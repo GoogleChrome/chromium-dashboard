@@ -274,7 +274,7 @@ BLINK_PROCESS_STAGES = [
       [],
       [],
       core_enums.INTENT_SHIP, core_enums.INTENT_SHIPPED,
-      stage_type=core_enums.STAGE_BLINK_SHIPPED),
+      stage_type=core_enums.STAGE_BLINK_SHIPPING),
   ]
 
 
@@ -357,7 +357,7 @@ BLINK_FAST_TRACK_STAGES = [
       [],
       [],
       core_enums.INTENT_SHIP, core_enums.INTENT_SHIPPED,
-      stage_type=core_enums.STAGE_FAST_SHIPPED),
+      stage_type=core_enums.STAGE_FAST_SHIPPING),
   ]
 
 
@@ -417,7 +417,7 @@ PSA_ONLY_STAGES = [
       [],
       [],
       core_enums.INTENT_SHIP, core_enums.INTENT_SHIPPED,
-      stage_type=core_enums.STAGE_PSA_SHIPPED),
+      stage_type=core_enums.STAGE_PSA_SHIPPING),
   ]
 
 
