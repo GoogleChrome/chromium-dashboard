@@ -43,6 +43,32 @@ class ChromedashApp extends LitElement {
           width: 100%;
         }
 
+        #content-sidebar-space {
+          position: sticky;
+          flex-shrink: 100;
+          width: 360px;
+        }
+
+        #sidebar {
+          position: absolute;
+          top: 0;
+          right: 0;
+          width: var(--sidebar-width);
+          bottom: 0;
+        }
+        #sidebar[hidden] {
+          display: none;
+        }
+        #sidebar-content {
+          position: sticky;
+          top: 10px;
+          height: 85vh;
+          border: var(--sidebar-border);
+          border-radius: var(--sidebar-radius);
+          background: var(--sidebar-bg);
+          padding: var(--content-padding);
+        }
+
         @media only screen and (max-width: 700px) {
           #content {
             margin-left: 0;
@@ -63,6 +89,7 @@ class ChromedashApp extends LitElement {
       bannerTime: {type: Number},
       pageComponent: {attribute: false},
       contextLink: {type: String}, // used for the back button in the feature page
+      sidebarHidden: {type: Boolean},
     };
   }
 
@@ -77,6 +104,7 @@ class ChromedashApp extends LitElement {
     this.bannerTime = null;
     this.pageComponent = null;
     this.contextLink = '/features';
+    this.sidebarHidden = true;
   }
 
   connectedCallback() {
@@ -197,6 +225,14 @@ class ChromedashApp extends LitElement {
     this.updateURLParams('q', e.detail.query);
   }
 
+  showSidebar() {
+    this.sidebarHidden = false;
+  }
+
+  hideSidebar() {
+    this.sidebarHidden = true;
+  }
+
   /**
  * Update window.locaton with new query params.
  * @param {string} key is the key of the query param.
@@ -240,6 +276,32 @@ class ChromedashApp extends LitElement {
     return url;
   }
 
+  renderContentAndSidebar() {
+    const wide = (this.pageComponent &&
+                  this.pageComponent.tagName == 'CHROMEDASH-ROADMAP-PAGE');
+    if (wide) {
+      return html`
+        <div id="content-component-wrapper" wide>
+          ${this.pageComponent}
+        </div>
+      `;
+    } else {
+      return html`
+        <div id="content-component-wrapper">
+          ${this.pageComponent}
+        </div>
+        <div id="content-sidebar-space">
+          <div id="sidebar" ?hidden=${this.sidebarHidden}>
+            <div id="sidebar-content">
+              <chromedash-gate-column .user=${this.user}>
+              </chromedash-gate-column>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+  }
+
   render() {
     // The <slot> below is for the Google sign-in button, this is because
     // Google Identity Services Library cannot find elements in a shadow DOM,
@@ -265,11 +327,7 @@ class ChromedashApp extends LitElement {
               .timestamp=${this.bannerTime}>
             </chromedash-banner>
             <div id="content-flex-wrapper">
-              <div id="content-component-wrapper"
-                ?wide=${this.pageComponent &&
-                  this.pageComponent.tagName == 'CHROMEDASH-ROADMAP-PAGE'}>
-                ${this.pageComponent}
-              </div>
+              ${this.renderContentAndSidebar()}
             </div>
           </div>
 
