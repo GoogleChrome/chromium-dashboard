@@ -377,6 +377,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
     # Write changes made to the corresponding stage type.
     if stage_update_items:
+      # If a stage_id is supplied, we make changes to only that specific stage.
       if stage_id:
         self.update_single_stage(stage_id, stage_update_items, changed_fields)
       else:
