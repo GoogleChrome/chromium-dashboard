@@ -393,6 +393,10 @@ indexes:
   - name: set_on
 - kind: Stage
   properties:
+  - name: feature_id
+  - name: stage_type
+- kind: Stage
+  properties:
   - name: stage_type
   - name: milestones.desktop_first
   - name: feature_id
