@@ -90,6 +90,22 @@ class ChromedashFeatureTable extends LitElement {
     this.fetchFeatures();
   }
 
+  loadNewPaginationPage(delta) {
+    const proposedStart = this.start + delta;
+    this.start = clamp(proposedStart, 0, this.totalCount - 1);
+    this._fireEvent('pagination', {index: this.start});
+    this.fetchFeatures();
+  }
+
+  _fireEvent(eventName, detail) {
+    const event = new CustomEvent(eventName, {
+      bubbles: true,
+      composed: true,
+      detail,
+    });
+    this.dispatchEvent(event);
+  }
+
   static get styles() {
     return [
       ...SHARED_STYLES,
@@ -160,12 +176,6 @@ class ChromedashFeatureTable extends LitElement {
       `;
     }
     return nothing;
-  }
-
-  loadNewPaginationPage(delta) {
-    const proposedStart = this.start + delta;
-    this.start = clamp(proposedStart, 0, this.totalCount - 1);
-    this.fetchFeatures();
   }
 
   renderPagination() {
