@@ -280,68 +280,54 @@ export class ChromedashProcessOverview extends LitElement {
     }
   }
 
-  findProcessStages(feStage) {
-    const stages = [];
+  findProcessStage(feStage) {
     for (const processStage of this.process.stages) {
       if (feStage.stage_type === processStage.stage_type) {
-        stages.push(processStage);
+        return processStage;
       }
     }
-    return stages;
+    return null;
   }
 
-  renderProcessesForStage(featureId, feStage) {
-    const processStages = this.findProcessStages(feStage);
-    const sections = [];
+  renderProcessStage(featureId, feStage) {
+    const processStage = this.findProcessStage(feStage);
+    if (processStage === null) return nothing;
 
-    for (const processStage of processStages) {
-      const isActive = (this.feature.active_stage_id === feStage.stage_id &&
-          this.feature.intent_stage_int === processStage.outgoing_stage);
+    const isActive = (this.feature.intent_stage_int === processStage.outgoing_stage);
 
-      sections.push(html`
-        <tr class="${isActive ?
-                      'active' : ''}">
-          <td>
-            <div><b>${processStage.name}</b></div>
-            <div>${processStage.description}</div>
-          </td>
-          <td>
-            ${processStage.progress_items.map(item =>
-                        this.renderProgressItem(processStage, item))}
-          </td>
-          <td>
-            ${isActive ?
-              html`<div><a
-                    href="/guide/stage/${featureId}/${feStage.stage_id}/${processStage.outgoing_stage}"
-                    class="button primary">Update</a></div>` :
-              nothing }
-            ${this.isPriorStage(processStage) ?
-              html`<a href="/guide/stage/${featureId}/${feStage.stage_id}/${processStage.outgoing_stage}"
-                  >Revisit</a>` :
-              nothing }
-            ${this.isStartableStage(processStage) ?
-              html`<a href="/guide/stage/${featureId}/${feStage.stage_id}/${processStage.outgoing_stage}"
-                      class="button primary">Start</a>` :
-              nothing }
-            ${this.isFutureStage(processStage) ?
-              html`<a href="/guide/stage/${featureId}/${feStage.stage_id}/${processStage.outgoing_stage}"
-                  >Preview</a>` :
-              nothing }
+    return html`
+      <tr class="${isActive ?
+                    'active' : ''}">
+        <td>
+          <div><b>${processStage.name}</b></div>
+          <div>${processStage.description}</div>
+        </td>
+        <td>
+          ${processStage.progress_items.map(item =>
+                      this.renderProgressItem(processStage, item))}
+        </td>
+        <td>
+          ${isActive ?
+            html`<div><a
+                  href="/guide/stage/${featureId}/${processStage.outgoing_stage}"
+                  class="button primary">Update</a></div>` :
+            nothing }
+          ${this.isPriorStage(processStage) ?
+            html`<a href="/guide/stage/${featureId}/${processStage.outgoing_stage}"
+                >Revisit</a>` :
+            nothing }
+          ${this.isStartableStage(processStage) ?
+            html`<a href="/guide/stage/${featureId}/${processStage.outgoing_stage}"
+                    class="button primary">Start</a>` :
+            nothing }
+          ${this.isFutureStage(processStage) ?
+            html`<a href="/guide/stage/${featureId}/${processStage.outgoing_stage}"
+                >Preview</a>` :
+            nothing }
 
-            ${this.renderActions(processStage)}
-          </td>
-        </tr>`);
-    }
-    return sections;
-  }
-
-  renderStages(feStages) {
-    let allSections = [];
-    feStages.forEach(feStage => {
-      const sections = this.renderProcessesForStage(this.feature.id, feStage);
-      allSections = allSections.concat(sections);
-    });
-    return allSections;
+          ${this.renderActions(processStage)}
+        </td>
+      </tr>`;
   }
 
   render() {
@@ -354,8 +340,7 @@ export class ChromedashProcessOverview extends LitElement {
          <th style="width: 25em" id="progress-header">Progress</th>
          <th style="width: 12em"></th>
        </tr>
-
-       ${this.renderStages(this.feature.stages)}
+       ${this.feature.stages.map(feStage => this.renderProcessStage(this.feature.id, feStage))}
        <tr>
          <td><b>Final review</b></td>
          <td></td>

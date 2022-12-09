@@ -320,7 +320,7 @@ const IMPLSTATUS_ORIGINTRIAL = [
 const MOST_PREPARETOSHIP = [
   'tag_review', 'tag_review_status', 'non_oss_deps',
   'webview_risks', 'anticipated_spec_changes', 'origin_trial_feedback_url',
-  'launch_bug_url', 'intent_to_ship_url', 'i2s_lgtms', 'comments',
+  'launch_bug_url', 'intent_to_ship_url', 'i2s_lgtms', 'comments', 'finch_url',
 ];
 
 const ANY_SHIP = ['launch_bug_url', 'finch_url', 'comments'];
