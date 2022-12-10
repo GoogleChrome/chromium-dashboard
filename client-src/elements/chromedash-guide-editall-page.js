@@ -204,7 +204,7 @@ export class ChromedashGuideEditallPage extends LitElement {
         <input type="hidden" name="stages" value="${stages}">
         <input type="hidden" name="token">
         <input type="hidden" name="nextPage" value=${this.getNextPage()} >
-        <input type="hidden" name="form_fields" value=${allFormFields}>
+        <input type="hidden" name="form_fields" value=${allFormFields.join(',')}>
         <chromedash-form-table ${ref(this.registerFormSubmitHandler)}>
           ${formsToRender}
         </chromedash-form-table>
