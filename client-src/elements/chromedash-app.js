@@ -1,10 +1,13 @@
 import {LitElement, css, html, nothing} from 'lit';
+import {ref, createRef} from 'lit/directives/ref.js';
 import {showToastMessage} from './utils';
 import page from 'page';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 
 class ChromedashApp extends LitElement {
+  gateColumnRef = createRef();
+
   static get styles() {
     return [
       ...SHARED_STYLES,
@@ -233,6 +236,11 @@ class ChromedashApp extends LitElement {
     this.sidebarHidden = true;
   }
 
+  showGateColumn(feature, stage, gate) {
+    this.gateColumnRef.value.setContext(feature, stage, gate);
+    this.showSidebar();
+  }
+
   /**
  * Update window.locaton with new query params.
  * @param {string} key is the key of the query param.
@@ -293,7 +301,8 @@ class ChromedashApp extends LitElement {
         <div id="content-sidebar-space">
           <div id="sidebar" ?hidden=${this.sidebarHidden}>
             <div id="sidebar-content">
-              <chromedash-gate-column .user=${this.user}>
+              <chromedash-gate-column
+                .user=${this.user} ${ref(this.gateColumnRef)}>
               </chromedash-gate-column>
             </div>
           </div>

@@ -1,5 +1,19 @@
 import {LitElement, css, html, nothing} from 'lit';
+import './chromedash-activity-log';
+import {showToastMessage} from './utils.js';
+
 import {SHARED_STYLES} from '../sass/shared-css.js';
+
+
+export const STATE_NAMES = [
+  [7, 'No response'],
+  [1, 'N/a or Ack'],
+  [2, 'Review requested'],
+  [3, 'Review started'],
+  [4, 'Needs work'],
+  [5, 'Approved'],
+  [6, 'Denied'],
+];
 
 
 class ChromedashGateColumn extends LitElement {
@@ -9,6 +23,10 @@ class ChromedashGateColumn extends LitElement {
       css`
        #votes-area {
          margin: var(--content-padding) 0;
+       }
+
+       #votes-area table {
+         border-spacing: var(--content-padding-half) var(--content-padding);;
        }
 
        #votes-area th {
@@ -25,23 +43,47 @@ class ChromedashGateColumn extends LitElement {
   static get properties() {
     return {
       user: {type: Object},
+      feature: {type: Object},
+      stage: {type: Object},
+      gate: {type: Object},
+      votes: {type: Array},
+      comments: {type: Array},
       loading: {type: Boolean},
+      needsSave: {type: Boolean},
     };
   }
 
   constructor() {
     super();
     this.user = {};
+    this.feature = {};
+    this.stage = {};
+    this.gate = {};
+    this.votes = [];
+    this.comments = [];
     this.loading = false;
+    this.needsSave = false;
   }
 
-  connectedCallback() {
-    super.connectedCallback();
+  setContext(feature, stage, gate) {
     this.loading = true;
-    // TODO(jrobbins): Just simulate loading data for now.
-    window.setTimeout(() => {
+    this.feature = feature;
+    this.stage = stage;
+    this.gate = gate;
+    const featureId = this.feature.id;
+    Promise.all([
+      window.csClient.getApprovals(featureId),
+      window.csClient.getComments(featureId),
+    ]).then(([approvalRes, commentRes]) => {
+      this.votes = approvalRes.approvals.filter((v) =>
+        v.gate_id == this.gate.id);
+      this.comments = commentRes.comments;
+      this.needsSave = false;
       this.loading = false;
-    }, 2000);
+    }).catch(() => {
+      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+      this.handleCancel();
+    });
   }
 
   renderHeadingsSkeleton() {
@@ -73,15 +115,15 @@ class ChromedashGateColumn extends LitElement {
   renderReviewStatus() {
     return html`
       <h3>
-        Status: Review requested
+        Review requested on YYYY-MM-DD
       </h3>
     `;
   }
 
   renderVotesSkeleton() {
     return html`
-      <table cellspacing=4>
-        <tr><th>Reviewer</th><th>Vote</th></tr>
+      <table>
+        <tr><th>Reviewer</th><th>Review status</th></tr>
         <tr>
          <td><sl-skeleton effect="sheen"></sl-skeleton></td>
          <td><sl-skeleton effect="sheen"></sl-skeleton></td>
@@ -90,18 +132,62 @@ class ChromedashGateColumn extends LitElement {
     `;
   }
 
-  renderVotes() {
+  findStateName(state) {
+    for (const item of STATE_NAMES) {
+      if (item[0] == state) {
+        return item[1];
+      }
+    }
+    // This should not normally be seen by users, but it will help us
+    // cope with data migration.
+    return `State ${state}`;
+  }
+
+  renderVoteReadOnly(vote) {
+    // TODO(jrobbins): background colors
+    return this.findStateName(vote.state);
+  }
+
+  renderVoteMenu(state) {
+    // hoist is needed when <sl-select> is in overflow:hidden context.
     return html`
-      <table cellspacing=4>
-        <tr><th>Reviewer</th><th>Vote</th></tr>
-        <tr>
-         <td>user1@example.com</td>
-         <td>Needs work</td>
-        </tr>
-        <tr>
-         <td>user2@example.com</td>
-         <td>Review started</td>
-        </tr>
+      <sl-select name="${this.gate.id}"
+          value="${state}"
+          @sl-change=${this.handleSelectChanged}
+          hoist size="small"
+        >
+            ${STATE_NAMES.map((valName) => html`
+              <sl-menu-item value="${valName[0]}"
+               >${valName[1]}</sl-menu-item>`,
+              )}
+      </sl-select>
+    `;
+  }
+
+  renderVoteRow(vote) {
+    const voteCell = (vote.set_by == this.user.email) ?
+      this.renderVoteMenu(vote.state) :
+      this.renderVoteReadOnly(vote);
+    return html`
+      <tr>
+       <td>${vote.set_by} ${vote.set_on}</td>
+       <td>${voteCell}</td>
+      </tr>
+    `;
+  }
+
+  renderVotes() {
+    const canVote = true; // TODO(jrobbins): permission checks.
+    const myVoteExists = this.votes.some((v) => v.set_by == this.user.email);
+    const addVoteRow = (canVote && !myVoteExists) ?
+      this.renderVoteRow({set_by: this.user.email, state: 7}) :
+      nothing;
+
+    return html`
+      <table>
+        <tr><th>Reviewer</th><th>Review status</th></tr>
+        ${this.votes.map((v) => this.renderVoteRow(v))}
+        ${addVoteRow}
       </table>
     `;
   }
