@@ -48,12 +48,12 @@ export class ChromedashAllFeaturesPage extends LitElement {
       this.query = this.rawQuery['q'];
     }
 
-    if (this.rawQuery.hasOwnProperty('start')) {
-      this.start = this.rawQuery['start'];
+    if (this.rawQuery.hasOwnProperty('start') && !Number.isNaN(+this.rawQuery['start'])) {
+      this.start = +this.rawQuery['start'];
     }
 
-    if (this.rawQuery.hasOwnProperty('num')) {
-      this.num = this.rawQuery['num'];
+    if (this.rawQuery.hasOwnProperty('num') && !Number.isNaN(+this.rawQuery['num'])) {
+      this.num = +this.rawQuery['num'];
     }
   }
 
