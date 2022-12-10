@@ -187,7 +187,8 @@ export class ChromedashGuideEditallPage extends LitElement {
         continue;
       }
       const formFields = this.getStageFormFields(processStage);
-      formsToRender.push(this.renderStageFormFields(formattedFeature, processStage, feStage, formFields));
+      formsToRender.push(this.renderStageFormFields(
+        formattedFeature, processStage, feStage, formFields));
       allFormFields = [...allFormFields, ...formFields];
     }
 
