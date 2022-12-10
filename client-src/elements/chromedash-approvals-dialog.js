@@ -236,7 +236,7 @@ class ChromedashApprovalsDialog extends LitElement {
         <span class="set_by">${voteValue.set_by}</span>
         <span class="set_on">${this.formatDate(voteValue.set_on)}</span>
         <span class="appr_val">
-          ${voteValue.set_by == this.user.email ? html`
+          ${voteValue.set_by == this.user?.email ? html`
         <sl-select name="${voteValue.gate_type}"
             value="${selectedValue}"
             data-field="${voteValue.gate_type}"
@@ -257,6 +257,7 @@ class ChromedashApprovalsDialog extends LitElement {
   }
 
   renderAddApproval(fieldId) {
+    if (!this.user) return nothing;
     const existingApprovalByMe = this.approvals.some((a) =>
       a.gate_type == fieldId && a.set_by == this.user.email);
     if (existingApprovalByMe) {
@@ -402,6 +403,7 @@ class ChromedashApprovalsDialog extends LitElement {
   }
 
   renderControls() {
+    if (!this.user) return nothing;
     let showAllCheckbox = nothing;
     if (this.subsetPending) {
       showAllCheckbox = html`
