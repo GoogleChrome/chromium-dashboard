@@ -137,27 +137,29 @@ export class ChromedashGuideEditallPage extends LitElement {
     `;
   }
 
-  findProcessStages(feStage) {
-    const stages = [];
+  findProcessStage(feStage) {
     for (const processStage of this.process.stages) {
       if (feStage.stage_type === processStage.stage_type) {
-        stages.push([processStage, feStage.stage_id]);
+        return processStage;
       }
     }
-    return stages;
+    return null;
   }
 
-  renderStageFormFields(name, stageId, formFields, formattedFeature) {
-    if (!formFields) {
-      return nothing;
-    }
+  getStageFormFields(processStage) {
+    return FLAT_FORMS_BY_INTENT_TYPE[processStage.outgoing_stage] || [];
+  }
+
+  renderStageFormFields(formattedFeature, processStage, feStage, formFields) {
+    if (!formFields) return nothing;
+
     return html`
-      <h3>${name}</h3>
+      <h3>${processStage.name}</h3>
       <section class="flat_form">
         ${formFields.map((field) => html`
           <chromedash-form-field
             name=${field}
-            stageId=${stageId}
+            stageId=${feStage.stage_id}
             value=${formattedFeature[field]}>
           </chromedash-form-field>
         `)}
@@ -166,22 +168,28 @@ export class ChromedashGuideEditallPage extends LitElement {
   }
 
   getForms(formattedFeature, feStages) {
-    let stages = [];
-    for (const feStage of feStages) {
-      stages = stages.concat(this.findProcessStages(feStage));
-    }
+    const formsToRender = [html`
+    <h3>Feature metadata</h3>
+    <section class="flat_form">
+      ${METADATA_FORM_FIELDS.map((field) => html`
+        <chromedash-form-field
+          name=${field}
+          value=${formattedFeature[field]}>
+        </chromedash-form-field>
+      `)}
+    </section>
+    `];
 
     let allFormFields = [...METADATA_FORM_FIELDS];
-    const formsToRender = [this.renderStageFormFields(
-      'Feature metadata', 0, METADATA_FORM_FIELDS, formattedFeature)];
-
-    stages.forEach(([stage, stageId]) => {
-      const formFields = FLAT_FORMS_BY_INTENT_TYPE[stage.outgoing_stage] || [];
+    for (const feStage of feStages) {
+      const processStage = this.findProcessStage(feStage);
+      if (!processStage) {
+        continue;
+      }
+      const formFields = this.getStageFormFields(processStage);
+      formsToRender.push(this.renderStageFormFields(formattedFeature, processStage, feStage, formFields));
       allFormFields = [...allFormFields, ...formFields];
-
-      formsToRender.push(
-        this.renderStageFormFields(stage.name, stageId, formFields, formattedFeature));
-    });
+    }
 
     return [allFormFields, formsToRender];
   }
