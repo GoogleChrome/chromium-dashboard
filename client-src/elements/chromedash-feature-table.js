@@ -181,7 +181,7 @@ class ChromedashFeatureTable extends LitElement {
   renderPagination() {
     // Indexes of first and last items shown in one-based counting.
     const firstShown = this.start + 1;
-    const lastShown = this.features.length ? this.start + this.features : firstShown;
+    const lastShown = this.start + this.features.length;
 
     const hasPrevPage = firstShown > 1;
     const hasNextPage = lastShown < this.totalCount;
@@ -200,6 +200,10 @@ class ChromedashFeatureTable extends LitElement {
       if (this.loading || (firstShown == 1 && lastShown == this.totalCount)) {
         return nothing;
       }
+    }
+
+    if (this.features.length === 0) {
+      return nothing;
     }
 
     return html`
