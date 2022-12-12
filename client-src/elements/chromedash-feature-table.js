@@ -202,6 +202,10 @@ class ChromedashFeatureTable extends LitElement {
       }
     }
 
+    if (this.features.length === 0) {
+      return nothing;
+    }
+
     return html`
       <div class="pagination">
         <span>${firstShown} - ${lastShown} of ${this.totalCount}</span>
