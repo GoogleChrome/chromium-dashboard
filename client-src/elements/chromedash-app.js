@@ -70,7 +70,6 @@ class ChromedashApp extends LitElement {
       bannerMessage: {type: String},
       bannerTime: {type: Number},
       pageComponent: {attribute: false},
-      featureHref: {type: String},
       contextLink: {type: String}, // used for the back button in the feature page
     };
   }
