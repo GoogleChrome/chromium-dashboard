@@ -229,6 +229,8 @@ class ChromedashApprovalsDialog extends LitElement {
     const placeholderOption = (voteValue.state === -1) ?
       html`<sl-menu-item value="-1" selected>No value</sl-menu-item>` :
       nothing;
+    const canVote = (this.user?.can_approve &&
+                     voteValue.set_by == this.user?.email);
 
     // hoist is needed when <sl-select> is in overflow:hidden context.
     return html`
@@ -236,7 +238,7 @@ class ChromedashApprovalsDialog extends LitElement {
         <span class="set_by">${voteValue.set_by}</span>
         <span class="set_on">${this.formatDate(voteValue.set_on)}</span>
         <span class="appr_val">
-          ${voteValue.set_by == this.user?.email ? html`
+          ${canVote ? html`
         <sl-select name="${voteValue.gate_type}"
             value="${selectedValue}"
             data-field="${voteValue.gate_type}"
@@ -257,7 +259,7 @@ class ChromedashApprovalsDialog extends LitElement {
   }
 
   renderAddApproval(fieldId) {
-    if (!this.user) return nothing;
+    if (!this.user || !this.user.can_approve) return nothing;
     const existingApprovalByMe = this.approvals.some((a) =>
       a.gate_type == fieldId && a.set_by == this.user.email);
     if (existingApprovalByMe) {
@@ -403,7 +405,7 @@ class ChromedashApprovalsDialog extends LitElement {
   }
 
   renderControls() {
-    if (!this.user) return nothing;
+    if (!this.user || !this.user.can_comment) return nothing;
     let showAllCheckbox = nothing;
     if (this.subsetPending) {
       showAllCheckbox = html`

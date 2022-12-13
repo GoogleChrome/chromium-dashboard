@@ -24,7 +24,7 @@ test_app = flask.Flask(__name__)
 
 class PermissionsAPITest(testing_config.CustomTestCase):
 
-  def setUp(self):    
+  def setUp(self):
     self.handler = permissions_api.PermissionsAPI()
     self.request_path = '/api/v0/currentuser/permissions'
 
@@ -47,6 +47,7 @@ class PermissionsAPITest(testing_config.CustomTestCase):
       'user': {
         'can_create_feature': False,
         'can_approve': False,
+        'can_comment': False,
         'can_edit_all': False,
         'is_admin': False,
         'email': 'one@example.com',
@@ -63,6 +64,7 @@ class PermissionsAPITest(testing_config.CustomTestCase):
       'user': {
         'can_create_feature': True,
         'can_approve': False,
+        'can_comment': True,
         'can_edit_all': False,
         'is_admin': False,
         'email': 'one@google.com',

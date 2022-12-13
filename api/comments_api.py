@@ -102,6 +102,9 @@ class CommentsAPI(basehandlers.APIHandler):
     comment_content = self.get_param('comment', required=False)
 
     if comment_content:
+      if not permissions.can_comment(user):
+        self.abort(403, msg='User is not allowed to comment')
+
       # TODO(danielrsmith): After UI changes, gate_id should be passed in
       # post request and not queried for.
       gates: list[Gate] = Gate.query(
