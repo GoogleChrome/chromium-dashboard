@@ -276,7 +276,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
   def test_post__comment_only(self, mock_get_approvers):
     """Handler adds a comment only, does not require approval permission."""
     mock_get_approvers.return_value = []
-    testing_config.sign_in('owner2@example.com', 123567890)
+    testing_config.sign_in('user2@chromium.org', 123567890)
     params = {'comment': 'Congratulations'}
     with test_app.test_request_context(self.request_path, json=params):
       actual = self.handler.do_post(feature_id=self.feature_id,
@@ -295,7 +295,19 @@ class CommentsAPITest(testing_config.CustomTestCase):
         self.feature_id, self.gate_1.key.integer_id(), comments_only=True)
     cmnt = updated_comments[0]
     self.assertEqual('Congratulations', cmnt.content)
+    self.assertEqual('user2@chromium.org', cmnt.author)
 
     # Check activity is also created.
     activity = review_models.Activity.get_by_id(cmnt.key.integer_id())
     self.assertIsNotNone(activity)
+
+  @mock.patch('internals.approval_defs.get_approvers')
+  def test_post__comment_rejected(self, mock_get_approvers):
+    """Outsiders cannot comment."""
+    mock_get_approvers.return_value = []
+    testing_config.sign_in('outsider@example.com', 123567890)
+    params = {'comment': 'Could be spam'}
+    with test_app.test_request_context(self.request_path, json=params):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.do_post(
+            feature_id=self.feature_id, gate_type=self.gate_1.gate_type)
