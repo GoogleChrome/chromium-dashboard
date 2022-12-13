@@ -18,6 +18,14 @@ class ChromedashApp extends LitElement {
           width: 100%;
         }
 
+        #rollout {
+          width: 100%;
+          text-align: center;
+          padding: 1em;
+          color: black;
+          background: lightgrey;
+        }
+
         #app-content-container {
           display: flex;
           flex-direction: column;
@@ -62,6 +70,7 @@ class ChromedashApp extends LitElement {
       bannerMessage: {type: String},
       bannerTime: {type: Number},
       pageComponent: {attribute: false},
+      featureHref: {type: String},
       contextLink: {type: String}, // used for the back button in the feature page
     };
   }
@@ -240,6 +249,18 @@ class ChromedashApp extends LitElement {
     return url;
   }
 
+  renderRolloutBanner(currentPage) {
+    if (currentPage.startsWith('/newfeatures')) {
+      return html`
+      <div id="rollout">
+        <a href="/features">Back to the old features page</a>
+      </div>
+    `;
+    }
+
+    return nothing;
+  }
+
   render() {
     // The <slot> below is for the Google sign-in button, this is because
     // Google Identity Services Library cannot find elements in a shadow DOM,
@@ -253,7 +274,8 @@ class ChromedashApp extends LitElement {
                 .user=${this.user}
                 .appTitle=${this.appTitle}
                 .googleSignInClientId=${this.googleSignInClientId}
-                .currentPage=${this.currentPage}>
+                .currentPage=${this.currentPage}
+                ?isNewFeatures=${true}>
                 <slot></slot>
               </chromedash-header>
             </div>
@@ -264,6 +286,7 @@ class ChromedashApp extends LitElement {
               .message=${this.bannerMessage}
               .timestamp=${this.bannerTime}>
             </chromedash-banner>
+            ${this.renderRolloutBanner(this.currentPage)}
             <div id="content-flex-wrapper">
               <div id="content-component-wrapper"
                 ?wide=${this.pageComponent &&
