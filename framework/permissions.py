@@ -62,6 +62,11 @@ def can_create_feature(user: User) -> bool:
   return False
 
 
+def can_comment(user: User) -> bool:
+  """Return true if the user is allowed to post review comments."""
+  return can_create_feature(user)
+
+
 def can_edit_any_feature(user: User) -> bool:
   """Return True if the user is allowed to edit all features."""
   if not user:
