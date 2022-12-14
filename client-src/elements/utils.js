@@ -32,3 +32,14 @@ export function slotAssignedElements(component, slotName) {
 export function clamp(val, lowerBound, upperBound) {
   return Math.max(lowerBound, Math.min(upperBound, val));
 }
+
+
+/* Given a feature entry stage entity, look up the related process stage. */
+export function findProcessStage(feStage, process) {
+  for (const processStage of process.stages) {
+    if (feStage.stage_type == processStage.stage_type) {
+      return processStage;
+    }
+  }
+  return null;
+}

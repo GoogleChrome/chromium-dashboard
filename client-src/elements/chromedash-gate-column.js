@@ -1,6 +1,6 @@
 import {LitElement, css, html, nothing} from 'lit';
 import './chromedash-activity-log';
-import {showToastMessage} from './utils.js';
+import {showToastMessage, findProcessStage} from './utils.js';
 
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
@@ -46,6 +46,7 @@ class ChromedashGateColumn extends LitElement {
       feature: {type: Object},
       stage: {type: Object},
       gate: {type: Object},
+      process: {type: Object},
       votes: {type: Array},
       comments: {type: Array},
       loading: {type: Boolean},
@@ -59,9 +60,10 @@ class ChromedashGateColumn extends LitElement {
     this.feature = {};
     this.stage = {};
     this.gate = {};
+    this.process = {};
     this.votes = [];
     this.comments = [];
-    this.loading = false;
+    this.loading = true;
     this.needsSave = false;
   }
 
@@ -72,9 +74,11 @@ class ChromedashGateColumn extends LitElement {
     this.gate = gate;
     const featureId = this.feature.id;
     Promise.all([
+      window.csClient.getFeatureProcess(featureId),
       window.csClient.getApprovals(featureId),
       window.csClient.getComments(featureId),
-    ]).then(([approvalRes, commentRes]) => {
+    ]).then(([process, approvalRes, commentRes]) => {
+      this.process = process;
       this.votes = approvalRes.approvals.filter((v) =>
         v.gate_id == this.gate.id);
       this.comments = commentRes.comments;
@@ -98,9 +102,11 @@ class ChromedashGateColumn extends LitElement {
   }
 
   renderHeadings() {
+    const processStage = findProcessStage(this.stage, this.process);
+    const processStageName = processStage ? processStage.name : nothing;
     return html`
-      <h3>Stage</h3>
-      <h2>Gate</h2>
+      <h3>${processStageName}</h3>
+      <h2>${this.gate.team_name}</h2>
     `;
   }
 
@@ -113,10 +119,11 @@ class ChromedashGateColumn extends LitElement {
   }
 
   renderReviewStatus() {
+    // TODO(jrobbins): display gate state name and requested_on or reviewed_on.
     return html`
-      <h3>
+      <div>
         Review requested on YYYY-MM-DD
-      </h3>
+      </div>
     `;
   }
 
@@ -170,7 +177,7 @@ class ChromedashGateColumn extends LitElement {
       this.renderVoteReadOnly(vote);
     return html`
       <tr>
-       <td>${vote.set_by} ${vote.set_on}</td>
+       <td>${vote.set_by}</td>
        <td>${voteCell}</td>
       </tr>
     `;

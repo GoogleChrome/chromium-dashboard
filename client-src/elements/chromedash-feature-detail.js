@@ -5,7 +5,7 @@ import '@polymer/iron-icon';
 import './chromedash-activity-log';
 import './chromedash-callout';
 import './chromedash-gate-chip';
-import {autolink} from './utils.js';
+import {autolink, findProcessStage} from './utils.js';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 const LONG_TEXT = 60;
@@ -328,17 +328,8 @@ class ChromedashFeatureDetail extends LitElement {
     `;
   }
 
-  findProcessStage(feStage) {
-    for (const processStage of this.process.stages) {
-      if (feStage.stage_type == processStage.stage_type) {
-        return processStage;
-      }
-    }
-    return null;
-  }
-
   renderStageSection(feStage) {
-    const processStage = this.findProcessStage(feStage);
+    const processStage = findProcessStage(feStage, this.process);
     if (processStage === null) return nothing;
     const fields = DISPLAY_FIELDS_IN_STAGES[processStage.outgoing_stage];
     const isActive = (this.feature.intent_stage_int == processStage.outgoing_stage);
