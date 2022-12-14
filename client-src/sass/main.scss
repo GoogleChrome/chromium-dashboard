@@ -60,6 +60,14 @@ body {
   max-width: 95%;
 }
 
+#rollout {
+  width: 100%;
+  text-align: center;
+  padding: 1em;
+  color: black;
+  background: lightgrey;
+}
+
 @media only screen and (max-width: 700px) {
   #content {
     margin-left: 0;
