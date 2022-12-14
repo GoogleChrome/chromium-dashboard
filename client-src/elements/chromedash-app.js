@@ -273,8 +273,7 @@ class ChromedashApp extends LitElement {
                 .user=${this.user}
                 .appTitle=${this.appTitle}
                 .googleSignInClientId=${this.googleSignInClientId}
-                .currentPage=${this.currentPage}
-                ?isNewFeatures=${true}>
+                .currentPage=${this.currentPage}>
                 <slot></slot>
               </chromedash-header>
             </div>

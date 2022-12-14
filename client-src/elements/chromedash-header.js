@@ -173,7 +173,6 @@ export class ChromedashHeader extends LitElement {
       currentPage: {type: String},
       user: {type: Object},
       loading: {type: Boolean},
-      isNewFeatures: {type: Boolean},
     };
   }
 
@@ -184,7 +183,6 @@ export class ChromedashHeader extends LitElement {
     this.currentPage = '';
     this.user = {};
     this.loading = false;
-    this.isNewFeatures = false;
   }
 
   connectedCallback() {
@@ -258,14 +256,6 @@ export class ChromedashHeader extends LitElement {
     return this.currentPage.startsWith(href);
   }
 
-  getFeatureHref() {
-    if (this.isNewFeatures) {
-      return '/newfeatures';
-    }
-
-    return '/features';
-  }
-
   renderTabs() {
     return html`
       <div id="maintabs" class="flex-container flex-container-inner-first">
@@ -273,7 +263,7 @@ export class ChromedashHeader extends LitElement {
         ${this.user ? html`
           <a class="flex-item" href="/myfeatures" ?active=${this.isCurrentPage('/myfeatures')}>My features</a>
         ` : nothing}
-        <a class="flex-item" href=${this.getFeatureHref()} ?active=${this.isCurrentPage('/features') || this.isCurrentPage('/newfeatures')}>All features</a>
+        <a class="flex-item" href="/features" ?active=${this.isCurrentPage('/features') || this.isCurrentPage('/newfeatures')}>All features</a>
         <div class="nav-dropdown-container flex-item" href="/metrics" ?active=${this.isCurrentPage('/metrics')}>
           <a class="nav-dropdown-trigger flex-item-inner">Stats
             <iron-icon icon="chromestatus:arrow-drop-down"></iron-icon>
