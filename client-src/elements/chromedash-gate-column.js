@@ -36,7 +36,6 @@ class ChromedashGateColumn extends LitElement {
        #review-status-area {
          margin: var(--content-padding-half) 0;
        }
-
     `];
   }
 
