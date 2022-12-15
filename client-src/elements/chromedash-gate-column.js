@@ -62,7 +62,7 @@ class ChromedashGateColumn extends LitElement {
     this.process = {};
     this.votes = [];
     this.comments = [];
-    this.loading = true;
+    this.loading = false;
     this.needsSave = false;
   }
 
