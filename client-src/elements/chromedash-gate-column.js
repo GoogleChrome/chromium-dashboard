@@ -89,6 +89,19 @@ class ChromedashGateColumn extends LitElement {
     });
   }
 
+  _fireEvent(eventName, detail) {
+    const event = new CustomEvent(eventName, {
+      bubbles: true,
+      composed: true,
+      detail,
+    });
+    this.dispatchEvent(event);
+  }
+
+  handleCancel() {
+    this._fireEvent('close', {});
+  }
+
   renderHeadingsSkeleton() {
     return html`
       <h3 class="sl-skeleton-header-container">

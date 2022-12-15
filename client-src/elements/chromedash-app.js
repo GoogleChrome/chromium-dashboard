@@ -57,7 +57,7 @@ class ChromedashApp extends LitElement {
         #content-sidebar-space {
           position: sticky;
           flex-shrink: 100;
-          width: 360px;
+          width: var(--sidebar-space);
         }
 
         #sidebar {
@@ -311,13 +311,15 @@ class ChromedashApp extends LitElement {
           <div id="sidebar" ?hidden=${this.sidebarHidden}>
             <div id="sidebar-content">
               <chromedash-gate-column
-                .user=${this.user} ${ref(this.gateColumnRef)}>
+                .user=${this.user} ${ref(this.gateColumnRef)}
+                @close=${() => this.hideSidebar()}>
               </chromedash-gate-column>
             </div>
           </div>
         </div>
       `;
     }
+  }
 
   renderRolloutBanner(currentPage) {
     if (currentPage.startsWith('/newfeatures')) {
