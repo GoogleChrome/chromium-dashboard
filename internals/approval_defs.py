@@ -168,11 +168,11 @@ def is_resolved(approval_values, field_id):
   return False
 
 
-def set_vote(feature_id: int,  gate_type: int, new_state: int,
-    set_by_email: str, gate_id: Optional[int]=None) -> None:
+def set_vote(feature_id: int,  gate_type: int | None, new_state: int,
+    set_by_email: str, gate_id: int | None=None) -> None:
   """Add or update an approval value."""
   gate: Optional[Gate] = None
-  if gate_id is None:
+  if gate_id is None and gate_type is not None:
     gate = get_gate_by_type(feature_id, gate_type)
     # If a vote is being set, a corresponding gate should already exist.
     if not gate:
@@ -180,6 +180,7 @@ def set_vote(feature_id: int,  gate_type: int, new_state: int,
           'Cannot set vote.')
       return
     gate_id = gate.key.integer_id()
+    gate_type = gate.gate_type
   else:
     gate = Gate.get_by_id(gate_id)
 

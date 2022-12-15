@@ -18,22 +18,12 @@ import logging
 import re
 from typing import Any, Optional
 
+from api import converters
 from framework import basehandlers
 from framework import permissions
 from internals import approval_defs
 from internals.review_models import Approval, ApprovalConfig, Gate, Vote
 
-
-def vote_value_to_json_dict(vote: Vote) -> dict[str, Any]:
-
-  return {
-      'feature_id': vote.feature_id,
-      'gate_id': vote.gate_id,
-      'gate_type': vote.gate_type,
-      'state': vote.state,
-      'set_on': str(vote.set_on),  # YYYY-MM-DD HH:MM:SS.SSS
-      'set_by': vote.set_by,
-      }
 
 class ApprovalsAPI(basehandlers.APIHandler):
   """Users may see the set of approvals on a feature, and add their own,
@@ -45,7 +35,7 @@ class ApprovalsAPI(basehandlers.APIHandler):
     gate_type = kwargs.get('gate_type', None)
     # Note: We assume that anyone may view approvals.
     votes = Vote.get_votes(feature_id=feature_id, gate_type=gate_type)
-    dicts = [vote_value_to_json_dict(v) for v in votes]
+    dicts = [converters.vote_value_to_json_dict(v) for v in votes]
     return {'approvals': dicts}
 
   def do_post(self, **kwargs) -> dict[str, str]:
@@ -157,46 +147,3 @@ class ApprovalConfigsAPI(basehandlers.APIHandler):
 
     # Callers don't use the JSON response for this API call.
     return {'message': 'Done'}
-
-
-def gate_value_to_json_dict(gate: Gate) -> dict[str, Any]:
-  next_action = str(gate.next_action) if gate.next_action else None
-  appr_def = approval_defs.APPROVAL_FIELDS_BY_ID[gate.gate_type]
-  return {
-      'feature_id': gate.feature_id,
-      'stage_id': gate.stage_id,
-      'gate_type': gate.gate_type,
-      'team_name': appr_def.team_name,
-      'gate_name': appr_def.name,
-      'state': gate.state,
-      'owners': gate.owners,
-      'next_action': next_action,  # YYYY-MM-DD or None
-      'additional_review': gate.additional_review
-      }
-
-
-class GatesAPI(basehandlers.APIHandler):
-  """Get gates for a feature."""
-
-  def do_get(self, **kwargs) -> dict[str, Any]:
-    """Return a list of all gates associated with the given feature."""
-    feature_id = kwargs.get('feature_id', None)
-    gates: list[Gate] = Gate.query(Gate.feature_id == feature_id).fetch()
-
-    # No gates associated with this feature.
-    if len(gates) == 0:
-      return {
-          'gates': [],
-          'possible_owners': {}
-          }
-
-    dicts = [gate_value_to_json_dict(g) for g in gates]
-    possible_owners_by_gate_type: dict[int, list[str]] = {
-        gate_type: approval_defs.get_approvers(gate_type)
-        for gate_type in approval_defs.APPROVAL_FIELDS_BY_ID
-        }
-
-    return {
-        'gates': dicts,
-        'possible_owners': possible_owners_by_gate_type
-        }
