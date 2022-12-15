@@ -171,14 +171,12 @@ class ChromedashGateColumn extends LitElement {
     // hoist is needed when <sl-select> is in overflow:hidden context.
     return html`
       <sl-select name="${this.gate.id}"
-          value="${state}"
-          @sl-change=${this.handleSelectChanged}
-          hoist size="small"
-        >
-            ${STATE_NAMES.map((valName) => html`
-              <sl-menu-item value="${valName[0]}"
-               >${valName[1]}</sl-menu-item>`,
-              )}
+                 value="${state}"
+                 @sl-change=${this.handleSelectChanged}
+                 hoist size="small">
+        ${STATE_NAMES.map((valName) => html`
+          <sl-menu-item value="${valName[0]}">${valName[1]}</sl-menu-item>`,
+        )}
       </sl-select>
     `;
   }
