@@ -21,6 +21,14 @@ class ChromedashApp extends LitElement {
           width: 100%;
         }
 
+        #rollout {
+          width: 100%;
+          text-align: center;
+          padding: 1em;
+          color: black;
+          background: lightgrey;
+        }
+
         #app-content-container {
           display: flex;
           flex-direction: column;
@@ -284,6 +292,7 @@ class ChromedashApp extends LitElement {
     return url;
   }
 
+
   renderContentAndSidebar() {
     const wide = (this.pageComponent &&
                   this.pageComponent.tagName == 'CHROMEDASH-ROADMAP-PAGE');
@@ -309,6 +318,17 @@ class ChromedashApp extends LitElement {
         </div>
       `;
     }
+
+  renderRolloutBanner(currentPage) {
+    if (currentPage.startsWith('/newfeatures')) {
+      return html`
+      <div id="rollout">
+        <a href="/features">Back to the old features page</a>
+      </div>
+    `;
+    }
+
+    return nothing;
   }
 
   render() {
@@ -335,6 +355,7 @@ class ChromedashApp extends LitElement {
               .message=${this.bannerMessage}
               .timestamp=${this.bannerTime}>
             </chromedash-banner>
+            ${this.renderRolloutBanner(this.currentPage)}
             <div id="content-flex-wrapper">
               ${this.renderContentAndSidebar()}
             </div>
