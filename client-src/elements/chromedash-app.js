@@ -249,6 +249,10 @@ class ChromedashApp extends LitElement {
     this.showSidebar();
   }
 
+  handleShowGateColumn(e) {
+    this.showGateColumn(e.detail.feature, e.detail.stage, e.detail.gate);
+  }
+
   /**
  * Update window.locaton with new query params.
  * @param {string} key is the key of the query param.
@@ -304,7 +308,8 @@ class ChromedashApp extends LitElement {
       `;
     } else {
       return html`
-        <div id="content-component-wrapper">
+        <div id="content-component-wrapper"
+          @show-gate-column=${(e) => this.handleShowGateColumn(e)}>
           ${this.pageComponent}
         </div>
         <div id="content-sidebar-space">

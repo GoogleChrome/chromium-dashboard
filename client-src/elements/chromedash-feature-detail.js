@@ -309,10 +309,11 @@ class ChromedashFeatureDetail extends LitElement {
     return this.renderSection('Metadata', content);
   }
 
-  renderGateChip(gate) {
+  renderGateChip(feStage, gate) {
     return html`
       <chromedash-gate-chip
         .feature=${this.feature}
+        .stage=${feStage}
         .gate=${gate}
       >
       </chromedash-gate-chip>
@@ -323,7 +324,7 @@ class ChromedashFeatureDetail extends LitElement {
     const gatesForStage = this.gates.filter(g => g.stage_id == feStage.stage_id);
     return html`
       <div class="gates">
-        ${gatesForStage.map(g => this.renderGateChip(g))}
+        ${gatesForStage.map(g => this.renderGateChip(feStage, g))}
       </div>
     `;
   }

@@ -29,6 +29,7 @@ class ChromedashGateChip extends LitElement {
   static get properties() {
     return {
       feature: {type: Object},
+      stage: {type: Object},
       gate: {type: Object},
     };
   }
@@ -36,6 +37,7 @@ class ChromedashGateChip extends LitElement {
   constructor() {
     super();
     this.feature = {};
+    this.stage = {};
     this.gate = {};
   }
 
@@ -116,11 +118,21 @@ class ChromedashGateChip extends LitElement {
     this.dispatchEvent(event);
   }
 
-  openApprovalsDialog() {
-    // Handled in chromedash-myfeatures-page.js.
-    this._fireEvent('open-approvals-event', {
-      feature: this.feature,
-    });
+  openApprovalsDialog(e) {
+    if (e.shiftKey) {
+      // Handled in chromedash-app.js.
+      this._fireEvent('show-gate-column', {
+        feature: this.feature,
+        stage: this.stage,
+        gate: this.gate,
+      });
+    } else {
+      // Handled in chromedash-myfeatures-page.js and chromedash-feature-page.
+      this._fireEvent('open-approvals-event', {
+        feature: this.feature,
+        gate: this.gate,
+      });
+    }
   }
 
   render() {
