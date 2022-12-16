@@ -18,6 +18,8 @@ from datetime import datetime
 
 from api import converters
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.review_models import Vote, Gate
+from internals import approval_defs
 
 
 class DelNoneTest(testing_config.CustomTestCase):
@@ -34,7 +36,7 @@ class DelNoneTest(testing_config.CustomTestCase):
         converters.del_none(d))
 
 
-class ConvertersTest(testing_config.CustomTestCase):
+class FeatureConvertersTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.date = datetime.now()
@@ -310,3 +312,69 @@ class ConvertersTest(testing_config.CustomTestCase):
     result = converters.feature_entry_to_json_verbose(self.fe_1)
     self.assertEqual(5, result['browsers']['safari']['view']['val'])
     self.assertEqual(5, result['browsers']['ff']['view']['val'])
+
+
+class VoteConvertersTest(testing_config.CustomTestCase):
+
+  def test_conversion(self):
+    """We can convert a Vote entity to JSON."""
+    vote = Vote(
+        feature_id=1, gate_id=2, gate_type=3, state=4,
+        set_on=datetime(2022, 12, 14, 1, 2, 3),
+        set_by='user@example.com')
+    actual = converters.vote_value_to_json_dict(vote)
+    expected = {
+      'feature_id': 1,
+      'gate_id': 2,
+      'gate_type': 3,
+      'state': 4,
+      'set_on': '2022-12-14 01:02:03',
+      'set_by': 'user@example.com',
+      }
+    self.assertEqual(expected, actual)
+
+
+class GateConvertersTest(testing_config.CustomTestCase):
+
+  def test_minimal(self):
+    """If a Gate has only required fields set, we can convert it to JSON."""
+    gate = Gate(feature_id=1, stage_id=2, gate_type=3, state=4)
+    actual = converters.gate_value_to_json_dict(gate)
+    appr_def = approval_defs.APPROVAL_FIELDS_BY_ID[gate.gate_type]
+    expected = {
+      'feature_id': 1,
+      'stage_id': 2,
+      'gate_type': 3,
+      'team_name': appr_def.team_name,
+      'gate_name': appr_def.name,
+      'state': 4,
+      'requested_on': None,
+      'owners': [],
+      'next_action': None,
+      'additional_review': False,
+      }
+    self.assertEqual(expected, actual)
+
+  def test_maxmimal(self):
+    """If a Gate has all fields set, we can convert it to JSON."""
+    gate = Gate(
+        feature_id=1, stage_id=2, gate_type=3, state=4,
+        requested_on=datetime(2022, 12, 14, 1, 2, 3),
+        owners=['appr1@example.com', 'appr2@example.com'],
+        next_action=datetime(2022, 12, 25, 4, 5, 6),
+        additional_review=True)
+    actual = converters.gate_value_to_json_dict(gate)
+    appr_def = approval_defs.APPROVAL_FIELDS_BY_ID[gate.gate_type]
+    expected = {
+      'feature_id': 1,
+      'stage_id': 2,
+      'gate_type': 3,
+      'team_name': appr_def.team_name,
+      'gate_name': appr_def.name,
+      'state': 4,
+      'requested_on': '2022-12-14 01:02:03',
+      'owners': ['appr1@example.com', 'appr2@example.com'],
+      'next_action': '2022-12-25 04:05:06',
+      'additional_review': True,
+      }
+    self.assertEqual(expected, actual)

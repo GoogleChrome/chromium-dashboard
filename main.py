@@ -28,6 +28,7 @@ from api import logout_api
 from api import metricsdata
 from api import permissions_api
 from api import processes_api
+from api import reviews_api
 from api import settings_api
 from api import stages_api
 from api import stars_api
@@ -99,12 +100,15 @@ api_routes: list[Route] = [
     Route(f'{API_BASE}/features/<int:feature_id>', features_api.FeaturesAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/approvals',
         approvals_api.ApprovalsAPI),
+    # TODO(jrobbins): Phase out approvals_api.
     Route(f'{API_BASE}/features/<int:feature_id>/approvals/<int:field_id>',
         approvals_api.ApprovalsAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/configs',
         approvals_api.ApprovalConfigsAPI),
+    Route(f'{API_BASE}/features/<int:feature_id>/votes/<int:gate_id>',
+        reviews_api.VotesAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/gates',
-        approvals_api.GatesAPI),
+        reviews_api.GatesAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/approvals/comments',
         comments_api.CommentsAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/approvals/<int:field_id>/comments',

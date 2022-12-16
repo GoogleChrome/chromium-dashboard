@@ -211,6 +211,16 @@ class ChromeStatusClient {
         {gateType: Number(gateType), state: Number(state)});
   }
 
+  getVotes(featureId, gateId) {
+    return this.doGet(`/features/${featureId}/votes/${gateId}`);
+  }
+
+  setVote(featureId, gateId, state) {
+    return this.doPost(
+        `/features/${featureId}/votes/${gateId}`,
+        {state: Number(state)});
+  }
+
   getApprovalConfigs(featureId) {
     return this.doGet(`/features/${featureId}/configs`);
   }
