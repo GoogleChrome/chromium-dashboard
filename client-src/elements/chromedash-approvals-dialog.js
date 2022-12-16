@@ -6,15 +6,17 @@ import {showToastMessage} from './utils.js';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 export const STATE_NAMES = [
-  // Not used: [0, 'Needs review'],
+  // Not used: [0, 'Preparing'],
+  [7, 'No response'],
   [1, 'N/a or Ack'],
   [2, 'Review requested'],
   [3, 'Review started'],
   [4, 'Needs work'],
+  [8, 'Internal review'],
   [5, 'Approved'],
   [6, 'Denied'],
 ];
-const PENDING_STATES = [2, 3, 4];
+const PENDING_STATES = [2, 3, 4, 8];
 
 const APPROVAL_DEFS = [
   {name: 'Intent to Prototype',

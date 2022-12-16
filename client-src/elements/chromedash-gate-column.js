@@ -11,6 +11,7 @@ export const STATE_NAMES = [
   [2, 'Review requested'],
   [3, 'Review started'],
   [4, 'Needs work'],
+  [8, 'Internal review'],
   [5, 'Approved'],
   [6, 'Denied'],
 ];
