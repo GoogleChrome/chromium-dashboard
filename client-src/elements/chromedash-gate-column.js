@@ -21,12 +21,19 @@ class ChromedashGateColumn extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
+       #close-button {
+         font-size: 2em;
+         position: absolute;
+         top: var(--content-padding-quarter);
+         right: var(--content-padding-quarter);
+       }
+
        #votes-area {
          margin: var(--content-padding) 0;
        }
 
        #votes-area table {
-         border-spacing: var(--content-padding-half) var(--content-padding);;
+         border-spacing: var(--content-padding-half) var(--content-padding);
        }
 
        #votes-area th {
@@ -62,7 +69,7 @@ class ChromedashGateColumn extends LitElement {
     this.process = {};
     this.votes = [];
     this.comments = [];
-    this.loading = false;
+    this.loading = true; // Avoid errors before first usage.
     this.needsSave = false;
   }
 
@@ -104,10 +111,12 @@ class ChromedashGateColumn extends LitElement {
 
   renderHeadingsSkeleton() {
     return html`
-      <h3 class="sl-skeleton-header-container">
+      <h3 class="sl-skeleton-header-container"
+          style="width: 60%">
         <sl-skeleton effect="sheen"></sl-skeleton>
       </h3>
-      <h2 class="sl-skeleton-header-container">
+      <h2 class="sl-skeleton-header-container"
+          style="margin-top: 4px; width: 75%">
         <sl-skeleton effect="sheen"></sl-skeleton>
       </h2>
     `;
@@ -234,6 +243,10 @@ class ChromedashGateColumn extends LitElement {
 
   render() {
     return html`
+      <sl-icon-button title="Close" name="x" id="close-button"
+        @click=${() => this.handleCancel()}
+        ></sl-icon-button>
+
         ${this.loading ?
           this.renderHeadingsSkeleton() :
           this.renderHeadings()}
