@@ -191,21 +191,16 @@ const FLAT_PREPARE_TO_SHIP_FIELDS = [
   'webview_risks', 'anticipated_spec_changes',
   'intent_to_ship_url', 'i2s_lgtms',
   // Implementation
-  'measurement',
-  'non_oss_deps',
-];
-
-
-const FLAT_SHIP_FIELDS = [
-  // Implementation
-  'finch_url',
+  'measurement', 'non_oss_deps', 'finch_url',
   'shipped_milestone', 'shipped_android_milestone',
   'shipped_ios_milestone', 'shipped_webview_milestone',
 ];
 
 export const FLAT_ENTERPRISE_PREPARE_TO_SHIP = [
   'rollout_milestone', 'rollout_platforms', 'rollout_details',
-  'enterprise_policies',
+  'enterprise_policies', 'finch_url',
+  'shipped_milestone', 'shipped_android_milestone',
+  'shipped_ios_milestone', 'shipped_webview_milestone',
 ];
 
 export const FLAT_ENTERPRISE_PREPARE_TO_SHIP_NAME = 'Start feature rollout';
@@ -219,7 +214,6 @@ export const FLAT_FORMS = [
   ['Dev trial', FLAT_DEV_TRAIL_FIELDS],
   ['Origin trial', FLAT_ORIGIN_TRIAL_FIELDS],
   ['Prepare to ship', FLAT_PREPARE_TO_SHIP_FIELDS],
-  ['Ship', FLAT_SHIP_FIELDS],
 ];
 
 
@@ -231,7 +225,6 @@ export const FLAT_FORMS_BY_FEATURE_TYPE = {
     ['Identify the need', FLAT_IDENTIFY_FIELDS],
     ['Dev trial', FLAT_DEV_TRAIL_FIELDS],
     ['Prepare to ship', FLAT_PREPARE_TO_SHIP_FIELDS],
-    ['Ship', FLAT_SHIP_FIELDS],
   ],
   [FEATURE_TYPES.FEATURE_TYPE_DEPRECATION_ID[0]]: [
     ['Feature metadata', FLAT_METADATA_FIELDS],
@@ -239,12 +232,11 @@ export const FLAT_FORMS_BY_FEATURE_TYPE = {
     ['Dev trial', FLAT_DEV_TRAIL_FIELDS],
     ['Origin trial', FLAT_ORIGIN_TRIAL_FIELDS],
     ['Prepare to ship', FLAT_PREPARE_TO_SHIP_FIELDS],
-    ['Ship', FLAT_SHIP_FIELDS],
   ],
   [FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0]]: [
     ['Feature metadata', FLAT_METADATA_FIELDS],
     [FLAT_ENTERPRISE_PREPARE_TO_SHIP_NAME, FLAT_ENTERPRISE_PREPARE_TO_SHIP],
-    ['Ship', FLAT_SHIP_FIELDS],
+    ['Prepare to ship', FLAT_PREPARE_TO_SHIP_FIELDS],
   ],
 };
 
@@ -320,10 +312,8 @@ const IMPLSTATUS_ORIGINTRIAL = [
 const MOST_PREPARETOSHIP = [
   'tag_review', 'tag_review_status', 'non_oss_deps',
   'webview_risks', 'anticipated_spec_changes', 'origin_trial_feedback_url',
-  'launch_bug_url', 'intent_to_ship_url', 'i2s_lgtms', 'comments',
+  'launch_bug_url', 'intent_to_ship_url', 'i2s_lgtms', 'finch_url', 'comments',
 ];
-
-const ANY_SHIP = ['launch_bug_url', 'finch_url', 'comments'];
 
 const EXISTING_PROTOTYPE = [
   'owner', 'editors', 'cc_recipients', 'blink_components', 'motivation',
@@ -341,9 +331,9 @@ const EXISTING_ORIGINTRIAL = [
 const PSA_IMPLEMENT = ['motivation', 'spec_link', 'standard_maturity', 'comments'];
 // TODO(jrobbins): advise user to request a tag review
 
-const PAS_PREPARETOSHIP = [
+const PSA_PREPARETOSHIP = [
   'tag_review', 'intent_to_implement_url', 'origin_trial_feedback_url',
-  'launch_bug_url', 'intent_to_ship_url', 'comments',
+  'launch_bug_url', 'intent_to_ship_url', 'finch_url', 'comments',
 ];
 
 const DEPRECATION_IMPLEMENT = ['deprecation_motivation', 'spec_link', 'comments'];
@@ -394,7 +384,7 @@ export const STAGE_FORMS = {
     [INTENT_STAGES.INTENT_EXTEND_TRIAL[0]]: NEWFEATURE_ORIGINTRIAL,
     [INTENT_STAGES.INTENT_SHIP[0]]: MOST_PREPARETOSHIP,
     [INTENT_STAGES.INTENT_ROLLOUT[0]]: ENTERPRISE_PREPARE_TO_SHIP,
-    [INTENT_STAGES.INTENT_SHIPPED[0]]: ANY_SHIP,
+    [INTENT_STAGES.INTENT_SHIPPED[0]]: MOST_PREPARETOSHIP,
   },
 
   [FEATURE_TYPES.FEATURE_TYPE_EXISTING_ID[0]]: {
@@ -403,15 +393,15 @@ export const STAGE_FORMS = {
     [INTENT_STAGES.INTENT_EXTEND_TRIAL[0]]: EXISTING_ORIGINTRIAL,
     [INTENT_STAGES.INTENT_SHIP[0]]: MOST_PREPARETOSHIP,
     [INTENT_STAGES.INTENT_ROLLOUT[0]]: ENTERPRISE_PREPARE_TO_SHIP,
-    [INTENT_STAGES.INTENT_SHIPPED[0]]: ANY_SHIP,
+    [INTENT_STAGES.INTENT_SHIPPED[0]]: MOST_PREPARETOSHIP,
   },
 
   [FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]]: {
     [INTENT_STAGES.INTENT_IMPLEMENT[0]]: PSA_IMPLEMENT,
     [INTENT_STAGES.INTENT_EXPERIMENT[0]]: ANY_DEVTRIAL,
-    [INTENT_STAGES.INTENT_SHIP[0]]: PAS_PREPARETOSHIP,
+    [INTENT_STAGES.INTENT_SHIP[0]]: PSA_PREPARETOSHIP,
     [INTENT_STAGES.INTENT_ROLLOUT[0]]: ENTERPRISE_PREPARE_TO_SHIP,
-    [INTENT_STAGES.INTENT_SHIPPED[0]]: ANY_SHIP,
+    [INTENT_STAGES.INTENT_SHIPPED[0]]: MOST_PREPARETOSHIP,
   },
 
   [FEATURE_TYPES.FEATURE_TYPE_DEPRECATION_ID[0]]: {
@@ -425,7 +415,7 @@ export const STAGE_FORMS = {
 
   [FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0]]: {
     [INTENT_STAGES.INTENT_ROLLOUT[0]]: ENTERPRISE_PREPARE_TO_SHIP,
-    [INTENT_STAGES.INTENT_SHIPPED[0]]: ANY_SHIP,
+    [INTENT_STAGES.INTENT_SHIPPED[0]]: MOST_PREPARETOSHIP,
   },
 };
 

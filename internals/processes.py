@@ -263,18 +263,6 @@ BLINK_PROCESS_STAGES = [
       [approval_defs.ShipApproval],
       core_enums.INTENT_IMPLEMENT_SHIP, core_enums.INTENT_SHIP,
       stage_type=core_enums.STAGE_BLINK_SHIPPING),
-
-  ProcessStage(
-      'Ship',
-      'Update milestones and other information when the feature '
-      'actually ships.',
-      [PI_FINAL_VENDOR_SIGNALS,
-       PI_FINAL_TARGET_MILESTONE,
-      ],
-      [],
-      [],
-      core_enums.INTENT_SHIP, core_enums.INTENT_SHIPPED,
-      stage_type=core_enums.STAGE_BLINK_SHIPPED),
   ]
 
 
@@ -346,18 +334,6 @@ BLINK_FAST_TRACK_STAGES = [
       [approval_defs.ShipApproval],
       core_enums.INTENT_EXPERIMENT, core_enums.INTENT_SHIP,
       stage_type=core_enums.STAGE_FAST_SHIPPING),
-
-  ProcessStage(
-      'Ship',
-      'Update milestones and other information when the feature '
-      'actually ships.',
-      [PI_FINAL_VENDOR_SIGNALS,
-       PI_FINAL_TARGET_MILESTONE,
-      ],
-      [],
-      [],
-      core_enums.INTENT_SHIP, core_enums.INTENT_SHIPPED,
-      stage_type=core_enums.STAGE_FAST_SHIPPED),
   ]
 
 
@@ -406,18 +382,6 @@ PSA_ONLY_STAGES = [
       [approval_defs.ShipApproval],
       core_enums.INTENT_EXPERIMENT, core_enums.INTENT_SHIP,
       stage_type=core_enums.STAGE_PSA_SHIPPING),
-
-  ProcessStage(
-      'Ship',
-      'Update milestones and other information when the feature '
-      'actually ships.',
-      [PI_FINAL_VENDOR_SIGNALS,
-       PI_FINAL_TARGET_MILESTONE,
-      ],
-      [],
-      [],
-      core_enums.INTENT_SHIP, core_enums.INTENT_SHIPPED,
-      stage_type=core_enums.STAGE_PSA_SHIPPED),
   ]
 
 
