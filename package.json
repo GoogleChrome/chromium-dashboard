@@ -54,7 +54,7 @@
     "@open-wc/testing": "^3.1.7",
     "@rollup/plugin-babel": "^6.0.3",
     "@rollup/plugin-node-resolve": "^15.0.1",
-    "@shoelace-style/shoelace": "^2.0.0-beta.85",
+    "@shoelace-style/shoelace": "^2.0.0-beta.86",
     "@web/test-runner": "^0.15.0",
     "@web/test-runner-playwright": "^0.9.0",
     "acorn": ">=8.8.1",
@@ -82,10 +82,10 @@
     "minimist": ">=1.2.7",
     "path-parse": ">=1.0.7",
     "regenerator-runtime": "^0.13.11",
-    "rollup": "^3.6.0",
+    "rollup": "^3.7.3",
     "rollup-plugin-babel-minify": "^10.0.0",
     "sinon": "^15.0.0",
-    "tar": ">=6.1.12",
+    "tar": ">=6.1.13",
     "trim-newlines": ">=4.0.2"
   },
   "dependencies": {
@@ -94,7 +94,7 @@
     "@polymer/iron-iconset-svg": "^3.0.1",
     "lit": "^2",
     "node-fetch": ">=3.3.0",
-    "sass": ">=1.56.1",
+    "sass": ">=1.56.2",
     "page": "^1.11.6",
     "urijs": ">=1.19.11",
     "yargs-parser": ">=21.1.1"

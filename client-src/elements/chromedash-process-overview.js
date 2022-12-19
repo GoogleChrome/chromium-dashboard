@@ -1,5 +1,6 @@
 import {LitElement, css, html, nothing} from 'lit';
 import './chromedash-callout';
+import {findProcessStage} from './utils';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 export class ChromedashProcessOverview extends LitElement {
@@ -280,21 +281,11 @@ export class ChromedashProcessOverview extends LitElement {
     }
   }
 
-  findProcessStage(feStage) {
-    for (const processStage of this.process.stages) {
-      if (feStage.stage_type === processStage.stage_type) {
-        return processStage;
-      }
-    }
-    return null;
-  }
-
   renderProcessStage(featureId, feStage) {
-    const processStage = this.findProcessStage(feStage);
+    const processStage = findProcessStage(feStage, this.process);
     if (processStage === null) return nothing;
 
-    const isActive = (this.feature.active_stage_id === feStage.stage_id &&
-      this.feature.intent_stage_int === processStage.outgoing_stage);
+    const isActive = (this.feature.active_stage_id === feStage.stage_id);
 
     return html`
       <tr class="${isActive ?

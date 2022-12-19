@@ -403,11 +403,9 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
           setattr(feature, field, field_val)
           stage_update_items.append((field, field_val))
 
-      # Write changes made to the corresponding stage type.
-      if stage_update_items:
-        # If a stage_id is supplied, we make changes to only that specific stage.
-        if stage_id:
-          self.update_single_stage(stage_id, stage_update_items, changed_fields)
+    # If a stage_id is supplied, we make changes to only that specific stage.
+    if stage_update_items and stage_id:
+      self.update_single_stage(stage_id, stage_update_items, changed_fields)
 
     # Update metadata fields.
     now = datetime.now()
@@ -446,6 +444,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
   def update_single_stage(self, stage_id: int,
       update_items: list[tuple[str, Any]],
       changed_fields: list[tuple[str, Any, Any]]) -> None:
+    """Make given changes to a specified stage."""
     stage_to_update = Stage.get_by_id(stage_id)
     if stage_to_update is None:
       self.abort(404, msg=f'Stage {stage_id} not found.')
@@ -465,7 +464,10 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     setattr(stage_to_update, 'intent_thread_url', intent_thread_val)
 
     for field, new_val in update_items:
+      # Update the field's name if it has been renamed.
+      old_field_name = field
       field = self.RENAMED_FIELD_MAPPING.get(field, field)
+
       old_val = None
       if field in MilestoneSet.MILESTONE_FIELD_MAPPING:
         milestone_field = MilestoneSet.MILESTONE_FIELD_MAPPING[field]
@@ -477,7 +479,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
         old_val = getattr(stage_to_update, field)
         setattr(stage_to_update, field, new_val)
       if old_val != new_val:
-        changed_fields.append((field, old_val, new_val))
+        changed_fields.append((old_field_name, old_val, new_val))
     stage_to_update.put()
 
   def update_stages_editall(self, feature: Feature, feature_type: int,

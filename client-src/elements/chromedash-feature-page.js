@@ -203,6 +203,8 @@ export class ChromedashFeaturePage extends LitElement {
   // TODO(jrobbins): Make it specific.
   handleOpenApprovals(e) {
     e.preventDefault();
+    // open old approvals dialog.
+    // TODO(jrobbins): Phase this out after approvals column is done.
     openApprovalsDialog(this.user, e.detail.feature);
   }
 
