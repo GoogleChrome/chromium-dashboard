@@ -332,15 +332,18 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       setattr(feature, 'impl_status_chrome', impl_status_val)
       setattr(fe, 'impl_status_chrome', impl_status_val)
 
-    intent_stage_val: Optional[int] = None
-    if self.touched('intent_stage'):
-      intent_stage_val = self._get_field_val('intent_stage', 'int')
-    elif self.form.get('set_stage') == 'on':
-      intent_stage_val = kwargs.get('stage_id', 0)
+    active_stage_id = -1
+    intent_stage_val: int | None = None
+    if self.form.get('set_stage') == 'on':
+      active_stage_id = kwargs.get('stage_id', 0)
+      intent_stage_val = kwargs.get('intent_stage', core_enums.INTENT_NONE)
     if intent_stage_val is not None:
+      self._add_changed_field(
+          fe, 'active_stage_id', active_stage_id, changed_fields)
       self._add_changed_field(
           fe, 'intent_stage', intent_stage_val, changed_fields)
       setattr(feature, 'intent_stage', intent_stage_val)
+      setattr(fe, 'active_stage_id', active_stage_id)
       setattr(fe, 'intent_stage', intent_stage_val)
 
     for field, field_type in self.STAGE_FIELDS:
