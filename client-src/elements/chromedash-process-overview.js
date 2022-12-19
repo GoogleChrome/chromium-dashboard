@@ -282,7 +282,7 @@ export class ChromedashProcessOverview extends LitElement {
   }
 
   renderProcessStage(featureId, feStage) {
-    const processStage = findProcessStage(feStage);
+    const processStage = findProcessStage(feStage, this.process);
     if (processStage === null) return nothing;
 
     const isActive = (this.feature.intent_stage_int === processStage.outgoing_stage);
