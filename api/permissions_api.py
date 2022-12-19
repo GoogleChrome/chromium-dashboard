@@ -20,7 +20,7 @@ from internals import approval_defs
 
 
 class PermissionsAPI(basehandlers.APIHandler):
-  """Permissions determine whether a user can create, approve, 
+  """Permissions determine whether a user can create, approve,
   or edit any feature, or admin the site"""
 
   def do_get(self, **kwargs):
@@ -28,7 +28,7 @@ class PermissionsAPI(basehandlers.APIHandler):
 
     # No user data if not signed in
     user_data = None
-    
+
     # get user permission data if signed in
     user = self.get_current_user()
     if user:
@@ -38,6 +38,7 @@ class PermissionsAPI(basehandlers.APIHandler):
         'can_create_feature': permissions.can_create_feature(user),
         'can_approve': permissions.can_approve_feature(
             user, None, approvers),
+        'can_comment': permissions.can_comment(user),
         'can_edit_all': permissions.can_edit_any_feature(user),
         'is_admin': permissions.can_admin_site(user),
         'email': user.email(),

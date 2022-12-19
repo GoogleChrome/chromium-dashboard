@@ -5,7 +5,7 @@ import '@polymer/iron-icon';
 import './chromedash-activity-log';
 import './chromedash-callout';
 import './chromedash-gate-chip';
-import {autolink} from './utils.js';
+import {autolink, findProcessStage} from './utils.js';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 const LONG_TEXT = 60;
@@ -311,10 +311,11 @@ class ChromedashFeatureDetail extends LitElement {
     return this.renderSection('Metadata', content);
   }
 
-  renderGateChip(gate) {
+  renderGateChip(feStage, gate) {
     return html`
       <chromedash-gate-chip
         .feature=${this.feature}
+        .stage=${feStage}
         .gate=${gate}
       >
       </chromedash-gate-chip>
@@ -325,7 +326,7 @@ class ChromedashFeatureDetail extends LitElement {
     const gatesForStage = this.gates.filter(g => g.stage_id == feStage.stage_id);
     return html`
       <div class="gates">
-        ${gatesForStage.map(g => this.renderGateChip(g))}
+        ${gatesForStage.map(g => this.renderGateChip(feStage, g))}
       </div>
     `;
   }
@@ -343,7 +344,7 @@ class ChromedashFeatureDetail extends LitElement {
     const fields = DISPLAY_FIELDS_IN_STAGES[feStage.intent_stage];
     if (fields === undefined || fields.length == 0) return nothing;
 
-    const processStage = this.findProcessStage(feStage);
+    const processStage = findProcessStage(feStage, this.process);
     if (!processStage) return nothing;
 
 

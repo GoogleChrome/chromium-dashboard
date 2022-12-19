@@ -1,5 +1,6 @@
 import {LitElement, css, html, nothing} from 'lit';
 import './chromedash-callout';
+import {findProcessStage} from './utils';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 export class ChromedashProcessOverview extends LitElement {
@@ -290,7 +291,7 @@ export class ChromedashProcessOverview extends LitElement {
   }
 
   renderProcessStage(featureId, feStage) {
-    const processStage = this.findProcessStage(feStage);
+    const processStage = findProcessStage(feStage, this.process);
     if (processStage === null) return nothing;
 
     const isActive = (this.feature.active_stage_id === feStage.stage_id &&
