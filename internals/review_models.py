@@ -26,21 +26,25 @@ from google.cloud import ndb  # type: ignore
 class Approval(ndb.Model):
   """Describes the current state of one approval on a feature."""
 
-  # Not used: NEEDS_REVIEW = 0
+  # Not used: PREPARING = 0
   NA = 1
   REVIEW_REQUESTED = 2
   REVIEW_STARTED = 3
   NEEDS_WORK = 4
   APPROVED = 5
   DENIED = 6
+  NO_RESPONSE = 7
+  INTERNAL_REVIEW = 8
   APPROVAL_VALUES = {
-      # Not used: NEEDS_REVIEW: 'needs_review',
+      # Not used: PREPARING: 'preparing',
       NA: 'na',
       REVIEW_REQUESTED: 'review_requested',
       REVIEW_STARTED: 'review_started',
       NEEDS_WORK: 'needs_work',
       APPROVED: 'approved',
       DENIED: 'denied',
+      NO_RESPONSE: 'no_response',
+      INTERNAL_REVIEW: 'internal_review',
   }
 
   FINAL_STATES = [NA, APPROVED, DENIED]
@@ -202,13 +206,15 @@ class OwnersFile(ndb.Model):
 class Vote(ndb.Model):  # copy from Approval
   """One approver's vote on what the state of a gate should be."""
 
-  # Not used: NEEDS_REVIEW = 0
+  # Not used: PREPARING = 0
   NA = 1
   REVIEW_REQUESTED = 2
   REVIEW_STARTED = 3
   NEEDS_WORK = 4
   APPROVED = 5
   DENIED = 6
+  NO_RESPONSE = 7
+  INTERNAL_REVIEW = 8
   VOTE_VALUES = {
       # Not used: PREPARING: 'preparing',
       NA: 'na',
@@ -217,6 +223,8 @@ class Vote(ndb.Model):  # copy from Approval
       NEEDS_WORK: 'needs_work',
       APPROVED: 'approved',
       DENIED: 'denied',
+      NO_RESPONSE: 'no_response',
+      INTERNAL_REVIEW: 'internal_review',
   }
 
   FINAL_STATES = [NA, APPROVED, DENIED]
@@ -263,7 +271,9 @@ class Gate(ndb.Model):  # copy from ApprovalConfig
   """Gates regulate the completion of a stage."""
 
   PREPARING = 0
-  PENDING_STATES = [Vote.REVIEW_REQUESTED, Vote.REVIEW_STARTED, Vote.NEEDS_WORK]
+  PENDING_STATES = [
+      Vote.REVIEW_REQUESTED, Vote.REVIEW_STARTED, Vote.NEEDS_WORK,
+      Vote.INTERNAL_REVIEW]
   FINAL_STATES = [Vote.NA, Vote.APPROVED, Vote.DENIED]
 
   feature_id = ndb.IntegerProperty(required=True)

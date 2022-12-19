@@ -20,7 +20,9 @@ from internals import stage_helpers
 
 from internals.core_enums import *
 from internals.core_models import Feature, FeatureEntry, Stage
-from internals.review_models import Gate
+from internals.review_models import Vote, Gate
+from internals import approval_defs
+
 
 SIMPLE_TYPES = frozenset((int, float, bool, dict, str, list))
 
@@ -583,3 +585,33 @@ def feature_entry_to_json_basic(fe: FeatureEntry,
   d['milestone'] = milestone
 
   return d
+
+
+def vote_value_to_json_dict(vote: Vote) -> dict[str, Any]:
+
+  return {
+      'feature_id': vote.feature_id,
+      'gate_id': vote.gate_id,
+      'gate_type': vote.gate_type,
+      'state': vote.state,
+      'set_on': str(vote.set_on),  # YYYY-MM-DD HH:MM:SS.SSS
+      'set_by': vote.set_by,
+      }
+
+
+def gate_value_to_json_dict(gate: Gate) -> dict[str, Any]:
+  next_action = str(gate.next_action) if gate.next_action else None
+  requested_on = str(gate.requested_on) if gate.requested_on else None
+  appr_def = approval_defs.APPROVAL_FIELDS_BY_ID[gate.gate_type]
+  return {
+      'feature_id': gate.feature_id,
+      'stage_id': gate.stage_id,
+      'gate_type': gate.gate_type,
+      'team_name': appr_def.team_name,
+      'gate_name': appr_def.name,
+      'state': gate.state,
+      'requested_on': requested_on,  # YYYY-MM-DD or None
+      'owners': gate.owners,
+      'next_action': next_action,  # YYYY-MM-DD or None
+      'additional_review': gate.additional_review
+      }

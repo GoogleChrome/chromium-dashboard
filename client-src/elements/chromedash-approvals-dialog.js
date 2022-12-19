@@ -6,15 +6,17 @@ import {showToastMessage} from './utils.js';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 export const STATE_NAMES = [
-  // Not used: [0, 'Needs review'],
+  // Not used: [0, 'Preparing'],
+  [7, 'No response'],
   [1, 'N/a or Ack'],
   [2, 'Review requested'],
   [3, 'Review started'],
   [4, 'Needs work'],
+  [8, 'Internal review'],
   [5, 'Approved'],
   [6, 'Denied'],
 ];
-const PENDING_STATES = [2, 3, 4];
+const PENDING_STATES = [2, 3, 4, 8];
 
 const APPROVAL_DEFS = [
   {name: 'Intent to Prototype',
@@ -226,9 +228,8 @@ class ChromedashApprovalsDialog extends LitElement {
     const selectedValue = (
       this.changedApprovalsByField.get(voteValue.gate_type) ||
       voteValue.state);
-    const placeholderOption = (voteValue.state === -1) ?
-      html`<sl-menu-item value="-1" selected>No value</sl-menu-item>` :
-      nothing;
+    const canVote = (this.user?.can_approve &&
+                     voteValue.set_by == this.user?.email);
 
     // hoist is needed when <sl-select> is in overflow:hidden context.
     return html`
@@ -236,14 +237,13 @@ class ChromedashApprovalsDialog extends LitElement {
         <span class="set_by">${voteValue.set_by}</span>
         <span class="set_on">${this.formatDate(voteValue.set_on)}</span>
         <span class="appr_val">
-          ${voteValue.set_by == this.user.email ? html`
+          ${canVote ? html`
         <sl-select name="${voteValue.gate_type}"
             value="${selectedValue}"
             data-field="${voteValue.gate_type}"
             @sl-change=${this.handleSelectChanged}
             hoist size="small"
           >
-              ${placeholderOption}
               ${STATE_NAMES.map((valName) => html`
                 <sl-menu-item value="${valName[0]}"
                  >${valName[1]}</sl-menu-item>`,
@@ -257,6 +257,7 @@ class ChromedashApprovalsDialog extends LitElement {
   }
 
   renderAddApproval(fieldId) {
+    if (!this.user || !this.user.can_approve) return nothing;
     const existingApprovalByMe = this.approvals.some((a) =>
       a.gate_type == fieldId && a.set_by == this.user.email);
     if (existingApprovalByMe) {
@@ -265,7 +266,7 @@ class ChromedashApprovalsDialog extends LitElement {
       return this.renderApprovalValue(
         {set_by: this.user.email,
           set_on: '',
-          state: -1,
+          state: 7,
           gate_type: fieldId});
     }
   }
@@ -374,7 +375,8 @@ class ChromedashApprovalsDialog extends LitElement {
   renderAllApprovals() {
     // Some feature types do not have all gates.
     // Only valid gate types should be shown.
-    const gatesShouldRender = GATES_BY_FEATURE_TYPE[this.feature.feature_type_int];
+    const gatesShouldRender = (
+      GATES_BY_FEATURE_TYPE[this.feature.feature_type_int] || new Set([]));
     return APPROVAL_DEFS.filter(def => gatesShouldRender.has(def.id))
       .map((apprDef) => this.renderApproval(apprDef));
   }
@@ -402,6 +404,7 @@ class ChromedashApprovalsDialog extends LitElement {
   }
 
   renderControls() {
+    if (!this.user || !this.user.can_comment) return nothing;
     let showAllCheckbox = nothing;
     if (this.subsetPending) {
       showAllCheckbox = html`
