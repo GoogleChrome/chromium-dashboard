@@ -228,9 +228,6 @@ class ChromedashApprovalsDialog extends LitElement {
     const selectedValue = (
       this.changedApprovalsByField.get(voteValue.gate_type) ||
       voteValue.state);
-    const placeholderOption = (voteValue.state === -1) ?
-      html`<sl-menu-item value="-1" selected>No value</sl-menu-item>` :
-      nothing;
     const canVote = (this.user?.can_approve &&
                      voteValue.set_by == this.user?.email);
 
@@ -247,7 +244,6 @@ class ChromedashApprovalsDialog extends LitElement {
             @sl-change=${this.handleSelectChanged}
             hoist size="small"
           >
-              ${placeholderOption}
               ${STATE_NAMES.map((valName) => html`
                 <sl-menu-item value="${valName[0]}"
                  >${valName[1]}</sl-menu-item>`,
@@ -270,7 +266,7 @@ class ChromedashApprovalsDialog extends LitElement {
       return this.renderApprovalValue(
         {set_by: this.user.email,
           set_on: '',
-          state: -1,
+          state: 7,
           gate_type: fieldId});
     }
   }
@@ -379,7 +375,8 @@ class ChromedashApprovalsDialog extends LitElement {
   renderAllApprovals() {
     // Some feature types do not have all gates.
     // Only valid gate types should be shown.
-    const gatesShouldRender = GATES_BY_FEATURE_TYPE[this.feature.feature_type_int];
+    const gatesShouldRender = (
+      GATES_BY_FEATURE_TYPE[this.feature.feature_type_int] || new Set([]));
     return APPROVAL_DEFS.filter(def => gatesShouldRender.has(def.id))
       .map((apprDef) => this.renderApproval(apprDef));
   }
