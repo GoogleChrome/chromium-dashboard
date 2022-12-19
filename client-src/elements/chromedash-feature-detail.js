@@ -331,15 +331,6 @@ class ChromedashFeatureDetail extends LitElement {
     `;
   }
 
-  findProcessStage(feStage) {
-    for (const processStage of this.process.stages) {
-      if (feStage.stage_type === processStage.stage_type) {
-        return processStage;
-      }
-    }
-    return null;
-  }
-
   renderProcessStage(feStage) {
     const fields = DISPLAY_FIELDS_IN_STAGES[feStage.intent_stage];
     if (fields === undefined || fields.length == 0) return nothing;
