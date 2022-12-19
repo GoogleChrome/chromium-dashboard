@@ -13,17 +13,34 @@ describe('chromedash-proces-overview', () => {
         progress_items: [],
         outgoing_stage: 1,
         actions: [],
+        stage_type: 110,
       }],
     };
     feature = {
       id: 123456,
       intent_stage_int: 1,
+      active_stage_id: 1,
+      stages: [
+        {
+          stage_id: 1,
+          stage_type: 110,
+          intent_stage: 1,
+        },
+        {
+          stage_id: 2,
+          stage_type: 120,
+          intent_stage: 2,
+        },
+      ],
     };
   });
 
-  it('renders with no data', async () => {
+  it('renders with basic data', async () => {
     const component = await fixture(
-      html`<chromedash-process-overview></chromedash-process-overview>`);
+      html`<chromedash-process-overview
+              .process=${process}
+              .feature=${feature}
+           ></chromedash-process-overview>`);
     assert.exists(component);
     assert.instanceOf(component, ChromedashProcessOverview);
     const stageHeader = component.shadowRoot.querySelector('th');
