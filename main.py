@@ -180,9 +180,9 @@ spa_page_routes = [
 spa_page_post_routes: list[Route] = [
   Route('/guide/new', guide.FeatureCreateHandler),
   Route('/guide/edit/<int:feature_id>', guide.FeatureEditHandler),
-  Route('/guide/stage/<int:feature_id>/<int:stage_id>',
+  Route('/guide/stage/<int:feature_id>/<int:intent_stage>',
       guide.FeatureEditHandler),
-  Route('/guide/stage/<int:feature_id>/<int:stage_id>/<int:intent_stage>',
+  Route('/guide/stage/<int:feature_id>/<int:intent_stage>/<int:stage_id>/',
       guide.FeatureEditHandler),
   Route('/guide/editall/<int:feature_id>', guide.FeatureEditHandler),
   Route('/guide/verify_accuracy/<int:feature_id>', guide.FeatureEditHandler),

@@ -357,7 +357,7 @@ class ChromedashFeatureDetail extends LitElement {
 
     const editButton = html`
       <sl-button size="small" style="float:right"
-          href="/guide/stage/${this.feature.id}/${feStage.stage_id}/${processStage.outgoing_stage}"
+          href="/guide/stage/${this.feature.id}/${processStage.outgoing_stage}/${feStage.stage_id}"
           >Edit fields</sl-button>
     `;
     const content = html`
