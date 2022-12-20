@@ -61,7 +61,7 @@ describe('chromedash-proces-overview', () => {
   });
 
   it('does not highlight when there is no active stage', async () => {
-    feature.intent_stage_int = 4;
+    feature.active_stage_id = null;
     const component = await fixture(
       html`<chromedash-process-overview
               .process=${process}

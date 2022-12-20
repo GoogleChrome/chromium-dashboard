@@ -53,7 +53,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     fe_1_stage_types = [110, 120, 130, 140, 150, 151, 160]
     fe_2_stage_types = [220, 230, 250, 251, 260]
     fe_3_stage_types = [320, 330, 360]
-    fe_4_stage_types = [410, 430, 450, 451, 460, 470]
+    fe_4_stage_types = [410, 430, 450, 451, 460]
     self.stages: list[Stage] = []
     for s_type in fe_1_stage_types:
       stage = Stage(

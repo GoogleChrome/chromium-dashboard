@@ -104,12 +104,11 @@ class StagesAPITest(testing_config.CustomTestCase):
 
   @mock.patch('flask.abort')
   def test_get__no_id(self, mock_abort):
-    """Raises 404 if stage ID is not specified."""
+    """Sends a basic response with id=0 when no ID specified."""
     mock_abort.side_effect = werkzeug.exceptions.BadRequest
     with test_app.test_request_context(f'{self.request_path}1/stages'):
-      with self.assertRaises(werkzeug.exceptions.BadRequest):
-        self.handler.do_get(feature_id=1)
-    mock_abort.assert_called_once_with(404, description='No stage specified.')
+      response = self.handler.do_get(feature_id=1)
+    self.assertEqual(response, {'id': 0})
 
   def test_get__valid(self):
     """Returns stage data if requesting a valid stage ID."""

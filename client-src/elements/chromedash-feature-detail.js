@@ -32,6 +32,8 @@ class ChromedashFeatureDetail extends LitElement {
     this.process = {};
     this.dismissedCues = [];
     this.anyCollapsed = true;
+    this.previousStageTypeRendered = 0;
+    this.sameTypeRendered = 0;
   }
 
   static get styles() {
@@ -298,7 +300,7 @@ class ChromedashFeatureDetail extends LitElement {
 
   renderMetadataSection() {
     const fields = DISPLAY_FIELDS_IN_STAGES['Metadata'];
-    if (fields === undefined || fields.length == 0) {
+    if (fields === undefined || fields.length === 0) {
       return nothing;
     }
     const content = html`
@@ -329,18 +331,34 @@ class ChromedashFeatureDetail extends LitElement {
     `;
   }
 
-  renderStageSection(feStage) {
+  renderProcessStage(feStage) {
+    const fields = DISPLAY_FIELDS_IN_STAGES[feStage.intent_stage];
+    if (fields === undefined || fields.length == 0) return nothing;
+
     const processStage = findProcessStage(feStage, this.process);
-    if (processStage === null) return nothing;
-    const fields = DISPLAY_FIELDS_IN_STAGES[processStage.outgoing_stage];
-    const isActive = this.feature.active_stage_id === feStage.stage_id;
-    if (fields === undefined || fields.length == 0) {
-      return nothing;
+    if (!processStage) return nothing;
+
+
+    // Add a number differentiation if this stage type is the same as another stage.
+    // NOTE: This will not have an effect until users can create multiple stages
+    // of the same type.
+    let numberDifferentiation = '';
+    if (this.previousStageTypeRendered === feStage.stage_type) {
+      this.sameTypeRendered += 1;
+      numberDifferentiation = ` ${this.sameTypeRendered}`;
+    } else {
+      this.previousStageTypeRendered = feStage.stage_type;
+      this.sameTypeRendered = 1;
     }
+
+    const name = `${processStage.name}${numberDifferentiation}`;
+    const isActive = (this.feature.active_stage_id === feStage.stage_id &&
+      this.feature.intent_stage_int === processStage.outgoing_stage);
+
     const editButton = html`
       <sl-button size="small" style="float:right"
-           href="/guide/stage/${this.feature.id}/${processStage.outgoing_stage}"
-           >Edit fields</sl-button>
+          href="/guide/stage/${this.feature.id}/${processStage.outgoing_stage}/${feStage.stage_id}"
+          >Edit fields</sl-button>
     `;
     const content = html`
       <p class="description">
@@ -352,7 +370,8 @@ class ChromedashFeatureDetail extends LitElement {
         ${this.renderSectionFields(fields)}
       </section>
     `;
-    return this.renderSection(processStage.name, content, isActive);
+
+    return this.renderSection(name, content, isActive);
   }
 
   renderActivitySection() {
@@ -376,7 +395,7 @@ class ChromedashFeatureDetail extends LitElement {
         ${this.renderControls()}
       </h2>
       ${this.renderMetadataSection()}
-      ${this.feature.stages.map(feStage => this.renderStageSection(feStage))}
+      ${this.feature.stages.map(feStage => this.renderProcessStage(feStage))}
       ${this.renderActivitySection()}
     `;
   }
