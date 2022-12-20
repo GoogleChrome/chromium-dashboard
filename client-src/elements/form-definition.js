@@ -273,11 +273,7 @@ const IMPLSTATUS_ALLMILESTONES = [
   'shipped_ios_milestone', 'shipped_webview_milestone',
 ];
 
-const IMPLSTATUS_EVALREADINESSTOSHIP = [
-  'shipped_milestone', 'shipped_android_milestone',
-  'shipped_ios_milestone', 'shipped_webview_milestone',
-  'measurement',
-];
+const IMPLSTATUS_EVALREADINESSTOSHIP = ['measurement'];
 
 const NEWFEATURE_ORIGINTRIAL = [
   'experiment_goals', 'experiment_risks',
@@ -302,8 +298,8 @@ const MOST_PREPARETOSHIP = [
 const ANY_SHIP = ['launch_bug_url', 'finch_url'];
 
 const EXISTING_PROTOTYPE = [
-  'blink_components', 'motivation', 'explainer_links',
-  'spec_link', 'standard_maturity', 'api_spec', 'intent_to_implement_url',
+  'explainer_links', 'spec_link', 'standard_maturity', 'api_spec',
+  'intent_to_implement_url',
 ];
 
 const EXISTING_ORIGINTRIAL = [
@@ -313,7 +309,7 @@ const EXISTING_ORIGINTRIAL = [
   'i2e_lgtms', 'origin_trial_feedback_url',
 ];
 
-const PSA_IMPLEMENT = ['motivation', 'spec_link', 'standard_maturity'];
+const PSA_IMPLEMENT = ['spec_link', 'standard_maturity'];
 // TODO(jrobbins): advise user to request a tag review
 
 const PSA_PREPARETOSHIP = [
