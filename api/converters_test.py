@@ -93,6 +93,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
   def test_feature_entry_to_json_basic__normal(self):
     """Converts feature entry to basic JSON dictionary."""
     result = converters.feature_entry_to_json_basic(self.fe_1)
+    expected_date = str(self.date)
     expected = {
       'id': 123,
       'name': 'feature template',
@@ -105,6 +106,14 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'resources': {
         'samples': ['https://example.com/samples'],
         'docs': ['https://example.com/docs'],
+      },
+      'created': {
+        'by': 'creator@example.com',
+        'when': expected_date
+      },
+      'updated': {
+        'by': 'updater@example.com',
+        'when': expected_date
       },
       'standards': {
         'spec': 'https://example.com/spec',
