@@ -507,6 +507,14 @@ def feature_entry_to_json_basic(fe: FeatureEntry,
       'samples': fe.sample_links or [],
       'docs': fe.doc_links or [],
     },
+    'created': {
+      'by': fe.creator_email,
+      'when': _date_to_str(fe.created)
+    },
+    'updated': {
+      'by': fe.updater_email,
+      'when': _date_to_str(fe.updated)
+    },
     'standards': {
       'spec': fe.spec_link,
       'maturity': {
