@@ -29,21 +29,31 @@ class ChromedashGateColumn extends LitElement {
          right: var(--content-padding-quarter);
        }
 
-       #votes-area {
-         margin: var(--content-padding) 0;
-       }
-
-       #votes-area table {
-         border-spacing: var(--content-padding-half) var(--content-padding);
-       }
-
-       #votes-area th {
-         font-weight: bold;
-       }
-
        #review-status-area {
          margin: var(--content-padding-half) 0;
        }
+
+       #votes-area {
+         margin: var(--content-padding) 0;
+       }
+       #votes-area table {
+         border-spacing: var(--content-padding-half) var(--content-padding);
+       }
+       #votes-area th {
+         font-weight: 500;
+       }
+
+        #controls {
+          padding: var(--content-padding);
+          text-align: right;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        #controls * + * {
+          padding-left: var(--content-padding);
+        }
+
     `];
   }
 
@@ -83,6 +93,7 @@ class ChromedashGateColumn extends LitElement {
     Promise.all([
       window.csClient.getFeatureProcess(featureId),
       window.csClient.getApprovals(featureId),
+      // TODO(jrobbins): Include activities for this gate
       window.csClient.getComments(featureId),
     ]).then(([process, approvalRes, commentRes]) => {
       this.process = process;
@@ -97,6 +108,21 @@ class ChromedashGateColumn extends LitElement {
     });
   }
 
+  reloadComments() {
+    const commentArea = this.shadowRoot.querySelector('#comment_area');
+    commentArea.value = '';
+    this.needsSave = false;
+    Promise.all([
+      // TODO(jrobbins): Include activities for this gate
+      window.csClient.getComments(this.feature.id),
+    ]).then(([commentRes]) => {
+      this.comments = commentRes.comments;
+    }).catch(() => {
+      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+      this.handleCancel();
+    });
+  }
+
   _fireEvent(eventName, detail) {
     const event = new CustomEvent(eventName, {
       bubbles: true,
@@ -104,6 +130,27 @@ class ChromedashGateColumn extends LitElement {
       detail,
     });
     this.dispatchEvent(event);
+  }
+
+  checkNeedsSave() {
+    let newNeedsSave = false;
+    const commentArea = this.shadowRoot.querySelector('#comment_area');
+    const newVal = commentArea && commentArea.value.trim() || '';
+    if (newVal != '') newNeedsSave = true;
+    this.needsSave = newNeedsSave;
+  }
+
+  handlePost() {
+    const commentArea = this.shadowRoot.querySelector('#comment_area');
+    const commentText = commentArea.value.trim();
+    const postToApprovalFieldId = 0; // Don't post to thread.
+    // TODO(jrobbins): Also post to intent thread
+    if (commentText != '') {
+      window.csClient.postComment(
+        this.feature.id, null, null, commentText,
+        Number(postToApprovalFieldId))
+        .then(() => this.reloadComments());
+    }
   }
 
   handleCancel() {
@@ -192,7 +239,7 @@ class ChromedashGateColumn extends LitElement {
   }
 
   renderVoteRow(vote) {
-    const voteCell = (vote.set_by == this.user.email) ?
+    const voteCell = (vote.set_by == this.user?.email) ?
       this.renderVoteMenu(vote.state) :
       this.renderVoteReadOnly(vote);
     return html`
@@ -205,9 +252,9 @@ class ChromedashGateColumn extends LitElement {
 
   renderVotes() {
     const canVote = true; // TODO(jrobbins): permission checks.
-    const myVoteExists = this.votes.some((v) => v.set_by == this.user.email);
+    const myVoteExists = this.votes.some((v) => v.set_by == this.user?.email);
     const addVoteRow = (canVote && !myVoteExists) ?
-      this.renderVoteRow({set_by: this.user.email, state: 7}) :
+      this.renderVoteRow({set_by: this.user?.email, state: 7}) :
       nothing;
 
     return html`
@@ -235,10 +282,38 @@ class ChromedashGateColumn extends LitElement {
     `;
   }
 
+  renderControls() {
+    if (!this.user || !this.user.can_comment) return nothing;
+    // TODO(jrobbins): checkbox to also post to intent thread.
+
+    return html`
+      <sl-textarea id="comment_area" rows=2 cols=40
+        @sl-change=${this.checkNeedsSave}
+        @keypress=${this.checkNeedsSave}
+        placeholder="Add a comment"
+        ></sl-textarea>
+       <div id="controls">
+         <sl-button variant="primary"
+           @click=${this.handlePost}
+           ?disabled=${!this.needsSave}
+           size="small"
+           >Post</sl-button>
+       </div>
+    `;
+  }
+
+
   renderComments() {
     return html`
       <h2>Comments &amp; Activity</h2>
-      TODO(jrobbins): Comments go here
+      ${this.renderControls()}
+      <chromedash-activity-log
+        .user=${this.user}
+        .feature=${this.feature}
+        .narrow=${true}
+        .reverse=${true}
+        .comments=${this.comments}>
+      </chromedash-activity-log>
     `;
   }
 
@@ -271,7 +346,6 @@ class ChromedashGateColumn extends LitElement {
         ${this.loading ?
           this.renderCommentsSkeleton() :
           this.renderComments()}
-
     `;
   }
 }
