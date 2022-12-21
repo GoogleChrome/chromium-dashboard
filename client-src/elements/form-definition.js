@@ -93,18 +93,6 @@ export const NEW_FEATURE_FORM_FIELDS = [
 ];
 // Note: feature_type is done with custom HTML in chromedash-guide-new-page
 
-export const METADATA_FORM_FIELDS = [
-  'name', 'summary', 'unlisted', 'breaking_change', 'owner',
-  'editors', 'cc_recipients', 'category',
-  'feature_type',
-  'search_tags',
-  // Implemention
-  'impl_status_chrome',
-  'blink_components',
-  'bug_url', 'launch_bug_url',
-  'comments',
-];
-
 export const VERIFY_ACCURACY_FORM_FIELDS = [
   'summary', 'owner', 'editors', 'cc_recipients', 'impl_status_chrome',
   'dt_milestone_android_start', 'dt_milestone_desktop_start',
