@@ -413,7 +413,7 @@ def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
   }
   d['tags'] = d.pop('search_tags', None)
   d['editors'] =  d.pop('editor_emails', [])
-  d['cc_emails'] = d.pop('cc_emails', [])
+  d['cc_recipients'] = d.pop('cc_emails', [])
   d['creator'] = fe.creator_email
   d['comments'] = d.pop('feature_notes', None)
 
