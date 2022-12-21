@@ -192,19 +192,22 @@ class ChromedashGateColumn extends LitElement {
   }
 
   renderVoteRow(vote) {
+    const shortVoter = vote.set_by.split('@')[0] + '@';
     const voteCell = (vote.set_by == this.user.email) ?
       this.renderVoteMenu(vote.state) :
       this.renderVoteReadOnly(vote);
     return html`
       <tr>
-       <td>${vote.set_by}</td>
+       <td title=${vote.set_by}>${shortVoter}</td>
        <td>${voteCell}</td>
       </tr>
     `;
   }
 
   renderVotes() {
-    const canVote = true; // TODO(jrobbins): permission checks.
+    const canVote = (
+      this.user &&
+        this.user.approvable_gate_types.includes(this.gate.gate_type));
     const myVoteExists = this.votes.some((v) => v.set_by == this.user.email);
     const addVoteRow = (canVote && !myVoteExists) ?
       this.renderVoteRow({set_by: this.user.email, state: 7}) :
