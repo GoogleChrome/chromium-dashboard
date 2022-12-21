@@ -287,18 +287,18 @@ class ChromedashGateColumn extends LitElement {
     // TODO(jrobbins): checkbox to also post to intent thread.
 
     return html`
-    <sl-textarea id="comment_area" rows=2 cols=40
-      @sl-change=${this.checkNeedsSave}
-      @keypress=${this.checkNeedsSave}
-      placeholder="Add a comment"
-      ></sl-textarea>
-     <div id="controls">
-       <sl-button variant="primary"
-         @click=${this.handlePost}
-         ?disabled=${!this.needsSave}
-         size="small"
-         >Post</sl-button>
-     </div>
+      <sl-textarea id="comment_area" rows=2 cols=40
+        @sl-change=${this.checkNeedsSave}
+        @keypress=${this.checkNeedsSave}
+        placeholder="Add a comment"
+        ></sl-textarea>
+       <div id="controls">
+         <sl-button variant="primary"
+           @click=${this.handlePost}
+           ?disabled=${!this.needsSave}
+           size="small"
+           >Post</sl-button>
+       </div>
     `;
   }
 
@@ -307,15 +307,13 @@ class ChromedashGateColumn extends LitElement {
     return html`
       <h2>Comments &amp; Activity</h2>
       ${this.renderControls()}
-      <div id="comment-area">
-        <chromedash-activity-log
-          .user=${this.user}
-          .feature=${this.feature}
-          .narrow=${true}
-          .reverse=${true}
-          .comments=${this.comments}>
-        </chromedash-activity-log>
-      </div>
+      <chromedash-activity-log
+        .user=${this.user}
+        .feature=${this.feature}
+        .narrow=${true}
+        .reverse=${true}
+        .comments=${this.comments}>
+      </chromedash-activity-log>
     `;
   }
 
@@ -348,7 +346,6 @@ class ChromedashGateColumn extends LitElement {
         ${this.loading ?
           this.renderCommentsSkeleton() :
           this.renderComments()}
-
     `;
   }
 }
