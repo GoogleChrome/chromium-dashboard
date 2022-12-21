@@ -370,6 +370,8 @@ def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
   d['rollout_details'] = _stage_attr(stages['rollout'], 'rollout_details')
   d['enterprise_policies'] = _stage_attr(stages['rollout'], 'enterprise_policies')
 
+  # TODO(danielrsmith): Adjust the references to this JSON to use
+  # the new renamed field names.
   impl_status_chrome = d.pop('impl_status_chrome', None)
   standard_maturity = d.pop('standard_maturity', None)
   d['is_released'] = fe.impl_status_chrome in RELEASE_IMPL_STATES
