@@ -3,7 +3,7 @@ import {ref} from 'lit/directives/ref.js';
 import {autolink} from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
-import {formatFeatureForEdit} from './form-definition';
+import {formatFeatureForEdit, FLAT_METADATA_FIELDS} from './form-definition';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {FORM_STYLES} from '../sass/forms-css.js';
 

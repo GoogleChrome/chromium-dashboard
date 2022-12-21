@@ -104,7 +104,7 @@ export const VERIFY_ACCURACY_FORM_FIELDS = [
   'accurate_as_of',
 ];
 
-const FLAT_METADATA_FIELDS = [
+export const FLAT_METADATA_FIELDS = [
   // Standardizaton
   'name', 'summary', 'unlisted', 'breaking_change', 'owner',
   'editors', 'cc_recipients', 'category',
@@ -117,7 +117,7 @@ const FLAT_METADATA_FIELDS = [
   'comments',
 ];
 
-const FLAT_IDENTIFY_FIELDS = [
+const FLAT_INCUBATE_FIELDS = [
   // Standardization
   'motivation', 'initial_public_proposal_url', 'explainer_links',
   // Implementtion
@@ -128,6 +128,8 @@ const FLAT_IDENTIFY_FIELDS = [
 const FLAT_IMPLEMENT_FIELDS = [
   // Standardization
   'spec_link', 'standard_maturity', 'api_spec', 'spec_mentors',
+
+  // Stage-specific fields
   'intent_to_implement_url',
 ];
 
@@ -143,32 +145,35 @@ const FLAT_DEV_TRIAL_FIELDS = [
   'security_review_status', 'privacy_review_status',
   'ergonomics_risks', 'activation_risks', 'security_risks', 'debuggability',
   'all_platforms', 'all_platforms_descr', 'wpt', 'wpt_descr',
-  'sample_links', 'devrel', 'ready_for_trial_url',
+  'sample_links', 'devrel',
+  'flag_name',
 
   // TODO(jrobbins): UA support signals section
 
-  // Implementation
+  // Stage-specific fields
   'dt_milestone_desktop_start', 'dt_milestone_android_start',
-  'dt_milestone_ios_start',
-  'flag_name',
+  'dt_milestone_ios_start', 'ready_for_trial_url',
 ];
 // TODO(jrobbins): api overview link
 
 
 const FLAT_ORIGIN_TRIAL_FIELDS = [
   // Standardization
-  'experiment_goals',
-  'experiment_risks',
-  'experiment_extension_reason', 'ongoing_constraints',
+  'ongoing_constraints',
   // TODO(jrobbins): display r4dt_url instead when deprecating.
-  'intent_to_experiment_url', 'intent_to_extend_experiment_url',
   'i2e_lgtms',
-  'origin_trial_feedback_url',
 
-  // Implementation
+  // Stage-specific fields
+  'experiment_goals', 'experiment_risks',
+  'intent_to_experiment_url',
+  'origin_trial_feedback_url',
   'ot_milestone_desktop_start', 'ot_milestone_desktop_end',
   'ot_milestone_android_start', 'ot_milestone_android_end',
   'ot_milestone_webview_start', 'ot_milestone_webview_end',
+
+  // Extension stage-specific fields
+  'experiment_extension_reason', 'intent_to_extend_experiment_url',
+
   'experiment_timeline', // deprecated
 ];
 
@@ -176,10 +181,13 @@ const FLAT_ORIGIN_TRIAL_FIELDS = [
 const FLAT_PREPARE_TO_SHIP_FIELDS = [
   // Standardization
   'tag_review', 'tag_review_status',
-  'webview_risks', 'anticipated_spec_changes',
-  'intent_to_ship_url', 'i2s_lgtms',
+  'webview_risks', 'anticipated_spec_changes', 'i2s_lgtms',
   // Implementation
-  'measurement', 'non_oss_deps', 'finch_url',
+  'measurement', 'non_oss_deps',
+
+
+  // Stage-specific fields
+  'finch_url', 'intent_to_ship_url',
   'shipped_milestone', 'shipped_android_milestone',
   'shipped_ios_milestone', 'shipped_webview_milestone',
 ];
@@ -195,7 +203,7 @@ export const FLAT_ENTERPRISE_PREPARE_TO_SHIP_NAME = 'Start feature rollout';
 // [[sectionName, flatFormFields]].
 export const FLAT_FORMS = [
   ['Feature metadata', FLAT_METADATA_FIELDS],
-  ['Identify the need', FLAT_IDENTIFY_FIELDS],
+  ['Identify the need', FLAT_INCUBATE_FIELDS],
   ['Prototype a solution', FLAT_IMPLEMENT_FIELDS],
   ['Dev trial', FLAT_DEV_TRIAL_FIELDS],
   ['Origin trial', FLAT_ORIGIN_TRIAL_FIELDS],
@@ -261,7 +269,7 @@ const IMPLSTATUS_ALLMILESTONES = [
   'shipped_ios_milestone', 'shipped_webview_milestone',
 ];
 
-const IMPLSTATUS_EVALREADINESSTOSHIP = ['measurement'];
+const IMPLSTATUS_EVALREADINESSTOSHIP = [];
 
 const NEWFEATURE_ORIGINTRIAL = [
   'experiment_goals', 'experiment_risks',
@@ -279,7 +287,7 @@ const IMPLSTATUS_ORIGINTRIAL = [
 
 const MOST_PREPARETOSHIP = [
   'tag_review', 'tag_review_status', 'non_oss_deps',
-  'webview_risks', 'anticipated_spec_changes',
+  'webview_risks', 'anticipated_spec_changes', 'measurement',
   'intent_to_ship_url', 'i2s_lgtms', 'finch_url',
 ];
 
