@@ -406,6 +406,10 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     # If a stage_id is supplied, we make changes to only that specific stage.
     if stage_update_items and stage_id:
       self.update_single_stage(stage_id, stage_update_items, changed_fields)
+    # Otherwise, we find the associated stages and make changes (edit-all).
+    elif stage_update_items:
+      self.update_multiple_stages(feature_id, feature.feature_type,
+          stage_update_items, changed_fields)
 
     # Update metadata fields.
     now = datetime.now()
@@ -421,14 +425,6 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
     key: ndb.Key = fe.put()
     feature.put()
-
-    # If a stage_id is supplied, we make changes to only that specific stage.
-    if stage_update_items and stage_id:
-      self.update_single_stage(stage_id, stage_update_items, changed_fields)
-    # Otherwise, we find the associated stages and make changes (edit-all).
-    elif stage_update_items:
-      self.update_multiple_stages(feature_id, feature.feature_type,
-          stage_update_items, changed_fields)
 
     notifier_helpers.notify_subscribers_and_save_amendments(
         fe, changed_fields, notify=True)
@@ -449,41 +445,65 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       redirect_url = '/guide/edit/' + str(key.integer_id())
     return self.redirect(redirect_url)
 
-  def update_single_stage(self, stage_id: int,
-      update_items: list[tuple[str, Any]],
-      changed_fields: list[tuple[str, Any, Any]]) -> None:
-    """Make given changes to a specified stage."""
-    stage_to_update = Stage.get_by_id(stage_id)
-    if stage_to_update is None:
-      self.abort(404, msg=f'Stage {stage_id} not found.')
-
-    for field, new_val in update_items:
-      # Update the field's name if it has been renamed.
-      old_field_name = field
-      field = self.RENAMED_FIELD_MAPPING.get(field, field)
-
-      old_val = None
-      if field in MilestoneSet.MILESTONE_FIELD_MAPPING:
-        milestone_field = MilestoneSet.MILESTONE_FIELD_MAPPING[field]
-        if stage_to_update.milestones is None:
-          stage_to_update.milestones = MilestoneSet()
-        old_val = getattr(stage_to_update.milestones, milestone_field)
-        setattr(stage_to_update.milestones, milestone_field, new_val)
-      elif field.startswith('intent_'):
-        old_val = getattr(stage_to_update, 'intent_thread_url')
-        setattr(stage_to_update, 'intent_thread_url', new_val)
-      else:
-        old_val = getattr(stage_to_update, field)
-        setattr(stage_to_update, field, new_val)
-      if old_val != new_val:
-        changed_fields.append((old_field_name, old_val, new_val))
-    stage_to_update.put()
-
-
   def update_multiple_stages(self, feature_id: int, feature_type: int,
       update_items: list[tuple[str, Any]],
       changed_fields: list[tuple[str, Any, Any]]) -> None:
-    """Make given changes to a specified stage."""
+    """Handle updating stages when IDs have not been specified."""
+    # Get all existing stages associated with the feature.
+    stages = stage_helpers.get_feature_stages(feature_id)
+
+    for field, new_val in update_items:
+      field = self.RENAMED_FIELD_MAPPING.get(field, field)
+      # Determine the stage type that the field should change on.
+      stage_type = core_enums.STAGE_TYPES_BY_FIELD_MAPPING[field][feature_type]
+      # If this feature type does not have this field, skip it
+      # (e.g. developer-facing code changes cannot have origin trial fields).
+      if stage_type is None:
+        continue
+      stages_list: list[Stage] = stages.get(stage_type, [])
+      stage: Stage | None = stages_list[0] if stages_list else None
+      # If a stage of this type does not exist for this feature, create it.
+      if stage is None:
+        stage = Stage(feature_id=feature_id, stage_type=stage_type)
+        stage.put()
+        stages[stage_type].append(stage)
+
+      # Change the field based on the field type.
+      # If this field changing is a milestone, change it in the
+      # MilestoneSet entity.
+      if field in MilestoneSet.MILESTONE_FIELD_MAPPING:
+        old_val = None
+        milestone_field = (
+            MilestoneSet.MILESTONE_FIELD_MAPPING[field])
+        milestoneset_entity = getattr(stage, 'milestones')
+        # If the MilestoneSet entity has not been initiated, create it.
+        if milestoneset_entity is None:
+          milestoneset_entity = MilestoneSet()
+        old_val = getattr(milestoneset_entity, milestone_field)
+        setattr(milestoneset_entity, milestone_field, new_val)
+        stage.milestones = milestoneset_entity
+      # If the field starts with "intent_", it should modify the
+      # more general "intent_thread_url" field.
+      elif field.startswith('intent_'):
+        old_val = getattr(stage, 'intent_thread_url')
+        setattr(stage, 'intent_thread_url', new_val)
+      # Otherwise, replace field value with attribute of the same field name.
+      else:
+        old_val = getattr(stage, field)
+        setattr(stage, field, new_val)
+
+      if old_val != new_val:
+        changed_fields.append((field, old_val, new_val))
+
+    # Write to all the stages.
+    for stages_by_type in stages.values():
+      for stage in stages_by_type:
+        stage.put()
+
+  def update_single_stage(self, stage_id: int,
+      update_items: list[tuple[str, Any]],
+      changed_fields: list[tuple[str, Any, Any]]) -> None:
+    """Update the fields of the stage of a given ID."""
     stage_to_update = Stage.get_by_id(stage_id)
     if stage_to_update is None:
       self.abort(404, msg=f'Stage {stage_id} not found.')
@@ -523,6 +543,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
   def update_stages_editall(self, feature: Feature, feature_type: int,
       stage_ids: list[int], changed_fields: list[tuple[str, Any, Any]]) -> None:
+    """Handle the updates for stages on the edit-all page."""
     for id in stage_ids:
       stage = Stage.get_by_id(id)
       if not stage:
