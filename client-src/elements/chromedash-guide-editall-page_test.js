@@ -6,6 +6,17 @@ import '../js-src/cs-client';
 import sinon from 'sinon';
 
 describe('chromedash-guide-editall-page', () => {
+  const process = {
+    stages: [{
+      name: 'stage one',
+      description: 'a description',
+      progress_items: [],
+      outgoing_stage: 1,
+      actions: [],
+      stage_type: 110,
+    }],
+  };
+
   const validFeaturePromise = Promise.resolve({
     id: 123456,
     name: 'feature one',
@@ -15,6 +26,18 @@ describe('chromedash-guide-editall-page', () => {
     feature_type_int: 0,
     intent_stage: 'fake intent stage',
     new_crbug_url: 'fake crbug link',
+    stages: [
+      {
+        stage_id: 1,
+        stage_type: 110,
+        intent_stage: 1,
+      },
+      {
+        stage_id: 2,
+        stage_type: 120,
+        intent_stage: 2,
+      },
+    ],
     browsers: {
       chrome: {
         blink_components: ['Blink'],
@@ -51,12 +74,15 @@ describe('chromedash-guide-editall-page', () => {
     await fixture(html`<chromedash-toast></chromedash-toast>`);
     window.csClient = new ChromeStatusClient('fake_token', 1);
     sinon.stub(window.csClient, 'getFeature');
+    sinon.stub(window.csClient, 'getFeatureProcess');
     sinon.stub(window.csClient, 'getBlinkComponents');
+    window.csClient.getFeatureProcess.returns(process);
     window.csClient.getBlinkComponents.returns(Promise.resolve({}));
   });
 
   afterEach(() => {
     window.csClient.getFeature.restore();
+    window.csClient.getFeatureProcess.restore();
     window.csClient.getBlinkComponents.restore();
   });
 

@@ -74,6 +74,7 @@ class ChromedashApp extends LitElement {
           position: sticky;
           top: 10px;
           height: 85vh;
+          overflow-y: auto;
           border: var(--sidebar-border);
           border-radius: var(--sidebar-radius);
           background: var(--sidebar-bg);

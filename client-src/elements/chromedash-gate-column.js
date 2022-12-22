@@ -1,4 +1,5 @@
 import {LitElement, css, html, nothing} from 'lit';
+import {ref, createRef} from 'lit/directives/ref.js';
 import './chromedash-activity-log';
 import {showToastMessage, findProcessStage} from './utils.js';
 
@@ -17,7 +18,10 @@ export const STATE_NAMES = [
 ];
 
 
-class ChromedashGateColumn extends LitElement {
+export class ChromedashGateColumn extends LitElement {
+  voteSelectRef = createRef();
+  commentAreaRef = createRef();
+
   static get styles() {
     return [
       ...SHARED_STYLES,
@@ -29,21 +33,31 @@ class ChromedashGateColumn extends LitElement {
          right: var(--content-padding-quarter);
        }
 
-       #votes-area {
-         margin: var(--content-padding) 0;
-       }
-
-       #votes-area table {
-         border-spacing: var(--content-padding-half) var(--content-padding);
-       }
-
-       #votes-area th {
-         font-weight: bold;
-       }
-
        #review-status-area {
          margin: var(--content-padding-half) 0;
        }
+
+       #votes-area {
+         margin: var(--content-padding) 0;
+       }
+       #votes-area table {
+         border-spacing: var(--content-padding-half) var(--content-padding);
+       }
+       #votes-area th {
+         font-weight: 500;
+       }
+
+        #controls {
+          padding: var(--content-padding);
+          text-align: right;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        #controls * + * {
+          padding-left: var(--content-padding);
+        }
+
     `];
   }
 
@@ -58,6 +72,8 @@ class ChromedashGateColumn extends LitElement {
       comments: {type: Array},
       loading: {type: Boolean},
       needsSave: {type: Boolean},
+      showSaved: {type: Boolean},
+      needsPost: {type: Boolean},
     };
   }
 
@@ -72,6 +88,8 @@ class ChromedashGateColumn extends LitElement {
     this.comments = [];
     this.loading = true; // Avoid errors before first usage.
     this.needsSave = false;
+    this.showSaved = false;
+    this.needsPost = false;
   }
 
   setContext(feature, stage, gate) {
@@ -83,6 +101,7 @@ class ChromedashGateColumn extends LitElement {
     Promise.all([
       window.csClient.getFeatureProcess(featureId),
       window.csClient.getApprovals(featureId),
+      // TODO(jrobbins): Include activities for this gate
       window.csClient.getComments(featureId),
     ]).then(([process, approvalRes, commentRes]) => {
       this.process = process;
@@ -90,7 +109,23 @@ class ChromedashGateColumn extends LitElement {
         v.gate_id == this.gate.id);
       this.comments = commentRes.comments;
       this.needsSave = false;
+      this.needsPost = false;
       this.loading = false;
+    }).catch(() => {
+      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+      this.handleCancel();
+    });
+  }
+
+  reloadComments() {
+    const commentArea = this.commentAreaRef.value;
+    commentArea.value = '';
+    this.needsPost = false;
+    Promise.all([
+      // TODO(jrobbins): Include activities for this gate
+      window.csClient.getComments(this.feature.id),
+    ]).then(([commentRes]) => {
+      this.comments = commentRes.comments;
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
       this.handleCancel();
@@ -104,6 +139,42 @@ class ChromedashGateColumn extends LitElement {
       detail,
     });
     this.dispatchEvent(event);
+  }
+
+  checkNeedsPost() {
+    let newNeedsPost = false;
+    const commentArea = this.commentAreaRef.value;
+    const newVal = commentArea && commentArea.value.trim() || '';
+    if (newVal != '') newNeedsPost = true;
+    this.needsPost = newNeedsPost;
+  }
+
+  handlePost() {
+    const commentArea = this.commentAreaRef.value;
+    const commentText = commentArea.value.trim();
+    const postToApprovalFieldId = 0; // Don't post to thread.
+    // TODO(jrobbins): Also post to intent thread
+    if (commentText != '') {
+      window.csClient.postComment(
+        this.feature.id, null, null, commentText,
+        Number(postToApprovalFieldId))
+        .then(() => this.reloadComments());
+    }
+  }
+
+  handleSelectChanged() {
+    this.needsSave = true;
+  }
+
+  handleSave() {
+    // TODO(jrobbins): This should specify gate ID rather than gate type.
+    window.csClient.setApproval(
+      this.feature.id, this.gate.gate_type,
+      this.voteSelectRef.value.value)
+      .then(() => {
+        this.needsSave = false;
+        this.showSaved = true;
+      });
   }
 
   handleCancel() {
@@ -178,10 +249,10 @@ class ChromedashGateColumn extends LitElement {
   }
 
   renderVoteMenu(state) {
-    // hoist is needed when <sl-select> is in overflow:hidden context.
+    // hoist is needed when <sl-select> is in overflow:auto context.
     return html`
       <sl-select name="${this.gate.id}"
-                 value="${state}"
+                 value="${state}" ${ref(this.voteSelectRef)}
                  @sl-change=${this.handleSelectChanged}
                  hoist size="small">
         ${STATE_NAMES.map((valName) => html`
@@ -192,23 +263,47 @@ class ChromedashGateColumn extends LitElement {
   }
 
   renderVoteRow(vote) {
-    const voteCell = (vote.set_by == this.user.email) ?
-      this.renderVoteMenu(vote.state) :
-      this.renderVoteReadOnly(vote);
+    const shortVoter = vote.set_by.split('@')[0] + '@';
+    let saveButton = nothing;
+    let voteCell = this.renderVoteReadOnly(vote);
+
+    if (vote.set_by == this.user?.email) {
+      voteCell = this.renderVoteMenu(vote.state);
+      if (this.needsSave) {
+        saveButton = html`
+          <sl-button
+            size="small" pill variant="primary"
+            @click=${this.handleSave}
+            >Save</sl-button>
+          `;
+      } else if (this.showSaved) {
+        saveButton = html`<b>Saved</b>`;
+      }
+    }
+
     return html`
       <tr>
-       <td>${vote.set_by}</td>
+       <td title=${vote.set_by}>${shortVoter}</td>
        <td>${voteCell}</td>
+       <td>${saveButton}</td>
       </tr>
     `;
   }
 
   renderVotes() {
-    const canVote = true; // TODO(jrobbins): permission checks.
-    const myVoteExists = this.votes.some((v) => v.set_by == this.user.email);
+    const canVote = (
+      this.user &&
+        this.user.approvable_gate_types.includes(this.gate.gate_type));
+    const myVoteExists = this.votes.some((v) => v.set_by == this.user?.email);
     const addVoteRow = (canVote && !myVoteExists) ?
-      this.renderVoteRow({set_by: this.user.email, state: 7}) :
+      this.renderVoteRow({set_by: this.user?.email, state: 7}) :
       nothing;
+
+    if (!canVote && this.votes.length === 0) {
+      return html`
+        <p>No review activity yet.</p>
+      `;
+    }
 
     return html`
       <table>
@@ -235,10 +330,38 @@ class ChromedashGateColumn extends LitElement {
     `;
   }
 
+  renderControls() {
+    if (!this.user || !this.user.can_comment) return nothing;
+    // TODO(jrobbins): checkbox to also post to intent thread.
+
+    return html`
+      <sl-textarea id="comment_area" rows=2 cols=40 ${ref(this.commentAreaRef)}
+        @sl-change=${this.checkNeedsPost}
+        @keypress=${this.checkNeedsPost}
+        placeholder="Add a comment"
+        ></sl-textarea>
+       <div id="controls">
+         <sl-button variant="primary"
+           @click=${this.handlePost}
+           ?disabled=${!this.needsPost}
+           size="small"
+           >Post</sl-button>
+       </div>
+    `;
+  }
+
+
   renderComments() {
     return html`
       <h2>Comments &amp; Activity</h2>
-      TODO(jrobbins): Comments go here
+      ${this.renderControls()}
+      <chromedash-activity-log
+        .user=${this.user}
+        .feature=${this.feature}
+        .narrow=${true}
+        .reverse=${true}
+        .comments=${this.comments}>
+      </chromedash-activity-log>
     `;
   }
 
@@ -271,7 +394,6 @@ class ChromedashGateColumn extends LitElement {
         ${this.loading ?
           this.renderCommentsSkeleton() :
           this.renderComments()}
-
     `;
   }
 }

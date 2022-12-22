@@ -36,8 +36,11 @@ class PermissionsAPI(basehandlers.APIHandler):
       approvers = approval_defs.get_approvers(field_id)
       user_data = {
         'can_create_feature': permissions.can_create_feature(user),
+        # TODO(jrobbins): phase out can_approve and use approvable_gate_types
         'can_approve': permissions.can_approve_feature(
             user, None, approvers),
+        'approvable_gate_types': sorted(
+            approval_defs.fields_approvable_by(user)),
         'can_comment': permissions.can_comment(user),
         'can_edit_all': permissions.can_edit_any_feature(user),
         'is_admin': permissions.can_admin_site(user),

@@ -93,6 +93,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
   def test_feature_entry_to_json_basic__normal(self):
     """Converts feature entry to basic JSON dictionary."""
     result = converters.feature_entry_to_json_basic(self.fe_1)
+    expected_date = str(self.date)
     expected = {
       'id': 123,
       'name': 'feature template',
@@ -105,6 +106,14 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'resources': {
         'samples': ['https://example.com/samples'],
         'docs': ['https://example.com/docs'],
+      },
+      'created': {
+        'by': 'creator@example.com',
+        'when': expected_date
+      },
+      'updated': {
+        'by': 'updater@example.com',
+        'when': expected_date
       },
       'standards': {
         'spec': 'https://example.com/spec',
@@ -336,12 +345,18 @@ class VoteConvertersTest(testing_config.CustomTestCase):
 
 class GateConvertersTest(testing_config.CustomTestCase):
 
+  def tearDown(self) -> None:
+    for g in Gate.query():
+      g.key.delete()
+
   def test_minimal(self):
     """If a Gate has only required fields set, we can convert it to JSON."""
     gate = Gate(feature_id=1, stage_id=2, gate_type=3, state=4)
+    gate.put()
     actual = converters.gate_value_to_json_dict(gate)
     appr_def = approval_defs.APPROVAL_FIELDS_BY_ID[gate.gate_type]
     expected = {
+      'id': gate.key.integer_id(),
       'feature_id': 1,
       'stage_id': 2,
       'gate_type': 3,
@@ -361,11 +376,13 @@ class GateConvertersTest(testing_config.CustomTestCase):
         feature_id=1, stage_id=2, gate_type=3, state=4,
         requested_on=datetime(2022, 12, 14, 1, 2, 3),
         owners=['appr1@example.com', 'appr2@example.com'],
-        next_action=datetime(2022, 12, 25, 4, 5, 6),
+        next_action=datetime(2022, 12, 25),
         additional_review=True)
+    gate.put()
     actual = converters.gate_value_to_json_dict(gate)
     appr_def = approval_defs.APPROVAL_FIELDS_BY_ID[gate.gate_type]
     expected = {
+      'id': gate.key.integer_id(),
       'feature_id': 1,
       'stage_id': 2,
       'gate_type': 3,
@@ -374,7 +391,7 @@ class GateConvertersTest(testing_config.CustomTestCase):
       'state': 4,
       'requested_on': '2022-12-14 01:02:03',
       'owners': ['appr1@example.com', 'appr2@example.com'],
-      'next_action': '2022-12-25 04:05:06',
+      'next_action': '2022-12-25',
       'additional_review': True,
       }
     self.assertEqual(expected, actual)
