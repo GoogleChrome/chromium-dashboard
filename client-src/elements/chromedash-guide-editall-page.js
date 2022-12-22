@@ -1,6 +1,6 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
-import {showToastMessage} from './utils.js';
+import {showToastMessage, findProcessStage} from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
 import {
@@ -35,7 +35,6 @@ export class ChromedashGuideEditallPage extends LitElement {
     super();
     this.featureId = 0;
     this.feature = {};
-    this.featureForEdit = {};
     this.loading = true;
     this.appTitle = '';
     this.nextPage = '';
@@ -54,7 +53,6 @@ export class ChromedashGuideEditallPage extends LitElement {
     ]).then(([feature, process]) => {
       this.feature = feature;
       this.process = process;
-      this.featureForEdit = formatFeatureForEdit(feature);
       if (this.feature.name) {
         document.title = `${this.feature.name} - ${this.appTitle}`;
       }
@@ -137,15 +135,6 @@ export class ChromedashGuideEditallPage extends LitElement {
     `;
   }
 
-  findProcessStage(feStage) {
-    for (const processStage of this.process.stages) {
-      if (feStage.stage_type === processStage.stage_type) {
-        return processStage;
-      }
-    }
-    return null;
-  }
-
   getStageFormFields(processStage) {
     return FLAT_FORMS_BY_INTENT_TYPE[processStage.outgoing_stage] || [];
   }
@@ -182,7 +171,7 @@ export class ChromedashGuideEditallPage extends LitElement {
 
     let allFormFields = [...METADATA_FORM_FIELDS];
     for (const feStage of feStages) {
-      const processStage = this.findProcessStage(feStage);
+      const processStage = findProcessStage(feStage, this.process);
       if (!processStage) {
         continue;
       }
