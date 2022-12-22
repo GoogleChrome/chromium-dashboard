@@ -5,10 +5,22 @@ import {
 } from './form-field-enums';
 
 
-const COMMA_SEPARATED_FIELDS = ['owner', 'editors', 'cc_recipients',
-  'spec_mentors', 'search_tags', 'devrel', 'i2e_lgtms', 'i2s_lgtms'];
+const COMMA_SEPARATED_FIELDS = [
+  'owner',
+  'editors',
+  'cc_recipients',
+  'spec_mentors',
+  'search_tags',
+  'devrel',
+  'i2e_lgtms',
+  'i2s_lgtms',
+];
 
-const LINE_SEPARATED_FIELDS = ['explainer_links', 'doc_links', 'sample_links'];
+const LINE_SEPARATED_FIELDS = [
+  'explainer_links',
+  'doc_links',
+  'sample_links',
+];
 
 /* Convert the format of feature object fetched from API into those for edit.
  * The feature object from API is formatted by the feature_to_legacy_json
@@ -85,119 +97,262 @@ export function formatFeatureForEdit(feature) {
   return formattedFeature;
 }
 
-// The following arrays define the list of fields for each guide form.
+/**
+ *
+ * The following arrays define the list of fields for each guide form.
+ *
+ * Most stages have flat form definitions, with overriding definitions
+ * for stages that display differently than their flat definitions.
+ */
 
-export const NEW_FEATURE_FORM_FIELDS = [
-  'name', 'summary', 'unlisted', 'breaking_change', 'owner',
-  'editors', 'cc_recipients', 'blink_components', 'category',
-];
+// The fields shown to the user when first creating a new feature.
 // Note: feature_type is done with custom HTML in chromedash-guide-new-page
+export const NEW_FEATURE_FORM_FIELDS = [
+  'name',
+  'summary',
+  'unlisted',
+  'breaking_change',
+  'owner',
+  'editors',
+  'cc_recipients',
+  'blink_components',
+  'category',
+];
 
+// The fields shown to the user when verifying the accuracy of a feature.
 export const VERIFY_ACCURACY_FORM_FIELDS = [
-  'summary', 'owner', 'editors', 'cc_recipients', 'impl_status_chrome',
-  'dt_milestone_android_start', 'dt_milestone_desktop_start',
-  'dt_milestone_ios_start', 'ot_milestone_android_start',
-  'ot_milestone_android_end', 'ot_milestone_desktop_start',
-  'ot_milestone_desktop_end', 'ot_milestone_webview_start',
-  'ot_milestone_webview_end', 'shipped_android_milestone',
-  'shipped_ios_milestone', 'shipped_milestone', 'shipped_webview_milestone',
+  'summary',
+  'owner',
+  'editors',
+  'cc_recipients',
+  'impl_status_chrome',
+  'dt_milestone_android_start',
+  'dt_milestone_desktop_start',
+  'dt_milestone_ios_start',
+  'ot_milestone_android_start',
+  'ot_milestone_android_end',
+  'ot_milestone_desktop_start',
+  'ot_milestone_desktop_end',
+  'ot_milestone_webview_start',
+  'ot_milestone_webview_end',
+  'shipped_android_milestone',
+  'shipped_ios_milestone',
+  'shipped_milestone',
+  'shipped_webview_milestone',
   'accurate_as_of',
 ];
 
-export const FLAT_METADATA_FIELDS = [
-  // Standardizaton
-  'name', 'summary', 'unlisted', 'breaking_change', 'owner',
-  'editors', 'cc_recipients', 'category',
-  'feature_type',
-  'search_tags',
-  // Implementtion
-  'impl_status_chrome',
-  'blink_components',
-  'bug_url', 'launch_bug_url',
-  'comments',
-];
+// The fields that are available to every feature.
+export const FLAT_METADATA_FIELDS = {
+  name: 'Feature metadata',
+  sections: [
+    // Standardizaton
+    {
+      name: 'Feature metadata',
+      fields: [
+        'name',
+        'summary',
+        'unlisted',
+        'breaking_change',
+        'owner',
+        'editors',
+        'cc_recipients',
+        'category',
+        'feature_type',
+        'search_tags',
+      ],
+    },
+    // Implementation
+    {
+      name: 'Implementation in Chromium',
+      fields: [
+        'impl_status_chrome',
+        'blink_components',
+        'bug_url',
+        'launch_bug_url',
+        'comments',
+      ],
+    },
+  ],
+};
 
-const FLAT_INCUBATE_FIELDS = [
-  // Standardization
-  'motivation', 'initial_public_proposal_url', 'explainer_links',
-  // Implementtion
-  'requires_embedder_support',
-];
+// All fields relevant to the incubate/planning stage.
+const FLAT_INCUBATE_FIELDS = {
+  name: 'Identify the need',
+  sections: [
+    // Standardization
+    {
+      name: 'Identify the need',
+      fields: [
+        'motivation',
+        'initial_public_proposal_url',
+        'explainer_links',
+      ],
+    },
+    // Implementation
+    {
+      name: 'Implementation in Chromium',
+      sections: ['requires_embedder_support']
+    },
+  ],
+};
 
+// All fields relevant to the implement/prototyping stage.
+const FLAT_IMPLEMENT_FIELDS = {
+  name: 'Prototype a solution',
+  sections: [
+    // Standardization
+    {
+      name: 'Prototype a solution',
+      fields: [
+        'spec_link',
+        'standard_maturity',
+        'api_spec',
+        'spec_mentors',
+        'intent_to_implement_url',
+      ],
+    },
+  ],
+};
 
-const FLAT_IMPLEMENT_FIELDS = [
-  // Standardization
-  'spec_link', 'standard_maturity', 'api_spec', 'spec_mentors',
-
-  // Stage-specific fields
-  'intent_to_implement_url',
-];
-
-
-const FLAT_DEV_TRIAL_FIELDS = [
-  // Standardizaton
-  'devtrial_instructions', 'doc_links',
-  'interop_compat_risks',
-  'safari_views', 'safari_views_link', 'safari_views_notes',
-  'ff_views', 'ff_views_link', 'ff_views_notes',
-  'web_dev_views', 'web_dev_views_link', 'web_dev_views_notes',
-  'other_views_notes',
-  'security_review_status', 'privacy_review_status',
-  'ergonomics_risks', 'activation_risks', 'security_risks', 'debuggability',
-  'all_platforms', 'all_platforms_descr', 'wpt', 'wpt_descr',
-  'sample_links', 'devrel',
-  'flag_name',
-
-  // TODO(jrobbins): UA support signals section
-
-  // Stage-specific fields
-  'dt_milestone_desktop_start', 'dt_milestone_android_start',
-  'dt_milestone_ios_start', 'ready_for_trial_url',
-];
+// All fields relevant to the dev trials stage.
+const FLAT_DEV_TRIAL_FIELDS = {
+  name: 'Dev trial',
+  sections: [
+    // Standardizaton
+    {
+      name: 'Dev trial',
+      fields: [
+        'devtrial_instructions',
+        'doc_links',
+        'interop_compat_risks',
+        'safari_views',
+        'safari_views_link',
+        'safari_views_notes',
+        'ff_views',
+        'ff_views_link',
+        'ff_views_notes',
+        'web_dev_views',
+        'web_dev_views_link',
+        'web_dev_views_notes',
+        'other_views_notes',
+        'security_review_status',
+        'privacy_review_status',
+        'ergonomics_risks',
+        'activation_risks',
+        'security_risks',
+        'debuggability',
+        'all_platforms',
+        'all_platforms_descr',
+        'wpt',
+        'wpt_descr',
+        'sample_links',
+        'devrel',
+      ],
+    },
+    {
+      name: 'Implementation in Chromium',
+      fields: [
+        'flag_name',
+        'dt_milestone_desktop_start',
+        'dt_milestone_android_start',
+        'dt_milestone_ios_start',
+        'ready_for_trial_url',
+      ],
+    },
+  ],
+};
+// TODO(jrobbins): UA support signals section
 // TODO(jrobbins): api overview link
 
+// All fields relevant to the origin trial stage.
+const FLAT_ORIGIN_TRIAL_FIELDS = {
+  name: 'Origin trial',
+  sections: [
+    // Standardization
+    {
+      name: 'Origin trial',
+      fields: [
+        'experiment_goals',
+        'experiment_risks',
+        'ongoing_constraints',
+        // TODO(jrobbins): display r4dt_url instead when deprecating.
+        'i2e_lgtms',
+        'intent_to_experiment_url',
+        'origin_trial_feedback_url',
 
-const FLAT_ORIGIN_TRIAL_FIELDS = [
-  // Standardization
-  'ongoing_constraints',
-  // TODO(jrobbins): display r4dt_url instead when deprecating.
-  'i2e_lgtms',
+        // Extension stage-specific fields
+        'experiment_extension_reason',
+        'intent_to_extend_experiment_url',
+      ],
+    },
+    // Implementation
+    {
+      name: 'Implementation in Chromium',
+      fields: [
+        'ot_milestone_desktop_start',
+        'ot_milestone_desktop_end',
+        'ot_milestone_android_start',
+        'ot_milestone_android_end',
+        'ot_milestone_webview_start',
+        'ot_milestone_webview_end',
+        'experiment_timeline', // deprecated
+      ],
+    },
+  ],
+};
 
-  // Stage-specific fields
-  'experiment_goals', 'experiment_risks',
-  'intent_to_experiment_url',
-  'origin_trial_feedback_url',
-  'ot_milestone_desktop_start', 'ot_milestone_desktop_end',
-  'ot_milestone_android_start', 'ot_milestone_android_end',
-  'ot_milestone_webview_start', 'ot_milestone_webview_end',
+// All fields relevant to the prepare to ship stage.
+const FLAT_PREPARE_TO_SHIP_FIELDS = {
+  name: 'Prepare to ship',
+  sections: [
+    {
+      name: 'Prepare to ship',
+      fields: [
+        // Standardization
+        'tag_review',
+        'tag_review_status',
+        'webview_risks',
+        'anticipated_spec_changes',
+        'i2s_lgtms',
+        // Implementation
+        'measurement',
+        'non_oss_deps',
 
-  // Extension stage-specific fields
-  'experiment_extension_reason', 'intent_to_extend_experiment_url',
+        // Stage-specific fields
+        'finch_url',
+        'intent_to_ship_url',
 
-  'experiment_timeline', // deprecated
-];
+      ],
+    },
+    {
+      name: 'Implementation in Chromium',
+      fields: [
+        'shipped_milestone',
+        'shipped_android_milestone',
+        'shipped_ios_milestone',
+        'shipped_webview_milestone',
+      ],
+    },
+  ],
+};
 
 
-const FLAT_PREPARE_TO_SHIP_FIELDS = [
-  // Standardization
-  'tag_review', 'tag_review_status',
-  'webview_risks', 'anticipated_spec_changes', 'i2s_lgtms',
-  // Implementation
-  'measurement', 'non_oss_deps',
-
-
-  // Stage-specific fields
-  'finch_url', 'intent_to_ship_url',
-  'shipped_milestone', 'shipped_android_milestone',
-  'shipped_ios_milestone', 'shipped_webview_milestone',
-];
-
-export const FLAT_ENTERPRISE_PREPARE_TO_SHIP = [
-  'rollout_milestone', 'rollout_platforms', 'rollout_details',
-  'enterprise_policies',
-];
-
-export const FLAT_ENTERPRISE_PREPARE_TO_SHIP_NAME = 'Start feature rollout';
+// All fields relevant to the enterprise prepare to ship stage.
+export const FLAT_ENTERPRISE_PREPARE_TO_SHIP = {
+  name: 'Start feature rollout',
+  sections: [
+    {
+      name: 'Start feature rollout',
+      fields: [
+        'rollout_milestone',
+        'rollout_platforms',
+        'rollout_details',
+        'enterprise_policies',
+      ],
+    },
+  ],
+};
 
 // Forms to be used on the "Edit all" page that shows a flat list of fields.
 // [[sectionName, flatFormFields]].
@@ -227,7 +382,7 @@ export const FLAT_FORMS_BY_FEATURE_TYPE = {
   ],
   [FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0]]: [
     ['Feature metadata', FLAT_METADATA_FIELDS],
-    [FLAT_ENTERPRISE_PREPARE_TO_SHIP_NAME, FLAT_ENTERPRISE_PREPARE_TO_SHIP],
+    ['Start feature rollout', FLAT_ENTERPRISE_PREPARE_TO_SHIP],
   ],
 };
 
@@ -402,7 +557,7 @@ export const IMPL_STATUS_FORMS = {
   [INTENT_STAGES.INTENT_SHIP[0]]:
     [IMPLEMENTATION_STATUS.ENABLED_BY_DEFAULT[0], IMPLSTATUS_ALLMILESTONES],
   [INTENT_STAGES.INTENT_ROLLOUT[0]]:
-      [IMPLEMENTATION_STATUS.ENABLED_BY_DEFAULT[0], IMPLSTATUS_ALLMILESTONES],
+    [IMPLEMENTATION_STATUS.ENABLED_BY_DEFAULT[0], IMPLSTATUS_ALLMILESTONES],
   [INTENT_STAGES.INTENT_SHIPPED[0]]:
     [IMPLEMENTATION_STATUS.ENABLED_BY_DEFAULT[0], IMPLSTATUS_ALLMILESTONES],
   [INTENT_STAGES.INTENT_REMOVED[0]]:
