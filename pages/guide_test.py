@@ -126,10 +126,12 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
         core_enums.STAGE_BLINK_DEV_TRIAL,
         core_enums.STAGE_BLINK_EVAL_READINESS,
         core_enums.STAGE_BLINK_ORIGIN_TRIAL,
-        core_enums.STAGE_BLINK_EXTEND_ORIGIN_TRIAL]
+        core_enums.STAGE_BLINK_SHIPPING]
+    stage_id = 10
     for stage_type in stage_types:
-      stage = Stage(feature_id=feature_id, stage_type=stage_type,
+      stage = Stage(id=stage_id, feature_id=feature_id, stage_type=stage_type,
           milestones=MilestoneSet())
+      stage_id += 10
       stage.put()
       # OT stage will be used to edit a single stage.
       if stage_type == 150:
@@ -211,7 +213,7 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
         self.handler.process_post_data(
             feature_id=self.feature_1.key.integer_id(), stage_id=self.stage_id)
 
-  def test_post__normal_valid_multiple_stages(self):
+  def test_post__normal_valid_editall(self):
     """Allowed user can edit a feature."""
     testing_config.sign_in('user1@google.com', 1234567890)
 
@@ -224,23 +226,22 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
     new_ready_for_trial_url = 'https://example.com/trial'
     new_intent_to_experiment_url = 'https://example.com/intent'
     new_experiment_risks = 'Some pretty risky business'
-    new_experiment_extension_reason = 'It would be fun'
     new_origin_trial_feedback_url = 'https://example.com/ot_intent'
     new_intent_to_ship_url = 'https://example.com/shipping'
 
     with test_app.test_request_context(
         self.request_path, data={
+            'stages': '30,50,60',
             'form_fields': form_fields,
             'category': '2',
             'name': 'Revised feature name',
             'summary': 'Revised feature summary',
-            'shipped_milestone': new_shipped_milestone,
-            'ready_for_trial_url': new_ready_for_trial_url,
-            'intent_to_experiment_url': new_intent_to_experiment_url,
-            'experiment_risks': new_experiment_risks,
-            'experiment_extension_reason': new_experiment_extension_reason,
-            'origin_trial_feedback_url': new_origin_trial_feedback_url,
-            'intent_to_ship_url': new_intent_to_ship_url,
+            'shipped_milestone__60': new_shipped_milestone,
+            'ready_for_trial_url__30': new_ready_for_trial_url,
+            'intent_to_experiment_url__50': new_intent_to_experiment_url,
+            'experiment_risks__50': new_experiment_risks,
+            'origin_trial_feedback_url__50': new_origin_trial_feedback_url,
+            'intent_to_ship_url__60': new_intent_to_ship_url,
             'feature_type': '1'
         }):
       actual_response = self.handler.process_post_data(
@@ -267,15 +268,13 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
     # Ensure changes were also made to Stage entities
     stages = stage_helpers.get_feature_stages(
         self.feature_1.key.integer_id())
-    self.assertEqual(len(stages.keys()), 7)
+    self.assertEqual(len(stages.keys()), 6)
     dev_trial_stage = stages.get(130)
     origin_trial_stages = stages.get(150)
-    ot_extension_stages = stages.get(151)
     # Stage for shipping should have been created.
     shipping_stages = stages.get(160)
     self.assertIsNotNone(origin_trial_stages)
     self.assertIsNotNone(shipping_stages)
-    self.assertIsNotNone(ot_extension_stages)
     # Check that correct stage fields were changed.
     self.assertEqual(dev_trial_stage[0].announcement_url,
                      new_ready_for_trial_url)
@@ -285,8 +284,6 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
         new_intent_to_experiment_url)
     self.assertEqual(origin_trial_stages[0].origin_trial_feedback_url,
         new_origin_trial_feedback_url)
-    self.assertEqual(ot_extension_stages[0].experiment_extension_reason,
-        new_experiment_extension_reason)
     self.assertEqual(shipping_stages[0].milestones.desktop_first,
         int(new_shipped_milestone))
     self.assertEqual(shipping_stages[0].intent_thread_url,

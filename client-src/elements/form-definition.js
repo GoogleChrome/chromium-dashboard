@@ -144,7 +144,7 @@ const FLAT_IMPLEMENT_FIELDS = [
 ];
 
 
-const FLAT_DEV_TRAIL_FIELDS = [
+const FLAT_DEV_TRIAL_FIELDS = [
   // Standardizaton
   'devtrial_instructions', 'doc_links',
   'interop_compat_risks',
@@ -193,6 +193,8 @@ const FLAT_PREPARE_TO_SHIP_FIELDS = [
   // Implementation
   'measurement',
   'non_oss_deps',
+  'shipped_milestone', 'shipped_android_milestone',
+  'shipped_ios_milestone', 'shipped_webview_milestone',
 ];
 
 
@@ -216,12 +218,11 @@ export const FLAT_FORMS = [
   ['Feature metadata', FLAT_METADATA_FIELDS],
   ['Identify the need', FLAT_IDENTIFY_FIELDS],
   ['Prototype a solution', FLAT_IMPLEMENT_FIELDS],
-  ['Dev trial', FLAT_DEV_TRAIL_FIELDS],
+  ['Dev trial', FLAT_DEV_TRIAL_FIELDS],
   ['Origin trial', FLAT_ORIGIN_TRIAL_FIELDS],
   ['Prepare to ship', FLAT_PREPARE_TO_SHIP_FIELDS],
   ['Ship', FLAT_SHIP_FIELDS],
 ];
-
 
 export const FLAT_FORMS_BY_FEATURE_TYPE = {
   [FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0]]: FLAT_FORMS,
@@ -229,14 +230,14 @@ export const FLAT_FORMS_BY_FEATURE_TYPE = {
   [FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]]: [
     ['Feature metadata', FLAT_METADATA_FIELDS],
     ['Identify the need', FLAT_IDENTIFY_FIELDS],
-    ['Dev trial', FLAT_DEV_TRAIL_FIELDS],
+    ['Dev trial', FLAT_DEV_TRIAL_FIELDS],
     ['Prepare to ship', FLAT_PREPARE_TO_SHIP_FIELDS],
     ['Ship', FLAT_SHIP_FIELDS],
   ],
   [FEATURE_TYPES.FEATURE_TYPE_DEPRECATION_ID[0]]: [
     ['Feature metadata', FLAT_METADATA_FIELDS],
     ['Identify the need', FLAT_IDENTIFY_FIELDS],
-    ['Dev trial', FLAT_DEV_TRAIL_FIELDS],
+    ['Dev trial', FLAT_DEV_TRIAL_FIELDS],
     ['Origin trial', FLAT_ORIGIN_TRIAL_FIELDS],
     ['Prepare to ship', FLAT_PREPARE_TO_SHIP_FIELDS],
     ['Ship', FLAT_SHIP_FIELDS],
@@ -446,4 +447,16 @@ export const IMPL_STATUS_FORMS = {
     [IMPLEMENTATION_STATUS.ENABLED_BY_DEFAULT[0], IMPLSTATUS_ALLMILESTONES],
   [INTENT_STAGES.INTENT_REMOVED[0]]:
     [IMPLEMENTATION_STATUS.REMOVED[0], IMPLSTATUS_ALLMILESTONES],
+};
+
+export const FLAT_FORMS_BY_INTENT_TYPE = {
+  [INTENT_STAGES.INTENT_INCUBATE[0]]: NEWFEATURE_INCUBATE,
+  [INTENT_STAGES.INTENT_IMPLEMENT[0]]: FLAT_IMPLEMENT_FIELDS,
+  [INTENT_STAGES.INTENT_EXPERIMENT[0]]: FLAT_DEV_TRIAL_FIELDS,
+  [INTENT_STAGES.INTENT_EXTEND_TRIAL[0]]: FLAT_ORIGIN_TRIAL_FIELDS,
+  [INTENT_STAGES.INTENT_IMPLEMENT_SHIP[0]]: NEWFEATURE_EVALREADINESSTOSHIP,
+  [INTENT_STAGES.INTENT_SHIP[0]]: FLAT_PREPARE_TO_SHIP_FIELDS,
+  [INTENT_STAGES.INTENT_ROLLOUT[0]]: ENTERPRISE_PREPARE_TO_SHIP,
+  [INTENT_STAGES.INTENT_SHIPPED[0]]: FLAT_SHIP_FIELDS,
+  [INTENT_STAGES.INTENT_REMOVED[0]]: DEPRECATION_REMOVED,
 };
