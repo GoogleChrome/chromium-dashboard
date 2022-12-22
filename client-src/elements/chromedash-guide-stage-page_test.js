@@ -1,7 +1,7 @@
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
 import {ChromedashGuideStagePage} from './chromedash-guide-stage-page';
-import {STAGE_FORMS, IMPL_STATUS_FORMS} from './form-definition';
+import {STAGE_FORMS} from './form-definition';
 import './chromedash-toast';
 import '../js-src/cs-client';
 import sinon from 'sinon';
@@ -157,7 +157,6 @@ describe('chromedash-guide-stage-page', () => {
     assert.include(form.innerHTML, '<input type="hidden" name="token">');
     assert.include(form.innerHTML, '<input type="hidden" name="form_fields"');
     assert.include(form.innerHTML, `${STAGE_FORMS[1][intentStage].join()}`);
-    assert.include(form.innerHTML, `${IMPL_STATUS_FORMS[intentStage][1].join()}`);
     assert.include(form.innerHTML, '<div class="final_buttons">');
 
     // Implementation section renders correct title and fields

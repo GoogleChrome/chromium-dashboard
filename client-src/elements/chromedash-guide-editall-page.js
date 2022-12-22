@@ -6,8 +6,7 @@ import './chromedash-form-field';
 import {
   formatFeatureForEdit,
   FLAT_FORMS_BY_FEATURE_TYPE,
-  FLAT_ENTERPRISE_PREPARE_TO_SHIP_NAME,
-  FLAT_ENTERPRISE_PREPARE_TO_SHIP} from './form-definition';
+  FLAT_ENTERPRISE_PREPARE_TO_SHIP_FIELDS} from './form-definition';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {FORM_STYLES} from '../sass/forms-css.js';
 
@@ -97,11 +96,11 @@ export class ChromedashGuideEditallPage extends LitElement {
 
     // Ensures the rollout field is shown for breaking changes.
     if (this.featureForEdit.breaking_change &&
-      !forms.some(([name]) => name === FLAT_ENTERPRISE_PREPARE_TO_SHIP_NAME)) {
+      !forms.some(([name]) => name === 'Start feature rollout')) {
       forms.splice(
         forms.length - 1,
         0,
-        [FLAT_ENTERPRISE_PREPARE_TO_SHIP_NAME, FLAT_ENTERPRISE_PREPARE_TO_SHIP]);
+        ['Start feature rollout', FLAT_ENTERPRISE_PREPARE_TO_SHIP_FIELDS]);
     }
     return forms;
   }
