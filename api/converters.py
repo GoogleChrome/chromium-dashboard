@@ -615,13 +615,14 @@ def gate_value_to_json_dict(gate: Gate) -> dict[str, Any]:
   requested_on = str(gate.requested_on) if gate.requested_on else None
   appr_def = approval_defs.APPROVAL_FIELDS_BY_ID[gate.gate_type]
   return {
+      'id': gate.key.integer_id(),
       'feature_id': gate.feature_id,
       'stage_id': gate.stage_id,
       'gate_type': gate.gate_type,
       'team_name': appr_def.team_name,
       'gate_name': appr_def.name,
       'state': gate.state,
-      'requested_on': requested_on,  # YYYY-MM-DD or None
+      'requested_on': requested_on,  # YYYY-MM-DD HH:MM:SS or None
       'owners': gate.owners,
       'next_action': next_action,  # YYYY-MM-DD or None
       'additional_review': gate.additional_review
