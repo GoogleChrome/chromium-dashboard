@@ -3,7 +3,7 @@ import {ref} from 'lit/directives/ref.js';
 import {showToastMessage} from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
-import {formatFeatureForEdit, STAGE_FORMS} from './form-definition';
+import {formatFeatureForEdit, FORMS_BY_STAGE_TYPE} from './form-definition';
 import {IMPLEMENTATION_STATUS} from './form-field-enums';
 import {ALL_FIELDS} from './form-field-specs';
 import {SHARED_STYLES} from '../sass/shared-css.js';
@@ -75,7 +75,7 @@ export class ChromedashGuideStagePage extends LitElement {
           this.stageName = processStage.name;
         }
       });
-      this.featureFormFields = STAGE_FORMS[this.feature.feature_type_int][this.intentStage] || {
+      this.featureFormFields = FORMS_BY_STAGE_TYPE[stage.stage_type] || {
         sections: [],
       };
       this.loading = false;
