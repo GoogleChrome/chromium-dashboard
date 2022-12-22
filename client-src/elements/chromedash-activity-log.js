@@ -75,6 +75,7 @@ export class ChromedashActivity extends LitElement {
       user: {type: Object},
       feature: {type: Object},
       activity: {type: Object},
+      narrow: {type: Boolean},
     };
   }
 
@@ -83,6 +84,7 @@ export class ChromedashActivity extends LitElement {
     this.user = null;
     this.feature = {};
     this.activity = null;
+    this.narrow = false;
   }
 
   static get styles() {
@@ -90,7 +92,18 @@ export class ChromedashActivity extends LitElement {
       ...SHARED_STYLES,
       css`
         .comment_header {
-          height: 24px;
+          min-height: 24px;
+        }
+
+        .comment_header.narrow .author {
+          font-weight: 500;
+        }
+        .comment_header.narrow .preposition {
+          display: none;
+        }
+        .comment_header.narrow .date {
+          display: block;
+          padding-bottom: var(--content-padding);
         }
 
         .comment {
@@ -214,12 +227,13 @@ export class ChromedashActivity extends LitElement {
     const preface = this.renderDeletedPreface();
     return html`
       <div class="comment">
-        <div class="comment_header">
-           <span class="author">${this.activity.author}</span>
-           on
-           <span class="date">${this.formatDate(this.activity.created)}</span>
-           ${this.formatRelativeDate()}
+        <div class="comment_header ${this.narrow ? 'narrow' : ''}">
            ${this.formatEditMenu()}
+           <span class="author">${this.activity.author}</span>
+           <span class="preposition">on</span>
+           <span class="date">${this.formatDate(this.activity.created)}
+             ${this.formatRelativeDate()}
+           </span>
         </div>
         <div id="amendments">
           ${this.activity.amendments.map((a) => html`
@@ -257,7 +271,19 @@ export class ChromedashActivityLog extends LitElement {
       user: {type: Object},
       feature: {type: Object},
       comments: {type: Array},
+      narrow: {type: Boolean},
+      reverse: {type: Boolean},
     };
+  }
+
+  static get styles() {
+    return [
+      ...SHARED_STYLES,
+      css`
+        p {
+          padding: var(--content-padding);
+        }
+    `];
   }
 
   constructor() {
@@ -265,6 +291,8 @@ export class ChromedashActivityLog extends LitElement {
     this.user = null;
     this.feature = {};
     this.comments = [];
+    this.narrow = false;
+    this.reverse = false;
   }
 
   render() {
@@ -276,15 +304,16 @@ export class ChromedashActivityLog extends LitElement {
       return html`<p>No comments yet.</p>`;
     }
 
-    return html`
-      ${this.comments.map((activity) => html`
+    const orderedComments = (
+      this.reverse ? this.comments.slice(0).reverse() : this.comments);
+    return orderedComments.map((activity) => html`
         <chromedash-activity
           .user=${this.user}
           .feature=${this.feature}
+          .narrow=${this.narrow}
           .activity=${activity}>
         </chromedash-activity>
-      `)}
-    `;
+      `);
   }
 }
 
