@@ -42,6 +42,13 @@ export class ChromedashMyFeaturesPage extends LitElement {
     });
   }
 
+  refetch() {
+    const tables = this.shadowRoot.querySelectorAll('chromedash-feature-table');
+    for (const table of tables) {
+      table.refetch();
+    }
+  }
+
   // Handles the Star-Toggle event fired by any one of the child components
   handleStarToggle(e) {
     const newStarredFeatures = new Set(this.starredFeatures);

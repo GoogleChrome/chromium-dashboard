@@ -154,6 +154,26 @@ export class ChromedashFeaturePage extends LitElement {
     });
   }
 
+  refetch() {
+    this.loading = true;
+    Promise.all([
+      window.csClient.getFeature(this.featureId),
+      window.csClient.getGates(this.featureId),
+      window.csClient.getComments(this.featureId, null, false),
+    ]).then(([feature, gatesRes, commentRes]) => {
+      this.feature = feature;
+      this.gates = gatesRes.gates;
+      this.comments = commentRes.comments;
+      this.loading = false;
+    }).catch((error) => {
+      if (error instanceof FeatureNotFoundError) {
+        this.loading = false;
+      } else {
+        showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+      }
+    });
+  }
+
   disconnectedCallback() {
     super.disconnectedCallback();
     document.title = this.appTitle;
