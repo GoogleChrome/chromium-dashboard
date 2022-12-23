@@ -27,5 +27,4 @@ describe('chromedash-settings-page', () => {
     assert.exists(component);
     assert.instanceOf(component, ChromedashGateColumn);
   });
-
 });

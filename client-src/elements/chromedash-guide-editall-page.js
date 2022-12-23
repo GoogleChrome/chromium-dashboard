@@ -139,35 +139,21 @@ export class ChromedashGuideEditallPage extends LitElement {
     return FORMS_BY_STAGE_TYPE[stageType] || null;
   }
 
-  renderStageFormFields(formattedFeature, processStage, feStage, formFields) {
-    if (!formFields) return nothing;
-
-    return html`
-      <h3>${processStage.name}</h3>
-      <section class="flat_form">
-        ${formFields.map((field) => html`
-          <chromedash-form-field
-            name=${field}
-            stageId=${feStage.stage_id}
-            value=${formattedFeature[field]}>
-          </chromedash-form-field>
-        `)}
-      </section>
-    `;
-  }
-
   // Flatten the sections to create a single array with all fields.
   flattenSections(stageSections) {
     return stageSections.reduce((combined, section) => [...combined, ...section.fields], []);
   }
 
-  renderStageSection(formattedFeature, name, stageFields) {
+  renderStageSection(formattedFeature, name, stageId, stageFields) {
+    if (!stageFields) return nothing;
+
     return html`
     <h3>${name}</h3>
     <section class="flat_form">
       ${stageFields.map(field => html`
         <chromedash-form-field
           name=${field}
+          stageId=${stageId}
           value=${formattedFeature[field]}>
         </chromedash-form-field>
       `)}
@@ -179,7 +165,7 @@ export class ChromedashGuideEditallPage extends LitElement {
     // All features display the metadata section.
     let fieldsOnly = this.flattenSections(FLAT_METADATA_FIELDS.sections);
     const formsToRender = [
-      this.renderStageSection(formattedFeature, FLAT_METADATA_FIELDS.name, fieldsOnly)];
+      this.renderStageSection(formattedFeature, FLAT_METADATA_FIELDS.name, 0, fieldsOnly)];
 
     // Generate a single array of every field that is displayed.
     let allFormFields = [...fieldsOnly];
@@ -193,7 +179,7 @@ export class ChromedashGuideEditallPage extends LitElement {
 
       fieldsOnly = this.flattenSections(stageForm.sections);
       formsToRender.push(this.renderStageSection(
-        formattedFeature, stageForm.name, fieldsOnly));
+        formattedFeature, stageForm.name, feStage.stage_id, fieldsOnly));
       allFormFields = [...allFormFields, ...fieldsOnly];
     }
 
@@ -204,8 +190,6 @@ export class ChromedashGuideEditallPage extends LitElement {
     const formattedFeature = formatFeatureForEdit(this.feature);
     const stageIds = this.feature.stages.map(stage => stage.stage_id);
     const [allFormFields, formsToRender] = this.getForms(formattedFeature, this.feature.stages);
-    console.log(allFormFields);
-    console.log(formsToRender);
     return html`
       <form name="feature_form" method="POST" action="/guide/editall/${this.featureId}">
         <input type="hidden" name="stages" value="${stageIds}">
