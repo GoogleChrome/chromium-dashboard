@@ -1,7 +1,6 @@
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
 import {ChromedashGuideStagePage} from './chromedash-guide-stage-page';
-import {STAGE_FORMS} from './form-definition';
 import './chromedash-toast';
 import '../js-src/cs-client';
 import sinon from 'sinon';
@@ -156,7 +155,6 @@ describe('chromedash-guide-stage-page', () => {
     assert.exists(form);
     assert.include(form.innerHTML, '<input type="hidden" name="token">');
     assert.include(form.innerHTML, '<input type="hidden" name="form_fields"');
-    assert.include(form.innerHTML, `${STAGE_FORMS[1][intentStage].join()}`);
     assert.include(form.innerHTML, '<div class="final_buttons">');
 
     // Implementation section renders correct title and fields
@@ -165,30 +163,5 @@ describe('chromedash-guide-stage-page', () => {
     assert.include(form.innerHTML, 'type="hidden" name="impl_status_offered"');
     assert.include(form.innerHTML, 'sl-checkbox name="set_impl_status"');
     assert.notInclude(form.innerHTML, 'This feature already has implementation status');
-  });
-
-  it('renders with fake data (without implStatusForm and implStatusName)', async () => {
-    const stageId = 10;
-    const featureId = 123456;
-    window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
-    window.csClient.getStage.withArgs(featureId, stageId).returns(validStagePromise);
-
-    const component = await fixture(
-      html`<chromedash-guide-stage-page
-             .stageId=${stageId}
-             .featureId=${featureId}>
-           </chromedash-guide-stage-page>`);
-    assert.exists(component);
-    assert.instanceOf(component, ChromedashGuideStagePage);
-
-    const form = component.shadowRoot.querySelector('form[name="feature_form"]');
-    assert.exists(form);
-
-    // Implementation section renders correct title and fields
-    assert.notInclude(form.innerHTML, 'Implementation in Chromium');
-    assert.notInclude(form.innerHTML, 'This feature already has implementation status');
-    assert.notInclude(form.innerHTML, 'fake implStatusName');
-    assert.notInclude(form.innerHTML, 'type="hidden" name="impl_status_offered"');
-    assert.notInclude(form.innerHTML, 'sl-checkbox name="set_impl_status"');
   });
 });
