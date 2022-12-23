@@ -24,7 +24,6 @@ export class ChromedashGuideEditallPage extends LitElement {
     return {
       featureId: {type: Number},
       feature: {type: Object},
-      process: {type: Object},
       loading: {type: Boolean},
       appTitle: {type: String},
       nextPage: {type: String},
@@ -49,10 +48,8 @@ export class ChromedashGuideEditallPage extends LitElement {
     this.loading = true;
     Promise.all([
       window.csClient.getFeature(this.featureId),
-      window.csClient.getFeatureProcess(this.featureId),
-    ]).then(([feature, process]) => {
+    ]).then(([feature]) => {
       this.feature = feature;
-      this.process = process;
       if (this.feature.name) {
         document.title = `${this.feature.name} - ${this.appTitle}`;
       }

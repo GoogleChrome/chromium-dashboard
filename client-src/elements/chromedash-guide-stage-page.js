@@ -59,25 +59,19 @@ export class ChromedashGuideStagePage extends LitElement {
     this.loading = true;
     Promise.all([
       window.csClient.getFeature(this.featureId),
-      window.csClient.getFeatureProcess(this.featureId),
       window.csClient.getStage(this.featureId, this.stageId),
-    ]).then(([feature, process, stage]) => {
+    ]).then(([feature, stage]) => {
       this.feature = feature;
-      if (stage.id !== 0) {
-        this.stage = stage;
-      }
+      this.stage = stage;
 
       if (this.feature.name) {
         document.title = `${this.feature.name} - ${this.appTitle}`;
       }
-      process.stages.map(processStage => {
-        if (processStage.outgoing_stage === this.intentStage) {
-          this.stageName = processStage.name;
-        }
-      });
       this.featureFormFields = FORMS_BY_STAGE_TYPE[stage.stage_type] || {
+        name: '',
         sections: [],
       };
+      this.stageName = this.featureFormFields.name;
       this.loading = false;
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');

@@ -18,7 +18,7 @@ describe('chromedash-guide-stage-page', () => {
     stages: [
       {
         stage_id: 10,
-        stage_type: 150,
+        stage_type: 160,
         intent_stage: 3,
       },
     ],
@@ -50,20 +50,11 @@ describe('chromedash-guide-stage-page', () => {
     },
     tags: ['tag_one'],
   });
-  const processPromise = Promise.resolve({
-    stages: [{
-      name: 'stage one',
-      description: 'a description',
-      progress_items: [],
-      outgoing_stage: 1,
-      actions: [],
-    }],
-  });
 
   const validStagePromise = Promise.resolve({
     id: 10,
     feature_id: 1,
-    stage_type: 150,
+    stage_type: 160,
     browser: 'Chrome',
     pm_emails: [],
     tl_emails: [],
@@ -98,16 +89,13 @@ describe('chromedash-guide-stage-page', () => {
     await fixture(html`<chromedash-toast></chromedash-toast>`);
     window.csClient = new ChromeStatusClient('fake_token', 1);
     sinon.stub(window.csClient, 'getFeature');
-    sinon.stub(window.csClient, 'getFeatureProcess');
     sinon.stub(window.csClient, 'getStage');
     sinon.stub(window.csClient, 'getBlinkComponents');
-    window.csClient.getFeatureProcess.returns(processPromise);
     window.csClient.getBlinkComponents.returns(Promise.resolve({}));
   });
 
   afterEach(() => {
     window.csClient.getFeature.restore();
-    window.csClient.getFeatureProcess.restore();
     window.csClient.getBlinkComponents.restore();
     window.csClient.getStage.restore();
   });

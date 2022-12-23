@@ -162,7 +162,7 @@ class StagesAPI(basehandlers.APIHandler):
 
     # Default return value if invalid stage ID is given.
     if stage_id is None or stage_id == 0:
-      return {'id': 0}
+      self.abort(404, msg='No stage specified.')
     
     stage: Stage | None = Stage.get_by_id(stage_id)
     if stage is None:
