@@ -3,7 +3,7 @@ import {ref} from 'lit/directives/ref.js';
 import {autolink} from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
-import {formatFeatureForEdit, METADATA_FORM_FIELDS} from './form-definition';
+import {formatFeatureForEdit, FLAT_METADATA_FIELDS} from './form-definition';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {FORM_STYLES} from '../sass/forms-css.js';
 
@@ -221,10 +221,10 @@ export class ChromedashGuideMetadata extends LitElement {
         <form name="overview_form" method="POST" action="/guide/stage/${this.feature.id}/0">
           <input type="hidden" name="token">
           <input type="hidden" name="form_fields"
-             value="${METADATA_FORM_FIELDS.join(',')}">
+             value="${FLAT_METADATA_FIELDS.join(',')}">
 
           <chromedash-form-table ${ref(this.registerFormSubmitHandler)}>
-            ${METADATA_FORM_FIELDS.map((field) => html`
+            ${FLAT_METADATA_FIELDS.map((field) => html`
               <chromedash-form-field
                 name=${field}
                 value=${formattedFeature[field]}>

@@ -6,17 +6,6 @@ import '../js-src/cs-client';
 import sinon from 'sinon';
 
 describe('chromedash-guide-editall-page', () => {
-  const process = {
-    stages: [{
-      name: 'stage one',
-      description: 'a description',
-      progress_items: [],
-      outgoing_stage: 1,
-      actions: [],
-      stage_type: 110,
-    }],
-  };
-
   const validFeaturePromise = Promise.resolve({
     id: 123456,
     name: 'feature one',
@@ -74,15 +63,12 @@ describe('chromedash-guide-editall-page', () => {
     await fixture(html`<chromedash-toast></chromedash-toast>`);
     window.csClient = new ChromeStatusClient('fake_token', 1);
     sinon.stub(window.csClient, 'getFeature');
-    sinon.stub(window.csClient, 'getFeatureProcess');
     sinon.stub(window.csClient, 'getBlinkComponents');
-    window.csClient.getFeatureProcess.returns(process);
     window.csClient.getBlinkComponents.returns(Promise.resolve({}));
   });
 
   afterEach(() => {
     window.csClient.getFeature.restore();
-    window.csClient.getFeatureProcess.restore();
     window.csClient.getBlinkComponents.restore();
   });
 

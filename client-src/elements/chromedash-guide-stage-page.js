@@ -3,7 +3,7 @@ import {ref} from 'lit/directives/ref.js';
 import {showToastMessage} from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
-import {formatFeatureForEdit, STAGE_FORMS, IMPL_STATUS_FORMS} from './form-definition';
+import {formatFeatureForEdit, FORMS_BY_STAGE_TYPE} from './form-definition';
 import {IMPLEMENTATION_STATUS} from './form-field-enums';
 import {ALL_FIELDS} from './form-field-specs';
 import {SHARED_STYLES} from '../sass/shared-css.js';
@@ -59,25 +59,19 @@ export class ChromedashGuideStagePage extends LitElement {
     this.loading = true;
     Promise.all([
       window.csClient.getFeature(this.featureId),
-      window.csClient.getFeatureProcess(this.featureId),
       window.csClient.getStage(this.featureId, this.stageId),
-    ]).then(([feature, process, stage]) => {
+    ]).then(([feature, stage]) => {
       this.feature = feature;
-      if (stage.id !== 0) {
-        this.stage = stage;
-      }
+      this.stage = stage;
 
       if (this.feature.name) {
         document.title = `${this.feature.name} - ${this.appTitle}`;
       }
-      process.stages.map(processStage => {
-        if (processStage.outgoing_stage === this.intentStage) {
-          this.stageName = processStage.name;
-        }
-      });
-      this.featureFormFields = STAGE_FORMS[this.feature.feature_type_int][this.intentStage] || [];
-      [this.implStatusOffered, this.implStatusFormFields] =
-        IMPL_STATUS_FORMS[this.intentStage] || [null, null];
+      this.featureFormFields = FORMS_BY_STAGE_TYPE[stage.stage_type] || {
+        name: '',
+        sections: [],
+      };
+      this.stageName = this.featureFormFields.name;
       this.loading = false;
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
@@ -171,8 +165,8 @@ export class ChromedashGuideStagePage extends LitElement {
 
   // get a comma-spearated list of field names
   getFormFields() {
-    const fields = this.implStatusFormFields ?
-      [...this.featureFormFields, ...this.implStatusFormFields] : this.featureFormFields;
+    const fields = this.featureFormFields.sections.reduce(
+      (combined, section) => [...combined, ...section.fields], []);
     return fields.join();
   }
 
@@ -213,46 +207,63 @@ export class ChromedashGuideStagePage extends LitElement {
     `;
   }
 
-  renderOneField(formattedFeature, field) {
-    const featureJSONKey = ALL_FIELDS[field].name || field;
-    return html`
+  renderFields(formattedFeature, section) {
+    return section.fields.map(field => {
+      const featureJSONKey = ALL_FIELDS[field].name || field;
+      return html`
       <chromedash-form-field
         name=${field}
         value=${formattedFeature[featureJSONKey]}>
       </chromedash-form-field>
     `;
+    });
   }
 
-  renderFeatureFormSection(formattedFeature) {
+  renderSections(formattedFeature, stageSections) {
     const stageType = (this.stage) ? this.stage.stage_type : null;
     let alreadyOnThisStage = false;
     if (stageType) {
-      alreadyOnThisStage = this.stage.stage_type === this.feature.intent_stage_int;
+      alreadyOnThisStage = this.stage.stage_type === this.feature.active_stage_id;
     }
-    return html`
+    const formSections = [
+      html`
       <section class="stage_form">
-        ${this.featureFormFields.map((field) => this.renderOneField(
-      formattedFeature, field))}
         <chromedash-form-field
           name="set_stage"
           value=${alreadyOnThisStage}
           ?disabled=${alreadyOnThisStage}>
         </chromedash-form-field>
-      </section>
-    `;
+      </section>`,
+    ];
+
+    stageSections.forEach(section => {
+      if (section.isImplementationSection) {
+        formSections.push(this.renderImplStatusFormSection(formattedFeature, section));
+      } else {
+        formSections.push(html`
+          <h3>${section.name}</h3>
+          <section class="stage_form">
+            ${this.renderFields(formattedFeature, section)}
+          </section>
+        `);
+      }
+    });
+
+    return formSections;
   }
 
-  renderImplStatusFormSection(formattedFeature) {
+  renderImplStatusFormSection(formattedFeature, section) {
     const alreadyOnThisImplStatus = (
-      this.implStatusOffered == this.feature.browsers.chrome.status.val);
+      section.implStatusValue === this.feature.browsers.chrome.status.val);
+
     const implStatusKey = Object.keys(IMPLEMENTATION_STATUS).find(
-      key => IMPLEMENTATION_STATUS[key][0] === this.implStatusOffered);
+      key => IMPLEMENTATION_STATUS[key][0] === section.implStatusValue);
     const implStatusName = implStatusKey ? IMPLEMENTATION_STATUS[implStatusKey][1]: null;
 
     if (!implStatusName && !this.implStatusFormFields) return nothing;
 
     return html`
-      <h3>Implementation in Chromium</h3>
+      <h3>${section.name}</h3>
       <section class="stage_form">
         ${implStatusName ? html`
           <tr>
@@ -270,7 +281,7 @@ export class ChromedashGuideStagePage extends LitElement {
               html`
                 <td style="padding: 6px 10px;">
                   <input type="hidden" name="impl_status_offered"
-                          value=${this.implStatusOffered}>
+                          value=${section.implStatusValue}>
                   <sl-checkbox name="set_impl_status"
                           id="set_impl_status"
                           size="small">
@@ -288,12 +299,7 @@ export class ChromedashGuideStagePage extends LitElement {
           </tr>
         `: nothing}
 
-        ${this.implStatusFormFields.map((field) => html`
-          <chromedash-form-field
-            name=${field}
-            value=${formattedFeature[field]}>
-          </chromedash-form-field>
-        `)}
+        ${this.renderFields(formattedFeature, section)}
       </section>
     `;
   }
@@ -308,8 +314,7 @@ export class ChromedashGuideStagePage extends LitElement {
         <input type="hidden" name="nextPage" value=${this.getNextPage()} >
 
         <chromedash-form-table ${ref(this.registerHandlers)}>
-          ${this.renderFeatureFormSection(formattedFeature)}
-          ${this.renderImplStatusFormSection(formattedFeature)}
+          ${this.renderSections(formattedFeature, this.featureFormFields.sections)}
         </chromedash-form-table>
 
         <div class="final_buttons">

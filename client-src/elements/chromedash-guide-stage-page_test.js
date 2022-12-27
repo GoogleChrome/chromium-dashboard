@@ -1,7 +1,6 @@
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
 import {ChromedashGuideStagePage} from './chromedash-guide-stage-page';
-import {STAGE_FORMS, IMPL_STATUS_FORMS} from './form-definition';
 import './chromedash-toast';
 import '../js-src/cs-client';
 import sinon from 'sinon';
@@ -19,7 +18,7 @@ describe('chromedash-guide-stage-page', () => {
     stages: [
       {
         stage_id: 10,
-        stage_type: 150,
+        stage_type: 160,
         intent_stage: 3,
       },
     ],
@@ -51,20 +50,11 @@ describe('chromedash-guide-stage-page', () => {
     },
     tags: ['tag_one'],
   });
-  const processPromise = Promise.resolve({
-    stages: [{
-      name: 'stage one',
-      description: 'a description',
-      progress_items: [],
-      outgoing_stage: 1,
-      actions: [],
-    }],
-  });
 
   const validStagePromise = Promise.resolve({
     id: 10,
     feature_id: 1,
-    stage_type: 150,
+    stage_type: 160,
     browser: 'Chrome',
     pm_emails: [],
     tl_emails: [],
@@ -99,16 +89,13 @@ describe('chromedash-guide-stage-page', () => {
     await fixture(html`<chromedash-toast></chromedash-toast>`);
     window.csClient = new ChromeStatusClient('fake_token', 1);
     sinon.stub(window.csClient, 'getFeature');
-    sinon.stub(window.csClient, 'getFeatureProcess');
     sinon.stub(window.csClient, 'getStage');
     sinon.stub(window.csClient, 'getBlinkComponents');
-    window.csClient.getFeatureProcess.returns(processPromise);
     window.csClient.getBlinkComponents.returns(Promise.resolve({}));
   });
 
   afterEach(() => {
     window.csClient.getFeature.restore();
-    window.csClient.getFeatureProcess.restore();
     window.csClient.getBlinkComponents.restore();
     window.csClient.getStage.restore();
   });
@@ -156,8 +143,6 @@ describe('chromedash-guide-stage-page', () => {
     assert.exists(form);
     assert.include(form.innerHTML, '<input type="hidden" name="token">');
     assert.include(form.innerHTML, '<input type="hidden" name="form_fields"');
-    assert.include(form.innerHTML, `${STAGE_FORMS[1][intentStage].join()}`);
-    assert.include(form.innerHTML, `${IMPL_STATUS_FORMS[intentStage][1].join()}`);
     assert.include(form.innerHTML, '<div class="final_buttons">');
 
     // Implementation section renders correct title and fields
@@ -166,30 +151,5 @@ describe('chromedash-guide-stage-page', () => {
     assert.include(form.innerHTML, 'type="hidden" name="impl_status_offered"');
     assert.include(form.innerHTML, 'sl-checkbox name="set_impl_status"');
     assert.notInclude(form.innerHTML, 'This feature already has implementation status');
-  });
-
-  it('renders with fake data (without implStatusForm and implStatusName)', async () => {
-    const stageId = 10;
-    const featureId = 123456;
-    window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
-    window.csClient.getStage.withArgs(featureId, stageId).returns(validStagePromise);
-
-    const component = await fixture(
-      html`<chromedash-guide-stage-page
-             .stageId=${stageId}
-             .featureId=${featureId}>
-           </chromedash-guide-stage-page>`);
-    assert.exists(component);
-    assert.instanceOf(component, ChromedashGuideStagePage);
-
-    const form = component.shadowRoot.querySelector('form[name="feature_form"]');
-    assert.exists(form);
-
-    // Implementation section renders correct title and fields
-    assert.notInclude(form.innerHTML, 'Implementation in Chromium');
-    assert.notInclude(form.innerHTML, 'This feature already has implementation status');
-    assert.notInclude(form.innerHTML, 'fake implStatusName');
-    assert.notInclude(form.innerHTML, 'type="hidden" name="impl_status_offered"');
-    assert.notInclude(form.innerHTML, 'sl-checkbox name="set_impl_status"');
   });
 });

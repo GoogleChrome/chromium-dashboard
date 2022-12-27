@@ -1,12 +1,12 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
-import {showToastMessage, findProcessStage} from './utils.js';
+import {showToastMessage} from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
 import {
   formatFeatureForEdit,
-  METADATA_FORM_FIELDS,
-  FLAT_FORMS_BY_INTENT_TYPE} from './form-definition';
+  FLAT_METADATA_FIELDS,
+  FORMS_BY_STAGE_TYPE} from './form-definition';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {FORM_STYLES} from '../sass/forms-css.js';
 
@@ -24,7 +24,6 @@ export class ChromedashGuideEditallPage extends LitElement {
     return {
       featureId: {type: Number},
       feature: {type: Object},
-      process: {type: Object},
       loading: {type: Boolean},
       appTitle: {type: String},
       nextPage: {type: String},
@@ -49,10 +48,8 @@ export class ChromedashGuideEditallPage extends LitElement {
     this.loading = true;
     Promise.all([
       window.csClient.getFeature(this.featureId),
-      window.csClient.getFeatureProcess(this.featureId),
-    ]).then(([feature, process]) => {
+    ]).then(([feature]) => {
       this.feature = feature;
-      this.process = process;
       if (this.feature.name) {
         document.title = `${this.feature.name} - ${this.appTitle}`;
       }
@@ -135,50 +132,61 @@ export class ChromedashGuideEditallPage extends LitElement {
     `;
   }
 
-  getStageFormFields(processStage) {
-    return FLAT_FORMS_BY_INTENT_TYPE[processStage.outgoing_stage] || [];
+  getStageForm(stageType) {
+    return FORMS_BY_STAGE_TYPE[stageType] || null;
   }
 
-  renderStageFormFields(formattedFeature, processStage, feStage, formFields) {
-    if (!formFields) return nothing;
+  // Flatten the sections to create a single array with all fields.
+  flattenSections(stageSections) {
+    return stageSections.reduce((combined, section) => [...combined, ...section.fields], []);
+  }
+
+  renderStageSection(formattedFeature, name, stageId, stageFields) {
+    if (!stageFields) return nothing;
 
     return html`
-      <h3>${processStage.name}</h3>
-      <section class="flat_form">
-        ${formFields.map((field) => html`
-          <chromedash-form-field
-            name=${field}
-            stageId=${feStage.stage_id}
-            value=${formattedFeature[field]}>
-          </chromedash-form-field>
-        `)}
-      </section>
-    `;
-  }
-
-  getForms(formattedFeature, feStages) {
-    const formsToRender = [html`
-    <h3>Feature metadata</h3>
+    <h3>${name}</h3>
     <section class="flat_form">
-      ${METADATA_FORM_FIELDS.map((field) => html`
+      ${stageFields.map(field => html`
         <chromedash-form-field
           name=${field}
+          stageId=${stageId}
           value=${formattedFeature[field]}>
         </chromedash-form-field>
       `)}
     </section>
-    `];
+    `;
+  }
 
-    let allFormFields = [...METADATA_FORM_FIELDS];
+  /**
+   * Builds the HTML elements for rendering the form sections.
+   * @param {Object} formattedFeature Object describing the feature.
+   * @param {Array} feStages List of stages associated with the feature.
+   *
+   * @return {Array} allFormFields, an array of strings representing all the field
+   *   names that will exist on the page.
+   * @return {Array} formsToRender, All HTML elements to render in the form.
+   */
+  getForms(formattedFeature, feStages) {
+    // All features display the metadata section.
+    let fieldsOnly = this.flattenSections(FLAT_METADATA_FIELDS.sections);
+    const formsToRender = [
+      this.renderStageSection(formattedFeature, FLAT_METADATA_FIELDS.name, 0, fieldsOnly)];
+
+    // Generate a single array with the name of every field that is displayed.
+    let allFormFields = [...fieldsOnly];
+
+
     for (const feStage of feStages) {
-      const processStage = findProcessStage(feStage, this.process);
-      if (!processStage) {
+      const stageForm = this.getStageForm(feStage.stage_type);
+      if (!stageForm) {
         continue;
       }
-      const formFields = this.getStageFormFields(processStage);
-      formsToRender.push(this.renderStageFormFields(
-        formattedFeature, processStage, feStage, formFields));
-      allFormFields = [...allFormFields, ...formFields];
+
+      fieldsOnly = this.flattenSections(stageForm.sections);
+      formsToRender.push(this.renderStageSection(
+        formattedFeature, stageForm.name, feStage.stage_id, fieldsOnly));
+      allFormFields = [...allFormFields, ...fieldsOnly];
     }
 
     return [allFormFields, formsToRender];
@@ -186,11 +194,11 @@ export class ChromedashGuideEditallPage extends LitElement {
 
   renderForm() {
     const formattedFeature = formatFeatureForEdit(this.feature);
-    const stages = this.feature.stages.map(stage => stage.stage_id);
+    const stageIds = this.feature.stages.map(stage => stage.stage_id);
     const [allFormFields, formsToRender] = this.getForms(formattedFeature, this.feature.stages);
     return html`
       <form name="feature_form" method="POST" action="/guide/editall/${this.featureId}">
-        <input type="hidden" name="stages" value="${stages}">
+        <input type="hidden" name="stages" value="${stageIds}">
         <input type="hidden" name="token">
         <input type="hidden" name="nextPage" value=${this.getNextPage()} >
         <input type="hidden" name="form_fields" value=${allFormFields.join(',')}>

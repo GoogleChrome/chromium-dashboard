@@ -1,14 +1,24 @@
 import {
-  FEATURE_TYPES,
-  INTENT_STAGES,
   IMPLEMENTATION_STATUS,
 } from './form-field-enums';
 
 
-const COMMA_SEPARATED_FIELDS = ['owner', 'editors', 'cc_recipients',
-  'spec_mentors', 'search_tags', 'devrel', 'i2e_lgtms', 'i2s_lgtms'];
+const COMMA_SEPARATED_FIELDS = [
+  'owner',
+  'editors',
+  'cc_recipients',
+  'spec_mentors',
+  'search_tags',
+  'devrel',
+  'i2e_lgtms',
+  'i2s_lgtms',
+];
 
-const LINE_SEPARATED_FIELDS = ['explainer_links', 'doc_links', 'sample_links'];
+const LINE_SEPARATED_FIELDS = [
+  'explainer_links',
+  'doc_links',
+  'sample_links',
+];
 
 /* Convert the format of feature object fetched from API into those for edit.
  * The feature object from API is formatted by the feature_to_legacy_json
@@ -85,378 +95,457 @@ export function formatFeatureForEdit(feature) {
   return formattedFeature;
 }
 
-// The following arrays define the list of fields for each guide form.
+/**
+ *
+ * The following objects define the list of fields for each guide form.
+ *
+ * Most stages have flat form definitions, with overriding definitions
+ * for stages that display differently than their flat definitions.
+ */
 
-export const NEW_FEATURE_FORM_FIELDS = [
-  'name', 'summary', 'unlisted', 'breaking_change', 'owner',
-  'editors', 'cc_recipients', 'blink_components', 'category',
-];
+// The fields shown to the user when first creating a new feature.
 // Note: feature_type is done with custom HTML in chromedash-guide-new-page
-
-export const METADATA_FORM_FIELDS = [
-  'name', 'summary', 'unlisted', 'breaking_change', 'owner',
-  'editors', 'cc_recipients', 'category',
-  'feature_type',
-  'search_tags',
-  // Implemention
-  'impl_status_chrome',
+export const NEW_FEATURE_FORM_FIELDS = [
+  'name',
+  'summary',
+  'unlisted',
+  'breaking_change',
+  'owner',
+  'editors',
+  'cc_recipients',
   'blink_components',
-  'bug_url', 'launch_bug_url',
+  'category',
 ];
 
+// The fields shown to the user when verifying the accuracy of a feature.
 export const VERIFY_ACCURACY_FORM_FIELDS = [
-  'summary', 'owner', 'editors', 'cc_recipients', 'impl_status_chrome',
-  'dt_milestone_android_start', 'dt_milestone_desktop_start',
-  'dt_milestone_ios_start', 'ot_milestone_android_start',
-  'ot_milestone_android_end', 'ot_milestone_desktop_start',
-  'ot_milestone_desktop_end', 'ot_milestone_webview_start',
-  'ot_milestone_webview_end', 'shipped_android_milestone',
-  'shipped_ios_milestone', 'shipped_milestone', 'shipped_webview_milestone',
+  'summary',
+  'owner',
+  'editors',
+  'cc_recipients',
+  'impl_status_chrome',
+  'dt_milestone_android_start',
+  'dt_milestone_desktop_start',
+  'dt_milestone_ios_start',
+  'ot_milestone_android_start',
+  'ot_milestone_android_end',
+  'ot_milestone_desktop_start',
+  'ot_milestone_desktop_end',
+  'ot_milestone_webview_start',
+  'ot_milestone_webview_end',
+  'shipped_android_milestone',
+  'shipped_ios_milestone',
+  'shipped_milestone',
+  'shipped_webview_milestone',
   'accurate_as_of',
 ];
 
-const FLAT_METADATA_FIELDS = [
-  // Standardizaton
-  'name', 'summary', 'unlisted', 'breaking_change', 'owner',
-  'editors', 'cc_recipients', 'category',
-  'feature_type',
-  'search_tags',
-  // Implementtion
-  'impl_status_chrome',
-  'blink_components',
-  'bug_url', 'launch_bug_url',
-  'comments',
-];
+// The fields that are available to every feature.
+export const FLAT_METADATA_FIELDS = {
+  name: 'Feature metadata',
+  sections: [
+    // Standardizaton
+    {
+      name: 'Feature metadata',
+      fields: [
+        'name',
+        'summary',
+        'unlisted',
+        'breaking_change',
+        'owner',
+        'editors',
+        'cc_recipients',
+        'category',
+        'feature_type',
+        'search_tags',
+      ],
+    },
+    // Implementation
+    {
+      name: 'Implementation in Chromium',
+      fields: [
+        'impl_status_chrome',
+        'blink_components',
+        'bug_url',
+        'launch_bug_url',
+        'comments',
+      ],
+      isImplementationSection: true,
+    },
+  ],
+};
 
-const FLAT_IDENTIFY_FIELDS = [
-  // Standardization
-  // TODO(jrobbins): display deprecation_motivation instead when deprecating.
-  'motivation', 'initial_public_proposal_url', 'explainer_links',
-  // Implementtion
-  'requires_embedder_support',
-];
+// All fields relevant to the incubate/planning stage.
+const FLAT_INCUBATE_FIELDS = {
+  name: 'Identify the need',
+  sections: [
+    // Standardization
+    {
+      name: 'Identify the need',
+      fields: [
+        'motivation',
+        'initial_public_proposal_url',
+        'explainer_links',
+      ],
+    },
+    // Implementation
+    {
+      name: 'Implementation in Chromium',
+      fields: ['requires_embedder_support'],
+      isImplementationSection: true,
+      implStatusValue: null,
+    },
+  ],
+};
 
+// All fields relevant to the implement/prototyping stage.
+// TODO(jrobbins): advise user to request a tag review
+// TODO(jrobbins): api overview link
+const FLAT_PROTOTYPE_FIELDS = {
+  name: 'Prototype a solution',
+  sections: [
+    // Standardization
+    {
+      name: 'Prototype a solution',
+      fields: [
+        'spec_link',
+        'standard_maturity',
+        'api_spec',
+        'spec_mentors',
+        'intent_to_implement_url',
+      ],
+    },
+  ],
+};
 
-const FLAT_IMPLEMENT_FIELDS = [
-  // Standardization
-  'spec_link', 'standard_maturity', 'api_spec', 'spec_mentors',
-  'intent_to_implement_url',
-];
-
-
-const FLAT_DEV_TRIAL_FIELDS = [
-  // Standardizaton
-  'devtrial_instructions', 'doc_links',
-  'interop_compat_risks',
-  'safari_views', 'safari_views_link', 'safari_views_notes',
-  'ff_views', 'ff_views_link', 'ff_views_notes',
-  'web_dev_views', 'web_dev_views_link', 'web_dev_views_notes',
-  'other_views_notes',
-  'security_review_status', 'privacy_review_status',
-  'ergonomics_risks', 'activation_risks', 'security_risks', 'debuggability',
-  'all_platforms', 'all_platforms_descr', 'wpt', 'wpt_descr',
-  'sample_links', 'devrel', 'ready_for_trial_url',
-
-  // TODO(jrobbins): UA support signals section
-
-  // Implementation
-  'dt_milestone_desktop_start', 'dt_milestone_android_start',
-  'dt_milestone_ios_start',
-  'flag_name',
-];
+// All fields relevant to the dev trials stage.
+const FLAT_DEV_TRIAL_FIELDS = {
+  name: 'Dev trial',
+  sections: [
+    // Standardizaton
+    {
+      name: 'Dev trial',
+      fields: [
+        'devtrial_instructions',
+        'doc_links',
+        'interop_compat_risks',
+        'safari_views',
+        'safari_views_link',
+        'safari_views_notes',
+        'ff_views',
+        'ff_views_link',
+        'ff_views_notes',
+        'web_dev_views',
+        'web_dev_views_link',
+        'web_dev_views_notes',
+        'other_views_notes',
+        'security_review_status',
+        'privacy_review_status',
+        'ergonomics_risks',
+        'activation_risks',
+        'security_risks',
+        'debuggability',
+        'all_platforms',
+        'all_platforms_descr',
+        'wpt',
+        'wpt_descr',
+        'sample_links',
+        'devrel',
+      ],
+    },
+    {
+      name: 'Implementation in Chromium',
+      fields: [
+        'flag_name',
+        'dt_milestone_desktop_start',
+        'dt_milestone_android_start',
+        'dt_milestone_ios_start',
+        'ready_for_trial_url',
+      ],
+      isImplementationSection: true,
+      implStatusValue: IMPLEMENTATION_STATUS.BEHIND_A_FLAG[0],
+    },
+  ],
+};
+// TODO(jrobbins): UA support signals section
 // TODO(jrobbins): api overview link
 
+// All fields relevant to the origin trial stage.
+const FLAT_ORIGIN_TRIAL_FIELDS = {
+  name: 'Origin trial',
+  sections: [
+    // Standardization
+    {
+      name: 'Origin trial',
+      fields: [
+        'experiment_goals',
+        'experiment_risks',
+        'ongoing_constraints',
+        // TODO(jrobbins): display r4dt_url instead when deprecating.
+        'i2e_lgtms',
+        'intent_to_experiment_url',
+        'origin_trial_feedback_url',
 
-const FLAT_ORIGIN_TRIAL_FIELDS = [
-  // Standardization
-  'experiment_goals',
-  'experiment_risks',
-  'experiment_extension_reason', 'ongoing_constraints',
-  // TODO(jrobbins): display r4dt_url instead when deprecating.
-  'intent_to_experiment_url', 'intent_to_extend_experiment_url',
-  'i2e_lgtms',
-  'origin_trial_feedback_url',
-
-  // Implementation
-  'ot_milestone_desktop_start', 'ot_milestone_desktop_end',
-  'ot_milestone_android_start', 'ot_milestone_android_end',
-  'ot_milestone_webview_start', 'ot_milestone_webview_end',
-  'experiment_timeline', // deprecated
-];
-
-
-const FLAT_PREPARE_TO_SHIP_FIELDS = [
-  // Standardization
-  'tag_review', 'tag_review_status',
-  'webview_risks', 'anticipated_spec_changes',
-  'intent_to_ship_url', 'i2s_lgtms',
-  // Implementation
-  'measurement',
-  'non_oss_deps',
-  'shipped_milestone', 'shipped_android_milestone',
-  'shipped_ios_milestone', 'shipped_webview_milestone',
-];
-
-
-const FLAT_SHIP_FIELDS = [
-  // Implementation
-  'finch_url',
-  'shipped_milestone', 'shipped_android_milestone',
-  'shipped_ios_milestone', 'shipped_webview_milestone',
-];
-
-export const FLAT_ENTERPRISE_PREPARE_TO_SHIP = [
-  'rollout_milestone', 'rollout_platforms', 'rollout_details',
-  'enterprise_policies',
-];
-
-export const FLAT_ENTERPRISE_PREPARE_TO_SHIP_NAME = 'Start feature rollout';
-
-// Forms to be used on the "Edit all" page that shows a flat list of fields.
-// [[sectionName, flatFormFields]].
-export const FLAT_FORMS = [
-  ['Feature metadata', FLAT_METADATA_FIELDS],
-  ['Identify the need', FLAT_IDENTIFY_FIELDS],
-  ['Prototype a solution', FLAT_IMPLEMENT_FIELDS],
-  ['Dev trial', FLAT_DEV_TRIAL_FIELDS],
-  ['Origin trial', FLAT_ORIGIN_TRIAL_FIELDS],
-  ['Prepare to ship', FLAT_PREPARE_TO_SHIP_FIELDS],
-  ['Ship', FLAT_SHIP_FIELDS],
-];
-
-export const FLAT_FORMS_BY_FEATURE_TYPE = {
-  [FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0]]: FLAT_FORMS,
-  [FEATURE_TYPES.FEATURE_TYPE_EXISTING_ID[0]]: FLAT_FORMS,
-  [FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]]: [
-    ['Feature metadata', FLAT_METADATA_FIELDS],
-    ['Identify the need', FLAT_IDENTIFY_FIELDS],
-    ['Dev trial', FLAT_DEV_TRIAL_FIELDS],
-    ['Prepare to ship', FLAT_PREPARE_TO_SHIP_FIELDS],
-    ['Ship', FLAT_SHIP_FIELDS],
-  ],
-  [FEATURE_TYPES.FEATURE_TYPE_DEPRECATION_ID[0]]: [
-    ['Feature metadata', FLAT_METADATA_FIELDS],
-    ['Identify the need', FLAT_IDENTIFY_FIELDS],
-    ['Dev trial', FLAT_DEV_TRIAL_FIELDS],
-    ['Origin trial', FLAT_ORIGIN_TRIAL_FIELDS],
-    ['Prepare to ship', FLAT_PREPARE_TO_SHIP_FIELDS],
-    ['Ship', FLAT_SHIP_FIELDS],
-  ],
-  [FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0]]: [
-    ['Feature metadata', FLAT_METADATA_FIELDS],
-    [FLAT_ENTERPRISE_PREPARE_TO_SHIP_NAME, FLAT_ENTERPRISE_PREPARE_TO_SHIP],
-    ['Ship', FLAT_SHIP_FIELDS],
+        // Extension stage-specific fields
+        'experiment_extension_reason',
+        'intent_to_extend_experiment_url',
+      ],
+    },
+    // Implementation
+    {
+      name: 'Implementation in Chromium',
+      fields: [
+        'ot_milestone_desktop_start',
+        'ot_milestone_desktop_end',
+        'ot_milestone_android_start',
+        'ot_milestone_android_end',
+        'ot_milestone_webview_start',
+        'ot_milestone_webview_end',
+        'experiment_timeline', // deprecated
+      ],
+      isImplementationSection: true,
+      implStatusValue: IMPLEMENTATION_STATUS.ORIGIN_TRIAL[0],
+    },
   ],
 };
 
-const NEWFEATURE_INCUBATE = [
-  'motivation', 'initial_public_proposal_url', 'explainer_links',
-  'bug_url', 'launch_bug_url', 'comments',
-];
-
-const IMPLSTATUS_INCUBATE = ['requires_embedder_support'];
-
-const NEWFEATURE_PROTOTYPE = [
-  'spec_link', 'standard_maturity', 'api_spec', 'spec_mentors',
-  'intent_to_implement_url', 'comments',
-];
-// TODO(jrobbins): advise user to request a tag review
-
-const ANY_DEVTRIAL = [
-  'bug_url', 'devtrial_instructions', 'doc_links',
-  'interop_compat_risks',
-  'safari_views', 'safari_views_link', 'safari_views_notes',
-  'ff_views', 'ff_views_link', 'ff_views_notes',
-  'web_dev_views', 'web_dev_views_link', 'web_dev_views_notes',
-  'other_views_notes',
-  'security_review_status', 'privacy_review_status',
-  'ergonomics_risks', 'activation_risks', 'security_risks', 'debuggability',
-  'all_platforms', 'all_platforms_descr', 'wpt', 'wpt_descr',
-  'sample_links', 'devrel', 'ready_for_trial_url', 'comments',
-];
-// TODO(jrobbins): api overview link
-
-const IMPLSTATUS_DEVTRIAL = [
-  'dt_milestone_desktop_start', 'dt_milestone_android_start',
-  'dt_milestone_ios_start',
-  'flag_name',
-];
-
-const NEWFEATURE_EVALREADINESSTOSHIP = [
-  'doc_links', 'tag_review', 'spec_link',
-  'standard_maturity', 'interop_compat_risks',
-  'safari_views', 'safari_views_link', 'safari_views_notes',
-  'ff_views', 'ff_views_link', 'ff_views_notes',
-  'web_dev_views', 'web_dev_views_link', 'web_dev_views_notes',
-  'other_views_notes',
-  'prefixed', 'non_oss_deps', 'comments',
-];
-
-const IMPLSTATUS_ALLMILESTONES = [
-  'shipped_milestone', 'shipped_android_milestone',
-  'shipped_ios_milestone', 'shipped_webview_milestone',
-];
-
-const IMPLSTATUS_EVALREADINESSTOSHIP = [
-  'shipped_milestone', 'shipped_android_milestone',
-  'shipped_ios_milestone', 'shipped_webview_milestone',
-  'measurement',
-];
-
-const NEWFEATURE_ORIGINTRIAL = [
-  'experiment_goals', 'experiment_risks',
-  'experiment_extension_reason', 'ongoing_constraints',
-  'origin_trial_feedback_url', 'intent_to_experiment_url',
-  'intent_to_extend_experiment_url',
-  'i2e_lgtms', 'comments',
-];
-
-const IMPLSTATUS_ORIGINTRIAL = [
-  'ot_milestone_desktop_start', 'ot_milestone_desktop_end',
-  'ot_milestone_android_start', 'ot_milestone_android_end',
-  'ot_milestone_webview_start', 'ot_milestone_webview_end',
-  'experiment_timeline', // deprecated
-];
-
-const MOST_PREPARETOSHIP = [
-  'tag_review', 'tag_review_status', 'non_oss_deps',
-  'webview_risks', 'anticipated_spec_changes', 'origin_trial_feedback_url',
-  'launch_bug_url', 'intent_to_ship_url', 'i2s_lgtms', 'comments', 'finch_url',
-];
-
-const ANY_SHIP = ['launch_bug_url', 'finch_url', 'comments'];
-
-const EXISTING_PROTOTYPE = [
-  'owner', 'editors', 'cc_recipients', 'blink_components', 'motivation',
-  'explainer_links', 'spec_link', 'standard_maturity', 'api_spec', 'bug_url',
-  'launch_bug_url', 'intent_to_implement_url', 'comments',
-];
-
-const EXISTING_ORIGINTRIAL = [
-  'experiment_goals', 'experiment_risks',
-  'experiment_extension_reason', 'ongoing_constraints',
-  'intent_to_experiment_url', 'intent_to_extend_experiment_url',
-  'i2e_lgtms', 'origin_trial_feedback_url', 'comments',
-];
-
-const PSA_IMPLEMENT = ['motivation', 'spec_link', 'standard_maturity', 'comments'];
-// TODO(jrobbins): advise user to request a tag review
-
-const PAS_PREPARETOSHIP = [
-  'tag_review', 'intent_to_implement_url', 'origin_trial_feedback_url',
-  'launch_bug_url', 'intent_to_ship_url', 'comments',
-];
-
-const DEPRECATION_IMPLEMENT = ['deprecation_motivation', 'spec_link', 'comments'];
-
-// Note: Even though this is similar to another form, it is likely to change.
-// const DEPRECATION_PREPARETOSHIP = [
-//   'impl_status_chrome', 'tag_review',
-//   'webview_risks',
-//   'intent_to_implement_url', 'origin_trial_feedback_url',
-//   'launch_bug_url', 'comments'
-// ];
-
-// Note: Even though this is similar to another form, it is likely to change.
-const DEPRECATION_DEPRECATIONTRIAL = [
-  'experiment_goals', 'experiment_risks',
-  'ot_milestone_desktop_start', 'ot_milestone_desktop_end',
-  'ot_milestone_android_start', 'ot_milestone_android_end',
-  'ot_milestone_webview_start', 'ot_milestone_webview_end',
-  'experiment_timeline', // deprecated
-  'experiment_extension_reason', 'ongoing_constraints',
-  'r4dt_url', // map to name="intent_to_experiment_url" field upon form submission
-  'intent_to_extend_experiment_url',
-  'r4dt_lgtms', // map to name="i2e_lgtms" field upon form submission
-  'origin_trial_feedback_url', 'comments',
-];
-
-// Note: Even though this is similar to another form, it is likely to change.
-const DEPRECATION_PREPARETOSHIP = [
-  'impl_status_chrome', 'intent_to_ship_url', 'i2s_lgtms',
-  'launch_bug_url', 'comments',
-];
-
-const DEPRECATION_REMOVED = ['comments'];
-
-const ENTERPRISE_PREPARE_TO_SHIP = [
-  'rollout_milestone', 'rollout_platforms', 'rollout_details',
-  'enterprise_policies',
-];
-
-// Forms to be used for each stage of each process.
-// { feature_type_id: { stage_id: stage_specific_form} }
-export const STAGE_FORMS = {
-  [FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0]]: {
-    [INTENT_STAGES.INTENT_INCUBATE[0]]: NEWFEATURE_INCUBATE,
-    [INTENT_STAGES.INTENT_IMPLEMENT[0]]: NEWFEATURE_PROTOTYPE,
-    [INTENT_STAGES.INTENT_EXPERIMENT[0]]: ANY_DEVTRIAL,
-    [INTENT_STAGES.INTENT_IMPLEMENT_SHIP[0]]: NEWFEATURE_EVALREADINESSTOSHIP,
-    [INTENT_STAGES.INTENT_EXTEND_TRIAL[0]]: NEWFEATURE_ORIGINTRIAL,
-    [INTENT_STAGES.INTENT_SHIP[0]]: MOST_PREPARETOSHIP,
-    [INTENT_STAGES.INTENT_ROLLOUT[0]]: ENTERPRISE_PREPARE_TO_SHIP,
-    [INTENT_STAGES.INTENT_SHIPPED[0]]: ANY_SHIP,
-  },
-
-  [FEATURE_TYPES.FEATURE_TYPE_EXISTING_ID[0]]: {
-    [INTENT_STAGES.INTENT_IMPLEMENT[0]]: EXISTING_PROTOTYPE,
-    [INTENT_STAGES.INTENT_EXPERIMENT[0]]: ANY_DEVTRIAL,
-    [INTENT_STAGES.INTENT_EXTEND_TRIAL[0]]: EXISTING_ORIGINTRIAL,
-    [INTENT_STAGES.INTENT_SHIP[0]]: MOST_PREPARETOSHIP,
-    [INTENT_STAGES.INTENT_ROLLOUT[0]]: ENTERPRISE_PREPARE_TO_SHIP,
-    [INTENT_STAGES.INTENT_SHIPPED[0]]: ANY_SHIP,
-  },
-
-  [FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]]: {
-    [INTENT_STAGES.INTENT_IMPLEMENT[0]]: PSA_IMPLEMENT,
-    [INTENT_STAGES.INTENT_EXPERIMENT[0]]: ANY_DEVTRIAL,
-    [INTENT_STAGES.INTENT_SHIP[0]]: PAS_PREPARETOSHIP,
-    [INTENT_STAGES.INTENT_ROLLOUT[0]]: ENTERPRISE_PREPARE_TO_SHIP,
-    [INTENT_STAGES.INTENT_SHIPPED[0]]: ANY_SHIP,
-  },
-
-  [FEATURE_TYPES.FEATURE_TYPE_DEPRECATION_ID[0]]: {
-    [INTENT_STAGES.INTENT_IMPLEMENT[0]]: DEPRECATION_IMPLEMENT,
-    [INTENT_STAGES.INTENT_EXPERIMENT[0]]: ANY_DEVTRIAL,
-    [INTENT_STAGES.INTENT_EXTEND_TRIAL[0]]: DEPRECATION_DEPRECATIONTRIAL,
-    [INTENT_STAGES.INTENT_SHIP[0]]: DEPRECATION_PREPARETOSHIP,
-    [INTENT_STAGES.INTENT_ROLLOUT[0]]: ENTERPRISE_PREPARE_TO_SHIP,
-    [INTENT_STAGES.INTENT_REMOVED[0]]: DEPRECATION_REMOVED,
-  },
-
-  [FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0]]: {
-    [INTENT_STAGES.INTENT_ROLLOUT[0]]: ENTERPRISE_PREPARE_TO_SHIP,
-    [INTENT_STAGES.INTENT_SHIPPED[0]]: ANY_SHIP,
-  },
+const FLAT_EVAL_READINESS_TO_SHIP_FIELDS = {
+  name: 'Evaluate readiness to ship',
+  sections: [
+    {
+      name: 'Evaluate readiness to ship',
+      fields: [
+        'prefixed',
+      ],
+    },
+  ],
 };
 
-export const IMPL_STATUS_FORMS = {
-  [INTENT_STAGES.INTENT_INCUBATE[0]]:
-    ['', IMPLSTATUS_INCUBATE],
-  [INTENT_STAGES.INTENT_EXPERIMENT[0]]:
-    [IMPLEMENTATION_STATUS.BEHIND_A_FLAG[0], IMPLSTATUS_DEVTRIAL],
-  [INTENT_STAGES.INTENT_EXTEND_TRIAL[0]]:
-    [IMPLEMENTATION_STATUS.ORIGIN_TRIAL[0], IMPLSTATUS_ORIGINTRIAL],
-  [INTENT_STAGES.INTENT_IMPLEMENT_SHIP[0]]:
-    ['', IMPLSTATUS_EVALREADINESSTOSHIP],
-  [INTENT_STAGES.INTENT_SHIP[0]]:
-    [IMPLEMENTATION_STATUS.ENABLED_BY_DEFAULT[0], IMPLSTATUS_ALLMILESTONES],
-  [INTENT_STAGES.INTENT_ROLLOUT[0]]:
-      [IMPLEMENTATION_STATUS.ENABLED_BY_DEFAULT[0], IMPLSTATUS_ALLMILESTONES],
-  [INTENT_STAGES.INTENT_SHIPPED[0]]:
-    [IMPLEMENTATION_STATUS.ENABLED_BY_DEFAULT[0], IMPLSTATUS_ALLMILESTONES],
-  [INTENT_STAGES.INTENT_REMOVED[0]]:
-    [IMPLEMENTATION_STATUS.REMOVED[0], IMPLSTATUS_ALLMILESTONES],
+// All fields relevant to the prepare to ship stage.
+const FLAT_PREPARE_TO_SHIP_FIELDS = {
+  name: 'Prepare to ship',
+  sections: [
+    {
+      name: 'Prepare to ship',
+      fields: [
+        // Standardization
+        'tag_review',
+        'tag_review_status',
+        'webview_risks',
+        'anticipated_spec_changes',
+        'i2s_lgtms',
+        // Implementation
+        'measurement',
+        'non_oss_deps',
+
+        // Stage-specific fields
+        'finch_url',
+        'intent_to_ship_url',
+
+      ],
+    },
+    {
+      name: 'Implementation in Chromium',
+      fields: [
+        'shipped_milestone',
+        'shipped_android_milestone',
+        'shipped_ios_milestone',
+        'shipped_webview_milestone',
+      ],
+      isImplementationSection: true,
+      implStatusValue: IMPLEMENTATION_STATUS.ENABLED_BY_DEFAULT[0],
+    },
+  ],
 };
 
-export const FLAT_FORMS_BY_INTENT_TYPE = {
-  [INTENT_STAGES.INTENT_INCUBATE[0]]: NEWFEATURE_INCUBATE,
-  [INTENT_STAGES.INTENT_IMPLEMENT[0]]: FLAT_IMPLEMENT_FIELDS,
-  [INTENT_STAGES.INTENT_EXPERIMENT[0]]: FLAT_DEV_TRIAL_FIELDS,
-  [INTENT_STAGES.INTENT_EXTEND_TRIAL[0]]: FLAT_ORIGIN_TRIAL_FIELDS,
-  [INTENT_STAGES.INTENT_IMPLEMENT_SHIP[0]]: NEWFEATURE_EVALREADINESSTOSHIP,
-  [INTENT_STAGES.INTENT_SHIP[0]]: FLAT_PREPARE_TO_SHIP_FIELDS,
-  [INTENT_STAGES.INTENT_ROLLOUT[0]]: ENTERPRISE_PREPARE_TO_SHIP,
-  [INTENT_STAGES.INTENT_SHIPPED[0]]: FLAT_SHIP_FIELDS,
-  [INTENT_STAGES.INTENT_REMOVED[0]]: DEPRECATION_REMOVED,
+// All fields relevant to the enterprise prepare to ship stage.
+export const FLAT_ENTERPRISE_PREPARE_TO_SHIP_FIELDS = {
+  name: 'Start feature rollout',
+  sections: [
+    {
+      name: 'Start feature rollout',
+      fields: [
+        'rollout_milestone',
+        'rollout_platforms',
+        'rollout_details',
+        'enterprise_policies',
+      ],
+    },
+  ],
+};
+
+/**
+ * The following definitions override the flat form definitions for
+ * specific stage types.
+ */
+
+
+const PSA_IMPLEMENT_FIELDS = {
+  name: 'Start prototyping',
+  sections: [
+    // Standardization
+    {
+      name: 'Start prototyping',
+      fields: [
+        'spec_link',
+        'standard_maturity',
+      ],
+    },
+  ],
+};
+
+const PSA_PREPARE_TO_SHIP_FIELDS = {
+  name: 'Prepare to ship',
+  sections: [
+    // Standardization
+    {
+      name: 'Prepare to ship',
+      fields: [
+        'tag_review',
+        'intent_to_ship_url',
+      ],
+    },
+    // Implementation
+    {
+      name: 'Implementation in Chromium',
+      fields: [
+        'shipped_milestone',
+        'shipped_android_milestone',
+        'shipped_ios_milestone',
+        'shipped_webview_milestone',
+      ],
+      isImplementationSection: true,
+      implStatusValue: IMPLEMENTATION_STATUS.ENABLED_BY_DEFAULT[0],
+    },
+  ],
+};
+
+// Note: Even though this is similar to another form, it is likely to change.
+const DEPRECATION_ORIGIN_TRIAL_FIELDS = {
+  name: 'Origin trial',
+  sections: [
+    {
+      name: 'Origin trial',
+      fields: [
+        'experiment_goals',
+        'experiment_risks',
+        'experiment_extension_reason',
+        'ongoing_constraints',
+        'r4dt_url', // map to name="intent_to_experiment_url" field upon form submission
+        'intent_to_extend_experiment_url',
+        'r4dt_lgtms', // map to name="i2e_lgtms" field upon form submission
+        'origin_trial_feedback_url',
+      ],
+    },
+    // Implementation
+    {
+      name: 'Implementation in Chromium',
+      fields: [
+        'ot_milestone_desktop_start',
+        'ot_milestone_desktop_end',
+        'ot_milestone_android_start',
+        'ot_milestone_android_end',
+        'ot_milestone_webview_start',
+        'ot_milestone_webview_end',
+        'experiment_timeline', // deprecated
+      ],
+      isImplementationSection: true,
+      implStatusValue: IMPLEMENTATION_STATUS.ORIGIN_TRIAL[0],
+    },
+  ],
+};
+
+// Note: Even though this is similar to another form, it is likely to change.
+const DEPRECATION_PREPARE_TO_SHIP_FIELDS = {
+  name: 'Prepare to ship',
+  sections: [
+    // Standardization
+    {
+      name: 'Prepare to ship',
+      fields: [
+        'intent_to_ship_url',
+        'i2s_lgtms',
+      ],
+    },
+    // Implementation
+    {
+      name: 'Implementation in Chromium',
+      fields: [
+        'shipped_milestone',
+        'shipped_android_milestone',
+        'shipped_ios_milestone',
+        'shipped_webview_milestone',
+      ],
+      isImplementationSection: true,
+      implStatusValue: IMPLEMENTATION_STATUS.ENABLED_BY_DEFAULT[0],
+    },
+  ],
+};
+
+
+// Stage_type values for each process.  Even though some of the stages
+// in these processes are similar to each other, they have distinct enum
+// values so that they can have different gates.
+
+// For incubating new standard features: the "blink" process.
+const STAGE_BLINK_INCUBATE = 110;
+const STAGE_BLINK_PROTOTYPE = 120;
+const STAGE_BLINK_DEV_TRIAL = 130;
+const STAGE_BLINK_EVAL_READINESS = 140;
+const STAGE_BLINK_ORIGIN_TRIAL = 150;
+// const STAGE_BLINK_EXTEND_ORIGIN_TRIAL = 151;
+const STAGE_BLINK_SHIPPING = 160;
+// Note: We might define post-ship support stage(s) later.
+
+// For implementing existing standards: the "fast track" process.
+const STAGE_FAST_PROTOTYPE = 220;
+const STAGE_FAST_DEV_TRIAL = 230;
+const STAGE_FAST_ORIGIN_TRIAL = 250;
+// const STAGE_FAST_EXTEND_ORIGIN_TRIAL = 251;
+const STAGE_FAST_SHIPPING = 260;
+
+// For developer-facing code changes not impacting a standard: the "PSA" process.
+const STAGE_PSA_IMPLEMENT_FIELDS = 320;
+const STAGE_PSA_DEV_TRIAL = 330;
+const STAGE_PSA_SHIPPING = 360;
+
+// For deprecating a feature: the "DEP" process.
+// const STAGE_DEP_PLAN = 410;
+const STAGE_DEP_DEV_TRIAL = 430;
+const STAGE_DEP_DEPRECATION_TRIAL = 450;
+// const STAGE_DEP_EXTEND_DEPRECATION_TRIAL = 451;
+const STAGE_DEP_SHIPPING = 460;
+// const STAGE_DEP_REMOVE_CODE = 470;
+
+// Note STAGE_* enum values 500-999 are reseverd for future WP processes.
+
+// Define enterprise feature processes.
+// Note: This stage can ge added to any feature that is following any process.
+const STAGE_ENT_ROLLOUT = 1061;
+const STAGE_ENT_SHIPPED = 1070;
+
+// TODO(danielrsmith): Differentiate origin trial and trial extension fields.
+export const FORMS_BY_STAGE_TYPE = {
+  [STAGE_BLINK_INCUBATE]: FLAT_INCUBATE_FIELDS,
+  [STAGE_BLINK_PROTOTYPE]: FLAT_PROTOTYPE_FIELDS,
+  [STAGE_BLINK_DEV_TRIAL]: FLAT_DEV_TRIAL_FIELDS,
+  [STAGE_BLINK_EVAL_READINESS]: FLAT_EVAL_READINESS_TO_SHIP_FIELDS,
+  [STAGE_BLINK_ORIGIN_TRIAL]: FLAT_ORIGIN_TRIAL_FIELDS,
+  [STAGE_BLINK_SHIPPING]: FLAT_PREPARE_TO_SHIP_FIELDS,
+
+  [STAGE_FAST_PROTOTYPE]: FLAT_PROTOTYPE_FIELDS,
+  [STAGE_FAST_DEV_TRIAL]: FLAT_DEV_TRIAL_FIELDS,
+  [STAGE_FAST_ORIGIN_TRIAL]: FLAT_ORIGIN_TRIAL_FIELDS,
+  [STAGE_FAST_SHIPPING]: FLAT_PREPARE_TO_SHIP_FIELDS,
+
+  [STAGE_PSA_IMPLEMENT_FIELDS]: PSA_IMPLEMENT_FIELDS,
+  [STAGE_PSA_DEV_TRIAL]: FLAT_DEV_TRIAL_FIELDS,
+  [STAGE_PSA_SHIPPING]: PSA_PREPARE_TO_SHIP_FIELDS,
+
+  [STAGE_DEP_DEV_TRIAL]: FLAT_DEV_TRIAL_FIELDS,
+  [STAGE_DEP_DEPRECATION_TRIAL]: DEPRECATION_ORIGIN_TRIAL_FIELDS,
+  [STAGE_DEP_SHIPPING]: DEPRECATION_PREPARE_TO_SHIP_FIELDS,
+
+  [STAGE_ENT_ROLLOUT]: FLAT_ENTERPRISE_PREPARE_TO_SHIP_FIELDS,
+  [STAGE_ENT_SHIPPED]: FLAT_PREPARE_TO_SHIP_FIELDS,
 };
