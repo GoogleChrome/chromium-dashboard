@@ -173,7 +173,7 @@ export class ChromedashGuideEditallPage extends LitElement {
     const formsToRender = [
       this.renderStageSection(formattedFeature, FLAT_METADATA_FIELDS.name, 0, fieldsOnly)];
 
-    // Generate a single array of every field that is displayed.
+    // Generate a single array with the name of every field that is displayed.
     let allFormFields = [...fieldsOnly];
 
 
