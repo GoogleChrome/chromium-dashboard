@@ -97,7 +97,7 @@ export function formatFeatureForEdit(feature) {
 
 /**
  *
- * The following arrays define the list of fields for each guide form.
+ * The following objects define the list of fields for each guide form.
  *
  * Most stages have flat form definitions, with overriding definitions
  * for stages that display differently than their flat definitions.

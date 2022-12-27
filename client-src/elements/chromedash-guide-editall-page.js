@@ -158,6 +158,15 @@ export class ChromedashGuideEditallPage extends LitElement {
     `;
   }
 
+  /**
+   * Builds the HTML elements for rendering the form sections.
+   * @param {Object} formattedFeature Object describing the feature.
+   * @param {Array} feStages List of stages associated with the feature.
+   *
+   * @return {Array} allFormFields, an array of strings representing all the field
+   *   names that will exist on the page.
+   * @return {Array} formsToRender, All HTML elements to render in the form.
+   */
   getForms(formattedFeature, feStages) {
     // All features display the metadata section.
     let fieldsOnly = this.flattenSections(FLAT_METADATA_FIELDS.sections);
