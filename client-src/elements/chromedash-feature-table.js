@@ -65,6 +65,10 @@ class ChromedashFeatureTable extends LitElement {
     });
   }
 
+  refetch() {
+    this.fetchFeatures();
+  }
+
   loadGateData() {
     for (const feature of this.features) {
       window.csClient.getGates(feature.id).then(res => {

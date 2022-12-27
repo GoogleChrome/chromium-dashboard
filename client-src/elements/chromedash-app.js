@@ -305,6 +305,15 @@ class ChromedashApp extends LitElement {
     return url;
   }
 
+  /* The user edited something, so tell components to refetch data. */
+  refetch() {
+    if (this.pageComponent?.refetch) {
+      this.pageComponent.refetch();
+    }
+    if (this.gateColumnRef.value?.refetch) {
+      this.gateColumnRef.value.refetch();
+    }
+  }
 
   renderContentAndSidebar() {
     const wide = (this.pageComponent &&
@@ -318,7 +327,9 @@ class ChromedashApp extends LitElement {
     } else {
       return html`
         <div id="content-component-wrapper"
-          @show-gate-column=${(e) => this.handleShowGateColumn(e)}>
+          @show-gate-column=${this.handleShowGateColumn}
+          @refetch-needed=${this.refetch}
+          >
           ${this.pageComponent}
         </div>
         <div id="content-sidebar-space">
@@ -326,7 +337,9 @@ class ChromedashApp extends LitElement {
             <div id="sidebar-content">
               <chromedash-gate-column
                 .user=${this.user} ${ref(this.gateColumnRef)}
-                @close=${() => this.hideSidebar()}>
+                @close=${this.hideSidebar}
+                @refetch-needed=${this.refetch}
+                >
               </chromedash-gate-column>
             </div>
           </div>
