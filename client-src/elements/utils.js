@@ -43,3 +43,9 @@ export function findProcessStage(feStage, process) {
   }
   return null;
 }
+
+
+/* Given a stage form definition, return a flat array of the fields associated with the stage. */
+export function flattenSections(stage) {
+  return stage.sections.reduce((combined, section) => [...combined, ...section.fields], []);
+}

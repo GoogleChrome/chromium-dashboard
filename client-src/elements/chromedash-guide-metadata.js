@@ -1,6 +1,6 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
-import {autolink} from './utils.js';
+import {autolink, flattenSections} from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
 import {formatFeatureForEdit, FLAT_METADATA_FIELDS} from './form-definition';
@@ -216,15 +216,16 @@ export class ChromedashGuideMetadata extends LitElement {
 
   renderEditForm() {
     const formattedFeature = formatFeatureForEdit(this.feature);
+    const metadataFields = flattenSections(FLAT_METADATA_FIELDS);
     return html`
       <div id="metadata-editing">
         <form name="overview_form" method="POST" action="/guide/stage/${this.feature.id}/0">
           <input type="hidden" name="token">
           <input type="hidden" name="form_fields"
-             value="${FLAT_METADATA_FIELDS.join(',')}">
+             value="${metadataFields.join(',')}">
 
           <chromedash-form-table ${ref(this.registerFormSubmitHandler)}>
-            ${FLAT_METADATA_FIELDS.map((field) => html`
+            ${metadataFields.map((field) => html`
               <chromedash-form-field
                 name=${field}
                 value=${formattedFeature[field]}>
