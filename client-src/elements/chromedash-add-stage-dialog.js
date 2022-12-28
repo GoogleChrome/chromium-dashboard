@@ -3,6 +3,7 @@ import '@polymer/iron-icon';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {CREATEABLE_STAGES, FORMS_BY_STAGE_TYPE} from './form-definition.js';
 
+
 let AddStageDialogEl;
 
 
@@ -16,6 +17,7 @@ export async function openAddStageDialog(featureId, featureType) {
   }
   AddStageDialogEl.show();
 }
+
 
 class ChromedashAddStageDialog extends LitElement {
   static get properties() {
@@ -58,6 +60,7 @@ class ChromedashAddStageDialog extends LitElement {
   renderSelectMenuItems() {
     const menuItems = [];
     for (const stageType of CREATEABLE_STAGES[this.featureType]) {
+      // Get the name of the stage from the form definition based on the stage type.
       const stageInfo = FORMS_BY_STAGE_TYPE[stageType];
       menuItems.push(html`
       <sl-menu-item value="${stageType}">
@@ -116,5 +119,6 @@ class ChromedashAddStageDialog extends LitElement {
     `;
   }
 }
+
 
 customElements.define('chromedash-add-stage-dialog', ChromedashAddStageDialog);
