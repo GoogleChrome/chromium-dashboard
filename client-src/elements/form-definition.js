@@ -220,7 +220,7 @@ const FLAT_PROTOTYPE_FIELDS = {
 
 // All fields relevant to the dev trials stage.
 const FLAT_DEV_TRIAL_FIELDS = {
-  name: 'Dev trial',
+  name: 'Dev trials and iterate on design',
   sections: [
     // Standardizaton
     {
@@ -253,6 +253,7 @@ const FLAT_DEV_TRIAL_FIELDS = {
         'devrel',
       ],
     },
+    // Implementation
     {
       name: 'Implementation in Chromium',
       fields: [
@@ -420,6 +421,56 @@ const PSA_PREPARE_TO_SHIP_FIELDS = {
   ],
 };
 
+const DEPRECATION_DEV_TRIAL_FIELDS = {
+  name: 'Dev trial of deprecation',
+  sections: [
+    // Standardizaton
+    {
+      name: 'Dev trial of deprecation',
+      fields: [
+        'devtrial_instructions',
+        'doc_links',
+        'interop_compat_risks',
+        'safari_views',
+        'safari_views_link',
+        'safari_views_notes',
+        'ff_views',
+        'ff_views_link',
+        'ff_views_notes',
+        'web_dev_views',
+        'web_dev_views_link',
+        'web_dev_views_notes',
+        'other_views_notes',
+        'security_review_status',
+        'privacy_review_status',
+        'ergonomics_risks',
+        'activation_risks',
+        'security_risks',
+        'debuggability',
+        'all_platforms',
+        'all_platforms_descr',
+        'wpt',
+        'wpt_descr',
+        'sample_links',
+        'devrel',
+      ],
+    },
+    // Implementation
+    {
+      name: 'Implementation in Chromium',
+      fields: [
+        'flag_name',
+        'dt_milestone_desktop_start',
+        'dt_milestone_android_start',
+        'dt_milestone_ios_start',
+        'ready_for_trial_url',
+      ],
+      isImplementationSection: true,
+      implStatusValue: IMPLEMENTATION_STATUS.BEHIND_A_FLAG[0],
+    },
+  ],
+};
+
 // Note: Even though this is similar to another form, it is likely to change.
 const DEPRECATION_ORIGIN_TRIAL_FIELDS = {
   name: 'Origin trial',
@@ -542,7 +593,7 @@ export const FORMS_BY_STAGE_TYPE = {
   [STAGE_PSA_DEV_TRIAL]: FLAT_DEV_TRIAL_FIELDS,
   [STAGE_PSA_SHIPPING]: PSA_PREPARE_TO_SHIP_FIELDS,
 
-  [STAGE_DEP_DEV_TRIAL]: FLAT_DEV_TRIAL_FIELDS,
+  [STAGE_DEP_DEV_TRIAL]: DEPRECATION_DEV_TRIAL_FIELDS,
   [STAGE_DEP_DEPRECATION_TRIAL]: DEPRECATION_ORIGIN_TRIAL_FIELDS,
   [STAGE_DEP_SHIPPING]: DEPRECATION_PREPARE_TO_SHIP_FIELDS,
 
