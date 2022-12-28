@@ -169,7 +169,7 @@ class ChromedashApp extends LitElement {
       this.pageComponent.contextLink = this.contextLink;
       this.currentPage = ctx.path;
       this.pageComponent.appTitle = this.appTitle;
-      if (this.pageComponent.featureId != this.gateColumnRef.value.feature?.id) {
+      if (this.pageComponent.featureId != this.gateColumnRef.value?.feature?.id) {
         this.hideSidebar();
       }
     });

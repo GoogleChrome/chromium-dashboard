@@ -115,7 +115,7 @@ class StagesAPI(basehandlers.APIHandler):
     if use_stage_type:
       if 'stage_type' not in body:
         self.abort(404, msg='Stage type not specified.')
-      stage.stage_type = body['stage_type']
+      stage.stage_type = int(body['stage_type'])
     s_type = stage.stage_type
 
     for field in self.GENERAL_FIELDS:
