@@ -143,12 +143,14 @@ class ChromedashApp extends LitElement {
       this.pageComponent.user = this.user;
       this.contextLink = ctx.path;
       this.currentPage = ctx.path;
+      this.hideSidebar();
     });
     page('/myfeatures', (ctx) => {
       this.pageComponent = document.createElement('chromedash-myfeatures-page');
       this.pageComponent.user = this.user;
       this.contextLink = ctx.path;
       this.currentPage = ctx.path;
+      this.hideSidebar();
     });
     page('/newfeatures', (ctx) => {
       this.pageComponent = document.createElement('chromedash-all-features-page');
@@ -158,6 +160,7 @@ class ChromedashApp extends LitElement {
       this.currentPage = ctx.path;
       this.pageComponent.addEventListener('pagination', this.handlePagination.bind(this));
       this.pageComponent.addEventListener('search', this.handleSearchQuery.bind(this));
+      this.hideSidebar();
     });
     page('/feature/:featureId(\\d+)', (ctx) => {
       this.pageComponent = document.createElement('chromedash-feature-page');
@@ -166,27 +169,34 @@ class ChromedashApp extends LitElement {
       this.pageComponent.contextLink = this.contextLink;
       this.currentPage = ctx.path;
       this.pageComponent.appTitle = this.appTitle;
+      if (this.pageComponent.featureId != this.gateColumnRef.value.feature?.id) {
+        this.hideSidebar();
+      }
     });
     page('/guide/new', () => {
       this.pageComponent = document.createElement('chromedash-guide-new-page');
       this.pageComponent.userEmail = this.user.email;
+      this.hideSidebar();
     });
     page('/guide/edit/:featureId(\\d+)', (ctx) => {
       this.pageComponent = document.createElement('chromedash-guide-edit-page');
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.appTitle = this.appTitle;
       this.currentPage = ctx.path;
+      this.hideSidebar();
     });
     page('/guide/editall/:featureId(\\d+)', (ctx) => {
       this.pageComponent = document.createElement('chromedash-guide-editall-page');
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.appTitle = this.appTitle;
       this.pageComponent.nextPage = this.currentPage;
+      this.hideSidebar();
     });
     page('/guide/verify_accuracy/:featureId(\\d+)', (ctx) => {
       this.pageComponent = document.createElement('chromedash-guide-verify-accuracy-page');
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.appTitle = this.appTitle;
+      this.hideSidebar();
     });
     page('/guide/stage/:featureId(\\d+)/:intentStage(\\d+)', (ctx) => {
       this.pageComponent = document.createElement('chromedash-guide-stage-page');
@@ -194,6 +204,7 @@ class ChromedashApp extends LitElement {
       this.pageComponent.intentStage = parseInt(ctx.params.intentStage);
       this.pageComponent.nextPage = this.currentPage;
       this.pageComponent.appTitle = this.appTitle;
+      this.hideSidebar();
     });
     page('/guide/stage/:featureId(\\d+)/:intentStage(\\d+)/:stageId(\\d+)', (ctx) => {
       this.pageComponent = document.createElement('chromedash-guide-stage-page');
@@ -202,10 +213,12 @@ class ChromedashApp extends LitElement {
       this.pageComponent.intentStage = parseInt(ctx.params.intentStage);
       this.pageComponent.nextPage = this.currentPage;
       this.pageComponent.appTitle = this.appTitle;
+      this.hideSidebar();
     });
     page('/settings', (ctx) => {
       this.pageComponent = document.createElement('chromedash-settings-page');
       this.currentPage = ctx.path;
+      this.hideSidebar();
     });
     page('/metrics/:type/:view', (ctx) => {
       // if already on this page and only the hash changes, don't create a new element
@@ -214,6 +227,7 @@ class ChromedashApp extends LitElement {
       this.pageComponent.type = ctx.params.type;
       this.pageComponent.view = ctx.params.view;
       this.currentPage = ctx.path;
+      this.hideSidebar();
     });
     page('/metrics/:type/timeline/:view/:bucketId', (ctx) => {
       this.pageComponent = document.createElement('chromedash-timeline-page');
@@ -221,6 +235,7 @@ class ChromedashApp extends LitElement {
       this.pageComponent.view = ctx.params.view;
       this.pageComponent.selectedBucketId = ctx.params.bucketId;
       this.currentPage = ctx.path;
+      this.hideSidebar();
     });
     page('/metrics', () => page.redirect('/metrics/css/popularity'));
     page('/metrics/css', () => page.redirect('/metrics/css/popularity'));
@@ -233,6 +248,7 @@ class ChromedashApp extends LitElement {
       this.pageComponent.user = this.user;
       this.contextLink = ctx.path;
       this.currentPage = ctx.path;
+      this.hideSidebar();
     });
     page.start();
   }
