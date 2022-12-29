@@ -1,6 +1,6 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
-import {showToastMessage} from './utils.js';
+import {showToastMessage, flattenSections} from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
 import {
@@ -138,11 +138,6 @@ export class ChromedashGuideEditallPage extends LitElement {
     return FORMS_BY_STAGE_TYPE[stageType] || null;
   }
 
-  // Flatten the sections to create a single array with all fields.
-  flattenSections(stageSections) {
-    return stageSections.reduce((combined, section) => [...combined, ...section.fields], []);
-  }
-
   renderStageSection(formattedFeature, name, feStage, stageFields) {
     if (!stageFields) return nothing;
 
@@ -186,7 +181,7 @@ export class ChromedashGuideEditallPage extends LitElement {
    */
   getForms(formattedFeature, feStages) {
     // All features display the metadata section.
-    let fieldsOnly = this.flattenSections(FLAT_METADATA_FIELDS.sections);
+    let fieldsOnly = flattenSections(FLAT_METADATA_FIELDS);
     const formsToRender = [
       this.renderStageSection(formattedFeature, FLAT_METADATA_FIELDS.name, {}, fieldsOnly)];
 
@@ -200,7 +195,7 @@ export class ChromedashGuideEditallPage extends LitElement {
         continue;
       }
 
-      fieldsOnly = this.flattenSections(stageForm.sections);
+      fieldsOnly = flattenSections(stageForm);
       formsToRender.push(this.renderStageSection(
         formattedFeature, stageForm.name, feStage, fieldsOnly));
       allFormFields = [...allFormFields, ...fieldsOnly];
