@@ -501,14 +501,21 @@ export class ChromedashGateColumn extends LitElement {
         size="small"
         >Post</sl-button>
     `;
+    const checkboxLabel = (
+      this.stage.intent_thread_url ?
+        html`
+            Also post to
+              <a href=${this.stage.intent_thread_url} target="_blank"
+                 >intent thread</a>
+          ` : 'Also post to intent thread');
     const postToThreadCheckbox = (
       this.gateHasIntentThread() ?
         html`
-            <sl-checkbox
-              ${ref(this.postToThreadRef)}
-              ?disabled=${!this.canPostTo(this.stage.intent_thread_url)}
-              size="small"
-              >Also post to intent thread</sl-checkbox>
+          <sl-checkbox
+            ${ref(this.postToThreadRef)}
+            ?disabled=${!this.canPostTo(this.stage.intent_thread_url)}
+            size="small"
+            >${checkboxLabel}</sl-checkbox>
           ` :
         nothing);
 
