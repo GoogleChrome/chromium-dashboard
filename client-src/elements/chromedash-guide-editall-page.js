@@ -152,20 +152,24 @@ export class ChromedashGuideEditallPage extends LitElement {
     }
     const sectionName = `${name}${numberDifferentiation}`;
 
-    let value = formattedFeature[field];
-    if (STAGE_SPECIFIC_FIELDS.has(field)) {
-      value = feStage[field];
-    }
-    return html`
-    <h3>${sectionName}</h3>
-    <section class="flat_form">
-      ${stageFields.map(field => html`
+    const formFieldEls = stageFields.map(field => {
+      let value = formattedFeature[field];
+      if (STAGE_SPECIFIC_FIELDS.has(field)) {
+        value = feStage[field];
+      }
+      return html`
         <chromedash-form-field
           name=${field}
           stageId=${feStage.id}
           value=${value}>
         </chromedash-form-field>
-      `)}
+      `;
+    });
+
+    return html`
+    <h3>${sectionName}</h3>
+    <section class="flat_form">
+      ${formFieldEls}
     </section>
     `;
   }
@@ -207,7 +211,6 @@ export class ChromedashGuideEditallPage extends LitElement {
   renderForm() {
     const formattedFeature = formatFeatureForEdit(this.feature);
     const stageIds = this.feature.stages.map(feStage => feStage.id);
-    console.log(stageIds);
     const [allFormFields, formsToRender] = this.getForms(formattedFeature, this.feature.stages);
     return html`
       <form name="feature_form" method="POST" action="/guide/editall/${this.featureId}">
