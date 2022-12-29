@@ -1,5 +1,4 @@
 import {LitElement, css, html} from 'lit';
-import '@polymer/iron-icon';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {CREATEABLE_STAGES, FORMS_BY_STAGE_TYPE} from './form-definition.js';
 
