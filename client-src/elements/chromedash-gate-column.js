@@ -29,6 +29,7 @@ export const ACTIVE_REVIEW_STATES = [
 export class ChromedashGateColumn extends LitElement {
   voteSelectRef = createRef();
   commentAreaRef = createRef();
+  postToThreadRef = createRef();
 
   static get styles() {
     return [
@@ -121,19 +122,20 @@ export class ChromedashGateColumn extends LitElement {
     this.needsPost = false;
   }
 
-  setContext(feature, stage, gate) {
+  setContext(feature, stageId, gate) {
     this.loading = true;
     this.feature = feature;
-    this.stage = stage;
     this.gate = gate;
     const featureId = this.feature.id;
     Promise.all([
       window.csClient.getFeatureProcess(featureId),
+      window.csClient.getStage(featureId, stageId),
       window.csClient.getApprovals(featureId),
       // TODO(jrobbins): Include activities for this gate
       window.csClient.getComments(featureId),
-    ]).then(([process, approvalRes, commentRes]) => {
+    ]).then(([process, stage, approvalRes, commentRes]) => {
       this.process = process;
+      this.stage = stage;
       this.votes = approvalRes.approvals.filter((v) =>
         v.gate_id == this.gate.id);
       this.comments = commentRes.comments;
@@ -204,8 +206,8 @@ export class ChromedashGateColumn extends LitElement {
   handlePost() {
     const commentArea = this.commentAreaRef.value;
     const commentText = commentArea.value.trim();
-    const postToApprovalFieldId = 0; // Don't post to thread.
-    // TODO(jrobbins): Also post to intent thread
+    const postToApprovalFieldId = (
+        this.postToThreadRef.value?.checked ? this.gate.gate_type : 0);
     if (commentText != '') {
       window.csClient.postComment(
         this.feature.id, null, null, commentText,
@@ -476,9 +478,46 @@ export class ChromedashGateColumn extends LitElement {
     `;
   }
 
+  gateHasIntentThread() {
+    return this.gate.team_name === 'API Owners';
+  }
+
+  canPostTo(threadArchiveUrl) {
+    return (
+      threadArchiveUrl &&
+        (threadArchiveUrl.startsWith(
+          'https://groups.google.com/a/chromium.org/d/msgid/blink-dev/') ||
+         threadArchiveUrl.startsWith(
+           'https://groups.google.com/d/msgid/jrobbins-test')));
+  }
+
   renderControls() {
     if (!this.user || !this.user.can_comment) return nothing;
-    // TODO(jrobbins): checkbox to also post to intent thread.
+
+    const postButton = html`
+      <sl-button variant="primary"
+        @click=${this.handlePost}
+        ?disabled=${!this.needsPost}
+        size="small"
+        >Post</sl-button>
+    `;
+    const checkboxLabel = (
+      this.stage.intent_thread_url ?
+        html`
+            Also post to
+              <a href=${this.stage.intent_thread_url} target="_blank"
+                 >intent thread</a>
+          ` : 'Also post to intent thread');
+    const postToThreadCheckbox = (
+      this.gateHasIntentThread() ?
+        html`
+          <sl-checkbox
+            ${ref(this.postToThreadRef)}
+            ?disabled=${!this.canPostTo(this.stage.intent_thread_url)}
+            size="small"
+            >${checkboxLabel}</sl-checkbox>
+          ` :
+        nothing);
 
     return html`
       <sl-textarea id="comment_area" rows=2 cols=40 ${ref(this.commentAreaRef)}
@@ -487,11 +526,8 @@ export class ChromedashGateColumn extends LitElement {
         placeholder="Add a comment"
         ></sl-textarea>
        <div id="controls">
-         <sl-button variant="primary"
-           @click=${this.handlePost}
-           ?disabled=${!this.needsPost}
-           size="small"
-           >Post</sl-button>
+         ${postButton}
+         ${postToThreadCheckbox}
        </div>
     `;
   }
