@@ -9,6 +9,7 @@ import {
   FORMS_BY_STAGE_TYPE} from './form-definition';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {FORM_STYLES} from '../sass/forms-css.js';
+import {STAGE_SPECIFIC_FIELDS} from './form-field-enums.js';
 
 
 export class ChromedashGuideEditallPage extends LitElement {
@@ -37,6 +38,7 @@ export class ChromedashGuideEditallPage extends LitElement {
     this.loading = true;
     this.appTitle = '';
     this.nextPage = '';
+    this.sameTypeRendered = 0;
   }
 
   connectedCallback() {
@@ -141,17 +143,32 @@ export class ChromedashGuideEditallPage extends LitElement {
     return stageSections.reduce((combined, section) => [...combined, ...section.fields], []);
   }
 
-  renderStageSection(formattedFeature, name, stageId, stageFields) {
+  renderStageSection(formattedFeature, name, feStage, stageFields) {
     if (!stageFields) return nothing;
 
+    // Add a number differentiation if this stage type is the same as another stage.
+    let numberDifferentiation = '';
+    if (this.previousStageTypeRendered && this.previousStageTypeRendered === feStage.stage_type) {
+      this.sameTypeRendered += 1;
+      numberDifferentiation = ` (${this.sameTypeRendered})`;
+    } else {
+      this.previousStageTypeRendered = feStage.stage_type;
+      this.sameTypeRendered = 1;
+    }
+    const sectionName = `${name}${numberDifferentiation}`;
+
+    let value = formattedFeature[field];
+    if (STAGE_SPECIFIC_FIELDS.has(field)) {
+      value = feStage[field];
+    }
     return html`
-    <h3>${name}</h3>
+    <h3>${sectionName}</h3>
     <section class="flat_form">
       ${stageFields.map(field => html`
         <chromedash-form-field
           name=${field}
-          stageId=${stageId}
-          value=${formattedFeature[field]}>
+          stageId=${feStage.id}
+          value=${value}>
         </chromedash-form-field>
       `)}
     </section>
@@ -171,7 +188,7 @@ export class ChromedashGuideEditallPage extends LitElement {
     // All features display the metadata section.
     let fieldsOnly = this.flattenSections(FLAT_METADATA_FIELDS.sections);
     const formsToRender = [
-      this.renderStageSection(formattedFeature, FLAT_METADATA_FIELDS.name, 0, fieldsOnly)];
+      this.renderStageSection(formattedFeature, FLAT_METADATA_FIELDS.name, {}, fieldsOnly)];
 
     // Generate a single array with the name of every field that is displayed.
     let allFormFields = [...fieldsOnly];
@@ -185,7 +202,7 @@ export class ChromedashGuideEditallPage extends LitElement {
 
       fieldsOnly = this.flattenSections(stageForm.sections);
       formsToRender.push(this.renderStageSection(
-        formattedFeature, stageForm.name, feStage.stage_id, fieldsOnly));
+        formattedFeature, stageForm.name, feStage, fieldsOnly));
       allFormFields = [...allFormFields, ...fieldsOnly];
     }
 
@@ -194,7 +211,8 @@ export class ChromedashGuideEditallPage extends LitElement {
 
   renderForm() {
     const formattedFeature = formatFeatureForEdit(this.feature);
-    const stageIds = this.feature.stages.map(stage => stage.stage_id);
+    const stageIds = this.feature.stages.map(feStage => feStage.id);
+    console.log(stageIds);
     const [allFormFields, formsToRender] = this.getForms(formattedFeature, this.feature.stages);
     return html`
       <form name="feature_form" method="POST" action="/guide/editall/${this.featureId}">
