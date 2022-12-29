@@ -479,7 +479,7 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   gateHasIntentThread() {
-    return this.gate.team_name == 'API Owners';
+    return this.gate.team_name === 'API Owners';
   }
 
   canPostTo(threadArchiveUrl) {
