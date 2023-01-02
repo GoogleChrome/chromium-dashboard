@@ -30,7 +30,6 @@ class ChromedashFeatureDetail extends LitElement {
     this.canEdit = false;
     this.feature = {};
     this.gates = [];
-    this.isAddingStage = false;
     this.process = {};
     this.dismissedCues = [];
     this.anyCollapsed = true;
