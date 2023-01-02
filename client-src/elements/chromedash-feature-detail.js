@@ -30,7 +30,6 @@ class ChromedashFeatureDetail extends LitElement {
     this.canEdit = false;
     this.feature = {};
     this.gates = [];
-    this.isAddingStage = false;
     this.process = {};
     this.dismissedCues = [];
     this.anyCollapsed = true;
@@ -397,7 +396,7 @@ class ChromedashFeatureDetail extends LitElement {
     }
 
     return html`
-    <sl-button variant="primary" size="small" @click="${
+    <sl-button size="small" @click="${
         () => openAddStageDialog(this.feature.id, this.feature.feature_type_int)}">
       Add stage
     </sl-button>`;

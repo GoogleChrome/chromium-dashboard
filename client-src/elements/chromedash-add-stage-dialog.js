@@ -1,20 +1,21 @@
 import {LitElement, css, html} from 'lit';
-import '@polymer/iron-icon';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {CREATEABLE_STAGES, FORMS_BY_STAGE_TYPE} from './form-definition.js';
 
 
 let AddStageDialogEl;
+let CurrentFeatureId;
 
 
 export async function openAddStageDialog(featureId, featureType) {
-  if (!AddStageDialogEl) {
+  if (!AddStageDialogEl || CurrentFeatureId !== featureId) {
     AddStageDialogEl = document.createElement('chromedash-add-stage-dialog');
     AddStageDialogEl.featureId = featureId;
     AddStageDialogEl.featureType = featureType;
     document.body.appendChild(AddStageDialogEl);
     await AddStageDialogEl.updateComplete;
   }
+  CurrentFeatureId = featureId;
   AddStageDialogEl.show();
 }
 
@@ -106,7 +107,7 @@ class ChromedashAddStageDialog extends LitElement {
         @click=${this.handleStageCreate}
         ?disabled=${!this.canSubmit}
         size="small"
-      >Create Stage</sl-button>
+      >Create stage</sl-button>
     </div>
     `;
   }
