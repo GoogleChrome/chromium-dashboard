@@ -3,20 +3,20 @@ import {SHARED_STYLES} from '../sass/shared-css.js';
 import {CREATEABLE_STAGES, FORMS_BY_STAGE_TYPE} from './form-definition.js';
 
 
-let AddStageDialogEl;
-let CurrentFeatureId;
+let addStageDialogEl;
+let currentFeatureId;
 
 
 export async function openAddStageDialog(featureId, featureType) {
-  if (!AddStageDialogEl || CurrentFeatureId !== featureId) {
-    AddStageDialogEl = document.createElement('chromedash-add-stage-dialog');
-    AddStageDialogEl.featureId = featureId;
-    AddStageDialogEl.featureType = featureType;
-    document.body.appendChild(AddStageDialogEl);
-    await AddStageDialogEl.updateComplete;
+  if (!addStageDialogEl || currentFeatureId !== featureId) {
+    addStageDialogEl = document.createElement('chromedash-add-stage-dialog');
+    addStageDialogEl.featureId = featureId;
+    addStageDialogEl.featureType = featureType;
+    document.body.appendChild(addStageDialogEl);
+    await addStageDialogEl.updateComplete;
   }
-  CurrentFeatureId = featureId;
-  AddStageDialogEl.show();
+  currentFeatureId = featureId;
+  addStageDialogEl.show();
 }
 
 
