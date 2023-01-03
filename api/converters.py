@@ -307,6 +307,11 @@ def stage_to_json_dict(
     d['ready_for_trial_url'] = stage.announcement_url
     d['finch_url'] = stage.finch_url
     milestone_field_names = MilestoneSet.SHIPPING_MILESTONE_FIELD_NAMES
+  elif d['stage_type'] == STAGE_TYPES_ROLLOUT[feature_type]:
+    d['rollout_milestone'] = stage.rollout_milestone
+    d['rollout_platforms'] = stage.rollout_platforms
+    d['rollout_details'] = stage.rollout_details
+    d['enterprise_policies'] = stage.enterprise_policies
 
   # Add milestone fields
   if stage.milestones is not None and milestone_field_names is not None:

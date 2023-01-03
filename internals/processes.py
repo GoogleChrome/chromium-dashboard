@@ -161,6 +161,26 @@ PI_ROLLOUT_PLATFORMS = ProgressItem('Rollout platforms', 'rollout_platforms')
 PI_ROLLOUT_DETAILS = ProgressItem('Rollout details', 'rollout_details')
 PI_ENTERPRISE_POLICIES = ProgressItem('Enterprise policies', 'enterprise_policies')
 
+
+# This is a stage that can be inserted in the stages of any non-enterprise
+# features that are marked as breaking changes.
+FEATURE_ROLLOUT_STAGE = ProcessStage(
+      'Start feature rollout',
+      'Lock in shipping milestone. '
+      'Create feature flag for the feature. '
+      'Create policies to enable/disable and control the feature. '
+      'Finalize docs and announcements and start rolling out the feature.',
+      [PI_ROLLOUT_MILESTONE,
+       PI_ROLLOUT_PLATFORMS,
+       PI_ROLLOUT_DETAILS,
+       PI_ENTERPRISE_POLICIES,
+      ],
+      [],
+      [],
+      core_enums.INTENT_SHIP, core_enums.INTENT_ROLLOUT,
+      stage_type=core_enums.STAGE_ENT_ROLLOUT)
+
+
 BLINK_PROCESS_STAGES = [
   ProcessStage(
       'Start incubating',
@@ -275,6 +295,7 @@ BLINK_PROCESS_STAGES = [
       [],
       core_enums.INTENT_SHIP, core_enums.INTENT_SHIPPED,
       stage_type=None),
+    FEATURE_ROLLOUT_STAGE,
   ]
 
 
@@ -358,6 +379,7 @@ BLINK_FAST_TRACK_STAGES = [
       [],
       core_enums.INTENT_SHIP, core_enums.INTENT_SHIPPED,
       stage_type=None),
+    FEATURE_ROLLOUT_STAGE,
   ]
 
 
@@ -418,6 +440,7 @@ PSA_ONLY_STAGES = [
       [],
       core_enums.INTENT_SHIP, core_enums.INTENT_SHIPPED,
       stage_type=None),
+    FEATURE_ROLLOUT_STAGE,
   ]
 
 
@@ -503,26 +526,8 @@ DEPRECATION_STAGES = [
       [],
       core_enums.INTENT_SHIP, core_enums.INTENT_REMOVED,
       stage_type=core_enums.STAGE_DEP_REMOVE_CODE),
+    FEATURE_ROLLOUT_STAGE,
   ]
-
-
-# This is a stage that can be inserted in the stages of any non-enterprise
-# features that are marked as breaking changes.
-FEATURE_ROLLOUT_STAGE = ProcessStage(
-      'Start feature rollout',
-      'Lock in shipping milestone. '
-      'Create feature flag for the feature. '
-      'Create policies to enable/disable and control the feature. '
-      'Finalize docs and announcements and start rolling out the feature.',
-      [PI_ROLLOUT_MILESTONE,
-       PI_ROLLOUT_PLATFORMS,
-       PI_ROLLOUT_DETAILS,
-       PI_ENTERPRISE_POLICIES,
-      ],
-      [],
-      [],
-      core_enums.INTENT_SHIP, core_enums.INTENT_ROLLOUT,
-      stage_type=core_enums.STAGE_ENT_ROLLOUT)
 
 # Thise are the stages for a feature that has the enterprise feature type.
 ENTERPRISE_STAGES = [
