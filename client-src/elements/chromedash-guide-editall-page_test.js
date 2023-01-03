@@ -23,7 +23,12 @@ describe('chromedash-guide-editall-page', () => {
       },
       {
         id: 2,
-        stage_type: 120,
+        stage_type: 160,
+        intent_stage: 2,
+      },
+      {
+        id: 3,
+        stage_type: 160,
         intent_stage: 2,
       },
     ],
@@ -112,5 +117,24 @@ describe('chromedash-guide-editall-page', () => {
     assert.include(featureForm.innerHTML,
       '<input type="hidden" name="form_fields" value="name,summary,unlisted,');
     assert.include(featureForm.innerHTML, '<section class="final_buttons">');
+  });
+
+  it('avoids duplicating fields', async () => {
+    const featureId = 123456;
+    window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
+
+    const component = await fixture(
+      html`<chromedash-guide-editall-page
+             .featureId=${featureId}>
+           </chromedash-guide-editall-page>`);
+    assert.exists(component);
+    assert.instanceOf(component, ChromedashGuideEditallPage);
+
+    // There are two shipping stage types, but 'tag_review_status' is not a stage-specific field,
+    // so only one field should display and it should not display for the second stage.
+    const measurementFields = component.shadowRoot.querySelectorAll(
+      'sl-select[name="tag_review_status"]');
+    assert.exists(measurementFields);
+    assert.isTrue(measurementFields.length === 1);
   });
 });
