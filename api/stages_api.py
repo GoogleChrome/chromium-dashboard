@@ -123,6 +123,9 @@ class StagesAPI(basehandlers.APIHandler):
     if s_type == core_enums.STAGE_TYPES_SHIPPING[feature_type]:
       self._add_given_stage_vals(stage, body, self.SHIPPING_FIELDS)
       gate_type = core_enums.GATE_SHIP
+    
+    if s_type == core_enums.STAGE_TYPES_ROLLOUT[feature_type]:
+      self._add_given_stage_vals(stage, body, self.ENTERPRISE_FIELDS)
 
     stage.put()
 
