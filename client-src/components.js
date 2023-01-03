@@ -31,10 +31,10 @@ setBasePath('/static/shoelace');
 // Configure shoelace to also find material design 24pt outline icons
 // like: <sl-icon-button library="material" name="unfold-more">
 // See developer-documentation.md for instructions adding icons.
-import { registerIconLibrary } from '@shoelace-style/shoelace/dist/utilities/icon-library.js';
+import {registerIconLibrary} from '@shoelace-style/shoelace/dist/utilities/icon-library.js';
 registerIconLibrary('material', {
-  resolver: name =>  `/static/shoelace/assets/material-icons/${name}.svg`,
-  mutator: svg => svg.setAttribute('fill', 'currentColor')
+  resolver: name => `/static/shoelace/assets/material-icons/${name}.svg`,
+  mutator: svg => svg.setAttribute('fill', 'currentColor'),
 });
 
 
@@ -65,6 +65,7 @@ import './elements/chromedash-guide-editall-page';
 import './elements/chromedash-guide-metadata';
 import './elements/chromedash-guide-new-page';
 import './elements/chromedash-guide-stage-page';
+import './elements/chromedash-guide-metadata-page';
 import './elements/chromedash-guide-verify-accuracy-page';
 import './elements/chromedash-header';
 import './elements/chromedash-legend';
