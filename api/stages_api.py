@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+from api import converters
 from framework import basehandlers
 from framework import permissions
 from internals import core_enums
@@ -68,31 +70,6 @@ class StagesAPI(basehandlers.APIHandler):
       'te_emails',
       'rollout_platforms',
       'enterprise_policies']
-
-  def _stage_to_json_dict(self, stage: Stage) -> dict:
-    """Create a JSON representation of a given stage."""
-    stage_dict = {}
-    # Get a list of every non-milestone field.
-    all_fields = (self.GENERAL_FIELDS + self.OT_FIELDS +
-        self.OT_EXTENSION_FIELDS + self.SHIPPING_FIELDS +
-        self.ENTERPRISE_FIELDS)
-    for field in all_fields:
-      stage_dict[field] = getattr(stage, field)
-    for field in self.MILESTONE_FIELDS:
-      if stage.milestones is not None:
-        stage_dict[field] = getattr(stage.milestones, field)
-      else:
-        stage_dict[field] = None
-
-    # Set list fields as empty list if null.
-    for field in self.FIELDS_DEFAULT_TO_LIST:
-      if getattr(stage, field) is None:
-        stage_dict[field] = []
-
-    stage_dict['id'] = stage.key.integer_id()
-    stage_dict['feature_id'] = stage.feature_id
-    stage_dict['stage_type'] = stage.stage_type
-    return stage_dict
 
   def _create_gate_for_stage(
       self, feature_id: int, stage_id: int, gate_type: int) -> None:
@@ -167,7 +144,7 @@ class StagesAPI(basehandlers.APIHandler):
     if stage is None:
       self.abort(404, msg=f'Stage {stage_id} not found')
 
-    return self._stage_to_json_dict(stage)
+    return converters.stage_to_json_dict(stage)
 
   def do_post(self, **kwargs):
     """Create a new stage."""

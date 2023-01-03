@@ -20,6 +20,7 @@ export class ChromedashProcessOverview extends LitElement {
     this.progress = {};
     this.dismissedCues = [];
     this.item_stage_map = null; // null means uninitialized.
+    this.sameTypeRendered = 0;
   }
 
   static prereqsId = 0;
@@ -285,13 +286,37 @@ export class ChromedashProcessOverview extends LitElement {
     const processStage = findProcessStage(feStage, this.process);
     if (processStage === null) return nothing;
 
-    const isActive = (this.feature.active_stage_id === feStage.stage_id);
+    const isActive = (this.feature.active_stage_id === feStage.id);
+
+    // Choose button based on active stage.
+    const buttonHref = `/guide/stage/${featureId}/${processStage.outgoing_stage}/${feStage.id}`;
+    let button = html`<a href="${buttonHref}">Edit</a>`;
+    if (isActive) {
+      button = html`<a href="${buttonHref}" class="button primary">Update</a>`;
+    } else if (this.isPriorStage(processStage)) {
+      button = html`<a href="${buttonHref}">Revisit</a>`;
+    } else if (this.isStartableStage(processStage)) {
+      button = html`<a href="${buttonHref}" class="button primary">Start</a>`;
+    } else if (this.isFutureStage(processStage)) {
+      button = html`<a href="${buttonHref}">Preview</a>`;
+    }
+
+    // Add a number differentiation if this stage type is the same as another stage.
+    let numberDifferentiation = '';
+    if (this.previousStageTypeRendered === feStage.stage_type) {
+      this.sameTypeRendered += 1;
+      numberDifferentiation = ` (${this.sameTypeRendered})`;
+    } else {
+      this.previousStageTypeRendered = feStage.stage_type;
+      this.sameTypeRendered = 1;
+    }
+    const sectionName = `${processStage.name}${numberDifferentiation}`;
 
     return html`
       <tr class="${isActive ?
                     'active' : ''}">
         <td>
-          <div><b>${processStage.name}</b></div>
+          <div><b>${sectionName}</b></div>
           <div>${processStage.description}</div>
         </td>
         <td>
@@ -299,24 +324,7 @@ export class ChromedashProcessOverview extends LitElement {
                       this.renderProgressItem(processStage, item))}
         </td>
         <td>
-          ${isActive ?
-            html`<div><a
-                  href="/guide/stage/${featureId}/${processStage.outgoing_stage}/${feStage.stage_id}"
-                  class="button primary">Update</a></div>` :
-            nothing }
-          ${this.isPriorStage(processStage) ?
-            html`<a href="/guide/stage/${featureId}/${processStage.outgoing_stage}/${feStage.stage_id}"
-                >Revisit</a>` :
-            nothing }
-          ${this.isStartableStage(processStage) ?
-            html`<a href="/guide/stage/${featureId}/${processStage.outgoing_stage}/${feStage.stage_id}"
-                    class="button primary">Start</a>` :
-            nothing }
-          ${this.isFutureStage(processStage) ?
-            html`<a href="/guide/stage/${featureId}/${processStage.outgoing_stage}/${feStage.stage_id}"
-                >Preview</a>` :
-            nothing }
-
+          ${button}
           ${this.renderActions(processStage)}
         </td>
       </tr>`;

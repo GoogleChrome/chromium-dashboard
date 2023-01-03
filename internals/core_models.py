@@ -448,8 +448,34 @@ class MilestoneSet(ndb.Model):  # copy from milestone fields of Feature
       'dt_milestone_desktop_start': 'desktop_first',
       'dt_milestone_android_start': 'android_first',
       'dt_milestone_ios_start': 'ios_first',
-      'dt_milestone_webview_start': 'webview_first'
+      'dt_milestone_webview_start': 'webview_first',
     }
+  
+  # List of milestone fields relevant to the origin trial stage types.
+  OT_MILESTONE_FIELD_NAMES = [
+    {'old': 'ot_milestone_desktop_start', 'new': 'desktop_first'},
+    {'old': 'ot_milestone_desktop_end', 'new': 'desktop_last'},
+    {'old': 'ot_milestone_android_start', 'new': 'android_first'},
+    {'old': 'ot_milestone_android_end', 'new': 'android_last'},
+    {'old': 'ot_milestone_webview_start', 'new': 'webview_first'},
+    {'old': 'ot_milestone_webview_end', 'new': 'webview_last'},
+  ]
+
+  # List of milestone fields relevant to the dev trial stage types.
+  DEV_TRIAL_MILESTONE_FIELD_NAMES = [
+    {'old': 'dt_milestone_desktop_start', 'new': 'desktop_first'},
+    {'old': 'dt_milestone_android_start', 'new': 'android_first'},
+    {'old': 'dt_milestone_ios_start', 'new': 'ios_first'},
+    {'old': 'dt_milestone_webview_start', 'new': 'webview_first'},
+  ]
+
+  # List of milestone fields relevant to the shipping stage types.
+  SHIPPING_MILESTONE_FIELD_NAMES = [
+    {'old': 'shipped_milestone', 'new': 'desktop_first'},
+    {'old': 'shipped_android_milestone', 'new': 'android_first'},
+    {'old': 'shipped_ios_milestone', 'new': 'ios_first'},
+    {'old': 'shipped_webview_milestone', 'new': 'webview_first'},
+  ]
 
   desktop_first = ndb.IntegerProperty()
   desktop_last = ndb.IntegerProperty()

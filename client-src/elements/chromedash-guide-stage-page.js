@@ -4,7 +4,7 @@ import {showToastMessage} from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
 import {formatFeatureForEdit, FORMS_BY_STAGE_TYPE} from './form-definition';
-import {IMPLEMENTATION_STATUS} from './form-field-enums';
+import {IMPLEMENTATION_STATUS, STAGE_SPECIFIC_FIELDS} from './form-field-enums';
 import {ALL_FIELDS} from './form-field-specs';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {FORM_STYLES} from '../sass/forms-css.js';
@@ -210,10 +210,14 @@ export class ChromedashGuideStagePage extends LitElement {
   renderFields(formattedFeature, section) {
     return section.fields.map(field => {
       const featureJSONKey = ALL_FIELDS[field].name || field;
+      let value = formattedFeature[featureJSONKey];
+      if (STAGE_SPECIFIC_FIELDS.has(featureJSONKey)) {
+        value = this.stage[featureJSONKey];
+      }
       return html`
       <chromedash-form-field
         name=${field}
-        value=${formattedFeature[featureJSONKey]}>
+        value=${value}>
       </chromedash-form-field>
     `;
     });

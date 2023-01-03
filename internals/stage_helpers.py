@@ -29,6 +29,8 @@ def get_feature_stages(feature_id: int) -> dict[int, list[Stage]]:
 
 
 def get_feature_stage_ids(feature_id: int) -> dict[int, list[int]]:
+  """Return a dictionary of stage IDs associated with the given feature."""
+  # key = stage type, value = list of stages with that stage type.
   stage_dict = defaultdict(list)
   for stage in Stage.query(Stage.feature_id == feature_id):
     stage_dict[stage.stage_type].append(stage.key.integer_id())

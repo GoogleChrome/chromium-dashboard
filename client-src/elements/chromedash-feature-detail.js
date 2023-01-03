@@ -1,7 +1,7 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {openAddStageDialog} from './chromedash-add-stage-dialog';
 import {DISPLAY_FIELDS_IN_STAGES} from './form-field-specs';
-import {PLATFORMS_DISPLAYNAME} from './form-field-enums';
+import {PLATFORMS_DISPLAYNAME, STAGE_SPECIFIC_FIELDS} from './form-field-enums';
 import '@polymer/iron-icon';
 import './chromedash-activity-log';
 import './chromedash-callout';
@@ -182,9 +182,13 @@ class ChromedashFeatureDetail extends LitElement {
     return !(value === undefined || value === null || value.length == 0);
   }
 
-  getFieldValue(fieldId) {
-    let value = this.feature[fieldId];
-    const fieldIdMapping = {
+  getFieldValue(fieldName, feStage) {
+    if (STAGE_SPECIFIC_FIELDS.has(fieldName)) {
+      return feStage[fieldName];
+    }
+
+    let value = this.feature[fieldName];
+    const fieldNameMapping = {
       spec_link: 'standards.spec',
       standard_maturity: 'standards.maturity.text',
       sample_links: 'resources.samples',
@@ -206,22 +210,22 @@ class ChromedashFeatureDetail extends LitElement {
       webdev_views_link: 'browsers.webdev.view.url',
       other_views_notes: 'browsers.other.view.notes',
     };
-    if (fieldIdMapping[fieldId]) {
+    if (!value && fieldNameMapping[fieldName]) {
       value = this.feature;
-      for (const step of fieldIdMapping[fieldId].split('.')) {
+      for (const step of fieldNameMapping[fieldName].split('.')) {
         if (value) {
           value = value[step];
         }
       }
     }
-    if (fieldId == 'rollout_platforms' && value) {
+    if (fieldName == 'rollout_platforms' && value) {
       value = value.map(platformId => PLATFORMS_DISPLAYNAME[platformId]);
     }
     return value;
   }
 
-  hasFieldValue(fieldId) {
-    const value = this.getFieldValue(fieldId);
+  hasFieldValue(fieldName, feStage) {
+    const value = this.getFieldValue(fieldName, feStage);
     return this.isDefinedValue(value);
   }
 
@@ -260,9 +264,9 @@ class ChromedashFeatureDetail extends LitElement {
     return this.renderText(value);
   }
 
-  renderField(fieldDef) {
+  renderField(fieldDef, feStage) {
     const [fieldId, fieldDisplayName, fieldType] = fieldDef;
-    const value = this.getFieldValue(fieldId);
+    const value = this.getFieldValue(fieldId, feStage);
     if (this.isDefinedValue(value)) {
       return html`
      <div class="value-item">
@@ -275,9 +279,9 @@ class ChromedashFeatureDetail extends LitElement {
     }
   }
 
-  renderSectionFields(fields) {
-    if (fields.some(fieldDef => this.hasFieldValue(fieldDef[0]))) {
-      return fields.map(fieldDef => this.renderField(fieldDef));
+  renderSectionFields(fields, feStage) {
+    if (fields.some(fieldDef => this.hasFieldValue(fieldDef[0], feStage))) {
+      return fields.map(fieldDef => this.renderField(fieldDef, feStage));
     } else {
       return html`<p>No relevant fields have been filled in.</p>`;
     }
@@ -306,7 +310,7 @@ class ChromedashFeatureDetail extends LitElement {
     }
     const content = html`
       <section class="card">
-        ${this.renderSectionFields(fields)}
+        ${this.renderSectionFields(fields, {})}
       </section>
     `;
     return this.renderSection('Metadata', content);
@@ -324,7 +328,7 @@ class ChromedashFeatureDetail extends LitElement {
   }
 
   renderGateChips(feStage) {
-    const gatesForStage = this.gates.filter(g => g.stage_id == feStage.stage_id);
+    const gatesForStage = this.gates.filter(g => g.stage_id == feStage.id);
     return html`
       <div class="gates">
         ${gatesForStage.map(g => this.renderGateChip(feStage, g))}
@@ -341,24 +345,21 @@ class ChromedashFeatureDetail extends LitElement {
 
 
     // Add a number differentiation if this stage type is the same as another stage.
-    // NOTE: This will not have an effect until users can create multiple stages
-    // of the same type.
     let numberDifferentiation = '';
     if (this.previousStageTypeRendered === feStage.stage_type) {
       this.sameTypeRendered += 1;
-      numberDifferentiation = ` ${this.sameTypeRendered}`;
+      numberDifferentiation = ` (${this.sameTypeRendered})`;
     } else {
       this.previousStageTypeRendered = feStage.stage_type;
       this.sameTypeRendered = 1;
     }
 
     const name = `${processStage.name}${numberDifferentiation}`;
-    const isActive = (this.feature.active_stage_id === feStage.stage_id &&
-      this.feature.intent_stage_int === processStage.outgoing_stage);
+    const isActive = this.feature.active_stage_id === feStage.id;
 
     const editButton = html`
       <sl-button size="small" style="float:right"
-          href="/guide/stage/${this.feature.id}/${processStage.outgoing_stage}/${feStage.stage_id}"
+          href="/guide/stage/${this.feature.id}/${processStage.outgoing_stage}/${feStage.id}"
           >Edit fields</sl-button>
     `;
     const content = html`
@@ -368,7 +369,7 @@ class ChromedashFeatureDetail extends LitElement {
       </p>
       ${this.renderGateChips(feStage)}
       <section class="card">
-        ${this.renderSectionFields(fields)}
+        ${this.renderSectionFields(fields, feStage)}
       </section>
     `;
 
