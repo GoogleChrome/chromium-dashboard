@@ -117,6 +117,8 @@ api_routes: list[Route] = [
         processes_api.ProcessesAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/progress',
         processes_api.ProgressAPI),
+    Route(f'{API_BASE}/features/<int:feature_id>/stages',
+            stages_api.StagesAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/stages/<int:stage_id>',
             stages_api.StagesAPI),
 

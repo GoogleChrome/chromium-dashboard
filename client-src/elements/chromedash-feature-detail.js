@@ -1,4 +1,5 @@
 import {LitElement, css, html, nothing} from 'lit';
+import {openAddStageDialog} from './chromedash-add-stage-dialog';
 import {DISPLAY_FIELDS_IN_STAGES} from './form-field-specs';
 import {PLATFORMS_DISPLAYNAME} from './form-field-enums';
 import '@polymer/iron-icon';
@@ -388,6 +389,18 @@ class ChromedashFeatureDetail extends LitElement {
     return this.renderSection(summary, content);
   }
 
+  renderAddStageButton() {
+    if (!this.canEdit) {
+      return nothing;
+    }
+
+    return html`
+    <sl-button size="small" @click="${
+        () => openAddStageDialog(this.feature.id, this.feature.feature_type_int)}">
+      Add stage
+    </sl-button>`;
+  }
+
   render() {
     return html`
       <h2>
@@ -397,6 +410,7 @@ class ChromedashFeatureDetail extends LitElement {
       ${this.renderMetadataSection()}
       ${this.feature.stages.map(feStage => this.renderProcessStage(feStage))}
       ${this.renderActivitySection()}
+      ${this.renderAddStageButton()}
     `;
   }
 }
