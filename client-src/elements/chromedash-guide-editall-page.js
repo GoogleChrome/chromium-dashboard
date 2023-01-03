@@ -156,6 +156,11 @@ export class ChromedashGuideEditallPage extends LitElement {
       let value = formattedFeature[field];
       if (STAGE_SPECIFIC_FIELDS.has(field)) {
         value = feStage[field];
+      } else if (this.sameTypeRendered > 1) {
+        // Don't render fields that are not stage-specific if this is
+        // a stage type that is already being rendered.
+        // This is to avoid repeated fields on the edit-all page.
+        return nothing;
       }
       return html`
         <chromedash-form-field
