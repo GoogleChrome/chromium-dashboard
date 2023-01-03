@@ -271,12 +271,6 @@ def _prep_stage_gate_info(
   return major_stages
 
 
-INTENT_THREAD_FIELD_NAMES = {
-  'ot': 'intent_to_experiment_url',
-  'ship': 'intent_to_shi'
-}
-
-
 def stage_to_json_dict(
     stage: Stage, feature_type: int | None=None) -> dict[str, Any]:
   """Convert a stage entity into a JSON dict."""
