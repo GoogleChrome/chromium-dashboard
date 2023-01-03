@@ -19,7 +19,7 @@ from google.cloud import ndb  # type: ignore
 from internals import stage_helpers
 
 from internals.core_enums import *
-from internals.core_models import Feature, FeatureEntry, Stage
+from internals.core_models import Feature, FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Vote, Gate
 from internals import approval_defs
 
@@ -236,7 +236,9 @@ def _prep_stage_gate_info(
   ship_type = STAGE_TYPES_SHIPPING[fe.feature_type]
   rollout_type = STAGE_TYPES_ROLLOUT[fe.feature_type]
 
-  stages = Stage.query(Stage.feature_id == d['id'])
+  # Get all stages associated with the feature, sorted by stage type.
+  stages = Stage.query(Stage.feature_id == d['id']).order(Stage.stage_type)
+
   major_stages: dict[str, Optional[Stage]] = {
       'proto': None,
       'dev_trial': None,
@@ -245,12 +247,13 @@ def _prep_stage_gate_info(
       'ship': None,
       'rollout': None}
 
-  # Write a list of stages and gates associated with the feature
-  d['stages'] = stage_helpers.get_feature_stage_ids_list(d['id'])
+  # Write a list of stages associated with the feature.
+  d['stages'] = []
 
   # TODO(danielrsmith): This approach should be removed or refactored when
   # functionality for creating multiple stages is added.
   for s in stages:
+    d['stages'].append(stage_to_json_dict(s, fe.feature_type))
     # Keep major stages for referencing additional fields.
     if s.stage_type == proto_type:
       major_stages['proto'] = s
@@ -267,42 +270,57 @@ def _prep_stage_gate_info(
 
   return major_stages
 
-MILESTONE_FIELDS = [
-  'desktop_first',
-  'desktop_last',
-  'android_first',
-  'android_last',
-  'ios_first',
-  'ios_last',
-  'webview_first',
-  'webview_last'
-]
 
-def stage_to_dict(stage: Stage) -> dict[str, Any]:
+def stage_to_json_dict(
+    stage: Stage, feature_type: int | None=None) -> dict[str, Any]:
+  """Convert a stage entity into a JSON dict."""
+  # Get feature type if not supplied.
+  if feature_type is None:
+    f = FeatureEntry.get_by_id(stage.feature_id)
+    feature_type = f.feature_type
+
   d: dict[str, Any] = {}
   d['id'] = stage.key.integer_id()
   d['feature_id'] = stage.feature_id
   d['stage_type'] = stage.stage_type
+  d['intent_stage'] = INTENT_STAGES_BY_STAGE_TYPE.get(
+      d['stage_type'], INTENT_NONE)
+
+  # Determine the stage type and handle stage-specific fields.
+  # TODO(danielrsmith): Change client to use new field names.
+  milestone_field_names: list[dict] | None = None
+  if d['stage_type'] == STAGE_TYPES_PROTOTYPE:
+    d['intent_to_implement_url'] = stage.intent_thread_url
+  elif d['stage_type'] == STAGE_TYPES_DEV_TRIAL[feature_type]:
+    milestone_field_names = MilestoneSet.DEV_TRIAL_MILESTONE_FIELD_NAMES
+  elif d['stage_type'] == STAGE_TYPES_ORIGIN_TRIAL[feature_type]:
+    d['intent_to_experiment_url'] = stage.intent_thread_url
+    d['experiment_goals'] = stage.experiment_goals
+    d['experiment_risks'] = stage.experiment_risks
+    d['origin_trial_feedback_url'] = stage.origin_trial_feedback_url
+    milestone_field_names = MilestoneSet.OT_MILESTONE_FIELD_NAMES
+  elif d['stage_type'] == STAGE_TYPES_EXTEND_ORIGIN_TRIAL[feature_type]:
+    d['experiment_extension_reason'] = stage.experiment_extension_reason
+    d['ot_stage_id'] = stage.ot_stage_id
+  elif d['stage_type'] == STAGE_TYPES_SHIPPING[feature_type]:
+    d['intent_to_ship_url'] = stage.intent_thread_url
+    d['ready_for_trial_url'] = stage.announcement_url
+    d['finch_url'] = stage.finch_url
+    milestone_field_names = MilestoneSet.SHIPPING_MILESTONE_FIELD_NAMES
 
   # Add milestone fields
-  if stage.milestones is not None:
-    for field in MILESTONE_FIELDS:
-      d[field] = getattr(stage.milestones, field)
-  else:
-    for field in MILESTONE_FIELDS:
-      d[field] = None
+  if stage.milestones is not None and milestone_field_names is not None:
+    for name_info in milestone_field_names:
+      # The old val name is still used on the client side.
+      # TODO(danielrsmith): Change client to use new field names.
+      d[name_info['old']] = getattr(stage.milestones, name_info['new'])
+      d[name_info['new']] = getattr(stage.milestones, name_info['new'])
 
   d['pm_emails'] = stage.pm_emails
   d['tl_emails'] = stage.tl_emails
   d['ux_emails'] = stage.ux_emails
   d['te_emails'] = stage.te_emails
-  d['experiment_goals'] = stage.experiment_goals
-  d['experiment_risks'] = stage.experiment_risks
-  d['experiment_extension_reason'] = stage.experiment_extension_reason
   d['intent_thread_url'] = stage.intent_thread_url
-  d['origin_trial_feedback_url'] = stage.origin_trial_feedback_url
-  d['announcement_url'] = stage.announcement_url
-  d['ot_stage_id'] = stage.ot_stage_id
 
   return d
 
