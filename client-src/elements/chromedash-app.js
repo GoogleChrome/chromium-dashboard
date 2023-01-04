@@ -215,6 +215,13 @@ class ChromedashApp extends LitElement {
       this.pageComponent.appTitle = this.appTitle;
       this.hideSidebar();
     });
+    page('/guide/stage/:featureId(\\d+)/metadata', (ctx) => {
+      this.pageComponent = document.createElement('chromedash-guide-metadata-page');
+      this.pageComponent.featureId = parseInt(ctx.params.featureId);
+      this.pageComponent.nextPage = this.currentPage;
+      this.pageComponent.appTitle = this.appTitle;
+      this.hideSidebar();
+    });
     page('/settings', (ctx) => {
       this.pageComponent = document.createElement('chromedash-settings-page');
       this.currentPage = ctx.path;

@@ -1214,6 +1214,7 @@ function makeDisplaySpecs(fields) {
 export const DISPLAY_FIELDS_IN_STAGES = {
   'Metadata': makeDisplaySpecs([
     'category', 'feature_type', 'accurate_as_of', 'breaking_change',
+    'search_tags', 'bug_url', 'launch_bug_url',
   ]),
   [INTENT_STAGES.INTENT_INCUBATE[0]]: makeDisplaySpecs([
     'initial_public_proposal_url', 'explainer_links',

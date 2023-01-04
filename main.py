@@ -164,6 +164,8 @@ spa_page_routes = [
       defaults={'require_edit_feature': True}),
   Route('/guide/verify_accuracy/<int:feature_id>',
       defaults={'require_edit_feature': True}),
+  Route('/guide/stage/<int:feature_id>/metadata',
+      defaults={'require_edit_feature': True}),
   Route('/metrics'),
   Route('/metrics/css'),
   Route('/metrics/css/popularity'),

@@ -308,7 +308,16 @@ class ChromedashFeatureDetail extends LitElement {
     if (fields === undefined || fields.length === 0) {
       return nothing;
     }
+    const editButton = html`
+      <sl-button size="small" style="float:right"
+          href="/guide/stage/${this.feature.id}/metadata"
+          >Edit fields</sl-button>
+    `;
+
     const content = html`
+      <p class="description">
+        ${this.canEdit ? editButton : nothing}
+      </p>
       <section class="card">
         ${this.renderSectionFields(fields, {})}
       </section>
