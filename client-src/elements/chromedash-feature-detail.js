@@ -38,6 +38,10 @@ class ChromedashFeatureDetail extends LitElement {
   }
 
   static get styles() {
+    const ICON_WIDTH = 18;
+    const GAP = 10;
+    const CONTENT_PADDING = 16;
+
     return [
       ...SHARED_STYLES,
       css`
@@ -102,25 +106,31 @@ class ChromedashFeatureDetail extends LitElement {
         margin-top: .5em;
       }
 
-      label {
-        font-weight: bold;
-        min-width: 300px;
-        display: inline-block;
-        width: 300px;
-        vertical-align: top;
+      dl {
+        padding: var(--content-padding-half);
+      }
+
+      dt {
+        font-weight: 500;
+        display: flex;
+        gap: ${GAP}px;
+        align-items: center;
+      }
+      dt sl-icon {
+        color: var(--gate-approved-color);
+        font-size: 1.3em;
+      }
+
+      dd {
+        padding: var(--content-padding-half);
+        padding-left: ${ICON_WIDTH + GAP + CONTENT_PADDING}px;
+        padding-bottom: var(--content-padding-large);
       }
 
       .inline-list {
         display: inline-block;
         padding: 0;
         margin: 0;
-      }
-
-      .value-item {
-        padding: var(--content-padding-half);
-      }
-      .value-item:nth-of-type(odd) {
-        background: var(--table-alternate-background);
       }
 
       .longtext {
@@ -267,21 +277,25 @@ class ChromedashFeatureDetail extends LitElement {
   renderField(fieldDef, feStage) {
     const [fieldId, fieldDisplayName, fieldType] = fieldDef;
     const value = this.getFieldValue(fieldId, feStage);
-    if (this.isDefinedValue(value)) {
-      return html`
-     <div class="value-item">
-       <label id=${fieldId}>${fieldDisplayName}</label>
-       ${this.renderValue(fieldType, value)}
-     </div>
+    const icon = this.isDefinedValue(value) ?
+      html`<sl-icon library="material" name="check_circle_20px"></sl-icon>` :
+      html`<sl-icon library="material" name="blank_20px"></sl-icon>`;
+    return html`
+      <dt id=${fieldId}>${icon} ${fieldDisplayName}</dt>
+      <dd>
+       ${this.isDefinedValue(value) ?
+          this.renderValue(fieldType, value) :
+          html`<i>No information provided yet</i>`}
+      </dd>
     `;
-    } else {
-      return nothing;
-    }
   }
 
   renderSectionFields(fields, feStage) {
     if (fields.some(fieldDef => this.hasFieldValue(fieldDef[0], feStage))) {
-      return fields.map(fieldDef => this.renderField(fieldDef, feStage));
+      return html`
+        <dl>
+          ${fields.map(fieldDef => this.renderField(fieldDef, feStage))}
+        </dl>`;
     } else {
       return html`<p>No relevant fields have been filled in.</p>`;
     }
