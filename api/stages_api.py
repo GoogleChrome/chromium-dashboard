@@ -17,6 +17,7 @@
 from api import converters
 from framework import basehandlers
 from framework import permissions
+from framework import rediscache
 from internals import core_enums
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate
@@ -169,6 +170,11 @@ class StagesAPI(basehandlers.APIHandler):
     self._update_stage_vals(
         stage, feature.feature_type, use_stage_type=True, create_gate=True)
 
+    # Changing stage values means the cached feature should be invalidated.
+    lookup_key = FeatureEntry.feature_cache_key(
+        FeatureEntry.DEFAULT_CACHE_KEY, feature_id)
+    rediscache.delete(lookup_key)
+
     # Return  the newly created stage ID.
     return {'message': 'Stage created.', 'stage_id': stage.key.integer_id()}
   
@@ -197,6 +203,11 @@ class StagesAPI(basehandlers.APIHandler):
     # Update specified fields. No need to create a gate for existing stage.
     self._update_stage_vals(
         stage, feature.feature_type, use_stage_type=False, create_gate=False)
+
+    # Changing stage values means the cached feature should be invalidated.
+    lookup_key = FeatureEntry.feature_cache_key(
+        FeatureEntry.DEFAULT_CACHE_KEY, feature_id)
+    rediscache.delete(lookup_key)
 
     return {'message': 'Stage values updated.'}
 
