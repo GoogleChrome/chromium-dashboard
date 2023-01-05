@@ -173,7 +173,7 @@ class StagesAPI(basehandlers.APIHandler):
     # Changing stage values means the cached feature should be invalidated.
     lookup_key = FeatureEntry.feature_cache_key(
         FeatureEntry.DEFAULT_CACHE_KEY, feature_id)
-    feature = rediscache.delete(lookup_key)
+    rediscache.delete(lookup_key)
 
     # Return  the newly created stage ID.
     return {'message': 'Stage created.', 'stage_id': stage.key.integer_id()}
@@ -200,14 +200,14 @@ class StagesAPI(basehandlers.APIHandler):
     if redirect_resp:
       return redirect_resp
 
-    # Changing stage values means the cached feature should be invalidated.
-    lookup_key = FeatureEntry.feature_cache_key(
-        FeatureEntry.DEFAULT_CACHE_KEY, feature_id)
-    feature = rediscache.delete(lookup_key)
-
     # Update specified fields. No need to create a gate for existing stage.
     self._update_stage_vals(
         stage, feature.feature_type, use_stage_type=False, create_gate=False)
+
+    # Changing stage values means the cached feature should be invalidated.
+    lookup_key = FeatureEntry.feature_cache_key(
+        FeatureEntry.DEFAULT_CACHE_KEY, feature_id)
+    rediscache.delete(lookup_key)
 
     return {'message': 'Stage values updated.'}
 
