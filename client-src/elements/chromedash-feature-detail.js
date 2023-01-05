@@ -1,7 +1,7 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {openAddStageDialog} from './chromedash-add-stage-dialog';
 import {DISPLAY_FIELDS_IN_STAGES} from './form-field-specs';
-import {PLATFORMS_DISPLAYNAME, STAGE_SPECIFIC_FIELDS} from './form-field-enums';
+import {DEPRECATED_FIELDS, PLATFORMS_DISPLAYNAME, STAGE_SPECIFIC_FIELDS} from './form-field-enums';
 import '@polymer/iron-icon';
 import './chromedash-activity-log';
 import './chromedash-callout';
@@ -280,10 +280,17 @@ class ChromedashFeatureDetail extends LitElement {
     const icon = this.isDefinedValue(value) ?
       html`<sl-icon library="material" name="check_circle_20px"></sl-icon>` :
       html`<sl-icon library="material" name="blank_20px"></sl-icon>`;
+
+    const isDefinedValue = this.isDefinedValue(value);
+    const isDeprecatedField = DEPRECATED_FIELDS.has(fieldId);
+    if (!isDefinedValue && isDeprecatedField) {
+      return nothing;
+    }
+
     return html`
       <dt id=${fieldId}>${icon} ${fieldDisplayName}</dt>
       <dd>
-       ${this.isDefinedValue(value) ?
+       ${isDefinedValue ?
           this.renderValue(fieldType, value) :
           html`<i>No information provided yet</i>`}
       </dd>
