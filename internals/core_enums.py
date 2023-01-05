@@ -325,6 +325,13 @@ STAGE_TYPES_ROLLOUT: dict[int, Optional[int]] = {
     FEATURE_TYPE_ENTERPRISE_ID: STAGE_ENT_ROLLOUT
   }
 
+# Origin trial stage types mapped to extension stage types.
+OT_EXTENSION_STAGE_TYPES_MAPPING: dict[int, int] = {
+  STAGE_BLINK_ORIGIN_TRIAL: STAGE_BLINK_EXTEND_ORIGIN_TRIAL,
+  STAGE_FAST_ORIGIN_TRIAL: STAGE_FAST_EXTEND_ORIGIN_TRIAL,
+  STAGE_DEP_DEPRECATION_TRIAL: STAGE_DEP_EXTEND_DEPRECATION_TRIAL,
+}
+
 # Mapping of original field names to the new stage types the fields live on.
 STAGE_TYPES_BY_FIELD_MAPPING: dict[str, dict[int, Optional[int]]] = {
     'finch_url': STAGE_TYPES_SHIPPING,
