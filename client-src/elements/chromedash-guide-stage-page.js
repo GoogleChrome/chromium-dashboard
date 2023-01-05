@@ -203,7 +203,6 @@ export class ChromedashGuideStagePage extends LitElement {
           </a>
         </h2>
       </div>
-      <h3>${this.stageName}</h3>
     `;
   }
 
