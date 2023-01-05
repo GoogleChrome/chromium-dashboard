@@ -122,6 +122,14 @@ export const STAGE_SPECIFIC_FIELDS = new Set([
   'ready_for_trial_url',
 ]);
 
+export const DEPRECATED_FIELDS = new Set([
+  'experiment_timeline',
+  'i2e_lgtms',
+  'i2s_lgtms',
+  'r4dt_lgtms',
+  'standardization',
+]);
+
 export const IMPLEMENTATION_STATUS = {
   NO_ACTIVE_DEV: [1, 'No active development'],
   PROPOSED: [2, 'Proposed'],
