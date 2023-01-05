@@ -281,7 +281,6 @@ class ChromedashFeatureDetail extends LitElement {
       html`<sl-icon library="material" name="check_circle_20px"></sl-icon>` :
       html`<sl-icon library="material" name="blank_20px"></sl-icon>`;
 
-
     const isDefinedValue = this.isDefinedValue(value);
     const isDeprecatedField = DEPRECATED_FIELDS.has(fieldId);
     if (!isDefinedValue && isDeprecatedField) {
