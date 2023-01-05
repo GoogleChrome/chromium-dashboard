@@ -897,7 +897,7 @@ export const ALL_FIELDS = {
 
   'i2e_lgtms': {
     type: 'input',
-    attrs: MULTI_EMAIL_FIELD_ATTRS,
+    attrs: {...MULTI_EMAIL_FIELD_ATTRS, placeholder: 'This field is deprecated', disabled: true},
     required: false,
     label: 'Intent to Experiment LGTM by',
     help_text: html`
@@ -907,7 +907,7 @@ export const ALL_FIELDS = {
 
   'i2s_lgtms': {
     type: 'input',
-    attrs: MULTI_EMAIL_FIELD_ATTRS,
+    attrs: {...MULTI_EMAIL_FIELD_ATTRS, placeholder: 'This field is deprecated', disabled: true},
     required: false,
     label: 'Intent to Ship LGTMs by',
     help_text: html`
@@ -920,7 +920,7 @@ export const ALL_FIELDS = {
     // form field name matches underlying DB field (sets "i2e_lgtms" field in DB).
     name: 'i2e_lgtms',
     type: 'input',
-    attrs: MULTI_EMAIL_FIELD_ATTRS,
+    attrs: {...MULTI_EMAIL_FIELD_ATTRS, placeholder: 'This field is deprecated', disabled: true},
     required: false,
     label: 'Request for Deprecation Trial LGTM by',
     help_text: html`
