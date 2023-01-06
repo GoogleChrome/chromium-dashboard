@@ -26,6 +26,7 @@ export class ChromedashGuideStagePage extends LitElement {
       stageName: {type: String},
       featureId: {type: Number},
       feature: {type: Object},
+      isActiveStage: {type: Boolean},
       featureFormFields: {type: Array},
       implStatusFormFields: {type: Array},
       implStatusOffered: {type: String},
@@ -42,6 +43,7 @@ export class ChromedashGuideStagePage extends LitElement {
     this.stageName = '';
     this.featureId = 0;
     this.feature = {};
+    this.isActiveStage = false;
     this.featureFormFields = [];
     this.implStatusFormFields = [];
     this.implStatusOffered = '';
@@ -66,6 +68,9 @@ export class ChromedashGuideStagePage extends LitElement {
 
       if (this.feature.name) {
         document.title = `${this.feature.name} - ${this.appTitle}`;
+      }
+      if (this.feature.active_stage_id === this.stage.id) {
+        this.isActiveStage = true;
       }
       this.featureFormFields = FORMS_BY_STAGE_TYPE[stage.stage_type] || {
         name: '',
@@ -223,18 +228,13 @@ export class ChromedashGuideStagePage extends LitElement {
   }
 
   renderSections(formattedFeature, stageSections) {
-    const stageType = (this.stage) ? this.stage.stage_type : null;
-    let alreadyOnThisStage = false;
-    if (stageType) {
-      alreadyOnThisStage = this.stage.stage_type === this.feature.active_stage_id;
-    }
     const formSections = [
       html`
       <section class="stage_form">
         <chromedash-form-field
           name="set_stage"
-          value=${alreadyOnThisStage}
-          ?disabled=${alreadyOnThisStage}>
+          value=${this.isActiveStage}
+          ?disabled=${this.isActiveStage}>
         </chromedash-form-field>
       </section>`,
     ];
