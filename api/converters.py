@@ -305,6 +305,7 @@ def stage_to_json_dict(
   if d['stage_type'] == STAGE_TYPES_PROTOTYPE[feature_type]:
     d['intent_to_implement_url'] = stage.intent_thread_url
   elif d['stage_type'] == STAGE_TYPES_DEV_TRIAL[feature_type]:
+    d['ready_for_trial_url'] = stage.announcement_url
     milestone_field_names = MilestoneSet.DEV_TRIAL_MILESTONE_FIELD_NAMES
   elif d['stage_type'] == STAGE_TYPES_ORIGIN_TRIAL[feature_type]:
     d['intent_to_experiment_url'] = stage.intent_thread_url
@@ -319,7 +320,6 @@ def stage_to_json_dict(
     d['ot_stage_id'] = stage.ot_stage_id
   elif d['stage_type'] == STAGE_TYPES_SHIPPING[feature_type]:
     d['intent_to_ship_url'] = stage.intent_thread_url
-    d['ready_for_trial_url'] = stage.announcement_url
     d['finch_url'] = stage.finch_url
     milestone_field_names = MilestoneSet.SHIPPING_MILESTONE_FIELD_NAMES
   elif d['stage_type'] == STAGE_TYPES_ROLLOUT[feature_type]:
