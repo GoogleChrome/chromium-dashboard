@@ -562,3 +562,38 @@ class CalcActiveStages(FlaskHandler):
     
     return (f'{active_stages_set} active stages set for features and '
         f'{stages_created} stages created for features.')
+
+
+class CreateTrialExtensionStages(FlaskHandler):
+
+  def get_template_data(self, **kwargs):
+    """Associate trial extension stages with the correct origin trial stages."""
+    self.require_cron_header()
+
+    stages_created = 0
+
+    # Query for all origin trial stages.
+    ot_queries = [
+        Stage.query(Stage.stage_type == STAGE_BLINK_ORIGIN_TRIAL),
+        Stage.query(Stage.stage_type == STAGE_FAST_ORIGIN_TRIAL),
+        Stage.query(Stage.stage_type == STAGE_DEP_DEPRECATION_TRIAL)]
+
+    for q in ot_queries:
+      for s in q:
+        stage_id = s.key.integer_id()
+        # Query for an extension stage associated with this trial stage.
+        # There should typically be one for now until trial extension
+        # functionality is available to all users.
+        extension_stage = (
+            Stage.query(Stage.ot_stage_id == stage_id).get())
+        # If there isn't an extension stage, create one and associate it with
+        # this trial stage.
+        if extension_stage is None:
+          extension_stage = Stage(feature_id=s.feature_id,
+              stage_type=OT_EXTENSION_STAGE_TYPES_MAPPING[s.stage_type],
+              ot_stage_id=stage_id)
+          extension_stage.put()
+          stages_created += 1
+
+    return (f'{stages_created} extension stages created for '
+        'existing trial stages.')
