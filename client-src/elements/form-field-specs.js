@@ -3,7 +3,6 @@ import {
   FEATURE_CATEGORIES,
   FEATURE_TYPES,
   IMPLEMENTATION_STATUS,
-  INTENT_STAGES,
   PLATFORM_CATEGORIES,
   STANDARD_MATURITY_CHOICES,
   REVIEW_STATUS_CHOICES,
@@ -607,6 +606,7 @@ export const ALL_FIELDS = {
     attrs: URL_FIELD_ATTRS,
     required: false,
     label: '',
+    displayLabel: 'Safari views link',
     help_text: html`Citation link.`,
   },
 
@@ -615,6 +615,7 @@ export const ALL_FIELDS = {
     attrs: {rows: 2, placeholder: 'Notes'},
     required: false,
     label: '',
+    displayLabel: 'Safari views notes',
     help_text: '',
   },
 
@@ -633,6 +634,7 @@ export const ALL_FIELDS = {
     attrs: URL_FIELD_ATTRS,
     required: false,
     label: '',
+    displayLabel: 'Firefox views link',
     help_text: html`
     Citation link.`,
   },
@@ -642,6 +644,7 @@ export const ALL_FIELDS = {
     attrs: {rows: 2, placeholder: 'Notes'},
     required: false,
     label: '',
+    displayLabel: 'Firefox views notes',
     help_text: '',
   },
 
@@ -661,6 +664,7 @@ export const ALL_FIELDS = {
     attrs: URL_FIELD_ATTRS,
     required: false,
     label: '',
+    displayLabel: 'Web / Framework developer views link',
     help_text: html`
       Citation link.`,
   },
@@ -670,6 +674,7 @@ export const ALL_FIELDS = {
     attrs: {rows: 2, placeholder: 'Notes'},
     required: false,
     label: '',
+    displayLabel: 'Web / Framework developer views notes',
     help_text: html`
       Reference known representative examples of opinions,
       both positive and negative.`,
@@ -1199,74 +1204,10 @@ function makeHumanReadable(fieldName) {
 }
 
 // Return an array of field info
-function makeDisplaySpec(fieldName) {
-  const field = ALL_FIELDS[fieldName];
-  const displayName = field.label || makeHumanReadable(fieldName);
-  const fieldType = categorizeFieldType(field);
+export function makeDisplaySpec(fieldName) {
+  const fieldProps = ALL_FIELDS[fieldName];
+  const displayName = fieldProps.label || fieldProps.displayLabel ||
+        makeHumanReadable(fieldName);
+  const fieldType = categorizeFieldType(fieldProps);
   return [fieldName, displayName, fieldType];
-};
-
-// Return a list of field specs for each of the fields named in the args.
-function makeDisplaySpecs(fields) {
-  return fields.map(field => makeDisplaySpec(field));
-};
-
-export const DISPLAY_FIELDS_IN_STAGES = {
-  'Metadata': makeDisplaySpecs([
-    'category', 'feature_type', 'accurate_as_of', 'breaking_change',
-    'search_tags', 'bug_url', 'launch_bug_url',
-  ]),
-  [INTENT_STAGES.INTENT_INCUBATE[0]]: makeDisplaySpecs([
-    'initial_public_proposal_url', 'explainer_links',
-    'requires_embedder_support',
-  ]),
-  [INTENT_STAGES.INTENT_IMPLEMENT[0]]: makeDisplaySpecs([
-    'spec_link', 'standard_maturity', 'api_spec', 'spec_mentors',
-    'intent_to_implement_url',
-  ]),
-  [INTENT_STAGES.INTENT_EXPERIMENT[0]]: makeDisplaySpecs([
-    'devtrial_instructions', 'doc_links',
-    'interop_compat_risks',
-    'safari_views', 'safari_views_link', 'safari_views_notes',
-    'ff_views', 'ff_views_link', 'ff_views_notes',
-    'web_dev_views', 'web_dev_views_link', 'web_dev_views_notes',
-    'other_views_notes',
-    'security_review_status', 'privacy_review_status',
-    'ergonomics_risks', 'activation_risks', 'security_risks',
-    'debuggability',
-    'all_platforms', 'all_platforms_descr', 'wpt', 'wpt_descr',
-    'sample_links', 'devrel', 'ready_for_trial_url',
-    'dt_milestone_desktop_start', 'dt_milestone_android_start',
-    'dt_milestone_ios_start',
-    'flag_name',
-  ]),
-  [INTENT_STAGES.INTENT_IMPLEMENT_SHIP[0]]: makeDisplaySpecs([
-    'launch_bug_url',
-    'tag_review', 'tag_review_status',
-    'webview_risks',
-    'measurement', 'prefixed', 'non_oss_deps',
-  ]),
-  [INTENT_STAGES.INTENT_EXTEND_TRIAL[0]]: makeDisplaySpecs([
-    'experiment_goals', 'experiment_risks',
-    'experiment_extension_reason', 'ongoing_constraints',
-    'origin_trial_feedback_url', 'intent_to_experiment_url',
-    'r4dt_url',
-    'intent_to_extend_experiment_url',
-    'i2e_lgtms', 'r4dt_lgtms',
-    'ot_milestone_desktop_start', 'ot_milestone_desktop_end',
-    'ot_milestone_android_start', 'ot_milestone_android_end',
-    'ot_milestone_webview_start', 'ot_milestone_webview_end',
-    'experiment_timeline', // Deprecated
-  ]),
-  [INTENT_STAGES.INTENT_SHIP[0]]: makeDisplaySpecs([
-    'finch_url', 'anticipated_spec_changes',
-    'shipped_milestone', 'shipped_android_milestone',
-    'shipped_ios_milestone', 'shipped_webview_milestone',
-    'intent_to_ship_url', 'i2s_lgtms',
-  ]),
-  [INTENT_STAGES.INTENT_ROLLOUT[0]]: makeDisplaySpecs([
-    'rollout_milestone', 'rollout_platforms', 'rollout_details',
-    'enterprise_policies',
-  ]),
-  [INTENT_STAGES.INTENT_SHIPPED[0]]: makeDisplaySpecs([]),
 };

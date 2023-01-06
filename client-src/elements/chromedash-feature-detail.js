@@ -1,12 +1,16 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {openAddStageDialog} from './chromedash-add-stage-dialog';
-import {DISPLAY_FIELDS_IN_STAGES} from './form-field-specs';
+import {makeDisplaySpec} from './form-field-specs';
+import {
+  FLAT_METADATA_FIELDS,
+  FORMS_BY_STAGE_TYPE} from './form-definition';
+
 import {DEPRECATED_FIELDS, PLATFORMS_DISPLAYNAME, STAGE_SPECIFIC_FIELDS} from './form-field-enums';
 import '@polymer/iron-icon';
 import './chromedash-activity-log';
 import './chromedash-callout';
 import './chromedash-gate-chip';
-import {autolink, findProcessStage} from './utils.js';
+import {autolink, findProcessStage, flattenSections} from './utils.js';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 const LONG_TEXT = 60;
@@ -93,7 +97,6 @@ class ChromedashFeatureDetail extends LitElement {
       .card {
         background: var(--card-background);
         max-width: var(--max-content-width);
-        margin-top: 1em;
         padding: 16px;
       }
 
@@ -107,7 +110,7 @@ class ChromedashFeatureDetail extends LitElement {
       }
 
       dl {
-        padding: var(--content-padding-half);
+        padding: 0 var(--content-padding-half);
       }
 
       dt {
@@ -199,6 +202,9 @@ class ChromedashFeatureDetail extends LitElement {
 
     let value = this.feature[fieldName];
     const fieldNameMapping = {
+      owner: 'browsers.chrome.owners',
+      editors: 'browsers.chrome.editors',
+      search_tags: 'tags',
       spec_link: 'standards.spec',
       standard_maturity: 'standards.maturity.text',
       sample_links: 'resources.samples',
@@ -214,10 +220,13 @@ class ChromedashFeatureDetail extends LitElement {
       shipped_ios_milestone: 'browsers.chrome.ios',
       ff_views: 'browsers.ff.view.text',
       ff_views_link: 'browsers.ff.view.url',
+      ff_views_notes: 'browsers.ff.view.notes',
       safari_views: 'browsers.safari.view.text',
       safari_views_link: 'browsers.safari.view.url',
-      webdev_views: 'browsers.webdev.view.text',
-      webdev_views_link: 'browsers.webdev.view.url',
+      safari_views_notes: 'browsers.safari.view.notes',
+      web_dev_views: 'browsers.webdev.view.text',
+      web_dev_views_link: 'browsers.webdev.view.url',
+      web_dev_views_notes: 'browsers.webdev.view.notes',
       other_views_notes: 'browsers.other.view.notes',
     };
     if (!value && fieldNameMapping[fieldName]) {
@@ -277,15 +286,15 @@ class ChromedashFeatureDetail extends LitElement {
   renderField(fieldDef, feStage) {
     const [fieldId, fieldDisplayName, fieldType] = fieldDef;
     const value = this.getFieldValue(fieldId, feStage);
-    const icon = this.isDefinedValue(value) ?
-      html`<sl-icon library="material" name="check_circle_20px"></sl-icon>` :
-      html`<sl-icon library="material" name="blank_20px"></sl-icon>`;
-
     const isDefinedValue = this.isDefinedValue(value);
     const isDeprecatedField = DEPRECATED_FIELDS.has(fieldId);
     if (!isDefinedValue && isDeprecatedField) {
       return nothing;
     }
+
+    const icon = isDefinedValue ?
+      html`<sl-icon library="material" name="check_circle_20px"></sl-icon>` :
+      html`<sl-icon library="material" name="blank_20px"></sl-icon>`;
 
     return html`
       <dt id=${fieldId}>${icon} ${fieldDisplayName}</dt>
@@ -324,11 +333,16 @@ class ChromedashFeatureDetail extends LitElement {
     `;
   }
 
+  getStageForm(stageType) {
+    return FORMS_BY_STAGE_TYPE[stageType] || null;
+  }
+
   renderMetadataSection() {
-    const fields = DISPLAY_FIELDS_IN_STAGES['Metadata'];
-    if (fields === undefined || fields.length === 0) {
+    const fieldNames = flattenSections(FLAT_METADATA_FIELDS);
+    if (fieldNames === undefined || fieldNames.length === 0) {
       return nothing;
     }
+    const fields = fieldNames.map(makeDisplaySpec);
     const editButton = html`
       <sl-button size="small" style="float:right"
           href="/guide/stage/${this.feature.id}/metadata"
@@ -367,8 +381,10 @@ class ChromedashFeatureDetail extends LitElement {
   }
 
   renderProcessStage(feStage) {
-    const fields = DISPLAY_FIELDS_IN_STAGES[feStage.intent_stage];
-    if (fields === undefined || fields.length == 0) return nothing;
+    const stageForm = this.getStageForm(feStage.stage_type);
+    const fieldNames = stageForm === null ? [] : flattenSections(stageForm);
+    if (fieldNames === undefined || fieldNames.length == 0) return nothing;
+    const fields = fieldNames.map(makeDisplaySpec);
 
     const processStage = findProcessStage(feStage, this.process);
     if (!processStage) return nothing;
