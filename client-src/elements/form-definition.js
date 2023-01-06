@@ -318,6 +318,7 @@ const FLAT_EVAL_READINESS_TO_SHIP_FIELDS = {
       name: 'Evaluate readiness to ship',
       fields: [
         'prefixed',
+        'tag_review',
       ],
     },
   ],
@@ -331,7 +332,6 @@ const FLAT_PREPARE_TO_SHIP_FIELDS = {
       name: 'Prepare to ship',
       fields: [
         // Standardization
-        'tag_review',
         'tag_review_status',
         'webview_risks',
         'anticipated_spec_changes',
@@ -403,7 +403,6 @@ const PSA_PREPARE_TO_SHIP_FIELDS = {
     {
       name: 'Prepare to ship',
       fields: [
-        'tag_review',
         'intent_to_ship_url',
       ],
     },
