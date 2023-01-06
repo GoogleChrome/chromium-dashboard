@@ -401,11 +401,11 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
           stage_update_items.append((field, field_val))
 
     # If a stage_id is supplied, we make changes to only that specific stage.
-    if stage_update_items and stage_id:
+    if stage_id:
       self.update_single_stage(
           stage_id, fe.feature_type, stage_update_items, changed_fields)
     # Otherwise, we find the associated stages and make changes (edit-all).
-    elif stage_update_items:
+    else:
       self.update_multiple_stages(feature_id, feature.feature_type,
           stage_update_items, changed_fields)
 

@@ -409,7 +409,7 @@ export const ALL_FIELDS = {
     type: 'input',
     attrs: MULTI_EMAIL_FIELD_ATTRS,
     required: false,
-    label: 'Spec mentor',
+    label: 'Spec mentors',
     help_text: html`
         Experienced
         <a target="_blank"
