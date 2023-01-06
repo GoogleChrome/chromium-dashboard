@@ -250,8 +250,6 @@ def _prep_stage_gate_info(
   # Write a list of stages associated with the feature.
   d['stages'] = []
 
-  # TODO(danielrsmith): This approach should be removed or refactored when
-  # functionality for creating multiple stages is added.
   for s in stages:
     d['stages'].append(stage_to_json_dict(s, fe.feature_type))
     # Keep major stages for referencing additional fields.
@@ -269,6 +267,21 @@ def _prep_stage_gate_info(
       major_stages['rollout'] = s
 
   return major_stages
+
+
+# This function is a workaround to reference extension stage info on
+# origin trial stages.
+# TODO(danielrsmith): Remove this once users can manually add trial extension
+# stages.
+def _add_ot_extension_fields(d: dict):
+  """Adds info from the trial extension stage to the OT stage dict."""
+  extension_stage = Stage.query(
+      Stage.ot_stage_id == d['id']).get()
+  if extension_stage is None:
+    return
+  d['experiment_extension_reason'] = extension_stage.experiment_extension_reason
+  d['intent_to_extend_experiment_url'] = (
+    extension_stage.intent_thread_url)
 
 
 def stage_to_json_dict(
@@ -298,9 +311,11 @@ def stage_to_json_dict(
     d['experiment_goals'] = stage.experiment_goals
     d['experiment_risks'] = stage.experiment_risks
     d['origin_trial_feedback_url'] = stage.origin_trial_feedback_url
+    _add_ot_extension_fields(d)
     milestone_field_names = MilestoneSet.OT_MILESTONE_FIELD_NAMES
   elif d['stage_type'] == STAGE_TYPES_EXTEND_ORIGIN_TRIAL[feature_type]:
     d['experiment_extension_reason'] = stage.experiment_extension_reason
+    d['intent_to_extend_experiment_url'] = stage.intent_thread_url
     d['ot_stage_id'] = stage.ot_stage_id
   elif d['stage_type'] == STAGE_TYPES_SHIPPING[feature_type]:
     d['intent_to_ship_url'] = stage.intent_thread_url
