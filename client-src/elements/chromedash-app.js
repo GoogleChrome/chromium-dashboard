@@ -282,7 +282,7 @@ class ChromedashApp extends LitElement {
   }
 
   handleShowGateColumn(e) {
-    this.showGateColumn(e.detail.feature, e.detail.stage.stage_id, e.detail.gate);
+    this.showGateColumn(e.detail.feature, e.detail.stage.id, e.detail.gate);
   }
 
   /**

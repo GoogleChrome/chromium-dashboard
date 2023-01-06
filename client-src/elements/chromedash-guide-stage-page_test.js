@@ -17,7 +17,7 @@ describe('chromedash-guide-stage-page', () => {
     new_crbug_url: 'fake crbug link',
     stages: [
       {
-        stage_id: 10,
+        id: 10,
         stage_type: 160,
         intent_stage: 3,
       },
