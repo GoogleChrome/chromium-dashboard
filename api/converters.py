@@ -302,7 +302,7 @@ def stage_to_json_dict(
   # Determine the stage type and handle stage-specific fields.
   # TODO(danielrsmith): Change client to use new field names.
   milestone_field_names: list[dict] | None = None
-  if d['stage_type'] == STAGE_TYPES_PROTOTYPE:
+  if d['stage_type'] == STAGE_TYPES_PROTOTYPE[feature_type]:
     d['intent_to_implement_url'] = stage.intent_thread_url
   elif d['stage_type'] == STAGE_TYPES_DEV_TRIAL[feature_type]:
     milestone_field_names = MilestoneSet.DEV_TRIAL_MILESTONE_FIELD_NAMES
@@ -440,6 +440,7 @@ def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
       'val': standard_maturity,
     },
   }
+  d['spec_mentors'] = fe.spec_mentor_emails
   d['tag_review_status'] = REVIEW_STATUS_CHOICES[fe.tag_review_status]
   d['tag_review_status_int'] = fe.tag_review_status
   d['security_review_status'] = REVIEW_STATUS_CHOICES[
