@@ -197,6 +197,10 @@ class ChromedashFeatureDetail extends LitElement {
 
   getFieldValue(fieldName, feStage) {
     if (STAGE_SPECIFIC_FIELDS.has(fieldName)) {
+      const value = feStage[fieldName];
+      if (fieldName === 'rollout_platforms' && value) {
+        return value.map(platformId => PLATFORMS_DISPLAYNAME[platformId]);
+      }
       return feStage[fieldName];
     }
 
@@ -236,9 +240,6 @@ class ChromedashFeatureDetail extends LitElement {
           value = value[step];
         }
       }
-    }
-    if (fieldName == 'rollout_platforms' && value) {
-      value = value.map(platformId => PLATFORMS_DISPLAYNAME[platformId]);
     }
     return value;
   }
