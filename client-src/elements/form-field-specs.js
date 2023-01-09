@@ -352,12 +352,14 @@ export const ALL_FIELDS = {
     required: false,
     label: 'Initial public proposal URL',
     help_text: html`
-        Link to the first public proposal to create this feature, e.g.,
-        a WICG discourse post.`,
+        Link to the first public proposal to create this feature.`,
     extra_help: html`
-        Add a reference to your <a href="https://github.com/WICG/proposals#what-does-a-proposal-look-like">
-        WICG proposal</a>
-        and start socializing the problem with other vendors and developers.`
+        If there isn't another obvious place to propose your feature, create a
+        <a href="https://github.com/WICG/proposals#what-does-a-proposal-look-like">
+        WICG proposal</a>.
+        You can use your proposal document to help you socialize the problem with other vendors
+        and developers.`,
+
   },
 
   'explainer_links': {
@@ -377,15 +379,13 @@ export const ALL_FIELDS = {
         for several examples of good explainers and tips for effective explainers.
         </p>
         <p>
-        You will need to publish this explainer by sharing it on a public forum,
-        and kick off "standards incubation" by proposing this to a relevant standards venue.
-        If you've already made an initial public proposal, post your explainer to that thread. Otherwise, your initial proposal can refer to your explainer.
+        If you've already made an initial public proposal (see above),
+        post your explainer to that thread.
+        Otherwise, make an initial proposal based on your explainer.
         </p>
         <p>
         Once a second organization is interested in the WICG proposal, you can move the explainer into the WICG. The <a href="https://wicg.github.io/admin/charter.html#chairs">WICG co-chairs</a> can help you.
         </p>
-
-
         <p>
         If you want help, ask for a <a href="https://sites.google.com/a/chromium.org/dev/blink/spec-mentors">specification mentor</a>.
         </p>`,
