@@ -130,6 +130,13 @@ export const DEPRECATED_FIELDS = new Set([
   'standardization',
 ]);
 
+export const GATE_SHORT_NAMES = {
+  1: 'Prototype',
+  2: 'OT',
+  3: 'OT Extension',
+  4: 'Ship',
+};
+
 export const IMPLEMENTATION_STATUS = {
   NO_ACTIVE_DEV: [1, 'No active development'],
   PROPOSED: [2, 'Proposed'],
