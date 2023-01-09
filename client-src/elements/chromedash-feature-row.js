@@ -1,5 +1,6 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {SHARED_STYLES} from '../sass/shared-css.js';
+import {GATE_SHORT_NAMES} from './form-field-enums.js';
 
 
 class ChromedashFeatureRow extends LitElement {
@@ -162,17 +163,22 @@ class ChromedashFeatureRow extends LitElement {
     return activeStagesAndTheirGates;
   }
 
+  getGateShortName(gate) {
+    return `${GATE_SHORT_NAMES[gate.gate_type]}: ` || nothing;
+  }
+
   renderActiveStageAndGates(stageAndGates) {
-    const stageName = ''; // TODO(jrobbins) get this data.
     return html`
       <div>
-        ${stageName}
         ${stageAndGates.gates.map(gate => html`
-          <chromedash-gate-chip
-            .feature=${this.feature}
-            .stage=${stageAndGates.stage}
-            .gate=${gate}
-          ></chromedash-gate-chip>`)}
+          <div>
+            ${this.getGateShortName(gate)}
+            <chromedash-gate-chip
+              .feature=${this.feature}
+              .stage=${stageAndGates.stage}
+              .gate=${gate}
+            ></chromedash-gate-chip>
+          </div>`)}
       </div>
     `;
   }
