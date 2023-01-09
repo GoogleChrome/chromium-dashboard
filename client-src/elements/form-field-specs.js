@@ -359,7 +359,6 @@ export const ALL_FIELDS = {
         WICG proposal</a>.
         You can use your proposal document to help you socialize the problem with other vendors
         and developers.`,
-
   },
 
   'explainer_links': {
@@ -384,7 +383,10 @@ export const ALL_FIELDS = {
         Otherwise, make an initial proposal based on your explainer.
         </p>
         <p>
-        Once a second organization is interested in the WICG proposal, you can move the explainer into the WICG. The <a href="https://wicg.github.io/admin/charter.html#chairs">WICG co-chairs</a> can help you.
+        Once a second organization is interested in the WICG proposal,
+        you can move the explainer into the WICG.
+        The <a href="https://wicg.github.io/admin/charter.html#chairs">WICG co-chairs</a>
+        can help you.
         </p>
         <p>
         If you want help, ask for a <a href="https://sites.google.com/a/chromium.org/dev/blink/spec-mentors">specification mentor</a>.
