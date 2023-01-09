@@ -354,6 +354,10 @@ export const ALL_FIELDS = {
     help_text: html`
         Link to the first public proposal to create this feature, e.g.,
         a WICG discourse post.`,
+    extra_help: html`
+        Add a reference to your <a href="https://github.com/WICG/proposals#what-does-a-proposal-look-like">
+        WICG proposal</a>
+        and start socializing the problem with other vendors and developers.`
   },
 
   'explainer_links': {
@@ -375,12 +379,10 @@ export const ALL_FIELDS = {
         <p>
         You will need to publish this explainer by sharing it on a public forum,
         and kick off "standards incubation" by proposing this to a relevant standards venue.
-        Frequently, this means you should
-        <a href="https://github.com/WICG/proposals#what-does-a-proposal-look-like">
-          make a WICG proposal</a> and start socializing
-        the problem with other vendors and developers.
-        Enter a reference to the public proposal in “Initial Public Proposal” field;
-        if there is interest in the WICG proposal and it can be moved into the WICG at this point, do so. The <a href="https://wicg.github.io/admin/charter.html#chairs">WICG co-chairs</a> can help you.
+        If you've already made an initial public proposal, post your explainer to that thread. Otherwise, your initial proposal can refer to your explainer.
+        </p>
+        <p>
+        Once a second organization is interested in the WICG proposal, you can move the explainer into the WICG. The <a href="https://wicg.github.io/admin/charter.html#chairs">WICG co-chairs</a> can help you.
         </p>
 
 
@@ -398,14 +400,6 @@ export const ALL_FIELDS = {
         Link to the spec, if and when available. When implementing
         a spec update, please link to a heading in a published spec
         rather than a pull request when possible.`,
-    extra_help: html`
-        <p>
-        In addition to starting or updating your specification,
-        start sketching out a proposed solution in your (public) explainer
-        during your prototyping, detailing the API design (using webIDL).
-        It's also a good idea to discuss your idea with the team/team lead (TL)
-        or area expert in the feature area, prior to checking in code in the area.
-        </p>`,
   },
 
   'comments': {
