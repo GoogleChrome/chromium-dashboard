@@ -310,6 +310,7 @@ export const ALL_FIELDS = {
         Explain why the web needs this change. It may be useful
         to describe what web developers are forced to do without
         it. When possible, add links to your explainer
+        (under <a href="#explainer_links">Explainer link(s)</a>)
         backing up your claims.
         <br/><br/>
         This text is sometimes included with the summary in the
@@ -350,8 +351,13 @@ export const ALL_FIELDS = {
     required: false,
     label: 'Initial public proposal URL',
     help_text: html`
-        Link to the first public proposal to create this feature, e.g.,
-        a WICG discourse post.`,
+        Link to the first public proposal to create this feature.`,
+    extra_help: html`
+        If there isn't another obvious place to propose your feature, create a
+        <a href="https://github.com/WICG/proposals#what-does-a-proposal-look-like">
+        WICG proposal</a>.
+        You can use your proposal document to help you socialize the problem with other vendors
+        and developers.`,
   },
 
   'explainer_links': {
@@ -365,6 +371,25 @@ export const ALL_FIELDS = {
         public forum before sending an Intent to Prototype in
         order to enable discussion with other browser vendors,
         standards bodies, or other interested parties.`,
+    extra_help: html`
+        <p>
+        See the TAG guide to writing <a href="https://tag.w3.org/explainers/">Explainers</a>
+        for several examples of good explainers and tips for effective explainers.
+        </p>
+        <p>
+        If you've already made an initial public proposal (see above),
+        post your explainer to that thread.
+        Otherwise, make an initial proposal based on your explainer.
+        </p>
+        <p>
+        Once a second organization is interested in the WICG proposal,
+        you can move the explainer into the WICG.
+        The <a href="https://wicg.github.io/admin/charter.html#chairs">WICG co-chairs</a>
+        can help you.
+        </p>
+        <p>
+        If you want help, ask for a <a href="https://sites.google.com/a/chromium.org/dev/blink/spec-mentors">specification mentor</a>.
+        </p>`,
   },
 
   'spec_link': {
