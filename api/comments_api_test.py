@@ -159,6 +159,8 @@ class CommentsAPITest(testing_config.CustomTestCase):
       actual_response = self.handler.do_get(
           feature_id=self.feature_id, gate_id=self.gate_1_id)
     testing_config.sign_out()
+
+    self.assertEqual(1, len(actual_response['comments']))
     actual_comment = actual_response['comments'][0]
     del actual_comment['created']
     del actual_comment['comment_id']
