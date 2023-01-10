@@ -127,7 +127,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
     testing_config.sign_out()
     self.assertEqual({'comments': []}, actual_response)
 
-  def test_get__legacy_comment(self):
+  def test_get__legacy_comments(self):
     """We can get legacy comments."""
     testing_config.sign_out()
     testing_config.sign_in('user7@example.com', 123567890)
