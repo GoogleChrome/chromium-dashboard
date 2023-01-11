@@ -115,6 +115,7 @@ def can_edit_feature(user: User, feature_id: int) -> bool:
   # If yes, the feature can be edited.
   return (email in feature.owner_emails or
           email in feature.editor_emails or
+          email in feature.spec_mentor_emails or
           email == feature.creator_email)
 
 

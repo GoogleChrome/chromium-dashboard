@@ -77,12 +77,17 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
     self.feature_editor.put()
     self.users.append(self.feature_editor)
 
+    self.spec_mentor = user_models.AppUser(email='mentor@example.com')
+    self.spec_mentor.put()
+    self.users.append(self.spec_mentor)
+
     # Feature for checking permissions against
     self.feature_1 = core_models.FeatureEntry(
         name='feature one', summary='sum',
         creator_email="feature_creator@example.com",
         owner_emails=['feature_owner@example.com'],
-        editor_emails=['feature_editor@example.com'], category=1)
+        editor_emails=['feature_editor@example.com'],
+        spec_mentor_emails=['mentor@example.com'], category=1)
     self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()
 
@@ -94,7 +99,8 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
   def check_function_results(
       self, func, additional_args,
       unregistered='missing', registered='missing',
-      special='missing', site_editor='missing', admin='missing', anon='missing'):
+      special='missing', site_editor='missing',
+      admin='missing', anon='missing'):
     """Test func under six conditions and check expected results."""
     # Test unregistered users
     testing_config.sign_in('unregistered@example.com', 123)
@@ -132,8 +138,9 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
 
   def check_function_results_with_feature(
       self, func, additional_args, unregistered='missing',
-      registered='missing', feature_owner='missing', feature_editor='missing',
-      creator='missing', site_editor='missing', admin='missing'):
+      registered='missing', feature_owner='missing',
+      feature_editor='missing', creator='missing',
+      site_editor='missing', admin='missing', spec_mentor='missing',):
     """Test func in the context of a specific feature id."""
     # Test unregistered users
     testing_config.sign_in('unregistered@example.com', 123)
@@ -170,6 +177,11 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
     user = users.get_current_user()
     self.assertEqual(admin, func(user, *additional_args))
 
+    # Test spec mentor users
+    testing_config.sign_in('mentor@example.com', 123)
+    user = users.get_current_user()
+    self.assertEqual(spec_mentor, func(user, *additional_args))
+
   def test_can_admin_site(self):
     self.check_function_results(
         permissions.can_admin_site, tuple(),
@@ -186,7 +198,7 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
       permissions.can_view_feature, (self.feature_id,),
       unregistered=True, registered=True,
       feature_owner=True, feature_editor=True,
-      creator=True, site_editor=True, admin=True
+      creator=True, site_editor=True, admin=True, spec_mentor=True,
     )
 
   def test_can_create_feature(self):
@@ -212,7 +224,7 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
       permissions.can_edit_feature, (self.feature_id,),
       unregistered=False, registered=False,
       feature_owner=True, feature_editor=True,
-      creator=True, site_editor=True, admin=True
+      creator=True, site_editor=True, admin=True, spec_mentor=True
     )
 
   def test_can_approve_feature(self):
