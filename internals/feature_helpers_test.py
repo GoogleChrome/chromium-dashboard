@@ -199,16 +199,16 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     self.assertEqual('feature a', actual[0]['name'])
     self.assertEqual('feature b', actual[1]['name'])
 
-    lookup_key_1 = '%s|basic|%s' % (FeatureEntry.DEFAULT_CACHE_KEY,
-                                    self.feature_1.key.integer_id())
-    lookup_key_2 = '%s|basic|%s' % (FeatureEntry.DEFAULT_CACHE_KEY,
-                                    self.feature_2.key.integer_id())
+    lookup_key_1 = '%s|%s' % (FeatureEntry.DEFAULT_CACHE_KEY,
+                              self.feature_1.key.integer_id())
+    lookup_key_2 = '%s|%s' % (FeatureEntry.DEFAULT_CACHE_KEY,
+                              self.feature_2.key.integer_id())
     self.assertEqual('feature a', rediscache.get(lookup_key_1)['name'])
     self.assertEqual('feature b', rediscache.get(lookup_key_2)['name'])
 
   def test_get_by_ids__cache_hit(self):
     """We can load features from rediscache."""
-    cache_key = '%s|basic|%s' % (
+    cache_key = '%s|%s' % (
         FeatureEntry.DEFAULT_CACHE_KEY, self.feature_1.key.integer_id())
     cached_feature = {
       'name': 'fake cached_feature',
