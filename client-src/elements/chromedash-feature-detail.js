@@ -224,6 +224,10 @@ class ChromedashFeatureDetail extends LitElement {
     this.calcMaxMilestone(milestoneFieldName, feStage);
 
     const maxMilestoneFieldName = `max_${milestoneFieldName}`;
+    // Display only extension milestone if the original milestone has not been added.
+    if (feStage[maxMilestoneFieldName] && !feStage[fieldName]) {
+      return `Extended to ${feStage[maxMilestoneFieldName]}`;
+    }
     // If the trial has been extended past the original milestone, display the extension
     // milestone with additional text reminding of the original milestone end date.
     if (feStage[maxMilestoneFieldName] && feStage[maxMilestoneFieldName] > feStage[fieldName]) {
