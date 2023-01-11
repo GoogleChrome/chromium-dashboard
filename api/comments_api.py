@@ -59,11 +59,11 @@ class CommentsAPI(basehandlers.APIHandler):
   def do_get(self, **kwargs) -> dict[str, list[dict[str, Any]]]:
     """Return a list of all review comments on the given feature."""
     feature_id = kwargs['feature_id']
-    field_id = kwargs.get('field_id', None)
+    gate_id = kwargs.get('gate_id', None)
     comments_only = self.get_bool_arg('comments_only')
     # Note: We assume that anyone may view approval comments.
     comments = Activity.get_activities(
-        feature_id, field_id, comments_only=comments_only)
+        feature_id, gate_id, comments_only=comments_only)
     user = self.get_current_user()
     is_admin = permissions.can_admin_site(user)
 
@@ -78,6 +78,8 @@ class CommentsAPI(basehandlers.APIHandler):
   def do_post(self, **kwargs) -> dict[str, str]:
     """Add a review comment and possibly set a approval value."""
     feature_id = kwargs['feature_id']
+    # TODO(kyle): Fix the gate_type here as it does not exist in the main.py;
+    # it should be gate_id.
     gate_type = kwargs.get('gate_type', None)
     new_state = self.get_int_param(
         'state', required=False,
@@ -87,6 +89,7 @@ class CommentsAPI(basehandlers.APIHandler):
     post_to_approval_field_id = self.get_param(
         'postToApprovalFieldId', required=False)
 
+    # TODO(kyle): this is not working. gate_type is always None.
     if gate_type is not None and new_state is not None:
       old_approvals = Approval.get_approvals(
           feature_id=feature_id, field_id=gate_type,

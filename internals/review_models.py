@@ -334,7 +334,8 @@ class Activity(ndb.Model):  # copy from Comment
     query = Activity.query().order(Activity.created)
     query = query.filter(Activity.feature_id == feature_id)
     if gate_id:
-      query = query.filter(Activity.gate_id == gate_id)
+      # Fetch activities with a gate_id or None value.
+      query = query.filter(Activity.gate_id.IN([gate_id, None]))
     acts = query.fetch(None)
     if comments_only:
       return [act for act in acts if act.content]
