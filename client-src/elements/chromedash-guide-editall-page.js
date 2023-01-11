@@ -235,7 +235,7 @@ export class ChromedashGuideEditallPage extends LitElement {
       const extensions = feStage.extensions || [];
       extensions.forEach(extensionStage => stageIds.push(extensionStage.id));
     });
-    return stageIds;
+    return stageIds.join(',');
   }
 
   renderForm() {
