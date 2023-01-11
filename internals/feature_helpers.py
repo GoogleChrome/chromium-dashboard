@@ -538,7 +538,7 @@ def get_all(limit: Optional[int]=None,
 
 
 def get_by_ids(feature_ids: list[int],
-               update_cache: bool=True) -> list[dict[str, Any]]:
+    update_cache: bool=False) -> list[dict[str, Any]]:
   """Return a list of JSON dicts for the specified features.
 
   Because the cache may rarely have stale data, this should only be
@@ -547,26 +547,21 @@ def get_by_ids(feature_ids: list[int],
   data from NDB directly.
   """
   result_dict = {}
-  futures_by_id = {}
-
-  if update_cache:
-    lookup_keys = [
-        FeatureEntry.feature_cache_key(
-            FeatureEntry.DEFAULT_CACHE_KEY + '|basic', feature_id)
-        for feature_id in feature_ids]
-    cached_features = rediscache.get_multi(lookup_keys)
-    result_dict = {f['id']: f
-                   for f in cached_features.values()
-                   if f is not None and f.get('id')}
+  futures = []
 
   for feature_id in feature_ids:
-    if result_dict.get(feature_id) is None:
-      futures_by_id[feature_id] = FeatureEntry.get_by_id_async(feature_id)
+    lookup_key = FeatureEntry.feature_cache_key(
+        FeatureEntry.DEFAULT_CACHE_KEY, feature_id)
+    feature = rediscache.get(lookup_key)
+    if feature is None or update_cache:
+      futures.append(FeatureEntry.get_by_id_async(feature_id))
+    else:
+      result_dict[feature_id] = feature
 
-  for future in futures_by_id.values():
+  for future in futures:
     unformatted_feature: Optional[FeatureEntry] = future.get_result()
     if unformatted_feature and not unformatted_feature.deleted:
-      feature = converters.feature_entry_to_json_basic(unformatted_feature)
+      feature = converters.feature_entry_to_json_verbose(unformatted_feature)
       if unformatted_feature.updated is not None:
         feature['updated_display'] = (
             unformatted_feature.updated.strftime("%Y-%m-%d"))
@@ -576,16 +571,10 @@ def get_by_ids(feature_ids: list[int],
           unformatted_feature.blink_components, unformatted_feature.bug_url,
           unformatted_feature.impl_status_chrome,
           unformatted_feature.owner_emails)
+      store_key = FeatureEntry.feature_cache_key(
+          FeatureEntry.DEFAULT_CACHE_KEY,  unformatted_feature.key.integer_id())
+      rediscache.set(store_key, feature)
       result_dict[unformatted_feature.key.integer_id()] = feature
-
-  if update_cache:
-    to_cache = {}
-    for feature_id in futures_by_id:
-      if feature_id in result_dict:
-        store_key = FeatureEntry.feature_cache_key(
-            FeatureEntry.DEFAULT_CACHE_KEY + '|basic', feature_id)
-        to_cache[store_key] = result_dict[feature_id]
-    rediscache.set_multi(to_cache)
 
   result_list = [
       result_dict[feature_id] for feature_id in feature_ids
