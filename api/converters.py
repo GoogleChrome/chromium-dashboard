@@ -227,7 +227,9 @@ def _stage_attr(
 
 
 def _prep_stage_gate_info(
-    fe: FeatureEntry, d: dict) -> dict[str, Optional[Stage]]:
+    fe: FeatureEntry, d: dict,
+    prefetched_stages: list[Stage] | None=None
+    ) -> dict[str, Optional[Stage]]:
   """Adds stage and gate info to the dict and returns major stage info."""
   proto_type = STAGE_TYPES_PROTOTYPE[fe.feature_type]
   dev_trial_type = STAGE_TYPES_DEV_TRIAL[fe.feature_type]
@@ -237,7 +239,10 @@ def _prep_stage_gate_info(
   rollout_type = STAGE_TYPES_ROLLOUT[fe.feature_type]
 
   # Get all stages associated with the feature, sorted by stage type.
-  stages = Stage.query(Stage.feature_id == d['id']).order(Stage.stage_type)
+  if prefetched_stages is not None:
+    stages = prefetched_stages
+  else:
+    stages = Stage.query(Stage.feature_id == d['id']).order(Stage.stage_type)
 
   major_stages: dict[str, Optional[Stage]] = {
       'proto': None,
@@ -345,7 +350,9 @@ def stage_to_json_dict(
   return d
 
 
-def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
+def feature_entry_to_json_verbose(
+    fe: FeatureEntry, prefetched_stages: list[Stage] | None=None
+    ) -> dict[str, Any]:
   """Returns a verbose dictionary with all info about a feature."""
   # Do not convert to JSON if the entity has not been saved.
   if not fe.key:
@@ -356,7 +363,7 @@ def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
   d['id'] = fe.key.integer_id()
 
   # Get stage and gate info, returning stage info to be more explicitly added.
-  stages = _prep_stage_gate_info(fe, d)
+  stages = _prep_stage_gate_info(fe, d, prefetched_stages=prefetched_stages)
   # Prototype stage fields.
   d['intent_to_implement_url'] = _stage_attr(
       stages['proto'], 'intent_thread_url')
