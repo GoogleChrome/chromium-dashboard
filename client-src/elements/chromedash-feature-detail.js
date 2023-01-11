@@ -200,7 +200,11 @@ class ChromedashFeatureDetail extends LitElement {
     return !(value === undefined || value === null || value.length == 0);
   }
 
+  // Look at all extension milestones and calculate the highest milestone that an origin trial
+  // is available. This is used to display the highest milestone available, but to preserve the
+  // milestone that the trial was originally available for without extensions.
   calcMaxMilestone(fieldName, feStage) {
+    // If the max milestone has already been calculated, or no trial extensions exist, do nothing.
     if (feStage[`max_${fieldName}`] || !feStage.extensions) {
       return;
     }
@@ -210,14 +214,18 @@ class ChromedashFeatureDetail extends LitElement {
         maxMilestone = Math.max(maxMilestone, extension[fieldName]);
       }
     }
+    // Save the findings with the "max_" prefix as a prop of the stage for reference.
     feStage[`max_${fieldName}`] = maxMilestone;
   }
 
+  // Get the milestone value that is displayed to the user regarding the origin trial end date.
   getMilestoneExtensionValue(fieldName, feStage) {
     const milestoneFieldName = OT_MILESTONE_END_FIELDS[fieldName];
     this.calcMaxMilestone(milestoneFieldName, feStage);
 
     const maxMilestoneFieldName = `max_${milestoneFieldName}`;
+    // If the trial has been extended past the original milestone, display the extension
+    // milestone with additional text reminding of the original milestone end date.
     if (feStage[maxMilestoneFieldName] && feStage[maxMilestoneFieldName] > feStage[fieldName]) {
       return `${feStage[maxMilestoneFieldName]} (extended from ${feStage[milestoneFieldName]})`;
     }
@@ -230,6 +238,7 @@ class ChromedashFeatureDetail extends LitElement {
       if (fieldName === 'rollout_platforms' && value) {
         return value.map(platformId => PLATFORMS_DISPLAYNAME[platformId]);
       } else if (fieldName in OT_MILESTONE_END_FIELDS) {
+        // If an origin trial end date is being displayed, handle extension milestones as well.
         return this.getMilestoneExtensionValue(fieldName, feStage);
       }
       return feStage[fieldName];
@@ -342,6 +351,8 @@ class ChromedashFeatureDetail extends LitElement {
     return fields.some(fieldDef => this.hasFieldValue(fieldDef[0], feStage));
   }
 
+  // Renders all fields for trial extension stages as a subsection of the
+  // origin trial stage that the extension is associated with.
   renderExtensionFields(extensionStages) {
     const extensionFields = [];
     const fieldNames = flattenSections(FLAT_TRIAL_EXTENSION_FIELDS);
@@ -362,6 +373,7 @@ class ChromedashFeatureDetail extends LitElement {
 
   renderSectionFields(fields, feStage) {
     if (this.stageHasAnyFilledFields(fields, feStage)) {
+      // Add the subsection of trial extension information if it is relevant.
       const extensionFields = (
         (feStage.extensions) ? this.renderExtensionFields(feStage.extensions) : []);
 

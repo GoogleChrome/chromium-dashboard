@@ -328,6 +328,9 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     if new_val != old_val:
       changed_fields.append((field, old_val, new_val))
 
+  # TODO(danielrsmith): This method's logic is way too complicated to easily
+  # maintain. This needs to be scrapped and submission of edits should be
+  # handled using features_api and stages_api.
   def process_post_data(self, **kwargs) -> requests.Response:
     feature_id = kwargs.get('feature_id', None)
     stage_id = kwargs.get('stage_id', None)

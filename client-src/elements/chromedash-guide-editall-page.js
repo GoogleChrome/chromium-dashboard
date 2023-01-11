@@ -231,6 +231,7 @@ export class ChromedashGuideEditallPage extends LitElement {
     const stageIds = [];
     this.feature.stages.forEach(feStage => {
       stageIds.push(feStage.id);
+      // Check if any trial extension exist, and collect their IDs as well.
       const extensions = feStage.extensions || [];
       extensions.forEach(extensionStage => stageIds.push(extensionStage.id));
     });

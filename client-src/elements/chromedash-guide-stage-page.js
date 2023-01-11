@@ -224,6 +224,7 @@ export class ChromedashGuideStagePage extends LitElement {
       if (STAGE_SPECIFIC_FIELDS.has(featureJSONKey)) {
         value = feStage[featureJSONKey];
       }
+      // stageId is only used here for trial extension stages to be used after submission.
       return html`
       <chromedash-form-field
         name=${field}
@@ -331,6 +332,8 @@ export class ChromedashGuideStagePage extends LitElement {
 
   renderForm() {
     let extensionStageIds = null;
+    // If any trial extensions are associated with this stage,
+    // their IDs are kept to retrieve during submission to save their values separately.
     if (this.stage.extensions) {
       extensionStageIds = this.stage.extensions.map(feStage => feStage.id);
     }
