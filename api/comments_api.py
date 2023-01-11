@@ -79,21 +79,10 @@ class CommentsAPI(basehandlers.APIHandler):
     """Add a review comment and possibly set a approval value."""
     feature_id = kwargs['feature_id']
     gate_id = kwargs.get('gate_id', None)
-    new_state = self.get_int_param(
-        'state', required=False,
-        validator=Vote.is_valid_state)
     feature = self.get_specified_feature(feature_id=feature_id)
     user = self.get_current_user(required=True)
-    post_to_approval_field_id = self.get_param(
-        'postToApprovalFieldId', required=False)
-
-    if gate_id is not None and new_state is not None:
-      approvers = approval_defs.get_approvers(gate_id)
-      if not permissions.can_approve_feature(user, feature, approvers):
-        self.abort(403, msg='User is not an approver')
-      Approval.set_approval(
-          feature.key.integer_id(), gate_id, new_state, user.email())
-      approval_defs.set_vote(feature_id, gate_id, new_state, user.email())
+    gate_type = self.get_param(
+        'gate_type', required=False)
 
     comment_content = self.get_param('comment', required=False)
     if comment_content:
@@ -104,9 +93,9 @@ class CommentsAPI(basehandlers.APIHandler):
           author=user.email(), content=comment_content)
       comment_activity.put()
 
-    if post_to_approval_field_id:
+    if gate_type:
       notifier.post_comment_to_mailing_list(
-          feature, post_to_approval_field_id, user.email(), comment_content)
+          feature, gate_type, user.email(), comment_content)
 
     # Callers don't use the JSON response for this API call.
     return {'message': 'Done'}

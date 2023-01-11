@@ -250,15 +250,15 @@ class ChromeStatusClient {
     return this.doGet(url);
   }
 
-  postComment(featureId, gateId, state, comment, postToApprovalFieldId) {
+  postComment(featureId, gateId, comment, gate_type) {
     if (gateId) {
       return this.doPost(
           `/features/${featureId}/approvals/${gateId}/comments`,
-          {state, comment, postToApprovalFieldId});
+          {comment, gate_type});
     } else {
       return this.doPost(
           `/features/${featureId}/approvals/comments`,
-          {comment, postToApprovalFieldId});
+          {comment, gate_type});
     }
   }
 
