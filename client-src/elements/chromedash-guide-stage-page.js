@@ -3,7 +3,10 @@ import {ref} from 'lit/directives/ref.js';
 import {showToastMessage} from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
-import {formatFeatureForEdit, FORMS_BY_STAGE_TYPE} from './form-definition';
+import {
+  FLAT_TRIAL_EXTENSION_FIELDS,
+  formatFeatureForEdit,
+  FORMS_BY_STAGE_TYPE} from './form-definition';
 import {IMPLEMENTATION_STATUS, STAGE_SPECIFIC_FIELDS} from './form-field-enums';
 import {ALL_FIELDS} from './form-field-specs';
 import {SHARED_STYLES} from '../sass/shared-css.js';
@@ -211,17 +214,22 @@ export class ChromedashGuideStagePage extends LitElement {
     `;
   }
 
-  renderFields(formattedFeature, section) {
+  renderFields(formattedFeature, section, feStage, useStageId=false) {
+    if (!feStage) {
+      feStage = this.stage;
+    }
     return section.fields.map(field => {
       const featureJSONKey = ALL_FIELDS[field].name || field;
       let value = formattedFeature[featureJSONKey];
       if (STAGE_SPECIFIC_FIELDS.has(featureJSONKey)) {
-        value = this.stage[featureJSONKey];
+        value = feStage[featureJSONKey];
       }
+      // stageId is only used here for trial extension stages to be used after submission.
       return html`
       <chromedash-form-field
         name=${field}
-        value=${value}>
+        value=${value}
+        stageId=${useStageId ? feStage.id : undefined}>
       </chromedash-form-field>
     `;
     });
@@ -251,6 +259,21 @@ export class ChromedashGuideStagePage extends LitElement {
         `);
       }
     });
+
+    if (this.stage.extensions) {
+      for (const extensionStage of this.stage.extensions) {
+        let i = 1;
+        for (const section of FLAT_TRIAL_EXTENSION_FIELDS.sections) {
+          formSections.push(html`
+            <h3>${section.name} ${i}</h3>
+            <section class="stage_form">
+              ${this.renderFields(formattedFeature, section, extensionStage, true)}
+            </section>
+          `);
+          i++;
+        }
+      }
+    }
 
     return formSections;
   }
@@ -308,11 +331,19 @@ export class ChromedashGuideStagePage extends LitElement {
   }
 
   renderForm() {
+    let extensionStageIds = null;
+    // If any trial extensions are associated with this stage,
+    // their IDs are kept to retrieve during submission to save their values separately.
+    if (this.stage.extensions) {
+      extensionStageIds = this.stage.extensions.map(feStage => feStage.id);
+    }
     const formattedFeature = formatFeatureForEdit(this.feature);
     return html`
       <form name="feature_form" method="POST"
         action="/guide/stage/${this.featureId}/${this.intentStage}/${this.stageId}">
         <input type="hidden" name="token">
+        ${extensionStageIds ? html`
+        <input type="hidden" name="extension_stage_ids" value="${extensionStageIds}">` : nothing}
         <input type="hidden" name="form_fields" value=${this.getFormFields()} >
         <input type="hidden" name="nextPage" value=${this.getNextPage()} >
 

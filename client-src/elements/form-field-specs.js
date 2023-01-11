@@ -53,7 +53,7 @@ const TEXT_FIELD_ATTRS = {
   type: 'text',
 };
 
-const MILESTONE_NUMBER_FILED_ATTRS = {
+const MILESTONE_NUMBER_FIELD_ATTRS = {
   type: 'number',
   placeholder: 'Milestone number',
 };
@@ -802,7 +802,7 @@ export const ALL_FIELDS = {
 
   'ot_milestone_desktop_start': {
     type: 'input',
-    attrs: MILESTONE_NUMBER_FILED_ATTRS,
+    attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: false,
     label: 'OT desktop start',
     help_text: html`
@@ -812,7 +812,7 @@ export const ALL_FIELDS = {
 
   'ot_milestone_desktop_end': {
     type: 'input',
-    attrs: MILESTONE_NUMBER_FILED_ATTRS,
+    attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: false,
     label: 'OT desktop end',
     help_text: html`
@@ -822,7 +822,7 @@ export const ALL_FIELDS = {
 
   'ot_milestone_android_start': {
     type: 'input',
-    attrs: MILESTONE_NUMBER_FILED_ATTRS,
+    attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: false,
     label: 'OT Android start',
     help_text: html`
@@ -832,7 +832,7 @@ export const ALL_FIELDS = {
 
   'ot_milestone_android_end': {
     type: 'input',
-    attrs: MILESTONE_NUMBER_FILED_ATTRS,
+    attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: false,
     label: 'OT Android end',
     help_text: html`
@@ -842,7 +842,7 @@ export const ALL_FIELDS = {
 
   'ot_milestone_webview_start': {
     type: 'input',
-    attrs: MILESTONE_NUMBER_FILED_ATTRS,
+    attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: false,
     label: 'OT WebView start',
     help_text: html`
@@ -852,7 +852,7 @@ export const ALL_FIELDS = {
 
   'ot_milestone_webview_end': {
     type: 'input',
-    attrs: MILESTONE_NUMBER_FILED_ATTRS,
+    attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: false,
     label: 'OT WebView end',
     help_text: html`
@@ -877,6 +877,33 @@ export const ALL_FIELDS = {
     help_text: html`
       If this is a repeated or extended experiment, explain why it's
       being repeated or extended.  Also, fill in discussion link fields below.`,
+  },
+
+  'extension_desktop_last': {
+    type: 'input',
+    attrs: MILESTONE_NUMBER_FIELD_ATTRS,
+    required: false,
+    label: 'Trial extension desktop end',
+    help_text: html`
+      The new last desktop milestone for which the trial has been extended. `,
+  },
+
+  'extension_android_last': {
+    type: 'input',
+    attrs: MILESTONE_NUMBER_FIELD_ATTRS,
+    required: false,
+    label: 'Trial extension Android end',
+    help_text: html`
+      The new last android milestone for which the trial has been extended. `,
+  },
+
+  'extension_webview_last': {
+    type: 'input',
+    attrs: MILESTONE_NUMBER_FIELD_ATTRS,
+    required: false,
+    label: 'Trial extension WebView end',
+    help_text: html`
+      The new last WebView milestone for which the trial has been extended.`,
   },
 
   'ongoing_constraints': {
@@ -1046,7 +1073,7 @@ export const ALL_FIELDS = {
 
   'shipped_milestone': {
     type: 'input',
-    attrs: MILESTONE_NUMBER_FILED_ATTRS,
+    attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: false,
     label: 'Chrome for desktop',
     help_text: SHIPPED_HELP_TXT,
@@ -1054,7 +1081,7 @@ export const ALL_FIELDS = {
 
   'shipped_android_milestone': {
     type: 'input',
-    attrs: MILESTONE_NUMBER_FILED_ATTRS,
+    attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: false,
     label: 'Chrome for Android',
     help_text: SHIPPED_HELP_TXT,
@@ -1062,7 +1089,7 @@ export const ALL_FIELDS = {
 
   'shipped_ios_milestone': {
     type: 'input',
-    attrs: MILESTONE_NUMBER_FILED_ATTRS,
+    attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: false,
     label: 'Chrome for iOS (RARE)',
     help_text: SHIPPED_HELP_TXT,
@@ -1070,7 +1097,7 @@ export const ALL_FIELDS = {
 
   'shipped_webview_milestone': {
     type: 'input',
-    attrs: MILESTONE_NUMBER_FILED_ATTRS,
+    attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: false,
     label: 'Android Webview',
     help_text: SHIPPED_WEBVIEW_HELP_TXT,
@@ -1110,7 +1137,7 @@ export const ALL_FIELDS = {
 
   'dt_milestone_desktop_start': {
     type: 'input',
-    attrs: MILESTONE_NUMBER_FILED_ATTRS,
+    attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: false,
     label: 'DevTrial on desktop',
     help_text: html`
@@ -1122,7 +1149,7 @@ export const ALL_FIELDS = {
 
   'dt_milestone_android_start': {
     type: 'input',
-    attrs: MILESTONE_NUMBER_FILED_ATTRS,
+    attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: false,
     label: 'DevTrial on Android',
     help_text: html`
@@ -1134,7 +1161,7 @@ export const ALL_FIELDS = {
 
   'dt_milestone_ios_start': {
     type: 'input',
-    attrs: MILESTONE_NUMBER_FILED_ATTRS,
+    attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: false,
     label: 'DevTrial on iOS (RARE)',
     help_text: html`
@@ -1171,7 +1198,7 @@ export const ALL_FIELDS = {
 
   'rollout_milestone': {
     type: 'input',
-    attrs: MILESTONE_NUMBER_FILED_ATTRS,
+    attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: false,
     label: 'Rollout milestone',
     help_text: html`
@@ -1229,10 +1256,14 @@ function makeHumanReadable(fieldName) {
 }
 
 // Return an array of field info
-export function makeDisplaySpec(fieldName) {
+function makeDisplaySpec(fieldName) {
   const fieldProps = ALL_FIELDS[fieldName];
   const displayName = fieldProps.label || fieldProps.displayLabel ||
         makeHumanReadable(fieldName);
   const fieldType = categorizeFieldType(fieldProps);
   return [fieldName, displayName, fieldType];
 };
+
+export function makeDisplaySpecs(fieldNames) {
+  return fieldNames.map(fieldName => makeDisplaySpec(fieldName));
+}

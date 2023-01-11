@@ -15,6 +15,7 @@
 
 from collections import defaultdict
 
+from api import converters
 from internals.core_enums import INTENT_NONE
 from internals.core_models import Stage
 from internals.core_models import INTENT_STAGES_BY_STAGE_TYPE
@@ -55,3 +56,8 @@ def get_feature_stage_ids_list(feature_id: int) -> list[dict[str, int]]:
       'stage_type': s.stage_type,
       'intent_stage': INTENT_STAGES_BY_STAGE_TYPE.get(s.stage_type, INTENT_NONE)
     } for s in q]
+
+def get_ot_stage_extensions(ot_stage_id: int):
+  """Return a list of extension stages associated with a stage in JSON format"""
+  q = Stage.query(Stage.ot_stage_id == ot_stage_id)
+  return [converters.stage_to_json_dict(stage) for stage in q]

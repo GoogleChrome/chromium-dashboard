@@ -255,21 +255,34 @@ def _prep_stage_gate_info(
   # Write a list of stages associated with the feature.
   d['stages'] = []
 
+  # Keep track of trial stage indexes so that we can add trial extension
+  # stages as a property of the trial stage later.
+  ot_stage_indexes: dict[int, int] = {}
   for s in stages:
-    d['stages'].append(stage_to_json_dict(s, fe.feature_type))
+    stage_dict = stage_to_json_dict(s, fe.feature_type)
     # Keep major stages for referencing additional fields.
     if s.stage_type == proto_type:
       major_stages['proto'] = s
     elif s.stage_type == dev_trial_type:
       major_stages['dev_trial'] = s
     elif s.stage_type == ot_type:
+      # Keep the stage's index to add trial extensions later.
+      ot_stage_indexes[s.key.integer_id()] = len(d['stages'])
+      stage_dict['extensions'] = []
       major_stages['ot'] = s
     elif s.stage_type == extend_type:
+      # Trial extensions are kept as a list on the associated trial stage dict.
+      if s.ot_stage_id and s.ot_stage_id in ot_stage_indexes:
+        (d['stages'][ot_stage_indexes[s.ot_stage_id]]['extensions']
+            .append(stage_dict))
       major_stages['extend'] = s
+      # No need to append the extension stage to the overall stages list.
+      continue
     elif s.stage_type == ship_type:
       major_stages['ship'] = s
     elif s.stage_type == rollout_type:
       major_stages['rollout'] = s
+    d['stages'].append(stage_dict)
 
   return major_stages
 
@@ -323,6 +336,7 @@ def stage_to_json_dict(
     d['experiment_extension_reason'] = stage.experiment_extension_reason
     d['intent_to_extend_experiment_url'] = stage.intent_thread_url
     d['ot_stage_id'] = stage.ot_stage_id
+    milestone_field_names = MilestoneSet.OT_EXTENSION_MILESTONE_FIELD_NAMES
   elif d['stage_type'] == STAGE_TYPES_SHIPPING[feature_type]:
     d['intent_to_ship_url'] = stage.intent_thread_url
     d['finch_url'] = stage.finch_url

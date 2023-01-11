@@ -6,7 +6,8 @@ import './chromedash-form-field';
 import {
   formatFeatureForEdit,
   FLAT_METADATA_FIELDS,
-  FORMS_BY_STAGE_TYPE} from './form-definition';
+  FORMS_BY_STAGE_TYPE,
+  FLAT_TRIAL_EXTENSION_FIELDS} from './form-definition';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {FORM_STYLES} from '../sass/forms-css.js';
 import {STAGE_SPECIFIC_FIELDS} from './form-field-enums.js';
@@ -208,14 +209,38 @@ export class ChromedashGuideEditallPage extends LitElement {
       formsToRender.push(this.renderStageSection(
         formattedFeature, stageForm.name, feStage, fieldsOnly));
       allFormFields = [...allFormFields, ...fieldsOnly];
+
+      // If extension stages are associated with this stage,
+      // render them in a separate section as well.
+      const extensions = feStage.extensions || [];
+      extensions.forEach((extensionStage, i) => {
+        fieldsOnly = flattenSections(FLAT_TRIAL_EXTENSION_FIELDS);
+        formsToRender.push(this.renderStageSection(
+          formattedFeature,
+          `${FLAT_TRIAL_EXTENSION_FIELDS.name} ${i + 1}`,
+          extensionStage,
+          fieldsOnly));
+        allFormFields = [...allFormFields, ...fieldsOnly];
+      });
     }
 
     return [allFormFields, formsToRender];
   }
 
+  getAllStageIds() {
+    const stageIds = [];
+    this.feature.stages.forEach(feStage => {
+      stageIds.push(feStage.id);
+      // Check if any trial extension exist, and collect their IDs as well.
+      const extensions = feStage.extensions || [];
+      extensions.forEach(extensionStage => stageIds.push(extensionStage.id));
+    });
+    return stageIds.join(',');
+  }
+
   renderForm() {
     const formattedFeature = formatFeatureForEdit(this.feature);
-    const stageIds = this.feature.stages.map(feStage => feStage.id);
+    const stageIds = this.getAllStageIds();
     const [allFormFields, formsToRender] = this.getForms(formattedFeature, this.feature.stages);
     return html`
       <form name="feature_form" method="POST" action="/guide/editall/${this.featureId}">

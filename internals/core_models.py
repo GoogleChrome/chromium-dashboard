@@ -461,6 +461,12 @@ class MilestoneSet(ndb.Model):  # copy from milestone fields of Feature
     {'old': 'ot_milestone_webview_end', 'new': 'webview_last'},
   ]
 
+  OT_EXTENSION_MILESTONE_FIELD_NAMES = [
+    {'old': 'extension_desktop_last', 'new': 'desktop_last'},
+    {'old': 'extension_android_last', 'new': 'android_last'},
+    {'old': 'extension_webview_last', 'new': 'webview_last'},
+  ]
+
   # List of milestone fields relevant to the dev trial stage types.
   DEV_TRIAL_MILESTONE_FIELD_NAMES = [
     {'old': 'dt_milestone_desktop_start', 'new': 'desktop_first'},

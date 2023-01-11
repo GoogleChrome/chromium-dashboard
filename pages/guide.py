@@ -207,6 +207,8 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
   STAGE_FIELDS: list[tuple[str, str]] = [
       ('ready_for_trial_url', 'link'),
       ('origin_trial_feedback_url', 'link'),
+      ('intent_to_extend_experiment_url', 'link'),
+      ('experiment_extension_reason', 'str'),
       ('finch_url', 'link'),
       ('experiment_goals', 'str'),
       ('experiment_risks', 'str'),
@@ -214,11 +216,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('rollout_platforms', 'split_str'),
       ('rollout_details', 'str'),
       ('enterprise_policies', 'split_str'),
-      ]
-
-  OT_EXTENSION_FIELDS: list[tuple[str, str]] = [
-      ('intent_to_extend_experiment_url', 'link'),
-      ('experiment_extension_reason', 'str')]
+  ]
 
   INTENT_FIELDS: list[str] = [
       'intent_to_implement_url',
@@ -242,6 +240,12 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('ot_milestone_ios_end', 'ios_last'),
       ('ot_milestone_webview_start', 'webview_first'),
       ('ot_milestone_webview_end', 'webview_last'),
+  ]
+
+  OT_EXTENSION_MILESTONE_FIELDS: list[tuple[str, str]] = [
+    ('extension_desktop_last', 'desktop_last'),
+    ('extension_android_last', 'android_last'),
+    ('extension_webview_last', 'webview_last'),
   ]
 
   SHIPPING_MILESTONE_FIELDS: list[tuple[str, str]] = [
@@ -324,6 +328,9 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     if new_val != old_val:
       changed_fields.append((field, old_val, new_val))
 
+  # TODO(danielrsmith): This method's logic is way too complicated to easily
+  # maintain. This needs to be scrapped and submission of edits should be
+  # handled using features_api and stages_api.
   def process_post_data(self, **kwargs) -> requests.Response:
     feature_id = kwargs.get('feature_id', None)
     stage_id = kwargs.get('stage_id', None)
@@ -409,6 +416,11 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       self.update_multiple_stages(feature_id, feature.feature_type,
           stage_update_items, changed_fields)
 
+    extension_stage_ids = self.form.get('extension_stage_ids')
+    if extension_stage_ids:
+      stage_ids_list = [int(id) for id in extension_stage_ids.split(',')]
+      self.update_stages_editall(
+          feature, fe.feature_type, stage_ids_list, changed_fields)
     # Update metadata fields.
     now = datetime.now()
     if self.form.get('accurate_as_of'):
@@ -442,34 +454,6 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     else:
       redirect_url = '/guide/edit/' + str(key.integer_id())
     return self.redirect(redirect_url)
-
-  # TODO(danielrsmith): This method should be removed and extension stage
-  # fields should be handled the same as other stages once users can create
-  # trial extension stages.
-  def _handle_ot_extension_stage_changes(self, ot_stage_id: int,
-      changed_fields: list[tuple[str, Any, Any]],
-      extension_stage: Stage | None=None,
-      is_from_editall: bool=False):
-    if extension_stage is None:
-      extension_stage = Stage.query(Stage.ot_stage_id == ot_stage_id).get()
-    if extension_stage is None:
-      return
-
-    for field, field_type in self.OT_EXTENSION_FIELDS:
-      # Update the field's name if it has been renamed.
-      old_field_name = field
-      field = self.RENAMED_FIELD_MAPPING.get(field, field)
-      old_val = getattr(extension_stage, field)
-      new_val = None
-      if is_from_editall:
-        new_val = self._get_field_val(
-            f'{old_field_name}__{ot_stage_id}', field_type)
-      else:
-        new_val = self._get_field_val(old_field_name, field_type)
-      if old_val != new_val:
-        setattr(extension_stage, field, new_val)
-        changed_fields.append((old_field_name, old_val, new_val))
-    extension_stage.put()
 
   def update_multiple_stages(self, feature_id: int, feature_type: int,
       update_items: list[tuple[str, Any]],
@@ -548,12 +532,6 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
           (changed_field, stage_to_update.intent_thread_url, intent_thread_val))
     setattr(stage_to_update, 'intent_thread_url', intent_thread_val)
 
-    # TODO(danielrsmith): Remove this and handle extension fields properly
-    # once the ability to add a trial extension is available to users.
-    if (stage_to_update.stage_type ==
-        core_enums.STAGE_TYPES_ORIGIN_TRIAL[feature_type]):
-      self._handle_ot_extension_stage_changes(stage_id, changed_fields)
-
     for field, new_val in update_items:
       # Update the field's name if it has been renamed.
       old_field_name = field
@@ -581,14 +559,6 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       if not stage:
         self.abort(404, msg=f'No stage {id} found')
 
-      # TODO(danielrsmith): Remove this and handle extension fields properly
-      # once the ability to add a trial extension is available to users.
-      if (stage.stage_type ==
-          core_enums.STAGE_TYPES_EXTEND_ORIGIN_TRIAL[feature_type]):
-        self._handle_ot_extension_stage_changes(
-            stage.ot_stage_id, changed_fields,
-            extension_stage=stage, is_from_editall=True)
-
       # Update the stage-specific fields.
       for field, field_type in self.STAGE_FIELDS:
         # To differentiate stages that have the same fields, the stage ID
@@ -610,6 +580,10 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       if stage.stage_type == core_enums.STAGE_TYPES_ORIGIN_TRIAL[feature_type]:
         intent_thread_field = 'intent_to_experiment_url'
         milestone_fields = self.OT_MILESTONE_FIELDS
+      if (stage.stage_type ==
+          core_enums.STAGE_TYPES_EXTEND_ORIGIN_TRIAL[feature_type]):
+        intent_thread_field = 'intent_to_extend_experiment_url'
+        milestone_fields = self.OT_EXTENSION_MILESTONE_FIELDS
       if stage.stage_type == core_enums.STAGE_TYPES_SHIPPING[feature_type]:
         intent_thread_field = 'intent_to_ship_url'
         milestone_fields = self.SHIPPING_MILESTONE_FIELDS
@@ -626,7 +600,6 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
         field_with_id = f'{field}__{id}'
         old_val = None
         new_val = self._get_field_val(field_with_id, 'int')
-
         milestoneset_entity = stage.milestones
         setattr(feature, field, new_val)
         milestoneset_entity = getattr(stage, 'milestones')
