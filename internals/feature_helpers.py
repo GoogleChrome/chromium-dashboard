@@ -565,8 +565,9 @@ def get_by_ids(feature_ids: list[int],
       futures_by_id[feature_id] = FeatureEntry.get_by_id_async(feature_id)
 
   stages_dict = {}
-  if feature_ids:
-    stages_list = Stage.query(Stage.feature_id.IN(feature_ids)).fetch(None)
+  if futures_by_id:
+    needed_ids = list(futures_by_id.keys())
+    stages_list = Stage.query(Stage.feature_id.IN(needed_ids)).fetch(None)
     stages_dict = stage_helpers.organize_all_stages_by_feature(stages_list)
 
   for future in futures_by_id.values():
