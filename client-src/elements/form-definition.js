@@ -492,10 +492,8 @@ const DEPRECATION_ORIGIN_TRIAL_FIELDS = {
       fields: [
         'experiment_goals',
         'experiment_risks',
-        'experiment_extension_reason',
         'ongoing_constraints',
         'r4dt_url', // map to name="intent_to_experiment_url" field upon form submission
-        'intent_to_extend_experiment_url',
         'r4dt_lgtms', // map to name="i2e_lgtms" field upon form submission
         'origin_trial_feedback_url',
       ],
