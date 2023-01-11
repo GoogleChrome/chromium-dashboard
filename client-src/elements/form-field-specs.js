@@ -1256,10 +1256,14 @@ function makeHumanReadable(fieldName) {
 }
 
 // Return an array of field info
-export function makeDisplaySpec(fieldName) {
+function makeDisplaySpec(fieldName) {
   const fieldProps = ALL_FIELDS[fieldName];
   const displayName = fieldProps.label || fieldProps.displayLabel ||
         makeHumanReadable(fieldName);
   const fieldType = categorizeFieldType(fieldProps);
   return [fieldName, displayName, fieldType];
 };
+
+export function makeDisplaySpecs(fieldNames) {
+  return fieldNames.map(fieldName => makeDisplaySpec(fieldName));
+}
