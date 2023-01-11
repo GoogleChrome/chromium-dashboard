@@ -55,7 +55,11 @@
 	// Use 'postCreateCommand' to run commands after the container is created.
 	// pip version https://github.com/microsoft/vscode-python/issues/18802
 	// Need to install pylint inside the virutalenv because the global one does not honor it.
-	"postCreateCommand": "npm run clean-setup; . cs-env/bin/activate; python -m pip install pylint==2.13.4",
+	// Recently, when running `npm run clean-setup` in the container, it has
+	// not been installing the packages in the virtual environment. Instead,
+	// it has been installing in the default Python environment. We will
+	// need to call npm run setup again once the environment has been activated.
+	"postCreateCommand": "npm run clean-setup; . cs-env/bin/activate; npm run setup; python -m pip install pylint==2.13.4",
 
 	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
 	"remoteUser": "vscode"

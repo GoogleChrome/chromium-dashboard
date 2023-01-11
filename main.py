@@ -111,7 +111,7 @@ api_routes: list[Route] = [
         reviews_api.GatesAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/approvals/comments',
         comments_api.CommentsAPI),
-    Route(f'{API_BASE}/features/<int:feature_id>/approvals/<int:field_id>/comments',
+    Route(f'{API_BASE}/features/<int:feature_id>/approvals/<int:gate_id>/comments',
         comments_api.CommentsAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/process',
         processes_api.ProcessesAPI),

@@ -128,6 +128,11 @@ class CommentTest(testing_config.CustomTestCase):
         author='one@example.com',
         content='some other text')
     self.act_1_2.put()
+    self.act_1_3 = Activity(
+        feature_id=self.feature_1_id,
+        author='one@example.com',
+        content='random')
+    self.act_1_3.put()
 
     self.feature_2 = core_models.Feature(
         name='feature b', summary='sum', owner=['feature_owner@example.com'],
@@ -149,26 +154,30 @@ class CommentTest(testing_config.CustomTestCase):
   def test_get_activities__some(self):
     """We get review comments if the feature has some."""
     actual = Activity.get_activities(self.feature_1_id)
-    self.assertEqual(2, len(actual))
+    self.assertEqual(3, len(actual))
     self.assertEqual(
-        ['some text', 'some other text'],
+        ['some text', 'some other text', 'random'],
         [c.content for c in actual])
 
   def test_get_activities__specific_fields(self):
     """We get review comments for specific approval fields if requested."""
     actual_1 = Activity.get_activities(
         self.feature_1_id, 1, comments_only=True)
-    self.assertEqual(1, len(actual_1))
-    self.assertEqual('some text', actual_1[0].content)
+    self.assertEqual(2, len(actual_1))
+    self.assertEqual(
+        ['some text', 'random'],
+        [c.content for c in actual_1])
 
     actual_2 = Activity.get_activities(
         self.feature_1_id, 2, comments_only=True)
-    self.assertEqual(1, len(actual_2))
-    self.assertEqual('some other text', actual_2[0].content)
+    self.assertEqual(2, len(actual_2))
+    self.assertEqual(
+        ['some other text', 'random'],
+        [c.content for c in actual_2])
 
     actual_3 = Activity.get_activities(
         self.feature_1_id, 3, comments_only=True)
-    self.assertEqual([], actual_3)
+    self.assertEqual('random', actual_3[0].content)
 
 
 class GateTest(testing_config.CustomTestCase):

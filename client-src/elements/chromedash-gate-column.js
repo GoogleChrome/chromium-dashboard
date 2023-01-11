@@ -132,7 +132,7 @@ export class ChromedashGateColumn extends LitElement {
       window.csClient.getStage(featureId, stageId),
       window.csClient.getApprovals(featureId),
       // TODO(jrobbins): Include activities for this gate
-      window.csClient.getComments(featureId),
+      window.csClient.getComments(featureId, gate.id),
     ]).then(([process, stage, approvalRes, commentRes]) => {
       this.process = process;
       this.stage = stage;
@@ -154,7 +154,7 @@ export class ChromedashGateColumn extends LitElement {
     this.needsPost = false;
     Promise.all([
       // TODO(jrobbins): Include activities for this gate
-      window.csClient.getComments(this.feature.id),
+      window.csClient.getComments(this.feature.id, this.gate.id),
     ]).then(([commentRes]) => {
       this.comments = commentRes.comments;
     }).catch(() => {
@@ -170,7 +170,7 @@ export class ChromedashGateColumn extends LitElement {
       window.csClient.getGates(featureId),
       window.csClient.getApprovals(featureId),
       // TODO(jrobbins): Include activities for this gate
-      window.csClient.getComments(featureId),
+      window.csClient.getComments(featureId, this.gate.id),
     ]).then(([gatesRes, approvalRes, commentRes]) => {
       for (const g of gatesRes.gates) {
         if (g.id == this.gate.id) this.gate = g;

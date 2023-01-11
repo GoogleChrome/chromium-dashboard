@@ -85,10 +85,11 @@ class CommentsAPITest(testing_config.CustomTestCase):
     self.gate_1 = review_models.Gate(feature_id=self.feature_id,
         stage_id=1, gate_type=2, state=review_models.Vote.NA)
     self.gate_1.put()
+    self.gate_1_id = self.gate_1.key.integer_id()
 
     self.handler = comments_api.CommentsAPI()
     self.request_path = ('/api/v0/features/%d/approvals/%d/comments' %
-                         (self.feature_id, self.gate_1.gate_type))
+                         (self.feature_id, self.gate_1_id))
 
     self.appr_1_1 = review_models.Approval(
         feature_id=self.feature_id, field_id=1,
@@ -96,12 +97,13 @@ class CommentsAPITest(testing_config.CustomTestCase):
         state=review_models.Approval.APPROVED)
     self.appr_1_1.put()
 
-    self.act_1_1 = review_models.Activity(feature_id=self.feature_id, gate_id=2,
-        author='owner1@example.com', created=NOW, content='Good job')
+    self.act_1_1 = review_models.Activity(
+      feature_id=self.feature_id, gate_id=self.gate_1_id,
+      author='owner1@example.com', created=NOW, content='Good job')
 
     self.expected_1 = {
         'feature_id': self.feature_id,
-        'gate_id': self.gate_1.gate_type,
+        'gate_id': self.gate_1_id,
         'author': 'owner1@example.com',
         'deleted_by': None,
         'content': 'Good job',
@@ -121,9 +123,26 @@ class CommentsAPITest(testing_config.CustomTestCase):
     testing_config.sign_in('user7@example.com', 123567890)
     with test_app.test_request_context(self.request_path):
       actual_response = self.handler.do_get(
-          feature_id=self.feature_id, field_id=self.gate_1.gate_type)
+          feature_id=self.feature_id, gate_id=self.gate_1_id)
     testing_config.sign_out()
     self.assertEqual({'comments': []}, actual_response)
+
+  def test_get__legacy_comments(self):
+    """We can get legacy comments."""
+    testing_config.sign_out()
+    testing_config.sign_in('user7@example.com', 123567890)
+
+    legacy_comment = review_models.Activity(
+      feature_id=self.feature_id, author='owner1@example.com',
+      created=NOW, content='nothing')
+    legacy_comment.put()
+
+    with test_app.test_request_context(self.request_path):
+      actual_response = self.handler.do_get(
+          feature_id=self.feature_id, gate_id=self.gate_1_id)
+    testing_config.sign_out()
+    actual_comment = actual_response['comments'][0]
+    self.assertEqual('nothing', actual_comment['content'])
 
   def test_get__all_some(self):
     """We can get all comments for a given approval."""
@@ -131,10 +150,17 @@ class CommentsAPITest(testing_config.CustomTestCase):
     testing_config.sign_in('user7@example.com', 123567890)
     self.act_1_1.put()
 
+    random_activity = review_models.Activity(
+      feature_id=self.feature_id, gate_id=99,
+      author='owner1@example.com', created=NOW, content='nothing')
+    random_activity.put()
+
     with test_app.test_request_context(self.request_path):
       actual_response = self.handler.do_get(
-          feature_id=self.feature_id, field_id=self.gate_1.gate_type)
+          feature_id=self.feature_id, gate_id=self.gate_1_id)
     testing_config.sign_out()
+
+    self.assertEqual(1, len(actual_response['comments']))
     actual_comment = actual_response['comments'][0]
     del actual_comment['created']
     del actual_comment['comment_id']
@@ -151,7 +177,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
 
     with test_app.test_request_context(self.request_path):
       resp = self.handler.do_get(
-        feature_id=self.feature_id, field_id=self.gate_1.gate_type)
+        feature_id=self.feature_id, gate_id=self.gate_1_id)
     testing_config.sign_out()
     self.assertEqual(resp['comments'], [])
 
@@ -165,7 +191,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
 
     with test_app.test_request_context(self.request_path):
       resp = self.handler.do_get(
-          feature_id=self.feature_id, field_id=self.gate_1.gate_type)
+          feature_id=self.feature_id, gate_id=self.gate_1_id)
     testing_config.sign_out()
     comment = resp['comments'][0]
     self.assertNotEqual(comment['content'], '[Deleted]')
@@ -241,7 +267,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
     with test_app.test_request_context(self.request_path, json=params):
       resp = self.handler.do_patch(feature_id=self.feature_id)
       get_resp = self.handler.do_get(
-          feature_id=self.feature_id, field_id=self.gate_1.gate_type)
+          feature_id=self.feature_id, gate_id=self.gate_1_id)
     testing_config.sign_out()
     self.assertEqual(get_resp['comments'][0]['deleted_by'], user_email)
     self.assertEqual(resp, {'message': 'Done'})
@@ -262,7 +288,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
     with test_app.test_request_context(self.request_path, json=params):
       resp = self.handler.do_patch(feature_id=self.feature_id)
       get_resp = self.handler.do_get(
-          feature_id=self.feature_id, field_id=self.gate_1.gate_type)
+          feature_id=self.feature_id, gate_id=self.gate_1_id)
     testing_config.sign_out()
     self.assertEqual(get_resp['comments'][0]['deleted_by'], None)
     self.assertEqual(resp, {'message': 'Done'})
