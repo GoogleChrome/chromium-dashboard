@@ -206,12 +206,12 @@ export class ChromedashGateColumn extends LitElement {
   handlePost() {
     const commentArea = this.commentAreaRef.value;
     const commentText = commentArea.value.trim();
-    const gate_type = (
+    const gateType = (
         this.postToThreadRef.value?.checked ? this.gate.gate_type : 0);
     if (commentText != '') {
       window.csClient.postComment(
         this.feature.id, this.gate.id, commentText,
-        Number(gate_type))
+        Number(gateType))
         .then(() => this.reloadComments());
     }
   }

@@ -82,7 +82,7 @@ class CommentsAPI(basehandlers.APIHandler):
     feature = self.get_specified_feature(feature_id=feature_id)
     user = self.get_current_user(required=True)
     gate_type = self.get_param(
-        'gate_type', required=False)
+        'gateType', required=False)
 
     comment_content = self.get_param('comment', required=False)
     if comment_content:

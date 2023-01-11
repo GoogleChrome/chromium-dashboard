@@ -521,12 +521,12 @@ class ChromedashApprovalsDialog extends LitElement {
     const commentText = commentArea.value.trim();
     const postToSelect = this.shadowRoot.querySelector(
       '#post_to_approval_field');
-    const gate_type = postToSelect && postToSelect.value || 0;
+    const gateType = postToSelect && postToSelect.value || 0;
     if (commentText != '') {
       promises.push(
         window.csClient.postComment(
           this.feature.id, null, commentText,
-          Number(gate_type)));
+          Number(gateType)));
     }
     Promise.all(promises).then(() => {
       this.shadowRoot.querySelector('sl-dialog').hide();
