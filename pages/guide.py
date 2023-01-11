@@ -108,21 +108,15 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
     # Obtain a list of stages and gates for the given feature type.
     stages_gates = core_enums.STAGES_AND_GATES_BY_FEATURE_TYPE[feature_type]
 
-    ot_stage_id: Optional[int] = None
     for stage_type, gate_type in stages_gates:
+      # Don't create a trial extension stage pre-emptively.
+      if stage_type == core_enums.STAGE_TYPES_EXTEND_ORIGIN_TRIAL[feature_type]:
+        continue
+
       stage = Stage(feature_id=feature_id, stage_type=stage_type)
-      # If we are creating a trial extension gate,
-      # then the trial extension stage was just created.
-      # Associate the origin trial stage id with the extension stage.
-      if gate_type == core_enums.GATE_EXTEND_ORIGIN_TRIAL:
-        stage.ot_stage_id = ot_stage_id
       stage.put()
       # Not all stages have gates. If a gate is specified, create it.
       if gate_type:
-        # Keep track of the ID of the origin trial Stage entity
-        # to use for the trial extension Stage entity.
-        if gate_type == core_enums.GATE_ORIGIN_TRIAL:
-          ot_stage_id = stage.key.integer_id()
         gate = Gate(feature_id=feature_id, stage_id=stage.key.integer_id(),
                     gate_type=gate_type, state=Gate.PREPARING)
         gate.put()

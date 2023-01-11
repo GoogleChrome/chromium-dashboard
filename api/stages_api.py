@@ -176,17 +176,6 @@ class StagesAPI(basehandlers.APIHandler):
     self._update_stage_vals(
         stage, feature.feature_type, use_stage_type=True, create_gate=True)
 
-    # Create an extension stage if creating an origin trial.
-    # This is a workaround to edit extension stage fields using the old
-    # paradigm of 1 field per feature.
-    # TODO(danielrsmith): refactor to only create extension stages as needed.
-    if stage.stage_type == core_enums.STAGE_TYPES_ORIGIN_TRIAL[
-        feature.feature_type]:
-      extension_stage = Stage(feature_id=feature_id,
-          stage_type=core_enums.OT_EXTENSION_STAGE_TYPES_MAPPING[
-              stage.stage_type], ot_stage_id=stage.key.integer_id())
-      extension_stage.put()
-
     # Changing stage values means the cached feature should be invalidated.
     lookup_key = FeatureEntry.feature_cache_key(
         FeatureEntry.DEFAULT_CACHE_KEY, feature_id)
