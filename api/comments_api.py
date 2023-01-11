@@ -78,9 +78,7 @@ class CommentsAPI(basehandlers.APIHandler):
   def do_post(self, **kwargs) -> dict[str, str]:
     """Add a review comment and possibly set a approval value."""
     feature_id = kwargs['feature_id']
-    # TODO(kyle): Fix the gate_type here as it does not exist in the main.py;
-    # it should be gate_id.
-    gate_type = kwargs.get('gate_type', None)
+    gate_id = kwargs.get('gate_id', None)
     new_state = self.get_int_param(
         'state', required=False,
         validator=Vote.is_valid_state)
@@ -89,33 +87,19 @@ class CommentsAPI(basehandlers.APIHandler):
     post_to_approval_field_id = self.get_param(
         'postToApprovalFieldId', required=False)
 
-    # TODO(kyle): this is not working. gate_type is always None.
-    if gate_type is not None and new_state is not None:
-      old_approvals = Approval.get_approvals(
-          feature_id=feature_id, field_id=gate_type,
-          set_by=user.email())
-
-      approvers = approval_defs.get_approvers(gate_type)
+    if gate_id is not None and new_state is not None:
+      approvers = approval_defs.get_approvers(gate_id)
       if not permissions.can_approve_feature(user, feature, approvers):
         self.abort(403, msg='User is not an approver')
       Approval.set_approval(
-          feature.key.integer_id(), gate_type, new_state, user.email())
-      approval_defs.set_vote(feature_id, gate_type, new_state, user.email())
+          feature.key.integer_id(), gate_id, new_state, user.email())
+      approval_defs.set_vote(feature_id, gate_id, new_state, user.email())
 
     comment_content = self.get_param('comment', required=False)
-
     if comment_content:
       if not permissions.can_comment(user):
         self.abort(403, msg='User is not allowed to comment')
 
-      # TODO(danielrsmith): After UI changes, gate_id should be passed in
-      # post request and not queried for.
-      gates: list[Gate] = Gate.query(
-          Gate.feature_id == feature_id, Gate.gate_type == gate_type).fetch()
-      gate_id = None
-      if len(gates) > 0:
-        gate_id = gates[0].key.integer_id()
-      # Schema migration double-write.
       comment_activity = Activity(feature_id=feature_id, gate_id=gate_id,
           author=user.email(), content=comment_content)
       comment_activity.put()

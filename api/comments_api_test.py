@@ -202,13 +202,13 @@ class CommentsAPITest(testing_config.CustomTestCase):
     with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post(
-            feature_id=self.feature_id, gate_type=self.gate_1.gate_type)
+            feature_id=self.feature_id, gate_id=self.gate_1_id)
 
     params = {'state': 999}
     with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post(
-            feature_id=self.feature_id, gate_type=self.gate_1.gate_type)
+            feature_id=self.feature_id, gate_id=self.gate_1_id)
 
   def test_post__feature_not_found(self):
     """Handler rejects requests that don't match an existing feature."""
@@ -216,7 +216,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
     params = {'state': review_models.Approval.NEEDS_WORK }
     with test_app.test_request_context(bad_path, json=params):
       with self.assertRaises(werkzeug.exceptions.NotFound):
-        self.handler.do_post(feature_id=12345, gate_type=self.gate_1.gate_type)
+        self.handler.do_post(feature_id=12345, gate_id=self.gate_1_id)
 
   @mock.patch('internals.approval_defs.get_approvers')
   def test_post__forbidden(self, mock_get_approvers):
@@ -228,19 +228,19 @@ class CommentsAPITest(testing_config.CustomTestCase):
     with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.do_post(
-            feature_id=self.feature_id, gate_type=self.gate_1.gate_type)
+            feature_id=self.feature_id, gate_id=self.gate_1_id)
 
     testing_config.sign_in('user7@example.com', 123567890)
     with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.do_post(
-            feature_id=self.feature_id, gate_type=self.gate_1.gate_type)
+            feature_id=self.feature_id, gate_id=self.gate_1_id)
 
     testing_config.sign_in('user@google.com', 123567890)
     with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.do_post(
-            feature_id=self.feature_id, gate_type=self.gate_1.gate_type)
+            feature_id=self.feature_id, gate_id=self.gate_1_id)
 
   def test_patch__forbidden(self):
     """Handler rejects requests from users who can't edit the given comment."""
@@ -306,7 +306,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
     params = {'comment': 'Congratulations'}
     with test_app.test_request_context(self.request_path, json=params):
       actual = self.handler.do_post(feature_id=self.feature_id,
-          gate_type=self.gate_1.gate_type)
+          gate_id=self.gate_1_id)
 
     self.assertEqual(actual, {'message': 'Done'})
     updated_approvals = review_models.Approval.get_approvals(
@@ -336,4 +336,4 @@ class CommentsAPITest(testing_config.CustomTestCase):
     with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.do_post(
-            feature_id=self.feature_id, gate_type=self.gate_1.gate_type)
+            feature_id=self.feature_id, gate_id=self.gate_1_id)
