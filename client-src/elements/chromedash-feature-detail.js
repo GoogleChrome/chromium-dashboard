@@ -5,7 +5,11 @@ import {
   FLAT_METADATA_FIELDS,
   FORMS_BY_STAGE_TYPE} from './form-definition';
 
-import {DEPRECATED_FIELDS, PLATFORMS_DISPLAYNAME, STAGE_SPECIFIC_FIELDS} from './form-field-enums';
+import {
+  DEPRECATED_FIELDS,
+  PLATFORMS_DISPLAYNAME,
+  STAGE_SPECIFIC_FIELDS,
+  OT_MILESTONE_END_FIELDS} from './form-field-enums';
 import '@polymer/iron-icon';
 import './chromedash-activity-log';
 import './chromedash-callout';
@@ -195,11 +199,37 @@ class ChromedashFeatureDetail extends LitElement {
     return !(value === undefined || value === null || value.length == 0);
   }
 
+  calcMaxMilestone(fieldName, feStage) {
+    if (feStage[`max_${fieldName}`]) {
+      return;
+    }
+    let maxMilestone = feStage[fieldName];
+    for (const extension of feStage.extensions) {
+      if (extension[fieldName]) {
+        maxMilestone = Math.max(maxMilestone, extension[fieldName]);
+      }
+    }
+    feStage[`max_${fieldName}`] = maxMilestone;
+  }
+
+  getMilestoneExtensionValue(fieldName, feStage) {
+    const milestoneFieldName = OT_MILESTONE_END_FIELDS[fieldName];
+    this.calcMaxMilestone(milestoneFieldName, feStage);
+
+    const maxMilestoneFieldName = `max_${milestoneFieldName}`;
+    if (feStage[maxMilestoneFieldName] && feStage[maxMilestoneFieldName] > feStage[fieldName]) {
+      return `${feStage[maxMilestoneFieldName]} (extended from ${feStage[milestoneFieldName]})`;
+    }
+    return feStage[fieldName];
+  }
+
   getFieldValue(fieldName, feStage) {
     if (STAGE_SPECIFIC_FIELDS.has(fieldName)) {
       const value = feStage[fieldName];
       if (fieldName === 'rollout_platforms' && value) {
         return value.map(platformId => PLATFORMS_DISPLAYNAME[platformId]);
+      } else if (fieldName in OT_MILESTONE_END_FIELDS) {
+        return this.getMilestoneExtensionValue(fieldName, feStage);
       }
       return feStage[fieldName];
     }

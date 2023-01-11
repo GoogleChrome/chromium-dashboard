@@ -102,6 +102,9 @@ export const STAGE_SPECIFIC_FIELDS = new Set([
   'dt_milestone_android_start',
   'dt_milestone_ios_start',
   'dt_milestone_webview_start',
+  'extension_desktop_last',
+  'extension_android_last',
+  'extension_webview_last',
 
   // Intent fields.
   'intent_to_implement_url',
@@ -135,6 +138,12 @@ export const GATE_SHORT_NAMES = {
   2: 'OT',
   3: 'OT Extension',
   4: 'Ship',
+};
+
+export const OT_MILESTONE_END_FIELDS = {
+  'ot_milestone_desktop_end': 'desktop_last',
+  'ot_milestone_android_end': 'android_last',
+  'ot_milestone_webview_end': 'webview_last',
 };
 
 export const IMPLEMENTATION_STATUS = {

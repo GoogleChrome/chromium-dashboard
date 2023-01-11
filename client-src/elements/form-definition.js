@@ -287,10 +287,6 @@ const FLAT_ORIGIN_TRIAL_FIELDS = {
         'i2e_lgtms',
         'intent_to_experiment_url',
         'origin_trial_feedback_url',
-
-        // Extension stage-specific fields
-        'experiment_extension_reason',
-        'intent_to_extend_experiment_url',
       ],
     },
     // Implementation
@@ -307,6 +303,22 @@ const FLAT_ORIGIN_TRIAL_FIELDS = {
       ],
       isImplementationSection: true,
       implStatusValue: IMPLEMENTATION_STATUS.ORIGIN_TRIAL[0],
+    },
+  ],
+};
+
+export const FLAT_TRIAL_EXTENSION_FIELDS = {
+  name: 'Trial extension',
+  sections: [
+    {
+      name: 'Trial extension',
+      fields: [
+        'experiment_extension_reason',
+        'intent_to_extend_experiment_url',
+        'extension_desktop_last',
+        'extension_android_last',
+        'extension_webview_last',
+      ],
     },
   ],
 };

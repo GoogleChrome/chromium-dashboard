@@ -18,7 +18,7 @@ from api import converters
 from framework import basehandlers
 from framework import permissions
 from framework import rediscache
-from internals import core_enums
+from internals import core_enums, stage_helpers
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate
 
@@ -148,7 +148,13 @@ class StagesAPI(basehandlers.APIHandler):
     if stage is None:
       self.abort(404, msg=f'Stage {stage_id} not found')
 
-    return converters.stage_to_json_dict(stage)
+    stage_dict = converters.stage_to_json_dict(stage)
+    # Add extensions associated with the stage if they exist.
+    extensions = stage_helpers.get_ot_stage_extensions(stage_dict['id'])
+    if extensions:
+      stage_dict['extensions'] = extensions
+    
+    return stage_dict
 
   def do_post(self, **kwargs):
     """Create a new stage."""
