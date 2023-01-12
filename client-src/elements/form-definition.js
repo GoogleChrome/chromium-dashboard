@@ -505,10 +505,8 @@ const DEPRECATION_ORIGIN_TRIAL_FIELDS = {
       fields: [
         'experiment_goals',
         'experiment_risks',
-        'experiment_extension_reason',
         'ongoing_constraints',
         'r4dt_url', // map to name="intent_to_experiment_url" field upon form submission
-        'intent_to_extend_experiment_url',
         'r4dt_lgtms', // map to name="i2e_lgtms" field upon form submission
         'origin_trial_feedback_url',
       ],
@@ -569,7 +567,7 @@ const STAGE_BLINK_PROTOTYPE = 120;
 const STAGE_BLINK_DEV_TRIAL = 130;
 const STAGE_BLINK_EVAL_READINESS = 140;
 const STAGE_BLINK_ORIGIN_TRIAL = 150;
-// const STAGE_BLINK_EXTEND_ORIGIN_TRIAL = 151;
+const STAGE_BLINK_EXTEND_ORIGIN_TRIAL = 151;
 const STAGE_BLINK_SHIPPING = 160;
 // Note: We might define post-ship support stage(s) later.
 
@@ -577,7 +575,7 @@ const STAGE_BLINK_SHIPPING = 160;
 const STAGE_FAST_PROTOTYPE = 220;
 const STAGE_FAST_DEV_TRIAL = 230;
 const STAGE_FAST_ORIGIN_TRIAL = 250;
-// const STAGE_FAST_EXTEND_ORIGIN_TRIAL = 251;
+const STAGE_FAST_EXTEND_ORIGIN_TRIAL = 251;
 const STAGE_FAST_SHIPPING = 260;
 
 // For developer-facing code changes not impacting a standard: the "PSA" process.
@@ -589,7 +587,7 @@ const STAGE_PSA_SHIPPING = 360;
 const STAGE_DEP_PLAN = 410;
 const STAGE_DEP_DEV_TRIAL = 430;
 const STAGE_DEP_DEPRECATION_TRIAL = 450;
-// const STAGE_DEP_EXTEND_DEPRECATION_TRIAL = 451;
+const STAGE_DEP_EXTEND_DEPRECATION_TRIAL = 451;
 const STAGE_DEP_SHIPPING = 460;
 // const STAGE_DEP_REMOVE_CODE = 470;
 
@@ -600,7 +598,6 @@ const STAGE_DEP_SHIPPING = 460;
 const STAGE_ENT_ROLLOUT = 1061;
 const STAGE_ENT_SHIPPED = 1070;
 
-// TODO(danielrsmith): Differentiate origin trial and trial extension fields.
 export const FORMS_BY_STAGE_TYPE = {
   [STAGE_BLINK_INCUBATE]: FLAT_INCUBATE_FIELDS,
   [STAGE_BLINK_PROTOTYPE]: FLAT_PROTOTYPE_FIELDS,
@@ -651,4 +648,12 @@ export const CREATEABLE_STAGES = {
     STAGE_ENT_ROLLOUT,
     STAGE_ENT_SHIPPED,
   ],
+};
+
+// key: Origin trial stage types,
+// value: extension stage type associated with the origin trial type.
+export const OT_EXTENSION_STAGE_MAPPING = {
+  [STAGE_BLINK_ORIGIN_TRIAL]: STAGE_BLINK_EXTEND_ORIGIN_TRIAL,
+  [STAGE_FAST_ORIGIN_TRIAL]: STAGE_FAST_EXTEND_ORIGIN_TRIAL,
+  [STAGE_DEP_DEPRECATION_TRIAL]: STAGE_DEP_EXTEND_DEPRECATION_TRIAL,
 };

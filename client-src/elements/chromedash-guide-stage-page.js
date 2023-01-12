@@ -261,8 +261,8 @@ export class ChromedashGuideStagePage extends LitElement {
     });
 
     if (this.stage.extensions) {
+      let i = 1;
       for (const extensionStage of this.stage.extensions) {
-        let i = 1;
         for (const section of FLAT_TRIAL_EXTENSION_FIELDS.sections) {
           formSections.push(html`
             <h3>${section.name} ${i}</h3>
@@ -270,8 +270,8 @@ export class ChromedashGuideStagePage extends LitElement {
               ${this.renderFields(formattedFeature, section, extensionStage, true)}
             </section>
           `);
-          i++;
         }
+        i++;
       }
     }
 

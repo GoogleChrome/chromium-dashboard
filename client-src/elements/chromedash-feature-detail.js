@@ -4,7 +4,9 @@ import {makeDisplaySpecs} from './form-field-specs';
 import {
   FLAT_METADATA_FIELDS,
   FLAT_TRIAL_EXTENSION_FIELDS,
-  FORMS_BY_STAGE_TYPE} from './form-definition';
+  FORMS_BY_STAGE_TYPE,
+  OT_EXTENSION_STAGE_MAPPING,
+} from './form-definition';
 
 import {
   DEPRECATED_FIELDS,
@@ -454,6 +456,24 @@ class ChromedashFeatureDetail extends LitElement {
     `;
   }
 
+  // Create an extension stage for an origin trial stage on button click.
+  createExtensionStage(feStage) {
+    if (!feStage.stage_type in OT_EXTENSION_STAGE_MAPPING) {
+      return;
+    }
+    const body = {
+      stage_type: OT_EXTENSION_STAGE_MAPPING[feStage.stage_type],
+      ot_stage_id: feStage.id,
+    };
+
+    window.csClient.createStage(this.feature.id, body)
+      .then(() => {
+        // Redirect to origin trial stage after creation.
+        location.assign(
+          `/guide/stage/${this.feature.id}/${feStage.intent_stage}/${feStage.id}`);
+      });
+  }
+
   renderProcessStage(feStage) {
     const stageForm = this.getStageForm(feStage.stage_type);
     const fieldNames = stageForm === null ? [] : flattenSections(stageForm);
@@ -477,14 +497,27 @@ class ChromedashFeatureDetail extends LitElement {
     const name = `${processStage.name}${numberDifferentiation}`;
     const isActive = this.feature.active_stage_id === feStage.id;
 
+    // Show a button to add a trial extension stage for origin trial stages.
+    let addExtensionButton = nothing;
+    if (this.canEdit && 'extensions' in feStage) {
+      // Button text changes based on whether or not an extension stage already exists.
+      const extensionButtonText = (feStage.extensions && feStage.extensions.length > 0) ?
+        'Add another trial extension' : 'Add a trial extension';
+      addExtensionButton = html`
+      <sl-button size="small" style="float:right"
+          @click=${() => this.createExtensionStage(feStage)}
+          >${extensionButtonText}</sl-button>`;
+    }
+
     const editButton = html`
       <sl-button size="small" style="float:right"
           href="/guide/stage/${this.feature.id}/${processStage.outgoing_stage}/${feStage.id}"
           >Edit fields</sl-button>
-    `;
+`;
     const content = html`
       <p class="description">
         ${this.canEdit ? editButton : nothing}
+        ${addExtensionButton}
         ${processStage.description}
       </p>
       ${this.renderGateChips(feStage)}

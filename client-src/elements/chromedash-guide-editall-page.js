@@ -213,11 +213,11 @@ export class ChromedashGuideEditallPage extends LitElement {
       // If extension stages are associated with this stage,
       // render them in a separate section as well.
       const extensions = feStage.extensions || [];
-      extensions.forEach((extensionStage, i) => {
+      extensions.forEach(extensionStage => {
         fieldsOnly = flattenSections(FLAT_TRIAL_EXTENSION_FIELDS);
         formsToRender.push(this.renderStageSection(
           formattedFeature,
-          `${FLAT_TRIAL_EXTENSION_FIELDS.name} ${i + 1}`,
+          `${FLAT_TRIAL_EXTENSION_FIELDS.name}`,
           extensionStage,
           fieldsOnly));
         allFormFields = [...allFormFields, ...fieldsOnly];
