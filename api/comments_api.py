@@ -81,8 +81,8 @@ class CommentsAPI(basehandlers.APIHandler):
     gate_id = kwargs.get('gate_id', None)
     feature = self.get_specified_feature(feature_id=feature_id)
     user = self.get_current_user(required=True)
-    gate_type = self.get_param(
-        'gateType', required=False)
+    post_to_thread_type = self.get_param(
+        'postToThreadType', required=False)
 
     comment_content = self.get_param('comment', required=False)
     if comment_content:
@@ -93,9 +93,9 @@ class CommentsAPI(basehandlers.APIHandler):
           author=user.email(), content=comment_content)
       comment_activity.put()
 
-    if gate_type:
+    if post_to_thread_type:
       notifier.post_comment_to_mailing_list(
-          feature, gate_type, user.email(), comment_content)
+          feature, post_to_thread_type, user.email(), comment_content)
 
     # Callers don't use the JSON response for this API call.
     return {'message': 'Done'}
