@@ -1,7 +1,8 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {ref, createRef} from 'lit/directives/ref.js';
 import './chromedash-activity-log';
-import {showToastMessage, findProcessStage} from './utils.js';
+import {autolink, showToastMessage, findProcessStage} from './utils.js';
+import {GATE_QUESTIONNAIRES} from './form-definition.js';
 
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
@@ -77,16 +78,29 @@ export class ChromedashGateColumn extends LitElement {
          font-weight: 500;
        }
 
-        #controls {
-          padding: var(--content-padding);
-          text-align: right;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-        #controls * + * {
-          padding-left: var(--content-padding);
-        }
+       #questionnaire {
+         white-space: pre-wrap;
+         padding: var(--content-padding-half);
+         min-height: 60px;
+         max-height: 360px;
+         overflow-y: auto;
+         border: var(--default-border);
+         border-radius: var(--border-radius);
+       }
+       #instructions {
+         margin-bottom: var(--content-padding-large);
+       }
+
+       #controls {
+         padding: var(--content-padding);
+         text-align: right;
+         display: flex;
+         justify-content: space-between;
+         align-items: center;
+       }
+       #controls * + * {
+         padding-left: var(--content-padding);
+       }
 
     `];
   }
@@ -461,13 +475,38 @@ export class ChromedashGateColumn extends LitElement {
     `;
   }
 
+  renderAction(action) {
+    const label = action.name;
+    const url = action.url
+      .replace('{feature_id}', this.feature.id)
+      .replace('{outgoing_stage}', this.stage.outgoing_stage);
+
+    return html`
+      <div>
+        <a href=${url} target="_blank">${label}</a>
+      </div>
+    `;
+  }
+
   renderQuestionnaireSkeleton() {
-    return nothing;
+    return html`
+      <h2>Survey questions</h2>
+      <div id="questionnaire">Loading...</div>
+      <p id="instructions">&nbsp;</p>
+    `;
   }
 
   renderQuestionnaire() {
-    // TODO(jrobbins): Implement questionnaires later.
-    return nothing;
+    const questionnaireText = GATE_QUESTIONNAIRES[this.gate.gate_type];
+    const instructions = (
+      questionnaireText ?
+        html`Please post responses in the comments below.` :
+        html`&nbsp`);
+    return html`
+      <h2>Survey questions</h2>
+      <div id="questionnaire">${autolink(questionnaireText)}</div>
+      <p id="instructions">${instructions}</p>
+    `;
   }
 
   renderCommentsSkeleton() {
@@ -525,6 +564,10 @@ export class ChromedashGateColumn extends LitElement {
         @keypress=${this.checkNeedsPost}
         placeholder="Add a comment"
         ></sl-textarea>
+       <div>
+         Comments will be visible publicly.
+         Only reviewers will be notified.
+       </div>
        <div id="controls">
          ${postButton}
          ${postToThreadCheckbox}
@@ -549,6 +592,10 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   render() {
+    const processStage = this.loading ?
+      null :
+      findProcessStage(this.stage, this.process);
+
     return html`
       <sl-icon-button title="Close" name="x" id="close-button"
         @click=${() => this.handleCancel()}
@@ -563,6 +610,9 @@ export class ChromedashGateColumn extends LitElement {
             this.renderReviewStatusSkeleton() :
             this.renderReviewStatus()}
         </div>
+        ${this.loading ?
+          nothing :
+          processStage.actions.map(act => this.renderAction(act))}
 
         <div id="votes-area">
           ${this.loading ?

@@ -652,3 +652,20 @@ export const CREATEABLE_STAGES = {
     STAGE_ENT_SHIPPED,
   ],
 };
+
+
+const BLINK_GENERIC_QUESTIONNAIRE = (
+  'Use the link above to generate an intent messsage, ' +
+  'and then post that message to blink-dev@chromium.org.\n' +
+  '\n' +
+  'Be sure to update your feature entry in response to ' +
+  'any suggestions on that email thread.'
+);
+
+
+export const GATE_QUESTIONNAIRES = {
+  1: BLINK_GENERIC_QUESTIONNAIRE,
+  2: BLINK_GENERIC_QUESTIONNAIRE,
+  3: BLINK_GENERIC_QUESTIONNAIRE,
+  4: BLINK_GENERIC_QUESTIONNAIRE,
+};
