@@ -154,7 +154,7 @@ export class ChromedashProcessOverview extends LitElement {
     return (viewedIncomingStageIndex > featureStageIndex);
   }
 
-  renderAction(action, stage) {
+  renderAction(action, stage, feStage) {
     const label = action.name;
     const url = action.url
       .replace('{feature_id}', this.feature.id)
@@ -191,7 +191,7 @@ export class ChromedashProcessOverview extends LitElement {
           ${prereqItems.map((item) => html`
           <li class="pending">
             ${item.stage.name}:
-            ${item.name} ${this.renderEditLink(item.stage, item)}
+            ${item.name} ${this.renderEditLink(item.stage, feStage, item)}
           </li>`)}
         </ol>
         <sl-button href="${url}" target="_blank" variant="primary" size="small">
@@ -207,24 +207,24 @@ export class ChromedashProcessOverview extends LitElement {
       </li>`;
   }
 
-  renderActions(stage) {
+  renderActions(stage, feStage) {
     if (stage.actions) {
       return html`
         <ol>
-         ${stage.actions.map(act => this.renderAction(act, stage))}
+         ${stage.actions.map(act => this.renderAction(act, stage, feStage))}
         </ol>`;
     } else {
       return nothing;
     }
   }
 
-  renderEditLink(stage, item) {
+  renderEditLink(stage, feStage, item) {
     const featureId = this.feature.id;
     let editEl = nothing;
     if (item.field) {
       editEl = html`
         <a class="edit-progress-item"
-           href="/guide/stage/${featureId}/${stage.outgoing_stage}#id_${item.field}">
+           href="/guide/stage/${featureId}/${stage.outgoing_stage}/${feStage.id}#id_${item.field}">
           Edit
         </a>
       `;
@@ -232,8 +232,8 @@ export class ChromedashProcessOverview extends LitElement {
     return editEl;
   }
 
-  renderProgressItem(stage, item) {
-    const editEl = this.renderEditLink(stage, item);
+  renderProgressItem(stage, feStage, item) {
+    const editEl = this.renderEditLink(stage, feStage, item);
 
     if (!this.progress.hasOwnProperty(item.name)) {
       return html`
@@ -321,11 +321,11 @@ export class ChromedashProcessOverview extends LitElement {
         </td>
         <td>
           ${processStage.progress_items.map(item =>
-                      this.renderProgressItem(processStage, item))}
+                      this.renderProgressItem(processStage, feStage, item))}
         </td>
         <td>
           ${button}
-          ${this.renderActions(processStage)}
+          ${this.renderActions(processStage, feStage)}
         </td>
       </tr>`;
   }
