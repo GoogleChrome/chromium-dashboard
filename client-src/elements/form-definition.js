@@ -433,6 +433,19 @@ const PSA_PREPARE_TO_SHIP_FIELDS = {
   ],
 };
 
+const DEPRECATION_PLAN_FIELDS = {
+  name: 'Write up motivation',
+  sections: [
+    {
+      name: 'Write up motivation',
+      fields: [
+        'motivation',
+        'spec_link',
+      ],
+    },
+  ],
+};
+
 const DEPRECATION_DEV_TRIAL_FIELDS = {
   name: 'Dev trial of deprecation',
   sections: [
@@ -573,7 +586,7 @@ const STAGE_PSA_DEV_TRIAL = 330;
 const STAGE_PSA_SHIPPING = 360;
 
 // For deprecating a feature: the "DEP" process.
-// const STAGE_DEP_PLAN = 410;
+const STAGE_DEP_PLAN = 410;
 const STAGE_DEP_DEV_TRIAL = 430;
 const STAGE_DEP_DEPRECATION_TRIAL = 450;
 // const STAGE_DEP_EXTEND_DEPRECATION_TRIAL = 451;
@@ -605,6 +618,7 @@ export const FORMS_BY_STAGE_TYPE = {
   [STAGE_PSA_DEV_TRIAL]: FLAT_DEV_TRIAL_FIELDS,
   [STAGE_PSA_SHIPPING]: PSA_PREPARE_TO_SHIP_FIELDS,
 
+  [STAGE_DEP_PLAN]: DEPRECATION_PLAN_FIELDS,
   [STAGE_DEP_DEV_TRIAL]: DEPRECATION_DEV_TRIAL_FIELDS,
   [STAGE_DEP_DEPRECATION_TRIAL]: DEPRECATION_ORIGIN_TRIAL_FIELDS,
   [STAGE_DEP_SHIPPING]: DEPRECATION_PREPARE_TO_SHIP_FIELDS,
