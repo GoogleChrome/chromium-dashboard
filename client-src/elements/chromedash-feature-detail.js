@@ -457,21 +457,25 @@ class ChromedashFeatureDetail extends LitElement {
   }
 
   // Create an extension stage for an origin trial stage on button click.
-  createExtensionStage(feStage) {
+  createExtensionStage(feStage, extensionAlreadyExists) {
     if (!feStage.stage_type in OT_EXTENSION_STAGE_MAPPING) {
       return;
     }
-    const body = {
-      stage_type: OT_EXTENSION_STAGE_MAPPING[feStage.stage_type],
-      ot_stage_id: feStage.id,
-    };
+    const confirmText = ('Trial extension fields are already available for this trial. ' +
+      'Do you want to add more fields for another, separate trial extension?');
+    if (!extensionAlreadyExists || window.confirm(confirmText)) {
+      const body = {
+        stage_type: OT_EXTENSION_STAGE_MAPPING[feStage.stage_type],
+        ot_stage_id: feStage.id,
+      };
 
-    window.csClient.createStage(this.feature.id, body)
-      .then(() => {
-        // Redirect to origin trial stage after creation.
-        location.assign(
-          `/guide/stage/${this.feature.id}/${feStage.intent_stage}/${feStage.id}`);
-      });
+      window.csClient.createStage(this.feature.id, body)
+        .then(() => {
+          // Redirect to origin trial stage after creation.
+          location.assign(
+            `/guide/stage/${this.feature.id}/${feStage.intent_stage}/${feStage.id}`);
+        });
+    }
   }
 
   renderProcessStage(feStage) {
@@ -501,11 +505,12 @@ class ChromedashFeatureDetail extends LitElement {
     let addExtensionButton = nothing;
     if (this.canEdit && 'extensions' in feStage) {
       // Button text changes based on whether or not an extension stage already exists.
-      const extensionButtonText = (feStage.extensions && feStage.extensions.length > 0) ?
+      const extensionAlreadyExists = (feStage.extensions && feStage.extensions.length > 0);
+      const extensionButtonText = extensionAlreadyExists ?
         'Add another trial extension' : 'Add a trial extension';
       addExtensionButton = html`
       <sl-button size="small" style="float:right"
-          @click=${() => this.createExtensionStage(feStage)}
+          @click=${() => this.createExtensionStage(feStage, extensionAlreadyExists)}
           >${extensionButtonText}</sl-button>`;
     }
 
