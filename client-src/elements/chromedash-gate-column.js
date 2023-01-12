@@ -206,16 +206,13 @@ export class ChromedashGateColumn extends LitElement {
   handlePost() {
     const commentArea = this.commentAreaRef.value;
     const commentText = commentArea.value.trim();
-    const postToThreadType = (
+    const postToApprovalFieldId = (
         this.postToThreadRef.value?.checked ? this.gate.gate_type : 0);
     if (commentText != '') {
-      Promise.all([
-        window.csClient.postComment(
-          this.feature.id, this.gate.id, commentText, Number(postToThreadType)),
-        window.csClient.setVote(featureId, this.gate.id, null),
-      ]).then(() => {
-        this.reloadComments()
-      });
+      window.csClient.postComment(
+        this.feature.id, null, null, commentText,
+        Number(postToApprovalFieldId))
+        .then(() => this.reloadComments());
     }
   }
 
