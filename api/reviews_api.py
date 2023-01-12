@@ -42,9 +42,8 @@ class VotesAPI(basehandlers.APIHandler):
     """Set a user's vote value for the specified feature and gate."""
     feature_id = kwargs['feature_id']
     gate_id = kwargs['gate_id']
-    new_state = self.get_int_param(
-        'state', validator=Approval.is_valid_state)
     feature = self.get_specified_feature(feature_id=feature_id)
+
     user = self.get_current_user(required=True)
     gate = Gate.get_by_id(gate_id)
     if not gate:
@@ -55,11 +54,6 @@ class VotesAPI(basehandlers.APIHandler):
       self.abort(403, msg='User is not an approver')
 
     # Note: We no longer write Approval entities.
-
-    gates: list[Gate] = Gate.query(
-        Gate.feature_id == feature_id, Gate.gate_id == gate_id).fetch()
-    if len(gates) == 0:
-      return {'message': 'No gate found for given feature ID and gate ID.'}
     new_state = self.get_int_param('state', validator=Vote.is_valid_state)
     approval_defs.set_vote(feature_id, None, new_state,
         user.email(), gate_id)
