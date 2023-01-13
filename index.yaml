@@ -331,6 +331,11 @@ indexes:
   - name: creator_email
   - name: updated
     direction: desc
+- kind: FeatureEntry
+  properties:
+  - name: spec_mentor_emails
+  - name: updated
+    direction: desc
 - kind: FeatureWords
   properties:
   - name: words
