@@ -162,7 +162,9 @@ export class ChromedashGuideStagePage extends LitElement {
       const hash = decodeURIComponent(location.hash);
       if (hash) {
         const el = this.shadowRoot.querySelector(hash);
-        el.scrollIntoView(true, {behavior: 'smooth'});
+        if (el) {
+          this.shadowRoot.querySelector(`chromedash-form-field[name="${el.name}"] tr th b`).scrollIntoView(true, {behavior: 'smooth'});
+        }
       }
     }
   }
