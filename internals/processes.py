@@ -118,7 +118,7 @@ PI_OT_AVAILABLE = ProgressItem('OT available')
 PI_OT_RESULTS = ProgressItem('OT results')
 PI_I2E_EMAIL = ProgressItem(
     'Intent to Experiment email', 'intent_to_experiment_url')
-PI_I2E_LGTMS = ProgressItem('One LGTM on Intent to Experiment', 'i2e_lgtms')
+PI_I2E_LGTMS = ProgressItem('One LGTM on Intent to Experiment')
 
 PI_MIGRATE_INCUBATION = ProgressItem('Request to migrate incubation')
 PI_TAG_ADDRESSED = ProgressItem(
@@ -128,7 +128,7 @@ PI_UPDATED_VENDOR_SIGNALS = ProgressItem(
 PI_UPDATED_TARGET_MILESTONE = ProgressItem(
     'Updated target milestone', 'shipped_milestone')
 PI_I2S_EMAIL = ProgressItem('Intent to Ship email', 'intent_to_ship_url')
-PI_I2S_LGTMS = ProgressItem('Three LGTMs on Intent to Ship', 'i2s_lgtms')
+PI_I2S_LGTMS = ProgressItem('Three LGTMs on Intent to Ship')
 
 # TODO(jrobbins): needs detector.
 PI_FINAL_VENDOR_SIGNALS = ProgressItem('Finalized vendor signals', 'safari_views')
@@ -149,7 +149,7 @@ PI_REMOVAL_OF_DT = ProgressItem('Removal of DT')
 PI_DT_EMAIL = ProgressItem(
     'Request for Deprecation Trial email', 'intent_to_experiment_url')
 PI_DT_LGTMS = ProgressItem(
-    'One LGTM on Request for Deprecation Trial', 'i2e_lgtms')
+    'One LGTM on Request for Deprecation Trial')
 
 # TODO(jrobbins): needs detector.
 PI_EXISTING_FEATURE = ProgressItem('Link to existing feature')
