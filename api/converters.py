@@ -240,6 +240,7 @@ def _prep_stage_gate_info(
 
   # Get all stages associated with the feature, sorted by stage type.
   if prefetched_stages is not None:
+    prefetched_stages.sort(key=lambda s: s.stage_type)
     stages = prefetched_stages
   else:
     stages = Stage.query(Stage.feature_id == d['id']).order(Stage.stage_type)
