@@ -81,13 +81,11 @@ export class ChromedashGateColumn extends LitElement {
        #questionnaire {
          white-space: pre-wrap;
          padding: var(--content-padding-half);
-         min-height: 60px;
-         max-height: 360px;
-         overflow-y: auto;
-         border: var(--default-border);
          border-radius: var(--border-radius);
+         background: var(--table-alternate-background);
        }
-       #instructions {
+       .instructions {
+         padding: var(--content-padding-half);
          margin-bottom: var(--content-padding-large);
        }
 
@@ -316,18 +314,37 @@ export class ChromedashGateColumn extends LitElement {
              this.user.editable_features.includes(this.feature.id)));
   }
 
+  renderAction(processStage, action) {
+    const label = action.name;
+    const url = action.url
+      .replace('{feature_id}', this.feature.id)
+      .replace('{outgoing_stage}', processStage.outgoing_stage);
+
+    return html`
+      <sl-button href=${url} target="_blank"
+       pill size=small variant=primary
+       >${label}</sl-button>
+    `;
+  }
+
   renderReviewStatusPreparing() {
-    if (this.userCanRequestReview()) {
-      return html`
-       <sl-button pill size=small variant=primary
-         @click=${this.handleReviewRequested}
-         >Request review</sl-button>
-      `;
-    } else {
+    if (!this.userCanRequestReview()) {
       return html`
         Review has not been requested yet.
       `;
     }
+
+    const processStage = findProcessStage(this.stage, this.process);
+    if (processStage?.actions?.length > 0) {
+      return processStage.actions.map(act =>
+        this.renderAction(processStage, act));
+    }
+
+    return html`
+     <sl-button pill size=small variant=primary
+       @click=${this.handleReviewRequested}
+       >Request review</sl-button>
+    `;
   }
 
   renderReviewStatusActive() {
@@ -475,24 +492,11 @@ export class ChromedashGateColumn extends LitElement {
     `;
   }
 
-  renderAction(action) {
-    const label = action.name;
-    const url = action.url
-      .replace('{feature_id}', this.feature.id)
-      .replace('{outgoing_stage}', this.stage.outgoing_stage);
-
-    return html`
-      <div>
-        <a href=${url} target="_blank">${label}</a>
-      </div>
-    `;
-  }
-
   renderQuestionnaireSkeleton() {
     return html`
       <h2>Survey questions</h2>
       <div id="questionnaire">Loading...</div>
-      <p id="instructions">&nbsp;</p>
+      <p class="instructions">&nbsp;</p>
     `;
   }
 
@@ -505,7 +509,7 @@ export class ChromedashGateColumn extends LitElement {
     return html`
       <h2>Survey questions</h2>
       <div id="questionnaire">${autolink(questionnaireText)}</div>
-      <p id="instructions">${instructions}</p>
+      <p class="instructions">${instructions}</p>
     `;
   }
 
@@ -564,7 +568,7 @@ export class ChromedashGateColumn extends LitElement {
         @keypress=${this.checkNeedsPost}
         placeholder="Add a comment"
         ></sl-textarea>
-       <div>
+       <div class="instructions">
          Comments will be visible publicly.
          Only reviewers will be notified.
        </div>
@@ -592,10 +596,6 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   render() {
-    const processStage = this.loading ?
-      null :
-      findProcessStage(this.stage, this.process);
-
     return html`
       <sl-icon-button title="Close" name="x" id="close-button"
         @click=${() => this.handleCancel()}
@@ -610,9 +610,6 @@ export class ChromedashGateColumn extends LitElement {
             this.renderReviewStatusSkeleton() :
             this.renderReviewStatus()}
         </div>
-        ${this.loading ?
-          nothing :
-          processStage.actions.map(act => this.renderAction(act))}
 
         <div id="votes-area">
           ${this.loading ?
