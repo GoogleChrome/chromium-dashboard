@@ -284,7 +284,7 @@ export class ChromedashHeader extends LitElement {
       ${this.user ? html`
         ${this.user.can_create_feature && !this.isCurrentPage('/guide/new') ? html`
           <sl-button href="/guide/new" variant="primary" size="small">
-            Add feature
+            Create feature
           </sl-button>
         `: nothing }
         <div class="nav-dropdown-container">
