@@ -317,8 +317,8 @@ class ChromeStatusClient {
     return this.doGet(`/features/${featureId}/stages/${stageId}`);
   }
 
-  createStage(featureId, stageType) {
-    return this.doPost(`/features/${featureId}/stages`, {stage_type: stageType});
+  createStage(featureId, body) {
+    return this.doPost(`/features/${featureId}/stages`, body);
   }
 
   // Processes API

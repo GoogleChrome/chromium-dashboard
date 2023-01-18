@@ -523,7 +523,8 @@ def get_all(limit: Optional[int]=None,
         query = query.filter(
           ndb.OR(FeatureEntry.owner_emails == comparator,
               FeatureEntry.editor_emails == comparator,
-              FeatureEntry.creator_email == comparator))
+              FeatureEntry.creator_email == comparator,
+              FeatureEntry.spec_mentor_emails == comparator))
       else:
         query = query.filter(getattr(FeatureEntry, filter_type) == comparator)
 

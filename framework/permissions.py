@@ -111,11 +111,13 @@ def can_edit_feature(user: User, feature_id: int) -> bool:
     return False
 
   email = user.email()
-  # Check if the user is an owner, editor, or creator for this feature.
-  # If yes, the feature can be edited.
-  return (email in feature.owner_emails or
-          email in feature.editor_emails or
-          email == feature.creator_email)
+  # Check if the user is an owner, editor, spec mentor, or creator
+  # for this feature. If yes, the feature can be edited.
+  return (
+      email in feature.owner_emails or
+      email in feature.editor_emails or
+      (feature.spec_mentor_emails and email in feature.spec_mentor_emails) or
+      email == feature.creator_email)
 
 
 def can_approve_feature(user: User, feature: FeatureEntry, approvers) -> bool:

@@ -78,7 +78,7 @@ class ChromedashAddStageDialog extends LitElement {
   }
 
   handleStageCreate() {
-    window.csClient.createStage(this.featureId, this.getStageSelectValue())
+    window.csClient.createStage(this.featureId, {stage_type: this.getStageSelectValue()})
       .then(() => {
         this.shadowRoot.querySelector('sl-dialog').hide();
         location.reload();
@@ -115,6 +115,7 @@ class ChromedashAddStageDialog extends LitElement {
   render() {
     return html`
       <sl-dialog label="Create a new stage">
+        <p>Here, you can add additional stages to your feature as needed.</p>
         ${this.renderStageSelect()}
       </sl-dialog>
     `;
