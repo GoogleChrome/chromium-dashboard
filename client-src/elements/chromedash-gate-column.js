@@ -505,7 +505,7 @@ export class ChromedashGateColumn extends LitElement {
     const instructions = (
       questionnaireText ?
         html`Please post responses in the comments below.` :
-        html`&nbsp`);
+        html`&nbsp;`);
     return html`
       <h2>Survey questions</h2>
       <div id="questionnaire">${autolink(questionnaireText)}</div>
