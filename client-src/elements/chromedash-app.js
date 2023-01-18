@@ -65,6 +65,7 @@ class ChromedashApp extends LitElement {
           top: 0;
           right: 0;
           width: var(--sidebar-width);
+          max-width: var(--sidebar-max-width);
           bottom: 0;
         }
         #sidebar[hidden] {
