@@ -570,7 +570,7 @@ export class ChromedashGateColumn extends LitElement {
         ></sl-textarea>
        <div class="instructions">
          Comments will be visible publicly.
-         Only reviewers will be notified.
+         Only reviewers will be notified when a comment is posted.
        </div>
        <div id="controls">
          ${postButton}
