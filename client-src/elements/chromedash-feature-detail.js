@@ -32,7 +32,7 @@ class ChromedashFeatureDetail extends LitElement {
       process: {type: Object},
       dismissedCues: {type: Array},
       anyCollapsed: {type: Boolean},
-      selectedGate: {type: Number},
+      selectedGateId: {type: Number},
     };
   }
 
@@ -47,7 +47,7 @@ class ChromedashFeatureDetail extends LitElement {
     this.anyCollapsed = true;
     this.previousStageTypeRendered = 0;
     this.sameTypeRendered = 0;
-    this.selectedGate = 0;
+    this.selectedGateId = 0;
   }
 
   static get styles() {
@@ -444,7 +444,7 @@ class ChromedashFeatureDetail extends LitElement {
         .feature=${this.feature}
         .stage=${feStage}
         .gate=${gate}
-        selectedGate=${this.selectedGate}
+        selectedGateId=${this.selectedGateId}
       >
       </chromedash-gate-chip>
     `;

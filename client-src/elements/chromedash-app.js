@@ -102,7 +102,7 @@ class ChromedashApp extends LitElement {
       pageComponent: {attribute: false},
       contextLink: {type: String}, // used for the back button in the feature page
       sidebarHidden: {type: Boolean},
-      selectedGate: {type: Number},
+      selectedGateId: {type: Number},
     };
   }
 
@@ -118,7 +118,7 @@ class ChromedashApp extends LitElement {
     this.pageComponent = null;
     this.contextLink = '/features';
     this.sidebarHidden = true;
-    this.selectedGate = 0;
+    this.selectedGateId = 0;
   }
 
   connectedCallback() {
@@ -150,7 +150,7 @@ class ChromedashApp extends LitElement {
     page('/myfeatures', (ctx) => {
       this.pageComponent = document.createElement('chromedash-myfeatures-page');
       this.pageComponent.user = this.user;
-      this.pageComponent.selectedGate = this.selectedGate;
+      this.pageComponent.selectedGateId = this.selectedGateId;
       this.contextLink = ctx.path;
       this.currentPage = ctx.path;
       this.hideSidebar();
@@ -170,7 +170,7 @@ class ChromedashApp extends LitElement {
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.user = this.user;
       this.pageComponent.contextLink = this.contextLink;
-      this.pageComponent.selectedGate = this.selectedGate;
+      this.pageComponent.selectedGateId = this.selectedGateId;
       this.currentPage = ctx.path;
       this.pageComponent.appTitle = this.appTitle;
       if (this.pageComponent.featureId != this.gateColumnRef.value?.feature?.id) {
@@ -282,7 +282,7 @@ class ChromedashApp extends LitElement {
 
   showGateColumn(feature, stageId, gate) {
     this.gateColumnRef.value.setContext(feature, stageId, gate);
-    this.selectedGate = gate.id;
+    this.selectedGateId = gate.id;
     this.showSidebar();
   }
 

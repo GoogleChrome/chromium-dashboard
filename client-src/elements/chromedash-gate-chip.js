@@ -33,7 +33,7 @@ class ChromedashGateChip extends LitElement {
       feature: {type: Object},
       stage: {type: Object},
       gate: {type: Object},
-      selectedGate: {type: Number},
+      selectedGateId: {type: Number},
     };
   }
 
@@ -42,7 +42,7 @@ class ChromedashGateChip extends LitElement {
     this.feature = {};
     this.stage = {};
     this.gate = {};
-    this.selectedGate = 0;
+    this.selectedGateId = 0;
   }
 
   static get styles() {
@@ -149,7 +149,7 @@ class ChromedashGateChip extends LitElement {
     const className = stateName.toLowerCase().replaceAll(' ', '_');
     const iconName = GATE_STATE_TO_ICON[this.gate.state];
     let selectedBorder;
-    if (this.gate.id == this.selectedGate) {
+    if (this.gate.id == this.selectedGateId) {
       selectedBorder = styleMap({border: '2px solid var(--dark-spot-color)'});
     }
     return html`
