@@ -133,11 +133,18 @@ export const DEPRECATED_FIELDS = new Set([
   'standardization',
 ]);
 
+export const GATE_TYPES = {
+  PROTOTYPE: 1,
+  ORIGIN_TRIAL: 2,
+  EXTEND_ORIGIN_TRIAL: 3,
+  SHIP: 4,
+};
+
 export const GATE_SHORT_NAMES = {
-  1: 'Prototype',
-  2: 'OT',
-  3: 'OT Extension',
-  4: 'Ship',
+  [GATE_TYPES.PROTOTYPE]: 'Prototype',
+  [GATE_TYPES.ORIGIN_TRIAL]: 'OT',
+  [GATE_TYPES.EXTEND_ORIGIN_TRIAL]: 'OT Extension',
+  [GATE_TYPES.SHIP]: 'Ship',
 };
 
 export const OT_MILESTONE_END_FIELDS = {
