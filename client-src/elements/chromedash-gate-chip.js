@@ -31,6 +31,7 @@ class ChromedashGateChip extends LitElement {
       feature: {type: Object},
       stage: {type: Object},
       gate: {type: Object},
+      selectedGate: {type: Number},
     };
   }
 
@@ -39,6 +40,7 @@ class ChromedashGateChip extends LitElement {
     this.feature = {};
     this.stage = {};
     this.gate = {};
+    this.selectedGate = 0;
   }
 
   static get styles() {
@@ -144,9 +146,9 @@ class ChromedashGateChip extends LitElement {
     const stateName = GATE_STATE_TO_NAME[this.gate.state];
     const className = stateName.toLowerCase().replaceAll(' ', '_');
     const iconName = GATE_STATE_TO_ICON[this.gate.state];
-
     return html`
       <sl-button pill size="small" class=${className}
+        ${this.gate.id == this.selectedGate ? 'style=border:2px solid var(--dark-spot-color)' : nothing}
         title="${teamName}: ${gateName}: ${stateName}"
         @click=${this.openApprovalsDialog}
         >

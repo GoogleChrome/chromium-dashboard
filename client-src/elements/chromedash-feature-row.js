@@ -14,6 +14,7 @@ class ChromedashFeatureRow extends LitElement {
       starredFeatures: {type: Object},
       approvals: {type: Object},
       gates: {type: Object},
+      selectedGate: {type: Number},
     };
   }
 
@@ -25,6 +26,7 @@ class ChromedashFeatureRow extends LitElement {
     this.canApprove = false;
     this.approvals = {};
     this.gates = {};
+    this.selectedGate = 0;
   }
 
   static get styles() {
@@ -177,6 +179,7 @@ class ChromedashFeatureRow extends LitElement {
               .feature=${this.feature}
               .stage=${stageAndGates.stage}
               .gate=${gate}
+              selectedGate=${this.selectedGate}
             ></chromedash-gate-chip>
           </div>`)}
       </div>
