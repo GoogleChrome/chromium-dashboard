@@ -1,6 +1,7 @@
 import {
   FEATURE_TYPES,
   IMPLEMENTATION_STATUS,
+  GATE_TYPES,
 } from './form-field-enums';
 
 
@@ -656,4 +657,21 @@ export const OT_EXTENSION_STAGE_MAPPING = {
   [STAGE_BLINK_ORIGIN_TRIAL]: STAGE_BLINK_EXTEND_ORIGIN_TRIAL,
   [STAGE_FAST_ORIGIN_TRIAL]: STAGE_FAST_EXTEND_ORIGIN_TRIAL,
   [STAGE_DEP_DEPRECATION_TRIAL]: STAGE_DEP_EXTEND_DEPRECATION_TRIAL,
+};
+
+
+const BLINK_GENERIC_QUESTIONNAIRE = (
+  'Use the link above to generate an intent messsage, ' +
+  'and then post that message to blink-dev@chromium.org.\n' +
+  '\n' +
+  'Be sure to update your feature entry in response to ' +
+  'any suggestions on that email thread.'
+);
+
+
+export const GATE_QUESTIONNAIRES = {
+  [GATE_TYPES.PROTOTYPE]: BLINK_GENERIC_QUESTIONNAIRE,
+  [GATE_TYPES.ORIGIN_TRIAL]: BLINK_GENERIC_QUESTIONNAIRE,
+  [GATE_TYPES.EXTEND_ORIGIN_TRIAL]: BLINK_GENERIC_QUESTIONNAIRE,
+  [GATE_TYPES.SHIP]: BLINK_GENERIC_QUESTIONNAIRE,
 };
