@@ -148,7 +148,7 @@ class ChromedashGateChip extends LitElement {
     const iconName = GATE_STATE_TO_ICON[this.gate.state];
     return html`
       <sl-button pill size="small" class=${className}
-        ${this.gate.id == this.selectedGate ? 'style=border:2px solid var(--dark-spot-color)' : nothing}
+        style="border:${this.gate.id == this.selectedGate ? '2px solid var(--dark-spot-color)' : nothing}"
         title="${teamName}: ${gateName}: ${stateName}"
         @click=${this.openApprovalsDialog}
         >
