@@ -1,6 +1,6 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {SHARED_STYLES} from '../sass/shared-css.js';
-import {GATE_SHORT_NAMES} from './form-field-enums.js';
+import {STAGE_SHORT_NAMES} from './form-definition.js';
 
 
 class ChromedashFeatureRow extends LitElement {
@@ -161,27 +161,38 @@ class ChromedashFeatureRow extends LitElement {
           gates: featureGates.filter(g => g.stage_id == stage.id),
         });
       }
+      for (const extension of stage.extensions || []) {
+        if (activeStageIds.has(extension.id)) {
+          activeStagesAndTheirGates.push({
+            stage: extension,
+            gates: featureGates.filter(g => g.stage_id == extension.id),
+          });
+        }
+      }
     }
     return activeStagesAndTheirGates;
   }
 
-  getGateShortName(gate) {
-    return `${GATE_SHORT_NAMES[gate.gate_type]}: ` || nothing;
+  getStageShortName(stage) {
+    if (STAGE_SHORT_NAMES[stage.stage_type]) {
+      return `${STAGE_SHORT_NAMES[stage.stage_type]}: `;
+    } else {
+      return nothing;
+    }
   }
 
   renderActiveStageAndGates(stageAndGates) {
     return html`
       <div>
+        ${this.getStageShortName(stageAndGates.stage)}
         ${stageAndGates.gates.map(gate => html`
-          <div>
-            ${this.getGateShortName(gate)}
-            <chromedash-gate-chip
-              .feature=${this.feature}
-              .stage=${stageAndGates.stage}
-              .gate=${gate}
-              selectedGateId=${this.selectedGateId}
-            ></chromedash-gate-chip>
-          </div>`)}
+          <chromedash-gate-chip
+            .feature=${this.feature}
+            .stage=${stageAndGates.stage}
+            .gate=${gate}
+            selectedGateId=${this.selectedGateId}
+          ></chromedash-gate-chip>
+         `)}
       </div>
     `;
   }
@@ -189,7 +200,6 @@ class ChromedashFeatureRow extends LitElement {
   renderHighlights(feature) {
     if (this.columns == 'approvals') {
       const activeStages = this.getActiveStages(feature);
-      // TODO(jrobbins): group gates by stage
 
       return html`
         <div class="highlights">

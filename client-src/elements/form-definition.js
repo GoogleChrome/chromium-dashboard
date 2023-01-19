@@ -660,6 +660,36 @@ export const OT_EXTENSION_STAGE_MAPPING = {
 };
 
 
+export const STAGE_SHORT_NAMES = {
+  [STAGE_BLINK_INCUBATE]: 'Incubate',
+  [STAGE_BLINK_PROTOTYPE]: 'Prototype',
+  [STAGE_BLINK_DEV_TRIAL]: 'DevTrial',
+  [STAGE_BLINK_EVAL_READINESS]: 'Eval readiness',
+  [STAGE_BLINK_ORIGIN_TRIAL]: 'OT',
+  [STAGE_BLINK_EXTEND_ORIGIN_TRIAL]: 'Extend OT',
+  [STAGE_BLINK_SHIPPING]: 'Ship',
+
+  [STAGE_FAST_PROTOTYPE]: 'Prototype',
+  [STAGE_FAST_DEV_TRIAL]: 'DevTrial',
+  [STAGE_FAST_ORIGIN_TRIAL]: 'OT',
+  [STAGE_FAST_EXTEND_ORIGIN_TRIAL]: 'Extend OT',
+  [STAGE_FAST_SHIPPING]: 'Ship',
+
+  [STAGE_PSA_IMPLEMENT_FIELDS]: 'Implement',
+  [STAGE_PSA_DEV_TRIAL]: 'DevTrial',
+  [STAGE_PSA_SHIPPING]: 'Ship',
+
+  [STAGE_DEP_PLAN]: 'Plan',
+  [STAGE_DEP_DEV_TRIAL]: 'DevTrial',
+  [STAGE_DEP_DEPRECATION_TRIAL]: 'Dep Trial',
+  [STAGE_DEP_EXTEND_DEPRECATION_TRIAL]: 'Extend Dep Trial',
+  [STAGE_DEP_SHIPPING]: 'Ship',
+
+  [STAGE_ENT_ROLLOUT]: 'Rollout',
+  [STAGE_ENT_SHIPPED]: 'Ship',
+};
+
+
 const BLINK_GENERIC_QUESTIONNAIRE = (
   'Use the link above to generate an intent messsage, ' +
   'and then post that message to blink-dev@chromium.org.\n' +

@@ -140,13 +140,6 @@ export const GATE_TYPES = {
   SHIP: 4,
 };
 
-export const GATE_SHORT_NAMES = {
-  [GATE_TYPES.PROTOTYPE]: 'Prototype',
-  [GATE_TYPES.ORIGIN_TRIAL]: 'OT',
-  [GATE_TYPES.EXTEND_ORIGIN_TRIAL]: 'OT Extension',
-  [GATE_TYPES.SHIP]: 'Ship',
-};
-
 export const OT_MILESTONE_END_FIELDS = {
   'ot_milestone_desktop_end': 'desktop_last',
   'ot_milestone_android_end': 'android_last',
