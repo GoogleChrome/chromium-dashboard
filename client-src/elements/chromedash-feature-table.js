@@ -24,6 +24,7 @@ class ChromedashFeatureTable extends LitElement {
       starredFeatures: {type: Object},
       noResultsMessage: {type: String},
       gates: {type: Object},
+      selectedGateId: {type: Number},
     };
   }
 
@@ -43,6 +44,7 @@ class ChromedashFeatureTable extends LitElement {
     this.canEdit = false;
     this.canApprove = false;
     this.gates = {};
+    this.selectedGateId = 0;
   }
 
   connectedCallback() {
@@ -239,6 +241,7 @@ class ChromedashFeatureTable extends LitElement {
          ?canApprove=${this.canApprove}
          .starredFeatures=${this.starredFeatures}
          .gates=${this.gates}
+         selectedGateId=${this.selectedGateId}
          ></chromedash-feature-row>
     `;
   }
