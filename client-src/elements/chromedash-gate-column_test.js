@@ -11,13 +11,13 @@ describe('chromedash-settings-page', () => {
   beforeEach(async () => {
     window.csClient = new ChromeStatusClient('fake_token', 1);
     sinon.stub(window.csClient, 'getFeatureProcess');
-    sinon.stub(window.csClient, 'getApprovals');
+    sinon.stub(window.csClient, 'getVotes');
     sinon.stub(window.csClient, 'getComments');
   });
 
   afterEach(() => {
     window.csClient.getFeatureProcess.restore();
-    window.csClient.getApprovals.restore();
+    window.csClient.getVotes.restore();
     window.csClient.getComments.restore();
   });
 
