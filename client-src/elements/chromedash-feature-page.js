@@ -95,6 +95,7 @@ export class ChromedashFeaturePage extends LitElement {
       appTitle: {type: String},
       starred: {type: Boolean},
       loading: {attribute: false},
+      selectedGateId: {type: Number},
     };
   }
 
@@ -111,6 +112,7 @@ export class ChromedashFeaturePage extends LitElement {
     this.appTitle = '';
     this.starred = false;
     this.loading = true;
+    this.selectedGateId = 0;
   }
 
   connectedCallback() {
@@ -486,6 +488,7 @@ export class ChromedashFeaturePage extends LitElement {
         .process=${this.process}
         .dismissedCues=${this.dismissedCues}
         @open-approvals-event=${this.handleOpenApprovals}
+        selectedGateId=${this.selectedGateId}
        >
       </chromedash-feature-detail>
     `;

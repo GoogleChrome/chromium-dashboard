@@ -20,6 +20,7 @@ export class ChromedashMyFeaturesPage extends LitElement {
     return {
       user: {type: Object},
       starredFeatures: {attribute: false}, // will contain a set of starred features
+      selectedGateId: {type: Number},
     };
   }
 
@@ -27,6 +28,7 @@ export class ChromedashMyFeaturesPage extends LitElement {
     super();
     this.user = {};
     this.starredFeatures = new Set();
+    this.selectedGateId = 0;
   }
 
   connectedCallback() {
@@ -85,6 +87,7 @@ export class ChromedashMyFeaturesPage extends LitElement {
           .starredFeatures=${this.starredFeatures}
           @star-toggle-event=${this.handleStarToggle}
           @open-approvals-event=${this.handleOpenApprovals}
+          selectedGateId=${this.selectedGateId}
           num=25 columns=${columns}>
         </chromedash-feature-table>
       </sl-details>
