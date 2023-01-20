@@ -1,5 +1,4 @@
 import {LitElement, css, html, nothing} from 'lit';
-import {styleMap} from 'lit-html/directives/style-map.js';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 
@@ -56,6 +55,10 @@ class ChromedashGateChip extends LitElement {
        border: var(--chip-border);
        padding: 0 0 0 4px;
        height: 27px;
+     }
+
+     sl-button.selected::part(base) {
+       border: 2px solid var(--dark-spot-color);
      }
 
      sl-button::part(base):hover {
@@ -147,13 +150,9 @@ class ChromedashGateChip extends LitElement {
     const stateName = GATE_STATE_TO_NAME[this.gate.state];
     const className = stateName.toLowerCase().replaceAll(' ', '_');
     const iconName = GATE_STATE_TO_ICON[this.gate.state];
-    let selectedBorder = '';
-    if (this.gate.id == this.selectedGateId) {
-      selectedBorder = styleMap({border: '2px solid var(--dark-spot-color)'});
-    }
+    const selected = (this.gate.id == this.selectedGateId) ? 'selected' : '';
     return html`
-      <sl-button pill size="small" class=${className}
-        style=${selectedBorder}
+      <sl-button pill size="small" class="${className} ${selected}"
         title="${teamName}: ${gateName}: ${stateName}"
         @click=${this.openApprovalsDialog}
         >

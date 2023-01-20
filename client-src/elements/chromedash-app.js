@@ -279,11 +279,14 @@ class ChromedashApp extends LitElement {
 
   hideSidebar() {
     this.sidebarHidden = true;
+    this.selectedGateId = 0;
+    this.pageComponent.selectedGateId = 0;
   }
 
   showGateColumn(feature, stageId, gate) {
     this.gateColumnRef.value.setContext(feature, stageId, gate);
     this.selectedGateId = gate.id;
+    this.pageComponent.selectedGateId = gate.id;
     this.showSidebar();
   }
 
