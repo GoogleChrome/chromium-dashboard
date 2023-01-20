@@ -691,7 +691,8 @@ export const STAGE_SHORT_NAMES = {
 
 
 const BLINK_GENERIC_QUESTIONNAIRE = (
-  'Use the link above to generate an intent messsage, ' +
+  'To request a review, use the "Draft intent..." button ' +
+  'above to generate an intent messsage, ' +
   'and then post that message to blink-dev@chromium.org.\n' +
   '\n' +
   'Be sure to update your feature entry in response to ' +
