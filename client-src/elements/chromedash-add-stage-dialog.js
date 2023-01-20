@@ -93,7 +93,7 @@ class ChromedashAddStageDialog extends LitElement {
     return html`
     <div id="controls">
       <sl-select
-        placement="top"
+        placement="top" hoist
         value=0
         id="stage_create_select"
         size="small"
