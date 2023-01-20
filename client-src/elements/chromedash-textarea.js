@@ -26,13 +26,14 @@ export class ChromedashTextarea extends SlTextarea {
   /**
    * Checks whether the value conforms to custom validation constraints.
    * @param {string} value
-   * @return {boolean}
+   * @return {boolean} Return true if value is valid.
    */
   customCheckValidity(value) {
     if (this.multiple) {
       if (this.chromedash_split_pattern &&
           this.chromedash_single_pattern) {
         const items = value.split(new RegExp(this.chromedash_split_pattern));
+        console.info('items', items);
         const singleItemRegex =
             new RegExp('^' + this.chromedash_single_pattern + '$', '');
         const valid = items.every((item) => {
@@ -40,6 +41,7 @@ export class ChromedashTextarea extends SlTextarea {
             // ignore empty items
             return true;
           }
+          console.info(`item: "${item}"`);
           const itemValid = singleItemRegex.test(item);
           return itemValid;
         });
@@ -54,24 +56,25 @@ export class ChromedashTextarea extends SlTextarea {
       const valueRegex = new RegExp('^' + this.pattern + '$', '');
       return valueRegex.test(value);
     }
-    // Otherwise, assume it is valid.
+    // Otherwise, assume it is valid.  What about required? disabled?
     return true;
   }
 
-  checkValidity() {
+  validate() {
     const invalidMsg = this.customCheckValidity(this.input.value) ? '' : 'invalid';
     this.setCustomValidity(invalidMsg);
+    this.reportValidity();
   }
 
   firstUpdated() {
-    this.invalid = !this.checkValidity();
+    this.validate();
   }
 
   updated() {
     if (!this.input) {
       return;
     }
-    this.checkValidity();
+    this.validate();
   }
 }
 
