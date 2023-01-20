@@ -33,7 +33,6 @@ export class ChromedashTextarea extends SlTextarea {
       if (this.chromedash_split_pattern &&
           this.chromedash_single_pattern) {
         const items = value.split(new RegExp(this.chromedash_split_pattern));
-        console.info('items', items);
         const singleItemRegex =
             new RegExp('^' + this.chromedash_single_pattern + '$', '');
         const valid = items.every((item) => {
@@ -41,7 +40,6 @@ export class ChromedashTextarea extends SlTextarea {
             // ignore empty items
             return true;
           }
-          console.info(`item: "${item}"`);
           const itemValid = singleItemRegex.test(item);
           return itemValid;
         });
