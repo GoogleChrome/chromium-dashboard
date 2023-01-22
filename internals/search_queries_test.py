@@ -56,14 +56,14 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
 
     self.gate_1 = review_models.Gate(
         feature_id=self.feature_1_id, stage_id=1,
-        gate_type=core_models.GATE_PROTOTYPE,
+        gate_type=core_models.GATE_API_PROTOTYPE,
         state=review_models.Vote.APPROVED,
         requested_on=datetime.datetime(2022, 7, 1))
     self.gate_1.put()
     self.gate_1_id = self.gate_1.key.integer_id()
 
     self.vote_1_1 = review_models.Vote(
-        feature_id=self.feature_1_id, gate_type=core_models.GATE_PROTOTYPE,
+        feature_id=self.feature_1_id, gate_type=core_models.GATE_API_PROTOTYPE,
         gate_id=self.gate_1_id,
         state=review_models.Vote.REVIEW_REQUESTED,
         set_on=datetime.datetime(2022, 7, 1),
@@ -71,7 +71,7 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
     self.vote_1_1.put()
 
     self.vote_1_2 = review_models.Vote(
-        feature_id=self.feature_1_id, gate_type=core_models.GATE_PROTOTYPE,
+        feature_id=self.feature_1_id, gate_type=core_models.GATE_API_PROTOTYPE,
         gate_id=self.gate_1_id,
         state=review_models.Vote.APPROVED,
         set_on=datetime.datetime(2022, 7, 2),
@@ -80,14 +80,14 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
 
     self.gate_2 = review_models.Gate(
         feature_id=self.feature_2_id, stage_id=1,
-        gate_type=core_enums.GATE_SHIP,
+        gate_type=core_enums.GATE_API_SHIP,
         state=review_models.Vote.REVIEW_REQUESTED,
         requested_on=datetime.datetime(2022, 8, 1))
     self.gate_2.put()
     self.gate_2_id = self.gate_2.key.integer_id()
 
     self.vote_2_1 = review_models.Vote(
-        feature_id=self.feature_2_id, gate_type=core_enums.GATE_SHIP,
+        feature_id=self.feature_2_id, gate_type=core_enums.GATE_API_SHIP,
         gate_id=self.gate_2_id,
         state=review_models.Vote.REVIEW_REQUESTED,
         set_on=datetime.datetime(2022, 8, 1),
@@ -95,7 +95,7 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
     self.vote_2_1.put()
 
     self.vote_2_2 = review_models.Vote(
-        feature_id=self.feature_2_id, gate_type=core_enums.GATE_SHIP,
+        feature_id=self.feature_2_id, gate_type=core_enums.GATE_API_SHIP,
         gate_id=self.gate_2_id,
         state=review_models.Vote.APPROVED,
         set_on=datetime.datetime(2022, 8, 2),

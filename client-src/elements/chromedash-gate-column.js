@@ -335,7 +335,8 @@ export class ChromedashGateColumn extends LitElement {
     }
 
     const processStage = findProcessStage(this.stage, this.process);
-    if (processStage?.actions?.length > 0) {
+    if (processStage?.actions?.length > 0 &&
+       this.gate.team_name == 'API Owners') {
       return processStage.actions.map(act =>
         this.renderAction(processStage, act));
     }
@@ -502,14 +503,13 @@ export class ChromedashGateColumn extends LitElement {
 
   renderQuestionnaire() {
     const questionnaireText = GATE_QUESTIONNAIRES[this.gate.gate_type];
-    const instructions = (
-      questionnaireText ?
-        html`Please post responses in the comments below.` :
-        html`&nbsp;`);
+    if (!questionnaireText) return nothing;
     return html`
       <h2>Survey questions</h2>
       <div id="questionnaire">${autolink(questionnaireText)}</div>
-      <p class="instructions">${instructions}</p>
+      <p class="instructions">
+        Please post responses in the comments below.
+      </p>
     `;
   }
 

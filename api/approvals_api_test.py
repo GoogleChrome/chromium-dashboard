@@ -21,6 +21,7 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 from google.cloud import ndb  # type: ignore
 
 from api import approvals_api
+from internals import core_enums
 from internals import core_models
 from internals.review_models import Approval, ApprovalConfig, Gate, Vote
 
@@ -78,7 +79,7 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
         'set_on': str(NOW),
         'state': Approval.NEEDS_WORK,
         }
-    
+
     self.vote_expected1 = {
         'feature_id': self.feature_id,
         'gate_id': 10,
@@ -243,6 +244,18 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
 
 class ApprovalConfigsAPITest(testing_config.CustomTestCase):
 
+  POSSIBLE_OWNERS = {
+      core_enums.GATE_API_PROTOTYPE: ['owner@example.com'],
+      core_enums.GATE_API_ORIGIN_TRIAL: ['owner@example.com'],
+      core_enums.GATE_API_EXTEND_ORIGIN_TRIAL: ['owner@example.com'],
+      core_enums.GATE_API_SHIP: ['owner@example.com'],
+      core_enums.GATE_ADOPTION_SHIP: ['owner@example.com'],
+      core_enums.GATE_PRIVACY_ORIGIN_TRIAL: ['owner@example.com'],
+      core_enums.GATE_PRIVACY_SHIP: ['owner@example.com'],
+      core_enums.GATE_SECURITY_ORIGIN_TRIAL: ['owner@example.com'],
+      core_enums.GATE_SECURITY_SHIP: ['owner@example.com'],
+      }
+
   def setUp(self):
     self.feature_1 = core_models.FeatureEntry(
         name='feature one', summary='sum', category=1)
@@ -293,12 +306,7 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
             'additional_review': False,
             'next_action': None,
             }],
-         'possible_owners': {
-             1: ['owner@example.com'],
-             2: ['owner@example.com'],
-             3: ['owner@example.com'],
-             4: ['owner@example.com'],
-         },
+         'possible_owners': self.POSSIBLE_OWNERS,
         },
         actual)
 
@@ -313,12 +321,7 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
             'additional_review': False,
             'next_action': None,
             }],
-         'possible_owners': {
-             1: ['owner@example.com'],
-             2: ['owner@example.com'],
-             3: ['owner@example.com'],
-             4: ['owner@example.com'],
-         },
+         'possible_owners': self.POSSIBLE_OWNERS,
         },
         actual)
 
@@ -331,12 +334,7 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
 
     self.assertEqual(
         {'configs': [],
-         'possible_owners': {
-             1: ['owner@example.com'],
-             2: ['owner@example.com'],
-             3: ['owner@example.com'],
-             4: ['owner@example.com'],
-         },
+         'possible_owners': self.POSSIBLE_OWNERS,
         },
         actual)
 

@@ -230,7 +230,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     """If the feature has no previous thread URL for this intent, set it."""
     if not thread_url:
       return
-    
+
     stage_type = core_enums.STAGE_TYPES_BY_GATE_TYPE_MAPPING[
         approval_field.field_id][feature.feature_type]
     if stage_type is None:

@@ -56,7 +56,7 @@ class StagesAPI(basehandlers.APIHandler):
   SHIPPING_FIELDS: list[str] = [
       'announcement_url',
       'finch_url']
-  
+
   ENTERPRISE_FIELDS: list[str] = [
       'rollout_milestone',
       'rollout_platforms',
@@ -106,25 +106,25 @@ class StagesAPI(basehandlers.APIHandler):
         if stage.milestones is None:
           stage.milestones = MilestoneSet()
         setattr(stage.milestones, field, body['field'])
-    
+
     # Keep the gate type that might need to be created for the stage type.
     gate_type: int | None = None
     # Update type-specific fields.
     if s_type == core_enums.STAGE_TYPES_DEV_TRIAL[feature_type]:
-      gate_type = core_enums.GATE_PROTOTYPE
+      gate_type = core_enums.GATE_API_PROTOTYPE
 
     if s_type == core_enums.STAGE_TYPES_ORIGIN_TRIAL[feature_type]:
       self._add_given_stage_vals(stage, body, self.OT_FIELDS)
-      gate_type = core_enums.GATE_ORIGIN_TRIAL
+      gate_type = core_enums.GATE_API_ORIGIN_TRIAL
 
     if s_type == core_enums.STAGE_TYPES_EXTEND_ORIGIN_TRIAL[feature_type]:
       self._add_given_stage_vals(stage, body, self.OT_EXTENSION_FIELDS)
-      gate_type = core_enums.GATE_EXTEND_ORIGIN_TRIAL
+      gate_type = core_enums.GATE_API_EXTEND_ORIGIN_TRIAL
 
     if s_type == core_enums.STAGE_TYPES_SHIPPING[feature_type]:
       self._add_given_stage_vals(stage, body, self.SHIPPING_FIELDS)
-      gate_type = core_enums.GATE_SHIP
-    
+      gate_type = core_enums.GATE_API_SHIP
+
     if s_type == core_enums.STAGE_TYPES_ROLLOUT[feature_type]:
       self._add_given_stage_vals(stage, body, self.ENTERPRISE_FIELDS)
 
@@ -143,7 +143,7 @@ class StagesAPI(basehandlers.APIHandler):
 
     if stage_id is None or stage_id == 0:
       self.abort(404, msg='No stage specified.')
-    
+
     stage: Stage | None = Stage.get_by_id(stage_id)
     if stage is None:
       self.abort(404, msg=f'Stage {stage_id} not found')
@@ -153,7 +153,7 @@ class StagesAPI(basehandlers.APIHandler):
     extensions = stage_helpers.get_ot_stage_extensions(stage_dict['id'])
     if extensions:
       stage_dict['extensions'] = extensions
-    
+
     return stage_dict
 
   def do_post(self, **kwargs):
@@ -183,7 +183,7 @@ class StagesAPI(basehandlers.APIHandler):
 
     # Return  the newly created stage ID.
     return {'message': 'Stage created.', 'stage_id': stage.key.integer_id()}
-  
+
   def do_patch(self, **kwargs):
     """Update an existing stage based on the stage ID."""
     stage_id = kwargs.get('stage_id', None)
@@ -222,17 +222,17 @@ class StagesAPI(basehandlers.APIHandler):
     stage_id = kwargs.get('stage_id', None)
     if stage_id is None:
       self.abort(404, msg='No stage specified.')
-    
+
     stage: Stage | None = Stage.get_by_id(stage_id)
     if stage is None:
       self.abort(404, msg=f'Stage {stage_id} not found.')
-    
+
     # Validate the user has edit permissions and redirect if needed.
     redirect_resp = permissions.validate_feature_edit_permission(
         self, stage.feature_id)
     if redirect_resp:
       return redirect_resp
-    
+
     stage.archived = True
     stage.put()
 
