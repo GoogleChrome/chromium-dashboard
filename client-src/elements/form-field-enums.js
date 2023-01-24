@@ -144,7 +144,6 @@ export const GATE_TYPES = {
   PRIVACY_SHIP: 34,
   SECURITY_ORIGIN_TRIAL: 42,
   SECURITY_SHIP: 44,
-  TEST_SHIP: 64,
 };
 
 export const GATE_TEAM_ORDER = [

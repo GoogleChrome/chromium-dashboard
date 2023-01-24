@@ -249,8 +249,6 @@ GATE_PRIVACY_ORIGIN_TRIAL = 32
 GATE_PRIVACY_SHIP = 34
 GATE_SECURITY_ORIGIN_TRIAL = 42
 GATE_SECURITY_SHIP = 44
-GATE_TEST_SHIP = 64
-
 
 
 # List of (stage type, gate type) for each feature type.
