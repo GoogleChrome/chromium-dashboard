@@ -200,11 +200,6 @@ class ChromeStatusClient {
   }
 
   // Approvals, configs, and review comments
-
-  getApprovals(featureId) {
-    return this.doGet(`/features/${featureId}/approvals`);
-  }
-
   setApproval(featureId, gateType, state) {
     return this.doPost(
         `/features/${featureId}/approvals`,
@@ -212,7 +207,10 @@ class ChromeStatusClient {
   }
 
   getVotes(featureId, gateId) {
-    return this.doGet(`/features/${featureId}/votes/${gateId}`);
+    if (gateId) {
+      return this.doGet(`/features/${featureId}/votes/${gateId}`);
+    }
+    return this.doGet(`/features/${featureId}/votes`);
   }
 
   setVote(featureId, gateId, state) {

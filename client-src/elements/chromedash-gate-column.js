@@ -142,7 +142,7 @@ export class ChromedashGateColumn extends LitElement {
     Promise.all([
       window.csClient.getFeatureProcess(featureId),
       window.csClient.getStage(featureId, stageId),
-      window.csClient.getApprovals(featureId),
+      window.csClient.getVotes(featureId, null),
       // TODO(jrobbins): Include activities for this gate
       window.csClient.getComments(featureId, gate.id),
     ]).then(([process, stage, approvalRes, commentRes]) => {
@@ -180,7 +180,7 @@ export class ChromedashGateColumn extends LitElement {
     const featureId = this.feature.id;
     Promise.all([
       window.csClient.getGates(featureId),
-      window.csClient.getApprovals(featureId),
+      window.csClient.getVotes(featureId, null),
       // TODO(jrobbins): Include activities for this gate
       window.csClient.getComments(featureId, this.gate.id),
     ]).then(([gatesRes, approvalRes, commentRes]) => {
