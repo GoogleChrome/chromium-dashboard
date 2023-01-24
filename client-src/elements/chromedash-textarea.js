@@ -26,7 +26,7 @@ export class ChromedashTextarea extends SlTextarea {
   /**
    * Checks whether the value conforms to custom validation constraints.
    * @param {string} value
-   * @return {boolean}
+   * @return {boolean} Return true if value is valid.
    */
   customCheckValidity(value) {
     if (this.multiple) {
@@ -54,24 +54,25 @@ export class ChromedashTextarea extends SlTextarea {
       const valueRegex = new RegExp('^' + this.pattern + '$', '');
       return valueRegex.test(value);
     }
-    // Otherwise, assume it is valid.
+    // Otherwise, assume it is valid.  What about required? disabled?
     return true;
   }
 
-  checkValidity() {
+  validate() {
     const invalidMsg = this.customCheckValidity(this.input.value) ? '' : 'invalid';
     this.setCustomValidity(invalidMsg);
+    this.reportValidity();
   }
 
   firstUpdated() {
-    this.invalid = !this.checkValidity();
+    this.validate();
   }
 
   updated() {
     if (!this.input) {
       return;
     }
-    this.checkValidity();
+    this.validate();
   }
 }
 

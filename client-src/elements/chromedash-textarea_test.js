@@ -44,41 +44,49 @@ describe('chromedash-textarea', () => {
 
   describe('when using custom validation', () => {
     it('should be valid with multiple valid inputs', async () => {
-      let component = await fixture(
-        html`<chromedash-textarea multiple 
-                chromedash_split_pattern="\\\s+" 
+      const component = await fixture(
+        html`<chromedash-textarea multiple
+                chromedash_split_pattern="\\\s+"
                 chromedash_single_pattern="[a-z]+"
                 value="abc def"></chromedash-textarea>`);
       assert.exists(component);
       await component.updateComplete;
-      assert.equal(component.invalid, false);
+      assert.equal(component.checkValidity(), true);
+    });
 
+    it('should be valid with multiple valid inputs and extra whitespace', async () => {
       // Test with extra whitespace
-      component = await fixture(
-        html`<chromedash-textarea multiple 
-                chromedash_split_pattern="\\\s+" 
+      const component = await fixture(
+        html`<chromedash-textarea multiple
+                chromedash_split_pattern="\\\s+"
                 chromedash_single_pattern="[a-z]+"
                 value=" \n  abc  \n def \n "></chromedash-textarea>`);
-      assert.equal(component.invalid, false);
+      assert.exists(component);
+      await component.updateComplete;
+      assert.equal(component.checkValidity(), true);
     });
 
     it('should be invalid with any invalid inputs', async () => {
-      let component = await fixture(
-        html`<chromedash-textarea multiple 
-                chromedash_split_pattern="\\\s+" 
+      const component = await fixture(
+        html`<chromedash-textarea multiple
+                chromedash_split_pattern="\\\s+"
                 chromedash_single_pattern="[a-z]+"
                 value="abc123 def"></chromedash-textarea>`);
       assert.exists(component);
-      assert.equal(component.invalid, true);
+      await component.updateComplete;
+      assert.equal(component.checkValidity(), false);
+    });
 
+    it('should be invalid with any invalid inputs and extra whitespace', async () => {
       // Test with extra whitespace
-      component = await fixture(
-        html`<chromedash-textarea multiple 
-                chromedash_split_pattern="\\\s+" 
+      const component = await fixture(
+        html`<chromedash-textarea multiple
+                chromedash_split_pattern="\\\s+"
                 chromedash_single_pattern="[a-z]+"
                 value=" \n  abc  \n def 456 \n "></chromedash-textarea>`);
       assert.exists(component);
-      assert.equal(component.invalid, true);
+      await component.updateComplete;
+      assert.equal(component.checkValidity(), false);
     });
   });
 });

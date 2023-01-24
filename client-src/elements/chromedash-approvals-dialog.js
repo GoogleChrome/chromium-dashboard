@@ -178,7 +178,7 @@ class ChromedashApprovalsDialog extends LitElement {
     this.shadowRoot.querySelector('sl-dialog').show();
     const featureId = this.feature.id;
     Promise.all([
-      window.csClient.getApprovals(featureId),
+      window.csClient.getVotes(featureId, null),
       window.csClient.getComments(featureId),
       window.csClient.getApprovalConfigs(featureId),
     ]).then(([approvalRes, commentRes, configRes]) => {
