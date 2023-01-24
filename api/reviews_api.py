@@ -34,11 +34,7 @@ class VotesAPI(basehandlers.APIHandler):
     feature_id = kwargs['feature_id']
     gate_id = kwargs.get('gate_id', None)
     # Note: We assume that anyone may view approvals.
-    if gate_id is not None:
-      votes = Vote.get_votes(feature_id=feature_id, gate_id=gate_id)
-    else:
-      votes = Vote.get_votes(feature_id=feature_id)
-
+    votes = Vote.get_votes(feature_id=feature_id, gate_id=gate_id)
     dicts = [converters.vote_value_to_json_dict(v) for v in votes]
     return {'votes': dicts}
 

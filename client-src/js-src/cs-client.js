@@ -207,9 +207,9 @@ class ChromeStatusClient {
   }
 
   getVotes(featureId, gateId) {
-  if (gateId) {
-    return this.doGet(`/features/${featureId}/votes/${gateId}`);
-  }
+    if (gateId) {
+      return this.doGet(`/features/${featureId}/votes/${gateId}`);
+    }
     return this.doGet(`/features/${featureId}/votes`);
   }
 
