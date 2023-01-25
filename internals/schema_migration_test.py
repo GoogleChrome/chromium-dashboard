@@ -17,9 +17,11 @@ from google.cloud import ndb  # type: ignore
 import testing_config  # Must be imported before the module under test.
 from datetime import datetime
 
+from internals.core_enums import *
 from internals.core_models import Feature, FeatureEntry, Stage
 from internals.review_models import Activity, Approval, Comment, Gate, Vote
 from internals import schema_migration
+
 
 class MigrateCommentsToActivitiesTest(testing_config.CustomTestCase):
 
@@ -74,6 +76,7 @@ class MigrateCommentsToActivitiesTest(testing_config.CustomTestCase):
     result_2 = migration_handler.get_template_data()
     expected = '0 Comment entities migrated to Activity entities.'
     self.assertEqual(result_2, expected)
+
 
 class MigrateEntitiesTest(testing_config.CustomTestCase):
 
@@ -353,3 +356,61 @@ class MigrateEntitiesTest(testing_config.CustomTestCase):
         schema_migration.MigrateApprovalsToVotes())
     expected = "0 Approval entities migrated to Vote entities."
     self.assertEqual(handler_message, expected)
+
+
+class WriteMissingGatesTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.handler = schema_migration.WriteMissingGates()
+    self.stage_1 = Stage(id=1, feature_id=1, stage_type=STAGE_BLINK_INCUBATE)
+
+    self.stage_2 = Stage(id=2, feature_id=1, stage_type=STAGE_BLINK_PROTOTYPE)
+    self.gate_2_api = Gate(id=3, feature_id=1, stage_id=2, state=Gate.PREPARING,
+                           gate_type=GATE_API_PROTOTYPE)
+
+    self.stage_3 = Stage(id=3, feature_id=1, stage_type=STAGE_BLINK_ORIGIN_TRIAL)
+
+  def tearDown(self):
+    for stage in Stage.query().fetch():
+      stage.key.delete()
+    for gate in Gate.query().fetch():
+      gate.key.delete()
+
+  def test_get_template_data__no_stages(self):
+    """This won't happen, but good to know that it does not crash."""
+    result = self.handler.get_template_data()
+    expected = '0 missing gates created for stages.'
+    self.assertEqual(result, expected)
+    # No gates were created as part of set-up or method call.
+    gates = Gate.query().fetch()
+    self.assertTrue(len(gates) == 0)
+
+  def test_get_template_data__none_needed(self):
+    """Stages have all needed gates already, we create zero gates."""
+    self.stage_1.put()
+    self.stage_2.put()
+    self.gate_2_api.put()
+
+    result = self.handler.get_template_data()
+    expected = '0 missing gates created for stages.'
+    self.assertEqual(result, expected)
+    # Existing API gate should still exist.
+    gates = Gate.query().fetch()
+    self.assertTrue(len(gates) == 1)
+
+  def test_get_template_data__all_needed(self):
+    """Stages lack all needed gates, so we create them."""
+    self.stage_3.put()
+
+    result = self.handler.get_template_data()
+    expected = '2 missing gates created for stages.'
+    self.assertEqual(result, expected)
+    # Existing API gate should still exist.
+    gates = Gate.query().fetch()
+    self.assertTrue(len(gates) == 2)
+    self.assertTrue(all(g.feature_id == 1 for g in gates))
+    # Note API gates are created in feature mingration handler, not here.
+    self.assertTrue(any(
+        g.gate_type == GATE_PRIVACY_ORIGIN_TRIAL for g in gates))
+    self.assertTrue(any(
+        g.gate_type == GATE_SECURITY_ORIGIN_TRIAL for g in gates))
