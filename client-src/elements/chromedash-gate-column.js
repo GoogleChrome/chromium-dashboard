@@ -145,10 +145,10 @@ export class ChromedashGateColumn extends LitElement {
       window.csClient.getVotes(featureId, null),
       // TODO(jrobbins): Include activities for this gate
       window.csClient.getComments(featureId, gate.id),
-    ]).then(([process, stage, approvalRes, commentRes]) => {
+    ]).then(([process, stage, votesRes, commentRes]) => {
       this.process = process;
       this.stage = stage;
-      this.votes = approvalRes.approvals.filter((v) =>
+      this.votes = votesRes.votes.filter((v) =>
         v.gate_id == this.gate.id);
       this.comments = commentRes.comments;
       this.needsSave = false;
@@ -183,11 +183,11 @@ export class ChromedashGateColumn extends LitElement {
       window.csClient.getVotes(featureId, null),
       // TODO(jrobbins): Include activities for this gate
       window.csClient.getComments(featureId, this.gate.id),
-    ]).then(([gatesRes, approvalRes, commentRes]) => {
+    ]).then(([gatesRes, votesRes, commentRes]) => {
       for (const g of gatesRes.gates) {
         if (g.id == this.gate.id) this.gate = g;
       }
-      this.votes = approvalRes.approvals.filter((v) =>
+      this.votes = votesRes.votes.filter((v) =>
         v.gate_id == this.gate.id);
       this.comments = commentRes.comments;
       this.needsSave = false;
@@ -234,9 +234,8 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   handleSave() {
-    // TODO(jrobbins): This should specify gate ID rather than gate type.
-    window.csClient.setApproval(
-      this.feature.id, this.gate.gate_type,
+    window.csClient.setVote(
+      this.feature.id, this.gate.id,
       this.voteSelectRef.value.value)
       .then(() => {
         this.needsSave = false;
