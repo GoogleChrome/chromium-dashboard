@@ -674,14 +674,14 @@ def vote_value_to_json_dict(vote: Vote) -> dict[str, Any]:
 def gate_value_to_json_dict(gate: Gate) -> dict[str, Any]:
   next_action = str(gate.next_action) if gate.next_action else None
   requested_on = str(gate.requested_on) if gate.requested_on else None
-  appr_def = approval_defs.APPROVAL_FIELDS_BY_ID[gate.gate_type]
+  appr_def = approval_defs.APPROVAL_FIELDS_BY_ID.get(gate.gate_type)
   return {
       'id': gate.key.integer_id(),
       'feature_id': gate.feature_id,
       'stage_id': gate.stage_id,
       'gate_type': gate.gate_type,
-      'team_name': appr_def.team_name,
-      'gate_name': appr_def.name,
+      'team_name': appr_def.team_name if appr_def else 'Team',
+      'gate_name': appr_def.name if appr_def else 'Gate',
       'state': gate.state,
       'requested_on': requested_on,  # YYYY-MM-DD HH:MM:SS or None
       'owners': gate.owners,
