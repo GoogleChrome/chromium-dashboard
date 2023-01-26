@@ -152,6 +152,7 @@ export class ChromedashGateColumn extends LitElement {
         v.gate_id == this.gate.id);
       this.comments = commentRes.comments;
       this.needsSave = false;
+      this.showSaved = false;
       this.needsPost = false;
       this.loading = false;
     }).catch(() => {
