@@ -594,7 +594,6 @@ class CalcActiveStages(FlaskHandler):
         active_stages_set += 1
       fe.put()
 
-
     return (f'{active_stages_set} active stages set for features and '
         f'{stages_created} stages created for features.')
 
