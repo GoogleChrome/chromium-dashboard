@@ -19,7 +19,7 @@ export const FORM_STYLES = [
     }
 
     table td:first-of-type {
-      width: 60%
+      width: 60%;
     }
 
     table .helptext {
@@ -118,7 +118,7 @@ export const FORM_STYLES = [
 
     /* menu items for selects should not be displayed at all, until defined */
     sl-select sl-menu-item:not(:defined) {
-      display: none
+      display: none;
     }
 
     chromedash-form-field {
