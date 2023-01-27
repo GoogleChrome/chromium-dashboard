@@ -245,8 +245,8 @@ class ChromedashApprovalsDialog extends LitElement {
             hoist size="small"
           >
               ${STATE_NAMES.map((valName) => html`
-                <sl-menu-item value="${valName[0]}"
-                 >${valName[1]}</sl-menu-item>`,
+                <sl-option value="${valName[0]}"
+                 >${valName[1]}</sl-option>`,
                 )}
         </sl-select>` : html`
            ${this.findStateName(voteValue.state)}
@@ -418,11 +418,11 @@ class ChromedashApprovalsDialog extends LitElement {
     }
     const postToSelect = html`
       <sl-select placement="top" value=0 id="post_to_approval_field" size="small">
-        <sl-menu-item value="0">Don't post to mailing list</sl-menu-item>
+        <sl-option value="0">Don't post to mailing list</sl-option>
         ${APPROVAL_DEFS.map((apprDef) => html`
-          <sl-menu-item value="${apprDef.id}"
+          <sl-option value="${apprDef.id}"
                   ?disabled=${!this.canPostTo(this.feature[apprDef.threadField])}
-          >Post to ${apprDef.name} thread</sl-menu-item>
+          >Post to ${apprDef.name} thread</sl-option>
         `)}
       </sl-select>
       `;
