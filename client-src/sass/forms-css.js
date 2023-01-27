@@ -18,8 +18,8 @@ export const FORM_STYLES = [
       vertical-align: top;
     }
 
-    table td:first-of-type { 
-      width: 60% 
+    table td:first-of-type {
+      width: 60%;
     }
 
     table .helptext {
@@ -118,7 +118,7 @@ export const FORM_STYLES = [
 
     /* menu items for selects should not be displayed at all, until defined */
     sl-select sl-menu-item:not(:defined) {
-      display: none 
+      display: none;
     }
 
     chromedash-form-field {
@@ -183,6 +183,11 @@ export const FORM_STYLES = [
 
     chromedash-form-field .errorlist {
       color: red;
+    }
+
+    chromedash-form-field sl-input[data-user-invalid]::part(base),
+    chromedash-form-field chromedash-textarea[data-user-invalid]::part(base) {
+      border-color: red;
     }
 
     chromedash-form-field sl-details::part(base) {
