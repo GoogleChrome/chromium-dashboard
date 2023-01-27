@@ -62,7 +62,7 @@ class ChromedashApprovalsDialog extends LitElement {
     return {
       user: {type: Object},
       feature: {type: Object},
-      approvals: {type: Array},
+      votes: {type: Array},
       comments: {type: Array},
       configs: {type: Array},
       possibleOwners: {type: Object},
@@ -79,7 +79,7 @@ class ChromedashApprovalsDialog extends LitElement {
     super();
     this.user = {};
     this.feature = {};
-    this.approvals = [];
+    this.votes = [];
     this.comments = [];
     this.configs = [];
     this.subsetPending = false;
@@ -181,9 +181,9 @@ class ChromedashApprovalsDialog extends LitElement {
       window.csClient.getVotes(featureId, null),
       window.csClient.getComments(featureId),
       window.csClient.getApprovalConfigs(featureId),
-    ]).then(([approvalRes, commentRes, configRes]) => {
-      this.approvals = approvalRes.approvals;
-      const numPending = this.approvals.filter((av) =>
+    ]).then(([votesRes, commentRes, configRes]) => {
+      this.votes = votesRes.votes;
+      const numPending = this.votes.filter((av) =>
         PENDING_STATES.includes(av.state)).length;
       this.subsetPending = (numPending > 0 &&
                             numPending < APPROVAL_DEFS.length);
@@ -258,7 +258,7 @@ class ChromedashApprovalsDialog extends LitElement {
 
   renderAddApproval(fieldId) {
     if (!this.user || !this.user.can_approve) return nothing;
-    const existingApprovalByMe = this.approvals.some((a) =>
+    const existingApprovalByMe = this.votes.some((a) =>
       a.gate_type == fieldId && a.set_by == this.user.email);
     if (existingApprovalByMe) {
       return nothing;
@@ -329,7 +329,7 @@ class ChromedashApprovalsDialog extends LitElement {
   }
 
   renderApproval(approvalDef) {
-    const approvalValues = this.approvals.filter((a) =>
+    const approvalValues = this.votes.filter((a) =>
       a.gate_type == approvalDef.id);
     const isActive = approvalValues.some((av) =>
       PENDING_STATES.includes(av.state));
