@@ -10,6 +10,7 @@ import {
 
 import {
   DEPRECATED_FIELDS,
+  GATE_TEAM_ORDER,
   PLATFORMS_DISPLAYNAME,
   STAGE_SPECIFIC_FIELDS,
   OT_MILESTONE_END_FIELDS} from './form-field-enums';
@@ -452,6 +453,9 @@ class ChromedashFeatureDetail extends LitElement {
 
   renderGateChips(feStage) {
     const gatesForStage = this.gates.filter(g => g.stage_id == feStage.id);
+    gatesForStage.sort((g1, g2) =>
+      GATE_TEAM_ORDER.indexOf(g1.team_name) -
+      GATE_TEAM_ORDER.indexOf(g2.team_name));
     return html`
       <div class="gates">
         ${gatesForStage.map(g => this.renderGateChip(feStage, g))}

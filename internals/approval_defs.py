@@ -50,28 +50,62 @@ class ApprovalFieldDef:
 PrototypeApproval = ApprovalFieldDef(
     'Intent to Prototype',
     'Not normally used.  If a review is requested, API Owners can approve.',
-    core_enums.GATE_PROTOTYPE, ONE_LGTM)
+    core_enums.GATE_API_PROTOTYPE, ONE_LGTM)
 
 ExperimentApproval = ApprovalFieldDef(
     'Intent to Experiment',
     'One API Owner must approve your intent',
-    core_enums.GATE_ORIGIN_TRIAL, ONE_LGTM)
+    core_enums.GATE_API_ORIGIN_TRIAL, ONE_LGTM)
 
 ExtendExperimentApproval = ApprovalFieldDef(
     'Intent to Extend Experiment',
     'One API Owner must approve your intent',
-    core_enums.GATE_EXTEND_ORIGIN_TRIAL, ONE_LGTM)
+    core_enums.GATE_API_EXTEND_ORIGIN_TRIAL, ONE_LGTM)
 
 ShipApproval = ApprovalFieldDef(
     'Intent to Ship',
     'Three API Owners must approve your intent',
-    core_enums.GATE_SHIP, THREE_LGTM)
+    core_enums.GATE_API_SHIP, THREE_LGTM)
+
+AdoptionShipApproval = ApprovalFieldDef(
+    'Adoption review',
+    'Adoption review',
+    core_enums.GATE_ADOPTION_SHIP, ONE_LGTM,
+    team_name='Adoption')
+
+PrivacyOriginTrialApproval = ApprovalFieldDef(
+    'Privacy OT Review',
+    'Privacy OT Review',
+    core_enums.GATE_PRIVACY_ORIGIN_TRIAL, ONE_LGTM,
+    team_name='Privacy')
+
+PrivacyShipApproval = ApprovalFieldDef(
+    'Privacy Ship Review',
+    'Privacy Ship Review',
+    core_enums.GATE_PRIVACY_SHIP, ONE_LGTM,
+    team_name='Privacy')
+
+SecurityOriginTrialApproval = ApprovalFieldDef(
+    'Security OT Review',
+    'Security OT Review',
+    core_enums.GATE_SECURITY_ORIGIN_TRIAL, ONE_LGTM,
+    team_name='Security')
+
+SecurityShipApproval = ApprovalFieldDef(
+    'Security Ship Review',
+    'Security Ship Review',
+    core_enums.GATE_SECURITY_SHIP, ONE_LGTM,
+    team_name='Security')
 
 APPROVAL_FIELDS_BY_ID = {
     afd.field_id: afd
     for afd in [
         PrototypeApproval, ExperimentApproval, ExtendExperimentApproval,
-        ShipApproval]
+        ShipApproval,
+        AdoptionShipApproval,
+        PrivacyOriginTrialApproval, PrivacyShipApproval,
+        SecurityOriginTrialApproval, SecurityShipApproval,
+        ]
     }
 
 

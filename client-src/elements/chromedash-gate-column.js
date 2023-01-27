@@ -145,10 +145,10 @@ export class ChromedashGateColumn extends LitElement {
       window.csClient.getVotes(featureId, null),
       // TODO(jrobbins): Include activities for this gate
       window.csClient.getComments(featureId, gate.id),
-    ]).then(([process, stage, approvalRes, commentRes]) => {
+    ]).then(([process, stage, votesRes, commentRes]) => {
       this.process = process;
       this.stage = stage;
-      this.votes = approvalRes.approvals.filter((v) =>
+      this.votes = votesRes.votes.filter((v) =>
         v.gate_id == this.gate.id);
       this.comments = commentRes.comments;
       this.needsSave = false;
@@ -184,11 +184,11 @@ export class ChromedashGateColumn extends LitElement {
       window.csClient.getVotes(featureId, null),
       // TODO(jrobbins): Include activities for this gate
       window.csClient.getComments(featureId, this.gate.id),
-    ]).then(([gatesRes, approvalRes, commentRes]) => {
+    ]).then(([gatesRes, votesRes, commentRes]) => {
       for (const g of gatesRes.gates) {
         if (g.id == this.gate.id) this.gate = g;
       }
-      this.votes = approvalRes.approvals.filter((v) =>
+      this.votes = votesRes.votes.filter((v) =>
         v.gate_id == this.gate.id);
       this.comments = commentRes.comments;
       this.needsSave = false;
@@ -235,9 +235,8 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   handleSave() {
-    // TODO(jrobbins): This should specify gate ID rather than gate type.
-    window.csClient.setApproval(
-      this.feature.id, this.gate.gate_type,
+    window.csClient.setVote(
+      this.feature.id, this.gate.id,
       this.voteSelectRef.value.value)
       .then(() => {
         this.needsSave = false;
@@ -336,7 +335,8 @@ export class ChromedashGateColumn extends LitElement {
     }
 
     const processStage = findProcessStage(this.stage, this.process);
-    if (processStage?.actions?.length > 0) {
+    if (processStage?.actions?.length > 0 &&
+       this.gate.team_name == 'API Owners') {
       return processStage.actions.map(act =>
         this.renderAction(processStage, act));
     }
@@ -503,14 +503,13 @@ export class ChromedashGateColumn extends LitElement {
 
   renderQuestionnaire() {
     const questionnaireText = GATE_QUESTIONNAIRES[this.gate.gate_type];
-    const instructions = (
-      questionnaireText ?
-        html`Please post responses in the comments below.` :
-        html`&nbsp;`);
+    if (!questionnaireText) return nothing;
     return html`
       <h2>Survey questions</h2>
       <div id="questionnaire">${autolink(questionnaireText)}</div>
-      <p class="instructions">${instructions}</p>
+      <p class="instructions">
+        Please post responses in the comments below.
+      </p>
     `;
   }
 

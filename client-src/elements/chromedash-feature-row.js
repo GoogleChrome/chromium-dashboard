@@ -1,6 +1,9 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {STAGE_SHORT_NAMES} from './form-definition.js';
+import {
+  GATE_TEAM_ORDER,
+} from './form-field-enums';
 
 
 class ChromedashFeatureRow extends LitElement {
@@ -182,10 +185,14 @@ class ChromedashFeatureRow extends LitElement {
   }
 
   renderActiveStageAndGates(stageAndGates) {
+    const sortedGates = stageAndGates.gates;
+    sortedGates.sort((g1, g2) =>
+      GATE_TEAM_ORDER.indexOf(g1.team_name) -
+      GATE_TEAM_ORDER.indexOf(g2.team_name));
     return html`
       <div>
         ${this.getStageShortName(stageAndGates.stage)}
-        ${stageAndGates.gates.map(gate => html`
+        ${sortedGates.map(gate => html`
           <chromedash-gate-chip
             .feature=${this.feature}
             .stage=${stageAndGates.stage}

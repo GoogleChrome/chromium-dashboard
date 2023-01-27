@@ -91,7 +91,7 @@ class MigrateCommentsToActivities(FlaskHandler):
           # If not, it is from the old migration and it can be deleted.
           activity.key.delete()
           old_migrations_deleted += 1
-    
+
     return (f'{old_migrations_deleted} Activities deleted '
         'from previous migration.')
 
@@ -176,7 +176,7 @@ class MigrateEntities(FlaskHandler):
     # updater_email will use the email from the updated_by field
     kwargs['updater_email'] = (original_entity.updated_by.email()
         if original_entity.updated_by else None)
-    
+
     # If Feature is being migrated, then Stages, Gates, and Votes will need to
     # also be migrated.
     cls.write_stages_for_feature(original_entity)
@@ -392,7 +392,7 @@ class MigrateApprovalsToVotes(FlaskHandler):
           set_on=approval.set_on, set_by=approval.set_by)
       vote.put()
       count += 1
-    
+
     return f'{count} Approval entities migrated to Vote entities.'
 
 
@@ -407,7 +407,7 @@ class EvaluateGateStatus(FlaskHandler):
     for gate in gates:
       approval_defs.update_gate_approval_state(gate)
       count += 1
-    
+
     return f'{count} Gate entities reevaluated.'
 
 
@@ -423,7 +423,7 @@ class DeleteNewEntities(FlaskHandler):
       for entity in kind.query():
         entity.key.delete()
         count += 1
-    
+
     return f'{count} entities deleted.'
 
 class WriteUpdatedField(FlaskHandler):
@@ -438,7 +438,7 @@ class WriteUpdatedField(FlaskHandler):
         fe.updated = fe.created
         fe.put()
         count += 1
-    
+
     return f'{count} FeatureEntry entities given updated field values.'
 
 
@@ -463,10 +463,10 @@ class UpdateDeprecatedViews(FlaskHandler):
       elif fe.safari_views == PUBLIC_SKEPTICISM:
         fe_changed = True
         fe.safari_views = OPPOSED
-      
+
       if fe_changed:
         fe.put()
-    
+
     for f in Feature.query():
       f_changed = False
       if f.ff_views == MIXED_SIGNALS:
@@ -492,27 +492,62 @@ class UpdateDeprecatedViews(FlaskHandler):
 
       if f_changed:
         f.put()
-    
+
     return 'Feature and FeatureEntry view fields updated.'
 
 
 class WriteMissingGates(FlaskHandler):
 
+  def write_gate_if_missing(
+      self, existing_gates, stage, gate_type):
+    """If there is no existing gate, create it and return 1."""
+    stage_id = stage.key.integer_id()
+    if any(ex.stage_id == stage_id
+           for ex in existing_gates):
+      return 0
+
+    gate = Gate(feature_id=stage.feature_id, stage_id=stage_id,
+                gate_type=gate_type, state=Gate.PREPARING)
+    gate.put()
+    return 1
+
   def get_template_data(self, **kwargs):
     """Write gates for code change implement stages (previously not written)."""
     self.require_cron_header()
 
+    existing_api_prototype_gates = Gate.query(
+        Gate.gate_type == GATE_API_PROTOTYPE).fetch()
+    existing_adoption_ship_gates = Gate.query(
+        Gate.gate_type == GATE_ADOPTION_SHIP).fetch()
+    existing_privacy_ot_gates = Gate.query(
+        Gate.gate_type == GATE_PRIVACY_ORIGIN_TRIAL).fetch()
+    existing_privacy_ship_gates = Gate.query(
+        Gate.gate_type == GATE_PRIVACY_SHIP).fetch()
+    existing_security_ot_gates = Gate.query(
+        Gate.gate_type == GATE_SECURITY_ORIGIN_TRIAL).fetch()
+    existing_security_ship_gates = Gate.query(
+        Gate.gate_type == GATE_SECURITY_SHIP).fetch()
+
     gates_created = 0
     for stage in Stage.query(Stage.stage_type == STAGE_PSA_IMPLEMENT):
-      # Check if a gate already exists for this phase.
-      stage_id = stage.key.integer_id()
-      matching_gates = Gate.query(Gate.stage_id == stage_id).fetch()
-      # If the gate doesn't exist, create it.
-      if len(matching_gates) == 0:
-        gate = Gate(feature_id=stage.feature_id, stage_id=stage_id,
-            gate_type=GATE_PROTOTYPE, state=Gate.PREPARING)
-        gate.put()
-        gates_created += 1
+      gates_created += self.write_gate_if_missing(
+          existing_api_prototype_gates, stage, GATE_API_PROTOTYPE)
+
+    for stage in Stage.query(Stage.stage_type.IN([
+        STAGE_BLINK_ORIGIN_TRIAL, STAGE_FAST_ORIGIN_TRIAL,
+        STAGE_DEP_DEPRECATION_TRIAL])):
+      gates_created += self.write_gate_if_missing(
+          existing_privacy_ot_gates, stage, GATE_PRIVACY_ORIGIN_TRIAL)
+      gates_created += self.write_gate_if_missing(
+          existing_security_ot_gates, stage, GATE_SECURITY_ORIGIN_TRIAL)
+
+    for stage in Stage.query(Stage.stage_type.IN([
+        STAGE_BLINK_SHIPPING, STAGE_FAST_SHIPPING, STAGE_PSA_SHIPPING,
+        STAGE_DEP_SHIPPING])):
+      gates_created += self.write_gate_if_missing(
+          existing_privacy_ship_gates, stage, GATE_PRIVACY_SHIP)
+      gates_created += self.write_gate_if_missing(
+          existing_security_ship_gates, stage, GATE_SECURITY_SHIP)
 
     return f'{gates_created} missing gates created for stages.'
 
@@ -544,7 +579,7 @@ class CalcActiveStages(FlaskHandler):
         active_stage = Stage.query(
             Stage.stage_type == active_stage_type,
             Stage.feature_id == feature_id).get()
-        
+
         # Find the stage ID and set active stage field to this ID.
         if active_stage:
           fe.active_stage_id = active_stage.key.integer_id()
@@ -558,8 +593,7 @@ class CalcActiveStages(FlaskHandler):
           fe.active_stage_id = stage.key.integer_id()
         active_stages_set += 1
       fe.put()
-      
-    
+
     return (f'{active_stages_set} active stages set for features and '
         f'{stages_created} stages created for features.')
 
