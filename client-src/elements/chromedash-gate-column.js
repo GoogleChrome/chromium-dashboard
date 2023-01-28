@@ -430,7 +430,7 @@ export class ChromedashGateColumn extends LitElement {
                  @sl-change=${this.handleSelectChanged}
                  hoist size="small">
         ${Object.values(STATE_NAMES).map((valName) => html`
-          <sl-menu-item value="${valName[0]}">${valName[1]}</sl-menu-item>`,
+          <sl-option value="${valName[0]}">${valName[1]}</sl-option>`,
         )}
       </sl-select>
     `;

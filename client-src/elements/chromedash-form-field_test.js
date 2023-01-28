@@ -32,7 +32,7 @@ describe('chromedash-form-field', () => {
     const renderElement = component.renderRoot;
     assert.include(renderElement.innerHTML, 'category');
     assert.include(renderElement.innerHTML, 'sl-select');
-    assert.include(renderElement.innerHTML, 'sl-menu-item');
+    assert.include(renderElement.innerHTML, 'sl-option');
   });
 
   it('renders a input type of field (with extraHelp)', async () => {

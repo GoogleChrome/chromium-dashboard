@@ -64,9 +64,9 @@ class ChromedashAddStageDialog extends LitElement {
       // Get the name of the stage from the form definition based on the stage type.
       const stageInfo = FORMS_BY_STAGE_TYPE[stageType];
       menuItems.push(html`
-      <sl-menu-item value="${stageType}">
+      <sl-option value="${stageType}">
         ${stageInfo.name}
-      </sl-menu-item>
+      </sl-option>
       `);
     }
     return menuItems;
@@ -100,7 +100,7 @@ class ChromedashAddStageDialog extends LitElement {
         @sl-change=${this.checkCanSubmit}
         style="width:16rem"
       >
-        <sl-menu-item value="0" disabled>Select a stage to create</sl-menu-item>
+        <sl-option value="0" disabled>Select a stage to create</sl-option>
         ${this.renderSelectMenuItems()}
       </sl-select>
       <sl-button variant="primary"

@@ -354,9 +354,9 @@ class ChromedashFeatureFilter extends LitElement {
               value=${fieldName}
               @sl-change="${(e) => this.handleChangeField(e.target.value, index)}">
        ${QUERIABLE_FIELDS.map((item) => html`
-         <sl-menu-item value="${item.name}">
+         <sl-option value="${item.name}">
            ${item.display}
-         </sl-menu-item>
+         </sl-option>
         `)}
       </sl-select>
     `;
@@ -380,9 +380,9 @@ class ChromedashFeatureFilter extends LitElement {
               value=${cond.op}
               @sl-change="${(e) => this.handleChangeOp(e.target.value, index)}">
        ${operatorOptions.map(opOption => html`
-         <sl-menu-item value="${opOption}">
+         <sl-option value="${opOption}">
            ${opOption}
-         </sl-menu-item>
+         </sl-option>
         `)}
       </sl-select>
     `;
@@ -428,7 +428,7 @@ class ChromedashFeatureFilter extends LitElement {
                 @sl-change="${(e) => this.handleChangeValue(e.target.value, index)}">
             ${Object.values(field.choices).map(
               (val) => html`
-                <sl-menu-item value="${val[1]}"> ${val[1]} </sl-menu-item>
+                <sl-option value="${val[1]}"> ${val[1]} </sl-option>
               `,
             )}
           </sl-select>
@@ -503,9 +503,9 @@ class ChromedashFeatureFilter extends LitElement {
           placeholder="Select a field name"
               @sl-change="${this.addFilterCondition}">
        ${QUERIABLE_FIELDS.map((item) => html`
-         <sl-menu-item value="${item.name}">
+         <sl-option value="${item.name}">
            ${item.display}
-         </sl-menu-item>
+         </sl-option>
         `)}
       </sl-select>
      </div>
