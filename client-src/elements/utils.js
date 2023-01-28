@@ -44,6 +44,19 @@ export function findProcessStage(feStage, process) {
   return null;
 }
 
+/* Given a process stage, find the first feature entry stage of the same type. */
+export function findFirstFeatureStage(intentStage, currentStage, fe) {
+  if (intentStage == currentStage.intent_stage) {
+    return currentStage;
+  }
+  for (const feStage of fe.stages) {
+    if (intentStage == feStage.intent_stage) {
+      return feStage;
+    }
+  }
+  return null;
+}
+
 
 /* Given a stage form definition, return a flat array of the fields associated with the stage. */
 export function flattenSections(stage) {

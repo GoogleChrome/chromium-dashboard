@@ -1,6 +1,8 @@
 import {LitElement, css, html, nothing} from 'lit';
 import './chromedash-callout';
-import {findProcessStage} from './utils';
+import {findProcessStage,
+  findFirstFeatureStage,
+} from './utils';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 export class ChromedashProcessOverview extends LitElement {
@@ -33,7 +35,7 @@ export class ChromedashProcessOverview extends LitElement {
         display: block;
         position: relative;
         box-sizing: border-box;
-        /* Don't do this, since it interferes with dialog placement. 
+        /* Don't do this, since it interferes with dialog placement.
         contain: content;  */
         overflow: hidden;
         background: inherit;
@@ -191,7 +193,12 @@ export class ChromedashProcessOverview extends LitElement {
           ${prereqItems.map((item) => html`
           <li class="pending">
             ${item.stage.name}:
-            ${item.name} ${this.renderEditLink(item.stage, feStage, item)}
+            ${item.name}
+            ${this.renderEditLink(
+                item.stage,
+                findFirstFeatureStage(
+                  item.stage.outgoing_stage, feStage, this.feature),
+                item)}
           </li>`)}
         </ol>
         <sl-button href="${url}" target="_blank" variant="primary" size="small">
