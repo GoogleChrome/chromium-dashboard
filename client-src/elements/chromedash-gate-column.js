@@ -84,6 +84,12 @@ export class ChromedashGateColumn extends LitElement {
          border-radius: var(--border-radius);
          background: var(--table-alternate-background);
        }
+       #questionnaire ul {
+         padding-left: 1em;
+       }
+       #questionnaire li {
+         list-style: disc;
+       }
        .instructions {
          padding: var(--content-padding-half);
          margin-bottom: var(--content-padding-large);
@@ -504,9 +510,11 @@ export class ChromedashGateColumn extends LitElement {
   renderQuestionnaire() {
     const questionnaireText = GATE_QUESTIONNAIRES[this.gate.gate_type];
     if (!questionnaireText) return nothing;
+    const markup = (typeof questionnaireText == 'string') ?
+      autolink(questionnaireText) : questionnaireText;
     return html`
       <h2>Survey questions</h2>
-      <div id="questionnaire">${autolink(questionnaireText)}</div>
+      <div id="questionnaire">${markup}</div>
       <p class="instructions">
         Please post responses in the comments below.
       </p>

@@ -139,15 +139,21 @@ export const GATE_TYPES = {
   API_ORIGIN_TRIAL: 2,
   API_EXTEND_ORIGIN_TRIAL: 3,
   API_SHIP: 4,
-  ADOPTION_SHIP: 14,
   PRIVACY_ORIGIN_TRIAL: 32,
   PRIVACY_SHIP: 34,
   SECURITY_ORIGIN_TRIAL: 42,
   SECURITY_SHIP: 44,
+
+  ENTERPRISE_SHIP: 54,
+  DEBUGGABILITY_ORIGIN_TRIAL: 62,
+  DEBUGGABILITY_SHIP: 64,
+  TESTING_SHIP: 74,
+  ADOPTION_SHIP: 84,
 };
 
 export const GATE_TEAM_ORDER = [
-  'Adoption', 'Privacy', 'Security', 'Testing', 'API Owners'];
+  'Privacy', 'Security', 'Enterprise', 'Debuggability',
+  'Testing', 'Adoption', 'API Owners'];
 
 
 export const OT_MILESTONE_END_FIELDS = {
