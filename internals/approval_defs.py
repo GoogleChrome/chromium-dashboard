@@ -67,12 +67,6 @@ ShipApproval = ApprovalFieldDef(
     'Three API Owners must approve your intent',
     core_enums.GATE_API_SHIP, THREE_LGTM)
 
-AdoptionShipApproval = ApprovalFieldDef(
-    'Adoption review',
-    'Adoption review',
-    core_enums.GATE_ADOPTION_SHIP, ONE_LGTM,
-    team_name='Adoption')
-
 PrivacyOriginTrialApproval = ApprovalFieldDef(
     'Privacy OT Review',
     'Privacy OT Review',
@@ -97,6 +91,36 @@ SecurityShipApproval = ApprovalFieldDef(
     core_enums.GATE_SECURITY_SHIP, ONE_LGTM,
     team_name='Security')
 
+EnterpriseShipApproval = ApprovalFieldDef(
+    'Enterprise Ship Review',
+    'Enterprise Ship Review',
+    core_enums.GATE_ENTERPRISE_SHIP, ONE_LGTM,
+    team_name='Enterprise')
+
+DebuggabilityOriginTrialApproval = ApprovalFieldDef(
+    'Debuggability OT Review',
+    'Debuggability OT Review',
+    core_enums.GATE_DEBUGGABILITY_ORIGIN_TRIAL, ONE_LGTM,
+    team_name='Debuggability')
+
+DebuggabilityShipApproval = ApprovalFieldDef(
+    'Debuggability Ship Review',
+    'Debuggability Ship Review',
+    core_enums.GATE_DEBUGGABILITY_SHIP, ONE_LGTM,
+    team_name='Debuggability')
+
+TestingShipApproval = ApprovalFieldDef(
+    'Testing Ship Review',
+    'Testing Ship Review',
+    core_enums.GATE_TESTING_SHIP, ONE_LGTM,
+    team_name='Testing')
+
+AdoptionShipApproval = ApprovalFieldDef(
+    'Adoption Ship Review',
+    'Adoption Ship Review',
+    core_enums.GATE_ADOPTION_SHIP, ONE_LGTM,
+    team_name='Adoption')
+
 APPROVAL_FIELDS_BY_ID = {
     afd.field_id: afd
     for afd in [
@@ -105,6 +129,10 @@ APPROVAL_FIELDS_BY_ID = {
         AdoptionShipApproval,
         PrivacyOriginTrialApproval, PrivacyShipApproval,
         SecurityOriginTrialApproval, SecurityShipApproval,
+        EnterpriseShipApproval,
+        DebuggabilityOriginTrialApproval, DebuggabilityShipApproval,
+        TestingShipApproval,
+        AdoptionShipApproval,
         ]
     }
 

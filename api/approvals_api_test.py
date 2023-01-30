@@ -249,11 +249,15 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
       core_enums.GATE_API_ORIGIN_TRIAL: ['owner@example.com'],
       core_enums.GATE_API_EXTEND_ORIGIN_TRIAL: ['owner@example.com'],
       core_enums.GATE_API_SHIP: ['owner@example.com'],
-      core_enums.GATE_ADOPTION_SHIP: ['owner@example.com'],
       core_enums.GATE_PRIVACY_ORIGIN_TRIAL: ['owner@example.com'],
       core_enums.GATE_PRIVACY_SHIP: ['owner@example.com'],
       core_enums.GATE_SECURITY_ORIGIN_TRIAL: ['owner@example.com'],
       core_enums.GATE_SECURITY_SHIP: ['owner@example.com'],
+      core_enums.GATE_ENTERPRISE_SHIP: ['owner@example.com'],
+      core_enums.GATE_DEBUGGABILITY_ORIGIN_TRIAL: ['owner@example.com'],
+      core_enums.GATE_DEBUGGABILITY_SHIP: ['owner@example.com'],
+      core_enums.GATE_TESTING_SHIP: ['owner@example.com'],
+      core_enums.GATE_ADOPTION_SHIP: ['owner@example.com'],
       }
 
   def setUp(self):

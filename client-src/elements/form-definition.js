@@ -1,3 +1,4 @@
+import {html} from 'lit';
 import {
   FEATURE_TYPES,
   IMPLEMENTATION_STATUS,
@@ -700,18 +701,79 @@ const BLINK_GENERIC_QUESTIONNAIRE = (
 );
 
 const ADOPTION_GENERIC_QUESTIONNAIRE = (
-  'To request a review, use the "Request review" button ' +
-  'above.'
+  `To request a review, use the "Request review" button above.`
 );
 
 const PRIVACY_GENERIC_QUESTIONNAIRE = (
-  'To request a review, use the "Request review" button ' +
-  'above.'
+  `To request a review, use the "Request review" button above.`
 );
 
 const SECURITY_GENERIC_QUESTIONNAIRE = (
-  'To request a review, use the "Request review" button ' +
-  'above.'
+  `To request a review, use the "Request review" button above.`
+);
+
+const ENTERPRISE_SHIP_QUESTIONNAIRE = (
+  html`<b>(1) Does this launch include a breaking change?</b>
+Does this launch remove or modify existing behavior or does it interrupt an existing user flow? (e.g. removing or restricting an API, or significant UI change). Answer with one of the following options, and/or describe anything you're unsure about:
+<ul>
+<li>No. There's no change visible to users, developers, or IT admins (e.g. internal refactoring)
+<li>No. This launch is strictly additive functionality
+<li>Yes. Something that exists is changing or being removed (even if usage is very small)
+<li>I don't know. Enterprise reviewers, please help me decide. The relevant information is: ______
+</ul>
+<b>(2) Is there any other reason you expect that enterprises will care about this launch?</b>
+(e.g. they may perceive a risk of data leaks if the browser is uploading new information, or it may be a surprise to employees resulting in them calling their help desk). Answer with one of the following options, and/or describe anything you're unsure about:
+<ul>
+<li>No. Enterprises won't care about this
+<li>Yes. They'll probably care because ______
+<li>I don't know. Enterprise reviewers, please help me decide. The relevant information is: ______
+</ul>
+<b>(3) Does your launch have an enterprise policy to control it, and will it be available when this rolls out to stable (even to 1%)?</b>
+Only required if you answered Yes to either of the first 2 questions. Answer with one of the following options, and/or describe anything you're unsure about:
+<ul>
+<li>Yes. It's called ______. It will be a permanent policy, and it will be available when stable rollout starts
+<li>Yes. It's called ______. This is a temporary transition period, so the policy will stop working on milestone ___. It will be available when stable rollout starts
+<li>No. A policy is infeasible because ______ (e.g. this launch is a change in how we compile Chrome)
+<li>No. A policy isn't necessary because ______ (e.g. there's a better method of control available to admins)
+</ul>
+<b>(4) Provide a brief title and description of this launch, which can be shared with enterprises.</b>
+Only required if you answered Yes to either of the first 2 questions. This may be added to browser release notes. Where applicable, explain the benefit to users, and describe the policy to control it.
+`
+);
+
+const DEBUGGABILITY_ORIGIN_TRIAL_QUESTIONNAIRE = (
+    `(1) Does the introduction of the new Web Platform feature break Chrome DevTools' existing developer experience?
+
+(2) Does Chrome DevTools' existing set of tooling features interact with the new Web Platform feature in an expected way?
+
+(3) Would the new Web Platform feature's acceptance and/or adoption benefit from adding a new developer workflow to Chrome DevTools?
+
+When in doubt, please check out https://goo.gle/devtools-checklist for details!
+`
+);
+
+const DEBUGGABILITY_SHIP_QUESTIONNAIRE = DEBUGGABILITY_ORIGIN_TRIAL_QUESTIONNAIRE;
+
+const TESTING_SHIP_QUESTIONNAIRE = (
+  'See http://go/chrome-wp-test-survey.'
+);
+
+const ADOPTION_SHIP_QUESTIONNAIRE = (
+  html`<b>(1) What is your availability expectation for this feature?</b>
+Examples:<ul>
+<li>Feature x is available on Web Platform mainline within 12 month of launch in Chrome
+<li>Feature x is available in Chromium browsers for the foreseeable future
+</ul>
+<b>(2) What is your adoption expectation for this feature?</b>
+Examples:<ul>
+<li>Feature x is considered a best practice for use case y within 12 month of reaching Web Platform baseline
+<li>Feature x is used by partner y to provide functionality z within 12 month of launch in Chrome
+<li>At least 3 major abstractions replace their use of feature y with feature x within 24 months of reaching mainline.
+</ul>
+<b>(3) What is the plan to achieve the stated expectations?</b>
+Please provide a plan that covers availability and adoption planning for the feature.
+
+`
 );
 
 
@@ -725,4 +787,10 @@ export const GATE_QUESTIONNAIRES = {
   [GATE_TYPES.PRIVACY_SHIP]: PRIVACY_GENERIC_QUESTIONNAIRE,
   [GATE_TYPES.SECURITY_ORIGIN_TRIAL]: SECURITY_GENERIC_QUESTIONNAIRE,
   [GATE_TYPES.SECURITY_SHIP]: SECURITY_GENERIC_QUESTIONNAIRE,
+  [GATE_TYPES.ENTERPRISE_SHIP]: ENTERPRISE_SHIP_QUESTIONNAIRE,
+  [GATE_TYPES.DEBUGGABILITY_ORIGIN_TRIAL]:
+      DEBUGGABILITY_ORIGIN_TRIAL_QUESTIONNAIRE,
+  [GATE_TYPES.DEBUGGABILITY_SHIP]: DEBUGGABILITY_SHIP_QUESTIONNAIRE,
+  [GATE_TYPES.TESTING_SHIP]: TESTING_SHIP_QUESTIONNAIRE,
+  [GATE_TYPES.ADOPTION_SHIP]: ADOPTION_SHIP_QUESTIONNAIRE,
 };
