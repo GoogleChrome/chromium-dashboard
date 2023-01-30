@@ -65,6 +65,7 @@ class ChromedashApprovalsDialog extends LitElement {
       votes: {type: Array},
       comments: {type: Array},
       configs: {type: Array},
+      gates: {type: Array},
       possibleOwners: {type: Object},
       showConfigs: {type: Object},
       showAllIntents: {type: Boolean},
@@ -82,6 +83,7 @@ class ChromedashApprovalsDialog extends LitElement {
     this.votes = [];
     this.comments = [];
     this.configs = [];
+    this.gates = [];
     this.subsetPending = false;
     this.possibleOwners = {};
     this.showConfigs = new Set();
@@ -181,8 +183,10 @@ class ChromedashApprovalsDialog extends LitElement {
       window.csClient.getVotes(featureId, null),
       window.csClient.getComments(featureId),
       window.csClient.getApprovalConfigs(featureId),
-    ]).then(([votesRes, commentRes, configRes]) => {
+      window.csClient.getGates(featureId),
+    ]).then(([votesRes, commentRes, configRes, gatesRes]) => {
       this.votes = votesRes.votes;
+      this.gates = gatesRes.gates;
       const numPending = this.votes.filter((av) =>
         PENDING_STATES.includes(av.state)).length;
       this.subsetPending = (numPending > 0 &&
@@ -256,10 +260,13 @@ class ChromedashApprovalsDialog extends LitElement {
     `;
   }
 
-  renderAddApproval(fieldId) {
+  renderMyPendingApproval(fieldId) {
     if (!this.user || !this.user.can_approve) return nothing;
     const existingApprovalByMe = this.votes.some((a) =>
       a.gate_type == fieldId && a.set_by == this.user.email);
+    // There shoud be only one approval entry for now, until we have
+    // multiple stage entities for the same type of stage, e.g.
+    // multiple shipping gates.
     if (existingApprovalByMe) {
       return nothing;
     } else {
@@ -366,7 +373,7 @@ class ChromedashApprovalsDialog extends LitElement {
         </h3>
         ${this.renderConfigWidgets(approvalDef)}
         ${approvalValues.map((av) => this.renderApprovalValue(av))}
-        ${this.renderAddApproval(approvalDef.id)}
+        ${this.renderMyPendingApproval(approvalDef.id)}
         ${threadLink}
       </div>
     `;
@@ -504,9 +511,18 @@ class ChromedashApprovalsDialog extends LitElement {
     const promises = [];
     for (const fieldId of this.changedApprovalsByField.keys()) {
       if (this.changedApprovalsByField.get(fieldId) != -1) {
+        // There shoud be only one gate by field ID for now, until we have
+        // multiple stage entities for the same type of stage, e.g.
+        // multiple shipping gates.
+        const gatesByField = this.gates.filter((g) =>
+          g.gate_type == fieldId);
+
+        if (!gatesByField.length) {
+          continue;
+        }
         promises.push(
-          window.csClient.setApproval(
-            this.feature.id, fieldId,
+          window.csClient.setVote(
+            this.feature.id, gatesByField[0].id,
             this.changedApprovalsByField.get(fieldId)));
       }
     }
