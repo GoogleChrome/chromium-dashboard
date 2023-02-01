@@ -599,7 +599,7 @@ export const ALL_FIELDS = {
     help_text: html`
       Describe the degree of
       <a target="_blank"
-          href="https://www.chromium.org/blink/guidelines/web-platform-changes-guidelines#TOC-Finding-balance">
+          href="https://www.chromium.org/blink/guidelines/web-platform-changes-guidelines#finding-balance">
         interoperability risk</a>.
       For a new feature, the main risk is
       that it fails to become an interoperable part of the web platform
