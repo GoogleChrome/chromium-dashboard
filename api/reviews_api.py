@@ -66,6 +66,7 @@ class VotesAPI(basehandlers.APIHandler):
       # If a review is requested, generate email
       # notifications to approvers.
       # TODO(kyleju): configure tasks to email approvers.
+      # TODO: gate_type and stage_type are int
       notifier_helpers.notify_approvers_of_reviews(feature, gate.gate_type, stage.stage_type)
 
     # Callers don't use the JSON response for this API call.

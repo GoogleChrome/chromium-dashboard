@@ -86,12 +86,12 @@ def notify_approvers_of_reviews(fe: 'FeatureEntry',
       'new_val': 'review_requested',
   }
 
-  params = {
+  params = [{
     'changes': changed_props,
     # Subscribers are only notified on feature update.
     'is_update': True,
     'feature': converters.feature_entry_to_json_verbose(fe)
-  }
+  }]
 
   # Create task to email subscribers.
   cloud_tasks_helpers.enqueue_task('/tasks/email-subscribers', params)
