@@ -199,13 +199,6 @@ class ChromeStatusClient {
     // TODO: catch((error) => { display message }
   }
 
-  // Approvals, configs, and review comments
-  setApproval(featureId, gateType, state) {
-    return this.doPost(
-        `/features/${featureId}/approvals`,
-        {gateType: Number(gateType), state: Number(state)});
-  }
-
   getVotes(featureId, gateId) {
     if (gateId) {
       return this.doGet(`/features/${featureId}/votes/${gateId}`);

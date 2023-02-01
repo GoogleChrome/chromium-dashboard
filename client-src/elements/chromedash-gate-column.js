@@ -286,9 +286,8 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   handleReviewRequested() {
-    // TODO(jrobbins): This should specify gate ID rather than gate type.
-    window.csClient.setApproval(
-      this.feature.id, this.gate.gate_type, REVIEW_REQUESTED)
+    window.csClient.setVote(
+      this.feature.id, this.gate.id, REVIEW_REQUESTED)
       .then(() => {
         this._fireEvent('refetch-needed', {});
       });
