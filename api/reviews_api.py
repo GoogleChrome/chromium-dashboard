@@ -21,8 +21,9 @@ from typing import Any, Optional
 from api import converters
 from framework import basehandlers
 from framework import permissions
-from internals import approval_defs
-from internals.review_models import Approval, ApprovalConfig, Gate, Vote
+from internals import approval_defs, notifier_helpers
+from internals.review_models import Gate, Vote
+from internals.core_models import Stage
 
 
 class VotesAPI(basehandlers.APIHandler):
@@ -57,6 +58,15 @@ class VotesAPI(basehandlers.APIHandler):
     new_state = self.get_int_param('state', validator=Vote.is_valid_state)
     approval_defs.set_vote(feature_id, None, new_state,
         user.email(), gate_id)
+
+    if new_state == Vote.REVIEW_REQUESTED:
+      stage = Stage.get_by_id(gate.stage_id)
+      if stage is None:
+        self.abort(404, msg=f'Stage {gate.stage_id} not found.')
+      # If a review is requested, generate email
+      # notifications to approvers.
+      # TODO(kyleju): configure tasks to email approvers.
+      notifier_helpers.notify_approvers_of_reviews(feature, gate.gate_type, stage.stage_type)
 
     # Callers don't use the JSON response for this API call.
     return {'message': 'Done'}

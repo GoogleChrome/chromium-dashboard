@@ -75,3 +75,23 @@ def notify_subscribers_and_save_amendments(fe: 'FeatureEntry',
 
   if notify:
     notify_feature_subscribers_of_changes(fe, amendments)
+
+
+def notify_approvers_of_reviews(fe: 'FeatureEntry',
+  gate_type: str, stage_type: str) -> None:
+  """Notify approvers of a review requested from a Gate."""
+  changed_props = {
+      'prop_name': '%s in %s' % (gate_type, stage_type),
+      'old_val': 'na',
+      'new_val': 'review_requested',
+  }
+
+  params = {
+    'changes': changed_props,
+    # Subscribers are only notified on feature update.
+    'is_update': True,
+    'feature': converters.feature_entry_to_json_verbose(fe)
+  }
+
+  # Create task to email subscribers.
+  cloud_tasks_helpers.enqueue_task('/tasks/email-subscribers', params)
