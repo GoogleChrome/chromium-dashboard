@@ -147,7 +147,7 @@ def apply_subscription_rules(
 
 
 def make_email_tasks(fe: FeatureEntry, target_emails: list[str],
-    is_update: bool = False, changes: Optional[list] = None):
+    is_update: bool=False, changes: Optional[list]=None, is_review: bool=False):
   """Return a list of task dicts to notify users of feature changes."""
   if changes is None:
     changes = []
@@ -176,9 +176,14 @@ def make_email_tasks(fe: FeatureEntry, target_emails: list[str],
     addr_reasons, fe.cc_emails,
     'You are CC\'d on this feature'
   )
-  accumulate_reasons(
-      addr_reasons, target_emails,
-      'You are watching all feature changes')
+  if is_review:
+    accumulate_reasons(
+        addr_reasons, target_emails,
+        'You received a review request for this feature')
+  else:
+    accumulate_reasons(
+        addr_reasons, target_emails,
+        'You are watching all feature changes')
 
   # There will always be at least one component.
   for component_name in fe.blink_components:
@@ -395,7 +400,7 @@ class FeatureReviewHandler(basehandlers.FlaskHandler):
     if fe:
       approvers = approval_defs.get_approvers(gate_type)
       email_tasks = make_email_tasks(fe, target_emails=approvers,
-          is_update=True, changes=changes)
+          is_update=True, changes=changes, is_review=True)
       send_emails(email_tasks)
 
     return {'message': 'Done'}
