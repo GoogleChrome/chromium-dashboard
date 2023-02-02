@@ -18,27 +18,32 @@ describe('chromedash-textarea', () => {
   describe('when using constraint validation', () => {
     it('should be valid by default', async () => {
       const el = await fixture(html` <chromedash-textarea></chromedash-textarea> `);
-      assert.equal(el.invalid, false);
+      assert.exists(el);
+      await el.updateComplete;
+      assert.equal(el.checkValidity(), true);
     });
 
     it('should be invalid when required and empty', async () => {
       const el = await fixture(html` <chromedash-textarea required></chromedash-textarea> `);
-      assert.equal(el.invalid, true);
+      assert.exists(el);
+      await el.updateComplete;
+      assert.equal(el.checkValidity(), false);
     });
 
     it('should be invalid when required and after removing disabled ', async () => {
       const el = await fixture(html` <chromedash-textarea disabled required></chromedash-textarea> `);
-
+      assert.exists(el);
       el.disabled = false;
       await el.updateComplete;
-      assert.equal(el.invalid, true);
+      assert.equal(el.checkValidity(), false);
     });
 
     it('should be invalid when required and disabled is removed', async () => {
       const el = await fixture(html` <chromedash-textarea disabled required></chromedash-textarea> `);
+      assert.exists(el);
       el.disabled = false;
       await el.updateComplete;
-      assert.equal(el.invalid, true);
+      assert.equal(el.checkValidity(), false);
     });
   });
 
