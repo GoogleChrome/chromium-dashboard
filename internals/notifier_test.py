@@ -302,7 +302,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     """We send email to component owners and subscribers for new features."""
     mock_f_e_b.return_value = 'mock body html'
     actual_tasks = notifier.make_email_tasks(
-        self.fe_1, is_update=False, changes=[])
+        self.fe_1, ['watcher_1@example.com'], is_update=False, changes=[])
     self.assertEqual(5, len(actual_tasks))
     (feature_cc_task, feature_editor_task, feature_owner_task,
      component_owner_task, watcher_task) = actual_tasks
@@ -352,7 +352,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     """We send email to component owners and subscribers for edits."""
     mock_f_e_b.return_value = 'mock body html'
     actual_tasks = notifier.make_email_tasks(
-        self.fe_1, True, self.changes)
+        self.fe_1, ['watcher_1@example.com'], True, self.changes)
     self.assertEqual(5, len(actual_tasks))
     (feature_cc_task, feature_editor_task, feature_owner_task,
      component_owner_task, watcher_task) = actual_tasks
@@ -408,7 +408,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     notifier.FeatureStar.set_star(
         'starrer_1@example.com', self.fe_1.key.integer_id())
     actual_tasks = notifier.make_email_tasks(
-        self.fe_1, True, self.changes)
+        self.fe_1, ['watcher_1@example.com'], True, self.changes)
     self.assertEqual(6, len(actual_tasks))
     (feature_cc_task, feature_editor_task, feature_owner_task,
      component_owner_task, starrer_task, watcher_task) = actual_tasks
@@ -476,7 +476,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     notifier.FeatureStar.set_star(
         'starrer_2@example.com', self.feature_2.key.integer_id())
     actual_tasks = notifier.make_email_tasks(
-        self.fe_2, True, self.changes)
+        self.fe_2, ['watcher_1@example.com'], True, self.changes)
     self.assertEqual(4, len(actual_tasks))
     # Note: There is no starrer_task.
     (feature_editor_task, feature_owner_task, component_owner_task,
