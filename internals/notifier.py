@@ -146,11 +146,15 @@ def apply_subscription_rules(
   return results
 
 
-def make_email_tasks(fe: FeatureEntry, target_emails: list[str],
-    is_update: bool = False, changes: Optional[list] = None):
+def make_email_tasks(fe: FeatureEntry, is_update: bool=False,
+    changes: Optional[list]=None):
   """Return a list of task dicts to notify users of feature changes."""
   if changes is None:
     changes = []
+
+  watchers: list[FeatureOwner] = FeatureOwner.query(
+      FeatureOwner.watching_all_features == True).fetch(None)
+  watcher_emails: list[str] = [watcher.email for watcher in watchers]
 
   fe_stages = stage_helpers.get_feature_stages(fe.key.integer_id())
 
@@ -177,7 +181,7 @@ def make_email_tasks(fe: FeatureEntry, target_emails: list[str],
     'You are CC\'d on this feature'
   )
   accumulate_reasons(
-      addr_reasons, target_emails,
+      addr_reasons, watcher_emails,
       'You are watching all feature changes')
 
   # There will always be at least one component.
@@ -365,37 +369,7 @@ class FeatureChangeHandler(basehandlers.FlaskHandler):
     # Load feature directly from NDB so as to never get a stale cached copy.
     fe = FeatureEntry.get_by_id(feature['id'])
     if fe and (is_update and len(changes) or not is_update):
-      watchers: list[FeatureOwner] = FeatureOwner.query(
-          FeatureOwner.watching_all_features == True).fetch(None)
-      watcher_emails: list[str] = [watcher.email for watcher in watchers]
-
-      email_tasks = make_email_tasks(fe, target_emails=watcher_emails,
-          is_update=is_update, changes=changes)
-      send_emails(email_tasks)
-
-    return {'message': 'Done'}
-
-
-class FeatureReviewHandler(basehandlers.FlaskHandler):
-  """This task handles feature review requests by making email tasks."""
-
-  IS_INTERNAL_HANDLER = True
-
-  def process_post_data(self, **kwargs):
-    self.require_task_header()
-
-    feature = self.get_param('feature')
-    gate_type = self.get_param('gate_type')
-    changes = self.get_param('changes', required=False) or []
-
-    logging.info('Starting to notify reviewers for feature %s',
-                 repr(feature)[:settings.MAX_LOG_LINE])
-
-    fe = FeatureEntry.get_by_id(feature['id'])
-    if fe:
-      approvers = approval_defs.get_approvers(gate_type)
-      email_tasks = make_email_tasks(fe, target_emails=approvers,
-          is_update=True, changes=changes)
+      email_tasks = make_email_tasks(fe, is_update=is_update, changes=changes)
       send_emails(email_tasks)
 
     return {'message': 'Done'}
