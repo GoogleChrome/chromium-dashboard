@@ -189,19 +189,23 @@ class ChromedashStackRank extends LitElement {
               SORT BY
             </sl-button>
             <sl-menu @click="${this.sort}">
-              <sl-menu-item ?checked=${this.sortType == 'percentage' && !this.sortReverse}
+              <sl-menu-item type="checkbox"
+                ?checked=${this.sortType == 'percentage' && !this.sortReverse}
                 data-order="percentage">
                 Most used
               </sl-menu-item>
-              <sl-menu-item ?checked=${this.sortType == 'percentage' && this.sortReverse}
+              <sl-menu-item type="checkbox"
+                ?checked=${this.sortType == 'percentage' && this.sortReverse}
                 data-order="percentage-reverse">
                 Least used
               </sl-menu-item>
-              <sl-menu-item ?checked=${this.sortType == 'property_name' && this.sortReverse}
+              <sl-menu-item type="checkbox"
+                ?checked=${this.sortType == 'property_name' && this.sortReverse}
                 data-order="property_name-reverse">
                 Name (A-Z)
               </sl-menu-item>
-              <sl-menu-item ?checked=${this.sortType == 'property_name' && !this.sortReverse}
+              <sl-menu-item type="checkbox"
+                ?checked=${this.sortType == 'property_name' && !this.sortReverse}
                 data-order="property_name">
                 Name (Z-A)
               </sl-menu-item>
@@ -229,7 +233,7 @@ class ChromedashStackRank extends LitElement {
               href="/metrics/${this.type}/timeline/${this.view}/${item.bucket_id}"
               title="Click to see a timeline view of this property">
             </chromedash-x-meter>
-            <a class="icon-wrapper" 
+            <a class="icon-wrapper"
               href="/metrics/${this.type}/timeline/${this.view}/${item.bucket_id}"
               title="Click to see a timeline view of this property">
               <iron-icon icon="chromestatus:timeline"></iron-icon>
