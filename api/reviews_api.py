@@ -43,23 +43,41 @@ class VotesAPI(basehandlers.APIHandler):
     feature_id = kwargs['feature_id']
     gate_id = kwargs['gate_id']
     feature = self.get_specified_feature(feature_id=feature_id)
+    new_state = self.get_int_param('state', validator=Vote.is_valid_state)
 
     user = self.get_current_user(required=True)
     gate = Gate.get_by_id(gate_id)
     if not gate:
       self.abort(404, msg='Gate not found')
+    if gate.feature_id != feature_id:
+      self.abort(400, msg='Mismatched feature and gate')
 
-    approvers = approval_defs.get_approvers(gate.gate_type)
-    if not permissions.can_approve_feature(user, feature, approvers):
-      self.abort(403, msg='User is not an approver')
+    self.require_permissions(user, feature, gate, new_state)
 
     # Note: We no longer write Approval entities.
-    new_state = self.get_int_param('state', validator=Vote.is_valid_state)
     approval_defs.set_vote(feature_id, None, new_state,
         user.email(), gate_id)
 
     # Callers don't use the JSON response for this API call.
     return {'message': 'Done'}
+
+  def require_permissions(self, user, feature, gate, new_state):
+    """Abort the request if the user lacks permission to set this vote."""
+    is_requesting_review = (new_state == Vote.REVIEW_REQUESTED)
+    is_editor = permissions.can_edit_feature(user, feature.key.integer_id())
+    approvers = approval_defs.get_approvers(gate.gate_type)
+    is_approver = permissions.can_approve_feature(user, feature, approvers)
+
+    if is_requesting_review and is_editor:
+      return
+
+    if is_approver:
+      return
+
+    if is_requesting_review:
+      self.abort(403, msg='User may not request a review')
+    else:
+      self.abort(403, msg='User is not an approver')
 
 
 class GatesAPI(basehandlers.APIHandler):
