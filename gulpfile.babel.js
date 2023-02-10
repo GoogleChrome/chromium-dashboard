@@ -18,6 +18,7 @@ import { rollup } from 'rollup';
 import rollupResolve from '@rollup/plugin-node-resolve';
 import rollupBabel from '@rollup/plugin-node-resolve';
 import rollupMinify from 'rollup-plugin-babel-minify';
+import commonjs from '@rollup/plugin-commonjs';
 
 function uglifyJS() {
   return uglify({
@@ -84,6 +85,7 @@ gulp.task('rollup', () => {
   return rollup({
     input: 'client-src/components.js',
     plugins: [
+      commonjs(),
       rollupResolve(),
       rollupBabel({
         plugins: ["@babel/plugin-syntax-dynamic-import"]

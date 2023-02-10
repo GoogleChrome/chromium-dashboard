@@ -4,6 +4,8 @@ import {showToastMessage} from './utils';
 import page from 'page';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
+import {DefaultApi as Api, Configuration} from 'chromestatus-openapi';
+
 
 class ChromedashApp extends LitElement {
   gateColumnRef = createRef();
@@ -91,6 +93,52 @@ class ChromedashApp extends LitElement {
     `];
   }
 
+  // eslint-disable-next-line valid-jsdoc
+  /**
+   * Refresh the XSRF Token, if needed. Add to headers.
+   *
+   * @param {import('chromestatus-openapi').RequestContext} req
+   * @return {Promise<FetchParams>}
+   */
+  async xsrfMiddleware(req) {
+    return window.csClient.ensureTokenIsValid().then({
+      ...req,
+      init: {
+        ...req.init,
+        headers: {
+          ...(req.init.headers || {}),
+          'X-Xsrf-Token': window.csClient.token,
+        },
+      },
+    });
+  }
+
+
+  // eslint-disable-next-line valid-jsdoc
+  /**
+   * Server sends XSSI prefix. Remove it and allow the client to parse.
+   *
+   * @param {import('chromestatus-openapi').ResponseContext} context
+   * @return {Promise<Response>}
+   */
+  async xssiMiddleware(context) {
+    const response = context.response;
+    return response.text().then((rawResponseText) => {
+      const XSSIPrefix = ')]}\'\n';
+      if (!rawResponseText.startsWith(XSSIPrefix)) {
+        throw new Error(
+          `Response does not start with XSSI prefix: ${XSSIPrefix}`);
+      }
+      return new Response(
+        rawResponseText.substring(XSSIPrefix.length),
+        {
+          status: response.status,
+          statusText: response.statusText,
+          headers: response.headers,
+        });
+    });
+  }
+
   static get properties() {
     return {
       user: {type: Object},
@@ -104,6 +152,7 @@ class ChromedashApp extends LitElement {
       contextLink: {type: String}, // used for the back button in the feature page
       sidebarHidden: {type: Boolean},
       selectedGateId: {type: Number},
+      client: {type: Api},
     };
   }
 
@@ -120,6 +169,12 @@ class ChromedashApp extends LitElement {
     this.contextLink = '/features';
     this.sidebarHidden = true;
     this.selectedGateId = 0;
+    this.client = new Api(
+      new Configuration({
+        credentials: 'same-origin',
+      }))
+      .withPreMiddleware(this.xsrfMiddleware)
+      .withPostMiddleware(this.xssiMiddleware);
   }
 
   connectedCallback() {

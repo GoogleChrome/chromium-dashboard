@@ -8,6 +8,7 @@
     "node": ">=18.0.0"
   },
   "scripts": {
+    "!preinstall(will fix after first route is added)": "npm run openapi",
     "setup": "npm ci; python3.10 -m venv cs-env; npm run deps",
     "clean-setup": "rm -rf node_modules cs-env; npm run setup",
     "deps": "source cs-env/bin/activate; pip install -r requirements.txt --upgrade; pip install -r requirements.dev.txt --upgrade",
@@ -34,7 +35,10 @@
     "staging": "./scripts/deploy_site.sh `git describe --always --abbrev=7 --match 'NOT A TAG' --dirty='-tainted'` cr-status-staging",
     "staging-rc": "./scripts/deploy_site.sh rc cr-status-staging",
     "deploy": "./scripts/deploy_site.sh `git describe --always --abbrev=7 --match 'NOT A TAG' --dirty='-tainted'`",
-    "deploy-rc": "./scripts/deploy_site.sh rc"
+    "deploy-rc": "./scripts/deploy_site.sh rc",
+    "openapi": "npm run openapi-backend",
+    "openapi-frontend": "openapi-generator-cli generate -i api.yaml -g typescript-fetch  -o gen/js/chromestatus-openapi --additional-properties=npmName=chromestatus-openapi,supportsES6=true",
+    "openapi-backend": "openapi-generator-cli generate -i api.yaml -g python-flask  --global-property models,supportingFiles,modelTests=false --additional-properties=packageName=gen.py.openapi"
   },
   "repository": {
     "type": "git",
@@ -52,7 +56,9 @@
     "@babel/preset-env": "^7.20.2",
     "@babel/register": "^7.18.9",
     "@open-wc/testing": "^3.1.7",
+    "@openapitools/openapi-generator-cli": "^2.5.2",
     "@rollup/plugin-babel": "^6.0.3",
+    "@rollup/plugin-commonjs": "^24.0.1",
     "@rollup/plugin-node-resolve": "^15.0.1",
     "@shoelace-style/shoelace": "^2.0.0",
     "@web/test-runner": "^0.15.0",
@@ -92,6 +98,7 @@
     "@polymer/iron-collapse": "^3.0.1",
     "@polymer/iron-icon": "^3.0.1",
     "@polymer/iron-iconset-svg": "^3.0.1",
+    "chromestatus-openapi": "file:gen/js/chromestatus-openapi",
     "lit": "^2",
     "node-fetch": ">=3.3.0",
     "page": "^1.11.6",

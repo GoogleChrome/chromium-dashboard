@@ -34,3 +34,6 @@ coverage
 
 # venv directory
 cs-env
+
+# Generated files
+gen/
