@@ -1,8 +1,10 @@
 import {LitElement, css, html, nothing} from 'lit';
 import './chromedash-callout';
-import {findProcessStage,
-  findFirstFeatureStage,
-} from './utils';
+import {
+  openPreflightDialog,
+  somePendingPrereqs,
+} from './chromedash-preflight-dialog';
+import {findProcessStage} from './utils';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 export class ChromedashProcessOverview extends LitElement {
@@ -21,7 +23,6 @@ export class ChromedashProcessOverview extends LitElement {
     this.process = {};
     this.progress = {};
     this.dismissedCues = [];
-    this.item_stage_map = null; // null means uninitialized.
     this.sameTypeRendered = 0;
   }
 
@@ -161,21 +162,12 @@ export class ChromedashProcessOverview extends LitElement {
     const url = action.url
       .replace('{feature_id}', this.feature.id)
       .replace('{outgoing_stage}', stage.outgoing_stage);
-    const prereqItemsNames = action.prerequisites.filter(
-      itemName => {
-        return !this.progress.hasOwnProperty(itemName);
-      });
-    const prereqItems = prereqItemsNames.map(name => {
-      // return {name, field, stage} for the named item.
-      return this.item_stage_map[name];
-    });
-    const prereqsId = ChromedashProcessOverview.prereqsId++;
-    const prereqsClass = `prereqs-${prereqsId}`;
 
     const checkCompletion = () => {
-      if (prereqItems.length > 0) {
+      if (somePendingPrereqs(action, this.progress)) {
         // Open the dialog.
-        this.shadowRoot.querySelector(`.${prereqsClass}`).show();
+        openPreflightDialog(
+          this.feature, this.progress, this.process, action, stage, feStage);
         return;
       } else {
         // Act like user clicked left button to go to the draft email window.
@@ -183,34 +175,9 @@ export class ChromedashProcessOverview extends LitElement {
         draftWindow.focus();
       }
     };
-    const dialog = html`
-      <sl-dialog class="missing-prereqs ${prereqsClass}"
-        label="Missing Prerequisites"
-        style="--width:fit-content"
-        @cancel=${this._cancelHandler}>
-        Before you ${label}, you should first do the following:
-        <ol class="missing-prereqs-list">
-          ${prereqItems.map((item) => html`
-          <li class="pending">
-            ${item.stage.name}:
-            ${item.name}
-            ${this.renderEditLink(
-                item.stage,
-                findFirstFeatureStage(
-                  item.stage.outgoing_stage, feStage, this.feature),
-                item)}
-          </li>`)}
-        </ol>
-        <sl-button href="${url}" target="_blank" variant="primary" size="small">
-          Proceed to Draft Email
-        </sl-button>
-      </sl-dialog>
-    `;
-
     return html`
       <li>
         <a @click=${checkCompletion}>${label}</a>
-        ${dialog}
       </li>`;
   }
 
@@ -267,26 +234,6 @@ export class ChromedashProcessOverview extends LitElement {
         ${item.name}
         ${editEl}
       </div>`;
-  }
-
-  willUpdate() {
-    if (this.process && this.item_stage_map == null) {
-      // Make sure this.process.stages is an array.
-      if (!this.process.stages) {
-        this.process.stages = [];
-      }
-
-      // We will need to find the stages of prerequisites for actions of each stage.
-      // So we will loop over all progress items of all stages one time
-      // to rebuild this map at the start of each full page render.
-      this.item_stage_map = {};
-      this.process.stages.forEach(
-        stage => stage.progress_items.forEach(
-          item => {
-            this.item_stage_map[item.name] = {...item, stage: stage};
-          },
-        ));
-    }
   }
 
   renderProcessStage(featureId, feStage) {

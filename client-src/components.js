@@ -72,6 +72,7 @@ import './elements/chromedash-header';
 import './elements/chromedash-legend';
 import './elements/chromedash-metadata';
 import './elements/chromedash-myfeatures-page';
+import './elements/chromedash-preflight-dialog';
 import './elements/chromedash-process-overview';
 import './elements/chromedash-settings-page';
 import './elements/chromedash-stack-rank';
