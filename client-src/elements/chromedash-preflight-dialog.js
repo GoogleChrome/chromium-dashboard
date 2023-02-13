@@ -125,9 +125,7 @@ export class ChromedashPreflightDialog extends LitElement {
   }
 
   renderDialogContent() {
-    console.log(this);
     if (this.feature == null) {
-      console.log('feature is null');
       return nothing;
     }
     const prereqItems = [];
