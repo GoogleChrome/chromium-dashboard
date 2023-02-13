@@ -1,5 +1,6 @@
 .dockerignore
 .gitignore
+.openapi-generator-ignore
 .travis.yml
 Dockerfile
 README.md
@@ -13,6 +14,7 @@ chromestatus_openapi/models/__init__.py
 chromestatus_openapi/models/base_model_.py
 chromestatus_openapi/openapi/openapi.yaml
 chromestatus_openapi/test/__init__.py
+chromestatus_openapi/test/test_default_controller.py
 chromestatus_openapi/typing_utils.py
 chromestatus_openapi/util.py
 git_push.sh
