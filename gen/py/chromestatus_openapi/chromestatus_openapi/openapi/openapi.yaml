@@ -12,6 +12,13 @@ info:
   version: 1.0.0
 servers:
 - url: /api/v0
-paths: {}
+paths:
+  /componentsubscribers:
+    get:
+      operationId: componentsubscribers_get
+      responses:
+        "200":
+          description: OK
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
 components:
   schemas: {}

@@ -3,7 +3,7 @@ import logging
 import connexion
 from flask_testing import TestCase
 
-from gen.py.openapi.encoder import JSONEncoder
+from chromestatus_openapi.encoder import JSONEncoder
 
 
 class BaseTestCase(TestCase):

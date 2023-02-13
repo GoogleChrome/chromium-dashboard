@@ -2,7 +2,7 @@ import datetime
 
 import six
 import typing
-from gen.py.openapi import typing_utils
+from chromestatus_openapi import typing_utils
 
 
 def _deserialize(data, klass):

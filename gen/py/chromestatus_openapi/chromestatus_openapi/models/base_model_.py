@@ -3,7 +3,7 @@ import pprint
 import six
 import typing
 
-from gen.py.openapi import util
+from chromestatus_openapi import util
 
 T = typing.TypeVar('T')
 

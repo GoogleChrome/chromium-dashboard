@@ -1,7 +1,7 @@
 from connexion.apps.flask_app import FlaskJSONEncoder
 import six
 
-from gen.py.openapi.models.base_model_ import Model
+from chromestatus_openapi.models.base_model_ import Model
 
 
 class JSONEncoder(FlaskJSONEncoder):

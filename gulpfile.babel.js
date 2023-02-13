@@ -85,8 +85,8 @@ gulp.task('rollup', () => {
   return rollup({
     input: 'client-src/components.js',
     plugins: [
-      commonjs(),
       rollupResolve(),
+      commonjs(),
       rollupBabel({
         plugins: ["@babel/plugin-syntax-dynamic-import"]
       }),

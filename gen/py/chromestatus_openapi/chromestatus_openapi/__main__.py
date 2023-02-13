@@ -2,7 +2,7 @@
 
 import connexion
 
-from gen.py.openapi import encoder
+from chromestatus_openapi import encoder
 
 
 def main():
