@@ -5,9 +5,6 @@ gen/py/openapi/controllers/security_controller_.py
 gen/py/openapi/encoder.py
 gen/py/openapi/models/__init__.py
 gen/py/openapi/models/base_model_.py
-gen/py/openapi/models/component_subscribers.py
-gen/py/openapi/models/component_subscribers_components_inner.py
-gen/py/openapi/models/component_subscribers_possible_subscribers_inner.py
 gen/py/openapi/openapi/openapi.yaml
 gen/py/openapi/test/__init__.py
 gen/py/openapi/typing_utils.py

@@ -14,3 +14,4 @@ info:
     url: 'https://www.apache.org/licenses/LICENSE-2.0.html'
 servers:
 - url: /api/v0
+paths: {}

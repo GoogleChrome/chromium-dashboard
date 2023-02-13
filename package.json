@@ -7,8 +7,10 @@
   "engines": {
     "node": ">=18.0.0"
   },
+  "workspaces": [
+    "./gen/js/*"
+  ],
   "scripts": {
-    "!preinstall(will fix after first route is added)": "npm run openapi",
     "setup": "npm ci; python3.10 -m venv cs-env; npm run deps",
     "clean-setup": "rm -rf node_modules cs-env; npm run setup",
     "deps": "source cs-env/bin/activate; pip install -r requirements.txt --upgrade; pip install -r requirements.dev.txt --upgrade",
@@ -36,9 +38,9 @@
     "staging-rc": "./scripts/deploy_site.sh rc cr-status-staging",
     "deploy": "./scripts/deploy_site.sh `git describe --always --abbrev=7 --match 'NOT A TAG' --dirty='-tainted'`",
     "deploy-rc": "./scripts/deploy_site.sh rc",
-    "openapi": "npm run openapi-backend",
-    "openapi-frontend": "openapi-generator-cli generate -i api.yaml -g typescript-fetch  -o gen/js/chromestatus-openapi --additional-properties=npmName=chromestatus-openapi,supportsES6=true",
-    "openapi-backend": "openapi-generator-cli generate -i api.yaml -g python-flask  --global-property models,supportingFiles,modelTests=false --additional-properties=packageName=gen.py.openapi"
+    "openapi": "npm run openapi-backend && npm run openapi-frontend",
+    "openapi-frontend": "rm -rf gen/js/chromestatus-openapi && openapi-generator-cli generate -i api.yaml -g typescript-fetch  -o gen/js/chromestatus-openapi --additional-properties=npmName=chromestatus-openapi,supportsES6=true,withInterfaces=true",
+    "openapi-backend": "rm -rf gen/py/openapi && openapi-generator-cli generate -i api.yaml -g python-flask  --global-property models,supportingFiles,modelTests=false --additional-properties=packageName=gen.py.openapi"
   },
   "repository": {
     "type": "git",
@@ -98,7 +100,6 @@
     "@polymer/iron-collapse": "^3.0.1",
     "@polymer/iron-icon": "^3.0.1",
     "@polymer/iron-iconset-svg": "^3.0.1",
-    "chromestatus-openapi": "file:gen/js/chromestatus-openapi",
     "lit": "^2",
     "node-fetch": ">=3.3.0",
     "page": "^1.11.6",
