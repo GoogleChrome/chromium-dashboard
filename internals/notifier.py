@@ -146,12 +146,11 @@ def apply_subscription_rules(
   return results
 
 
-def make_email_tasks(fe: FeatureEntry, is_update: bool=False,
+def make_feature_changes_email(fe: FeatureEntry, is_update: bool=False,
     changes: Optional[list]=None):
   """Return a list of task dicts to notify users of feature changes."""
   if changes is None:
     changes = []
-
   watchers: list[FeatureOwner] = FeatureOwner.query(
       FeatureOwner.watching_all_features == True).fetch(None)
   watcher_emails: list[str] = [watcher.email for watcher in watchers]
@@ -207,6 +206,27 @@ def make_email_tasks(fe: FeatureEntry, is_update: bool=False,
   for reason, sub_addrs in rule_results.items():
     accumulate_reasons(addr_reasons, sub_addrs, reason)
 
+  all_tasks = [convert_reasons_to_task(
+                   addr, reasons, email_html, subject, triggering_user_email)
+               for addr, reasons in sorted(addr_reasons.items())]
+  return all_tasks
+
+
+def make_review_requests_email(fe: FeatureEntry, gate_type: int, changes: Optional[list]=None):
+  """Return a list of task dicts to notify approvers of review requests."""
+  if changes is None:
+    changes = []
+  fe_stages = stage_helpers.get_feature_stages(fe.key.integer_id())
+  email_html = format_email_body(True, fe, fe_stages, changes)
+
+  subject = 'Review Request for feature: %s' % fe.name
+  triggering_user_email = fe.updater_email
+
+  approvers = approval_defs.get_approvers(gate_type)
+  reasons = 'You received a review request for this feature'
+
+  addr_reasons: dict[str, list[str]] = collections.defaultdict(list)
+  accumulate_reasons(addr_reasons, approvers, reasons)
   all_tasks = [convert_reasons_to_task(
                    addr, reasons, email_html, subject, triggering_user_email)
                for addr, reasons in sorted(addr_reasons.items())]
@@ -369,7 +389,30 @@ class FeatureChangeHandler(basehandlers.FlaskHandler):
     # Load feature directly from NDB so as to never get a stale cached copy.
     fe = FeatureEntry.get_by_id(feature['id'])
     if fe and (is_update and len(changes) or not is_update):
-      email_tasks = make_email_tasks(fe, is_update=is_update, changes=changes)
+      email_tasks = make_feature_changes_email(fe, is_update=is_update, changes=changes)
+      send_emails(email_tasks)
+
+    return {'message': 'Done'}
+
+
+class FeatureReviewHandler(basehandlers.FlaskHandler):
+  """This task handles feature review requests by making email tasks."""
+
+  IS_INTERNAL_HANDLER = True
+
+  def process_post_data(self, **kwargs):
+    self.require_task_header()
+
+    feature = self.get_param('feature')
+    gate_type = self.get_param('gate_type')
+    changes = self.get_param('changes', required=False) or []
+
+    logging.info('Starting to notify reviewers for feature %s',
+                 repr(feature)[:settings.MAX_LOG_LINE])
+
+    fe = FeatureEntry.get_by_id(feature['id'])
+    if fe:
+      email_tasks = make_review_requests_email(fe, gate_type, changes)
       send_emails(email_tasks)
 
     return {'message': 'Done'}

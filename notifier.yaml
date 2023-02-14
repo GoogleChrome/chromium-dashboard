@@ -10,6 +10,10 @@ handlers:
   script: auto
   # Header checks prevent raw access to this handler.  Tasks have headers.
 
+- url: /tasks/email-reviewers
+  script: auto
+  # Header checks prevent raw access to this handler.  Tasks have headers.
+
 app_engine_apis: true
 
 # Set up VPC Access Connector for Redis in prod.

@@ -236,6 +236,7 @@ internals_routes: list[Route] = [
 
   Route('/tasks/email-subscribers', notifier.FeatureChangeHandler),
   Route('/tasks/detect-intent', detect_intent.IntentEmailHandler),
+  Route('/tasks/email-reviewers', notifier.FeatureReviewHandler),
 
   Route('/admin/schema_migration_delete_entities',
       schema_migration.DeleteNewEntities),

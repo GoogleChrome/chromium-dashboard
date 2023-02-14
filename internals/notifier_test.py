@@ -298,10 +298,10 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertEqual({}, actual)
 
   @mock.patch('internals.notifier.format_email_body')
-  def test_make_email_tasks__new(self, mock_f_e_b):
+  def test_make_feature_changes_email__new(self, mock_f_e_b):
     """We send email to component owners and subscribers for new features."""
     mock_f_e_b.return_value = 'mock body html'
-    actual_tasks = notifier.make_email_tasks(
+    actual_tasks = notifier.make_feature_changes_email(
         self.fe_1, is_update=False, changes=[])
     self.assertEqual(5, len(actual_tasks))
     (feature_cc_task, feature_editor_task, feature_owner_task,
@@ -348,10 +348,10 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         False, self.fe_1, self.fe_1_stages, [])
 
   @mock.patch('internals.notifier.format_email_body')
-  def test_make_email_tasks__update(self, mock_f_e_b):
+  def test_make_feature_changes_email__update(self, mock_f_e_b):
     """We send email to component owners and subscribers for edits."""
     mock_f_e_b.return_value = 'mock body html'
-    actual_tasks = notifier.make_email_tasks(
+    actual_tasks = notifier.make_feature_changes_email(
         self.fe_1, True, self.changes)
     self.assertEqual(5, len(actual_tasks))
     (feature_cc_task, feature_editor_task, feature_owner_task,
@@ -402,12 +402,44 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         True, self.fe_1, self.fe_1_stages, self.changes)
 
   @mock.patch('internals.notifier.format_email_body')
-  def test_make_email_tasks__starrer(self, mock_f_e_b):
+  @mock.patch('internals.approval_defs.get_approvers')
+  def test_make_review_requests_email(self, mock_get_approvers, mock_f_e_b):
+    """We send email to approvers for a review request."""
+    mock_f_e_b.return_value = 'mock body html'
+    mock_get_approvers.return_value = ['approver1@example.com', 'approver2@example.com']
+
+    actual_tasks = notifier.make_review_requests_email(
+        self.fe_1, 1, self.changes)
+    self.assertEqual(2, len(actual_tasks))
+    review_task_1 = actual_tasks[0]
+
+    # Notification to feature change watcher.
+    self.assertEqual('Review Request for feature: feature one', review_task_1['subject'])
+    self.assertIn('mock body html', review_task_1['html'])
+    self.assertIn('<li>You received a review request for this feature</li>',
+      review_task_1['html'])
+    self.assertEqual('approver1@example.com', review_task_1['to'])
+
+    review_task_2 = actual_tasks[1]
+
+    # Notification to feature change watcher.
+    self.assertEqual('Review Request for feature: feature one', review_task_2['subject'])
+    self.assertIn('mock body html', review_task_2['html'])
+    self.assertIn('<li>You received a review request for this feature</li>',
+      review_task_2['html'])
+    self.assertEqual('approver2@example.com', review_task_2['to'])
+
+    mock_f_e_b.assert_called_once_with(
+        True, self.fe_1, self.fe_1_stages, self.changes)
+    mock_get_approvers.assert_called_once_with(1)
+
+  @mock.patch('internals.notifier.format_email_body')
+  def test_make_feature_changes_email__starrer(self, mock_f_e_b):
     """We send email to users who starred the feature."""
     mock_f_e_b.return_value = 'mock body html'
     notifier.FeatureStar.set_star(
         'starrer_1@example.com', self.fe_1.key.integer_id())
-    actual_tasks = notifier.make_email_tasks(
+    actual_tasks = notifier.make_feature_changes_email(
         self.fe_1, True, self.changes)
     self.assertEqual(6, len(actual_tasks))
     (feature_cc_task, feature_editor_task, feature_owner_task,
@@ -466,7 +498,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
 
 
   @mock.patch('internals.notifier.format_email_body')
-  def test_make_email_tasks__starrer_unsubscribed(self, mock_f_e_b):
+  def test_make_feature_changes_email__starrer_unsubscribed(self, mock_f_e_b):
     """We don't email users who starred the feature but opted out."""
     mock_f_e_b.return_value = 'mock body html'
     starrer_2_pref = user_models.UserPref(
@@ -475,7 +507,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     starrer_2_pref.put()
     notifier.FeatureStar.set_star(
         'starrer_2@example.com', self.feature_2.key.integer_id())
-    actual_tasks = notifier.make_email_tasks(
+    actual_tasks = notifier.make_feature_changes_email(
         self.fe_2, True, self.changes)
     self.assertEqual(4, len(actual_tasks))
     # Note: There is no starrer_task.
