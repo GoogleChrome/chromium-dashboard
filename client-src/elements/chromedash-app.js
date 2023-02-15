@@ -154,7 +154,7 @@ class ChromedashApp extends LitElement {
       contextLink: {type: String}, // used for the back button in the feature page
       sidebarHidden: {type: Boolean},
       selectedGateId: {type: Number},
-      client: {type: Api},
+      _clientProvider: {attribute: false, state: true},
     };
   }
 
@@ -171,7 +171,7 @@ class ChromedashApp extends LitElement {
     this.contextLink = '/features';
     this.sidebarHidden = true;
     this.selectedGateId = 0;
-    this._provider = new ContextProvider(
+    this._clientProvider = new ContextProvider(
       this,
       chromestatusOpenApiContext,
       new Api(
