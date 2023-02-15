@@ -1,6 +1,10 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {ref, createRef} from 'lit/directives/ref.js';
 import './chromedash-activity-log';
+import {
+  openPreflightDialog,
+  somePendingPrereqs,
+} from './chromedash-preflight-dialog';
 import {autolink, showToastMessage, findProcessStage} from './utils.js';
 import {GATE_QUESTIONNAIRES} from './form-definition.js';
 
@@ -115,6 +119,7 @@ export class ChromedashGateColumn extends LitElement {
       feature: {type: Object},
       stage: {type: Object},
       gate: {type: Object},
+      progress: {type: Object},
       process: {type: Object},
       votes: {type: Array},
       comments: {type: Array},
@@ -131,6 +136,7 @@ export class ChromedashGateColumn extends LitElement {
     this.feature = {};
     this.stage = {};
     this.gate = {};
+    this.progress = {};
     this.process = {};
     this.votes = [];
     this.comments = [];
@@ -146,12 +152,14 @@ export class ChromedashGateColumn extends LitElement {
     this.gate = gate;
     const featureId = this.feature.id;
     Promise.all([
+      window.csClient.getFeatureProgress(featureId),
       window.csClient.getFeatureProcess(featureId),
       window.csClient.getStage(featureId, stageId),
       window.csClient.getVotes(featureId, null),
       // TODO(jrobbins): Include activities for this gate
       window.csClient.getComments(featureId, gate.id),
-    ]).then(([process, stage, votesRes, commentRes]) => {
+    ]).then(([progress, process, stage, votesRes, commentRes]) => {
+      this.progress = progress;
       this.process = process;
       this.stage = stage;
       this.votes = votesRes.votes.filter((v) =>
@@ -325,8 +333,22 @@ export class ChromedashGateColumn extends LitElement {
       .replace('{feature_id}', this.feature.id)
       .replace('{outgoing_stage}', processStage.outgoing_stage);
 
+    const checkCompletion = () => {
+      if (somePendingPrereqs(action, this.progress)) {
+        // Open the dialog.
+        openPreflightDialog(
+          this.feature, this.progress, this.process, action,
+          processStage, this.stage);
+        return;
+      } else {
+        // Act like user clicked left button to go to the draft email window.
+        const draftWindow = window.open(url, '_blank');
+        draftWindow.focus();
+      }
+    };
+
     return html`
-      <sl-button href=${url} target="_blank"
+      <sl-button @click=${checkCompletion}
        pill size=small variant=primary
        >${label}</sl-button>
     `;

@@ -99,18 +99,16 @@ export class ChromedashPreflightDialog extends LitElement {
   }
 
   renderEditLink(stage, feStage, pi) {
-    const featureId = this.feature.id;
-    let editEl = nothing;
-    if (pi.field) {
-      editEl = html`
+    if (pi.field && stage && feStage) {
+      return html`
         <a class="edit-progress-item"
-           href="/guide/stage/${featureId}/${stage.outgoing_stage}/${feStage.id}#id_${pi.field}"
+           href="/guide/stage/${this.feature.id}/${stage.outgoing_stage}/${feStage.id}#id_${pi.field}"
            @click=${this.closeDialog}>
           Edit
         </a>
       `;
     }
-    return editEl;
+    return nothing;
   }
 
   makePrereqItem(itemName) {
