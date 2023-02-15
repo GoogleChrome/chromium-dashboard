@@ -16,7 +16,7 @@ import eslintIfFixed from 'gulp-eslint-if-fixed';
 import autoPrefixer from 'gulp-autoprefixer';
 import { rollup } from 'rollup';
 import rollupResolve from '@rollup/plugin-node-resolve';
-import rollupBabel from '@rollup/plugin-node-resolve';
+import rollupBabel from '@rollup/plugin-babel';
 import rollupMinify from 'rollup-plugin-babel-minify';
 import commonjs from '@rollup/plugin-commonjs';
 
@@ -37,6 +37,7 @@ gulp.task('lint', () => {
   return gulp.src([
     'client-src/js-src/*.js',
     'client-src/elements/*.js',
+    'client-src/contexts/*.js',
   ])
     .pipe(eslint())
     .pipe(eslint.format())
@@ -47,6 +48,7 @@ gulp.task('lint-fix', () => {
   return gulp.src([
     'client-src/js-src/*.js',
     'client-src/elements/*.js',
+    'client-src/contexts/*.js',
   ], {base: './'})
     .pipe(eslint({fix:true}))
     .pipe(eslint.format())
@@ -86,10 +88,8 @@ gulp.task('rollup', () => {
     input: 'client-src/components.js',
     plugins: [
       rollupResolve(),
+      rollupBabel({babelHelpers: 'bundled'}),
       commonjs(),
-      rollupBabel({
-        plugins: ["@babel/plugin-syntax-dynamic-import"]
-      }),
       rollupMinify({mangle: false, comments: false}),
     ],
   }).then(bundle => {
@@ -139,7 +139,15 @@ gulp.task('watch', gulp.series(
   'default',
   function watch() {
     gulp.watch(['client-src/sass/**/*.scss'], gulp.series('styles'));
-    gulp.watch(['client-src/js-src/**/*.js', 'client-src/elements/*.js'], gulp.series(['lint', 'js']));
-    gulp.watch(['client-src/components.js', 'client-src/elements/*.js'], gulp.series(['rollup']));
-  }
+    gulp.watch([
+      'client-src/js-src/**/*.js',
+      'client-src/elements/*.js',
+      'client-src/contexts/*.js',
+    ], gulp.series(['lint', 'js']));
+    gulp.watch([
+      'client-src/components.js',
+      'client-src/elements/*.js',
+      'client-src/contexts/*.js',
+    ], gulp.series(['rollup']));
+  },
 ));

@@ -1,4 +1,7 @@
 import {LitElement, css, html, nothing} from 'lit';
+// import {property} from 'lit/decorators.js';
+import {ContextProvider} from '@lit-labs/context';
+import {chromestatusOpenApiContext} from '../contexts/openapi-context';
 import {ref, createRef} from 'lit/directives/ref.js';
 import {showToastMessage} from './utils';
 import page from 'page';
@@ -9,6 +12,15 @@ import {DefaultApi as Api, Configuration} from 'chromestatus-openapi';
 
 class ChromedashApp extends LitElement {
   gateColumnRef = createRef();
+
+  // @provide({context: chromestatusOpenApiContext})
+  // @property({attribute: false})
+  // openapiClient = new Api(
+  //   new Configuration({
+  //     credentials: 'same-origin',
+  //   }))
+  //   .withPreMiddleware(xsrfMiddleware)
+  //   .withPostMiddleware(xssiMiddleware);
 
   static get styles() {
     return [
@@ -175,6 +187,7 @@ class ChromedashApp extends LitElement {
       }))
       .withPreMiddleware(this.xsrfMiddleware)
       .withPostMiddleware(this.xssiMiddleware);
+    this._provider = new ContextProvider(this, chromestatusOpenApiContext, this.client);
   }
 
   connectedCallback() {
