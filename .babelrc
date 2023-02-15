@@ -1,7 +1,4 @@
 {
-  // "assumptions": {
-  //   "setPublicClassFields": true
-  // },
   "presets": [
     [
       "@babel/preset-env",
@@ -14,10 +11,6 @@
     ]
   ],
   "plugins": [
-    // ["@babel/plugin-proposal-decorators", {
-    //   "version": "2018-09",
-    //   "decoratorsBeforeExport": true
-    // }],
-    ["@babel/plugin-proposal-class-properties"]
+    "@babel/plugin-proposal-class-properties"
   ]
 }
