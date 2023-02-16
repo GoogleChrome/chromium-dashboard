@@ -79,7 +79,8 @@ def notify_subscribers_and_save_amendments(fe: 'FeatureEntry',
 
 def notify_approvers_of_reviews(fe: 'FeatureEntry', gate: Gate) -> None:
   """Notify approvers of a review requested from a Gate."""
-  gate_url = 'https://chromestatus.com/feature/%s?gate=%s' % (gate.feature_id, gate.id)
+  gate_url = 'https://chromestatus.com/feature/%s?gate=%s' % (
+    gate.feature_id, gate.key.integer_id())
   changed_props = {
       'prop_name': 'Review status change in %s' % (gate_url),
       'old_val': 'na',
