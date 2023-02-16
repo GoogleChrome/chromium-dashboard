@@ -34,6 +34,8 @@ class ChromedashFeatureDetail extends LitElement {
       dismissedCues: {type: Array},
       anyCollapsed: {type: Boolean},
       selectedGateId: {type: Number},
+      rawQuery: {type: Object},
+      openStage: {type: Number},
     };
   }
 
@@ -49,6 +51,8 @@ class ChromedashFeatureDetail extends LitElement {
     this.previousStageTypeRendered = 0;
     this.sameTypeRendered = 0;
     this.selectedGateId = 0;
+    this.rawQuery = {};
+    this.openStage = 0;
   }
 
   static get styles() {
@@ -163,6 +167,49 @@ class ChromedashFeatureDetail extends LitElement {
       }
 
     `];
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.intializeGateColumn();
+  }
+
+  intializeGateColumn() {
+    if (!this.rawQuery) {
+      return;
+    }
+
+    if (!this.rawQuery.hasOwnProperty('gate')) {
+      return;
+    }
+    const gateVal = this.rawQuery['gate'];
+    const foundGates = this.gates.filter(g => g.id == gateVal);
+    if (!foundGates.length) {
+      return;
+    }
+    const gate = foundGates[0];
+
+    const foundStages = this.feature.stages.filter(s => s.id == gate.stage_id);
+    if (!foundStages.length) {
+      return;
+    }
+    const stage = foundStages[0];
+    this.openStage = stage.id;
+
+    this._fireEvent('show-gate-column', {
+      feature: this.feature,
+      stage: stage,
+      gate: gate,
+    });
+  }
+
+  _fireEvent(eventName, detail) {
+    const event = new CustomEvent(eventName, {
+      bubbles: true,
+      composed: true,
+      detail,
+    });
+    this.dispatchEvent(event);
   }
 
   isAnyCollapsed() {
@@ -396,7 +443,7 @@ class ChromedashFeatureDetail extends LitElement {
     }
   }
 
-  renderSection(summary, content, isActive=false) {
+  renderSection(summary, content, isActive=false, defaultOpen=false) {
     if (isActive) {
       summary += ' - Active';
     }
@@ -404,7 +451,7 @@ class ChromedashFeatureDetail extends LitElement {
       <sl-details summary=${summary}
         @sl-after-show=${this.updateCollapsed}
         @sl-after-hide=${this.updateCollapsed}
-        ?open=${isActive}
+        ?open=${isActive || defaultOpen}
         class=${isActive ? 'active' : ''}
       >
         ${content}
@@ -538,7 +585,8 @@ class ChromedashFeatureDetail extends LitElement {
       </section>
     `;
 
-    return this.renderSection(name, content, isActive);
+    const defaultOpen = (feStage.id == this.openStage);
+    return this.renderSection(name, content, isActive, defaultOpen);
   }
 
   renderActivitySection() {
