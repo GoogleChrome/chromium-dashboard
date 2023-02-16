@@ -171,7 +171,7 @@ class ChromedashFeatureDetail extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    intializeGateColumn();
+    this.intializeGateColumn();
   }
 
   intializeGateColumn() {
@@ -201,6 +201,15 @@ class ChromedashFeatureDetail extends LitElement {
       stage: stage,
       gate: gate,
     });
+  }
+
+  _fireEvent(eventName, detail) {
+    const event = new CustomEvent(eventName, {
+      bubbles: true,
+      composed: true,
+      detail,
+    });
+    this.dispatchEvent(event);
   }
 
   isAnyCollapsed() {
@@ -452,15 +461,6 @@ class ChromedashFeatureDetail extends LitElement {
 
   getStageForm(stageType) {
     return FORMS_BY_STAGE_TYPE[stageType] || null;
-  }
-
-  _fireEvent(eventName, detail) {
-    const event = new CustomEvent(eventName, {
-      bubbles: true,
-      composed: true,
-      detail,
-    });
-    this.dispatchEvent(event);
   }
 
   renderMetadataSection() {
