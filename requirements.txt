@@ -32,4 +32,4 @@ itsdangerous==2.1.2
 pyparsing==2.4.7
 
 # OpenAPI files
--e ./gen/py/chromestatus_openapi
+./gen/py/chromestatus_openapi
