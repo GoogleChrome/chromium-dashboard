@@ -242,8 +242,9 @@ class VotesAPITest(testing_config.CustomTestCase):
     self.assertEqual(vote.set_by, 'reviewer1@example.com')
     self.assertEqual(vote.state, Vote.DENIED)
 
+  @mock.patch('internals.notifier_helpers.notify_approvers_of_reviews')
   @mock.patch('internals.approval_defs.get_approvers')
-  def test_post__request_review(self, mock_get_approvers):
+  def test_post__request_review(self, mock_get_approvers, mock_notifier):
     """Handler allows a feature owner to rquest a review."""
     mock_get_approvers.return_value = ['reviewer1@example.com']
     testing_config.sign_in('owner1@example.com', 123567890)
@@ -261,3 +262,5 @@ class VotesAPITest(testing_config.CustomTestCase):
     self.assertEqual(vote.gate_id, 1)
     self.assertEqual(vote.set_by, 'owner1@example.com')
     self.assertEqual(vote.state, Vote.REVIEW_REQUESTED)
+
+    mock_notifier.assert_called_once_with(self.feature_1, self.gate_1)
