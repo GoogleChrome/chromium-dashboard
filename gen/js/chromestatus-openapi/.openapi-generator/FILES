@@ -6,6 +6,11 @@ package.json
 src/apis/DefaultApi.ts
 src/apis/index.ts
 src/index.ts
+src/models/ComponentUsersRequest.ts
+src/models/ComponentsUsers.ts
+src/models/ComponentsUsersComponentsInner.ts
+src/models/ComponentsUsersUsersInner.ts
+src/models/index.ts
 src/runtime.ts
 tsconfig.esm.json
 tsconfig.json
