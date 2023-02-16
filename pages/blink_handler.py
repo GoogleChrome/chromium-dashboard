@@ -26,28 +26,6 @@ class BlinkHandler(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'admin/blink.html'
 
-  def __update_subscribers_list(
-      self, add=True, user_id=None, blink_component=None, primary=False):
-    if not user_id or not blink_component:
-      return False
-
-    user = user_models.FeatureOwner.get_by_id(int(user_id))
-    if not user:
-      return True
-
-    if primary:
-      if add:
-        user.add_as_component_owner(blink_component)
-      else:
-        user.remove_as_component_owner(blink_component)
-    else:
-      if add:
-        user.add_to_component_subscribers(blink_component)
-      else:
-        user.remove_from_component_subscribers(blink_component)
-
-    return True
-
   @permissions.require_admin_site
   def get_template_data(self, **kwargs):
     components = user_models.BlinkComponent.query().order(
@@ -77,24 +55,6 @@ class BlinkHandler(basehandlers.FlaskHandler):
       'components': components[1:] # ditch generic "Blink" component
     }
     return template_data
-
-  # Remove user from component subscribers.
-  @permissions.require_admin_site
-  def put(self):
-    params = self.request.get_json(force=True)
-    self.__update_subscribers_list(False, user_id=params.get('userId'),
-                                   blink_component=params.get('componentName'),
-                                   primary=params.get('primary'))
-    return {'done': True}
-
-  # Add user to component subscribers.
-  @permissions.require_admin_site
-  def process_post_data(self, **kwargs):
-    params = self.request.get_json(force=True)
-    self.__update_subscribers_list(True, user_id=params.get('userId'),
-                                   blink_component=params.get('componentName'),
-                                   primary=params.get('primary'))
-    return params
 
 
 class SubscribersHandler(basehandlers.FlaskHandler):

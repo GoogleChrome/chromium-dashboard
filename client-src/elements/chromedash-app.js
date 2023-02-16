@@ -377,6 +377,13 @@ class ChromedashApp extends LitElement {
       this.currentPage = ctx.path;
       this.hideSidebar();
     });
+    page('/admin/blink', (ctx) => {
+      this.pageComponent = document.createElement('chromedash-admin-blink-page');
+      this.pageComponent.user = this.user;
+      this.contextLink = ctx.path;
+      this.currentPage = ctx.path;
+      this.hideSidebar();
+    });
     page.start();
   }
 

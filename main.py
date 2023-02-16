@@ -19,6 +19,8 @@ from typing import Any, Type
 from api import accounts_api, dev_api
 from api import approvals_api
 from api import blink_components_api
+from api import component_users
+from api import components_users
 from api import channels_api
 from api import comments_api
 from api import cues_api
@@ -126,6 +128,10 @@ api_routes: list[Route] = [
 
     Route(f'{API_BASE}/blinkcomponents',
         blink_components_api.BlinkComponentsAPI),
+    Route(f'{API_BASE}/componentsusers',
+        components_users.ComponentsUsersAPI),
+    Route(f'{API_BASE}/components/<int:component_id>/users/<int:user_id>',
+        component_users.ComponentUsersAPI),
 
     Route(f'{API_BASE}/login', login_api.LoginAPI),
     Route(f'{API_BASE}/logout', logout_api.LogoutAPI),
@@ -183,6 +189,8 @@ spa_page_routes = [
   Route('/metrics/feature/timeline/popularity/<int:bucket_id>'),
   Route('/settings', defaults={'require_signin': True}),
   Route('/enterprise'),
+  # Admin pages
+  Route('/admin/blink', defaults={'require_admin_site': True, 'require_signin': True}),
 ]
 
 spa_page_post_routes: list[Route] = [
@@ -199,7 +207,6 @@ spa_page_post_routes: list[Route] = [
 
 mpa_page_routes: list[Route] = [
     Route('/admin/subscribers', blink_handler.SubscribersHandler),
-    Route('/admin/blink', blink_handler.BlinkHandler),
     Route('/admin/users/new', users.UserListHandler),
 
     Route('/admin/features/launch/<int:feature_id>',

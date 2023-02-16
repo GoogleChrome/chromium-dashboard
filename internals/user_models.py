@@ -152,9 +152,9 @@ class FeatureOwner(ndb.Model):
   primary_blink_components = ndb.KeyProperty(repeated=True)
   watching_all_features = ndb.BooleanProperty(default=False)
 
-  def add_to_component_subscribers(self, component_name):
+  def add_to_component_subscribers(self, component_id):
     """Adds the user to the list of Blink component subscribers."""
-    c = BlinkComponent.get_by_name(component_name)
+    c = BlinkComponent.get_by_id(component_id)
     if c:
       # Add the user if they're not already in the list.
       if not len(list_with_component(self.blink_components, c)):
@@ -163,11 +163,11 @@ class FeatureOwner(ndb.Model):
     return None
 
   def remove_from_component_subscribers(
-      self, component_name, remove_as_owner=False):
+      self, component_id, remove_as_owner=False):
     """Removes the user from the list of Blink component subscribers or as
        the owner of the component.
     """
-    c = BlinkComponent.get_by_name(component_name)
+    c = BlinkComponent.get_by_id(component_id)
     if c:
       if remove_as_owner:
         self.primary_blink_components = (
@@ -179,21 +179,21 @@ class FeatureOwner(ndb.Model):
       return self.put()
     return None
 
-  def add_as_component_owner(self, component_name):
+  def add_as_component_owner(self, component_id):
     """Adds the user as the Blink component owner."""
-    c = BlinkComponent.get_by_name(component_name)
+    c = BlinkComponent.get_by_id(component_id)
     if c:
       # Update both the primary list and blink components subscribers if the
       # user is not already in them.
-      self.add_to_component_subscribers(component_name)
+      self.add_to_component_subscribers(component_id)
       if not len(list_with_component(self.primary_blink_components, c)):
         self.primary_blink_components.append(c.key)
       return self.put()
     return None
 
-  def remove_as_component_owner(self, component_name):
+  def remove_as_component_owner(self, component_id):
     return self.remove_from_component_subscribers(
-        component_name, remove_as_owner=True)
+        component_id, remove_as_owner=True)
 
 
 class BlinkComponent(ndb.Model):
