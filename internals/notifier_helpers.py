@@ -87,11 +87,11 @@ def notify_approvers_of_reviews(fe: 'FeatureEntry', gate: Gate) -> None:
       'new_val': 'review_requested',
   }
 
-  params = [{
+  params = {
     'changes': changed_props,
     'gate_type': gate.gate_type,
     'feature': converters.feature_entry_to_json_verbose(fe)
-  }]
+  }
 
   # Create task to email subscribers.
   cloud_tasks_helpers.enqueue_task('/tasks/email-reviewers', params)
