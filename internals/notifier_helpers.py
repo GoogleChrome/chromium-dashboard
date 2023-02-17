@@ -88,7 +88,7 @@ def notify_approvers_of_reviews(fe: 'FeatureEntry', gate: Gate) -> None:
   }
 
   params = {
-    'changes': changed_props,
+    'changes': [changed_props],
     'gate_type': gate.gate_type,
     'feature': converters.feature_entry_to_json_verbose(fe)
   }
