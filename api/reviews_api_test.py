@@ -202,8 +202,9 @@ class VotesAPITest(testing_config.CustomTestCase):
         self.handler.do_post(
             feature_id=self.feature_id, gate_id=self.gate_1_id)
 
+  @mock.patch('internals.notifier_helpers.notify_subscribers_of_vote_changes')
   @mock.patch('internals.approval_defs.get_approvers')
-  def test_post__add_new_vote(self, mock_get_approvers):
+  def test_post__add_new_vote(self, mock_get_approvers, mock_notifier):
     """Handler adds a vote when one did not exist before."""
     mock_get_approvers.return_value = ['reviewer1@example.com']
     testing_config.sign_in('reviewer1@example.com', 123567890)
@@ -221,8 +222,12 @@ class VotesAPITest(testing_config.CustomTestCase):
     self.assertEqual(vote.set_by, 'reviewer1@example.com')
     self.assertEqual(vote.state, Vote.NEEDS_WORK)
 
+    mock_notifier.assert_called_once_with(self.feature_1,
+        self.gate_1, 'reviewer1@example.com', Vote.NEEDS_WORK)
+
+  @mock.patch('internals.notifier_helpers.notify_subscribers_of_vote_changes')
   @mock.patch('internals.approval_defs.get_approvers')
-  def test_post__update_vote(self, mock_get_approvers):
+  def test_post__update_vote(self, mock_get_approvers, mock_notifier):
     """Handler updates a vote when one already exists for that reviwer."""
     mock_get_approvers.return_value = ['reviewer1@example.com']
     testing_config.sign_in('reviewer1@example.com', 123567890)
@@ -241,6 +246,9 @@ class VotesAPITest(testing_config.CustomTestCase):
     self.assertEqual(vote.gate_id, 1)
     self.assertEqual(vote.set_by, 'reviewer1@example.com')
     self.assertEqual(vote.state, Vote.DENIED)
+
+    mock_notifier.assert_called_once_with(self.feature_1,
+        self.gate_1, 'reviewer1@example.com', Vote.DENIED)
 
   @mock.patch('internals.notifier_helpers.notify_approvers_of_reviews')
   @mock.patch('internals.approval_defs.get_approvers')
