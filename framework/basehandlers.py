@@ -197,6 +197,13 @@ class APIHandler(BaseHandler):
     handler_data = self.do_post(*args, **kwargs)
     return self.defensive_jsonify(handler_data), headers
 
+  def put(self, *args, **kwargs):
+    """Handle an incoming HTTP PUT request."""
+    self.require_signed_in_and_xsrf_token()
+    headers = self.get_headers()
+    handler_data = self.do_put(*args, **kwargs)
+    return self.defensive_jsonify(handler_data), headers
+
   def patch(self, *args, **kwargs):
     """Handle an incoming HTTP PATCH request."""
     self.require_signed_in_and_xsrf_token()
@@ -242,6 +249,10 @@ class APIHandler(BaseHandler):
 
   def do_post(self, **kwargs):
     """Subclasses should implement this method to handle a POST request."""
+    self.abort(405, valid_methods=self._get_valid_methods())
+
+  def do_put(self, **kwargs):
+    """Subclasses should implement this method to handle a PUT request."""
     self.abort(405, valid_methods=self._get_valid_methods())
 
   def do_patch(self, **kwargs):
