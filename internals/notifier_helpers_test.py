@@ -87,7 +87,7 @@ class ActivityTest(testing_config.CustomTestCase):
     notifier_helpers.notify_subscribers_of_vote_changes(
         self.feature_1, self.gate_1, 'abc@example.com', Vote.DENIED)
     expected_content = ('abc@example.com set review status for stage'
-                ':Start prototyping, gate: Intent to Prototype to denied.')
+                ': Start prototyping, gate: Intent to Prototype to denied.')
     feature_id = self.feature_1.key.integer_id()
     activities = Activity.get_activities(feature_id)
     self.assertEqual(len(activities), 1)
