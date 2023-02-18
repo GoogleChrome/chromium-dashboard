@@ -103,15 +103,11 @@ class ChromedashApp extends LitElement {
    * @return {Promise<FetchParams>}
    */
   async xsrfMiddleware(req) {
-    return window.csClient.ensureTokenIsValid().then({
-      ...req,
-      init: {
-        ...req.init,
-        headers: {
-          ...(req.init.headers || {}),
-          'X-Xsrf-Token': window.csClient.token,
-        },
-      },
+    return window.csClient.ensureTokenIsValid().then(() => {
+      const headers = req.init.headers || {};
+      headers['X-Xsrf-Token'] = [window.csClient.token];
+      req.init.headers = headers;
+      return req;
     });
   }
 
