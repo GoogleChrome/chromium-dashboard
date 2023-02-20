@@ -21,42 +21,6 @@ from internals import legacy_helpers
 from internals import user_models
 from api.channels_api import construct_chrome_channels_details
 
-
-class BlinkHandler(basehandlers.FlaskHandler):
-
-  TEMPLATE_PATH = 'admin/blink.html'
-
-  @permissions.require_admin_site
-  def get_template_data(self, **kwargs):
-    components = user_models.BlinkComponent.query().order(
-        user_models.BlinkComponent.name).fetch(None)
-    possible_subscribers = user_models.FeatureOwner.query().order(
-        user_models.FeatureOwner.name).fetch(None)
-
-    # Format for template
-    possible_subscriber_dicts = [
-        {'id': fo.key.integer_id(), 'email': fo.email}
-        for fo in possible_subscribers]
-
-    component_to_subscribers = {c.key: [] for c in components}
-    component_to_owners = {c.key: [] for c in components}
-    for ps in possible_subscribers:
-      for subed_component_key in ps.blink_components:
-        component_to_subscribers[subed_component_key].append(ps)
-      for owned_component_key in ps.primary_blink_components:
-        component_to_owners[owned_component_key].append(ps.name)
-
-    for c in components:
-      c.computed_subscribers = component_to_subscribers[c.key]
-      c.computed_owners = component_to_owners[c.key]
-
-    template_data = {
-      'possible_subscribers': possible_subscriber_dicts,
-      'components': components[1:] # ditch generic "Blink" component
-    }
-    return template_data
-
-
 class SubscribersHandler(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'admin/subscribers.html'
