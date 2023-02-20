@@ -60,6 +60,9 @@ class VotesAPI(basehandlers.APIHandler):
 
     if new_state == Vote.REVIEW_REQUESTED:
       notifier_helpers.notify_approvers_of_reviews(feature, gate)
+    else:
+      notifier_helpers.notify_subscribers_of_vote_changes(
+          feature, gate, user.email(), new_state)
 
     # Callers don't use the JSON response for this API call.
     return {'message': 'Done'}

@@ -16,8 +16,8 @@
 from typing import Any, TYPE_CHECKING
 from api import converters
 from framework import cloud_tasks_helpers, users
-from internals import core_enums
-from internals.review_models import Gate, Amendment, Activity
+from internals import core_enums, approval_defs
+from internals.review_models import Gate, Amendment, Activity, Vote
 
 if TYPE_CHECKING:
   from internals.core_models import FeatureEntry
@@ -95,3 +95,39 @@ def notify_approvers_of_reviews(fe: 'FeatureEntry', gate: Gate) -> None:
 
   # Create task to email subscribers.
   cloud_tasks_helpers.enqueue_task('/tasks/email-reviewers', params)
+
+
+def notify_subscribers_of_vote_changes(fe: 'FeatureEntry', gate: Gate,
+    email: str, new_state: int) -> None:
+  """Notify subscribers of a vote change and save amendments."""
+  stage_name = core_enums.INTENT_STAGES[gate.stage_id]
+  state_name = Vote.VOTE_VALUES[new_state]
+
+  appr_def = approval_defs.APPROVAL_FIELDS_BY_ID[gate.gate_type]
+  gate_name = appr_def.name
+
+  acitivity_content = '%s set review status for stage: %s, gate: %s to %s.' % (
+      email, stage_name, gate_name, state_name)
+  gate_id = gate.key.integer_id()
+  activity = Activity(feature_id=fe.key.integer_id(), gate_id=gate_id,
+                      author=email, content=acitivity_content)
+  activity.put()
+
+  old_state = Vote.VOTE_VALUES[gate.state]
+  gate_url = 'https://chromestatus.com/feature/%s?gate=%s' % (
+    gate.feature_id, gate_id)
+  changed_props = {
+      'prop_name': '%s set review status in %s' % (email, gate_url),
+      'old_val': old_state,
+      'new_val': state_name,
+  }
+
+  params = {
+    'changes': [changed_props],
+    # Subscribers are only notified on feature update.
+    'is_update': True,
+    'feature': converters.feature_entry_to_json_verbose(fe)
+  }
+
+  # Create task to email subscribers.
+  cloud_tasks_helpers.enqueue_task('/tasks/email-subscribers', params)
