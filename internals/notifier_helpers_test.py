@@ -93,7 +93,7 @@ class ActivityTest(testing_config.CustomTestCase):
   @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
   def test_vote_changes_activities__created(self, mock_task_helpers):
     notifier_helpers.notify_subscribers_of_vote_changes(
-        self.feature_1, self.gate_1, 'abc@example.com', Vote.DENIED)
+        self.feature_1, self.gate_1, 'abc@example.com', Vote.DENIED, Vote.NA)
     expected_content = ('abc@example.com set review status for stage'
                 ': Start prototyping, gate: Intent to Prototype to denied.')
     feature_id = self.feature_1.key.integer_id()
