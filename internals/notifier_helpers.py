@@ -98,7 +98,7 @@ def notify_approvers_of_reviews(fe: 'FeatureEntry', gate: Gate) -> None:
 
 
 def notify_subscribers_of_vote_changes(fe: 'FeatureEntry', gate: Gate,
-    email: str, new_state: int) -> None:
+    email: str, new_state: int, old_state: int) -> None:
   """Notify subscribers of a vote change and save amendments."""
   stage = core_models.Stage.get_by_id(gate.stage_id)
   stage_enum = core_enums.INTENT_STAGES_BY_STAGE_TYPE.get(
@@ -116,12 +116,12 @@ def notify_subscribers_of_vote_changes(fe: 'FeatureEntry', gate: Gate,
                       author=email, content=acitivity_content)
   activity.put()
 
-  old_state = Vote.VOTE_VALUES[gate.state]
+  old_state_name = Vote.VOTE_VALUES[old_state]
   gate_url = 'https://chromestatus.com/feature/%s?gate=%s' % (
     gate.feature_id, gate_id)
   changed_props = {
       'prop_name': '%s set review status in %s' % (email, gate_url),
-      'old_val': old_state,
+      'old_val': old_state_name,
       'new_val': state_name,
   }
 
