@@ -92,6 +92,16 @@ gulp.task('rollup', () => {
       commonjs(),
       rollupMinify({mangle: false, comments: false}),
     ],
+    onwarn: function(warning, warn) {
+      // There is currently a warning when using the es6 module from openapi.
+      // It is a common issue and can be suppresed.
+      // The error that is suppresed:
+      // The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten
+      // https://github.com/rollup/rollup/issues/1518#issuecomment-321875784
+      // Suppres that error but continue to print the remaining errors.
+      if (warning.code === 'THIS_IS_UNDEFINED') return;
+      warn(warning); // this requires Rollup 0.46
+    },
   }).then(bundle => {
     return bundle.write({
       dir: 'static/dist',
