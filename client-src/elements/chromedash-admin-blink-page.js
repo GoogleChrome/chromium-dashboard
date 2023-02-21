@@ -265,7 +265,7 @@ export class ChromedashAdminBlinkPage extends LitElement {
             <h2>Blink components</h2>
             ${this.loading ?
               html`<div>loading components</div>` :
-              html`<div>listing ${this.components.length} components</div>`
+              html`<div id="component-count">listing ${this.components.length} components</div>`
             }
           </div>
           <a href="/admin/subscribers" class="view_owners_linke">List by owner &amp; their features →</a>

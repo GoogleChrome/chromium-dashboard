@@ -17,7 +17,10 @@ describe('chromedash-admin-blink-page', () => {
     });
 
     customElements.define('fake-client-provider-0', class extends LitElement {
-      provider = new ContextProvider(this, chromestatusOpenApiContext, client);
+      constructor() {
+        super();
+        this.provider = new ContextProvider(this, chromestatusOpenApiContext, client);
+      }
     });
     const clientParentFixture = await fixture(html `<fake-client-provider-0></fake-client-provider-0>`);
     const component = await fixture(
@@ -48,7 +51,10 @@ describe('chromedash-admin-blink-page', () => {
     });
 
     customElements.define('fake-client-provider-1', class extends LitElement {
-      provider = new ContextProvider(this, chromestatusOpenApiContext, client);
+      constructor() {
+        super();
+        this.provider = new ContextProvider(this, chromestatusOpenApiContext, client);
+      }
     });
     const clientParentFixture = await fixture(html `<fake-client-provider-1></fake-client-provider-1>`);
     const component = await fixture(
@@ -56,5 +62,9 @@ describe('chromedash-admin-blink-page', () => {
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashAdminBlinkPage);
+
+    // subheader exists
+    const subheaderCountEl = component.shadowRoot.querySelector('#component-count');
+    assert.exists(subheaderCountEl);
   });
 });
