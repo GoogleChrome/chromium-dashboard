@@ -1,5 +1,7 @@
 import {LitElement, css, html, nothing} from 'lit';
 import './chromedash-callout';
+import {ACTIVE_REVIEW_STATES} from './chromedash-gate-column';
+import {GATE_TEAM_ORDER} from './form-field-enums';
 import {findFirstFeatureStage} from './utils';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
@@ -7,14 +9,14 @@ import {SHARED_STYLES} from '../sass/shared-css.js';
 let preflightDialogEl;
 
 export async function openPreflightDialog(
-  feature, progress, process, action, stage, feStage) {
+  feature, progress, process, action, stage, feStage, featureGates) {
   if (!preflightDialogEl) {
     preflightDialogEl = document.createElement('chromedash-preflight-dialog');
     document.body.appendChild(preflightDialogEl);
     await preflightDialogEl.updateComplete;
   }
   preflightDialogEl.openWithContext(
-    feature, progress, process, action, stage, feStage);
+    feature, progress, process, action, stage, feStage, featureGates);
 }
 
 
@@ -23,11 +25,28 @@ export function somePendingPrereqs(action, progress) {
     itemName => !progress.hasOwnProperty(itemName));
 }
 
+export function somePendingGates(featureGates, feStage) {
+  return findPendingGates(featureGates, feStage).length > 0;
+}
+
+
+function findPendingGates(featureGates, feStage) {
+  const gatesForStage = featureGates.filter(g => g.stage_id == feStage.id);
+  const otherGates = gatesForStage.filter(g => g.team_name != 'API Owners');
+  const pendingGates = otherGates.filter(g =>
+    ACTIVE_REVIEW_STATES.includes(g.state));
+  pendingGates.sort((g1, g2) =>
+    GATE_TEAM_ORDER.indexOf(g1.team_name) -
+      GATE_TEAM_ORDER.indexOf(g2.team_name));
+  return pendingGates;
+}
+
 
 export class ChromedashPreflightDialog extends LitElement {
   static get properties() {
     return {
       feature: {type: Object},
+      featureGates: {type: Array},
       progress: {type: Object},
       process: {type: Object},
       action: {type: Object},
@@ -40,6 +59,7 @@ export class ChromedashPreflightDialog extends LitElement {
   constructor() {
     super();
     this.feature = null;
+    this.featureGates = null;
     this.progress = null;
     this.process = null;
     this.action = null;
@@ -84,13 +104,15 @@ export class ChromedashPreflightDialog extends LitElement {
     `];
   }
 
-  openWithContext(feature, progress, process, action, stage, feStage) {
+  openWithContext(
+    feature, progress, process, action, stage, feStage, featureGates) {
     this.feature = feature;
     this.progress = progress;
     this.process = process;
     this.action = action;
     this.stage = stage;
     this.feStage = feStage;
+    this.featureGates = featureGates;
     this.shadowRoot.querySelector('sl-dialog').show();
   }
 
@@ -132,6 +154,7 @@ export class ChromedashPreflightDialog extends LitElement {
         prereqItems.push(this.makePrereqItem(itemName));
       }
     }
+    const pendingGates = findPendingGates(this.featureGates, this.feStage);
 
     const url = this.action.url
       .replace('{feature_id}', this.feature.id)
@@ -150,6 +173,11 @@ export class ChromedashPreflightDialog extends LitElement {
                 item.stage.outgoing_stage, this.stage, this.feature),
               item)}
         </li>`)}
+      </ol>
+
+      <p>Pending gates:</p>
+      <ol>
+      ${pendingGates.map(g => g.team_name)}
       </ol>
       <sl-button href="${url}" target="_blank" variant="primary" size="small">
         Proceed to Draft Email

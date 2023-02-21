@@ -117,6 +117,7 @@ export class ChromedashGateColumn extends LitElement {
     return {
       user: {type: Object},
       feature: {type: Object},
+      featureGates: {type: Array},
       stage: {type: Object},
       gate: {type: Object},
       progress: {type: Object},
@@ -134,6 +135,7 @@ export class ChromedashGateColumn extends LitElement {
     super();
     this.user = {};
     this.feature = {};
+    this.featureGates = [];
     this.stage = {};
     this.gate = {};
     this.progress = {};
@@ -334,11 +336,12 @@ export class ChromedashGateColumn extends LitElement {
       .replace('{outgoing_stage}', processStage.outgoing_stage);
 
     const checkCompletion = () => {
-      if (somePendingPrereqs(action, this.progress)) {
+      if (somePendingPrereqs(action, this.progress) ||
+          somePendingGates(this.featureGates, this.stage)) {
         // Open the dialog.
         openPreflightDialog(
           this.feature, this.progress, this.process, action,
-          processStage, this.stage);
+          processStage, this.stage, this.featureGates);
         return;
       } else {
         // Act like user clicked left button to go to the draft email window.
@@ -347,8 +350,19 @@ export class ChromedashGateColumn extends LitElement {
       }
     };
 
+    const loadThenCheckCompletion = () => {
+      Promise.all([
+        window.csClient.getGates(this.feature.id),
+      ]).then(([gatesRes]) => {
+        this.featureGates = gatesRes.gates;
+        checkCompletion();
+      }).catch(() => {
+        showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+      });
+    };
+
     return html`
-      <sl-button @click=${checkCompletion}
+      <sl-button @click=${loadThenCheckCompletion}
        pill size=small variant=primary
        >${label}</sl-button>
     `;
