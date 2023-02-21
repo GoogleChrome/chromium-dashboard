@@ -101,7 +101,9 @@ def notify_subscribers_of_vote_changes(fe: 'FeatureEntry', gate: Gate,
     email: str, new_state: int) -> None:
   """Notify subscribers of a vote change and save amendments."""
   stage = core_models.Stage.get_by_id(gate.stage_id)
-  stage_name = core_enums.INTENT_STAGES[stage.stage_type]
+  stage_enum = core_enums.INTENT_STAGES_BY_STAGE_TYPE.get(
+    stage.stage_type, core_enums.INTENT_NONE)
+  stage_name = core_enums.INTENT_STAGES[stage_enum]
   state_name = Vote.VOTE_VALUES[new_state]
 
   appr_def = approval_defs.APPROVAL_FIELDS_BY_ID[gate.gate_type]
