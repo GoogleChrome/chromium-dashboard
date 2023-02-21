@@ -15,7 +15,7 @@ from unittest import mock
 
 from internals import notifier_helpers
 import testing_config  # Must be imported before the module under test.
-from internals.core_models import FeatureEntry
+from internals.core_models import FeatureEntry, Stage, MilestoneSet
 from internals.review_models import Activity, Vote, Gate
 
 class ActivityTest(testing_config.CustomTestCase):
@@ -27,10 +27,17 @@ class ActivityTest(testing_config.CustomTestCase):
     self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()
 
-    self.gate_1 = Gate(id=1, feature_id=self.feature_id, stage_id=1,
+    self.gate_1 = Gate(id=123, feature_id=self.feature_id, stage_id=321,
         gate_type=1, state=Vote.NA)
     self.gate_1.put()
     self.gate_1_id = self.gate_1.key.integer_id()
+
+    self.stage = Stage(
+        id=321,
+        feature_id=self.feature_id,
+        stage_type=1,
+        milestones=MilestoneSet(desktop_first=99))
+    self.stage.put()
 
     testing_config.sign_in('one@example.com', 123567890)
 
@@ -39,6 +46,7 @@ class ActivityTest(testing_config.CustomTestCase):
       activity.key.delete()
     self.feature_1.key.delete()
     self.gate_1.key.delete()
+    self.stage.key.delete()
     testing_config.sign_out()
 
   def test_activities__created(self):
