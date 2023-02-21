@@ -48,17 +48,15 @@ class ComponentUsersAPI(basehandlers.APIHandler):
   @permissions.require_admin_site
   def do_put(self, **kwargs):
     params = self.request.get_json(force=True)
-    params.get('is_owner')
     self.__update_subscribers_list(True, user_id=kwargs.get('user_id', None),
                                    blink_component_id=kwargs.get('component_id', None),
-                                   primary=params.get('is_owner'))
+                                   primary=params.get('owner'))
     return {}, 200
 
   @permissions.require_admin_site
   def do_delete(self, **kwargs):
     params = self.request.get_json(force=True)
-    params.get('is_owner')
     self.__update_subscribers_list(False, user_id=kwargs.get('user_id', None),
                                    blink_component_id=kwargs.get('component_id', None),
-                                   primary=params.get('is_owner'))
+                                   primary=params.get('owner'))
     return {}, 200

@@ -68,7 +68,7 @@ export class ChromedashAdminBlinkPage extends LitElement {
       loading: {type: Boolean},
       user: {type: Object},
       _clientConsumer: {attribute: false},
-      _editMode: {type: Boolean, attribute: false},
+      _editMode: {type: Boolean},
       components: {type: Array},
       usersMap: {type: Object},
     };
@@ -87,6 +87,7 @@ export class ChromedashAdminBlinkPage extends LitElement {
     super();
     this._clientConsumer = new ContextConsumer(this, chromestatusOpenApiContext, undefined, true);
     this.loading = true;
+    this._editMode = false;
   }
 
   connectedCallback() {
@@ -109,9 +110,45 @@ export class ChromedashAdminBlinkPage extends LitElement {
 
   _onEditModeToggle() {
     this._editMode = !this._editMode;
-    this.shadowRoot.querySelector('#components_list').classList.toggle('editing', this._editMode);
   }
 
+  _addComponentUserListener(e) {
+    const component = Object.assign({}, this.components[e.detail.index]);
+    if (e.detail.isError) {
+      showToastMessage(`"Unable to add ${this.usersMap.get(e.detail.userId).name} to ${component.name}".`);
+      return;
+    }
+
+    // If the user is already a subscriber, we do not want to append it.
+    // We can get here if we are adding the user the owner list.
+    if (!component.subscriberIds.includes(e.detail.userId)) {
+      component.subscriberIds = [...component.subscriberIds, e.detail.userId];
+    }
+    if (e.detail.toggleAsOwner) {
+      component.ownerIds = [...component.ownerIds, e.detail.userId];
+    }
+    showToastMessage(`"${this.usersMap.get(e.detail.userId).name} added to ${component.name}".`);
+    this.components[e.detail.index] = component;
+    this.requestUpdate();
+  }
+
+  _removeComponentUserListener(e) {
+    const component = Object.assign({}, this.components[e.detail.index]);
+    if (e.detail.isError) {
+      showToastMessage(`"Unable to remove ${this.usersMap.get(e.detail.userId).name} from ${component.name}".`);
+      return;
+    }
+
+    component.subscriberIds = component.subscriberIds.filter(
+      (currentUserId) => e.detail.userId !== currentUserId);
+    if (e.detail.toggleAsOwner) {
+      component.ownerIds = component.ownerIds.filter(
+        (currentUserId) => e.detail.userId !== currentUserId);
+    }
+    showToastMessage(`"${this.usersMap.get(e.detail.userId).name} removed from ${component.name}".`);
+    this.components[e.detail.index] = component;
+    this.requestUpdate();
+  }
 
   renderSubheader() {
     return html`
@@ -144,20 +181,20 @@ export class ChromedashAdminBlinkPage extends LitElement {
     }
   }
   renderComponents() {
-    const userListTemplate = [];
-    for (const user of this.usersMap.values()) {
-      userListTemplate.push(
-        html`<option class="owner_name" value="${user.id}" data-email="${user.email}" data-name="${user.name}">${user.name}: ${user.email}</option>`);
-    }
     return html`
       <ul id="components_list">
         ${this.components.map((component, index) => html`
           <li class="layout horizontal" id="${component.name}">
             <chromedash-admin-blink-component-listing
-              .component=${component},
-              .index=${index},
-              .usersMap=${this.usersMap},
-              .editing=${this._editMode},
+              .id=${component.id}
+              .name=${component.name}
+              .subscriberIds=${component.subscriberIds}
+              .ownerIds=${component.ownerIds}
+              .index=${index}
+              .usersMap=${this.usersMap}
+              ?editing=${this._editMode}
+              @adminRemoveComponentUser=${this._removeComponentUserListener}
+              @adminAddComponentUser=${this._addComponentUserListener}
             ></chromedash-admin-blink-component-listing>
           </li>
         `)}

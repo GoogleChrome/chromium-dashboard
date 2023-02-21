@@ -2,7 +2,6 @@ import {html, css, LitElement} from 'lit';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {VARS} from '../sass/_vars-css.js';
 import {LAYOUT_CSS} from '../sass/_layout-css.js';
-import {showToastMessage} from './utils.js';
 import {ContextConsumer} from '@lit-labs/context';
 import {chromestatusOpenApiContext} from '../contexts/openapi-context';
 
@@ -13,17 +12,21 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
       VARS,
       LAYOUT_CSS,
       css`
-      :host[editing] .owners_list_add_remove {
+      :host {
+        display: flex;
+      }
+
+      :host([editing]) .owners_list_add_remove {
           opacity: 1;
           pointer-events: all
       }
 
-      :host[editing] .owners_list select[multiple] {
+      :host([editing]) .owners_list select[multiple] {
           background-color: #fff;
           border-color: rgba(0, 0, 0, 0);
       }
 
-      :host[editing] .owners_list select[multiple] option {
+      :host([editing]) .owners_list select[multiple] option {
           padding-left: 4px;
       }
 
@@ -81,16 +84,17 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
   /** @type {ContextConsumer<import("../contexts/openapi-context").chromestatusOpenApiContext>} */
   _clientConsumer;
 
-  /** @type {import('chromestatus-openapi').ComponentsUsersComponentsInner} */
-  component;
-
   static get properties() {
     return {
       _clientConsumer: {attribute: false},
-      editing: {type: Boolean, reflect: false},
+      editing: {type: Boolean, reflect: true},
       component: {type: Object},
       index: {type: Number},
       usersMap: {type: Object},
+      id: {type: Number},
+      name: {type: String},
+      subscriberIds: {type: Array},
+      ownerIds: {type: Array},
     };
   }
 
@@ -107,10 +111,14 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
     return e.target.parentElement.querySelector('.is_primary_checkbox').checked;
   }
 
+  /**
+   * @param {int} userId
+   * @return {boolean}
+   */
   _isUserInOwnerList(userId) {
     const ownersList = this.shadowRoot.querySelector(`#owner_list_${this.index}`);
     return Array.from(
-      ownersList.options).find(option => option.value === userId);
+      ownersList.options).find(option => parseInt(option.value) === userId);
   }
 
   _addUser(e) {
@@ -129,19 +137,27 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
       return;
     }
 
-    this._clientConsumer.value.addUserToComponent(
-      {componentId: component.id, userId: userId, componentUsersRequest: {owner: toggleAsOwner}})
-      .then(() =>{
-        this.component.subscriberIds = [...this.component.subscriberIds, userId];
-        if (toggleAsOwner) {
-          this.component.ownerIds = [...this.component.ownerIds, userId];
-        }
-        this.requestUpdate();
-
-        showToastMessage(`"${this.usersMap.get(userId).name} added to ${this.component.name}".`);
-      })
+    let isError = false;
+    this._clientConsumer.value.addUserToComponent({
+      componentId: this.id,
+      userId: userId,
+      componentUsersRequest: {owner: toggleAsOwner},
+    })
+      .then(() => {})
       .catch(()=> {
-        showToastMessage(`"Unable to add ${this.usersMap.get(userId).name} to ${this.component.name}".`);
+        isError = true;
+      })
+      .finally(() => {
+        this.dispatchEvent(new CustomEvent('adminAddComponentUser', {
+          detail: {
+            userId: userId,
+            toggleAsOwner: toggleAsOwner,
+            index: this.index,
+            isError: isError,
+          },
+          bubbles: true,
+          composed: true,
+        }));
       });
   }
   /**
@@ -157,34 +173,57 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
       return;
     }
 
-    this._clientConsumer.value.removeUserFromComponent(
-      {componentId: component.id, userId: userId, componentUsersRequest: {owner: toggleAsOwner}})
-      .then(() =>{
-        this.component.subscriberIds.filter((currentUserId) => userId !== currentUserId);
-        if (toggleAsOwner) {
-          this.component.ownerIds.filter((currentUserId) => userId !== currentUserId);
-        }
+    // Don't try to remove user if they do not exist in the list
+    if (!this._isUserInOwnerList(userId)) {
+      return;
+    }
 
-        showToastMessage(`"${this.usersMap.get(userId).name} removed from ${this.component.name}".`);
-      })
+    let isError = false;
+    this._clientConsumer.value.removeUserFromComponent({
+      componentId: this.id,
+      userId: userId,
+      componentUsersRequest: {owner: toggleAsOwner},
+    })
+      .then(() => {})
       .catch(()=> {
-        showToastMessage(`"Unable to remove ${this.usersMap.get(userId).name} from ${this.component.name}".`);
+        isError = true;
+      })
+      .finally(() => {
+        this.dispatchEvent(new CustomEvent('adminRemoveComponentUser', {
+          detail: {
+            userId: userId,
+            toggleAsOwner: toggleAsOwner,
+            index: this.index,
+            isError: isError,
+          },
+          bubbles: true,
+          composed: true,
+        }));
       });
   }
 
+  _printUserDetails(userId) {
+    return html`${this.usersMap.get(userId).name}: ${this.usersMap.get(userId).email}`;
+  }
+
   render() {
+    const userListTemplate = [];
+    for (const user of this.usersMap.values()) {
+      userListTemplate.push(
+        html`<option class="owner_name" value="${user.id}" data-email="${user.email}" data-name="${user.name}">${user.name}: ${user.email}</option>`);
+    }
     return html `
       <div class="component_name">
         <div class="column_header">Component</div>
-        <h3>${this.component.name}</h3>
+        <h3>${this.name}</h3>
       </div>
       <div class="owners_list layout horizontal center">
         <div>
           <div class="column_header">Receives email updates:</div>
-          <select multiple disabled id="owner_list_${this.index}" size="${this.component.subscriberIds.length}">
-            ${this.component.subscriberIds.map((subscriberId) => component.ownerIds.includes(subscriberId) ?
-      html `<option class="owner_name component_owner" value="${subscriberId}">${this.usersMap.get(subscriberId).name}: ${this.usersMap.get(subscriberId).email}</option>`:
-      html `<option class="owner_name" value="${subscriberId}">${this.usersMap.get(subscriberId).name}: ${this.usersMap.get(subscriberId).email}</option>`,
+          <select multiple disabled id="owner_list_${this.index}" size="${this.subscriberIds.length}">
+            ${this.subscriberIds.map((subscriberId) => this.ownerIds.includes(subscriberId) ?
+      html `<option class="owner_name component_owner" value="${subscriberId}">${this._printUserDetails(subscriberId)}</option>`:
+      html `<option class="owner_name" value="${subscriberId}">${this._printUserDetails(subscriberId)}</option>`,
             )};
           </select>
         </div>
@@ -197,9 +236,9 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
             <label title="Toggles the user as an owner. If you click 'Remove' ans this is not checked, the user is removed from the component.">Owner? <input type="checkbox" class="is_primary_checkbox"></label>
           </div>
           <button @click="${(e) => this._addUser(e)}" class="add_owner_button"
-                  data-component-name="${this.component.name}">Add</button>
+                  data-component-name="${this.name}">Add</button>
           <button @click="${(e) => this._removeUser(e)}" class="remove_owner_button"
-                  data-component-name="${this.component.name}">Remove</button>
+                  data-component-name="${this.name}">Remove</button>
         </div>
       </div>    
     `;
