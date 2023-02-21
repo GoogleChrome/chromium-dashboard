@@ -35,7 +35,7 @@ class ActivityTest(testing_config.CustomTestCase):
     self.stage = Stage(
         id=321,
         feature_id=self.feature_id,
-        stage_type=1,
+        stage_type=120,
         milestones=MilestoneSet(desktop_first=99))
     self.stage.put()
 
