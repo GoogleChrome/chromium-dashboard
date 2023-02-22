@@ -3,9 +3,8 @@ import {html, LitElement} from 'lit';
 import {assert, expect, fixture, oneEvent} from '@open-wc/testing';
 import sinon from 'sinon';
 import {DefaultApi} from 'chromestatus-openapi';
-import { chromestatusOpenApiContext } from '../contexts/openapi-context';
-import { ContextProvider } from '@lit-labs/context';
-
+import {chromestatusOpenApiContext} from '../contexts/openapi-context';
+import {ContextProvider} from '@lit-labs/context';
 
 /** @type {Map<number, import("chromestatus-openapi").ComponentsUsersUsersInner>} */
 const testUsersMap = new Map([
@@ -74,13 +73,11 @@ describe('chromedash-admin-blink-component-listing', () => {
     });
   });
   describe('_addUser', async () => {
+    const eventListeners = {add: function() {}, remove: function() {}};
     let sandbox;
     let element;
     /** @type {import('sinon').SinonStubbedInstance<DefaultApi>} */
     let client;
-
-    let addUserEventSpy;
-    let removeUserEventSpy;
 
     customElements.define(`add-blink-component-user-client-provider`, class extends LitElement {
       _updateProvider(_client) {
@@ -92,8 +89,8 @@ describe('chromedash-admin-blink-component-listing', () => {
       sandbox = sinon.createSandbox();
       client = sandbox.createStubInstance(DefaultApi);
       clientParentFixture._updateProvider(client);
-      addUserEventSpy = sandbox.fake();
-      removeUserEventSpy = sandbox.fake();
+      sandbox.stub(eventListeners, 'add');
+      sandbox.stub(eventListeners, 'remove');
 
       element = await fixture(
         html`<chromedash-admin-blink-component-listing
@@ -104,8 +101,8 @@ describe('chromedash-admin-blink-component-listing', () => {
         .index=${0}
         .usersMap=${testUsersMap}
         ?editing=${true}
-        @adminRemoveComponentUser=${removeUserEventSpy}
-        @adminAddComponentUser=${addUserEventSpy}
+        @adminRemoveComponentUser=${eventListeners.remove}
+        @adminAddComponentUser=${eventListeners.add}
       ></chromedash-admin-blink-component-listing>`,
         {parentNode: clientParentFixture},
       );
@@ -131,8 +128,8 @@ describe('chromedash-admin-blink-component-listing', () => {
       // Should timeout
       expect(oneEvent(element, 'adminAddComponentUser')).to.throw;
       expect(alertStub).to.have.callCount(0);
-      expect(removeUserEventSpy).to.have.callCount(0);
-      expect(addUserEventSpy).to.have.callCount(0);
+      sandbox.assert.callCount(eventListeners.add, 0);
+      sandbox.assert.callCount(eventListeners.remove, 0);
     });
     it('should make successful adminAddComponentUser event if addUserToComponent OK', async () => {
       const alertStub = sandbox.stub(window, 'alert');
@@ -143,31 +140,29 @@ describe('chromedash-admin-blink-component-listing', () => {
       const ev = await oneEvent(element, 'adminAddComponentUser');
       expect(ev).to.exist;
       expect(alertStub).to.have.callCount(0);
-      expect(removeUserEventSpy).to.have.callCount(0);
-      expect(addUserEventSpy).to.have.callCount(1);
+      sandbox.assert.callCount(eventListeners.add, 1);
+      sandbox.assert.callCount(eventListeners.remove, 0);
     });
   });
   describe('_removeUser', async () => {
+    const eventListeners = {add: function() {}, remove: function() {}};
     let sandbox;
     let element;
     /** @type {import('sinon').SinonStubbedInstance<DefaultApi>} */
     let client;
-
-    let addUserEventSpy;
-    let removeUserEventSpy;
 
     customElements.define(`remove-blink-component-user-client-provider`, class extends LitElement {
       _updateProvider(_client) {
         this.provider = new ContextProvider(this, chromestatusOpenApiContext, _client);
       }
     });
-    const clientParentFixture = await fixture(html `<remove-blink-component-user-client-provider></add-blink-component-user-client-provider>`);
+    const clientParentFixture = await fixture(html `<remove-blink-component-user-client-provider></remove-blink-component-user-client-provider>`);
     beforeEach(async () => {
       sandbox = sinon.createSandbox();
       client = sandbox.createStubInstance(DefaultApi);
       clientParentFixture._updateProvider(client);
-      addUserEventSpy = sandbox.fake();
-      removeUserEventSpy = sandbox.fake();
+      sandbox.stub(eventListeners, 'add');
+      sandbox.stub(eventListeners, 'remove');
 
       element = await fixture(
         html`<chromedash-admin-blink-component-listing
@@ -178,8 +173,8 @@ describe('chromedash-admin-blink-component-listing', () => {
         .index=${0}
         .usersMap=${testUsersMap}
         ?editing=${true}
-        @adminRemoveComponentUser=${removeUserEventSpy}
-        @adminAddComponentUser=${addUserEventSpy}
+        @adminRemoveComponentUser=${eventListeners.remove}
+        @adminAddComponentUser=${eventListeners.add}
       ></chromedash-admin-blink-component-listing>`,
         {parentNode: clientParentFixture},
       );
@@ -205,8 +200,8 @@ describe('chromedash-admin-blink-component-listing', () => {
       // Should timeout
       expect(oneEvent(element, 'adminRemoveComponentUser')).to.throw;
       expect(alertStub).to.have.callCount(0);
-      expect(removeUserEventSpy).to.have.callCount(0);
-      expect(addUserEventSpy).to.have.callCount(0);
+      sandbox.assert.callCount(eventListeners.add, 0);
+      sandbox.assert.callCount(eventListeners.remove, 0);
     });
     // eslint-disable-next-line max-len
     it('should make successful adminRemoveComponentUser event if removeUserFromComponent OK', async () => {
@@ -218,8 +213,8 @@ describe('chromedash-admin-blink-component-listing', () => {
       const ev = await oneEvent(element, 'adminRemoveComponentUser');
       expect(ev).to.exist;
       expect(alertStub).to.have.callCount(0);
-      expect(removeUserEventSpy).to.have.callCount(1);
-      expect(addUserEventSpy).to.have.callCount(0);
+      sandbox.assert.callCount(eventListeners.add, 0);
+      sandbox.assert.callCount(eventListeners.remove, 1);
     });
   });
 });
