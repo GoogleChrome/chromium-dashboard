@@ -188,8 +188,8 @@ export class ChromedashAdminBlinkPage extends LitElement {
             <chromedash-admin-blink-component-listing
               .id=${component.id}
               .name=${component.name}
-              .subscriberIds=${component.subscriberIds}
-              .ownerIds=${component.ownerIds}
+              .subscriberIds=${component.subscriberIds ?? []}
+              .ownerIds=${component.ownerIds ?? []}
               .index=${index}
               .usersMap=${this.usersMap}
               ?editing=${this._editMode}
