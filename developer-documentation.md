@@ -79,3 +79,332 @@ address of any Google account that you own, such as an `@gmail.com` account.
 
 - When run locally, Datastore Emulator is used for storing all the entries. To reset local database, remove the local directory for storing data/config for the emulator. The default directory is `<USER_CONFIG_DIR>/emulators/datastore`. The value of `<USER_CONFIG_DIR>` can be found by running: `$ gcloud info --format='get(config.paths.global_config_dir)'` in the terminal. To learn more about using the Datastore Emulator CLI, execute `$ gcloud beta emulators datastore --help`.
 - Executing `npm start` or `npm test` automatically starts the Datastore Emulator and shuts it down afterwards.
+
+## Adding a new API
+
+This section outlines the steps to consider when adding a new API.
+
+Note: For all new APIs, please consider using [OpenAPI](https://www.openapis.org/).
+With OpenAPI, developers can write a specification for their API and have code
+generated for them on both the frontend and backend. This helps remove the
+burden of manually writing data models and data encoding and decoding for both sides.
+There is a tool installed as a devDependency called
+[openapi-generator-cli](https://github.com/OpenAPITools/openapi-generator-cli)
+to do the generation of the code.
+
+The specification follows OpenAPI version 3 and is located at [api.yaml](./api.yaml).
+
+Below are steps to help guide a developer along with a relatable example that follows the same steps.
+
+### Step 0: Additional Tools To Help
+
+If using Visual Studio Code, install the following extensions. (These are pre-installed if using the devcontainer)
+- [OpenAPI (Swagger) Editor](https://marketplace.visualstudio.com/items?itemName=42Crunch.vscode-openapi)
+
+### Step 1: Add the path and operations
+
+*Before completing this step, read the [Paths and Operations](https://swagger.io/docs/specification/paths-and-operations/) and [Describing Parameters](https://swagger.io/docs/specification/describing-parameters/) OpenAPI docs*
+
+#### Step 1a: Add the Path
+
+1. Open the spec file and navigate to the top level `paths` object.
+2. Add the desired path. All paths already have the `/api/v0` prefix (check the `servers` object). Do not include that prefix when adding the path.
+
+<details>
+  <summary>Example (click to expand)</summary>
+  
+  #### api.yaml
+  ```yaml
+  paths:
+    /features/{feature_id}:
+  ```
+</details>
+
+
+
+#### Step 1b: Add Operations
+
+Operations = HTTP verbs. (e.g. GET, POST, PUT, etc)
+
+- Add the operation(s) under the path.
+- Ensure each operation has a `summary`, `description` and `operationId`
+- If your path has path parameters, describe the parameters now too.
+  - Mark these are required as well.
+
+<details>
+  <summary>Example (click to expand)</summary>
+  
+  #### api.yaml
+  ```yaml
+  paths:
+    /features/{feature_id}:
+      get:
+        summary: Get a feature by ID.
+        description: >-
+          Get a feature by ID. More details about this here.
+          Also, can do more comments
+        operationId: getFeatureById
+        parameters:
+          - name: feature_id
+            in: path
+            description: Feature ID
+            required: true
+            schema:
+              type: integer
+              format: int64
+      post:
+        summary: Update a feature by ID.
+        description: >-
+          Update a feature with the given ID.
+          More details about this here.
+        operationId: updateFeatureById
+        parameters:
+          - name: feature_id
+            in: path
+            description: Feature ID
+            required: true
+            schema:
+              type: integer
+              format: int64
+  ```
+</details>
+
+
+
+### Step 2: Describe the request body
+
+*Before completing this step, read the [Describing Request Body](https://swagger.io/docs/specification/describing-request-body/) OpenAPI doc*
+
+- Go down to the top-level sibling property named `components`.
+- Describe the schema for the request body under `components.schemas`
+- (Optionally, not shown) Use `components.requestBodies` section for payloads used multiple places.
+- Afterwards, reference the new schema in the operation with content type application/json.
+
+<details>
+  <summary>Example (click to expand)</summary>
+  
+  #### api.yaml
+  ```yaml
+  paths:
+    /features/{feature_id}:
+  ...
+      post:
+        summary: Update a feature by ID.
+        description: >-
+          Update a feature with the given ID.
+          More details about this here.
+        operationId: updateFeatureById
+        parameters:
+          - name: feature_id
+            in: path
+            description: Feature ID
+            required: true
+            schema:
+              type: integer
+              format: int64
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feature'
+
+  components:
+    schemas:
+      Feature:
+        description: A feature
+        type: object
+        properties:
+          id:
+            type: integer
+          name:
+            type: string
+          live:
+            type: boolean
+            description: Some optional field
+        required:
+          - id
+          - name
+  ```
+</details>
+
+
+*For this example, only needed to describe a request body for the `post` operation.*
+
+### Step 3: Describe the Responses
+
+*Before completing this step, read the [Describing Responses](https://swagger.io/docs/specification/describing-request-body/) OpenAPI doc*
+
+- If there is some response body to return, add it the `components.schemas` section like in step 2.
+- Add the appropriate response code(s)
+  - Don't worry about describing global errors like unauthorized calls right now.
+- For each response code, reference the component
+
+<details>
+  <summary>Example (click to expand)</summary>
+  
+  #### api.yaml
+  ```yaml
+  paths:
+    /features/{feature_id}:
+  ...
+      post:
+        summary: Update a feature by ID.
+        description: >-
+          Update a feature with the given ID.
+          More details about this here.
+        operationId: updateFeatureById
+        parameters:
+          - name: feature_id
+            in: path
+            description: Feature ID
+            required: true
+            schema:
+              type: integer
+              format: int64
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feature'
+        responses:
+          '200':
+            description: An updated feature
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Feature'
+
+  components:
+    schemas:
+      Feature:
+        description: A feature
+        type: object
+        properties:
+          id:
+            type: integer
+          name:
+            type: string
+          live:
+            type: boolean
+            description: Some optional field
+        required:
+          - id
+          - name
+  ```
+</details>
+
+### Step 4: Generate the Code
+
+Run: `npm run openapi`
+
+<details>
+  <summary>Example (click to expand)</summary>
+  
+  #### api.yaml
+  ```yaml
+  paths:
+    /features/{feature_id}:
+      post:
+        summary: Update a feature by ID.
+        description: >-
+          Update a feature with the given ID.
+          More details about this here.
+        operationId: updateFeatureById
+        parameters:
+          - name: feature_id
+            in: path
+            description: Feature ID
+            required: true
+            schema:
+              type: integer
+              format: int64
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feature'
+        responses:
+          '200':
+            description: An updated feature
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Feature'
+      get:
+        summary: Get a feature by ID.
+        description: >-
+          Get a feature by ID. More details about this here.
+          Also, can do more comments
+        operationId: getFeatureById
+        parameters:
+          - name: feature_id
+            in: path
+            description: Feature ID
+            required: true
+            schema:
+              type: integer
+              format: int64
+        responses:
+          '200':
+            description: An updated feature
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Feature'
+
+  components:
+    schemas:
+      Feature:
+        description: A feature
+        type: object
+        properties:
+          id:
+            type: integer
+          name:
+            type: string
+          live:
+            type: boolean
+            description: Some optional field
+        required:
+          - id
+          - name
+  ```
+</details>
+
+### Step 5: Incorporate Into Backend
+
+Currently, the repository is configured to use the generated Python data models for the backend. *Once all routes are generated by OpenAPI, it would be wise to revisit using the controllers as well*
+
+- Open `main.py`
+- Locate the `api_routes` variable.
+- Add a route.
+  - In this example, it would be `Route(f'{API_BASE}/features/<int:feature_id>', features_api.FeaturesAPI)`.
+- In the handler, the generated model classes can be imported from `chromestatus_openapi.models`.
+- Since we do not use the controllers, you will need to return a dictionary of the model class. Then, Flask can convert it appropriately to json. Each generated class has a `to_dict()` method to accomplish this.
+
+### Step 6: Incorporate Into Frontend
+
+The frontend use @lit-labs/context to pass the client around. The benefits of it can be seen [here](https://lit.dev/docs/data/context/) and the advertised use cases [here](https://lit.dev/docs/data/context/#example-use-cases).
+
+Your element needs to use a context consumer to retrieve the client that is provided by `chromedash-app`. Once you have the client, you can make an API call like normal.
+
+```js
+import {ContextConsumer} from '@lit-labs/context';
+import {chromestatusOpenApiContext} from '../contexts/openapi-context';
+export class SomeElement extends LitElement {
+  // Nice to have type hinting so that the IDE can auto complete the client and its functions.
+  /** @type {ContextConsumer<import("../contexts/openapi-context").chromestatusOpenApiContext>} */
+  _clientConsumer;
+
+  constructor() {
+    super();
+    this._clientConsumer = new ContextConsumer(this, chromestatusOpenApiContext, undefined, true);
+  }
+
+  fetchData() {
+    // Important to call .value to get the client from the context.
+    this.clientConsumer.value.getFeature();
+  }
+  // other element stuff
+}
+```
