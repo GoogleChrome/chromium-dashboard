@@ -102,8 +102,7 @@ export class ChromedashAdminBlinkPage extends LitElement {
         this.usersMap = new Map(response.users.map(user => [user.id, user]));
         this.components = response.components;
         this.loading = false;
-      }).catch((error) => {
-        console.error(error);
+      }).catch(() => {
         showToastMessage('Some errors occurred. Please refresh the page or try again later.');
       });
   }

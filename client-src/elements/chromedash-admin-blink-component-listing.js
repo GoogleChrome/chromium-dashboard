@@ -103,12 +103,16 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
     this._clientConsumer = new ContextConsumer(this, chromestatusOpenApiContext, undefined, true);
   }
 
-  _findSelectedOptionElement(e) {
-    return e.target.parentElement.querySelector('.owner_candidates').selectedOptions[0];
+  _getOptionsElement() {
+    return this.shadowRoot.querySelector('.owner_candidates');
   }
 
-  _isOwnerCheckboxChecked(e) {
-    return e.target.parentElement.querySelector('.is_primary_checkbox').checked;
+  _findSelectedOptionElement() {
+    return this._getOptionsElement().selectedOptions[0];
+  }
+
+  _isOwnerCheckboxChecked() {
+    return this.shadowRoot.querySelector('.is_primary_checkbox').checked;
   }
 
   /**
@@ -121,9 +125,9 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
       ownersList.options).find(option => parseInt(option.value) === userId);
   }
 
-  _addUser(e) {
-    const toggleAsOwner = this._isOwnerCheckboxChecked(e);
-    const selectedCandidate = this._findSelectedOptionElement(e);
+  _addUser() {
+    const toggleAsOwner = this._isOwnerCheckboxChecked();
+    const selectedCandidate = this._findSelectedOptionElement();
 
     const userId = parseInt(selectedCandidate.value);
 
@@ -163,9 +167,9 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
   /**
    * @param {PointerEvent} e event
    */
-  _removeUser(e) {
-    const toggleAsOwner = this._isOwnerCheckboxChecked(e);
-    const selectedCandidate = this._findSelectedOptionElement(e);
+  _removeUser() {
+    const toggleAsOwner = this._isOwnerCheckboxChecked();
+    const selectedCandidate = this._findSelectedOptionElement();
 
     const userId = parseInt(selectedCandidate.value);
     if (selectedCandidate.disabled) {
@@ -230,14 +234,14 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
         <div class="owners_list_add_remove">
           <div>
             <select class="owner_candidates">
-              <option selected disabled>Select owner to add/remove</option>
+              <option selected disabled data-placeholder="true">Select owner to add/remove</option>
               ${userListTemplate}
             </select><br>
             <label title="Toggles the user as an owner. If you click 'Remove' ans this is not checked, the user is removed from the component.">Owner? <input type="checkbox" class="is_primary_checkbox"></label>
           </div>
-          <button @click="${(e) => this._addUser(e)}" class="add_owner_button"
+          <button @click="${this._addUser}" class="add_owner_button"
                   data-component-name="${this.name}">Add</button>
-          <button @click="${(e) => this._removeUser(e)}" class="remove_owner_button"
+          <button @click="${this._removeUser}" class="remove_owner_button"
                   data-component-name="${this.name}">Remove</button>
         </div>
       </div>    
