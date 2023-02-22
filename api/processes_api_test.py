@@ -75,7 +75,7 @@ class ProcessesAPITest(testing_config.CustomTestCase):
     expected['stages'][-1]['incoming_stage'] = core_enums.INTENT_ROLLOUT
 
     self.assertEqual(expected, actual)
-  
+
   def test_get__feature_type_1(self):
     """We can get process for features with feature type 1 (Existing feature implementation)."""
     self.feature_1.feature_type = 1
@@ -211,5 +211,6 @@ class ProgressAPITest(testing_config.CustomTestCase):
       'Ready for Trial email': 'https://example.com/ready_for_trial',
       'Intent to Ship email': 'https://example.com/ship',
       'Spec link': 'fake spec link',
+      'Updated target milestone': 'True',
       'Web developer signals': 'True',
     }, actual)

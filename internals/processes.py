@@ -131,10 +131,10 @@ PI_I2S_EMAIL = ProgressItem('Intent to Ship email', 'intent_to_ship_url')
 PI_I2S_LGTMS = ProgressItem('Three LGTMs on Intent to Ship')
 
 # TODO(jrobbins): needs detector.
-PI_FINAL_VENDOR_SIGNALS = ProgressItem('Finalized vendor signals', 'safari_views')
+PI_FINAL_VENDOR_SIGNALS = ProgressItem('Final vendor signals', 'safari_views')
 # TODO(jrobbins): needs detector.
 PI_FINAL_TARGET_MILESTONE = ProgressItem(
-    'Finalized target milestone', 'shipped_milestone')
+    'Final target milestone', 'shipped_milestone')
 
 PI_CODE_IN_CHROMIUM = ProgressItem('Code in Chromium')
 
@@ -687,6 +687,11 @@ PROGRESS_DETECTORS = {
         f.safari_views != core_enums.NO_PUBLIC_SIGNALS),
 
     'Estimated target milestone':
+    lambda f, stages: bool(core_enums.STAGE_TYPES_SHIPPING[f.feature_type] and
+        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].milestones and
+        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].milestones.desktop_first),
+
+    'Updated target milestone':
     lambda f, stages: bool(core_enums.STAGE_TYPES_SHIPPING[f.feature_type] and
         stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].milestones and
         stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].milestones.desktop_first),
