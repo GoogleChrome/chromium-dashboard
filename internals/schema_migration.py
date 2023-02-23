@@ -656,7 +656,8 @@ class MigrateSubjectLineField(FlaskHandler):
 
       # Check each corresponding FeatureEntry stage to migrate the
       # intent subject line if needed.
-      prototype_stages = stages[STAGE_TYPES_PROTOTYPE[f_type]]
+      proto_stage_type = STAGE_TYPES_PROTOTYPE[f_type] or -1
+      prototype_stages = stages.get(proto_stage_type, [])
       if (f.intent_to_implement_subject_line and
           # If there are more than 1 stage for a specific stage type,
           # we can't be sure which is the correct intent, so don't migrate.
@@ -667,7 +668,8 @@ class MigrateSubjectLineField(FlaskHandler):
             f.intent_to_implement_subject_line)
         stages_to_update.append(prototype_stages[0])
 
-      ship_stages = stages[STAGE_TYPES_SHIPPING[f_type]]
+      ship_stage_type = STAGE_TYPES_SHIPPING[f_type] or -1
+      ship_stages = stages.get(ship_stage_type, [])
       if (f.intent_to_ship_subject_line and
           len(ship_stages) == 1 and
           not ship_stages[0].intent_subject_line):
@@ -675,7 +677,8 @@ class MigrateSubjectLineField(FlaskHandler):
             f.intent_to_ship_subject_line)
         stages_to_update.append(ship_stages[0])
 
-      ot_stages = stages[STAGE_TYPES_ORIGIN_TRIAL[f_type]]
+      ot_stage_type = STAGE_TYPES_ORIGIN_TRIAL[f_type] or -1
+      ot_stages = stages.get(ot_stage_type, [])
       if (f.intent_to_experiment_subject_line and
           len(ot_stages) == 1 and
           not ot_stages[0].intent_subject_line):
@@ -683,7 +686,8 @@ class MigrateSubjectLineField(FlaskHandler):
             f.intent_to_experiment_subject_line)
         stages_to_update.append(ot_stages[0])
 
-      extension_stages = stages[STAGE_TYPES_EXTEND_ORIGIN_TRIAL[f_type]]
+      extension_stage_type = STAGE_TYPES_EXTEND_ORIGIN_TRIAL[f_type] or -1
+      extension_stages = stages.get(extension_stage_type, [])
       if (f.intent_to_extend_experiment_subject_line and
           len(extension_stages) == 1 and
           not extension_stages[0].intent_subject_line):
