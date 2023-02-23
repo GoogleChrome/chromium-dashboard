@@ -59,6 +59,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         #ot_milestone_desktop_start=100,
         editor_emails=['feature_editor@example.com', 'owner_1@example.com'],
         cc_emails=['cc@example.com'], category=1,
+        devrel_emails=['devrel1@gmail.com'],
         creator_email='creator1@gmail.com',
         updater_email='editor1@gmail.com',
         blink_components=['Blink'],
@@ -303,8 +304,8 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     mock_f_e_b.return_value = 'mock body html'
     actual_tasks = notifier.make_feature_changes_email(
         self.fe_1, is_update=False, changes=[])
-    self.assertEqual(5, len(actual_tasks))
-    (feature_cc_task, feature_editor_task, feature_owner_task,
+    self.assertEqual(6, len(actual_tasks))
+    (feature_cc_task, devrel_task, feature_editor_task, feature_owner_task,
      component_owner_task, watcher_task) = actual_tasks
 
     # Notification to feature owner.
@@ -320,6 +321,13 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertIn('<li>You are listed as an editor of this feature</li>',
       feature_editor_task['html'])
     self.assertEqual('feature_editor@example.com', feature_editor_task['to'])
+
+    # Notification to devrel to feature changes.
+    self.assertEqual('new feature: feature one', devrel_task['subject'])
+    self.assertIn('mock body html', devrel_task['html'])
+    self.assertIn('<li>You are a devrel contact for this feature.</li>',
+      devrel_task['html'])
+    self.assertEqual('devrel1@gmail.com', devrel_task['to'])
 
     # Notification to user CC'd to feature changes.
     self.assertEqual('new feature: feature one', feature_cc_task['subject'])
@@ -353,8 +361,8 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     mock_f_e_b.return_value = 'mock body html'
     actual_tasks = notifier.make_feature_changes_email(
         self.fe_1, True, self.changes)
-    self.assertEqual(5, len(actual_tasks))
-    (feature_cc_task, feature_editor_task, feature_owner_task,
+    self.assertEqual(6, len(actual_tasks))
+    (feature_cc_task, devrel_task, feature_editor_task, feature_owner_task,
      component_owner_task, watcher_task) = actual_tasks
 
     # Notification to feature owner.
@@ -372,6 +380,13 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertIn('<li>You are listed as an editor of this feature</li>',
       feature_editor_task['html'])
     self.assertEqual('feature_editor@example.com', feature_editor_task['to'])
+
+    # Notification to devrel to feature changes.
+    self.assertEqual('updated feature: feature one', devrel_task['subject'])
+    self.assertIn('mock body html', devrel_task['html'])
+    self.assertIn('<li>You are a devrel contact for this feature.</li>',
+      devrel_task['html'])
+    self.assertEqual('devrel1@gmail.com', devrel_task['to'])
 
     # Notification to user CC'd on feature changes.
     self.assertEqual('updated feature: feature one',
@@ -441,8 +456,8 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         'starrer_1@example.com', self.fe_1.key.integer_id())
     actual_tasks = notifier.make_feature_changes_email(
         self.fe_1, True, self.changes)
-    self.assertEqual(6, len(actual_tasks))
-    (feature_cc_task, feature_editor_task, feature_owner_task,
+    self.assertEqual(7, len(actual_tasks))
+    (feature_cc_task, devrel_task, feature_editor_task, feature_owner_task,
      component_owner_task, starrer_task, watcher_task) = actual_tasks
 
     # Notification to feature owner.
@@ -460,6 +475,13 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertIn('<li>You are listed as an editor of this feature</li>',
       feature_editor_task['html'])
     self.assertEqual('feature_editor@example.com', feature_editor_task['to'])
+
+    # Notification to devrel to feature changes.
+    self.assertEqual('updated feature: feature one', devrel_task['subject'])
+    self.assertIn('mock body html', devrel_task['html'])
+    self.assertIn('<li>You are a devrel contact for this feature.</li>',
+      devrel_task['html'])
+    self.assertEqual('devrel1@gmail.com', devrel_task['to'])
 
     # Notification to user CC'd on feature changes.
     self.assertEqual('updated feature: feature one',

@@ -180,8 +180,13 @@ def make_feature_changes_email(fe: FeatureEntry, is_update: bool=False,
     'You are CC\'d on this feature'
   )
   accumulate_reasons(
-      addr_reasons, watcher_emails,
-      'You are watching all feature changes')
+    addr_reasons, fe.devrel_emails,
+    'You are a devrel contact for this feature.'
+  )
+  accumulate_reasons(
+    addr_reasons, watcher_emails,
+    'You are watching all feature changes'
+  )
 
   # There will always be at least one component.
   for component_name in fe.blink_components:
