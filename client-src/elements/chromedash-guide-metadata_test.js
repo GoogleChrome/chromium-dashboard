@@ -11,6 +11,7 @@ describe('chromedash-guide-metadata', () => {
     feature_type: 'fake feature type',
     intent_stage: 'fake intent stage',
     new_crbug_url: 'fake crbug link',
+    devrel: ['devrel1@example.com', 'devrel2@example.com'],
     cc_recipients: ['fake chrome cc one', 'fake chrome cc two'],
     browsers: {
       chrome: {
@@ -51,6 +52,9 @@ describe('chromedash-guide-metadata', () => {
     // feature owners are listed
     assert.include(metadataDiv.innerHTML, 'href="mailto:fake chrome owner one"');
     assert.include(metadataDiv.innerHTML, 'href="mailto:fake chrome owner two"');
+    // devrel recipients are listed
+    assert.include(metadataDiv.innerHTML, 'href="mailto:devrel1@example.com"');
+    assert.include(metadataDiv.innerHTML, 'href="mailto:devrel2@example.com"');
     // cc recipients are listed
     assert.include(metadataDiv.innerHTML, 'href="mailto:fake chrome cc one"');
     assert.include(metadataDiv.innerHTML, 'href="mailto:fake chrome cc two"');

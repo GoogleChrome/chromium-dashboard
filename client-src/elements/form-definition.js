@@ -158,6 +158,7 @@ export const FLAT_METADATA_FIELDS = {
         'owner',
         'editors',
         'cc_recipients',
+        'devrel',
         'category',
         'feature_type',
         'search_tags',
