@@ -325,8 +325,8 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     # Notification to devrel to feature changes.
     self.assertEqual('new feature: feature one', devrel_task['subject'])
     self.assertIn('mock body html', devrel_task['html'])
-    self.assertIn('<li>You are CC\'d on this feature</li>',
-      feature_cc_task['html'])
+    self.assertIn('<li>You are a devrel contact for this feature.</li>',
+      devrel_task['html'])
     self.assertEqual('devrel1@gmail.com', devrel_task['to'])
 
     # Notification to user CC'd to feature changes.
@@ -384,8 +384,8 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     # Notification to devrel to feature changes.
     self.assertEqual('updated feature: feature one', devrel_task['subject'])
     self.assertIn('mock body html', devrel_task['html'])
-    self.assertIn('<li>You are CC\'d on this feature</li>',
-      feature_cc_task['html'])
+    self.assertIn('<li>You are a devrel contact for this feature.</li>',
+      devrel_task['html'])
     self.assertEqual('devrel1@gmail.com', devrel_task['to'])
 
     # Notification to user CC'd on feature changes.
@@ -479,8 +479,8 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     # Notification to devrel to feature changes.
     self.assertEqual('updated feature: feature one', devrel_task['subject'])
     self.assertIn('mock body html', devrel_task['html'])
-    self.assertIn('<li>You are CC\'d on this feature</li>',
-      feature_cc_task['html'])
+    self.assertIn('<li>You are a devrel contact for this feature.</li>',
+      devrel_task['html'])
     self.assertEqual('devrel1@gmail.com', devrel_task['to'])
 
     # Notification to user CC'd on feature changes.

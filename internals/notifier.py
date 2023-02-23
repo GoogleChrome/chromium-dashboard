@@ -181,7 +181,7 @@ def make_feature_changes_email(fe: FeatureEntry, is_update: bool=False,
   )
   accumulate_reasons(
     addr_reasons, fe.devrel_emails,
-    'You are CC\'d on this feature'
+    'You are a devrel contact for this feature.'
   )
   accumulate_reasons(
     addr_reasons, watcher_emails,
