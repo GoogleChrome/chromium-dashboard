@@ -258,6 +258,8 @@ internals_routes: list[Route] = [
       schema_migration.CalcActiveStages),
   Route('/admin/schema_migration_extension_stages',
     schema_migration.CreateTrialExtensionStages),
+  Route('/admin/schema_migration_subject_line',
+    schema_migration.MigrateSubjectLineField),
 ]
 
 dev_routes: list[Route] = []
