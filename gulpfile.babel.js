@@ -16,7 +16,7 @@ import eslintIfFixed from 'gulp-eslint-if-fixed';
 import autoPrefixer from 'gulp-autoprefixer';
 import { rollup } from 'rollup';
 import rollupResolve from '@rollup/plugin-node-resolve';
-import rollupBabel from '@rollup/plugin-node-resolve';
+import rollupBabel from '@rollup/plugin-babel';
 import rollupMinify from 'rollup-plugin-babel-minify';
 
 function uglifyJS() {
@@ -36,6 +36,7 @@ gulp.task('lint', () => {
   return gulp.src([
     'client-src/js-src/*.js',
     'client-src/elements/*.js',
+    'client-src/contexts/*.js',
   ])
     .pipe(eslint())
     .pipe(eslint.format())
@@ -46,6 +47,7 @@ gulp.task('lint-fix', () => {
   return gulp.src([
     'client-src/js-src/*.js',
     'client-src/elements/*.js',
+    'client-src/contexts/*.js',
   ], {base: './'})
     .pipe(eslint({fix:true}))
     .pipe(eslint.format())
@@ -85,11 +87,19 @@ gulp.task('rollup', () => {
     input: 'client-src/components.js',
     plugins: [
       rollupResolve(),
-      rollupBabel({
-        plugins: ["@babel/plugin-syntax-dynamic-import"]
-      }),
+      rollupBabel({babelHelpers: 'bundled'}),
       rollupMinify({mangle: false, comments: false}),
     ],
+    onwarn: function(warning, warn) {
+      // There is currently a warning when using the es6 module from openapi.
+      // It is a common issue and can be suppresed.
+      // The error that is suppresed:
+      // The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten
+      // https://github.com/rollup/rollup/issues/1518#issuecomment-321875784
+      // Suppres that error but continue to print the remaining errors.
+      if (warning.code === 'THIS_IS_UNDEFINED') return;
+      warn(warning); // this requires Rollup 0.46
+    },
   }).then(bundle => {
     return bundle.write({
       dir: 'static/dist',
@@ -137,7 +147,15 @@ gulp.task('watch', gulp.series(
   'default',
   function watch() {
     gulp.watch(['client-src/sass/**/*.scss'], gulp.series('styles'));
-    gulp.watch(['client-src/js-src/**/*.js', 'client-src/elements/*.js'], gulp.series(['lint', 'js']));
-    gulp.watch(['client-src/components.js', 'client-src/elements/*.js'], gulp.series(['rollup']));
-  }
+    gulp.watch([
+      'client-src/js-src/**/*.js',
+      'client-src/elements/*.js',
+      'client-src/contexts/*.js',
+    ], gulp.series(['lint', 'js']));
+    gulp.watch([
+      'client-src/components.js',
+      'client-src/elements/*.js',
+      'client-src/contexts/*.js',
+    ], gulp.series(['rollup']));
+  },
 ));
