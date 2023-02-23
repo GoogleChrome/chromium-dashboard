@@ -18,7 +18,6 @@ import { rollup } from 'rollup';
 import rollupResolve from '@rollup/plugin-node-resolve';
 import rollupBabel from '@rollup/plugin-babel';
 import rollupMinify from 'rollup-plugin-babel-minify';
-import commonjs from '@rollup/plugin-commonjs';
 
 function uglifyJS() {
   return uglify({
@@ -89,7 +88,6 @@ gulp.task('rollup', () => {
     plugins: [
       rollupResolve(),
       rollupBabel({babelHelpers: 'bundled'}),
-      commonjs(),
       rollupMinify({mangle: false, comments: false}),
     ],
     onwarn: function(warning, warn) {
