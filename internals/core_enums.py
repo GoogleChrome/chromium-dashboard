@@ -17,10 +17,6 @@ import collections
 from typing import Optional
 
 
-# Internal DevRel mailing list for ChromeStatus.
-DEVREL_EMAIL = 'devrel-chromestatus-all@google.com'
-
-
 # NOTE: The enum mapping in this file needs to be consistent with
 # chromium-dashboard/client-src/elements/form-field-enums.js.
 WEBCOMPONENTS = 1
