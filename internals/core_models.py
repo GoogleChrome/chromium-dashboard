@@ -517,6 +517,7 @@ class Stage(ndb.Model):
   experiment_risks = ndb.TextProperty()
   experiment_extension_reason = ndb.TextProperty()
   intent_thread_url = ndb.StringProperty()
+  intent_subject_line = ndb.StringProperty()
   origin_trial_feedback_url = ndb.StringProperty()
   announcement_url = ndb.StringProperty()
   # Origin trial stage id that this stage extends, if trial extension stage.

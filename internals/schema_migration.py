@@ -16,7 +16,7 @@ import logging
 from google.cloud import ndb  # type: ignore
 
 from framework.basehandlers import FlaskHandler
-from internals import approval_defs
+from internals import approval_defs, stage_helpers
 from internals.core_models import Feature, FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Activity, Approval, Comment, Gate, Vote
 from internals.core_enums import *
@@ -631,3 +631,73 @@ class CreateTrialExtensionStages(FlaskHandler):
 
     return (f'{stages_created} extension stages created for '
         'existing trial stages.')
+
+
+class MigrateSubjectLineField(FlaskHandler):
+
+  def get_template_data(self, **kwargs) -> str:
+    """Migrates old Feature subject line fields to their respective stages."""
+    self.require_cron_header()
+
+    count = 0
+    for f in Feature.query():
+      f_id = f.key.integer_id()
+      f_type = f.feature_type
+
+      # If there are no subject line fields present, no need to migrate.
+      if (not f.intent_to_implement_subject_line and
+          not f.intent_to_ship_subject_line and
+          not f.intent_to_experiment_subject_line and
+          not f.intent_to_extend_experiment_subject_line):
+        continue
+
+      stages_to_update = []
+      stages = stage_helpers.get_feature_stages(f_id)
+
+      # Check each corresponding FeatureEntry stage to migrate the
+      # intent subject line if needed.
+      proto_stage_type = STAGE_TYPES_PROTOTYPE[f_type] or -1
+      prototype_stages = stages.get(proto_stage_type, [])
+      if (f.intent_to_implement_subject_line and
+          # If there are more than 1 stage for a specific stage type,
+          # we can't be sure which is the correct intent, so don't migrate.
+          # (this should be very rare).
+          len(prototype_stages) == 1 and
+          not prototype_stages[0].intent_subject_line):
+        prototype_stages[0].intent_subject_line = (
+            f.intent_to_implement_subject_line)
+        stages_to_update.append(prototype_stages[0])
+
+      ship_stage_type = STAGE_TYPES_SHIPPING[f_type] or -1
+      ship_stages = stages.get(ship_stage_type, [])
+      if (f.intent_to_ship_subject_line and
+          len(ship_stages) == 1 and
+          not ship_stages[0].intent_subject_line):
+        ship_stages[0].intent_subject_line = (
+            f.intent_to_ship_subject_line)
+        stages_to_update.append(ship_stages[0])
+
+      ot_stage_type = STAGE_TYPES_ORIGIN_TRIAL[f_type] or -1
+      ot_stages = stages.get(ot_stage_type, [])
+      if (f.intent_to_experiment_subject_line and
+          len(ot_stages) == 1 and
+          not ot_stages[0].intent_subject_line):
+        ot_stages[0].intent_subject_line = (
+            f.intent_to_experiment_subject_line)
+        stages_to_update.append(ot_stages[0])
+
+      extension_stage_type = STAGE_TYPES_EXTEND_ORIGIN_TRIAL[f_type] or -1
+      extension_stages = stages.get(extension_stage_type, [])
+      if (f.intent_to_extend_experiment_subject_line and
+          len(extension_stages) == 1 and
+          not extension_stages[0].intent_subject_line):
+        extension_stages[0].intent_subject_line = (
+            f.intent_to_extend_experiment_subject_line)
+        stages_to_update.append(extension_stages[0])
+
+      # Save changes to all updated Stage entities.
+      if stages_to_update:
+        ndb.put_multi(stages_to_update)
+        count += len(stages_to_update)
+
+    return f'{count} subject line fields migrated.'
