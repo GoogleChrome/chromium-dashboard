@@ -33,6 +33,10 @@ from internals import search_fulltext
 import settings
 
 
+# Internal DevRel mailing list for ChromeStatus.
+DEVREL_EMAIL = 'devrel-chromestatus-all@google.com'
+
+
 class FeatureCreateHandler(basehandlers.FlaskHandler):
 
   @permissions.require_create_feature
@@ -59,6 +63,7 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
         owner=owners,
         editors=editors,
         cc_recipients=cc_emails,
+        devrel=[DEVREL_EMAIL],
         creator=signed_in_user.email(),
         accurate_as_of=datetime.now(),
         unlisted=self.form.get('unlisted') == 'on',
@@ -79,6 +84,7 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
         owner_emails=owners,
         editor_emails=editors,
         cc_emails=cc_emails,
+        devrel_emails=[DEVREL_EMAIL],
         creator_email=signed_in_user.email(),
         updater_email=signed_in_user.email(),
         accurate_as_of=datetime.now(),
