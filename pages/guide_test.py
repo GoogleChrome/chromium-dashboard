@@ -95,6 +95,8 @@ class FeatureCreateTest(testing_config.CustomTestCase):
     self.assertEqual('Feature name', feature_entry.name)
     self.assertEqual('Feature summary', feature_entry.summary)
     self.assertEqual('user1@google.com', feature_entry.creator_email)
+    self.assertEqual(['devrel-chromestatus-all@google.com'],
+                     feature_entry.devrel_emails)
 
     # Ensure Stage and Gate entities were also created.
     stages = Stage.query().fetch()
