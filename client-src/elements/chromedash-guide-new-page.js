@@ -1,8 +1,11 @@
-import {LitElement, css, html} from 'lit';
+import {LitElement, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
-import {NEW_FEATURE_FORM_FIELDS} from './form-definition';
+import {
+  NEW_FEATURE_FORM_FIELDS,
+  ENTERPRISE_NEW_FEATURE_FORM_FIELDS,
+} from './form-definition';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {FORM_STYLES} from '../sass/forms-css.js';
 
@@ -35,6 +38,7 @@ export class ChromedashGuideNewPage extends LitElement {
   static get properties() {
     return {
       userEmail: {type: String},
+      isEnterpriseFeature: {type: Boolean},
     };
   }
 
@@ -78,10 +82,14 @@ export class ChromedashGuideNewPage extends LitElement {
 
   renderForm() {
     const newFeatureInitialValues = {owner: this.userEmail};
+    const formFields = this.isEnterpriseFeature ?
+      ENTERPRISE_NEW_FEATURE_FORM_FIELDS :
+      NEW_FEATURE_FORM_FIELDS;
+    const postAction = this.isEnterpriseFeature ? '/guide/enterprise/new' : '/guide/new';
 
     return html`
       <section id="stage_form">
-        <form name="overview_form" method="POST" action='/guide/new'>
+        <form name="overview_form" method="POST" action=${postAction}>
           <input type="hidden" name="token">
           <chromedash-form-table ${ref(this.registerFormSubmitHandler)}>
 
@@ -92,17 +100,19 @@ export class ChromedashGuideNewPage extends LitElement {
               page for process instructions.
             </span>
 
-            ${NEW_FEATURE_FORM_FIELDS.map((field) => html`
+            ${formFields.map((field) => html`
               <chromedash-form-field
                 name=${field}
                 value=${newFeatureInitialValues[field]}>
               </chromedash-form-field>
             `)}
 
-            <chromedash-form-field
-              name="feature_type_radio_group"
-              class="choices">
-            </chromedash-form-field>
+            ${!this.isEnterpriseFeature ? html`
+              <chromedash-form-field
+                name="feature_type_radio_group"
+                class="choices">
+              </chromedash-form-field>` :
+            nothing}
           </chromedash-form-table>
           <input type="submit" class="primary" value="Submit">
         </form>

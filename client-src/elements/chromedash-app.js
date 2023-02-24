@@ -184,6 +184,12 @@ class ChromedashApp extends LitElement {
       this.pageComponent.userEmail = this.user.email;
       this.hideSidebar();
     });
+    page('/guide/enterprise/new', () => {
+      this.pageComponent = document.createElement('chromedash-guide-new-page');
+      this.pageComponent.userEmail = this.user.email;
+      this.pageComponent.isEnterpriseFeature = true;
+      this.hideSidebar();
+    });
     page('/guide/edit/:featureId(\\d+)', (ctx) => {
       this.pageComponent = document.createElement('chromedash-guide-edit-page');
       this.pageComponent.featureId = parseInt(ctx.params.featureId);

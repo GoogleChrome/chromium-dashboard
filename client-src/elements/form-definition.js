@@ -31,6 +31,8 @@ export function formatFeatureForEdit(feature) {
   const formattedFeature = {
     ...feature,
     category: feature.category_int,
+    enterprise_feature_categories: Array.from(new Set(feature.enterprise_feature_categories || []))
+      .map(x => parseInt(x).toString()),
     feature_type: feature.feature_type_int,
     intent_stage: feature.intent_stage_int,
 
@@ -120,6 +122,16 @@ export const NEW_FEATURE_FORM_FIELDS = [
   'category',
 ];
 
+export const ENTERPRISE_NEW_FEATURE_FORM_FIELDS = [
+  'name',
+  'summary',
+  'owner',
+  'editors',
+  'launch_bug_url',
+  'enterprise_feature_categories',
+  'breaking_change',
+];
+
 // The fields shown to the user when verifying the accuracy of a feature.
 export const VERIFY_ACCURACY_FORM_FIELDS = [
   'summary',
@@ -173,6 +185,33 @@ export const FLAT_METADATA_FIELDS = {
         'bug_url',
         'launch_bug_url',
         'comments',
+      ],
+      isImplementationSection: true,
+    },
+  ],
+};
+
+// The fields that are available to every enterprise feature.
+export const FLAT_ENTERPRISE_METADATA_FIELDS = {
+  name: 'Feature metadata',
+  sections: [
+    // Standardizaton
+    {
+      name: 'Feature metadata',
+      fields: [
+        'name',
+        'summary',
+        'owner',
+        'editors',
+        'enterprise_feature_categories',
+        'breaking_change',
+      ],
+    },
+    // Implementation
+    {
+      name: 'Implementation in Chromium',
+      fields: [
+        'launch_bug_url',
       ],
       isImplementationSection: true,
     },

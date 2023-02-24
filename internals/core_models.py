@@ -174,6 +174,7 @@ class Feature(DictModel):
   intent_stage = ndb.IntegerProperty(default=INTENT_NONE)
   summary = ndb.StringProperty(required=True)
   unlisted = ndb.BooleanProperty(default=False)
+  enterprise_feature_categories = ndb.StringProperty(repeated=True)
   # TODO(jrobbins): Add an entry_state enum to track app-specific lifecycle
   # info for a feature entry as distinct from process-specific stage.
   deleted = ndb.BooleanProperty(default=False)
@@ -321,6 +322,7 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   name = ndb.StringProperty(required=True)
   summary = ndb.TextProperty(required=True)
   category = ndb.IntegerProperty(required=True)
+  enterprise_feature_categories = ndb.StringProperty(repeated=True)
   blink_components = ndb.StringProperty(repeated=True)
   star_count = ndb.IntegerProperty(default=0)
   search_tags = ndb.StringProperty(repeated=True)

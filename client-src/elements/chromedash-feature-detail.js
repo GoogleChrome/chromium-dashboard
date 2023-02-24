@@ -2,6 +2,7 @@ import {LitElement, css, html, nothing} from 'lit';
 import {openAddStageDialog} from './chromedash-add-stage-dialog';
 import {makeDisplaySpecs} from './form-field-specs';
 import {
+  FLAT_ENTERPRISE_METADATA_FIELDS,
   FLAT_METADATA_FIELDS,
   FLAT_TRIAL_EXTENSION_FIELDS,
   FORMS_BY_STAGE_TYPE,
@@ -13,7 +14,8 @@ import {
   GATE_TEAM_ORDER,
   PLATFORMS_DISPLAYNAME,
   STAGE_SPECIFIC_FIELDS,
-  OT_MILESTONE_END_FIELDS} from './form-field-enums';
+  OT_MILESTONE_END_FIELDS,
+  ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME} from './form-field-enums';
 import '@polymer/iron-icon';
 import './chromedash-activity-log';
 import './chromedash-callout';
@@ -337,6 +339,10 @@ class ChromedashFeatureDetail extends LitElement {
         }
       }
     }
+    if (fieldName === 'enterprise_feature_categories' && value) {
+      return value.map(categoryId =>
+        ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME[categoryId]);
+    }
     return value;
   }
 
@@ -464,7 +470,10 @@ class ChromedashFeatureDetail extends LitElement {
   }
 
   renderMetadataSection() {
-    const fieldNames = flattenSections(FLAT_METADATA_FIELDS);
+    // modify for enterprise
+    const fieldNames = flattenSections(this.feature.is_enterprise_feature ?
+      FLAT_ENTERPRISE_METADATA_FIELDS :
+      FLAT_METADATA_FIELDS);
     if (fieldNames === undefined || fieldNames.length === 0) {
       return nothing;
     }

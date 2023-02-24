@@ -6,6 +6,7 @@ import './chromedash-form-field';
 import {
   formatFeatureForEdit,
   FLAT_METADATA_FIELDS,
+  FLAT_ENTERPRISE_METADATA_FIELDS,
   FORMS_BY_STAGE_TYPE,
   FLAT_TRIAL_EXTENSION_FIELDS} from './form-definition';
 import {SHARED_STYLES} from '../sass/shared-css.js';
@@ -191,7 +192,9 @@ export class ChromedashGuideEditallPage extends LitElement {
    */
   getForms(formattedFeature, feStages) {
     // All features display the metadata section.
-    let fieldsOnly = flattenSections(FLAT_METADATA_FIELDS);
+    let fieldsOnly = flattenSections(formattedFeature.is_enterprise_feature ?
+      FLAT_ENTERPRISE_METADATA_FIELDS :
+      FLAT_METADATA_FIELDS);
     const formsToRender = [
       this.renderStageSection(formattedFeature, FLAT_METADATA_FIELDS.name, {}, fieldsOnly)];
 
