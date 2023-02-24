@@ -17,6 +17,7 @@ describe('chromedash-guide-metadata', () => {
         blink_components: ['Blink'],
         owners: ['fake chrome owner one', 'fake chrome owner two'],
         status: {text: 'fake chrome status text'},
+        devrel: ['devrel1@example.com', 'devrel2@example.com'],
       },
       ff: {view: {text: 'fake ff view text'}},
       safari: {view: {text: 'fake safari view text'}},
@@ -51,6 +52,9 @@ describe('chromedash-guide-metadata', () => {
     // feature owners are listed
     assert.include(metadataDiv.innerHTML, 'href="mailto:fake chrome owner one"');
     assert.include(metadataDiv.innerHTML, 'href="mailto:fake chrome owner two"');
+    // devrel recipients are listed
+    assert.include(metadataDiv.innerHTML, 'href="mailto:devrel1@example.com"');
+    assert.include(metadataDiv.innerHTML, 'href="mailto:devrel2@example.com"');
     // cc recipients are listed
     assert.include(metadataDiv.innerHTML, 'href="mailto:fake chrome cc one"');
     assert.include(metadataDiv.innerHTML, 'href="mailto:fake chrome cc two"');

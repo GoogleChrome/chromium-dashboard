@@ -143,6 +143,15 @@ export class ChromedashGuideMetadata extends LitElement {
             </tr>
 
             <tr>
+              <th>DevRel</th>
+              <td>
+                ${this.feature.browsers.chrome.devrel.map((dev) => html`
+                  <a href="mailto:${dev}">${dev}</a>
+                `)}
+              </td>
+            </tr>
+
+            <tr>
               <th>Category</th>
               <td>${this.feature.category}</td>
             </tr>

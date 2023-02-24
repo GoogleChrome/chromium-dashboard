@@ -158,6 +158,7 @@ export const FLAT_METADATA_FIELDS = {
         'owner',
         'editors',
         'cc_recipients',
+        'devrel',
         'category',
         'feature_type',
         'search_tags',
@@ -253,7 +254,6 @@ const FLAT_DEV_TRIAL_FIELDS = {
         'wpt',
         'wpt_descr',
         'sample_links',
-        'devrel',
       ],
     },
     // Implementation
@@ -479,7 +479,6 @@ const DEPRECATION_DEV_TRIAL_FIELDS = {
         'wpt',
         'wpt_descr',
         'sample_links',
-        'devrel',
       ],
     },
     // Implementation
