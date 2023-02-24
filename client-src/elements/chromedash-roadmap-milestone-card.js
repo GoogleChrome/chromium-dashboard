@@ -133,10 +133,17 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
     return Object.keys(obj).sort();
   }
 
+
+  hidePopup(e) {
+    if (e.relatedTarget != this.renderRoot.querySelector('#detailed-info-link')) {
+      this.infoPopupRef.value.active = null;
+    }
+  }
+
   renderInfoIcon() {
     return html`
       <sl-icon-button name="info-circle" id="info-button"
-        @click=${() => this.infoPopupRef.value.active = !this.infoPopupRef.value.active}
+        @click=${() => this.infoPopupRef.value.active = !this.infoPopupRef.value.active} @focusout=${this.hidePopup}
       ></sl-icon-button>
 
       <sl-popup anchor="info-button" placement="bottom" strategy="fixed"
@@ -144,7 +151,7 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
         <div class="popup-content">
           New versions are offered to users gradually. <br/>
           See
-          <a href="https://chromiumdash.appspot.com/schedule"
+          <a @focusout=${this.hidePopup} id="detailed-info-link" href="https://chromiumdash.appspot.com/schedule"
              target="_blank">detailed dates</a>.
         </div>
       </sl-popup>
