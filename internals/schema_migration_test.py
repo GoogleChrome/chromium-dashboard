@@ -414,3 +414,131 @@ class WriteMissingGatesTest(testing_config.CustomTestCase):
         g.gate_type == GATE_PRIVACY_ORIGIN_TRIAL for g in gates))
     self.assertTrue(any(
         g.gate_type == GATE_SECURITY_ORIGIN_TRIAL for g in gates))
+
+
+class MigrateLGTMFieldsTest(testing_config.CustomTestCase):
+  def setUp(self):
+    self.feature_1 = Feature(
+        id=1,
+        created=datetime(2020, 1, 1),
+        updated=datetime(2020, 7, 1),
+        accurate_as_of=datetime(2020, 3, 1),
+        created_by=ndb.User(
+            _auth_domain='example.com', email='user@example.com'),
+        updated_by=ndb.User(
+            _auth_domain='example.com', email='editor@example.com'),
+        owner=['owner@example.com'],
+        creator='creator@example.com',
+        editors=['editor@example.com'],
+        cc_recipients=['cc_user@example.com'],
+        unlisted=False,
+        deleted=False,
+        name='feature_one',
+        summary='newly migrated summary',
+        comments='Some comments.',
+        category=1,
+        i2e_lgtms=['lgtm@gmail.com'])
+    self.feature_1.put()
+
+    self.feature_2 = Feature(
+        id=2,
+        created=datetime(2020, 4, 1),
+        updated=datetime(2020, 7, 1),
+        accurate_as_of=datetime(2020, 6, 1),
+        created_by=ndb.User(
+            _auth_domain='example.com', email='user@example.com'),
+        updated_by=ndb.User(
+            _auth_domain='example.com', email='editor@example.com'),
+        feature_type=0,
+        owner=['owner@example.com'],
+        editors=['editor@example.com'],
+        i2s_lgtms=['lgtm1@gmail.com'],
+        unlisted=False,
+        deleted=False,
+        name='feature_two',
+        summary='summary',
+        category=1,)
+    self.feature_2.put()
+
+    # Feature 3 stages are already migrated.
+    self.feature_3 = Feature(
+        id=3,
+        created=datetime(2020, 4, 1),
+        updated=datetime(2020, 7, 1),
+        accurate_as_of=datetime(2020, 6, 1),
+        created_by=ndb.User(
+            _auth_domain='example.com', email='user@example.com'),
+        updated_by=ndb.User(
+            _auth_domain='example.com', email='editor@example.com'),
+        owner=['owner@example.com'],
+        editors=['editor@example.com'],
+        unlisted=False,
+        deleted=False,
+        name='feature_three',
+        summary='summary',
+        category=1)
+    self.feature_3.put()
+
+    self.feature_4 = Feature(
+        id=4,
+        created=datetime(2020, 4, 1),
+        updated=datetime(2020, 7, 1),
+        accurate_as_of=datetime(2020, 6, 1),
+        created_by=ndb.User(
+            _auth_domain='example.com', email='user@example.com'),
+        updated_by=ndb.User(
+            _auth_domain='example.com', email='editor@example.com'),
+        owner=['owner@example.com'],
+        editors=['editor@example.com'],
+        feature_type=1,
+        unlisted=False,
+        deleted=False,
+        name='feature_four',
+        summary='migrated summary',
+        category=1)
+    self.feature_4.put()
+
+    self.gate_1 = Gate(feature_id=1, stage_id=2, gate_type=GATE_API_ORIGIN_TRIAL, state=0)
+    self.gate_1.put()
+
+    self.gate_2 = Gate(feature_id=2, stage_id=2, gate_type=GATE_API_SHIP, state=3)
+    self.gate_2.put()
+
+  def tearDown(self):
+    kinds = [Feature, FeatureEntry, Stage, Gate, Approval, Vote]
+    for kind in kinds:
+      for entity in kind.query().fetch():
+        entity.key.delete()
+
+  def run_handler(self, handler):
+    return handler.get_template_data()
+
+  def test_migrations_two_votes(self):
+    handler_message = self.run_handler(
+        schema_migration.MigrateLGTMFields())
+    expected = '2 of 2 lgtms fields migrated.'
+    self.assertEqual(handler_message, expected)
+
+    votes = Vote.query().fetch()
+    self.assertEqual(len(votes), 2)
+
+    vote_1 = votes[0]
+    self.assertEqual(vote_1.feature_id, 1)
+    self.assertEqual(vote_1.gate_type, GATE_API_ORIGIN_TRIAL)
+    self.assertEqual(vote_1.state, Vote.APPROVED)
+    self.assertEqual(vote_1.set_by, 'lgtm@gmail.com')
+    self.assertEqual(self.gate_1.state, Vote.APPROVED)
+
+    vote_2 = votes[1]
+    self.assertEqual(vote_2.feature_id, 2)
+    self.assertEqual(vote_2.gate_type, GATE_API_SHIP)
+    self.assertEqual(vote_2.state, Vote.APPROVED)
+    self.assertEqual(vote_2.set_by, 'lgtm1@gmail.com')
+    # THREE_LGTM required for GATE_API_SHIP.
+    self.assertEqual(self.gate_2.state, Gate.PREPARING)
+
+    # Nothing should be migrated twice.
+    handler_message = self.run_handler(
+        schema_migration.MigrateLGTMFields())
+    expected = '0 of 0 lgtms fields migrated.'
+    self.assertEqual(handler_message, expected)

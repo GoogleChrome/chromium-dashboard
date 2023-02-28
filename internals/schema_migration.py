@@ -711,53 +711,63 @@ class MigrateLGTMFields(FlaskHandler):
 
     count = 0
     votes_to_create = []
-    for f in Feature.query():
-      if (f.i2e_lgtms and not self.has_existing_vote(f.i2e_lgtms, GATE_API_ORIGIN_TRIA, f)):
+    vote_dict = self.get_vote_dict()
+    features = Feature.query()
+    for f in features:
+      if not f.i2e_lgtms:
+        continue
+      for email in f.i2e_lgtms:
+        if self.has_existing_vote(email, GATE_API_ORIGIN_TRIAL, f, vote_dict):
+          continue
+
         # i2e_lgtms (Intent to Experiment)'s gate_type is GATE_API_ORIGIN_TRIAL.
         votes_to_create.append(self.create_new_vote(
-            f.i2e_lgtms, GATE_API_ORIGIN_TRIAL, f))
+            email, GATE_API_ORIGIN_TRIAL, f))
         count += 1
 
-      if (f.i2s_lgtms and not self.has_existing_vote(f.i2s_lgtms, GATE_API_SHIP, f)):
+    for f in features:
+      if not f.i2s_lgtms:
+        continue
+      for email in f.i2s_lgtms:
+        if self.has_existing_vote(email, GATE_API_SHIP, f, vote_dict):
+          continue
+
         # i2s_lgtms (Intent to Ship)'s gate_type is GATE_API_SHIP.
         votes_to_create.append(self.create_new_vote(
-            f.i2s_lgtms, GATE_API_SHIP, f))
+            email, GATE_API_SHIP, f))
         count += 1
 
-    ndb.put_multi(votes_to_create)
-    return f'{count} lgtms fields migrated.'
+    # Only create 100 votes at a time.
+    votes_to_create = votes_to_create[:100]
+    for new_vote in votes_to_create:
+      approval_defs.set_vote(new_vote.feature_id, new_vote.gate_type,
+                             new_vote.state, new_vote.set_by)
+    return f'{len(votes_to_create)} of {count} lgtms fields migrated.'
 
-  def has_existing_vote(self, email, gate_type, f):
+  def get_vote_dict(self):
+    vote_dict = {}
+    votes = Vote.query().fetch(None)
+    for vote in votes:
+      if vote.feature_id in vote_dict:
+        vote_dict[vote.feature_id].append(vote)
+      else:
+        vote_dict[vote.feature_id] = [vote]
+    return vote_dict
+
+  def has_existing_vote(self, email, gate_type, f, vote_dict):
     f_id = f.key.integer_id()
-    # Find the correct gate for a feature_id and gate_type.
-    gate = approval_defs.get_gate_by_type(f_id, gate_type)
-    if not gate:
-      logging.info('Gate entity not found for the given feature. '
-                   'Cannot find vote.')
+    if f_id not in vote_dict:
       return False
 
-    gate_id = gate.key.integer_id()
-    # Find the vote with.
-    existing_vote = Vote.query(Vote.set_by == email,
-                               Vote.gate_id == gate_id).get()
-
-    # If a vote exists, we do not overwrite existing vote state.
-    if existing_vote:
-      return True
+    for v in vote_dict[f_id]:
+      # Check if set by the same reviewer and the same gate_type.
+      if v.set_by == email and v.gate_type == gate_type:
+        return True
 
     return False
 
   def create_new_vote(self, email, gate_type, f):
     f_id = f.key.integer_id()
-
-    # Find the correct gate for a feature_id and gate_type.
-    gate = approval_defs.get_gate_by_type(f_id, gate_type)
-    if not gate:
-      logging.info('Gate entity not found for the given feature. '
-                   'Cannot find vote.')
-      return
-    gate_id = gate.key.integer_id()
-
-    vote = Vote(feature_id=f_id, gate_id=gate_id, gate_type=gate_type,
+    vote = Vote(feature_id=f_id, gate_type=gate_type,
                 state=Vote.APPROVED, set_by=email)
     return vote
