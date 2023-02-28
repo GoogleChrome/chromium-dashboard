@@ -701,3 +701,63 @@ class MigrateSubjectLineField(FlaskHandler):
         count += len(stages_to_update)
 
     return f'{count} subject line fields migrated.'
+
+
+class MigrateLGTMFields(FlaskHandler):
+
+  def get_template_data(self, **kwargs) -> str:
+    """Migrates old Feature subject lgtms to their respective votes."""
+    self.require_cron_header()
+
+    count = 0
+    votes_to_create = []
+    for f in Feature.query():
+      if (f.i2e_lgtms and not self.has_existing_vote(f.i2e_lgtms, GATE_API_ORIGIN_TRIA, f)):
+        # i2e_lgtms (Intent to Experiment)'s gate_type is GATE_API_ORIGIN_TRIAL.
+        votes_to_create.append(self.create_new_vote(
+            f.i2e_lgtms, GATE_API_ORIGIN_TRIAL, f))
+        count += 1
+
+      if (f.i2s_lgtms and not self.has_existing_vote(f.i2s_lgtms, GATE_API_SHIP, f)):
+        # i2s_lgtms (Intent to Ship)'s gate_type is GATE_API_SHIP.
+        votes_to_create.append(self.create_new_vote(
+            f.i2s_lgtms, GATE_API_SHIP, f))
+        count += 1
+
+    ndb.put_multi(votes_to_create)
+    return f'{count} lgtms fields migrated.'
+
+  def has_existing_vote(self, email, gate_type, f):
+    f_id = f.key.integer_id()
+    # Find the correct gate for a feature_id and gate_type.
+    gate = approval_defs.get_gate_by_type(f_id, gate_type)
+    if not gate:
+      logging.info('Gate entity not found for the given feature. '
+                   'Cannot find vote.')
+      return False
+
+    gate_id = gate.key.integer_id()
+    # Find the vote with.
+    existing_vote = Vote.query(Vote.set_by == email,
+                               Vote.gate_id == gate_id).get()
+
+    # If a vote exists, we do not overwrite existing vote state.
+    if existing_vote:
+      return True
+
+    return False
+
+  def create_new_vote(self, email, gate_type, f):
+    f_id = f.key.integer_id()
+
+    # Find the correct gate for a feature_id and gate_type.
+    gate = approval_defs.get_gate_by_type(f_id, gate_type)
+    if not gate:
+      logging.info('Gate entity not found for the given feature. '
+                   'Cannot find vote.')
+      return
+    gate_id = gate.key.integer_id()
+
+    vote = Vote(feature_id=f_id, gate_id=gate_id, gate_type=gate_type,
+                state=Vote.APPROVED, set_by=email)
+    return vote
