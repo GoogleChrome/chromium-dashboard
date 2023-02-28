@@ -406,8 +406,12 @@ class ChromedashApprovalsDialog extends LitElement {
       threadArchiveUrl &&
         (threadArchiveUrl.startsWith(
           'https://groups.google.com/a/chromium.org/d/msgid/blink-dev/') ||
-         threadArchiveUrl.startsWith(
-           'https://groups.google.com/d/msgid/jrobbins-test')));
+          threadArchiveUrl.startsWith(
+            'https://groups.google.com/a/chromium.org/g/blink-dev/') ||
+          threadArchiveUrl.startsWith(
+            'https://groups.google.com/d/msgid/jrobbins-test') ||
+          threadArchiveUrl.startsWith(
+            'https://groups.google.com/g/jrobbins-test')));
   }
 
   renderControls() {

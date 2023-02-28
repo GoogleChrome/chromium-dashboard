@@ -194,7 +194,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
       logging.info('Could not retrieve feature')
       return {'message': 'Feature not found'}
 
-    self.set_intent_thread_url(feature, approval_field, thread_url)
+    self.set_intent_thread_url(feature, approval_field, thread_url, subject)
     self.create_approvals(feature, approval_field, from_addr, body)
     return {'message': 'Done'}
 
@@ -226,7 +226,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
 
   def set_intent_thread_url(self, feature: FeatureEntry,
       approval_field: approval_defs.ApprovalFieldDef,
-      thread_url: Optional[str]) -> None:
+      thread_url: str | None, subject: str | None) -> None:
     """If the feature has no previous thread URL for this intent, set it."""
     if not thread_url:
       return
@@ -235,16 +235,19 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
         approval_field.field_id][feature.feature_type]
     if stage_type is None:
       return
-    # TODO(danielrsmith): A new way to approach this detection will be needed
-    # when multiple versions of the same stage type are possible.
+    # TODO(danielrsmith): A new way to approach this detection is needed
+    # now that multiple stages of the same type can exist for a feature.
+    # This will currently only detect an intent if there is only 1 stage
+    # of the specific stage type associated with the feature.
     matching_stages: list[Stage] = Stage.query(
         Stage.feature_id == feature.key.integer_id(),
         Stage.stage_type == stage_type).fetch()
-    if (len(matching_stages) == 0 or
+    if (len(matching_stages) == 0 or len(matching_stages) > 1 or
         matching_stages[0].intent_thread_url is not None):
       return
 
     matching_stages[0].intent_thread_url = thread_url
+    matching_stages[0].intent_subject_line = subject
     matching_stages[0].put()
 
   def create_approvals(self, feature: FeatureEntry,
