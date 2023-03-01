@@ -16,6 +16,7 @@
 import datetime
 from typing import Any
 from google.cloud import ndb  # type: ignore
+from internals import stage_helpers
 
 from internals.core_enums import *
 from internals.core_models import Feature, FeatureEntry, MilestoneSet, Stage
@@ -376,15 +377,8 @@ def feature_entry_to_json_verbose(
 
   d['id'] = fe.key.integer_id()
 
-  # Add gate information.
-  d['gates'] = []
-  gate_q = Gate.query(Gate.feature_id == d['id'])
-  for gate in gate_q:
-    d['gates'].append(gate_value_to_json_dict(gate))
-
-  # Get stage info to be more explicitly added.
+  # Get stage and gate info, returning stage info to be more explicitly added.
   stages = _prep_stage_gate_info(fe, d, prefetched_stages=prefetched_stages)
-
   # Prototype stage fields.
   d['intent_to_implement_url'] = _stage_attr(
       stages['proto'], 'intent_thread_url')
