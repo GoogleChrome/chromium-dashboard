@@ -133,7 +133,7 @@ export class ChromedashGuideMetadata extends LitElement {
             <tr>
               <th>CC</th>
               <td>
-                ${this.feature.cc_recipients ?
+                ${this.feature.cc_recipients && this.feature.cc_recipients.length ?
                   this.feature.cc_recipients.map((ccRecipient)=> html`
                   <a href="mailto:${ccRecipient}">${ccRecipient}</a>
                   `): html`
@@ -145,9 +145,13 @@ export class ChromedashGuideMetadata extends LitElement {
             <tr>
               <th>DevRel</th>
               <td>
-                ${this.feature.browsers.chrome.devrel.map((dev) => html`
+                ${this.feature.browsers.chrome.devrel &&
+                  this.feature.browsers.chrome.devrel.length ?
+                  this.feature.browsers.chrome.devrel.map((dev) => html`
                   <a href="mailto:${dev}">${dev}</a>
-                `)}
+                `) : html`
+                None
+              `}
               </td>
             </tr>
 
@@ -166,7 +170,7 @@ export class ChromedashGuideMetadata extends LitElement {
               <td>${this.feature.intent_stage}</td>
             </tr>
 
-            ${this.feature.tags ? html`
+            ${this.feature.tags && this.feature.tags.length ? html`
               <tr>
                 <th>Search tags</th>
                 <td>

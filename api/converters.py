@@ -16,7 +16,6 @@
 import datetime
 from typing import Any
 from google.cloud import ndb  # type: ignore
-from internals import stage_helpers
 
 from internals.core_enums import *
 from internals.core_models import Feature, FeatureEntry, MilestoneSet, Stage
@@ -60,7 +59,7 @@ def del_none(d):
   Delete dict keys with None values, and empty lists, recursively.
   """
   for key, value in list(d.items()):
-    if value is None or (isinstance(value, list) and len(value) == 0):
+    if value is None:
       del d[key]
     elif isinstance(value, dict):
       del_none(value)
@@ -226,7 +225,7 @@ def _stage_attr(
   return getattr(stage.milestones, field)
 
 
-def _prep_stage_gate_info(
+def _prep_stage_info(
     fe: FeatureEntry, d: dict,
     prefetched_stages: list[Stage] | None=None
     ) -> dict[str, Optional[Stage]]:
@@ -377,8 +376,15 @@ def feature_entry_to_json_verbose(
 
   d['id'] = fe.key.integer_id()
 
-  # Get stage and gate info, returning stage info to be more explicitly added.
-  stages = _prep_stage_gate_info(fe, d, prefetched_stages=prefetched_stages)
+  # Add gate information.
+  d['gates'] = []
+  gate_q = Gate.query(Gate.feature_id == d['id'])
+  for gate in gate_q:
+    d['gates'].append(gate_value_to_json_dict(gate))
+
+  # Get stage info to be more explicitly added.
+  stages = _prep_stage_info(fe, d, prefetched_stages=prefetched_stages)
+
   # Prototype stage fields.
   d['intent_to_implement_url'] = _stage_attr(
       stages['proto'], 'intent_thread_url')
@@ -462,7 +468,7 @@ def feature_entry_to_json_verbose(
       'val': standard_maturity,
     },
   }
-  d['spec_mentors'] = fe.spec_mentor_emails
+  d['spec_mentors'] = d.pop('spec_mentor_emails', [])
   d['tag_review_status'] = REVIEW_STATUS_CHOICES[fe.tag_review_status]
   d['tag_review_status_int'] = fe.tag_review_status
   d['security_review_status'] = REVIEW_STATUS_CHOICES[
