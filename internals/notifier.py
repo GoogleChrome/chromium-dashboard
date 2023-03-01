@@ -491,7 +491,7 @@ def post_comment_to_mailing_list(
     feature: FeatureEntry,
     gate_id: int,
     approval_field_id: int,
-    author_addr: str | None,
+    author_addr: str,
     comment_content: str):
   """Post a message to the intent thread."""
   to_addr = settings.REVIEW_COMMENT_MAILING_LIST

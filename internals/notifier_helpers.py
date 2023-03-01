@@ -116,7 +116,7 @@ def notify_subscribers_of_vote_changes(fe: 'FeatureEntry', gate: Gate,
                       author=email, content=acitivity_content)
   activity.put()
 
-  old_state_name = Vote.VOTE_VALUES[old_state]
+  old_state_name = Vote.VOTE_VALUES.get(old_state, Vote.VOTE_VALUES[Vote.NA])
   gate_url = 'https://chromestatus.com/feature/%s?gate=%s' % (
     gate.feature_id, gate_id)
   changed_props = {
