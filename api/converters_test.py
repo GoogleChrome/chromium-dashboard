@@ -308,14 +308,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
             'notes': 'other notes',
           }
         }
-      },
-
-      # Default empty lists for unfilled list fields.
-      'cc_recipients': [],
-      'explainer_links': [],
-      'gates': [],
-      'spec_mentors': [],
-      'tags': []
+      }
     }
     self.assertEqual(result, expected)
 

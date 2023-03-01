@@ -59,7 +59,7 @@ def del_none(d):
   Delete dict keys with None values, and empty lists, recursively.
   """
   for key, value in list(d.items()):
-    if value is None:
+    if value is None or (isinstance(value, list) and len(value) == 0):
       del d[key]
     elif isinstance(value, dict):
       del_none(value)
@@ -225,7 +225,7 @@ def _stage_attr(
   return getattr(stage.milestones, field)
 
 
-def _prep_stage_info(
+def _prep_stage_gate_info(
     fe: FeatureEntry, d: dict,
     prefetched_stages: list[Stage] | None=None
     ) -> dict[str, Optional[Stage]]:
@@ -383,7 +383,7 @@ def feature_entry_to_json_verbose(
     d['gates'].append(gate_value_to_json_dict(gate))
 
   # Get stage info to be more explicitly added.
-  stages = _prep_stage_info(fe, d, prefetched_stages=prefetched_stages)
+  stages = _prep_stage_gate_info(fe, d, prefetched_stages=prefetched_stages)
 
   # Prototype stage fields.
   d['intent_to_implement_url'] = _stage_attr(
@@ -468,7 +468,7 @@ def feature_entry_to_json_verbose(
       'val': standard_maturity,
     },
   }
-  d['spec_mentors'] = d.pop('spec_mentor_emails', [])
+  d['spec_mentors'] = fe.spec_mentor_emails
   d['tag_review_status'] = REVIEW_STATUS_CHOICES[fe.tag_review_status]
   d['tag_review_status_int'] = fe.tag_review_status
   d['security_review_status'] = REVIEW_STATUS_CHOICES[
