@@ -1,7 +1,9 @@
 import {html} from 'lit';
 import {
+  ENTERPRISE_FEATURE_CATEGORIES,
   FEATURE_CATEGORIES,
   FEATURE_TYPES,
+  FEATURE_TYPES_WITHOUT_ENTERPRISE,
   IMPLEMENTATION_STATUS,
   PLATFORM_CATEGORIES,
   STANDARD_MATURITY_CHOICES,
@@ -234,7 +236,7 @@ export const ALL_FIELDS = {
     // form field name matches underlying DB field (sets "feature_type" in DB).
     name: 'feature_type',
     type: 'radios',
-    choices: FEATURE_TYPES,
+    choices: FEATURE_TYPES_WITHOUT_ENTERPRISE,
     label: 'Feature type',
     help_text: html`
         Select the feature type.
@@ -1194,6 +1196,15 @@ export const ALL_FIELDS = {
     label: 'Enterprise policies',
     help_text: html`
       List of policies that control the feature, if any.`,
+  },
+
+  'enterprise_feature_categories': {
+    type: 'multiselect',
+    choices: ENTERPRISE_FEATURE_CATEGORIES,
+    required: false,
+    label: 'Categories',
+    help_text: html`
+      Select all that apply.`,
   },
 
   'rollout_milestone': {

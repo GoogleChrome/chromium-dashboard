@@ -384,6 +384,25 @@ export class ChromedashFeaturePage extends LitElement {
     `;
   }
 
+  renderEnterpriseFeatureStatus() {
+    return html`
+    ${this.feature.browsers.chrome.owners ? html`
+      <section id="owner">
+        <h3>${this.feature.browsers.chrome.owners.length == 1 ? 'Owner' : 'Owners'}</h3>
+        <ul>
+          ${this.feature.browsers.chrome.owners.map((owner) => html`
+            <li><a href="mailto:${owner}">${owner}</a></li>
+          `)}
+        </ul>
+      </section>
+    `: nothing}
+
+    <section id="updated">
+      <p><span>Last updated on ${this.feature.updated_display}</span></p>
+    </section>`;
+  }
+
+
   renderFeatureStatus() {
     return html`
       <section id="status">
@@ -513,7 +532,9 @@ export class ChromedashFeaturePage extends LitElement {
       ${this.renderSubHeader()}
       <div id="feature">
         ${this.renderFeatureContent()}
-        ${this.renderFeatureStatus()}
+        ${this.feature.is_enterprise_feature ?
+            this.renderEnterpriseFeatureStatus() :
+            this.renderFeatureStatus()}
       </div>
       ${this.renderFeatureDetails()}
     `;

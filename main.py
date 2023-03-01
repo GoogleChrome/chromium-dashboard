@@ -154,6 +154,8 @@ spa_page_routes = [
   Route('/feature/<int:feature_id>'),
   Route('/guide/new',
       defaults={'require_create_feature': True}),
+  Route('/guide/enterprise/new',
+      defaults={'require_create_feature': True}),
   Route('/guide/edit/<int:feature_id>',
       defaults={'require_edit_feature': True}),
   Route('/guide/stage/<int:feature_id>/<int:stage_id>/<int:intent_stage>',
@@ -185,6 +187,7 @@ spa_page_routes = [
 
 spa_page_post_routes: list[Route] = [
   Route('/guide/new', guide.FeatureCreateHandler),
+  Route('/guide/enterprise/new', guide.EnterpriseFeatureCreateHandler),
   Route('/guide/edit/<int:feature_id>', guide.FeatureEditHandler),
   Route('/guide/stage/<int:feature_id>/<int:intent_stage>',
       guide.FeatureEditHandler),

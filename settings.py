@@ -30,6 +30,9 @@ BANNER_TIME = None
 # If a feature entry does not specify a component, use this one.
 DEFAULT_COMPONENT = 'Blink'
 
+# The default component for enterprise features.
+DEFAULT_ENTERPRISE_COMPONENT = 'Enterprise'
+
 
 ################################################################################
 

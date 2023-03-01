@@ -220,6 +220,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'category_int': 1,
       'feature_type': 'New feature incubation',
       'feature_type_int': 0,
+      'is_enterprise_feature': False,
       'intent_stage': 'Start prototyping',
       'intent_stage_int': 1,
       'star_count': 0,
@@ -322,6 +323,15 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
     self.assertEqual(5, result['browsers']['safari']['view']['val'])
     self.assertEqual(5, result['browsers']['ff']['view']['val'])
 
+  def test_feature_entry_to_json_verbose__enterprise_feature(self):
+    """Function handles if any views fields have deprecated values."""
+    # Deprecated views enum value.
+    self.fe_1.feature_type = 4 # FEATURE_TYPE_ENTERPRISE_ID
+    self.fe_1.enterprise_feature_categories = ['1', '2']
+    self.fe_1.put()
+    result = converters.feature_entry_to_json_verbose(self.fe_1)
+    self.assertTrue(result['is_enterprise_feature'])
+    self.assertEqual(['1', '2'], result['enterprise_feature_categories'])
 
 class VoteConvertersTest(testing_config.CustomTestCase):
 

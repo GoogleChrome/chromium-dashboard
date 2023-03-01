@@ -77,10 +77,12 @@ def feature_to_legacy_json(f: Feature) -> dict[str, Any]:
   else:
     d['id'] = None
   d['category'] = FEATURE_CATEGORIES[f.category]
+  d['enterprise_feature_categories'] = f.enterprise_feature_categories
   d['category_int'] = f.category
   if f.feature_type is not None:
     d['feature_type'] = FEATURE_TYPES[f.feature_type]
     d['feature_type_int'] = f.feature_type
+    d['is_enterprise_feature'] = f.feature_type == FEATURE_TYPE_ENTERPRISE_ID
   if f.intent_stage is not None:
     d['intent_stage'] = INTENT_STAGES[f.intent_stage]
     d['intent_stage_int'] = f.intent_stage
@@ -437,9 +439,11 @@ def feature_entry_to_json_verbose(
   d['is_released'] = fe.impl_status_chrome in RELEASE_IMPL_STATES
   d['category'] = FEATURE_CATEGORIES[fe.category]
   d['category_int'] = fe.category
+  d['enterprise_feature_categories'] = d.pop('enterprise_feature_categories', [])
   if fe.feature_type is not None:
     d['feature_type'] = FEATURE_TYPES[fe.feature_type]
     d['feature_type_int'] = fe.feature_type
+    d['is_enterprise_feature'] = fe.feature_type == FEATURE_TYPE_ENTERPRISE_ID
   if fe.intent_stage is not None:
     d['intent_stage'] = INTENT_STAGES.get(
         fe.intent_stage, INTENT_STAGES[INTENT_NONE])

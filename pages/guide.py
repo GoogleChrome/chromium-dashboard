@@ -128,6 +128,71 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
         gate.put()
 
 
+class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
+
+  @permissions.require_create_feature
+  def process_post_data(self, **kwargs):
+    owners = self.split_emails('owner')
+    editors = self.split_emails('editors')
+
+    signed_in_user = ndb.User(
+        email=self.get_current_user().email(),
+        _auth_domain='gmail.com')
+    feature_type = core_enums.FEATURE_TYPE_ENTERPRISE_ID
+    feature = Feature(
+        category=int(core_enums.MISC),
+        enterprise_feature_categories=self.split_input(
+            'enterprise_feature_categories'),
+        name=self.form.get('name'),
+        feature_type=feature_type,
+        summary=self.form.get('summary'),
+        owner=owners,
+        editors=editors,
+        launch_bug_url=self.form.get('launch_bug_url'),
+        breaking_change=self.form.get('breaking_change') == 'on',
+        creator=signed_in_user.email(),
+        accurate_as_of=datetime.now(),
+        blink_components=[settings.DEFAULT_ENTERPRISE_COMPONENT],
+        tag_review_status=core_enums.REVIEW_NA,
+        created_by=signed_in_user,
+        updated_by=signed_in_user)
+    key = feature.put()
+
+    # Write for new FeatureEntry entity.
+    feature_entry = FeatureEntry(
+        id=feature.key.integer_id(),
+        category=int(core_enums.MISC),
+        enterprise_feature_categories=self.split_input(
+            'enterprise_feature_categories'),
+        name=self.form.get('name'),
+        feature_type=feature_type,
+        summary=self.form.get('summary'),
+        owner_emails=owners,
+        editor_emails=editors,
+        launch_bug_url=self.form.get('launch_bug_url'),
+        breaking_change=self.form.get('breaking_change') == 'on',
+        creator_email=signed_in_user.email(),
+        updater_email=signed_in_user.email(),
+        accurate_as_of=datetime.now(),
+        blink_components=[settings.DEFAULT_ENTERPRISE_COMPONENT],
+        tag_review_status=core_enums.REVIEW_NA)
+    feature_entry.put()
+    search_fulltext.index_feature(feature_entry)
+
+    # Write each Stage and Gate entity for the given feature.
+    self.write_gates_and_stages_for_feature(
+        feature_entry.key.integer_id(), feature_type)
+
+    # Remove all feature-related cache.
+    rediscache.delete_keys_with_prefix(Feature.feature_cache_prefix())
+    rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
+
+    # TODO(jrobbins): Make this be /feature/ID after ability to edit
+    # from the feature detail page is complete.
+    redirect_url = '/guide/edit/' + str(key.integer_id())
+    return self.redirect(redirect_url)
+
+
 class FeatureEditHandler(basehandlers.FlaskHandler):
 
   # Field name, data type
@@ -158,6 +223,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('blink_components', 'split_str'),
       ('devrel', 'emails'),
       ('category', 'int'),
+      ('enterprise_feature_categories', 'split_str'),
       ('name', 'str'),
       ('summary', 'str'),
       ('motivation', 'str'),
@@ -264,7 +330,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       'privacy_review_status', 'tag_review_status', 'safari_views', 'ff_views',
       'web_dev_views', 'blink_components', 'impl_status_chrome'])
 
-  MULTI_SELECT_FIELDS: frozenset[str] = frozenset(['rollout_platforms'])
+  MULTI_SELECT_FIELDS: frozenset[str] = frozenset(['rollout_platforms', 'enterprise_feature_categories'])
 
   def touched(self, param_name: str) -> bool:
     """Return True if the user edited the specified field."""
@@ -309,7 +375,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       return self.form.get(field)
     elif field_type == 'split_str':
       val = self.split_input(field, delim=',')
-      if field == 'rollout_platforms':
+      if field == 'rollout_platforms' or field == 'enterprise_feature_categories':
         val = self.form.getlist(field)
         # Occasionally, input will give an empty string as the first element.
         # It needs to be removed.
