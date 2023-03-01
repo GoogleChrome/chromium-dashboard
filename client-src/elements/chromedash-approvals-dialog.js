@@ -166,6 +166,17 @@ class ChromedashApprovalsDialog extends LitElement {
       for (const gate of this.gates) {
         gate.stage = this.feature.stages.find(s => s.id === gate.stage_id);
       }
+
+      // Sort gates for display. Gates are sorted by the stage type they are
+      // associated, then by gate type. This ensures all ship gates are
+      // listed near each other, as well as origin trial gates, etc.
+      this.gates.sort((a, b) => {
+        if (a.stage && b.stage && a.stage.stage_type !== b.stage.stage_type) {
+          return a.stage.stage_type - b.stage.stage_type;
+        }
+        return a.gate_type - b.gate_type;
+      });
+
       const numPending = this.votes.filter((av) =>
         PENDING_STATES.includes(av.state)).length;
       this.subsetPending = (
