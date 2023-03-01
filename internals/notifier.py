@@ -505,7 +505,11 @@ def send_emails(email_tasks):
 
 
 def post_comment_to_mailing_list(
-    feature, approval_field_id, author_addr, comment_content):
+    feature: FeatureEntry,
+    gate_id: int,
+    approval_field_id: int,
+    author_addr: str,
+    comment_content: str):
   """Post a message to the intent thread."""
   to_addr = settings.REVIEW_COMMENT_MAILING_LIST
   from_user = author_addr.split('@')[0]
