@@ -18,32 +18,6 @@ export const STATE_NAMES = [
 ];
 const PENDING_STATES = [2, 3, 4, 8];
 
-const APPROVAL_DEFS = [
-  {name: 'Intent to Prototype',
-    id: 1,
-    threadField: 'intent_to_implement_url',
-  },
-  {name: 'Intent to Experiment',
-    id: 2,
-    threadField: 'intent_to_experiment_url',
-  },
-  {name: 'Intent to Extend Experiment',
-    id: 3,
-    threadField: 'intent_to_extend_experiment_url',
-  },
-  {name: 'Intent to Ship',
-    id: 4,
-    threadField: 'intent_to_ship_url',
-  },
-];
-
-const GATES_BY_FEATURE_TYPE = {
-  0: new Set([1, 2, 3, 4]),
-  1: new Set([1, 2, 3, 4]),
-  2: new Set([4]),
-  3: new Set([2, 3, 4]),
-};
-
 let approvalDialogEl;
 
 export async function openApprovalsDialog(user, feature) {
@@ -69,7 +43,7 @@ class ChromedashApprovalsDialog extends LitElement {
       possibleOwners: {type: Object},
       showConfigs: {type: Object},
       showAllIntents: {type: Boolean},
-      changedApprovalsByField: {attribute: false},
+      changedApprovalsByGate: {attribute: false},
       changedConfigsByField: {attribute: false},
       needsSave: {type: Boolean},
       loading: {attribute: false},
@@ -88,7 +62,7 @@ class ChromedashApprovalsDialog extends LitElement {
     this.possibleOwners = {};
     this.showConfigs = new Set();
     this.showAllIntents = false;
-    this.changedApprovalsByField = new Map();
+    this.changedApprovalsByGate = new Map();
     this.changedConfigsByField = new Map();
     this.needsSave = false;
     this.loading = true;
@@ -187,12 +161,28 @@ class ChromedashApprovalsDialog extends LitElement {
     ]).then(([votesRes, commentRes, configRes, gatesRes]) => {
       this.votes = votesRes.votes;
       this.gates = gatesRes.gates;
+
+      // Associate stages with their respective gates.
+      for (const gate of this.gates) {
+        gate.stage = this.feature.stages.find(s => s.id === gate.stage_id);
+      }
+
+      // Sort gates for display. Gates are sorted by the stage type they are
+      // associated, then by gate type. This ensures all ship gates are
+      // listed near each other, as well as origin trial gates, etc.
+      this.gates.sort((a, b) => {
+        if (a.stage && b.stage && a.stage.stage_type !== b.stage.stage_type) {
+          return a.stage.stage_type - b.stage.stage_type;
+        }
+        return a.gate_type - b.gate_type;
+      });
+
       const numPending = this.votes.filter((av) =>
         PENDING_STATES.includes(av.state)).length;
-      this.subsetPending = (numPending > 0 &&
-                            numPending < APPROVAL_DEFS.length);
+      this.subsetPending = (
+        numPending > 0 && numPending < this.gates.length);
       this.showAllIntents = numPending == 0;
-      this.changedApprovalsByField = new Map();
+      this.changedApprovalsByGate = new Map();
       this.needsSave = false;
 
       this.comments = commentRes.comments;
@@ -230,11 +220,10 @@ class ChromedashApprovalsDialog extends LitElement {
 
   renderApprovalValue(voteValue) {
     const selectedValue = (
-      this.changedApprovalsByField.get(voteValue.gate_type) ||
+      this.changedApprovalsByGate.get(voteValue.gate_id) ||
       voteValue.state);
     const canVote = (this.user?.can_approve &&
                      voteValue.set_by == this.user?.email);
-
     // hoist is needed when <sl-select> is in overflow:hidden context.
     return html`
       <div class="approval_row">
@@ -242,9 +231,9 @@ class ChromedashApprovalsDialog extends LitElement {
         <span class="set_on">${this.formatDate(voteValue.set_on)}</span>
         <span class="appr_val">
           ${canVote ? html`
-        <sl-select name="${voteValue.gate_type}"
+        <sl-select name="${voteValue.gate_id}"
             value="${selectedValue}"
-            data-field="${voteValue.gate_type}"
+            data-field="${voteValue.gate_id}"
             @sl-change=${this.handleSelectChanged}
             hoist size="small"
           >
@@ -260,10 +249,10 @@ class ChromedashApprovalsDialog extends LitElement {
     `;
   }
 
-  renderMyPendingApproval(fieldId) {
+  renderMyPendingApproval(gateInfo) {
     if (!this.user || !this.user.can_approve) return nothing;
     const existingApprovalByMe = this.votes.some((a) =>
-      a.gate_type == fieldId && a.set_by == this.user.email);
+      a.gate_id === gateInfo.id && a.set_by == this.user.email);
     // There shoud be only one approval entry for now, until we have
     // multiple stage entities for the same type of stage, e.g.
     // multiple shipping gates.
@@ -274,43 +263,44 @@ class ChromedashApprovalsDialog extends LitElement {
         {set_by: this.user.email,
           set_on: '',
           state: 7,
-          gate_type: fieldId});
+          gate_id: gateInfo.id,
+          gate_type: gateInfo.gate_type});
     }
   }
 
-  renderConfigWidgets(approvalDef) {
-    const fieldId = approvalDef.id;
-    const isOpen = this.showConfigs.has(fieldId);
+  renderConfigWidgets(gateInfo) {
+    const gateType = gateInfo.gate_type;
+    const isOpen = this.showConfigs.has(gateType);
     if (!isOpen) {
       return nothing;
     }
 
-    const config = this.configs.find(c => c.field_id == fieldId);
+    const config = this.configs.find(c => c.field_id == gateType);
     const owners = (config ? config.owners : []).join(', ');
     const nextAction = config ? config.next_action : '';
     const additionalReview = config && config.additional_review;
-    const offerAdditionalReview = fieldId == 2 || fieldId == 3;
+    const offerAdditionalReview = gateType == 2 || gateType == 3;
 
     const ownerWidget = html`
-      <input id="owners-${fieldId}" data-field="${fieldId}"
+      <input id="owners-${gateType}" data-field="${gateType}"
              @change=${this.handleConfigChanged}
              size=30 type="email" multiple placeholder="emails"
-             list="possible-owners-${fieldId}"
+             list="possible-owners-${gateType}"
              value="${owners}">
-      <datalist id="possible-owners-${fieldId}">
-         ${(this.possibleOwners[fieldId] || []).map(po => html`
+      <datalist id="possible-owners-${gateType}">
+         ${(this.possibleOwners[gateType] || []).map(po => html`
             <option value="${po}"></option>
          `)}
       </datalist>
     `;
     const nextActionWidget = html`
-      <input id="next-action-${fieldId}" data-field="${fieldId}"
+      <input id="next-action-${gateType}" data-field="${gateType}"
              @change=${this.handleConfigChanged}
-             type=date name="next_action_${fieldId}"
+             type=date name="next_action_${gateType}"
              value="${nextAction}">
     `;
     const additionalReviewWidget = html`
-      <input id="additional-review-${fieldId}" data-field="${fieldId}"
+      <input id="additional-review-${gateType}" data-field="${gateType}"
              @change=${this.handleConfigChanged}
              type=checkbox ?checked=${additionalReview}>
     `;
@@ -335,31 +325,30 @@ class ChromedashApprovalsDialog extends LitElement {
     `;
   }
 
-  renderApproval(approvalDef) {
-    const approvalValues = this.votes.filter((a) =>
-      a.gate_type == approvalDef.id);
-    const isActive = approvalValues.some((av) =>
-      PENDING_STATES.includes(av.state));
+  renderApproval(gateInfo) {
+    const voteValues = this.votes.filter((a) =>
+      a.gate_id == gateInfo.id);
+    const isActive = voteValues.some(v =>
+      PENDING_STATES.includes(v.state));
 
     if (!isActive && !this.showAllIntents) return nothing;
 
-
-    const isOpen = this.showConfigs.has(approvalDef.id);
+    const isOpen = this.showConfigs.has(gateInfo.gate_type);
     const configExpandIcon = html`
       <iron-icon
          style="margin-left:4px"
          @click="${() => {
-      this.toggleConfig(approvalDef);
+      this.toggleConfig(gateInfo);
     }}"
          icon="chromestatus:${isOpen ? 'expand-less' : 'expand-more'}">
       </iron-icon>
     `;
 
     let threadLink = nothing;
-    if (this.feature[approvalDef.threadField]) {
+    if (gateInfo.stage?.intent_thread_url) {
       threadLink = html`
         <div>
-          <a href="${this.feature[approvalDef.threadField]}" target="_blank"
+          <a href="${gateInfo.stage.intent_thread_url}" target="_blank"
              >blink-dev thread</a>
         </div>
       `;
@@ -368,24 +357,20 @@ class ChromedashApprovalsDialog extends LitElement {
     return html`
       <div class="approval_section">
         <h3>
-          ${approvalDef.name}
+          ${gateInfo.gate_name}
           ${configExpandIcon}
         </h3>
-        ${this.renderConfigWidgets(approvalDef)}
-        ${approvalValues.map((av) => this.renderApprovalValue(av))}
-        ${this.renderMyPendingApproval(approvalDef.id)}
+        ${this.renderConfigWidgets(gateInfo)}
+        ${voteValues.map(v => this.renderApprovalValue(v))}
+        ${this.renderMyPendingApproval(gateInfo)}
         ${threadLink}
       </div>
     `;
   }
 
   renderAllApprovals() {
-    // Some feature types do not have all gates.
-    // Only valid gate types should be shown.
-    const gatesShouldRender = (
-      GATES_BY_FEATURE_TYPE[this.feature.feature_type_int] || new Set([]));
-    return APPROVAL_DEFS.filter(def => gatesShouldRender.has(def.id))
-      .map((apprDef) => this.renderApproval(apprDef));
+    // Render an approval for each gate associated with the feature.
+    return this.gates.map(gateInfo => this.renderApproval(gateInfo));
   }
 
   renderAllComments() {
@@ -426,10 +411,10 @@ class ChromedashApprovalsDialog extends LitElement {
     const postToSelect = html`
       <sl-select placement="top" value=0 id="post_to_approval_field" size="small">
         <sl-option value="0">Don't post to mailing list</sl-option>
-        ${APPROVAL_DEFS.map((apprDef) => html`
-          <sl-option value="${apprDef.id}"
-                  ?disabled=${!this.canPostTo(this.feature[apprDef.threadField])}
-          >Post to ${apprDef.name} thread</sl-option>
+        ${this.gates.map(gate => html`
+          <sl-option value="${gate.id}"
+                  ?disabled=${!this.canPostTo(gate.stage?.intent_thread_url || '')}
+          >Post to ${gate.gate_name} thread</sl-option>
         `)}
       </sl-select>
       `;
@@ -470,13 +455,15 @@ class ChromedashApprovalsDialog extends LitElement {
     `;
   }
 
+  // Check if any information is new and can be saved
+  // after each user interaction with the dialog box.
   checkNeedsSave() {
     let newNeedsSave = false;
     const commentArea = this.shadowRoot.querySelector('#comment_area');
     const newVal = commentArea && commentArea.value.trim() || '';
     if (newVal != '') newNeedsSave = true;
-    for (const fieldId of this.changedApprovalsByField.keys()) {
-      if (this.changedApprovalsByField.get(fieldId) != -1) {
+    for (const voteValue of this.changedApprovalsByGate.values()) {
+      if (voteValue != -1) {
         newNeedsSave = true;
       }
     }
@@ -486,10 +473,11 @@ class ChromedashApprovalsDialog extends LitElement {
     this.needsSave = newNeedsSave;
   }
 
+  // Handle a vote value being changed by the user.
   handleSelectChanged(e) {
-    const fieldId = e.target.dataset['field'];
+    const gateId = e.target.dataset['field'];
     const newVal = e.target.value;
-    this.changedApprovalsByField.set(fieldId, newVal);
+    this.changedApprovalsByGate.set(gateId, newVal);
     this.checkNeedsSave();
   }
 
@@ -509,23 +497,22 @@ class ChromedashApprovalsDialog extends LitElement {
 
   handleSave() {
     const promises = [];
-    for (const fieldId of this.changedApprovalsByField.keys()) {
-      if (this.changedApprovalsByField.get(fieldId) != -1) {
-        // There shoud be only one gate by field ID for now, until we have
-        // multiple stage entities for the same type of stage, e.g.
-        // multiple shipping gates.
-        const gatesByField = this.gates.filter((g) =>
-          g.gate_type == fieldId);
-
-        if (!gatesByField.length) {
+    // Check if any votes were changed by the user, and change them if so.
+    for (const [gateId, voteValue] of this.changedApprovalsByGate) {
+      if (voteValue !== -1) {
+        const changedGate = this.gates.find(g => g.id === Number(gateId));
+        if (!changedGate) {
           continue;
         }
         promises.push(
           window.csClient.setVote(
-            this.feature.id, gatesByField[0].id,
-            this.changedApprovalsByField.get(fieldId)));
+            this.feature.id, changedGate.id,
+            voteValue));
       }
     }
+
+    // TODO(danielrsmith): ApprovalConfig entities are deprecated and
+    // this request should instead affect Gate entities.
     for (const fieldId of this.changedConfigsByField.keys()) {
       const config = this.changedConfigsByField.get(fieldId);
       promises.push(
@@ -533,16 +520,20 @@ class ChromedashApprovalsDialog extends LitElement {
           this.feature.id, fieldId, config['owners'],
           config['nextAction'], config['additionalReview']));
     }
+
+    // Handle saving comment and posting to thread if a comment was provided.
     const commentArea = this.shadowRoot.querySelector('#comment_area');
     const commentText = commentArea.value.trim();
     const postToSelect = this.shadowRoot.querySelector(
       '#post_to_approval_field');
-    const postToThreadType = postToSelect && postToSelect.value || 0;
+    const gateId = (postToSelect) ? Number(postToSelect.value) : 0;
+    const gate = this.gates.find(g => g.id === gateId);
+    const gateType = (gate) ? gate.gate_type : 0;
     if (commentText != '') {
       promises.push(
         window.csClient.postComment(
-          this.feature.id, null, commentText,
-          Number(postToThreadType)));
+          this.feature.id, gateId, commentText,
+          Number(gateType)));
     }
     Promise.all(promises).then(() => {
       this.shadowRoot.querySelector('sl-dialog').hide();
@@ -553,12 +544,12 @@ class ChromedashApprovalsDialog extends LitElement {
     this.shadowRoot.querySelector('sl-dialog').hide();
   }
 
-  toggleConfig(approvalDef) {
+  toggleConfig(gateInfo) {
     const newConfigs = new Set([...this.showConfigs]); // Make a copy.
-    if (newConfigs.has(approvalDef.id)) {
-      newConfigs.delete(approvalDef.id);
+    if (newConfigs.has(gateInfo.gate_type)) {
+      newConfigs.delete(gateInfo.gate_type);
     } else {
-      newConfigs.add(approvalDef.id);
+      newConfigs.add(gateInfo.gate_type);
     }
     this.showConfigs = newConfigs;
   }

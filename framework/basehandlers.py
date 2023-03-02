@@ -122,7 +122,7 @@ class BaseHandler(flask.views.MethodView):
     return val
 
   def get_specified_feature(
-      self, feature_id: Optional[int]=None) -> FeatureEntry:
+      self, feature_id: Optional[int]=None):
     """Get the feature specified in the featureId parameter."""
     feature_id = (feature_id or
                   self.get_int_param('featureId', required=True))
