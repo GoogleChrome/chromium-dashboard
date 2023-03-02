@@ -413,7 +413,7 @@ class ChromedashApprovalsDialog extends LitElement {
         <sl-option value="0">Don't post to mailing list</sl-option>
         ${this.gates.map(gate => html`
           <sl-option value="${gate.id}"
-                  ?disabled=${!this.canPostTo(this.feature.stage?.intent_thread_url || '')}
+                  ?disabled=${!this.canPostTo(gate.stage?.intent_thread_url || '')}
           >Post to ${gate.gate_name} thread</sl-option>
         `)}
       </sl-select>
