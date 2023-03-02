@@ -93,6 +93,9 @@ class CommentsAPI(basehandlers.APIHandler):
           author=user.email(), content=comment_content)
       comment_activity.put()
 
+    # We can only be certain which intent thread we want to post to with
+    # a relevant gate ID in order to get the intent_thread_url field from
+    # the corresponding Stage entity.
     if post_to_thread_type and gate_id:
       notifier.post_comment_to_mailing_list(
           feature, gate_id, post_to_thread_type, user.email(), comment_content)

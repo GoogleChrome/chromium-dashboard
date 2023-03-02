@@ -326,10 +326,10 @@ class ChromedashApprovalsDialog extends LitElement {
   }
 
   renderApproval(gateInfo) {
-    const approvalValues = this.votes.filter((a) =>
+    const voteValues = this.votes.filter((a) =>
       a.gate_id == gateInfo.id);
-    const isActive = approvalValues.some((av) =>
-      PENDING_STATES.includes(av.state));
+    const isActive = voteValues.some(v =>
+      PENDING_STATES.includes(v.state));
 
     if (!isActive && !this.showAllIntents) return nothing;
 
@@ -361,7 +361,7 @@ class ChromedashApprovalsDialog extends LitElement {
           ${configExpandIcon}
         </h3>
         ${this.renderConfigWidgets(gateInfo)}
-        ${approvalValues.map((av) => this.renderApprovalValue(av))}
+        ${voteValues.map(v => this.renderApprovalValue(v))}
         ${this.renderMyPendingApproval(gateInfo)}
         ${threadLink}
       </div>
@@ -391,8 +391,8 @@ class ChromedashApprovalsDialog extends LitElement {
       threadArchiveUrl &&
         (threadArchiveUrl.startsWith(
           'https://groups.google.com/a/chromium.org/d/msgid/blink-dev/') ||
-          threadArchiveUrl.startsWith(
-            'https://groups.google.com/d/msgid/jrobbins-test')));
+         threadArchiveUrl.startsWith(
+           'https://groups.google.com/d/msgid/jrobbins-test')));
   }
 
   renderControls() {
@@ -455,6 +455,8 @@ class ChromedashApprovalsDialog extends LitElement {
     `;
   }
 
+  // Check if any information is new and can be saved
+  // after each user interaction with the dialog box.
   checkNeedsSave() {
     let newNeedsSave = false;
     const commentArea = this.shadowRoot.querySelector('#comment_area');
