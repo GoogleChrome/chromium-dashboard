@@ -125,7 +125,7 @@ class ChromedashGateChip extends LitElement {
   }
 
   openApprovalsDialog(e) {
-    if (e.shiftKey) {
+    if (!e.altKey) {
       // Handled in chromedash-app.js.
       this._fireEvent('show-gate-column', {
         feature: this.feature,
