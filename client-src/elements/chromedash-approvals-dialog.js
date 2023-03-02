@@ -69,6 +69,7 @@ class ChromedashApprovalsDialog extends LitElement {
       possibleOwners: {type: Object},
       showConfigs: {type: Object},
       showAllIntents: {type: Boolean},
+      submittingChanges: {type: Boolean},
       changedApprovalsByField: {attribute: false},
       changedConfigsByField: {attribute: false},
       needsSave: {type: Boolean},
@@ -88,6 +89,7 @@ class ChromedashApprovalsDialog extends LitElement {
     this.possibleOwners = {};
     this.showConfigs = new Set();
     this.showAllIntents = false;
+    this.submittingChanges = false;
     this.changedApprovalsByField = new Map();
     this.changedConfigsByField = new Map();
     this.needsSave = false;
@@ -176,6 +178,7 @@ class ChromedashApprovalsDialog extends LitElement {
 
   openWithFeature(feature) {
     this.loading = true;
+    this.submittingChanges = false;
     this.feature = feature;
     this.shadowRoot.querySelector('sl-dialog').show();
     const featureId = this.feature.id;
@@ -445,7 +448,7 @@ class ChromedashApprovalsDialog extends LitElement {
        ${postToSelect}
        <sl-button variant="primary"
          @click=${this.handleSave}
-         ?disabled=${!this.needsSave}
+         ?disabled=${!this.needsSave || this.submittingChanges}
          size="small"
          >Save</sl-button>
      </div>
@@ -509,6 +512,7 @@ class ChromedashApprovalsDialog extends LitElement {
 
   handleSave() {
     const promises = [];
+    this.submittingChanges = true;
     for (const fieldId of this.changedApprovalsByField.keys()) {
       if (this.changedApprovalsByField.get(fieldId) != -1) {
         // There shoud be only one gate by field ID for now, until we have
@@ -545,7 +549,10 @@ class ChromedashApprovalsDialog extends LitElement {
           Number(postToThreadType)));
     }
     Promise.all(promises).then(() => {
-      this.shadowRoot.querySelector('sl-dialog').hide();
+      this.handleCancel();
+    }).catch(() => {
+      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+      this.handleCancel();
     });
   }
 
