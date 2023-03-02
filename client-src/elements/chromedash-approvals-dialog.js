@@ -43,6 +43,7 @@ class ChromedashApprovalsDialog extends LitElement {
       possibleOwners: {type: Object},
       showConfigs: {type: Object},
       showAllIntents: {type: Boolean},
+      submittingChanges: {type: Boolean},
       changedApprovalsByGate: {attribute: false},
       changedConfigsByField: {attribute: false},
       needsSave: {type: Boolean},
@@ -62,6 +63,7 @@ class ChromedashApprovalsDialog extends LitElement {
     this.possibleOwners = {};
     this.showConfigs = new Set();
     this.showAllIntents = false;
+    this.submittingChanges = false;
     this.changedApprovalsByGate = new Map();
     this.changedConfigsByField = new Map();
     this.needsSave = false;
@@ -150,6 +152,7 @@ class ChromedashApprovalsDialog extends LitElement {
 
   openWithFeature(feature) {
     this.loading = true;
+    this.submittingChanges = false;
     this.feature = feature;
     this.shadowRoot.querySelector('sl-dialog').show();
     const featureId = this.feature.id;
@@ -430,7 +433,7 @@ class ChromedashApprovalsDialog extends LitElement {
        ${postToSelect}
        <sl-button variant="primary"
          @click=${this.handleSave}
-         ?disabled=${!this.needsSave}
+         ?disabled=${!this.needsSave || this.submittingChanges}
          size="small"
          >Save</sl-button>
      </div>
@@ -497,6 +500,7 @@ class ChromedashApprovalsDialog extends LitElement {
 
   handleSave() {
     const promises = [];
+    this.submittingChanges = true;
     // Check if any votes were changed by the user, and change them if so.
     for (const [gateId, voteValue] of this.changedApprovalsByGate) {
       if (voteValue !== -1) {
@@ -536,7 +540,10 @@ class ChromedashApprovalsDialog extends LitElement {
           Number(gateType)));
     }
     Promise.all(promises).then(() => {
-      this.shadowRoot.querySelector('sl-dialog').hide();
+      this.handleCancel();
+    }).catch(() => {
+      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+      this.handleCancel();
     });
   }
 
