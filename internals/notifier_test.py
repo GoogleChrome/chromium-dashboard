@@ -731,15 +731,22 @@ class FunctionsTest(testing_config.CustomTestCase):
     self.fe_1 = FeatureEntry(
         name='feature one', summary='sum', category=1, feature_type=0)
     self.fe_1.put()
+
+    stages = []
     # Prototyping stage.
     self.proto_stage = Stage(feature_id=self.fe_1.key.integer_id(),
         stage_type=120, intent_thread_url=impl_url)
-    self.proto_stage.put()
+    stages.append(self.proto_stage)
     # Origin trial stage.
     self.ot_stage = Stage(feature_id=self.fe_1.key.integer_id(), stage_type=150,
         intent_thread_url=expr_url)
-    self.ot_stage.put()
-    # Note: There is no need to put() it in the datastore.
+    stages.append(self.ot_stage)
+    # Ship stage with no intent thread url.
+    self.ship_stage = Stage(
+        feature_id=self.fe_1.key.integer_id(), stage_type=160,
+        intent_thread_url=None)
+    stages.append(self.ship_stage)
+    ndb.put_multi(stages)
 
   def tearDown(self) -> None:
     kinds: list[ndb.Model] = [FeatureEntry, Stage]
@@ -751,16 +758,13 @@ class FunctionsTest(testing_config.CustomTestCase):
     """We can select the correct approval thread field of a feature."""
     self.assertEqual(
         '123xxx=yyy@mail.gmail.com',
-        notifier.get_thread_id(
-            self.fe_1, approval_defs.PrototypeApproval))
+        notifier.get_thread_id(self.proto_stage))
     self.assertEqual(
         '456xxx=yyy@mail.gmail.com',
-        notifier.get_thread_id(
-            self.fe_1, approval_defs.ExperimentApproval))
+        notifier.get_thread_id(self.ot_stage))
     self.assertEqual(
         None,
-        notifier.get_thread_id(
-            self.fe_1, approval_defs.ShipApproval))
+        notifier.get_thread_id(self.ship_stage))
 
   def test_generate_thread_subject__normal(self):
     """Most intents just use the name of the intent."""
@@ -807,5 +811,4 @@ class FunctionsTest(testing_config.CustomTestCase):
     self.proto_stage.intent_thread_url += '?param=val#anchor'
     self.assertEqual(
         '123xxx=yyy@mail.gmail.com',
-        notifier.get_thread_id(
-            self.fe_1, approval_defs.PrototypeApproval))
+        notifier.get_thread_id(self.proto_stage))

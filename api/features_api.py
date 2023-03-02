@@ -15,6 +15,7 @@
 
 from typing import Any, Optional
 
+from api import converters
 from framework import basehandlers
 from framework import permissions
 from framework import rediscache
@@ -28,10 +29,10 @@ class FeaturesAPI(basehandlers.APIHandler):
   """Features are the the main records that we track."""
 
   def get_one_feature(self, feature_id: int) -> dict[str, Any]:
-    features = feature_helpers.get_by_ids([feature_id])
-    if not features:
+    feature = FeatureEntry.get_by_id(feature_id)
+    if not feature:
       self.abort(404, msg='Feature %r not found' % feature_id)
-    return features[0]
+    return converters.feature_entry_to_json_verbose(feature)
 
   def do_search(self) -> dict[str, Any]:
     user = users.get_current_user()

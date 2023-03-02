@@ -36,6 +36,7 @@ from internals import approval_defs
 from internals import core_enums
 from internals import stage_helpers
 from internals.core_models import Feature, FeatureEntry, MilestoneSet, Stage
+from internals.review_models import Gate
 from internals.user_models import (
     AppUser, BlinkComponent, FeatureOwner, UserPref)
 
@@ -443,30 +444,12 @@ def generate_thread_subject(feature, approval_field):
   return '%s: %s' % (intent_phrase, feature.name)
 
 
-def get_thread_id(feature: FeatureEntry, approval_field):
+def get_thread_id(stage: Stage):
   """If we have the URL of the Google Groups thread, we can get its ID."""
-  stages = stage_helpers.get_feature_stages(feature.key.integer_id())
-  stage_type: int | None = None
-  if approval_field == approval_defs.PrototypeApproval:
-    stage_type = core_enums.STAGE_TYPES_PROTOTYPE[feature.feature_type]
-  # TODO(jrobbins): Ready-for-trial threads
-  if approval_field == approval_defs.ExperimentApproval:
-    stage_type = core_enums.STAGE_TYPES_ORIGIN_TRIAL[feature.feature_type]
-  if approval_field == approval_defs.ExtendExperimentApproval:
-    stage_type = core_enums.STAGE_TYPES_EXTEND_ORIGIN_TRIAL[
-        feature.feature_type]
-  if approval_field == approval_defs.ShipApproval:
-    stage_type = core_enums.STAGE_TYPES_SHIPPING[feature.feature_type]
-
-  thread_url: str | None = None
-  if stage_type:
-    relevant_stages = stages[stage_type]
-    if relevant_stages:
-      # TODO(danielrsmith): Refactor for compatibility with multiple stages.
-      thread_url = relevant_stages[0].intent_thread_url
-  if not thread_url:
+  if stage.intent_thread_url is None:
     return None
 
+  thread_url = stage.intent_thread_url
   thread_url = thread_url.split('#')[0]  # Chop off any anchor
   thread_url = thread_url.split('?')[0]  # Chop off any query string params
   thread_url = urllib.parse.unquote(thread_url)  # Convert %40 to @.
@@ -505,15 +488,31 @@ def send_emails(email_tasks):
 
 
 def post_comment_to_mailing_list(
-    feature, approval_field_id, author_addr, comment_content):
+    feature: FeatureEntry,
+    gate_id: int,
+    approval_field_id: int,
+    author_addr: str,
+    comment_content: str):
   """Post a message to the intent thread."""
   to_addr = settings.REVIEW_COMMENT_MAILING_LIST
   from_user = author_addr.split('@')[0]
   approval_field = approval_defs.APPROVAL_FIELDS_BY_ID[approval_field_id]
-  subject = generate_thread_subject(feature, approval_field)
+
+  # Use the Gate ID to find the Stage ID that has the thread URL and subject.
+  gate: Gate | None = Gate.get_by_id(gate_id)
+  stage: Stage | None = None if gate is None else Stage.get_by_id(gate.stage_id)
+  # There should always be a matching stage for every gate.
+  if stage is None:
+    raise ValueError("No matching Stage entity found for given Gate ID.")
+
+  # Set the subject line from the stage, or generate it if null.
+  subject = None if stage is None else stage.intent_subject_line
+  if subject is None:
+    subject = generate_thread_subject(feature, approval_field)
+
   if not subject.startswith('Re: '):
     subject = 'Re: ' + subject
-  thread_id = get_thread_id(feature, approval_field)
+  thread_id = get_thread_id(stage)
   references = None
   if thread_id:
     references = '<%s>' % thread_id
