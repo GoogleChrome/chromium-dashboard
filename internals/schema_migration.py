@@ -701,3 +701,73 @@ class MigrateSubjectLineField(FlaskHandler):
         count += len(stages_to_update)
 
     return f'{count} subject line fields migrated.'
+
+
+class MigrateLGTMFields(FlaskHandler):
+
+  def get_template_data(self, **kwargs) -> str:
+    """Migrates old Feature subject lgtms to their respective votes."""
+    self.require_cron_header()
+
+    count = 0
+    votes_to_create = []
+    vote_dict = self.get_vote_dict()
+    features = Feature.query()
+    for f in features:
+      if not f.i2e_lgtms:
+        continue
+      for email in f.i2e_lgtms:
+        if self.has_existing_vote(email, GATE_API_ORIGIN_TRIAL, f, vote_dict):
+          continue
+
+        # i2e_lgtms (Intent to Experiment)'s gate_type is GATE_API_ORIGIN_TRIAL.
+        votes_to_create.append(self.create_new_vote(
+            email, GATE_API_ORIGIN_TRIAL, f))
+        count += 1
+
+    for f in features:
+      if not f.i2s_lgtms:
+        continue
+      for email in f.i2s_lgtms:
+        if self.has_existing_vote(email, GATE_API_SHIP, f, vote_dict):
+          continue
+
+        # i2s_lgtms (Intent to Ship)'s gate_type is GATE_API_SHIP.
+        votes_to_create.append(self.create_new_vote(
+            email, GATE_API_SHIP, f))
+        count += 1
+
+    # Only create 100 votes at a time.
+    votes_to_create = votes_to_create[:100]
+    for new_vote in votes_to_create:
+      approval_defs.set_vote(new_vote.feature_id, new_vote.gate_type,
+                             new_vote.state, new_vote.set_by)
+    return f'{len(votes_to_create)} of {count} lgtms fields migrated.'
+
+  def get_vote_dict(self):
+    vote_dict = {}
+    votes = Vote.query().fetch(None)
+    for vote in votes:
+      if vote.feature_id in vote_dict:
+        vote_dict[vote.feature_id].append(vote)
+      else:
+        vote_dict[vote.feature_id] = [vote]
+    return vote_dict
+
+  def has_existing_vote(self, email, gate_type, f, vote_dict):
+    f_id = f.key.integer_id()
+    if f_id not in vote_dict:
+      return False
+
+    for v in vote_dict[f_id]:
+      # Check if set by the same reviewer and the same gate_type.
+      if v.set_by == email and v.gate_type == gate_type:
+        return True
+
+    return False
+
+  def create_new_vote(self, email, gate_type, f):
+    f_id = f.key.integer_id()
+    vote = Vote(feature_id=f_id, gate_type=gate_type,
+                state=Vote.APPROVED, set_by=email)
+    return vote
