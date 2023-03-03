@@ -18,7 +18,6 @@ class ChromedashFeature extends LitElement {
     return {
       feature: {type: Object},
       canEdit: {type: Boolean},
-      canApprove: {type: Boolean},
       signedin: {type: Boolean},
       open: {type: Boolean, reflect: true}, // Attribute used in the parent for styling
       starred: {type: Boolean},
@@ -197,25 +196,10 @@ class ChromedashFeature extends LitElement {
       });
   }
 
-  openApprovalsDialog(feature) {
-    // handled in chromedash-myfeatures-page.js
-    this._fireEvent('open-approvals-event', {
-      feature: feature,
-    });
-  }
-
   render() {
     return html`
       <hgroup @click="${this._togglePanelExpansion}">
         <h2><a href="/feature/${this.feature.id}">${this.feature.name}</a>
-          ${this.canApprove ? html`
-            <span class="tooltip" title="Review approvals">
-              <a id="approvals-icon" data-tooltip
-                 @click="${() => this.openApprovalsDialog(this.feature)}">
-                <iron-icon icon="chromestatus:approval"></iron-icon>
-              </a>
-            </span>
-            `: nothing}
           ${this.canEdit ? html`
             <span class="tooltip" title="Edit this feature">
               <a href="/guide/edit/${this.feature.id}" data-tooltip>

@@ -217,12 +217,6 @@ export class ChromedashFeaturePage extends LitElement {
     });
   }
 
-  /* Open the general approvals dialog when the user clicks on stamp icon. */
-  handleApprovalClick(e) {
-    e.preventDefault();
-    openApprovalsDialog(this.user, this.feature);
-  }
-
   /* Open the specific approvals dialog when the user clicks on a gate chip. */
   // TODO(jrobbins): Make it specific.
   handleOpenApprovals(e) {
@@ -294,13 +288,6 @@ export class ChromedashFeaturePage extends LitElement {
               <iron-icon icon="chromestatus:link"></iron-icon>
             </a>
           </span>
-          ${this.user && this.user.can_approve ? html`
-            <span class="tooltip" title="Review approvals">
-              <a href="#" id="approvals-icon" data-tooltip @click=${this.handleApprovalClick}>
-                <iron-icon icon="chromestatus:approval"></iron-icon>
-              </a>
-            </span>
-          `: nothing}
           ${canEdit ? html`
             <span class="tooltip" title="Edit this feature">
               <a href="/guide/edit/${this.featureId}" class="editfeature" data-tooltip>
