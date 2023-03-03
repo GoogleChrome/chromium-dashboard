@@ -452,7 +452,7 @@ class MigrateLGTMFieldsTest(testing_config.CustomTestCase):
         feature_type=0,
         owner=['owner@example.com'],
         editors=['editor@example.com'],
-        i2s_lgtms=['lgtm1@gmail.com'],
+        i2s_lgtms=['lgtm1@gmail.com', 'lgtm2@gmail.com'],
         unlisted=False,
         deleted=False,
         name='feature_two',
@@ -516,11 +516,11 @@ class MigrateLGTMFieldsTest(testing_config.CustomTestCase):
   def test_migrations_two_votes(self):
     handler_message = self.run_handler(
         schema_migration.MigrateLGTMFields())
-    expected = '2 of 2 lgtms fields migrated.'
+    expected = '3 of 3 lgtms fields migrated.'
     self.assertEqual(handler_message, expected)
 
     votes = Vote.query().fetch()
-    self.assertEqual(len(votes), 2)
+    self.assertEqual(len(votes), 3)
 
     vote_1 = votes[0]
     self.assertEqual(vote_1.feature_id, 1)
@@ -534,6 +534,14 @@ class MigrateLGTMFieldsTest(testing_config.CustomTestCase):
     self.assertEqual(vote_2.gate_type, GATE_API_SHIP)
     self.assertEqual(vote_2.state, Vote.APPROVED)
     self.assertEqual(vote_2.set_by, 'lgtm1@gmail.com')
+    # THREE_LGTM required for GATE_API_SHIP.
+    self.assertEqual(self.gate_2.state, Gate.PREPARING)
+
+    vote_2 = votes[2]
+    self.assertEqual(vote_2.feature_id, 2)
+    self.assertEqual(vote_2.gate_type, GATE_API_SHIP)
+    self.assertEqual(vote_2.state, Vote.APPROVED)
+    self.assertEqual(vote_2.set_by, 'lgtm2@gmail.com')
     # THREE_LGTM required for GATE_API_SHIP.
     self.assertEqual(self.gate_2.state, Gate.PREPARING)
 
