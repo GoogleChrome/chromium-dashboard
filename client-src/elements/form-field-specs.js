@@ -312,7 +312,7 @@ export const ALL_FIELDS = {
         Explain why the web needs this change. It may be useful
         to describe what web developers are forced to do without
         it. When possible, add links to your explainer
-        (under <a href="#explainer_links">Explainer link(s)</a>)
+        (under <a href="#id_explainer_links">Explainer link(s)</a>)
         backing up your claims.
         <br/><br/>
         This text is sometimes included with the summary in the
