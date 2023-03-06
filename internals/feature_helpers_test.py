@@ -20,7 +20,8 @@ from framework import rediscache
 from internals.core_enums import *
 from internals import feature_helpers
 from internals import stage_helpers
-from internals.core_models import Feature, FeatureEntry, MilestoneSet, Stage
+from internals.legacy_models import Feature
+from internals.core_models import FeatureEntry, MilestoneSet, Stage
 
 
 class FeatureHelpersTest(testing_config.CustomTestCase):

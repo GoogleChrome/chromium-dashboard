@@ -21,7 +21,8 @@ import requests
 from flask import render_template
 
 from framework import basehandlers
-from internals import core_models
+from internals.core_models import FeatureEntry, MilestoneSet
+from internals.legacy_models import Feature
 from internals import notifier
 from internals import stage_helpers
 from internals.core_enums import STAGE_TYPES_BY_FIELD_MAPPING
@@ -52,7 +53,7 @@ def build_email_tasks(
     # TODO(danielrsmith): the estimated-milestones-template.html is reliant
     # on old Feature entity milestone fields and will need to be refactored
     # to use Stage entity fields before removing this Feature use.
-    feature = core_models.Feature.get_by_id(fe.key.integer_id())
+    feature = Feature.get_by_id(fe.key.integer_id())
     body_data = {
       'id': fe.key.integer_id(),
       'feature': feature,
@@ -120,7 +121,7 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
           milestones = stage.milestones
           m = (None if milestones is None
               else getattr(milestones,
-                  core_models.MilestoneSet.MILESTONE_FIELD_MAPPING[field]))
+                  MilestoneSet.MILESTONE_FIELD_MAPPING[field]))
           if m is not None and m >= min_mstone and m <= max_mstone:
             if min_milestone is None:
               min_milestone = m
@@ -134,8 +135,8 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
 
   def determine_features_to_notify(self, current_milestone_info):
     """Get all features filter them by class-specific and milestone criteria."""
-    features = core_models.FeatureEntry.query(
-        core_models.FeatureEntry.deleted == False).fetch()
+    features = FeatureEntry.query(
+        FeatureEntry.deleted == False).fetch()
     prefiltered_features = self.prefilter_features(
         current_milestone_info, features)
     features_milestone_pairs = self.filter_by_milestones(

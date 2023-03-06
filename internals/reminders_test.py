@@ -18,7 +18,8 @@ import settings
 from datetime import datetime
 from unittest import mock
 
-from internals.core_models import Feature, FeatureEntry, MilestoneSet, Stage
+from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.legacy_models import Feature
 from internals import reminders
 
 from google.cloud import ndb  # type: ignore

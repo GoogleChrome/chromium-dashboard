@@ -23,7 +23,7 @@ from framework import permissions
 from framework import users
 from internals import core_enums
 from internals import approval_defs
-from internals.core_models import Feature, FeatureEntry, Stage
+from internals.core_models import FeatureEntry, Stage
 from internals import review_models
 
 

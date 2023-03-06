@@ -18,7 +18,8 @@ import testing_config  # Must be imported before the module under test.
 from datetime import datetime
 
 from internals.core_enums import *
-from internals.core_models import Feature, FeatureEntry, Stage
+from internals.core_models import FeatureEntry, Stage
+from internals.legacy_models import Feature
 from internals.review_models import Activity, Approval, Comment, Gate, Vote
 from internals import schema_migration
 
