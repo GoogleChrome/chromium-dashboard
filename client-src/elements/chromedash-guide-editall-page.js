@@ -70,7 +70,7 @@ export class ChromedashGuideEditallPage extends LitElement {
 
   /* Add the form's event listener after Shoelace event listeners are attached
    * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
-  async registerFormSubmitHandler(el) {
+  async registerHandlers(el) {
     if (!el) return;
 
     await el.updateComplete;
@@ -78,6 +78,8 @@ export class ChromedashGuideEditallPage extends LitElement {
     hiddenTokenField.form.addEventListener('submit', (event) => {
       this.handleFormSubmit(event, hiddenTokenField);
     });
+
+    this.scrollToPosition();
   }
 
   handleFormSubmit(event, hiddenTokenField) {
@@ -92,6 +94,18 @@ export class ChromedashGuideEditallPage extends LitElement {
 
   handleCancelClick() {
     window.location.href = `/guide/edit/${this.featureId}`;
+  }
+
+  scrollToPosition() {
+    if (location.hash) {
+      const hash = decodeURIComponent(location.hash);
+      if (hash) {
+        const el = this.shadowRoot.querySelector(hash);
+        if (el) {
+          this.shadowRoot.querySelector(`chromedash-form-field[name="${el.name}"] tr th b`).scrollIntoView(true, {behavior: 'smooth'});
+        }
+      }
+    }
   }
 
   renderSkeletons() {
@@ -251,7 +265,7 @@ export class ChromedashGuideEditallPage extends LitElement {
         <input type="hidden" name="token">
         <input type="hidden" name="nextPage" value=${this.getNextPage()} >
         <input type="hidden" name="form_fields" value=${allFormFields.join(',')}>
-        <chromedash-form-table ${ref(this.registerFormSubmitHandler)}>
+        <chromedash-form-table ${ref(this.registerHandlers)}>
           ${formsToRender}
         </chromedash-form-table>
 
