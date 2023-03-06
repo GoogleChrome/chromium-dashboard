@@ -160,10 +160,6 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
 
 
   renderCardHeader() {
-    // Starting with M110, display Early Stable Release dates.
-    const stableStart = (this.channel.version >= 110) ?
-      this.channel.final_beta : this.channel.stable_date;
-
     return html `
       <div class="layout vertical center">
         <h1 class="channel_label">${this.templateContent.channelLabel}</h1>
@@ -184,10 +180,15 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
       </div>
       <div class="milestone_info layout horizontal center-center">
         <h3>
-          <span class="channel_label">Stable</span> ${this._computeDaysUntil(stableStart)}
-          <span class="release-stable">(${this._computeDate(stableStart, true)})</span>
+          <span class="channel_label">Early Stable</span> ${this._computeDaysUntil(this.channel.final_beta)}
+          <span class="early-stable">(${this._computeDate(this.channel.final_beta, true)})</span>
+        </h3>
+      </div>
+      <div class="milestone_info layout horizontal center-center">
+        <h3>
+          <span class="channel_label">Stable</span> ${this._computeDaysUntil(this.channel.stable_date)}
+          <span class="release-stable">(${this._computeDate(this.channel.stable_date, true)})</span>
           ${this.renderInfoIcon()}
-
         </h3>
       </div>
       ` : nothing}
