@@ -129,7 +129,7 @@ Operations = HTTP verbs. (e.g. GET, POST, PUT, etc)
 - Add the operation(s) under the path.
 - Ensure each operation has a `summary`, `description` and `operationId`
 - If your path has path parameters, describe the parameters now too.
-  - Mark these are required as well.
+  - Mark required parameters with `required: true`.
 
 <details>
   <summary>Example (click to expand)</summary>
@@ -140,7 +140,7 @@ Operations = HTTP verbs. (e.g. GET, POST, PUT, etc)
     /features/{feature_id}:
       get:
         summary: Get a feature by ID.
-        description: >-
+        description: |
           Get a feature by ID. More details about this here.
           Also, can do more comments
         operationId: getFeatureById
@@ -154,7 +154,7 @@ Operations = HTTP verbs. (e.g. GET, POST, PUT, etc)
               format: int64
       post:
         summary: Update a feature by ID.
-        description: >-
+        description: |
           Update a feature with the given ID.
           More details about this here.
         operationId: updateFeatureById
@@ -190,7 +190,7 @@ Operations = HTTP verbs. (e.g. GET, POST, PUT, etc)
   ...
       post:
         summary: Update a feature by ID.
-        description: >-
+        description: |
           Update a feature with the given ID.
           More details about this here.
         operationId: updateFeatureById
@@ -249,7 +249,7 @@ Operations = HTTP verbs. (e.g. GET, POST, PUT, etc)
   ...
       post:
         summary: Update a feature by ID.
-        description: >-
+        description: |
           Update a feature with the given ID.
           More details about this here.
         operationId: updateFeatureById
@@ -306,7 +306,7 @@ Run: `npm run openapi`
     /features/{feature_id}:
       post:
         summary: Update a feature by ID.
-        description: >-
+        description: |
           Update a feature with the given ID.
           More details about this here.
         operationId: updateFeatureById
