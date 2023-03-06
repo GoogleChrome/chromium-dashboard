@@ -16,8 +16,8 @@ import testing_config  # Must be imported before the module under test.
 
 import datetime
 
-from internals.legacy_models import Feature
-from internals.review_models import Activity, Approval, Gate, OwnersFile, Vote
+from internals.legacy_models import Approval, Feature 
+from internals.review_models import Activity, Gate, OwnersFile, Vote
 
 
 class ApprovalTest(testing_config.CustomTestCase):

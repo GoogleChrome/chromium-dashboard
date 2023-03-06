@@ -13,13 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
 from typing import Any
 
 from framework import basehandlers
 from framework import permissions
-from internals import approval_defs
-from internals.review_models import Activity, Amendment, Approval, Gate, Vote
+from internals.review_models import Activity, Amendment
 from internals import notifier
 
 

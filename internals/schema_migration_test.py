@@ -19,8 +19,8 @@ from datetime import datetime
 
 from internals.core_enums import *
 from internals.core_models import FeatureEntry, Stage
-from internals.legacy_models import Feature
-from internals.review_models import Activity, Approval, Comment, Gate, Vote
+from internals.legacy_models import Feature, Approval, Comment
+from internals.review_models import Activity, Gate, Vote
 from internals import schema_migration
 
 

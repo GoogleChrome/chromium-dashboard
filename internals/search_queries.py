@@ -25,7 +25,7 @@ from framework import users
 from framework import utils
 from internals import core_enums
 from internals.core_models import FeatureEntry, Stage
-from internals import review_models
+from internals.review_models import Gate
 
 
 def single_field_query_async(
@@ -176,17 +176,17 @@ def _sorted_by_joined_model(
 def sorted_by_pending_request_date(descending: bool) -> list[int]:
   """Return feature_ids of pending approvals sorted by request date."""
   return _sorted_by_joined_model(
-      review_models.Gate,
-      review_models.Gate.state.IN(review_models.Gate.PENDING_STATES),
-      descending, review_models.Gate.requested_on)
+      Gate,
+      Gate.state.IN(Gate.PENDING_STATES),
+      descending, Gate.requested_on)
 
 
 def sorted_by_review_date(descending: bool) -> list[int]:
   """Return feature_ids of reviewed approvals sorted by last review."""
   return _sorted_by_joined_model(
-      review_models.Gate,
-      review_models.Gate.state.IN(review_models.Gate.FINAL_STATES),
-      descending, review_models.Gate.requested_on)
+      Gate,
+      Gate.state.IN(Gate.FINAL_STATES),
+      descending, Gate.requested_on)
 
 
 QUERIABLE_FIELDS: dict[str, Property] = {
