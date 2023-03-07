@@ -23,7 +23,8 @@ import html5lib
 import settings
 
 from internals import core_enums
-from internals import core_models
+from internals.core_models import FeatureEntry
+from internals.legacy_models import Feature
 from internals import user_models
 from pages import featurelist
 from framework import rediscache
@@ -47,13 +48,13 @@ class TestWithFeature(testing_config.CustomTestCase):
     self.app_admin.is_admin = True
     self.app_admin.put()
 
-    self.feature_1 = core_models.Feature(
+    self.feature_1 = Feature(
         name='feature one', summary='detailed sum', owner=['owner@example.com'],
         category=1, intent_stage=core_enums.INTENT_IMPLEMENT)
     self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()
 
-    self.fe_1 = core_models.FeatureEntry(
+    self.fe_1 = FeatureEntry(
         name='feature one', summary='detailed sum',
         owner_emails=['owner@example.com'],
         category=1, intent_stage=core_enums.INTENT_IMPLEMENT)

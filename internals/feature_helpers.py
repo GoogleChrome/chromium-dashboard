@@ -24,7 +24,8 @@ from framework import rediscache
 from framework import users
 from internals import stage_helpers
 from internals.core_enums import *
-from internals.core_models import Feature, FeatureEntry, Stage
+from internals.core_models import FeatureEntry, Stage
+from internals.legacy_models import Feature
 import settings
 
 

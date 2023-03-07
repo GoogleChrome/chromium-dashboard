@@ -18,7 +18,8 @@ import datetime
 from unittest import mock
 
 from internals import core_enums
-from internals import core_models
+from internals.core_models import FeatureEntry
+from internals.legacy_models import Feature
 from internals import notifier
 from internals import review_models
 from internals import search
@@ -102,11 +103,11 @@ class SearchRETest(testing_config.CustomTestCase):
 class SearchFunctionsTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = core_models.Feature(
+    self.feature_1 = Feature(
         name='feature 1', summary='sum', category=1, web_dev_views=1,
         impl_status_chrome=3)
     self.feature_1.put()
-    self.featureentry_1 = core_models.FeatureEntry(
+    self.featureentry_1 = FeatureEntry(
         id=self.feature_1.key.integer_id(),
         name='feature 1', summary='sum', category=1, web_dev_views=1,
         impl_status_chrome=3)
@@ -114,11 +115,11 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.featureentry_1.editor_emails = ['editor@example.com']
     self.featureentry_1.cc_emailss = ['cc@example.com']
     self.featureentry_1.put()
-    self.feature_2 = core_models.Feature(
+    self.feature_2 = Feature(
         name='feature 2', summary='sum', category=2, web_dev_views=1,
         impl_status_chrome=3)
     self.feature_2.put()
-    self.featureentry_2 = core_models.FeatureEntry(
+    self.featureentry_2 = FeatureEntry(
         id=self.feature_2.key.integer_id(),
         name='feature 2', summary='sum', category=2, web_dev_views=1,
         impl_status_chrome=3)
@@ -126,22 +127,22 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.featureentry_2.put()
     notifier.FeatureStar.set_star(
         'starrer@example.com', self.feature_1.key.integer_id())
-    self.feature_3 = core_models.Feature(
+    self.feature_3 = Feature(
         name='feature 3', summary='sum', category=3, web_dev_views=1,
         impl_status_chrome=3, unlisted=True)
     self.feature_3.put()
-    self.featureentry_3 = core_models.FeatureEntry(
+    self.featureentry_3 = FeatureEntry(
         id=self.feature_3.key.integer_id(),
         name='feature 3', summary='sum', category=3, web_dev_views=1,
         impl_status_chrome=3, unlisted=True)
     self.featureentry_3.owner_emails = ['owner@example.com']
     self.featureentry_3.put()
-    self.feature_4 = core_models.Feature(
+    self.feature_4 = Feature(
         name='feature 4', summary='sum', category=4, web_dev_views=1,
         impl_status_chrome=4,
         feature_type=core_enums.FEATURE_TYPE_ENTERPRISE_ID)
     self.feature_4.put()
-    self.featureentry_4 = core_models.FeatureEntry(
+    self.featureentry_4 = FeatureEntry(
         id=self.feature_4.key.integer_id(),
         name='feature 4', summary='sum', category=4, web_dev_views=1,
         impl_status_chrome=4,

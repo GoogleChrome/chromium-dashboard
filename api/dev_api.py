@@ -17,7 +17,8 @@ import json
 from google.cloud import ndb  # type: ignore
 
 from framework.basehandlers import APIHandler
-from internals.core_models import Feature, FeatureEntry, MilestoneSet, Stage
+from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.legacy_models import Feature
 from internals.review_models import Activity, Approval, Comment, Gate, Vote
 from internals.core_enums import *
 import settings
