@@ -36,7 +36,6 @@ from internals import approval_defs
 from internals import core_enums
 from internals import stage_helpers
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
-from internals.legacy_models import Feature
 from internals.review_models import Gate
 from internals.user_models import (
     AppUser, BlinkComponent, FeatureOwner, UserPref)
@@ -267,14 +266,6 @@ class FeatureStar(ndb.Model):
       feature_star.put()
     else:
       return  # No need to update anything in datastore
-
-    # Load feature directly from NDB so as to never get a stale cached copy.
-    feature = Feature.get_by_id(feature_id)
-    feature.star_count += 1 if starred else -1
-    if feature.star_count < 0:
-      logging.error('count would be < 0: %r', (email, feature_id, starred))
-      return
-    feature.put()
 
     feature_entry = FeatureEntry.get_by_id(feature_id)
     feature_entry.star_count += 1 if starred else -1

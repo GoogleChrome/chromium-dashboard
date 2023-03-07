@@ -30,7 +30,6 @@ from internals import notifier
 from internals import stage_helpers
 from internals import user_models
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
-from internals.legacy_models import Feature
 import settings
 
 test_app = flask.Flask(__name__,
@@ -42,19 +41,7 @@ TESTDATA = testing_config.Testdata(__file__)
 class EmailFormattingTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = Feature(
-        name='feature one', summary='sum', owner=['feature_owner@example.com'],
-        ot_milestone_desktop_start=100,
-        editors=['feature_editor@example.com', 'owner_1@example.com'],
-        cc_recipients=['cc@example.com'], category=1,
-        created_by=ndb.User(
-            email='creator1@gmail.com', _auth_domain='gmail.com'),
-        updated_by=ndb.User(
-            email='editor1@gmail.com', _auth_domain='gmail.com'),
-        blink_components=['Blink'])
-    self.feature_1.put()
     self.fe_1 = FeatureEntry(
-        id=self.feature_1.key.integer_id(),
         name='feature one', summary='sum',
         owner_emails=['feature_owner@example.com'],
         #ot_milestone_desktop_start=100,
@@ -89,17 +76,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.watcher_1.put()
     self.changes = [dict(prop_name='test_prop', new_val='test new value',
                     old_val='test old value')]
-    self.feature_2 = Feature(
-        name='feature two', summary='sum', owner=['feature_owner@example.com'],
-        editors=['feature_editor@example.com', 'owner_1@example.com'],
-        category=1, created_by=ndb.User(
-            email='creator2@example.com', _auth_domain='gmail.com'),
-        updated_by=ndb.User(
-            email='editor2@example.com', _auth_domain='gmail.com'),
-        blink_components=['Blink'], feature_type=1)
-    self.feature_2.put()
     self.fe_2 = FeatureEntry(
-        id=self.feature_2.key.integer_id(),
         name='feature two', summary='sum',
         owner_emails=['feature_owner@example.com'],
         editor_emails=['feature_editor@example.com', 'owner_1@example.com'],
@@ -117,14 +94,6 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     # This feature will only be used for the template tests.
     # Hardcode the Feature Key ID so that the ID is deterministic in the
     # template tests.
-    self.template_fe = Feature(
-        name='feature template', summary='sum', owner=['feature_owner@example.com'],
-        editors=['feature_editor@example.com', 'owner_1@example.com'],
-        category=1, created_by=ndb.User(
-            email='creator_template@example.com', _auth_domain='gmail.com'),
-        updated_by=ndb.User(
-            email='editor_template@example.com', _auth_domain='gmail.com'),
-        blink_components=['Blink'])
     self.template_fe = FeatureEntry(
         id=123, name='feature template', summary='sum',
         owner_emails=['feature_owner@example.com'],
@@ -143,8 +112,8 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.maxDiff = None
 
   def tearDown(self):
-    kinds = [Feature, FeatureEntry, Stage,
-        user_models.FeatureOwner, user_models.BlinkComponent]
+    kinds = [FeatureEntry, Stage, user_models.FeatureOwner,
+             user_models.BlinkComponent]
     for kind in kinds:
       for entity in kind.query():
         entity.key.delete()
@@ -178,7 +147,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
 
   def test_format_email_body__mozdev_links(self):
     """We generate an email body with links to developer.mozilla.org."""
-    self.feature_1.doc_links = ['https://developer.mozilla.org/look-here']
+    self.fe_1.doc_links = ['https://developer.mozilla.org/look-here']
     with test_app.app_context():
       body_html = notifier.format_email_body(
           True, self.template_fe, self.template_stages, self.changes)
@@ -186,7 +155,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__mozdev_links_mozilla.html'])
 
-    self.feature_1.doc_links = [
+    self.fe_1.doc_links = [
         'https://hacker-site.org/developer.mozilla.org/look-here']
     with test_app.app_context():
       body_html = notifier.format_email_body(
@@ -529,7 +498,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         notify_as_starrer=False)
     starrer_2_pref.put()
     notifier.FeatureStar.set_star(
-        'starrer_2@example.com', self.feature_2.key.integer_id())
+        'starrer_2@example.com', self.fe_2.key.integer_id())
     actual_tasks = notifier.make_feature_changes_email(
         self.fe_2, True, self.changes)
     self.assertEqual(4, len(actual_tasks))
@@ -547,33 +516,17 @@ class EmailFormattingTest(testing_config.CustomTestCase):
 class FeatureStarTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = Feature(
-        name='feature one', summary='sum', category=1)
-    self.feature_1.put()
-    self.feature_2 = Feature(
-        name='feature two', summary='sum', category=1)
-    self.feature_2.put()
-    self.feature_3 = Feature(
-        name='feature three', summary='sum', category=1)
-    self.feature_3.put()
-
     self.fe_1 = FeatureEntry(
-        id=self.feature_1.key.integer_id(),
         name='feature one', summary='sum', category=1)
     self.fe_1.put()
     self.fe_2 = FeatureEntry(
-        id=self.feature_2.key.integer_id(),
         name='feature two', summary='sum', category=1)
     self.fe_2.put()
     self.fe_3 = FeatureEntry(
-        id=self.feature_3.key.integer_id(),
         name='feature three', summary='sum', category=1)
     self.fe_3.put()
 
   def tearDown(self):
-    self.feature_1.key.delete()
-    self.feature_2.key.delete()
-    self.feature_3.key.delete()
     self.fe_1.key.delete()
     self.fe_2.key.delete()
     self.fe_3.key.delete()
@@ -581,21 +534,19 @@ class FeatureStarTest(testing_config.CustomTestCase):
   def test_get_star__no_existing(self):
     """User has never starred the given feature."""
     email = 'user1@example.com'
-    feature_id = self.feature_1.key.integer_id()
+    feature_id = self.fe_1.key.integer_id()
     actual = notifier.FeatureStar.get_star(email, feature_id)
     self.assertEqual(None, actual)
 
   def test_get_and_set_star(self):
     """User can star and unstar a feature."""
     email = 'user2@example.com'
-    feature_id = self.feature_1.key.integer_id()
+    feature_id = self.fe_1.key.integer_id()
     notifier.FeatureStar.set_star(email, feature_id)
     actual = notifier.FeatureStar.get_star(email, feature_id)
     self.assertEqual(email, actual.email)
     self.assertEqual(feature_id, actual.feature_id)
     self.assertTrue(actual.starred)
-    updated_feature = Feature.get_by_id(feature_id)
-    self.assertEqual(1, updated_feature.star_count)
     updated_fe = FeatureEntry.get_by_id(feature_id)
     self.assertEqual(1, updated_fe.star_count)
 
@@ -604,8 +555,6 @@ class FeatureStarTest(testing_config.CustomTestCase):
     self.assertEqual(email, actual.email)
     self.assertEqual(feature_id, actual.feature_id)
     self.assertFalse(actual.starred)
-    updated_feature = Feature.get_by_id(feature_id)
-    self.assertEqual(0, updated_feature.star_count)
     updated_fe = FeatureEntry.get_by_id(feature_id)
     self.assertEqual(0, updated_fe.star_count)
 
@@ -619,9 +568,9 @@ class FeatureStarTest(testing_config.CustomTestCase):
   def test_get_user_stars__some_stars(self):
     """User has starred three features."""
     email = 'user5@example.com'
-    feature_1_id = self.feature_1.key.integer_id()
-    feature_2_id = self.feature_2.key.integer_id()
-    feature_3_id = self.feature_3.key.integer_id()
+    feature_1_id = self.fe_1.key.integer_id()
+    feature_2_id = self.fe_2.key.integer_id()
+    feature_3_id = self.fe_3.key.integer_id()
     # Note intermixed order
     notifier.FeatureStar.set_star(email, feature_1_id)
     notifier.FeatureStar.set_star(email, feature_3_id)
@@ -636,7 +585,7 @@ class FeatureStarTest(testing_config.CustomTestCase):
 
   def test_get_feature_starrers__no_stars(self):
     """No user has starred the given feature."""
-    feature_1_id = self.feature_1.key.integer_id()
+    feature_1_id = self.fe_1.key.integer_id()
     actual = notifier.FeatureStar.get_feature_starrers(feature_1_id)
     self.assertEqual([], actual)
 
@@ -646,7 +595,7 @@ class FeatureStarTest(testing_config.CustomTestCase):
     app_user_1.put()
     app_user_2 = user_models.AppUser(email='user17@example.com')
     app_user_2.put()
-    feature_1_id = self.feature_1.key.integer_id()
+    feature_1_id = self.fe_1.key.integer_id()
     notifier.FeatureStar.set_star(app_user_1.email, feature_1_id)
     notifier.FeatureStar.set_star(app_user_2.email, feature_1_id)
 
