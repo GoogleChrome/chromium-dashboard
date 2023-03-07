@@ -24,7 +24,8 @@ from framework import users
 from internals import core_enums
 from internals import approval_defs
 from internals.core_models import FeatureEntry, Stage
-from internals import review_models
+from internals.legacy_models import Approval
+from internals.review_models import Vote
 
 
 FIELDS_REQUIRING_LGTMS = [
@@ -147,7 +148,7 @@ def is_lgtm_allowed(from_addr, feature, approval_field):
 
 def detect_new_thread(feature_id, approval_field):
   """Return True if there are no previous approval values for this intent."""
-  existing_approvals = review_models.Approval.get_approvals(
+  existing_approvals = Approval.get_approvals(
       feature_id=feature_id, field_id=approval_field.field_id)
   return not existing_approvals
 
@@ -262,11 +263,11 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     if (detect_lgtm(body) and
         is_lgtm_allowed(from_addr, feature, approval_field)):
       logging.info('found LGTM')
-      review_models.Approval.set_approval(
+      Approval.set_approval(
           feature_id, approval_field.field_id,
-          review_models.Approval.APPROVED, from_addr)
+          Approval.APPROVED, from_addr)
       approval_defs.set_vote(feature_id, approval_field.field_id,
-          review_models.Vote.APPROVED, from_addr)
+          Vote.APPROVED, from_addr)
 
     # Case 2: Create a review request for any discussion that does not already
     # have any approval values stored.
@@ -274,10 +275,10 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
       logging.info('found new thread')
       if approval_field in FIELDS_REQUIRING_LGTMS:
         logging.info('requesting a review')
-        review_models.Approval.set_approval(
+        Approval.set_approval(
             feature_id, approval_field.field_id,
-            review_models.Approval.REVIEW_REQUESTED, from_addr)
+            Approval.REVIEW_REQUESTED, from_addr)
         # TODO(jrobbins): set gate state rather than creating
         # REVIEW_REQUESTED votes.
         approval_defs.set_vote(feature_id, approval_field.field_id,
-            review_models.Vote.REVIEW_REQUESTED, from_addr)
+            Vote.REVIEW_REQUESTED, from_addr)

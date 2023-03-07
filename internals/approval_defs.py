@@ -23,7 +23,8 @@ import requests
 
 from framework import permissions
 from internals import core_enums
-from internals.review_models import Approval, Gate, OwnersFile, Vote
+from internals.legacy_models import Approval
+from internals.review_models import Gate, OwnersFile, Vote
 import settings
 
 CACHE_EXPIRATION = 60 * 60  # One hour

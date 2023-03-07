@@ -24,7 +24,8 @@ import flask
 import werkzeug
 
 from internals import approval_defs
-from internals.review_models import Approval, Gate, Vote
+from internals.legacy_models import Approval
+from internals.review_models import Gate, Vote
 
 
 class FetchOwnersTest(testing_config.CustomTestCase):

@@ -18,8 +18,8 @@ from google.cloud import ndb  # type: ignore
 from framework.basehandlers import FlaskHandler
 from internals import approval_defs, stage_helpers
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
-from internals.legacy_models import Feature
-from internals.review_models import Activity, Approval, Comment, Gate, Vote
+from internals.legacy_models import Feature, Approval, Comment
+from internals.review_models import Activity, Gate, Vote
 from internals.core_enums import *
 
 # Gate type enums (declared in approval_defs.py)

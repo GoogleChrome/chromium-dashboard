@@ -20,8 +20,8 @@ from unittest import mock
 from internals import core_enums
 from internals.core_models import FeatureEntry
 from internals.legacy_models import Feature
+from internals.review_models import Gate, Vote
 from internals import notifier
-from internals import review_models
 from internals import search
 
 
@@ -162,7 +162,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.featureentry_2.key.delete()
     self.featureentry_3.key.delete()
     self.featureentry_4.key.delete()
-    for gate in review_models.Gate.query():
+    for gate in Gate.query():
       gate.key.delete()
 
   @mock.patch('internals.approval_defs.fields_approvable_by')
@@ -185,9 +185,9 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     testing_config.sign_in('visitor@example.com', 111)
     now = datetime.datetime.now()
     mock_approvable_by.return_value = set()
-    review_models.Gate(
+    Gate(
         feature_id=self.feature_1.key.integer_id(), stage_id=1,
-        gate_type=1, state=review_models.Vote.REVIEW_REQUESTED,
+        gate_type=1, state=Vote.REVIEW_REQUESTED,
         requested_on=now).put()
 
     future = search.process_pending_approval_me_query()
@@ -203,13 +203,13 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     time_1 = datetime.datetime.now() - datetime.timedelta(days=4)
     time_2 = datetime.datetime.now()
     mock_approvable_by.return_value = set([1, 2, 3])
-    review_models.Gate(
+    Gate(
         feature_id=self.feature_2.key.integer_id(), stage_id=1,
-        gate_type=1, state=review_models.Vote.REVIEW_REQUESTED,
+        gate_type=1, state=Vote.REVIEW_REQUESTED,
         requested_on=time_1).put()
-    review_models.Gate(
+    Gate(
         feature_id=self.feature_1.key.integer_id(), stage_id=1,
-        gate_type=1, state=review_models.Vote.REVIEW_REQUESTED,
+        gate_type=1, state=Vote.REVIEW_REQUESTED,
         requested_on=time_2).put()
 
     future = search.process_pending_approval_me_query()
@@ -229,13 +229,13 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     time_1 = datetime.datetime.now() - datetime.timedelta(days=4)
     time_2 = datetime.datetime.now()
     mock_approvable_by.return_value = set([1, 2, 3])
-    review_models.Gate(
+    Gate(
         feature_id=self.feature_2.key.integer_id(), stage_id=1,
-        gate_type=1, state=review_models.Vote.REVIEW_REQUESTED,
+        gate_type=1, state=Vote.REVIEW_REQUESTED,
         requested_on=time_1).put()
-    review_models.Gate(
+    Gate(
         feature_id=self.feature_1.key.integer_id(), stage_id=1,
-        gate_type=1, state=review_models.Vote.APPROVED,
+        gate_type=1, state=Vote.APPROVED,
         requested_on=time_2).put()
 
     future = search.process_pending_approval_me_query()
@@ -283,13 +283,13 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     mock_approvable_by.return_value = set({1, 2, 3})
     time_1 = datetime.datetime.now() - datetime.timedelta(days=4)
     time_2 = datetime.datetime.now()
-    review_models.Gate(
+    Gate(
         feature_id=self.feature_1.key.integer_id(), stage_id=1,
-        gate_type=1, state=review_models.Vote.NA,
+        gate_type=1, state=Vote.NA,
         requested_on=time_2).put()
-    review_models.Gate(
+    Gate(
         feature_id=self.feature_2.key.integer_id(), stage_id=1,
-        gate_type=1, state=review_models.Vote.APPROVED,
+        gate_type=1, state=Vote.APPROVED,
         requested_on=time_1).put()
 
     future = search.process_recent_reviews_query()
