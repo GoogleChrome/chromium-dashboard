@@ -198,10 +198,18 @@ class ChromedashApp extends LitElement {
       this.hideSidebar();
     });
     page('/guide/editall/:featureId(\\d+)', (ctx) => {
+      // if already on this page and only the hash changes, don't create a new element
+      if (this.currentPage == ctx.path && ctx.hash) {
+        if (window.jumpToLink) {
+          window.jumpToLink(`#${ctx.hash}`);
+        }
+        return;
+      }
       this.pageComponent = document.createElement('chromedash-guide-editall-page');
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.appTitle = this.appTitle;
       this.pageComponent.nextPage = this.currentPage;
+      this.currentPage = ctx.path;
       this.hideSidebar();
     });
     page('/guide/verify_accuracy/:featureId(\\d+)', (ctx) => {

@@ -72,14 +72,33 @@ export class ChromedashGuideEditallPage extends LitElement {
    * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
   async registerHandlers(el) {
     if (!el) return;
-
     await el.updateComplete;
+
+    window.addEventListener('beforeunload', (event) => {
+      // Having an event listener for beforeunload causes the browser to
+      // check for unsaved changes. But the event handler seems to be otherwise ignored.
+
+      // if (this.submittingForm) return undefined;
+      if (confirm('leave the page?')) {
+        return undefined;
+      } else {
+        event.preventDefault();
+        return event.returnValue = '';
+      }
+      // Check whether any form fields have changed.
+    });
+
     const hiddenTokenField = this.shadowRoot.querySelector('input[name=token]');
     hiddenTokenField.form.addEventListener('submit', (event) => {
       this.handleFormSubmit(event, hiddenTokenField);
     });
 
     this.scrollToPosition();
+
+    // Add global function to jump to form field.
+    window.jumpToLink = (link) => {
+      this.jumpToLink(link);
+    };
   }
 
   handleFormSubmit(event, hiddenTokenField) {
@@ -99,10 +118,28 @@ export class ChromedashGuideEditallPage extends LitElement {
   scrollToPosition() {
     if (location.hash) {
       const hash = decodeURIComponent(location.hash);
-      if (hash) {
-        const el = this.shadowRoot.querySelector(hash);
-        if (el) {
-          this.shadowRoot.querySelector(`chromedash-form-field[name="${el.name}"] tr th b`).scrollIntoView(true, {behavior: 'smooth'});
+      this.jumpToLink(hash);
+    }
+  }
+
+  jumpToLink(link) {
+    const hash = link; // Assume link is just #id_of_form_field for now.
+    if (hash) {
+      const el = this.shadowRoot.querySelector(hash);
+      if (el) {
+        const targetSelector = `chromedash-form-field[name="${el.name}"] tr th b`;
+        const target = this.shadowRoot.querySelector(targetSelector);
+        if (target) {
+          target.scrollIntoView({
+            block: 'start', inline: 'nearest', behavior: 'smooth',
+          });
+          if (el.input) {
+            el.focus();
+          } else {
+            setTimeout(() => {
+              el.focus();
+            }, 500);
+          }
         }
       }
     }

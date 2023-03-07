@@ -22,12 +22,12 @@ HISTORY:-
 ## Front end
 
 - Our client side is implemented in [Lit](https://lit.dev).
-- It is largely a SPA (single-page application) with routing done via `page.js`.
+- It is largely a SPA (single-page application) with routing done via `page.js` (see [visionmedia/page.js: Micro client-side router inspired by the Express router](http://github.copm/visionmedia/page.js)), configured in `setUpRoutes` of `chromedash-app.js`.
 - It communicates with the server via code in `cs-client.js`.
 - We use [Shoelace widgets](https://shoelace.style).
 
 
-### Main site page renderring
+### Main site page rendering
 
 All the pages are rendered in a combination of Jinja2 template (`/templates`) and front-end components (`/client-src/elements`).
 
