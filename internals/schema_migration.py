@@ -518,8 +518,6 @@ class WriteMissingGates(FlaskHandler):
 
     existing_api_prototype_gates = Gate.query(
         Gate.gate_type == GATE_API_PROTOTYPE).fetch()
-    existing_adoption_ship_gates = Gate.query(
-        Gate.gate_type == GATE_ADOPTION_SHIP).fetch()
     existing_privacy_ot_gates = Gate.query(
         Gate.gate_type == GATE_PRIVACY_ORIGIN_TRIAL).fetch()
     existing_privacy_ship_gates = Gate.query(

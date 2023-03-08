@@ -273,6 +273,9 @@ class Feature(DictModel):
 
   doc_links = ndb.StringProperty(repeated=True)
   measurement = ndb.StringProperty()
+  availability_expectation = ndb.TextProperty()
+  adoption_expectation = ndb.TextProperty()
+  adoption_plan = ndb.TextProperty()
   sample_links = ndb.StringProperty(repeated=True)
   non_oss_deps = ndb.StringProperty()
 

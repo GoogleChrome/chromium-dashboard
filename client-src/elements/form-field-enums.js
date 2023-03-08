@@ -163,12 +163,11 @@ export const GATE_TYPES = {
   DEBUGGABILITY_ORIGIN_TRIAL: 62,
   DEBUGGABILITY_SHIP: 64,
   TESTING_SHIP: 74,
-  ADOPTION_SHIP: 84,
 };
 
 export const GATE_TEAM_ORDER = [
   'Privacy', 'Security', 'Enterprise', 'Debuggability',
-  'Testing', 'Adoption', 'API Owners'];
+  'Testing', 'API Owners'];
 
 
 export const OT_MILESTONE_END_FIELDS = {

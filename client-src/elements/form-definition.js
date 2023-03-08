@@ -389,6 +389,9 @@ const FLAT_PREPARE_TO_SHIP_FIELDS = {
         'webview_risks',
         'anticipated_spec_changes',
         'i2s_lgtms',
+        'availability_expectation',
+        'adoption_expectation',
+        'adoption_plan',
         // Implementation
         'measurement',
         'non_oss_deps',
@@ -738,10 +741,6 @@ const BLINK_GENERIC_QUESTIONNAIRE = (
   'any suggestions on that email thread.'
 );
 
-const ADOPTION_GENERIC_QUESTIONNAIRE = (
-  `To request a review, use the "Request review" button above.`
-);
-
 const PRIVACY_GENERIC_QUESTIONNAIRE = (
   `To request a review, use the "Request review" button above.`
 );
@@ -796,31 +795,12 @@ const TESTING_SHIP_QUESTIONNAIRE = (
   'See http://go/chrome-wp-test-survey.'
 );
 
-const ADOPTION_SHIP_QUESTIONNAIRE = (
-  html`<b>(1) What is your availability expectation for this feature?</b>
-Examples:<ul>
-<li>Feature x is available on Web Platform mainline within 12 month of launch in Chrome
-<li>Feature x is available in Chromium browsers for the foreseeable future
-</ul>
-<b>(2) What is your adoption expectation for this feature?</b>
-Examples:<ul>
-<li>Feature x is considered a best practice for use case y within 12 month of reaching Web Platform baseline
-<li>Feature x is used by partner y to provide functionality z within 12 month of launch in Chrome
-<li>At least 3 major abstractions replace their use of feature y with feature x within 24 months of reaching mainline.
-</ul>
-<b>(3) What is the plan to achieve the stated expectations?</b>
-Please provide a plan that covers availability and adoption planning for the feature.
-
-`
-);
-
 
 export const GATE_QUESTIONNAIRES = {
   [GATE_TYPES.API_PROTOTYPE]: BLINK_GENERIC_QUESTIONNAIRE,
   [GATE_TYPES.API_ORIGIN_TRIAL]: BLINK_GENERIC_QUESTIONNAIRE,
   [GATE_TYPES.API_EXTEND_ORIGIN_TRIAL]: BLINK_GENERIC_QUESTIONNAIRE,
   [GATE_TYPES.API_SHIP]: BLINK_GENERIC_QUESTIONNAIRE,
-  [GATE_TYPES.ADOPTION_SHIP]: ADOPTION_GENERIC_QUESTIONNAIRE,
   [GATE_TYPES.PRIVACY_ORIGIN_TRIAL]: PRIVACY_GENERIC_QUESTIONNAIRE,
   [GATE_TYPES.PRIVACY_SHIP]: PRIVACY_GENERIC_QUESTIONNAIRE,
   [GATE_TYPES.SECURITY_ORIGIN_TRIAL]: SECURITY_GENERIC_QUESTIONNAIRE,
@@ -830,5 +810,4 @@ export const GATE_QUESTIONNAIRES = {
       DEBUGGABILITY_ORIGIN_TRIAL_QUESTIONNAIRE,
   [GATE_TYPES.DEBUGGABILITY_SHIP]: DEBUGGABILITY_SHIP_QUESTIONNAIRE,
   [GATE_TYPES.TESTING_SHIP]: TESTING_SHIP_QUESTIONNAIRE,
-  [GATE_TYPES.ADOPTION_SHIP]: ADOPTION_SHIP_QUESTIONNAIRE,
 };

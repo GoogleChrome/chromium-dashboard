@@ -482,6 +482,55 @@ export const ALL_FIELDS = {
         have set up.`,
   },
 
+  'availability_expectation': {
+    type: 'textarea',
+    attrs: {rows: 4},
+    required: false,
+    label: 'Availability expectation',
+    help_text: html`
+      What is your availability expectation for this feature?
+      Examples:`,
+    extra_help: html`
+      <ul>
+        <li>Feature is available on Web Platform mainline within 12 months
+            of launch in Chrome.
+        <li>Feature is available only in Chromium browsers for the
+            foreseeable future.
+      </ul>
+    `,
+  },
+
+  'adoption_expectation': {
+    type: 'textarea',
+    attrs: {rows: 4},
+    required: false,
+    label: 'Adoption expectation',
+    help_text: html`
+      What is your adoption expectation for this feature?
+      Examples:`,
+    extra_help: html`
+      <ul>
+        <li>Feature is considered a best practice for some use case
+            within 12 months of reaching Web Platform baseline.
+        <li>Feature is used by specific partner(s) to provide functionality
+            within 12 months of launch in Chrome.
+        <li>At least 3 major abstractions replace their use of an existing
+            feature with this feature within 24 months of reaching mainline.
+      </ul>
+    `,
+  },
+
+  'adoption_plan': {
+    type: 'textarea',
+    attrs: {rows: 4},
+    required: false,
+    label: 'Adoption plan',
+    help_text: html`
+      What is the plan to achieve the stated expectations?
+      Please provide a plan that covers availability and adoption
+      for the feature.`,
+  },
+
   'security_review_status': {
     type: 'select',
     choices: REVIEW_STATUS_CHOICES,
