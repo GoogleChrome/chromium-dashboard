@@ -190,7 +190,7 @@ class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
 
     # TODO(jrobbins): Make this be /feature/ID after ability to edit
     # from the feature detail page is complete.
-    redirect_url = '/guide/edit/' + str(key.integer_id())
+    redirect_url = '/guide/editall/' + str(key.integer_id()) + '#rollout1'
     return self.redirect(redirect_url)
 
 

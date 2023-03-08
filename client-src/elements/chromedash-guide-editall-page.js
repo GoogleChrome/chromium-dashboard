@@ -8,7 +8,8 @@ import {
   FLAT_METADATA_FIELDS,
   FLAT_ENTERPRISE_METADATA_FIELDS,
   FORMS_BY_STAGE_TYPE,
-  FLAT_TRIAL_EXTENSION_FIELDS} from './form-definition';
+  FLAT_TRIAL_EXTENSION_FIELDS,
+  STAGE_SHORT_NAMES} from './form-definition';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {FORM_STYLES} from '../sass/forms-css.js';
 import {STAGE_SPECIFIC_FIELDS} from './form-field-enums.js';
@@ -122,7 +123,8 @@ export class ChromedashGuideEditallPage extends LitElement {
   }
 
   getNextPage() {
-    return this.nextPage || `/guide/edit/${this.featureId}`;
+    return this.nextPage || this.feature.is_enterprise_feature ?
+    `/feature/${this.featureId}` : `/guide/edit/${this.featureId}`;
   }
 
   renderSubheader() {
@@ -174,9 +176,10 @@ export class ChromedashGuideEditallPage extends LitElement {
         </chromedash-form-field>
       `;
     });
-
+    const id = `${STAGE_SHORT_NAMES[feStage.stage_type] || 'metadata'}${this.sameTypeRendered}`
+      .toLowerCase();
     return html`
-    <h3>${sectionName}</h3>
+    <h3 id="${id}">${sectionName}</h3>
     <section class="flat_form">
       ${formFieldEls}
     </section>
