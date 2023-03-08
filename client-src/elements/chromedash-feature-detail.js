@@ -492,7 +492,11 @@ class ChromedashFeatureDetail extends LitElement {
         ${this.renderSectionFields(fields, {})}
       </section>
     `;
-    return this.renderSection('Metadata', content);
+    return this.renderSection(
+      'Metadata',
+      content,
+      /* isActive=*/false,
+      /* defaultOpen=*/this.feature.is_enterprise_feature);
   }
 
   renderGateChip(feStage, gate) {
@@ -593,8 +597,7 @@ class ChromedashFeatureDetail extends LitElement {
         ${this.renderSectionFields(fields, feStage)}
       </section>
     `;
-
-    const defaultOpen = (feStage.id == this.openStage);
+    const defaultOpen = this.feature.is_enterprise_feature || (feStage.id == this.openStage);
     return this.renderSection(name, content, isActive, defaultOpen);
   }
 
