@@ -78,14 +78,8 @@ export class ChromedashGuideEditallPage extends LitElement {
       // Having an event listener for beforeunload causes the browser to
       // check for unsaved changes. But the event handler seems to be otherwise ignored.
 
-      // if (this.submittingForm) return undefined;
-      if (confirm('leave the page?')) {
-        return undefined;
-      } else {
-        event.preventDefault();
-        return event.returnValue = '';
-      }
-      // Check whether any form fields have changed.
+      event.preventDefault();
+      return event.returnValue = '';
     });
 
     const hiddenTokenField = this.shadowRoot.querySelector('input[name=token]');
@@ -93,12 +87,7 @@ export class ChromedashGuideEditallPage extends LitElement {
       this.handleFormSubmit(event, hiddenTokenField);
     });
 
-    this.scrollToPosition();
-
-    // Add global function to jump to form field.
-    window.jumpToLink = (link) => {
-      this.jumpToLink(link);
-    };
+    this.setupScrollToHash();
   }
 
   handleFormSubmit(event, hiddenTokenField) {
@@ -115,34 +104,42 @@ export class ChromedashGuideEditallPage extends LitElement {
     window.location.href = `/guide/edit/${this.featureId}`;
   }
 
-  scrollToPosition() {
-    if (location.hash) {
-      const hash = decodeURIComponent(location.hash);
-      this.jumpToLink(hash);
-    }
-  }
-
-  jumpToLink(link) {
-    const hash = link; // Assume link is just #id_of_form_field for now.
-    if (hash) {
-      const el = this.shadowRoot.querySelector(hash);
-      if (el) {
-        const targetSelector = `chromedash-form-field[name="${el.name}"] tr th b`;
-        const target = this.shadowRoot.querySelector(targetSelector);
-        if (target) {
-          target.scrollIntoView({
-            block: 'start', inline: 'nearest', behavior: 'smooth',
-          });
-          if (el.input) {
-            el.focus();
-          } else {
-            setTimeout(() => {
+  setupScrollToHash() {
+    const scrollToElement = (hash) => {
+      if (hash) {
+        const el = this.shadowRoot.querySelector(hash);
+        if (el) {
+          // Find the header element for the form field.
+          const headerSelector = `chromedash-form-field[name="${el.name}"] tr th b`;
+          const header = this.shadowRoot.querySelector(headerSelector);
+          if (header) {
+            header.scrollIntoView({
+              block: 'start', inline: 'nearest', behavior: 'smooth',
+            });
+            // Focus on the corresponding form field.
+            if (el.input) {
+              // el.focus() calls el.input.focus();
               el.focus();
-            }, 500);
+            } else {
+              // Not ready yet, so try after a timeout.  TODO: Avoid the timeout.
+              setTimeout(() => {
+                el.focus();
+              }, 0);
+            }
           }
         }
       }
+    };
+
+    if (location.hash) {
+      const hash = decodeURIComponent(location.hash);
+      scrollToElement(hash);
     }
+
+    // Add global function to jump to form field.
+    window.scrollToElement = (hash) => {
+      scrollToElement(hash);
+    };
   }
 
   renderSkeletons() {

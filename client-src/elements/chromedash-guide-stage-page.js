@@ -94,6 +94,13 @@ export class ChromedashGuideStagePage extends LitElement {
   async registerHandlers(el) {
     if (!el) return;
 
+    window.addEventListener('beforeunload', (event) => {
+      // Having an event listener for beforeunload causes the browser to
+      // check for unsaved changes. But the event handler seems to be otherwise ignored.
+      event.preventDefault();
+      return event.returnValue = '';
+    });
+
     /* Add the form's event listener after Shoelace event listeners are attached
     * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
     await el.updateComplete;
@@ -103,7 +110,7 @@ export class ChromedashGuideStagePage extends LitElement {
     });
 
     this.addMiscEventListeners();
-    this.scrollToPosition();
+    this.setupScrollToHash();
   }
 
   handleFormSubmit(event, hiddenTokenField) {
@@ -157,16 +164,42 @@ export class ChromedashGuideStagePage extends LitElement {
     }
   }
 
-  scrollToPosition() {
-    if (location.hash) {
-      const hash = decodeURIComponent(location.hash);
+  setupScrollToHash() {
+    const scrollToElement = (hash) => {
       if (hash) {
         const el = this.shadowRoot.querySelector(hash);
         if (el) {
-          this.shadowRoot.querySelector(`chromedash-form-field[name="${el.name}"] tr th b`).scrollIntoView(true, {behavior: 'smooth'});
+          // Find the header element for the form field.
+          const headerSelector = `chromedash-form-field[name="${el.name}"] tr th b`;
+          const header = this.shadowRoot.querySelector(headerSelector);
+          if (header) {
+            header.scrollIntoView({
+              block: 'start', inline: 'nearest', behavior: 'smooth',
+            });
+            // Focus on the corresponding form field.
+            if (el.input) {
+              // el.focus() calls el.input.focus();
+              el.focus();
+            } else {
+              // Not ready yet, so try after a timeout.  TODO: Avoid the timeout.
+              setTimeout(() => {
+                el.focus();
+              }, 0);
+            }
+          }
         }
       }
+    };
+
+    if (location.hash) {
+      const hash = decodeURIComponent(location.hash);
+      scrollToElement(hash);
     }
+
+    // Add global function to jump to form field.
+    window.scrollToElement = (hash) => {
+      scrollToElement(hash);
+    };
   }
 
   handleCancelClick() {
