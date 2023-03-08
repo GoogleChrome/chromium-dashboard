@@ -111,7 +111,7 @@ describe('chromedash-guide-metadata', () => {
     // feature feature type is listed
     assert.include(metadataDiv.innerHTML, 'fake feature type');
     // feature intent stage is listed
-    assert.include(metadataDiv.innerHTML, 'fake intent stage');
+    assert.notInclude(metadataDiv.innerHTML, 'fake intent stage');
     // feature tag is listed
     assert.notInclude(metadataDiv.innerHTML, 'tag_one');
     // feature status is listed
