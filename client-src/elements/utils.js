@@ -105,8 +105,5 @@ export function setupScrollToHash(pageElement) {
 
 /* Returns a html template if the condition is true, otherwise returns an empty html */
 export function renderHTMLIf(condition, originalHTML) {
-  if (condition) {
-    return originalHTML;
-  }
-  return nothing;
+  return condition ? originalHTML : nothing;
 }

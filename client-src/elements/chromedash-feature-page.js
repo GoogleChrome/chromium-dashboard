@@ -288,7 +288,7 @@ export class ChromedashFeaturePage extends LitElement {
               <iron-icon icon="chromestatus:link"></iron-icon>
             </a>
           </span>
-          ${renderHTMLIf(canEdit && !this.feature.is_enterprise_feature, `
+          ${renderHTMLIf(canEdit && !this.feature.is_enterprise_feature, html`
             <span class="tooltip" title="Edit this feature">
               <a href="/guide/edit/${this.featureId}" class="editfeature" data-tooltip>
                 <iron-icon icon="chromestatus:create"></iron-icon>
