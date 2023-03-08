@@ -191,17 +191,22 @@ class ChromedashApp extends LitElement {
       }
     });
     page('/guide/new', () => {
+      if (scrollIfHash(ctx)) return;
       this.pageComponent = document.createElement('chromedash-guide-new-page');
       this.pageComponent.userEmail = this.user.email;
+      this.currentPage = ctx.path;
       this.hideSidebar();
     });
     page('/guide/enterprise/new', () => {
+      if (scrollIfHash(ctx)) return;
       this.pageComponent = document.createElement('chromedash-guide-new-page');
       this.pageComponent.userEmail = this.user.email;
       this.pageComponent.isEnterpriseFeature = true;
+      this.currentPage = ctx.path;
       this.hideSidebar();
     });
     page('/guide/edit/:featureId(\\d+)', (ctx) => {
+      if (scrollIfHash(ctx)) return;
       this.pageComponent = document.createElement('chromedash-guide-edit-page');
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.appTitle = this.appTitle;
@@ -245,10 +250,12 @@ class ChromedashApp extends LitElement {
       this.hideSidebar();
     });
     page('/guide/stage/:featureId(\\d+)/metadata', (ctx) => {
+      if (scrollIfHash(ctx)) return;
       this.pageComponent = document.createElement('chromedash-guide-metadata-page');
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.nextPage = this.currentPage;
       this.pageComponent.appTitle = this.appTitle;
+      this.currentPage = ctx.path;
       this.hideSidebar();
     });
     page('/settings', (ctx) => {
