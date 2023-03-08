@@ -226,8 +226,10 @@ export class ChromedashGuideStagePage extends LitElement {
   }
 
   renderSections(formattedFeature, stageSections) {
-    const formSections = [
-      html`
+    const formSections = formattedFeature.is_enterprise_feature ?
+      [] :
+      [
+        html`
       <section class="stage_form">
         <chromedash-form-field
           name="set_stage"
@@ -235,7 +237,7 @@ export class ChromedashGuideStagePage extends LitElement {
           ?disabled=${this.isActiveStage}>
         </chromedash-form-field>
       </section>`,
-    ];
+      ];
 
     stageSections.forEach(section => {
       if (section.isImplementationSection) {

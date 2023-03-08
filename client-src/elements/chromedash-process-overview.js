@@ -245,7 +245,9 @@ export class ChromedashProcessOverview extends LitElement {
     // Choose button based on active stage.
     const buttonHref = `/guide/stage/${featureId}/${processStage.outgoing_stage}/${feStage.id}`;
     let button = html`<a href="${buttonHref}">Edit</a>`;
-    if (isActive) {
+    if (this.feature.is_enterprise_feature) {
+      button = html`<a href="${buttonHref}" class="button primary">Edit</a>`;
+    } else if (isActive) {
       button = html`<a href="${buttonHref}" class="button primary">Update</a>`;
     } else if (this.isPriorStage(processStage)) {
       button = html`<a href="${buttonHref}">Revisit</a>`;
