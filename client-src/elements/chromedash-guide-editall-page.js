@@ -13,6 +13,7 @@ import {
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {FORM_STYLES} from '../sass/forms-css.js';
 import {STAGE_SPECIFIC_FIELDS} from './form-field-enums.js';
+import {openAddStageDialog} from './chromedash-add-stage-dialog';
 
 
 export class ChromedashGuideEditallPage extends LitElement {
@@ -246,6 +247,14 @@ export class ChromedashGuideEditallPage extends LitElement {
     return stageIds.join(',');
   }
 
+  renderAddStageButton() {
+    return html`
+    <sl-button size="small" @click="${
+        () => openAddStageDialog(this.feature.id, this.feature.feature_type_int)}">
+      Add stage
+    </sl-button>`;
+  }
+
   renderForm() {
     const formattedFeature = formatFeatureForEdit(this.feature);
     const stageIds = this.getAllStageIds();
@@ -259,6 +268,7 @@ export class ChromedashGuideEditallPage extends LitElement {
         <chromedash-form-table ${ref(this.registerHandlers)}>
           ${formsToRender}
         </chromedash-form-table>
+        ${this.renderAddStageButton()}
 
         <section class="final_buttons">
           <input class="button" type="submit" value="Submit">
