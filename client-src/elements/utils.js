@@ -66,9 +66,9 @@ export function flattenSections(stage) {
 
 /* Set up scrolling to a hash url (e.g. #id_explainer_links). */
 export function setupScrollToHash(pageElement) {
-  // Scroll to the form field identified by the hash parameter.
-  // This should be of the form '#id_<form-field-id>'.
-  // Note that this function is bound to the pageElement.
+  // Scroll to the element identified by the hash parameter, which must include
+  // the '#' prefix.  E.g. for a form field: '#id_<form-field-name>'.
+  // Note that this function is bound to the pageElement for a page.
   const scrollToElement = (hash) => {
     if (hash) {
       const el = pageElement.shadowRoot.querySelector(hash);
@@ -101,12 +101,12 @@ export function setupScrollToHash(pageElement) {
     }
   };
 
-  // Add global function to jump to form field within the pageElement.
+  // Add global function to jump to an element within the pageElement.
   window.scrollToElement = (hash) => {
     scrollToElement(hash);
   };
 
-  // Check now as well, used when first rendering a page.
+  // Check now as well, which is used when first rendering a page.
   if (location.hash) {
     const hash = decodeURIComponent(location.hash);
     scrollToElement(hash);
