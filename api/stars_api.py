@@ -14,10 +14,6 @@
 # limitations under the License.
 
 
-
-
-import logging
-
 from framework import basehandlers
 from internals import notifier
 
