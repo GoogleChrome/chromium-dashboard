@@ -86,6 +86,10 @@ export function setupScrollToHash(pageElement) {
           fieldRow.scrollIntoView({
             block: 'center', behavior: 'smooth',
           });
+        } else {
+          el.scrollIntoView({
+            behavior: 'smooth',
+          });
         }
       }
     }
