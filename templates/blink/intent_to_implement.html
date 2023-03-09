@@ -210,6 +210,21 @@
   {{feature.measurement|urlize}}
 {% endif %}
 
+{% if feature.availability_expectation %}
+  <br><br><h4>Availability expectation</h4>
+  {{feature.availability_expectation|urlize}}
+{% endif %}
+
+{% if feature.adoption_expectation %}
+  <br><br><h4>Adoption expectation</h4>
+  {{feature.adoption_expectation|urlize}}
+{% endif %}
+
+{% if feature.adoption_plan %}
+  <br><br><h4>Adoption plan</h4>
+  {{feature.adoption_plan|urlize}}
+{% endif %}
+
 {% if feature.non_oss_deps %}
   <br><br><h4>Non-OSS dependencies</h4>
   <p style="font-style: italic">
