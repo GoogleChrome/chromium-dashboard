@@ -258,7 +258,6 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
       core_enums.GATE_DEBUGGABILITY_ORIGIN_TRIAL: ['owner@example.com'],
       core_enums.GATE_DEBUGGABILITY_SHIP: ['owner@example.com'],
       core_enums.GATE_TESTING_SHIP: ['owner@example.com'],
-      core_enums.GATE_ADOPTION_SHIP: ['owner@example.com'],
       }
 
   def setUp(self):

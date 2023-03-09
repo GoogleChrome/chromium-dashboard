@@ -116,24 +116,16 @@ TestingShipApproval = ApprovalFieldDef(
     core_enums.GATE_TESTING_SHIP, ONE_LGTM,
     team_name='Testing')
 
-AdoptionShipApproval = ApprovalFieldDef(
-    'Adoption Ship Review',
-    'Adoption Ship Review',
-    core_enums.GATE_ADOPTION_SHIP, ONE_LGTM,
-    team_name='Adoption')
-
 APPROVAL_FIELDS_BY_ID = {
     afd.field_id: afd
     for afd in [
         PrototypeApproval, ExperimentApproval, ExtendExperimentApproval,
         ShipApproval,
-        AdoptionShipApproval,
         PrivacyOriginTrialApproval, PrivacyShipApproval,
         SecurityOriginTrialApproval, SecurityShipApproval,
         EnterpriseShipApproval,
         DebuggabilityOriginTrialApproval, DebuggabilityShipApproval,
         TestingShipApproval,
-        AdoptionShipApproval,
         ]
     }
 

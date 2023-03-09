@@ -66,11 +66,14 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   flag_name = ndb.StringProperty()
   ongoing_constraints = ndb.TextProperty()
 
-  # Gate: Adoption
+  # Topic: Adoption (reviewed by API Owners.  Auto-approved gate later?)
   motivation = ndb.TextProperty()
   devtrial_instructions = ndb.TextProperty()
   activation_risks = ndb.TextProperty()
   measurement = ndb.TextProperty()
+  availability_expectation = ndb.TextProperty()
+  adoption_expectation = ndb.TextProperty()
+  adoption_plan = ndb.TextProperty()
 
   # Gate: Standardization & Interop
   initial_public_proposal_url = ndb.StringProperty()
@@ -176,7 +179,7 @@ class MilestoneSet(ndb.Model):  # copy from milestone fields of Feature
       'dt_milestone_ios_start': 'ios_first',
       'dt_milestone_webview_start': 'webview_first',
     }
-  
+
   # List of milestone fields relevant to the origin trial stage types.
   OT_MILESTONE_FIELD_NAMES = [
     {'old': 'ot_milestone_desktop_start', 'new': 'desktop_first'},
