@@ -66,23 +66,29 @@ export function flattenSections(stage) {
 
 /* Set up scrolling to a hash url (e.g. #id_explainer_links). */
 export function setupScrollToHash(pageElement) {
+  // Scroll to the form field identified by the hash parameter.
+  // This should be of the form '#id_<form-field-id>'.
+  // Note that this function is bound to the pageElement.
   const scrollToElement = (hash) => {
     if (hash) {
       const el = pageElement.shadowRoot.querySelector(hash);
       if (el) {
-        // Find the form field element.
+        // Focus on the element, if possible.
+        // Note: focus() must be called before scrollToView().
+        if (el.input) {
+          // Note: shoelace element.focus() calls el.input.focus();
+          el.focus();
+        } else {
+          // No el.input (yet), so try after delay.  TODO: Avoid the timeout.
+          setTimeout(() => {
+            el.focus();
+          }, 100);
+        }
+
+        // Find the form field container element, if any.
         const fieldRowSelector = `chromedash-form-field[name="${el.name}"] tr + tr`;
         const fieldRow = pageElement.shadowRoot.querySelector(fieldRowSelector);
         if (fieldRow) {
-          if (el.input) {
-            // el.focus() calls el.input.focus();
-            el.focus();
-          } else {
-            // Not ready yet, so try after delay.  TODO: Avoid the timeout.
-            setTimeout(() => {
-              el.focus();
-            }, 100);
-          }
           fieldRow.scrollIntoView({
             block: 'center', behavior: 'smooth',
           });
@@ -95,7 +101,7 @@ export function setupScrollToHash(pageElement) {
     }
   };
 
-  // Add global function to jump to form field.
+  // Add global function to jump to form field within the pageElement.
   window.scrollToElement = (hash) => {
     scrollToElement(hash);
   };
