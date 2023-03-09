@@ -38,7 +38,7 @@ API_OWNERS_URL = (
 PRIVACY_APPROVERS = [
     'owp-privacy-approvers@google.com',
 ]
-SECURITY_APPROVERS = [
+SECURITY_APPROVERS: list[str] = [
   # TBD
 ]
 ENTERPRISE_APPROVERS = [
