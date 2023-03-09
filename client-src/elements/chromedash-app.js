@@ -190,14 +190,14 @@ class ChromedashApp extends LitElement {
         this.hideSidebar();
       }
     });
-    page('/guide/new', () => {
+    page('/guide/new', (ctx) => {
       if (scrollIfHash(ctx)) return;
       this.pageComponent = document.createElement('chromedash-guide-new-page');
       this.pageComponent.userEmail = this.user.email;
       this.currentPage = ctx.path;
       this.hideSidebar();
     });
-    page('/guide/enterprise/new', () => {
+    page('/guide/enterprise/new', (ctx) => {
       if (scrollIfHash(ctx)) return;
       this.pageComponent = document.createElement('chromedash-guide-new-page');
       this.pageComponent.userEmail = this.user.email;
