@@ -62,3 +62,42 @@ export function findFirstFeatureStage(intentStage, currentStage, fe) {
 export function flattenSections(stage) {
   return stage.sections.reduce((combined, section) => [...combined, ...section.fields], []);
 }
+
+/* Set up scrolling to a hash url (e.g. #id_explainer_links). */
+export function setupScrollToHash(pageElement) {
+  const scrollToElement = (hash) => {
+    if (hash) {
+      const el = pageElement.shadowRoot.querySelector(hash);
+      if (el) {
+        // Find the form field element.
+        const fieldRowSelector = `chromedash-form-field[name="${el.name}"] tr + tr`;
+        const fieldRow = pageElement.shadowRoot.querySelector(fieldRowSelector);
+        if (fieldRow) {
+          if (el.input) {
+            // el.focus() calls el.input.focus();
+            el.focus();
+          } else {
+            // Not ready yet, so try after delay.  TODO: Avoid the timeout.
+            setTimeout(() => {
+              el.focus();
+            }, 100);
+          }
+          fieldRow.scrollIntoView({
+            block: 'center', behavior: 'smooth',
+          });
+        }
+      }
+    }
+  };
+
+  // Add global function to jump to form field.
+  window.scrollToElement = (hash) => {
+    scrollToElement(hash);
+  };
+
+  // Check now as well, used when first rendering a page.
+  if (location.hash) {
+    const hash = decodeURIComponent(location.hash);
+    scrollToElement(hash);
+  }
+}

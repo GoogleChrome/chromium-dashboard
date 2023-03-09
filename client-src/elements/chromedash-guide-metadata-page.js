@@ -1,6 +1,6 @@
 import {LitElement, css, html} from 'lit';
 import {ref} from 'lit/directives/ref.js';
-import {showToastMessage} from './utils.js';
+import {showToastMessage, setupScrollToHash} from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
 import {
@@ -76,7 +76,7 @@ export class ChromedashGuideMetadataPage extends LitElement {
     });
 
     this.addMiscEventListeners();
-    this.scrollToPosition();
+    setupScrollToHash(this);
   }
 
   handleFormSubmit(event, hiddenTokenField) {
@@ -95,16 +95,6 @@ export class ChromedashGuideMetadataPage extends LitElement {
       fields[i].addEventListener('input', (e) => {
         e.target.classList.add('interacted');
       });
-    }
-  }
-
-  scrollToPosition() {
-    if (location.hash) {
-      const hash = decodeURIComponent(location.hash);
-      if (hash) {
-        const el = this.shadowRoot.querySelector(hash);
-        el.scrollIntoView(true, {behavior: 'smooth'});
-      }
     }
   }
 

@@ -1,6 +1,6 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
-import {showToastMessage, flattenSections} from './utils.js';
+import {showToastMessage, flattenSections, setupScrollToHash} from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
 import {
@@ -72,14 +72,14 @@ export class ChromedashGuideEditallPage extends LitElement {
    * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
   async registerHandlers(el) {
     if (!el) return;
-
     await el.updateComplete;
+
     const hiddenTokenField = this.shadowRoot.querySelector('input[name=token]');
     hiddenTokenField.form.addEventListener('submit', (event) => {
       this.handleFormSubmit(event, hiddenTokenField);
     });
 
-    this.scrollToPosition();
+    setupScrollToHash(this);
   }
 
   handleFormSubmit(event, hiddenTokenField) {
@@ -94,18 +94,6 @@ export class ChromedashGuideEditallPage extends LitElement {
 
   handleCancelClick() {
     window.location.href = `/guide/edit/${this.featureId}`;
-  }
-
-  scrollToPosition() {
-    if (location.hash) {
-      const hash = decodeURIComponent(location.hash);
-      if (hash) {
-        const el = this.shadowRoot.querySelector(hash);
-        if (el) {
-          this.shadowRoot.querySelector(`chromedash-form-field[name="${el.name}"] tr th b`).scrollIntoView(true, {behavior: 'smooth'});
-        }
-      }
-    }
   }
 
   renderSkeletons() {

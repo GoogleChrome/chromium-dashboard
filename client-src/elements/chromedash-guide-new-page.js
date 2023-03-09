@@ -8,6 +8,7 @@ import {
 } from './form-definition';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {FORM_STYLES} from '../sass/forms-css.js';
+import {setupScrollToHash} from './utils';
 
 
 export class ChromedashGuideNewPage extends LitElement {
@@ -49,7 +50,7 @@ export class ChromedashGuideNewPage extends LitElement {
 
   /* Add the form's event listener after Shoelace event listeners are attached
    * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
-  async registerFormSubmitHandler(el) {
+  async registerHandlers(el) {
     if (!el) return;
 
     await el.updateComplete;
@@ -57,6 +58,8 @@ export class ChromedashGuideNewPage extends LitElement {
     hiddenTokenField.form.addEventListener('submit', (event) => {
       this.handleFormSubmit(event, hiddenTokenField);
     });
+
+    setupScrollToHash(this);
   }
 
   handleFormSubmit(event, hiddenTokenField) {
@@ -91,7 +94,7 @@ export class ChromedashGuideNewPage extends LitElement {
       <section id="stage_form">
         <form name="overview_form" method="POST" action=${postAction}>
           <input type="hidden" name="token">
-          <chromedash-form-table ${ref(this.registerFormSubmitHandler)}>
+          <chromedash-form-table ${ref(this.registerHandlers)}>
 
             <span>
               Please see the
