@@ -199,7 +199,7 @@ export class ChromedashGuideMetadata extends LitElement {
               <tr>
                 <th>Process stage</th>
                 <td>${this.feature.intent_stage}</td>
-              </tr>`
+              </tr>`,
             )}
 
             ${this.feature.tags && !this.feature.is_enterprise_feature ? html`

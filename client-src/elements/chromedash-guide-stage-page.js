@@ -236,7 +236,7 @@ export class ChromedashGuideStagePage extends LitElement {
             value=${this.isActiveStage}
             ?disabled=${this.isActiveStage}>
           </chromedash-form-field>
-        </section>`)
+        </section>`);
     }
 
     stageSections.forEach(section => {
