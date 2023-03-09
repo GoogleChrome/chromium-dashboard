@@ -8,10 +8,12 @@ import {
   FLAT_METADATA_FIELDS,
   FLAT_ENTERPRISE_METADATA_FIELDS,
   FORMS_BY_STAGE_TYPE,
-  FLAT_TRIAL_EXTENSION_FIELDS} from './form-definition';
+  FLAT_TRIAL_EXTENSION_FIELDS,
+  STAGE_SHORT_NAMES} from './form-definition';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {FORM_STYLES} from '../sass/forms-css.js';
 import {STAGE_SPECIFIC_FIELDS} from './form-field-enums.js';
+import {openAddStageDialog} from './chromedash-add-stage-dialog';
 
 
 export class ChromedashGuideEditallPage extends LitElement {
@@ -122,7 +124,8 @@ export class ChromedashGuideEditallPage extends LitElement {
   }
 
   getNextPage() {
-    return this.nextPage || `/guide/edit/${this.featureId}`;
+    return this.nextPage || this.feature.is_enterprise_feature ?
+    `/feature/${this.featureId}` : `/guide/edit/${this.featureId}`;
   }
 
   renderSubheader() {
@@ -174,9 +177,10 @@ export class ChromedashGuideEditallPage extends LitElement {
         </chromedash-form-field>
       `;
     });
-
+    const id = `${STAGE_SHORT_NAMES[feStage.stage_type] || 'metadata'}${this.sameTypeRendered}`
+      .toLowerCase();
     return html`
-    <h3>${sectionName}</h3>
+    <h3 id="${id}">${sectionName}</h3>
     <section class="flat_form">
       ${formFieldEls}
     </section>
@@ -243,6 +247,14 @@ export class ChromedashGuideEditallPage extends LitElement {
     return stageIds.join(',');
   }
 
+  renderAddStageButton() {
+    return html`
+    <sl-button size="small" @click="${
+        () => openAddStageDialog(this.feature.id, this.feature.feature_type_int)}">
+      Add stage
+    </sl-button>`;
+  }
+
   renderForm() {
     const formattedFeature = formatFeatureForEdit(this.feature);
     const stageIds = this.getAllStageIds();
@@ -256,6 +268,7 @@ export class ChromedashGuideEditallPage extends LitElement {
         <chromedash-form-table ${ref(this.registerHandlers)}>
           ${formsToRender}
         </chromedash-form-table>
+        ${this.renderAddStageButton()}
 
         <section class="final_buttons">
           <input class="button" type="submit" value="Submit">

@@ -226,16 +226,18 @@ export class ChromedashGuideStagePage extends LitElement {
   }
 
   renderSections(formattedFeature, stageSections) {
-    const formSections = [
-      html`
-      <section class="stage_form">
-        <chromedash-form-field
-          name="set_stage"
-          value=${this.isActiveStage}
-          ?disabled=${this.isActiveStage}>
-        </chromedash-form-field>
-      </section>`,
-    ];
+    const formSections = [];
+    if (!formattedFeature.is_enterprise_feature) {
+      formSections.push(
+        html`
+        <section class="stage_form">
+          <chromedash-form-field
+            name="set_stage"
+            value=${this.isActiveStage}
+            ?disabled=${this.isActiveStage}>
+          </chromedash-form-field>
+        </section>`);
+    }
 
     stageSections.forEach(section => {
       if (section.isImplementationSection) {

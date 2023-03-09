@@ -2,7 +2,7 @@ import {LitElement, css, html, nothing} from 'lit';
 import './chromedash-feature-detail';
 import './chromedash-gantt';
 import {openApprovalsDialog} from './chromedash-approvals-dialog';
-import {autolink, showToastMessage} from './utils.js';
+import {autolink, renderHTMLIf, showToastMessage} from './utils.js';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 const INACTIVE_STATES = [
@@ -288,13 +288,13 @@ export class ChromedashFeaturePage extends LitElement {
               <iron-icon icon="chromestatus:link"></iron-icon>
             </a>
           </span>
-          ${canEdit ? html`
+          ${renderHTMLIf(canEdit && !this.feature.is_enterprise_feature, html`
             <span class="tooltip" title="Edit this feature">
               <a href="/guide/edit/${this.featureId}" class="editfeature" data-tooltip>
                 <iron-icon icon="chromestatus:create"></iron-icon>
               </a>
             </span>
-          `: nothing}
+          `)}
         </div>
         <h2 id="breadcrumbs">
           <a href="${this.contextLink}">

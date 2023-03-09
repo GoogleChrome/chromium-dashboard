@@ -1,6 +1,6 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
-import {autolink, flattenSections} from './utils.js';
+import {autolink, flattenSections, renderHTMLIf} from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
 import {ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME} from './form-field-enums';
@@ -195,10 +195,12 @@ export class ChromedashGuideMetadata extends LitElement {
               <td>${this.feature.feature_type}</td>
             </tr>
 
-            <tr>
-              <th>Process stage</th>
-              <td>${this.feature.intent_stage}</td>
-            </tr>
+            ${renderHTMLIf(!this.feature.is_enterprise_feature, html`
+              <tr>
+                <th>Process stage</th>
+                <td>${this.feature.intent_stage}</td>
+              </tr>`,
+            )}
 
             ${this.feature.tags && !this.feature.is_enterprise_feature ? html`
               <tr>

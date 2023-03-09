@@ -1,6 +1,7 @@
 // This file contains helper functions for our elements.
 
 import {markupAutolinks} from './autolink.js';
+import {nothing} from 'lit';
 
 let toastEl;
 
@@ -85,6 +86,10 @@ export function setupScrollToHash(pageElement) {
           fieldRow.scrollIntoView({
             block: 'center', behavior: 'smooth',
           });
+        } else {
+          el.scrollIntoView({
+            behavior: 'smooth',
+          });
         }
       }
     }
@@ -100,4 +105,9 @@ export function setupScrollToHash(pageElement) {
     const hash = decodeURIComponent(location.hash);
     scrollToElement(hash);
   }
+}
+
+/* Returns a html template if the condition is true, otherwise returns an empty html */
+export function renderHTMLIf(condition, originalHTML) {
+  return condition ? originalHTML : nothing;
 }
