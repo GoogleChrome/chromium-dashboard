@@ -47,7 +47,12 @@ def format_email_body(
   """Return an HTML string for a notification email body."""
 
   stage_type = core_enums.STAGE_TYPES_SHIPPING[fe.feature_type] or 0
-  ship_milestones: MilestoneSet | None = fe_stages[stage_type][0].milestones
+  ship_stages: list[Stage] = fe_stages.get(stage_type, [])
+  # TODO(danielrsmith): These notifications do not convey correct information
+  # for features with multiple shipping stages. Implement a new way to
+  # specify the shipping stage affected.
+  ship_milestones: MilestoneSet | None = (
+      ship_stages[0].milestones if len(ship_stages) > 0 else None)
   milestone_str = 'not yet assigned'
   if ship_milestones is not None:
     if ship_milestones.desktop_first:
