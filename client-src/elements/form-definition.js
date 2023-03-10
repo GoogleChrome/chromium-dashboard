@@ -129,7 +129,6 @@ export const ENTERPRISE_NEW_FEATURE_FORM_FIELDS = [
   'editors',
   'launch_bug_url',
   'enterprise_feature_categories',
-  'breaking_change',
 ];
 
 // The fields that are available to every feature.
@@ -400,6 +399,7 @@ export const FLAT_ENTERPRISE_PREPARE_TO_SHIP_FIELDS = {
     {
       name: 'Start feature rollout',
       fields: [
+        'rollout_impact',
         'rollout_milestone',
         'rollout_platforms',
         'rollout_details',

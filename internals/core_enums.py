@@ -398,6 +398,7 @@ STAGE_TYPES_BY_FIELD_MAPPING: dict[str, dict[int, Optional[int]]] = {
     'dt_milestone_ios_start': STAGE_TYPES_DEV_TRIAL,
     'dt_milestone_webview_start': STAGE_TYPES_DEV_TRIAL,
     'enterprise_policies': STAGE_TYPES_ROLLOUT,
+    'rollout_impact': STAGE_TYPES_ROLLOUT,
     'rollout_milestone': STAGE_TYPES_ROLLOUT,
     'rollout_platforms': STAGE_TYPES_ROLLOUT,
     'rollout_details': STAGE_TYPES_ROLLOUT

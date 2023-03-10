@@ -253,6 +253,7 @@ class Stage(ndb.Model):
   ot_stage_id = ndb.IntegerProperty()
 
   #Enterprise
+  rollout_impact = ndb.IntegerProperty(default=2) # default to "Medium impact"
   rollout_milestone = ndb.IntegerProperty()
   rollout_platforms = ndb.StringProperty(repeated=True)
   rollout_details = ndb.TextProperty()

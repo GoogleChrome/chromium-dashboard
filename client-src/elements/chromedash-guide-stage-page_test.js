@@ -76,6 +76,7 @@ describe('chromedash-guide-stage-page', () => {
     ot_stage_id: null,
     announcement_url: null,
     finch_url: null,
+    rollout_impact: null,
     rollout_milestone: null,
     rollout_platforms: [],
     rollout_details: null,
