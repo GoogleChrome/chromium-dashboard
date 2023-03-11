@@ -53,6 +53,7 @@ def format_email_body(
   # specify the shipping stage affected.
   ship_milestones: MilestoneSet | None = (
       ship_stages[0].milestones if len(ship_stages) > 0 else None)
+
   milestone_str = 'not yet assigned'
   if ship_milestones is not None:
     if ship_milestones.desktop_first:
@@ -139,12 +140,20 @@ def apply_subscription_rules(
   # configurable through some kind of user preference.
   changed_field_names = {c['prop_name'] for c in changes}
   results: dict[str, list[str]] = {}
+
+  # Find an existing shipping stage with milestone info.
   stage_type = core_enums.STAGE_TYPES_SHIPPING[fe.feature_type] or 0
-  ship_stage = fe_stages[stage_type][0]
+  ship_stages: list[Stage] = fe_stages.get(stage_type, [])
+  # TODO(danielrsmith): These notifications do not convey correct information
+  # for features with multiple shipping stages. Implement a new way to
+  # specify the shipping stage affected.
+  ship_milestones: MilestoneSet | None = (
+      ship_stages[0].milestones if len(ship_stages) > 0 else None)
+
   # Check if feature has some other milestone set, but not webview.
-  if (ship_stage.milestones is not None and
-      ship_stage.milestones.android_first and
-      not ship_stage.milestones.webview_first):
+  if (ship_milestones is not None and
+      ship_milestones.android_first and
+      not ship_milestones.webview_first):
     milestone_fields = ['shipped_android_milestone']
     if not changed_field_names.isdisjoint(milestone_fields):
       results[WEBVIEW_RULE_REASON] = WEBVIEW_RULE_ADDRS
