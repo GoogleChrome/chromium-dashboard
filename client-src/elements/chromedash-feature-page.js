@@ -2,7 +2,9 @@ import {LitElement, css, html, nothing} from 'lit';
 import './chromedash-feature-detail';
 import './chromedash-gantt';
 import {openApprovalsDialog} from './chromedash-approvals-dialog';
-import {autolink, renderHTMLIf, showToastMessage} from './utils.js';
+import {autolink, renderHTMLIf, showToastMessage,
+  renderAbsoluteDate, renderRelativeDate,
+} from './utils.js';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 const INACTIVE_STATES = [
@@ -40,6 +42,12 @@ export class ChromedashFeaturePage extends LitElement {
         section label {
           font-weight: 500;
           margin-right: 5px;
+        }
+
+        #updated {
+          color: var(--unimportant-text-color);
+          border-top: var(--default-border);
+          padding: var(--content-padding-quarter) 0 0 var(--content-padding);
         }
 
         li {
@@ -383,10 +391,7 @@ export class ChromedashFeaturePage extends LitElement {
         </ul>
       </section>
     `: nothing}
-
-    <section id="updated">
-      <p><span>Last updated on ${this.feature.updated_display}</span></p>
-    </section>`;
+    `;
   }
 
 
@@ -477,9 +482,15 @@ export class ChromedashFeaturePage extends LitElement {
             `)}
         </section>
       `: nothing}
+    `;
+  }
 
+  renderUpdated() {
+    return html`
       <section id="updated">
-        <p><span>Last updated on ${this.feature.updated_display}</span></p>
+          Last updated on
+          ${renderAbsoluteDate(this.feature.updated?.when, true)}
+          ${renderRelativeDate(this.feature.updated?.when)}
       </section>
     `;
   }
@@ -522,6 +533,7 @@ export class ChromedashFeaturePage extends LitElement {
         ${this.feature.is_enterprise_feature ?
             this.renderEnterpriseFeatureStatus() :
             this.renderFeatureStatus()}
+        ${this.renderUpdated()}
       </div>
       ${this.renderFeatureDetails()}
     `;

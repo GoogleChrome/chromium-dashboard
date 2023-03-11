@@ -1,7 +1,7 @@
 // This file contains helper functions for our elements.
 
 import {markupAutolinks} from './autolink.js';
-import {nothing} from 'lit';
+import {nothing, html} from 'lit';
 
 let toastEl;
 
@@ -110,4 +110,39 @@ export function setupScrollToHash(pageElement) {
 /* Returns a html template if the condition is true, otherwise returns an empty html */
 export function renderHTMLIf(condition, originalHTML) {
   return condition ? originalHTML : nothing;
+}
+
+
+function _parseDateStr(dateStr) {
+  // Format date to "YYYY-MM-DDTHH:mm:ss.sssZ" to represent UTC.
+  dateStr = dateStr || '';
+  dateStr = dateStr.replace(' ', 'T');
+  const dateObj = new Date(`${dateStr}Z`);
+  if (isNaN(dateObj)) {
+    return null;
+  }
+  return dateObj;
+}
+
+
+export function renderAbsoluteDate(dateStr, includeTime=false) {
+  if (!dateStr) {
+    return '';
+  }
+  if (includeTime) {
+    return dateStr.split('.')[0]; // Ignore microseconds.
+  } else {
+    return dateStr.split(' ')[0]; // Ignore time.
+  }
+}
+
+
+export function renderRelativeDate(dateStr) {
+  const dateObj = _parseDateStr(dateStr);
+  if (!dateObj) return nothing;
+  return html`
+      <span class="relative_date">
+        (<sl-relative-time date="${dateObj.toISOString()}">
+         </sl-relative-time>)
+      </span>`;
 }

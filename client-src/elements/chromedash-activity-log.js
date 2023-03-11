@@ -1,5 +1,6 @@
 import {LitElement, css, html, nothing} from 'lit';
-import {autolink} from './utils.js';
+import {autolink, renderAbsoluteDate, renderRelativeDate,
+} from './utils.js';
 import '@polymer/iron-icon';
 
 import {SHARED_STYLES} from '../sass/shared-css.js';
@@ -136,10 +137,6 @@ export class ChromedashActivity extends LitElement {
       `];
   }
 
-  formatDate(dateStr) {
-    return dateStr.split('.')[0]; // Ignore microseconds.
-  }
-
   // Returns a boolean representing whether the given activity can be edited.
   isEditable() {
     if (!this.user) {
@@ -204,22 +201,6 @@ export class ChromedashActivity extends LitElement {
       </div>`;
   }
 
-  // Display how long ago the comment was created compared to now.
-  formatRelativeDate() {
-    // Format date to "YYYY-MM-DDTHH:mm:ss.sssZ" to represent UTC.
-    let dateStr = this.activity.created || '';
-    dateStr = this.activity.created.replace(' ', 'T');
-    const activityDate = new Date(`${dateStr}Z`);
-    if (isNaN(activityDate)) {
-      return nothing;
-    }
-    return html`
-      <span class="relative_date">
-        (<sl-relative-time date="${activityDate.toISOString()}">
-        </sl-relative-time>)
-      </span>`;
-  }
-
   render() {
     if (!this.activity) {
       return nothing;
@@ -231,8 +212,9 @@ export class ChromedashActivity extends LitElement {
            ${this.formatEditMenu()}
            <span class="author">${this.activity.author}</span>
            <span class="preposition">on</span>
-           <span class="date">${this.formatDate(this.activity.created)}
-             ${this.formatRelativeDate()}
+           <span class="date">
+             ${renderAbsoluteDate(this.activity.created, true)}
+             ${renderRelativeDate(this.activity.created)}
            </span>
         </div>
         <div id="amendments">

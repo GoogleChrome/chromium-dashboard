@@ -137,16 +137,6 @@ export const SHARED_STYLES = [
     white-space: pre-wrap;
   }
 
-  #updated {
-    padding-top: var(--content-padding);
-  }
-
-  #updated span {
-    color: var(--unimportant-text-color);
-    border-top: var(--default-border);
-    padding: var(--content-padding-quarter) var(--content-padding) 0 0;
-  }
-
   #breadcrumbs a {
     text-decoration: none;
     color: inherit;
