@@ -169,8 +169,8 @@ class ChromedashApp extends LitElement {
       // If there was a previous page, check if we would lose unsaved changes.
       if (this.pageComponent) {
         // Act like we are unloading previous page and loading a new page.
-        console.info('Unloading old page', this.pageComponent);
         if (changesMade) {
+          // Should we use shoelace dialog instead?
           if (!confirm('You will lose unsaved changes.  Proceed anyway?')) {
             // Set ctx.handled to false, so we don't change browser's history.
             ctx.handled = false;
@@ -201,9 +201,13 @@ class ChromedashApp extends LitElement {
 
       window.setTimeout(() => {
         // Allow submit button to proceed, if the form is valid.
-        const submitButton = this.pageComponent.shadowRoot.querySelector('input[type="submit"');
+        // The submit button is not necessarily loaded yet, hence the timeout.
+        // Note: in general, there are several more ways to submit a form.
+        const submitButton =
+          this.pageComponent.shadowRoot.querySelector('input[type="submit"');
         if (submitButton) {
           const currentBeforeUnloadHandler = beforeUnloadHandler;
+          const currentPageComponent = this.pageComponent;
           submitButton.addEventListener('click', () => {
             resetBeforeUnloadHandler();
           });
@@ -216,10 +220,15 @@ class ChromedashApp extends LitElement {
           // So just restore after a timeout, checking that we are still in
           // the same place.
           window.setTimeout(() => {
-            window.addEventListener('beforeunload', currentBeforeUnloadHandler);
+            if (this.pageComponent == currentPageComponent) {
+              window.addEventListener('beforeunload',
+                currentBeforeUnloadHandler);
+            }
           }, 1000);
         }
       }, 1000);
+
+      // If we didn't return false above, return true now.
       return true;
     };
 
