@@ -17,7 +17,7 @@ import logging
 from typing import Any, Optional
 from google.cloud import ndb  # type: ignore
 
-from api import converters
+from api.legacy_converters import feature_to_legacy_json
 from framework import rediscache
 from framework import users
 from internals.core_enums import *
@@ -49,7 +49,7 @@ def get_by_ids_legacy(feature_ids: list[int],
   for future in futures:
     unformatted_feature: Optional[Feature] = future.get_result()
     if unformatted_feature and not unformatted_feature.deleted:
-      feature = converters.feature_to_legacy_json(unformatted_feature)
+      feature = feature_to_legacy_json(unformatted_feature)
       feature['updated_display'] = (
           unformatted_feature.updated.strftime("%Y-%m-%d"))
       feature['new_crbug_url'] = _new_crbug_url(
@@ -104,7 +104,7 @@ def get_all_legacy(limit=None, order='-updated', filterby=None,
     feature_list = query.fetch(limit, keys_only=keys_only)
     if not keys_only:
       feature_list = [
-          converters.feature_to_legacy_json(f) for f in feature_list]
+          feature_to_legacy_json(f) for f in feature_list]
 
     rediscache.set(KEY, feature_list)
 
@@ -221,12 +221,12 @@ def get_chronological_legacy(limit=None, update_cache: bool=False,
     all_features.extend(no_longer_pursuing_features)
     all_features = [f for f in all_features if not f.deleted]
 
-    feature_list = [converters.feature_to_legacy_json(f) for f in all_features]
+    feature_list = [feature_to_legacy_json(f) for f in all_features]
 
     Feature._annotate_first_of_milestones(feature_list)
 
     rediscache.set(cache_key, feature_list)
 
   if not show_unlisted:
-    feature_list = filter_unlisted(feature_list)
+    feature_list = filter_unlisted_legacy(feature_list)
   return feature_list
