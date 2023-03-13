@@ -138,8 +138,21 @@ class ChromedashApp extends LitElement {
   setUpRoutes() {
     page.strict(true); // Be precise about trailing slashes in routes.
 
-    let beforeUnloadHandler = null;
+    // Whether any changes have been made to form fields.
+    // Undo of changes does not undo this setting.
+    // This is null only when "loading" a new page.
     let changesMade = null;
+
+    let beforeUnloadHandler = null;
+
+    const resetBeforeUnloadHandler = () => {
+      if (!beforeUnloadHandler) return;
+      // Remove previous beforeunload handler, to forget changes.
+      window.removeEventListener('beforeunload', beforeUnloadHandler);
+      beforeUnloadHandler = null;
+    };
+
+    // Maybe set up new page, or if the URL is the same, we stay.
     // Returns true if we are proceeding to the new page, false otherwise.
     const setupNewPage = (ctx, componentName) => {
       // If current page is ctx.path and a ctx.hash exists,
@@ -168,19 +181,16 @@ class ChromedashApp extends LitElement {
 
       // Loading new page.
       this.pageComponent = document.createElement(componentName);
-      // Reset for new page.
       changesMade = null;
-      if (beforeUnloadHandler) {
-        // First remove previous beforeunload handler, to forget changes?
-        window.removeEventListener('beforeunload', beforeUnloadHandler);
-        beforeUnloadHandler = null;
-      };
+      resetBeforeUnloadHandler();
+
+      // If anything has changed, set up beforeunload handler.
       this.pageComponent.addEventListener('sl-change', () => {
         changesMade = true;
         // Make sure the beforeunload event handler has been set up.
         if (beforeUnloadHandler) return;
         beforeUnloadHandler = (event) => {
-          // Cancel the event to ask the user whether to stay.
+          // Cancel the event, which asks user whether to stay.
           event.preventDefault();
           // Chrome requires returnValue to be set.
           event.returnValue = `You made changes that have not been saved.
@@ -188,6 +198,28 @@ class ChromedashApp extends LitElement {
         };
         window.addEventListener('beforeunload', beforeUnloadHandler);
       });
+
+      window.setTimeout(() => {
+        // Allow submit button to proceed, if the form is valid.
+        const submitButton = this.pageComponent.shadowRoot.querySelector('input[type="submit"');
+        if (submitButton) {
+          const currentBeforeUnloadHandler = beforeUnloadHandler;
+          submitButton.addEventListener('click', () => {
+            resetBeforeUnloadHandler();
+          });
+          // If the form turns out to be invalid, or if the submit fails for
+          // any reason, we will still be on the same page.  So if that happens,
+          // we will want to restore the beforeunload handler.
+          // But we can't easily check whether the form is invalid, and that
+          // is not enough anyway.  There is no way to know at this time, and
+          // there is no event to indicate failure after it occurs.
+          // So just restore after a timeout, checking that we are still in
+          // the same place.
+          window.setTimeout(() => {
+            window.addEventListener('beforeunload', currentBeforeUnloadHandler);
+          }, 1000);
+        }
+      }, 1000);
       return true;
     };
 
