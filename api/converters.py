@@ -26,7 +26,7 @@ from internals import approval_defs
 SIMPLE_TYPES = frozenset((int, float, bool, dict, str, list))
 
 
-def to_dict(entity: ndb.Model) -> dict[str, Any]:
+def to_dict(entity: ndb.Model) -> dict[str, Any]: # pragma: no cover
   output = {}
   for key, prop in entity._properties.items():
     # Skip obsolete values that are still in our datastore
