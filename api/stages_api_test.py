@@ -51,6 +51,28 @@ class StagesAPITest(testing_config.CustomTestCase):
     self.stage_2 = Stage(id=11, feature_id=1, stage_type=160)
     self.stage_2.put()
 
+    self.stage_3 = Stage(id=30, feature_id=99, stage_type=150, browser='Chrome',
+        ux_emails=['ux_person@example.com'],
+        intent_thread_url='https://example.com/intent',
+        milestones=MilestoneSet(desktop_first=100),
+        experiment_goals='To be the very best.')
+    self.stage_3.put()
+
+    self.stage_4 = Stage(id=40, feature_id=1, stage_type=150, browser='Chrome',
+        ux_emails=['ux_person@example.com'],
+        intent_thread_url='https://example.com/intent',
+        milestones=MilestoneSet(desktop_first=100),
+        experiment_goals='To be the very best.')
+    self.stage_4.put()
+
+    self.stage_5 = Stage(id=50, feature_id=1, stage_type=150, browser='Chrome',
+        ot_stage_id=40,
+        ux_emails=['ux_person@example.com'],
+        intent_thread_url='https://example.com/intent',
+        milestones=MilestoneSet(desktop_first=100),
+        experiment_goals='To be the very best.')
+    self.stage_5.put()
+
     self.expected_stage_1 = {
         'id': 10,
         'feature_id': 1,
@@ -115,6 +137,70 @@ class StagesAPITest(testing_config.CustomTestCase):
 
     self.assertEqual(self.expected_stage_1, actual)
 
+  def test_get__valid_with_extension(self):
+    """Returns stage data with extension if requesting a valid stage ID."""
+    extension = {
+        'id': 50,
+        'feature_id': 1,
+        'stage_type': 150,
+        'intent_stage': 3,
+        'pm_emails': [],
+        'tl_emails': [],
+        'ux_emails': ['ux_person@example.com'],
+        'te_emails': [],
+        'intent_thread_url': 'https://example.com/intent',
+        'intent_to_experiment_url': 'https://example.com/intent',
+        'desktop_first': 100,
+        'desktop_last': None,
+        'android_first': None,
+        'android_last': None,
+        'webview_first': None,
+        'webview_last': None,
+        'experiment_goals': 'To be the very best.',
+        'experiment_risks': None,
+        'ot_milestone_android_end': None,
+        'ot_milestone_android_start': None,
+        'ot_milestone_desktop_end': None,
+        'ot_milestone_desktop_start': 100,
+        'ot_milestone_webview_end': None,
+        'ot_milestone_webview_start': None,
+        'origin_trial_feedback_url': None}
+
+    expect = {
+        'id': 40,
+        'feature_id': 1,
+        'stage_type': 150,
+        'intent_stage': 3,
+        'pm_emails': [],
+        'tl_emails': [],
+        'ux_emails': ['ux_person@example.com'],
+        'te_emails': [],
+        'intent_thread_url': 'https://example.com/intent',
+        'intent_to_experiment_url': 'https://example.com/intent',
+        'intent_to_extend_experiment_url': 'https://example.com/intent',
+        'desktop_first': 100,
+        'desktop_last': None,
+        'android_first': None,
+        'android_last': None,
+        'webview_first': None,
+        'webview_last': None,
+        'experiment_extension_reason': None,
+        'experiment_goals': 'To be the very best.',
+        'experiment_risks': None,
+        'extensions': [extension],
+        'ot_milestone_android_end': None,
+        'ot_milestone_android_start': None,
+        'ot_milestone_desktop_end': None,
+        'ot_milestone_desktop_start': 100,
+        'ot_milestone_webview_end': None,
+        'ot_milestone_webview_start': None,
+        'origin_trial_feedback_url': None}
+
+    with test_app.test_request_context(f'{self.request_path}1/stages/10'):
+      actual = self.handler.do_get(feature_id=1, stage_id=40)
+
+    self.assertEqual(expect, actual)
+
   @mock.patch('flask.abort')
   def test_post__not_allowed(self, mock_abort):
     """Raises 403 if user has no edit access to feature."""
@@ -129,6 +215,18 @@ class StagesAPITest(testing_config.CustomTestCase):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.do_post(feature_id=1)
     mock_abort.assert_called_once_with(403)
+
+  @mock.patch('framework.permissions.validate_feature_edit_permission')
+  def test_post__Redirect(self, permission_call):
+    """Lack of permission in POST and redirect users."""
+    permission_call.return_value = 'fake response'
+    testing_config.sign_in('feature_owner@example.com', 123)
+
+    with test_app.test_request_context(
+        f'{self.request_path}1/stages/10'):
+      actual = self.handler.do_post(feature_id=1)
+
+    self.assertEqual(actual, 'fake response')
 
   @mock.patch('flask.abort')
   def test_post__bad_id(self, mock_abort):
@@ -179,6 +277,7 @@ class StagesAPITest(testing_config.CustomTestCase):
     testing_config.sign_in('feature_owner@example.com', 123)
     json = {
         'stage_type': 151,
+        'desktop_first': 100, 
         'intent_thread_url': 'https://example.com/different'}
 
     with test_app.test_request_context(
@@ -243,6 +342,34 @@ class StagesAPITest(testing_config.CustomTestCase):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_patch(feature_id=1)
     mock_abort.assert_called_once_with(404, description='No stage specified.')
+
+  @mock.patch('flask.abort')
+  def test_patch__no_feature(self, mock_abort):
+    """Raises 404 if no feature was found."""
+    testing_config.sign_in('feature_owner@example.com', 123)
+    json = {
+        'intent_thread_url': 'https://example.com/different'}
+    mock_abort.side_effect = werkzeug.exceptions.BadRequest
+
+    with test_app.test_request_context(
+        f'{self.request_path}1/stages', json=json):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.do_patch(stage_id=30)
+
+    description = 'Feature 99 not found associated with stage 30'
+    mock_abort.assert_called_once_with(404, description=description)
+
+  @mock.patch('framework.permissions.validate_feature_edit_permission')
+  def test_patch__Redirect(self, permission_call):
+    """Lack of permission in Patch and redirect users."""
+    permission_call.return_value = 'fake response'
+    testing_config.sign_in('feature_owner@example.com', 123)
+
+    with test_app.test_request_context(
+        f'{self.request_path}1/stages/10'):
+      actual = self.handler.do_patch(stage_id=10)
+
+    self.assertEqual(actual, 'fake response')
 
   @mock.patch('flask.abort')
   def test_patch__stage_type_change_attempt(self, mock_abort):
@@ -318,3 +445,14 @@ class StagesAPITest(testing_config.CustomTestCase):
       actual = self.handler.do_delete(feature_id=1, stage_id=10)
     self.assertEqual(actual['message'], 'Stage archived.')
     self.assertEqual(self.stage_1.archived, True)
+
+
+  @mock.patch('framework.permissions.validate_feature_edit_permission')
+  def test_delete__Redirect(self, permission_call):
+    """Lack of permission in Delete and redirect users."""
+    permission_call.return_value = 'fake response'
+
+    with test_app.test_request_context(f'{self.request_path}1/stages/10'):
+      actual = self.handler.do_delete(feature_id=1, stage_id=10)
+
+    self.assertEqual(actual, 'fake response')
