@@ -103,7 +103,7 @@ class FeatureCreateTest(testing_config.CustomTestCase):
     stages = Stage.query().fetch()
     gates = Gate.query().fetch()
     self.assertEqual(len(stages), 6)
-    self.assertEqual(len(gates), 9)
+    self.assertEqual(len(gates), 7)
 
 
 class FeatureEditHandlerTest(testing_config.CustomTestCase):
