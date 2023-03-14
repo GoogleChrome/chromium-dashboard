@@ -12,15 +12,15 @@ from chromestatus_openapi.test import BaseTestCase
 class TestDefaultController(BaseTestCase):
     """DefaultController integration test stubs"""
 
-    def test_componentsubscribers_get(self):
-        """Test case for componentsubscribers_get
+    def test_componentsusers_get(self):
+        """Test case for componentsusers_get
 
         
         """
         headers = { 
         }
         response = self.client.open(
-            '/api/v0/componentsubscribers',
+            '/api/v0/componentsusers',
             method='GET',
             headers=headers)
         self.assert200(response,

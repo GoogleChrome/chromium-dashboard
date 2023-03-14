@@ -13,9 +13,9 @@ info:
 servers:
 - url: /api/v0
 paths:
-  /componentsubscribers:
+  /componentsusers:
     get:
-      operationId: componentsubscribers_get
+      operationId: componentsusers_get
       responses:
         "200":
           description: OK

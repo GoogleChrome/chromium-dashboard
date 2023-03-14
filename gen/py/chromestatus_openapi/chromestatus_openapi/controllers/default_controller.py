@@ -7,8 +7,8 @@ from typing import Union
 from chromestatus_openapi import util
 
 
-def componentsubscribers_get():  # noqa: E501
-    """componentsubscribers_get
+def componentsusers_get():  # noqa: E501
+    """componentsusers_get
 
      # noqa: E501
 

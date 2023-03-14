@@ -28,11 +28,11 @@ export interface DefaultApiInterface {
      * @throws {RequiredError}
      * @memberof DefaultApiInterface
      */
-    componentsubscribersGetRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+    componentsusersGetRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
 
     /**
      */
-    componentsubscribersGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+    componentsusersGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
 }
 
@@ -43,13 +43,13 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
 
     /**
      */
-    async componentsubscribersGetRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+    async componentsusersGetRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/componentsubscribers`,
+            path: `/componentsusers`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -60,8 +60,8 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
 
     /**
      */
-    async componentsubscribersGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.componentsubscribersGetRaw(initOverrides);
+    async componentsusersGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.componentsusersGetRaw(initOverrides);
     }
 
 }
