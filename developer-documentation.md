@@ -151,7 +151,6 @@ Operations = HTTP verbs. (e.g. GET, POST, PUT, etc)
             required: true
             schema:
               type: integer
-              format: int64
       post:
         summary: Update a feature by ID.
         description: |
@@ -165,7 +164,6 @@ Operations = HTTP verbs. (e.g. GET, POST, PUT, etc)
             required: true
             schema:
               type: integer
-              format: int64
   ```
 </details>
 
@@ -201,7 +199,6 @@ Operations = HTTP verbs. (e.g. GET, POST, PUT, etc)
             required: true
             schema:
               type: integer
-              format: int64
         requestBody:
           content:
             application/json:
@@ -260,7 +257,6 @@ Operations = HTTP verbs. (e.g. GET, POST, PUT, etc)
             required: true
             schema:
               type: integer
-              format: int64
         requestBody:
           content:
             application/json:
@@ -317,7 +313,6 @@ Run: `npm run openapi`
             required: true
             schema:
               type: integer
-              format: int64
         requestBody:
           content:
             application/json:
@@ -343,7 +338,6 @@ Run: `npm run openapi`
             required: true
             schema:
               type: integer
-              format: int64
         responses:
           '200':
             description: An updated feature
