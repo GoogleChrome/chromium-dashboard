@@ -192,6 +192,8 @@ class FeatureAccuracyHandler(AbstractReminderHandler):
   """Periodically remind owners to verify the accuracy of their entries."""
 
   ACCURACY_GRACE_PERIOD = timedelta(weeks=4)
+  ALLOW_ESCALATION = True  # Outstanding notifications will be escalated.
+  ESCALATION_CHECK = lambda self, f: f.outstanding_notifications >= 2
   SUBJECT_FORMAT = '[Action requested] Update %s'
   EMAIL_TEMPLATE_PATH = 'accuracy_notice_email.html'
   FUTURE_MILESTONES_TO_CONSIDER = 2
