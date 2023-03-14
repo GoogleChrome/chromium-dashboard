@@ -333,6 +333,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
         'when': str(self.date)
       },
       'accurate_as_of': str(self.date),
+      'outstanding_notifications': 0,
       'resources': {
         'samples': ['https://example.com/samples'],
         'docs': ['https://example.com/docs'],

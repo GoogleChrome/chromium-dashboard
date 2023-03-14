@@ -33,6 +33,7 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   created = ndb.DateTimeProperty(auto_now_add=True)
   updated = ndb.DateTimeProperty(auto_now_add=True)
   accurate_as_of = ndb.DateTimeProperty()
+  outstanding_notifications = ndb.IntegerProperty(default=0)
   creator_email = ndb.StringProperty()
   updater_email = ndb.StringProperty()
 
@@ -54,7 +55,7 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   feature_notes = ndb.TextProperty()  # copy from comments
 
   # Metadata: Process information
-  feature_type = ndb.IntegerProperty(default=FEATURE_TYPE_INCUBATE_ID)
+  feature_type = ndb.IntegerProperty(required=True, default=FEATURE_TYPE_INCUBATE_ID)
   intent_stage = ndb.IntegerProperty(default=INTENT_NONE)
   active_stage_id = ndb.IntegerProperty()
   bug_url = ndb.StringProperty()  # Tracking bug
