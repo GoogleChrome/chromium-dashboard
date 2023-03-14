@@ -143,14 +143,16 @@ class ChromedashApp extends LitElement {
     // This is null only when "loading" a new page.
     let changesMade = null;
 
-    let beforeUnloadHandler = null;
-
-    const resetBeforeUnloadHandler = () => {
-      if (!beforeUnloadHandler) return;
-      // Remove previous beforeunload handler, to forget changes.
-      window.removeEventListener('beforeunload', beforeUnloadHandler);
-      beforeUnloadHandler = null;
+    // Set up beforeunload event handler for the whole window.
+    const beforeUnloadHandler = (event) => {
+      if (!changesMade) return;
+      // Cancel the event, which asks user whether to stay.
+      event.preventDefault();
+      // Chrome requires returnValue to be set.
+      event.returnValue = `You made changes that have not been saved.
+      Are you sure you want to leave?`;
     };
+    window.addEventListener('beforeunload', beforeUnloadHandler);
 
     // Maybe set up new page, or if the URL is the same, we stay.
     // Returns true if we are proceeding to the new page, false otherwise.
@@ -181,48 +183,32 @@ class ChromedashApp extends LitElement {
 
       // Loading new page.
       this.pageComponent = document.createElement(componentName);
-      changesMade = null;
-      resetBeforeUnloadHandler();
+      changesMade = false;
 
-      // If anything has changed, set up beforeunload handler.
+      // Remember if anything has changed since the page was visited.
       this.pageComponent.addEventListener('sl-change', () => {
         changesMade = true;
-        // Make sure the beforeunload event handler has been set up.
-        if (beforeUnloadHandler) return;
-        beforeUnloadHandler = (event) => {
-          // Cancel the event, which asks user whether to stay.
-          event.preventDefault();
-          // Chrome requires returnValue to be set.
-          event.returnValue = `You made changes that have not been saved.
-          Are you sure you want to leave?`;
-        };
-        window.addEventListener('beforeunload', beforeUnloadHandler);
       });
 
       window.setTimeout(() => {
-        // Allow submit button to proceed, if the form is valid.
-        // The submit button is not necessarily loaded yet, hence the timeout.
-        // Note: in general, there are several more ways to submit a form.
-        const submitButton =
-          this.pageComponent.shadowRoot.querySelector('input[type="submit"');
-        if (submitButton) {
-          const currentBeforeUnloadHandler = beforeUnloadHandler;
-          const currentPageComponent = this.pageComponent;
-          submitButton.addEventListener('click', () => {
-            resetBeforeUnloadHandler();
+        // Allow form submit to proceed without warning.
+        const form = this.pageComponent.shadowRoot.querySelector('form');
+        if (form) {
+          const currentChangesMade = changesMade;
+          form.addEventListener('submit', () => {
+            changesMade = false;
           });
-          // If the form turns out to be invalid, or if the submit fails for
-          // any reason, we will still be on the same page.  So if that happens,
-          // we will want to restore the beforeunload handler.
-          // But we can't easily check whether the form is invalid, and that
+
+          const currentPageComponent = this.pageComponent;
+
+          // We can't easily check whether the form is valid, and that
           // is not enough anyway.  There is no way to know at this time, and
           // there is no event to indicate failure after it occurs.
-          // So just restore after a timeout, checking that we are still in
-          // the same place.
+          // So just restore the changesMade status after a timeout,
+          // checking that we are still on the same page.
           window.setTimeout(() => {
             if (this.pageComponent == currentPageComponent) {
-              window.addEventListener('beforeunload',
-                currentBeforeUnloadHandler);
+              changesMade = currentChangesMade;
             }
           }, 1000);
         }
