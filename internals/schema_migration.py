@@ -499,56 +499,62 @@ class UpdateDeprecatedViews(FlaskHandler):
 
 class WriteMissingGates(FlaskHandler):
 
-  def write_gate_if_missing(
-      self, existing_gates, stage, gate_type):
-    """If there is no existing gate, create it and return 1."""
-    stage_id = stage.key.integer_id()
-    if any(ex.stage_id == stage_id
-           for ex in existing_gates):
-      return 0
+  GATES_TO_CREATE_PER_RUN = 5000
 
-    gate = Gate(feature_id=stage.feature_id, stage_id=stage_id,
-                gate_type=gate_type, state=Gate.PREPARING)
-    gate.put()
-    return 1
+  GATE_RULES: dict[int, dict[int, list[int]]] = {
+      fe_type: dict(stages_and_gates)
+      for fe_type, stages_and_gates in STAGES_AND_GATES_BY_FEATURE_TYPE.items()
+  }
+
+  def make_needed_gates(self, fe, stage, existing_gates):
+    """Instantiate and return any needed gates for the given stage."""
+    if not fe:
+      logging.info(f'Stage {stage.key.integer_id()} has no feature entry')
+      return []
+    if fe.feature_type not in self.GATE_RULES:
+      logging.info(f'Skipping stage of bad feature {fe.key.integer_id()}')
+      return []
+    if stage.stage_type not in self.GATE_RULES[fe.feature_type]:
+      logging.info(f'Skipping bad stage {stage.key.integer_id()} ')
+      return []
+
+
+    new_gates: list[Gate] = []
+    needed_gates = self.GATE_RULES[fe.feature_type][stage.stage_type]
+    for needed_gate_type in needed_gates:
+      if not any(eg for eg in existing_gates
+                 if eg.gate_type == needed_gate_type):
+        gate = Gate(
+            feature_id=stage.feature_id,
+            stage_id=stage.key.integer_id(),
+            gate_type=needed_gate_type,
+            state=Gate.PREPARING)
+        new_gates.append(gate)
+    return new_gates
 
   def get_template_data(self, **kwargs):
-    """Write gates for code change implement stages (previously not written)."""
+    """Create a chunk of needed gates for all features."""
     self.require_cron_header()
 
-    existing_api_prototype_gates = Gate.query(
-        Gate.gate_type == GATE_API_PROTOTYPE).fetch()
-    existing_privacy_ot_gates = Gate.query(
-        Gate.gate_type == GATE_PRIVACY_ORIGIN_TRIAL).fetch()
-    existing_privacy_ship_gates = Gate.query(
-        Gate.gate_type == GATE_PRIVACY_SHIP).fetch()
-    existing_security_ot_gates = Gate.query(
-        Gate.gate_type == GATE_SECURITY_ORIGIN_TRIAL).fetch()
-    existing_security_ship_gates = Gate.query(
-        Gate.gate_type == GATE_SECURITY_SHIP).fetch()
+    all_feature_entries = FeatureEntry.query().fetch()
+    fe_by_id = {fe.key.integer_id(): fe
+                for fe in all_feature_entries}
+    existing_gates_by_stage_id = collections.defaultdict(list)
+    for gate in Gate.query():
+      existing_gates_by_stage_id[gate.stage_id].append(gate)
 
-    gates_created = 0
-    for stage in Stage.query(Stage.stage_type == STAGE_PSA_IMPLEMENT):
-      gates_created += self.write_gate_if_missing(
-          existing_api_prototype_gates, stage, GATE_API_PROTOTYPE)
+    gates_to_write: list(Gate) = []
+    for stage in Stage.query():
+      new_gates = self.make_needed_gates(
+          fe_by_id.get(stage.feature_id), stage,
+          existing_gates_by_stage_id[stage.key.integer_id()])
+      gates_to_write.extend(new_gates)
+      if len(gates_to_write) > self.GATES_TO_CREATE_PER_RUN:
+        break  # Stop early if we risk exceeding GAE timeout.
 
-    for stage in Stage.query(Stage.stage_type.IN([
-        STAGE_BLINK_ORIGIN_TRIAL, STAGE_FAST_ORIGIN_TRIAL,
-        STAGE_DEP_DEPRECATION_TRIAL])):
-      gates_created += self.write_gate_if_missing(
-          existing_privacy_ot_gates, stage, GATE_PRIVACY_ORIGIN_TRIAL)
-      gates_created += self.write_gate_if_missing(
-          existing_security_ot_gates, stage, GATE_SECURITY_ORIGIN_TRIAL)
+    ndb.put_multi(gates_to_write)
 
-    for stage in Stage.query(Stage.stage_type.IN([
-        STAGE_BLINK_SHIPPING, STAGE_FAST_SHIPPING, STAGE_PSA_SHIPPING,
-        STAGE_DEP_SHIPPING])):
-      gates_created += self.write_gate_if_missing(
-          existing_privacy_ship_gates, stage, GATE_PRIVACY_SHIP)
-      gates_created += self.write_gate_if_missing(
-          existing_security_ship_gates, stage, GATE_SECURITY_SHIP)
-
-    return f'{gates_created} missing gates created for stages.'
+    return f'{len(gates_to_write)} missing gates created for stages.'
 
 
 
