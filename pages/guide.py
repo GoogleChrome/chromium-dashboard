@@ -342,15 +342,17 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     # hidden form field named "touched" that lists the names of all fields
     # actually touched by the user.
 
+    # For now, checkboxes and multi-selects are always considered "touched",
+    # if they are present on the form.
+    if (param_name in self.CHECKBOX_FIELDS or
+        param_name in self.MULTI_SELECT_FIELDS):
+      return param_name in form_fields if len(form_fields) > 0 else True
 
     # For now, selects are considered "touched", if they are
     # present on the form and are not empty strings.
     if param_name in self.SELECT_FIELDS:
       return bool(self.form.get(param_name))
-    # For now, checkboxes and multi-selects are always considered "touched",
-    # if they are present on the form.
-    if param_name in form_fields:
-      return True
+
     # See TODO at top of this method.
     return param_name in self.form
 
@@ -628,7 +630,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
         # To differentiate stages that have the same fields, the stage ID
         # is appended to the field name with 2 underscores.
         field_with_id = f'{field}__{id}'
-        if not self.touched(field, form_fields):
+        if not self.touched(field_with_id, form_fields):
           continue
         new_field_name = self.RENAMED_FIELD_MAPPING.get(field, field)
         old_val = getattr(stage, new_field_name)
@@ -656,17 +658,18 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
         milestone_fields = self.SHIPPING_MILESTONE_FIELDS
 
       # Determine if 'intent_thread_url' field needs to be changed.
-      if intent_thread_field and self.touched(intent_thread_field, form_fields):
+      intent_field_with_id = f'{intent_thread_field}__{id}'
+      if intent_thread_field and self.touched(intent_field_with_id, form_fields):
         old_val = stage.intent_thread_url
-        new_val = self._get_field_val(f'{intent_thread_field}__{id}', 'link')
+        new_val = self._get_field_val(intent_field_with_id, 'link')
         if old_val != new_val:
           changed_fields.append((intent_thread_field, old_val, new_val))
         setattr(stage, 'intent_thread_url', new_val)
 
       for field, milestone_field in milestone_fields:
-        if not self.touched(field, form_fields):
-          continue
         field_with_id = f'{field}__{id}'
+        if not self.touched(field_with_id, form_fields):
+          continue
         old_val = None
         new_val = self._get_field_val(field_with_id, 'int')
         milestoneset_entity = stage.milestones

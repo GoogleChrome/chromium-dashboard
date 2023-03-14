@@ -153,8 +153,8 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
     """We can tell if the user meant to edit a field."""
     with test_app.test_request_context(
         'path', data={'name': 'new name'}):
-      self.assertTrue(self.handler.touched('name'))
-      self.assertFalse(self.handler.touched('summary'))
+      self.assertTrue(self.handler.touched('name', ['name', 'summary']))
+      self.assertFalse(self.handler.touched('summary', ['name', 'summary']))
 
   def test_touched__checkboxes(self):
     """For now, any checkbox listed in form_fields is considered touched."""
@@ -162,12 +162,13 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
         'path', data={'form_fields': 'unlisted, api_spec',
                       'unlisted': 'yes',
                       'wpt': 'yes'}):
+      form_fields = ['unlisted', 'api_spec']
       # unlisted is in this form and the user checked the box.
-      self.assertTrue(self.handler.touched('unlisted'))
+      self.assertTrue(self.handler.touched('unlisted', form_fields))
       # api_spec is this form and the user did not check the box.
-      self.assertTrue(self.handler.touched('api_spec'))
+      self.assertTrue(self.handler.touched('api_spec', form_fields))
       # wpt is not part of this form, regardless if a value was given.
-      self.assertFalse(self.handler.touched('wpt'))
+      self.assertFalse(self.handler.touched('wpt', form_fields))
 
   def test_touched__selects(self):
     """For now, any select in the form data considered touched if not ''."""
@@ -176,11 +177,11 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
                       'category': '',
                       'feature_type': '4'}):
       # The user did not choose any value for category.
-      self.assertFalse(self.handler.touched('category'))
+      self.assertFalse(self.handler.touched('category', []))
       # The user did select a value, or one was already set.
-      self.assertTrue(self.handler.touched('feature_type'))
+      self.assertTrue(self.handler.touched('feature_type', []))
       # intent_state is a select, but it was not present in this POST.
-      self.assertFalse(self.handler.touched('select'))
+      self.assertFalse(self.handler.touched('select', []))
 
   def test_touched__multiselects(self):
     """For now, any multi-select listed in form_fields is considered touched."""
@@ -188,17 +189,17 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
     with test_app.test_request_context(
         'path', data={'form_fields': 'rollout_platforms',
                       'rollout_platforms': 'iOS'}):
-      self.assertTrue(self.handler.touched('rollout_platforms'))
+      self.assertTrue(self.handler.touched('rollout_platforms', ['rollout_platforms']))
 
     # Field in is this form and no value was selected
     with test_app.test_request_context(
         'path', data={'form_fields': 'rollout_platforms'}):
-      self.assertTrue(self.handler.touched('rollout_platforms'))
+      self.assertTrue(self.handler.touched('rollout_platforms', ['rollout_platforms']))
 
     # rollout_platforms is not part of this form
     with test_app.test_request_context(
         'path', data={'form_fields': 'other,fields'}):
-      self.assertFalse(self.handler.touched('rollout_platforms'))
+      self.assertFalse(self.handler.touched('rollout_platforms', ['other, fields']))
 
   def test_post__anon(self):
     """Anon cannot edit features, gets a 403."""
@@ -223,7 +224,7 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
     # Fields changed.
     form_fields = ('category, name, summary, shipped_milestone, '
         'intent_to_experiment_url, experiment_risks, experiment_reason, '
-        'origin_trial_feedback_url, intent_to_ship_url')
+        'origin_trial_feedback_url, intent_to_ship_url, ready_for_trial_url')
     # Expected stage change items.
     new_shipped_milestone = '84'
     new_ready_for_trial_url = 'https://example.com/trial'
