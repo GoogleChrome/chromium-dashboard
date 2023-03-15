@@ -1,5 +1,4 @@
-/componentsusers:
-  get:
-    responses:
-      '200':
-        description: OK
+get:
+  responses:
+    '200':
+      description: OK

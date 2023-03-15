@@ -18,4 +18,4 @@ paths:
   # The Python generator needs at least one path to generate a proper setup.py
   # Add a placeholder one.
   /componentsusers:
-    $ref: 'componentsusers.paths.yaml#/~1componentsusers'
+    $ref: 'componentsusers.paths.yaml'
