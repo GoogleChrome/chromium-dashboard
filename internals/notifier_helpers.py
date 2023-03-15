@@ -134,3 +134,25 @@ def notify_subscribers_of_vote_changes(fe: 'FeatureEntry', gate: Gate,
 
   # Create task to email subscribers.
   cloud_tasks_helpers.enqueue_task('/tasks/email-subscribers', params)
+
+
+def notify_subscribers_of_new_comments(fe: 'FeatureEntry', gate_id: int,
+    email: str, comment: str) -> None:
+  """Notify subscribers of a new comment."""
+  gate_url = 'https://chromestatus.com/feature/%s?gate=%s' % (
+      fe.key.integer_id(), gate_id)
+  changed_props = {
+      'prop_name': '%s posted a new comment in %s' % (email, gate_url),
+      'old_val': 'na',
+      'new_val': comment,
+  }
+
+  params = {
+    'changes': [changed_props],
+    # Subscribers are only notified on feature update.
+    'is_update': True,
+    'feature': converters.feature_entry_to_json_verbose(fe)
+  }
+
+  # Create task to email subscribers.
+  cloud_tasks_helpers.enqueue_task('/tasks/email-subscribers', params)
