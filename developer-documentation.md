@@ -111,17 +111,6 @@ If using Visual Studio Code, install the following extensions. (These are pre-in
   - Example 1: /componentsusers -> File `componentusers.paths.yaml`
   - Example 2: /components/{componentId} -> File `components_componentid.paths.yaml`
   - Example 3: /components/{componentId}/users/{userId} -> File `components_componentid_users_userid.yaml`
-- Add the desired path. All paths already have the `/api/v0` prefix (check the `servers` object in openapi/api.yaml). Do not include that prefix when adding the path.
-
-<details>
-  <summary>Example (click to expand)</summary>
-  
-  #### openapi/features_featureid.paths.yaml
-  ```yaml
-  /features/{feature_id}:
-  ```
-</details>
-
 
 
 #### Step 1b: Add Operations
@@ -138,33 +127,32 @@ Operations = HTTP verbs. (e.g. GET, POST, PUT, etc)
   
   #### openapi/features_featureid.paths.yaml
   ```yaml
-  /features/{feature_id}:
-    get:
-      summary: Get a feature by ID.
-      description: |
-        Get a feature by ID. More details about this here.
-        Also, can do more comments
-      operationId: getFeatureById
-      parameters:
-        - name: feature_id
-          in: path
-          description: Feature ID
-          required: true
-          schema:
-            type: integer
-    post:
-      summary: Update a feature by ID.
-      description: |
-        Update a feature with the given ID.
-        More details about this here.
-      operationId: updateFeatureById
-      parameters:
-        - name: feature_id
-          in: path
-          description: Feature ID
-          required: true
-          schema:
-            type: integer
+  get:
+    summary: Get a feature by ID.
+    description: |
+      Get a feature by ID. More details about this here.
+      Also, can do more comments
+    operationId: getFeatureById
+    parameters:
+      - name: feature_id
+        in: path
+        description: Feature ID
+        required: true
+        schema:
+          type: integer
+  post:
+    summary: Update a feature by ID.
+    description: |
+      Update a feature with the given ID.
+      More details about this here.
+    operationId: updateFeatureById
+    parameters:
+      - name: feature_id
+        in: path
+        description: Feature ID
+        required: true
+        schema:
+          type: integer
   ```
 </details>
 
@@ -215,26 +203,25 @@ Operations = HTTP verbs. (e.g. GET, POST, PUT, etc)
   
   #### openapi/features_featureid.paths.yaml
   ```yaml
-  /features/{feature_id}:
   ...
-    post:
-      summary: Update a feature by ID.
-      description: |
-        Update a feature with the given ID.
-        More details about this here.
-      operationId: updateFeatureById
-      parameters:
-        - name: feature_id
-          in: path
-          description: Feature ID
-          required: true
+  post:
+    summary: Update a feature by ID.
+    description: |
+      Update a feature with the given ID.
+      More details about this here.
+    operationId: updateFeatureById
+    parameters:
+      - name: feature_id
+        in: path
+        description: Feature ID
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      content:
+        application/json:
           schema:
-            type: integer
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: 'features_featureid.schemas.yaml#/Feature'
+            $ref: 'features_featureid.schemas.yaml#/Feature'
   ```
 </details>
 
@@ -262,33 +249,32 @@ Operations = HTTP verbs. (e.g. GET, POST, PUT, etc)
   
   #### openapi/features_featureid.paths.yaml
   ```yaml
-  /features/{feature_id}:
   ...
-    post:
-      summary: Update a feature by ID.
-      description: |
-        Update a feature with the given ID.
-        More details about this here.
-      operationId: updateFeatureById
-      parameters:
-        - name: feature_id
-          in: path
-          description: Feature ID
-          required: true
+  post:
+    summary: Update a feature by ID.
+    description: |
+      Update a feature with the given ID.
+      More details about this here.
+    operationId: updateFeatureById
+    parameters:
+      - name: feature_id
+        in: path
+        description: Feature ID
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      content:
+        application/json:
           schema:
-            type: integer
-      requestBody:
+            $ref: 'features_featureid.schemas.yaml#/Feature'
+    responses:
+      '200':
+        description: An updated feature
         content:
           application/json:
             schema:
               $ref: 'features_featureid.schemas.yaml#/Feature'
-      responses:
-        '200':
-          description: An updated feature
-          content:
-            application/json:
-              schema:
-                $ref: 'features_featureid.schemas.yaml#/Feature'
   ```
 </details>
 
