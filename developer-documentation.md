@@ -294,7 +294,7 @@ Operations = HTTP verbs. (e.g. GET, POST, PUT, etc)
 
 ### Step 4: Add the path and schemas to the high level openapi/api.yaml
 
-- Under paths, add the path. Under the path, add a $ref to the `.paths.yaml` file.  The value of the $ref should equal `{paths file name}#/{path}`. **Note**: The slashes in the path have to be escaped with `~1`. Read this [document](https://swagger.io/docs/specification/using-ref/) for more details.
+- Under paths, add the path. Under the path, add a $ref to the `.paths.yaml` file.  The value of the $ref should equal `{paths file name}`.
 - Under `components.schemas`, add the schema name. Under the schema, add a $ref key. The value of the $ref should equal `{schemas file name}#/{Object name}`
 
 <details>
@@ -304,7 +304,7 @@ Operations = HTTP verbs. (e.g. GET, POST, PUT, etc)
   ```yaml
   paths:
     /features/{feature_id}:
-      $ref: 'features_featureid.paths.yaml#/~1features~1{featureId}'
+      $ref: 'features_featureid.paths.yaml'
   components:
     schemas:
       Feature:
