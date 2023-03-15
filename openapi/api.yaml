@@ -19,9 +19,3 @@ paths:
     $ref: 'componentsusers.paths.yaml'
   /components/{componentId}/users/{userId}:
     $ref: 'component_componentid_users_userid.paths.yaml'
-components:
-  schemas:        
-    ComponentsUsers:
-      $ref: 'componentsusers.schemas.yaml#/ComponentsUsers'
-    ComponentUsersRequest:
-      $ref: 'component_componentid_users_userid.schemas.yaml#/ComponentUsersRequest'
