@@ -317,7 +317,7 @@ class GatesAPITest(testing_config.CustomTestCase):
         "gates": [
             {
                 "id": 1,
-                "feature_id": 450,
+                "feature_id": self.feature_id,
                 "stage_id": 1,
                 "gate_type": 1,
                 "team_name": "API Owners",
@@ -343,6 +343,7 @@ class GatesAPITest(testing_config.CustomTestCase):
             64: ["reviewer1@example.com"],
             74: ["reviewer1@example.com"],
         }}
+
     self.assertEqual(actual, expected)
 
   @mock.patch('internals.approval_defs.get_approvers')
