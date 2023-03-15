@@ -278,10 +278,9 @@ Operations = HTTP verbs. (e.g. GET, POST, PUT, etc)
   ```
 </details>
 
-### Step 4: Add the path and schemas to the high level openapi/api.yaml
+### Step 4: Add the path to the high level openapi/api.yaml
 
 - Under paths, add the path. Under the path, add a $ref to the `.paths.yaml` file.  The value of the $ref should equal `{paths file name}`.
-- Under `components.schemas`, add the schema name. Under the schema, add a $ref key. The value of the $ref should equal `{schemas file name}#/{Object name}`
 
 <details>
   <summary>Example (click to expand)</summary>
@@ -291,10 +290,6 @@ Operations = HTTP verbs. (e.g. GET, POST, PUT, etc)
   paths:
     /features/{feature_id}:
       $ref: 'features_featureid.paths.yaml'
-  components:
-    schemas:
-      Feature:
-        $ref: 'features_featureid.schemas.yaml#/Feature'
   ```
 </details>
 
