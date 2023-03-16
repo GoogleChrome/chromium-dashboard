@@ -66,23 +66,29 @@ export function flattenSections(stage) {
 
 /* Set up scrolling to a hash url (e.g. #id_explainer_links). */
 export function setupScrollToHash(pageElement) {
+  // Scroll to the element identified by the hash parameter, which must include
+  // the '#' prefix.  E.g. for a form field: '#id_<form-field-name>'.
+  // Note that this function is bound to the pageElement for a page.
   const scrollToElement = (hash) => {
     if (hash) {
       const el = pageElement.shadowRoot.querySelector(hash);
       if (el) {
-        // Find the form field element.
+        // Focus on the element, if possible.
+        // Note: focus() must be called before scrollToView().
+        if (el.input) {
+          // Note: shoelace element.focus() calls el.input.focus();
+          el.focus();
+        } else {
+          // No el.input (yet), so try after delay.  TODO: Avoid the timeout.
+          setTimeout(() => {
+            el.focus();
+          }, 100);
+        }
+
+        // Find the form field container element, if any.
         const fieldRowSelector = `chromedash-form-field[name="${el.name}"] tr + tr`;
         const fieldRow = pageElement.shadowRoot.querySelector(fieldRowSelector);
         if (fieldRow) {
-          if (el.input) {
-            // el.focus() calls el.input.focus();
-            el.focus();
-          } else {
-            // Not ready yet, so try after delay.  TODO: Avoid the timeout.
-            setTimeout(() => {
-              el.focus();
-            }, 100);
-          }
           fieldRow.scrollIntoView({
             block: 'center', behavior: 'smooth',
           });
@@ -95,12 +101,12 @@ export function setupScrollToHash(pageElement) {
     }
   };
 
-  // Add global function to jump to form field.
+  // Add global function to jump to an element within the pageElement.
   window.scrollToElement = (hash) => {
     scrollToElement(hash);
   };
 
-  // Check now as well, used when first rendering a page.
+  // Check now as well, which is used when first rendering a page.
   if (location.hash) {
     const hash = decodeURIComponent(location.hash);
     scrollToElement(hash);

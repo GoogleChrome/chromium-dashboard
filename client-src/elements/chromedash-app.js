@@ -139,8 +139,10 @@ class ChromedashApp extends LitElement {
     page.strict(true); // Be precise about trailing slashes in routes.
 
     const scrollIfHash = (ctx) => {
-      // If current page is ctx.path and only the hash changes, don't create a new element
+      // If current page is ctx.path and only the hash changes,
+      // don't create a new element for a page refresh
       // but instead just scroll to the element identified by the hash.
+      // Note this ignores the query string, if any.
       if (this.currentPage == ctx.path && ctx.hash) {
         if (window.scrollToElement) {
           window.scrollToElement(`#${ctx.hash}`);
