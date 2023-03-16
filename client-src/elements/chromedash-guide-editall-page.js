@@ -42,6 +42,7 @@ export class ChromedashGuideEditallPage extends LitElement {
     this.loading = true;
     this.appTitle = '';
     this.nextPage = '';
+    this.previousStageTypeRendered = 0;
     this.sameTypeRendered = 0;
   }
 

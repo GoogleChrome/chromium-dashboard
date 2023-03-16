@@ -38,6 +38,8 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
     this.feature = {};
     this.loading = true;
     this.appTitle = '';
+    this.previousStageTypeRendered = 0;
+    this.sameTypeRendered = 0;
   }
 
   connectedCallback() {
