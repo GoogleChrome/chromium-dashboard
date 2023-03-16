@@ -16,10 +16,11 @@
 # from google.appengine.api import users
 from api.converters import feature_entry_to_json_verbose
 
-from internals import core_enums, stage_helpers
+from internals import core_enums
+from internals import processes
+from internals import stage_helpers
 from framework import basehandlers
 from framework import permissions
-from internals import processes
 
 INTENT_PARAM = 'intent'
 LAUNCH_PARAM = 'launch'
