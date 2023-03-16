@@ -363,6 +363,12 @@ class WriteMissingGatesTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.handler = schema_migration.WriteMissingGates()
+    self.fe_1 = FeatureEntry(
+        id=1, name='feature a', summary='sum', impl_status_chrome=3,
+        owner_emails=['feature_owner@example.com'], category=1,
+        updated=datetime(2020, 3, 1), feature_type=FEATURE_TYPE_INCUBATE_ID)
+    self.fe_1.put()
+
     self.stage_1 = Stage(id=1, feature_id=1, stage_type=STAGE_BLINK_INCUBATE)
 
     self.stage_2 = Stage(id=2, feature_id=1, stage_type=STAGE_BLINK_PROTOTYPE)
@@ -372,10 +378,10 @@ class WriteMissingGatesTest(testing_config.CustomTestCase):
     self.stage_3 = Stage(id=3, feature_id=1, stage_type=STAGE_BLINK_ORIGIN_TRIAL)
 
   def tearDown(self):
-    for stage in Stage.query().fetch():
-      stage.key.delete()
-    for gate in Gate.query().fetch():
-      gate.key.delete()
+    kinds = [FeatureEntry, Stage, Gate]
+    for kind in kinds:
+      for entity in kind.query().fetch():
+        entity.key.delete()
 
   def test_get_template_data__no_stages(self):
     """This won't happen, but good to know that it does not crash."""
@@ -406,15 +412,14 @@ class WriteMissingGatesTest(testing_config.CustomTestCase):
     result = self.handler.get_template_data()
     expected = '2 missing gates created for stages.'
     self.assertEqual(result, expected)
-    # Existing API gate should still exist.
+
     gates = Gate.query().fetch()
     self.assertTrue(len(gates) == 2)
     self.assertTrue(all(g.feature_id == 1 for g in gates))
-    # Note API gates are created in feature mingration handler, not here.
     self.assertTrue(any(
-        g.gate_type == GATE_PRIVACY_ORIGIN_TRIAL for g in gates))
+        g.gate_type == GATE_DEBUGGABILITY_ORIGIN_TRIAL for g in gates))
     self.assertTrue(any(
-        g.gate_type == GATE_SECURITY_ORIGIN_TRIAL for g in gates))
+        g.gate_type == GATE_API_ORIGIN_TRIAL for g in gates))
 
 
 class MigrateLGTMFieldsTest(testing_config.CustomTestCase):

@@ -5,7 +5,9 @@ import {
   openPreflightDialog,
   somePendingPrereqs,
 } from './chromedash-preflight-dialog';
-import {autolink, showToastMessage, findProcessStage} from './utils.js';
+import {autolink, showToastMessage, findProcessStage,
+  renderAbsoluteDate, renderRelativeDate,
+} from './utils.js';
 import {GATE_QUESTIONNAIRES} from './form-definition.js';
 
 import {SHARED_STYLES} from '../sass/shared-css.js';
@@ -321,25 +323,6 @@ export class ChromedashGateColumn extends LitElement {
       });
   }
 
-  formatDate(dateStr) {
-    return dateStr.split(' ')[0]; // Ignore time of day
-  }
-
-  formatRelativeDate(dateStr) {
-    // Format date to "YYYY-MM-DDTHH:mm:ss.sssZ" to represent UTC.
-    dateStr = dateStr || '';
-    dateStr = dateStr.replace(' ', 'T');
-    const dateObj = new Date(`${dateStr}Z`);
-    if (isNaN(dateObj)) {
-      return nothing;
-    }
-    return html`
-      <span class="relative_date">
-        (<sl-relative-time date="${dateObj.toISOString()}">
-        </sl-relative-time>)
-      </span>`;
-  }
-
   /* A user that can edit the current feature can request a review. */
   userCanRequestReview() {
     return (this.user &&
@@ -397,8 +380,9 @@ export class ChromedashGateColumn extends LitElement {
 
   renderReviewStatusActive() {
     return html`
-      Review requested on ${this.formatDate(this.gate.requested_on)}
-      ${this.formatRelativeDate(this.gate.requested_on)}
+      Review requested on
+      ${renderAbsoluteDate(this.gate.requested_on)}
+      ${renderRelativeDate(this.gate.requested_on)}
     `;
   }
 

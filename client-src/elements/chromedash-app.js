@@ -161,6 +161,7 @@ class ChromedashApp extends LitElement {
       // don't create a new element but instead
       // just scroll to the element identified by the hash.
       // Note, this ignores any query string.
+
       if (this.currentPage == ctx.path && ctx.hash) {
         if (window.scrollToElement) {
           window.scrollToElement(`#${ctx.hash}`);

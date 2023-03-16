@@ -277,7 +277,6 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
   STAGE_FIELDS: list[tuple[str, str]] = [
       ('ready_for_trial_url', 'link'),
       ('origin_trial_feedback_url', 'link'),
-      ('intent_to_extend_experiment_url', 'link'),
       ('experiment_extension_reason', 'str'),
       ('finch_url', 'link'),
       ('experiment_goals', 'str'),
@@ -336,7 +335,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
   MULTI_SELECT_FIELDS: frozenset[str] = frozenset(['rollout_platforms', 'enterprise_feature_categories'])
 
-  def touched(self, param_name: str) -> bool:
+  def touched(self, param_name: str, form_fields: list[str]) -> bool:
     """Return True if the user edited the specified field."""
     # TODO(jrobbins): for now we just consider everything on the current form
     # to have been touched.  Later we will add javascript to populate a
@@ -347,13 +346,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     # if they are present on the form.
     if (param_name in self.CHECKBOX_FIELDS or
         param_name in self.MULTI_SELECT_FIELDS):
-      form_fields_str = self.form.get('form_fields')
-      if form_fields_str:
-        form_fields = [field_name.strip()
-                       for field_name in form_fields_str.split(',')]
-        return param_name in form_fields
-      else:
-        return True
+      return param_name in form_fields if len(form_fields) > 0 else True
 
     # For now, selects are considered "touched", if they are
     # present on the form and are not empty strings.
@@ -422,8 +415,14 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     stage_update_items: list[tuple[str, Any]] = []
     changed_fields: list[tuple[str, Any, Any]] = []
 
+    form_fields_str = self.form.get('form_fields')
+    form_fields: list[str] = []
+    if form_fields_str:
+      form_fields = [
+          field_name.strip() for field_name in form_fields_str.split(',')]
+
     for field, field_type in self.EXISTING_FIELDS:
-      if self.touched(field):
+      if self.touched(field, form_fields):
         field_val = self._get_field_val(field, field_type)
         new_field = self.RENAMED_FIELD_MAPPING.get(field, field)
         self._add_changed_field(fe, new_field, field_val, changed_fields)
@@ -433,7 +432,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     # impl_status_chrome and intent_stage
     # can be be set either by <select> or a checkbox.
     impl_status_val: Optional[int] = None
-    if self.touched('impl_status_chrome'):
+    if self.touched('impl_status_chrome', form_fields):
       impl_status_val = self._get_field_val('impl_status_chrome', 'int')
     elif self._get_field_val('set_impl_status', 'bool'):
       impl_status_val = self._get_field_val('impl_status_offered', 'int')
@@ -462,35 +461,29 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     if stage_ids:
       stage_ids_list = [int(id) for id in stage_ids.split(',')]
       self.update_stages_editall(
-          feature, fe.feature_type, stage_ids_list, changed_fields)
-    else:
+          feature, fe.feature_type, stage_ids_list, changed_fields, form_fields)
+    # If a stage_id is supplied, we make changes to only that specific stage.
+    elif stage_id:
       for field, field_type in self.STAGE_FIELDS:
-        if self.touched(field):
+        if self.touched(field, form_fields):
           field_val = self._get_field_val(field, field_type)
           setattr(feature, field, field_val)
           stage_update_items.append((field, field_val))
 
       for field in MilestoneSet.MILESTONE_FIELD_MAPPING.keys():
-        if self.touched(field):
+        if self.touched(field, form_fields):
           # TODO(jrobbins): Consider supporting milestones that are not ints.
           field_val = self._get_field_val(field, 'int')
           setattr(feature, field, field_val)
           stage_update_items.append((field, field_val))
-
-    # If a stage_id is supplied, we make changes to only that specific stage.
-    if stage_id:
       self.update_single_stage(
           stage_id, fe.feature_type, stage_update_items, changed_fields)
-    # Otherwise, we find the associated stages and make changes (edit-all).
-    else:
-      self.update_multiple_stages(feature_id, feature.feature_type,
-          stage_update_items, changed_fields)
 
     extension_stage_ids = self.form.get('extension_stage_ids')
     if extension_stage_ids:
       stage_ids_list = [int(id) for id in extension_stage_ids.split(',')]
       self.update_stages_editall(
-          feature, fe.feature_type, stage_ids_list, changed_fields)
+          feature, fe.feature_type, stage_ids_list, changed_fields, form_fields)
     # Update metadata fields.
     now = datetime.now()
     if self.form.get('accurate_as_of'):
@@ -621,26 +614,32 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
         changed_fields.append((old_field_name, old_val, new_val))
     stage_to_update.put()
 
-  def update_stages_editall(self, feature: Feature, feature_type: int,
-      stage_ids: list[int], changed_fields: list[tuple[str, Any, Any]]) -> None:
+  def update_stages_editall(
+      self,
+      feature: Feature, feature_type: int,
+      stage_ids: list[int],
+      changed_fields: list[tuple[str, Any, Any]],
+      form_fields: list[str]) -> None:
     """Handle the updates for stages on the edit-all page."""
     for id in stage_ids:
       stage = Stage.get_by_id(id)
       if not stage:
         self.abort(404, msg=f'No stage {id} found')
-
       # Update the stage-specific fields.
       for field, field_type in self.STAGE_FIELDS:
         # To differentiate stages that have the same fields, the stage ID
         # is appended to the field name with 2 underscores.
         field_with_id = f'{field}__{id}'
+        if not self.touched(field_with_id, form_fields):
+          continue
         new_field_name = self.RENAMED_FIELD_MAPPING.get(field, field)
         old_val = getattr(stage, new_field_name)
         new_val = self._get_field_val(field_with_id, field_type)
         setattr(stage, new_field_name, new_val)
-        changed_fields.append((field, old_val, new_val))
+        if old_val != new_val:
+          changed_fields.append((field, old_val, new_val))
 
-      intent_thread_field= None
+      intent_thread_field = None
       milestone_fields = []
       # Determine if the stage type is one with specific milestone fields.
       if stage.stage_type == core_enums.STAGE_TYPES_PROTOTYPE[feature_type]:
@@ -659,15 +658,18 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
         milestone_fields = self.SHIPPING_MILESTONE_FIELDS
 
       # Determine if 'intent_thread_url' field needs to be changed.
-      if intent_thread_field:
+      intent_field_with_id = f'{intent_thread_field}__{id}'
+      if intent_thread_field and self.touched(intent_field_with_id, form_fields):
         old_val = stage.intent_thread_url
-        new_val = self._get_field_val(f'{intent_thread_field}__{id}', 'link')
+        new_val = self._get_field_val(intent_field_with_id, 'link')
         if old_val != new_val:
           changed_fields.append((intent_thread_field, old_val, new_val))
         setattr(stage, 'intent_thread_url', new_val)
 
       for field, milestone_field in milestone_fields:
         field_with_id = f'{field}__{id}'
+        if not self.touched(field_with_id, form_fields):
+          continue
         old_val = None
         new_val = self._get_field_val(field_with_id, 'int')
         milestoneset_entity = stage.milestones
@@ -679,5 +681,6 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
           old_val = getattr(milestoneset_entity, milestone_field)
         setattr(milestoneset_entity, milestone_field, new_val)
         stage.milestones = milestoneset_entity
-        changed_fields.append((field, old_val, new_val))
+        if old_val != new_val:
+          changed_fields.append((field, old_val, new_val))
       stage.put()

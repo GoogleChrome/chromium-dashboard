@@ -1,7 +1,7 @@
 // This file contains helper functions for our elements.
 
 import {markupAutolinks} from './autolink.js';
-import {nothing} from 'lit';
+import {nothing, html} from 'lit';
 
 let toastEl;
 
@@ -66,23 +66,29 @@ export function flattenSections(stage) {
 
 /* Set up scrolling to a hash url (e.g. #id_explainer_links). */
 export function setupScrollToHash(pageElement) {
+  // Scroll to the element identified by the hash parameter, which must include
+  // the '#' prefix.  E.g. for a form field: '#id_<form-field-name>'.
+  // Note that this function is bound to the pageElement for a page.
   const scrollToElement = (hash) => {
     if (hash) {
       const el = pageElement.shadowRoot.querySelector(hash);
       if (el) {
-        // Find the form field element.
+        // Focus on the element, if possible.
+        // Note: focus() must be called before scrollToView().
+        if (el.input) {
+          // Note: shoelace element.focus() calls el.input.focus();
+          el.focus();
+        } else {
+          // No el.input (yet), so try after delay.  TODO: Avoid the timeout.
+          setTimeout(() => {
+            el.focus();
+          }, 100);
+        }
+
+        // Find the form field container element, if any.
         const fieldRowSelector = `chromedash-form-field[name="${el.name}"] tr + tr`;
         const fieldRow = pageElement.shadowRoot.querySelector(fieldRowSelector);
         if (fieldRow) {
-          if (el.input) {
-            // el.focus() calls el.input.focus();
-            el.focus();
-          } else {
-            // Not ready yet, so try after delay.  TODO: Avoid the timeout.
-            setTimeout(() => {
-              el.focus();
-            }, 100);
-          }
           fieldRow.scrollIntoView({
             block: 'center', behavior: 'smooth',
           });
@@ -95,12 +101,12 @@ export function setupScrollToHash(pageElement) {
     }
   };
 
-  // Add global function to jump to form field.
+  // Add global function to jump to an element within the pageElement.
   window.scrollToElement = (hash) => {
     scrollToElement(hash);
   };
 
-  // Check now as well, used when first rendering a page.
+  // Check now as well, which is used when first rendering a page.
   if (location.hash) {
     const hash = decodeURIComponent(location.hash);
     scrollToElement(hash);
@@ -110,4 +116,39 @@ export function setupScrollToHash(pageElement) {
 /* Returns a html template if the condition is true, otherwise returns an empty html */
 export function renderHTMLIf(condition, originalHTML) {
   return condition ? originalHTML : nothing;
+}
+
+
+function _parseDateStr(dateStr) {
+  // Format date to "YYYY-MM-DDTHH:mm:ss.sssZ" to represent UTC.
+  dateStr = dateStr || '';
+  dateStr = dateStr.replace(' ', 'T');
+  const dateObj = new Date(`${dateStr}Z`);
+  if (isNaN(dateObj)) {
+    return null;
+  }
+  return dateObj;
+}
+
+
+export function renderAbsoluteDate(dateStr, includeTime=false) {
+  if (!dateStr) {
+    return '';
+  }
+  if (includeTime) {
+    return dateStr.split('.')[0]; // Ignore microseconds.
+  } else {
+    return dateStr.split(' ')[0]; // Ignore time.
+  }
+}
+
+
+export function renderRelativeDate(dateStr) {
+  const dateObj = _parseDateStr(dateStr);
+  if (!dateObj) return nothing;
+  return html`
+      <span class="relative_date">
+        (<sl-relative-time date="${dateObj.toISOString()}">
+         </sl-relative-time>)
+      </span>`;
 }
