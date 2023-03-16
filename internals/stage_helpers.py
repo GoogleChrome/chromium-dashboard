@@ -14,8 +14,7 @@
 # limitations under the License.
 
 from collections import defaultdict
-
-from google.cloud import ndb  # type: ignore
+from typing import TypedDict
 
 from api import converters
 from internals.core_enums import (
@@ -27,6 +26,17 @@ from internals.core_enums import (
     STAGE_TYPES_EXTEND_ORIGIN_TRIAL,
     STAGE_TYPES_SHIPPING)
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
+
+
+# Type return value of get_stage_info_for_templates()
+class StageTemplateInfo(TypedDict):
+  proto_stages: list[Stage]
+  dt_stages: list[Stage]
+  ot_stages: list[Stage]
+  extension_stages: list[Stage]
+  ship_stages: list[Stage]
+  should_render_mstone_table: bool
+  should_render_intents: bool
 
 
 def get_feature_stages(feature_id: int) -> dict[int, list[Stage]]:
@@ -74,7 +84,7 @@ def get_ot_stage_extensions(ot_stage_id: int):
 
 
 def get_stage_info_for_templates(
-    fe: FeatureEntry) -> dict[str, list[Stage] | bool]:
+    fe: FeatureEntry) -> StageTemplateInfo:
   """Gather the information needed to display the estimated milestones table."""
   # Only milestones from DevTrial, OT, or shipping stages are displayed.
   id = fe.key.integer_id()
@@ -85,7 +95,8 @@ def get_stage_info_for_templates(
   extension_stage_type = STAGE_TYPES_EXTEND_ORIGIN_TRIAL[f_type]
   ship_stage_type = STAGE_TYPES_SHIPPING[f_type]
 
-  stage_info: dict[str, list[Stage] | bool] = {
+
+  stage_info: StageTemplateInfo = {
     'proto_stages': [],
     'dt_stages': [],
     'ot_stages': [],
@@ -140,7 +151,7 @@ def get_stage_info_for_templates(
         stage_info['should_render_mstone_table'] = True
     
     if s.stage_type == extension_stage_type:
-      stage_info['extension_stages'].append(s)
+     stage_info['extension_stages'].append(s)
       # Extension stages are not rendered
       # in the milestones table; only for intents.
 

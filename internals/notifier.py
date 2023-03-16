@@ -57,6 +57,7 @@ def _determine_milestone_string(ship_stages: list[Stage]) -> str:
                 if mstone is None else min(ms.android_first, mstone))
       has_android_mstone = True
   
+  # Add the android suffix if there were only android milestones.
   milestone_str = str(mstone)
   if not has_desktop_mstone and has_android_mstone:
     milestone_str = f'{milestone_str} (android)'
