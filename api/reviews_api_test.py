@@ -129,7 +129,7 @@ class VotesAPITest(testing_config.CustomTestCase):
     self.assertEqual({'votes': [self.vote_expected1]}, actual_response)
 
   def test_post__bad_feature_id(self):
-    """Handler rejects requests that don't specify an exisging feature."""
+    """Handler rejects requests that don't specify an existing feature."""
     params = {}
     with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.NotFound):
@@ -182,6 +182,13 @@ class VotesAPITest(testing_config.CustomTestCase):
             feature_id=self.feature_id, gate_id=self.gate_1_id)
 
     testing_config.sign_in('owner1@example.com', 123567890)
+    with test_app.test_request_context(self.request_path, json=params):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.do_post(
+            feature_id=self.feature_id, gate_id=self.gate_1_id)
+
+    params = {'state': Vote.REVIEW_REQUESTED}
+    testing_config.sign_in('user7@example.com', 123567890)
     with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.do_post(
@@ -272,3 +279,83 @@ class VotesAPITest(testing_config.CustomTestCase):
     self.assertEqual(vote.state, Vote.REVIEW_REQUESTED)
 
     mock_notifier.assert_called_once_with(self.feature_1, self.gate_1)
+
+
+class GatesAPITest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.feature_1 = core_models.FeatureEntry(
+        name='feature one', summary='sum', category=1,
+        owner_emails=['owner1@example.com'])
+    self.feature_1.put()
+    self.feature_id = self.feature_1.key.integer_id()
+
+    self.gate_1 = Gate(id=1, feature_id=self.feature_id, stage_id=1,
+        gate_type=1, state=Vote.NA)
+    self.gate_1.put()
+    self.gate_1_id = self.gate_1.key.integer_id()
+
+    self.handler = reviews_api.GatesAPI()
+    self.request_path = '/api/v0/features/%d/gates' % self.feature_id
+
+  def tearDown(self):
+    self.feature_1.key.delete()
+    kinds: list[ndb.Model] = [Gate, Vote]
+    for kind in kinds:
+      for entity in kind.query():
+        entity.key.delete()
+
+  @mock.patch('internals.approval_defs.get_approvers')
+  def test_do_get__success(self, mock_get_approvers):
+    """Handler retrieves all gates associated with a given feature."""
+    mock_get_approvers.return_value = ['reviewer1@example.com']
+
+    with test_app.test_request_context(self.request_path):
+      actual = self.handler.do_get(feature_id=self.feature_id)
+
+    expected = {
+        "gates": [
+            {
+                "id": 1,
+                "feature_id": self.feature_id,
+                "stage_id": 1,
+                "gate_type": 1,
+                "team_name": "API Owners",
+                "gate_name": "Intent to Prototype",
+                "state": 1,
+                "requested_on": None,
+                "owners": [],
+                "next_action": None,
+                "additional_review": False,
+            },
+        ],
+        "possible_owners": {
+            1: ["reviewer1@example.com"],
+            2: ["reviewer1@example.com"],
+            3: ["reviewer1@example.com"],
+            4: ["reviewer1@example.com"],
+            32: ["reviewer1@example.com"],
+            34: ["reviewer1@example.com"],
+            42: ["reviewer1@example.com"],
+            44: ["reviewer1@example.com"],
+            54: ["reviewer1@example.com"],
+            62: ["reviewer1@example.com"],
+            64: ["reviewer1@example.com"],
+            74: ["reviewer1@example.com"],
+        }}
+
+    self.assertEqual(actual, expected)
+
+  @mock.patch('internals.approval_defs.get_approvers')
+  def test_do_get__empty_gates(self, mock_get_approvers):
+    """Handler cannnot find any gates."""
+    mock_get_approvers.return_value = ['reviewer1@example.com']
+
+    with test_app.test_request_context(self.request_path):
+      actual = self.handler.do_get(feature_id=999)
+
+    expected = {
+        'gates': [],
+        'possible_owners': {}
+    }
+    self.assertEqual(actual, expected)
