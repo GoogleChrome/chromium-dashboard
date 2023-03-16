@@ -1,7 +1,6 @@
 import {LitElement, css, html} from 'lit';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {CREATEABLE_STAGES, FORMS_BY_STAGE_TYPE} from './form-definition.js';
-import {renderHTMLIf} from './utils.js';
 
 
 let addStageDialogEl;
@@ -91,22 +90,17 @@ class ChromedashAddStageDialog extends LitElement {
   }
 
   renderStageSelect() {
-    const offerChoice = CREATEABLE_STAGES[this.featureType].length > 1;
-    const initialValue = offerChoice ? 0 : CREATEABLE_STAGES[this.featureType][0];
-    this.canSubmit = !offerChoice;
     return html`
     <div id="controls">
       <sl-select
         placement="top" hoist
-        value=${initialValue}
+        value=0
         id="stage_create_select"
         size="small"
         @sl-change=${this.checkCanSubmit}
         style="width:16rem"
       >
-        ${renderHTMLIf(
-          offerChoice,
-          html`<sl-option value="0" disabled>Select a stage to create</sl-option>`)}
+        <sl-option value="0" disabled>Select a stage to create</sl-option>
         ${this.renderSelectMenuItems()}
       </sl-select>
       <sl-button variant="primary"
