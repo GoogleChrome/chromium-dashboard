@@ -21,7 +21,8 @@ from google.cloud import ndb  # type: ignore
 from framework import rediscache
 from internals import core_enums
 from internals import stage_helpers
-from internals.core_models import Feature, FeatureEntry, MilestoneSet, Stage
+from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.legacy_models import Feature
 from internals.review_models import Gate
 from pages import guide
 
@@ -95,12 +96,14 @@ class FeatureCreateTest(testing_config.CustomTestCase):
     self.assertEqual('Feature name', feature_entry.name)
     self.assertEqual('Feature summary', feature_entry.summary)
     self.assertEqual('user1@google.com', feature_entry.creator_email)
+    self.assertEqual(['devrel-chromestatus-all@google.com'],
+                     feature_entry.devrel_emails)
 
     # Ensure Stage and Gate entities were also created.
     stages = Stage.query().fetch()
     gates = Gate.query().fetch()
     self.assertEqual(len(stages), 6)
-    self.assertEqual(len(gates), 4)
+    self.assertEqual(len(gates), 7)
 
 
 class FeatureEditHandlerTest(testing_config.CustomTestCase):

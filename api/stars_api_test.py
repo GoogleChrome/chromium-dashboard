@@ -15,11 +15,10 @@
 import testing_config  # Must be imported before the module under test.
 
 import flask
-from unittest import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
 
 from api import stars_api
-from internals import core_models
+from internals.core_models import FeatureEntry
 from internals import notifier
 
 test_app = flask.Flask(__name__)
@@ -28,18 +27,13 @@ test_app = flask.Flask(__name__)
 class StarsAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = core_models.Feature(
-        name='feature one', summary='sum', category=1)
-    self.feature_1.put()
-    self.fe_1 = core_models.FeatureEntry(
-        id=self.feature_1.key.integer_id(),
+    self.fe_1 = FeatureEntry(
         name='feature one', summary='sum', category=1)
     self.fe_1.put()
     self.handler = stars_api.StarsAPI()
     self.request_path = '/api/v0/currentuser/stars'
 
   def tearDown(self):
-    self.feature_1.key.delete()
     self.fe_1.key.delete()
     for star in notifier.FeatureStar.query():
       star.key.delete()
@@ -61,13 +55,13 @@ class StarsAPITest(testing_config.CustomTestCase):
   def test_get__some_stars(self):
     """User has starred some features."""
     email = 'user8@example.com'
-    feature_1_id = self.feature_1.key.integer_id()
+    feature_id = self.fe_1.key.integer_id()
     testing_config.sign_in(email, 123567890)
-    notifier.FeatureStar.set_star(email, feature_1_id)
+    notifier.FeatureStar.set_star(email, feature_id)
     with test_app.test_request_context(self.request_path):
       actual_response = self.handler.do_get()
     self.assertEqual(
-        {"featureIds": [feature_1_id]},
+        {"featureIds": [feature_id]},
         actual_response)
 
   def test_post__invalid_feature_id(self):
@@ -91,7 +85,7 @@ class StarsAPITest(testing_config.CustomTestCase):
 
   def test_post__anon(self):
     """We reject anon star requests."""
-    feature_id = self.feature_1.key.integer_id()
+    feature_id = self.fe_1.key.integer_id()
     params = {"featureId": feature_id}
     testing_config.sign_out()
     with test_app.test_request_context(self.request_path, json=params):
@@ -102,70 +96,56 @@ class StarsAPITest(testing_config.CustomTestCase):
     """User sends a duplicate request, which should be a no-op."""
     testing_config.sign_in('user7@example.com', 123567890)
 
-    feature_id = self.feature_1.key.integer_id()
+    feature_id = self.fe_1.key.integer_id()
     params = {"featureId": feature_id}
     with test_app.test_request_context(self.request_path, json=params):
       self.handler.do_post()  # Original request
 
-    updated_feature = core_models.Feature.get_by_id(feature_id)
-    self.assertEqual(1, updated_feature.star_count)
-    updated_fe = core_models.FeatureEntry.get_by_id(feature_id)
+    updated_fe = FeatureEntry.get_by_id(feature_id)
     self.assertEqual(1, updated_fe.star_count)
 
     with test_app.test_request_context(self.request_path, json=params):
       self.handler.do_post()  # Duplicate request
-    updated_feature = core_models.Feature.get_by_id(feature_id)
-    self.assertEqual(1, updated_feature.star_count)  # Still 1, not 2.
-    updated_fe = core_models.FeatureEntry.get_by_id(feature_id)
+    updated_fe = FeatureEntry.get_by_id(feature_id)
     self.assertEqual(1, updated_fe.star_count)  # Still 1, not 2.
 
     params = {"featureId": feature_id, "starred": False}
     with test_app.test_request_context(self.request_path, json=params):
       self.handler.do_post()  # Original request
-    updated_feature = core_models.Feature.get_by_id(feature_id)
-    self.assertEqual(0, updated_feature.star_count)
-    updated_fe = core_models.FeatureEntry.get_by_id(feature_id)
+    updated_fe = FeatureEntry.get_by_id(feature_id)
     self.assertEqual(0, updated_fe.star_count)
 
     with test_app.test_request_context(self.request_path, json=params):
       self.handler.do_post()  # Duplicate request
-    updated_feature = core_models.Feature.get_by_id(feature_id)
-    self.assertEqual(0, updated_feature.star_count)  # Still 0, not negative.
-    updated_fe = core_models.FeatureEntry.get_by_id(feature_id)
+    updated_fe = FeatureEntry.get_by_id(feature_id)
     self.assertEqual(0, updated_fe.star_count)  # Still 0, not negative.
 
   def test_post__unmatched_unstar(self):
     """User tries to unstar feature that they never starred: no-op."""
     testing_config.sign_in('user8@example.com', 123567890)
 
-    feature_id = self.feature_1.key.integer_id()
+    feature_id = self.fe_1.key.integer_id()
     # User never stars the feature in the first place.
 
     params = {"featureId": feature_id, "starred": False}
     with test_app.test_request_context(self.request_path, json=params):
       self.handler.do_post()  # Out-of-step request
-    updated_feature = core_models.Feature.get_by_id(feature_id)
-    self.assertEqual(0, updated_feature.star_count)  # Still 0, not negative.
-    updated_fe = core_models.FeatureEntry.get_by_id(feature_id)
+    updated_fe = FeatureEntry.get_by_id(feature_id)
     self.assertEqual(0, updated_fe.star_count)  # Still 0, not negative.
 
   def test_post__normal(self):
     """User can star and unstar."""
     testing_config.sign_in('user6@example.com', 123567890)
 
-    feature_id = self.feature_1.key.integer_id()
+    feature_id = self.fe_1.key.integer_id()
     params = {"featureId": feature_id}
     with test_app.test_request_context(self.request_path, json=params):
       self.handler.do_post()
-    updated_feature = core_models.Feature.get_by_id(feature_id)
-    self.assertEqual(1, updated_feature.star_count)
-    updated_fe = core_models.FeatureEntry.get_by_id(feature_id)
+    updated_fe = FeatureEntry.get_by_id(feature_id)
     self.assertEqual(1, updated_fe.star_count)
 
     params = {"featureId": feature_id, "starred": False}
     with test_app.test_request_context(self.request_path, json=params):
       self.handler.do_post()
-    updated_feature = core_models.Feature.get_by_id(feature_id)
-    self.assertEqual(0, updated_feature.star_count)
-    updated_fe = core_models.FeatureEntry.get_by_id(feature_id)
+    updated_fe = FeatureEntry.get_by_id(feature_id)
     self.assertEqual(0, updated_fe.star_count)

@@ -20,7 +20,8 @@ from framework import rediscache
 from internals.core_enums import *
 from internals import feature_helpers
 from internals import stage_helpers
-from internals.core_models import Feature, FeatureEntry, MilestoneSet, Stage
+from internals.legacy_models import Feature
+from internals.core_models import FeatureEntry, MilestoneSet, Stage
 
 
 class FeatureHelpersTest(testing_config.CustomTestCase):
@@ -263,38 +264,6 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     self.assertEqual('feature a', actual[1]['name'])
     self.assertEqual('feature c', actual[2]['name'])
     self.assertEqual('feature b', actual[3]['name'])
-
-  def test_get_chronological__normal(self):
-    """We can retrieve a list of features."""
-    actual = feature_helpers.get_chronological_legacy()
-    names = [f['name'] for f in actual]
-    self.assertEqual(
-        ['feature c', 'feature d', 'feature a', 'feature b'],
-        names)
-    self.assertEqual(True, actual[0]['first_of_milestone'])
-    self.assertEqual(False, hasattr(actual[1], 'first_of_milestone'))
-    self.assertEqual(True, actual[2]['first_of_milestone'])
-    self.assertEqual(False, hasattr(actual[3], 'first_of_milestone'))
-
-  def test_get_chronological__unlisted(self):
-    """Unlisted features are not included in the list."""
-    self.legacy_feature_2.unlisted = True
-    self.legacy_feature_2.put()
-    actual = feature_helpers.get_chronological_legacy()
-    names = [f['name'] for f in actual]
-    self.assertEqual(
-        ['feature c', 'feature d', 'feature a'],
-        names)
-
-  def test_get_chronological__unlisted_shown(self):
-    """Unlisted features are included for users with edit access."""
-    self.legacy_feature_2.unlisted = True
-    self.legacy_feature_2.put()
-    actual = feature_helpers.get_chronological_legacy(show_unlisted=True)
-    names = [f['name'] for f in actual]
-    self.assertEqual(
-        ['feature c', 'feature d', 'feature a', 'feature b'],
-        names)
 
   def test_get_in_milestone__normal(self):
     """We can retrieve a list of features."""

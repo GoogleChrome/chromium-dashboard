@@ -1,7 +1,9 @@
 import {html} from 'lit';
 import {
+  ENTERPRISE_FEATURE_CATEGORIES,
   FEATURE_CATEGORIES,
   FEATURE_TYPES,
+  FEATURE_TYPES_WITHOUT_ENTERPRISE,
   IMPLEMENTATION_STATUS,
   PLATFORM_CATEGORIES,
   STANDARD_MATURITY_CHOICES,
@@ -234,7 +236,7 @@ export const ALL_FIELDS = {
     // form field name matches underlying DB field (sets "feature_type" in DB).
     name: 'feature_type',
     type: 'radios',
-    choices: FEATURE_TYPES,
+    choices: FEATURE_TYPES_WITHOUT_ENTERPRISE,
     label: 'Feature type',
     help_text: html`
         Select the feature type.
@@ -310,7 +312,7 @@ export const ALL_FIELDS = {
         Explain why the web needs this change. It may be useful
         to describe what web developers are forced to do without
         it. When possible, add links to your explainer
-        (under <a href="#explainer_links">Explainer link(s)</a>)
+        (under <a href="#id_explainer_links">Explainer link(s)</a>)
         backing up your claims.
         <br/><br/>
         This text is sometimes included with the summary in the
@@ -354,7 +356,8 @@ export const ALL_FIELDS = {
         Link to the first public proposal to create this feature.`,
     extra_help: html`
         If there isn't another obvious place to propose your feature, create a
-        <a href="https://github.com/WICG/proposals#what-does-a-proposal-look-like">
+        <a target="_blank"
+           href="https://github.com/WICG/proposals#what-does-a-proposal-look-like">
         WICG proposal</a>.
         You can use your proposal document to help you socialize the problem with other vendors
         and developers.`,
@@ -373,7 +376,8 @@ export const ALL_FIELDS = {
         standards bodies, or other interested parties.`,
     extra_help: html`
         <p>
-        See the TAG guide to writing <a href="https://tag.w3.org/explainers/">Explainers</a>
+        See the TAG guide to writing <a target="_blank"
+           href="https://tag.w3.org/explainers/">Explainers</a>
         for several examples of good explainers and tips for effective explainers.
         </p>
         <p>
@@ -388,7 +392,8 @@ export const ALL_FIELDS = {
         can help you.
         </p>
         <p>
-        If you want help, ask for a <a href="https://sites.google.com/a/chromium.org/dev/blink/spec-mentors">specification mentor</a>.
+        If you want help, ask for a <a target="_blank"
+           href="https://sites.google.com/a/chromium.org/dev/blink/spec-mentors">specification mentor</a>.
         </p>`,
   },
 
@@ -478,6 +483,55 @@ export const ALL_FIELDS = {
         features.  Note here what measurements you have added to track the
         success of this feature, such as a link to the UseCounter(s) you
         have set up.`,
+  },
+
+  'availability_expectation': {
+    type: 'textarea',
+    attrs: {rows: 4},
+    required: false,
+    label: 'Availability expectation',
+    help_text: html`
+      What is your availability expectation for this feature?
+      Examples:`,
+    extra_help: html`
+      <ul>
+        <li>Feature is available on Web Platform mainline within 12 months
+            of launch in Chrome.
+        <li>Feature is available only in Chromium browsers for the
+            foreseeable future.
+      </ul>
+    `,
+  },
+
+  'adoption_expectation': {
+    type: 'textarea',
+    attrs: {rows: 4},
+    required: false,
+    label: 'Adoption expectation',
+    help_text: html`
+      What is your adoption expectation for this feature?
+      Examples:`,
+    extra_help: html`
+      <ul>
+        <li>Feature is considered a best practice for some use case
+            within 12 months of reaching Web Platform baseline.
+        <li>Feature is used by specific partner(s) to provide functionality
+            within 12 months of launch in Chrome.
+        <li>At least 3 major abstractions replace their use of an existing
+            feature with this feature within 24 months of reaching mainline.
+      </ul>
+    `,
+  },
+
+  'adoption_plan': {
+    type: 'textarea',
+    attrs: {rows: 4},
+    required: false,
+    label: 'Adoption plan',
+    help_text: html`
+      What is the plan to achieve the stated expectations?
+      Please provide a plan that covers availability and adoption
+      for the feature.`,
   },
 
   'security_review_status': {
@@ -948,7 +1002,8 @@ export const ALL_FIELDS = {
     label: 'Finch experiment',
     help_text: html`
       If your feature will roll out gradually via a
-      <a href="http://go/finch" targe="_blank">Finch experiment</a>,
+      <a target="_blank"
+           href="http://go/finch">Finch experiment</a>,
       link to it here.`,
   },
 
@@ -1029,16 +1084,20 @@ export const ALL_FIELDS = {
     required: false,
     label: 'Web Platform Tests Description',
     help_text: html`
-      Please link to the <a href="https://wpt.fyi/results">results on
+      Please link to the <a target="_blank"
+           href="https://wpt.fyi/results">results on
       wpt.fyi</a>. If any part of the feature is not tested by
       web-platform-tests, please include links to issues, e.g. a
       web-platform-tests issue with the "infra" label explaining why a
       certain thing cannot be tested
-      (<a href="https://github.com/w3c/web-platform-tests/issues/3867">example</a>),
+      (<a target="_blank"
+           href="https://github.com/w3c/web-platform-tests/issues/3867">example</a>),
       a spec issue for some change that would make it possible to test.
-      (<a href="https://github.com/whatwg/fullscreen/issues/70">example</a>),
+      (<a target="_blank"
+           href="https://github.com/whatwg/fullscreen/issues/70">example</a>),
       or a Chromium issue to upstream some existing tests
-      (<a href="https://bugs.chromium.org/p/chromium/issues/detail?id=695486">example</a>).`,
+      (<a target="_blank"
+           href="https://bugs.chromium.org/p/chromium/issues/detail?id=695486">example</a>).`,
   },
 
   'sample_links': {
@@ -1194,6 +1253,15 @@ export const ALL_FIELDS = {
     label: 'Enterprise policies',
     help_text: html`
       List of policies that control the feature, if any.`,
+  },
+
+  'enterprise_feature_categories': {
+    type: 'multiselect',
+    choices: ENTERPRISE_FEATURE_CATEGORIES,
+    required: false,
+    label: 'Categories',
+    help_text: html`
+      Select all that apply.`,
   },
 
   'rollout_milestone': {

@@ -22,7 +22,8 @@ from api import converters
 from framework import basehandlers
 from framework import permissions
 from internals import approval_defs
-from internals.review_models import Approval, ApprovalConfig, Gate, Vote
+from internals.legacy_models import Approval, ApprovalConfig
+from internals.review_models import Gate, Vote
 
 
 class ApprovalsAPI(basehandlers.APIHandler):

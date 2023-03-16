@@ -2,6 +2,7 @@ import {LitElement, css, html, nothing} from 'lit';
 import {openAddStageDialog} from './chromedash-add-stage-dialog';
 import {makeDisplaySpecs} from './form-field-specs';
 import {
+  FLAT_ENTERPRISE_METADATA_FIELDS,
   FLAT_METADATA_FIELDS,
   FLAT_TRIAL_EXTENSION_FIELDS,
   FORMS_BY_STAGE_TYPE,
@@ -13,7 +14,8 @@ import {
   GATE_TEAM_ORDER,
   PLATFORMS_DISPLAYNAME,
   STAGE_SPECIFIC_FIELDS,
-  OT_MILESTONE_END_FIELDS} from './form-field-enums';
+  OT_MILESTONE_END_FIELDS,
+  ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME} from './form-field-enums';
 import '@polymer/iron-icon';
 import './chromedash-activity-log';
 import './chromedash-callout';
@@ -34,6 +36,8 @@ class ChromedashFeatureDetail extends LitElement {
       dismissedCues: {type: Array},
       anyCollapsed: {type: Boolean},
       selectedGateId: {type: Number},
+      rawQuery: {type: Object},
+      openStage: {type: Number},
     };
   }
 
@@ -49,6 +53,8 @@ class ChromedashFeatureDetail extends LitElement {
     this.previousStageTypeRendered = 0;
     this.sameTypeRendered = 0;
     this.selectedGateId = 0;
+    this.rawQuery = {};
+    this.openStage = 0;
   }
 
   static get styles() {
@@ -163,6 +169,49 @@ class ChromedashFeatureDetail extends LitElement {
       }
 
     `];
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.intializeGateColumn();
+  }
+
+  intializeGateColumn() {
+    if (!this.rawQuery) {
+      return;
+    }
+
+    if (!this.rawQuery.hasOwnProperty('gate')) {
+      return;
+    }
+    const gateVal = this.rawQuery['gate'];
+    const foundGates = this.gates.filter(g => g.id == gateVal);
+    if (!foundGates.length) {
+      return;
+    }
+    const gate = foundGates[0];
+
+    const foundStages = this.feature.stages.filter(s => s.id == gate.stage_id);
+    if (!foundStages.length) {
+      return;
+    }
+    const stage = foundStages[0];
+    this.openStage = stage.id;
+
+    this._fireEvent('show-gate-column', {
+      feature: this.feature,
+      stage: stage,
+      gate: gate,
+    });
+  }
+
+  _fireEvent(eventName, detail) {
+    const event = new CustomEvent(eventName, {
+      bubbles: true,
+      composed: true,
+      detail,
+    });
+    this.dispatchEvent(event);
   }
 
   isAnyCollapsed() {
@@ -290,6 +339,10 @@ class ChromedashFeatureDetail extends LitElement {
         }
       }
     }
+    if (fieldName === 'enterprise_feature_categories' && value) {
+      return value.map(categoryId =>
+        ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME[categoryId]);
+    }
     return value;
   }
 
@@ -396,7 +449,7 @@ class ChromedashFeatureDetail extends LitElement {
     }
   }
 
-  renderSection(summary, content, isActive=false) {
+  renderSection(summary, content, isActive=false, defaultOpen=false) {
     if (isActive) {
       summary += ' - Active';
     }
@@ -404,7 +457,7 @@ class ChromedashFeatureDetail extends LitElement {
       <sl-details summary=${summary}
         @sl-after-show=${this.updateCollapsed}
         @sl-after-hide=${this.updateCollapsed}
-        ?open=${isActive}
+        ?open=${isActive || defaultOpen}
         class=${isActive ? 'active' : ''}
       >
         ${content}
@@ -417,7 +470,10 @@ class ChromedashFeatureDetail extends LitElement {
   }
 
   renderMetadataSection() {
-    const fieldNames = flattenSections(FLAT_METADATA_FIELDS);
+    // modify for enterprise
+    const fieldNames = flattenSections(this.feature.is_enterprise_feature ?
+      FLAT_ENTERPRISE_METADATA_FIELDS :
+      FLAT_METADATA_FIELDS);
     if (fieldNames === undefined || fieldNames.length === 0) {
       return nothing;
     }
@@ -436,7 +492,11 @@ class ChromedashFeatureDetail extends LitElement {
         ${this.renderSectionFields(fields, {})}
       </section>
     `;
-    return this.renderSection('Metadata', content);
+    return this.renderSection(
+      'Metadata',
+      content,
+      /* isActive=*/false,
+      /* defaultOpen=*/this.feature.is_enterprise_feature);
   }
 
   renderGateChip(feStage, gate) {
@@ -537,8 +597,8 @@ class ChromedashFeatureDetail extends LitElement {
         ${this.renderSectionFields(fields, feStage)}
       </section>
     `;
-
-    return this.renderSection(name, content, isActive);
+    const defaultOpen = this.feature.is_enterprise_feature || (feStage.id == this.openStage);
+    return this.renderSection(name, content, isActive, defaultOpen);
   }
 
   renderActivitySection() {

@@ -22,8 +22,9 @@ from internals import approval_defs
 from internals import core_enums
 from internals import detect_intent
 from internals import stage_helpers
-from internals.core_models import FeatureEntry, MilestoneSet, Stage
-from internals.review_models import Approval, Gate, Vote
+from internals.core_models import FeatureEntry, Stage
+from internals.legacy_models import Approval
+from internals.review_models import Gate, Vote
 
 test_app = flask.Flask(__name__)
 
@@ -352,7 +353,7 @@ class FunctionTest(testing_config.CustomTestCase):
     self.assertFalse(detect_intent.is_lgtm_allowed(
         'other@example.com', self.feature_1, approval_defs.ShipApproval))
 
-  @mock.patch('internals.review_models.Approval.get_approvals')
+  @mock.patch('internals.legacy_models.Approval.get_approvals')
   def test_detect_new_thread(self, mock_get_approvals):
     """A thread is new if there are no previous approval values."""
     mock_get_approvals.return_value = []

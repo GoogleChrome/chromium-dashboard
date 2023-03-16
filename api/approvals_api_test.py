@@ -23,7 +23,8 @@ from google.cloud import ndb  # type: ignore
 from api import approvals_api
 from internals import core_enums
 from internals import core_models
-from internals.review_models import Approval, ApprovalConfig, Gate, Vote
+from internals.legacy_models import Approval, ApprovalConfig
+from internals.review_models import Gate, Vote
 
 test_app = flask.Flask(__name__)
 
@@ -257,7 +258,6 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
       core_enums.GATE_DEBUGGABILITY_ORIGIN_TRIAL: ['owner@example.com'],
       core_enums.GATE_DEBUGGABILITY_SHIP: ['owner@example.com'],
       core_enums.GATE_TESTING_SHIP: ['owner@example.com'],
-      core_enums.GATE_ADOPTION_SHIP: ['owner@example.com'],
       }
 
   def setUp(self):

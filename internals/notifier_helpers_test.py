@@ -11,11 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from unittest import mock
 
 from internals import notifier_helpers
 import testing_config  # Must be imported before the module under test.
-from internals.core_models import FeatureEntry
-from internals.review_models import Activity
+from internals.core_models import FeatureEntry, Stage, MilestoneSet
+from internals.review_models import Activity, Vote, Gate
 
 class ActivityTest(testing_config.CustomTestCase):
 
@@ -24,12 +25,28 @@ class ActivityTest(testing_config.CustomTestCase):
         name='feature a', summary='sum', category=1,
         owner_emails=['feature_owner@example.com'])
     self.feature_1.put()
+    self.feature_id = self.feature_1.key.integer_id()
+
+    self.gate_1 = Gate(id=123, feature_id=self.feature_id, stage_id=321,
+        gate_type=1, state=Vote.NA)
+    self.gate_1.put()
+    self.gate_1_id = self.gate_1.key.integer_id()
+
+    self.stage = Stage(
+        id=321,
+        feature_id=self.feature_id,
+        stage_type=120,
+        milestones=MilestoneSet(desktop_first=99))
+    self.stage.put()
+
     testing_config.sign_in('one@example.com', 123567890)
 
   def tearDown(self):
     for activity in Activity.query():
       activity.key.delete()
     self.feature_1.key.delete()
+    self.gate_1.key.delete()
+    self.stage.key.delete()
     testing_config.sign_out()
 
   def test_activities__created(self):
@@ -72,3 +89,19 @@ class ActivityTest(testing_config.CustomTestCase):
     activities = Activity.get_activities(self.feature_1.key.integer_id())
     # No activity entity created.
     self.assertTrue(len(activities) == 0)
+
+  @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
+  def test_vote_changes_activities__created(self, mock_task_helpers):
+    notifier_helpers.notify_subscribers_of_vote_changes(
+        self.feature_1, self.gate_1, 'abc@example.com', Vote.DENIED, Vote.NA)
+    expected_content = ('abc@example.com set review status for stage'
+                ': Start prototyping, gate: Intent to Prototype to denied.')
+    feature_id = self.feature_1.key.integer_id()
+    activities = Activity.get_activities(feature_id)
+    self.assertEqual(len(activities), 1)
+    self.assertEqual(activities[0].feature_id, feature_id)
+    self.assertEqual(activities[0].gate_id, self.gate_1_id)
+    self.assertEqual(activities[0].author, 'abc@example.com')
+    self.assertEqual(activities[0].content, expected_content)
+
+    mock_task_helpers.assert_called_once()

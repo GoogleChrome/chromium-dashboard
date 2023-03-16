@@ -35,7 +35,8 @@ import settings
 from internals import approval_defs
 from internals import core_enums
 from internals import stage_helpers
-from internals.core_models import Feature, FeatureEntry, MilestoneSet, Stage
+from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.review_models import Gate
 from internals.user_models import (
     AppUser, BlinkComponent, FeatureOwner, UserPref)
 
@@ -46,7 +47,13 @@ def format_email_body(
   """Return an HTML string for a notification email body."""
 
   stage_type = core_enums.STAGE_TYPES_SHIPPING[fe.feature_type] or 0
-  ship_milestones: MilestoneSet | None = fe_stages[stage_type][0].milestones
+  ship_stages: list[Stage] = fe_stages.get(stage_type, [])
+  # TODO(danielrsmith): These notifications do not convey correct information
+  # for features with multiple shipping stages. Implement a new way to
+  # specify the shipping stage affected.
+  ship_milestones: MilestoneSet | None = (
+      ship_stages[0].milestones if len(ship_stages) > 0 else None)
+
   milestone_str = 'not yet assigned'
   if ship_milestones is not None:
     if ship_milestones.desktop_first:
@@ -133,12 +140,20 @@ def apply_subscription_rules(
   # configurable through some kind of user preference.
   changed_field_names = {c['prop_name'] for c in changes}
   results: dict[str, list[str]] = {}
+
+  # Find an existing shipping stage with milestone info.
   stage_type = core_enums.STAGE_TYPES_SHIPPING[fe.feature_type] or 0
-  ship_stage = fe_stages[stage_type][0]
+  ship_stages: list[Stage] = fe_stages.get(stage_type, [])
+  # TODO(danielrsmith): These notifications do not convey correct information
+  # for features with multiple shipping stages. Implement a new way to
+  # specify the shipping stage affected.
+  ship_milestones: MilestoneSet | None = (
+      ship_stages[0].milestones if len(ship_stages) > 0 else None)
+
   # Check if feature has some other milestone set, but not webview.
-  if (ship_stage.milestones is not None and
-      ship_stage.milestones.android_first and
-      not ship_stage.milestones.webview_first):
+  if (ship_milestones is not None and
+      ship_milestones.android_first and
+      not ship_milestones.webview_first):
     milestone_fields = ['shipped_android_milestone']
     if not changed_field_names.isdisjoint(milestone_fields):
       results[WEBVIEW_RULE_REASON] = WEBVIEW_RULE_ADDRS
@@ -180,8 +195,13 @@ def make_feature_changes_email(fe: FeatureEntry, is_update: bool=False,
     'You are CC\'d on this feature'
   )
   accumulate_reasons(
-      addr_reasons, watcher_emails,
-      'You are watching all feature changes')
+    addr_reasons, fe.devrel_emails,
+    'You are a devrel contact for this feature.'
+  )
+  accumulate_reasons(
+    addr_reasons, watcher_emails,
+    'You are watching all feature changes'
+  )
 
   # There will always be at least one component.
   for component_name in fe.blink_components:
@@ -260,14 +280,6 @@ class FeatureStar(ndb.Model):
       feature_star.put()
     else:
       return  # No need to update anything in datastore
-
-    # Load feature directly from NDB so as to never get a stale cached copy.
-    feature = Feature.get_by_id(feature_id)
-    feature.star_count += 1 if starred else -1
-    if feature.star_count < 0:
-      logging.error('count would be < 0: %r', (email, feature_id, starred))
-      return
-    feature.put()
 
     feature_entry = FeatureEntry.get_by_id(feature_id)
     feature_entry.star_count += 1 if starred else -1
@@ -438,30 +450,12 @@ def generate_thread_subject(feature, approval_field):
   return '%s: %s' % (intent_phrase, feature.name)
 
 
-def get_thread_id(feature: FeatureEntry, approval_field):
+def get_thread_id(stage: Stage):
   """If we have the URL of the Google Groups thread, we can get its ID."""
-  stages = stage_helpers.get_feature_stages(feature.key.integer_id())
-  stage_type: int | None = None
-  if approval_field == approval_defs.PrototypeApproval:
-    stage_type = core_enums.STAGE_TYPES_PROTOTYPE[feature.feature_type]
-  # TODO(jrobbins): Ready-for-trial threads
-  if approval_field == approval_defs.ExperimentApproval:
-    stage_type = core_enums.STAGE_TYPES_ORIGIN_TRIAL[feature.feature_type]
-  if approval_field == approval_defs.ExtendExperimentApproval:
-    stage_type = core_enums.STAGE_TYPES_EXTEND_ORIGIN_TRIAL[
-        feature.feature_type]
-  if approval_field == approval_defs.ShipApproval:
-    stage_type = core_enums.STAGE_TYPES_SHIPPING[feature.feature_type]
-
-  thread_url: str | None = None
-  if stage_type:
-    relevant_stages = stages[stage_type]
-    if relevant_stages:
-      # TODO(danielrsmith): Refactor for compatibility with multiple stages.
-      thread_url = relevant_stages[0].intent_thread_url
-  if not thread_url:
+  if stage.intent_thread_url is None:
     return None
 
+  thread_url = stage.intent_thread_url
   thread_url = thread_url.split('#')[0]  # Chop off any anchor
   thread_url = thread_url.split('?')[0]  # Chop off any query string params
   thread_url = urllib.parse.unquote(thread_url)  # Convert %40 to @.
@@ -500,15 +494,31 @@ def send_emails(email_tasks):
 
 
 def post_comment_to_mailing_list(
-    feature, approval_field_id, author_addr, comment_content):
+    feature: FeatureEntry,
+    gate_id: int,
+    approval_field_id: int,
+    author_addr: str,
+    comment_content: str):
   """Post a message to the intent thread."""
   to_addr = settings.REVIEW_COMMENT_MAILING_LIST
   from_user = author_addr.split('@')[0]
   approval_field = approval_defs.APPROVAL_FIELDS_BY_ID[approval_field_id]
-  subject = generate_thread_subject(feature, approval_field)
+
+  # Use the Gate ID to find the Stage ID that has the thread URL and subject.
+  gate: Gate | None = Gate.get_by_id(gate_id)
+  stage: Stage | None = None if gate is None else Stage.get_by_id(gate.stage_id)
+  # There should always be a matching stage for every gate.
+  if stage is None:
+    raise ValueError("No matching Stage entity found for given Gate ID.")
+
+  # Set the subject line from the stage, or generate it if null.
+  subject = None if stage is None else stage.intent_subject_line
+  if subject is None:
+    subject = generate_thread_subject(feature, approval_field)
+
   if not subject.startswith('Re: '):
     subject = 'Re: ' + subject
-  thread_id = get_thread_id(feature, approval_field)
+  thread_id = get_thread_id(stage)
   references = None
   if thread_id:
     references = '<%s>' % thread_id

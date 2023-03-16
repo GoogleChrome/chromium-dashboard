@@ -1,9 +1,13 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
-import {autolink, flattenSections} from './utils.js';
+import {autolink, flattenSections, renderHTMLIf} from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
-import {formatFeatureForEdit, FLAT_METADATA_FIELDS} from './form-definition';
+import {ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME} from './form-field-enums';
+import {
+  formatFeatureForEdit,
+  FLAT_ENTERPRISE_METADATA_FIELDS,
+  FLAT_METADATA_FIELDS} from './form-definition';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {FORM_STYLES} from '../sass/forms-css.js';
 
@@ -130,34 +134,75 @@ export class ChromedashGuideMetadata extends LitElement {
               </td>
             </tr>
 
-            <tr>
-              <th>CC</th>
-              <td>
-                ${this.feature.cc_recipients ?
-                  this.feature.cc_recipients.map((ccRecipient)=> html`
-                  <a href="mailto:${ccRecipient}">${ccRecipient}</a>
+            ${!this.feature.is_enterprise_feature ? html`
+              <tr>
+                <th>CC</th>
+                <td>
+                  ${this.feature.cc_recipients ?
+                    this.feature.cc_recipients.map((ccRecipient)=> html`
+                    <a href="mailto:${ccRecipient}">${ccRecipient}</a>
+                    `): html`
+                    None
+                  `}
+                </td>
+              </tr>` :
+            nothing}
+
+            ${!this.feature.is_enterprise_feature ? html`
+              <tr>
+                <th>DevRel</th>
+                <td>
+                  ${this.feature.browsers.chrome.devrel ?
+                    this.feature.browsers.chrome.devrel.map((dev) => html`
+                    <a href="mailto:${dev}">${dev}</a>
                   `): html`
                   None
                 `}
-              </td>
-            </tr>
+                </td>
+              </tr>` :
+            nothing}
 
-            <tr>
-              <th>Category</th>
-              <td>${this.feature.category}</td>
-            </tr>
+            ${this.feature.is_enterprise_feature ? html`
+              <tr>
+                <th>Editors</th>
+                <td>
+                  ${this.feature.editors ?
+                    this.feature.editors.map((editor)=> html`
+                    <a href="mailto:${editor}">${editor}</a>
+                    `): html`
+                    None
+                  `}
+                </td>
+              </tr>` :
+            nothing}
+
+            ${!this.feature.is_enterprise_feature ? html`
+              <tr>
+                <th>Category</th>
+                <td>${this.feature.category}</td>
+              </tr>` :
+            nothing}
+            ${this.feature.is_enterprise_feature ? html`
+              <tr>
+                <th>Categories</th>
+                <td>${this.feature.enterprise_feature_categories.map(id =>
+              ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME[id]) || 'None'}</td>
+              </tr>` :
+            nothing}
 
             <tr>
               <th>Feature type</th>
               <td>${this.feature.feature_type}</td>
             </tr>
 
-            <tr>
-              <th>Process stage</th>
-              <td>${this.feature.intent_stage}</td>
-            </tr>
+            ${renderHTMLIf(!this.feature.is_enterprise_feature, html`
+              <tr>
+                <th>Process stage</th>
+                <td>${this.feature.intent_stage}</td>
+              </tr>`,
+            )}
 
-            ${this.feature.tags ? html`
+            ${this.feature.tags && !this.feature.is_enterprise_feature ? html`
               <tr>
                 <th>Search tags</th>
                 <td>
@@ -172,26 +217,30 @@ export class ChromedashGuideMetadata extends LitElement {
 
 
           <table class="property-sheet">
-            <tr>
-              <th>Implementation status</th>
-              <td>${this.feature.browsers.chrome.status.text}</td>
-            </tr>
+          ${!this.feature.is_enterprise_feature ? html`
+              <tr>
+                <th>Implementation status</th>
+                <td>${this.feature.browsers.chrome.status.text}</td>
+              </tr>` :
+            nothing}
 
             <tr>
               <th>Blink components</th>
               <td>${this.feature.browsers.chrome.blink_components.join(', ')}</td>
             </tr>
 
-            <tr>
-              <th>Tracking bug</th>
-              <td>
-                ${this.feature.browsers.chrome.bug ? html`
-                  <a href="${this.feature.browsers.chrome.bug}">${this.feature.browsers.chrome.bug}</a>
-                `: html`
-                  None
-                `}
-              </td>
-            </tr>
+            ${!this.feature.is_enterprise_feature ? html`
+              <tr>
+                <th>Tracking bug</th>
+                <td>
+                  ${this.feature.browsers.chrome.bug ? html`
+                    <a href="${this.feature.browsers.chrome.bug}">${this.feature.browsers.chrome.bug}</a>
+                  `: html`
+                    None
+                  `}
+                </td>
+              </tr>` :
+              nothing}
 
             <tr>
               <th>Launch bug</th>
@@ -216,7 +265,9 @@ export class ChromedashGuideMetadata extends LitElement {
 
   renderEditForm() {
     const formattedFeature = formatFeatureForEdit(this.feature);
-    const metadataFields = flattenSections(FLAT_METADATA_FIELDS);
+    const metadataFields = flattenSections(this.feature.is_enterprise_feature ?
+      FLAT_ENTERPRISE_METADATA_FIELDS :
+      FLAT_METADATA_FIELDS);
     return html`
       <div id="metadata-editing">
         <form name="overview_form" method="POST" action="/guide/stage/${this.feature.id}/0">

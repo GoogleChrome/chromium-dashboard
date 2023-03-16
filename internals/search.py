@@ -22,13 +22,12 @@ from google.cloud.ndb import Key
 from google.cloud.ndb.tasklets import Future  # for type checking only
 
 from framework import users
-from framework import utils
+from internals.core_models import FeatureEntry
+from internals.review_models import Gate
 from internals import approval_defs
 from internals import core_enums
-from internals import core_models
 from internals import feature_helpers
 from internals import notifier
-from internals import review_models
 from internals import search_queries
 from internals import search_fulltext
 
@@ -45,9 +44,9 @@ def process_pending_approval_me_query() -> list[int]:
   approvable_gate_types = approval_defs.fields_approvable_by(user)
   if not approvable_gate_types:
     return []
-  query = review_models.Gate.query(
-      review_models.Gate.state.IN(review_models.Gate.PENDING_STATES),
-      review_models.Gate.gate_type.IN(approvable_gate_types))
+  query = Gate.query(
+      Gate.state.IN(Gate.PENDING_STATES),
+      Gate.gate_type.IN(approvable_gate_types))
   future_feature_ids = query.fetch_async(projection=['feature_id'])
   return future_feature_ids
 
@@ -64,8 +63,8 @@ def process_starred_me_query() -> list[int]:
 
 def process_recent_reviews_query() -> list[int]:
   """Return features that were reviewed recently."""
-  query = review_models.Gate.query(
-      review_models.Gate.state.IN(review_models.Gate.FINAL_STATES))
+  query = Gate.query(
+      Gate.state.IN(Gate.FINAL_STATES))
   future_feature_ids = query.fetch_async(projection=['feature_id'], limit=40)
   return future_feature_ids
 
@@ -355,6 +354,6 @@ def process_negation_operations(feature_id_future_ops):
 
 def fetch_all_feature_ids_set():
   """Fetch all FeatureEntry ids. """
-  all_feature_keys = core_models.FeatureEntry.query().fetch(keys_only=True)
+  all_feature_keys = FeatureEntry.query().fetch(keys_only=True)
   feature_ids_set = set(key.integer_id() for key in all_feature_keys)
   return feature_ids_set

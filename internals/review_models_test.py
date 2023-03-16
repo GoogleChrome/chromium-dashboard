@@ -15,17 +15,15 @@
 import testing_config  # Must be imported before the module under test.
 
 import datetime
-from unittest import mock
-from framework import users
 
-from internals import approval_defs, core_models
-from internals.review_models import Activity, Approval, Gate, OwnersFile, Vote
+from internals.legacy_models import Approval, Feature 
+from internals.review_models import Activity, Gate, OwnersFile, Vote
 
 
 class ApprovalTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = core_models.Feature(
+    self.feature_1 = Feature(
         name='feature a', summary='sum', category=1, impl_status_chrome=3)
     self.feature_1.put()
     self.feature_1_id = self.feature_1.key.integer_id()
@@ -113,7 +111,7 @@ class ApprovalTest(testing_config.CustomTestCase):
 class CommentTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = core_models.Feature(
+    self.feature_1 = Feature(
         name='feature a', summary='sum',  owner=['feature_owner@example.com'],
         category=1, impl_status_chrome=3)
     self.feature_1.put()
@@ -134,7 +132,7 @@ class CommentTest(testing_config.CustomTestCase):
         content='random')
     self.act_1_3.put()
 
-    self.feature_2 = core_models.Feature(
+    self.feature_2 = Feature(
         name='feature b', summary='sum', owner=['feature_owner@example.com'],
         category=1, impl_status_chrome=3)
     self.feature_2.put()

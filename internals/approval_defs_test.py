@@ -24,7 +24,8 @@ import flask
 import werkzeug
 
 from internals import approval_defs
-from internals.review_models import Approval, Gate, Vote
+from internals.legacy_models import Approval
+from internals.review_models import Gate, Vote
 
 
 class FetchOwnersTest(testing_config.CustomTestCase):
@@ -73,11 +74,11 @@ MOCK_APPROVALS_BY_ID = {
     1: approval_defs.ApprovalFieldDef(
         'Intent to test',
         'You need permission to test',
-        1, approval_defs.ONE_LGTM, ['approver@example.com']),
+        1, approval_defs.ONE_LGTM, ['approver@example.com'], 'API Owners'),
     2: approval_defs.ApprovalFieldDef(
         'Intent to optimize',
         'You need permission to optimize',
-        2, approval_defs.THREE_LGTM, 'https://example.com'),
+        2, approval_defs.THREE_LGTM, 'https://example.com', 'API Owners'),
 }
 
 

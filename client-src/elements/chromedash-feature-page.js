@@ -2,7 +2,9 @@ import {LitElement, css, html, nothing} from 'lit';
 import './chromedash-feature-detail';
 import './chromedash-gantt';
 import {openApprovalsDialog} from './chromedash-approvals-dialog';
-import {autolink, showToastMessage} from './utils.js';
+import {autolink, renderHTMLIf, showToastMessage,
+  renderAbsoluteDate, renderRelativeDate,
+} from './utils.js';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 const INACTIVE_STATES = [
@@ -40,6 +42,12 @@ export class ChromedashFeaturePage extends LitElement {
         section label {
           font-weight: 500;
           margin-right: 5px;
+        }
+
+        #updated {
+          color: var(--unimportant-text-color);
+          border-top: var(--default-border);
+          padding: var(--content-padding-quarter) 0 0 var(--content-padding);
         }
 
         li {
@@ -96,6 +104,7 @@ export class ChromedashFeaturePage extends LitElement {
       starred: {type: Boolean},
       loading: {attribute: false},
       selectedGateId: {type: Number},
+      rawQuery: {type: Object},
     };
   }
 
@@ -113,6 +122,7 @@ export class ChromedashFeaturePage extends LitElement {
     this.starred = false;
     this.loading = true;
     this.selectedGateId = 0;
+    this.rawQuery = {};
   }
 
   connectedCallback() {
@@ -215,12 +225,6 @@ export class ChromedashFeaturePage extends LitElement {
     });
   }
 
-  /* Open the general approvals dialog when the user clicks on stamp icon. */
-  handleApprovalClick(e) {
-    e.preventDefault();
-    openApprovalsDialog(this.user, this.feature);
-  }
-
   /* Open the specific approvals dialog when the user clicks on a gate chip. */
   // TODO(jrobbins): Make it specific.
   handleOpenApprovals(e) {
@@ -292,20 +296,13 @@ export class ChromedashFeaturePage extends LitElement {
               <iron-icon icon="chromestatus:link"></iron-icon>
             </a>
           </span>
-          ${this.user && this.user.can_approve ? html`
-            <span class="tooltip" title="Review approvals">
-              <a href="#" id="approvals-icon" data-tooltip @click=${this.handleApprovalClick}>
-                <iron-icon icon="chromestatus:approval"></iron-icon>
-              </a>
-            </span>
-          `: nothing}
-          ${canEdit ? html`
+          ${renderHTMLIf(canEdit && !this.feature.is_enterprise_feature, html`
             <span class="tooltip" title="Edit this feature">
               <a href="/guide/edit/${this.featureId}" class="editfeature" data-tooltip>
                 <iron-icon icon="chromestatus:create"></iron-icon>
               </a>
             </span>
-          `: nothing}
+          `)}
         </div>
         <h2 id="breadcrumbs">
           <a href="${this.contextLink}">
@@ -381,6 +378,22 @@ export class ChromedashFeaturePage extends LitElement {
       `: nothing}
     `;
   }
+
+  renderEnterpriseFeatureStatus() {
+    return html`
+    ${this.feature.browsers.chrome.owners ? html`
+      <section id="owner">
+        <h3>${this.feature.browsers.chrome.owners.length == 1 ? 'Owner' : 'Owners'}</h3>
+        <ul>
+          ${this.feature.browsers.chrome.owners.map((owner) => html`
+            <li><a href="mailto:${owner}">${owner}</a></li>
+          `)}
+        </ul>
+      </section>
+    `: nothing}
+    `;
+  }
+
 
   renderFeatureStatus() {
     return html`
@@ -469,9 +482,15 @@ export class ChromedashFeaturePage extends LitElement {
             `)}
         </section>
       `: nothing}
+    `;
+  }
 
+  renderUpdated() {
+    return html`
       <section id="updated">
-        <p><span>Last updated on ${this.feature.updated_display}</span></p>
+          Last updated on
+          ${renderAbsoluteDate(this.feature.updated?.when, true)}
+          ${renderRelativeDate(this.feature.updated?.when)}
       </section>
     `;
   }
@@ -487,6 +506,7 @@ export class ChromedashFeaturePage extends LitElement {
         .comments=${this.comments}
         .process=${this.process}
         .dismissedCues=${this.dismissedCues}
+        .rawQuery=${this.rawQuery}
         @open-approvals-event=${this.handleOpenApprovals}
         selectedGateId=${this.selectedGateId}
        >
@@ -510,7 +530,10 @@ export class ChromedashFeaturePage extends LitElement {
       ${this.renderSubHeader()}
       <div id="feature">
         ${this.renderFeatureContent()}
-        ${this.renderFeatureStatus()}
+        ${this.feature.is_enterprise_feature ?
+            this.renderEnterpriseFeatureStatus() :
+            this.renderFeatureStatus()}
+        ${this.renderUpdated()}
       </div>
       ${this.renderFeatureDetails()}
     `;

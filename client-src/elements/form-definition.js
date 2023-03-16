@@ -31,6 +31,8 @@ export function formatFeatureForEdit(feature) {
   const formattedFeature = {
     ...feature,
     category: feature.category_int,
+    enterprise_feature_categories: Array.from(new Set(feature.enterprise_feature_categories || []))
+      .map(x => parseInt(x).toString()),
     feature_type: feature.feature_type_int,
     intent_stage: feature.intent_stage_int,
 
@@ -120,6 +122,16 @@ export const NEW_FEATURE_FORM_FIELDS = [
   'category',
 ];
 
+export const ENTERPRISE_NEW_FEATURE_FORM_FIELDS = [
+  'name',
+  'summary',
+  'owner',
+  'editors',
+  'launch_bug_url',
+  'enterprise_feature_categories',
+  'breaking_change',
+];
+
 // The fields shown to the user when verifying the accuracy of a feature.
 export const VERIFY_ACCURACY_FORM_FIELDS = [
   'summary',
@@ -158,6 +170,7 @@ export const FLAT_METADATA_FIELDS = {
         'owner',
         'editors',
         'cc_recipients',
+        'devrel',
         'category',
         'feature_type',
         'search_tags',
@@ -172,6 +185,33 @@ export const FLAT_METADATA_FIELDS = {
         'bug_url',
         'launch_bug_url',
         'comments',
+      ],
+      isImplementationSection: true,
+    },
+  ],
+};
+
+// The fields that are available to every enterprise feature.
+export const FLAT_ENTERPRISE_METADATA_FIELDS = {
+  name: 'Feature metadata',
+  sections: [
+    // Standardizaton
+    {
+      name: 'Feature metadata',
+      fields: [
+        'name',
+        'summary',
+        'owner',
+        'editors',
+        'enterprise_feature_categories',
+        'breaking_change',
+      ],
+    },
+    // Implementation
+    {
+      name: 'Implementation in Chromium',
+      fields: [
+        'launch_bug_url',
       ],
       isImplementationSection: true,
     },
@@ -253,7 +293,6 @@ const FLAT_DEV_TRIAL_FIELDS = {
         'wpt',
         'wpt_descr',
         'sample_links',
-        'devrel',
       ],
     },
     // Implementation
@@ -350,6 +389,9 @@ const FLAT_PREPARE_TO_SHIP_FIELDS = {
         'webview_risks',
         'anticipated_spec_changes',
         'i2s_lgtms',
+        'availability_expectation',
+        'adoption_expectation',
+        'adoption_plan',
         // Implementation
         'measurement',
         'non_oss_deps',
@@ -479,7 +521,6 @@ const DEPRECATION_DEV_TRIAL_FIELDS = {
         'wpt',
         'wpt_descr',
         'sample_links',
-        'devrel',
       ],
     },
     // Implementation
@@ -648,7 +689,6 @@ export const CREATEABLE_STAGES = {
   ],
   [FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0]]: [
     STAGE_ENT_ROLLOUT,
-    STAGE_ENT_SHIPPED,
   ],
 };
 
@@ -698,10 +738,6 @@ const BLINK_GENERIC_QUESTIONNAIRE = (
   '\n' +
   'Be sure to update your feature entry in response to ' +
   'any suggestions on that email thread.'
-);
-
-const ADOPTION_GENERIC_QUESTIONNAIRE = (
-  `To request a review, use the "Request review" button above.`
 );
 
 const PRIVACY_GENERIC_QUESTIONNAIRE = (
@@ -758,31 +794,12 @@ const TESTING_SHIP_QUESTIONNAIRE = (
   'See http://go/chrome-wp-test-survey.'
 );
 
-const ADOPTION_SHIP_QUESTIONNAIRE = (
-  html`<b>(1) What is your availability expectation for this feature?</b>
-Examples:<ul>
-<li>Feature x is available on Web Platform mainline within 12 month of launch in Chrome
-<li>Feature x is available in Chromium browsers for the foreseeable future
-</ul>
-<b>(2) What is your adoption expectation for this feature?</b>
-Examples:<ul>
-<li>Feature x is considered a best practice for use case y within 12 month of reaching Web Platform baseline
-<li>Feature x is used by partner y to provide functionality z within 12 month of launch in Chrome
-<li>At least 3 major abstractions replace their use of feature y with feature x within 24 months of reaching mainline.
-</ul>
-<b>(3) What is the plan to achieve the stated expectations?</b>
-Please provide a plan that covers availability and adoption planning for the feature.
-
-`
-);
-
 
 export const GATE_QUESTIONNAIRES = {
   [GATE_TYPES.API_PROTOTYPE]: BLINK_GENERIC_QUESTIONNAIRE,
   [GATE_TYPES.API_ORIGIN_TRIAL]: BLINK_GENERIC_QUESTIONNAIRE,
   [GATE_TYPES.API_EXTEND_ORIGIN_TRIAL]: BLINK_GENERIC_QUESTIONNAIRE,
   [GATE_TYPES.API_SHIP]: BLINK_GENERIC_QUESTIONNAIRE,
-  [GATE_TYPES.ADOPTION_SHIP]: ADOPTION_GENERIC_QUESTIONNAIRE,
   [GATE_TYPES.PRIVACY_ORIGIN_TRIAL]: PRIVACY_GENERIC_QUESTIONNAIRE,
   [GATE_TYPES.PRIVACY_SHIP]: PRIVACY_GENERIC_QUESTIONNAIRE,
   [GATE_TYPES.SECURITY_ORIGIN_TRIAL]: SECURITY_GENERIC_QUESTIONNAIRE,
@@ -792,5 +809,4 @@ export const GATE_QUESTIONNAIRES = {
       DEBUGGABILITY_ORIGIN_TRIAL_QUESTIONNAIRE,
   [GATE_TYPES.DEBUGGABILITY_SHIP]: DEBUGGABILITY_SHIP_QUESTIONNAIRE,
   [GATE_TYPES.TESTING_SHIP]: TESTING_SHIP_QUESTIONNAIRE,
-  [GATE_TYPES.ADOPTION_SHIP]: ADOPTION_SHIP_QUESTIONNAIRE,
 };

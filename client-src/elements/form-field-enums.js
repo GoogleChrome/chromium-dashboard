@@ -28,6 +28,18 @@ export const FEATURE_CATEGORIES = {
   CAPABILITIES: [21, 'Capabilities (Fugu)'],
 };
 
+export const ENTERPRISE_FEATURE_CATEGORIES = {
+  SECURITYANDPRIVACY: [1, 'Security / Privacy'],
+  USERPRODUCTIVITYANDAPPS: [2, 'User Productivity / Apps'],
+  MANAGEMENT: [3, 'Management'],
+};
+
+export const ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME = {
+  1: 'Security/Privacy', // SECURITYANDPRIVACY
+  2: 'User Productivity/Apps', // USERPRODUCTIVITYANDAPPS
+  3: 'Management', // MANAGEMENT
+};
+
 export const PLATFORM_CATEGORIES = {
   PLATFORM_ANDROID: [1, 'Android'],
   PLATFORM_IOS: [2, 'iOS'],
@@ -52,7 +64,7 @@ export const PLATFORMS_DISPLAYNAME = {
 
 // FEATURE_TYPES object is organized as [intValue, stringLabel, description],
 // the descriptions are used only for the descriptions of feature_type_radio_group
-export const FEATURE_TYPES = {
+export const FEATURE_TYPES_WITHOUT_ENTERPRISE = {
   FEATURE_TYPE_INCUBATE_ID: [0, 'New feature incubation',
     'When building new features, we follow a process that emphasizes engagement ' +
     'with the WICG and other stakeholders early.'],
@@ -64,6 +76,9 @@ export const FEATURE_TYPES = {
     'This type of feature entry can be referenced from a PSA immediately.'],
   FEATURE_TYPE_DEPRECATION_ID: [3, 'Feature deprecation',
     'Deprecate and remove an old feature.'],
+};
+export const FEATURE_TYPES = {
+  ...FEATURE_TYPES_WITHOUT_ENTERPRISE,
   FEATURE_TYPE_ENTERPRISE_ID: [4, 'New Feature or removal affecting enterprises',
     'For features or changes that need to be communicated to enterprises or schools.'],
 };
@@ -148,12 +163,11 @@ export const GATE_TYPES = {
   DEBUGGABILITY_ORIGIN_TRIAL: 62,
   DEBUGGABILITY_SHIP: 64,
   TESTING_SHIP: 74,
-  ADOPTION_SHIP: 84,
 };
 
 export const GATE_TEAM_ORDER = [
   'Privacy', 'Security', 'Enterprise', 'Debuggability',
-  'Testing', 'Adoption', 'API Owners'];
+  'Testing', 'API Owners'];
 
 
 export const OT_MILESTONE_END_FIELDS = {

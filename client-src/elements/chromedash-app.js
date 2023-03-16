@@ -138,6 +138,19 @@ class ChromedashApp extends LitElement {
   setUpRoutes() {
     page.strict(true); // Be precise about trailing slashes in routes.
 
+    const scrollIfHash = (ctx) => {
+      // If current page is ctx.path and only the hash changes,
+      // don't create a new element for a page refresh
+      // but instead just scroll to the element identified by the hash.
+      // Note this ignores the query string, if any.
+      if (this.currentPage == ctx.path && ctx.hash) {
+        if (window.scrollToElement) {
+          window.scrollToElement(`#${ctx.hash}`);
+        }
+        return true;
+      }
+    };
+
     // SPA routing rules.  Note that rules are considered in order.
     // And :var can match any string (including a slash) if there is no slash after it.
     page('/', () => page.redirect('/roadmap'));
@@ -172,18 +185,30 @@ class ChromedashApp extends LitElement {
       this.pageComponent.user = this.user;
       this.pageComponent.contextLink = this.contextLink;
       this.pageComponent.selectedGateId = this.selectedGateId;
+      this.pageComponent.rawQuery = window.csClient.parseRawQuery(ctx.querystring);
       this.currentPage = ctx.path;
       this.pageComponent.appTitle = this.appTitle;
       if (this.pageComponent.featureId != this.gateColumnRef.value?.feature?.id) {
         this.hideSidebar();
       }
     });
-    page('/guide/new', () => {
+    page('/guide/new', (ctx) => {
+      if (scrollIfHash(ctx)) return;
       this.pageComponent = document.createElement('chromedash-guide-new-page');
       this.pageComponent.userEmail = this.user.email;
+      this.currentPage = ctx.path;
+      this.hideSidebar();
+    });
+    page('/guide/enterprise/new', (ctx) => {
+      if (scrollIfHash(ctx)) return;
+      this.pageComponent = document.createElement('chromedash-guide-new-page');
+      this.pageComponent.userEmail = this.user.email;
+      this.pageComponent.isEnterpriseFeature = true;
+      this.currentPage = ctx.path;
       this.hideSidebar();
     });
     page('/guide/edit/:featureId(\\d+)', (ctx) => {
+      if (scrollIfHash(ctx)) return;
       this.pageComponent = document.createElement('chromedash-guide-edit-page');
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.appTitle = this.appTitle;
@@ -191,10 +216,12 @@ class ChromedashApp extends LitElement {
       this.hideSidebar();
     });
     page('/guide/editall/:featureId(\\d+)', (ctx) => {
+      if (scrollIfHash(ctx)) return;
       this.pageComponent = document.createElement('chromedash-guide-editall-page');
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.appTitle = this.appTitle;
       this.pageComponent.nextPage = this.currentPage;
+      this.currentPage = ctx.path;
       this.hideSidebar();
     });
     page('/guide/verify_accuracy/:featureId(\\d+)', (ctx) => {
@@ -204,27 +231,33 @@ class ChromedashApp extends LitElement {
       this.hideSidebar();
     });
     page('/guide/stage/:featureId(\\d+)/:intentStage(\\d+)', (ctx) => {
+      if (scrollIfHash(ctx)) return;
       this.pageComponent = document.createElement('chromedash-guide-stage-page');
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.intentStage = parseInt(ctx.params.intentStage);
       this.pageComponent.nextPage = this.currentPage;
       this.pageComponent.appTitle = this.appTitle;
+      this.currentPage = ctx.path;
       this.hideSidebar();
     });
     page('/guide/stage/:featureId(\\d+)/:intentStage(\\d+)/:stageId(\\d+)', (ctx) => {
+      if (scrollIfHash(ctx)) return;
       this.pageComponent = document.createElement('chromedash-guide-stage-page');
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.stageId = parseInt(ctx.params.stageId);
       this.pageComponent.intentStage = parseInt(ctx.params.intentStage);
       this.pageComponent.nextPage = this.currentPage;
       this.pageComponent.appTitle = this.appTitle;
+      this.currentPage = ctx.path;
       this.hideSidebar();
     });
     page('/guide/stage/:featureId(\\d+)/metadata', (ctx) => {
+      if (scrollIfHash(ctx)) return;
       this.pageComponent = document.createElement('chromedash-guide-metadata-page');
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.nextPage = this.currentPage;
       this.pageComponent.appTitle = this.appTitle;
+      this.currentPage = ctx.path;
       this.hideSidebar();
     });
     page('/settings', (ctx) => {

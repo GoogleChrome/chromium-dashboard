@@ -5,7 +5,9 @@ import {
   openPreflightDialog,
   somePendingPrereqs,
 } from './chromedash-preflight-dialog';
-import {autolink, showToastMessage, findProcessStage} from './utils.js';
+import {autolink, showToastMessage, findProcessStage,
+  renderAbsoluteDate, renderRelativeDate,
+} from './utils.js';
 import {GATE_QUESTIONNAIRES} from './form-definition.js';
 
 import {SHARED_STYLES} from '../sass/shared-css.js';
@@ -127,6 +129,8 @@ export class ChromedashGateColumn extends LitElement {
       loading: {type: Boolean},
       needsSave: {type: Boolean},
       showSaved: {type: Boolean},
+      submittingComment: {type: Boolean},
+      submittingVote: {type: Boolean},
       needsPost: {type: Boolean},
     };
   }
@@ -145,6 +149,8 @@ export class ChromedashGateColumn extends LitElement {
     this.loading = true; // Avoid errors before first usage.
     this.needsSave = false;
     this.showSaved = false;
+    this.submittingComment = false;
+    this.submittingVote = false;
     this.needsPost = false;
   }
 
@@ -169,6 +175,8 @@ export class ChromedashGateColumn extends LitElement {
       this.comments = commentRes.comments;
       this.needsSave = false;
       this.showSaved = false;
+      this.submittingComment = false;
+      this.submittingVote = false;
       this.needsPost = false;
       this.loading = false;
     }).catch(() => {
@@ -233,15 +241,23 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   handlePost() {
+    this.submittingVote = true;
     const commentArea = this.commentAreaRef.value;
     const commentText = commentArea.value.trim();
     const postToThreadType = (
-        this.postToThreadRef.value?.checked ? this.gate.gate_type : 0);
+      this.postToThreadRef.value?.checked ? this.gate.gate_type : 0);
     if (commentText != '') {
       window.csClient.postComment(
         this.feature.id, this.gate.id, commentText,
         Number(postToThreadType))
-        .then(() => this.reloadComments());
+        .then(() => {
+          this.reloadComments();
+          this.submittingVote = false;
+        })
+        .catch(() => {
+          showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+          this.submittingVote = false;
+        });
     }
   }
 
@@ -251,13 +267,19 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   handleSave() {
+    this.submittingComment = true;
     window.csClient.setVote(
       this.feature.id, this.gate.id,
       this.voteSelectRef.value.value)
       .then(() => {
         this.needsSave = false;
         this.showSaved = true;
+        this.submittingComment = false;
         this._fireEvent('refetch-needed', {});
+      })
+      .catch(() => {
+        showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+        this.submittingComment = false;
       });
   }
 
@@ -301,25 +323,6 @@ export class ChromedashGateColumn extends LitElement {
       .then(() => {
         this._fireEvent('refetch-needed', {});
       });
-  }
-
-  formatDate(dateStr) {
-    return dateStr.split(' ')[0]; // Ignore time of day
-  }
-
-  formatRelativeDate(dateStr) {
-    // Format date to "YYYY-MM-DDTHH:mm:ss.sssZ" to represent UTC.
-    dateStr = dateStr || '';
-    dateStr = dateStr.replace(' ', 'T');
-    const dateObj = new Date(`${dateStr}Z`);
-    if (isNaN(dateObj)) {
-      return nothing;
-    }
-    return html`
-      <span class="relative_date">
-        (<sl-relative-time date="${dateObj.toISOString()}">
-        </sl-relative-time>)
-      </span>`;
   }
 
   /* A user that can edit the current feature can request a review. */
@@ -391,8 +394,9 @@ export class ChromedashGateColumn extends LitElement {
 
   renderReviewStatusActive() {
     return html`
-      Review requested on ${this.formatDate(this.gate.requested_on)}
-      ${this.formatRelativeDate(this.gate.requested_on)}
+      Review requested on
+      ${renderAbsoluteDate(this.gate.requested_on)}
+      ${renderRelativeDate(this.gate.requested_on)}
     `;
   }
 
@@ -494,6 +498,7 @@ export class ChromedashGateColumn extends LitElement {
           <sl-button
             size="small" variant="primary"
             @click=${this.handleSave}
+            ?disabled=${this.submittingComment}
             >Save</sl-button>
           `;
       } else if (this.showSaved) {
@@ -583,7 +588,7 @@ export class ChromedashGateColumn extends LitElement {
     const postButton = html`
       <sl-button variant="primary"
         @click=${this.handlePost}
-        ?disabled=${!this.needsPost}
+        ?disabled=${!this.needsPost || this.submittingVote}
         size="small"
         >Post</sl-button>
     `;

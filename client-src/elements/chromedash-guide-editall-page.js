@@ -1,16 +1,19 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
-import {showToastMessage, flattenSections} from './utils.js';
+import {showToastMessage, flattenSections, setupScrollToHash} from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
 import {
   formatFeatureForEdit,
   FLAT_METADATA_FIELDS,
+  FLAT_ENTERPRISE_METADATA_FIELDS,
   FORMS_BY_STAGE_TYPE,
-  FLAT_TRIAL_EXTENSION_FIELDS} from './form-definition';
+  FLAT_TRIAL_EXTENSION_FIELDS,
+  STAGE_SHORT_NAMES} from './form-definition';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {FORM_STYLES} from '../sass/forms-css.js';
 import {STAGE_SPECIFIC_FIELDS} from './form-field-enums.js';
+import {openAddStageDialog} from './chromedash-add-stage-dialog';
 
 
 export class ChromedashGuideEditallPage extends LitElement {
@@ -69,14 +72,16 @@ export class ChromedashGuideEditallPage extends LitElement {
 
   /* Add the form's event listener after Shoelace event listeners are attached
    * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
-  async registerFormSubmitHandler(el) {
+  async registerHandlers(el) {
     if (!el) return;
-
     await el.updateComplete;
+
     const hiddenTokenField = this.shadowRoot.querySelector('input[name=token]');
     hiddenTokenField.form.addEventListener('submit', (event) => {
       this.handleFormSubmit(event, hiddenTokenField);
     });
+
+    setupScrollToHash(this);
   }
 
   handleFormSubmit(event, hiddenTokenField) {
@@ -119,7 +124,8 @@ export class ChromedashGuideEditallPage extends LitElement {
   }
 
   getNextPage() {
-    return this.nextPage || `/guide/edit/${this.featureId}`;
+    return this.nextPage || this.feature.is_enterprise_feature ?
+    `/feature/${this.featureId}` : `/guide/edit/${this.featureId}`;
   }
 
   renderSubheader() {
@@ -171,9 +177,10 @@ export class ChromedashGuideEditallPage extends LitElement {
         </chromedash-form-field>
       `;
     });
-
+    const id = `${STAGE_SHORT_NAMES[feStage.stage_type] || 'metadata'}${this.sameTypeRendered}`
+      .toLowerCase();
     return html`
-    <h3>${sectionName}</h3>
+    <h3 id="${id}">${sectionName}</h3>
     <section class="flat_form">
       ${formFieldEls}
     </section>
@@ -191,7 +198,9 @@ export class ChromedashGuideEditallPage extends LitElement {
    */
   getForms(formattedFeature, feStages) {
     // All features display the metadata section.
-    let fieldsOnly = flattenSections(FLAT_METADATA_FIELDS);
+    let fieldsOnly = flattenSections(formattedFeature.is_enterprise_feature ?
+      FLAT_ENTERPRISE_METADATA_FIELDS :
+      FLAT_METADATA_FIELDS);
     const formsToRender = [
       this.renderStageSection(formattedFeature, FLAT_METADATA_FIELDS.name, {}, fieldsOnly)];
 
@@ -238,6 +247,14 @@ export class ChromedashGuideEditallPage extends LitElement {
     return stageIds.join(',');
   }
 
+  renderAddStageButton() {
+    return html`
+    <sl-button size="small" @click="${
+        () => openAddStageDialog(this.feature.id, this.feature.feature_type_int)}">
+      Add stage
+    </sl-button>`;
+  }
+
   renderForm() {
     const formattedFeature = formatFeatureForEdit(this.feature);
     const stageIds = this.getAllStageIds();
@@ -248,9 +265,10 @@ export class ChromedashGuideEditallPage extends LitElement {
         <input type="hidden" name="token">
         <input type="hidden" name="nextPage" value=${this.getNextPage()} >
         <input type="hidden" name="form_fields" value=${allFormFields.join(',')}>
-        <chromedash-form-table ${ref(this.registerFormSubmitHandler)}>
+        <chromedash-form-table ${ref(this.registerHandlers)}>
           ${formsToRender}
         </chromedash-form-table>
+        ${this.renderAddStageButton()}
 
         <section class="final_buttons">
           <input class="button" type="submit" value="Submit">

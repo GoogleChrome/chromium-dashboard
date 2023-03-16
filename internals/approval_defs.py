@@ -23,7 +23,8 @@ import requests
 
 from framework import permissions
 from internals import core_enums
-from internals.review_models import Approval, Gate, OwnersFile, Vote
+from internals.legacy_models import Approval
+from internals.review_models import Gate, OwnersFile, Vote
 import settings
 
 CACHE_EXPIRATION = 60 * 60  # One hour
@@ -34,6 +35,26 @@ THREE_LGTM = 'Three LGTMs'
 API_OWNERS_URL = (
     'https://chromium.googlesource.com/chromium/src/+/'
     'main/third_party/blink/API_OWNERS?format=TEXT')
+PRIVACY_APPROVERS = [
+    'owp-privacy-approvers@google.com',
+]
+SECURITY_APPROVERS: list[str] = [
+  # TBD
+]
+ENTERPRISE_APPROVERS = [
+    'cbe-launch-approvers@google.com',
+    'bheenan@google.com',
+]
+DEBUGGABILITY_APPROVERS = [
+    'bmeurer@google.com',
+    'danilsomsikov@google.com',
+    'yangguo@google.com',
+]
+TESTING_APPROVERS = [
+    'sadapala@google.com',
+    'santhoshkumarm@google.com',
+    'vivianz@google.com',
+]
 
 @dataclass(eq=True, frozen=True)
 class ApprovalFieldDef:
@@ -41,8 +62,8 @@ class ApprovalFieldDef:
   description: str
   field_id: int
   rule: str
-  approvers: str | list[str] = API_OWNERS_URL
-  team_name: str = 'API Owners'
+  approvers: str | list[str]
+  team_name: str
 
 # Note: This can be requested manually through the UI, but it is not
 # triggered by a blink-dev thread because i2p intents are only FYIs to
@@ -50,89 +71,85 @@ class ApprovalFieldDef:
 PrototypeApproval = ApprovalFieldDef(
     'Intent to Prototype',
     'Not normally used.  If a review is requested, API Owners can approve.',
-    core_enums.GATE_API_PROTOTYPE, ONE_LGTM)
+    core_enums.GATE_API_PROTOTYPE, ONE_LGTM,
+    approvers=API_OWNERS_URL, team_name='API Owners')
 
 ExperimentApproval = ApprovalFieldDef(
     'Intent to Experiment',
     'One API Owner must approve your intent',
-    core_enums.GATE_API_ORIGIN_TRIAL, ONE_LGTM)
+    core_enums.GATE_API_ORIGIN_TRIAL, ONE_LGTM,
+    approvers=API_OWNERS_URL, team_name='API Owners')
 
 ExtendExperimentApproval = ApprovalFieldDef(
     'Intent to Extend Experiment',
     'One API Owner must approve your intent',
-    core_enums.GATE_API_EXTEND_ORIGIN_TRIAL, ONE_LGTM)
+    core_enums.GATE_API_EXTEND_ORIGIN_TRIAL, ONE_LGTM,
+    approvers=API_OWNERS_URL, team_name='API Owners')
 
 ShipApproval = ApprovalFieldDef(
     'Intent to Ship',
     'Three API Owners must approve your intent',
-    core_enums.GATE_API_SHIP, THREE_LGTM)
+    core_enums.GATE_API_SHIP, THREE_LGTM,
+    approvers=API_OWNERS_URL, team_name='API Owners')
 
 PrivacyOriginTrialApproval = ApprovalFieldDef(
     'Privacy OT Review',
     'Privacy OT Review',
     core_enums.GATE_PRIVACY_ORIGIN_TRIAL, ONE_LGTM,
-    team_name='Privacy')
+    approvers=PRIVACY_APPROVERS, team_name='Privacy')
 
 PrivacyShipApproval = ApprovalFieldDef(
     'Privacy Ship Review',
     'Privacy Ship Review',
     core_enums.GATE_PRIVACY_SHIP, ONE_LGTM,
-    team_name='Privacy')
+    approvers=PRIVACY_APPROVERS, team_name='Privacy')
 
 SecurityOriginTrialApproval = ApprovalFieldDef(
     'Security OT Review',
     'Security OT Review',
     core_enums.GATE_SECURITY_ORIGIN_TRIAL, ONE_LGTM,
-    team_name='Security')
+    approvers=SECURITY_APPROVERS, team_name='Security')
 
 SecurityShipApproval = ApprovalFieldDef(
     'Security Ship Review',
     'Security Ship Review',
     core_enums.GATE_SECURITY_SHIP, ONE_LGTM,
-    team_name='Security')
+    approvers=SECURITY_APPROVERS, team_name='Security')
 
 EnterpriseShipApproval = ApprovalFieldDef(
     'Enterprise Ship Review',
     'Enterprise Ship Review',
     core_enums.GATE_ENTERPRISE_SHIP, ONE_LGTM,
-    team_name='Enterprise')
+    approvers=ENTERPRISE_APPROVERS, team_name='Enterprise')
 
 DebuggabilityOriginTrialApproval = ApprovalFieldDef(
     'Debuggability OT Review',
     'Debuggability OT Review',
     core_enums.GATE_DEBUGGABILITY_ORIGIN_TRIAL, ONE_LGTM,
-    team_name='Debuggability')
+    approvers=DEBUGGABILITY_APPROVERS, team_name='Debuggability')
 
 DebuggabilityShipApproval = ApprovalFieldDef(
     'Debuggability Ship Review',
     'Debuggability Ship Review',
     core_enums.GATE_DEBUGGABILITY_SHIP, ONE_LGTM,
-    team_name='Debuggability')
+    approvers=DEBUGGABILITY_APPROVERS, team_name='Debuggability')
 
 TestingShipApproval = ApprovalFieldDef(
     'Testing Ship Review',
     'Testing Ship Review',
     core_enums.GATE_TESTING_SHIP, ONE_LGTM,
-    team_name='Testing')
-
-AdoptionShipApproval = ApprovalFieldDef(
-    'Adoption Ship Review',
-    'Adoption Ship Review',
-    core_enums.GATE_ADOPTION_SHIP, ONE_LGTM,
-    team_name='Adoption')
+    approvers=TESTING_APPROVERS, team_name='Testing')
 
 APPROVAL_FIELDS_BY_ID = {
     afd.field_id: afd
     for afd in [
         PrototypeApproval, ExperimentApproval, ExtendExperimentApproval,
         ShipApproval,
-        AdoptionShipApproval,
         PrivacyOriginTrialApproval, PrivacyShipApproval,
         SecurityOriginTrialApproval, SecurityShipApproval,
         EnterpriseShipApproval,
         DebuggabilityOriginTrialApproval, DebuggabilityShipApproval,
         TestingShipApproval,
-        AdoptionShipApproval,
         ]
     }
 

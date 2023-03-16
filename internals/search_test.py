@@ -18,9 +18,10 @@ import datetime
 from unittest import mock
 
 from internals import core_enums
-from internals import core_models
+from internals.core_models import FeatureEntry
+from internals.legacy_models import Feature
+from internals.review_models import Gate, Vote
 from internals import notifier
-from internals import review_models
 from internals import search
 
 
@@ -102,11 +103,11 @@ class SearchRETest(testing_config.CustomTestCase):
 class SearchFunctionsTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = core_models.Feature(
+    self.feature_1 = Feature(
         name='feature 1', summary='sum', category=1, web_dev_views=1,
         impl_status_chrome=3)
     self.feature_1.put()
-    self.featureentry_1 = core_models.FeatureEntry(
+    self.featureentry_1 = FeatureEntry(
         id=self.feature_1.key.integer_id(),
         name='feature 1', summary='sum', category=1, web_dev_views=1,
         impl_status_chrome=3)
@@ -114,11 +115,11 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.featureentry_1.editor_emails = ['editor@example.com']
     self.featureentry_1.cc_emailss = ['cc@example.com']
     self.featureentry_1.put()
-    self.feature_2 = core_models.Feature(
+    self.feature_2 = Feature(
         name='feature 2', summary='sum', category=2, web_dev_views=1,
         impl_status_chrome=3)
     self.feature_2.put()
-    self.featureentry_2 = core_models.FeatureEntry(
+    self.featureentry_2 = FeatureEntry(
         id=self.feature_2.key.integer_id(),
         name='feature 2', summary='sum', category=2, web_dev_views=1,
         impl_status_chrome=3)
@@ -126,22 +127,22 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.featureentry_2.put()
     notifier.FeatureStar.set_star(
         'starrer@example.com', self.feature_1.key.integer_id())
-    self.feature_3 = core_models.Feature(
+    self.feature_3 = Feature(
         name='feature 3', summary='sum', category=3, web_dev_views=1,
         impl_status_chrome=3, unlisted=True)
     self.feature_3.put()
-    self.featureentry_3 = core_models.FeatureEntry(
+    self.featureentry_3 = FeatureEntry(
         id=self.feature_3.key.integer_id(),
         name='feature 3', summary='sum', category=3, web_dev_views=1,
         impl_status_chrome=3, unlisted=True)
     self.featureentry_3.owner_emails = ['owner@example.com']
     self.featureentry_3.put()
-    self.feature_4 = core_models.Feature(
+    self.feature_4 = Feature(
         name='feature 4', summary='sum', category=4, web_dev_views=1,
         impl_status_chrome=4,
         feature_type=core_enums.FEATURE_TYPE_ENTERPRISE_ID)
     self.feature_4.put()
-    self.featureentry_4 = core_models.FeatureEntry(
+    self.featureentry_4 = FeatureEntry(
         id=self.feature_4.key.integer_id(),
         name='feature 4', summary='sum', category=4, web_dev_views=1,
         impl_status_chrome=4,
@@ -161,7 +162,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.featureentry_2.key.delete()
     self.featureentry_3.key.delete()
     self.featureentry_4.key.delete()
-    for gate in review_models.Gate.query():
+    for gate in Gate.query():
       gate.key.delete()
 
   @mock.patch('internals.approval_defs.fields_approvable_by')
@@ -184,9 +185,9 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     testing_config.sign_in('visitor@example.com', 111)
     now = datetime.datetime.now()
     mock_approvable_by.return_value = set()
-    review_models.Gate(
+    Gate(
         feature_id=self.feature_1.key.integer_id(), stage_id=1,
-        gate_type=1, state=review_models.Vote.REVIEW_REQUESTED,
+        gate_type=1, state=Vote.REVIEW_REQUESTED,
         requested_on=now).put()
 
     future = search.process_pending_approval_me_query()
@@ -202,13 +203,13 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     time_1 = datetime.datetime.now() - datetime.timedelta(days=4)
     time_2 = datetime.datetime.now()
     mock_approvable_by.return_value = set([1, 2, 3])
-    review_models.Gate(
+    Gate(
         feature_id=self.feature_2.key.integer_id(), stage_id=1,
-        gate_type=1, state=review_models.Vote.REVIEW_REQUESTED,
+        gate_type=1, state=Vote.REVIEW_REQUESTED,
         requested_on=time_1).put()
-    review_models.Gate(
+    Gate(
         feature_id=self.feature_1.key.integer_id(), stage_id=1,
-        gate_type=1, state=review_models.Vote.REVIEW_REQUESTED,
+        gate_type=1, state=Vote.REVIEW_REQUESTED,
         requested_on=time_2).put()
 
     future = search.process_pending_approval_me_query()
@@ -228,13 +229,13 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     time_1 = datetime.datetime.now() - datetime.timedelta(days=4)
     time_2 = datetime.datetime.now()
     mock_approvable_by.return_value = set([1, 2, 3])
-    review_models.Gate(
+    Gate(
         feature_id=self.feature_2.key.integer_id(), stage_id=1,
-        gate_type=1, state=review_models.Vote.REVIEW_REQUESTED,
+        gate_type=1, state=Vote.REVIEW_REQUESTED,
         requested_on=time_1).put()
-    review_models.Gate(
+    Gate(
         feature_id=self.feature_1.key.integer_id(), stage_id=1,
-        gate_type=1, state=review_models.Vote.APPROVED,
+        gate_type=1, state=Vote.APPROVED,
         requested_on=time_2).put()
 
     future = search.process_pending_approval_me_query()
@@ -282,13 +283,13 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     mock_approvable_by.return_value = set({1, 2, 3})
     time_1 = datetime.datetime.now() - datetime.timedelta(days=4)
     time_2 = datetime.datetime.now()
-    review_models.Gate(
+    Gate(
         feature_id=self.feature_1.key.integer_id(), stage_id=1,
-        gate_type=1, state=review_models.Vote.NA,
+        gate_type=1, state=Vote.NA,
         requested_on=time_2).put()
-    review_models.Gate(
+    Gate(
         feature_id=self.feature_2.key.integer_id(), stage_id=1,
-        gate_type=1, state=review_models.Vote.APPROVED,
+        gate_type=1, state=Vote.APPROVED,
         requested_on=time_1).put()
 
     future = search.process_recent_reviews_query()

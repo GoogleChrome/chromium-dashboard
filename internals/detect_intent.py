@@ -23,8 +23,9 @@ from framework import permissions
 from framework import users
 from internals import core_enums
 from internals import approval_defs
-from internals.core_models import Feature, FeatureEntry, Stage
-from internals import review_models
+from internals.core_models import FeatureEntry, Stage
+from internals.legacy_models import Approval
+from internals.review_models import Vote
 
 
 FIELDS_REQUIRING_LGTMS = [
@@ -147,7 +148,7 @@ def is_lgtm_allowed(from_addr, feature, approval_field):
 
 def detect_new_thread(feature_id, approval_field):
   """Return True if there are no previous approval values for this intent."""
-  existing_approvals = review_models.Approval.get_approvals(
+  existing_approvals = Approval.get_approvals(
       feature_id=feature_id, field_id=approval_field.field_id)
   return not existing_approvals
 
@@ -194,7 +195,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
       logging.info('Could not retrieve feature')
       return {'message': 'Feature not found'}
 
-    self.set_intent_thread_url(feature, approval_field, thread_url)
+    self.set_intent_thread_url(feature, approval_field, thread_url, subject)
     self.create_approvals(feature, approval_field, from_addr, body)
     return {'message': 'Done'}
 
@@ -226,7 +227,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
 
   def set_intent_thread_url(self, feature: FeatureEntry,
       approval_field: approval_defs.ApprovalFieldDef,
-      thread_url: Optional[str]) -> None:
+      thread_url: str | None, subject: str | None) -> None:
     """If the feature has no previous thread URL for this intent, set it."""
     if not thread_url:
       return
@@ -235,16 +236,19 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
         approval_field.field_id][feature.feature_type]
     if stage_type is None:
       return
-    # TODO(danielrsmith): A new way to approach this detection will be needed
-    # when multiple versions of the same stage type are possible.
+    # TODO(danielrsmith): A new way to approach this detection is needed
+    # now that multiple stages of the same type can exist for a feature.
+    # This will currently only detect an intent if there is only 1 stage
+    # of the specific stage type associated with the feature.
     matching_stages: list[Stage] = Stage.query(
         Stage.feature_id == feature.key.integer_id(),
         Stage.stage_type == stage_type).fetch()
-    if (len(matching_stages) == 0 or
+    if (len(matching_stages) == 0 or len(matching_stages) > 1 or
         matching_stages[0].intent_thread_url is not None):
       return
 
     matching_stages[0].intent_thread_url = thread_url
+    matching_stages[0].intent_subject_line = subject
     matching_stages[0].put()
 
   def create_approvals(self, feature: FeatureEntry,
@@ -259,11 +263,11 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     if (detect_lgtm(body) and
         is_lgtm_allowed(from_addr, feature, approval_field)):
       logging.info('found LGTM')
-      review_models.Approval.set_approval(
+      Approval.set_approval(
           feature_id, approval_field.field_id,
-          review_models.Approval.APPROVED, from_addr)
+          Approval.APPROVED, from_addr)
       approval_defs.set_vote(feature_id, approval_field.field_id,
-          review_models.Vote.APPROVED, from_addr)
+          Vote.APPROVED, from_addr)
 
     # Case 2: Create a review request for any discussion that does not already
     # have any approval values stored.
@@ -271,10 +275,10 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
       logging.info('found new thread')
       if approval_field in FIELDS_REQUIRING_LGTMS:
         logging.info('requesting a review')
-        review_models.Approval.set_approval(
+        Approval.set_approval(
             feature_id, approval_field.field_id,
-            review_models.Approval.REVIEW_REQUESTED, from_addr)
+            Approval.REVIEW_REQUESTED, from_addr)
         # TODO(jrobbins): set gate state rather than creating
         # REVIEW_REQUESTED votes.
         approval_defs.set_vote(feature_id, approval_field.field_id,
-            review_models.Vote.REVIEW_REQUESTED, from_addr)
+            Vote.REVIEW_REQUESTED, from_addr)

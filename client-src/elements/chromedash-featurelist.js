@@ -1,5 +1,4 @@
 import {LitElement, html} from 'lit';
-import {openApprovalsDialog} from './chromedash-approvals-dialog';
 // eslint-disable-next-line no-unused-vars
 import './chromedash-feature';
 import {FEATURELIST_CSS} from '../sass/elements/chromedash-featurelist-css.js';
@@ -13,7 +12,6 @@ class ChromedashFeaturelist extends LitElement {
     return {
       user: {type: Object},
       isSiteEditor: {type: Boolean},
-      canApprove: {type: Boolean},
       signedInUser: {type: String},
       editableFeatures: {type: Object},
       features: {attribute: false}, // Directly edited and accessed in template/features.html
@@ -34,7 +32,6 @@ class ChromedashFeaturelist extends LitElement {
     this.metadataEl = document.querySelector('chromedash-metadata');
     this.searchEl = document.querySelector('.search input');
     this.isSiteEditor = false;
-    this.canApprove = false;
     this.signedInUser = '';
     this._hasInitialized = false; // Used to check initialization code.
     this._hasScrolledByUser = false; // Used to set the app header state.
@@ -52,7 +49,6 @@ class ChromedashFeaturelist extends LitElement {
      * to be bound to `this`. */
     this._onFeatureToggledBound = this._onFeatureToggled.bind(this);
     this._onStarToggledBound = this._onStarToggled.bind(this);
-    this._onOpenApprovalsBound = this._onOpenApprovals.bind(this);
 
     this._loadData();
   }
@@ -172,10 +168,6 @@ class ChromedashFeaturelist extends LitElement {
       newStarredFeatures.delete(feature.id);
     }
     this.starredFeatures = newStarredFeatures;
-  }
-
-  _onOpenApprovals(e) {
-    openApprovalsDialog(this.user, e.detail.feature);
   }
 
   _filterProperty(propPath, regExp, feature) {
@@ -371,10 +363,8 @@ class ChromedashFeaturelist extends LitElement {
                  ?starred="${item.starred}"
                  @feature-toggled="${this._onFeatureToggledBound}"
                  @star-toggled="${this._onStarToggledBound}"
-                 @open-approvals-event="${this._onOpenApprovalsBound}"
                  .feature="${item.feature}"
                  ?canEdit="${item.canEditFeature}"
-                 ?canApprove="${this.canApprove}"
                  ?signedIn="${this.signedInUser != ''}"
           ></chromedash-feature>
           </div>

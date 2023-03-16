@@ -23,6 +23,7 @@ from internals.core_models import INTENT_STAGES_BY_STAGE_TYPE
 
 def get_feature_stages(feature_id: int) -> dict[int, list[Stage]]:
   """Return a dictionary of stages associated with a given feature."""
+  # key = stage type, value = list of stages with that stage type.
   stage_dict = defaultdict(list)
   for stage in Stage.query(Stage.feature_id == feature_id):
     stage_dict[stage.stage_type].append(stage)

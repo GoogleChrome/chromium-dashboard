@@ -1,5 +1,4 @@
 import {LitElement, css, html} from 'lit';
-import {openApprovalsDialog} from './chromedash-approvals-dialog';
 import {showToastMessage} from './utils.js';
 import './chromedash-feature-table';
 import {SHARED_STYLES} from '../sass/shared-css.js';
@@ -84,10 +83,6 @@ export class ChromedashAllFeaturesPage extends LitElement {
       });
   }
 
-  handleOpenApprovals(e) {
-    openApprovalsDialog(this.user, e.detail.feature);
-  }
-
   renderBox(query) {
     return html`
       <chromedash-feature-table
@@ -97,10 +92,8 @@ export class ChromedashAllFeaturesPage extends LitElement {
         showQuery
         ?signedIn=${Boolean(this.user)}
         ?canEdit=${this.user && this.user.can_edit_all}
-        ?canApprove=${this.user && this.user.can_approve}
         .starredFeatures=${this.starredFeatures}
         @star-toggle-event=${this.handleStarToggle}
-        @open-approvals-event=${this.handleOpenApprovals}
         alwaysOfferPagination columns="normal">
       </chromedash-feature-table>
     `;

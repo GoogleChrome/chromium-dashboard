@@ -21,8 +21,8 @@ from typing import Any, Optional
 from api import converters
 from framework import basehandlers
 from framework import permissions
-from internals import approval_defs
-from internals.review_models import Approval, ApprovalConfig, Gate, Vote
+from internals import approval_defs, notifier_helpers
+from internals.review_models import Gate, Vote
 
 
 class VotesAPI(basehandlers.APIHandler):
@@ -52,11 +52,18 @@ class VotesAPI(basehandlers.APIHandler):
     if gate.feature_id != feature_id:
       self.abort(400, msg='Mismatched feature and gate')
 
+    old_state = gate.state
     self.require_permissions(user, feature, gate, new_state)
 
     # Note: We no longer write Approval entities.
     approval_defs.set_vote(feature_id, None, new_state,
         user.email(), gate_id)
+
+    if new_state == Vote.REVIEW_REQUESTED:
+      notifier_helpers.notify_approvers_of_reviews(feature, gate)
+    else:
+      notifier_helpers.notify_subscribers_of_vote_changes(
+          feature, gate, user.email(), new_state, old_state)
 
     # Callers don't use the JSON response for this API call.
     return {'message': 'Done'}
