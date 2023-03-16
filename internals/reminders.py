@@ -63,7 +63,7 @@ def choose_email_recipients(
 
 def build_email_tasks(
     features_to_notify, subject_format, body_template_path,
-    current_milestone_info, allow_escalation, escalation_check):
+    current_milestone_info, escalation_check):
   email_tasks = []
   beta_date = datetime.fromisoformat(current_milestone_info['earliest_beta'])
   beta_date_str = beta_date.strftime('%Y-%m-%d')
@@ -73,14 +73,14 @@ def build_email_tasks(
     # to use Stage entity fields before removing this Feature use.
     feature = Feature.get_by_id(fe.key.integer_id())
     # Check if this notification should be escalated.
-    is_escalated = allow_escalation and escalation_check(fe)
+    is_escalated = escalation_check(fe)
     body_data = {
       'id': fe.key.integer_id(),
       'feature': feature,
       'site_url': settings.SITE_URL,
       'milestone': mstone,
       'beta_date_str': beta_date_str,
-      'is_escalated': is_escalated
+      'is_escalated': is_escalated,
     }
     html = render_template(body_template_path, **body_data)
     subject = subject_format % fe.name
@@ -105,10 +105,6 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
   FUTURE_MILESTONES_TO_CONSIDER = 0
   MILESTONE_FIELDS: list[str] = list()  # Subclasses must override
 
-  ALLOW_ESCALATION = False  # By default, reminders do not escalate.
-  # Function to check if a feature notification should be escalated.
-  ESCALATION_CHECK: Callable | None = None  # Subclasses must override
-
   def get_template_data(self, **kwargs):
     """Sends notifications to users requesting feature updates for accuracy."""
     self.require_cron_header()
@@ -116,16 +112,15 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
     features_to_notify = self.determine_features_to_notify(
         current_milestone_info)
     email_tasks = build_email_tasks(
-        features_to_notify, self.SUBJECT_FORMAT, self.EMAIL_TEMPLATE_PATH,
-        current_milestone_info, self.ALLOW_ESCALATION, self.ESCALATION_CHECK)
+        features_to_notify, self.SUBJECT_FORMAT,
+        self.EMAIL_TEMPLATE_PATH, current_milestone_info,
+        self.should_escalate_notification)
     notifier.send_emails(email_tasks)
 
     message =  f'{len(email_tasks)} email(s) sent or logged.'
     logging.info(message)
 
-    if hasattr(self, 'cleanup'):
-      self.cleanup(features_to_notify)
-
+    self.changes_after_sending_notifications(features_to_notify)
     return {'message': message}
 
   def prefilter_features(
@@ -182,15 +177,22 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
     features_milestone_pairs = self.filter_by_milestones(
         current_milestone_info, prefiltered_features)
     return features_milestone_pairs
+  
+  # Subclasses should override if escalation is needed.
+  def should_escalate_notification(self, feature: FeatureEntry) -> bool:
+    """Determine if the notification should be escalated to more users."""
+    return False
+
+  # Subclasses should override if processing is needed after notifications sent.
+  def changes_after_sending_notifications(
+      self, features_notified: list[tuple[FeatureEntry, int]]) -> None:
+    pass
 
 
 class FeatureAccuracyHandler(AbstractReminderHandler):
   """Periodically remind owners to verify the accuracy of their entries."""
 
   ACCURACY_GRACE_PERIOD = timedelta(weeks=4)
-  ALLOW_ESCALATION = True 
-  # Notifications after the 2nd with no acknowledgement will be escalated.
-  ESCALATION_CHECK = lambda self, f: f.outstanding_notifications >= 2
   SUBJECT_FORMAT = '[Action requested] Update %s'
   EMAIL_TEMPLATE_PATH = 'accuracy_notice_email.html'
   FUTURE_MILESTONES_TO_CONSIDER = 2
@@ -220,7 +222,12 @@ class FeatureAccuracyHandler(AbstractReminderHandler):
             feature.accurate_as_of + self.ACCURACY_GRACE_PERIOD < now)]
     return prefiltered_features
   
-  def cleanup(self, notified_features: list[tuple[FeatureEntry, int]]) -> None:
+  def should_escalate_notification(self, feature: FeatureEntry) -> bool:
+    """Escalate notification if 2 previous emails have had no response."""
+    return feature.outstanding_notifications >= 2
+
+  def changes_after_sending_notifications(
+      self, notified_features: list[tuple[FeatureEntry, int]]) -> None:
     """Updates the count of any outstanding notifications."""
     features_to_update = []
     for feature, _ in notified_features:

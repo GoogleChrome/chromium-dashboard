@@ -122,8 +122,7 @@ class FunctionTest(testing_config.CustomTestCase):
           '[Action requested] Update %s',
           handler.EMAIL_TEMPLATE_PATH,
           self.current_milestone_info,
-          handler.ALLOW_ESCALATION,
-          handler.ESCALATION_CHECK)
+          handler.should_escalate_notification)
 
     self.assertEqual(1, len(actual))
     task = actual[0]
@@ -145,8 +144,7 @@ class FunctionTest(testing_config.CustomTestCase):
           '[Action requested] Update %s',
           handler.EMAIL_TEMPLATE_PATH,
           self.current_milestone_info,
-          handler.ALLOW_ESCALATION,
-          handler.ESCALATION_CHECK)
+          handler.should_escalate_notification)
 
     self.assertEqual(5, len(actual))
     task = actual[0]
@@ -159,10 +157,11 @@ class FunctionTest(testing_config.CustomTestCase):
 
   def test_build_email_tasks_prepublication(self):
     with test_app.app_context():
+      handler = reminders.PrepublicationHandler()
       actual = reminders.build_email_tasks(
           [(self.feature_template, 100)], '[Action requested] Update %s',
-          reminders.PrepublicationHandler.EMAIL_TEMPLATE_PATH,
-          self.current_milestone_info, False, None)
+          handler.EMAIL_TEMPLATE_PATH,
+          self.current_milestone_info, handler.should_escalate_notification)
     self.assertEqual(1, len(actual))
     task = actual[0]
     self.assertEqual('feature_owner@example.com', task['to'])
