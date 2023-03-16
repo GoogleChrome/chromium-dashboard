@@ -82,11 +82,13 @@
     {{feature.tag_review_status}}
   {% endif %}
 
-  {% if feature.origin_trial_feedback_url %}
-    <br><br><h4>Link to origin trial feedback summary</h4>
-    {{feature.origin_trial_feedback_url}}
-  {% endif %}
+  {% for stage in stage_info.ot_stages %}
+    {% if stage.origin_trial_feedback_url %}
+      <br><br><h4>Link to origin trial feedback summary</h4>
+      {{stage.origin_trial_feedback_url}}
 
+    {% endif %}
+  {% endfor %}
   <br><br><h4>Risks</h4>
   <div style="margin-left: 4em;">
     <br><br><h4>Interoperability and Compatibility</h4>
@@ -156,8 +158,12 @@
   {% endif %}
 
   {% if 'extension_reason' in sections_to_show %}
-    <br><br><h4>Reason this experiment is being extended</h4>
-    <p class="preformatted">{{feature.experiment_extension_reason|urlize}}</p>
+    {% for stage in stage_info.extension_stages %}
+      {% if stage.experiment_extension_reason %}
+        <br><br><h4>Reason this experiment is being extended</h4>
+        <p class="preformatted">{{stage.experiment_extension_reason|urlize}}</p>
+      {% endif %}
+    {% endfor %}
   {% endif %}
 
   <br><br><h4>Ongoing technical constraints</h4>
@@ -266,33 +272,34 @@
 <a href="{{default_url}}">{{default_url}}</a>
 
 
-{% if feature.intent_to_implement_url or feature.ready_for_trial_url or feature.intent_to_experiment_url or feature.intent_to_extend_experiment_url or feature.intent_to_ship_url %}
+{% if should_render_intents %}
   <br><br><h4>Links to previous Intent discussions</h4>
 
-  {% if feature.intent_to_implement_url %}
-    Intent to prototype: {{feature.intent_to_implement_url|urlize}}
-    <br>
-  {% endif %}
+  {% for stage in stage_info.proto_stages %}{% if stage.intent_thread_url %}
+      Intent to prototype: {{stage.intent_thread_url|urlize}}
 
-  {% if feature.ready_for_trial_url %}
-    Ready for Trial: {{feature.ready_for_trial_url|urlize}}
-    <br>
-  {% endif %}
+  {% endif %}{% endfor %}
+  {% for stage in stage_info.dt_stages %}{% if stage.announcement_url %}
+      Ready for Trial: {{stage.announcement_url|urlize}}
+      <br>
 
-  {% if feature.intent_to_experiment_url %}
-    Intent to Experiment: {{feature.intent_to_experiment_url|urlize}}
-    <br>
-  {% endif %}
+  {% endif %}{% endfor %}
+  {% for stage in stage_info.ot_stages %}{% if stage.intent_thread_url %}
+      Intent to Experiment: {{stage.intent_thread_url|urlize}}
+      <br>
 
-  {% if feature.intent_to_extend_experiment_url %}
-    Intent to Extend Experiment: {{feature.intent_to_extend_experiment_url|urlize}}
-    <br>
-  {% endif %}
+  {% endif %}{% endfor %}
+  {% for stage in stage_info.extension_stages %}
+    {% if stage.intent_thread_url %}
+      Intent to Extend Experiment: {{stage.intent_thread_url|urlize}}
+      <br>
 
-  {% if feature.intent_to_ship_url %}
-    Intent to Ship: {{feature.intent_to_ship_url|urlize}}
-    <br>
-  {% endif %}
+  {% endif %}{% endfor %}
+  {% for stage in stage_info.extension_stages %}{% if stage.intent_thread_url %}
+      Intent to Ship: {{stage.intent_thread_url|urlize}}
+      <br>
+
+  {% endif %}{% endfor %}
 {% endif %}
 
 

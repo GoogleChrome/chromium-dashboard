@@ -15,10 +15,18 @@
 
 from collections import defaultdict
 
+from google.cloud import ndb  # type: ignore
+
 from api import converters
-from internals.core_enums import INTENT_NONE
-from internals.core_models import Stage
-from internals.core_models import INTENT_STAGES_BY_STAGE_TYPE
+from internals.core_enums import (
+    INTENT_NONE,
+    INTENT_STAGES_BY_STAGE_TYPE,
+    STAGE_TYPES_PROTOTYPE,
+    STAGE_TYPES_DEV_TRIAL,
+    STAGE_TYPES_ORIGIN_TRIAL,
+    STAGE_TYPES_EXTEND_ORIGIN_TRIAL,
+    STAGE_TYPES_SHIPPING)
+from internals.core_models import FeatureEntry, MilestoneSet, Stage
 
 
 def get_feature_stages(feature_id: int) -> dict[int, list[Stage]]:
@@ -58,7 +66,90 @@ def get_feature_stage_ids_list(feature_id: int) -> list[dict[str, int]]:
       'intent_stage': INTENT_STAGES_BY_STAGE_TYPE.get(s.stage_type, INTENT_NONE)
     } for s in q]
 
+
 def get_ot_stage_extensions(ot_stage_id: int):
   """Return a list of extension stages associated with a stage in JSON format"""
   q = Stage.query(Stage.ot_stage_id == ot_stage_id)
   return [converters.stage_to_json_dict(stage) for stage in q]
+
+
+def get_stage_info_for_templates(
+    fe: FeatureEntry) -> dict[str, list[Stage] | bool]:
+  """Gather the information needed to display the estimated milestones table."""
+  # Only milestones from DevTrial, OT, or shipping stages are displayed.
+  id = fe.key.integer_id()
+  f_type = fe.feature_type or 0
+  proto_stage_type = STAGE_TYPES_PROTOTYPE[f_type]
+  dt_stage_type = STAGE_TYPES_DEV_TRIAL[f_type]
+  ot_stage_type = STAGE_TYPES_ORIGIN_TRIAL[f_type]
+  extension_stage_type = STAGE_TYPES_EXTEND_ORIGIN_TRIAL[f_type]
+  ship_stage_type = STAGE_TYPES_SHIPPING[f_type]
+
+  stage_info: dict[str, list[Stage] | bool] = {
+    'proto_stages': [],
+    'dt_stages': [],
+    'ot_stages': [],
+    'extension_stages': [],
+    'ship_stages': [],
+    # Note if any milestones that can be displayed are seen while organizing.
+    # This is used to check if rendering the milestone table is needed.
+    'should_render_mstone_table': False,
+    # Note if any intent URLs are seen while organizing.
+    # This is used to check if rendering the table is needed.
+    'should_render_intents': False
+  }
+
+  for s in Stage.query(Stage.feature_id == id):
+    # Stage info is not needed if it's not the correct stage type
+    # or has no milestones specified.
+    if (s.stage_type != proto_stage_type and
+        s.stage_type != dt_stage_type and
+        s.stage_type != ot_stage_type and
+        s.stage_type != extension_stage_type and
+        s.stage_type != ship_stage_type):
+      continue
+
+    # If an intent thread is present in any stage,
+    # we should render the intents template.
+    stage_info['should_render_intents'] = (
+        stage_info['should_render_intents'] or
+        s.intent_thread_url is not None)
+
+    # Add stages to their respective lists.
+    if s.stage_type == proto_stage_type: 
+      stage_info['proto_stages'].append(s)
+
+    # Make sure a MilestoneSet entity is referenced to avoid errors. 
+    if s.milestones is None:
+      s.milestones = MilestoneSet()
+
+    m: MilestoneSet = s.milestones
+    if s.stage_type == dt_stage_type:
+      # Dev trial's announcement URL is rendered in templates like an intent.
+      stage_info['should_render_intents'] = (
+          stage_info['should_render_intents'] or
+          s.announcement_url is not None)
+      stage_info['dt_stages'].append(s)
+      if m.desktop_first or m.android_first or m.ios_first:
+        stage_info['should_render_mstone_table'] = True
+    
+    if s.stage_type == ot_stage_type:
+      stage_info['ot_stages'].append(s)
+      if (m.desktop_first or m.android_first or m.webview_first or
+          m.desktop_last or m.android_last or m.webview_last):
+        stage_info['should_render_mstone_table'] = True
+    
+    if s.stage_type == extension_stage_type:
+      stage_info['extension_stages'].append(s)
+      # Extension stages are not rendered
+      # in the milestones table; only for intents.
+
+    if s.stage_type == ship_stage_type:
+      stage_info['ship_stages'].append(s)
+      if m.desktop_first or m.android_first or m.webview_first or m.ios_first:
+        stage_info['should_render_mstone_table'] = True
+  
+  # Returns a dictionary of stages needed for rendering info, as well as
+  # a boolean value representing whether or not the estimated milestones
+  # table will need to be rendered.
+  return stage_info

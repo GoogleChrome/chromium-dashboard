@@ -41,26 +41,35 @@ from internals.user_models import (
     AppUser, BlinkComponent, FeatureOwner, UserPref)
 
 
+def _determine_milestone_string(ship_stages: list[Stage]) -> str:
+  """Determine the shipping milestone string to display in the template."""
+  has_desktop_mstone = False
+  has_android_mstone = False
+  mstone: int | None = None
+  for stage in ship_stages:
+    ms: MilestoneSet = stage.milestones or MilestoneSet()
+    if ms.desktop_first:
+      mstone = (ms.desktop_first
+                if mstone is None else min(ms.desktop_first, mstone))
+      has_desktop_mstone = True
+    elif not has_desktop_mstone and ms.android_first:
+      mstone = (ms.android_first
+                if mstone is None else min(ms.android_first, mstone))
+      has_android_mstone = True
+  
+  milestone_str = str(mstone)
+  if not has_desktop_mstone and has_android_mstone:
+    milestone_str = f'{milestone_str} (android)'
+  
+  return milestone_str
+
+
 def format_email_body(
-    is_update: bool, fe: FeatureEntry, fe_stages: dict[int, list[Stage]],
-    changes: list[dict[str, Any]]) -> str:
+    is_update: bool, fe: FeatureEntry, changes: list[dict[str, Any]]) -> str:
   """Return an HTML string for a notification email body."""
 
-  stage_type = core_enums.STAGE_TYPES_SHIPPING[fe.feature_type] or 0
-  ship_stages: list[Stage] = fe_stages.get(stage_type, [])
-  # TODO(danielrsmith): These notifications do not convey correct information
-  # for features with multiple shipping stages. Implement a new way to
-  # specify the shipping stage affected.
-  ship_milestones: MilestoneSet | None = (
-      ship_stages[0].milestones if len(ship_stages) > 0 else None)
-
-  milestone_str = 'not yet assigned'
-  if ship_milestones is not None:
-    if ship_milestones.desktop_first:
-      milestone_str = ship_milestones.desktop_first
-    elif (ship_milestones.desktop_first is None and
-        ship_milestones.android_first is not None):
-      milestone_str = f'{ship_milestones.android_first} (android)'
+  stage_info = stage_helpers.get_stage_info_for_templates(fe)
+  milestone_str = _determine_milestone_string(stage_info['ship_stages'])
 
   moz_link_urls = [
       link for link in fe.doc_links
@@ -80,6 +89,8 @@ def format_email_body(
 
   body_data = {
       'feature': fe,
+      'stage_info': stage_info,
+      'should_render_mstone_table': stage_info['should_render_mstone_table'],
       'creator_email': fe.creator_email,
       'updater_email': fe.updater_email,
       'id': fe.key.integer_id(),
@@ -133,8 +144,7 @@ WEBVIEW_RULE_ADDRS = ['webview-leads-external@google.com']
 
 
 def apply_subscription_rules(
-    fe: FeatureEntry, fe_stages: dict[int, list[Stage]],
-    changes: list) -> dict[str, list[str]]:
+    fe: FeatureEntry, changes: list) -> dict[str, list[str]]:
   """Return {"reason": [addrs]} for users who set up rules."""
   # Note: for now this is hard-coded, but it will eventually be
   # configurable through some kind of user preference.
@@ -142,11 +152,9 @@ def apply_subscription_rules(
   results: dict[str, list[str]] = {}
 
   # Find an existing shipping stage with milestone info.
+  fe_stages = stage_helpers.get_feature_stages(fe.key.integer_id())
   stage_type = core_enums.STAGE_TYPES_SHIPPING[fe.feature_type] or 0
   ship_stages: list[Stage] = fe_stages.get(stage_type, [])
-  # TODO(danielrsmith): These notifications do not convey correct information
-  # for features with multiple shipping stages. Implement a new way to
-  # specify the shipping stage affected.
   ship_milestones: MilestoneSet | None = (
       ship_stages[0].milestones if len(ship_stages) > 0 else None)
 
@@ -170,9 +178,7 @@ def make_feature_changes_email(fe: FeatureEntry, is_update: bool=False,
       FeatureOwner.watching_all_features == True).fetch(None)
   watcher_emails: list[str] = [watcher.email for watcher in watchers]
 
-  fe_stages = stage_helpers.get_feature_stages(fe.key.integer_id())
-
-  email_html = format_email_body(is_update, fe, fe_stages, changes)
+  email_html = format_email_body(is_update, fe, changes)
   if is_update:
     subject = 'updated feature: %s' % fe.name
     triggering_user_email = fe.updater_email
@@ -222,7 +228,7 @@ def make_feature_changes_email(fe: FeatureEntry, is_update: bool=False,
   starrer_emails: list[str] = [user.email for user in starrers]
   accumulate_reasons(addr_reasons, starrer_emails, 'You starred this feature')
 
-  rule_results = apply_subscription_rules(fe, fe_stages, changes)
+  rule_results = apply_subscription_rules(fe, changes)
   for reason, sub_addrs in rule_results.items():
     accumulate_reasons(addr_reasons, sub_addrs, reason)
 
@@ -236,8 +242,7 @@ def make_review_requests_email(fe: FeatureEntry, gate_type: int, changes: Option
   """Return a list of task dicts to notify approvers of review requests."""
   if changes is None:
     changes = []
-  fe_stages = stage_helpers.get_feature_stages(fe.key.integer_id())
-  email_html = format_email_body(True, fe, fe_stages, changes)
+  email_html = format_email_body(True, fe, changes)
 
   subject = 'Review Request for feature: %s' % fe.name
   triggering_user_email = fe.updater_email

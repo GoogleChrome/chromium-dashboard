@@ -16,7 +16,7 @@
 # from google.appengine.api import users
 from api.converters import feature_entry_to_json_verbose
 
-from internals import core_enums
+from internals import core_enums, stage_helpers
 from framework import basehandlers
 from framework import permissions
 from internals import processes
@@ -49,9 +49,13 @@ class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
 
   def get_page_data(self, feature_id, f, intent_stage):
     """Return a dictionary of data used to render the page."""
+    stage_info = stage_helpers.get_stage_info_for_templates(f)
     page_data = {
         'subject_prefix': self.compute_subject_prefix(f, intent_stage),
         'feature': feature_entry_to_json_verbose(f),
+        'stage_info': stage_info,
+        'should_render_mstone_table': stage_info['should_render_mstone_table'],
+        'should_render_intents': stage_info['should_render_intents'],
         'sections_to_show': processes.INTENT_EMAIL_SECTIONS.get(
             intent_stage, []),
         'intent_stage': intent_stage,
