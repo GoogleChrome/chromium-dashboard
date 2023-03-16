@@ -1,7 +1,6 @@
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
 import {ChromedashGuideVerifyAccuracyPage} from './chromedash-guide-verify-accuracy-page';
-import {VERIFY_ACCURACY_FORM_FIELDS} from './form-definition';
 import './chromedash-toast';
 import '../js-src/cs-client';
 import sinon from 'sinon';
@@ -15,6 +14,37 @@ describe('chromedash-guide-verify-accuracy-page', () => {
     feature_type: 'fake feature type',
     intent_stage: 'fake intent stage',
     new_crbug_url: 'fake crbug link',
+    browsers: {
+      chrome: {
+        blink_components: ['Blink'],
+        owners: ['fake chrome owner one', 'fake chrome owner two'],
+        status: {
+          milestone_str: 'No active development',
+          text: 'No active development',
+          val: 1},
+      },
+      ff: {view: {text: 'No signal', val: 5}},
+      safari: {view: {text: 'No signal', val: 5}},
+      webdev: {view: {text: 'No signal', val: 4}},
+      other: {view: {}},
+    },
+    stages: [
+      {
+        id: 1,
+        stage_type: 110,
+        intent_stage: 1,
+      },
+      {
+        id: 2,
+        stage_type: 160,
+        intent_stage: 2,
+      },
+      {
+        id: 3,
+        stage_type: 160,
+        intent_stage: 2,
+      },
+    ],
     browsers: {
       chrome: {
         blink_components: ['Blink'],
@@ -94,8 +124,6 @@ describe('chromedash-guide-verify-accuracy-page', () => {
     const featureForm = component.shadowRoot.querySelector('form[name="feature_form"]');
     assert.exists(featureForm);
     assert.include(featureForm.innerHTML, '<input type="hidden" name="token">');
-    assert.include(featureForm.innerHTML,
-      `<input type="hidden" name="form_fields" value="${VERIFY_ACCURACY_FORM_FIELDS.join()}">`);
     assert.include(featureForm.innerHTML, '<section class="final_buttons">');
   });
 });
