@@ -22,7 +22,7 @@ from google.cloud import ndb  # type: ignore
 from flask import render_template
 
 from framework import basehandlers
-from internals.core_models import FeatureEntry
+from internals.core_models import FeatureEntry, MilestoneSet
 from internals import notifier
 from internals import stage_helpers
 from internals.core_enums import (
