@@ -335,8 +335,11 @@ export class ChromedashGateColumn extends LitElement {
         return;
       } else {
         // Act like user clicked left button to go to the draft email window.
-        const draftWindow = window.open(url, '_blank');
-        draftWindow.focus();
+        // Use setTimeout() to prevent safari from blocking the new tab.
+        setTimeout(() => {
+          const draftWindow = window.open(url, '_blank');
+          draftWindow.focus();
+        });
       }
     };
 
