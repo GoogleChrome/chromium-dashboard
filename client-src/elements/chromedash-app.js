@@ -138,31 +138,99 @@ class ChromedashApp extends LitElement {
   setUpRoutes() {
     page.strict(true); // Be precise about trailing slashes in routes.
 
-    const scrollIfHash = (ctx) => {
-      // If current page is ctx.path and only the hash changes,
-      // don't create a new element for a page refresh
-      // but instead just scroll to the element identified by the hash.
-      // Note this ignores the query string, if any.
+    // Whether any changes have been made to form fields.
+    // Undo of changes does not undo this setting.
+    // This is null only when "loading" a new page.
+    let changesMade = null;
+
+    // Set up beforeunload event handler for the whole window.
+    const beforeUnloadHandler = (event) => {
+      if (!changesMade) return;
+      // Cancel the event, which asks user whether to stay.
+      event.preventDefault();
+      // Chrome requires returnValue to be set.
+      event.returnValue = `You made changes that have not been saved.
+      Are you sure you want to leave?`;
+    };
+    window.addEventListener('beforeunload', beforeUnloadHandler);
+
+    // Maybe set up new page, or if the URL is the same, we stay.
+    // Returns true if we are proceeding to the new page, false otherwise.
+    const setupNewPage = (ctx, componentName) => {
+      // If current page is ctx.path and a ctx.hash exists,
+      // don't create a new element but instead
+      // just scroll to the element identified by the hash.
+      // Note, this ignores any query string.
+
       if (this.currentPage == ctx.path && ctx.hash) {
         if (window.scrollToElement) {
           window.scrollToElement(`#${ctx.hash}`);
         }
-        return true;
+        return false;
       }
+
+      // If there was a previous page, check if we would lose unsaved changes.
+      if (this.pageComponent) {
+        // Act like we are unloading previous page and loading a new page.
+        if (changesMade) {
+          // Should we use shoelace dialog instead?
+          if (!confirm('You will lose unsaved changes.  Proceed anyway?')) {
+            // Set ctx.handled to false, so we don't change browser's history.
+            ctx.handled = false;
+            return false;
+          }
+        }
+      }
+
+      // Loading new page.
+      this.pageComponent = document.createElement(componentName);
+      changesMade = false;
+
+      // Remember if anything has changed since the page was visited.
+      this.pageComponent.addEventListener('sl-change', () => {
+        changesMade = true;
+      });
+
+      window.setTimeout(() => {
+        // Allow form submit to proceed without warning.
+        const form = this.pageComponent.shadowRoot.querySelector('form');
+        if (form) {
+          const currentChangesMade = changesMade;
+          form.addEventListener('submit', () => {
+            changesMade = false;
+          });
+
+          const currentPageComponent = this.pageComponent;
+
+          // We can't easily check whether the form is valid, and that
+          // is not enough anyway.  There is no way to know at this time, and
+          // there is no event to indicate failure after it occurs.
+          // So just restore the changesMade status after a timeout,
+          // checking that we are still on the same page.
+          window.setTimeout(() => {
+            if (this.pageComponent == currentPageComponent) {
+              changesMade = currentChangesMade;
+            }
+          }, 1000);
+        }
+      }, 1000);
+
+      // If we didn't return false above, return true now.
+      return true;
     };
 
     // SPA routing rules.  Note that rules are considered in order.
     // And :var can match any string (including a slash) if there is no slash after it.
     page('/', () => page.redirect('/roadmap'));
     page('/roadmap', (ctx) => {
-      this.pageComponent = document.createElement('chromedash-roadmap-page');
+      if (!setupNewPage(ctx, 'chromedash-roadmap-page')) return;
       this.pageComponent.user = this.user;
       this.contextLink = ctx.path;
       this.currentPage = ctx.path;
       this.hideSidebar();
     });
     page('/myfeatures', (ctx) => {
-      this.pageComponent = document.createElement('chromedash-myfeatures-page');
+      if (!setupNewPage(ctx, 'chromedash-myfeatures-page')) return;
       this.pageComponent.user = this.user;
       this.pageComponent.selectedGateId = this.selectedGateId;
       this.contextLink = ctx.path;
@@ -170,54 +238,50 @@ class ChromedashApp extends LitElement {
       this.hideSidebar();
     });
     page('/newfeatures', (ctx) => {
-      this.pageComponent = document.createElement('chromedash-all-features-page');
+      if (!setupNewPage(ctx, 'chromedash-all-features-page')) return;
       this.pageComponent.user = this.user;
       this.pageComponent.rawQuery = window.csClient.parseRawQuery(ctx.querystring);
-      this.contextLink = ctx.path;
-      this.currentPage = ctx.path;
       this.pageComponent.addEventListener('pagination', this.handlePagination.bind(this));
       this.pageComponent.addEventListener('search', this.handleSearchQuery.bind(this));
+      this.contextLink = ctx.path;
+      this.currentPage = ctx.path;
       this.hideSidebar();
     });
     page('/feature/:featureId(\\d+)', (ctx) => {
-      this.pageComponent = document.createElement('chromedash-feature-page');
+      if (!setupNewPage(ctx, 'chromedash-feature-page')) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.user = this.user;
       this.pageComponent.contextLink = this.contextLink;
       this.pageComponent.selectedGateId = this.selectedGateId;
       this.pageComponent.rawQuery = window.csClient.parseRawQuery(ctx.querystring);
-      this.currentPage = ctx.path;
       this.pageComponent.appTitle = this.appTitle;
+      this.currentPage = ctx.path;
       if (this.pageComponent.featureId != this.gateColumnRef.value?.feature?.id) {
         this.hideSidebar();
       }
     });
     page('/guide/new', (ctx) => {
-      if (scrollIfHash(ctx)) return;
-      this.pageComponent = document.createElement('chromedash-guide-new-page');
+      if (!setupNewPage(ctx, 'chromedash-guide-new-page')) return;
       this.pageComponent.userEmail = this.user.email;
       this.currentPage = ctx.path;
       this.hideSidebar();
     });
     page('/guide/enterprise/new', (ctx) => {
-      if (scrollIfHash(ctx)) return;
-      this.pageComponent = document.createElement('chromedash-guide-new-page');
+      if (!setupNewPage(ctx, 'chromedash-guide-new-page')) return;
       this.pageComponent.userEmail = this.user.email;
       this.pageComponent.isEnterpriseFeature = true;
       this.currentPage = ctx.path;
       this.hideSidebar();
     });
     page('/guide/edit/:featureId(\\d+)', (ctx) => {
-      if (scrollIfHash(ctx)) return;
-      this.pageComponent = document.createElement('chromedash-guide-edit-page');
+      if (!setupNewPage(ctx, 'chromedash-guide-edit-page')) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.appTitle = this.appTitle;
       this.currentPage = ctx.path;
       this.hideSidebar();
     });
     page('/guide/editall/:featureId(\\d+)', (ctx) => {
-      if (scrollIfHash(ctx)) return;
-      this.pageComponent = document.createElement('chromedash-guide-editall-page');
+      if (!setupNewPage(ctx, 'chromedash-guide-editall-page')) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.appTitle = this.appTitle;
       this.pageComponent.nextPage = this.currentPage;
@@ -225,14 +289,13 @@ class ChromedashApp extends LitElement {
       this.hideSidebar();
     });
     page('/guide/verify_accuracy/:featureId(\\d+)', (ctx) => {
-      this.pageComponent = document.createElement('chromedash-guide-verify-accuracy-page');
+      if (!setupNewPage(ctx, 'chromedash-guide-verify-accuracy-page')) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.appTitle = this.appTitle;
       this.hideSidebar();
     });
     page('/guide/stage/:featureId(\\d+)/:intentStage(\\d+)', (ctx) => {
-      if (scrollIfHash(ctx)) return;
-      this.pageComponent = document.createElement('chromedash-guide-stage-page');
+      if (!setupNewPage(ctx, 'chromedash-guide-stage-page')) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.intentStage = parseInt(ctx.params.intentStage);
       this.pageComponent.nextPage = this.currentPage;
@@ -241,8 +304,7 @@ class ChromedashApp extends LitElement {
       this.hideSidebar();
     });
     page('/guide/stage/:featureId(\\d+)/:intentStage(\\d+)/:stageId(\\d+)', (ctx) => {
-      if (scrollIfHash(ctx)) return;
-      this.pageComponent = document.createElement('chromedash-guide-stage-page');
+      if (!setupNewPage(ctx, 'chromedash-guide-stage-page')) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.stageId = parseInt(ctx.params.stageId);
       this.pageComponent.intentStage = parseInt(ctx.params.intentStage);
@@ -252,8 +314,7 @@ class ChromedashApp extends LitElement {
       this.hideSidebar();
     });
     page('/guide/stage/:featureId(\\d+)/metadata', (ctx) => {
-      if (scrollIfHash(ctx)) return;
-      this.pageComponent = document.createElement('chromedash-guide-metadata-page');
+      if (!setupNewPage(ctx, 'chromedash-guide-metadata-page')) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.nextPage = this.currentPage;
       this.pageComponent.appTitle = this.appTitle;
@@ -261,21 +322,19 @@ class ChromedashApp extends LitElement {
       this.hideSidebar();
     });
     page('/settings', (ctx) => {
-      this.pageComponent = document.createElement('chromedash-settings-page');
+      if (!setupNewPage(ctx, 'chromedash-settings-page')) return;
       this.currentPage = ctx.path;
       this.hideSidebar();
     });
     page('/metrics/:type/:view', (ctx) => {
-      // if already on this page and only the hash changes, don't create a new element
-      if (this.currentPage == ctx.path && ctx.hash) return;
-      this.pageComponent = document.createElement('chromedash-stack-rank-page');
+      if (!setupNewPage(ctx, 'chromedash-stack-rank-page')) return;
       this.pageComponent.type = ctx.params.type;
       this.pageComponent.view = ctx.params.view;
       this.currentPage = ctx.path;
       this.hideSidebar();
     });
     page('/metrics/:type/timeline/:view/:bucketId', (ctx) => {
-      this.pageComponent = document.createElement('chromedash-timeline-page');
+      if (!setupNewPage(ctx, 'chromedash-timeline-page')) return;
       this.pageComponent.type = ctx.params.type;
       this.pageComponent.view = ctx.params.view;
       this.pageComponent.selectedBucketId = ctx.params.bucketId;
@@ -289,7 +348,7 @@ class ChromedashApp extends LitElement {
     page('/metrics/feature/timeline/popularity', () =>
       page.redirect('/metrics/feature/popularity'));
     page('/enterprise', (ctx) => {
-      this.pageComponent = document.createElement('chromedash-enterprise-page');
+      if (!setupNewPage(ctx, 'chromedash-enterprise-page')) return;
       this.pageComponent.user = this.user;
       this.contextLink = ctx.path;
       this.currentPage = ctx.path;
