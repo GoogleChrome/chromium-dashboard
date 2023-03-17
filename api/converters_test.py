@@ -490,7 +490,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
     self.assertEqual(['1', '2'], result['enterprise_feature_categories'])
 
   def test_feature_entry_to_json_verbose__empty_feature(self):
-    """Function handles an empty feature."""  
+    """Function handles an empty feature."""
     empty_fe = FeatureEntry()
 
     with self.assertRaises(Exception):
