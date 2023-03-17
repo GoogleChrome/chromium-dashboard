@@ -109,6 +109,6 @@ class ActivityTest(testing_config.CustomTestCase):
   @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
   def test_notify_subscribers_of_new_comments(self, mock_task_helpers):
     notifier_helpers.notify_subscribers_of_new_comments(
-        self.feature_1, 123, 'abc@example.com', 'fake comments')
+        self.feature_1, self.gate_1, 'abc@example.com', 'fake comments')
 
     mock_task_helpers.assert_called_once()

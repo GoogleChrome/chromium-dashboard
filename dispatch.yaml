@@ -13,5 +13,8 @@ dispatch:
 - url: "*/tasks/email-reviewers"
   service: notifier
 
+- url: "*/tasks/email-new-comments"
+  service: notifier
+
 - url: "*/*"
   service: default

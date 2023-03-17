@@ -17,7 +17,7 @@ from typing import Any
 
 from framework import basehandlers
 from framework import permissions
-from internals.review_models import Activity, Amendment
+from internals.review_models import Activity, Amendment, Gate
 from internals import notifier, notifier_helpers
 
 
@@ -94,8 +94,11 @@ class CommentsAPI(basehandlers.APIHandler):
     # Notify subscribers of new comments when user posts a comment
     # via the gate column.
     if gate_id:
+      gate = Gate.get_by_id(gate_id)
+      if not gate:
+        self.abort(404, msg='Gate not found; notifications abort.')
       notifier_helpers.notify_subscribers_of_new_comments(
-          feature, gate_id, user.email(), comment_content)
+          feature, gate, user.email(), comment_content)
 
     # We can only be certain which intent thread we want to post to with
     # a relevant gate ID in order to get the intent_thread_url field from

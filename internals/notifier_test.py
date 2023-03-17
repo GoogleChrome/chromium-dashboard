@@ -419,6 +419,66 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     mock_get_approvers.assert_called_once_with(1)
 
   @mock.patch('internals.notifier.format_email_body')
+  @mock.patch('internals.approval_defs.get_approvers')
+  def test_make_new_comments_email(self, mock_get_approvers, mock_f_e_b):
+    """We send email to approvers for a review request."""
+    mock_f_e_b.return_value = 'mock body html'
+    mock_get_approvers.return_value = ['approver1@example.com']
+
+    actual_tasks = notifier.make_new_comments_email(
+        self.fe_1, 1, self.changes)
+    self.assertEqual(6, len(actual_tasks))
+    (review_task_1, feature_cc_task, devrel_task,
+     feature_editor_task, feature_owner_task, feature_editor_task_2) = actual_tasks
+
+    self.assertEqual('New comments for feature: feature one', review_task_1['subject'])
+    self.assertIn('mock body html', review_task_1['html'])
+    self.assertIn('<li>You are the reviewer for this gate</li>',
+      review_task_1['html'])
+    self.assertEqual('approver1@example.com', review_task_1['to'])
+
+    # Notification to feature owner.
+    self.assertEqual('feature_owner@example.com', feature_owner_task['to'])
+    self.assertEqual('New comments for feature: feature one',
+      feature_owner_task['subject'])
+    self.assertIn('mock body html', feature_owner_task['html'])
+    self.assertIn('<li>You are listed as an owner of this feature</li>',
+      feature_owner_task['html'])
+
+    # Notification to feature editor.
+    self.assertEqual('New comments for feature: feature one',
+      feature_editor_task['subject'])
+    self.assertIn('mock body html', feature_editor_task['html'])
+    self.assertIn('<li>You are listed as an editor of this feature</li>',
+      feature_editor_task['html'])
+    self.assertEqual('feature_editor@example.com', feature_editor_task['to'])
+
+    # Notification to devrel to feature changes.
+    self.assertEqual('New comments for feature: feature one', devrel_task['subject'])
+    self.assertIn('mock body html', devrel_task['html'])
+    self.assertIn('<li>You are a devrel contact for this feature.</li>',
+      devrel_task['html'])
+    self.assertEqual('devrel1@gmail.com', devrel_task['to'])
+
+    # Notification to user CC'd on feature changes.
+    self.assertEqual('New comments for feature: feature one',
+      feature_cc_task['subject'])
+    self.assertIn('mock body html', feature_cc_task['html'])
+    self.assertIn('<li>You are CC\'d on this feature</li>',
+      feature_cc_task['html'])
+    self.assertEqual('cc@example.com', feature_cc_task['to'])
+
+    self.assertEqual('New comments for feature: feature one', feature_editor_task_2['subject'])
+    self.assertIn('mock body html', feature_editor_task_2['html'])
+    self.assertIn('<li>You are listed as an editor of this feature</li>',
+      feature_editor_task_2['html'])
+    self.assertEqual('owner_1@example.com', feature_editor_task_2['to'])
+
+    mock_f_e_b.assert_called_once_with(
+        True, self.fe_1, self.fe_1_stages, self.changes)
+    mock_get_approvers.assert_called_once_with(1)
+
+  @mock.patch('internals.notifier.format_email_body')
   def test_make_feature_changes_email__starrer(self, mock_f_e_b):
     """We send email to users who starred the feature."""
     mock_f_e_b.return_value = 'mock body html'
