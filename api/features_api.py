@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Optional
+from typing import Optional, TypedDict
 
 from api import converters
 from framework import basehandlers
@@ -21,20 +21,21 @@ from framework import permissions
 from framework import rediscache
 from framework import users
 from internals.core_enums import *
-from internals.core_models import FeatureEntry
+from internals.core_models import FeatureEntry, VerboseFeatureDict
 from internals import feature_helpers
 from internals import search
+
 
 class FeaturesAPI(basehandlers.APIHandler):
   """Features are the the main records that we track."""
 
-  def get_one_feature(self, feature_id: int) -> dict[str, Any]:
+  def get_one_feature(self, feature_id: int) -> VerboseFeatureDict:
     feature = FeatureEntry.get_by_id(feature_id)
     if not feature:
       self.abort(404, msg='Feature %r not found' % feature_id)
     return converters.feature_entry_to_json_verbose(feature)
 
-  def do_search(self) -> dict[str, Any]:
+  def do_search(self):
     user = users.get_current_user()
     # Show unlisted features to site editors or admins.
     show_unlisted_features = permissions.can_edit_any_feature(user)
@@ -69,7 +70,7 @@ class FeaturesAPI(basehandlers.APIHandler):
         'features': features_on_page,
         }
 
-  def do_get(self, **kwargs) -> dict[str, Any]:
+  def do_get(self, **kwargs):
     """Handle GET requests for a single feature or a search."""
     feature_id = kwargs.get('feature_id', None)
     if feature_id:
