@@ -1,7 +1,9 @@
 import {LitElement, css, html, nothing} from 'lit';
 import './chromedash-callout';
-import {ACTIVE_REVIEW_STATES} from './chromedash-gate-column';
-import {GATE_TEAM_ORDER} from './form-field-enums';
+import {
+  GATE_TEAM_ORDER,
+  GATE_FINISHED_REVIEW_STATES,
+} from './form-field-enums';
 import {findFirstFeatureStage} from './utils';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
@@ -34,7 +36,7 @@ function findPendingGates(featureGates, feStage) {
   const gatesForStage = featureGates.filter(g => g.stage_id == feStage.id);
   const otherGates = gatesForStage.filter(g => g.team_name != 'API Owners');
   const pendingGates = otherGates.filter(g =>
-    ACTIVE_REVIEW_STATES.includes(g.state));
+    !GATE_FINISHED_REVIEW_STATES.includes(g.state));
   pendingGates.sort((g1, g2) =>
     GATE_TEAM_ORDER.indexOf(g1.team_name) -
       GATE_TEAM_ORDER.indexOf(g2.team_name));
@@ -173,12 +175,17 @@ export class ChromedashPreflightDialog extends LitElement {
                 item.stage.outgoing_stage, this.stage, this.feature),
               item)}
         </li>`)}
+        ${pendingGates.map(g => html`
+          <li class="pending">
+            Get approval or NA from the
+            <a href="/feature/${this.feature.id}?gate=${g.id}"
+               @click=${this.closeDialog}
+               >${g.team_name}</a>
+            team
+          </li>
+         `)}
       </ol>
 
-      <p>Pending gates:</p>
-      <ol>
-      ${pendingGates.map(g => g.team_name)}
-      </ol>
       <sl-button href="${url}" target="_blank" variant="primary" size="small">
         Proceed to Draft Email
       </sl-button>

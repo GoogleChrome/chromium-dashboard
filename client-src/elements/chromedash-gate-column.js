@@ -4,33 +4,20 @@ import './chromedash-activity-log';
 import {
   openPreflightDialog,
   somePendingPrereqs,
+  somePendingGates,
 } from './chromedash-preflight-dialog';
 import {autolink, showToastMessage, findProcessStage,
   renderAbsoluteDate, renderRelativeDate,
 } from './utils.js';
 import {GATE_QUESTIONNAIRES} from './form-definition.js';
+import {
+  GATE_PREPARING,
+  GATE_REVIEW_REQUESTED,
+  VOTE_OPTIONS,
+  GATE_ACTIVE_REVIEW_STATES,
+} from './form-field-enums';
 
 import {SHARED_STYLES} from '../sass/shared-css.js';
-
-
-export const PREPARING = 0;
-export const REVIEW_REQUESTED = 2;
-export const STATE_NAMES = {
-  NO_RESPONSE: [7, 'No response'],
-  NA: [1, 'N/a or Ack'],
-  REVIEW_STARTED: [3, 'Review started'],
-  NEEDS_WORK: [4, 'Needs work'],
-  INTERNAL_REVIEW: [8, 'Internal review'],
-  APPROVED: [5, 'Approved'],
-  DENIED: [6, 'Denied'],
-};
-
-export const ACTIVE_REVIEW_STATES = [
-  REVIEW_REQUESTED,
-  STATE_NAMES.REVIEW_STARTED[0],
-  STATE_NAMES.NEEDS_WORK[0],
-  STATE_NAMES.INTERNAL_REVIEW[0],
-];
 
 
 export class ChromedashGateColumn extends LitElement {
@@ -319,7 +306,7 @@ export class ChromedashGateColumn extends LitElement {
 
   handleReviewRequested() {
     window.csClient.setVote(
-      this.feature.id, this.gate.id, REVIEW_REQUESTED)
+      this.feature.id, this.gate.id, GATE_REVIEW_REQUESTED)
       .then(() => {
         this._fireEvent('refetch-needed', {});
       });
@@ -421,13 +408,13 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   renderReviewStatus() {
-    if (this.gate.state == PREPARING) {
+    if (this.gate.state == GATE_PREPARING) {
       return this.renderReviewStatusPreparing();
-    } else if (ACTIVE_REVIEW_STATES.includes(this.gate.state)) {
+    } else if (GATE_ACTIVE_REVIEW_STATES.includes(this.gate.state)) {
       return this.renderReviewStatusActive();
-    } else if (this.gate.state == STATE_NAMES.APPROVED[0]) {
+    } else if (this.gate.state == VOTE_OPTIONS.APPROVED[0]) {
       return this.renderReviewStatusApproved();
-    } else if (this.gate.state == STATE_NAMES.DENIED[0]) {
+    } else if (this.gate.state == VOTE_OPTIONS.DENIED[0]) {
       return this.renderReviewStatusDenied();
     } else {
       console.log('Unexpected gate state');
@@ -449,10 +436,10 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   findStateName(state) {
-    if (state == REVIEW_REQUESTED) {
+    if (state == GATE_REVIEW_REQUESTED) {
       return 'Review requested';
     }
-    for (const item of Object.values(STATE_NAMES)) {
+    for (const item of Object.values(VOTE_OPTIONS)) {
       if (item[0] == state) {
         return item[1];
       }
@@ -474,7 +461,7 @@ export class ChromedashGateColumn extends LitElement {
                  value="${state}" ${ref(this.voteSelectRef)}
                  @sl-change=${this.handleSelectChanged}
                  hoist size="small">
-        ${Object.values(STATE_NAMES).map((valName) => html`
+        ${Object.values(VOTE_OPTIONS).map((valName) => html`
           <sl-option value="${valName[0]}">${valName[1]}</sl-option>`,
         )}
       </sl-select>
@@ -490,8 +477,8 @@ export class ChromedashGateColumn extends LitElement {
       // If the current reviewer was the one who requested the review,
       // select "No response" in the menu because there is no
       // "Review requested" menu item now.
-      const state = (vote.state == REVIEW_REQUESTED ?
-        STATE_NAMES.NO_RESPONSE[0] : vote.state);
+      const state = (vote.state == GATE_REVIEW_REQUESTED ?
+        VOTE_OPTIONS.NO_RESPONSE[0] : vote.state);
       voteCell = this.renderVoteMenu(state);
       if (this.needsSave) {
         saveButton = html`
