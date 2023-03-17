@@ -15,7 +15,6 @@
 from datetime import datetime, timedelta
 import json
 import logging
-from typing import Callable
 import requests
 
 from google.cloud import ndb  # type: ignore
