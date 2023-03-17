@@ -15,9 +15,9 @@
 from datetime import datetime, timedelta
 import json
 import logging
-from typing import Optional
 import requests
 
+from google.cloud import ndb  # type: ignore
 from flask import render_template
 
 from framework import basehandlers
@@ -31,6 +31,7 @@ import settings
 
 CHROME_RELEASE_SCHEDULE_URL = (
     'https://chromiumdash.appspot.com/fetch_milestone_schedule')
+WEBSTATUS_EMAIL = 'webstatus@google.com'
 
 
 def get_current_milestone_info(anchor_channel: str):
@@ -43,9 +44,25 @@ def get_current_milestone_info(anchor_channel: str):
   return mstone_info['mstones'][0]
 
 
+def choose_email_recipients(
+    feature: FeatureEntry, is_escalated: bool) -> list[str]:
+  """Choose which recipients will receive the email notification."""
+  # Only feature owners are notified for a non-escalated notification.
+  if not is_escalated:
+    return feature.owner_emails
+
+  # Escalated notification. Add extended recipients.
+  all_notified_users = set([WEBSTATUS_EMAIL])
+  all_notified_users.add(feature.creator_email)
+  all_notified_users.update(feature.owner_emails)
+  all_notified_users.update(feature.editor_emails)
+  all_notified_users.update(feature.spec_mentor_emails or [])
+  return list(all_notified_users)
+  
+
 def build_email_tasks(
     features_to_notify, subject_format, body_template_path,
-    current_milestone_info):
+    current_milestone_info, escalation_check):
   email_tasks = []
   beta_date = datetime.fromisoformat(current_milestone_info['earliest_beta'])
   beta_date_str = beta_date.strftime('%Y-%m-%d')
@@ -54,18 +71,24 @@ def build_email_tasks(
     # on old Feature entity milestone fields and will need to be refactored
     # to use Stage entity fields before removing this Feature use.
     feature = Feature.get_by_id(fe.key.integer_id())
+    # Check if this notification should be escalated.
+    is_escalated = escalation_check(fe)
     body_data = {
       'id': fe.key.integer_id(),
       'feature': feature,
       'site_url': settings.SITE_URL,
       'milestone': mstone,
       'beta_date_str': beta_date_str,
+      'is_escalated': is_escalated,
     }
     html = render_template(body_template_path, **body_data)
     subject = subject_format % fe.name
-    for owner in fe.owner_emails:
+    if is_escalated:
+      subject = f'ESCALATED: {subject}'
+    recipients = choose_email_recipients(fe, is_escalated)
+    for recipient in recipients:
       email_tasks.append({
-        'to': owner,
+        'to': recipient,
         'subject': subject,
         'reply_to': None,
         'html': html
@@ -75,11 +98,11 @@ def build_email_tasks(
 
 class AbstractReminderHandler(basehandlers.FlaskHandler):
   JSONIFY = True
-  SUBJECT_FORMAT: Optional[str] = '%s'
-  EMAIL_TEMPLATE_PATH: Optional[str] = None  # Subclasses must override
+  SUBJECT_FORMAT: str | None = '%s'
+  EMAIL_TEMPLATE_PATH: str | None = None  # Subclasses must override
   ANCHOR_CHANNEL = 'current'  # the stable channel
   FUTURE_MILESTONES_TO_CONSIDER = 0
-  MILESTONE_FIELDS: Optional[tuple] = None  # Subclasses must override
+  MILESTONE_FIELDS: list[str] = list()  # Subclasses must override
 
   def get_template_data(self, **kwargs):
     """Sends notifications to users requesting feature updates for accuracy."""
@@ -88,19 +111,30 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
     features_to_notify = self.determine_features_to_notify(
         current_milestone_info)
     email_tasks = build_email_tasks(
-        features_to_notify, self.SUBJECT_FORMAT, self.EMAIL_TEMPLATE_PATH,
-        current_milestone_info)
+        features_to_notify, self.SUBJECT_FORMAT,
+        self.EMAIL_TEMPLATE_PATH, current_milestone_info,
+        self.should_escalate_notification)
     notifier.send_emails(email_tasks)
 
     message =  f'{len(email_tasks)} email(s) sent or logged.'
     logging.info(message)
+
+    self.changes_after_sending_notifications(features_to_notify)
     return {'message': message}
 
-  def prefilter_features(self, current_milestone_info, features):
+  def prefilter_features(
+      self,
+      current_milestone_info: dict,
+      features: list[FeatureEntry]
+      ) -> list[FeatureEntry]:
     """Return a list of features that fit class-specific criteria."""
     return features  # Defaults to no prefiltering.
 
-  def filter_by_milestones(self, current_milestone_info, features):
+  def filter_by_milestones(
+      self,
+      current_milestone_info: dict,
+      features: list[FeatureEntry]
+      ) -> list[tuple[FeatureEntry, int]]:
     """Return [(feature, milestone)] for features with a milestone in range."""
     # 'current' milestone is the next stable milestone that hasn't landed.
     # We send notifications to any feature planned for beta or stable launch
@@ -115,8 +149,8 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
       for field in self.MILESTONE_FIELDS:
         # Get fields that are relevant to the milestones field specified
         # (e.g. 'shipped_milestone' implies shipping stages)
-        relevant_stages = stages[
-            STAGE_TYPES_BY_FIELD_MAPPING[field][feature.feature_type]]
+        relevant_stages = stages.get(
+            STAGE_TYPES_BY_FIELD_MAPPING[field][feature.feature_type] or -1, [])
         for stage in relevant_stages:
           milestones = stage.milestones
           m = (None if milestones is None
@@ -142,6 +176,16 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
     features_milestone_pairs = self.filter_by_milestones(
         current_milestone_info, prefiltered_features)
     return features_milestone_pairs
+  
+  # Subclasses should override if escalation is needed.
+  def should_escalate_notification(self, feature: FeatureEntry) -> bool:
+    """Determine if the notification should be escalated to more users."""
+    return False
+
+  # Subclasses should override if processing is needed after notifications sent.
+  def changes_after_sending_notifications(
+      self, features_notified: list[tuple[FeatureEntry, int]]) -> None:
+    pass
 
 
 class FeatureAccuracyHandler(AbstractReminderHandler):
@@ -151,7 +195,7 @@ class FeatureAccuracyHandler(AbstractReminderHandler):
   SUBJECT_FORMAT = '[Action requested] Update %s'
   EMAIL_TEMPLATE_PATH = 'accuracy_notice_email.html'
   FUTURE_MILESTONES_TO_CONSIDER = 2
-  MILESTONE_FIELDS = (
+  MILESTONE_FIELDS = [
       'dt_milestone_android_start',
       'dt_milestone_desktop_start',
       'dt_milestone_ios_start',
@@ -162,9 +206,13 @@ class FeatureAccuracyHandler(AbstractReminderHandler):
       'shipped_android_milestone',
       'shipped_ios_milestone',
       'shipped_milestone',
-      'shipped_webview_milestone')
+      'shipped_webview_milestone']
 
-  def prefilter_features(self, current_milestone_info, features):
+  def prefilter_features(
+      self,
+      current_milestone_info: dict,
+      features: list[FeatureEntry]
+      ) -> list[FeatureEntry]:
     now = datetime.now()
     prefiltered_features = [
         feature for feature in features
@@ -172,6 +220,19 @@ class FeatureAccuracyHandler(AbstractReminderHandler):
         if (feature.accurate_as_of is None or
             feature.accurate_as_of + self.ACCURACY_GRACE_PERIOD < now)]
     return prefiltered_features
+  
+  def should_escalate_notification(self, feature: FeatureEntry) -> bool:
+    """Escalate notification if 2 previous emails have had no response."""
+    return feature.outstanding_notifications >= 2
+
+  def changes_after_sending_notifications(
+      self, notified_features: list[tuple[FeatureEntry, int]]) -> None:
+    """Updates the count of any outstanding notifications."""
+    features_to_update = []
+    for feature, _ in notified_features:
+      feature.outstanding_notifications += 1
+      features_to_update.append(feature)
+    ndb.put_multi(features_to_update)
 
 
 class PrepublicationHandler(AbstractReminderHandler):
@@ -179,11 +240,11 @@ class PrepublicationHandler(AbstractReminderHandler):
 
   SUBJECT_FORMAT = '[Action requested] Review %s'
   EMAIL_TEMPLATE_PATH = 'prepublication-notice-email.html'
-  MILESTONE_FIELDS = (
+  MILESTONE_FIELDS = [
       'shipped_android_milestone',
       'shipped_ios_milestone',
       'shipped_milestone',
-      'shipped_webview_milestone')
+      'shipped_webview_milestone']
   # Devrel copies summaries 1 week before the beta goes live.
   PUBLICATION_LEAD_TIME = timedelta(weeks=1)
   # We remind owners 1 week before that.

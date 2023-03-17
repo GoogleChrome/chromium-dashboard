@@ -53,7 +53,10 @@ def make_test_features():
 
   feature_2 = FeatureEntry(
       name='feature two', summary='sum',
+      creator_email='owner_2@example.com',
       owner_emails=['owner_1@example.com', 'owner_2@example.com'],
+      editor_emails=['feature_editor@example.com'],
+      spec_mentor_emails=['mentor@example.com'],
       category=1, feature_type=1)
   feature_2.put()
 
@@ -88,7 +91,10 @@ class FunctionTest(testing_config.CustomTestCase):
         category=1, feature_type=0, ot_milestone_desktop_start=100)
     self.feature_template = FeatureEntry(id=123,
       name='feature one', summary='sum',
+      creator_email='creator@example.com',
       owner_emails=['feature_owner@example.com'],
+      editor_emails=['feature_editor@example.com'],
+      spec_mentor_emails=['mentor@example.com'],
       category=1, feature_type=0)
     stages = [110, 120, 130, 140, 150, 151, 160]
     for stage_type in stages:
@@ -110,10 +116,14 @@ class FunctionTest(testing_config.CustomTestCase):
 
   def test_build_email_tasks_feature_accuracy(self):
     with test_app.app_context():
+      handler = reminders.FeatureAccuracyHandler()
       actual = reminders.build_email_tasks(
-          [(self.feature_template, 100)], '[Action requested] Update %s',
-          reminders.FeatureAccuracyHandler.EMAIL_TEMPLATE_PATH,
-          self.current_milestone_info)
+          [(self.feature_template, 100)],
+          '[Action requested] Update %s',
+          handler.EMAIL_TEMPLATE_PATH,
+          self.current_milestone_info,
+          handler.should_escalate_notification)
+
     self.assertEqual(1, len(actual))
     task = actual[0]
     self.assertEqual('feature_owner@example.com', task['to'])
@@ -123,12 +133,35 @@ class FunctionTest(testing_config.CustomTestCase):
     self.assertMultiLineEqual(
       TESTDATA['test_build_email_tasks_feature_accuracy.html'], task['html'])
 
+  def test_build_email_tasks_feature_accuracy__escalated(self):
+    # Set feature to have outstanding notifications to cause escalation.
+    self.feature_template.outstanding_notifications = 2
+
+    with test_app.app_context():
+      handler = reminders.FeatureAccuracyHandler()
+      actual = reminders.build_email_tasks(
+          [(self.feature_template, 100)],
+          '[Action requested] Update %s',
+          handler.EMAIL_TEMPLATE_PATH,
+          self.current_milestone_info,
+          handler.should_escalate_notification)
+
+    self.assertEqual(5, len(actual))
+    task = actual[0]
+    self.assertEqual(
+        'ESCALATED: [Action requested] Update feature one', task['subject'])
+    self.assertEqual(None, task['reply_to'])
+    # TESTDATA.make_golden(task['html'], 'test_build_email_tasks_escalated_feature_accuracy.html')
+    self.assertMultiLineEqual(
+      TESTDATA['test_build_email_tasks_escalated_feature_accuracy.html'], task['html'])
+
   def test_build_email_tasks_prepublication(self):
     with test_app.app_context():
+      handler = reminders.PrepublicationHandler()
       actual = reminders.build_email_tasks(
           [(self.feature_template, 100)], '[Action requested] Update %s',
-          reminders.PrepublicationHandler.EMAIL_TEMPLATE_PATH,
-          self.current_milestone_info)
+          handler.EMAIL_TEMPLATE_PATH,
+          self.current_milestone_info, handler.should_escalate_notification)
     self.assertEqual(1, len(actual))
     task = actual[0]
     self.assertEqual('feature_owner@example.com', task['to'])
@@ -182,6 +215,44 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
       result = self.handler.get_template_data()
     expected = {'message': '2 email(s) sent or logged.'}
     self.assertEqual(result, expected)
+
+  @mock.patch('requests.get')
+  def test_determine_features_to_notify__escalated(self, mock_get):
+    self.feature_1.outstanding_notifications = 1
+    self.feature_2.outstanding_notifications = 2
+
+    mock_return = MockResponse(
+        text=('{"mstones":[{"mstone": "148", '
+              '"earliest_beta": "2024-02-03T01:23:45"}]}'))
+    mock_get.return_value = mock_return
+    with test_app.app_context():
+      result = self.handler.get_template_data()
+    # More email tasks should be created to notify extended contributors.
+    expected = {'message': '5 email(s) sent or logged.'}
+    self.assertEqual(result, expected)
+
+    # F1 outstanding should be unchanged and F2 should have one extra.
+    self.assertEqual(self.feature_1.outstanding_notifications, 1)
+    self.assertEqual(self.feature_2.outstanding_notifications, 3)
+
+  @mock.patch('requests.get')
+  def test_determine_features_to_notify__escalated_not_outstanding(
+      self, mock_get):
+    self.feature_1.outstanding_notifications = 2
+    self.feature_2.outstanding_notifications = 1
+    
+    mock_return = MockResponse(
+        text=('{"mstones":[{"mstone": "148", '
+              '"earliest_beta": "2024-02-03T01:23:45"}]}'))
+    mock_get.return_value = mock_return
+    with test_app.app_context():
+      result = self.handler.get_template_data()
+    expected = {'message': '2 email(s) sent or logged.'}
+    self.assertEqual(result, expected)
+
+    # F1 outstanding should be unchanged and F2 should have one extra.
+    self.assertEqual(self.feature_1.outstanding_notifications, 2)
+    self.assertEqual(self.feature_2.outstanding_notifications, 2)
 
 
 class PrepublicationHandlerTest(testing_config.CustomTestCase):

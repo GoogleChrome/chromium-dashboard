@@ -1,5 +1,11 @@
-<p>
-  You are receiving this notification because you are listed as an owner of the following ChromeStatus feature entry:
+{% if is_escalated %}<p>
+  In order to ensure feature data accuracy, this notification has been
+  escalated to extended contributors of this feature and to the WebStatus team.
+</p>
+{% endif %}<p>
+  You are receiving this notification because you are listed as
+  a{% if not is_escalated %}n owner{% endif %}{% if is_escalated %} contributor{% endif %}
+  of the following ChromeStatus feature entry:
 </p>
 </br>
 <p>

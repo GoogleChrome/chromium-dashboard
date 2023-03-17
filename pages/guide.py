@@ -489,6 +489,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     if self.form.get('accurate_as_of'):
       feature.accurate_as_of = now
       fe.accurate_as_of = now
+      fe.outstanding_notifications = 0
     user_email = self.get_current_user().email()
     feature.updated_by = ndb.User(
         email=user_email,
