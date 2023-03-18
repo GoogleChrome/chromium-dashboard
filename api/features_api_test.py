@@ -220,25 +220,25 @@ class FeaturesAPITestGet_NewSchema(testing_config.CustomTestCase):
     url = self.request_path + '?start=bad'
     with test_app.test_request_context(url):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
-        actual = self.handler.do_get()
+        self.handler.do_get()
 
     # Malformed num parameter
     url = self.request_path + '?num=bad'
     with test_app.test_request_context(url):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
-        actual = self.handler.do_get()
+        self.handler.do_get()
 
     # User wants a negative number of results
     url = self.request_path + '?num=-1'
     with test_app.test_request_context(url):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
-        actual = self.handler.do_get()
+        self.handler.do_get()
 
     # User wants a negative offset
     url = self.request_path + '?start=-1'
     with test_app.test_request_context(url):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
-        actual = self.handler.do_get()
+        self.handler.do_get()
 
   def test_get__all_unlisted_no_perms(self):
     """JSON feed does not include unlisted features for users who can't edit."""
@@ -447,18 +447,16 @@ class FeaturesAPITestGet_OldSchema(testing_config.CustomTestCase):
     self.assertEqual(0, actual['total_count'])
     self.assertEqual(0, len(actual['features_by_type']['Enabled by default']))
 
-  @mock.patch('flask.abort')
-  def test_get__in_milestone_invalid_query(self, mock_abort):
+  def test_get__in_milestone_invalid_query(self):
     """Invalid value of milestone should not be processed."""
-    mock_abort.side_effect = werkzeug.exceptions.BadRequest
-
-    # Feature is present in milestone
     with test_app.test_request_context(
         self.request_path+'?milestone=chromium'):
-      with self.assertRaises(werkzeug.exceptions.BadRequest):
-        actual = self.handler.do_get()
-        mock_abort.assert_called_once_with(
-            400, msg="Request parameter 'milestone' was not an int")
+      with self.assertRaises(werkzeug.exceptions.BadRequest) as cm:
+        self.handler.do_get()
+      self.assertEqual(400, cm.exception.code)
+      self.assertEqual(
+          "Request parameter 'milestone' was not an int",
+          cm.exception.description)
 
   def test_get__specific_id__found(self):
     """JSON feed has just the feature requested."""
