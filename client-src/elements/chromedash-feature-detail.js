@@ -295,7 +295,6 @@ class ChromedashFeatureDetail extends LitElement {
     if (STAGE_SPECIFIC_FIELDS.has(fieldName)) {
       const value = feStage[fieldName];
       if (fieldName === 'rollout_impact' && value) {
-        debugger;
         return ROLLOUT_IMPACT_DISPLAYNAME[value];
       } if (fieldName === 'rollout_platforms' && value) {
         return value.map(platformId => PLATFORMS_DISPLAYNAME[platformId]);
