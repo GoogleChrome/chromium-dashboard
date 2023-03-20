@@ -338,6 +338,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
         'samples': ['https://example.com/samples'],
         'docs': ['https://example.com/docs'],
       },
+      'rollout_impact': 2,
       'standards': {
         'spec': 'https://example.com/spec',
         'maturity': {
