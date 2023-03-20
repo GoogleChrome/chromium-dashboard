@@ -161,6 +161,25 @@ def apply_subscription_rules(
   return results
 
 
+def add_core_receivers(fe: FeatureEntry, addr_reasons: dict[str, list[str]]):
+  accumulate_reasons(
+    addr_reasons, fe.owner_emails,
+    'You are listed as an owner of this feature'
+  )
+  accumulate_reasons(
+    addr_reasons, fe.editor_emails,
+    'You are listed as an editor of this feature'
+  )
+  accumulate_reasons(
+    addr_reasons, fe.cc_emails,
+    'You are CC\'d on this feature'
+  )
+  accumulate_reasons(
+    addr_reasons, fe.devrel_emails,
+    'You are a devrel contact for this feature.'
+  )
+
+
 def make_feature_changes_email(fe: FeatureEntry, is_update: bool=False,
     changes: Optional[list]=None):
   """Return a list of task dicts to notify users of feature changes."""
@@ -182,22 +201,7 @@ def make_feature_changes_email(fe: FeatureEntry, is_update: bool=False,
 
   addr_reasons: dict[str, list[str]] = collections.defaultdict(list)
 
-  accumulate_reasons(
-    addr_reasons, fe.owner_emails,
-    'You are listed as an owner of this feature'
-  )
-  accumulate_reasons(
-    addr_reasons, fe.editor_emails,
-    'You are listed as an editor of this feature'
-  )
-  accumulate_reasons(
-    addr_reasons, fe.cc_emails,
-    'You are CC\'d on this feature'
-  )
-  accumulate_reasons(
-    addr_reasons, fe.devrel_emails,
-    'You are a devrel contact for this feature.'
-  )
+  add_core_receivers(fe, addr_reasons)
   accumulate_reasons(
     addr_reasons, watcher_emails,
     'You are watching all feature changes'
@@ -247,6 +251,30 @@ def make_review_requests_email(fe: FeatureEntry, gate_type: int, changes: Option
 
   addr_reasons: dict[str, list[str]] = collections.defaultdict(list)
   accumulate_reasons(addr_reasons, approvers, reasons)
+  all_tasks = [convert_reasons_to_task(
+                   addr, reasons, email_html, subject, triggering_user_email)
+               for addr, reasons in sorted(addr_reasons.items())]
+  return all_tasks
+
+
+def make_new_comments_email(fe: FeatureEntry, gate_type: int, changes: Optional[list]=None):
+  """Return a list of task dicts to notify of new comments."""
+  if changes is None:
+    changes = []
+  fe_stages = stage_helpers.get_feature_stages(fe.key.integer_id())
+  email_html = format_email_body(True, fe, fe_stages, changes)
+
+  subject = 'New comments for feature: %s' % fe.name
+  triggering_user_email = fe.updater_email
+
+  addr_reasons: dict[str, list[str]] = collections.defaultdict(list)
+  add_core_receivers(fe, addr_reasons)
+
+  # Add gate reviewers.
+  approvers = approval_defs.get_approvers(gate_type)
+  reasons = 'You are the reviewer for this gate'
+  accumulate_reasons(addr_reasons, approvers, reasons)
+
   all_tasks = [convert_reasons_to_task(
                    addr, reasons, email_html, subject, triggering_user_email)
                for addr, reasons in sorted(addr_reasons.items())]
@@ -425,6 +453,29 @@ class FeatureReviewHandler(basehandlers.FlaskHandler):
     fe = FeatureEntry.get_by_id(feature['id'])
     if fe:
       email_tasks = make_review_requests_email(fe, gate_type, changes)
+      send_emails(email_tasks)
+
+    return {'message': 'Done'}
+
+
+class FeatureCommentHandler(basehandlers.FlaskHandler):
+  """This task handles feature comment notifications by making email tasks."""
+
+  IS_INTERNAL_HANDLER = True
+
+  def process_post_data(self, **kwargs):
+    self.require_task_header()
+
+    feature = self.get_param('feature')
+    gate_type = self.get_param('gate_type')
+    changes = self.get_param('changes', required=False) or []
+
+    logging.info('Starting to notify of comments for feature %s',
+                 repr(feature)[:settings.MAX_LOG_LINE])
+
+    fe = FeatureEntry.get_by_id(feature['id'])
+    if fe:
+      email_tasks = make_new_comments_email(fe, gate_type, changes)
       send_emails(email_tasks)
 
     return {'message': 'Done'}

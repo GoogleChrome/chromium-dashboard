@@ -17,8 +17,8 @@ from typing import Any
 
 from framework import basehandlers
 from framework import permissions
-from internals.review_models import Activity, Amendment
-from internals import notifier
+from internals.review_models import Activity, Amendment, Gate
+from internals import notifier, notifier_helpers
 
 
 def amendment_to_json_dict(amendment: Amendment) -> dict[str, Any]:
@@ -90,6 +90,15 @@ class CommentsAPI(basehandlers.APIHandler):
       comment_activity = Activity(feature_id=feature_id, gate_id=gate_id,
           author=user.email(), content=comment_content)
       comment_activity.put()
+
+    # Notify subscribers of new comments when user posts a comment
+    # via the gate column.
+    if gate_id:
+      gate = Gate.get_by_id(gate_id)
+      if not gate:
+        self.abort(404, msg='Gate not found; notifications abort.')
+      notifier_helpers.notify_subscribers_of_new_comments(
+          feature, gate, user.email(), comment_content)
 
     # We can only be certain which intent thread we want to post to with
     # a relevant gate ID in order to get the intent_thread_url field from

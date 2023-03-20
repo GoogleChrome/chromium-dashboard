@@ -85,7 +85,7 @@ class ActivityTest(testing_config.CustomTestCase):
     changed_fields = [('editor_emails', None, [])]
     notifier_helpers.notify_subscribers_and_save_amendments(
         self.feature_1, changed_fields)
-    
+
     activities = Activity.get_activities(self.feature_1.key.integer_id())
     # No activity entity created.
     self.assertTrue(len(activities) == 0)
@@ -103,5 +103,12 @@ class ActivityTest(testing_config.CustomTestCase):
     self.assertEqual(activities[0].gate_id, self.gate_1_id)
     self.assertEqual(activities[0].author, 'abc@example.com')
     self.assertEqual(activities[0].content, expected_content)
+
+    mock_task_helpers.assert_called_once()
+
+  @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
+  def test_notify_subscribers_of_new_comments(self, mock_task_helpers):
+    notifier_helpers.notify_subscribers_of_new_comments(
+        self.feature_1, self.gate_1, 'abc@example.com', 'fake comments')
 
     mock_task_helpers.assert_called_once()
