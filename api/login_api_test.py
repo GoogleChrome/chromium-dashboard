@@ -32,6 +32,12 @@ class LoginAPITest(testing_config.CustomTestCase):
     self.handler = login_api.LoginAPI()
     self.request_path = '/api/v0/login'
 
+  def test_get(self):
+    """We reject all GETs to this endpoint."""
+    with test_app.test_request_context(self.request_path):
+      with self.assertRaises(werkzeug.exceptions.MethodNotAllowed):
+        self.handler.do_get()
+
   def test_post__missing_credential_token(self):
     """We reject login requests that don't have any credential_token."""
     params = {}
