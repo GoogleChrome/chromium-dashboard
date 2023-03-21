@@ -9,4 +9,4 @@ get:
       content:
         application/json:
           schema:
-            $ref: 'componentsusers.schemas.yaml#/ComponentsUsers'
+            $ref: 'componentsusers.schemas.yaml#/ComponentsUsersResponse'

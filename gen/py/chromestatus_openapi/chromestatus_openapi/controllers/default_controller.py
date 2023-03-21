@@ -5,7 +5,7 @@ from typing import Tuple
 from typing import Union
 
 from chromestatus_openapi.models.component_users_request import ComponentUsersRequest  # noqa: E501
-from chromestatus_openapi.models.components_users import ComponentsUsers  # noqa: E501
+from chromestatus_openapi.models.components_users_response import ComponentsUsersResponse  # noqa: E501
 from chromestatus_openapi import util
 
 
@@ -34,7 +34,7 @@ def list_component_users():  # noqa: E501
      # noqa: E501
 
 
-    :rtype: Union[ComponentsUsers, Tuple[ComponentsUsers, int], Tuple[ComponentsUsers, int, Dict[str, str]]
+    :rtype: Union[ComponentsUsersResponse, Tuple[ComponentsUsersResponse, int], Tuple[ComponentsUsersResponse, int, Dict[str, str]]
     """
     return 'do some magic!'
 

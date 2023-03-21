@@ -16,39 +16,39 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ComponentsUsersComponentsInner
+ * @interface OwnersAndSubscribersOfComponent
  */
-export interface ComponentsUsersComponentsInner {
+export interface OwnersAndSubscribersOfComponent {
     /**
      * 
      * @type {string}
-     * @memberof ComponentsUsersComponentsInner
+     * @memberof OwnersAndSubscribersOfComponent
      */
     id: string;
     /**
      * 
      * @type {string}
-     * @memberof ComponentsUsersComponentsInner
+     * @memberof OwnersAndSubscribersOfComponent
      */
     name: string;
     /**
      * 
      * @type {Array<number>}
-     * @memberof ComponentsUsersComponentsInner
+     * @memberof OwnersAndSubscribersOfComponent
      */
     subscriberIds?: Array<number>;
     /**
      * 
      * @type {Array<number>}
-     * @memberof ComponentsUsersComponentsInner
+     * @memberof OwnersAndSubscribersOfComponent
      */
     ownerIds?: Array<number>;
 }
 
 /**
- * Check if a given object implements the ComponentsUsersComponentsInner interface.
+ * Check if a given object implements the OwnersAndSubscribersOfComponent interface.
  */
-export function instanceOfComponentsUsersComponentsInner(value: object): boolean {
+export function instanceOfOwnersAndSubscribersOfComponent(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "id" in value;
     isInstance = isInstance && "name" in value;
@@ -56,11 +56,11 @@ export function instanceOfComponentsUsersComponentsInner(value: object): boolean
     return isInstance;
 }
 
-export function ComponentsUsersComponentsInnerFromJSON(json: any): ComponentsUsersComponentsInner {
-    return ComponentsUsersComponentsInnerFromJSONTyped(json, false);
+export function OwnersAndSubscribersOfComponentFromJSON(json: any): OwnersAndSubscribersOfComponent {
+    return OwnersAndSubscribersOfComponentFromJSONTyped(json, false);
 }
 
-export function ComponentsUsersComponentsInnerFromJSONTyped(json: any, ignoreDiscriminator: boolean): ComponentsUsersComponentsInner {
+export function OwnersAndSubscribersOfComponentFromJSONTyped(json: any, ignoreDiscriminator: boolean): OwnersAndSubscribersOfComponent {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -73,7 +73,7 @@ export function ComponentsUsersComponentsInnerFromJSONTyped(json: any, ignoreDis
     };
 }
 
-export function ComponentsUsersComponentsInnerToJSON(value?: ComponentsUsersComponentsInner | null): any {
+export function OwnersAndSubscribersOfComponentToJSON(value?: OwnersAndSubscribersOfComponent | null): any {
     if (value === undefined) {
         return undefined;
     }

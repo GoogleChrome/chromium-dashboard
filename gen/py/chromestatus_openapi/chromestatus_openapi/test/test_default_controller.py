@@ -7,7 +7,7 @@ from flask import json
 from six import BytesIO
 
 from chromestatus_openapi.models.component_users_request import ComponentUsersRequest  # noqa: E501
-from chromestatus_openapi.models.components_users import ComponentsUsers  # noqa: E501
+from chromestatus_openapi.models.components_users_response import ComponentsUsersResponse  # noqa: E501
 from chromestatus_openapi.test import BaseTestCase
 
 

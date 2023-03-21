@@ -16,13 +16,13 @@
 import * as runtime from '../runtime';
 import type {
   ComponentUsersRequest,
-  ComponentsUsers,
+  ComponentsUsersResponse,
 } from '../models';
 import {
     ComponentUsersRequestFromJSON,
     ComponentUsersRequestToJSON,
-    ComponentsUsersFromJSON,
-    ComponentsUsersToJSON,
+    ComponentsUsersResponseFromJSON,
+    ComponentsUsersResponseToJSON,
 } from '../models';
 
 export interface AddUserToComponentRequest {
@@ -68,12 +68,12 @@ export interface DefaultApiInterface {
      * @throws {RequiredError}
      * @memberof DefaultApiInterface
      */
-    listComponentUsersRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ComponentsUsers>>;
+    listComponentUsersRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ComponentsUsersResponse>>;
 
     /**
      * List all components and possible users
      */
-    listComponentUsers(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ComponentsUsers>;
+    listComponentUsers(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ComponentsUsersResponse>;
 
     /**
      * 
@@ -138,7 +138,7 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     /**
      * List all components and possible users
      */
-    async listComponentUsersRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ComponentsUsers>> {
+    async listComponentUsersRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ComponentsUsersResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -150,13 +150,13 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ComponentsUsersFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ComponentsUsersResponseFromJSON(jsonValue));
     }
 
     /**
      * List all components and possible users
      */
-    async listComponentUsers(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ComponentsUsers> {
+    async listComponentUsers(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ComponentsUsersResponse> {
         const response = await this.listComponentUsersRaw(initOverrides);
         return await response.value();
     }

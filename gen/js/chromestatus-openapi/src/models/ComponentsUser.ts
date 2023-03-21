@@ -16,33 +16,33 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ComponentsUsersUsersInner
+ * @interface ComponentsUser
  */
-export interface ComponentsUsersUsersInner {
+export interface ComponentsUser {
     /**
      * 
      * @type {number}
-     * @memberof ComponentsUsersUsersInner
+     * @memberof ComponentsUser
      */
     id: number;
     /**
      * 
      * @type {string}
-     * @memberof ComponentsUsersUsersInner
+     * @memberof ComponentsUser
      */
     name: string;
     /**
      * 
      * @type {string}
-     * @memberof ComponentsUsersUsersInner
+     * @memberof ComponentsUser
      */
     email: string;
 }
 
 /**
- * Check if a given object implements the ComponentsUsersUsersInner interface.
+ * Check if a given object implements the ComponentsUser interface.
  */
-export function instanceOfComponentsUsersUsersInner(value: object): boolean {
+export function instanceOfComponentsUser(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "id" in value;
     isInstance = isInstance && "name" in value;
@@ -51,11 +51,11 @@ export function instanceOfComponentsUsersUsersInner(value: object): boolean {
     return isInstance;
 }
 
-export function ComponentsUsersUsersInnerFromJSON(json: any): ComponentsUsersUsersInner {
-    return ComponentsUsersUsersInnerFromJSONTyped(json, false);
+export function ComponentsUserFromJSON(json: any): ComponentsUser {
+    return ComponentsUserFromJSONTyped(json, false);
 }
 
-export function ComponentsUsersUsersInnerFromJSONTyped(json: any, ignoreDiscriminator: boolean): ComponentsUsersUsersInner {
+export function ComponentsUserFromJSONTyped(json: any, ignoreDiscriminator: boolean): ComponentsUser {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -67,7 +67,7 @@ export function ComponentsUsersUsersInnerFromJSONTyped(json: any, ignoreDiscrimi
     };
 }
 
-export function ComponentsUsersUsersInnerToJSON(value?: ComponentsUsersUsersInner | null): any {
+export function ComponentsUserToJSON(value?: ComponentsUser | null): any {
     if (value === undefined) {
         return undefined;
     }
