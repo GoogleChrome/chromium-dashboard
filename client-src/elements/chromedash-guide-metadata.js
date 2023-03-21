@@ -73,6 +73,10 @@ export class ChromedashGuideMetadata extends LitElement {
   async registerFormSubmitHandler(el) {
     if (!el) return;
 
+    // Call the app.handleFormSbubmit, which manages beforeunload events.
+    const app = document.querySelector('chromedash-app');
+    app.handleFormSubmit();
+
     await el.updateComplete;
     const hiddenTokenField = this.shadowRoot.querySelector('input[name=token]');
     hiddenTokenField.form.addEventListener('submit', (event) => {
