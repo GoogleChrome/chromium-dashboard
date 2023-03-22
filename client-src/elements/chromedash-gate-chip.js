@@ -68,7 +68,7 @@ class ChromedashGateChip extends LitElement {
        border: 2px solid var(--dark-spot-color);
      }
 
-     sl-button::part(base):hover {
+     sl-button:hover .teamname {
        text-decoration: underline;
      }
 
@@ -128,14 +128,9 @@ class ChromedashGateChip extends LitElement {
        align-items: baseline;
      }
 
-
      .abbrev {
        padding-left: var(--content-padding-quarter);
-       text-decoration: none;
        font-weight: 900;
-     }
-     sl-button::part(base):hover sl-button::part(prefix) {
-       text-decoration: none;
      }
     `];
   }
@@ -190,7 +185,7 @@ class ChromedashGateChip extends LitElement {
         title="${teamName}: ${gateName}: ${stateName}"
         @click=${this.openApprovalsDialog}
         >
-        ${icon} ${teamName}
+        ${icon} <span class="teamname">${teamName}</span>
       </sl-button>
     `;
   }
