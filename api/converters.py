@@ -207,6 +207,7 @@ def stage_to_json_dict(
     d['finch_url'] = stage.finch_url
     milestone_field_names = MilestoneSet.SHIPPING_MILESTONE_FIELD_NAMES
   elif d['stage_type'] == STAGE_TYPES_ROLLOUT[feature_type]:
+    d['rollout_impact'] = stage.rollout_impact
     d['rollout_milestone'] = stage.rollout_milestone
     d['rollout_platforms'] = stage.rollout_platforms
     d['rollout_details'] = stage.rollout_details
@@ -289,6 +290,7 @@ def feature_entry_to_json_verbose(
   # Ship stage fields.
   d['intent_to_ship_url'] = _stage_attr(stages['ship'], 'intent_thread_url')
   d['finch_url'] = _stage_attr(stages['ship'], 'finch_url')
+  d['rollout_impact'] = _stage_attr(stages['rollout'], 'rollout_impact')
   d['rollout_milestone'] = _stage_attr(stages['rollout'], 'rollout_milestone')
   d['rollout_platforms'] = _stage_attr(stages['rollout'], 'rollout_platforms')
   d['rollout_details'] = _stage_attr(stages['rollout'], 'rollout_details')

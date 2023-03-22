@@ -55,6 +55,16 @@ ENTERPRISE_FEATURE_SECURITYANDPRIVACY = 1
 ENTERPRISE_FEATURE_USERPRODUCTIVITYANDAPPS = 2
 ENTERPRISE_FEATURE_MANAGEMENT = 3
 
+IMPACT_LOW = 1
+IMPACT_MEDIUM = 2
+IMPACT_HIGH = 3
+
+IMPACT_CATEGORIES = collections.OrderedDict([
+  (IMPACT_LOW, 'Low'),
+  (IMPACT_MEDIUM, 'Medium'),
+  (IMPACT_HIGH, 'High'),
+])
+
 PLATFORM_CATEGORIES = collections.OrderedDict([
   (PLATFORM_ANDROID, 'Android'),
   (PLATFORM_IOS, 'iOS'),
@@ -398,6 +408,7 @@ STAGE_TYPES_BY_FIELD_MAPPING: dict[str, dict[int, Optional[int]]] = {
     'dt_milestone_ios_start': STAGE_TYPES_DEV_TRIAL,
     'dt_milestone_webview_start': STAGE_TYPES_DEV_TRIAL,
     'enterprise_policies': STAGE_TYPES_ROLLOUT,
+    'rollout_impact': STAGE_TYPES_ROLLOUT,
     'rollout_milestone': STAGE_TYPES_ROLLOUT,
     'rollout_platforms': STAGE_TYPES_ROLLOUT,
     'rollout_details': STAGE_TYPES_ROLLOUT
@@ -621,6 +632,7 @@ PROPERTY_NAMES_TO_ENUM_DICTS = {
     'browsers.safari.view': VENDOR_VIEWS,
     'web_dev_views': WEB_DEV_VIEWS,
     'browsers.webdev.view': WEB_DEV_VIEWS,
+    'rollout_impact': IMPACT_CATEGORIES,
     'rollout_platforms': PLATFORM_CATEGORIES,
   }
 

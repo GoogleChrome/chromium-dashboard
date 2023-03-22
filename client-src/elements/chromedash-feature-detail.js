@@ -15,7 +15,8 @@ import {
   PLATFORMS_DISPLAYNAME,
   STAGE_SPECIFIC_FIELDS,
   OT_MILESTONE_END_FIELDS,
-  ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME} from './form-field-enums';
+  ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME,
+  ROLLOUT_IMPACT_DISPLAYNAME} from './form-field-enums';
 import '@polymer/iron-icon';
 import './chromedash-activity-log';
 import './chromedash-callout';
@@ -293,7 +294,9 @@ class ChromedashFeatureDetail extends LitElement {
   getFieldValue(fieldName, feStage) {
     if (STAGE_SPECIFIC_FIELDS.has(fieldName)) {
       const value = feStage[fieldName];
-      if (fieldName === 'rollout_platforms' && value) {
+      if (fieldName === 'rollout_impact' && value) {
+        return ROLLOUT_IMPACT_DISPLAYNAME[value];
+      } if (fieldName === 'rollout_platforms' && value) {
         return value.map(platformId => PLATFORMS_DISPLAYNAME[platformId]);
       } else if (fieldName in OT_MILESTONE_END_FIELDS) {
         // If an origin trial end date is being displayed, handle extension milestones as well.

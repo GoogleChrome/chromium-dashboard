@@ -6,6 +6,7 @@ import {
   FEATURE_TYPES_WITHOUT_ENTERPRISE,
   IMPLEMENTATION_STATUS,
   PLATFORM_CATEGORIES,
+  ROLLOUT_IMPACT,
   STANDARD_MATURITY_CHOICES,
   REVIEW_STATUS_CHOICES,
   VENDOR_VIEWS_COMMON,
@@ -1262,6 +1263,14 @@ export const ALL_FIELDS = {
     label: 'Categories',
     help_text: html`
       Select all that apply.`,
+  },
+
+  'rollout_impact': {
+    type: 'select',
+    choices: ROLLOUT_IMPACT,
+    initial: ROLLOUT_IMPACT.IMPACT_MEDIUM[0],
+    label: 'Impact',
+    help_text: '',
   },
 
   'rollout_milestone': {

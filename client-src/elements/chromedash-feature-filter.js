@@ -11,6 +11,7 @@ import {
   VENDOR_VIEWS_COMMON,
   VENDOR_VIEWS_GECKO,
   WEB_DEV_VIEWS,
+  ROLLOUT_IMPACT,
 } from './form-field-enums';
 
 const ENTER_KEY_CODE = 13;
@@ -166,6 +167,10 @@ const QUERIABLE_FIELDS = [
   {name: 'intent_stage',
     display: 'Spec process stage',
     choices: INTENT_STAGES,
+    type: ENUM_TYPE},
+  {name: 'rollout_impact',
+    display: 'Impact',
+    choices: ROLLOUT_IMPACT,
     type: ENUM_TYPE},
   // TODO: rollout_platforms is not yet supported.
   // {name: 'rollout_platforms',
