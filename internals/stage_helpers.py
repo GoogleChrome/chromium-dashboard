@@ -95,7 +95,6 @@ def get_stage_info_for_templates(
   extension_stage_type = STAGE_TYPES_EXTEND_ORIGIN_TRIAL[f_type]
   ship_stage_type = STAGE_TYPES_SHIPPING[f_type]
 
-
   stage_info: StageTemplateInfo = {
     'proto_stages': [],
     'dt_stages': [],
@@ -107,12 +106,11 @@ def get_stage_info_for_templates(
     'should_render_mstone_table': False,
     # Note if any intent URLs are seen while organizing.
     # This is used to check if rendering the table is needed.
-    'should_render_intents': False
+    'should_render_intents': False,
   }
 
   for s in Stage.query(Stage.feature_id == id):
-    # Stage info is not needed if it's not the correct stage type
-    # or has no milestones specified.
+    # Stage info is not needed if it's not the correct stage type.
     if (s.stage_type != proto_stage_type and
         s.stage_type != dt_stage_type and
         s.stage_type != ot_stage_type and
@@ -122,9 +120,8 @@ def get_stage_info_for_templates(
 
     # If an intent thread is present in any stage,
     # we should render the intents template.
-    stage_info['should_render_intents'] = (
-        stage_info['should_render_intents'] or
-        s.intent_thread_url is not None)
+    if s.intent_thread_url is not None:
+      stage_info['should_render_intents'] = True
 
     # Add stages to their respective lists.
     if s.stage_type == proto_stage_type: 
@@ -137,9 +134,8 @@ def get_stage_info_for_templates(
     m: MilestoneSet = s.milestones
     if s.stage_type == dt_stage_type:
       # Dev trial's announcement URL is rendered in templates like an intent.
-      stage_info['should_render_intents'] = (
-          stage_info['should_render_intents'] or
-          s.announcement_url is not None)
+      if s.announcement_url is not None:
+        stage_info['should_render_intents'] = True
       stage_info['dt_stages'].append(s)
       if m.desktop_first or m.android_first or m.ios_first:
         stage_info['should_render_mstone_table'] = True

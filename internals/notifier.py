@@ -43,25 +43,22 @@ from internals.user_models import (
 
 def _determine_milestone_string(ship_stages: list[Stage]) -> str:
   """Determine the shipping milestone string to display in the template."""
-  has_desktop_mstone = False
-  has_android_mstone = False
-  mstone: int | None = None
-  for stage in ship_stages:
-    ms: MilestoneSet = stage.milestones or MilestoneSet()
-    if ms.desktop_first:
-      mstone = (ms.desktop_first
-                if mstone is None else min(ms.desktop_first, mstone))
-      has_desktop_mstone = True
-    elif not has_desktop_mstone and ms.android_first:
-      mstone = (ms.android_first
-                if mstone is None else min(ms.android_first, mstone))
-      has_android_mstone = True
-  
-  # Add the android suffix if there were only android milestones.
-  milestone_str = str(mstone)
-  if not has_desktop_mstone and has_android_mstone:
-    milestone_str = f'{milestone_str} (android)'
-  
+  # Get the earliest desktop and android milestones.
+  first_desktop = min(
+      (stage.milestones.desktop_first for stage in ship_stages
+        if stage.milestones and stage.milestones.desktop_first),
+    default=None)
+  first_android = min(
+      (stage.milestones.android_first for stage in ship_stages
+        if stage.milestones and stage.milestones.android_first),
+    default=None)
+
+  # Use the desktop milestone by default if it's available.
+  milestone_str = str(first_desktop)
+  # Use the android milestone with the android suffix if there are no
+  # desktop milestones.
+  if not first_desktop and first_android:
+    milestone_str = f'{first_android} (android)'
   return milestone_str
 
 
