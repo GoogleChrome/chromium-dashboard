@@ -15,6 +15,7 @@
 from datetime import datetime, timedelta
 import json
 import logging
+from typing import Any, Callable
 import requests
 
 from google.cloud import ndb  # type: ignore
@@ -22,10 +23,10 @@ from flask import render_template
 
 from framework import basehandlers
 from internals.core_models import FeatureEntry, MilestoneSet
-from internals.legacy_models import Feature
 from internals import notifier
 from internals import stage_helpers
-from internals.core_enums import STAGE_TYPES_BY_FIELD_MAPPING
+from internals.core_enums import (
+    STAGE_TYPES_BY_FIELD_MAPPING)
 import settings
 
 
@@ -61,21 +62,27 @@ def choose_email_recipients(
   
 
 def build_email_tasks(
-    features_to_notify, subject_format, body_template_path,
-    current_milestone_info, escalation_check):
-  email_tasks = []
+    features_to_notify: list[tuple[FeatureEntry, int]],
+    subject_format: str,
+    body_template_path: str,
+    current_milestone_info: dict,
+    escalation_check: Callable
+    ) -> list[dict[str, Any]]:
+  email_tasks: list[dict[str, Any]] = []
   beta_date = datetime.fromisoformat(current_milestone_info['earliest_beta'])
   beta_date_str = beta_date.strftime('%Y-%m-%d')
   for fe, mstone in features_to_notify:
-    # TODO(danielrsmith): the estimated-milestones-template.html is reliant
-    # on old Feature entity milestone fields and will need to be refactored
-    # to use Stage entity fields before removing this Feature use.
-    feature = Feature.get_by_id(fe.key.integer_id())
     # Check if this notification should be escalated.
     is_escalated = escalation_check(fe)
+
+    # Get stage information needed to display the template.
+    stage_info = stage_helpers.get_stage_info_for_templates(fe)
+
     body_data = {
       'id': fe.key.integer_id(),
-      'feature': feature,
+      'feature': fe,
+      'stage_info': stage_info,
+      'should_render_mstone_table': stage_info['should_render_mstone_table'],
       'site_url': settings.SITE_URL,
       'milestone': mstone,
       'beta_date_str': beta_date_str,
@@ -167,7 +174,10 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
 
     return result
 
-  def determine_features_to_notify(self, current_milestone_info):
+  def determine_features_to_notify(
+      self,
+      current_milestone_info: dict
+      ) -> list[tuple[FeatureEntry, int]]:
     """Get all features filter them by class-specific and milestone criteria."""
     features = FeatureEntry.query(
         FeatureEntry.deleted == False).fetch()
