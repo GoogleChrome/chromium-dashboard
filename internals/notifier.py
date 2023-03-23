@@ -265,7 +265,7 @@ def make_new_comments_email(fe: FeatureEntry, gate_type: int, changes: Optional[
   if changes is None:
     changes = []
   fe_stages = stage_helpers.get_feature_stages(fe.key.integer_id())
-  email_html = format_email_body(True, fe, fe_stages, changes)
+  email_html = format_email_body(True, fe, changes)
 
   subject = 'New comments for feature: %s' % fe.name
   triggering_user_email = fe.updater_email
