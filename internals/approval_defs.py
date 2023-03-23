@@ -308,14 +308,14 @@ def _calc_gate_state(votes: list[Vote], rule: str) -> int:
       return Vote.APPROVED
 
   # Return the most recent of any REVIEW_REQUESTED, NEEDS_WORK,
-  # REVIEW_STARTED, or DENIED.  This could allow a feature owner to
-  # re-request a review after addressing feedback and have the gate
-  # show up as REVIEW_STARTED again.  However, we will not offer
-  # "re-review" in the UI yet.
+  # REVIEW_STARTED, INTERNAL_REVIEW, or DENIED.  This could allow a
+  # feature owner to re-request a review after addressing feedback and
+  # have the gate show up as REVIEW_STARTED again.  However, we will
+  # not offer "re-review" in the UI yet.
   for vote in sorted(votes, reverse=True, key=lambda v: v.set_on):
     if vote.state in (
         Vote.NEEDS_WORK, Vote.REVIEW_STARTED, Vote.REVIEW_REQUESTED,
-        Vote.DENIED):
+        Vote.DENIED, Vote.INTERNAL_REVIEW):
       return vote.state
 
   # The feature owner has not requested review yet, or the request was
