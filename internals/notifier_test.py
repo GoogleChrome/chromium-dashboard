@@ -476,8 +476,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
       feature_editor_task_2['html'])
     self.assertEqual('owner_1@example.com', feature_editor_task_2['to'])
 
-    mock_f_e_b.assert_called_once_with(
-        True, self.fe_1, self.fe_1_stages, self.changes)
+    mock_f_e_b.assert_called_once_with(True, self.fe_1, self.changes)
     mock_get_approvers.assert_called_once_with(1)
 
   @mock.patch('internals.notifier.format_email_body')
