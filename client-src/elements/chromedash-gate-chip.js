@@ -58,7 +58,7 @@ class ChromedashGateChip extends LitElement {
      }
 
      sl-button.selected::part(base) {
-       border: 2px solid var(--dark-spot-color);
+       box-shadow: 0 0 0 2px var(--dark-spot-color);
      }
 
      sl-button::part(base):hover {
