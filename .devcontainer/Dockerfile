@@ -10,7 +10,7 @@ RUN if [ "${NODE_VERSION}" != "none" ]; then su vscode -c "umask 0002 && . /usr/
 
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \ 
     # openapi-generator-cli dependencies
-    && sudo apt-get install openjdk-17-jre \
+    && sudo apt-get install -y openjdk-17-jre \
     # Playwright dependencies - needed for "npm run webtest"
     && sudo apt-get install -y libgtk-3-0 \
        libasound2 \
