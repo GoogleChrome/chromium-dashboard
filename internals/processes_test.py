@@ -278,6 +278,13 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
     self.feature_1.impl_status_chrome = core_enums.REMOVED
     self.assertTrue(detector(self.feature_1, self.stages_dict))
 
+  def test_rollout_impact(self):
+    detector = processes.PROGRESS_DETECTORS['Rollout impact']
+    # There is always a value for this
+    self.assertTrue(detector(self.feature_1, self.stages_dict))
+    self.stages_dict[1061][0].rollout_impact = 1
+    self.assertTrue(detector(self.feature_1, self.stages_dict))
+
   def test_rollout_milestone(self):
     detector = processes.PROGRESS_DETECTORS['Rollout milestone']
     self.assertFalse(detector(self.feature_1, self.stages_dict))

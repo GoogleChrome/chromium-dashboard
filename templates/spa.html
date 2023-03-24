@@ -59,10 +59,12 @@ limitations under the License.
   </script>
   <script nonce="{{nonce}}" src="/static/js/metric.min.js?v={{app_version}}"></script>
   <script nonce="{{nonce}}" src="/static/js/cs-client.min.js?v={{app_version}}"></script>
+  <script nonce="{{nonce}}" src="/static/dist/openapi-client.js?v={{app_version}}"></script>
   {# Loaded immediately because it is used by JS code on the page. #}
   <script nonce="{{nonce}}">
     window.csClient = new ChromeStatusClient(
       '{{xsrf_token}}', {{ xsrf_token_expires }});
+    window.csOpenApiClient = new ChromeStatusOpenApiClient();
   </script>
 
   <script type="module" nonce="{{nonce}}" defer src="/static/dist/components.js?v={{app_version}}"></script>

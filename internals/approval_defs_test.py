@@ -216,6 +216,7 @@ DN = Vote.DENIED
 NW = Vote.NEEDS_WORK
 RS = Vote.REVIEW_STARTED
 NA = Vote.NA
+IR = Vote.INTERNAL_REVIEW
 GATE_VALUES= Vote.VOTE_VALUES.copy()
 GATE_VALUES.update({Gate.PREPARING: 'preparing'})
 
@@ -258,6 +259,15 @@ class CalcGateStateTest(testing_config.CustomTestCase):
                      self.do_calc(RR, RS, NW))
     self.assertEqual(('needs_work', 'needs_work'),
                      self.do_calc(RR, NW, NW))
+
+  def test_request_internal_review(self):
+    """Owner requested a review and a reviewer opts for internal review."""
+    self.assertEqual(('internal_review', 'internal_review'),
+                     self.do_calc(RR, IR))
+    self.assertEqual(('internal_review', 'internal_review'),
+                     self.do_calc(RR, RS, IR))
+    self.assertEqual(('internal_review', 'internal_review'),
+                     self.do_calc(RR, NW, IR))
 
   def test_request_disagreement(self):
     """Reviewers may have different opinions, needed LGTMs counted."""

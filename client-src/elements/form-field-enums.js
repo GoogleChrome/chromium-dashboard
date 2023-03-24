@@ -62,6 +62,18 @@ export const PLATFORMS_DISPLAYNAME = {
   8: 'Fuchsia', // PLATFORM_FUCHSIA
 };
 
+export const ROLLOUT_IMPACT = {
+  IMPACT_LOW: [1, 'Low'],
+  IMPACT_MEDIUM: [2, 'Medium'],
+  IMPACT_HIGH: [3, 'High'],
+};
+
+export const ROLLOUT_IMPACT_DISPLAYNAME = {
+  1: 'Low', // IMPACT_LOW
+  2: 'Medium', // IMPACT_MEDIUM
+  3: 'High', // IMPACT_HIGH
+};
+
 // FEATURE_TYPES object is organized as [intValue, stringLabel, description],
 // the descriptions are used only for the descriptions of feature_type_radio_group
 export const FEATURE_TYPES_WITHOUT_ENTERPRISE = {
@@ -133,6 +145,7 @@ export const STAGE_SPECIFIC_FIELDS = new Set([
   'experiment_goals',
   'experiment_risks',
   'experiment_extension_reason',
+  'rollout_impact',
   'rollout_milestone',
   'rollout_platforms',
   'rollout_details',

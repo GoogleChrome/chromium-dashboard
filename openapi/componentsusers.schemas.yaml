@@ -1,0 +1,41 @@
+ComponentsUsersResponse:
+  properties:
+    users:
+      type: array
+      items:
+        $ref: '#/ComponentsUser'
+    components:
+      type: array
+      items:
+        $ref: '#/OwnersAndSubscribersOfComponent'
+ComponentsUser:
+  type: object
+  properties:
+    id:
+      type: integer
+    name:
+      type: string
+    email:
+      type: string
+  required:
+    - id
+    - name
+    - email
+OwnersAndSubscribersOfComponent:
+  type: object
+  properties:
+    id:
+      type: string
+    name:
+      type: string
+    subscriber_ids:
+      type: array
+      items:
+        type: integer
+    owner_ids:
+      type: array
+      items:
+        type: integer
+  required:
+    - id
+    - name

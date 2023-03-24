@@ -58,6 +58,7 @@ class StagesAPI(basehandlers.APIHandler):
       'finch_url']
 
   ENTERPRISE_FIELDS: list[str] = [
+      'rollout_impact',
       'rollout_milestone',
       'rollout_platforms',
       'rollout_details',

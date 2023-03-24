@@ -254,8 +254,9 @@ class CommentsAPITest(testing_config.CustomTestCase):
     self.assertIsNotNone(activity)
     self.assertIsNone(activity.deleted_by)
 
+  @mock.patch('internals.notifier_helpers.notify_subscribers_of_new_comments')
   @mock.patch('internals.approval_defs.get_approvers')
-  def test_post__comment_only(self, mock_get_approvers):
+  def test_post__comment_only(self, mock_get_approvers, mock_notifier):
     """Handler adds a comment only, does not require approval permission."""
     mock_get_approvers.return_value = []
     testing_config.sign_in('user2@chromium.org', 123567890)

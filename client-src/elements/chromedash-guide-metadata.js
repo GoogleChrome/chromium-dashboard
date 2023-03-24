@@ -83,6 +83,10 @@ export class ChromedashGuideMetadata extends LitElement {
   handleFormSubmit(event, hiddenTokenField) {
     event.preventDefault();
 
+    // Call the app.handleFormSbubmit, which manages beforeunload events.
+    const app = document.querySelector('chromedash-app');
+    app.handleFormSubmit();
+
     // get the XSRF token and update it if it's expired before submission
     window.csClient.ensureTokenIsValid().then(() => {
       hiddenTokenField.value = window.csClient.token;

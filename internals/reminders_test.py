@@ -102,12 +102,12 @@ class FunctionTest(testing_config.CustomTestCase):
       if stage_type == 150:
         stage.milestones = MilestoneSet(desktop_first=100)
       stage.put()
-    
+
     self.old_feature_template.put()
     self.feature_template.put()
 
     self.maxDiff = None
-  
+
   def tearDown(self) -> None:
     kinds: list[ndb.Model] = [Feature, FeatureEntry, Stage]
     for kind in kinds:
@@ -240,7 +240,7 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
       self, mock_get):
     self.feature_1.outstanding_notifications = 2
     self.feature_2.outstanding_notifications = 1
-    
+
     mock_return = MockResponse(
         text=('{"mstones":[{"mstone": "148", '
               '"earliest_beta": "2024-02-03T01:23:45"}]}'))

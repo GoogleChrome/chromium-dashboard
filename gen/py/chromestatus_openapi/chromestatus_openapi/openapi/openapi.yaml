@@ -1,0 +1,183 @@
+openapi: 3.0.0
+info:
+  description: "The API for chromestatus.com. chromestatus.com is the official tool\
+    \ used for tracking feature launches in Blink (the browser engine that powers\
+    \ Chrome and many other web browsers). This tool guides feature owners through\
+    \ our launch process and serves as a primary source for developer information\
+    \ that then ripples throughout the web developer ecosystem. More details at: https://github.com/GoogleChrome/chromium-dashboard"
+  license:
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  title: chomestatus API
+  version: 1.0.0
+servers:
+- url: /api/v0
+paths:
+  /components/{componentId}/users/{userId}:
+    delete:
+      operationId: remove_user_from_component
+      parameters:
+      - description: Component ID
+        in: path
+        name: componentId
+        required: true
+        schema:
+          type: integer
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComponentUsersRequest'
+      responses:
+        "200":
+          description: Success
+      summary: Remove a user from a component
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+    put:
+      operationId: add_user_to_component
+      parameters:
+      - description: Component ID
+        in: path
+        name: componentId
+        required: true
+        schema:
+          type: integer
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComponentUsersRequest'
+      responses:
+        "200":
+          description: Success
+      summary: Add a user to a component
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /componentsusers:
+    get:
+      operationId: list_component_users
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComponentsUsersResponse'
+          description: List of all the potential users and components with existing
+            subscribers and owners.
+      summary: List all components and possible users
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+components:
+  schemas:
+    ComponentsUsersResponse:
+      example:
+        components:
+        - name: name
+          id: id
+          subscriber_ids:
+          - 6
+          - 6
+          owner_ids:
+          - 1
+          - 1
+        - name: name
+          id: id
+          subscriber_ids:
+          - 6
+          - 6
+          owner_ids:
+          - 1
+          - 1
+        users:
+        - name: name
+          id: 0
+          email: email
+        - name: name
+          id: 0
+          email: email
+      properties:
+        users:
+          items:
+            $ref: '#/components/schemas/ComponentsUser'
+          title: users
+          type: array
+        components:
+          items:
+            $ref: '#/components/schemas/OwnersAndSubscribersOfComponent'
+          title: components
+          type: array
+      title: ComponentsUsersResponse
+    ComponentsUser:
+      example:
+        name: name
+        id: 0
+        email: email
+      properties:
+        id:
+          title: id
+          type: integer
+        name:
+          title: name
+          type: string
+        email:
+          title: email
+          type: string
+      required:
+      - email
+      - id
+      - name
+      title: ComponentsUser
+      type: object
+    OwnersAndSubscribersOfComponent:
+      example:
+        name: name
+        id: id
+        subscriber_ids:
+        - 6
+        - 6
+        owner_ids:
+        - 1
+        - 1
+      properties:
+        id:
+          title: id
+          type: string
+        name:
+          title: name
+          type: string
+        subscriber_ids:
+          items:
+            type: integer
+          title: subscriber_ids
+          type: array
+        owner_ids:
+          items:
+            type: integer
+          title: owner_ids
+          type: array
+      required:
+      - id
+      - name
+      title: OwnersAndSubscribersOfComponent
+      type: object
+    ComponentUsersRequest:
+      description: Traits about the user in relation to the component
+      example:
+        owner: true
+      properties:
+        owner:
+          description: "Impacts this user's ownership. For PUT, add ownership. For\
+            \ DELETE, remove ownership."
+          title: owner
+          type: boolean
+      title: ComponentUsersRequest

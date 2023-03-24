@@ -1,0 +1,21 @@
+openapi: 3.0.0
+info:
+  description: >-
+    The API for chromestatus.com. chromestatus.com is the official tool used
+    for tracking feature launches in Blink (the browser engine that powers
+    Chrome and many other web browsers). This tool guides feature owners
+    through our launch process and serves as a primary source for developer
+    information that then ripples throughout the web developer ecosystem.
+    More details at: https://github.com/GoogleChrome/chromium-dashboard
+  version: 1.0.0
+  title: chomestatus API
+  license:
+    name: Apache-2.0
+    url: 'https://www.apache.org/licenses/LICENSE-2.0.html'
+servers:
+- url: /api/v0
+paths:
+  /componentsusers:
+    $ref: 'componentsusers.paths.yaml'
+  /components/{componentId}/users/{userId}:
+    $ref: 'component_componentid_users_userid.paths.yaml'

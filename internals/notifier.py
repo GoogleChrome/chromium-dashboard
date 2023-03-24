@@ -41,26 +41,33 @@ from internals.user_models import (
     AppUser, BlinkComponent, FeatureOwner, UserPref)
 
 
+def _determine_milestone_string(ship_stages: list[Stage]) -> str:
+  """Determine the shipping milestone string to display in the template."""
+  # Get the earliest desktop and android milestones.
+  first_desktop = min(
+      (stage.milestones.desktop_first for stage in ship_stages
+        if stage.milestones and stage.milestones.desktop_first),
+    default=None)
+  first_android = min(
+      (stage.milestones.android_first for stage in ship_stages
+        if stage.milestones and stage.milestones.android_first),
+    default=None)
+
+  # Use the desktop milestone by default if it's available.
+  milestone_str = str(first_desktop)
+  # Use the android milestone with the android suffix if there are no
+  # desktop milestones.
+  if not first_desktop and first_android:
+    milestone_str = f'{first_android} (android)'
+  return milestone_str
+
+
 def format_email_body(
-    is_update: bool, fe: FeatureEntry, fe_stages: dict[int, list[Stage]],
-    changes: list[dict[str, Any]]) -> str:
+    is_update: bool, fe: FeatureEntry, changes: list[dict[str, Any]]) -> str:
   """Return an HTML string for a notification email body."""
 
-  stage_type = core_enums.STAGE_TYPES_SHIPPING[fe.feature_type] or 0
-  ship_stages: list[Stage] = fe_stages.get(stage_type, [])
-  # TODO(danielrsmith): These notifications do not convey correct information
-  # for features with multiple shipping stages. Implement a new way to
-  # specify the shipping stage affected.
-  ship_milestones: MilestoneSet | None = (
-      ship_stages[0].milestones if len(ship_stages) > 0 else None)
-
-  milestone_str = 'not yet assigned'
-  if ship_milestones is not None:
-    if ship_milestones.desktop_first:
-      milestone_str = ship_milestones.desktop_first
-    elif (ship_milestones.desktop_first is None and
-        ship_milestones.android_first is not None):
-      milestone_str = f'{ship_milestones.android_first} (android)'
+  stage_info = stage_helpers.get_stage_info_for_templates(fe)
+  milestone_str = _determine_milestone_string(stage_info['ship_stages'])
 
   moz_link_urls = [
       link for link in fe.doc_links
@@ -80,6 +87,8 @@ def format_email_body(
 
   body_data = {
       'feature': fe,
+      'stage_info': stage_info,
+      'should_render_mstone_table': stage_info['should_render_mstone_table'],
       'creator_email': fe.creator_email,
       'updater_email': fe.updater_email,
       'id': fe.key.integer_id(),
@@ -133,8 +142,7 @@ WEBVIEW_RULE_ADDRS = ['webview-leads-external@google.com']
 
 
 def apply_subscription_rules(
-    fe: FeatureEntry, fe_stages: dict[int, list[Stage]],
-    changes: list) -> dict[str, list[str]]:
+    fe: FeatureEntry, changes: list) -> dict[str, list[str]]:
   """Return {"reason": [addrs]} for users who set up rules."""
   # Note: for now this is hard-coded, but it will eventually be
   # configurable through some kind of user preference.
@@ -142,11 +150,9 @@ def apply_subscription_rules(
   results: dict[str, list[str]] = {}
 
   # Find an existing shipping stage with milestone info.
+  fe_stages = stage_helpers.get_feature_stages(fe.key.integer_id())
   stage_type = core_enums.STAGE_TYPES_SHIPPING[fe.feature_type] or 0
   ship_stages: list[Stage] = fe_stages.get(stage_type, [])
-  # TODO(danielrsmith): These notifications do not convey correct information
-  # for features with multiple shipping stages. Implement a new way to
-  # specify the shipping stage affected.
   ship_milestones: MilestoneSet | None = (
       ship_stages[0].milestones if len(ship_stages) > 0 else None)
 
@@ -161,27 +167,7 @@ def apply_subscription_rules(
   return results
 
 
-def make_feature_changes_email(fe: FeatureEntry, is_update: bool=False,
-    changes: Optional[list]=None):
-  """Return a list of task dicts to notify users of feature changes."""
-  if changes is None:
-    changes = []
-  watchers: list[FeatureOwner] = FeatureOwner.query(
-      FeatureOwner.watching_all_features == True).fetch(None)
-  watcher_emails: list[str] = [watcher.email for watcher in watchers]
-
-  fe_stages = stage_helpers.get_feature_stages(fe.key.integer_id())
-
-  email_html = format_email_body(is_update, fe, fe_stages, changes)
-  if is_update:
-    subject = 'updated feature: %s' % fe.name
-    triggering_user_email = fe.updater_email
-  else:
-    subject = 'new feature: %s' % fe.name
-    triggering_user_email = fe.creator_email
-
-  addr_reasons: dict[str, list[str]] = collections.defaultdict(list)
-
+def add_core_receivers(fe: FeatureEntry, addr_reasons: dict[str, list[str]]):
   accumulate_reasons(
     addr_reasons, fe.owner_emails,
     'You are listed as an owner of this feature'
@@ -198,6 +184,28 @@ def make_feature_changes_email(fe: FeatureEntry, is_update: bool=False,
     addr_reasons, fe.devrel_emails,
     'You are a devrel contact for this feature.'
   )
+
+
+def make_feature_changes_email(fe: FeatureEntry, is_update: bool=False,
+    changes: Optional[list]=None):
+  """Return a list of task dicts to notify users of feature changes."""
+  if changes is None:
+    changes = []
+  watchers: list[FeatureOwner] = FeatureOwner.query(
+      FeatureOwner.watching_all_features == True).fetch(None)
+  watcher_emails: list[str] = [watcher.email for watcher in watchers]
+
+  email_html = format_email_body(is_update, fe, changes)
+  if is_update:
+    subject = 'updated feature: %s' % fe.name
+    triggering_user_email = fe.updater_email
+  else:
+    subject = 'new feature: %s' % fe.name
+    triggering_user_email = fe.creator_email
+
+  addr_reasons: dict[str, list[str]] = collections.defaultdict(list)
+
+  add_core_receivers(fe, addr_reasons)
   accumulate_reasons(
     addr_reasons, watcher_emails,
     'You are watching all feature changes'
@@ -222,7 +230,7 @@ def make_feature_changes_email(fe: FeatureEntry, is_update: bool=False,
   starrer_emails: list[str] = [user.email for user in starrers]
   accumulate_reasons(addr_reasons, starrer_emails, 'You starred this feature')
 
-  rule_results = apply_subscription_rules(fe, fe_stages, changes)
+  rule_results = apply_subscription_rules(fe, changes)
   for reason, sub_addrs in rule_results.items():
     accumulate_reasons(addr_reasons, sub_addrs, reason)
 
@@ -236,8 +244,7 @@ def make_review_requests_email(fe: FeatureEntry, gate_type: int, changes: Option
   """Return a list of task dicts to notify approvers of review requests."""
   if changes is None:
     changes = []
-  fe_stages = stage_helpers.get_feature_stages(fe.key.integer_id())
-  email_html = format_email_body(True, fe, fe_stages, changes)
+  email_html = format_email_body(True, fe, changes)
 
   subject = 'Review Request for feature: %s' % fe.name
   triggering_user_email = fe.updater_email
@@ -247,6 +254,30 @@ def make_review_requests_email(fe: FeatureEntry, gate_type: int, changes: Option
 
   addr_reasons: dict[str, list[str]] = collections.defaultdict(list)
   accumulate_reasons(addr_reasons, approvers, reasons)
+  all_tasks = [convert_reasons_to_task(
+                   addr, reasons, email_html, subject, triggering_user_email)
+               for addr, reasons in sorted(addr_reasons.items())]
+  return all_tasks
+
+
+def make_new_comments_email(fe: FeatureEntry, gate_type: int, changes: Optional[list]=None):
+  """Return a list of task dicts to notify of new comments."""
+  if changes is None:
+    changes = []
+  fe_stages = stage_helpers.get_feature_stages(fe.key.integer_id())
+  email_html = format_email_body(True, fe, changes)
+
+  subject = 'New comments for feature: %s' % fe.name
+  triggering_user_email = fe.updater_email
+
+  addr_reasons: dict[str, list[str]] = collections.defaultdict(list)
+  add_core_receivers(fe, addr_reasons)
+
+  # Add gate reviewers.
+  approvers = approval_defs.get_approvers(gate_type)
+  reasons = 'You are the reviewer for this gate'
+  accumulate_reasons(addr_reasons, approvers, reasons)
+
   all_tasks = [convert_reasons_to_task(
                    addr, reasons, email_html, subject, triggering_user_email)
                for addr, reasons in sorted(addr_reasons.items())]
@@ -425,6 +456,29 @@ class FeatureReviewHandler(basehandlers.FlaskHandler):
     fe = FeatureEntry.get_by_id(feature['id'])
     if fe:
       email_tasks = make_review_requests_email(fe, gate_type, changes)
+      send_emails(email_tasks)
+
+    return {'message': 'Done'}
+
+
+class FeatureCommentHandler(basehandlers.FlaskHandler):
+  """This task handles feature comment notifications by making email tasks."""
+
+  IS_INTERNAL_HANDLER = True
+
+  def process_post_data(self, **kwargs):
+    self.require_task_header()
+
+    feature = self.get_param('feature')
+    gate_type = self.get_param('gate_type')
+    changes = self.get_param('changes', required=False) or []
+
+    logging.info('Starting to notify of comments for feature %s',
+                 repr(feature)[:settings.MAX_LOG_LINE])
+
+    fe = FeatureEntry.get_by_id(feature['id'])
+    if fe:
+      email_tasks = make_new_comments_email(fe, gate_type, changes)
       send_emails(email_tasks)
 
     return {'message': 'Done'}

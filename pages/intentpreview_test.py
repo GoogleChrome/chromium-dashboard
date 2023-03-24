@@ -25,7 +25,7 @@ import settings
 from google.cloud import ndb  # type: ignore
 from pages import intentpreview
 from internals import core_enums
-from internals import core_models
+from internals.core_models import FeatureEntry, MilestoneSet, Stage
 
 test_app = flask.Flask(__name__,
   template_folder=settings.get_flask_template_path())
@@ -36,10 +36,31 @@ TESTDATA = testing_config.Testdata(__file__)
 class IntentEmailPreviewHandlerTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = core_models.FeatureEntry(
+    self.feature_1 = FeatureEntry(
         name='feature one', summary='sum', owner_emails=['user1@google.com'],
-        category=1, intent_stage=core_enums.INTENT_IMPLEMENT)
+        category=1, intent_stage=core_enums.INTENT_IMPLEMENT,
+        feature_type=0)
     self.feature_1.put()
+    # Write stages for the feature.
+    stage_types = [110, 120, 130, 140, 150, 151, 160, 1061]
+    for s_type in stage_types:
+      s = Stage(feature_id=self.feature_1.key.integer_id(), stage_type=s_type,
+          milestones=MilestoneSet(desktop_first=1,
+              android_first=1, desktop_last=2),
+          intent_thread_url=f'https://example.com/{s_type}')
+      # Add stage-specific fields based on the stage ID.
+      # 150 is the ID associated with the origin trial stage for feature type 0.
+      if s_type == 150:
+        s.experiment_goals = 'goals'
+        s.experiment_risks = 'risks'
+        s.announcement_url = 'https://example.com/announce'
+      # 151 is the stage ID associated with the origin trial extension.
+      elif s_type == 151:
+        s.experiment_extension_reason = 'reason'
+      # 151 is the ID associated with the shipping stage.
+      elif s_type == 160:
+        s.finch_url = 'https://example.com/finch'
+      s.put()
 
     self.request_path = '/admin/features/launch/%d/%d?intent' % (
         core_enums.INTENT_SHIP, self.feature_1.key.integer_id())
@@ -191,7 +212,7 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
 
   def setUp(self):
     super(IntentEmailPreviewTemplateTest, self).setUp()
-    self.feature_1 = core_models.FeatureEntry(
+    self.feature_1 = FeatureEntry(
         name='feature one', summary='sum', owner_emails=['user1@google.com'],
         category=1, intent_stage=core_enums.INTENT_IMPLEMENT)
     # Hardcode the key for the template test

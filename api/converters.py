@@ -192,9 +192,11 @@ def stage_to_json_dict(
     'ot_stage_id': stage.ot_stage_id,
     'intent_to_ship_url': stage.intent_thread_url,
     'finch_url': stage.finch_url,
+
     'rollout_milestone': stage.rollout_milestone,
     'rollout_platforms': stage.rollout_platforms,
     'rollout_details': stage.rollout_details,
+    'rollout_impact': stage.rollout_impact,
     'enterprise_policies': stage.enterprise_policies,
 
     # Milestone fields to be populated later.
@@ -482,6 +484,9 @@ def feature_entry_to_json_verbose(
     'finch_url': _stage_attr(stage_info['ship'], 'finch_url'),
     'rollout_milestone': _stage_attr(stage_info['rollout'], 'rollout_milestone'),
     'rollout_details': _stage_attr(stage_info['rollout'], 'rollout_details'),
+    'rollout_impact': _stage_attr(stage_info['rollout'], 'rollout_impact'),
+    'rollout_platforms': _stage_attr(stage_info['rollout'], 'rollout_platforms'),
+    'enterprise_policies': _stage_attr(stage_info['rollout'], 'enterprise_policies'),
 
   }
 

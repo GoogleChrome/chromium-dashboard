@@ -199,7 +199,7 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
     # rollout_platforms is not part of this form
     with test_app.test_request_context(
         'path', data={'form_fields': 'other,fields'}):
-      self.assertFalse(self.handler.touched('rollout_platforms', ['other, fields']))
+      self.assertFalse(self.handler.touched('rollout_platforms', ['other', 'fields']))
 
   def test_post__anon(self):
     """Anon cannot edit features, gets a 403."""

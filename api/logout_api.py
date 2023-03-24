@@ -23,6 +23,10 @@ from framework import basehandlers
 class LogoutAPI(basehandlers.APIHandler):
   """Clear the session when the user signs out."""
 
+  def do_get(self, **kwargs):
+    """Reject unneeded GET requests without triggering Error Reporting."""
+    self.abort(405, valid_methods=['POST'])
+
   def do_post(self, **kwargs):
     session.clear()
     return {'message': 'Done'}

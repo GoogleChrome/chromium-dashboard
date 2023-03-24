@@ -11,17 +11,24 @@ const GATE_STATE_TO_NAME = {
   5: 'Approved', // APPROVED
   6: 'Denied', // DENIED
   // TODO(jrobbins): COMPLETE for auto-approved.
+  8: 'Internal review', // INTERNAL_REVIEW
 };
 
 const GATE_STATE_TO_ICON = {
   0: 'arrow_circle_right_20px', // PREPARING
-  1: 'visibility_20px', //  NA
+  //  NA has no icon.
   2: 'pending_20px', // REVIEW_REQUESTED
   3: 'pending_20px', // REVIEW_STARTED
   4: 'autorenew_20px', // NEEDS_WORK
   5: 'check_circle_filled_20px', // APPROVED
   6: 'block_20px', // DENIED
   // TODO(jrobbins): COMPLETE for auto-approved also check_circle_filled_20px.
+  // INTERNAL_REVIEW has no icon.
+};
+
+const GATE_STATE_TO_ABBREV = {
+  1: 'N/A', //  NA
+  8: 'INT', // INTERNAL_REVIEW
 };
 
 
@@ -58,10 +65,10 @@ class ChromedashGateChip extends LitElement {
      }
 
      sl-button.selected::part(base) {
-       border: 2px solid var(--dark-spot-color);
+       box-shadow: 0 0 0 2px var(--dark-spot-color);
      }
 
-     sl-button::part(base):hover {
+     sl-button:hover .teamname {
        text-decoration: underline;
      }
 
@@ -69,8 +76,8 @@ class ChromedashGateChip extends LitElement {
        background: var(--gate-fyi-background);
        color: var(--gate-fyi-color);
      }
-     .fyi sl-icon {
-       color: var(--gate-fyi-icon-color);
+     sl-button.fyi::part(prefix) {
+       align-items: baseline;
      }
 
      sl-button.preparing::part(base) {
@@ -112,6 +119,19 @@ class ChromedashGateChip extends LitElement {
      .denied sl-icon {
        color: var(--gate-denied-icon-color);
      }
+
+     sl-button.internal_review::part(base) {
+       background: var(--gate-fyi-background);
+       color: var(--gate-fyi-color);
+     }
+     sl-button.internal_review::part(prefix) {
+       align-items: baseline;
+     }
+
+     .abbrev {
+       padding-left: var(--content-padding-quarter);
+       font-weight: 900;
+     }
     `];
   }
 
@@ -149,15 +169,23 @@ class ChromedashGateChip extends LitElement {
     const gateName = this.gate.name;
     const stateName = GATE_STATE_TO_NAME[this.gate.state];
     const className = stateName.toLowerCase().replaceAll(' ', '_');
-    const iconName = GATE_STATE_TO_ICON[this.gate.state];
     const selected = (this.gate.id == this.selectedGateId) ? 'selected' : '';
+
+    const iconName = GATE_STATE_TO_ICON[this.gate.state];
+    const abbrev = GATE_STATE_TO_ABBREV[this.gate.state] || gateName;
+    let icon = html`<b class="abbrev" slot="prefix">${abbrev}</b>`;
+    if (iconName) {
+      icon = html`
+        <sl-icon slot="prefix" library="material" name=${iconName}></sl-icon>
+      `;
+    }
+
     return html`
       <sl-button pill size="small" class="${className} ${selected}"
         title="${teamName}: ${gateName}: ${stateName}"
         @click=${this.openApprovalsDialog}
         >
-        <sl-icon slot="prefix" library="material" name=${iconName}></sl-icon>
-        ${teamName}
+        ${icon} <span class="teamname">${teamName}</span>
       </sl-button>
     `;
   }
