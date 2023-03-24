@@ -29,8 +29,8 @@ class ChromeStatusOpenApiClient extends Api {
     super(new Configuration({
       credentials: 'same-origin',
       middleware: [
-        ChromeStatusMiddlewares.xsrfMiddleware,
-        ChromeStatusMiddlewares.xssiMiddleware,
+        {pre: ChromeStatusMiddlewares.xsrfMiddleware},
+        {post: ChromeStatusMiddlewares.xssiMiddleware},
       ],
     }));
   }

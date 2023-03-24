@@ -21,9 +21,9 @@ describe('openapi-client', () => {
         assert.equal(window.csOpenApiClient.configuration.credentials, 'same-origin');
       });
       it('should have the middlewares loaded', async () => {
-        assert.equal(window.csOpenApiClient.middleware[0],
+        assert.equal(window.csOpenApiClient.middleware[0].pre,
           ChromeStatusMiddlewares.xsrfMiddleware);
-        assert.equal(window.csOpenApiClient.middleware[1],
+        assert.equal(window.csOpenApiClient.middleware[1].post,
           ChromeStatusMiddlewares.xssiMiddleware);
       });
     });
