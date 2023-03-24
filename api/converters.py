@@ -14,7 +14,7 @@
 # limitations under the License.
 
 import datetime
-from typing import Any, Literal, TypedDict
+from typing import Any, TypedDict
 from google.cloud import ndb  # type: ignore
 
 from internals.core_enums import *
