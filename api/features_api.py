@@ -73,6 +73,9 @@ class FeaturesAPI(basehandlers.APIHandler):
 
   def do_get(self, **kwargs):
     """Handle GET requests for a single feature or a search."""
+    # TODO(danielrsmith): This request gives two independent return types
+    # based on whether a feature_id was specified. Determine the best
+    # way to handle this in a strictly-typed manner and implement it.
     feature_id = kwargs.get('feature_id', None)
     if feature_id:
       return self.get_one_feature(feature_id)
