@@ -15,7 +15,7 @@ info:
 servers:
 - url: /api/v0
 paths:
-  # The Python generator needs at least one path to generate a proper setup.py
-  # Add a placeholder one.
   /componentsusers:
     $ref: 'componentsusers.paths.yaml'
+  /components/{componentId}/users/{userId}:
+    $ref: 'component_componentid_users_userid.paths.yaml'

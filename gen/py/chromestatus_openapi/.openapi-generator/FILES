@@ -12,6 +12,10 @@ chromestatus_openapi/controllers/security_controller_.py
 chromestatus_openapi/encoder.py
 chromestatus_openapi/models/__init__.py
 chromestatus_openapi/models/base_model_.py
+chromestatus_openapi/models/component_users_request.py
+chromestatus_openapi/models/components_user.py
+chromestatus_openapi/models/components_users_response.py
+chromestatus_openapi/models/owners_and_subscribers_of_component.py
 chromestatus_openapi/openapi/openapi.yaml
 chromestatus_openapi/test/__init__.py
 chromestatus_openapi/test/test_default_controller.py

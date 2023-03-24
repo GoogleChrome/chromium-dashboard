@@ -1,0 +1,6 @@
+ComponentUsersRequest:
+  description: "Traits about the user in relation to the component"
+  properties:
+    owner:
+      type: boolean
+      description: Impacts this user's ownership. For PUT, add ownership. For DELETE, remove ownership.
