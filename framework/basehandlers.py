@@ -573,6 +573,14 @@ class SPAHandler(FlaskHandler):
           self, feature_id)
       if redirect_resp:
         return redirect_resp
+    # Validate the user has admin permissions and redirect if needed.
+    if defaults.get('require_admin_site'):
+      user = self.get_current_user()
+      # Should have already done the require_signin check.
+      # If for reason, we don't let's treat it as the main 403 case.
+      if (not user
+        or not permissions.can_admin_site(user)):
+        self.abort(403, msg='Cannot perform admin actions')
 
     return {} # no handler_data needed to be returned
 
