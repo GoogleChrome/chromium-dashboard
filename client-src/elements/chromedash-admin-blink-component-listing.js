@@ -16,7 +16,7 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
 
       :host([editing]) .owners_list_add_remove {
           opacity: 1;
-          pointer-events: all
+          pointer-events: all;
       }
 
       :host([editing]) .owners_list select[multiple] {
@@ -35,7 +35,7 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
 
       .component_name h3 {
           color: initial;
-          padding-top: 4px
+          padding-top: 4px;
       }
 
       .column_header {
@@ -43,27 +43,27 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
       }
 
       .owners_list {
-          flex: 1 0 auto
+          flex: 1 0 auto;
       }
 
       .component_owner {
-          font-weight: 600
+          font-weight: 600;
       }
 
       .owners_list_add_remove {
           margin-left: calc(var(--content-padding) / 2);
           opacity: 0;
           transition: 200ms opacity cubic-bezier(0, 0, 0.2, 1);
-          pointer-events: none
+          pointer-events: none;
       }
 
       .owners_list_add_remove button[disabled] {
           pointer-events: none;
-          opacity: .5
+          opacity: .5;
       }
 
       .remove_owner_button {
-          color: darkred
+          color: darkred;
       }
 
       select[multiple] {
@@ -71,12 +71,12 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
           background-color: #eee;
           border: none;
           transition: 200ms background-color cubic-bezier(0, 0, 0.2, 1);
-          font-size: inherit
+          font-size: inherit;
       }
 
       select[multiple]:disabled option {
           color: initial;
-          padding: 4px 0
+          padding: 4px 0;
       }`];
   }
   /** @type {import('chromestatus-openapi').DefaultApiInterface} */

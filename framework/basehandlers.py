@@ -578,8 +578,8 @@ class SPAHandler(FlaskHandler):
       user = self.get_current_user()
       # Should have already done the require_signin check.
       # If for reason, we don't let's treat it as the main 403 case.
-      if not user \
-        or not permissions.can_admin_site(user):
+      if (not user
+        or not permissions.can_admin_site(user)):
         self.abort(403, msg='Cannot perform admin actions')
 
     return {} # no handler_data needed to be returned

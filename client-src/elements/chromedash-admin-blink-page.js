@@ -77,7 +77,7 @@ export class ChromedashAdminBlinkPage extends LitElement {
   /** @type {Array<import('chromestatus-openapi').OwnersAndSubscribersOfComponent>} */
   components;
 
-  /** @type {Map<int, import('chromestatus-openapi').ComponentsUser} */
+  /** @type {Map<int, import('chromestatus-openapi').ComponentsUser}> */
   usersMap;
 
   constructor() {

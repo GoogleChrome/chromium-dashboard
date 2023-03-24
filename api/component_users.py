@@ -43,7 +43,7 @@ class ComponentUsersAPI(basehandlers.APIHandler):
 
   def do_get(self, **kwargs):
     """In the future, this could be implemented."""
-    self.abort(405, valid_methods=self._get_valid_methods())
+    self.abort(405, valid_methods=['PUT', 'DELETE'])
 
   @permissions.require_admin_site
   def do_put(self, **kwargs) -> tuple[dict, int]:
