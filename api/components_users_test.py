@@ -20,7 +20,6 @@ import flask
 
 from google.cloud import ndb  # type: ignore
 from internals import user_models
-from chromestatus_openapi.models import ComponentsUsers
 from api import components_users
 
 test_app = flask.Flask(__name__)
