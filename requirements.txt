@@ -30,3 +30,6 @@ itsdangerous==2.1.2
 # Work-around for failure to deploy
 # https://stackoverflow.com/questions/69936420/google-cloud-platform-app-deploy-failure-due-to-pyparsing
 pyparsing==2.4.7
+
+# OpenAPI files
+./gen/py/chromestatus_openapi

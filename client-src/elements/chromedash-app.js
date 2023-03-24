@@ -4,7 +4,6 @@ import {showToastMessage} from './utils';
 import page from 'page';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
-
 class ChromedashApp extends LitElement {
   gateColumnRef = createRef();
 
