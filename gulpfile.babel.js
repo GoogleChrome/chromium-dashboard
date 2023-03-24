@@ -84,7 +84,10 @@ gulp.task('css', function() {
 
 gulp.task('rollup', () => {
   return rollup({
-    input: 'client-src/components.js',
+    input: [
+      'client-src/components.js',
+      'client-src/js-src/openapi-client.js',
+    ],
     plugins: [
       rollupResolve(),
       rollupBabel({babelHelpers: 'bundled'}),
@@ -114,6 +117,9 @@ gulp.task('rollup', () => {
 gulp.task('js', () => {
   return gulp.src([
     'client-src/js-src/**/*.js',
+    // openapi-client has imports and needs to use rollup.
+    // exlcude it from the list.
+    '!client-src/js-src/**/openapi-client*.js',
   ])
     .pipe(babel()) // Defaults are in .babelrc
     .pipe(uglifyJS())
