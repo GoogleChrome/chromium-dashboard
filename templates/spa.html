@@ -64,7 +64,7 @@ limitations under the License.
   <script nonce="{{nonce}}">
     window.csClient = new ChromeStatusClient(
       '{{xsrf_token}}', {{ xsrf_token_expires }});
-      window.csOpenapiClient = new ChromeStatusOpenApiClient();
+    window.csOpenApiClient = new ChromeStatusOpenApiClient();
   </script>
 
   <script type="module" nonce="{{nonce}}" defer src="/static/dist/components.js?v={{app_version}}"></script>

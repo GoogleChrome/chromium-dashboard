@@ -12,6 +12,22 @@ describe('openapi-client', () => {
   afterEach(() => {
     window.csClient.getPermissions.restore();
   });
+  describe('ChromeStatusOpenApiClient', () => {
+    describe('constructor', () => {
+      beforeEach(async () => {
+        window.csOpenApiClient = new ChromeStatusOpenApiClient();
+      });
+      it('should have same-origin in the config', async () => {
+        assert.equal(window.csOpenApiClient.configuration.credentials, 'same-origin');
+      });
+      it('should have the middlewares loaded', async () => {
+        assert.equal(window.csOpenApiClient.middleware[0],
+          ChromeStatusMiddlewares.xsrfMiddleware);
+        assert.equal(window.csOpenApiClient.middleware[1],
+          ChromeStatusMiddlewares.xssiMiddleware);
+      });
+    });
+  });
   describe('Middlewares', () => {
     describe('xsrfMiddleware', () => {
       it('should add the XSRF token to the request with existing headers', async () => {
