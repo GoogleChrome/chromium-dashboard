@@ -14,9 +14,9 @@
 # limitations under the License.
 
 from chromestatus_openapi.models import (
-  ComponentsUsers,
-  ComponentsUsersComponentsInner,
-  ComponentsUsersUsersInner)
+  ComponentsUsersResponse,
+  OwnersAndSubscribersOfComponent,
+  ComponentsUser)
 
 from google.cloud import ndb
 
@@ -36,7 +36,7 @@ class ComponentsUsersAPI(basehandlers.APIHandler):
         user_models.FeatureOwner.name).fetch(None)
 
     users = [
-        ComponentsUsersUsersInner(
+        ComponentsUser(
           id=fo.key.integer_id(), email=fo.email, name=fo.name)
         for fo in possible_subscribers]
 
@@ -50,16 +50,16 @@ class ComponentsUsersAPI(basehandlers.APIHandler):
       for owned_component_key in ps.primary_blink_components:
         component_to_owners[owned_component_key].append(ps.key.integer_id())
 
-    returned_components: list[ComponentsUsersComponentsInner] = []
+    returned_components: list[OwnersAndSubscribersOfComponent] = []
     for c in components:
       returned_components.append(
-        ComponentsUsersComponentsInner(
+        OwnersAndSubscribersOfComponent(
           id=c.key.integer_id(),
           name=c.name,
           subscriber_ids=component_to_subscribers[c.key],
           owner_ids=component_to_owners[c.key]))
 
-    return ComponentsUsers(
+    return ComponentsUsersResponse(
       users=users,
       components=returned_components[1:], # ditch generic "Blink" component
       ).to_dict()
