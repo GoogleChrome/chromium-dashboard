@@ -28,7 +28,7 @@ describe('chromedash-admin-blink-page', () => {
   });
 
   it('render with fake data', async () => {
-    /** @type {import('chromestatus-openapi').ComponentsUsers} */
+    /** @type {import('chromestatus-openapi').ComponentsUsersResponse} */
     const response = {
       users: [
         {id: 0, name: 'user0', email: 'user0@example.com'},
