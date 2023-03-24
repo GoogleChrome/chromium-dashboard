@@ -485,9 +485,6 @@ def feature_entry_to_json_verbose(
     'rollout_milestone': _stage_attr(stage_info['rollout'], 'rollout_milestone'),
     'rollout_details': _stage_attr(stage_info['rollout'], 'rollout_details'),
     'rollout_impact': _stage_attr(stage_info['rollout'], 'rollout_impact'),
-    'rollout_platforms': _stage_attr(stage_info['rollout'], 'rollout_platforms'),
-    'enterprise_policies': _stage_attr(stage_info['rollout'], 'enterprise_policies'),
-
   }
 
   if (d['is_released'] and

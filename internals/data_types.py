@@ -49,9 +49,10 @@ class StageDict(TypedDict):
   finch_url: str | None
 
   # Enterprise specific fields
+  rollout_details: str | None
+  rollout_impact: int | None
   rollout_milestone: int | None
   rollout_platforms: list[str]
-  rollout_details: list[str]
   enterprise_policies: list[str]
 
   # Email information
@@ -274,8 +275,11 @@ class VerboseFeatureDict(TypedDict):
   experiment_risks: str | None
   announcement_url: str | None
   experiment_extension_reason: str | None
-  rollout_milestone: int | None
+
   rollout_details: str | None
+  rollout_impact: int | None
+  rollout_milestone: int | None
+
   experiment_timeline: str | None
   resources: FeatureDictInnerResourceInfo
   comments: str | None  # feature_notes
