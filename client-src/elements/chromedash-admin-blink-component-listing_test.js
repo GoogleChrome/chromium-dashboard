@@ -1,10 +1,8 @@
 import {ChromedashAdminBlinkComponentListing} from './chromedash-admin-blink-component-listing';
-import {html, LitElement} from 'lit';
+import {html} from 'lit';
 import {assert, expect, fixture, oneEvent} from '@open-wc/testing';
 import sinon from 'sinon';
 import {DefaultApi} from 'chromestatus-openapi';
-import {chromestatusOpenApiContext} from '../contexts/openapi-context';
-import {ContextProvider} from '@lit-labs/context';
 
 /** @type {Map<number, import("chromestatus-openapi").ComponentsUsersUsersInner>} */
 const testUsersMap = new Map([
@@ -79,18 +77,13 @@ describe('chromedash-admin-blink-component-listing', () => {
     /** @type {import('sinon').SinonStubbedInstance<DefaultApi>} */
     let client;
 
-    customElements.define(`add-blink-component-user-client-provider`, class extends LitElement {
-      _updateProvider(_client) {
-        this.provider = new ContextProvider(this, chromestatusOpenApiContext, _client);
-      }
-    });
-    const clientParentFixture = await fixture(html `<add-blink-component-user-client-provider></add-blink-component-user-client-provider>`);
     beforeEach(async () => {
       sandbox = sinon.createSandbox();
+      /** @type {import('sinon').SinonStubbedInstance<DefaultApi>} */
       client = sandbox.createStubInstance(DefaultApi);
-      clientParentFixture._updateProvider(client);
       sandbox.stub(eventListeners, 'add');
       sandbox.stub(eventListeners, 'remove');
+      window.csOpenApiClient = client;
 
       element = await fixture(
         html`<chromedash-admin-blink-component-listing
@@ -104,7 +97,6 @@ describe('chromedash-admin-blink-component-listing', () => {
         @adminRemoveComponentUser=${eventListeners.remove}
         @adminAddComponentUser=${eventListeners.add}
       ></chromedash-admin-blink-component-listing>`,
-        {parentNode: clientParentFixture},
       );
     });
     afterEach(async () => {
@@ -151,18 +143,12 @@ describe('chromedash-admin-blink-component-listing', () => {
     /** @type {import('sinon').SinonStubbedInstance<DefaultApi>} */
     let client;
 
-    customElements.define(`remove-blink-component-user-client-provider`, class extends LitElement {
-      _updateProvider(_client) {
-        this.provider = new ContextProvider(this, chromestatusOpenApiContext, _client);
-      }
-    });
-    const clientParentFixture = await fixture(html `<remove-blink-component-user-client-provider></remove-blink-component-user-client-provider>`);
     beforeEach(async () => {
       sandbox = sinon.createSandbox();
       client = sandbox.createStubInstance(DefaultApi);
-      clientParentFixture._updateProvider(client);
       sandbox.stub(eventListeners, 'add');
       sandbox.stub(eventListeners, 'remove');
+      window.csOpenApiClient = client;
 
       element = await fixture(
         html`<chromedash-admin-blink-component-listing
@@ -176,7 +162,6 @@ describe('chromedash-admin-blink-component-listing', () => {
         @adminRemoveComponentUser=${eventListeners.remove}
         @adminAddComponentUser=${eventListeners.add}
       ></chromedash-admin-blink-component-listing>`,
-        {parentNode: clientParentFixture},
       );
     });
     afterEach(async () => {

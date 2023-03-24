@@ -1,9 +1,7 @@
 import './chromedash-toast';
-import {html, LitElement} from 'lit';
+import {html} from 'lit';
 import {ChromedashAdminBlinkPage} from './chromedash-admin-blink-page';
 import {assert, fixture} from '@open-wc/testing';
-import {ContextProvider} from '@lit-labs/context';
-import {chromestatusOpenApiContext} from '../contexts/openapi-context';
 import sinon from 'sinon';
 import {DefaultApi} from 'chromestatus-openapi';
 describe('chromedash-admin-blink-page', () => {
@@ -11,20 +9,13 @@ describe('chromedash-admin-blink-page', () => {
     await fixture(html`<chromedash-toast></chromedash-toast>`);
   });
   it('render with no data', async () => {
-    const client = sinon.createStubInstance(DefaultApi, {
+    window.csOpenApiClient = sinon.createStubInstance(DefaultApi, {
       listComponentUsers: sinon.stub().rejects(
         new Error('Got error response from server')),
     });
 
-    customElements.define('fake-client-provider-0', class extends LitElement {
-      constructor() {
-        super();
-        this.provider = new ContextProvider(this, chromestatusOpenApiContext, client);
-      }
-    });
-    const clientParentFixture = await fixture(html `<fake-client-provider-0></fake-client-provider-0>`);
     const component = await fixture(
-      html`<chromedash-admin-blink-page></chromedash-admin-blink-page>`, {parentNode: clientParentFixture},
+      html`<chromedash-admin-blink-page></chromedash-admin-blink-page>`,
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashAdminBlinkPage);
@@ -46,19 +37,12 @@ describe('chromedash-admin-blink-page', () => {
         {id: 0, name: 'component0', subscriberIds: [0], ownerIds: [0]},
       ],
     };
-    const client = sinon.createStubInstance(DefaultApi, {
+    window.csOpenApiClient = sinon.createStubInstance(DefaultApi, {
       listComponentUsers: sinon.stub().resolves(response),
     });
 
-    customElements.define('fake-client-provider-1', class extends LitElement {
-      constructor() {
-        super();
-        this.provider = new ContextProvider(this, chromestatusOpenApiContext, client);
-      }
-    });
-    const clientParentFixture = await fixture(html `<fake-client-provider-1></fake-client-provider-1>`);
     const component = await fixture(
-      html`<chromedash-admin-blink-page></chromedash-admin-blink-page>`, {parentNode: clientParentFixture},
+      html`<chromedash-admin-blink-page></chromedash-admin-blink-page>`,
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashAdminBlinkPage);

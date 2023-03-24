@@ -2,8 +2,6 @@ import {html, css, LitElement} from 'lit';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {VARS} from '../sass/_vars-css.js';
 import {LAYOUT_CSS} from '../sass/_layout-css.js';
-import {ContextConsumer} from '@lit-labs/context';
-import {chromestatusOpenApiContext} from '../contexts/openapi-context';
 
 export class ChromedashAdminBlinkComponentListing extends LitElement {
   static get styles() {
@@ -81,12 +79,12 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
           padding: 4px 0
       }`];
   }
-  /** @type {ContextConsumer<import("../contexts/openapi-context").chromestatusOpenApiContext>} */
-  _clientConsumer;
+  /** @type {import('chromestatus-openapi').DefaultApiInterface} */
+  _client;
 
   static get properties() {
     return {
-      _clientConsumer: {attribute: false},
+      _client: {attribute: false},
       editing: {type: Boolean, reflect: true},
       component: {type: Object},
       index: {type: Number},
@@ -100,7 +98,7 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
 
   constructor() {
     super();
-    this._clientConsumer = new ContextConsumer(this, chromestatusOpenApiContext, undefined, true);
+    this._client = window.csOpenApiClient;
   }
 
   _getOptionsElement() {
@@ -142,7 +140,7 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
     }
 
     let isError = false;
-    this._clientConsumer.value.addUserToComponent({
+    this._client.addUserToComponent({
       componentId: this.id,
       userId: userId,
       componentUsersRequest: {owner: toggleAsOwner},
@@ -183,7 +181,7 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
     }
 
     let isError = false;
-    this._clientConsumer.value.removeUserFromComponent({
+    this._client.removeUserFromComponent({
       componentId: this.id,
       userId: userId,
       componentUsersRequest: {owner: toggleAsOwner},

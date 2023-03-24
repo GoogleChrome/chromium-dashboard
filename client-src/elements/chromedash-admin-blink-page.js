@@ -1,12 +1,9 @@
 import {LitElement, css, html} from 'lit';
 import {showToastMessage} from './utils.js';
-import {ContextConsumer} from '@lit-labs/context';
-import {chromestatusOpenApiContext} from '../contexts/openapi-context';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {VARS} from '../sass/_vars-css.js';
 import {LAYOUT_CSS} from '../sass/_layout-css.js';
 import './chromedash-admin-blink-component-listing';
-
 
 export class ChromedashAdminBlinkPage extends LitElement {
   static get styles() {
@@ -67,15 +64,15 @@ export class ChromedashAdminBlinkPage extends LitElement {
     return {
       loading: {type: Boolean},
       user: {type: Object},
-      _clientConsumer: {attribute: false},
+      _client: {attribute: false},
       _editMode: {type: Boolean},
       components: {type: Array},
       usersMap: {type: Object},
     };
   }
 
-  /** @type {ContextConsumer<import("../contexts/openapi-context").chromestatusOpenApiContext>} */
-  _clientConsumer;
+  /** @type {import('chromestatus-openapi').DefaultApiInterface} */
+  _client;
 
   /** @type {Array<import('chromestatus-openapi').ComponentsUsersComponentsInner>} */
   components;
@@ -85,9 +82,9 @@ export class ChromedashAdminBlinkPage extends LitElement {
 
   constructor() {
     super();
-    this._clientConsumer = new ContextConsumer(this, chromestatusOpenApiContext, undefined, true);
     this.loading = true;
     this._editMode = false;
+    this._client = window.csOpenApiClient;
   }
 
   connectedCallback() {
@@ -97,7 +94,7 @@ export class ChromedashAdminBlinkPage extends LitElement {
 
   fetchData() {
     this.loading = true;
-    this._clientConsumer.value.listComponentUsers()
+    this._client.listComponentUsers()
       .then((response) => {
         this.usersMap = new Map(response.users.map(user => [user.id, user]));
         this.components = response.components;
