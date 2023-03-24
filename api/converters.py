@@ -18,7 +18,8 @@ from typing import Any, Literal, TypedDict
 from google.cloud import ndb  # type: ignore
 
 from internals.core_enums import *
-from internals.core_models import FeatureEntry, MilestoneSet, Stage, StageDict, VerboseFeatureDict
+from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.data_types import StageDict, VerboseFeatureDict
 from internals.review_models import Vote, Gate
 from internals import approval_defs
 

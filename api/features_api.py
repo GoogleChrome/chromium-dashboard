@@ -21,7 +21,8 @@ from framework import permissions
 from framework import rediscache
 from framework import users
 from internals.core_enums import *
-from internals.core_models import FeatureEntry, VerboseFeatureDict
+from internals.core_models import FeatureEntry
+from internals.data_types import VerboseFeatureDict
 from internals import feature_helpers
 from internals import search
 
