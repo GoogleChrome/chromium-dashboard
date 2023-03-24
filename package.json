@@ -27,14 +27,18 @@
     "do-coverage": "coverage3 erase && coverage3 run -m unittest discover -p '*_test.py' -b && coverage3 html",
     "coverage": "source cs-env/bin/activate; (npm run start-emulator > /dev/null 2>&1 &); sleep 3; curl --retry 4 http://localhost:15606/ --retry-connrefused; npm run do-coverage;  npm run stop-emulator",
     "view-coverage": "pushd htmlcov/; python3.10 -m http.server 8080; popd",
-    "mypy": "source cs-env/bin/activate; mypy --ignore-missing-imports --exclude cs-env/ --exclude appengine_config.py .",
+    "mypy": "source cs-env/bin/activate; mypy --ignore-missing-imports --exclude cs-env/ --exclude gen/ --exclude appengine_config.py .",
     "lint": "gulp lint-fix && lit-analyzer \"client-src/elements/chromedash-!(featurelist)*.js\"",
     "presubmit": "npm test && npm run webtest && npm run lint && npm run mypy",
     "pylint": "pylint --output-format=parseable *py api/*py framework/*py internals/*py pages/*py",
     "staging": "./scripts/deploy_site.sh `git describe --always --abbrev=7 --match 'NOT A TAG' --dirty='-tainted'` cr-status-staging",
     "staging-rc": "./scripts/deploy_site.sh rc cr-status-staging",
     "deploy": "./scripts/deploy_site.sh `git describe --always --abbrev=7 --match 'NOT A TAG' --dirty='-tainted'`",
-    "deploy-rc": "./scripts/deploy_site.sh rc"
+    "deploy-rc": "./scripts/deploy_site.sh rc",
+    "openapi": "npm run openapi-backend && npm run openapi-frontend",
+    "openapi-frontend": "rm -rf gen/js/chromestatus-openapi && openapi-generator-cli generate -i openapi/api.yaml -g typescript-fetch  -o gen/js/chromestatus-openapi --additional-properties=npmName=chromestatus-openapi,withInterfaces=true,supportsES6=true && npm install",
+    "openapi-backend": "rm -rf gen/py/chromestatus_openapi && openapi-generator-cli generate -i openapi/api.yaml -g python-flask  -o gen/py/chromestatus_openapi --additional-properties=packageName=chromestatus_openapi && pip install -r requirements.txt",
+    "openapi-validate": "openapi-generator-cli validate -i openapi/api.yaml"
   },
   "repository": {
     "type": "git",
@@ -52,6 +56,7 @@
     "@babel/preset-env": "^7.20.2",
     "@babel/register": "^7.21.0",
     "@open-wc/testing": "^3.1.7",
+    "@openapitools/openapi-generator-cli": "^2.5.2",
     "@rollup/plugin-babel": "^6.0.3",
     "@rollup/plugin-node-resolve": "^15.0.1",
     "@shoelace-style/shoelace": "^2.3.0",
