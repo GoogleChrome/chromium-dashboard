@@ -32,6 +32,17 @@ function addLicense() {
   });
 }
 
+function rollupIgnoreUndefinedWarning(warning, warn) {
+  // There is currently a warning when using the es6 module from openapi.
+  // It is a common issue and can be suppresed.
+  // The error that is suppresed:
+  // The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten
+  // https://github.com/rollup/rollup/issues/1518#issuecomment-321875784
+  // Suppres that error but continue to print the remaining errors.
+  if (warning.code === 'THIS_IS_UNDEFINED') return;
+  warn(warning); // this requires Rollup 0.46
+}
+
 gulp.task('lint', () => {
   return gulp.src([
     'client-src/js-src/*.js',
@@ -93,20 +104,32 @@ gulp.task('rollup', () => {
       rollupBabel({babelHelpers: 'bundled'}),
       rollupMinify({mangle: false, comments: false}),
     ],
-    onwarn: function(warning, warn) {
-      // There is currently a warning when using the es6 module from openapi.
-      // It is a common issue and can be suppresed.
-      // The error that is suppresed:
-      // The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten
-      // https://github.com/rollup/rollup/issues/1518#issuecomment-321875784
-      // Suppres that error but continue to print the remaining errors.
-      if (warning.code === 'THIS_IS_UNDEFINED') return;
-      warn(warning); // this requires Rollup 0.46
-    },
+    onwarn: rollupIgnoreUndefinedWarning,
   }).then(bundle => {
     return bundle.write({
       dir: 'static/dist',
       format: 'es',
+      sourcemap: true,
+      compact: true,
+    });
+  });
+});
+
+gulp.task('rollup-cjs', () => {
+  return rollup({
+    input: [
+      'client-src/js-src/openapi-client.js',
+    ],
+    plugins: [
+      rollupResolve(),
+      rollupBabel({babelHelpers: 'bundled'}),
+      rollupMinify({mangle: false, comments: false}),
+    ],
+    onwarn: rollupIgnoreUndefinedWarning,
+  }).then(bundle => {
+    return bundle.write({
+      dir: 'static/dist',
+      format: 'cjs',
       sourcemap: true,
       compact: true,
     });
@@ -118,7 +141,10 @@ gulp.task('js', () => {
   return gulp.src([
     'client-src/js-src/**/*.js',
     // openapi-client has imports and needs to use rollup.
-    // exlcude it from the list.
+    // exclude it from the list.
+    // Else, the file will need to be treated as a module.
+    // Browsers defer loading <script type="module"> tags and this client is
+    // needed early on page load.
     '!client-src/js-src/**/openapi-client*.js',
   ])
     .pipe(babel()) // Defaults are in .babelrc
@@ -146,6 +172,7 @@ gulp.task('default', gulp.series(
   'js',
   'lint-fix',
   'rollup',
+  'rollup-cjs',
 ));
 
 // Build production files, the default task
