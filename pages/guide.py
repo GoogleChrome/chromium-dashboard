@@ -40,6 +40,11 @@ DEVREL_EMAIL = 'devrel-chromestatus-all@google.com'
 
 class FeatureCreateHandler(basehandlers.FlaskHandler):
 
+  TEMPLATE_PATH = 'spa.html'
+
+  def get_template_data(self, **defaults):
+    return basehandlers.get_spa_template_data(self, defaults)
+
   @permissions.require_create_feature
   def process_post_data(self, **kwargs):
     owners = self.split_emails('owner')
@@ -131,6 +136,11 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
 
 class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
 
+  TEMPLATE_PATH = 'spa.html'
+
+  def get_template_data(self, **defaults):
+    return basehandlers.get_spa_template_data(self, defaults)
+
   @permissions.require_create_feature
   def process_post_data(self, **kwargs):
     owners = self.split_emails('owner')
@@ -194,6 +204,11 @@ class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
 
 
 class FeatureEditHandler(basehandlers.FlaskHandler):
+
+  TEMPLATE_PATH = 'spa.html'
+
+  def get_template_data(self, **defaults):
+    return basehandlers.get_spa_template_data(self, defaults)
 
   # Field name, data type
   EXISTING_FIELDS: list[tuple[str, str]] = [

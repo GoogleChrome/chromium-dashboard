@@ -47,7 +47,6 @@ test_app = basehandlers.FlaskApplication(
     __name__,
     [Route('/path', MockHandler),
      ],
-    [], # POST routes
     debug=True)
 
 
