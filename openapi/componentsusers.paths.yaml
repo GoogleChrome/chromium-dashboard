@@ -1,0 +1,12 @@
+get:
+  summary: List all components and possible users
+  operationId: listComponentUsers
+  responses:
+    '200':
+      description: >-
+        List of all the potential users and components with existing
+        subscribers and owners.
+      content:
+        application/json:
+          schema:
+            $ref: 'componentsusers.schemas.yaml#/ComponentsUsersResponse'

@@ -197,6 +197,13 @@ class APIHandler(BaseHandler):
     handler_data = self.do_post(*args, **kwargs)
     return self.defensive_jsonify(handler_data), headers
 
+  def put(self, *args, **kwargs):
+    """Handle an incoming HTTP PUT request."""
+    self.require_signed_in_and_xsrf_token()
+    headers = self.get_headers()
+    handler_data = self.do_put(*args, **kwargs)
+    return self.defensive_jsonify(handler_data), headers
+
   def patch(self, *args, **kwargs):
     """Handle an incoming HTTP PATCH request."""
     self.require_signed_in_and_xsrf_token()
@@ -242,6 +249,10 @@ class APIHandler(BaseHandler):
 
   def do_post(self, **kwargs):
     """Subclasses should implement this method to handle a POST request."""
+    self.abort(405, valid_methods=self._get_valid_methods())
+
+  def do_put(self, **kwargs):
+    """Subclasses should implement this method to handle a PUT request."""
     self.abort(405, valid_methods=self._get_valid_methods())
 
   def do_patch(self, **kwargs):
@@ -547,6 +558,7 @@ class SPAHandler(FlaskHandler):
 
 
 def get_spa_template_data(handler_obj, defaults):
+  """Check permissions then let spa.html do its thing."""
   # Check if the page requires user to sign in
   if defaults.get('require_signin') and not handler_obj.get_current_user():
     return flask.redirect(settings.LOGIN_PAGE_URL), handler_obj.get_headers()
@@ -566,6 +578,14 @@ def get_spa_template_data(handler_obj, defaults):
         handler_obj, feature_id)
     if redirect_resp:
       return redirect_resp
+
+  # Validate the user has admin permissions and redirect if needed.
+  if defaults.get('require_admin_site'):
+    user = handler_obj.get_current_user()
+    # Should have already done the require_signin check.
+    # If for reason, we don't let's treat it as the main 403 case.
+    if not user or not permissions.can_admin_site(user):
+      handler_obj.abort(403, msg='Cannot perform admin actions')
 
   return {} # no handler_data needed to be returned
 

@@ -4,7 +4,6 @@ import {showToastMessage} from './utils';
 import page from 'page';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
-
 class ChromedashApp extends LitElement {
   gateColumnRef = createRef();
 
@@ -373,6 +372,13 @@ class ChromedashApp extends LitElement {
       page.redirect('/metrics/feature/popularity'));
     page('/enterprise', (ctx) => {
       if (!this.setupNewPage(ctx, 'chromedash-enterprise-page')) return;
+      this.pageComponent.user = this.user;
+      this.contextLink = ctx.path;
+      this.currentPage = ctx.path;
+      this.hideSidebar();
+    });
+    page('/admin/blink', (ctx) => {
+      this.pageComponent = document.createElement('chromedash-admin-blink-page');
       this.pageComponent.user = this.user;
       this.contextLink = ctx.path;
       this.currentPage = ctx.path;

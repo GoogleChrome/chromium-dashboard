@@ -1,0 +1,48 @@
+put:
+  summary: Add a user to a component
+  operationId: addUserToComponent
+  parameters:
+    - in: path
+      name: componentId
+      schema:
+        type: integer
+      required: true
+      description: Component ID
+    - in: path
+      name: userId
+      schema:
+        type: integer
+      required: true
+      description: User ID
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: 'component_componentid_users_userid.schemas.yaml#/ComponentUsersRequest'
+  responses:
+    '200':
+      description: "Success"
+delete:
+  summary: Remove a user from a component
+  operationId: removeUserFromComponent
+  parameters:
+    - in: path
+      name: componentId
+      schema:
+        type: integer
+      required: true
+      description: Component ID
+    - in: path
+      name: userId
+      schema:
+        type: integer
+      required: true
+      description: User ID
+  responses:
+    '200':
+      description: "Success"
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: 'component_componentid_users_userid.schemas.yaml#/ComponentUsersRequest'
