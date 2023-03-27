@@ -554,38 +554,44 @@ class SPAHandler(FlaskHandler):
   TEMPLATE_PATH = 'spa.html'
 
   def get_template_data(self, **defaults):
-    # Check if the page requires user to sign in
-    if defaults.get('require_signin') and not self.get_current_user():
-      return flask.redirect(settings.LOGIN_PAGE_URL), self.get_headers()
-
-    # Check if the page requires create feature permission
-    if defaults.get('require_create_feature'):
-      redirect_resp = permissions.validate_feature_create_permission(self)
-      if redirect_resp:
-        return redirect_resp
-
-    # Validate the user has edit permissions and redirect if needed.
-    if defaults.get('require_edit_feature'):
-      feature_id = defaults.get('feature_id')
-      if not feature_id:
-        self.abort(500, msg='Cannot get feature ID from the URL')
-      redirect_resp = permissions.validate_feature_edit_permission(
-          self, feature_id)
-      if redirect_resp:
-        return redirect_resp
-    # Validate the user has admin permissions and redirect if needed.
-    if defaults.get('require_admin_site'):
-      user = self.get_current_user()
-      # Should have already done the require_signin check.
-      # If for reason, we don't let's treat it as the main 403 case.
-      if (not user
-        or not permissions.can_admin_site(user)):
-        self.abort(403, msg='Cannot perform admin actions')
-
-    return {} # no handler_data needed to be returned
+    return get_spa_template_data(self, defaults)
 
 
-def FlaskApplication(import_name, routes, post_routes, pattern_base='', debug=False):
+def get_spa_template_data(handler_obj, defaults):
+  """Check permissions then let spa.html do its thing."""
+  # Check if the page requires user to sign in
+  if defaults.get('require_signin') and not handler_obj.get_current_user():
+    return flask.redirect(settings.LOGIN_PAGE_URL), handler_obj.get_headers()
+
+  # Check if the page requires create feature permission
+  if defaults.get('require_create_feature'):
+    redirect_resp = permissions.validate_feature_create_permission(handler_obj)
+    if redirect_resp:
+      return redirect_resp
+
+  # Validate the user has edit permissions and redirect if needed.
+  if defaults.get('require_edit_feature'):
+    feature_id = defaults.get('feature_id')
+    if not feature_id:
+      handler_obj.abort(500, msg='Cannot get feature ID from the URL')
+    redirect_resp = permissions.validate_feature_edit_permission(
+        handler_obj, feature_id)
+    if redirect_resp:
+      return redirect_resp
+
+  # Validate the user has admin permissions and redirect if needed.
+  if defaults.get('require_admin_site'):
+    user = handler_obj.get_current_user()
+    # Should have already done the require_signin check.
+    # If for reason, we don't let's treat it as the main 403 case.
+    if not user or not permissions.can_admin_site(user):
+      handler_obj.abort(403, msg='Cannot perform admin actions')
+
+  return {} # no handler_data needed to be returned
+
+
+
+def FlaskApplication(import_name, routes, pattern_base='', debug=False):
   """Make a Flask app and add routes and handlers that work like webapp2."""
 
   app = flask.Flask(import_name,
@@ -599,19 +605,11 @@ def FlaskApplication(import_name, routes, post_routes, pattern_base='', debug=Fa
     app.secret_key = secrets.get_session_secret()  # For flask.session
     app.permanent_session_lifetime = xsrf.REFRESH_TOKEN_TIMEOUT_SEC
 
-  for i, route in enumerate(post_routes):
-    classname = route.handler_class.__name__
-    app.add_url_rule(
-        pattern_base + route.path,
-        endpoint=f'{classname}{i}',  # We don't use it, but it must be unique.
-        view_func=route.handler_class.as_view(classname),
-        methods=["POST"])
-
   for i, route in enumerate(routes):
     classname = route.handler_class.__name__
     app.add_url_rule(
         pattern_base + route.path,
-        endpoint=f'{classname}{i + len(post_routes)}',  # We don't use it, but it must be unique.
+        endpoint=f'{classname}{i}',  # We don't use it, but it must be unique.
         view_func=route.handler_class.as_view(classname),
         defaults=route.defaults)
 

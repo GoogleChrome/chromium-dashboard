@@ -152,27 +152,31 @@ api_routes: list[Route] = [
     # (f'{API_BASE}/metrics/<str:kind>/<int:bucket_id>', TODO),
 ]
 
+# The Routes below that have no handler specified use SPAHandler.
+# The guide.* handlers each call get_spa_template_data().
 spa_page_routes = [
   Route('/'),
   Route('/roadmap'),
   Route('/myfeatures', defaults={'require_signin': True}),
   Route('/newfeatures'),
   Route('/feature/<int:feature_id>'),
-  Route('/guide/new',
+  Route('/guide/new', guide.FeatureCreateHandler,
       defaults={'require_create_feature': True}),
-  Route('/guide/enterprise/new',
+  Route('/guide/enterprise/new', guide.EnterpriseFeatureCreateHandler,
       defaults={'require_create_feature': True}),
-  Route('/guide/edit/<int:feature_id>',
+  Route('/guide/edit/<int:feature_id>', guide.FeatureEditHandler,
       defaults={'require_edit_feature': True}),
-  Route('/guide/stage/<int:feature_id>/<int:stage_id>/<int:intent_stage>',
+  Route('/guide/stage/<int:feature_id>/<int:intent_stage>/<int:stage_id>',
+        guide.FeatureEditHandler,
       defaults={'require_edit_feature': True}),
   Route('/guide/stage/<int:feature_id>/<int:stage_id>',
+        guide.FeatureEditHandler,
       defaults={'require_edit_feature': True}),
-  Route('/guide/edit/<int:feature_id>/<int:stage_id>',
+  Route('/guide/edit/<int:feature_id>/<int:stage_id>', guide.FeatureEditHandler,
       defaults={'require_edit_feature': True}),
-  Route('/guide/editall/<int:feature_id>',
+  Route('/guide/editall/<int:feature_id>', guide.FeatureEditHandler,
       defaults={'require_edit_feature': True}),
-  Route('/guide/verify_accuracy/<int:feature_id>',
+  Route('/guide/verify_accuracy/<int:feature_id>', guide.FeatureEditHandler,
       defaults={'require_edit_feature': True}),
   Route('/guide/stage/<int:feature_id>/metadata',
       defaults={'require_edit_feature': True}),
@@ -191,18 +195,6 @@ spa_page_routes = [
   Route('/enterprise'),
   # Admin pages
   Route('/admin/blink', defaults={'require_admin_site': True, 'require_signin': True}),
-]
-
-spa_page_post_routes: list[Route] = [
-  Route('/guide/new', guide.FeatureCreateHandler),
-  Route('/guide/enterprise/new', guide.EnterpriseFeatureCreateHandler),
-  Route('/guide/edit/<int:feature_id>', guide.FeatureEditHandler),
-  Route('/guide/stage/<int:feature_id>/<int:intent_stage>',
-      guide.FeatureEditHandler),
-  Route('/guide/stage/<int:feature_id>/<int:intent_stage>/<int:stage_id>/',
-      guide.FeatureEditHandler),
-  Route('/guide/editall/<int:feature_id>', guide.FeatureEditHandler),
-  Route('/guide/verify_accuracy/<int:feature_id>', guide.FeatureEditHandler),
 ]
 
 mpa_page_routes: list[Route] = [
@@ -270,7 +262,7 @@ if settings.DEV_MODE:
 app = basehandlers.FlaskApplication(
     __name__,
     (metrics_chart_routes + api_routes + mpa_page_routes + spa_page_routes +
-     internals_routes + dev_routes), spa_page_post_routes)
+     internals_routes + dev_routes))
 
 # TODO(jrobbins): Make the CSP handler be a class like our others.
 app.add_url_rule(

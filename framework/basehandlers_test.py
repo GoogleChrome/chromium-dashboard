@@ -74,7 +74,6 @@ test_app = basehandlers.FlaskApplication(
      Route('/ui/density.json', basehandlers.ConstHandler,
       {'UI density': ['default', 'comfortable', 'compact']}),
      ],
-    [], # POST routes
     debug=True)
 
 
