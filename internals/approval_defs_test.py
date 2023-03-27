@@ -14,14 +14,9 @@
 
 import base64
 import datetime
-import requests
 import testing_config  # Must be imported before the module under test.
-import unittest
-import urllib.request, urllib.parse, urllib.error
 
 from unittest import mock
-import flask
-import werkzeug
 
 from internals import approval_defs
 from internals.legacy_models import Approval

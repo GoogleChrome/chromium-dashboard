@@ -16,8 +16,7 @@
 from dataclasses import dataclass, field
 from typing import Any, Type
 
-from api import accounts_api, dev_api
-from api import approvals_api
+from api import accounts_api
 from api import blink_components_api
 from api import component_users
 from api import components_users
@@ -100,13 +99,6 @@ API_BASE = '/api/v0'
 api_routes: list[Route] = [
     Route(f'{API_BASE}/features', features_api.FeaturesAPI),
     Route(f'{API_BASE}/features/<int:feature_id>', features_api.FeaturesAPI),
-    Route(f'{API_BASE}/features/<int:feature_id>/approvals',
-        approvals_api.ApprovalsAPI),
-    # TODO(jrobbins): Phase out approvals_api.
-    Route(f'{API_BASE}/features/<int:feature_id>/approvals/<int:field_id>',
-        approvals_api.ApprovalsAPI),
-    Route(f'{API_BASE}/features/<int:feature_id>/configs',
-        approvals_api.ApprovalConfigsAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/votes',
         reviews_api.VotesAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/votes/<int:gate_id>',
