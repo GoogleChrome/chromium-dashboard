@@ -23,7 +23,6 @@ from internals import core_enums
 from internals import detect_intent
 from internals import stage_helpers
 from internals.core_models import FeatureEntry, Stage
-from internals.legacy_models import Approval
 from internals.review_models import Gate, Vote
 
 test_app = flask.Flask(__name__)
@@ -353,7 +352,7 @@ class FunctionTest(testing_config.CustomTestCase):
     self.assertFalse(detect_intent.is_lgtm_allowed(
         'other@example.com', self.feature_1, approval_defs.ShipApproval))
 
-  @mock.patch('internals.legacy_models.Approval.get_approvals')
+  @mock.patch('internals.review_models.Vote.get_votes')
   def test_detect_new_thread(self, mock_get_approvals):
     """A thread is new if there are no previous approval values."""
     mock_get_approvals.return_value = []
@@ -415,7 +414,7 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     self.handler = detect_intent.IntentEmailHandler()
 
   def tearDown(self):
-    for kind in [Approval, FeatureEntry, Gate, Stage, Vote]:
+    for kind in [FeatureEntry, Gate, Stage, Vote]:
       for entity in kind.query():
         entity.key.delete()
 
@@ -427,20 +426,12 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
 
     self.assertEqual(actual, {'message': 'Done'})
 
-    created_approvals = list(Approval.query().fetch(None))
-    self.assertEqual(1, len(created_approvals))
-    appr = created_approvals[0]
-    self.assertEqual(self.feature_id, appr.feature_id)
-    self.assertEqual(approval_defs.ShipApproval.field_id, appr.field_id)
-    self.assertEqual(Approval.REVIEW_REQUESTED, appr.state)
-    self.assertEqual('user@example.com', appr.set_by)
-
     created_votes = list(Vote.query().fetch(None))
     self.assertEqual(1, len(created_votes))
     vote = created_votes[0]
     self.assertEqual(self.feature_id, vote.feature_id)
     # TODO(jrobbins): check gate_id
-    self.assertEqual(Approval.REVIEW_REQUESTED, vote.state)
+    self.assertEqual(Vote.REVIEW_REQUESTED, vote.state)
     self.assertEqual('user@example.com', vote.set_by)
 
     self.assertEqual(
@@ -454,9 +445,6 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
       actual = self.handler.process_post_data()
 
     self.assertEqual(actual, {'message': 'Done'})
-
-    created_approvals = list(Approval.query().fetch(None))
-    self.assertEqual(0, len(created_approvals))
 
     created_votes = list(Vote.query().fetch(None))
     self.assertEqual(0, len(created_votes))
@@ -477,11 +465,11 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
 
     self.assertEqual(actual, {'message': 'Done'})
 
-    created_approvals = list(Approval.query().fetch(None))
-    self.assertEqual(1, len(created_approvals))
-    appr = created_approvals[0]
-    self.assertEqual(self.feature_id, appr.feature_id)
-    self.assertEqual(approval_defs.ShipApproval.field_id, appr.field_id)
-    self.assertEqual(Approval.APPROVED, appr.state)
-    self.assertEqual('user@example.com', appr.set_by)
+    created_votes: list[Vote] = Vote.query().fetch()
+    self.assertEqual(1, len(created_votes))
+    vote = created_votes[0]
+    self.assertEqual(self.feature_id, vote.feature_id)
+    self.assertEqual(approval_defs.ShipApproval.field_id, vote.gate_type)
+    self.assertEqual(Vote.APPROVED, vote.state)
+    self.assertEqual('user@example.com', vote.set_by)
     self.assertEqual(self.stages_dict[160][0].intent_thread_url, self.thread_url)

@@ -24,7 +24,6 @@ from framework import users
 from internals import core_enums
 from internals import approval_defs
 from internals.core_models import FeatureEntry, Stage
-from internals.legacy_models import Approval
 from internals.review_models import Vote
 
 
@@ -148,9 +147,9 @@ def is_lgtm_allowed(from_addr, feature, approval_field):
 
 def detect_new_thread(feature_id, approval_field):
   """Return True if there are no previous approval values for this intent."""
-  existing_approvals = Approval.get_approvals(
-      feature_id=feature_id, field_id=approval_field.field_id)
-  return not existing_approvals
+  existing_votes = Vote.get_votes(
+      feature_id=feature_id, gate_type=approval_field.field_id)
+  return not existing_votes
 
 
 def remove_markdown(body):
@@ -263,9 +262,6 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     if (detect_lgtm(body) and
         is_lgtm_allowed(from_addr, feature, approval_field)):
       logging.info('found LGTM')
-      Approval.set_approval(
-          feature_id, approval_field.field_id,
-          Approval.APPROVED, from_addr)
       approval_defs.set_vote(feature_id, approval_field.field_id,
           Vote.APPROVED, from_addr)
 
@@ -275,9 +271,6 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
       logging.info('found new thread')
       if approval_field in FIELDS_REQUIRING_LGTMS:
         logging.info('requesting a review')
-        Approval.set_approval(
-            feature_id, approval_field.field_id,
-            Approval.REVIEW_REQUESTED, from_addr)
         # TODO(jrobbins): set gate state rather than creating
         # REVIEW_REQUESTED votes.
         approval_defs.set_vote(feature_id, approval_field.field_id,
