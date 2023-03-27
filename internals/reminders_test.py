@@ -85,10 +85,6 @@ class FunctionTest(testing_config.CustomTestCase):
     self.current_milestone_info = {
         'earliest_beta': '2022-09-21T12:34:56',
     }
-
-    self.old_feature_template = Feature(id=123,
-        name='feature one', summary='sum', owner=['feature_owner@example.com'],
-        category=1, feature_type=0, ot_milestone_desktop_start=100)
     self.feature_template = FeatureEntry(id=123,
       name='feature one', summary='sum',
       creator_email='creator@example.com',
@@ -103,7 +99,6 @@ class FunctionTest(testing_config.CustomTestCase):
         stage.milestones = MilestoneSet(desktop_first=100)
       stage.put()
 
-    self.old_feature_template.put()
     self.feature_template.put()
 
     self.maxDiff = None

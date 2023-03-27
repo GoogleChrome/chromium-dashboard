@@ -20,7 +20,6 @@ from framework import rediscache
 from internals.core_enums import *
 from internals import feature_helpers
 from internals import stage_helpers
-from internals.legacy_models import Feature
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 
 
@@ -81,29 +80,8 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     self.fe_4_stages_dict = stage_helpers.get_feature_stages(
         self.feature_4.key.integer_id())
 
-    # Legacy entities for testing legacy functions.
-    self.legacy_feature_2 = Feature(
-        name='feature b', summary='sum',
-        owner=['feature_owner@example.com'], category=1)
-    self.legacy_feature_2.put()
-
-    self.legacy_feature_1 = Feature(
-        name='feature a', summary='sum', impl_status_chrome=3,
-        owner=['feature_owner@example.com'], category=1)
-    self.legacy_feature_1.put()
-
-    self.legacy_feature_4 = Feature(
-        name='feature d', summary='sum', category=1, impl_status_chrome=2,
-        owner=['feature_owner@example.com'])
-    self.legacy_feature_4.put()
-
-    self.legacy_feature_3 = Feature(
-        name='feature c', summary='sum', category=1, impl_status_chrome=2,
-        owner=['feature_owner@example.com'])
-    self.legacy_feature_3.put()
-
   def tearDown(self):
-    for kind in [Feature, FeatureEntry, Stage]:
+    for kind in [FeatureEntry, Stage]:
       for entity in kind.query():
         entity.key.delete()
 
