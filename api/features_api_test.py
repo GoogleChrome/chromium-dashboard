@@ -122,29 +122,6 @@ class FeaturesAPITestGet_NewSchema(testing_config.CustomTestCase):
     self.feature_3.put()
     self.feature_3_id = self.feature_3.key.integer_id()
 
-    # Feature entities for testing legacy functions.
-    self.legacy_feature_1 = Feature(
-        name='feature one', summary='sum Z',
-        owner=['feature_owner@example.com'], category=1,
-        intent_stage=core_enums.INTENT_IMPLEMENT)
-    self.legacy_feature_1.put()
-    self.legacy_feature_1_id = self.feature_1.key.integer_id()
-
-    self.legacy_feature_2 = Feature(
-        name='feature two', summary='sum K',
-        owner=['other_owner@example.com'], category=1,
-        intent_stage=core_enums.INTENT_IMPLEMENT)
-    self.legacy_feature_2.put()
-    self.legacy_feature_2_id = self.feature_2.key.integer_id()
-
-    self.legacy_feature_3 = Feature(
-        name='feature three', summary='sum A',
-        owner=['other_owner@example.com'], category=1,
-        intent_stage=core_enums.INTENT_IMPLEMENT,
-        unlisted=True)
-    self.legacy_feature_3.put()
-    self.legacy_feature_3_id = self.feature_3.key.integer_id()
-
     self.request_path = '/api/v0/features'
     self.handler = features_api.FeaturesAPI()
 
@@ -348,31 +325,6 @@ class FeaturesAPITestGet_OldSchema(testing_config.CustomTestCase):
     self.feature_3_id = self.feature_3.key.integer_id()
     self.ship_stage_3 = Stage(feature_id=self.feature_1_id,
         stage_type=360, milestones=MilestoneSet(desktop_first=2))
-
-    # Feature entities for testing legacy functions.
-    self.legacy_feature_1 = Feature(
-        name='feature one', summary='sum Z',
-        owner=['feature_owner@example.com'], category=1,
-        intent_stage=core_enums.INTENT_IMPLEMENT,
-        shipped_milestone=1)
-    self.legacy_feature_1.put()
-    self.legacy_feature_1_id = self.feature_1.key.integer_id()
-
-    self.legacy_feature_2 = Feature(
-        name='feature two', summary='sum K',
-        owner=['other_owner@example.com'], category=1,
-        intent_stage=core_enums.INTENT_IMPLEMENT,
-        shipped_milestone=2)
-    self.legacy_feature_2.put()
-    self.legacy_feature_2_id = self.feature_2.key.integer_id()
-
-    self.legacy_feature_3 = Feature(
-        name='feature three', summary='sum A',
-        owner=['other_owner@example.com'], category=1,
-        intent_stage=core_enums.INTENT_IMPLEMENT,
-        shipped_milestone=2, unlisted=True)
-    self.legacy_feature_3.put()
-    self.legacy_feature_3_id = self.feature_3.key.integer_id()
 
     self.request_path = '/api/v0/features'
     self.handler = features_api.FeaturesAPI()

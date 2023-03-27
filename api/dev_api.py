@@ -74,13 +74,8 @@ class WriteDevData(APIHandler):
 
         fe = FeatureEntry(id=f_id, created=created, updated=updated,
             accurate_as_of=accurate_as_of)
-        # Also write the old Feature entity.
-        feature = Feature(id=f_id, created=created, updated=updated,
-            accurate_as_of=accurate_as_of)
         for field, value in d.items():
           setattr(fe, field, value)
-          setattr(feature, self.RENAMED_FIELD_MAPPING.get(field, field), value)
-        feature.put()
         fe.put()
       features_created = len(info['feature_entries'])
 
