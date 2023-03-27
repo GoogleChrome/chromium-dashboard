@@ -16,7 +16,7 @@ google-cloud-ndb==1.11.1
 google-cloud-logging==3.0.0
 google-auth==1.31.0
 requests==2.27.1
-redis==4.3.4
+redis==4.5.3
 fakeredis==1.9.0
 Flask==2.1.2
 flask-cors==3.0.10
