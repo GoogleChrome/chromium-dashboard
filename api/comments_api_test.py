@@ -22,7 +22,6 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 
 from api import comments_api
 from internals.core_models import FeatureEntry
-from internals.legacy_models import Approval
 from internals.review_models import Activity, Amendment, Gate, Vote
 
 test_app = flask.Flask(__name__)
@@ -107,8 +106,6 @@ class CommentsAPITest(testing_config.CustomTestCase):
 
   def tearDown(self):
     self.feature_1.key.delete()
-    for appr in Approval.query():
-      appr.key.delete()
     for activity in Activity.query():
       activity.key.delete()
 
