@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import base64
-import collections
 from dataclasses import dataclass
 import datetime
 import logging
@@ -23,7 +22,6 @@ import requests
 
 from framework import permissions
 from internals import core_enums
-from internals.legacy_models import Approval
 from internals.review_models import Gate, OwnersFile, Vote
 import settings
 
@@ -219,9 +217,9 @@ def is_approved(approval_values, field_id):
   """Return true if we have all needed APPROVED values and no DENIED."""
   count = 0
   for av in approval_values:
-    if av.state in (Approval.APPROVED, Approval.NA):
+    if av.state in (Vote.APPROVED, Vote.NA):
       count += 1
-    elif av.state == Approval.DENIED:
+    elif av.state == Vote.DENIED:
       return False
   afd = APPROVAL_FIELDS_BY_ID[field_id]
 
@@ -241,7 +239,7 @@ def is_resolved(approval_values, field_id):
 
   # Any DENIED value means that the review is no longer pending.
   for av in approval_values:
-    if av.state == Approval.DENIED:
+    if av.state == Vote.DENIED:
       return True
 
   return False

@@ -14,17 +14,11 @@
 
 import base64
 import datetime
-import requests
 import testing_config  # Must be imported before the module under test.
-import unittest
-import urllib.request, urllib.parse, urllib.error
 
 from unittest import mock
-import flask
-import werkzeug
 
 from internals import approval_defs
-from internals.legacy_models import Approval
 from internals.review_models import Gate, Vote
 
 
@@ -119,24 +113,24 @@ class IsApprovedTest(testing_config.CustomTestCase):
 
   def setUp(self):
     feature_1_id = 123456
-    self.appr_nr = Approval(
-        feature_id=feature_1_id, field_id=1,
-        state=Approval.REVIEW_REQUESTED,
+    self.appr_nr = Vote(
+        feature_id=feature_1_id, gate_type=1,
+        state=Vote.REVIEW_REQUESTED,
         set_on=datetime.datetime.now(),
         set_by='one@example.com')
-    self.appr_na = Approval(
-        feature_id=feature_1_id, field_id=1,
-        state=Approval.NA,
+    self.appr_na = Vote(
+        feature_id=feature_1_id, gate_type=1,
+        state=Vote.NA,
         set_on=datetime.datetime.now(),
         set_by='one@example.com')
-    self.appr_no = Approval(
-        feature_id=feature_1_id, field_id=1,
-        state=Approval.DENIED,
+    self.appr_no = Vote(
+        feature_id=feature_1_id, gate_type=1,
+        state=Vote.DENIED,
         set_on=datetime.datetime.now(),
         set_by='two@example.com')
-    self.appr_yes = Approval(
-        feature_id=feature_1_id, field_id=1,
-        state=Approval.APPROVED,
+    self.appr_yes = Vote(
+        feature_id=feature_1_id, gate_type=1,
+        state=Vote.APPROVED,
         set_on=datetime.datetime.now(),
         set_by='three@example.com')
 
