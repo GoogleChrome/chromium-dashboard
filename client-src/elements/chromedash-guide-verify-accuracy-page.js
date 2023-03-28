@@ -210,7 +210,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
         fieldsOnly = flattenSections(VERIFY_ACCURACY_TRIAL_EXTENSION_FIELDS);
         let sectionName = VERIFY_ACCURACY_TRIAL_EXTENSION_FIELDS.name;
         if (feStage.display_name) {
-          sectionName = `${VERIFY_ACCURACY_TRIAL_EXTENSION_FIELDS.name} (${feStage.display_name})`;
+          sectionName = `${feStage.display_name} ${VERIFY_ACCURACY_TRIAL_EXTENSION_FIELDS.name}`;
         }
         formsToRender.push(this.renderStageSection(
           formattedFeature,

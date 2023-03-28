@@ -229,7 +229,7 @@ export class ChromedashGuideEditallPage extends LitElement {
         fieldsOnly = flattenSections(FLAT_TRIAL_EXTENSION_FIELDS);
         let sectionName = FLAT_TRIAL_EXTENSION_FIELDS.name;
         if (feStage.display_name) {
-          sectionName = `${FLAT_TRIAL_EXTENSION_FIELDS.name} (${feStage.display_name})`;
+          sectionName = ` ${feStage.display_name} ${FLAT_TRIAL_EXTENSION_FIELDS.name}`;
         }
         formsToRender.push(this.renderStageSection(
           formattedFeature,
