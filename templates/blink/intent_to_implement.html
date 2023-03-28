@@ -41,7 +41,7 @@
   {% endif %}
 
   <br><br><h4>Specification</h4>
-  {% if feature.standards.spec %}{{feature.standards.spec|urlize}}{% endif %}
+  {{feature.standards.spec|urlize}}
 
   {% if feature.resources and feature.resources.docs %}
     <br><br><h4>Design docs</h4>
@@ -60,10 +60,10 @@
 
   {% if 'motivation' in sections_to_show %}
     <br><br><h4>Motivation</h4>
-    <p class="preformatted">{% if feature.motivation %}{{feature.motivation|urlize}}{% endif %}</p>
+    <p class="preformatted">{{feature.motivation|urlize}}</p>
 
     <br><br><h4>Initial public proposal</h4>
-    {% if feature.initial_public_proposal_url %}{{feature.initial_public_proposal_url|urlize}}{% endif %}
+    {{feature.initial_public_proposal_url|urlize}}
   {% endif %}
 
   {% if feature.tags %}
@@ -75,7 +75,7 @@
   {% endif %}
 
   <br><br><h4>TAG review</h4>
-  {% if feature.tag_review %}{{feature.tag_review|urlize}}{% endif %}
+  {{feature.tag_review|urlize}}
 
   {% if feature.tag_review_status %}
     <br><br><h4>TAG review status</h4>
@@ -92,7 +92,7 @@
   <br><br><h4>Risks</h4>
   <div style="margin-left: 4em;">
     <br><br><h4>Interoperability and Compatibility</h4>
-    <p class="preformatted">{% if feature.interop_compat_risks %}{{feature.interop_compat_risks|urlize}}{% endif %}</p>
+    <p class="preformatted">{{feature.interop_compat_risks|urlize}}</p>
 
     <br><br><i>Gecko</i>: {{feature.browsers.ff.view.text}}
     {% if feature.browsers.ff.view.url %}
@@ -143,7 +143,7 @@
       Does this intent deprecate or change behavior of existing APIs,
       such that it has potentially high risk for Android WebView-based
       applications?</p>
-    <p class="preformatted">{% if feature.webview_risks %}{{feature.webview_risks|urlize}}{% endif %}</p>
+    <p class="preformatted">{{feature.webview_risks|urlize}}</p>
 
   </div> <!-- end risks -->
 
@@ -172,7 +172,7 @@
 {% endif %}
 
 <br><br><h4>Debuggability</h4>
-<p class="preformatted">{% if feature.debuggability %}{{feature.debuggability|urlize}}{% endif %}</p>
+<p class="preformatted">{{feature.debuggability|urlize}}</p>
 
 {% if 'experiment' in sections_to_show or 'ship' in sections_to_show %}
   <br><br><h4>Will this feature be supported on all six Blink platforms
@@ -196,7 +196,7 @@
 {% endif %}
 
 <br><br><h4>Flag name</h4>
-{% if feature.flag_name %}{{feature.flag_name}}{% endif %}
+{{feature.flag_name}}
 
 <br><br><h4>Requires code in //chrome?</h4>
 {{feature.requires_embedder_support}}
