@@ -226,6 +226,7 @@ class Stage(ndb.Model):
   # Identifying information: what.
   feature_id = ndb.IntegerProperty(required=True)
   stage_type = ndb.IntegerProperty(required=True)
+  display_name = ndb.StringProperty()
 
   # Pragmatic information: where and when.
   browser = ndb.StringProperty()  # Blank or "Chrome" for now.
