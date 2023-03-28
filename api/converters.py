@@ -14,11 +14,12 @@
 # limitations under the License.
 
 import datetime
-from typing import Any
+from typing import Any, TypedDict
 from google.cloud import ndb  # type: ignore
 
 from internals.core_enums import *
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.data_types import StageDict, VerboseFeatureDict
 from internals.review_models import Vote, Gate
 from internals import approval_defs
 
@@ -72,29 +73,38 @@ def _date_to_str(date: Optional[datetime.datetime]) -> Optional[str]:
   return str(date) if date is not None else None
 
 
-def _val_to_list(items: Optional[list]) -> list:
+def _val_to_list(items: list | None) -> list:
   """Returns the given list, or returns an empty list if null."""
   return items if items is not None else []
 
 
-def _stage_attr(
-    stage: Optional[Stage], field: str, is_mstone: bool=False) -> Optional[Any]:
+def _stage_attr(stage: Stage | None, field: str) -> Any:
   """Returns a specified field of a Stage entity."""
-  if stage is None:
-    return None
-  if not is_mstone:
-    return getattr(stage, field)
+  return None if stage is None else getattr(stage, field)
 
-  if stage.milestones is None:
+def _get_milestone_attr(stage: Stage | None, field: str) -> int | None:
+  """Returns a specified milestone field of a Stage entity."""
+  if stage is None or stage.milestones is None:
     return None
   return getattr(stage.milestones, field)
 
 
-def _prep_stage_gate_info(
-    fe: FeatureEntry, d: dict,
+# Return type for _prep_stage_info function.
+class StagePrepResponse(TypedDict):
+  proto: Stage | None
+  dev_trial: Stage | None
+  ot: Stage | None
+  extend: Stage | None
+  ship: Stage | None
+  rollout: Stage | None
+  all_stages: list[StageDict]
+
+
+def _prep_stage_info(
+    fe: FeatureEntry,
     prefetched_stages: list[Stage] | None=None
-    ) -> dict[str, Optional[Stage]]:
-  """Adds stage and gate info to the dict and returns major stage info."""
+    ) -> StagePrepResponse:
+  """Prepares stage info of a feature to help create JSON dictionaries."""
   proto_type = STAGE_TYPES_PROTOTYPE[fe.feature_type]
   dev_trial_type = STAGE_TYPES_DEV_TRIAL[fe.feature_type]
   ot_type = STAGE_TYPES_ORIGIN_TRIAL[fe.feature_type]
@@ -107,18 +117,18 @@ def _prep_stage_gate_info(
     prefetched_stages.sort(key=lambda s: s.stage_type)
     stages = prefetched_stages
   else:
-    stages = Stage.query(Stage.feature_id == d['id']).order(Stage.stage_type)
+    stages = Stage.query(
+        Stage.feature_id == fe.key.integer_id()).order(Stage.stage_type)
 
-  major_stages: dict[str, Optional[Stage]] = {
+  stage_info: StagePrepResponse = {
       'proto': None,
       'dev_trial': None,
       'ot': None,
       'extend': None,
       'ship': None,
-      'rollout': None}
-
-  # Write a list of stages associated with the feature.
-  d['stages'] = []
+      'rollout': None,
+      # Write a list of all stages associated with the feature.
+      'all_stages': []}
 
   # Keep track of trial stage indexes so that we can add trial extension
   # stages as a property of the trial stage later.
@@ -127,296 +137,368 @@ def _prep_stage_gate_info(
     stage_dict = stage_to_json_dict(s, fe.feature_type)
     # Keep major stages for referencing additional fields.
     if s.stage_type == proto_type:
-      major_stages['proto'] = s
+      stage_info['proto'] = s
     elif s.stage_type == dev_trial_type:
-      major_stages['dev_trial'] = s
+      stage_info['dev_trial'] = s
     elif s.stage_type == ot_type:
       # Keep the stage's index to add trial extensions later.
-      ot_stage_indexes[s.key.integer_id()] = len(d['stages'])
+      ot_stage_indexes[s.key.integer_id()] = len(stage_info['all_stages'])
       stage_dict['extensions'] = []
-      major_stages['ot'] = s
+      stage_info['ot'] = s
     elif s.stage_type == extend_type:
       # Trial extensions are kept as a list on the associated trial stage dict.
       if s.ot_stage_id and s.ot_stage_id in ot_stage_indexes:
-        (d['stages'][ot_stage_indexes[s.ot_stage_id]]['extensions']
+        (stage_info['all_stages'][ot_stage_indexes[s.ot_stage_id]]['extensions']
             .append(stage_dict))
-      major_stages['extend'] = s
+      stage_info['extend'] = s
       # No need to append the extension stage to the overall stages list.
       continue
     elif s.stage_type == ship_type:
-      major_stages['ship'] = s
+      stage_info['ship'] = s
     elif s.stage_type == rollout_type:
-      major_stages['rollout'] = s
-    d['stages'].append(stage_dict)
+      stage_info['rollout'] = s
+    stage_info['all_stages'].append(stage_dict)
 
-  return major_stages
-
-
-# This function is a workaround to reference extension stage info on
-# origin trial stages.
-# TODO(danielrsmith): Remove this once users can manually add trial extension
-# stages.
-def _add_ot_extension_fields(d: dict):
-  """Adds info from the trial extension stage to the OT stage dict."""
-  extension_stage = Stage.query(
-      Stage.ot_stage_id == d['id']).get()
-  if extension_stage is None:
-    return
-  d['experiment_extension_reason'] = extension_stage.experiment_extension_reason
-  d['intent_to_extend_experiment_url'] = (
-    extension_stage.intent_thread_url)
+  return stage_info
 
 
 def stage_to_json_dict(
-    stage: Stage, feature_type: int | None=None) -> dict[str, Any]:
+    stage: Stage, feature_type: int | None=None) -> StageDict:
   """Convert a stage entity into a JSON dict."""
   # Get feature type if not supplied.
   if feature_type is None:
     f = FeatureEntry.get_by_id(stage.feature_id)
     feature_type = f.feature_type
+  d: StageDict = {
+    'id': stage.key.integer_id(),
+    'feature_id': stage.feature_id,
+    'stage_type': stage.stage_type,
+    'intent_stage': INTENT_STAGES_BY_STAGE_TYPE.get(
+        stage.stage_type, INTENT_NONE),
+    'pm_emails': stage.pm_emails,
+    'tl_emails': stage.tl_emails,
+    'ux_emails': stage.ux_emails,
+    'te_emails': stage.te_emails,
+    'intent_thread_url': stage.intent_thread_url,
 
-  d: dict[str, Any] = {}
-  d['id'] = stage.key.integer_id()
-  d['feature_id'] = stage.feature_id
-  d['stage_type'] = stage.stage_type
-  d['intent_stage'] = INTENT_STAGES_BY_STAGE_TYPE.get(
-      d['stage_type'], INTENT_NONE)
+    'announcement_url': stage.announcement_url,
+    'intent_to_experiment_url': stage.intent_thread_url,
+    'experiment_goals': stage.experiment_goals,
+    'experiment_risks': stage.experiment_risks,
+    'origin_trial_feedback_url': stage.origin_trial_feedback_url,
+    'extensions': [],
+    'experiment_extension_reason': stage.experiment_extension_reason,
+    'intent_to_extend_experiment_url': stage.intent_thread_url,
+    'ot_stage_id': stage.ot_stage_id,
+    'intent_to_ship_url': stage.intent_thread_url,
+    'finch_url': stage.finch_url,
 
-  # Determine the stage type and handle stage-specific fields.
-  # TODO(danielrsmith): Change client to use new field names.
-  milestone_field_names: list[dict] | None = None
+    'rollout_milestone': stage.rollout_milestone,
+    'rollout_platforms': stage.rollout_platforms,
+    'rollout_details': stage.rollout_details,
+    'rollout_impact': stage.rollout_impact,
+    'enterprise_policies': stage.enterprise_policies,
+
+    # Milestone fields to be populated later.
+    'desktop_first': None,
+    'android_first': None,
+    'ios_first': None,
+    'webview_first': None,
+    'desktop_last': None,
+    'android_last': None,
+    'ios_last': None,
+    'webview_last': None,
+
+    # TODO(danielrsmith): Change client to use new field names.
+    # Legacy field names.
+    'intent_to_implement_url': None,
+    'intent_to_experiment_url': None,
+    'intent_to_extend_experiment_url': None,
+    'intent_to_ship_url': None,
+    'ready_for_trial_url': stage.announcement_url,
+
+    # Legacy milestone field names.
+    'shipped_milestone': None,
+    'shipped_android_milestone': None,
+    'shipped_ios_milestone': None,
+    'shipped_webview_milestone': None,
+    'ot_milestone_desktop_start': None,
+    'ot_milestone_desktop_end': None,
+    'ot_milestone_android_start': None,
+    'ot_milestone_android_end': None,
+    'ot_milestone_webview_start': None,
+    'ot_milestone_webview_end': None,
+    'dt_milestone_desktop_start': None,
+    'dt_milestone_android_start': None,
+    'dt_milestone_ios_start': None,
+    'dt_milestone_webview_start': None,
+  }
+
+  # Determine milestone fields to use and intent fields to populate.
+  milestone_field_names: list[dict[str, str]] | None = None
   if d['stage_type'] == STAGE_TYPES_PROTOTYPE[feature_type]:
     d['intent_to_implement_url'] = stage.intent_thread_url
   elif d['stage_type'] == STAGE_TYPES_DEV_TRIAL[feature_type]:
-    d['ready_for_trial_url'] = stage.announcement_url
     milestone_field_names = MilestoneSet.DEV_TRIAL_MILESTONE_FIELD_NAMES
   elif d['stage_type'] == STAGE_TYPES_ORIGIN_TRIAL[feature_type]:
     d['intent_to_experiment_url'] = stage.intent_thread_url
-    d['experiment_goals'] = stage.experiment_goals
-    d['experiment_risks'] = stage.experiment_risks
-    d['origin_trial_feedback_url'] = stage.origin_trial_feedback_url
-    _add_ot_extension_fields(d)
     milestone_field_names = MilestoneSet.OT_MILESTONE_FIELD_NAMES
   elif d['stage_type'] == STAGE_TYPES_EXTEND_ORIGIN_TRIAL[feature_type]:
-    d['experiment_extension_reason'] = stage.experiment_extension_reason
     d['intent_to_extend_experiment_url'] = stage.intent_thread_url
-    d['ot_stage_id'] = stage.ot_stage_id
     milestone_field_names = MilestoneSet.OT_EXTENSION_MILESTONE_FIELD_NAMES
   elif d['stage_type'] == STAGE_TYPES_SHIPPING[feature_type]:
     d['intent_to_ship_url'] = stage.intent_thread_url
-    d['finch_url'] = stage.finch_url
     milestone_field_names = MilestoneSet.SHIPPING_MILESTONE_FIELD_NAMES
-  elif d['stage_type'] == STAGE_TYPES_ROLLOUT[feature_type]:
-    d['rollout_impact'] = stage.rollout_impact
-    d['rollout_milestone'] = stage.rollout_milestone
-    d['rollout_platforms'] = stage.rollout_platforms
-    d['rollout_details'] = stage.rollout_details
-    d['enterprise_policies'] = stage.enterprise_policies
 
-  # Add milestone fields
+  # Add milestone fields.
   if stage.milestones is not None and milestone_field_names is not None:
     for name_info in milestone_field_names:
       # The old val name is still used on the client side.
       # TODO(danielrsmith): Change client to use new field names.
-      d[name_info['old']] = getattr(stage.milestones, name_info['new'])
-      d[name_info['new']] = getattr(stage.milestones, name_info['new'])
-
-  d['pm_emails'] = stage.pm_emails
-  d['tl_emails'] = stage.tl_emails
-  d['ux_emails'] = stage.ux_emails
-  d['te_emails'] = stage.te_emails
-  d['intent_thread_url'] = stage.intent_thread_url
+      # Must be type ignored until this is (eventually) removed.
+      d[name_info['old']] = getattr(stage.milestones, name_info['new'])  # type: ignore
+      d[name_info['new']] = getattr(stage.milestones, name_info['new'])  # type: ignore
 
   return d
 
 
 def feature_entry_to_json_verbose(
     fe: FeatureEntry, prefetched_stages: list[Stage] | None=None
-    ) -> dict[str, Any]:
+    ) -> VerboseFeatureDict:
   """Returns a verbose dictionary with all info about a feature."""
   # Do not convert to JSON if the entity has not been saved.
   if not fe.key:
-    return {}
+    raise Exception('Unsaved FeatureEntry cannot be converted.')
 
-  d: dict[str, Any] = fe.to_dict()
+  id: int = fe.key.integer_id()
 
-  d['id'] = fe.key.integer_id()
+  # Get stage info, returning it to be more explicitly added.
+  stage_info = _prep_stage_info(
+      fe, prefetched_stages=prefetched_stages)
 
-  # Get stage and gate info, returning stage info to be more explicitly added.
-  stages = _prep_stage_gate_info(fe, d, prefetched_stages=prefetched_stages)
-  # Prototype stage fields.
-  d['intent_to_implement_url'] = _stage_attr(
-      stages['proto'], 'intent_thread_url')
-
-  # Dev trial stage fields.
-  d['dt_milestone_desktop_start'] = _stage_attr(
-      stages['dev_trial'], 'desktop_first', True)
-  d['dt_milestone_android_start'] = _stage_attr(
-      stages['dev_trial'], 'android_first', True)
-  d['dt_milestone_ios_start'] = _stage_attr(
-      stages['dev_trial'], 'ios_first', True)
-  d['dt_milestone_webview_start'] = _stage_attr(
-      stages['dev_trial'], 'webview_first', True)
-  d['ready_for_trial_url'] = _stage_attr(
-      stages['dev_trial'], 'announcement_url')
-
-  # Origin trial stage fields.
-  d['ot_milestone_desktop_start'] = _stage_attr(
-      stages['ot'], 'desktop_first', True)
-  d['ot_milestone_android_start'] = _stage_attr(
-      stages['ot'], 'android_first', True)
-  d['ot_milestone_webview_start'] = _stage_attr(
-      stages['ot'], 'webview_first', True)
-  d['ot_milestone_desktop_end'] = _stage_attr(
-      stages['ot'], 'desktop_last', True)
-  d['ot_milestone_android_end'] = _stage_attr(
-      stages['ot'], 'android_last', True)
-  d['ot_milestone_webview_end'] = _stage_attr(
-      stages['ot'], 'webview_last', True)
-  d['origin_trial_feeback_url'] = _stage_attr(
-      stages['ot'], 'origin_trial_feedback_url')
-  d['intent_to_experiment_url'] = _stage_attr(
-      stages['ot'], 'intent_thread_url')
-  d['experiment_goals'] = _stage_attr(stages['ot'], 'experiment_goals')
-  d['experiment_risks'] = _stage_attr(stages['ot'], 'experiment_risks')
-  d['announcement_url'] = _stage_attr(stages['ot'], 'announcement_url')
-
-  # Extend origin trial stage fields.
-  d['experiment_extension_reason'] = _stage_attr(
-      stages['extend'], 'experiment_extension_reason')
-  d['intent_to_extend_experiment_url'] = _stage_attr(
-      stages['extend'], 'intent_thread_url')
-
-  # Ship stage fields.
-  d['intent_to_ship_url'] = _stage_attr(stages['ship'], 'intent_thread_url')
-  d['finch_url'] = _stage_attr(stages['ship'], 'finch_url')
-  d['rollout_impact'] = _stage_attr(stages['rollout'], 'rollout_impact')
-  d['rollout_milestone'] = _stage_attr(stages['rollout'], 'rollout_milestone')
-  d['rollout_platforms'] = _stage_attr(stages['rollout'], 'rollout_platforms')
-  d['rollout_details'] = _stage_attr(stages['rollout'], 'rollout_details')
-  d['enterprise_policies'] = _stage_attr(stages['rollout'], 'enterprise_policies')
-
-  # TODO(danielrsmith): Adjust the references to this JSON to use
-  # the new renamed field names.
-  impl_status_chrome = d.pop('impl_status_chrome', None)
-  standard_maturity = d.pop('standard_maturity', None)
-  d['is_released'] = fe.impl_status_chrome in RELEASE_IMPL_STATES
-  d['category'] = FEATURE_CATEGORIES[fe.category]
-  d['category_int'] = fe.category
-  d['enterprise_feature_categories'] = d.pop('enterprise_feature_categories', [])
-  if fe.feature_type is not None:
-    d['feature_type'] = FEATURE_TYPES[fe.feature_type]
-    d['feature_type_int'] = fe.feature_type
-    d['is_enterprise_feature'] = fe.feature_type == FEATURE_TYPE_ENTERPRISE_ID
-  if fe.intent_stage is not None:
-    d['intent_stage'] = INTENT_STAGES.get(
-        fe.intent_stage, INTENT_STAGES[INTENT_NONE])
-    d['intent_stage_int'] = fe.intent_stage
-  d['active_stage_id'] = fe.active_stage_id
-  d['created'] = {
-    'by': d.pop('creator_email', None),
-    'when': _date_to_str(fe.created),
-  }
-  d['updated'] = {
-    'by': d.pop('updater_email', None),
-    'when': _date_to_str(fe.updated),
-  }
-  d['accurate_as_of'] = _date_to_str(fe.accurate_as_of)
-  d['standards'] = {
-    'spec': fe.spec_link,
-    'maturity': {
-      'text': STANDARD_MATURITY_CHOICES.get(standard_maturity),
-      'short_text': STANDARD_MATURITY_SHORT.get(standard_maturity),
-      'val': standard_maturity,
+  d: VerboseFeatureDict = {
+    'id': id,
+    'name': fe.name,
+    'summary': fe.summary,
+    'blink_components': fe.blink_components or [],
+    'star_count': fe.star_count,
+    'search_tags': fe.search_tags or [],
+    'created': {
+      'by': fe.creator_email,
+      'when': _date_to_str(fe.created),
     },
-  }
-  d['spec_mentors'] = fe.spec_mentor_emails
-  d['tag_review_status'] = REVIEW_STATUS_CHOICES[fe.tag_review_status]
-  d['tag_review_status_int'] = fe.tag_review_status
-  d['security_review_status'] = REVIEW_STATUS_CHOICES[
-      fe.security_review_status]
-  d['security_review_status_int'] = fe.security_review_status
-  d['privacy_review_status'] = REVIEW_STATUS_CHOICES[fe.privacy_review_status]
-  d['privacy_review_status_int'] = fe.privacy_review_status
-  d['resources'] = {
-    'samples': _val_to_list(fe.sample_links),
-    'docs': _val_to_list(fe.doc_links),
-  }
-  d['tags'] = d.pop('search_tags', None)
-  d['editors'] =  d.pop('editor_emails', [])
-  d['cc_recipients'] = d.pop('cc_emails', [])
-  d['creator'] = fe.creator_email
-  d['comments'] = d.pop('feature_notes', None)
+    'updated': {
+      'by': fe.updater_email,
+      'when': _date_to_str(fe.updated),
+    },
+    'category': FEATURE_CATEGORIES[fe.category],
+    'category_int': fe.category,
+    'feature_notes': fe.feature_notes,
+    'enterprise_feature_categories': fe.enterprise_feature_categories or [],
+    'stages': stage_info['all_stages'],
+    'accurate_as_of': _date_to_str(fe.accurate_as_of),
+    'creator_email': fe.creator_email,
+    'updater_email': fe.updater_email,
+    'owner_emails': fe.owner_emails or [],
+    'editor_emails': fe.editor_emails or [],
+    'cc_emails': fe.cc_emails or [],
+    'spec_mentor_emails': fe.spec_mentor_emails or [],
+    'unlisted': fe.unlisted,
+    'deleted': fe.deleted,
+    'editors': fe.editor_emails or [],
+    'cc_recipients': fe.cc_emails or [],
+    'spec_mentors': fe.spec_mentor_emails or [],
+    'creator': fe.creator_email,
+    'feature_type': FEATURE_TYPES[fe.feature_type],
+    'feature_type_int': fe.feature_type,
+    'intent_stage': INTENT_STAGES.get(
+        fe.intent_stage, INTENT_STAGES[INTENT_NONE]),
+    'intent_stage_int': fe.intent_stage,
+    'active_stage_id': fe.active_stage_id,
+    'bug_url': fe.bug_url,
+    'launch_bug_url': fe.launch_bug_url,
+    'new_crbug_url': None,
+    'breaking_change': fe.breaking_change,
+    'flag_name': fe.flag_name,
+    'ongoing_constraints': fe.ongoing_constraints,
+    'motivation': fe.motivation,
+    'devtrial_instructions': fe.devtrial_instructions,
+    'activation_risks': fe.activation_risks,
+    'measurement': fe.measurement,
+    'availability_expectation': fe.availability_expectation,
+    'adoption_expectation': fe.adoption_expectation,
+    'adoption_plan': fe.adoption_plan,
+    'initial_public_proposal_url': fe.initial_public_proposal_url,
+    'explainer_links': fe.explainer_links,
+    'requires_embedder_support': fe.requires_embedder_support,
+    'spec_link': fe.spec_link,
+    'api_spec': fe.api_spec,
+    'interop_compat_risks': fe.interop_compat_risks,
+    'all_platforms': fe.all_platforms,
+    'all_platforms_descr': fe.all_platforms_descr,
+    'non_oss_deps': fe.non_oss_deps,
+    'anticipated_spec_changes': fe.anticipated_spec_changes,
+    'security_risks': fe.security_risks,
+    'ergonomics_risks': fe.ergonomics_risks,
+    'wpt': fe.wpt,
+    'wpt_descr': fe.wpt_descr,
+    'webview_risks': fe.webview_risks,
+    'devrel_emails': fe.devrel_emails or [],
+    'debuggability': fe.debuggability,
+    'doc_links': fe.doc_links or [],
+    'sample_links': fe.sample_links or [],
+    'prefixed': fe.prefixed,
+    'tags': fe.search_tags,
+    'tag_review': fe.tag_review,
+    'tag_review_status': REVIEW_STATUS_CHOICES[fe.tag_review_status],
+    'tag_review_status_int': fe.tag_review_status,
+    'security_review_status': REVIEW_STATUS_CHOICES[fe.security_review_status],
+    'security_review_status_int': fe.security_review_status,
+    'privacy_review_status': REVIEW_STATUS_CHOICES[fe.privacy_review_status],
+    'privacy_review_status_int': fe.privacy_review_status,
+    'updated_display': None,
+    'resources': {
+      'samples': fe.sample_links or [],
+      'docs': fe.doc_links or [],
+    },
+    'comments': fe.feature_notes,
+    'ff_views': fe.ff_views or NO_PUBLIC_SIGNALS,
+    'safari_views': fe.safari_views or NO_PUBLIC_SIGNALS,
+    'web_dev_views': fe.web_dev_views or DEV_NO_SIGNALS,
+    'browsers': {
+      'chrome': {
+        'bug': fe.bug_url,
+        'blink_components': fe.blink_components or [],
+        'devrel': fe.devrel_emails or [],
+        'owners': fe.owner_emails or [],
+        'origintrial': fe.impl_status_chrome == ORIGIN_TRIAL,
+        'intervention': fe.impl_status_chrome == INTERVENTION,
+        'prefixed': fe.prefixed,
+        'flag': fe.impl_status_chrome == BEHIND_A_FLAG,
+        'status': {
+          'text': IMPLEMENTATION_STATUS[fe.impl_status_chrome],
+          'val': fe.impl_status_chrome,
+          'milestone_str': None
+        },
 
-  ff_views = d.pop('ff_views', NO_PUBLIC_SIGNALS)
-  safari_views = d.pop('safari_views', NO_PUBLIC_SIGNALS)
-  web_dev_views = d.pop('web_dev_views', DEV_NO_SIGNALS)
-  d['browsers'] = {
-    'chrome': {
-      'bug': fe.bug_url,
-      'blink_components': d.pop('blink_components', []),
-      'devrel': _val_to_list(fe.devrel_emails),
-      'owners': d.pop('owner_emails', []),
-      'origintrial': fe.impl_status_chrome == ORIGIN_TRIAL,
-      'intervention': fe.impl_status_chrome == INTERVENTION,
-      'prefixed': fe.prefixed,
-      'flag': fe.impl_status_chrome == BEHIND_A_FLAG,
-      'status': {
-        'text': IMPLEMENTATION_STATUS[impl_status_chrome],
-        'val': impl_status_chrome
+        # TODO(danielrsmith): Find out if these are used and delete if not.
+        'desktop': _get_milestone_attr(stage_info['ship'], 'desktop_first'),
+        'android': _get_milestone_attr(stage_info['ship'], 'android_first'),
+        'webview': _get_milestone_attr(stage_info['ship'], 'webview_first'),
+        'ios': _get_milestone_attr(stage_info['ship'], 'ios_first'),
+
       },
-      'desktop': _stage_attr(stages['ship'], 'desktop_first', True),
-      'android': _stage_attr(stages['ship'], 'android_first', True),
-      'webview': _stage_attr(stages['ship'], 'webview_first', True),
-      'ios': _stage_attr(stages['ship'], 'ios_first', True),
+      'ff': {
+        'view': {
+          'text': VENDOR_VIEWS.get(
+              fe.ff_views, VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS]),
+          'val': fe.ff_views if fe.ff_views in VENDOR_VIEWS else NO_PUBLIC_SIGNALS,
+          'url': fe.ff_views_link,
+          'notes': fe.ff_views_notes,
+        },
+      },
+      'safari': {
+        'view': {
+          'text': VENDOR_VIEWS.get(
+              fe.safari_views,VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS]),
+          'val': (fe.safari_views if fe.safari_views in VENDOR_VIEWS
+                  else NO_PUBLIC_SIGNALS),
+          'url': fe.safari_views_link,
+          'notes': fe.safari_views_notes,
+        },
+      },
+      'webdev': {
+        'view': {
+          'text': WEB_DEV_VIEWS.get(fe.web_dev_views, WEB_DEV_VIEWS[DEV_NO_SIGNALS]),
+          'val': (fe.web_dev_views if fe.web_dev_views in WEB_DEV_VIEWS
+                  else DEV_NO_SIGNALS),
+          'url': fe.web_dev_views_link,
+          'notes': fe.web_dev_views_notes,
+        },
+      },
+      'other': {
+        'view': {
+          'text': None,
+          'val': None,
+          'url': None,
+          'notes':fe.other_views_notes,
+        },
+      },
     },
-    'ff': {
-      'view': {
-        'text': VENDOR_VIEWS.get(ff_views,
-            VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS]),
-        'val': ff_views if ff_views in VENDOR_VIEWS else NO_PUBLIC_SIGNALS,
-        'url': d.pop('ff_views_link', None),
-        'notes': d.pop('ff_views_notes'),
-      }
+    'enterprise_feature_categories': fe.enterprise_feature_categories or [],
+    'standards': {
+      'spec': fe.spec_link,
+      'maturity': {
+        'text': STANDARD_MATURITY_CHOICES.get(fe.standard_maturity),
+        'short_text': STANDARD_MATURITY_SHORT.get(fe.standard_maturity),
+        'val': fe.standard_maturity,
+      },
     },
-    'safari': {
-      'view': {
-        'text': VENDOR_VIEWS.get(safari_views,
-            VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS]),
-        'val': (safari_views if safari_views in VENDOR_VIEWS
-            else NO_PUBLIC_SIGNALS),
-        'url': d.pop('safari_views_link', None),
-        'notes': d.pop('safari_views_notes', None),
-      }
-    },
-    'webdev': {
-      'view': {
-        'text': WEB_DEV_VIEWS.get(web_dev_views,
-            WEB_DEV_VIEWS[DEV_NO_SIGNALS]),
-        'val': (web_dev_views if web_dev_views in WEB_DEV_VIEWS
-            else DEV_NO_SIGNALS),
-        'url': d.pop('web_dev_views_link', None),
-        'notes': d.pop('web_dev_views_notes', None),
-      }
-    },
-    'other': {
-      'view': {
-        'notes': d.pop('other_views_notes', None),
-      }
-    },
+    'is_released': fe.impl_status_chrome in RELEASE_IMPL_STATES,
+    'is_enterprise_feature': fe.feature_type == FEATURE_TYPE_ENTERPRISE_ID,
+
+    'experiment_timeline': fe.experiment_timeline,
+    # TODO(danielrsmith): Adjust the references to this JSON to use
+    # the new renamed field names.
+    # Prototype stage fields.
+    'intent_to_implement_url': _stage_attr(
+        stage_info['proto'], 'intent_thread_url'),
+    # Dev trial stage fields.
+    'dt_milestone_desktop_start': _get_milestone_attr(
+        stage_info['dev_trial'], 'desktop_first'),
+    'dt_milestone_android_start': _get_milestone_attr(
+        stage_info['dev_trial'], 'android_first'),
+    'dt_milestone_ios_start': _get_milestone_attr(
+        stage_info['dev_trial'], 'ios_first'),
+    'dt_milestone_webview_start': _get_milestone_attr(
+        stage_info['dev_trial'], 'webview_first'),
+    'ready_for_trial_url': _stage_attr(
+        stage_info['dev_trial'], 'announcement_url'),
+    # Origin trial stage fields.
+    'ot_milestone_desktop_start': _get_milestone_attr(
+        stage_info['ot'], 'desktop_first'),
+    'ot_milestone_android_start': _get_milestone_attr(
+        stage_info['ot'], 'android_first'),
+    'ot_milestone_webview_start': _get_milestone_attr(
+        stage_info['ot'], 'webview_first'),
+    'ot_milestone_desktop_end': _get_milestone_attr(
+        stage_info['ot'], 'desktop_last'),
+    'ot_milestone_android_end': _get_milestone_attr(
+        stage_info['ot'], 'android_last'),
+    'ot_milestone_webview_end': _get_milestone_attr(
+        stage_info['ot'], 'webview_last'),
+    'origin_trial_feeback_url': _stage_attr(
+        stage_info['ot'], 'origin_trial_feedback_url'),
+    'intent_to_experiment_url': _stage_attr(
+        stage_info['ot'], 'intent_thread_url'),
+    'experiment_goals': _stage_attr(stage_info['ot'], 'experiment_goals'),
+    'experiment_risks': _stage_attr(stage_info['ot'], 'experiment_risks'),
+    'announcement_url': _stage_attr(stage_info['ot'], 'announcement_url'),
+    # Extend origin trial stage fields.
+    'experiment_extension_reason': _stage_attr(
+        stage_info['extend'], 'experiment_extension_reason'),
+    'intent_to_extend_experiment_url': _stage_attr(
+        stage_info['extend'], 'intent_thread_url'),
+    # Ship stage fields.
+    'intent_to_ship_url': _stage_attr(stage_info['ship'], 'intent_thread_url'),
+    'finch_url': _stage_attr(stage_info['ship'], 'finch_url'),
+    'rollout_milestone': _stage_attr(stage_info['rollout'], 'rollout_milestone'),
+    'rollout_details': _stage_attr(stage_info['rollout'], 'rollout_details'),
+    'rollout_impact': _stage_attr(stage_info['rollout'], 'rollout_impact'),
   }
 
-  if d['is_released'] and _stage_attr(stages['ship'], 'desktop_first', True):
-    d['browsers']['chrome']['status']['milestone_str'] = (
-        _stage_attr(stages['ship'], 'desktop_first', True))
-  elif d['is_released'] and _stage_attr(stages['ship'], 'android_first', True):
-    d['browsers']['chrome']['status']['milestone_str'] = (
-        _stage_attr(stages['ship'], 'android_first', True))
+  if (d['is_released'] and
+      _get_milestone_attr(stage_info['ship'], 'desktop_first')):
+    d['browsers']['chrome']['status']['milestone_str'] = str(
+        _get_milestone_attr(stage_info['ship'], 'desktop_first'))
+  elif (d['is_released'] and
+        _get_milestone_attr(stage_info['ship'], 'android_first')):
+    d['browsers']['chrome']['status']['milestone_str'] = str(
+        _get_milestone_attr(stage_info['ship'], 'android_first'))
   else:
     d['browsers']['chrome']['status']['milestone_str'] = (
         d['browsers']['chrome']['status']['text'])
 
-  del_none(d) # Further prune response by removing null/[] values.
   return d
 
 

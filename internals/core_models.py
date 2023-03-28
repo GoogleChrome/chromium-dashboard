@@ -171,8 +171,6 @@ class MilestoneSet(ndb.Model):  # copy from milestone fields of Feature
       'ot_milestone_desktop_end': 'desktop_last',
       'ot_milestone_android_start': 'android_first',
       'ot_milestone_android_end': 'android_last',
-      'ot_milestone_ios_start': 'ios_first',
-      'ot_milestone_ios_end': 'ios_last',
       'ot_milestone_webview_start': 'webview_first',
       'ot_milestone_webview_end': 'webview_last',
       'dt_milestone_desktop_start': 'desktop_first',

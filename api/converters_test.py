@@ -248,9 +248,9 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
         'other': {
           'view': {
             'notes': 'other notes',
-          }
-        }
-      }
+          },
+        },
+      },
     }
     self.assertEqual(result, expected)
 
@@ -333,7 +333,6 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
         'when': str(self.date)
       },
       'accurate_as_of': str(self.date),
-      'outstanding_notifications': 0,
       'resources': {
         'samples': ['https://example.com/samples'],
         'docs': ['https://example.com/docs'],
@@ -347,6 +346,64 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
           'val': 1,
         },
       },
+
+      'activation_risks': None,
+      'active_stage_id': None,
+      'adoption_expectation': None,
+      'adoption_plan': None,
+      'all_platforms': None,
+      'all_platforms_descr': None,
+      'anticipated_spec_changes': None,
+      'availability_expectation': None,
+      'blink_components': ['Blink'],
+
+      'cc_emails': [],
+      'cc_recipients': [],
+      'creator_email': 'creator@example.com',
+      'debuggability': None,
+      'devtrial_instructions': None,
+      'dt_milestone_ios_start': None,
+      'dt_milestone_webview_start': None,
+      'editor_emails': ['feature_editor@example.com', 'owner_1@example.com'],
+      'enterprise_feature_categories': [],
+      'ergonomics_risks': None,
+      'experiment_timeline': None,
+      'explainer_links': [],
+      'feature_notes': 'notes',
+      'ff_views': 5,
+      'flag_name': None,
+      'initial_public_proposal_url': None,
+      'interop_compat_risks': None,
+      'measurement': None,
+      'motivation': None,
+      'new_crbug_url': None,
+      'non_oss_deps': None,
+      'ongoing_constraints': None,
+      'origin_trial_feeback_url': None,
+      'ot_milestone_android_end': None,
+      'ot_milestone_webview_end': None,
+      'ot_milestone_webview_start': None,
+      'owner_emails': ['feature_owner@example.com'],
+      'ot_milestone_webview_end': None,
+      'ot_milestone_webview_start': None,
+      'owner_emails': ['feature_owner@example.com'],
+      'ready_for_trial_url': None,
+      'rollout_details': None,
+      'rollout_milestone': None,
+      'safari_views': 1,
+      'search_tags': [],
+      'security_risks': None,
+      'spec_mentor_emails': [],
+      'spec_mentors': [],
+      'tag_review': None,
+      'tags': [],
+      'updated_display': None,
+      'updater_email': 'updater@example.com',
+      'web_dev_views': 1,
+      'webview_risks': None,
+      'wpt': None,
+      'wpt_descr': None,
+
       'tag_review_status': 'Pending',
       'tag_review_status_int': 1,
       'security_review_status': 'Issues open',
@@ -364,12 +421,15 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
           'owners':['feature_owner@example.com'],
           'desktop': 1,
           'android': 1,
+          'ios': None,
+
           'origintrial': False,
           'intervention': False,
           'prefixed': False,
           'flag': False,
+          'webview': None,
           'status': {
-            'milestone_str': 1,
+            'milestone_str': '1',
             'text': 'Enabled by default',
             'val': 5
           }
@@ -392,6 +452,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
         },
         'webdev': {
           'view': {
+          'notes': None,
           'text': 'Strongly positive',
           'val': 1,
           'url': 'https://example.com/web_dev',
@@ -399,10 +460,13 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
         },
         'other': {
           'view': {
-            'notes': 'other notes',
-          }
-        }
-      }
+            'notes': 'other notes',                                      
+            'text': None,
+            'url': None,
+            'val': None,
+          },
+        },
+      },
     }
     self.assertEqual(result, expected)
 
@@ -430,9 +494,8 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
     """Function handles an empty feature."""
     empty_fe = FeatureEntry()
 
-    result = converters.feature_entry_to_json_verbose(empty_fe)
-
-    self.assertEqual(result, {})
+    with self.assertRaises(Exception):
+      converters.feature_entry_to_json_verbose(empty_fe)
 
 
 class VoteConvertersTest(testing_config.CustomTestCase):
