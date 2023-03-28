@@ -266,7 +266,7 @@ def set_vote(feature_id: int,  gate_type: int | None, new_state: int,
 
   now = datetime.datetime.now()
   existing_list: list[Vote] = Vote.get_votes(feature_id=feature_id,
-      gate_id=gate_id, gate_type=gate_type, set_by=set_by_email)
+      gate_id=gate_id, set_by=set_by_email)
   if existing_list:
     existing = existing_list[0]
     existing.set_on = now
