@@ -285,27 +285,6 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'unlisted': False,
       'api_spec': False,
       'breaking_change': False,
-
-      # Intent fields
-      'intent_to_implement_url': 'https://example.com/120',
-      'intent_to_experiment_url': 'https://example.com/150',
-      'intent_to_extend_experiment_url': 'https://example.com/151',
-      'intent_to_ship_url': 'https://example.com/160',
-
-      # Milestone fields
-      'dt_milestone_desktop_start': 1,
-      'dt_milestone_android_start': 1,
-      'ot_milestone_desktop_start': 1,
-      'ot_milestone_android_start': 1,
-      'ot_milestone_desktop_end': 2,
-
-      # Stage-specific fields
-      'experiment_goals': 'goals',
-      'experiment_risks': 'risks',
-      'experiment_extension_reason': 'reason',
-      'announcement_url': 'https://example.com/announce',
-      'finch_url': 'https://example.com/finch',
-
       'is_released': True,
       'category': 'Web Components',
       'category_int': 1,
@@ -337,7 +316,6 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
         'samples': ['https://example.com/samples'],
         'docs': ['https://example.com/docs'],
       },
-      'rollout_impact': 2,
       'standards': {
         'spec': 'https://example.com/spec',
         'maturity': {
@@ -362,8 +340,6 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'creator_email': 'creator@example.com',
       'debuggability': None,
       'devtrial_instructions': None,
-      'dt_milestone_ios_start': None,
-      'dt_milestone_webview_start': None,
       'editor_emails': ['feature_editor@example.com', 'owner_1@example.com'],
       'enterprise_feature_categories': [],
       'ergonomics_risks': None,
@@ -379,17 +355,8 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'new_crbug_url': None,
       'non_oss_deps': None,
       'ongoing_constraints': None,
-      'origin_trial_feeback_url': None,
-      'ot_milestone_android_end': None,
-      'ot_milestone_webview_end': None,
-      'ot_milestone_webview_start': None,
       'owner_emails': ['feature_owner@example.com'],
-      'ot_milestone_webview_end': None,
-      'ot_milestone_webview_start': None,
       'owner_emails': ['feature_owner@example.com'],
-      'ready_for_trial_url': None,
-      'rollout_details': None,
-      'rollout_milestone': None,
       'safari_views': 1,
       'search_tags': [],
       'security_risks': None,

@@ -451,6 +451,7 @@ export const ALL_FIELDS = {
 
   'intent_to_implement_url': {
     type: 'input',
+    name: 'intent_thread_url',
     attrs: URL_FIELD_ATTRS,
     required: false,
     label: 'Intent to Prototype link',
@@ -601,6 +602,7 @@ export const ALL_FIELDS = {
   },
 
   'intent_to_ship_url': {
+    name: 'intent_thread_url',
     type: 'input',
     attrs: URL_FIELD_ATTRS,
     required: false,
@@ -619,6 +621,7 @@ export const ALL_FIELDS = {
   },
 
   'intent_to_experiment_url': {
+    name: 'intent_thread_url',
     type: 'input',
     attrs: URL_FIELD_ATTRS,
     required: false,
@@ -628,6 +631,7 @@ export const ALL_FIELDS = {
   },
 
   'intent_to_extend_experiment_url': {
+    name: 'intent_thread_url',
     type: 'input',
     attrs: URL_FIELD_ATTRS,
     required: false,
@@ -638,7 +642,7 @@ export const ALL_FIELDS = {
 
   'r4dt_url': {
     // form field name matches underlying DB field (sets "intent_to_experiment_url" field in DB).
-    name: 'intent_to_experiment_url',
+    name: 'intent_thread_url',
     type: 'input',
     attrs: URL_FIELD_ATTRS,
     required: false,

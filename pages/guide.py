@@ -300,6 +300,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('rollout_platforms', 'split_str'),
       ('rollout_details', 'str'),
       ('enterprise_policies', 'split_str'),
+      ('intent_thread_url', 'str'),
   ]
 
   INTENT_FIELDS: list[str] = [
