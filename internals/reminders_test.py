@@ -19,7 +19,6 @@ from datetime import datetime
 from unittest import mock
 
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
-from internals.legacy_models import Feature
 from internals import reminders
 
 from google.cloud import ndb  # type: ignore
@@ -104,7 +103,7 @@ class FunctionTest(testing_config.CustomTestCase):
     self.maxDiff = None
 
   def tearDown(self) -> None:
-    kinds: list[ndb.Model] = [Feature, FeatureEntry, Stage]
+    kinds: list[ndb.Model] = [FeatureEntry, Stage]
     for kind in kinds:
       for entity in kind.query():
         entity.key.delete()

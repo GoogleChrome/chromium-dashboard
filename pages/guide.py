@@ -27,7 +27,6 @@ from framework import permissions
 from internals import core_enums, notifier_helpers
 from internals import stage_helpers
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
-from internals.legacy_models import Feature
 from internals.review_models import Gate
 from internals import processes
 from internals import search_fulltext
@@ -61,28 +60,9 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
     signed_in_user = ndb.User(
         email=self.get_current_user().email(),
         _auth_domain='gmail.com')
-    feature = Feature(
-        category=int(self.form.get('category')),
-        name=self.form.get('name'),
-        feature_type=feature_type,
-        summary=self.form.get('summary'),
-        owner=owners,
-        editors=editors,
-        cc_recipients=cc_emails,
-        devrel=[DEVREL_EMAIL],
-        creator=signed_in_user.email(),
-        accurate_as_of=datetime.now(),
-        unlisted=self.form.get('unlisted') == 'on',
-        breaking_change=self.form.get('breaking_change') == 'on',
-        blink_components=blink_components,
-        tag_review_status=processes.initial_tag_review_status(feature_type),
-        created_by=signed_in_user,
-        updated_by=signed_in_user)
-    key = feature.put()
 
     # Write for new FeatureEntry entity.
     feature_entry = FeatureEntry(
-        id=feature.key.integer_id(),
         category=int(self.form.get('category')),
         name=self.form.get('name'),
         feature_type=feature_type,
@@ -98,15 +78,13 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
         breaking_change=self.form.get('breaking_change') == 'on',
         blink_components=blink_components,
         tag_review_status=processes.initial_tag_review_status(feature_type))
-    feature_entry.put()
+    key: ndb.Key = feature_entry.put()
     search_fulltext.index_feature(feature_entry)
 
     # Write each Stage and Gate entity for the given feature.
-    self.write_gates_and_stages_for_feature(
-        feature_entry.key.integer_id(), feature_type)
+    self.write_gates_and_stages_for_feature(key.integer_id(), feature_type)
 
     # Remove all feature-related cache.
-    rediscache.delete_keys_with_prefix(Feature.feature_cache_prefix())
     rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
 
     # TODO(jrobbins): Make this be /feature/ID after ability to edit
@@ -150,27 +128,9 @@ class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
         email=self.get_current_user().email(),
         _auth_domain='gmail.com')
     feature_type = core_enums.FEATURE_TYPE_ENTERPRISE_ID
-    feature = Feature(
-        category=int(core_enums.MISC),
-        enterprise_feature_categories=self.split_input(
-            'enterprise_feature_categories'),
-        name=self.form.get('name'),
-        feature_type=feature_type,
-        summary=self.form.get('summary'),
-        owner=owners,
-        editors=editors,
-        launch_bug_url=self.form.get('launch_bug_url'),
-        creator=signed_in_user.email(),
-        accurate_as_of=datetime.now(),
-        blink_components=[settings.DEFAULT_ENTERPRISE_COMPONENT],
-        tag_review_status=core_enums.REVIEW_NA,
-        created_by=signed_in_user,
-        updated_by=signed_in_user)
-    key = feature.put()
 
     # Write for new FeatureEntry entity.
     feature_entry = FeatureEntry(
-        id=feature.key.integer_id(),
         category=int(core_enums.MISC),
         enterprise_feature_categories=self.split_input(
             'enterprise_feature_categories'),
@@ -186,15 +146,13 @@ class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
         accurate_as_of=datetime.now(),
         blink_components=[settings.DEFAULT_ENTERPRISE_COMPONENT],
         tag_review_status=core_enums.REVIEW_NA)
-    feature_entry.put()
+    key: ndb.Key = feature_entry.put()
     search_fulltext.index_feature(feature_entry)
 
     # Write each Stage and Gate entity for the given feature.
-    self.write_gates_and_stages_for_feature(
-        feature_entry.key.integer_id(), feature_type)
+    self.write_gates_and_stages_for_feature(key.integer_id(), feature_type)
 
     # Remove all feature-related cache.
-    rediscache.delete_keys_with_prefix(Feature.feature_cache_prefix())
     rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
 
     # TODO(jrobbins): Make this be /feature/ID after ability to edit
@@ -420,7 +378,6 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
     if feature_id:
       # Load feature directly from NDB so as to never get a stale cached copy.
-      feature: Feature = Feature.get_by_id(feature_id)
       fe: FeatureEntry = FeatureEntry.get_by_id(feature_id)
       if fe is None:
         self.abort(404, msg='Feature not found')
@@ -441,7 +398,6 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
         field_val = self._get_field_val(field, field_type)
         new_field = self.RENAMED_FIELD_MAPPING.get(field, field)
         self._add_changed_field(fe, new_field, field_val, changed_fields)
-        setattr(feature, field, field_val)
         setattr(fe, new_field, field_val)
 
     # impl_status_chrome and intent_stage
@@ -454,7 +410,6 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     if impl_status_val:
       self._add_changed_field(
           fe, 'impl_status_chrome', impl_status_val, changed_fields)
-      setattr(feature, 'impl_status_chrome', impl_status_val)
       setattr(fe, 'impl_status_chrome', impl_status_val)
 
     active_stage_id = -1
@@ -467,7 +422,6 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
           fe, 'active_stage_id', active_stage_id, changed_fields)
       self._add_changed_field(
           fe, 'intent_stage', intent_stage_val, changed_fields)
-      setattr(feature, 'intent_stage', intent_stage_val)
       setattr(fe, 'active_stage_id', active_stage_id)
       setattr(fe, 'intent_stage', intent_stage_val)
 
@@ -476,20 +430,18 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     if stage_ids:
       stage_ids_list = [int(id) for id in stage_ids.split(',')]
       self.update_stages_editall(
-          feature, fe.feature_type, stage_ids_list, changed_fields, form_fields)
+          fe.feature_type, stage_ids_list, changed_fields, form_fields)
     # If a stage_id is supplied, we make changes to only that specific stage.
     elif stage_id:
       for field, field_type in self.STAGE_FIELDS:
         if self.touched(field, form_fields):
           field_val = self._get_field_val(field, field_type)
-          setattr(feature, field, field_val)
           stage_update_items.append((field, field_val))
 
       for field in MilestoneSet.MILESTONE_FIELD_MAPPING.keys():
         if self.touched(field, form_fields):
           # TODO(jrobbins): Consider supporting milestones that are not ints.
           field_val = self._get_field_val(field, 'int')
-          setattr(feature, field, field_val)
           stage_update_items.append((field, field_val))
       self.update_single_stage(
           stage_id, fe.feature_type, stage_update_items, changed_fields)
@@ -497,28 +449,21 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     extension_stage_ids = self.form.get('extension_stage_ids')
     if extension_stage_ids:
       stage_ids_list = [int(id) for id in extension_stage_ids.split(',')]
-      self.update_stages_editall(
-          feature, fe.feature_type, stage_ids_list, changed_fields, form_fields)
+      self.update_stages_editall(fe.feature_type, stage_ids_list, changed_fields, form_fields)
     # Update metadata fields.
     now = datetime.now()
     if self.form.get('accurate_as_of'):
-      feature.accurate_as_of = now
       fe.accurate_as_of = now
       fe.outstanding_notifications = 0
     user_email = self.get_current_user().email()
-    feature.updated_by = ndb.User(
-        email=user_email,
-        _auth_domain='gmail.com')
     fe.updater_email = user_email
     fe.updated = now
 
     key: ndb.Key = fe.put()
-    feature.put()
 
     notifier_helpers.notify_subscribers_and_save_amendments(
         fe, changed_fields, notify=True)
     # Remove all feature-related cache.
-    rediscache.delete_keys_with_prefix(Feature.feature_cache_prefix())
     rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
 
     # Update full-text index.
@@ -632,7 +577,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
   def update_stages_editall(
       self,
-      feature: Feature, feature_type: int,
+      feature_type: int,
       stage_ids: list[int],
       changed_fields: list[tuple[str, Any, Any]],
       form_fields: list[str]) -> None:
@@ -689,7 +634,6 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
         old_val = None
         new_val = self._get_field_val(field_with_id, 'int')
         milestoneset_entity = stage.milestones
-        setattr(feature, field, new_val)
         milestoneset_entity = getattr(stage, 'milestones')
         if milestoneset_entity is None:
           milestoneset_entity = MilestoneSet()
