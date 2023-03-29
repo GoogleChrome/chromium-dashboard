@@ -82,8 +82,7 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
     search_fulltext.index_feature(feature_entry)
 
     # Write each Stage and Gate entity for the given feature.
-    self.write_gates_and_stages_for_feature(
-        feature_entry.key.integer_id(), feature_type)
+    self.write_gates_and_stages_for_feature(key.integer_id(), feature_type)
 
     # Remove all feature-related cache.
     rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
@@ -151,8 +150,7 @@ class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
     search_fulltext.index_feature(feature_entry)
 
     # Write each Stage and Gate entity for the given feature.
-    self.write_gates_and_stages_for_feature(
-        feature_entry.key.integer_id(), feature_type)
+    self.write_gates_and_stages_for_feature(key.integer_id(), feature_type)
 
     # Remove all feature-related cache.
     rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
