@@ -304,7 +304,8 @@ class CalcGateStateTest(testing_config.CustomTestCase):
 class UpdateTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.gate_1 = Gate(feature_id=1, stage_id=1, gate_type=2, state=Vote.APPROVED)
+    self.gate_1 = Gate(
+        id=1001, feature_id=1, stage_id=1, gate_type=2, state=Gate.PREPARING)
     self.gate_1.put()
     gate_id = self.gate_1.key.integer_id()
     self.votes = []
@@ -324,8 +325,8 @@ class UpdateTest(testing_config.CustomTestCase):
         state=Vote.REVIEW_REQUESTED, set_on=datetime.datetime(2020, 1, 2),
         set_by='user5@example.com'))
 
-    self.gate_2 = Gate(feature_id=2, stage_id=2, gate_type=2,
-        state=Vote.APPROVED)
+    self.gate_2 = Gate(
+        id=1002, feature_id=2, stage_id=2, gate_type=2, state=Vote.APPROVED)
     self.gate_2.put()
     gate_id = self.gate_2.key.integer_id()
     self.votes.append(Vote(feature_id=1, gate_id=gate_id,
@@ -368,13 +369,13 @@ class UpdateTest(testing_config.CustomTestCase):
   def test_update_approval_stage__needs_update(self):
     """Gate's approval state will be updated based on votes."""
     # Gate 1 should evaluate to not approved after updating.
-    self.assertEqual(
-        approval_defs.update_gate_approval_state(self.gate_1), Vote.APPROVED)
+    self.assertTrue(
+        approval_defs.update_gate_approval_state(self.gate_1))
     self.assertEqual(self.gate_1.state, Vote.APPROVED)
 
   def test_update_approval_state__no_change(self):
     """Gate's approval state does not change unless it needs to."""
     # Gate 2 is already marked as approved and should not change.
-    self.assertEqual(
-        approval_defs.update_gate_approval_state(self.gate_2), Vote.APPROVED)
+    self.assertFalse(
+        approval_defs.update_gate_approval_state(self.gate_2))
     self.assertEqual(self.gate_2.state, Vote.APPROVED)

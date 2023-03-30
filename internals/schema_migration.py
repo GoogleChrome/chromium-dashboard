@@ -31,11 +31,18 @@ class EvaluateGateStatus(FlaskHandler):
 
     gates: ndb.Query = Gate.query()
     count = 0
+    batch = []
+    BATCH_SIZE = 100
     for gate in gates:
-      approval_defs.update_gate_approval_state(gate)
-      count += 1
+      if approval_defs.update_gate_approval_state(gate):
+        batch.append(gate)
+        count += 1
+        if len(batch) > BATCH_SIZE:
+          ndb.put_multi(batch)
+          batch = []
 
-    return f'{count} Gate entities reevaluated.'
+    ndb.put_multi(batch)
+    return f'{count} Gate entities updated.'
 
 
 class WriteMissingGates(FlaskHandler):
