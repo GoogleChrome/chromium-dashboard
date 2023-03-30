@@ -174,7 +174,8 @@ export class ChromedashGuideEditallPage extends LitElement {
         <chromedash-form-field
           name=${field}
           stageId=${feStage.id}
-          value=${value}>
+          value=${value}
+          ?forEnterprise=${formattedFeature.is_enterprise_feature}>
         </chromedash-form-field>
       `;
     });

@@ -283,7 +283,8 @@ export class ChromedashGuideMetadata extends LitElement {
             ${metadataFields.map((field) => html`
               <chromedash-form-field
                 name=${field}
-                value=${formattedFeature[field]}>
+                value=${formattedFeature[field]}
+                ?forEnterprise=${this.feature.is_enterprise_feature}>
               </chromedash-form-field>
             `)}
           </chromedash-form-table>

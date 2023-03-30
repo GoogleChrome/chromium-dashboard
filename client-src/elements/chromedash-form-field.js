@@ -14,6 +14,7 @@ export class ChromedashFormField extends LitElement {
       disabled: {type: Boolean},
       loading: {type: Boolean},
       fieldProps: {type: Object},
+      forEnterprise: {type: Boolean},
       componentChoices: {type: Object}, // just for the blink component select field
     };
   }
@@ -25,6 +26,7 @@ export class ChromedashFormField extends LitElement {
     this.value = '';
     this.disabled = false;
     this.loading = false;
+    this.forEnterprise = false;
     this.componentChoices = {};
   }
 
@@ -192,7 +194,9 @@ export class ChromedashFormField extends LitElement {
   }
 
   render() {
-    const helpText = this.fieldProps.help_text;
+    const helpText = this.forEnterprise && this.fieldProps.enterprise_help_text ?
+      this.fieldProps.enterprise_help_text :
+      this.fieldProps.help_text;
     const extraHelpText = this.fieldProps.extra_help;
 
     return html`

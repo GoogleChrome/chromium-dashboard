@@ -219,7 +219,8 @@ export class ChromedashGuideStagePage extends LitElement {
       <chromedash-form-field
         name=${field}
         value=${value}
-        stageId=${useStageId ? feStage.id : undefined}>
+        stageId=${useStageId ? feStage.id : undefined}
+        ?forEnterprise=${formattedFeature.is_enterprise_feature}>
       </chromedash-form-field>
     `;
     });
@@ -234,7 +235,8 @@ export class ChromedashGuideStagePage extends LitElement {
           <chromedash-form-field
             name="set_stage"
             value=${this.isActiveStage}
-            ?disabled=${this.isActiveStage}>
+            ?disabled=${this.isActiveStage}
+            ?forEnterprise=${formattedFeature.is_enterprise_feature}>
           </chromedash-form-field>
         </section>`);
     }
