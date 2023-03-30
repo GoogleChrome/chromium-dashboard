@@ -113,6 +113,19 @@ export const ALL_FIELDS = {
     type: 'textarea',
     required: true,
     label: 'Summary',
+    enterprise_help_text: html`
+       <p>This text will be used in the
+        <a href="https://support.google.com/chrome/a/answer/7679408?hl=en" target="_blank">
+       enterprise release notes</a>,
+        which are publicly visible and primarily written for IT admins.</p>
+       <p>Explain what's changing from the point of view of an end-user,
+        developer, or administrator. Indicate what the motivation is for
+        this change, especially if there’s security or privacy benefits to
+        the change. If an admin should do something (like test or set an enterprise policy),
+        please explain. Finally, if the change has a user-visible benefit
+        (eg. better security or privacy), explain that motivation.
+        See <a href="go/releasenotes-examples" target="_blank">go/releasenotes-examples</a>
+        for examples.</p>`,
     help_text: html`
        <p>Text in the beta release post, the enterprise release notes,
         and other external sources will be based on this text.</p>
@@ -1253,7 +1266,7 @@ export const ALL_FIELDS = {
     required: false,
     label: 'Enterprise policies',
     help_text: html`
-      List of policies that control the feature, if any.`,
+      List the policies that are being introduced, removed, or can be used to control the feature at this stage, if any.`,
   },
 
   'enterprise_feature_categories': {
@@ -1270,7 +1283,10 @@ export const ALL_FIELDS = {
     choices: ROLLOUT_IMPACT,
     initial: ROLLOUT_IMPACT.IMPACT_MEDIUM[0],
     label: 'Impact',
-    help_text: '',
+    help_text: html`
+      A stage is probably high impact if it introduces a breaking change on the stable channel,
+      or seriously changes the experience of using Chrome. Use your judgment; if you're unsure,
+      most stages are Medium impact.`,
   },
 
   'rollout_milestone': {
@@ -1279,7 +1295,7 @@ export const ALL_FIELDS = {
     required: false,
     label: 'Rollout milestone',
     help_text: html`
-      Milestone in which rollout for this feature starts.`,
+      The milestone in which this stage rolls out to the stable channel (even a 1% rollout)`,
   },
 
   'rollout_platforms': {
@@ -1288,7 +1304,7 @@ export const ALL_FIELDS = {
     required: false,
     label: 'Rollout platforms',
     help_text: html`
-      Platforms for which rollout for this feature occurs in the selected milestone.`,
+      The platform(s) affected by this stage`,
   },
 
   'rollout_details': {
@@ -1297,10 +1313,11 @@ export const ALL_FIELDS = {
     required: false,
     label: 'Rollout details',
     help_text: html`
-      Explain what specifically is changing in the selected milestone for the
-      selected platforms. Include any controls admins have to test it
-      (e.g. flags) and control it (e.g. an enterprise policy). Write in the
-      present tense.`,
+      Explain what specifically is changing in this milestone, for the given platforms.
+      Many features are composed of multiple stages on different milestones. For example,
+      you may have a stage that introduces a change and a temporary policy to control it,
+      then another stage on a subsequent milestone that removes the policy. Alternatively,
+      you may ship the feature to different platforms in different milestones.`,
   },
 
   'breaking_change': {

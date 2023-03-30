@@ -106,7 +106,8 @@ export class ChromedashGuideNewPage extends LitElement {
             ${formFields.map((field) => html`
               <chromedash-form-field
                 name=${field}
-                value=${newFeatureInitialValues[field]}>
+                value=${newFeatureInitialValues[field]}
+                ?forEnterprise=${this.isEnterpriseFeature}>
               </chromedash-form-field>
             `)}
 
@@ -117,7 +118,10 @@ export class ChromedashGuideNewPage extends LitElement {
               </chromedash-form-field>` :
             nothing}
           </chromedash-form-table>
-          <input type="submit" class="primary" value="Submit">
+          <input
+            type="submit"
+            class="primary"
+            value=${this.isEnterpriseFeature ? 'Continue' : 'Add stage'}>
         </form>
       </section>
     `;
