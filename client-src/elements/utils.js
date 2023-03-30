@@ -45,6 +45,24 @@ export function findProcessStage(feStage, process) {
   return null;
 }
 
+/* Determine if the display name field should be displayed for a stage. */
+export function shouldShowDisplayNameField(feStages, stageType) {
+  // The display name field is only available to a feature's stages
+  // that have more than 1 of the same stage type associated.
+  // It is used to differentiate those stages.
+  let matchingStageCount = 0;
+  for (let i = 0; i < feStages.length; i++) {
+    if (feStages[i].stage_type === stageType) {
+      matchingStageCount++;
+      // If we find two of the same stage type, then display the display name field.
+      if (matchingStageCount > 1) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 /* Given a process stage, find the first feature entry stage of the same type. */
 export function findFirstFeatureStage(intentStage, currentStage, fe) {
   if (intentStage == currentStage.intent_stage) {

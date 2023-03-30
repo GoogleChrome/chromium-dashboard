@@ -141,7 +141,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
     }
     let sectionName = `${name}${numberDifferentiation}`;
     if (feStage.display_name) {
-      sectionName = `${feStage.display_name} (${name})`;
+      sectionName = `${name}: ${feStage.display_name}`;
     }
 
     const formFieldEls = stageFields.map(field => {

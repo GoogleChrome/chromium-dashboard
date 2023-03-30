@@ -1,6 +1,10 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
-import {showToastMessage, flattenSections, setupScrollToHash} from './utils.js';
+import {
+  showToastMessage,
+  flattenSections,
+  setupScrollToHash,
+  shouldShowDisplayNameField} from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
 import {
@@ -160,9 +164,14 @@ export class ChromedashGuideEditallPage extends LitElement {
     }
     let sectionName = `${sectionBaseName}${numberDifferentiation}`;
     if (feStage.display_name) {
-      sectionName = `${feStage.display_name} (${sectionBaseName})`;
+      sectionName = `${sectionBaseName}: ${feStage.display_name} `;
     }
     const formFieldEls = stageFields.map(field => {
+      // Only show "display name" field if there is more than one stage of the same type.
+      if (field === 'display_name' &&
+          !shouldShowDisplayNameField(this.feature.stages, feStage.stage_type)) {
+        return nothing;
+      }
       let value = formattedFeature[field];
       if (STAGE_SPECIFIC_FIELDS.has(field)) {
         value = feStage[field];
@@ -229,7 +238,7 @@ export class ChromedashGuideEditallPage extends LitElement {
         fieldsOnly = flattenSections(FLAT_TRIAL_EXTENSION_FIELDS);
         let sectionName = FLAT_TRIAL_EXTENSION_FIELDS.name;
         if (feStage.display_name) {
-          sectionName = ` ${feStage.display_name} ${FLAT_TRIAL_EXTENSION_FIELDS.name}`;
+          sectionName = ` ${FLAT_TRIAL_EXTENSION_FIELDS.name}: ${feStage.display_name} `;
         }
         formsToRender.push(this.renderStageSection(
           formattedFeature,

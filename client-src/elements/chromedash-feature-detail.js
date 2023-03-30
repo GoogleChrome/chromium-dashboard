@@ -570,7 +570,7 @@ class ChromedashFeatureDetail extends LitElement {
 
     let name = `${processStage.name}${numberDifferentiation}`;
     if (feStage.display_name) {
-      name = `${feStage.display_name} (${processStage.name})`;
+      name = `${processStage.name}: ${feStage.display_name}`;
     }
     const isActive = this.feature.active_stage_id === feStage.id;
 
