@@ -277,8 +277,8 @@ def set_vote(feature_id: int,  gate_type: int | None, new_state: int,
         gate_type=gate_type, state=new_state, set_on=now, set_by=set_by_email)
     new_vote.put()
 
-  if gate:
-    update_gate_approval_state(gate)
+  if gate and update_gate_approval_state(gate):
+    gate.put()
 
 
 def get_gate_by_type(feature_id: int, gate_type: int):
@@ -322,11 +322,13 @@ def _calc_gate_state(votes: list[Vote], rule: str) -> int:
 
 
 def update_gate_approval_state(gate: Gate) -> int:
-  """Change the Gate state based on its votes."""
+  """Change the Gate state in RAM based on its votes. Return True if changed."""
   votes = Vote.get_votes(gate_id=gate.key.integer_id())
   afd = APPROVAL_FIELDS_BY_ID[gate.gate_type]
-  gate.state = _calc_gate_state(votes, afd.rule)
+  new_state = _calc_gate_state(votes, afd.rule)
+  if new_state == gate.state:
+    return False
+  gate.state = new_state
   if votes:
     gate.requested_on = min(v.set_on for v in votes)
-  gate.put()
-  return gate.state
+  return True
