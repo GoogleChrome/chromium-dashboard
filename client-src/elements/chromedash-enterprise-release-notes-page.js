@@ -5,14 +5,12 @@ import {STAGE_ENT_ROLLOUT} from './form-definition.js';
 import {showToastMessage} from './utils.js';
 
 
-export class ChromedashEnterprisePage extends LitElement {
+export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   static get properties() {
     return {
-      query: {type: String},
       currentFeatures: {type: Array},
       upcomingFeatures: {type: Array},
       features: {type: Array},
-      loading: {type: Boolean},
       channels: {type: Object},
       selectedMilestone: {type: Number},
     };
@@ -20,9 +18,6 @@ export class ChromedashEnterprisePage extends LitElement {
 
   constructor() {
     super();
-    this.query = 'feature_type="New Feature or removal affecting enterprises" ' +
-    'OR breaking_change=true';
-    this.loading = true;
     this.currentFeatures = [];
     this.upcomingFeatures = [];
     this.features = [];
@@ -105,14 +100,13 @@ export class ChromedashEnterprisePage extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-
     Promise.all([
       window.csClient.getChannels(),
-      window.csClient.searchFeatures(this.query),
+      window.csClient.searchFeatures(
+        'feature_type="New Feature or removal affecting enterprises" OR breaking_change=true'),
     ]).then(([channels, {features}]) => {
       this.channels = channels;
       this.selectedMilestone = this.channels.stable.version;
-
       // Filter out features that don't have rollout stages.
       // Ensure that the stages are only rollout stages.
       this.features = features
@@ -122,8 +116,6 @@ export class ChromedashEnterprisePage extends LitElement {
           stages: f.stages
             .filter(s => s.stage_type === STAGE_ENT_ROLLOUT && !!s.rollout_milestone)
             .sort((a, b) => a.rollout_milestone - b.rollout_milestone)}));
-      this.updateCurrentAndUpcomingFeatures();
-      this.loading = false;
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
@@ -166,15 +158,16 @@ export class ChromedashEnterprisePage extends LitElement {
 
   updateSelectedMilestone() {
     this.selectedMilestone = parseInt(this.shadowRoot.querySelector('#milestone-selector').value);
+  }
+
+  update() {
     this.updateCurrentAndUpcomingFeatures();
+    super.update();
   }
 
   renderMilestoneSelector() {
-    if (this.loading) {
-      return html``;
-    }
     const options = [];
-    for (let i = 0; i < this.channels.stable.version + 20; ++i) {
+    for (let i = 0; i < this.selectedMilestone + 20; ++i) {
       options.push(html`<sl-option value="${i}">Chrome ${i} release summary</sl-option>`);
     }
     return html`
@@ -303,4 +296,6 @@ export class ChromedashEnterprisePage extends LitElement {
   }
 }
 
-customElements.define('chromedash-enterprise-release-notes-page', ChromedashEnterprisePage);
+customElements.define(
+  'chromedash-enterprise-release-notes-page',
+  ChromedashEnterpriseReleaseNotesPage);
