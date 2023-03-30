@@ -710,7 +710,7 @@ const STAGE_DEP_SHIPPING = 460;
 
 // Define enterprise feature processes.
 // Note: This stage can ge added to any feature that is following any process.
-const STAGE_ENT_ROLLOUT = 1061;
+export const STAGE_ENT_ROLLOUT = 1061;
 const STAGE_ENT_SHIPPED = 1070;
 
 export const FORMS_BY_STAGE_TYPE = {
