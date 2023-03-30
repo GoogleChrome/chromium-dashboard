@@ -112,6 +112,9 @@ class FeatureDictInnerChromeBrowserInfo(TypedDict):
   prefixed: bool | None
   flag: bool | None
   status: FeatureDictInnerBrowserStatus
+
+  # Old representation of ship dates.
+  # TODO(danielrsmith): find if needed and remove if unneeded.
   desktop: int | None
   android: int | None
   webview: int | None
