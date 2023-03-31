@@ -416,8 +416,6 @@ export class ChromedashGateColumn extends LitElement {
     } else if (this.gate.state == STATE_NAMES.DENIED[0]) {
       return this.renderReviewStatusDenied();
     } else {
-      console.log('Unexpected gate state');
-      console.log(this.gate);
       return nothing;
     }
   }
