@@ -562,13 +562,16 @@ class ChromedashFeatureDetail extends LitElement {
     let numberDifferentiation = '';
     if (this.previousStageTypeRendered === feStage.stage_type) {
       this.sameTypeRendered += 1;
-      numberDifferentiation = ` (${this.sameTypeRendered})`;
+      numberDifferentiation = ` ${this.sameTypeRendered}`;
     } else {
       this.previousStageTypeRendered = feStage.stage_type;
       this.sameTypeRendered = 1;
     }
 
-    const name = `${processStage.name}${numberDifferentiation}`;
+    let name = `${processStage.name}${numberDifferentiation}`;
+    if (feStage.display_name) {
+      name = `${processStage.name}: ${feStage.display_name}`;
+    }
     const isActive = this.feature.active_stage_id === feStage.id;
 
     // Show a button to add a trial extension stage for origin trial stages.

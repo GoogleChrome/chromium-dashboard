@@ -154,7 +154,8 @@ export class ChromedashGuideMetadataPage extends LitElement {
       return html`
       <chromedash-form-field
         name=${field}
-        value=${formattedFeature[featureJSONKey]}>
+        value=${formattedFeature[featureJSONKey]}
+        ?forEnterprise=${formattedFeature.is_enterprise_feature}>
       </chromedash-form-field>
     `;
     });

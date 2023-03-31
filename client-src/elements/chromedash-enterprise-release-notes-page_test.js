@@ -1,6 +1,7 @@
 import {html} from 'lit';
 import {assert, fixture, nextFrame} from '@open-wc/testing';
 import {ChromedashEnterpriseReleaseNotesPage} from './chromedash-enterprise-release-notes-page';
+import {parseRawQuery, clearURLParams} from './utils.js';
 import './chromedash-toast';
 import '../js-src/cs-client';
 import sinon from 'sinon';
@@ -143,6 +144,25 @@ describe('chromedash-feature-page', () => {
   afterEach(() => {
     window.csClient.searchFeatures.restore();
     window.csClient.getChannels.restore();
+    clearURLParams('milestone');
+  });
+
+  it('reflects the milestone in the query params', async () => {
+    const component = await fixture(html`
+      <chromedash-enterprise-release-notes-page></chromedash-enterprise-release-notes-page>`);
+    assert.exists(component);
+    assert.instanceOf(component, ChromedashEnterpriseReleaseNotesPage);
+    assert.equal(parseRawQuery(window.location.search).milestone, 100);
+
+    // Select a future milestone
+    component.selectedMilestone = 110;
+    await nextFrame();
+    assert.equal(parseRawQuery(window.location.search).milestone, 110);
+
+    // Select a previous milestone
+    component.selectedMilestone = 90;
+    await nextFrame();
+    assert.equal(parseRawQuery(window.location.search).milestone, 90);
   });
 
   it('renders with no data', async () => {

@@ -173,6 +173,7 @@ def stage_to_json_dict(
     'id': stage.key.integer_id(),
     'feature_id': stage.feature_id,
     'stage_type': stage.stage_type,
+    'display_name': stage.display_name,
     'intent_stage': INTENT_STAGES_BY_STAGE_TYPE.get(
         stage.stage_type, INTENT_NONE),
     'pm_emails': stage.pm_emails,
