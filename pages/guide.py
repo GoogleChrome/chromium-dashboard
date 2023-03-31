@@ -239,7 +239,6 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       'devrel': 'devrel_emails',
       'spec_mentors': 'spec_mentor_emails',
       'comments': 'feature_notes',
-      'ready_for_trial_url': 'announcement_url',
       'intent_to_implement_url': 'intent_thread_url',
       'intent_to_ship_url': 'intent_thread_url',
       'intent_to_experiment_url': 'intent_thread_url',
@@ -247,7 +246,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
   # Field name, data type
   STAGE_FIELDS: list[tuple[str, str]] = [
-      ('ready_for_trial_url', 'link'),
+      ('announcement_url', 'link'),
       ('origin_trial_feedback_url', 'link'),
       ('experiment_extension_reason', 'str'),
       ('finch_url', 'link'),

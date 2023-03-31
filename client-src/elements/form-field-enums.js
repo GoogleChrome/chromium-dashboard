@@ -150,7 +150,7 @@ export const STAGE_SPECIFIC_FIELDS = new Set([
   'rollout_platforms',
   'rollout_details',
   'enterprise_policies',
-  'ready_for_trial_url',
+  'announcement_url',
 ]);
 
 // Mapping of specific field names to their more generic stage names.

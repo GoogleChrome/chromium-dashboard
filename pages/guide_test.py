@@ -215,10 +215,10 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
     # Fields changed.
     form_fields = ('category, name, summary, shipped_milestone, '
         'intent_to_experiment_url, experiment_risks, experiment_reason, '
-        'origin_trial_feedback_url, intent_to_ship_url, ready_for_trial_url')
+        'origin_trial_feedback_url, intent_to_ship_url, announcement_url')
     # Expected stage change items.
     new_shipped_milestone = '84'
-    new_ready_for_trial_url = 'https://example.com/trial'
+    new_announcement_url = 'https://example.com/trial'
     new_intent_to_experiment_url = 'https://example.com/intent'
     new_experiment_risks = 'Some pretty risky business'
     new_origin_trial_feedback_url = 'https://example.com/ot_intent'
@@ -232,7 +232,7 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
             'name': 'Revised feature name',
             'summary': 'Revised feature summary',
             'shipped_milestone__60': new_shipped_milestone,
-            'ready_for_trial_url__30': new_ready_for_trial_url,
+            'announcement_url__30': new_announcement_url,
             'intent_to_experiment_url__50': new_intent_to_experiment_url,
             'experiment_risks__50': new_experiment_risks,
             'origin_trial_feedback_url__50': new_origin_trial_feedback_url,
@@ -266,7 +266,7 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
     self.assertIsNotNone(shipping_stages)
     # Check that correct stage fields were changed.
     self.assertEqual(dev_trial_stage[0].announcement_url,
-                     new_ready_for_trial_url)
+                     new_announcement_url)
     self.assertEqual(origin_trial_stages[0].experiment_risks,
         new_experiment_risks)
     self.assertEqual(origin_trial_stages[0].intent_thread_url,
