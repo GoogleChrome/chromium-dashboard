@@ -337,7 +337,7 @@ class ChromedashFeatureDetail extends LitElement {
       web_dev_views_notes: 'browsers.webdev.view.notes',
       other_views_notes: 'browsers.other.view.notes',
     };
-    if (!value && fieldNameMapping[fieldName]) {
+    if (fieldNameMapping[fieldName]) {
       value = this.feature;
       for (const step of fieldNameMapping[fieldName].split('.')) {
         if (value) {
