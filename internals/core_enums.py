@@ -518,7 +518,7 @@ VENDOR_VIEWS_COMMON = {
   SHIPPED: 'Shipped/Shipping',
   IN_DEV: 'In development',
   PUBLIC_SUPPORT: 'Positive',
-  NO_PUBLIC_SIGNALS: 'No signal',
+  NO_PUBLIC_SIGNALS: 'No signals',
   OPPOSED: 'Negative',
   NEUTRAL: 'Neutral',
   SIGNALS_NA: 'N/A',
