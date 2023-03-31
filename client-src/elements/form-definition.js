@@ -47,7 +47,7 @@ export function formatFeatureForEdit(feature) {
 
     tag_review_status: feature.tag_review_status_int,
     security_review_status: feature.security_review_status_int,
-    privacy_review_status: feature.security_review_status_int,
+    privacy_review_status: feature.privacy_review_status_int,
 
     // from feature.resources
     sample_links: feature.resources.samples,
