@@ -1,6 +1,6 @@
 import {LitElement, css, html} from 'lit';
 import {ref} from 'lit/directives/ref.js';
-import {flattenSections, showToastMessage} from './utils.js';
+import {getStageValue, flattenSections, showToastMessage} from './utils.js';
 import './chromedash-form-field';
 import './chromedash-form-table';
 import {formatFeatureForEdit,
@@ -147,7 +147,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
     const formFieldEls = stageFields.map(field => {
       let value = formattedFeature[field];
       if (STAGE_SPECIFIC_FIELDS.has(field)) {
-        value = feStage[field];
+        value = getStageValue(feStage, field);
       } else if (this.sameTypeRendered > 1) {
         // Don't render fields that are not stage-specific if this is
         // a stage type that is already being rendered.

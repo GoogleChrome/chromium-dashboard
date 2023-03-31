@@ -121,8 +121,6 @@ export const STAGE_SPECIFIC_FIELDS = new Set([
   'ot_milestone_desktop_end',
   'ot_milestone_android_start',
   'ot_milestone_android_end',
-  'ot_milestone_ios_start',
-  'ot_milestone_ios_end',
   'ot_milestone_webview_start',
   'ot_milestone_webview_end',
   'dt_milestone_desktop_start',
@@ -138,6 +136,7 @@ export const STAGE_SPECIFIC_FIELDS = new Set([
   'intent_to_ship_url',
   'intent_to_experiment_url',
   'intent_to_extend_experiment_url',
+  'intent_thread_url',
 
   // Misc fields.
   'display_name',
@@ -153,6 +152,34 @@ export const STAGE_SPECIFIC_FIELDS = new Set([
   'enterprise_policies',
   'ready_for_trial_url',
 ]);
+
+// Mapping of specific field names to their more generic stage names.
+export const STAGE_FIELD_NAME_MAPPING = {
+  // Milestone fields.
+  shipped_milestone: 'desktop_first',
+  shipped_android_milestone: 'android_first',
+  shipped_ios_milestone: 'ios_first',
+  shipped_webview_milestone: 'webview_first',
+  ot_milestone_desktop_start: 'desktop_first',
+  ot_milestone_desktop_end: 'desktop_last',
+  ot_milestone_android_start: 'android_first',
+  ot_milestone_android_end: 'android_last',
+  ot_milestone_webview_start: 'webview_first',
+  ot_milestone_webview_end: 'webview_last',
+  dt_milestone_desktop_start: 'desktop_first',
+  dt_milestone_android_start: 'android_first',
+  dt_milestone_ios_start: 'ios_first',
+  dt_milestone_webview_start: 'webview_first',
+  extension_desktop_last: 'desktop_last',
+  extension_android_last: 'android_last',
+  extension_webview_last: 'webview_last',
+
+  // Intent fields.
+  intent_to_implement_url: 'intent_thread_url',
+  intent_to_ship_url: 'intent_thread_url',
+  intent_to_experiment_url: 'intent_thread_url',
+  intent_to_extend_experiment_url: 'intent_thread_url',
+};
 
 export const DEPRECATED_FIELDS = new Set([
   'experiment_timeline',

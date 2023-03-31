@@ -169,6 +169,8 @@ def stage_to_json_dict(
   if feature_type is None:
     f = FeatureEntry.get_by_id(stage.feature_id)
     feature_type = f.feature_type
+  milestones: MilestoneSet = stage.milestones or MilestoneSet()
+
   d: StageDict = {
     'id': stage.key.integer_id(),
     'feature_id': stage.feature_id,
@@ -183,15 +185,12 @@ def stage_to_json_dict(
     'intent_thread_url': stage.intent_thread_url,
 
     'announcement_url': stage.announcement_url,
-    'intent_to_experiment_url': stage.intent_thread_url,
     'experiment_goals': stage.experiment_goals,
     'experiment_risks': stage.experiment_risks,
     'origin_trial_feedback_url': stage.origin_trial_feedback_url,
     'extensions': [],
     'experiment_extension_reason': stage.experiment_extension_reason,
-    'intent_to_extend_experiment_url': stage.intent_thread_url,
     'ot_stage_id': stage.ot_stage_id,
-    'intent_to_ship_url': stage.intent_thread_url,
     'finch_url': stage.finch_url,
 
     'rollout_milestone': stage.rollout_milestone,
@@ -201,64 +200,15 @@ def stage_to_json_dict(
     'enterprise_policies': stage.enterprise_policies,
 
     # Milestone fields to be populated later.
-    'desktop_first': None,
-    'android_first': None,
-    'ios_first': None,
-    'webview_first': None,
-    'desktop_last': None,
-    'android_last': None,
-    'ios_last': None,
-    'webview_last': None,
-
-    # TODO(danielrsmith): Change client to use new field names.
-    # Legacy field names.
-    'intent_to_implement_url': None,
-    'intent_to_experiment_url': None,
-    'intent_to_extend_experiment_url': None,
-    'intent_to_ship_url': None,
-    'ready_for_trial_url': stage.announcement_url,
-
-    # Legacy milestone field names.
-    'shipped_milestone': None,
-    'shipped_android_milestone': None,
-    'shipped_ios_milestone': None,
-    'shipped_webview_milestone': None,
-    'ot_milestone_desktop_start': None,
-    'ot_milestone_desktop_end': None,
-    'ot_milestone_android_start': None,
-    'ot_milestone_android_end': None,
-    'ot_milestone_webview_start': None,
-    'ot_milestone_webview_end': None,
-    'dt_milestone_desktop_start': None,
-    'dt_milestone_android_start': None,
-    'dt_milestone_ios_start': None,
-    'dt_milestone_webview_start': None,
+    'desktop_first': milestones.desktop_first,
+    'android_first': milestones.android_first,
+    'ios_first': milestones.ios_first,
+    'webview_first': milestones.webview_first,
+    'desktop_last': milestones.desktop_last,
+    'android_last': milestones.android_last,
+    'ios_last': milestones.ios_last,
+    'webview_last': milestones.webview_last,
   }
-
-  # Determine milestone fields to use and intent fields to populate.
-  milestone_field_names: list[dict[str, str]] | None = None
-  if d['stage_type'] == STAGE_TYPES_PROTOTYPE[feature_type]:
-    d['intent_to_implement_url'] = stage.intent_thread_url
-  elif d['stage_type'] == STAGE_TYPES_DEV_TRIAL[feature_type]:
-    milestone_field_names = MilestoneSet.DEV_TRIAL_MILESTONE_FIELD_NAMES
-  elif d['stage_type'] == STAGE_TYPES_ORIGIN_TRIAL[feature_type]:
-    d['intent_to_experiment_url'] = stage.intent_thread_url
-    milestone_field_names = MilestoneSet.OT_MILESTONE_FIELD_NAMES
-  elif d['stage_type'] == STAGE_TYPES_EXTEND_ORIGIN_TRIAL[feature_type]:
-    d['intent_to_extend_experiment_url'] = stage.intent_thread_url
-    milestone_field_names = MilestoneSet.OT_EXTENSION_MILESTONE_FIELD_NAMES
-  elif d['stage_type'] == STAGE_TYPES_SHIPPING[feature_type]:
-    d['intent_to_ship_url'] = stage.intent_thread_url
-    milestone_field_names = MilestoneSet.SHIPPING_MILESTONE_FIELD_NAMES
-
-  # Add milestone fields.
-  if stage.milestones is not None and milestone_field_names is not None:
-    for name_info in milestone_field_names:
-      # The old val name is still used on the client side.
-      # TODO(danielrsmith): Change client to use new field names.
-      # Must be type ignored until this is (eventually) removed.
-      d[name_info['old']] = getattr(stage.milestones, name_info['new'])  # type: ignore
-      d[name_info['new']] = getattr(stage.milestones, name_info['new'])  # type: ignore
 
   return d
 
@@ -439,53 +389,6 @@ def feature_entry_to_json_verbose(
     'is_enterprise_feature': fe.feature_type == FEATURE_TYPE_ENTERPRISE_ID,
 
     'experiment_timeline': fe.experiment_timeline,
-    # TODO(danielrsmith): Adjust the references to this JSON to use
-    # the new renamed field names.
-    # Prototype stage fields.
-    'intent_to_implement_url': _stage_attr(
-        stage_info['proto'], 'intent_thread_url'),
-    # Dev trial stage fields.
-    'dt_milestone_desktop_start': _get_milestone_attr(
-        stage_info['dev_trial'], 'desktop_first'),
-    'dt_milestone_android_start': _get_milestone_attr(
-        stage_info['dev_trial'], 'android_first'),
-    'dt_milestone_ios_start': _get_milestone_attr(
-        stage_info['dev_trial'], 'ios_first'),
-    'dt_milestone_webview_start': _get_milestone_attr(
-        stage_info['dev_trial'], 'webview_first'),
-    'ready_for_trial_url': _stage_attr(
-        stage_info['dev_trial'], 'announcement_url'),
-    # Origin trial stage fields.
-    'ot_milestone_desktop_start': _get_milestone_attr(
-        stage_info['ot'], 'desktop_first'),
-    'ot_milestone_android_start': _get_milestone_attr(
-        stage_info['ot'], 'android_first'),
-    'ot_milestone_webview_start': _get_milestone_attr(
-        stage_info['ot'], 'webview_first'),
-    'ot_milestone_desktop_end': _get_milestone_attr(
-        stage_info['ot'], 'desktop_last'),
-    'ot_milestone_android_end': _get_milestone_attr(
-        stage_info['ot'], 'android_last'),
-    'ot_milestone_webview_end': _get_milestone_attr(
-        stage_info['ot'], 'webview_last'),
-    'origin_trial_feeback_url': _stage_attr(
-        stage_info['ot'], 'origin_trial_feedback_url'),
-    'intent_to_experiment_url': _stage_attr(
-        stage_info['ot'], 'intent_thread_url'),
-    'experiment_goals': _stage_attr(stage_info['ot'], 'experiment_goals'),
-    'experiment_risks': _stage_attr(stage_info['ot'], 'experiment_risks'),
-    'announcement_url': _stage_attr(stage_info['ot'], 'announcement_url'),
-    # Extend origin trial stage fields.
-    'experiment_extension_reason': _stage_attr(
-        stage_info['extend'], 'experiment_extension_reason'),
-    'intent_to_extend_experiment_url': _stage_attr(
-        stage_info['extend'], 'intent_thread_url'),
-    # Ship stage fields.
-    'intent_to_ship_url': _stage_attr(stage_info['ship'], 'intent_thread_url'),
-    'finch_url': _stage_attr(stage_info['ship'], 'finch_url'),
-    'rollout_milestone': _stage_attr(stage_info['rollout'], 'rollout_milestone'),
-    'rollout_details': _stage_attr(stage_info['rollout'], 'rollout_details'),
-    'rollout_impact': _stage_attr(stage_info['rollout'], 'rollout_impact'),
   }
 
   if (d['is_released'] and

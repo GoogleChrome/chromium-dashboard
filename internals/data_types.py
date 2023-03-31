@@ -19,8 +19,6 @@ from __future__ import annotations
 
 from typing import TypedDict
 
-from internals.core_enums import *
-
 
 # JSON representation of Stage entity data.
 class StageDict(TypedDict):
@@ -32,7 +30,6 @@ class StageDict(TypedDict):
   intent_thread_url: str | None
 
   # Dev trial specific fields.
-  ready_for_trial_url: str | None
   announcement_url: str | None
 
   
@@ -71,30 +68,6 @@ class StageDict(TypedDict):
   android_last: int | None
   ios_last: int | None
   webview_last: int | None
-
-  # Legacy fields or fields that now live on stage entities.
-  # TODO(danielrsmith): stop representing these on the feature dict
-  # and references them direct from stage entities.
-  intent_to_implement_url: str | None
-  intent_to_experiment_url: str  | None
-  intent_to_extend_experiment_url: str | None
-  intent_to_ship_url: str | None
-
-  # Legacy milestone fields that now live on stage entities.
-  dt_milestone_desktop_start: int | None
-  dt_milestone_android_start: int | None
-  dt_milestone_ios_start: int | None
-  dt_milestone_webview_start: int | None
-  ot_milestone_desktop_start: int | None
-  ot_milestone_android_start: int | None
-  ot_milestone_webview_start: int | None
-  ot_milestone_desktop_end: int | None
-  ot_milestone_android_end: int | None
-  ot_milestone_webview_end: int | None
-  shipped_milestone: int | None
-  shipped_android_milestone: int | None
-  shipped_ios_milestone: int | None
-  shipped_webview_milestone: int | None
 
 
 #############################
@@ -140,6 +113,9 @@ class FeatureDictInnerChromeBrowserInfo(TypedDict):
   prefixed: bool | None
   flag: bool | None
   status: FeatureDictInnerBrowserStatus
+
+  # Old representation of ship dates.
+  # TODO(danielrsmith): find if needed and remove if unneeded.
   desktop: int | None
   android: int | None
   webview: int | None
@@ -263,24 +239,6 @@ class VerboseFeatureDict(TypedDict):
 
   stages: list[StageDict]
 
-  # Legacy fields or fields that now live on stage entities.
-  # TODO(danielrsmith): stop representing these on the feature dict
-  # and references them direct from stage entities.
-  intent_to_implement_url: str | None
-  intent_to_experiment_url: str  | None
-  intent_to_extend_experiment_url: str | None
-  intent_to_ship_url: str | None
-  ready_for_trial_url: str | None
-  origin_trial_feeback_url: str | None
-  experiment_goals: str | None
-  experiment_risks: str | None
-  announcement_url: str | None
-  experiment_extension_reason: str | None
-
-  rollout_details: str | None
-  rollout_impact: int | None
-  rollout_milestone: int | None
-
   experiment_timeline: str | None
   resources: FeatureDictInnerResourceInfo
   comments: str | None  # feature_notes
@@ -291,20 +249,6 @@ class VerboseFeatureDict(TypedDict):
   web_dev_views: int
 
   browsers: FeatureBrowsersInfo
-
-  # Legacy milestone fields that now live on stage entities.
-  dt_milestone_desktop_start: int | None
-  dt_milestone_android_start: int | None
-  dt_milestone_ios_start: int | None
-  dt_milestone_webview_start: int | None
-  ot_milestone_desktop_start: int | None
-  ot_milestone_android_start: int | None
-  ot_milestone_webview_start: int | None
-  ot_milestone_desktop_end: int | None
-  ot_milestone_android_end: int | None
-  ot_milestone_webview_end: int | None
-
-  finch_url: str | None
 
   standards: FeatureDictInnerStandardsInfo
   is_released: bool

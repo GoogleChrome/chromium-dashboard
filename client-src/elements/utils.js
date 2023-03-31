@@ -2,6 +2,7 @@
 
 import {markupAutolinks} from './autolink.js';
 import {nothing, html} from 'lit';
+import {STAGE_FIELD_NAME_MAPPING} from './form-field-enums';
 
 let toastEl;
 
@@ -76,6 +77,13 @@ export function findFirstFeatureStage(intentStage, currentStage, fe) {
   return null;
 }
 
+/* Get the value of a stage field using a form-specific name */
+export function getStageValue(stage, fieldName) {
+  if (fieldName in STAGE_FIELD_NAME_MAPPING) {
+    return stage[STAGE_FIELD_NAME_MAPPING[fieldName]];
+  }
+  return stage[fieldName];
+}
 
 /* Given a stage form definition, return a flat array of the fields associated with the stage. */
 export function flattenSections(stage) {

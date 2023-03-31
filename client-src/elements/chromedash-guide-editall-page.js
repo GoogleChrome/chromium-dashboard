@@ -1,6 +1,7 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
 import {
+  getStageValue,
   showToastMessage,
   flattenSections,
   setupScrollToHash,
@@ -174,7 +175,7 @@ export class ChromedashGuideEditallPage extends LitElement {
       }
       let value = formattedFeature[field];
       if (STAGE_SPECIFIC_FIELDS.has(field)) {
-        value = feStage[field];
+        value = getStageValue(feStage, field);
       } else if (this.sameTypeRendered > 1) {
         // Don't render fields that are not stage-specific if this is
         // a stage type that is already being rendered.

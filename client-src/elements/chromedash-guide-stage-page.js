@@ -1,6 +1,10 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
-import {setupScrollToHash, showToastMessage, shouldShowDisplayNameField} from './utils.js';
+import {
+  getStageValue,
+  showToastMessage,
+  setupScrollToHash,
+  shouldShowDisplayNameField} from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
 import {
@@ -217,7 +221,7 @@ export class ChromedashGuideStagePage extends LitElement {
       const featureJSONKey = ALL_FIELDS[field].name || field;
       let value = formattedFeature[featureJSONKey];
       if (STAGE_SPECIFIC_FIELDS.has(featureJSONKey)) {
-        value = feStage[featureJSONKey];
+        value = getStageValue(feStage, featureJSONKey);
       }
       // stageId is only used here for trial extension stages to be used after submission.
       return html`
