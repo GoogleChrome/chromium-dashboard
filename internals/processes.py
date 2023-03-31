@@ -99,7 +99,7 @@ PI_SEC_REVIEW = ProgressItem('Security review issues addressed')
 PI_PRI_REVIEW = ProgressItem('Privacy review issues addressed')
 # TODO(jrobbins): needs detector.
 PI_EXTERNAL_REVIEWS = ProgressItem('External reviews')
-PI_R4DT_EMAIL = ProgressItem('Ready for Trial email', 'ready_for_trial_url')
+PI_R4DT_EMAIL = ProgressItem('Ready for Trial email', 'announcement_url')
 
 PI_TAG_REQUESTED = ProgressItem('TAG review requested', 'tag_review')
 PI_VENDOR_SIGNALS = ProgressItem('Vendor signals', 'safari_views')

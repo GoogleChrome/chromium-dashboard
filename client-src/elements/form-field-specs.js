@@ -624,7 +624,7 @@ export const ALL_FIELDS = {
                 thread, link to it here.`,
   },
 
-  'ready_for_trial_url': {
+  'announcement_url': {
     type: 'input',
     attrs: URL_FIELD_ATTRS,
     required: false,

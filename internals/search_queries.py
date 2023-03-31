@@ -296,7 +296,7 @@ STAGE_QUERIABLE_FIELDS: dict[str, Property] = {
     'intent_to_extend_experiment_url': Stage.intent_thread_url,
     'intent_to_implement_url': Stage.intent_thread_url,
     'intent_to_ship_url': Stage.intent_thread_url,
-    'ready_for_trial_url': Stage.announcement_url,
+    'announcement_url': Stage.announcement_url,
 
     # Obsolete fields
     # 'i2e_lgtms': Feature.i2e_lgtms,
@@ -330,7 +330,7 @@ STAGE_TYPES_BY_QUERY_FIELD: dict[str, dict[int, Optional[int]]] = {
     'intent_to_extend_experiment_url': core_enums.STAGE_TYPES_EXTEND_ORIGIN_TRIAL,
     'intent_to_implement_url': core_enums.STAGE_TYPES_PROTOTYPE,
     'intent_to_ship_url': core_enums.STAGE_TYPES_SHIPPING,
-    'ready_for_trial_url': core_enums.STAGE_TYPES_PROTOTYPE,
+    'announcement_url': core_enums.STAGE_TYPES_PROTOTYPE,
   }
 
 
