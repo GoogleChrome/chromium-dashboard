@@ -83,7 +83,6 @@ class FeaturesAPI(basehandlers.APIHandler):
 
   # TODO(jrobbins): do_post
 
-  # TODO(jrobbins): do_patch
   def do_patch(self, **kwargs):
     """Handle PATCH requests to update fields in a single feature."""
     feature_id = kwargs['feature_id']
@@ -105,10 +104,10 @@ class FeaturesAPI(basehandlers.APIHandler):
     for field in fields_to_update:
       # Each field specified should be a valid field that exists on the entity.
       if not hasattr(feature, field):
-        self.abort(500, msg=f'FeatureEntry has no attribute {field}')
+        self.abort(400, msg=f'FeatureEntry has no attribute {field}.')
       if field in FeatureEntry.FIELDS_IMMUTABLE_BY_USER:
-        self.abort(500, f'FeatureEntry field {field} is immutable.')
-      setattr(feature, field, body[field])
+        self.abort(400, f'FeatureEntry field {field} is immutable.')
+      setattr(feature, field, body.get(field, None))
 
     feature.updater_email = self.get_current_user().email()
     feature.updated = datetime.now()

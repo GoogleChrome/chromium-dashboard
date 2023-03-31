@@ -420,7 +420,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         self.handler.do_patch(feature_id=self.feature_1_id)
 
   def test_patch__invalid_fields(self):
-    """PATCH request fails with 500 when supplying invalid fields."""
+    """PATCH request fails with 400 when supplying invalid fields."""
     # Signed-in user with permissions
     testing_config.sign_in('admin@example.com', 123567890)
 
@@ -433,11 +433,11 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     }
     request_path = f'{self.request_path}/{self.feature_1_id}'
     with test_app.test_request_context(request_path, json=invalid_request_body):
-      with self.assertRaises(werkzeug.exceptions.InternalServerError):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_patch(feature_id=self.feature_1_id)
   
   def test_patch__immutable_fields(self):
-    """PATCH request fails with 500 when immutable field change is attempted."""
+    """PATCH request fails with 400 when immutable field change is attempted."""
     # Signed-in user with permissions
     testing_config.sign_in('admin@example.com', 123567890)
 
@@ -448,5 +448,5 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     }
     request_path = f'{self.request_path}/{self.feature_1_id}'
     with test_app.test_request_context(request_path, json=invalid_request_body):
-      with self.assertRaises(werkzeug.exceptions.InternalServerError):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_patch(feature_id=self.feature_1_id)
