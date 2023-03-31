@@ -185,6 +185,7 @@ spa_page_routes = [
   Route('/metrics/feature/timeline/popularity/<int:bucket_id>'),
   Route('/settings', defaults={'require_signin': True}),
   Route('/enterprise'),
+  Route('/enterprise/releasenotes'),
   # Admin pages
   Route('/admin/blink', defaults={'require_admin_site': True, 'require_signin': True}),
 ]

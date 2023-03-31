@@ -297,6 +297,7 @@ const FLAT_ORIGIN_TRIAL_FIELDS = {
     {
       name: 'Origin trial',
       fields: [
+        'display_name',
         'experiment_goals',
         'experiment_risks',
         'ongoing_constraints',
@@ -360,6 +361,7 @@ const FLAT_PREPARE_TO_SHIP_FIELDS = {
     {
       name: 'Prepare to ship',
       fields: [
+        'display_name',
         // Standardization
         'tag_review_status',
         'webview_risks',
@@ -523,6 +525,7 @@ const DEPRECATION_ORIGIN_TRIAL_FIELDS = {
     {
       name: 'Origin trial',
       fields: [
+        'display_name',
         'experiment_goals',
         'experiment_risks',
         'ongoing_constraints',
@@ -557,6 +560,7 @@ const DEPRECATION_PREPARE_TO_SHIP_FIELDS = {
     {
       name: 'Prepare to ship',
       fields: [
+        'display_name',
         'intent_to_ship_url',
         'i2s_lgtms',
       ],
@@ -710,7 +714,7 @@ const STAGE_DEP_SHIPPING = 460;
 
 // Define enterprise feature processes.
 // Note: This stage can ge added to any feature that is following any process.
-const STAGE_ENT_ROLLOUT = 1061;
+export const STAGE_ENT_ROLLOUT = 1061;
 const STAGE_ENT_SHIPPED = 1070;
 
 export const FORMS_BY_STAGE_TYPE = {

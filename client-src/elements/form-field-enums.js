@@ -139,6 +139,7 @@ export const STAGE_SPECIFIC_FIELDS = new Set([
   'intent_thread_url',
 
   // Misc fields.
+  'display_name',
   'origin_trial_feedback_url',
   'finch_url',
   'experiment_goals',

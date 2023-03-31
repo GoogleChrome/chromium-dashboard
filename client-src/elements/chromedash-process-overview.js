@@ -261,12 +261,15 @@ export class ChromedashProcessOverview extends LitElement {
     let numberDifferentiation = '';
     if (this.previousStageTypeRendered === feStage.stage_type) {
       this.sameTypeRendered += 1;
-      numberDifferentiation = ` (${this.sameTypeRendered})`;
+      numberDifferentiation = ` ${this.sameTypeRendered}`;
     } else {
       this.previousStageTypeRendered = feStage.stage_type;
       this.sameTypeRendered = 1;
     }
-    const sectionName = `${processStage.name}${numberDifferentiation}`;
+    let sectionName = `${processStage.name}${numberDifferentiation}`;
+    if (feStage.display_name) {
+      sectionName = `${feStage.display_name} (${processStage.name})`;
+    }
 
     return html`
       <tr class="${isActive ?

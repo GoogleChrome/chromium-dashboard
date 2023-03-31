@@ -21,7 +21,6 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 from api import features_api
 from internals import core_enums
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
-from internals.legacy_models import Feature
 from internals import user_models
 from framework import rediscache
 
@@ -130,7 +129,7 @@ class FeaturesAPITestGet_NewSchema(testing_config.CustomTestCase):
     self.app_admin.put()
 
   def tearDown(self):
-    for kind in [Feature, FeatureEntry, user_models.AppUser]:
+    for kind in [FeatureEntry, user_models.AppUser]:
       for entity in kind.query():
         entity.key.delete()
 
@@ -334,7 +333,7 @@ class FeaturesAPITestGet_OldSchema(testing_config.CustomTestCase):
     self.app_admin.put()
 
   def tearDown(self):
-    for kind in [Feature, FeatureEntry, Stage, user_models.AppUser]:
+    for kind in [FeatureEntry, Stage, user_models.AppUser]:
       for entity in kind.query():
         entity.key.delete()
     testing_config.sign_out()

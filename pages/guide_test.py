@@ -22,7 +22,6 @@ from framework import rediscache
 from internals import core_enums
 from internals import stage_helpers
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
-from internals.legacy_models import Feature
 from internals.review_models import Gate
 from pages import guide
 
@@ -49,7 +48,7 @@ class FeatureCreateTest(testing_config.CustomTestCase):
     self.handler = guide.FeatureCreateHandler()
 
   def tearDown(self) -> None:
-    kinds: list[ndb.Model] = [Feature, FeatureEntry, Stage, Gate]
+    kinds: list[ndb.Model] = [FeatureEntry, Stage, Gate]
     for kind in kinds:
       entities = kind.query().fetch()
       for entity in entities:
@@ -85,12 +84,8 @@ class FeatureCreateTest(testing_config.CustomTestCase):
     location = actual_response.headers['location']
     self.assertTrue(location.startswith('/guide/edit/'))
     new_feature_id = int(location.split('/')[-1])
-    feature = Feature.get_by_id(new_feature_id)
-    self.assertEqual(1, feature.category)
-    self.assertEqual('Feature name', feature.name)
-    self.assertEqual('Feature summary', feature.summary)
 
-    # Ensure FeatureEntry entity was also created.
+    # Ensure FeatureEntry entity was created.
     feature_entry = FeatureEntry.get_by_id(new_feature_id)
     self.assertEqual(1, feature_entry.category)
     self.assertEqual('Feature name', feature_entry.name)
@@ -99,7 +94,7 @@ class FeatureCreateTest(testing_config.CustomTestCase):
     self.assertEqual(['devrel-chromestatus-all@google.com'],
                      feature_entry.devrel_emails)
 
-    # Ensure Stage and Gate entities were also created.
+    # Ensure Stage and Gate entities were created.
     stages = Stage.query().fetch()
     gates = Gate.query().fetch()
     self.assertEqual(len(stages), 6)
@@ -109,14 +104,10 @@ class FeatureCreateTest(testing_config.CustomTestCase):
 class FeatureEditHandlerTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = Feature(
-        name='feature one', summary='sum', owner=['user1@google.com'],
-        category=1)
-    self.feature_1.put()
     self.stage = core_enums.INTENT_INCUBATE  # Shows first form
 
     self.fe_1 = FeatureEntry(
-        id=self.feature_1.key.integer_id(), name='feature one',
+        name='feature one',
         summary='sum', owner_emails=['user1@google.com'], category=1,
         standard_maturity=1, ff_views=1, safari_views=1, web_dev_views=1,
         impl_status_chrome=1)
@@ -140,11 +131,11 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
       if stage_type == 150:
         self.stage_id = stage.key.integer_id()
 
-    self.request_path = f'/guide/stage/{self.feature_1.key.integer_id()}'
+    self.request_path = f'/guide/stage/{self.fe_1.key.integer_id()}'
     self.handler = guide.FeatureEditHandler()
 
   def tearDown(self):
-    self.feature_1.key.delete()
+    self.fe_1.key.delete()
     self.fe_1.key.delete()
     for stage in Stage.query():
       stage.key.delete()
@@ -207,7 +198,7 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
     with test_app.test_request_context(self.request_path, method='POST'):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.process_post_data(
-            feature_id=self.feature_1.key.integer_id(), stage_id=self.stage_id)
+            feature_id=self.fe_1.key.integer_id(), stage_id=self.stage_id)
 
   def test_post__non_allowed(self):
     """Non-allowed cannot edit features, gets a 403."""
@@ -215,7 +206,7 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
     with test_app.test_request_context(self.request_path, method='POST'):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.process_post_data(
-            feature_id=self.feature_1.key.integer_id(), stage_id=self.stage_id)
+            feature_id=self.fe_1.key.integer_id(), stage_id=self.stage_id)
 
   def test_post__normal_valid_editall(self):
     """Allowed user can edit a feature."""
@@ -253,25 +244,19 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
 
     self.assertEqual('302 FOUND', actual_response.status)
     location = actual_response.headers['location']
-    self.assertEqual('/guide/edit/%d' % self.feature_1.key.integer_id(),
+    self.assertEqual('/guide/edit/%d' % self.fe_1.key.integer_id(),
                      location)
-    revised_feature = Feature.get_by_id(
-        self.feature_1.key.integer_id())
-    self.assertEqual(2, revised_feature.category)
-    self.assertEqual('Revised feature name', revised_feature.name)
-    self.assertEqual('Revised feature summary', revised_feature.summary)
-    self.assertEqual(84, revised_feature.shipped_milestone)
 
-    # Ensure changes were also made to FeatureEntry entity
+    # Ensure changes were made to FeatureEntry entity.
     revised_entry = FeatureEntry.get_by_id(
-        self.feature_1.key.integer_id())
+        self.fe_1.key.integer_id())
     self.assertEqual(2, revised_entry.category)
     self.assertEqual('Revised feature name', revised_entry.name)
     self.assertEqual('Revised feature summary', revised_entry.summary)
 
-    # Ensure changes were also made to Stage entities
+    # Ensure changes were made to Stage entities.
     stages = stage_helpers.get_feature_stages(
-        self.feature_1.key.integer_id())
+        self.fe_1.key.integer_id())
     self.assertEqual(len(stages.keys()), 6)
     dev_trial_stage = stages.get(130)
     origin_trial_stages = stages.get(150)
@@ -322,23 +307,18 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
 
     self.assertEqual('302 FOUND', actual_response.status)
     location = actual_response.headers['location']
-    self.assertEqual('/guide/edit/%d' % self.feature_1.key.integer_id(),
+    self.assertEqual('/guide/edit/%d' % self.fe_1.key.integer_id(),
                      location)
-    revised_feature = Feature.get_by_id(
-        self.feature_1.key.integer_id())
-    self.assertEqual('Revised feature name', revised_feature.name)
-    self.assertEqual('Revised feature summary', revised_feature.summary)
-    self.assertEqual(84, revised_feature.ot_milestone_desktop_start)
 
-    # Ensure changes were also made to FeatureEntry entity
+    # Ensure changes were made to FeatureEntry entity.
     revised_entry = FeatureEntry.get_by_id(
-        self.feature_1.key.integer_id())
+        self.fe_1.key.integer_id())
     self.assertEqual('Revised feature name', revised_entry.name)
     self.assertEqual('Revised feature summary', revised_entry.summary)
 
-    # Ensure changes were also made to Stage entity
+    # Ensure changes were made to Stage entity.
     stages = stage_helpers.get_feature_stages(
-        self.feature_1.key.integer_id())
+        self.fe_1.key.integer_id())
     self.assertEqual(len(stages.keys()), 6)
     origin_trial_stages = stages.get(150)
     # Stage for shipping should have been created.

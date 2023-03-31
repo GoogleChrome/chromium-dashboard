@@ -24,7 +24,6 @@ import settings
 
 from internals import core_enums
 from internals.core_models import FeatureEntry
-from internals.legacy_models import Feature
 from internals import user_models
 from pages import featurelist
 from framework import rediscache
