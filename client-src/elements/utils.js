@@ -152,3 +152,89 @@ export function renderRelativeDate(dateStr) {
          </sl-relative-time>)
       </span>`;
 }
+
+
+/**
+ * Parses URL query strings into a dict.
+ * @param {string} rawQuery a raw URL query string, e.g. q=abc&num=1;
+ * @return {Object} A key-value pair dictionary for the query string.
+ */
+export function parseRawQuery(rawQuery) {
+  const params = new URLSearchParams(rawQuery);
+  const result = {};
+  for (const param of params.keys()) {
+    const values = params.getAll(param);
+    if (!values.length) {
+      continue;
+    }
+    // Assume there is only one value.
+    result[param] = values[0];
+  }
+  return result;
+}
+
+
+/**
+ * Create a new URL using params and a location.
+ * @param {string} params is the new param object.
+ * @param {Object} location is an URL location.
+ * @return {Object} the new URL.
+ */
+export function getNewLocation(params, location) {
+  const url = new URL(location);
+  url.search = '';
+  if (params) {
+    for (const [k, v] of Object.entries(params)) {
+      // Skip if the value is empty.
+      if (!v) {
+        continue;
+      }
+      url.searchParams.append(k, v);
+    }
+  }
+  return url;
+}
+
+
+/**
+ * Update window.location with new query params.
+ * @param {string} key is the key of the query param.
+ * @param {string} val is the unencoded value of the query param.
+ */
+export function updateURLParams(key, val) {
+  // Update the query param object.
+  const rawQuery = parseRawQuery(window.location.search);
+  rawQuery[key] = encodeURIComponent(val);
+
+  // Assemble the new URL.
+  const newURL = getNewLocation(rawQuery, window.location);
+  newURL.hash = '';
+  if (newURL.toString() === window.location.toString()) {
+    return;
+  }
+  // Update URL without refreshing the page. {path:} is needed for
+  // an issue in page.js:
+  // https://github.com/visionmedia/page.js/issues/293#issuecomment-456906679
+  window.history.pushState({path: newURL.toString()}, '', newURL);
+}
+
+/**
+ * Update window.location with new query params.
+ * @param {string} key is the key of the query param to delete.
+ */
+export function clearURLParams(key) {
+  // Update the query param object.
+  const rawQuery = parseRawQuery(window.location.search);
+  delete rawQuery[key];
+
+  // Assemble the new URL.
+  const newURL = getNewLocation(rawQuery, window.location);
+  newURL.hash = '';
+  if (newURL.toString() === window.location.toString()) {
+    return;
+  }
+  // Update URL without refreshing the page. {path:} is needed for
+  // an issue in page.js:
+  // https://github.com/visionmedia/page.js/issues/293#issuecomment-456906679
+  window.history.pushState({path: newURL.toString()}, '', newURL);
+}
