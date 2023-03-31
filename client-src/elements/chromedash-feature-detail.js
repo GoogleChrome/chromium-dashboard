@@ -8,6 +8,7 @@ import {
   FLAT_TRIAL_EXTENSION_FIELDS,
   FORMS_BY_STAGE_TYPE,
   OT_EXTENSION_STAGE_MAPPING,
+  STAGE_TYPES_ORIGIN_TRIAL,
 } from './form-definition';
 
 import {
@@ -578,7 +579,7 @@ class ChromedashFeatureDetail extends LitElement {
 
     // Show a button to add a trial extension stage for origin trial stages.
     let addExtensionButton = nothing;
-    if (this.canEdit && 'extensions' in feStage) {
+    if (this.canEdit && STAGE_TYPES_ORIGIN_TRIAL.has(feStage.stage_type)) {
       // Button text changes based on whether or not an extension stage already exists.
       const extensionAlreadyExists = (feStage.extensions && feStage.extensions.length > 0);
       const extensionButtonText = extensionAlreadyExists ?
