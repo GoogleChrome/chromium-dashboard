@@ -2,8 +2,9 @@ import {html, LitElement, css} from 'lit';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {ENTERPRISE_FEATURE_CATEGORIES, PLATFORMS_DISPLAYNAME} from './form-field-enums.js';
 import {STAGE_ENT_ROLLOUT} from './form-definition.js';
-import {showToastMessage} from './utils.js';
+import {showToastMessage, updateURLParams, parseRawQuery} from './utils.js';
 
+const milestoneQueryParamKey = 'milestone';
 
 export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   static get properties() {
@@ -22,7 +23,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     this.upcomingFeatures = [];
     this.features = [];
     this.channels = {};
-    this.selectedMilestone = 0;
+    this.selectedMilestone = undefined;
   }
 
   static get styles() {
@@ -106,7 +107,13 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         'feature_type="New Feature or removal affecting enterprises" OR breaking_change=true'),
     ]).then(([channels, {features}]) => {
       this.channels = channels;
-      this.selectedMilestone = this.channels.stable.version;
+      const queryParams = parseRawQuery(window.location.search);
+      if (milestoneQueryParamKey in queryParams) {
+        this.selectedMilestone = parseInt(queryParams[milestoneQueryParamKey], 10);
+      } else {
+        this.selectedMilestone = this.channels.stable.version;
+        updateURLParams(milestoneQueryParamKey, this.selectedMilestone);
+      }
       // Filter out features that don't have rollout stages.
       // Ensure that the stages are only rollout stages.
       this.features = features
@@ -162,6 +169,9 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
 
   update() {
     this.updateCurrentAndUpcomingFeatures();
+    if (this.selectedMilestone !== undefined) {
+      updateURLParams(milestoneQueryParamKey, this.selectedMilestone);
+    }
     super.update();
   }
 
