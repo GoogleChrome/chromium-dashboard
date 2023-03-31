@@ -29,6 +29,17 @@ import settings
 class FeatureEntry(ndb.Model):  # Copy from Feature
   """This is the main representation of a feature that we are tracking."""
 
+  # Fields that should not be mutated by user edit requests.
+  FIELDS_IMMUTABLE_BY_USER = frozenset([
+    'id',
+    'created',
+    'creator_email',
+    'outstanding_notifications',
+    'deleted',
+    'star_count',
+    'feature_type',
+  ])
+
   # Metadata: Creation and updates.
   created = ndb.DateTimeProperty(auto_now_add=True)
   updated = ndb.DateTimeProperty(auto_now_add=True)

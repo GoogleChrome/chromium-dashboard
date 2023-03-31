@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, TypedDict
+from datetime import datetime
 
 from api import converters
 from framework import basehandlers
@@ -83,7 +83,36 @@ class FeaturesAPI(basehandlers.APIHandler):
 
   # TODO(jrobbins): do_post
 
-  # TODO(jrobbins): do_patch
+  def do_patch(self, **kwargs):
+    """Handle PATCH requests to update fields in a single feature."""
+    feature_id = kwargs['feature_id']
+    body = self.get_json_param_dict()
+
+    # update_fields represents which fields will be updated by this request.
+    fields_to_update = body.get('update_fields', [])
+    feature: FeatureEntry | None = FeatureEntry.get_by_id(feature_id)
+    if feature is None:
+      self.abort(404, msg=f'Feature {feature_id} not found')
+
+    # Validate the user has edit permissions and redirect if needed.
+    redirect_resp = permissions.validate_feature_edit_permission(
+        self, feature_id)
+    if redirect_resp:
+      return redirect_resp
+
+    # Update each field specified in the field mask.
+    for field in fields_to_update:
+      # Each field specified should be a valid field that exists on the entity.
+      if not hasattr(feature, field):
+        self.abort(400, msg=f'FeatureEntry has no attribute {field}.')
+      if field in FeatureEntry.FIELDS_IMMUTABLE_BY_USER:
+        self.abort(400, f'FeatureEntry field {field} is immutable.')
+      setattr(feature, field, body.get(field, None))
+
+    feature.updater_email = self.get_current_user().email()
+    feature.updated = datetime.now()
+    feature.put()
+    return {'message': f'Feature {feature_id} updated.'}
 
   @permissions.require_admin_site
   def do_delete(self, **kwargs) -> dict[str, str]:
@@ -98,7 +127,7 @@ class FeaturesAPI(basehandlers.APIHandler):
     rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
 
     # Write for new FeatureEntry entity.
-    feature_entry: Optional[FeatureEntry] = (
+    feature_entry: FeatureEntry | None = (
         FeatureEntry.get_by_id(feature_id))
     if feature_entry:
       feature_entry.deleted = True
