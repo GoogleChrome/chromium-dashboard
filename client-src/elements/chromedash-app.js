@@ -215,13 +215,14 @@ class ChromedashApp extends LitElement {
 
     // Loading new page.
     this.pageComponent = document.createElement(componentName);
+    this.setChangesMade(false);
+    this.removeBeforeUnloadHandler();
 
     window.setTimeout(() => {
       // Timeout required since the form may not be created yet.
       // Allow form submit to proceed without warning.
       const form = this.pageComponent.shadowRoot.querySelector('form');
       if (form) {
-        this.setChangesMade(false);
         this.addBeforeUnloadHandler();
 
         // Remember if anything has changed since the page was loaded.
