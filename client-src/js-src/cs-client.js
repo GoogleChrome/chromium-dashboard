@@ -97,7 +97,6 @@ class ChromeStatusClient {
     const rawResponseText = await response.text();
     const XSSIPrefix = ')]}\'\n';
     if (!rawResponseText.startsWith(XSSIPrefix)) {
-      console.log(rawResponseText);
       throw new Error(
           `Response does not start with XSSI prefix: ${XSSIPrefix}`);
     }

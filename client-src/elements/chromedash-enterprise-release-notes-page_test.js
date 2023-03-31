@@ -177,7 +177,6 @@ describe('chromedash-feature-page', () => {
     // invalid feature requests would trigger the toast to show message
     const toastEl = document.querySelector('chromedash-toast');
     const toastMsgSpan = toastEl.shadowRoot.querySelector('span#msg');
-    console.log(toastMsgSpan.innerHTML);
     assert.include(toastMsgSpan.innerHTML,
       'Some errors occurred. Please refresh the page or try again later.');
   });
