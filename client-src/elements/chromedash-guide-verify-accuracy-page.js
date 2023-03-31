@@ -134,12 +134,15 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
     let numberDifferentiation = '';
     if (this.previousStageTypeRendered && this.previousStageTypeRendered === feStage.stage_type) {
       this.sameTypeRendered += 1;
-      numberDifferentiation = ` (${this.sameTypeRendered})`;
+      numberDifferentiation = ` ${this.sameTypeRendered}`;
     } else {
       this.previousStageTypeRendered = feStage.stage_type;
       this.sameTypeRendered = 1;
     }
-    const sectionName = `${name}${numberDifferentiation}`;
+    let sectionName = `${name}${numberDifferentiation}`;
+    if (feStage.display_name) {
+      sectionName = `${name}: ${feStage.display_name}`;
+    }
 
     const formFieldEls = stageFields.map(field => {
       let value = formattedFeature[field];
@@ -206,9 +209,13 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
       const extensions = feStage.extensions || [];
       extensions.forEach(extensionStage => {
         fieldsOnly = flattenSections(VERIFY_ACCURACY_TRIAL_EXTENSION_FIELDS);
+        let sectionName = VERIFY_ACCURACY_TRIAL_EXTENSION_FIELDS.name;
+        if (feStage.display_name) {
+          sectionName = `${feStage.display_name} ${VERIFY_ACCURACY_TRIAL_EXTENSION_FIELDS.name}`;
+        }
         formsToRender.push(this.renderStageSection(
           formattedFeature,
-          `${VERIFY_ACCURACY_TRIAL_EXTENSION_FIELDS.name}`,
+          sectionName,
           extensionStage,
           fieldsOnly));
         allFormFields = [...allFormFields, ...fieldsOnly];

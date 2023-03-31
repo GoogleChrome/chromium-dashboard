@@ -1260,6 +1260,25 @@ export const ALL_FIELDS = {
     help_text: '',
   },
 
+  'display_name': {
+    type: 'input',
+    attrs: TEXT_FIELD_ATTRS,
+    required: false,
+    label: 'Stage display name',
+    help_text: html`
+        <p>Optional. Stage name to display on the feature detail page.</p>`,
+    extra_help: html`
+    <p>
+    This name is only used for displaying stages on this site. Use this to differentiate stages of the same type.
+    </p>
+    <h4>Examples</h4>
+    <ul>
+      <li>Extended deprecation trial</li>
+      <li>Second origin trial run</li>
+      <li>Delayed ship for Android</li>
+    </ul>`,
+  },
+
   'enterprise_policies': {
     type: 'input',
     attrs: MULTI_STRING_FIELD_ATTRS,
