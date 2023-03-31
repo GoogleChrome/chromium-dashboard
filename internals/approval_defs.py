@@ -324,8 +324,10 @@ def _calc_gate_state(votes: list[Vote], rule: str) -> int:
 def update_gate_approval_state(gate: Gate) -> int:
   """Change the Gate state in RAM based on its votes. Return True if changed."""
   votes = Vote.get_votes(gate_id=gate.key.integer_id())
-  afd = APPROVAL_FIELDS_BY_ID[gate.gate_type]
-  new_state = _calc_gate_state(votes, afd.rule)
+  afd = APPROVAL_FIELDS_BY_ID.get(gate.gate_type)
+  # Assume any gate of a type that is not currently supported is ONE_LGTM.
+  rule = afd.rule if afd else ONE_LGTM
+  new_state = _calc_gate_state(votes, rule)
   if new_state == gate.state:
     return False
   gate.state = new_state
