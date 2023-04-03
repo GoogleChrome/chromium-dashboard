@@ -98,7 +98,7 @@
     "trim-newlines": ">=5.0.0"
   },
   "dependencies": {
-    "@lit-labs/context": "^0.2.0",
+    "@lit-labs/context": "^0.3.0",
     "@polymer/iron-collapse": "^3.0.1",
     "@polymer/iron-icon": "^3.0.1",
     "@polymer/iron-iconset-svg": "^3.0.1",
