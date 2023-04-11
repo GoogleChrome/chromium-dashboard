@@ -157,7 +157,6 @@ export class ChromedashAdminBlinkPage extends LitElement {
               html`<div id="component-count">listing ${this.components.length} components</div>`
             }
           </div>
-          <a href="/admin/subscribers" class="view_owners_linke">List by owner &amp; their features →</a>
         </div>
         <div class="layout horizontal subheader_toggles">
           <!-- <paper-toggle-button> doesn't working here. Related links:
