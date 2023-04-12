@@ -211,12 +211,6 @@ mpa_page_routes: list[Route] = [
         defaults={'template_path': 'farewell-samples.html'}),
 
     Route('/omaha_data', metrics.OmahaDataHandler),
-
-    # Maintenance scripts.
-    Route('/scripts/evaluate_gate_status',
-          maintenance_scripts.EvaluateGateStatus),
-    Route('/scripts/write_missing_gates',
-          maintenance_scripts.WriteMissingGates),
 ]
 
 internals_routes: list[Route] = [
@@ -237,6 +231,12 @@ internals_routes: list[Route] = [
   Route('/tasks/detect-intent', detect_intent.IntentEmailHandler),
   Route('/tasks/email-reviewers', notifier.FeatureReviewHandler),
   Route('/tasks/email-comments', notifier.FeatureCommentHandler),
+
+  # Maintenance scripts.
+  Route('/scripts/evaluate_gate_status',
+      maintenance_scripts.EvaluateGateStatus),
+  Route('/scripts/write_missing_gates',
+      maintenance_scripts.WriteMissingGates),
 ]
 
 dev_routes: list[Route] = []
