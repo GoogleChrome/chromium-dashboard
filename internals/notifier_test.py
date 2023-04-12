@@ -28,7 +28,8 @@ from internals import approval_defs
 from internals import core_enums
 from internals import notifier
 from internals import stage_helpers
-from internals import user_models
+from internals.user_models import (
+    AppUser, BlinkComponent, FeatureOwner, UserPref)
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 import settings
 
@@ -64,13 +65,13 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.fe_1_stages = stage_helpers.get_feature_stages(
         self.fe_1.key.integer_id())
 
-    self.component_1 = user_models.BlinkComponent(name='Blink')
+    self.component_1 = BlinkComponent(name='Blink')
     self.component_1.put()
-    self.component_owner_1 = user_models.FeatureOwner(
+    self.component_owner_1 = FeatureOwner(
         name='owner_1', email='owner_1@example.com',
         primary_blink_components=[self.component_1.key])
     self.component_owner_1.put()
-    self.watcher_1 = user_models.FeatureOwner(
+    self.watcher_1 = FeatureOwner(
         name='watcher_1', email='watcher_1@example.com',
         watching_all_features=True)
     self.watcher_1.put()
@@ -114,8 +115,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.maxDiff = None
 
   def tearDown(self):
-    kinds = [FeatureEntry, Stage, user_models.FeatureOwner,
-             user_models.BlinkComponent]
+    kinds = [FeatureEntry, Stage, FeatureOwner, BlinkComponent]
     for kind in kinds:
       for entity in kind.query():
         entity.key.delete()
@@ -554,7 +554,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
   def test_make_feature_changes_email__starrer_unsubscribed(self, mock_f_e_b):
     """We don't email users who starred the feature but opted out."""
     mock_f_e_b.return_value = 'mock body html'
-    starrer_2_pref = user_models.UserPref(
+    starrer_2_pref = UserPref(
         email='starrer_2@example.com',
         notify_as_starrer=False)
     starrer_2_pref.put()
@@ -652,9 +652,9 @@ class FeatureStarTest(testing_config.CustomTestCase):
 
   def test_get_feature_starrers__some_starrers(self):
     """Two users have starred the given feature."""
-    app_user_1 = user_models.AppUser(email='user16@example.com')
+    app_user_1 = AppUser(email='user16@example.com')
     app_user_1.put()
-    app_user_2 = user_models.AppUser(email='user17@example.com')
+    app_user_2 = AppUser(email='user17@example.com')
     app_user_2.put()
     feature_1_id = self.fe_1.key.integer_id()
     notifier.FeatureStar.set_star(app_user_1.email, feature_1_id)
@@ -674,52 +674,61 @@ class FeatureStarTest(testing_config.CustomTestCase):
 class NotifyInactiveUsersHandlerTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.users = []
-    active_user = user_models.AppUser(
+    active_user = AppUser(
+      created=datetime(2020, 10, 1),
       email="active_user@example.com", is_admin=False, is_site_editor=False,
       last_visit=datetime(2023, 8, 30))
     active_user.put()
-    self.users.append(active_user)
 
-    self.inactive_user = user_models.AppUser(
+    inactive_user = AppUser(
+      created=datetime(2020, 10, 1),
       email="inactive_user@example.com", is_admin=False, is_site_editor=False,
       last_visit=datetime(2023, 2, 20))
-    self.inactive_user.put()
-    self.users.append(self.inactive_user)
+    inactive_user.put()
+    self.inactive_user = inactive_user
+    
+    # User who has recently been given access by an admin,
+    # but has not yet visited the site. They should not be considered inactive.
+    newly_created_user = AppUser(
+      created=datetime(2023, 8, 1),
+      email="new_user@example.com", is_admin=False, is_site_editor=False)
+    newly_created_user.put()
 
-    really_inactive_user = user_models.AppUser(
+    # Very inactive user who has already been warned of inactivity
+    # via notification. They should not receive a second notification.
+    really_inactive_user = AppUser(
+      created=datetime(2020, 10, 1),
       email="really_inactive_user@example.com", is_admin=False,
       is_site_editor=False, last_visit=datetime(2022, 10, 1),
       notified_inactive=True)
     really_inactive_user.put()
-    self.users.append(really_inactive_user)
 
-    active_admin = user_models.AppUser(
+    active_admin = AppUser(
+      created=datetime(2020, 10, 1),
       email="active_admin@example.com", is_admin=True, is_site_editor=True,
       last_visit=datetime(2023, 9, 30))
     active_admin.put()
-    self.users.append(active_admin)
 
-    inactive_admin = user_models.AppUser(
+    inactive_admin = AppUser(
+      created=datetime(2020, 10, 1),
       email="inactive_admin@example.com", is_admin=True, is_site_editor=True,
       last_visit=datetime(2023, 3, 1))
     inactive_admin.put()
-    self.users.append(inactive_admin)
 
-    active_site_editor = user_models.AppUser(
+    active_site_editor = AppUser(
+      created=datetime(2020, 10, 1),
       email="active_site_editor@example.com", is_admin=False,
       is_site_editor=True, last_visit=datetime(2023, 7, 30))
     active_site_editor.put()
-    self.users.append(active_site_editor)
 
-    inactive_site_editor = user_models.AppUser(
+    inactive_site_editor = AppUser(
+      created=datetime(2020, 10, 1),
       email="inactive_site_editor@example.com", is_admin=False,
       is_site_editor=True, last_visit=datetime(2023, 2, 9))
     inactive_site_editor.put()
-    self.users.append(inactive_site_editor)
 
   def tearDown(self):
-    for user in self.users:
+    for user in AppUser.query():
       user.key.delete()
 
   def test_determine_users_to_notify(self):

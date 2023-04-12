@@ -377,7 +377,7 @@ class NotifyInactiveUsersHandler(basehandlers.FlaskHandler):
       now = datetime.now()
 
     q = AppUser.query()
-    users = q.fetch()
+    users: list[AppUser] = q.fetch()
     inactive_users = []
     inactive_cutoff = now - timedelta(days=self.INACTIVE_WARN_DAYS)
 
@@ -388,8 +388,11 @@ class NotifyInactiveUsersHandler(basehandlers.FlaskHandler):
         continue
 
       # If the user does not have a last visit, it is assumed the last visit
-      # is roughly the date the last_visit field was added.
+      # is either the account's creation date or the date the last_visit
+      # field was created on the model - whatever is latest.
       last_visit = user.last_visit or self.DEFAULT_LAST_VISIT
+      if user.created > last_visit:
+        last_visit = user.created
       # Notify the user of inactivity if they haven't already been notified.
       if (last_visit < inactive_cutoff):
         inactive_users.append(user.email)
