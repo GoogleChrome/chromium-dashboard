@@ -196,7 +196,10 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
     mock_get.return_value = mock_return
     with test_app.app_context():
       result = self.handler.get_template_data()
-    expected = {'message': '1 email(s) sent or logged.'}
+    expected_message = ('1 email(s) sent or logged.\n'
+                        'Recipients:\n'
+                        'feature_owner@example.com')
+    expected = {'message': expected_message}
     self.assertEqual(result, expected)
 
   @mock.patch('requests.get')
@@ -207,7 +210,11 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
     mock_get.return_value = mock_return
     with test_app.app_context():
       result = self.handler.get_template_data()
-    expected = {'message': '2 email(s) sent or logged.'}
+    expected_message = ('2 email(s) sent or logged.\n'
+                        'Recipients:\n'
+                        'owner_1@example.com\n'
+                        'owner_2@example.com')
+    expected = {'message': expected_message}
     self.assertEqual(result, expected)
 
   @mock.patch('requests.get')
@@ -222,7 +229,14 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
     with test_app.app_context():
       result = self.handler.get_template_data()
     # More email tasks should be created to notify extended contributors.
-    expected = {'message': '5 email(s) sent or logged.'}
+    expected_message = ('5 email(s) sent or logged.\n'
+                        'Recipients:\n'
+                        'feature_editor@example.com\n'
+                        'jrobbins-test@googlegroups.com\n'
+                        'mentor@example.com\n'
+                        'owner_1@example.com\n'
+                        'owner_2@example.com')
+    expected = {'message': expected_message}
     self.assertEqual(result, expected)
 
     # F1 outstanding should be unchanged and F2 should have one extra.
@@ -241,7 +255,11 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
     mock_get.return_value = mock_return
     with test_app.app_context():
       result = self.handler.get_template_data()
-    expected = {'message': '2 email(s) sent or logged.'}
+    expected_message = ('2 email(s) sent or logged.\n'
+                        'Recipients:\n'
+                        'owner_1@example.com\n'
+                        'owner_2@example.com')
+    expected = {'message': expected_message}
     self.assertEqual(result, expected)
 
     # F1 outstanding should be unchanged and F2 should have one extra.

@@ -33,6 +33,7 @@ import settings
 CHROME_RELEASE_SCHEDULE_URL = (
     'https://chromiumdash.appspot.com/fetch_milestone_schedule')
 WEBSTATUS_EMAIL = 'webstatus@google.com'
+STAGING_EMAIL = 'jrobbins-test@googlegroups.com'
 
 
 def get_current_milestone_info(anchor_channel: str):
@@ -53,7 +54,8 @@ def choose_email_recipients(
     return feature.owner_emails
 
   # Escalated notification. Add extended recipients.
-  all_notified_users = set([WEBSTATUS_EMAIL])
+  ws_group_email = WEBSTATUS_EMAIL if settings.PROD else STAGING_EMAIL
+  all_notified_users = set([ws_group_email])
   all_notified_users.add(feature.creator_email)
   all_notified_users.update(feature.owner_emails)
   all_notified_users.update(feature.editor_emails)
@@ -123,7 +125,13 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
         self.should_escalate_notification)
     notifier.send_emails(email_tasks)
 
-    message =  f'{len(email_tasks)} email(s) sent or logged.'
+    recipients_str = ''
+    # Add an alphabetical list of unique recipients to the return message.
+    if len(email_tasks):
+      recipients = '\n'.join(
+          sorted(list(set([task['to'] for task in email_tasks]))))
+      recipients_str = f'\nRecipients:\n{recipients}'
+    message =  f'{len(email_tasks)} email(s) sent or logged.{recipients_str}'
     logging.info(message)
 
     self.changes_after_sending_notifications(features_to_notify)
