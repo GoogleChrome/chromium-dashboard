@@ -304,7 +304,10 @@ const FLAT_ORIGIN_TRIAL_FIELDS = {
         // TODO(jrobbins): display r4dt_url instead when deprecating.
         'i2e_lgtms',
         'intent_to_experiment_url',
-        'origin_trial_feedback_url',
+
+        // TODO(danielrsmith): Add this field back when a display consensus
+        // has been reached, or remove it entirely.
+        // 'origin_trial_feedback_url',
       ],
     },
     // Implementation
@@ -531,7 +534,10 @@ const DEPRECATION_ORIGIN_TRIAL_FIELDS = {
         'ongoing_constraints',
         'r4dt_url', // map to name="intent_to_experiment_url" field upon form submission
         'r4dt_lgtms', // map to name="i2e_lgtms" field upon form submission
-        'origin_trial_feedback_url',
+
+        // TODO(danielrsmith): Add this field back when a display consensus
+        // has been reached, or remove it entirely.
+        // 'origin_trial_feedback_url',
       ],
     },
     // Implementation
