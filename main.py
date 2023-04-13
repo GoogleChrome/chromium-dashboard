@@ -39,13 +39,12 @@ from framework import csp
 from framework import sendemail
 from internals import detect_intent
 from internals import fetchmetrics
+from internals import maintenance_scripts
 from internals import notifier
 from internals import data_backup
 from internals import inactive_users
 from internals import search_fulltext
-from internals import schema_migration
 from internals import reminders
-from pages import blink_handler
 from pages import featurelist
 from pages import guide
 from pages import intentpreview
@@ -191,7 +190,6 @@ spa_page_routes = [
 ]
 
 mpa_page_routes: list[Route] = [
-    Route('/admin/subscribers', blink_handler.SubscribersHandler),
     Route('/admin/users/new', users.UserListHandler),
 
     Route('/admin/features/launch/<int:feature_id>',
@@ -234,12 +232,11 @@ internals_routes: list[Route] = [
   Route('/tasks/email-reviewers', notifier.FeatureReviewHandler),
   Route('/tasks/email-comments', notifier.FeatureCommentHandler),
 
-  Route('/admin/schema_migration_gate_status',
-      schema_migration.EvaluateGateStatus),
-  Route('/admin/schema_migration_missing_gates',
-    schema_migration.WriteMissingGates),
-  Route('/admin/schema_migration_lgtm_fields',
-    schema_migration.MigrateLGTMFields),
+  # Maintenance scripts.
+  Route('/scripts/evaluate_gate_status',
+      maintenance_scripts.EvaluateGateStatus),
+  Route('/scripts/write_missing_gates',
+      maintenance_scripts.WriteMissingGates),
 ]
 
 dev_routes: list[Route] = []
