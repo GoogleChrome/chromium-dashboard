@@ -37,7 +37,6 @@ class StageDict(TypedDict):
   experiment_goals: str | None
   experiment_risks: str | None
   extensions: list[StageDict]  # type: ignore
-  origin_trial_feedback_url: str | None
   
   # Trial extension specific fields.
   ot_stage_id: int | None

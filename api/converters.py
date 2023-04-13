@@ -187,7 +187,6 @@ def stage_to_json_dict(
     'announcement_url': stage.announcement_url,
     'experiment_goals': stage.experiment_goals,
     'experiment_risks': stage.experiment_risks,
-    'origin_trial_feedback_url': stage.origin_trial_feedback_url,
     'extensions': [],
     'experiment_extension_reason': stage.experiment_extension_reason,
     'ot_stage_id': stage.ot_stage_id,
