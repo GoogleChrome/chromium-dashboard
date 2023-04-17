@@ -63,7 +63,7 @@
     "@openapitools/openapi-generator-cli": "^2.5.2",
     "@rollup/plugin-babel": "^6.0.3",
     "@rollup/plugin-node-resolve": "^15.0.1",
-    "@shoelace-style/shoelace": "^2.3.0",
+    "@shoelace-style/shoelace": "^2.4.0",
     "@web/test-runner": "^0.15.3",
     "@web/test-runner-playwright": "^0.9.0",
     "acorn": ">=8.8.2",
