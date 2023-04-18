@@ -996,7 +996,9 @@ export const ALL_FIELDS = {
     label: 'Origin trial feedback summary',
     help_text: html`
       If your feature was available as an origin trial, link to a summary
-      of usage and developer feedback. If not, leave this empty.`,
+      of usage and developer feedback. If not, leave this empty. DO NOT
+      USE FEEDBACK VERBATIM without prior consultation with the Origin 
+      Trials team.`,
   },
 
   'anticipated_spec_changes': {
