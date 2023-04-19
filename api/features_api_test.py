@@ -21,6 +21,7 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 from api import features_api
 from internals import core_enums
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.review_models import Gate
 from internals import user_models
 from framework import rediscache
 
@@ -141,7 +142,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     self.app_admin.put()
 
   def tearDown(self):
-    for kind in [FeatureEntry, Stage, user_models.AppUser]:
+    for kind in [FeatureEntry, Gate, Stage, user_models.AppUser]:
       for entity in kind.query():
         entity.key.delete()
 
@@ -486,6 +487,42 @@ class FeaturesAPITest(testing_config.CustomTestCase):
       self.assertEqual(getattr(new_feature, field), value)
     # User's email should match creator_email field.
     self.assertEqual(new_feature.creator_email, 'admin@example.com')
+
+  def test_post__valid_stage_and_gate_creation(self):
+    """POST request successful with valid input from user with permissions."""
+    # Signed-in user with permissions
+    testing_config.sign_in('admin@example.com', 123567890)
+
+    valid_request_body = {
+      'name': 'A name',
+      'summary': 'A summary',
+      'owner_emails': ['summary', 'owner_emails'],
+      'category': 2,
+      'feature_type': 0,
+      'impl_status_chrome': 3,
+      'standard_maturity': 2,
+      'ff_views': 1,
+      'safari_views': 1,
+      'web_dev_views': 1,
+    }
+
+    request_path = f'{self.request_path}/create'
+    with test_app.test_request_context(request_path, json=valid_request_body):
+      response = self.handler.do_post()
+    # A new feature ID should be returned.
+    self.assertIsNotNone(response['feature_id'])
+    self.assertTrue(type(response['feature_id']) == int)
+    # New feature should exist.
+    new_feature: FeatureEntry | None = (
+        FeatureEntry.get_by_id(response['feature_id']))
+    self.assertIsNotNone(new_feature)
+
+    # Ensure Stage and Gate entities were created.
+    stages = Stage.query(
+        Stage.feature_id == new_feature.key.integer_id()).fetch()
+    gates = Gate.query(Gate.feature_id == new_feature.key.integer_id()).fetch()
+    self.assertEqual(len(stages), 6)
+    self.assertEqual(len(gates), 7)
 
   def test_post__no_permissions(self):
     """403 Forbidden if the user does not have feature create access."""
