@@ -74,7 +74,7 @@ export class ChromedashActivity extends LitElement {
   static get properties() {
     return {
       user: {type: Object},
-      feature: {type: Object},
+      featureId: {type: Number},
       activity: {type: Object},
       narrow: {type: Boolean},
     };
@@ -83,7 +83,7 @@ export class ChromedashActivity extends LitElement {
   constructor() {
     super();
     this.user = null;
-    this.feature = {};
+    this.featureId = 0;
     this.activity = null;
     this.narrow = false;
   }
@@ -232,10 +232,10 @@ export class ChromedashActivity extends LitElement {
     let resp;
     if (isUndelete) {
       resp = await window.csClient.undeleteComment(
-        this.feature.id, this.activity.comment_id);
+        this.featureId, this.activity.comment_id);
     } else {
       resp = await window.csClient.deleteComment(
-        this.feature.id, this.activity.comment_id);
+        this.featureId, this.activity.comment_id);
     }
     if (resp && resp.message === 'Done') {
       this.activity.deleted_by = (isUndelete) ? null : this.user.email;
@@ -251,7 +251,7 @@ export class ChromedashActivityLog extends LitElement {
   static get properties() {
     return {
       user: {type: Object},
-      feature: {type: Object},
+      featureId: {type: Number},
       comments: {type: Array},
       narrow: {type: Boolean},
       reverse: {type: Boolean},
@@ -271,7 +271,7 @@ export class ChromedashActivityLog extends LitElement {
   constructor() {
     super();
     this.user = null;
-    this.feature = {};
+    this.featureId = 0;
     this.comments = [];
     this.narrow = false;
     this.reverse = false;
@@ -291,7 +291,7 @@ export class ChromedashActivityLog extends LitElement {
     return orderedComments.map((activity) => html`
         <chromedash-activity
           .user=${this.user}
-          .feature=${this.feature}
+          .featureId=${this.featureId}
           .narrow=${this.narrow}
           .activity=${activity}>
         </chromedash-activity>
