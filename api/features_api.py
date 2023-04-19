@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from datetime import datetime
+from google.cloud import ndb
 
 from api import converters
 from framework import basehandlers
@@ -81,7 +82,37 @@ class FeaturesAPI(basehandlers.APIHandler):
       return self.get_one_feature(feature_id)
     return self.do_search()
 
-  # TODO(jrobbins): do_post
+  @permissions.require_create_feature
+  def do_post(self, **kwargs):
+    """Handle POST requests to create a single feature."""
+    body = self.get_json_param_dict()
+
+    # A feature creation request should have all required fields.
+    for field in FeatureEntry.REQUIRED_FIELDS:
+      if field not in body:
+        self.abort(400, msg=f'Required field "{field}" not provided.')
+    
+    # A feature creation request should not change fields that user
+    # cannot change.
+    for field in FeatureEntry.FIELDS_IMMUTABLE_BY_USER:
+      # Feature type cannot be changed after creation,
+      # but is required to be created. Don't check for it as an immutable field.
+      if field == 'feature_type':
+        continue
+      if field in body:
+        self.abort(400, msg=f'Immutable field "{field}" provided')
+
+    # Try to create the feature using the provided data.
+    try:
+      feature = FeatureEntry(**body,
+                             creator_email=self.get_current_user().email())
+      feature.put()
+    except Exception as e:
+      self.abort(400, msg=str(e))
+    id = feature.key.integer_id()
+
+    return {'message': f'Feature {id} created.',
+            'feature_id': id}
 
   def do_patch(self, **kwargs):
     """Handle PATCH requests to update fields in a single feature."""

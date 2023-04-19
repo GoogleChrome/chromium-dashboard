@@ -57,9 +57,6 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
     # TODO(jrobbins): Validate input, even though it is done on client.
 
     feature_type = int(self.form.get('feature_type', 0))
-    signed_in_user = ndb.User(
-        email=self.get_current_user().email(),
-        _auth_domain='gmail.com')
 
     # Write for new FeatureEntry entity.
     feature_entry = FeatureEntry(
@@ -71,8 +68,8 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
         editor_emails=editors,
         cc_emails=cc_emails,
         devrel_emails=[DEVREL_EMAIL],
-        creator_email=signed_in_user.email(),
-        updater_email=signed_in_user.email(),
+        creator_email=self.get_current_user().email(),
+        updater_email=self.get_current_user().email(),
         accurate_as_of=datetime.now(),
         unlisted=self.form.get('unlisted') == 'on',
         breaking_change=self.form.get('breaking_change') == 'on',
