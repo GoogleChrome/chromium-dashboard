@@ -382,7 +382,7 @@ class ChromedashApprovalsDialog extends LitElement {
       <div class="comment_section">
         <chromedash-activity-log
           .user=${this.user}
-          .feature=${this.feature.id}
+          .featureId=${this.feature.id}
           .comments=${this.comments}>
         </chromedash-activity-log>
       </div>

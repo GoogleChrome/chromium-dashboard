@@ -153,7 +153,7 @@ export class ChromedashActivityPage extends LitElement {
       ${this.renderControls()}
       <chromedash-activity-log
         .user=${this.user}
-        .feature=${this.featureId}
+        .featureId=${this.featureId}
         .narrow=${true}
         .reverse=${true}
         .comments=${this.comments}>

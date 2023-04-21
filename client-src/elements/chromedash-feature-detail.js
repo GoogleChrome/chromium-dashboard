@@ -616,7 +616,7 @@ class ChromedashFeatureDetail extends LitElement {
         <div style="padding-top: var(--content-padding)">
           <chromedash-activity-log
             .user=${this.user}
-            .feature=${this.feature.id}
+            .featureId=${this.feature.id}
             .comments=${this.comments}
           ></chromedash-activity-log>
         </div>
