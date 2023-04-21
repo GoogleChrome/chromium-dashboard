@@ -12,9 +12,7 @@ const nonAdminUser = {
   email: 'non-admin@google.com',
 };
 
-const featureOne = {
-  id: 123456,
-};
+const featureOne = 123456;
 
 const actOne = {
   comment_id: 1,
@@ -48,7 +46,7 @@ describe('chromedash-activity', () => {
     const component = await fixture(
       html`<chromedash-activity
               .user=${anonUser}
-              .feature=${featureOne}
+              .featureId=${featureOne}
               .activity=${actOne}>
              </chromedash-activity>`);
     const commentDiv = component.shadowRoot.querySelector('.comment');
@@ -65,7 +63,7 @@ describe('chromedash-activity', () => {
     const component = await fixture(
       html`<chromedash-activity
               .user=${nonAdminUser}
-              .feature=${featureOne}
+              .featureId=${featureOne}
               .activity=${actOne}>
              </chromedash-activity>`);
     const commentDiv = component.shadowRoot.querySelector('.comment');
@@ -88,7 +86,7 @@ describe('chromedash-activity', () => {
     const component = await fixture(
       html`<chromedash-activity
               .user=${nonAdminUser}
-              .feature=${featureOne}
+              .featureId=${featureOne}
               .activity=${deletedComment}>
              </chromedash-activity>`);
     const commentDiv = component.shadowRoot.querySelector('.comment');
@@ -113,7 +111,7 @@ describe('chromedash-activity', () => {
     const component = await fixture(
       html`<chromedash-activity
               .user=${nonAdminUser}
-              .feature=${featureOne}
+              .featureId=${featureOne}
               .activity=${doomedComment}>
              </chromedash-activity>`);
     const before = component.shadowRoot.querySelector('.comment');
@@ -143,7 +141,7 @@ describe('chromedash-activity', () => {
     const component = await fixture(
       html`<chromedash-activity
               .user=${nonAdminUser}
-              .feature=${featureOne}
+              .featureId=${featureOne}
               .activity=${blessedComment}>
              </chromedash-activity>`);
     const before = component.shadowRoot.querySelector('.comment');
@@ -164,7 +162,7 @@ describe('chromedash-activity', () => {
     const component = await fixture(
       html`<chromedash-activity
               .user=${nonAdminUser}
-              .feature=${featureOne}
+              .featureId=${featureOne}
               .activity=${actOne}>
             </chromedash-activity>`);
 
@@ -191,7 +189,7 @@ describe('chromedash-activity-log', () => {
     const component = await fixture(
       html`<chromedash-activity-log
             .user=${nonAdminUser}
-            .feature=${featureOne}
+            .featureId=${featureOne}
             .comments=${[actOne, actTwo]}>
             </chromedash-activity-log>`);
     assert.exists(component);

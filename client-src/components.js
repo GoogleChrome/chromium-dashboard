@@ -44,6 +44,7 @@ import './elements/icons';
 import './elements/chromedash-admin-blink-component-listing';
 import './elements/chromedash-admin-blink-page';
 import './elements/chromedash-all-features-page';
+import './elements/chromedash-activity-page';
 import './elements/chromedash-activity-log';
 import './elements/chromedash-app';
 import './elements/chromedash-approvals-dialog';
