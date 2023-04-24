@@ -99,7 +99,7 @@ export class ChromedashActivityPage extends LitElement {
     const commentText = commentArea.value.trim();
     if (commentText != '') {
       window.csClient.postComment(
-        this.feature.id, null, commentText, 0)
+        this.featureId, null, commentText, 0)
         .then(() => {
           this.reloadComments();
         })
