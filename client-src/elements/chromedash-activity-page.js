@@ -69,7 +69,6 @@ export class ChromedashActivityPage extends LitElement {
       this.loading = false;
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-      this.handleCancel();
     });
   }
 
@@ -84,7 +83,6 @@ export class ChromedashActivityPage extends LitElement {
       this.comments = commentRes.comments;
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-      this.handleCancel();
     });
   }
 
@@ -101,7 +99,7 @@ export class ChromedashActivityPage extends LitElement {
     const commentText = commentArea.value.trim();
     if (commentText != '') {
       window.csClient.postComment(
-        this.feature.id, this.gate.id, commentText, 0)
+        this.feature.id, null, commentText, 0)
         .then(() => {
           this.reloadComments();
         })
