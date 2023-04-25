@@ -93,7 +93,7 @@
     "regenerator-runtime": "^0.13.11",
     "rollup": "^3.20.2",
     "rollup-plugin-babel-minify": "^10.0.0",
-    "sinon": "^15.0.3",
+    "sinon": "^15.0.4",
     "tar": ">=6.1.13",
     "trim-newlines": ">=5.0.0"
   },
