@@ -17,7 +17,7 @@ export class ChromedashActivityPage extends LitElement {
        .instructions {
          padding: var(--content-padding-half);
          margin-bottom: var(--content-padding-large);
-         margin-left: 3px;
+         margin-left: 10px;
        }
 
        #comment_area {
@@ -25,7 +25,7 @@ export class ChromedashActivityPage extends LitElement {
        }
        #header {
           margin-bottom: 10px;
-          margin-left: 5px;
+          margin-left: 15px;
        }
        #controls {
          padding: var(--content-padding);
