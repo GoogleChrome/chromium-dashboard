@@ -56,7 +56,6 @@ class ChromedashApprovalsDialog extends LitElement {
     this.user = {};
     this.feature = {};
     this.votes = [];
-    this.comments = [];
     this.configs = [];
     this.gates = [];
     this.subsetPending = false;
@@ -158,10 +157,9 @@ class ChromedashApprovalsDialog extends LitElement {
     const featureId = this.feature.id;
     Promise.all([
       window.csClient.getVotes(featureId, null),
-      window.csClient.getComments(featureId),
       window.csClient.getApprovalConfigs(featureId),
       window.csClient.getGates(featureId),
-    ]).then(([votesRes, commentRes, configRes, gatesRes]) => {
+    ]).then(([votesRes, configRes, gatesRes]) => {
       this.votes = votesRes.votes;
       this.gates = gatesRes.gates;
 
@@ -187,9 +185,6 @@ class ChromedashApprovalsDialog extends LitElement {
       this.showAllIntents = numPending == 0;
       this.changedApprovalsByGate = new Map();
       this.needsSave = false;
-
-      this.comments = commentRes.comments;
-
       this.configs = configRes.configs;
       this.showConfigs = new Set(this.configs.map(c => c.field_id));
       this.changedConfigsByField = new Map();
@@ -378,14 +373,9 @@ class ChromedashApprovalsDialog extends LitElement {
 
   renderAllComments() {
     return html`
-      <h3>Comments</h3>
-      <div class="comment_section">
-        <chromedash-activity-log
-          .user=${this.user}
-          .featureId=${this.feature.id}
-          .comments=${this.comments}>
-        </chromedash-activity-log>
-      </div>
+      <a href="/feature/${this.feature.id}/activity">
+        <h3>Comments</h3>
+      </a>
     `;
   }
 

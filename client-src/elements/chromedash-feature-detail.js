@@ -613,15 +613,11 @@ class ChromedashFeatureDetail extends LitElement {
   renderActivitySection() {
     const summary = 'Comments & Activity';
     const content = html`
-        <div style="padding-top: var(--content-padding)">
-          <chromedash-activity-log
-            .user=${this.user}
-            .featureId=${this.feature.id}
-            .comments=${this.comments}
-          ></chromedash-activity-log>
-        </div>
+      <a href="/feature/${this.feature.id}/activity">
+        <sl-details summary=${summary}></sl-details>
+      </a>
     `;
-    return this.renderSection(summary, content);
+    return content;
   }
 
   renderAddStageButton() {
