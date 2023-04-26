@@ -27,8 +27,30 @@ from main import Route
 from framework import basehandlers
 from framework import users
 from framework import xsrf
-from internals import user_models
+from internals.core_models import FeatureEntry
+from internals.user_models import AppUser
 import settings
+
+
+class TestableAPIHandler(basehandlers.APIHandler):
+
+  def require_signed_in_and_xsrf_token(self):
+    pass
+
+  def do_get(self):
+    return {'message': 'done get'}
+
+  def do_post(self):
+    return {'message': 'done post'}
+
+  def do_put(self):
+    return {'message': 'done put'}
+
+  def do_patch(self):
+    return {'message': 'done patch'}
+
+  def do_delete(self):
+    return {'message': 'done delete'}
 
 
 class TestableFlaskHandler(basehandlers.FlaskHandler):
@@ -81,6 +103,16 @@ class BaseHandlerTests(testing_config.CustomTestCase):
 
   def setUp(self):
     self.handler = basehandlers.BaseHandler()
+    self.fe_1 = FeatureEntry(
+        name='feature one', summary='sum',
+        creator_email="feature_creator@example.com",
+        owner_emails=['feature_owner@example.com'],
+        editor_emails=['feature_editor@example.com'],
+        spec_mentor_emails=['mentor@example.com'], category=1)
+    self.fe_1.put()
+
+  def tearDown(self):
+    self.fe_1.key.delete()
 
   @mock.patch('flask.request', 'fake request')
   def test_request(self):
@@ -265,6 +297,20 @@ class BaseHandlerTests(testing_config.CustomTestCase):
       mock_abort.assert_called_once_with(
           400, msg="Parameter 'featureId' was not an int")
 
+  @mock.patch('framework.permissions.can_view_feature')
+  @mock.patch('framework.basehandlers.BaseHandler.abort')
+  def test_get_specified_feature__denied(self, mock_abort, mock_can_view):
+    """Reject requests for features that the user is not allowed to view."""
+    mock_abort.side_effect = werkzeug.exceptions.Forbidden
+    mock_can_view.return_value = False
+
+    fe_id = self.fe_1.key.integer_id()
+    with test_app.test_request_context('/test', json={'featureId': fe_id}):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.get_specified_feature()
+      mock_abort.assert_called_once_with(
+          403, msg="Cannot view that feature")
+
   def test_get_bool_arg__explicitly_true(self):
     """A bool query string arg that is "true" or "1" is true."""
     with test_app.test_request_context('/test?maybe=true'):
@@ -383,7 +429,7 @@ class APIHandlerTests(testing_config.CustomTestCase):
   def setUp(self):
     self.handler = basehandlers.APIHandler()
 
-    self.appuser = user_models.AppUser(email='user@example.com')
+    self.appuser = AppUser(email='user@example.com')
     self.appuser.put()
 
   def tearDown(self):
@@ -411,13 +457,49 @@ class APIHandlerTests(testing_config.CustomTestCase):
     self.assertTrue(actual_sent_text.startswith(basehandlers.XSSI_PREFIX))
     self.assertIn(json.dumps(handler_data), actual_sent_text)
 
-  def test_do_get(self):
-    """If a subclass does not implement do_get(), raise NotImplementedError."""
-    with self.assertRaises(NotImplementedError):
-      self.handler.do_get()
+  def check_http_method_handler(self, handler_method, expected_message):
+    with test_app.test_request_context('/path'):
+      actual = handler_method()
+      response, headers = actual
+    self.assertEqual(
+        response.get_data().decode('utf-8'),
+        basehandlers.XSSI_PREFIX + '{"message": "' + expected_message + '"}')
 
-    with self.assertRaises(NotImplementedError):
-      self.handler.do_get(feature_id=1234)
+  def test_get(self):
+    """If a subclass has do_get(), get() should return a JSON response."""
+    self.handler = TestableAPIHandler()
+    self.check_http_method_handler(self.handler.get, 'done get')
+
+  def test_post(self):
+    """If a subclass has do_post(), post() should return a JSON response."""
+    self.handler = TestableAPIHandler()
+    self.check_http_method_handler(self.handler.post, 'done post')
+
+  def test_put(self):
+    """If a subclass has do_put(), put() should return a JSON response."""
+    self.handler = TestableAPIHandler()
+    self.check_http_method_handler(self.handler.put, 'done put')
+
+  def test_patch(self):
+    """If a subclass has do_patch(), patch() should return a JSON response."""
+    self.handler = TestableAPIHandler()
+    self.check_http_method_handler(self.handler.patch, 'done patch')
+
+  def test_delete(self):
+    """If a subclass has do_delete(), delete() should return a JSON response."""
+    self.handler = TestableAPIHandler()
+    self.check_http_method_handler(self.handler.delete, 'done delete')
+
+  def test_get_valid_methods__minimal(self):
+    """It should return a list of HTTP verb names that have do_* methods."""
+    actual = self.handler._get_valid_methods()
+    self.assertEqual(actual, ['GET'])
+
+  def test_get_valid_methods__all(self):
+    """It should return a list of HTTP verb names that have do_* methods."""
+    self.handler = TestableAPIHandler()
+    actual = self.handler._get_valid_methods()
+    self.assertEqual(actual, ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
 
   @mock.patch('flask.abort')
   def check_bad_HTTP_method(self, handler_method, mock_abort):
@@ -431,9 +513,21 @@ class APIHandlerTests(testing_config.CustomTestCase):
     with self.assertRaises(mock_abort.side_effect):
       handler_method(feature_id=1234)
 
+  def test_do_get__unimplemented(self):
+    """If a subclass does not implement do_get(), raise NotImplementedError."""
+    with self.assertRaises(NotImplementedError):
+      self.handler.do_get()
+
+    with self.assertRaises(NotImplementedError):
+      self.handler.do_get(feature_id=1234)
+
   def test_do_post(self):
     """If a subclass does not implement do_post(), return a 405."""
     self.check_bad_HTTP_method(self.handler.do_post)
+
+  def test_do_put(self):
+    """If a subclass does not implement do_patch(), return a 405."""
+    self.check_bad_HTTP_method(self.handler.do_put)
 
   def test_do_patch(self):
     """If a subclass does not implement do_patch(), return a 405."""
@@ -442,6 +536,12 @@ class APIHandlerTests(testing_config.CustomTestCase):
   def test_do_delete(self):
     """If a subclass does not implement do_delete(), return a 405."""
     self.check_bad_HTTP_method(self.handler.do_delete)
+
+  @mock.patch('framework.xsrf.validate_token')
+  def test_validate_token(self, mock_validate_token):
+    """This simply calls xsrf.validate_token."""
+    self.handler.validate_token('token', 'email')
+    mock_validate_token.assert_called_once_with('token', 'email')
 
   @mock.patch('framework.basehandlers.APIHandler.validate_token')
   def test_require_signed_in_and_xsrf_token__OK_body(self, mock_validate_token):
@@ -471,9 +571,10 @@ class APIHandlerTests(testing_config.CustomTestCase):
     testing_config.sign_in('user@example.com', 111)
     params = {}  # No token
     with test_app.test_request_context('/path', json=params):
-      with self.assertRaises(werkzeug.exceptions.BadRequest):
+      with self.assertRaises(werkzeug.exceptions.BadRequest) as cm:
         self.handler.require_signed_in_and_xsrf_token()
     mock_validate_token.assert_not_called()
+    self.assertEqual(cm.exception.description, 'Missing XSRF token')
 
   @mock.patch('framework.basehandlers.APIHandler.validate_token')
   def test_require_signed_in_and_xsrf_token__bad(self, mock_validate_token):
@@ -482,24 +583,35 @@ class APIHandlerTests(testing_config.CustomTestCase):
     mock_validate_token.side_effect = xsrf.TokenIncorrect()
     params = {'token': 'bad token'}
     with test_app.test_request_context('/path', json=params):
-      with self.assertRaises(werkzeug.exceptions.BadRequest):
+      with self.assertRaises(werkzeug.exceptions.BadRequest) as cm:
         self.handler.require_signed_in_and_xsrf_token()
     mock_validate_token.assert_called()
+    self.assertEqual(cm.exception.description, 'Invalid XSRF token')
 
   @mock.patch('framework.basehandlers.APIHandler.validate_token')
   def test_require_signed_in_and_xsrf_token__anon(self, mock_validate_token):
     """User is signed out, so reject."""
     testing_config.sign_out()
     with test_app.test_request_context('/path', json={}):
-      with self.assertRaises(werkzeug.exceptions.Forbidden):
+      with self.assertRaises(werkzeug.exceptions.Forbidden) as cm:
         self.handler.require_signed_in_and_xsrf_token()
     mock_validate_token.assert_not_called()
+    self.assertEqual(cm.exception.description, 'User must be signed in')
 
   def test_update_last_visit_field__valid_user(self):
     """Update the last_visit field of a valid user."""
     updated_user = self.handler._update_last_visit_field("user@example.com")
     self.assertNotEqual(self.appuser.last_visit, None)
     self.assertTrue(updated_user)
+    self.assertIsNone(self.appuser.notified_inactive)
+
+  def test_update_last_visit_field__reset(self):
+    """Reset the notified_inactive field of a user that was notified."""
+    self.appuser.notified_inactive = True
+    updated_user = self.handler._update_last_visit_field("user@example.com")
+    self.assertNotEqual(self.appuser.last_visit, None)
+    self.assertTrue(updated_user)
+    self.assertFalse(self.appuser.notified_inactive)
 
   def test_update_last_field__no_user(self):
     """Don't update last_visit field if the user is unknown."""
@@ -510,7 +622,7 @@ class APIHandlerTests(testing_config.CustomTestCase):
 class FlaskHandlerTests(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.user_1 = user_models.AppUser(email='registered@example.com')
+    self.user_1 = AppUser(email='registered@example.com')
     self.user_1.put()
     self.handler = TestableFlaskHandler()
 
@@ -663,7 +775,7 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
     self.assertIn('some/other/path', actual_response.headers['location'])
 
   def test_post__json(self):
-    """if process_post_data() returns a dict, it is passed to flask."""
+    """if process_post_data() returns a dict, it is returned to flask."""
     testing_config.sign_in('user@example.com', 111)
     with test_app.test_request_context('/test'):
       actual_dict, actual_headers = self.handler.post()
@@ -671,6 +783,18 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
     self.assertEqual(
         {'objects': [1, 2, 3]},
         actual_dict)
+    self.assertNotIn('Access-Control-Allow-Origin', actual_headers)
+
+  def test_post__jsonify(self):
+    """When JSONIFY == True, dicts and lists are converted to json strings."""
+    self.handler.JSONIFY = True
+    testing_config.sign_in('user@example.com', 111)
+    with test_app.test_request_context('/test'):
+      actual_response, actual_headers = self.handler.post()
+
+    self.assertEqual(
+        '{"objects":[1,2,3]}\n',
+        actual_response.get_data().decode('utf-8'))
     self.assertNotIn('Access-Control-Allow-Origin', actual_headers)
 
   def test_post__redirect(self):
