@@ -17,8 +17,16 @@ export class ChromedashActivityPage extends LitElement {
        .instructions {
          padding: var(--content-padding-half);
          margin-bottom: var(--content-padding-large);
+         margin-left: 10px;
        }
 
+       #comment_area {
+        margin: 0 var(--content-padding);
+       }
+       #header {
+          margin-bottom: 10px;
+          margin-left: 15px;
+       }
        #controls {
          padding: var(--content-padding);
          text-align: right;
@@ -147,7 +155,14 @@ export class ChromedashActivityPage extends LitElement {
   renderComments() {
     // TODO(jrobbins): Include relevant activities too.
     return html`
-      <h2>Comments</h2>
+      <div id="header">
+        <h2 id="breadcrumbs">
+          <a href="/feature/${this.featureId}">
+            <iron-icon icon="chromestatus:arrow-back"></iron-icon>
+            Comments
+          </a>
+        </h2>
+      </div>
       ${this.renderControls()}
       <chromedash-activity-log
         .user=${this.user}
