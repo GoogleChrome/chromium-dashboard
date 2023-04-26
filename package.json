@@ -60,7 +60,7 @@
     "@babel/preset-env": "^7.21.4",
     "@babel/register": "^7.21.0",
     "@open-wc/testing": "^3.1.8",
-    "@openapitools/openapi-generator-cli": "^2.5.2",
+    "@openapitools/openapi-generator-cli": "^2.6.0",
     "@rollup/plugin-babel": "^6.0.3",
     "@rollup/plugin-node-resolve": "^15.0.2",
     "@shoelace-style/shoelace": "^2.4.0",
