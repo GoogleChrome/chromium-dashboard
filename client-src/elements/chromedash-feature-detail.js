@@ -7,9 +7,11 @@ import {
   FLAT_METADATA_FIELDS,
   FLAT_TRIAL_EXTENSION_FIELDS,
   FORMS_BY_STAGE_TYPE,
+} from './form-definition';
+import {
   OT_EXTENSION_STAGE_MAPPING,
   STAGE_TYPES_ORIGIN_TRIAL,
-} from './form-definition';
+} from './form-field-enums';
 
 import {
   DEPRECATED_FIELDS,

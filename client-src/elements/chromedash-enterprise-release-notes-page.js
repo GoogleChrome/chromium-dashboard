@@ -1,7 +1,10 @@
 import {html, LitElement, css} from 'lit';
 import {SHARED_STYLES} from '../sass/shared-css.js';
-import {ENTERPRISE_FEATURE_CATEGORIES, PLATFORMS_DISPLAYNAME} from './form-field-enums.js';
-import {STAGE_ENT_ROLLOUT} from './form-definition.js';
+import {
+  ENTERPRISE_FEATURE_CATEGORIES,
+  PLATFORMS_DISPLAYNAME,
+  STAGE_ENT_ROLLOUT,
+} from './form-field-enums.js';
 import {showToastMessage, updateURLParams, parseRawQuery} from './utils.js';
 
 const milestoneQueryParamKey = 'milestone';
