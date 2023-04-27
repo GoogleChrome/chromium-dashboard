@@ -229,11 +229,14 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
       thread_url: str | None, subject: str | None) -> None:
     """If the feature has no previous thread URL for this intent, set it."""
     if not thread_url:
+      logging.info('Given false thread_url %r', thread_url)
       return
 
     stage_type = core_enums.STAGE_TYPES_BY_GATE_TYPE_MAPPING[
         approval_field.field_id][feature.feature_type]
     if stage_type is None:
+      logging.info('stage_type not found for %r %r',
+                   approval_field.field_id, feature.feature_type)
       return
     # TODO(danielrsmith): A new way to approach this detection is needed
     # now that multiple stages of the same type can exist for a feature.
@@ -242,13 +245,19 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     matching_stages: list[Stage] = Stage.query(
         Stage.feature_id == feature.key.integer_id(),
         Stage.stage_type == stage_type).fetch()
-    if (len(matching_stages) == 0 or len(matching_stages) > 1 or
-        matching_stages[0].intent_thread_url is not None):
+    if len(matching_stages) == 0 or len(matching_stages) > 1:
+      logging.info('Ambiguous stages: %r', matching_stages)
+      return
+    if matching_stages[0].intent_thread_url:
+      logging.info('intent_thread_url was already set to %r',
+                   matching_stages[0].intent_thread_url)
       return
 
     matching_stages[0].intent_thread_url = thread_url
     matching_stages[0].intent_subject_line = subject
     matching_stages[0].put()
+    logging.info('Set intent_thread_url to %r and intent_subject_line to %r',
+                 thread_url, subject)
 
   def create_approvals(self, feature: FeatureEntry,
       approval_field: approval_defs.ApprovalFieldDef,

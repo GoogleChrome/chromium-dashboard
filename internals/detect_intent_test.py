@@ -437,6 +437,12 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     self.assertEqual(
         self.stages_dict[160][0].intent_thread_url, self.thread_url)
 
+  def test_process_post_data__new_thread_already_empty_str(self):
+    """We still set intent_thread_url if it was previously an empty string."""
+    self.stages_dict[160][0].intent_thread_url = ''
+    self.stages_dict[160][0].put()
+    self.test_process_post_data__new_thread()
+
   def test_process_post_data__new_thread_just_FYI(self):
     """When we detect a new thread, it might not require a review."""
     self.review_json_data['subject'] = 'Intent to Prototype: featurename'
