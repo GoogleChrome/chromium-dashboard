@@ -1,5 +1,10 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {SHARED_STYLES} from '../sass/shared-css.js';
+import {
+  STAGE_TYPES_DEV_TRIAL,
+  STAGE_TYPES_ORIGIN_TRIAL,
+  STAGE_TYPES_SHIPPING,
+} from './form-field-enums.js';
 
 class ChromedashGantt extends LitElement {
   static get properties() {
@@ -128,6 +133,26 @@ class ChromedashGantt extends LitElement {
     return cellsOnRow;
   }
 
+  // Get lists of all dev trial, origin trial, and shipping stages
+  // associated with the feature.
+  getByStageType() {
+    const dtStages = [];
+    const otStages = [];
+    const shipStages = [];
+
+    for (const stage of this.feature.stages) {
+      if (STAGE_TYPES_DEV_TRIAL.has(stage.stage_type)) {
+        dtStages.push(stage);
+      } else if (STAGE_TYPES_ORIGIN_TRIAL.has(stage.stage_type)) {
+        otStages.push(stage);
+      } else if (STAGE_TYPES_SHIPPING.has(stage.stage_type)) {
+        shipStages.push(stage);
+      }
+    }
+
+    // TODO(DanielRyanSmith): Fix this to support multiple stages.
+    return [dtStages[0], otStages[0], shipStages[0]];
+  }
 
   renderPlatform(
     platform, devTrialMilestone, originTrialMilestoneFirst,
@@ -188,37 +213,23 @@ class ChromedashGantt extends LitElement {
   }
 
   render() {
-    const f = this.feature;
-    const dtDesktop = f.dt_milestone_desktop_start;
-    const otDesktopFirst = f.ot_milestone_desktop_start;
-    const otDesktopLast = f.ot_milestone_desktop_end;
-    const shipDesktop = f.browsers.chrome.desktop;
-    const dtAndroid = f.dt_milestone_android_start;
-    const otAndroidFirst = f.ot_milestone_android_start;
-    const otAndroidLast = f.ot_milestone_android_end;
-    const shipAndroid = f.browsers.chrome.android;
-    const dtIos = f.dt_milestone_ios_start;
-    const otIosFirst = null; // Chrome on iOS does not support OT.
-    const otIosLast = null; // Chrome on iOS does not support OT.
-    const shipIos = f.browsers.chrome.ios;
-    const dtWebview = f.dt_milestone_webview_start;
-    const otWebviewFirst = null; // Webview does not support OT.
-    const otWebviewLast = null; // Webview does not support OT.
-    const shipWebview = f.browsers.chrome.webview;
-
     // Don't show the visualization if there is no active development.
     // But, any milestones are available as text in the details section.
     if (this._isInactive()) {
       return nothing;
     }
 
+    const [dtStage, otStage, shipStage] = this.getByStageType();
+
+    // TODO(DanielRyanSmith): This implementation is a fix that does not
+    // account for multiple stages on the same feature. Add functionality to
+    // accommodate multiples of the same stage type.
     const allMilestones = [
-      dtDesktop, dtAndroid, dtIos, dtWebview,
-      otDesktopFirst, otDesktopLast,
-      otAndroidFirst, otAndroidLast,
-      otIosFirst, otIosLast,
-      otWebviewFirst, otWebviewLast,
-      shipDesktop, shipAndroid, shipIos, shipWebview].filter(x => x);
+      dtStage?.desktop_first, dtStage?.android_first, dtStage?.ios_first, dtStage?.webview_first,
+      otStage?.desktop_first, otStage?.android_first, otStage?.ios_first, otStage?.webview_first,
+      otStage?.desktop_last, otStage?.android_last, otStage?.ios_last, otStage?.webview_last,
+      shipStage?.desktop_first, shipStage?.android_first,
+      shipStage?.ios_first, shipStage?.webview_first].filter(x => x);
 
     if (allMilestones.length == 0) {
       return html`<p>No milestones specified</p>`;
@@ -265,16 +276,28 @@ class ChromedashGantt extends LitElement {
        <label>Estimated milestones:</label>
        <ul>
        ${this.renderPlatform('Desktop',
-          dtDesktop, otDesktopFirst, otDesktopLast, shipDesktop,
+          dtStage?.desktop_first,
+          otStage?.desktop_first,
+          otStage?.desktop_last,
+          shipStage?.desktop_first,
           sortedMilestones)}
        ${this.renderPlatform('Android',
-          dtAndroid, otAndroidFirst, otAndroidLast, shipAndroid,
+          dtStage?.android_first,
+          otStage?.android_first,
+          otStage?.android_last,
+          shipStage?.android_first,
           sortedMilestones)}
        ${this.renderPlatform('iOS',
-          dtIos, otIosFirst, otIosLast, shipIos,
+          dtStage?.ios_first,
+          otStage?.ios_first,
+          otStage?.ios_last,
+          shipStage?.ios_first,
           sortedMilestones)}
        ${this.renderPlatform('Webview',
-          dtWebview, otWebviewFirst, otWebviewLast, shipWebview,
+          dtStage?.webview_first,
+          otStage?.webview_first,
+          otStage?.webview_last,
+          shipStage?.webview_first,
           sortedMilestones)}
        </ul>
     `;
