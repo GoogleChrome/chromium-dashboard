@@ -33,4 +33,17 @@ describe('chromedash-form-table', () => {
     assert.exists(secondRow);
     assert.include(secondRow.innerHTML, 'Row 2');
   });
+
+  // it('render for screenshot', async ({page}) => {
+  //   const component = await fixture(
+  //     html`<chromedash-form-table></chromedash-form-table>`);
+  //   await component.updateComplete;
+  //   assert.exists(component);
+
+  //   const image = await component.toDataURL();
+  //   assert.exists(image);
+
+  //   // await page.screenshot({ path: 'screenshot.png', fullPage: true }).toMatchShapshot('screenshot.png');
+  //   // done();
+  // }).timeout(3000);
 });
