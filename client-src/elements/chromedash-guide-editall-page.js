@@ -14,10 +14,10 @@ import {
   FLAT_ENTERPRISE_METADATA_FIELDS,
   FORMS_BY_STAGE_TYPE,
   FLAT_TRIAL_EXTENSION_FIELDS,
-  STAGE_SHORT_NAMES} from './form-definition';
+} from './form-definition';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {FORM_STYLES} from '../sass/forms-css.js';
-import {STAGE_SPECIFIC_FIELDS} from './form-field-enums.js';
+import {STAGE_SHORT_NAMES, STAGE_SPECIFIC_FIELDS} from './form-field-enums.js';
 import {openAddStageDialog} from './chromedash-add-stage-dialog';
 
 

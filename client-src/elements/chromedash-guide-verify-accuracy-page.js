@@ -4,12 +4,11 @@ import {getStageValue, flattenSections, showToastMessage} from './utils.js';
 import './chromedash-form-field';
 import './chromedash-form-table';
 import {formatFeatureForEdit,
-  STAGE_SHORT_NAMES,
   VERIFY_ACCURACY_CONFIRMATION_FIELD,
   VERIFY_ACCURACY_FORMS_BY_STAGE_TYPE,
   VERIFY_ACCURACY_METADATA_FIELDS,
   VERIFY_ACCURACY_TRIAL_EXTENSION_FIELDS} from './form-definition';
-import {STAGE_SPECIFIC_FIELDS} from './form-field-enums.js';
+import {STAGE_SHORT_NAMES, STAGE_SPECIFIC_FIELDS} from './form-field-enums.js';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {FORM_STYLES} from '../sass/forms-css.js';
 
