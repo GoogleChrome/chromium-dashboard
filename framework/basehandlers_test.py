@@ -353,77 +353,6 @@ class BaseHandlerTests(testing_config.CustomTestCase):
       self.assertEqual(None, actual)
 
 
-class RedirectorTests(testing_config.CustomTestCase):
-
-  def test_redirector(self):
-    """If the user hits a redirector, they get a redirect response."""
-    with test_app.test_request_context('/old_path'):
-      actual_redirect, actual_headers = test_app.dispatch_request()
-
-    self.assertEqual(302, actual_redirect.status_code)
-    self.assertEqual('/new_path', actual_redirect.headers['location'])
-
-
-class ConstHandlerTests(testing_config.CustomTestCase):
-
-  def test_template_found(self):
-    """We can run a template that requires no handler logic."""
-    with test_app.test_request_context('/just_a_template'):
-      actual_tuple = test_app.dispatch_request()
-
-    actual_text, actual_status, actual_headers = actual_tuple
-    self.assertIn('Hi Guest,', actual_text)
-    self.assertEqual(200, actual_status)
-    self.assertNotIn('Access-Control-Allow-Origin', actual_headers)
-
-  def test_xml_template_found(self):
-    """We can run an XML template that requires no handler logic."""
-    with test_app.test_request_context('/just_an_xml_template'):
-      actual_tuple = test_app.dispatch_request()
-
-    actual_text, actual_status, actual_headers = actual_tuple
-    self.assertIn('RSS feed', actual_text)
-    self.assertEqual(200, actual_status)
-    self.assertNotIn('Access-Control-Allow-Origin', actual_headers)
-
-  @mock.patch('logging.error')
-  def test_bad_template_path(self, mock_err):
-    """We can run a template that requires no handler logic."""
-    with test_app.test_request_context('/messed_up_template'):
-      with self.assertRaises(werkzeug.exceptions.InternalServerError):
-        test_app.dispatch_request()
-    self.assertEqual(1, len(mock_err.mock_calls))
-
-  def test_json(self):
-    """We can return constant JSON."""
-    with test_app.test_request_context('/ui/density.json'):
-      actual_response = test_app.dispatch_request()
-
-    self.assertEqual(
-        {'UI density': ['default', 'comfortable', 'compact']},
-        actual_response.json)
-
-  def test_require_signin__normal(self):
-    """A const page renders when the user is signed in.."""
-    testing_config.sign_in('user@example.com', 111)
-    with test_app.test_request_context('/must_be_signed_in'):
-      actual_tuple = test_app.dispatch_request()
-
-    actual_text, actual_status, actual_headers = actual_tuple
-    self.assertIn('This is used by unit tests', actual_text)
-    self.assertEqual(200, actual_status)
-
-  def test_require_signin__anon(self):
-    """If sign-in is required and user is anon, we redirect."""
-    testing_config.sign_out()
-    with test_app.test_request_context('/must_be_signed_in'):
-      actual_redirect, actual_headers = test_app.dispatch_request()
-
-    self.assertEqual(302, actual_redirect.status_code)
-    self.assertEqual(
-        settings.LOGIN_PAGE_URL, actual_redirect.headers['location'])
-
-
 class APIHandlerTests(testing_config.CustomTestCase):
 
   def setUp(self):
@@ -1099,9 +1028,246 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
           self.handler.parse_links('extrajunk'))
 
 
-class TestCORS(testing_config.CustomTestCase):
+class RedirectorTests(testing_config.CustomTestCase):
 
-  def test_with_allow_origin(self):
+  def test_redirector(self):
+    """If the user hits a redirector, they get a redirect response."""
+    with test_app.test_request_context('/old_path'):
+      actual_redirect, actual_headers = test_app.dispatch_request()
+
+    self.assertEqual(302, actual_redirect.status_code)
+    self.assertEqual('/new_path', actual_redirect.headers['location'])
+
+
+class ConstHandlerTests(testing_config.CustomTestCase):
+
+  def test_template_found(self):
+    """We can run a template that requires no handler logic."""
+    with test_app.test_request_context('/just_a_template'):
+      actual_tuple = test_app.dispatch_request()
+
+    actual_text, actual_status, actual_headers = actual_tuple
+    self.assertIn('Hi Guest,', actual_text)
+    self.assertEqual(200, actual_status)
+    self.assertNotIn('Access-Control-Allow-Origin', actual_headers)
+
+  def test_xml_template_found(self):
+    """We can run an XML template that requires no handler logic."""
+    with test_app.test_request_context('/just_an_xml_template'):
+      actual_tuple = test_app.dispatch_request()
+
+    actual_text, actual_status, actual_headers = actual_tuple
+    self.assertIn('RSS feed', actual_text)
+    self.assertEqual(200, actual_status)
+    self.assertNotIn('Access-Control-Allow-Origin', actual_headers)
+
+  @mock.patch('logging.error')
+  def test_bad_template_path(self, mock_err):
+    """We can run a template that requires no handler logic."""
+    with test_app.test_request_context('/messed_up_template'):
+      with self.assertRaises(werkzeug.exceptions.InternalServerError):
+        test_app.dispatch_request()
+    self.assertEqual(1, len(mock_err.mock_calls))
+
+  def test_json(self):
+    """We can return constant JSON."""
+    with test_app.test_request_context('/ui/density.json'):
+      actual_response = test_app.dispatch_request()
+
+    self.assertEqual(
+        {'UI density': ['default', 'comfortable', 'compact']},
+        actual_response.json)
+
+  def test_require_signin__normal(self):
+    """A const page renders when the user is signed in.."""
+    testing_config.sign_in('user@example.com', 111)
+    with test_app.test_request_context('/must_be_signed_in'):
+      actual_tuple = test_app.dispatch_request()
+
+    actual_text, actual_status, actual_headers = actual_tuple
+    self.assertIn('This is used by unit tests', actual_text)
+    self.assertEqual(200, actual_status)
+
+  def test_require_signin__anon(self):
+    """If sign-in is required and user is anon, we redirect."""
+    testing_config.sign_out()
+    with test_app.test_request_context('/must_be_signed_in'):
+      actual_redirect, actual_headers = test_app.dispatch_request()
+
+    self.assertEqual(302, actual_redirect.status_code)
+    self.assertEqual(
+        settings.LOGIN_PAGE_URL, actual_redirect.headers['location'])
+
+
+class SPAHandlerTests(testing_config.CustomTestCase):
+
+  @mock.patch('framework.basehandlers.get_spa_template_data')
+  def test_get_template_data(self, mock_get_spa):
+    """It simply calls get_spa_template_data."""
+    mock_get_spa.return_value = 'fake response'
+    handler = basehandlers.SPAHandler()
+    actual = handler.get_template_data(x=1, y=2)
+
+    self.assertEqual('fake response', actual)
+    mock_get_spa.assert_called_once_with(handler, {'x': 1, 'y': 2})
+
+
+class GetSPATemplateDataTests(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.handler = basehandlers.SPAHandler()
+    self.fe_1 = FeatureEntry(
+        name='feature one', summary='sum',
+        creator_email="feature_creator@example.com",
+        owner_emails=['feature_owner@example.com'],
+        editor_emails=['feature_editor@example.com'],
+        spec_mentor_emails=['mentor@example.com'], category=1)
+    self.fe_1.put()
+    self.appuser = AppUser(email='appuser@example.com')
+    self.appuser.put()
+
+  def tearDown(self):
+    self.fe_1.key.delete()
+    self.appuser.key.delete()
+
+  def test_get_spa_template_data__signin_missing(self):
+    """This page requires sign in, but user is anon."""
+    testing_config.sign_out()
+    with test_app.test_request_context('/must_be_signed_in'):
+      defaults = {'require_signin': True}
+      actual_redirect, actual_headers = basehandlers.get_spa_template_data(
+          self.handler, defaults)
+
+    self.assertEqual(302, actual_redirect.status_code)
+    self.assertEqual(
+        settings.LOGIN_PAGE_URL, actual_redirect.headers['location'])
+
+  def test_get_spa_template_data__signin_ok(self):
+    """This page requires sign in, and user is signed in."""
+    testing_config.sign_in('user@example.com', 111)
+    with test_app.test_request_context('/must_be_signed_in'):
+      defaults = {'require_signin': True}
+      actual = basehandlers.get_spa_template_data(self.handler, defaults)
+
+    self.assertEqual({}, actual)
+
+  def test_get_spa_template_data__create_perm_anon(self):
+    """This page requires create permission, but user has not signed in yet."""
+    testing_config.sign_out()
+    with test_app.test_request_context('/must_have_create'):
+      defaults = {'require_create_feature': True}
+      actual_redirect = basehandlers.get_spa_template_data(
+          self.handler, defaults)
+
+    self.assertEqual(302, actual_redirect.status_code)
+    self.assertEqual(
+        settings.LOGIN_PAGE_URL, actual_redirect.headers['location'])
+
+  def test_get_spa_template_data__create_perm_missing(self):
+    """This page requires permission to create, but user lacks it."""
+    testing_config.sign_in('user@example.com', 111)
+    with test_app.test_request_context('/must_have_create'):
+      defaults = {'require_create_feature': True}
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        basehandlers.get_spa_template_data(
+            self.handler, defaults)
+
+  def test_get_spa_template_data__create_perm_ok(self):
+    """This page requires permission to create, and user has it."""
+    testing_config.sign_in('user@chromium.org', 111)
+    with test_app.test_request_context('/must_have_create'):
+      defaults = {'require_create_feature': True}
+      actual = basehandlers.get_spa_template_data(
+          self.handler, defaults)
+
+    self.assertEqual({}, actual)
+
+  @mock.patch('logging.error')
+  def test_get_spa_template_data__edit_perm_no_feature(self, mock_err):
+    """This page requires editing a feature, but no feature specified."""
+    testing_config.sign_in('admin@chromium.org', 111)
+    with test_app.test_request_context('/must_have_edit'):
+      defaults = {'require_edit_feature': True}  # no feature_id.
+      with self.assertRaises(werkzeug.exceptions.InternalServerError) as cm:
+        basehandlers.get_spa_template_data(self.handler, defaults)
+
+    self.assertEqual(
+        cm.exception.description, 'Cannot get feature ID from the URL')
+
+  def test_get_spa_template_data__edit_perm_anon(self):
+    """This page requires editing a feature, but user has not signed in yet."""
+    testing_config.sign_out()
+    with test_app.test_request_context('/must_have_edit'):
+      defaults = {
+          'require_edit_feature': True,
+          'feature_id': self.fe_1.key.integer_id()}
+      actual_redirect = basehandlers.get_spa_template_data(
+          self.handler, defaults)
+
+    self.assertEqual(302, actual_redirect.status_code)
+    self.assertEqual(
+        settings.LOGIN_PAGE_URL, actual_redirect.headers['location'])
+
+  def test_get_spa_template_data__edit_perm_no_permission(self):
+    """This page requires editing a feature, but user lacks it."""
+    testing_config.sign_in('user@example.com', 111)
+    with test_app.test_request_context('/must_have_edit'):
+      defaults = {
+          'require_edit_feature': True,
+          'feature_id': self.fe_1.key.integer_id()}
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        basehandlers.get_spa_template_data(self.handler, defaults)
+
+  def test_get_spa_template_data__edit_perm_ok(self):
+    """This page requires editing a feature, and user has it."""
+    testing_config.sign_in('feature_owner@example.com', 111)
+    with test_app.test_request_context('/must_have_edit'):
+      defaults = {
+          'require_edit_feature': True,
+          'feature_id': self.fe_1.key.integer_id()}
+      actual = basehandlers.get_spa_template_data(self.handler, defaults)
+
+    self.assertEqual({}, actual)
+
+  def test_get_spa_template_data__admin_perm_anon(self):
+    """This page requires admin perms, but user has not signed in yet."""
+    testing_config.sign_out()
+    with test_app.test_request_context('/must_have_admin'):
+      defaults = {'require_admin_site': True}
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        basehandlers.get_spa_template_data(self.handler, defaults)
+
+  def test_get_spa_template_data__admin_perm_no_permission(self):
+    """This page requires admin perms, but user lacks it."""
+    testing_config.sign_in('user@example.com', 111)
+    with test_app.test_request_context('/must_have_admin'):
+      defaults = {'require_admin_site': True}
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        basehandlers.get_spa_template_data(self.handler, defaults)
+
+  def test_get_spa_template_data__admin_perm_ok(self):
+    """This page requires admin perms, and user has it."""
+    testing_config.sign_in('appuser@example.com', 111)
+    self.appuser.is_admin = True
+    self.appuser.put()
+    with test_app.test_request_context('/must_have_admin'):
+      defaults = {'require_admin_site': True}
+      actual = basehandlers.get_spa_template_data(self.handler, defaults)
+
+    self.assertEqual({}, actual)
+
+  def test_get_spa_template_data__no_requirements(self):
+    """This SPA page doesn't require anything special."""
+    with test_app.test_request_context('/spa'):
+      defaults = {}
+      actual = basehandlers.get_spa_template_data(self.handler, defaults)
+
+    self.assertEqual({}, actual)
+
+
+class FlaskApplicationTests(testing_config.CustomTestCase):
+
+  def test_cors_with_allow_origin(self):
     """If the request hits a /data path, they get '*'."""
     with test_app.test_request_context('/data/test'):
       actual_response = test_app.full_dispatch_request()
@@ -1110,7 +1276,7 @@ class TestCORS(testing_config.CustomTestCase):
         '*',
         actual_response.headers['Access-Control-Allow-Origin'])
 
-  def test_without_allow_origin(self):
+  def test_cors_without_allow_origin(self):
     """If the request hits any non-/data path, they get no header."""
     with test_app.test_request_context('/test'):
       actual_response = test_app.full_dispatch_request()

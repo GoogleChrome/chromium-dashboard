@@ -537,6 +537,7 @@ class ConstHandler(FlaskHandler):
 
     return flask.jsonify(defaults)
 
+
 def ndb_wsgi_middleware(wsgi_app):
   """Create a new runtime context for cloud ndb for every request"""
   client = ndb.Client()
