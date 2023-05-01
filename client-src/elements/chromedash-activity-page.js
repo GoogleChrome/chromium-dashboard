@@ -70,7 +70,7 @@ export class ChromedashActivityPage extends LitElement {
   fetchComments() {
     this.loading = true;
     Promise.all([
-      window.csClient.getComments(this.featureId),
+      window.csClient.getComments(this.featureId, null, false),
     ]).then(([commentRes]) => {
       this.comments = commentRes.comments;
       this.needsPost = false;
@@ -85,8 +85,7 @@ export class ChromedashActivityPage extends LitElement {
     commentArea.value = '';
     this.needsPost = false;
     Promise.all([
-      // TODO(jrobbins): Include activities for this gate
-      window.csClient.getComments(this.featureId),
+      window.csClient.getComments(this.featureId, null, false),
     ]).then(([commentRes]) => {
       this.comments = commentRes.comments;
     }).catch(() => {
@@ -159,7 +158,7 @@ export class ChromedashActivityPage extends LitElement {
         <h2 id="breadcrumbs">
           <a href="/feature/${this.featureId}">
             <iron-icon icon="chromestatus:arrow-back"></iron-icon>
-            Comments
+            Comments &amp; Activity
           </a>
         </h2>
       </div>
