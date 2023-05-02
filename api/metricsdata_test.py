@@ -134,6 +134,7 @@ class CSSPopularityHandlerTests(testing_config.CustomTestCase):
     self.prop_4 = metrics_models.FeatureObserverHistogram(
         bucket_id=4, property_name='a feat')
     self.prop_4.put()
+    testing_config.sign_in('test@example.com', 111)
 
   def tearDown(self):
     self.datapoint.key.delete()
@@ -142,6 +143,7 @@ class CSSPopularityHandlerTests(testing_config.CustomTestCase):
     self.prop_3.key.delete()
     self.prop_4.key.delete()
     rediscache.flushall()
+    testing_config.sign_out()
 
   def test_get_top_num_cache_key(self):
     actual = self.handler.get_top_num_cache_key(30)
