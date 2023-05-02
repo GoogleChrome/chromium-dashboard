@@ -175,7 +175,7 @@ class APIHandler(BaseHandler):
     body = json.dumps(handler_data)
     return flask.current_app.response_class(
         XSSI_PREFIX + body,
-        mimetype=flask.current_app.config['JSONIFY_MIMETYPE'])
+        mimetype=flask.current_app.json.mimetype)
 
   def get(self, *args, **kwargs):
     """Handle an incoming HTTP GET request."""
