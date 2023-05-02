@@ -151,6 +151,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
 
   def test_get__all_listed(self):
     """Get all features that are listed."""
+    testing_config.sign_in('test@example.com', 111)
     with test_app.test_request_context(self.request_path):
       actual = self.handler.do_get()
 
