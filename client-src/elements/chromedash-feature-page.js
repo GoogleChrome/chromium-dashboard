@@ -6,6 +6,7 @@ import {autolink, renderHTMLIf, showToastMessage,
   renderAbsoluteDate, renderRelativeDate,
 } from './utils.js';
 import {SHARED_STYLES} from '../sass/shared-css.js';
+import {DETAILS_STYLES} from './chromedash-feature-detail';
 
 const INACTIVE_STATES = [
   'No longer pursuing',
@@ -17,6 +18,7 @@ export class ChromedashFeaturePage extends LitElement {
   static get styles() {
     return [
       ...SHARED_STYLES,
+      ...DETAILS_STYLES,
       css`
         #feature {
           background: var(--card-background);
@@ -42,12 +44,6 @@ export class ChromedashFeaturePage extends LitElement {
         section label {
           font-weight: 500;
           margin-right: 5px;
-        }
-
-        #updated {
-          color: var(--unimportant-text-color);
-          border-top: var(--default-border);
-          padding: var(--content-padding-quarter) 0 0 var(--content-padding);
         }
 
         li {
@@ -485,12 +481,20 @@ export class ChromedashFeaturePage extends LitElement {
     `;
   }
 
-  renderUpdated() {
+  renderHistory() {
     return html`
-      <section id="updated">
-          Last updated on
+      <section id="history">
+          <h3>History</h3>
+          <p>Entry created on
+          ${renderAbsoluteDate(this.feature.created?.when, true)}
+          ${renderRelativeDate(this.feature.created?.when)}</p>
+          <p>Last updated on
           ${renderAbsoluteDate(this.feature.updated?.when, true)}
-          ${renderRelativeDate(this.feature.updated?.when)}
+          ${renderRelativeDate(this.feature.updated?.when)}</p>
+
+          <p><a href="/feature/${this.feature.id}/activity">
+            All comments &amp; activity
+          </a></p>
       </section>
     `;
   }
@@ -528,13 +532,17 @@ export class ChromedashFeaturePage extends LitElement {
     // At this point, the feature has loaded successfully, render the components.
     return html`
       ${this.renderSubHeader()}
-      <div id="feature">
-        ${this.renderFeatureContent()}
-        ${this.feature.is_enterprise_feature ?
-            this.renderEnterpriseFeatureStatus() :
-            this.renderFeatureStatus()}
-        ${this.renderUpdated()}
-      </div>
+      <sl-details summary="Overview"
+        ?open=${true}
+      >
+        <section class="card">
+          ${this.renderFeatureContent()}
+          ${this.feature.is_enterprise_feature ?
+              this.renderEnterpriseFeatureStatus() :
+              this.renderFeatureStatus()}
+          ${this.renderHistory()}
+        </section>
+      </sl-details>
       ${this.renderFeatureDetails()}
     `;
   }
