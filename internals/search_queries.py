@@ -62,6 +62,7 @@ def single_field_query_async(
     return []
 
   # TODO(jrobbins): Handle ":" operator as substrings for text fields.
+  # TODO(jrobbins): Implement quick-OR for integer fields, e.g., x=2,3,4.
 
   try:
     # If the field can be set to val, then it can be compared to val.
