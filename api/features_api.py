@@ -208,11 +208,11 @@ class FeaturesAPI(basehandlers.APIHandler):
       self.abort(400, msg=str(e))
     id = feature.key.integer_id()
 
-    self._write_gates_and_stages_for_feature(id, feature.feature_type)
+    self._write_stages_and_gates_for_feature(id, feature.feature_type)
     return {'message': f'Feature {id} created.',
             'feature_id': id}
 
-  def _write_gates_and_stages_for_feature(
+  def _write_stages_and_gates_for_feature(
       self, feature_id: int, feature_type: int) -> None:
     """Write each Stage and Gate entity for newly created feature."""
     # Obtain a list of stages and gates for the given feature type.
