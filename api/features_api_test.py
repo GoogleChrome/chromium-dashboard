@@ -588,6 +588,72 @@ class FeaturesAPITest(testing_config.CustomTestCase):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post()
 
+  def test_post__bad_data_type_int(self):
+    """POST request fails with 400 when a bad int data type is provided."""
+    # Signed-in user with permissions
+    testing_config.sign_in('admin@example.com', 123567890)
+
+    invalid_request_body = {
+      'name': 'A name',
+      'summary': 'A summary',
+      'owner_emails': ['summary', 'owner_emails'],
+      'category': 'THIS SHOULD BE AN INTEGER',  # Bad data type.
+      'feature_type': 1,
+      'impl_status_chrome': 1,
+      'standard_maturity': 1,
+      'ff_views': 1,
+      'safari_views': 1,
+      'web_dev_views': 1,
+    }
+    request_path = f'{self.request_path}/create'
+    with test_app.test_request_context(request_path, json=invalid_request_body):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.do_post()
+
+  def test_post__bad_data_type_str(self):
+    """POST request fails with 400 when a bad str data type is provided."""
+    # Signed-in user with permissions
+    testing_config.sign_in('admin@example.com', 123567890)
+
+    invalid_request_body = {
+      'name': 1, # Bad data type.
+      'summary': 'A summary',
+      'owner_emails': ['summary', 'owner_emails'],
+      'category': 1,
+      'feature_type': 1,
+      'impl_status_chrome': 1,
+      'standard_maturity': 1,
+      'ff_views': 1,
+      'safari_views': 1,
+      'web_dev_views': 1,
+    }
+    request_path = f'{self.request_path}/create'
+    with test_app.test_request_context(request_path, json=invalid_request_body):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.do_post()
+
+  def test_post__bad_data_type_list(self):
+    """POST request fails with 400 when a bad list data type is provided."""
+    # Signed-in user with permissions
+    testing_config.sign_in('admin@example.com', 123567890)
+
+    invalid_request_body = {
+      'name': 'A name',
+      'summary': 'A summary',
+      'owner_emails': 'summary,owner_emails', # Bad data type.
+      'category': 1,
+      'feature_type': 1,
+      'impl_status_chrome': 1,
+      'standard_maturity': 1,
+      'ff_views': 1,
+      'safari_views': 1,
+      'web_dev_views': 1,
+    }
+    request_path = f'{self.request_path}/create'
+    with test_app.test_request_context(request_path, json=invalid_request_body):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.do_post()
+
   def test_post__missing_required_field(self):
     """POST request fails with 400 when missing required fields."""
     # Signed-in user with permissions
