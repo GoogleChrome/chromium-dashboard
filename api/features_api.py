@@ -63,8 +63,8 @@ class FeaturesAPI(basehandlers.APIHandler):
       features_on_page, total_count = search.process_query(
           user_query, sort_spec=sort_spec, show_unlisted=show_unlisted_features,
           show_enterprise=show_enterprise, start=start, num=num)
-    except ValueError:
-      self.abort(400, msg=str(ValueError))
+    except ValueError as err:
+      self.abort(400, msg=str(err))
 
     return {
         'total_count': total_count,
