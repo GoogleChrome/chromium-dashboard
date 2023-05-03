@@ -15,7 +15,6 @@
 
 from datetime import datetime
 from typing import Any
-from google.cloud import ndb
 
 from api import converters
 from framework import basehandlers
@@ -102,10 +101,15 @@ class FeaturesAPI(basehandlers.APIHandler):
 
   def _abort_invalid_data_type(
       self, field: str, field_type: str, value: Any) -> None:
+    """Abort the process if an invalid data type is given."""
     self.abort(400, msg=(
         f'Bad value for field {field} of type {field_type}: {value}'))
 
-  def _format_field_val(self, field: str, value: Any) -> Any:
+  def _format_field_val(
+      self,
+      field: str,
+      value: Any
+    ) -> str | int | bool | list | None:
     """Format the given feature value based on the field type."""
     # Only fields with defined data types are allowed.
     if field not in self.FIELD_DATA_TYPES_CREATE:
@@ -128,11 +132,8 @@ class FeaturesAPI(basehandlers.APIHandler):
       except ValueError:
         self._abort_invalid_data_type(field, field_type, value)
     elif field_type == 'bool':
-      try:
-        return bool(value)
-      except ValueError:
-        self._abort_invalid_data_type(field, field_type, value)
-    return value
+      return bool(value)
+    return str(value)
 
   def get_one_feature(self, feature_id: int) -> VerboseFeatureDict:
     feature = FeatureEntry.get_by_id(feature_id)
