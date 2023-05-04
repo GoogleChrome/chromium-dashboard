@@ -15,6 +15,7 @@
 
 from datetime import datetime
 from typing import Any
+from google.cloud import ndb
 
 from api import converters
 from framework import basehandlers
@@ -225,11 +226,15 @@ class FeaturesAPI(basehandlers.APIHandler):
 
       stage = Stage(feature_id=feature_id, stage_type=stage_type)
       stage.put()
+      new_gates: list[Gate] = []
       # Stages can have zero or more gates.
       for gate_type in gate_types:
         gate = Gate(feature_id=feature_id, stage_id=stage.key.integer_id(),
                     gate_type=gate_type, state=Gate.PREPARING)
-        gate.put()
+        new_gates.append(gate)
+
+      if new_gates:
+        ndb.put_multi(new_gates)
 
   def do_patch(self, **kwargs):
     """Handle PATCH requests to update fields in a single feature."""
