@@ -120,7 +120,7 @@ export const ROADMAP_MILESTONE_CARD_CSS = [
     .milestone_info {
       margin-bottom: 8px;
     }
-    .milestone_info:nth-of-type(3) {
+    .milestone_info:nth-of-type(4) {
       border-bottom: 1px solid #e6e6e6;
       padding-bottom: 16px;
     }
