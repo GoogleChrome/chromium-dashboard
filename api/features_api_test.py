@@ -450,3 +450,162 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     with test_app.test_request_context(request_path, json=invalid_request_body):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_patch(feature_id=self.feature_1_id)
+
+  def test_post__valid(self):
+    """POST request successful with valid input from user with permissions."""
+    # Signed-in user with permissions
+    testing_config.sign_in('admin@example.com', 123567890)
+
+    valid_request_body = {
+      'name': 'A name',
+      'summary': 'A summary',
+      'owner_emails': ['summary', 'owner_emails'],
+      'category': 2,
+      'feature_type': 1,
+      'impl_status_chrome': 3,
+      'standard_maturity': 2,
+      'ff_views': 1,
+      'safari_views': 1,
+      'web_dev_views': 1,
+      'wpt': True,
+    }
+
+    request_path = f'{self.request_path}/create'
+    with test_app.test_request_context(request_path, json=valid_request_body):
+      response = self.handler.do_post()
+    # A new feature ID should be returned.
+    self.assertIsNotNone(response['feature_id'])
+    self.assertTrue(type(response['feature_id']) == int)
+    # New feature should exist.
+    new_feature: FeatureEntry | None = (
+        FeatureEntry.get_by_id(response['feature_id']))
+    self.assertIsNotNone(new_feature)
+
+    # New feature's values should match fields in JSON body. 
+    for field, value in valid_request_body.items():
+      self.assertEqual(getattr(new_feature, field), value)
+    # User's email should match creator_email field.
+    self.assertEqual(new_feature.creator_email, 'admin@example.com')
+
+  def test_post__no_permissions(self):
+    """403 Forbidden if the user does not have feature create access."""
+    testing_config.sign_in('someuser@example.com', 123567890)
+
+    request_path = f'{self.request_path}/create'
+    with test_app.test_request_context(request_path, json={}):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.do_post()
+
+  def test_post__invalid_fields(self):
+    """POST request fails with 400 when supplying invalid fields."""
+    # Signed-in user with permissions
+    testing_config.sign_in('admin@example.com', 123567890)
+
+    invalid_request_body = {
+      'bad_param': 'Not a real field',  # Bad field.
+
+      'name': 'A name',
+      'summary': 'A summary',
+      'owner_emails': ['user@example.com', 'user2@example.com'],
+      'category': 1,
+      'feature_type': 1,
+      'impl_status_chrome': 1,
+      'standard_maturity': 1,
+      'ff_views': 1,
+      'safari_views': 1,
+      'web_dev_views': 1,
+    }
+    request_path = f'{self.request_path}/create'
+    with test_app.test_request_context(request_path, json=invalid_request_body):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.do_post()
+  
+  def test_post__immutable_fields(self):
+    """POST request fails with 400 when immutable field is provided."""
+    # Signed-in user with permissions
+    testing_config.sign_in('admin@example.com', 123567890)
+
+    invalid_request_body = {
+      'creator_email': 'differentuser@example.com',  # Immutable.
+
+      'name': 'A name',
+      'summary': 'A summary',
+      'owner_emails': ['user@example.com', 'user2@example.com'],
+      'category': 1,
+      'feature_type': 1,
+      'impl_status_chrome': 1,
+      'standard_maturity': 1,
+      'ff_views': 1,
+      'safari_views': 1,
+      'web_dev_views': 1,
+    }
+    request_path = f'{self.request_path}/create'
+    with test_app.test_request_context(request_path, json=invalid_request_body):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.do_post()
+
+  def test_post__bad_data_type_int(self):
+    """POST request fails with 400 when a bad int data type is provided."""
+    # Signed-in user with permissions
+    testing_config.sign_in('admin@example.com', 123567890)
+
+    invalid_request_body = {
+      'name': 'A name',
+      'summary': 'A summary',
+      'owner_emails': ['user@example.com', 'user2@example.com'],
+      'category': 'THIS SHOULD BE AN INTEGER',  # Bad data type.
+      'feature_type': 1,
+      'impl_status_chrome': 1,
+      'standard_maturity': 1,
+      'ff_views': 1,
+      'safari_views': 1,
+      'web_dev_views': 1,
+    }
+    request_path = f'{self.request_path}/create'
+    with test_app.test_request_context(request_path, json=invalid_request_body):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.do_post()
+
+  def test_post__bad_data_type_list(self):
+    """POST request fails with 400 when a bad list data type is provided."""
+    # Signed-in user with permissions
+    testing_config.sign_in('admin@example.com', 123567890)
+
+    invalid_request_body = {
+      'name': 'A name',
+      'summary': 'A summary',
+      'owner_emails': 'summary,owner_emails', # Bad data type.
+      'category': 1,
+      'feature_type': 1,
+      'impl_status_chrome': 1,
+      'standard_maturity': 1,
+      'ff_views': 1,
+      'safari_views': 1,
+      'web_dev_views': 1,
+    }
+    request_path = f'{self.request_path}/create'
+    with test_app.test_request_context(request_path, json=invalid_request_body):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.do_post()
+
+  def test_post__missing_required_field(self):
+    """POST request fails with 400 when missing required fields."""
+    # Signed-in user with permissions
+    testing_config.sign_in('admin@example.com', 123567890)
+
+    invalid_request_body = {
+      # No 'name' field.
+      'summary': 'A summary',
+      'owner_emails': ['summary', 'owner_emails'],
+      'category': 1,
+      'feature_type': 1,
+      'impl_status_chrome': 1,
+      'standard_maturity': 1,
+      'ff_views': 1,
+      'safari_views': 1,
+      'web_dev_views': 1,
+    }
+    request_path = f'{self.request_path}/create'
+    with test_app.test_request_context(request_path, json=invalid_request_body):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.do_post()

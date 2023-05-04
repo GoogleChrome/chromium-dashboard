@@ -167,10 +167,7 @@ PI_ENTERPRISE_POLICIES = ProgressItem('Enterprise policies', 'enterprise_policie
 # features that are marked as breaking changes.
 FEATURE_ROLLOUT_STAGE = ProcessStage(
       'Start feature rollout',
-      'Lock in shipping milestone. '
-      'Create feature flag for the feature. '
-      'Create policies to enable/disable and control the feature. '
-      'Finalize docs and announcements and start rolling out the feature.',
+      '',
       [PI_ROLLOUT_IMPACT,
        PI_ROLLOUT_MILESTONE,
        PI_ROLLOUT_PLATFORMS,
@@ -535,10 +532,7 @@ DEPRECATION_STAGES = [
 ENTERPRISE_STAGES = [
   ProcessStage(
       'Start feature rollout',
-      'Lock in shipping milestone. '
-      'Create feature flag for the feature. '
-      'Create policies to enable/disable and control the feature. '
-      'Finalize docs and announcements and start rolling out the feature.',
+      '',
       [PI_ROLLOUT_IMPACT,
        PI_ROLLOUT_MILESTONE,
        PI_ROLLOUT_PLATFORMS,

@@ -98,6 +98,7 @@ API_BASE = '/api/v0'
 api_routes: list[Route] = [
     Route(f'{API_BASE}/features', features_api.FeaturesAPI),
     Route(f'{API_BASE}/features/<int:feature_id>', features_api.FeaturesAPI),
+    Route(f'{API_BASE}/features/create', features_api.FeaturesAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/votes',
         reviews_api.VotesAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/votes/<int:gate_id>',

@@ -43,6 +43,19 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
     'feature_type',
   ])
 
+  # All required fields needed upon feature creation.
+  REQUIRED_FIELDS = frozenset([
+    'name',
+    'summary',
+    'category',
+    'feature_type',
+    'impl_status_chrome',
+    'standard_maturity',
+    'ff_views',
+    'safari_views',
+    'web_dev_views',
+  ])
+
   # Metadata: Creation and updates.
   created = ndb.DateTimeProperty(auto_now_add=True)
   updated = ndb.DateTimeProperty(auto_now_add=True)

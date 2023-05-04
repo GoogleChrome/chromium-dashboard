@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from datetime import datetime
+from typing import Any
 
 from api import converters
 from framework import basehandlers
@@ -25,10 +26,114 @@ from internals.core_models import FeatureEntry
 from internals.data_types import VerboseFeatureDict
 from internals import feature_helpers
 from internals import search
-
+import settings
 
 class FeaturesAPI(basehandlers.APIHandler):
   """Features are the the main records that we track."""
+
+  # Dictionary with fields that can be edited on feature creation
+  # and their data types.
+  # Field name, data type
+  FIELD_DATA_TYPES_CREATE: dict[str, str] = {
+    'activation_risks': 'str',
+    'adoption_expectation': 'str',
+    'adoption_plan': 'str',
+    'all_platforms': 'bool',
+    'all_platforms_descr': 'str',
+    'anticipated_spec_changes': 'str',
+    'api_spec': 'bool',
+    'availability_expectation': 'str',
+    'blink_components': 'list',
+    'breaking_change': 'bool',
+    'bug_url': 'str',
+    'category': 'int',
+    'cc_emails': 'list',
+    'comments': 'str',
+    'debuggability': 'str',
+    'devrel': 'list',
+    'devtrial_instructions': 'str',
+    'doc_links': 'list',
+    'editors_emails': 'list',
+    'enterprise_feature_categories': 'list',
+    'ergonomics_risks': 'str',
+    'explainer_links': 'list',
+    'feature_type': 'int',
+    'ff_views': 'int',
+    'ff_views_link': 'str',
+    'ff_views_notes': 'str',
+    'flag_name': 'str',
+    'impl_status_chrome': 'int',
+    'initial_public_proposal_url': 'str',
+    'intent_stage': 'int',
+    'interop_compat_risks': 'str',
+    'launch_bug_url': 'str',
+    'measurement': 'str',
+    'motivation': 'str',
+    'name': 'str',
+    'non_oss_deps': 'str',
+    'ongoing_constraints': 'str',
+    'other_views_notes': 'str',
+    'owner_emails': 'list',
+    'prefixed': 'bool',
+    'privacy_review_status': 'int',
+    'requires_embedder_support': 'bool',
+    'safari_views': 'int',
+    'safari_views_link': 'str',
+    'safari_views_notes': 'str',
+    'sample_links': 'list',
+    'search_tags': 'list',
+    'security_review_status': 'int',
+    'security_risks': 'str',
+    'spec_link': 'str',
+    'spec_mentors': 'list',
+    'standard_maturity': 'int',
+    'summary': 'str',
+    'tag_review': 'str',
+    'tag_review_status': 'int',
+    'unlisted': 'bool',
+    'web_dev_views': 'int',
+    'web_dev_views_link': 'str',
+    'web_dev_views_notes': 'str',
+    'webview_risks': 'str',
+    'wpt': 'bool',
+    'wpt_descr': 'str',
+  }
+
+  def _abort_invalid_data_type(
+      self, field: str, field_type: str, value: Any) -> None:
+    """Abort the process if an invalid data type is given."""
+    self.abort(400, msg=(
+        f'Bad value for field {field} of type {field_type}: {value}'))
+
+  def _format_field_val(
+      self,
+      field: str,
+      value: Any
+    ) -> str | int | bool | list | None:
+    """Format the given feature value based on the field type."""
+    # Only fields with defined data types are allowed.
+    if field not in self.FIELD_DATA_TYPES_CREATE:
+      self.abort(400, msg=f'Field "{field}" data format not found.')
+    
+    field_type = self.FIELD_DATA_TYPES_CREATE[field]
+
+    # If the field is empty, no need to format.
+    if value is None:
+      return None
+
+    # TODO(DanielRyanSmith): Write checks to ensure enum values are valid.
+    if (field_type == 'list'):
+      if field == 'blink_components' and len(value) == 0:
+        return [settings.DEFAULT_COMPONENT]
+      return value
+    elif field_type == 'int':
+      try:
+        return int(value)
+      except ValueError:
+        self._abort_invalid_data_type(field, field_type, value)
+    elif field_type == 'bool':
+      return bool(value)
+    return str(value)
 
   def get_one_feature(self, feature_id: int) -> VerboseFeatureDict:
     feature = FeatureEntry.get_by_id(feature_id)
@@ -81,7 +186,29 @@ class FeaturesAPI(basehandlers.APIHandler):
       return self.get_one_feature(feature_id)
     return self.do_search()
 
-  # TODO(jrobbins): do_post
+  @permissions.require_create_feature
+  def do_post(self, **kwargs):
+    """Handle POST requests to create a single feature."""
+    body = self.get_json_param_dict()
+
+    # A feature creation request should have all required fields.
+    for field in FeatureEntry.REQUIRED_FIELDS:
+      if field not in body:
+        self.abort(400, msg=f'Required field "{field}" not provided.')
+
+    fields_dict = {field: self._format_field_val(field, value)
+                   for field, value in body.items()}
+    # Try to create the feature using the provided data.
+    try:
+      feature = FeatureEntry(**fields_dict,
+                             creator_email=self.get_current_user().email())
+      feature.put()
+    except Exception as e:
+      self.abort(400, msg=str(e))
+    id = feature.key.integer_id()
+
+    return {'message': f'Feature {id} created.',
+            'feature_id': id}
 
   def do_patch(self, **kwargs):
     """Handle PATCH requests to update fields in a single feature."""

@@ -116,8 +116,8 @@ describe('chromedash-guide-metadata', () => {
     assert.notInclude(metadataDiv.innerHTML, 'tag_one');
     // feature status is listed
     assert.notInclude(metadataDiv.innerHTML, 'fake chrome status text');
-    // feature blink component is listed
-    assert.include(metadataDiv.innerHTML, 'Blink');
+    // feature blink component is not listed
+    assert.notInclude(metadataDiv.innerHTML, 'Blink');
     // delete button does not exists
     assert.notInclude(metadataDiv.innerHTML, 'class="delete-button"');
   });
