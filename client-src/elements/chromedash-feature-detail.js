@@ -28,6 +28,29 @@ import './chromedash-gate-chip';
 import {autolink, findProcessStage, flattenSections} from './utils.js';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
+export const DETAILS_STYLES = [css`
+      sl-details {
+        border: var(--card-border);
+        box-shadow: var(--card-box-shadow);
+        margin: var(--content-padding-half);
+        border-radius: 4px;
+        background: var(--card-background);
+      }
+      sl-details::part(base),
+      sl-details::part(header) {
+        background: transparent;
+      }
+      sl-details::part(header) {
+        padding-bottom: 8px;
+      }
+
+      .card {
+        background: var(--card-background);
+        max-width: var(--max-content-width);
+        padding: 16px;
+      }
+`];
+
 const LONG_TEXT = 60;
 
 class ChromedashFeatureDetail extends LitElement {
@@ -69,6 +92,7 @@ class ChromedashFeatureDetail extends LitElement {
 
     return [
       ...SHARED_STYLES,
+      ...DETAILS_STYLES,
       css`
       :host {
         display: block;
@@ -80,29 +104,11 @@ class ChromedashFeatureDetail extends LitElement {
       }
 
       h2 {
+        margin-top: var(--content-padding);
         display: flex;
       }
       h2 span {
         flex: 1;
-      }
-
-      sl-details {
-        border: var(--card-border);
-        box-shadow: var(--card-box-shadow);
-        margin: var(--content-padding-half);
-        border-radius: 4px;
-      }
-
-      sl-details {
-        background: var(--card-background);
-      }
-
-      sl-details::part(base),
-      sl-details::part(header) {
-        background: transparent;
-      }
-      sl-details::part(header) {
-        padding-bottom: 8px;
       }
 
       .description,
@@ -113,12 +119,6 @@ class ChromedashFeatureDetail extends LitElement {
       sl-details sl-button::part(base) {
         color: var(--sl-color-primary-600);
         border: 1px solid var(--sl-color-primary-600);
-      }
-
-      .card {
-        background: var(--card-background);
-        max-width: var(--max-content-width);
-        padding: 16px;
       }
 
       ol {
@@ -220,8 +220,8 @@ class ChromedashFeatureDetail extends LitElement {
   }
 
   isAnyCollapsed() {
-    const sections = this.shadowRoot.querySelectorAll('sl-details');
-    const open = this.shadowRoot.querySelectorAll('sl-details[open]');
+    const sections = this.shadowRoot.querySelectorAll('.stage');
+    const open = this.shadowRoot.querySelectorAll('.stage[open]');
     return open.length < sections.length;
   }
 
@@ -231,7 +231,7 @@ class ChromedashFeatureDetail extends LitElement {
 
   toggleAll() {
     const shouldOpen = this.anyCollapsed;
-    this.shadowRoot.querySelectorAll('sl-details').forEach((el) => {
+    this.shadowRoot.querySelectorAll('.stage').forEach((el) => {
       el.open = shouldOpen;
     });
   }
@@ -457,7 +457,8 @@ class ChromedashFeatureDetail extends LitElement {
     }
   }
 
-  renderSection(summary, content, isActive=false, defaultOpen=false) {
+  renderSection(
+    summary, content, isActive=false, defaultOpen=false, isStage=true) {
     if (isActive) {
       summary += ' - Active';
     }
@@ -466,7 +467,7 @@ class ChromedashFeatureDetail extends LitElement {
         @sl-after-show=${this.updateCollapsed}
         @sl-after-hide=${this.updateCollapsed}
         ?open=${isActive || defaultOpen}
-        class=${isActive ? 'active' : ''}
+        class="${isActive ? 'active' : ''} ${isStage ? 'stage' : ''}"
       >
         ${content}
       </sl-details>
@@ -504,7 +505,9 @@ class ChromedashFeatureDetail extends LitElement {
       'Metadata',
       content,
       /* isActive=*/false,
-      /* defaultOpen=*/this.feature.is_enterprise_feature);
+      /* defaultOpen=*/this.feature.is_enterprise_feature,
+      /* isStage=*/false,
+    );
   }
 
   renderGateChip(feStage, gate) {
@@ -612,16 +615,6 @@ class ChromedashFeatureDetail extends LitElement {
     return this.renderSection(name, content, isActive, defaultOpen);
   }
 
-  renderActivitySection() {
-    const summary = 'Comments & Activity';
-    const content = html`
-      <a href="/feature/${this.feature.id}/activity">
-        <sl-details summary=${summary}></sl-details>
-      </a>
-    `;
-    return content;
-  }
-
   renderAddStageButton() {
     if (!this.canEdit) {
       return nothing;
@@ -636,13 +629,12 @@ class ChromedashFeatureDetail extends LitElement {
 
   render() {
     return html`
+      ${this.renderMetadataSection()}
       <h2>
         <span>Development stages</span>
         ${this.renderControls()}
       </h2>
-      ${this.renderMetadataSection()}
       ${this.feature.stages.map(feStage => this.renderProcessStage(feStage))}
-      ${this.renderActivitySection()}
       ${this.renderAddStageButton()}
     `;
   }
