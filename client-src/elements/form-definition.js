@@ -176,7 +176,6 @@ export const FLAT_ENTERPRISE_METADATA_FIELDS = {
         'owner',
         'editors',
         'enterprise_feature_categories',
-        'breaking_change',
       ],
     },
     // Implementation
