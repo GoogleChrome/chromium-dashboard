@@ -40,6 +40,7 @@ export class ChromedashGuideStagePage extends LitElement {
       loading: {type: Boolean},
       appTitle: {type: String},
       nextPage: {type: String},
+      fieldValues: {type: Array},
     };
   }
 
@@ -57,12 +58,26 @@ export class ChromedashGuideStagePage extends LitElement {
     this.loading = true;
     this.appTitle = '';
     this.nextPage = '';
+    this.fieldValues = [];
   }
 
   connectedCallback() {
     super.connectedCallback();
     this.fetchData();
   }
+
+  // Handler to update form values when a field update event is fired.
+  handleFormFieldUpdate(event) {
+    const value = event.detail.value;
+    // Index represents which form was updated.
+    const index = event.detail.index;
+    if (index >= this.fieldValues.length) {
+      throw new Error('Out of bounds index when updating field values.');
+    }
+    // The field has been updated, so it is considered touched.
+    this.fieldValues[index].touched = true;
+    this.fieldValues[index].value = value;
+  };
 
   fetchData() {
     this.loading = true;
@@ -220,16 +235,25 @@ export class ChromedashGuideStagePage extends LitElement {
       }
       const featureJSONKey = ALL_FIELDS[field].name || field;
       let value = formattedFeature[featureJSONKey];
+      // The stage ID is only defined for the form field if it is a stage-specific field.
+      let stageId = undefined;
       if (STAGE_SPECIFIC_FIELDS.has(featureJSONKey)) {
         value = getStageValue(feStage, featureJSONKey);
+        stageId = feStage.id;
       }
-      // stageId is only used here for trial extension stages to be used after submission.
+
+      // Add the field to this component's stage before creating the field component.
+      const index = this.fieldValues.length;
+      this.fieldValues.push({name: featureJSONKey, touched: false, value, stageId});
+
       return html`
       <chromedash-form-field
         name=${field}
         value=${value}
+        index=${index}
         stageId=${useStageId ? feStage.id : undefined}
-        ?forEnterprise=${formattedFeature.is_enterprise_feature}>
+        ?forEnterprise=${formattedFeature.is_enterprise_feature}
+        @form-field-update="${this.handleFormFieldUpdate}">
       </chromedash-form-field>
     `;
     });
@@ -238,14 +262,25 @@ export class ChromedashGuideStagePage extends LitElement {
   renderSections(formattedFeature, stageSections) {
     const formSections = [];
     if (!formattedFeature.is_enterprise_feature) {
+      // Add the field to this component's stage before creating the field component.
+      const index = this.fieldValues.length;
+      this.fieldValues.push({
+        name: 'set_stage',
+        touched: false,
+        value: this.isActiveStage,
+        implicitValue: this.stage.id,
+      });
+
       formSections.push(
         html`
         <section class="stage_form">
           <chromedash-form-field
             name="set_stage"
             value=${this.isActiveStage}
+            index=${index}
             ?disabled=${this.isActiveStage}
-            ?forEnterprise=${formattedFeature.is_enterprise_feature}>
+            ?forEnterprise=${formattedFeature.is_enterprise_feature}
+            @form-field-update="${this.handleFormFieldUpdate}">
           </chromedash-form-field>
         </section>`);
     }
@@ -356,8 +391,10 @@ export class ChromedashGuideStagePage extends LitElement {
 
         <div class="final_buttons">
           <input class="button" type="submit" value="Submit">
-          <button id="cancel-button" type="reset"
-            @click=${this.handleCancelClick}>Cancel</button>
+          <!-- TODO(DanielRyanSmith): Update this form to submit using a class method -->
+          <!-- and the formatFeatureChanges function to make the API call. -->
+          <button id="cancel-button"
+            @click=${this.submitChanges}>Cancel</button>
         </div>
       </form>
     `;
