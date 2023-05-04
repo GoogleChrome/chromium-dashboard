@@ -123,7 +123,6 @@ export const ENTERPRISE_NEW_FEATURE_FORM_FIELDS = [
   'summary',
   'owner',
   'editors',
-  'launch_bug_url',
   'enterprise_feature_categories',
 ];
 
@@ -177,14 +176,6 @@ export const FLAT_ENTERPRISE_METADATA_FIELDS = {
         'editors',
         'enterprise_feature_categories',
       ],
-    },
-    // Implementation
-    {
-      name: 'Implementation in Chromium',
-      fields: [
-        'launch_bug_url',
-      ],
-      isImplementationSection: true,
     },
   ],
 };

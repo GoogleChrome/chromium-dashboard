@@ -139,8 +139,6 @@ class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
         summary=self.form.get('summary'),
         owner_emails=owners,
         editor_emails=editors,
-        launch_bug_url=self.form.get('launch_bug_url'),
-        breaking_change=self.form.get('breaking_change') == 'on',
         creator_email=signed_in_user.email(),
         updater_email=signed_in_user.email(),
         accurate_as_of=datetime.now(),
