@@ -84,9 +84,7 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
     # Remove all feature-related cache.
     rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
 
-    # TODO(jrobbins): Make this be /feature/ID after ability to edit
-    # from the feature detail page is complete.
-    redirect_url = '/guide/edit/' + str(key.integer_id())
+    redirect_url = '/feature/' + str(key.integer_id())
     return self.redirect(redirect_url)
 
   def write_gates_and_stages_for_feature(
@@ -150,8 +148,6 @@ class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
     # Remove all feature-related cache.
     rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
 
-    # TODO(jrobbins): Make this be /feature/ID after ability to edit
-    # from the feature detail page is complete.
     redirect_url = '/guide/editall/' + str(key.integer_id()) + '#rollout1'
     return self.redirect(redirect_url)
 
