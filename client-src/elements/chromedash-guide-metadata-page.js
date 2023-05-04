@@ -182,7 +182,9 @@ export class ChromedashGuideMetadataPage extends LitElement {
         <input type="hidden" name="nextPage" value=${this.getNextPage()} >
 
         <chromedash-form-table ${ref(this.registerHandlers)}>
-          ${this.renderSections(formattedFeature, FLAT_METADATA_FIELDS.sections)}
+          ${this.renderSections(formattedFeature, formattedFeature.is_enterprise_feature ?
+      FLAT_ENTERPRISE_METADATA_FIELDS.sections :
+      FLAT_METADATA_FIELDS.sections)}
         </chromedash-form-table>
 
         <div class="final_buttons">

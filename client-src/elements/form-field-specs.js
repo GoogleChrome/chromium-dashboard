@@ -114,18 +114,14 @@ export const ALL_FIELDS = {
     required: true,
     label: 'Summary',
     enterprise_help_text: html`
-       <p>This text will be used in the
-        <a href="https://support.google.com/chrome/a/answer/7679408?hl=en" target="_blank">
-       enterprise release notes</a>,
-        which are publicly visible and primarily written for IT admins.</p>
-       <p>Explain what's changing from the point of view of an end-user,
-        developer, or administrator. Indicate what the motivation is for
-        this change, especially if there’s security or privacy benefits to
-        the change. If an admin should do something (like test or set an enterprise policy),
-        please explain. Finally, if the change has a user-visible benefit
-        (eg. better security or privacy), explain that motivation.
-        See <a href="go/releasenotes-examples" target="_blank">go/releasenotes-examples</a>
-        for examples.</p>`,
+       <p>This text will be used in the enterprise release notes, which are publicly visible and primarily written for IT admins.</p>
+       <p>Explain what's changing from the point of view of an end-user, developer, or administrator.
+        Indicate what the motivation is for this change, especially if there’s security or privacy benefits to the change.
+        If an admin should do something (like test or set an enterprise policy), please explain. Finally, if the change has
+        a user-visible benefit (eg. better security or privacy), explain that motivation. If there are already publicly visible comms
+        (e.g. blog posts), you should link to them here as well.</p>
+      <p>See <a href="https://docs.google.com/document/d/1SdQ-DKeA5O7I8ju5Cb8zSM5S4NPwUACNJ9qbEhz-AYU" target="_blank">go/releasenotes-examples</a>
+       for examples.</p>`,
     help_text: html`
        <p>Text in the beta release post, the enterprise release notes,
         and other external sources will be based on this text.</p>
@@ -161,6 +157,7 @@ export const ALL_FIELDS = {
     Splits the HTTP cache using the top frame origin (and possibly subframe origin) to prevent documents from one origin from knowing whether a resource from another origin was cached. The HTTP cache is currently one per profile, with a single namespace for all resources and subresources regardless of origin or renderer process. Splitting the cache on top frame origins helps the browser deflect side-channel attacks where one site can detect resources in another site's cache.
     </blockquote>
     `,
+    enterprise_extra_help: '',
   },
 
   'owner': {

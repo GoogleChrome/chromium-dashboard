@@ -1,6 +1,6 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
-import {autolink, flattenSections, renderHTMLIf} from './utils.js';
+import {autolink, flattenSections} from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
 import {ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME} from './form-field-enums';
@@ -104,6 +104,60 @@ export class ChromedashGuideMetadata extends LitElement {
     });
   }
 
+  renderReadOnlyTableForEnterprise() {
+    return html`
+      <div id="metadata-readonly">
+        <div style="margin-bottom: 1em">
+          <div id="metadata-buttons">
+            <a id="open-metadata" @click=${() => this.editing = true}>Edit</a>
+            ${this.isAdmin ? html`
+              <div>
+                <a id="delete-feature" class="delete-button"
+                  @click=${this.handleDeleteFeature}>Delete</a>
+              </div>
+            `: nothing}
+          </div>
+          <div>${autolink(this.feature.summary)}</div>
+        </div>
+
+        <div class="flex-cols">
+          <table class="property-sheet">
+            <tr>
+              <th>Owners</th>
+              <td>
+                ${this.feature.browsers.chrome.owners.map((owner) => html`
+                  <a href="mailto:${owner}">${owner}</a>
+                `)}
+              </td>
+            </tr>
+
+            <tr>
+              <th>Editors</th>
+              <td>
+                ${this.feature.editors ?
+                  this.feature.editors.map((editor)=> html`
+                  <a href="mailto:${editor}">${editor}</a>
+                  `): html`
+                  None
+                `}
+              </td>
+            </tr>
+            
+            <tr>
+              <th>Categories</th>
+              <td>${this.feature.enterprise_feature_categories.map(id =>
+                    ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME[id]) || 'None'}</td>
+            </tr>
+
+            <tr>
+              <th>Feature type</th>
+              <td>${this.feature.feature_type}</td>
+            </tr>
+        </div>
+      </div>
+    `;
+  }
+
   renderReadOnlyTable() {
     return html`
       <div id="metadata-readonly">
@@ -138,75 +192,58 @@ export class ChromedashGuideMetadata extends LitElement {
               </td>
             </tr>
 
-            ${!this.feature.is_enterprise_feature ? html`
-              <tr>
-                <th>CC</th>
-                <td>
-                  ${this.feature.cc_recipients ?
-                    this.feature.cc_recipients.map((ccRecipient)=> html`
-                    <a href="mailto:${ccRecipient}">${ccRecipient}</a>
-                    `): html`
-                    None
-                  `}
-                </td>
-              </tr>` :
-            nothing}
-
-            ${!this.feature.is_enterprise_feature ? html`
-              <tr>
-                <th>DevRel</th>
-                <td>
-                  ${this.feature.browsers.chrome.devrel ?
-                    this.feature.browsers.chrome.devrel.map((dev) => html`
-                    <a href="mailto:${dev}">${dev}</a>
+            <tr>
+              <th>CC</th>
+              <td>
+                ${this.feature.cc_recipients ?
+                  this.feature.cc_recipients.map((ccRecipient)=> html`
+                  <a href="mailto:${ccRecipient}">${ccRecipient}</a>
                   `): html`
                   None
                 `}
-                </td>
-              </tr>` :
-            nothing}
+              </td>
+            </tr>
 
-            ${this.feature.is_enterprise_feature ? html`
-              <tr>
-                <th>Editors</th>
-                <td>
-                  ${this.feature.editors ?
-                    this.feature.editors.map((editor)=> html`
-                    <a href="mailto:${editor}">${editor}</a>
-                    `): html`
-                    None
-                  `}
-                </td>
-              </tr>` :
-            nothing}
+            <tr>
+              <th>DevRel</th>
+              <td>
+                ${this.feature.browsers.chrome.devrel ?
+                  this.feature.browsers.chrome.devrel.map((dev) => html`
+                  <a href="mailto:${dev}">${dev}</a>
+                `): html`
+                None
+              `}
+              </td>
+            </tr>
 
-            ${!this.feature.is_enterprise_feature ? html`
-              <tr>
-                <th>Category</th>
-                <td>${this.feature.category}</td>
-              </tr>` :
-            nothing}
-            ${this.feature.is_enterprise_feature ? html`
-              <tr>
-                <th>Categories</th>
-                <td>${this.feature.enterprise_feature_categories.map(id =>
-              ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME[id]) || 'None'}</td>
-              </tr>` :
-            nothing}
+            <tr>
+              <th>Editors</th>
+              <td>
+                ${this.feature.editors ?
+                  this.feature.editors.map((editor)=> html`
+                  <a href="mailto:${editor}">${editor}</a>
+                  `): html`
+                  None
+                `}
+              </td>
+            </tr>
+
+            <tr>
+              <th>Category</th>
+              <td>${this.feature.category}</td>
+            </tr>
 
             <tr>
               <th>Feature type</th>
               <td>${this.feature.feature_type}</td>
             </tr>
 
-            ${renderHTMLIf(!this.feature.is_enterprise_feature, html`
-              <tr>
-                <th>Process stage</th>
-                <td>${this.feature.intent_stage}</td>
-              </tr>`,
-            )}
+            <tr>
+              <th>Process stage</th>
+              <td>${this.feature.intent_stage}</td>
+            </tr>
 
-            ${this.feature.tags && !this.feature.is_enterprise_feature ? html`
+            ${this.feature.tags ? html`
               <tr>
                 <th>Search tags</th>
                 <td>
@@ -221,30 +258,26 @@ export class ChromedashGuideMetadata extends LitElement {
 
 
           <table class="property-sheet">
-          ${!this.feature.is_enterprise_feature ? html`
-              <tr>
-                <th>Implementation status</th>
-                <td>${this.feature.browsers.chrome.status.text}</td>
-              </tr>` :
-            nothing}
+            <tr>
+              <th>Implementation status</th>
+              <td>${this.feature.browsers.chrome.status.text}</td>
+            </tr>
 
             <tr>
               <th>Blink components</th>
               <td>${this.feature.browsers.chrome.blink_components.join(', ')}</td>
             </tr>
 
-            ${!this.feature.is_enterprise_feature ? html`
-              <tr>
-                <th>Tracking bug</th>
-                <td>
-                  ${this.feature.browsers.chrome.bug ? html`
-                    <a href="${this.feature.browsers.chrome.bug}">${this.feature.browsers.chrome.bug}</a>
-                  `: html`
-                    None
-                  `}
-                </td>
-              </tr>` :
-              nothing}
+            <tr>
+              <th>Tracking bug</th>
+              <td>
+                ${this.feature.browsers.chrome.bug ? html`
+                  <a href="${this.feature.browsers.chrome.bug}">${this.feature.browsers.chrome.bug}</a>
+                `: html`
+                  None
+                `}
+              </td>
+            </tr>
 
             <tr>
               <th>Launch bug</th>
@@ -256,7 +289,6 @@ export class ChromedashGuideMetadata extends LitElement {
                 `}
               </td>
             </tr>
-
             <tr>
               <th>Breaking change</th>
               <td>${this.feature.breaking_change}</td>
@@ -302,7 +334,10 @@ export class ChromedashGuideMetadata extends LitElement {
   render() {
     return html`
       <section id="metadata">
-        ${this.editing ? this.renderEditForm() : this.renderReadOnlyTable()}
+        ${this.editing ?
+          this.renderEditForm() :this.feature.is_enterprise_feature ?
+            this.renderReadOnlyTableForEnterprise() :
+            this.renderReadOnlyTable()}
       </section>
     `;
   }
