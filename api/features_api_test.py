@@ -581,16 +581,16 @@ class FeaturesAPITest(testing_config.CustomTestCase):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post()
 
-  def test_post__bad_data_type_list(self):
-    """POST request fails with 400 when a bad list data type is provided."""
+  def test_post__bad_data_type_int(self):
+    """POST request fails with 400 when a bad int data type is provided."""
     # Signed-in user with permissions
     testing_config.sign_in('admin@example.com', 123567890)
 
     invalid_request_body = {
       'name': 'A name',
       'summary': 'A summary',
-      'owner_emails': 'summary,owner_emails', # Bad data type.
-      'category': 1,
+      'owner_emails': ['user@example.com', 'user2@example.com'],
+      'category': 'THIS SHOULD BE AN INTEGER',  # Bad data type.
       'feature_type': 1,
       'impl_status_chrome': 1,
       'standard_maturity': 1,
@@ -603,16 +603,16 @@ class FeaturesAPITest(testing_config.CustomTestCase):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post()
 
-  def test_post__bad_data_type_int(self):
-    """POST request fails with 400 when a bad int data type is provided."""
+  def test_post__bad_data_type_list(self):
+    """POST request fails with 400 when a bad list data type is provided."""
     # Signed-in user with permissions
     testing_config.sign_in('admin@example.com', 123567890)
 
     invalid_request_body = {
       'name': 'A name',
       'summary': 'A summary',
-      'owner_emails': ['user@example.com', 'user2@example.com'],
-      'category': 'THIS SHOULD BE AN INTEGER',  # Bad data type.
+      'owner_emails': 'summary,owner_emails', # Bad data type.
+      'category': 1,
       'feature_type': 1,
       'impl_status_chrome': 1,
       'standard_maturity': 1,
