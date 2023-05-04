@@ -197,7 +197,7 @@ export class ChromedashFormField extends LitElement {
     const helpText = this.forEnterprise && this.fieldProps.enterprise_help_text ?
       this.fieldProps.enterprise_help_text :
       this.fieldProps.help_text;
-    const extraHelpText = this.forEnterprise && this.fieldProps.enterprise_extra_help ?
+    const extraHelpText = this.forEnterprise ?
       this.fieldProps.enterprise_extra_help :
       this.fieldProps.extra_help;
     return html`
