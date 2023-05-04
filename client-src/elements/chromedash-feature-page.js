@@ -319,6 +319,16 @@ export class ChromedashFeaturePage extends LitElement {
     `;
   }
 
+  renderEnterpriseFeatureContent() {
+    return html`
+      ${this.feature.summary ? html`
+        <section id="summary">
+          <p class="preformatted">${autolink(this.feature.summary)}</p>
+        </section>
+      `: nothing}
+    `;
+  }
+
   renderFeatureContent() {
     return html`
       ${this.feature.unlisted ? html`
@@ -529,10 +539,12 @@ export class ChromedashFeaturePage extends LitElement {
     return html`
       ${this.renderSubHeader()}
       <div id="feature">
-        ${this.renderFeatureContent()}
         ${this.feature.is_enterprise_feature ?
-            this.renderEnterpriseFeatureStatus() :
-            this.renderFeatureStatus()}
+          this.renderEnterpriseFeatureContent() :
+          this.renderFeatureContent()}
+        ${this.feature.is_enterprise_feature ?
+          this.renderEnterpriseFeatureStatus() :
+          this.renderFeatureStatus()}
         ${this.renderUpdated()}
       </div>
       ${this.renderFeatureDetails()}
