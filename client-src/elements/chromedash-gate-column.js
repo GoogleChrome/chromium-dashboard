@@ -619,7 +619,7 @@ export class ChromedashGateColumn extends LitElement {
       ${this.renderControls()}
       <chromedash-activity-log
         .user=${this.user}
-        .feature=${this.feature}
+        .featureId=${this.feature.id}
         .narrow=${true}
         .reverse=${true}
         .comments=${this.comments}>

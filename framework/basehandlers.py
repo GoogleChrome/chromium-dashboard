@@ -175,7 +175,7 @@ class APIHandler(BaseHandler):
     body = json.dumps(handler_data)
     return flask.current_app.response_class(
         XSSI_PREFIX + body,
-        mimetype=flask.current_app.config['JSONIFY_MIMETYPE'])
+        mimetype=flask.current_app.json.mimetype)
 
   def get(self, *args, **kwargs):
     """Handle an incoming HTTP GET request."""
@@ -223,6 +223,8 @@ class APIHandler(BaseHandler):
     valid_methods = ['GET']
     if self.do_post.__code__ is not APIHandler.do_post.__code__:
       valid_methods.append('POST')
+    if self.do_put.__code__ is not APIHandler.do_put.__code__:
+      valid_methods.append('PUT')
     if self.do_patch.__code__ is not APIHandler.do_patch.__code__:
       valid_methods.append('PATCH')
     if self.do_delete.__code__ is not APIHandler.do_delete.__code__:
@@ -271,8 +273,6 @@ class APIHandler(BaseHandler):
   def require_signed_in_and_xsrf_token(self):
     """Every API POST, PUT, or DELETE must be signed in with an XSRF token."""
     user = self.get_current_user(required=True)
-    if not user:
-      self.abort(403, msg='Sign in required')
     token = self.request.headers.get('X-Xsrf-Token')
     if not token:
       try:
@@ -536,6 +536,7 @@ class ConstHandler(FlaskHandler):
       return defaults
 
     return flask.jsonify(defaults)
+
 
 def ndb_wsgi_middleware(wsgi_app):
   """Create a new runtime context for cloud ndb for every request"""

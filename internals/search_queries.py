@@ -62,6 +62,15 @@ def single_field_query_async(
     return []
 
   # TODO(jrobbins): Handle ":" operator as substrings for text fields.
+  # TODO(jrobbins): Implement quick-OR for integer fields, e.g., x=2,3,4.
+
+  try:
+    # If the field can be set to val, then it can be compared to val.
+    field._validate(val)
+  except ndb.exceptions.BadValueError:
+    logging.info('Wrong type of value for %r: %r' % (field, val))
+    raise ValueError('Query value does not match field type')
+
   if (operator == '='):
     val_list = str(val).split(',')
     if len(val_list) > 1:

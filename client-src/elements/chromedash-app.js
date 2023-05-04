@@ -285,6 +285,14 @@ class ChromedashApp extends LitElement {
         this.hideSidebar();
       }
     });
+    page('/feature/:featureId(\\d+)/activity', (ctx) => {
+      if (!this.setupNewPage(ctx, 'chromedash-activity-page')) return;
+      this.pageComponent.featureId = parseInt(ctx.params.featureId);
+      this.pageComponent.user = this.user;
+      this.pageComponent.contextLink = this.contextLink;
+      this.currentPage = ctx.path;
+      this.hideSidebar();
+    });
     page('/guide/new', (ctx) => {
       if (!this.setupNewPage(ctx, 'chromedash-guide-new-page')) return;
       this.pageComponent.userEmail = this.user.email;

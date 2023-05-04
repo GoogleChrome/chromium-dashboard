@@ -1,8 +1,8 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {SHARED_STYLES} from '../sass/shared-css.js';
-import {STAGE_SHORT_NAMES} from './form-definition.js';
 import {
   GATE_TEAM_ORDER,
+  STAGE_SHORT_NAMES,
 } from './form-field-enums';
 
 

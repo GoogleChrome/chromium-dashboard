@@ -190,7 +190,7 @@ class User(object):
 def get_current_user():
     if settings.UNIT_TEST_MODE:
       user_via_env = None
-      if os.environ['USER_EMAIL']!= '':
+      if os.environ.get('USER_EMAIL', '') != '':
         user_via_env = User(email=os.environ['USER_EMAIL'])
       return user_via_env
 

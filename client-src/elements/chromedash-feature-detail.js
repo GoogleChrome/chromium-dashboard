@@ -7,9 +7,11 @@ import {
   FLAT_METADATA_FIELDS,
   FLAT_TRIAL_EXTENSION_FIELDS,
   FORMS_BY_STAGE_TYPE,
+} from './form-definition';
+import {
   OT_EXTENSION_STAGE_MAPPING,
   STAGE_TYPES_ORIGIN_TRIAL,
-} from './form-definition';
+} from './form-field-enums';
 
 import {
   DEPRECATED_FIELDS,
@@ -613,15 +615,11 @@ class ChromedashFeatureDetail extends LitElement {
   renderActivitySection() {
     const summary = 'Comments & Activity';
     const content = html`
-        <div style="padding-top: var(--content-padding)">
-          <chromedash-activity-log
-            .user=${this.user}
-            .feature=${this.feature}
-            .comments=${this.comments}
-          ></chromedash-activity-log>
-        </div>
+      <a href="/feature/${this.feature.id}/activity">
+        <sl-details summary=${summary}></sl-details>
+      </a>
     `;
-    return this.renderSection(summary, content);
+    return content;
   }
 
   renderAddStageButton() {
