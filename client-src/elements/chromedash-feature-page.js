@@ -57,6 +57,10 @@ export class ChromedashFeaturePage extends LitElement {
           width: 125px;
         }
 
+        #history p {
+          margin-top: var(--content-padding-half);
+        }
+
         sl-skeleton {
           margin-bottom: 1em;
           width: 60%;
