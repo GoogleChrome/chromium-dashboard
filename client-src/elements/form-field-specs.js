@@ -157,6 +157,7 @@ export const ALL_FIELDS = {
     Splits the HTTP cache using the top frame origin (and possibly subframe origin) to prevent documents from one origin from knowing whether a resource from another origin was cached. The HTTP cache is currently one per profile, with a single namespace for all resources and subresources regardless of origin or renderer process. Splitting the cache on top frame origins helps the browser deflect side-channel attacks where one site can detect resources in another site's cache.
     </blockquote>
     `,
+    enterprise_extra_help: '',
   },
 
   'owner': {
