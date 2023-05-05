@@ -1,5 +1,5 @@
 import {html} from 'lit';
-import {autolink, clamp} from './utils';
+import {autolink, clamp, formatFeatureChanges} from './utils';
 import {assert} from '@open-wc/testing';
 
 const compareAutolinkResult = (result, expected) => {
@@ -99,6 +99,142 @@ go/this-is-a-test
     it('returns upperBound when val is equal or above upperBound', () => {
       assert.equal(100, clamp(100, 1, 100));
       assert.equal(100, clamp(101, 1, 100));
+    });
+  });
+
+  describe('formatFeatureChanges', () => {
+    const featureId = 1;
+    it('ignores untouched fields', () => {
+      // No field should be marked as 'touched'.
+      const testFieldValues = [
+        {
+          name: 'example_field',
+          value: '123',
+          touched: false,
+          stageId: undefined,
+          implicitValue: undefined,
+        },
+      ];
+      const expected = {
+        featureChanges: {id: 1},
+        stages: [],
+        hasChanges: false,
+      };
+      assert.deepEqual(formatFeatureChanges(testFieldValues, featureId), expected);
+    });
+    it('detects feature changes', () => {
+      const testFieldValues = [
+        {
+          name: 'example_field',
+          value: '123',
+          touched: true,
+          stageId: undefined,
+          implicitValue: undefined,
+        },
+      ];
+      const expected = {
+        featureChanges: {
+          id: 1,
+          example_field: '123',
+        },
+        stages: [],
+        hasChanges: true,
+      };
+      assert.deepEqual(formatFeatureChanges(testFieldValues, featureId), expected);
+    });
+    it('detects stage changes', () => {
+      const testFieldValues = [
+        {
+          name: 'example_field',
+          value: '123',
+          touched: true,
+          stageId: 1, // Field is now associated with a stage.
+          implicitValue: undefined,
+        },
+      ];
+      const expected = {
+        featureChanges: {id: 1},
+        stages: [
+          {id: 1, example_field: '123'},
+        ],
+        hasChanges: true,
+      };
+      assert.deepEqual(formatFeatureChanges(testFieldValues, featureId), expected);
+    });
+    it('handles implicit values', () => {
+      const testFieldValues = [
+        {
+          name: 'implicit_value_field',
+          value: true,
+          touched: true,
+          stageId: undefined,
+          implicitValue: 123,
+        },
+      ];
+      const expected = {
+        featureChanges: {id: 1, implicit_value_field: 123},
+        stages: [],
+        hasChanges: true,
+      };
+      assert.deepEqual(formatFeatureChanges(testFieldValues, featureId), expected);
+    });
+    it('ignores implicit values when falsey value', () => {
+      const testFieldValues = [
+        {
+          name: 'implicit_value_field',
+          value: false, // Value is false, so change should be ignored even if touched.
+          touched: true,
+          stageId: undefined,
+          implicitValue: 123,
+        },
+      ];
+      const expected = {
+        featureChanges: {id: 1},
+        stages: [],
+        hasChanges: false,
+      };
+      assert.deepEqual(formatFeatureChanges(testFieldValues, featureId), expected);
+    });
+    it('detects changes to multiple entities', () => {
+      const testFieldValues = [
+        {
+          name: 'example_field1',
+          value: '123',
+          touched: true,
+          stageId: undefined,
+          implicitValue: undefined,
+        },
+        {
+          name: 'example_field2',
+          value: '456',
+          touched: true,
+          stageId: 1,
+          implicitValue: undefined,
+        },
+        {
+          name: 'example_field3',
+          value: '789',
+          touched: true,
+          stageId: 2,
+          implicitValue: undefined,
+        },
+        {
+          name: 'example_field4',
+          value: 'A value',
+          touched: false, // Field should be ignored.
+          stageId: 2,
+          implicitValue: undefined,
+        },
+      ];
+      const expected = {
+        featureChanges: {id: 1, example_field1: '123'},
+        stages: [
+          {id: 1, example_field2: '456'},
+          {id: 2, example_field3: '789'},
+        ],
+        hasChanges: true,
+      };
+      assert.deepEqual(formatFeatureChanges(testFieldValues, featureId), expected);
     });
   });
 });
