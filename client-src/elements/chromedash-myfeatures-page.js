@@ -72,6 +72,11 @@ export class ChromedashMyFeaturesPage extends LitElement {
     openApprovalsDialog(this.user, e.detail.feature);
   }
 
+  userCanApprove() {
+    return this.user && (
+      this.user.is_admin || this.user.approvable_gate_types?.length > 0);
+  }
+
   renderBox(title, query, columns, sortSpec='', opened=true) {
     return html`
       <sl-details
@@ -83,7 +88,6 @@ export class ChromedashMyFeaturesPage extends LitElement {
           sortSpec="${sortSpec}"
           ?signedIn=${Boolean(this.user)}
           ?canEdit=${this.user && this.user.can_edit_all}
-          ?canApprove=${this.user && this.user.can_approve}
           .starredFeatures=${this.starredFeatures}
           @star-toggle-event=${this.handleStarToggle}
           @open-approvals-event=${this.handleOpenApprovals}
@@ -119,7 +123,7 @@ export class ChromedashMyFeaturesPage extends LitElement {
       <div id="subheader">
         <h2>My features</h2>
       </div>
-      ${this.user && this.user.can_approve ? this.renderPendingAndRecentApprovals() : nothing}
+      ${this.userCanApprove() ? this.renderPendingAndRecentApprovals() : nothing}
       ${this.renderICanEdit()}
       ${this.renderIStarred()}
     `;

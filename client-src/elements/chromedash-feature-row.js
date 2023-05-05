@@ -13,7 +13,6 @@ class ChromedashFeatureRow extends LitElement {
       columns: {type: String},
       signedIn: {type: Boolean},
       canEdit: {type: Boolean},
-      canApprove: {type: Boolean},
       starredFeatures: {type: Object},
       approvals: {type: Object},
       gates: {type: Object},
@@ -26,7 +25,6 @@ class ChromedashFeatureRow extends LitElement {
     this.starredFeatures = new Set();
     this.feature = null;
     this.canEdit = false;
-    this.canApprove = false;
     this.approvals = {};
     this.gates = {};
     this.selectedGateId = 0;

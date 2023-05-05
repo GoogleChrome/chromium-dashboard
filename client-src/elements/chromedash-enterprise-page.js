@@ -9,7 +9,6 @@ export class ChromedashEnterprisePage extends ChromedashAllFeaturesPage {
         query=${query}
         ?signedIn=${Boolean(this.user)}
         ?canEdit=${this.user && this.user.can_edit_all}
-        ?canApprove=${this.user && this.user.can_approve}
         .starredFeatures=${this.starredFeatures}
         @star-toggle-event=${this.handleStarToggle}
         @open-approvals-event=${this.handleOpenApprovals}
