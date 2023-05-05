@@ -271,6 +271,8 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   }
 
   renderReleaseNotesDetailsSection(title, features, shouldDisplayStageTitleInBold) {
+    // Each section has a "To remove line that contains the owners and last updated date."
+    // That line is to be removed by whomever copy/pastes the content into the release notes.
     return html`
     <div class="note-section">
       <h2>${title}</h2>
