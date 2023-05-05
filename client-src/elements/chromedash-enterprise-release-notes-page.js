@@ -85,15 +85,20 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       }
 
       li {
-        list-style: disc;
-      }
-
-      ul ul li {
         list-style: circle;
       }
 
-      ul.note-details li , .summary{
+      .feature {
+        margin: 1rem 0 2rem;
+      }
+
+      .feature p {
         margin: 1rem 0;
+      }
+
+      .toremove {
+        font-style: italic;
+        font-weight: bold;
       }
   
       td:not(:first-child), th:not(:first-child) {
@@ -266,26 +271,27 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   }
 
   renderReleaseNotesDetailsSection(title, features, shouldDisplayStageTitleInBold) {
+    // Each feature has a "To remove" line that contains the feature's owners and last update date.
+    // That line is to be removed by whomever copy/pastes the content into the final release notes.
     return html`
     <div class="note-section">
       <h2>${title}</h2>
-      <ul class="note-details">
-        ${features.map(f => html`
-        <li>
-          <strong>${f.name}</strong>
-          <p class="summary">${f.summary}</p>
-          <ul>
-          ${f.stages.map(s => html`
-            <li>
-              <span class="${shouldDisplayStageTitleInBold(s.rollout_milestone,
+      ${features.map(f => html`
+      <section class="feature">
+        <strong>${f.name}</strong>
+        <p class="toremove">< To remove - Owners: ${f.browsers.chrome.owners.join(', ')} - Last Updated: ${f.updated.when} ></p>
+        <p class="summary">${f.summary}</p>
+        <ul>
+        ${f.stages.map(s => html`
+          <li>
+            <span class="${shouldDisplayStageTitleInBold(s.rollout_milestone,
       f.stages.map(s => s.rollout_milestone).sort()) ? 'bold' : ''}">
-                ${this.getStageTitle(s)}
-              </span>
-              ${s.rollout_details || 'Missing details' }
-            </li>`)}
-          </ul>
-        </li>`)}
-      </ul>
+              ${this.getStageTitle(s)}
+            </span>
+            ${s.rollout_details || 'Missing details' }
+          </li>`)}
+        </ul>
+      </section>`)}
     </div>`;
   }
 

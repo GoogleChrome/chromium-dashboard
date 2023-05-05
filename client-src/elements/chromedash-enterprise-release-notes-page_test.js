@@ -17,6 +17,14 @@ describe('chromedash-feature-page', () => {
           enterprise_feature_categories: ['1', '2'],
           new_crbug_url: 'fake crbug link',
           stages: [],
+          browsers: {
+            chrome: {
+              owners: ['owner'],
+            }
+          },
+          updated: {
+            when: "feature1 updated"
+          }
         },
         {
           id: 2,
@@ -34,6 +42,14 @@ describe('chromedash-feature-page', () => {
               stage_type: 120,
             },
           ],
+          browsers: {
+            chrome: {
+              owners: ['owner'],
+            }
+          },
+          updated: {
+            when: "updated when"
+          }
         },
         {
           id: 3,
@@ -55,6 +71,14 @@ describe('chromedash-feature-page', () => {
               stage_type: 120,
             },
           ],
+          browsers: {
+            chrome: {
+              owners: ['owner'],
+            }
+          },
+          updated: {
+            when: "updated when"
+          }
         },
         {
           id: 4,
@@ -80,6 +104,14 @@ describe('chromedash-feature-page', () => {
               rollout_platforms: [],
             },
           ],
+          browsers: {
+            chrome: {
+              owners: ['owner1', 'owner2'],
+            }
+          },
+          updated: {
+            when: "feature 4 updated"
+          }
         },
         {
           id: 5,
@@ -105,6 +137,14 @@ describe('chromedash-feature-page', () => {
               rollout_platforms: [],
             },
           ],
+          browsers: {
+            chrome: {
+              owners: ['owner'],
+            }
+          },
+          updated: {
+            when: "updated when"
+          }
         },
         {
           id: 6,
@@ -122,6 +162,14 @@ describe('chromedash-feature-page', () => {
               rollout_platforms: [],
             },
           ],
+          browsers: {
+            chrome: {
+              owners: ['owner'],
+            }
+          },
+          updated: {
+            when: "updated when"
+          }
         },
       ],
     });
@@ -239,16 +287,19 @@ describe('chromedash-feature-page', () => {
     // Test Chrome browser updates
     {
       assert.equal('Chrome browser updates', releaseNotes[0].querySelector('h2').textContent);
-      const features = [...releaseNotes[0].querySelectorAll('.note-details > li')];
+      const features = [...releaseNotes[0].querySelectorAll('.feature')];
 
       // Test feature 1
       {
         assert.equal(
           'feature with two consecutive rollout stages',
           features[0].querySelector('strong').textContent);
+          assert.equal(
+            '< To remove - Owners: owner1, owner2 - Last Updated: feature 4 updated >',
+            features[0].querySelector('.toremove').textContent);
         assert.equal(
           'feature 4 summary',
-          features[0].querySelector('p').textContent);
+          features[0].querySelector('.summary').textContent);
         const stages = [...features[0].querySelectorAll('li')];
         assert.equal(2, stages.length);
         assert.include(stages[0].textContent, 'Chrome 100: ');
@@ -263,8 +314,11 @@ describe('chromedash-feature-page', () => {
           'feature with one rollout stages',
           features[1].querySelector('strong').textContent);
         assert.equal(
+          '< To remove - Owners: owner - Last Updated: updated when >',
+          features[1].querySelector('.toremove').textContent);
+        assert.equal(
           'feature 3 summary',
-          features[1].querySelector('p').textContent);
+          features[1].querySelector('.summary').textContent);
         const stages = [...features[1].querySelectorAll('li')];
         assert.equal(1, stages.length);
         assert.include(stages[0].textContent, 'Chrome 100: ');
@@ -277,7 +331,7 @@ describe('chromedash-feature-page', () => {
       assert.equal(
         'Upcoming Chrome browser updates',
         releaseNotes[1].querySelector('h2').textContent);
-      const features = [...releaseNotes[1].querySelectorAll('.note-details > li')];
+      const features = [...releaseNotes[1].querySelectorAll('.feature')];
 
       // Test feature 1
       {
@@ -285,8 +339,11 @@ describe('chromedash-feature-page', () => {
           'feature with upcoming rollout stages',
           features[0].querySelector('strong').textContent);
         assert.equal(
+          '< To remove - Owners: owner - Last Updated: updated when >',
+          features[0].querySelector('.toremove').textContent);
+        assert.equal(
           'feature 6 summary',
-          features[0].querySelector('p').textContent);
+          features[0].querySelector('.summary').textContent);
         const stages = [...features[0].querySelectorAll('li')];
         assert.equal(1, stages.length);
         assert.include(stages[0].textContent, 'Chrome 999: ');
@@ -299,8 +356,11 @@ describe('chromedash-feature-page', () => {
           'feature with past and future rollout stages',
           features[1].querySelector('strong').textContent);
         assert.equal(
+          '< To remove - Owners: owner - Last Updated: updated when >',
+          features[1].querySelector('.toremove').textContent);
+        assert.equal(
           'feature 5 summary',
-          features[1].querySelector('p').textContent);
+          features[1].querySelector('.summary').textContent);
         const stages = [...features[1].querySelectorAll('li')];
         assert.equal(2, stages.length);
         assert.include(stages[0].textContent, 'Chrome 1: ');
@@ -350,7 +410,7 @@ describe('chromedash-feature-page', () => {
     // Test Chrome browser updates
     {
       assert.equal('Chrome browser updates', releaseNotes[0].querySelector('h2').textContent);
-      const features = [...releaseNotes[0].querySelectorAll('.note-details > li')];
+      const features = [...releaseNotes[0].querySelectorAll('.feature')];
       assert.equal(0, features.length);
     }
 
@@ -359,7 +419,7 @@ describe('chromedash-feature-page', () => {
       assert.equal(
         'Upcoming Chrome browser updates',
         releaseNotes[1].querySelector('h2').textContent);
-      const features = [...releaseNotes[1].querySelectorAll('.note-details > li')];
+      const features = [...releaseNotes[1].querySelectorAll('.feature')];
       assert.equal(0, features.length);
     }
   });
