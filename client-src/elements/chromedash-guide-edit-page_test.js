@@ -7,7 +7,6 @@ import sinon from 'sinon';
 
 describe('chromedash-guide-edit-page', () => {
   const permissionsPromise = Promise.resolve({
-    can_approve: false,
     can_create_feature: true,
     can_edit_all: true,
     is_admin: false,

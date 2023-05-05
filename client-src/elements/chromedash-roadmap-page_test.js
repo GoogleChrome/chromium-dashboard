@@ -88,7 +88,6 @@ describe('chromedash-roadmap-page', () => {
 
   it('renders with fake data', async () => {
     const user = {
-      can_approve: false,
       can_create_feature: true,
       can_edit: true,
       is_admin: false,

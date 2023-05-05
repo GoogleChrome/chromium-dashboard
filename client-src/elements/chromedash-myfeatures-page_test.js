@@ -33,7 +33,6 @@ describe('chromedash-myfeatures-page', () => {
 
   it('user has no approval permission', async () => {
     const user = {
-      can_approve: false,
       can_create_feature: true,
       can_edit_all: true,
       is_admin: false,
@@ -75,7 +74,7 @@ describe('chromedash-myfeatures-page', () => {
 
   it('user has approval permission', async () => {
     const user = {
-      can_approve: true,
+      approvable_gate_types: [54],
       can_create_feature: true,
       can_edit_all: true,
       is_admin: false,

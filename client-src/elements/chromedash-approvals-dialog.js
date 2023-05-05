@@ -216,11 +216,16 @@ class ChromedashApprovalsDialog extends LitElement {
     return `State ${state}`;
   }
 
+  userCanApprove() {
+    return this.user && (
+      this.user.is_admin || this.user.approvable_gate_types?.length > 0);
+  }
+
   renderApprovalValue(voteValue) {
     const selectedValue = (
       this.changedApprovalsByGate.get(voteValue.gate_id) ||
       voteValue.state);
-    const canVote = (this.user?.can_approve &&
+    const canVote = (this.userCanApprove() &&
                      voteValue.set_by == this.user?.email);
     // hoist is needed when <sl-select> is in overflow:hidden context.
     return html`
@@ -248,7 +253,7 @@ class ChromedashApprovalsDialog extends LitElement {
   }
 
   renderMyPendingApproval(gateInfo) {
-    if (!this.user || !this.user.can_approve) return nothing;
+    if (!this.userCanApprove()) return nothing;
     const existingApprovalByMe = this.votes.some((a) =>
       a.gate_id === gateInfo.id && a.set_by == this.user.email);
     // There shoud be only one approval entry for now, until we have

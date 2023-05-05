@@ -43,6 +43,7 @@ def process_pending_approval_me_query() -> list[int]:
 
   approvable_gate_types = approval_defs.fields_approvable_by(user)
   if not approvable_gate_types:
+    logging.info('User has no approvable_gate_types')
     return []
   query = Gate.query(
       Gate.state.IN(Gate.PENDING_STATES),
@@ -275,6 +276,8 @@ def create_future_operations_from_queries(terms):
     if textterm:
       future = search_fulltext.search_fulltext(textterm)
     elif is_predefined_query_term(field_name, op_str, val_str):
+      logging.info('Running predefined query term: %r %r %r',
+                   field_name, op_str, val_str)
       future = process_predefined_query_term(field_name, op_str, val_str)
     else:
       future = process_query_term(is_negation, field_name, op_str, val_str)

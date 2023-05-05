@@ -68,7 +68,6 @@ describe('chromedash-header', () => {
 
   it('user is signed in', async () => {
     window.csClient.getPermissions.returns(Promise.resolve({
-      can_approve: false,
       can_create_feature: true,
       can_edit: true,
       is_admin: false,
