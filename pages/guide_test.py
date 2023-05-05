@@ -82,7 +82,7 @@ class FeatureCreateTest(testing_config.CustomTestCase):
 
     self.assertEqual('302 FOUND', actual_response.status)
     location = actual_response.headers['location']
-    self.assertTrue(location.startswith('/guide/edit/'))
+    self.assertTrue(location.startswith('/feature/'))
     new_feature_id = int(location.split('/')[-1])
 
     # Ensure FeatureEntry entity was created.
