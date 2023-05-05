@@ -15,6 +15,7 @@
 
 from datetime import datetime
 from typing import Any
+from google.cloud import ndb
 
 from api import converters
 from framework import basehandlers
@@ -22,7 +23,8 @@ from framework import permissions
 from framework import rediscache
 from framework import users
 from internals.core_enums import *
-from internals.core_models import FeatureEntry
+from internals.core_models import FeatureEntry, Stage
+from internals.review_models import Gate
 from internals.data_types import VerboseFeatureDict
 from internals import feature_helpers
 from internals import search
@@ -207,8 +209,32 @@ class FeaturesAPI(basehandlers.APIHandler):
       self.abort(400, msg=str(e))
     id = feature.key.integer_id()
 
+    self._write_stages_and_gates_for_feature(id, feature.feature_type)
     return {'message': f'Feature {id} created.',
             'feature_id': id}
+
+  def _write_stages_and_gates_for_feature(
+      self, feature_id: int, feature_type: int) -> None:
+    """Write each Stage and Gate entity for newly created feature."""
+    # Obtain a list of stages and gates for the given feature type.
+    stages_gates = STAGES_AND_GATES_BY_FEATURE_TYPE[feature_type]
+
+    for stage_type, gate_types in stages_gates:
+      # Don't create a trial extension stage pre-emptively.
+      if stage_type == STAGE_TYPES_EXTEND_ORIGIN_TRIAL[feature_type]:
+        continue
+
+      stage = Stage(feature_id=feature_id, stage_type=stage_type)
+      stage.put()
+      new_gates: list[Gate] = []
+      # Stages can have zero or more gates.
+      for gate_type in gate_types:
+        gate = Gate(feature_id=feature_id, stage_id=stage.key.integer_id(),
+                    gate_type=gate_type, state=Gate.PREPARING)
+        new_gates.append(gate)
+
+      if new_gates:
+        ndb.put_multi(new_gates)
 
   def do_patch(self, **kwargs):
     """Handle PATCH requests to update fields in a single feature."""
