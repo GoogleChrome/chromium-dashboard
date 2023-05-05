@@ -121,7 +121,7 @@ export class ChromedashGuideNewPage extends LitElement {
           <input
             type="submit"
             class="primary"
-            value=${this.isEnterpriseFeature ? 'Continue' : 'Add stage'}>
+            value=${this.isEnterpriseFeature ? 'Continue' : 'Submit'}>
         </form>
       </section>
     `;

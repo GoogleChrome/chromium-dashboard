@@ -20,11 +20,11 @@ describe('chromedash-feature-page', () => {
           browsers: {
             chrome: {
               owners: ['owner'],
-            }
+            },
           },
           updated: {
-            when: "feature1 updated"
-          }
+            when: 'feature1 updated',
+          },
         },
         {
           id: 2,
@@ -45,11 +45,11 @@ describe('chromedash-feature-page', () => {
           browsers: {
             chrome: {
               owners: ['owner'],
-            }
+            },
           },
           updated: {
-            when: "updated when"
-          }
+            when: 'updated when',
+          },
         },
         {
           id: 3,
@@ -74,11 +74,11 @@ describe('chromedash-feature-page', () => {
           browsers: {
             chrome: {
               owners: ['owner'],
-            }
+            },
           },
           updated: {
-            when: "updated when"
-          }
+            when: 'updated when',
+          },
         },
         {
           id: 4,
@@ -107,11 +107,11 @@ describe('chromedash-feature-page', () => {
           browsers: {
             chrome: {
               owners: ['owner1', 'owner2'],
-            }
+            },
           },
           updated: {
-            when: "feature 4 updated"
-          }
+            when: 'feature 4 updated',
+          },
         },
         {
           id: 5,
@@ -140,11 +140,11 @@ describe('chromedash-feature-page', () => {
           browsers: {
             chrome: {
               owners: ['owner'],
-            }
+            },
           },
           updated: {
-            when: "updated when"
-          }
+            when: 'updated when',
+          },
         },
         {
           id: 6,
@@ -165,11 +165,11 @@ describe('chromedash-feature-page', () => {
           browsers: {
             chrome: {
               owners: ['owner'],
-            }
+            },
           },
           updated: {
-            when: "updated when"
-          }
+            when: 'updated when',
+          },
         },
       ],
     });
@@ -294,9 +294,9 @@ describe('chromedash-feature-page', () => {
         assert.equal(
           'feature with two consecutive rollout stages',
           features[0].querySelector('strong').textContent);
-          assert.equal(
-            '< To remove - Owners: owner1, owner2 - Last Updated: feature 4 updated >',
-            features[0].querySelector('.toremove').textContent);
+        assert.equal(
+          '< To remove - Owners: owner1, owner2 - Last Updated: feature 4 updated >',
+          features[0].querySelector('.toremove').textContent);
         assert.equal(
           'feature 4 summary',
           features[0].querySelector('.summary').textContent);
