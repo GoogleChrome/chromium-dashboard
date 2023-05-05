@@ -278,7 +278,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       <section class="feature">
         <strong>${f.name}</strong>
         <p class="toremove">< To remove - Owners: ${f.browsers.chrome.owners.join(', ')} - Last Updated: ${f.updated.when} ></p>
-        <p>${f.summary}</p>
+        <p class="summary">${f.summary}</p>
         <ul>
         ${f.stages.map(s => html`
           <li>
