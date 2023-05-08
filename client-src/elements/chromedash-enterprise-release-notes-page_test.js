@@ -25,6 +25,7 @@ describe('chromedash-feature-page', () => {
           updated: {
             when: 'feature1 updated',
           },
+          screenshot_links: [],
         },
         {
           id: 2,
@@ -50,6 +51,7 @@ describe('chromedash-feature-page', () => {
           updated: {
             when: 'updated when',
           },
+          screenshot_links: [],
         },
         {
           id: 3,
@@ -79,6 +81,7 @@ describe('chromedash-feature-page', () => {
           updated: {
             when: 'updated when',
           },
+          screenshot_links: ['https://example.com/screenshot1'],
         },
         {
           id: 4,
@@ -112,6 +115,7 @@ describe('chromedash-feature-page', () => {
           updated: {
             when: 'feature 4 updated',
           },
+          screenshot_links: ['https://example.com/screenshot1', 'https://example.com/screenshot2'],
         },
         {
           id: 5,
@@ -145,6 +149,7 @@ describe('chromedash-feature-page', () => {
           updated: {
             when: 'updated when',
           },
+          screenshot_links: ['https://example.com/screenshot1'],
         },
         {
           id: 6,
@@ -170,6 +175,7 @@ describe('chromedash-feature-page', () => {
           updated: {
             when: 'updated when',
           },
+          screenshot_links: [],
         },
       ],
     });
@@ -306,6 +312,13 @@ describe('chromedash-feature-page', () => {
         assert.include(stages[0].textContent, 'fake rollout details 100');
         assert.include(stages[1].textContent, 'Chrome 101: ');
         assert.include(stages[1].textContent, 'fake rollout details 101');
+
+        const screenshots = [...features[0].querySelectorAll('.screenshots img')];
+        assert.lengthOf(screenshots, 2)
+        assert.equal(screenshots[0].src, 'https://example.com/screenshot1')
+        assert.equal(screenshots[0].alt, `Feature screenshot 1`)
+        assert.equal(screenshots[1].src, 'https://example.com/screenshot2')
+        assert.equal(screenshots[1].alt, `Feature screenshot 2`)
       }
 
       // Test feature 2
@@ -323,6 +336,11 @@ describe('chromedash-feature-page', () => {
         assert.equal(1, stages.length);
         assert.include(stages[0].textContent, 'Chrome 100: ');
         assert.include(stages[0].textContent, 'fake rollout details 100');
+
+        const screenshots = [...features[1].querySelectorAll('.screenshots img')];
+        assert.lengthOf(screenshots, 1)
+        assert.equal(screenshots[0].src, 'https://example.com/screenshot1')
+        assert.equal(screenshots[0].alt, `Feature screenshot 1`)
       }
     }
 
@@ -348,6 +366,9 @@ describe('chromedash-feature-page', () => {
         assert.equal(1, stages.length);
         assert.include(stages[0].textContent, 'Chrome 999: ');
         assert.include(stages[0].textContent, 'fake rollout details 999');
+
+        const screenshots = [...features[0].querySelectorAll('.screenshots img')];
+        assert.isEmpty(screenshots);
       }
 
       // Test feature 2
@@ -367,6 +388,11 @@ describe('chromedash-feature-page', () => {
         assert.include(stages[0].textContent, 'fake rollout details 1');
         assert.include(stages[1].textContent, 'Chrome 1000: ');
         assert.include(stages[1].textContent, 'fake rollout details 1000');
+
+        const screenshots = [...features[1].querySelectorAll('.screenshots img')];
+        assert.lengthOf(screenshots, 1)
+        assert.equal(screenshots[0].src, 'https://example.com/screenshot1')
+        assert.equal(screenshots[0].alt, `Feature screenshot 1`)
       }
     }
   });

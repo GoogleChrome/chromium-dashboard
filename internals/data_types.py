@@ -186,6 +186,7 @@ class VerboseFeatureDict(TypedDict):
   active_stage_id: int | None
   bug_url: str | None
   launch_bug_url: str | None
+  screenshot_links: list[str]
   breaking_change: bool
 
   # Implementation in Chrome

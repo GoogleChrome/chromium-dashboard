@@ -103,6 +103,19 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   
       td:not(:first-child), th:not(:first-child) {
         text-align: center;
+      }
+      
+      .screenshots {
+        display: flex;
+      }
+
+      .screenshots img {
+        margin-top: 1rem;
+        max-width: 50%;
+      }
+
+      .screenshots img + img {
+        margin-inline-start: 1rem;
       }`,
     ];
   }
@@ -162,11 +175,11 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
                              stages.some(s => s.rollout_milestone > this.selectedMilestone))
       .sort((a, b) => {
         const minA = Math.min(a.stages
-          .filter(s => s.rollout_milestone > this.selectedMilestone)
-          .map(s => s.rollout_milestone));
+          .filter(s => (s.rollout_milestone || 0) > this.selectedMilestone)
+          .map(s => s.rollout_milestone)) || 0;
         const minB = Math.min(b.stages
-          .filter(s => s.rollout_milestone > this.selectedMilestone)
-          .map(s => s.rollout_milestone));
+          .filter(s => (s.rollout_milestone || 0) > this.selectedMilestone)
+          .map(s => s.rollout_milestone)) || 0;
         return minA - minB;
       });
   }
@@ -291,6 +304,9 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
             ${s.rollout_details || 'Missing details' }
           </li>`)}
         </ul>
+        <div class="screenshots">
+          ${f.screenshot_links.map((url, i) => html`<img src="${url}" alt="Feature screenshot ${i + 1}">`)}
+        </div>
       </section>`)}
     </div>`;
   }

@@ -17,6 +17,7 @@ const LINE_SEPARATED_FIELDS = [
   'explainer_links',
   'doc_links',
   'sample_links',
+  'screenshot_links',
 ];
 
 /* Convert the format of feature object fetched from API into those for edit.
@@ -175,6 +176,7 @@ export const FLAT_ENTERPRISE_METADATA_FIELDS = {
         'owner',
         'editors',
         'enterprise_feature_categories',
+        'screenshot_links',
       ],
     },
   ],

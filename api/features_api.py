@@ -69,6 +69,7 @@ class FeaturesAPI(basehandlers.APIHandler):
     'intent_stage': 'int',
     'interop_compat_risks': 'str',
     'launch_bug_url': 'str',
+    'screenshot_links': 'list',
     'measurement': 'str',
     'motivation': 'str',
     'name': 'str',
