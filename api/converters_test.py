@@ -48,7 +48,8 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
         editor_emails=['feature_editor@example.com', 'owner_1@example.com'],
         impl_status_chrome=5, blink_components=['Blink'],
         spec_link='https://example.com/spec',
-        sample_links=['https://example.com/samples'], standard_maturity=1,
+        sample_links=['https://example.com/samples'],
+        screenshot_links=['https://example.com/screenshot'], standard_maturity=1,
         ff_views=5, ff_views_link='https://example.com/ff_views',
         ff_views_notes='ff notes', safari_views=1,
         bug_url='https://example.com/bug',
@@ -303,6 +304,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'requires_embedder_support': False,
       'spec_link': 'https://example.com/spec',
       'sample_links': ['https://example.com/samples'],
+      'screenshot_links': ['https://example.com/screenshot'],
       'created': {
         'by': 'creator@example.com',
         'when': str(self.date)

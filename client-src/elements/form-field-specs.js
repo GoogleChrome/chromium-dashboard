@@ -314,6 +314,14 @@ export const ALL_FIELDS = {
             href="https://launch.corp.google.com/">
           Create a launch</a>.`,
   },
+  'screenshot_links': {
+    type: 'textarea',
+    attrs: MULTI_URL_FIELD_ATTRS,
+    required: false,
+    label: 'Screenshots link(s)',
+    help_text: html`
+        Link to screenshots showcasing this feature (one URL per line).`,
+  },
 
   'motivation': {
     type: 'textarea',

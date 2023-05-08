@@ -172,6 +172,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('explainer_links', 'links'),
       ('bug_url', 'link'),
       ('launch_bug_url', 'link'),
+      ('screenshot_links', 'links'),
       ('anticipated_spec_changes', 'str'),
       ('requires_embedder_support', 'bool'),
       ('devtrial_instructions', 'link'),

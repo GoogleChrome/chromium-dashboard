@@ -269,6 +269,7 @@ def feature_entry_to_json_verbose(
     'bug_url': fe.bug_url,
     'launch_bug_url': fe.launch_bug_url,
     'new_crbug_url': None,
+    'screenshot_links': fe.screenshot_links or [],
     'breaking_change': fe.breaking_change,
     'flag_name': fe.flag_name,
     'ongoing_constraints': fe.ongoing_constraints,
