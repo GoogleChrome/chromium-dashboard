@@ -64,7 +64,7 @@
     "@rollup/plugin-babel": "^6.0.3",
     "@rollup/plugin-node-resolve": "^15.0.2",
     "@shoelace-style/shoelace": "^2.4.0",
-    "@web/test-runner": "^0.15.3",
+    "@web/test-runner": "^0.16.1",
     "@web/test-runner-playwright": "^0.10.0",
     "acorn": ">=8.8.2",
     "color-string": ">=1.9.0",
@@ -95,7 +95,8 @@
     "rollup-plugin-babel-minify": "^10.0.0",
     "sinon": "^15.0.4",
     "tar": ">=6.1.13",
-    "trim-newlines": ">=5.0.0"
+    "trim-newlines": ">=5.0.0",
+    "typescript": "^5.0.4"
   },
   "dependencies": {
     "@lit-labs/context": "^0.3.0",
