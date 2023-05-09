@@ -264,3 +264,70 @@ export function clearURLParams(key) {
   // https://github.com/visionmedia/page.js/issues/293#issuecomment-456906679
   window.history.pushState({path: newURL.toString()}, '', newURL);
 }
+
+/**
+ * @typedef {Object} FieldInfo
+ * @property {string} name The name of the field.
+ * @property {boolean} touched Whether the field was mutated by the user.
+ * @property {number} stageId The stage that the field is associated with.
+ *   This field is undefined if the change is a feature change.
+ * @property {*} value The value written in the form field.
+ * @property {*} implicitValue Value that should be changed for some checkbox fields.
+ *   e.g. "set_stage" is a checkbox, but should change the field to a stage ID if true.
+ */
+
+/**
+ * @typedef {Object} UpdateSubmitBody
+ * @property {Object.<string, *>} featureChanges An object with feature changes.
+ *   key=field name, value=new field value.
+ * @property {Array.<Object>} stages The list of changes to specific stages.
+ * @property {boolean} hasChanges Whether any valid changes are present for submission.
+ */
+
+/**
+ * Prepare feature/stage changes to be submitted.
+ * @param {Array.<FieldInfo>} fieldValues List of fields in the form.
+ * @param {number} featureId The ID of the feature being updated.
+ * @return {UpdateSubmitBody} Formatted body of new PATCH request.
+ */
+export function formatFeatureChanges(fieldValues, featureId) {
+  let hasChanges = false;
+  const featureChanges = {id: featureId};
+  // Multiple stages can be mutated, so this object is a stage of stages.
+  const stages = {};
+  for (const {name, touched, value, stageId, implicitValue} of fieldValues) {
+    // Only submit changes for touched fields.
+    if (!touched) {
+      continue;
+    }
+
+    // If an explicit value is present, the field value should be truthy.
+    // Otherwise, we ignore the change.
+    // For example, if this is a checkbox to set the active stage, it would need
+    // to be set to true (value), then the active stage would be set to a stage ID (implicitValue).
+    if (implicitValue !== undefined) {
+      // Falsey value with an implicit value should be ignored (like an unchecked checkbox).
+      if (!value) {
+        continue;
+      }
+      // fields with implicit values are always changes to feature entities.
+      featureChanges[name] = implicitValue;
+    } else if (!stageId) {
+      // If the field doesn't specify a stage ID, that means this change is for a feature field.
+      featureChanges[name] = value;
+    } else {
+      if (!(stageId in stages)) {
+        stages[stageId] = {id: stageId};
+      }
+      stages[stageId][name] = value;
+    }
+    // If we see a touched field, it means there are changes in the submission.
+    hasChanges = true;
+  }
+
+  return {
+    featureChanges,
+    stages: Object.values(stages),
+    hasChanges,
+  };
+}
