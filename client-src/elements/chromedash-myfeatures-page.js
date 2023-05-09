@@ -1,6 +1,5 @@
 import {LitElement, css, html, nothing} from 'lit';
 import './chromedash-feature-table';
-import {openApprovalsDialog} from './chromedash-approvals-dialog';
 import {showToastMessage} from './utils.js';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
@@ -68,10 +67,6 @@ export class ChromedashMyFeaturesPage extends LitElement {
       });
   }
 
-  handleOpenApprovals(e) {
-    openApprovalsDialog(this.user, e.detail.feature);
-  }
-
   userCanApprove() {
     return this.user && (
       this.user.is_admin || this.user.approvable_gate_types?.length > 0);
@@ -90,7 +85,6 @@ export class ChromedashMyFeaturesPage extends LitElement {
           ?canEdit=${this.user && this.user.can_edit_all}
           .starredFeatures=${this.starredFeatures}
           @star-toggle-event=${this.handleStarToggle}
-          @open-approvals-event=${this.handleOpenApprovals}
           selectedGateId=${this.selectedGateId}
           num=25 columns=${columns}>
         </chromedash-feature-table>

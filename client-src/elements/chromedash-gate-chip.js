@@ -144,21 +144,13 @@ class ChromedashGateChip extends LitElement {
     this.dispatchEvent(event);
   }
 
-  openApprovalsDialog(e) {
-    if (!e.altKey) {
-      // Handled in chromedash-app.js.
-      this._fireEvent('show-gate-column', {
-        feature: this.feature,
-        stage: this.stage,
-        gate: this.gate,
-      });
-    } else {
-      // Handled in chromedash-myfeatures-page.js and chromedash-feature-page.
-      this._fireEvent('open-approvals-event', {
-        feature: this.feature,
-        gate: this.gate,
-      });
-    }
+  handleClick() {
+    // Handled in chromedash-app.js.
+    this._fireEvent('show-gate-column', {
+      feature: this.feature,
+      stage: this.stage,
+      gate: this.gate,
+    });
   }
 
   render() {
@@ -183,7 +175,7 @@ class ChromedashGateChip extends LitElement {
     return html`
       <sl-button pill size="small" class="${className} ${selected}"
         title="${teamName}: ${gateName}: ${stateName}"
-        @click=${this.openApprovalsDialog}
+        @click=${this.handleClick}
         >
         ${icon} <span class="teamname">${teamName}</span>
       </sl-button>

@@ -1,7 +1,6 @@
 import {LitElement, css, html, nothing} from 'lit';
 import './chromedash-feature-detail';
 import './chromedash-gantt';
-import {openApprovalsDialog} from './chromedash-approvals-dialog';
 import {autolink, renderHTMLIf, showToastMessage,
   renderAbsoluteDate, renderRelativeDate,
 } from './utils.js';
@@ -223,15 +222,6 @@ export class ChromedashFeaturePage extends LitElement {
     navigator.clipboard.writeText(url).then(() => {
       showToastMessage('Link copied');
     });
-  }
-
-  /* Open the specific approvals dialog when the user clicks on a gate chip. */
-  // TODO(jrobbins): Make it specific.
-  handleOpenApprovals(e) {
-    e.preventDefault();
-    // open old approvals dialog.
-    // TODO(jrobbins): Phase this out after approvals column is done.
-    openApprovalsDialog(this.user, e.detail.feature);
   }
 
   renderSkeletonSection() {
@@ -525,7 +515,6 @@ export class ChromedashFeaturePage extends LitElement {
         .process=${this.process}
         .dismissedCues=${this.dismissedCues}
         .rawQuery=${this.rawQuery}
-        @open-approvals-event=${this.handleOpenApprovals}
         selectedGateId=${this.selectedGateId}
        >
       </chromedash-feature-detail>
