@@ -47,7 +47,6 @@ import './elements/chromedash-all-features-page';
 import './elements/chromedash-activity-page';
 import './elements/chromedash-activity-log';
 import './elements/chromedash-app';
-import './elements/chromedash-approvals-dialog';
 import './elements/chromedash-banner';
 import './elements/chromedash-callout';
 import './elements/chromedash-color-status';

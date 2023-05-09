@@ -11,7 +11,6 @@ export class ChromedashEnterprisePage extends ChromedashAllFeaturesPage {
         ?canEdit=${this.user && this.user.can_edit_all}
         .starredFeatures=${this.starredFeatures}
         @star-toggle-event=${this.handleStarToggle}
-        @open-approvals-event=${this.handleOpenApprovals}
         num=100 alwaysOfferPagination columns="normal">
       </chromedash-feature-table>
     `;
