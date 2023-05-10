@@ -1,7 +1,7 @@
 import {LitElement, css, html, nothing} from 'lit';
 import '@polymer/iron-icon';
 import './chromedash-x-meter';
-import {SHARED_STYLES} from '../sass/shared-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 
 
 class ChromedashStackRank extends LitElement {

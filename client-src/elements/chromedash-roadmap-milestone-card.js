@@ -1,7 +1,7 @@
 import {LitElement, html, nothing} from 'lit';
 import {ref, createRef} from 'lit/directives/ref.js';
 import {ROADMAP_MILESTONE_CARD_CSS} from
-  '../sass/elements/chromedash-roadmap-milestone-card-css.js';
+  '../css/elements/chromedash-roadmap-milestone-card-css.js';
 
 const REMOVED_STATUS = ['Removed'];
 const DEPRECATED_STATUS = ['Deprecated', 'No longer pursuing'];

@@ -1,8 +1,8 @@
 import {LitElement, css, html} from 'lit';
 import {showToastMessage} from './utils.js';
-import {SHARED_STYLES} from '../sass/shared-css.js';
-import {VARS} from '../sass/_vars-css.js';
-import {LAYOUT_CSS} from '../sass/_layout-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
+import {VARS} from '../css/_vars-css.js';
+import {LAYOUT_CSS} from '../css/_layout-css.js';
 import './chromedash-admin-blink-component-listing';
 
 export class ChromedashAdminBlinkPage extends LitElement {
@@ -11,7 +11,7 @@ export class ChromedashAdminBlinkPage extends LitElement {
       SHARED_STYLES,
       VARS,
       LAYOUT_CSS,
-      css`      
+      css`
       body {
           scroll-behavior: smooth;
       }
@@ -208,4 +208,3 @@ export class ChromedashAdminBlinkPage extends LitElement {
 }
 
 customElements.define('chromedash-admin-blink-page', ChromedashAdminBlinkPage);
-

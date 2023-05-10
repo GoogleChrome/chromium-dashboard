@@ -4,7 +4,7 @@ import './chromedash-activity-log';
 import {showToastMessage,
 } from './utils.js';
 
-import {SHARED_STYLES} from '../sass/shared-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 
 
 export class ChromedashActivityPage extends LitElement {

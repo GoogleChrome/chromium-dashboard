@@ -26,7 +26,7 @@ import './chromedash-activity-log';
 import './chromedash-callout';
 import './chromedash-gate-chip';
 import {autolink, findProcessStage, flattenSections} from './utils.js';
-import {SHARED_STYLES} from '../sass/shared-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 
 export const DETAILS_STYLES = [css`
       sl-details {

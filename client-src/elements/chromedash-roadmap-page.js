@@ -1,7 +1,7 @@
 import {LitElement, css, html} from 'lit';
 import {ref, createRef} from 'lit/directives/ref.js';
 import './chromedash-roadmap';
-import {SHARED_STYLES} from '../sass/shared-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 
 
 export class ChromedashRoadmapPage extends LitElement {

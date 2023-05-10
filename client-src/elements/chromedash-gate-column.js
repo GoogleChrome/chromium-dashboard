@@ -10,7 +10,7 @@ import {autolink, showToastMessage, findProcessStage,
 } from './utils.js';
 import {GATE_QUESTIONNAIRES} from './form-definition.js';
 
-import {SHARED_STYLES} from '../sass/shared-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 
 
 export const PREPARING = 0;

@@ -2,7 +2,7 @@ import {LitElement, css, html, nothing} from 'lit';
 import {ref, createRef} from 'lit/directives/ref.js';
 import {showToastMessage, parseRawQuery, updateURLParams} from './utils';
 import page from 'page';
-import {SHARED_STYLES} from '../sass/shared-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 
 class ChromedashApp extends LitElement {
   gateColumnRef = createRef();

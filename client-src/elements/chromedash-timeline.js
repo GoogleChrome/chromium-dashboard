@@ -1,6 +1,6 @@
 import {LitElement, css, html} from 'lit';
 import {showToastMessage} from './utils.js';
-import {SHARED_STYLES} from '../sass/shared-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 
 
 class ChromedashTimeline extends LitElement {

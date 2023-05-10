@@ -2,8 +2,8 @@ import {LitElement, css, html} from 'lit';
 import './chromedash-guide-metadata';
 import './chromedash-process-overview';
 import {showToastMessage} from './utils.js';
-import {SHARED_STYLES} from '../sass/shared-css.js';
-import {FORM_STYLES} from '../sass/forms-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
+import {FORM_STYLES} from '../css/forms-css.js';
 
 
 export class ChromedashGuideEditPage extends LitElement {
