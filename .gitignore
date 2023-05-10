@@ -18,7 +18,7 @@ env_vars.yaml
 node_modules
 
 # Generated files
-static/css/
+# static/css/
 static/dist/
 static/js/
 

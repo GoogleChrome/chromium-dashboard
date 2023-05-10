@@ -1,0 +1,50 @@
+/* App specific */
+/* ----- */
+#content {
+  flex-direction: column;
+  counter-reset: h3;
+  height: auto;
+}
+#content section {
+  max-width: 600px;
+  flex: 1 0 auto;
+  margin-bottom: 15px;
+}
+#content section > div {
+  background: white;
+  border: 1px solid #ddd;
+  box-shadow: rgba(0, 0, 0, 0.067) 1px 1px 4px;
+  padding: 12px;
+  margin: 8px 0 16px 0;
+}
+#content section > p {
+  color: #444;
+}
+#content h3 {
+  margin-bottom: 10px;
+}
+#content h3:before {
+  counter-increment: h3;
+  content: counter(h3) ".";
+  margin-right: 5px;
+}
+
+.subject {
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.email .help {
+  font-style: italic;
+  color: #aaa;
+}
+.email h4 {
+  font-weight: 600;
+}
+
+.alertbox {
+  margin: 2em;
+  padding: 1em;
+  background: var(--warning-background);
+  color: var(--warning-color);
+}
