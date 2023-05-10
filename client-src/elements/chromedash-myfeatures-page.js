@@ -93,6 +93,7 @@ export class ChromedashMyFeaturesPage extends LitElement {
   }
 
   renderPendingAndRecentApprovals() {
+    // Use feature_type>=0 to include all types, even enterprise.
     const pendingBox = this.renderBox(
       'Features pending my approval',
       'pending-approval-by:me feature_type>=0',
