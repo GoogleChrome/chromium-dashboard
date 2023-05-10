@@ -65,11 +65,13 @@ describe('chromedash-myfeatures-page', () => {
 
     // "Features I can edit" sl-details exists and has a correct query
     assert.exists(featureICanEdit);
-    assert.include(featureICanEdit.innerHTML, 'query="can_edit:me"');
+    assert.include(
+      featureICanEdit.innerHTML, 'query="can_edit:me feature_type>=0"');
 
     // Features I starred sl-details exists and has a correct query
     assert.exists(featureIStarred);
-    assert.include(featureIStarred.innerHTML, 'query="starred-by:me"');
+    assert.include(
+      featureIStarred.innerHTML, 'query="starred-by:me feature_type>=0"');
   });
 
   it('user has approval permission', async () => {
@@ -103,18 +105,24 @@ describe('chromedash-myfeatures-page', () => {
 
     // "Recently reviewed features" exists and has a correct query
     assert.exists(pendingReview);
-    assert.include(pendingReview.innerHTML, 'query="pending-approval-by:me"');
+    assert.include(
+      pendingReview.innerHTML,
+      'query="pending-approval-by:me feature_type>=0"');
 
     // "Features pending my approval" exists and has a correct query
     assert.exists(recentReview);
-    assert.include(recentReview.innerHTML, 'query="is:recently-reviewed"');
+    assert.include(
+      recentReview.innerHTML,
+      'query="is:recently-reviewed feature_type>=0"');
 
     // "Features I can edit" sl-details exists and has a correct query
     assert.exists(featureICanEdit);
-    assert.include(featureICanEdit.innerHTML, 'query="can_edit:me"');
+    assert.include(
+      featureICanEdit.innerHTML, 'query="can_edit:me feature_type>=0"');
 
     // "Features I starred" sl-details exists and has a correct query
     assert.exists(featureIStarred);
-    assert.include(featureIStarred.innerHTML, 'query="starred-by:me"');
+    assert.include(
+      featureIStarred.innerHTML, 'query="starred-by:me feature_type>=0"');
   });
 });
