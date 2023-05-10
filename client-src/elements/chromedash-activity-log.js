@@ -3,7 +3,7 @@ import {autolink, renderAbsoluteDate, renderRelativeDate,
 } from './utils.js';
 import '@polymer/iron-icon';
 
-import {SHARED_STYLES} from '../sass/shared-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 
 
 export class ChromedashAmendment extends LitElement {

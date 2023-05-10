@@ -1,5 +1,5 @@
 import {LitElement, css, html, nothing} from 'lit';
-import {SHARED_STYLES} from '../sass/shared-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 import {
   STAGE_TYPES_DEV_TRIAL,
   STAGE_TYPES_ORIGIN_TRIAL,

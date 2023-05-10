@@ -15,8 +15,8 @@ import {
   FORMS_BY_STAGE_TYPE,
   FLAT_TRIAL_EXTENSION_FIELDS,
 } from './form-definition';
-import {SHARED_STYLES} from '../sass/shared-css.js';
-import {FORM_STYLES} from '../sass/forms-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
+import {FORM_STYLES} from '../css/forms-css.js';
 import {STAGE_SHORT_NAMES, STAGE_SPECIFIC_FIELDS} from './form-field-enums.js';
 import {openAddStageDialog} from './chromedash-add-stage-dialog';
 

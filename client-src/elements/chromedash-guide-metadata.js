@@ -8,8 +8,8 @@ import {
   formatFeatureForEdit,
   FLAT_ENTERPRISE_METADATA_FIELDS,
   FLAT_METADATA_FIELDS} from './form-definition';
-import {SHARED_STYLES} from '../sass/shared-css.js';
-import {FORM_STYLES} from '../sass/forms-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
+import {FORM_STYLES} from '../css/forms-css.js';
 
 
 export class ChromedashGuideMetadata extends LitElement {
@@ -142,7 +142,7 @@ export class ChromedashGuideMetadata extends LitElement {
                 `}
               </td>
             </tr>
-            
+
             <tr>
               <th>Categories</th>
               <td>${this.feature.enterprise_feature_categories.map(id =>

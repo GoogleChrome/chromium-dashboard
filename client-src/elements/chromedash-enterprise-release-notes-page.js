@@ -1,5 +1,5 @@
 import {html, LitElement, css} from 'lit';
-import {SHARED_STYLES} from '../sass/shared-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 import {
   ENTERPRISE_FEATURE_CATEGORIES,
   PLATFORMS_DISPLAYNAME,
@@ -66,7 +66,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       th {
         background-color: var(--table-header-background);
       }
-    
+
       table, th, td {
         border: var(--table-divider);
       }
@@ -74,7 +74,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       table th, .bold {
         font-weight: bold;
       }
-  
+
       table th, table td {
         padding: 16px 32px;
         vertical-align: top;
@@ -100,11 +100,11 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         font-style: italic;
         font-weight: bold;
       }
-  
+
       td:not(:first-child), th:not(:first-child) {
         text-align: center;
       }
-      
+
       .screenshots {
         display: flex;
       }

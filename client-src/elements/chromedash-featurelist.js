@@ -1,7 +1,7 @@
 import {LitElement, html} from 'lit';
 // eslint-disable-next-line no-unused-vars
 import './chromedash-feature';
-import {FEATURELIST_CSS} from '../sass/elements/chromedash-featurelist-css.js';
+import {FEATURELIST_CSS} from '../css/elements/chromedash-featurelist-css.js';
 
 const MAX_FEATURES_SHOWN = 500;
 

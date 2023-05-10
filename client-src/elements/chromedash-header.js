@@ -1,6 +1,6 @@
 import {LitElement, html, css, nothing} from 'lit';
 import {showToastMessage} from './utils';
-import {SHARED_STYLES} from '../sass/shared-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 
 
 export class ChromedashHeader extends LitElement {

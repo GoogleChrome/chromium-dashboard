@@ -1,7 +1,7 @@
 import {LitElement, css, html, nothing} from 'lit';
 import './chromedash-feature-table';
 import {showToastMessage} from './utils.js';
-import {SHARED_STYLES} from '../sass/shared-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 
 
 export class ChromedashMyFeaturesPage extends LitElement {

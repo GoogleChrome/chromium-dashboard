@@ -157,7 +157,8 @@ gulp.task('js', () => {
 // Clean generated files
 gulp.task('clean', () => {
   return deleteAsync([
-    'static/css/',
+    // Disabled as part of removing sass/scss.
+    // 'static/css/',
     'static/dist',
     'static/js/',
   ], {dot: true});
@@ -166,8 +167,8 @@ gulp.task('clean', () => {
 
 // Build production files, the default task
 gulp.task('default', gulp.series(
+  'clean',
   // Incrementally removing sass/scss.
-  // 'clean',
   // 'styles',
   'css',
   'js',
@@ -184,11 +185,13 @@ gulp.task('watch', gulp.series(
     gulp.watch([
       'client-src/js-src/**/*.js',
       'client-src/elements/*.js',
+      'client-src/elements/css/**/*.js',
       'client-src/contexts/*.js',
     ], gulp.series(['lint', 'js']));
     gulp.watch([
       'client-src/components.js',
       'client-src/elements/*.js',
+      'client-src/elements/css/**/*.js',
       'client-src/contexts/*.js',
     ], gulp.series(['rollup']));
   },

@@ -1,7 +1,7 @@
 import {html, css, LitElement} from 'lit';
-import {SHARED_STYLES} from '../sass/shared-css.js';
-import {VARS} from '../sass/_vars-css.js';
-import {LAYOUT_CSS} from '../sass/_layout-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
+import {VARS} from '../css/_vars-css.js';
+import {LAYOUT_CSS} from '../css/_layout-css.js';
 
 export class ChromedashAdminBlinkComponentListing extends LitElement {
   static get styles() {
@@ -242,11 +242,10 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
           <button @click="${this._removeUser}" class="remove_owner_button"
                   data-component-name="${this.name}">Remove</button>
         </div>
-      </div>    
+      </div>
     `;
   }
 }
 
 customElements.define(
   'chromedash-admin-blink-component-listing', ChromedashAdminBlinkComponentListing);
-
