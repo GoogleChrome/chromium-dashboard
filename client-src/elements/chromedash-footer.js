@@ -1,5 +1,5 @@
 import {LitElement, html, css} from 'lit';
-import {SHARED_STYLES} from '../sass/shared-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 
 
 export class ChromedashFooter extends LitElement {
@@ -40,7 +40,7 @@ export class ChromedashFooter extends LitElement {
           #footer-spacer {
             display: block;
           }
-        } 
+        }
     `];
   }
 

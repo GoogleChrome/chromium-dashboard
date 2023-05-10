@@ -13,8 +13,8 @@ import {
   FORMS_BY_STAGE_TYPE} from './form-definition';
 import {IMPLEMENTATION_STATUS, STAGE_SPECIFIC_FIELDS} from './form-field-enums';
 import {ALL_FIELDS} from './form-field-specs';
-import {SHARED_STYLES} from '../sass/shared-css.js';
-import {FORM_STYLES} from '../sass/forms-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
+import {FORM_STYLES} from '../css/forms-css.js';
 
 
 export class ChromedashGuideStagePage extends LitElement {

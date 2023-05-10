@@ -1,6 +1,6 @@
 import {LitElement, css, html} from 'lit';
 
-import {SHARED_STYLES} from '../sass/shared-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 
 const CYAN = 120;
 const DEFAULT_MAX = 7;

@@ -1,7 +1,7 @@
 import {LitElement, css, html, nothing} from 'lit';
 import './chromedash-callout';
 import {findFirstFeatureStage} from './utils';
-import {SHARED_STYLES} from '../sass/shared-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 
 
 let preflightDialogEl;

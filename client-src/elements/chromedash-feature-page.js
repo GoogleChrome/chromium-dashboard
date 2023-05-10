@@ -4,7 +4,7 @@ import './chromedash-gantt';
 import {autolink, renderHTMLIf, showToastMessage,
   renderAbsoluteDate, renderRelativeDate,
 } from './utils.js';
-import {SHARED_STYLES} from '../sass/shared-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 import {DETAILS_STYLES} from './chromedash-feature-detail';
 
 const INACTIVE_STATES = [

@@ -5,7 +5,7 @@ import {
   somePendingPrereqs,
 } from './chromedash-preflight-dialog';
 import {findProcessStage} from './utils';
-import {SHARED_STYLES} from '../sass/shared-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 
 export class ChromedashProcessOverview extends LitElement {
   static get properties() {

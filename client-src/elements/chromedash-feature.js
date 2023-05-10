@@ -4,8 +4,8 @@ import {autolink} from './utils.js';
 import '@polymer/iron-icon';
 import './chromedash-color-status';
 
-import {FEATURE_CSS} from '../sass/elements/chromedash-feature-css.js';
-import {SHARED_STYLES} from '../sass/shared-css.js';
+import {FEATURE_CSS} from '../css/elements/chromedash-feature-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 
 const MAX_STANDARDS_VAL = 5;
 const MAX_VENDOR_VIEW = 7;

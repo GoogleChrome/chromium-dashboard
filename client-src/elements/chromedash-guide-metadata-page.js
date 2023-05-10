@@ -8,8 +8,8 @@ import {
   FLAT_ENTERPRISE_METADATA_FIELDS,
   formatFeatureForEdit} from './form-definition';
 import {ALL_FIELDS} from './form-field-specs';
-import {SHARED_STYLES} from '../sass/shared-css.js';
-import {FORM_STYLES} from '../sass/forms-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
+import {FORM_STYLES} from '../css/forms-css.js';
 
 
 export class ChromedashGuideMetadataPage extends LitElement {
