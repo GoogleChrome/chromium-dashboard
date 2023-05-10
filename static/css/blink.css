@@ -1,0 +1,123 @@
+/* App specific */
+/* ----- */
+.layout {
+  display: flex;
+}
+
+.layout.wrap {
+  flex-wrap: wrap;
+}
+
+.layout.center {
+  align-items: center;
+}
+
+.layout.center-center {
+  align-items: center;
+  justify-content: center;
+}
+
+.layout.vertical {
+  flex-direction: column;
+}
+
+body {
+  scroll-behavior: smooth;
+}
+
+#spinner {
+  display: none !important;
+}
+
+#subheader .subheader_toggles {
+  display: flex !important;
+  justify-content: flex-end;
+  flex: 1 0 auto;
+}
+#subheader ul {
+  list-style-type: none;
+  margin-left: 16px;
+}
+#subheader ul li {
+  text-align: center;
+  border-radius: 3px;
+  box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.065);
+  padding: 0.5em;
+  background: #366597;
+  color: #fff;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+#subheader ul li a {
+  color: inherit;
+  text-decoration: none;
+}
+#subheader .view_owners_linke {
+  margin-left: 16px;
+}
+
+#components_list {
+  list-style: none;
+  margin-bottom: 64px;
+}
+#components_list.editing .owners_list_add_remove {
+  opacity: 1;
+  pointer-events: all;
+}
+#components_list.editing .owners_list select[multiple] {
+  background-color: #fff;
+  border-color: transparent;
+}
+#components_list.editing .owners_list select[multiple] option {
+  padding-left: 4px;
+}
+#components_list li {
+  padding: 16px 0;
+}
+#components_list .component_name {
+  flex: 1 0 130px;
+  margin-right: 16px;
+}
+#components_list .component_name h3 {
+  color: initial;
+  padding-top: 4px;
+}
+
+.column_header {
+  margin-bottom: 8px;
+}
+
+.owners_list {
+  flex: 1 0 auto;
+}
+
+.component_owner {
+  font-weight: 600;
+}
+
+.owners_list_add_remove {
+  margin-left: 8px;
+  opacity: 0;
+  transition: 200ms opacity cubic-bezier(0, 0, 0.2, 1);
+  pointer-events: none;
+}
+.owners_list_add_remove button[disabled] {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.remove_owner_button {
+  color: darkred;
+}
+
+select[multiple] {
+  min-width: 275px;
+  background-color: #eee;
+  border: none;
+  transition: 200ms background-color cubic-bezier(0, 0, 0.2, 1);
+  font-size: inherit;
+}
+select[multiple]:disabled option {
+  color: initial;
+  padding: 4px 0;
+}

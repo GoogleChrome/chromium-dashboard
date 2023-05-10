@@ -314,11 +314,11 @@ describe('chromedash-feature-page', () => {
         assert.include(stages[1].textContent, 'fake rollout details 101');
 
         const screenshots = [...features[0].querySelectorAll('.screenshots img')];
-        assert.lengthOf(screenshots, 2)
-        assert.equal(screenshots[0].src, 'https://example.com/screenshot1')
-        assert.equal(screenshots[0].alt, `Feature screenshot 1`)
-        assert.equal(screenshots[1].src, 'https://example.com/screenshot2')
-        assert.equal(screenshots[1].alt, `Feature screenshot 2`)
+        assert.lengthOf(screenshots, 2);
+        assert.equal(screenshots[0].src, 'https://example.com/screenshot1');
+        assert.equal(screenshots[0].alt, `Feature screenshot 1`);
+        assert.equal(screenshots[1].src, 'https://example.com/screenshot2');
+        assert.equal(screenshots[1].alt, `Feature screenshot 2`);
       }
 
       // Test feature 2
@@ -338,9 +338,9 @@ describe('chromedash-feature-page', () => {
         assert.include(stages[0].textContent, 'fake rollout details 100');
 
         const screenshots = [...features[1].querySelectorAll('.screenshots img')];
-        assert.lengthOf(screenshots, 1)
-        assert.equal(screenshots[0].src, 'https://example.com/screenshot1')
-        assert.equal(screenshots[0].alt, `Feature screenshot 1`)
+        assert.lengthOf(screenshots, 1);
+        assert.equal(screenshots[0].src, 'https://example.com/screenshot1');
+        assert.equal(screenshots[0].alt, `Feature screenshot 1`);
       }
     }
 
@@ -390,9 +390,9 @@ describe('chromedash-feature-page', () => {
         assert.include(stages[1].textContent, 'fake rollout details 1000');
 
         const screenshots = [...features[1].querySelectorAll('.screenshots img')];
-        assert.lengthOf(screenshots, 1)
-        assert.equal(screenshots[0].src, 'https://example.com/screenshot1')
-        assert.equal(screenshots[0].alt, `Feature screenshot 1`)
+        assert.lengthOf(screenshots, 1);
+        assert.equal(screenshots[0].src, 'https://example.com/screenshot1');
+        assert.equal(screenshots[0].alt, `Feature screenshot 1`);
       }
     }
   });

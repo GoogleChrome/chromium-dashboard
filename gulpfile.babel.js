@@ -67,6 +67,7 @@ gulp.task('lint-fix', () => {
 });
 
 // Compile and automatically prefix stylesheets
+// This task is deprecated. Use css directly.
 gulp.task('styles', () => {
   const AUTOPREFIXER_BROWSERS = [
     'last 1 version',
@@ -78,7 +79,6 @@ gulp.task('styles', () => {
     'client-src/sass/**/*.scss'
   ])
     .pipe(sass({
-      outputStyle: 'compressed',
       precision: 10
     }).on('error', sass.logError))
     .pipe(autoPrefixer(AUTOPREFIXER_BROWSERS))
@@ -166,8 +166,9 @@ gulp.task('clean', () => {
 
 // Build production files, the default task
 gulp.task('default', gulp.series(
-  'clean',
-  'styles',
+  // Incrementally removing sass/scss.
+  // 'clean',
+  // 'styles',
   'css',
   'js',
   'lint-fix',
