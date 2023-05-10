@@ -309,6 +309,26 @@ export class ChromedashFeaturePage extends LitElement {
     `;
   }
 
+  renderWarnings() {
+    if (this.feature.deleted) {
+      return html`
+        <div id="deleted" class="warning">
+          This feature is marked as deleted.  It does not appear in
+          feature lists and is only viewable by users who can edit it.
+        </div>
+      `;
+    }
+    if (this.feature.unlisted) {
+      return html`
+        <div id="access" class="warning">
+          This feature is only shown in the feature list
+          to users with access to edit this feature.
+        </div>
+      `;
+    }
+    return nothing;
+  }
+
   renderEnterpriseFeatureContent() {
     return html`
       ${this.feature.summary ? html`
@@ -321,13 +341,6 @@ export class ChromedashFeaturePage extends LitElement {
 
   renderFeatureContent() {
     return html`
-      ${this.feature.unlisted ? html`
-        <section id="access">
-        <p><b>This feature is only shown in the feature list
-        to users with access to edit this feature.</b></p>
-        </section>
-      `: nothing}
-
       ${this.feature.summary ? html`
         <section id="summary">
           <p class="preformatted">${autolink(this.feature.summary)}</p>
@@ -393,7 +406,6 @@ export class ChromedashFeaturePage extends LitElement {
     `: nothing}
     `;
   }
-
 
   renderFeatureStatus() {
     return html`
@@ -535,6 +547,7 @@ export class ChromedashFeaturePage extends LitElement {
     // At this point, the feature has loaded successfully, render the components.
     return html`
       ${this.renderSubHeader()}
+      ${this.renderWarnings()}
       <sl-details summary="Overview"
         ?open=${true}
       >

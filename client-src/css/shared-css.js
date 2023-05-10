@@ -137,6 +137,13 @@ export const SHARED_STYLES = [
     white-space: pre-wrap;
   }
 
+  .warning {
+    margin: var(--content-padding);
+    padding: var(--content-padding);
+    background: var(--warning-background);
+    color: var(--warning-color);
+  }
+
   #breadcrumbs a {
     text-decoration: none;
     color: inherit;

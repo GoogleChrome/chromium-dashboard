@@ -117,7 +117,7 @@ class FeaturesAPI(basehandlers.APIHandler):
     # Only fields with defined data types are allowed.
     if field not in self.FIELD_DATA_TYPES_CREATE:
       self.abort(400, msg=f'Field "{field}" data format not found.')
-    
+
     field_type = self.FIELD_DATA_TYPES_CREATE[field]
 
     # If the field is empty, no need to format.
@@ -141,6 +141,9 @@ class FeaturesAPI(basehandlers.APIHandler):
   def get_one_feature(self, feature_id: int) -> VerboseFeatureDict:
     feature = FeatureEntry.get_by_id(feature_id)
     if not feature:
+      self.abort(404, msg='Feature %r not found' % feature_id)
+    user = users.get_current_user()
+    if feature.deleted and not permissions.can_edit_feature(user, feature_id):
       self.abort(404, msg='Feature %r not found' % feature_id)
     return converters.feature_entry_to_json_verbose(feature)
 

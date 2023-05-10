@@ -382,12 +382,29 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     self.assertEqual('feature one', actual['name'])
 
   def test_get__specific_id__not_found(self):
-    """We give 404 if the feature requested feature was not found."""
+    """We give 404 if the requested feature was not found."""
     request_path = self.request_path + '/999'
     with test_app.test_request_context(request_path):
       with self.assertRaises(werkzeug.exceptions.NotFound):
         self.handler.do_get(feature_id=999)
-  
+
+  def test_get__specific_id__deleted(self):
+    """We give 404 if the requested feature was deleted, unless can dit."""
+    self.feature_1.deleted = True
+    self.feature_1.put()
+
+    testing_config.sign_out()
+    request_path = self.request_path + '/' + str(self.feature_1_id)
+    with test_app.test_request_context(request_path):
+      with self.assertRaises(werkzeug.exceptions.NotFound):
+        self.handler.do_get(feature_id=999)
+
+    # Signed-in user with permissions
+    testing_config.sign_in('admin@example.com', 123567890)
+    with test_app.test_request_context(request_path):
+      actual = self.handler.do_get(feature_id=self.feature_1_id)
+    self.assertEqual('feature one', actual['name'])
+
   def test_patch__valid(self):
     """PATCH request successful with valid input from user with permissions."""
     # Signed-in user with permissions
@@ -436,7 +453,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     with test_app.test_request_context(request_path, json=invalid_request_body):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_patch(feature_id=self.feature_1_id)
-  
+
   def test_patch__immutable_fields(self):
     """PATCH request fails with 400 when immutable field change is attempted."""
     # Signed-in user with permissions
@@ -482,7 +499,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         FeatureEntry.get_by_id(response['feature_id']))
     self.assertIsNotNone(new_feature)
 
-    # New feature's values should match fields in JSON body. 
+    # New feature's values should match fields in JSON body.
     for field, value in valid_request_body.items():
       self.assertEqual(getattr(new_feature, field), value)
     # User's email should match creator_email field.
@@ -556,7 +573,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     with test_app.test_request_context(request_path, json=invalid_request_body):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post()
-  
+
   def test_post__immutable_fields(self):
     """POST request fails with 400 when immutable field is provided."""
     # Signed-in user with permissions
