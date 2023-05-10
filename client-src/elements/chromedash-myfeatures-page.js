@@ -93,23 +93,30 @@ export class ChromedashMyFeaturesPage extends LitElement {
   }
 
   renderPendingAndRecentApprovals() {
+    // Use feature_type>=0 to include all types, even enterprise.
     const pendingBox = this.renderBox(
-      'Features pending my approval', 'pending-approval-by:me', 'approvals',
-      'gate.requested_on');
+      'Features pending my approval',
+      'pending-approval-by:me feature_type>=0',
+      'approvals', 'gate.requested_on');
     const recentBox = this.renderBox(
-      'Recently reviewed features', 'is:recently-reviewed', 'normal',
-      '-gate.reviewed_on', false);
+      'Recently reviewed features',
+      'is:recently-reviewed feature_type>=0',
+      'normal', '-gate.reviewed_on', false);
     return [pendingBox, recentBox];
   }
 
   renderIStarred() {
     return this.renderBox(
-      'Features I starred', 'starred-by:me', 'normal');
+      'Features I starred',
+      'starred-by:me feature_type>=0',
+      'normal');
   }
 
   renderICanEdit() {
     return this.renderBox(
-      'Features I can edit', 'can_edit:me', 'normal');
+      'Features I can edit',
+      'can_edit:me feature_type>=0',
+      'normal');
   }
 
   render() {
