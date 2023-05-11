@@ -1,5 +1,5 @@
 import {LitElement, css, html, nothing} from 'lit';
-import {getStageValue} from './utils';
+import {getStageValue, renderHTMLIf} from './utils';
 import {openAddStageDialog} from './chromedash-add-stage-dialog';
 import {makeDisplaySpecs} from './form-field-specs';
 import {
@@ -173,6 +173,11 @@ class ChromedashFeatureDetail extends LitElement {
         box-shadow: var(--spot-card-box-shadow);
       }
 
+      .enterprise-help-text > *, .enterprise-help-text li {
+        margin: revert;
+        padding: revert;
+        list-style: revert;
+      }
     `];
   }
 
@@ -634,6 +639,23 @@ class ChromedashFeatureDetail extends LitElement {
         <span>Development stages</span>
         ${this.renderControls()}
       </h2>
+      ${renderHTMLIf(this.feature.is_enterprise_feature, html`
+        <section class="enterprise-help-text">
+          <p>The enterprise release notes focus on changes to the stable channel.
+          Please add a stage for each milestone where something is changing on the stable channel.
+          For finch rollouts, use the milestone where the rollout starts.
+          </p>
+          <p>
+            For example, you may only have a single stage where you roll out to 100% of users on milestone N.
+          </p>
+          <p>A more complex example might look like this:</p>
+          <ul>
+            <li>On milestone N-1, you introduce a flag for early testing of an upcoming change, or start a deprecation origin trial</li>
+            <li>On milestone N, you start a finch rollout of a feature at 1% and introduce an enterprise policy for it</li>
+            <li>On milestone N+3, you remove the enterprise policy</li>
+          </ul>
+        </section>
+      `)}
       ${this.feature.stages.map(feStage => this.renderProcessStage(feStage))}
       ${this.renderAddStageButton()}
     `;

@@ -588,6 +588,14 @@ def get_spa_template_data(handler_obj, defaults):
     if not user or not permissions.can_admin_site(user):
       handler_obj.abort(403, msg='Cannot perform admin actions')
 
+  # Validate the user has a google or chromium account and redirect if needed.
+  if defaults.get('require_google_or_chromium_account'):
+    user = handler_obj.get_current_user()
+    # Should have already done the require_signin check.
+    # If for reason, we don't let's treat it as the main 403 case.
+    if not user or not permissions.is_google_or_chromium_account(user):
+      handler_obj.abort(403, msg='You cannot access this page')
+
   return {} # no handler_data needed to be returned
 
 

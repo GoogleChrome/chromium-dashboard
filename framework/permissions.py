@@ -35,6 +35,12 @@ def can_admin_site(user: User) -> bool:
 
   return False
 
+def is_google_or_chromium_account(user: User) -> bool:
+  """Return True if the current uses a @chromium.org or @google.com email."""
+  # A user is an admin if they have an AppUser entity that has is_admin set.
+  if user:
+    return user.email().endswith(('@chromium.org', '@google.com'))
+  return False
 
 def can_view_feature(unused_user, unused_feature) -> bool:
   """Return True if the user is allowed to view the given feature."""
