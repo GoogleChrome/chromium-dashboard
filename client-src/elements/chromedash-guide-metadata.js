@@ -158,6 +158,26 @@ export class ChromedashGuideMetadata extends LitElement {
     `;
   }
 
+  renderWarnings() {
+    if (this.feature.deleted) {
+      return html`
+        <div id="deleted" class="warning">
+          This feature is marked as deleted.  It does not appear in
+          feature lists and is only viewable by users who can edit it.
+        </div>
+      `;
+    }
+    if (this.feature.unlisted) {
+      return html`
+        <div id="access" class="warning">
+          This feature is only shown in the feature list
+          to users with access to edit this feature.
+        </div>
+      `;
+    }
+    return nothing;
+  }
+
   renderReadOnlyTable() {
     return html`
       <div id="metadata-readonly">
@@ -173,13 +193,6 @@ export class ChromedashGuideMetadata extends LitElement {
           </div>
           <div>${autolink(this.feature.summary)}</div>
         </div>
-
-        ${this.feature.unlisted ? html`
-          <div style="padding: 8px">
-            This feature is only shown in the feature list
-            to users with access to edit this feature.
-          </div>
-        `: nothing}
 
         <div class="flex-cols">
           <table class="property-sheet">
@@ -333,6 +346,7 @@ export class ChromedashGuideMetadata extends LitElement {
 
   render() {
     return html`
+      ${this.renderWarnings()}
       <section id="metadata">
         ${this.editing ?
           this.renderEditForm() :this.feature.is_enterprise_feature ?
