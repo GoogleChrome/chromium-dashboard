@@ -23,84 +23,120 @@ from framework import permissions
 from framework import rediscache
 from framework import users
 from internals.core_enums import *
-from internals.core_models import FeatureEntry, Stage
+from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate
 from internals.data_types import VerboseFeatureDict
 from internals import feature_helpers
 from internals import search
 import settings
 
+
+# Data type for lists defining field data type information.
+FIELD_INFO_DATA_TYPE = list[tuple[str, str]]
+
+
 class FeaturesAPI(basehandlers.APIHandler):
   """Features are the the main records that we track."""
 
+  ############################
+  ###### Mutable Fields ######
+  ############################
   # Dictionary with fields that can be edited on feature creation
   # and their data types.
   # Field name, data type
-  FIELD_DATA_TYPES_CREATE: dict[str, str] = {
-    'activation_risks': 'str',
-    'adoption_expectation': 'str',
-    'adoption_plan': 'str',
-    'all_platforms': 'bool',
-    'all_platforms_descr': 'str',
-    'anticipated_spec_changes': 'str',
-    'api_spec': 'bool',
-    'availability_expectation': 'str',
-    'blink_components': 'list',
-    'breaking_change': 'bool',
-    'bug_url': 'str',
-    'category': 'int',
-    'cc_emails': 'list',
-    'comments': 'str',
-    'debuggability': 'str',
-    'devrel': 'list',
-    'devtrial_instructions': 'str',
-    'doc_links': 'list',
-    'editors_emails': 'list',
-    'enterprise_feature_categories': 'list',
-    'ergonomics_risks': 'str',
-    'explainer_links': 'list',
-    'feature_type': 'int',
-    'ff_views': 'int',
-    'ff_views_link': 'str',
-    'ff_views_notes': 'str',
-    'flag_name': 'str',
-    'impl_status_chrome': 'int',
-    'initial_public_proposal_url': 'str',
-    'intent_stage': 'int',
-    'interop_compat_risks': 'str',
-    'launch_bug_url': 'str',
-    'screenshot_links': 'list',
-    'measurement': 'str',
-    'motivation': 'str',
-    'name': 'str',
-    'non_oss_deps': 'str',
-    'ongoing_constraints': 'str',
-    'other_views_notes': 'str',
-    'owner_emails': 'list',
-    'prefixed': 'bool',
-    'privacy_review_status': 'int',
-    'requires_embedder_support': 'bool',
-    'safari_views': 'int',
-    'safari_views_link': 'str',
-    'safari_views_notes': 'str',
-    'sample_links': 'list',
-    'search_tags': 'list',
-    'security_review_status': 'int',
-    'security_risks': 'str',
-    'spec_link': 'str',
-    'spec_mentors': 'list',
-    'standard_maturity': 'int',
-    'summary': 'str',
-    'tag_review': 'str',
-    'tag_review_status': 'int',
-    'unlisted': 'bool',
-    'web_dev_views': 'int',
-    'web_dev_views_link': 'str',
-    'web_dev_views_notes': 'str',
-    'webview_risks': 'str',
-    'wpt': 'bool',
-    'wpt_descr': 'str',
-  }
+  FEATURE_FIELD_DATA_TYPES: FIELD_INFO_DATA_TYPE = [
+    ('activation_risks', 'str'),
+    ('adoption_expectation', 'str'),
+    ('adoption_plan', 'str'),
+    ('all_platforms', 'bool'),
+    ('all_platforms_descr', 'str'),
+    ('anticipated_spec_changes', 'str'),
+    ('api_spec', 'bool'),
+    ('availability_expectation', 'str'),
+    ('blink_components', 'list'),
+    ('breaking_change', 'bool'),
+    ('bug_url', 'str'),
+    ('category', 'int'),
+    ('cc_emails', 'list'),
+    ('comments', 'str'),
+    ('debuggability', 'str'),
+    ('devrel', 'list'),
+    ('devtrial_instructions', 'str'),
+    ('doc_links', 'list'),
+    ('editors_emails', 'list'),
+    ('enterprise_feature_categories', 'list'),
+    ('ergonomics_risks', 'str'),
+    ('explainer_links', 'list'),
+    ('feature_type', 'int'),
+    ('ff_views', 'int'),
+    ('ff_views_link', 'str'),
+    ('ff_views_notes', 'str'),
+    ('flag_name', 'str'),
+    ('impl_status_chrome', 'int'),
+    ('initial_public_proposal_url', 'str'),
+    ('intent_stage', 'int'),
+    ('interop_compat_risks', 'str'),
+    ('launch_bug_url', 'str'),
+    ('screenshot_links', 'list'),
+    ('measurement', 'str'),
+    ('motivation', 'str'),
+    ('name', 'str'),
+    ('non_oss_deps', 'str'),
+    ('ongoing_constraints', 'str'),
+    ('other_views_notes', 'str'),
+    ('owner_emails', 'list'),
+    ('prefixed', 'bool'),
+    ('privacy_review_status', 'int'),
+    ('requires_embedder_support', 'bool'),
+    ('safari_views', 'int'),
+    ('safari_views_link', 'str'),
+    ('safari_views_notes', 'str'),
+    ('sample_links', 'list'),
+    ('search_tags', 'list'),
+    ('security_review_status', 'int'),
+    ('security_risks', 'str'),
+    ('spec_link', 'str'),
+    ('spec_mentors', 'list'),
+    ('standard_maturity', 'int'),
+    ('summary', 'str'),
+    ('tag_review', 'str'),
+    ('tag_review_status', 'int'),
+    ('unlisted', 'bool'),
+    ('web_dev_views', 'int'),
+    ('web_dev_views_link', 'str'),
+    ('web_dev_views_notes', 'str'),
+    ('webview_risks', 'str'),
+    ('wpt', 'bool'),
+    ('wpt_descr', 'str'),
+  ]
+
+  STAGE_FIELD_DATA_TYPES: FIELD_INFO_DATA_TYPE = [
+    ('display_name', 'str'),
+    ('browser', 'str'),
+    ('experiment_goals', 'str'),
+    ('experiment_risks', 'str'),
+    ('experiment_extension_reason', 'str'),
+    ('intent_thread_url', 'str'),
+    ('origin_trial_feedback_url', 'str'),
+    ('announcement_url', 'str'),
+    ('rollout_impact', 'int'),
+    ('rollout_milestone', 'int'),
+    ('rollout_platforms', 'list'),
+    ('rollout_details', 'str'),
+    ('enterprise_policies', 'str'),
+  ]
+
+  MILESTONESET_FIELD_DATA_TYPES: FIELD_INFO_DATA_TYPE = [
+    ('desktop_first', 'int'),
+    ('desktop_last', 'int'),
+    ('android_first', 'int'),
+    ('android_last', 'int'),
+    ('ios_first', 'int'),
+    ('ios_last', 'int'),
+    ('webview_first', 'int'),
+    ('webview_last', 'int'),
+  ]
+
 
   def _abort_invalid_data_type(
       self, field: str, field_type: str, value: Any) -> None:
@@ -111,14 +147,10 @@ class FeaturesAPI(basehandlers.APIHandler):
   def _format_field_val(
       self,
       field: str,
-      value: Any
+      field_type: str,
+      value: Any,
     ) -> str | int | bool | list | None:
     """Format the given feature value based on the field type."""
-    # Only fields with defined data types are allowed.
-    if field not in self.FIELD_DATA_TYPES_CREATE:
-      self.abort(400, msg=f'Field "{field}" data format not found.')
-
-    field_type = self.FIELD_DATA_TYPES_CREATE[field]
 
     # If the field is empty, no need to format.
     if value is None:
@@ -137,6 +169,10 @@ class FeaturesAPI(basehandlers.APIHandler):
     elif field_type == 'bool':
       return bool(value)
     return str(value)
+
+  ###########
+  ### GET ###
+  ###########
 
   def get_one_feature(self, feature_id: int) -> VerboseFeatureDict:
     feature = FeatureEntry.get_by_id(feature_id)
@@ -192,6 +228,10 @@ class FeaturesAPI(basehandlers.APIHandler):
       return self.get_one_feature(feature_id)
     return self.do_search()
 
+  ############
+  ### POST ###
+  ############
+
   @permissions.require_create_feature
   def do_post(self, **kwargs):
     """Handle POST requests to create a single feature."""
@@ -202,8 +242,12 @@ class FeaturesAPI(basehandlers.APIHandler):
       if field not in body:
         self.abort(400, msg=f'Required field "{field}" not provided.')
 
-    fields_dict = {field: self._format_field_val(field, value)
-                   for field, value in body.items()}
+    fields_dict = {}
+    for field, field_type in self.FEATURE_FIELD_DATA_TYPES:
+      if field in body:
+        fields_dict[field] = self._format_field_val(
+            field, field_type, body[field])
+
     # Try to create the feature using the provided data.
     try:
       feature = FeatureEntry(**fields_dict,
@@ -240,16 +284,112 @@ class FeaturesAPI(basehandlers.APIHandler):
       if new_gates:
         ndb.put_multi(new_gates)
 
+  #############
+  ### PATCH ###
+  #############
+
+  def _update_field_value(
+      self,
+      entity: FeatureEntry | MilestoneSet | Stage,
+      field: str,
+      field_type: str,
+      value: Any
+    ) -> None:
+    new_value = self._format_field_val(field, field_type, value)
+    setattr(entity, field, new_value)
+
+  def _patch_update_stages(
+      self,
+      stage_changes_list: list[dict[str, Any]]
+    ) -> bool:
+    """Update stage fields with changes provided in the PATCH request."""
+    stages: list[Stage] = []
+    for change_info in stage_changes_list:
+      stage_was_updated = False
+      # Check if valid ID is provided and fetch stage if it exists.
+      if 'id' not in change_info:
+        self.abort(400, msg='Missing stage ID in stage updates')
+      id = change_info['id']
+      stage = Stage.get_by_id(id)
+      if not stage:
+        self.abort(400, msg=f'Stage not found for ID {id}')
+
+      # Update stage fields.
+      for field, field_type in self.STAGE_FIELD_DATA_TYPES:
+        if field not in change_info:
+          continue
+        self._update_field_value(stage, field, field_type, change_info[field])
+        stage_was_updated = True
+
+      # Update milestone fields.
+      milestones = stage.milestones
+      for field, field_type in self.MILESTONESET_FIELD_DATA_TYPES:
+        if field not in change_info:
+          continue
+        if milestones is None:
+          milestones = MilestoneSet()
+        self._update_field_value(
+            milestones, field, field_type, change_info[field])
+        stage_was_updated = True
+      stage.milestones = milestones
+
+      if stage_was_updated:
+        stages.append(stage)
+
+    # Save all of the updates made.
+    # Return a boolean representing if any changes were made to any stages.
+    if stages:
+      ndb.put_multi(stages)
+      return True
+    return False
+
+  def _patch_update_special_fields(
+      self,
+      feature: FeatureEntry,
+      feature_changes: dict[str, Any],
+      has_updated: bool
+    ) -> None:
+    """Handle any special FeatureEntry fields."""
+    now = datetime.now()
+    # Handle accuracy notifications if this is an accuracy verification request.
+    if 'accurate_as_of' in feature_changes:
+      feature.accurate_as_of = now
+      feature.outstanding_notifications = 0
+      has_updated = True
+    
+    if has_updated:
+      user_email = self.get_current_user().email()
+      feature.updater_email = user_email
+      feature.updated = now
+
+  def _patch_update_feature(
+      self,
+      feature: FeatureEntry,
+      feature_changes: dict[str, Any],
+      has_updated: bool
+    ) -> None:
+    """Update feature fields with changes provided in the PATCH request."""
+    for field, field_type in self.FEATURE_FIELD_DATA_TYPES:
+      if field not in feature_changes:
+        continue
+      self._update_field_value(
+          feature, field, field_type, feature_changes[field])
+      has_updated = True
+    
+    self._patch_update_special_fields(feature, feature_changes, has_updated)
+    feature.put()
+
   def do_patch(self, **kwargs):
     """Handle PATCH requests to update fields in a single feature."""
-    feature_id = kwargs['feature_id']
     body = self.get_json_param_dict()
 
-    # update_fields represents which fields will be updated by this request.
-    fields_to_update = body.get('update_fields', [])
+    # Check if valid ID is provided and fetch feature if it exists.
+    if 'id' not in body['feature_changes']:
+      self.abort(400, msg='Missing feature ID in feature updates')
+    feature_id = body['feature_changes']['id']
     feature: FeatureEntry | None = FeatureEntry.get_by_id(feature_id)
-    if feature is None:
-      self.abort(404, msg=f'Feature {feature_id} not found')
+    if not feature:
+      self.abort(400, msg=f'Feature not found for ID {feature_id}')
 
     # Validate the user has edit permissions and redirect if needed.
     redirect_resp = permissions.validate_feature_edit_permission(
@@ -257,19 +397,14 @@ class FeaturesAPI(basehandlers.APIHandler):
     if redirect_resp:
       return redirect_resp
 
-    # Update each field specified in the field mask.
-    for field in fields_to_update:
-      # Each field specified should be a valid field that exists on the entity.
-      if not hasattr(feature, field):
-        self.abort(400, msg=f'FeatureEntry has no attribute {field}.')
-      if field in FeatureEntry.FIELDS_IMMUTABLE_BY_USER:
-        self.abort(400, f'FeatureEntry field {field} is immutable.')
-      setattr(feature, field, body.get(field, None))
+    has_updated = self._patch_update_stages(body['stages'])
+    self._patch_update_feature(feature, body['feature_changes'], has_updated)
 
-    feature.updater_email = self.get_current_user().email()
-    feature.updated = datetime.now()
-    feature.put()
     return {'message': f'Feature {feature_id} updated.'}
+
+  ##############
+  ### DELETE ###
+  ##############
 
   @permissions.require_admin_site
   def do_delete(self, **kwargs) -> dict[str, str]:

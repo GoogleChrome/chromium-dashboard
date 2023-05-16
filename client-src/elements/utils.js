@@ -278,10 +278,10 @@ export function clearURLParams(key) {
 
 /**
  * @typedef {Object} UpdateSubmitBody
- * @property {Object.<string, *>} featureChanges An object with feature changes.
+ * @property {Object.<string, *>} feature_changes An object with feature changes.
  *   key=field name, value=new field value.
  * @property {Array.<Object>} stages The list of changes to specific stages.
- * @property {boolean} hasChanges Whether any valid changes are present for submission.
+ * @property {boolean} has_changes Whether any valid changes are present for submission.
  */
 
 /**
@@ -326,8 +326,8 @@ export function formatFeatureChanges(fieldValues, featureId) {
   }
 
   return {
-    featureChanges,
+    feature_changes: featureChanges,
     stages: Object.values(stages),
-    hasChanges,
+    has_changes: hasChanges,
   };
 }
