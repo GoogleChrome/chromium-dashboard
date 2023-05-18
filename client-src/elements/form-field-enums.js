@@ -361,11 +361,11 @@ export const REVIEW_STATUS_CHOICES = {
 // NEUTRAL = 8
 // SIGNALS_NA = 9
 // GECKO_UNDER_CONSIDERATION = 10
-// GECKO_IMPORTANT = 11
-// GECKO_WORTH_PROTOTYPING = 12
-// GECKO_NONHARMFUL = 13
+// GECKO_IMPORTANT = 11 # Deprecated; use PUBLIC_SUPPORT
+// GECKO_WORTH_PROTOTYPING = 12 # Deprecated; use PUBLIC_SUPPORT
+// GECKO_NONHARMFUL = 13 # Deprecated; use NEUTRAL
 // GECKO_DEFER = 14
-// GECKO_HARMFUL = 15
+// GECKO_HARMFUL = 15 # Deprecated; use OPPOSED
 
 export const VENDOR_VIEWS_COMMON = {
   SHIPPED: [1, 'Shipped/Shipping'],
@@ -378,13 +378,14 @@ export const VENDOR_VIEWS_COMMON = {
 };
 
 export const VENDOR_VIEWS_GECKO = {
-  ...VENDOR_VIEWS_COMMON,
+  NO_PUBLIC_SIGNALS: [5, 'No signal'],
+  SIGNALS_NA: [9, 'N/A'],
   GECKO_UNDER_CONSIDERATION: [10, 'Under consideration'],
-  GECKO_IMPORTANT: [11, 'Important'],
-  GECKO_WORTH_PROTOTYPING: [12, 'Worth prototyping'],
-  GECKO_NONHARMFUL: [13, 'Non-harmful'],
   GECKO_DEFER: [14, 'Defer'],
-  GECKO_HARMFUL: [15, 'Harmful'],
+  PUBLIC_SUPPORT: [3, 'Positive'],
+  OPPOSED: [7, 'Negative'],
+  NEUTRAL: [8, 'Neutral'],
+  SHIPPED: [1, 'Shipped/Shipping'],
 };
 
 export const WEB_DEV_VIEWS = {
