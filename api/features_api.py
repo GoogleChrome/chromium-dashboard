@@ -17,6 +17,7 @@ from datetime import datetime
 from typing import Any
 from google.cloud import ndb
 
+from api import api_specs
 from api import converters
 from framework import basehandlers
 from framework import permissions
@@ -31,112 +32,8 @@ from internals import search
 import settings
 
 
-# Data type for lists defining field data type information.
-FIELD_INFO_DATA_TYPE = list[tuple[str, str]]
-
-
 class FeaturesAPI(basehandlers.APIHandler):
   """Features are the the main records that we track."""
-
-  ############################
-  ###### Mutable Fields ######
-  ############################
-  # Dictionary with fields that can be edited on feature creation
-  # and their data types.
-  # Field name, data type
-  FEATURE_FIELD_DATA_TYPES: FIELD_INFO_DATA_TYPE = [
-    ('activation_risks', 'str'),
-    ('adoption_expectation', 'str'),
-    ('adoption_plan', 'str'),
-    ('all_platforms', 'bool'),
-    ('all_platforms_descr', 'str'),
-    ('anticipated_spec_changes', 'str'),
-    ('api_spec', 'bool'),
-    ('availability_expectation', 'str'),
-    ('blink_components', 'list'),
-    ('breaking_change', 'bool'),
-    ('bug_url', 'str'),
-    ('category', 'int'),
-    ('cc_emails', 'list'),
-    ('comments', 'str'),
-    ('debuggability', 'str'),
-    ('devrel', 'list'),
-    ('devtrial_instructions', 'str'),
-    ('doc_links', 'list'),
-    ('editors_emails', 'list'),
-    ('enterprise_feature_categories', 'list'),
-    ('ergonomics_risks', 'str'),
-    ('explainer_links', 'list'),
-    ('feature_type', 'int'),
-    ('ff_views', 'int'),
-    ('ff_views_link', 'str'),
-    ('ff_views_notes', 'str'),
-    ('flag_name', 'str'),
-    ('impl_status_chrome', 'int'),
-    ('initial_public_proposal_url', 'str'),
-    ('intent_stage', 'int'),
-    ('interop_compat_risks', 'str'),
-    ('launch_bug_url', 'str'),
-    ('screenshot_links', 'list'),
-    ('measurement', 'str'),
-    ('motivation', 'str'),
-    ('name', 'str'),
-    ('non_oss_deps', 'str'),
-    ('ongoing_constraints', 'str'),
-    ('other_views_notes', 'str'),
-    ('owner_emails', 'list'),
-    ('prefixed', 'bool'),
-    ('privacy_review_status', 'int'),
-    ('requires_embedder_support', 'bool'),
-    ('safari_views', 'int'),
-    ('safari_views_link', 'str'),
-    ('safari_views_notes', 'str'),
-    ('sample_links', 'list'),
-    ('search_tags', 'list'),
-    ('security_review_status', 'int'),
-    ('security_risks', 'str'),
-    ('spec_link', 'str'),
-    ('spec_mentors', 'list'),
-    ('standard_maturity', 'int'),
-    ('summary', 'str'),
-    ('tag_review', 'str'),
-    ('tag_review_status', 'int'),
-    ('unlisted', 'bool'),
-    ('web_dev_views', 'int'),
-    ('web_dev_views_link', 'str'),
-    ('web_dev_views_notes', 'str'),
-    ('webview_risks', 'str'),
-    ('wpt', 'bool'),
-    ('wpt_descr', 'str'),
-  ]
-
-  STAGE_FIELD_DATA_TYPES: FIELD_INFO_DATA_TYPE = [
-    ('display_name', 'str'),
-    ('browser', 'str'),
-    ('experiment_goals', 'str'),
-    ('experiment_risks', 'str'),
-    ('experiment_extension_reason', 'str'),
-    ('intent_thread_url', 'str'),
-    ('origin_trial_feedback_url', 'str'),
-    ('announcement_url', 'str'),
-    ('rollout_impact', 'int'),
-    ('rollout_milestone', 'int'),
-    ('rollout_platforms', 'list'),
-    ('rollout_details', 'str'),
-    ('enterprise_policies', 'str'),
-  ]
-
-  MILESTONESET_FIELD_DATA_TYPES: FIELD_INFO_DATA_TYPE = [
-    ('desktop_first', 'int'),
-    ('desktop_last', 'int'),
-    ('android_first', 'int'),
-    ('android_last', 'int'),
-    ('ios_first', 'int'),
-    ('ios_last', 'int'),
-    ('webview_first', 'int'),
-    ('webview_last', 'int'),
-  ]
-
 
   def _abort_invalid_data_type(
       self, field: str, field_type: str, value: Any) -> None:
@@ -169,10 +66,6 @@ class FeaturesAPI(basehandlers.APIHandler):
     elif field_type == 'bool':
       return bool(value)
     return str(value)
-
-  ###########
-  ### GET ###
-  ###########
 
   def get_one_feature(self, feature_id: int) -> VerboseFeatureDict:
     feature = FeatureEntry.get_by_id(feature_id)
@@ -228,10 +121,6 @@ class FeaturesAPI(basehandlers.APIHandler):
       return self.get_one_feature(feature_id)
     return self.do_search()
 
-  ############
-  ### POST ###
-  ############
-
   @permissions.require_create_feature
   def do_post(self, **kwargs):
     """Handle POST requests to create a single feature."""
@@ -243,7 +132,7 @@ class FeaturesAPI(basehandlers.APIHandler):
         self.abort(400, msg=f'Required field "{field}" not provided.')
 
     fields_dict = {}
-    for field, field_type in self.FEATURE_FIELD_DATA_TYPES:
+    for field, field_type in api_specs.FEATURE_FIELD_DATA_TYPES:
       if field in body:
         fields_dict[field] = self._format_field_val(
             field, field_type, body[field])
@@ -284,10 +173,6 @@ class FeaturesAPI(basehandlers.APIHandler):
       if new_gates:
         ndb.put_multi(new_gates)
 
-  #############
-  ### PATCH ###
-  #############
-
   def _update_field_value(
       self,
       entity: FeatureEntry | MilestoneSet | Stage,
@@ -315,7 +200,7 @@ class FeaturesAPI(basehandlers.APIHandler):
         self.abort(400, msg=f'Stage not found for ID {id}')
 
       # Update stage fields.
-      for field, field_type in self.STAGE_FIELD_DATA_TYPES:
+      for field, field_type in api_specs.STAGE_FIELD_DATA_TYPES:
         if field not in change_info:
           continue
         self._update_field_value(stage, field, field_type, change_info[field])
@@ -323,7 +208,7 @@ class FeaturesAPI(basehandlers.APIHandler):
 
       # Update milestone fields.
       milestones = stage.milestones
-      for field, field_type in self.MILESTONESET_FIELD_DATA_TYPES:
+      for field, field_type in api_specs.MILESTONESET_FIELD_DATA_TYPES:
         if field not in change_info:
           continue
         if milestones is None:
@@ -369,7 +254,7 @@ class FeaturesAPI(basehandlers.APIHandler):
       has_updated: bool
     ) -> None:
     """Update feature fields with changes provided in the PATCH request."""
-    for field, field_type in self.FEATURE_FIELD_DATA_TYPES:
+    for field, field_type in api_specs.FEATURE_FIELD_DATA_TYPES:
       if field not in feature_changes:
         continue
       self._update_field_value(
@@ -401,10 +286,6 @@ class FeaturesAPI(basehandlers.APIHandler):
     self._patch_update_feature(feature, body['feature_changes'], has_updated)
 
     return {'message': f'Feature {feature_id} updated.'}
-
-  ##############
-  ### DELETE ###
-  ##############
 
   @permissions.require_admin_site
   def do_delete(self, **kwargs) -> dict[str, str]:
