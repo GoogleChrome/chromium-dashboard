@@ -241,6 +241,8 @@ internals_routes: list[Route] = [
       maintenance_scripts.EvaluateGateStatus),
   Route('/scripts/write_missing_gates',
       maintenance_scripts.WriteMissingGates),
+  Route('/scripts/migrate_gecko_views',
+      maintenance_scripts.MigrateGeckoViews),
 ]
 
 dev_routes: list[Route] = []

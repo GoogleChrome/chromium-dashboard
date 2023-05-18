@@ -102,3 +102,41 @@ class WriteMissingGates(FlaskHandler):
     ndb.put_multi(gates_to_write)
 
     return f'{len(gates_to_write)} missing gates created for stages.'
+
+
+class MigrateGeckoViews(FlaskHandler):
+
+  MAPPING = {
+      GECKO_IMPORTANT: PUBLIC_SUPPORT,
+      GECKO_WORTH_PROTOTYPING: PUBLIC_SUPPORT,
+      GECKO_NONHARMFUL: NEUTRAL,
+      GECKO_HARMFUL: OPPOSED,
+      }
+
+  def update_ff_views(self, fe):
+    """Update ff_views and return True if update was needed."""
+    if fe.ff_views in self.MAPPING:
+      fe.ff_views = self.MAPPING[fe.ff_views]
+      return True
+
+    return False
+
+  def get_template_data(self, **kwargs):
+    """Change gecko views from old options to a more common list."""
+    self.require_cron_header()
+
+    features: ndb.Query = FeatureEntry.query(
+        FeatureEntry.ff_views != NO_PUBLIC_SIGNALS)
+    count = 0
+    batch = []
+    BATCH_SIZE = 100
+    for fe in features:
+      if self.update_ff_views(fe):
+        batch.append(fe)
+        count += 1
+        if len(batch) > BATCH_SIZE:
+          ndb.put_multi(batch)
+          batch = []
+
+    ndb.put_multi(batch)
+    return f'{count} FeatureEntry entities updated.'
