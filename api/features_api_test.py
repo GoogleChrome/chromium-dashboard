@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from datetime import datetime
 import testing_config  # Must be imported before the module under test.
 
 import flask
@@ -112,6 +113,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     self.ship_stage_1 = Stage(feature_id=self.feature_1_id,
         stage_type=160, milestones=MilestoneSet(desktop_first=1))
     self.ship_stage_1.put()
+    self.ship_stage_1_id = self.ship_stage_1.key.integer_id()
 
     self.feature_2 = FeatureEntry(
         name='feature two', summary='sum K', feature_type=1,
@@ -407,71 +409,203 @@ class FeaturesAPITest(testing_config.CustomTestCase):
 
   def test_patch__valid(self):
     """PATCH request successful with valid input from user with permissions."""
-    # Signed-in user with permissions
+    # Signed-in user with permissions.
     testing_config.sign_in('admin@example.com', 123567890)
 
     new_summary = 'a different summary'
     new_owner_emails = ['test@example.com']
     valid_request_body = {
-      'update_fields': ['summary', 'owner_emails'],
-      'summary': new_summary,
-      'owner_emails': new_owner_emails,
+      'feature_changes': {
+        'id': self.feature_1_id,
+        'summary': new_summary,
+        'owner_emails': new_owner_emails,
+      },
+      'stages': [],
     }
-    request_path = f'{self.request_path}/{self.feature_1_id}'
+    request_path = f'{self.request_path}/update'
     with test_app.test_request_context(request_path, json=valid_request_body):
-      response = self.handler.do_patch(feature_id=self.feature_1_id)
-    # Success response should be returned
+      response = self.handler.do_patch()
+    # Success response should be returned.
     self.assertEqual({'message': f'Feature {self.feature_1_id} updated.'}, response)
     # Assert that changes were made.
     self.assertEqual(self.feature_1.summary, new_summary)
     self.assertEqual(self.feature_1.owner_emails, new_owner_emails)
-    # Updater email field should be changed
+    # Updater email field should be changed.
+    self.assertIsNotNone(self.feature_1.updated)
+    self.assertEqual(self.feature_1.updater_email, 'admin@example.com')
+
+  def test_patch__stage_changes(self):
+    """Valid PATCH updates stage entities."""
+    # Signed-in user with permissions.
+    testing_config.sign_in('admin@example.com', 123567890)
+
+    new_intent_url = 'https://example.com/intent'
+    valid_request_body = {
+      'feature_changes': {
+        'id': self.feature_1_id,
+      },
+      'stages': [
+        {
+          'id': self.ship_stage_1_id,
+          'intent_thread_url': new_intent_url,
+        },
+      ],
+    }
+    request_path = f'{self.request_path}/update'
+    with test_app.test_request_context(request_path, json=valid_request_body):
+      response = self.handler.do_patch()
+
+    # Success response should be returned.
+    self.assertEqual(
+        {'message': f'Feature {self.feature_1_id} updated.'}, response)
+    # Assert that changes were made.
+    self.assertEqual(self.ship_stage_1.intent_thread_url, new_intent_url)
+    # Updater email field should be changed even with only stage changes.
+    self.assertIsNotNone(self.feature_1.updated)
+    self.assertEqual(self.feature_1.updater_email, 'admin@example.com')
+
+  def test_patch__milestone_changes(self):
+    """Valid PATCH updates milestone fields on stage entities."""
+    # Signed-in user with permissions.
+    testing_config.sign_in('admin@example.com', 123567890)
+
+    new_desktop_first = 100
+    valid_request_body = {
+      'feature_changes': {
+        'id': self.feature_1_id,
+      },
+      'stages': [
+        {
+          'id': self.ship_stage_1_id,
+          'desktop_first': new_desktop_first,
+        },
+      ],
+    }
+    request_path = f'{self.request_path}/update'
+    with test_app.test_request_context(request_path, json=valid_request_body):
+      response = self.handler.do_patch()
+
+    # Success response should be returned.
+    self.assertEqual(
+        {'message': f'Feature {self.feature_1_id} updated.'}, response)
+    # Assert that changes were made.
+    self.assertIsNotNone(self.ship_stage_1.milestones)
+    self.assertEqual(
+        self.ship_stage_1.milestones.desktop_first, new_desktop_first)
+    # Updater email field should be changed.
+    self.assertIsNotNone(self.feature_1.updated)
+    self.assertEqual(self.feature_1.updater_email, 'admin@example.com')
+
+  def test_patch__milestone_changes_null(self):
+    """Valid PATCH updates milestone fields when milestones object is null."""
+    self.ship_stage_1.milestones = None
+    self.ship_stage_1.put()
+
+    # Signed-in user with permissions.
+    testing_config.sign_in('admin@example.com', 123567890)
+
+    new_desktop_first = 100
+    valid_request_body = {
+      'feature_changes': {
+        'id': self.feature_1_id,
+      },
+      'stages': [
+        {
+          'id': self.ship_stage_1_id,
+          'desktop_first': new_desktop_first,
+        },
+      ],
+    }
+    request_path = f'{self.request_path}/update'
+    with test_app.test_request_context(request_path, json=valid_request_body):
+      response = self.handler.do_patch()
+
+    # Success response should be returned.
+    self.assertEqual(
+        {'message': f'Feature {self.feature_1_id} updated.'}, response)
+    # Assert that changes were made.
+    self.assertIsNotNone(self.ship_stage_1.milestones)
+    self.assertEqual(
+        self.ship_stage_1.milestones.desktop_first, new_desktop_first)
+    # Updater email field should be changed even with only stage changes.
+    self.assertIsNotNone(self.feature_1.updated)
     self.assertEqual(self.feature_1.updater_email, 'admin@example.com')
 
   def test_patch__no_permissions(self):
     """We give 403 if the user does not have feature edit access."""
     testing_config.sign_in('someuser@example.com', 123567890)
-
+    request_body = {
+          'feature_changes': {
+            'id': self.feature_1_id,
+          },
+          'stages': [],
+        }
     request_path = f'{self.request_path}/{self.feature_1_id}'
-    with test_app.test_request_context(request_path, json={}):
+    with test_app.test_request_context(request_path, json=request_body):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.do_patch(feature_id=self.feature_1_id)
 
   def test_patch__invalid_fields(self):
-    """PATCH request fails with 400 when supplying invalid fields."""
-    # Signed-in user with permissions
+    """PATCH request does not attempt to update invalid fields."""
+    # Signed-in user with permissions.
     testing_config.sign_in('admin@example.com', 123567890)
 
     bad_param = 'Not a real field'
-    new_owner_emails = ['test@example.com']
     invalid_request_body = {
-      'update_fields': ['bad_param', 'owner_emails'],
-      'bad_param': bad_param,
-      'owner_emails': new_owner_emails,
+      'feature_changes': {
+        'id': self.feature_1_id,
+        'bad_param': bad_param,
+      },
+      'stages': [
+        {
+          'id': self.ship_stage_1_id,
+          'bad_param': bad_param,
+        },
+      ],
     }
-    request_path = f'{self.request_path}/{self.feature_1_id}'
+    request_path = f'{self.request_path}/update'
     with test_app.test_request_context(request_path, json=invalid_request_body):
-      with self.assertRaises(werkzeug.exceptions.BadRequest):
-        self.handler.do_patch(feature_id=self.feature_1_id)
+      self.handler.do_patch(feature_id=self.feature_1_id)
+    # Updater email field should NOT be changed. No changes were made.
+    self.assertIsNone(self.feature_1.updater_email)
 
-  def test_patch__immutable_fields(self):
-    """PATCH request fails with 400 when immutable field change is attempted."""
-    # Signed-in user with permissions
+  def test_patch__accurate_as_of(self):
+    """Updates accurate_as_of for accuracy verification request."""
+    # Signed-in user with permissions.
     testing_config.sign_in('admin@example.com', 123567890)
 
-    new_creator = 'differentuser@example.com'
-    invalid_request_body = {
-      'update_fields': ['creator_email'],
-      'creator_email': new_creator,
+    # Add some outstanding notifications beforehand.
+    self.feature_1.outstanding_notifications = 2
+    old_accuracy_date = datetime(2020, 1, 1)
+    self.feature_1.accurate_as_of = old_accuracy_date
+    self.feature_1.put()
+
+    valid_request_body = {
+      'feature_changes': {
+        'id': self.feature_1_id,
+        'accurate_as_of': True,
+      },
+      'stages': [
+        {
+          'id': self.ship_stage_1_id,
+          'desktop_first': 115
+        },
+      ],
     }
-    request_path = f'{self.request_path}/{self.feature_1_id}'
-    with test_app.test_request_context(request_path, json=invalid_request_body):
-      with self.assertRaises(werkzeug.exceptions.BadRequest):
-        self.handler.do_patch(feature_id=self.feature_1_id)
+    request_path = f'{self.request_path}/update'
+    with test_app.test_request_context(request_path, json=valid_request_body):
+      self.handler.do_patch(feature_id=self.feature_1_id)
+    # Assert that changes were made.
+    self.assertIsNotNone(self.feature_1.accurate_as_of)
+    self.assertTrue(self.feature_1.accurate_as_of > old_accuracy_date)
+    self.assertEqual(self.feature_1.outstanding_notifications, 0)
+    # Updater email field should be changed.
+    self.assertIsNotNone(self.feature_1.updated)
+    self.assertEqual(self.feature_1.updater_email, 'admin@example.com')
 
   def test_post__valid(self):
     """POST request successful with valid input from user with permissions."""
-    # Signed-in user with permissions
+    # Signed-in user with permissions.
     testing_config.sign_in('admin@example.com', 123567890)
 
     valid_request_body = {
@@ -507,7 +641,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
 
   def test_post__valid_stage_and_gate_creation(self):
     """POST request successful with valid input from user with permissions."""
-    # Signed-in user with permissions
+    # Signed-in user with permissions.
     testing_config.sign_in('admin@example.com', 123567890)
 
     valid_request_body = {
@@ -552,10 +686,10 @@ class FeaturesAPITest(testing_config.CustomTestCase):
 
   def test_post__invalid_fields(self):
     """POST request fails with 400 when supplying invalid fields."""
-    # Signed-in user with permissions
+    # Signed-in user with permissions.
     testing_config.sign_in('admin@example.com', 123567890)
 
-    invalid_request_body = {
+    request_body = {
       'bad_param': 'Not a real field',  # Bad field.
 
       'name': 'A name',
@@ -570,16 +704,29 @@ class FeaturesAPITest(testing_config.CustomTestCase):
       'web_dev_views': 1,
     }
     request_path = f'{self.request_path}/create'
-    with test_app.test_request_context(request_path, json=invalid_request_body):
-      with self.assertRaises(werkzeug.exceptions.BadRequest):
-        self.handler.do_post()
+    with test_app.test_request_context(request_path, json=request_body):
+      response = self.handler.do_post()
+    # A new feature ID should be returned.
+    self.assertIsNotNone(response['feature_id'])
+    self.assertTrue(type(response['feature_id']) == int)
+    # New feature should exist.
+    new_feature: FeatureEntry | None = (
+        FeatureEntry.get_by_id(response['feature_id']))
+    self.assertIsNotNone(new_feature)
+
+    # New feature's values should match fields in JSON body (except bad param).
+    for field, value in request_body.items():
+      # Invalid fields are ignored and not updated.
+      if field == 'bad_param':
+        continue
+      self.assertEqual(getattr(new_feature, field), value)
 
   def test_post__immutable_fields(self):
     """POST request fails with 400 when immutable field is provided."""
-    # Signed-in user with permissions
+    # Signed-in user with permissions.
     testing_config.sign_in('admin@example.com', 123567890)
 
-    invalid_request_body = {
+    request_body = {
       'creator_email': 'differentuser@example.com',  # Immutable.
 
       'name': 'A name',
@@ -594,13 +741,29 @@ class FeaturesAPITest(testing_config.CustomTestCase):
       'web_dev_views': 1,
     }
     request_path = f'{self.request_path}/create'
-    with test_app.test_request_context(request_path, json=invalid_request_body):
-      with self.assertRaises(werkzeug.exceptions.BadRequest):
-        self.handler.do_post()
+    with test_app.test_request_context(request_path, json=request_body):
+      response = self.handler.do_post()
+    # A new feature ID should be returned.
+    self.assertIsNotNone(response['feature_id'])
+    self.assertTrue(type(response['feature_id']) == int)
+    # New feature should exist.
+    new_feature: FeatureEntry | None = (
+        FeatureEntry.get_by_id(response['feature_id']))
+    self.assertIsNotNone(new_feature)
+
+    # New feature's values should match fields in JSON body
+    # (except immutable field).
+    for field, value in request_body.items():
+      if field == 'creator_email':
+        # User's email should match creator_email field.
+        # The given creator_email should be ignored.
+        self.assertEqual(new_feature.creator_email, 'admin@example.com')
+      else:
+        self.assertEqual(getattr(new_feature, field), value)
 
   def test_post__bad_data_type_int(self):
     """POST request fails with 400 when a bad int data type is provided."""
-    # Signed-in user with permissions
+    # Signed-in user with permissions.
     testing_config.sign_in('admin@example.com', 123567890)
 
     invalid_request_body = {
@@ -622,7 +785,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
 
   def test_post__bad_data_type_list(self):
     """POST request fails with 400 when a bad list data type is provided."""
-    # Signed-in user with permissions
+    # Signed-in user with permissions.
     testing_config.sign_in('admin@example.com', 123567890)
 
     invalid_request_body = {
@@ -644,7 +807,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
 
   def test_post__missing_required_field(self):
     """POST request fails with 400 when missing required fields."""
-    # Signed-in user with permissions
+    # Signed-in user with permissions.
     testing_config.sign_in('admin@example.com', 123567890)
 
     invalid_request_body = {

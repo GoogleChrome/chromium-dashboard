@@ -116,9 +116,9 @@ go/this-is-a-test
         },
       ];
       const expected = {
-        featureChanges: {id: 1},
+        feature_changes: {id: 1},
         stages: [],
-        hasChanges: false,
+        has_changes: false,
       };
       assert.deepEqual(formatFeatureChanges(testFieldValues, featureId), expected);
     });
@@ -133,12 +133,12 @@ go/this-is-a-test
         },
       ];
       const expected = {
-        featureChanges: {
+        feature_changes: {
           id: 1,
           example_field: '123',
         },
         stages: [],
-        hasChanges: true,
+        has_changes: true,
       };
       assert.deepEqual(formatFeatureChanges(testFieldValues, featureId), expected);
     });
@@ -153,11 +153,11 @@ go/this-is-a-test
         },
       ];
       const expected = {
-        featureChanges: {id: 1},
+        feature_changes: {id: 1},
         stages: [
           {id: 1, example_field: '123'},
         ],
-        hasChanges: true,
+        has_changes: true,
       };
       assert.deepEqual(formatFeatureChanges(testFieldValues, featureId), expected);
     });
@@ -172,9 +172,9 @@ go/this-is-a-test
         },
       ];
       const expected = {
-        featureChanges: {id: 1, implicit_value_field: 123},
+        feature_changes: {id: 1, implicit_value_field: 123},
         stages: [],
-        hasChanges: true,
+        has_changes: true,
       };
       assert.deepEqual(formatFeatureChanges(testFieldValues, featureId), expected);
     });
@@ -189,9 +189,9 @@ go/this-is-a-test
         },
       ];
       const expected = {
-        featureChanges: {id: 1},
+        feature_changes: {id: 1},
         stages: [],
-        hasChanges: false,
+        has_changes: false,
       };
       assert.deepEqual(formatFeatureChanges(testFieldValues, featureId), expected);
     });
@@ -227,12 +227,12 @@ go/this-is-a-test
         },
       ];
       const expected = {
-        featureChanges: {id: 1, example_field1: '123'},
+        feature_changes: {id: 1, example_field1: '123'},
         stages: [
           {id: 1, example_field2: '456'},
           {id: 2, example_field3: '789'},
         ],
-        hasChanges: true,
+        has_changes: true,
       };
       assert.deepEqual(formatFeatureChanges(testFieldValues, featureId), expected);
     });
