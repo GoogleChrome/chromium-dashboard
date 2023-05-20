@@ -507,11 +507,11 @@ OPPOSED = 7
 NEUTRAL = 8
 SIGNALS_NA = 9
 GECKO_UNDER_CONSIDERATION = 10
-GECKO_IMPORTANT = 11
-GECKO_WORTH_PROTOTYPING = 12
-GECKO_NONHARMFUL = 13
+GECKO_IMPORTANT = 11  # Deprecated
+GECKO_WORTH_PROTOTYPING = 12  # Deprecated
+GECKO_NONHARMFUL = 13  # Deprecated
 GECKO_DEFER = 14
-GECKO_HARMFUL = 15
+GECKO_HARMFUL = 15  # Deprecated
 
 
 VENDOR_VIEWS_COMMON = {
@@ -524,15 +524,23 @@ VENDOR_VIEWS_COMMON = {
   SIGNALS_NA: 'N/A',
   }
 
-VENDOR_VIEWS_GECKO = VENDOR_VIEWS_COMMON.copy()
-VENDOR_VIEWS_GECKO.update({
+VENDOR_VIEWS_GECKO = {
+  NO_PUBLIC_SIGNALS: 'No signal',
+  SIGNALS_NA: 'N/A',
   GECKO_UNDER_CONSIDERATION: 'Under consideration',
+  GECKO_DEFER: 'Defer',
+  PUBLIC_SUPPORT: 'Positive',
+  OPPOSED: 'Negative',
+  NEUTRAL: 'Neutral',
+  SHIPPED: 'Shipped/Shipping',
+
+  # TODO(jrobbins): Delete these lines after migration script has been
+  # run in prod.
   GECKO_IMPORTANT: 'Important',
   GECKO_WORTH_PROTOTYPING: 'Worth prototyping',
   GECKO_NONHARMFUL: 'Non-harmful',
-  GECKO_DEFER: 'Defer',
   GECKO_HARMFUL: 'Harmful',
-  })
+  }
 
 # These vendors have no "custom" views values yet.
 VENDOR_VIEWS_EDGE = VENDOR_VIEWS_COMMON

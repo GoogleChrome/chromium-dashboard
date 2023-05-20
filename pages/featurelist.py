@@ -58,7 +58,7 @@ class FeatureListHandler(basehandlers.FlaskHandler):
       list(core_enums.IMPLEMENTATION_STATUS.items())])
     template_data['VENDOR_VIEWS'] = json.dumps([
       {'key': k, 'val': v} for k,v in
-      list(core_enums.VENDOR_VIEWS.items())])
+      sorted(core_enums.VENDOR_VIEWS.items())])
     template_data['WEB_DEV_VIEWS'] = json.dumps([
       {'key': k, 'val': v} for k,v in
       list(core_enums.WEB_DEV_VIEWS.items())])
