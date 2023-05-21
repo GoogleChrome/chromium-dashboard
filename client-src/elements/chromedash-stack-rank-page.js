@@ -67,6 +67,7 @@ export class ChromedashStackRankPage extends LitElement {
     fetch(endpoint, options).then((res) => res.json()).then((props) => {
       for (let i = 0, item; item = props[i]; ++i) {
         item.percentage = (item.day_percentage * 100).toFixed(6);
+        item.obsolete = item.property_name && item.property_name.startsWith('OBSOLETE_');
       }
       const viewList = props.filter((item) => {
         return !['ERROR', 'PageVisits', 'PageDestruction'].includes(item.property_name);
