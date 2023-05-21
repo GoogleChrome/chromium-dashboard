@@ -237,9 +237,8 @@ class ChromedashStackRank extends LitElement {
   renderStackRank(displayedList) {
     return html`
       ${displayedList.map((item) => html`
-        <li class="stack-rank-item" id="${item.property_name}" class="${
-          (this.shouldHideObsolete && item.obsolete) ? 'stack-rank-item-hidden' : ''
-        }">
+        <li class="stack-rank-item${(this.shouldHideObsolete && item.obsolete) ? ' stack-rank-item-hidden' : ''}"
+          id="${item.property_name}">
           <div title="${item.property_name}. Click to deep link to this property.">
             <a class="stack-rank-item-name" href="#${item.property_name}" @click=${this.scrollToPosition}>
               <iron-icon class="hash-link" icon="chromestatus:link"></iron-icon>
