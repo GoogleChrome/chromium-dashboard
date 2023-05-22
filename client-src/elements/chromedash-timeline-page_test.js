@@ -12,7 +12,10 @@ describe('chromedash-timeline-page', () => {
     await fixture(html`<chromedash-toast></chromedash-toast>`);
     sinon.stub(window, 'fetch');
     // hacky way to stub out google chart load method
-    window.google = {charts: {load: () => {}}};
+    window.google = {charts: {
+      load: () => {},
+      setOnLoadCallback: (f) => f(),
+    }};
   });
 
   afterEach(() => {
