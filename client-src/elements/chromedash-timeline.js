@@ -100,7 +100,7 @@ class ChromedashTimeline extends LitElement {
   }
 
   updated() {
-    this._updateTimeline();
+    window.google.charts.setOnLoadCallback(this._updateTimeline.bind(this));
   }
 
   updateSelectedBucketId(e) {
