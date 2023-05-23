@@ -49,7 +49,7 @@ class ChromedashTimeline extends LitElement {
       #http-archive-data {
         border: 0;
         width: 100%;
-        height: 775px;
+        height: 870px;
       }
 
       .header_title {
@@ -253,6 +253,7 @@ class ChromedashTimeline extends LitElement {
 SELECT yyyymmdd, client, pct_urls, sample_urls
 FROM \`httparchive.blink_features.usage\`
 WHERE feature = '${featureName}'
+AND yyyymmdd = (SELECT MAX(yyyymmdd) FROM \`httparchive.blink_features.usage\`)
 ORDER BY yyyymmdd DESC, client`;
     }
   }
