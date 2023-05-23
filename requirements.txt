@@ -15,7 +15,7 @@ google-cloud-tasks==2.7.0
 google-cloud-ndb==1.11.1
 google-cloud-logging==3.0.0
 google-auth==1.31.0
-requests==2.27.1
+requests==2.31.0
 redis==4.4.4
 fakeredis==1.10.1
 Flask==2.3.2
