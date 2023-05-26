@@ -4,6 +4,12 @@ from internals.link_helpers import Link, LINK_TYPE_CHROMIUM_BUG
 
 class LinkHelperTest(testing_config.CustomTestCase):
 
+    def test_link_with_wrong_host(self):
+        link = Link(
+                'https://bugs0chromium.org/p/chromium/issues/detail?id=100000'
+                )
+        assert link.type != LINK_TYPE_CHROMIUM_BUG
+    
     def test_parse_chromium_tracker(self):
         link = Link(
             'https://bugs.chromium.org/p/chromium/issues/detail?id=100000')
@@ -17,7 +23,7 @@ class LinkHelperTest(testing_config.CustomTestCase):
 
     def test_parse_chromium_tracker_fail_wrong_id(self):
         link = Link(
-            'https://bugs.chromium.org/p/chromium/issues/details?id=100000000000000')
+            'https://bugs.chromium.org/p/chromium/issues/detail?id=100000000000000')
         link.parse()
         assert link.information == None 
         assert link.is_parsed == True

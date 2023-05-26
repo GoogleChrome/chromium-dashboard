@@ -6,7 +6,7 @@ LINK_TYPE_CHROMIUM_BUG = 'chromium_bug'
 LINK_TYPE_UNKNOWN = 'unknown'
 LINK_TYPES_REGEX = {
     # https://bugs.chromium.org/p/chromium/issues/detail?id=
-    LINK_TYPE_CHROMIUM_BUG: re.compile(r'https://bugs.chromium.org/p/chromium/issues/detail?.*'),
+    LINK_TYPE_CHROMIUM_BUG: re.compile(r'https://bugs\.chromium\.org/p/chromium/issues/detail\?.*'),
     # any other links
     LINK_TYPE_UNKNOWN: re.compile(r'https?://.*'),
 }
