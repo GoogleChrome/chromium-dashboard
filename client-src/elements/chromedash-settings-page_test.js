@@ -79,3 +79,7 @@ describe('chromedash-settings-page', () => {
     assert.notInclude(checkboxEl.outerHTML, 'checked');
   });
 });
+
+
+// When you get a chance, I'd like your insights into how to fix the "you have unsaved changes" logic for the user settings page.  Right now if the user changes then saves, then navigates away, they still get the warning.
+// It looks like the logic in chromedash-app that waits 1 sec then checks of the user is still on the same pageComponent (to detect a failed submission) is also being used here because the user settings component stays on the same component and just shows "settings save" as a toast.

@@ -119,12 +119,6 @@ class ChromedashApp extends LitElement {
     this.contextLink = '/features';
     this.sidebarHidden = true;
     this.selectedGateId = 0;
-
-    // Whether any changes have been made to form fields on the current page.
-    // This is false when first "loading" a new page.
-    // Undo of changes does not undo this setting.
-    this.changesMade = false;
-    //
     this.beforeUnloadHandler = null;
   }
 
@@ -152,7 +146,7 @@ class ChromedashApp extends LitElement {
     // Set up beforeunload event handler for the whole window.
     this.removeBeforeUnloadHandler();
     this.beforeUnloadHandler = (event) => {
-      if (!this.changesMade) return;
+      if (!this.getUnsavedChanges()) return;
       // Cancel the event, which asks user whether to stay.
       event.preventDefault();
       // Chrome requires returnValue to be set.
@@ -162,24 +156,36 @@ class ChromedashApp extends LitElement {
     window.addEventListener('beforeunload', this.beforeUnloadHandler);
   }
 
-  setChangesMade(flag) {
-    this.changesMade = flag;
+  getUnsavedChanges() {
+    if (!this.pageComponent) return;
+    return this.pageComponent.unsavedChanges;
+  }
+
+  setUnsavedChanges(flag) {
+    // Whether any unsaved changes have been made to form fields on the
+    // current pageComponent. This is false when first "loading" a new page.
+    // Undo of changes does not undo this setting.
+    if (!this.pageComponent) return;
+    this.pageComponent.unsavedChanges = flag;
   }
 
   handleFormSubmit() {
-    const currentChangesMade = this.changesMade;
-    this.setChangesMade(false);
+    // Remember the unsavedChanges status of the current page,
+    // then set it to false.
+    const currentPageComponent = this.pageComponent;
+    const currentUnsavedChanges = this.pageComponent.unsavedChanges;
+    this.setUnsavedChanges(false);
     this.removeBeforeUnloadHandler();
 
-    const currentPageComponent = this.pageComponent;
 
     // We can't easily check whether the form is valid, and that
     // is not enough anyway.  Since there is no event to indicate failure,
-    // just restore the changesMade status after a timeout,
-    // checking that we are still on the same page.
+    // we'll just restore the unsavedChanges status after a timeout,
+    // when we are still on the same page.
     window.setTimeout(() => {
-      if (this.pageComponent == currentPageComponent) {
-        this.setChangesMade(currentChangesMade);
+      if (this.pageComponent == currentPageComponent &&
+        this.getUnsavedChanges()) {
+        this.setUnsavedChanges(currentUnsavedChanges);
         this.addBeforeUnloadHandler();
       }
     }, 1000);
@@ -203,7 +209,7 @@ class ChromedashApp extends LitElement {
     // This is like the beforeunload handler, but for "in-page" actions.
     if (this.pageComponent) {
       // Act like we are unloading previous page and loading a new page.
-      if (this.changesMade) {
+      if (this.getUnsavedChanges()) {
         // Should we use shoelace dialog instead?
         if (!confirm('You will lose unsaved changes.  Proceed anyway?')) {
           // Set ctx.handled to false, so we don't change browser's history.
@@ -215,7 +221,7 @@ class ChromedashApp extends LitElement {
 
     // Loading new page.
     this.pageComponent = document.createElement(componentName);
-    this.setChangesMade(false);
+    this.setUnsavedChanges(false);
     this.removeBeforeUnloadHandler();
 
     window.setTimeout(() => {
@@ -227,7 +233,7 @@ class ChromedashApp extends LitElement {
 
         // Remember if anything has changed since the page was loaded.
         this.pageComponent.addEventListener('sl-change', () => {
-          this.setChangesMade(true);
+          this.setUnsavedChanges(true);
         });
 
         form.addEventListener('submit', () => {
