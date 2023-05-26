@@ -1,5 +1,5 @@
 import testing_config
-from internals.link_helpers import Link
+from internals.link_helpers import Link, LINK_TYPE_CHROMIUM_BUG
 
 
 class LinkHelperTest(testing_config.CustomTestCase):
@@ -9,6 +9,8 @@ class LinkHelperTest(testing_config.CustomTestCase):
             'https://bugs.chromium.org/p/chromium/issues/detail?id=100000')
         link.parse()
         info = link.information
+        assert link.type == LINK_TYPE_CHROMIUM_BUG
+        assert link.is_parsed == True
         assert info["summary"] == "Repeated zooms leave tearing artifact"
         assert info["statusRef"]["status"] == "Fixed"
         assert info["ownerRef"]["displayName"] == 'backer@chromium.org'
@@ -17,10 +19,13 @@ class LinkHelperTest(testing_config.CustomTestCase):
         link = Link(
             'https://bugs.chromium.org/p/chromium/issues/details?id=100000000000000')
         link.parse()
-        print(link.information)
-        assert link.information == None and link.is_error == True
+        assert link.information == None 
+        assert link.is_parsed == True
+        assert link.is_error == True
 
     def test_parse_chromium_tracker_fail_no_permission(self):
         link = Link('https://bugs.chromium.org/p/chromium/issues/detail?id=1')
         link.parse()
-        assert link.information == None and link.is_error == True
+        assert link.information == None
+        assert link.is_parsed == True 
+        assert link.is_error == True
