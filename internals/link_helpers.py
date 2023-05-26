@@ -11,11 +11,8 @@ LINK_TYPES_REGEX = {
     LINK_TYPE_UNKNOWN: re.compile(r'https?://.*'),
 }
 
+
 class Link():
-    url = str
-    type = str
-    is_parsed = bool
-    information = dict
 
     @classmethod
     def get_type(cls, link: str) -> str | None:
@@ -24,16 +21,17 @@ class Link():
             if regex.match(link):
                 return link_type
         return None
-    
+
     def __init__(self, url: str):
         self.url = url
         self.type = Link.get_type(url)
         self.is_parsed = False
         self.is_error = False
+        self.information = None
 
     def _parse_chromium_bug(self) -> dict:
         """Parse the information from the chromium bug tracker."""
-        
+
         endpoint = 'https://bugs.chromium.org/prpc/monorail.Issues/GetIssue'
 
         issue_id = self.url.split('id=')[-1]
@@ -41,7 +39,8 @@ class Link():
         # csrf token is required, its expiration is about 2 hours according to the tokenExpiresSec field
         # technically, we could cache the csrf token and reuse it for 2 hours
 
-        csrf_token = re.findall("'token': '(.*?)'", requests.get("https://bugs.chromium.org/p/chromium/issues/wizard").text)
+        csrf_token = re.findall(
+            "'token': '(.*?)'", requests.get("https://bugs.chromium.org/p/chromium/issues/wizard").text)
         csrf_token = csrf_token[0] if csrf_token else None
 
         if csrf_token is None:
@@ -58,7 +57,7 @@ class Link():
                 'localId': int(issue_id)
             },
         }
-        
+
         information = requests.post(endpoint, json=body, headers=headers).text
 
         # remove )]}' from the beginning of the response
@@ -66,10 +65,12 @@ class Link():
             information = information[5:]
 
         information = json.loads(information)
-        
+
         return information.get('issue', None)
 
     def parse(self):
+        """Parse the link and store the information."""
+
         if self.type == LINK_TYPE_CHROMIUM_BUG:
             try:
                 self.information = self._parse_chromium_bug()
