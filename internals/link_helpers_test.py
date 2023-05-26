@@ -2,18 +2,10 @@ import testing_config
 from internals.link_helpers import Link
 
 class LinkHelperTest(testing_config.CustomTestCase):
-
-    def setUp(self):
-        pass
-    
-    def tearDown(self):
-        pass
     
     def test_parse_chromium_tracker(self):
         link = Link('https://bugs.chromium.org/p/chromium/issues/detail?id=100000')
         link.parse()
-        import json
-        print(json.dumps(link.information, indent=4, sort_keys=True))
         info = link.information
         assert info["summary"] == "Repeated zooms leave tearing artifact"
         assert info["statusRef"]["status"] == "Fixed"
