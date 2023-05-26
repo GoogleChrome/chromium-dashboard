@@ -41,10 +41,10 @@ class Link():
         # csrf token is required, its expiration is about 2 hours according to the tokenExpiresSec field
         # technically, we could cache the csrf token and reuse it for 2 hours
 
-        csrf_token = ""
-        csrf_token = re.findall("'token': '(.*?)'", requests.get("https://bugs.chromium.org/p/chromium/issues/wizard").text)[0]
+        csrf_token = re.findall("'token': '(.*?)'", requests.get("https://bugs.chromium.org/p/chromium/issues/wizard").text)
+        csrf_token = csrf_token[0] if csrf_token else None
 
-        if csrf_token == "":
+        if csrf_token is None:
             raise Exception("Could not find bugs.chromium.org CSRF token")
 
         headers = {
