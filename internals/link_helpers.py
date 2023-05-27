@@ -2,6 +2,8 @@ import re
 import requests
 import json
 import logging
+from typing import Any
+
 LINK_TYPE_CHROMIUM_BUG = 'chromium_bug'
 LINK_TYPE_UNKNOWN = 'unknown'
 LINK_TYPES_REGEX = {
@@ -29,7 +31,7 @@ class Link():
         self.is_error = False
         self.information = None
 
-    def _parse_chromium_bug(self) -> dict:
+    def _parse_chromium_bug(self) -> dict[str, object]:
         """Parse the information from the chromium bug tracker."""
 
         endpoint = 'https://bugs.chromium.org/prpc/monorail.Issues/GetIssue'
@@ -48,7 +50,7 @@ class Link():
 
         headers = {
             'accept': 'application/json',
-            'x-xsrf-token': csrf_token,
+            'x-xsrf-token': str(csrf_token),
             'content-type': 'application/json',
         }
         body = {
@@ -58,13 +60,13 @@ class Link():
             },
         }
 
-        information = requests.post(endpoint, json=body, headers=headers).text
+        json_str = requests.post(endpoint, json=body, headers=headers).text
 
         # remove )]}' from the beginning of the response
-        if information.startswith(")]}'"):
-            information = information[5:]
+        if json_str.startswith(")]}'"):
+            json_str = json_str[5:]
 
-        information = json.loads(information)
+        information: dict[str, Any] = json.loads(json_str)
 
         return information.get('issue', None)
 
