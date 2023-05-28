@@ -27,7 +27,7 @@ class LinkTest(testing_config.CustomTestCase):
     self.feature2.key.delete()
     pass
 
-  def mock_user_change_fields(self, changed_fields, target_feature = None):
+  def mock_user_change_fields(self, changed_fields, target_feature=None):
     if not target_feature:
       target_feature = self.feature
     for field_name, old_val, new_val in changed_fields:
@@ -38,8 +38,7 @@ class LinkTest(testing_config.CustomTestCase):
 
   def test_feature_changed_add_and_remove_url(self):
     url = "https://bugs.chromium.org/p/chromium/issues/detail?id=100000"
-    query = FeatureLinks.query(
-      FeatureLinks.feature_ids == self.feature_id)
+    query = FeatureLinks.query(FeatureLinks.url == url)
 
     changed_fields = [
       ('bug_url', None, url),
@@ -56,7 +55,7 @@ class LinkTest(testing_config.CustomTestCase):
     self.assertEqual(link.information["summary"],
                      "Repeated zooms leave tearing artifact")
 
-    # remove bug_url field, the link should still exist 
+    # remove bug_url field, the link should still exist
     # because launch_bug_url field is still using it
     changed_fields_remove = [('bug_url', url, None)]
     self.mock_user_change_fields(changed_fields_remove)
@@ -71,9 +70,8 @@ class LinkTest(testing_config.CustomTestCase):
     self.assertIsNone(link)
 
   def test_feature_changed_invalid_url(self):
-    query = FeatureLinks.query(
-        FeatureLinks.feature_ids == self.feature_id)
     url = "https://bugs.chromium.org/p/chromium/issues/detail?id=100000000000"
+    query = FeatureLinks.query(FeatureLinks.url == url)
     changed_fields = [
       ('bug_url', None, url),
     ]
@@ -83,11 +81,10 @@ class LinkTest(testing_config.CustomTestCase):
     link = query.get()
     self.assertIsNotNone(link)
     self.assertIsNone(link.information)
-  
+
   def test_features_with_same_link(self):
-    query = FeatureLinks.query(
-    FeatureLinks.feature_ids == self.feature_id)
     url = "https://bugs.chromium.org/p/chromium/issues/detail?id=100000"
+    query = FeatureLinks.query(FeatureLinks.url == url)
     changed_fields = [
       ('bug_url', None, url),
     ]
@@ -106,4 +103,3 @@ class LinkTest(testing_config.CustomTestCase):
     link = query.get()
     self.assertNotIn(self.feature_id, link.feature_ids)
     self.assertIn(self.feature2_id, link.feature_ids)
-                      
