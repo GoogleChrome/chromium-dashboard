@@ -7,7 +7,9 @@ from google.cloud import ndb  # type: ignore
 
 
 class FeatureLinks(ndb.Model):
-  """Links that occur in the fields of the feature."""
+  """Links that occur in the fields of the feature. 
+  This helps show a preview of information of linked pages, saving users the trouble of clicking.
+  """
   created = ndb.DateTimeProperty(auto_now_add=True)
   updated = ndb.DateTimeProperty(auto_now=True)
   feature_ids = ndb.IntegerProperty(repeated=True)
@@ -16,7 +18,7 @@ class FeatureLinks(ndb.Model):
   information = ndb.JsonProperty()
 
 
-def update_feature_links(fe: 'FeatureEntry', changed_fields: list[tuple[str, Any, Any]]) -> None:
+def update_feature_links(fe: FeatureEntry, changed_fields: list[tuple[str, Any, Any]]) -> None:
   """Update the links in the given feature entry."""
   for _, old_val, new_val in changed_fields:
     if new_val != old_val:
@@ -36,7 +38,7 @@ def update_feature_links(fe: 'FeatureEntry', changed_fields: list[tuple[str, Any
         pass
 
 
-def _index_link(link: Link, fe: 'FeatureEntry') -> None:
+def _index_link(link: Link, fe: FeatureEntry) -> None:
   """Index the given link."""
   logging.info(f'Indexing link {link.url} for feature {fe.key.integer_id()}')
   feature_id = fe.key.integer_id()
@@ -64,7 +66,7 @@ def _index_link(link: Link, fe: 'FeatureEntry') -> None:
   feature_link.put()
 
 
-def _remove_link(link: Link, fe: 'FeatureEntry') -> None:
+def _remove_link(link: Link, fe: FeatureEntry) -> None:
   """Un-index the given link."""
   feature_id = fe.key.integer_id()
   feature_links = FeatureLinks.query(FeatureLinks.url == link.url).fetch(None)
@@ -78,7 +80,7 @@ def _remove_link(link: Link, fe: 'FeatureEntry') -> None:
       logging.info(f'Delete indexed link {link.url}')
 
 
-def _get_feature_links(fe: 'FeatureEntry') -> list[Link]:
+def _get_feature_links(fe: FeatureEntry) -> list[Link]:
   """Return a list of Link in the given feature entry."""
   pass
 

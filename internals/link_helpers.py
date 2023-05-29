@@ -40,7 +40,8 @@ class Link():
 
     # csrf token is required, its expiration is about 2 hours according to the tokenExpiresSec field
     # technically, we could cache the csrf token and reuse it for 2 hours
-
+    # TODO: consider using a monorail API client with OAuth
+    
     csrf_token = re.findall(
         "'token': '(.*?)'", requests.get("https://bugs.chromium.org/p/chromium/issues/wizard").text)
     csrf_token = csrf_token[0] if csrf_token else None
