@@ -333,4 +333,9 @@ def update_gate_approval_state(gate: Gate) -> int:
   gate.state = new_state
   if votes:
     gate.requested_on = min(v.set_on for v in votes)
+
+  # Starting a review resets responded_on.
+  if new_state == Vote.REVIEW_REQUESTED:
+    gate.responded_on = None
+
   return True

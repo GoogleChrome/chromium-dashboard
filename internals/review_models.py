@@ -136,6 +136,8 @@ class Gate(ndb.Model):
   state = ndb.IntegerProperty(required=True)
   # The datetime of the first vote on this gate.
   requested_on = ndb.DateTimeProperty()
+  # The first comment or vote on this gate from a reviewer after the request.
+  responded_on = ndb.DateTimeProperty()
 
   owners = ndb.StringProperty(repeated=True)
   next_action = ndb.DateProperty()
