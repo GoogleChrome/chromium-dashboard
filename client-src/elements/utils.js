@@ -331,3 +331,14 @@ export function formatFeatureChanges(fieldValues, featureId) {
     has_changes: hasChanges,
   };
 }
+
+/**
+ * Manage response to change submission.
+ * Required to manage beforeUnload handler.
+ * @param {string} response The error message to display,
+ *     or empty string if save was successful.
+ */
+export function handleSaveChangesResponse(response) {
+  const app = document.querySelector('chromedash-app');
+  app.setUnsavedChanges(response !== '');
+}
