@@ -465,12 +465,12 @@ export class ChromedashGateColumn extends LitElement {
     `;
   }
 
-  renderVoteRow(vote) {
+  renderVoteRow(vote, canVote) {
     const shortVoter = vote.set_by.split('@')[0] + '@';
     let saveButton = nothing;
     let voteCell = this.renderVoteReadOnly(vote);
 
-    if (vote.set_by == this.user?.email) {
+    if (canVote && vote.set_by == this.user?.email) {
       // If the current reviewer was the one who requested the review,
       // select "No response" in the menu because there is no
       // "Review requested" menu item now.
@@ -505,7 +505,7 @@ export class ChromedashGateColumn extends LitElement {
         this.user.approvable_gate_types.includes(this.gate.gate_type));
     const myVoteExists = this.votes.some((v) => v.set_by == this.user?.email);
     const addVoteRow = (canVote && !myVoteExists) ?
-      this.renderVoteRow({set_by: this.user?.email, state: 7}) :
+      this.renderVoteRow({set_by: this.user?.email, state: 7}, canVote) :
       nothing;
 
     if (!canVote && this.votes.length === 0) {
@@ -517,7 +517,7 @@ export class ChromedashGateColumn extends LitElement {
     return html`
       <table>
         <tr><th>Reviewer</th><th>Review status</th></tr>
-        ${this.votes.map((v) => this.renderVoteRow(v))}
+        ${this.votes.map((v) => this.renderVoteRow(v, canVote))}
         ${addVoteRow}
       </table>
     `;
