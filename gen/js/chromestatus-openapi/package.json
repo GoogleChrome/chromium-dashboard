@@ -16,6 +16,6 @@
     "prepare": "npm run build"
   },
   "devDependencies": {
-    "typescript": "^5.0"
+    "typescript": "^5.1"
   }
 }

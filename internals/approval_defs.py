@@ -40,7 +40,9 @@ SECURITY_APPROVERS: list[str] = [
   # TBD
 ]
 ENTERPRISE_APPROVERS = [
-    'cbe-launch-approvers@google.com',
+    'mhoste@google.com',
+    'angelaweber@google.com',
+    'davidayad@google.com',
     'bheenan@google.com',
 ]
 DEBUGGABILITY_APPROVERS = [
