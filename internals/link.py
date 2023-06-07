@@ -39,16 +39,16 @@ def update_feature_links(fe: FeatureEntry, changed_fields: list[tuple[str, Any, 
     if new_val != old_val:
       if old_val is None and not bool(new_val):
         continue
-      if (isinstance(old_val, str) and Link.get_type(old_val)):
+      if isinstance(old_val, str) and Link.get_type(old_val):
         link = Link(old_val)
         fe_dict = fe.to_dict()
         if link.url not in list(fe_dict.values()):
           # if the link is not in other fields, then remove it
           _remove_link(link, fe)
-      if (isinstance(new_val, str) and Link.get_type(new_val)):
+      if isinstance(new_val, str) and Link.get_type(new_val):
         link = Link(new_val)
         _index_link(link, fe)
-      elif (isinstance(new_val, list)):
+      elif isinstance(new_val, list):
         # TODO: check if new_val is a list of strings, if so, then index/un-index each link.
         pass
 
