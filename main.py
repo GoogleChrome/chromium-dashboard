@@ -188,7 +188,7 @@ spa_page_routes = [
   Route('/enterprise'),
   Route(
     '/enterprise/releasenotes',
-    defaults={'require_signin': True, 'require_google_or_chromium_account': True,}),
+    defaults={'require_signin': True, 'is_enterprise_page': True}),
   # Admin pages
   Route('/admin/blink', defaults={'require_admin_site': True, 'require_signin': True}),
 ]

@@ -562,6 +562,11 @@ def get_spa_template_data(handler_obj, defaults):
   """Check permissions then let spa.html do its thing."""
   # Check if the page requires user to sign in
   if defaults.get('require_signin') and not handler_obj.get_current_user():
+    if defaults.get('is_enterprise_page'):
+      common_data = handler_obj.get_common_data()
+      if 'loginStatus=False' in common_data['current_path']:
+        return {}
+      return flask.redirect('?loginStatus=False'), handler_obj.get_headers()
     return flask.redirect(settings.LOGIN_PAGE_URL), handler_obj.get_headers()
 
   # Check if the page requires create feature permission
@@ -589,7 +594,7 @@ def get_spa_template_data(handler_obj, defaults):
       handler_obj.abort(403, msg='Cannot perform admin actions')
 
   # Validate the user has a google or chromium account and redirect if needed.
-  if defaults.get('require_google_or_chromium_account'):
+  if defaults.get('is_enterprise_page'):
     user = handler_obj.get_current_user()
     # Should have already done the require_signin check.
     # If for reason, we don't let's treat it as the main 403 case.
