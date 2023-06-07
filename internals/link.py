@@ -49,7 +49,8 @@ def update_feature_links(fe: FeatureEntry, changed_fields: list[tuple[str, Any, 
         link = Link(new_val)
         _index_link(link, fe)
       elif isinstance(new_val, list):
-        # TODO: check if new_val is a list of strings, if so, then index/un-index each link.
+        # TODO: check if new_val/new_val is a list of links, if so, then index/un-index each link.
+        # TODO: check if new_val/new_val is a long text with links, if so, then index/un-index each link.
         pass
 
 
