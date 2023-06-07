@@ -5,12 +5,12 @@ import logging
 from typing import Any
 
 LINK_TYPE_CHROMIUM_BUG = 'chromium_bug'
-LINK_TYPE_UNKNOWN = 'unknown'
+LINK_TYPE_WEB = 'web'
 LINK_TYPES_REGEX = {
     # https://bugs.chromium.org/p/chromium/issues/detail?id=
     LINK_TYPE_CHROMIUM_BUG: re.compile(r'https://bugs\.chromium\.org/p/chromium/issues/detail\?.*'),
     # any other links
-    LINK_TYPE_UNKNOWN: re.compile(r'https?://.*'),
+    LINK_TYPE_WEB: re.compile(r'https?://.*'),
 }
 
 
@@ -81,7 +81,7 @@ class Link():
         logging.error(f'Error parsing chromium bug {self.url}: {e}')
         self.is_error = True
         self.information = None
-    elif self.type == LINK_TYPE_UNKNOWN:
+    elif self.type == LINK_TYPE_WEB:
       # TODO: parse other url title and description, og tags, etc.
       self.information = None
     self.is_parsed = True
