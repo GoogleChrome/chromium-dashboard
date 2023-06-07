@@ -15,7 +15,7 @@
 
 import testing_config
 from internals.core_models import FeatureEntry
-from internals.link import FeatureLinks, update_feature_links
+from internals.feature_links import FeatureLinks, update_feature_links
 from internals.link_helpers import LINK_TYPE_CHROMIUM_BUG
 
 
