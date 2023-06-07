@@ -22,6 +22,7 @@ from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.data_types import StageDict, VerboseFeatureDict
 from internals.review_models import Vote, Gate
 from internals import approval_defs
+from internals import slo
 
 
 SIMPLE_TYPES = frozenset((int, float, bool, dict, str, list))
@@ -529,7 +530,18 @@ def vote_value_to_json_dict(vote: Vote) -> dict[str, Any]:
 def gate_value_to_json_dict(gate: Gate) -> dict[str, Any]:
   next_action = str(gate.next_action) if gate.next_action else None
   requested_on = str(gate.requested_on) if gate.requested_on else None
+  responded_on = str(gate.responded_on) if gate.responded_on else None
   appr_def = approval_defs.APPROVAL_FIELDS_BY_ID.get(gate.gate_type)
+  slo_initial_response_remaining = None
+  slo_initial_response_took = None
+  if requested_on:
+    if responded_on:
+      slo_initial_response_took = slo.weekdays_between(
+          gate.requested_on, gate.responded_on)
+    else:
+      slo_initial_response_remaining = slo.remaining_days(
+          gate.requested_on, appr_def.slo_initial_response)
+
   return {
       'id': gate.key.integer_id(),
       'feature_id': gate.feature_id,
@@ -539,7 +551,11 @@ def gate_value_to_json_dict(gate: Gate) -> dict[str, Any]:
       'gate_name': appr_def.name if appr_def else 'Gate',
       'state': gate.state,
       'requested_on': requested_on,  # YYYY-MM-DD HH:MM:SS or None
+      'responded_on': responded_on,  # YYYY-MM-DD HH:MM:SS or None
       'owners': gate.owners,
       'next_action': next_action,  # YYYY-MM-DD or None
-      'additional_review': gate.additional_review
+      'additional_review': gate.additional_review,
+      'slo_initial_response': appr_def.slo_initial_response,
+      'slo_initial_response_took': slo_initial_response_took,
+      'slo_initial_response_remaining': slo_initial_response_remaining,
       }

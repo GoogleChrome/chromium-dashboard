@@ -24,19 +24,32 @@ def is_weekday(d: datetime.datetime) -> bool:
   return d.weekday() < 5
 
 
-def weekdays_since(requested_on: datetime.datetime) -> int:
-  """Return the number of weekdays since a review was requested (in UTC)."""
-  d = requested_on.astimezone(PACIFIC_TZ)
-  today = datetime.datetime.now(tz=PACIFIC_TZ)
+def weekdays_between(start: datetime.datetime, end: datetime.datetime) -> int:
+  """Return the number of Pacific timezone weekdays between two UTC dates."""
+  d_ptz = start.astimezone(PACIFIC_TZ)
+  end_ptz = end.astimezone(tz=PACIFIC_TZ)
   weekday_counter = 0
-  while d < today and weekday_counter < MAX_DAYS:
-    d = d + timedelta(days=1)
-    if is_weekday(d):
+  while d_ptz < end_ptz and weekday_counter < MAX_DAYS:
+    d_ptz = d_ptz + datetime.timedelta(days=1)
+    if is_weekday(d_ptz):
       weekday_counter += 1
 
   return weekday_counter
 
 
+def now_utc() -> datetime.datetime:
+  """A mockable version of datetime.datetime.now()."""
+  return datetime.datetime.now()
+
+
+def remaining_days(requested_on: datetime.datetime, slo_limit: int) -> int:
+  """Return the number of weekdays before the SLO deadline is reached."""
+  # Positive: There are days remaining.
+  # Zero: The review is due today.
+  # Negative: The review is overdue.
+  return slo_limit - weekdays_between(requested_on, now_utc())
+
+
 def is_overdue(requested_on: datetime.datetime, slo_limit: int) -> bool:
   """Return True if a review is overdue."""
-  return weekdays_since(requested_on) > slo_limit
+  return remaining_days(requested_on, slo_limit) < 0

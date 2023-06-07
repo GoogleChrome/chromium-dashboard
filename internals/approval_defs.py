@@ -56,6 +56,8 @@ TESTING_APPROVERS = [
     'vivianz@google.com',
 ]
 
+DEFAULT_SLO_LIMIT = 2  # Two weekdays in the Pacific timezone.
+
 @dataclass(eq=True, frozen=True)
 class ApprovalFieldDef:
   name: str
@@ -64,6 +66,8 @@ class ApprovalFieldDef:
   rule: str
   approvers: str | list[str]
   team_name: str
+  slo_initial_response: int = DEFAULT_SLO_LIMIT
+
 
 # Note: This can be requested manually through the UI, but it is not
 # triggered by a blink-dev thread because i2p intents are only FYIs to
