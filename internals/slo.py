@@ -16,8 +16,14 @@ import datetime
 import logging
 import pytz
 
+from framework import permissions
+from framework.users import User
+from internals.core_models import FeatureEntry
+from internals.review_models import Gate, Vote
+
 PACIFIC_TZ = pytz.timezone('US/Pacific')
 MAX_DAYS = 9999
+
 
 def is_weekday(d: datetime.datetime) -> bool:
   """Return True if d is a weekday: Monday through Friday."""
@@ -53,3 +59,39 @@ def remaining_days(requested_on: datetime.datetime, slo_limit: int) -> int:
 def is_overdue(requested_on: datetime.datetime, slo_limit: int) -> bool:
   """Return True if a review is overdue."""
   return remaining_days(requested_on, slo_limit) < 0
+
+
+def record_vote(gate: Gate, votes: list[Vote]) -> bool:
+  """Record a Gate SLO response time if needed.  Return True if changed."""
+  if gate.requested_on is None:
+    return False  # Review has not been requested yet.
+  elif gate.responded_on is not None:
+    return False  # We already recorded the time of the initial response.
+  elif not votes:
+    return False  # No votes yet
+  else:
+    recent_vote_time = max(v.set_on for v in votes)
+    if recent_vote_time > gate.requested_on:
+      logging.info('SLO: Got reviewer vote as initial response')
+      gate.responded_on = recent_vote_time
+      return True
+
+  return False
+
+
+def record_comment(
+    feature: FeatureEntry, gate: Gate, user: User,
+    approvers: list[str]) -> bool:
+  """Record Gate SLO response time if needed.  Return True if changed."""
+  if gate.requested_on is None:
+    return False  # Review has not been requested yet.
+  elif gate.responded_on is not None:
+    return False  # We already recorded the time of the initial response.
+  else:
+    is_approver = permissions.can_approve_feature(user, feature, approvers)
+    if is_approver:
+      logging.info('SLO: Got reviewer comment as initial response')
+      gate.responded_on = datetime.datetime.now()
+      return True
+
+  return False

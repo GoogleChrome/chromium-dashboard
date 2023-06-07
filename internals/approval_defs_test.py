@@ -369,21 +369,24 @@ class UpdateTest(testing_config.CustomTestCase):
   def test_update_approval_stage__needs_update(self):
     """Gate's approval state will be updated based on votes."""
     # Gate 1 should evaluate to approved after updating.
+    votes = Vote.get_votes(gate_id=self.gate_1.key.integer_id())
     self.assertTrue(
-        approval_defs.update_gate_approval_state(self.gate_1))
+        approval_defs.update_gate_approval_state(self.gate_1, votes))
     self.assertEqual(self.gate_1.state, Vote.APPROVED)
 
   def test_update_approval_state__no_change(self):
     """Gate's approval state does not change unless it needs to."""
     # Gate 2 is already marked as approved and should not change.
+    votes = Vote.get_votes(gate_id=self.gate_2.key.integer_id())
     self.assertFalse(
-        approval_defs.update_gate_approval_state(self.gate_2))
+        approval_defs.update_gate_approval_state(self.gate_2, votes))
     self.assertEqual(self.gate_2.state, Vote.APPROVED)
 
   def test_update_approval_state__unsupported_gate_type(self):
     """If we don't recognize the gate type, assume rule ONE_LGTM."""
     self.gate_1.gate_type = 999
     # Gate 1 should evaluate to approved after updating.
+    votes = Vote.get_votes(gate_id=self.gate_1.key.integer_id())
     self.assertTrue(
-        approval_defs.update_gate_approval_state(self.gate_1))
+        approval_defs.update_gate_approval_state(self.gate_1, votes))
     self.assertEqual(self.gate_1.state, Vote.APPROVED)

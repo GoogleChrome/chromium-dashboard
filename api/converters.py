@@ -532,6 +532,9 @@ def gate_value_to_json_dict(gate: Gate) -> dict[str, Any]:
   requested_on = str(gate.requested_on) if gate.requested_on else None
   responded_on = str(gate.responded_on) if gate.responded_on else None
   appr_def = approval_defs.APPROVAL_FIELDS_BY_ID.get(gate.gate_type)
+  slo_initial_response = approval_defs.DEFAULT_SLO_LIMIT
+  if appr_def:
+    slo_initial_response = appr_def.slo_initial_response
   slo_initial_response_remaining = None
   slo_initial_response_took = None
   if requested_on:
@@ -540,7 +543,7 @@ def gate_value_to_json_dict(gate: Gate) -> dict[str, Any]:
           gate.requested_on, gate.responded_on)
     else:
       slo_initial_response_remaining = slo.remaining_days(
-          gate.requested_on, appr_def.slo_initial_response)
+          gate.requested_on, slo_initial_response)
 
   return {
       'id': gate.key.integer_id(),
@@ -555,7 +558,7 @@ def gate_value_to_json_dict(gate: Gate) -> dict[str, Any]:
       'owners': gate.owners,
       'next_action': next_action,  # YYYY-MM-DD or None
       'additional_review': gate.additional_review,
-      'slo_initial_response': appr_def.slo_initial_response,
+      'slo_initial_response': slo_initial_response,
       'slo_initial_response_took': slo_initial_response_took,
       'slo_initial_response_remaining': slo_initial_response_remaining,
       }

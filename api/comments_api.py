@@ -18,7 +18,10 @@ from typing import Any
 from framework import basehandlers
 from framework import permissions
 from internals.review_models import Activity, Amendment, Gate
-from internals import notifier, notifier_helpers
+from internals import approval_defs
+from internals import notifier
+from internals import notifier_helpers
+from internals import slo
 
 
 def amendment_to_json_dict(amendment: Amendment) -> dict[str, Any]:
@@ -92,13 +95,16 @@ class CommentsAPI(basehandlers.APIHandler):
       comment_activity.put()
 
     # Notify subscribers of new comments when user posts a comment
-    # via the gate column.
+    # via the gate column.  Also, record SLO initial response time.
     if gate_id:
       gate = Gate.get_by_id(gate_id)
       if not gate:
         self.abort(404, msg='Gate not found; notifications abort.')
       notifier_helpers.notify_subscribers_of_new_comments(
           feature, gate, user.email(), comment_content)
+      approvers = approval_defs.get_approvers(gate.gate_type)
+      if slo.record_comment(feature, gate, user, approvers):
+        gate.put()
 
     # We can only be certain which intent thread we want to post to with
     # a relevant gate ID in order to get the intent_thread_url field from
