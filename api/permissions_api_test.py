@@ -47,7 +47,6 @@ class PermissionsAPITest(testing_config.CustomTestCase):
       'user': {
         'can_create_feature': False,
         'approvable_gate_types': [],
-        'can_approve': False,
         'can_comment': False,
         'can_edit_all': False,
         'is_admin': False,
@@ -65,7 +64,6 @@ class PermissionsAPITest(testing_config.CustomTestCase):
       'user': {
         'can_create_feature': True,
         'approvable_gate_types': [],
-        'can_approve': False,
         'can_comment': True,
         'can_edit_all': False,
         'is_admin': False,
