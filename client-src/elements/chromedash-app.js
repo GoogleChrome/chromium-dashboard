@@ -311,8 +311,14 @@ class ChromedashApp extends LitElement {
       this.hideSidebar();
     });
     page('/guide/enterprise/new', (ctx) => {
-      if (!this.setupNewPage(ctx, 'chromedash-guide-new-page')) return;
-      this.pageComponent.userEmail = this.user.email;
+      if (!this.setupNewPage(
+        ctx,
+        'chromedash-guide-new-page',
+        'chromedash-login-required-page')) return;
+
+      if (ctx.querystring.search('loginStatus=False') == -1) {
+        this.pageComponent.userEmail = this.user.email;
+      }
       this.pageComponent.isEnterpriseFeature = true;
       this.currentPage = ctx.path;
       this.hideSidebar();
