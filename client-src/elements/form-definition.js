@@ -125,6 +125,7 @@ export const ENTERPRISE_NEW_FEATURE_FORM_FIELDS = [
   'owner',
   'editors',
   'enterprise_feature_categories',
+  'screenshot_links',
 ];
 
 // The fields that are available to every feature.
