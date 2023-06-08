@@ -312,7 +312,7 @@ class ChromedashFeatureDetail extends LitElement {
     let value = this.feature[fieldName];
     const fieldNameMapping = {
       owner: 'browsers.chrome.owners',
-      editors: 'browsers.chrome.editors',
+      editors: 'editors',
       search_tags: 'tags',
       spec_link: 'standards.spec',
       standard_maturity: 'standards.maturity.text',
