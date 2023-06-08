@@ -67,7 +67,7 @@ describe('chromedash-guide-edit-page', () => {
     'Estimated target milestone': 'True',
     'Final target milestone': 'True',
     'Intent to Experiment email': 'fake intent to experiment url',
-    'Ready for Trial email': 'fake ready for trial url',
+    'Ready for Developer Testing email': 'fake ready for dev test url',
     'Spec link': 'fake spec link',
     'Web developer signals': 'True',
   });
