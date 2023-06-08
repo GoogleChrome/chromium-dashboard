@@ -206,7 +206,7 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
     self.assertTrue(detector(self.feature_1, self.stages_dict))
 
   def test_ready_for_trial_email(self):
-    detector = processes.PROGRESS_DETECTORS['Ready for Trial email']
+    detector = processes.PROGRESS_DETECTORS['Ready for Developer Testing email']
     self.assertFalse(detector(self.feature_1, self.stages_dict))
     self.stages_dict[130][0].announcement_url = 'http://example.com/trial_ready'
     self.assertTrue(detector(self.feature_1, self.stages_dict))

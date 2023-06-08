@@ -153,7 +153,7 @@ class IntentEmailPreviewHandlerTest(testing_config.CustomTestCase):
             self.feature_1, core_enums.INTENT_IMPLEMENT))
 
     self.assertEqual(
-        'Ready for Trial',
+        'Ready for Developer Testing',
         self.handler.compute_subject_prefix(
             self.feature_1, core_enums.INTENT_EXPERIMENT))
 

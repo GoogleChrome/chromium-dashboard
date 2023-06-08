@@ -633,9 +633,9 @@ export const ALL_FIELDS = {
     type: 'input',
     attrs: URL_FIELD_ATTRS,
     required: false,
-    label: 'Ready for Trial link',
-    help_text: html`After you have started the "Ready for Trial" discussion
-                thread, link to it here.`,
+    label: 'Ready for Develper Testing link',
+    help_text: html`After you have started the "Ready for Developer Testing"
+                 discussion thread, link to it here.`,
   },
 
   'intent_to_experiment_url': {
@@ -1002,7 +1002,7 @@ export const ALL_FIELDS = {
     help_text: html`
       If your feature was available as an origin trial, link to a summary
       of usage and developer feedback. If not, leave this empty. DO NOT
-      USE FEEDBACK VERBATIM without prior consultation with the Origin 
+      USE FEEDBACK VERBATIM without prior consultation with the Origin
       Trials team.`,
   },
 

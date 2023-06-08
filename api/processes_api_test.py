@@ -208,7 +208,7 @@ class ProgressAPITest(testing_config.CustomTestCase):
       'Final target milestone': 'True',
       'Intent to Prototype email': 'https://example.com/prototype',
       'Intent to Experiment email': 'https://example.com/ot',
-      'Ready for Trial email': 'https://example.com/ready_for_trial',
+      'Ready for Developer Testing email': 'https://example.com/ready_for_trial',
       'Intent to Ship email': 'https://example.com/ship',
       'Spec link': 'fake spec link',
       'Updated target milestone': 'True',

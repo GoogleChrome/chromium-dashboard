@@ -81,7 +81,7 @@ class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
     elif intent_stage == core_enums.INTENT_IMPLEMENT:
       return 'Intent to Prototype'
     elif intent_stage == core_enums.INTENT_EXPERIMENT:
-      return 'Ready for Trial'
+      return 'Ready for Developer Testing'
     elif intent_stage == core_enums.INTENT_EXTEND_TRIAL:
       if feature.feature_type == core_enums.FEATURE_TYPE_DEPRECATION_ID:
         return 'Request for Deprecation Trial'
