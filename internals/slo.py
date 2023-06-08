@@ -33,6 +33,8 @@ def is_weekday(d: datetime.datetime) -> bool:
 def weekdays_between(start: datetime.datetime, end: datetime.datetime) -> int:
   """Return the number of Pacific timezone weekdays between two UTC dates."""
   d_ptz = start.astimezone(PACIFIC_TZ)
+  # The day of the request does not count.
+  d_ptz = d_ptz.replace(hour=23, minute=59, second=59)
   end_ptz = end.astimezone(tz=PACIFIC_TZ)
   weekday_counter = 0
   while d_ptz < end_ptz and weekday_counter < MAX_DAYS:
@@ -91,7 +93,7 @@ def record_comment(
     is_approver = permissions.can_approve_feature(user, feature, approvers)
     if is_approver:
       logging.info('SLO: Got reviewer comment as initial response')
-      gate.responded_on = datetime.datetime.now()
+      gate.responded_on = now_utc()
       return True
 
   return False

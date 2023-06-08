@@ -522,14 +522,16 @@ class GateConvertersTest(testing_config.CustomTestCase):
   @mock.patch('internals.slo.now_utc')
   def test_maxmimal(self, mock_now):
     """If a Gate has all fields set, we can convert it to JSON."""
-    mock_now.return_value = datetime(2022, 12, 20, 1, 2, 3)
     gate = Gate(
         feature_id=1, stage_id=2, gate_type=3, state=4,
-        requested_on=datetime(2022, 12, 14, 1, 2, 3),
+        requested_on=datetime(2022, 12, 14, 1, 2, 3), # Wednesday
         owners=['appr1@example.com', 'appr2@example.com'],
         next_action=datetime(2022, 12, 25),
         additional_review=True)
     gate.put()
+    # The review weas due on Friday 2022-12-16.
+    mock_now.return_value = datetime(2022, 12, 20, 1, 2, 3)  # Tuesday after.
+
     actual = converters.gate_value_to_json_dict(gate)
     appr_def = approval_defs.APPROVAL_FIELDS_BY_ID[gate.gate_type]
     expected = {
