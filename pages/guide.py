@@ -137,6 +137,7 @@ class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
         creator_email=signed_in_user.email(),
         updater_email=signed_in_user.email(),
         accurate_as_of=datetime.now(),
+        screenshot_links=self.parse_links('screenshot_links'),
         blink_components=[settings.DEFAULT_ENTERPRISE_COMPONENT],
         tag_review_status=core_enums.REVIEW_NA)
     key: ndb.Key = feature_entry.put()
