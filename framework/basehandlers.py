@@ -527,6 +527,8 @@ class ConstHandler(FlaskHandler):
   def get_template_data(self, **defaults):
     """Render a template, or return a JSON constant."""
     if defaults.get('require_signin') and not self.get_current_user():
+      if 'loginStatus=False' in self.get_common_data()['current_path']:
+        return {}
       return flask.redirect(settings.LOGIN_PAGE_URL), self.get_headers()
     if 'template_path' in defaults:
       template_path = defaults['template_path']
@@ -562,11 +564,9 @@ def get_spa_template_data(handler_obj, defaults):
   """Check permissions then let spa.html do its thing."""
   # Check if the page requires user to sign in
   if defaults.get('require_signin') and not handler_obj.get_current_user():
-    if defaults.get('is_enterprise_page'):
-      common_data = handler_obj.get_common_data()
-      if 'loginStatus=False' in common_data['current_path']:
-        return {}
-      return flask.redirect('?loginStatus=False'), handler_obj.get_headers()
+    common_data = handler_obj.get_common_data()
+    if 'loginStatus=False' in common_data['current_path']:
+      return {}
     return flask.redirect(settings.LOGIN_PAGE_URL), handler_obj.get_headers()
 
   # Check if the page requires create feature permission

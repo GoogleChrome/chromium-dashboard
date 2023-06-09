@@ -31,6 +31,10 @@ class MockHandler(basehandlers.BaseHandler):
 
   def __init__(self):
     self.called_with = None
+    self.common_data = {}
+
+  def get_common_data(self):
+    return self.common_data
 
   @permissions.require_admin_site
   def do_get(self, *args):

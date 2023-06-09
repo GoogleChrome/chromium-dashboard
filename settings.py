@@ -64,7 +64,7 @@ GOOGLE_SIGN_IN_CLIENT_ID = (
 
 # This is where the an anon user is redirected if they try to access a
 # page that requires being signed in.
-LOGIN_PAGE_URL = '/features?loginStatus=False'
+LOGIN_PAGE_URL = '?loginStatus=False'
 
 INBOUND_EMAIL_ADDR = 'chromestatus@cr-status-staging.appspotmail.com'
 

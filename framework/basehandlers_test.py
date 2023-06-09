@@ -1142,23 +1142,11 @@ class GetSPATemplateDataTests(testing_config.CustomTestCase):
     self.assertEqual(
         settings.LOGIN_PAGE_URL, actual_redirect.headers['location'])
 
-  def test_get_spa_template_data__signin_missing_enterprise(self):
-    """This page requires sign in, but user is anon."""
-    testing_config.sign_out()
-    with test_app.test_request_context('/must_be_signed_in'):
-      defaults = {'require_signin': True, 'is_enterprise_page':True}
-      actual_redirect, actual_headers = basehandlers.get_spa_template_data(
-          self.handler, defaults)
-
-    self.assertEqual(302, actual_redirect.status_code)
-    self.assertEqual(
-        '?loginStatus=False', actual_redirect.headers['location'])
-
-  def test_get_spa_template_data__signin_missing_enterprise_after_redirect(self):
+  def test_get_spa_template_data__signin_missing_after_redirect(self):
     """This page requires sign in, but user is anon."""
     testing_config.sign_out()
     with test_app.test_request_context('/must_be_signed_in?loginStatus=False'):
-      defaults = {'require_signin': True, 'is_enterprise_page':True}
+      defaults = {'require_signin': True}
       actual = basehandlers.get_spa_template_data(self.handler, defaults)
 
     self.assertEqual({}, actual)
