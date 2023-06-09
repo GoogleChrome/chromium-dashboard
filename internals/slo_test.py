@@ -55,6 +55,15 @@ class SLOFunctionTests(testing_config.CustomTestCase):
     actual = slo.weekdays_between(start, end)
     self.assertEqual(2, actual)
 
+  def test_weekdays_between__friday_into_weekend(self):
+    """We can count the weekdays between dates."""
+    start = datetime.datetime(2023, 6, 9, 12, 30, 0)  # Fri
+    end = datetime.datetime(2023, 6, 10, 14, 15, 10)  # Sat
+    actual = slo.weekdays_between(start, end)
+    # Friday does not count because it is the day of the request,
+    # and Saturday is a weekend.
+    self.assertEqual(0, actual)
+
   def test_weekdays_between__backwards(self):
     """If end is before start, that counts as zero."""
     start = datetime.datetime(2023, 6, 7, 12, 30, 0)
