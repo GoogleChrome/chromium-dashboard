@@ -1,5 +1,5 @@
 import {LitElement, css, html, nothing} from 'lit';
-import {getStageValue} from './utils';
+import {getStageValue, renderHTMLIf} from './utils';
 import {openAddStageDialog} from './chromedash-add-stage-dialog';
 import {makeDisplaySpecs} from './form-field-specs';
 import {
@@ -618,11 +618,12 @@ class ChromedashFeatureDetail extends LitElement {
     if (!this.canEdit) {
       return nothing;
     }
+    const text = this.feature.is_enterprise_feature ? 'Add Step': 'Add Stage';
 
     return html`
     <sl-button size="small" @click="${
         () => openAddStageDialog(this.feature.id, this.feature.feature_type_int)}">
-      Add stage
+      ${text}
     </sl-button>`;
   }
 
@@ -630,7 +631,8 @@ class ChromedashFeatureDetail extends LitElement {
     return html`
       ${this.renderMetadataSection()}
       <h2>
-        <span>Development stages</span>
+        ${renderHTMLIf(!this.feature.is_enterprise_feature, html`<span>Development stages</span>`)}
+        ${renderHTMLIf(this.feature.is_enterprise_feature, html`<span>Rollout steps</span>`)}
         ${this.renderControls()}
       </h2>
       ${this.feature.stages.map(feStage => this.renderProcessStage(feStage))}

@@ -385,10 +385,10 @@ const FLAT_PREPARE_TO_SHIP_FIELDS = {
 
 // All fields relevant to the enterprise prepare to ship stage.
 export const FLAT_ENTERPRISE_PREPARE_TO_SHIP_FIELDS = {
-  name: 'Start feature rollout',
+  name: 'Rollout step',
   sections: [
     {
-      name: 'Start feature rollout',
+      name: 'Rollout step',
       fields: [
         'rollout_impact',
         'rollout_milestone',
