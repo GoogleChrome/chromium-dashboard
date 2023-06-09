@@ -305,7 +305,6 @@ class ChromedashApp extends LitElement {
       this.hideSidebar();
     });
     page('/guide/new', (ctx) => {
-      debugger;
       if (!this.setupNewPage(ctx, 'chromedash-guide-new-page')) return;
       if (ctx.querystring.search('loginStatus=False') == -1) {
         this.pageComponent.userEmail = this.user.email;
