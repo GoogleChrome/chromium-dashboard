@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import testing_config  # Must be imported before the module under test.
+from unittest import mock
 
 from datetime import datetime
 
@@ -429,7 +430,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
         },
         'other': {
           'view': {
-            'notes': 'other notes',                                      
+            'notes': 'other notes',
             'text': None,
             'url': None,
             'val': None,
@@ -508,21 +509,29 @@ class GateConvertersTest(testing_config.CustomTestCase):
       'gate_name': appr_def.name,
       'state': 4,
       'requested_on': None,
+      'responded_on': None,
       'owners': [],
       'next_action': None,
       'additional_review': False,
+      'slo_initial_response': 2,
+      'slo_initial_response_took': None,
+      'slo_initial_response_remaining': None,
       }
     self.assertEqual(expected, actual)
 
-  def test_maxmimal(self):
+  @mock.patch('internals.slo.now_utc')
+  def test_maxmimal(self, mock_now):
     """If a Gate has all fields set, we can convert it to JSON."""
     gate = Gate(
         feature_id=1, stage_id=2, gate_type=3, state=4,
-        requested_on=datetime(2022, 12, 14, 1, 2, 3),
+        requested_on=datetime(2022, 12, 14, 1, 2, 3), # Wednesday
         owners=['appr1@example.com', 'appr2@example.com'],
         next_action=datetime(2022, 12, 25),
         additional_review=True)
     gate.put()
+    # The review weas due on Friday 2022-12-16.
+    mock_now.return_value = datetime(2022, 12, 20, 1, 2, 3)  # Tuesday after.
+
     actual = converters.gate_value_to_json_dict(gate)
     appr_def = approval_defs.APPROVAL_FIELDS_BY_ID[gate.gate_type]
     expected = {
@@ -534,8 +543,27 @@ class GateConvertersTest(testing_config.CustomTestCase):
       'gate_name': appr_def.name,
       'state': 4,
       'requested_on': '2022-12-14 01:02:03',
+      'responded_on': None,
       'owners': ['appr1@example.com', 'appr2@example.com'],
       'next_action': '2022-12-25',
       'additional_review': True,
+      'slo_initial_response': 2,
+      'slo_initial_response_took': None,  # Review is still in-progress.
+      'slo_initial_response_remaining': -2,  # Two weekdays overdue.
       }
     self.assertEqual(expected, actual)
+
+  def test_slo_complete_review(self):
+    """If a Gate review was completed, response includes the number of days."""
+    gate = Gate(
+        feature_id=1, stage_id=2, gate_type=3, state=4,
+        requested_on=datetime(2022, 12, 14, 1, 2, 3),
+        responded_on=datetime(2022, 12, 20, 1, 2, 3),
+        owners=['appr1@example.com', 'appr2@example.com'],
+        next_action=datetime(2022, 12, 25),
+        additional_review=True)
+    gate.put()
+    actual = converters.gate_value_to_json_dict(gate)
+
+    self.assertEqual(4, actual['slo_initial_response_took'])
+    self.assertEqual(None, actual['slo_initial_response_remaining'])

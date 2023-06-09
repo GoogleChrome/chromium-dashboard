@@ -324,9 +324,13 @@ class GatesAPITest(testing_config.CustomTestCase):
                 "gate_name": "Intent to Prototype",
                 "state": 1,
                 "requested_on": None,
+                "responded_on": None,
                 "owners": [],
                 "next_action": None,
                 "additional_review": False,
+                'slo_initial_response': 2,
+                'slo_initial_response_took': None,
+                'slo_initial_response_remaining': None,
             },
         ],
         "possible_owners": {

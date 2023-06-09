@@ -36,6 +36,7 @@ BAKE_APPROVAL_DEF_DICT = collections.OrderedDict([
     ('field_id', 9),
     ('rule', approval_defs.ONE_LGTM),
     ('approvers', ['chef@example.com']),
+    ('slo_initial_response', 2),
     ])
 
 PI_COLD_DOUGH = processes.ProgressItem('Cold dough', 'dough')
