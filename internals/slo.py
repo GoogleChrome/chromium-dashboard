@@ -84,7 +84,7 @@ def record_vote(gate: Gate, votes: list[Vote]) -> bool:
 def record_comment(
     feature: FeatureEntry, gate: Gate, user: User,
     approvers: list[str]) -> bool:
-  """Record Gate SLO response time if needed.  Return True if changed."""
+  """Record Gate SLO response time if needed. Return True if changed."""
   if gate.requested_on is None:
     return False  # Review has not been requested yet.
   elif gate.responded_on is not None:
