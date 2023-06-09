@@ -137,6 +137,13 @@ def can_approve_feature(user: User, feature: FeatureEntry, approvers) -> bool:
   return is_approver
 
 
+def _maybe_redirect_to_login(handler_obj):
+  common_data = handler_obj.get_common_data()
+  if 'loginStatus=False' in common_data['current_path']:
+    return {}
+  return handler_obj.redirect(settings.LOGIN_PAGE_URL)
+    
+
 def _reject_or_proceed(
     handler_obj, handler_method, handler_args, handler_kwargs,
     perm_function):
@@ -146,7 +153,7 @@ def _reject_or_proceed(
 
   # Give the user a chance to sign in
   if not user and req.method == 'GET':
-    return handler_obj.redirect(settings.LOGIN_PAGE_URL)
+    return _maybe_redirect_to_login(handler_obj)
 
   if not perm_function(user):
     handler_obj.abort(403)
@@ -189,7 +196,7 @@ def validate_feature_create_permission(handler_obj):
 
   # Give the user a chance to sign in
   if not user and req.method == 'GET':
-    return handler_obj.redirect(settings.LOGIN_PAGE_URL)
+    return _maybe_redirect_to_login(handler_obj)
 
   # Redirect to 403 if user does not have create permission for feature.
   if not can_create_feature(user):
@@ -203,7 +210,7 @@ def validate_feature_edit_permission(handler_obj, feature_id: int):
 
   # Give the user a chance to sign in
   if not user and req.method == 'GET':
-    return handler_obj.redirect(settings.LOGIN_PAGE_URL)
+    return _maybe_redirect_to_login(handler_obj)
 
   # Redirect to 404 if feature is not found.
   # Load feature directly from NDB so as to never get a stale cached copy.

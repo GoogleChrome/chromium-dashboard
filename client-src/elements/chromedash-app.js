@@ -192,10 +192,10 @@ class ChromedashApp extends LitElement {
   }
 
   // Maybe set up new page, or if the URL is the same, we stay.
-  // If signin is required and a backup component is passed in signinRequiredComponentName,
+  // If signin is required 'chromedash-login-required-page' is rendered.,
   // we render that component instead page.
   // Returns true if we are proceeding to the new page, false otherwise.
-  setupNewPage(ctx, componentName, signinRequiredComponentName) {
+  setupNewPage(ctx, componentName) {
     // If current page is ctx.path and a ctx.hash exists,
     // don't create a new element but instead
     // just scroll to the element identified by the hash.
@@ -223,8 +223,8 @@ class ChromedashApp extends LitElement {
     const signinRequired = ctx.querystring.search('loginStatus=False') > -1;
 
     // Loading new page.
-    this.pageComponent = document.createElement(signinRequired && signinRequiredComponentName ?
-      signinRequiredComponentName :
+    this.pageComponent = document.createElement(signinRequired ?
+      'chromedash-login-required-page' :
       componentName);
     this.setUnsavedChanges(false);
     this.removeBeforeUnloadHandler();
@@ -305,16 +305,18 @@ class ChromedashApp extends LitElement {
       this.hideSidebar();
     });
     page('/guide/new', (ctx) => {
+      debugger;
       if (!this.setupNewPage(ctx, 'chromedash-guide-new-page')) return;
-      this.pageComponent.userEmail = this.user.email;
+      if (ctx.querystring.search('loginStatus=False') == -1) {
+        this.pageComponent.userEmail = this.user.email;
+      }
       this.currentPage = ctx.path;
       this.hideSidebar();
     });
     page('/guide/enterprise/new', (ctx) => {
       if (!this.setupNewPage(
         ctx,
-        'chromedash-guide-new-page',
-        'chromedash-login-required-page')) return;
+        'chromedash-guide-new-page')) return;
 
       if (ctx.querystring.search('loginStatus=False') == -1) {
         this.pageComponent.userEmail = this.user.email;
@@ -414,8 +416,7 @@ class ChromedashApp extends LitElement {
     page('/enterprise/releasenotes', (ctx) => {
       if (!this.setupNewPage(
         ctx,
-        'chromedash-enterprise-release-notes-page',
-        'chromedash-login-required-page')) return;
+        'chromedash-enterprise-release-notes-page')) return;
       this.pageComponent.user = this.user;
       this.contextLink = ctx.path;
       this.currentPage = ctx.path;
