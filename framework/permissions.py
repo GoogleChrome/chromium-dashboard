@@ -139,7 +139,7 @@ def can_approve_feature(user: User, feature: FeatureEntry, approvers) -> bool:
 
 def _maybe_redirect_to_login(handler_obj):
   common_data = handler_obj.get_common_data()
-  if 'loginStatus=False' in common_data['current_path']:
+  if 'current_path' in common_data and 'loginStatus=False' in common_data['current_path']:
     return {}
   return handler_obj.redirect(settings.LOGIN_PAGE_URL)
     
