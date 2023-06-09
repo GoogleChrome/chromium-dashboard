@@ -84,8 +84,7 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
     # Remove all feature-related cache.
     rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
 
-    redirect_url = '/feature/' + str(key.integer_id())
-    return self.redirect(redirect_url)
+    return {'message': 'Done'}
 
   def write_gates_and_stages_for_feature(
       self, feature_id: int, feature_type: int) -> None:
@@ -127,7 +126,7 @@ class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
     # Write for new FeatureEntry entity.
     feature_entry = FeatureEntry(
         category=int(core_enums.MISC),
-        enterprise_feature_categories=self.split_input(
+        enterprise_feature_categories=self.form.getlist(
             'enterprise_feature_categories'),
         name=self.form.get('name'),
         feature_type=feature_type,
