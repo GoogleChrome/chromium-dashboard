@@ -80,8 +80,6 @@ class FeatureCreateTest(testing_config.CustomTestCase):
         }, method='POST'):
       actual_response = self.handler.process_post_data()
 
-
-    print(actual_response)
     self.assertEqual('302 FOUND', actual_response.status)
     location = actual_response.headers['location']
     self.assertTrue(location.startswith('/feature/'))
