@@ -84,7 +84,8 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
     # Remove all feature-related cache.
     rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
 
-    return {'message': 'Done'}
+    redirect_url = '/feature/' + str(key.integer_id())
+    return self.redirect(redirect_url)
 
   def write_gates_and_stages_for_feature(
       self, feature_id: int, feature_type: int) -> None:
