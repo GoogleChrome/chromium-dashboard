@@ -167,7 +167,7 @@ PI_ENTERPRISE_POLICIES = ProgressItem('Enterprise policies', 'enterprise_policie
 # This is a stage that can be inserted in the stages of any non-enterprise
 # features that are marked as breaking changes.
 FEATURE_ROLLOUT_STAGE = ProcessStage(
-      'Start feature rollout',
+      'Rollout step',
       '',
       [PI_ROLLOUT_IMPACT,
        PI_ROLLOUT_MILESTONE,
@@ -532,7 +532,7 @@ DEPRECATION_STAGES = [
 # Thise are the stages for a feature that has the enterprise feature type.
 ENTERPRISE_STAGES = [
   ProcessStage(
-      'Start feature rollout',
+      'Rollout step',
       '',
       [PI_ROLLOUT_IMPACT,
        PI_ROLLOUT_MILESTONE,

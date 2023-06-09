@@ -127,7 +127,7 @@ class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
     # Write for new FeatureEntry entity.
     feature_entry = FeatureEntry(
         category=int(core_enums.MISC),
-        enterprise_feature_categories=self.split_input(
+        enterprise_feature_categories=self.form.getlist(
             'enterprise_feature_categories'),
         name=self.form.get('name'),
         feature_type=feature_type,

@@ -172,12 +172,6 @@ class ChromedashFeatureDetail extends LitElement {
         border: var(--spot-card-border);
         box-shadow: var(--spot-card-box-shadow);
       }
-
-      .enterprise-help-text > *, .enterprise-help-text li {
-        margin: revert;
-        padding: revert;
-        list-style: revert;
-      }
     `];
   }
 
@@ -318,7 +312,7 @@ class ChromedashFeatureDetail extends LitElement {
     let value = this.feature[fieldName];
     const fieldNameMapping = {
       owner: 'browsers.chrome.owners',
-      editors: 'browsers.chrome.editors',
+      editors: 'editors',
       search_tags: 'tags',
       spec_link: 'standards.spec',
       standard_maturity: 'standards.maturity.text',
@@ -624,11 +618,12 @@ class ChromedashFeatureDetail extends LitElement {
     if (!this.canEdit) {
       return nothing;
     }
+    const text = this.feature.is_enterprise_feature ? 'Add Step': 'Add Stage';
 
     return html`
     <sl-button size="small" @click="${
         () => openAddStageDialog(this.feature.id, this.feature.feature_type_int)}">
-      Add stage
+      ${text}
     </sl-button>`;
   }
 
@@ -636,26 +631,10 @@ class ChromedashFeatureDetail extends LitElement {
     return html`
       ${this.renderMetadataSection()}
       <h2>
-        <span>Development stages</span>
+        ${renderHTMLIf(!this.feature.is_enterprise_feature, html`<span>Development stages</span>`)}
+        ${renderHTMLIf(this.feature.is_enterprise_feature, html`<span>Rollout steps</span>`)}
         ${this.renderControls()}
       </h2>
-      ${renderHTMLIf(this.feature.is_enterprise_feature, html`
-        <section class="enterprise-help-text">
-          <p>The enterprise release notes focus on changes to the stable channel.
-          Please add a stage for each milestone where something is changing on the stable channel.
-          For finch rollouts, use the milestone where the rollout starts.
-          </p>
-          <p>
-            For example, you may only have a single stage where you roll out to 100% of users on milestone N.
-          </p>
-          <p>A more complex example might look like this:</p>
-          <ul>
-            <li>On milestone N-1, you introduce a flag for early testing of an upcoming change, or start a deprecation origin trial</li>
-            <li>On milestone N, you start a finch rollout of a feature at 1% and introduce an enterprise policy for it</li>
-            <li>On milestone N+3, you remove the enterprise policy</li>
-          </ul>
-        </section>
-      `)}
       ${this.feature.stages.map(feStage => this.renderProcessStage(feStage))}
       ${this.renderAddStageButton()}
     `;

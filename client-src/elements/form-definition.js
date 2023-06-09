@@ -125,6 +125,7 @@ export const ENTERPRISE_NEW_FEATURE_FORM_FIELDS = [
   'owner',
   'editors',
   'enterprise_feature_categories',
+  'screenshot_links',
 ];
 
 // The fields that are available to every feature.
@@ -384,10 +385,10 @@ const FLAT_PREPARE_TO_SHIP_FIELDS = {
 
 // All fields relevant to the enterprise prepare to ship stage.
 export const FLAT_ENTERPRISE_PREPARE_TO_SHIP_FIELDS = {
-  name: 'Start feature rollout',
+  name: 'Rollout step',
   sections: [
     {
-      name: 'Start feature rollout',
+      name: 'Rollout step',
       fields: [
         'rollout_impact',
         'rollout_milestone',

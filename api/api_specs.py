@@ -38,7 +38,7 @@ FEATURE_FIELD_DATA_TYPES: FIELD_INFO_DATA_TYPE = [
   ('devrel', 'list'),
   ('devtrial_instructions', 'str'),
   ('doc_links', 'list'),
-  ('editors_emails', 'list'),
+  ('editor_emails', 'list'),
   ('enterprise_feature_categories', 'list'),
   ('ergonomics_risks', 'str'),
   ('explainer_links', 'list'),
