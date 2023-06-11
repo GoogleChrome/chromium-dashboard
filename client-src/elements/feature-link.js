@@ -77,7 +77,7 @@ export function enhanceUrl(url, featureLinks = [], defaultFallback) {
   }
 
   if (!featureLink) {
-    return fallback();
+    return defaultFallback();
   }
 
   return _enhanceLink(featureLink, defaultFallback);

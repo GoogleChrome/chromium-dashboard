@@ -145,7 +145,6 @@ export class ChromedashFeaturePage extends LitElement {
       window.csClient.getFeatureProcess(this.featureId),
       window.csClient.getDismissedCues(),
       window.csClient.getStars(),
-      window.csClient.getFeatureLinks(this.featureId),
     ]).then(([
       feature,
       gatesRes,
@@ -153,13 +152,12 @@ export class ChromedashFeaturePage extends LitElement {
       process,
       dismissedCues,
       starredFeatures,
-      featureLinks]) => {
+    ]) => {
       this.feature = feature;
       this.gates = gatesRes.gates;
       this.comments = commentRes.comments;
       this.process = process;
       this.dismissedCues = dismissedCues;
-      this.featureLinks = featureLinks;
       if (starredFeatures.includes(this.featureId)) {
         this.starred = true;
       }
@@ -174,6 +172,12 @@ export class ChromedashFeaturePage extends LitElement {
         showToastMessage('Some errors occurred. Please refresh the page or try again later.');
       }
     });
+
+    window.csClient.getFeatureLinks(this.featureId).then(
+      (featureLinks) => {
+        this.featureLinks = featureLinks;
+      },
+    );
   }
 
   refetch() {
