@@ -343,7 +343,7 @@ export class ChromedashFeaturePage extends LitElement {
     return html`
       ${this.feature.summary ? html`
         <section id="summary">
-          <p class="preformatted">${autolink(this.feature.summary)}</p>
+          <p class="preformatted">${autolink(this.feature.summary, this.featureLinks)}</p>
         </section>
       `: nothing}
     `;
@@ -353,14 +353,14 @@ export class ChromedashFeaturePage extends LitElement {
     return html`
       ${this.feature.summary ? html`
         <section id="summary">
-          <p class="preformatted">${autolink(this.feature.summary)}</p>
+          <p class="preformatted">${autolink(this.feature.summary, this.featureLinks)}</p>
         </section>
       `: nothing}
 
       ${this.feature.motivation ? html`
         <section id="motivation">
           <h3>Motivation</h3>
-          <p class="preformatted">${autolink(this.feature.motivation)}</p>
+          <p class="preformatted">${autolink(this.feature.motivation, this.featureLinks)}</p>
         </section>
       `: nothing}
 
@@ -491,7 +491,7 @@ export class ChromedashFeaturePage extends LitElement {
       ${this.feature.comments ? html`
         <section id="comments">
           <h3>Comments</h3>
-          <p class="preformatted">${autolink(this.feature.comments)}</p>
+          <p class="preformatted">${autolink(this.feature.comments, this.featureLinks)}</p>
         </section>
       `: nothing}
 
@@ -537,6 +537,7 @@ export class ChromedashFeaturePage extends LitElement {
         .process=${this.process}
         .dismissedCues=${this.dismissedCues}
         .rawQuery=${this.rawQuery}
+        .featureLinks=${this.featureLinks}
         selectedGateId=${this.selectedGateId}
        >
       </chromedash-feature-detail>

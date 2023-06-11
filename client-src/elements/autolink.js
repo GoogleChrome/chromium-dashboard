@@ -3,7 +3,7 @@
 // See: https://chromium.googlesource.com/infra/infra/+/refs/heads/main/appengine/monorail/static_src/autolink.js
 
 import {html} from 'lit';
-
+import {enhanceAutolink} from './feature-link.js';
 const CRBUG_DEFAULT_PROJECT = 'chromium';
 const CRBUG_URL = 'https://bugs.chromium.org';
 const CRBUG_LINK_RE = /(\b(https?:\/\/)?crbug\.com\/)((\b[-a-z0-9]+)(\/))?(\d+)\b(\#c[0-9]+)?/gi;
@@ -182,7 +182,7 @@ function createIssueRefRun(projectName, localId, content, commentId) {
   };
 }
 
-export function markupAutolinks(plainString) {
+export function markupAutolinks(plainString, featureLinks = []) {
   plainString = plainString || '';
   const chunks = [plainString.trim()];
   const textRuns = [];
@@ -192,6 +192,11 @@ export function markupAutolinks(plainString) {
   });
   const result = textRuns.map(part => {
     if (part.tag === 'a') {
+      const featureLink = featureLinks.find(fe => fe.url === part.href);
+      if (featureLink) {
+        // if the link is a feature link, enhance it to provide more information
+        return enhanceAutolink(part, featureLink);
+      }
       return html`<a href="${part.href}" target="_blank" rel="noopener noreferrer">${part.content}</a>`;
     }
     return part.content;
