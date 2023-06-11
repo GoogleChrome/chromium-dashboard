@@ -18,6 +18,7 @@ function enhanceChromeStatusLink(featureLink) {
   const ownerRef = information.ownerRef;
   // const ccRefs = information.ccRefs;
   const openedTimestamp = information.openedTimestamp;
+  const closedTimestamp = information.closedTimestamp;
   function renderTooltipContent() {
     return html`
     <div class="feature-link-tooltip">
@@ -25,6 +26,12 @@ function enhanceChromeStatusLink(featureLink) {
       <div>
         <strong>Opened:</strong>
         <span>${_formatTimestamp(openedTimestamp)}</span>
+      </div>
+    `}
+    ${closedTimestamp && html`
+      <div>
+        <strong>Closed:</strong>
+        <span>${_formatTimestamp(closedTimestamp)}</span>
       </div>
     `}
     ${reporterRef && html`
