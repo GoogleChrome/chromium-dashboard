@@ -134,7 +134,11 @@ export const SHARED_STYLES = [
   }
 
   .preformatted {
-    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .feature-link {
+    display: inline;
   }
 
   .warning {
