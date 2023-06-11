@@ -94,6 +94,7 @@ export class ChromedashFeaturePage extends LitElement {
       user: {type: Object},
       featureId: {type: Number},
       feature: {type: Object},
+      featureLinks: {type: Array},
       gates: {type: Array},
       comments: {type: Array},
       process: {type: Object},
@@ -112,6 +113,7 @@ export class ChromedashFeaturePage extends LitElement {
     this.user = {};
     this.featureId = 0;
     this.feature = {};
+    this.featureLinks = [];
     this.gates = [];
     this.comments = {};
     this.process = {};
@@ -142,13 +144,21 @@ export class ChromedashFeaturePage extends LitElement {
       window.csClient.getFeatureProcess(this.featureId),
       window.csClient.getDismissedCues(),
       window.csClient.getStars(),
-    ]).then(([feature, gatesRes, commentRes, process, dismissedCues, starredFeatures]) => {
+      window.csClient.getFeatureLinks(this.featureId),
+    ]).then(([
+      feature,
+      gatesRes,
+      commentRes,
+      process,
+      dismissedCues,
+      starredFeatures,
+      featureLinks]) => {
       this.feature = feature;
       this.gates = gatesRes.gates;
       this.comments = commentRes.comments;
       this.process = process;
       this.dismissedCues = dismissedCues;
-
+      this.featureLinks = featureLinks;
       if (starredFeatures.includes(this.featureId)) {
         this.starred = true;
       }

@@ -99,9 +99,20 @@ def _remove_link(link: Link, fe: FeatureEntry) -> None:
         logging.info(f'Delete indexed link {link.url}')
 
 
-def _get_feature_links(fe: FeatureEntry) -> list[Link]:
-  """Return a list of Link in the given feature entry."""
-  pass
+def _get_feature_links(feature_id: int) -> list[FeatureLinks]:
+  """Return a list of FeatureLinks for a given feature id"""
+  feature_links = FeatureLinks.query(
+      FeatureLinks.feature_ids == feature_id).fetch(None)
+  return feature_links if feature_links else []
+
+
+def get_by_feature_id(feature_id: int) -> list[dict[str, Any]]:
+  """Return a list of dicts of FeatureLinks for a given feature id
+  The returned dicts only include the url, type, and information fields.
+  This is used by the api to return json to the client.
+  """
+  feature_links = _get_feature_links(feature_id)
+  return [link.to_dict(include=['url', 'type', 'information']) for link in feature_links]
 
 
 def _index_feature_links(fe: FeatureEntry) -> None:

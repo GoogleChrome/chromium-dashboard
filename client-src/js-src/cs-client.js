@@ -302,6 +302,12 @@ class ChromeStatusClient {
     return this.doGet(url);
   }
 
+  // FeatureLinks API
+
+  getFeatureLinks(featureId) {
+    return this.doGet(`/feature_links?feature_id=${featureId}`);
+  }
+
   // Stages API
   getStage(featureId, stageId) {
     return this.doGet(`/features/${featureId}/stages/${stageId}`);
