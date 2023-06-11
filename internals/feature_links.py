@@ -60,7 +60,7 @@ def _index_link(link: Link, fe: FeatureEntry) -> None:
   feature_id = fe.key.integer_id()
   feature_links = FeatureLinks.query(FeatureLinks.url == link.url).fetch(None)
   feature_link: FeatureLinks = feature_links[0] if feature_links else None
-  if feature_link:
+  if hasattr(feature_link, 'feature_ids'):
     if feature_id not in feature_link.feature_ids:
       feature_link.feature_ids.append(feature_id)
       feature_link.type = link.type
@@ -87,15 +87,16 @@ def _remove_link(link: Link, fe: FeatureEntry) -> None:
   feature_id = fe.key.integer_id()
   feature_links = FeatureLinks.query(FeatureLinks.url == link.url).fetch(None)
   feature_link: FeatureLinks = feature_links[0] if feature_links else None
-  if feature_id in feature_link.feature_ids:
-     feature_link.feature_ids.remove(feature_id)
-     if feature_link.feature_ids:
-       feature_link.put()
-       logging.info(f'Updated indexed link {link.url}')
-     else:
-       # delete the link if it is not used by any feature
-       feature_link.key.delete()
-       logging.info(f'Delete indexed link {link.url}')
+  if hasattr(feature_link, 'feature_ids'):
+    if feature_id in feature_link.feature_ids:
+      feature_link.feature_ids.remove(feature_id)
+      if feature_link.feature_ids:
+        feature_link.put()
+        logging.info(f'Updated indexed link {link.url}')
+      else:
+        # delete the link if it is not used by any feature
+        feature_link.key.delete()
+        logging.info(f'Delete indexed link {link.url}')
 
 
 def _get_feature_links(fe: FeatureEntry) -> list[Link]:
