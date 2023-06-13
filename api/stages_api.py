@@ -109,22 +109,17 @@ class StagesAPI(basehandlers.APIHandler):
         setattr(stage.milestones, field, body[field])
 
     # Keep the gate type that might need to be created for the stage type.
-    gate_type: int | None = None
+    gate_type: int | None = stage_helpers.get_gate_for_stage(feature_type, s_type)
     # Update type-specific fields.
-    if s_type == core_enums.STAGE_TYPES_DEV_TRIAL[feature_type]: # pragma: no cover
-      gate_type = core_enums.GATE_API_PROTOTYPE
 
     if s_type == core_enums.STAGE_TYPES_ORIGIN_TRIAL[feature_type]:
       self._add_given_stage_vals(stage, body, self.OT_FIELDS)
-      gate_type = core_enums.GATE_API_ORIGIN_TRIAL
 
     if s_type == core_enums.STAGE_TYPES_EXTEND_ORIGIN_TRIAL[feature_type]:
       self._add_given_stage_vals(stage, body, self.OT_EXTENSION_FIELDS)
-      gate_type = core_enums.GATE_API_EXTEND_ORIGIN_TRIAL
 
     if s_type == core_enums.STAGE_TYPES_SHIPPING[feature_type]: # pragma: no cover
       self._add_given_stage_vals(stage, body, self.SHIPPING_FIELDS)
-      gate_type = core_enums.GATE_API_SHIP
 
     if s_type == core_enums.STAGE_TYPES_ROLLOUT[feature_type]: # pragma: no cover
       self._add_given_stage_vals(stage, body, self.ENTERPRISE_FIELDS)
