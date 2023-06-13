@@ -48,7 +48,7 @@ function enhanceChromeStatusLink(featureLink) {
     </div>`;
   }
   return html`<div class="feature-link">
-    <sl-badge variant="${statusRef.meansOpen ? 'success' : 'danger'}">${statusRef.status}</sl-badge>
+    <sl-badge variant="${statusRef.meansOpen ? 'success' : 'neutral'}">${statusRef.status}</sl-badge>
     <sl-tooltip style="--sl-tooltip-arrow-size: 0;">
         <div slot="content">${renderTooltipContent()}</div>
         <a href="${featureLink.url}" target="_blank" rel="noopener noreferrer">
