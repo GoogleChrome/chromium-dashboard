@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 import logging
 from google.cloud import ndb  # type: ignore
 
 from framework.basehandlers import FlaskHandler
 from internals import approval_defs
 from internals.core_models import FeatureEntry, Stage
-from internals.review_models import Gate
+from internals.review_models import Gate, Vote, Activity
 from internals.core_enums import *
 
 
@@ -140,3 +141,55 @@ class MigrateGeckoViews(FlaskHandler):
 
     ndb.put_multi(batch)
     return f'{count} FeatureEntry entities updated.'
+
+
+class BackfillRespondedOn(FlaskHandler):
+
+  def update_responded_on(self, gate):
+    """Update gate.responded_on and return True if an update was needed."""
+    gate_id = gate.key.integer_id()
+    earliest_response = datetime.datetime.max
+
+    approvers = approval_defs.get_approvers(gate.gate_type)
+    activities = Activity.get_activities(
+        gate.feature_id, gate_id=gate_id, comments_only=True)
+    for a in activities:
+      if gate.requested_on < a.created < earliest_response:
+        if a.author in approvers:
+          earliest_response = a.created
+          logging.info(f'Set feature {gate.feature_id} gate {gate_id} '
+                       f'to {a.created} because of comment')
+
+    votes = Vote.get_votes(gate_id=gate_id)
+    for v in votes:
+      if gate.requested_on < v.set_on < earliest_response:
+        earliest_response = v.set_on
+        logging.info(f'Set feature {gate.feature_id} gate {gate_id} '
+                     f'to {v.set_on} because of vote')
+
+    if earliest_response != datetime.datetime.max:
+      gate.responded_on = earliest_response
+      return True
+    else:
+      return False
+
+  def get_template_data(self, **kwargs):
+    """Backfill responded_on dates for existing gates."""
+    self.require_cron_header()
+    gates: ndb.Query = Gate.query(Gate.requested_on != None)
+    count = 0
+    batch = []
+    BATCH_SIZE = 100
+    for g in gates:
+      if g.responded_on:
+        continue
+      if self.update_responded_on(g):
+        batch.append(g)
+        count += 1
+        if len(batch) > BATCH_SIZE:
+          ndb.put_multi(batch)
+          logging.info(f'Finished a batch of {BATCH_SIZE}')
+          batch = []
+
+    ndb.put_multi(batch)
+    return f'{count} Gates entities updated.'
