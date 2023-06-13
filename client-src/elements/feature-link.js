@@ -20,8 +20,7 @@ function enhanceChromeStatusLink(featureLink) {
   const openedTimestamp = information.openedTimestamp;
   const closedTimestamp = information.closedTimestamp;
   function renderTooltipContent() {
-    return html`
-    <div class="feature-link-tooltip">
+    return html`<div class="feature-link-tooltip">
     ${openedTimestamp && html`
       <div>
         <strong>Opened:</strong>
@@ -46,11 +45,9 @@ function enhanceChromeStatusLink(featureLink) {
           <span>${ownerRef.displayName}</span>
         </div>
     `}
-    </div>
-    `;
+    </div>`;
   }
-  return html`
-  <div class="feature-link">
+  return html`<div class="feature-link">
     <sl-badge variant="${statusRef.meansOpen ? 'success' : 'danger'}">${statusRef.status}</sl-badge>
     <sl-tooltip style="--sl-tooltip-arrow-size: 0;">
         <div slot="content">${renderTooltipContent()}</div>
@@ -58,8 +55,7 @@ function enhanceChromeStatusLink(featureLink) {
         ${information.summary}
         </a>
     </sl-tooltip>
-  </div>
-  `;
+  </div>`;
 }
 
 function _enhanceLink(featureLink, defaultFallback) {

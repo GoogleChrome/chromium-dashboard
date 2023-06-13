@@ -161,7 +161,7 @@ class ChromedashFeatureDetail extends LitElement {
 
       .longtext {
         display: block;
-        overflow-wrap: anywhere;
+        white-space: pre-wrap;
         padding: var(--content-padding-half);
       }
 
