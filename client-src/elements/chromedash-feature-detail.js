@@ -371,11 +371,11 @@ class ChromedashFeatureDetail extends LitElement {
 
   renderUrl(value) {
     if (value.startsWith('http')) {
-      return enhanceUrl(value, this.featureLinks, () => html`
-        <a href=${value} target="_blank"
-         class="url ${value.length > LONG_TEXT ? 'longurl' : ''}"
-         >${value}</a>
-      `);
+      return enhanceUrl(value, this.featureLinks, html`
+      <a href=${value} target="_blank"
+       class="url ${value.length > LONG_TEXT ? 'longurl' : ''}"
+       >${value}</a>
+    `);
     }
     return this.renderText(value);
   }

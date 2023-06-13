@@ -442,10 +442,9 @@ export class ChromedashFeaturePage extends LitElement {
           ${this.feature.browsers.chrome.bug ? enhanceUrl(
       this.feature.browsers.chrome.bug,
       this.featureLinks,
-      () => html`
+      html`
             (<a href=${this.feature.browsers.chrome.bug} target="_blank" rel="noopener">tracking bug</a>)
-          `,
-    ) : nothing}
+          `) : nothing}
           <chromedash-gantt .feature=${this.feature}></chromedash-gantt>
         </p>
       </section>

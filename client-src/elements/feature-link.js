@@ -58,36 +58,31 @@ function enhanceChromeStatusLink(featureLink) {
   </div>`;
 }
 
-function _enhanceLink(featureLink, defaultFallback) {
-  if (!defaultFallback) {
-    throw new Error('defaultFallback html is required');
+function _enhanceLink(featureLink, fallback) {
+  if (!fallback) {
+    throw new Error('fallback html is required');
   }
   if (!featureLink) {
-    return defaultFallback();
+    return fallback;
   }
   switch (featureLink.type) {
     case LINK_TYPE_CHROMIUM_BUG:
       return enhanceChromeStatusLink(featureLink);
     default:
-      return defaultFallback();
+      return fallback;
   }
 }
 
-export function enhanceUrl(url, featureLinks = [], defaultFallback) {
+export function enhanceUrl(url, featureLinks = [], fallback) {
   const featureLink = featureLinks.find(fe => fe.url === url);
-  if (!defaultFallback) {
-    defaultFallback = () => html`<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+  if (!fallback) {
+    fallback = html`<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
   }
 
-  if (!featureLink) {
-    return defaultFallback();
-  }
-
-  return _enhanceLink(featureLink, defaultFallback);
+  return _enhanceLink(featureLink, fallback);
 }
 
 export function enhanceAutolink(part, featureLink) {
-  return _enhanceLink(featureLink, () => {
-    return html`<a href="${part.href}" target="_blank" rel="noopener noreferrer">${part.content}</a>`;
-  });
+  const fallback = html`<a href="${part.href}" target="_blank" rel="noopener noreferrer">${part.content}</a>`;
+  return _enhanceLink(featureLink, fallback);
 }
