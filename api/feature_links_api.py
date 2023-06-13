@@ -28,12 +28,6 @@ class FeatureLinksAPI(basehandlers.APIHandler):
       self.abort(404, msg='Feature not found')
     return feature_links.get_by_feature_id(feature_id)
 
-  def do_get_milestone(self):
-    milestone = self.get_int_arg('milestone')
-    if milestone:
-      # TODO: return redis cached feature links in milestone
-      pass
-
   def do_get(self, **kwargs):
 
     feature_id = self.get_int_arg('feature_id', None)
