@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections import defaultdict
 from datetime import datetime, timedelta
 import json
 import logging
@@ -22,9 +23,12 @@ from google.cloud import ndb  # type: ignore
 from flask import render_template
 
 from framework import basehandlers
+from internals import approval_defs
 from internals.core_models import FeatureEntry, MilestoneSet
+from internals.review_models import Gate
 from internals import notifier
 from internals import stage_helpers
+from internals import slo
 from internals.core_enums import (
     STAGE_TYPES_BY_FIELD_MAPPING)
 import settings
@@ -61,7 +65,7 @@ def choose_email_recipients(
   all_notified_users.update(feature.editor_emails)
   all_notified_users.update(feature.spec_mentor_emails or [])
   return list(all_notified_users)
-  
+
 
 def build_email_tasks(
     features_to_notify: list[tuple[FeatureEntry, int]],
@@ -194,7 +198,7 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
     features_milestone_pairs = self.filter_by_milestones(
         current_milestone_info, prefiltered_features)
     return features_milestone_pairs
-  
+
   # Subclasses should override if escalation is needed.
   def should_escalate_notification(self, feature: FeatureEntry) -> bool:
     """Determine if the notification should be escalated to more users."""
@@ -238,7 +242,7 @@ class FeatureAccuracyHandler(AbstractReminderHandler):
         if (feature.accurate_as_of is None or
             feature.accurate_as_of + self.ACCURACY_GRACE_PERIOD < now)]
     return prefiltered_features
-  
+
   def should_escalate_notification(self, feature: FeatureEntry) -> bool:
     """Escalate notification if 2 previous emails have had no response."""
     return feature.outstanding_notifications >= 2
@@ -285,3 +289,24 @@ class PrepublicationHandler(AbstractReminderHandler):
       # If this cron is running on an off week, do nothing.
       logging.info('Off week')
       return []
+
+
+class SLOReportHandler(basehandlers.FlaskHandler):
+  JSONIFY = True
+  # For now, this just returns a JSON report to help me evaluate if we
+  # are ready to start sending SLO reminder emails without sending too
+  # many.
+
+  def get_template_data(self, **kwargs):
+    """Returns a JSON report listing overdue review for each reviewer."""
+    overdue_gates = slo.get_overdue_gates(
+        approval_defs.APPROVAL_FIELDS_BY_ID, approval_defs.DEFAULT_SLO_LIMIT)
+    gates_by_reviewer: dict[str, list[Gate]] = defaultdict(list)
+    for og in overdue_gates:
+      gate_info = [og.feature_id, og.stage_id, og.key.integer_id()]
+      reviewers = approval_defs.get_approvers(og.gate_type)
+      for r in reviewers:
+        gates_by_reviewer[r].append(gate_info)
+
+    return {'message': 'OK',
+            'gates_by_reviewer': gates_by_reviewer}

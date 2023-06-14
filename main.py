@@ -191,6 +191,7 @@ spa_page_routes = [
     defaults={'require_signin': True, 'is_enterprise_page': True}),
   # Admin pages
   Route('/admin/blink', defaults={'require_admin_site': True, 'require_signin': True}),
+  Route('/admin/slo_report', reminders.SLOReportHandler),
 ]
 
 mpa_page_routes: list[Route] = [
