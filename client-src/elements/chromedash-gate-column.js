@@ -73,6 +73,15 @@ export class ChromedashGateColumn extends LitElement {
        .denied sl-icon {
          color: var(--gate-denied-icon-color);
        }
+       #slo-area sl-icon {
+         font-size: 16px;
+         vertical-align: text-bottom;
+         color: var(--unimportant-text-color);
+       }
+       .overdue,
+       #slo-area .overdue sl-icon {
+         color: var(--slo-overdue-color);
+       }
 
        #votes-area {
          margin: var(--content-padding) 0;
@@ -420,6 +429,69 @@ export class ChromedashGateColumn extends LitElement {
     }
   }
 
+  renderSLOStatusSkeleton() {
+    return html`
+      <p>
+        Reviewer SLO status:
+      </p>`;
+  }
+
+  renderInfoIcon() {
+    return html`
+      <sl-tooltip hoist style="--max-width: 14em;"
+        content="Reviewers are encouraged to provide an initial
+          review status update
+          or a comment within this number of days.
+          The full review may take longer.">
+        <sl-icon name="info-circle" id="info-button"></sl-icon>
+      </sl-tooltip>
+    `;
+  }
+
+  dayPhrase(count) {
+    return String(count) + (count == 1 ? ' day' : ' days');
+  }
+
+  renderSLOStatus() {
+    const limit = this.gate?.slo_initial_response;
+    const took = this.gate?.slo_initial_response_took;
+    const remaining = this.gate?.slo_initial_response_remaining;
+    let msg = nothing;
+    let iconName = '';
+    let className = '';
+
+    if (typeof took === 'number') {
+      msg = html`took ${this.dayPhrase(took)} for initial response`;
+    } else if (typeof remaining === 'number') {
+      iconName = 'clock_loader_60_20px';
+      if (remaining > 0) {
+        msg = html`${this.dayPhrase(remaining)} remaining`;
+      } else if (remaining < 0) {
+        className = 'overdue';
+        msg = html`${this.dayPhrase(-remaining)} overdue`;
+      } else {
+        msg = html`initial response is due today`;
+      };
+    } else if (typeof limit === 'number') {
+      return html`
+        <p>Reviewer SLO: ${this.dayPhrase(limit)} for initial response
+        ${this.renderInfoIcon()}</p>
+      `;
+    }
+
+    if (msg === nothing) {
+      return nothing;
+    } else {
+      const icon = iconName ?
+        html`<sl-icon library="material" name="${iconName}"></sl-icon>` :
+        nothing;
+      return html`
+        <p id="slo-area">
+          Reviewer SLO status: <span class="${className}">${icon} ${msg}</span>
+        </p>`;
+    }
+  }
+
   renderVotesSkeleton() {
     return html`
       <table>
@@ -633,29 +705,34 @@ export class ChromedashGateColumn extends LitElement {
         @click=${() => this.handleCancel()}
         ></sl-icon-button>
 
+      ${this.loading ?
+        this.renderHeadingsSkeleton() :
+        this.renderHeadings()}
+
+      <div id="review-status-area">
         ${this.loading ?
-          this.renderHeadingsSkeleton() :
-          this.renderHeadings()}
-
-        <div id="review-status-area">
-          ${this.loading ?
-            this.renderReviewStatusSkeleton() :
-            this.renderReviewStatus()}
-        </div>
-
-        <div id="votes-area">
-          ${this.loading ?
-            this.renderVotesSkeleton() :
-            this.renderVotes()}
-        </div>
-
+          this.renderReviewStatusSkeleton() :
+          this.renderReviewStatus()}
+      </div>
+      <div id="slo-area">
         ${this.loading ?
-          this.renderQuestionnaireSkeleton() :
-          this.renderQuestionnaire()}
+          this.renderSLOStatusSkeleton() :
+          this.renderSLOStatus()}
+      </div>
 
+      <div id="votes-area">
         ${this.loading ?
-          this.renderCommentsSkeleton() :
-          this.renderComments()}
+          this.renderVotesSkeleton() :
+          this.renderVotes()}
+      </div>
+
+      ${this.loading ?
+        this.renderQuestionnaireSkeleton() :
+        this.renderQuestionnaire()}
+
+      ${this.loading ?
+        this.renderCommentsSkeleton() :
+        this.renderComments()}
     `;
   }
 }
