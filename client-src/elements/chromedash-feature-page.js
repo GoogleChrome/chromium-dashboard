@@ -444,7 +444,7 @@ export class ChromedashFeaturePage extends LitElement {
       this.featureLinks,
       html`
             (<a href=${this.feature.browsers.chrome.bug} target="_blank" rel="noopener">tracking bug</a>)
-          `) : nothing}
+          `, 'tracking bug') : nothing}
           <chromedash-gantt .feature=${this.feature}></chromedash-gantt>
         </p>
       </section>

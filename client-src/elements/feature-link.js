@@ -3,7 +3,7 @@ import {html} from 'lit';
 const LINK_TYPE_CHROMIUM_BUG = 'chromium_bug';
 
 
-function enhanceChromeStatusLink(featureLink) {
+function enhanceChromeStatusLink(featureLink, text) {
   function _formatTimestamp(timestamp) {
     const date = new Date(timestamp * 1000);
     const formatOptions = {
@@ -59,34 +59,37 @@ function enhanceChromeStatusLink(featureLink) {
     <sl-tooltip style="--sl-tooltip-arrow-size: 0;--max-width: 50vw;">
         <div slot="content">${renderTooltipContent()}</div>
         <a href="${featureLink.url}" target="_blank" rel="noopener noreferrer">
-        ${featureLink.url}
+        ${text}
         </a>
     </sl-tooltip>
   </div>`;
 }
 
-function _enhanceLink(featureLink, fallback) {
+function _enhanceLink(featureLink, fallback, text) {
   if (!fallback) {
     throw new Error('fallback html is required');
   }
   if (!featureLink) {
     return fallback;
   }
+  if (!text) {
+    text = featureLink.url;
+  }
   switch (featureLink.type) {
     case LINK_TYPE_CHROMIUM_BUG:
-      return enhanceChromeStatusLink(featureLink);
+      return enhanceChromeStatusLink(featureLink, text);
     default:
       return fallback;
   }
 }
 
-export function enhanceUrl(url, featureLinks = [], fallback) {
+export function enhanceUrl(url, featureLinks = [], fallback, text) {
   const featureLink = featureLinks.find(fe => fe.url === url);
   if (!fallback) {
     fallback = html`<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
   }
 
-  return _enhanceLink(featureLink, fallback);
+  return _enhanceLink(featureLink, fallback, text);
 }
 
 export function enhanceAutolink(part, featureLink) {
