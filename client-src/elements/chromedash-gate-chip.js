@@ -132,6 +132,10 @@ class ChromedashGateChip extends LitElement {
        padding-left: var(--content-padding-quarter);
        font-weight: 900;
      }
+
+     sl-button sl-icon.overdue {
+       color: var(--slo-overdue-color);
+     }
     `];
   }
 
@@ -163,21 +167,29 @@ class ChromedashGateChip extends LitElement {
     const className = stateName.toLowerCase().replaceAll(' ', '_');
     const selected = (this.gate.id == this.selectedGateId) ? 'selected' : '';
 
-    const iconName = GATE_STATE_TO_ICON[this.gate.state];
+    const statusIconName = GATE_STATE_TO_ICON[this.gate.state];
     const abbrev = GATE_STATE_TO_ABBREV[this.gate.state] || gateName;
-    let icon = html`<b class="abbrev" slot="prefix">${abbrev}</b>`;
-    if (iconName) {
-      icon = html`
-        <sl-icon slot="prefix" library="material" name=${iconName}></sl-icon>
+    let statusIcon = html`<b class="abbrev" slot="prefix">${abbrev}</b>`;
+    if (statusIconName) {
+      statusIcon = html`
+        <sl-icon slot="prefix" library="material"
+                 name=${statusIconName}></sl-icon>
       `;
     }
+
+    const overdueIcon = (this.gate.slo_initial_response_remaining < 0) ?
+      html`<sl-icon slot="suffix" library="material" class="overdue"
+                 name="clock_loader_60_20px"></sl-icon>` :
+      nothing;
 
     return html`
       <sl-button pill size="small" class="${className} ${selected}"
         title="${teamName}: ${gateName}: ${stateName}"
         @click=${this.handleClick}
         >
-        ${icon} <span class="teamname">${teamName}</span>
+        ${statusIcon}
+        <span class="teamname">${teamName}</span>
+        ${overdueIcon}
       </sl-button>
     `;
   }
