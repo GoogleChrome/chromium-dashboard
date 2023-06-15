@@ -179,7 +179,6 @@ def decode_raw_owner_content(raw_content) -> list[str]:
   owners = []
   decoded = base64.b64decode(raw_content).decode()
   for line in decoded.split('\n'):
-    logging.info('got line: '  + line[:settings.MAX_LOG_LINE])
     if '#' in line:
       line = line[:line.index('#')]
     line = line.strip()
@@ -191,6 +190,9 @@ def decode_raw_owner_content(raw_content) -> list[str]:
 
 def get_approvers(field_id) -> list[str]:
   """Return a list of email addresses of users allowed to approve."""
+  if field_id not in APPROVAL_FIELDS_BY_ID:
+    return []
+
   afd = APPROVAL_FIELDS_BY_ID[field_id]
 
   # afd.approvers can be either a hard-coded list of approver emails
