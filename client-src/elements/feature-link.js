@@ -13,6 +13,7 @@ function enhanceChromeStatusLink(featureLink) {
   }
 
   const information = featureLink.information;
+  const summary = information.summary;
   const statusRef = information.statusRef;
   const reporterRef = information.reporterRef;
   const ownerRef = information.ownerRef;
@@ -21,6 +22,12 @@ function enhanceChromeStatusLink(featureLink) {
   const closedTimestamp = information.closedTimestamp;
   function renderTooltipContent() {
     return html`<div class="feature-link-tooltip">
+    ${summary && html`
+    <div>
+      <strong>Summary:</strong>
+      <span>${summary}</span>
+    </div>
+  `}
     ${openedTimestamp && html`
       <div>
         <strong>Opened:</strong>
@@ -48,11 +55,11 @@ function enhanceChromeStatusLink(featureLink) {
     </div>`;
   }
   return html`<div class="feature-link">
-    <sl-badge variant="${statusRef.meansOpen ? 'success' : 'neutral'}">${statusRef.status}</sl-badge>
-    <sl-tooltip style="--sl-tooltip-arrow-size: 0;">
+    <sl-badge class="badge" pill variant="${statusRef.meansOpen ? 'success' : 'neutral'}">${statusRef.status}</sl-badge>
+    <sl-tooltip style="--sl-tooltip-arrow-size: 0;--max-width: 50vw;">
         <div slot="content">${renderTooltipContent()}</div>
         <a href="${featureLink.url}" target="_blank" rel="noopener noreferrer">
-        ${information.summary}
+        ${featureLink.url}
         </a>
     </sl-tooltip>
   </div>`;

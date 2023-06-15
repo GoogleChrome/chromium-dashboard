@@ -140,6 +140,17 @@ export const SHARED_STYLES = [
   .feature-link {
     display: inline;
     white-space: normal;
+    line-break: anywhere;
+  }
+
+  .feature-link .badge {
+    height: 18px;
+  }
+
+  .feature-link-tooltip {
+    display: flex;
+    flex-direction: column;
+    row-gap: 0.5em;
   }
 
   .warning {
