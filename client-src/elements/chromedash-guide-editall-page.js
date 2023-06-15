@@ -43,6 +43,7 @@ export class ChromedashGuideEditallPage extends LitElement {
       loading: {type: Boolean},
       appTitle: {type: String},
       nextPage: {type: String},
+      nextStageToCreateId: {type: Number},
     };
   }
 
@@ -55,6 +56,7 @@ export class ChromedashGuideEditallPage extends LitElement {
     this.nextPage = '';
     this.previousStageTypeRendered = 0;
     this.sameTypeRendered = 0;
+    this.nextStageToCreateId = 0;
   }
 
   connectedCallback() {
@@ -218,6 +220,7 @@ export class ChromedashGuideEditallPage extends LitElement {
         <chromedash-form-field
           name=${field}
           stageId=${feStage.id}
+          stageType=${feStage.to_create ? feStage.stage_type : undefined}
           value=${value}
           ?forEnterprise=${formattedFeature.is_enterprise_feature}>
         </chromedash-form-field>
@@ -298,6 +301,7 @@ export class ChromedashGuideEditallPage extends LitElement {
   getAllStageIds() {
     const stageIds = [];
     this.feature.stages.forEach(feStage => {
+      if (feStage.to_create) return;
       stageIds.push(feStage.id);
       // Check if any trial extension exist, and collect their IDs as well.
       const extensions = feStage.extensions || [];
@@ -310,9 +314,19 @@ export class ChromedashGuideEditallPage extends LitElement {
     const text = this.feature.is_enterprise_feature ? 'Add Step': 'Add Stage';
     return html`
     <sl-button size="small" @click="${
-        () => openAddStageDialog(this.feature.id, this.feature.feature_type_int)}">
+        () => openAddStageDialog(this.feature.id, this.feature.feature_type_int, this.AddNewStageToCreate.bind(this))}">
       ${text}
     </sl-button>`;
+  }
+
+  AddNewStageToCreate(stageType) {
+    this.feature.stages.push({
+      ...stageType,
+      to_create: true,
+      id: ++this.nextStageToCreateId});
+    this.feature.stages = this.feature.stages
+      .sort((a, b) => a.stage_type_int - b.stage_type_int);
+    this.feature = {...this.feature};
   }
 
   renderForm() {

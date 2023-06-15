@@ -424,7 +424,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     if stage_ids:
       stage_ids_list = [int(id) for id in stage_ids.split(',')]
       self.update_stages_editall(
-          fe.feature_type, stage_ids_list, changed_fields, form_fields)
+          feature_id, fe.feature_type, stage_ids_list, changed_fields, form_fields)
     # If a stage_id is supplied, we make changes to only that specific stage.
     elif stage_id:
       for field, field_type in self.STAGE_FIELDS:
@@ -443,7 +443,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     extension_stage_ids = self.form.get('extension_stage_ids')
     if extension_stage_ids:
       stage_ids_list = [int(id) for id in extension_stage_ids.split(',')]
-      self.update_stages_editall(fe.feature_type, stage_ids_list, changed_fields, form_fields)
+      self.update_stages_editall(feature_id, fe.feature_type, stage_ids_list, changed_fields, form_fields)
     # Update metadata fields.
     now = datetime.now()
     if self.form.get('accurate_as_of'):
@@ -571,12 +571,28 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
   def update_stages_editall(
       self,
+      feature_id: int,
       feature_type: int,
       stage_ids: list[int],
       changed_fields: list[tuple[str, Any, Any]],
       form_fields: list[str]) -> None:
     """Handle the updates for stages on the edit-all page."""
+    id_to_field_suffix = {}
+    ids_created = set()
+    for field in self.form.keys():
+      if not field.endswith('__create'):
+        continue
+      [name, id, stage_type, suffix] = field.split('__')
+      if stage_type is None:
+        continue
+      if id not in ids_created:
+        ids_created.add(id)
+        stage = stage_helpers.create_feature_stage(feature_id, feature_type, int(stage_type))
+        id_to_field_suffix[stage.key.id()] = f'{id}__{stage_type}__create'
+        stage_ids.append(stage.key.id())
+
     for id in stage_ids:
+      suffix = id_to_field_suffix.get(id, id)
       stage = Stage.get_by_id(id)
       if not stage:
         self.abort(404, msg=f'No stage {id} found')
@@ -584,12 +600,12 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       for field, field_type in self.STAGE_FIELDS:
         # To differentiate stages that have the same fields, the stage ID
         # is appended to the field name with 2 underscores.
-        field_with_id = f'{field}__{id}'
-        if not self.touched(field_with_id, form_fields):
+        field_with_suffix = f'{field}__{suffix}'
+        if not self.touched(field_with_suffix, form_fields):
           continue
         new_field_name = self.RENAMED_FIELD_MAPPING.get(field, field)
         old_val = getattr(stage, new_field_name)
-        new_val = self._get_field_val(field_with_id, field_type)
+        new_val = self._get_field_val(field_with_suffix, field_type)
         setattr(stage, new_field_name, new_val)
         if old_val != new_val:
           changed_fields.append((field, old_val, new_val))
@@ -613,20 +629,20 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
         milestone_fields = self.SHIPPING_MILESTONE_FIELDS
 
       # Determine if 'intent_thread_url' field needs to be changed.
-      intent_field_with_id = f'{intent_thread_field}__{id}'
-      if intent_thread_field and self.touched(intent_field_with_id, form_fields):
+      intent_field_with_suffix = f'{intent_thread_field}__{suffix}'
+      if intent_thread_field and self.touched(intent_field_with_suffix, form_fields):
         old_val = stage.intent_thread_url
-        new_val = self._get_field_val(intent_field_with_id, 'link')
+        new_val = self._get_field_val(intent_field_with_suffix, 'link')
         if old_val != new_val:
           changed_fields.append((intent_thread_field, old_val, new_val))
         setattr(stage, 'intent_thread_url', new_val)
 
       for field, milestone_field in milestone_fields:
-        field_with_id = f'{field}__{id}'
-        if not self.touched(field_with_id, form_fields):
+        field_with_suffix = f'{field}__{suffix}'
+        if not self.touched(field_with_suffix, form_fields):
           continue
         old_val = None
-        new_val = self._get_field_val(field_with_id, 'int')
+        new_val = self._get_field_val(field_with_suffix, 'int')
         milestoneset_entity = stage.milestones
         milestoneset_entity = getattr(stage, 'milestones')
         if milestoneset_entity is None:

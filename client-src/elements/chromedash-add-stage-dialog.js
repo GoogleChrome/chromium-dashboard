@@ -7,11 +7,14 @@ let addStageDialogEl;
 let currentFeatureId;
 
 
-export async function openAddStageDialog(featureId, featureType) {
-  if (!addStageDialogEl || currentFeatureId !== featureId) {
+export async function openAddStageDialog(featureId, featureType, onSubmitCustomHandler) {
+  if (!addStageDialogEl ||
+      currentFeatureId !== featureId ||
+      onSubmitCustomHandler !== addStageDialogEl.onSubmitCustomHandler) {
     addStageDialogEl = document.createElement('chromedash-add-stage-dialog');
     addStageDialogEl.featureId = featureId;
     addStageDialogEl.featureType = featureType;
+    addStageDialogEl.onSubmitCustomHandler = onSubmitCustomHandler;
     document.body.appendChild(addStageDialogEl);
     await addStageDialogEl.updateComplete;
   }
@@ -26,6 +29,7 @@ class ChromedashAddStageDialog extends LitElement {
       featureId: {type: Number},
       featureType: {type: Number},
       canSubmit: {type: Boolean},
+      onSubmitCustomHandler: {type: Function},
     };
   }
 
@@ -33,6 +37,7 @@ class ChromedashAddStageDialog extends LitElement {
     super();
     this.featureId = 0;
     this.featureType = 0;
+    this.onSubmitCustomHandler = null;
     this.canSubmit = false;
   }
 
@@ -78,6 +83,12 @@ class ChromedashAddStageDialog extends LitElement {
   }
 
   handleStageCreate() {
+    if (this.onSubmitCustomHandler) {
+      this.onSubmitCustomHandler({stage_type: Number(this.getStageSelectValue())});
+      this.onSubmitCustomHandler = null;
+      this.shadowRoot.querySelector('sl-dialog').hide();
+      return;
+    }
     window.csClient.createStage(this.featureId, {stage_type: this.getStageSelectValue()})
       .then(() => {
         this.shadowRoot.querySelector('sl-dialog').hide();

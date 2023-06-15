@@ -224,6 +224,14 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
     new_origin_trial_feedback_url = 'https://example.com/ot_intent'
     new_intent_to_ship_url = 'https://example.com/shipping'
 
+    # Expected stage created
+    new_rollout_milestone = 50
+    new_rollout_details = 'Details'
+    new_rollout_impact = 3
+    new_second_rollout_milestone = 55
+    new_second_rollout_details = 'Details 1'
+    new_second_rollout_impact = 1
+
     with test_app.test_request_context(
         self.request_path, data={
             'stages': '30,50,60',
@@ -237,7 +245,14 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
             'experiment_risks__50': new_experiment_risks,
             'origin_trial_feedback_url__50': new_origin_trial_feedback_url,
             'intent_to_ship_url__60': new_intent_to_ship_url,
+            'rollout_milestone__1__1061__create': new_rollout_milestone,
+            'rollout_details__1__1061__create': new_rollout_details,
+            'rollout_impact__1__1061__create': new_rollout_impact,
+            'rollout_milestone__2__1061__create': new_second_rollout_milestone,
+            'rollout_details__2__1061__create': new_second_rollout_details,
+            'rollout_impact__2__1061__create': new_second_rollout_impact,
             'feature_type': '1'
+            # TODO ad to creates
         }):
       actual_response = self.handler.process_post_data(
           feature_id=self.fe_1.key.integer_id())
@@ -257,7 +272,7 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
     # Ensure changes were made to Stage entities.
     stages = stage_helpers.get_feature_stages(
         self.fe_1.key.integer_id())
-    self.assertEqual(len(stages.keys()), 6)
+    self.assertEqual(len(stages.keys()), 7)
     dev_trial_stage = stages.get(130)
     origin_trial_stages = stages.get(150)
     # Stage for shipping should have been created.
@@ -277,6 +292,14 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
         int(new_shipped_milestone))
     self.assertEqual(shipping_stages[0].intent_thread_url,
         new_intent_to_ship_url)
+    # Check that rollout stages are created
+    rollout_stages = stages.get(1061)
+    self.assertEqual(rollout_stages[0].rollout_milestone, new_rollout_milestone)
+    self.assertEqual(rollout_stages[0].rollout_details, new_rollout_details)
+    self.assertEqual(rollout_stages[0].rollout_impact, new_rollout_impact)
+    self.assertEqual(rollout_stages[1].rollout_milestone, new_second_rollout_milestone)
+    self.assertEqual(rollout_stages[1].rollout_details, new_second_rollout_details)
+    self.assertEqual(rollout_stages[1].rollout_impact, new_second_rollout_impact)
 
   def test_post__normal_valid_single_stage(self):
     """Allowed user can edit a feature."""
