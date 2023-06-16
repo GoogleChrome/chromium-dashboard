@@ -19,6 +19,7 @@ from unittest import mock
 
 from framework import permissions
 from framework.users import User
+from internals import approval_defs
 from internals.core_models import FeatureEntry
 from internals.review_models import Gate, Vote
 from internals import slo
@@ -131,27 +132,6 @@ class SLOFunctionTests(testing_config.CustomTestCase):
     actual = slo.remaining_days(start, 2)
     self.assertEqual(2, actual)
 
-  @mock.patch('internals.slo.now_utc')
-  def test_is_overdue(self, mock_now):
-    """We can calculate days remaining in the SLO limit."""
-    start = datetime.datetime(2023, 6, 7, 12, 30, 0)  # Wed
-    mock_now.return_value = datetime.datetime(2023, 6, 7, 12, 30, 0)  # Wed
-
-    mock_now.return_value = datetime.datetime(2023, 6, 8, 12, 30, 0)  # Thu
-    self.assertFalse(slo.is_overdue(start, 2))
-
-    mock_now.return_value = datetime.datetime(2023, 6, 9, 12, 30, 0)  # Fri
-    self.assertFalse(slo.is_overdue(start, 2))
-
-    mock_now.return_value = datetime.datetime(2023, 6, 10, 12, 30, 0)  # Sat
-    self.assertFalse(slo.is_overdue(start, 2))
-
-    mock_now.return_value = datetime.datetime(2023, 6, 11, 12, 30, 0)  # Sun
-    self.assertFalse(slo.is_overdue(start, 2))
-
-    mock_now.return_value = datetime.datetime(2023, 6, 12, 12, 30, 0)  # Mon
-    self.assertTrue(slo.is_overdue(start, 2))
-
 
 class SLORecordingTests(testing_config.CustomTestCase):
 
@@ -237,3 +217,72 @@ class SLORecordingTests(testing_config.CustomTestCase):
     self.assertTrue(slo.record_comment(feature, self.gate, user, approvers))
     self.assertEqual(self.a_date, self.gate.requested_on)
     self.assertEqual(self.a_date, self.gate.responded_on)
+
+
+APPR_FIELDS = approval_defs.APPROVAL_FIELDS_BY_ID
+DEFAULT_SLO_LIMIT = approval_defs.DEFAULT_SLO_LIMIT
+
+class SLOReportingTests(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.gate_1 = Gate(feature_id=1, stage_id=2, gate_type=3, state=4)
+    self.gate_1.requested_on = datetime.datetime(2023, 6, 7, 12, 30, 0)  # Wed
+    self.gate_1.put()
+
+    self.gate_2 = Gate(feature_id=2, stage_id=2, gate_type=5, state=5)
+    self.gate_2.requested_on = datetime.datetime(2023, 6, 7, 12, 30, 0)  # Wed
+    self.gate_2.put()
+
+    self.gate_3 = Gate(feature_id=2, stage_id=2, gate_type=5, state=4)
+    self.gate_3.requested_on = datetime.datetime(2023, 6, 9, 12, 30, 0)  # Fri
+    self.gate_3.put()
+
+  def tearDown(self):
+    self.gate_1.key.delete()
+    self.gate_2.key.delete()
+    self.gate_3.key.delete()
+
+  def test_is_gate_overdue__not_started(self):
+    """A gate is not overdue if the review has not started yet."""
+    self.gate_1.requested_on = None
+    self.assertFalse(slo.is_gate_overdue(
+        self.gate_1, APPR_FIELDS, DEFAULT_SLO_LIMIT))
+
+  def test_is_gate_overdue__already_responded(self):
+    """A gate is not overdue if the reviewer already responded."""
+    self.gate_1.responded_on = datetime.datetime(2023, 6, 12, 12, 30, 0)  # Mon
+    self.assertFalse(slo.is_gate_overdue(
+        self.gate_1, APPR_FIELDS, DEFAULT_SLO_LIMIT))
+
+  @mock.patch('internals.slo.now_utc')
+  def test_is_gate_overdue__defined_gate_type(self, mock_now):
+    """We can tell if a gate is overdue based on the configured SLO limit."""
+    mock_now.return_value = datetime.datetime(2023, 6, 7, 12, 30, 0)  # Wed
+    self.assertFalse(slo.is_gate_overdue(
+        self.gate_1, APPR_FIELDS, DEFAULT_SLO_LIMIT))
+
+    mock_now.return_value = datetime.datetime(2023, 6, 12, 12, 30, 0)  # Mon
+    self.assertTrue(slo.is_gate_overdue(
+        self.gate_1, APPR_FIELDS, DEFAULT_SLO_LIMIT))
+
+  @mock.patch('internals.slo.now_utc')
+  def test_is_gate_overdue__undefined_gate_type(self, mock_now):
+    """We can tell if a gate is overdue based on a default SLO limit."""
+    mock_now.return_value = datetime.datetime(2023, 6, 7, 12, 30, 0)  # Wed
+    self.assertFalse(slo.is_gate_overdue(
+        self.gate_1, {}, DEFAULT_SLO_LIMIT))
+
+    mock_now.return_value = datetime.datetime(2023, 6, 12, 12, 30, 0)  # Mon
+    self.assertTrue(slo.is_gate_overdue(
+        self.gate_1, {}, DEFAULT_SLO_LIMIT))
+
+  @mock.patch('internals.slo.now_utc')
+  def test_get_overdue_gates(self, mock_now):
+    """We can tell if a gate is overdue based on a default SLO limit."""
+    mock_now.return_value = datetime.datetime(2023, 6, 12, 12, 30, 0)  # Mon
+
+    actual = slo.get_overdue_gates(APPR_FIELDS, DEFAULT_SLO_LIMIT)
+    # gate_1 is overdue.
+    # gate_2 was approved so it is no longer pending.
+    # gate_3 was requested later so it is not overdue yet.
+    self.assertEqual([self.gate_1], actual)

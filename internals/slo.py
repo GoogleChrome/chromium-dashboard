@@ -58,11 +58,6 @@ def remaining_days(requested_on: datetime.datetime, slo_limit: int) -> int:
   return slo_limit - weekdays_between(requested_on, now_utc())
 
 
-def is_overdue(requested_on: datetime.datetime, slo_limit: int) -> bool:
-  """Return True if a review is overdue."""
-  return remaining_days(requested_on, slo_limit) < 0
-
-
 def record_vote(gate: Gate, votes: list[Vote]) -> bool:
   """Record a Gate SLO response time if needed.  Return True if changed."""
   if gate.requested_on is None:
@@ -97,3 +92,21 @@ def record_comment(
       return True
 
   return False
+
+
+def is_gate_overdue(gate, appr_fields, default_slo_limit) -> bool:
+  """Return True if a gate's review is overdue."""
+  if gate.requested_on is None or gate.responded_on is not None:
+    return False
+  appr_def = appr_fields.get(gate.gate_type)
+  slo_limit = (appr_def.slo_initial_response
+               if appr_def else default_slo_limit)
+  return remaining_days(gate.requested_on, slo_limit) < 0
+
+
+def get_overdue_gates(appr_fields, default_slo_limit):
+  """Return a list of gates with overdue reviews."""
+  active_gates = Gate.query(Gate.state.IN(Gate.PENDING_STATES))
+  overdue_gates = [g for g in active_gates
+                   if is_gate_overdue(g, appr_fields, default_slo_limit)]
+  return overdue_gates
