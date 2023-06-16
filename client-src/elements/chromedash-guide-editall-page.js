@@ -319,13 +319,20 @@ export class ChromedashGuideEditallPage extends LitElement {
     </sl-button>`;
   }
 
-  AddNewStageToCreate(stageType) {
-    this.feature.stages.push({
-      ...stageType,
-      to_create: true,
-      id: ++this.nextStageToCreateId});
-    this.feature.stages = this.feature.stages
-      .sort((a, b) => a.stage_type_int - b.stage_type_int);
+  AddNewStageToCreate(newStage) {
+    const lastIndexOfType = this.feature.stages
+      .findLastIndex((stage) => stage.stage_type === newStage.stage_type);
+    if (lastIndexOfType === -1) {
+      this.feature.stages.push({
+        ...newStage,
+        to_create: true,
+        id: ++this.nextStageToCreateId});
+    } else {
+      this.feature.stages.splice(lastIndexOfType + 1, 0, {
+        ...newStage,
+        to_create: true,
+        id: ++this.nextStageToCreateId});
+    }
     this.feature = {...this.feature};
   }
 
