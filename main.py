@@ -24,6 +24,7 @@ from api import channels_api
 from api import comments_api
 from api import cues_api
 from api import features_api
+from api import feature_links_api
 from api import login_api
 from api import logout_api
 from api import metricsdata
@@ -99,6 +100,7 @@ api_routes: list[Route] = [
     Route(f'{API_BASE}/features', features_api.FeaturesAPI),
     Route(f'{API_BASE}/features/<int:feature_id>', features_api.FeaturesAPI),
     Route(f'{API_BASE}/features/create', features_api.FeaturesAPI),
+    Route(f'{API_BASE}/feature_links', feature_links_api.FeatureLinksAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/votes',
         reviews_api.VotesAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/votes/<int:gate_id>',

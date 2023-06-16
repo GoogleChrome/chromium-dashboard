@@ -1,5 +1,6 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {getStageValue, renderHTMLIf} from './utils';
+import {enhanceUrl} from './feature-link';
 import {openAddStageDialog} from './chromedash-add-stage-dialog';
 import {makeDisplaySpecs} from './form-field-specs';
 import {
@@ -56,6 +57,7 @@ const LONG_TEXT = 60;
 class ChromedashFeatureDetail extends LitElement {
   static get properties() {
     return {
+      featureLinks: {type: Array},
       user: {type: Object},
       canEdit: {type: Boolean},
       feature: {type: Object},
@@ -360,7 +362,7 @@ class ChromedashFeatureDetail extends LitElement {
 
   renderText(value) {
     value = String(value);
-    const markup = autolink(value);
+    const markup = autolink(value, this.featureLinks);
     if (value.length > LONG_TEXT || value.includes('\n')) {
       return html`<span class="longtext">${markup}</span>`;
     }
@@ -369,11 +371,11 @@ class ChromedashFeatureDetail extends LitElement {
 
   renderUrl(value) {
     if (value.startsWith('http')) {
-      return html`
-        <a href=${value} target="_blank"
-           class="url ${value.length > LONG_TEXT ? 'longurl' : ''}"
-           >${value}</a>
-      `;
+      return enhanceUrl(value, this.featureLinks, html`
+      <a href=${value} target="_blank"
+       class="url ${value.length > LONG_TEXT ? 'longurl' : ''}"
+       >${value}</a>
+    `);
     }
     return this.renderText(value);
   }

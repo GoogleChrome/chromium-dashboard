@@ -137,6 +137,22 @@ export const SHARED_STYLES = [
     white-space: pre-wrap;
   }
 
+  .feature-link {
+    display: inline;
+    white-space: normal;
+    line-break: anywhere;
+  }
+
+  .feature-link .badge {
+    height: 18px;
+  }
+
+  .feature-link-tooltip {
+    display: flex;
+    flex-direction: column;
+    row-gap: 0.5em;
+  }
+
   .warning {
     margin: var(--content-padding);
     padding: var(--content-padding);

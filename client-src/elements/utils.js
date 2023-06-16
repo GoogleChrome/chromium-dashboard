@@ -9,8 +9,8 @@ let toastEl;
 /* Convert user-entered text into safe HTML with clickable links
  * where appropriate.  Returns an array with text and anchor tags.
  */
-export function autolink(s) {
-  const withLinks = markupAutolinks(s);
+export function autolink(s, featureLinks = []) {
+  const withLinks = markupAutolinks(s, featureLinks);
   return withLinks;
 }
 
