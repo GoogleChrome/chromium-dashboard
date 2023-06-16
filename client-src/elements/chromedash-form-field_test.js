@@ -101,4 +101,32 @@ describe('chromedash-form-field', () => {
     assert.include(renderElement.innerHTML, 'multiple');
     assert.include(renderElement.innerHTML, 'cleareable');
   });
+
+  it('renders a stage\'s field with the right form field name', async () => {
+    const component = await fixture(
+      html`
+      <chromedash-form-field name="rollout_platforms" stageId="1">
+      </chromedash-form-field>`);
+    assert.exists(component);
+    assert.instanceOf(component, ChromedashFormField);
+    const fieldRow = component.renderRoot.querySelector('tr');
+    assert.exists(fieldRow);
+
+    const renderElement = component.renderRoot;
+    assert.include(renderElement.innerHTML, 'name="rollout_platforms__1"');
+  });
+
+  it('renders a stage\'s field to be created with the right form field name', async () => {
+    const component = await fixture(
+      html`
+      <chromedash-form-field name="rollout_platforms" stageId="10" stageType="11">
+      </chromedash-form-field>`);
+    assert.exists(component);
+    assert.instanceOf(component, ChromedashFormField);
+    const fieldRow = component.renderRoot.querySelector('tr');
+    assert.exists(fieldRow);
+
+    const renderElement = component.renderRoot;
+    assert.include(renderElement.innerHTML, 'name="rollout_platforms__10__11__create"');
+  });
 });

@@ -24,8 +24,13 @@ from internals.core_enums import (
     STAGE_TYPES_DEV_TRIAL,
     STAGE_TYPES_ORIGIN_TRIAL,
     STAGE_TYPES_EXTEND_ORIGIN_TRIAL,
-    STAGE_TYPES_SHIPPING)
+    STAGE_TYPES_SHIPPING,
+    GATE_API_SHIP,
+    GATE_API_EXTEND_ORIGIN_TRIAL,
+    GATE_API_ORIGIN_TRIAL,
+    GATE_API_PROTOTYPE)
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.review_models import Gate
 
 
 # Type return value of get_stage_info_for_templates()
@@ -37,6 +42,36 @@ class StageTemplateInfo(TypedDict):
   ship_stages: list[Stage]
   should_render_mstone_table: bool
   should_render_intents: bool
+
+def create_feature_stage(feature_id: int, feature_type: int, stage_type: int) -> Stage:
+  # Create the stage.
+  stage = Stage(feature_id=feature_id, stage_type=stage_type)
+  stage.put()
+
+  # If we should create a gate and this is a stage that requires a gate,
+  # create it.
+  gate_type = get_gate_for_stage(feature_type, stage_type)
+  if gate_type is not None:
+    gate = Gate(feature_id=feature_id, stage_id=stage.key.id(), gate_type=gate_type,
+        state=Gate.PREPARING)
+    gate.put()
+
+  return stage
+  
+def get_gate_for_stage(feature_type, s_type) -> int | None:
+  # Update type-specific fields.
+  if s_type == STAGE_TYPES_DEV_TRIAL[feature_type]: # pragma: no cover
+    return GATE_API_PROTOTYPE
+
+  if s_type == STAGE_TYPES_ORIGIN_TRIAL[feature_type]:
+    return GATE_API_ORIGIN_TRIAL
+
+  if s_type == STAGE_TYPES_EXTEND_ORIGIN_TRIAL[feature_type]:
+    return GATE_API_EXTEND_ORIGIN_TRIAL
+
+  if s_type == STAGE_TYPES_SHIPPING[feature_type]: # pragma: no cover
+    return GATE_API_SHIP
+  return None
 
 
 def get_feature_stages(feature_id: int) -> dict[int, list[Stage]]:

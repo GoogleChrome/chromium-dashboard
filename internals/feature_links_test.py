@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import testing_config
+from unittest import mock
 from internals.core_models import FeatureEntry
 from internals.feature_links import FeatureLinks, update_feature_links
 from internals.link_helpers import LINK_TYPE_CHROMIUM_BUG
@@ -84,7 +85,8 @@ class LinkTest(testing_config.CustomTestCase):
     link = query.get()
     self.assertIsNone(link)
 
-  def test_feature_changed_invalid_url(self):
+  @mock.patch('logging.error')
+  def test_feature_changed_invalid_url(self, mock_error):
     url = "https://bugs.chromium.org/p/chromium/issues/detail?id=100000000000"
     query = FeatureLinks.query(FeatureLinks.url == url)
     changed_fields = [

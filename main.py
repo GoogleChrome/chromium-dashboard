@@ -193,6 +193,7 @@ spa_page_routes = [
     defaults={'require_signin': True, 'is_enterprise_page': True}),
   # Admin pages
   Route('/admin/blink', defaults={'require_admin_site': True, 'require_signin': True}),
+  Route('/admin/slo_report', reminders.SLOReportHandler),
 ]
 
 mpa_page_routes: list[Route] = [
@@ -240,11 +241,13 @@ internals_routes: list[Route] = [
 
   # Maintenance scripts.
   Route('/scripts/evaluate_gate_status',
-      maintenance_scripts.EvaluateGateStatus),
+        maintenance_scripts.EvaluateGateStatus),
   Route('/scripts/write_missing_gates',
-      maintenance_scripts.WriteMissingGates),
+        maintenance_scripts.WriteMissingGates),
   Route('/scripts/migrate_gecko_views',
-      maintenance_scripts.MigrateGeckoViews),
+        maintenance_scripts.MigrateGeckoViews),
+  Route('/scripts/backfill_responded_on',
+        maintenance_scripts.BackfillRespondedOn),
 ]
 
 dev_routes: list[Route] = []

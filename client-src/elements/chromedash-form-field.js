@@ -16,6 +16,7 @@ export class ChromedashFormField extends LitElement {
       loading: {type: Boolean},
       fieldProps: {type: Object},
       forEnterprise: {type: Boolean},
+      stageType: {type: Number | undefined},
       componentChoices: {type: Object}, // just for the blink component select field
     };
   }
@@ -29,6 +30,7 @@ export class ChromedashFormField extends LitElement {
     this.disabled = false;
     this.loading = false;
     this.forEnterprise = false;
+    this.stageType = undefined;
     this.componentChoices = {};
   }
 
@@ -102,7 +104,7 @@ export class ChromedashFormField extends LitElement {
     // form field name can be specified in form-field-spec to match DB field name
     let fieldName = this.fieldProps.name || this.name;
     if (STAGE_SPECIFIC_FIELDS.has(fieldName) && this.stageId) {
-      fieldName = `${fieldName}__${this.stageId}`;
+      fieldName = this.stageType ? `${fieldName}__${this.stageId}__${this.stageType}__create` : `${fieldName}__${this.stageId}`;
     }
     // choices can be specified in form-field-spec or fetched from API
     const choices = this.fieldProps.choices || this.componentChoices;
