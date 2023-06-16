@@ -81,9 +81,6 @@ export function formatFeatureForEdit(feature) {
 
     // from feature.browsers.other
     other_views_notes: feature.browsers.other.view.notes,
-
-    rollout_platforms: Array.from(new Set((feature.rollout_platforms || [])
-      .map(x => parseInt(x).toString()))),
   };
 
   COMMA_SEPARATED_FIELDS.map((field) => {
