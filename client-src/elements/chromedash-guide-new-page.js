@@ -33,6 +33,16 @@ export class ChromedashGuideNewPage extends LitElement {
         .choices p {
           margin: .5em 1.5em 1em;
         }
+
+        .process-notice {
+          margin: var(--content-padding-half) 0;
+          padding: var(--content-padding-half);
+          background: var(--light-accent-color);
+          border-radius: 8px;
+        }
+        .process-notice p + p {
+          margin-top: var(--content-padding-half);
+        }
       `];
   }
 
@@ -83,6 +93,26 @@ export class ChromedashGuideNewPage extends LitElement {
     `;
   }
 
+  renderWarnings() {
+    if (this.isEnterpriseFeature) {
+      return nothing;
+    } else {
+      return html`
+       <div class="process-notice">
+         <p>Please see the <a
+         href="https://www.chromium.org/blink/launching-features"
+         target="_blank" rel="noopener">Launching features</a> page for process
+         instructions.</p>
+
+         <p>Googlers: Please follow the instructions at <a
+         href="https://goto.corp.google.com/wp-launch-guidelines"
+         target="_blank" rel="noopener">go/wp-launch-guidelines</a> (internal
+         document) to determine whether you also require an internal review.</p>
+       </div>
+      `;
+    }
+  }
+
   renderForm() {
     const newFeatureInitialValues = {owner: this.userEmail};
     const formFields = this.isEnterpriseFeature ?
@@ -95,14 +125,7 @@ export class ChromedashGuideNewPage extends LitElement {
         <form name="overview_form" method="POST" action=${postAction}>
           <input type="hidden" name="token">
           <chromedash-form-table ${ref(this.registerHandlers)}>
-
-            <span>
-              Please see the
-              <a href="https://www.chromium.org/blink/launching-features"
-                target="_blank" rel="noopener">Launching features</a>
-              page for process instructions.
-            </span>
-
+            ${this.renderWarnings()}
             ${formFields.map((field) => html`
               <chromedash-form-field
                 name=${field}
