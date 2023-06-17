@@ -58,6 +58,7 @@ TESTING_APPROVERS = [
 ]
 
 DEFAULT_SLO_LIMIT = 2  # Two weekdays in the Pacific timezone.
+LONGER_SLO_LIMIT = 7  # Seven weekdays in the Pacific timezone.
 
 @dataclass(eq=True, frozen=True)
 class ApprovalFieldDef:
@@ -77,25 +78,29 @@ PrototypeApproval = ApprovalFieldDef(
     'Intent to Prototype',
     'Not normally used.  If a review is requested, API Owners can approve.',
     core_enums.GATE_API_PROTOTYPE, ONE_LGTM,
-    approvers=API_OWNERS_URL, team_name='API Owners')
+    approvers=API_OWNERS_URL, team_name='API Owners',
+    slo_initial_response=LONGER_SLO_LIMIT)
 
 ExperimentApproval = ApprovalFieldDef(
     'Intent to Experiment',
     'One API Owner must approve your intent',
     core_enums.GATE_API_ORIGIN_TRIAL, ONE_LGTM,
-    approvers=API_OWNERS_URL, team_name='API Owners')
+    approvers=API_OWNERS_URL, team_name='API Owners',
+    slo_initial_response=LONGER_SLO_LIMIT)
 
 ExtendExperimentApproval = ApprovalFieldDef(
     'Intent to Extend Experiment',
     'One API Owner must approve your intent',
     core_enums.GATE_API_EXTEND_ORIGIN_TRIAL, ONE_LGTM,
-    approvers=API_OWNERS_URL, team_name='API Owners')
+    approvers=API_OWNERS_URL, team_name='API Owners',
+    slo_initial_response=LONGER_SLO_LIMIT)
 
 ShipApproval = ApprovalFieldDef(
     'Intent to Ship',
     'Three API Owners must approve your intent',
     core_enums.GATE_API_SHIP, THREE_LGTM,
-    approvers=API_OWNERS_URL, team_name='API Owners')
+    approvers=API_OWNERS_URL, team_name='API Owners',
+    slo_initial_response=LONGER_SLO_LIMIT)
 
 PrivacyOriginTrialApproval = ApprovalFieldDef(
     'Privacy OT Review',

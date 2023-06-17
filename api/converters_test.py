@@ -513,7 +513,7 @@ class GateConvertersTest(testing_config.CustomTestCase):
       'owners': [],
       'next_action': None,
       'additional_review': False,
-      'slo_initial_response': 2,
+      'slo_initial_response': appr_def.slo_initial_response,
       'slo_initial_response_took': None,
       'slo_initial_response_remaining': None,
       }
@@ -523,7 +523,7 @@ class GateConvertersTest(testing_config.CustomTestCase):
   def test_maxmimal(self, mock_now):
     """If a Gate has all fields set, we can convert it to JSON."""
     gate = Gate(
-        feature_id=1, stage_id=2, gate_type=3, state=4,
+        feature_id=1, stage_id=2, gate_type=34, state=4,
         requested_on=datetime(2022, 12, 14, 1, 2, 3), # Wednesday
         owners=['appr1@example.com', 'appr2@example.com'],
         next_action=datetime(2022, 12, 25),
@@ -538,7 +538,7 @@ class GateConvertersTest(testing_config.CustomTestCase):
       'id': gate.key.integer_id(),
       'feature_id': 1,
       'stage_id': 2,
-      'gate_type': 3,
+      'gate_type': 34,
       'team_name': appr_def.team_name,
       'gate_name': appr_def.name,
       'state': 4,
@@ -547,7 +547,7 @@ class GateConvertersTest(testing_config.CustomTestCase):
       'owners': ['appr1@example.com', 'appr2@example.com'],
       'next_action': '2022-12-25',
       'additional_review': True,
-      'slo_initial_response': 2,
+      'slo_initial_response': appr_def.slo_initial_response,
       'slo_initial_response_took': None,  # Review is still in-progress.
       'slo_initial_response_remaining': -2,  # Two weekdays overdue.
       }
