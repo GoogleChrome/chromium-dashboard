@@ -22,16 +22,22 @@ from internals import feature_links
 class FeatureLinksAPI(basehandlers.APIHandler):
   """FeatureLinksAPI will return the links and its information to the client."""
 
-  def get_feature_links(self, feature_id: int):
+  def get_feature_links(self, feature_id: int, update_stale_links: bool = False):
     feature = FeatureEntry.get_by_id(feature_id)
     if not feature:
       self.abort(404, msg='Feature not found')
-    return feature_links.get_by_feature_id(feature_id)
+    return feature_links.get_by_feature_id(feature_id, update_stale_links)
 
   def do_get(self, **kwargs):
 
     feature_id = self.get_int_arg('feature_id', None)
+    update_stale_links = self.get_bool_arg('update_stale_links', True)
     if feature_id:
-      return self.get_feature_links(feature_id)
+      data, has_stale_links = self.get_feature_links(
+          feature_id, update_stale_links)
+      return {
+          "data": data,
+          "has_stale_links": has_stale_links
+      }
     else:
       self.abort(400, msg='Missing feature_id')

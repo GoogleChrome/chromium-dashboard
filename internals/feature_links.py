@@ -14,11 +14,18 @@
 # limitations under the License.
 
 import logging
+import datetime
+from threading import Semaphore
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 from internals.core_models import FeatureEntry
 from internals.link_helpers import Link
 
 from google.cloud import ndb  # type: ignore
+
+executor = ThreadPoolExecutor()
+concurrent_updates_sem = Semaphore(32)
+LINK_STALE_MINUTES = 30
 
 
 class FeatureLinks(ndb.Model):
@@ -106,20 +113,44 @@ def _get_feature_links(feature_id: int) -> list[FeatureLinks]:
   return feature_links if feature_links else []
 
 
-def get_by_feature_id(feature_id: int) -> list[dict[str, Any]]:
+def get_by_feature_id(feature_id: int, update_stale_links=False) -> tuple[list[dict], bool]:
   """Return a list of dicts of FeatureLinks for a given feature id
   The returned dicts only include the url, type, and information fields.
   This is used by the api to return json to the client.
+  update_stale_links: if True, then trigger a background task to update the information of the links.
   """
   feature_links = _get_feature_links(feature_id)
-  return [link.to_dict(include=['url', 'type', 'information']) for link in feature_links]
+  stale_time = datetime.datetime.now(
+      tz=datetime.timezone.utc) - datetime.timedelta(minutes=LINK_STALE_MINUTES)
+  stale_time = stale_time.replace(tzinfo=None)
+  stale_feature_links = [
+      link for link in feature_links if link.updated < stale_time]
+  has_stale_links = len(stale_feature_links) > 0
+
+  if has_stale_links and update_stale_links:
+    logging.info(
+        f'Found {len(stale_feature_links)} stale links for feature_id {feature_id}')
+    concurrent_updates_sem.acquire()
+    future = executor.submit(_index_feature_links, stale_feature_links)
+    future.add_done_callback(lambda _: concurrent_updates_sem.release())
+  return [link.to_dict(include=['url', 'type', 'information']) for link in feature_links], has_stale_links
 
 
-def _index_feature_links(fe: FeatureEntry) -> None:
+def _index_feature_links(feature_links: list[FeatureLinks]) -> None:
+  """index the links in the given feature links."""
+  for feature_link in feature_links:
+    link = Link(feature_link.url)
+    link.parse()
+    feature_link.information = link.information
+    feature_link.put()
+    logging.info(f'Update indexed link {link.url}')
+
+
+def _index_feature_entry(fe: FeatureEntry) -> None:
   """index the links in the given feature entry."""
   pass
 
 
-def _batch_index_feature_links(fes: list[FeatureEntry]) -> None:
+def _batch_index_feature_entries(fes: list[FeatureEntry]) -> None:
   """index the links in the given feature entries."""
   pass

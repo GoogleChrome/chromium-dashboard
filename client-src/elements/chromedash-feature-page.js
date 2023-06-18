@@ -175,9 +175,18 @@ export class ChromedashFeaturePage extends LitElement {
 
     window.csClient.getFeatureLinks(this.featureId).then(
       (featureLinks) => {
-        this.featureLinks = featureLinks;
+        this.featureLinks = featureLinks?.data || [];
+        if (featureLinks?.has_stale_links) {
+          // delay 2 seconds to fetch server to get latest link information
+          setTimeout(this.refetchFeatureLinks.bind(this), 2000);
+        }
       },
     );
+  }
+
+  async refetchFeatureLinks() {
+    featureLinks = await window.csClient.getFeatureLinks(this.featureId, false);
+    this.featureLinks = featureLinks?.data || [];
   }
 
   refetch() {
