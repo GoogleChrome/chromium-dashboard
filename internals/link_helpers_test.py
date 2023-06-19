@@ -15,11 +15,56 @@
 
 import testing_config
 from unittest import mock
-from internals.link_helpers import Link, LINK_TYPE_CHROMIUM_BUG
+from internals.link_helpers import Link, LINK_TYPE_CHROMIUM_BUG, LINK_TYPE_GITHUB_ISSUE
 
 
 class LinkHelperTest(testing_config.CustomTestCase):
-  def test_link_with_wrong_host(self):
+  def test_link_github_issue(self):
+    urls_to_test = [
+        "https://github.com/GoogleChrome/chromium-dashboard/issues/999",
+        "https://www.github.com/GoogleChrome/chromium-dashboard/issues/999",
+        "https://www.github.com/GoogleChrome/chromium-dashboard/issues/999?params=1#issuecomment-688970447"
+    ]
+    for url in urls_to_test:
+      link = Link(url)
+      self.assertEqual(link.type, LINK_TYPE_GITHUB_ISSUE)
+
+  def test_link_non_github_issue(self):
+    urls_to_test = [
+        "https://fakegithub.com/GoogleChrome/chromium-dashboard/issues/999",
+        "https://www.github.com/GoogleChrome/chromium-dashboard/issues/",
+    ]
+    for url in urls_to_test:
+      link = Link(url)
+      self.assertNotEqual(link, LINK_TYPE_GITHUB_ISSUE)
+
+  def test_parse_github_issue(self):
+    link = Link(
+        "https://www.github.com/GoogleChrome/chromium-dashboard/issues/999?params=1#issuecomment-688970447")
+    link.parse()
+    info = link.information
+    self.assertEqual(link.type, LINK_TYPE_GITHUB_ISSUE)
+    self.assertEqual(link.is_parsed, True)
+    self.assertEqual(info["title"], "Comments field is incorrectly escaped")
+    self.assertEqual(info["state"], "closed")
+    self.assertEqual(info["state_reason"], "completed")
+    self.assertEqual(info["closed_at"], '2020-12-01T21:50:57Z')
+
+  @mock.patch('logging.error')
+  def test_parse_github_issue_fail_wrong_id_or_no_permission(self, mock_error):
+    link = Link(
+        "https://www.github.com/GoogleChrome/chromium-dashboard/issues/100000000000000"
+    )
+    link.parse()
+    self.assertEqual(link.type, LINK_TYPE_GITHUB_ISSUE)
+    self.assertEqual(link.is_parsed, True)
+    self.assertEqual(link.is_error, True)
+
+  def test_link_chromium(self):
+    link = Link("https://bugs.chromium.org/p/chromium/issues/detail?id=100000")
+    self.assertEqual(link.type, LINK_TYPE_CHROMIUM_BUG)
+
+  def test_link_non_chromium(self):
     link = Link("https://bugs0chromium.org/p/chromium/issues/detail?id=100000")
     self.assertNotEqual(link.type, LINK_TYPE_CHROMIUM_BUG)
 
