@@ -18,18 +18,21 @@ import requests
 import json
 import logging
 from typing import Any
-from ghapi.all import GhApi
+from ghapi.core import GhApi
 from urllib.parse import urlparse
+import base64
 
 github_api_client = GhApi()
 
 LINK_TYPE_CHROMIUM_BUG = 'chromium_bug'
 LINK_TYPE_GITHUB_ISSUE = 'github_issue'
+LINK_TYPE_GITHUB_MARKDOWN = 'github_markdown'
 LINK_TYPE_WEB = 'web'
 LINK_TYPES_REGEX = {
     # https://bugs.chromium.org/p/chromium/issues/detail?id=
     LINK_TYPE_CHROMIUM_BUG: re.compile(r'https://bugs\.chromium\.org/p/chromium/issues/detail\?.*'),
     LINK_TYPE_GITHUB_ISSUE: re.compile(r'https://(www\.)?github\.com/.*issues/\d+'),
+    LINK_TYPE_GITHUB_MARKDOWN: re.compile(r'https://(www\.)?github\.com/.*\.md.*'),
     LINK_TYPE_WEB: re.compile(r'https?://.*'),
 }
 
@@ -50,6 +53,33 @@ class Link():
     self.is_parsed = False
     self.is_error = False
     self.information = None
+
+  def _parse_github_markdown(self) -> dict[str, object]:
+    parsed_url = urlparse(self.url)
+    path = parsed_url.path
+    owner = path.split('/')[1]
+    repo = path.split('/')[2]
+    ref = path.split('/')[4]
+    file_path = '/'.join(path.split('/')[5:])
+    try:
+      branch_information = github_api_client.repos.get_branch(
+          owner=owner, repo=repo, branch=ref)
+      ref = branch_information.name
+    except Exception as e:
+      if e.code != 404:
+        raise e
+
+    information = github_api_client.repos.get_content(
+        owner=owner, repo=repo, path=file_path, ref=ref)
+
+    # decode the content from base64
+    content_str = information.content
+    content_decoded = base64.b64decode(content_str).decode('utf-8')
+    # get markdown title
+    title = content_decoded.split('\n')[0].replace('#', '').strip()
+    information['_parsed_title'] = title
+
+    return information
 
   def _parse_github_issue(self) -> dict[str, object]:
     """Parse the information from the github issue tracker."""
@@ -113,6 +143,8 @@ class Link():
         self.information = self._parse_chromium_bug()
       elif self.type == LINK_TYPE_GITHUB_ISSUE:
         self.information = self._parse_github_issue()
+      elif self.type == LINK_TYPE_GITHUB_MARKDOWN:
+        self.information = self._parse_github_markdown()
       elif self.type == LINK_TYPE_WEB:
         # TODO: parse other url title and description, og tags, etc.
         self.information = None
