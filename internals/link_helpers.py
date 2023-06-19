@@ -63,10 +63,13 @@ class Link():
     ref = path.split('/')[4]
     file_path = '/'.join(path.split('/')[5:])
     try:
+      # try to get the branch information, if it exists, update branch name
+      # this handles the case where the branch is renamed
       branch_information = github_api_client.repos.get_branch(
           owner=owner, repo=repo, branch=ref)
       ref = branch_information.name
     except HTTPError as e:
+      # if the branch does not exist, then it is probably a commit hash
       if e.code != 404:
         raise e
 
