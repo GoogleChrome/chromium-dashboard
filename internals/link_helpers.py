@@ -19,6 +19,7 @@ import json
 import logging
 from typing import Any
 from ghapi.core import GhApi
+from urllib.error import HTTPError
 from urllib.parse import urlparse
 import base64
 
@@ -65,7 +66,7 @@ class Link():
       branch_information = github_api_client.repos.get_branch(
           owner=owner, repo=repo, branch=ref)
       ref = branch_information.name
-    except Exception as e:
+    except HTTPError as e:
       if e.code != 404:
         raise e
 
