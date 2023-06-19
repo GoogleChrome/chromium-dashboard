@@ -76,8 +76,8 @@ class Link():
     # decode the content from base64
     content_str = information.content
     content_decoded = base64.b64decode(content_str).decode('utf-8')
-    # get markdown title
-    title = content_decoded.split('\n')[0].replace('#', '').strip()
+    # get markdown title, remove beginning and trailing # but keep the rest
+    title = content_decoded.split('\n')[0].strip('#').strip()
     information['_parsed_title'] = title
 
     return information
