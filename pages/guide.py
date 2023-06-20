@@ -567,6 +567,12 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
         setattr(stage_to_update, field, new_val)
       if old_val != new_val:
         changed_fields.append((old_field_name, old_val, new_val))
+    
+    if stage_to_update.created == datetime.min:
+      feature: FeatureEntry = FeatureEntry.get_by_id(stage_to_update.feature_id)
+      if feature is None:
+        self.abort(404, msg='Feature not found')
+      setattr(stage_to_update, 'created', feature.created)
     stage_to_update.put()
 
   def update_stages_editall(
@@ -655,7 +661,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
         if old_val != new_val:
           changed_fields.append((field, old_val, new_val))
 
-      # Update the created date only when editing all so that ordering of the stages stays
+      # Update the created date when editing so that ordering of the stages stays
       # consistent.
       if stage.created == datetime.min:
         setattr(stage, 'created', feature.created)
