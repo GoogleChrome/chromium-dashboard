@@ -83,6 +83,13 @@ export class ChromedashGateColumn extends LitElement {
          color: var(--slo-overdue-color);
        }
 
+       .process-notice {
+         margin: var(--content-padding-half) 0;
+         padding: var(--content-padding-half);
+         background: var(--light-accent-color);
+         border-radius: 8px;
+       }
+
        #votes-area {
          margin: var(--content-padding) 0;
        }
@@ -492,6 +499,20 @@ export class ChromedashGateColumn extends LitElement {
     }
   }
 
+  renderWarnings() {
+    if (this.gate.team_name == 'Privacy') {
+      return html`
+       <div class="process-notice">
+         Googlers: Please follow the instructions at <a
+         href="https://goto.corp.google.com/wp-launch-guidelines"
+         target="_blank" rel="noopener">go/wp-launch-guidelines</a> (internal
+         document) to determine whether you also require an internal review.
+       </div>
+      `;
+    }
+    return nothing;
+  }
+
   renderVotesSkeleton() {
     return html`
       <table>
@@ -719,6 +740,8 @@ export class ChromedashGateColumn extends LitElement {
           this.renderSLOStatusSkeleton() :
           this.renderSLOStatus()}
       </div>
+
+      ${this.renderWarnings()}
 
       <div id="votes-area">
         ${this.loading ?

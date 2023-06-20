@@ -328,7 +328,7 @@ class GatesAPITest(testing_config.CustomTestCase):
                 "owners": [],
                 "next_action": None,
                 "additional_review": False,
-                'slo_initial_response': 2,
+                'slo_initial_response': 7,
                 'slo_initial_response_took': None,
                 'slo_initial_response_remaining': None,
             },

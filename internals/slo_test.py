@@ -136,13 +136,13 @@ class SLOFunctionTests(testing_config.CustomTestCase):
 class SLORecordingTests(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.gate = Gate(feature_id=1, stage_id=2, gate_type=3, state=4)
+    self.gate = Gate(feature_id=1, stage_id=2, gate_type=34, state=4)
     self.vote_review_requested = Vote(
-        feature_id=1, gate_id=2, gate_type=3, state=Vote.REVIEW_REQUESTED,
+        feature_id=1, gate_id=2, gate_type=34, state=Vote.REVIEW_REQUESTED,
         set_on=datetime.datetime(2023, 6, 7, 1, 2, 3),  # Wed
         set_by='feature-owner@example.com')
     self.vote_needs_work = Vote(
-        feature_id=1, gate_id=2, gate_type=3, state=Vote.NEEDS_WORK,
+        feature_id=1, gate_id=2, gate_type=34, state=Vote.NEEDS_WORK,
         set_on=datetime.datetime(2023, 6, 12, 1, 2, 3),  # Mon
         set_by='reviewer@example.com')
     self.a_date = datetime.datetime(2023, 6, 17, 1, 2, 3)
@@ -225,15 +225,15 @@ DEFAULT_SLO_LIMIT = approval_defs.DEFAULT_SLO_LIMIT
 class SLOReportingTests(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.gate_1 = Gate(feature_id=1, stage_id=2, gate_type=3, state=4)
+    self.gate_1 = Gate(feature_id=1, stage_id=2, gate_type=34, state=4)
     self.gate_1.requested_on = datetime.datetime(2023, 6, 7, 12, 30, 0)  # Wed
     self.gate_1.put()
 
-    self.gate_2 = Gate(feature_id=2, stage_id=2, gate_type=5, state=5)
+    self.gate_2 = Gate(feature_id=2, stage_id=2, gate_type=54, state=5)
     self.gate_2.requested_on = datetime.datetime(2023, 6, 7, 12, 30, 0)  # Wed
     self.gate_2.put()
 
-    self.gate_3 = Gate(feature_id=2, stage_id=2, gate_type=5, state=4)
+    self.gate_3 = Gate(feature_id=2, stage_id=2, gate_type=54, state=4)
     self.gate_3.requested_on = datetime.datetime(2023, 6, 9, 12, 30, 0)  # Fri
     self.gate_3.put()
 
