@@ -14,6 +14,7 @@
 
 import testing_config  # Must be imported first
 
+import datetime
 import flask
 from unittest import mock
 import werkzeug
@@ -21,6 +22,7 @@ import werkzeug
 from internals import approval_defs
 from internals import core_enums
 from internals import detect_intent
+from internals import slo
 from internals import stage_helpers
 from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Gate, Vote
@@ -479,3 +481,54 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     self.assertEqual(Vote.APPROVED, vote.state)
     self.assertEqual('user@example.com', vote.set_by)
     self.assertEqual(self.stages_dict[160][0].intent_thread_url, self.thread_url)
+
+  @mock.patch('logging.info')
+  def test_record_slo__gate_not_found(self, mock_info):
+    """If we can't find the gate, exit early."""
+    appr_field = approval_defs.TestingShipApproval
+    self.handler.record_slo(self.feature_1, appr_field, 'from_addr')
+    mock_info.assert_called_once_with('Did not find a gate')
+
+  @mock.patch('logging.info')
+  def test_record_slo__gate_ambiguous(self, mock_info):
+    """If we tell which gate, exit early."""
+    appr_field = approval_defs.TestingShipApproval
+    gate_3 = Gate(feature_id=self.feature_id, stage_id=2,
+        gate_type=appr_field.field_id, state=Vote.NA)
+    gate_3.put()
+    gate_4 = Gate(feature_id=self.feature_id, stage_id=2,
+        gate_type=appr_field.field_id, state=Vote.NA)
+    gate_4.put()
+
+    self.handler.record_slo(self.feature_1, appr_field, 'from_addr')
+    mock_info.assert_called_once_with(f'Ambiguous gates: {self.feature_id}')
+
+  @mock.patch('internals.slo.now_utc')
+  def test_record_slo__normal(self, mock_now):
+    """If an approver posted, count that as an initial response."""
+    mock_now.return_value = datetime.datetime.now()
+    appr_field = approval_defs.TestingShipApproval
+    gate = Gate(feature_id=self.feature_id, stage_id=2,
+        gate_type=appr_field.field_id, state=Vote.NA)
+    gate.requested_on = mock_now.return_value
+    gate.put()
+    from_addr = approval_defs.TESTING_APPROVERS[0]
+
+    self.handler.record_slo(self.feature_1, appr_field, from_addr)
+
+    revised_gate = Gate.get_by_id(gate.key.integer_id())
+    self.assertEqual(mock_now.return_value, revised_gate.responded_on)
+
+  def test_record_slo__non_approver(self):
+    """If a non-approver posted, don'tcount that as an initial response."""
+    appr_field = approval_defs.TestingShipApproval
+    gate = Gate(feature_id=self.feature_id, stage_id=2,
+        gate_type=appr_field.field_id, state=Vote.NA)
+    gate.requested_on = datetime.datetime.now()
+    gate.put()
+    from_addr = 'non-approver@example.com'
+
+    self.handler.record_slo(self.feature_1, appr_field, from_addr)
+
+    revised_gate = Gate.get_by_id(gate.key.integer_id())
+    self.assertEqual(None, revised_gate.responded_on)

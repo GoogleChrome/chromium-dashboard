@@ -24,7 +24,8 @@ from framework import users
 from internals import core_enums
 from internals import approval_defs
 from internals.core_models import FeatureEntry, Stage
-from internals.review_models import Vote
+from internals.review_models import Vote, Gate
+from internals import slo
 
 
 FIELDS_REQUIRING_LGTMS = [
@@ -196,6 +197,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
 
     self.set_intent_thread_url(feature, approval_field, thread_url, subject)
     self.create_approvals(feature, approval_field, from_addr, body)
+    self.record_slo(feature, approval_field, from_addr)
     return {'message': 'Done'}
 
   def load_detected_feature(self, feature_id: Optional[int],
@@ -284,3 +286,21 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
         # REVIEW_REQUESTED votes.
         approval_defs.set_vote(feature_id, approval_field.field_id,
             Vote.REVIEW_REQUESTED, from_addr)
+
+  def record_slo(self, feature, approval_field, from_addr) -> None:
+    """Update SLO timestamps."""
+    feature_id = feature.key.integer_id()
+    matching_gates = Gate.query(
+        Gate.feature_id == feature_id,
+        Gate.gate_type == approval_field.field_id).fetch(None)
+    if len(matching_gates) == 0:
+      logging.info('Did not find a gate')
+      return
+    if len(matching_gates) > 1:
+      logging.info(f'Ambiguous gates: {feature_id}')
+      return
+    gate = matching_gates[0]
+    user = users.User(email=from_addr)
+    approvers = approval_defs.get_approvers(gate.gate_type)
+    if slo.record_comment(feature, gate, user, approvers):
+      gate.put()
