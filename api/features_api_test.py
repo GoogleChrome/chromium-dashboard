@@ -413,7 +413,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     testing_config.sign_in('admin@example.com', 123567890)
 
     new_summary = 'a different summary'
-    new_owner_emails = ['test@example.com']
+    new_owner_emails = 'test@example.com'
     valid_request_body = {
       'feature_changes': {
         'id': self.feature_1_id,
@@ -429,7 +429,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     self.assertEqual({'message': f'Feature {self.feature_1_id} updated.'}, response)
     # Assert that changes were made.
     self.assertEqual(self.feature_1.summary, new_summary)
-    self.assertEqual(self.feature_1.owner_emails, new_owner_emails)
+    self.assertEqual(self.feature_1.owner_emails, ['test@example.com'])
     # Updater email field should be changed.
     self.assertIsNotNone(self.feature_1.updated)
     self.assertEqual(self.feature_1.updater_email, 'admin@example.com')
@@ -611,7 +611,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     valid_request_body = {
       'name': 'A name',
       'summary': 'A summary',
-      'owner_emails': ['summary', 'owner_emails'],
+      'owner_emails': 'user@example.com,user2@example.com',
       'category': 2,
       'feature_type': 1,
       'impl_status_chrome': 3,
@@ -635,7 +635,11 @@ class FeaturesAPITest(testing_config.CustomTestCase):
 
     # New feature's values should match fields in JSON body.
     for field, value in valid_request_body.items():
-      self.assertEqual(getattr(new_feature, field), value)
+      if field == 'owner_emails':
+        # list field types should convert the string into a list.
+        self.assertEqual(new_feature.owner_emails, ['user@example.com', 'user2@example.com'])
+      else:
+        self.assertEqual(getattr(new_feature, field), value)
     # User's email should match creator_email field.
     self.assertEqual(new_feature.creator_email, 'admin@example.com')
 
@@ -647,7 +651,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     valid_request_body = {
       'name': 'A name',
       'summary': 'A summary',
-      'owner_emails': ['summary', 'owner_emails'],
+      'owner_emails': 'user@example.com,user2@example.com',
       'category': 2,
       'feature_type': 0,
       'impl_status_chrome': 3,
@@ -694,7 +698,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
 
       'name': 'A name',
       'summary': 'A summary',
-      'owner_emails': ['user@example.com', 'user2@example.com'],
+      'owner_emails': 'user@example.com,user2@example.com',
       'category': 1,
       'feature_type': 1,
       'impl_status_chrome': 1,
@@ -719,7 +723,11 @@ class FeaturesAPITest(testing_config.CustomTestCase):
       # Invalid fields are ignored and not updated.
       if field == 'bad_param':
         continue
-      self.assertEqual(getattr(new_feature, field), value)
+      if field == 'owner_emails':
+        # list field types should convert the string into a list.
+        self.assertEqual(new_feature.owner_emails, ['user@example.com', 'user2@example.com'])
+      else:
+        self.assertEqual(getattr(new_feature, field), value)
 
   def test_post__immutable_fields(self):
     """POST request fails with 400 when immutable field is provided."""
@@ -731,7 +739,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
 
       'name': 'A name',
       'summary': 'A summary',
-      'owner_emails': ['user@example.com', 'user2@example.com'],
+      'owner_emails': 'user@example.com,user2@example.com',
       'category': 1,
       'feature_type': 1,
       'impl_status_chrome': 1,
@@ -758,6 +766,10 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         # User's email should match creator_email field.
         # The given creator_email should be ignored.
         self.assertEqual(new_feature.creator_email, 'admin@example.com')
+      elif field == 'owner_emails':
+        # list field types should convert the string into a list.
+        self.assertEqual(new_feature.owner_emails,
+                         ['user@example.com', 'user2@example.com'])
       else:
         self.assertEqual(getattr(new_feature, field), value)
 
@@ -769,30 +781,8 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     invalid_request_body = {
       'name': 'A name',
       'summary': 'A summary',
-      'owner_emails': ['user@example.com', 'user2@example.com'],
+      'owner_emails': 'user@example.com,user2@example.com',
       'category': 'THIS SHOULD BE AN INTEGER',  # Bad data type.
-      'feature_type': 1,
-      'impl_status_chrome': 1,
-      'standard_maturity': 1,
-      'ff_views': 1,
-      'safari_views': 1,
-      'web_dev_views': 1,
-    }
-    request_path = f'{self.request_path}/create'
-    with test_app.test_request_context(request_path, json=invalid_request_body):
-      with self.assertRaises(werkzeug.exceptions.BadRequest):
-        self.handler.do_post()
-
-  def test_post__bad_data_type_list(self):
-    """POST request fails with 400 when a bad list data type is provided."""
-    # Signed-in user with permissions.
-    testing_config.sign_in('admin@example.com', 123567890)
-
-    invalid_request_body = {
-      'name': 'A name',
-      'summary': 'A summary',
-      'owner_emails': 'summary,owner_emails', # Bad data type.
-      'category': 1,
       'feature_type': 1,
       'impl_status_chrome': 1,
       'standard_maturity': 1,
@@ -813,7 +803,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     invalid_request_body = {
       # No 'name' field.
       'summary': 'A summary',
-      'owner_emails': ['summary', 'owner_emails'],
+      'owner_emails': 'owner1@example.com,owner2@example.com',
       'category': 1,
       'feature_type': 1,
       'impl_status_chrome': 1,

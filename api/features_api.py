@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from datetime import datetime
+import re
 from typing import Any
 from google.cloud import ndb
 
@@ -32,6 +33,15 @@ from internals import search
 import settings
 
 
+# See https://www.regextester.com/93901 for url regex
+SCHEME_PATTERN = r'((?P<scheme>[a-z]+):(\/\/)?)?'
+DOMAIN_PATTERN = r'([\w-]+(\.[\w-]+)+)'
+PATH_PARAMS_ANCHOR_PATTERN = r'([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?'
+URL_RE = re.compile(r'\b%s%s%s\b' % (
+    SCHEME_PATTERN, DOMAIN_PATTERN, PATH_PARAMS_ANCHOR_PATTERN))
+ALLOWED_SCHEMES = [None, 'http', 'https']
+
+
 class FeaturesAPI(basehandlers.APIHandler):
   """Features are the the main records that we track."""
 
@@ -40,6 +50,31 @@ class FeaturesAPI(basehandlers.APIHandler):
     """Abort the process if an invalid data type is given."""
     self.abort(400, msg=(
         f'Bad value for field {field} of type {field_type}: {value}'))
+
+  def _extract_link(self, s):
+    if s:
+      match_obj = URL_RE.search(str(s))
+      if match_obj and match_obj.group('scheme') in ALLOWED_SCHEMES:
+        link = match_obj.group()
+        if not link.startswith(('http://', 'https://')):
+          link = 'http://' + link
+        return link
+
+    return None
+
+  def _split_list_input(
+      self,
+      field: str,
+      field_type: str,
+      value: str,
+      delimiter: str='\\r?\\n'
+    ) -> list[str]:
+    try:
+      formatted_list = [
+        x.strip() for x in re.split(delimiter, value) if x.strip()]
+    except AttributeError:
+      self._abort_invalid_data_type(field, field_type, value)
+    return formatted_list
 
   def _format_field_val(
       self,
@@ -54,10 +89,17 @@ class FeaturesAPI(basehandlers.APIHandler):
       return None
 
     # TODO(DanielRyanSmith): Write checks to ensure enum values are valid.
-    if (field_type == 'list'):
+    if field_type == 'emails' or field_type == 'split_str':
+      list_val = self._split_list_input(field, field_type, value, ',')
       if field == 'blink_components' and len(value) == 0:
         return [settings.DEFAULT_COMPONENT]
-      return value
+      return list_val
+    elif field_type == 'link':
+      return self._extract_link(value)
+    elif field_type == 'links':
+      list_val = self._split_list_input(field, field_type, value, ',')
+      # Filter out any URLs that do not conform to the proper pattern.
+      return [link for link in self._extract_link(list_val) if link]
     elif field_type == 'int':
       try:
         return int(value)
