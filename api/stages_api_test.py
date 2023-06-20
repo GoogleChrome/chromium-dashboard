@@ -16,6 +16,7 @@
 import testing_config  # Must be imported before the module under test.
 
 import flask
+from datetime import datetime
 from unittest import mock
 from google.cloud import ndb  # type: ignore
 import werkzeug.exceptions
@@ -30,6 +31,7 @@ test_app = flask.Flask(__name__)
 class StagesAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
+    self.now = datetime.now()
     self.feature_owner = AppUser(email='feature_owner@example.com')
     self.feature_owner.put()
 
@@ -45,24 +47,27 @@ class StagesAPITest(testing_config.CustomTestCase):
         ux_emails=['ux_person@example.com'],
         intent_thread_url='https://example.com/intent',
         milestones=MilestoneSet(desktop_first=100),
-        experiment_goals='To be the very best.')
+        experiment_goals='To be the very best.',
+        created=self.now)
     self.stage_1.put()
     # Shipping stage.
-    self.stage_2 = Stage(id=11, feature_id=1, stage_type=160)
+    self.stage_2 = Stage(id=11, feature_id=1, stage_type=160, created=self.now)
     self.stage_2.put()
 
     self.stage_3 = Stage(id=30, feature_id=99, stage_type=150, browser='Chrome',
         ux_emails=['ux_person@example.com'],
         intent_thread_url='https://example.com/intent',
         milestones=MilestoneSet(desktop_first=100),
-        experiment_goals='To be the very best.')
+        experiment_goals='To be the very best.',
+        created=self.now)
     self.stage_3.put()
 
     self.stage_4 = Stage(id=40, feature_id=1, stage_type=150, browser='Chrome',
         ux_emails=['ux_person@example.com'],
         intent_thread_url='https://example.com/intent',
         milestones=MilestoneSet(desktop_first=100),
-        experiment_goals='To be the very best.')
+        experiment_goals='To be the very best.',
+        created=self.now)
     self.stage_4.put()
 
     self.stage_5 = Stage(id=50, feature_id=1, stage_type=150, browser='Chrome',
@@ -70,13 +75,15 @@ class StagesAPITest(testing_config.CustomTestCase):
         ux_emails=['ux_person@example.com'],
         intent_thread_url='https://example.com/intent',
         milestones=MilestoneSet(desktop_first=100),
-        experiment_goals='To be the very best.')
+        experiment_goals='To be the very best.',
+        created=self.now)
     self.stage_5.put()
 
     self.expected_stage_1 = {
         'android_first': None,
         'android_last': None,
         'announcement_url': None,
+        'created': str(self.now),
         'desktop_first': 100,
         'desktop_last': None,
         'display_name': None,
@@ -147,6 +154,7 @@ class StagesAPITest(testing_config.CustomTestCase):
     """Returns stage data with extension if requesting a valid stage ID."""
     extension = {
         'id': 50,
+        'created': str(self.now),
         'feature_id': 1,
         'stage_type': 150,
         'intent_stage': 3,
@@ -181,6 +189,7 @@ class StagesAPITest(testing_config.CustomTestCase):
 
     expect = {
         'id': 40,
+        'created': str(self.now),
         'feature_id': 1,
         'stage_type': 150,
         'intent_stage': 3,
