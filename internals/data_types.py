@@ -23,6 +23,7 @@ from typing import TypedDict
 # JSON representation of Stage entity data.
 class StageDict(TypedDict):
   id: int
+  created: str
   feature_id: int
   stage_type: int
   display_name: str

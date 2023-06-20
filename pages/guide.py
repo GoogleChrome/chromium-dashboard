@@ -424,7 +424,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     if stage_ids:
       stage_ids_list = [int(id) for id in stage_ids.split(',')]
       self.update_stages_editall(
-          feature_id, fe.feature_type, stage_ids_list, changed_fields, form_fields)
+          fe, stage_ids_list, changed_fields, form_fields)
     # If a stage_id is supplied, we make changes to only that specific stage.
     elif stage_id:
       for field, field_type in self.STAGE_FIELDS:
@@ -443,7 +443,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     extension_stage_ids = self.form.get('extension_stage_ids')
     if extension_stage_ids:
       stage_ids_list = [int(id) for id in extension_stage_ids.split(',')]
-      self.update_stages_editall(feature_id, fe.feature_type, stage_ids_list, changed_fields, form_fields)
+      self.update_stages_editall(fe, stage_ids_list, changed_fields, form_fields)
     # Update metadata fields.
     now = datetime.now()
     if self.form.get('accurate_as_of'):
@@ -571,14 +571,15 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
   def update_stages_editall(
       self,
-      feature_id: int,
-      feature_type: int,
+      feature: FeatureEntry,
       stage_ids: list[int],
       changed_fields: list[tuple[str, Any, Any]],
       form_fields: list[str]) -> None:
     """Handle the updates for stages on the edit-all page."""
     id_to_field_suffix = {}
     ids_created = set()
+    feature_id = feature.key.id()
+    feature_type = feature.feature_type
     for field in self.form.keys():
       if not field.endswith('__create'):
         continue
@@ -653,4 +654,10 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
         stage.milestones = milestoneset_entity
         if old_val != new_val:
           changed_fields.append((field, old_val, new_val))
+
+      # Update the created date only when editing all so that ordering of the stages stays
+      # consistent.
+      if stage.created == datetime.min:
+        setattr(stage, 'created', feature.created)
+
       stage.put()
