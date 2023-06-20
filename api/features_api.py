@@ -72,7 +72,7 @@ class FeaturesAPI(basehandlers.APIHandler):
     try:
       formatted_list = [
         x.strip() for x in re.split(delimiter, value) if x.strip()]
-    except AttributeError:
+    except TypeError:
       self._abort_invalid_data_type(field, field_type, value)
     return formatted_list
 

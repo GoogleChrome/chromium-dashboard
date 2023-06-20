@@ -803,7 +803,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     invalid_request_body = {
       'name': 'A name',
       'summary': 'A summary',
-      'owner_emails': 'user@example.com,user2@example.com', # Bad data type.
+      'owner_emails': 12345, # Bad data type.
       'category': 1,
       'feature_type': 1,
       'impl_status_chrome': 1,
