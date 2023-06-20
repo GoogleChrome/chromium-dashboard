@@ -211,8 +211,6 @@ def stage_to_json_dict(
     'webview_last': milestones.webview_last,
   }
 
-  print(d['created'])
-
   return d
 
 
