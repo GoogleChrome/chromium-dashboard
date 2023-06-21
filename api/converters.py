@@ -115,12 +115,9 @@ def _prep_stage_info(
 
   # Get all stages associated with the feature, sorted by stage type.
   if prefetched_stages is not None:
-    prefetched_stages.sort(key=lambda s: s.stage_type)
     stages = prefetched_stages
   else:
-    stages = Stage.query(
-        Stage.feature_id == fe.key.integer_id()).order(Stage.stage_type)
-
+    stages = Stage.query(Stage.feature_id == fe.key.integer_id())
   stage_info: StagePrepResponse = {
       'proto': None,
       'dev_trial': None,
@@ -159,7 +156,9 @@ def _prep_stage_info(
     elif s.stage_type == rollout_type:
       stage_info['rollout'] = s
     stage_info['all_stages'].append(stage_dict)
+    print(stage_dict['created'])
 
+  stage_info['all_stages'].sort(key=lambda s: (s['stage_type'], s['created']))
   return stage_info
 
 
@@ -174,6 +173,7 @@ def stage_to_json_dict(
 
   d: StageDict = {
     'id': stage.key.integer_id(),
+    'created': str(stage.created),
     'feature_id': stage.feature_id,
     'stage_type': stage.stage_type,
     'display_name': stage.display_name,

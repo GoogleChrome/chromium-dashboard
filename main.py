@@ -248,6 +248,8 @@ internals_routes: list[Route] = [
         maintenance_scripts.MigrateGeckoViews),
   Route('/scripts/backfill_responded_on',
         maintenance_scripts.BackfillRespondedOn),
+  Route('/scripts/backfill_stage_created',
+        maintenance_scripts.BackfillStageCreated),
 ]
 
 dev_routes: list[Route] = []

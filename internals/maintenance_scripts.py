@@ -193,3 +193,26 @@ class BackfillRespondedOn(FlaskHandler):
 
     ndb.put_multi(batch)
     return f'{count} Gates entities updated.'
+
+class BackfillStageCreated(FlaskHandler):
+  def get_template_data(self, **kwargs):
+    """Backfill created dates for existing stages."""
+    self.require_cron_header()
+    count = 0
+    batch = []
+    BATCH_SIZE = 100
+    stages: ndb.Query = Stage.query()
+    for stage in stages:
+      feature_entry = FeatureEntry.get_by_id(stage.feature_id)
+      if feature_entry == None or stage.created != None:
+        continue
+      stage.created = feature_entry.created
+      batch.append(stage)
+      count += 1
+      if len(batch) > BATCH_SIZE:
+        ndb.put_multi(batch)
+        logging.info(f'Finished a batch of {BATCH_SIZE}')
+        batch = []
+
+    ndb.put_multi(batch)
+    return f'{count} Stages entities updated of {stages.count()} available stages.'
