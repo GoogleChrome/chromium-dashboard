@@ -156,7 +156,6 @@ def _prep_stage_info(
     elif s.stage_type == rollout_type:
       stage_info['rollout'] = s
     stage_info['all_stages'].append(stage_dict)
-    print(stage_dict['created'])
 
   stage_info['all_stages'].sort(key=lambda s: (s['stage_type'], s['created']))
   return stage_info
