@@ -142,6 +142,7 @@ export class ChromedashHeader extends LitElement {
 
           .flex-container-inner-first {
             justify-content: space-between;
+            flex-direction: column;
             width: 100%;
           }
 
@@ -258,6 +259,8 @@ export class ChromedashHeader extends LitElement {
 
   renderTabs() {
     return html`
+      <sl-drawer label="Drawer" placement="start" open=true class="drawer-placement-start">
+      This drawer slides in from the start.
       <div id="maintabs" class="flex-container flex-container-inner-first">
         <a class="flex-item" href="/roadmap" ?active=${this.isCurrentPage('/roadmap')}>Roadmap</a>
         ${this.user ? html`
@@ -275,6 +278,7 @@ export class ChromedashHeader extends LitElement {
           </ul>
         </div>
       </div>
+      </sl-drawer>
     `;
   }
 
