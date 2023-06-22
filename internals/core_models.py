@@ -93,6 +93,8 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   # Implementation in Chrome
   impl_status_chrome = ndb.IntegerProperty(required=True, default=NO_ACTIVE_DEV)
   flag_name = ndb.StringProperty()
+  finch_name = ndb.StringProperty()
+  non_finch_justification = ndb.TextProperty()
   ongoing_constraints = ndb.TextProperty()
 
   # Topic: Adoption (reviewed by API Owners.  Auto-approved gate later?)

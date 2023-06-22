@@ -273,6 +273,8 @@ def feature_entry_to_json_verbose(
     'screenshot_links': fe.screenshot_links or [],
     'breaking_change': fe.breaking_change,
     'flag_name': fe.flag_name,
+    'finch_name': fe.finch_name,
+    'non_finch_justification': fe.non_finch_justification,
     'ongoing_constraints': fe.ongoing_constraints,
     'motivation': fe.motivation,
     'devtrial_instructions': fe.devtrial_instructions,

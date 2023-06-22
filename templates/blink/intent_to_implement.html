@@ -195,8 +195,23 @@
      >{{feature.devtrial_instructions}}</a>
 {% endif %}
 
-<br><br><h4>Flag name</h4>
+<br><br><h4>Flag name on chrome://flags</h4>
 {{feature.flag_name}}
+
+<br><br><h4>Finch feature name</h4>
+{{feature.finch_name}}
+
+{% if feature.non_finch_justification %}
+  <br><br><h4>Non-finch justification</h4>
+  <p class="preformatted">{{feature.non_finch_justification|urlize}}</p>
+{% else %}
+  {% if not feature.finch_name %}
+    <br><br><h4>Non-finch justification</h4>
+    None
+  {% endif %}
+{% endif %}
+
+
 
 <br><br><h4>Requires code in //chrome?</h4>
 {{feature.requires_embedder_support}}

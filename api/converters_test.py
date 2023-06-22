@@ -351,6 +351,8 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'feature_notes': 'notes',
       'ff_views': 5,
       'flag_name': None,
+      'finch_name': None,
+      'non_finch_justification': None,
       'initial_public_proposal_url': None,
       'interop_compat_risks': None,
       'measurement': None,
