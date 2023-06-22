@@ -1261,7 +1261,34 @@ export const ALL_FIELDS = {
     required: false,
     label: 'Flag name',
     help_text: html`
-      Name of the flag on chrome://flags that enables this feature.`,
+      Name of the flag on chrome://flags that allows a web developer to
+      enable this feature in their own browser to try it out.
+      E.g., "storage-buckets".  These are defined in <a target="_blank"
+      href="https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/about_flags.cc">about_flags.cc</a>.`,
+  },
+
+  'finch_name': {
+    type: 'input',
+    attrs: TEXT_FIELD_ATTRS,
+    required: false,
+    label: 'Finch feature name',
+    help_text: html`
+      String name of the <code>base::Feature</code> defined via the
+      <code>BASE_FEATURE</code> macro in your feature implementation
+      code. E.g., "StoragBuckets".  These names are used
+      in <a target="_blank"
+      href="https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/runtime_enabled_features.json5"
+      >runtime_enabled_features.json5</a> and finch GCL files`,
+  },
+
+  'non_finch_justification': {
+    type: 'textarea',
+    required: false,
+    label: 'Non-finch justification',
+    help_text: html`
+      The <a target="_blank"
+      href="https://chromium.googlesource.com/chromium/src/+/main/docs/flag_guarding_guidelines.md">Flag Guarding Guidelines</a> require new features to have
+       a finch flag.  If your feature does not have a finch flag, explain why.`,
   },
 
   'prefixed': {

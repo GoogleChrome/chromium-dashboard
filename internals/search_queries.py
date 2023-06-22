@@ -225,6 +225,9 @@ QUERIABLE_FIELDS: dict[str, Property] = {
 
     'browsers.chrome.status': FeatureEntry.impl_status_chrome,
     'browsers.chrome.flag_name': FeatureEntry.flag_name,
+    'browsers.chrome.finch_name': FeatureEntry.finch_name,
+    'browsers.chrome.non_finch_justification':
+        FeatureEntry.non_finch_justification,
     'ongoing_constraints': FeatureEntry.ongoing_constraints,
 
     'motivation': FeatureEntry.motivation,

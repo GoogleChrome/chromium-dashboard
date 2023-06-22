@@ -33,13 +33,13 @@ class StageDict(TypedDict):
   # Dev trial specific fields.
   announcement_url: str | None
 
-  
+
   # Origin trial specific fields.
   experiment_goals: str | None
   experiment_risks: str | None
   extensions: list[StageDict]  # type: ignore
   origin_trial_feedback_url: str | None
-  
+
   # Trial extension specific fields.
   ot_stage_id: int | None
   experiment_extension_reason: str | None
@@ -192,6 +192,8 @@ class VerboseFeatureDict(TypedDict):
 
   # Implementation in Chrome
   flag_name: str | None
+  finch_name: str | None
+  non_finch_justification: str | None
   ongoing_constraints: str | None
 
   # Topic: Adoption

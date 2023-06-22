@@ -14,7 +14,7 @@
 # limitations under the License.
 
 # Data type for lists defining field data type information.
-FIELD_INFO_DATA_TYPE = list[tuple[str, str]]  
+FIELD_INFO_DATA_TYPE = list[tuple[str, str]]
 
 # List with fields that can be edited on feature create/update
 # and their data types.
@@ -47,6 +47,8 @@ FEATURE_FIELD_DATA_TYPES: FIELD_INFO_DATA_TYPE = [
   ('ff_views_link', 'str'),
   ('ff_views_notes', 'str'),
   ('flag_name', 'str'),
+  ('finch_name', 'str'),
+  ('non_finch_justification', 'str'),
   ('impl_status_chrome', 'int'),
   ('initial_public_proposal_url', 'str'),
   ('intent_stage', 'int'),
