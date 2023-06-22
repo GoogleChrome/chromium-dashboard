@@ -287,3 +287,4 @@ class Stage(ndb.Model):
   enterprise_policies = ndb.StringProperty(repeated=True)
 
   archived = ndb.BooleanProperty(default=False)
+  created = ndb.DateTimeProperty(auto_now_add=True)
