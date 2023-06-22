@@ -58,7 +58,7 @@ TESTING_APPROVERS = [
 ]
 
 DEFAULT_SLO_LIMIT = 2  # Two weekdays in the Pacific timezone.
-LONGER_SLO_LIMIT = 7  # Seven weekdays in the Pacific timezone.
+LONGER_SLO_LIMIT = 5  # Five weekdays in the Pacific timezone.
 
 @dataclass(eq=True, frozen=True)
 class ApprovalFieldDef:
