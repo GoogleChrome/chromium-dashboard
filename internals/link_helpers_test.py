@@ -19,6 +19,17 @@ from internals.link_helpers import Link, LINK_TYPE_CHROMIUM_BUG
 
 
 class LinkHelperTest(testing_config.CustomTestCase):
+  def test_extract_urls_from_value(self):
+    field_value = "https://www.chromestatus.com/feature/1234"
+    urls = Link.extract_urls_from_value(field_value)
+    self.assertEqual(urls, [field_value])
+    field_value = "leadinghttps:https://www.chromestatus.com/feature/1234, https://www.chromestatus.com/feature/5678 is valid"
+    urls = Link.extract_urls_from_value(field_value)
+    self.assertEqual(urls, ["https://www.chromestatus.com/feature/1234", "https://www.chromestatus.com/feature/5678"])
+    field_value = ["https://www.chromestatus.com/feature/1234", "not a valid urlhttps://www.chromestatus.com/feature/", None]
+    urls = Link.extract_urls_from_value(field_value)
+    self.assertEqual(urls, ["https://www.chromestatus.com/feature/1234"])
+
   def test_link_with_wrong_host(self):
     link = Link("https://bugs0chromium.org/p/chromium/issues/detail?id=100000")
     self.assertNotEqual(link.type, LINK_TYPE_CHROMIUM_BUG)

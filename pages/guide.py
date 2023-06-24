@@ -30,6 +30,7 @@ from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate
 from internals import processes
 from internals import search_fulltext
+from internals import feature_links
 import settings
 
 
@@ -461,7 +462,10 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
         fe, changed_fields, notify=True)
     # Remove all feature-related cache.
     rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
-
+    
+    # TODO: comment out this line to enable feature links  
+    # feature_links.update_feature_links(fe, changed_fields)
+    
     # Update full-text index.
     if fe:
       search_fulltext.index_feature(fe)

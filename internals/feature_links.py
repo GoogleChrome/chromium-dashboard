@@ -35,23 +35,24 @@ class FeatureLinks(ndb.Model):
 
 def update_feature_links(fe: FeatureEntry, changed_fields: list[tuple[str, Any, Any]]) -> None:
   """Update the links in the given feature entry."""
-  for _, old_val, new_val in changed_fields:
+  for field, old_val, new_val in changed_fields:
     if new_val != old_val:
       if old_val is None and not bool(new_val):
         continue
-      if isinstance(old_val, str) and Link.get_type(old_val):
-        link = Link(old_val)
-        fe_dict = fe.to_dict()
-        if link.url not in list(fe_dict.values()):
-          # if the link is not in other fields, then remove it
+      old_val_urls = Link.extract_urls_from_value(old_val)
+      new_val_urls = Link.extract_urls_from_value(new_val)
+      urls_to_remove = set(old_val_urls) - set(new_val_urls)
+      urls_to_add = set(new_val_urls) - set(old_val_urls)
+      fe_values = fe.to_dict(exclude=[field]).values()
+      all_urls = [url for value in fe_values for url in Link.extract_urls_from_value(value)]
+      for url in urls_to_remove:
+        if url not in all_urls:
+          # if the url is not in any other field in this feature, then remove it from the index
+          link = Link(url)
           _remove_link(link, fe)
-      if isinstance(new_val, str) and Link.get_type(new_val):
-        link = Link(new_val)
+      for url in urls_to_add:
+        link = Link(url)
         _index_link(link, fe)
-      elif isinstance(new_val, list):
-        # TODO: check if new_val/new_val is a list of links, if so, then index/un-index each link.
-        # TODO: check if new_val/new_val is a long text with links, if so, then index/un-index each link.
-        pass
 
 
 def _index_link(link: Link, fe: FeatureEntry) -> None:
