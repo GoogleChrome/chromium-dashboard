@@ -22,7 +22,7 @@ from internals import feature_links
 class FeatureLinksAPI(basehandlers.APIHandler):
   """FeatureLinksAPI will return the links and its information to the client."""
 
-  def get_feature_links(self, feature_id: int, update_stale_links: bool = False):
+  def get_feature_links(self, feature_id: int, update_stale_links: bool):
     feature = FeatureEntry.get_by_id(feature_id)
     if not feature:
       self.abort(404, msg='Feature not found')

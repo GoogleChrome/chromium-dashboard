@@ -15,16 +15,14 @@
 
 import logging
 import datetime
-from threading import Semaphore
-from concurrent.futures import ThreadPoolExecutor
+from framework import cloud_tasks_helpers
+from framework import basehandlers
 from typing import Any
 from internals.core_models import FeatureEntry
 from internals.link_helpers import Link
 
 from google.cloud import ndb  # type: ignore
 
-executor = ThreadPoolExecutor()
-concurrent_updates_sem = Semaphore(32)
 LINK_STALE_MINUTES = 30
 
 
@@ -113,7 +111,7 @@ def _get_feature_links(feature_id: int) -> list[FeatureLinks]:
   return feature_links if feature_links else []
 
 
-def get_by_feature_id(feature_id: int, update_stale_links=False) -> tuple[list[dict], bool]:
+def get_by_feature_id(feature_id: int, update_stale_links: bool) -> tuple[list[dict], bool]:
   """Return a list of dicts of FeatureLinks for a given feature id
   The returned dicts only include the url, type, and information fields.
   This is used by the api to return json to the client.
@@ -129,21 +127,45 @@ def get_by_feature_id(feature_id: int, update_stale_links=False) -> tuple[list[d
 
   if has_stale_links and update_stale_links:
     logging.info(
-        f'Found {len(stale_feature_links)} stale links for feature_id {feature_id}')
-    concurrent_updates_sem.acquire()
-    future = executor.submit(_index_feature_links, stale_feature_links)
-    future.add_done_callback(lambda _: concurrent_updates_sem.release())
+        f'Found {len(stale_feature_links)} stale links for feature_id {feature_id}, send links to cloud task')
+
+    feature_link_ids = [link.key.id() for link in stale_feature_links]
+    cloud_tasks_helpers.enqueue_task(
+        '/tasks/update-feature-links', {
+            'feature_link_ids': feature_link_ids
+        })
   return [link.to_dict(include=['url', 'type', 'information']) for link in feature_links], has_stale_links
 
 
-def _index_feature_links(feature_links: list[FeatureLinks]) -> None:
-  """index the links in the given feature links."""
-  for feature_link in feature_links:
-    link = Link(feature_link.url)
-    link.parse()
-    feature_link.information = link.information
-    feature_link.put()
-    logging.info(f'Update indexed link {link.url}')
+class FeatureLinksUpdateHandler(basehandlers.FlaskHandler):
+  """This task handles update feature links information with the given ids."""
+
+  IS_INTERNAL_HANDLER = True
+
+  def process_post_data(self, **kwargs):
+    self.require_task_header()
+
+    logging.info('Starting indexing feature links')
+
+    feature_link_ids = self.get_param('feature_link_ids')
+
+    _index_feature_links_by_ids(feature_link_ids)
+    logging.info('Finished indexing feature links')
+    return {'message': 'Done'}
+
+
+def _index_feature_links_by_ids(feature_link_ids: list[Any]) -> None:
+  """index the links in the given feature links ids"""
+  for feature_link_id in feature_link_ids:
+    feature_link = FeatureLinks.get_by_id(feature_link_id)
+    if feature_link:
+      link = Link(feature_link.url)
+      link.parse()
+      feature_link.type = link.type
+      feature_link.information = link.information
+      feature_link.put()
+
+    logging.info(f'Update information for indexed link {link.url}')
 
 
 def _index_feature_entry(fe: FeatureEntry) -> None:
