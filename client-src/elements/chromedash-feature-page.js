@@ -177,8 +177,8 @@ export class ChromedashFeaturePage extends LitElement {
       (featureLinks) => {
         this.featureLinks = featureLinks?.data || [];
         if (featureLinks?.has_stale_links) {
-          // delay 2 seconds to fetch server to get latest link information
-          setTimeout(this.refetchFeatureLinks.bind(this), 2000);
+          // delay 10 seconds to fetch server to get latest link information
+          setTimeout(this.refetchFeatureLinks.bind(this), 10000);
         }
       },
     );
