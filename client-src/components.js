@@ -53,6 +53,7 @@ import './elements/chromedash-app';
 import './elements/chromedash-banner';
 import './elements/chromedash-callout';
 import './elements/chromedash-color-status';
+import './elements/chromedash-drawer';
 import './elements/chromedash-feature';
 import './elements/chromedash-feature-detail';
 import './elements/chromedash-feature-filter';

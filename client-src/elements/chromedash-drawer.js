@@ -3,7 +3,7 @@ import {showToastMessage} from './utils';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
 
-export class ChromedashHeader extends LitElement {
+export class ChromedashDrawer extends LitElement {
   static get styles() {
     return [
       ...SHARED_STYLES,
@@ -109,11 +109,6 @@ export class ChromedashHeader extends LitElement {
           justify-content: space-between;
         }
 
-        .flex-container-outer {
-          flex-wrap: wrap;
-          width: 100%;
-        }
-
         @media only screen and (max-width: 700px) {
           header {
             --logoSize: 24px;
@@ -139,7 +134,9 @@ export class ChromedashHeader extends LitElement {
             border-radius: 0;
             flex: 1 0 auto;
           }
-
+          sl-drawer  {
+            position: relative;
+          }
           .flex-container-inner-first {
             justify-content: space-between;
             flex-direction: column;
@@ -169,7 +166,6 @@ export class ChromedashHeader extends LitElement {
 
   static get properties() {
     return {
-      appTitle: {type: String},
       googleSignInClientId: {type: String},
       currentPage: {type: String},
       user: {type: Object},
@@ -179,7 +175,6 @@ export class ChromedashHeader extends LitElement {
 
   constructor() {
     super();
-    this.appTitle = '';
     this.googleSignInClientId = '',
     this.currentPage = '';
     this.user = {};
@@ -259,7 +254,7 @@ export class ChromedashHeader extends LitElement {
 
   renderTabs() {
     return html`
-      <div id="maintabs" class="flex-container flex-container-inner-first">
+      <sl-drawer label="Drawer" placement="start" open=true class="drawer-placement-start" contained>
         <a class="flex-item" href="/roadmap" ?active=${this.isCurrentPage('/roadmap')}>Roadmap</a>
         ${this.user ? html`
           <a class="flex-item" href="/myfeatures" ?active=${this.isCurrentPage('/myfeatures')}>My features</a>
@@ -274,56 +269,15 @@ export class ChromedashHeader extends LitElement {
             <li><a href="/metrics/css/animated">CSS Animation</a></li>
             <li><a href="/metrics/feature/popularity">JS/HTML</a></li>
           </ul>
-        </div>
-      </div>
-    `;
-  }
-
-  renderAccountMenu() {
-    return html`
-      <div class="flex-container flex-container-inner-second">
-      ${this.user ? html`
-        ${this.user.can_create_feature && !this.isCurrentPage('/guide/new') ? html`
-          <sl-button href="/guide/new" variant="primary" size="small">
-            Create feature
-          </sl-button>
-        `: nothing }
-        <div class="nav-dropdown-container">
-          <a class="nav-dropdown-trigger">
-            ${this.user.email}
-            <iron-icon icon="chromestatus:arrow-drop-down"></iron-icon>
-          </a>
-          <ul>
-            <li><a href="/settings">Settings</a></li>
-            <li><a href="#" id="sign-out-link" @click=${this.handleSignOutClick}>Sign out</a></li>
-          </ul>
-        </div>
-      ` : html`
-        <slot></slot>
-      `}
-      </div>
+      </sl-drawer>
     `;
   }
 
   render() {
     return html`
-      <header>
-        <aside>
-          <hgroup>
-            <a href="/features" target="_top"><h1>${this.appTitle}</h1></a>
-          </hgroup>
-        </aside>
-        <nav>
-          ${!this.loading ? html`
-            <div class="flex-container flex-container-outer">
-              ${this.renderTabs()}
-              ${this.renderAccountMenu()}
-            </div>
-          ` : nothing}
-        </nav>
-      </header>
+        ${this.renderTabs()}
     `;
   }
 }
 
-customElements.define('chromedash-header', ChromedashHeader);
+customElements.define('chromedash-drawer', ChromedashDrawer);

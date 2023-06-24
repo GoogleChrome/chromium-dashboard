@@ -39,6 +39,10 @@ class ChromedashApp extends LitElement {
           position: relative;
         }
 
+        #main-content {
+          margin-left: 20px;
+        }
+
         #content-flex-wrapper {
           display: flex;
           justify-content: center;
@@ -528,13 +532,22 @@ class ChromedashApp extends LitElement {
           </div>
 
           <div id="content">
-            <chromedash-banner
-              .message=${this.bannerMessage}
-              .timestamp=${this.bannerTime}>
-            </chromedash-banner>
-            ${this.renderRolloutBanner(this.currentPage)}
-            <div id="content-flex-wrapper">
-              ${this.renderContentAndSidebar()}
+            <div>
+              <chromedash-drawer
+                .user=${this.user}
+                .googleSignInClientId=${this.googleSignInClientId}
+                .currentPage=${this.currentPage}>
+              </chromedash-drawer>
+            </div class="main-content">
+            <div>
+              <chromedash-banner
+                .message=${this.bannerMessage}
+                .timestamp=${this.bannerTime}>
+              </chromedash-banner>
+              ${this.renderRolloutBanner(this.currentPage)}
+              <div id="content-flex-wrapper">
+                ${this.renderContentAndSidebar()}
+              </div>
             </div>
           </div>
 
