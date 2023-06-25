@@ -3,7 +3,7 @@ import {showToastMessage, ISMOBILE} from './utils';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
 
-export class ChromedashHeader extends LitElement {
+export class ChromedashDrawer extends LitElement {
   static get styles() {
     return [
       ...SHARED_STYLES,
@@ -20,123 +20,84 @@ export class ChromedashHeader extends LitElement {
           --nav-link-active-color: var(--md-blue-900);
           --nav-link-active-border: 2px solid var(--nav-link-active-color);
         }
-
-        header {
+        nav {
           display: flex;
+          flex: 1;
           align-items: baseline;
           user-select: none;
           background: var(--card-background);
           border-bottom: var(--card-border);
           box-shadow: var(--card-box-shadow);
-        }
-        header a {
-          text-decoration: none !important;
-        }
-        header nav {
-          display: flex;
-          flex: 1;
           align-items: center;
           margin: 0 var(--content-padding);
           -webkit-font-smoothing: initial;
         }
-        header nav a {
+        nav a {
+          text-decoration: none !important;
           cursor: pointer;
           font-size: var(--nav-link-font-size);
-          text-align: center;
+          text-align: left;
           padding: var(--content-padding-half) var(--content-padding);
           color: var(--nav-link-color);
           white-space: nowrap;
           border-bottom: var(--nav-link-border);
         }
-        header nav a:hover {
+        nav a:hover {
           color: black;
           background: var(--nav-link-hover-background);
         }
-        header nav a.disabled {
+        nav a.disabled {
           opacity: 0.5;
           pointer-events: none;
         }
-        header nav [active] {
+        nav [active] {
           color: var(--nav-link-active-color);
           border-bottom: var(--nav-link-active-border);
         }
-        header nav [active] a {
+        nav [active] a {
           color: var(--nav-link-active-color);
         }
-        header nav .nav-dropdown-container {
-          position: relative;
-        }
-        header nav .nav-dropdown-container ul {
-          display: none;
-          position: absolute;
+        ul {
           top: 80%;
-          left: 0;
-          list-style: none;
+          left: 10px;
           z-index: 1;
+          text-align: left;
+          padding-left: 15px;
+        }
+
+        .flex-item {
+          padding-top: 10px;
+          padding-bottom: 10px;
+          text-align: left;
+        }
+        .flex-item-inner {
+          margin-top: -10px;
+        }
+        .flex-item-inner:hover {
+          color: var(--nav-link-color);
           background: var(--card-background);
-          border-bottom: var(--card-border);
-          box-shadow: var(--card-box-shadow);
         }
-        header nav .nav-dropdown-container a {
+        sl-drawer a {
           display: block;
         }
-        header nav .nav-dropdown-container .nav-dropdown-trigger:hover + ul,
-        header nav .nav-dropdown-container ul:hover {
-          display: block;
+        sl-drawer::part(header) {
+          display: none;
         }
-        header aside {
-          --logoSize: 32px;
-
-          background: url(/static/img/chrome_logo.svg) no-repeat var(--content-padding) 50%;
-          background-size: var(--logoSize);
-          padding: 0.75em 2em;
-          padding-left: calc(var(--logoSize) + var(--content-padding) + var(--content-padding) / 2);
+        sl-button {
+          margin-left: 10px;
         }
-        header aside hgroup a {
-          color: var(--logo-color);
-        }
-        header aside h1 {
-          line-height: 1;
-        }
-        header aside img {
-          height: 45px;
-          width: 45px;
-          margin-right: 7px;
-        }
-
-        .flex-container {
-          display: flex;
-          justify-content: flex-end;
-          flex-wrap: wrap;
-          width: 100%;
-        }
-
-        .menu{
-          margin-left: 15px;
-          margin-right: 7px;
-          align-items: center;
-        }
-        .menu:hover {
-          color: black;
-          background: var(--nav-link-hover-background);
-        }
-        .menu [active] {
-          color: var(--nav-link-active-color);
-          border-bottom: var(--nav-link-active-border);
-        }
-
         @media only screen and (max-width: 700px) {
           header {
             --logoSize: 24px;
 
             margin: 0;
-            display: flex;
+            display: block;
           }
-          header aside {
-            display: flex;
-            padding: var(--content-padding-half);
-            border-radius: 0;
-            background: inherit;
+          sl-drawer a {
+            display: block;
+          }
+          sl-drawer::part(header) {
+            display: none;
           }
         }
     `];
@@ -144,9 +105,8 @@ export class ChromedashHeader extends LitElement {
 
   static get properties() {
     return {
-      appTitle: {type: String},
-      googleSignInClientId: {type: String},
       currentPage: {type: String},
+      googleSignInClientId: {type: String},
       user: {type: Object},
       loading: {type: Boolean},
     };
@@ -154,17 +114,16 @@ export class ChromedashHeader extends LitElement {
 
   constructor() {
     super();
-    this.appTitle = '';
-    this.googleSignInClientId = '',
     this.currentPage = '';
+    this.googleSignInClientId = '',
     this.user = {};
     this.loading = false;
   }
 
   connectedCallback() {
     super.connectedCallback();
-    // The user sign-in is desktop only.
-    if (ISMOBILE) {
+    // The user sign-in is moibile only.
+    if (!ISMOBILE) {
       return;
     }
 
@@ -199,15 +158,12 @@ export class ChromedashHeader extends LitElement {
 
     // Google Identity Services Library cannot find elements in a shadow DOM,
     // so we create signInButton element at the document level and insert it
-    // in the light DOM of the header, which will be rendered in the <slot> below
+    // in this DOM, which will be rendered in the <slot> below
     const signInButton = document.createElement('div');
     google.accounts.id.renderButton(signInButton, {type: 'standard'});
-    const appComponent = document.querySelector('chromedash-app');
-    if (appComponent) {
-      appComponent.insertAdjacentElement('afterbegin', signInButton); // for SPA
-    } else {
-      this.insertAdjacentElement('afterbegin', signInButton); // for MPA
-    }
+    signInButton.style.maxWidth = '200px';
+    signInButton.style.maxWidth = '40px';
+    this.insertAdjacentElement('afterbegin', signInButton);
   }
 
   handleCredentialResponse(credentialResponse) {
@@ -236,37 +192,62 @@ export class ChromedashHeader extends LitElement {
     return this.currentPage.startsWith(href);
   }
 
-  _fireEvent(eventName, detail) {
-    const event = new CustomEvent(eventName, {
-      bubbles: true,
-      composed: true,
-      detail,
-    });
-    this.dispatchEvent(event);
+  toggleDrawerActions() {
+    const drawer = this.shadowRoot.querySelector('.drawer-placement-start');
+    if (drawer.open) {
+      drawer.hide();
+    } else {
+      drawer.show();
+    }
+    return drawer.open;
   }
 
-  handleDrawer() {
-    this._fireEvent('drawer-clicked', {});
+  renderTabs() {
+    let accountMenu = nothing;
+    if (ISMOBILE && !this.loading) {
+      accountMenu = html`
+      ${this.renderAccountMenu()}
+      `;
+    }
+
+    return html`
+      <sl-drawer label="Menu" placement="start" class="drawer-placement-start"
+        style="--size: 300px;" contained noHeader ?open=${!ISMOBILE}>
+        ${accountMenu}
+        <a class="flex-item" href="/roadmap" ?active=${this.isCurrentPage('/roadmap')}>Roadmap</a>
+        ${this.user ? html`
+          <a class="flex-item" href="/myfeatures" ?active=${this.isCurrentPage('/myfeatures')}>My features</a>
+        ` : nothing}
+        <a class="flex-item" href="/features" ?active=${this.isCurrentPage('/features') || this.isCurrentPage('/newfeatures')}>All features</a>
+        <div class="flex-item">
+          <a class="flex-item-inner">Stats</a>
+          <ul>
+            <li><a href="/metrics/css/popularity" ?active=${this.isCurrentPage('/metrics/css/popularity')}>CSS</a></li>
+            <li><a href="/metrics/css/animated" ?active=${this.isCurrentPage('/metrics/css/animated')}>CSS Animation</a></li>
+            <li><a href="/metrics/feature/popularity" ?active=${this.isCurrentPage('/metrics/feature/popularity')}>JS/HTML</a></li>
+          </ul>
+        </div>
+      </sl-drawer>
+    `;
   }
 
   renderAccountMenu() {
     return html`
       ${this.user ? html`
-        ${this.user.can_create_feature && !this.isCurrentPage('/guide/new') ? html`
-          <sl-button href="/guide/new" variant="primary" size="small">
-            Create feature
-          </sl-button>
-        `: nothing }
-        <div class="nav-dropdown-container">
-          <a class="nav-dropdown-trigger">
+        <div class="flex-item">
+          <a class="flex-item-inner">
             ${this.user.email}
-            <iron-icon icon="chromestatus:arrow-drop-down"></iron-icon>
           </a>
           <ul>
             <li><a href="/settings">Settings</a></li>
             <li><a href="#" id="sign-out-link" @click=${this.handleSignOutClick}>Sign out</a></li>
           </ul>
         </div>
+        ${this.user.can_create_feature && !this.isCurrentPage('/guide/new') ? html`
+          <sl-button class="flex-item" href="/guide/new" variant="primary" size="small">
+            Create feature
+          </sl-button>
+        `: nothing }
       ` : html`
         <slot></slot>
       `}
@@ -274,30 +255,12 @@ export class ChromedashHeader extends LitElement {
   }
 
   render() {
-    let accountMenu = nothing;
-    if (!ISMOBILE && !this.loading) {
-      accountMenu = html`
-      <div class="flex-container">
-        ${this.renderAccountMenu()}
-      </div>`;
-    }
-
     return html`
-      <header>
-        <sl-icon-button variant="text" library="material" class="menu"
-          style="font-size: 1.2rem;" name="menu_20px" @click="${this.handleDrawer}">
-        </sl-icon-button >
-        <aside>
-          <hgroup>
-            <a href="/features" target="_top"><h1>${this.appTitle}</h1></a>
-          </hgroup>
-        </aside>
-        <nav>
-          ${accountMenu}
-        </nav>
-      </header>
+      <nav>
+        ${this.renderTabs()}
+      </nav>
     `;
   }
 }
 
-customElements.define('chromedash-header', ChromedashHeader);
+customElements.define('chromedash-drawer', ChromedashDrawer);

@@ -52,16 +52,7 @@ describe('chromedash-header', () => {
     const nav = component.shadowRoot.querySelector('nav');
     assert.exists(nav);
 
-    // nav bar has correct tabs
     const navInnerHTML = nav.innerHTML;
-    assert.include(navInnerHTML, 'href="/roadmap"');
-    assert.include(navInnerHTML, 'href="/features"');
-    assert.include(navInnerHTML, 'href="/metrics/css/popularity"');
-    assert.include(navInnerHTML, 'href="/metrics/feature/popularity"');
-
-    // anon shouldn't have the myfeatures tab
-    assert.notInclude(navInnerHTML, 'href="/myfeatures');
-
     // anon has the (slotted in) google sign-in button
     assert.include(navInnerHTML, '<slot>');
   });
@@ -89,14 +80,7 @@ describe('chromedash-header', () => {
     const nav = component.shadowRoot.querySelector('nav');
     assert.exists(nav);
 
-    // nav bar has correct tabs
     const navInnerHTML = nav.innerHTML;
-    assert.include(navInnerHTML, 'href="/roadmap"');
-    assert.include(navInnerHTML, 'href="/features"');
-    assert.include(navInnerHTML, 'href="/metrics/css/popularity"');
-    assert.include(navInnerHTML, 'href="/metrics/feature/popularity"');
-    assert.include(navInnerHTML, 'href="/myfeatures');
-
     // logged in users have Settings and Sign Out options
     assert.include(navInnerHTML, 'Settings');
     assert.include(navInnerHTML, 'Sign out');
