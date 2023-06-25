@@ -5,6 +5,8 @@ import {nothing, html} from 'lit';
 import {STAGE_FIELD_NAME_MAPPING} from './form-field-enums';
 
 let toastEl;
+// Determines if it is a mobile device.
+export const ISMOBILE = window.screen.width < 701;
 
 /* Convert user-entered text into safe HTML with clickable links
  * where appropriate.  Returns an array with text and anchor tags.

@@ -1,6 +1,7 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {ref, createRef} from 'lit/directives/ref.js';
-import {showToastMessage, parseRawQuery, updateURLParams} from './utils';
+import {styleMap} from 'lit-html/directives/style-map.js';
+import {showToastMessage, parseRawQuery, updateURLParams, ISMOBILE} from './utils';
 import page from 'page';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
@@ -103,6 +104,7 @@ class ChromedashApp extends LitElement {
       contextLink: {type: String}, // used for the back button in the feature page
       sidebarHidden: {type: Boolean},
       selectedGateId: {type: Number},
+      drawerOpen: {type: Boolean},
     };
   }
 
@@ -120,6 +122,7 @@ class ChromedashApp extends LitElement {
     this.sidebarHidden = true;
     this.selectedGateId = 0;
     this.beforeUnloadHandler = null;
+    this.drawerOpen = !ISMOBILE;
   }
 
   connectedCallback() {
@@ -453,6 +456,11 @@ class ChromedashApp extends LitElement {
     this.showGateColumn(e.detail.feature, e.detail.stage.id, e.detail.gate);
   }
 
+  handleShowDrawer() {
+    const drawer = this.shadowRoot.querySelector('chromedash-drawer');
+    this.drawerOpen = drawer.handleDrawerActions();
+  }
+
   /* The user edited something, so tell components to refetch data. */
   refetch() {
     if (this.pageComponent?.refetch) {
@@ -509,6 +517,11 @@ class ChromedashApp extends LitElement {
   }
 
   render() {
+    let styleMargin = styleMap({'margin-left': '20px'});
+
+    if (!ISMOBILE && this.drawerOpen) {
+      styleMargin = styleMap({'margin-left': '300px'});
+    }
     // The <slot> below is for the Google sign-in button, this is because
     // Google Identity Services Library cannot find elements in a shadow DOM,
     // so we create signInButton element at the document level and insert it
@@ -521,20 +534,29 @@ class ChromedashApp extends LitElement {
                 .user=${this.user}
                 .appTitle=${this.appTitle}
                 .googleSignInClientId=${this.googleSignInClientId}
-                .currentPage=${this.currentPage}>
+                .currentPage=${this.currentPage}
+                @drawer-clicked=${this.handleShowDrawer}>
                 <slot></slot>
               </chromedash-header>
             </div>
           </div>
 
           <div id="content">
-            <chromedash-banner
-              .message=${this.bannerMessage}
-              .timestamp=${this.bannerTime}>
-            </chromedash-banner>
-            ${this.renderRolloutBanner(this.currentPage)}
-            <div id="content-flex-wrapper">
-              ${this.renderContentAndSidebar()}
+            <div>
+              <chromedash-drawer
+                .user=${this.user}
+                .currentPage=${this.currentPage}>
+              </chromedash-drawer>
+            </div>
+            <div style=${styleMargin}>
+              <chromedash-banner
+                .message=${this.bannerMessage}
+                .timestamp=${this.bannerTime}>
+              </chromedash-banner>
+              ${this.renderRolloutBanner(this.currentPage)}
+              <div id="content-flex-wrapper">
+                ${this.renderContentAndSidebar()}
+              </div>
             </div>
           </div>
 
