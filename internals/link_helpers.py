@@ -157,4 +157,5 @@ class Link():
       self.error = e
       self.is_error = True
       self.information = None
+      # TODO: store error information and show 404/403 error icon for the link
     self.is_parsed = True
