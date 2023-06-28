@@ -34,3 +34,8 @@ coverage
 
 # venv directory
 cs-env
+
+# playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/
