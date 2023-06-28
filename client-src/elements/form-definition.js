@@ -262,6 +262,8 @@ const FLAT_DEV_TRIAL_FIELDS = {
       name: 'Implementation in Chromium',
       fields: [
         'flag_name',
+        'finch_name',
+        'non_finch_justification',
         'dt_milestone_desktop_start',
         'dt_milestone_android_start',
         'dt_milestone_ios_start',
@@ -493,6 +495,8 @@ const DEPRECATION_DEV_TRIAL_FIELDS = {
       name: 'Implementation in Chromium',
       fields: [
         'flag_name',
+        'finch_name',
+        'non_finch_justification',
         'dt_milestone_desktop_start',
         'dt_milestone_android_start',
         'dt_milestone_ios_start',

@@ -178,6 +178,8 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('requires_embedder_support', 'bool'),
       ('devtrial_instructions', 'link'),
       ('flag_name', 'str'),
+      ('finch_name', 'str'),
+      ('non_finch_justification', 'str'),
       ('owner', 'emails'),
       ('editors', 'emails'),
       ('cc_recipients', 'emails'),

@@ -95,6 +95,8 @@ const QUERIABLE_FIELDS = [
   // 'requires_embedder_support': Feature.requires_embedder_support,
 
   {name: 'browsers.chrome.flag_name', display: 'Flag name', type: TEXT_TYPE},
+  {name: 'browsers.chrome.finch_name', display: 'Finch name', type: TEXT_TYPE},
+  // 'browsers.chrome.non_finch_justification': Feature.non_finch_justification,
   // 'all_platforms': Feature.all_platforms,
   // 'all_platforms_descr': Feature.all_platforms_descr,
   // 'wpt': Feature.wpt,
