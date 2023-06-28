@@ -394,12 +394,18 @@ export class ChromedashGateColumn extends LitElement {
     `;
   }
 
-  renderReviewStatusActive() {
-    return html`
-      Review requested on
-      ${renderAbsoluteDate(this.gate.requested_on)}
-      ${renderRelativeDate(this.gate.requested_on)}
-    `;
+  renderReviewRequest() {
+    for (const v of this.votes) {
+      if (v.state == REVIEW_REQUESTED) {
+        const shortVoter = v.set_by.split('@')[0] + '@';
+        return html`
+          ${shortVoter} requested on
+          ${renderAbsoluteDate(this.gate.requested_on)}
+          ${renderRelativeDate(this.gate.requested_on)}
+      `;
+      }
+    }
+    return nothing;
   }
 
   renderReviewStatusApproved() {
@@ -425,8 +431,6 @@ export class ChromedashGateColumn extends LitElement {
   renderReviewStatus() {
     if (this.gate.state == PREPARING) {
       return this.renderReviewStatusPreparing();
-    } else if (ACTIVE_REVIEW_STATES.includes(this.gate.state)) {
-      return this.renderReviewStatusActive();
     } else if (this.gate.state == STATE_NAMES.APPROVED[0]) {
       return this.renderReviewStatusApproved();
     } else if (this.gate.state == STATE_NAMES.DENIED[0]) {
@@ -563,6 +567,11 @@ export class ChromedashGateColumn extends LitElement {
     let saveButton = nothing;
     let voteCell = this.renderVoteReadOnly(vote);
 
+    if (vote.state === REVIEW_REQUESTED &&
+        !(canVote && vote.set_by === this.user?.email)) {
+      return nothing; // The requester is shown by renderReviewRequest().
+    }
+
     if (canVote && vote.set_by == this.user?.email) {
       // If the current reviewer was the one who requested the review,
       // select "No response" in the menu because there is no
@@ -597,11 +606,12 @@ export class ChromedashGateColumn extends LitElement {
       this.user &&
         this.user.approvable_gate_types.includes(this.gate.gate_type));
     const myVoteExists = this.votes.some((v) => v.set_by == this.user?.email);
+    const responses = this.votes.filter((v) => v.state !== REVIEW_REQUESTED);
     const addVoteRow = (canVote && !myVoteExists) ?
       this.renderVoteRow({set_by: this.user?.email, state: 7}, canVote) :
       nothing;
 
-    if (!canVote && this.votes.length === 0) {
+    if (!canVote && responses.length === 0) {
       return html`
         <p>No review activity yet.</p>
       `;
@@ -734,6 +744,7 @@ export class ChromedashGateColumn extends LitElement {
         ${this.loading ?
           this.renderReviewStatusSkeleton() :
           this.renderReviewStatus()}
+        ${this.renderReviewRequest()}
       </div>
       <div id="slo-area">
         ${this.loading ?
