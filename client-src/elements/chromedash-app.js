@@ -96,6 +96,7 @@ class ChromedashApp extends LitElement {
       loading: {type: Boolean},
       appTitle: {type: String},
       googleSignInClientId: {type: String},
+      devMode: {type: String},
       currentPage: {type: String},
       bannerMessage: {type: String},
       bannerTime: {type: Number},
@@ -112,6 +113,7 @@ class ChromedashApp extends LitElement {
     this.loading = true;
     this.appTitle = '';
     this.googleSignInClientId = '',
+    this.devMode = '';
     this.currentPage = '';
     this.bannerMessage = '';
     this.bannerTime = null;
@@ -521,6 +523,7 @@ class ChromedashApp extends LitElement {
                 .user=${this.user}
                 .appTitle=${this.appTitle}
                 .googleSignInClientId=${this.googleSignInClientId}
+                .devMode=${this.devMode}
                 .currentPage=${this.currentPage}>
                 <slot></slot>
               </chromedash-header>

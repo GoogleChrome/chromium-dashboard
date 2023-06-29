@@ -170,6 +170,7 @@ export class ChromedashHeader extends LitElement {
     return {
       appTitle: {type: String},
       googleSignInClientId: {type: String},
+      devMode: {type: String},
       currentPage: {type: String},
       user: {type: Object},
       loading: {type: Boolean},
@@ -180,6 +181,7 @@ export class ChromedashHeader extends LitElement {
     super();
     this.appTitle = '';
     this.googleSignInClientId = '',
+    this.devMode = '';
     this.currentPage = '';
     this.user = {};
     this.loading = false;
@@ -187,6 +189,8 @@ export class ChromedashHeader extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+
+    this.initializeTestingSignIn();
 
     // user is passed in from chromedash-app
     if (this.user && this.user.email) return;
@@ -227,6 +231,33 @@ export class ChromedashHeader extends LitElement {
       appComponent.insertAdjacentElement('afterbegin', signInButton); // for SPA
     } else {
       this.insertAdjacentElement('afterbegin', signInButton); // for MPA
+    }
+  }
+
+  initializeTestingSignIn() {
+    if (this.devMode != 'True') {
+      return;
+    }
+
+    // Create DEV_MODE login button for testing
+    const signInTestingButton = document.createElement('button');
+    signInTestingButton.innerText = 'Sign in as example@chromium.org';
+    signInTestingButton.setAttribute('data-testid', 'dev-mode-sign-in-button');
+    signInTestingButton.addEventListener('click', () => {
+      alert('Sign in as example@chromium.org');
+      // POST to '/dev/mock_login' to login as example@chromium.
+      fetch('/dev/mock_login', {method: 'POST'}).then(() => {
+        alert('should be logged in now');
+        // Reload window.
+        window.location.replace(window.location.href.split('?')[0]);
+      });
+    });
+
+    const appComponent = document.querySelector('chromedash-app');
+    if (appComponent) {
+      appComponent.insertAdjacentElement('afterbegin', signInTestingButton); // for SPA
+    } else {
+      this.insertAdjacentElement('afterbegin', signInTestingButton); // for MPA
     }
   }
 

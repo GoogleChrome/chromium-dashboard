@@ -1,6 +1,12 @@
 // @ts-check
 import {test, expect} from '@playwright/test';
 
+test.beforeEach(async ({page}) => {
+  // Attempt to login before running tests.
+  await page.getByTestId('dev-mode-sign-in-button')
+    .click();
+});
+
 test('has title', async ({page}) => {
   await page.goto('http://localhost:8080/guide/new');
 
