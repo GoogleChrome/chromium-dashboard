@@ -190,7 +190,7 @@ class APIHandler(BaseHandler):
     for k, v in json_body.items():
       logging.info('%r: %s', k, repr(v)[:settings.MAX_LOG_LINE])
     is_login_request = str(self.request.url_rule) in (
-        '/api/v0/login', 'api/v0/mock_login')
+        '/api/v0/login', '/dev/mock_login')
 
     if not is_login_request:
       self.require_signed_in_and_xsrf_token()
