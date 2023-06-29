@@ -204,6 +204,10 @@ export const SHARED_STYLES = [
     --sheen-color: #ccc;
   }
 
+  sl-relative-time {
+    margin: 0 -3px;  // Mitigate spacing from unknown cause.
+  }
+
   @media only screen and (max-width: 700px) {
     h1 {
       font-size: 24px;
