@@ -40,6 +40,7 @@ from framework import csp
 from framework import sendemail
 from internals import detect_intent
 from internals import fetchmetrics
+from internals import feature_links
 from internals import maintenance_scripts
 from internals import notifier
 from internals import data_backup
@@ -238,6 +239,7 @@ internals_routes: list[Route] = [
   Route('/tasks/detect-intent', detect_intent.IntentEmailHandler),
   Route('/tasks/email-reviewers', notifier.FeatureReviewHandler),
   Route('/tasks/email-comments', notifier.FeatureCommentHandler),
+  Route('/tasks/update-feature-links', feature_links.FeatureLinksUpdateHandler),
 
   # Maintenance scripts.
   Route('/scripts/evaluate_gate_status',

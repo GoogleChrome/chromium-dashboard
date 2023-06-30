@@ -19,13 +19,22 @@ import json
 import logging
 from typing import Any
 from string import punctuation
+from ghapi.core import GhApi
+from urllib.error import HTTPError
+from urllib.parse import urlparse
+import base64
+
+github_api_client = GhApi()
 
 LINK_TYPE_CHROMIUM_BUG = 'chromium_bug'
+LINK_TYPE_GITHUB_ISSUE = 'github_issue'
+LINK_TYPE_GITHUB_MARKDOWN = 'github_markdown'
 LINK_TYPE_WEB = 'web'
 LINK_TYPES_REGEX = {
     # https://bugs.chromium.org/p/chromium/issues/detail?id=
     LINK_TYPE_CHROMIUM_BUG: re.compile(r'https://bugs\.chromium\.org/p/chromium/issues/detail\?.*'),
-    # any other links
+    LINK_TYPE_GITHUB_ISSUE: re.compile(r'https://(www\.)?github\.com/.*issues/\d+'),
+    LINK_TYPE_GITHUB_MARKDOWN: re.compile(r'https://(www\.)?github\.com/.*\.md.*'),
     LINK_TYPE_WEB: re.compile(r'https?://.*'),
 }
 
@@ -62,12 +71,57 @@ class Link():
     self.is_error = False
     self.information = None
 
+  def _parse_github_markdown(self) -> dict[str, object]:
+    parsed_url = urlparse(self.url)
+    path = parsed_url.path
+    owner = path.split('/')[1]
+    repo = path.split('/')[2]
+    ref = path.split('/')[4]
+    file_path = '/'.join(path.split('/')[5:])
+    try:
+      # try to get the branch information, if it exists, update branch name
+      # this handles the case where the branch is renamed
+      branch_information = github_api_client.repos.get_branch(
+          owner=owner, repo=repo, branch=ref)
+      ref = branch_information.name
+    except HTTPError as e:
+      # if the branch does not exist, then it is probably a commit hash
+      if e.code != 404:
+        raise e
+
+    information = github_api_client.repos.get_content(
+        owner=owner, repo=repo, path=file_path, ref=ref)
+
+    # decode the content from base64
+    content_str = information.content
+    content_decoded = base64.b64decode(content_str).decode('utf-8')
+    # get markdown title, remove beginning and trailing # but keep the rest
+    title = content_decoded.split('\n')[0].strip('#').strip()
+    information['_parsed_title'] = title
+
+    return information
+
+  def _parse_github_issue(self) -> dict[str, object]:
+    """Parse the information from the github issue tracker."""
+
+    parsed_url = urlparse(self.url)
+    path = parsed_url.path
+    owner = path.split('/')[1]
+    repo = path.split('/')[2]
+    issue_id = path.split('/')[4]
+
+    information = github_api_client.issues.get(
+        owner=owner, repo=repo, issue_number=int(issue_id))
+
+    return information
+
   def _parse_chromium_bug(self) -> dict[str, object]:
     """Parse the information from the chromium bug tracker."""
 
     endpoint = 'https://bugs.chromium.org/prpc/monorail.Issues/GetIssue'
 
-    issue_id = self.url.split('id=')[-1]
+    parsed_url = urlparse(self.url)
+    issue_id = parsed_url.query.split('id=')[-1].split('&')[0]
 
     # csrf token is required, its expiration is about 2 hours according to the tokenExpiresSec field
     # technically, we could cache the csrf token and reuse it for 2 hours
@@ -104,15 +158,20 @@ class Link():
 
   def parse(self):
     """Parse the link and store the information."""
-
-    if self.type == LINK_TYPE_CHROMIUM_BUG:
-      try:
+    try:
+      if self.type == LINK_TYPE_CHROMIUM_BUG:
         self.information = self._parse_chromium_bug()
-      except Exception as e:
-        logging.error(f'Error parsing chromium bug {self.url}: {e}')
-        self.is_error = True
+      elif self.type == LINK_TYPE_GITHUB_ISSUE:
+        self.information = self._parse_github_issue()
+      elif self.type == LINK_TYPE_GITHUB_MARKDOWN:
+        self.information = self._parse_github_markdown()
+      elif self.type == LINK_TYPE_WEB:
+        # TODO: parse other url title and description, og tags, etc.
         self.information = None
-    elif self.type == LINK_TYPE_WEB:
-      # TODO: parse other url title and description, og tags, etc.
+    except Exception as e:
+      logging.error(f'Error parsing {self.type} {self.url}: {e}')
+      self.error = e
+      self.is_error = True
       self.information = None
+      # TODO: store error information and show 404/403 error icon for the link
     self.is_parsed = True

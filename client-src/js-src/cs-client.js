@@ -304,8 +304,8 @@ class ChromeStatusClient {
 
   // FeatureLinks API
 
-  getFeatureLinks(featureId) {
-    return this.doGet(`/feature_links?feature_id=${featureId}`);
+  getFeatureLinks(featureId, updateStaleLinks=true) {
+    return this.doGet(`/feature_links?feature_id=${featureId}&update_stale_links=${updateStaleLinks}`);
   }
 
   // Stages API
