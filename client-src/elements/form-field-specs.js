@@ -17,15 +17,15 @@ import {
 /* Patterns from https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch04s01.html
  * Removing single quote ('), backtick (`), and pipe (|) since they are risky unless properly escaped everywhere.
  * Also removing ! and % because they have special meaning for some older email routing systems. */
-const USER_REGEX = '[A-Za-z0-9_#$&*+/=?{}~^.-]+';
-const DOMAIN_REGEX = String.raw`(([A-Za-z0-9-]+\.)+[A-Za-z]{2,6})`;
+const USER_REGEX = String.raw`[A-Za-z0-9_#$&*+\/=?\{\}~^.\-]+`;
+const DOMAIN_REGEX = String.raw`(([A-Za-z0-9\-]+\.)+[A-Za-z]{2,6})`;
 
 const EMAIL_ADDRESS_REGEX = USER_REGEX + '@' + DOMAIN_REGEX;
 const EMAIL_ADDRESSES_REGEX = EMAIL_ADDRESS_REGEX + '([ ]*,[ ]*' + EMAIL_ADDRESS_REGEX + ')*';
 
 // Simple http URLs
 const PORTNUM_REGEX = '(:[0-9]+)?';
-const URL_REGEX = '(https?)://' + DOMAIN_REGEX + PORTNUM_REGEX + String.raw`(/[^\s]*)?`;
+const URL_REGEX = '(https?)://' + DOMAIN_REGEX + PORTNUM_REGEX + String.raw`(/\S*)?`;
 const URL_PADDED_REGEX = String.raw`\s*` + URL_REGEX + String.raw`\s*`;
 
 const URL_FIELD_ATTRS = {

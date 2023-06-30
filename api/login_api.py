@@ -48,3 +48,23 @@ class LoginAPI(basehandlers.APIHandler):
       message = "Invalid token"
 
     return {'message': message}
+
+
+TESTING_ACCOUNTS = ['example@chromium.org']
+
+
+class MockLogin(basehandlers.APIHandler):
+  """Create a session using a testing account."""
+
+  def do_post(self, **kwargs):
+    if not settings.DEV_MODE and not settings.UNIT_TEST_MODE:
+      self.abort(status=403,
+          msg="This can only be used in a development environment.")
+
+    email = self.get_param('email', default=TESTING_ACCOUNTS[0])
+    if email not in TESTING_ACCOUNTS:
+      self.abort(status=403,
+          msg="This can only be used with specific testing accounts.")
+
+    users.add_signed_user_info_to_session(email)
+    return {'message': f'Signed in as {email}'}
