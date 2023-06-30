@@ -24,6 +24,19 @@ from internals.link_helpers import (
 
 
 class LinkHelperTest(testing_config.CustomTestCase):
+  def test_extract_urls_from_value(self):
+    field_value = "https://www.chromestatus.com/feature/1234"
+    urls = Link.extract_urls_from_value(field_value)
+    self.assertEqual(urls, [field_value])
+
+    field_value = "leadinghttps:https://www.chromestatus.com/feature/1234, https://www.chromestatus.com/feature/5678 is valid"
+    urls = Link.extract_urls_from_value(field_value)
+    self.assertEqual(urls, ["https://www.chromestatus.com/feature/1234", "https://www.chromestatus.com/feature/5678"])
+    
+    field_value = ["https://www.chromestatus.com/feature/1234", "not a valid urlhttps://www.chromestatus.com/feature/", None]
+    urls = Link.extract_urls_from_value(field_value)
+    self.assertEqual(urls, ["https://www.chromestatus.com/feature/1234"])
+
   def test_link_github_markdown(self):
     urls_to_test = [
         "https://github.com/w3c/reporting/blob/master/EXPLAINER.md#crashes",

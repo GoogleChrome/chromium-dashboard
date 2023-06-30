@@ -18,6 +18,7 @@ import requests
 import json
 import logging
 from typing import Any
+from string import punctuation
 from ghapi.core import GhApi
 from urllib.error import HTTPError
 from urllib.parse import urlparse
@@ -37,8 +38,23 @@ LINK_TYPES_REGEX = {
     LINK_TYPE_WEB: re.compile(r'https?://.*'),
 }
 
+URL_REGEX = re.compile(r'(https?://\S+)')
+
 
 class Link():
+
+  @classmethod
+  def extract_urls_from_value(cls, value: Any) -> list[str]:
+    """Extract the urls from the given value."""
+    if isinstance(value, str):
+      urls = URL_REGEX.findall(value)
+      # remove trailing punctuation
+      urls = [url.rstrip(punctuation) for url in urls]
+      return urls
+    elif isinstance(value, list):
+      return [url for url in value if isinstance(url, str) and URL_REGEX.match(url)]
+    else:
+      return []
 
   @classmethod
   def get_type(cls, link: str) -> str | None:
