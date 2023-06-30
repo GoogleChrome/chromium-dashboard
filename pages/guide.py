@@ -463,8 +463,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     # Remove all feature-related cache.
     rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
     
-    # TODO: comment out this line to enable feature links  
-    # feature_links.update_feature_links(fe, changed_fields)
+    feature_links.update_feature_links(fe, changed_fields)
     
     # Update full-text index.
     if fe:
