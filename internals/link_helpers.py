@@ -110,8 +110,22 @@ class Link():
     repo = path.split('/')[2]
     issue_id = path.split('/')[4]
 
-    information = github_api_client.issues.get(
+    resp = github_api_client.issues.get(
         owner=owner, repo=repo, issue_number=int(issue_id))
+    information = {
+        'url': resp.get('url'),
+        'number': resp.get('number'),
+        'title': resp.get('title'),
+        'user_login': (
+            resp.get('user').get('login') if resp.get('user') else None),
+        'state': resp.get('state'),
+        'state_reason': resp.get('state_reason'),
+        'assignee_login': (
+            resp.get('assignee').get('login') if resp.get('assignee') else None),
+        'created_at': resp.get('created_at'),
+        'updated_at': resp.get('updated_at'),
+        'closed_at': resp.get('closed_at'),
+        }
 
     return information
 

@@ -27,7 +27,7 @@ LINK_STALE_MINUTES = 30
 
 
 class FeatureLinks(ndb.Model):
-  """Links that occur in the fields of the feature. 
+  """Links that occur in the fields of the feature.
   This helps show a preview of information of linked pages, saving users the trouble of clicking.
   """
   created = ndb.DateTimeProperty(auto_now_add=True)
@@ -77,6 +77,7 @@ def _index_link(link: Link, fe: FeatureEntry) -> None:
     link.parse()
     if link.information is None:
       logging.info(f'Could not parse link {link.url}')
+    logging.info('info is %r', link.information)
     feature_link = FeatureLinks(
         feature_ids=[feature_id],
         type=link.type,
