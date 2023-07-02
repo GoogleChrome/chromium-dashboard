@@ -78,6 +78,10 @@ function _enhanceLink(featureLink, fallback, text) {
   if (!featureLink) {
     return fallback;
   }
+  if (!featureLink.information) {
+    // TODO: render 403/404 link empty information
+    return fallback;
+  }
   if (!text) {
     text = featureLink.url;
   }
@@ -89,6 +93,7 @@ function _enhanceLink(featureLink, fallback, text) {
         return fallback;
     }
   } catch (e) {
+    console.log('feature link render error:', e);
     return fallback;
   }
 }
