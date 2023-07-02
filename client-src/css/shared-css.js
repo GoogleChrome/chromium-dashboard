@@ -152,6 +152,7 @@ export const SHARED_STYLES = [
     height: 16px;
     padding: 4px;
     border-width: 0;
+    text-transform: capitalize;
   }
 
   .feature-link .tag::part(base) {
