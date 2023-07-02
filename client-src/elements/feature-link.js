@@ -20,6 +20,11 @@ function enhanceChromeStatusLink(featureLink, text) {
   // const ccRefs = information.ccRefs;
   const openedTimestamp = information.openedTimestamp;
   const closedTimestamp = information.closedTimestamp;
+
+  if (!text) {
+    text = summary;
+  }
+
   function renderTooltipContent() {
     return html`<div class="feature-link-tooltip">
     ${summary && html`
@@ -54,15 +59,16 @@ function enhanceChromeStatusLink(featureLink, text) {
     `}
     </div>`;
   }
-  return html`<div class="feature-link">
-    <sl-badge class="badge" pill variant="${statusRef.meansOpen ? 'success' : 'neutral'}">${statusRef.status}</sl-badge>
+  return html`<a class="feature-link" href="${featureLink.url}" target="_blank" rel="noopener noreferrer">
     <sl-tooltip style="--sl-tooltip-arrow-size: 0;--max-width: 50vw;">
         <div slot="content">${renderTooltipContent()}</div>
-        <a href="${featureLink.url}" target="_blank" rel="noopener noreferrer">
-        ${text}
-        </a>
+        <sl-badge class="tag">
+          <sl-tag size="small" class="badge" variant="${statusRef.meansOpen ? 'success' : 'neutral'}">${statusRef.status}</sl-tag>
+          <img src="https://bugs.chromium.org/static/images/monorail.ico" alt="icon" class="icon" />
+          ${text}
+        </sl-badge>
     </sl-tooltip>
-  </div>`;
+  </a>`;
 }
 
 function _enhanceLink(featureLink, fallback, text) {
@@ -77,7 +83,7 @@ function _enhanceLink(featureLink, fallback, text) {
   }
   switch (featureLink.type) {
     case LINK_TYPE_CHROMIUM_BUG:
-      return enhanceChromeStatusLink(featureLink, text);
+      return enhanceChromeStatusLink(featureLink);
     default:
       return fallback;
   }
