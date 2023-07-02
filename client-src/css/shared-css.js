@@ -161,7 +161,8 @@ export const SHARED_STYLES = [
     background-color: rgb(232,234,237);
     color: var(--default-font-color);
     font-weight: 400;
-    border-width: 0;
+    border-left-width 0px;
+    border-right-width 0px;
     border-radius: 8px;
     display: inline-flex;
     align-items: center;

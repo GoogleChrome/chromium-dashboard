@@ -2,6 +2,7 @@ import {html} from 'lit';
 // LINK_TYPES should be consistent with the server link_helpers.py
 const LINK_TYPE_CHROMIUM_BUG = 'chromium_bug';
 const LINK_TYPE_GITHUB_ISSUE = 'github_issue';
+const LINK_TYPE_GITHUB_MARKDOWN = 'github_markdown';
 
 function enhanceChromeStatusLink(featureLink, text) {
   function _formatTimestamp(timestamp) {
@@ -143,6 +144,43 @@ function enhanceGithubIssueLink(featureLink, text) {
     </sl-tooltip>
   </a>`;
 }
+
+function enhanceGithubMarkdownLink(featureLink, text) {
+  const information = featureLink.information;
+  const path = information.path;
+  const title = information._parsed_title;
+  const size = information.size;
+  const readableSize = (size / 1024).toFixed(2) + ' KB';
+  if (!text) {
+    text = title;
+  }
+
+  function renderTooltipContent() {
+    return html`<div class="feature-link-tooltip">
+    ${path && html`
+      <div>
+        <strong>File:</strong>
+        <span>${path}</span>
+      </div>
+    `}
+    ${size && html`
+    <div>
+      <strong>Size:</strong>
+      <span>${readableSize}</span>
+    </div>
+    `}
+    </div>`;
+  }
+  return html`<a class="feature-link" href="${featureLink.url}" target="_blank" rel="noopener noreferrer">
+    <sl-tooltip style="--sl-tooltip-arrow-size: 0;--max-width: 50vw;">
+        <div slot="content">${renderTooltipContent()}</div>
+        <sl-badge class="tag">
+          <img src="https://docs.github.com/assets/cb-600/images/site/favicon.png" alt="icon" class="icon" />
+          ${'Markdown: ' + text}
+        </sl-badge>
+    </sl-tooltip>
+  </a>`;
+}
 function _enhanceLink(featureLink, fallback, text) {
   if (!fallback) {
     throw new Error('fallback html is required');
@@ -163,6 +201,8 @@ function _enhanceLink(featureLink, fallback, text) {
         return enhanceChromeStatusLink(featureLink);
       case LINK_TYPE_GITHUB_ISSUE:
         return enhanceGithubIssueLink(featureLink);
+      case LINK_TYPE_GITHUB_MARKDOWN:
+        return enhanceGithubMarkdownLink(featureLink);
       default:
         return fallback;
     }
