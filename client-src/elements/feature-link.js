@@ -81,11 +81,15 @@ function _enhanceLink(featureLink, fallback, text) {
   if (!text) {
     text = featureLink.url;
   }
-  switch (featureLink.type) {
-    case LINK_TYPE_CHROMIUM_BUG:
-      return enhanceChromeStatusLink(featureLink);
-    default:
-      return fallback;
+  try {
+    switch (featureLink.type) {
+      case LINK_TYPE_CHROMIUM_BUG:
+        return enhanceChromeStatusLink(featureLink);
+      default:
+        return fallback;
+    }
+  } catch (e) {
+    return fallback;
   }
 }
 
