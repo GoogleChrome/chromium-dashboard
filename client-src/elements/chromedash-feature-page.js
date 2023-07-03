@@ -185,7 +185,7 @@ export class ChromedashFeaturePage extends LitElement {
   }
 
   async refetchFeatureLinks() {
-    featureLinks = await window.csClient.getFeatureLinks(this.featureId, false);
+    const featureLinks = await window.csClient.getFeatureLinks(this.featureId, false);
     this.featureLinks = featureLinks?.data || [];
   }
 
