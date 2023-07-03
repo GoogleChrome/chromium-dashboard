@@ -71,6 +71,7 @@ function enhanceChromeStatusLink(featureLink, text) {
     </sl-tooltip>
   </a>`;
 }
+
 function enhanceGithubIssueLink(featureLink, text) {
   function _formatISOTime(dateString) {
     const date = new Date(dateString);
@@ -181,6 +182,7 @@ function enhanceGithubMarkdownLink(featureLink, text) {
     </sl-tooltip>
   </a>`;
 }
+
 function _enhanceLink(featureLink, fallback, text) {
   if (!fallback) {
     throw new Error('fallback html is required');
