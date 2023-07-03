@@ -4,6 +4,13 @@ const LINK_TYPE_CHROMIUM_BUG = 'chromium_bug';
 const LINK_TYPE_GITHUB_ISSUE = 'github_issue';
 const LINK_TYPE_GITHUB_MARKDOWN = 'github_markdown';
 
+function _formatLongText(text, maxLength = 50) {
+  if (text.length > maxLength) {
+    return text.substring(0, 35) + '...' + text.substring(text.length - 15, text.length);
+  }
+  return text;
+}
+
 function enhanceChromeStatusLink(featureLink, text) {
   function _formatTimestamp(timestamp) {
     const date = new Date(timestamp * 1000);
@@ -66,7 +73,7 @@ function enhanceChromeStatusLink(featureLink, text) {
         <sl-badge class="tag">
           <sl-tag size="small" class="badge" variant="${statusRef.meansOpen ? 'success' : 'neutral'}">${statusRef.status}</sl-tag>
           <img src="https://bugs.chromium.org/static/images/monorail.ico" alt="icon" class="icon" />
-          ${text}
+          ${_formatLongText(text)}
         </sl-badge>
     </sl-tooltip>
   </a>`;
@@ -140,7 +147,7 @@ function enhanceGithubIssueLink(featureLink, text) {
         <sl-badge class="tag">
           <sl-tag size="small" class="badge" variant="${state === 'open' ? 'success' : 'neutral'}">${state}</sl-tag>
           <img src="https://docs.github.com/assets/cb-600/images/site/favicon.png" alt="icon" class="icon" />
-          ${`#${number} ` + text}
+          ${_formatLongText(`#${number} ` + text)}
         </sl-badge>
     </sl-tooltip>
   </a>`;
@@ -177,7 +184,7 @@ function enhanceGithubMarkdownLink(featureLink, text) {
         <div slot="content">${renderTooltipContent()}</div>
         <sl-badge class="tag">
           <img src="https://docs.github.com/assets/cb-600/images/site/favicon.png" alt="icon" class="icon" />
-          ${'Markdown: ' + text}
+          ${_formatLongText('Markdown: ' + text)}
         </sl-badge>
     </sl-tooltip>
   </a>`;
