@@ -24,7 +24,10 @@ from urllib.error import HTTPError
 from urllib.parse import urlparse
 import base64
 
-github_api_client = GhApi()
+from framework import secrets
+
+
+github_api_client = None
 
 LINK_TYPE_CHROMIUM_BUG = 'chromium_bug'
 LINK_TYPE_GITHUB_ISSUE = 'github_issue'
@@ -39,6 +42,16 @@ LINK_TYPES_REGEX = {
 }
 
 URL_REGEX = re.compile(r'(https?://\S+)')
+
+
+def get_github_api_client():
+  """Set up the GitHub client."""
+  global github_api_client
+  if github_api_client is None:
+    token = secrets.ApiCredential.get_github_token()
+    github_api_client = GhApi(token=token)
+
+  return github_api_client
 
 
 class Link():
@@ -72,6 +85,7 @@ class Link():
     self.information = None
 
   def _parse_github_markdown(self) -> dict[str, object]:
+    client = get_github_api_client()
     parsed_url = urlparse(self.url)
     path = parsed_url.path
     owner = path.split('/')[1]
@@ -81,7 +95,7 @@ class Link():
     try:
       # try to get the branch information, if it exists, update branch name
       # this handles the case where the branch is renamed
-      branch_information = github_api_client.repos.get_branch(
+      branch_information = client.repos.get_branch(
           owner=owner, repo=repo, branch=ref)
       ref = branch_information.name
     except HTTPError as e:
@@ -89,7 +103,7 @@ class Link():
       if e.code != 404:
         raise e
 
-    information = github_api_client.repos.get_content(
+    information = client.repos.get_content(
         owner=owner, repo=repo, path=file_path, ref=ref)
 
     # decode the content from base64
@@ -110,7 +124,8 @@ class Link():
     repo = path.split('/')[2]
     issue_id = path.split('/')[4]
 
-    resp = github_api_client.issues.get(
+    client = get_github_api_client()
+    resp = client.issues.get(
         owner=owner, repo=repo, issue_number=int(issue_id))
     information = {
         'url': resp.get('url'),
