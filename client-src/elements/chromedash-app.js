@@ -458,7 +458,7 @@ class ChromedashApp extends LitElement {
 
   handleShowDrawer() {
     const drawer = this.shadowRoot.querySelector('chromedash-drawer');
-    this.drawerOpen = drawer.handleDrawerActions();
+    this.drawerOpen = drawer.toggleDrawerActions();
   }
 
   /* The user edited something, so tell components to refetch data. */
@@ -518,10 +518,10 @@ class ChromedashApp extends LitElement {
 
   render() {
     let styleMargin = styleMap({'margin-left': '20px'});
-
     if (!ISMOBILE && this.drawerOpen) {
       styleMargin = styleMap({'margin-left': '300px'});
     }
+
     // The <slot> below is for the Google sign-in button, this is because
     // Google Identity Services Library cannot find elements in a shadow DOM,
     // so we create signInButton element at the document level and insert it
@@ -545,7 +545,8 @@ class ChromedashApp extends LitElement {
             <div>
               <chromedash-drawer
                 .user=${this.user}
-                .currentPage=${this.currentPage}>
+                .currentPage=${this.currentPage}
+                .googleSignInClientId=${this.googleSignInClientId}>
               </chromedash-drawer>
             </div>
             <div style=${styleMargin}>

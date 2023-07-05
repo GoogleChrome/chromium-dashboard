@@ -1,5 +1,5 @@
 import {LitElement, html, css, nothing} from 'lit';
-import {ISMOBILE} from './utils';
+import {showToastMessage, ISMOBILE} from './utils';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
 
@@ -106,6 +106,7 @@ export class ChromedashDrawer extends LitElement {
   static get properties() {
     return {
       currentPage: {type: String},
+      googleSignInClientId: {type: String},
       user: {type: Object},
       loading: {type: Boolean},
     };
@@ -114,15 +115,84 @@ export class ChromedashDrawer extends LitElement {
   constructor() {
     super();
     this.currentPage = '';
+    this.googleSignInClientId = '',
     this.user = {};
     this.loading = false;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    // The user sign-in is moibile only.
+    if (!ISMOBILE) {
+      return;
+    }
+
+    // user is passed in from chromedash-app
+    if (this.user && this.user.email) return;
+
+    // user is passed in from chromedash-app, but the user is not logged in
+    if (!this.user) {
+      this.initializeGoogleSignIn();
+      return;
+    };
+
+    // user is not passed in from anywhere, i.e. this.user is still {}
+    // this is for MPA pages where this component is initialized in _base.html
+    this.loading = true;
+    window.csClient.getPermissions().then((user) => {
+      this.user = user;
+      if (!this.user) this.initializeGoogleSignIn();
+    }).catch(() => {
+      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+    }).finally(() => {
+      this.loading = false;
+    });
+  }
+
+  initializeGoogleSignIn() {
+    google.accounts.id.initialize({
+      client_id: this.googleSignInClientId,
+      callback: this.handleCredentialResponse,
+    });
+    google.accounts.id.prompt();
+
+    // Google Identity Services Library cannot find elements in a shadow DOM,
+    // so we create signInButton element at the document level and insert it
+    // in this DOM, which will be rendered in the <slot> below
+    const signInButton = document.createElement('div');
+    google.accounts.id.renderButton(signInButton, {type: 'standard'});
+    signInButton.style.maxWidth = '200px';
+    signInButton.style.maxWidth = '40px';
+    this.insertAdjacentElement('afterbegin', signInButton);
+  }
+
+  handleCredentialResponse(credentialResponse) {
+    window.csClient.signIn(credentialResponse)
+      .then(() => {
+        window.location.replace(window.location.href.split('?')[0]);
+      })
+      .catch(() => {
+        console.error('Sign in failed, so signing out to allow retry');
+        signOut();
+      });
+  }
+
+  handleSignOutClick(e) {
+    e.preventDefault();
+    this.signOut();
+  }
+
+  signOut() {
+    window.csClient.signOut().then(() => {
+      window.location.reload();
+    });
   }
 
   isCurrentPage(href) {
     return this.currentPage.startsWith(href);
   }
 
-  handleDrawerActions() {
+  toggleDrawerActions() {
     const drawer = this.shadowRoot.querySelector('.drawer-placement-start');
     if (drawer.open) {
       drawer.hide();
@@ -142,7 +212,7 @@ export class ChromedashDrawer extends LitElement {
 
     return html`
       <sl-drawer label="Menu" placement="start" class="drawer-placement-start"
-        style="--size: 300px;" contained noHeader open>
+        style="--size: 300px;" contained noHeader ?open=${!ISMOBILE}>
         ${accountMenu}
         <a class="flex-item" href="/roadmap" ?active=${this.isCurrentPage('/roadmap')}>Roadmap</a>
         ${this.user ? html`

@@ -52,6 +52,7 @@ describe('chromedash-header', () => {
     const nav = component.shadowRoot.querySelector('nav');
     assert.exists(nav);
 
+    const navInnerHTML = nav.innerHTML;
     // anon has the (slotted in) google sign-in button
     assert.include(navInnerHTML, '<slot>');
   });
@@ -79,6 +80,7 @@ describe('chromedash-header', () => {
     const nav = component.shadowRoot.querySelector('nav');
     assert.exists(nav);
 
+    const navInnerHTML = nav.innerHTML;
     // logged in users have Settings and Sign Out options
     assert.include(navInnerHTML, 'Settings');
     assert.include(navInnerHTML, 'Sign out');

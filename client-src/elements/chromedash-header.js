@@ -163,6 +163,10 @@ export class ChromedashHeader extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+    // The user sign-in is desktop only.
+    if (ISMOBILE) {
+      return;
+    }
 
     // user is passed in from chromedash-app
     if (this.user && this.user.email) return;
