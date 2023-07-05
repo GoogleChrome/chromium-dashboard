@@ -130,7 +130,7 @@ export class ChromedashHeader extends LitElement {
             --logoSize: 24px;
 
             margin: 0;
-            display: block;
+            display: flex;
           }
           header aside {
             display: flex;

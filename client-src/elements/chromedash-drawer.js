@@ -83,6 +83,9 @@ export class ChromedashDrawer extends LitElement {
         sl-drawer::part(header) {
           display: none;
         }
+        sl-button {
+          margin-left: 10px;
+        }
         @media only screen and (max-width: 700px) {
           header {
             --logoSize: 24px;
@@ -161,11 +164,6 @@ export class ChromedashDrawer extends LitElement {
   renderAccountMenu() {
     return html`
       ${this.user ? html`
-        ${this.user.can_create_feature && !this.isCurrentPage('/guide/new') ? html`
-          <sl-button href="/guide/new" variant="primary" size="small">
-            Create feature
-          </sl-button>
-        `: nothing }
         <div class="flex-item">
           <a class="flex-item-inner">
             ${this.user.email}
@@ -175,6 +173,11 @@ export class ChromedashDrawer extends LitElement {
             <li><a href="#" id="sign-out-link" @click=${this.handleSignOutClick}>Sign out</a></li>
           </ul>
         </div>
+        ${this.user.can_create_feature && !this.isCurrentPage('/guide/new') ? html`
+          <sl-button class="flex-item" href="/guide/new" variant="primary" size="small">
+            Create feature
+          </sl-button>
+        `: nothing }
       ` : html`
         <slot></slot>
       `}
