@@ -445,6 +445,7 @@ body.loading #spinner {
 #content {
   margin: var(--content-padding);
   position: relative;
+  min-height: 500px;
 }
 
 #content-flex-wrapper {

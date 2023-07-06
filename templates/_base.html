@@ -91,6 +91,12 @@ limitations under the License.
         <div id="spinner">
           <img src="/static/img/ring.svg">
         </div>
+        <div>
+          <chromedash-drawer
+            .currentPage="{{current_path}}"
+            .googleSignInClientId="{{google_sign_in_client_id}}">
+          </chromedash-drawer>
+        </div>
         <chromedash-banner
           message="{{banner_message}}"
           timestamp="{{banner_time}}">
