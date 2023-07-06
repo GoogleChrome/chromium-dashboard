@@ -141,10 +141,42 @@ export const SHARED_STYLES = [
     display: inline;
     white-space: normal;
     line-break: anywhere;
+    color: var(--default-font-color);
   }
 
-  .feature-link .badge {
-    height: 18px;
+  .feature-link:hover {
+    text-decoration: none;
+  }
+
+  .feature-link .badge::part(base) {
+    height: 16px;
+    padding: 4px;
+    border-width: 0;
+    text-transform: capitalize;
+  }
+
+  .feature-link .tag::part(base) {
+    vertical-align: middle;
+    height: 22px;
+    background-color: rgb(232,234,237);
+    color: var(--default-font-color);
+    font-weight: 400;
+    border-left-width 0px;
+    border-right-width 0px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    column-gap: 0.3em;
+  }
+
+  .feature-link .tag::part(base):hover {
+    background-color: rgb(209,211,213);
+  }
+
+  .feature-link .icon {
+    display: block;
+    width: 12px;
+    height: 12px;
   }
 
   .feature-link-tooltip {
