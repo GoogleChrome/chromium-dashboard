@@ -1,5 +1,5 @@
 import {LitElement, html, css, nothing} from 'lit';
-import {showToastMessage, ISMOBILE} from './utils';
+import {showToastMessage, IS_MOBILE} from './utils';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
 
@@ -164,7 +164,7 @@ export class ChromedashHeader extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     // The user sign-in is desktop only.
-    if (ISMOBILE) {
+    if (IS_MOBILE) {
       return;
     }
 
@@ -275,7 +275,7 @@ export class ChromedashHeader extends LitElement {
 
   render() {
     let accountMenu = nothing;
-    if (!ISMOBILE && !this.loading) {
+    if (!IS_MOBILE && !this.loading) {
       accountMenu = html`
       <div class="flex-container">
         ${this.renderAccountMenu()}

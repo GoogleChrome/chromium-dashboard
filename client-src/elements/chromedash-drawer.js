@@ -1,5 +1,5 @@
 import {LitElement, html, css, nothing} from 'lit';
-import {showToastMessage, ISMOBILE} from './utils';
+import {showToastMessage, IS_MOBILE} from './utils';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
 
@@ -16,9 +16,8 @@ export class ChromedashDrawer extends LitElement {
           --nav-link-color: var(--md-gray-700-alpha);
           --nav-link-font-size: 16px;
           --nav-link-hover-background: var(--md-gray-100-alpha);
-          --nav-link-border: 2px solid transparent;
           --nav-link-active-color: var(--md-blue-900);
-          --nav-link-active-border: 2px solid var(--nav-link-active-color);
+          --nav-link-active-background: var(--light-accent-color);
         }
         nav {
           display: flex;
@@ -40,7 +39,6 @@ export class ChromedashDrawer extends LitElement {
           padding: var(--content-padding-half) var(--content-padding);
           color: var(--nav-link-color);
           white-space: nowrap;
-          border-bottom: var(--nav-link-border);
         }
         nav a:hover {
           color: black;
@@ -52,7 +50,7 @@ export class ChromedashDrawer extends LitElement {
         }
         nav [active] {
           color: var(--nav-link-active-color);
-          border-bottom: var(--nav-link-active-border);
+          background: var(--nav-link-active-background);
         }
         nav [active] a {
           color: var(--nav-link-active-color);
@@ -123,7 +121,7 @@ export class ChromedashDrawer extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     // The user sign-in is moibile only.
-    if (!ISMOBILE) {
+    if (!IS_MOBILE) {
       return;
     }
 
@@ -202,9 +200,9 @@ export class ChromedashDrawer extends LitElement {
     return drawer.open;
   }
 
-  renderTabs() {
+  renderDrawer() {
     let accountMenu = nothing;
-    if (ISMOBILE && !this.loading) {
+    if (IS_MOBILE && !this.loading) {
       accountMenu = html`
       ${this.renderAccountMenu()}
       `;
@@ -212,7 +210,7 @@ export class ChromedashDrawer extends LitElement {
 
     return html`
       <sl-drawer label="Menu" placement="start" class="drawer-placement-start"
-        style="--size: 300px;" contained noHeader ?open=${!ISMOBILE}>
+        style="--size: 300px;" contained noHeader ?open=${!IS_MOBILE}>
         ${accountMenu}
         <a class="flex-item" href="/roadmap" ?active=${this.isCurrentPage('/roadmap')}>Roadmap</a>
         ${this.user ? html`
@@ -257,7 +255,7 @@ export class ChromedashDrawer extends LitElement {
   render() {
     return html`
       <nav>
-        ${this.renderTabs()}
+        ${this.renderDrawer()}
       </nav>
     `;
   }

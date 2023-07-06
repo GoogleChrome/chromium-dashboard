@@ -1,7 +1,7 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {ref, createRef} from 'lit/directives/ref.js';
 import {styleMap} from 'lit-html/directives/style-map.js';
-import {showToastMessage, parseRawQuery, updateURLParams, ISMOBILE} from './utils';
+import {showToastMessage, parseRawQuery, updateURLParams, IS_MOBILE} from './utils';
 import page from 'page';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
@@ -38,6 +38,7 @@ class ChromedashApp extends LitElement {
         #content {
           margin: var(--content-padding);
           position: relative;
+          min-height: 500px;
         }
 
         #content-flex-wrapper {
@@ -122,7 +123,7 @@ class ChromedashApp extends LitElement {
     this.sidebarHidden = true;
     this.selectedGateId = 0;
     this.beforeUnloadHandler = null;
-    this.drawerOpen = !ISMOBILE;
+    this.drawerOpen = !IS_MOBILE;
   }
 
   connectedCallback() {
@@ -518,7 +519,7 @@ class ChromedashApp extends LitElement {
 
   render() {
     let styleMargin = styleMap({'margin-left': '20px'});
-    if (!ISMOBILE && this.drawerOpen) {
+    if (!IS_MOBILE && this.drawerOpen) {
       styleMargin = styleMap({'margin-left': '300px'});
     }
 
