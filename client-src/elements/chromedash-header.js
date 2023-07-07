@@ -23,7 +23,7 @@ export class ChromedashHeader extends LitElement {
 
         header {
           display: flex;
-          align-items: baseline;
+          align-items: center;
           user-select: none;
           background: var(--card-background);
           border-bottom: var(--card-border);
@@ -108,6 +108,7 @@ export class ChromedashHeader extends LitElement {
           display: flex;
           justify-content: flex-end;
           flex-wrap: wrap;
+          align-items: center;
           width: 100%;
         }
 
@@ -285,7 +286,7 @@ export class ChromedashHeader extends LitElement {
     return html`
       <header>
         <sl-icon-button variant="text" library="material" class="menu"
-          style="font-size: 1.2rem;" name="menu_20px" @click="${this.handleDrawer}">
+          style="font-size: 2.4rem;" name="menu_20px" @click="${this.handleDrawer}">
         </sl-icon-button >
         <aside>
           <hgroup>
