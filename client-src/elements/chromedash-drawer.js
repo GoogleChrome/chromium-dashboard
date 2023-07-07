@@ -3,6 +3,9 @@ import {showToastMessage, IS_MOBILE} from './utils';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
 
+export const DRAWER_WIDTH_PX = 200;
+
+
 export class ChromedashDrawer extends LitElement {
   static get styles() {
     return [
@@ -15,7 +18,7 @@ export class ChromedashDrawer extends LitElement {
 
           --nav-link-color: var(--md-gray-700-alpha);
           --nav-link-font-size: 16px;
-          --nav-link-hover-background: var(--md-gray-100-alpha);
+          --nav-link-hover-background: var(--md-gray-50-alpha);
           --nav-link-active-color: var(--md-blue-900);
           --nav-link-active-background: var(--light-accent-color);
         }
@@ -25,8 +28,7 @@ export class ChromedashDrawer extends LitElement {
           align-items: baseline;
           user-select: none;
           background: var(--card-background);
-          border-bottom: var(--card-border);
-          box-shadow: var(--card-box-shadow);
+          border: none;
           align-items: center;
           margin: 0 var(--content-padding);
           -webkit-font-smoothing: initial;
@@ -39,6 +41,7 @@ export class ChromedashDrawer extends LitElement {
           padding: var(--content-padding-half) var(--content-padding);
           color: var(--nav-link-color);
           white-space: nowrap;
+          border-radius: var(--pill-border-radius);
         }
         nav a:hover {
           color: black;
@@ -52,8 +55,8 @@ export class ChromedashDrawer extends LitElement {
           color: var(--nav-link-active-color);
           background: var(--nav-link-active-background);
         }
-        nav [active] a {
-          color: var(--nav-link-active-color);
+        nav [active]:hover {
+          background: var(--md-gray-100-alpha);
         }
         ul {
           top: 80%;
@@ -198,7 +201,8 @@ export class ChromedashDrawer extends LitElement {
 
     return html`
       <sl-drawer label="Menu" placement="start" class="drawer-placement-start"
-        style="--size: 300px;" contained noHeader ?open=${!IS_MOBILE}>
+        style="--size: ${DRAWER_WIDTH_PX}px;" contained noHeader
+        ?open=${!IS_MOBILE}>
         ${accountMenu}
         <a class="flex-item" href="/roadmap" ?active=${this.isCurrentPage('/roadmap')}>Roadmap</a>
         ${this.user?.email ? html`

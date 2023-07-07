@@ -4,6 +4,8 @@ import {styleMap} from 'lit-html/directives/style-map.js';
 import {showToastMessage, parseRawQuery, updateURLParams, IS_MOBILE} from './utils';
 import page from 'page';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import {DRAWER_WIDTH_PX} from './chromedash-drawer.js';
+
 
 class ChromedashApp extends LitElement {
   gateColumnRef = createRef();
@@ -36,7 +38,7 @@ class ChromedashApp extends LitElement {
         }
 
         #content {
-          margin: var(--content-padding);
+          margin: 0;
           position: relative;
           min-height: 500px;
         }
@@ -520,7 +522,7 @@ class ChromedashApp extends LitElement {
   render() {
     let styleMargin = styleMap({'margin-left': '20px'});
     if (!IS_MOBILE && this.drawerOpen) {
-      styleMargin = styleMap({'margin-left': '300px'});
+      styleMargin = styleMap({'margin-left': (DRAWER_WIDTH_PX + 10) + 'px'});
     }
 
     // The <slot> below is for the Google sign-in button, this is because

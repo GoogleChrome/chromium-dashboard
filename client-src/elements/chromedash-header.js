@@ -23,7 +23,7 @@ export class ChromedashHeader extends LitElement {
 
         header {
           display: flex;
-          align-items: baseline;
+          align-items: center;
           user-select: none;
           background: var(--card-background);
           border-bottom: var(--card-border);
@@ -84,30 +84,22 @@ export class ChromedashHeader extends LitElement {
         header nav .nav-dropdown-container ul:hover {
           display: block;
         }
-        header aside {
-          --logoSize: 32px;
-
-          background: url(/static/img/chrome_logo.svg) no-repeat var(--content-padding) 50%;
-          background-size: var(--logoSize);
-          padding: 0.75em 2em;
-          padding-left: calc(var(--logoSize) + var(--content-padding) + var(--content-padding) / 2);
-        }
-        header aside hgroup a {
+        header aside a {
           color: var(--logo-color);
         }
         header aside h1 {
           line-height: 1;
         }
         header aside img {
-          height: 45px;
-          width: 45px;
-          margin-right: 7px;
+          height: 24px;
+          width: 24px;
         }
 
         .flex-container {
           display: flex;
           justify-content: flex-end;
           flex-wrap: wrap;
+          align-items: center;
           width: 100%;
         }
 
@@ -285,12 +277,15 @@ export class ChromedashHeader extends LitElement {
     return html`
       <header>
         <sl-icon-button variant="text" library="material" class="menu"
-          style="font-size: 1.2rem;" name="menu_20px" @click="${this.handleDrawer}">
+          style="font-size: 2.4rem;" name="menu_20px" @click="${this.handleDrawer}">
         </sl-icon-button >
         <aside>
-          <hgroup>
-            <a href="/features" target="_top"><h1>${this.appTitle}</h1></a>
-          </hgroup>
+            <a href="/roadmap" target="_top">
+              <h1>
+                <img src="/static/img/chrome_logo.svg">
+                ${this.appTitle}
+              </h1>
+            </a>
         </aside>
         <nav>
           ${accountMenu}
