@@ -120,26 +120,16 @@ export class ChromedashDrawer extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    // The user sign-in is moibile only.
-    if (!IS_MOBILE) {
-      return;
-    }
-
     // user is passed in from chromedash-app
     if (this.user && this.user.email) return;
 
-    // user is passed in from chromedash-app, but the user is not logged in
-    if (!this.user) {
-      this.initializeGoogleSignIn();
-      return;
-    };
-
-    // user is not passed in from anywhere, i.e. this.user is still {}
-    // this is for MPA pages where this component is initialized in _base.html
+    // Try to load user.
     this.loading = true;
     window.csClient.getPermissions().then((user) => {
       this.user = user;
-      if (!this.user) this.initializeGoogleSignIn();
+      // If it is on mobile, log-in is intialized in this component.
+      // Othewise, log-in is initialized in chromedash-header.
+      if (!this.user && IS_MOBILE) this.initializeGoogleSignIn();
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     }).finally(() => {
@@ -159,8 +149,6 @@ export class ChromedashDrawer extends LitElement {
     // in this DOM, which will be rendered in the <slot> below
     const signInButton = document.createElement('div');
     google.accounts.id.renderButton(signInButton, {type: 'standard'});
-    signInButton.style.maxWidth = '200px';
-    signInButton.style.maxWidth = '40px';
     this.insertAdjacentElement('afterbegin', signInButton);
   }
 
@@ -213,7 +201,7 @@ export class ChromedashDrawer extends LitElement {
         style="--size: 300px;" contained noHeader ?open=${!IS_MOBILE}>
         ${accountMenu}
         <a class="flex-item" href="/roadmap" ?active=${this.isCurrentPage('/roadmap')}>Roadmap</a>
-        ${this.user ? html`
+        ${this.user?.email ? html`
           <a class="flex-item" href="/myfeatures" ?active=${this.isCurrentPage('/myfeatures')}>My features</a>
         ` : nothing}
         <a class="flex-item" href="/features" ?active=${this.isCurrentPage('/features') || this.isCurrentPage('/newfeatures')}>All features</a>
@@ -231,7 +219,7 @@ export class ChromedashDrawer extends LitElement {
 
   renderAccountMenu() {
     return html`
-      ${this.user ? html`
+      ${this.user?.email ? html`
         <div class="flex-item">
           <a class="flex-item-inner">
             ${this.user.email}

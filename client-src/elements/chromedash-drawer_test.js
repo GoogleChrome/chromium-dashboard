@@ -22,7 +22,7 @@ describe('chromedash-drawer', () => {
   it('user is not signed in', async () => {
     window.csClient.getPermissions.returns(Promise.resolve(null));
     const component = await fixture(
-      html`<chromedash-drawer appTitle="Fake Title" user=null></chromedash-drawer>`);
+      html`<chromedash-drawer appTitle="Fake Title"></chromedash-drawer>`);
     assert.exists(component);
     assert.instanceOf(component, ChromedashDrawer);
     const nav = component.shadowRoot.querySelector('nav');
