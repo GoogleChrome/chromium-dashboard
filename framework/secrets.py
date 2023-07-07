@@ -95,7 +95,7 @@ class ApiCredential(ndb.Model):
 
   @classmethod
   def select_token_for_api(cls, api_name: str) -> 'ApiCredential':
-    """Return one of our credientialsfor the requested API or make a blank."""
+    """Return one of our credientials for the requested API or make a blank."""
     query = ApiCredential.query(ApiCredential.api_name == api_name)
     all_for_api = query.fetch(None)
     if not all_for_api:
