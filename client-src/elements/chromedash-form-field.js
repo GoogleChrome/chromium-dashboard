@@ -16,7 +16,7 @@ export class ChromedashFormField extends LitElement {
       loading: {type: Boolean},
       fieldProps: {type: Object},
       forEnterprise: {type: Boolean},
-      stageType: {type: Number | undefined},
+      stageType: {type: Number},
       componentChoices: {type: Object}, // just for the blink component select field
     };
   }
