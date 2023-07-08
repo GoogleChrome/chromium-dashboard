@@ -394,7 +394,7 @@ export class ChromedashGuideStagePage extends LitElement {
           <!-- TODO(DanielRyanSmith): Update this form to submit using a class method -->
           <!-- and the formatFeatureChanges function to make the API call. -->
           <button id="cancel-button"
-            @click=${this.submitChanges}>Cancel</button>
+            @click=${this.handleCancelClick}>Cancel</button>
         </div>
       </form>
     `;
