@@ -167,6 +167,7 @@ export const SHARED_STYLES = [
     align-items: center;
     column-gap: 0.3em;
     padding: 1px 5px;
+    margin: 1px 0;
   }
 
   .feature-link sl-tag::part(base):hover {
