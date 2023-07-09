@@ -26,8 +26,23 @@ from internals.link_helpers import (
 
 class LinkHelperTest(testing_config.CustomTestCase):
 
+  def test_real_server_error_url(self):
+    link = Link("http://httpstat.us/503")
+    
+    link.parse()
+    self.assertEqual(link.type, LINK_TYPE_WEB)
+    self.assertEqual(link.is_error, True)
+    self.assertEqual(link.http_error_code, 503)
+
+    link = Link("https://httpstat.us/400")
+
+    link.parse()
+    self.assertEqual(link.type, LINK_TYPE_WEB)
+    self.assertEqual(link.is_error, True)
+    self.assertEqual(link.http_error_code, 400)
+
   @mock.patch('requests.get')
-  def test_invalid_url(self, mock_requests_get):
+  def test_mock_not_found_url(self, mock_requests_get):
     mock_requests_get.return_value = testing_config.Blank(
         status_code=404, content='')  
 
