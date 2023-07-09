@@ -148,28 +148,29 @@ export const SHARED_STYLES = [
     text-decoration: none;
   }
 
-  .feature-link .badge::part(base) {
-    height: 16px;
+  .feature-link sl-badge::part(base) {
+    height: 14px;
     padding: 4px;
     border-width: 0;
     text-transform: capitalize;
+    font-weight: 400;
   }
 
-  .feature-link .tag::part(base) {
+  .feature-link sl-tag::part(base) {
     vertical-align: middle;
-    height: 22px;
+    height: 18px;
     background-color: rgb(232,234,237);
     color: var(--default-font-color);
-    font-weight: 400;
-    border-left-width 0px;
-    border-right-width 0px;
-    border-radius: 8px;
+    border: none;
+    border-radius: 500px;
     display: inline-flex;
     align-items: center;
     column-gap: 0.3em;
+    padding: 1px 5px;
+    margin: 1px 0;
   }
 
-  .feature-link .tag::part(base):hover {
+  .feature-link sl-tag::part(base):hover {
     background-color: rgb(209,211,213);
   }
 

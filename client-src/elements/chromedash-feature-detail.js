@@ -156,7 +156,6 @@ class ChromedashFeatureDetail extends LitElement {
       .inline-list {
         display: inline-block;
         padding: 0;
-        margin: 0;
       }
 
       .longtext {

@@ -70,11 +70,11 @@ function enhanceChromeStatusLink(featureLink, text) {
   return html`<a class="feature-link" href="${featureLink.url}" target="_blank" rel="noopener noreferrer">
     <sl-tooltip style="--sl-tooltip-arrow-size: 0;--max-width: 50vw;">
         <div slot="content">${renderTooltipContent()}</div>
-        <sl-badge class="tag">
-          <sl-tag size="small" class="badge" variant="${statusRef.meansOpen ? 'success' : 'neutral'}">${statusRef.status}</sl-tag>
+        <sl-tag>
           <img src="https://bugs.chromium.org/static/images/monorail.ico" alt="icon" class="icon" />
+          <sl-badge size="small" variant="${statusRef.meansOpen ? 'success' : 'neutral'}">${statusRef.status}</sl-badge>
           ${_formatLongText(text)}
-        </sl-badge>
+        </sl-tag>
     </sl-tooltip>
   </a>`;
 }
@@ -144,11 +144,11 @@ function enhanceGithubIssueLink(featureLink, text) {
   return html`<a class="feature-link" href="${featureLink.url}" target="_blank" rel="noopener noreferrer">
     <sl-tooltip style="--sl-tooltip-arrow-size: 0;--max-width: 50vw;">
         <div slot="content">${renderTooltipContent()}</div>
-        <sl-badge class="tag">
-          <sl-tag size="small" class="badge" variant="${state === 'open' ? 'success' : 'neutral'}">${state}</sl-tag>
+        <sl-tag>
           <img src="https://docs.github.com/assets/cb-600/images/site/favicon.png" alt="icon" class="icon" />
+          <sl-badge size="small" variant="${state === 'open' ? 'success' : 'neutral'}">${state}</sl-badge>
           ${_formatLongText(`#${number} ` + text)}
-        </sl-badge>
+        </sl-tag>
     </sl-tooltip>
   </a>`;
 }
@@ -182,10 +182,10 @@ function enhanceGithubMarkdownLink(featureLink, text) {
   return html`<a class="feature-link" href="${featureLink.url}" target="_blank" rel="noopener noreferrer">
     <sl-tooltip style="--sl-tooltip-arrow-size: 0;--max-width: 50vw;">
         <div slot="content">${renderTooltipContent()}</div>
-        <sl-badge class="tag">
+        <sl-tag>
           <img src="https://docs.github.com/assets/cb-600/images/site/favicon.png" alt="icon" class="icon" />
           ${_formatLongText('Markdown: ' + text)}
-        </sl-badge>
+        </sl-tag>
     </sl-tooltip>
   </a>`;
 }
