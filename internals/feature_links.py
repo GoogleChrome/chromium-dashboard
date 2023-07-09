@@ -36,6 +36,8 @@ class FeatureLinks(ndb.Model):
   url = ndb.StringProperty(required=True)
   type = ndb.StringProperty(required=True)
   information = ndb.JsonProperty()
+  is_error = ndb.BooleanProperty(default=False)
+  http_error_code = ndb.IntegerProperty()
 
 
 def update_feature_links(fe: FeatureEntry, changed_fields: list[tuple[str, Any, Any]]) -> None:
@@ -75,14 +77,14 @@ def _index_link(link: Link, fe: FeatureEntry) -> None:
     # we only want to parse the link if it is new,
     # for existing links, we will use a cron job to update the information
     link.parse()
-    if link.information is None:
-      logging.info(f'Could not parse link {link.url}')
     logging.info('info is %r', link.information)
     feature_link = FeatureLinks(
         feature_ids=[feature_id],
         type=link.type,
         url=link.url,
-        information=link.information
+        information=link.information,
+        is_error=link.is_error,
+        http_error_code=link.http_error_code
     )
     logging.info(f'Created link {link.url}')
   logging.info(f'Indexed link {link.url} for feature {feature_id}')
@@ -159,12 +161,19 @@ class FeatureLinksUpdateHandler(basehandlers.FlaskHandler):
 def _index_feature_links_by_ids(feature_link_ids: list[Any]) -> None:
   """index the links in the given feature links ids"""
   for feature_link_id in feature_link_ids:
-    feature_link = FeatureLinks.get_by_id(feature_link_id)
+    feature_link: FeatureLinks = FeatureLinks.get_by_id(feature_link_id)
     if feature_link:
       link = Link(feature_link.url)
       link.parse()
+      if link.is_error:
+        feature_link.is_error = link.is_error
+      else:
+        # only update the information if it is not an error
+        feature_link.information = link.information
+
+      if link.http_error_code:
+        feature_link.http_error_code = link.http_error_code
       feature_link.type = link.type
-      feature_link.information = link.information
       feature_link.put()
 
     logging.info(f'Update information for indexed link {link.url}')
