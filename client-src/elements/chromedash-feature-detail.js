@@ -158,10 +158,6 @@ class ChromedashFeatureDetail extends LitElement {
         padding: 0;
       }
 
-      .inline-list li + li {
-        margin-top: 2px;
-      }
-
       .longtext {
         display: block;
         white-space: pre-wrap;
