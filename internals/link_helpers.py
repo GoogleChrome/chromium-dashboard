@@ -17,7 +17,7 @@ import re
 import requests
 import json
 import logging
-from typing import Any
+from typing import Any, Optional
 from string import punctuation
 from ghapi.core import GhApi
 from urllib.error import HTTPError
@@ -69,7 +69,7 @@ class Link():
     self.type = Link.get_type(url)
     self.is_parsed = False
     self.is_error = False
-    self.http_error_code = None
+    self.http_error_code: Optional[int] = None
     self.information = None
 
   def _parse_github_markdown(self) -> dict[str, object]:
