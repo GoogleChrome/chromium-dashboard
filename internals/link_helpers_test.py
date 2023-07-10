@@ -60,7 +60,7 @@ class LinkHelperTest(testing_config.CustomTestCase):
     field_value = "leadinghttps:https://www.chromestatus.com/feature/1234, https://www.chromestatus.com/feature/5678 is valid"
     urls = Link.extract_urls_from_value(field_value)
     self.assertEqual(urls, ["https://www.chromestatus.com/feature/1234", "https://www.chromestatus.com/feature/5678"])
-    
+
     field_value = ["https://www.chromestatus.com/feature/1234", "not a valid urlhttps://www.chromestatus.com/feature/", None]
     urls = Link.extract_urls_from_value(field_value)
     self.assertEqual(urls, ["https://www.chromestatus.com/feature/1234"])

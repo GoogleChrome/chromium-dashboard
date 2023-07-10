@@ -88,6 +88,14 @@ limitations under the License.
   See https://github.com/GoogleChrome/chromium-dashboard/issues/2014
   #}
   <script type="module" nonce="{{nonce}}" src="/static/js/shared.min.js?v={{app_version}}"></script>
+
+  {# Work-around for bug in sl-select:
+     https://github.com/GoogleChrome/chromium-dashboard/issues/3137
+  #}
+  <script nonce="{{nonce}}">
+    let process = { env: {} };
+  </script>
+
 </body>
 
 </html>

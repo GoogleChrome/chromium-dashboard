@@ -24,7 +24,11 @@ from urllib.error import HTTPError
 from urllib.parse import urlparse
 import base64
 
-github_api_client = GhApi()
+from framework import secrets
+
+
+github_crediential = None
+github_api_client = None
 
 LINK_TYPE_CHROMIUM_BUG = 'chromium_bug'
 LINK_TYPE_GITHUB_ISSUE = 'github_issue'
@@ -39,6 +43,24 @@ LINK_TYPES_REGEX = {
 }
 
 URL_REGEX = re.compile(r'(https?://\S+)')
+
+
+def get_github_api_client():
+  """Set up the GitHub client."""
+  global github_credential
+  global github_api_client
+  if github_api_client is None:
+    github_credential = secrets.ApiCredential.get_github_credendial()
+    github_api_client = GhApi(token=github_credential.token)
+
+  return github_api_client
+
+
+def rotate_github_client():
+  """Try a different github client, e.g., after quota is used up."""
+  global github_api_client
+  github_credential.record_failure()
+  github_api_client = None  # A new one will be selected on when needed.
 
 
 class Link():
@@ -72,17 +94,15 @@ class Link():
     self.http_error_code: Optional[int] = None
     self.information = None
 
-  def _parse_github_markdown(self) -> dict[str, object]:
-    parsed_url = urlparse(self.url)
-    path = parsed_url.path
-    owner = path.split('/')[1]
-    repo = path.split('/')[2]
-    ref = path.split('/')[4]
-    file_path = '/'.join(path.split('/')[5:])
+  def _fetch_github_file(
+      self, owner: str, repo: str, ref: str, file_path: str,
+      retries=1):
+    """Get a file from GitHub."""
+    client = get_github_api_client()
     try:
       # try to get the branch information, if it exists, update branch name
-      # this handles the case where the branch is renamed
-      branch_information = github_api_client.repos.get_branch(
+      # this handles the case where the branch is renamed.
+      branch_information = client.repos.get_branch(
           owner=owner, repo=repo, branch=ref)
       ref = branch_information.name
     except HTTPError as e:
@@ -90,8 +110,28 @@ class Link():
       if e.code != 404:
         raise e
 
-    information = github_api_client.repos.get_content(
+    try:
+      information = client.repos.get_content(
         owner=owner, repo=repo, path=file_path, ref=ref)
+      return information
+    except HTTPError as e:
+      logging.info(f'Got http response code {e.code}')
+      if e.code != 404 and retries > 0:
+        rotate_github_client()
+        return self._fetch_github_file(
+            owner, repo, ref, file_path, retries=retries - 1)
+      else:
+        raise e
+
+  def _parse_github_markdown(self) -> dict[str, object]:
+    parsed_url = urlparse(self.url)
+    path = parsed_url.path
+    owner = path.split('/')[1]
+    repo = path.split('/')[2]
+    ref = path.split('/')[4]
+    file_path = '/'.join(path.split('/')[5:])
+
+    information = self._fetch_github_file(owner, repo, ref, file_path)
 
     # decode the content from base64
     content_str = information.content
@@ -102,7 +142,24 @@ class Link():
 
     return information
 
-  def _parse_github_issue(self) -> dict[str, object]:
+  def _fetch_github_issue(
+      self, owner: str, repo: str, issue_id: int,
+      retries=1) -> dict[str, Any]:
+    """Get an issue from GitHub."""
+    try:
+      client = get_github_api_client()
+      resp = client.issues.get(owner=owner, repo=repo, issue_number=issue_id)
+      return resp
+    except HTTPError as e:
+      logging.info(f'Got http response code {e.code}')
+      if e.code != 404 and retries > 0:
+        rotate_github_client()
+        return self._fetch_github_issue(
+            owner, repo, issue_id, retries=retries - 1)
+      else:
+        raise e
+
+  def _parse_github_issue(self) -> dict[str, str | None]:
     """Parse the information from the github issue tracker."""
 
     parsed_url = urlparse(self.url)
@@ -111,18 +168,17 @@ class Link():
     repo = path.split('/')[2]
     issue_id = path.split('/')[4]
 
-    resp = github_api_client.issues.get(
-        owner=owner, repo=repo, issue_number=int(issue_id))
+    resp = self._fetch_github_issue(owner, repo, int(issue_id))
     information = {
         'url': resp.get('url'),
         'number': resp.get('number'),
         'title': resp.get('title'),
         'user_login': (
-            resp.get('user').get('login') if resp.get('user') else None),
+            resp['user'].get('login') if resp.get('user') else None),
         'state': resp.get('state'),
         'state_reason': resp.get('state_reason'),
         'assignee_login': (
-            resp.get('assignee').get('login') if resp.get('assignee') else None),
+            resp['assignee'].get('login') if resp.get('assignee') else None),
         'created_at': resp.get('created_at'),
         'updated_at': resp.get('updated_at'),
         'closed_at': resp.get('closed_at'),
