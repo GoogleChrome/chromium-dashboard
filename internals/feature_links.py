@@ -138,7 +138,7 @@ def get_by_feature_id(feature_id: int, update_stale_links: bool) -> tuple[list[d
         '/tasks/update-feature-links', {
             'feature_link_ids': feature_link_ids
         })
-  return [link.to_dict(include=['url', 'type', 'information']) for link in feature_links], has_stale_links
+  return [link.to_dict(include=['url', 'type', 'information', 'http_error_code']) for link in feature_links], has_stale_links
 
 
 class FeatureLinksUpdateHandler(basehandlers.FlaskHandler):

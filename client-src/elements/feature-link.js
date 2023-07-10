@@ -198,7 +198,14 @@ function _enhanceLink(featureLink, fallback, text) {
     return fallback;
   }
   if (!featureLink.information) {
-    // TODO: render 403/404 link empty information
+    if (featureLink.http_error_code) {
+      return html`<div class="feature-link">
+        <sl-tag>
+          <sl-badge size="small" variant="${featureLink.http_error_code >= 500 ? 'danger' : 'warning'}">${featureLink.http_error_code}</sl-badge>
+          ${fallback}
+        </sl-tag>
+      </div>`;
+    }
     return fallback;
   }
   if (!text) {
