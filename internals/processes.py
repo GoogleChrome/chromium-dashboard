@@ -128,6 +128,9 @@ PI_UPDATED_VENDOR_SIGNALS = ProgressItem(
     'Updated vendor signals', 'safari_views')
 PI_UPDATED_TARGET_MILESTONE = ProgressItem(
     'Updated target milestone', 'shipped_milestone')
+PI_FINCH_FEATURE_OR_JUSTIFY = ProgressItem(
+    'Finch feature name or non-finch justification',
+    'finch_name')
 PI_I2S_EMAIL = ProgressItem('Intent to Ship email', 'intent_to_ship_url')
 PI_I2S_LGTMS = ProgressItem('Three LGTMs on Intent to Ship')
 
@@ -223,6 +226,7 @@ BLINK_PROCESS_STAGES = [
        PI_PRI_REVIEW,
        PI_EXTERNAL_REVIEWS,
        PI_R4DT_EMAIL,
+       PI_FINCH_FEATURE_OR_JUSTIFY,
       ],
       [Action('Draft Ready for Developer Testing email', INTENT_EMAIL_URL,
               [PI_INITIAL_PUBLIC_PROPOSAL.name, PI_MOTIVATION.name,
@@ -278,6 +282,7 @@ BLINK_PROCESS_STAGES = [
       [Action('Draft Intent to Ship email', INTENT_EMAIL_URL,
               [PI_INITIAL_PUBLIC_PROPOSAL.name, PI_MOTIVATION.name,
                PI_EXPLAINER.name, PI_SPEC_LINK.name,
+               PI_FINCH_FEATURE_OR_JUSTIFY.name,
                PI_TAG_ADDRESSED.name, PI_UPDATED_VENDOR_SIGNALS.name,
                PI_UPDATED_TARGET_MILESTONE.name])],
       [approval_defs.ShipApproval],
@@ -330,6 +335,7 @@ BLINK_FAST_TRACK_STAGES = [
        PI_R4DT_EMAIL,
        PI_VENDOR_SIGNALS,
        PI_EST_TARGET_MILESTONE,
+       PI_FINCH_FEATURE_OR_JUSTIFY,
       ],
       [Action('Draft Ready for Developer Testing email', INTENT_EMAIL_URL,
               [PI_SPEC_LINK.name, PI_EST_TARGET_MILESTONE.name])],
@@ -363,7 +369,9 @@ BLINK_FAST_TRACK_STAGES = [
        PI_I2S_LGTMS,
       ],
       [Action('Draft Intent to Ship email', INTENT_EMAIL_URL,
-              [PI_SPEC_LINK.name, PI_UPDATED_TARGET_MILESTONE.name])],
+              [PI_SPEC_LINK.name,
+               PI_FINCH_FEATURE_OR_JUSTIFY.name,
+               PI_UPDATED_TARGET_MILESTONE.name])],
       [approval_defs.ShipApproval],
       core_enums.INTENT_EXPERIMENT, core_enums.INTENT_SHIP,
       stage_type=core_enums.STAGE_FAST_SHIPPING),
@@ -409,6 +417,7 @@ PSA_ONLY_STAGES = [
       [PI_R4DT_EMAIL,
        PI_VENDOR_SIGNALS,
        PI_EST_TARGET_MILESTONE,
+       PI_FINCH_FEATURE_OR_JUSTIFY,
       ],
       [Action('Draft Ready for Developer Testing email', INTENT_EMAIL_URL,
               [PI_SPEC_LINK.name, PI_EST_TARGET_MILESTONE.name])],
@@ -424,7 +433,9 @@ PSA_ONLY_STAGES = [
        PI_I2S_EMAIL,
       ],
       [Action('Draft Intent to Ship email', INTENT_EMAIL_URL,
-              [PI_SPEC_LINK.name, PI_UPDATED_TARGET_MILESTONE.name])],
+              [PI_SPEC_LINK.name,
+               PI_FINCH_FEATURE_OR_JUSTIFY.name,
+               PI_UPDATED_TARGET_MILESTONE.name])],
       [approval_defs.ShipApproval],
       core_enums.INTENT_EXPERIMENT, core_enums.INTENT_SHIP,
       stage_type=core_enums.STAGE_PSA_SHIPPING),
@@ -473,6 +484,7 @@ DEPRECATION_STAGES = [
       [PI_R4DT_EMAIL,
        PI_VENDOR_SIGNALS,
        PI_EST_TARGET_MILESTONE,
+       PI_FINCH_FEATURE_OR_JUSTIFY,
       ],
       [Action('Draft Ready for Developer Testing email', INTENT_EMAIL_URL,
               [PI_MOTIVATION.name, PI_VENDOR_SIGNALS.name,
@@ -507,7 +519,8 @@ DEPRECATION_STAGES = [
        PI_I2S_LGTMS,
       ],
       [Action('Draft Intent to Ship email', INTENT_EMAIL_URL,
-              [PI_MOTIVATION.name, PI_VENDOR_SIGNALS.name,
+              [PI_MOTIVATION.name,
+               PI_FINCH_FEATURE_OR_JUSTIFY.name, PI_VENDOR_SIGNALS.name,
                PI_UPDATED_TARGET_MILESTONE.name])],
       [approval_defs.ShipApproval],
       core_enums.INTENT_EXPERIMENT, core_enums.INTENT_SHIP,
@@ -689,6 +702,9 @@ PROGRESS_DETECTORS = {
     lambda f, stages: bool(core_enums.STAGE_TYPES_SHIPPING[f.feature_type] and
         stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].milestones and
         stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].milestones.desktop_first),
+
+    'Finch feature name or non-finch justification':
+    lambda f, stages: bool(f.finch_name or f.non_finch_justification),
 
     'Code in Chromium':
     lambda f, _: f.impl_status_chrome in (
