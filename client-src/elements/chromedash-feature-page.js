@@ -92,7 +92,7 @@ export class ChromedashFeaturePage extends LitElement {
 
   static get properties() {
     return {
-      user: {type: Object},
+      user: {attribute: false},
       featureId: {type: Number},
       feature: {type: Object},
       featureLinks: {type: Array},
@@ -111,7 +111,7 @@ export class ChromedashFeaturePage extends LitElement {
 
   constructor() {
     super();
-    this.user = {};
+    this.user = null;
     this.featureId = 0;
     this.feature = {};
     this.featureLinks = [];
