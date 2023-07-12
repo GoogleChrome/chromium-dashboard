@@ -69,6 +69,16 @@ limitations under the License.
         '', 0);
   </script>
 
+  
+  <script type="module" nonce="fake nonce">
+    const drawer = document.querySelector('chromedash-drawer');
+    const header = document.querySelector('chromedash-header');
+    header.addEventListener('drawer-clicked', (e) => {
+      e.preventDefault();
+      open = drawer.toggleDrawerActions();
+    });
+  </script>
+
   <script type="module" nonce="fake nonce" defer
           src="/static/dist/components.js?v=Undeployed"></script>
   

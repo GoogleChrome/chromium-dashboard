@@ -12,8 +12,6 @@ const featureListEl = document.querySelector('chromedash-featurelist');
 const chromeMetadataEl = document.querySelector('chromedash-metadata');
 const searchEl = document.querySelector('.search input');
 const legendEl = document.querySelector('chromedash-legend');
-const drawer = document.querySelector('chromedash-drawer');
-const header = document.querySelector('chromedash-header');
 
 
 /**
@@ -112,10 +110,4 @@ const loadFeatureLegendViews = function(views) {
 document.querySelector('.legend-button').addEventListener('click', (e) => {
   e.preventDefault();
   legendEl.open();
-});
-
-
-header.addEventListener('drawer-clicked', (e) => {
-  e.preventDefault();
-  open = drawer.toggleDrawerActions();
 });

@@ -66,6 +66,16 @@ limitations under the License.
         '{{xsrf_token}}', {{xsrf_token_expires}});
   </script>
 
+  {# Attach Eventlistener for the drawer menu. #}
+  <script type="module" nonce="{{nonce}}">
+    const drawer = document.querySelector('chromedash-drawer');
+    const header = document.querySelector('chromedash-header');
+    header.addEventListener('drawer-clicked', (e) => {
+      e.preventDefault();
+      open = drawer.toggleDrawerActions();
+    });
+  </script>
+
   <script type="module" nonce="{{nonce}}" defer
           src="/static/dist/components.js?v={{app_version}}"></script>
   {% block preload %}{% endblock %}
