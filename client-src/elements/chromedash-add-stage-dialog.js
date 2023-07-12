@@ -29,7 +29,7 @@ class ChromedashAddStageDialog extends LitElement {
       featureId: {type: Number},
       featureType: {type: Number},
       canSubmit: {type: Boolean},
-      onSubmitCustomHandler: {type: Function},
+      onSubmitCustomHandler: {attribute: false},
     };
   }
 
