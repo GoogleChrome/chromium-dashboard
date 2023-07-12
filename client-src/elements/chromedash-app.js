@@ -520,9 +520,9 @@ class ChromedashApp extends LitElement {
   }
 
   render() {
-    let styleMargin = styleMap({'margin-left': '20px'});
+    let styleMargin = {'margin-left': '20px'};
     if (!IS_MOBILE && this.drawerOpen) {
-      styleMargin = styleMap({'margin-left': (DRAWER_WIDTH_PX + 10) + 'px'});
+      styleMargin = {'margin-left': (DRAWER_WIDTH_PX + 10) + 'px'};
     }
 
     // The <slot> below is for the Google sign-in button, this is because
@@ -552,7 +552,7 @@ class ChromedashApp extends LitElement {
                 .googleSignInClientId=${this.googleSignInClientId}>
               </chromedash-drawer>
             </div>
-            <div style=${styleMargin}>
+            <div style=${styleMap(styleMargin)}>
               <chromedash-banner
                 .message=${this.bannerMessage}
                 .timestamp=${this.bannerTime}>
