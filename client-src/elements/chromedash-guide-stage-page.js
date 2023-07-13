@@ -349,7 +349,7 @@ export class ChromedashGuideStagePage extends LitElement {
           name="set_impl_status"
           value=${alreadyOnThisImplStatus}
           index=${index}
-          checkbox-label=${label}
+          checkboxLabel=${label}
           ?disabled=${alreadyOnThisImplStatus}
           @form-field-update="${this.handleFormFieldUpdate}">
         </chromedash-form-field>

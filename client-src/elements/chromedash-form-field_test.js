@@ -10,7 +10,7 @@ describe('chromedash-form-field', () => {
         name="unlisted"
         value="True"
         checked="True"
-        checkbox-label="A specific label">
+        checkboxLabel="A specific label">
       </chromedash-form-field>`);
     assert.exists(component);
     assert.instanceOf(component, ChromedashFormField);
