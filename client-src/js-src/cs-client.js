@@ -302,6 +302,10 @@ class ChromeStatusClient {
     return this.doGet(url);
   }
 
+  updateFeature(featureChanges) {
+    return this.doPatch('/features', featureChanges);
+  }
+
   // FeatureLinks API
 
   getFeatureLinks(featureId, updateStaleLinks=true) {
