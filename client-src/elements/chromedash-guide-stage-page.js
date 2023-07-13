@@ -326,43 +326,33 @@ export class ChromedashGuideStagePage extends LitElement {
 
     if (!implStatusName && !this.implStatusFormFields) return nothing;
 
+    // Set the checkbox label based on the current implementation status.
+    let label = `Set implementation status to: ${implStatusName}`;
+    if (alreadyOnThisImplStatus) {
+      label = `This feature already has implementation status: ${implStatusName}`;
+    }
+    const index = this.fieldValues.length;
+    this.fieldValues.push({
+      name: 'impl_status_chrome',
+      touched: false,
+      value: alreadyOnThisImplStatus,
+      implicitValue: section.implStatusValue,
+    });
+
     return html`
       <h3>${section.name}</h3>
       <section class="stage_form">
-        ${implStatusName ? html`
-          <tr>
-            <td colspan="2"><b>Implementation status:</b></span></td>
-          </tr>
-          <tr>
-            ${alreadyOnThisImplStatus ?
-              html`
-                <td style="padding: 6px 10px;">
-                    This feature already has implementation status:
-                    <b>${implStatusName}</b>.
-                </td>
-              ` :
-              // TODO(jrobbins): When checked, make some milestone fields required.
-              html`
-                <td style="padding: 6px 10px;">
-                  <input type="hidden" name="impl_status_offered"
-                          value=${section.implStatusValue}>
-                  <sl-checkbox name="set_impl_status"
-                          id="set_impl_status"
-                          size="small">
-                    Set implementation status to: <b>${implStatusName}</b>
-                  </sl-checkbox>
-                </td>
-                <td style="padding: 6px 10px;">
-                  <span class="helptext"
-                        style="display: block; font-size: small; margin-top: 2px;">
-                    Check this box to update the implementation
-                    status of this feature in Chromium.
-                  </span>
-                </td>
-              `}
-          </tr>
-        `: nothing}
-
+        <input type="hidden" name="impl_status_offered"
+            value=${section.implStatusValue}>
+        <!-- TODO(jrobbins): When checked, make some milestone fields required. -->
+        <chromedash-form-field
+          name="set_impl_status"
+          value=${alreadyOnThisImplStatus}
+          index=${index}
+          checkbox-label=${label}
+          ?disabled=${alreadyOnThisImplStatus}
+          @form-field-update="${this.handleFormFieldUpdate}">
+        </chromedash-form-field>
         ${this.renderFields(formattedFeature, section)}
       </section>
     `;

@@ -285,6 +285,14 @@ export const ALL_FIELDS = {
         default, be sure to set the equivalent Process stage.`,
   },
 
+  'set_impl_status': {
+    type: 'checkbox',
+    label: 'Implementation status',
+    help_text: html`
+        Check this box to update the implementation status of
+        this feature in Chromium.`,
+  },
+
   'bug_url': {
     type: 'input',
     attrs: URL_FIELD_ATTRS,

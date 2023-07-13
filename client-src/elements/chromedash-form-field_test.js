@@ -6,7 +6,11 @@ describe('chromedash-form-field', () => {
   it('renders a checkbox type of field', async () => {
     const component = await fixture(
       html`
-      <chromedash-form-field name="unlisted" value="True" checked="True">
+      <chromedash-form-field
+        name="unlisted"
+        value="True"
+        checked="True"
+        checkbox-label="A specific label">
       </chromedash-form-field>`);
     assert.exists(component);
     assert.instanceOf(component, ChromedashFormField);
@@ -17,6 +21,7 @@ describe('chromedash-form-field', () => {
     assert.include(renderElement.innerHTML, 'Unlisted');
     assert.include(renderElement.innerHTML, 'sl-checkbox');
     assert.include(renderElement.innerHTML, 'checked');
+    assert.include(renderElement.innerHTML, 'A specific label');
   });
 
   it('renders a select type of field', async () => {
