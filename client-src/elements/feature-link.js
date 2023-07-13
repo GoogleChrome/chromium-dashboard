@@ -165,6 +165,12 @@ function enhanceGithubMarkdownLink(featureLink, text) {
 
   function renderTooltipContent() {
     return html`<div class="feature-link-tooltip">
+    ${title && html`
+    <div>
+      <strong>Title:</strong>
+      <span>${title}</span>
+    </div>
+  `}
     ${path && html`
       <div>
         <strong>File:</strong>
