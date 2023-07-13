@@ -135,7 +135,6 @@ export class ChromedashGuideStagePage extends LitElement {
       hiddenTokenField.value = window.csClient.token;
       return csClient.updateFeature(submitBody);
     }).then(() => {
-      window.onbeforeunload = null; // Allow redirect without asking to confirm leave site.
       window.location.href = this.nextPage || `/guide/edit/${this.featureId}`;
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
