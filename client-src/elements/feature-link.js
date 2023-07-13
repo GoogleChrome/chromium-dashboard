@@ -201,7 +201,10 @@ function _enhanceLink(featureLink, fallback, text) {
     if (featureLink.http_error_code) {
       return html`<div class="feature-link">
         <sl-tag>
-          <sl-badge size="small" variant="${featureLink.http_error_code >= 500 ? 'danger' : 'warning'}">${featureLink.http_error_code}</sl-badge>
+          <sl-icon library="material" name="link"></sl-icon>
+          <sl-badge size="small" variant="${featureLink.http_error_code >= 500 ? 'danger' : 'warning'}">
+            ${featureLink.http_error_code}
+          </sl-badge>
           ${fallback}
         </sl-tag>
       </div>`;
