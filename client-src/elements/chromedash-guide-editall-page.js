@@ -112,7 +112,7 @@ export class ChromedashGuideEditallPage extends LitElement {
       hiddenTokenField.value = window.csClient.token;
       return csClient.updateFeature(submitBody);
     }).then(() => {
-      // window.location.href = this.nextPage || `/guide/edit/${this.featureId}`;
+      window.location.href = this.nextPage || `/guide/edit/${this.featureId}`;
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
@@ -329,70 +329,42 @@ export class ChromedashGuideEditallPage extends LitElement {
     return formsToRender;
   }
 
-  getAllStageIds() {
-    const stageIds = [];
-    this.feature.stages.forEach(feStage => {
-      if (feStage.to_create) return;
-      stageIds.push(feStage.id);
-      // Check if any trial extension exist, and collect their IDs as well.
-      const extensions = feStage.extensions || [];
-      extensions.forEach(extensionStage => stageIds.push(extensionStage.id));
-    });
-    return stageIds.join(',');
-  }
-
   renderAddStageButton() {
     const text = this.feature.is_enterprise_feature ? 'Add Step': 'Add Stage';
+    const clickHandler = () => {
+      openAddStageDialog(
+        this.feature.id,
+        this.feature.feature_type_int,
+        this.createNewStage.bind(this));
+    };
     return html`
-    <sl-button size="small" @click="${
-        () => openAddStageDialog(this.feature.id, this.feature.feature_type_int, this.addNewStageToCreate.bind(this))}">
+    <sl-button size="small" @click="${clickHandler}">
       ${text}
     </sl-button>`;
   }
 
-  addNewStageToCreate(newStage) {
-    const lastIndexOfType = this.feature.stages
-      .findLastIndex((stage) => stage.stage_type === newStage.stage_type);
-    if (lastIndexOfType === -1) {
-      this.feature.stages.push({
-        ...newStage,
-        to_create: true,
-        id: ++this.nextStageToCreateId});
-    } else {
-      this.feature.stages.splice(lastIndexOfType + 1, 0, {
-        ...newStage,
-        to_create: true,
-        id: ++this.nextStageToCreateId});
-    }
-    this.feature = {...this.feature};
+  // Create a stage requested on the edit all page.
+  createNewStage(newStage) {
+    window.csClient.createStage(
+      this.featureId, {stage_type: newStage.stage_type})
+      .then(() => window.csClient.getFeature(this.featureId))
+      .then(feature => {
+        this.feature = feature;
+      }).catch(() => {
+        showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+      });
   }
 
   deleteStage(stage) {
     if (!confirm('Delete feature?')) return;
-    if (stage.to_create) {
-      const index = this.feature.stages.indexOf(stage);
-      if (index > -1) {
-        this.feature.stages.splice(index, 1);
-        this.feature = {...this.feature};
-      }
-    } else {
-      window.csClient.deleteStage(this.featureId, stage.id)
-        .then((resp) => {
-          if (resp.message === 'Stage archived.') {
-            return window.csClient.getFeature(this.featureId);
-          }
-        })
-        .then(feature => {
-          const stagesToCreate = this.feature.stages
-            .filter(stage => stage.to_create);
-          stagesToCreate.forEach(stageToCreate => {
-            const lastIndexOfType = feature.stages
-              .findLastIndex((stage) => stage.stage_type === stageToCreate.stage_type);
-            feature.stages.splice(lastIndexOfType + 1, 0, stageToCreate);
-          });
-          this.feature = feature;
-        });
-    }
+
+    window.csClient.deleteStage(this.featureId, stage.id)
+      .then(() => window.csClient.getFeature(this.featureId))
+      .then(feature => {
+        this.feature = feature;
+      }).catch(() => {
+        showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+      });
   }
 
 
