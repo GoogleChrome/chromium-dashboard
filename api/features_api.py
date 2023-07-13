@@ -100,10 +100,14 @@ class FeaturesAPI(basehandlers.APIHandler):
     elif field_type == 'link':
       return self._extract_link(value)
     elif field_type == 'links':
-      list_val = self._split_list_input(field, field_type, value, ',')
+      list_val = self._split_list_input(field, field_type, value)
       # Filter out any URLs that do not conform to the proper pattern.
-      return [link for link in self._extract_link(list_val) if link]
+      return [self._extract_link(link)
+              for link in list_val if link]
     elif field_type == 'int':
+      # Int fields can be unset by giving null or nothing in the input field.
+      if value == '' or value is None:
+        return None
       try:
         return int(value)
       except ValueError:
