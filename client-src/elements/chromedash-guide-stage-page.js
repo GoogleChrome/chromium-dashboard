@@ -1,6 +1,7 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
 import {
+  formatFeatureChanges,
   getStageValue,
   showToastMessage,
   setupScrollToHash,
@@ -125,13 +126,19 @@ export class ChromedashGuideStagePage extends LitElement {
     setupScrollToHash(this);
   }
 
-  handleFormSubmit(event, hiddenTokenField) {
-    event.preventDefault();
+  handleFormSubmit(e, hiddenTokenField) {
+    e.preventDefault();
+    const submitBody = formatFeatureChanges(this.fieldValues, this.featureId);
 
     // get the XSRF token and update it if it's expired before submission
     window.csClient.ensureTokenIsValid().then(() => {
       hiddenTokenField.value = window.csClient.token;
-      event.target.submit();
+      return csClient.updateFeature(submitBody);
+    }).then(() => {
+      window.onbeforeunload = null; // Allow redirect without asking to confirm leave site.
+      window.location.href = this.nextPage || `/guide/edit/${this.featureId}`;
+    }).catch(() => {
+      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
   }
 
@@ -265,7 +272,7 @@ export class ChromedashGuideStagePage extends LitElement {
       // Add the field to this component's stage before creating the field component.
       const index = this.fieldValues.length;
       this.fieldValues.push({
-        name: 'set_stage',
+        name: 'active_stage_id',
         touched: false,
         value: this.isActiveStage,
         implicitValue: this.stage.id,
@@ -326,75 +333,47 @@ export class ChromedashGuideStagePage extends LitElement {
 
     if (!implStatusName && !this.implStatusFormFields) return nothing;
 
+    // Set the checkbox label based on the current implementation status.
+    let label = `Set implementation status to: ${implStatusName}`;
+    if (alreadyOnThisImplStatus) {
+      label = `This feature already has implementation status: ${implStatusName}`;
+    }
+    const index = this.fieldValues.length;
+    this.fieldValues.push({
+      name: 'impl_status_chrome',
+      touched: false,
+      value: alreadyOnThisImplStatus,
+      implicitValue: section.implStatusValue,
+    });
+
     return html`
       <h3>${section.name}</h3>
       <section class="stage_form">
-        ${implStatusName ? html`
-          <tr>
-            <td colspan="2"><b>Implementation status:</b></span></td>
-          </tr>
-          <tr>
-            ${alreadyOnThisImplStatus ?
-              html`
-                <td style="padding: 6px 10px;">
-                    This feature already has implementation status:
-                    <b>${implStatusName}</b>.
-                </td>
-              ` :
-              // TODO(jrobbins): When checked, make some milestone fields required.
-              html`
-                <td style="padding: 6px 10px;">
-                  <input type="hidden" name="impl_status_offered"
-                          value=${section.implStatusValue}>
-                  <sl-checkbox name="set_impl_status"
-                          id="set_impl_status"
-                          size="small">
-                    Set implementation status to: <b>${implStatusName}</b>
-                  </sl-checkbox>
-                </td>
-                <td style="padding: 6px 10px;">
-                  <span class="helptext"
-                        style="display: block; font-size: small; margin-top: 2px;">
-                    Check this box to update the implementation
-                    status of this feature in Chromium.
-                  </span>
-                </td>
-              `}
-          </tr>
-        `: nothing}
-
+        <!-- TODO(jrobbins): When checked, make some milestone fields required. -->
+        <chromedash-form-field
+          name="set_impl_status"
+          value=${alreadyOnThisImplStatus}
+          index=${index}
+          checkboxLabel=${label}
+          ?disabled=${alreadyOnThisImplStatus}
+          @form-field-update="${this.handleFormFieldUpdate}">
+        </chromedash-form-field>
         ${this.renderFields(formattedFeature, section)}
       </section>
     `;
   }
 
   renderForm() {
-    let extensionStageIds = null;
-    // If any trial extensions are associated with this stage,
-    // their IDs are kept to retrieve during submission to save their values separately.
-    if (this.stage.extensions) {
-      extensionStageIds = this.stage.extensions.map(feStage => feStage.id);
-    }
     const formattedFeature = formatFeatureForEdit(this.feature);
     return html`
-      <form name="feature_form" method="POST"
-        action="/guide/stage/${this.featureId}/${this.intentStage}/${this.stageId}">
+      <form name="feature_form">
         <input type="hidden" name="token">
-        ${extensionStageIds ? html`
-        <input type="hidden" name="extension_stage_ids" value="${extensionStageIds}">` : nothing}
-        <input type="hidden" name="form_fields" value=${this.getFormFields()} >
-        <input type="hidden" name="nextPage" value=${this.getNextPage()} >
-
         <chromedash-form-table ${ref(this.registerHandlers)}>
           ${this.renderSections(formattedFeature, this.featureFormFields.sections)}
         </chromedash-form-table>
-
         <div class="final_buttons">
-          <input class="button" type="submit" value="Submit">
-          <!-- TODO(DanielRyanSmith): Update this form to submit using a class method -->
-          <!-- and the formatFeatureChanges function to make the API call. -->
-          <button id="cancel-button"
-            @click=${this.handleCancelClick}>Cancel</button>
+          <input id='submit-button' class="button" type="submit" value="Submit">
+          <button id="cancel-button" @click=${this.handleCancelClick}>Cancel</button>
         </div>
       </form>
     `;

@@ -17,13 +17,14 @@ from typing import Any, TYPE_CHECKING
 from api import converters
 from framework import cloud_tasks_helpers, users
 from internals import core_enums, approval_defs, core_models
+from internals.data_types import CHANGED_FIELDS_LIST_TYPE
 from internals.review_models import Gate, Amendment, Activity, Vote
 
 if TYPE_CHECKING:
   from internals.core_models import FeatureEntry
 
 def _get_changes_as_amendments(
-    changed_fields: list[tuple[str, Any, Any]]) -> list[Amendment]:
+    changed_fields: CHANGED_FIELDS_LIST_TYPE) -> list[Amendment]:
   """Convert list of field changes to Amendment entities."""
   # Diff values to see what properties have changed.
   amendments = []
@@ -61,7 +62,7 @@ def notify_feature_subscribers_of_changes(fe: 'FeatureEntry',
   cloud_tasks_helpers.enqueue_task('/tasks/email-subscribers', params)
 
 def notify_subscribers_and_save_amendments(fe: 'FeatureEntry',
-    changed_fields: list[tuple[str, Any, Any]], notify: bool=True) -> None:
+    changed_fields: CHANGED_FIELDS_LIST_TYPE, notify: bool=True) -> None:
   """Notify subscribers of changes to FeatureEntry and save amendments."""
   amendments = _get_changes_as_amendments(changed_fields)
 

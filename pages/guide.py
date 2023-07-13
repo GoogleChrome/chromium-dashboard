@@ -27,6 +27,7 @@ from framework import permissions
 from internals import core_enums, notifier_helpers
 from internals import stage_helpers
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.data_types import CHANGED_FIELDS_LIST_TYPE
 from internals.review_models import Gate
 from internals import processes
 from internals import search_fulltext
@@ -167,7 +168,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('spec_link', 'link'),
       ('standard_maturity', 'int'),
       ('api_spec', 'bool'),
-      ('spec_mentors', 'emails'),
+      ('spec_mentor_emails', 'emails'),
       ('security_review_status', 'int'),
       ('privacy_review_status', 'int'),
       ('initial_public_proposal_url', 'link'),
@@ -181,9 +182,9 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('flag_name', 'str'),
       ('finch_name', 'str'),
       ('non_finch_justification', 'str'),
-      ('owner', 'emails'),
-      ('editors', 'emails'),
-      ('cc_recipients', 'emails'),
+      ('owner_emails', 'emails'),
+      ('editor_emails', 'emails'),
+      ('cc_emails', 'emails'),
       ('unlisted', 'bool'),
       ('doc_links', 'links'),
       ('measurement', 'str'),
@@ -193,7 +194,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('sample_links', 'links'),
       ('search_tags', 'split_str'),
       ('blink_components', 'split_str'),
-      ('devrel', 'emails'),
+      ('devrel_emails', 'emails'),
       ('category', 'int'),
       ('enterprise_feature_categories', 'split_str'),
       ('name', 'str'),
@@ -223,18 +224,12 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('tag_review', 'str'),
       ('tag_review_status', 'int'),
       ('webview_risks', 'str'),
-      ('comments', 'str'),
+      ('feature_notes', 'str'),
       ('breaking_change', 'bool'),
       ('ongoing_constraints', 'str')]
 
   # Old field name, new field name
   RENAMED_FIELD_MAPPING: dict[str, str] = {
-      'owner': 'owner_emails',
-      'editors': 'editor_emails',
-      'cc_recipients': 'cc_emails',
-      'devrel': 'devrel_emails',
-      'spec_mentors': 'spec_mentor_emails',
-      'comments': 'feature_notes',
       'intent_to_implement_url': 'intent_thread_url',
       'intent_to_ship_url': 'intent_thread_url',
       'intent_to_experiment_url': 'intent_thread_url',
@@ -355,7 +350,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     raise ValueError(f'Unknown field data type: {field_type}')
 
   def _add_changed_field(self, fe: FeatureEntry, field: str, new_val: Any,
-      changed_fields: list[tuple[str, Any, Any]]) -> None:
+      changed_fields: CHANGED_FIELDS_LIST_TYPE) -> None:
     """Add values to the list of changed fields if the values differ."""
     old_val = getattr(fe, field)
     if new_val != old_val:
@@ -382,7 +377,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     logging.info('POST is %r', self.form)
 
     stage_update_items: list[tuple[str, Any]] = []
-    changed_fields: list[tuple[str, Any, Any]] = []
+    changed_fields: CHANGED_FIELDS_LIST_TYPE = []
 
     form_fields_str = self.form.get('form_fields')
     form_fields: list[str] = []
@@ -480,7 +475,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
   def update_multiple_stages(self, feature_id: int, feature_type: int,
       update_items: list[tuple[str, Any]],
-      changed_fields: list[tuple[str, Any, Any]]) -> None:
+      changed_fields: CHANGED_FIELDS_LIST_TYPE) -> None:
     """Handle updating stages when IDs have not been specified."""
     # Get all existing stages associated with the feature.
     stages = stage_helpers.get_feature_stages(feature_id)
@@ -535,7 +530,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
   def update_single_stage(self, stage_id: int, feature_type: int,
       update_items: list[tuple[str, Any]],
-      changed_fields: list[tuple[str, Any, Any]]) -> None:
+      changed_fields: CHANGED_FIELDS_LIST_TYPE) -> None:
     """Update the fields of the stage of a given ID."""
     stage_to_update = Stage.get_by_id(stage_id)
     if stage_to_update is None:
@@ -579,7 +574,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       feature_id: int,
       feature_type: int,
       stage_ids: list[int],
-      changed_fields: list[tuple[str, Any, Any]],
+      changed_fields: CHANGED_FIELDS_LIST_TYPE,
       form_fields: list[str]) -> None:
     """Handle the updates for stages on the edit-all page."""
     id_to_field_suffix = {}
