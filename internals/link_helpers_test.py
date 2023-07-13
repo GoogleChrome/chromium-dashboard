@@ -20,11 +20,38 @@ from internals.link_helpers import (
     LINK_TYPE_CHROMIUM_BUG,
     LINK_TYPE_GITHUB_ISSUE,
     LINK_TYPE_GITHUB_MARKDOWN,
+    LINK_TYPE_WEB
 )
 
 
 class LinkHelperTest(testing_config.CustomTestCase):
 
+  def test_real_server_error_url(self):
+    link = Link("http://httpstat.us/503")
+    
+    link.parse()
+    self.assertEqual(link.type, LINK_TYPE_WEB)
+    self.assertEqual(link.is_error, True)
+    self.assertEqual(link.http_error_code, 503)
+
+    link = Link("https://httpstat.us/400")
+
+    link.parse()
+    self.assertEqual(link.type, LINK_TYPE_WEB)
+    self.assertEqual(link.is_error, True)
+    self.assertEqual(link.http_error_code, 400)
+
+  @mock.patch('requests.get')
+  def test_mock_not_found_url(self, mock_requests_get):
+    mock_requests_get.return_value = testing_config.Blank(
+        status_code=404, content='')  
+
+    link = Link("https://www.google.com/")
+    link.parse()
+    self.assertEqual(link.type, LINK_TYPE_WEB)
+    self.assertEqual(link.is_error, True)
+    self.assertEqual(link.http_error_code, 404)
+  
   def test_extract_urls_from_value(self):
     field_value = "https://www.chromestatus.com/feature/1234"
     urls = Link.extract_urls_from_value(field_value)
@@ -110,6 +137,7 @@ class LinkHelperTest(testing_config.CustomTestCase):
     self.assertEqual(link.type, LINK_TYPE_GITHUB_ISSUE)
     self.assertEqual(link.is_parsed, True)
     self.assertEqual(link.is_error, True)
+    self.assertEqual(link.http_error_code, 404)
 
   def test_link_chromium(self):
     link = Link("https://bugs.chromium.org/p/chromium/issues/detail?id=100000")

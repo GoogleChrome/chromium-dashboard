@@ -17,7 +17,7 @@ import re
 import requests
 import json
 import logging
-from typing import Any
+from typing import Any, Optional
 from string import punctuation
 from ghapi.core import GhApi
 from urllib.error import HTTPError
@@ -91,6 +91,7 @@ class Link():
     self.type = Link.get_type(url)
     self.is_parsed = False
     self.is_error = False
+    self.http_error_code: Optional[int] = None
     self.information = None
 
   def _fetch_github_file(
@@ -225,10 +226,26 @@ class Link():
     information: dict[str, Any] = json.loads(json_str)
 
     return information.get('issue', None)
-
+  
+  def _validate_url(self) -> bool:
+    """The `_validate_url` method is used to validate the URL associated with the Link object. It
+    sends a GET request to the URL and checks the response status code. If the status code is not
+    200 (OK), it sets the `is_error` flag to True and stores the HTTP error code. This method is
+    used to determine if the URL is accessible and valid."""
+    res = requests.get(self.url, allow_redirects=True)
+    if res.status_code != 200:
+      self.is_error = True
+      self.http_error_code = res.status_code
+      return False
+    return True
+  
   def parse(self):
     """Parse the link and store the information."""
     try:
+      if not self.type or not self._validate_url():
+        # if the link is not valid, return early
+        self.is_parsed = True
+        return
       if self.type == LINK_TYPE_CHROMIUM_BUG:
         self.information = self._parse_chromium_bug()
       elif self.type == LINK_TYPE_GITHUB_ISSUE:
@@ -236,12 +253,12 @@ class Link():
       elif self.type == LINK_TYPE_GITHUB_MARKDOWN:
         self.information = self._parse_github_markdown()
       elif self.type == LINK_TYPE_WEB:
-        # TODO: parse other url title and description, og tags, etc.
         self.information = None
     except Exception as e:
       logging.error(f'Error parsing {self.type} {self.url}: {e}')
       self.error = e
       self.is_error = True
+      if isinstance(e, HTTPError):
+        self.http_error_code = e.code
       self.information = None
-      # TODO: store error information and show 404/403 error icon for the link
     self.is_parsed = True
