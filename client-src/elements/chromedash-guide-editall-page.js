@@ -1,6 +1,7 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
 import {
+  formatFeatureChanges,
   getStageValue,
   showToastMessage,
   flattenSections,
@@ -19,6 +20,7 @@ import {
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
 import {STAGE_SHORT_NAMES, STAGE_SPECIFIC_FIELDS, STAGE_ENT_ROLLOUT} from './form-field-enums.js';
+import {ALL_FIELDS} from './form-field-specs';
 import {openAddStageDialog} from './chromedash-add-stage-dialog';
 
 
@@ -44,6 +46,7 @@ export class ChromedashGuideEditallPage extends LitElement {
       appTitle: {type: String},
       nextPage: {type: String},
       nextStageToCreateId: {type: Number},
+      fieldValues: {type: Array},
     };
   }
 
@@ -57,6 +60,7 @@ export class ChromedashGuideEditallPage extends LitElement {
     this.previousStageTypeRendered = 0;
     this.sameTypeRendered = 0;
     this.nextStageToCreateId = 0;
+    this.fieldValues = [];
   }
 
   connectedCallback() {
@@ -98,15 +102,33 @@ export class ChromedashGuideEditallPage extends LitElement {
     setupScrollToHash(this);
   }
 
-  handleFormSubmit(event, hiddenTokenField) {
-    event.preventDefault();
+  handleFormSubmit(e, hiddenTokenField) {
+    e.preventDefault();
+    const submitBody = formatFeatureChanges(this.fieldValues, this.featureId);
 
     // get the XSRF token and update it if it's expired before submission
     window.csClient.ensureTokenIsValid().then(() => {
       hiddenTokenField.value = window.csClient.token;
-      event.target.submit();
+      return csClient.updateFeature(submitBody);
+    }).then(() => {
+      // window.location.href = this.nextPage || `/guide/edit/${this.featureId}`;
+    }).catch(() => {
+      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
   }
+
+  // Handler to update form values when a field update event is fired.
+  handleFormFieldUpdate(event) {
+    const value = event.detail.value;
+    // Index represents which form was updated.
+    const index = event.detail.index;
+    if (index >= this.fieldValues.length) {
+      throw new Error('Out of bounds index when updating field values.');
+    }
+    // The field has been updated, so it is considered touched.
+    this.fieldValues[index].touched = true;
+    this.fieldValues[index].value = value;
+  };
 
   handleCancelClick() {
     window.location.href = `/guide/edit/${this.featureId}`;
@@ -201,28 +223,35 @@ export class ChromedashGuideEditallPage extends LitElement {
     if (feStage.display_name) {
       sectionName = `${sectionBaseName}: ${feStage.display_name} `;
     }
+
     const formFieldEls = stageFields.map(field => {
       // Only show "display name" field if there is more than one stage of the same type.
-      if (field === 'display_name' &&
+      const featureJSONKey = ALL_FIELDS[field].name || field;
+      if (featureJSONKey === 'display_name' &&
           !shouldShowDisplayNameField(this.feature.stages, feStage.stage_type)) {
         return nothing;
       }
       let value = formattedFeature[field];
-      if (STAGE_SPECIFIC_FIELDS.has(field)) {
-        value = getStageValue(feStage, field);
+      let stageId = null;
+      if (STAGE_SPECIFIC_FIELDS.has(featureJSONKey)) {
+        value = getStageValue(feStage, featureJSONKey);
+        stageId = feStage.id;
       } else if (this.sameTypeRendered > 1) {
         // Don't render fields that are not stage-specific if this is
         // a stage type that is already being rendered.
         // This is to avoid repeated fields on the edit-all page.
         return nothing;
       }
+      const index = this.fieldValues.length;
+      this.fieldValues.push({name: featureJSONKey, touched: false, value, stageId});
+
       return html`
         <chromedash-form-field
           name=${field}
-          stageId=${feStage.id}
-          stageType=${feStage.to_create ? feStage.stage_type : undefined}
+          index=${index}
           value=${value}
-          ?forEnterprise=${formattedFeature.is_enterprise_feature}>
+          ?forEnterprise=${formattedFeature.is_enterprise_feature}
+          @form-field-update="${this.handleFormFieldUpdate}">
         </chromedash-form-field>
       `;
     });
@@ -243,8 +272,6 @@ export class ChromedashGuideEditallPage extends LitElement {
    * @param {Object} formattedFeature Object describing the feature.
    * @param {Array} feStages List of stages associated with the feature.
    *
-   * @return {Array} allFormFields, an array of strings representing all the field
-   *   names that will exist on the page.
    * @return {Array} formsToRender, All HTML elements to render in the form.
    */
   getForms(formattedFeature, feStages) {
@@ -254,10 +281,6 @@ export class ChromedashGuideEditallPage extends LitElement {
       FLAT_METADATA_FIELDS);
     const formsToRender = [
       this.renderStageSection(formattedFeature, FLAT_METADATA_FIELDS.name, {}, fieldsOnly)];
-
-    // Generate a single array with the name of every field that is displayed.
-    let allFormFields = [...fieldsOnly];
-
 
     let previousStageType = null;
     for (const feStage of feStages) {
@@ -275,7 +298,6 @@ export class ChromedashGuideEditallPage extends LitElement {
       fieldsOnly = flattenSections(stageForm);
       formsToRender.push(this.renderStageSection(
         formattedFeature, stageForm.name, feStage, fieldsOnly));
-      allFormFields = [...allFormFields, ...fieldsOnly];
 
       // If extension stages are associated with this stage,
       // render them in a separate section as well.
@@ -291,11 +313,10 @@ export class ChromedashGuideEditallPage extends LitElement {
           sectionName,
           extensionStage,
           fieldsOnly));
-        allFormFields = [...allFormFields, ...fieldsOnly];
       });
     }
 
-    return [allFormFields, formsToRender];
+    return formsToRender;
   }
 
   getAllStageIds() {
@@ -338,14 +359,10 @@ export class ChromedashGuideEditallPage extends LitElement {
 
   renderForm() {
     const formattedFeature = formatFeatureForEdit(this.feature);
-    const stageIds = this.getAllStageIds();
-    const [allFormFields, formsToRender] = this.getForms(formattedFeature, this.feature.stages);
+    const formsToRender = this.getForms(formattedFeature, this.feature.stages);
     return html`
-      <form name="feature_form" method="POST" action="/guide/editall/${this.featureId}">
-        <input type="hidden" name="stages" value="${stageIds}">
+      <form name="feature_form">
         <input type="hidden" name="token">
-        <input type="hidden" name="nextPage" value=${this.getNextPage()} >
-        <input type="hidden" name="form_fields" value=${allFormFields.join(',')}>
         <chromedash-form-table ${ref(this.registerHandlers)}>
           ${formsToRender}
         </chromedash-form-table>
