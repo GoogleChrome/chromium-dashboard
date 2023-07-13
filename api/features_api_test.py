@@ -447,7 +447,10 @@ class FeaturesAPITest(testing_config.CustomTestCase):
       'stages': [
         {
           'id': self.ship_stage_1_id,
-          'intent_thread_url': new_intent_url,
+          'intent_thread_url': {
+            'field_display_name': 'shipped_milestone',
+            'value': new_intent_url,
+          },
         },
       ],
     }
@@ -477,7 +480,10 @@ class FeaturesAPITest(testing_config.CustomTestCase):
       'stages': [
         {
           'id': self.ship_stage_1_id,
-          'desktop_first': new_desktop_first,
+          'desktop_first': {
+            'field_display_name': 'desktop_first',
+            'value': new_desktop_first,
+          },
         },
       ],
     }
@@ -512,7 +518,10 @@ class FeaturesAPITest(testing_config.CustomTestCase):
       'stages': [
         {
           'id': self.ship_stage_1_id,
-          'desktop_first': new_desktop_first,
+          'desktop_first': {
+            'field_display_name': 'desktop_first',
+            'value': new_desktop_first,
+          },
         },
       ],
     }
@@ -559,7 +568,10 @@ class FeaturesAPITest(testing_config.CustomTestCase):
       'stages': [
         {
           'id': self.ship_stage_1_id,
-          'bad_param': bad_param,
+          'bad_param': {
+            'field_display_name': 'bad_param',
+            'value': bad_param,
+          },
         },
       ],
     }
@@ -588,7 +600,10 @@ class FeaturesAPITest(testing_config.CustomTestCase):
       'stages': [
         {
           'id': self.ship_stage_1_id,
-          'desktop_first': 115
+          'desktop_first': {
+            'field_display_name': 'shipped_milestone',
+            'value': 115,
+          }
         },
       ],
     }
