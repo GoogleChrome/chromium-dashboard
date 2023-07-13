@@ -424,6 +424,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         'devtrial_instructions': new_devtrial_instructions,  # link
         'doc_links': doc_links,
         'category': '1',  # int
+        'privacy_review_status': '',  # empty int
         'prefixed': 'true',  # bool
       },
       'stages': [],
@@ -436,6 +437,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
       ('devtrial_instructions', new_devtrial_instructions),
       ('doc_links', ['https://example.com/docs1', 'https://example.com/docs2']),
       ('category', 1),
+      ('privacy_review_status', None),
       ('prefixed', True),
     ]
     request_path = f'{self.request_path}/update'
