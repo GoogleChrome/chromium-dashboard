@@ -111,7 +111,7 @@ export class ChromedashGuideEditallPage extends LitElement {
       hiddenTokenField.value = window.csClient.token;
       return csClient.updateFeature(submitBody);
     }).then(() => {
-      // window.location.href = this.nextPage || `/guide/edit/${this.featureId}`;
+      window.location.href = this.nextPage || `/guide/edit/${this.featureId}`;
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
@@ -319,42 +319,41 @@ export class ChromedashGuideEditallPage extends LitElement {
     return formsToRender;
   }
 
-  getAllStageIds() {
-    const stageIds = [];
-    this.feature.stages.forEach(feStage => {
-      if (feStage.to_create) return;
-      stageIds.push(feStage.id);
-      // Check if any trial extension exist, and collect their IDs as well.
-      const extensions = feStage.extensions || [];
-      extensions.forEach(extensionStage => stageIds.push(extensionStage.id));
-    });
-    return stageIds.join(',');
-  }
-
   renderAddStageButton() {
     const text = this.feature.is_enterprise_feature ? 'Add Step': 'Add Stage';
+    const clickHandler = () => {
+      openAddStageDialog(
+        this.feature.id,
+        this.feature.feature_type_int,
+        this.createNewStage.bind(this));
+    };
     return html`
-    <sl-button size="small" @click="${
-        () => openAddStageDialog(this.feature.id, this.feature.feature_type_int, this.AddNewStageToCreate.bind(this))}">
+    <sl-button size="small" @click="${clickHandler}">
       ${text}
     </sl-button>`;
   }
 
-  AddNewStageToCreate(newStage) {
-    const lastIndexOfType = this.feature.stages
-      .findLastIndex((stage) => stage.stage_type === newStage.stage_type);
-    if (lastIndexOfType === -1) {
-      this.feature.stages.push({
-        ...newStage,
-        to_create: true,
-        id: ++this.nextStageToCreateId});
-    } else {
-      this.feature.stages.splice(lastIndexOfType + 1, 0, {
-        ...newStage,
-        to_create: true,
-        id: ++this.nextStageToCreateId});
-    }
-    this.feature = {...this.feature};
+  // Create a stage requested on the edit all page.
+  createNewStage(newStage) {
+    window.csClient.createStage(
+      this.featureId, {stage_type: newStage.stage_type})
+      .then(resp => {
+        // Add the newly created stage to the form.
+        const lastIndexOfType = this.feature.stages
+          .findLastIndex((stage) => stage.stage_type === newStage.stage_type);
+        if (lastIndexOfType === -1) {
+          this.feature.stages.push({
+            ...newStage,
+            id: resp.stage_id});
+        } else {
+          this.feature.stages.splice(lastIndexOfType + 1, 0, {
+            ...newStage,
+            id: resp.stage_id});
+        }
+        this.feature = {...this.feature};
+      }).catch(() => {
+        showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+      });
   }
 
   renderForm() {
