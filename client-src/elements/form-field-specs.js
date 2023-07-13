@@ -162,6 +162,7 @@ export const ALL_FIELDS = {
 
   'owner': {
     type: 'input',
+    name: 'owner_emails', // Field name in database.
     attrs: MULTI_EMAIL_FIELD_ATTRS,
     required: true,
     label: 'Feature owners',
@@ -171,6 +172,7 @@ export const ALL_FIELDS = {
 
   'editors': {
     type: 'input',
+    name: 'editor_emails', // Field name in database.
     attrs: MULTI_EMAIL_FIELD_ATTRS,
     required: false,
     label: 'Feature editors',
@@ -182,6 +184,7 @@ export const ALL_FIELDS = {
 
   'cc_recipients': {
     type: 'input',
+    name: 'cc_emails', // Field name in database.
     attrs: MULTI_EMAIL_FIELD_ATTRS,
     required: false,
     label: 'CC',
@@ -258,6 +261,7 @@ export const ALL_FIELDS = {
   },
 
   'set_stage': {
+    name: 'active_stage_id',
     type: 'checkbox',
     label: 'Set to this stage',
     help_text: html`
@@ -283,6 +287,15 @@ export const ALL_FIELDS = {
         Select the appropriate Chromium development stage. If you
         select In developer trial, Origin trial, or Enabled by
         default, be sure to set the equivalent Process stage.`,
+  },
+
+  'set_impl_status': {
+    type: 'checkbox',
+    name: 'impl_status_chrome',
+    label: 'Implementation status',
+    help_text: html`
+        Check this box to update the implementation status of
+        this feature in Chromium.`,
   },
 
   'bug_url': {
@@ -429,6 +442,7 @@ export const ALL_FIELDS = {
 
   'comments': {
     type: 'textarea',
+    name: 'feature_notes', // Field name in database.
     attrs: {rows: 4},
     required: false,
     label: 'Comments',
@@ -456,6 +470,7 @@ export const ALL_FIELDS = {
 
   'spec_mentors': {
     type: 'input',
+    name: 'spec_mentor_emails',
     attrs: MULTI_EMAIL_FIELD_ATTRS,
     required: false,
     label: 'Spec mentors',
@@ -1148,6 +1163,7 @@ export const ALL_FIELDS = {
 
   'devrel': {
     type: 'input',
+    name: 'devrel_emails', // Field name in database.
     attrs: MULTI_EMAIL_FIELD_ATTRS,
     required: false,
     label: 'Developer relations emails',
