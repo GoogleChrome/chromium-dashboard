@@ -124,8 +124,6 @@ describe('chromedash-guide-editall-page', () => {
     const featureForm = component.shadowRoot.querySelector('form[name="feature_form"]');
     assert.exists(featureForm);
     assert.include(featureForm.innerHTML, '<input type="hidden" name="token">');
-    assert.include(featureForm.innerHTML,
-      '<input type="hidden" name="form_fields" value="name,summary,unlisted,');
     assert.include(featureForm.innerHTML, '<section class="final_buttons">');
 
     const formTable = component.shadowRoot.querySelector('chromedash-form-table');

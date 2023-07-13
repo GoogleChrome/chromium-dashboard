@@ -2,7 +2,6 @@ import {LitElement, html, nothing} from 'lit';
 import {ALL_FIELDS} from './form-field-specs';
 import {ref} from 'lit/directives/ref.js';
 import './chromedash-textarea';
-import {STAGE_SPECIFIC_FIELDS} from './form-field-enums';
 import {showToastMessage} from './utils.js';
 
 export class ChromedashFormField extends LitElement {
@@ -25,7 +24,6 @@ export class ChromedashFormField extends LitElement {
   constructor() {
     super();
     this.name = '';
-    this.stageId = 0;
     this.value = '';
     this.index = -1;
     this.checkboxLabel = '';
@@ -104,10 +102,7 @@ export class ChromedashFormField extends LitElement {
       this.fieldProps.initial : this.value;
 
     // form field name can be specified in form-field-spec to match DB field name
-    let fieldName = this.fieldProps.name || this.name;
-    if (STAGE_SPECIFIC_FIELDS.has(fieldName) && this.stageId) {
-      fieldName = this.stageType ? `${fieldName}__${this.stageId}__${this.stageType}__create` : `${fieldName}__${this.stageId}`;
-    }
+    const fieldName = this.fieldProps.name || this.name;
     // choices can be specified in form-field-spec or fetched from API
     const choices = this.fieldProps.choices || this.componentChoices;
 
