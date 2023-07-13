@@ -110,6 +110,7 @@ export class ChromedashDrawer extends LitElement {
       googleSignInClientId: {type: String},
       user: {type: Object},
       loading: {type: Boolean},
+      defaultOpen: {type: Boolean},
     };
   }
 
@@ -119,6 +120,7 @@ export class ChromedashDrawer extends LitElement {
     this.googleSignInClientId = '',
     this.user = {};
     this.loading = false;
+    this.defaultOpen = false;
   }
 
   connectedCallback() {
@@ -202,7 +204,7 @@ export class ChromedashDrawer extends LitElement {
     return html`
       <sl-drawer label="Menu" placement="start" class="drawer-placement-start"
         style="--size: ${DRAWER_WIDTH_PX}px;" contained noHeader
-        ?open=${!IS_MOBILE}>
+        ?open=${!IS_MOBILE && this.defaultOpen}>
         ${accountMenu}
         <a class="flex-item" href="/roadmap" ?active=${this.isCurrentPage('/roadmap')}>Roadmap</a>
         ${this.user?.email ? html`
