@@ -17,6 +17,7 @@ export class ChromedashFooter extends LitElement {
           align-items: center;
           margin-top: 2em;
           padding: var(--content-padding-half);
+          z-index: 800;
         }
 
         footer div > * + * {
