@@ -121,7 +121,7 @@ export class ChromedashGuideStagePage extends LitElement {
       this.handleFormSubmit(event, hiddenTokenField);
     });
 
-    this.addMiscEventListeners();
+    this.miscSetup();
     setupScrollToHash(this);
   }
 
@@ -135,44 +135,12 @@ export class ChromedashGuideStagePage extends LitElement {
     });
   }
 
-  addMiscEventListeners() {
-    const fields = this.shadowRoot.querySelectorAll('input, textarea');
-    for (let i = 0; i < fields.length; ++i) {
-      fields[i].addEventListener('input', (e) => {
-        e.target.classList.add('interacted');
-      });
-    }
-
+  miscSetup() {
     // Allow editing if there was already a value specified in this
     // deprecated field.
     const timelineField = this.shadowRoot.querySelector('#id_experiment_timeline');
     if (timelineField && timelineField.value) {
       timelineField.disabled = '';
-    }
-
-    // Copy field SRC to DST if SRC is edited and DST was empty and
-    // has not been edited.
-    const COPY_ON_EDIT = [
-      ['dt_milestone_desktop_start', 'dt_milestone_android_start'],
-      ['dt_milestone_desktop_start', 'dt_milestone_webview_start'],
-      // Don't autofill dt_milestone_ios_start because it is rare.
-      ['ot_milestone_desktop_start', 'ot_milestone_android_start'],
-      ['ot_milestone_desktop_end', 'ot_milestone_android_end'],
-      ['ot_milestone_desktop_start', 'ot_milestone_webview_start'],
-      ['ot_milestone_desktop_end', 'ot_milestone_webview_end'],
-    ];
-
-    for (const [srcId, dstId] of COPY_ON_EDIT) {
-      const srcEl = this.shadowRoot.querySelector('#id_' + srcId);
-      const dstEl = this.shadowRoot.querySelector('#id_' + dstId);
-      if (srcEl && dstEl && srcEl.value == dstEl.value) {
-        srcEl.addEventListener('input', () => {
-          if (!dstEl.classList.contains('interacted')) {
-            dstEl.value = srcEl.value;
-            dstEl.classList.add('copied');
-          }
-        });
-      }
     }
   }
 
