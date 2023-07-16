@@ -17,6 +17,7 @@ export class ChromedashFooter extends LitElement {
           align-items: center;
           margin-top: 2em;
           padding: var(--content-padding-half);
+          z-index: 800;
         }
 
         footer div > * + * {
@@ -26,7 +27,7 @@ export class ChromedashFooter extends LitElement {
 
         #footer-spacer {
           display: none;
-          height: calc(54px + var(--content-padding) * 2);
+          height: calc(28px + var(--content-padding-half));
         }
 
         @media only screen and (min-width: 601px) and (min-height: 601px) {
