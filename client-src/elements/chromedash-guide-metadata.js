@@ -105,7 +105,6 @@ export class ChromedashGuideMetadata extends LitElement {
     if (index >= this.fieldValues.length) {
       throw new Error('Out of bounds index when updating field values.');
     }
-    console.log(this.fieldValues);
     // The field has been updated, so it is considered touched.
     this.fieldValues[index].touched = true;
     this.fieldValues[index].value = value;
