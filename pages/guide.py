@@ -235,6 +235,12 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
   # Old field name, new field name
   RENAMED_FIELD_MAPPING: dict[str, str] = {
+      'owner': 'owner_emails',
+      'editors': 'editor_emails',
+      'cc_recipients': 'cc_emails',
+      'devrel': 'devrel_emails',
+      'spec_mentors': 'spec_mentor_emails',
+      'comments': 'feature_notes',
       'intent_to_implement_url': 'intent_thread_url',
       'intent_to_ship_url': 'intent_thread_url',
       'intent_to_experiment_url': 'intent_thread_url',
