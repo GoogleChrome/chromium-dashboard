@@ -48,9 +48,9 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
 
   @permissions.require_create_feature
   def process_post_data(self, **kwargs):
-    owners = self.split_emails('owner')
-    editors = self.split_emails('editors')
-    cc_emails = self.split_emails('cc_recipients')
+    owners = self.split_emails('owner_emails')
+    editors = self.split_emails('editor_emails')
+    cc_emails = self.split_emails('cc_emails')
 
     blink_components = (
         self.split_input('blink_components', delim=',') or
@@ -182,8 +182,11 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('flag_name', 'str'),
       ('finch_name', 'str'),
       ('non_finch_justification', 'str'),
+      ('owner', 'emails'),
       ('owner_emails', 'emails'),
+      ('editors', 'emails'),
       ('editor_emails', 'emails'),
+      ('cc_recipients', 'emails'),
       ('cc_emails', 'emails'),
       ('unlisted', 'bool'),
       ('doc_links', 'links'),
@@ -194,6 +197,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('sample_links', 'links'),
       ('search_tags', 'split_str'),
       ('blink_components', 'split_str'),
+      ('devrel', 'emails'),
       ('devrel_emails', 'emails'),
       ('category', 'int'),
       ('enterprise_feature_categories', 'split_str'),
@@ -224,12 +228,19 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('tag_review', 'str'),
       ('tag_review_status', 'int'),
       ('webview_risks', 'str'),
+      ('comments', 'str'),
       ('feature_notes', 'str'),
       ('breaking_change', 'bool'),
       ('ongoing_constraints', 'str')]
 
   # Old field name, new field name
   RENAMED_FIELD_MAPPING: dict[str, str] = {
+      'owner': 'owner_emails',
+      'editors': 'editor_emails',
+      'cc_recipients': 'cc_emails',
+      'devrel': 'devrel_emails',
+      'spec_mentors': 'spec_mentor_emails',
+      'comments': 'feature_notes',
       'intent_to_implement_url': 'intent_thread_url',
       'intent_to_ship_url': 'intent_thread_url',
       'intent_to_experiment_url': 'intent_thread_url',
