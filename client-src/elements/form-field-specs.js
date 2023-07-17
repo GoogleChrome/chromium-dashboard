@@ -117,7 +117,7 @@ export const ALL_FIELDS = {
        <p>This text will be used in the enterprise release notes, which are publicly visible and primarily written for IT admins.</p>
        <p>Explain what's changing from the point of view of an end-user, developer, or administrator.
         Indicate what the motivation is for this change, especially if there’s security or privacy benefits to the change.
-        If an admin should do something (like test or set an enterprise policy), please explain. Finally, if the change has
+        If an admin should do something (like test or set a flag or an enterprise policy), please explain. Finally, if the change has
         a user-visible benefit (eg. better security or privacy), explain that motivation. If there are already publicly visible comms
         (e.g. blog posts), you should link to them here as well.</p>
       <p>See <a href="https://docs.google.com/document/d/1SdQ-DKeA5O7I8ju5Cb8zSM5S4NPwUACNJ9qbEhz-AYU" target="_blank">go/releasenotes-examples</a>

@@ -313,6 +313,10 @@ class ChromeStatusClient {
     return this.doGet(`/features/${featureId}/stages/${stageId}`);
   }
 
+  deleteStage(featureId, stageId) {
+    return this.doDelete(`/features/${featureId}/stages/${stageId}`);
+  }
+
   createStage(featureId, body) {
     return this.doPost(`/features/${featureId}/stages`, body);
   }

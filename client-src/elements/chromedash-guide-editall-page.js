@@ -1,5 +1,6 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
+import {repeat} from 'lit/directives/repeat.js';
 import {
   getStageValue,
   showToastMessage,
@@ -230,12 +231,19 @@ export class ChromedashGuideEditallPage extends LitElement {
       .toLowerCase();
     const isEnterpriseFeatureRollout = formattedFeature.is_enterprise_feature &&
       feStage.stage_type === STAGE_ENT_ROLLOUT;
-    return html`
-    ${renderHTMLIf(!isEnterpriseFeatureRollout, html`<h3 id="${id}">${sectionName}</h3>`)}
-    <section class="flat_form">
-      ${formFieldEls}
-    </section>
-    `;
+    return {
+      id: feStage.id,
+      item: html`
+        ${renderHTMLIf(!isEnterpriseFeatureRollout, html`<h3 id="${id}">${sectionName}</h3>`)}
+        <section class="flat_form" stage="${feStage.stage_type}">
+          ${renderHTMLIf(feStage.stage_type === STAGE_ENT_ROLLOUT,
+            html`
+            <sl-button stage="${feStage.stage_type}" size="small" @click="${() => this.deleteStage(feStage)}">
+              Delete
+            </sl-button>`)}
+          ${formFieldEls}
+        </section>
+    `};
   }
 
   /**
@@ -253,7 +261,7 @@ export class ChromedashGuideEditallPage extends LitElement {
       FLAT_ENTERPRISE_METADATA_FIELDS :
       FLAT_METADATA_FIELDS);
     const formsToRender = [
-      this.renderStageSection(formattedFeature, FLAT_METADATA_FIELDS.name, {}, fieldsOnly)];
+      this.renderStageSection(formattedFeature, FLAT_METADATA_FIELDS.name, {id: -1}, fieldsOnly)];
 
     // Generate a single array with the name of every field that is displayed.
     let allFormFields = [...fieldsOnly];
@@ -268,7 +276,9 @@ export class ChromedashGuideEditallPage extends LitElement {
 
       if (formattedFeature.is_enterprise_feature &&
           feStage.stage_type !== previousStageType) {
-        formsToRender.push(this.getHelpTextForStage(feStage.stage_type));
+        formsToRender.push({
+          id: -2,
+          item: this.getHelpTextForStage(feStage.stage_type)});
         previousStageType = feStage.stage_type;
       }
 
@@ -314,12 +324,12 @@ export class ChromedashGuideEditallPage extends LitElement {
     const text = this.feature.is_enterprise_feature ? 'Add Step': 'Add Stage';
     return html`
     <sl-button size="small" @click="${
-        () => openAddStageDialog(this.feature.id, this.feature.feature_type_int, this.AddNewStageToCreate.bind(this))}">
+        () => openAddStageDialog(this.feature.id, this.feature.feature_type_int, this.addNewStageToCreate.bind(this))}">
       ${text}
     </sl-button>`;
   }
 
-  AddNewStageToCreate(newStage) {
+  addNewStageToCreate(newStage) {
     const lastIndexOfType = this.feature.stages
       .findLastIndex((stage) => stage.stage_type === newStage.stage_type);
     if (lastIndexOfType === -1) {
@@ -336,10 +346,40 @@ export class ChromedashGuideEditallPage extends LitElement {
     this.feature = {...this.feature};
   }
 
+  deleteStage(stage) {
+    if (!confirm('Delete feature?')) return;
+    if (stage.to_create) {
+      const index = this.feature.stages.indexOf(stage);
+      if (index > -1) {
+        this.feature.stages.splice(index, 1);
+        this.feature = {...this.feature};
+      }
+    } else {
+      window.csClient.deleteStage(this.featureId, stage.id)
+        .then((resp) => {
+          if (resp.message === 'Done') {
+            return window.csClient.getFeature(this.featureId);
+          }
+        })
+        .then(feature => {
+          const stagesToCreate = this.feature.stages
+            .filter(stage => stage.to_create);
+          stagesToCreate.forEach(stage => {
+            const lastIndexOfType = this.feature.stages
+              .findLastIndex((stage) => stage.stage_type === newStage.stage_type);
+            this.feature.stages.splice(lastIndexOfType + 1, 0, stage);
+          });
+          this.feature = feature;
+        });
+    }
+  }
+
+
   renderForm() {
     const formattedFeature = formatFeatureForEdit(this.feature);
     const stageIds = this.getAllStageIds();
-    const [allFormFields, formsToRender] = this.getForms(formattedFeature, this.feature.stages);
+    const [allFormFields, formsToRender] = this
+      .getForms(formattedFeature, this.feature.stages);
     return html`
       <form name="feature_form" method="POST" action="/guide/editall/${this.featureId}">
         <input type="hidden" name="stages" value="${stageIds}">
@@ -347,7 +387,7 @@ export class ChromedashGuideEditallPage extends LitElement {
         <input type="hidden" name="nextPage" value=${this.getNextPage()} >
         <input type="hidden" name="form_fields" value=${allFormFields.join(',')}>
         <chromedash-form-table ${ref(this.registerHandlers)}>
-          ${formsToRender}
+          ${repeat(formsToRender, form => form.id, (_, i) => formsToRender[i].item)}
         </chromedash-form-table>
         ${this.renderAddStageButton()}
 

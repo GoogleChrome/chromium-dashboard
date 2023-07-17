@@ -31,6 +31,16 @@ describe('chromedash-guide-editall-page', () => {
         stage_type: 160,
         intent_stage: 2,
       },
+      {
+        id: 3,
+        stage_type: 1061,
+        intent_stage: 1,
+      },
+      {
+        id: 4,
+        stage_type: 1061,
+        intent_stage: 1,
+      },
     ],
     browsers: {
       chrome: {
@@ -117,6 +127,13 @@ describe('chromedash-guide-editall-page', () => {
     assert.include(featureForm.innerHTML,
       '<input type="hidden" name="form_fields" value="name,summary,unlisted,');
     assert.include(featureForm.innerHTML, '<section class="final_buttons">');
+
+    const formTable = component.shadowRoot.querySelector('chromedash-form-table');
+    assert.exists(formTable);
+    
+    // delete button shown on rollout steps only
+    const deleteButtons = formTable.querySelectorAll('sl-button[stage="1061"]');
+    assert.equal(deleteButtons.length, 2);
   });
 
   it('avoids duplicating fields', async () => {
