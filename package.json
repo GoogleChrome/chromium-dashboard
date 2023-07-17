@@ -42,7 +42,10 @@
     "openapi": "npm run openapi-backend && npm run openapi-frontend",
     "openapi-frontend": "rm -rf gen/js/chromestatus-openapi && openapi-generator-cli generate -i openapi/api.yaml -g typescript-fetch  -o gen/js/chromestatus-openapi --additional-properties=npmName=chromestatus-openapi,withInterfaces=true,supportsES6=true && npm install",
     "openapi-backend": "rm -rf gen/py/chromestatus_openapi && openapi-generator-cli generate -i openapi/api.yaml -g python-flask  -o gen/py/chromestatus_openapi --additional-properties=packageName=chromestatus_openapi && pip install -r requirements.txt",
-    "openapi-validate": "openapi-generator-cli validate -i openapi/api.yaml"
+    "openapi-validate": "openapi-generator-cli validate -i openapi/api.yaml",
+    "//pwtests": "The version of the docker playwright image used here must exactly match the versions of @playwright/test in devDependencies and the Github Actions configuration (in playwright.yml).  The version of playwright used in devDependencies should not include the ^ prefix, so it doesn't auto-upgrade and get out of sync.",
+    "pwtests": "docker run --rm --network host --volume $(pwd):/work/ --workdir /work/ -it mcr.microsoft.com/playwright:v1.35.1-jammy /bin/bash -c \"npm ci && npx playwright test\"",
+    "pwtests-update": "docker run --rm --network host --volume $(pwd):/work/ --workdir /work/ -it mcr.microsoft.com/playwright:v1.35.1-jammy /bin/bash -c \"npm ci && npx playwright test --update-snapshots\""
   },
   "repository": {
     "type": "git",
@@ -61,7 +64,7 @@
     "@babel/register": "^7.22.5",
     "@open-wc/testing": "^3.2.0",
     "@openapitools/openapi-generator-cli": "^2.6.0",
-    "@playwright/test": "^1.35.1",
+    "@playwright/test": "1.35.1",
     "@rollup/plugin-babel": "^6.0.3",
     "@rollup/plugin-node-resolve": "^15.1.0",
     "@shoelace-style/shoelace": "^2.4.0",

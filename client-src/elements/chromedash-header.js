@@ -244,11 +244,9 @@ export class ChromedashHeader extends LitElement {
     signInTestingButton.innerText = 'Sign in as example@chromium.org';
     signInTestingButton.setAttribute('data-testid', 'dev-mode-sign-in-button');
     signInTestingButton.addEventListener('click', () => {
-      alert('Sign in as example@chromium.org');
       // POST to '/dev/mock_login' to login as example@chromium.
       fetch('/dev/mock_login', {method: 'POST'}).then(() => {
-        alert('should be logged in now');
-        // Reload window.
+        // Reload the page to display with the logged in user.
         window.location.replace(window.location.href.split('?')[0]);
       });
     });
@@ -314,7 +312,8 @@ export class ChromedashHeader extends LitElement {
       <div class="flex-container flex-container-inner-second">
       ${this.user ? html`
         ${this.user.can_create_feature && !this.isCurrentPage('/guide/new') ? html`
-          <sl-button href="/guide/new" variant="primary" size="small">
+          <sl-button href="/guide/new" variant="primary" size="small"
+            data-testid="create-feature">
             Create feature
           </sl-button>
         `: nothing }
