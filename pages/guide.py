@@ -423,14 +423,8 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       setattr(fe, 'active_stage_id', active_stage_id)
       setattr(fe, 'intent_stage', intent_stage_val)
 
-    # List of stage IDs will be present if the request comes from edit_all page.
-    stage_ids = self.form.get('stages')
-    if stage_ids:
-      stage_ids_list = [int(id) for id in stage_ids.split(',')]
-      self.update_stages_editall(
-          feature_id, fe.feature_type, stage_ids_list, changed_fields, form_fields)
     # If a stage_id is supplied, we make changes to only that specific stage.
-    elif stage_id:
+    if stage_id:
       for field, field_type in self.STAGE_FIELDS:
         if self.touched(field, form_fields):
           field_val = self._get_field_val(field, field_type)
@@ -443,6 +437,12 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
           stage_update_items.append((field, field_val))
       self.update_single_stage(
           stage_id, fe.feature_type, stage_update_items, changed_fields)
+    else:
+      # List of stage IDs will be present if the request comes from edit_all page.
+      stage_ids = self.form.get('stages')
+      stage_ids_list = [int(id) for id in stage_ids.split(',')] if stage_ids else []
+      self.update_stages_editall(
+          feature_id, fe.feature_type, stage_ids_list, changed_fields, form_fields)
 
     extension_stage_ids = self.form.get('extension_stage_ids')
     if extension_stage_ids:

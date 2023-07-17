@@ -357,17 +357,17 @@ export class ChromedashGuideEditallPage extends LitElement {
     } else {
       window.csClient.deleteStage(this.featureId, stage.id)
         .then((resp) => {
-          if (resp.message === 'Done') {
+          if (resp.message === 'Stage archived.') {
             return window.csClient.getFeature(this.featureId);
           }
         })
         .then(feature => {
           const stagesToCreate = this.feature.stages
             .filter(stage => stage.to_create);
-          stagesToCreate.forEach(stage => {
-            const lastIndexOfType = this.feature.stages
-              .findLastIndex((stage) => stage.stage_type === newStage.stage_type);
-            this.feature.stages.splice(lastIndexOfType + 1, 0, stage);
+          stagesToCreate.forEach(stageToCreate => {
+            const lastIndexOfType = feature.stages
+              .findLastIndex((stage) => stage.stage_type === stageToCreate.stage_type);
+            feature.stages.splice(lastIndexOfType + 1, 0, stageToCreate);
           });
           this.feature = feature;
         });
