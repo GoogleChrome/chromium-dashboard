@@ -59,12 +59,16 @@ def update_feature_links(fe: FeatureEntry, changed_fields: list[tuple[str, Any, 
           _remove_link(link, fe)
       for url in urls_to_add:
         link = Link(url)
-        _index_link(link, fe)
+        feature_link = _get_index_link(link, fe, should_parse_new_link=True)
+        feature_link.put()
+        logging.info(f'Indexed feature_link {feature_link.url} to {feature_link.key.integer_id()} for feature {fe.key.integer_id()}')
 
+def _get_index_link(link: Link, fe: FeatureEntry, should_parse_new_link: bool = False) -> FeatureLinks:
+  """
+  indexes a given link for a specific feature by creating or updating a `FeatureLinks` object.
+  Returns the `FeatureLinks` object.
+  """
 
-def _index_link(link: Link, fe: FeatureEntry) -> None:
-  """Index the given link."""
-  logging.info(f'Indexing link {link.url} for feature {fe.key.integer_id()}')
   feature_id = fe.key.integer_id()
   feature_links = FeatureLinks.query(FeatureLinks.url == link.url).fetch(None)
   feature_link: FeatureLinks = feature_links[0] if feature_links else None
@@ -72,12 +76,9 @@ def _index_link(link: Link, fe: FeatureEntry) -> None:
     if feature_id not in feature_link.feature_ids:
       feature_link.feature_ids.append(feature_id)
       feature_link.type = link.type
-      logging.info(f'Add feature {feature_id} to existing link {link.url}')
   else:
-    # we only want to parse the link if it is new,
-    # for existing links, we will use a cron job to update the information
-    link.parse()
-    logging.info('info is %r', link.information)
+    if should_parse_new_link:
+      link.parse()
     feature_link = FeatureLinks(
         feature_ids=[feature_id],
         type=link.type,
@@ -86,9 +87,8 @@ def _index_link(link: Link, fe: FeatureEntry) -> None:
         is_error=link.is_error,
         http_error_code=link.http_error_code
     )
-    logging.info(f'Created link {link.url}')
-  logging.info(f'Indexed link {link.url} for feature {feature_id}')
-  feature_link.put()
+
+  return feature_link
 
 
 def _remove_link(link: Link, fe: FeatureEntry) -> None:
@@ -179,11 +179,35 @@ def _index_feature_links_by_ids(feature_link_ids: list[Any]) -> None:
     logging.info(f'Update information for indexed link {link.url}')
 
 
-def _index_feature_entry(fe: FeatureEntry) -> None:
-  """index the links in the given feature entry."""
-  pass
+def _extract_feature_urls(fe: FeatureEntry) -> list[str]:
+  fe_values = fe.to_dict().values()
+  all_urls = [url for value in fe_values for url in Link.extract_urls_from_value(value)]
+  return list(set(all_urls))
 
 
-def _batch_index_feature_entries(fes: list[FeatureEntry]) -> None:
-  """index the links in the given feature entries."""
-  pass
+def batch_index_feature_entries(fes: list[FeatureEntry], skip_existing: bool) -> int:
+  """
+  The function `batch_index_feature_entries` takes a list of `FeatureEntry` objects, generates feature
+  links for each entry, and stores them in batches in the database, skipping existing entries if
+  specified.
+  
+  :param fes: fes is a list of FeatureEntry
+  :param skip_existing: A boolean value indicating whether to skip feature entries that already have
+  existing feature links
+  """
+  
+  link_count = 0
+
+  for fe in fes:
+    if skip_existing:
+      feature_links = _get_feature_links(fe.key.integer_id())
+      if len(feature_links) > 0:
+        continue
+
+    urls = _extract_feature_urls(fe)
+    feature_links = [_get_index_link(Link(url), fe, should_parse_new_link=False) for url in urls]
+    ndb.put_multi(feature_links)
+    link_count += len(feature_links)
+    logging.info(f'Feature {fe.key.integer_id()} indexed {len(feature_links)} urls')
+
+  return link_count
