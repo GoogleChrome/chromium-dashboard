@@ -27,9 +27,11 @@ from framework import permissions
 from internals import core_enums, notifier_helpers
 from internals import stage_helpers
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.data_types import CHANGED_FIELDS_LIST_TYPE
 from internals.review_models import Gate
 from internals import processes
 from internals import search_fulltext
+from internals import feature_links
 import settings
 
 
@@ -354,7 +356,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     raise ValueError(f'Unknown field data type: {field_type}')
 
   def _add_changed_field(self, fe: FeatureEntry, field: str, new_val: Any,
-      changed_fields: list[tuple[str, Any, Any]]) -> None:
+      changed_fields: CHANGED_FIELDS_LIST_TYPE) -> None:
     """Add values to the list of changed fields if the values differ."""
     old_val = getattr(fe, field)
     if new_val != old_val:
@@ -381,7 +383,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     logging.info('POST is %r', self.form)
 
     stage_update_items: list[tuple[str, Any]] = []
-    changed_fields: list[tuple[str, Any, Any]] = []
+    changed_fields: CHANGED_FIELDS_LIST_TYPE = []
 
     form_fields_str = self.form.get('form_fields')
     form_fields: list[str] = []
@@ -461,7 +463,9 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
         fe, changed_fields, notify=True)
     # Remove all feature-related cache.
     rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
-
+    
+    feature_links.update_feature_links(fe, changed_fields)
+    
     # Update full-text index.
     if fe:
       search_fulltext.index_feature(fe)
@@ -477,7 +481,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
   def update_multiple_stages(self, feature_id: int, feature_type: int,
       update_items: list[tuple[str, Any]],
-      changed_fields: list[tuple[str, Any, Any]]) -> None:
+      changed_fields: CHANGED_FIELDS_LIST_TYPE) -> None:
     """Handle updating stages when IDs have not been specified."""
     # Get all existing stages associated with the feature.
     stages = stage_helpers.get_feature_stages(feature_id)
@@ -532,7 +536,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
   def update_single_stage(self, stage_id: int, feature_type: int,
       update_items: list[tuple[str, Any]],
-      changed_fields: list[tuple[str, Any, Any]]) -> None:
+      changed_fields: CHANGED_FIELDS_LIST_TYPE) -> None:
     """Update the fields of the stage of a given ID."""
     stage_to_update = Stage.get_by_id(stage_id)
     if stage_to_update is None:
@@ -576,7 +580,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       feature_id: int,
       feature_type: int,
       stage_ids: list[int],
-      changed_fields: list[tuple[str, Any, Any]],
+      changed_fields: CHANGED_FIELDS_LIST_TYPE,
       form_fields: list[str]) -> None:
     """Handle the updates for stages on the edit-all page."""
     id_to_field_suffix = {}

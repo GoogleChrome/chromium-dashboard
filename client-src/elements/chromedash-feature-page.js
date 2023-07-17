@@ -92,7 +92,7 @@ export class ChromedashFeaturePage extends LitElement {
 
   static get properties() {
     return {
-      user: {type: Object},
+      user: {attribute: false},
       featureId: {type: Number},
       feature: {type: Object},
       featureLinks: {type: Array},
@@ -111,7 +111,7 @@ export class ChromedashFeaturePage extends LitElement {
 
   constructor() {
     super();
-    this.user = {};
+    this.user = null;
     this.featureId = 0;
     this.feature = {};
     this.featureLinks = [];
@@ -175,9 +175,18 @@ export class ChromedashFeaturePage extends LitElement {
 
     window.csClient.getFeatureLinks(this.featureId).then(
       (featureLinks) => {
-        this.featureLinks = featureLinks;
+        this.featureLinks = featureLinks?.data || [];
+        if (featureLinks?.has_stale_links) {
+          // delay 10 seconds to fetch server to get latest link information
+          setTimeout(this.refetchFeatureLinks.bind(this), 10000);
+        }
       },
     );
+  }
+
+  async refetchFeatureLinks() {
+    const featureLinks = await window.csClient.getFeatureLinks(this.featureId, false);
+    this.featureLinks = featureLinks?.data || [];
   }
 
   refetch() {

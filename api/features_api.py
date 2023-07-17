@@ -26,10 +26,13 @@ from framework import rediscache
 from framework import users
 from internals.core_enums import *
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.data_types import CHANGED_FIELDS_LIST_TYPE
+from internals import notifier_helpers
 from internals.review_models import Gate
 from internals.data_types import VerboseFeatureDict
 from internals import feature_helpers
 from internals import search
+from internals import search_fulltext
 import settings
 
 
@@ -97,10 +100,14 @@ class FeaturesAPI(basehandlers.APIHandler):
     elif field_type == 'link':
       return self._extract_link(value)
     elif field_type == 'links':
-      list_val = self._split_list_input(field, field_type, value, ',')
+      list_val = self._split_list_input(field, field_type, value)
       # Filter out any URLs that do not conform to the proper pattern.
-      return [link for link in self._extract_link(list_val) if link]
+      return [self._extract_link(link)
+              for link in list_val if link]
     elif field_type == 'int':
+      # Int fields can be unset by giving null or nothing in the input field.
+      if value == '' or value is None:
+        return None
       try:
         return int(value)
       except ValueError:
@@ -227,7 +234,8 @@ class FeaturesAPI(basehandlers.APIHandler):
 
   def _patch_update_stages(
       self,
-      stage_changes_list: list[dict[str, Any]]
+      stage_changes_list: list[dict[str, Any]],
+      changed_fields: CHANGED_FIELDS_LIST_TYPE
     ) -> bool:
     """Update stage fields with changes provided in the PATCH request."""
     stages: list[Stage] = []
@@ -245,7 +253,10 @@ class FeaturesAPI(basehandlers.APIHandler):
       for field, field_type in api_specs.STAGE_FIELD_DATA_TYPES:
         if field not in change_info:
           continue
-        self._update_field_value(stage, field, field_type, change_info[field])
+        old_value = getattr(stage, field)
+        new_value = change_info[field]
+        self._update_field_value(stage, field, field_type, new_value)
+        changed_fields.append((field, old_value, new_value))
         stage_was_updated = True
 
       # Update milestone fields.
@@ -255,8 +266,10 @@ class FeaturesAPI(basehandlers.APIHandler):
           continue
         if milestones is None:
           milestones = MilestoneSet()
-        self._update_field_value(
-            milestones, field, field_type, change_info[field])
+        old_value = getattr(milestones, field)
+        new_value = change_info[field]
+        self._update_field_value(milestones, field, field_type, new_value)
+        changed_fields.append((field, old_value, new_value))
         stage_was_updated = True
       stage.milestones = milestones
 
@@ -293,14 +306,17 @@ class FeaturesAPI(basehandlers.APIHandler):
       self,
       feature: FeatureEntry,
       feature_changes: dict[str, Any],
-      has_updated: bool
+      has_updated: bool,
+      changed_fields: CHANGED_FIELDS_LIST_TYPE
     ) -> None:
     """Update feature fields with changes provided in the PATCH request."""
     for field, field_type in api_specs.FEATURE_FIELD_DATA_TYPES:
       if field not in feature_changes:
         continue
-      self._update_field_value(
-          feature, field, field_type, feature_changes[field])
+      old_value = getattr(feature, field)
+      new_value = feature_changes[field]
+      self._update_field_value(feature, field, field_type, new_value)
+      changed_fields.append((field, old_value, new_value))
       has_updated = True
     
     self._patch_update_special_fields(feature, feature_changes, has_updated)
@@ -324,8 +340,18 @@ class FeaturesAPI(basehandlers.APIHandler):
     if redirect_resp:
       return redirect_resp
 
-    has_updated = self._patch_update_stages(body['stages'])
-    self._patch_update_feature(feature, body['feature_changes'], has_updated)
+    changed_fields: CHANGED_FIELDS_LIST_TYPE = []
+    has_updated = self._patch_update_stages(body['stages'], changed_fields)
+    self._patch_update_feature(
+      feature, body['feature_changes'], has_updated, changed_fields)
+
+    notifier_helpers.notify_subscribers_and_save_amendments(
+        feature, changed_fields, notify=True)
+    # Remove all feature-related cache.
+    rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
+    # Update full-text index.
+    if feature:
+      search_fulltext.index_feature(feature)
 
     return {'message': f'Feature {feature_id} updated.'}
 

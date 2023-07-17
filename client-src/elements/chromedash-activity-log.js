@@ -73,7 +73,7 @@ customElements.define('chromedash-amendment', ChromedashAmendment);
 export class ChromedashActivity extends LitElement {
   static get properties() {
     return {
-      user: {type: Object},
+      user: {attribute: false},
       featureId: {type: Number},
       activity: {type: Object},
       narrow: {type: Boolean},

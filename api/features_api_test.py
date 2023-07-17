@@ -413,23 +413,41 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     testing_config.sign_in('admin@example.com', 123567890)
 
     new_summary = 'a different summary'
-    new_owner_emails = 'test@example.com'
+    new_devtrial_instructions = 'https://example.com/instructions'
+    doc_links = 'https://example.com/docs1\nhttps://example.com/docs2'
     valid_request_body = {
       'feature_changes': {
         'id': self.feature_1_id,
-        'summary': new_summary,
-        'owner_emails': new_owner_emails,
+        'summary': new_summary,  # str
+        'owner_emails': 'test@example.com', # emails
+        'search_tags': 'tag1,tag2,tag3',  # split_str
+        'devtrial_instructions': new_devtrial_instructions,  # link
+        'doc_links': doc_links,
+        'category': '1',  # int
+        'privacy_review_status': '',  # empty int
+        'prefixed': 'true',  # bool
       },
       'stages': [],
     }
+
+    expected_changes = [
+      ('summary', new_summary),
+      ('owner_emails', ['test@example.com']),
+      ('search_tags', ['tag1', 'tag2', 'tag3']),
+      ('devtrial_instructions', new_devtrial_instructions),
+      ('doc_links', ['https://example.com/docs1', 'https://example.com/docs2']),
+      ('category', 1),
+      ('privacy_review_status', None),
+      ('prefixed', True),
+    ]
     request_path = f'{self.request_path}/update'
     with test_app.test_request_context(request_path, json=valid_request_body):
       response = self.handler.do_patch()
     # Success response should be returned.
     self.assertEqual({'message': f'Feature {self.feature_1_id} updated.'}, response)
     # Assert that changes were made.
-    self.assertEqual(self.feature_1.summary, new_summary)
-    self.assertEqual(self.feature_1.owner_emails, ['test@example.com'])
+    for field, expected_value in expected_changes:
+      self.assertEqual(getattr(self.feature_1, field), expected_value)
     # Updater email field should be changed.
     self.assertIsNotNone(self.feature_1.updated)
     self.assertEqual(self.feature_1.updater_email, 'admin@example.com')

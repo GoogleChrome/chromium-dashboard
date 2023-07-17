@@ -285,6 +285,14 @@ export const ALL_FIELDS = {
         default, be sure to set the equivalent Process stage.`,
   },
 
+  'set_impl_status': {
+    type: 'checkbox',
+    label: 'Implementation status',
+    help_text: html`
+        Check this box to update the implementation status of
+        this feature in Chromium.`,
+  },
+
   'bug_url': {
     type: 'input',
     attrs: URL_FIELD_ATTRS,
@@ -1275,7 +1283,7 @@ export const ALL_FIELDS = {
     help_text: html`
       String name of the <code>base::Feature</code> defined via the
       <code>BASE_FEATURE</code> macro in your feature implementation
-      code. E.g., "StoragBuckets".  These names are used
+      code. E.g., "StorageBuckets".  These names are used
       in <a target="_blank"
       href="https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/runtime_enabled_features.json5"
       >runtime_enabled_features.json5</a> and finch GCL files`,

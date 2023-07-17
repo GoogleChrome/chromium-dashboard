@@ -69,6 +69,16 @@ limitations under the License.
         '', 0);
   </script>
 
+  
+  <script type="module" nonce="fake nonce">
+    const drawer = document.querySelector('chromedash-drawer');
+    const header = document.querySelector('chromedash-header');
+    header.addEventListener('drawer-clicked', (e) => {
+      e.preventDefault();
+      open = drawer.toggleDrawerActions();
+    });
+  </script>
+
   <script type="module" nonce="fake nonce" defer
           src="/static/dist/components.js?v=Undeployed"></script>
   
@@ -93,6 +103,12 @@ limitations under the License.
       <div id="content">
         <div id="spinner">
           <img src="/static/img/ring.svg">
+        </div>
+        <div>
+          <chromedash-drawer
+            currentPage="/admin/features/launch/5/234?intent"
+            googleSignInClientId="914217904764-enfcea61q4hqe7ak8kkuteglrbhk8el1.apps.googleusercontent.com">
+          </chromedash-drawer>
         </div>
         <chromedash-banner
           message=""

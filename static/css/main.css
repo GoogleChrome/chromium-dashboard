@@ -324,6 +324,7 @@ sl-skeleton {
   --max-content-width: 860px;
   --border-radius: 4px;
   --large-border-radius: 8px;
+  --pill-border-radius: 500px;
   --logo-color: var(--default-color);
   --logo-size: 32px;
   --icon-size: 22px;
@@ -443,8 +444,9 @@ body.loading #spinner {
 }
 
 #content {
-  margin: var(--content-padding);
+  margin: 0;
   position: relative;
+  min-height: 500px;
 }
 
 #content-flex-wrapper {

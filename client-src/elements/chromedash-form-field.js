@@ -13,10 +13,11 @@ export class ChromedashFormField extends LitElement {
       value: {type: String},
       index: {type: Number}, // Represents which field this is on the form.
       disabled: {type: Boolean},
+      checkboxLabel: {type: String}, // Optional override of default label.
       loading: {type: Boolean},
       fieldProps: {type: Object},
       forEnterprise: {type: Boolean},
-      stageType: {type: Number | undefined},
+      stageType: {type: Number},
       componentChoices: {type: Object}, // just for the blink component select field
     };
   }
@@ -27,6 +28,7 @@ export class ChromedashFormField extends LitElement {
     this.stageId = 0;
     this.value = '';
     this.index = -1;
+    this.checkboxLabel = '';
     this.disabled = false;
     this.loading = false;
     this.forEnterprise = false;
@@ -111,6 +113,7 @@ export class ChromedashFormField extends LitElement {
 
     let fieldHTML = '';
     if (type === 'checkbox') {
+      const label = this.checkboxLabel || this.fieldProps.label;
       // value can be a js or python boolean value converted to a string
       // or the initial value specified in form-field-spec
       fieldHTML = html`
@@ -121,7 +124,7 @@ export class ChromedashFormField extends LitElement {
           ?checked=${fieldValue === 'true' || fieldValue === 'True'}
           ?disabled=${this.disabled || fieldDisabled}
           @sl-change="${this.handleFieldUpdated}">
-          ${this.fieldProps.label}
+          ${label}
         </sl-checkbox>
       `;
     } else if (type === 'select') {

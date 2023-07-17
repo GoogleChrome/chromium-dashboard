@@ -17,8 +17,11 @@
 # https://stackoverflow.com/a/33533514
 from __future__ import annotations
 
-from typing import TypedDict
+from typing import Any, TypedDict
 
+# List of changed fields to be used to create Activity entities
+# and notify subscribed users of changes to a feature.
+CHANGED_FIELDS_LIST_TYPE = list[tuple[str, Any, Any]]
 
 # JSON representation of Stage entity data.
 class StageDict(TypedDict):

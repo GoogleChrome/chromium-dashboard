@@ -150,7 +150,6 @@ describe('chromedash-guide-stage-page', () => {
     assert.include(form.innerHTML, 'Implementation in Chromium');
     assert.include(form.innerHTML, '4');
     assert.include(form.innerHTML, 'type="hidden" name="impl_status_offered"');
-    assert.include(form.innerHTML, 'sl-checkbox name="set_impl_status"');
     assert.notInclude(form.innerHTML, 'This feature already has implementation status');
   });
 });

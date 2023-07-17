@@ -1,5 +1,5 @@
 import {LitElement, html, css, nothing} from 'lit';
-import {showToastMessage} from './utils';
+import {showToastMessage, IS_MOBILE} from './utils';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
 
@@ -23,7 +23,7 @@ export class ChromedashHeader extends LitElement {
 
         header {
           display: flex;
-          align-items: baseline;
+          align-items: center;
           user-select: none;
           background: var(--card-background);
           border-bottom: var(--card-border);
@@ -84,34 +84,37 @@ export class ChromedashHeader extends LitElement {
         header nav .nav-dropdown-container ul:hover {
           display: block;
         }
-        header aside {
-          --logoSize: 32px;
-
-          background: url(/static/img/chrome_logo.svg) no-repeat var(--content-padding) 50%;
-          background-size: var(--logoSize);
-          padding: 0.75em 2em;
-          padding-left: calc(var(--logoSize) + var(--content-padding) + var(--content-padding) / 2);
-        }
-        header aside hgroup a {
+        header aside a {
           color: var(--logo-color);
         }
         header aside h1 {
           line-height: 1;
         }
         header aside img {
-          height: 45px;
-          width: 45px;
-          margin-right: 7px;
+          height: 24px;
+          width: 24px;
         }
 
         .flex-container {
           display: flex;
-          justify-content: space-between;
+          justify-content: flex-end;
+          flex-wrap: wrap;
+          align-items: center;
+          width: 100%;
         }
 
-        .flex-container-outer {
-          flex-wrap: wrap;
-          width: 100%;
+        .menu{
+          margin-left: 15px;
+          margin-right: 7px;
+          align-items: center;
+        }
+        .menu:hover {
+          color: black;
+          background: var(--nav-link-hover-background);
+        }
+        .menu [active] {
+          color: var(--nav-link-active-color);
+          border-bottom: var(--nav-link-active-border);
         }
 
         @media only screen and (max-width: 700px) {
@@ -119,48 +122,13 @@ export class ChromedashHeader extends LitElement {
             --logoSize: 24px;
 
             margin: 0;
-            display: block;
+            display: flex;
           }
           header aside {
             display: flex;
             padding: var(--content-padding-half);
             border-radius: 0;
             background: inherit;
-
-          }
-          header nav {
-            margin: 0;
-            justify-content: center;
-            flex-wrap: wrap;
-          }
-          header nav a {
-            padding: var(--content-padding-half) var(--content-padding);
-            margin: 0;
-            border-radius: 0;
-            flex: 1 0 auto;
-          }
-
-          .flex-container-inner-first {
-            justify-content: space-between;
-            width: 100%;
-          }
-
-          .flex-item {
-            padding-left: 0px;
-            padding-right: 0px;
-            flex: 1 0 auto;
-          }
-
-          .flex-item-inner {
-            padding-left: 0px;
-            padding-right: 0px;
-            text-align: center;
-            flex: 0 1 auto;
-          }
-
-          .flex-container-inner-second {
-            justify-content: center;
-            width: 100%;
           }
         }
     `];
@@ -189,6 +157,10 @@ export class ChromedashHeader extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+    // The user sign-in is desktop only.
+    if (IS_MOBILE) {
+      return;
+    }
 
     this.initializeTestingSignIn();
 
@@ -285,31 +257,21 @@ export class ChromedashHeader extends LitElement {
     return this.currentPage.startsWith(href);
   }
 
-  renderTabs() {
-    return html`
-      <div id="maintabs" class="flex-container flex-container-inner-first">
-        <a class="flex-item" href="/roadmap" ?active=${this.isCurrentPage('/roadmap')}>Roadmap</a>
-        ${this.user ? html`
-          <a class="flex-item" href="/myfeatures" ?active=${this.isCurrentPage('/myfeatures')}>My features</a>
-        ` : nothing}
-        <a class="flex-item" href="/features" ?active=${this.isCurrentPage('/features') || this.isCurrentPage('/newfeatures')}>All features</a>
-        <div class="nav-dropdown-container flex-item" href="/metrics" ?active=${this.isCurrentPage('/metrics')}>
-          <a class="nav-dropdown-trigger flex-item-inner">Stats
-            <iron-icon icon="chromestatus:arrow-drop-down"></iron-icon>
-          </a>
-          <ul>
-            <li><a href="/metrics/css/popularity">CSS</a></li>
-            <li><a href="/metrics/css/animated">CSS Animation</a></li>
-            <li><a href="/metrics/feature/popularity">JS/HTML</a></li>
-          </ul>
-        </div>
-      </div>
-    `;
+  _fireEvent(eventName, detail) {
+    const event = new CustomEvent(eventName, {
+      bubbles: true,
+      composed: true,
+      detail,
+    });
+    this.dispatchEvent(event);
+  }
+
+  handleDrawer() {
+    this._fireEvent('drawer-clicked', {});
   }
 
   renderAccountMenu() {
     return html`
-      <div class="flex-container flex-container-inner-second">
       ${this.user ? html`
         ${this.user.can_create_feature && !this.isCurrentPage('/guide/new') ? html`
           <sl-button href="/guide/new" variant="primary" size="small"
@@ -330,25 +292,33 @@ export class ChromedashHeader extends LitElement {
       ` : html`
         <slot></slot>
       `}
-      </div>
     `;
   }
 
   render() {
+    let accountMenu = nothing;
+    if (!IS_MOBILE && !this.loading) {
+      accountMenu = html`
+      <div class="flex-container">
+        ${this.renderAccountMenu()}
+      </div>`;
+    }
+
     return html`
       <header>
+        <sl-icon-button variant="text" library="material" class="menu"
+          style="font-size: 2.4rem;" name="menu_20px" @click="${this.handleDrawer}">
+        </sl-icon-button >
         <aside>
-          <hgroup>
-            <a href="/features" target="_top"><h1>${this.appTitle}</h1></a>
-          </hgroup>
+            <a href="/roadmap" target="_top">
+              <h1>
+                <img src="/static/img/chrome_logo.svg">
+                ${this.appTitle}
+              </h1>
+            </a>
         </aside>
         <nav>
-          ${!this.loading ? html`
-            <div class="flex-container flex-container-outer">
-              ${this.renderTabs()}
-              ${this.renderAccountMenu()}
-            </div>
-          ` : nothing}
+          ${accountMenu}
         </nav>
       </header>
     `;

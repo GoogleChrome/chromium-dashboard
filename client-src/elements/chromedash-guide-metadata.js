@@ -153,6 +153,7 @@ export class ChromedashGuideMetadata extends LitElement {
               <th>Feature type</th>
               <td>${this.feature.feature_type}</td>
             </tr>
+          </table>
         </div>
       </div>
     `;

@@ -121,7 +121,7 @@ export class ChromedashGuideStagePage extends LitElement {
       this.handleFormSubmit(event, hiddenTokenField);
     });
 
-    this.addMiscEventListeners();
+    this.miscSetup();
     setupScrollToHash(this);
   }
 
@@ -135,44 +135,12 @@ export class ChromedashGuideStagePage extends LitElement {
     });
   }
 
-  addMiscEventListeners() {
-    const fields = this.shadowRoot.querySelectorAll('input, textarea');
-    for (let i = 0; i < fields.length; ++i) {
-      fields[i].addEventListener('input', (e) => {
-        e.target.classList.add('interacted');
-      });
-    }
-
+  miscSetup() {
     // Allow editing if there was already a value specified in this
     // deprecated field.
     const timelineField = this.shadowRoot.querySelector('#id_experiment_timeline');
     if (timelineField && timelineField.value) {
       timelineField.disabled = '';
-    }
-
-    // Copy field SRC to DST if SRC is edited and DST was empty and
-    // has not been edited.
-    const COPY_ON_EDIT = [
-      ['dt_milestone_desktop_start', 'dt_milestone_android_start'],
-      ['dt_milestone_desktop_start', 'dt_milestone_webview_start'],
-      // Don't autofill dt_milestone_ios_start because it is rare.
-      ['ot_milestone_desktop_start', 'ot_milestone_android_start'],
-      ['ot_milestone_desktop_end', 'ot_milestone_android_end'],
-      ['ot_milestone_desktop_start', 'ot_milestone_webview_start'],
-      ['ot_milestone_desktop_end', 'ot_milestone_webview_end'],
-    ];
-
-    for (const [srcId, dstId] of COPY_ON_EDIT) {
-      const srcEl = this.shadowRoot.querySelector('#id_' + srcId);
-      const dstEl = this.shadowRoot.querySelector('#id_' + dstId);
-      if (srcEl && dstEl && srcEl.value == dstEl.value) {
-        srcEl.addEventListener('input', () => {
-          if (!dstEl.classList.contains('interacted')) {
-            dstEl.value = srcEl.value;
-            dstEl.classList.add('copied');
-          }
-        });
-      }
     }
   }
 
@@ -326,43 +294,33 @@ export class ChromedashGuideStagePage extends LitElement {
 
     if (!implStatusName && !this.implStatusFormFields) return nothing;
 
+    // Set the checkbox label based on the current implementation status.
+    let label = `Set implementation status to: ${implStatusName}`;
+    if (alreadyOnThisImplStatus) {
+      label = `This feature already has implementation status: ${implStatusName}`;
+    }
+    const index = this.fieldValues.length;
+    this.fieldValues.push({
+      name: 'impl_status_chrome',
+      touched: false,
+      value: alreadyOnThisImplStatus,
+      implicitValue: section.implStatusValue,
+    });
+
     return html`
       <h3>${section.name}</h3>
       <section class="stage_form">
-        ${implStatusName ? html`
-          <tr>
-            <td colspan="2"><b>Implementation status:</b></span></td>
-          </tr>
-          <tr>
-            ${alreadyOnThisImplStatus ?
-              html`
-                <td style="padding: 6px 10px;">
-                    This feature already has implementation status:
-                    <b>${implStatusName}</b>.
-                </td>
-              ` :
-              // TODO(jrobbins): When checked, make some milestone fields required.
-              html`
-                <td style="padding: 6px 10px;">
-                  <input type="hidden" name="impl_status_offered"
-                          value=${section.implStatusValue}>
-                  <sl-checkbox name="set_impl_status"
-                          id="set_impl_status"
-                          size="small">
-                    Set implementation status to: <b>${implStatusName}</b>
-                  </sl-checkbox>
-                </td>
-                <td style="padding: 6px 10px;">
-                  <span class="helptext"
-                        style="display: block; font-size: small; margin-top: 2px;">
-                    Check this box to update the implementation
-                    status of this feature in Chromium.
-                  </span>
-                </td>
-              `}
-          </tr>
-        `: nothing}
-
+        <input type="hidden" name="impl_status_offered"
+            value=${section.implStatusValue}>
+        <!-- TODO(jrobbins): When checked, make some milestone fields required. -->
+        <chromedash-form-field
+          name="set_impl_status"
+          value=${alreadyOnThisImplStatus}
+          index=${index}
+          checkboxLabel=${label}
+          ?disabled=${alreadyOnThisImplStatus}
+          @form-field-update="${this.handleFormFieldUpdate}">
+        </chromedash-form-field>
         ${this.renderFields(formattedFeature, section)}
       </section>
     `;
@@ -394,7 +352,7 @@ export class ChromedashGuideStagePage extends LitElement {
           <!-- TODO(DanielRyanSmith): Update this form to submit using a class method -->
           <!-- and the formatFeatureChanges function to make the API call. -->
           <button id="cancel-button"
-            @click=${this.submitChanges}>Cancel</button>
+            @click=${this.handleCancelClick}>Cancel</button>
         </div>
       </form>
     `;
