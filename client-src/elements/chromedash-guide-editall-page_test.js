@@ -130,7 +130,7 @@ describe('chromedash-guide-editall-page', () => {
 
     const formTable = component.shadowRoot.querySelector('chromedash-form-table');
     assert.exists(formTable);
-    
+
     // delete button shown on rollout steps only
     const deleteButtons = formTable.querySelectorAll('sl-button[stage="1061"]');
     assert.equal(deleteButtons.length, 2);
