@@ -322,7 +322,7 @@ export function formatFeatureChanges(fieldValues, featureId) {
         stages[stageId] = {id: stageId};
       }
       stages[stageId][STAGE_FIELD_NAME_MAPPING[name] || name] = {
-        field_display_name: name,
+        form_field_name: name,
         value,
       };
     }

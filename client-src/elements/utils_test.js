@@ -158,7 +158,7 @@ go/this-is-a-test
           {
             id: 1,
             example_field: {
-              field_display_name: 'example_field',
+              form_field_name: 'example_field',
               value: '123',
             },
           },
@@ -204,7 +204,7 @@ go/this-is-a-test
           {
             id: 1,
             intent_thread_url: {
-              field_display_name: 'intent_to_ship_url',
+              form_field_name: 'intent_to_ship_url',
               value: 123,
             },
           },
@@ -267,14 +267,14 @@ go/this-is-a-test
           {
             id: 1,
             example_field2: {
-              field_display_name: 'example_field2',
+              form_field_name: 'example_field2',
               value: '456',
             },
           },
           {
             id: 2,
             example_field3: {
-              field_display_name: 'example_field3',
+              form_field_name: 'example_field3',
               value: '789',
             },
           },
