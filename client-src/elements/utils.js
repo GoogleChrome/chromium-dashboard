@@ -321,7 +321,10 @@ export function formatFeatureChanges(fieldValues, featureId) {
       if (!(stageId in stages)) {
         stages[stageId] = {id: stageId};
       }
-      stages[stageId][name] = value;
+      stages[stageId][STAGE_FIELD_NAME_MAPPING[name] || name] = {
+        form_field_name: name,
+        value,
+      };
     }
     // If we see a touched field, it means there are changes in the submission.
     hasChanges = true;

@@ -291,6 +291,7 @@ export const ALL_FIELDS = {
 
   'set_impl_status': {
     type: 'checkbox',
+    name: 'impl_status_chrome',
     label: 'Implementation status',
     help_text: html`
         Check this box to update the implementation status of

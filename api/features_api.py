@@ -253,10 +253,11 @@ class FeaturesAPI(basehandlers.APIHandler):
       for field, field_type in api_specs.STAGE_FIELD_DATA_TYPES:
         if field not in change_info:
           continue
+        form_field_name = change_info[field]['form_field_name']
         old_value = getattr(stage, field)
-        new_value = change_info[field]
+        new_value = change_info[field]['value']
         self._update_field_value(stage, field, field_type, new_value)
-        changed_fields.append((field, old_value, new_value))
+        changed_fields.append((form_field_name, old_value, new_value))
         stage_was_updated = True
 
       # Update milestone fields.
@@ -266,10 +267,11 @@ class FeaturesAPI(basehandlers.APIHandler):
           continue
         if milestones is None:
           milestones = MilestoneSet()
+        form_field_name = change_info[field]['form_field_name']
         old_value = getattr(milestones, field)
-        new_value = change_info[field]
+        new_value = change_info[field]['value']
         self._update_field_value(milestones, field, field_type, new_value)
-        changed_fields.append((field, old_value, new_value))
+        changed_fields.append((form_field_name, old_value, new_value))
         stage_was_updated = True
       stage.milestones = milestones
 
