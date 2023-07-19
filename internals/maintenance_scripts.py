@@ -224,3 +224,4 @@ class BackfillFeatureLinks(FlaskHandler):
     all_feature_entries = FeatureEntry.query().fetch()
     count = batch_index_feature_entries(all_feature_entries, True)
     return f'{len(all_feature_entries)} FeatureEntry entities backfilled of {count} feature links.'
+  
