@@ -1021,6 +1021,68 @@ export const ALL_FIELDS = {
       Trials team.`,
   },
 
+  'ot_chromium_trial_name': {
+    type: 'input',
+    attrs: TEXT_FIELD_ATTRS,
+    required: false,
+    label: 'Chromium trial name',
+    help_text: html`
+      Name for the trial, as specified in <a target="_blank"
+      href="https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/runtime_enabled_features.json5"
+      >runtime_enabled_features.json5</a>.`,
+  },
+
+  'ot_documentation_url': {
+    type: 'input',
+    attrs: URL_FIELD_ATTRS,
+    required: false,
+    label: 'Documentation link',
+    help_text: html`
+      Link to more information to help developers use the trial's feature
+      (e.g. blog post, Github explainer, etc.).`,
+  },
+
+  'ot_has_third_party_support': {
+    type: 'checkbox',
+    initial: false,
+    label: 'Origin trial supports third party origins',
+    help_text: html`
+      Whether this trial supports third party origins. See
+      <a href="https://web.dev/third-party-origin-trials/">this article</a>
+      for more information.`,
+  },
+
+  'ot_is_critical_trial': {
+    type: 'checkbox',
+    initial: false,
+    label: 'Critical origin trial',
+    help_text: html`
+      See <a href="go/running-an-origin-trial">go/running-an-origin-trial</a>
+      for criteria and additional process requirements.`,
+  },
+
+  'ot_is_deprecation_trial': {
+    type: 'checkbox',
+    initial: false,
+    label: 'Deprecation trial',
+    help_text: html`
+      Is this a deprecation trial? See the
+      <a href="https://www.chromium.org/blink/launching-features/#deprecation-trial"
+      >deprecation trial section</a> for more information.`,
+  },
+
+  'ot_webfeature_use_counter': {
+    type: 'input',
+    attrs: TEXT_FIELD_ATTRS,
+    required: false,
+    label: 'WebFeature UseCounter name',
+    help_text: html`
+    For measuring usage, this must be a single named value from the
+    WebFeature enum, e.g. kWorkerStart. See
+    <a href="https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom"
+    >web_feature.mojom</a>.`,
+  },
+
   'anticipated_spec_changes': {
     type: 'textarea',
     attrs: {rows: 4},

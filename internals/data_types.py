@@ -42,6 +42,12 @@ class StageDict(TypedDict):
   experiment_risks: str | None
   extensions: list[StageDict]  # type: ignore
   origin_trial_feedback_url: str | None
+  ot_chromium_trial_name: str | None
+  ot_documentation_url: str | None
+  ot_has_third_party_support: bool
+  ot_is_critical_trial: bool
+  ot_is_deprecation_trial: bool
+  ot_webfeature_use_counter: str | None
 
   # Trial extension specific fields.
   ot_stage_id: int | None
