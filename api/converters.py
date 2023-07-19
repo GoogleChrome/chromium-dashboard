@@ -117,7 +117,7 @@ def _prep_stage_info(
   if prefetched_stages is not None:
     stages = prefetched_stages
   else:
-    stages = Stage.query(Stage.feature_id == fe.key.integer_id())
+    stages = Stage.query(Stage.feature_id == fe.key.integer_id(), Stage.archived == False)
   stage_info: StagePrepResponse = {
       'proto': None,
       'dev_trial': None,

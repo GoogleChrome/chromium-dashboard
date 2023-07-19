@@ -359,7 +359,7 @@ def get_by_ids(feature_ids: list[int],
   stages_dict = {}
   if futures_by_id:
     needed_ids = list(futures_by_id.keys())
-    stages_list = Stage.query(Stage.feature_id.IN(needed_ids)).fetch(None)
+    stages_list = Stage.query(Stage.feature_id.IN(needed_ids), Stage.archived == False).fetch(None)
     stages_dict = stage_helpers.organize_all_stages_by_feature(stages_list)
 
   for future in futures_by_id.values():
@@ -414,7 +414,7 @@ def get_features_by_impl_status(limit: int | None=None, update_cache: bool=False
     logging.info('recomputing feature list')
     # Get features by implementation status.
     futures: list[Future] = []
-    stages_future = Stage.query().fetch_async()
+    stages_future = Stage.query(Stage.archived == False).fetch_async()
     for impl_status in IMPLEMENTATION_STATUS.keys():
       q = FeatureEntry.query(FeatureEntry.impl_status_chrome == impl_status)
       q = q.order(FeatureEntry.impl_status_chrome)

@@ -58,6 +58,7 @@ export class ChromedashGuideMetadata extends LitElement {
       feature: {type: Object},
       isAdmin: {type: Boolean},
       editing: {type: Boolean},
+      email: {type: String},
     };
   }
 
@@ -66,6 +67,11 @@ export class ChromedashGuideMetadata extends LitElement {
     this.feature = {};
     this.isAdmin = false;
     this.editing = false;
+    this.email = '';
+  }
+
+  canDeleteFeature() {
+    return this.isAdmin || (this.email && this.email === this.feature.creator);
   }
 
   /* Add the form's event listener after Shoelace event listeners are attached
@@ -110,7 +116,7 @@ export class ChromedashGuideMetadata extends LitElement {
         <div style="margin-bottom: 1em">
           <div id="metadata-buttons">
             <a id="open-metadata" @click=${() => this.editing = true}>Edit</a>
-            ${this.isAdmin ? html`
+            ${this.canDeleteFeature() ? html`
               <div>
                 <a id="delete-feature" class="delete-button"
                   @click=${this.handleDeleteFeature}>Delete</a>
@@ -185,7 +191,7 @@ export class ChromedashGuideMetadata extends LitElement {
         <div style="margin-bottom: 1em">
           <div id="metadata-buttons">
             <a id="open-metadata" @click=${() => this.editing = true}>Edit</a>
-            ${this.isAdmin ? html`
+            ${this.canDeleteFeature() ? html`
               <div>
                 <a id="delete-feature" class="delete-button"
                   @click=${this.handleDeleteFeature}>Delete</a>
