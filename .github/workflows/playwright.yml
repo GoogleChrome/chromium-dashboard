@@ -9,9 +9,6 @@ jobs:
   playwright:
     name: 'Playwright Tests'
     runs-on: ubuntu-latest
-    container:
-      # Note: the version of the docker container for playwright must exactly match the version used in package.json.
-      image: mcr.microsoft.com/playwright:v1.35.1-jammy
     steps:
         - uses: actions/checkout@v3
 
