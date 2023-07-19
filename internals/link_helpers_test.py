@@ -80,6 +80,8 @@ class LinkHelperTest(testing_config.CustomTestCase):
     link = Link(
         "https://github.com/w3c/reporting/blob/master/EXPLAINER.md")
     link.parse()
+    if link.is_error and "rate limit" in str(link.error):
+      return
     info = link.information
     self.assertEqual(link.type, LINK_TYPE_GITHUB_MARKDOWN)
     self.assertEqual(link.is_parsed, True)
@@ -90,6 +92,8 @@ class LinkHelperTest(testing_config.CustomTestCase):
     link = Link(
         "https://github.com/vmpstr/web-proposals/blob/b146b4447b3746669000f1abbb5a19d32f508540/explainers/cv-auto-event.md")
     link.parse()
+    if link.is_error and "rate limit" in str(link.error):
+      return
     info = link.information
     self.assertEqual(link.type, LINK_TYPE_GITHUB_MARKDOWN)
     self.assertEqual(link.is_parsed, True)
@@ -120,6 +124,8 @@ class LinkHelperTest(testing_config.CustomTestCase):
         "https://www.github.com/GoogleChrome/chromium-dashboard/issues/999?params=1#issuecomment-688970447"
     )
     link.parse()
+    if link.is_error and "rate limit" in str(link.error):
+      return
     info = link.information
     self.assertEqual(link.type, LINK_TYPE_GITHUB_ISSUE)
     self.assertEqual(link.is_parsed, True)
