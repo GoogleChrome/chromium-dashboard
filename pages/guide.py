@@ -48,9 +48,9 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
 
   @permissions.require_create_feature
   def process_post_data(self, **kwargs):
-    owners = self.split_emails('owner')
-    editors = self.split_emails('editors')
-    cc_emails = self.split_emails('cc_recipients')
+    owners = self.split_emails('owner_emails')
+    editors = self.split_emails('editor_emails')
+    cc_emails = self.split_emails('cc_emails')
 
     blink_components = (
         self.split_input('blink_components', delim=',') or
@@ -168,7 +168,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('spec_link', 'link'),
       ('standard_maturity', 'int'),
       ('api_spec', 'bool'),
-      ('spec_mentors', 'emails'),
+      ('spec_mentor_emails', 'emails'),
       ('security_review_status', 'int'),
       ('privacy_review_status', 'int'),
       ('initial_public_proposal_url', 'link'),
@@ -183,8 +183,11 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('finch_name', 'str'),
       ('non_finch_justification', 'str'),
       ('owner', 'emails'),
+      ('owner_emails', 'emails'),
       ('editors', 'emails'),
+      ('editor_emails', 'emails'),
       ('cc_recipients', 'emails'),
+      ('cc_emails', 'emails'),
       ('unlisted', 'bool'),
       ('doc_links', 'links'),
       ('measurement', 'str'),
@@ -195,6 +198,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('search_tags', 'split_str'),
       ('blink_components', 'split_str'),
       ('devrel', 'emails'),
+      ('devrel_emails', 'emails'),
       ('category', 'int'),
       ('enterprise_feature_categories', 'split_str'),
       ('name', 'str'),
@@ -225,6 +229,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('tag_review_status', 'int'),
       ('webview_risks', 'str'),
       ('comments', 'str'),
+      ('feature_notes', 'str'),
       ('breaking_change', 'bool'),
       ('ongoing_constraints', 'str')]
 
