@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  playwright:
+    build:
+      context: .
+      dockerfile: ../.playwright/Dockerfile
+      args:
+        UID: ${UID}
+        GID: ${GID}
+    working_dir: /work
+    volumes:
+      - ..:/work/
+      - /work/cs-env
+    user: pwuser
+    depends_on:
+      - myapp
+
+    # Overrides default command so things don't shut down after the process ends.
+    command: sleep infinity
+    network_mode: service:db
+
+  myapp:
+    extends:
+      file: ../.devcontainer/docker-compose.yml
+      service: app
+    depends_on:
+      - db
+    user: vscode
+    working_dir: /workspace
+    command: bash -c "npm run setup && source cs-env/bin/activate; npm run start-app"
+    network_mode: service:db
