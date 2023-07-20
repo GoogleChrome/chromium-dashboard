@@ -320,12 +320,16 @@ export class ChromedashGuideEditallPage extends LitElement {
     return stageIds.join(',');
   }
 
+  // render the button to add a new stage. Displays for enterprise features only.
   renderAddStageButton() {
-    const text = this.feature.is_enterprise_feature ? 'Add Step': 'Add Stage';
+    if (!this.feature.is_enterprise_feature) {
+      return nothing;
+    }
+
     return html`
     <sl-button size="small" @click="${
         () => openAddStageDialog(this.feature.id, this.feature.feature_type_int, this.addNewStageToCreate.bind(this))}">
-      ${text}
+      Add Step
     </sl-button>`;
   }
 
