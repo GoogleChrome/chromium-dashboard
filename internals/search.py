@@ -201,7 +201,7 @@ def _sort_by_total_order(
 
 
 def process_query(
-    user_query: str, sort_spec: str = None,
+    user_query: str, sort_spec: str|None = None,
     show_unlisted=False, show_deleted=False, show_enterprise=False,
     start=0, num=DEFAULT_RESULTS_PER_PAGE) -> tuple[list[dict[str, Any]], int]:
   """Parse the user's query, run it, and return a list of features."""
