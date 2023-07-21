@@ -5,6 +5,7 @@ services:
     build:
       context: ..
       dockerfile: .devcontainer/Dockerfile
+      target: ide
     volumes:
       - ..:/workspace:cached
 
