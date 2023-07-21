@@ -9,7 +9,9 @@ services:
       - myapp
     # Overrides default command so things don't shut down after the process ends.
     command: sleep infinity
-    network_mode: service:db
+    network_mode: host
+    volumes:
+      - ../client-src/elements/__screenshots__:/work/client-src/elements/__screenshots__
 
   myapp:
     build:
@@ -17,10 +19,15 @@ services:
       dockerfile: .devcontainer/Dockerfile
       target: dev
     depends_on:
-      - db
+      - mydb
     command: bash -c "source cs-env/bin/activate; npm run start-app"
-    network_mode: service:db
+    network_mode: host
 
     environment:
       DATASTORE_PROJECT_ID: cr-status-staging
       DATASTORE_EMULATOR_HOST: localhost:15606
+  mydb:
+    extends:
+      file: ../.devcontainer/docker-compose.yml
+      service: db
+    network_mode: host

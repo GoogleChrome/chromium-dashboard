@@ -44,8 +44,11 @@
     "openapi-backend": "rm -rf gen/py/chromestatus_openapi && openapi-generator-cli generate -i openapi/api.yaml -g python-flask  -o gen/py/chromestatus_openapi --additional-properties=packageName=chromestatus_openapi && pip install -r requirements.txt",
     "openapi-validate": "openapi-generator-cli validate -i openapi/api.yaml",
     "//pwtests": "The version of the docker playwright image used here must exactly match the versions of @playwright/test in devDependencies and the Github Actions configuration (in playwright.yml).  The version of playwright used in devDependencies should not include the ^ prefix, so it doesn't auto-upgrade and get out of sync.",
-    "pwtests": "docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml build && docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml run playwright bash -c \"./.playwright/wait-for-app.sh && npx playwright test\"",
-    "pwtests-update": "docker run --rm --network host --volume $(pwd):/work/ --workdir /work/ -it mcr.microsoft.com/playwright:v1.35.1-jammy /bin/bash -c \"npm ci && npx playwright test --update-snapshots\""
+    "pwtests-build": "docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml build --build-arg USERID=$(id -u ${USER}) --build-arg GROUPID=$(id -g ${USER})",
+    "pwtests": "npm run pwtests-build && docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml run playwright bash -c \"./.playwright/wait-for-app.sh && npx playwright test\"",
+    "pwtests-update": "npm run pwtests-build && docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml run playwright bash -c \"./.playwright/wait-for-app.sh && npx playwright test --update-snapshots\"",
+    "pwtests-shell": "npm run pwtests-build && docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml run playwright bash",
+    "pwtests-ui": "npm run pwtests-build && docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml run playwright bash -c \"./.playwright/wait-for-app.sh && npx playwright test --ui --ui-port=8123\""
   },
   "repository": {
     "type": "git",

@@ -1,6 +1,16 @@
 FROM mcr.microsoft.com/playwright:v1.35.1-jammy
 
-# playwright already created this user
+ARG USERID
+ARG GROUPID
+
+USER root
+# playwright already created this user. Delete it and use the UID & GID from the host
+RUN userdel -r pwuser && \
+    groupadd -g $GROUPID pwuser && \
+    useradd pwuser -u $USERID -g $GROUPID -m -s /bin/bash && \
+    mkdir -p /work/client-src/elements/__screenshots__ && \
+    chown -R pwuser /work
+
 USER pwuser
 WORKDIR /work
 COPY --chown=pwuser:pwuser openapi /work/openapi/
