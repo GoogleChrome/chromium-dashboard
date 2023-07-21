@@ -190,12 +190,12 @@ def batch_index_feature_entries(fes: list[FeatureEntry], skip_existing: bool) ->
   The function `batch_index_feature_entries` takes a list of `FeatureEntry` objects, generates feature
   links for each entry, and stores them in batches in the database, skipping existing entries if
   specified.
-  
+
   :param fes: fes is a list of FeatureEntry
   :param skip_existing: A boolean value indicating whether to skip feature entries that already have
   existing feature links
   """
-  
+
   link_count = 0
 
   for fe in fes:
