@@ -646,7 +646,7 @@ export const ALL_FIELDS = {
     type: 'input',
     attrs: URL_FIELD_ATTRS,
     required: false,
-    label: 'Ready for Develper Testing link',
+    label: 'Ready for Developer Testing link',
     help_text: html`After you have started the "Ready for Developer Testing"
                  discussion thread, link to it here.`,
   },
