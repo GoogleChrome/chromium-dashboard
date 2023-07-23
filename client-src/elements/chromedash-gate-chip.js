@@ -55,13 +55,21 @@ class ChromedashGateChip extends LitElement {
       ...SHARED_STYLES,
       css`
       sl-icon {
-        font-size: 1.3rem;
+        font-size: 1.2rem;
       }
+
+     sl-button::part(label) {
+       padding: 0 4px;
+     }
+
+     sl-button::part(suffix) {
+       padding-right: 4px;
+     }
 
      sl-button::part(base) {
        border: var(--chip-border);
        padding: 0 0 0 4px;
-       height: 27px;
+       align-items: center;
      }
 
      sl-button.selected::part(base) {
