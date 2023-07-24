@@ -12,6 +12,7 @@ services:
     network_mode: host
     volumes:
       - ../client-src/elements/__screenshots__:/work/client-src/elements/__screenshots__
+      - ../test-results:/work/test-results
 
   myapp:
     build:

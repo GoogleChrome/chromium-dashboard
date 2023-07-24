@@ -9,6 +9,7 @@ RUN userdel -r pwuser && \
     groupadd -g $GROUPID pwuser && \
     useradd pwuser -u $USERID -g $GROUPID -m -s /bin/bash && \
     mkdir -p /work/client-src/elements/__screenshots__ && \
+    mkdir -p /work/test-results && \
     chown -R pwuser /work
 
 USER pwuser
