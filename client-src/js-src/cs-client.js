@@ -302,6 +302,10 @@ class ChromeStatusClient {
     return this.doGet(url);
   }
 
+  updateFeature(featureChanges) {
+    return this.doPatch('/features', featureChanges);
+  }
+
   // FeatureLinks API
 
   getFeatureLinks(featureId, updateStaleLinks=true) {
@@ -311,6 +315,10 @@ class ChromeStatusClient {
   // Stages API
   getStage(featureId, stageId) {
     return this.doGet(`/features/${featureId}/stages/${stageId}`);
+  }
+
+  deleteStage(featureId, stageId) {
+    return this.doDelete(`/features/${featureId}/stages/${stageId}`);
   }
 
   createStage(featureId, body) {

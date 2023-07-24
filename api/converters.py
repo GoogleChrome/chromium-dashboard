@@ -117,7 +117,7 @@ def _prep_stage_info(
   if prefetched_stages is not None:
     stages = prefetched_stages
   else:
-    stages = Stage.query(Stage.feature_id == fe.key.integer_id())
+    stages = Stage.query(Stage.feature_id == fe.key.integer_id(), Stage.archived == False)
   stage_info: StagePrepResponse = {
       'proto': None,
       'dev_trial': None,
@@ -304,11 +304,14 @@ def feature_entry_to_json_verbose(
     'prefixed': fe.prefixed,
     'tags': fe.search_tags,
     'tag_review': fe.tag_review,
-    'tag_review_status': REVIEW_STATUS_CHOICES[fe.tag_review_status],
+    'tag_review_status': REVIEW_STATUS_CHOICES.get(
+        fe.tag_review_status, REVIEW_STATUS_CHOICES[REVIEW_PENDING]),
     'tag_review_status_int': fe.tag_review_status,
-    'security_review_status': REVIEW_STATUS_CHOICES[fe.security_review_status],
+    'security_review_status': REVIEW_STATUS_CHOICES.get(
+        fe.security_review_status, REVIEW_STATUS_CHOICES[REVIEW_PENDING]),
     'security_review_status_int': fe.security_review_status,
-    'privacy_review_status': REVIEW_STATUS_CHOICES[fe.privacy_review_status],
+    'privacy_review_status': REVIEW_STATUS_CHOICES.get(
+        fe.privacy_review_status, REVIEW_STATUS_CHOICES[REVIEW_PENDING]),
     'privacy_review_status_int': fe.privacy_review_status,
     'updated_display': None,
     'resources': {

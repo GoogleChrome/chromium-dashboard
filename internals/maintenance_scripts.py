@@ -21,7 +21,7 @@ from internals import approval_defs
 from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Gate, Vote, Activity
 from internals.core_enums import *
-
+from internals.feature_links import batch_index_feature_entries
 
 class EvaluateGateStatus(FlaskHandler):
 
@@ -216,3 +216,12 @@ class BackfillStageCreated(FlaskHandler):
 
     ndb.put_multi(batch)
     return f'{count} Stages entities updated of {stages.count()} available stages.'
+
+class BackfillFeatureLinks(FlaskHandler):
+  def get_template_data(self, **kwargs):
+    """Backfill feature links for existing feature entries."""
+    self.require_cron_header()
+    all_feature_entries = FeatureEntry.query().fetch()
+    count = batch_index_feature_entries(all_feature_entries, True)
+    return f'{len(all_feature_entries)} FeatureEntry entities backfilled of {count} feature links.'
+  

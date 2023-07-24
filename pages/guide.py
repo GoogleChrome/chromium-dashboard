@@ -48,9 +48,9 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
 
   @permissions.require_create_feature
   def process_post_data(self, **kwargs):
-    owners = self.split_emails('owner')
-    editors = self.split_emails('editors')
-    cc_emails = self.split_emails('cc_recipients')
+    owners = self.split_emails('owner_emails')
+    editors = self.split_emails('editor_emails')
+    cc_emails = self.split_emails('cc_emails')
 
     blink_components = (
         self.split_input('blink_components', delim=',') or
@@ -168,7 +168,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('spec_link', 'link'),
       ('standard_maturity', 'int'),
       ('api_spec', 'bool'),
-      ('spec_mentors', 'emails'),
+      ('spec_mentor_emails', 'emails'),
       ('security_review_status', 'int'),
       ('privacy_review_status', 'int'),
       ('initial_public_proposal_url', 'link'),
@@ -183,8 +183,11 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('finch_name', 'str'),
       ('non_finch_justification', 'str'),
       ('owner', 'emails'),
+      ('owner_emails', 'emails'),
       ('editors', 'emails'),
+      ('editor_emails', 'emails'),
       ('cc_recipients', 'emails'),
+      ('cc_emails', 'emails'),
       ('unlisted', 'bool'),
       ('doc_links', 'links'),
       ('measurement', 'str'),
@@ -195,6 +198,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('search_tags', 'split_str'),
       ('blink_components', 'split_str'),
       ('devrel', 'emails'),
+      ('devrel_emails', 'emails'),
       ('category', 'int'),
       ('enterprise_feature_categories', 'split_str'),
       ('name', 'str'),
@@ -225,6 +229,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('tag_review_status', 'int'),
       ('webview_risks', 'str'),
       ('comments', 'str'),
+      ('feature_notes', 'str'),
       ('breaking_change', 'bool'),
       ('ongoing_constraints', 'str')]
 
@@ -423,14 +428,8 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       setattr(fe, 'active_stage_id', active_stage_id)
       setattr(fe, 'intent_stage', intent_stage_val)
 
-    # List of stage IDs will be present if the request comes from edit_all page.
-    stage_ids = self.form.get('stages')
-    if stage_ids:
-      stage_ids_list = [int(id) for id in stage_ids.split(',')]
-      self.update_stages_editall(
-          feature_id, fe.feature_type, stage_ids_list, changed_fields, form_fields)
     # If a stage_id is supplied, we make changes to only that specific stage.
-    elif stage_id:
+    if stage_id:
       for field, field_type in self.STAGE_FIELDS:
         if self.touched(field, form_fields):
           field_val = self._get_field_val(field, field_type)
@@ -443,6 +442,12 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
           stage_update_items.append((field, field_val))
       self.update_single_stage(
           stage_id, fe.feature_type, stage_update_items, changed_fields)
+    else:
+      # List of stage IDs will be present if the request comes from edit_all page.
+      stage_ids = self.form.get('stages')
+      stage_ids_list = [int(id) for id in stage_ids.split(',')] if stage_ids else []
+      self.update_stages_editall(
+          feature_id, fe.feature_type, stage_ids_list, changed_fields, form_fields)
 
     extension_stage_ids = self.form.get('extension_stage_ids')
     if extension_stage_ids:

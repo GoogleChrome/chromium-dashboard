@@ -155,7 +155,13 @@ go/this-is-a-test
       const expected = {
         feature_changes: {id: 1},
         stages: [
-          {id: 1, example_field: '123'},
+          {
+            id: 1,
+            example_field: {
+              form_field_name: 'example_field',
+              value: '123',
+            },
+          },
         ],
         has_changes: true,
       };
@@ -172,8 +178,37 @@ go/this-is-a-test
         },
       ];
       const expected = {
-        feature_changes: {id: 1, implicit_value_field: 123},
+        feature_changes: {
+          id: 1,
+          implicit_value_field: 123,
+        },
         stages: [],
+        has_changes: true,
+      };
+      assert.deepEqual(formatFeatureChanges(testFieldValues, featureId), expected);
+    });
+    it('differentiates field database names vs field display names', () => {
+      const testFieldValues = [
+        {
+          name: 'intent_to_ship_url',
+          value: 123,
+          touched: true,
+          stageId: 1,
+        },
+      ];
+      const expected = {
+        feature_changes: {
+          id: 1,
+        },
+        stages: [
+          {
+            id: 1,
+            intent_thread_url: {
+              form_field_name: 'intent_to_ship_url',
+              value: 123,
+            },
+          },
+        ],
         has_changes: true,
       };
       assert.deepEqual(formatFeatureChanges(testFieldValues, featureId), expected);
@@ -229,8 +264,20 @@ go/this-is-a-test
       const expected = {
         feature_changes: {id: 1, example_field1: '123'},
         stages: [
-          {id: 1, example_field2: '456'},
-          {id: 2, example_field3: '789'},
+          {
+            id: 1,
+            example_field2: {
+              form_field_name: 'example_field2',
+              value: '456',
+            },
+          },
+          {
+            id: 2,
+            example_field3: {
+              form_field_name: 'example_field3',
+              value: '789',
+            },
+          },
         ],
         has_changes: true,
       };

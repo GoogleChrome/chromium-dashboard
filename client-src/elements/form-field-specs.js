@@ -117,7 +117,7 @@ export const ALL_FIELDS = {
        <p>This text will be used in the enterprise release notes, which are publicly visible and primarily written for IT admins.</p>
        <p>Explain what's changing from the point of view of an end-user, developer, or administrator.
         Indicate what the motivation is for this change, especially if there’s security or privacy benefits to the change.
-        If an admin should do something (like test or set an enterprise policy), please explain. Finally, if the change has
+        If an admin should do something (like test or set a flag or an enterprise policy), please explain. Finally, if the change has
         a user-visible benefit (eg. better security or privacy), explain that motivation. If there are already publicly visible comms
         (e.g. blog posts), you should link to them here as well.</p>
       <p>See <a href="https://docs.google.com/document/d/1SdQ-DKeA5O7I8ju5Cb8zSM5S4NPwUACNJ9qbEhz-AYU" target="_blank">go/releasenotes-examples</a>
@@ -162,6 +162,7 @@ export const ALL_FIELDS = {
 
   'owner': {
     type: 'input',
+    name: 'owner_emails', // Field name in database.
     attrs: MULTI_EMAIL_FIELD_ATTRS,
     required: true,
     label: 'Feature owners',
@@ -171,6 +172,7 @@ export const ALL_FIELDS = {
 
   'editors': {
     type: 'input',
+    name: 'editor_emails', // Field name in database.
     attrs: MULTI_EMAIL_FIELD_ATTRS,
     required: false,
     label: 'Feature editors',
@@ -182,6 +184,7 @@ export const ALL_FIELDS = {
 
   'cc_recipients': {
     type: 'input',
+    name: 'cc_emails', // Field name in database.
     attrs: MULTI_EMAIL_FIELD_ATTRS,
     required: false,
     label: 'CC',
@@ -258,6 +261,7 @@ export const ALL_FIELDS = {
   },
 
   'set_stage': {
+    name: 'active_stage_id',
     type: 'checkbox',
     label: 'Set to this stage',
     help_text: html`
@@ -287,6 +291,7 @@ export const ALL_FIELDS = {
 
   'set_impl_status': {
     type: 'checkbox',
+    name: 'impl_status_chrome',
     label: 'Implementation status',
     help_text: html`
         Check this box to update the implementation status of
@@ -437,6 +442,7 @@ export const ALL_FIELDS = {
 
   'comments': {
     type: 'textarea',
+    name: 'feature_notes', // Field name in database.
     attrs: {rows: 4},
     required: false,
     label: 'Comments',
@@ -464,6 +470,7 @@ export const ALL_FIELDS = {
 
   'spec_mentors': {
     type: 'input',
+    name: 'spec_mentor_emails',
     attrs: MULTI_EMAIL_FIELD_ATTRS,
     required: false,
     label: 'Spec mentors',
@@ -477,7 +484,6 @@ export const ALL_FIELDS = {
 
   'intent_to_implement_url': {
     type: 'input',
-    name: 'intent_thread_url',
     attrs: URL_FIELD_ATTRS,
     required: false,
     label: 'Intent to Prototype link',
@@ -628,7 +634,6 @@ export const ALL_FIELDS = {
   },
 
   'intent_to_ship_url': {
-    name: 'intent_thread_url',
     type: 'input',
     attrs: URL_FIELD_ATTRS,
     required: false,
@@ -641,13 +646,12 @@ export const ALL_FIELDS = {
     type: 'input',
     attrs: URL_FIELD_ATTRS,
     required: false,
-    label: 'Ready for Develper Testing link',
+    label: 'Ready for Developer Testing link',
     help_text: html`After you have started the "Ready for Developer Testing"
                  discussion thread, link to it here.`,
   },
 
   'intent_to_experiment_url': {
-    name: 'intent_thread_url',
     type: 'input',
     attrs: URL_FIELD_ATTRS,
     required: false,
@@ -657,7 +661,6 @@ export const ALL_FIELDS = {
   },
 
   'intent_to_extend_experiment_url': {
-    name: 'intent_thread_url',
     type: 'input',
     attrs: URL_FIELD_ATTRS,
     required: false,
@@ -668,7 +671,6 @@ export const ALL_FIELDS = {
 
   'r4dt_url': {
     // form field name matches underlying DB field (sets "intent_to_experiment_url" field in DB).
-    name: 'intent_thread_url',
     type: 'input',
     attrs: URL_FIELD_ATTRS,
     required: false,
@@ -1156,6 +1158,7 @@ export const ALL_FIELDS = {
 
   'devrel': {
     type: 'input',
+    name: 'devrel_emails', // Field name in database.
     attrs: MULTI_EMAIL_FIELD_ATTRS,
     required: false,
     label: 'Developer relations emails',

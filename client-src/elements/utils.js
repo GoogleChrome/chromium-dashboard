@@ -303,25 +303,34 @@ export function formatFeatureChanges(fieldValues, featureId) {
       continue;
     }
 
+    // Arrays should be submitted as comma-separated strings.
+    let formattedValue = value;
+    if (Array.isArray(formattedValue)) {
+      formattedValue = formattedValue.join(',');
+    }
+
     // If an explicit value is present, the field value should be truthy.
     // Otherwise, we ignore the change.
     // For example, if this is a checkbox to set the active stage, it would need
     // to be set to true (value), then the active stage would be set to a stage ID (implicitValue).
     if (implicitValue !== undefined) {
       // Falsey value with an implicit value should be ignored (like an unchecked checkbox).
-      if (!value) {
+      if (!formattedValue) {
         continue;
       }
       // fields with implicit values are always changes to feature entities.
       featureChanges[name] = implicitValue;
     } else if (!stageId) {
       // If the field doesn't specify a stage ID, that means this change is for a feature field.
-      featureChanges[name] = value;
+      featureChanges[name] = formattedValue;
     } else {
       if (!(stageId in stages)) {
         stages[stageId] = {id: stageId};
       }
-      stages[stageId][name] = value;
+      stages[stageId][STAGE_FIELD_NAME_MAPPING[name] || name] = {
+        form_field_name: name,
+        value: formattedValue,
+      };
     }
     // If we see a touched field, it means there are changes in the submission.
     hasChanges = true;

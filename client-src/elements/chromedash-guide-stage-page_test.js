@@ -143,13 +143,11 @@ describe('chromedash-guide-stage-page', () => {
     const form = component.shadowRoot.querySelector('form[name="feature_form"]');
     assert.exists(form);
     assert.include(form.innerHTML, '<input type="hidden" name="token">');
-    assert.include(form.innerHTML, '<input type="hidden" name="form_fields"');
     assert.include(form.innerHTML, '<div class="final_buttons">');
 
     // Implementation section renders correct title and fields
     assert.include(form.innerHTML, 'Implementation in Chromium');
     assert.include(form.innerHTML, '4');
-    assert.include(form.innerHTML, 'type="hidden" name="impl_status_offered"');
     assert.notInclude(form.innerHTML, 'This feature already has implementation status');
   });
 });
