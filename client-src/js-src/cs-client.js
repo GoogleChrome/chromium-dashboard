@@ -312,6 +312,10 @@ class ChromeStatusClient {
     return this.doGet(`/feature_links?feature_id=${featureId}&update_stale_links=${updateStaleLinks}`);
   }
 
+  getFeatureLinksSummary() {
+    return this.doGet('/feature_links_summary');
+  }
+
   // Stages API
   getStage(featureId, stageId) {
     return this.doGet(`/features/${featureId}/stages/${stageId}`);

@@ -16,8 +16,8 @@
 from framework import basehandlers
 from internals.core_enums import *
 from internals.core_models import FeatureEntry
-from internals import feature_links
-
+from internals.feature_links import FeatureLinks, get_by_feature_id
+from framework import permissions
 
 class FeatureLinksAPI(basehandlers.APIHandler):
   """FeatureLinksAPI will return the links and its information to the client."""
@@ -26,7 +26,7 @@ class FeatureLinksAPI(basehandlers.APIHandler):
     feature = FeatureEntry.get_by_id(feature_id)
     if not feature:
       self.abort(404, msg='Feature not found')
-    return feature_links.get_by_feature_id(feature_id, update_stale_links)
+    return get_by_feature_id(feature_id, update_stale_links)
 
   def do_get(self, **kwargs):
 
@@ -41,3 +41,20 @@ class FeatureLinksAPI(basehandlers.APIHandler):
       }
     else:
       self.abort(400, msg='Missing feature_id')
+
+
+class FeatureLinksSummaryAPI(basehandlers.APIHandler):
+  """FeatureLinksSummaryAPI will return all links to the client."""
+
+  @permissions.require_admin_site
+  def do_get(self, **kwargs):
+    feature_links = FeatureLinks.query().fetch(
+        projection=[
+            FeatureLinks.feature_ids,
+            FeatureLinks.url,
+            FeatureLinks.type,
+            FeatureLinks.is_error,
+            FeatureLinks.http_error_code,
+        ]
+    )
+    return [item.to_dict() for item in feature_links]

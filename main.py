@@ -95,6 +95,7 @@ api_routes: list[Route] = [
     Route(f'{API_BASE}/features/<int:feature_id>', features_api.FeaturesAPI),
     Route(f'{API_BASE}/features/create', features_api.FeaturesAPI),
     Route(f'{API_BASE}/feature_links', feature_links_api.FeatureLinksAPI),
+    Route(f'{API_BASE}/feature_links_summary', feature_links_api.FeatureLinksSummaryAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/votes',
         reviews_api.VotesAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/votes/<int:gate_id>',
@@ -187,6 +188,7 @@ spa_page_routes = [
     defaults={'require_signin': True, 'is_enterprise_page': True}),
   # Admin pages
   Route('/admin/blink', defaults={'require_admin_site': True, 'require_signin': True}),
+  Route('/admin/feature_links', defaults={'require_admin_site': True, 'require_signin': True}),
   Route('/admin/slo_report', reminders.SLOReportHandler),
 ]
 

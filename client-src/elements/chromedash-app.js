@@ -418,6 +418,13 @@ class ChromedashApp extends LitElement {
       this.currentPage = ctx.path;
       this.hideSidebar();
     });
+    page('/admin/feature_links', (ctx) => {
+      if (!this.setupNewPage(ctx, 'chromedash-admin-feature-links-page')) return;
+      this.pageComponent.user = this.user;
+      this.contextLink = ctx.path;
+      this.currentPage = ctx.path;
+      this.hideSidebar();
+    });
     page('/enterprise/releasenotes', (ctx) => {
       if (!this.setupNewPage(
         ctx,
