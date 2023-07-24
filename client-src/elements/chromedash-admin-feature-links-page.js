@@ -59,10 +59,10 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
       return Object.fromEntries(map);
     };
 
-    const countAndSortGroupBy = (obj) => {
-      return Object.entries(obj).map(([key, value]) => ({
-        key,
-        count: value.length,
+    const countAndSortGroupBy = (obj, keyName = 'key') => {
+      return Object.entries(obj).map(([k, v]) => ({
+        [keyName]: k,
+        count: v.length,
       })).sort((a, b) => b.count - a.count);
     };
 
@@ -73,11 +73,11 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
     };
     return {
       stats: {
-        total: this.featureLinks.length,
-        covered: this.featureLinks.length - webLinks.length,
-        uncovered: webLinks.length,
-        types: countAndSortGroupBy(groups.types),
-        uncoveredDomains: countAndSortGroupBy(groups.uncoveredDomains),
+        totalCount: this.featureLinks.length,
+        coveredCount: this.featureLinks.length - webLinks.length,
+        uncoveredCount: webLinks.length,
+        types: countAndSortGroupBy(groups.types, 'type'),
+        uncoveredDomains: countAndSortGroupBy(groups.uncoveredDomains, 'domain'),
       },
       groupBy,
     };
