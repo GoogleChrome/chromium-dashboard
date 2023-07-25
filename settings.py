@@ -105,7 +105,7 @@ elif APP_ID == 'cr-status-staging':
 else:
   logging.error('Unexpected app ID %r, please configure settings.py.', APP_ID)
 
-def get_ot_api_key() -> str:
+def get_ot_api_key() -> str|None:
   # In dev or unit test mode, pull the API key from a local file.
   if DEV_MODE or UNIT_TEST_MODE:
     try:
