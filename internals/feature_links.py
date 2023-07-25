@@ -59,9 +59,10 @@ def update_feature_links(fe: FeatureEntry, changed_fields: list[tuple[str, Any, 
           _remove_link(link, fe)
       for url in urls_to_add:
         link = Link(url)
-        feature_link = _get_index_link(link, fe, should_parse_new_link=True)
-        feature_link.put()
-        logging.info(f'Indexed feature_link {feature_link.url} to {feature_link.key.integer_id()} for feature {fe.key.integer_id()}')
+        if link.type:
+          feature_link = _get_index_link(link, fe, should_parse_new_link=True)
+          feature_link.put()
+          logging.info(f'Indexed feature_link {feature_link.url} to {feature_link.key.integer_id()} for feature {fe.key.integer_id()}')
 
 def _get_index_link(link: Link, fe: FeatureEntry, should_parse_new_link: bool = False) -> FeatureLinks:
   """
@@ -205,7 +206,13 @@ def batch_index_feature_entries(fes: list[FeatureEntry], skip_existing: bool) ->
         continue
 
     urls = _extract_feature_urls(fe)
-    feature_links = [_get_index_link(Link(url), fe, should_parse_new_link=False) for url in urls]
+    feature_links = []
+    for url in urls:
+      link = Link(url)
+      if link.type:
+        fl = _get_index_link(link, fe, should_parse_new_link=False)
+        feature_links.append(fl)
+
     ndb.put_multi(feature_links)
     link_count += len(feature_links)
     logging.info(f'Feature {fe.key.integer_id()} indexed {len(feature_links)} urls')

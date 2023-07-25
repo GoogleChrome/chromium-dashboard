@@ -96,6 +96,7 @@ class Link():
     self.is_error = False
     self.http_error_code: Optional[int] = None
     self.information = None
+    logging.info(f'Constructed Link for {url} with type {self.type}')
 
   def _fetch_github_file(
       self, owner: str, repo: str, ref: str, file_path: str,
@@ -232,7 +233,7 @@ class Link():
     information: dict[str, Any] = json.loads(json_str)
 
     return information.get('issue', None)
-  
+
   def _validate_url(self) -> bool:
     """The `_validate_url` method is used to validate the URL associated with the Link object. It
     sends a GET request to the URL and checks the response status code. If the status code is not
@@ -244,7 +245,7 @@ class Link():
       self.http_error_code = res.status_code
       return False
     return True
-  
+
   def parse(self):
     """Parse the link and store the information."""
     try:
