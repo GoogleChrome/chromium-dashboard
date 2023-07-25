@@ -117,7 +117,7 @@ def get_ot_api_key() -> str|None:
     # If in staging or prod, pull the API key from the project secrets.
     from google.cloud.secretmanager import SecretManagerServiceClient
     client = SecretManagerServiceClient()
-    name = client.secret_path(APP_ID, 'OT_API_KEY') + '/versions/latest'
+    name = f'{client.secret_path(APP_ID, 'OT_API_KEY')}/versions/latest'
     response = client.access_secret_version(request={'name': name})
     if response:
       return response.payload.data.decode("UTF-8")
