@@ -1,6 +1,5 @@
 import logging
 import os
-from typing import Any, Optional
 
 
 ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -12,7 +11,7 @@ def get_flask_template_path() -> str:
 
 # By default, send all email to an archive for debugging.
 # For the live cr-status server, this setting is None.
-SEND_ALL_EMAIL_TO: Optional[str] = (
+SEND_ALL_EMAIL_TO: str|None = (
     'cr-status-staging-emails+%(user)s+%(domain)s@google.com')
 
 BOUNCE_ESCALATION_ADDR = 'cr-status-bounces@google.com'
@@ -74,6 +73,8 @@ REVIEW_COMMENT_MAILING_LIST = 'jrobbins-test@googlegroups.com'
 # Truncate some log lines to stay under limits of Google Cloud Logging.
 MAX_LOG_LINE = 200 * 1000
 
+# Origin trials API URL
+OT_API_URL = 'https://staging-chromeorigintrials-pa.sandbox.googleapis.com'
 
 if UNIT_TEST_MODE:
   APP_TITLE = 'Local testing'
@@ -89,6 +90,7 @@ elif APP_ID == 'cr-status':
   SEND_EMAIL = True
   SEND_ALL_EMAIL_TO = None  # Deliver it to the intended users
   SITE_URL = 'https://chromestatus.com/'
+  OT_API_URL = 'https://chromeorigintrials-pa.googleapis.com'
   GOOGLE_SIGN_IN_CLIENT_ID = (
       '999517574127-7ueh2a17bv1ave9thlgtap19pt5qjp4g.'
       'apps.googleusercontent.com')
@@ -102,6 +104,27 @@ elif APP_ID == 'cr-status-staging':
   BACKUP_BUCKET = 'cr-staging-backups'
 else:
   logging.error('Unexpected app ID %r, please configure settings.py.', APP_ID)
+
+def get_ot_api_key() -> str:
+  # In dev or unit test mode, pull the API key from a local file.
+  if DEV_MODE or UNIT_TEST_MODE:
+    try:
+      with open(f'{ROOT_DIR}/ot_api_key.txt', 'r') as f:
+        return f.read().strip()
+    except:
+      return None
+  else:
+    # If in staging or prod, pull the API key from the project secrets.
+    from google.cloud.secretmanager import SecretManagerServiceClient
+    client = SecretManagerServiceClient()
+    name = client.secret_path(APP_ID, 'OT_API_KEY') + '/versions/latest'
+    response = client.access_secret_version(request={'name': name})
+    if response:
+      return response.payload.data.decode("UTF-8")
+  return None
+
+
+OT_API_KEY: str|None = get_ot_api_key()
 
 RSS_FEED_LIMIT = 15
 
