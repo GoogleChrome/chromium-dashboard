@@ -102,6 +102,7 @@ STAGE_FIELD_DATA_TYPES: FIELD_INFO_DATA_TYPE = [
   ('experiment_extension_reason', 'str'),
   ('intent_thread_url', 'link'),
   ('origin_trial_feedback_url', 'link'),
+  ('origin_trial_id', 'str'),
   ('ot_chromium_trial_name', 'str'),
   ('ot_documentation_url', 'link'),
   ('ot_has_third_party_support', 'bool'),

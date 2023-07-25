@@ -610,8 +610,8 @@ const VERIFY_ACCURACY_DEV_TRIAL_FIELDS = {
     {
       name: 'Dev trials milestones',
       fields: [
-        'dt_milestone_android_start',
         'dt_milestone_desktop_start',
+        'dt_milestone_android_start',
         'dt_milestone_ios_start',
       ],
     },
@@ -624,10 +624,10 @@ const VERIFY_ACCURACY_ORIGIN_TRIAL_FIELDS = {
     {
       name: 'Origin trial milestones',
       fields: [
-        'ot_milestone_android_start',
-        'ot_milestone_android_end',
         'ot_milestone_desktop_start',
         'ot_milestone_desktop_end',
+        'ot_milestone_android_start',
+        'ot_milestone_android_end',
         'ot_milestone_webview_start',
         'ot_milestone_webview_end',
       ],
@@ -641,8 +641,8 @@ export const VERIFY_ACCURACY_TRIAL_EXTENSION_FIELDS = {
     {
       name: 'Trial extension milestones',
       fields: [
-        'extension_desktop_last',
         'extension_android_last',
+        'extension_desktop_last',
         'extension_webview_last',
       ],
     },
@@ -655,9 +655,9 @@ const VERIFY_ACCURACY_PREPARE_TO_SHIP_FIELDS = {
     {
       name: 'Shipping milestones',
       fields: [
+        'shipped_milestone',
         'shipped_android_milestone',
         'shipped_ios_milestone',
-        'shipped_milestone',
         'shipped_webview_milestone',
       ],
     },

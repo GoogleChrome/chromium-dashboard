@@ -276,9 +276,10 @@ class Stage(ndb.Model):
   intent_subject_line = ndb.StringProperty()
 
   # Origin trial fields
+  origin_trial_id = ndb.StringProperty()
+  origin_trial_feedback_url = ndb.StringProperty()
   experiment_goals = ndb.TextProperty()
   experiment_risks = ndb.TextProperty()
-  origin_trial_feedback_url = ndb.StringProperty()
   ot_chromium_trial_name = ndb.StringProperty()
   ot_documentation_url = ndb.StringProperty()
   ot_has_third_party_support = ndb.BooleanProperty(default=False)

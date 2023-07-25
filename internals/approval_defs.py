@@ -50,6 +50,7 @@ DEBUGGABILITY_APPROVERS = [
     'bmeurer@google.com',
     'danilsomsikov@google.com',
     'yangguo@google.com',
+    'changhaohan@google.com',
 ]
 TESTING_APPROVERS = [
     'sadapala@google.com',

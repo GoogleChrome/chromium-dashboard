@@ -113,7 +113,8 @@ export class ChromedashGuideEditPage extends LitElement {
     return html`
       <chromedash-guide-metadata
         .feature=${this.feature}
-        .isAdmin=${this.user && this.user.is_admin}>
+        .isAdmin=${this.user && this.user.is_admin}
+        .email=${this.user.email}>
       </chromedash-guide-metadata>
     `;
   }

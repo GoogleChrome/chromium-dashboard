@@ -1,6 +1,6 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
-import {autolink, flattenSections} from './utils.js';
+import {autolink, formatFeatureChanges, flattenSections} from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
 import {ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME} from './form-field-enums';
@@ -56,16 +56,24 @@ export class ChromedashGuideMetadata extends LitElement {
   static get properties() {
     return {
       feature: {type: Object},
+      fieldValues: {type: Array},
       isAdmin: {type: Boolean},
       editing: {type: Boolean},
+      email: {type: String},
     };
   }
 
   constructor() {
     super();
     this.feature = {};
+    this.fieldValues = [];
     this.isAdmin = false;
     this.editing = false;
+    this.email = '';
+  }
+
+  canDeleteFeature() {
+    return this.isAdmin || (this.email && this.email === this.feature.creator);
   }
 
   /* Add the form's event listener after Shoelace event listeners are attached
@@ -80,18 +88,32 @@ export class ChromedashGuideMetadata extends LitElement {
     });
   }
 
-  handleFormSubmit(event, hiddenTokenField) {
-    event.preventDefault();
-
-    // Call the app.handleFormSbubmit, which manages beforeunload events.
-    const app = document.querySelector('chromedash-app');
-    app.handleFormSubmit();
+  handleFormSubmit(e, hiddenTokenField) {
+    e.preventDefault();
+    const submitBody = formatFeatureChanges(this.fieldValues, this.feature.id);
 
     // get the XSRF token and update it if it's expired before submission
     window.csClient.ensureTokenIsValid().then(() => {
       hiddenTokenField.value = window.csClient.token;
-      event.target.submit();
+      return csClient.updateFeature(submitBody);
+    }).then(() => {
+      window.location.href = this.nextPage || `/guide/edit/${this.feature.id}`;
+    }).catch(() => {
+      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
+  }
+
+  // Handler to update form values when a field update event is fired.
+  handleFormFieldUpdate(event) {
+    const value = event.detail.value;
+    // Index represents which form was updated.
+    const index = event.detail.index;
+    if (index >= this.fieldValues.length) {
+      throw new Error('Out of bounds index when updating field values.');
+    }
+    // The field has been updated, so it is considered touched.
+    this.fieldValues[index].touched = true;
+    this.fieldValues[index].value = value;
   }
 
   handleDeleteFeature() {
@@ -110,7 +132,7 @@ export class ChromedashGuideMetadata extends LitElement {
         <div style="margin-bottom: 1em">
           <div id="metadata-buttons">
             <a id="open-metadata" @click=${() => this.editing = true}>Edit</a>
-            ${this.isAdmin ? html`
+            ${this.canDeleteFeature() ? html`
               <div>
                 <a id="delete-feature" class="delete-button"
                   @click=${this.handleDeleteFeature}>Delete</a>
@@ -185,7 +207,7 @@ export class ChromedashGuideMetadata extends LitElement {
         <div style="margin-bottom: 1em">
           <div id="metadata-buttons">
             <a id="open-metadata" @click=${() => this.editing = true}>Edit</a>
-            ${this.isAdmin ? html`
+            ${this.canDeleteFeature() ? html`
               <div>
                 <a id="delete-feature" class="delete-button"
                   @click=${this.handleDeleteFeature}>Delete</a>
@@ -313,6 +335,28 @@ export class ChromedashGuideMetadata extends LitElement {
     `;
   }
 
+  renderFields(formattedFeature, metadataFields) {
+    return metadataFields.map((field) => {
+      // Add the field to this component's stage before creating the field component.
+      const index = this.fieldValues.length;
+      const value = formattedFeature[field];
+      this.fieldValues.push({
+        name: field,
+        touched: false,
+        value,
+      });
+
+      return html`
+        <chromedash-form-field
+          name=${field}
+          index=${index}
+          value=${value}
+          ?forEnterprise=${this.feature.is_enterprise_feature}
+          @form-field-update="${this.handleFormFieldUpdate}">
+        </chromedash-form-field>`;
+    });
+  }
+
   renderEditForm() {
     const formattedFeature = formatFeatureForEdit(this.feature);
     const metadataFields = flattenSections(this.feature.is_enterprise_feature ?
@@ -320,19 +364,10 @@ export class ChromedashGuideMetadata extends LitElement {
       FLAT_METADATA_FIELDS);
     return html`
       <div id="metadata-editing">
-        <form name="overview_form" method="POST" action="/guide/stage/${this.feature.id}/0">
+        <form name="overview_form">
           <input type="hidden" name="token">
-          <input type="hidden" name="form_fields"
-             value="${metadataFields.join(',')}">
-
           <chromedash-form-table ${ref(this.registerFormSubmitHandler)}>
-            ${metadataFields.map((field) => html`
-              <chromedash-form-field
-                name=${field}
-                value=${formattedFeature[field]}
-                ?forEnterprise=${this.feature.is_enterprise_feature}>
-              </chromedash-form-field>
-            `)}
+            ${this.renderFields(formattedFeature, metadataFields)}
           </chromedash-form-table>
 
           <section class="final_buttons">

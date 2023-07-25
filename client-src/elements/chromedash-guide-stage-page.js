@@ -290,16 +290,15 @@ export class ChromedashGuideStagePage extends LitElement {
     return formSections;
   }
 
-  renderImplStatusFormSection(formattedFeature, section) {
+  // Render the checkbox to set to this implementation stage.
+  renderSetImplField(implStatusName, section) {
+    // Don't render this checkbox if there's no associated implementation stage name.
+    if (!implStatusName) {
+      return nothing;
+    }
+
     const alreadyOnThisImplStatus = (
       section.implStatusValue === this.feature.browsers.chrome.status.val);
-
-    const implStatusKey = Object.keys(IMPLEMENTATION_STATUS).find(
-      key => IMPLEMENTATION_STATUS[key][0] === section.implStatusValue);
-    const implStatusName = implStatusKey ? IMPLEMENTATION_STATUS[implStatusKey][1]: null;
-
-    if (!implStatusName && !this.implStatusFormFields) return nothing;
-
     // Set the checkbox label based on the current implementation status.
     let label = `Set implementation status to: ${implStatusName}`;
     if (alreadyOnThisImplStatus) {
@@ -314,17 +313,28 @@ export class ChromedashGuideStagePage extends LitElement {
     });
 
     return html`
+      <chromedash-form-field
+        name="set_impl_status"
+        value=${alreadyOnThisImplStatus}
+        index=${index}
+        checkboxLabel=${label}
+        ?disabled=${alreadyOnThisImplStatus}
+        @form-field-update="${this.handleFormFieldUpdate}">
+      </chromedash-form-field>`;
+  }
+
+  renderImplStatusFormSection(formattedFeature, section) {
+    const implStatusKey = Object.keys(IMPLEMENTATION_STATUS).find(
+      key => IMPLEMENTATION_STATUS[key][0] === section.implStatusValue);
+    const implStatusName = implStatusKey ? IMPLEMENTATION_STATUS[implStatusKey][1]: null;
+
+    if (!implStatusName && !this.implStatusFormFields) return nothing;
+
+    return html`
       <h3>${section.name}</h3>
       <section class="stage_form">
         <!-- TODO(jrobbins): When checked, make some milestone fields required. -->
-        <chromedash-form-field
-          name="set_impl_status"
-          value=${alreadyOnThisImplStatus}
-          index=${index}
-          checkboxLabel=${label}
-          ?disabled=${alreadyOnThisImplStatus}
-          @form-field-update="${this.handleFormFieldUpdate}">
-        </chromedash-form-field>
+        ${this.renderSetImplField(implStatusName, section)}
         ${this.renderFields(formattedFeature, section)}
       </section>
     `;

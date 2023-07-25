@@ -27,12 +27,14 @@ from framework import users
 from internals.core_enums import *
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.data_types import CHANGED_FIELDS_LIST_TYPE
+from internals import feature_links
 from internals import notifier_helpers
 from internals.review_models import Gate
 from internals.data_types import VerboseFeatureDict
 from internals import feature_helpers
 from internals import search
 from internals import search_fulltext
+from internals.user_models import AppUser
 import settings
 
 
@@ -298,7 +300,7 @@ class FeaturesAPI(basehandlers.APIHandler):
       feature.accurate_as_of = now
       feature.outstanding_notifications = 0
       has_updated = True
-    
+
     if has_updated:
       user_email = self.get_current_user().email()
       feature.updater_email = user_email
@@ -320,7 +322,7 @@ class FeaturesAPI(basehandlers.APIHandler):
       self._update_field_value(feature, field, field_type, new_value)
       changed_fields.append((field, old_value, new_value))
       has_updated = True
-    
+
     self._patch_update_special_fields(feature, feature_changes, has_updated)
     feature.put()
 
@@ -354,10 +356,11 @@ class FeaturesAPI(basehandlers.APIHandler):
     # Update full-text index.
     if feature:
       search_fulltext.index_feature(feature)
+      feature_links.update_feature_links(feature, changed_fields)
 
     return {'message': f'Feature {feature_id} updated.'}
 
-  @permissions.require_admin_site
+  @permissions.require_create_feature
   def do_delete(self, **kwargs) -> dict[str, str]:
     """Delete the specified feature."""
     # TODO(jrobbins): implement undelete UI.  For now, use cloud console.
@@ -365,6 +368,12 @@ class FeaturesAPI(basehandlers.APIHandler):
     feature = self.get_specified_feature(feature_id=feature_id)
     if feature is None:
       return {'message': 'ID does not match any feature.'}
+
+    user = users.get_current_user()
+    app_user = AppUser.get_app_user(user.email())
+    if ((app_user is None or not app_user.is_admin)
+         and user.email() != feature.creator_email):
+      self.abort(403)
     feature.deleted = True
     feature.put()
     rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())

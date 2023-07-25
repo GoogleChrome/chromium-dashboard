@@ -28,7 +28,7 @@ class LinkHelperTest(testing_config.CustomTestCase):
 
   def test_real_server_error_url(self):
     link = Link("http://httpstat.us/503")
-    
+
     link.parse()
     self.assertEqual(link.type, LINK_TYPE_WEB)
     self.assertEqual(link.is_error, True)
@@ -44,14 +44,14 @@ class LinkHelperTest(testing_config.CustomTestCase):
   @mock.patch('requests.get')
   def test_mock_not_found_url(self, mock_requests_get):
     mock_requests_get.return_value = testing_config.Blank(
-        status_code=404, content='')  
+        status_code=404, content='')
 
     link = Link("https://www.google.com/")
     link.parse()
     self.assertEqual(link.type, LINK_TYPE_WEB)
     self.assertEqual(link.is_error, True)
     self.assertEqual(link.http_error_code, 404)
-  
+
   def test_extract_urls_from_value(self):
     field_value = "https://www.chromestatus.com/feature/1234"
     urls = Link.extract_urls_from_value(field_value)
@@ -80,6 +80,8 @@ class LinkHelperTest(testing_config.CustomTestCase):
     link = Link(
         "https://github.com/w3c/reporting/blob/master/EXPLAINER.md")
     link.parse()
+    if link.is_error and "rate limit" in str(link.error):
+      return
     info = link.information
     self.assertEqual(link.type, LINK_TYPE_GITHUB_MARKDOWN)
     self.assertEqual(link.is_parsed, True)
@@ -90,6 +92,8 @@ class LinkHelperTest(testing_config.CustomTestCase):
     link = Link(
         "https://github.com/vmpstr/web-proposals/blob/b146b4447b3746669000f1abbb5a19d32f508540/explainers/cv-auto-event.md")
     link.parse()
+    if link.is_error and "rate limit" in str(link.error):
+      return
     info = link.information
     self.assertEqual(link.type, LINK_TYPE_GITHUB_MARKDOWN)
     self.assertEqual(link.is_parsed, True)
@@ -120,6 +124,8 @@ class LinkHelperTest(testing_config.CustomTestCase):
         "https://www.github.com/GoogleChrome/chromium-dashboard/issues/999?params=1#issuecomment-688970447"
     )
     link.parse()
+    if link.is_error and "rate limit" in str(link.error):
+      return
     info = link.information
     self.assertEqual(link.type, LINK_TYPE_GITHUB_ISSUE)
     self.assertEqual(link.is_parsed, True)
@@ -180,3 +186,10 @@ class LinkHelperTest(testing_config.CustomTestCase):
     self.assertEqual(link.is_parsed, True)
     self.assertEqual(link.is_error, True)
     self.assertEqual(link.information, None)
+
+  def test_link_no_type(self):
+    """We can find a link in text, but have that link not match any type."""
+    urls = Link.extract_urls_from_value('Some kind of https://... link.')
+    url = urls[0]
+    link = Link(url)
+    self.assertEqual(link.type, None)

@@ -38,6 +38,7 @@ class StageDict(TypedDict):
 
 
   # Origin trial specific fields.
+  origin_trial_id: str | None
   experiment_goals: str | None
   experiment_risks: str | None
   extensions: list[StageDict]  # type: ignore

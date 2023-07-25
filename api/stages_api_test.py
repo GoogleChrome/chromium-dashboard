@@ -62,7 +62,9 @@ class StagesAPITest(testing_config.CustomTestCase):
         created=self.now)
     self.stage_3.put()
 
-    self.stage_4 = Stage(id=40, feature_id=1, stage_type=150, browser='Chrome',
+    self.stage_4 = Stage(
+        id=40, feature_id=1, stage_type=150, browser='Chrome',
+        origin_trial_id='-5269211564023480319',
         ux_emails=['ux_person@example.com'],
         intent_thread_url='https://example.com/intent',
         ot_chromium_trial_name='ExampleChromiumTrialName',
@@ -94,6 +96,7 @@ class StagesAPITest(testing_config.CustomTestCase):
         'desktop_last': None,
         'display_name': None,
         'enterprise_policies': [],
+        'origin_trial_id': None,
         'origin_trial_feedback_url': None,
         'ot_chromium_trial_name': None,
         'ot_documentation_url': None,
@@ -198,6 +201,7 @@ class StagesAPITest(testing_config.CustomTestCase):
         'finch_url': None,
         'ios_first': None,
         'ios_last': None,
+        'origin_trial_id': None,
         'ot_stage_id': 40,
         'rollout_details': None,
         'rollout_impact': 2,
@@ -229,6 +233,7 @@ class StagesAPITest(testing_config.CustomTestCase):
         'extensions': [extension],
         'announcement_url': None,
         'enterprise_policies': [],
+        'origin_trial_id': '-5269211564023480319',
         'origin_trial_feedback_url': None,
         'ot_chromium_trial_name': 'ExampleChromiumTrialName',
         'ot_documentation_url': 'https://example.com/ot_docs',

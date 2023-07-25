@@ -117,7 +117,7 @@ def _prep_stage_info(
   if prefetched_stages is not None:
     stages = prefetched_stages
   else:
-    stages = Stage.query(Stage.feature_id == fe.key.integer_id())
+    stages = Stage.query(Stage.feature_id == fe.key.integer_id(), Stage.archived == False)
   stage_info: StagePrepResponse = {
       'proto': None,
       'dev_trial': None,
@@ -187,6 +187,7 @@ def stage_to_json_dict(
     'announcement_url': stage.announcement_url,
     'experiment_goals': stage.experiment_goals,
     'experiment_risks': stage.experiment_risks,
+    'origin_trial_id': stage.origin_trial_id,
     'origin_trial_feedback_url': stage.origin_trial_feedback_url,
     'ot_chromium_trial_name': stage.ot_chromium_trial_name,
     'ot_documentation_url': stage.ot_documentation_url,
