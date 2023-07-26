@@ -83,9 +83,21 @@
   {% endif %}
 
   {% for stage in stage_info.ot_stages %}
-    {% if stage.origin_trial_feedback_url %}
+    {% if stage.ot_chromium_trial_name %}
+      <br><br><h4>Chromium Trial Name</h4>
+      {{stage.ot_chromium_trial_name}}
+
+    {% endif %}{% if stage.origin_trial_feedback_url %}
       <br><br><h4>Link to origin trial feedback summary</h4>
       {{stage.origin_trial_feedback_url}}
+
+    {% endif %}{% if stage.ot_documentation_url %}
+      <br><br><h4>Origin Trial documentation link</h4>
+      {{stage.ot_documentation_url}}
+
+    {% endif %}{% if stage.ot_webfeature_use_counter %}
+      <br><br><h4>WebFeature UseCounter name</h4>
+      {{stage.ot_webfeature_use_counter}}
 
     {% endif %}
   {% endfor %}

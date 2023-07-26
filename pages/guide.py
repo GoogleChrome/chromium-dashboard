@@ -249,11 +249,17 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
   # Field name, data type
   STAGE_FIELDS: list[tuple[str, str]] = [
       ('announcement_url', 'link'),
-      ('origin_trial_feedback_url', 'link'),
       ('experiment_extension_reason', 'str'),
       ('finch_url', 'link'),
       ('experiment_goals', 'str'),
       ('experiment_risks', 'str'),
+      ('origin_trial_feedback_url', 'link'),
+      ('ot_chromium_trial_name', 'str'),
+      ('ot_documentation_url', 'link'),
+      ('ot_has_third_party_support', 'bool'),
+      ('ot_is_critical_trial', 'bool'),
+      ('ot_is_deprecation_trial', 'bool'),
+      ('ot_webfeature_use_counter', 'str'),
       ('rollout_impact', 'int'),
       ('rollout_milestone', 'int'),
       ('rollout_platforms', 'split_str'),

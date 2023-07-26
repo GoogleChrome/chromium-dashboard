@@ -270,15 +270,23 @@ class Stage(ndb.Model):
   te_emails = ndb.StringProperty(repeated=True)
 
   # Gate-related fields that need separate values for repeated stages.
-  # copy from Feature.
-  experiment_goals = ndb.TextProperty()
-  experiment_risks = ndb.TextProperty()
+  announcement_url = ndb.StringProperty()
   experiment_extension_reason = ndb.TextProperty()
   intent_thread_url = ndb.StringProperty()
   intent_subject_line = ndb.StringProperty()
+
+  # Origin trial fields
   origin_trial_id = ndb.StringProperty()
   origin_trial_feedback_url = ndb.StringProperty()
-  announcement_url = ndb.StringProperty()
+  experiment_goals = ndb.TextProperty()
+  experiment_risks = ndb.TextProperty()
+  ot_chromium_trial_name = ndb.StringProperty()
+  ot_documentation_url = ndb.StringProperty()
+  ot_has_third_party_support = ndb.BooleanProperty(default=False)
+  ot_is_critical_trial = ndb.BooleanProperty(default=False)
+  ot_is_deprecation_trial = ndb.BooleanProperty(default=False)
+  ot_webfeature_use_counter = ndb.StringProperty()
+
   # Origin trial stage id that this stage extends, if trial extension stage.
   ot_stage_id = ndb.IntegerProperty()
 
