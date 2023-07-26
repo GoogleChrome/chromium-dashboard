@@ -15,6 +15,7 @@
 
 
 from framework import basehandlers
+from framework.secrets import get_ot_api_key
 import requests
 import settings
 
@@ -23,7 +24,7 @@ class OriginTrialsAPI(basehandlers.APIHandler):
 
   def do_get(self, **kwargs):
     """Get a list of all origin trials."""
-    key = settings.OT_API_KEY
+    key = get_ot_api_key()
     # Return an empty list if no API key is found.
     if key == None:
       return []
