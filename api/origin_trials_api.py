@@ -29,10 +29,14 @@ class OriginTrialsAPI(basehandlers.APIHandler):
     if key == None:
       return []
 
-    response = requests.get(
-        f'{settings.OT_API_URL}/v1/trials',
-        params={'prettyPrint': 'false', 'key': key})
-    if response.ok:
-      trials = response.json()['trials']
-      return trials
+    try:
+      response = requests.get(
+          f'{settings.OT_API_URL}/v1/trials',
+          params={'prettyPrint': 'false', 'key': key})
+      response.raise_for_status()
+      if response.ok:
+        trials = response.json()['trials']
+        return trials
+    except:
+      self.abort(500, 'Error obtaining origin trial data from API.')
     return []
