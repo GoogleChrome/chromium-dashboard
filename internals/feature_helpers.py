@@ -24,7 +24,6 @@ from framework import users
 from internals import stage_helpers
 from internals.core_enums import *
 from internals.core_models import FeatureEntry, Stage
-import settings
 
 
 def filter_unlisted(feature_list: list[dict]) -> list[dict]:

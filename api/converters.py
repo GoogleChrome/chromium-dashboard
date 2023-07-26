@@ -24,6 +24,7 @@ from internals.data_types import StageDict, VerboseFeatureDict
 from internals.review_models import Vote, Gate
 from internals import approval_defs
 from internals import slo
+import settings
 
 
 SIMPLE_TYPES = frozenset((int, float, bool, dict, str, list))
