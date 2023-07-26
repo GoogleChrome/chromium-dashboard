@@ -357,7 +357,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'interop_compat_risks': None,
       'measurement': None,
       'motivation': None,
-      'new_crbug_url': None,
+      'new_crbug_url': 'https://bugs.chromium.org/p/chromium/issues/entry?components=Blink&cc=feature_owner@example.com',
       'non_oss_deps': None,
       'ongoing_constraints': None,
       'owner_emails': ['feature_owner@example.com'],

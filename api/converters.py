@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import datetime
+import re
 from typing import Any, TypedDict
 from google.cloud import ndb  # type: ignore
 
@@ -220,6 +221,37 @@ def stage_to_json_dict(
   return d
 
 
+def _parse_crbug_number(bug_url: Optional[str]) -> Optional[str]:
+  if bug_url is None:
+    return None
+  m = re.search(r'[\/|?id=]([0-9]+)$', bug_url)
+  if m:
+    return m.group(1)
+  return None
+
+
+def _format_new_crbug_url(blink_components: Optional[list[str]],
+    bug_url: Optional[str], impl_status_chrome: int,
+    owner_emails: list[str]=list()) -> str:
+  url = 'https://bugs.chromium.org/p/chromium/issues/entry'
+  if blink_components and len(blink_components) > 0:
+    params = ['components=' + blink_components[0]]
+  else:
+    params = ['components=' + settings.DEFAULT_COMPONENT]
+  crbug_number = _parse_crbug_number(bug_url)
+  if crbug_number and impl_status_chrome in (
+      NO_ACTIVE_DEV,
+      PROPOSED,
+      IN_DEVELOPMENT,
+      BEHIND_A_FLAG,
+      ORIGIN_TRIAL,
+      INTERVENTION):
+    params.append('blocking=' + crbug_number)
+  if owner_emails:
+    params.append('cc=' + ','.join(owner_emails))
+  return url + '?' + '&'.join(params)
+
+
 def feature_entry_to_json_verbose(
     fe: FeatureEntry, prefetched_stages: list[Stage] | None=None
     ) -> VerboseFeatureDict:
@@ -233,6 +265,9 @@ def feature_entry_to_json_verbose(
   # Get stage info, returning it to be more explicitly added.
   stage_info = _prep_stage_info(
       fe, prefetched_stages=prefetched_stages)
+
+  new_crbug_url = _format_new_crbug_url(
+      fe.blink_components, fe.bug_url, fe.impl_status_chrome, fe.owner_emails)
 
   d: VerboseFeatureDict = {
     'id': id,
@@ -275,7 +310,7 @@ def feature_entry_to_json_verbose(
     'active_stage_id': fe.active_stage_id,
     'bug_url': fe.bug_url,
     'launch_bug_url': fe.launch_bug_url,
-    'new_crbug_url': None,
+    'new_crbug_url': new_crbug_url,
     'screenshot_links': fe.screenshot_links or [],
     'breaking_change': fe.breaking_change,
     'flag_name': fe.flag_name,
