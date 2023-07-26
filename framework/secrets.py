@@ -27,7 +27,7 @@ from google.cloud import ndb  # type: ignore
 RANDOM_KEY_LENGTH = 128
 RANDOM_KEY_CHARACTERS = string.ascii_letters + string.digits
 
-OT_API_KEY: str|None = None
+ot_api_key: str|None = None
 
 def make_random_key(length=RANDOM_KEY_LENGTH, chars=RANDOM_KEY_CHARACTERS):
   """Return a string with lots of random characters."""
@@ -124,25 +124,27 @@ class ApiCredential(ndb.Model):
     self.put()
 
 
-def get_ot_api_key(app_id, root_dir, is_dev_mode) -> str|None:
+def get_ot_api_key(app_id: str, root_dir: str, is_dev_mode: bool) -> str|None:
   """Obtain an API key to be used for requests to the origin trials API."""
+  if ot_api_key is not None:
+    return ot_api_key
+
   if is_dev_mode:
     # In dev or unit test mode, pull the API key from a local file.
     try:
       with open(f'{root_dir}/ot_api_key.txt', 'r') as f:
-        OT_API_KEY = f.read().strip()
-        return
+        ot_api_key = f.read().strip()
+        return ot_api_key
     except:
       print('No key found locally for the Origin Trials API.')
-      OT_API_KEY = None
-      return
+      return None
   else:
     # If in staging or prod, pull the API key from the project secrets.
     from google.cloud.secretmanager import SecretManagerServiceClient
     client = SecretManagerServiceClient()
-    name = f'{client.secret_path(app_id, "OT_API_KEY")}/versions/latest'
+    name = f'{client.secret_path(app_id, "ot_api_key")}/versions/latest'
     response = client.access_secret_version(request={'name': name})
     if response:
-      OT_API_KEY = response.payload.data.decode("UTF-8")
-      return
-  OT_API_KEY = None
+      ot_api_key = response.payload.data.decode("UTF-8")
+      return ot_api_key
+  return None
