@@ -15,7 +15,6 @@
 
 from asyncio import Future
 import logging
-import re
 from typing import Any, Optional
 from google.cloud import ndb  # type: ignore
 
@@ -25,38 +24,6 @@ from framework import users
 from internals import stage_helpers
 from internals.core_enums import *
 from internals.core_models import FeatureEntry, Stage
-import settings
-
-
-def _crbug_number(bug_url: Optional[str]) -> Optional[str]:
-  if bug_url is None:
-    return None
-  m = re.search(r'[\/|?id=]([0-9]+)$', bug_url)
-  if m:
-    return m.group(1)
-  return None
-
-
-def _new_crbug_url(blink_components: Optional[list[str]],
-    bug_url: Optional[str], impl_status_chrome: int,
-    owner_emails: list[str]=list()) -> str:
-  url = 'https://bugs.chromium.org/p/chromium/issues/entry'
-  if blink_components and len(blink_components) > 0:
-    params = ['components=' + blink_components[0]]
-  else:
-    params = ['components=' + settings.DEFAULT_COMPONENT]
-  crbug_number = _crbug_number(bug_url)
-  if crbug_number and impl_status_chrome in (
-      NO_ACTIVE_DEV,
-      PROPOSED,
-      IN_DEVELOPMENT,
-      BEHIND_A_FLAG,
-      ORIGIN_TRIAL,
-      INTERVENTION):
-    params.append('blocking=' + crbug_number)
-  if owner_emails:
-    params.append('cc=' + ','.join(owner_emails))
-  return url + '?' + '&'.join(params)
 
 
 def filter_unlisted(feature_list: list[dict]) -> list[dict]:
@@ -373,10 +340,6 @@ def get_by_ids(feature_ids: list[int],
             unformatted_feature.updated.strftime("%Y-%m-%d"))
       else:
         feature['updated_display'] = ''
-      feature['new_crbug_url'] = _new_crbug_url(
-          unformatted_feature.blink_components, unformatted_feature.bug_url,
-          unformatted_feature.impl_status_chrome,
-          unformatted_feature.owner_emails)
       result_dict[feature_id] = feature
 
   if update_cache:
