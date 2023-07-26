@@ -17,6 +17,7 @@ import base64
 import hmac
 import logging
 import random
+import settings
 import string
 import time
 
@@ -124,17 +125,18 @@ class ApiCredential(ndb.Model):
     self.put()
 
 
-def get_ot_api_key(app_id: str, root_dir: str, is_dev_mode: bool) -> str|None:
+def get_ot_api_key() -> str|None:
   """Obtain an API key to be used for requests to the origin trials API."""
-  if ot_api_key is not None:
-    return ot_api_key
+  # Reuse the API key's value if we've already obtained it.
+  if settings.OT_API_KEY is not None:
+    return settings.OT_API_KEY
 
-  if is_dev_mode:
+  if settings.DEV_MODE or settings.UNIT_TEST_MODE:
     # In dev or unit test mode, pull the API key from a local file.
     try:
-      with open(f'{root_dir}/ot_api_key.txt', 'r') as f:
-        ot_api_key = f.read().strip()
-        return ot_api_key
+      with open(f'{settings.ROOT_DIR}/ot_api_key.txt', 'r') as f:
+        settings.OT_API_KEY = f.read().strip()
+        return settings.OT_API_KEY
     except:
       print('No key found locally for the Origin Trials API.')
       return None
@@ -142,9 +144,10 @@ def get_ot_api_key(app_id: str, root_dir: str, is_dev_mode: bool) -> str|None:
     # If in staging or prod, pull the API key from the project secrets.
     from google.cloud.secretmanager import SecretManagerServiceClient
     client = SecretManagerServiceClient()
-    name = f'{client.secret_path(app_id, "ot_api_key")}/versions/latest'
+    name = (f'{client.secret_path(settings.APP_ID, "OT_API_KEY")}'
+            '/versions/latest')
     response = client.access_secret_version(request={'name': name})
     if response:
-      ot_api_key = response.payload.data.decode("UTF-8")
-      return ot_api_key
+      settings.OT_API_KEY = response.payload.data.decode("UTF-8")
+      return settings.OT_API_KEY
   return None

@@ -77,6 +77,7 @@ MAX_LOG_LINE = 200 * 1000
 
 # Origin trials API URL
 OT_API_URL = 'https://staging-chromeorigintrials-pa.sandbox.googleapis.com'
+OT_API_KEY: str|None = None  # Value is set later when request is needed.
 
 if UNIT_TEST_MODE:
   APP_TITLE = 'Local testing'
