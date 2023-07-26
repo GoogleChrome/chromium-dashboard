@@ -177,6 +177,26 @@ limitations under the License.
       };
       loadFeatureLegendViews(VIEWS);
     })();
+
+    // Since we don't use chromedash-app on this page, re-implement a little
+    // logic for the main menu shifting the page content on desktop.
+    const isMobile = window.screen.width < 701;
+    if (!isMobile) {
+        const header = document.querySelector('chromedash-header');
+        const drawer = document.querySelector('chromedash-drawer');
+        const flexWrapper = document.querySelector('#content-flex-wrapper');
+        const shiftedStyle = 'margin-left: 210px; justify-content: start';
+        drawer.defaultOpen = true;
+        flexWrapper.style = shiftedStyle;
+
+        function shiftPage() {
+            let slDrawer = drawer.shadowRoot.querySelector('sl-drawer');
+            const isOpening = !slDrawer.open;
+            flexWrapper.style = isOpening ? shiftedStyle : '';
+        }
+        header.addEventListener('drawer-clicked', shiftPage);
+    }
+
   </script>
 
 
