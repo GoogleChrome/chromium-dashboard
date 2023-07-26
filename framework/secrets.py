@@ -121,3 +121,23 @@ class ApiCredential(ndb.Model):
     logging.info('Recording failure at %r', now or int(time.time()))
     self.failure_timestamp = now or int(time.time())
     self.put()
+
+
+def get_ot_api_key(app_id, root_dir, is_dev_mode) -> str|None:
+  """Obtain an API key to be used for requests to the origin trials API."""
+  if is_dev_mode:
+    # In dev or unit test mode, pull the API key from a local file.
+    try:
+      with open(f'{root_dir}/ot_api_key.txt', 'r') as f:
+        return f.read().strip()
+    except:
+      return None
+  else:
+    # If in staging or prod, pull the API key from the project secrets.
+    from google.cloud.secretmanager import SecretManagerServiceClient
+    client = SecretManagerServiceClient()
+    name = f'{client.secret_path(app_id, "OT_API_KEY")}/versions/latest'
+    response = client.access_secret_version(request={'name': name})
+    if response:
+      return response.payload.data.decode("UTF-8")
+  return None

@@ -1,6 +1,8 @@
 import logging
 import os
 
+from framework.secrets import get_ot_api_key
+
 
 ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -105,26 +107,11 @@ elif APP_ID == 'cr-status-staging':
 else:
   logging.error('Unexpected app ID %r, please configure settings.py.', APP_ID)
 
-def get_ot_api_key() -> str|None:
-  # In dev or unit test mode, pull the API key from a local file.
-  if DEV_MODE or UNIT_TEST_MODE:
-    try:
-      with open(f'{ROOT_DIR}/ot_api_key.txt', 'r') as f:
-        return f.read().strip()
-    except:
-      return None
-  else:
-    # If in staging or prod, pull the API key from the project secrets.
-    from google.cloud.secretmanager import SecretManagerServiceClient
-    client = SecretManagerServiceClient()
-    name = f'{client.secret_path(APP_ID, "OT_API_KEY")}/versions/latest'
-    response = client.access_secret_version(request={'name': name})
-    if response:
-      return response.payload.data.decode("UTF-8")
-  return None
-
-
-OT_API_KEY: str|None = get_ot_api_key()
+OT_API_KEY: str|None = get_ot_api_key(
+  app_id=APP_ID,
+  root_dir=ROOT_DIR,
+  is_dev_mode=DEV_MODE or UNIT_TEST_MODE
+)
 
 RSS_FEED_LIMIT = 15
 
