@@ -107,12 +107,6 @@ elif APP_ID == 'cr-status-staging':
 else:
   logging.error('Unexpected app ID %r, please configure settings.py.', APP_ID)
 
-OT_API_KEY: str|None = get_ot_api_key(
-  app_id=APP_ID,
-  root_dir=ROOT_DIR,
-  is_dev_mode=DEV_MODE or UNIT_TEST_MODE
-)
-
 RSS_FEED_LIMIT = 15
 
 DEFAULT_CACHE_TIME = 3600 # seconds

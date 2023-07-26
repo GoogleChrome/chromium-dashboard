@@ -27,6 +27,7 @@ from google.cloud import ndb  # type: ignore
 RANDOM_KEY_LENGTH = 128
 RANDOM_KEY_CHARACTERS = string.ascii_letters + string.digits
 
+OT_API_KEY: str|None = None
 
 def make_random_key(length=RANDOM_KEY_LENGTH, chars=RANDOM_KEY_CHARACTERS):
   """Return a string with lots of random characters."""
@@ -129,9 +130,12 @@ def get_ot_api_key(app_id, root_dir, is_dev_mode) -> str|None:
     # In dev or unit test mode, pull the API key from a local file.
     try:
       with open(f'{root_dir}/ot_api_key.txt', 'r') as f:
-        return f.read().strip()
+        OT_API_KEY = f.read().strip()
+        return
     except:
-      return None
+      print('No key found locally for the Origin Trials API.')
+      OT_API_KEY = None
+      return
   else:
     # If in staging or prod, pull the API key from the project secrets.
     from google.cloud.secretmanager import SecretManagerServiceClient
@@ -139,5 +143,6 @@ def get_ot_api_key(app_id, root_dir, is_dev_mode) -> str|None:
     name = f'{client.secret_path(app_id, "OT_API_KEY")}/versions/latest'
     response = client.access_secret_version(request={'name': name})
     if response:
-      return response.payload.data.decode("UTF-8")
-  return None
+      OT_API_KEY = response.payload.data.decode("UTF-8")
+      return
+  OT_API_KEY = None
