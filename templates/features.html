@@ -69,7 +69,7 @@
         flexWrapper.style = shiftedStyle;
 
         function shiftPage() {
-            let slDrawer = drawer.shadowRoot.querySelector('sl-drawer');
+            const slDrawer = drawer.shadowRoot.querySelector('sl-drawer');
             const isOpening = !slDrawer.open;
             flexWrapper.style = isOpening ? shiftedStyle : '';
         }
