@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2023 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -15,30 +14,16 @@
 
 
 from framework import basehandlers
-from framework import secrets
-import logging
-import requests
-import settings
+from framework import origin_trials_client
 
 
 class OriginTrialsAPI(basehandlers.APIHandler):
 
   def do_get(self, **kwargs):
     """Get a list of all origin trials."""
-    key = secrets.get_ot_api_key()
-    # Return an empty list if no API key is found.
-    if key == None:
-      return []
+    trials_list, err = origin_trials_client.get_trials_list()
+    if err is not None:
+      status_code, error_message = err
+      self.abort(status_code, error_message)
 
-    try:
-      response = requests.get(
-          f'{settings.OT_API_URL}/v1/trials',
-          params={'prettyPrint': 'false', 'key': key})
-      response.raise_for_status()
-    except requests.exceptions.HTTPError:
-      self.abort(500, 'Error obtaining origin trial data from API')
-
-    response_json = response.json()
-    if 'trials' not in response_json:
-      self.abort(500, 'Malformed response from origin trials API')
-    return response.json()['trials']
+    return trials_list
