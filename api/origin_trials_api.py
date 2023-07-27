@@ -37,7 +37,6 @@ class OriginTrialsAPI(basehandlers.APIHandler):
       response.raise_for_status()
     except requests.exceptions.HTTPError:
       err_msg = 'Error obtaining origin trial data from API'
-      logging.error(err_msg)
       self.abort(500, err_msg)
 
     response_json = response.json()
