@@ -32,7 +32,7 @@ def get_trials_list() -> tuple[list[dict[str, Any]], ERROR_INFO_TYPE]:
   key = secrets.get_ot_api_key()
   # Return an empty list if no API key is found.
   if key == None:
-    return [], None
+    return []
 
   response = requests.get(
       f'{settings.OT_API_URL}/v1/trials',
