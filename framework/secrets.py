@@ -138,7 +138,7 @@ def get_ot_api_key() -> str|None:
         settings.OT_API_KEY = f.read().strip()
         return settings.OT_API_KEY
     except:
-      print('No key found locally for the Origin Trials API.')
+      logging.info('No key found locally for the Origin Trials API.')
       return None
   else:
     # If in staging or prod, pull the API key from the project secrets.
