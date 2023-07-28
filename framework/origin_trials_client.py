@@ -29,9 +29,12 @@ import settings
 def get_trials_list() -> list[dict[str, Any]]:
   """Get a list of all origin trials.
   
+  Returns:
+    A list of data on all public origin trials.
+
   Raises:
-    requests.exceptions.RequestException: If the request fails to connect or the HTTP
-      status code is not successful.
+    requests.exceptions.RequestException: If the request fails to connect or
+      the HTTP status code is not successful.
     KeyError: If the response from the OT API is not in the expected format.
   """
   key = secrets.get_ot_api_key()
