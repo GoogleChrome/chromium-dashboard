@@ -23,25 +23,33 @@ import settings
 
 
 
-# Data type for information if an error occurred. Error code + message.
-ERROR_INFO_TYPE = tuple[int, str]|None
 
 
 def get_trials_list() -> list[dict[str, Any]]:
-  """Get a list of all origin trials."""
+  """Get a list of all origin trials.
+  
+  Raises:
+    requests.exceptions.RequestException: If the request fails to connect or the HTTP
+      status code is not successful.
+    KeyError: If the response from the OT API is not in the expected format.
+  """
   key = secrets.get_ot_api_key()
   # Return an empty list if no API key is found.
   if key == None:
     return []
 
-  response = requests.get(
-      f'{settings.OT_API_URL}/v1/trials',
-      params={'prettyPrint': 'false', 'key': key})
-  response.raise_for_status()
+  try:
+    response = requests.get(
+        f'{settings.OT_API_URL}/v1/trials',
+        params={'prettyPrint': 'false', 'key': key})
+    response.raise_for_status()
+  except requests.exceptions.RequestException as e:
+    logging.exception("Failed to get response from OT")
+    raise e
 
   response_json = response.json()
 
   trials_list = [asdict(OriginTrialInfo(api_trial))
                  for api_trial in response_json['trials']
                  if api_trial['isPublic']]
-  return trials_list, None
+  return trials_list
