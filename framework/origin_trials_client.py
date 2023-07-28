@@ -27,7 +27,7 @@ import settings
 ERROR_INFO_TYPE = tuple[int, str]|None
 
 
-def get_trials_list() -> tuple[list[dict[str, Any]], ERROR_INFO_TYPE]:
+def get_trials_list() -> list[dict[str, Any]]:
   """Get a list of all origin trials."""
   key = secrets.get_ot_api_key()
   # Return an empty list if no API key is found.
