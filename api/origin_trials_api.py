@@ -20,8 +20,14 @@ from framework import origin_trials_client
 class OriginTrialsAPI(basehandlers.APIHandler):
 
   def do_get(self, **kwargs):
-    """Get a list of all origin trials."""
-
+    """Get a list of all origin trials.
+    Returns:
+      A list of data on all public origin trials.
+    
+    Raises:
+      RequestException: If an error occurred interacting with the OT API.
+      KeyError: If the response from the OT API is not in the expected format.
+    """
     try:
       trials_list = origin_trials_client.get_trials_list()
     except requests.exceptions.RequestException:
