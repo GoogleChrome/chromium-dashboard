@@ -114,7 +114,7 @@ export const ALL_FIELDS = {
     required: true,
     label: 'Summary',
     enterprise_help_text: html`
-       <p>This text will be used in the enterprise release notes, which are publicly visible and primarily written for IT admins.</p>
+       <p>This text will be used in the <a href="https://support.google.com/chrome/a/answer/7679408" target="_blank">enterprise release notes</a>, which are publicly visible and primarily written for IT admins.</p>
        <p>Explain what's changing from the point of view of an end-user, developer, or administrator.
         Indicate what the motivation is for this change, especially if there’s security or privacy benefits to the change.
         If an admin should do something (like test or set a flag or an enterprise policy), please explain. Finally, if the change has
@@ -333,7 +333,7 @@ export const ALL_FIELDS = {
     required: false,
     label: 'Screenshots link(s)',
     help_text: html`
-        Link to screenshots showcasing this feature (one URL per line).`,
+        Optional: Link to screenshots showcasing this feature (one URL per line). These will be shared publicly.`,
   },
 
   'motivation': {
@@ -1425,7 +1425,7 @@ export const ALL_FIELDS = {
     required: false,
     label: 'Rollout milestone',
     help_text: html`
-      The milestone in which this stage rolls out to the stable channel (even a 1% rollout)`,
+    The milestone in which this stage rolls out to the stable channel (even a 1% rollout). If you don't yet know which milestone it will be, put in your best estimate. You can always change this later.`,
   },
 
   'rollout_platforms': {
