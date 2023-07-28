@@ -14,6 +14,7 @@
 
 
 from dataclasses import asdict
+import logging
 from typing import Any
 import requests
 
@@ -44,7 +45,7 @@ def get_trials_list() -> list[dict[str, Any]]:
         params={'prettyPrint': 'false', 'key': key})
     response.raise_for_status()
   except requests.exceptions.RequestException as e:
-    logging.exception("Failed to get response from OT")
+    logging.exception("Failed to get response from Origin Trials API.")
     raise e
 
   response_json = response.json()
