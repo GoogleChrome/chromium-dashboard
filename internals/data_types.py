@@ -270,7 +270,6 @@ class VerboseFeatureDict(TypedDict):
 class OriginTrialInfo():
   def __init__(self, api_trial):
     self.id = api_trial.get('id', '')
-    self.ot_type = api_trial.get('type', '')
     self.display_name = api_trial.get('displayName', '')
     self.description = api_trial.get('description', '')
     self.origin_trial_feature_name = api_trial.get('originTrialFeatureName', '')
@@ -282,7 +281,6 @@ class OriginTrialInfo():
     self.end_time = api_trial.get('endTime', '')
 
   id: str
-  ot_type: str
   display_name: str
   description: str
   origin_trial_feature_name: str

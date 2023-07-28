@@ -24,9 +24,6 @@ test_app = flask.Flask(__name__)
 
 class OriginTrialsClientTest(testing_config.CustomTestCase):
 
-  def setUp(self):
-    self.maxDiff = None
-
   mock_list_trials_json = {
     'trials': [
       {
@@ -34,7 +31,6 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
         'displayName': 'Example Trial',
         'description': 'A description.',
         'originTrialFeatureName': 'ExampleTrial',
-        'type': 'ORIGIN_TRIAL',
         'status': 'ACTIVE',
         'enabled': True,
         'isPublic': True,
@@ -48,7 +44,6 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
         'displayName': 'Non-public trial',
         'description': 'Another description.',
         'originTrialFeatureName': 'SampleTrial',
-        'type': 'DEPRECATION',
         'status': 'COMPLETE',
         'enabled': True,
         'isPublic': False,
@@ -88,7 +83,6 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
         'display_name': 'Example Trial',
         'description': 'A description.',
         'origin_trial_feature_name': 'ExampleTrial',
-        'ot_type': 'ORIGIN_TRIAL',
         'status': 'ACTIVE',
         'enabled': True,
         'chromestatus_url': 'https://example.com/chromestatus',

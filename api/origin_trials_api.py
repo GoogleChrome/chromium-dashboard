@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+import requests
 from framework import basehandlers
 from framework import origin_trials_client
 
@@ -21,9 +21,12 @@ class OriginTrialsAPI(basehandlers.APIHandler):
 
   def do_get(self, **kwargs):
     """Get a list of all origin trials."""
-    trials_list, err = origin_trials_client.get_trials_list()
-    if err is not None:
-      status_code, error_message = err
-      self.abort(status_code, error_message)
+
+    try:
+      trials_list = origin_trials_client.get_trials_list()
+    except requests.exceptions.RequestException:
+      self.abort(500, 'Error obtaining origin trial data from API')
+    except KeyError:
+      self.abort(500, 'Malformed response from origin trials API')
 
     return trials_list

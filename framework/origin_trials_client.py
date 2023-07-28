@@ -34,17 +34,12 @@ def get_trials_list() -> tuple[list[dict[str, Any]], ERROR_INFO_TYPE]:
   if key == None:
     return [], None
 
-  try:
-    response = requests.get(
-        f'{settings.OT_API_URL}/v1/trials',
-        params={'prettyPrint': 'false', 'key': key})
-    response.raise_for_status()
-  except requests.exceptions.HTTPError:
-    return [], (500, 'Error obtaining origin trial data from API')
+  response = requests.get(
+      f'{settings.OT_API_URL}/v1/trials',
+      params={'prettyPrint': 'false', 'key': key})
+  response.raise_for_status()
 
   response_json = response.json()
-  if 'trials' not in response_json:
-    return [], (500, 'Malformed response from origin trials API')
 
   trials_list = [asdict(OriginTrialInfo(api_trial))
                  for api_trial in response_json['trials']
