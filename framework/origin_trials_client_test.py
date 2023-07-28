@@ -61,7 +61,7 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
       self, mock_requests_get, mock_api_key_get):
     """If no API key is available, return an empty list of trials."""
     mock_api_key_get.return_value = None
-    trials_list, _ = origin_trials_client.get_trials_list()
+    trials_list = origin_trials_client.get_trials_list()
 
     self.assertEqual(trials_list, [])
     mock_api_key_get.assert_called_once()
@@ -91,7 +91,7 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
         'end_time': '2025-01-01T00:00:00Z',
       },
     ]
-    trials_list, _ = origin_trials_client.get_trials_list()
+    trials_list = origin_trials_client.get_trials_list()
     self.assertEqual(trials_list, expected)
 
     mock_api_key_get.assert_called_once()
