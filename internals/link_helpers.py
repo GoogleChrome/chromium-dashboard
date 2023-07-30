@@ -47,6 +47,12 @@ LINK_TYPES_REGEX = {
 
 URL_REGEX = re.compile(r'(https?://\S+)')
 
+def valid_url(url):
+    try:
+        result = urlparse(url)
+        return all([result.scheme, result.netloc, result.path])
+    except:
+        return False
 
 def get_github_api_client():
   """Set up the GitHub client."""
@@ -75,11 +81,11 @@ class Link():
       urls = URL_REGEX.findall(value)
       # remove trailing punctuation
       urls = [url.rstrip(punctuation) for url in urls]
-      return urls
     elif isinstance(value, list):
-      return [url for url in value if isinstance(url, str) and URL_REGEX.match(url)]
+      urls = [url for url in value if isinstance(url, str) and URL_REGEX.match(url)]
     else:
-      return []
+      urls = []
+    return [url for url in urls if valid_url(url)]
 
   @classmethod
   def get_type(cls, link: str) -> str | None:

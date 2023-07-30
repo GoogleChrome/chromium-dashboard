@@ -20,12 +20,31 @@ from internals.link_helpers import (
     LINK_TYPE_CHROMIUM_BUG,
     LINK_TYPE_GITHUB_ISSUE,
     LINK_TYPE_GITHUB_MARKDOWN,
-    LINK_TYPE_WEB
+    LINK_TYPE_WEB,
+    valid_url
 )
 
 
 class LinkHelperTest(testing_config.CustomTestCase):
 
+
+  def test_valid_url(self):
+      invalid_urls = [
+        'http://',
+        'http://w',
+        'https://invalid',
+      ]
+      valid_urls = [
+        'http://www.google.com/',
+        'https://www.google.com/',
+      ]
+      for url in invalid_urls:
+        with self.subTest(url=url):
+          self.assertFalse(valid_url(url))
+      for url in valid_urls:
+        with self.subTest(url=url):
+          self.assertTrue(valid_url(url))
+        
   def test_real_server_error_url(self):
     link = Link("http://httpstat.us/503")
 
@@ -57,7 +76,7 @@ class LinkHelperTest(testing_config.CustomTestCase):
     urls = Link.extract_urls_from_value(field_value)
     self.assertEqual(urls, [field_value])
 
-    field_value = "leadinghttps:https://www.chromestatus.com/feature/1234, https://www.chromestatus.com/feature/5678 is valid"
+    field_value = "leadinghttps:https://www.chromestatus.com/feature/1234');, https://www.chromestatus.com/feature/5678 is valid"
     urls = Link.extract_urls_from_value(field_value)
     self.assertEqual(urls, ["https://www.chromestatus.com/feature/1234", "https://www.chromestatus.com/feature/5678"])
 
