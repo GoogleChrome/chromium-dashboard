@@ -229,39 +229,40 @@ def get_feature_links_summary():
   )
   links = [item.to_dict() for item in feature_links]
 
-  def group_by(list, keyGetter):
-      map = {}
+  def group_by(list, get_key_fn):
+      dict = {}
       for item in list:
           try:
-              key = keyGetter(item)
-              collection = map.get(key) or []
+              key = get_key_fn(item)
+              collection = dict.get(key) or []
               collection.append(item)
-              map[key] = collection
+              dict[key] = collection
           except:
               continue
-      return map
+      return dict
   
-  def countAndSortGroupBy(obj, keyName = 'key'):
+  def count_and_sort(dict, key_name = 'key'):
       list = []
-      for k, v in obj.items():
+      for k, v in dict.items():
           list.append({
-              keyName: k,
+              key_name: k,
               "count": len(v),
           })
       list.sort(key=lambda x: x["count"], reverse=True)
       return list
   
-  uncovered_links = [link for link in links if link['type'] == 'web']
   def get_domain_with_scheme(url):
     scheme, host = urlparse(url).scheme, urlparse(url).netloc
     return f"{scheme}://{host}"
   
+  uncovered_links = [link for link in links if link['type'] == 'web']
   link_types = group_by(links, lambda item: item['type'])
   uncovered_link_domains = group_by(uncovered_links, lambda item: get_domain_with_scheme(item['url']))
+
   return {
       "total_count": len(links),
       "covered_count": len(links) - len(uncovered_links),
       "uncovered_count": len(uncovered_links),
-      "link_types": countAndSortGroupBy(link_types),
-      "uncovered_link_domains": countAndSortGroupBy(uncovered_link_domains),
+      "link_types": count_and_sort(link_types),
+      "uncovered_link_domains": count_and_sort(uncovered_link_domains),
   } 
