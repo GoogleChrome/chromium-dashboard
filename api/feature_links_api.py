@@ -16,7 +16,7 @@
 from framework import basehandlers
 from internals.core_enums import *
 from internals.core_models import FeatureEntry
-from internals.feature_links import FeatureLinks, get_by_feature_id
+from internals.feature_links import get_feature_links_summary, get_by_feature_id
 from framework import permissions
 
 class FeatureLinksAPI(basehandlers.APIHandler):
@@ -48,13 +48,4 @@ class FeatureLinksSummaryAPI(basehandlers.APIHandler):
 
   @permissions.require_admin_site
   def do_get(self, **kwargs):
-    feature_links = FeatureLinks.query().fetch(
-        projection=[
-            FeatureLinks.feature_ids,
-            FeatureLinks.url,
-            FeatureLinks.type,
-            FeatureLinks.is_error,
-            FeatureLinks.http_error_code,
-        ]
-    )
-    return [item.to_dict() for item in feature_links]
+    return get_feature_links_summary()

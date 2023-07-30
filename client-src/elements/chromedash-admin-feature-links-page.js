@@ -16,13 +16,13 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
     return {
       loading: {type: Boolean},
       featureLinks: {type: Array},
-      featureLinksStats: {type: Object},
+      featureLinkSummary: {type: Object},
     };
   }
 
   constructor() {
     super();
-    this.featureLinks = [];
+    this.featureLinkSummary = [];
   }
 
   connectedCallback() {
@@ -33,8 +33,7 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
   async fetchData() {
     try {
       this.loading = true;
-      this.featureLinks = await window.csClient.getFeatureLinksSummary();
-      this.featureLinksStats = this.statsFilter();
+      this.featureLinkSummary = await window.csClient.getFeatureLinkSummary();
     } catch {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     } finally {
@@ -42,49 +41,8 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
     }
   }
 
-  statsFilter() {
-    const groupBy = (list, keyGetter) => {
-      const map = new Map();
-      for (const item of list) {
-        try {
-          const key = keyGetter(item);
-          const collection = map.get(key) || [];
-          collection.push(item);
-          map.set(key, collection);
-        } catch {
-          console.log('Encounter error in groupBy, skipping:', item);
-          continue;
-        }
-      }
-      return Object.fromEntries(map);
-    };
-
-    const countAndSortGroupBy = (obj, keyName = 'key') => {
-      return Object.entries(obj).map(([k, v]) => ({
-        [keyName]: k,
-        count: v.length,
-      })).sort((a, b) => b.count - a.count);
-    };
-
-    const webLinks = this.featureLinks.filter(link => link.type === 'web');
-    const groups = {
-      types: groupBy(this.featureLinks, item => item['type']),
-      uncoveredDomains: groupBy(webLinks, item => new URL(item.url).hostname),
-    };
-    return {
-      stats: {
-        totalCount: this.featureLinks.length,
-        coveredCount: this.featureLinks.length - webLinks.length,
-        uncoveredCount: webLinks.length,
-        types: countAndSortGroupBy(groups.types, 'type'),
-        uncoveredDomains: countAndSortGroupBy(groups.uncoveredDomains, 'domain'),
-      },
-      groupBy,
-    };
-  }
-
   renderComponents() {
-    return html`<pre>${JSON.stringify(this.featureLinksStats.stats, null, 2)}}</pre>`;
+    return html`<pre>${JSON.stringify(this.featureLinkSummary, null, 2)}}</pre>`;
   }
   render() {
     return html`
