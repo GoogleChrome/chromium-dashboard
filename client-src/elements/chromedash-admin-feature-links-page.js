@@ -10,12 +10,19 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
       SHARED_STYLES,
       VARS,
       LAYOUT_CSS,
-      css``];
+      css`
+      .feature-links-summary .line {
+        padding: var(--content-padding-half);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 16px;
+      }
+      `];
   }
   static get properties() {
     return {
       loading: {type: Boolean},
-      featureLinks: {type: Array},
       featureLinkSummary: {type: Object},
     };
   }
@@ -42,7 +49,25 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
   }
 
   renderComponents() {
-    return html`<pre>${JSON.stringify(this.featureLinkSummary, null, 2)}}</pre>`;
+    return html`
+    <div class="feature-links-summary">
+      <sl-details summary="Links Summary" open>
+        <div class="line">Total Links <b>${this.featureLinkSummary.total_count}</b></div>
+        <div class="line">Covered Links <b>${this.featureLinkSummary.covered_count}</b></div>
+        <div class="line">Uncovered (aka web) Links <b>${this.featureLinkSummary.uncovered_count}</b></div>
+      </sl-details>
+      <sl-details summary="Link Types" open>
+        ${this.featureLinkSummary.link_types.map((linkType) => html`
+          <div class="line">${(linkType.key).toUpperCase()} <b>${linkType.count}</b></div>
+        `)}
+      </sl-details>
+      <sl-details summary="Uncovered Link Domains" open>
+        ${this.featureLinkSummary.uncovered_link_domains.map((domain) => html`
+          <div class="line"><a href=${domain.key}>${domain.key}</a> <b>${domain.count}</b></div>
+        `)}
+      </sl-details>
+    </div>
+    `;
   }
   render() {
     return html`
