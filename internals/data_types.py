@@ -17,6 +17,7 @@
 # https://stackoverflow.com/a/33533514
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any, TypedDict
 
 # List of changed fields to be used to create Activity entities
@@ -269,3 +270,29 @@ class VerboseFeatureDict(TypedDict):
   is_enterprise_feature: bool
   updated_display: str | None
   new_crbug_url: str | None
+
+
+@dataclass
+class OriginTrialInfo():
+  def __init__(self, api_trial):
+    self.id = api_trial.get('id', '')
+    self.display_name = api_trial.get('displayName', '')
+    self.description = api_trial.get('description', '')
+    self.origin_trial_feature_name = api_trial.get('originTrialFeatureName', '')
+    self.enabled = api_trial.get('enabled', None)
+    self.status = api_trial.get('status', '')
+    self.chromestatus_url = api_trial.get('chromestatusUrl', '')
+    self.start_milestone = api_trial.get('startMilestone', '')
+    self.end_milestone = api_trial.get('endMilestone', '')
+    self.end_time = api_trial.get('endTime', '')
+
+  id: str
+  display_name: str
+  description: str
+  origin_trial_feature_name: str
+  enabled: bool|None
+  status: str
+  chromestatus_url: str
+  start_milestone: str
+  end_milestone: str
+  end_time: str
