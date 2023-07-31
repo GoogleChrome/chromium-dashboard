@@ -8,6 +8,7 @@ import {
   formatFeatureForEdit,
   FLAT_ENTERPRISE_METADATA_FIELDS,
   FLAT_METADATA_FIELDS} from './form-definition';
+import {ALL_FIELDS} from './form-field-specs';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
 
@@ -339,9 +340,10 @@ export class ChromedashGuideMetadata extends LitElement {
     return metadataFields.map((field) => {
       // Add the field to this component's stage before creating the field component.
       const index = this.fieldValues.length;
-      const value = formattedFeature[field];
+      const featureJSONKey = ALL_FIELDS[field].name || field;
+      const value = formattedFeature[featureJSONKey];
       this.fieldValues.push({
-        name: field,
+        name: featureJSONKey,
         touched: false,
         value,
       });
