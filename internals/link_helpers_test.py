@@ -208,7 +208,7 @@ class LinkHelperTest(testing_config.CustomTestCase):
 
   def test_link_no_type(self):
     """We can find a link in text, but have that link not match any type."""
-    urls = Link.extract_urls_from_value('Some kind of https://... link.')
+    urls = Link.extract_urls_from_value('Some kind of https://g.com link.')
     url = urls[0]
     link = Link(url)
     self.assertEqual(link.type, None)
