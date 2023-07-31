@@ -64,6 +64,14 @@ This will start a local datastore emulator, run unit tests, and then shut down t
 
 There are some developing information in developer-documentation.md.
 
+### Origin Trials
+To test the functionality of this application locally that interacts with data from the Origin Trials API, an API key will need to be acquired. To do this, run the following command:
+
+```bash
+npm run dev-ot-key
+```
+
+Note: *Only developers with access to the cr-status-staging GCP project will be able to successfully run this command. If you need to test this and you don't have access, open an issue.*
 
 **Notes**
 
