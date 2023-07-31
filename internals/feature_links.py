@@ -65,10 +65,10 @@ def update_feature_links(fe: FeatureEntry, changed_fields: list[tuple[str, Any, 
             feature_link.put()
             logging.info(f'Indexed feature_link {feature_link.url} to {feature_link.key.integer_id()} for feature {fe.key.integer_id()}')
 
-def _get_index_link(link: Link, fe: FeatureEntry, should_parse_new_link: bool = False) -> FeatureLinks:
+def _get_index_link(link: Link, fe: FeatureEntry, should_parse_new_link: bool = False) -> FeatureLinks | None:
   """
   indexes a given link for a specific feature by creating or updating a `FeatureLinks` object.
-  Returns the `FeatureLinks` object.
+  Returns the `FeatureLinks` object or None.
   """
 
   feature_id = fe.key.integer_id()
