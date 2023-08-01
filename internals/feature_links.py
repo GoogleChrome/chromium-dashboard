@@ -21,6 +21,7 @@ from typing import Any
 from urllib.parse import urlparse
 from internals.core_models import FeatureEntry
 from internals.link_helpers import Link
+from collections import Counter
 
 from google.cloud import ndb  # type: ignore
 
@@ -63,6 +64,7 @@ def update_feature_links(fe: FeatureEntry, changed_fields: list[tuple[str, Any, 
         feature_link = _get_index_link(link, fe, should_parse_new_link=True)
         feature_link.put()
         logging.info(f'Indexed feature_link {feature_link.url} to {feature_link.key.integer_id()} for feature {fe.key.integer_id()}')
+
 
 def _get_index_link(link: Link, fe: FeatureEntry, should_parse_new_link: bool = False) -> FeatureLinks:
   """
@@ -213,11 +215,19 @@ def batch_index_feature_entries(fes: list[FeatureEntry], skip_existing: bool) ->
 
   return link_count
 
+
 def get_feature_links_summary():
   """
   The function `get_feature_links_summary` retrieves feature links from a database, groups them by
   type and uncovered domains, and returns a summary of the counts and types of links.
   """
+
+  MAX_RESULTS = 100
+
+  def get_domain_with_scheme(url):
+    scheme, host = urlparse(url).scheme, urlparse(url).netloc
+    return f"{scheme}://{host}"
+
   feature_links = FeatureLinks.query().fetch(
       projection=[
           FeatureLinks.feature_ids,
@@ -228,41 +238,18 @@ def get_feature_links_summary():
       ]
   )
   links = [item.to_dict() for item in feature_links]
-
-  def group_by(list, get_key_fn):
-      dict = {}
-      for item in list:
-          try:
-              key = get_key_fn(item)
-              collection = dict.get(key) or []
-              collection.append(item)
-              dict[key] = collection
-          except:
-              continue
-      return dict
-  
-  def count_and_sort(dict, key_name = 'key'):
-      list = []
-      for k, v in dict.items():
-          list.append({
-              key_name: k,
-              "count": len(v),
-          })
-      list.sort(key=lambda x: x["count"], reverse=True)
-      return list
-  
-  def get_domain_with_scheme(url):
-    scheme, host = urlparse(url).scheme, urlparse(url).netloc
-    return f"{scheme}://{host}"
-  
   uncovered_links = [link for link in links if link['type'] == 'web']
-  link_types = group_by(links, lambda item: item['type'])
-  uncovered_link_domains = group_by(uncovered_links, lambda item: get_domain_with_scheme(item['url']))
+
+  link_types_counter = Counter(item['type'] for item in links)
+  uncovered_link_domains_counter = Counter(get_domain_with_scheme(item['url']) for item in uncovered_links)
+
+  link_types = [{'key': k, 'count': c} for (k, c) in link_types_counter.most_common(MAX_RESULTS)]
+  uncovered_link_domains = [{'key': k, 'count': c} for (k, c) in uncovered_link_domains_counter.most_common(MAX_RESULTS)]
 
   return {
       "total_count": len(links),
       "covered_count": len(links) - len(uncovered_links),
       "uncovered_count": len(uncovered_links),
-      "link_types": count_and_sort(link_types),
-      "uncovered_link_domains": count_and_sort(uncovered_link_domains),
-  } 
+      "link_types": link_types,
+      "uncovered_link_domains": uncovered_link_domains,
+  }
