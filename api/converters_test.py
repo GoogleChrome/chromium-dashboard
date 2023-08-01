@@ -531,7 +531,7 @@ class GateConvertersTest(testing_config.CustomTestCase):
         next_action=datetime(2022, 12, 25),
         additional_review=True)
     gate.put()
-    # The review weas due on Wednesday 2022-12-21.
+    # The review was due on Wednesday 2022-12-21.
     mock_now.return_value = datetime(2022, 12, 23, 1, 2, 3)  # Thursday after.
 
     actual = converters.gate_value_to_json_dict(gate)
