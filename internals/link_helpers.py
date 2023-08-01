@@ -23,7 +23,7 @@ from ghapi.core import GhApi
 from urllib.error import HTTPError
 from urllib.parse import urlparse
 import base64
-
+import validators
 from framework import secrets
 
 
@@ -49,8 +49,7 @@ URL_REGEX = re.compile(r'(https?://\S+)')
 
 def valid_url(url):
     try:
-        result = urlparse(url)
-        return all([result.scheme, result.netloc, result.path])
+        return validators.url(url, public=True)
     except:
         return False
 

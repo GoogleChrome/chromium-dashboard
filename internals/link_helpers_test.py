@@ -31,12 +31,14 @@ class LinkHelperTest(testing_config.CustomTestCase):
   def test_valid_url(self):
       invalid_urls = [
         'http://',
-        'http://w',
+        'http://.',
         'https://invalid',
       ]
       valid_urls = [
         'http://www.google.com/',
         'https://www.google.com/',
+        'http://www.google.com',
+        'https://www.google.com',
       ]
       for url in invalid_urls:
         with self.subTest(url=url):
