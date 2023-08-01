@@ -759,11 +759,17 @@ const BLINK_GENERIC_QUESTIONNAIRE = (
 );
 
 const PRIVACY_GENERIC_QUESTIONNAIRE = (
-  `To request a review, use the "Request review" button above.`
+  html`<p><b>Please fill out the Security &amp; Privacy self-review questionnaire: <a href="https://www.w3.org/TR/security-privacy-questionnaire/" target="_blank">https://www.w3.org/TR/security-privacy-questionnaire</a>/</b></p>
+<p>Share it as a public document, as a file in your repository, or in any other public format of your choice.</p>
+<p>You can reuse the same filled-out questionnaire in the security review below, across all stages of this ChromeStatus entry, and across all entries related to the same API. If you updated an existing questionnaire to reflect new changes to the API, please highlight them for an easier review.</p>
+<p><b>If you believe your feature has no privacy impact</b> and none of the questions in the questionnaire apply, you can provide a justification instead, e.g. "Removing a prefix from the API, no changes to functionality" or "New CSS property that doesn't depend on the user state, therefore doesn't reveal any user information". Note that if your reviewer disagrees with the justification, they may ask you to fill out the questionnaire nevertheless.</p>`
 );
 
 const SECURITY_GENERIC_QUESTIONNAIRE = (
-  `To request a review, use the "Request review" button above.`
+  html`<p><b>Please fill out the Security &amp; Privacy self-review questionnaire: <a href="https://www.w3.org/TR/security-privacy-questionnaire/" target="_blank">https://www.w3.org/TR/security-privacy-questionnaire</a>/</b></p>
+<p>Share it as a public document, as a file in your repository, or in any other public format of your choice.</p>
+<p>You can reuse the same filled-out questionnaire in the privacy review above, across all stages of this ChromeStatus entry, and across all entries related to an API. If you updated an existing questionnaire to reflect new changes to the API, please highlight them for an easier review.</p>
+<p><b>If you believe your feature has no security impact</b> and none of the questions in the questionnaire apply, you can provide a justification instead. Note that if your reviewer disagrees with the justification, they may ask you to fill out the questionnaire nevertheless.</p>`
 );
 
 const ENTERPRISE_SHIP_QUESTIONNAIRE = (
