@@ -61,13 +61,14 @@ def update_feature_links(fe: FeatureEntry, changed_fields: list[tuple[str, Any, 
         link = Link(url)
         if link.type:
           feature_link = _get_index_link(link, fe, should_parse_new_link=True)
-          feature_link.put()
-          logging.info(f'Indexed feature_link {feature_link.url} to {feature_link.key.integer_id()} for feature {fe.key.integer_id()}')
+          if feature_link:
+            feature_link.put()
+            logging.info(f'Indexed feature_link {feature_link.url} to {feature_link.key.integer_id()} for feature {fe.key.integer_id()}')
 
-def _get_index_link(link: Link, fe: FeatureEntry, should_parse_new_link: bool = False) -> FeatureLinks:
+def _get_index_link(link: Link, fe: FeatureEntry, should_parse_new_link: bool = False) -> FeatureLinks | None:
   """
   indexes a given link for a specific feature by creating or updating a `FeatureLinks` object.
-  Returns the `FeatureLinks` object.
+  Returns the `FeatureLinks` object or None.
   """
 
   feature_id = fe.key.integer_id()
@@ -80,6 +81,8 @@ def _get_index_link(link: Link, fe: FeatureEntry, should_parse_new_link: bool = 
   else:
     if should_parse_new_link:
       link.parse()
+      if link.is_error:
+        return None
     feature_link = FeatureLinks(
         feature_ids=[feature_id],
         type=link.type,
@@ -211,7 +214,8 @@ def batch_index_feature_entries(fes: list[FeatureEntry], skip_existing: bool) ->
       link = Link(url)
       if link.type:
         fl = _get_index_link(link, fe, should_parse_new_link=False)
-        feature_links.append(fl)
+        if fl:
+          feature_links.append(fl)
 
     ndb.put_multi(feature_links)
     link_count += len(feature_links)
