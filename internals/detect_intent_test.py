@@ -486,7 +486,7 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
   def test_record_slo__gate_not_found(self, mock_info):
     """If we can't find the gate, exit early."""
     appr_field = approval_defs.TestingShipApproval
-    self.handler.record_slo(self.feature_1, appr_field, 'from_addr')
+    self.handler.record_slo(self.feature_1, appr_field, 'from_addr', False)
     mock_info.assert_called_once_with('Did not find a gate')
 
   @mock.patch('logging.info')
@@ -500,7 +500,7 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
         gate_type=appr_field.field_id, state=Vote.NA)
     gate_4.put()
 
-    self.handler.record_slo(self.feature_1, appr_field, 'from_addr')
+    self.handler.record_slo(self.feature_1, appr_field, 'from_addr', False)
     mock_info.assert_called_once_with(f'Ambiguous gates: {self.feature_id}')
 
   @mock.patch('internals.slo.now_utc')
@@ -514,10 +514,24 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     gate.put()
     from_addr = approval_defs.TESTING_APPROVERS[0]
 
-    self.handler.record_slo(self.feature_1, appr_field, from_addr)
+    self.handler.record_slo(self.feature_1, appr_field, from_addr, False)
 
     revised_gate = Gate.get_by_id(gate.key.integer_id())
     self.assertEqual(mock_now.return_value, revised_gate.responded_on)
+
+  def test_record_slo__initial_request_from_approver(self):
+    """If a approver themselves requests review, it's not a response."""
+    appr_field = approval_defs.TestingShipApproval
+    gate = Gate(feature_id=self.feature_id, stage_id=2,
+        gate_type=appr_field.field_id, state=Vote.NA)
+    gate.requested_on = datetime.datetime.now()
+    gate.put()
+    from_addr = approval_defs.TESTING_APPROVERS[0]
+
+    self.handler.record_slo(self.feature_1, appr_field, from_addr, True)
+
+    revised_gate = Gate.get_by_id(gate.key.integer_id())
+    self.assertEqual(None, revised_gate.responded_on)
 
   def test_record_slo__non_approver(self):
     """If a non-approver posted, don'tcount that as an initial response."""
@@ -528,7 +542,7 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     gate.put()
     from_addr = 'non-approver@example.com'
 
-    self.handler.record_slo(self.feature_1, appr_field, from_addr)
+    self.handler.record_slo(self.feature_1, appr_field, from_addr, False)
 
     revised_gate = Gate.get_by_id(gate.key.integer_id())
     self.assertEqual(None, revised_gate.responded_on)
