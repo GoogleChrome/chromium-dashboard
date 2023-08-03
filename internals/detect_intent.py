@@ -103,12 +103,12 @@ def detect_feature_id(body):
 
 THREAD_LINK_RE = re.compile(
     r'To view this discussion on the web visit\s+'
-    r'(https://groups\.google\.com/a/chromium.org/d/msgid/blink-dev/'
-    r'\S+)[.]')
+    r'(> )?(https://groups\.google\.com/a/chromium.org/d/msgid/blink-dev/'
+    r'\S+)[\n> .]', re.MULTILINE)
 STAGING_THREAD_LINK_RE = re.compile(
     r'To view this discussion on the web visit\s+'
-    r'(https://groups\.google\.com/d/msgid/jrobbins-test/'
-    r'\S+)[.]')
+    r'(> )?(https://groups\.google\.com/d/msgid/jrobbins-test/'
+    r'\S+)[\n> .]', re.MULTILINE)
 
 
 def detect_thread_url(body):
@@ -116,7 +116,7 @@ def detect_thread_url(body):
   match = (THREAD_LINK_RE.search(body) or
            STAGING_THREAD_LINK_RE.search(body))
   if match:
-    return match.group(1)
+    return match.group(2)
   return None
 
 
