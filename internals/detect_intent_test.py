@@ -271,6 +271,31 @@ class FunctionTest(testing_config.CustomTestCase):
          '-oNTb%2BZjiJk%2B6RNb9%2Bv05w%40mail.gmail.com'),
         detect_intent.detect_thread_url(footer))
 
+  def test_detect_thread_url__quoted(self):
+    """We can parse a quoted thread archive link from the body footer."""
+    footer = (
+        'On 7/27/23 12:29 PM, USER NAME wrote:'
+        '>'
+        '>  [SNIP]'
+        '> --\n'
+        '> You received this message because you are subscribed to the Google\n'
+        '> Groups "blink-dev" group.\n'
+        '> To unsubscribe from this group and stop receiving emails from it, send\n'
+        '> an email to blink-dev+unsubscribe@chromium.org.\n'
+        '> To view this discussion on the web visit\n'
+        '> https://groups.google.com/a/chromium.org/d/msgid/blink-dev/CAL5BFfULP5d3fNCAqeO2gLP56R3HCytmaNk%2B9kpYsC2dj4%3DqoQ%40mail.gmail.com\n'
+        '> <https://groups.google.com/a/chromium.org/d/msgid/blink-dev/CAL5BFfULP5d3fNCAqeO2gLP56R3HCytmaNk%2B9kpYsC2dj4%3DqoQ%40mail.gmail.com?utm_medium=email&utm_source=foo\\n'
+        'ter>.\n'
+        '\n'
+        '--\n'
+        'You received this message because you are subscribed to the Google Groups "blink-dev" group.\n'
+        'To unsubscribe from this group and stop receiving emails from it, send an email to blink-dev+unsubscribe@chromium.org.\n'
+        'To view this discussion on the web visit https://groups.google.com/a/chromium.org/d/msgid/blink-dev/7c94d7c3-212a-62de-dfa4-76bbd25990c9%40chromium.org.')
+    self.assertEqual(
+        ('https://groups.google.com'
+         '/a/chromium.org/d/msgid/blink-dev/CAL5BFfULP5d3fNCAqeO2gLP56R3HCytmaNk%2B9kpYsC2dj4%3DqoQ%40mail.gmail.com'),
+        detect_intent.detect_thread_url(footer))
+
   def test_detect_thread_url__staging(self):
     """We can parse the staging thread archive link from the body footer."""
     footer = (
