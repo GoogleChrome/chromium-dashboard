@@ -538,6 +538,7 @@ class ChromedashApp extends LitElement {
               <chromedash-header
                 .user=${this.user}
                 .appTitle=${this.appTitle}
+                .devMode=${this.devMode}
                 .googleSignInClientId=${this.googleSignInClientId}
                 .currentPage=${this.currentPage}
                 @drawer-clicked=${this.handleShowDrawer}>

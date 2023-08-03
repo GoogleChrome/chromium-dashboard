@@ -23,7 +23,7 @@
     "watch": "gulp watch",
     "start-app": "npm run build && curl --retry 4 http://localhost:15606/ --retry-connrefused && ./scripts/start_server.sh",
     "start": "npm stop; source cs-env/bin/activate; (npm run start-emulator-persist > /dev/null 2>&1 &); npm run start-app; status=$?; npm run stop-emulator; exit $status",
-    "stop": "kill `pgrep gunicorn`",
+    "stop": "npm run pwtests-shutdown && kill `pgrep gunicorn`",
     "test": "(npm run start-emulator > /dev/null 2>&1 &); sleep 6; curl --retry 4 http://localhost:15606/ --retry-connrefused; npm run do-tests; status=$?; npm run stop-emulator; exit $status",
     "webtest": "web-test-runner \"client-src/**/*_test.js\" --node-resolve --playwright --browsers chromium firefox",
     "webtest:watch": "web-test-runner \"client-src/**/*_test.js\" --node-resolve --playwright --watch --browsers chromium",
@@ -48,7 +48,8 @@
     "pwtests": "npm run pwtests-build && docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml run playwright bash -c \"./.playwright/wait-for-app.sh && npx playwright test\"",
     "pwtests-update": "npm run pwtests-build && docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml run playwright bash -c \"./.playwright/wait-for-app.sh && npx playwright test --update-snapshots\"",
     "pwtests-shell": "npm run pwtests-build && docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml run playwright bash",
-    "pwtests-ui": "npm run pwtests-build && docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml run playwright bash -c \"./.playwright/wait-for-app.sh && npx playwright test --ui --ui-port=8123\""
+    "pwtests-ui": "npm run pwtests-build && docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml run playwright bash -c \"./.playwright/wait-for-app.sh && npx playwright test --ui --ui-port=8123\"",
+    "pwtests-shutdown": "docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml down"
   },
   "repository": {
     "type": "git",

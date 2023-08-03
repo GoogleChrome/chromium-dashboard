@@ -162,16 +162,15 @@ export class ChromedashHeader extends LitElement {
       return;
     }
 
-    this.initializeTestingSignIn();
-
     // user is passed in from chromedash-app
     if (this.user && this.user.email) return;
 
     // user is passed in from chromedash-app, but the user is not logged in
     if (!this.user) {
       this.initializeGoogleSignIn();
+      this.initializeTestingSignIn();
       return;
-    };
+    }
 
     // user is not passed in from anywhere, i.e. this.user is still {}
     // this is for MPA pages where this component is initialized in _base.html
@@ -279,14 +278,14 @@ export class ChromedashHeader extends LitElement {
             Create feature
           </sl-button>
         `: nothing }
-        <div class="nav-dropdown-container">
+        <div class="nav-dropdown-container" data-testid="nav-container">
           <a class="nav-dropdown-trigger">
             ${this.user.email}
             <iron-icon icon="chromestatus:arrow-drop-down"></iron-icon>
           </a>
           <ul>
             <li><a href="/settings">Settings</a></li>
-            <li><a href="#" id="sign-out-link" @click=${this.handleSignOutClick}>Sign out</a></li>
+            <li><a href="#" id="sign-out-link" data-testid="sign-out-link" @click=${this.handleSignOutClick}>Sign out</a></li>
           </ul>
         </div>
       ` : html`

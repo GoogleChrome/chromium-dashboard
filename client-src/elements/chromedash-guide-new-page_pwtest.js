@@ -1,68 +1,103 @@
 // @ts-check
 import {test, expect} from '@playwright/test';
 
-test.beforeEach(async ({page}) => {
+async function login(page) {
   // Attempt to login before running each test.
+  // await page.goto('/');
   let loginButton = page.locator('[data-testid=dev-mode-sign-in-button]');
+  expect(loginButton).toBeTruthy();
+  expect(await loginButton.count()).toBe(1);
   if (loginButton && await loginButton.count() == 1) {
     await loginButton.click();
-    await page.waitForURL('/roadmap');
-    loginButton = page.locator('[data-testid=dev-mode-sign-in-button]');
-    expect(await loginButton.count()).toBe(0);
   }
-  // Either way, we should be logged in now.
-  const navDropdownLink = page.getByText('example@chromium.org');
-  expect(await navDropdownLink.count() == 1);
-});
+  // Either way, check that we are logged in now.
+  await page.waitForURL('/roadmap');
+  let navContainer = page.locator('[data-testid=nav-container]');
+  expect(await navContainer.count()).toBe(1);
+}
 
-test.afterEach(async ({page}) => {
+async function logout(page) {
   // Attempt to sign out after running each test.
-  let navDropdownLink = page.getByText('example@chromium.org');
-  if (navDropdownLink && await navDropdownLink.count() == 1) {
-    await navDropdownLink.hover();
-    const signOutLink = page.getByText('Sign out');
+  let navContainer = page.locator('[data-testid=nav-container]');
+  if (navContainer && await navContainer.count() == 1) {
+    await navContainer.hover();
+    const signOutLink = page.locator('[data-testid=sign-out-link]');
     expect(await signOutLink.count()).toBe(1);
     await signOutLink.click();
-    navDropdownLink = page.getByText('example@chromium.org');
-    expect(await navDropdownLink.count()).toBe(0);
+
+    navContainer = page.locator('[data-testid=nav-container]');
+    expect(await navContainer.count()).toBe(0);
   }
+}
+
+// test.beforeEach(async ({page}) => {
+//   // await login(page);
+// });
+
+test.afterEach(async ({page}) => {
+  await logout(page);
 });
 
 
-// test('has title', async ({page}) => {
-//   await page.goto('http://localhost:8080/guide/new');
+test('has login button before login', async ({page}) => {
+  await page.goto('/roadmap');
 
-//   // Expect a title "to contain" a substring.
-//   await expect(page).toHaveTitle(/Chrome Status/);
-// });
+  // Expect the title to contain a substring.
+  await expect(page).toHaveTitle(/Chrome Status/);
 
-test('navigate to create feature page', async ({page}) => {
-  page.goto('http://localhost:8080/');
-  await page.waitForURL('http://localhost:8080/');
+  // Expect a login button to be present.
+  let loginButton = page.locator('[data-testid=dev-mode-sign-in-button]');
+  expect(loginButton).toBeTruthy();
+  expect(await loginButton.count()).toBe(1);
 
-  // Attempt to login before running each test.
-  // let loginButton = page.locator('[data-testid=dev-mode-sign-in-button]');
-  let loginButton = page.getByTestId('dev-mode-sign-in-button');
-  if (loginButton && await loginButton.count() == 1) {
-    await loginButton.click();
-    await page.waitForURL('/roadmap');
-    loginButton = page.locator('[data-testid=dev-mode-sign-in-button]');
-    expect(await loginButton.count()).toBe(0);
-  }
-  // Either way, we should be logged in now.
-  const navDropdownLink = page.getByText('example@chromium.org');
-  expect(await navDropdownLink.count() == 1);
+  // Expect a nav container to not be present.
+  let navContainer = page.locator('[data-testid=nav-container]');
+  expect(await navContainer.count()).toBe(0);
 
-  const maintabs = page.locator('div');
-  expect(await maintabs.count()).toBe(1);
+  // Expect a create feature button to not be present.
+  const createFeatureButton = page.locator('[data-testid=create-feature]');
+  expect(await createFeatureButton.count()).toBe(0);
+
+  // Take a screenshot of the initial page.
+  await expect(page).toHaveScreenshot('chrome-status.png');
+});
+
+
+test('has create feature button after login', async ({ page }) => {
+  await page.goto('/roadmap');
+  await login(page);
+
+    // Expect a login button to not be present.
+  let loginButton = page.locator('[data-testid=dev-mode-sign-in-button]');
+  expect(loginButton).toBeTruthy();
+  expect(await loginButton.count()).toBe(0);
+
+  // Expect a nav container to be present.
+  let navContainer = page.locator('[data-testid=nav-container]');
+  expect(await navContainer.count()).toBe(1);
+
+  // Expect a create feature button to be present.
+  const createFeatureButton = page.locator('[data-testid=create-feature]');
+  expect(await createFeatureButton.count()).toBe(1);
+
+  // Take a screenshot with "Create feature" button.
+  await expect(page).toHaveScreenshot('create-feature-button.png');
+});
+
+test('navigate to create feature page', async ({ page }) => {
+  await page.goto('/roadmap');
+  await login(page);
 
   // Navigate to the new feature page.
   // await page.locator('sl-button[data-testid=create-feature]').click();
   // const createFeatureButton = page.getByText(' Create feature ');
-  const createFeatureButton = page.getByTestId('create-feature');
+  const createFeatureButton = page.locator('[data-testid=create-feature]');
   expect(await createFeatureButton.count()).toBe(1);
   createFeatureButton.click();
   await page.waitForURL('/guide/new');
+
+  // Take a screenshot of the content area.
+  await expect(page).toHaveScreenshot('chrome-status-new-feature.png');
 });
 
 
@@ -72,7 +107,7 @@ test('navigate to create feature page', async ({page}) => {
 //   expect(await navDropdownLink.count() == 1);
 
 //   // Navigate to the new feature page.
-//   page.goto('/guide/new');
+//   await page.goto('/guide/new');
 //   await page.waitForURL('http://localhost:8080/guide/new');
 
 //   // Take a screenshot of the content area.
