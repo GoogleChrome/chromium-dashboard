@@ -16,8 +16,8 @@
 import testing_config
 from unittest import mock
 from internals.core_models import FeatureEntry
-from internals.feature_links import FeatureLinks, update_feature_links
-from internals.link_helpers import LINK_TYPE_CHROMIUM_BUG
+from internals.feature_links import FeatureLinks, update_feature_links, get_feature_links_summary
+from internals.link_helpers import LINK_TYPE_CHROMIUM_BUG, LINK_TYPE_WEB
 
 
 class LinkTest(testing_config.CustomTestCase):
@@ -51,6 +51,34 @@ class LinkTest(testing_config.CustomTestCase):
     self.feature.put()
 
     update_feature_links(target_feature, changed_fields)
+
+  def test_get_feature_links_summary(self):
+    links = [
+      FeatureLinks(url='https://bugs.chromium.org/p/chromium/issues/detail?id=100000', type=LINK_TYPE_CHROMIUM_BUG),
+      FeatureLinks(url='https://docs.google.com/document/d/xxx', type=LINK_TYPE_WEB),
+      FeatureLinks(url='https://docs.google.com/spreadsheets/d/xxx', type=LINK_TYPE_WEB),
+      FeatureLinks(url='https://www.google.com', type=LINK_TYPE_WEB),
+    ]
+    for link in links:
+      link.put()
+    summary = get_feature_links_summary()
+
+    self.assertEqual(
+          summary,
+          {
+              "total_count": 4,
+              "covered_count": 1,
+              "uncovered_count": 3,
+              "link_types": [
+                  {"key": "web", "count": 3},
+                  {"key": "chromium_bug", "count": 1},
+              ],
+              "uncovered_link_domains": [
+                {"key": "https://docs.google.com", "count": 2},
+                {"key": "https://www.google.com", "count": 1},
+              ],
+          },
+      )
 
   def test_feature_changed_add_and_remove_url(self):
     url = "https://bugs.chromium.org/p/chromium/issues/detail?id=100000"
