@@ -103,12 +103,12 @@ def detect_feature_id(body):
 
 THREAD_LINK_RE = re.compile(
     r'To view this discussion on the web visit\s+'
-    r'(https://groups\.google\.com/a/chromium.org/d/msgid/blink-dev/'
-    r'\S+)[.]')
+    r'(> )?(https://groups\.google\.com/a/chromium.org/d/msgid/blink-dev/'
+    r'\S+)[\n> .]', re.MULTILINE)
 STAGING_THREAD_LINK_RE = re.compile(
     r'To view this discussion on the web visit\s+'
-    r'(https://groups\.google\.com/d/msgid/jrobbins-test/'
-    r'\S+)[.]')
+    r'(> )?(https://groups\.google\.com/d/msgid/jrobbins-test/'
+    r'\S+)[\n> .]', re.MULTILINE)
 
 
 def detect_thread_url(body):
@@ -116,7 +116,7 @@ def detect_thread_url(body):
   match = (THREAD_LINK_RE.search(body) or
            STAGING_THREAD_LINK_RE.search(body))
   if match:
-    return match.group(1)
+    return match.group(2)
   return None
 
 
@@ -196,8 +196,9 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
       return {'message': 'Feature not found'}
 
     self.set_intent_thread_url(feature, approval_field, thread_url, subject)
+    is_new_thread = detect_new_thread(feature_id, approval_field)
     self.create_approvals(feature, approval_field, from_addr, body)
-    self.record_slo(feature, approval_field, from_addr)
+    self.record_slo(feature, approval_field, from_addr, is_new_thread)
     return {'message': 'Done'}
 
   def load_detected_feature(self, feature_id: Optional[int],
@@ -287,8 +288,10 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
         approval_defs.set_vote(feature_id, approval_field.field_id,
             Vote.REVIEW_REQUESTED, from_addr)
 
-  def record_slo(self, feature, approval_field, from_addr) -> None:
+  def record_slo(self, feature, approval_field, from_addr, is_new_thread) -> None:
     """Update SLO timestamps."""
+    if is_new_thread:
+      return  # The initial request can never count as a response.
     feature_id = feature.key.integer_id()
     matching_gates = Gate.query(
         Gate.feature_id == feature_id,

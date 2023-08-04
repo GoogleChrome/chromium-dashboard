@@ -28,6 +28,7 @@ from api import feature_links_api
 from api import login_api
 from api import logout_api
 from api import metricsdata
+from api import origin_trials_api
 from api import permissions_api
 from api import processes_api
 from api import reviews_api
@@ -139,6 +140,7 @@ api_routes: list[Route] = [
     # (f'{API_BASE}/schedule', TODO),  # chromiumdash data
     # (f'{API_BASE}/metrics/<str:kind>', TODO),  # uma-export data
     # (f'{API_BASE}/metrics/<str:kind>/<int:bucket_id>', TODO),
+    Route(f'{API_BASE}/origintrials', origin_trials_api.OriginTrialsAPI),
 ]
 
 # The Routes below that have no handler specified use SPAHandler.

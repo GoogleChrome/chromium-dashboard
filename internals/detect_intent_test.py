@@ -271,6 +271,31 @@ class FunctionTest(testing_config.CustomTestCase):
          '-oNTb%2BZjiJk%2B6RNb9%2Bv05w%40mail.gmail.com'),
         detect_intent.detect_thread_url(footer))
 
+  def test_detect_thread_url__quoted(self):
+    """We can parse a quoted thread archive link from the body footer."""
+    footer = (
+        'On 7/27/23 12:29 PM, USER NAME wrote:'
+        '>'
+        '>  [SNIP]'
+        '> --\n'
+        '> You received this message because you are subscribed to the Google\n'
+        '> Groups "blink-dev" group.\n'
+        '> To unsubscribe from this group and stop receiving emails from it, send\n'
+        '> an email to blink-dev+unsubscribe@chromium.org.\n'
+        '> To view this discussion on the web visit\n'
+        '> https://groups.google.com/a/chromium.org/d/msgid/blink-dev/CAL5BFfULP5d3fNCAqeO2gLP56R3HCytmaNk%2B9kpYsC2dj4%3DqoQ%40mail.gmail.com\n'
+        '> <https://groups.google.com/a/chromium.org/d/msgid/blink-dev/CAL5BFfULP5d3fNCAqeO2gLP56R3HCytmaNk%2B9kpYsC2dj4%3DqoQ%40mail.gmail.com?utm_medium=email&utm_source=foo\\n'
+        'ter>.\n'
+        '\n'
+        '--\n'
+        'You received this message because you are subscribed to the Google Groups "blink-dev" group.\n'
+        'To unsubscribe from this group and stop receiving emails from it, send an email to blink-dev+unsubscribe@chromium.org.\n'
+        'To view this discussion on the web visit https://groups.google.com/a/chromium.org/d/msgid/blink-dev/7c94d7c3-212a-62de-dfa4-76bbd25990c9%40chromium.org.')
+    self.assertEqual(
+        ('https://groups.google.com'
+         '/a/chromium.org/d/msgid/blink-dev/CAL5BFfULP5d3fNCAqeO2gLP56R3HCytmaNk%2B9kpYsC2dj4%3DqoQ%40mail.gmail.com'),
+        detect_intent.detect_thread_url(footer))
+
   def test_detect_thread_url__staging(self):
     """We can parse the staging thread archive link from the body footer."""
     footer = (
@@ -486,7 +511,7 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
   def test_record_slo__gate_not_found(self, mock_info):
     """If we can't find the gate, exit early."""
     appr_field = approval_defs.TestingShipApproval
-    self.handler.record_slo(self.feature_1, appr_field, 'from_addr')
+    self.handler.record_slo(self.feature_1, appr_field, 'from_addr', False)
     mock_info.assert_called_once_with('Did not find a gate')
 
   @mock.patch('logging.info')
@@ -500,7 +525,7 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
         gate_type=appr_field.field_id, state=Vote.NA)
     gate_4.put()
 
-    self.handler.record_slo(self.feature_1, appr_field, 'from_addr')
+    self.handler.record_slo(self.feature_1, appr_field, 'from_addr', False)
     mock_info.assert_called_once_with(f'Ambiguous gates: {self.feature_id}')
 
   @mock.patch('internals.slo.now_utc')
@@ -514,10 +539,24 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     gate.put()
     from_addr = approval_defs.TESTING_APPROVERS[0]
 
-    self.handler.record_slo(self.feature_1, appr_field, from_addr)
+    self.handler.record_slo(self.feature_1, appr_field, from_addr, False)
 
     revised_gate = Gate.get_by_id(gate.key.integer_id())
     self.assertEqual(mock_now.return_value, revised_gate.responded_on)
+
+  def test_record_slo__initial_request_from_approver(self):
+    """If a approver themselves requests review, it's not a response."""
+    appr_field = approval_defs.TestingShipApproval
+    gate = Gate(feature_id=self.feature_id, stage_id=2,
+        gate_type=appr_field.field_id, state=Vote.NA)
+    gate.requested_on = datetime.datetime.now()
+    gate.put()
+    from_addr = approval_defs.TESTING_APPROVERS[0]
+
+    self.handler.record_slo(self.feature_1, appr_field, from_addr, True)
+
+    revised_gate = Gate.get_by_id(gate.key.integer_id())
+    self.assertEqual(None, revised_gate.responded_on)
 
   def test_record_slo__non_approver(self):
     """If a non-approver posted, don'tcount that as an initial response."""
@@ -528,7 +567,7 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     gate.put()
     from_addr = 'non-approver@example.com'
 
-    self.handler.record_slo(self.feature_1, appr_field, from_addr)
+    self.handler.record_slo(self.feature_1, appr_field, from_addr, False)
 
     revised_gate = Gate.get_by_id(gate.key.integer_id())
     self.assertEqual(None, revised_gate.responded_on)

@@ -2,8 +2,10 @@ import {html, LitElement, css} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {
   ENTERPRISE_FEATURE_CATEGORIES,
+  PLATFORM_CATEGORIES,
   PLATFORMS_DISPLAYNAME,
   STAGE_ENT_ROLLOUT,
+  STAGE_TYPES_SHIPPING,
 } from './form-field-enums.js';
 import {showToastMessage, updateURLParams, parseRawQuery} from './utils.js';
 
@@ -120,6 +122,64 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     ];
   }
 
+  convertShippingStageToRolloutStages(stage) {
+    const milestones = [
+      stage.desktop_first, stage.android_first, stage.ios_first, stage.webview_first,
+      stage.desktop_last, stage.android_last, stage.ios_last, stage.webview_last,
+    ];
+    const milestoneAndPlatformsMap = milestones
+      .reduce((acc, milestone) => ({...acc, [milestone]: new Set()}), {});
+
+    if (stage.desktop_first) {
+      milestoneAndPlatformsMap[stage.desktop_first].add(
+        PLATFORM_CATEGORIES['PLATFORM_WINDOWS'][0]);
+      milestoneAndPlatformsMap[stage.desktop_first].add(
+        PLATFORM_CATEGORIES['PLATFORM_MAC'][0]);
+      milestoneAndPlatformsMap[stage.desktop_first].add(
+        PLATFORM_CATEGORIES['PLATFORM_LINUX'][0]);
+    }
+    if (stage.android_first) {
+      milestoneAndPlatformsMap[stage.android_first].add(
+        PLATFORM_CATEGORIES['PLATFORM_ANDROID'][0]);
+    }
+    if (stage.ios_first) {
+      milestoneAndPlatformsMap[stage.ios_first].add(
+        PLATFORM_CATEGORIES['PLATFORM_IOS'][0]);
+    }
+    if (stage.webview_first) {
+      milestoneAndPlatformsMap[stage.webview_first].add(
+        PLATFORM_CATEGORIES['PLATFORM_ANDROID'][0]);
+    }
+    if (stage.desktop_last) {
+      milestoneAndPlatformsMap[stage.desktop_last].add(
+        PLATFORM_CATEGORIES['PLATFORM_WINDOWS'][0]);
+      milestoneAndPlatformsMap[stage.desktop_last].add(
+        PLATFORM_CATEGORIES['PLATFORM_MAC'][0]);
+      milestoneAndPlatformsMap[stage.desktop_last].add(
+        PLATFORM_CATEGORIES['PLATFORM_LINUX'][0]);
+    }
+    if (stage.android_last) {
+      milestoneAndPlatformsMap[stage.android_last].add(
+        PLATFORM_CATEGORIES['PLATFORM_ANDROID'][0]);
+    }
+    if (stage.ios_last) {
+      milestoneAndPlatformsMap[stage.ios_last].add(
+        PLATFORM_CATEGORIES['PLATFORM_IOS'][0]);
+    }
+    if (stage.webview_last) {
+      milestoneAndPlatformsMap[stage.webview_last].add(
+        PLATFORM_CATEGORIES['PLATFORM_ANDROID'][0]);
+    }
+    return Object.entries(milestoneAndPlatformsMap)
+      .map(([milestone, platforms]) => ({
+        stage_type: STAGE_ENT_ROLLOUT,
+        rollout_milestone: Number(milestone),
+        rollout_platforms: Array.from(platforms),
+        rollout_impact: 1,
+        rollout_details: 'Missing details, no rollout step was created for this',
+      }));
+  }
+
   connectedCallback() {
     super.connectedCallback();
     Promise.all([
@@ -135,9 +195,24 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         this.selectedMilestone = this.channels.stable.version;
         updateURLParams(milestoneQueryParamKey, this.selectedMilestone);
       }
+
+      // Simulate rollout stage for features with breaking changes and planned
+      // milestones but without rollout stages so that they appear on the release
+      // notes.
+      const featuresRequiringRolloutStages = features
+        .filter(({stages}) => !stages
+          .some(s => s.stage_type === STAGE_ENT_ROLLOUT) &&
+                     stages.some(s => STAGE_TYPES_SHIPPING.has(s.stage_type)))
+        .map(f => ({
+          ...f,
+          stages: f.stages
+            .filter(s => STAGE_TYPES_SHIPPING.has(s.stage_type))
+            .map(this.convertShippingStageToRolloutStages).flatMap(x => x),
+        }));
+
       // Filter out features that don't have rollout stages.
       // Ensure that the stages are only rollout stages.
-      this.features = features
+      this.features = [...features, ...featuresRequiringRolloutStages]
         .filter(({stages}) => stages.some(s => s.stage_type === STAGE_ENT_ROLLOUT))
         .map(f => ({
           ...f,

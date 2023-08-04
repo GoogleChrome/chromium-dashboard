@@ -177,6 +177,36 @@ describe('chromedash-feature-page', () => {
           },
           screenshot_links: [],
         },
+        {
+          id: 7,
+          name: 'normal feature with shipping stage',
+          summary: 'normal feature summary',
+          new_crbug_url: 'fake crbug link',
+          enterprise_feature_categories: [],
+          stages: [
+            {
+              id: 9,
+              stage_type: 460,
+              desktop_first: 100,
+              desktop_last: 101,
+              android_first: 100,
+              android_last: 101,
+              ios_first: 102,
+              ios_last: 103,
+              webview_first: 100,
+              webview_last: 102,
+            },
+          ],
+          browsers: {
+            chrome: {
+              owners: ['owner'],
+            },
+          },
+          updated: {
+            when: 'updated when',
+          },
+          screenshot_links: [],
+        },
       ],
     });
 
@@ -240,6 +270,7 @@ describe('chromedash-feature-page', () => {
       <chromedash-enterprise-release-notes-page></chromedash-enterprise-release-notes-page>`);
     assert.exists(component);
     assert.instanceOf(component, ChromedashEnterpriseReleaseNotesPage);
+    debugger;
 
     const releaseNotesSummary = component.shadowRoot.querySelector('#release-notes-summary');
     const children = [...releaseNotesSummary.querySelectorAll('tr > *')];
@@ -262,23 +293,29 @@ describe('chromedash-feature-page', () => {
     assert.include(children[10].textContent, '✓');
     assert.include(children[11].textContent, '✓');
 
+    // Validate second feature row
+    assert.equal(children[12].textContent, 'normal feature with shipping stage');
+    assert.notInclude(children[13].textContent, '✓');
+    assert.notInclude(children[14].textContent, '✓');
+    assert.notInclude(children[15].textContent, '✓');
+
     // Validate second headers
-    assert.equal(children[12].textContent, 'Upcoming Chrome browser updates');
-    assert.equal(children[13].textContent, 'Security / Privacy');
-    assert.equal(children[14].textContent, 'User productivity / Apps');
-    assert.equal(children[15].textContent, 'Management');
+    assert.equal(children[16].textContent, 'Upcoming Chrome browser updates');
+    assert.equal(children[17].textContent, 'Security / Privacy');
+    assert.equal(children[18].textContent, 'User productivity / Apps');
+    assert.equal(children[19].textContent, 'Management');
 
     // Validate first upcoming feature row
-    assert.equal(children[16].textContent, 'feature with upcoming rollout stages');
-    assert.notInclude(children[17].textContent, '✓');
-    assert.include(children[18].textContent, '✓');
-    assert.notInclude(children[19].textContent, '✓');
-
-    // Validate first upcoming feature row
-    assert.equal(children[20].textContent, 'feature with past and future rollout stages');
+    assert.equal(children[20].textContent, 'feature with upcoming rollout stages');
     assert.notInclude(children[21].textContent, '✓');
     assert.include(children[22].textContent, '✓');
     assert.notInclude(children[23].textContent, '✓');
+
+    // Validate first upcoming feature row
+    assert.equal(children[24].textContent, 'feature with past and future rollout stages');
+    assert.notInclude(children[25].textContent, '✓');
+    assert.include(children[26].textContent, '✓');
+    assert.notInclude(children[27].textContent, '✓');
   });
 
   it('renders detailed release with features in the right sections', async () => {
@@ -336,6 +373,42 @@ describe('chromedash-feature-page', () => {
         assert.equal(1, stages.length);
         assert.include(stages[0].textContent, 'Chrome 100: ');
         assert.include(stages[0].textContent, 'fake rollout details 100');
+
+        const screenshots = [...features[1].querySelectorAll('.screenshots img')];
+        assert.lengthOf(screenshots, 1);
+        assert.equal(screenshots[0].src, 'https://example.com/screenshot1');
+        assert.equal(screenshots[0].alt, `Feature screenshot 1`);
+      }
+
+      // Test feature 3
+      {
+        assert.equal(
+          'normal feature with shipping stage',
+          features[2].querySelector('strong').textContent);
+        assert.equal(
+          '< To remove - Owners: owner - Last Updated: updated when >',
+          features[2].querySelector('.toremove').textContent);
+        assert.equal(
+          'normal feature summary',
+          features[2].querySelector('.summary').textContent);
+        const stages = [...features[2].querySelectorAll('li')];
+        assert.equal(4, stages.length);
+        assert.include(stages[0].textContent, 'Chrome 100 on Windows, Mac, Linux, Android: ');
+        assert.include(
+          stages[0].textContent,
+          'Missing details, no rollout step was created for this');
+        assert.include(stages[1].textContent, 'Chrome 101 on Windows, Mac, Linux, Android: ');
+        assert.include(
+          stages[1].textContent,
+          'Missing details, no rollout step was created for this');
+        assert.include(stages[2].textContent, 'Chrome 102 on iOS, Android: ');
+        assert.include(
+          stages[2].textContent,
+          'Missing details, no rollout step was created for this');
+        assert.include(stages[3].textContent, 'Chrome 103 on iOS: ');
+        assert.include(
+          stages[3].textContent,
+          'Missing details, no rollout step was created for this');
 
         const screenshots = [...features[1].querySelectorAll('.screenshots img')];
         assert.lengthOf(screenshots, 1);

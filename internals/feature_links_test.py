@@ -124,8 +124,7 @@ class LinkTest(testing_config.CustomTestCase):
     # add invalid url to feature
     self.mock_user_change_fields(changed_fields)
     link = query.get()
-    self.assertIsNotNone(link)
-    self.assertIsNone(link.information)
+    self.assertIsNone(link)
 
   def test_features_with_same_link(self):
     url = "https://bugs.chromium.org/p/chromium/issues/detail?id=100000"

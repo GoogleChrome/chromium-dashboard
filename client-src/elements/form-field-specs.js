@@ -114,7 +114,7 @@ export const ALL_FIELDS = {
     required: true,
     label: 'Summary',
     enterprise_help_text: html`
-       <p>This text will be used in the enterprise release notes, which are publicly visible and primarily written for IT admins.</p>
+       <p>This text will be used in the <a href="https://support.google.com/chrome/a/answer/7679408" target="_blank">enterprise release notes</a>, which are publicly visible and primarily written for IT admins.</p>
        <p>Explain what's changing from the point of view of an end-user, developer, or administrator.
         Indicate what the motivation is for this change, especially if there’s security or privacy benefits to the change.
         If an admin should do something (like test or set a flag or an enterprise policy), please explain. Finally, if the change has
@@ -333,7 +333,7 @@ export const ALL_FIELDS = {
     required: false,
     label: 'Screenshots link(s)',
     help_text: html`
-        Link to screenshots showcasing this feature (one URL per line).`,
+        Optional: Link to screenshots showcasing this feature (one URL per line). These will be shared publicly.`,
   },
 
   'motivation': {
@@ -646,7 +646,7 @@ export const ALL_FIELDS = {
     type: 'input',
     attrs: URL_FIELD_ATTRS,
     required: false,
-    label: 'Ready for Develper Testing link',
+    label: 'Ready for Developer Testing link',
     help_text: html`After you have started the "Ready for Developer Testing"
                  discussion thread, link to it here.`,
   },
@@ -1016,6 +1016,68 @@ export const ALL_FIELDS = {
       Trials team.`,
   },
 
+  'ot_chromium_trial_name': {
+    type: 'input',
+    attrs: TEXT_FIELD_ATTRS,
+    required: false,
+    label: 'Chromium trial name',
+    help_text: html`
+      Name for the trial, as specified in <a target="_blank"
+      href="https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/runtime_enabled_features.json5"
+      >runtime_enabled_features.json5</a>.`,
+  },
+
+  'ot_documentation_url': {
+    type: 'input',
+    attrs: URL_FIELD_ATTRS,
+    required: false,
+    label: 'Documentation link',
+    help_text: html`
+      Link to more information to help developers use the trial's feature
+      (e.g. blog post, Github explainer, etc.).`,
+  },
+
+  'ot_has_third_party_support': {
+    type: 'checkbox',
+    initial: false,
+    label: 'Origin trial supports third party origins',
+    help_text: html`
+      Whether this trial supports third party origins. See
+      <a href="https://web.dev/third-party-origin-trials/">this article</a>
+      for more information.`,
+  },
+
+  'ot_is_critical_trial': {
+    type: 'checkbox',
+    initial: false,
+    label: 'Critical origin trial',
+    help_text: html`
+      See <a href="go/running-an-origin-trial">go/running-an-origin-trial</a>
+      for criteria and additional process requirements.`,
+  },
+
+  'ot_is_deprecation_trial': {
+    type: 'checkbox',
+    initial: false,
+    label: 'Deprecation trial',
+    help_text: html`
+      Is this a deprecation trial? See the
+      <a href="https://www.chromium.org/blink/launching-features/#deprecation-trial"
+      >deprecation trial section</a> for more information.`,
+  },
+
+  'ot_webfeature_use_counter': {
+    type: 'input',
+    attrs: TEXT_FIELD_ATTRS,
+    required: false,
+    label: 'WebFeature UseCounter name',
+    help_text: html`
+    For measuring usage, this must be a single named value from the
+    WebFeature enum, e.g. kWorkerStart. See
+    <a href="https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom"
+    >web_feature.mojom</a>.`,
+  },
+
   'anticipated_spec_changes': {
     type: 'textarea',
     attrs: {rows: 4},
@@ -1363,7 +1425,7 @@ export const ALL_FIELDS = {
     required: false,
     label: 'Rollout milestone',
     help_text: html`
-      The milestone in which this stage rolls out to the stable channel (even a 1% rollout)`,
+    The milestone in which this stage rolls out to the stable channel (even a 1% rollout). If you don't yet know which milestone it will be, put in your best estimate. You can always change this later.`,
   },
 
   'rollout_platforms': {

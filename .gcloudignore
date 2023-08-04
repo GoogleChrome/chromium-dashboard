@@ -49,3 +49,6 @@ tutorial-env
 
 # Testdata for Python tests
 testdata
+
+# API Key for local development
+ot_api_key.txt
