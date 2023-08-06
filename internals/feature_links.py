@@ -283,7 +283,7 @@ class UpdateAllFeatureLinksHandlers(FlaskHandler):
     self.require_cron_header()
 
     should_notify_on_error = self.get_bool_arg('should_notify_on_error', True)
-    update_all_links = self.get_bool_arg('update_all_links', False)
+    no_filter = self.get_bool_arg('no_filter', False)
 
     feature_links = FeatureLinks.query().fetch(
       projection=[
@@ -297,7 +297,7 @@ class UpdateAllFeatureLinksHandlers(FlaskHandler):
 
     ids_to_update = []
 
-    if update_all_links:
+    if no_filter:
       # for backfill purposes
       ids_to_update = [fe.key.integer_id() for fe in feature_links]
     else:
