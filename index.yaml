@@ -471,3 +471,4 @@ indexes:
   - name: is_error
   - name: type
   - name: url
+  - name: updated
