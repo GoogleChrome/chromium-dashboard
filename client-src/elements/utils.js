@@ -298,8 +298,8 @@ export function formatFeatureChanges(fieldValues, featureId) {
   // Multiple stages can be mutated, so this object is a stage of stages.
   const stages = {};
   for (const {name, touched, value, stageId, implicitValue} of fieldValues) {
-    // Only submit changes for touched fields.
-    if (!touched) {
+    // Only submit changes for touched fields or accuracy verification updates.
+    if (!touched && (name !== 'accurate_as_of' || value !== true)) {
       continue;
     }
 
