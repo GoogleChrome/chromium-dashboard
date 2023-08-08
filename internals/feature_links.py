@@ -226,17 +226,22 @@ def batch_index_feature_entries(fes: list[FeatureEntry], skip_existing: bool) ->
   return link_count
 
 
+def get_domain_with_scheme(url):
+  try:
+    parse_result = urlparse(url)
+    scheme = parse_result.scheme
+    host = parse_result.netloc
+  except ValueError as e:
+    return 'Invalid: ' + url[:30]
+  return f"{scheme}://{host}"
+
+
 def get_feature_links_summary():
   """
   The function `get_feature_links_summary` retrieves feature links from a database, groups them by
   type and uncovered domains, and returns a summary of the counts and types of links.
   """
-
   MAX_RESULTS = 100
-
-  def get_domain_with_scheme(url):
-    scheme, host = urlparse(url).scheme, urlparse(url).netloc
-    return f"{scheme}://{host}"
 
   feature_links = FeatureLinks.query().fetch(
       projection=[
