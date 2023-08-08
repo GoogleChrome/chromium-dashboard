@@ -57,11 +57,11 @@ import settings
 
 # Sets up Cloud Logging client library.
 # TODO(jrobbins): Re-enable Google Cloud Logging when #3197 is resolved.
-# if not settings.UNIT_TEST_MODE and not settings.DEV_MODE:
-#   import google.cloud.logging
-#   client = google.cloud.logging.Client()
-#   client.get_default_handler()
-#   client.setup_logging()
+if True: #not settings.UNIT_TEST_MODE and not settings.DEV_MODE:
+  import google.cloud.logging
+  client = google.cloud.logging.Client()
+  client.get_default_handler()
+  client.setup_logging()
 
 
 # Note: In the URLs below, parameters like <int:feature_id> are
