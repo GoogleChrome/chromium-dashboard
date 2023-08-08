@@ -167,8 +167,11 @@ export class ChromedashHeader extends LitElement {
 
     // user is passed in from chromedash-app, but the user is not logged in
     if (!this.user) {
-      this.initializeGoogleSignIn();
-      this.initializeTestingSignIn();
+      if (this.devMode == 'False') {
+        this.initializeGoogleSignIn();
+      } else {
+        this.initializeTestingSignIn();
+      }
       return;
     }
 
@@ -177,7 +180,13 @@ export class ChromedashHeader extends LitElement {
     this.loading = true;
     window.csClient.getPermissions().then((user) => {
       this.user = user;
-      if (!this.user) this.initializeGoogleSignIn();
+      if (!this.user) {
+        if (this.devMode == 'False') {
+          this.initializeGoogleSignIn();
+        } else {
+          this.initializeTestingSignIn();
+        }
+      }
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     }).finally(() => {
@@ -196,6 +205,9 @@ export class ChromedashHeader extends LitElement {
     // so we create signInButton element at the document level and insert it
     // in the light DOM of the header, which will be rendered in the <slot> below
     const signInButton = document.createElement('div');
+    signInButton.setAttribute('style', 'width:200px; height:40px;');
+    signInButton.setAttribute('data-testid', 'google-signin-button');
+    signInButton.setAttribute('data-auto_prompt', 'false');
     google.accounts.id.renderButton(signInButton, {type: 'standard'});
     const appComponent = document.querySelector('chromedash-app');
     if (appComponent) {
