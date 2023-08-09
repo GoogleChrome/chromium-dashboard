@@ -6,10 +6,6 @@ import {html} from 'lit';
 import {enhanceAutolink} from './feature-link.js';
 const CRBUG_DEFAULT_PROJECT = 'chromium';
 const CRBUG_URL = 'https://bugs.chromium.org';
-const CRBUG_LINK_RE = /(\b(https?:\/\/)?crbug\.com\/)((\b[-a-z0-9]+)(\/))?(\d+)\b(\#c[0-9]+)?/gi;
-const CRBUG_LINK_RE_PROJECT_GROUP = 4;
-const CRBUG_LINK_RE_ID_GROUP = 6;
-const CRBUG_LINK_RE_COMMENT_GROUP = 7;
 const ISSUE_TRACKER_RE = /(\b(issues?|bugs?)[ \t]*(:|=|\b)|\bfixed[ \t]*:)([ \t]*((\b[-a-z0-9]+)[:\#])?(\#?)(\d+)\b(,?[ \t]*(and|or)?)?)+/gi;
 const PROJECT_LOCALID_RE = /((\b(issue|bug)[ \t]*(:|=)?[ \t]*|\bfixed[ \t]*:[ \t]*)?((\b[-a-z0-9]+)[:\#])?(\#?)(\d+))/gi;
 const PROJECT_COMMENT_BUG_RE = /(((\b(issue|bug)[ \t]*(:|=)?[ \t]*)(\#?)(\d+)[ \t*])?((\b((comment)[ \t]*(:|=)?[ \t]*(\#?))|(\B((\#))(c)))(\d+)))/gi;
@@ -38,13 +34,6 @@ Components.set(
   {
     refRegs: [PROJECT_COMMENT_BUG_RE],
     replacer: replaceCommentBugRef,
-  },
-);
-Components.set(
-  '01-tracker-crbug',
-  {
-    refRegs: [CRBUG_LINK_RE],
-    replacer: replaceCrbugIssueRef,
   },
 );
 Components.set(
@@ -78,19 +67,6 @@ Components.set(
 // Replace plain text references with links functions.
 function replaceIssueRef(stringMatch, projectName, localId, commentId) {
   return createIssueRefRun(projectName, localId, stringMatch, commentId);
-}
-
-function replaceCrbugIssueRef(match) {
-  // When crbug links don't specify a project, the default project is Chromium.
-  const projectName =
-    match[CRBUG_LINK_RE_PROJECT_GROUP] || CRBUG_DEFAULT_PROJECT;
-  const localId = match[CRBUG_LINK_RE_ID_GROUP];
-  let commentId = '';
-  if (match[CRBUG_LINK_RE_COMMENT_GROUP] !== undefined) {
-    commentId = match[CRBUG_LINK_RE_COMMENT_GROUP];
-  }
-  return [replaceIssueRef(match[0], projectName, localId,
-    commentId)];
 }
 
 function replaceTrackerIssueRef(match, currentProjectName=CRBUG_DEFAULT_PROJECT) {
