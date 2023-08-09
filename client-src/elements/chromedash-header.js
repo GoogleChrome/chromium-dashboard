@@ -316,7 +316,7 @@ export class ChromedashHeader extends LitElement {
     }
 
     return html`
-      <header>
+      <header data-testid="header">
         <sl-icon-button variant="text" library="material" class="menu"
           style="font-size: 2.4rem;" name="menu_20px" @click="${this.handleDrawer}">
         </sl-icon-button >

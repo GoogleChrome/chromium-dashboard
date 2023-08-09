@@ -47,6 +47,7 @@
     "pwtests-build": "docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml build --build-arg USERID=$(id -u ${USER}) --build-arg GROUPID=$(id -g ${USER})",
     "pwtests": "npm run pwtests-build && docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml run playwright bash -c \"./.playwright/wait-for-app.sh && npx playwright test\"",
     "pwtests-update": "npm run pwtests-build && docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml run playwright bash -c \"./.playwright/wait-for-app.sh && npx playwright test --update-snapshots\"",
+    "pwtests-report": "npm run pwtests-build && docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml run playwright bash -c \"./.playwright/wait-for-app.sh && npx playwright show-report\"",
     "pwtests-shell": "npm run pwtests-build && docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml run playwright bash",
     "pwtests-ui": "npm run pwtests-build && docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml run playwright bash -c \"./.playwright/wait-for-app.sh && npx playwright test --ui --ui-port=8123\"",
     "pwtests-shutdown": "docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml down"
