@@ -28,6 +28,7 @@ from google.cloud import ndb  # type: ignore
 LINK_STALE_MINUTES = 30
 CRON_JOB_LINK_STALE_DAYS = 8
 
+
 class FeatureLinks(ndb.Model):
   """Links that occur in the fields of the feature.
   This helps show a preview of information of linked pages, saving users the trouble of clicking.
@@ -66,6 +67,7 @@ def update_feature_links(fe: FeatureEntry, changed_fields: list[tuple[str, Any, 
           if feature_link:
             feature_link.put()
             logging.info(f'Indexed feature_link {feature_link.url} to {feature_link.key.integer_id()} for feature {fe.key.integer_id()}')
+
 
 def _get_index_link(link: Link, fe: FeatureEntry, should_parse_new_link: bool = False) -> FeatureLinks | None:
   """
@@ -166,7 +168,8 @@ class FeatureLinksUpdateHandler(FlaskHandler):
     return {'message': 'Done'}
 
 
-def _index_feature_links_by_ids(feature_link_ids: list[Any], should_notify_on_error) -> None:
+def _index_feature_links_by_ids(
+        feature_link_ids: list[Any], should_notify_on_error: bool) -> None:
   """index the links in the given feature links ids"""
   for feature_link_id in feature_link_ids:
     feature_link: FeatureLinks = FeatureLinks.get_by_id(feature_link_id)
@@ -190,7 +193,6 @@ def _index_feature_links_by_ids(feature_link_ids: list[Any], should_notify_on_er
 
       feature_link.type = link.type
       feature_link.put()
-
 
 
 def _extract_feature_urls(fe: FeatureEntry) -> list[str]:
@@ -272,6 +274,7 @@ def get_feature_links_summary():
       "uncovered_link_domains": uncovered_link_domains,
   }
 
+
 class UpdateAllFeatureLinksHandlers(FlaskHandler):
 
   def get_template_data(self, **kwargs) -> str:
@@ -279,20 +282,20 @@ class UpdateAllFeatureLinksHandlers(FlaskHandler):
     retrieves feature links from a database, identifies which links need to be updated based on certain conditions, 
     and enqueues tasks to update those links in batches.
     """
-    
+
     self.require_cron_header()
 
     should_notify_on_error = self.get_bool_arg('should_notify_on_error', True)
     no_filter = self.get_bool_arg('no_filter', False)
 
     feature_links = FeatureLinks.query().fetch(
-      projection=[
-        FeatureLinks.url,
-        FeatureLinks.type,
-        FeatureLinks.is_error,
-        FeatureLinks.http_error_code,
-        FeatureLinks.updated,
-      ]
+        projection=[
+            FeatureLinks.url,
+            FeatureLinks.type,
+            FeatureLinks.is_error,
+            FeatureLinks.http_error_code,
+            FeatureLinks.updated,
+        ]
     )
 
     ids_to_update = []
@@ -302,7 +305,7 @@ class UpdateAllFeatureLinksHandlers(FlaskHandler):
       ids_to_update = [fe.key.integer_id() for fe in feature_links]
     else:
       stale_time = datetime.datetime.now(
-      tz=datetime.timezone.utc) - datetime.timedelta(days=CRON_JOB_LINK_STALE_DAYS)
+          tz=datetime.timezone.utc) - datetime.timedelta(days=CRON_JOB_LINK_STALE_DAYS)
       stale_time = stale_time.replace(tzinfo=None)
       for fe in feature_links:
         # if stale
