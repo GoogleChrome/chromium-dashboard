@@ -26,3 +26,6 @@ cron:
 - description: Removes any users that have been inactive for 9 months.
   url: /cron/remove_inactive_users
   schedule: 1st monday of month 9:00
+- description: Update all feature links that are staled.
+  url: /cron/update_all_feature_links
+  schedule: every tuesday 05:00

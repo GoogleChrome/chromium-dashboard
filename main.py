@@ -229,6 +229,7 @@ internals_routes: list[Route] = [
   Route('/cron/remove_inactive_users',
       inactive_users.RemoveInactiveUsersHandler),
   Route('/cron/reindex_all', search_fulltext.ReindexAllFeatures),
+  Route('/cron/update_all_feature_links', feature_links.UpdateAllFeatureLinksHandlers),
 
   Route('/admin/find_stop_words', search_fulltext.FindStopWords),
 

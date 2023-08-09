@@ -16,9 +16,13 @@
 import testing_config
 from unittest import mock
 from internals.core_models import FeatureEntry
-from internals.feature_links import FeatureLinks, update_feature_links, get_feature_links_summary
+from internals.feature_links import FeatureLinks, update_feature_links, get_domain_with_scheme, get_feature_links_summary, UpdateAllFeatureLinksHandlers
 from internals.link_helpers import LINK_TYPE_CHROMIUM_BUG, LINK_TYPE_WEB
+from google.cloud import ndb
+from datetime import datetime
+import flask
 
+test_app = flask.Flask(__name__)
 
 class LinkTest(testing_config.CustomTestCase):
 
@@ -52,41 +56,72 @@ class LinkTest(testing_config.CustomTestCase):
 
     update_feature_links(target_feature, changed_fields)
 
+  def test_get_domain_and_scheme__valid(self):
+    self.assertEqual(
+        'https://example.com',
+        get_domain_with_scheme('https://example.com'))
+    self.assertEqual(
+        'https://example.com',
+        get_domain_with_scheme('https://example.com/'))
+    self.assertEqual(
+        'https://example.com',
+        get_domain_with_scheme('https://example.com/something?foo=bar#baz'))
+    self.assertEqual(
+        'https://localhost',
+        get_domain_with_scheme('https://localhost'))
+    self.assertEqual(
+        'https://localhost:8080',
+        get_domain_with_scheme('https://localhost:8080'))
+    self.assertEqual(
+        'https://192.168.0.1',
+        get_domain_with_scheme('https://192.168.0.1/'))
+    self.assertEqual(
+        'https://[2a01:5cc0:1:2::4]',
+        get_domain_with_scheme('https://[2a01:5cc0:1:2::4]/something'))
+
+  def test_get_domain_and_scheme__invalid(self):
+    self.assertEqual(
+        'Invalid: https://[2a01:5cc0:1:2:$::4]/s',
+        get_domain_with_scheme('https://[2a01:5cc0:1:2:$::4]/something'))
+    self.assertEqual(
+        'Invalid: http://[::1.2.3',
+        get_domain_with_scheme('http://[::1.2.3'))
+
   def test_get_feature_links_summary(self):
     links = [
-      FeatureLinks(url='https://bugs.chromium.org/p/chromium/issues/detail?id=100000', type=LINK_TYPE_CHROMIUM_BUG),
-      FeatureLinks(url='https://docs.google.com/document/d/xxx', type=LINK_TYPE_WEB),
-      FeatureLinks(url='https://docs.google.com/spreadsheets/d/xxx', type=LINK_TYPE_WEB),
-      FeatureLinks(url='https://www.google.com', type=LINK_TYPE_WEB),
+        FeatureLinks(url='https://bugs.chromium.org/p/chromium/issues/detail?id=100000', type=LINK_TYPE_CHROMIUM_BUG),
+        FeatureLinks(url='https://docs.google.com/document/d/xxx', type=LINK_TYPE_WEB),
+        FeatureLinks(url='https://docs.google.com/spreadsheets/d/xxx', type=LINK_TYPE_WEB),
+        FeatureLinks(url='https://www.google.com', type=LINK_TYPE_WEB),
     ]
     for link in links:
       link.put()
     summary = get_feature_links_summary()
 
     self.assertEqual(
-          summary,
-          {
-              "total_count": 4,
-              "covered_count": 1,
-              "uncovered_count": 3,
-              "link_types": [
-                  {"key": "web", "count": 3},
-                  {"key": "chromium_bug", "count": 1},
-              ],
-              "uncovered_link_domains": [
+        summary,
+        {
+            "total_count": 4,
+            "covered_count": 1,
+            "uncovered_count": 3,
+            "link_types": [
+                {"key": "web", "count": 3},
+                {"key": "chromium_bug", "count": 1},
+            ],
+            "uncovered_link_domains": [
                 {"key": "https://docs.google.com", "count": 2},
                 {"key": "https://www.google.com", "count": 1},
-              ],
-          },
-      )
+            ],
+        },
+    )
 
   def test_feature_changed_add_and_remove_url(self):
     url = "https://bugs.chromium.org/p/chromium/issues/detail?id=100000"
     query = FeatureLinks.query(FeatureLinks.url == url)
 
     changed_fields = [
-      ('bug_url', None, url),
-      ('launch_bug_url', None, url),
+        ('bug_url', None, url),
+        ('launch_bug_url', None, url),
     ]
 
     # add two same links in a feature fields
@@ -108,7 +143,7 @@ class LinkTest(testing_config.CustomTestCase):
 
     # remove launch_bug_url field, the link should be deleted
     changed_fields_remove = [
-      ('launch_bug_url', url, None)]
+        ('launch_bug_url', url, None)]
     self.mock_user_change_fields(changed_fields_remove)
     link = query.get()
     self.assertIsNone(link)
@@ -118,7 +153,7 @@ class LinkTest(testing_config.CustomTestCase):
     url = "https://bugs.chromium.org/p/chromium/issues/detail?id=100000000000"
     query = FeatureLinks.query(FeatureLinks.url == url)
     changed_fields = [
-      ('bug_url', None, url),
+        ('bug_url', None, url),
     ]
 
     # add invalid url to feature
@@ -130,7 +165,7 @@ class LinkTest(testing_config.CustomTestCase):
     url = "https://bugs.chromium.org/p/chromium/issues/detail?id=100000"
     query = FeatureLinks.query(FeatureLinks.url == url)
     changed_fields = [
-      ('bug_url', None, url),
+        ('bug_url', None, url),
     ]
     # add same link to both features
     self.mock_user_change_fields(changed_fields)
@@ -142,8 +177,36 @@ class LinkTest(testing_config.CustomTestCase):
 
     # remove link from one feature
     changed_fields_remove = [
-      ('bug_url', url, None)]
+        ('bug_url', url, None)]
     self.mock_user_change_fields(changed_fields_remove)
     link = query.get()
     self.assertNotIn(self.feature_id, link.feature_ids)
     self.assertIn(self.feature2_id, link.feature_ids)
+
+  def test_update_all_feature_links(self):
+    feature_links = [
+        # not stale feature link
+        FeatureLinks(
+            url='https://docs.google.com/',
+            type=LINK_TYPE_WEB,
+        ),
+        # link type changed
+        FeatureLinks(
+            url='https://bugs.chromium.org/p/chromium/issues/detail?id=100000',
+            type=LINK_TYPE_WEB
+        ),
+        # link with error
+        FeatureLinks(
+            url='https://docs.google.com/document/d/xxx',
+            type=LINK_TYPE_WEB,
+            is_error=True,
+        ),
+    ]
+    ndb.put_multi(feature_links)
+
+    update_all_feature_links = UpdateAllFeatureLinksHandlers()
+    with test_app.test_request_context('/cron/update_all_feature_links', query_string={'should_notify_on_error': False}):
+      result = update_all_feature_links.get_template_data()
+    expected = 'Started updating 2 Feature Links in 1 batches'
+    
+    self.assertEqual(result, expected)
