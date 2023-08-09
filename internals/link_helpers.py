@@ -37,11 +37,11 @@ LINK_TYPE_WEB = 'web'
 LINK_TYPES_REGEX = {
     # https://bugs.chromium.org/p/chromium/issues/detail?id=
     # https://crbug.com/
-    LINK_TYPE_CHROMIUM_BUG: re.compile(r'https://bugs\.chromium\.org/p/chromium/issues/detail\?.*|https://crbug\.com/\d+'),
+    LINK_TYPE_CHROMIUM_BUG: re.compile(r'https?://bugs\.chromium\.org/p/chromium/issues/detail\?.*|https?://crbug\.com/\d+'),
     # https://github.com/GoogleChrome/chromium-dashboard/issues/999
-    LINK_TYPE_GITHUB_ISSUE: re.compile(r'https://(www\.)?github\.com/.*issues/\d+'),
+    LINK_TYPE_GITHUB_ISSUE: re.compile(r'https?://(www\.)?github\.com/.*issues/\d+'),
     # https://github.com/w3c/reporting/blob/master/EXPLAINER.md
-    LINK_TYPE_GITHUB_MARKDOWN: re.compile(r'https://(www\.)?github\.com/.*\.md.*'),
+    LINK_TYPE_GITHUB_MARKDOWN: re.compile(r'https?://(www\.)?github\.com/.*\.md.*'),
     LINK_TYPE_WEB: re.compile(r'https?://.*'),
 }
 
