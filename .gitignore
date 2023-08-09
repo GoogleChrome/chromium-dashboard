@@ -39,3 +39,6 @@ cs-env
 /test-results/
 /playwright-report/
 /playwright/.cache/
+
+# API Key for local development
+ot_api_key.txt

@@ -292,7 +292,13 @@ const FLAT_ORIGIN_TRIAL_FIELDS = {
         // TODO(jrobbins): display r4dt_url instead when deprecating.
         'i2e_lgtms',
         'intent_to_experiment_url',
+        'ot_chromium_trial_name',
+        'ot_webfeature_use_counter',
+        'ot_documentation_url',
         'origin_trial_feedback_url',
+        'ot_is_deprecation_trial',
+        'ot_has_third_party_support',
+        'ot_is_critical_trial',
       ],
     },
     // Implementation
@@ -521,7 +527,13 @@ const DEPRECATION_ORIGIN_TRIAL_FIELDS = {
         'ongoing_constraints',
         'r4dt_url', // map to name="intent_to_experiment_url" field upon form submission
         'r4dt_lgtms', // map to name="i2e_lgtms" field upon form submission
+        'ot_chromium_trial_name',
+        'ot_webfeature_use_counter',
+        'ot_documentation_url',
         'origin_trial_feedback_url',
+        'ot_is_deprecation_trial',
+        'ot_has_third_party_support',
+        'ot_is_critical_trial',
       ],
     },
     // Implementation
@@ -747,11 +759,17 @@ const BLINK_GENERIC_QUESTIONNAIRE = (
 );
 
 const PRIVACY_GENERIC_QUESTIONNAIRE = (
-  `To request a review, use the "Request review" button above.`
+  html`<p><b>Please fill out the Security &amp; Privacy self-review questionnaire: <a href="https://www.w3.org/TR/security-privacy-questionnaire/" target="_blank">https://www.w3.org/TR/security-privacy-questionnaire</a>/</b></p>
+<p>Share it as a public document, as a file in your repository, or in any other public format of your choice.</p>
+<p>You can reuse the same filled-out questionnaire in the security review below, across all stages of this ChromeStatus entry, and across all entries related to the same API. If you updated an existing questionnaire to reflect new changes to the API, please highlight them for an easier review.</p>
+<p><b>If you believe your feature has no privacy impact</b> and none of the questions in the questionnaire apply, you can provide a justification instead, e.g. "Removing a prefix from the API, no changes to functionality" or "New CSS property that doesn't depend on the user state, therefore doesn't reveal any user information". Note that if your reviewer disagrees with the justification, they may ask you to fill out the questionnaire nevertheless.</p>`
 );
 
 const SECURITY_GENERIC_QUESTIONNAIRE = (
-  `To request a review, use the "Request review" button above.`
+  html`<p><b>Please fill out the Security &amp; Privacy self-review questionnaire: <a href="https://www.w3.org/TR/security-privacy-questionnaire/" target="_blank">https://www.w3.org/TR/security-privacy-questionnaire</a>/</b></p>
+<p>Share it as a public document, as a file in your repository, or in any other public format of your choice.</p>
+<p>You can reuse the same filled-out questionnaire in the privacy review above, across all stages of this ChromeStatus entry, and across all entries related to an API. If you updated an existing questionnaire to reflect new changes to the API, please highlight them for an easier review.</p>
+<p><b>If you believe your feature has no security impact</b> and none of the questions in the questionnaire apply, you can provide a justification instead. Note that if your reviewer disagrees with the justification, they may ask you to fill out the questionnaire nevertheless.</p>`
 );
 
 const ENTERPRISE_SHIP_QUESTIONNAIRE = (

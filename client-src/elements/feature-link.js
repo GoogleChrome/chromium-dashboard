@@ -196,7 +196,7 @@ function enhanceGithubMarkdownLink(featureLink, text) {
   </a>`;
 }
 
-function _enhanceLink(featureLink, fallback, text) {
+function _enhanceLink(featureLink, fallback, text, ignoreHttpErrorCodes = []) {
   if (!fallback) {
     throw new Error('fallback html is required');
   }
@@ -204,7 +204,8 @@ function _enhanceLink(featureLink, fallback, text) {
     return fallback;
   }
   if (!featureLink.information) {
-    if (featureLink.http_error_code) {
+    if (featureLink.http_error_code &&
+       !ignoreHttpErrorCodes.includes(featureLink.http_error_code)) {
       return html`<div class="feature-link">
         <sl-tag>
           <sl-icon library="material" name="link"></sl-icon>
@@ -248,5 +249,5 @@ export function enhanceUrl(url, featureLinks = [], fallback, text) {
 
 export function enhanceAutolink(part, featureLink) {
   const fallback = html`<a href="${part.href}" target="_blank" rel="noopener noreferrer">${part.content}</a>`;
-  return _enhanceLink(featureLink, fallback);
+  return _enhanceLink(featureLink, fallback, part.content, [404]);
 }

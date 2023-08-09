@@ -28,6 +28,7 @@ from api import feature_links_api
 from api import login_api
 from api import logout_api
 from api import metricsdata
+from api import origin_trials_api
 from api import permissions_api
 from api import processes_api
 from api import reviews_api
@@ -95,6 +96,7 @@ api_routes: list[Route] = [
     Route(f'{API_BASE}/features/<int:feature_id>', features_api.FeaturesAPI),
     Route(f'{API_BASE}/features/create', features_api.FeaturesAPI),
     Route(f'{API_BASE}/feature_links', feature_links_api.FeatureLinksAPI),
+    Route(f'{API_BASE}/feature_links_summary', feature_links_api.FeatureLinksSummaryAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/votes',
         reviews_api.VotesAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/votes/<int:gate_id>',
@@ -138,6 +140,7 @@ api_routes: list[Route] = [
     # (f'{API_BASE}/schedule', TODO),  # chromiumdash data
     # (f'{API_BASE}/metrics/<str:kind>', TODO),  # uma-export data
     # (f'{API_BASE}/metrics/<str:kind>/<int:bucket_id>', TODO),
+    Route(f'{API_BASE}/origintrials', origin_trials_api.OriginTrialsAPI),
 ]
 
 # The Routes below that have no handler specified use SPAHandler.
@@ -187,6 +190,7 @@ spa_page_routes = [
     defaults={'require_signin': True, 'is_enterprise_page': True}),
   # Admin pages
   Route('/admin/blink', defaults={'require_admin_site': True, 'require_signin': True}),
+  Route('/admin/feature_links', defaults={'require_admin_site': True, 'require_signin': True}),
   Route('/admin/slo_report', reminders.SLOReportHandler),
 ]
 
@@ -225,6 +229,7 @@ internals_routes: list[Route] = [
   Route('/cron/remove_inactive_users',
       inactive_users.RemoveInactiveUsersHandler),
   Route('/cron/reindex_all', search_fulltext.ReindexAllFeatures),
+  Route('/cron/update_all_feature_links', feature_links.UpdateAllFeatureLinksHandlers),
 
   Route('/admin/find_stop_words', search_fulltext.FindStopWords),
 

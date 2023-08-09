@@ -1,6 +1,7 @@
 import logging
 import os
-from typing import Any, Optional
+
+from framework.secrets import get_ot_api_key
 
 
 ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -12,7 +13,7 @@ def get_flask_template_path() -> str:
 
 # By default, send all email to an archive for debugging.
 # For the live cr-status server, this setting is None.
-SEND_ALL_EMAIL_TO: Optional[str] = (
+SEND_ALL_EMAIL_TO: str|None = (
     'cr-status-staging-emails+%(user)s+%(domain)s@google.com')
 
 BOUNCE_ESCALATION_ADDR = 'cr-status-bounces@google.com'
@@ -74,6 +75,9 @@ REVIEW_COMMENT_MAILING_LIST = 'jrobbins-test@googlegroups.com'
 # Truncate some log lines to stay under limits of Google Cloud Logging.
 MAX_LOG_LINE = 200 * 1000
 
+# Origin trials API URL
+OT_API_URL = 'https://staging-chromeorigintrials-pa.sandbox.googleapis.com'
+OT_API_KEY: str|None = None  # Value is set later when request is needed.
 
 if UNIT_TEST_MODE:
   APP_TITLE = 'Local testing'
@@ -89,6 +93,7 @@ elif APP_ID == 'cr-status':
   SEND_EMAIL = True
   SEND_ALL_EMAIL_TO = None  # Deliver it to the intended users
   SITE_URL = 'https://chromestatus.com/'
+  OT_API_URL = 'https://chromeorigintrials-pa.googleapis.com'
   GOOGLE_SIGN_IN_CLIENT_ID = (
       '999517574127-7ueh2a17bv1ave9thlgtap19pt5qjp4g.'
       'apps.googleusercontent.com')

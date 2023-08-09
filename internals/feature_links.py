@@ -16,14 +16,17 @@
 import logging
 import datetime
 from framework import cloud_tasks_helpers
-from framework import basehandlers
+from framework.basehandlers import FlaskHandler
 from typing import Any
+from urllib.parse import urlparse
 from internals.core_models import FeatureEntry
 from internals.link_helpers import Link
+from collections import Counter
 
 from google.cloud import ndb  # type: ignore
 
 LINK_STALE_MINUTES = 30
+CRON_JOB_LINK_STALE_DAYS = 8
 
 
 class FeatureLinks(ndb.Model):
@@ -59,14 +62,17 @@ def update_feature_links(fe: FeatureEntry, changed_fields: list[tuple[str, Any, 
           _remove_link(link, fe)
       for url in urls_to_add:
         link = Link(url)
-        feature_link = _get_index_link(link, fe, should_parse_new_link=True)
-        feature_link.put()
-        logging.info(f'Indexed feature_link {feature_link.url} to {feature_link.key.integer_id()} for feature {fe.key.integer_id()}')
+        if link.type:
+          feature_link = _get_index_link(link, fe, should_parse_new_link=True)
+          if feature_link:
+            feature_link.put()
+            logging.info(f'Indexed feature_link {feature_link.url} to {feature_link.key.integer_id()} for feature {fe.key.integer_id()}')
 
-def _get_index_link(link: Link, fe: FeatureEntry, should_parse_new_link: bool = False) -> FeatureLinks:
+
+def _get_index_link(link: Link, fe: FeatureEntry, should_parse_new_link: bool = False) -> FeatureLinks | None:
   """
   indexes a given link for a specific feature by creating or updating a `FeatureLinks` object.
-  Returns the `FeatureLinks` object.
+  Returns the `FeatureLinks` object or None.
   """
 
   feature_id = fe.key.integer_id()
@@ -79,6 +85,8 @@ def _get_index_link(link: Link, fe: FeatureEntry, should_parse_new_link: bool = 
   else:
     if should_parse_new_link:
       link.parse()
+      if link.is_error:
+        return None
     feature_link = FeatureLinks(
         feature_ids=[feature_id],
         type=link.type,
@@ -136,12 +144,13 @@ def get_by_feature_id(feature_id: int, update_stale_links: bool) -> tuple[list[d
     feature_link_ids = [link.key.id() for link in stale_feature_links]
     cloud_tasks_helpers.enqueue_task(
         '/tasks/update-feature-links', {
-            'feature_link_ids': feature_link_ids
+            'feature_link_ids': feature_link_ids,
+            'should_notify_on_error': False
         })
   return [link.to_dict(include=['url', 'type', 'information', 'http_error_code']) for link in feature_links], has_stale_links
 
 
-class FeatureLinksUpdateHandler(basehandlers.FlaskHandler):
+class FeatureLinksUpdateHandler(FlaskHandler):
   """This task handles update feature links information with the given ids."""
 
   IS_INTERNAL_HANDLER = True
@@ -152,13 +161,15 @@ class FeatureLinksUpdateHandler(basehandlers.FlaskHandler):
     logging.info('Starting indexing feature links')
 
     feature_link_ids = self.get_param('feature_link_ids')
+    should_notify_on_error = self.get_bool_param('should_notify_on_error', False)
 
-    _index_feature_links_by_ids(feature_link_ids)
+    _index_feature_links_by_ids(feature_link_ids, should_notify_on_error=should_notify_on_error)
     logging.info('Finished indexing feature links')
     return {'message': 'Done'}
 
 
-def _index_feature_links_by_ids(feature_link_ids: list[Any]) -> None:
+def _index_feature_links_by_ids(
+        feature_link_ids: list[Any], should_notify_on_error: bool) -> None:
   """index the links in the given feature links ids"""
   for feature_link_id in feature_link_ids:
     feature_link: FeatureLinks = FeatureLinks.get_by_id(feature_link_id)
@@ -166,17 +177,22 @@ def _index_feature_links_by_ids(feature_link_ids: list[Any]) -> None:
       link = Link(feature_link.url)
       link.parse()
       if link.is_error:
+        if not feature_link.is_error and should_notify_on_error:
+          # TODO: if feature_link turns from no-error to error, notify users
+          pass
+        if link.http_error_code:
+          feature_link.http_error_code = link.http_error_code
         feature_link.is_error = link.is_error
+        logging.info(f'Update indexed link {feature_link_id} {feature_link.url} encountered error')
       else:
-        # only update the information if it is not an error
+        # update the information if it is not an error
         feature_link.information = link.information
+        feature_link.is_error = False
+        feature_link.http_error_code = None
+        logging.info(f'Update indexed link {feature_link_id} {feature_link.url} successfully')
 
-      if link.http_error_code:
-        feature_link.http_error_code = link.http_error_code
       feature_link.type = link.type
       feature_link.put()
-
-    logging.info(f'Update information for indexed link {link.url}')
 
 
 def _extract_feature_urls(fe: FeatureEntry) -> list[str]:
@@ -205,9 +221,120 @@ def batch_index_feature_entries(fes: list[FeatureEntry], skip_existing: bool) ->
         continue
 
     urls = _extract_feature_urls(fe)
-    feature_links = [_get_index_link(Link(url), fe, should_parse_new_link=False) for url in urls]
+    feature_links = []
+    for url in urls:
+      link = Link(url)
+      if link.type:
+        fl = _get_index_link(link, fe, should_parse_new_link=False)
+        if fl:
+          feature_links.append(fl)
+
     ndb.put_multi(feature_links)
     link_count += len(feature_links)
     logging.info(f'Feature {fe.key.integer_id()} indexed {len(feature_links)} urls')
 
   return link_count
+
+
+def get_domain_with_scheme(url):
+  try:
+    parse_result = urlparse(url)
+    scheme = parse_result.scheme
+    host = parse_result.netloc
+  except ValueError as e:
+    return 'Invalid: ' + url[:30]
+  return f"{scheme}://{host}"
+
+
+def get_feature_links_summary():
+  """
+  The function `get_feature_links_summary` retrieves feature links from a database, groups them by
+  type and uncovered domains, and returns a summary of the counts and types of links.
+  """
+  MAX_RESULTS = 100
+
+  feature_links = FeatureLinks.query().fetch(
+      projection=[
+          FeatureLinks.feature_ids,
+          FeatureLinks.url,
+          FeatureLinks.type,
+          FeatureLinks.is_error,
+          FeatureLinks.http_error_code,
+      ]
+  )
+  links = [item.to_dict() for item in feature_links]
+  uncovered_links = [link for link in links if link['type'] == 'web']
+
+  link_types_counter = Counter(item['type'] for item in links)
+  uncovered_link_domains_counter = Counter(get_domain_with_scheme(item['url']) for item in uncovered_links)
+
+  link_types = [{'key': k, 'count': c} for (k, c) in link_types_counter.most_common(MAX_RESULTS)]
+  uncovered_link_domains = [{'key': k, 'count': c} for (k, c) in uncovered_link_domains_counter.most_common(MAX_RESULTS)]
+
+  return {
+      "total_count": len(links),
+      "covered_count": len(links) - len(uncovered_links),
+      "uncovered_count": len(uncovered_links),
+      "link_types": link_types,
+      "uncovered_link_domains": uncovered_link_domains,
+  }
+
+
+class UpdateAllFeatureLinksHandlers(FlaskHandler):
+
+  def get_template_data(self, **kwargs) -> str:
+    """
+    retrieves feature links from a database, identifies which links need to be updated based on certain conditions, 
+    and enqueues tasks to update those links in batches.
+    """
+
+    self.require_cron_header()
+
+    should_notify_on_error = self.get_bool_arg('should_notify_on_error', True)
+    no_filter = self.get_bool_arg('no_filter', False)
+
+    feature_links = FeatureLinks.query().fetch(
+        projection=[
+            FeatureLinks.url,
+            FeatureLinks.type,
+            FeatureLinks.is_error,
+            FeatureLinks.http_error_code,
+            FeatureLinks.updated,
+        ]
+    )
+
+    ids_to_update = []
+
+    if no_filter:
+      # for backfill purposes
+      ids_to_update = [fe.key.integer_id() for fe in feature_links]
+    else:
+      stale_time = datetime.datetime.now(
+          tz=datetime.timezone.utc) - datetime.timedelta(days=CRON_JOB_LINK_STALE_DAYS)
+      stale_time = stale_time.replace(tzinfo=None)
+      for fe in feature_links:
+        # if stale
+        if fe.updated < stale_time:
+          ids_to_update.append(fe.key.integer_id())
+        # if error exists
+        elif fe.is_error or fe.http_error_code:
+          ids_to_update.append(fe.key.integer_id())
+        # if type changed since last update
+        elif fe.type != Link.get_type(fe.url):
+          ids_to_update.append(fe.key.integer_id())
+
+    BATCH_SIZE = 500
+    batch_update_ids = [ids_to_update[i:i+BATCH_SIZE] for i in range(0, len(ids_to_update), BATCH_SIZE)]
+
+    for batch in batch_update_ids:
+      cloud_tasks_helpers.enqueue_task(
+          '/tasks/update-feature-links',
+          {
+              'feature_link_ids': batch,
+              'should_notify_on_error': should_notify_on_error
+          }
+      )
+
+    msg = f'Started updating {len(ids_to_update)} Feature Links in {len(batch_update_ids)} batches'
+    logging.info(msg)
+    return msg

@@ -23,7 +23,7 @@ from ghapi.core import GhApi
 from urllib.error import HTTPError
 from urllib.parse import urlparse
 import base64
-
+import validators
 from framework import secrets
 
 
@@ -37,16 +37,21 @@ LINK_TYPE_WEB = 'web'
 LINK_TYPES_REGEX = {
     # https://bugs.chromium.org/p/chromium/issues/detail?id=
     # https://crbug.com/
-    LINK_TYPE_CHROMIUM_BUG: re.compile(r'https://bugs\.chromium\.org/p/chromium/issues/detail\?.*|https://crbug\.com/\d+'),
+    LINK_TYPE_CHROMIUM_BUG: re.compile(r'https?://bugs\.chromium\.org/p/chromium/issues/detail\?.*|https?://crbug\.com/\d+'),
     # https://github.com/GoogleChrome/chromium-dashboard/issues/999
-    LINK_TYPE_GITHUB_ISSUE: re.compile(r'https://(www\.)?github\.com/.*issues/\d+'),
+    LINK_TYPE_GITHUB_ISSUE: re.compile(r'https?://(www\.)?github\.com/.*issues/\d+'),
     # https://github.com/w3c/reporting/blob/master/EXPLAINER.md
-    LINK_TYPE_GITHUB_MARKDOWN: re.compile(r'https://(www\.)?github\.com/.*\.md.*'),
+    LINK_TYPE_GITHUB_MARKDOWN: re.compile(r'https?://(www\.)?github\.com/.*\.md.*'),
     LINK_TYPE_WEB: re.compile(r'https?://.*'),
 }
 
 URL_REGEX = re.compile(r'(https?://\S+)')
 
+def valid_url(url):
+    try:
+        return validators.url(url, public=True)
+    except:
+        return False
 
 def get_github_api_client():
   """Set up the GitHub client."""
@@ -75,11 +80,11 @@ class Link():
       urls = URL_REGEX.findall(value)
       # remove trailing punctuation
       urls = [url.rstrip(punctuation) for url in urls]
-      return urls
     elif isinstance(value, list):
-      return [url for url in value if isinstance(url, str) and URL_REGEX.match(url)]
+      urls = [url for url in value if isinstance(url, str) and URL_REGEX.match(url)]
     else:
-      return []
+      urls = []
+    return [url for url in urls if valid_url(url)]
 
   @classmethod
   def get_type(cls, link: str) -> str | None:
@@ -96,6 +101,7 @@ class Link():
     self.is_error = False
     self.http_error_code: Optional[int] = None
     self.information = None
+    logging.info(f'Constructed Link for {url} with type {self.type}')
 
   def _fetch_github_file(
       self, owner: str, repo: str, ref: str, file_path: str,
@@ -232,7 +238,7 @@ class Link():
     information: dict[str, Any] = json.loads(json_str)
 
     return information.get('issue', None)
-  
+
   def _validate_url(self) -> bool:
     """The `_validate_url` method is used to validate the URL associated with the Link object. It
     sends a GET request to the URL and checks the response status code. If the status code is not
@@ -244,7 +250,7 @@ class Link():
       self.http_error_code = res.status_code
       return False
     return True
-  
+
   def parse(self):
     """Parse the link and store the information."""
     try:
