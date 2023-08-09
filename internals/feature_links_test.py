@@ -16,7 +16,7 @@
 import testing_config
 from unittest import mock
 from internals.core_models import FeatureEntry
-from internals.feature_links import FeatureLinks, update_feature_links, get_feature_links_summary, UpdateAllFeatureLinksHandlers
+from internals.feature_links import FeatureLinks, update_feature_links, get_domain_with_scheme, get_feature_links_summary, UpdateAllFeatureLinksHandlers
 from internals.link_helpers import LINK_TYPE_CHROMIUM_BUG, LINK_TYPE_WEB
 from google.cloud import ndb
 from datetime import datetime
@@ -55,6 +55,37 @@ class LinkTest(testing_config.CustomTestCase):
     self.feature.put()
 
     update_feature_links(target_feature, changed_fields)
+
+  def test_get_domain_and_scheme__valid(self):
+    self.assertEqual(
+        'https://example.com',
+        get_domain_with_scheme('https://example.com'))
+    self.assertEqual(
+        'https://example.com',
+        get_domain_with_scheme('https://example.com/'))
+    self.assertEqual(
+        'https://example.com',
+        get_domain_with_scheme('https://example.com/something?foo=bar#baz'))
+    self.assertEqual(
+        'https://localhost',
+        get_domain_with_scheme('https://localhost'))
+    self.assertEqual(
+        'https://localhost:8080',
+        get_domain_with_scheme('https://localhost:8080'))
+    self.assertEqual(
+        'https://192.168.0.1',
+        get_domain_with_scheme('https://192.168.0.1/'))
+    self.assertEqual(
+        'https://[2a01:5cc0:1:2::4]',
+        get_domain_with_scheme('https://[2a01:5cc0:1:2::4]/something'))
+
+  def test_get_domain_and_scheme__invalid(self):
+    self.assertEqual(
+        'Invalid: https://[2a01:5cc0:1:2:$::4]/s',
+        get_domain_with_scheme('https://[2a01:5cc0:1:2:$::4]/something'))
+    self.assertEqual(
+        'Invalid: http://[::1.2.3',
+        get_domain_with_scheme('http://[::1.2.3'))
 
   def test_get_feature_links_summary(self):
     links = [
