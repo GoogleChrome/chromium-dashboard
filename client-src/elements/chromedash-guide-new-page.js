@@ -88,7 +88,7 @@ export class ChromedashGuideNewPage extends LitElement {
         <span style="float:right; margin-right: 2em">
         <a href="https://github.com/GoogleChrome/chromium-dashboard/issues/new?labels=Feedback&amp;template=process-and-guide-ux-feedback.md"
           target="_blank" rel="noopener">Process and UI feedback</a></span>
-        <h2>Add a feature</h2>
+        <h2 data-testid="add-a-feature">Add a feature</h2>
       </div>
     `;
   }

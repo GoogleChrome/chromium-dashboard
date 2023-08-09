@@ -285,8 +285,8 @@ export class ChromedashHeader extends LitElement {
     return html`
       ${this.user ? html`
         ${this.user.can_create_feature && !this.isCurrentPage('/guide/new') ? html`
-          <sl-button href="/guide/new" variant="primary" size="small"
-            data-testid="create-feature">
+          <sl-button data-testid="create-feature-button"
+            href="/guide/new" variant="primary" size="small">
             Create feature
           </sl-button>
         `: nothing }

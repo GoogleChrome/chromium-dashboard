@@ -236,7 +236,8 @@ export class ChromedashDrawer extends LitElement {
           </ul>
         </div>
         ${this.user.can_create_feature && !this.isCurrentPage('/guide/new') ? html`
-          <sl-button class="flex-item" href="/guide/new" variant="primary" size="small">
+          <sl-button data-testid="create-feature-button"
+            class="flex-item" href="/guide/new" variant="primary" size="small">
             Create feature
           </sl-button>
         `: nothing }
