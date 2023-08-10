@@ -67,7 +67,7 @@ async function logout(page) {
   const navContainer = page.locator('[data-testid=nav-container]');
   await expect(navContainer).toBeVisible({timeout: 20000});
 
-  await navContainer.hover({ timeout: 1000 });
+  await navContainer.hover({timeout: 1000});
   const signOutLink = page.locator('[data-testid=sign-out-link]');
   await expect(signOutLink).toBeVisible();
 
@@ -139,13 +139,13 @@ test('navigate to create feature page', async ({page}) => {
 //     .toHaveScreenshot('new-feature-page-content.png');
 // });
 
-test('enter feature name', async ({ page }) => {
+test('enter feature name', async ({page}) => {
   // Navigate to the new feature page.
   const createFeatureButton = page.locator('[data-testid=create-feature-button]');
   createFeatureButton.click();
 
   const featureNameInput = page.locator('input[name="name"]');
-  await expect(featureNameInput).toBeVisible({ timeout: 30000 });
+  await expect(featureNameInput).toBeVisible({timeout: 30000});
 
   // Expand the extra help.
   const extraHelpButton = page.locator('chromedash-form-field[name="name"] sl-icon-button');
