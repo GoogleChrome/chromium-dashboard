@@ -125,17 +125,35 @@ test('navigate to create feature page', async ({page}) => {
   await expect(page).toHaveScreenshot('new-feature-page.png');
 });
 
+// test('new feature page content', async ({page}) => {
+//   // Navigate to the new feature page.
+//   await page.goto('/guide/new', {timeout: 20000});
+//   // await page.waitForURL('**/guide/new', {timeout: 30000});
 
-test('new feature page content', async ({page}) => {
+//   // Expect "Add a feature" header to be present.
+//   const addAFeatureHeader = page.locator('[data-testid=add-a-feature]');
+//   await expect(addAFeatureHeader).toBeVisible({timeout: 30000});
+
+//   // Take a screenshot
+//   await expect(page.locator('chromedash-guide-new-page'))
+//     .toHaveScreenshot('new-feature-page-content.png');
+// });
+
+test('enter feature name', async ({ page }) => {
   // Navigate to the new feature page.
-  await page.goto('/guide/new', {timeout: 20000});
-  // await page.waitForURL('**/guide/new', {timeout: 30000});
+  const createFeatureButton = page.locator('[data-testid=create-feature-button]');
+  createFeatureButton.click();
 
-  // Expect "Add a feature" header to be present.
-  const addAFeatureHeader = page.locator('[data-testid=add-a-feature]');
-  await expect(addAFeatureHeader).toBeVisible({timeout: 30000});
+  const featureNameInput = page.locator('input[name="name"]');
+  await expect(featureNameInput).toBeVisible({ timeout: 30000 });
 
-  // Take a screenshot
-  await expect(page.locator('chromedash-guide-new-page'))
-    .toHaveScreenshot('new-feature-page-content.png');
+  // Expand the extra help.
+  const extraHelpButton = page.locator('chromedash-form-field[name="name"] sl-icon-button');
+  await expect(extraHelpButton).toBeVisible();
+  extraHelpButton.click();
+
+  // Enter a feature name.
+  featureNameInput.fill('Test feature name');
+
+  await expect(page).toHaveScreenshot('feature-name.png');
 });
