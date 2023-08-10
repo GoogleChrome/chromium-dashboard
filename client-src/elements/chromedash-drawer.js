@@ -58,12 +58,8 @@ export class ChromedashDrawer extends LitElement {
         nav [active]:hover {
           background: var(--md-gray-100-alpha);
         }
-        ul {
-          top: 80%;
-          left: 10px;
-          z-index: 1;
-          text-align: left;
-          padding-left: 15px;
+        hr {
+          margin: 15px;
         }
 
         .flex-item {
@@ -71,12 +67,9 @@ export class ChromedashDrawer extends LitElement {
           padding-bottom: 10px;
           text-align: left;
         }
-        .flex-item-inner {
-          margin-top: -10px;
-        }
-        .flex-item-inner:hover {
-          color: var(--nav-link-color);
-          background: var(--card-background);
+        .section-header {
+          margin: 0px 16px 10px;
+          font-weight: bold;
         }
         sl-drawer a {
           display: block;
@@ -211,39 +204,31 @@ export class ChromedashDrawer extends LitElement {
           <a class="flex-item" href="/myfeatures" ?active=${this.isCurrentPage('/myfeatures')}>My features</a>
         ` : nothing}
         <a class="flex-item" href="/features" ?active=${this.isCurrentPage('/features') || this.isCurrentPage('/newfeatures')}>All features</a>
-        <div class="flex-item">
-          <a class="flex-item-inner">Stats</a>
-          <ul>
-            <li><a href="/metrics/css/popularity" ?active=${this.isCurrentPage('/metrics/css/popularity')}>CSS</a></li>
-            <li><a href="/metrics/css/animated" ?active=${this.isCurrentPage('/metrics/css/animated')}>CSS Animation</a></li>
-            <li><a href="/metrics/feature/popularity" ?active=${this.isCurrentPage('/metrics/feature/popularity')}>JS/HTML</a></li>
-          </ul>
-        </div>
+        <hr>
+        <div class="section-header">Stats</div>
+        <a href="/metrics/css/popularity" ?active=${this.isCurrentPage('/metrics/css/popularity')}>CSS</a>
+        <a href="/metrics/css/animated" ?active=${this.isCurrentPage('/metrics/css/animated')}>CSS Animation</a>
+        <a href="/metrics/feature/popularity" ?active=${this.isCurrentPage('/metrics/feature/popularity')}>JS/HTML</a>
       </sl-drawer>
     `;
   }
 
   renderAccountMenu() {
+    if (!this.user) {
+      return nothing;
+    }
+
     return html`
-      ${this.user?.email ? html`
-        <div class="flex-item">
-          <a class="flex-item-inner">
-            ${this.user.email}
-          </a>
-          <ul>
-            <li><a href="/settings">Settings</a></li>
-            <li><a href="#" id="sign-out-link" @click=${this.handleSignOutClick}>Sign out</a></li>
-          </ul>
-        </div>
-        ${this.user.can_create_feature && !this.isCurrentPage('/guide/new') ? html`
-          <sl-button data-testid="create-feature-button"
-            class="flex-item" href="/guide/new" variant="primary" size="small">
-            Create feature
-          </sl-button>
+      <div class="section-header">${this.user.email}</div>
+      <a href="/settings">Settings</a>
+      <a href="#" id="sign-out-link" @click=${this.handleSignOutClick}>Sign out</a>
+      ${this.user.can_create_feature && !this.isCurrentPage('/guide/new') ? html`
+        <sl-button data-testid="create-feature-button"
+          href="/guide/new" variant="primary" size="small">
+          Create feature
+        </sl-button>
         `: nothing }
-      ` : html`
-        <slot></slot>
-      `}
+      <hr>
     `;
   }
 
