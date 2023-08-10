@@ -12,7 +12,7 @@ RUN userdel -r pwuser && \
     mkdir -p /work/test-results && \
     chown -R pwuser /work
 
-# should include: mkdir -p /work/playwright-report && \
+# should include:  mkdir -p /work/playwright-report && \
 
 USER pwuser
 WORKDIR /work

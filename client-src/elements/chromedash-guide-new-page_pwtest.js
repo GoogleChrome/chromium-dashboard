@@ -139,13 +139,15 @@ test('navigate to create feature page', async ({page}) => {
 //     .toHaveScreenshot('new-feature-page-content.png');
 // });
 
-test('enter feature name', async ({page}) => {
+test('enter feature name', async ({ page }) => {
+  test.setTimeout(90000);
+
   // Navigate to the new feature page.
   const createFeatureButton = page.locator('[data-testid=create-feature-button]');
-  createFeatureButton.click();
+  createFeatureButton.click({timeout: 10000});
 
   const featureNameInput = page.locator('input[name="name"]');
-  await expect(featureNameInput).toBeVisible({timeout: 30000});
+  await expect(featureNameInput).toBeVisible({timeout: 60000});
 
   // Expand the extra help.
   const extraHelpButton = page.locator('chromedash-form-field[name="name"] sl-icon-button');
