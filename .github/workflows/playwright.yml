@@ -19,3 +19,9 @@ jobs:
         - name: Run your tests
           timeout-minutes: 15
           run: npm run pwtests
+        - uses: actions/upload-artifact@v3
+          if: failure()
+          with:
+            name: test-results
+            path: test-results/
+            retention-days: 30
