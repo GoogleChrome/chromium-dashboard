@@ -19,7 +19,7 @@ import testing_config  # Must be imported before the module under test.
 from unittest import mock
 
 from internals import approval_defs
-from internals.review_models import Gate, Vote
+from internals.review_models import Gate, GateDef, Vote
 
 
 class FetchOwnersTest(testing_config.CustomTestCase):
@@ -73,10 +73,18 @@ MOCK_APPROVALS_BY_ID = {
         'Intent to optimize',
         'You need permission to optimize',
         2, approval_defs.THREE_LGTM, 'https://example.com', 'API Owners'),
+    3: approval_defs.ApprovalFieldDef(
+        'Intent to memorize',
+        'You need permission to memorize',
+        3, approval_defs.THREE_LGTM, approval_defs.IN_NDB, 'API Owners'),
 }
 
 
 class GetApproversTest(testing_config.CustomTestCase):
+
+  def tearDown(self):
+    for gate_def in GateDef.query():
+      gate_def.key.delete()
 
   @mock.patch('internals.approval_defs.APPROVAL_FIELDS_BY_ID',
               MOCK_APPROVALS_BY_ID)
@@ -97,6 +105,34 @@ class GetApproversTest(testing_config.CustomTestCase):
     mock_fetch_owner.assert_called_once_with('https://example.com')
     self.assertEqual(actual, ['owner@example.com'])
 
+  @mock.patch('internals.approval_defs.APPROVAL_FIELDS_BY_ID',
+              MOCK_APPROVALS_BY_ID)
+  @mock.patch('internals.approval_defs.fetch_owners')
+  def test__ndb_new(self, mock_fetch_owner):
+    """Some approvals will have appovers in NDB, but they are not found."""
+    actual = approval_defs.get_approvers(3)
+    mock_fetch_owner.assert_not_called()
+    self.assertEqual(actual, [])
+    updated_gate_defs = GateDef.query().fetch()
+    self.assertEqual(1, len(updated_gate_defs))
+    self.assertEqual(3, updated_gate_defs[0].gate_type)
+    self.assertEqual([], updated_gate_defs[0].approvers)
+
+  @mock.patch('internals.approval_defs.APPROVAL_FIELDS_BY_ID',
+              MOCK_APPROVALS_BY_ID)
+  @mock.patch('internals.approval_defs.fetch_owners')
+  def test__ndb_existing(self, mock_fetch_owner):
+    """Some approvals will have appovers in NDB, use it if found."""
+    gate_def_3 = GateDef(gate_type=3, approvers=['a', 'b'])
+    gate_def_3.put()
+    actual = approval_defs.get_approvers(3)
+    mock_fetch_owner.assert_not_called()
+    self.assertEqual(actual, ['a', 'b'])
+    existing_gate_defs = GateDef.query().fetch()
+    self.assertEqual(1, len(existing_gate_defs))
+    self.assertEqual(3, existing_gate_defs[0].gate_type)
+    self.assertEqual(['a', 'b'], existing_gate_defs[0].approvers)
+
 
 class IsValidFieldIdTest(testing_config.CustomTestCase):
 
@@ -106,7 +142,7 @@ class IsValidFieldIdTest(testing_config.CustomTestCase):
     """We know if a field_id is defined or not."""
     self.assertTrue(approval_defs.is_valid_field_id(1))
     self.assertTrue(approval_defs.is_valid_field_id(2))
-    self.assertFalse(approval_defs.is_valid_field_id(3))
+    self.assertFalse(approval_defs.is_valid_field_id(99))
 
 
 class IsApprovedTest(testing_config.CustomTestCase):

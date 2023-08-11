@@ -22,7 +22,6 @@ import logging
 from typing import Optional
 from google.cloud import ndb  # type: ignore
 
-
 class OwnersFile(ndb.Model):
   """Describes the properties to store raw API_OWNERS content."""
   url = ndb.StringProperty(required=True)
@@ -53,6 +52,33 @@ class OwnersFile(ndb.Model):
       return None
 
     return owners_file.raw_content
+
+
+class GateDef(ndb.Model):
+  """Configuration for a review gate."""
+  gate_type = ndb.IntegerProperty(required=True)
+  approvers = ndb.StringProperty(repeated=True)
+
+  # TODO(jrobbins): Use these and phase out approval_devs.ApprovalFieldDef.
+  name = ndb.StringProperty()
+  description = ndb.StringProperty()
+  rule = ndb.StringProperty()
+  team_name = ndb.StringProperty()
+  slo_initial_response = ndb.IntegerProperty()
+
+  @classmethod
+  def get_gate_def(cls, gate_type: int) -> GateDef | None:
+    """Load an existing GateDef and or create a new one."""
+    query: ndb.Query = GateDef.query(GateDef.gate_type == gate_type)
+    gate_defs = query.fetch(1)
+    if gate_defs:
+      gate_def = gate_defs[0]
+    else:
+      logging.info(f'Creating empty GateDef for {gate_type}')
+      gate_def = GateDef(gate_type=gate_type)
+      gate_def.put()
+
+    return gate_def
 
 
 class Vote(ndb.Model):
