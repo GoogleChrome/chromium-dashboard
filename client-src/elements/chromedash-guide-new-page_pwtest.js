@@ -1,23 +1,15 @@
 // @ts-check
 import {test, expect} from '@playwright/test';
 
-const delay = (/** @type {number | undefined} */ ms) =>
-  new Promise((resolve) => setTimeout(resolve, ms));
+// const delay = (/** @type {number | undefined} */ ms) =>
+//   new Promise((resolve) => setTimeout(resolve, ms));
 
-let firstTestDelayed = false;
-async function delayBeforeFirstTest() {
-  if (firstTestDelayed) return;
-  console.log('Before delay before first test');
-  await delay(5000); // Delay the start of execution of any testing.
-  console.log('After delay');
-  firstTestDelayed = true;
-}
-
-// Record whether we captured images of the page before and after login let loginScreenshots = false;
+// Timeout for logging in, in milliseconds.
+// Initially set to 60 seconds, to allow server to warm up and respond to login.
+// Changed to shorter timeout after first test.
+let loginTimeout = 60000;
 
 async function login(page) {
-  await delayBeforeFirstTest();
-
   // await expect(page).toHaveScreenshot('roadmap.png');
   // Always reset to the roadmap page.
   await page.goto('/', {timeout: 20000});
@@ -54,7 +46,8 @@ async function login(page) {
   // Expect a nav container to be present.
   // This sometimes fails, even though the screenshot seems correct.
   const navContainer = page.locator('[data-testid=nav-container]');
-  await expect(navContainer).toBeVisible({timeout: 20000});
+  await expect(navContainer).toBeVisible({ timeout: loginTimeout });
+  loginTimeout = 30000; // After first test, reduce timeout.
 
   // if (!loginScreenshots) {
   //   // Take a screenshot of the page after login.
@@ -64,7 +57,7 @@ async function login(page) {
 }
 
 test.beforeEach(async ({page}) => {
-  test.setTimeout(60000);
+  test.setTimeout(60000 + loginTimeout);
   // Attempt to login before running each test.
   await login(page);
 });
