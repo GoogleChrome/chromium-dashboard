@@ -1,12 +1,24 @@
 version: '3.8'
 
 services:
+  change-vol-ownership:
+    image: ubuntu:22.04
+    user: "root"
+    group_add:
+      - '${GROUPID}'
+    volumes:
+      - ../client-src/elements/__screenshots__:/tmp/__screenshots__
+      - ../test-results:/tmp/test-results
+    command: bash -c "chown -R ${USERID}:${GROUPID} /tmp/__screenshots__ && chown -R ${USERID}:${GROUPID} /tmp/test-results"
   playwright:
     build:
       context: ..
       dockerfile: ./.playwright/Dockerfile
     depends_on:
-      - myapp
+      myapp:
+        condition: service_started
+      change-vol-ownership:
+          condition: service_completed_successfully
     # Overrides default command so things don't shut down after the process ends.
     command: sleep infinity
     network_mode: host

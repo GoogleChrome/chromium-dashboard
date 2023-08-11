@@ -46,12 +46,12 @@
     "openapi-validate": "openapi-generator-cli validate -i openapi/api.yaml",
     "//pwtests": "The version of the docker playwright image used here must exactly match the versions of @playwright/test in devDependencies and the Github Actions configuration (in playwright.yml).  The version of playwright used in devDependencies should not include the ^ prefix, so it doesn't auto-upgrade and get out of sync.",
     "pwtests-build": "docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml build --parallel --build-arg USERID=$(id -u ${USER}) --build-arg GROUPID=$(id -g ${USER})",
-    "pwtests": "pwd && whoami && npm run pwtests-build && docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml run --user=$(id -u ${USER}):$(id -g ${USER}) playwright bash -c \"./.playwright/wait-for-app.sh && whoami && ls -al . && ls -al test-results && npx playwright test\"",
-    "pwtests-update": "npm run pwtests-build && docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml run --user=$(id -u ${USER}):$(id -g ${USER}) playwright bash -c \"./.playwright/wait-for-app.sh && npx playwright test --update-snapshots\"",
-    "pwtests-report": "npm run pwtests-build && docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml run --user=$(id -u ${USER}):$(id -g ${USER}) playwright bash -c \"./.playwright/wait-for-app.sh && npx playwright show-report\"",
-    "pwtests-shell": "npm run pwtests-build && docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml run --user=$(id -u ${USER}):$(id -g ${USER}) playwright bash",
-    "pwtests-ui": "npm run pwtests-build && docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml run --user=$(id -u ${USER}):$(id -g ${USER}) playwright bash -c \"./.playwright/wait-for-app.sh && npx playwright test --ui --ui-port=8123\"",
-    "pwtests-shutdown": "docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml down"
+    "pwtests": "ls -al . && pwd && whoami && npm run pwtests-build && USERID=$(id -u) GROUPID=$(id -g) docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml run --user=$(id -u ${USER}):$(id -g ${USER}) playwright bash -c \"./.playwright/wait-for-app.sh && whoami && ls -al . && ls -al test-results && npx playwright test\"",
+    "pwtests-update": "npm run pwtests-build && USERID=$(id -u) GROUPID=$(id -g) docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml run --user=$(id -u ${USER}):$(id -g ${USER}) playwright bash -c \"./.playwright/wait-for-app.sh && npx playwright test --update-snapshots\"",
+    "pwtests-report": "npm run pwtests-build && USERID=$(id -u) GROUPID=$(id -g) docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml run --user=$(id -u ${USER}):$(id -g ${USER}) playwright bash -c \"./.playwright/wait-for-app.sh && npx playwright show-report\"",
+    "pwtests-shell": "npm run pwtests-build && USERID=$(id -u) GROUPID=$(id -g) docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml run --user=$(id -u ${USER}):$(id -g ${USER}) playwright bash",
+    "pwtests-ui": "npm run pwtests-build && USERID=$(id -u) GROUPID=$(id -g) docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml run --user=$(id -u ${USER}):$(id -g ${USER}) playwright bash -c \"./.playwright/wait-for-app.sh && npx playwright test --ui --ui-port=8123\"",
+    "pwtests-shutdown": "USERID=$(id -u) GROUPID=$(id -g) docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml down"
   },
   "repository": {
     "type": "git",
