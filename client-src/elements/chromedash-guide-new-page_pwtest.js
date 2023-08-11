@@ -8,6 +8,7 @@ import {test, expect} from '@playwright/test';
 // Initially set to longer timeout, in case server needs to warm up and
 // respond to the login.  Changed to shorter timeout after login is successful.
 let loginTimeout = 30000;
+let capturedFirstLogin = false;
 
 async function login(page) {
   // await expect(page).toHaveScreenshot('roadmap.png');
@@ -59,7 +60,10 @@ async function login(page) {
   page.mouse.move(0, 0); // Move away from content on page.
 
   // Check that we are logged in now.
-  // await expect(page).toHaveScreenshot('after-login-click.png');
+  if (!capturedFirstLogin) {
+    await expect(page).toHaveScreenshot('after-login-click.png');
+    capturedFirstLogin = true;
+  }
 
   // Expect a nav container to be present.
   // This sometimes fails, even though the screenshot seems correct.
