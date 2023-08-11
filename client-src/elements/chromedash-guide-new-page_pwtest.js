@@ -33,10 +33,13 @@ async function login(page) {
     await expect(page).toHaveTitle(/Chrome Status/);
     page.mouse.move(0, 0); // Move away from content on page.
   }
+  await delay(5000);
 
   // Expect login button to be present.
   const loginButton = page.locator('button[data-testid=dev-mode-sign-in-button]');
   await expect(loginButton).toBeVisible({timeout: loginTimeout});
+
+  await delay(5000);
 
   // // Expect nav container to not be present.
   // const navContainer = page.locator('[data-testid=nav-container]');
