@@ -67,7 +67,7 @@ class GateDef(ndb.Model):
   slo_initial_response = ndb.IntegerProperty()
 
   @classmethod
-  def get_gate_def(cls, gate_type: int) -> GateDef | None:
+  def get_gate_def(cls, gate_type: int) -> GateDef:
     """Load an existing GateDef and or create a new one."""
     query: ndb.Query = GateDef.query(GateDef.gate_type == gate_type)
     gate_defs = query.fetch(1)
