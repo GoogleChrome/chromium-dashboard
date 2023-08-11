@@ -30,18 +30,18 @@ async function login(page) {
 
   // await page.goto('/', {timeout: 30000});
   // await page.waitForURL('**/roadmap', {timeout: 20000});
-  page.mouse.move(0, 0); // Move away from content on page.
 
   // Expect the title to contain a substring.
   await expect(page).toHaveTitle(/Chrome Status/);
+  page.mouse.move(0, 0); // Move away from content on page.
 
   // Check that we are logged in now.
   // await expect(page).toHaveScreenshot('after-login-click.png');
 
   // Expect a nav container to be present.
   // This sometimes fails, even though the screenshot seems correct.
-  // navContainer = page.locator('[data-testid=nav-container]');
-  // await expect(navContainer).toBeVisible({timeout: 20000});
+  const navContainer = page.locator('[data-testid=nav-container]');
+  await expect(navContainer).toBeVisible({timeout: 20000});
 
   // if (!loginScreenshots) {
   //   // Take a screenshot of the page after login.
@@ -139,7 +139,7 @@ test('navigate to create feature page', async ({page}) => {
 //     .toHaveScreenshot('new-feature-page-content.png');
 // });
 
-test('enter feature name', async ({ page }) => {
+test('enter feature name', async ({page}) => {
   test.setTimeout(90000);
 
   // Navigate to the new feature page.
