@@ -5,16 +5,34 @@ import {test, expect} from '@playwright/test';
 //   new Promise((resolve) => setTimeout(resolve, ms));
 
 // Timeout for logging in, in milliseconds.
-// Initially set to 60 seconds, to allow server to warm up and respond to login.
-// Changed to shorter timeout after first test.
-let loginTimeout = 60000;
+// Initially set to longer timeout, in case server needs to warm up and
+// respond to the login.  Changed to shorter timeout after login is successful.
+let loginTimeout = 30000;
 
 async function login(page) {
   // await expect(page).toHaveScreenshot('roadmap.png');
   // Always reset to the roadmap page.
   await page.goto('/', {timeout: 20000});
   await page.waitForURL('**/roadmap', {timeout: 20000});
+
+  await expect(page).toHaveTitle(/Chrome Status/);
   page.mouse.move(0, 0); // Move away from content on page.
+
+  // Check whether we are already logged in.
+  let navContainer = page.locator('[data-testid=nav-container]');
+  if (await navContainer.isVisible()) {
+    // Already logged in. Need to logout.
+    await navContainer.hover({timeout: 5000});
+    const signOutLink = page.locator('[data-testid=sign-out-link]');
+    await expect(signOutLink).toBeVisible();
+
+    await signOutLink.hover({timeout: 5000});
+    await signOutLink.click({timeout: 5000});
+
+    await page.waitForURL('**/roadmap');
+    await expect(page).toHaveTitle(/Chrome Status/);
+    page.mouse.move(0, 0); // Move away from content on page.
+  }
 
   // Expect login button to be present.
   const loginButton = page.locator('button[data-testid=dev-mode-sign-in-button]');
@@ -31,7 +49,7 @@ async function login(page) {
 
   // Need to wait for the google signin button to be ready, to avoid
   // loginButton.waitFor('visible');
-  await page.click('button[data-testid=dev-mode-sign-in-button]', {timeout: 30000});
+  await page.click('button[data-testid=dev-mode-sign-in-button]', {timeout: 10000});
 
   // await page.goto('/', {timeout: 30000});
   // await page.waitForURL('**/roadmap', {timeout: 20000});
@@ -45,9 +63,9 @@ async function login(page) {
 
   // Expect a nav container to be present.
   // This sometimes fails, even though the screenshot seems correct.
-  const navContainer = page.locator('[data-testid=nav-container]');
-  await expect(navContainer).toBeVisible({ timeout: loginTimeout });
-  loginTimeout = 30000; // After first test, reduce timeout.
+  navContainer = page.locator('[data-testid=nav-container]');
+  await expect(navContainer).toBeVisible({timeout: loginTimeout});
+  loginTimeout = 10000; // After first login, reduce timeout.
 
   // if (!loginScreenshots) {
   //   // Take a screenshot of the page after login.
@@ -55,12 +73,6 @@ async function login(page) {
   //   loginScreenshots = true;
   // }
 }
-
-test.beforeEach(async ({page}) => {
-  test.setTimeout(60000 + loginTimeout);
-  // Attempt to login before running each test.
-  await login(page);
-});
 
 // let logoutScreenshots = false;
 
@@ -70,18 +82,27 @@ async function logout(page) {
   await page.goto('/');
   await page.waitForURL('**/roadmap');
 
+  await expect(page).toHaveTitle(/Chrome Status/);
+  page.mouse.move(0, 0); // Move away from content on page.
+
   const navContainer = page.locator('[data-testid=nav-container]');
   await expect(navContainer).toBeVisible({timeout: 20000});
 
-  await navContainer.hover({timeout: 1000});
+  await navContainer.hover({timeout: 5000});
   const signOutLink = page.locator('[data-testid=sign-out-link]');
   await expect(signOutLink).toBeVisible();
 
-  await signOutLink.hover({timeout: 1000});
+  await signOutLink.hover({timeout: 5000});
   // if (!logoutScreenshots) {
   //   await expect(page).toHaveScreenshot('sign-out-link.png');
   // }
   await signOutLink.click({timeout: 5000});
+
+  await page.waitForURL('**/roadmap');
+  // await page.goto('/');
+  // await page.waitForURL('**/roadmap');
+  // await expect(page).toHaveTitle(/Chrome Status/);
+  // page.mouse.move(0, 0); // Move away from content on page.
 
   // await page.goto('/');
   // await page.waitForURL('**/roadmap');
@@ -99,8 +120,15 @@ async function logout(page) {
   // await expect(loginButton).toBeVisible({timeout: 10000});
 }
 
+
+test.beforeEach(async ({page}) => {
+  test.setTimeout(60000 + loginTimeout);
+  // Attempt to login before running each test.
+  await login(page);
+});
+
 test.afterEach(async ({page}) => {
-  test.setTimeout(60000);
+  test.setTimeout(60000 + loginTimeout);
   await logout(page);
 });
 
