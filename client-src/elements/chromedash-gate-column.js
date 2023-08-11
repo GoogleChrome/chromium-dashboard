@@ -14,7 +14,6 @@ import {
   GATE_PREPARING,
   GATE_REVIEW_REQUESTED,
   VOTE_OPTIONS,
-  GATE_ACTIVE_REVIEW_STATES,
 } from './form-field-enums';
 
 import {SHARED_STYLES} from '../css/shared-css.js';
@@ -400,7 +399,7 @@ export class ChromedashGateColumn extends LitElement {
 
   renderReviewRequest() {
     for (const v of this.votes) {
-      if (v.state == REVIEW_REQUESTED) {
+      if (v.state == GATE_REVIEW_REQUESTED) {
         const shortVoter = v.set_by.split('@')[0] + '@';
         return html`
           ${shortVoter} requested on
@@ -435,8 +434,6 @@ export class ChromedashGateColumn extends LitElement {
   renderReviewStatus() {
     if (this.gate.state == GATE_PREPARING) {
       return this.renderReviewStatusPreparing();
-    } else if (GATE_ACTIVE_REVIEW_STATES.includes(this.gate.state)) {
-      return this.renderReviewStatusActive();
     } else if (this.gate.state == VOTE_OPTIONS.APPROVED[0]) {
       return this.renderReviewStatusApproved();
     } else if (this.gate.state == VOTE_OPTIONS.DENIED[0]) {
@@ -573,7 +570,7 @@ export class ChromedashGateColumn extends LitElement {
     let saveButton = nothing;
     let voteCell = this.renderVoteReadOnly(vote);
 
-    if (vote.state === REVIEW_REQUESTED &&
+    if (vote.state === GATE_REVIEW_REQUESTED &&
         !(canVote && vote.set_by === this.user?.email)) {
       return nothing; // The requester is shown by renderReviewRequest().
     }
@@ -612,7 +609,7 @@ export class ChromedashGateColumn extends LitElement {
       this.user &&
         this.user.approvable_gate_types.includes(this.gate.gate_type));
     const myVoteExists = this.votes.some((v) => v.set_by == this.user?.email);
-    const responses = this.votes.filter((v) => v.state !== REVIEW_REQUESTED);
+    const responses = this.votes.filter((v) => v.state !== GATE_REVIEW_REQUESTED);
     const addVoteRow = (canVote && !myVoteExists) ?
       this.renderVoteRow({set_by: this.user?.email, state: 7}, canVote) :
       nothing;
