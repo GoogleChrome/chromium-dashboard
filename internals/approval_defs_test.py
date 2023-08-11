@@ -122,7 +122,7 @@ class GetApproversTest(testing_config.CustomTestCase):
               MOCK_APPROVALS_BY_ID)
   @mock.patch('internals.approval_defs.fetch_owners')
   def test__ndb_existing(self, mock_fetch_owner):
-    """Some approvals will have appovers in NDB, use it if found."""
+    """Some approvals will have approvers in NDB, use it if found."""
     gate_def_3 = GateDef(gate_type=3, approvers=['a', 'b'])
     gate_def_3.put()
     actual = approval_defs.get_approvers(3)
