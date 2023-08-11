@@ -10,7 +10,8 @@ RUN userdel -r pwuser && \
     useradd pwuser -u $USERID -g $GROUPID -m -s /bin/bash && \
     mkdir -p /work/client-src/elements/__screenshots__ && \
     mkdir -p /work/test-results && \
-    chown -R pwuser /work
+    chown -R pwuser /work && \
+    chmod -R 766 /work/test-results
 
 # should include:  mkdir -p /work/playwright-report && \
 
