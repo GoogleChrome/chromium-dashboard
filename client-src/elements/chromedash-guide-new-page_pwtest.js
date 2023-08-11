@@ -1,10 +1,23 @@
 // @ts-check
 import {test, expect} from '@playwright/test';
 
-// Record whether we captured images of the page before and after login
-// let loginScreenshots = false;
+const delay = (/** @type {number | undefined} */ ms) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
+
+let firstTestDelayed = false;
+async function delayBeforeFirstTest() {
+  if (firstTestDelayed) return;
+  console.log('Before delay before first test');
+  await delay(5000); // Delay the start of execution of any testing.
+  console.log('After delay');
+  firstTestDelayed = true;
+}
+
+// Record whether we captured images of the page before and after login let loginScreenshots = false;
 
 async function login(page) {
+  await delayBeforeFirstTest();
+
   // await expect(page).toHaveScreenshot('roadmap.png');
   // Always reset to the roadmap page.
   await page.goto('/', {timeout: 20000});
