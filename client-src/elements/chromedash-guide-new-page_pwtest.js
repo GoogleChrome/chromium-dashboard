@@ -1,8 +1,8 @@
 // @ts-check
 import {test, expect} from '@playwright/test';
 
-// const delay = (/** @type {number | undefined} */ ms) =>
-//   new Promise((resolve) => setTimeout(resolve, ms));
+const delay = (/** @type {number | undefined} */ ms) =>
+   new Promise((resolve) => setTimeout(resolve, ms));
 
 // Timeout for logging in, in milliseconds.
 // Initially set to longer timeout, in case server needs to warm up and
@@ -36,7 +36,7 @@ async function login(page) {
 
   // Expect login button to be present.
   const loginButton = page.locator('button[data-testid=dev-mode-sign-in-button]');
-  await expect(loginButton).toBeVisible();
+  await expect(loginButton).toBeVisible({timeout: loginTimeout});
 
   // // Expect nav container to not be present.
   // const navContainer = page.locator('[data-testid=nav-container]');
@@ -50,6 +50,7 @@ async function login(page) {
   // Need to wait for the google signin button to be ready, to avoid
   // loginButton.waitFor('visible');
   await page.click('button[data-testid=dev-mode-sign-in-button]', {timeout: 10000});
+  await delay(5000);
 
   // await page.goto('/', {timeout: 30000});
   // await page.waitForURL('**/roadmap', {timeout: 20000});
@@ -101,7 +102,7 @@ async function logout(page) {
   await page.waitForURL('**/roadmap');
   // await page.goto('/');
   // await page.waitForURL('**/roadmap');
-  // await expect(page).toHaveTitle(/Chrome Status/);
+  await expect(page).toHaveTitle(/Chrome Status/);
   // page.mouse.move(0, 0); // Move away from content on page.
 
   // await page.goto('/');
