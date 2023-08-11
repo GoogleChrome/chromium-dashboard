@@ -45,13 +45,12 @@
     "openapi-backend": "rm -rf gen/py/chromestatus_openapi && openapi-generator-cli generate -i openapi/api.yaml -g python-flask  -o gen/py/chromestatus_openapi --additional-properties=packageName=chromestatus_openapi && pip install -r requirements.txt",
     "openapi-validate": "openapi-generator-cli validate -i openapi/api.yaml",
     "//pwtests": "The version of the docker playwright image used here must exactly match the versions of @playwright/test in devDependencies and the Github Actions configuration (in playwright.yml).  The version of playwright used in devDependencies should not include the ^ prefix, so it doesn't auto-upgrade and get out of sync.",
-    "pwtests-build": "docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml build --build-arg USERID=$(id -u ${USER}) --build-arg GROUPID=$(id -g ${USER})",
-    "pwtests": "npm run pwtests-build && docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml run playwright bash -c \"./.playwright/wait-for-app.sh && npx playwright test\"",
-    "pwtests-update": "npm run pwtests-build && docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml run playwright bash -c \"./.playwright/wait-for-app.sh && npx playwright test --update-snapshots\"",
-    "pwtests-report": "npm run pwtests-build && docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml run playwright bash -c \"./.playwright/wait-for-app.sh && npx playwright show-report\"",
-    "pwtests-shell": "npm run pwtests-build && docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml run playwright bash",
-    "pwtests-ui": "npm run pwtests-build && docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml run playwright bash -c \"./.playwright/wait-for-app.sh && npx playwright test --ui --ui-port=8123\"",
-    "pwtests-shutdown": "docker compose -f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml down"
+    "pwtests": "./.playwright/run.sh bash -c \"./.playwright/wait-for-app.sh && ls -al . && npx playwright test\"",
+    "pwtests-update": "./.playwright/run.sh bash -c \"./.playwright/wait-for-app.sh && npx playwright test --update-snapshots\"",
+    "pwtests-report": "./.playwright/run.sh bash -c \"./.playwright/wait-for-app.sh && npx playwright show-report\"",
+    "pwtests-shell": "./.playwright/run.sh bash",
+    "pwtests-ui": "./.playwright/run.sh bash -c \"./.playwright/wait-for-app.sh && npx playwright test --ui --ui-port=8123\"",
+    "pwtests-shutdown": "./.playwright/run.sh down"
   },
   "repository": {
     "type": "git",

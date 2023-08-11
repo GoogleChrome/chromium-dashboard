@@ -1,12 +1,32 @@
 version: '3.8'
 
 services:
+  # In GitHub Actions, the volumes will still mount as root.
+  # This service will fix the ownership.
+  fix_volume_ownership:
+    image: ubuntu:22.04
+    user: "root"
+    group_add:
+      - '${GROUPID}'
+    volumes:
+      - ../client-src/elements/__screenshots__:/tmp/__screenshots__
+      - ../test-results:/tmp/test-results
+    command: >
+      bash -c "chown -R ${USERID}:${GROUPID} /tmp/__screenshots__
+      && chown -R ${USERID}:${GROUPID} /tmp/test-results"
   playwright:
     build:
       context: ..
       dockerfile: ./.playwright/Dockerfile
+      cache_from:
+        - type=gha,scope=${GITHUB_REF_NAME}-playwright-image
+      cache_to:
+        - type=gha,mode=max,scope=${GITHUB_REF_NAME}-playwright-image
     depends_on:
-      - myapp
+      myapp:
+        condition: service_started
+      fix_volume_ownership:
+          condition: service_completed_successfully
     # Overrides default command so things don't shut down after the process ends.
     command: sleep infinity
     network_mode: host
@@ -19,6 +39,10 @@ services:
       context: ..
       dockerfile: .devcontainer/Dockerfile
       target: dev
+      cache_from:
+        - type=gha,scope=${GITHUB_REF_NAME}-myapp-image
+      cache_to:
+        - type=gha,mode=max,scope=${GITHUB_REF_NAME}-myapp-image
     depends_on:
       - mydb
     command: bash -c "source cs-env/bin/activate; npm run start-app"
