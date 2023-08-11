@@ -4,6 +4,7 @@ import {
   GATE_TEAM_ORDER,
   STAGE_SHORT_NAMES,
 } from './form-field-enums';
+import {ACTIVE_REVIEW_STATES} from './chromedash-gate-column';
 
 
 class ChromedashFeatureRow extends LitElement {
@@ -147,7 +148,7 @@ class ChromedashFeatureRow extends LitElement {
   }
 
   isActiveGate(gate) {
-    return gate.state == 2 || gate.state == 3 || gate.state == 4;
+    return ACTIVE_REVIEW_STATES.includes(gate.state);
   }
 
   getActiveStages(feature) {
