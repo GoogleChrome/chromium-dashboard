@@ -109,7 +109,7 @@ class GetApproversTest(testing_config.CustomTestCase):
               MOCK_APPROVALS_BY_ID)
   @mock.patch('internals.approval_defs.fetch_owners')
   def test__ndb_new(self, mock_fetch_owner):
-    """Some approvals will have appovers in NDB, but they are not found."""
+    """Some approvals will have approvers in NDB, but they are not found."""
     actual = approval_defs.get_approvers(3)
     mock_fetch_owner.assert_not_called()
     self.assertEqual(actual, [])
