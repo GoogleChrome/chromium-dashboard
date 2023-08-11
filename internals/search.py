@@ -43,6 +43,7 @@ def process_pending_approval_me_query() -> list[int]:
 
   approvable_gate_types = approval_defs.fields_approvable_by(user)
   if not approvable_gate_types:
+    logging.info('User has no approvable_gate_types')
     return []
   query = Gate.query(
       Gate.state.IN(Gate.PENDING_STATES),
@@ -200,7 +201,7 @@ def _sort_by_total_order(
 
 
 def process_query(
-    user_query: str, sort_spec: str = None,
+    user_query: str, sort_spec: str|None = None,
     show_unlisted=False, show_deleted=False, show_enterprise=False,
     start=0, num=DEFAULT_RESULTS_PER_PAGE) -> tuple[list[dict[str, Any]], int]:
   """Parse the user's query, run it, and return a list of features."""
@@ -275,6 +276,8 @@ def create_future_operations_from_queries(terms):
     if textterm:
       future = search_fulltext.search_fulltext(textterm)
     elif is_predefined_query_term(field_name, op_str, val_str):
+      logging.info('Running predefined query term: %r %r %r',
+                   field_name, op_str, val_str)
       future = process_predefined_query_term(field_name, op_str, val_str)
     else:
       future = process_query_term(is_negation, field_name, op_str, val_str)

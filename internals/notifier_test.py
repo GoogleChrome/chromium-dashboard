@@ -28,7 +28,8 @@ from internals import approval_defs
 from internals import core_enums
 from internals import notifier
 from internals import stage_helpers
-from internals import user_models
+from internals.user_models import (
+    AppUser, BlinkComponent, FeatureOwner, UserPref)
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 import settings
 
@@ -64,13 +65,13 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.fe_1_stages = stage_helpers.get_feature_stages(
         self.fe_1.key.integer_id())
 
-    self.component_1 = user_models.BlinkComponent(name='Blink')
+    self.component_1 = BlinkComponent(name='Blink')
     self.component_1.put()
-    self.component_owner_1 = user_models.FeatureOwner(
+    self.component_owner_1 = FeatureOwner(
         name='owner_1', email='owner_1@example.com',
         primary_blink_components=[self.component_1.key])
     self.component_owner_1.put()
-    self.watcher_1 = user_models.FeatureOwner(
+    self.watcher_1 = FeatureOwner(
         name='watcher_1', email='watcher_1@example.com',
         watching_all_features=True)
     self.watcher_1.put()
@@ -100,20 +101,21 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         editor_emails=['feature_editor@example.com', 'owner_1@example.com'],
         category=1, creator_email='creator_template@example.com',
         updater_email='editor_template@example.com',
-        blink_components=['Blink'])
+        blink_components=['Blink'], feature_type=0)
     self.template_ship_stage = Stage(feature_id=123, stage_type=160,
         milestones=MilestoneSet(desktop_first=100))
+    self.template_ship_stage_2 = Stage(feature_id=123, stage_type=160,
+        milestones=MilestoneSet(desktop_first=103))
     self.template_fe.put()
     self.template_ship_stage.put()
-    self.template_stages = stage_helpers.get_feature_stages(123)
+    self.template_ship_stage_2.put()
     self.template_fe.key = ndb.Key('FeatureEntry', 123)
     self.template_fe.put()
 
     self.maxDiff = None
 
   def tearDown(self):
-    kinds = [FeatureEntry, Stage, user_models.FeatureOwner,
-             user_models.BlinkComponent]
+    kinds = [FeatureEntry, Stage, FeatureOwner, BlinkComponent]
     for kind in kinds:
       for entity in kind.query():
         entity.key.delete()
@@ -122,7 +124,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     """We generate an email body for new features."""
     with test_app.app_context():
       body_html = notifier.format_email_body(
-          False, self.template_fe, self.template_stages, [])
+          False, self.template_fe, [])
     # TESTDATA.make_golden(body_html, 'test_format_email_body__new.html')
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__new.html'])
@@ -131,7 +133,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     """We don't crash if the change list is emtpy."""
     with test_app.app_context():
       body_html = notifier.format_email_body(
-          True, self.template_fe, self.template_stages, [])
+          True, self.template_fe, [])
     # TESTDATA.make_golden(body_html, 'test_format_email_body__update_no_changes.html')
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__update_no_changes.html'])
@@ -140,7 +142,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     """We generate an email body for an updated feature."""
     with test_app.app_context():
       body_html = notifier.format_email_body(
-          True, self.template_fe, self.template_stages, self.changes)
+          True, self.template_fe, self.changes)
     # TESTDATA.make_golden(body_html, 'test_format_email_body__update_with_changes.html')
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__update_with_changes.html'])
@@ -150,7 +152,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.fe_1.doc_links = ['https://developer.mozilla.org/look-here']
     with test_app.app_context():
       body_html = notifier.format_email_body(
-          True, self.template_fe, self.template_stages, self.changes)
+          True, self.template_fe, self.changes)
     # TESTDATA.make_golden(body_html, 'test_format_email_body__mozdev_links_mozilla.html')
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__mozdev_links_mozilla.html'])
@@ -159,7 +161,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         'https://hacker-site.org/developer.mozilla.org/look-here']
     with test_app.app_context():
       body_html = notifier.format_email_body(
-          True, self.template_fe, self.template_stages, self.changes)
+          True, self.template_fe, self.changes)
     # TESTDATA.make_golden(body_html, 'test_format_email_body__mozdev_links_non_mozilla.html')
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__mozdev_links_non_mozilla.html'])
@@ -235,7 +237,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     changes = [{'prop_name': 'shipped_android_milestone'}]
 
     actual = notifier.apply_subscription_rules(
-        self.fe_1, self.fe_1_stages, changes)
+        self.fe_1, changes)
 
     self.assertEqual(
         {notifier.WEBVIEW_RULE_REASON: notifier.WEBVIEW_RULE_ADDRS},
@@ -248,7 +250,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     changes = [{'prop_name': 'some_other_field'}]  # irrelevant changesa
 
     actual = notifier.apply_subscription_rules(
-        self.fe_1, self.fe_1_stages, changes)
+        self.fe_1, changes)
 
     self.assertEqual({}, actual)
 
@@ -258,14 +260,14 @@ class EmailFormattingTest(testing_config.CustomTestCase):
 
     # No milestones of any kind set.
     actual = notifier.apply_subscription_rules(
-        self.fe_1, self.fe_1_stages, changes)
+        self.fe_1, changes)
     self.assertEqual({}, actual)
 
     # Webview is also set
     self.ship_stage.milestones.android_first = 88
     self.ship_stage.milestones.webview_first = 89
     actual = notifier.apply_subscription_rules(
-        self.fe_1, self.fe_1_stages, changes)
+        self.fe_1, changes)
     self.assertEqual({}, actual)
 
   @mock.patch('internals.notifier.format_email_body')
@@ -323,7 +325,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
 
     mock_f_e_b.assert_called_once_with(
-        False, self.fe_1, self.fe_1_stages, [])
+        False, self.fe_1, [])
 
   @mock.patch('internals.notifier.format_email_body')
   def test_make_feature_changes_email__update(self, mock_f_e_b):
@@ -384,7 +386,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
 
     mock_f_e_b.assert_called_once_with(
-        True, self.fe_1, self.fe_1_stages, self.changes)
+        True, self.fe_1, self.changes)
 
   @mock.patch('internals.notifier.format_email_body')
   @mock.patch('internals.approval_defs.get_approvers')
@@ -415,7 +417,66 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertEqual('approver2@example.com', review_task_2['to'])
 
     mock_f_e_b.assert_called_once_with(
-        True, self.fe_1, self.fe_1_stages, self.changes)
+        True, self.fe_1, self.changes)
+    mock_get_approvers.assert_called_once_with(1)
+
+  @mock.patch('internals.notifier.format_email_body')
+  @mock.patch('internals.approval_defs.get_approvers')
+  def test_make_new_comments_email(self, mock_get_approvers, mock_f_e_b):
+    """We send email to approvers for a review request."""
+    mock_f_e_b.return_value = 'mock body html'
+    mock_get_approvers.return_value = ['approver1@example.com']
+
+    actual_tasks = notifier.make_new_comments_email(
+        self.fe_1, 1, self.changes)
+    self.assertEqual(6, len(actual_tasks))
+    (review_task_1, feature_cc_task, devrel_task,
+     feature_editor_task, feature_owner_task, feature_editor_task_2) = actual_tasks
+
+    self.assertEqual('New comments for feature: feature one', review_task_1['subject'])
+    self.assertIn('mock body html', review_task_1['html'])
+    self.assertIn('<li>You are the reviewer for this gate</li>',
+      review_task_1['html'])
+    self.assertEqual('approver1@example.com', review_task_1['to'])
+
+    # Notification to feature owner.
+    self.assertEqual('feature_owner@example.com', feature_owner_task['to'])
+    self.assertEqual('New comments for feature: feature one',
+      feature_owner_task['subject'])
+    self.assertIn('mock body html', feature_owner_task['html'])
+    self.assertIn('<li>You are listed as an owner of this feature</li>',
+      feature_owner_task['html'])
+
+    # Notification to feature editor.
+    self.assertEqual('New comments for feature: feature one',
+      feature_editor_task['subject'])
+    self.assertIn('mock body html', feature_editor_task['html'])
+    self.assertIn('<li>You are listed as an editor of this feature</li>',
+      feature_editor_task['html'])
+    self.assertEqual('feature_editor@example.com', feature_editor_task['to'])
+
+    # Notification to devrel to feature changes.
+    self.assertEqual('New comments for feature: feature one', devrel_task['subject'])
+    self.assertIn('mock body html', devrel_task['html'])
+    self.assertIn('<li>You are a devrel contact for this feature.</li>',
+      devrel_task['html'])
+    self.assertEqual('devrel1@gmail.com', devrel_task['to'])
+
+    # Notification to user CC'd on feature changes.
+    self.assertEqual('New comments for feature: feature one',
+      feature_cc_task['subject'])
+    self.assertIn('mock body html', feature_cc_task['html'])
+    self.assertIn('<li>You are CC\'d on this feature</li>',
+      feature_cc_task['html'])
+    self.assertEqual('cc@example.com', feature_cc_task['to'])
+
+    self.assertEqual('New comments for feature: feature one', feature_editor_task_2['subject'])
+    self.assertIn('mock body html', feature_editor_task_2['html'])
+    self.assertIn('<li>You are listed as an editor of this feature</li>',
+      feature_editor_task_2['html'])
+    self.assertEqual('owner_1@example.com', feature_editor_task_2['to'])
+
+    mock_f_e_b.assert_called_once_with(True, self.fe_1, self.changes)
     mock_get_approvers.assert_called_once_with(1)
 
   @mock.patch('internals.notifier.format_email_body')
@@ -486,14 +547,14 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
 
     mock_f_e_b.assert_called_once_with(
-        True, self.fe_1, self.fe_1_stages, self.changes)
+        True, self.fe_1, self.changes)
 
 
   @mock.patch('internals.notifier.format_email_body')
   def test_make_feature_changes_email__starrer_unsubscribed(self, mock_f_e_b):
     """We don't email users who starred the feature but opted out."""
     mock_f_e_b.return_value = 'mock body html'
-    starrer_2_pref = user_models.UserPref(
+    starrer_2_pref = UserPref(
         email='starrer_2@example.com',
         notify_as_starrer=False)
     starrer_2_pref.put()
@@ -510,7 +571,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertEqual('owner_1@example.com', component_owner_task['to'])
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
     mock_f_e_b.assert_called_once_with(
-        True, self.fe_2, self.fe_2_stages, self.changes)
+        True, self.fe_2, self.changes)
 
 
 class FeatureStarTest(testing_config.CustomTestCase):
@@ -591,9 +652,9 @@ class FeatureStarTest(testing_config.CustomTestCase):
 
   def test_get_feature_starrers__some_starrers(self):
     """Two users have starred the given feature."""
-    app_user_1 = user_models.AppUser(email='user16@example.com')
+    app_user_1 = AppUser(email='user16@example.com')
     app_user_1.put()
-    app_user_2 = user_models.AppUser(email='user17@example.com')
+    app_user_2 = AppUser(email='user17@example.com')
     app_user_2.put()
     feature_1_id = self.fe_1.key.integer_id()
     notifier.FeatureStar.set_star(app_user_1.email, feature_1_id)
@@ -613,52 +674,61 @@ class FeatureStarTest(testing_config.CustomTestCase):
 class NotifyInactiveUsersHandlerTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.users = []
-    active_user = user_models.AppUser(
+    active_user = AppUser(
+      created=datetime(2020, 10, 1),
       email="active_user@example.com", is_admin=False, is_site_editor=False,
       last_visit=datetime(2023, 8, 30))
     active_user.put()
-    self.users.append(active_user)
 
-    self.inactive_user = user_models.AppUser(
+    inactive_user = AppUser(
+      created=datetime(2020, 10, 1),
       email="inactive_user@example.com", is_admin=False, is_site_editor=False,
       last_visit=datetime(2023, 2, 20))
-    self.inactive_user.put()
-    self.users.append(self.inactive_user)
+    inactive_user.put()
+    self.inactive_user = inactive_user
+    
+    # User who has recently been given access by an admin,
+    # but has not yet visited the site. They should not be considered inactive.
+    newly_created_user = AppUser(
+      created=datetime(2023, 8, 1),
+      email="new_user@example.com", is_admin=False, is_site_editor=False)
+    newly_created_user.put()
 
-    really_inactive_user = user_models.AppUser(
+    # Very inactive user who has already been warned of inactivity
+    # via notification. They should not receive a second notification.
+    really_inactive_user = AppUser(
+      created=datetime(2020, 10, 1),
       email="really_inactive_user@example.com", is_admin=False,
       is_site_editor=False, last_visit=datetime(2022, 10, 1),
       notified_inactive=True)
     really_inactive_user.put()
-    self.users.append(really_inactive_user)
 
-    active_admin = user_models.AppUser(
+    active_admin = AppUser(
+      created=datetime(2020, 10, 1),
       email="active_admin@example.com", is_admin=True, is_site_editor=True,
       last_visit=datetime(2023, 9, 30))
     active_admin.put()
-    self.users.append(active_admin)
 
-    inactive_admin = user_models.AppUser(
+    inactive_admin = AppUser(
+      created=datetime(2020, 10, 1),
       email="inactive_admin@example.com", is_admin=True, is_site_editor=True,
       last_visit=datetime(2023, 3, 1))
     inactive_admin.put()
-    self.users.append(inactive_admin)
 
-    active_site_editor = user_models.AppUser(
+    active_site_editor = AppUser(
+      created=datetime(2020, 10, 1),
       email="active_site_editor@example.com", is_admin=False,
       is_site_editor=True, last_visit=datetime(2023, 7, 30))
     active_site_editor.put()
-    self.users.append(active_site_editor)
 
-    inactive_site_editor = user_models.AppUser(
+    inactive_site_editor = AppUser(
+      created=datetime(2020, 10, 1),
       email="inactive_site_editor@example.com", is_admin=False,
       is_site_editor=True, last_visit=datetime(2023, 2, 9))
     inactive_site_editor.put()
-    self.users.append(inactive_site_editor)
 
   def tearDown(self):
-    for user in self.users:
+    for user in AppUser.query():
       user.key.delete()
 
   def test_determine_users_to_notify(self):

@@ -19,13 +19,12 @@ from google.cloud import ndb  # type: ignore
 from api import dev_api
 from internals import stage_helpers
 from internals.core_models import FeatureEntry, Stage
-from internals.legacy_models import Feature
 from internals.review_models import Gate
 
 class DevAPITest(testing_config.CustomTestCase):
 
   def tearDown(self):
-    for kind in [Feature, FeatureEntry, Stage, Gate]:
+    for kind in [FeatureEntry, Stage, Gate]:
       for entity in kind.query():
         entity.key.delete()
 
@@ -51,13 +50,10 @@ class DevAPITest(testing_config.CustomTestCase):
 
   def test_clear_entities(self):
     """Script successfully deletes most major entities."""
-    f_1 = Feature(id=1, name='feature one', summary='summary',
-        category=1, impl_status_chrome=1)
     fe_1 = FeatureEntry(id=1, name='feature one', summary='summary',
         category=1, impl_status_chrome=1)
     stage = Stage(id=2, feature_id=1, stage_type=160)
     gate = Gate(id=3, feature_id=1, stage_id=2, gate_type=4, state=1)
-    f_1.put()
     fe_1.put()
     stage.put()
     gate.put()
@@ -65,6 +61,6 @@ class DevAPITest(testing_config.CustomTestCase):
     handler_class = dev_api.ClearEntities()
     handler_class.do_get()
 
-    kinds: list[ndb.Model] = [Feature, FeatureEntry, Stage, Gate]
+    kinds: list[ndb.Model] = [FeatureEntry, Stage, Gate]
     for kind in kinds:
       self.assertTrue(len(kind.query().fetch()) == 0)

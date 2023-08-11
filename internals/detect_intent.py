@@ -24,8 +24,8 @@ from framework import users
 from internals import core_enums
 from internals import approval_defs
 from internals.core_models import FeatureEntry, Stage
-from internals.legacy_models import Approval
-from internals.review_models import Vote
+from internals.review_models import Vote, Gate
+from internals import slo
 
 
 FIELDS_REQUIRING_LGTMS = [
@@ -103,12 +103,12 @@ def detect_feature_id(body):
 
 THREAD_LINK_RE = re.compile(
     r'To view this discussion on the web visit\s+'
-    r'(https://groups\.google\.com/a/chromium.org/d/msgid/blink-dev/'
-    r'\S+)[.]')
+    r'(> )?(https://groups\.google\.com/a/chromium.org/d/msgid/blink-dev/'
+    r'\S+)[\n> .]', re.MULTILINE)
 STAGING_THREAD_LINK_RE = re.compile(
     r'To view this discussion on the web visit\s+'
-    r'(https://groups\.google\.com/d/msgid/jrobbins-test/'
-    r'\S+)[.]')
+    r'(> )?(https://groups\.google\.com/d/msgid/jrobbins-test/'
+    r'\S+)[\n> .]', re.MULTILINE)
 
 
 def detect_thread_url(body):
@@ -116,7 +116,7 @@ def detect_thread_url(body):
   match = (THREAD_LINK_RE.search(body) or
            STAGING_THREAD_LINK_RE.search(body))
   if match:
-    return match.group(1)
+    return match.group(2)
   return None
 
 
@@ -148,9 +148,9 @@ def is_lgtm_allowed(from_addr, feature, approval_field):
 
 def detect_new_thread(feature_id, approval_field):
   """Return True if there are no previous approval values for this intent."""
-  existing_approvals = Approval.get_approvals(
-      feature_id=feature_id, field_id=approval_field.field_id)
-  return not existing_approvals
+  existing_votes = Vote.get_votes(
+      feature_id=feature_id, gate_type=approval_field.field_id)
+  return not existing_votes
 
 
 def remove_markdown(body):
@@ -196,7 +196,9 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
       return {'message': 'Feature not found'}
 
     self.set_intent_thread_url(feature, approval_field, thread_url, subject)
+    is_new_thread = detect_new_thread(feature_id, approval_field)
     self.create_approvals(feature, approval_field, from_addr, body)
+    self.record_slo(feature, approval_field, from_addr, is_new_thread)
     return {'message': 'Done'}
 
   def load_detected_feature(self, feature_id: Optional[int],
@@ -230,11 +232,14 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
       thread_url: str | None, subject: str | None) -> None:
     """If the feature has no previous thread URL for this intent, set it."""
     if not thread_url:
+      logging.info('Given false thread_url %r', thread_url)
       return
 
     stage_type = core_enums.STAGE_TYPES_BY_GATE_TYPE_MAPPING[
         approval_field.field_id][feature.feature_type]
     if stage_type is None:
+      logging.info('stage_type not found for %r %r',
+                   approval_field.field_id, feature.feature_type)
       return
     # TODO(danielrsmith): A new way to approach this detection is needed
     # now that multiple stages of the same type can exist for a feature.
@@ -243,13 +248,19 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     matching_stages: list[Stage] = Stage.query(
         Stage.feature_id == feature.key.integer_id(),
         Stage.stage_type == stage_type).fetch()
-    if (len(matching_stages) == 0 or len(matching_stages) > 1 or
-        matching_stages[0].intent_thread_url is not None):
+    if len(matching_stages) == 0 or len(matching_stages) > 1:
+      logging.info('Ambiguous stages: %r', matching_stages)
+      return
+    if matching_stages[0].intent_thread_url:
+      logging.info('intent_thread_url was already set to %r',
+                   matching_stages[0].intent_thread_url)
       return
 
     matching_stages[0].intent_thread_url = thread_url
     matching_stages[0].intent_subject_line = subject
     matching_stages[0].put()
+    logging.info('Set intent_thread_url to %r and intent_subject_line to %r',
+                 thread_url, subject)
 
   def create_approvals(self, feature: FeatureEntry,
       approval_field: approval_defs.ApprovalFieldDef,
@@ -263,9 +274,6 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     if (detect_lgtm(body) and
         is_lgtm_allowed(from_addr, feature, approval_field)):
       logging.info('found LGTM')
-      Approval.set_approval(
-          feature_id, approval_field.field_id,
-          Approval.APPROVED, from_addr)
       approval_defs.set_vote(feature_id, approval_field.field_id,
           Vote.APPROVED, from_addr)
 
@@ -275,10 +283,27 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
       logging.info('found new thread')
       if approval_field in FIELDS_REQUIRING_LGTMS:
         logging.info('requesting a review')
-        Approval.set_approval(
-            feature_id, approval_field.field_id,
-            Approval.REVIEW_REQUESTED, from_addr)
         # TODO(jrobbins): set gate state rather than creating
         # REVIEW_REQUESTED votes.
         approval_defs.set_vote(feature_id, approval_field.field_id,
             Vote.REVIEW_REQUESTED, from_addr)
+
+  def record_slo(self, feature, approval_field, from_addr, is_new_thread) -> None:
+    """Update SLO timestamps."""
+    if is_new_thread:
+      return  # The initial request can never count as a response.
+    feature_id = feature.key.integer_id()
+    matching_gates = Gate.query(
+        Gate.feature_id == feature_id,
+        Gate.gate_type == approval_field.field_id).fetch(None)
+    if len(matching_gates) == 0:
+      logging.info('Did not find a gate')
+      return
+    if len(matching_gates) > 1:
+      logging.info(f'Ambiguous gates: {feature_id}')
+      return
+    gate = matching_gates[0]
+    user = users.User(email=from_addr)
+    approvers = approval_defs.get_approvers(gate.gate_type)
+    if slo.record_comment(feature, gate, user, approvers):
+      gate.put()

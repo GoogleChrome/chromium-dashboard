@@ -1,4 +1,4 @@
-runtime: python310
+runtime: python311
 service: notifier
 
 handlers:
@@ -11,6 +11,10 @@ handlers:
   # Header checks prevent raw access to this handler.  Tasks have headers.
 
 - url: /tasks/email-reviewers
+  script: auto
+  # Header checks prevent raw access to this handler.  Tasks have headers.
+
+- url: /tasks/email-comments
   script: auto
   # Header checks prevent raw access to this handler.  Tasks have headers.
 

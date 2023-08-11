@@ -7,14 +7,12 @@ import sinon from 'sinon';
 
 describe('chromedash-feature-page', () => {
   const user = {
-    can_approve: false,
     can_create_feature: true,
     can_edit_all: true,
     is_admin: false,
     email: 'example@google.com',
   };
   const editor = {
-    can_approve: false,
     can_create_feature: false,
     can_edit_all: false,
     editable_features: [123456],
@@ -22,7 +20,6 @@ describe('chromedash-feature-page', () => {
     email: 'editor@example.com',
   };
   const visitor = {
-    can_approve: false,
     can_create_feature: false,
     can_edit_all: false,
     editable_features: [],

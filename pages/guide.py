@@ -27,10 +27,11 @@ from framework import permissions
 from internals import core_enums, notifier_helpers
 from internals import stage_helpers
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
-from internals.legacy_models import Feature
+from internals.data_types import CHANGED_FIELDS_LIST_TYPE
 from internals.review_models import Gate
 from internals import processes
 from internals import search_fulltext
+from internals import feature_links
 import settings
 
 
@@ -40,11 +41,16 @@ DEVREL_EMAIL = 'devrel-chromestatus-all@google.com'
 
 class FeatureCreateHandler(basehandlers.FlaskHandler):
 
+  TEMPLATE_PATH = 'spa.html'
+
+  def get_template_data(self, **defaults):
+    return basehandlers.get_spa_template_data(self, defaults)
+
   @permissions.require_create_feature
   def process_post_data(self, **kwargs):
-    owners = self.split_emails('owner')
-    editors = self.split_emails('editors')
-    cc_emails = self.split_emails('cc_recipients')
+    owners = self.split_emails('owner_emails')
+    editors = self.split_emails('editor_emails')
+    cc_emails = self.split_emails('cc_emails')
 
     blink_components = (
         self.split_input('blink_components', delim=',') or
@@ -53,31 +59,9 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
     # TODO(jrobbins): Validate input, even though it is done on client.
 
     feature_type = int(self.form.get('feature_type', 0))
-    signed_in_user = ndb.User(
-        email=self.get_current_user().email(),
-        _auth_domain='gmail.com')
-    feature = Feature(
-        category=int(self.form.get('category')),
-        name=self.form.get('name'),
-        feature_type=feature_type,
-        summary=self.form.get('summary'),
-        owner=owners,
-        editors=editors,
-        cc_recipients=cc_emails,
-        devrel=[DEVREL_EMAIL],
-        creator=signed_in_user.email(),
-        accurate_as_of=datetime.now(),
-        unlisted=self.form.get('unlisted') == 'on',
-        breaking_change=self.form.get('breaking_change') == 'on',
-        blink_components=blink_components,
-        tag_review_status=processes.initial_tag_review_status(feature_type),
-        created_by=signed_in_user,
-        updated_by=signed_in_user)
-    key = feature.put()
 
     # Write for new FeatureEntry entity.
     feature_entry = FeatureEntry(
-        id=feature.key.integer_id(),
         category=int(self.form.get('category')),
         name=self.form.get('name'),
         feature_type=feature_type,
@@ -86,27 +70,23 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
         editor_emails=editors,
         cc_emails=cc_emails,
         devrel_emails=[DEVREL_EMAIL],
-        creator_email=signed_in_user.email(),
-        updater_email=signed_in_user.email(),
+        creator_email=self.get_current_user().email(),
+        updater_email=self.get_current_user().email(),
         accurate_as_of=datetime.now(),
         unlisted=self.form.get('unlisted') == 'on',
         breaking_change=self.form.get('breaking_change') == 'on',
         blink_components=blink_components,
         tag_review_status=processes.initial_tag_review_status(feature_type))
-    feature_entry.put()
+    key: ndb.Key = feature_entry.put()
     search_fulltext.index_feature(feature_entry)
 
     # Write each Stage and Gate entity for the given feature.
-    self.write_gates_and_stages_for_feature(
-        feature_entry.key.integer_id(), feature_type)
+    self.write_gates_and_stages_for_feature(key.integer_id(), feature_type)
 
     # Remove all feature-related cache.
-    rediscache.delete_keys_with_prefix(Feature.feature_cache_prefix())
     rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
 
-    # TODO(jrobbins): Make this be /feature/ID after ability to edit
-    # from the feature detail page is complete.
-    redirect_url = '/guide/edit/' + str(key.integer_id())
+    redirect_url = '/feature/' + str(key.integer_id())
     return self.redirect(redirect_url)
 
   def write_gates_and_stages_for_feature(
@@ -131,6 +111,11 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
 
 class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
 
+  TEMPLATE_PATH = 'spa.html'
+
+  def get_template_data(self, **defaults):
+    return basehandlers.get_spa_template_data(self, defaults)
+
   @permissions.require_create_feature
   def process_post_data(self, **kwargs):
     owners = self.split_emails('owner')
@@ -140,61 +125,42 @@ class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
         email=self.get_current_user().email(),
         _auth_domain='gmail.com')
     feature_type = core_enums.FEATURE_TYPE_ENTERPRISE_ID
-    feature = Feature(
-        category=int(core_enums.MISC),
-        enterprise_feature_categories=self.split_input(
-            'enterprise_feature_categories'),
-        name=self.form.get('name'),
-        feature_type=feature_type,
-        summary=self.form.get('summary'),
-        owner=owners,
-        editors=editors,
-        launch_bug_url=self.form.get('launch_bug_url'),
-        breaking_change=self.form.get('breaking_change') == 'on',
-        creator=signed_in_user.email(),
-        accurate_as_of=datetime.now(),
-        blink_components=[settings.DEFAULT_ENTERPRISE_COMPONENT],
-        tag_review_status=core_enums.REVIEW_NA,
-        created_by=signed_in_user,
-        updated_by=signed_in_user)
-    key = feature.put()
 
     # Write for new FeatureEntry entity.
     feature_entry = FeatureEntry(
-        id=feature.key.integer_id(),
         category=int(core_enums.MISC),
-        enterprise_feature_categories=self.split_input(
+        enterprise_feature_categories=self.form.getlist(
             'enterprise_feature_categories'),
         name=self.form.get('name'),
         feature_type=feature_type,
         summary=self.form.get('summary'),
         owner_emails=owners,
         editor_emails=editors,
-        launch_bug_url=self.form.get('launch_bug_url'),
-        breaking_change=self.form.get('breaking_change') == 'on',
         creator_email=signed_in_user.email(),
         updater_email=signed_in_user.email(),
         accurate_as_of=datetime.now(),
+        screenshot_links=self.parse_links('screenshot_links'),
         blink_components=[settings.DEFAULT_ENTERPRISE_COMPONENT],
         tag_review_status=core_enums.REVIEW_NA)
-    feature_entry.put()
+    key: ndb.Key = feature_entry.put()
     search_fulltext.index_feature(feature_entry)
 
     # Write each Stage and Gate entity for the given feature.
-    self.write_gates_and_stages_for_feature(
-        feature_entry.key.integer_id(), feature_type)
+    self.write_gates_and_stages_for_feature(key.integer_id(), feature_type)
 
     # Remove all feature-related cache.
-    rediscache.delete_keys_with_prefix(Feature.feature_cache_prefix())
     rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
 
-    # TODO(jrobbins): Make this be /feature/ID after ability to edit
-    # from the feature detail page is complete.
     redirect_url = '/guide/editall/' + str(key.integer_id()) + '#rollout1'
     return self.redirect(redirect_url)
 
 
 class FeatureEditHandler(basehandlers.FlaskHandler):
+
+  TEMPLATE_PATH = 'spa.html'
+
+  def get_template_data(self, **defaults):
+    return basehandlers.get_spa_template_data(self, defaults)
 
   # Field name, data type
   EXISTING_FIELDS: list[tuple[str, str]] = [
@@ -202,20 +168,26 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('spec_link', 'link'),
       ('standard_maturity', 'int'),
       ('api_spec', 'bool'),
-      ('spec_mentors', 'emails'),
+      ('spec_mentor_emails', 'emails'),
       ('security_review_status', 'int'),
       ('privacy_review_status', 'int'),
       ('initial_public_proposal_url', 'link'),
       ('explainer_links', 'links'),
       ('bug_url', 'link'),
       ('launch_bug_url', 'link'),
+      ('screenshot_links', 'links'),
       ('anticipated_spec_changes', 'str'),
       ('requires_embedder_support', 'bool'),
       ('devtrial_instructions', 'link'),
       ('flag_name', 'str'),
+      ('finch_name', 'str'),
+      ('non_finch_justification', 'str'),
       ('owner', 'emails'),
+      ('owner_emails', 'emails'),
       ('editors', 'emails'),
+      ('editor_emails', 'emails'),
       ('cc_recipients', 'emails'),
+      ('cc_emails', 'emails'),
       ('unlisted', 'bool'),
       ('doc_links', 'links'),
       ('measurement', 'str'),
@@ -226,6 +198,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('search_tags', 'split_str'),
       ('blink_components', 'split_str'),
       ('devrel', 'emails'),
+      ('devrel_emails', 'emails'),
       ('category', 'int'),
       ('enterprise_feature_categories', 'split_str'),
       ('name', 'str'),
@@ -256,6 +229,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('tag_review_status', 'int'),
       ('webview_risks', 'str'),
       ('comments', 'str'),
+      ('feature_notes', 'str'),
       ('breaking_change', 'bool'),
       ('ongoing_constraints', 'str')]
 
@@ -267,7 +241,6 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       'devrel': 'devrel_emails',
       'spec_mentors': 'spec_mentor_emails',
       'comments': 'feature_notes',
-      'ready_for_trial_url': 'announcement_url',
       'intent_to_implement_url': 'intent_thread_url',
       'intent_to_ship_url': 'intent_thread_url',
       'intent_to_experiment_url': 'intent_thread_url',
@@ -275,17 +248,25 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
   # Field name, data type
   STAGE_FIELDS: list[tuple[str, str]] = [
-      ('ready_for_trial_url', 'link'),
-      ('origin_trial_feedback_url', 'link'),
-      ('intent_to_extend_experiment_url', 'link'),
+      ('announcement_url', 'link'),
       ('experiment_extension_reason', 'str'),
       ('finch_url', 'link'),
       ('experiment_goals', 'str'),
       ('experiment_risks', 'str'),
+      ('origin_trial_feedback_url', 'link'),
+      ('ot_chromium_trial_name', 'str'),
+      ('ot_documentation_url', 'link'),
+      ('ot_has_third_party_support', 'bool'),
+      ('ot_is_critical_trial', 'bool'),
+      ('ot_is_deprecation_trial', 'bool'),
+      ('ot_webfeature_use_counter', 'str'),
+      ('rollout_impact', 'int'),
       ('rollout_milestone', 'int'),
       ('rollout_platforms', 'split_str'),
       ('rollout_details', 'str'),
       ('enterprise_policies', 'split_str'),
+      ('intent_thread_url', 'str'),
+      ('display_name', 'str'),
   ]
 
   INTENT_FIELDS: list[str] = [
@@ -336,7 +317,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
   MULTI_SELECT_FIELDS: frozenset[str] = frozenset(['rollout_platforms', 'enterprise_feature_categories'])
 
-  def touched(self, param_name: str) -> bool:
+  def touched(self, param_name: str, form_fields: list[str]) -> bool:
     """Return True if the user edited the specified field."""
     # TODO(jrobbins): for now we just consider everything on the current form
     # to have been touched.  Later we will add javascript to populate a
@@ -347,13 +328,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     # if they are present on the form.
     if (param_name in self.CHECKBOX_FIELDS or
         param_name in self.MULTI_SELECT_FIELDS):
-      form_fields_str = self.form.get('form_fields')
-      if form_fields_str:
-        form_fields = [field_name.strip()
-                       for field_name in form_fields_str.split(',')]
-        return param_name in form_fields
-      else:
-        return True
+      return param_name in form_fields if len(form_fields) > 0 else True
 
     # For now, selects are considered "touched", if they are
     # present on the form and are not empty strings.
@@ -379,7 +354,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       return self.form.get(field)
     elif field_type == 'split_str':
       val = self.split_input(field, delim=',')
-      if field == 'rollout_platforms' or field == 'enterprise_feature_categories':
+      if 'rollout_platforms' in field or field == 'enterprise_feature_categories':
         val = self.form.getlist(field)
         # Occasionally, input will give an empty string as the first element.
         # It needs to be removed.
@@ -392,7 +367,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     raise ValueError(f'Unknown field data type: {field_type}')
 
   def _add_changed_field(self, fe: FeatureEntry, field: str, new_val: Any,
-      changed_fields: list[tuple[str, Any, Any]]) -> None:
+      changed_fields: CHANGED_FIELDS_LIST_TYPE) -> None:
     """Add values to the list of changed fields if the values differ."""
     old_val = getattr(fe, field)
     if new_val != old_val:
@@ -412,7 +387,6 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
     if feature_id:
       # Load feature directly from NDB so as to never get a stale cached copy.
-      feature: Feature = Feature.get_by_id(feature_id)
       fe: FeatureEntry = FeatureEntry.get_by_id(feature_id)
       if fe is None:
         self.abort(404, msg='Feature not found')
@@ -420,27 +394,31 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     logging.info('POST is %r', self.form)
 
     stage_update_items: list[tuple[str, Any]] = []
-    changed_fields: list[tuple[str, Any, Any]] = []
+    changed_fields: CHANGED_FIELDS_LIST_TYPE = []
+
+    form_fields_str = self.form.get('form_fields')
+    form_fields: list[str] = []
+    if form_fields_str:
+      form_fields = [
+          field_name.strip() for field_name in form_fields_str.split(',')]
 
     for field, field_type in self.EXISTING_FIELDS:
-      if self.touched(field):
+      if self.touched(field, form_fields):
         field_val = self._get_field_val(field, field_type)
         new_field = self.RENAMED_FIELD_MAPPING.get(field, field)
         self._add_changed_field(fe, new_field, field_val, changed_fields)
-        setattr(feature, field, field_val)
         setattr(fe, new_field, field_val)
 
     # impl_status_chrome and intent_stage
     # can be be set either by <select> or a checkbox.
     impl_status_val: Optional[int] = None
-    if self.touched('impl_status_chrome'):
+    if self.touched('impl_status_chrome', form_fields):
       impl_status_val = self._get_field_val('impl_status_chrome', 'int')
     elif self._get_field_val('set_impl_status', 'bool'):
       impl_status_val = self._get_field_val('impl_status_offered', 'int')
     if impl_status_val:
       self._add_changed_field(
           fe, 'impl_status_chrome', impl_status_val, changed_fields)
-      setattr(feature, 'impl_status_chrome', impl_status_val)
       setattr(fe, 'impl_status_chrome', impl_status_val)
 
     active_stage_id = -1
@@ -453,65 +431,52 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
           fe, 'active_stage_id', active_stage_id, changed_fields)
       self._add_changed_field(
           fe, 'intent_stage', intent_stage_val, changed_fields)
-      setattr(feature, 'intent_stage', intent_stage_val)
       setattr(fe, 'active_stage_id', active_stage_id)
       setattr(fe, 'intent_stage', intent_stage_val)
 
-    # List of stage IDs will be present if the request comes from edit_all page.
-    stage_ids = self.form.get('stages')
-    if stage_ids:
-      stage_ids_list = [int(id) for id in stage_ids.split(',')]
-      self.update_stages_editall(
-          feature, fe.feature_type, stage_ids_list, changed_fields)
-    else:
+    # If a stage_id is supplied, we make changes to only that specific stage.
+    if stage_id:
       for field, field_type in self.STAGE_FIELDS:
-        if self.touched(field):
+        if self.touched(field, form_fields):
           field_val = self._get_field_val(field, field_type)
-          setattr(feature, field, field_val)
           stage_update_items.append((field, field_val))
 
       for field in MilestoneSet.MILESTONE_FIELD_MAPPING.keys():
-        if self.touched(field):
+        if self.touched(field, form_fields):
           # TODO(jrobbins): Consider supporting milestones that are not ints.
           field_val = self._get_field_val(field, 'int')
-          setattr(feature, field, field_val)
           stage_update_items.append((field, field_val))
-
-    # If a stage_id is supplied, we make changes to only that specific stage.
-    if stage_id:
       self.update_single_stage(
           stage_id, fe.feature_type, stage_update_items, changed_fields)
-    # Otherwise, we find the associated stages and make changes (edit-all).
     else:
-      self.update_multiple_stages(feature_id, feature.feature_type,
-          stage_update_items, changed_fields)
+      # List of stage IDs will be present if the request comes from edit_all page.
+      stage_ids = self.form.get('stages')
+      stage_ids_list = [int(id) for id in stage_ids.split(',')] if stage_ids else []
+      self.update_stages_editall(
+          feature_id, fe.feature_type, stage_ids_list, changed_fields, form_fields)
 
     extension_stage_ids = self.form.get('extension_stage_ids')
     if extension_stage_ids:
       stage_ids_list = [int(id) for id in extension_stage_ids.split(',')]
-      self.update_stages_editall(
-          feature, fe.feature_type, stage_ids_list, changed_fields)
+      self.update_stages_editall(feature_id, fe.feature_type, stage_ids_list, changed_fields, form_fields)
     # Update metadata fields.
     now = datetime.now()
     if self.form.get('accurate_as_of'):
-      feature.accurate_as_of = now
       fe.accurate_as_of = now
+      fe.outstanding_notifications = 0
     user_email = self.get_current_user().email()
-    feature.updated_by = ndb.User(
-        email=user_email,
-        _auth_domain='gmail.com')
     fe.updater_email = user_email
     fe.updated = now
 
     key: ndb.Key = fe.put()
-    feature.put()
 
     notifier_helpers.notify_subscribers_and_save_amendments(
         fe, changed_fields, notify=True)
     # Remove all feature-related cache.
-    rediscache.delete_keys_with_prefix(Feature.feature_cache_prefix())
     rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
-
+    
+    feature_links.update_feature_links(fe, changed_fields)
+    
     # Update full-text index.
     if fe:
       search_fulltext.index_feature(fe)
@@ -527,7 +492,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
   def update_multiple_stages(self, feature_id: int, feature_type: int,
       update_items: list[tuple[str, Any]],
-      changed_fields: list[tuple[str, Any, Any]]) -> None:
+      changed_fields: CHANGED_FIELDS_LIST_TYPE) -> None:
     """Handle updating stages when IDs have not been specified."""
     # Get all existing stages associated with the feature.
     stages = stage_helpers.get_feature_stages(feature_id)
@@ -582,7 +547,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
   def update_single_stage(self, stage_id: int, feature_type: int,
       update_items: list[tuple[str, Any]],
-      changed_fields: list[tuple[str, Any, Any]]) -> None:
+      changed_fields: CHANGED_FIELDS_LIST_TYPE) -> None:
     """Update the fields of the stage of a given ID."""
     stage_to_update = Stage.get_by_id(stage_id)
     if stage_to_update is None:
@@ -621,26 +586,48 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
         changed_fields.append((old_field_name, old_val, new_val))
     stage_to_update.put()
 
-  def update_stages_editall(self, feature: Feature, feature_type: int,
-      stage_ids: list[int], changed_fields: list[tuple[str, Any, Any]]) -> None:
+  def update_stages_editall(
+      self,
+      feature_id: int,
+      feature_type: int,
+      stage_ids: list[int],
+      changed_fields: CHANGED_FIELDS_LIST_TYPE,
+      form_fields: list[str]) -> None:
     """Handle the updates for stages on the edit-all page."""
+    id_to_field_suffix = {}
+    ids_created = set()
+    for field in self.form.keys():
+      if not field.endswith('__create'):
+        continue
+      [name, id, stage_type, suffix] = field.split('__')
+      if stage_type is None:
+        continue
+      if id not in ids_created:
+        ids_created.add(id)
+        stage = stage_helpers.create_feature_stage(feature_id, feature_type, int(stage_type))
+        id_to_field_suffix[stage.key.id()] = f'{id}__{stage_type}__create'
+        stage_ids.append(stage.key.id())
+
     for id in stage_ids:
+      suffix = id_to_field_suffix.get(id, id)
       stage = Stage.get_by_id(id)
       if not stage:
         self.abort(404, msg=f'No stage {id} found')
-
       # Update the stage-specific fields.
       for field, field_type in self.STAGE_FIELDS:
         # To differentiate stages that have the same fields, the stage ID
         # is appended to the field name with 2 underscores.
-        field_with_id = f'{field}__{id}'
+        field_with_suffix = f'{field}__{suffix}'
+        if not self.touched(field_with_suffix, form_fields):
+          continue
         new_field_name = self.RENAMED_FIELD_MAPPING.get(field, field)
         old_val = getattr(stage, new_field_name)
-        new_val = self._get_field_val(field_with_id, field_type)
+        new_val = self._get_field_val(field_with_suffix, field_type)
         setattr(stage, new_field_name, new_val)
-        changed_fields.append((field, old_val, new_val))
+        if old_val != new_val:
+          changed_fields.append((field, old_val, new_val))
 
-      intent_thread_field= None
+      intent_thread_field = None
       milestone_fields = []
       # Determine if the stage type is one with specific milestone fields.
       if stage.stage_type == core_enums.STAGE_TYPES_PROTOTYPE[feature_type]:
@@ -659,19 +646,21 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
         milestone_fields = self.SHIPPING_MILESTONE_FIELDS
 
       # Determine if 'intent_thread_url' field needs to be changed.
-      if intent_thread_field:
+      intent_field_with_suffix = f'{intent_thread_field}__{suffix}'
+      if intent_thread_field and self.touched(intent_field_with_suffix, form_fields):
         old_val = stage.intent_thread_url
-        new_val = self._get_field_val(f'{intent_thread_field}__{id}', 'link')
+        new_val = self._get_field_val(intent_field_with_suffix, 'link')
         if old_val != new_val:
           changed_fields.append((intent_thread_field, old_val, new_val))
         setattr(stage, 'intent_thread_url', new_val)
 
       for field, milestone_field in milestone_fields:
-        field_with_id = f'{field}__{id}'
+        field_with_suffix = f'{field}__{suffix}'
+        if not self.touched(field_with_suffix, form_fields):
+          continue
         old_val = None
-        new_val = self._get_field_val(field_with_id, 'int')
+        new_val = self._get_field_val(field_with_suffix, 'int')
         milestoneset_entity = stage.milestones
-        setattr(feature, field, new_val)
         milestoneset_entity = getattr(stage, 'milestones')
         if milestoneset_entity is None:
           milestoneset_entity = MilestoneSet()
@@ -679,5 +668,6 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
           old_val = getattr(milestoneset_entity, milestone_field)
         setattr(milestoneset_entity, milestone_field, new_val)
         stage.milestones = milestoneset_entity
-        changed_fields.append((field, old_val, new_val))
+        if old_val != new_val:
+          changed_fields.append((field, old_val, new_val))
       stage.put()

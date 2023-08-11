@@ -140,6 +140,27 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
         [self.feature_1_id, self.feature_2_id, self.feature_3_id],
         [key.integer_id() for key in actual])
 
+  def check_wrong_type(self, field_name, bad_value):
+    with self.assertRaises(ValueError) as cm:
+      search_queries.single_field_query_async(
+          field_name, '=', bad_value)
+    self.assertEqual(
+        cm.exception.args[0], 'Query value does not match field type')
+
+  def test_single_field_query_async__wrong_types(self):
+    """We reject requests with values that parse to the wrong type."""
+    # Feature entry fields
+    self.check_wrong_type('owner', True)
+    self.check_wrong_type('owner', 123)
+    self.check_wrong_type('deleted', 'not a boolean')
+    self.check_wrong_type('star_count', 'not an integer')
+    self.check_wrong_type('created.when', 'not a date')
+
+    # Stage fields
+    self.check_wrong_type('browsers.chrome.android', 'not an integer')
+    self.check_wrong_type('finch_url', 123)
+    self.check_wrong_type('finch_url', True)
+
   def test_single_field_query_async__normal_stage_field(self):
     """We can find a FeatureEntry based on values in an associated Stage."""
     actual_promise = search_queries.single_field_query_async(

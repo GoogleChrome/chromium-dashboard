@@ -29,10 +29,38 @@ import settings
 class FeatureEntry(ndb.Model):  # Copy from Feature
   """This is the main representation of a feature that we are tracking."""
 
+  # Fields that should not be mutated by user edit requests.
+  FIELDS_IMMUTABLE_BY_USER = frozenset([
+    'id',
+    'created',
+    'creator_email',
+    'updated',
+    'updater_email',
+    'accurate_as_of',
+    'outstanding_notifications',
+    'deleted',
+    'star_count',
+    'feature_type',
+  ])
+
+  # All required fields needed upon feature creation.
+  REQUIRED_FIELDS = frozenset([
+    'name',
+    'summary',
+    'category',
+    'feature_type',
+    'impl_status_chrome',
+    'standard_maturity',
+    'ff_views',
+    'safari_views',
+    'web_dev_views',
+  ])
+
   # Metadata: Creation and updates.
   created = ndb.DateTimeProperty(auto_now_add=True)
   updated = ndb.DateTimeProperty(auto_now_add=True)
   accurate_as_of = ndb.DateTimeProperty()
+  outstanding_notifications = ndb.IntegerProperty(default=0)
   creator_email = ndb.StringProperty()
   updater_email = ndb.StringProperty()
 
@@ -54,16 +82,19 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   feature_notes = ndb.TextProperty()  # copy from comments
 
   # Metadata: Process information
-  feature_type = ndb.IntegerProperty(default=FEATURE_TYPE_INCUBATE_ID)
+  feature_type = ndb.IntegerProperty(required=True, default=FEATURE_TYPE_INCUBATE_ID)
   intent_stage = ndb.IntegerProperty(default=INTENT_NONE)
   active_stage_id = ndb.IntegerProperty()
   bug_url = ndb.StringProperty()  # Tracking bug
   launch_bug_url = ndb.StringProperty()  # FLT or go/launch
+  screenshot_links = ndb.StringProperty(repeated=True)
   breaking_change = ndb.BooleanProperty(default=False)
 
   # Implementation in Chrome
   impl_status_chrome = ndb.IntegerProperty(required=True, default=NO_ACTIVE_DEV)
   flag_name = ndb.StringProperty()
+  finch_name = ndb.StringProperty()
+  non_finch_justification = ndb.TextProperty()
   ongoing_constraints = ndb.TextProperty()
 
   # Topic: Adoption (reviewed by API Owners.  Auto-approved gate later?)
@@ -170,8 +201,6 @@ class MilestoneSet(ndb.Model):  # copy from milestone fields of Feature
       'ot_milestone_desktop_end': 'desktop_last',
       'ot_milestone_android_start': 'android_first',
       'ot_milestone_android_end': 'android_last',
-      'ot_milestone_ios_start': 'ios_first',
-      'ot_milestone_ios_end': 'ios_last',
       'ot_milestone_webview_start': 'webview_first',
       'ot_milestone_webview_end': 'webview_last',
       'dt_milestone_desktop_start': 'desktop_first',
@@ -227,6 +256,7 @@ class Stage(ndb.Model):
   # Identifying information: what.
   feature_id = ndb.IntegerProperty(required=True)
   stage_type = ndb.IntegerProperty(required=True)
+  display_name = ndb.StringProperty()
 
   # Pragmatic information: where and when.
   browser = ndb.StringProperty()  # Blank or "Chrome" for now.
@@ -240,21 +270,32 @@ class Stage(ndb.Model):
   te_emails = ndb.StringProperty(repeated=True)
 
   # Gate-related fields that need separate values for repeated stages.
-  # copy from Feature.
-  experiment_goals = ndb.TextProperty()
-  experiment_risks = ndb.TextProperty()
+  announcement_url = ndb.StringProperty()
   experiment_extension_reason = ndb.TextProperty()
   intent_thread_url = ndb.StringProperty()
   intent_subject_line = ndb.StringProperty()
+
+  # Origin trial fields
+  origin_trial_id = ndb.StringProperty()
   origin_trial_feedback_url = ndb.StringProperty()
-  announcement_url = ndb.StringProperty()
+  experiment_goals = ndb.TextProperty()
+  experiment_risks = ndb.TextProperty()
+  ot_chromium_trial_name = ndb.StringProperty()
+  ot_documentation_url = ndb.StringProperty()
+  ot_has_third_party_support = ndb.BooleanProperty(default=False)
+  ot_is_critical_trial = ndb.BooleanProperty(default=False)
+  ot_is_deprecation_trial = ndb.BooleanProperty(default=False)
+  ot_webfeature_use_counter = ndb.StringProperty()
+
   # Origin trial stage id that this stage extends, if trial extension stage.
   ot_stage_id = ndb.IntegerProperty()
 
   #Enterprise
+  rollout_impact = ndb.IntegerProperty(default=2) # default to "Medium impact"
   rollout_milestone = ndb.IntegerProperty()
   rollout_platforms = ndb.StringProperty(repeated=True)
   rollout_details = ndb.TextProperty()
   enterprise_policies = ndb.StringProperty(repeated=True)
 
   archived = ndb.BooleanProperty(default=False)
+  created = ndb.DateTimeProperty(auto_now_add=True)

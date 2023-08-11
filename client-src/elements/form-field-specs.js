@@ -6,6 +6,7 @@ import {
   FEATURE_TYPES_WITHOUT_ENTERPRISE,
   IMPLEMENTATION_STATUS,
   PLATFORM_CATEGORIES,
+  ROLLOUT_IMPACT,
   STANDARD_MATURITY_CHOICES,
   REVIEW_STATUS_CHOICES,
   VENDOR_VIEWS_COMMON,
@@ -16,15 +17,15 @@ import {
 /* Patterns from https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch04s01.html
  * Removing single quote ('), backtick (`), and pipe (|) since they are risky unless properly escaped everywhere.
  * Also removing ! and % because they have special meaning for some older email routing systems. */
-const USER_REGEX = '[A-Za-z0-9_#$&*+/=?{}~^.-]+';
-const DOMAIN_REGEX = String.raw`(([A-Za-z0-9-]+\.)+[A-Za-z]{2,6})`;
+const USER_REGEX = String.raw`[A-Za-z0-9_#$&*+\/=?\{\}~^.\-]+`;
+const DOMAIN_REGEX = String.raw`(([A-Za-z0-9\-]+\.)+[A-Za-z]{2,6})`;
 
 const EMAIL_ADDRESS_REGEX = USER_REGEX + '@' + DOMAIN_REGEX;
 const EMAIL_ADDRESSES_REGEX = EMAIL_ADDRESS_REGEX + '([ ]*,[ ]*' + EMAIL_ADDRESS_REGEX + ')*';
 
 // Simple http URLs
 const PORTNUM_REGEX = '(:[0-9]+)?';
-const URL_REGEX = '(https?)://' + DOMAIN_REGEX + PORTNUM_REGEX + String.raw`(/[^\s]*)?`;
+const URL_REGEX = '(https?)://' + DOMAIN_REGEX + PORTNUM_REGEX + String.raw`(/\S*)?`;
 const URL_PADDED_REGEX = String.raw`\s*` + URL_REGEX + String.raw`\s*`;
 
 const URL_FIELD_ATTRS = {
@@ -112,6 +113,15 @@ export const ALL_FIELDS = {
     type: 'textarea',
     required: true,
     label: 'Summary',
+    enterprise_help_text: html`
+       <p>This text will be used in the <a href="https://support.google.com/chrome/a/answer/7679408" target="_blank">enterprise release notes</a>, which are publicly visible and primarily written for IT admins.</p>
+       <p>Explain what's changing from the point of view of an end-user, developer, or administrator.
+        Indicate what the motivation is for this change, especially if there’s security or privacy benefits to the change.
+        If an admin should do something (like test or set a flag or an enterprise policy), please explain. Finally, if the change has
+        a user-visible benefit (eg. better security or privacy), explain that motivation. If there are already publicly visible comms
+        (e.g. blog posts), you should link to them here as well.</p>
+      <p>See <a href="https://docs.google.com/document/d/1SdQ-DKeA5O7I8ju5Cb8zSM5S4NPwUACNJ9qbEhz-AYU" target="_blank">go/releasenotes-examples</a>
+       for examples.</p>`,
     help_text: html`
        <p>Text in the beta release post, the enterprise release notes,
         and other external sources will be based on this text.</p>
@@ -147,10 +157,12 @@ export const ALL_FIELDS = {
     Splits the HTTP cache using the top frame origin (and possibly subframe origin) to prevent documents from one origin from knowing whether a resource from another origin was cached. The HTTP cache is currently one per profile, with a single namespace for all resources and subresources regardless of origin or renderer process. Splitting the cache on top frame origins helps the browser deflect side-channel attacks where one site can detect resources in another site's cache.
     </blockquote>
     `,
+    enterprise_extra_help: '',
   },
 
   'owner': {
     type: 'input',
+    name: 'owner_emails', // Field name in database.
     attrs: MULTI_EMAIL_FIELD_ATTRS,
     required: true,
     label: 'Feature owners',
@@ -160,6 +172,7 @@ export const ALL_FIELDS = {
 
   'editors': {
     type: 'input',
+    name: 'editor_emails', // Field name in database.
     attrs: MULTI_EMAIL_FIELD_ATTRS,
     required: false,
     label: 'Feature editors',
@@ -171,6 +184,7 @@ export const ALL_FIELDS = {
 
   'cc_recipients': {
     type: 'input',
+    name: 'cc_emails', // Field name in database.
     attrs: MULTI_EMAIL_FIELD_ATTRS,
     required: false,
     label: 'CC',
@@ -247,6 +261,7 @@ export const ALL_FIELDS = {
   },
 
   'set_stage': {
+    name: 'active_stage_id',
     type: 'checkbox',
     label: 'Set to this stage',
     help_text: html`
@@ -272,6 +287,15 @@ export const ALL_FIELDS = {
         Select the appropriate Chromium development stage. If you
         select In developer trial, Origin trial, or Enabled by
         default, be sure to set the equivalent Process stage.`,
+  },
+
+  'set_impl_status': {
+    type: 'checkbox',
+    name: 'impl_status_chrome',
+    label: 'Implementation status',
+    help_text: html`
+        Check this box to update the implementation status of
+        this feature in Chromium.`,
   },
 
   'bug_url': {
@@ -302,6 +326,14 @@ export const ALL_FIELDS = {
         <a target="_blank"
             href="https://launch.corp.google.com/">
           Create a launch</a>.`,
+  },
+  'screenshot_links': {
+    type: 'textarea',
+    attrs: MULTI_URL_FIELD_ATTRS,
+    required: false,
+    label: 'Screenshots link(s)',
+    help_text: html`
+        Optional: Link to screenshots showcasing this feature (one URL per line). These will be shared publicly.`,
   },
 
   'motivation': {
@@ -410,6 +442,7 @@ export const ALL_FIELDS = {
 
   'comments': {
     type: 'textarea',
+    name: 'feature_notes', // Field name in database.
     attrs: {rows: 4},
     required: false,
     label: 'Comments',
@@ -437,6 +470,7 @@ export const ALL_FIELDS = {
 
   'spec_mentors': {
     type: 'input',
+    name: 'spec_mentor_emails',
     attrs: MULTI_EMAIL_FIELD_ATTRS,
     required: false,
     label: 'Spec mentors',
@@ -608,13 +642,13 @@ export const ALL_FIELDS = {
                 thread, link to it here.`,
   },
 
-  'ready_for_trial_url': {
+  'announcement_url': {
     type: 'input',
     attrs: URL_FIELD_ATTRS,
     required: false,
-    label: 'Ready for Trial link',
-    help_text: html`After you have started the "Ready for Trial" discussion
-                thread, link to it here.`,
+    label: 'Ready for Developer Testing link',
+    help_text: html`After you have started the "Ready for Developer Testing"
+                 discussion thread, link to it here.`,
   },
 
   'intent_to_experiment_url': {
@@ -637,7 +671,6 @@ export const ALL_FIELDS = {
 
   'r4dt_url': {
     // form field name matches underlying DB field (sets "intent_to_experiment_url" field in DB).
-    name: 'intent_to_experiment_url',
     type: 'input',
     attrs: URL_FIELD_ATTRS,
     required: false,
@@ -978,7 +1011,71 @@ export const ALL_FIELDS = {
     label: 'Origin trial feedback summary',
     help_text: html`
       If your feature was available as an origin trial, link to a summary
-      of usage and developer feedback. If not, leave this empty.`,
+      of usage and developer feedback. If not, leave this empty. DO NOT
+      USE FEEDBACK VERBATIM without prior consultation with the Origin
+      Trials team.`,
+  },
+
+  'ot_chromium_trial_name': {
+    type: 'input',
+    attrs: TEXT_FIELD_ATTRS,
+    required: false,
+    label: 'Chromium trial name',
+    help_text: html`
+      Name for the trial, as specified in <a target="_blank"
+      href="https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/runtime_enabled_features.json5"
+      >runtime_enabled_features.json5</a>.`,
+  },
+
+  'ot_documentation_url': {
+    type: 'input',
+    attrs: URL_FIELD_ATTRS,
+    required: false,
+    label: 'Documentation link',
+    help_text: html`
+      Link to more information to help developers use the trial's feature
+      (e.g. blog post, Github explainer, etc.).`,
+  },
+
+  'ot_has_third_party_support': {
+    type: 'checkbox',
+    initial: false,
+    label: 'Origin trial supports third party origins',
+    help_text: html`
+      Whether this trial supports third party origins. See
+      <a href="https://web.dev/third-party-origin-trials/">this article</a>
+      for more information.`,
+  },
+
+  'ot_is_critical_trial': {
+    type: 'checkbox',
+    initial: false,
+    label: 'Critical origin trial',
+    help_text: html`
+      See <a href="go/running-an-origin-trial">go/running-an-origin-trial</a>
+      for criteria and additional process requirements.`,
+  },
+
+  'ot_is_deprecation_trial': {
+    type: 'checkbox',
+    initial: false,
+    label: 'Deprecation trial',
+    help_text: html`
+      Is this a deprecation trial? See the
+      <a href="https://www.chromium.org/blink/launching-features/#deprecation-trial"
+      >deprecation trial section</a> for more information.`,
+  },
+
+  'ot_webfeature_use_counter': {
+    type: 'input',
+    attrs: TEXT_FIELD_ATTRS,
+    required: false,
+    label: 'WebFeature UseCounter name',
+    help_text: html`
+    For measuring usage, this must be a single named value from the
+    WebFeature enum, e.g. kWorkerStart. See
+    <a href="https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom"
+    >web_feature.mojom</a>.`,
   },
 
   'anticipated_spec_changes': {
@@ -1123,6 +1220,7 @@ export const ALL_FIELDS = {
 
   'devrel': {
     type: 'input',
+    name: 'devrel_emails', // Field name in database.
     attrs: MULTI_EMAIL_FIELD_ATTRS,
     required: false,
     label: 'Developer relations emails',
@@ -1236,7 +1334,34 @@ export const ALL_FIELDS = {
     required: false,
     label: 'Flag name',
     help_text: html`
-      Name of the flag on chrome://flags that enables this feature.`,
+      Name of the flag on chrome://flags that allows a web developer to
+      enable this feature in their own browser to try it out.
+      E.g., "storage-buckets".  These are defined in <a target="_blank"
+      href="https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/about_flags.cc">about_flags.cc</a>.`,
+  },
+
+  'finch_name': {
+    type: 'input',
+    attrs: TEXT_FIELD_ATTRS,
+    required: false,
+    label: 'Finch feature name',
+    help_text: html`
+      String name of the <code>base::Feature</code> defined via the
+      <code>BASE_FEATURE</code> macro in your feature implementation
+      code. E.g., "StorageBuckets".  These names are used
+      in <a target="_blank"
+      href="https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/runtime_enabled_features.json5"
+      >runtime_enabled_features.json5</a> and finch GCL files`,
+  },
+
+  'non_finch_justification': {
+    type: 'textarea',
+    required: false,
+    label: 'Non-finch justification',
+    help_text: html`
+      The <a target="_blank"
+      href="https://chromium.googlesource.com/chromium/src/+/main/docs/flag_guarding_guidelines.md">Flag Guarding Guidelines</a> require new features to have
+       a finch flag.  If your feature does not have a finch flag, explain why.`,
   },
 
   'prefixed': {
@@ -1246,13 +1371,32 @@ export const ALL_FIELDS = {
     help_text: '',
   },
 
+  'display_name': {
+    type: 'input',
+    attrs: TEXT_FIELD_ATTRS,
+    required: false,
+    label: 'Stage display name',
+    help_text: html`
+        <p>Optional. Stage name to display on the feature detail page.</p>`,
+    extra_help: html`
+    <p>
+    This name is only used for displaying stages on this site. Use this to differentiate stages of the same type.
+    </p>
+    <h4>Examples</h4>
+    <ul>
+      <li>Extended deprecation trial</li>
+      <li>Second origin trial run</li>
+      <li>Delayed ship for Android</li>
+    </ul>`,
+  },
+
   'enterprise_policies': {
     type: 'input',
     attrs: MULTI_STRING_FIELD_ATTRS,
     required: false,
     label: 'Enterprise policies',
     help_text: html`
-      List of policies that control the feature, if any.`,
+      List the policies that are being introduced, removed, or can be used to control the feature at this stage, if any.`,
   },
 
   'enterprise_feature_categories': {
@@ -1264,13 +1408,24 @@ export const ALL_FIELDS = {
       Select all that apply.`,
   },
 
+  'rollout_impact': {
+    type: 'select',
+    choices: ROLLOUT_IMPACT,
+    initial: ROLLOUT_IMPACT.IMPACT_MEDIUM[0],
+    label: 'Impact',
+    help_text: html`
+      A stage is probably high impact if it introduces a breaking change on the stable channel,
+      or seriously changes the experience of using Chrome. Use your judgment; if you're unsure,
+      most stages are Medium impact.`,
+  },
+
   'rollout_milestone': {
     type: 'input',
     attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: false,
     label: 'Rollout milestone',
     help_text: html`
-      Milestone in which rollout for this feature starts.`,
+    The milestone in which this stage rolls out to the stable channel (even a 1% rollout). If you don't yet know which milestone it will be, put in your best estimate. You can always change this later.`,
   },
 
   'rollout_platforms': {
@@ -1279,7 +1434,7 @@ export const ALL_FIELDS = {
     required: false,
     label: 'Rollout platforms',
     help_text: html`
-      Platforms for which rollout for this feature occurs in the selected milestone.`,
+      The platform(s) affected by this stage`,
   },
 
   'rollout_details': {
@@ -1288,10 +1443,11 @@ export const ALL_FIELDS = {
     required: false,
     label: 'Rollout details',
     help_text: html`
-      Explain what specifically is changing in the selected milestone for the
-      selected platforms. Include any controls admins have to test it
-      (e.g. flags) and control it (e.g. an enterprise policy). Write in the
-      present tense.`,
+      Explain what specifically is changing in this milestone, for the given platforms.
+      Many features are composed of multiple stages on different milestones. For example,
+      you may have a stage that introduces a change and a temporary policy to control it,
+      then another stage on a subsequent milestone that removes the policy. Alternatively,
+      you may ship the feature to different platforms in different milestones.`,
   },
 
   'breaking_change': {

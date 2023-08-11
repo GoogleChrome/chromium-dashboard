@@ -1,6 +1,6 @@
 import {LitElement, css, html} from 'lit';
 import {ref} from 'lit/directives/ref.js';
-import {showToastMessage, setupScrollToHash} from './utils.js';
+import {formatFeatureChanges, showToastMessage, setupScrollToHash} from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
 import {
@@ -8,8 +8,8 @@ import {
   FLAT_ENTERPRISE_METADATA_FIELDS,
   formatFeatureForEdit} from './form-definition';
 import {ALL_FIELDS} from './form-field-specs';
-import {SHARED_STYLES} from '../sass/shared-css.js';
-import {FORM_STYLES} from '../sass/forms-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
+import {FORM_STYLES} from '../css/forms-css.js';
 
 
 export class ChromedashGuideMetadataPage extends LitElement {
@@ -28,6 +28,7 @@ export class ChromedashGuideMetadataPage extends LitElement {
       loading: {type: Boolean},
       appTitle: {type: String},
       nextPage: {type: String},
+      fieldValues: {type: Array},
     };
   }
 
@@ -38,6 +39,7 @@ export class ChromedashGuideMetadataPage extends LitElement {
     this.loading = true;
     this.appTitle = '';
     this.nextPage = '';
+    this.fieldValues = [];
   }
 
   connectedCallback() {
@@ -75,28 +77,36 @@ export class ChromedashGuideMetadataPage extends LitElement {
       this.handleFormSubmit(event, hiddenTokenField);
     });
 
-    this.addMiscEventListeners();
     setupScrollToHash(this);
   }
 
-  handleFormSubmit(event, hiddenTokenField) {
-    event.preventDefault();
+  handleFormSubmit(e, hiddenTokenField) {
+    e.preventDefault();
+    const submitBody = formatFeatureChanges(this.fieldValues, this.featureId);
 
     // get the XSRF token and update it if it's expired before submission
     window.csClient.ensureTokenIsValid().then(() => {
       hiddenTokenField.value = window.csClient.token;
-      event.target.submit();
+      return csClient.updateFeature(submitBody);
+    }).then(() => {
+      window.location.href = this.nextPage || `/guide/edit/${this.featureId}`;
+    }).catch(() => {
+      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
   }
 
-  addMiscEventListeners() {
-    const fields = this.shadowRoot.querySelectorAll('input, textarea');
-    for (let i = 0; i < fields.length; ++i) {
-      fields[i].addEventListener('input', (e) => {
-        e.target.classList.add('interacted');
-      });
+  // Handler to update form values when a field update event is fired.
+  handleFormFieldUpdate(event) {
+    const value = event.detail.value;
+    // Index represents which form was updated.
+    const index = event.detail.index;
+    if (index >= this.fieldValues.length) {
+      throw new Error('Out of bounds index when updating field values.');
     }
-  }
+    // The field has been updated, so it is considered touched.
+    this.fieldValues[index].touched = true;
+    this.fieldValues[index].value = value;
+  };
 
   handleCancelClick() {
     window.location.href = `/guide/edit/${this.featureId}`;
@@ -151,10 +161,17 @@ export class ChromedashGuideMetadataPage extends LitElement {
   renderFields(formattedFeature, section) {
     return section.fields.map(field => {
       const featureJSONKey = ALL_FIELDS[field].name || field;
+      const value = formattedFeature[featureJSONKey];
+      // Add the field to this component's stage before creating the field component.
+      const index = this.fieldValues.length;
+      this.fieldValues.push({name: featureJSONKey, touched: false, value});
       return html`
       <chromedash-form-field
         name=${field}
-        value=${formattedFeature[featureJSONKey]}>
+        index=${index}
+        value=${value}
+        ?forEnterprise=${formattedFeature.is_enterprise_feature}
+        @form-field-update="${this.handleFormFieldUpdate}">
       </chromedash-form-field>
     `;
     });
@@ -173,15 +190,16 @@ export class ChromedashGuideMetadataPage extends LitElement {
 
   renderForm() {
     const formattedFeature = formatFeatureForEdit(this.feature);
-    return html`
-      <form name="feature_form" method="POST"
-        action="/guide/edit/${this.featureId}">
-        <input type="hidden" name="token">
-        <input type="hidden" name="form_fields" value=${this.getFormFields()} >
-        <input type="hidden" name="nextPage" value=${this.getNextPage()} >
+    let sections = FLAT_METADATA_FIELDS.sections;
+    if (formattedFeature.is_enterprise_feature) {
+      sections = FLAT_ENTERPRISE_METADATA_FIELDS.sections;
+    }
 
+    return html`
+      <form name="feature_form">
+        <input type="hidden" name="token">
         <chromedash-form-table ${ref(this.registerHandlers)}>
-          ${this.renderSections(formattedFeature, FLAT_METADATA_FIELDS.sections)}
+          ${this.renderSections(formattedFeature, sections)}
         </chromedash-form-table>
 
         <div class="final_buttons">

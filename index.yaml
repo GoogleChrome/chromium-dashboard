@@ -374,6 +374,10 @@ indexes:
   - name: set_on
 - kind: Vote
   properties:
+  - name: gate_type
+  - name: set_on
+- kind: Vote
+  properties:
   - name: state
   - name: set_on
 - kind: Vote
@@ -460,3 +464,11 @@ indexes:
   - name: state
   - name: requested_on
   - name: feature_id
+- kind: FeatureLinks
+  properties:
+  - name: feature_ids
+  - name: http_error_code
+  - name: is_error
+  - name: type
+  - name: url
+  - name: updated

@@ -15,57 +15,63 @@
 import testing_config  # Must be imported before the module under test.
 from datetime import datetime
 
-from internals import user_models
+from internals.user_models import AppUser
 from internals.inactive_users import RemoveInactiveUsersHandler
 
 class RemoveInactiveUsersHandlerTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.users = []
-    active_user = user_models.AppUser(
+    active_user = AppUser(
+      created=datetime(2020, 10, 1),
       email="active_user@example.com", is_admin=False, is_site_editor=False,
       last_visit=datetime(2023, 8, 30))
     active_user.put()
-    self.users.append(active_user)
 
-    inactive_user = user_models.AppUser(
+    inactive_user = AppUser(
+      created=datetime(2020, 10, 1),
       email="inactive_user@example.com", is_admin=False, is_site_editor=False,
       last_visit=datetime(2023, 2, 20))
     inactive_user.put()
-    self.users.append(inactive_user)
+    
+    # User who has recently been given access by an admin,
+    # but has not yet visited the site. They should not be considered inactive.
+    newly_created_user = AppUser(
+      created=datetime(2023, 8, 1),
+      email="new_user@example.com", is_admin=False, is_site_editor=False)
+    newly_created_user.put()
 
-    really_inactive_user = user_models.AppUser(
+    really_inactive_user = AppUser(
+      created=datetime(2020, 10, 1),
       email="really_inactive_user@example.com", is_admin=False,
       is_site_editor=False, last_visit=datetime(2022, 10, 1))
     really_inactive_user.put()
-    self.users.append(really_inactive_user)
 
-    active_admin = user_models.AppUser(
+    active_admin = AppUser(
+      created=datetime(2020, 10, 1),
       email="active_admin@example.com", is_admin=True, is_site_editor=True,
       last_visit=datetime(2023, 9, 30))
     active_admin.put()
-    self.users.append(active_admin)
 
-    inactive_admin = user_models.AppUser(
+    inactive_admin = AppUser(
+      created=datetime(2020, 10, 1),
       email="inactive_admin@example.com", is_admin=True, is_site_editor=True,
       last_visit=datetime(2023, 3, 1))
     inactive_admin.put()
-    self.users.append(inactive_admin)
 
-    active_site_editor = user_models.AppUser(
+    active_site_editor = AppUser(
+      created=datetime(2020, 10, 1),
       email="active_site_editor@example.com", is_admin=False,
       is_site_editor=True, last_visit=datetime(2023, 7, 30))
     active_site_editor.put()
-    self.users.append(active_site_editor)
 
-    inactive_site_editor = user_models.AppUser(
+    inactive_site_editor = AppUser(
+      created=datetime(2020, 10, 1),
       email="inactive_site_editor@example.com", is_admin=False,
       is_site_editor=True, last_visit=datetime(2023, 2, 9))
     inactive_site_editor.put()
-    self.users.append(inactive_site_editor)
 
   def tearDown(self):
-    for user in self.users:
+    for user in AppUser.query():
       user.key.delete()
 
   def test_remove_inactive_users(self):

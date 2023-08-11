@@ -1,7 +1,7 @@
 import {LitElement, html, css} from 'lit';
 import {showToastMessage} from './utils.js';
 import '@polymer/iron-icon';
-import {SHARED_STYLES} from '../sass/shared-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 
 const TEMPLATE_CONTENT = {
   stable_minus_one: {

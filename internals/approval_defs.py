@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import base64
-import collections
 from dataclasses import dataclass
 import datetime
 import logging
@@ -23,11 +22,12 @@ import requests
 
 from framework import permissions
 from internals import core_enums
-from internals.legacy_models import Approval
-from internals.review_models import Gate, OwnersFile, Vote
+from internals import slo
+from internals.review_models import Gate, GateDef, OwnersFile, Vote
 import settings
 
 CACHE_EXPIRATION = 60 * 60  # One hour
+IN_NDB = 'stored in ndb'
 
 
 ONE_LGTM = 'One LGTM'
@@ -35,26 +35,27 @@ THREE_LGTM = 'Three LGTMs'
 API_OWNERS_URL = (
     'https://chromium.googlesource.com/chromium/src/+/'
     'main/third_party/blink/API_OWNERS?format=TEXT')
-PRIVACY_APPROVERS = [
-    'owp-privacy-approvers@google.com',
-]
-SECURITY_APPROVERS: list[str] = [
-  # TBD
-]
+PRIVACY_APPROVERS = IN_NDB
+SECURITY_APPROVERS = IN_NDB
 ENTERPRISE_APPROVERS = [
-    'cbe-launch-approvers@google.com',
+    'mhoste@google.com',
+    'angelaweber@google.com',
+    'davidayad@google.com',
     'bheenan@google.com',
 ]
 DEBUGGABILITY_APPROVERS = [
     'bmeurer@google.com',
     'danilsomsikov@google.com',
     'yangguo@google.com',
+    'changhaohan@google.com',
 ]
 TESTING_APPROVERS = [
     'sadapala@google.com',
     'santhoshkumarm@google.com',
     'vivianz@google.com',
 ]
+
+DEFAULT_SLO_LIMIT = 5  # Five weekdays in the Pacific timezone.
 
 @dataclass(eq=True, frozen=True)
 class ApprovalFieldDef:
@@ -64,6 +65,8 @@ class ApprovalFieldDef:
   rule: str
   approvers: str | list[str]
   team_name: str
+  slo_initial_response: int = DEFAULT_SLO_LIMIT
+
 
 # Note: This can be requested manually through the UI, but it is not
 # triggered by a blink-dev thread because i2p intents are only FYIs to
@@ -154,7 +157,7 @@ APPROVAL_FIELDS_BY_ID = {
     }
 
 
-def fetch_owners(url):
+def fetch_owners(url) -> list[str]:
   """Load a list of email addresses from an OWNERS file."""
   raw_content = OwnersFile.get_raw_owner_file(url)
   if raw_content:
@@ -170,11 +173,10 @@ def fetch_owners(url):
   return decode_raw_owner_content(response.content)
 
 
-def decode_raw_owner_content(raw_content):
+def decode_raw_owner_content(raw_content) -> list[str]:
   owners = []
   decoded = base64.b64decode(raw_content).decode()
   for line in decoded.split('\n'):
-    logging.info('got line: '  + line[:settings.MAX_LOG_LINE])
     if '#' in line:
       line = line[:line.index('#')]
     line = line.strip()
@@ -184,9 +186,16 @@ def decode_raw_owner_content(raw_content):
   return owners
 
 
-def get_approvers(field_id):
+def get_approvers(field_id) -> list[str]:
   """Return a list of email addresses of users allowed to approve."""
+  if field_id not in APPROVAL_FIELDS_BY_ID:
+    return []
+
   afd = APPROVAL_FIELDS_BY_ID[field_id]
+
+  if afd.approvers == IN_NDB:
+    gate_def = GateDef.get_gate_def(field_id)
+    return gate_def.approvers
 
   # afd.approvers can be either a hard-coded list of approver emails
   # or it can be a URL of an OWNERS file.  Right now we only use the
@@ -219,9 +228,9 @@ def is_approved(approval_values, field_id):
   """Return true if we have all needed APPROVED values and no DENIED."""
   count = 0
   for av in approval_values:
-    if av.state in (Approval.APPROVED, Approval.NA):
+    if av.state in (Vote.APPROVED, Vote.NA):
       count += 1
-    elif av.state == Approval.DENIED:
+    elif av.state == Vote.DENIED:
       return False
   afd = APPROVAL_FIELDS_BY_ID[field_id]
 
@@ -241,7 +250,7 @@ def is_resolved(approval_values, field_id):
 
   # Any DENIED value means that the review is no longer pending.
   for av in approval_values:
-    if av.state == Approval.DENIED:
+    if av.state == Vote.DENIED:
       return True
 
   return False
@@ -268,7 +277,7 @@ def set_vote(feature_id: int,  gate_type: int | None, new_state: int,
 
   now = datetime.datetime.now()
   existing_list: list[Vote] = Vote.get_votes(feature_id=feature_id,
-      gate_id=gate_id, gate_type=gate_type, set_by=set_by_email)
+      gate_id=gate_id, set_by=set_by_email)
   if existing_list:
     existing = existing_list[0]
     existing.set_on = now
@@ -280,7 +289,11 @@ def set_vote(feature_id: int,  gate_type: int | None, new_state: int,
     new_vote.put()
 
   if gate:
-    update_gate_approval_state(gate)
+    votes = Vote.get_votes(gate_id=gate.key.integer_id())
+    state_was_updated = update_gate_approval_state(gate, votes)
+    slo_was_updated = slo.record_vote(gate, votes)
+    if state_was_updated or slo_was_updated:
+      gate.put()
 
 
 def get_gate_by_type(feature_id: int, gate_type: int):
@@ -308,14 +321,14 @@ def _calc_gate_state(votes: list[Vote], rule: str) -> int:
       return Vote.APPROVED
 
   # Return the most recent of any REVIEW_REQUESTED, NEEDS_WORK,
-  # REVIEW_STARTED, or DENIED.  This could allow a feature owner to
-  # re-request a review after addressing feedback and have the gate
-  # show up as REVIEW_STARTED again.  However, we will not offer
-  # "re-review" in the UI yet.
+  # REVIEW_STARTED, INTERNAL_REVIEW, or DENIED.  This could allow a
+  # feature owner to re-request a review after addressing feedback and
+  # have the gate show up as REVIEW_STARTED again.  However, we will
+  # not offer "re-review" in the UI yet.
   for vote in sorted(votes, reverse=True, key=lambda v: v.set_on):
     if vote.state in (
         Vote.NEEDS_WORK, Vote.REVIEW_STARTED, Vote.REVIEW_REQUESTED,
-        Vote.DENIED):
+        Vote.DENIED, Vote.INTERNAL_REVIEW):
       return vote.state
 
   # The feature owner has not requested review yet, or the request was
@@ -323,12 +336,20 @@ def _calc_gate_state(votes: list[Vote], rule: str) -> int:
   return Gate.PREPARING
 
 
-def update_gate_approval_state(gate: Gate) -> int:
-  """Change the Gate state based on its votes."""
-  votes = Vote.get_votes(gate_id=gate.key.integer_id())
-  afd = APPROVAL_FIELDS_BY_ID[gate.gate_type]
-  gate.state = _calc_gate_state(votes, afd.rule)
+def update_gate_approval_state(gate: Gate, votes: list[Vote]) -> bool:
+  """Change the Gate state in RAM based on its votes. Return True if changed."""
+  afd = APPROVAL_FIELDS_BY_ID.get(gate.gate_type)
+  # Assume any gate of a type that is not currently supported is ONE_LGTM.
+  rule = afd.rule if afd else ONE_LGTM
+  new_state = _calc_gate_state(votes, rule)
+  if new_state == gate.state:
+    return False
+  gate.state = new_state
   if votes:
     gate.requested_on = min(v.set_on for v in votes)
-  gate.put()
-  return gate.state
+
+  # Starting a review resets responded_on.
+  if new_state == Vote.REVIEW_REQUESTED:
+    gate.responded_on = None
+
+  return True

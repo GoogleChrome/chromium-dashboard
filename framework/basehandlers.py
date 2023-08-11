@@ -175,7 +175,7 @@ class APIHandler(BaseHandler):
     body = json.dumps(handler_data)
     return flask.current_app.response_class(
         XSSI_PREFIX + body,
-        mimetype=flask.current_app.config['JSONIFY_MIMETYPE'])
+        mimetype=flask.current_app.json.mimetype)
 
   def get(self, *args, **kwargs):
     """Handle an incoming HTTP GET request."""
@@ -189,12 +189,20 @@ class APIHandler(BaseHandler):
     logging.info('POST data is:')
     for k, v in json_body.items():
       logging.info('%r: %s', k, repr(v)[:settings.MAX_LOG_LINE])
-    is_login_request = str(self.request.url_rule) == '/api/v0/login'
+    is_login_request = str(self.request.url_rule) in (
+        '/api/v0/login', '/dev/mock_login')
 
     if not is_login_request:
       self.require_signed_in_and_xsrf_token()
     headers = self.get_headers()
     handler_data = self.do_post(*args, **kwargs)
+    return self.defensive_jsonify(handler_data), headers
+
+  def put(self, *args, **kwargs):
+    """Handle an incoming HTTP PUT request."""
+    self.require_signed_in_and_xsrf_token()
+    headers = self.get_headers()
+    handler_data = self.do_put(*args, **kwargs)
     return self.defensive_jsonify(handler_data), headers
 
   def patch(self, *args, **kwargs):
@@ -216,6 +224,8 @@ class APIHandler(BaseHandler):
     valid_methods = ['GET']
     if self.do_post.__code__ is not APIHandler.do_post.__code__:
       valid_methods.append('POST')
+    if self.do_put.__code__ is not APIHandler.do_put.__code__:
+      valid_methods.append('PUT')
     if self.do_patch.__code__ is not APIHandler.do_patch.__code__:
       valid_methods.append('PATCH')
     if self.do_delete.__code__ is not APIHandler.do_delete.__code__:
@@ -244,6 +254,10 @@ class APIHandler(BaseHandler):
     """Subclasses should implement this method to handle a POST request."""
     self.abort(405, valid_methods=self._get_valid_methods())
 
+  def do_put(self, **kwargs):
+    """Subclasses should implement this method to handle a PUT request."""
+    self.abort(405, valid_methods=self._get_valid_methods())
+
   def do_patch(self, **kwargs):
     """Subclasses should implement this method to handle a PATCH request."""
     self.abort(405, valid_methods=self._get_valid_methods())
@@ -260,8 +274,6 @@ class APIHandler(BaseHandler):
   def require_signed_in_and_xsrf_token(self):
     """Every API POST, PUT, or DELETE must be signed in with an XSRF token."""
     user = self.get_current_user(required=True)
-    if not user:
-      self.abort(403, msg='Sign in required')
     token = self.request.headers.get('X-Xsrf-Token')
     if not token:
       try:
@@ -516,6 +528,8 @@ class ConstHandler(FlaskHandler):
   def get_template_data(self, **defaults):
     """Render a template, or return a JSON constant."""
     if defaults.get('require_signin') and not self.get_current_user():
+      if 'loginStatus=False' in self.get_common_data()['current_path']:
+        return {}
       return flask.redirect(settings.LOGIN_PAGE_URL), self.get_headers()
     if 'template_path' in defaults:
       template_path = defaults['template_path']
@@ -525,6 +539,7 @@ class ConstHandler(FlaskHandler):
       return defaults
 
     return flask.jsonify(defaults)
+
 
 def ndb_wsgi_middleware(wsgi_app):
   """Create a new runtime context for cloud ndb for every request"""
@@ -543,30 +558,55 @@ class SPAHandler(FlaskHandler):
   TEMPLATE_PATH = 'spa.html'
 
   def get_template_data(self, **defaults):
-    # Check if the page requires user to sign in
-    if defaults.get('require_signin') and not self.get_current_user():
-      return flask.redirect(settings.LOGIN_PAGE_URL), self.get_headers()
-
-    # Check if the page requires create feature permission
-    if defaults.get('require_create_feature'):
-      redirect_resp = permissions.validate_feature_create_permission(self)
-      if redirect_resp:
-        return redirect_resp
-
-    # Validate the user has edit permissions and redirect if needed.
-    if defaults.get('require_edit_feature'):
-      feature_id = defaults.get('feature_id')
-      if not feature_id:
-        self.abort(500, msg='Cannot get feature ID from the URL')
-      redirect_resp = permissions.validate_feature_edit_permission(
-          self, feature_id)
-      if redirect_resp:
-        return redirect_resp
-
-    return {} # no handler_data needed to be returned
+    return get_spa_template_data(self, defaults)
 
 
-def FlaskApplication(import_name, routes, post_routes, pattern_base='', debug=False):
+def get_spa_template_data(handler_obj, defaults):
+  """Check permissions then let spa.html do its thing."""
+  # Check if the page requires user to sign in
+  if defaults.get('require_signin') and not handler_obj.get_current_user():
+    common_data = handler_obj.get_common_data()
+    if 'loginStatus=False' in common_data['current_path']:
+      return {}
+    return flask.redirect(settings.LOGIN_PAGE_URL), handler_obj.get_headers()
+
+  # Check if the page requires create feature permission
+  if defaults.get('require_create_feature'):
+    redirect_resp = permissions.validate_feature_create_permission(handler_obj)
+    if redirect_resp:
+      return redirect_resp
+
+  # Validate the user has edit permissions and redirect if needed.
+  if defaults.get('require_edit_feature'):
+    feature_id = defaults.get('feature_id')
+    if not feature_id:
+      handler_obj.abort(500, msg='Cannot get feature ID from the URL')
+    redirect_resp = permissions.validate_feature_edit_permission(
+        handler_obj, feature_id)
+    if redirect_resp:
+      return redirect_resp
+
+  # Validate the user has admin permissions and redirect if needed.
+  if defaults.get('require_admin_site'):
+    user = handler_obj.get_current_user()
+    # Should have already done the require_signin check.
+    # If for reason, we don't let's treat it as the main 403 case.
+    if not user or not permissions.can_admin_site(user):
+      handler_obj.abort(403, msg='Cannot perform admin actions')
+
+  # Validate the user has a google or chromium account and redirect if needed.
+  if defaults.get('is_enterprise_page'):
+    user = handler_obj.get_current_user()
+    # Should have already done the require_signin check.
+    # If for reason, we don't let's treat it as the main 403 case.
+    if not user or not permissions.is_google_or_chromium_account(user):
+      handler_obj.abort(403, msg='You cannot access this page')
+
+  return {} # no handler_data needed to be returned
+
+
+
+def FlaskApplication(import_name, routes, pattern_base='', debug=False):
   """Make a Flask app and add routes and handlers that work like webapp2."""
 
   app = flask.Flask(import_name,
@@ -580,19 +620,11 @@ def FlaskApplication(import_name, routes, post_routes, pattern_base='', debug=Fa
     app.secret_key = secrets.get_session_secret()  # For flask.session
     app.permanent_session_lifetime = xsrf.REFRESH_TOKEN_TIMEOUT_SEC
 
-  for i, route in enumerate(post_routes):
-    classname = route.handler_class.__name__
-    app.add_url_rule(
-        pattern_base + route.path,
-        endpoint=f'{classname}{i}',  # We don't use it, but it must be unique.
-        view_func=route.handler_class.as_view(classname),
-        methods=["POST"])
-
   for i, route in enumerate(routes):
     classname = route.handler_class.__name__
     app.add_url_rule(
         pattern_base + route.path,
-        endpoint=f'{classname}{i + len(post_routes)}',  # We don't use it, but it must be unique.
+        endpoint=f'{classname}{i}',  # We don't use it, but it must be unique.
         view_func=route.handler_class.as_view(classname),
         defaults=route.defaults)
 

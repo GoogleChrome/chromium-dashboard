@@ -1,7 +1,7 @@
 import {LitElement, css, html} from 'lit';
 import {ref, createRef} from 'lit/directives/ref.js';
 import './chromedash-roadmap';
-import {SHARED_STYLES} from '../sass/shared-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 
 
 export class ChromedashRoadmapPage extends LitElement {
@@ -64,9 +64,9 @@ export class ChromedashRoadmapPage extends LitElement {
     const margin = 16;
 
     let numColumns = 3;
-    if (window.matchMedia('(max-width: 768px)').matches) {
+    if (containerWidth < 768) {
       numColumns = 1;
-    } else if (window.matchMedia('(max-width: 1152px)').matches) {
+    } else if (containerWidth < 1152) {
       numColumns = 2;
     }
     this.numColumns = numColumns;

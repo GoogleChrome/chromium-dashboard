@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import testing_config  # Must be imported before the module under test.
+from unittest import mock
 
 from datetime import datetime
 
@@ -48,7 +49,8 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
         editor_emails=['feature_editor@example.com', 'owner_1@example.com'],
         impl_status_chrome=5, blink_components=['Blink'],
         spec_link='https://example.com/spec',
-        sample_links=['https://example.com/samples'], standard_maturity=1,
+        sample_links=['https://example.com/samples'],
+        screenshot_links=['https://example.com/screenshot'], standard_maturity=1,
         ff_views=5, ff_views_link='https://example.com/ff_views',
         ff_views_notes='ff notes', safari_views=1,
         bug_url='https://example.com/bug',
@@ -248,9 +250,9 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
         'other': {
           'view': {
             'notes': 'other notes',
-          }
-        }
-      }
+          },
+        },
+      },
     }
     self.assertEqual(result, expected)
 
@@ -285,27 +287,6 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'unlisted': False,
       'api_spec': False,
       'breaking_change': False,
-
-      # Intent fields
-      'intent_to_implement_url': 'https://example.com/120',
-      'intent_to_experiment_url': 'https://example.com/150',
-      'intent_to_extend_experiment_url': 'https://example.com/151',
-      'intent_to_ship_url': 'https://example.com/160',
-
-      # Milestone fields
-      'dt_milestone_desktop_start': 1,
-      'dt_milestone_android_start': 1,
-      'ot_milestone_desktop_start': 1,
-      'ot_milestone_android_start': 1,
-      'ot_milestone_desktop_end': 2,
-
-      # Stage-specific fields
-      'experiment_goals': 'goals',
-      'experiment_risks': 'risks',
-      'experiment_extension_reason': 'reason',
-      'announcement_url': 'https://example.com/announce',
-      'finch_url': 'https://example.com/finch',
-
       'is_released': True,
       'category': 'Web Components',
       'category_int': 1,
@@ -324,6 +305,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'requires_embedder_support': False,
       'spec_link': 'https://example.com/spec',
       'sample_links': ['https://example.com/samples'],
+      'screenshot_links': ['https://example.com/screenshot'],
       'created': {
         'by': 'creator@example.com',
         'when': str(self.date)
@@ -345,6 +327,55 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
           'val': 1,
         },
       },
+
+      'activation_risks': None,
+      'active_stage_id': None,
+      'adoption_expectation': None,
+      'adoption_plan': None,
+      'all_platforms': None,
+      'all_platforms_descr': None,
+      'anticipated_spec_changes': None,
+      'availability_expectation': None,
+      'blink_components': ['Blink'],
+
+      'cc_emails': [],
+      'cc_recipients': [],
+      'creator_email': 'creator@example.com',
+      'debuggability': None,
+      'devtrial_instructions': None,
+      'editor_emails': ['feature_editor@example.com', 'owner_1@example.com'],
+      'enterprise_feature_categories': [],
+      'ergonomics_risks': None,
+      'experiment_timeline': None,
+      'explainer_links': [],
+      'feature_notes': 'notes',
+      'ff_views': 5,
+      'flag_name': None,
+      'finch_name': None,
+      'non_finch_justification': None,
+      'initial_public_proposal_url': None,
+      'interop_compat_risks': None,
+      'measurement': None,
+      'motivation': None,
+      'new_crbug_url': 'https://bugs.chromium.org/p/chromium/issues/entry?components=Blink&cc=feature_owner@example.com',
+      'non_oss_deps': None,
+      'ongoing_constraints': None,
+      'owner_emails': ['feature_owner@example.com'],
+      'owner_emails': ['feature_owner@example.com'],
+      'safari_views': 1,
+      'search_tags': [],
+      'security_risks': None,
+      'spec_mentor_emails': [],
+      'spec_mentors': [],
+      'tag_review': None,
+      'tags': [],
+      'updated_display': None,
+      'updater_email': 'updater@example.com',
+      'web_dev_views': 1,
+      'webview_risks': None,
+      'wpt': None,
+      'wpt_descr': None,
+
       'tag_review_status': 'Pending',
       'tag_review_status_int': 1,
       'security_review_status': 'Issues open',
@@ -362,12 +393,15 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
           'owners':['feature_owner@example.com'],
           'desktop': 1,
           'android': 1,
+          'ios': None,
+
           'origintrial': False,
           'intervention': False,
           'prefixed': False,
           'flag': False,
+          'webview': None,
           'status': {
-            'milestone_str': 1,
+            'milestone_str': '1',
             'text': 'Enabled by default',
             'val': 5
           }
@@ -390,6 +424,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
         },
         'webdev': {
           'view': {
+          'notes': None,
           'text': 'Strongly positive',
           'val': 1,
           'url': 'https://example.com/web_dev',
@@ -398,9 +433,12 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
         'other': {
           'view': {
             'notes': 'other notes',
-          }
-        }
-      }
+            'text': None,
+            'url': None,
+            'val': None,
+          },
+        },
+      },
     }
     self.assertEqual(result, expected)
 
@@ -428,9 +466,8 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
     """Function handles an empty feature."""
     empty_fe = FeatureEntry()
 
-    result = converters.feature_entry_to_json_verbose(empty_fe)
-
-    self.assertEqual(result, {})
+    with self.assertRaises(Exception):
+      converters.feature_entry_to_json_verbose(empty_fe)
 
 
 class VoteConvertersTest(testing_config.CustomTestCase):
@@ -474,34 +511,61 @@ class GateConvertersTest(testing_config.CustomTestCase):
       'gate_name': appr_def.name,
       'state': 4,
       'requested_on': None,
+      'responded_on': None,
       'owners': [],
       'next_action': None,
       'additional_review': False,
+      'slo_initial_response': appr_def.slo_initial_response,
+      'slo_initial_response_took': None,
+      'slo_initial_response_remaining': None,
       }
     self.assertEqual(expected, actual)
 
-  def test_maxmimal(self):
+  @mock.patch('internals.slo.now_utc')
+  def test_maxmimal(self, mock_now):
     """If a Gate has all fields set, we can convert it to JSON."""
     gate = Gate(
-        feature_id=1, stage_id=2, gate_type=3, state=4,
-        requested_on=datetime(2022, 12, 14, 1, 2, 3),
+        feature_id=1, stage_id=2, gate_type=34, state=4,
+        requested_on=datetime(2022, 12, 14, 1, 2, 3), # Wednesday
         owners=['appr1@example.com', 'appr2@example.com'],
         next_action=datetime(2022, 12, 25),
         additional_review=True)
     gate.put()
+    # The review was due on Wednesday 2022-12-21.
+    mock_now.return_value = datetime(2022, 12, 23, 1, 2, 3)  # Thursday after.
+
     actual = converters.gate_value_to_json_dict(gate)
     appr_def = approval_defs.APPROVAL_FIELDS_BY_ID[gate.gate_type]
     expected = {
       'id': gate.key.integer_id(),
       'feature_id': 1,
       'stage_id': 2,
-      'gate_type': 3,
+      'gate_type': 34,
       'team_name': appr_def.team_name,
       'gate_name': appr_def.name,
       'state': 4,
       'requested_on': '2022-12-14 01:02:03',
+      'responded_on': None,
       'owners': ['appr1@example.com', 'appr2@example.com'],
       'next_action': '2022-12-25',
       'additional_review': True,
+      'slo_initial_response': appr_def.slo_initial_response,
+      'slo_initial_response_took': None,  # Review is still in-progress.
+      'slo_initial_response_remaining': -2,  # Two weekdays overdue.
       }
     self.assertEqual(expected, actual)
+
+  def test_slo_complete_review(self):
+    """If a Gate review was completed, response includes the number of days."""
+    gate = Gate(
+        feature_id=1, stage_id=2, gate_type=3, state=4,
+        requested_on=datetime(2022, 12, 14, 1, 2, 3),
+        responded_on=datetime(2022, 12, 20, 1, 2, 3),
+        owners=['appr1@example.com', 'appr2@example.com'],
+        next_action=datetime(2022, 12, 25),
+        additional_review=True)
+    gate.put()
+    actual = converters.gate_value_to_json_dict(gate)
+
+    self.assertEqual(4, actual['slo_initial_response_took'])
+    self.assertEqual(None, actual['slo_initial_response_remaining'])

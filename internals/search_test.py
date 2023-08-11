@@ -19,7 +19,6 @@ from unittest import mock
 
 from internals import core_enums
 from internals.core_models import FeatureEntry
-from internals.legacy_models import Feature
 from internals.review_models import Gate, Vote
 from internals import notifier
 from internals import search
@@ -103,47 +102,26 @@ class SearchRETest(testing_config.CustomTestCase):
 class SearchFunctionsTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = Feature(
-        name='feature 1', summary='sum', category=1, web_dev_views=1,
-        impl_status_chrome=3)
-    self.feature_1.put()
     self.featureentry_1 = FeatureEntry(
-        id=self.feature_1.key.integer_id(),
         name='feature 1', summary='sum', category=1, web_dev_views=1,
         impl_status_chrome=3)
     self.featureentry_1.owner_emails = ['owner@example.com']
     self.featureentry_1.editor_emails = ['editor@example.com']
     self.featureentry_1.cc_emailss = ['cc@example.com']
     self.featureentry_1.put()
-    self.feature_2 = Feature(
-        name='feature 2', summary='sum', category=2, web_dev_views=1,
-        impl_status_chrome=3)
-    self.feature_2.put()
     self.featureentry_2 = FeatureEntry(
-        id=self.feature_2.key.integer_id(),
         name='feature 2', summary='sum', category=2, web_dev_views=1,
         impl_status_chrome=3)
     self.featureentry_2.owner_emails = ['owner@example.com']
     self.featureentry_2.put()
     notifier.FeatureStar.set_star(
-        'starrer@example.com', self.feature_1.key.integer_id())
-    self.feature_3 = Feature(
-        name='feature 3', summary='sum', category=3, web_dev_views=1,
-        impl_status_chrome=3, unlisted=True)
-    self.feature_3.put()
+        'starrer@example.com', self.featureentry_1.key.integer_id())
     self.featureentry_3 = FeatureEntry(
-        id=self.feature_3.key.integer_id(),
         name='feature 3', summary='sum', category=3, web_dev_views=1,
         impl_status_chrome=3, unlisted=True)
     self.featureentry_3.owner_emails = ['owner@example.com']
     self.featureentry_3.put()
-    self.feature_4 = Feature(
-        name='feature 4', summary='sum', category=4, web_dev_views=1,
-        impl_status_chrome=4,
-        feature_type=core_enums.FEATURE_TYPE_ENTERPRISE_ID)
-    self.feature_4.put()
     self.featureentry_4 = FeatureEntry(
-        id=self.feature_4.key.integer_id(),
         name='feature 4', summary='sum', category=4, web_dev_views=1,
         impl_status_chrome=4,
         feature_type=core_enums.FEATURE_TYPE_ENTERPRISE_ID)
@@ -152,18 +130,15 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
 
   def tearDown(self):
     notifier.FeatureStar.set_star(
-        'starrer@example.com', self.feature_1.key.integer_id(),
+        'starrer@example.com', self.featureentry_1.key.integer_id(),
         starred=False)
-    self.feature_1.key.delete()
-    self.feature_2.key.delete()
-    self.feature_3.key.delete()
-    self.feature_4.key.delete()
     self.featureentry_1.key.delete()
     self.featureentry_2.key.delete()
     self.featureentry_3.key.delete()
     self.featureentry_4.key.delete()
-    for gate in Gate.query():
-      gate.key.delete()
+    for kind in [Gate, FeatureEntry]:
+      for entity in kind.query():
+        entity.key.delete()
 
   @mock.patch('internals.approval_defs.fields_approvable_by')
   def test_process_pending_approval_me_query__none(
@@ -186,7 +161,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     now = datetime.datetime.now()
     mock_approvable_by.return_value = set()
     Gate(
-        feature_id=self.feature_1.key.integer_id(), stage_id=1,
+        feature_id=self.featureentry_1.key.integer_id(), stage_id=1,
         gate_type=1, state=Vote.REVIEW_REQUESTED,
         requested_on=now).put()
 
@@ -204,11 +179,11 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     time_2 = datetime.datetime.now()
     mock_approvable_by.return_value = set([1, 2, 3])
     Gate(
-        feature_id=self.feature_2.key.integer_id(), stage_id=1,
+        feature_id=self.featureentry_2.key.integer_id(), stage_id=1,
         gate_type=1, state=Vote.REVIEW_REQUESTED,
         requested_on=time_1).put()
     Gate(
-        feature_id=self.feature_1.key.integer_id(), stage_id=1,
+        feature_id=self.featureentry_1.key.integer_id(), stage_id=1,
         gate_type=1, state=Vote.REVIEW_REQUESTED,
         requested_on=time_2).put()
 
@@ -217,8 +192,8 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.assertEqual(2, len(feature_ids))
     # Results are not sorted.
     self.assertCountEqual(
-        [self.feature_2.key.integer_id(),
-         self.feature_1.key.integer_id()],
+        [self.featureentry_2.key.integer_id(),
+         self.featureentry_1.key.integer_id()],
         feature_ids)
 
   @mock.patch('internals.approval_defs.fields_approvable_by')
@@ -230,11 +205,11 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     time_2 = datetime.datetime.now()
     mock_approvable_by.return_value = set([1, 2, 3])
     Gate(
-        feature_id=self.feature_2.key.integer_id(), stage_id=1,
+        feature_id=self.featureentry_2.key.integer_id(), stage_id=1,
         gate_type=1, state=Vote.REVIEW_REQUESTED,
         requested_on=time_1).put()
     Gate(
-        feature_id=self.feature_1.key.integer_id(), stage_id=1,
+        feature_id=self.featureentry_1.key.integer_id(), stage_id=1,
         gate_type=1, state=Vote.APPROVED,
         requested_on=time_2).put()
 
@@ -243,7 +218,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.assertEqual(1, len(feature_ids))
     # Results are not sorted.
     self.assertEqual(
-        [self.feature_2.key.integer_id()],
+        [self.featureentry_2.key.integer_id()],
         feature_ids)
 
   def test_process_starred_me_query__anon(self):
@@ -263,7 +238,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     testing_config.sign_in('starrer@example.com', 111)
     actual = search.process_starred_me_query()
     self.assertEqual(len(actual), 1)
-    self.assertEqual(actual[0], self.feature_1.key.integer_id())
+    self.assertEqual(actual[0], self.featureentry_1.key.integer_id())
 
   @mock.patch('internals.approval_defs.fields_approvable_by')
   def test_process_recent_reviews_query__none(
@@ -284,11 +259,11 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     time_1 = datetime.datetime.now() - datetime.timedelta(days=4)
     time_2 = datetime.datetime.now()
     Gate(
-        feature_id=self.feature_1.key.integer_id(), stage_id=1,
+        feature_id=self.featureentry_1.key.integer_id(), stage_id=1,
         gate_type=1, state=Vote.NA,
         requested_on=time_2).put()
     Gate(
-        feature_id=self.feature_2.key.integer_id(), stage_id=1,
+        feature_id=self.featureentry_2.key.integer_id(), stage_id=1,
         gate_type=1, state=Vote.APPROVED,
         requested_on=time_1).put()
 
@@ -297,9 +272,9 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
 
     self.assertEqual(2, len(feature_ids))
     self.assertEqual(
-        feature_ids[0], self.feature_1.key.integer_id())  # Most recent
+        feature_ids[0], self.featureentry_1.key.integer_id())  # Most recent
     self.assertEqual(
-        feature_ids[1], self.feature_2.key.integer_id())
+        feature_ids[1], self.featureentry_2.key.integer_id())
 
   def test_sort_by_total_order__empty(self):
     """Sorting an empty list works."""
@@ -334,10 +309,10 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
   def test_process_query__predefined(
       self, mock_recent, mock_own_me, mock_star_me, mock_pend_me):
     """We can match predefined queries."""
-    mock_recent.return_value = [self.feature_1.key.integer_id()]
-    mock_own_me.return_value = [self.feature_2.key.integer_id()]
-    mock_star_me.return_value = [self.feature_1.key.integer_id()]
-    mock_pend_me.return_value = [self.feature_2.key.integer_id()]
+    mock_recent.return_value = [self.featureentry_1.key.integer_id()]
+    mock_own_me.return_value = [self.featureentry_2.key.integer_id()]
+    mock_star_me.return_value = [self.featureentry_1.key.integer_id()]
+    mock_pend_me.return_value = [self.featureentry_2.key.integer_id()]
 
     actual_pending, tc = search.process_query('pending-approval-by:me')
     self.assertEqual(actual_pending[0]['name'], 'feature 2')
@@ -358,10 +333,10 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
   def test_process_query__negated_predefined(
       self, mock_recent, mock_own_me, mock_star_me, mock_pend_me):
     """We can match predefined queries."""
-    mock_recent.return_value = [self.feature_1.key.integer_id()]
-    mock_own_me.return_value = [self.feature_2.key.integer_id()]
-    mock_star_me.return_value = [self.feature_1.key.integer_id()]
-    mock_pend_me.return_value = [self.feature_2.key.integer_id()]
+    mock_recent.return_value = [self.featureentry_1.key.integer_id()]
+    mock_own_me.return_value = [self.featureentry_2.key.integer_id()]
+    mock_star_me.return_value = [self.featureentry_1.key.integer_id()]
+    mock_pend_me.return_value = [self.featureentry_2.key.integer_id()]
 
     actual_pending, tc = search.process_query('-pending-approval-by:me')
     self.assertEqual(actual_pending[0]['name'], 'feature 1')

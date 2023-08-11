@@ -5,7 +5,7 @@ import {
   GATE_FINISHED_REVIEW_STATES,
 } from './form-field-enums';
 import {findFirstFeatureStage} from './utils';
-import {SHARED_STYLES} from '../sass/shared-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 
 
 let preflightDialogEl;

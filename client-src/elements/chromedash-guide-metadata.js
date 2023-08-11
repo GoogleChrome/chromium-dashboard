@@ -1,6 +1,6 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
-import {autolink, flattenSections, renderHTMLIf} from './utils.js';
+import {autolink, formatFeatureChanges, flattenSections} from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
 import {ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME} from './form-field-enums';
@@ -8,8 +8,9 @@ import {
   formatFeatureForEdit,
   FLAT_ENTERPRISE_METADATA_FIELDS,
   FLAT_METADATA_FIELDS} from './form-definition';
-import {SHARED_STYLES} from '../sass/shared-css.js';
-import {FORM_STYLES} from '../sass/forms-css.js';
+import {ALL_FIELDS} from './form-field-specs';
+import {SHARED_STYLES} from '../css/shared-css.js';
+import {FORM_STYLES} from '../css/forms-css.js';
 
 
 export class ChromedashGuideMetadata extends LitElement {
@@ -56,16 +57,24 @@ export class ChromedashGuideMetadata extends LitElement {
   static get properties() {
     return {
       feature: {type: Object},
+      fieldValues: {type: Array},
       isAdmin: {type: Boolean},
       editing: {type: Boolean},
+      email: {type: String},
     };
   }
 
   constructor() {
     super();
     this.feature = {};
+    this.fieldValues = [];
     this.isAdmin = false;
     this.editing = false;
+    this.email = '';
+  }
+
+  canDeleteFeature() {
+    return this.isAdmin || (this.email && this.email === this.feature.creator);
   }
 
   /* Add the form's event listener after Shoelace event listeners are attached
@@ -80,14 +89,32 @@ export class ChromedashGuideMetadata extends LitElement {
     });
   }
 
-  handleFormSubmit(event, hiddenTokenField) {
-    event.preventDefault();
+  handleFormSubmit(e, hiddenTokenField) {
+    e.preventDefault();
+    const submitBody = formatFeatureChanges(this.fieldValues, this.feature.id);
 
     // get the XSRF token and update it if it's expired before submission
     window.csClient.ensureTokenIsValid().then(() => {
       hiddenTokenField.value = window.csClient.token;
-      event.target.submit();
+      return csClient.updateFeature(submitBody);
+    }).then(() => {
+      window.location.href = this.nextPage || `/guide/edit/${this.feature.id}`;
+    }).catch(() => {
+      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
+  }
+
+  // Handler to update form values when a field update event is fired.
+  handleFormFieldUpdate(event) {
+    const value = event.detail.value;
+    // Index represents which form was updated.
+    const index = event.detail.index;
+    if (index >= this.fieldValues.length) {
+      throw new Error('Out of bounds index when updating field values.');
+    }
+    // The field has been updated, so it is considered touched.
+    this.fieldValues[index].touched = true;
+    this.fieldValues[index].value = value;
   }
 
   handleDeleteFeature() {
@@ -100,13 +127,13 @@ export class ChromedashGuideMetadata extends LitElement {
     });
   }
 
-  renderReadOnlyTable() {
+  renderReadOnlyTableForEnterprise() {
     return html`
       <div id="metadata-readonly">
         <div style="margin-bottom: 1em">
           <div id="metadata-buttons">
             <a id="open-metadata" @click=${() => this.editing = true}>Edit</a>
-            ${this.isAdmin ? html`
+            ${this.canDeleteFeature() ? html`
               <div>
                 <a id="delete-feature" class="delete-button"
                   @click=${this.handleDeleteFeature}>Delete</a>
@@ -115,13 +142,6 @@ export class ChromedashGuideMetadata extends LitElement {
           </div>
           <div>${autolink(this.feature.summary)}</div>
         </div>
-
-        ${this.feature.unlisted ? html`
-          <div style="padding: 8px">
-            This feature is only shown in the feature list
-            to users with access to edit this feature.
-          </div>
-        `: nothing}
 
         <div class="flex-cols">
           <table class="property-sheet">
@@ -134,75 +154,133 @@ export class ChromedashGuideMetadata extends LitElement {
               </td>
             </tr>
 
-            ${!this.feature.is_enterprise_feature ? html`
-              <tr>
-                <th>CC</th>
-                <td>
-                  ${this.feature.cc_recipients ?
-                    this.feature.cc_recipients.map((ccRecipient)=> html`
-                    <a href="mailto:${ccRecipient}">${ccRecipient}</a>
-                    `): html`
-                    None
-                  `}
-                </td>
-              </tr>` :
-            nothing}
-
-            ${!this.feature.is_enterprise_feature ? html`
-              <tr>
-                <th>DevRel</th>
-                <td>
-                  ${this.feature.browsers.chrome.devrel ?
-                    this.feature.browsers.chrome.devrel.map((dev) => html`
-                    <a href="mailto:${dev}">${dev}</a>
+            <tr>
+              <th>Editors</th>
+              <td>
+                ${this.feature.editors ?
+                  this.feature.editors.map((editor)=> html`
+                  <a href="mailto:${editor}">${editor}</a>
                   `): html`
                   None
                 `}
-                </td>
-              </tr>` :
-            nothing}
+              </td>
+            </tr>
 
-            ${this.feature.is_enterprise_feature ? html`
-              <tr>
-                <th>Editors</th>
-                <td>
-                  ${this.feature.editors ?
-                    this.feature.editors.map((editor)=> html`
-                    <a href="mailto:${editor}">${editor}</a>
-                    `): html`
-                    None
-                  `}
-                </td>
-              </tr>` :
-            nothing}
+            <tr>
+              <th>Categories</th>
+              <td>${this.feature.enterprise_feature_categories.map(id =>
+                    ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME[id]) || 'None'}</td>
+            </tr>
 
-            ${!this.feature.is_enterprise_feature ? html`
-              <tr>
-                <th>Category</th>
-                <td>${this.feature.category}</td>
-              </tr>` :
-            nothing}
-            ${this.feature.is_enterprise_feature ? html`
-              <tr>
-                <th>Categories</th>
-                <td>${this.feature.enterprise_feature_categories.map(id =>
-              ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME[id]) || 'None'}</td>
-              </tr>` :
-            nothing}
+            <tr>
+              <th>Feature type</th>
+              <td>${this.feature.feature_type}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+
+  renderWarnings() {
+    if (this.feature.deleted) {
+      return html`
+        <div id="deleted" class="warning">
+          This feature is marked as deleted.  It does not appear in
+          feature lists and is only viewable by users who can edit it.
+        </div>
+      `;
+    }
+    if (this.feature.unlisted) {
+      return html`
+        <div id="access" class="warning">
+          This feature is only shown in the feature list
+          to users with access to edit this feature.
+        </div>
+      `;
+    }
+    return nothing;
+  }
+
+  renderReadOnlyTable() {
+    return html`
+      <div id="metadata-readonly">
+        <div style="margin-bottom: 1em">
+          <div id="metadata-buttons">
+            <a id="open-metadata" @click=${() => this.editing = true}>Edit</a>
+            ${this.canDeleteFeature() ? html`
+              <div>
+                <a id="delete-feature" class="delete-button"
+                  @click=${this.handleDeleteFeature}>Delete</a>
+              </div>
+            `: nothing}
+          </div>
+          <div>${autolink(this.feature.summary)}</div>
+        </div>
+
+        <div class="flex-cols">
+          <table class="property-sheet">
+            <tr>
+              <th>Owners</th>
+              <td>
+                ${this.feature.browsers.chrome.owners.map((owner) => html`
+                  <a href="mailto:${owner}">${owner}</a>
+                `)}
+              </td>
+            </tr>
+
+            <tr>
+              <th>CC</th>
+              <td>
+                ${this.feature.cc_recipients ?
+                  this.feature.cc_recipients.map((ccRecipient)=> html`
+                  <a href="mailto:${ccRecipient}">${ccRecipient}</a>
+                  `): html`
+                  None
+                `}
+              </td>
+            </tr>
+
+            <tr>
+              <th>DevRel</th>
+              <td>
+                ${this.feature.browsers.chrome.devrel ?
+                  this.feature.browsers.chrome.devrel.map((dev) => html`
+                  <a href="mailto:${dev}">${dev}</a>
+                `): html`
+                None
+              `}
+              </td>
+            </tr>
+
+            <tr>
+              <th>Editors</th>
+              <td>
+                ${this.feature.editors ?
+                  this.feature.editors.map((editor)=> html`
+                  <a href="mailto:${editor}">${editor}</a>
+                  `): html`
+                  None
+                `}
+              </td>
+            </tr>
+
+            <tr>
+              <th>Category</th>
+              <td>${this.feature.category}</td>
+            </tr>
 
             <tr>
               <th>Feature type</th>
               <td>${this.feature.feature_type}</td>
             </tr>
 
-            ${renderHTMLIf(!this.feature.is_enterprise_feature, html`
-              <tr>
-                <th>Process stage</th>
-                <td>${this.feature.intent_stage}</td>
-              </tr>`,
-            )}
+            <tr>
+              <th>Process stage</th>
+              <td>${this.feature.intent_stage}</td>
+            </tr>
 
-            ${this.feature.tags && !this.feature.is_enterprise_feature ? html`
+            ${this.feature.tags ? html`
               <tr>
                 <th>Search tags</th>
                 <td>
@@ -217,30 +295,26 @@ export class ChromedashGuideMetadata extends LitElement {
 
 
           <table class="property-sheet">
-          ${!this.feature.is_enterprise_feature ? html`
-              <tr>
-                <th>Implementation status</th>
-                <td>${this.feature.browsers.chrome.status.text}</td>
-              </tr>` :
-            nothing}
+            <tr>
+              <th>Implementation status</th>
+              <td>${this.feature.browsers.chrome.status.text}</td>
+            </tr>
 
             <tr>
               <th>Blink components</th>
               <td>${this.feature.browsers.chrome.blink_components.join(', ')}</td>
             </tr>
 
-            ${!this.feature.is_enterprise_feature ? html`
-              <tr>
-                <th>Tracking bug</th>
-                <td>
-                  ${this.feature.browsers.chrome.bug ? html`
-                    <a href="${this.feature.browsers.chrome.bug}">${this.feature.browsers.chrome.bug}</a>
-                  `: html`
-                    None
-                  `}
-                </td>
-              </tr>` :
-              nothing}
+            <tr>
+              <th>Tracking bug</th>
+              <td>
+                ${this.feature.browsers.chrome.bug ? html`
+                  <a href="${this.feature.browsers.chrome.bug}">${this.feature.browsers.chrome.bug}</a>
+                `: html`
+                  None
+                `}
+              </td>
+            </tr>
 
             <tr>
               <th>Launch bug</th>
@@ -252,7 +326,6 @@ export class ChromedashGuideMetadata extends LitElement {
                 `}
               </td>
             </tr>
-
             <tr>
               <th>Breaking change</th>
               <td>${this.feature.breaking_change}</td>
@@ -263,6 +336,29 @@ export class ChromedashGuideMetadata extends LitElement {
     `;
   }
 
+  renderFields(formattedFeature, metadataFields) {
+    return metadataFields.map((field) => {
+      // Add the field to this component's stage before creating the field component.
+      const index = this.fieldValues.length;
+      const featureJSONKey = ALL_FIELDS[field].name || field;
+      const value = formattedFeature[featureJSONKey];
+      this.fieldValues.push({
+        name: featureJSONKey,
+        touched: false,
+        value,
+      });
+
+      return html`
+        <chromedash-form-field
+          name=${field}
+          index=${index}
+          value=${value}
+          ?forEnterprise=${this.feature.is_enterprise_feature}
+          @form-field-update="${this.handleFormFieldUpdate}">
+        </chromedash-form-field>`;
+    });
+  }
+
   renderEditForm() {
     const formattedFeature = formatFeatureForEdit(this.feature);
     const metadataFields = flattenSections(this.feature.is_enterprise_feature ?
@@ -270,18 +366,10 @@ export class ChromedashGuideMetadata extends LitElement {
       FLAT_METADATA_FIELDS);
     return html`
       <div id="metadata-editing">
-        <form name="overview_form" method="POST" action="/guide/stage/${this.feature.id}/0">
+        <form name="overview_form">
           <input type="hidden" name="token">
-          <input type="hidden" name="form_fields"
-             value="${metadataFields.join(',')}">
-
           <chromedash-form-table ${ref(this.registerFormSubmitHandler)}>
-            ${metadataFields.map((field) => html`
-              <chromedash-form-field
-                name=${field}
-                value=${formattedFeature[field]}>
-              </chromedash-form-field>
-            `)}
+            ${this.renderFields(formattedFeature, metadataFields)}
           </chromedash-form-table>
 
           <section class="final_buttons">
@@ -296,8 +384,12 @@ export class ChromedashGuideMetadata extends LitElement {
 
   render() {
     return html`
+      ${this.renderWarnings()}
       <section id="metadata">
-        ${this.editing ? this.renderEditForm() : this.renderReadOnlyTable()}
+        ${this.editing ?
+          this.renderEditForm() :this.feature.is_enterprise_feature ?
+            this.renderReadOnlyTableForEnterprise() :
+            this.renderReadOnlyTable()}
       </section>
     `;
   }

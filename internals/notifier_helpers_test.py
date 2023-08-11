@@ -16,6 +16,7 @@ from unittest import mock
 from internals import notifier_helpers
 import testing_config  # Must be imported before the module under test.
 from internals.core_models import FeatureEntry, Stage, MilestoneSet
+from internals.data_types import CHANGED_FIELDS_LIST_TYPE
 from internals.review_models import Activity, Vote, Gate
 
 class ActivityTest(testing_config.CustomTestCase):
@@ -50,10 +51,11 @@ class ActivityTest(testing_config.CustomTestCase):
     testing_config.sign_out()
 
   def test_activities__created(self):
-    changed_fields_1 = [('name', 'feature a', 'feature Z'),
+    changed_fields_1: CHANGED_FIELDS_LIST_TYPE = [
+        ('name', 'feature a', 'feature Z'),
         ('summary', 'sum', 'A new and more accurate summary.'),
         ('shipped_milestone', 1, 100)]
-    changed_fields_2 = [('category', 1, 2)]
+    changed_fields_2: CHANGED_FIELDS_LIST_TYPE = [('category', 1, 2)]
     notifier_helpers.notify_subscribers_and_save_amendments(
         self.feature_1, changed_fields_1)
     notifier_helpers.notify_subscribers_and_save_amendments(
@@ -72,7 +74,7 @@ class ActivityTest(testing_config.CustomTestCase):
 
   def test_activities_created__no_changes(self):
     """No Activity should be logged if submitted with no changes."""
-    changed_fields = []
+    changed_fields: CHANGED_FIELDS_LIST_TYPE = []
     notifier_helpers.notify_subscribers_and_save_amendments(
         self.feature_1, changed_fields)
 
@@ -82,10 +84,10 @@ class ActivityTest(testing_config.CustomTestCase):
 
   def test_activities_created__empty_list_not_created(self):
     """No amendment should be logged if the value moved from None to empty list."""
-    changed_fields = [('editor_emails', None, [])]
+    changed_fields: CHANGED_FIELDS_LIST_TYPE = [('editor_emails', None, [])]
     notifier_helpers.notify_subscribers_and_save_amendments(
         self.feature_1, changed_fields)
-    
+
     activities = Activity.get_activities(self.feature_1.key.integer_id())
     # No activity entity created.
     self.assertTrue(len(activities) == 0)
@@ -103,5 +105,12 @@ class ActivityTest(testing_config.CustomTestCase):
     self.assertEqual(activities[0].gate_id, self.gate_1_id)
     self.assertEqual(activities[0].author, 'abc@example.com')
     self.assertEqual(activities[0].content, expected_content)
+
+    mock_task_helpers.assert_called_once()
+
+  @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
+  def test_notify_subscribers_of_new_comments(self, mock_task_helpers):
+    notifier_helpers.notify_subscribers_of_new_comments(
+        self.feature_1, self.gate_1, 'abc@example.com', 'fake comments')
 
     mock_task_helpers.assert_called_once()

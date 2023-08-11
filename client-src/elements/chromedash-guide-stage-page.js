@@ -1,6 +1,11 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
-import {showToastMessage, setupScrollToHash} from './utils.js';
+import {
+  formatFeatureChanges,
+  getStageValue,
+  showToastMessage,
+  setupScrollToHash,
+  shouldShowDisplayNameField} from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
 import {
@@ -9,8 +14,8 @@ import {
   FORMS_BY_STAGE_TYPE} from './form-definition';
 import {IMPLEMENTATION_STATUS, STAGE_SPECIFIC_FIELDS} from './form-field-enums';
 import {ALL_FIELDS} from './form-field-specs';
-import {SHARED_STYLES} from '../sass/shared-css.js';
-import {FORM_STYLES} from '../sass/forms-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
+import {FORM_STYLES} from '../css/forms-css.js';
 
 
 export class ChromedashGuideStagePage extends LitElement {
@@ -36,6 +41,7 @@ export class ChromedashGuideStagePage extends LitElement {
       loading: {type: Boolean},
       appTitle: {type: String},
       nextPage: {type: String},
+      fieldValues: {type: Array},
     };
   }
 
@@ -53,12 +59,26 @@ export class ChromedashGuideStagePage extends LitElement {
     this.loading = true;
     this.appTitle = '';
     this.nextPage = '';
+    this.fieldValues = [];
   }
 
   connectedCallback() {
     super.connectedCallback();
     this.fetchData();
   }
+
+  // Handler to update form values when a field update event is fired.
+  handleFormFieldUpdate(event) {
+    const value = event.detail.value;
+    // Index represents which form was updated.
+    const index = event.detail.index;
+    if (index >= this.fieldValues.length) {
+      throw new Error('Out of bounds index when updating field values.');
+    }
+    // The field has been updated, so it is considered touched.
+    this.fieldValues[index].touched = true;
+    this.fieldValues[index].value = value;
+  };
 
   fetchData() {
     this.loading = true;
@@ -102,58 +122,31 @@ export class ChromedashGuideStagePage extends LitElement {
       this.handleFormSubmit(event, hiddenTokenField);
     });
 
-    this.addMiscEventListeners();
+    this.miscSetup();
     setupScrollToHash(this);
   }
 
-  handleFormSubmit(event, hiddenTokenField) {
-    event.preventDefault();
+  handleFormSubmit(e, hiddenTokenField) {
+    e.preventDefault();
+    const submitBody = formatFeatureChanges(this.fieldValues, this.featureId);
 
     // get the XSRF token and update it if it's expired before submission
     window.csClient.ensureTokenIsValid().then(() => {
       hiddenTokenField.value = window.csClient.token;
-      event.target.submit();
+      return csClient.updateFeature(submitBody);
+    }).then(() => {
+      window.location.href = this.nextPage || `/guide/edit/${this.featureId}`;
+    }).catch(() => {
+      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
   }
 
-  addMiscEventListeners() {
-    const fields = this.shadowRoot.querySelectorAll('input, textarea');
-    for (let i = 0; i < fields.length; ++i) {
-      fields[i].addEventListener('input', (e) => {
-        e.target.classList.add('interacted');
-      });
-    }
-
+  miscSetup() {
     // Allow editing if there was already a value specified in this
     // deprecated field.
     const timelineField = this.shadowRoot.querySelector('#id_experiment_timeline');
     if (timelineField && timelineField.value) {
       timelineField.disabled = '';
-    }
-
-    // Copy field SRC to DST if SRC is edited and DST was empty and
-    // has not been edited.
-    const COPY_ON_EDIT = [
-      ['dt_milestone_desktop_start', 'dt_milestone_android_start'],
-      ['dt_milestone_desktop_start', 'dt_milestone_webview_start'],
-      // Don't autofill dt_milestone_ios_start because it is rare.
-      ['ot_milestone_desktop_start', 'ot_milestone_android_start'],
-      ['ot_milestone_desktop_end', 'ot_milestone_android_end'],
-      ['ot_milestone_desktop_start', 'ot_milestone_webview_start'],
-      ['ot_milestone_desktop_end', 'ot_milestone_webview_end'],
-    ];
-
-    for (const [srcId, dstId] of COPY_ON_EDIT) {
-      const srcEl = this.shadowRoot.querySelector('#id_' + srcId);
-      const dstEl = this.shadowRoot.querySelector('#id_' + dstId);
-      if (srcEl && dstEl && srcEl.value == dstEl.value) {
-        srcEl.addEventListener('input', () => {
-          if (!dstEl.classList.contains('interacted')) {
-            dstEl.value = srcEl.value;
-            dstEl.classList.add('copied');
-          }
-        });
-      }
     }
   }
 
@@ -209,17 +202,32 @@ export class ChromedashGuideStagePage extends LitElement {
       feStage = this.stage;
     }
     return section.fields.map(field => {
+      // Only show "display name" field if there is more than one stage of the same type.
+      if (field === 'display_name' &&
+          !shouldShowDisplayNameField(this.feature.stages, feStage.stage_type)) {
+        return nothing;
+      }
       const featureJSONKey = ALL_FIELDS[field].name || field;
       let value = formattedFeature[featureJSONKey];
+      // The stage ID is only defined for the form field if it is a stage-specific field.
+      let stageId = undefined;
       if (STAGE_SPECIFIC_FIELDS.has(featureJSONKey)) {
-        value = feStage[featureJSONKey];
+        value = getStageValue(feStage, featureJSONKey);
+        stageId = feStage.id;
       }
-      // stageId is only used here for trial extension stages to be used after submission.
+
+      // Add the field to this component's stage before creating the field component.
+      const index = this.fieldValues.length;
+      this.fieldValues.push({name: featureJSONKey, touched: false, value, stageId});
+
       return html`
       <chromedash-form-field
         name=${field}
         value=${value}
-        stageId=${useStageId ? feStage.id : undefined}>
+        index=${index}
+        stageId=${useStageId ? feStage.id : undefined}
+        ?forEnterprise=${formattedFeature.is_enterprise_feature}
+        @form-field-update="${this.handleFormFieldUpdate}">
       </chromedash-form-field>
     `;
     });
@@ -228,13 +236,25 @@ export class ChromedashGuideStagePage extends LitElement {
   renderSections(formattedFeature, stageSections) {
     const formSections = [];
     if (!formattedFeature.is_enterprise_feature) {
+      // Add the field to this component's stage before creating the field component.
+      const index = this.fieldValues.length;
+      this.fieldValues.push({
+        name: 'active_stage_id',
+        touched: false,
+        value: this.isActiveStage,
+        implicitValue: this.stage.id,
+      });
+
       formSections.push(
         html`
         <section class="stage_form">
           <chromedash-form-field
             name="set_stage"
             value=${this.isActiveStage}
-            ?disabled=${this.isActiveStage}>
+            index=${index}
+            ?disabled=${this.isActiveStage}
+            ?forEnterprise=${formattedFeature.is_enterprise_feature}
+            @form-field-update="${this.handleFormFieldUpdate}">
           </chromedash-form-field>
         </section>`);
     }
@@ -270,10 +290,40 @@ export class ChromedashGuideStagePage extends LitElement {
     return formSections;
   }
 
-  renderImplStatusFormSection(formattedFeature, section) {
+  // Render the checkbox to set to this implementation stage.
+  renderSetImplField(implStatusName, section) {
+    // Don't render this checkbox if there's no associated implementation stage name.
+    if (!implStatusName) {
+      return nothing;
+    }
+
     const alreadyOnThisImplStatus = (
       section.implStatusValue === this.feature.browsers.chrome.status.val);
+    // Set the checkbox label based on the current implementation status.
+    let label = `Set implementation status to: ${implStatusName}`;
+    if (alreadyOnThisImplStatus) {
+      label = `This feature already has implementation status: ${implStatusName}`;
+    }
+    const index = this.fieldValues.length;
+    this.fieldValues.push({
+      name: 'impl_status_chrome',
+      touched: false,
+      value: alreadyOnThisImplStatus,
+      implicitValue: section.implStatusValue,
+    });
 
+    return html`
+      <chromedash-form-field
+        name="set_impl_status"
+        value=${alreadyOnThisImplStatus}
+        index=${index}
+        checkboxLabel=${label}
+        ?disabled=${alreadyOnThisImplStatus}
+        @form-field-update="${this.handleFormFieldUpdate}">
+      </chromedash-form-field>`;
+  }
+
+  renderImplStatusFormSection(formattedFeature, section) {
     const implStatusKey = Object.keys(IMPLEMENTATION_STATUS).find(
       key => IMPLEMENTATION_STATUS[key][0] === section.implStatusValue);
     const implStatusName = implStatusKey ? IMPLEMENTATION_STATUS[implStatusKey][1]: null;
@@ -283,70 +333,24 @@ export class ChromedashGuideStagePage extends LitElement {
     return html`
       <h3>${section.name}</h3>
       <section class="stage_form">
-        ${implStatusName ? html`
-          <tr>
-            <td colspan="2"><b>Implementation status:</b></span></td>
-          </tr>
-          <tr>
-            ${alreadyOnThisImplStatus ?
-              html`
-                <td style="padding: 6px 10px;">
-                    This feature already has implementation status:
-                    <b>${implStatusName}</b>.
-                </td>
-              ` :
-              // TODO(jrobbins): When checked, make some milestone fields required.
-              html`
-                <td style="padding: 6px 10px;">
-                  <input type="hidden" name="impl_status_offered"
-                          value=${section.implStatusValue}>
-                  <sl-checkbox name="set_impl_status"
-                          id="set_impl_status"
-                          size="small">
-                    Set implementation status to: <b>${implStatusName}</b>
-                  </sl-checkbox>
-                </td>
-                <td style="padding: 6px 10px;">
-                  <span class="helptext"
-                        style="display: block; font-size: small; margin-top: 2px;">
-                    Check this box to update the implementation
-                    status of this feature in Chromium.
-                  </span>
-                </td>
-              `}
-          </tr>
-        `: nothing}
-
+        <!-- TODO(jrobbins): When checked, make some milestone fields required. -->
+        ${this.renderSetImplField(implStatusName, section)}
         ${this.renderFields(formattedFeature, section)}
       </section>
     `;
   }
 
   renderForm() {
-    let extensionStageIds = null;
-    // If any trial extensions are associated with this stage,
-    // their IDs are kept to retrieve during submission to save their values separately.
-    if (this.stage.extensions) {
-      extensionStageIds = this.stage.extensions.map(feStage => feStage.id);
-    }
     const formattedFeature = formatFeatureForEdit(this.feature);
     return html`
-      <form name="feature_form" method="POST"
-        action="/guide/stage/${this.featureId}/${this.intentStage}/${this.stageId}">
+      <form name="feature_form">
         <input type="hidden" name="token">
-        ${extensionStageIds ? html`
-        <input type="hidden" name="extension_stage_ids" value="${extensionStageIds}">` : nothing}
-        <input type="hidden" name="form_fields" value=${this.getFormFields()} >
-        <input type="hidden" name="nextPage" value=${this.getNextPage()} >
-
         <chromedash-form-table ${ref(this.registerHandlers)}>
           ${this.renderSections(formattedFeature, this.featureFormFields.sections)}
         </chromedash-form-table>
-
         <div class="final_buttons">
-          <input class="button" type="submit" value="Submit">
-          <button id="cancel-button" type="reset"
-            @click=${this.handleCancelClick}>Cancel</button>
+          <input id='submit-button' class="button" type="submit" value="Submit">
+          <button id="cancel-button" @click=${this.handleCancelClick}>Cancel</button>
         </div>
       </form>
     `;

@@ -1,7 +1,7 @@
 import {LitElement, css, html, nothing} from 'lit';
 import '@polymer/iron-icon';
 import './chromedash-x-meter';
-import {SHARED_STYLES} from '../sass/shared-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 
 
 class ChromedashStackRank extends LitElement {
@@ -14,6 +14,7 @@ class ChromedashStackRank extends LitElement {
       sortType: {type: String},
       sortReverse: {type: Boolean},
       tempList: {attribute: false},
+      shouldHideObsolete: {state: true, attribute: false},
     };
   }
 
@@ -25,6 +26,8 @@ class ChromedashStackRank extends LitElement {
     this.maxPercentage = 100;
     this.sortType = 'percentage';
     this.sortReverse = false;
+    this.shouldHideObsolete = true;
+    this.obsoleteCount = 0;
   }
 
 
@@ -80,6 +83,10 @@ class ChromedashStackRank extends LitElement {
 
       .stack-rank-item {
         border-top: var(--table-divider)
+      }
+
+      .stack-rank-item-hidden {
+        display: none;
       }
 
       .stack-rank-item-name {
@@ -151,6 +158,8 @@ class ChromedashStackRank extends LitElement {
     setTimeout(() => {
       this.scrollToPosition();
     }, 300);
+
+    this.obsoleteCount = this.viewList.filter((item) => item.obsolete).length;
   }
 
   scrollToPosition(e) {
@@ -178,10 +187,19 @@ class ChromedashStackRank extends LitElement {
     this.viewList = sortBy_(this.sortType, this.sortReverse, newViewList);
   }
 
+  handleChangeHideObsolete(e) {
+    this.shouldHideObsolete = e.target.checked;
+  }
+
   renderSubHeader() {
     return html`
       <div id="subheader">
-        <p class="title-text">Showing <span>${this.viewList.length}</span> properties</p>
+        <p class="title-text">Showing <span>${this.viewList.length - (
+          this.shouldHideObsolete ? this.obsoleteCount : 0
+        )}</span> properties</p>
+        <sl-checkbox ?checked=${this.shouldHideObsolete} @input=${this.handleChangeHideObsolete} >
+          Hide obsolete
+        </sl-checkbox>
         <div id="dropdown-selection">
           <sl-dropdown>
             <sl-button slot="trigger" variant="text" ?disabled=${!this.viewList.length}>
@@ -219,7 +237,8 @@ class ChromedashStackRank extends LitElement {
   renderStackRank(displayedList) {
     return html`
       ${displayedList.map((item) => html`
-        <li class="stack-rank-item" id="${item.property_name}">
+        <li class="stack-rank-item ${(this.shouldHideObsolete && item.obsolete) ? 'stack-rank-item-hidden' : ''}"
+          id="${item.property_name}">
           <div title="${item.property_name}. Click to deep link to this property.">
             <a class="stack-rank-item-name" href="#${item.property_name}" @click=${this.scrollToPosition}>
               <iron-icon class="hash-link" icon="chromestatus:link"></iron-icon>

@@ -55,6 +55,16 @@ ENTERPRISE_FEATURE_SECURITYANDPRIVACY = 1
 ENTERPRISE_FEATURE_USERPRODUCTIVITYANDAPPS = 2
 ENTERPRISE_FEATURE_MANAGEMENT = 3
 
+IMPACT_LOW = 1
+IMPACT_MEDIUM = 2
+IMPACT_HIGH = 3
+
+IMPACT_CATEGORIES = collections.OrderedDict([
+  (IMPACT_LOW, 'Low'),
+  (IMPACT_MEDIUM, 'Medium'),
+  (IMPACT_HIGH, 'High'),
+])
+
 PLATFORM_CATEGORIES = collections.OrderedDict([
   (PLATFORM_ANDROID, 'Android'),
   (PLATFORM_IOS, 'iOS'),
@@ -274,7 +284,7 @@ STAGES_AND_GATES_BY_FEATURE_TYPE: dict[int, list[tuple[int, list[int]]]] = {
         (STAGE_BLINK_EXTEND_ORIGIN_TRIAL, [GATE_API_EXTEND_ORIGIN_TRIAL]),
         (STAGE_BLINK_SHIPPING,
          [
-          # GATE_PRIVACY_SHIP, GATE_SECURITY_SHIP,
+          GATE_PRIVACY_SHIP, GATE_SECURITY_SHIP,
           GATE_ENTERPRISE_SHIP,
           GATE_DEBUGGABILITY_SHIP, GATE_TESTING_SHIP,
           GATE_API_SHIP])],
@@ -287,7 +297,7 @@ STAGES_AND_GATES_BY_FEATURE_TYPE: dict[int, list[tuple[int, list[int]]]] = {
         (STAGE_FAST_EXTEND_ORIGIN_TRIAL, [GATE_API_EXTEND_ORIGIN_TRIAL]),
         (STAGE_FAST_SHIPPING,
          [
-          # GATE_PRIVACY_SHIP, GATE_SECURITY_SHIP,
+          GATE_PRIVACY_SHIP, GATE_SECURITY_SHIP,
           GATE_ENTERPRISE_SHIP,
           GATE_DEBUGGABILITY_SHIP, GATE_TESTING_SHIP,
           GATE_API_SHIP])],
@@ -304,7 +314,7 @@ STAGES_AND_GATES_BY_FEATURE_TYPE: dict[int, list[tuple[int, list[int]]]] = {
         (STAGE_DEP_EXTEND_DEPRECATION_TRIAL, [GATE_API_EXTEND_ORIGIN_TRIAL]),
         (STAGE_DEP_SHIPPING,
          [
-          # GATE_PRIVACY_SHIP, GATE_SECURITY_SHIP,
+          GATE_PRIVACY_SHIP, GATE_SECURITY_SHIP,
           GATE_ENTERPRISE_SHIP,
           GATE_DEBUGGABILITY_SHIP, GATE_TESTING_SHIP,
           GATE_API_SHIP]),
@@ -398,6 +408,7 @@ STAGE_TYPES_BY_FIELD_MAPPING: dict[str, dict[int, Optional[int]]] = {
     'dt_milestone_ios_start': STAGE_TYPES_DEV_TRIAL,
     'dt_milestone_webview_start': STAGE_TYPES_DEV_TRIAL,
     'enterprise_policies': STAGE_TYPES_ROLLOUT,
+    'rollout_impact': STAGE_TYPES_ROLLOUT,
     'rollout_milestone': STAGE_TYPES_ROLLOUT,
     'rollout_platforms': STAGE_TYPES_ROLLOUT,
     'rollout_details': STAGE_TYPES_ROLLOUT
@@ -496,11 +507,11 @@ OPPOSED = 7
 NEUTRAL = 8
 SIGNALS_NA = 9
 GECKO_UNDER_CONSIDERATION = 10
-GECKO_IMPORTANT = 11
-GECKO_WORTH_PROTOTYPING = 12
-GECKO_NONHARMFUL = 13
+GECKO_IMPORTANT = 11  # Deprecated
+GECKO_WORTH_PROTOTYPING = 12  # Deprecated
+GECKO_NONHARMFUL = 13  # Deprecated
 GECKO_DEFER = 14
-GECKO_HARMFUL = 15
+GECKO_HARMFUL = 15  # Deprecated
 
 
 VENDOR_VIEWS_COMMON = {
@@ -513,15 +524,23 @@ VENDOR_VIEWS_COMMON = {
   SIGNALS_NA: 'N/A',
   }
 
-VENDOR_VIEWS_GECKO = VENDOR_VIEWS_COMMON.copy()
-VENDOR_VIEWS_GECKO.update({
+VENDOR_VIEWS_GECKO = {
+  NO_PUBLIC_SIGNALS: 'No signal',
+  SIGNALS_NA: 'N/A',
   GECKO_UNDER_CONSIDERATION: 'Under consideration',
+  GECKO_DEFER: 'Defer',
+  PUBLIC_SUPPORT: 'Positive',
+  OPPOSED: 'Negative',
+  NEUTRAL: 'Neutral',
+  SHIPPED: 'Shipped/Shipping',
+
+  # TODO(jrobbins): Delete these lines after migration script has been
+  # run in prod.
   GECKO_IMPORTANT: 'Important',
   GECKO_WORTH_PROTOTYPING: 'Worth prototyping',
   GECKO_NONHARMFUL: 'Non-harmful',
-  GECKO_DEFER: 'Defer',
   GECKO_HARMFUL: 'Harmful',
-  })
+  }
 
 # These vendors have no "custom" views values yet.
 VENDOR_VIEWS_EDGE = VENDOR_VIEWS_COMMON
@@ -621,6 +640,7 @@ PROPERTY_NAMES_TO_ENUM_DICTS = {
     'browsers.safari.view': VENDOR_VIEWS,
     'web_dev_views': WEB_DEV_VIEWS,
     'browsers.webdev.view': WEB_DEV_VIEWS,
+    'rollout_impact': IMPACT_CATEGORIES,
     'rollout_platforms': PLATFORM_CATEGORIES,
   }
 

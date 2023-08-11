@@ -28,7 +28,7 @@ class RemoveInactiveUsersHandler(FlaskHandler):
     now = kwargs.get('now', datetime.now())
 
     q = AppUser.query()
-    users = q.fetch()
+    users: list[AppUser] = q.fetch()
     removed_users = []
     inactive_cutoff = now - timedelta(days=self.INACTIVE_REMOVE_DAYS)
     for user in users:
@@ -37,8 +37,11 @@ class RemoveInactiveUsersHandler(FlaskHandler):
         continue
 
       # If the user does not have a last visit, it is assumed the last visit
-      # is roughly the date the last_visit field was added.
+      # is either the account's creation date or the date the last_visit
+      # field was created on the model - whatever is latest.
       last_visit = user.last_visit or self.DEFAULT_LAST_VISIT
+      if user.created > last_visit:
+        last_visit = user.created
       if last_visit < inactive_cutoff:
         removed_users.append(user.email)
         logging.info(f'User removed: {user.email}')

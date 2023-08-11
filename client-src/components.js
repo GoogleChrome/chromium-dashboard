@@ -10,6 +10,7 @@ import '@polymer/iron-iconset-svg';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/checkbox/checkbox.js';
 import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
+import '@shoelace-style/shoelace/dist/components/drawer/drawer.js';
 import '@shoelace-style/shoelace/dist/components/details/details.js';
 import '@shoelace-style/shoelace/dist/components/dropdown/dropdown.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
@@ -24,6 +25,9 @@ import '@shoelace-style/shoelace/dist/components/relative-time/relative-time.js'
 import '@shoelace-style/shoelace/dist/components/skeleton/skeleton.js';
 import '@shoelace-style/shoelace/dist/components/select/select.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
+import '@shoelace-style/shoelace/dist/components/badge/badge.js';
+import '@shoelace-style/shoelace/dist/components/tag/tag.js';
+import '@shoelace-style/shoelace/dist/components/tooltip/tooltip.js';
 import {setBasePath} from '@shoelace-style/shoelace/dist/utilities/base-path.js';
 
 // Set the base path to the folder you copied Shoelace's assets to
@@ -41,13 +45,17 @@ registerIconLibrary('material', {
 
 // chromedash components
 import './elements/icons';
+import './elements/chromedash-admin-blink-component-listing';
+import './elements/chromedash-admin-blink-page';
+import './elements/chromedash-admin-feature-links-page';
 import './elements/chromedash-all-features-page';
+import './elements/chromedash-activity-page';
 import './elements/chromedash-activity-log';
 import './elements/chromedash-app';
-import './elements/chromedash-approvals-dialog';
 import './elements/chromedash-banner';
 import './elements/chromedash-callout';
 import './elements/chromedash-color-status';
+import './elements/chromedash-drawer';
 import './elements/chromedash-feature';
 import './elements/chromedash-feature-detail';
 import './elements/chromedash-feature-filter';
@@ -70,6 +78,7 @@ import './elements/chromedash-guide-metadata-page';
 import './elements/chromedash-guide-verify-accuracy-page';
 import './elements/chromedash-header';
 import './elements/chromedash-legend';
+import './elements/chromedash-login-required-page';
 import './elements/chromedash-metadata';
 import './elements/chromedash-myfeatures-page';
 import './elements/chromedash-preflight-dialog';
@@ -87,3 +96,4 @@ import './elements/chromedash-roadmap-page';
 import './elements/chromedash-userlist';
 import './elements/chromedash-x-meter';
 import './elements/chromedash-enterprise-page';
+import './elements/chromedash-enterprise-release-notes-page';

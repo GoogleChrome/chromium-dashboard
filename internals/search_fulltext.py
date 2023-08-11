@@ -64,6 +64,8 @@ def get_strings(fe : FeatureEntry) -> list[str]:
 
   # TODO: impl_status_Chrome
   strings.append(fe.flag_name)
+  strings.append(fe.finch_name)
+  strings.append(fe.non_finch_justification)
   strings.append(fe.ongoing_constraints)
 
   strings.append(fe.motivation)

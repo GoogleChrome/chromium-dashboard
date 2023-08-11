@@ -17,7 +17,7 @@ import {
   GATE_ACTIVE_REVIEW_STATES,
 } from './form-field-enums';
 
-import {SHARED_STYLES} from '../sass/shared-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 
 
 export class ChromedashGateColumn extends LitElement {
@@ -59,6 +59,22 @@ export class ChromedashGateColumn extends LitElement {
        }
        .denied sl-icon {
          color: var(--gate-denied-icon-color);
+       }
+       #slo-area sl-icon {
+         font-size: 16px;
+         vertical-align: text-bottom;
+         color: var(--unimportant-text-color);
+       }
+       .overdue,
+       #slo-area .overdue sl-icon {
+         color: var(--slo-overdue-color);
+       }
+
+       .process-notice {
+         margin: var(--content-padding-half) 0;
+         padding: var(--content-padding-half);
+         background: var(--light-accent-color);
+         border-radius: 8px;
        }
 
        #votes-area {
@@ -382,12 +398,18 @@ export class ChromedashGateColumn extends LitElement {
     `;
   }
 
-  renderReviewStatusActive() {
-    return html`
-      Review requested on
-      ${renderAbsoluteDate(this.gate.requested_on)}
-      ${renderRelativeDate(this.gate.requested_on)}
-    `;
+  renderReviewRequest() {
+    for (const v of this.votes) {
+      if (v.state == REVIEW_REQUESTED) {
+        const shortVoter = v.set_by.split('@')[0] + '@';
+        return html`
+          ${shortVoter} requested on
+          ${renderAbsoluteDate(this.gate.requested_on)}
+          ${renderRelativeDate(this.gate.requested_on)}
+      `;
+      }
+    }
+    return nothing;
   }
 
   renderReviewStatusApproved() {
@@ -420,10 +442,85 @@ export class ChromedashGateColumn extends LitElement {
     } else if (this.gate.state == VOTE_OPTIONS.DENIED[0]) {
       return this.renderReviewStatusDenied();
     } else {
-      console.log('Unexpected gate state');
-      console.log(this.gate);
       return nothing;
     }
+  }
+
+  renderSLOStatusSkeleton() {
+    return html`
+      <p>
+        Reviewer SLO status:
+      </p>`;
+  }
+
+  renderInfoIcon() {
+    return html`
+      <sl-tooltip hoist style="--max-width: 14em;"
+        content="Reviewers are encouraged to provide an initial
+          review status update
+          or a comment within this number of days.
+          The full review may take longer.">
+        <sl-icon name="info-circle" id="info-button"></sl-icon>
+      </sl-tooltip>
+    `;
+  }
+
+  dayPhrase(count) {
+    return String(count) + (count == 1 ? ' day' : ' days');
+  }
+
+  renderSLOStatus() {
+    const limit = this.gate?.slo_initial_response;
+    const took = this.gate?.slo_initial_response_took;
+    const remaining = this.gate?.slo_initial_response_remaining;
+    let msg = nothing;
+    let iconName = '';
+    let className = '';
+
+    if (typeof took === 'number') {
+      msg = html`took ${this.dayPhrase(took)} for initial response`;
+    } else if (typeof remaining === 'number') {
+      iconName = 'clock_loader_60_20px';
+      if (remaining > 0) {
+        msg = html`${this.dayPhrase(remaining)} remaining`;
+      } else if (remaining < 0) {
+        className = 'overdue';
+        msg = html`${this.dayPhrase(-remaining)} overdue`;
+      } else {
+        msg = html`initial response is due today`;
+      };
+    } else if (typeof limit === 'number') {
+      return html`
+        <p>Reviewer SLO: ${this.dayPhrase(limit)} for initial response
+        ${this.renderInfoIcon()}</p>
+      `;
+    }
+
+    if (msg === nothing) {
+      return nothing;
+    } else {
+      const icon = iconName ?
+        html`<sl-icon library="material" name="${iconName}"></sl-icon>` :
+        nothing;
+      return html`
+        <p id="slo-area">
+          Reviewer SLO status: <span class="${className}">${icon} ${msg}</span>
+        </p>`;
+    }
+  }
+
+  renderWarnings() {
+    if (this.gate.team_name == 'Privacy') {
+      return html`
+       <div class="process-notice">
+         Googlers: Please follow the instructions at <a
+         href="https://goto.corp.google.com/wp-launch-guidelines"
+         target="_blank" rel="noopener">go/wp-launch-guidelines</a> (internal
+         document) to determine whether you also require an internal review.
+       </div>
+      `;
+    }
+    return nothing;
   }
 
   renderVotesSkeleton() {
@@ -471,12 +568,17 @@ export class ChromedashGateColumn extends LitElement {
     `;
   }
 
-  renderVoteRow(vote) {
+  renderVoteRow(vote, canVote) {
     const shortVoter = vote.set_by.split('@')[0] + '@';
     let saveButton = nothing;
     let voteCell = this.renderVoteReadOnly(vote);
 
-    if (vote.set_by == this.user?.email) {
+    if (vote.state === REVIEW_REQUESTED &&
+        !(canVote && vote.set_by === this.user?.email)) {
+      return nothing; // The requester is shown by renderReviewRequest().
+    }
+
+    if (canVote && vote.set_by == this.user?.email) {
       // If the current reviewer was the one who requested the review,
       // select "No response" in the menu because there is no
       // "Review requested" menu item now.
@@ -510,11 +612,12 @@ export class ChromedashGateColumn extends LitElement {
       this.user &&
         this.user.approvable_gate_types.includes(this.gate.gate_type));
     const myVoteExists = this.votes.some((v) => v.set_by == this.user?.email);
+    const responses = this.votes.filter((v) => v.state !== REVIEW_REQUESTED);
     const addVoteRow = (canVote && !myVoteExists) ?
-      this.renderVoteRow({set_by: this.user?.email, state: 7}) :
+      this.renderVoteRow({set_by: this.user?.email, state: 7}, canVote) :
       nothing;
 
-    if (!canVote && this.votes.length === 0) {
+    if (!canVote && responses.length === 0) {
       return html`
         <p>No review activity yet.</p>
       `;
@@ -523,7 +626,7 @@ export class ChromedashGateColumn extends LitElement {
     return html`
       <table>
         <tr><th>Reviewer</th><th>Review status</th></tr>
-        ${this.votes.map((v) => this.renderVoteRow(v))}
+        ${this.votes.map((v) => this.renderVoteRow(v, canVote))}
         ${addVoteRow}
       </table>
     `;
@@ -625,7 +728,7 @@ export class ChromedashGateColumn extends LitElement {
       ${this.renderControls()}
       <chromedash-activity-log
         .user=${this.user}
-        .feature=${this.feature}
+        .featureId=${this.feature.id}
         .narrow=${true}
         .reverse=${true}
         .comments=${this.comments}>
@@ -639,29 +742,37 @@ export class ChromedashGateColumn extends LitElement {
         @click=${() => this.handleCancel()}
         ></sl-icon-button>
 
+      ${this.loading ?
+        this.renderHeadingsSkeleton() :
+        this.renderHeadings()}
+
+      <div id="review-status-area">
         ${this.loading ?
-          this.renderHeadingsSkeleton() :
-          this.renderHeadings()}
-
-        <div id="review-status-area">
-          ${this.loading ?
-            this.renderReviewStatusSkeleton() :
-            this.renderReviewStatus()}
-        </div>
-
-        <div id="votes-area">
-          ${this.loading ?
-            this.renderVotesSkeleton() :
-            this.renderVotes()}
-        </div>
-
+          this.renderReviewStatusSkeleton() :
+          this.renderReviewStatus()}
+        ${this.renderReviewRequest()}
+      </div>
+      <div id="slo-area">
         ${this.loading ?
-          this.renderQuestionnaireSkeleton() :
-          this.renderQuestionnaire()}
+          this.renderSLOStatusSkeleton() :
+          this.renderSLOStatus()}
+      </div>
 
+      ${this.renderWarnings()}
+
+      <div id="votes-area">
         ${this.loading ?
-          this.renderCommentsSkeleton() :
-          this.renderComments()}
+          this.renderVotesSkeleton() :
+          this.renderVotes()}
+      </div>
+
+      ${this.loading ?
+        this.renderQuestionnaireSkeleton() :
+        this.renderQuestionnaire()}
+
+      ${this.loading ?
+        this.renderCommentsSkeleton() :
+        this.renderComments()}
     `;
   }
 }

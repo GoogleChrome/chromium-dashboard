@@ -1,5 +1,5 @@
 import {LitElement, css, html, nothing} from 'lit';
-import {SHARED_STYLES} from '../sass/shared-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 import {
   FEATURE_CATEGORIES,
   FEATURE_TYPES,
@@ -11,6 +11,7 @@ import {
   VENDOR_VIEWS_COMMON,
   VENDOR_VIEWS_GECKO,
   WEB_DEV_VIEWS,
+  ROLLOUT_IMPACT,
 } from './form-field-enums';
 
 const ENTER_KEY_CODE = 13;
@@ -94,6 +95,8 @@ const QUERIABLE_FIELDS = [
   // 'requires_embedder_support': Feature.requires_embedder_support,
 
   {name: 'browsers.chrome.flag_name', display: 'Flag name', type: TEXT_TYPE},
+  {name: 'browsers.chrome.finch_name', display: 'Finch name', type: TEXT_TYPE},
+  // 'browsers.chrome.non_finch_justification': Feature.non_finch_justification,
   // 'all_platforms': Feature.all_platforms,
   // 'all_platforms_descr': Feature.all_platforms_descr,
   // 'wpt': Feature.wpt,
@@ -166,6 +169,10 @@ const QUERIABLE_FIELDS = [
   {name: 'intent_stage',
     display: 'Spec process stage',
     choices: INTENT_STAGES,
+    type: ENUM_TYPE},
+  {name: 'rollout_impact',
+    display: 'Impact',
+    choices: ROLLOUT_IMPACT,
     type: ENUM_TYPE},
   // TODO: rollout_platforms is not yet supported.
   // {name: 'rollout_platforms',

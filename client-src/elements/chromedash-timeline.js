@@ -1,6 +1,6 @@
 import {LitElement, css, html} from 'lit';
 import {showToastMessage} from './utils.js';
-import {SHARED_STYLES} from '../sass/shared-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 
 
 class ChromedashTimeline extends LitElement {
@@ -49,7 +49,7 @@ class ChromedashTimeline extends LitElement {
       #http-archive-data {
         border: 0;
         width: 100%;
-        height: 775px;
+        height: 870px;
       }
 
       .header_title {
@@ -100,7 +100,7 @@ class ChromedashTimeline extends LitElement {
   }
 
   updated() {
-    this._updateTimeline();
+    window.google.charts.setOnLoadCallback(this._updateTimeline.bind(this));
   }
 
   updateSelectedBucketId(e) {
@@ -253,6 +253,7 @@ class ChromedashTimeline extends LitElement {
 SELECT yyyymmdd, client, pct_urls, sample_urls
 FROM \`httparchive.blink_features.usage\`
 WHERE feature = '${featureName}'
+AND yyyymmdd = (SELECT MAX(yyyymmdd) FROM \`httparchive.blink_features.usage\`)
 ORDER BY yyyymmdd DESC, client`;
     }
   }

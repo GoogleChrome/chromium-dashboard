@@ -22,7 +22,6 @@ from framework import rediscache
 from internals import core_enums
 from internals import stage_helpers
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
-from internals.legacy_models import Feature
 from internals.review_models import Gate
 from pages import guide
 
@@ -49,7 +48,7 @@ class FeatureCreateTest(testing_config.CustomTestCase):
     self.handler = guide.FeatureCreateHandler()
 
   def tearDown(self) -> None:
-    kinds: list[ndb.Model] = [Feature, FeatureEntry, Stage, Gate]
+    kinds: list[ndb.Model] = [FeatureEntry, Stage, Gate]
     for kind in kinds:
       entities = kind.query().fetch()
       for entity in entities:
@@ -83,14 +82,10 @@ class FeatureCreateTest(testing_config.CustomTestCase):
 
     self.assertEqual('302 FOUND', actual_response.status)
     location = actual_response.headers['location']
-    self.assertTrue(location.startswith('/guide/edit/'))
+    self.assertTrue(location.startswith('/feature/'))
     new_feature_id = int(location.split('/')[-1])
-    feature = Feature.get_by_id(new_feature_id)
-    self.assertEqual(1, feature.category)
-    self.assertEqual('Feature name', feature.name)
-    self.assertEqual('Feature summary', feature.summary)
 
-    # Ensure FeatureEntry entity was also created.
+    # Ensure FeatureEntry entity was created.
     feature_entry = FeatureEntry.get_by_id(new_feature_id)
     self.assertEqual(1, feature_entry.category)
     self.assertEqual('Feature name', feature_entry.name)
@@ -99,24 +94,20 @@ class FeatureCreateTest(testing_config.CustomTestCase):
     self.assertEqual(['devrel-chromestatus-all@google.com'],
                      feature_entry.devrel_emails)
 
-    # Ensure Stage and Gate entities were also created.
+    # Ensure Stage and Gate entities were created.
     stages = Stage.query().fetch()
     gates = Gate.query().fetch()
     self.assertEqual(len(stages), 6)
-    self.assertEqual(len(gates), 7)
+    self.assertEqual(len(gates), 9)
 
 
 class FeatureEditHandlerTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = Feature(
-        name='feature one', summary='sum', owner=['user1@google.com'],
-        category=1)
-    self.feature_1.put()
     self.stage = core_enums.INTENT_INCUBATE  # Shows first form
 
     self.fe_1 = FeatureEntry(
-        id=self.feature_1.key.integer_id(), name='feature one',
+        name='feature one',
         summary='sum', owner_emails=['user1@google.com'], category=1,
         standard_maturity=1, ff_views=1, safari_views=1, web_dev_views=1,
         impl_status_chrome=1)
@@ -140,11 +131,11 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
       if stage_type == 150:
         self.stage_id = stage.key.integer_id()
 
-    self.request_path = f'/guide/stage/{self.feature_1.key.integer_id()}'
+    self.request_path = f'/guide/stage/{self.fe_1.key.integer_id()}'
     self.handler = guide.FeatureEditHandler()
 
   def tearDown(self):
-    self.feature_1.key.delete()
+    self.fe_1.key.delete()
     self.fe_1.key.delete()
     for stage in Stage.query():
       stage.key.delete()
@@ -153,8 +144,8 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
     """We can tell if the user meant to edit a field."""
     with test_app.test_request_context(
         'path', data={'name': 'new name'}):
-      self.assertTrue(self.handler.touched('name'))
-      self.assertFalse(self.handler.touched('summary'))
+      self.assertTrue(self.handler.touched('name', ['name', 'summary']))
+      self.assertFalse(self.handler.touched('summary', ['name', 'summary']))
 
   def test_touched__checkboxes(self):
     """For now, any checkbox listed in form_fields is considered touched."""
@@ -162,12 +153,13 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
         'path', data={'form_fields': 'unlisted, api_spec',
                       'unlisted': 'yes',
                       'wpt': 'yes'}):
+      form_fields = ['unlisted', 'api_spec']
       # unlisted is in this form and the user checked the box.
-      self.assertTrue(self.handler.touched('unlisted'))
+      self.assertTrue(self.handler.touched('unlisted', form_fields))
       # api_spec is this form and the user did not check the box.
-      self.assertTrue(self.handler.touched('api_spec'))
+      self.assertTrue(self.handler.touched('api_spec', form_fields))
       # wpt is not part of this form, regardless if a value was given.
-      self.assertFalse(self.handler.touched('wpt'))
+      self.assertFalse(self.handler.touched('wpt', form_fields))
 
   def test_touched__selects(self):
     """For now, any select in the form data considered touched if not ''."""
@@ -176,11 +168,11 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
                       'category': '',
                       'feature_type': '4'}):
       # The user did not choose any value for category.
-      self.assertFalse(self.handler.touched('category'))
+      self.assertFalse(self.handler.touched('category', []))
       # The user did select a value, or one was already set.
-      self.assertTrue(self.handler.touched('feature_type'))
+      self.assertTrue(self.handler.touched('feature_type', []))
       # intent_state is a select, but it was not present in this POST.
-      self.assertFalse(self.handler.touched('select'))
+      self.assertFalse(self.handler.touched('select', []))
 
   def test_touched__multiselects(self):
     """For now, any multi-select listed in form_fields is considered touched."""
@@ -188,17 +180,17 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
     with test_app.test_request_context(
         'path', data={'form_fields': 'rollout_platforms',
                       'rollout_platforms': 'iOS'}):
-      self.assertTrue(self.handler.touched('rollout_platforms'))
+      self.assertTrue(self.handler.touched('rollout_platforms', ['rollout_platforms']))
 
     # Field in is this form and no value was selected
     with test_app.test_request_context(
         'path', data={'form_fields': 'rollout_platforms'}):
-      self.assertTrue(self.handler.touched('rollout_platforms'))
+      self.assertTrue(self.handler.touched('rollout_platforms', ['rollout_platforms']))
 
     # rollout_platforms is not part of this form
     with test_app.test_request_context(
         'path', data={'form_fields': 'other,fields'}):
-      self.assertFalse(self.handler.touched('rollout_platforms'))
+      self.assertFalse(self.handler.touched('rollout_platforms', ['other', 'fields']))
 
   def test_post__anon(self):
     """Anon cannot edit features, gets a 403."""
@@ -206,7 +198,7 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
     with test_app.test_request_context(self.request_path, method='POST'):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.process_post_data(
-            feature_id=self.feature_1.key.integer_id(), stage_id=self.stage_id)
+            feature_id=self.fe_1.key.integer_id(), stage_id=self.stage_id)
 
   def test_post__non_allowed(self):
     """Non-allowed cannot edit features, gets a 403."""
@@ -214,7 +206,7 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
     with test_app.test_request_context(self.request_path, method='POST'):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.process_post_data(
-            feature_id=self.feature_1.key.integer_id(), stage_id=self.stage_id)
+            feature_id=self.fe_1.key.integer_id(), stage_id=self.stage_id)
 
   def test_post__normal_valid_editall(self):
     """Allowed user can edit a feature."""
@@ -223,14 +215,22 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
     # Fields changed.
     form_fields = ('category, name, summary, shipped_milestone, '
         'intent_to_experiment_url, experiment_risks, experiment_reason, '
-        'origin_trial_feedback_url, intent_to_ship_url')
+        'origin_trial_feedback_url, intent_to_ship_url, announcement_url')
     # Expected stage change items.
     new_shipped_milestone = '84'
-    new_ready_for_trial_url = 'https://example.com/trial'
+    new_announcement_url = 'https://example.com/trial'
     new_intent_to_experiment_url = 'https://example.com/intent'
     new_experiment_risks = 'Some pretty risky business'
     new_origin_trial_feedback_url = 'https://example.com/ot_intent'
     new_intent_to_ship_url = 'https://example.com/shipping'
+
+    # Expected stage created
+    new_rollout_milestone = 50
+    new_rollout_details = 'Details'
+    new_rollout_impact = 3
+    new_second_rollout_milestone = 55
+    new_second_rollout_details = 'Details 1'
+    new_second_rollout_impact = 1
 
     with test_app.test_request_context(
         self.request_path, data={
@@ -240,38 +240,39 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
             'name': 'Revised feature name',
             'summary': 'Revised feature summary',
             'shipped_milestone__60': new_shipped_milestone,
-            'ready_for_trial_url__30': new_ready_for_trial_url,
+            'announcement_url__30': new_announcement_url,
             'intent_to_experiment_url__50': new_intent_to_experiment_url,
             'experiment_risks__50': new_experiment_risks,
             'origin_trial_feedback_url__50': new_origin_trial_feedback_url,
             'intent_to_ship_url__60': new_intent_to_ship_url,
+            'rollout_milestone__1__1061__create': new_rollout_milestone,
+            'rollout_details__1__1061__create': new_rollout_details,
+            'rollout_impact__1__1061__create': new_rollout_impact,
+            'rollout_milestone__2__1061__create': new_second_rollout_milestone,
+            'rollout_details__2__1061__create': new_second_rollout_details,
+            'rollout_impact__2__1061__create': new_second_rollout_impact,
             'feature_type': '1'
+            # TODO ad to creates
         }):
       actual_response = self.handler.process_post_data(
           feature_id=self.fe_1.key.integer_id())
 
     self.assertEqual('302 FOUND', actual_response.status)
     location = actual_response.headers['location']
-    self.assertEqual('/guide/edit/%d' % self.feature_1.key.integer_id(),
+    self.assertEqual('/guide/edit/%d' % self.fe_1.key.integer_id(),
                      location)
-    revised_feature = Feature.get_by_id(
-        self.feature_1.key.integer_id())
-    self.assertEqual(2, revised_feature.category)
-    self.assertEqual('Revised feature name', revised_feature.name)
-    self.assertEqual('Revised feature summary', revised_feature.summary)
-    self.assertEqual(84, revised_feature.shipped_milestone)
 
-    # Ensure changes were also made to FeatureEntry entity
+    # Ensure changes were made to FeatureEntry entity.
     revised_entry = FeatureEntry.get_by_id(
-        self.feature_1.key.integer_id())
+        self.fe_1.key.integer_id())
     self.assertEqual(2, revised_entry.category)
     self.assertEqual('Revised feature name', revised_entry.name)
     self.assertEqual('Revised feature summary', revised_entry.summary)
 
-    # Ensure changes were also made to Stage entities
+    # Ensure changes were made to Stage entities.
     stages = stage_helpers.get_feature_stages(
-        self.feature_1.key.integer_id())
-    self.assertEqual(len(stages.keys()), 6)
+        self.fe_1.key.integer_id())
+    self.assertEqual(len(stages.keys()), 7)
     dev_trial_stage = stages.get(130)
     origin_trial_stages = stages.get(150)
     # Stage for shipping should have been created.
@@ -280,7 +281,7 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
     self.assertIsNotNone(shipping_stages)
     # Check that correct stage fields were changed.
     self.assertEqual(dev_trial_stage[0].announcement_url,
-                     new_ready_for_trial_url)
+                     new_announcement_url)
     self.assertEqual(origin_trial_stages[0].experiment_risks,
         new_experiment_risks)
     self.assertEqual(origin_trial_stages[0].intent_thread_url,
@@ -291,6 +292,14 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
         int(new_shipped_milestone))
     self.assertEqual(shipping_stages[0].intent_thread_url,
         new_intent_to_ship_url)
+    # Check that rollout stages are created
+    rollout_stages = stages.get(1061)
+    self.assertEqual(rollout_stages[0].rollout_milestone, new_rollout_milestone)
+    self.assertEqual(rollout_stages[0].rollout_details, new_rollout_details)
+    self.assertEqual(rollout_stages[0].rollout_impact, new_rollout_impact)
+    self.assertEqual(rollout_stages[1].rollout_milestone, new_second_rollout_milestone)
+    self.assertEqual(rollout_stages[1].rollout_details, new_second_rollout_details)
+    self.assertEqual(rollout_stages[1].rollout_impact, new_second_rollout_impact)
 
   def test_post__normal_valid_single_stage(self):
     """Allowed user can edit a feature."""
@@ -321,23 +330,18 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
 
     self.assertEqual('302 FOUND', actual_response.status)
     location = actual_response.headers['location']
-    self.assertEqual('/guide/edit/%d' % self.feature_1.key.integer_id(),
+    self.assertEqual('/guide/edit/%d' % self.fe_1.key.integer_id(),
                      location)
-    revised_feature = Feature.get_by_id(
-        self.feature_1.key.integer_id())
-    self.assertEqual('Revised feature name', revised_feature.name)
-    self.assertEqual('Revised feature summary', revised_feature.summary)
-    self.assertEqual(84, revised_feature.ot_milestone_desktop_start)
 
-    # Ensure changes were also made to FeatureEntry entity
+    # Ensure changes were made to FeatureEntry entity.
     revised_entry = FeatureEntry.get_by_id(
-        self.feature_1.key.integer_id())
+        self.fe_1.key.integer_id())
     self.assertEqual('Revised feature name', revised_entry.name)
     self.assertEqual('Revised feature summary', revised_entry.summary)
 
-    # Ensure changes were also made to Stage entity
+    # Ensure changes were made to Stage entity.
     stages = stage_helpers.get_feature_stages(
-        self.feature_1.key.integer_id())
+        self.fe_1.key.integer_id())
     self.assertEqual(len(stages.keys()), 6)
     origin_trial_stages = stages.get(150)
     # Stage for shipping should have been created.

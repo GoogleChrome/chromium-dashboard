@@ -2,7 +2,7 @@ import {LitElement, css, html, nothing} from 'lit';
 import {showToastMessage, clamp} from './utils.js';
 import './chromedash-feature-filter';
 import './chromedash-feature-row';
-import {SHARED_STYLES} from '../sass/shared-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 
 
 class ChromedashFeatureTable extends LitElement {
@@ -20,7 +20,6 @@ class ChromedashFeatureTable extends LitElement {
       columns: {type: String},
       signedIn: {type: Boolean},
       canEdit: {type: Boolean},
-      canApprove: {type: Boolean},
       starredFeatures: {type: Object},
       noResultsMessage: {type: String},
       gates: {type: Object},
@@ -42,7 +41,6 @@ class ChromedashFeatureTable extends LitElement {
     this.alwaysOfferPagination = false;
     this.noResultsMessage = 'No results';
     this.canEdit = false;
-    this.canApprove = false;
     this.gates = {};
     this.selectedGateId = 0;
   }
@@ -238,7 +236,6 @@ class ChromedashFeatureTable extends LitElement {
          columns=${this.columns}
          ?signedIn=${this.signedIn}
          ?canEdit=${this.canEdit}
-         ?canApprove=${this.canApprove}
          .starredFeatures=${this.starredFeatures}
          .gates=${this.gates}
          selectedGateId=${this.selectedGateId}

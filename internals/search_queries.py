@@ -30,7 +30,7 @@ from internals.review_models import Gate
 
 def single_field_query_async(
     field_name: str, operator: str, val: Union[str, int, datetime.datetime],
-    limit: int = None) -> Union[list[int], Future]:
+    limit: int|None = None) -> Union[list[int], Future]:
   """Create a query for one FeatureEntry field and run it, returning a promise."""
   # Note: We don't exclude deleted features, that's done by process_query.
   field_name = field_name.lower()
@@ -62,6 +62,15 @@ def single_field_query_async(
     return []
 
   # TODO(jrobbins): Handle ":" operator as substrings for text fields.
+  # TODO(jrobbins): Implement quick-OR for integer fields, e.g., x=2,3,4.
+
+  try:
+    # If the field can be set to val, then it can be compared to val.
+    field._validate(val)
+  except ndb.exceptions.BadValueError:
+    logging.info('Wrong type of value for %r: %r' % (field, val))
+    raise ValueError('Query value does not match field type')
+
   if (operator == '='):
     val_list = str(val).split(',')
     if len(val_list) > 1:
@@ -216,6 +225,9 @@ QUERIABLE_FIELDS: dict[str, Property] = {
 
     'browsers.chrome.status': FeatureEntry.impl_status_chrome,
     'browsers.chrome.flag_name': FeatureEntry.flag_name,
+    'browsers.chrome.finch_name': FeatureEntry.finch_name,
+    'browsers.chrome.non_finch_justification':
+        FeatureEntry.non_finch_justification,
     'ongoing_constraints': FeatureEntry.ongoing_constraints,
 
     'motivation': FeatureEntry.motivation,
@@ -296,7 +308,7 @@ STAGE_QUERIABLE_FIELDS: dict[str, Property] = {
     'intent_to_extend_experiment_url': Stage.intent_thread_url,
     'intent_to_implement_url': Stage.intent_thread_url,
     'intent_to_ship_url': Stage.intent_thread_url,
-    'ready_for_trial_url': Stage.announcement_url,
+    'announcement_url': Stage.announcement_url,
 
     # Obsolete fields
     # 'i2e_lgtms': Feature.i2e_lgtms,
@@ -330,7 +342,7 @@ STAGE_TYPES_BY_QUERY_FIELD: dict[str, dict[int, Optional[int]]] = {
     'intent_to_extend_experiment_url': core_enums.STAGE_TYPES_EXTEND_ORIGIN_TRIAL,
     'intent_to_implement_url': core_enums.STAGE_TYPES_PROTOTYPE,
     'intent_to_ship_url': core_enums.STAGE_TYPES_SHIPPING,
-    'ready_for_trial_url': core_enums.STAGE_TYPES_PROTOTYPE,
+    'announcement_url': core_enums.STAGE_TYPES_PROTOTYPE,
   }
 
 

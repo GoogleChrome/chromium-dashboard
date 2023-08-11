@@ -69,6 +69,16 @@ limitations under the License.
         '', 0);
   </script>
 
+  
+  <script type="module" nonce="fake nonce">
+    const drawer = document.querySelector('chromedash-drawer');
+    const header = document.querySelector('chromedash-header');
+    header.addEventListener('drawer-clicked', (e) => {
+      e.preventDefault();
+      open = drawer.toggleDrawerActions();
+    });
+  </script>
+
   <script type="module" nonce="fake nonce" defer
           src="/static/dist/components.js?v=Undeployed"></script>
   
@@ -93,6 +103,12 @@ limitations under the License.
       <div id="content">
         <div id="spinner">
           <img src="/static/img/ring.svg">
+        </div>
+        <div>
+          <chromedash-drawer
+            currentPage="/admin/features/launch/5/234?intent"
+            googleSignInClientId="914217904764-enfcea61q4hqe7ak8kkuteglrbhk8el1.apps.googleusercontent.com">
+          </chromedash-drawer>
         </div>
         <chromedash-banner
           message=""
@@ -167,7 +183,7 @@ limitations under the License.
   
 
   <br><br><h4>Specification</h4>
-  
+  None
 
   
 
@@ -181,16 +197,16 @@ limitations under the License.
 
   
     <br><br><h4>Motivation</h4>
-    <p class="preformatted"></p>
+    <p class="preformatted">None</p>
 
     <br><br><h4>Initial public proposal</h4>
-    
+    None
   
 
   
 
   <br><br><h4>TAG review</h4>
-  
+  None
 
   
     <br><br><h4>TAG review status</h4>
@@ -198,11 +214,10 @@ limitations under the License.
   
 
   
-
   <br><br><h4>Risks</h4>
   <div style="margin-left: 4em;">
     <br><br><h4>Interoperability and Compatibility</h4>
-    <p class="preformatted"></p>
+    <p class="preformatted">None</p>
 
     <br><br><i>Gecko</i>: No signal
     
@@ -230,14 +245,14 @@ limitations under the License.
       Does this intent deprecate or change behavior of existing APIs,
       such that it has potentially high risk for Android WebView-based
       applications?</p>
-    <p class="preformatted"></p>
+    <p class="preformatted">None</p>
 
   </div> <!-- end risks -->
 
 
 
 <br><br><h4>Debuggability</h4>
-<p class="preformatted"></p>
+<p class="preformatted">None</p>
 
 
 
@@ -247,7 +262,19 @@ No
 
 
 
-<br><br><h4>Flag name</h4>
+<br><br><h4>Flag name on chrome://flags</h4>
+None
+
+<br><br><h4>Finch feature name</h4>
+None
+
+
+  
+    <br><br><h4>Non-finch justification</h4>
+    None
+  
+
+
 
 
 <br><br><h4>Requires code in //chrome?</h4>

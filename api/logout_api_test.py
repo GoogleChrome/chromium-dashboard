@@ -31,6 +31,12 @@ class LogoutAPITest(testing_config.CustomTestCase):
     self.handler = logout_api.LogoutAPI()
     self.request_path = '/api/v0/logout'
 
+  def test_get(self):
+    """We reject all GETs to this endpoint."""
+    with test_app.test_request_context(self.request_path):
+      with self.assertRaises(werkzeug.exceptions.MethodNotAllowed):
+        self.handler.do_get()
+
   def test_post__normal(self):
     """We log out the user whenever they request that."""
     params = {}

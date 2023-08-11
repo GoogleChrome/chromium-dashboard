@@ -31,6 +31,10 @@ class MockHandler(basehandlers.BaseHandler):
 
   def __init__(self):
     self.called_with = None
+    self.common_data = {}
+
+  def get_common_data(self):
+    return self.common_data
 
   @permissions.require_admin_site
   def do_get(self, *args):
@@ -47,7 +51,6 @@ test_app = basehandlers.FlaskApplication(
     __name__,
     [Route('/path', MockHandler),
      ],
-    [], # POST routes
     debug=True)
 
 
@@ -240,6 +243,18 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
         unregistered=False, registered=True,
         special=False, site_editor=False, admin=True, anon=False)
 
+  def test_can_view_enterprise_release_notes(self):
+    # Test non google or chromium user
+    testing_config.sign_in('user@example.com', 123)
+    self.assertEqual(False, permissions.is_google_or_chromium_account(users.get_current_user()))
+
+    # Test google user
+    testing_config.sign_in('user@google.com', 123)
+    self.assertEqual(True, permissions.is_google_or_chromium_account(users.get_current_user()))
+
+    # Test chromium user
+    testing_config.sign_in('user@chromium.org', 123)
+    self.assertEqual(True, permissions.is_google_or_chromium_account(users.get_current_user()))
 
 class RequireAdminSiteTests(testing_config.CustomTestCase):
 

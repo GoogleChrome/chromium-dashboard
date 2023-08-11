@@ -18,7 +18,6 @@ from google.cloud import ndb  # type: ignore
 
 from framework.basehandlers import APIHandler
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
-from internals.legacy_models import  Approval, Comment, Feature
 from internals.review_models import Activity, Gate, Vote
 from internals.core_enums import *
 import settings
@@ -32,8 +31,8 @@ class ClearEntities(APIHandler):
       self.abort(status=403,
           msg="This can only be used in a development environment.")
     
-    kinds: list[ndb.Model] = [Feature, FeatureEntry, MilestoneSet,
-        Stage, Activity, Approval, Comment, Gate, Vote]
+    kinds: list[ndb.Model] = [FeatureEntry, MilestoneSet,
+        Stage, Activity, Gate, Vote]
     
     for kind in kinds:
       for entity in kind.query():
@@ -74,13 +73,8 @@ class WriteDevData(APIHandler):
 
         fe = FeatureEntry(id=f_id, created=created, updated=updated,
             accurate_as_of=accurate_as_of)
-        # Also write the old Feature entity.
-        feature = Feature(id=f_id, created=created, updated=updated,
-            accurate_as_of=accurate_as_of)
         for field, value in d.items():
           setattr(fe, field, value)
-          setattr(feature, self.RENAMED_FIELD_MAPPING.get(field, field), value)
-        feature.put()
         fe.put()
       features_created = len(info['feature_entries'])
 

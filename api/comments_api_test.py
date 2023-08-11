@@ -22,7 +22,6 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 
 from api import comments_api
 from internals.core_models import FeatureEntry
-from internals.legacy_models import Approval
 from internals.review_models import Activity, Amendment, Gate, Vote
 
 test_app = flask.Flask(__name__)
@@ -107,8 +106,6 @@ class CommentsAPITest(testing_config.CustomTestCase):
 
   def tearDown(self):
     self.feature_1.key.delete()
-    for appr in Approval.query():
-      appr.key.delete()
     for activity in Activity.query():
       activity.key.delete()
 
@@ -254,8 +251,9 @@ class CommentsAPITest(testing_config.CustomTestCase):
     self.assertIsNotNone(activity)
     self.assertIsNone(activity.deleted_by)
 
+  @mock.patch('internals.notifier_helpers.notify_subscribers_of_new_comments')
   @mock.patch('internals.approval_defs.get_approvers')
-  def test_post__comment_only(self, mock_get_approvers):
+  def test_post__comment_only(self, mock_get_approvers, mock_notifier):
     """Handler adds a comment only, does not require approval permission."""
     mock_get_approvers.return_value = []
     testing_config.sign_in('user2@chromium.org', 123567890)

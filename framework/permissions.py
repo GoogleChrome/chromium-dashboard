@@ -35,6 +35,12 @@ def can_admin_site(user: User) -> bool:
 
   return False
 
+def is_google_or_chromium_account(user: User) -> bool:
+  """Return True if the current uses a @chromium.org or @google.com email."""
+  # A user is an admin if they have an AppUser entity that has is_admin set.
+  if user:
+    return user.email().endswith(('@chromium.org', '@google.com'))
+  return False
 
 def can_view_feature(unused_user, unused_feature) -> bool:
   """Return True if the user is allowed to view the given feature."""
@@ -131,6 +137,13 @@ def can_approve_feature(user: User, feature: FeatureEntry, approvers) -> bool:
   return is_approver
 
 
+def _maybe_redirect_to_login(handler_obj):
+  common_data = handler_obj.get_common_data()
+  if 'current_path' in common_data and 'loginStatus=False' in common_data['current_path']:
+    return {}
+  return handler_obj.redirect(settings.LOGIN_PAGE_URL)
+    
+
 def _reject_or_proceed(
     handler_obj, handler_method, handler_args, handler_kwargs,
     perm_function):
@@ -140,7 +153,7 @@ def _reject_or_proceed(
 
   # Give the user a chance to sign in
   if not user and req.method == 'GET':
-    return handler_obj.redirect(settings.LOGIN_PAGE_URL)
+    return _maybe_redirect_to_login(handler_obj)
 
   if not perm_function(user):
     handler_obj.abort(403)
@@ -183,7 +196,7 @@ def validate_feature_create_permission(handler_obj):
 
   # Give the user a chance to sign in
   if not user and req.method == 'GET':
-    return handler_obj.redirect(settings.LOGIN_PAGE_URL)
+    return _maybe_redirect_to_login(handler_obj)
 
   # Redirect to 403 if user does not have create permission for feature.
   if not can_create_feature(user):
@@ -197,7 +210,7 @@ def validate_feature_edit_permission(handler_obj, feature_id: int):
 
   # Give the user a chance to sign in
   if not user and req.method == 'GET':
-    return handler_obj.redirect(settings.LOGIN_PAGE_URL)
+    return _maybe_redirect_to_login(handler_obj)
 
   # Redirect to 404 if feature is not found.
   # Load feature directly from NDB so as to never get a stale cached copy.

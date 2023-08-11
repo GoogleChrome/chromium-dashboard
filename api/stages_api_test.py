@@ -16,6 +16,7 @@
 import testing_config  # Must be imported before the module under test.
 
 import flask
+from datetime import datetime
 from unittest import mock
 from google.cloud import ndb  # type: ignore
 import werkzeug.exceptions
@@ -30,6 +31,7 @@ test_app = flask.Flask(__name__)
 class StagesAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
+    self.now = datetime.now()
     self.feature_owner = AppUser(email='feature_owner@example.com')
     self.feature_owner.put()
 
@@ -45,24 +47,35 @@ class StagesAPITest(testing_config.CustomTestCase):
         ux_emails=['ux_person@example.com'],
         intent_thread_url='https://example.com/intent',
         milestones=MilestoneSet(desktop_first=100),
-        experiment_goals='To be the very best.')
+        experiment_goals='To be the very best.',
+        created=self.now)
     self.stage_1.put()
     # Shipping stage.
-    self.stage_2 = Stage(id=11, feature_id=1, stage_type=160)
+    self.stage_2 = Stage(id=11, feature_id=1, stage_type=160, created=self.now)
     self.stage_2.put()
 
     self.stage_3 = Stage(id=30, feature_id=99, stage_type=150, browser='Chrome',
         ux_emails=['ux_person@example.com'],
         intent_thread_url='https://example.com/intent',
         milestones=MilestoneSet(desktop_first=100),
-        experiment_goals='To be the very best.')
+        experiment_goals='To be the very best.',
+        created=self.now)
     self.stage_3.put()
 
-    self.stage_4 = Stage(id=40, feature_id=1, stage_type=150, browser='Chrome',
+    self.stage_4 = Stage(
+        id=40, feature_id=1, stage_type=150, browser='Chrome',
+        origin_trial_id='-5269211564023480319',
         ux_emails=['ux_person@example.com'],
         intent_thread_url='https://example.com/intent',
+        ot_chromium_trial_name='ExampleChromiumTrialName',
+        ot_documentation_url='https://example.com/ot_docs',
+        ot_has_third_party_support=True,
+        ot_is_deprecation_trial=True,
+        ot_is_critical_trial=True,
+        ot_webfeature_use_counter='kExampleUseCounter',
         milestones=MilestoneSet(desktop_first=100),
-        experiment_goals='To be the very best.')
+        experiment_goals='To be the very best.',
+        created=self.now)
     self.stage_4.put()
 
     self.stage_5 = Stage(id=50, feature_id=1, stage_type=150, browser='Chrome',
@@ -70,35 +83,50 @@ class StagesAPITest(testing_config.CustomTestCase):
         ux_emails=['ux_person@example.com'],
         intent_thread_url='https://example.com/intent',
         milestones=MilestoneSet(desktop_first=100),
-        experiment_goals='To be the very best.')
+        experiment_goals='To be the very best.',
+        created=self.now)
     self.stage_5.put()
 
     self.expected_stage_1 = {
-        'id': 10,
-        'feature_id': 1,
-        'stage_type': 150,
-        'intent_stage': 3,
-        'pm_emails': [],
-        'tl_emails': [],
-        'ux_emails': ['ux_person@example.com'],
-        'te_emails': [],
-        'intent_thread_url': 'https://example.com/intent',
-        'intent_to_experiment_url': 'https://example.com/intent',
-        'desktop_first': 100,
-        'desktop_last': None,
         'android_first': None,
         'android_last': None,
-        'webview_first': None,
-        'webview_last': None,
+        'announcement_url': None,
+        'created': str(self.now),
+        'desktop_first': 100,
+        'desktop_last': None,
+        'display_name': None,
+        'enterprise_policies': [],
+        'origin_trial_id': None,
+        'origin_trial_feedback_url': None,
+        'ot_chromium_trial_name': None,
+        'ot_documentation_url': None,
+        'ot_has_third_party_support': False,
+        'ot_is_critical_trial': False,
+        'ot_is_deprecation_trial': False,
+        'ot_webfeature_use_counter': None,
+        'experiment_extension_reason': None,
         'experiment_goals': 'To be the very best.',
         'experiment_risks': None,
-        'ot_milestone_android_end': None,
-        'ot_milestone_android_start': None,
-        'ot_milestone_desktop_end': None,
-        'ot_milestone_desktop_start': 100,
-        'ot_milestone_webview_end': None,
-        'ot_milestone_webview_start': None,
-        'origin_trial_feedback_url': None}
+        'extensions': [],
+        'feature_id': 1,
+        'finch_url': None,
+        'id': 10,
+        'intent_stage': 3,
+        'intent_thread_url': 'https://example.com/intent',
+        'ios_first': None,
+        'ios_last': None,
+        'ot_stage_id': None,
+        'pm_emails': [],
+        'rollout_details': None,
+        'rollout_impact': 2,
+        'rollout_milestone': None,
+        'rollout_platforms': [],
+        'stage_type': 150,
+        'te_emails': [],
+        'tl_emails': [],
+        'ux_emails': ['ux_person@example.com'],
+        'webview_first': None,
+        'webview_last': None}
 
     self.handler = stages_api.StagesAPI()
     self.request_path = '/api/v0/features/'
@@ -141,6 +169,7 @@ class StagesAPITest(testing_config.CustomTestCase):
     """Returns stage data with extension if requesting a valid stage ID."""
     extension = {
         'id': 50,
+        'created': str(self.now),
         'feature_id': 1,
         'stage_type': 150,
         'intent_stage': 3,
@@ -149,8 +178,8 @@ class StagesAPITest(testing_config.CustomTestCase):
         'ux_emails': ['ux_person@example.com'],
         'te_emails': [],
         'intent_thread_url': 'https://example.com/intent',
-        'intent_to_experiment_url': 'https://example.com/intent',
         'desktop_first': 100,
+        'display_name': None,
         'desktop_last': None,
         'android_first': None,
         'android_last': None,
@@ -158,16 +187,31 @@ class StagesAPITest(testing_config.CustomTestCase):
         'webview_last': None,
         'experiment_goals': 'To be the very best.',
         'experiment_risks': None,
-        'ot_milestone_android_end': None,
-        'ot_milestone_android_start': None,
-        'ot_milestone_desktop_end': None,
-        'ot_milestone_desktop_start': 100,
-        'ot_milestone_webview_end': None,
-        'ot_milestone_webview_start': None,
-        'origin_trial_feedback_url': None}
+        'origin_trial_feedback_url': None,
+        'ot_chromium_trial_name': None,
+        'ot_documentation_url': None,
+        'ot_has_third_party_support': False,
+        'ot_is_critical_trial': False,
+        'ot_is_deprecation_trial': False,
+        'ot_webfeature_use_counter': None,
+        'announcement_url': None,
+        'enterprise_policies': [],
+        'experiment_extension_reason': None,
+        'extensions': [],
+        'finch_url': None,
+        'ios_first': None,
+        'ios_last': None,
+        'origin_trial_id': None,
+        'ot_stage_id': 40,
+        'rollout_details': None,
+        'rollout_impact': 2,
+        'rollout_milestone': None,
+        'rollout_platforms': [],
+}
 
     expect = {
         'id': 40,
+        'created': str(self.now),
         'feature_id': 1,
         'stage_type': 150,
         'intent_stage': 3,
@@ -176,9 +220,8 @@ class StagesAPITest(testing_config.CustomTestCase):
         'ux_emails': ['ux_person@example.com'],
         'te_emails': [],
         'intent_thread_url': 'https://example.com/intent',
-        'intent_to_experiment_url': 'https://example.com/intent',
-        'intent_to_extend_experiment_url': 'https://example.com/intent',
         'desktop_first': 100,
+        'display_name': None,
         'desktop_last': None,
         'android_first': None,
         'android_last': None,
@@ -188,13 +231,25 @@ class StagesAPITest(testing_config.CustomTestCase):
         'experiment_goals': 'To be the very best.',
         'experiment_risks': None,
         'extensions': [extension],
-        'ot_milestone_android_end': None,
-        'ot_milestone_android_start': None,
-        'ot_milestone_desktop_end': None,
-        'ot_milestone_desktop_start': 100,
-        'ot_milestone_webview_end': None,
-        'ot_milestone_webview_start': None,
-        'origin_trial_feedback_url': None}
+        'announcement_url': None,
+        'enterprise_policies': [],
+        'origin_trial_id': '-5269211564023480319',
+        'origin_trial_feedback_url': None,
+        'ot_chromium_trial_name': 'ExampleChromiumTrialName',
+        'ot_documentation_url': 'https://example.com/ot_docs',
+        'ot_has_third_party_support': True,
+        'ot_is_critical_trial': True,
+        'ot_is_deprecation_trial': True,
+        'ot_webfeature_use_counter': 'kExampleUseCounter',
+        'rollout_details': None,
+        'rollout_impact': 2,
+        'rollout_milestone': None,
+        'rollout_platforms': [],
+        'ot_stage_id': None,
+        'ios_first': None,
+        'ios_last': None,
+        'finch_url': None,
+}
 
     with test_app.test_request_context(f'{self.request_path}1/stages/10'):
       actual = self.handler.do_get(feature_id=1, stage_id=40)

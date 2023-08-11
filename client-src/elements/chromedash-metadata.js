@@ -1,6 +1,6 @@
 import {LitElement, css, html} from 'lit';
 import {ifDefined} from 'lit/directives/if-defined.js';
-import {SHARED_STYLES} from '../sass/shared-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 
 class ChromedashMetadata extends LitElement {
   static get properties() {

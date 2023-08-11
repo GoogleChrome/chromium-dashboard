@@ -14,18 +14,12 @@
 
 import base64
 import datetime
-import requests
 import testing_config  # Must be imported before the module under test.
-import unittest
-import urllib.request, urllib.parse, urllib.error
 
 from unittest import mock
-import flask
-import werkzeug
 
 from internals import approval_defs
-from internals.legacy_models import Approval
-from internals.review_models import Gate, Vote
+from internals.review_models import Gate, GateDef, Vote
 
 
 class FetchOwnersTest(testing_config.CustomTestCase):
@@ -79,10 +73,18 @@ MOCK_APPROVALS_BY_ID = {
         'Intent to optimize',
         'You need permission to optimize',
         2, approval_defs.THREE_LGTM, 'https://example.com', 'API Owners'),
+    3: approval_defs.ApprovalFieldDef(
+        'Intent to memorize',
+        'You need permission to memorize',
+        3, approval_defs.THREE_LGTM, approval_defs.IN_NDB, 'API Owners'),
 }
 
 
 class GetApproversTest(testing_config.CustomTestCase):
+
+  def tearDown(self):
+    for gate_def in GateDef.query():
+      gate_def.key.delete()
 
   @mock.patch('internals.approval_defs.APPROVAL_FIELDS_BY_ID',
               MOCK_APPROVALS_BY_ID)
@@ -103,6 +105,34 @@ class GetApproversTest(testing_config.CustomTestCase):
     mock_fetch_owner.assert_called_once_with('https://example.com')
     self.assertEqual(actual, ['owner@example.com'])
 
+  @mock.patch('internals.approval_defs.APPROVAL_FIELDS_BY_ID',
+              MOCK_APPROVALS_BY_ID)
+  @mock.patch('internals.approval_defs.fetch_owners')
+  def test__ndb_new(self, mock_fetch_owner):
+    """Some approvals will have approvers in NDB, but they are not found."""
+    actual = approval_defs.get_approvers(3)
+    mock_fetch_owner.assert_not_called()
+    self.assertEqual(actual, [])
+    updated_gate_defs = GateDef.query().fetch()
+    self.assertEqual(1, len(updated_gate_defs))
+    self.assertEqual(3, updated_gate_defs[0].gate_type)
+    self.assertEqual([], updated_gate_defs[0].approvers)
+
+  @mock.patch('internals.approval_defs.APPROVAL_FIELDS_BY_ID',
+              MOCK_APPROVALS_BY_ID)
+  @mock.patch('internals.approval_defs.fetch_owners')
+  def test__ndb_existing(self, mock_fetch_owner):
+    """Some approvals will have approvers in NDB, use it if found."""
+    gate_def_3 = GateDef(gate_type=3, approvers=['a', 'b'])
+    gate_def_3.put()
+    actual = approval_defs.get_approvers(3)
+    mock_fetch_owner.assert_not_called()
+    self.assertEqual(actual, ['a', 'b'])
+    existing_gate_defs = GateDef.query().fetch()
+    self.assertEqual(1, len(existing_gate_defs))
+    self.assertEqual(3, existing_gate_defs[0].gate_type)
+    self.assertEqual(['a', 'b'], existing_gate_defs[0].approvers)
+
 
 class IsValidFieldIdTest(testing_config.CustomTestCase):
 
@@ -112,31 +142,31 @@ class IsValidFieldIdTest(testing_config.CustomTestCase):
     """We know if a field_id is defined or not."""
     self.assertTrue(approval_defs.is_valid_field_id(1))
     self.assertTrue(approval_defs.is_valid_field_id(2))
-    self.assertFalse(approval_defs.is_valid_field_id(3))
+    self.assertFalse(approval_defs.is_valid_field_id(99))
 
 
 class IsApprovedTest(testing_config.CustomTestCase):
 
   def setUp(self):
     feature_1_id = 123456
-    self.appr_nr = Approval(
-        feature_id=feature_1_id, field_id=1,
-        state=Approval.REVIEW_REQUESTED,
+    self.appr_nr = Vote(
+        feature_id=feature_1_id, gate_type=1,
+        state=Vote.REVIEW_REQUESTED,
         set_on=datetime.datetime.now(),
         set_by='one@example.com')
-    self.appr_na = Approval(
-        feature_id=feature_1_id, field_id=1,
-        state=Approval.NA,
+    self.appr_na = Vote(
+        feature_id=feature_1_id, gate_type=1,
+        state=Vote.NA,
         set_on=datetime.datetime.now(),
         set_by='one@example.com')
-    self.appr_no = Approval(
-        feature_id=feature_1_id, field_id=1,
-        state=Approval.DENIED,
+    self.appr_no = Vote(
+        feature_id=feature_1_id, gate_type=1,
+        state=Vote.DENIED,
         set_on=datetime.datetime.now(),
         set_by='two@example.com')
-    self.appr_yes = Approval(
-        feature_id=feature_1_id, field_id=1,
-        state=Approval.APPROVED,
+    self.appr_yes = Vote(
+        feature_id=feature_1_id, gate_type=1,
+        state=Vote.APPROVED,
         set_on=datetime.datetime.now(),
         set_by='three@example.com')
 
@@ -216,6 +246,7 @@ DN = Vote.DENIED
 NW = Vote.NEEDS_WORK
 RS = Vote.REVIEW_STARTED
 NA = Vote.NA
+IR = Vote.INTERNAL_REVIEW
 GATE_VALUES= Vote.VOTE_VALUES.copy()
 GATE_VALUES.update({Gate.PREPARING: 'preparing'})
 
@@ -259,6 +290,15 @@ class CalcGateStateTest(testing_config.CustomTestCase):
     self.assertEqual(('needs_work', 'needs_work'),
                      self.do_calc(RR, NW, NW))
 
+  def test_request_internal_review(self):
+    """Owner requested a review and a reviewer opts for internal review."""
+    self.assertEqual(('internal_review', 'internal_review'),
+                     self.do_calc(RR, IR))
+    self.assertEqual(('internal_review', 'internal_review'),
+                     self.do_calc(RR, RS, IR))
+    self.assertEqual(('internal_review', 'internal_review'),
+                     self.do_calc(RR, NW, IR))
+
   def test_request_disagreement(self):
     """Reviewers may have different opinions, needed LGTMs counted."""
     self.assertEqual(('approved', 'needs_work'),
@@ -300,7 +340,8 @@ class CalcGateStateTest(testing_config.CustomTestCase):
 class UpdateTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.gate_1 = Gate(feature_id=1, stage_id=1, gate_type=2, state=Vote.APPROVED)
+    self.gate_1 = Gate(
+        id=1001, feature_id=1, stage_id=1, gate_type=2, state=Gate.PREPARING)
     self.gate_1.put()
     gate_id = self.gate_1.key.integer_id()
     self.votes = []
@@ -320,8 +361,8 @@ class UpdateTest(testing_config.CustomTestCase):
         state=Vote.REVIEW_REQUESTED, set_on=datetime.datetime(2020, 1, 2),
         set_by='user5@example.com'))
 
-    self.gate_2 = Gate(feature_id=2, stage_id=2, gate_type=2,
-        state=Vote.APPROVED)
+    self.gate_2 = Gate(
+        id=1002, feature_id=2, stage_id=2, gate_type=2, state=Vote.APPROVED)
     self.gate_2.put()
     gate_id = self.gate_2.key.integer_id()
     self.votes.append(Vote(feature_id=1, gate_id=gate_id,
@@ -363,14 +404,25 @@ class UpdateTest(testing_config.CustomTestCase):
 
   def test_update_approval_stage__needs_update(self):
     """Gate's approval state will be updated based on votes."""
-    # Gate 1 should evaluate to not approved after updating.
-    self.assertEqual(
-        approval_defs.update_gate_approval_state(self.gate_1), Vote.APPROVED)
+    # Gate 1 should evaluate to approved after updating.
+    votes = Vote.get_votes(gate_id=self.gate_1.key.integer_id())
+    self.assertTrue(
+        approval_defs.update_gate_approval_state(self.gate_1, votes))
     self.assertEqual(self.gate_1.state, Vote.APPROVED)
 
   def test_update_approval_state__no_change(self):
     """Gate's approval state does not change unless it needs to."""
     # Gate 2 is already marked as approved and should not change.
-    self.assertEqual(
-        approval_defs.update_gate_approval_state(self.gate_2), Vote.APPROVED)
+    votes = Vote.get_votes(gate_id=self.gate_2.key.integer_id())
+    self.assertFalse(
+        approval_defs.update_gate_approval_state(self.gate_2, votes))
     self.assertEqual(self.gate_2.state, Vote.APPROVED)
+
+  def test_update_approval_state__unsupported_gate_type(self):
+    """If we don't recognize the gate type, assume rule ONE_LGTM."""
+    self.gate_1.gate_type = 999
+    # Gate 1 should evaluate to approved after updating.
+    votes = Vote.get_votes(gate_id=self.gate_1.key.integer_id())
+    self.assertTrue(
+        approval_defs.update_gate_approval_state(self.gate_1, votes))
+    self.assertEqual(self.gate_1.state, Vote.APPROVED)

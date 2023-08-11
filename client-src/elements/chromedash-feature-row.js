@@ -1,9 +1,10 @@
 import {LitElement, css, html, nothing} from 'lit';
-import {SHARED_STYLES} from '../sass/shared-css.js';
-import {STAGE_SHORT_NAMES} from './form-definition.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 import {
   GATE_TEAM_ORDER,
+  STAGE_SHORT_NAMES,
 } from './form-field-enums';
+import {ACTIVE_REVIEW_STATES} from './chromedash-gate-column';
 
 
 class ChromedashFeatureRow extends LitElement {
@@ -13,7 +14,6 @@ class ChromedashFeatureRow extends LitElement {
       columns: {type: String},
       signedIn: {type: Boolean},
       canEdit: {type: Boolean},
-      canApprove: {type: Boolean},
       starredFeatures: {type: Object},
       approvals: {type: Object},
       gates: {type: Object},
@@ -26,7 +26,6 @@ class ChromedashFeatureRow extends LitElement {
     this.starredFeatures = new Set();
     this.feature = null;
     this.canEdit = false;
-    this.canApprove = false;
     this.approvals = {};
     this.gates = {};
     this.selectedGateId = 0;
@@ -149,7 +148,7 @@ class ChromedashFeatureRow extends LitElement {
   }
 
   isActiveGate(gate) {
-    return gate.state == 2 || gate.state == 3 || gate.state == 4;
+    return ACTIVE_REVIEW_STATES.includes(gate.state);
   }
 
   getActiveStages(feature) {

@@ -14,7 +14,7 @@ For a one-click setup that leverages devcontainers, check out the devcontainer
 
 ### Installation
 1. Install gcloud and needed components:
-    1.  Before you begin, make sure that you have a java JRE (version 8 or greater) installed. JRE is required to use the DataStore Emulator.
+    1.  Before you begin, make sure that you have a java JRE (version 8 or greater) installed. JRE is required to use the DataStore Emulator and [openapi-generator-cli](https://github.com/OpenAPITools/openapi-generator-cli).
     1. [Google App Engine SDK for Python](https://cloud.google.com/appengine/docs/standard/python3/setting-up-environment). Make sure to select Python 3.
     1. `gcloud init`
     1. `gcloud components install cloud-datastore-emulator`
@@ -64,6 +64,14 @@ This will start a local datastore emulator, run unit tests, and then shut down t
 
 There are some developing information in developer-documentation.md.
 
+### Origin Trials
+To test the functionality of this application locally that interacts with data from the Origin Trials API, an API key will need to be acquired. To do this, run the following command:
+
+```bash
+npm run dev-ot-key
+```
+
+Note: *Only developers with access to the cr-status-staging GCP project will be able to successfully run this command. If you need to test this and you don't have access, open an issue.*
 
 **Notes**
 

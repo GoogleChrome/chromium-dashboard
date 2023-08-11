@@ -1,9 +1,5 @@
 import {html} from 'lit';
-import {
-  FEATURE_TYPES,
-  IMPLEMENTATION_STATUS,
-  GATE_TYPES,
-} from './form-field-enums';
+import * as enums from './form-field-enums';
 
 
 const COMMA_SEPARATED_FIELDS = [
@@ -21,6 +17,7 @@ const LINE_SEPARATED_FIELDS = [
   'explainer_links',
   'doc_links',
   'sample_links',
+  'screenshot_links',
 ];
 
 /* Convert the format of feature object fetched from API into those for edit.
@@ -47,7 +44,7 @@ export function formatFeatureForEdit(feature) {
 
     tag_review_status: feature.tag_review_status_int,
     security_review_status: feature.security_review_status_int,
-    privacy_review_status: feature.security_review_status_int,
+    privacy_review_status: feature.privacy_review_status_int,
 
     // from feature.resources
     sample_links: feature.resources.samples,
@@ -84,9 +81,6 @@ export function formatFeatureForEdit(feature) {
 
     // from feature.browsers.other
     other_views_notes: feature.browsers.other.view.notes,
-
-    rollout_platforms: Array.from(new Set((feature.rollout_platforms || [])
-      .map(x => parseInt(x).toString()))),
   };
 
   COMMA_SEPARATED_FIELDS.map((field) => {
@@ -127,32 +121,8 @@ export const ENTERPRISE_NEW_FEATURE_FORM_FIELDS = [
   'summary',
   'owner',
   'editors',
-  'launch_bug_url',
   'enterprise_feature_categories',
-  'breaking_change',
-];
-
-// The fields shown to the user when verifying the accuracy of a feature.
-export const VERIFY_ACCURACY_FORM_FIELDS = [
-  'summary',
-  'owner',
-  'editors',
-  'cc_recipients',
-  'impl_status_chrome',
-  'dt_milestone_android_start',
-  'dt_milestone_desktop_start',
-  'dt_milestone_ios_start',
-  'ot_milestone_android_start',
-  'ot_milestone_android_end',
-  'ot_milestone_desktop_start',
-  'ot_milestone_desktop_end',
-  'ot_milestone_webview_start',
-  'ot_milestone_webview_end',
-  'shipped_android_milestone',
-  'shipped_ios_milestone',
-  'shipped_milestone',
-  'shipped_webview_milestone',
-  'accurate_as_of',
+  'screenshot_links',
 ];
 
 // The fields that are available to every feature.
@@ -204,16 +174,8 @@ export const FLAT_ENTERPRISE_METADATA_FIELDS = {
         'owner',
         'editors',
         'enterprise_feature_categories',
-        'breaking_change',
+        'screenshot_links',
       ],
-    },
-    // Implementation
-    {
-      name: 'Implementation in Chromium',
-      fields: [
-        'launch_bug_url',
-      ],
-      isImplementationSection: true,
     },
   ],
 };
@@ -300,13 +262,15 @@ const FLAT_DEV_TRIAL_FIELDS = {
       name: 'Implementation in Chromium',
       fields: [
         'flag_name',
+        'finch_name',
+        'non_finch_justification',
         'dt_milestone_desktop_start',
         'dt_milestone_android_start',
         'dt_milestone_ios_start',
-        'ready_for_trial_url',
+        'announcement_url',
       ],
       isImplementationSection: true,
-      implStatusValue: IMPLEMENTATION_STATUS.BEHIND_A_FLAG[0],
+      implStatusValue: enums.IMPLEMENTATION_STATUS.BEHIND_A_FLAG[0],
     },
   ],
 };
@@ -321,13 +285,20 @@ const FLAT_ORIGIN_TRIAL_FIELDS = {
     {
       name: 'Origin trial',
       fields: [
+        'display_name',
         'experiment_goals',
         'experiment_risks',
         'ongoing_constraints',
         // TODO(jrobbins): display r4dt_url instead when deprecating.
         'i2e_lgtms',
         'intent_to_experiment_url',
+        'ot_chromium_trial_name',
+        'ot_webfeature_use_counter',
+        'ot_documentation_url',
         'origin_trial_feedback_url',
+        'ot_is_deprecation_trial',
+        'ot_has_third_party_support',
+        'ot_is_critical_trial',
       ],
     },
     // Implementation
@@ -343,7 +314,7 @@ const FLAT_ORIGIN_TRIAL_FIELDS = {
         'experiment_timeline', // deprecated
       ],
       isImplementationSection: true,
-      implStatusValue: IMPLEMENTATION_STATUS.ORIGIN_TRIAL[0],
+      implStatusValue: enums.IMPLEMENTATION_STATUS.ORIGIN_TRIAL[0],
     },
   ],
 };
@@ -384,6 +355,7 @@ const FLAT_PREPARE_TO_SHIP_FIELDS = {
     {
       name: 'Prepare to ship',
       fields: [
+        'display_name',
         // Standardization
         'tag_review_status',
         'webview_risks',
@@ -411,18 +383,19 @@ const FLAT_PREPARE_TO_SHIP_FIELDS = {
         'shipped_webview_milestone',
       ],
       isImplementationSection: true,
-      implStatusValue: IMPLEMENTATION_STATUS.ENABLED_BY_DEFAULT[0],
+      implStatusValue: enums.IMPLEMENTATION_STATUS.ENABLED_BY_DEFAULT[0],
     },
   ],
 };
 
 // All fields relevant to the enterprise prepare to ship stage.
 export const FLAT_ENTERPRISE_PREPARE_TO_SHIP_FIELDS = {
-  name: 'Start feature rollout',
+  name: 'Rollout step',
   sections: [
     {
-      name: 'Start feature rollout',
+      name: 'Rollout step',
       fields: [
+        'rollout_impact',
         'rollout_milestone',
         'rollout_platforms',
         'rollout_details',
@@ -472,7 +445,7 @@ const PSA_PREPARE_TO_SHIP_FIELDS = {
         'shipped_webview_milestone',
       ],
       isImplementationSection: true,
-      implStatusValue: IMPLEMENTATION_STATUS.ENABLED_BY_DEFAULT[0],
+      implStatusValue: enums.IMPLEMENTATION_STATUS.ENABLED_BY_DEFAULT[0],
     },
   ],
 };
@@ -528,13 +501,15 @@ const DEPRECATION_DEV_TRIAL_FIELDS = {
       name: 'Implementation in Chromium',
       fields: [
         'flag_name',
+        'finch_name',
+        'non_finch_justification',
         'dt_milestone_desktop_start',
         'dt_milestone_android_start',
         'dt_milestone_ios_start',
-        'ready_for_trial_url',
+        'announcement_url',
       ],
       isImplementationSection: true,
-      implStatusValue: IMPLEMENTATION_STATUS.BEHIND_A_FLAG[0],
+      implStatusValue: enums.IMPLEMENTATION_STATUS.BEHIND_A_FLAG[0],
     },
   ],
 };
@@ -546,12 +521,19 @@ const DEPRECATION_ORIGIN_TRIAL_FIELDS = {
     {
       name: 'Origin trial',
       fields: [
+        'display_name',
         'experiment_goals',
         'experiment_risks',
         'ongoing_constraints',
         'r4dt_url', // map to name="intent_to_experiment_url" field upon form submission
         'r4dt_lgtms', // map to name="i2e_lgtms" field upon form submission
+        'ot_chromium_trial_name',
+        'ot_webfeature_use_counter',
+        'ot_documentation_url',
         'origin_trial_feedback_url',
+        'ot_is_deprecation_trial',
+        'ot_has_third_party_support',
+        'ot_is_critical_trial',
       ],
     },
     // Implementation
@@ -567,7 +549,7 @@ const DEPRECATION_ORIGIN_TRIAL_FIELDS = {
         'experiment_timeline', // deprecated
       ],
       isImplementationSection: true,
-      implStatusValue: IMPLEMENTATION_STATUS.ORIGIN_TRIAL[0],
+      implStatusValue: enums.IMPLEMENTATION_STATUS.ORIGIN_TRIAL[0],
     },
   ],
 };
@@ -580,6 +562,7 @@ const DEPRECATION_PREPARE_TO_SHIP_FIELDS = {
     {
       name: 'Prepare to ship',
       fields: [
+        'display_name',
         'intent_to_ship_url',
         'i2s_lgtms',
       ],
@@ -594,140 +577,175 @@ const DEPRECATION_PREPARE_TO_SHIP_FIELDS = {
         'shipped_webview_milestone',
       ],
       isImplementationSection: true,
-      implStatusValue: IMPLEMENTATION_STATUS.ENABLED_BY_DEFAULT[0],
+      implStatusValue: enums.IMPLEMENTATION_STATUS.ENABLED_BY_DEFAULT[0],
     },
   ],
 };
 
+// ****************************
+// ** Verify Accuracy fields **
+// ****************************
+// The fields shown to the user when verifying the accuracy of a feature.
+// Only one stage can be used for each definition object, so
+// multiple definitions exist for each stage that might be updated.
+export const VERIFY_ACCURACY_METADATA_FIELDS = {
+  name: 'Feature Metadata',
+  sections: [
+    {
+      name: 'Feature Metadata',
+      fields: [
+        'summary',
+        'owner',
+        'editors',
+        'cc_recipients',
+        'impl_status_chrome',
+      ],
+    },
+  ],
+};
 
-// Stage_type values for each process.  Even though some of the stages
-// in these processes are similar to each other, they have distinct enum
-// values so that they can have different gates.
+const VERIFY_ACCURACY_DEV_TRIAL_FIELDS = {
+  name: 'Dev trials and iterate on design',
+  sections: [
+    {
+      name: 'Dev trials milestones',
+      fields: [
+        'dt_milestone_desktop_start',
+        'dt_milestone_android_start',
+        'dt_milestone_ios_start',
+      ],
+    },
+  ],
+};
 
-// For incubating new standard features: the "blink" process.
-const STAGE_BLINK_INCUBATE = 110;
-const STAGE_BLINK_PROTOTYPE = 120;
-const STAGE_BLINK_DEV_TRIAL = 130;
-const STAGE_BLINK_EVAL_READINESS = 140;
-const STAGE_BLINK_ORIGIN_TRIAL = 150;
-const STAGE_BLINK_EXTEND_ORIGIN_TRIAL = 151;
-const STAGE_BLINK_SHIPPING = 160;
-// Note: We might define post-ship support stage(s) later.
+const VERIFY_ACCURACY_ORIGIN_TRIAL_FIELDS = {
+  name: 'Origin trial',
+  sections: [
+    {
+      name: 'Origin trial milestones',
+      fields: [
+        'ot_milestone_desktop_start',
+        'ot_milestone_desktop_end',
+        'ot_milestone_android_start',
+        'ot_milestone_android_end',
+        'ot_milestone_webview_start',
+        'ot_milestone_webview_end',
+      ],
+    },
+  ],
+};
 
-// For implementing existing standards: the "fast track" process.
-const STAGE_FAST_PROTOTYPE = 220;
-const STAGE_FAST_DEV_TRIAL = 230;
-const STAGE_FAST_ORIGIN_TRIAL = 250;
-const STAGE_FAST_EXTEND_ORIGIN_TRIAL = 251;
-const STAGE_FAST_SHIPPING = 260;
+export const VERIFY_ACCURACY_TRIAL_EXTENSION_FIELDS = {
+  name: 'Trial extension',
+  sections: [
+    {
+      name: 'Trial extension milestones',
+      fields: [
+        'extension_android_last',
+        'extension_desktop_last',
+        'extension_webview_last',
+      ],
+    },
+  ],
+};
 
-// For developer-facing code changes not impacting a standard: the "PSA" process.
-const STAGE_PSA_IMPLEMENT_FIELDS = 320;
-const STAGE_PSA_DEV_TRIAL = 330;
-const STAGE_PSA_SHIPPING = 360;
+const VERIFY_ACCURACY_PREPARE_TO_SHIP_FIELDS = {
+  name: 'Prepare to ship',
+  sections: [
+    {
+      name: 'Shipping milestones',
+      fields: [
+        'shipped_milestone',
+        'shipped_android_milestone',
+        'shipped_ios_milestone',
+        'shipped_webview_milestone',
+      ],
+    },
+  ],
+};
 
-// For deprecating a feature: the "DEP" process.
-const STAGE_DEP_PLAN = 410;
-const STAGE_DEP_DEV_TRIAL = 430;
-const STAGE_DEP_DEPRECATION_TRIAL = 450;
-const STAGE_DEP_EXTEND_DEPRECATION_TRIAL = 451;
-const STAGE_DEP_SHIPPING = 460;
-// const STAGE_DEP_REMOVE_CODE = 470;
-
-// Note STAGE_* enum values 500-999 are reseverd for future WP processes.
-
-// Define enterprise feature processes.
-// Note: This stage can ge added to any feature that is following any process.
-const STAGE_ENT_ROLLOUT = 1061;
-const STAGE_ENT_SHIPPED = 1070;
+// A single form to display the checkbox for verifying accuracy at the end.
+export const VERIFY_ACCURACY_CONFIRMATION_FIELD = {
+  name: 'Verify Accuracy',
+  sections: [
+    {
+      name: 'Verify Accuracy',
+      fields: [
+        'accurate_as_of',
+      ],
+    },
+  ],
+};
 
 export const FORMS_BY_STAGE_TYPE = {
-  [STAGE_BLINK_INCUBATE]: FLAT_INCUBATE_FIELDS,
-  [STAGE_BLINK_PROTOTYPE]: FLAT_PROTOTYPE_FIELDS,
-  [STAGE_BLINK_DEV_TRIAL]: FLAT_DEV_TRIAL_FIELDS,
-  [STAGE_BLINK_EVAL_READINESS]: FLAT_EVAL_READINESS_TO_SHIP_FIELDS,
-  [STAGE_BLINK_ORIGIN_TRIAL]: FLAT_ORIGIN_TRIAL_FIELDS,
-  [STAGE_BLINK_SHIPPING]: FLAT_PREPARE_TO_SHIP_FIELDS,
+  [enums.STAGE_BLINK_INCUBATE]: FLAT_INCUBATE_FIELDS,
+  [enums.STAGE_BLINK_PROTOTYPE]: FLAT_PROTOTYPE_FIELDS,
+  [enums.STAGE_BLINK_DEV_TRIAL]: FLAT_DEV_TRIAL_FIELDS,
+  [enums.STAGE_BLINK_EVAL_READINESS]: FLAT_EVAL_READINESS_TO_SHIP_FIELDS,
+  [enums.STAGE_BLINK_ORIGIN_TRIAL]: FLAT_ORIGIN_TRIAL_FIELDS,
+  [enums.STAGE_BLINK_SHIPPING]: FLAT_PREPARE_TO_SHIP_FIELDS,
 
-  [STAGE_FAST_PROTOTYPE]: FLAT_PROTOTYPE_FIELDS,
-  [STAGE_FAST_DEV_TRIAL]: FLAT_DEV_TRIAL_FIELDS,
-  [STAGE_FAST_ORIGIN_TRIAL]: FLAT_ORIGIN_TRIAL_FIELDS,
-  [STAGE_FAST_SHIPPING]: FLAT_PREPARE_TO_SHIP_FIELDS,
+  [enums.STAGE_FAST_PROTOTYPE]: FLAT_PROTOTYPE_FIELDS,
+  [enums.STAGE_FAST_DEV_TRIAL]: FLAT_DEV_TRIAL_FIELDS,
+  [enums.STAGE_FAST_ORIGIN_TRIAL]: FLAT_ORIGIN_TRIAL_FIELDS,
+  [enums.STAGE_FAST_SHIPPING]: FLAT_PREPARE_TO_SHIP_FIELDS,
 
-  [STAGE_PSA_IMPLEMENT_FIELDS]: PSA_IMPLEMENT_FIELDS,
-  [STAGE_PSA_DEV_TRIAL]: FLAT_DEV_TRIAL_FIELDS,
-  [STAGE_PSA_SHIPPING]: PSA_PREPARE_TO_SHIP_FIELDS,
+  [enums.STAGE_PSA_IMPLEMENT_FIELDS]: PSA_IMPLEMENT_FIELDS,
+  [enums.STAGE_PSA_DEV_TRIAL]: FLAT_DEV_TRIAL_FIELDS,
+  [enums.STAGE_PSA_SHIPPING]: PSA_PREPARE_TO_SHIP_FIELDS,
 
-  [STAGE_DEP_PLAN]: DEPRECATION_PLAN_FIELDS,
-  [STAGE_DEP_DEV_TRIAL]: DEPRECATION_DEV_TRIAL_FIELDS,
-  [STAGE_DEP_DEPRECATION_TRIAL]: DEPRECATION_ORIGIN_TRIAL_FIELDS,
-  [STAGE_DEP_SHIPPING]: DEPRECATION_PREPARE_TO_SHIP_FIELDS,
+  [enums.STAGE_DEP_PLAN]: DEPRECATION_PLAN_FIELDS,
+  [enums.STAGE_DEP_DEV_TRIAL]: DEPRECATION_DEV_TRIAL_FIELDS,
+  [enums.STAGE_DEP_DEPRECATION_TRIAL]: DEPRECATION_ORIGIN_TRIAL_FIELDS,
+  [enums.STAGE_DEP_SHIPPING]: DEPRECATION_PREPARE_TO_SHIP_FIELDS,
 
-  [STAGE_ENT_ROLLOUT]: FLAT_ENTERPRISE_PREPARE_TO_SHIP_FIELDS,
-  [STAGE_ENT_SHIPPED]: FLAT_PREPARE_TO_SHIP_FIELDS,
+  [enums.STAGE_ENT_ROLLOUT]: FLAT_ENTERPRISE_PREPARE_TO_SHIP_FIELDS,
+  [enums.STAGE_ENT_SHIPPED]: FLAT_PREPARE_TO_SHIP_FIELDS,
 };
 
 export const CREATEABLE_STAGES = {
-  [FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0]]: [
-    STAGE_BLINK_ORIGIN_TRIAL,
-    STAGE_BLINK_SHIPPING,
-    STAGE_ENT_ROLLOUT,
+  [enums.FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0]]: [
+    enums.STAGE_BLINK_ORIGIN_TRIAL,
+    enums.STAGE_BLINK_SHIPPING,
+    enums.STAGE_ENT_ROLLOUT,
   ],
-  [FEATURE_TYPES.FEATURE_TYPE_EXISTING_ID[0]]: [
-    STAGE_FAST_ORIGIN_TRIAL,
-    STAGE_FAST_SHIPPING,
-    STAGE_ENT_ROLLOUT,
+  [enums.FEATURE_TYPES.FEATURE_TYPE_EXISTING_ID[0]]: [
+    enums.STAGE_FAST_ORIGIN_TRIAL,
+    enums.STAGE_FAST_SHIPPING,
+    enums.STAGE_ENT_ROLLOUT,
   ],
-  [FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]]: [
-    STAGE_PSA_SHIPPING,
-    STAGE_ENT_ROLLOUT,
+  [enums.FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]]: [
+    enums.STAGE_PSA_SHIPPING,
+    enums.STAGE_ENT_ROLLOUT,
   ],
-  [FEATURE_TYPES.FEATURE_TYPE_DEPRECATION_ID[0]]: [
-    STAGE_DEP_DEPRECATION_TRIAL,
-    STAGE_DEP_SHIPPING,
-    STAGE_ENT_ROLLOUT,
+  [enums.FEATURE_TYPES.FEATURE_TYPE_DEPRECATION_ID[0]]: [
+    enums.STAGE_DEP_DEPRECATION_TRIAL,
+    enums.STAGE_DEP_SHIPPING,
+    enums.STAGE_ENT_ROLLOUT,
   ],
-  [FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0]]: [
-    STAGE_ENT_ROLLOUT,
+  [enums.FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0]]: [
+    enums.STAGE_ENT_ROLLOUT,
   ],
 };
 
-// key: Origin trial stage types,
-// value: extension stage type associated with the origin trial type.
-export const OT_EXTENSION_STAGE_MAPPING = {
-  [STAGE_BLINK_ORIGIN_TRIAL]: STAGE_BLINK_EXTEND_ORIGIN_TRIAL,
-  [STAGE_FAST_ORIGIN_TRIAL]: STAGE_FAST_EXTEND_ORIGIN_TRIAL,
-  [STAGE_DEP_DEPRECATION_TRIAL]: STAGE_DEP_EXTEND_DEPRECATION_TRIAL,
-};
 
+export const VERIFY_ACCURACY_FORMS_BY_STAGE_TYPE = {
+  [enums.STAGE_BLINK_DEV_TRIAL]: VERIFY_ACCURACY_DEV_TRIAL_FIELDS,
+  [enums.STAGE_BLINK_ORIGIN_TRIAL]: VERIFY_ACCURACY_ORIGIN_TRIAL_FIELDS,
+  [enums.STAGE_BLINK_SHIPPING]: VERIFY_ACCURACY_PREPARE_TO_SHIP_FIELDS,
 
-export const STAGE_SHORT_NAMES = {
-  [STAGE_BLINK_INCUBATE]: 'Incubate',
-  [STAGE_BLINK_PROTOTYPE]: 'Prototype',
-  [STAGE_BLINK_DEV_TRIAL]: 'DevTrial',
-  [STAGE_BLINK_EVAL_READINESS]: 'Eval readiness',
-  [STAGE_BLINK_ORIGIN_TRIAL]: 'OT',
-  [STAGE_BLINK_EXTEND_ORIGIN_TRIAL]: 'Extend OT',
-  [STAGE_BLINK_SHIPPING]: 'Ship',
+  [enums.STAGE_FAST_DEV_TRIAL]: VERIFY_ACCURACY_DEV_TRIAL_FIELDS,
+  [enums.STAGE_FAST_ORIGIN_TRIAL]: VERIFY_ACCURACY_ORIGIN_TRIAL_FIELDS,
+  [enums.STAGE_FAST_SHIPPING]: VERIFY_ACCURACY_PREPARE_TO_SHIP_FIELDS,
 
-  [STAGE_FAST_PROTOTYPE]: 'Prototype',
-  [STAGE_FAST_DEV_TRIAL]: 'DevTrial',
-  [STAGE_FAST_ORIGIN_TRIAL]: 'OT',
-  [STAGE_FAST_EXTEND_ORIGIN_TRIAL]: 'Extend OT',
-  [STAGE_FAST_SHIPPING]: 'Ship',
+  [enums.STAGE_PSA_DEV_TRIAL]: VERIFY_ACCURACY_DEV_TRIAL_FIELDS,
+  [enums.STAGE_PSA_SHIPPING]: VERIFY_ACCURACY_PREPARE_TO_SHIP_FIELDS,
 
-  [STAGE_PSA_IMPLEMENT_FIELDS]: 'Implement',
-  [STAGE_PSA_DEV_TRIAL]: 'DevTrial',
-  [STAGE_PSA_SHIPPING]: 'Ship',
+  [enums.STAGE_DEP_DEV_TRIAL]: VERIFY_ACCURACY_DEV_TRIAL_FIELDS,
+  [enums.STAGE_DEP_DEPRECATION_TRIAL]: VERIFY_ACCURACY_ORIGIN_TRIAL_FIELDS,
+  [enums.STAGE_DEP_SHIPPING]: VERIFY_ACCURACY_PREPARE_TO_SHIP_FIELDS,
 
-  [STAGE_DEP_PLAN]: 'Plan',
-  [STAGE_DEP_DEV_TRIAL]: 'DevTrial',
-  [STAGE_DEP_DEPRECATION_TRIAL]: 'Dep Trial',
-  [STAGE_DEP_EXTEND_DEPRECATION_TRIAL]: 'Extend Dep Trial',
-  [STAGE_DEP_SHIPPING]: 'Ship',
-
-  [STAGE_ENT_ROLLOUT]: 'Rollout',
-  [STAGE_ENT_SHIPPED]: 'Ship',
+  [enums.STAGE_ENT_SHIPPED]: VERIFY_ACCURACY_PREPARE_TO_SHIP_FIELDS,
 };
 
 
@@ -741,11 +759,17 @@ const BLINK_GENERIC_QUESTIONNAIRE = (
 );
 
 const PRIVACY_GENERIC_QUESTIONNAIRE = (
-  `To request a review, use the "Request review" button above.`
+  html`<p><b>Please fill out the Security &amp; Privacy self-review questionnaire: <a href="https://www.w3.org/TR/security-privacy-questionnaire/" target="_blank">https://www.w3.org/TR/security-privacy-questionnaire</a>/</b></p>
+<p>Share it as a public document, as a file in your repository, or in any other public format of your choice.</p>
+<p>You can reuse the same filled-out questionnaire in the security review below, across all stages of this ChromeStatus entry, and across all entries related to the same API. If you updated an existing questionnaire to reflect new changes to the API, please highlight them for an easier review.</p>
+<p><b>If you believe your feature has no privacy impact</b> and none of the questions in the questionnaire apply, you can provide a justification instead, e.g. "Removing a prefix from the API, no changes to functionality" or "New CSS property that doesn't depend on the user state, therefore doesn't reveal any user information". Note that if your reviewer disagrees with the justification, they may ask you to fill out the questionnaire nevertheless.</p>`
 );
 
 const SECURITY_GENERIC_QUESTIONNAIRE = (
-  `To request a review, use the "Request review" button above.`
+  html`<p><b>Please fill out the Security &amp; Privacy self-review questionnaire: <a href="https://www.w3.org/TR/security-privacy-questionnaire/" target="_blank">https://www.w3.org/TR/security-privacy-questionnaire</a>/</b></p>
+<p>Share it as a public document, as a file in your repository, or in any other public format of your choice.</p>
+<p>You can reuse the same filled-out questionnaire in the privacy review above, across all stages of this ChromeStatus entry, and across all entries related to an API. If you updated an existing questionnaire to reflect new changes to the API, please highlight them for an easier review.</p>
+<p><b>If you believe your feature has no security impact</b> and none of the questions in the questionnaire apply, you can provide a justification instead. Note that if your reviewer disagrees with the justification, they may ask you to fill out the questionnaire nevertheless.</p>`
 );
 
 const ENTERPRISE_SHIP_QUESTIONNAIRE = (
@@ -796,17 +820,17 @@ const TESTING_SHIP_QUESTIONNAIRE = (
 
 
 export const GATE_QUESTIONNAIRES = {
-  [GATE_TYPES.API_PROTOTYPE]: BLINK_GENERIC_QUESTIONNAIRE,
-  [GATE_TYPES.API_ORIGIN_TRIAL]: BLINK_GENERIC_QUESTIONNAIRE,
-  [GATE_TYPES.API_EXTEND_ORIGIN_TRIAL]: BLINK_GENERIC_QUESTIONNAIRE,
-  [GATE_TYPES.API_SHIP]: BLINK_GENERIC_QUESTIONNAIRE,
-  [GATE_TYPES.PRIVACY_ORIGIN_TRIAL]: PRIVACY_GENERIC_QUESTIONNAIRE,
-  [GATE_TYPES.PRIVACY_SHIP]: PRIVACY_GENERIC_QUESTIONNAIRE,
-  [GATE_TYPES.SECURITY_ORIGIN_TRIAL]: SECURITY_GENERIC_QUESTIONNAIRE,
-  [GATE_TYPES.SECURITY_SHIP]: SECURITY_GENERIC_QUESTIONNAIRE,
-  [GATE_TYPES.ENTERPRISE_SHIP]: ENTERPRISE_SHIP_QUESTIONNAIRE,
-  [GATE_TYPES.DEBUGGABILITY_ORIGIN_TRIAL]:
+  [enums.GATE_TYPES.API_PROTOTYPE]: BLINK_GENERIC_QUESTIONNAIRE,
+  [enums.GATE_TYPES.API_ORIGIN_TRIAL]: BLINK_GENERIC_QUESTIONNAIRE,
+  [enums.GATE_TYPES.API_EXTEND_ORIGIN_TRIAL]: BLINK_GENERIC_QUESTIONNAIRE,
+  [enums.GATE_TYPES.API_SHIP]: BLINK_GENERIC_QUESTIONNAIRE,
+  [enums.GATE_TYPES.PRIVACY_ORIGIN_TRIAL]: PRIVACY_GENERIC_QUESTIONNAIRE,
+  [enums.GATE_TYPES.PRIVACY_SHIP]: PRIVACY_GENERIC_QUESTIONNAIRE,
+  [enums.GATE_TYPES.SECURITY_ORIGIN_TRIAL]: SECURITY_GENERIC_QUESTIONNAIRE,
+  [enums.GATE_TYPES.SECURITY_SHIP]: SECURITY_GENERIC_QUESTIONNAIRE,
+  [enums.GATE_TYPES.ENTERPRISE_SHIP]: ENTERPRISE_SHIP_QUESTIONNAIRE,
+  [enums.GATE_TYPES.DEBUGGABILITY_ORIGIN_TRIAL]:
       DEBUGGABILITY_ORIGIN_TRIAL_QUESTIONNAIRE,
-  [GATE_TYPES.DEBUGGABILITY_SHIP]: DEBUGGABILITY_SHIP_QUESTIONNAIRE,
-  [GATE_TYPES.TESTING_SHIP]: TESTING_SHIP_QUESTIONNAIRE,
+  [enums.GATE_TYPES.DEBUGGABILITY_SHIP]: DEBUGGABILITY_SHIP_QUESTIONNAIRE,
+  [enums.GATE_TYPES.TESTING_SHIP]: TESTING_SHIP_QUESTIONNAIRE,
 };

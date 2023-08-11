@@ -7,7 +7,6 @@ import sinon from 'sinon';
 
 describe('chromedash-guide-edit-page', () => {
   const permissionsPromise = Promise.resolve({
-    can_approve: false,
     can_create_feature: true,
     can_edit_all: true,
     is_admin: false,
@@ -68,7 +67,7 @@ describe('chromedash-guide-edit-page', () => {
     'Estimated target milestone': 'True',
     'Final target milestone': 'True',
     'Intent to Experiment email': 'fake intent to experiment url',
-    'Ready for Trial email': 'fake ready for trial url',
+    'Ready for Developer Testing email': 'fake ready for dev test url',
     'Spec link': 'fake spec link',
     'Web developer signals': 'True',
   });

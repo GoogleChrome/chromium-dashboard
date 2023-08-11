@@ -1,6 +1,6 @@
 import {LitElement, css, html, nothing} from 'lit';
 import './chromedash-color-status';
-import {SHARED_STYLES} from '../sass/shared-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 
 class ChromedashLegend extends LitElement {
   static get properties() {
@@ -79,7 +79,7 @@ class ChromedashLegend extends LitElement {
     }
     return html`
       <sl-dialog class="legend" style="--width:fit-content">
-        <h3>About the data</h3> 
+        <h3>About the data</h3>
         <section class="content-wrapper">
           <p class="description">What you're looking at is a mostly
           comprehensive list of web platform features that have landed in

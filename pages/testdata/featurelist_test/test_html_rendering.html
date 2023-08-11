@@ -68,6 +68,16 @@ limitations under the License.
         '', 0);
   </script>
 
+  
+  <script type="module" nonce="fake nonce">
+    const drawer = document.querySelector('chromedash-drawer');
+    const header = document.querySelector('chromedash-header');
+    header.addEventListener('drawer-clicked', (e) => {
+      e.preventDefault();
+      open = drawer.toggleDrawerActions();
+    });
+  </script>
+
   <script type="module" nonce="fake nonce" defer
           src="/static/dist/components.js?v=Undeployed"></script>
   
@@ -94,6 +104,12 @@ limitations under the License.
       <div id="content">
         <div id="spinner">
           <img src="/static/img/ring.svg">
+        </div>
+        <div>
+          <chromedash-drawer
+            currentPage="/?"
+            googleSignInClientId="914217904764-enfcea61q4hqe7ak8kkuteglrbhk8el1.apps.googleusercontent.com">
+          </chromedash-drawer>
         </div>
         <chromedash-banner
           message=""
@@ -161,6 +177,26 @@ limitations under the License.
       };
       loadFeatureLegendViews(VIEWS);
     })();
+
+    // Since we don't use chromedash-app on this page, re-implement a little
+    // logic for the main menu shifting the page content on desktop.
+    const isMobile = window.screen.width < 701;
+    if (!isMobile) {
+        const header = document.querySelector('chromedash-header');
+        const drawer = document.querySelector('chromedash-drawer');
+        const flexWrapper = document.querySelector('#content-flex-wrapper');
+        const shiftedStyle = 'margin-left: 210px; justify-content: start';
+        drawer.defaultOpen = true;
+        flexWrapper.style = shiftedStyle;
+
+        function shiftPage() {
+            const slDrawer = drawer.shadowRoot.querySelector('sl-drawer');
+            const isOpening = !slDrawer.open;
+            flexWrapper.style = isOpening ? shiftedStyle : '';
+        }
+        header.addEventListener('drawer-clicked', shiftPage);
+    }
+
   </script>
 
 

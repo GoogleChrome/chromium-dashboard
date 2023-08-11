@@ -97,7 +97,6 @@ class ChromeStatusClient {
     const rawResponseText = await response.text();
     const XSSIPrefix = ')]}\'\n';
     if (!rawResponseText.startsWith(XSSIPrefix)) {
-      console.log(rawResponseText);
       throw new Error(
           `Response does not start with XSSI prefix: ${XSSIPrefix}`);
     }
@@ -303,9 +302,27 @@ class ChromeStatusClient {
     return this.doGet(url);
   }
 
+  updateFeature(featureChanges) {
+    return this.doPatch('/features', featureChanges);
+  }
+
+  // FeatureLinks API
+
+  getFeatureLinks(featureId, updateStaleLinks=true) {
+    return this.doGet(`/feature_links?feature_id=${featureId}&update_stale_links=${updateStaleLinks}`);
+  }
+
+  getFeatureLinkSummary() {
+    return this.doGet('/feature_links_summary');
+  }
+
   // Stages API
   getStage(featureId, stageId) {
     return this.doGet(`/features/${featureId}/stages/${stageId}`);
+  }
+
+  deleteStage(featureId, stageId) {
+    return this.doDelete(`/features/${featureId}/stages/${stageId}`);
   }
 
   createStage(featureId, body) {
@@ -334,25 +351,6 @@ class ChromeStatusClient {
 
   getSpecifiedChannels(start, end) {
     return this.doGet(`/channels?start=${start}&end=${end}`);
-  }
-
-  /**
-   * Parses URL query strings into a dict.
-   * @param {string} rawQuery a raw URL query string, e.g. q=abc&num=1;
-   * @return {Object} A key-value pair dictionary for the query string.
-   */
-  parseRawQuery(rawQuery) {
-    const params = new URLSearchParams(rawQuery);
-    const result = {};
-    for (const param of params.keys()) {
-      const values = params.getAll(param);
-      if (!values.length) {
-        continue;
-      }
-      // Assume there is only one value.
-      result[param] = values[0];
-    }
-    return result;
   }
 };
 

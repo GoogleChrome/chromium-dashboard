@@ -1,4 +1,6 @@
 import {LitElement, css, html, nothing} from 'lit';
+import {getStageValue, renderHTMLIf} from './utils';
+import {enhanceUrl} from './feature-link';
 import {openAddStageDialog} from './chromedash-add-stage-dialog';
 import {makeDisplaySpecs} from './form-field-specs';
 import {
@@ -6,8 +8,11 @@ import {
   FLAT_METADATA_FIELDS,
   FLAT_TRIAL_EXTENSION_FIELDS,
   FORMS_BY_STAGE_TYPE,
-  OT_EXTENSION_STAGE_MAPPING,
 } from './form-definition';
+import {
+  OT_EXTENSION_STAGE_MAPPING,
+  STAGE_TYPES_ORIGIN_TRIAL,
+} from './form-field-enums';
 
 import {
   DEPRECATED_FIELDS,
@@ -15,19 +20,44 @@ import {
   PLATFORMS_DISPLAYNAME,
   STAGE_SPECIFIC_FIELDS,
   OT_MILESTONE_END_FIELDS,
-  ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME} from './form-field-enums';
+  ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME,
+  ROLLOUT_IMPACT_DISPLAYNAME} from './form-field-enums';
 import '@polymer/iron-icon';
 import './chromedash-activity-log';
 import './chromedash-callout';
 import './chromedash-gate-chip';
 import {autolink, findProcessStage, flattenSections} from './utils.js';
-import {SHARED_STYLES} from '../sass/shared-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
+
+export const DETAILS_STYLES = [css`
+      sl-details {
+        border: var(--card-border);
+        box-shadow: var(--card-box-shadow);
+        margin: var(--content-padding-half);
+        border-radius: 4px;
+        background: var(--card-background);
+      }
+      sl-details::part(base),
+      sl-details::part(header) {
+        background: transparent;
+      }
+      sl-details::part(header) {
+        padding-bottom: 8px;
+      }
+
+      .card {
+        background: var(--card-background);
+        max-width: var(--max-content-width);
+        padding: 16px;
+      }
+`];
 
 const LONG_TEXT = 60;
 
 class ChromedashFeatureDetail extends LitElement {
   static get properties() {
     return {
+      featureLinks: {type: Array},
       user: {type: Object},
       canEdit: {type: Boolean},
       feature: {type: Object},
@@ -64,6 +94,7 @@ class ChromedashFeatureDetail extends LitElement {
 
     return [
       ...SHARED_STYLES,
+      ...DETAILS_STYLES,
       css`
       :host {
         display: block;
@@ -75,29 +106,11 @@ class ChromedashFeatureDetail extends LitElement {
       }
 
       h2 {
+        margin-top: var(--content-padding);
         display: flex;
       }
       h2 span {
         flex: 1;
-      }
-
-      sl-details {
-        border: var(--card-border);
-        box-shadow: var(--card-box-shadow);
-        margin: var(--content-padding-half);
-        border-radius: 4px;
-      }
-
-      sl-details {
-        background: var(--card-background);
-      }
-
-      sl-details::part(base),
-      sl-details::part(header) {
-        background: transparent;
-      }
-      sl-details::part(header) {
-        padding-bottom: 8px;
       }
 
       .description,
@@ -108,12 +121,6 @@ class ChromedashFeatureDetail extends LitElement {
       sl-details sl-button::part(base) {
         color: var(--sl-color-primary-600);
         border: 1px solid var(--sl-color-primary-600);
-      }
-
-      .card {
-        background: var(--card-background);
-        max-width: var(--max-content-width);
-        padding: 16px;
       }
 
       ol {
@@ -149,7 +156,6 @@ class ChromedashFeatureDetail extends LitElement {
       .inline-list {
         display: inline-block;
         padding: 0;
-        margin: 0;
       }
 
       .longtext {
@@ -167,7 +173,6 @@ class ChromedashFeatureDetail extends LitElement {
         border: var(--spot-card-border);
         box-shadow: var(--spot-card-box-shadow);
       }
-
     `];
   }
 
@@ -215,8 +220,8 @@ class ChromedashFeatureDetail extends LitElement {
   }
 
   isAnyCollapsed() {
-    const sections = this.shadowRoot.querySelectorAll('sl-details');
-    const open = this.shadowRoot.querySelectorAll('sl-details[open]');
+    const sections = this.shadowRoot.querySelectorAll('.stage');
+    const open = this.shadowRoot.querySelectorAll('.stage[open]');
     return open.length < sections.length;
   }
 
@@ -226,7 +231,7 @@ class ChromedashFeatureDetail extends LitElement {
 
   toggleAll() {
     const shouldOpen = this.anyCollapsed;
-    this.shadowRoot.querySelectorAll('sl-details').forEach((el) => {
+    this.shadowRoot.querySelectorAll('.stage').forEach((el) => {
       el.open = shouldOpen;
     });
   }
@@ -257,15 +262,16 @@ class ChromedashFeatureDetail extends LitElement {
   // Look at all extension milestones and calculate the highest milestone that an origin trial
   // is available. This is used to display the highest milestone available, but to preserve the
   // milestone that the trial was originally available for without extensions.
-  calcMaxMilestone(fieldName, feStage) {
+  calcMaxMilestone(feStage, fieldName) {
     // If the max milestone has already been calculated, or no trial extensions exist, do nothing.
     if (feStage[`max_${fieldName}`] || !feStage.extensions) {
       return;
     }
-    let maxMilestone = feStage[fieldName];
+    let maxMilestone = getStageValue(feStage, fieldName) || 0;
     for (const extension of feStage.extensions) {
-      if (extension[fieldName]) {
-        maxMilestone = Math.max(maxMilestone, extension[fieldName]);
+      const extensionValue = getStageValue(extension, fieldName);
+      if (extensionValue) {
+        maxMilestone = Math.max(maxMilestone, extensionValue);
       }
     }
     // Save the findings with the "max_" prefix as a prop of the stage for reference.
@@ -273,39 +279,41 @@ class ChromedashFeatureDetail extends LitElement {
   }
 
   // Get the milestone value that is displayed to the user regarding the origin trial end date.
-  getMilestoneExtensionValue(fieldName, feStage) {
-    const milestoneFieldName = OT_MILESTONE_END_FIELDS[fieldName];
-    this.calcMaxMilestone(milestoneFieldName, feStage);
+  getMilestoneExtensionValue(feStage, fieldName) {
+    const milestoneValue = getStageValue(feStage, fieldName);
+    this.calcMaxMilestone(feStage, fieldName);
 
-    const maxMilestoneFieldName = `max_${milestoneFieldName}`;
+    const maxMilestoneFieldName = `max_${fieldName}`;
     // Display only extension milestone if the original milestone has not been added.
-    if (feStage[maxMilestoneFieldName] && !feStage[fieldName]) {
+    if (feStage[maxMilestoneFieldName] && !milestoneValue) {
       return `Extended to ${feStage[maxMilestoneFieldName]}`;
     }
     // If the trial has been extended past the original milestone, display the extension
     // milestone with additional text reminding of the original milestone end date.
-    if (feStage[maxMilestoneFieldName] && feStage[maxMilestoneFieldName] > feStage[fieldName]) {
-      return `${feStage[maxMilestoneFieldName]} (extended from ${feStage[milestoneFieldName]})`;
+    if (feStage[maxMilestoneFieldName] && feStage[maxMilestoneFieldName] > milestoneValue) {
+      return `${feStage[maxMilestoneFieldName]} (extended from ${milestoneValue})`;
     }
-    return feStage[fieldName];
+    return milestoneValue;
   }
 
   getFieldValue(fieldName, feStage) {
     if (STAGE_SPECIFIC_FIELDS.has(fieldName)) {
-      const value = feStage[fieldName];
-      if (fieldName === 'rollout_platforms' && value) {
+      const value = getStageValue(feStage, fieldName);
+      if (fieldName === 'rollout_impact' && value) {
+        return ROLLOUT_IMPACT_DISPLAYNAME[value];
+      } if (fieldName === 'rollout_platforms' && value) {
         return value.map(platformId => PLATFORMS_DISPLAYNAME[platformId]);
       } else if (fieldName in OT_MILESTONE_END_FIELDS) {
         // If an origin trial end date is being displayed, handle extension milestones as well.
-        return this.getMilestoneExtensionValue(fieldName, feStage);
+        return this.getMilestoneExtensionValue(feStage, fieldName);
       }
-      return feStage[fieldName];
+      return value;
     }
 
     let value = this.feature[fieldName];
     const fieldNameMapping = {
       owner: 'browsers.chrome.owners',
-      editors: 'browsers.chrome.editors',
+      editors: 'editors',
       search_tags: 'tags',
       spec_link: 'standards.spec',
       standard_maturity: 'standards.maturity.text',
@@ -331,7 +339,7 @@ class ChromedashFeatureDetail extends LitElement {
       web_dev_views_notes: 'browsers.webdev.view.notes',
       other_views_notes: 'browsers.other.view.notes',
     };
-    if (!value && fieldNameMapping[fieldName]) {
+    if (fieldNameMapping[fieldName]) {
       value = this.feature;
       for (const step of fieldNameMapping[fieldName].split('.')) {
         if (value) {
@@ -353,7 +361,7 @@ class ChromedashFeatureDetail extends LitElement {
 
   renderText(value) {
     value = String(value);
-    const markup = autolink(value);
+    const markup = autolink(value, this.featureLinks);
     if (value.length > LONG_TEXT || value.includes('\n')) {
       return html`<span class="longtext">${markup}</span>`;
     }
@@ -362,11 +370,11 @@ class ChromedashFeatureDetail extends LitElement {
 
   renderUrl(value) {
     if (value.startsWith('http')) {
-      return html`
-        <a href=${value} target="_blank"
-           class="url ${value.length > LONG_TEXT ? 'longurl' : ''}"
-           >${value}</a>
-      `;
+      return enhanceUrl(value, this.featureLinks, html`
+      <a href=${value} target="_blank"
+       class="url ${value.length > LONG_TEXT ? 'longurl' : ''}"
+       >${value}</a>
+    `);
     }
     return this.renderText(value);
   }
@@ -449,7 +457,8 @@ class ChromedashFeatureDetail extends LitElement {
     }
   }
 
-  renderSection(summary, content, isActive=false, defaultOpen=false) {
+  renderSection(
+    summary, content, isActive=false, defaultOpen=false, isStage=true) {
     if (isActive) {
       summary += ' - Active';
     }
@@ -458,7 +467,7 @@ class ChromedashFeatureDetail extends LitElement {
         @sl-after-show=${this.updateCollapsed}
         @sl-after-hide=${this.updateCollapsed}
         ?open=${isActive || defaultOpen}
-        class=${isActive ? 'active' : ''}
+        class="${isActive ? 'active' : ''} ${isStage ? 'stage' : ''}"
       >
         ${content}
       </sl-details>
@@ -496,7 +505,9 @@ class ChromedashFeatureDetail extends LitElement {
       'Metadata',
       content,
       /* isActive=*/false,
-      /* defaultOpen=*/this.feature.is_enterprise_feature);
+      /* defaultOpen=*/this.feature.is_enterprise_feature,
+      /* isStage=*/false,
+    );
   }
 
   renderGateChip(feStage, gate) {
@@ -559,18 +570,21 @@ class ChromedashFeatureDetail extends LitElement {
     let numberDifferentiation = '';
     if (this.previousStageTypeRendered === feStage.stage_type) {
       this.sameTypeRendered += 1;
-      numberDifferentiation = ` (${this.sameTypeRendered})`;
+      numberDifferentiation = ` ${this.sameTypeRendered}`;
     } else {
       this.previousStageTypeRendered = feStage.stage_type;
       this.sameTypeRendered = 1;
     }
 
-    const name = `${processStage.name}${numberDifferentiation}`;
+    let name = `${processStage.name}${numberDifferentiation}`;
+    if (feStage.display_name) {
+      name = `${processStage.name}: ${feStage.display_name}`;
+    }
     const isActive = this.feature.active_stage_id === feStage.id;
 
     // Show a button to add a trial extension stage for origin trial stages.
     let addExtensionButton = nothing;
-    if (this.canEdit && 'extensions' in feStage) {
+    if (this.canEdit && STAGE_TYPES_ORIGIN_TRIAL.has(feStage.stage_type)) {
       // Button text changes based on whether or not an extension stage already exists.
       const extensionAlreadyExists = (feStage.extensions && feStage.extensions.length > 0);
       const extensionButtonText = extensionAlreadyExists ?
@@ -601,41 +615,28 @@ class ChromedashFeatureDetail extends LitElement {
     return this.renderSection(name, content, isActive, defaultOpen);
   }
 
-  renderActivitySection() {
-    const summary = 'Comments & Activity';
-    const content = html`
-        <div style="padding-top: var(--content-padding)">
-          <chromedash-activity-log
-            .user=${this.user}
-            .feature=${this.feature}
-            .comments=${this.comments}
-          ></chromedash-activity-log>
-        </div>
-    `;
-    return this.renderSection(summary, content);
-  }
-
   renderAddStageButton() {
     if (!this.canEdit) {
       return nothing;
     }
+    const text = this.feature.is_enterprise_feature ? 'Add Step': 'Add Stage';
 
     return html`
     <sl-button size="small" @click="${
         () => openAddStageDialog(this.feature.id, this.feature.feature_type_int)}">
-      Add stage
+      ${text}
     </sl-button>`;
   }
 
   render() {
     return html`
+      ${this.renderMetadataSection()}
       <h2>
-        <span>Development stages</span>
+        ${renderHTMLIf(!this.feature.is_enterprise_feature, html`<span>Development stages</span>`)}
+        ${renderHTMLIf(this.feature.is_enterprise_feature, html`<span>Rollout steps</span>`)}
         ${this.renderControls()}
       </h2>
-      ${this.renderMetadataSection()}
       ${this.feature.stages.map(feStage => this.renderProcessStage(feStage))}
-      ${this.renderActivitySection()}
       ${this.renderAddStageButton()}
     `;
   }

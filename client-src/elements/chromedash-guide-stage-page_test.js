@@ -76,6 +76,7 @@ describe('chromedash-guide-stage-page', () => {
     ot_stage_id: null,
     announcement_url: null,
     finch_url: null,
+    rollout_impact: null,
     rollout_milestone: null,
     rollout_platforms: [],
     rollout_details: null,
@@ -142,14 +143,11 @@ describe('chromedash-guide-stage-page', () => {
     const form = component.shadowRoot.querySelector('form[name="feature_form"]');
     assert.exists(form);
     assert.include(form.innerHTML, '<input type="hidden" name="token">');
-    assert.include(form.innerHTML, '<input type="hidden" name="form_fields"');
     assert.include(form.innerHTML, '<div class="final_buttons">');
 
     // Implementation section renders correct title and fields
     assert.include(form.innerHTML, 'Implementation in Chromium');
     assert.include(form.innerHTML, '4');
-    assert.include(form.innerHTML, 'type="hidden" name="impl_status_offered"');
-    assert.include(form.innerHTML, 'sl-checkbox name="set_impl_status"');
     assert.notInclude(form.innerHTML, 'This feature already has implementation status');
   });
 });

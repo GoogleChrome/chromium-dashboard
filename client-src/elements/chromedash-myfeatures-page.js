@@ -1,8 +1,7 @@
 import {LitElement, css, html, nothing} from 'lit';
 import './chromedash-feature-table';
-import {openApprovalsDialog} from './chromedash-approvals-dialog';
 import {showToastMessage} from './utils.js';
-import {SHARED_STYLES} from '../sass/shared-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 
 
 export class ChromedashMyFeaturesPage extends LitElement {
@@ -68,8 +67,9 @@ export class ChromedashMyFeaturesPage extends LitElement {
       });
   }
 
-  handleOpenApprovals(e) {
-    openApprovalsDialog(this.user, e.detail.feature);
+  userCanApprove() {
+    return this.user && (
+      this.user.is_admin || this.user.approvable_gate_types?.length > 0);
   }
 
   renderBox(title, query, columns, sortSpec='', opened=true) {
@@ -83,10 +83,8 @@ export class ChromedashMyFeaturesPage extends LitElement {
           sortSpec="${sortSpec}"
           ?signedIn=${Boolean(this.user)}
           ?canEdit=${this.user && this.user.can_edit_all}
-          ?canApprove=${this.user && this.user.can_approve}
           .starredFeatures=${this.starredFeatures}
           @star-toggle-event=${this.handleStarToggle}
-          @open-approvals-event=${this.handleOpenApprovals}
           selectedGateId=${this.selectedGateId}
           num=25 columns=${columns}>
         </chromedash-feature-table>
@@ -95,23 +93,30 @@ export class ChromedashMyFeaturesPage extends LitElement {
   }
 
   renderPendingAndRecentApprovals() {
+    // Use feature_type>=0 to include all types, even enterprise.
     const pendingBox = this.renderBox(
-      'Features pending my approval', 'pending-approval-by:me', 'approvals',
-      'gate.requested_on');
+      'Features pending my approval',
+      'pending-approval-by:me feature_type>=0',
+      'approvals', 'gate.requested_on');
     const recentBox = this.renderBox(
-      'Recently reviewed features', 'is:recently-reviewed', 'normal',
-      '-gate.reviewed_on', false);
+      'Recently reviewed features',
+      'is:recently-reviewed feature_type>=0',
+      'normal', '-gate.reviewed_on', false);
     return [pendingBox, recentBox];
   }
 
   renderIStarred() {
     return this.renderBox(
-      'Features I starred', 'starred-by:me', 'normal');
+      'Features I starred',
+      'starred-by:me feature_type>=0',
+      'normal');
   }
 
   renderICanEdit() {
     return this.renderBox(
-      'Features I can edit', 'can_edit:me', 'normal');
+      'Features I can edit',
+      'can_edit:me feature_type>=0',
+      'normal');
   }
 
   render() {
@@ -119,7 +124,7 @@ export class ChromedashMyFeaturesPage extends LitElement {
       <div id="subheader">
         <h2>My features</h2>
       </div>
-      ${this.user && this.user.can_approve ? this.renderPendingAndRecentApprovals() : nothing}
+      ${this.userCanApprove() ? this.renderPendingAndRecentApprovals() : nothing}
       ${this.renderICanEdit()}
       ${this.renderIStarred()}
     `;

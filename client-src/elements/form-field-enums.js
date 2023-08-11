@@ -62,6 +62,18 @@ export const PLATFORMS_DISPLAYNAME = {
   8: 'Fuchsia', // PLATFORM_FUCHSIA
 };
 
+export const ROLLOUT_IMPACT = {
+  IMPACT_LOW: [1, 'Low'],
+  IMPACT_MEDIUM: [2, 'Medium'],
+  IMPACT_HIGH: [3, 'High'],
+};
+
+export const ROLLOUT_IMPACT_DISPLAYNAME = {
+  1: 'Low', // IMPACT_LOW
+  2: 'Medium', // IMPACT_MEDIUM
+  3: 'High', // IMPACT_HIGH
+};
+
 // FEATURE_TYPES object is organized as [intValue, stringLabel, description],
 // the descriptions are used only for the descriptions of feature_type_radio_group
 export const FEATURE_TYPES_WITHOUT_ENTERPRISE = {
@@ -82,6 +94,107 @@ export const FEATURE_TYPES = {
   FEATURE_TYPE_ENTERPRISE_ID: [4, 'New Feature or removal affecting enterprises',
     'For features or changes that need to be communicated to enterprises or schools.'],
 };
+
+
+// ***********************************************************************
+// Stage type values for each process. Even though some of the stages
+// in these processes are similar to each other, they have distinct enum
+// values so that they can have different gates.
+// *********************************************************************
+// For incubating new standard features: the "blink" process.
+export const STAGE_BLINK_INCUBATE = 110;
+export const STAGE_BLINK_PROTOTYPE = 120;
+export const STAGE_BLINK_DEV_TRIAL = 130;
+export const STAGE_BLINK_EVAL_READINESS = 140;
+export const STAGE_BLINK_ORIGIN_TRIAL = 150;
+export const STAGE_BLINK_EXTEND_ORIGIN_TRIAL = 151;
+export const STAGE_BLINK_SHIPPING = 160;
+// Note: We might define post-ship support stage(s) later.
+
+// For implementing existing standards: the "fast track" process.
+export const STAGE_FAST_PROTOTYPE = 220;
+export const STAGE_FAST_DEV_TRIAL = 230;
+export const STAGE_FAST_ORIGIN_TRIAL = 250;
+export const STAGE_FAST_EXTEND_ORIGIN_TRIAL = 251;
+export const STAGE_FAST_SHIPPING = 260;
+
+// For developer-facing code changes not impacting a standard: the "PSA" process.
+export const STAGE_PSA_IMPLEMENT_FIELDS = 320;
+export const STAGE_PSA_DEV_TRIAL = 330;
+export const STAGE_PSA_SHIPPING = 360;
+
+// For deprecating a feature: the "DEP" process.
+export const STAGE_DEP_PLAN = 410;
+export const STAGE_DEP_DEV_TRIAL = 430;
+export const STAGE_DEP_DEPRECATION_TRIAL = 450;
+export const STAGE_DEP_EXTEND_DEPRECATION_TRIAL = 451;
+export const STAGE_DEP_SHIPPING = 460;
+// const STAGE_DEP_REMOVE_CODE = 470;
+
+// Note STAGE_* enum values 500-999 are reseverd for future WP processes.
+
+// Define enterprise feature processes.
+// Note: This stage can be added to any feature that is following any process.
+export const STAGE_ENT_ROLLOUT = 1061;
+export const STAGE_ENT_SHIPPED = 1070;
+
+export const STAGE_TYPES_DEV_TRIAL = new Set([
+  STAGE_BLINK_DEV_TRIAL,
+  STAGE_FAST_DEV_TRIAL,
+  STAGE_PSA_DEV_TRIAL,
+  STAGE_DEP_DEV_TRIAL,
+]);
+
+export const STAGE_TYPES_ORIGIN_TRIAL = new Set([
+  STAGE_BLINK_ORIGIN_TRIAL,
+  STAGE_FAST_ORIGIN_TRIAL,
+  STAGE_DEP_DEPRECATION_TRIAL,
+]);
+
+export const STAGE_TYPES_SHIPPING = new Set([
+  STAGE_BLINK_SHIPPING,
+  STAGE_FAST_SHIPPING,
+  STAGE_PSA_SHIPPING,
+  STAGE_DEP_SHIPPING,
+]);
+
+// key: Origin trial stage types,
+// value: extension stage type associated with the origin trial type.
+export const OT_EXTENSION_STAGE_MAPPING = {
+  [STAGE_BLINK_ORIGIN_TRIAL]: STAGE_BLINK_EXTEND_ORIGIN_TRIAL,
+  [STAGE_FAST_ORIGIN_TRIAL]: STAGE_FAST_EXTEND_ORIGIN_TRIAL,
+  [STAGE_DEP_DEPRECATION_TRIAL]: STAGE_DEP_EXTEND_DEPRECATION_TRIAL,
+};
+
+export const STAGE_SHORT_NAMES = {
+  [STAGE_BLINK_INCUBATE]: 'Incubate',
+  [STAGE_BLINK_PROTOTYPE]: 'Prototype',
+  [STAGE_BLINK_DEV_TRIAL]: 'DevTrial',
+  [STAGE_BLINK_EVAL_READINESS]: 'Eval readiness',
+  [STAGE_BLINK_ORIGIN_TRIAL]: 'OT',
+  [STAGE_BLINK_EXTEND_ORIGIN_TRIAL]: 'Extend OT',
+  [STAGE_BLINK_SHIPPING]: 'Ship',
+
+  [STAGE_FAST_PROTOTYPE]: 'Prototype',
+  [STAGE_FAST_DEV_TRIAL]: 'DevTrial',
+  [STAGE_FAST_ORIGIN_TRIAL]: 'OT',
+  [STAGE_FAST_EXTEND_ORIGIN_TRIAL]: 'Extend OT',
+  [STAGE_FAST_SHIPPING]: 'Ship',
+
+  [STAGE_PSA_IMPLEMENT_FIELDS]: 'Implement',
+  [STAGE_PSA_DEV_TRIAL]: 'DevTrial',
+  [STAGE_PSA_SHIPPING]: 'Ship',
+
+  [STAGE_DEP_PLAN]: 'Plan',
+  [STAGE_DEP_DEV_TRIAL]: 'DevTrial',
+  [STAGE_DEP_DEPRECATION_TRIAL]: 'Dep Trial',
+  [STAGE_DEP_EXTEND_DEPRECATION_TRIAL]: 'Extend Dep Trial',
+  [STAGE_DEP_SHIPPING]: 'Ship',
+
+  [STAGE_ENT_ROLLOUT]: 'Rollout',
+  [STAGE_ENT_SHIPPED]: 'Ship',
+};
+
 
 export const INTENT_STAGES = {
   INTENT_NONE: [0, 'None'],
@@ -109,8 +222,6 @@ export const STAGE_SPECIFIC_FIELDS = new Set([
   'ot_milestone_desktop_end',
   'ot_milestone_android_start',
   'ot_milestone_android_end',
-  'ot_milestone_ios_start',
-  'ot_milestone_ios_end',
   'ot_milestone_webview_start',
   'ot_milestone_webview_end',
   'dt_milestone_desktop_start',
@@ -126,19 +237,56 @@ export const STAGE_SPECIFIC_FIELDS = new Set([
   'intent_to_ship_url',
   'intent_to_experiment_url',
   'intent_to_extend_experiment_url',
+  'intent_thread_url',
 
   // Misc fields.
+  'display_name',
   'origin_trial_feedback_url',
+  'ot_chromium_trial_name',
+  'ot_webfeature_use_counter',
+  'ot_documentation_url',
+  'ot_is_deprecation_trial',
+  'ot_has_third_party_support',
+  'ot_is_critical_trial',
   'finch_url',
   'experiment_goals',
   'experiment_risks',
   'experiment_extension_reason',
+  'rollout_impact',
   'rollout_milestone',
   'rollout_platforms',
   'rollout_details',
   'enterprise_policies',
-  'ready_for_trial_url',
+  'announcement_url',
 ]);
+
+// Mapping of specific field names to their more generic stage names.
+export const STAGE_FIELD_NAME_MAPPING = {
+  // Milestone fields.
+  shipped_milestone: 'desktop_first',
+  shipped_android_milestone: 'android_first',
+  shipped_ios_milestone: 'ios_first',
+  shipped_webview_milestone: 'webview_first',
+  ot_milestone_desktop_start: 'desktop_first',
+  ot_milestone_desktop_end: 'desktop_last',
+  ot_milestone_android_start: 'android_first',
+  ot_milestone_android_end: 'android_last',
+  ot_milestone_webview_start: 'webview_first',
+  ot_milestone_webview_end: 'webview_last',
+  dt_milestone_desktop_start: 'desktop_first',
+  dt_milestone_android_start: 'android_first',
+  dt_milestone_ios_start: 'ios_first',
+  dt_milestone_webview_start: 'webview_first',
+  extension_desktop_last: 'desktop_last',
+  extension_android_last: 'android_last',
+  extension_webview_last: 'webview_last',
+
+  // Intent fields.
+  intent_to_implement_url: 'intent_thread_url',
+  intent_to_ship_url: 'intent_thread_url',
+  intent_to_experiment_url: 'intent_thread_url',
+  intent_to_extend_experiment_url: 'intent_thread_url',
+};
 
 export const DEPRECATED_FIELDS = new Set([
   'experiment_timeline',
@@ -243,11 +391,11 @@ export const REVIEW_STATUS_CHOICES = {
 // NEUTRAL = 8
 // SIGNALS_NA = 9
 // GECKO_UNDER_CONSIDERATION = 10
-// GECKO_IMPORTANT = 11
-// GECKO_WORTH_PROTOTYPING = 12
-// GECKO_NONHARMFUL = 13
+// GECKO_IMPORTANT = 11 # Deprecated; use PUBLIC_SUPPORT
+// GECKO_WORTH_PROTOTYPING = 12 # Deprecated; use PUBLIC_SUPPORT
+// GECKO_NONHARMFUL = 13 # Deprecated; use NEUTRAL
 // GECKO_DEFER = 14
-// GECKO_HARMFUL = 15
+// GECKO_HARMFUL = 15 # Deprecated; use OPPOSED
 
 export const VENDOR_VIEWS_COMMON = {
   SHIPPED: [1, 'Shipped/Shipping'],
@@ -260,13 +408,14 @@ export const VENDOR_VIEWS_COMMON = {
 };
 
 export const VENDOR_VIEWS_GECKO = {
-  ...VENDOR_VIEWS_COMMON,
+  NO_PUBLIC_SIGNALS: [5, 'No signal'],
+  SIGNALS_NA: [9, 'N/A'],
   GECKO_UNDER_CONSIDERATION: [10, 'Under consideration'],
-  GECKO_IMPORTANT: [11, 'Important'],
-  GECKO_WORTH_PROTOTYPING: [12, 'Worth prototyping'],
-  GECKO_NONHARMFUL: [13, 'Non-harmful'],
   GECKO_DEFER: [14, 'Defer'],
-  GECKO_HARMFUL: [15, 'Harmful'],
+  PUBLIC_SUPPORT: [3, 'Positive'],
+  OPPOSED: [7, 'Negative'],
+  NEUTRAL: [8, 'Neutral'],
+  SHIPPED: [1, 'Shipped/Shipping'],
 };
 
 export const WEB_DEV_VIEWS = {
