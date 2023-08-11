@@ -56,9 +56,9 @@ limitations under the License.
 
   <script nonce="fake nonce">
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get("loginStatus") == 'False') {
-      alert('Please log in.');
-    }
+    // if (urlParams.get("loginStatus") == 'False') {
+    //   alert('Please log in.');
+    // }
   </script>
   <script nonce="fake nonce" src="/static/js/metric.min.js?v=Undeployed"></script>
   <script nonce="fake nonce" src="/static/js/cs-client.min.js?v=Undeployed"></script>
@@ -95,7 +95,8 @@ limitations under the License.
           <chromedash-header
             appTitle="Local testing"
             currentPage="/admin/features/launch/5/234?intent"
-            googleSignInClientId="914217904764-enfcea61q4hqe7ak8kkuteglrbhk8el1.apps.googleusercontent.com">
+            googleSignInClientId="914217904764-enfcea61q4hqe7ak8kkuteglrbhk8el1.apps.googleusercontent.com"
+            devMode="False">
           </chromedash-header>
         </div>
       </div>

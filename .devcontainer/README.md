@@ -29,7 +29,8 @@ You can click on the appropriate badge to get the environment setup:
 | [Visual Studio Code Remote - Containers](https://code.visualstudio.com/docs/remote/create-dev-container) | [![Open in Remote - Containers](https://img.shields.io/static/v1?label=Remote%20-%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/GoogleChrome/chromium-dashboard) | Locally: Docker and Visual Studio Code | Runs locally. Have more resources | Need to have VS Code and Docker setup |
 | [GitHub Codespaces](https://docs.github.com/en/enterprise-cloud@latest/codespaces) | <ul><li>East US[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=8633551&machine=standardLinux32gb&location=EastUs&devcontainer_path=.devcontainer%2Fdevcontainer.json)</li><li>West US[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=8633551&machine=standardLinux32gb&location=WestUs2&devcontainer_path=.devcontainer%2Fdevcontainer.json)</li></ul> | Access to Codespaces | Nothing to install locally | Limited resources: 4 cores, 8GB RAM, 32GB Storage |
 
-Upon creating the devcontainer by clicking the appropriate badge, `npm run setup` is ran automatically.
+Upon creating the devcontainer by clicking the appropriate badge, `npm run setup`
+is run automatically.
 
 *Note*: Sometimes when you open the terminal, it won't automatically activate
 the python environment. Either 1) Open a new terminal (usually it works the
@@ -43,6 +44,11 @@ due to the database container being outside the main dev container.
 | `npm test` | `npm run do-tests` |
 | `npm start` | `npm run start-app` |
 
+To update the test_html_rendering.html, modify the test_html_rendering method in
+the corresponding test file, uncomment the line that looks like:
+ # TESTDATA.make_golden(template_text, 'test_html_rendering.html')
+
+Then run the test again, and revert your change of the test file.
 ## Accessing the various services
 
 To access the database, database viewer or the app when it is running, go to
@@ -61,11 +67,11 @@ There are other ports needed for the IDE itself but mainly, you only need to wat
 ## Upgrading versions of Node and Python
 
 In the docker-compose.yml file:
-- For Python: Change the `VARIANT` argument to the appropirate [variant](https://github.com/microsoft/vscode-dev-containers/tree/main/containers/python-3)
+- For Python: Change the `VARIANT` argument to the appropriate [variant](https://github.com/microsoft/vscode-dev-containers/tree/main/containers/python-3)
 - For Node: Change the `NODE_VERSION` to the appropriate version used by [nvm](https://github.com/nvm-sh/nvm)
 
 ## Troubleshooting
 
-When there are depedency changes and environment changes in requirements.txt or package.json, the Devcontainer needs to be rebuilt:
+When there are dependency changes and environment changes in requirements.txt or package.json, the Devcontainer needs to be rebuilt:
 - `rm -rf node_modules cs-env` in terminal
 - View -> Command Palette -> Rebuild container without cache
