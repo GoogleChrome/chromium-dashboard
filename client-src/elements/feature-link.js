@@ -2,6 +2,7 @@ import {html} from 'lit';
 // LINK_TYPES should be consistent with the server link_helpers.py
 const LINK_TYPE_CHROMIUM_BUG = 'chromium_bug';
 const LINK_TYPE_GITHUB_ISSUE = 'github_issue';
+const LINK_TYPE_GITHUB_PULL_REQUEST = 'github_pull_request';
 const LINK_TYPE_GITHUB_MARKDOWN = 'github_markdown';
 
 function _formatLongText(text, maxLength = 50) {
@@ -97,6 +98,10 @@ function enhanceGithubIssueLink(featureLink, text) {
   const title = information.title;
   const owner = information.user_login;
   const number = information.number;
+  const repo = information.url.split('/').slice(4, 6).join('/');
+  const typePath = featureLink.url.split('/').slice(-2)[0];
+  const type = typePath === 'issues' ? 'Issue' : typePath === 'pull' ? 'Pull Request' : typePath;
+
   if (!text) {
     text = title;
   }
@@ -107,6 +112,18 @@ function enhanceGithubIssueLink(featureLink, text) {
     <div>
       <strong>Title:</strong>
       <span>${title}</span>
+    </div>
+  `}
+    ${repo && html`
+      <div>
+        <strong>Repo:</strong>
+        <span>${repo}</span>
+      </div>
+    `}
+    ${type && html`
+    <div>
+      <strong>Type:</strong>
+      <span>${type}</span>
     </div>
   `}
     ${createdAt && html`
@@ -226,6 +243,10 @@ function _enhanceLink(featureLink, fallback, text, ignoreHttpErrorCodes = []) {
       case LINK_TYPE_CHROMIUM_BUG:
         return enhanceChromeStatusLink(featureLink);
       case LINK_TYPE_GITHUB_ISSUE:
+        return enhanceGithubIssueLink(featureLink);
+      case LINK_TYPE_GITHUB_PULL_REQUEST:
+        // we use github issue api to get pull request information, 
+        // the result will be the similar to github issue
         return enhanceGithubIssueLink(featureLink);
       case LINK_TYPE_GITHUB_MARKDOWN:
         return enhanceGithubMarkdownLink(featureLink);

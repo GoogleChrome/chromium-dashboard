@@ -33,6 +33,7 @@ github_api_client = None
 LINK_TYPE_CHROMIUM_BUG = 'chromium_bug'
 LINK_TYPE_GITHUB_ISSUE = 'github_issue'
 LINK_TYPE_GITHUB_MARKDOWN = 'github_markdown'
+LINK_TYPE_GITHUB_PULL_REQUEST = 'github_pull_request'
 LINK_TYPE_WEB = 'web'
 LINK_TYPES_REGEX = {
     # https://bugs.chromium.org/p/chromium/issues/detail?id=
@@ -40,6 +41,8 @@ LINK_TYPES_REGEX = {
     LINK_TYPE_CHROMIUM_BUG: re.compile(r'https?://bugs\.chromium\.org/p/chromium/issues/detail\?.*|https?://crbug\.com/\d+'),
     # https://github.com/GoogleChrome/chromium-dashboard/issues/999
     LINK_TYPE_GITHUB_ISSUE: re.compile(r'https?://(www\.)?github\.com/.*issues/\d+'),
+    # https://github.com/GoogleChrome/chromium-dashboard/pull/3044
+    LINK_TYPE_GITHUB_PULL_REQUEST: re.compile(r'https?://(www\.)?github\.com/.*pull/\d+'),
     # https://github.com/w3c/reporting/blob/master/EXPLAINER.md
     LINK_TYPE_GITHUB_MARKDOWN: re.compile(r'https?://(www\.)?github\.com/.*\.md.*'),
     LINK_TYPE_WEB: re.compile(r'https?://.*'),
@@ -261,6 +264,10 @@ class Link():
       if self.type == LINK_TYPE_CHROMIUM_BUG:
         self.information = self._parse_chromium_bug()
       elif self.type == LINK_TYPE_GITHUB_ISSUE:
+        self.information = self._parse_github_issue()
+      elif self.type == LINK_TYPE_GITHUB_PULL_REQUEST:
+        # we can also use github issue api to get pull request information
+        # pull request api can get more information but we don't need it for now
         self.information = self._parse_github_issue()
       elif self.type == LINK_TYPE_GITHUB_MARKDOWN:
         self.information = self._parse_github_markdown()
