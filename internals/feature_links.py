@@ -264,19 +264,26 @@ def get_feature_links_summary():
   )
   links = [item.to_dict() for item in feature_links]
   uncovered_links = [link for link in links if link['type'] == 'web']
+  error_links = [link for link in links if link['is_error']]
+  http_error_links = [link for link in links if link['http_error_code']]
 
   link_types_counter = Counter(item['type'] for item in links)
   uncovered_link_domains_counter = Counter(get_domain_with_scheme(item['url']) for item in uncovered_links)
+  error_link_domains_counter = Counter(get_domain_with_scheme(item['url']) for item in error_links)
 
   link_types = [{'key': k, 'count': c} for (k, c) in link_types_counter.most_common(MAX_RESULTS)]
   uncovered_link_domains = [{'key': k, 'count': c} for (k, c) in uncovered_link_domains_counter.most_common(MAX_RESULTS)]
+  error_link_domains = [{'key': k, 'count': c} for (k, c) in error_link_domains_counter.most_common(MAX_RESULTS)]
 
   return {
       "total_count": len(links),
       "covered_count": len(links) - len(uncovered_links),
       "uncovered_count": len(uncovered_links),
+      "error_count": len(error_links),
+      "http_error_count": len(http_error_links),
       "link_types": link_types,
       "uncovered_link_domains": uncovered_link_domains,
+      "error_link_domains": error_link_domains
   }
 
 

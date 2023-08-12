@@ -51,10 +51,12 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
   renderComponents() {
     return html`
     <div class="feature-links-summary">
-      <sl-details summary="Links Summary" open>
-        <div class="line">Total Links <b>${this.featureLinkSummary.total_count}</b></div>
+      <sl-details summary="Link Summary" open>
+        <div class="line">All Links <b>${this.featureLinkSummary.total_count}</b></div>
         <div class="line">Covered Links <b>${this.featureLinkSummary.covered_count}</b></div>
-        <div class="line">Uncovered (aka web) Links <b>${this.featureLinkSummary.uncovered_count}</b></div>
+        <div class="line">Uncovered (aka "web") Links <b>${this.featureLinkSummary.uncovered_count}</b></div>
+        <div class="line">All Error Links<b>${this.featureLinkSummary.error_count}</b></div>
+        <div class="line">HTTP Error Links<b>${this.featureLinkSummary.http_error_count}</b></div>
       </sl-details>
       <sl-details summary="Link Types" open>
         ${this.featureLinkSummary.link_types.map((linkType) => html`
@@ -66,6 +68,11 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
           <div class="line"><a href=${domain.key}>${domain.key}</a> <b>${domain.count}</b></div>
         `)}
       </sl-details>
+      <sl-details summary="Error Link Domains" open>
+      ${this.featureLinkSummary.error_link_domains.map((domain) => html`
+        <div class="line"><a href=${domain.key}>${domain.key}</a> <b>${domain.count}</b></div>
+      `)}
+    </sl-details>
     </div>
     `;
   }
