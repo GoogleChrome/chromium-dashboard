@@ -4,6 +4,7 @@ const LINK_TYPE_CHROMIUM_BUG = 'chromium_bug';
 const LINK_TYPE_GITHUB_ISSUE = 'github_issue';
 const LINK_TYPE_GITHUB_PULL_REQUEST = 'github_pull_request';
 const LINK_TYPE_GITHUB_MARKDOWN = 'github_markdown';
+const LINK_TYPE_MDN_DOCS = 'mdn_docs';
 
 function _formatLongText(text, maxLength = 50) {
   if (text.length > maxLength) {
@@ -213,6 +214,43 @@ function enhanceGithubMarkdownLink(featureLink, text) {
   </a>`;
 }
 
+function enhanceMDNDocsLink(featureLink, text) {
+  const information = featureLink.information;
+  const title = information.title;
+  const description = information.description;
+
+
+  if (!text) {
+    text = title;
+  }
+
+  function renderTooltipContent() {
+    return html`<div class="feature-link-tooltip">
+    ${title && html`
+    <div>
+      <strong>Title:</strong>
+      <span>${title}</span>
+    </div>
+  `}
+    ${description && html`
+      <div>
+        <strong>Description:</strong>
+        <span>${description}</span>
+      </div>
+    `}
+    </div>`;
+  }
+  return html`<a class="feature-link" href="${featureLink.url}" target="_blank" rel="noopener noreferrer">
+    <sl-tooltip style="--sl-tooltip-arrow-size: 0;--max-width: 50vw;">
+        <div slot="content">${renderTooltipContent()}</div>
+        <sl-tag>
+          <img src="https://developer.mozilla.org/favicon-48x48.png" alt="icon" class="icon" />
+          ${_formatLongText(title)}
+        </sl-tag>
+    </sl-tooltip>
+  </a>`;
+}
+
 function _enhanceLink(featureLink, fallback, text, ignoreHttpErrorCodes = []) {
   if (!fallback) {
     throw new Error('fallback html is required');
@@ -245,11 +283,13 @@ function _enhanceLink(featureLink, fallback, text, ignoreHttpErrorCodes = []) {
       case LINK_TYPE_GITHUB_ISSUE:
         return enhanceGithubIssueLink(featureLink);
       case LINK_TYPE_GITHUB_PULL_REQUEST:
-        // we use github issue api to get pull request information, 
+        // we use github issue api to get pull request information,
         // the result will be the similar to github issue
         return enhanceGithubIssueLink(featureLink);
       case LINK_TYPE_GITHUB_MARKDOWN:
         return enhanceGithubMarkdownLink(featureLink);
+      case LINK_TYPE_MDN_DOCS:
+        return enhanceMDNDocsLink(featureLink);
       default:
         return fallback;
     }

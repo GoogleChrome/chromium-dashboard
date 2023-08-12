@@ -21,12 +21,22 @@ from internals.link_helpers import (
     LINK_TYPE_GITHUB_ISSUE,
     LINK_TYPE_GITHUB_MARKDOWN,
     LINK_TYPE_WEB,
+    LINK_TYPE_MDN_DOCS,
     valid_url
 )
 
 
 class LinkHelperTest(testing_config.CustomTestCase):
 
+  def test_mdn_docs_url(self):
+    link = Link("https://developer.mozilla.org/en-US/docs/Web/HTML")
+    link.parse()
+    self.assertEqual(link.type, LINK_TYPE_MDN_DOCS)
+    self.assertEqual(link.url, "https://developer.mozilla.org/en-US/docs/Web/HTML")
+    self.assertTrue(link.is_parsed)
+    self.assertFalse(link.is_error)
+    self.assertIsNotNone(link.information.get('title'))
+    self.assertIsNotNone(link.information.get('description'))
 
   def test_valid_url(self):
       invalid_urls = [
