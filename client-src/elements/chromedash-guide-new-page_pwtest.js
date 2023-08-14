@@ -20,7 +20,7 @@ async function login(page) {
 
   // Check whether we are already logged in.
   let navContainer = page.locator('[data-testid=nav-container]');
-  if (await navContainer.isVisible()) {
+  while (await navContainer.isVisible()) {
     // Already logged in. Need to logout.
     await navContainer.hover({timeout: 5000});
     const signOutLink = page.locator('[data-testid=sign-out-link]');
@@ -32,6 +32,8 @@ async function login(page) {
     await page.waitForURL('**/roadmap');
     await expect(page).toHaveTitle(/Chrome Status/);
     page.mouse.move(0, 0); // Move away from content on page.
+
+    navContainer = page.locator('[data-testid=nav-container]');
   }
   await delay(5000);
 
