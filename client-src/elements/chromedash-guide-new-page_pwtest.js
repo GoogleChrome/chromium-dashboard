@@ -57,7 +57,7 @@ async function login(page) {
 
   // Need to wait for the google signin button to be ready, to avoid
   // loginButton.waitFor('visible');
-  await page.click('button[data-testid=dev-mode-sign-in-button]', {timeout: 10000});
+  await loginButton.click({timeout: 10000});
   await delay(5000);
 
   // await page.goto('/', {timeout: 30000});
@@ -66,6 +66,7 @@ async function login(page) {
   // Expect the title to contain a substring.
   await expect(page).toHaveTitle(/Chrome Status/);
   page.mouse.move(0, 0); // Move away from content on page.
+  await delay(5000);
 
   await expect(page).toHaveScreenshot('after-login-click.png');
 
