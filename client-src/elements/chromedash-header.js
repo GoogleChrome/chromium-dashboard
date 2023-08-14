@@ -233,15 +233,19 @@ export class ChromedashHeader extends LitElement {
       console.info('login as developer for testing, and replace the url if successful.');
       // POST to '/dev/mock_login' to login as example@chromium.
       fetch('/dev/mock_login', { method: 'POST' }).then((response) => {
+        console.log('fetch response', response);
         if (!response.ok) {
           signInTestingButton.style.color = 'red';
           throw new Error('Sign in failed! Response:', response);
         }
         // Reload the page to display with the logged in user.
+        console.log('before location replace');
         window.location.replace(window.location.href.split('?')[0]);
-      }).catch((error) => {
-        console.error('Sign in failed.  Now what? ', error);
+        console.log('after location replace');
       })
+      .catch((error) => {
+        console.error('Sign in failed.  Now what? ', error);
+      });
     });
 
     const appComponent = document.querySelector('chromedash-app');

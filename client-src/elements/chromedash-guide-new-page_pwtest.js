@@ -49,8 +49,11 @@ async function login(page) {
   page.on('console', async msg => {
     if (msg.type() === 'warn') { return } // ignore warnings
     const values = [];
-    for (const arg of msg.args())
-      values.push(await arg.jsonValue());
+    for (const arg of msg.args()) {
+      if (arg && arg.jsonValue) {
+        values.push(await arg.jsonValue());
+      }
+    }
     console.log(`console.${msg.type()}: `, ...values);
   });
 
