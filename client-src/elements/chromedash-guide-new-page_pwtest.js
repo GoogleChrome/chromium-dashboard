@@ -1,5 +1,6 @@
 // @ts-check
 import {test, expect} from '@playwright/test';
+import playwright from "playwright";
 
 const delay = (/** @type {number | undefined} */ ms) =>
    new Promise((resolve) => setTimeout(resolve, ms));
@@ -8,6 +9,26 @@ const delay = (/** @type {number | undefined} */ ms) =>
 // Initially set to longer timeout, in case server needs to warm up and
 // respond to the login.  Changed to shorter timeout after login is successful.
 let loginTimeout = 30000;
+
+
+ (async () => {
+  const browser = await playwright.chromium.launch();
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  const consoleMsgs = []
+  page.on("console", (message) => {
+    // if (message.type() === "error") {
+    consoleMsgs.push(message.text())
+    // }
+  })
+  await page.evaluate(() => {
+    console.error("hello from the browser console.error");
+    console.log("hello from the browser console.log");
+  })
+  console.log(consoleMsgs)
+  await browser.close();
+ })();
+
 
 async function login(page) {
   // await expect(page).toHaveScreenshot('roadmap.png');
