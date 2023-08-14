@@ -1,6 +1,6 @@
 // @ts-check
 import {test, expect} from '@playwright/test';
-// import playwright from "playwright";
+import playwright from "playwright";
 
 const delay = (/** @type {number | undefined} */ ms) =>
    new Promise((resolve) => setTimeout(resolve, ms));
@@ -11,38 +11,38 @@ const delay = (/** @type {number | undefined} */ ms) =>
 let loginTimeout = 30000;
 
 
-// (async () => {
-//   const browser = await playwright.chromium.launch();
-//   const context = await browser.newContext();
-//   const page = await context.newPage();
-//   // let consoleMsgs = []
-//   page.on("console", (message) => {
-//     // if (message.type() === "error") {
-//     // consoleMsgs.push([message.type(), message.text()])
-//     // }
-//     console.log(message.type(), message.text());
-//   });
-//   // await page.evaluate(() => {
-//   //   console.error("hello from the browser console.error");
-//   //   console.log("hello from the browser console.log");
-//   //   console.info("hello from the browser console.info");
-//   // });
-//   // if (consoleMsgs.length > 0) {
-//   //   console.log('console messages: ', consoleMsgs);
-//   //   consoleMsgs = [];
-//   // }
-//   // await browser.close();
-//   // if (consoleMsgs.length > 0) {
-//   //   console.log('After browser.close(); console messages: ', consoleMsgs);
-//   //   consoleMsgs = [];
-//   // }
+(async () => {
+  const browser = await playwright.chromium.launch();
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  let consoleMsgs = []
+  page.on("console", (message) => {
+    // if (message.type() === "error") {
+    // consoleMsgs.push([message.type(), message.text()])
+    // }
+    console.log(message.type(), message.text());
+  });
+  await page.evaluate(() => {
+    console.log("hello from the browser console.log");
+    // console.info("hello from the browser console.info");
+    // console.error("hello from the browser console.error");
+  });
+  if (consoleMsgs.length > 0) {
+    console.log('console messages: ', consoleMsgs);
+    consoleMsgs = [];
+  }
+  await browser.close();
+  // if (consoleMsgs.length > 0) {
+  //   console.log('After browser.close(); console messages: ', consoleMsgs);
+  //   consoleMsgs = [];
+  // }
 
-//     // Wait for all messages to be received.
-//     await page.waitForNavigation();
+    // // Wait for all messages to be received.
+    // await page.waitForNavigation();
 
-//     // Close the browser instance.
-//     await browser.close();
-//  })();
+    // // Close the browser instance.
+    // await browser.close();
+ })();
 
 
 async function login(page) {
@@ -64,15 +64,15 @@ async function login(page) {
   await page.goto('/', {timeout: 20000});
   await page.waitForURL('**/roadmap', {timeout: 20000});
 
-  await delay(5000);
+  await delay(1000);
   await expect(page).toHaveTitle(/Chrome Status/);
   page.mouse.move(0, 0); // Move away from content on page.
 
-  await delay(5000);
+  await delay(1000);
   // Check whether we are already logged in.
   let navContainer = page.locator('[data-testid=nav-container]');
   while (await navContainer.isVisible()) {
-    // Already logged in. Need to logout.
+    console.log('Already (still) logged in. Need to logout.');
     await navContainer.hover({timeout: 5000});
     const signOutLink = page.locator('[data-testid=sign-out-link]');
     await expect(signOutLink).toBeVisible();
@@ -80,12 +80,13 @@ async function login(page) {
     await signOutLink.hover({timeout: 5000});
     await signOutLink.click({timeout: 5000});
 
-    await delay(5000);
+    await delay(1000);
     await page.waitForURL('**/roadmap');
     await expect(page).toHaveTitle(/Chrome Status/);
     page.mouse.move(0, 0); // Move away from content on page.
+    console.log('Should be logged out ow.');
 
-    await delay(5000);
+    await delay(1000);
     navContainer = page.locator('[data-testid=nav-container]');
   }
 
@@ -94,7 +95,7 @@ async function login(page) {
   const loginButton = page.locator('button[data-testid=dev-mode-sign-in-button]');
   await expect(loginButton).toBeVisible({timeout: loginTimeout});
 
-  await delay(5000);
+  await delay(1000);
 
   // // Expect nav container to not be present.
   // const navContainer = page.locator('[data-testid=nav-container]');
@@ -107,8 +108,8 @@ async function login(page) {
 
   // Need to wait for the google signin button to be ready, to avoid
   // loginButton.waitFor('visible');
-  await loginButton.click({timeout: 10000});
-  await delay(5000);
+  await loginButton.click({timeout: 1000, delay: 100, noWaitAfter: true});
+  await delay(1000);
 
   // await page.goto('/', {timeout: 30000});
   // await page.waitForURL('**/roadmap', {timeout: 20000});
@@ -116,7 +117,7 @@ async function login(page) {
   // Expect the title to contain a substring.
   await expect(page).toHaveTitle(/Chrome Status/);
   page.mouse.move(0, 0); // Move away from content on page.
-  await delay(5000);
+  await delay(5000); // longer delay here, to allow for login.
 
   await expect(page).toHaveScreenshot('after-login-click.png');
 
@@ -141,16 +142,16 @@ async function logout(page) {
   // First reset to the roadmap page.
   await page.goto('/');
   await page.waitForURL('**/roadmap');
-  await delay(5000);
+  await delay(1000);
 
   await expect(page).toHaveTitle(/Chrome Status/);
   page.mouse.move(0, 0); // Move away from content on page.
-  await delay(5000);
+  await delay(1000);
 
   const navContainer = page.locator('[data-testid=nav-container]');
   await expect(navContainer).toBeVisible({timeout: 20000});
 
-  await delay(5000);
+  await delay(1000);
 
   await navContainer.hover({timeout: 5000});
   const signOutLink = page.locator('[data-testid=sign-out-link]');

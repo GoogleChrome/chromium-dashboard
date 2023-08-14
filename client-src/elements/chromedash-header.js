@@ -236,6 +236,7 @@ export class ChromedashHeader extends LitElement {
         console.log('fetch response', response);
         if (!response.ok) {
           signInTestingButton.style.color = 'red';
+          console.error('About to throw error regarding failed login.', response);
           throw new Error('Sign in failed! Response:', response);
         }
         // Reload the page to display with the logged in user.
