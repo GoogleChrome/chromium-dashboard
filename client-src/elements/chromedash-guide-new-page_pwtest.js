@@ -15,9 +15,11 @@ async function login(page) {
   await page.goto('/', {timeout: 20000});
   await page.waitForURL('**/roadmap', {timeout: 20000});
 
+  await delay(5000);
   await expect(page).toHaveTitle(/Chrome Status/);
   page.mouse.move(0, 0); // Move away from content on page.
 
+  await delay(5000);
   // Check whether we are already logged in.
   let navContainer = page.locator('[data-testid=nav-container]');
   while (await navContainer.isVisible()) {
@@ -29,13 +31,14 @@ async function login(page) {
     await signOutLink.hover({timeout: 5000});
     await signOutLink.click({timeout: 5000});
 
+    await delay(5000);
     await page.waitForURL('**/roadmap');
     await expect(page).toHaveTitle(/Chrome Status/);
     page.mouse.move(0, 0); // Move away from content on page.
 
+    await delay(5000);
     navContainer = page.locator('[data-testid=nav-container]');
   }
-  await delay(5000);
 
   // Expect login button to be present.
   const loginButton = page.locator('button[data-testid=dev-mode-sign-in-button]');
