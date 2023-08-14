@@ -1,6 +1,6 @@
 // @ts-check
 import {test, expect} from '@playwright/test';
-import playwright from "playwright";
+// import playwright from "playwright";
 
 const delay = (/** @type {number | undefined} */ ms) =>
    new Promise((resolve) => setTimeout(resolve, ms));
@@ -11,26 +11,49 @@ const delay = (/** @type {number | undefined} */ ms) =>
 let loginTimeout = 30000;
 
 
- (async () => {
-  const browser = await playwright.chromium.launch();
-  const context = await browser.newContext();
-  const page = await context.newPage();
-  const consoleMsgs = []
-  page.on("console", (message) => {
-    // if (message.type() === "error") {
-    consoleMsgs.push(message.text())
-    // }
-  })
-  await page.evaluate(() => {
-    console.error("hello from the browser console.error");
-    console.log("hello from the browser console.log");
-  })
-  console.log(consoleMsgs)
-  await browser.close();
- })();
+// (async () => {
+//   const browser = await playwright.chromium.launch();
+//   const context = await browser.newContext();
+//   const page = await context.newPage();
+//   // let consoleMsgs = []
+//   page.on("console", (message) => {
+//     // if (message.type() === "error") {
+//     // consoleMsgs.push([message.type(), message.text()])
+//     // }
+//     console.log(message.type(), message.text());
+//   });
+//   // await page.evaluate(() => {
+//   //   console.error("hello from the browser console.error");
+//   //   console.log("hello from the browser console.log");
+//   //   console.info("hello from the browser console.info");
+//   // });
+//   // if (consoleMsgs.length > 0) {
+//   //   console.log('console messages: ', consoleMsgs);
+//   //   consoleMsgs = [];
+//   // }
+//   // await browser.close();
+//   // if (consoleMsgs.length > 0) {
+//   //   console.log('After browser.close(); console messages: ', consoleMsgs);
+//   //   consoleMsgs = [];
+//   // }
+
+//     // Wait for all messages to be received.
+//     await page.waitForNavigation();
+
+//     // Close the browser instance.
+//     await browser.close();
+//  })();
 
 
 async function login(page) {
+  page.on('console', async msg => {
+    if (msg.type() === 'warn') { return } // ignore warnings
+    const values = [];
+    for (const arg of msg.args())
+      values.push(await arg.jsonValue());
+    console.log(`console.${msg.type()}: `, ...values);
+  });
+
   // await expect(page).toHaveScreenshot('roadmap.png');
   // Always reset to the roadmap page.
   await page.goto('/', {timeout: 20000});
@@ -62,6 +85,7 @@ async function login(page) {
   }
 
   // Expect login button to be present.
+  console.info('expect login button to be present and visible');
   const loginButton = page.locator('button[data-testid=dev-mode-sign-in-button]');
   await expect(loginButton).toBeVisible({timeout: loginTimeout});
 
@@ -112,12 +136,16 @@ async function logout(page) {
   // First reset to the roadmap page.
   await page.goto('/');
   await page.waitForURL('**/roadmap');
+  await delay(5000);
 
   await expect(page).toHaveTitle(/Chrome Status/);
   page.mouse.move(0, 0); // Move away from content on page.
+  await delay(5000);
 
   const navContainer = page.locator('[data-testid=nav-container]');
   await expect(navContainer).toBeVisible({timeout: 20000});
+
+  await delay(5000);
 
   await navContainer.hover({timeout: 5000});
   const signOutLink = page.locator('[data-testid=sign-out-link]');

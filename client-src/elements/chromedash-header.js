@@ -157,6 +157,8 @@ export class ChromedashHeader extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+    console.info('chromedash-header connectedCallback');
+
     // The user sign-in is desktop only.
     if (IS_MOBILE) {
       return;
@@ -226,6 +228,7 @@ export class ChromedashHeader extends LitElement {
     const signInTestingButton = document.createElement('button');
     signInTestingButton.innerText = 'Sign in as example@chromium.org';
     signInTestingButton.setAttribute('data-testid', 'dev-mode-sign-in-button');
+    console.info('setup button to login as developer.');
     signInTestingButton.addEventListener('click', () => {
       console.info('login as developer for testing, and replace the url if successful.');
       // POST to '/dev/mock_login' to login as example@chromium.
