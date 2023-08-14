@@ -227,11 +227,18 @@ export class ChromedashHeader extends LitElement {
     signInTestingButton.innerText = 'Sign in as example@chromium.org';
     signInTestingButton.setAttribute('data-testid', 'dev-mode-sign-in-button');
     signInTestingButton.addEventListener('click', () => {
+      console.info('login as developer for testing, and replace the url if successful.');
       // POST to '/dev/mock_login' to login as example@chromium.
-      fetch('/dev/mock_login', {method: 'POST'}).then(() => {
+      fetch('/dev/mock_login', { method: 'POST' }).then((response) => {
+        if (!response.ok) {
+          signInTestingButton.style.color = 'red';
+          throw new Error('Sign in failed! Response:', response);
+        }
         // Reload the page to display with the logged in user.
         window.location.replace(window.location.href.split('?')[0]);
-      });
+      }).catch((error) => {
+        console.error('Sign in failed.  Now what? ', error);
+      })
     });
 
     const appComponent = document.querySelector('chromedash-app');
