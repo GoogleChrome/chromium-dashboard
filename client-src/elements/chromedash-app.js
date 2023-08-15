@@ -131,9 +131,11 @@ class ChromedashApp extends LitElement {
   }
 
   connectedCallback() {
+    console.log('chromedash-app connectedCallback');
     super.connectedCallback();
     this.loading = true;
     window.csClient.getPermissions().then((user) => {
+      console.log('chromedash-app getPermissions email', user?.email || null);
       this.user = user;
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');

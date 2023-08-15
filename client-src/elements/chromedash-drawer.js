@@ -99,7 +99,7 @@ export class ChromedashDrawer extends LitElement {
 
   static get properties() {
     return {
-      currentPage: { type: String },
+      currentPage: {type: String},
       devMode: {type: String},
       googleSignInClientId: {type: String},
       user: {type: Object},
@@ -119,7 +119,7 @@ export class ChromedashDrawer extends LitElement {
   }
 
   connectedCallback() {
-    console.log('chromedash-drawer connectedCallback() email:', this.user?.email);
+    console.log('chromedash-drawer connectedCallback() email:', this.user?.email || 'none');
     super.connectedCallback();
     // user is passed in from chromedash-app
     if (this.user && this.user.email) return;
@@ -172,7 +172,7 @@ export class ChromedashDrawer extends LitElement {
     signInTestingButton.addEventListener('click', () => {
       console.log('login as developer for testing, and replace the url if successful.');
       // POST to '/dev/mock_login' to login as example@chromium.
-      fetch('/dev/mock_login', { method: 'POST' }).then((response) => {
+      fetch('/dev/mock_login', {method: 'POST'}).then((response) => {
         console.log('fetch response ok:', response.ok);
         if (!response.ok) {
           signInTestingButton.style.color = 'red';
@@ -183,9 +183,9 @@ export class ChromedashDrawer extends LitElement {
         window.location.replace(window.location.href.split('?')[0]);
         console.log('after location replace');
       })
-      .catch((error) => {
-        console.error('Sign in failed.  Now what? ', error);
-      });
+        .catch((error) => {
+          console.error('Sign in failed.  Now what? ', error);
+        });
     });
 
     const appComponent = document.querySelector('chromedash-app');
@@ -213,7 +213,7 @@ export class ChromedashDrawer extends LitElement {
   }
 
   signOut() {
-    console.log('chromedash-drawer signOut called email:', this.user?.email);
+    console.log('chromedash-drawer signOut called email:', this.user?.email || 'none');
     window.csClient.signOut().then(() => {
       window.location.reload();
     });

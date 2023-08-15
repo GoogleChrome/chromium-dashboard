@@ -1,5 +1,6 @@
 // @ts-check
 import {test, expect} from '@playwright/test';
+
 // import playwright from "playwright";
 
 // (async () => {
@@ -37,13 +38,13 @@ import {test, expect} from '@playwright/test';
 //  })();
 
 const delay = (/** @type {number | undefined} */ ms) =>
-   new Promise((resolve) => setTimeout(resolve, ms));
+  new Promise((resolve) => setTimeout(resolve, ms));
 
 
 function captureConsoleMessages(page) {
   page.on('console', async msg => {
     // ignore warnings for now.  There are tons of them.
-    if (msg.type() === 'warn') { return }
+    if (msg.type() === 'warn') { return; }
 
     // Get time before await on arg values.
     const now = new Date();
@@ -54,15 +55,22 @@ function captureConsoleMessages(page) {
 
     const values = [];
     for (const arg of msg.args()) {
+      let argString = '';
       try {
         // Sometimes this fails with something like:
         //  "Protocol error (Runtime.callFunctionOn): Target closed."
-        values.push(await arg.jsonValue());
+        argString = (await arg.jsonValue()).toString();
       } catch (e) {
-        values.push(arg.toString());
+        argString = arg.toString();
       }
+      if (argString.match(/does not have a proper “SameSite” attribute value/)) {
+        argString = argString.replace('JavaScript Warning: ', 'SameSite ')
+          .replace('does not have a proper “SameSite” attribute value. Soon, cookies without the “SameSite” attribute or with an invalid value will be treated as “Lax”. This means that the cookie will no longer be sent in third-party contexts. If your application depends on this cookie being available in such contexts, please add the “SameSite=None“ attribute to it. To know more about the “SameSite“ attribute, read https://developer.mozilla.org/docs/Web/HTTP/Headers/Set-Cookie/SameSite', '');
+      }
+      values.push(argString);
     }
-    console.log(`${time}: console.${msg.type()}: `, ...values);
+    const valuesString = values.join(' ');
+    console.log(`${time}: console.${msg.type()}: ${valuesString}`);
   });
 }
 
@@ -201,7 +209,7 @@ async function logout(page) {
 }
 
 
-test.beforeEach(async ({ page }) => {
+test.beforeEach(async ({page}) => {
   captureConsoleMessages(page);
   test.setTimeout(60000 + loginTimeout);
   // Attempt to login before running each test.
