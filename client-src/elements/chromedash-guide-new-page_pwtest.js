@@ -174,7 +174,9 @@ async function login(page) {
   page.mouse.move(0, 0); // Move away from content on page.
   await delay(loginTimeout / 3); // longer delay here, to allow for initial login.
 
-  await expect(page).toHaveScreenshot('after-login-click.png');
+  // Take a screenshot of header that should have "Create feature" button.
+  await expect(page.locator('[data-testid=header]')).toHaveScreenshot('after-login-click.png');
+  // was; await expect(page).toHaveScreenshot('after-login-click.png');
 
   // Check that we are logged in now.
   // Expect a nav container to be present.

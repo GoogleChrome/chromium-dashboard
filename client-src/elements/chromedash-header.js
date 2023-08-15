@@ -234,20 +234,25 @@ export class ChromedashHeader extends LitElement {
     signInTestingButton.addEventListener('click', () => {
       console.log('login as developer for testing, and replace the url if successful.');
       // POST to '/dev/mock_login' to login as example@chromium.
-      fetch('/dev/mock_login', {method: 'POST'}).then((response) => {
-        console.log('fetch response ok:', response.ok);
-        if (!response.ok) {
-          signInTestingButton.style.color = 'red';
-          console.error('About to throw error re failed login.', response);
-          throw new Error('Sign in failed! Response:', response);
-        }
-        // Avoid reloading the page to display with the logged in user.
-        // Use history.replaceState() instead.
-        const url = window.location.href.split('?')[0];
-        window.history.replaceState(null, null, url);
-        window.location = url;
-        console.log('after location replace');
-      })
+      fetch('/dev/mock_login', {method: 'POST'})
+        .then((response) => {
+          console.log('fetch response ok:', response.ok);
+          if (!response.ok) {
+            signInTestingButton.style.color = 'red';
+            console.error('About to throw error re failed login.', response);
+            throw new Error('Sign in failed! Response:', response);
+          }
+          // Avoid reloading the page to display with the logged in user.
+          // Use history.replaceState() instead.
+          const url = window.location.href.split('?')[0];
+          window.history.replaceState(null, null, url);
+        })
+        .then(() => {
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+          console.log('after location replace');
+        })
         .catch((error) => {
           console.error('Sign in failed.  Now what? ', error);
         });
