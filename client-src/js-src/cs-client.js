@@ -133,12 +133,14 @@ class ChromeStatusClient {
   // Signing in and out
 
   signIn(credentialResponse) {
+    console.log('cs-client signIn()');
     const credential = credentialResponse.credential;
     // We don't use doPost because we don't already have a XSRF token.
     return this.doFetch('/login', 'POST', {'credential': credential}, false);
   }
 
   signOut() {
+    console.log('cs-client signOut()');
     return this.doPost('/logout');
   }
 

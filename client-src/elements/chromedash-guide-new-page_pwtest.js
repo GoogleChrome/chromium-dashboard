@@ -1,64 +1,79 @@
 // @ts-check
 import {test, expect} from '@playwright/test';
-import playwright from "playwright";
+// import playwright from "playwright";
+
+// (async () => {
+//   // Capture console messages at top level.  No idea if we need this.
+//   const browser = await playwright.chromium.launch();
+//   const context = await browser.newContext();
+//   const page = await context.newPage();
+//   let consoleMsgs = []
+//   page.on("console", (message) => {
+//     // if (message.type() === "error") {
+//     // consoleMsgs.push([message.type(), message.text()])
+//     // }
+//     console.log(message.type(), message.text());
+//   });
+//   await page.evaluate(() => {
+//     console.log("hello from the browser console.log");
+//     // console.info("hello from the browser console.info");
+//     // console.error("hello from the browser console.error");
+//   });
+//   if (consoleMsgs.length > 0) {
+//     console.log('console messages: ', consoleMsgs);
+//     consoleMsgs = [];
+//   }
+//   await browser.close();
+//   // if (consoleMsgs.length > 0) {
+//   //   console.log('After browser.close(); console messages: ', consoleMsgs);
+//   //   consoleMsgs = [];
+//   // }
+
+//     // // Wait for all messages to be received.
+//     // await page.waitForNavigation();
+
+//     // // Close the browser instance.
+//     // await browser.close();
+//  })();
 
 const delay = (/** @type {number | undefined} */ ms) =>
    new Promise((resolve) => setTimeout(resolve, ms));
 
-// Timeout for logging in, in milliseconds.
-// Initially set to longer timeout, in case server needs to warm up and
-// respond to the login.  Changed to shorter timeout after login is successful.
-let loginTimeout = 30000;
 
-
-(async () => {
-  const browser = await playwright.chromium.launch();
-  const context = await browser.newContext();
-  const page = await context.newPage();
-  let consoleMsgs = []
-  page.on("console", (message) => {
-    // if (message.type() === "error") {
-    // consoleMsgs.push([message.type(), message.text()])
-    // }
-    console.log(message.type(), message.text());
-  });
-  await page.evaluate(() => {
-    console.log("hello from the browser console.log");
-    // console.info("hello from the browser console.info");
-    // console.error("hello from the browser console.error");
-  });
-  if (consoleMsgs.length > 0) {
-    console.log('console messages: ', consoleMsgs);
-    consoleMsgs = [];
-  }
-  await browser.close();
-  // if (consoleMsgs.length > 0) {
-  //   console.log('After browser.close(); console messages: ', consoleMsgs);
-  //   consoleMsgs = [];
-  // }
-
-    // // Wait for all messages to be received.
-    // await page.waitForNavigation();
-
-    // // Close the browser instance.
-    // await browser.close();
- })();
-
-
-async function login(page) {
+function captureConsoleMessages(page) {
   page.on('console', async msg => {
-    if (msg.type() === 'warn') { return } // ignore warnings
+    // ignore warnings for now.  There are tons of them.
+    if (msg.type() === 'warn') { return }
+
+    // Get time before await on arg values.
+    const now = new Date();
+    const minutes = now.getUTCMinutes().toString().padStart(2, '0');
+    const seconds = now.getUTCSeconds().toString().padStart(2, '0');
+    const millis = now.getUTCMilliseconds().toString().padStart(3, '0');
+    const time = `${minutes}:${seconds}:${millis}`;
+
     const values = [];
     for (const arg of msg.args()) {
       try {
+        // Sometimes this fails with something like:
+        //  "Protocol error (Runtime.callFunctionOn): Target closed."
         values.push(await arg.jsonValue());
       } catch (e) {
         values.push(arg.toString());
       }
     }
-    console.log(`console.${msg.type()}: `, ...values);
+    console.log(`${time}: console.${msg.type()}: `, ...values);
   });
+}
 
+
+// Timeout for logging in, in milliseconds.
+// Initially set to longer timeout, in case server needs to warm up and
+// respond to the login.  Changed to shorter timeout after login is successful.
+// Not sure we need this yet.
+let loginTimeout = 30000;
+
+async function login(page) {
   // await expect(page).toHaveScreenshot('roadmap.png');
   // Always reset to the roadmap page.
   await page.goto('/', {timeout: 20000});
@@ -69,7 +84,7 @@ async function login(page) {
   page.mouse.move(0, 0); // Move away from content on page.
 
   await delay(1000);
-  // Check whether we are already logged in.
+  // Check whether we are already or still logged in.
   let navContainer = page.locator('[data-testid=nav-container]');
   while (await navContainer.isVisible()) {
     console.log('Already (still) logged in. Need to logout.');
@@ -117,7 +132,7 @@ async function login(page) {
   // Expect the title to contain a substring.
   await expect(page).toHaveTitle(/Chrome Status/);
   page.mouse.move(0, 0); // Move away from content on page.
-  await delay(5000); // longer delay here, to allow for login.
+  await delay(loginTimeout / 3); // longer delay here, to allow for initial login.
 
   await expect(page).toHaveScreenshot('after-login-click.png');
 
@@ -186,7 +201,8 @@ async function logout(page) {
 }
 
 
-test.beforeEach(async ({page}) => {
+test.beforeEach(async ({ page }) => {
+  captureConsoleMessages(page);
   test.setTimeout(60000 + loginTimeout);
   // Attempt to login before running each test.
   await login(page);

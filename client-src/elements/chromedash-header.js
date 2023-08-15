@@ -157,7 +157,8 @@ export class ChromedashHeader extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    console.info('chromedash-header connectedCallback');
+    console.log('chromedash-header connectedCallback email: ',
+      this.user?.email);
 
     // The user sign-in is desktop only.
     if (IS_MOBILE) {
@@ -228,19 +229,18 @@ export class ChromedashHeader extends LitElement {
     const signInTestingButton = document.createElement('button');
     signInTestingButton.innerText = 'Sign in as example@chromium.org';
     signInTestingButton.setAttribute('data-testid', 'dev-mode-sign-in-button');
-    console.info('setup button to login as developer.');
+    console.log('chromedash-header setup button to login as developer.');
     signInTestingButton.addEventListener('click', () => {
-      console.info('login as developer for testing, and replace the url if successful.');
+      console.log('login as developer for testing, and replace the url if successful.');
       // POST to '/dev/mock_login' to login as example@chromium.
       fetch('/dev/mock_login', { method: 'POST' }).then((response) => {
-        console.log('fetch response', response);
+        console.log('fetch response ok:', response.ok);
         if (!response.ok) {
           signInTestingButton.style.color = 'red';
-          console.error('About to throw error regarding failed login.', response);
+          console.error('About to throw error re failed login.', response);
           throw new Error('Sign in failed! Response:', response);
         }
         // Reload the page to display with the logged in user.
-        console.log('before location replace');
         window.location.replace(window.location.href.split('?')[0]);
         console.log('after location replace');
       })
@@ -274,6 +274,7 @@ export class ChromedashHeader extends LitElement {
   }
 
   signOut() {
+    console.log('chromedash-header signOut called email:', this.user?.email);
     window.csClient.signOut().then(() => {
       window.location.reload();
     });

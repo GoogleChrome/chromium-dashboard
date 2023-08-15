@@ -560,6 +560,7 @@ class ChromedashApp extends LitElement {
                 .user=${this.user}
                 .currentPage=${this.currentPage}
                 ?defaultOpen=${true}
+                .devMode=${this.devMode}
                 .googleSignInClientId=${this.googleSignInClientId}>
               </chromedash-drawer>
             </div>
