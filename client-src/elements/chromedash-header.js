@@ -241,8 +241,11 @@ export class ChromedashHeader extends LitElement {
           console.error('About to throw error re failed login.', response);
           throw new Error('Sign in failed! Response:', response);
         }
-        // Reload the page to display with the logged in user.
-        window.location.replace(window.location.href.split('?')[0]);
+        // Avoid reloading the page to display with the logged in user.
+        // Use history.replaceState() instead.
+        const url = window.location.href.split('?')[0];
+        window.history.replaceState(null, null, url);
+        window.location = url;
         console.log('after location replace');
       })
         .catch((error) => {
@@ -261,7 +264,9 @@ export class ChromedashHeader extends LitElement {
   handleCredentialResponse(credentialResponse) {
     window.csClient.signIn(credentialResponse)
       .then(() => {
-        window.location.replace(window.location.href.split('?')[0]);
+        const url = window.location.href.split('?')[0];
+        window.history.replaceState(url);
+        window.location = url;
       })
       .catch(() => {
         console.error('Sign in failed, so signing out to allow retry');

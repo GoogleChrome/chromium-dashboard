@@ -44,7 +44,9 @@ const delay = (/** @type {number | undefined} */ ms) =>
 function captureConsoleMessages(page) {
   page.on('console', async msg => {
     // ignore warnings for now.  There are tons of them.
-    if (msg.type() === 'warn') { return; }
+    if (msg.type() === 'warn') {
+      return;
+    }
 
     // Get time before await on arg values.
     const now = new Date();
@@ -74,6 +76,35 @@ function captureConsoleMessages(page) {
   });
 }
 
+function capturePageEvents(page) {
+  page.on('open', async () => {
+    console.log(`open: ${page.url()}`);
+  });
+  page.on('close', async () => {
+    console.log(`close: ${page.url()}`);
+  });
+  // page.on('request', async (/** @type {Request} */ request) => {
+  //   console.log(`request: ${request.url()}`);
+  // });
+  // page.on('response', async (/** @type {Response} */ response) => {
+  //   console.log(`response: ${response.url()}`);
+  // });
+  // page.on('requestfinished', request => {
+  //   console.log(`requestfinished: ${request.url()}`);
+  // });
+  page.on('requestfailed', request => {
+    console.log(`requestfailed: ${request.url()} with: ${request.failure().errorText}`);
+  });
+  page.on('pageerror', async (/** @type {Error} */ error) => {
+    console.log(`pageerror: ${error}`);
+  });
+  page.on('crash', async () => {
+    console.log(`crash: ${page.url()}`);
+  });
+  page.on('domcontentloaded', async () => {
+    console.log(`domcontentloaded: ${page.url()}`);
+  });
+}
 
 // Timeout for logging in, in milliseconds.
 // Initially set to longer timeout, in case server needs to warm up and
@@ -215,6 +246,7 @@ async function logout(page) {
 
 test.beforeEach(async ({page}) => {
   captureConsoleMessages(page);
+  capturePageEvents(page);
   test.setTimeout(60000 + loginTimeout);
   // Attempt to login before running each test.
   await login(page);
@@ -226,7 +258,7 @@ test.afterEach(async ({page}) => {
 });
 
 
-test('navigate to create feature page', async ({ page }) => {
+test('navigate to create feature page', async ({page}) => {
   console.log('navigate to create feature page');
   // await page.goto('/');
   // await page.waitForURL('**/roadmap');
@@ -268,7 +300,7 @@ test('navigate to create feature page', async ({ page }) => {
 //     .toHaveScreenshot('new-feature-page-content.png');
 // });
 
-test('enter feature name', async ({ page }) => {
+test('enter feature name', async ({page}) => {
   console.log('enter feature name');
   test.setTimeout(90000);
 
