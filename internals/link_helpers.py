@@ -33,6 +33,8 @@ github_api_client = None
 LINK_TYPE_CHROMIUM_BUG = 'chromium_bug'
 LINK_TYPE_GITHUB_ISSUE = 'github_issue'
 LINK_TYPE_GITHUB_MARKDOWN = 'github_markdown'
+LINK_TYPE_GITHUB_PULL_REQUEST = 'github_pull_request'
+LINK_TYPE_MDN_DOCS = 'mdn_docs'
 LINK_TYPE_WEB = 'web'
 LINK_TYPES_REGEX = {
     # https://bugs.chromium.org/p/chromium/issues/detail?id=
@@ -40,18 +42,24 @@ LINK_TYPES_REGEX = {
     LINK_TYPE_CHROMIUM_BUG: re.compile(r'https?://bugs\.chromium\.org/p/chromium/issues/detail\?.*|https?://crbug\.com/\d+'),
     # https://github.com/GoogleChrome/chromium-dashboard/issues/999
     LINK_TYPE_GITHUB_ISSUE: re.compile(r'https?://(www\.)?github\.com/.*issues/\d+'),
+    # https://github.com/GoogleChrome/chromium-dashboard/pull/3044
+    LINK_TYPE_GITHUB_PULL_REQUEST: re.compile(r'https?://(www\.)?github\.com/.*pull/\d+'),
     # https://github.com/w3c/reporting/blob/master/EXPLAINER.md
     LINK_TYPE_GITHUB_MARKDOWN: re.compile(r'https?://(www\.)?github\.com/.*\.md.*'),
+    # https://developer.mozilla.org/en-US/docs/Web/API/DOMException
+    LINK_TYPE_MDN_DOCS: re.compile(r'https?://(www\.)?developer\.mozilla\.org/.*'),
     LINK_TYPE_WEB: re.compile(r'https?://.*'),
 }
 
 URL_REGEX = re.compile(r'(https?://\S+)')
 
+
 def valid_url(url):
-    try:
-        return validators.url(url, public=True)
-    except:
-        return False
+  try:
+    return validators.url(url, public=True)
+  except:
+    return False
+
 
 def get_github_api_client():
   """Set up the GitHub client."""
@@ -104,8 +112,8 @@ class Link():
     logging.info(f'Constructed Link for {url} with type {self.type}')
 
   def _fetch_github_file(
-      self, owner: str, repo: str, ref: str, file_path: str,
-      retries=1):
+          self, owner: str, repo: str, ref: str, file_path: str,
+          retries=1):
     """Get a file from GitHub."""
     client = get_github_api_client()
     try:
@@ -121,7 +129,7 @@ class Link():
 
     try:
       information = client.repos.get_content(
-        owner=owner, repo=repo, path=file_path, ref=ref)
+          owner=owner, repo=repo, path=file_path, ref=ref)
       return information
     except HTTPError as e:
       logging.info(f'Got http response code {e.code}')
@@ -152,8 +160,8 @@ class Link():
     return information
 
   def _fetch_github_issue(
-      self, owner: str, repo: str, issue_id: int,
-      retries=1) -> dict[str, Any]:
+          self, owner: str, repo: str, issue_id: int,
+          retries=1) -> dict[str, Any]:
     """Get an issue from GitHub."""
     try:
       client = get_github_api_client()
@@ -191,7 +199,7 @@ class Link():
         'created_at': resp.get('created_at'),
         'updated_at': resp.get('updated_at'),
         'closed_at': resp.get('closed_at'),
-        }
+    }
 
     return information
 
@@ -239,6 +247,18 @@ class Link():
 
     return information.get('issue', None)
 
+  def _parse_html_head(self):
+    html_str = requests.get(self.url).text
+    title = re.search(r'<title>(.*?)</title>', html_str)
+    title_og = re.search(r'<meta property="og:title" content="(.*?)"', html_str)
+    description = re.search(r'<meta name="description" content="(.*?)"', html_str)
+    description_og = re.search(r'<meta property="og:description" content="(.*?)"', html_str)
+
+    return {
+        'title': title.group(1) if title else (title_og.group(1) if title_og else None),
+        'description': description.group(1) if description else (description_og.group(1) if description_og else None),
+    }
+
   def _validate_url(self) -> bool:
     """The `_validate_url` method is used to validate the URL associated with the Link object. It
     sends a GET request to the URL and checks the response status code. If the status code is not
@@ -262,8 +282,14 @@ class Link():
         self.information = self._parse_chromium_bug()
       elif self.type == LINK_TYPE_GITHUB_ISSUE:
         self.information = self._parse_github_issue()
+      elif self.type == LINK_TYPE_GITHUB_PULL_REQUEST:
+        # we can also use github issue api to get pull request information
+        # pull request api can get more information but we don't need it for now
+        self.information = self._parse_github_issue()
       elif self.type == LINK_TYPE_GITHUB_MARKDOWN:
         self.information = self._parse_github_markdown()
+      elif self.type == LINK_TYPE_MDN_DOCS:
+        self.information = self._parse_html_head()
       elif self.type == LINK_TYPE_WEB:
         self.information = None
     except Exception as e:
