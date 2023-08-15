@@ -84,6 +84,7 @@ let loginTimeout = 30000;
 async function login(page) {
   // await expect(page).toHaveScreenshot('roadmap.png');
   // Always reset to the roadmap page.
+  console.log('login: goto /');
   await page.goto('/', {timeout: 20000});
   await page.waitForURL('**/roadmap', {timeout: 20000});
 
@@ -156,6 +157,7 @@ async function login(page) {
   //   await expect(page).toHaveScreenshot('after-login.png', {timeout: 10000});
   //   loginScreenshots = true;
   // }
+  console.log('login: done');
 }
 
 // let logoutScreenshots = false;
@@ -163,6 +165,7 @@ async function login(page) {
 async function logout(page) {
   // Attempt to sign out after running each test.
   // First reset to the roadmap page.
+  console.log('logout: goto /');
   await page.goto('/');
   await page.waitForURL('**/roadmap');
   await delay(1000);
@@ -206,6 +209,7 @@ async function logout(page) {
   // const loginButton = page.locator('[data-testid=dev-mode-sign-in-button]');
   // await loginButton.waitFor('visible', {timeout: 10000});
   // await expect(loginButton).toBeVisible({timeout: 10000});
+  console.log('logout: done');
 }
 
 
@@ -222,7 +226,8 @@ test.afterEach(async ({page}) => {
 });
 
 
-test('navigate to create feature page', async ({page}) => {
+test('navigate to create feature page', async ({ page }) => {
+  console.log('navigate to create feature page');
   // await page.goto('/');
   // await page.waitForURL('**/roadmap');
 
@@ -246,6 +251,7 @@ test('navigate to create feature page', async ({page}) => {
 
   // Take a screenshot of the content area.
   await expect(page).toHaveScreenshot('new-feature-page.png');
+  console.log('navigate to create feature page done');
 });
 
 // test('new feature page content', async ({page}) => {
@@ -262,7 +268,8 @@ test('navigate to create feature page', async ({page}) => {
 //     .toHaveScreenshot('new-feature-page-content.png');
 // });
 
-test('enter feature name', async ({page}) => {
+test('enter feature name', async ({ page }) => {
+  console.log('enter feature name');
   test.setTimeout(90000);
 
   // Navigate to the new feature page.
@@ -281,4 +288,5 @@ test('enter feature name', async ({page}) => {
   featureNameInput.fill('Test feature name');
 
   await expect(page).toHaveScreenshot('feature-name.png');
+  console.log('enter feature name done');
 });

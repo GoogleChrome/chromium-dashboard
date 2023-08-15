@@ -228,6 +228,7 @@ export class ChromedashHeader extends LitElement {
     // Create DEV_MODE login button for testing
     const signInTestingButton = document.createElement('button');
     signInTestingButton.innerText = 'Sign in as example@chromium.org';
+    signInTestingButton.setAttribute('type', 'button');
     signInTestingButton.setAttribute('data-testid', 'dev-mode-sign-in-button');
     console.log('chromedash-header setup button to login as developer.');
     signInTestingButton.addEventListener('click', () => {
