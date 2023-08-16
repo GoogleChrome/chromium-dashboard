@@ -52,6 +52,9 @@ describe('chromedash-guide-edit-page', () => {
     },
     tags: ['tag_one'],
   });
+  const validGatesPromise = Promise.resolve({
+    gates: [],
+  });
   const processPromise = Promise.resolve({
     stages: [{
       name: 'stage one',
@@ -81,6 +84,7 @@ describe('chromedash-guide-edit-page', () => {
     window.csClient = new ChromeStatusClient('fake_token', 1);
     sinon.stub(window.csClient, 'getPermissions');
     sinon.stub(window.csClient, 'getFeature');
+    sinon.stub(window.csClient, 'getGates');
     sinon.stub(window.csClient, 'getFeatureProcess');
     sinon.stub(window.csClient, 'getFeatureProgress');
     sinon.stub(window.csClient, 'getDismissedCues');
@@ -93,6 +97,7 @@ describe('chromedash-guide-edit-page', () => {
   afterEach(() => {
     window.csClient.getPermissions.restore();
     window.csClient.getFeature.restore();
+    window.csClient.getGates.restore();
     window.csClient.getFeatureProcess.restore();
     window.csClient.getFeatureProgress.restore();
     window.csClient.getDismissedCues.restore();
@@ -118,6 +123,7 @@ describe('chromedash-guide-edit-page', () => {
     const featureId = 123456;
     window.csClient.getPermissions.returns(permissionsPromise);
     window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
+    window.csClient.getGates.withArgs(featureId).returns(validGatesPromise);
 
     const component = await fixture(
       html`<chromedash-guide-edit-page
