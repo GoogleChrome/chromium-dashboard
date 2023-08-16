@@ -175,6 +175,7 @@ async function login(page) {
   await delay(loginTimeout / 3); // longer delay here, to allow for initial login.
 
   // Take a screenshot of header that should have "Create feature" button.
+  console.log('take a screenshot of header that should have "Create feature" button');
   await expect(page.locator('[data-testid=header]')).toHaveScreenshot('after-login-click.png');
   // was; await expect(page).toHaveScreenshot('after-login-click.png');
 
