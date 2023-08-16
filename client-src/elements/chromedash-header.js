@@ -244,12 +244,13 @@ export class ChromedashHeader extends LitElement {
           }
           // Avoid reloading the page to display with the logged in user.
           // Use history.replaceState() instead.
-          const url = window.location.href.split('?')[0];
-          window.history.replaceState(null, null, url);
+          // const url = window.location.href.split('?')[0];
+          // window.history.replaceState(null, null, url);
         })
         .then(() => {
           setTimeout(() => {
-            window.location.reload();
+            // load the home page after login.
+            window.location = '/';
           }, 1000);
           console.log('after location replace');
         })
