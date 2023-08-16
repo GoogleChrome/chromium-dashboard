@@ -161,18 +161,40 @@ async function login(page) {
   //   await expect(page).toHaveScreenshot('before-login.png');
   // }
 
+  const responseListener = async (/** @type {Response} */ response) => {
+    if (response.url() === 'http://localhost:8080/') {
+      console.log(`response url: ${response.url()}`);
+      console.log(`response status: ${response.status()}`);
+      console.log(`response statusText: ${response.statusText()}`);
+      // console.log(`response fromCache: ${response.fromCache()}`);
+      // console.log(`response fromServiceWorker: ${response.fromServiceWorker()}`);
+      // console.log(`response request: ${response.request()}`);
+      // console.log(`response request headers: ${response.request().headers()}`);
+      // console.log(`response request postData: ${response.request().postData()}`);
+      // console.log(`response request method: ${response.request().method()}`);
+      const headers = response.headers();
+      console.log('Response headers:');
+      for (const [name, value] of Object.entries(headers)) {
+        console.log(`  ${name}: ${value}`);
+      }
+
+      // console.log(`response ok: ${response.ok()}`);
+    }
+  };
+  page.on('response', responseListener);
+
   // Need to wait for the google signin button to be ready, to avoid
   // loginButton.waitFor('visible');
   await loginButton.click({timeout: 1000, delay: 100, noWaitAfter: true});
   await delay(1000);
 
-  // await page.goto('/', {timeout: 30000});
-  // await page.waitForURL('**/roadmap', {timeout: 20000});
 
   // Expect the title to contain a substring.
   await expect(page).toHaveTitle(/Chrome Status/);
   page.mouse.move(0, 0); // Move away from content on page.
   await delay(loginTimeout / 3); // longer delay here, to allow for initial login.
+
+  page.removeListener('response', responseListener);
 
   // Take a screenshot of header that should have "Create feature" button.
   console.log('take a screenshot of header that should have "Create feature" button');
