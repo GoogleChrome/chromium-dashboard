@@ -163,26 +163,42 @@ async function login(page) {
 
   // Listen for responses, to check for login response.
   const responseListener = async (/** @type {Response} */ response) => {
-    console.log(`response url: ${response.url()}`);
-    console.log(`response status: ${response.status()}`);
-    console.log(`response statusText: ${response.statusText()}`);
-    // console.log(`response fromCache: ${response.fromCache()}`);
-    // console.log(`response fromServiceWorker: ${response.fromServiceWorker()}`);
-    // console.log(`response request: ${response.request()}`);
-    // console.log(`response request headers: ${response.request().headers()}`);
-    // console.log(`response request postData: ${response.request().postData()}`);
-    // console.log(`response request method: ${response.request().method()}`);
-    const headers = response.headers();
-    console.log('Response headers:');
-    for (const [name, value] of Object.entries(headers)) {
-      console.log(`  ${name}: ${value}`);
+    if (response.url().match('/currentuser/permissions')) {
+      console.log(`response url: ${response.url()}`);
+
+      console.log(`response status: ${response.status()}`);
+      console.log(`response statusText: ${response.statusText()}`);
+      // console.log(`response fromCache: ${response.fromCache()}`);
+      console.log(`response fromServiceWorker: ${response.fromServiceWorker()}`);
+      // console.log(`response request: ${response.request()}`);
+      // console.log(`response request headers: ${response.request().headers()}`);
+      // console.log(`response request postData: ${response.request().postData()}`);
+      // console.log(`response request method: ${response.request().method()}`);
+
+      // Display response headers.
+      const headers = response.headers();
+      console.log('Response headers:');
+      for (const [name, value] of Object.entries(headers)) {
+        console.log(`  ${name}: ${value}`);
+      }
+
+      // Decode cookies.
+      // const setCookieHeader = response.headers()['set-cookie'];
+      // if (setCookieHeader) {
+      //   const cookies = await page.context().cookies();
+      //   cookies.forEach((cookie) => {
+      //     console.log('Decoded Cookie:', cookie);
+      //   });
+      // }
+
+      console.log(`response body: '${await response.text()}'`);
     }
   };
 
   page.once('request', async (/** @type {Request} */ request) => {
     console.log(`request: ${request.url()}`);
 
-    page.once('response', responseListener);
+    page.on('response', responseListener);
   });
 
   // Need to wait for the google signin button to be ready, to avoid
@@ -195,7 +211,7 @@ async function login(page) {
   page.mouse.move(0, 0); // Move away from content on page.
   await delay(loginTimeout / 3); // longer delay here, to allow for initial login.
 
-  // page.removeListener('response', responseListener);
+  page.removeListener('response', responseListener);
 
   // Take a screenshot of header that should have "Create feature" button.
   console.log('take a screenshot of header that should have "Create feature" button');
