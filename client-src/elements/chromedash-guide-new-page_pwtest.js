@@ -192,6 +192,9 @@ async function login(page) {
       // }
 
       console.log(`response body: '${await response.text()}'`);
+
+      // Now we are done with the response listener.
+      page.removeListener('response', responseListener);
     }
   };
 
@@ -203,15 +206,14 @@ async function login(page) {
 
   // Need to wait for the google signin button to be ready, to avoid
   // loginButton.waitFor('visible');
-  await loginButton.click({timeout: 1000, delay: 100, noWaitAfter: true});
-  await delay(1000);
+  await loginButton.click({timeout: 1000, delay: 100});
+  await delay(6000);
 
   // Expect the title to contain a substring.
   await expect(page).toHaveTitle(/Chrome Status/);
   page.mouse.move(0, 0); // Move away from content on page.
   await delay(loginTimeout / 3); // longer delay here, to allow for initial login.
 
-  page.removeListener('response', responseListener);
 
   // Take a screenshot of header that should have "Create feature" button.
   console.log('take a screenshot of header that should have "Create feature" button');
