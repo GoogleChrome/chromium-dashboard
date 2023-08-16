@@ -32,6 +32,7 @@ export class ChromedashGuideEditPage extends LitElement {
       user: {type: Object},
       featureId: {type: Number},
       feature: {type: Object},
+      featureGates: {type: Array},
       process: {type: Object},
       progress: {type: Object},
       dismissedCues: {type: Array},
@@ -45,6 +46,7 @@ export class ChromedashGuideEditPage extends LitElement {
     this.user = {};
     this.featureId = 0;
     this.feature = {};
+    this.featureGates = [];
     this.process = {};
     this.progress = {};
     this.dismissedCues = [];
@@ -62,12 +64,14 @@ export class ChromedashGuideEditPage extends LitElement {
     Promise.all([
       window.csClient.getPermissions(),
       window.csClient.getFeature(this.featureId),
+      window.csClient.getGates(this.featureId),
       window.csClient.getFeatureProcess(this.featureId),
       window.csClient.getFeatureProgress(this.featureId),
       window.csClient.getDismissedCues(),
-    ]).then(([user, feature, process, progress, dismissedCues]) => {
+    ]).then(([user, feature, gatesRes, process, progress, dismissedCues]) => {
       this.user = user;
       this.feature = feature;
+      this.featureGates = gatesRes.gates;
       this.process = process;
       this.progress = progress;
       this.dismissedCues = dismissedCues;
@@ -126,6 +130,7 @@ export class ChromedashGuideEditPage extends LitElement {
           .feature=${this.feature}
           .process=${this.process}
           .progress=${this.progress}
+          .featureGates=${this.featureGates}
           .dismissedCues=${this.dismissedCues}>
         </chromedash-process-overview>
       </section>
