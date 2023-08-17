@@ -162,47 +162,98 @@ async function login(page) {
   // }
 
   // Listen for responses, to check for login response.
-  const responseListener = async (/** @type {Response} */ response) => {
-    if (response.url().match('/currentuser/permissions')) {
-      console.log(`response url: ${response.url()}`);
+  // const responseListener = async (/** @type {Response} */ response) => {
+  //   if (response.url().match('/currentuser/permissions')) {
+  //     console.log(`response url: ${response.url()}`);
 
-      console.log(`response status: ${response.status()}`);
-      console.log(`response statusText: ${response.statusText()}`);
-      // console.log(`response fromCache: ${response.fromCache()}`);
-      console.log(`response fromServiceWorker: ${response.fromServiceWorker()}`);
-      // console.log(`response request: ${response.request()}`);
-      // console.log(`response request headers: ${response.request().headers()}`);
-      // console.log(`response request postData: ${response.request().postData()}`);
-      // console.log(`response request method: ${response.request().method()}`);
+  //     console.log(`response status: ${response.status()}`);
+  //     console.log(`response statusText: ${response.statusText()}`);
+  //     // console.log(`response fromCache: ${response.fromCache()}`);
+  //     console.log(`response fromServiceWorker: ${response.fromServiceWorker()}`);
+  //     // console.log(`response request: ${response.request()}`);
+  //     // console.log(`response request headers: ${response.request().headers()}`);
+  //     // console.log(`response request postData: ${response.request().postData()}`);
+  //     // console.log(`response request method: ${response.request().method()}`);
 
-      // Display response headers.
-      const headers = response.headers();
-      console.log('Response headers:');
-      for (const [name, value] of Object.entries(headers)) {
-        console.log(`  ${name}: ${value}`);
-      }
+  //     // Display response headers.
+  //     const headers = response.headers();
+  //     console.log('Response headers:');
+  //     for (const [name, value] of Object.entries(headers)) {
+  //       console.log(`  ${name}: ${value}`);
+  //     }
 
-      // Decode cookies.
-      // const setCookieHeader = response.headers()['set-cookie'];
-      // if (setCookieHeader) {
-      //   const cookies = await page.context().cookies();
-      //   cookies.forEach((cookie) => {
-      //     console.log('Decoded Cookie:', cookie);
-      //   });
-      // }
+  //     // Decode cookies.
+  //     // const setCookieHeader = response.headers()['set-cookie'];
+  //     // if (setCookieHeader) {
+  //     //   const cookies = await page.context().cookies();
+  //     //   cookies.forEach((cookie) => {
+  //     //     console.log('Decoded Cookie:', cookie);
+  //     //   });
+  //     // }
 
-      console.log(`response body: '${await response.text()}'`);
+  //     console.log(`response body: '${await response.text()}'`);
 
-      // Now we are done with the response listener.
-      page.removeListener('response', responseListener);
-    }
-  };
+  //     // Now we are done with the response listener.
+  //     page.removeListener('response', responseListener);
+  //   }
+  // };
 
-  page.once('request', async (/** @type {Request} */ request) => {
-    console.log(`request: ${request.url()}`);
+  // const responseListener = async (/** @type {Response} */ response) => {
+  //   //if (response.url() == 'http://localhost:8080/') {
+  //     //console.log(`request url: ${request.url()}`);
 
-    page.on('response', responseListener);
-  });
+  //     const headers = response.headers();
+  //     // console.log('Request headers:');
+  //     // for (const [name, value] of Object.entries(headers)) {
+  //     //   console.log(`  ${name}: ${value}`);
+  //     // }
+
+  //   const setCookieHeader = headers['Set-Cookie'];
+  //   if (setCookieHeader) {
+  //     console.log(`response url: ${response.url()}`);
+  //     console.log('set-cookie header:', setCookieHeader);
+  //     const cookies = await page.context().cookies();
+  //       cookies.forEach((cookie) => {
+  //         //if (cookie.name === 'session') {
+  //           console.log('Decoded Cookie:', cookie);
+  //         //}
+  //       });
+  //     }
+  //     //page.removeListener('request', requestListener);
+  //   //}
+  // };
+
+  // const requestListener = async (/** @type {Request} */ request) => {
+  //   //if (request.url() == 'http://localhost:8080/') {
+  //     //console.log(`request url: ${request.url()}`);
+
+  //     const headers = request.headers();
+  //     // console.log('Request headers:');
+  //     // for (const [name, value] of Object.entries(headers)) {
+  //     //   console.log(`  ${name}: ${value}`);
+  //     // }
+
+  //   const cookieHeader = headers['cookie'];
+  //   if (cookieHeader) {
+  //     console.log(`request url: ${request.url()}`);
+  //     console.log('cookie header:', cookieHeader);
+  //     const cookies = await page.context().cookies();
+  //       cookies.forEach((cookie) => {
+  //         //if (cookie.name === 'session') {
+  //           console.log('Decoded Cookie:', cookie);
+  //         //}
+  //       });
+  //     }
+  //     //page.removeListener('request', requestListener);
+  //   //}
+  // };
+
+  // page.once('request', async (/** @type {Request} */ request) => {
+  //   console.log(`request: ${request.url()}`);
+
+  //   page.on('response', responseListener);
+  //   page.on('request', requestListener);
+  // });
 
   // Need to wait for the google signin button to be ready, to avoid
   // loginButton.waitFor('visible');

@@ -249,10 +249,9 @@ export class ChromedashHeader extends LitElement {
         })
         .then(() => {
           setTimeout(() => {
-            // load the home page after login.
+            console.log('load the home page after login.');
             window.location = '/';
           }, 5000);
-          console.log('after location replace');
         })
         .catch((error) => {
           console.error('Sign in failed.  Now what? ', error);
