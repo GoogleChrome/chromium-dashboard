@@ -157,9 +157,24 @@ class ChromeStatusClient {
   }
 
   // Permissions API
-  getPermissions() {
+  getPermissions(testingAndLoggedIn) {
     return this.doGet('/currentuser/permissions')
-      .then((res) => res.user);
+      .then((res) => {
+        if (testingAndLoggedIn) {
+          res = {
+            "user": {
+              "can_create_feature": true,
+              "approvable_gate_types": [],
+              "can_comment": true,
+              "can_edit_all": false,
+              "is_admin": false,
+              "email": "example@chromium.org",
+              "editable_features": []
+            }
+          };
+        }
+        return res.user;
+      });
   }
 
   // Settings API

@@ -149,6 +149,7 @@ export class ChromedashHeader extends LitElement {
     super();
     this.appTitle = '';
     this.googleSignInClientId = '',
+    this.loggedInForTesting = false;
     this.devMode = '';
     this.currentPage = '';
     this.user = {};
@@ -181,7 +182,8 @@ export class ChromedashHeader extends LitElement {
     // user is not passed in from anywhere, i.e. this.user is still {}
     // this is for MPA pages where this component is initialized in _base.html
     this.loading = true;
-    window.csClient.getPermissions().then((user) => {
+    window.csClient.getPermissions(
+        this.devMode == 'True' && this.loggedInForTesting).then((user) => {
       this.user = user;
       if (!this.user) {
         if (this.devMode == 'False') {
@@ -254,6 +256,7 @@ export class ChromedashHeader extends LitElement {
           setTimeout(() => {
             // Act like we are logged in and redirect to the home page.
             appComponent.setLoggedInForTesting(true);
+            this.loggedInForTesting = true;
             console.log('load the home page after login.');
             window.location = '/';
           }, 5000);
@@ -293,6 +296,7 @@ export class ChromedashHeader extends LitElement {
     const appComponent = document.querySelector('chromedash-app');
     if (this.devMode == 'True') {
       appComponent.setLoggedInForTesting(false);
+      this.loggedInForTesting = false;
     }
     window.csClient.signOut().then(() => {
       window.location.reload();

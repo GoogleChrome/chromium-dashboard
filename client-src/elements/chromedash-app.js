@@ -135,18 +135,8 @@ class ChromedashApp extends LitElement {
     console.log('chromedash-app connectedCallback');
     super.connectedCallback();
     this.loading = true;
-    window.csClient.getPermissions().then((user) => {
-      if (this.devMode == 'True' && this.loggedInForTesting) {
-        user = {
-          "can_create_feature": true,
-          "approvable_gate_types": [],
-          "can_comment": true,
-          "can_edit_all": false,
-          "is_admin": false,
-          "email": "example@chromium.org",
-          "editable_features": []
-        };
-      }
+    window.csClient.getPermissions(
+        this.devMode == 'True' && this.loggedInForTesting).then((user) => {
       console.log('chromedash-app getPermissions email', user?.email || null);
       this.user = user;
     }).catch(() => {
