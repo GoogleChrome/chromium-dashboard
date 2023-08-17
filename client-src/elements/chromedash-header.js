@@ -231,6 +231,9 @@ export class ChromedashHeader extends LitElement {
     signInTestingButton.setAttribute('type', 'button');
     signInTestingButton.setAttribute('data-testid', 'dev-mode-sign-in-button');
     console.log('chromedash-header setup button to login as developer.');
+
+    const appComponent = document.querySelector('chromedash-app');
+
     signInTestingButton.addEventListener('click', () => {
       console.log('login as developer for testing, and replace the url if successful.');
       // POST to '/dev/mock_login' to login as example@chromium.
@@ -249,6 +252,8 @@ export class ChromedashHeader extends LitElement {
         })
         .then(() => {
           setTimeout(() => {
+            // Act like we are logged in and redirect to the home page.
+            appComponent.setLoggedInForTesting(true);
             console.log('load the home page after login.');
             window.location = '/';
           }, 5000);
@@ -258,7 +263,6 @@ export class ChromedashHeader extends LitElement {
         });
     });
 
-    const appComponent = document.querySelector('chromedash-app');
     if (appComponent) {
       appComponent.insertAdjacentElement('afterbegin', signInTestingButton); // for SPA
     } else {
@@ -286,6 +290,10 @@ export class ChromedashHeader extends LitElement {
 
   signOut() {
     console.log('chromedash-header signOut called email:', this.user?.email || 'none');
+    const appComponent = document.querySelector('chromedash-app');
+    if (this.devMode == 'True') {
+      appComponent.setLoggedInForTesting(false);
+    }
     window.csClient.signOut().then(() => {
       window.location.reload();
     });
