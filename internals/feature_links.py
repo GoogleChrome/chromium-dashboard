@@ -174,6 +174,7 @@ def _index_feature_links_by_ids(
   for feature_link_id in feature_link_ids:
     feature_link: FeatureLinks = FeatureLinks.get_by_id(feature_link_id)
     if feature_link:
+      logging.info(f'processing {feature_link.url}')
       link = Link(feature_link.url)
       link.parse()
       if link.is_error:
@@ -291,7 +292,7 @@ class UpdateAllFeatureLinksHandlers(FlaskHandler):
 
   def get_template_data(self, **kwargs) -> str:
     """
-    retrieves feature links from a database, identifies which links need to be updated based on certain conditions, 
+    retrieves feature links from a database, identifies which links need to be updated based on certain conditions,
     and enqueues tasks to update those links in batches.
     """
 
@@ -330,7 +331,7 @@ class UpdateAllFeatureLinksHandlers(FlaskHandler):
         elif fe.type != Link.get_type(fe.url):
           ids_to_update.append(fe.key.integer_id())
 
-    BATCH_SIZE = 500
+    BATCH_SIZE = 100
     batch_update_ids = [ids_to_update[i:i+BATCH_SIZE] for i in range(0, len(ids_to_update), BATCH_SIZE)]
 
     for batch in batch_update_ids:
