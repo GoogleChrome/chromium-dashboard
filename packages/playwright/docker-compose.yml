@@ -9,15 +9,15 @@ services:
     group_add:
       - '${GROUPID}'
     volumes:
-      - ../client-src/elements/__screenshots__:/tmp/__screenshots__
-      - ../test-results:/tmp/test-results
+      - ./tests/__screenshots__/__screenshots__:/tmp/__screenshots__
+      - ./test-results:/tmp/test-results
     command: >
       bash -c "chown -R ${USERID}:${GROUPID} /tmp/__screenshots__
       && chown -R ${USERID}:${GROUPID} /tmp/test-results"
   playwright:
     build:
-      context: ..
-      dockerfile: ./.playwright/Dockerfile
+      context: .
+      dockerfile: Dockerfile
       cache_from:
         - type=gha,scope=${GITHUB_REF_NAME}-playwright-image
       cache_to:
@@ -31,21 +31,22 @@ services:
     command: sleep infinity
     network_mode: host
     volumes:
-      - ../client-src/elements/__screenshots__:/work/client-src/elements/__screenshots__
-      - ../test-results:/work/test-results
+      - ./tests/__screenshots__:/work/tests/__screenshots__
+      - ./test-results:/work/test-results
 
   myapp:
+    user: "appuser"
     build:
-      context: ..
-      dockerfile: .devcontainer/Dockerfile
-      target: dev
+      context: ../../
+      dockerfile: Dockerfile
+      target: app
       cache_from:
         - type=gha,scope=${GITHUB_REF_NAME}-myapp-image
       cache_to:
         - type=gha,mode=max,scope=${GITHUB_REF_NAME}-myapp-image
     depends_on:
       - mydb
-    command: bash -c "source cs-env/bin/activate; npm run start-app"
+    command: bash -c "source cs-env/bin/activate; env && whoami && npm run start-app"
     network_mode: host
 
     environment:
@@ -54,6 +55,6 @@ services:
       - DATASTORE_EMULATOR_HOST=localhost:15606
   mydb:
     extends:
-      file: ../.devcontainer/docker-compose.yml
+      file: ../../.devcontainer/db-docker-compose.yml
       service: db
     network_mode: host

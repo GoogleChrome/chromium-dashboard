@@ -2,7 +2,14 @@
 
 export USERID=$(id -u)
 export GROUPID=$(id -g)
-export COMPOSE_FILES_FLAG="-f .playwright/docker-compose.yml -f .devcontainer/docker-compose.yml"
+
+set -e
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+export COMPOSE_FILES_FLAG="-f ${SCRIPT_DIR}/docker-compose.yml 
+    -f  ${SCRIPT_DIR}/../../.devcontainer/db-docker-compose.yml"
+echo $COMPOSE_FILES_FLAG
 build() {
    docker compose \
     ${COMPOSE_FILES_FLAG} \
@@ -24,6 +31,7 @@ fi
 
 build
 
-docker compose \
+set -x
+USERID=${USERID} GROUPID=${GROUPID} docker compose \
     ${COMPOSE_FILES_FLAG} \
     run --user=${USERID}:${GROUPID} playwright "$@"

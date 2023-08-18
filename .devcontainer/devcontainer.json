@@ -2,8 +2,11 @@
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.245.2/containers/python-3
 {
 	"name": "Chromium Dashboard",
-	"dockerComposeFile": "docker-compose.yml",
-	"service": "app",
+	"dockerComposeFile": [
+		"docker-compose.yml",
+		"db-docker-compose.yml"
+	],
+	"service": "ide",
 	"workspaceFolder": "/workspace",
 
 	// Configure tool-specific properties.
