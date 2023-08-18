@@ -119,7 +119,6 @@ class ChromedashApp extends LitElement {
     this.appTitle = '';
     this.googleSignInClientId = '',
     this.devMode = '';
-    this.loggedInForTesting = false;
     this.currentPage = '';
     this.bannerMessage = '';
     this.bannerTime = null;
@@ -135,8 +134,7 @@ class ChromedashApp extends LitElement {
     console.log('chromedash-app connectedCallback');
     super.connectedCallback();
     this.loading = true;
-    window.csClient.getPermissions(
-        this.devMode == 'True' && this.loggedInForTesting).then((user) => {
+    window.csClient.getPermissions().then((user) => {
       console.log('chromedash-app getPermissions email', user?.email || null);
       this.user = user;
     }).catch(() => {
@@ -145,10 +143,6 @@ class ChromedashApp extends LitElement {
       this.setUpRoutes();
       this.loading = false;
     });
-  }
-
-  setLoggedInForTesting(flag) {
-    this.loggedInForTesting = flag;
   }
 
   removeBeforeUnloadHandler() {

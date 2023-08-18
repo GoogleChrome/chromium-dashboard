@@ -219,7 +219,7 @@ async function login(page) {
   //         //}
   //       });
   //     }
-  //     //page.removeListener('request', requestListener);
+  //     page.removeListener('request', requestListener);
   //   //}
   // };
 
