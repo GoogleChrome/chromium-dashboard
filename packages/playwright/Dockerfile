@@ -8,7 +8,7 @@ USER root
 RUN userdel -r pwuser && \
     groupadd -g $GROUPID pwuser && \
     useradd pwuser -u $USERID -g $GROUPID -m -s /bin/bash && \
-    mkdir -p /work/client-src/elements/__screenshots__ && \
+    mkdir -p /work/tests/__screenshots__ && \
     mkdir -p /work/test-results && \
     chown -R pwuser /work
 
@@ -16,10 +16,10 @@ RUN userdel -r pwuser && \
 
 USER pwuser
 WORKDIR /work
-COPY --chown=pwuser:pwuser openapi /work/openapi/
-COPY --chown=pwuser:pwuser gen /work/gen/
+# COPY --chown=pwuser:pwuser openapi /work/openapi/
+# COPY --chown=pwuser:pwuser gen /work/gen/
 # Cache the infrequent but time consuming changes early
-COPY --chown=pwuser:pwuser requirements.txt requirements.dev.txt package.json package-lock.json /work/
-RUN npm ci && npx playwright install
+COPY --chown=pwuser:pwuser package.json /work/
+RUN npm install -D && npx playwright install
 # Copy the rest
 COPY --chown=pwuser:pwuser . /work

@@ -1,0 +1,13 @@
+{
+    "name": "playwright",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "test": "./run.sh bash -c \"./wait-for-app.sh && ls -al . && npx playwright test\""
+    },
+    "author": "",
+    "devDependencies": {
+        "@playwright/test": "^1.37.1"
+    }
+}

@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  app:
+  ide:
     build:
       context: ..
       dockerfile: .devcontainer/Dockerfile
@@ -18,18 +18,3 @@ services:
     environment:
       DATASTORE_PROJECT_ID: cr-status-staging
       DATASTORE_EMULATOR_HOST: localhost:15606
-
-  db:
-    image: google/cloud-sdk:402.0.0-emulators
-    restart: unless-stopped
-    command: gcloud beta emulators datastore start --project=cr-status-staging --host-port 0.0.0.0:15606 --no-store-on-disk --consistency=1.0
-
-  dsadmin:
-    image: ghcr.io/remko/dsadmin:v0.18.1
-    entrypoint: /ko-app/dsadmin -port 8888
-    depends_on:
-      - db
-    network_mode: service:db
-    environment:
-      DATASTORE_PROJECT_ID: cr-status-staging
-      DATASTORE_EMULATOR_HOST: "db:15606"

@@ -38,13 +38,3 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
        libxi6
 
 RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && npm install -g gulp-cli" 2>&1
-
-FROM ide as dev
-WORKDIR /workspace
-COPY openapi /workspace/openapi/
-COPY gen /workspace/gen/
-# Cache the infrequent but time consuming changes early
-COPY requirements.txt requirements.dev.txt package.json package-lock.json /workspace/
-RUN npm run setup
-# Copy the rest
-COPY . /workspace
