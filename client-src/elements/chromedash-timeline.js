@@ -1,4 +1,4 @@
-import {LitElement, css, html} from 'lit';
+import {LitElement, css, html, nothing} from 'lit';
 import {showToastMessage} from './utils.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
@@ -259,6 +259,16 @@ ORDER BY yyyymmdd DESC, client`;
   }
 
   render() {
+    const note2017 = html`
+      <p class="callout">
+        <b>Note</b>: on 2017-10-26 the underlying metrics were switched over
+        to a newer collection system which is <a
+        href="https://groups.google.com/a/chromium.org/forum/#!msg/blink-api-owners-discuss/IpIkbz0qtrM/HUCfSMv2AQAJ"
+        target="_blank">more accurate</a>.
+        This is also the reason for the abrupt spike around 2017-10-26.
+      </p>
+    `;
+
     return html`
       <input id="datalist-input" type="search" list="features" placeholder="Select or search a property" @change="${this.updateSelectedBucketId}" />
       <datalist id="features">
@@ -277,11 +287,7 @@ ORDER BY yyyymmdd DESC, client`;
         only have data from the Chrome channels they're on.
       </p>
       <div id="chart"></div>
-      <p class="callout">
-        <b>Note</b>: on 2017-10-26 the underlying metrics were switched over to a newer collection system
-        which is <a href="https://groups.google.com/a/chromium.org/forum/#!msg/blink-api-owners-discuss/IpIkbz0qtrM/HUCfSMv2AQAJ" target="_blank">more accurate</a>.
-        This is also the reason for the abrupt spike around 2017-10-26.
-      </p>
+      ${this.showAllHistoricalData ? note2017 : nothing}
       <h3 id="httparchive" class="header_title">Adoption of the feature on top sites</h3>
       <p class="description">The chart below shows the adoption of the feature by the top URLs on the internet. Data from <a href="https://httparchive.org/" target="_blank">HTTP Archive</a>.</p>
       <iframe id="http-archive-data"></iframe>
