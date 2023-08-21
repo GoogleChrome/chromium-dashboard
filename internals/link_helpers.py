@@ -44,7 +44,7 @@ LINK_TYPES_REGEX = {
     # https://bugs.chromium.org/p/chromium/issues/detail?id=
     # https://crbug.com/
     # https://code.google.com/p/chromium/issues/detail?id=
-    LINK_TYPE_CHROMIUM_BUG: re.compile(r'https?://bugs\.chromium\.org/p/chromium/issues/detail\?id=d+|https?://crbug\.com/\d+|https?://code\.google\.com/p/chromium/issues/detail\?id=\d+'),
+    LINK_TYPE_CHROMIUM_BUG: re.compile(r'https?://bugs\.chromium\.org/p/chromium/issues/detail\?id=\d+|https?://crbug\.com/\d+|https?://code\.google\.com/p/chromium/issues/detail\?id=\d+'),
     # https://github.com/GoogleChrome/chromium-dashboard/issues/999
     LINK_TYPE_GITHUB_ISSUE: re.compile(r'https?://(www\.)?github\.com/.*issues/\d+'),
     # https://github.com/GoogleChrome/chromium-dashboard/pull/3044
