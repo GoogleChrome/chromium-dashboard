@@ -3,6 +3,7 @@ import {SHARED_STYLES} from '../css/shared-css.js';
 import {
   GATE_TEAM_ORDER,
   STAGE_SHORT_NAMES,
+  GATE_ACTIVE_REVIEW_STATES,
 } from './form-field-enums';
 
 
@@ -147,7 +148,7 @@ class ChromedashFeatureRow extends LitElement {
   }
 
   isActiveGate(gate) {
-    return gate.state == 2 || gate.state == 3 || gate.state == 4;
+    return GATE_ACTIVE_REVIEW_STATES.includes(gate.state);
   }
 
   getActiveStages(feature) {

@@ -383,7 +383,7 @@ export class ChromedashFeaturePage extends LitElement {
           <h3>Demos and samples</h3>
           <ul>
             ${this.feature.resources.samples.map((sampleLink) => html`
-              <li><a href="${sampleLink}">${sampleLink}</a></li>
+              <li>${enhanceUrl(sampleLink, this.featureLinks)}</li>
             `)}
           </ul>
         </section>
@@ -394,7 +394,7 @@ export class ChromedashFeaturePage extends LitElement {
           <h3>Documentation</h3>
           <ul>
             ${this.feature.resources.docs.map((docLink) => html`
-              <li><a href="${docLink}">${docLink}</a></li>
+              <li>${enhanceUrl(docLink, this.featureLinks)}</li>
             `)}
           </ul>
         </section>
@@ -403,9 +403,7 @@ export class ChromedashFeaturePage extends LitElement {
       ${this.feature.standards.spec ? html`
         <section id="specification">
           <h3>Specification</h3>
-          <p><a href=${this.feature.standards.spec} target="_blank" rel="noopener">
-            Specification link
-          </a></p>
+          <p>${enhanceUrl(this.feature.standards.spec, this.featureLinks)}</p>
           <br>
           <p>
             <label>Status:</label>

@@ -104,6 +104,8 @@ class LinkTest(testing_config.CustomTestCase):
             "total_count": 4,
             "covered_count": 1,
             "uncovered_count": 3,
+            "error_count": 0,
+            "http_error_count": 0,
             "link_types": [
                 {"key": "web", "count": 3},
                 {"key": "chromium_bug", "count": 1},
@@ -112,6 +114,7 @@ class LinkTest(testing_config.CustomTestCase):
                 {"key": "https://docs.google.com", "count": 2},
                 {"key": "https://www.google.com", "count": 1},
             ],
+            "error_link_domains": []
         },
     )
 

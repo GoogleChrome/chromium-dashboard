@@ -15,6 +15,7 @@
 
 from dataclasses import dataclass, field
 from typing import Any, Type
+import threading
 
 from api import accounts_api
 from api import blink_components_api
@@ -55,13 +56,22 @@ from pages import metrics
 from pages import users
 import settings
 
+
+# Patch treading library to work-around bug with Google Cloud Logging.
+original_delete = threading.Thread._delete  # type: ignore
+def safe_delete(self):
+  try:
+    original_delete(self)
+  except KeyError:
+    pass
+threading.Thread._delete = safe_delete  # type: ignore
+
+
 # Sets up Cloud Logging client library.
-# TODO(jrobbins): Re-enable Google Cloud Logging when #3197 is resolved.
-# if not settings.UNIT_TEST_MODE and not settings.DEV_MODE:
-#   import google.cloud.logging
-#   client = google.cloud.logging.Client()
-#   client.get_default_handler()
-#   client.setup_logging()
+if not settings.UNIT_TEST_MODE and not settings.DEV_MODE:
+  import google.cloud.logging
+  client = google.cloud.logging.Client()
+  client.setup_logging()
 
 
 # Note: In the URLs below, parameters like <int:feature_id> are

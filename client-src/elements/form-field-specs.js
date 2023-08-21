@@ -1052,7 +1052,8 @@ export const ALL_FIELDS = {
     initial: false,
     label: 'Critical origin trial',
     help_text: html`
-      See <a href="go/running-an-origin-trial">go/running-an-origin-trial</a>
+      See <a href="https://goto.google.com/running-an-origin-trial"
+      >go/running-an-origin-trial</a>
       for criteria and additional process requirements.`,
   },
 

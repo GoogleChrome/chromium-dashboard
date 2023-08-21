@@ -4,33 +4,19 @@ import './chromedash-activity-log';
 import {
   openPreflightDialog,
   somePendingPrereqs,
+  somePendingGates,
 } from './chromedash-preflight-dialog';
 import {autolink, showToastMessage, findProcessStage,
   renderAbsoluteDate, renderRelativeDate,
 } from './utils.js';
 import {GATE_QUESTIONNAIRES} from './form-definition.js';
+import {
+  GATE_PREPARING,
+  GATE_REVIEW_REQUESTED,
+  VOTE_OPTIONS,
+} from './form-field-enums';
 
 import {SHARED_STYLES} from '../css/shared-css.js';
-
-
-export const PREPARING = 0;
-export const REVIEW_REQUESTED = 2;
-export const STATE_NAMES = {
-  NO_RESPONSE: [7, 'No response'],
-  NA: [1, 'N/a or Ack'],
-  REVIEW_STARTED: [3, 'Review started'],
-  NEEDS_WORK: [4, 'Needs work'],
-  INTERNAL_REVIEW: [8, 'Internal review'],
-  APPROVED: [5, 'Approved'],
-  DENIED: [6, 'Denied'],
-};
-
-export const ACTIVE_REVIEW_STATES = [
-  REVIEW_REQUESTED,
-  STATE_NAMES.REVIEW_STARTED[0],
-  STATE_NAMES.NEEDS_WORK[0],
-  STATE_NAMES.INTERNAL_REVIEW[0],
-];
 
 
 export class ChromedashGateColumn extends LitElement {
@@ -135,6 +121,7 @@ export class ChromedashGateColumn extends LitElement {
     return {
       user: {type: Object},
       feature: {type: Object},
+      featureGates: {type: Array},
       stage: {type: Object},
       gate: {type: Object},
       progress: {type: Object},
@@ -154,6 +141,7 @@ export class ChromedashGateColumn extends LitElement {
     super();
     this.user = {};
     this.feature = {};
+    this.featureGates = [];
     this.stage = {};
     this.gate = {};
     this.progress = {};
@@ -333,7 +321,7 @@ export class ChromedashGateColumn extends LitElement {
 
   handleReviewRequested() {
     window.csClient.setVote(
-      this.feature.id, this.gate.id, REVIEW_REQUESTED)
+      this.feature.id, this.gate.id, GATE_REVIEW_REQUESTED)
       .then(() => {
         this._fireEvent('refetch-needed', {});
       });
@@ -353,21 +341,36 @@ export class ChromedashGateColumn extends LitElement {
       .replace('{outgoing_stage}', processStage.outgoing_stage);
 
     const checkCompletion = () => {
-      if (somePendingPrereqs(action, this.progress)) {
+      if (somePendingPrereqs(action, this.progress) ||
+          somePendingGates(this.featureGates, this.stage)) {
         // Open the dialog.
         openPreflightDialog(
           this.feature, this.progress, this.process, action,
-          processStage, this.stage);
+          processStage, this.stage, this.featureGates);
         return;
       } else {
         // Act like user clicked left button to go to the draft email window.
-        const draftWindow = window.open(url, '_blank');
-        draftWindow.focus();
+        // Use setTimeout() to prevent safari from blocking the new tab.
+        setTimeout(() => {
+          const draftWindow = window.open(url, '_blank');
+          draftWindow.focus();
+        });
       }
     };
 
+    const loadThenCheckCompletion = () => {
+      Promise.all([
+        window.csClient.getGates(this.feature.id),
+      ]).then(([gatesRes]) => {
+        this.featureGates = gatesRes.gates;
+        checkCompletion();
+      }).catch(() => {
+        showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+      });
+    };
+
     return html`
-      <sl-button @click=${checkCompletion}
+      <sl-button @click=${loadThenCheckCompletion}
        pill size=small variant=primary
        >${label}</sl-button>
     `;
@@ -396,7 +399,7 @@ export class ChromedashGateColumn extends LitElement {
 
   renderReviewRequest() {
     for (const v of this.votes) {
-      if (v.state == REVIEW_REQUESTED) {
+      if (v.state == GATE_REVIEW_REQUESTED) {
         const shortVoter = v.set_by.split('@')[0] + '@';
         return html`
           ${shortVoter} requested on
@@ -429,11 +432,11 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   renderReviewStatus() {
-    if (this.gate.state == PREPARING) {
+    if (this.gate.state == GATE_PREPARING) {
       return this.renderReviewStatusPreparing();
-    } else if (this.gate.state == STATE_NAMES.APPROVED[0]) {
+    } else if (this.gate.state == VOTE_OPTIONS.APPROVED[0]) {
       return this.renderReviewStatusApproved();
-    } else if (this.gate.state == STATE_NAMES.DENIED[0]) {
+    } else if (this.gate.state == VOTE_OPTIONS.DENIED[0]) {
       return this.renderReviewStatusDenied();
     } else {
       return nothing;
@@ -530,10 +533,10 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   findStateName(state) {
-    if (state == REVIEW_REQUESTED) {
+    if (state == GATE_REVIEW_REQUESTED) {
       return 'Review requested';
     }
-    for (const item of Object.values(STATE_NAMES)) {
+    for (const item of Object.values(VOTE_OPTIONS)) {
       if (item[0] == state) {
         return item[1];
       }
@@ -555,7 +558,7 @@ export class ChromedashGateColumn extends LitElement {
                  value="${state}" ${ref(this.voteSelectRef)}
                  @sl-change=${this.handleSelectChanged}
                  hoist size="small">
-        ${Object.values(STATE_NAMES).map((valName) => html`
+        ${Object.values(VOTE_OPTIONS).map((valName) => html`
           <sl-option value="${valName[0]}">${valName[1]}</sl-option>`,
         )}
       </sl-select>
@@ -567,7 +570,7 @@ export class ChromedashGateColumn extends LitElement {
     let saveButton = nothing;
     let voteCell = this.renderVoteReadOnly(vote);
 
-    if (vote.state === REVIEW_REQUESTED &&
+    if (vote.state === GATE_REVIEW_REQUESTED &&
         !(canVote && vote.set_by === this.user?.email)) {
       return nothing; // The requester is shown by renderReviewRequest().
     }
@@ -576,8 +579,8 @@ export class ChromedashGateColumn extends LitElement {
       // If the current reviewer was the one who requested the review,
       // select "No response" in the menu because there is no
       // "Review requested" menu item now.
-      const state = (vote.state == REVIEW_REQUESTED ?
-        STATE_NAMES.NO_RESPONSE[0] : vote.state);
+      const state = (vote.state == GATE_REVIEW_REQUESTED ?
+        VOTE_OPTIONS.NO_RESPONSE[0] : vote.state);
       voteCell = this.renderVoteMenu(state);
       if (this.needsSave) {
         saveButton = html`
@@ -606,7 +609,7 @@ export class ChromedashGateColumn extends LitElement {
       this.user &&
         this.user.approvable_gate_types.includes(this.gate.gate_type));
     const myVoteExists = this.votes.some((v) => v.set_by == this.user?.email);
-    const responses = this.votes.filter((v) => v.state !== REVIEW_REQUESTED);
+    const responses = this.votes.filter((v) => v.state !== GATE_REVIEW_REQUESTED);
     const addVoteRow = (canVote && !myVoteExists) ?
       this.renderVoteRow({set_by: this.user?.email, state: 7}, canVote) :
       nothing;

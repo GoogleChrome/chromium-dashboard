@@ -3,6 +3,7 @@ import './chromedash-callout';
 import {
   openPreflightDialog,
   somePendingPrereqs,
+  somePendingGates,
 } from './chromedash-preflight-dialog';
 import {findProcessStage} from './utils';
 import {SHARED_STYLES} from '../css/shared-css.js';
@@ -14,6 +15,7 @@ export class ChromedashProcessOverview extends LitElement {
       process: {type: Object},
       progress: {type: Object},
       dismissedCues: {type: Array},
+      featureGates: {type: Array},
     };
   }
 
@@ -24,6 +26,7 @@ export class ChromedashProcessOverview extends LitElement {
     this.progress = {};
     this.dismissedCues = [];
     this.sameTypeRendered = 0;
+    this.featureGates = [];
   }
 
   static prereqsId = 0;
@@ -164,10 +167,12 @@ export class ChromedashProcessOverview extends LitElement {
       .replace('{outgoing_stage}', stage.outgoing_stage);
 
     const checkCompletion = () => {
-      if (somePendingPrereqs(action, this.progress)) {
+      if (somePendingPrereqs(action, this.progress) ||
+          somePendingGates(this.featureGates, feStage)) {
         // Open the dialog.
         openPreflightDialog(
-          this.feature, this.progress, this.process, action, stage, feStage);
+          this.feature, this.progress, this.process, action, stage, feStage,
+          this.featureGates);
         return;
       } else {
         // Act like user clicked left button to go to the draft email window.

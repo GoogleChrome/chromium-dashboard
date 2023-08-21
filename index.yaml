@@ -472,3 +472,10 @@ indexes:
   - name: type
   - name: url
   - name: updated
+- kind: FeatureLinks
+  properties:
+  - name: http_error_code
+  - name: is_error
+  - name: type
+  - name: updated
+  - name: url

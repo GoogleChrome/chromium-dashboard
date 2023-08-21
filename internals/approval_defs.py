@@ -23,10 +23,11 @@ import requests
 from framework import permissions
 from internals import core_enums
 from internals import slo
-from internals.review_models import Gate, OwnersFile, Vote
+from internals.review_models import Gate, GateDef, OwnersFile, Vote
 import settings
 
 CACHE_EXPIRATION = 60 * 60  # One hour
+IN_NDB = 'stored in ndb'
 
 
 ONE_LGTM = 'One LGTM'
@@ -34,12 +35,8 @@ THREE_LGTM = 'Three LGTMs'
 API_OWNERS_URL = (
     'https://chromium.googlesource.com/chromium/src/+/'
     'main/third_party/blink/API_OWNERS?format=TEXT')
-PRIVACY_APPROVERS = [
-    'owp-privacy-approvers@google.com',
-]
-SECURITY_APPROVERS: list[str] = [
-  # TBD
-]
+PRIVACY_APPROVERS = IN_NDB
+SECURITY_APPROVERS = IN_NDB
 ENTERPRISE_APPROVERS = [
     'mhoste@google.com',
     'angelaweber@google.com',
@@ -195,6 +192,10 @@ def get_approvers(field_id) -> list[str]:
     return []
 
   afd = APPROVAL_FIELDS_BY_ID[field_id]
+
+  if afd.approvers == IN_NDB:
+    gate_def = GateDef.get_gate_def(field_id)
+    return gate_def.approvers
 
   # afd.approvers can be either a hard-coded list of approver emails
   # or it can be a URL of an OWNERS file.  Right now we only use the
