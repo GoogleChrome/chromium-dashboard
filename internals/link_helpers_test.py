@@ -176,6 +176,10 @@ class LinkHelperTest(testing_config.CustomTestCase):
     self.assertEqual(link.is_error, True)
     self.assertEqual(link.http_error_code, 404)
 
+  def test_link_code_google(self):
+    link = Link("https://code.google.com/p/chromium/issues/detail?id=515786")
+    self.assertEqual(link.type, LINK_TYPE_CHROMIUM_BUG)
+
   def test_link_crbug(self):
     link = Link("https://crbug.com/1352598")
     self.assertEqual(link.type, LINK_TYPE_CHROMIUM_BUG)

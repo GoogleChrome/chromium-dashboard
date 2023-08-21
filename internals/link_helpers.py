@@ -39,7 +39,8 @@ LINK_TYPE_WEB = 'web'
 LINK_TYPES_REGEX = {
     # https://bugs.chromium.org/p/chromium/issues/detail?id=
     # https://crbug.com/
-    LINK_TYPE_CHROMIUM_BUG: re.compile(r'https?://bugs\.chromium\.org/p/chromium/issues/detail\?.*|https?://crbug\.com/\d+'),
+    # https://code.google.com/p/chromium/issues/detail?id=
+    LINK_TYPE_CHROMIUM_BUG: re.compile(r'https?://bugs\.chromium\.org/p/chromium/issues/detail\?id=d+|https?://crbug\.com/\d+|https?://code\.google\.com/p/chromium/issues/detail\?id=\d+'),
     # https://github.com/GoogleChrome/chromium-dashboard/issues/999
     LINK_TYPE_GITHUB_ISSUE: re.compile(r'https?://(www\.)?github\.com/.*issues/\d+'),
     # https://github.com/GoogleChrome/chromium-dashboard/pull/3044
@@ -213,6 +214,8 @@ class Link():
       issue_id = parsed_url.query.split('id=')[-1].split('&')[0]
     elif parsed_url.netloc == 'crbug.com':
       issue_id = parsed_url.path.lstrip('/')
+    elif parsed_url.netloc == 'code.google.com':
+      issue_id = parsed_url.query.split('id=')[-1].split('&')[0]
 
     # csrf token is required, its expiration is about 2 hours according to the tokenExpiresSec field
     # technically, we could cache the csrf token and reuse it for 2 hours
