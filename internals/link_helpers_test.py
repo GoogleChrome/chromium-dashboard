@@ -24,12 +24,29 @@ from internals.link_helpers import (
     LINK_TYPE_MDN_DOCS,
     LINK_TYPE_GOOGLE_DOCS,
     LINK_TYPE_MOZILLA_BUG,
+    LINK_TYPE_SPECS,
     valid_url
 )
 
 
 class LinkHelperTest(testing_config.CustomTestCase):
+  def test_specs_url(self):
+    urls = [
+      "https://w3c.github.io/presentation-api/",
+      "https://www.w3.org/TR/css-pseudo-4/#highlight-pseudos",
+      "https://dev.w3.org/html5/spec-LC/the-button-element.html",
+      "https://drafts.csswg.org/css-conditional-4/#support-definition-ext",
+      "https://drafts.csswg.org/css-values-3/#position",
+      "https://dom.spec.whatwg.org/#validate",
+      "https://html.spec.whatwg.org/multipage/webappapis.html",
+      "https://wicg.github.io/keyboard-map/#layoutchange-event",
+    ]
 
+    for url in urls:
+      with self.subTest(url=url):
+        link = Link(url)
+        self.assertEqual(link.type, LINK_TYPE_SPECS)
+        self.assertEqual(link.url, url)
   def test_mozilla_bug(self):
     link = Link("https://bugzilla.mozilla.org/show_bug.cgi?id=1314686")
     link.parse()

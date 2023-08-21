@@ -8,6 +8,7 @@ const LINK_TYPE_MDN_DOCS = 'mdn_docs';
 const LINK_TYPE_GOOGLE_DOCS = 'google_docs';
 const LINK_TYPE_MOZILLA_BUG = 'mozilla_bug';
 const LINK_TYPE_WEBKIT_BUG = 'webkit_bug';
+const LINK_TYPE_SPECS = 'specs';
 
 function _formatLongText(text, maxLength = 50) {
   if (text.length > maxLength) {
@@ -249,6 +250,47 @@ function _enhanceLinkWithTitleAndDescription(featureLink, iconUrl) {
   </a>`;
 }
 
+function enhanceSpecsLink(featureLink) {
+  const url = featureLink.url;
+  const iconUrl = `https://www.google.com/s2/favicons?domain_url=${url}`;
+  const hashtag = url.split('#')[1];
+  const information = featureLink.information;
+  const title = information.title;
+  const description = information.description;
+
+  function renderTooltipContent() {
+    return html`<div class="feature-link-tooltip">
+    ${title && html`
+    <div>
+      <strong>Title:</strong>
+      <span>${title}</span>
+    </div>
+  `}
+    ${description && html`
+      <div>
+        <strong>Description:</strong>
+        <span>${description}</span>
+      </div>
+    `}
+    </div>
+    ${hashtag && html`
+      <div>
+        <strong>Hashtag:</strong>
+        <span>#${hashtag}</span>
+      `}
+      </div>`;
+  }
+  return html`<a class="feature-link" href="${featureLink.url}" target="_blank" rel="noopener noreferrer">
+    <sl-tooltip style="--sl-tooltip-arrow-size: 0;--max-width: 50vw;">
+        <div slot="content">${renderTooltipContent()}</div>
+        <sl-tag>
+          <img src="${iconUrl}" alt="icon" class="icon" />
+          ${_formatLongText(title)}
+        </sl-tag>
+    </sl-tooltip>
+  </a>`;
+}
+
 function enhanceMDNDocsLink(featureLink) {
   return _enhanceLinkWithTitleAndDescription(featureLink, 'https://developer.mozilla.org/favicon-48x48.png');
 }
@@ -322,6 +364,8 @@ function _enhanceLink(featureLink, fallback, text, ignoreHttpErrorCodes = []) {
         return enhanceMozillaBugLink(featureLink);
       case LINK_TYPE_WEBKIT_BUG:
         return enhanceWebKitBugLink(featureLink);
+      case LINK_TYPE_SPECS:
+        return enhanceSpecsLink(featureLink);
       default:
         return fallback;
     }

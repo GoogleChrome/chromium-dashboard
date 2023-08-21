@@ -39,6 +39,7 @@ LINK_TYPE_MDN_DOCS = 'mdn_docs'
 LINK_TYPE_GOOGLE_DOCS = 'google_docs'
 LINK_TYPE_MOZILLA_BUG = 'mozilla_bug'
 LINK_TYPE_WEBKIT_BUG = 'webkit_bug'
+LINK_TYPE_SPECS = 'specs'
 LINK_TYPE_WEB = 'web'
 LINK_TYPES_REGEX = {
     # https://bugs.chromium.org/p/chromium/issues/detail?id=
@@ -59,6 +60,12 @@ LINK_TYPES_REGEX = {
     LINK_TYPE_MOZILLA_BUG: re.compile(r'https?://bugzilla\.mozilla\.org/show_bug\.cgi\?id=\d+'),
     # https://bugs.webkit.org/show_bug.cgi?id=128456
     LINK_TYPE_WEBKIT_BUG: re.compile(r'https?://bugs\.webkit\.org/show_bug\.cgi\?id=\d+'),
+    # https://w3c.github.io/
+    # https://w3.org/
+    # https://drafts.csswg.org/
+    # https://whatwg.org/
+    # https://wicg.github.io/
+    LINK_TYPE_SPECS: re.compile(r'https?://w3c\.github\.io/.*|https?://[a-z]+\.?w3\.org/.*|https?://drafts\.csswg\.org/.*|https?://[a-z\.]*whatwg\.org/.*|https?://wicg\.github\.io/.*'),
     LINK_TYPE_WEB: re.compile(r'https?://.*'),
 }
 
@@ -265,7 +272,7 @@ class Link():
     # unescape html, e.g. &amp; -> &
     # remove line breaks
     html_str = html.unescape(response.text)
-    
+
     title = re.search(r'<title>(.*?)</title>', html_str)
     title_og = re.search(r'<meta property="og:title" content="(.*?)"', html_str)
     description = re.search(r'<meta name="description"\s+content="(.*?)"', html_str)
@@ -306,10 +313,11 @@ class Link():
       elif self.type == LINK_TYPE_GITHUB_MARKDOWN:
         self.information = self._parse_github_markdown()
       elif self.type in [
-        LINK_TYPE_MDN_DOCS,
-        LINK_TYPE_GOOGLE_DOCS,
-        LINK_TYPE_MOZILLA_BUG,
-        LINK_TYPE_WEBKIT_BUG
+          LINK_TYPE_MDN_DOCS,
+          LINK_TYPE_GOOGLE_DOCS,
+          LINK_TYPE_MOZILLA_BUG,
+          LINK_TYPE_WEBKIT_BUG,
+          LINK_TYPE_SPECS,
       ]:
         self.information = self._parse_html_head()
       elif self.type == LINK_TYPE_WEB:
