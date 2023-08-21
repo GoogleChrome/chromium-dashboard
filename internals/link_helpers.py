@@ -18,7 +18,6 @@ import requests
 import json
 import logging
 from typing import Any, Optional
-from string import punctuation
 from ghapi.core import GhApi
 from urllib.error import HTTPError
 from urllib.parse import urlparse
@@ -104,7 +103,11 @@ class Link():
     """Extract the urls from the given value."""
     if isinstance(value, str):
       urls = URL_REGEX.findall(value)
+      
       # remove trailing punctuation
+      # punctuation similar to string.punctuation except that it does not include "/" 
+      # this keep url ending with "/"
+      punctuation = r"""!"#$%&'()*+,-.:;<=>?@[\]^_`{|}~"""
       urls = [url.rstrip(punctuation) for url in urls]
     elif isinstance(value, list):
       urls = [url for url in value if isinstance(url, str) and URL_REGEX.match(url)]
