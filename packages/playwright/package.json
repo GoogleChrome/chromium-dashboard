@@ -5,12 +5,12 @@
     "main": "index.js",
     "scripts": {
         "test": "./run.sh bash -c \"./wait-for-app.sh && ls -al . && npx playwright test\"",
-        "pwtests": "./playwright/run.sh bash -c \"./playwright/wait-for-app.sh && ls -al . && npx playwright test\"",
-        "pwtests-update": "./playwright/run.sh bash -c \"./wait-for-app.sh && npx playwright test --update-snapshots\"",
-        "pwtests-report": "./playwright/run.sh bash -c \"./wait-for-app.sh && npx playwright show-report\"",
-        "pwtests-shell": "./playwright/run.sh bash",
-        "pwtests-ui": "./playwright/run.sh bash -c \"./wait-for-app.sh && npx playwright test --ui --ui-port=8123\"",
-        "pwtests-shutdown": "./playwright/run.sh down"
+        "pwtests": "./run.sh bash -c \"./playwright/wait-for-app.sh && ls -al . && npx playwright test\"",
+        "pwtests-update": "./run.sh bash -c \"./wait-for-app.sh && npx playwright test --update-snapshots\"",
+        "pwtests-report": "./run.sh bash -c \"./wait-for-app.sh && npx playwright show-report\"",
+        "pwtests-shell": "./run.sh bash",
+        "pwtests-ui": "./run.sh bash -c \"./wait-for-app.sh && npx playwright test --ui --ui-port=8123\"",
+        "pwtests-shutdown": "./run.sh down"
     },
     "author": "",
     "devDependencies": {
