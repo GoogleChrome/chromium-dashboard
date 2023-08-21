@@ -35,6 +35,7 @@ LINK_TYPE_GITHUB_ISSUE = 'github_issue'
 LINK_TYPE_GITHUB_MARKDOWN = 'github_markdown'
 LINK_TYPE_GITHUB_PULL_REQUEST = 'github_pull_request'
 LINK_TYPE_MDN_DOCS = 'mdn_docs'
+LINK_TYPE_GOOGLE_DOCS = 'google_docs'
 LINK_TYPE_WEB = 'web'
 LINK_TYPES_REGEX = {
     # https://bugs.chromium.org/p/chromium/issues/detail?id=
@@ -49,6 +50,8 @@ LINK_TYPES_REGEX = {
     LINK_TYPE_GITHUB_MARKDOWN: re.compile(r'https?://(www\.)?github\.com/.*\.md.*'),
     # https://developer.mozilla.org/en-US/docs/Web/API/DOMException
     LINK_TYPE_MDN_DOCS: re.compile(r'https?://(www\.)?developer\.mozilla\.org/.*'),
+    # https://docs.google.com/document/d/1-M_o-il38aW64Gyk4R23Yaxy1p2Uy7D0i6J5qTWzypU
+    LINK_TYPE_GOOGLE_DOCS: re.compile(r'https?://docs\.google\.com/(document|spreadsheets|presentation|forms)/.*'),
     LINK_TYPE_WEB: re.compile(r'https?://.*'),
 }
 
@@ -258,8 +261,8 @@ class Link():
     description_og = re.search(r'<meta property="og:description" content="(.*?)"', html_str)
 
     return {
-        'title': title.group(1) if title else (title_og.group(1) if title_og else None),
-        'description': description.group(1) if description else (description_og.group(1) if description_og else None),
+        'title': title_og.group(1) if title_og else (title.group(1) if title else None),
+        'description': description_og.group(1) if description_og else (description.group(1) if description else None),
     }
 
   def _validate_url(self) -> bool:
@@ -291,7 +294,7 @@ class Link():
         self.information = self._parse_github_issue()
       elif self.type == LINK_TYPE_GITHUB_MARKDOWN:
         self.information = self._parse_github_markdown()
-      elif self.type == LINK_TYPE_MDN_DOCS:
+      elif self.type == LINK_TYPE_MDN_DOCS or self.type == LINK_TYPE_GOOGLE_DOCS:
         self.information = self._parse_html_head()
       elif self.type == LINK_TYPE_WEB:
         self.information = None

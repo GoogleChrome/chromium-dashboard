@@ -5,6 +5,7 @@ const LINK_TYPE_GITHUB_ISSUE = 'github_issue';
 const LINK_TYPE_GITHUB_PULL_REQUEST = 'github_pull_request';
 const LINK_TYPE_GITHUB_MARKDOWN = 'github_markdown';
 const LINK_TYPE_MDN_DOCS = 'mdn_docs';
+const LINK_TYPE_GOOGLE_DOCS = 'google_docs';
 
 function _formatLongText(text, maxLength = 50) {
   if (text.length > maxLength) {
@@ -214,15 +215,10 @@ function enhanceGithubMarkdownLink(featureLink, text) {
   </a>`;
 }
 
-function enhanceMDNDocsLink(featureLink, text) {
+function _enhanceLinkWithTitleAndDescription(featureLink, iconUrl) {
   const information = featureLink.information;
   const title = information.title;
   const description = information.description;
-
-
-  if (!text) {
-    text = title;
-  }
 
   function renderTooltipContent() {
     return html`<div class="feature-link-tooltip">
@@ -244,11 +240,31 @@ function enhanceMDNDocsLink(featureLink, text) {
     <sl-tooltip style="--sl-tooltip-arrow-size: 0;--max-width: 50vw;">
         <div slot="content">${renderTooltipContent()}</div>
         <sl-tag>
-          <img src="https://developer.mozilla.org/favicon-48x48.png" alt="icon" class="icon" />
+          <img src="${iconUrl}" alt="icon" class="icon" />
           ${_formatLongText(title)}
         </sl-tag>
     </sl-tooltip>
   </a>`;
+}
+
+function enhanceMDNDocsLink(featureLink) {
+  return _enhanceLinkWithTitleAndDescription(featureLink, 'https://developer.mozilla.org/favicon-48x48.png');
+}
+
+function enhanceGoogleDocsLink(featureLink) {
+  const url = featureLink.url;
+  const type = url.split('/')[3];
+  let iconUrl = 'https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico';
+
+  if (type === 'spreadsheets') {
+    iconUrl = 'https://ssl.gstatic.com/docs/spreadsheets/favicon3.ico';
+  } else if (type === 'presentation') {
+    iconUrl = 'https://ssl.gstatic.com/docs/presentations/images/favicon5.ico';
+  } else if (type === 'forms') {
+    iconUrl = 'https://ssl.gstatic.com/docs/spreadsheets/forms/favicon_qp2.png';
+  }
+
+  return _enhanceLinkWithTitleAndDescription(featureLink, iconUrl);
 }
 
 function _enhanceLink(featureLink, fallback, text, ignoreHttpErrorCodes = []) {
@@ -290,6 +306,8 @@ function _enhanceLink(featureLink, fallback, text, ignoreHttpErrorCodes = []) {
         return enhanceGithubMarkdownLink(featureLink);
       case LINK_TYPE_MDN_DOCS:
         return enhanceMDNDocsLink(featureLink);
+      case LINK_TYPE_GOOGLE_DOCS:
+        return enhanceGoogleDocsLink(featureLink);
       default:
         return fallback;
     }

@@ -22,11 +22,21 @@ from internals.link_helpers import (
     LINK_TYPE_GITHUB_MARKDOWN,
     LINK_TYPE_WEB,
     LINK_TYPE_MDN_DOCS,
+    LINK_TYPE_GOOGLE_DOCS,
     valid_url
 )
 
 
 class LinkHelperTest(testing_config.CustomTestCase):
+
+  def test_google_docs_url(self):
+    link = Link("https://docs.google.com/document/d/1-M_o-il38aW64Gyk4R23Yaxy1p2Uy7D0i6J5qTWzypU")
+    link.parse()
+    self.assertEqual(link.type, LINK_TYPE_GOOGLE_DOCS)
+    self.assertTrue(link.is_parsed)
+    self.assertFalse(link.is_error)
+    self.assertIsNotNone(link.information.get('title'))
+    self.assertIsNotNone(link.information.get('description'))
 
   def test_mdn_docs_url(self):
     link = Link("https://developer.mozilla.org/en-US/docs/Web/HTML")
@@ -39,24 +49,24 @@ class LinkHelperTest(testing_config.CustomTestCase):
     self.assertIsNotNone(link.information.get('description'))
 
   def test_valid_url(self):
-      invalid_urls = [
+    invalid_urls = [
         'http://',
         'http://.',
         'https://invalid',
-      ]
-      valid_urls = [
+    ]
+    valid_urls = [
         'http://www.google.com/',
         'https://www.google.com/',
         'http://www.google.com',
         'https://www.google.com',
-      ]
-      for url in invalid_urls:
-        with self.subTest(url=url):
-          self.assertFalse(valid_url(url))
-      for url in valid_urls:
-        with self.subTest(url=url):
-          self.assertTrue(valid_url(url))
-        
+    ]
+    for url in invalid_urls:
+      with self.subTest(url=url):
+        self.assertFalse(valid_url(url))
+    for url in valid_urls:
+      with self.subTest(url=url):
+        self.assertTrue(valid_url(url))
+
   def test_real_server_error_url(self):
     link = Link("http://httpstat.us/503")
 
