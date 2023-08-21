@@ -5,7 +5,6 @@
     "main": "index.js",
     "scripts": {
         "test": "./run.sh bash -c \"./wait-for-app.sh && ls -al . && npx playwright test\"",
-        "//pwtests": "The version of the docker playwright image used here must exactly match the versions of @playwright/test in devDependencies and the Github Actions configuration (in playwright.yml).  The version of playwright used in devDependencies should not include the ^ prefix, so it doesn't auto-upgrade and get out of sync.",
         "pwtests": "./playwright/run.sh bash -c \"./playwright/wait-for-app.sh && ls -al . && npx playwright test\"",
         "pwtests-update": "./playwright/run.sh bash -c \"./wait-for-app.sh && npx playwright test --update-snapshots\"",
         "pwtests-report": "./playwright/run.sh bash -c \"./wait-for-app.sh && npx playwright show-report\"",
