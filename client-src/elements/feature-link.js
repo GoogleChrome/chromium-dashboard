@@ -285,7 +285,7 @@ function enhanceSpecsLink(featureLink) {
         <div slot="content">${renderTooltipContent()}</div>
         <sl-tag>
           <img src="${iconUrl}" alt="icon" class="icon" />
-          ${_formatLongText(title)}
+          Spec: ${_formatLongText(title)}
         </sl-tag>
     </sl-tooltip>
   </a>`;
