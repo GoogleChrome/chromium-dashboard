@@ -6,6 +6,8 @@ const LINK_TYPE_GITHUB_PULL_REQUEST = 'github_pull_request';
 const LINK_TYPE_GITHUB_MARKDOWN = 'github_markdown';
 const LINK_TYPE_MDN_DOCS = 'mdn_docs';
 const LINK_TYPE_GOOGLE_DOCS = 'google_docs';
+const LINK_TYPE_MOZILLA_BUG = 'mozilla_bug';
+const LINK_TYPE_WEBKIT_BUG = 'webkit_bug';
 
 function _formatLongText(text, maxLength = 50) {
   if (text.length > maxLength) {
@@ -251,6 +253,14 @@ function enhanceMDNDocsLink(featureLink) {
   return _enhanceLinkWithTitleAndDescription(featureLink, 'https://developer.mozilla.org/favicon-48x48.png');
 }
 
+function enhanceMozillaBugLink(featureLink) {
+  return _enhanceLinkWithTitleAndDescription(featureLink, 'https://bugzilla.mozilla.org/favicon.ico');
+}
+
+function enhanceWebKitBugLink(featureLink) {
+  return _enhanceLinkWithTitleAndDescription(featureLink, 'https://bugs.webkit.org/images/favicon.ico');
+}
+
 function enhanceGoogleDocsLink(featureLink) {
   const url = featureLink.url;
   const type = url.split('/')[3];
@@ -308,6 +318,10 @@ function _enhanceLink(featureLink, fallback, text, ignoreHttpErrorCodes = []) {
         return enhanceMDNDocsLink(featureLink);
       case LINK_TYPE_GOOGLE_DOCS:
         return enhanceGoogleDocsLink(featureLink);
+      case LINK_TYPE_MOZILLA_BUG:
+        return enhanceMozillaBugLink(featureLink);
+      case LINK_TYPE_WEBKIT_BUG:
+        return enhanceWebKitBugLink(featureLink);
       default:
         return fallback;
     }

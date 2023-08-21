@@ -23,11 +23,21 @@ from internals.link_helpers import (
     LINK_TYPE_WEB,
     LINK_TYPE_MDN_DOCS,
     LINK_TYPE_GOOGLE_DOCS,
+    LINK_TYPE_MOZILLA_BUG,
     valid_url
 )
 
 
 class LinkHelperTest(testing_config.CustomTestCase):
+
+  def test_mozilla_bug(self):
+    link = Link("https://bugzilla.mozilla.org/show_bug.cgi?id=1314686")
+    link.parse()
+    self.assertEqual(link.type, LINK_TYPE_MOZILLA_BUG)
+    self.assertTrue(link.is_parsed)
+    self.assertFalse(link.is_error)
+    self.assertIsNotNone(link.information.get('title'))
+    self.assertIsNotNone(link.information.get('description'))
 
   def test_google_docs_url(self):
     link = Link("https://docs.google.com/document/d/1-M_o-il38aW64Gyk4R23Yaxy1p2Uy7D0i6J5qTWzypU")
