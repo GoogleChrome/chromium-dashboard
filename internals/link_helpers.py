@@ -273,11 +273,11 @@ class Link():
   def _parse_html_head(self):
     response = requests.get(self.url)
     # unescape html, e.g. &amp; -> &
-    # remove line breaks
     html_str = html.unescape(response.text)
 
     title = re.search(r'<title>(.*?)</title>', html_str)
-    title_og = re.search(r'<meta property="og:title" content="(.*?)"', html_str)
+    # use \s+ instead of whitespace, to match multiple whitespaces or newlines
+    title_og = re.search(r'<meta property="og:title"\s+content="(.*?)"', html_str)
     description = re.search(r'<meta name="description"\s+content="(.*?)"', html_str)
     description_og = re.search(r'<meta property="og:description"\s+content="(.*?)"', html_str)
 
