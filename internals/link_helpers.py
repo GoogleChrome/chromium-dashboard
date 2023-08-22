@@ -18,12 +18,12 @@ import requests
 import json
 import logging
 from typing import Any, Optional
-from string import punctuation
 from ghapi.core import GhApi
 from urllib.error import HTTPError
 from urllib.parse import urlparse
 import base64
 import validators
+import html
 from framework import secrets
 
 
@@ -35,11 +35,16 @@ LINK_TYPE_GITHUB_ISSUE = 'github_issue'
 LINK_TYPE_GITHUB_MARKDOWN = 'github_markdown'
 LINK_TYPE_GITHUB_PULL_REQUEST = 'github_pull_request'
 LINK_TYPE_MDN_DOCS = 'mdn_docs'
+LINK_TYPE_GOOGLE_DOCS = 'google_docs'
+LINK_TYPE_MOZILLA_BUG = 'mozilla_bug'
+LINK_TYPE_WEBKIT_BUG = 'webkit_bug'
+LINK_TYPE_SPECS = 'specs'
 LINK_TYPE_WEB = 'web'
 LINK_TYPES_REGEX = {
     # https://bugs.chromium.org/p/chromium/issues/detail?id=
     # https://crbug.com/
-    LINK_TYPE_CHROMIUM_BUG: re.compile(r'https?://bugs\.chromium\.org/p/chromium/issues/detail\?.*|https?://crbug\.com/\d+'),
+    # https://code.google.com/p/chromium/issues/detail?id=
+    LINK_TYPE_CHROMIUM_BUG: re.compile(r'https?://bugs\.chromium\.org/p/chromium/issues/detail\?id=\d+|https?://crbug\.com/\d+|https?://code\.google\.com/p/chromium/issues/detail\?id=\d+'),
     # https://github.com/GoogleChrome/chromium-dashboard/issues/999
     LINK_TYPE_GITHUB_ISSUE: re.compile(r'https?://(www\.)?github\.com/.*issues/\d+'),
     # https://github.com/GoogleChrome/chromium-dashboard/pull/3044
@@ -48,6 +53,18 @@ LINK_TYPES_REGEX = {
     LINK_TYPE_GITHUB_MARKDOWN: re.compile(r'https?://(www\.)?github\.com/.*\.md.*'),
     # https://developer.mozilla.org/en-US/docs/Web/API/DOMException
     LINK_TYPE_MDN_DOCS: re.compile(r'https?://(www\.)?developer\.mozilla\.org/.*'),
+    # https://docs.google.com/document/d/1-M_o-il38aW64Gyk4R23Yaxy1p2Uy7D0i6J5qTWzypU
+    LINK_TYPE_GOOGLE_DOCS: re.compile(r'https?://docs\.google\.com/(document|spreadsheets|presentation|forms)/.*'),
+    # https://bugzilla.mozilla.org/show_bug.cgi?id=1314686
+    LINK_TYPE_MOZILLA_BUG: re.compile(r'https?://bugzilla\.mozilla\.org/show_bug\.cgi\?id=\d+'),
+    # https://bugs.webkit.org/show_bug.cgi?id=128456
+    LINK_TYPE_WEBKIT_BUG: re.compile(r'https?://bugs\.webkit\.org/show_bug\.cgi\?id=\d+'),
+    # https://w3c.github.io/
+    # https://w3.org/
+    # https://drafts.csswg.org/
+    # https://whatwg.org/
+    # https://wicg.github.io/
+    LINK_TYPE_SPECS: re.compile(r'https?://w3c\.github\.io/.*|https?://[a-z]+\.?w3\.org/.*|https?://drafts\.csswg\.org/.*|https?://[a-z\.]*whatwg\.org/.*|https?://wicg\.github\.io/.*'),
     LINK_TYPE_WEB: re.compile(r'https?://.*'),
 }
 
@@ -86,7 +103,11 @@ class Link():
     """Extract the urls from the given value."""
     if isinstance(value, str):
       urls = URL_REGEX.findall(value)
+      
       # remove trailing punctuation
+      # punctuation similar to string.punctuation except that it does not include "/" 
+      # this keep url ending with "/"
+      punctuation = r"""!"#$%&'()*+,-.:;<=>?@[\]^_`{|}~"""
       urls = [url.rstrip(punctuation) for url in urls]
     elif isinstance(value, list):
       urls = [url for url in value if isinstance(url, str) and URL_REGEX.match(url)]
@@ -213,6 +234,8 @@ class Link():
       issue_id = parsed_url.query.split('id=')[-1].split('&')[0]
     elif parsed_url.netloc == 'crbug.com':
       issue_id = parsed_url.path.lstrip('/')
+    elif parsed_url.netloc == 'code.google.com':
+      issue_id = parsed_url.query.split('id=')[-1].split('&')[0]
 
     # csrf token is required, its expiration is about 2 hours according to the tokenExpiresSec field
     # technically, we could cache the csrf token and reuse it for 2 hours
@@ -248,15 +271,19 @@ class Link():
     return information.get('issue', None)
 
   def _parse_html_head(self):
-    html_str = requests.get(self.url).text
+    response = requests.get(self.url)
+    # unescape html, e.g. &amp; -> &
+    html_str = html.unescape(response.text)
+
     title = re.search(r'<title>(.*?)</title>', html_str)
-    title_og = re.search(r'<meta property="og:title" content="(.*?)"', html_str)
-    description = re.search(r'<meta name="description" content="(.*?)"', html_str)
-    description_og = re.search(r'<meta property="og:description" content="(.*?)"', html_str)
+    # use \s+ instead of whitespace, to match multiple whitespaces or newlines
+    title_og = re.search(r'<meta property="og:title"\s+content="(.*?)"', html_str)
+    description = re.search(r'<meta name="description"\s+content="(.*?)"', html_str)
+    description_og = re.search(r'<meta property="og:description"\s+content="(.*?)"', html_str)
 
     return {
-        'title': title.group(1) if title else (title_og.group(1) if title_og else None),
-        'description': description.group(1) if description else (description_og.group(1) if description_og else None),
+        'title': title_og.group(1) if title_og else (title.group(1) if title else None),
+        'description': description_og.group(1) if description_og else (description.group(1) if description else None),
     }
 
   def _validate_url(self) -> bool:
@@ -288,7 +315,13 @@ class Link():
         self.information = self._parse_github_issue()
       elif self.type == LINK_TYPE_GITHUB_MARKDOWN:
         self.information = self._parse_github_markdown()
-      elif self.type == LINK_TYPE_MDN_DOCS:
+      elif self.type in [
+          LINK_TYPE_MDN_DOCS,
+          LINK_TYPE_GOOGLE_DOCS,
+          LINK_TYPE_MOZILLA_BUG,
+          LINK_TYPE_WEBKIT_BUG,
+          LINK_TYPE_SPECS,
+      ]:
         self.information = self._parse_html_head()
       elif self.type == LINK_TYPE_WEB:
         self.information = None

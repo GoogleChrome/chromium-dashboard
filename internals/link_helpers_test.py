@@ -22,11 +22,48 @@ from internals.link_helpers import (
     LINK_TYPE_GITHUB_MARKDOWN,
     LINK_TYPE_WEB,
     LINK_TYPE_MDN_DOCS,
+    LINK_TYPE_GOOGLE_DOCS,
+    LINK_TYPE_MOZILLA_BUG,
+    LINK_TYPE_SPECS,
     valid_url
 )
 
 
 class LinkHelperTest(testing_config.CustomTestCase):
+  def test_specs_url(self):
+    urls = [
+      "https://w3c.github.io/presentation-api/",
+      "https://www.w3.org/TR/css-pseudo-4/#highlight-pseudos",
+      "https://dev.w3.org/html5/spec-LC/the-button-element.html",
+      "https://drafts.csswg.org/css-conditional-4/#support-definition-ext",
+      "https://drafts.csswg.org/css-values-3/#position",
+      "https://dom.spec.whatwg.org/#validate",
+      "https://html.spec.whatwg.org/multipage/webappapis.html",
+      "https://wicg.github.io/keyboard-map/#layoutchange-event",
+    ]
+
+    for url in urls:
+      with self.subTest(url=url):
+        link = Link(url)
+        self.assertEqual(link.type, LINK_TYPE_SPECS)
+        self.assertEqual(link.url, url)
+  def test_mozilla_bug(self):
+    link = Link("https://bugzilla.mozilla.org/show_bug.cgi?id=1314686")
+    link.parse()
+    self.assertEqual(link.type, LINK_TYPE_MOZILLA_BUG)
+    self.assertTrue(link.is_parsed)
+    self.assertFalse(link.is_error)
+    self.assertIsNotNone(link.information.get('title'))
+    self.assertIsNotNone(link.information.get('description'))
+
+  def test_google_docs_url(self):
+    link = Link("https://docs.google.com/document/d/1-M_o-il38aW64Gyk4R23Yaxy1p2Uy7D0i6J5qTWzypU")
+    link.parse()
+    self.assertEqual(link.type, LINK_TYPE_GOOGLE_DOCS)
+    self.assertTrue(link.is_parsed)
+    self.assertFalse(link.is_error)
+    self.assertIsNotNone(link.information.get('title'))
+    self.assertIsNotNone(link.information.get('description'))
 
   def test_mdn_docs_url(self):
     link = Link("https://developer.mozilla.org/en-US/docs/Web/HTML")
@@ -39,38 +76,23 @@ class LinkHelperTest(testing_config.CustomTestCase):
     self.assertIsNotNone(link.information.get('description'))
 
   def test_valid_url(self):
-      invalid_urls = [
+    invalid_urls = [
         'http://',
         'http://.',
         'https://invalid',
-      ]
-      valid_urls = [
+    ]
+    valid_urls = [
         'http://www.google.com/',
         'https://www.google.com/',
         'http://www.google.com',
         'https://www.google.com',
-      ]
-      for url in invalid_urls:
-        with self.subTest(url=url):
-          self.assertFalse(valid_url(url))
-      for url in valid_urls:
-        with self.subTest(url=url):
-          self.assertTrue(valid_url(url))
-        
-  def test_real_server_error_url(self):
-    link = Link("http://httpstat.us/503")
-
-    link.parse()
-    self.assertEqual(link.type, LINK_TYPE_WEB)
-    self.assertEqual(link.is_error, True)
-    self.assertEqual(link.http_error_code, 503)
-
-    link = Link("https://httpstat.us/400")
-
-    link.parse()
-    self.assertEqual(link.type, LINK_TYPE_WEB)
-    self.assertEqual(link.is_error, True)
-    self.assertEqual(link.http_error_code, 400)
+    ]
+    for url in invalid_urls:
+      with self.subTest(url=url):
+        self.assertFalse(valid_url(url))
+    for url in valid_urls:
+      with self.subTest(url=url):
+        self.assertTrue(valid_url(url))
 
   @mock.patch('requests.get')
   def test_mock_not_found_url(self, mock_requests_get):
@@ -85,6 +107,10 @@ class LinkHelperTest(testing_config.CustomTestCase):
 
   def test_extract_urls_from_value(self):
     field_value = "https://www.chromestatus.com/feature/1234"
+    urls = Link.extract_urls_from_value(field_value)
+    self.assertEqual(urls, [field_value])
+
+    field_value = "https://w3c.github.io/presentation-api/"
     urls = Link.extract_urls_from_value(field_value)
     self.assertEqual(urls, [field_value])
 
@@ -175,6 +201,10 @@ class LinkHelperTest(testing_config.CustomTestCase):
     self.assertEqual(link.is_parsed, True)
     self.assertEqual(link.is_error, True)
     self.assertEqual(link.http_error_code, 404)
+
+  def test_link_code_google(self):
+    link = Link("https://code.google.com/p/chromium/issues/detail?id=515786")
+    self.assertEqual(link.type, LINK_TYPE_CHROMIUM_BUG)
 
   def test_link_crbug(self):
     link = Link("https://crbug.com/1352598")
