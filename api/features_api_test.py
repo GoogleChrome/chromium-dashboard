@@ -710,7 +710,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         Stage.feature_id == new_feature.key.integer_id()).fetch()
     gates = Gate.query(Gate.feature_id == new_feature.key.integer_id()).fetch()
     self.assertEqual(len(stages), 6)
-    self.assertEqual(len(gates), 9)
+    self.assertEqual(len(gates), 11)
 
   def test_post__no_permissions(self):
     """403 Forbidden if the user does not have feature create access."""

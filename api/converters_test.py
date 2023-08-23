@@ -551,7 +551,7 @@ class GateConvertersTest(testing_config.CustomTestCase):
       'additional_review': True,
       'slo_initial_response': appr_def.slo_initial_response,
       'slo_initial_response_took': None,  # Review is still in-progress.
-      'slo_initial_response_remaining': -2,  # Two weekdays overdue.
+      'slo_initial_response_remaining': -1,  # One weekday overdue.
       }
     self.assertEqual(expected, actual)
 

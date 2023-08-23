@@ -261,7 +261,7 @@ class SLOReportingTests(testing_config.CustomTestCase):
     self.assertFalse(slo.is_gate_overdue(
         self.gate_1, APPR_FIELDS, DEFAULT_SLO_LIMIT))
 
-    mock_now.return_value = datetime.datetime(2023, 6, 15, 12, 30, 0)  # Thu
+    mock_now.return_value = datetime.datetime(2023, 6, 16, 12, 30, 0)  # Thu
     self.assertTrue(slo.is_gate_overdue(
         self.gate_1, APPR_FIELDS, DEFAULT_SLO_LIMIT))
 
@@ -279,7 +279,7 @@ class SLOReportingTests(testing_config.CustomTestCase):
   @mock.patch('internals.slo.now_utc')
   def test_get_overdue_gates(self, mock_now):
     """We can tell if a gate is overdue based on a default SLO limit."""
-    mock_now.return_value = datetime.datetime(2023, 6, 15, 12, 30, 0)  # Thu
+    mock_now.return_value = datetime.datetime(2023, 6, 16, 12, 30, 0)  # Fri
 
     actual = slo.get_overdue_gates(APPR_FIELDS, DEFAULT_SLO_LIMIT)
     # gate_1 is overdue.

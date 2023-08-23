@@ -99,25 +99,29 @@ PrivacyOriginTrialApproval = ApprovalFieldDef(
     'Privacy OT Review',
     'Privacy OT Review',
     core_enums.GATE_PRIVACY_ORIGIN_TRIAL, ONE_LGTM,
-    approvers=PRIVACY_APPROVERS, team_name='Privacy')
+    approvers=PRIVACY_APPROVERS, team_name='Privacy',
+    slo_initial_response=6)
 
 PrivacyShipApproval = ApprovalFieldDef(
     'Privacy Ship Review',
     'Privacy Ship Review',
     core_enums.GATE_PRIVACY_SHIP, ONE_LGTM,
-    approvers=PRIVACY_APPROVERS, team_name='Privacy')
+    approvers=PRIVACY_APPROVERS, team_name='Privacy',
+    slo_initial_response=6)
 
 SecurityOriginTrialApproval = ApprovalFieldDef(
     'Security OT Review',
     'Security OT Review',
     core_enums.GATE_SECURITY_ORIGIN_TRIAL, ONE_LGTM,
-    approvers=SECURITY_APPROVERS, team_name='Security')
+    approvers=SECURITY_APPROVERS, team_name='Security',
+    slo_initial_response=6)
 
 SecurityShipApproval = ApprovalFieldDef(
     'Security Ship Review',
     'Security Ship Review',
     core_enums.GATE_SECURITY_SHIP, ONE_LGTM,
-    approvers=SECURITY_APPROVERS, team_name='Security')
+    approvers=SECURITY_APPROVERS, team_name='Security',
+    slo_initial_response=6)
 
 EnterpriseShipApproval = ApprovalFieldDef(
     'Enterprise Ship Review',
