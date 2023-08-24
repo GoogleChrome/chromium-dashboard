@@ -386,6 +386,7 @@ class FlaskHandler(BaseHandler):
       logging.info('Striping www and redirecting to %r', location)
       return self.redirect(location)
     handler_data = self.get_template_data(*args, **kwargs)
+    logging.info("BaseHandler get. About to refresh user session.")
     users.refresh_user_session()
 
     if self.JSONIFY and type(handler_data) in (dict, list):
