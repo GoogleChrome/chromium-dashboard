@@ -4,7 +4,7 @@ import {SHARED_STYLES} from '../css/shared-css.js';
 
 const GATE_STATE_TO_NAME = {
   0: 'Preparing', // PREPARING
-  1: 'FYI', //  NA
+  1: 'Not applicable', //  NA
   2: 'Pending', // REVIEW_REQUESTED
   3: 'Pending', // REVIEW_STARTED
   4: 'Needs work', // NEEDS_WORK
@@ -80,11 +80,11 @@ class ChromedashGateChip extends LitElement {
        text-decoration: underline;
      }
 
-     sl-button.fyi::part(base) {
-       background: var(--gate-fyi-background);
-       color: var(--gate-fyi-color);
+     sl-button.not_applicable::part(base) {
+       background: var(--gate-not-applicable-background);
+       color: var(--gate-not-applicable-color);
      }
-     sl-button.fyi::part(prefix) {
+     sl-button.not_applicable::part(prefix) {
        align-items: baseline;
      }
 
@@ -129,8 +129,8 @@ class ChromedashGateChip extends LitElement {
      }
 
      sl-button.internal_review::part(base) {
-       background: var(--gate-fyi-background);
-       color: var(--gate-fyi-color);
+       background: var(--gate-pending-background);
+       color: var(--gate-pending-color);
      }
      sl-button.internal_review::part(prefix) {
        align-items: baseline;
