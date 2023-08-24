@@ -5,7 +5,7 @@
     "main": "index.js",
     "scripts": {
         "test": "./run.sh bash -c \"./wait-for-app.sh && ls -al . && npx playwright test\"",
-        "pwtests": "./run.sh bash -c \"./playwright/wait-for-app.sh && ls -al . && npx playwright test\"",
+        "pwtests": "./run.sh bash -c \"./wait-for-app.sh && ls -al . && npx playwright test\"",
         "pwtests-update": "./run.sh bash -c \"./wait-for-app.sh && npx playwright test --update-snapshots\"",
         "pwtests-report": "./run.sh bash -c \"./wait-for-app.sh && npx playwright show-report\"",
         "pwtests-shell": "./run.sh bash",
