@@ -325,7 +325,7 @@ class GatesAPITest(testing_config.CustomTestCase):
                 "state": 1,
                 "requested_on": None,
                 "responded_on": None,
-                "owners": [],
+                "assignee_emails": [],
                 "next_action": None,
                 "additional_review": False,
                 'slo_initial_response': 5,
@@ -333,7 +333,7 @@ class GatesAPITest(testing_config.CustomTestCase):
                 'slo_initial_response_remaining': None,
             },
         ],
-        "possible_owners": {
+        "possible_assignee_emails": {
             1: ["reviewer1@example.com"],
             2: ["reviewer1@example.com"],
             3: ["reviewer1@example.com"],
@@ -360,6 +360,6 @@ class GatesAPITest(testing_config.CustomTestCase):
 
     expected = {
         'gates': [],
-        'possible_owners': {}
+        'possible_assignee_emails': {}
     }
     self.assertEqual(actual, expected)

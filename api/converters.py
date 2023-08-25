@@ -602,7 +602,7 @@ def gate_value_to_json_dict(gate: Gate) -> dict[str, Any]:
       'state': gate.state,
       'requested_on': requested_on,  # YYYY-MM-DD HH:MM:SS or None
       'responded_on': responded_on,  # YYYY-MM-DD HH:MM:SS or None
-      'owners': gate.owners,
+      'assignee_emails': gate.assignee_emails,
       'next_action': next_action,  # YYYY-MM-DD or None
       'additional_review': gate.additional_review,
       'slo_initial_response': slo_initial_response,

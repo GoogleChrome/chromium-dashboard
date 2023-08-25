@@ -22,6 +22,7 @@ import settings
 from framework.users import User
 from internals import feature_helpers
 from internals.core_models import FeatureEntry
+from internals.review_models import Gate
 from internals.user_models import AppUser
 
 
@@ -126,15 +127,18 @@ def can_edit_feature(user: User, feature_id: int) -> bool:
       email == feature.creator_email)
 
 
-def can_approve_feature(user: User, feature: FeatureEntry, approvers) -> bool:
-  """Return True if the user is allowed to approve the given feature."""
-  # TODO(jrobbins): make this per-feature
+def can_review_gate(
+    user: User, feature: FeatureEntry, gate: Gate | None,
+    approvers: list[str]) -> bool:
+  """Return True if the user is allowed to review the given gate."""
   if not can_view_feature(user, feature):
     return False
   if can_admin_site(user):
     return True
   is_approver = user is not None and user.email() in approvers
-  return is_approver
+  is_assigned = (user is not None and gate is not None and
+                 user.email() in gate.assignee_emails)
+  return is_approver or is_assigned
 
 
 def _maybe_redirect_to_login(handler_obj):
@@ -142,7 +146,7 @@ def _maybe_redirect_to_login(handler_obj):
   if 'current_path' in common_data and 'loginStatus=False' in common_data['current_path']:
     return {}
   return handler_obj.redirect(settings.LOGIN_PAGE_URL)
-    
+
 
 def _reject_or_proceed(
     handler_obj, handler_method, handler_args, handler_kwargs,

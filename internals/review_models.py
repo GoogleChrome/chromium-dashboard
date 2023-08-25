@@ -165,7 +165,7 @@ class Gate(ndb.Model):
   # The first comment or vote on this gate from a reviewer after the request.
   responded_on = ndb.DateTimeProperty()
 
-  owners = ndb.StringProperty(repeated=True)
+  assignee_emails = ndb.StringProperty(repeated=True)
   next_action = ndb.DateProperty()
   additional_review = ndb.BooleanProperty(default=False)
 

@@ -85,7 +85,7 @@ def record_comment(
   elif gate.responded_on is not None:
     return False  # We already recorded the time of the initial response.
   else:
-    is_approver = permissions.can_approve_feature(user, feature, approvers)
+    is_approver = permissions.can_review_gate(user, feature, gate, approvers)
     if is_approver:
       logging.info('SLO: Got reviewer comment as initial response')
       gate.responded_on = now_utc()

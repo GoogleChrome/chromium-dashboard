@@ -32,8 +32,6 @@ class PermissionsAPI(basehandlers.APIHandler):
     # get user permission data if signed in
     user = self.get_current_user()
     if user:
-      field_id = approval_defs.ShipApproval.field_id
-      approvers = approval_defs.get_approvers(field_id)
       user_data = {
         'can_create_feature': permissions.can_create_feature(user),
         'approvable_gate_types': sorted(
