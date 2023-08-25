@@ -357,8 +357,6 @@ class FlaskHandler(BaseHandler):
       user_pref = user_models.UserPref.get_signed_in_user_pref()
       common_data['user'] = {
         'can_create_feature': permissions.can_create_feature(user),
-        'can_approve': permissions.can_approve_feature(
-            user, None, approvers),
         'can_edit_all': permissions.can_edit_any_feature(user),
         'is_admin': permissions.can_admin_site(user),
         'editable_features': [],

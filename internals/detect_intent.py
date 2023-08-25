@@ -142,7 +142,8 @@ def is_lgtm_allowed(from_addr, feature, approval_field):
   """Return true if the user is allowed to approve this feature."""
   user = users.User(email=from_addr)
   approvers = approval_defs.get_approvers(approval_field.field_id)
-  allowed = permissions.can_approve_feature(user, feature, approvers)
+  gate = None  # TODO(jrobbins): Detect assignee who is not an approver.
+  allowed = permissions.can_review_gate(user, feature, gate, approvers)
   return allowed
 
 

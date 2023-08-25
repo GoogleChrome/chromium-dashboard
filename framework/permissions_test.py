@@ -230,16 +230,16 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
       creator=True, site_editor=True, admin=True, spec_mentor=True
     )
 
-  def test_can_approve_feature(self):
+  def test_can_review_gate(self):
     approvers = []
     self.check_function_results(
-        permissions.can_approve_feature, (None, approvers),
+        permissions.can_review_gate, (None, None, approvers),
         unregistered=False, registered=False,
         special=False, site_editor=False, admin=True, anon=False)
 
     approvers = ['registered@example.com']
     self.check_function_results(
-        permissions.can_approve_feature, (None, approvers),
+        permissions.can_review_gate, (None, None, approvers),
         unregistered=False, registered=True,
         special=False, site_editor=False, admin=True, anon=False)
 
