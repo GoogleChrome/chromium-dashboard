@@ -10,6 +10,7 @@
         "pwtests-report": "./run.sh bash -c \"./wait-for-app.sh && npx playwright show-report\"",
         "pwtests-shell": "./run.sh bash",
         "pwtests-ui": "./run.sh bash -c \"./wait-for-app.sh && npx playwright test --ui --ui-port=8123\"",
+        "pwtests-debug": "./run.sh debug",
         "pwtests-shutdown": "./run.sh down"
     },
     "author": "",

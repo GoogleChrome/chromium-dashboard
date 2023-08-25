@@ -14,7 +14,7 @@ services:
     command: >
       bash -c "chown -R ${USERID}:${GROUPID} /tmp/__screenshots__
       && chown -R ${USERID}:${GROUPID} /tmp/test-results"
-  playwright:
+  playwright: &playwright
     build:
       context: .
       dockerfile: Dockerfile
@@ -34,6 +34,15 @@ services:
       - ./tests/__screenshots__:/work/tests/__screenshots__
       - ./test-results:/work/test-results
 
+  # mounts x11 display. May not be available in all places. Separate it out.
+  playwright_display:
+    <<: *playwright
+    environment:
+      - DISPLAY
+    volumes:
+      - ./tests/__screenshots__:/work/tests/__screenshots__
+      - ./test-results:/work/test-results
+      - /tmp/.X11-unix:/tmp/.X11-unix
   myapp:
     user: "appuser"
     build:

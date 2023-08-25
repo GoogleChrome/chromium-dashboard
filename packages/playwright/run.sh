@@ -20,7 +20,6 @@ build() {
 }
 
 
-
 if [ "$1" == "down" ];
 then
     docker compose \
@@ -31,7 +30,15 @@ fi
 
 build
 
+CONTAINER=playwright
+CMD=("$@")
+if [ "$1" == "debug" ];
+then
+    CONTAINER=playwright_display
+    CMD=(bash -c './wait-for-app.sh && npx playwright test --debug')
+fi
+
 set -x
 USERID=${USERID} GROUPID=${GROUPID} docker compose \
     ${COMPOSE_FILES_FLAG} \
-    run --user=${USERID}:${GROUPID} playwright "$@"
+    run --user=${USERID}:${GROUPID} "$CONTAINER" "${CMD[@]}"

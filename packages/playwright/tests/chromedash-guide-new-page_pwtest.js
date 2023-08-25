@@ -115,6 +115,7 @@ let loginTimeout = 30000;
 async function login(page) {
   // await expect(page).toHaveScreenshot('roadmap.png');
   // Always reset to the roadmap page.
+  await page.pause();
   console.log('login: goto /');
   await page.goto('/', {timeout: 20000});
   await page.waitForURL('**/roadmap', {timeout: 20000});
