@@ -2,7 +2,8 @@
 *.pyc
 *.swp
 .sass-cache
-.vscode
+.vscode/*
+!.vscode/launch.json
 *oauth2.data
 .fcm_server_key
 *.iml

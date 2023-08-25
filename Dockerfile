@@ -34,6 +34,6 @@ COPY --chown=appuser:appuser openapi /workspace/openapi/
 COPY --chown=appuser:appuser gen /workspace/gen/
 # Cache the infrequent but time consuming changes early
 COPY --chown=appuser:appuser requirements.txt requirements.dev.txt package.json package-lock.json /workspace/
-RUN npm install -g gulp-cli && npm run setup
+RUN npm install -g gulp-cli && npm run setup && cs-env/bin/python -m pip install debugpy==1.6.7.post1
 # Copy the rest
 COPY --chown=appuser:appuser . /workspace
