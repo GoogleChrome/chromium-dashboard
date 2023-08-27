@@ -1,4 +1,4 @@
-import {LitElement, css, html} from 'lit';
+import {LitElement, css, html, nothing} from 'lit';
 import {showToastMessage} from './utils.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {VARS} from '../css/_vars-css.js';
@@ -18,6 +18,9 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
         justify-content: space-between;
         font-size: 16px;
       }
+      .feature-links-samples .line {
+        background: rgb(232,234,237);
+      }
       sl-icon-button::part(base) {
         padding: 0;
         margin-left: 8px;
@@ -27,14 +30,17 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
   static get properties() {
     return {
       loading: {type: Boolean},
+      sampleId: {type: String},
       samplesLoading: {type: Boolean},
+      featureLinksSamples: {type: Array},
       featureLinkSummary: {type: Object},
     };
   }
 
   constructor() {
     super();
-    this.featureLinkSummary = [];
+    this.featureLinkSummary = {};
+    this.featureLinksSamples = [];
   }
 
   connectedCallback() {
@@ -52,15 +58,40 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
       this.loading = false;
     }
   }
+  calcSampleId(domain, type, isError) {
+    return `domain=${domain}&type=${type}&isError=${isError}`;
+  }
   async fetchLinkSamples(domain, type, isError) {
+    this.sampleId = this.calcSampleId(domain, type, isError);
+    this.featureLinksSamples = [];
+    this.samplesLoading = true;
     try {
-      this.samplesLoading = true;
-      await window.csClient.getFeatureLinkSamples(domain, type, isError);
+      this.featureLinksSamples = await window.csClient.getFeatureLinkSamples(domain, type, isError);
     } catch {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     } finally {
       this.samplesLoading = false;
     }
+  }
+  renderSamples() {
+    if (this.samplesLoading) {
+      return html`<sl-spinner></sl-spinner>`;
+    }
+    return html`
+    <div class="feature-links-samples">
+      ${this.featureLinksSamples.map((sample) => html`
+        <div class="line">
+          <div>
+            <a href=${sample.url}><i>${sample.url}</i></a>
+            ${sample.http_error_code ? html`<i>(${sample.http_error_code})</i>` : nothing}
+          </div>
+          <a href=${`/feature/${sample.feature_ids}`} target="_blank" rel="noopener">
+            <sl-icon library="material" name="link" slot="prefix" title="linked feature"></sl-icon>
+          </a>
+        </div>
+      `)}
+    </div>
+    `;
   }
 
   renderComponents() {
@@ -89,6 +120,7 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
           </div>
             <b>${domain.count}</b>
           </div>
+          ${this.sampleId === this.calcSampleId(domain.key, 'web', undefined) ? this.renderSamples() : nothing}
         `)}
       </sl-details>
       <sl-details summary="Error Link Domains" open>
@@ -102,6 +134,7 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
       </div>
         <b>${domain.count}</b>
       </div>
+      ${this.sampleId === this.calcSampleId(domain.key, undefined, true) ? this.renderSamples() : nothing}
     `)}
     </sl-details>
     </div>
