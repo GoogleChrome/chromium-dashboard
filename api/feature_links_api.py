@@ -16,7 +16,7 @@
 from framework import basehandlers
 from internals.core_enums import *
 from internals.core_models import FeatureEntry
-from internals.feature_links import get_feature_links_summary, get_by_feature_id
+from internals.feature_links import get_feature_links_summary, get_by_feature_id, get_feature_links_samples
 from framework import permissions
 
 class FeatureLinksAPI(basehandlers.APIHandler):
@@ -44,8 +44,19 @@ class FeatureLinksAPI(basehandlers.APIHandler):
 
 
 class FeatureLinksSummaryAPI(basehandlers.APIHandler):
-  """FeatureLinksSummaryAPI will return all links to the client."""
+  """FeatureLinksSummaryAPI will return summary of links to the client. """
 
   @permissions.require_admin_site
   def do_get(self, **kwargs):
     return get_feature_links_summary()
+
+class FeatureLinksSamplesAPI(basehandlers.APIHandler):
+  """FeatureLinksSamplesAPI will return sample links to the client. """
+
+  @permissions.require_admin_site
+  def do_get(self, **kwargs):
+    domain = self.request.args.get('domain', None)
+    type = self.request.args.get('type', None)
+    is_error = self.get_bool_arg('is_error', None)
+    if domain:
+      return get_feature_links_samples(domain, type, is_error)

@@ -18,11 +18,16 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
         justify-content: space-between;
         font-size: 16px;
       }
+      sl-icon-button::part(base) {
+        padding: 0;
+        margin-left: 8px;
+      }
       `];
   }
   static get properties() {
     return {
       loading: {type: Boolean},
+      samplesLoading: {type: Boolean},
       featureLinkSummary: {type: Object},
     };
   }
@@ -47,6 +52,16 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
       this.loading = false;
     }
   }
+  async fetchLinkSamples(domain, type, isError) {
+    try {
+      this.samplesLoading = true;
+      await window.csClient.getFeatureLinkSamples(domain, type, isError);
+    } catch {
+      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+    } finally {
+      this.samplesLoading = false;
+    }
+  }
 
   renderComponents() {
     return html`
@@ -65,13 +80,29 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
       </sl-details>
       <sl-details summary="Uncovered Link Domains" open>
         ${this.featureLinkSummary.uncovered_link_domains.map((domain) => html`
-          <div class="line"><a href=${domain.key}>${domain.key}</a> <b>${domain.count}</b></div>
+          <div class="line">
+            <div>
+              <a href=${domain.key}>${domain.key}</a>
+              <sl-icon-button library="material" name="search" slot="prefix" title="Samples"
+              @click=${() => this.fetchLinkSamples(domain.key, 'web', undefined)}>
+              ></sl-icon-button>
+          </div>
+            <b>${domain.count}</b>
+          </div>
         `)}
       </sl-details>
       <sl-details summary="Error Link Domains" open>
       ${this.featureLinkSummary.error_link_domains.map((domain) => html`
-        <div class="line"><a href=${domain.key}>${domain.key}</a> <b>${domain.count}</b></div>
-      `)}
+      <div class="line">
+        <div>
+          <a href=${domain.key}>${domain.key}</a>
+          <sl-icon-button library="material" name="search" slot="prefix" title="Samples"
+          @click=${() => this.fetchLinkSamples(domain.key, undefined, true)}>
+          ></sl-icon-button>
+      </div>
+        <b>${domain.count}</b>
+      </div>
+    `)}
     </sl-details>
     </div>
     `;

@@ -316,6 +316,17 @@ class ChromeStatusClient {
     return this.doGet('/feature_links_summary');
   }
 
+  getFeatureLinkSamples(domain, type, isError) {
+    let optionalParams = '';
+    if (type) {
+      optionalParams += `&type=${type}`;
+    }
+    if (isError !== undefined && isError !== null) {
+      optionalParams += `&is_error=${isError}`;
+    }
+    return this.doGet(`/feature_links_samples?domain=${domain}${optionalParams}`);
+  }
+
   // Stages API
   getStage(featureId, stageId) {
     return this.doGet(`/features/${featureId}/stages/${stageId}`);
