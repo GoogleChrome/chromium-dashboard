@@ -287,6 +287,17 @@ async function login(page) {
   console.log('login: done');
 }
 
+// test.beforeAll(async ({ browser }) => {
+//   // Create a page once and sign in.
+//   console.log('login initially.');
+//   const page = await browser.newPage();
+//   await page.goto('/');
+//   await delay(1000);
+
+//   await login(page);
+//   console.log('done with initial login');
+// });
+
 // let logoutScreenshots = false;
 
 async function logout(page) {
