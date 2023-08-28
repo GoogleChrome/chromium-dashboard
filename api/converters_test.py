@@ -512,7 +512,7 @@ class GateConvertersTest(testing_config.CustomTestCase):
       'state': 4,
       'requested_on': None,
       'responded_on': None,
-      'owners': [],
+      'assignee_emails': [],
       'next_action': None,
       'additional_review': False,
       'slo_initial_response': appr_def.slo_initial_response,
@@ -527,7 +527,7 @@ class GateConvertersTest(testing_config.CustomTestCase):
     gate = Gate(
         feature_id=1, stage_id=2, gate_type=34, state=4,
         requested_on=datetime(2022, 12, 14, 1, 2, 3), # Wednesday
-        owners=['appr1@example.com', 'appr2@example.com'],
+        assignee_emails=['appr1@example.com', 'appr2@example.com'],
         next_action=datetime(2022, 12, 25),
         additional_review=True)
     gate.put()
@@ -546,12 +546,12 @@ class GateConvertersTest(testing_config.CustomTestCase):
       'state': 4,
       'requested_on': '2022-12-14 01:02:03',
       'responded_on': None,
-      'owners': ['appr1@example.com', 'appr2@example.com'],
+      'assignee_emails': ['appr1@example.com', 'appr2@example.com'],
       'next_action': '2022-12-25',
       'additional_review': True,
       'slo_initial_response': appr_def.slo_initial_response,
       'slo_initial_response_took': None,  # Review is still in-progress.
-      'slo_initial_response_remaining': -2,  # Two weekdays overdue.
+      'slo_initial_response_remaining': -1,  # One weekday overdue.
       }
     self.assertEqual(expected, actual)
 
@@ -561,7 +561,7 @@ class GateConvertersTest(testing_config.CustomTestCase):
         feature_id=1, stage_id=2, gate_type=3, state=4,
         requested_on=datetime(2022, 12, 14, 1, 2, 3),
         responded_on=datetime(2022, 12, 20, 1, 2, 3),
-        owners=['appr1@example.com', 'appr2@example.com'],
+        assignee_emails=['appr1@example.com', 'appr2@example.com'],
         next_action=datetime(2022, 12, 25),
         additional_review=True)
     gate.put()

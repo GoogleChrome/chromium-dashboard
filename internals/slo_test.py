@@ -184,35 +184,35 @@ class SLORecordingTests(testing_config.CustomTestCase):
     self.assertEqual(self.a_date, self.gate.requested_on)
     self.assertEqual(self.a_date, self.gate.responded_on)
 
-  @mock.patch('framework.permissions.can_approve_feature')
-  def test_record_comment__not_started(self, mock_caf):
+  @mock.patch('framework.permissions.can_review_gate')
+  def test_record_comment__not_started(self, mock_crg):
     """Comments posted before the review starts don't count."""
     feature, user, approvers = 'fake feature', 'fake user', ['fake approvers']
     # Note that self.gate.requested_on is None.
-    mock_caf.return_value = False
+    mock_crg.return_value = False
     self.assertFalse(slo.record_comment(feature, self.gate, user, approvers))
-    mock_caf.return_value = True
+    mock_crg.return_value = True
     self.assertFalse(slo.record_comment(feature, self.gate, user, approvers))
     self.assertIsNone(self.gate.requested_on)
     self.assertIsNone(self.gate.responded_on)
 
-  @mock.patch('framework.permissions.can_approve_feature')
-  def test_record_comment__non_appover(self, mock_caf):
+  @mock.patch('framework.permissions.can_review_gate')
+  def test_record_comment__non_appover(self, mock_crg):
     """Comments posted during the review by non-approvers don't count."""
     feature, user, approvers = 'fake feature', 'fake user', ['fake approvers']
     self.gate.requested_on = self.a_date
-    mock_caf.return_value = False
+    mock_crg.return_value = False
     self.assertFalse(slo.record_comment(feature, self.gate, user, approvers))
     self.assertEqual(self.a_date, self.gate.requested_on)
     self.assertIsNone(self.gate.responded_on)
 
   @mock.patch('internals.slo.now_utc')
-  @mock.patch('framework.permissions.can_approve_feature')
-  def test_record_comment__appover(self, mock_caf, mock_now):
+  @mock.patch('framework.permissions.can_review_gate')
+  def test_record_comment__appover(self, mock_crg, mock_now):
     """Comments posted during the review by an approver do count."""
     feature, user, approvers = 'fake feature', 'fake user', ['fake approvers']
     self.gate.requested_on = self.a_date
-    mock_caf.return_value = True
+    mock_crg.return_value = True
     mock_now.return_value = self.a_date
     self.assertTrue(slo.record_comment(feature, self.gate, user, approvers))
     self.assertEqual(self.a_date, self.gate.requested_on)
@@ -261,7 +261,7 @@ class SLOReportingTests(testing_config.CustomTestCase):
     self.assertFalse(slo.is_gate_overdue(
         self.gate_1, APPR_FIELDS, DEFAULT_SLO_LIMIT))
 
-    mock_now.return_value = datetime.datetime(2023, 6, 15, 12, 30, 0)  # Thu
+    mock_now.return_value = datetime.datetime(2023, 6, 16, 12, 30, 0)  # Thu
     self.assertTrue(slo.is_gate_overdue(
         self.gate_1, APPR_FIELDS, DEFAULT_SLO_LIMIT))
 
@@ -279,7 +279,7 @@ class SLOReportingTests(testing_config.CustomTestCase):
   @mock.patch('internals.slo.now_utc')
   def test_get_overdue_gates(self, mock_now):
     """We can tell if a gate is overdue based on a default SLO limit."""
-    mock_now.return_value = datetime.datetime(2023, 6, 15, 12, 30, 0)  # Thu
+    mock_now.return_value = datetime.datetime(2023, 6, 16, 12, 30, 0)  # Fri
 
     actual = slo.get_overdue_gates(APPR_FIELDS, DEFAULT_SLO_LIMIT)
     # gate_1 is overdue.

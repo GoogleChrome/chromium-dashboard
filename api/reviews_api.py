@@ -73,7 +73,7 @@ class VotesAPI(basehandlers.APIHandler):
     is_requesting_review = (new_state == Vote.REVIEW_REQUESTED)
     is_editor = permissions.can_edit_feature(user, feature.key.integer_id())
     approvers = approval_defs.get_approvers(gate.gate_type)
-    is_approver = permissions.can_approve_feature(user, feature, approvers)
+    is_approver = permissions.can_review_gate(user, feature, gate, approvers)
 
     if is_requesting_review and is_editor:
       return
@@ -99,16 +99,16 @@ class GatesAPI(basehandlers.APIHandler):
     if len(gates) == 0:
       return {
           'gates': [],
-          'possible_owners': {}
+          'possible_assignee_emails': {}
           }
 
     dicts = [converters.gate_value_to_json_dict(g) for g in gates]
-    possible_owners_by_gate_type: dict[int, list[str]] = {
+    possible_assignees_by_gate_type: dict[int, list[str]] = {
         gate_type: approval_defs.get_approvers(gate_type)
         for gate_type in approval_defs.APPROVAL_FIELDS_BY_ID
         }
 
     return {
         'gates': dicts,
-        'possible_owners': possible_owners_by_gate_type
+        'possible_assignee_emails': possible_assignees_by_gate_type
         }

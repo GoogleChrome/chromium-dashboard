@@ -379,9 +379,9 @@ sl-skeleton {
   --toast-color: var(--md-gray-50);
   --toast-action-color: var(--md-orange-200);
   --chip-border: none;
-  --gate-fyi-background: var(--md-gray-100);
-  --gate-fyi-color: var(--md-gray-800);
-  --gate-fyi-icon-color: var(--md-gray-800);
+  --gate-not-applicable-background: var(--md-green-50);
+  --gate-not-applicable-color: var(--md-green-700);
+  --gate-not-applicable-icon-color: var(--md-green-600);
   --gate-preparing-background: var(--md-gray-100);
   --gate-preparing-color: var(--md-gray-800);
   --gate-preparing-icon-color: var(--md-gray-800);
@@ -396,7 +396,7 @@ sl-skeleton {
   --gate-approved-icon-color: var(--md-green-600);
   --gate-denied-background: var(--md-red-50);
   --gate-denied-color: var(--md-red-700);
-  --gate-denided-icon-color: var(--md-red-600);
+  --gate-denied-icon-color: var(--md-red-600);
   --gate-complete-background: var(--gate-approved-background);
   --gate-complete-color: var(--gate-approved-color);
   --gate-complete-icon-color: var(--gate-approved-icon-color);
