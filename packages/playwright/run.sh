@@ -22,6 +22,7 @@ build() {
 
 if [ "$1" == "down" ];
 then
+    docker rm $(docker ps --filter status=exited -q) || true
     docker compose \
         ${COMPOSE_FILES_FLAG} \
         down
@@ -41,4 +42,4 @@ fi
 set -x
 USERID=${USERID} GROUPID=${GROUPID} docker compose \
     ${COMPOSE_FILES_FLAG} \
-    run --user=${USERID}:${GROUPID} "$CONTAINER" "${CMD[@]}"
+    run --remove-orphans --rm --user=${USERID}:${GROUPID} "$CONTAINER" "${CMD[@]}"
