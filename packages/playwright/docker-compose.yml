@@ -24,7 +24,7 @@ services:
         - type=gha,mode=max,scope=${GITHUB_REF_NAME}-playwright-image
     depends_on:
       myapp:
-        condition: service_started
+        condition: service_healthy
       fix_volume_ownership:
           condition: service_completed_successfully
     # Overrides default command so things don't shut down after the process ends.
@@ -41,7 +41,7 @@ services:
       - DISPLAY
     depends_on:
       debugapp:
-        condition: service_started
+        condition: service_healthy
       fix_volume_ownership:
           condition: service_completed_successfully
     volumes:
@@ -60,9 +60,17 @@ services:
       cache_to:
         - type=gha,mode=max,scope=${GITHUB_REF_NAME}-myapp-image
     depends_on:
-      - mydb
+      mydb:
+        condition: service_healthy
     command: bash -c "source cs-env/bin/activate; env && whoami && npm run start-app"
     network_mode: host
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+      start_interval: 30s
 
     environment:
       - SERVER_SOFTWARE=Development
@@ -77,3 +85,9 @@ services:
       file: ../../.devcontainer/db-docker-compose.yml
       service: db
     network_mode: host
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:15606"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 5s
