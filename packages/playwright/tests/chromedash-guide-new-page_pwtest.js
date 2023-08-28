@@ -259,7 +259,7 @@ async function login(page) {
   // Need to wait for the google signin button to be ready, to avoid
   // loginButton.waitFor('visible');
   await loginButton.click({timeout: 1000, delay: 100});
-  await delay(6000);
+  await delay(10000);
 
   // Expect the title to contain a substring.
   await expect(page).toHaveTitle(/Chrome Status/);

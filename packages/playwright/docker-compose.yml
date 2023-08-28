@@ -9,7 +9,7 @@ services:
     group_add:
       - '${GROUPID}'
     volumes:
-      - ./tests/__screenshots__/__screenshots__:/tmp/__screenshots__
+      - ./tests/__screenshots__:/tmp/__screenshots__
       - ./test-results:/tmp/test-results
     command: >
       bash -c "chown -R ${USERID}:${GROUPID} /tmp/__screenshots__
