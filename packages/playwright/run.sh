@@ -22,7 +22,7 @@ build() {
 
 if [ "$1" == "down" ];
 then
-    docker rm $(docker ps --filter status=exited -q)
+    docker rm $(docker ps --filter status=exited -q) || true
     docker compose \
         ${COMPOSE_FILES_FLAG} \
         down
