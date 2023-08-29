@@ -14,11 +14,13 @@
 
 import datetime
 import logging
+from typing import Any
 from google.cloud import ndb  # type: ignore
 
 from framework.basehandlers import FlaskHandler
+from framework import origin_trials_client
 from internals import approval_defs
-from internals.core_models import FeatureEntry, Stage
+from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate, Vote, Activity
 from internals.core_enums import *
 from internals.feature_links import batch_index_feature_entries
@@ -224,4 +226,117 @@ class BackfillFeatureLinks(FlaskHandler):
     all_feature_entries = FeatureEntry.query().fetch()
     count = batch_index_feature_entries(all_feature_entries, True)
     return f'{len(all_feature_entries)} FeatureEntry entities backfilled of {count} feature links.'
-  
+
+
+class AssociateOTs(FlaskHandler):
+  def write_fields_for_trial_stage(self, trial_stage: Stage, trial_data: dict[str, Any]):
+    """Check if any OT stage fields are unfilled and populate them with
+    the matching trial data.
+    """
+    if trial_stage.origin_trial_id is None:
+      trial_stage.origin_trial_id = trial_data['id']
+
+    if trial_stage.ot_chromium_trial_name is None:
+      trial_stage.ot_chromium_trial_name = trial_data['origin_trial_feature_name']
+
+    if trial_stage.milestones is None:
+      trial_stage.milestones = MilestoneSet()
+    if (trial_stage.milestones.desktop_first is None and
+        trial_data['start_milestone'] is not None):
+      trial_stage.milestones.desktop_first = int(trial_data['start_milestone'])
+    if trial_stage.milestones.desktop_last is None:
+      # An original end milestone is kept if the trial has had extensions.
+      # TODO(DanielRyanSmith): Extension milestones in the trial data
+      # should be associated with new extension stages for data accuracy.
+      if trial_data['original_end_milestone'] is not None:
+        trial_stage.milestones.desktop_last = (
+            int(trial_data['original_end_milestone']))
+      elif trial_data['end_milestone'] is not None:
+        trial_stage.milestones.desktop_last = (
+            int(trial_data['end_milestone']))
+
+    if trial_stage.display_name is None:
+      trial_stage.display_name = trial_data['display_name']
+
+    if trial_stage.intent_thread_url is None:
+      trial_stage.intent_thread_url = trial_data['intent_to_experiment_url']
+
+    if trial_stage.origin_trial_feedback_url is None:
+      trial_stage.origin_trial_feedback_url = trial_data['feedback_url']
+
+    if trial_stage.ot_documentation_url is None:
+      trial_stage.ot_documentation_url = trial_data['documentation_url']
+
+    if trial_stage.ot_has_third_party_support:
+      trial_stage.ot_has_third_party_support = trial_data['allow_third_party_origins']
+
+    if not trial_stage.ot_is_deprecation_trial:
+      trial_stage.ot_is_deprecation_trial = trial_data['type'] == 'DEPRECATION'
+
+  def get_template_data(self, **kwargs):
+    """Link existing origin trials with their ChromeStatus entry"""
+    self.require_cron_header()
+
+    trials_list = origin_trials_client.get_trials_list()
+    entities_to_write: list[Stage] = []
+    for trial_data in trials_list:
+      stage = Stage.query(
+          Stage.origin_trial_id == trial_data['id']).get()
+      # If this trial is already associated with a ChromeStatus stage,
+      # just try and see if any unfilled fields need populated.
+      if stage:
+        self.write_fields_for_trial_stage(stage, trial_data)
+        entities_to_write.append(stage)
+        continue
+
+      if ('chromestatus_url' not in trial_data or 
+          trial_data['chromestatus_url'] is None):
+        print(f'No ChromeStatus URL for trial {trial_data["id"]}')
+        continue
+      chromestatus_id_start = trial_data['chromestatus_url'].rfind('/')
+      if chromestatus_id_start == -1:
+        print('Could not derive ChromeStatus ID from URL: '
+              f'{trial_data["chromestatus_url"]}')
+        continue
+      # Add 1 to point to the start of the ID.
+      chromestatus_id_start += 1
+      chromestatus_id_str = (
+          trial_data['chromestatus_url'][chromestatus_id_start:])
+      try:
+        chromestatus_id = int(chromestatus_id_str)
+      except ValueError:
+        print(f'Could not parse ChromeStatus ID: {chromestatus_id_str}')
+        continue
+
+      fe: FeatureEntry|None = FeatureEntry.get_by_id(chromestatus_id)
+      if fe is None:
+        print(f'No feature found for ChromeStatus ID: {chromestatus_id}')
+        continue
+      feature_id = fe.key.integer_id()
+      trial_stage_type = STAGE_TYPES_ORIGIN_TRIAL[fe.feature_type]
+      trial_stages = Stage.query(
+          Stage.stage_type == trial_stage_type,
+          Stage.feature_id == feature_id).fetch()
+      # If there are no OT stages for the feature, we can't associate the
+      # trial with any stages.
+      if len(trial_stages) == 0:
+        print(f'No OT stages found for feature ID: {feature_id}')
+        continue
+      # If there is currently more than one origin trial stage for the
+      # feature, we don't know which one represents the given trial.
+      if len(trial_stages) > 1:
+        print(f'Multiple origin trial stages found for feature {feature_id}. '
+              'Cannot discern which stage to associate trial with.')
+        continue
+
+      self.write_fields_for_trial_stage(trial_stages[0], trial_data)
+      entities_to_write.append(trial_stages[0])
+
+    # Update all the stages at the end. Note that there is a chance
+    # The stage entities have not changed any values if all fields already
+    # had a value.
+    print(f'{len(entities_to_write)} stages to update.')
+    if len(entities_to_write) > 0:
+      ndb.put_multi(entities_to_write)
+
+    return f'{len(entities_to_write)} Stages updated with trial data.'

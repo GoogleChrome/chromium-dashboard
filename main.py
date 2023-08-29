@@ -263,6 +263,8 @@ internals_routes: list[Route] = [
         maintenance_scripts.BackfillStageCreated),
   Route('/scripts/backfill_feature_links',
         maintenance_scripts.BackfillFeatureLinks),
+  Route('/scripts/associate_origin_trials',
+        maintenance_scripts.AssociateOTs),
 ]
 
 dev_routes: list[Route] = []
