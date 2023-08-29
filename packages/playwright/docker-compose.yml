@@ -62,6 +62,8 @@ services:
     depends_on:
       mydb:
         condition: service_healthy
+      mydsadmin:
+        condition: service_started
     command: bash -c "source cs-env/bin/activate; env && whoami && npm run start-app"
     network_mode: host
     healthcheck:
@@ -79,6 +81,17 @@ services:
   debugapp:
     <<: *myapp
     command: bash -c "source cs-env/bin/activate; env && whoami && npm run debug-app"
+
+  mydsadmin:
+    image: ghcr.io/remko/dsadmin:v0.18.1
+    network_mode: host
+    entrypoint: /ko-app/dsadmin -port 8889
+    depends_on:
+      mydb:
+        condition: service_healthy
+    environment:
+      DATASTORE_PROJECT_ID: cr-status-staging
+      DATASTORE_EMULATOR_HOST: "localhost:15606"
 
   mydb:
     extends:

@@ -25,7 +25,7 @@ then
     docker rm $(docker ps --filter status=exited -q) || true
     docker compose \
         ${COMPOSE_FILES_FLAG} \
-        down
+        down --remove-orphans -v
     exit 0
 fi
 
