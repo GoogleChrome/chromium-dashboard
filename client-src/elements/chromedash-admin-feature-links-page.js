@@ -62,6 +62,7 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
   calcSampleId(domain, type, isError) {
     return `domain=${domain}&type=${type}&isError=${isError}`;
   }
+
   async fetchLinkSamples(domain, type, isError) {
     this.sampleId = this.calcSampleId(domain, type, isError);
     this.featureLinksSamples = [];
@@ -75,6 +76,7 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
       this.samplesLoading = false;
     }
   }
+
   renderSamples() {
     if (this.samplesLoading) {
       return html`<sl-spinner></sl-spinner>`;
@@ -142,6 +144,7 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
     </div>
     `;
   }
+
   render() {
     return html`
       ${this.loading ?
