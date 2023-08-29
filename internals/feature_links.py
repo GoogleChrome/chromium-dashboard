@@ -288,6 +288,39 @@ def get_feature_links_summary():
   }
 
 
+def get_feature_links_samples(domain: str, type: str | None, is_error: bool | None):
+  """retrieves a list of feature links based on the specified domain, type, and error status."""
+
+  MAX_SAMPLES = 100
+  filters = [
+      FeatureLinks.url >= domain,
+  ]
+  if type:
+    filters.append(FeatureLinks.type == type)
+  if is_error:
+    filters.append(FeatureLinks.is_error == is_error)
+  feature_links = FeatureLinks.query(
+      *filters
+  ).fetch(MAX_SAMPLES)
+
+  # filter out links that do not start with the specified domain and convert to dict
+  feature_links = [
+      fl.to_dict(include=['url', 'type', 'feature_ids', 'is_error', 'http_error_code'])
+      for fl in feature_links if fl.url.startswith(domain)
+  ]
+
+  # flatten feature links like projection in get_feature_links_summary
+  flattened_feature_links = []
+  for feature_link in feature_links:
+    for feature_id in feature_link['feature_ids']:
+      flattened_feature_links.append({
+          **feature_link,
+          'feature_ids': feature_id
+      })
+
+  return flattened_feature_links
+
+
 class UpdateAllFeatureLinksHandlers(FlaskHandler):
 
   def get_template_data(self, **kwargs) -> str:
