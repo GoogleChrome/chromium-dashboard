@@ -229,6 +229,7 @@ class BackfillFeatureLinks(FlaskHandler):
 
 
 class AssociateOTs(FlaskHandler):
+
   def write_fields_for_trial_stage(self, trial_stage: Stage, trial_data: dict[str, Any]):
     """Check if any OT stage fields are unfilled and populate them with
     the matching trial data.
@@ -279,6 +280,7 @@ class AssociateOTs(FlaskHandler):
 
     trials_list = origin_trials_client.get_trials_list()
     entities_to_write: list[Stage] = []
+    trials_with_no_feature: list[str] = []
     for trial_data in trials_list:
       stage = Stage.query(
           Stage.origin_trial_id == trial_data['id']).get()
@@ -292,13 +294,16 @@ class AssociateOTs(FlaskHandler):
       if ('chromestatus_url' not in trial_data or 
           trial_data['chromestatus_url'] is None):
         print(f'No ChromeStatus URL for trial {trial_data["id"]}')
+        trials_with_no_feature.append(trial_data)
         continue
+      # The ChromeStatus feature ID is pulled out of the ChromeStatus URL.
       chromestatus_id_start = trial_data['chromestatus_url'].rfind('/')
       if chromestatus_id_start == -1:
         print('Could not derive ChromeStatus ID from URL: '
               f'{trial_data["chromestatus_url"]}')
+        trials_with_no_feature.append(trial_data)
         continue
-      # Add 1 to point to the start of the ID.
+      # Add 1 to index, which is the start index of the ID.
       chromestatus_id_start += 1
       chromestatus_id_str = (
           trial_data['chromestatus_url'][chromestatus_id_start:])
@@ -306,11 +311,13 @@ class AssociateOTs(FlaskHandler):
         chromestatus_id = int(chromestatus_id_str)
       except ValueError:
         print(f'Could not parse ChromeStatus ID: {chromestatus_id_str}')
+        trials_with_no_feature.append(trial_data)
         continue
 
       fe: FeatureEntry|None = FeatureEntry.get_by_id(chromestatus_id)
       if fe is None:
         print(f'No feature found for ChromeStatus ID: {chromestatus_id}')
+        trials_with_no_feature.append(trial_data)
         continue
       feature_id = fe.key.integer_id()
       trial_stage_type = STAGE_TYPES_ORIGIN_TRIAL[fe.feature_type]
@@ -321,19 +328,29 @@ class AssociateOTs(FlaskHandler):
       # trial with any stages.
       if len(trial_stages) == 0:
         print(f'No OT stages found for feature ID: {feature_id}')
+        trials_with_no_feature.append(trial_data)
         continue
       # If there is currently more than one origin trial stage for the
       # feature, we don't know which one represents the given trial.
       if len(trial_stages) > 1:
         print(f'Multiple origin trial stages found for feature {feature_id}. '
               'Cannot discern which stage to associate trial with.')
+        trials_with_no_feature.append(trial_data)
         continue
 
       self.write_fields_for_trial_stage(trial_stages[0], trial_data)
       entities_to_write.append(trial_stages[0])
 
+    # List any origin trials that did not get associated with a feature entry.
+    if len(trials_with_no_feature) > 0:
+      print('Trials not associated with a ChromeStatus feature:')
+    else:
+      print('All trials associated with a ChromeStatus feature!')
+    for trial_data in trials_with_no_feature:
+      print(trial_data['id'], trial_data['display_name'])
+
     # Update all the stages at the end. Note that there is a chance
-    # The stage entities have not changed any values if all fields already
+    # the stage entities have not changed any values if all fields already
     # had a value.
     print(f'{len(entities_to_write)} stages to update.')
     if len(entities_to_write) > 0:
