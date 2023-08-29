@@ -43,6 +43,7 @@ class Secrets(ndb.Model):
   session_secret = ndb.StringProperty()
 
   @classmethod
+  @ndb.transactional(retries=4)
   def _get_or_make_singleton(cls):
     needs_save = False
     singleton = None

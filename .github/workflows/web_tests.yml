@@ -59,7 +59,5 @@ jobs:
       - run: npm run deps
       - run: npm run build --if-present
 
-      - run: npx playwright install-deps
-
       - name: Run web test runner
         run: npm run webtest
