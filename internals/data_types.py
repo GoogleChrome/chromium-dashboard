@@ -284,12 +284,12 @@ class OriginTrialInfo():
     self.chromestatus_url = api_trial.get('chromestatusUrl', None)
     self.start_milestone = api_trial.get('startMilestone', None)
     self.end_milestone = api_trial.get('endMilestone', None)
+    self.original_end_milestone = api_trial.get('originalEndMilestone', None)
     self.end_time = api_trial.get('endTime', None)
     self.documentation_url = api_trial.get('documentationUrl', None)
     self.feedback_url = api_trial.get('feedbackUrl', None)
     self.intent_to_experiment_url = api_trial.get('intentToExperimentUrl', None)
     self.trial_extensions = api_trial.get('trialExtensions', None)
-    self.original_end_milestone = api_trial.get('originalEndMilestone', None)
     self.type = api_trial.get('type', None)
     self.allow_third_party_origins = api_trial.get('allowThirdPartyOrigins', False)
 
@@ -302,11 +302,11 @@ class OriginTrialInfo():
   chromestatus_url: str|None
   start_milestone: str|None
   end_milestone: str|None
+  original_end_milestone: str|None
   end_time: str|None
   documentation_url: str|None
   feedback_url: str|None
   intent_to_experiment_url: str|None
   trial_extensions: list|None
-  original_end_milestone: str|None
   type: str|None
   allow_third_party_origins: bool
