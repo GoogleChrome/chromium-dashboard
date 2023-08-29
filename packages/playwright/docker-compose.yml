@@ -30,6 +30,10 @@ services:
     # Overrides default command so things don't shut down after the process ends.
     command: sleep infinity
     network_mode: host
+    environment:
+      # GitHub sets CI to true automatically
+      # https://docs.github.com/en/actions/learn-github-actions/variables#default-environment-variables
+      - CI
     volumes:
       - ./tests/__screenshots__:/work/tests/__screenshots__
       - ./test-results:/work/test-results
