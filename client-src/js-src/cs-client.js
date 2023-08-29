@@ -312,11 +312,11 @@ class ChromeStatusClient {
     return this.doGet(`/feature_links?feature_id=${featureId}&update_stale_links=${updateStaleLinks}`);
   }
 
-  getFeatureLinkSummary() {
+  getFeatureLinksSummary() {
     return this.doGet('/feature_links_summary');
   }
 
-  getFeatureLinkSamples(domain, type, isError) {
+  getFeatureLinksSamples(domain, type, isError) {
     let optionalParams = '';
     if (type) {
       optionalParams += `&type=${type}`;

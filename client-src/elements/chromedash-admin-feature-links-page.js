@@ -33,13 +33,13 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
       sampleId: {type: String},
       samplesLoading: {type: Boolean},
       featureLinksSamples: {type: Array},
-      featureLinkSummary: {type: Object},
+      featureLinksSummary: {type: Object},
     };
   }
 
   constructor() {
     super();
-    this.featureLinkSummary = {};
+    this.featureLinksSummary = {};
     this.featureLinksSamples = [];
   }
 
@@ -51,7 +51,7 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
   async fetchData() {
     try {
       this.loading = true;
-      this.featureLinkSummary = await window.csClient.getFeatureLinkSummary();
+      this.featureLinksSummary = await window.csClient.getFeatureLinksSummary();
     } catch {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     } finally {
@@ -67,7 +67,8 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
     this.featureLinksSamples = [];
     this.samplesLoading = true;
     try {
-      this.featureLinksSamples = await window.csClient.getFeatureLinkSamples(domain, type, isError);
+      this.featureLinksSamples = await
+      window.csClient.getFeatureLinksSamples(domain, type, isError);
     } catch {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     } finally {
@@ -99,19 +100,19 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
     return html`
     <div class="feature-links-summary">
       <sl-details summary="Link Summary" open>
-        <div class="line">All Links <b>${this.featureLinkSummary.total_count}</b></div>
-        <div class="line">Covered Links <b>${this.featureLinkSummary.covered_count}</b></div>
-        <div class="line">Uncovered (aka "web") Links <b>${this.featureLinkSummary.uncovered_count}</b></div>
-        <div class="line">All Error Links<b>${this.featureLinkSummary.error_count}</b></div>
-        <div class="line">HTTP Error Links<b>${this.featureLinkSummary.http_error_count}</b></div>
+        <div class="line">All Links <b>${this.featureLinksSummary.total_count}</b></div>
+        <div class="line">Covered Links <b>${this.featureLinksSummary.covered_count}</b></div>
+        <div class="line">Uncovered (aka "web") Links <b>${this.featureLinksSummary.uncovered_count}</b></div>
+        <div class="line">All Error Links<b>${this.featureLinksSummary.error_count}</b></div>
+        <div class="line">HTTP Error Links<b>${this.featureLinksSummary.http_error_count}</b></div>
       </sl-details>
       <sl-details summary="Link Types" open>
-        ${this.featureLinkSummary.link_types.map((linkType) => html`
+        ${this.featureLinksSummary.link_types.map((linkType) => html`
           <div class="line">${(linkType.key).toUpperCase()} <b>${linkType.count}</b></div>
         `)}
       </sl-details>
       <sl-details summary="Uncovered Link Domains" open>
-        ${this.featureLinkSummary.uncovered_link_domains.map((domain) => html`
+        ${this.featureLinksSummary.uncovered_link_domains.map((domain) => html`
           <div class="line">
             <div>
               <a href=${domain.key}>${domain.key}</a>
@@ -125,7 +126,7 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
         `)}
       </sl-details>
       <sl-details summary="Error Link Domains" open>
-      ${this.featureLinkSummary.error_link_domains.map((domain) => html`
+      ${this.featureLinksSummary.error_link_domains.map((domain) => html`
       <div class="line">
         <div>
           <a href=${domain.key}>${domain.key}</a>
