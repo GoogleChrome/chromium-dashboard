@@ -58,6 +58,7 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
       this.loading = false;
     }
   }
+
   calcSampleId(domain, type, isError) {
     return `domain=${domain}&type=${type}&isError=${isError}`;
   }

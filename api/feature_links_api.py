@@ -44,14 +44,14 @@ class FeatureLinksAPI(basehandlers.APIHandler):
 
 
 class FeatureLinksSummaryAPI(basehandlers.APIHandler):
-  """FeatureLinksSummaryAPI will return summary of links to the client. """
+  """FeatureLinksSummaryAPI will return summary of links to the client."""
 
   @permissions.require_admin_site
   def do_get(self, **kwargs):
     return get_feature_links_summary()
 
 class FeatureLinksSamplesAPI(basehandlers.APIHandler):
-  """FeatureLinksSamplesAPI will return sample links to the client. """
+  """FeatureLinksSamplesAPI will return sample links to the client."""
 
   @permissions.require_admin_site
   def do_get(self, **kwargs):
