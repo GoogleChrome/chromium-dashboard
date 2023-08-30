@@ -275,24 +275,38 @@ class VerboseFeatureDict(TypedDict):
 @dataclass
 class OriginTrialInfo():
   def __init__(self, api_trial):
-    self.id = api_trial.get('id', '')
-    self.display_name = api_trial.get('displayName', '')
-    self.description = api_trial.get('description', '')
-    self.origin_trial_feature_name = api_trial.get('originTrialFeatureName', '')
-    self.enabled = api_trial.get('enabled', None)
-    self.status = api_trial.get('status', '')
-    self.chromestatus_url = api_trial.get('chromestatusUrl', '')
-    self.start_milestone = api_trial.get('startMilestone', '')
-    self.end_milestone = api_trial.get('endMilestone', '')
-    self.end_time = api_trial.get('endTime', '')
+    self.id = api_trial.get('id', None)
+    self.display_name = api_trial.get('displayName', None)
+    self.description = api_trial.get('description', None)
+    self.origin_trial_feature_name = api_trial.get('originTrialFeatureName', None)
+    self.enabled = api_trial.get('enabled', False)
+    self.status = api_trial.get('status', None)
+    self.chromestatus_url = api_trial.get('chromestatusUrl', None)
+    self.start_milestone = api_trial.get('startMilestone', None)
+    self.end_milestone = api_trial.get('endMilestone', None)
+    self.original_end_milestone = api_trial.get('originalEndMilestone', None)
+    self.end_time = api_trial.get('endTime', None)
+    self.documentation_url = api_trial.get('documentationUrl', None)
+    self.feedback_url = api_trial.get('feedbackUrl', None)
+    self.intent_to_experiment_url = api_trial.get('intentToExperimentUrl', None)
+    self.trial_extensions = api_trial.get('trialExtensions', None)
+    self.type = api_trial.get('type', None)
+    self.allow_third_party_origins = api_trial.get('allowThirdPartyOrigins', False)
 
-  id: str
-  display_name: str
-  description: str
-  origin_trial_feature_name: str
-  enabled: bool|None
-  status: str
-  chromestatus_url: str
-  start_milestone: str
-  end_milestone: str
-  end_time: str
+  id: str|None
+  display_name: str|None
+  description: str|None
+  origin_trial_feature_name: str|None
+  enabled: bool
+  status: str|None
+  chromestatus_url: str|None
+  start_milestone: str|None
+  end_milestone: str|None
+  original_end_milestone: str|None
+  end_time: str|None
+  documentation_url: str|None
+  feedback_url: str|None
+  intent_to_experiment_url: str|None
+  trial_extensions: list|None
+  type: str|None
+  allow_third_party_origins: bool
