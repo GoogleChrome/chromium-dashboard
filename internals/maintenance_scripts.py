@@ -274,6 +274,49 @@ class AssociateOTs(FlaskHandler):
     if not trial_stage.ot_is_deprecation_trial:
       trial_stage.ot_is_deprecation_trial = trial_data['type'] == 'DEPRECATION'
 
+  def parse_feature_id(self, chromestatus_url: str|None) -> int|None:
+      if chromestatus_url is None:
+        return None
+      # The ChromeStatus feature ID is pulled out of the ChromeStatus URL.
+      chromestatus_id_start = chromestatus_url.rfind('/')
+      if chromestatus_id_start == -1:
+        logging.info(f'Bad ChromeStatus URL: {chromestatus_url}')
+        return None
+      # Add 1 to index, which is the start index of the ID.
+      chromestatus_id_start += 1
+      chromestatus_id_str = chromestatus_url[chromestatus_id_start:]
+      try:
+        chromestatus_id = int(chromestatus_id_str)
+      except ValueError:
+        logging.info(
+            f'Unable to parse ID from ChromeStatus URL: {chromestatus_url}')
+        return None
+      return chromestatus_id
+
+  def find_trial_stage(self, feature_id: int) -> Stage|None:
+      fe: FeatureEntry|None = FeatureEntry.get_by_id(feature_id)
+      if fe is None:
+        logging.info(f'No feature found for ChromeStatus ID: {feature_id}')
+        return None
+
+      trial_stage_type = STAGE_TYPES_ORIGIN_TRIAL[fe.feature_type]
+      trial_stages = Stage.query(
+          Stage.stage_type == trial_stage_type,
+          Stage.feature_id == feature_id).fetch()
+      # If there are no OT stages for the feature, we can't associate the
+      # trial with any stages.
+      if len(trial_stages) == 0:
+        logging.info(f'No OT stages found for feature ID: {feature_id}')
+        return None
+      # If there is currently more than one origin trial stage for the
+      # feature, we don't know which one represents the given trial.
+      if len(trial_stages) > 1:
+        logging.info('Multiple origin trial stages found for feature '
+                     f'{feature_id}. Cannot discern which stage to associate '
+                     'trial with.')
+        return None
+      return trial_stages[0]
+
   def get_template_data(self, **kwargs):
     """Link existing origin trials with their ChromeStatus entry"""
     self.require_cron_header()
@@ -285,74 +328,37 @@ class AssociateOTs(FlaskHandler):
       stage = Stage.query(
           Stage.origin_trial_id == trial_data['id']).get()
       # If this trial is already associated with a ChromeStatus stage,
-      # just try and see if any unfilled fields need populated.
+      # just see if any unfilled fields need to be populated.
       if stage:
         self.write_fields_for_trial_stage(stage, trial_data)
         entities_to_write.append(stage)
         continue
 
-      if ('chromestatus_url' not in trial_data or 
-          trial_data['chromestatus_url'] is None):
-        print(f'No ChromeStatus URL for trial {trial_data["id"]}')
-        trials_with_no_feature.append(trial_data)
-        continue
-      # The ChromeStatus feature ID is pulled out of the ChromeStatus URL.
-      chromestatus_id_start = trial_data['chromestatus_url'].rfind('/')
-      if chromestatus_id_start == -1:
-        print('Could not derive ChromeStatus ID from URL: '
-              f'{trial_data["chromestatus_url"]}')
-        trials_with_no_feature.append(trial_data)
-        continue
-      # Add 1 to index, which is the start index of the ID.
-      chromestatus_id_start += 1
-      chromestatus_id_str = (
-          trial_data['chromestatus_url'][chromestatus_id_start:])
-      try:
-        chromestatus_id = int(chromestatus_id_str)
-      except ValueError:
-        print(f'Could not parse ChromeStatus ID: {chromestatus_id_str}')
+      feature_id = self.parse_feature_id(trial_data['chromestatus_url'])
+      if feature_id is None:
         trials_with_no_feature.append(trial_data)
         continue
 
-      fe: FeatureEntry|None = FeatureEntry.get_by_id(chromestatus_id)
-      if fe is None:
-        print(f'No feature found for ChromeStatus ID: {chromestatus_id}')
-        trials_with_no_feature.append(trial_data)
-        continue
-      feature_id = fe.key.integer_id()
-      trial_stage_type = STAGE_TYPES_ORIGIN_TRIAL[fe.feature_type]
-      trial_stages = Stage.query(
-          Stage.stage_type == trial_stage_type,
-          Stage.feature_id == feature_id).fetch()
-      # If there are no OT stages for the feature, we can't associate the
-      # trial with any stages.
-      if len(trial_stages) == 0:
-        print(f'No OT stages found for feature ID: {feature_id}')
-        trials_with_no_feature.append(trial_data)
-        continue
-      # If there is currently more than one origin trial stage for the
-      # feature, we don't know which one represents the given trial.
-      if len(trial_stages) > 1:
-        print(f'Multiple origin trial stages found for feature {feature_id}. '
-              'Cannot discern which stage to associate trial with.')
+      ot_stage = self.find_trial_stage(feature_id)
+      if ot_stage is None:
         trials_with_no_feature.append(trial_data)
         continue
 
-      self.write_fields_for_trial_stage(trial_stages[0], trial_data)
-      entities_to_write.append(trial_stages[0])
+      self.write_fields_for_trial_stage(ot_stage, trial_data)
+      entities_to_write.append(ot_stage)
 
     # List any origin trials that did not get associated with a feature entry.
     if len(trials_with_no_feature) > 0:
-      print('Trials not associated with a ChromeStatus feature:')
+      logging.info('Trials not associated with a ChromeStatus feature:')
     else:
-      print('All trials associated with a ChromeStatus feature!')
+      logging.info('All trials associated with a ChromeStatus feature!')
     for trial_data in trials_with_no_feature:
-      print(trial_data['id'], trial_data['display_name'])
+      logging.info(f'{trial_data["id"]} {trial_data["display_name"]}')
 
     # Update all the stages at the end. Note that there is a chance
     # the stage entities have not changed any values if all fields already
     # had a value.
-    print(f'{len(entities_to_write)} stages to update.')
+    logging.info(f'{len(entities_to_write)} stages to update.')
     if len(entities_to_write) > 0:
       ndb.put_multi(entities_to_write)
 
