@@ -62,7 +62,31 @@ npm test
 
 This will start a local datastore emulator, run unit tests, and then shut down the emulator.
 
-There are some developing information in developer-documentation.md.
+To update test_html_rendering.html, modify the `test_html_rendering` method in
+the corresponding test file, uncomment the line that looks like:
+
+```python
+ # TESTDATA.make_golden(template_text, 'test_html_rendering.html')
+```
+
+Then run the test again (and maybe one more time), and then you can revert
+your change of the test files.
+
+To run the Playwright visual tests (aka end-to-end tests), the command to use is:
+```bash
+npm run pwtests --packages/playwright
+```
+
+If there are errors, or if you need to update any of the screeenshot images,
+you can update all images for all tests with:
+```bash
+npm run pwtests-update --packages/playwright
+```
+
+Then check the `packages/playwright/test-results` directory for any changes.
+
+
+There is some additional information for developers in developer-documentation.md.
 
 ### Origin Trials
 To test the functionality of this application locally that interacts with data from the Origin Trials API, an API key will need to be acquired. To do this, run the following command:

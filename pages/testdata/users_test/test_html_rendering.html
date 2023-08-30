@@ -55,9 +55,9 @@ limitations under the License.
 
   <script nonce="fake nonce">
     const urlParams = new URLSearchParams(window.location.search);
-    // if (urlParams.get("loginStatus") == 'False') {
-    //   alert('Please log in.');
-    // }
+    if (urlParams.get("loginStatus") == 'False') {
+      alert('Please log in.');
+    }
   </script>
   <script nonce="fake nonce" src="/static/js/metric.min.js?v=Undeployed"></script>
   <script nonce="fake nonce" src="/static/js/cs-client.min.js?v=Undeployed"></script>
