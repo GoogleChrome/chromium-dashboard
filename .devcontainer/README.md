@@ -49,6 +49,12 @@ the corresponding test file, uncomment the line that looks like:
  # TESTDATA.make_golden(template_text, 'test_html_rendering.html')
 
 Then run the test again, and revert your change of the test file.
+
+To run the Playwright visual tests (aka end-to-end tests), the command to use is:
+`npm run pwtests --packages/playwright`.  If there are errors, or if you need to
+update the screeenshot images, you can update all images for all tests with:
+`npm run pwtests-update --packages/playwright`.  Check the `packages/playwright/test-results` directory for any changes.
+
 ## Accessing the various services
 
 To access the database, database viewer or the app when it is running, go to

@@ -119,7 +119,6 @@ export class ChromedashDrawer extends LitElement {
   }
 
   connectedCallback() {
-    console.log('chromedash-drawer connectedCallback() email:', this.user?.email || 'none');
     super.connectedCallback();
     // user is passed in from chromedash-app
     if (this.user && this.user.email) return;
@@ -168,22 +167,17 @@ export class ChromedashDrawer extends LitElement {
     const signInTestingButton = document.createElement('button');
     signInTestingButton.innerText = 'Sign in as example@chromium.org';
     signInTestingButton.setAttribute('data-testid', 'dev-mode-sign-in-button');
-    console.log('setup button to login as developer.');
     signInTestingButton.addEventListener('click', () => {
-      console.log('login as developer for testing, and replace the url if successful.');
       // POST to '/dev/mock_login' to login as example@chromium.
       fetch('/dev/mock_login', {method: 'POST'}).then((response) => {
-        console.log('fetch response ok:', response.ok);
         if (!response.ok) {
           signInTestingButton.style.color = 'red';
-          console.error('About to throw error re failed login.', response);
           throw new Error('Sign in failed! Response:', response);
         }
         // Reload the page to display with the logged in user.
         const url = window.location.href.split('?')[0];
         window.history.replaceState(null, null, url);
         window.location = url;
-        console.log('after location replace');
       })
         .catch((error) => {
           console.error('Sign in failed.  Now what? ', error);
@@ -217,7 +211,6 @@ export class ChromedashDrawer extends LitElement {
   }
 
   signOut() {
-    console.log('chromedash-drawer signOut called email:', this.user?.email || 'none');
     window.csClient.signOut().then(() => {
       window.location.reload();
     });

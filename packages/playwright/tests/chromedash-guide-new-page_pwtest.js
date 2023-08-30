@@ -1,109 +1,10 @@
 // @ts-check
 import { test, expect } from '@playwright/test';
-import { captureConsoleMessages, delay } from './test_utils';
-
-// Timeout for logging in, in milliseconds.
-// Initially set to longer timeout, in case server needs to warm up and
-// respond to the login.  Changed to shorter timeout after login is successful.
-// Not sure we need this yet.
-let loginTimeout = 30000;
-
-async function login(page) {
-  // await expect(page).toHaveScreenshot('roadmap.png');
-  // Always reset to the roadmap page.
-  await page.pause();
-  console.log('login: goto /');
-  await page.goto('/', {timeout: 20000});
-  await page.waitForURL('**/roadmap', {timeout: 20000});
-
-  await delay(1000);
-  await expect(page).toHaveTitle(/Chrome Status/);
-  page.mouse.move(0, 0); // Move away from content on page.
-
-  await delay(1000);
-  // Check whether we are already or still logged in.
-  let navContainer = page.locator('[data-testid=nav-container]');
-  while (await navContainer.isVisible()) {
-    console.log('Already (still) logged in. Need to logout.');
-    await navContainer.hover({timeout: 5000});
-    const signOutLink = page.locator('[data-testid=sign-out-link]');
-    await expect(signOutLink).toBeVisible();
-
-    await signOutLink.hover({timeout: 5000});
-    await signOutLink.click({timeout: 5000});
-
-    await delay(1000);
-    await page.waitForURL('**/roadmap');
-    await expect(page).toHaveTitle(/Chrome Status/);
-    page.mouse.move(0, 0); // Move away from content on page.
-    console.log('Should be logged out ow.');
-
-    await delay(1000);
-    navContainer = page.locator('[data-testid=nav-container]');
-  }
-
-  // Expect login button to be present.
-  console.info('expect login button to be present and visible');
-  const loginButton = page.locator('button[data-testid=dev-mode-sign-in-button]');
-  await expect(loginButton).toBeVisible({timeout: loginTimeout});
-  await delay(1000);
-
-  await loginButton.click({timeout: 1000, delay: 100});
-  await delay(10000);
-
-  // Expect the title to contain a substring.
-  await expect(page).toHaveTitle(/Chrome Status/);
-  page.mouse.move(0, 0); // Move away from content on page.
-  await delay(loginTimeout / 3); // longer delay here, to allow for initial login.
-
-  // Take a screenshot of header that should have "Create feature" button.
-  console.log('take a screenshot of header that should have "Create feature" button');
-  await expect(page.locator('[data-testid=header]')).toHaveScreenshot('after-login-click.png');
-
-  // Check that we are logged in now.
-  // Expect a nav container to be present.
-  // This sometimes fails, even though the screenshot seems correct.
-  navContainer = page.locator('[data-testid=nav-container]');
-  await expect(navContainer).toBeVisible({timeout: loginTimeout});
-  loginTimeout = 5000; // After first login, reduce timeout.
-
-  console.log('login: done');
-}
-
-async function logout(page) {
-  // Attempt to sign out after running each test.
-  // First reset to the roadmap page.
-  console.log('logout: goto /');
-  await page.goto('/');
-  await page.waitForURL('**/roadmap');
-  await delay(1000);
-
-  await expect(page).toHaveTitle(/Chrome Status/);
-  page.mouse.move(0, 0); // Move away from content on page.
-  await delay(1000);
-
-  const navContainer = page.locator('[data-testid=nav-container]');
-  await expect(navContainer).toBeVisible({timeout: 20000});
-
-  await delay(1000);
-
-  await navContainer.hover({timeout: 5000});
-  const signOutLink = page.locator('[data-testid=sign-out-link]');
-  await expect(signOutLink).toBeVisible();
-
-  await signOutLink.hover({timeout: 5000});
-  await signOutLink.click({timeout: 5000});
-
-  await page.waitForURL('**/roadmap');
-  await expect(page).toHaveTitle(/Chrome Status/);
-
-  console.log('logout: done');
-}
-
+import { captureConsoleMessages, delay, login, logout } from './test_utils';
 
 test.beforeEach(async ({page}) => {
   captureConsoleMessages(page);
-  test.setTimeout(60000 + loginTimeout);
+  test.setTimeout(90000);
 
   // Attempt to login before running each test.
   await login(page);
@@ -115,7 +16,7 @@ test.afterEach(async ({page}) => {
 
 
 test('navigate to create feature page', async ({page}) => {
-  console.log('navigate to create feature page');
+  // console.log('navigate to create feature page');
 
   // Expect create feature button to be present.
   const createFeatureButton = page.locator('[data-testid=create-feature-button]');
@@ -126,7 +27,6 @@ test('navigate to create feature page', async ({page}) => {
 
   // Navigate to the new feature page by clicking.
   createFeatureButton.click();
-  // await page.waitForURL('**/guide/new', {timeout: 20000});
 
   // Expect "Add a feature" header to be present.
   const addAFeatureHeader = page.locator('[data-testid=add-a-feature]');
@@ -134,12 +34,12 @@ test('navigate to create feature page', async ({page}) => {
 
   // Take a screenshot of the content area.
   await expect(page).toHaveScreenshot('new-feature-page.png');
-  console.log('navigate to create feature page done');
+  // console.log('navigate to create feature page done');
 });
 
 
 test('enter feature name', async ({page}) => {
-  console.log('enter feature name');
+  // console.log('enter feature name');
   test.setTimeout(90000);
 
   // Navigate to the new feature page.
@@ -158,5 +58,5 @@ test('enter feature name', async ({page}) => {
   featureNameInput.fill('Test feature name');
 
   await expect(page).toHaveScreenshot('feature-name.png');
-  console.log('enter feature name done');
+  // console.log('enter feature name done');
 });

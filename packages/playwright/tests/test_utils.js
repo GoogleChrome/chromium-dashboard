@@ -1,8 +1,12 @@
 // @ts-check
-import '@playwright/test';
+import { expect } from '@playwright/test';
 
-export const delay = (/** @type {number | undefined} */ ms) =>
-  new Promise((resolve) => setTimeout(resolve, ms));
+/**
+ * @param {number | undefined} ms
+ */
+export async function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 
 /**
@@ -47,15 +51,15 @@ export function captureConsoleMessages(page) {
  * @param {import("playwright-core").Page} page
  */
 export function capturePageEvents(page) {
-  page.on('open', async () => {
-    console.log(`open: ${page.url()}`);
-  });
+  // page.on('open', async () => {
+  //   console.log(`open: ${page.url()}`);
+  // });
   page.on('close', async () => {
     console.log(`close: ${page.url()}`);
   });
-  page.on('requestfailed', request => {
-    console.log(`requestfailed: ${request.url()} with: ${request.failure().errorText}`);
-  });
+  // page.on('requestfailed', request => {
+  //   console.log(`requestfailed: ${request.url()} with: ${request.failure().errorText}`);
+  // });
   page.on('pageerror', async (/** @type {Error} */ error) => {
     console.log(`pageerror: ${error}`);
   });
@@ -86,4 +90,109 @@ export async function decodeCookies(page) {
   cookies.forEach((cookie) => {
     console.log('Decoded Cookie:', cookie);
   });
+}
+
+
+
+// Timeout for logging in, in milliseconds.
+// Initially set to longer timeout, in case server needs to warm up and
+// respond to the login.  Changed to shorter timeout after login is successful.
+// Not sure we need this yet.
+let loginTimeout = 20000;
+
+/**
+ * @param {import("playwright-core").Page} page
+ */
+export async function login(page) {
+  // await expect(page).toHaveScreenshot('roadmap.png');
+  // Always reset to the roadmap page.
+  await page.pause();
+  // console.log('login: goto /');
+  await page.goto('/', {timeout: 20000});
+  await page.waitForURL('**/roadmap', {timeout: 20000});
+
+  await delay(1000);
+  await expect(page).toHaveTitle(/Chrome Status/);
+  page.mouse.move(0, 0); // Move away from content on page.
+
+  await delay(1000);
+  // Check whether we are already or still logged in.
+  let navContainer = page.locator('[data-testid=nav-container]');
+  while (await navContainer.isVisible()) {
+    // console.log('Already (still) logged in. Need to logout.');
+    await navContainer.hover({timeout: 5000});
+    const signOutLink = page.locator('[data-testid=sign-out-link]');
+    await expect(signOutLink).toBeVisible();
+
+    await signOutLink.hover({timeout: 5000});
+    await signOutLink.click({timeout: 5000});
+
+    await delay(1000);
+    await page.waitForURL('**/roadmap');
+    await expect(page).toHaveTitle(/Chrome Status/);
+    page.mouse.move(0, 0); // Move away from content on page.
+    // console.log('Should be logged out ow.');
+
+    await delay(1000);
+    navContainer = page.locator('[data-testid=nav-container]');
+  }
+
+  // Expect login button to be present.
+  // console.info('expect login button to be present and visible');
+  const loginButton = page.locator('button[data-testid=dev-mode-sign-in-button]');
+  await expect(loginButton).toBeVisible({timeout: loginTimeout});
+  await delay(1000);
+
+  await loginButton.click({timeout: 1000, delay: 100});
+  await delay(loginTimeout / 3); // longer delay here, to allow for initial login.
+
+  // Expect the title to contain a substring.
+  await expect(page).toHaveTitle(/Chrome Status/);
+  page.mouse.move(0, 0); // Move away from content on page.
+  await delay(6000);
+
+  // Take a screenshot of header that should have "Create feature" button.
+  // console.log('take a screenshot of header that should have "Create feature" button');
+  await expect(page.locator('[data-testid=header]')).toHaveScreenshot('after-login-click.png');
+
+  // Check that we are logged in now.
+  // Expect a nav container to be present.
+  // This sometimes fails, even though the screenshot seems correct.
+  navContainer = page.locator('[data-testid=nav-container]');
+  await expect(navContainer).toBeVisible({timeout: loginTimeout});
+  loginTimeout = 5000; // After first login, reduce timeout/delay.
+
+  // console.log('login: done');
+}
+
+/**
+ * @param {import("playwright-core").Page} page
+ */
+export async function logout(page) {
+  // Attempt to sign out after running each test.
+  // First reset to the roadmap page.
+  // console.log('logout: goto /');
+  await page.goto('/');
+  await page.waitForURL('**/roadmap');
+  await delay(1000);
+
+  await expect(page).toHaveTitle(/Chrome Status/);
+  page.mouse.move(0, 0); // Move away from content on page.
+  await delay(1000);
+
+  const navContainer = page.locator('[data-testid=nav-container]');
+  await expect(navContainer).toBeVisible({timeout: 20000});
+  await delay(1000);
+
+  await navContainer.hover({timeout: 5000});
+  const signOutLink = page.locator('[data-testid=sign-out-link]');
+  await expect(signOutLink).toBeVisible();
+
+  await signOutLink.hover({timeout: 5000});
+  await signOutLink.click({timeout: 5000});
+
+  await page.waitForURL('**/roadmap');
+  await expect(page).toHaveTitle(/Chrome Status/);
+
+  // console.log('logout: done');
 }
