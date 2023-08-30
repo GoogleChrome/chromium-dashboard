@@ -123,7 +123,7 @@ class ChromedashFeatureDetail extends LitElement {
         margin-right: 4px;
       }
 
-      sl-details sl-button[variant~="default"]::part(base) {
+      sl-details sl-button[variant="default"]::part(base) {
         color: var(--sl-color-primary-600);
         border: 1px solid var(--sl-color-primary-600);
       }
