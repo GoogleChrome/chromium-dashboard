@@ -14,6 +14,7 @@
 
 
 import collections
+import re
 from typing import Optional
 
 
@@ -660,6 +661,14 @@ def convert_enum_int_to_string(property_name, value):
   return converted_value
 
 
+WORD_RE = re.compile(r'[a-z0-9]+')
+def normalize_enum_string(value: str) -> str:
+  """Make enum name comparisons more convienent."""
+  words = WORD_RE.findall(value.lower())
+  normal = '_'.join(w for w in words if w)
+  return normal
+
+
 def convert_enum_string_to_int(property_name, value):
   """If the property is an enum, return its enum value, else -1."""
   try:
@@ -667,9 +676,10 @@ def convert_enum_string_to_int(property_name, value):
   except ValueError:
     pass
 
+  normal_value = normalize_enum_string(value)
   enum_dict = PROPERTY_NAMES_TO_ENUM_DICTS.get(property_name, {})
   for index, enum_str in enum_dict.items():
-    if enum_str == value:
+    if normalize_enum_string(enum_str) == normal_value:
       return index
   return -1
 
