@@ -192,7 +192,7 @@ def get_current_user():
       user_via_env = None
       if os.environ.get('USER_EMAIL', '') != '':
         user_via_env = User(email=os.environ['USER_EMAIL'])
-      logging.info("User get_current_user via_env %s", user_via_env)
+      # logging.info("User get_current_user via_env %s", user_via_env)
       return user_via_env
 
     user_info, signature = session.get('signed_user_info', (None, None))
@@ -203,16 +203,16 @@ def get_current_user():
             str(user_info),
             timeout=xsrf.REFRESH_TOKEN_TIMEOUT_SEC)
         user_via_signed_user_info = User(email=user_info['email'])
-        logging.info("User get_current_user via_signed_user_info %s", user_via_signed_user_info)
+        # logging.info("User get_current_user via_signed_user_info %s", user_via_signed_user_info)
         return user_via_signed_user_info
 
       except xsrf.TokenIncorrect:
         # If anything is not right, give the user a fresh session.
-        logging.info("User get_current_user session.clear()")
+        # logging.info("User get_current_user session.clear()")
         session.clear()
         pass
 
-    logging.info("User get_current_user None")
+    # logging.info("User get_current_user None")
     return None  # User is not signed in.
 
 
@@ -232,6 +232,6 @@ def add_signed_user_info_to_session(email):
 def refresh_user_session():
     """If the user is signed in, update the signed user info with a new date."""
     user = get_current_user()
-    logging.info("User refresh_user_session called for user %s", user)
+    # logging.info("User refresh_user_session called for user %s", user)
     if user:
         add_signed_user_info_to_session(user.email())

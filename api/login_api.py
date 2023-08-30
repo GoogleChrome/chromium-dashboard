@@ -57,18 +57,18 @@ class MockLogin(basehandlers.APIHandler):
   """Create a session using a testing account."""
 
   def do_post(self, **kwargs):
-    logging.info("MockLogin post called.")
+    # logging.info("MockLogin post called.")
     if not settings.DEV_MODE and not settings.UNIT_TEST_MODE:
-      logging.info("MockLogin post abort.  Not in dev environment.")
+      # logging.info("MockLogin post abort.  Not in dev environment.")
       self.abort(status=403,
           msg="This can only be used in a development environment.")
 
     email = self.get_param('email', default=TESTING_ACCOUNTS[0])
     if email not in TESTING_ACCOUNTS:
-      logging.info("MockLogin post abort.  Not using a testing account.")
+      # logging.info("MockLogin post abort.  Not using a testing account.")
       self.abort(status=403,
           msg="This can only be used with specific testing accounts.")
 
     users.add_signed_user_info_to_session(email)
-    logging.info('MockLogin post. Signed in as %s', email)
+    # logging.info('MockLogin post. Signed in as %s', email)
     return {'message': f'Signed in as {email}'}
