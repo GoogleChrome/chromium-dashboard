@@ -107,6 +107,7 @@ api_routes: list[Route] = [
     Route(f'{API_BASE}/features/create', features_api.FeaturesAPI),
     Route(f'{API_BASE}/feature_links', feature_links_api.FeatureLinksAPI),
     Route(f'{API_BASE}/feature_links_summary', feature_links_api.FeatureLinksSummaryAPI),
+    Route(f'{API_BASE}/feature_links_samples', feature_links_api.FeatureLinksSamplesAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/votes',
         reviews_api.VotesAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/votes/<int:gate_id>',
@@ -240,6 +241,7 @@ internals_routes: list[Route] = [
       inactive_users.RemoveInactiveUsersHandler),
   Route('/cron/reindex_all', search_fulltext.ReindexAllFeatures),
   Route('/cron/update_all_feature_links', feature_links.UpdateAllFeatureLinksHandlers),
+  Route('/cron/associate_origin_trials', maintenance_scripts.AssociateOTs),
 
   Route('/admin/find_stop_words', search_fulltext.FindStopWords),
 

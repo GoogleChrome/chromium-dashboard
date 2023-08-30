@@ -85,6 +85,10 @@ export class ChromedashGateColumn extends LitElement {
        #votes-area th {
          font-weight: 500;
        }
+       table .your-vote {
+         font-style: italic;
+         white-space: nowrap;
+       }
 
        #questionnaire {
          white-space: pre-wrap;
@@ -565,31 +569,25 @@ export class ChromedashGateColumn extends LitElement {
     `;
   }
 
+  renderSaveButton() {
+    return html`
+      <sl-button
+        size="small" variant="primary"
+        @click=${this.handleSave}
+        ?disabled=${this.submittingComment}
+        >Save</sl-button>
+      `;
+  }
+
   renderVoteRow(vote, canVote) {
     const shortVoter = vote.set_by.split('@')[0] + '@';
     let saveButton = nothing;
     let voteCell = this.renderVoteReadOnly(vote);
 
-    if (vote.state === GATE_REVIEW_REQUESTED &&
-        !(canVote && vote.set_by === this.user?.email)) {
-      return nothing; // The requester is shown by renderReviewRequest().
-    }
-
     if (canVote && vote.set_by == this.user?.email) {
-      // If the current reviewer was the one who requested the review,
-      // select "No response" in the menu because there is no
-      // "Review requested" menu item now.
-      const state = (vote.state == GATE_REVIEW_REQUESTED ?
-        VOTE_OPTIONS.NO_RESPONSE[0] : vote.state);
-      voteCell = this.renderVoteMenu(state);
+      voteCell = this.renderVoteMenu(vote.state);
       if (this.needsSave) {
-        saveButton = html`
-          <sl-button
-            size="small" variant="primary"
-            @click=${this.handleSave}
-            ?disabled=${this.submittingComment}
-            >Save</sl-button>
-          `;
+        saveButton = this.renderSaveButton();
       } else if (this.showSaved) {
         saveButton = html`<b>Saved</b>`;
       }
@@ -604,15 +602,26 @@ export class ChromedashGateColumn extends LitElement {
     `;
   }
 
+  renderAddVoteRow() {
+    const voteCell = this.renderVoteMenu(VOTE_OPTIONS.NO_RESPONSE[0]);
+    const saveButton = this.needsSave ? this.renderSaveButton() : nothing;
+    return html`
+      <tr>
+       <td class="your-vote">Awaiting review</td>
+       <td>${voteCell}</td>
+       <td>${saveButton}</td>
+      </tr>
+    `;
+  }
+
   renderVotes() {
     const canVote = (
       this.user &&
         this.user.approvable_gate_types.includes(this.gate.gate_type));
-    const myVoteExists = this.votes.some((v) => v.set_by == this.user?.email);
     const responses = this.votes.filter((v) => v.state !== GATE_REVIEW_REQUESTED);
-    const addVoteRow = (canVote && !myVoteExists) ?
-      this.renderVoteRow({set_by: this.user?.email, state: 7}, canVote) :
-      nothing;
+    const myResponseExists = responses.some((v) => v.set_by == this.user?.email);
+    const addVoteRow = (canVote && !myResponseExists) ?
+      this.renderAddVoteRow() : nothing;
 
     if (!canVote && responses.length === 0) {
       return html`
@@ -623,7 +632,7 @@ export class ChromedashGateColumn extends LitElement {
     return html`
       <table>
         <tr><th>Reviewer</th><th>Review status</th></tr>
-        ${this.votes.map((v) => this.renderVoteRow(v, canVote))}
+        ${responses.map((v) => this.renderVoteRow(v, canVote))}
         ${addVoteRow}
       </table>
     `;
