@@ -118,7 +118,12 @@ class ChromedashFeatureDetail extends LitElement {
         padding: 8px 16px;
       }
 
-      sl-details sl-button::part(base) {
+      sl-details sl-button {
+        float: right;
+        margin-right: 4px;
+      }
+
+      sl-details sl-button[variant~="default"]::part(base) {
         color: var(--sl-color-primary-600);
         border: 1px solid var(--sl-color-primary-600);
       }
@@ -582,27 +587,44 @@ class ChromedashFeatureDetail extends LitElement {
     }
     const isActive = this.feature.active_stage_id === feStage.id;
 
-    // Show a button to add a trial extension stage for origin trial stages.
+    // Show any buttons that should be displayed at the top of the detail card.
     let addExtensionButton = nothing;
+    let editButton = nothing;
+    let visitTrialButton = nothing;
     if (this.canEdit && STAGE_TYPES_ORIGIN_TRIAL.has(feStage.stage_type)) {
       // Button text changes based on whether or not an extension stage already exists.
       const extensionAlreadyExists = (feStage.extensions && feStage.extensions.length > 0);
       const extensionButtonText = extensionAlreadyExists ?
         'Add another trial extension' : 'Add a trial extension';
       addExtensionButton = html`
-      <sl-button size="small" style="float:right"
+      <sl-button size="small"
           @click=${() => this.createExtensionStage(feStage, extensionAlreadyExists)}
           >${extensionButtonText}</sl-button>`;
     }
-
-    const editButton = html`
-      <sl-button size="small" style="float:right"
-          href="/guide/stage/${this.feature.id}/${processStage.outgoing_stage}/${feStage.id}"
-          >Edit fields</sl-button>
-`;
+    if (this.canEdit) {
+      editButton = html`
+        <sl-button size="small"
+            href="/guide/stage/${this.feature.id}/${processStage.outgoing_stage}/${feStage.id}"
+            >Edit fields</sl-button>`;
+    }
+    // If we have an origin trial ID associated with the stage, add a link to the trial.
+    if (feStage.origin_trial_id) {
+      let originTrialsURL = `https://origintrials-staging.corp.google.com/origintrials/#/view_trials/${feStage.origin_trial_id}`;
+      // If this is the production host, link to the production OT site.
+      if (window.location.host === 'chromestatus.com') {
+        originTrialsURL = `https://developer.chrome.com/origintrials/#/view_trials/${feStage.origin_trial_id}`;
+      }
+      visitTrialButton = html`
+        <sl-button 
+          size="small"
+          variant="primary"
+          href=${originTrialsURL}
+          target="_blank">View Origin Trial</sl-button>`;
+    }
     const content = html`
       <p class="description">
-        ${this.canEdit ? editButton : nothing}
+        ${visitTrialButton}
+        ${editButton}
         ${addExtensionButton}
         ${processStage.description}
       </p>
