@@ -57,6 +57,7 @@ const LONG_TEXT = 60;
 class ChromedashFeatureDetail extends LitElement {
   static get properties() {
     return {
+      appTitle: {type: String},
       featureLinks: {type: Array},
       user: {type: Object},
       canEdit: {type: Boolean},
@@ -73,6 +74,7 @@ class ChromedashFeatureDetail extends LitElement {
 
   constructor() {
     super();
+    this.appTitle = '';
     this.user = {};
     this.canEdit = false;
     this.feature = {};
@@ -611,7 +613,7 @@ class ChromedashFeatureDetail extends LitElement {
     if (feStage.origin_trial_id) {
       let originTrialsURL = `https://origintrials-staging.corp.google.com/origintrials/#/view_trials/${feStage.origin_trial_id}`;
       // If this is the production host, link to the production OT site.
-      if (window.location.host === 'chromestatus.com') {
+      if (this.appTitle === 'Chrome Platform Status') {
         originTrialsURL = `https://developer.chrome.com/origintrials/#/view_trials/${feStage.origin_trial_id}`;
       }
       visitTrialButton = html`
