@@ -543,6 +543,7 @@ export class ChromedashFeaturePage extends LitElement {
   renderFeatureDetails() {
     return html`
       <chromedash-feature-detail
+        appTitle=${this.appTitle}
         .loading=${this.loading}
         .user=${this.user}
         ?canEdit=${this.userCanEdit()}
