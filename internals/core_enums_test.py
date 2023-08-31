@@ -55,6 +55,25 @@ class EnumsFunctionsTest(testing_config.CustomTestCase):
         'impl_status_chrome', 99)
     self.assertEqual(99, actual)
 
+  def test_normalize_enum_string(self):
+    """We can convert enum names to snake_case."""
+    self.assertEqual(
+        'positive', core_enums.normalize_enum_string('Positive'))
+    self.assertEqual(
+        'mixed_signals', core_enums.normalize_enum_string('Mixed signals'))
+    self.assertEqual(
+        'mixed_signals', core_enums.normalize_enum_string('Mixed_signals'))
+    self.assertEqual(
+        'mixed_signals', core_enums.normalize_enum_string('mixed_signals'))
+    self.assertEqual(
+        'mixed_signals', core_enums.normalize_enum_string('mixed-signals'))
+    self.assertEqual(
+        'in_developer_trial_behind_a_flag',
+        core_enums.normalize_enum_string('In developer trial (Behind a flag)'))
+    self.assertEqual(
+        'in_developer_trial_behind_a_flag',
+        core_enums.normalize_enum_string('In_developer_trial_(Behind_a_flag)'))
+
   def test_convert_enum_string_to_int__already_numeric(self):
     """If the value passed in is already an int, go with it."""
     actual = core_enums.convert_enum_string_to_int(
@@ -65,6 +84,10 @@ class EnumsFunctionsTest(testing_config.CustomTestCase):
     """We use the enum representation if it is defined."""
     actual = core_enums.convert_enum_string_to_int(
         'impl_status_chrome', 'No active development')
+    self.assertEqual(core_enums.NO_ACTIVE_DEV, actual)
+
+    actual = core_enums.convert_enum_string_to_int(
+        'impl_status_chrome', 'No_active_development')
     self.assertEqual(core_enums.NO_ACTIVE_DEV, actual)
 
     actual = core_enums.convert_enum_string_to_int(
