@@ -55,8 +55,8 @@ jobs:
         run: |
           npm install -g gulp
 
-      - run: npm ci
-      - run: npm run deps
+      - run: npm config set script-shell bash --global
+      - run: npm run setup
       - run: npm run build --if-present
 
       - name: Run web test runner

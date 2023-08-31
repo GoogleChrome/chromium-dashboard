@@ -12,12 +12,10 @@ RUN userdel -r pwuser && \
     mkdir -p /work/test-results && \
     chown -R pwuser /work
 
-# should include:  mkdir -p /work/playwright-report && \
+RUN npm config set script-shell bash --global
 
 USER pwuser
 WORKDIR /work
-# COPY --chown=pwuser:pwuser openapi /work/openapi/
-# COPY --chown=pwuser:pwuser gen /work/gen/
 # Cache the infrequent but time consuming changes early
 COPY --chown=pwuser:pwuser package.json /work/
 RUN npm install -D && npx playwright install

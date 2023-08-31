@@ -20,7 +20,9 @@ RUN curl https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.4/install.sh | bash 
     && . $NVM_DIR/nvm.sh \
     && nvm install $NODE_VERSION \
     && nvm alias default $NODE_VERSION \
-    && nvm use default
+    && nvm use default \
+    && npm config set script-shell bash
+
 
 ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
 ENV PATH="${PATH}:$NVM_DIR/versions/node/v$NODE_VERSION/bin"

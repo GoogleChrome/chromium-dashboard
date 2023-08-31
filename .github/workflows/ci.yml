@@ -45,14 +45,14 @@ jobs:
       - name: installation
         run: |
           npm install -g gulp
-          npm ci
-          npm run deps
+          npm config set script-shell bash --global
+          npm run setup
 
       - name: lint
         run: npm run lint
 
       - name: mypy
-        run: mypy --ignore-missing-imports --exclude cs-env/ --exclude gen/ --exclude appengine_config.py .
+        run: npm run mypy
 
       - name: test
         run: npm test
