@@ -180,7 +180,7 @@ export class ChromedashDrawer extends LitElement {
         window.location = url;
       })
         .catch((error) => {
-          console.error('Sign in failed.  Now what? ', error);
+          console.error('Sign in failed.', error);
         });
     });
 

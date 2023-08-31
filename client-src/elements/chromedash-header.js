@@ -206,9 +206,6 @@ export class ChromedashHeader extends LitElement {
     // so we create signInButton element at the document level and insert it
     // in the light DOM of the header, which will be rendered in the <slot> below
     const signInButton = document.createElement('div');
-    signInButton.setAttribute('style', 'width:200px; height:40px;');
-    signInButton.setAttribute('data-testid', 'google-signin-button');
-    signInButton.setAttribute('data-auto_prompt', 'false');
     google.accounts.id.renderButton(signInButton, {type: 'standard'});
     const appComponent = document.querySelector('chromedash-app');
     if (appComponent) {
@@ -247,10 +244,10 @@ export class ChromedashHeader extends LitElement {
         .then(() => {
           setTimeout(() => {
             window.location = '/';
-          }, 5000);
+          }, 1000);
         })
         .catch((error) => {
-          console.error('Sign in failed.  Now what? ', error);
+          console.error('Sign in failed.', error);
         });
     });
 

@@ -157,9 +157,7 @@ class ChromeStatusClient {
   // Permissions API
   getPermissions() {
     return this.doGet('/currentuser/permissions')
-      .then((res) => {
-        return res.user;
-      });
+      .then((res) => res.user);
   }
 
   // Settings API
