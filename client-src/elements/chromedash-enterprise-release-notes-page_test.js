@@ -14,6 +14,7 @@ describe('chromedash-feature-page', () => {
           id: 1,
           name: 'feature with no stages',
           summary: 'feature 1 summary',
+          editors: ['editor1', 'editor2'],
           enterprise_feature_categories: ['1', '2'],
           new_crbug_url: 'fake crbug link',
           stages: [],
@@ -31,6 +32,7 @@ describe('chromedash-feature-page', () => {
           id: 2,
           name: 'feature with no rollout stages',
           summary: 'feature 2 summary',
+          editors: ['editor1', 'editor2'],
           enterprise_feature_categories: ['1', '3'],
           new_crbug_url: 'fake crbug link',
           stages: [
@@ -58,6 +60,7 @@ describe('chromedash-feature-page', () => {
           name: 'feature with one rollout stages',
           summary: 'feature 3 summary',
           new_crbug_url: 'fake crbug link',
+          editors: ['editor1', 'editor2'],
           enterprise_feature_categories: ['1', '2', '3'],
           stages: [
             {
@@ -88,6 +91,7 @@ describe('chromedash-feature-page', () => {
           name: 'feature with two consecutive rollout stages',
           summary: 'feature 4 summary',
           new_crbug_url: 'fake crbug link',
+          editors: ['editor1'],
           enterprise_feature_categories: ['3'],
           stages: [
             {
@@ -109,7 +113,7 @@ describe('chromedash-feature-page', () => {
           ],
           browsers: {
             chrome: {
-              owners: ['owner1', 'owner2'],
+              owners: ['owner1'],
             },
           },
           updated: {
@@ -122,6 +126,7 @@ describe('chromedash-feature-page', () => {
           name: 'feature with past and future rollout stages',
           summary: 'feature 5 summary',
           new_crbug_url: 'fake crbug link',
+          editors: ['editor1', 'editor2'],
           enterprise_feature_categories: ['2'],
           stages: [
             {
@@ -156,6 +161,7 @@ describe('chromedash-feature-page', () => {
           name: 'feature with upcoming rollout stages',
           summary: 'feature 6 summary',
           new_crbug_url: 'fake crbug link',
+          editors: ['editor1', 'editor2'],
           enterprise_feature_categories: ['2'],
           stages: [
             {
@@ -182,6 +188,7 @@ describe('chromedash-feature-page', () => {
           name: 'normal feature with shipping stage',
           summary: 'normal feature summary',
           new_crbug_url: 'fake crbug link',
+          editors: ['editor1', 'editor2'],
           enterprise_feature_categories: [],
           stages: [
             {
@@ -338,16 +345,16 @@ describe('chromedash-feature-page', () => {
           'feature with two consecutive rollout stages',
           features[0].querySelector('strong').textContent);
         assert.equal(
-          '< To remove - Owners: owner1, owner2 - Last Updated: feature 4 updated >',
+          '< To remove - Owners: owner1 - Editors: editor1  - Last Updated: feature 4 updated >',
           features[0].querySelector('.toremove').textContent);
         assert.equal(
           'feature 4 summary',
           features[0].querySelector('.summary').textContent);
         const stages = [...features[0].querySelectorAll('li')];
         assert.equal(2, stages.length);
-        assert.include(stages[0].textContent, 'Chrome 100: ');
+        assert.include(stages[0].textContent, 'Chrome 100');
         assert.include(stages[0].textContent, 'fake rollout details 100');
-        assert.include(stages[1].textContent, 'Chrome 101: ');
+        assert.include(stages[1].textContent, 'Chrome 101');
         assert.include(stages[1].textContent, 'fake rollout details 101');
 
         const screenshots = [...features[0].querySelectorAll('.screenshots img')];
@@ -364,14 +371,14 @@ describe('chromedash-feature-page', () => {
           'feature with one rollout stages',
           features[1].querySelector('strong').textContent);
         assert.equal(
-          '< To remove - Owners: owner - Last Updated: updated when >',
+          '< To remove - Owners: owner - Editors: editor1, editor2  - Last Updated: updated when >',
           features[1].querySelector('.toremove').textContent);
         assert.equal(
           'feature 3 summary',
           features[1].querySelector('.summary').textContent);
         const stages = [...features[1].querySelectorAll('li')];
         assert.equal(1, stages.length);
-        assert.include(stages[0].textContent, 'Chrome 100: ');
+        assert.include(stages[0].textContent, 'Chrome 100');
         assert.include(stages[0].textContent, 'fake rollout details 100');
 
         const screenshots = [...features[1].querySelectorAll('.screenshots img')];
@@ -386,29 +393,17 @@ describe('chromedash-feature-page', () => {
           'normal feature with shipping stage',
           features[2].querySelector('strong').textContent);
         assert.equal(
-          '< To remove - Owners: owner - Last Updated: updated when >',
+          '< To remove - Owners: owner - Editors: editor1, editor2  - Last Updated: updated when >',
           features[2].querySelector('.toremove').textContent);
         assert.equal(
           'normal feature summary',
           features[2].querySelector('.summary').textContent);
         const stages = [...features[2].querySelectorAll('li')];
         assert.equal(4, stages.length);
-        assert.include(stages[0].textContent, 'Chrome 100 on Windows, Mac, Linux, Android: ');
-        assert.include(
-          stages[0].textContent,
-          'Missing details, no rollout step was created for this');
-        assert.include(stages[1].textContent, 'Chrome 101 on Windows, Mac, Linux, Android: ');
-        assert.include(
-          stages[1].textContent,
-          'Missing details, no rollout step was created for this');
-        assert.include(stages[2].textContent, 'Chrome 102 on iOS, Android: ');
-        assert.include(
-          stages[2].textContent,
-          'Missing details, no rollout step was created for this');
-        assert.include(stages[3].textContent, 'Chrome 103 on iOS: ');
-        assert.include(
-          stages[3].textContent,
-          'Missing details, no rollout step was created for this');
+        assert.include(stages[0].textContent, 'Chrome 100 on Windows, Mac, Linux, Android');
+        assert.include(stages[1].textContent, 'Chrome 101 on Windows, Mac, Linux, Android');
+        assert.include(stages[2].textContent, 'Chrome 102 on iOS, Android');
+        assert.include(stages[3].textContent, 'Chrome 103 on iOS');
 
         const screenshots = [...features[1].querySelectorAll('.screenshots img')];
         assert.lengthOf(screenshots, 1);
@@ -430,14 +425,14 @@ describe('chromedash-feature-page', () => {
           'feature with upcoming rollout stages',
           features[0].querySelector('strong').textContent);
         assert.equal(
-          '< To remove - Owners: owner - Last Updated: updated when >',
+          '< To remove - Owners: owner - Editors: editor1, editor2  - Last Updated: updated when >',
           features[0].querySelector('.toremove').textContent);
         assert.equal(
           'feature 6 summary',
           features[0].querySelector('.summary').textContent);
         const stages = [...features[0].querySelectorAll('li')];
         assert.equal(1, stages.length);
-        assert.include(stages[0].textContent, 'Chrome 999: ');
+        assert.include(stages[0].textContent, 'Chrome 999');
         assert.include(stages[0].textContent, 'fake rollout details 999');
 
         const screenshots = [...features[0].querySelectorAll('.screenshots img')];
@@ -450,16 +445,16 @@ describe('chromedash-feature-page', () => {
           'feature with past and future rollout stages',
           features[1].querySelector('strong').textContent);
         assert.equal(
-          '< To remove - Owners: owner - Last Updated: updated when >',
+          '< To remove - Owners: owner - Editors: editor1, editor2  - Last Updated: updated when >',
           features[1].querySelector('.toremove').textContent);
         assert.equal(
           'feature 5 summary',
           features[1].querySelector('.summary').textContent);
         const stages = [...features[1].querySelectorAll('li')];
         assert.equal(2, stages.length);
-        assert.include(stages[0].textContent, 'Chrome 1: ');
+        assert.include(stages[0].textContent, 'Chrome 1');
         assert.include(stages[0].textContent, 'fake rollout details 1');
-        assert.include(stages[1].textContent, 'Chrome 1000: ');
+        assert.include(stages[1].textContent, 'Chrome 1000');
         assert.include(stages[1].textContent, 'fake rollout details 1000');
 
         const screenshots = [...features[1].querySelectorAll('.screenshots img')];

@@ -151,6 +151,7 @@ export class ChromedashFormField extends LitElement {
           hoist
           multiple
           cleareable
+          ?required=${this.fieldProps.required}
           ?disabled=${fieldDisabled || this.disabled || this.loading}
           @sl-change="${this.handleFieldUpdated}">
           ${Object.values(choices).map(
