@@ -1423,8 +1423,8 @@ export const ALL_FIELDS = {
   'rollout_milestone': {
     type: 'input',
     attrs: MILESTONE_NUMBER_FIELD_ATTRS,
-    required: false,
-    label: 'Rollout milestone',
+    required: true,
+    label: 'Chrome milestone',
     help_text: html`
     The milestone in which this stage rolls out to the stable channel (even a 1% rollout). If you don't yet know which milestone it will be, put in your best estimate. You can always change this later.`,
   },
@@ -1432,7 +1432,7 @@ export const ALL_FIELDS = {
   'rollout_platforms': {
     type: 'multiselect',
     choices: PLATFORM_CATEGORIES,
-    required: false,
+    required: true,
     label: 'Rollout platforms',
     help_text: html`
       The platform(s) affected by this stage`,
@@ -1442,7 +1442,7 @@ export const ALL_FIELDS = {
     type: 'textarea',
     attrs: {rows: 4},
     required: false,
-    label: 'Rollout details',
+    label: 'Rollout details (optional)',
     help_text: html`
       Explain what specifically is changing in this milestone, for the given platforms.
       Many features are composed of multiple stages on different milestones. For example,
