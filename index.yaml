@@ -479,3 +479,11 @@ indexes:
   - name: type
   - name: updated
   - name: url
+- kind: FeatureLinks
+  properties:
+  - name: is_error
+  - name: url
+- kind: FeatureLinks
+  properties:
+  - name: type
+  - name: url
