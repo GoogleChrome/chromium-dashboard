@@ -182,9 +182,8 @@ export class ChromedashHeader extends LitElement {
     window.csClient.getPermissions().then((user) => {
       this.user = user;
       if (!this.user) {
-        if (this.devMode == 'False') {
-          this.initializeGoogleSignIn();
-        } else {
+        this.initializeGoogleSignIn();
+        if (this.devMode == 'True') {
           this.initializeTestingSignIn();
         }
       }

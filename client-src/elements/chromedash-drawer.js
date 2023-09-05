@@ -130,9 +130,8 @@ export class ChromedashDrawer extends LitElement {
       // If it is on mobile, log-in is intialized in this component.
       // Othewise, log-in is initialized in chromedash-header.
       if (!this.user && IS_MOBILE) {
-        if (this.devMode == 'False') {
-          this.initializeGoogleSignIn();
-        } else {
+        this.initializeGoogleSignIn();
+        if (this.devMode == 'True') {
           this.initializeTestingSignIn();
         }
       }
