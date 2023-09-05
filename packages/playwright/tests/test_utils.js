@@ -104,7 +104,9 @@ let loginTimeout = 20000;
  * @param {import("playwright-core").Page} page
  */
 export async function login(page) {
-  // await expect(page).toHaveScreenshot('roadmap.png');
+
+  page.exposeFunction('isPlaywright');
+
   // Always reset to the roadmap page.
   await page.pause();
   // console.log('login: goto /');
@@ -114,8 +116,8 @@ export async function login(page) {
   await delay(1000);
   await expect(page).toHaveTitle(/Chrome Status/);
   page.mouse.move(0, 0); // Move away from content on page.
-
   await delay(1000);
+
   // Check whether we are already or still logged in.
   let navContainer = page.locator('[data-testid=nav-container]');
   while (await navContainer.isVisible()) {
@@ -132,16 +134,16 @@ export async function login(page) {
     await expect(page).toHaveTitle(/Chrome Status/);
     page.mouse.move(0, 0); // Move away from content on page.
     // console.log('Should be logged out ow.');
-
     await delay(1000);
+
     navContainer = page.locator('[data-testid=nav-container]');
   }
+  await delay(1000);
 
   // Expect login button to be present.
   // console.info('expect login button to be present and visible');
   const loginButton = page.locator('button[data-testid=dev-mode-sign-in-button]');
   await expect(loginButton).toBeVisible({timeout: loginTimeout});
-  await delay(loginTimeout + 1000);
 
   await loginButton.click({timeout: 1000, delay: 100});
   await delay(loginTimeout / 3); // longer delay here, to allow for initial login.

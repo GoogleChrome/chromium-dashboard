@@ -168,8 +168,11 @@ export class ChromedashHeader extends LitElement {
 
     // user is passed in from chromedash-app, but the user is not logged in
     if (!this.user) {
-      // Insert the google signin button first.
-      this.initializeGoogleSignIn();
+      if (!window['isPlaywright']) {
+        // Insert the google signin button first.
+        // Only insert if not running playwright.
+        this.initializeGoogleSignIn();
+      }
       if (this.devMode == 'True') {
         // Insert the testing signin second, so it appears to the left
         // of the google signin button, with a large margin on the right.
@@ -184,7 +187,9 @@ export class ChromedashHeader extends LitElement {
     window.csClient.getPermissions().then((user) => {
       this.user = user;
       if (!this.user) {
-        this.initializeGoogleSignIn();
+        if (!window['isPlaywright']) {
+          this.initializeGoogleSignIn();
+        }
         if (this.devMode == 'True') {
           this.initializeTestingSignIn();
         }
@@ -235,13 +240,8 @@ export class ChromedashHeader extends LitElement {
       fetch('/dev/mock_login', {method: 'POST'})
         .then((response) => {
           if (!response.ok) {
-            signInTestingButton.style.color = 'red';
             throw new Error('Sign in failed! Response:', response);
           }
-          // Avoid reloading the page to display with the logged in user.
-          // Use history.replaceState() instead.
-          // const url = window.location.href.split('?')[0];
-          // window.history.replaceState(null, null, url);
         })
         .then(() => {
           setTimeout(() => {
@@ -263,9 +263,10 @@ export class ChromedashHeader extends LitElement {
   handleCredentialResponse(credentialResponse) {
     window.csClient.signIn(credentialResponse)
       .then(() => {
-        const url = window.location.href.split('?')[0];
-        window.history.replaceState(url);
-        window.location = url;
+        setTimeout(() => {
+          const url = window.location.href.split('?')[0];
+          window.location = url;
+        }, 1000);
       })
       .catch(() => {
         console.error('Sign in failed, so signing out to allow retry');
