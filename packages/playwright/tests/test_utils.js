@@ -141,7 +141,7 @@ export async function login(page) {
   // console.info('expect login button to be present and visible');
   const loginButton = page.locator('button[data-testid=dev-mode-sign-in-button]');
   await expect(loginButton).toBeVisible({timeout: loginTimeout});
-  await delay(1000);
+  await delay(loginTimeout + 1000);
 
   await loginButton.click({timeout: 1000, delay: 100});
   await delay(loginTimeout / 3); // longer delay here, to allow for initial login.

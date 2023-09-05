@@ -168,9 +168,11 @@ export class ChromedashHeader extends LitElement {
 
     // user is passed in from chromedash-app, but the user is not logged in
     if (!this.user) {
-      if (this.devMode == 'False') {
-        this.initializeGoogleSignIn();
-      } else {
+      // Insert the google signin button first.
+      this.initializeGoogleSignIn();
+      if (this.devMode == 'True') {
+        // Insert the testing signin second, so it appears to the left
+        // of the google signin button, with a large margin on the right.
         this.initializeTestingSignIn();
       }
       return;
@@ -224,6 +226,7 @@ export class ChromedashHeader extends LitElement {
     signInTestingButton.innerText = 'Sign in as example@chromium.org';
     signInTestingButton.setAttribute('type', 'button');
     signInTestingButton.setAttribute('data-testid', 'dev-mode-sign-in-button');
+    signInTestingButton.setAttribute('style', 'margin-right: 300px');
 
     const appComponent = document.querySelector('chromedash-app');
 
