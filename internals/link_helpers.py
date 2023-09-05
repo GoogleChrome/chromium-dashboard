@@ -70,6 +70,8 @@ LINK_TYPES_REGEX = {
 
 URL_REGEX = re.compile(r'(https?://\S+)')
 
+TIMEOUT = 30  # We wait at most 30 seconds for each web page request.
+
 
 def valid_url(url):
   try:
@@ -103,9 +105,9 @@ class Link():
     """Extract the urls from the given value."""
     if isinstance(value, str):
       urls = URL_REGEX.findall(value)
-      
+
       # remove trailing punctuation
-      # punctuation similar to string.punctuation except that it does not include "/" 
+      # punctuation similar to string.punctuation except that it does not include "/"
       # this keep url ending with "/"
       punctuation = r"""!"#$%&'()*+,-.:;<=>?@[\]^_`{|}~"""
       urls = [url.rstrip(punctuation) for url in urls]
@@ -241,8 +243,9 @@ class Link():
     # technically, we could cache the csrf token and reuse it for 2 hours
     # TODO: consider using a monorail API client with OAuth
 
-    csrf_token = re.findall(
-        "'token': '(.*?)'", requests.get("https://bugs.chromium.org/p/chromium/issues/wizard").text)
+    csrf_response = requests.get(
+        "https://bugs.chromium.org/p/chromium/issues/wizard", timeout=TIMEOUT)
+    csrf_token = re.findall("'token': '(.*?)'", csrf_response.text)
     csrf_token = csrf_token[0] if csrf_token else None
 
     if csrf_token is None:
@@ -260,7 +263,9 @@ class Link():
         },
     }
 
-    json_str = requests.post(endpoint, json=body, headers=headers).text
+    bug_response = requests.post(
+        endpoint, json=body, headers=headers, timeout=TIMEOUT)
+    json_str = bug_response.text
 
     # remove )]}' from the beginning of the response
     if json_str.startswith(")]}'"):
@@ -271,7 +276,7 @@ class Link():
     return information.get('issue', None)
 
   def _parse_html_head(self):
-    response = requests.get(self.url)
+    response = requests.get(self.url, timeout=TIMEOUT)
     # unescape html, e.g. &amp; -> &
     html_str = html.unescape(response.text)
 
@@ -291,7 +296,7 @@ class Link():
     sends a GET request to the URL and checks the response status code. If the status code is not
     200 (OK), it sets the `is_error` flag to True and stores the HTTP error code. This method is
     used to determine if the URL is accessible and valid."""
-    res = requests.get(self.url, allow_redirects=True)
+    res = requests.get(self.url, allow_redirects=True, timeout=TIMEOUT)
     if res.status_code != 200:
       self.is_error = True
       self.http_error_code = res.status_code
@@ -300,6 +305,10 @@ class Link():
 
   def parse(self):
     """Parse the link and store the information."""
+    # Flush logs because GAE instances killed for exceeding request time limit
+    # may lose logging output that has not been flushed.
+    logging.getLogger().handlers[0].flush()
+
     try:
       if not self.type or not self._validate_url():
         # if the link is not valid, return early

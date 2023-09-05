@@ -7,7 +7,7 @@ import {
   STAGE_ENT_ROLLOUT,
   STAGE_TYPES_SHIPPING,
 } from './form-field-enums.js';
-import {showToastMessage, updateURLParams, parseRawQuery} from './utils.js';
+import {showToastMessage, updateURLParams, parseRawQuery, renderHTMLIf} from './utils.js';
 
 const milestoneQueryParamKey = 'milestone';
 
@@ -88,6 +88,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
 
       li {
         list-style: circle;
+        margin-block-end: 16px;
       }
 
       .feature {
@@ -176,7 +177,6 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         rollout_milestone: Number(milestone),
         rollout_platforms: Array.from(platforms),
         rollout_impact: 1,
-        rollout_details: 'Missing details, no rollout step was created for this',
       }));
   }
 
@@ -352,10 +352,10 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   getStageTitle(stage) {
     if (stage.rollout_platforms.length === 0 ||
         stage.rollout_platforms.length === Object.values(PLATFORMS_DISPLAYNAME).length) {
-      return `Chrome ${stage.rollout_milestone}: `;
+      return `Chrome ${stage.rollout_milestone}`;
     }
     return `Chrome ${stage.rollout_milestone} on ` +
-           `${stage.rollout_platforms.map(p => PLATFORMS_DISPLAYNAME[p]).join(', ')}: `;
+           `${stage.rollout_platforms.map(p => PLATFORMS_DISPLAYNAME[p]).join(', ')}`;
   }
 
   renderReleaseNotesDetailsSection(title, features, shouldDisplayStageTitleInBold) {
@@ -367,8 +367,8 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       ${features.map(f => html`
       <section class="feature">
         <strong>${f.name}</strong>
-        <p class="toremove">< To remove - Owners: ${f.browsers.chrome.owners.join(', ')} - Last Updated: ${f.updated.when} ></p>
-        <p class="summary">${f.summary}</p>
+        <p class="toremove">< To remove - Owners: ${f.browsers.chrome.owners.join(', ')} - Editors: ${(f.editors || []).join(', ')}  - Last Updated: ${f.updated.when} ></p>
+        <p class="summary preformatted">${f.summary}</p>
         <ul>
         ${f.stages.map(s => html`
           <li>
@@ -376,7 +376,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       f.stages.map(s => s.rollout_milestone).sort()) ? 'bold' : ''}">
               ${this.getStageTitle(s)}
             </span>
-            ${s.rollout_details || 'Missing details' }
+            ${renderHTMLIf(s.rollout_details, html`<br/><span class="preformatted">${s.rollout_details}</span>`)}
           </li>`)}
         </ul>
         <div class="screenshots">

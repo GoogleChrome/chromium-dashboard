@@ -112,7 +112,7 @@ export class ChromedashGuideEditallPage extends LitElement {
       hiddenTokenField.value = window.csClient.token;
       return csClient.updateFeature(submitBody);
     }).then(() => {
-      window.location.href = this.nextPage || `/guide/edit/${this.featureId}`;
+      window.location.href = this.getNextPage();
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
@@ -161,8 +161,13 @@ export class ChromedashGuideEditallPage extends LitElement {
   }
 
   getNextPage() {
-    return this.nextPage || this.feature.is_enterprise_feature ?
-    `/feature/${this.featureId}` : `/guide/edit/${this.featureId}`;
+    if (this.nextPage) {
+      return this.nextPage;
+    }
+    if (this.feature.is_enterprise_feature) {
+      return `/feature/${this.featureId}`;
+    }
+    return `/guide/edit/${this.featureId}`;
   }
 
   renderSubheader() {

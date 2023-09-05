@@ -118,8 +118,8 @@ class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
 
   @permissions.require_create_feature
   def process_post_data(self, **kwargs):
-    owners = self.split_emails('owner')
-    editors = self.split_emails('editors')
+    owners = self.split_emails('owner_emails')
+    editors = self.split_emails('editor_emails')
 
     signed_in_user = ndb.User(
         email=self.get_current_user().email(),
