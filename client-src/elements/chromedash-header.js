@@ -245,7 +245,8 @@ export class ChromedashHeader extends LitElement {
         })
         .then(() => {
           setTimeout(() => {
-            window.location = '/';
+            const url = window.location.href.split('?')[0];
+            window.location = url;
           }, 1000);
         })
         .catch((error) => {
