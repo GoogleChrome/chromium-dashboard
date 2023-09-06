@@ -6,11 +6,12 @@ test.beforeEach(async ({page}) => {
   captureConsoleMessages(page);
   test.setTimeout(90000);
 
-  // Attempt to login before running each test.
+  // Login before running each test.
   await login(page);
 });
 
-test.afterEach(async ({page}) => {
+test.afterEach(async ({ page }) => {
+  // Logout after running each test.
   await logout(page);
 });
 

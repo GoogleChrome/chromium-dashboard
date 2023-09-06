@@ -10,7 +10,7 @@ export async function delay(ms) {
 
 
 /**
- * Call this, say in your test.beforeEach() method to capture all
+ * Call this, say in your test.beforeEach() method, to capture all
  * console messages and copy them to the playwright console.
  * @param {import("playwright-core").Page} page
  */
@@ -38,6 +38,7 @@ export function captureConsoleMessages(page) {
       } catch (e) {
         argString = arg.toString();
       }
+      // Simplify tons of "SameSite" warnings.
       if (argString.match(/does not have a proper “SameSite” attribute value/)) {
         argString = argString.replace('JavaScript Warning: ', 'SameSite ')
           .replace('does not have a proper “SameSite” attribute value. Soon, cookies without the “SameSite” attribute or with an invalid value will be treated as “Lax”. This means that the cookie will no longer be sent in third-party contexts. If your application depends on this cookie being available in such contexts, please add the “SameSite=None“ attribute to it. To know more about the “SameSite“ attribute, read https://developer.mozilla.org/docs/Web/HTTP/Headers/Set-Cookie/SameSite', '');
@@ -107,7 +108,7 @@ let loginTimeout = 20000;
  */
 export async function login(page) {
 
-  page.exposeFunction('isPlaywright');
+  page.exposeFunction('isPlaywright', () => {});
 
   // Always reset to the roadmap page.
   await page.pause();
@@ -121,10 +122,10 @@ export async function login(page) {
   await delay(1000);
 
   // Check whether we are already or still logged in.
-  let navContainer = page.locator('[data-testid=nav-container]');
-  while (await navContainer.isVisible()) {
+  let accountIndicator = page.locator('[data-testid=account-indicator]');
+  while (await accountIndicator.isVisible()) {
     // console.log('Already (still) logged in. Need to logout.');
-    await navContainer.hover({timeout: 5000});
+    await accountIndicator.hover({timeout: 5000});
     const signOutLink = page.locator('[data-testid=sign-out-link]');
     await expect(signOutLink).toBeVisible();
 
@@ -138,7 +139,7 @@ export async function login(page) {
     // console.log('Should be logged out ow.');
     await delay(1000);
 
-    navContainer = page.locator('[data-testid=nav-container]');
+    accountIndicator = page.locator('[data-testid=account-indicator]');
   }
   await delay(1000);
 
@@ -153,7 +154,7 @@ export async function login(page) {
   // Expect the title to contain a substring.
   await expect(page).toHaveTitle(/Chrome Status/);
   page.mouse.move(0, 0); // Move away from content on page.
-  await delay(6000);
+  await delay(1000);
 
   // Take a screenshot of header that should have "Create feature" button.
   // console.log('take a screenshot of header that should have "Create feature" button');
@@ -162,10 +163,11 @@ export async function login(page) {
   // Check that we are logged in now.
   // Expect a nav container to be present.
   // This sometimes fails, even though the screenshot seems correct.
-  navContainer = page.locator('[data-testid=nav-container]');
-  await expect(navContainer).toBeVisible({timeout: loginTimeout});
-  loginTimeout = 5000; // After first login, reduce timeout/delay.
+  accountIndicator = page.locator('[data-testid=account-indicator]');
+  await expect(accountIndicator).toBeVisible({ timeout: loginTimeout });
 
+  // After first login, reduce timeout/delay.
+  loginTimeout = 5000;
   // console.log('login: done');
 }
 
@@ -184,15 +186,14 @@ export async function logout(page) {
   page.mouse.move(0, 0); // Move away from content on page.
   await delay(1000);
 
-  const navContainer = page.locator('[data-testid=nav-container]');
-  await expect(navContainer).toBeVisible({timeout: 20000});
+  const accountIndicator = page.locator('[data-testid=account-indicator]');
+  await expect(accountIndicator).toBeVisible({timeout: 20000});
   await delay(1000);
 
-  await navContainer.hover({timeout: 5000});
+  // Need to hover to see the sign-out-link
+  await accountIndicator.hover({timeout: 5000});
   const signOutLink = page.locator('[data-testid=sign-out-link]');
   await expect(signOutLink).toBeVisible();
-  // TODO: Check whether the hover before click is needed.
-  await signOutLink.hover({timeout: 5000});
   await signOutLink.click({timeout: 5000});
 
   await page.waitForURL('**/roadmap');
