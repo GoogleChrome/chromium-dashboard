@@ -10,6 +10,8 @@ export async function delay(ms) {
 
 
 /**
+ * Call this, say in your test.beforeEach() method to capture all
+ * console messages and copy them to the playwright console.
  * @param {import("playwright-core").Page} page
  */
 export function captureConsoleMessages(page) {
@@ -189,7 +191,7 @@ export async function logout(page) {
   await navContainer.hover({timeout: 5000});
   const signOutLink = page.locator('[data-testid=sign-out-link]');
   await expect(signOutLink).toBeVisible();
-
+  // TODO: Check whether the hover before click is needed.
   await signOutLink.hover({timeout: 5000});
   await signOutLink.click({timeout: 5000});
 

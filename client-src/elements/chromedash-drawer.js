@@ -196,9 +196,10 @@ export class ChromedashDrawer extends LitElement {
   handleCredentialResponse(credentialResponse) {
     window.csClient.signIn(credentialResponse)
       .then(() => {
-        const url = window.location.href.split('?')[0];
-        window.history.replaceState(null, null, url);
-        window.location = url;
+        setTimeout(() => {
+          const url = window.location.href.split('?')[0];
+          window.location = url;
+        }, 1000);
       })
       .catch(() => {
         console.error('Sign in failed, so signing out to allow retry');
