@@ -20,17 +20,17 @@ test('navigate to create feature page', async ({page}) => {
   // console.log('navigate to create feature page');
 
   // Expect create feature button to be present.
-  const createFeatureButton = page.locator('[data-testid=create-feature-button]');
+  const createFeatureButton = page.getByTestId('create-feature-button');
   await expect(createFeatureButton).toBeVisible({timeout: 30000});
 
   // Take a screenshot of header with "Create feature" button.
-  await expect(page.locator('[data-testid=header]')).toHaveScreenshot('create-feature-button.png');
+  await expect(page.getByTestId('header')).toHaveScreenshot('create-feature-button.png');
 
   // Navigate to the new feature page by clicking.
   createFeatureButton.click();
 
   // Expect "Add a feature" header to be present.
-  const addAFeatureHeader = page.locator('[data-testid=add-a-feature]');
+  const addAFeatureHeader = page.getByTestId('add-a-feature');
   await expect(addAFeatureHeader).toBeVisible();
 
   // Take a screenshot of the content area.
@@ -44,7 +44,7 @@ test('enter feature name', async ({page}) => {
   test.setTimeout(90000);
 
   // Navigate to the new feature page.
-  const createFeatureButton = page.locator('[data-testid=create-feature-button]');
+  const createFeatureButton = page.getByTestId('create-feature-button');
   createFeatureButton.click({timeout: 10000});
 
   const featureNameInput = page.locator('input[name="name"]');

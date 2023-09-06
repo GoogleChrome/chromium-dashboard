@@ -122,11 +122,11 @@ export async function login(page) {
   await delay(1000);
 
   // Check whether we are already or still logged in.
-  let accountIndicator = page.locator('[data-testid=account-indicator]');
+  let accountIndicator = page.getByTestId('account-indicator');
   while (await accountIndicator.isVisible()) {
     // console.log('Already (still) logged in. Need to logout.');
     await accountIndicator.hover({timeout: 5000});
-    const signOutLink = page.locator('[data-testid=sign-out-link]');
+    const signOutLink = page.getByTestId('sign-out-link');
     await expect(signOutLink).toBeVisible();
 
     await signOutLink.hover({timeout: 5000});
@@ -139,13 +139,13 @@ export async function login(page) {
     // console.log('Should be logged out ow.');
     await delay(1000);
 
-    accountIndicator = page.locator('[data-testid=account-indicator]');
+    accountIndicator = page.getByTestId('account-indicator');
   }
   await delay(1000);
 
   // Expect login button to be present.
   // console.info('expect login button to be present and visible');
-  const loginButton = page.locator('button[data-testid=dev-mode-sign-in-button]');
+  const loginButton = page.getByTestId('dev-mode-sign-in-button');
   await expect(loginButton).toBeVisible({timeout: loginTimeout});
 
   await loginButton.click({timeout: 1000, delay: 100});
@@ -158,12 +158,12 @@ export async function login(page) {
 
   // Take a screenshot of header that should have "Create feature" button.
   // console.log('take a screenshot of header that should have "Create feature" button');
-  await expect(page.locator('[data-testid=header]')).toHaveScreenshot('after-login-click.png');
+  await expect(page.getByTestId('header')).toHaveScreenshot('after-login-click.png');
 
   // Check that we are logged in now.
   // Expect a nav container to be present.
   // This sometimes fails, even though the screenshot seems correct.
-  accountIndicator = page.locator('[data-testid=account-indicator]');
+  accountIndicator = page.getByTestId('account-indicator');
   await expect(accountIndicator).toBeVisible({ timeout: loginTimeout });
 
   // After first login, reduce timeout/delay.
@@ -186,13 +186,13 @@ export async function logout(page) {
   page.mouse.move(0, 0); // Move away from content on page.
   await delay(1000);
 
-  const accountIndicator = page.locator('[data-testid=account-indicator]');
+  const accountIndicator = page.getByTestId('account-indicator');
   await expect(accountIndicator).toBeVisible({timeout: 20000});
   await delay(1000);
 
   // Need to hover to see the sign-out-link
   await accountIndicator.hover({timeout: 5000});
-  const signOutLink = page.locator('[data-testid=sign-out-link]');
+  const signOutLink = page.getByTestId('sign-out-link');
   await expect(signOutLink).toBeVisible();
   await signOutLink.click({timeout: 5000});
 
