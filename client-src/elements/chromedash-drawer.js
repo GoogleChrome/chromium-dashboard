@@ -100,6 +100,7 @@ export class ChromedashDrawer extends LitElement {
   static get properties() {
     return {
       currentPage: {type: String},
+      devMode: {type: String},
       googleSignInClientId: {type: String},
       user: {type: Object},
       loading: {type: Boolean},
@@ -110,6 +111,7 @@ export class ChromedashDrawer extends LitElement {
   constructor() {
     super();
     this.currentPage = '';
+    this.devMode = 'False';
     this.googleSignInClientId = '',
     this.user = {};
     this.loading = false;
@@ -127,7 +129,14 @@ export class ChromedashDrawer extends LitElement {
       this.user = user;
       // If it is on mobile, log-in is intialized in this component.
       // Othewise, log-in is initialized in chromedash-header.
-      if (!this.user && IS_MOBILE) this.initializeGoogleSignIn();
+      if (!this.user && IS_MOBILE) {
+        if (!window['isPlaywright']) {
+          this.initializeGoogleSignIn();
+        }
+        if (this.devMode == 'True') {
+          this.initializeTestingSignIn();
+        }
+      }
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     }).finally(() => {
@@ -150,10 +159,47 @@ export class ChromedashDrawer extends LitElement {
     this.insertAdjacentElement('afterbegin', signInButton);
   }
 
+  initializeTestingSignIn() {
+    if (this.devMode != 'True') {
+      return;
+    }
+
+    // Create DEV_MODE login button for testing
+    const signInTestingButton = document.createElement('button');
+    signInTestingButton.innerText = 'Sign in as example@chromium.org';
+    signInTestingButton.setAttribute('data-testid', 'dev-mode-sign-in-button');
+    signInTestingButton.addEventListener('click', () => {
+      // POST to '/dev/mock_login' to login as example@chromium.
+      fetch('/dev/mock_login', {method: 'POST'}).then((response) => {
+        if (!response.ok) {
+          signInTestingButton.style.color = 'red';
+          throw new Error('Sign in failed! Response:', response);
+        }
+        // Reload the page to display with the logged in user.
+        const url = window.location.href.split('?')[0];
+        window.history.replaceState(null, null, url);
+        window.location = url;
+      })
+        .catch((error) => {
+          console.error('Sign in failed.', error);
+        });
+    });
+
+    const appComponent = document.querySelector('chromedash-app');
+    if (appComponent) {
+      appComponent.insertAdjacentElement('afterbegin', signInTestingButton); // for SPA
+    } else {
+      this.insertAdjacentElement('afterbegin', signInTestingButton); // for MPA
+    }
+  }
+
   handleCredentialResponse(credentialResponse) {
     window.csClient.signIn(credentialResponse)
       .then(() => {
-        window.location.replace(window.location.href.split('?')[0]);
+        setTimeout(() => {
+          const url = window.location.href.split('?')[0];
+          window.location = url;
+        }, 1000);
       })
       .catch(() => {
         console.error('Sign in failed, so signing out to allow retry');
@@ -223,7 +269,8 @@ export class ChromedashDrawer extends LitElement {
       <a href="/settings">Settings</a>
       <a href="#" id="sign-out-link" @click=${this.handleSignOutClick}>Sign out</a>
       ${this.user.can_create_feature && !this.isCurrentPage('/guide/new') ? html`
-        <sl-button href="/guide/new" variant="primary" size="small">
+        <sl-button data-testid="create-feature-button"
+          href="/guide/new" variant="primary" size="small">
           Create feature
         </sl-button>
         `: nothing }

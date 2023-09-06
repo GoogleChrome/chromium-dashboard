@@ -2,7 +2,8 @@
 *.pyc
 *.swp
 .sass-cache
-.vscode
+.vscode/*
+!.vscode/launch.json
 *oauth2.data
 .fcm_server_key
 *.iml
@@ -18,7 +19,7 @@ env_vars.yaml
 node_modules
 
 # Generated files
-# static/css/
+static/css/
 static/dist/
 static/js/
 
@@ -34,6 +35,11 @@ coverage
 
 # venv directory
 cs-env
+
+# playwright
+test-results/
+/playwright-report/
+/playwright/.cache/
 
 # API Key for local development
 ot_api_key.txt

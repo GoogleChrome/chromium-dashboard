@@ -2,8 +2,11 @@
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.245.2/containers/python-3
 {
 	"name": "Chromium Dashboard",
-	"dockerComposeFile": "docker-compose.yml",
-	"service": "app",
+	"dockerComposeFile": [
+		"docker-compose.yml",
+		"db-docker-compose.yml"
+	],
+	"service": "ide",
 	"workspaceFolder": "/workspace",
 
 	// Configure tool-specific properties.
@@ -41,7 +44,8 @@
 			"extensions": [
 				"ms-python.python",
 				"bierner.lit-html",
-				"42Crunch.vscode-openapi"
+				"42Crunch.vscode-openapi",
+				"ms-playwright.playwright"
 			]
 		}
 	},
@@ -64,5 +68,12 @@
 	"postCreateCommand": "npm run clean-setup; . cs-env/bin/activate; npm run setup; python -m pip install pylint==2.13.4",
 
 	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
-	"remoteUser": "vscode"
+	"remoteUser": "vscode",
+
+	"features": {
+		// https://github.com/devcontainers/features/tree/main/src/docker-in-docker
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {
+			"dockerDashComposeVersion": "v2"
+		}
+	}
 }

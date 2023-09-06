@@ -138,6 +138,7 @@ export class ChromedashHeader extends LitElement {
     return {
       appTitle: {type: String},
       googleSignInClientId: {type: String},
+      devMode: {type: String},
       currentPage: {type: String},
       user: {type: Object},
       loading: {type: Boolean},
@@ -148,6 +149,7 @@ export class ChromedashHeader extends LitElement {
     super();
     this.appTitle = '';
     this.googleSignInClientId = '',
+    this.devMode = '';
     this.currentPage = '';
     this.user = {};
     this.loading = false;
@@ -155,6 +157,7 @@ export class ChromedashHeader extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+
     // The user sign-in is desktop only.
     if (IS_MOBILE) {
       return;
@@ -165,16 +168,32 @@ export class ChromedashHeader extends LitElement {
 
     // user is passed in from chromedash-app, but the user is not logged in
     if (!this.user) {
-      this.initializeGoogleSignIn();
+      if (!window['isPlaywright']) {
+        // Insert the google signin button first.
+        // Only insert if not running playwright.
+        this.initializeGoogleSignIn();
+      }
+      if (this.devMode == 'True') {
+        // Insert the testing signin second, so it appears to the left
+        // of the google signin button, with a large margin on the right.
+        this.initializeTestingSignIn();
+      }
       return;
-    };
+    }
 
     // user is not passed in from anywhere, i.e. this.user is still {}
     // this is for MPA pages where this component is initialized in _base.html
     this.loading = true;
     window.csClient.getPermissions().then((user) => {
       this.user = user;
-      if (!this.user) this.initializeGoogleSignIn();
+      if (!this.user) {
+        if (!window['isPlaywright']) {
+          this.initializeGoogleSignIn();
+        }
+        if (this.devMode == 'True') {
+          this.initializeTestingSignIn();
+        }
+      }
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     }).finally(() => {
@@ -202,10 +221,53 @@ export class ChromedashHeader extends LitElement {
     }
   }
 
+  initializeTestingSignIn() {
+    if (this.devMode != 'True') {
+      return;
+    }
+
+    // Create DEV_MODE login button for testing
+    const signInTestingButton = document.createElement('button');
+    signInTestingButton.innerText = 'Sign in as example@chromium.org';
+    signInTestingButton.setAttribute('type', 'button');
+    signInTestingButton.setAttribute('data-testid', 'dev-mode-sign-in-button');
+    signInTestingButton.setAttribute('style', 'margin-right: 300px');
+
+    const appComponent = document.querySelector('chromedash-app');
+
+    signInTestingButton.addEventListener('click', () => {
+      // POST to '/dev/mock_login' to login as example@chromium.
+      fetch('/dev/mock_login', {method: 'POST'})
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error('Sign in failed! Response:', response);
+          }
+        })
+        .then(() => {
+          setTimeout(() => {
+            const url = window.location.href.split('?')[0];
+            window.location = url;
+          }, 1000);
+        })
+        .catch((error) => {
+          console.error('Sign in failed.', error);
+        });
+    });
+
+    if (appComponent) {
+      appComponent.insertAdjacentElement('afterbegin', signInTestingButton); // for SPA
+    } else {
+      this.insertAdjacentElement('afterbegin', signInTestingButton); // for MPA
+    }
+  }
+
   handleCredentialResponse(credentialResponse) {
     window.csClient.signIn(credentialResponse)
       .then(() => {
-        window.location.replace(window.location.href.split('?')[0]);
+        setTimeout(() => {
+          const url = window.location.href.split('?')[0];
+          window.location = url;
+        }, 1000);
       })
       .catch(() => {
         console.error('Sign in failed, so signing out to allow retry');
@@ -245,18 +307,19 @@ export class ChromedashHeader extends LitElement {
     return html`
       ${this.user ? html`
         ${this.user.can_create_feature && !this.isCurrentPage('/guide/new') ? html`
-          <sl-button href="/guide/new" variant="primary" size="small">
+          <sl-button data-testid="create-feature-button"
+            href="/guide/new" variant="primary" size="small">
             Create feature
           </sl-button>
         `: nothing }
-        <div class="nav-dropdown-container">
+        <div class="nav-dropdown-container" data-testid="account-indicator">
           <a class="nav-dropdown-trigger">
             ${this.user.email}
             <iron-icon icon="chromestatus:arrow-drop-down"></iron-icon>
           </a>
           <ul>
             <li><a href="/settings">Settings</a></li>
-            <li><a href="#" id="sign-out-link" @click=${this.handleSignOutClick}>Sign out</a></li>
+            <li><a href="#" id="sign-out-link" data-testid="sign-out-link" @click=${this.handleSignOutClick}>Sign out</a></li>
           </ul>
         </div>
       ` : html`
@@ -275,7 +338,7 @@ export class ChromedashHeader extends LitElement {
     }
 
     return html`
-      <header>
+      <header data-testid="header">
         <sl-icon-button variant="text" library="material" class="menu"
           style="font-size: 2.4rem;" name="menu_20px" @click="${this.handleDrawer}">
         </sl-icon-button >

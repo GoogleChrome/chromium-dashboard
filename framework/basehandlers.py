@@ -341,6 +341,7 @@ class FlaskHandler(BaseHandler):
     app_version = os.environ.get('GAE_VERSION', 'Undeployed')
     common_data = {
       'prod': settings.PROD,
+      'DEV_MODE': settings.DEV_MODE,
       'APP_TITLE': settings.APP_TITLE,
       'google_sign_in_client_id': settings.GOOGLE_SIGN_IN_CLIENT_ID,
       'current_path': current_path,

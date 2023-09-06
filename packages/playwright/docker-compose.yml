@@ -1,0 +1,110 @@
+version: '3.8'
+
+services:
+  # In GitHub Actions, the volumes will still mount as root.
+  # This service will fix the ownership.
+  fix_volume_ownership:
+    image: ubuntu:22.04
+    user: "root"
+    group_add:
+      - '${GROUPID}'
+    volumes:
+      - ./tests/__screenshots__:/tmp/__screenshots__
+      - ./test-results:/tmp/test-results
+    command: >
+      bash -c "chown -R ${USERID}:${GROUPID} /tmp/__screenshots__
+      && chown -R ${USERID}:${GROUPID} /tmp/test-results"
+  playwright: &playwright
+    build:
+      context: .
+      dockerfile: Dockerfile
+      cache_from:
+        - type=gha,scope=${GITHUB_REF_NAME}-playwright-image
+      cache_to:
+        - type=gha,mode=max,scope=${GITHUB_REF_NAME}-playwright-image
+    depends_on:
+      myapp:
+        condition: service_healthy
+      fix_volume_ownership:
+          condition: service_completed_successfully
+    # Overrides default command so things don't shut down after the process ends.
+    command: sleep infinity
+    network_mode: host
+    environment:
+      # GitHub sets CI to true automatically
+      # https://docs.github.com/en/actions/learn-github-actions/variables#default-environment-variables
+      - CI
+    volumes:
+      - ./tests/__screenshots__:/work/tests/__screenshots__
+      - ./test-results:/work/test-results
+
+  # mounts x11 display. May not be available in all places. Separate it out.
+  playwright_display:
+    <<: *playwright
+    environment:
+      - DISPLAY
+    depends_on:
+      debugapp:
+        condition: service_healthy
+      fix_volume_ownership:
+          condition: service_completed_successfully
+    volumes:
+      - ./tests/__screenshots__:/work/tests/__screenshots__
+      - ./test-results:/work/test-results
+      - /tmp/.X11-unix:/tmp/.X11-unix
+
+  myapp: &myapp
+    user: "appuser"
+    build:
+      context: ../../
+      dockerfile: Dockerfile
+      target: app
+      cache_from:
+        - type=gha,scope=${GITHUB_REF_NAME}-myapp-image
+      cache_to:
+        - type=gha,mode=max,scope=${GITHUB_REF_NAME}-myapp-image
+    depends_on:
+      mydb:
+        condition: service_healthy
+      mydsadmin:
+        condition: service_started
+    command: bash -c "source cs-env/bin/activate; env && whoami && npm run start-app"
+    network_mode: host
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+      start_interval: 30s
+
+    environment:
+      - SERVER_SOFTWARE=Development
+      - DATASTORE_PROJECT_ID=cr-status-staging
+      - DATASTORE_EMULATOR_HOST=localhost:15606
+  debugapp:
+    <<: *myapp
+    command: bash -c "source cs-env/bin/activate; env && whoami && npm run debug-app"
+
+  mydsadmin:
+    image: ghcr.io/remko/dsadmin:v0.18.1
+    network_mode: host
+    entrypoint: /ko-app/dsadmin -port 8889
+    depends_on:
+      mydb:
+        condition: service_healthy
+    environment:
+      DATASTORE_PROJECT_ID: cr-status-staging
+      DATASTORE_EMULATOR_HOST: "localhost:15606"
+
+  mydb:
+    extends:
+      file: ../../.devcontainer/db-docker-compose.yml
+      service: db
+    network_mode: host
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:15606"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 5s

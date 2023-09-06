@@ -100,6 +100,7 @@ class ChromedashApp extends LitElement {
       loading: {type: Boolean},
       appTitle: {type: String},
       googleSignInClientId: {type: String},
+      devMode: {type: String},
       currentPage: {type: String},
       bannerMessage: {type: String},
       bannerTime: {type: Number},
@@ -117,6 +118,7 @@ class ChromedashApp extends LitElement {
     this.loading = true;
     this.appTitle = '';
     this.googleSignInClientId = '',
+    this.devMode = '';
     this.currentPage = '';
     this.bannerMessage = '';
     this.bannerTime = null;
@@ -543,6 +545,7 @@ class ChromedashApp extends LitElement {
               <chromedash-header
                 .user=${this.user}
                 .appTitle=${this.appTitle}
+                .devMode=${this.devMode}
                 .googleSignInClientId=${this.googleSignInClientId}
                 .currentPage=${this.currentPage}
                 @drawer-clicked=${this.handleShowDrawer}>
@@ -557,6 +560,7 @@ class ChromedashApp extends LitElement {
                 .user=${this.user}
                 .currentPage=${this.currentPage}
                 ?defaultOpen=${true}
+                .devMode=${this.devMode}
                 .googleSignInClientId=${this.googleSignInClientId}>
               </chromedash-drawer>
             </div>

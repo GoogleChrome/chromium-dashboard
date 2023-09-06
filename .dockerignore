@@ -1,0 +1,10 @@
+cs-env
+node_modules
+test-results
+playwright-report/
+playwright/.cache/
+
+# Web test runner coverage report
+coverage
+
+__pycache__
