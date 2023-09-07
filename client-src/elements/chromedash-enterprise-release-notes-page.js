@@ -110,15 +110,14 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
 
       .screenshots {
         display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
       }
 
       .screenshots img {
-        margin-top: 1rem;
-        max-width: 50%;
-      }
-
-      .screenshots img + img {
-        margin-inline-start: 1rem;
+        flex: 0 1 auto;
+        max-height: 300px;
+        max-width: calc(50% - 0.5rem);
       }`,
     ];
   }
