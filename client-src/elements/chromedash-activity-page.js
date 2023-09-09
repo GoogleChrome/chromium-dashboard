@@ -70,7 +70,7 @@ export class ChromedashActivityPage extends LitElement {
   fetchComments() {
     this.loading = true;
     Promise.all([
-      window.csClient.getComments(this.featureId, null, false),
+      window.csClient.getComments(this.featureId, null),
     ]).then(([commentRes]) => {
       this.comments = commentRes.comments;
       this.needsPost = false;
@@ -85,7 +85,7 @@ export class ChromedashActivityPage extends LitElement {
     commentArea.value = '';
     this.needsPost = false;
     Promise.all([
-      window.csClient.getComments(this.featureId, null, false),
+      window.csClient.getComments(this.featureId, null),
     ]).then(([commentRes]) => {
       this.comments = commentRes.comments;
     }).catch(() => {

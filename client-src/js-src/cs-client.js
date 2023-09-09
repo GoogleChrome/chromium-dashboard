@@ -229,13 +229,10 @@ class ChromeStatusClient {
     return this.doGet(`/features/${featureId}/gates`);
   }
 
-  getComments(featureId, gateId, commentsOnly=true) {
+  getComments(featureId, gateId) {
     let url = `/features/${featureId}/approvals/comments`;
     if (gateId) {
       url = `/features/${featureId}/approvals/${gateId}/comments`;
-    }
-    if (commentsOnly) {
-      url += '?comments_only';
     }
     return this.doGet(url);
   }

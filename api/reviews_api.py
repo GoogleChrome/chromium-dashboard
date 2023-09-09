@@ -52,7 +52,9 @@ class VotesAPI(basehandlers.APIHandler):
     if gate.feature_id != feature_id:
       self.abort(400, msg='Mismatched feature and gate')
 
-    old_state = gate.state
+    old_votes = Vote.get_votes(
+        feature_id=feature_id, gate_id=gate_id, set_by=user.email())
+    old_state = old_votes[0].state if old_votes else Vote.NO_RESPONSE
     self.require_permissions(user, feature, gate, new_state)
 
     # Note: We no longer write Approval entities.
@@ -60,7 +62,8 @@ class VotesAPI(basehandlers.APIHandler):
         user.email(), gate_id)
 
     if new_state == Vote.REVIEW_REQUESTED:
-      notifier_helpers.notify_approvers_of_reviews(feature, gate)
+      notifier_helpers.notify_approvers_of_reviews(
+          feature, gate, user.email())
     else:
       notifier_helpers.notify_subscribers_of_vote_changes(
           feature, gate, user.email(), new_state, old_state)

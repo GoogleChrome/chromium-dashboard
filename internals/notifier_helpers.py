@@ -78,8 +78,16 @@ def notify_subscribers_and_save_amendments(fe: 'FeatureEntry',
     notify_feature_subscribers_of_changes(fe, amendments)
 
 
-def notify_approvers_of_reviews(fe: 'FeatureEntry', gate: Gate) -> None:
+def notify_approvers_of_reviews(
+    fe: 'FeatureEntry', gate: Gate, email: str) -> None:
   """Notify approvers of a review requested from a Gate."""
+  amendment = Amendment(field_name='review_status',
+                        old_value='None', new_value='review_requested')
+  gate_id = gate.key.integer_id()
+  activity = Activity(feature_id=fe.key.integer_id(), gate_id=gate_id,
+                      author=email, amendments=[amendment])
+  activity.put()
+
   gate_url = 'https://chromestatus.com/feature/%s?gate=%s' % (
     gate.feature_id, gate.key.integer_id())
   changed_props = {
@@ -106,18 +114,18 @@ def notify_subscribers_of_vote_changes(fe: 'FeatureEntry', gate: Gate,
     stage.stage_type, core_enums.INTENT_NONE)
   stage_name = core_enums.INTENT_STAGES[stage_enum]
   state_name = Vote.VOTE_VALUES[new_state]
+  old_state_name = Vote.VOTE_VALUES.get(old_state, str(old_state))
 
   appr_def = approval_defs.APPROVAL_FIELDS_BY_ID[gate.gate_type]
   gate_name = appr_def.name
 
-  acitivity_content = '%s set review status for stage: %s, gate: %s to %s.' % (
-      email, stage_name, gate_name, state_name)
+  amendment = Amendment(field_name='review_status',
+                        old_value=old_state_name, new_value=state_name)
   gate_id = gate.key.integer_id()
   activity = Activity(feature_id=fe.key.integer_id(), gate_id=gate_id,
-                      author=email, content=acitivity_content)
+                      author=email, amendments=[amendment])
   activity.put()
 
-  old_state_name = Vote.VOTE_VALUES.get(old_state, Vote.VOTE_VALUES[Vote.NA])
   gate_url = 'https://chromestatus.com/feature/%s?gate=%s' % (
     gate.feature_id, gate_id)
   changed_props = {

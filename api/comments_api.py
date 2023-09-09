@@ -61,6 +61,7 @@ class CommentsAPI(basehandlers.APIHandler):
     """Return a list of all review comments on the given feature."""
     feature_id = kwargs['feature_id']
     gate_id = kwargs.get('gate_id', None)
+    # TODO(jrobbins): Remove comments_only after next deployment.
     comments_only = self.get_bool_arg('comments_only')
     # Note: We assume that anyone may view approval comments.
     comments = Activity.get_activities(

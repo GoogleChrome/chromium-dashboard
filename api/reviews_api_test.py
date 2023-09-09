@@ -229,8 +229,9 @@ class VotesAPITest(testing_config.CustomTestCase):
     self.assertEqual(vote.set_by, 'reviewer1@example.com')
     self.assertEqual(vote.state, Vote.NEEDS_WORK)
 
-    mock_notifier.assert_called_once_with(self.feature_1,
-        self.gate_1, 'reviewer1@example.com', Vote.NEEDS_WORK, Vote.NA)
+    mock_notifier.assert_called_once_with(
+        self.feature_1, self.gate_1, 'reviewer1@example.com',
+        Vote.NEEDS_WORK, Vote.NO_RESPONSE)
 
   @mock.patch('internals.notifier_helpers.notify_subscribers_of_vote_changes')
   @mock.patch('internals.approval_defs.get_approvers')
@@ -254,8 +255,9 @@ class VotesAPITest(testing_config.CustomTestCase):
     self.assertEqual(vote.set_by, 'reviewer1@example.com')
     self.assertEqual(vote.state, Vote.DENIED)
 
-    mock_notifier.assert_called_once_with(self.feature_1,
-        self.gate_1, 'reviewer1@example.com', Vote.DENIED, Vote.NA)
+    mock_notifier.assert_called_once_with(
+        self.feature_1, self.gate_1, 'reviewer1@example.com',
+        Vote.DENIED, Vote.APPROVED)
 
   @mock.patch('internals.notifier_helpers.notify_approvers_of_reviews')
   @mock.patch('internals.approval_defs.get_approvers')
@@ -278,7 +280,8 @@ class VotesAPITest(testing_config.CustomTestCase):
     self.assertEqual(vote.set_by, 'owner1@example.com')
     self.assertEqual(vote.state, Vote.REVIEW_REQUESTED)
 
-    mock_notifier.assert_called_once_with(self.feature_1, self.gate_1)
+    mock_notifier.assert_called_once_with(
+        self.feature_1, self.gate_1, 'owner1@example.com')
 
 
 class GatesAPITest(testing_config.CustomTestCase):

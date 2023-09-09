@@ -141,7 +141,7 @@ export class ChromedashFeaturePage extends LitElement {
     Promise.all([
       window.csClient.getFeature(this.featureId),
       window.csClient.getGates(this.featureId),
-      window.csClient.getComments(this.featureId, null, false),
+      window.csClient.getComments(this.featureId, null),
       window.csClient.getFeatureProcess(this.featureId),
       window.csClient.getDismissedCues(),
       window.csClient.getStars(),
@@ -194,7 +194,7 @@ export class ChromedashFeaturePage extends LitElement {
     Promise.all([
       window.csClient.getFeature(this.featureId),
       window.csClient.getGates(this.featureId),
-      window.csClient.getComments(this.featureId, null, false),
+      window.csClient.getComments(this.featureId, null),
     ]).then(([feature, gatesRes, commentRes]) => {
       this.feature = feature;
       this.gates = gatesRes.gates;
