@@ -53,6 +53,7 @@ from pages import featurelist
 from pages import guide
 from pages import intentpreview
 from pages import metrics
+from pages import ot_requests
 from pages import users
 import settings
 
@@ -208,6 +209,7 @@ spa_page_routes = [
 
 mpa_page_routes: list[Route] = [
     Route('/admin/users/new', users.UserListHandler),
+    Route('/admin/ot_requests', ot_requests.OriginTrialsRequests),
 
     Route('/admin/features/launch/<int:feature_id>',
         intentpreview.IntentEmailPreviewHandler),

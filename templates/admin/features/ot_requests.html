@@ -1,0 +1,67 @@
+{% extends "_base.html" %}
+
+{% block page_title %}OT Requests - {% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/forms.css?v={{app_version}}">
+<link rel="stylesheet" href="/static/css/features/launch.css?v={{app_version}}">
+{% endblock %}
+
+{% block content %}
+<p>Body
+  <span class="tooltip copy-text" style="float:right"
+        title="Copy text to clipboard">
+      <a href="#" data-tooltip>
+        <iron-icon icon="chromestatus:content_copy"
+                   id="copy-email-body"></iron-icon>
+      </a>
+  </span>
+</p>
+{# <!-- {% for contact in stage.ot_emails|slice:"1:" %}{{contact}}{% endfor %} --> #}
+<h4>Daniel Test</h4>
+<div class="email">
+<table>
+  {% for stage in stages %}
+  <tr>
+    <td>{{stage.display_name}}</td>
+    <td>Pending</td>
+    <td>{{stage.ot_emails.0}}</td>
+    <td>{% for contact in stage.ot_emails[1:] %}{{contact}}<br>{% endfor %}</td>
+    <td>{{stage.milestones.desktop_first}}</td>
+    <td>{{stage.milestones.desktop_last}}</td>
+    <td></td>
+    <td>{{stage.ot_chromium_trial_name}}</td>
+    <td>{{stage.ot_webfeature_use_counter}}</td>
+    <td>{{stage.intent_thread_url}}</td>
+    <td>https://chromestatus.com/feature/{{stage.feature_id}}</td>
+    <td>{{stage.ot_feedback_submission_url}}</td>
+    <td>{{stage.ot_description}}</td>
+    <td>{% if stage.ot_has_third_party_support %}Yes{% else %}No{% endif %}</td>
+    <td>{% if stage.ot_is_critical_trial %}Yes{% else %}No{% endif %}</td>
+    <td>{% if stage.ot_is_deprecation_trial %}Yes{% else %}No{% endif %}</td>
+  </tr>
+  {% endfor %}
+</table>
+</div>
+{% endblock %}
+
+{% block js %}
+<script nonce="{{nonce}}">
+// Remove loading spinner at page load.
+  document.body.classList.remove('loading');
+
+  const copyEmailBodyEl = document.querySelector('#copy-email-body');
+  const emailBodyEl = document.querySelector('.email');
+  const toastEl = document.querySelector('chromedash-toast');
+  if (copyEmailBodyEl && emailBodyEl) {
+      copyEmailBodyEl.addEventListener('click', () => {
+          window.getSelection().removeAllRanges();
+          const range = document.createRange();
+          range.selectNode(emailBodyEl);
+          window.getSelection().addRange(range);
+          document.execCommand('copy');
+          toastEl.showMessage('Email body copied');
+      });
+  }
+</script>
+{% endblock %}
