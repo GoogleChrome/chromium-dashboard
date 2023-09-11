@@ -347,11 +347,9 @@ export class SomeElement extends LitElement {
 
 Feature links provide users with easy access to additional information about URLs in the feature, without the need to navigate away from the site.
 
-If you’re an admin, you can view [all existing feature links and their associated statistics](https://chromestatus.com/admin/feature_links).
+You can view all existing feature links and their associated statistics on [admin page](https://chromestatus.com/admin/feature_links).
 
 #### How to add a new type of feature link (or updating an existing one)
-
-Follow these steps to add a new type of feature link:
 
 1. Modify `internals/link_helpers.py` and `internals/link_helpers_test.py` to include support for parsing the new type of feature link.
 2. Update `client-src/elements/feature-link.js` to render the new type of feature link.
@@ -361,6 +359,6 @@ Follow these steps to add a new type of feature link:
 
 Feature links are automatically updated when a feature is created or edited. However, if you’ve performed a database cleanup, you can use a script to backfill the feature links.
 
-1. Run `/scripts/backfill_feature_links` to backfill the feature links without extracting information.
+1. Run `/scripts/backfill_feature_links` to backfill the feature links without extracting information into the database. After running the script, you can verify the results by visiting [admin page](https://chromestatus.com/admin/feature_links).
 2. Run `/cron/update_all_feature_links?no_filter=true` to update all existing feature links with latest information.
 
