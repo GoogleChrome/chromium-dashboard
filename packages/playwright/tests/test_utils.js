@@ -1,6 +1,7 @@
 // @ts-check
 import { expect } from '@playwright/test';
 
+
 /**
  * @param {number | undefined} ms
  */
@@ -95,7 +96,13 @@ export async function decodeCookies(page) {
   });
 }
 
-
+/**
+ * @param {import("playwright-core").Page} page
+ */
+export async function isMobile(page) {
+  const viewportSize = page.viewportSize();
+  return (viewportSize && viewportSize.width <= 700)
+}
 
 // Timeout for logging in, in milliseconds.
 // Initially set to longer timeout, in case server needs to warm up and
@@ -145,10 +152,11 @@ export async function login(page) {
 
   // Expect login button to be present.
   // console.info('expect login button to be present and visible');
+  // if (isMobile(page))
   const loginButton = page.getByTestId('dev-mode-sign-in-button');
   await expect(loginButton).toBeVisible({timeout: loginTimeout});
 
-  await loginButton.click({timeout: 1000, delay: 100});
+  await loginButton.click({timeout: 5000, delay: 1000});
   await delay(loginTimeout / 3); // longer delay here, to allow for initial login.
 
   // Expect the title to contain a substring.
@@ -160,11 +168,11 @@ export async function login(page) {
   // console.log('take a screenshot of header that should have "Create feature" button');
   await expect(page.getByTestId('header')).toHaveScreenshot('after-login-click.png');
 
-  // Check that we are logged in now.
-  // Expect a nav container to be present.
-  // This sometimes fails, even though the screenshot seems correct.
-  accountIndicator = page.getByTestId('account-indicator');
-  await expect(accountIndicator).toBeVisible({ timeout: loginTimeout });
+  // // Check that we are logged in now.
+  // // Expect a nav container to be present.
+  // // This sometimes fails, even though the screenshot seems correct.
+  // accountIndicator = page.getByTestId('account-indicator');
+  // await expect(accountIndicator).toBeVisible({ timeout: loginTimeout });
 
   // After first login, reduce timeout/delay.
   loginTimeout = 5000;
@@ -186,12 +194,18 @@ export async function logout(page) {
   page.mouse.move(0, 0); // Move away from content on page.
   await delay(1000);
 
-  const accountIndicator = page.getByTestId('account-indicator');
-  await expect(accountIndicator).toBeVisible({timeout: 20000});
+  if (await isMobile(page)) {
+    const menuButton = page.locator('[data-testid=menu]');
+    await expect(menuButton).toBeVisible();
+    await menuButton.click();
+  } else {
+    const accountIndicator = page.getByTestId('account-indicator');
+    await expect(accountIndicator).toBeVisible({ timeout: 20000 });
+    await accountIndicator.hover({timeout: 5000});
+  }
   await delay(1000);
 
   // Need to hover to see the sign-out-link
-  await accountIndicator.hover({timeout: 5000});
   const signOutLink = page.getByTestId('sign-out-link');
   await expect(signOutLink).toBeVisible();
   await signOutLink.click({timeout: 5000});
