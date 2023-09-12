@@ -72,24 +72,24 @@ class CommentTest(testing_config.CustomTestCase):
         [c.content for c in actual])
 
   def test_get_activities__specific_fields(self):
-    """We get review comments for specific approval fields if requested."""
+    """We get review comments for specific gates if requested."""
     actual_1 = Activity.get_activities(
         self.feature_1_id, 1, comments_only=True)
-    self.assertEqual(2, len(actual_1))
+    self.assertEqual(1, len(actual_1))
     self.assertEqual(
-        ['some text', 'random'],
+        ['some text'],
         [c.content for c in actual_1])
 
     actual_2 = Activity.get_activities(
         self.feature_1_id, 2, comments_only=True)
-    self.assertEqual(2, len(actual_2))
+    self.assertEqual(1, len(actual_2))
     self.assertEqual(
-        ['some other text', 'random'],
+        ['some other text'],
         [c.content for c in actual_2])
 
     actual_3 = Activity.get_activities(
         self.feature_1_id, 3, comments_only=True)
-    self.assertEqual('random', actual_3[0].content)
+    self.assertEqual([], actual_3)
 
 
 class GateTest(testing_config.CustomTestCase):

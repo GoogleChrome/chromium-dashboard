@@ -104,7 +104,12 @@ class ActivityTest(testing_config.CustomTestCase):
     self.assertEqual(activities[0].feature_id, feature_id)
     self.assertEqual(activities[0].gate_id, self.gate_1_id)
     self.assertEqual(activities[0].author, 'abc@example.com')
-    self.assertEqual(activities[0].content, expected_content)
+    self.assertEqual(activities[0].content, None)
+    amendments = activities[0].amendments
+    self.assertEqual(len(amendments), 1)
+    self.assertEqual(amendments[0].field_name, 'review_status')
+    self.assertEqual(amendments[0].old_value, 'na')
+    self.assertEqual(amendments[0].new_value, 'denied')
 
     mock_task_helpers.assert_called_once()
 

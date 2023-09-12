@@ -170,7 +170,6 @@ export class ChromedashGateColumn extends LitElement {
       window.csClient.getFeatureProcess(featureId),
       window.csClient.getStage(featureId, stageId),
       window.csClient.getVotes(featureId, null),
-      // TODO(jrobbins): Include activities for this gate
       window.csClient.getComments(featureId, gate.id),
     ]).then(([progress, process, stage, votesRes, commentRes]) => {
       this.progress = progress;

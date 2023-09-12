@@ -120,21 +120,20 @@ class CommentsAPITest(testing_config.CustomTestCase):
     self.assertEqual({'comments': []}, actual_response)
 
   def test_get__legacy_comments(self):
-    """We can get legacy comments."""
+    """We no longer return legacy gate comments when gate_id is specified."""
     testing_config.sign_out()
     testing_config.sign_in('user7@example.com', 123567890)
 
     legacy_comment = Activity(
       feature_id=self.feature_id, author='owner1@example.com',
-      created=NOW, content='nothing')
+      created=NOW, content='nothing')  # no gate_id
     legacy_comment.put()
 
     with test_app.test_request_context(self.request_path):
       actual_response = self.handler.do_get(
           feature_id=self.feature_id, gate_id=self.gate_1_id)
     testing_config.sign_out()
-    actual_comment = actual_response['comments'][0]
-    self.assertEqual('nothing', actual_comment['content'])
+    self.assertEqual([], actual_response['comments'])
 
   def test_get__all_some(self):
     """We can get all comments for a given approval."""

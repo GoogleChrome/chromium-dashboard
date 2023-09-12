@@ -61,10 +61,8 @@ class CommentsAPI(basehandlers.APIHandler):
     """Return a list of all review comments on the given feature."""
     feature_id = kwargs['feature_id']
     gate_id = kwargs.get('gate_id', None)
-    comments_only = self.get_bool_arg('comments_only')
     # Note: We assume that anyone may view approval comments.
-    comments = Activity.get_activities(
-        feature_id, gate_id, comments_only=comments_only)
+    comments = Activity.get_activities(feature_id, gate_id)
     user = self.get_current_user()
     is_admin = permissions.can_admin_site(user)
 

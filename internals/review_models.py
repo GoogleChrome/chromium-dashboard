@@ -210,12 +210,11 @@ class Activity(ndb.Model):  # copy from Comment
   @classmethod
   def get_activities(cls, feature_id: int, gate_id: Optional[int]=None,
       comments_only: bool=False) -> list[Activity]:
-    """Return actitivies for an approval."""
+    """Return all actitivies for a feature, or a specific gate."""
     query = Activity.query().order(Activity.created)
     query = query.filter(Activity.feature_id == feature_id)
     if gate_id:
-      # Fetch activities with a gate_id or None value.
-      query = query.filter(Activity.gate_id.IN([gate_id, None]))
+      query = query.filter(Activity.gate_id == gate_id)
     acts = query.fetch(None)
     if comments_only:
       return [act for act in acts if act.content]
