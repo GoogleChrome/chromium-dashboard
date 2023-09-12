@@ -241,6 +241,7 @@ internals_routes: list[Route] = [
       inactive_users.RemoveInactiveUsersHandler),
   Route('/cron/reindex_all', search_fulltext.ReindexAllFeatures),
   Route('/cron/update_all_feature_links', feature_links.UpdateAllFeatureLinksHandlers),
+  Route('/cron/associate_origin_trials', maintenance_scripts.AssociateOTs),
 
   Route('/admin/find_stop_words', search_fulltext.FindStopWords),
 
