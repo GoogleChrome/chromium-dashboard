@@ -611,10 +611,10 @@ class ChromedashFeatureDetail extends LitElement {
     }
     // If we have an origin trial ID associated with the stage, add a link to the trial.
     if (feStage.origin_trial_id) {
-      let originTrialsURL = `https://origintrials-staging.corp.google.com/origintrials/#/view_trials/${feStage.origin_trial_id}`;
+      let originTrialsURL = `https://origintrials-staging.corp.google.com/origintrials/#/view_trial/${feStage.origin_trial_id}`;
       // If this is the production host, link to the production OT site.
       if (this.appTitle === 'Chrome Platform Status') {
-        originTrialsURL = `https://developer.chrome.com/origintrials/#/view_trials/${feStage.origin_trial_id}`;
+        originTrialsURL = `https://developer.chrome.com/origintrials/#/view_trial/${feStage.origin_trial_id}`;
       }
       visitTrialButton = html`
         <sl-button 
