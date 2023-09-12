@@ -29,8 +29,6 @@ cron:
 - description: Update all feature links that are staled.
   url: /cron/update_all_feature_links
   schedule: every tuesday 05:00
-- description: |
-    Check for origin trials and associate them with their respective
-    ChromeStatus feature entry.
+- description: Check origin trials and associate with their ChromeStatus entry.
   url: /cron/associate_origin_trials
   schedule: every day 6:00
