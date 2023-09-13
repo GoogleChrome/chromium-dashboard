@@ -1,6 +1,7 @@
 // @ts-check
 import { test, expect } from '@playwright/test';
-import { captureConsoleMessages, delay, login, logout } from './test_utils';
+import { captureConsoleMessages, isMobile, delay, login, logout } from './test_utils';
+
 
 test.beforeEach(async ({page}) => {
   captureConsoleMessages(page);
@@ -18,20 +19,30 @@ test.afterEach(async ({ page }) => {
 
 test('navigate to create feature page', async ({page}) => {
   // console.log('navigate to create feature page');
+  const mobile = await isMobile(page);
+
+  const menuButton = page.locator('[data-testid=menu]');
+  await expect(menuButton).toBeVisible();
+  if (mobile) {
+    await menuButton.click();  // To show menu.
+  }
 
   // Expect create feature button to be present.
   const createFeatureButton = page.getByTestId('create-feature-button');
   await expect(createFeatureButton).toBeVisible({timeout: 30000});
+  // Take a screenshot of the "Create feature" button.
+  await expect(createFeatureButton).toHaveScreenshot('create-feature-button.png');
 
-  // Take a screenshot of header with "Create feature" button.
-  await expect(page.getByTestId('header')).toHaveScreenshot('create-feature-button.png');
-
-  // Navigate to the new feature page by clicking.
-  createFeatureButton.click();
+  // Navigate to the new feature page.
+  await createFeatureButton.click();
+  if (mobile) {
+    await menuButton.click();  // To hide menu
+    delay(500);
+  }
 
   // Expect "Add a feature" header to be present.
   const addAFeatureHeader = page.getByTestId('add-a-feature');
-  await expect(addAFeatureHeader).toBeVisible();
+  await expect(addAFeatureHeader).toBeVisible({timeout:10000});
 
   // Take a screenshot of the content area.
   await expect(page).toHaveScreenshot('new-feature-page.png');
@@ -42,10 +53,23 @@ test('navigate to create feature page', async ({page}) => {
 test('enter feature name', async ({page}) => {
   // console.log('enter feature name');
   test.setTimeout(90000);
+  const mobile = await isMobile(page);
+
+  const menuButton = page.locator('[data-testid=menu]');
+  await expect(menuButton).toBeVisible();
+  if (mobile) {
+    await menuButton.click();
+  }
+
+  const createFeatureButton = page.getByTestId('create-feature-button');
+  await expect(createFeatureButton).toBeVisible({ timeout: 30000 });
 
   // Navigate to the new feature page.
-  const createFeatureButton = page.getByTestId('create-feature-button');
-  createFeatureButton.click({timeout: 10000});
+  await createFeatureButton.click();
+  if (mobile) {
+    await menuButton.click();  // To hide menu
+    delay(2500);
+  }
 
   const featureNameInput = page.locator('input[name="name"]');
   await expect(featureNameInput).toBeVisible({timeout: 60000});

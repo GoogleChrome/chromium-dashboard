@@ -158,8 +158,8 @@ export class ChromedashHeader extends LitElement {
   connectedCallback() {
     super.connectedCallback();
 
-    // The user sign-in is desktop only.
     if (IS_MOBILE) {
+      // Login UI will be handled by chromedash-drawer instead.
       return;
     }
 
@@ -222,18 +222,13 @@ export class ChromedashHeader extends LitElement {
   }
 
   initializeTestingSignIn() {
-    if (this.devMode != 'True') {
-      return;
-    }
-
     // Create DEV_MODE login button for testing
     const signInTestingButton = document.createElement('button');
     signInTestingButton.innerText = 'Sign in as example@chromium.org';
     signInTestingButton.setAttribute('type', 'button');
     signInTestingButton.setAttribute('data-testid', 'dev-mode-sign-in-button');
-    signInTestingButton.setAttribute('style', 'margin-right: 300px');
-
-    const appComponent = document.querySelector('chromedash-app');
+    signInTestingButton.setAttribute('style',
+      'margin-right: 300px; z-index:1000; background: lightblue; border: 1px solid blue;');
 
     signInTestingButton.addEventListener('click', () => {
       // POST to '/dev/mock_login' to login as example@chromium.
@@ -254,8 +249,9 @@ export class ChromedashHeader extends LitElement {
         });
     });
 
-    if (appComponent) {
-      appComponent.insertAdjacentElement('afterbegin', signInTestingButton); // for SPA
+    const signInButtonContainer = document.querySelector('chromedash-app');
+    if (signInButtonContainer) {
+      signInButtonContainer.insertAdjacentElement('afterbegin', signInTestingButton); // for SPA
     } else {
       this.insertAdjacentElement('afterbegin', signInTestingButton); // for MPA
     }
@@ -339,7 +335,7 @@ export class ChromedashHeader extends LitElement {
 
     return html`
       <header data-testid="header">
-        <sl-icon-button variant="text" library="material" class="menu"
+        <sl-icon-button data-testid="menu" variant="text" library="material" class="menu"
           style="font-size: 2.4rem;" name="menu_20px" @click="${this.handleDrawer}">
         </sl-icon-button >
         <aside>

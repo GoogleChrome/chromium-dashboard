@@ -5,8 +5,18 @@ import {nothing, html} from 'lit';
 import {STAGE_FIELD_NAME_MAPPING} from './form-field-enums';
 
 let toastEl;
-// Determines if it is a mobile device.
-export const IS_MOBILE = window.screen.width < 701;
+
+// Determine if the browser looks like the user is on a mobile device.
+// We assume that a small enough window width implies a mobile device.
+const NARROW_WINDOW_MAX_WIDTH = 700;
+
+export const IS_MOBILE = (() => {
+  const width = window.innerWidth ||
+    document.documentElement.clientWidth ||
+    document.body.clientWidth;
+  return width <= NARROW_WINDOW_MAX_WIDTH;
+})();
+
 
 /* Convert user-entered text into safe HTML with clickable links
  * where appropriate.  Returns an array with text and anchor tags.
