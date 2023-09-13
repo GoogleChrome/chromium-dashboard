@@ -258,6 +258,9 @@ class Stage(ndb.Model):
   stage_type = ndb.IntegerProperty(required=True)
   display_name = ndb.StringProperty()
 
+  # Currently only used for separate origin trial descriptions.
+  stage_description = ndb.TextProperty()
+
   # Pragmatic information: where and when.
   browser = ndb.StringProperty()  # Blank or "Chrome" for now.
   milestones = ndb.StructuredProperty(MilestoneSet)
