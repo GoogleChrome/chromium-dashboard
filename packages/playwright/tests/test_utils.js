@@ -143,7 +143,6 @@ export async function login(page) {
     await page.waitForURL('**/roadmap');
     await expect(page).toHaveTitle(/Chrome Status/);
     page.mouse.move(0, 0); // Move away from content on page.
-    // console.log('Should be logged out ow.');
     await delay(1000);
 
     accountIndicator = page.getByTestId('account-indicator');
@@ -152,7 +151,6 @@ export async function login(page) {
 
   // Expect login button to be present.
   // console.info('expect login button to be present and visible');
-  // if (isMobile(page))
   const loginButton = page.getByTestId('dev-mode-sign-in-button');
   await expect(loginButton).toBeVisible({timeout: loginTimeout});
 
@@ -167,12 +165,6 @@ export async function login(page) {
   // Take a screenshot of header that should have "Create feature" button.
   // console.log('take a screenshot of header that should have "Create feature" button');
   await expect(page.getByTestId('header')).toHaveScreenshot('after-login-click.png');
-
-  // // Check that we are logged in now.
-  // // Expect a nav container to be present.
-  // // This sometimes fails, even though the screenshot seems correct.
-  // accountIndicator = page.getByTestId('account-indicator');
-  // await expect(accountIndicator).toBeVisible({ timeout: loginTimeout });
 
   // After first login, reduce timeout/delay.
   loginTimeout = 5000;
