@@ -241,7 +241,6 @@ export const STAGE_SPECIFIC_FIELDS = new Set([
 
   // Misc fields.
   'display_name',
-  'stage_description',
   'origin_trial_feedback_url',
   'ot_chromium_trial_name',
   'ot_description',
