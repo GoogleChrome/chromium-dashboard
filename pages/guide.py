@@ -271,6 +271,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('rollout_milestone', 'int'),
       ('rollout_platforms', 'split_str'),
       ('rollout_details', 'str'),
+      ('stage_description', 'str'),
       ('enterprise_policies', 'split_str'),
       ('intent_thread_url', 'str'),
       ('display_name', 'str'),

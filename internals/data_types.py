@@ -30,6 +30,7 @@ class StageDict(TypedDict):
   created: str
   feature_id: int
   stage_type: int
+  stage_description: str | None
   display_name: str
   intent_stage: int
   intent_thread_url: str | None
