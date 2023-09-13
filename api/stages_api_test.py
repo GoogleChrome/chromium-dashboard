@@ -64,7 +64,6 @@ class StagesAPITest(testing_config.CustomTestCase):
 
     self.stage_4 = Stage(
         id=40, feature_id=1, stage_type=150, browser='Chrome',
-        stage_description='An origin trial\'s description',
         origin_trial_id='-5269211564023480319',
         ux_emails=['ux_person@example.com'],
         intent_thread_url='https://example.com/intent',
@@ -101,7 +100,6 @@ class StagesAPITest(testing_config.CustomTestCase):
         'created': str(self.now),
         'desktop_first': 100,
         'desktop_last': None,
-        'stage_description': None,
         'display_name': None,
         'enterprise_policies': [],
         'origin_trial_id': None,
@@ -190,7 +188,6 @@ class StagesAPITest(testing_config.CustomTestCase):
         'te_emails': [],
         'intent_thread_url': 'https://example.com/intent',
         'desktop_first': 100,
-        'stage_description': None,
         'display_name': None,
         'desktop_last': None,
         'android_first': None,
@@ -236,7 +233,6 @@ class StagesAPITest(testing_config.CustomTestCase):
         'te_emails': [],
         'intent_thread_url': 'https://example.com/intent',
         'desktop_first': 100,
-        'stage_description': 'An origin trial\'s description',
         'display_name': None,
         'desktop_last': None,
         'android_first': None,
