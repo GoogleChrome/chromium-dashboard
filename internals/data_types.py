@@ -30,6 +30,7 @@ class StageDict(TypedDict):
   created: str
   feature_id: int
   stage_type: int
+  stage_description: str | None
   display_name: str
   intent_stage: int
   intent_thread_url: str | None
@@ -46,6 +47,7 @@ class StageDict(TypedDict):
   origin_trial_feedback_url: str | None
   ot_chromium_trial_name: str | None
   ot_documentation_url: str | None
+  ot_emails: list[str]
   ot_has_third_party_support: bool
   ot_is_critical_trial: bool
   ot_is_deprecation_trial: bool

@@ -258,6 +258,9 @@ class Stage(ndb.Model):
   stage_type = ndb.IntegerProperty(required=True)
   display_name = ndb.StringProperty()
 
+  # Currently only used for separate origin trial descriptions.
+  stage_description = ndb.TextProperty()
+
   # Pragmatic information: where and when.
   browser = ndb.StringProperty()  # Blank or "Chrome" for now.
   milestones = ndb.StructuredProperty(MilestoneSet)
@@ -282,9 +285,11 @@ class Stage(ndb.Model):
   experiment_risks = ndb.TextProperty()
   ot_chromium_trial_name = ndb.StringProperty()
   ot_documentation_url = ndb.StringProperty()
+  ot_emails = ndb.StringProperty(repeated=True)
   ot_has_third_party_support = ndb.BooleanProperty(default=False)
   ot_is_critical_trial = ndb.BooleanProperty(default=False)
   ot_is_deprecation_trial = ndb.BooleanProperty(default=False)
+  ot_request_note = ndb.TextProperty()
   ot_webfeature_use_counter = ndb.StringProperty()
 
   # Origin trial stage id that this stage extends, if trial extension stage.
