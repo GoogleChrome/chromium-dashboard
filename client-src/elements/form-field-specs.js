@@ -1409,14 +1409,18 @@ export const ALL_FIELDS = {
     </ul>`,
   },
 
-  'stage_description': {
+  'ot_description': {
     type: 'textarea',
     required: true,
-    label: 'Description',
+    label: 'Trial description',
     help_text: html`
-      <p>
-        A brief description of the feature (1-2 sentences). Displayed publicly.
-      </p>`,
+    <p>
+      A brief description of the feature to interest web developers in joining
+      the trial (1-2 sentences). Shown as the trial description in the
+      <a href="https://developer.chrome.com/origintrials/" target="_blank">
+        Origin Trials Console
+      </a>.
+    </p>`,
   },
 
   'enterprise_policies': {
@@ -1450,7 +1454,7 @@ export const ALL_FIELDS = {
 
   'rollout_milestone': {
     type: 'input',
-    attrs: { ...MILESTONE_NUMBER_FIELD_ATTRS, min: 100 },
+    attrs: {...MILESTONE_NUMBER_FIELD_ATTRS, min: 100},
     required: true,
     label: 'Chrome milestone',
     help_text: html`

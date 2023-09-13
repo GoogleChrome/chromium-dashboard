@@ -94,7 +94,7 @@ FEATURE_FIELD_DATA_TYPES: FIELD_INFO_DATA_TYPE = [
 STAGE_FIELD_DATA_TYPES: FIELD_INFO_DATA_TYPE = [
   ('announcement_url', 'link'),
   ('browser', 'str'),
-  ('stage_description', 'str'),
+  ('ot_description', 'str'),
   ('display_name', 'str'),
   ('enterprise_policies', 'split_str'),
   ('finch_url', 'link'),
