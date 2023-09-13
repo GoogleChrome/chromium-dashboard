@@ -292,7 +292,6 @@ const FLAT_ORIGIN_TRIAL_FIELDS = {
         // TODO(jrobbins): display r4dt_url instead when deprecating.
         'i2e_lgtms',
         'intent_to_experiment_url',
-        'ot_description',
         'ot_chromium_trial_name',
         'ot_webfeature_use_counter',
         'ot_documentation_url',
