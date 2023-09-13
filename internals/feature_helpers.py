@@ -58,6 +58,40 @@ def _get_future_results(async_features: Future | None) -> list[FeatureEntry]:
     return []
   return async_features.result()
 
+def get_features_in_release_notes(milestone: int):
+  cache_key = '%s|%s|%s' % (
+      FeatureEntry.DEFAULT_CACHE_KEY, 'release_notes_milestone', milestone)
+
+  cached_features = rediscache.get(cache_key)
+  if cached_features:
+    return cached_features
+
+  stages = Stage.query(
+          Stage.archived == False,
+      ndb.OR(Stage.milestones.desktop_first >= milestone,
+          Stage.milestones.android_first >= milestone,
+          Stage.milestones.ios_first >= milestone,
+          Stage.milestones.webview_first >= milestone,
+          Stage.milestones.desktop_last >= milestone,
+          Stage.milestones.ios_last >= milestone,
+          Stage.milestones.webview_last >= milestone,
+          Stage.rollout_milestone >= milestone),
+      ndb.OR(Stage.stage_type == STAGE_BLINK_SHIPPING,
+          Stage.stage_type == STAGE_PSA_SHIPPING,
+          Stage.stage_type == STAGE_FAST_SHIPPING,
+          Stage.stage_type == STAGE_DEP_SHIPPING,
+          Stage.stage_type == STAGE_ENT_ROLLOUT)).filter().fetch()
+  
+  feature_ids = list(set({
+      *[s.feature_id for s in stages]}))
+  features = [converters.feature_entry_to_json_verbose(f)
+            for f in _get_future_results(_get_entries_by_id_async(feature_ids))]
+  features = [f for f in filter_unlisted(features) 
+    if f['breaking_change'] == True or f['feature_type_int'] == FEATURE_TYPE_ENTERPRISE_ID]
+
+  rediscache.set(cache_key, features)
+  return features
+
 
 def get_in_milestone(milestone: int,
     show_unlisted: bool=False) -> dict[str, list[dict[str, Any]]]:

@@ -179,54 +179,31 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       }));
   }
 
-  connectedCallback() {
-    super.connectedCallback();
-    Promise.all([
-      window.csClient.getChannels(),
-      window.csClient.searchFeatures(
-        'feature_type="New Feature or removal affecting enterprises" OR breaking_change=true'),
-    ]).then(([channels, {features}]) => {
-      this.channels = channels;
-      const queryParams = parseRawQuery(window.location.search);
-      if (milestoneQueryParamKey in queryParams) {
-        this.selectedMilestone = parseInt(queryParams[milestoneQueryParamKey], 10);
-      } else {
-        this.selectedMilestone = this.channels.stable.version;
-        updateURLParams(milestoneQueryParamKey, this.selectedMilestone);
-      }
+  updateFeatures(features) {
+    // Simulate rollout stage for features with breaking changes and planned
+    // milestones but without rollout stages so that they appear on the release
+    // notes.
+    const featuresRequiringRolloutStages = features
+      .filter(({stages}) => !stages
+        .some(s => s.stage_type === STAGE_ENT_ROLLOUT) &&
+                   stages.some(s => STAGE_TYPES_SHIPPING.has(s.stage_type)))
+      .map(f => ({
+        ...f,
+        stages: f.stages
+          .filter(s => STAGE_TYPES_SHIPPING.has(s.stage_type))
+          .map(this.convertShippingStageToRolloutStages).flatMap(x => x),
+      }));
 
-      // Simulate rollout stage for features with breaking changes and planned
-      // milestones but without rollout stages so that they appear on the release
-      // notes.
-      const featuresRequiringRolloutStages = features
-        .filter(({stages}) => !stages
-          .some(s => s.stage_type === STAGE_ENT_ROLLOUT) &&
-                     stages.some(s => STAGE_TYPES_SHIPPING.has(s.stage_type)))
-        .map(f => ({
-          ...f,
-          stages: f.stages
-            .filter(s => STAGE_TYPES_SHIPPING.has(s.stage_type))
-            .map(this.convertShippingStageToRolloutStages).flatMap(x => x),
-        }));
+    // Filter out features that don't have rollout stages.
+    // Ensure that the stages are only rollout stages.
+    this.features = [...features, ...featuresRequiringRolloutStages]
+      .filter(({stages}) => stages.some(s => s.stage_type === STAGE_ENT_ROLLOUT))
+      .map(f => ({
+        ...f,
+        stages: f.stages
+          .filter(s => s.stage_type === STAGE_ENT_ROLLOUT && !!s.rollout_milestone)
+          .sort((a, b) => a.rollout_milestone - b.rollout_milestone)}));
 
-      // Filter out features that don't have rollout stages.
-      // Ensure that the stages are only rollout stages.
-      this.features = [...features, ...featuresRequiringRolloutStages]
-        .filter(({stages}) => stages.some(s => s.stage_type === STAGE_ENT_ROLLOUT))
-        .map(f => ({
-          ...f,
-          stages: f.stages
-            .filter(s => s.stage_type === STAGE_ENT_ROLLOUT && !!s.rollout_milestone)
-            .sort((a, b) => a.rollout_milestone - b.rollout_milestone)}));
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-    });
-  }
-
-  /**
-   *  Updates currentFeatures and upcomingFeatures based on the selected milestone.
-   */
-  updateCurrentAndUpcomingFeatures() {
     // Features with a rollout stage in the selected milestone sorted with the highest impact.
     this.currentFeatures = this.features
       .filter(({stages}) => stages.some(s => s.rollout_milestone === this.selectedMilestone))
@@ -258,12 +235,35 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       });
   }
 
+  connectedCallback() {
+    window.csClient.getChannels()
+      .then(channels => {
+        this.channels = channels;
+        const queryParams = parseRawQuery(window.location.search);
+        if (milestoneQueryParamKey in queryParams) {
+          this.selectedMilestone = parseInt(queryParams[milestoneQueryParamKey], 10);
+        } else {
+          this.selectedMilestone = this.channels.stable.version;
+          updateURLParams(milestoneQueryParamKey, this.selectedMilestone);
+        }
+      })
+      .then(() => window.csClient.getFeaturesForEnterpriseReleaseNotes(this.selectedMilestone))
+      .then(({features}) => this.updateFeatures(features))
+      .catch(() => {
+        showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+      })
+      .finally(() => super.connectedCallback());
+  }
+
   updateSelectedMilestone() {
     this.selectedMilestone = parseInt(this.shadowRoot.querySelector('#milestone-selector').value);
+    window.csClient.getFeaturesForEnterpriseReleaseNotes(this.selectedMilestone)
+      .then(({features}) => this.updateFeatures(features)).catch(() => {
+        showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+      });
   }
 
   update() {
-    this.updateCurrentAndUpcomingFeatures();
     if (this.selectedMilestone !== undefined) {
       updateURLParams(milestoneQueryParamKey, this.selectedMilestone);
     }
