@@ -24,6 +24,7 @@ from framework import users
 from internals import stage_helpers
 from internals.core_enums import *
 from internals.core_models import FeatureEntry, Stage
+from internals.data_types import VerboseFeatureDict
 
 
 def filter_unlisted(feature_list: list[dict]) -> list[dict]:
@@ -84,7 +85,7 @@ def get_features_in_release_notes(milestone: int):
   
   feature_ids = list(set({
       *[s.feature_id for s in stages]}))
-  features = [converters.feature_entry_to_json_verbose(f)
+  features = [dict(converters.feature_entry_to_json_verbose(f))
             for f in _get_future_results(_get_entries_by_id_async(feature_ids))]
   features = [f for f in filter_unlisted(features) 
     if f['breaking_change'] == True or f['feature_type_int'] == FEATURE_TYPE_ENTERPRISE_ID]
