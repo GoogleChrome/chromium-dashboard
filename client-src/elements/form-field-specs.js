@@ -1037,6 +1037,17 @@ export const ALL_FIELDS = {
       (e.g. blog post, Github explainer, etc.).`,
   },
 
+  'ot_emails': {
+    type: 'input',
+    attrs: MULTI_EMAIL_FIELD_ATTRS,
+    required: true,
+    label: 'Origin trial contacts',
+    help_text: html`
+      List any other individuals or groups to include on the contact list
+      (e.g. for reminders on trial milestones).
+      Please enter valid email addresses.`,
+  },
+
   'ot_has_third_party_support': {
     type: 'checkbox',
     initial: false,
@@ -1065,6 +1076,13 @@ export const ALL_FIELDS = {
       Is this a deprecation trial? See the
       <a href="https://www.chromium.org/blink/launching-features/#deprecation-trial"
       >deprecation trial section</a> for more information.`,
+  },
+
+  'ot_request_note': {
+    type: 'textarea',
+    required: false,
+    label: 'Anything else?',
+    help_text: html`<p>Let us know if you have any further questions or comments.</p>`,
   },
 
   'ot_webfeature_use_counter': {
@@ -1389,6 +1407,20 @@ export const ALL_FIELDS = {
       <li>Second origin trial run</li>
       <li>Delayed ship for Android</li>
     </ul>`,
+  },
+
+  'ot_description': {
+    type: 'textarea',
+    required: true,
+    label: 'Trial description',
+    help_text: html`
+    <p>
+      A brief description of the feature to interest web developers in joining
+      the trial (1-2 sentences). Shown as the trial description in the
+      <a href="https://developer.chrome.com/origintrials/" target="_blank">
+        Origin Trials Console
+      </a>.
+    </p>`,
   },
 
   'enterprise_policies': {
