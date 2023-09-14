@@ -1422,7 +1422,7 @@ export const ALL_FIELDS = {
 
   'rollout_milestone': {
     type: 'input',
-    attrs: { ...MILESTONE_NUMBER_FIELD_ATTRS, min: 100 },
+    attrs: {...MILESTONE_NUMBER_FIELD_ATTRS, min: 100},
     required: true,
     label: 'Chrome milestone',
     help_text: html`

@@ -144,6 +144,16 @@ class FeaturesAPI(basehandlers.APIHandler):
           'total_count': total_count,
           }
 
+    # Query-string parameter 'releaseNotesMilestone' is provided
+    release_notes_milestone = self.get_int_arg('releaseNotesMilestone')
+    if release_notes_milestone:
+      features_in_release_notes = feature_helpers.get_features_in_release_notes(
+        milestone=release_notes_milestone)
+      return {
+        'features': features_in_release_notes,
+        'total_count': len(features_in_release_notes)
+        }
+
     user_query = self.request.args.get('q', '')
     sort_spec = self.request.args.get('sort')
     num = self.get_int_arg('num', search.DEFAULT_RESULTS_PER_PAGE)

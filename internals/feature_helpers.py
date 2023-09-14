@@ -24,6 +24,7 @@ from framework import users
 from internals import stage_helpers
 from internals.core_enums import *
 from internals.core_models import FeatureEntry, Stage
+from internals.data_types import VerboseFeatureDict
 
 
 def filter_unlisted(feature_list: list[dict]) -> list[dict]:
@@ -57,6 +58,37 @@ def _get_future_results(async_features: Future | None) -> list[FeatureEntry]:
   if async_features is None:
     return []
   return async_features.result()
+
+def get_features_in_release_notes(milestone: int):
+  cache_key = '%s|%s|%s' % (
+      FeatureEntry.DEFAULT_CACHE_KEY, 'release_notes_milestone', milestone)
+
+  cached_features = rediscache.get(cache_key)
+  if cached_features:
+    return cached_features
+
+  stages = Stage.query(
+          Stage.archived == False,
+      ndb.OR(Stage.milestones.desktop_first >= milestone,
+          Stage.milestones.android_first >= milestone,
+          Stage.milestones.ios_first >= milestone,
+          Stage.milestones.webview_first >= milestone,
+          Stage.milestones.desktop_last >= milestone,
+          Stage.milestones.ios_last >= milestone,
+          Stage.milestones.webview_last >= milestone,
+          Stage.rollout_milestone >= milestone),
+      Stage.stage_type.IN([STAGE_BLINK_SHIPPING, STAGE_PSA_SHIPPING,
+          STAGE_FAST_SHIPPING, STAGE_DEP_SHIPPING, STAGE_ENT_ROLLOUT])).filter().fetch()
+  
+  feature_ids = list(set({
+      *[s.feature_id for s in stages]}))
+  features = [dict(converters.feature_entry_to_json_verbose(f))
+            for f in _get_future_results(_get_entries_by_id_async(feature_ids))]
+  features = [f for f in filter_unlisted(features) 
+    if f['breaking_change'] == True or f['feature_type_int'] == FEATURE_TYPE_ENTERPRISE_ID]
+
+  rediscache.set(cache_key, features)
+  return features
 
 
 def get_in_milestone(milestone: int,

@@ -382,3 +382,96 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     self.assertEqual(
         cached_test_feature,
         actual)
+
+  def test_get_in_milestone__non_enterprise_features(self):
+    """We can retrieve a list of features."""
+    self.fe_1_stages_dict[160][0].milestones = MilestoneSet(desktop_first=1)
+    self.fe_1_stages_dict[160][0].put()
+    self.fe_2_stages_dict[260][0].milestones = MilestoneSet(desktop_last=2)
+    self.fe_2_stages_dict[260][0].put()
+    self.fe_3_stages_dict[360][0].milestones = MilestoneSet(ios_first=3)
+    self.fe_3_stages_dict[360][0].put()
+    self.fe_4_stages_dict[460][0].milestones = MilestoneSet(ios_last=4)
+    self.fe_4_stages_dict[460][0].put()
+
+    cache_key = '%s|%s|%s' % (
+        FeatureEntry.DEFAULT_CACHE_KEY, 'release_notes_milestone', 1)
+
+    # There is no breaking change
+    features = feature_helpers.get_features_in_release_notes(milestone=1)
+    self.assertEqual(0, len(features))
+    cached_result = rediscache.get(cache_key)
+    rediscache.delete(cache_key)
+    self.assertEqual(cached_result, features)
+    
+    # Features 1, 2, 3 and 4 are breaking changes
+    self.feature_1.breaking_change = True
+    self.feature_1.put()
+    self.feature_2.breaking_change = True
+    self.feature_2.put()
+    self.feature_3.breaking_change = True
+    self.feature_3.put()
+    self.feature_4.breaking_change = True
+    self.feature_4.put()
+
+    features = feature_helpers.get_features_in_release_notes(milestone=1)
+    self.assertEqual(4, len(features))
+    self.assertEqual(
+      ['feature a', 'feature b', 'feature c', 'feature d'],
+      [f['name'] for f in features])
+    cached_result = rediscache.get(cache_key)
+    rediscache.delete(cache_key)
+    self.assertEqual(cached_result, features)
+    
+    cache_key = '%s|%s|%s' % (
+        FeatureEntry.DEFAULT_CACHE_KEY, 'release_notes_milestone', 3)
+    features = feature_helpers.get_features_in_release_notes(milestone=3)
+    self.assertEqual(2, len(features))
+    self.assertEqual(
+      ['feature c', 'feature d'],
+      [f['name'] for f in features])
+    cached_result = rediscache.get(cache_key)
+    rediscache.delete(cache_key)
+    self.assertEqual(cached_result, features)
+
+    # Features 1, 2, 3 are breaking changes
+    # only feature 1, 2 and 4 are planned to be released
+    self.feature_4.breaking_change = False
+    self.feature_4.put()
+    self.fe_3_stages_dict[360][0].milestones = MilestoneSet()
+    self.fe_3_stages_dict[360][0].put()
+
+    features = feature_helpers.get_features_in_release_notes(milestone=3)
+    self.assertEqual(0, len(features))
+    cached_result = rediscache.get(cache_key)
+    rediscache.delete(cache_key)
+    self.assertEqual(cached_result, features)
+
+    cache_key = '%s|%s|%s' % (
+        FeatureEntry.DEFAULT_CACHE_KEY, 'release_notes_milestone', 1)
+    features = feature_helpers.get_features_in_release_notes(milestone=1)
+    self.assertEqual(2, len(features))
+    self.assertEqual(
+      ['feature a', 'feature b'],
+      [f['name'] for f in features])
+    cached_result = rediscache.get(cache_key)
+    rediscache.delete(cache_key)
+    self.assertEqual(cached_result, features)
+
+    # Enterprise features are included
+    rollout_stage = Stage(
+        feature_id=self.feature_4.key.integer_id(),
+        stage_type=STAGE_ENT_ROLLOUT,
+        rollout_milestone=1)
+    rollout_stage.put()
+    self.feature_4.feature_type = 4
+    self.feature_4.put()
+
+    features = feature_helpers.get_features_in_release_notes(milestone=1)
+    self.assertEqual(3, len(features))
+    self.assertEqual(
+      ['feature a', 'feature b', 'feature d'],
+      [f['name'] for f in features])
+    cached_result = rediscache.get(cache_key)
+    rediscache.delete(cache_key)
+    self.assertEqual(cached_result, features)

@@ -285,6 +285,10 @@ class ChromeStatusClient {
       (resp) => resp['features_by_type']);
   }
 
+  getFeaturesForEnterpriseReleaseNotes(milestone) {
+    return this.doGet(`/features?releaseNotesMilestone=${milestone}`);
+  }
+
   searchFeatures(userQuery, sortSpec, start, num) {
     let url = `/features?q=${userQuery}`;
     if (sortSpec) {

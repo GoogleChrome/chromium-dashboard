@@ -6,7 +6,7 @@ import './chromedash-toast';
 import '../js-src/cs-client';
 import sinon from 'sinon';
 
-describe('chromedash-feature-page', () => {
+describe('chromedash-enterprise-release-notes-page', () => {
   const featuresPromise = Promise.resolve(
     {
       features: [
@@ -226,14 +226,14 @@ describe('chromedash-feature-page', () => {
   beforeEach(async () => {
     await fixture(html`<chromedash-toast></chromedash-toast>`);
     window.csClient = new ChromeStatusClient('fake_token', 1);
-    sinon.stub(window.csClient, 'searchFeatures');
+    sinon.stub(window.csClient, 'getFeaturesForEnterpriseReleaseNotes');
     sinon.stub(window.csClient, 'getChannels');
-    window.csClient.searchFeatures.returns(featuresPromise);
+    window.csClient.getFeaturesForEnterpriseReleaseNotes.returns(featuresPromise);
     window.csClient.getChannels.returns(channelsPromise);
   });
 
   afterEach(() => {
-    window.csClient.searchFeatures.restore();
+    window.csClient.getFeaturesForEnterpriseReleaseNotes.restore();
     window.csClient.getChannels.restore();
     clearURLParams('milestone');
   });
@@ -258,7 +258,7 @@ describe('chromedash-feature-page', () => {
 
   it('renders with no data', async () => {
     const invalidFeaturePromise = Promise.reject(new Error('Got error response from server'));
-    window.csClient.searchFeatures.returns(invalidFeaturePromise);
+    window.csClient.getFeaturesForEnterpriseReleaseNotes.returns(invalidFeaturePromise);
 
     const component = await fixture(html`
       <chromedash-enterprise-release-notes-page></chromedash-enterprise-release-notes-page>`);
@@ -277,7 +277,6 @@ describe('chromedash-feature-page', () => {
       <chromedash-enterprise-release-notes-page></chromedash-enterprise-release-notes-page>`);
     assert.exists(component);
     assert.instanceOf(component, ChromedashEnterpriseReleaseNotesPage);
-    debugger;
 
     const releaseNotesSummary = component.shadowRoot.querySelector('#release-notes-summary');
     const children = [...releaseNotesSummary.querySelectorAll('tr > *')];
@@ -473,6 +472,7 @@ describe('chromedash-feature-page', () => {
 
     // Select a future milestone
     component.selectedMilestone = 2000;
+    component.updateSelectedMilestone();
     await nextFrame();
 
     // Tests summary
