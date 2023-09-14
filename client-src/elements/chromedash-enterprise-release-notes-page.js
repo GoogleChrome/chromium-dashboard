@@ -392,7 +392,8 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       m => m === this.selectedMilestone)}
     ${this.renderReleaseNotesDetailsSection(
       `Upcoming Chrome browser updates`, this.upcomingFeatures,
-      (m, milestones) => milestones.find(x => x> this.selectedMilestone) === m)}`;
+      (m, milestones) => milestones
+        .find(x => parseInt(x) > parseInt(this.selectedMilestone)) === m)}`;
   }
 
   render() {
