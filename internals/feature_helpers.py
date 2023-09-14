@@ -77,11 +77,8 @@ def get_features_in_release_notes(milestone: int):
           Stage.milestones.ios_last >= milestone,
           Stage.milestones.webview_last >= milestone,
           Stage.rollout_milestone >= milestone),
-      ndb.OR(Stage.stage_type == STAGE_BLINK_SHIPPING,
-          Stage.stage_type == STAGE_PSA_SHIPPING,
-          Stage.stage_type == STAGE_FAST_SHIPPING,
-          Stage.stage_type == STAGE_DEP_SHIPPING,
-          Stage.stage_type == STAGE_ENT_ROLLOUT)).filter().fetch()
+      Stage.stage_type.IN([STAGE_BLINK_SHIPPING, STAGE_PSA_SHIPPING,
+          STAGE_FAST_SHIPPING, STAGE_DEP_SHIPPING, STAGE_ENT_ROLLOUT])).filter().fetch()
   
   feature_ids = list(set({
       *[s.feature_id for s in stages]}))
