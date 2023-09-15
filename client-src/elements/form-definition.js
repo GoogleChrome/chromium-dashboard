@@ -523,7 +523,7 @@ export const ORIGIN_TRIAL_CREATION_FIELDS = {
         'ot_emails',
         'intent_to_experiment_url',
         'ot_documentation_url',
-        'origin_trial_feedback_url',
+        'ot_feedback_submission_url',
         'ot_chromium_trial_name',
         'ot_webfeature_use_counter',
         'ot_is_deprecation_trial',
