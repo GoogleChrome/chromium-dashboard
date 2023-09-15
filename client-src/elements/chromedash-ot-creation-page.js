@@ -102,7 +102,6 @@ export class ChromedashOTCreationPage extends LitElement {
   handleFormSubmit(e) {
     e.preventDefault();
     const submitBody = formatFeatureChanges(this.fieldValues, this.featureId);
-
     csClient.updateFeature(submitBody).then(() => {
       window.location.href = this.nextPage || `/feature/${this.featureId}`;
     }).catch(() => {
