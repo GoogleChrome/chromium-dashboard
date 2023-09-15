@@ -1423,6 +1423,16 @@ export const ALL_FIELDS = {
     </p>`,
   },
 
+  'ot_feedback_submission_url': {
+    type: 'input',
+    attrs: URL_FIELD_ATTRS,
+    required: false,
+    label: 'Feature feedback link',
+    help_text: html`
+      Link for developers to file feedback on the feature
+      (e.g. GitHub issues, or WICG page).`,
+  },
+
   'enterprise_policies': {
     type: 'input',
     attrs: MULTI_STRING_FIELD_ATTRS,

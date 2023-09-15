@@ -245,6 +245,7 @@ export const STAGE_SPECIFIC_FIELDS = new Set([
   'ot_chromium_trial_name',
   'ot_description',
   'ot_emails',
+  'ot_feedback_submission_url',
   'ot_request_note',
   'ot_webfeature_use_counter',
   'ot_documentation_url',
