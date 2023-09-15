@@ -514,6 +514,27 @@ const DEPRECATION_DEV_TRIAL_FIELDS = {
   ],
 };
 
+export const ORIGIN_TRIAL_CREATION_FIELDS = {
+  name: 'Origin trial creation',
+  sections: [
+    {
+      fields: [
+        'ot_description',
+        'ot_emails',
+        'intent_to_experiment_url',
+        'ot_documentation_url',
+        'origin_trial_feedback_url',
+        'ot_chromium_trial_name',
+        'ot_webfeature_use_counter',
+        'ot_is_deprecation_trial',
+        'ot_has_third_party_support',
+        'ot_is_critical_trial',
+        'ot_request_note',
+      ],
+    },
+  ],
+};
+
 // Note: Even though this is similar to another form, it is likely to change.
 const DEPRECATION_ORIGIN_TRIAL_FIELDS = {
   name: 'Origin trial',

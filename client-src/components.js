@@ -81,6 +81,7 @@ import './elements/chromedash-legend';
 import './elements/chromedash-login-required-page';
 import './elements/chromedash-metadata';
 import './elements/chromedash-myfeatures-page';
+import './elements/chromedash-ot-creation-page';
 import './elements/chromedash-preflight-dialog';
 import './elements/chromedash-process-overview';
 import './elements/chromedash-settings-page';

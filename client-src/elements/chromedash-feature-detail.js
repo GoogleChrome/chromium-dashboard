@@ -592,7 +592,7 @@ class ChromedashFeatureDetail extends LitElement {
     // Show any buttons that should be displayed at the top of the detail card.
     let addExtensionButton = nothing;
     let editButton = nothing;
-    let visitTrialButton = nothing;
+    let trialButton = nothing;
     if (this.canEdit && STAGE_TYPES_ORIGIN_TRIAL.has(feStage.stage_type)) {
       // Button text changes based on whether or not an extension stage already exists.
       const extensionAlreadyExists = (feStage.extensions && feStage.extensions.length > 0);
@@ -616,16 +616,26 @@ class ChromedashFeatureDetail extends LitElement {
       if (this.appTitle === 'Chrome Platform Status') {
         originTrialsURL = `https://developer.chrome.com/origintrials/#/view_trial/${feStage.origin_trial_id}`;
       }
-      visitTrialButton = html`
+      trialButton = html`
         <sl-button 
           size="small"
           variant="primary"
           href=${originTrialsURL}
           target="_blank">View Origin Trial</sl-button>`;
+
+      // TODO(DanielRyanSmith): uncomment this code block to make the trial
+      // creation form available in the UI.
+    // } else if (this.canEdit) {
+    //   trialButton = html`
+    //     <sl-button
+    //       size="small"
+    //       variant="primary"
+    //       href="/ot_creation_request/${this.feature.id}/${feStage.id}"
+    //       >Request Trial Creation</sl-button>`;
     }
     const content = html`
       <p class="description">
-        ${visitTrialButton}
+        ${trialButton}
         ${editButton}
         ${addExtensionButton}
         ${processStage.description}
