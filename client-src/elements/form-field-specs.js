@@ -1087,7 +1087,11 @@ export const ALL_FIELDS = {
 
   'ot_webfeature_use_counter': {
     type: 'input',
-    attrs: TEXT_FIELD_ATTRS,
+    attrs: {
+      ...TEXT_FIELD_ATTRS,
+      placeholder: 'e.g. "kWebFeature"',
+      pattern: String.raw`k\S*`,
+    },
     required: false,
     label: 'WebFeature UseCounter name',
     help_text: html`

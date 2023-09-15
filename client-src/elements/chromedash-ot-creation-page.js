@@ -102,7 +102,7 @@ export class ChromedashOTCreationPage extends LitElement {
   handleFormSubmit(e) {
     e.preventDefault();
     const submitBody = formatFeatureChanges(this.fieldValues, this.featureId);
-    console.log(submitBody);
+
     csClient.updateFeature(submitBody).then(() => {
       window.location.href = this.nextPage || `/feature/${this.featureId}`;
     }).catch(() => {
@@ -188,8 +188,7 @@ export class ChromedashOTCreationPage extends LitElement {
             id='submit-button'
             class="button"
             type="submit"
-            value="Submit"
-            @click=${this.handleFormSubmit}>
+            value="Submit">
           <button id="cancel-button" @click=${this.handleCancelClick}>Cancel</button>
         </div>
       </form>
