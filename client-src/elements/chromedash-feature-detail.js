@@ -638,23 +638,21 @@ class ChromedashFeatureDetail extends LitElement {
       if (this.appTitle === 'Chrome Platform Status') {
         originTrialsURL = `https://developer.chrome.com/origintrials/#/view_trial/${feStage.origin_trial_id}`;
       }
-      trialButton = html`
+      return html`
         <sl-button 
           size="small"
           variant="primary"
           href=${originTrialsURL}
           target="_blank">View Origin Trial</sl-button>`;
-
-      // TODO(DanielRyanSmith): uncomment this code block to make the trial
-      // creation form available in the UI.
-    // } else if (this.canEdit) {
-    //   trialButton = html`
-    //     <sl-button
-    //       size="small"
-    //       variant="primary"
-    //       href="/ot_creation_request/${this.feature.id}/${feStage.id}"
-    //       >Request Trial Creation</sl-button>`;
+    } else if (this.canEdit) {
+      return html`
+        <sl-button
+          size="small"
+          variant="primary"
+          href="/ot_creation_request/${this.feature.id}/${feStage.id}"
+          >Request Trial Creation</sl-button>`;
     }
+    return nothing;
   }
 
   renderAddStageButton() {

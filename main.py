@@ -183,9 +183,7 @@ spa_page_routes = [
       defaults={'require_edit_feature': True}),
   Route('/guide/stage/<int:feature_id>/metadata',
       defaults={'require_edit_feature': True}),
-  # TODO(DanielRyanSmith): Uncomment this to allow navigation to the
-  # OT creation request form in the UI.
-  # Route('/ot_creation_request/<int:feature_id>/<int:stage_id>'),
+  Route('/ot_creation_request/<int:feature_id>/<int:stage_id>'),
   Route('/metrics'),
   Route('/metrics/css'),
   Route('/metrics/css/popularity'),
