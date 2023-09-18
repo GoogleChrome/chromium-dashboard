@@ -592,7 +592,7 @@ class ChromedashFeatureDetail extends LitElement {
     // Show any buttons that should be displayed at the top of the detail card.
     let addExtensionButton = nothing;
     let editButton = nothing;
-    const trialButton = renderOriginTrialButton(feStage);
+    const trialButton = this.renderOriginTrialButton(feStage);
     if (this.canEdit && STAGE_TYPES_ORIGIN_TRIAL.has(feStage.stage_type)) {
       // Button text changes based on whether or not an extension stage already exists.
       const extensionAlreadyExists = (feStage.extensions && feStage.extensions.length > 0);
