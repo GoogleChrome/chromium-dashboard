@@ -111,7 +111,7 @@ export class ChromedashOTCreationPage extends LitElement {
   }
 
   handleCancelClick() {
-    window.location.href = `/guide/edit/${this.featureId}`;
+    window.location.href = `/feature/${this.featureId}`;
   }
 
   renderSkeletons() {
