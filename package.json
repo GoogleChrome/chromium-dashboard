@@ -102,7 +102,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@lit-labs/context": "^0.4.0",
+    "@lit-labs/context": "^0.4.1",
     "@polymer/iron-collapse": "^3.0.1",
     "@polymer/iron-icon": "^3.0.1",
     "@polymer/iron-iconset-svg": "^3.0.1",
