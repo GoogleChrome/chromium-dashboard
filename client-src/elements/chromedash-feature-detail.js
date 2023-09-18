@@ -592,7 +592,7 @@ class ChromedashFeatureDetail extends LitElement {
     // Show any buttons that should be displayed at the top of the detail card.
     let addExtensionButton = nothing;
     let editButton = nothing;
-    let trialButton = nothing;
+    const trialButton = renderOriginTrialButton(feStage);
     if (this.canEdit && STAGE_TYPES_ORIGIN_TRIAL.has(feStage.stage_type)) {
       // Button text changes based on whether or not an extension stage already exists.
       const extensionAlreadyExists = (feStage.extensions && feStage.extensions.length > 0);
@@ -609,6 +609,28 @@ class ChromedashFeatureDetail extends LitElement {
             href="/guide/stage/${this.feature.id}/${processStage.outgoing_stage}/${feStage.id}"
             >Edit fields</sl-button>`;
     }
+    const content = html`
+      <p class="description">
+        ${trialButton}
+        ${editButton}
+        ${addExtensionButton}
+        ${processStage.description}
+      </p>
+      ${this.renderGateChips(feStage)}
+      <section class="card">
+        ${this.renderSectionFields(fields, feStage)}
+      </section>
+    `;
+    const defaultOpen = this.feature.is_enterprise_feature || (feStage.id == this.openStage);
+    return this.renderSection(name, content, isActive, defaultOpen);
+  }
+
+  renderOriginTrialButton(feStage) {
+    // Don't render an origin trial button if this is not an OT stage.
+    if (!STAGE_TYPES_ORIGIN_TRIAL.has(feStage.stage_type)) {
+      return nothing;
+    }
+
     // If we have an origin trial ID associated with the stage, add a link to the trial.
     if (feStage.origin_trial_id) {
       let originTrialsURL = `https://origintrials-staging.corp.google.com/origintrials/#/view_trial/${feStage.origin_trial_id}`;
@@ -633,20 +655,6 @@ class ChromedashFeatureDetail extends LitElement {
     //       href="/ot_creation_request/${this.feature.id}/${feStage.id}"
     //       >Request Trial Creation</sl-button>`;
     }
-    const content = html`
-      <p class="description">
-        ${trialButton}
-        ${editButton}
-        ${addExtensionButton}
-        ${processStage.description}
-      </p>
-      ${this.renderGateChips(feStage)}
-      <section class="card">
-        ${this.renderSectionFields(fields, feStage)}
-      </section>
-    `;
-    const defaultOpen = this.feature.is_enterprise_feature || (feStage.id == this.openStage);
-    return this.renderSection(name, content, isActive, defaultOpen);
   }
 
   renderAddStageButton() {
