@@ -262,8 +262,8 @@ class AssociateOTs(FlaskHandler):
     if trial_stage.intent_thread_url is None:
       trial_stage.intent_thread_url = trial_data['intent_to_experiment_url']
 
-    if trial_stage.origin_trial_feedback_url is None:
-      trial_stage.origin_trial_feedback_url = trial_data['feedback_url']
+    if trial_stage.ot_feedback_submission_url is None:
+      trial_stage.ot_feedback_submission_url = trial_data['feedback_url']
 
     if trial_stage.ot_documentation_url is None:
       trial_stage.ot_documentation_url = trial_data['documentation_url']
@@ -273,6 +273,9 @@ class AssociateOTs(FlaskHandler):
 
     if not trial_stage.ot_is_deprecation_trial:
       trial_stage.ot_is_deprecation_trial = trial_data['type'] == 'DEPRECATION'
+
+    # Clear the trial creation request if it's active.
+    trial_stage.ot_action_requested = False
 
   def parse_feature_id(self, chromestatus_url: str|None) -> int|None:
       if chromestatus_url is None:
