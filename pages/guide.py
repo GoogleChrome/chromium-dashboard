@@ -258,6 +258,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('ot_description', 'str'),
       ('ot_documentation_url', 'link'),
       ('ot_emails', 'emails'),
+      ('ot_feedback_submission_url', 'link'),
       ('ot_has_third_party_support', 'bool'),
       ('ot_is_critical_trial', 'bool'),
       ('ot_is_deprecation_trial', 'bool'),

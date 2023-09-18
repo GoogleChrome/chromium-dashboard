@@ -48,6 +48,7 @@ class StageDict(TypedDict):
   ot_description: str | None
   ot_documentation_url: str | None
   ot_emails: list[str]
+  ot_feedback_submission_url: str | None
   ot_has_third_party_support: bool
   ot_is_critical_trial: bool
   ot_is_deprecation_trial: bool

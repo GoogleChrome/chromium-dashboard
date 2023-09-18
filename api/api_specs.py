@@ -107,6 +107,7 @@ STAGE_FIELD_DATA_TYPES: FIELD_INFO_DATA_TYPE = [
   ('ot_chromium_trial_name', 'str'),
   ('ot_documentation_url', 'link'),
   ('ot_emails', 'emails'),
+  ('ot_feedback_submission_url', 'link'),
   ('ot_has_third_party_support', 'bool'),
   ('ot_is_critical_trial', 'bool'),
   ('ot_is_deprecation_trial', 'bool'),

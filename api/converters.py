@@ -177,7 +177,6 @@ def stage_to_json_dict(
     'created': str(stage.created),
     'feature_id': stage.feature_id,
     'stage_type': stage.stage_type,
-    'ot_description': stage.ot_description,
     'display_name': stage.display_name,
     'intent_stage': INTENT_STAGES_BY_STAGE_TYPE.get(
         stage.stage_type, INTENT_NONE),
@@ -193,8 +192,10 @@ def stage_to_json_dict(
     'origin_trial_id': stage.origin_trial_id,
     'origin_trial_feedback_url': stage.origin_trial_feedback_url,
     'ot_chromium_trial_name': stage.ot_chromium_trial_name,
+    'ot_description': stage.ot_description,
     'ot_documentation_url': stage.ot_documentation_url,
     'ot_emails': stage.ot_emails,
+    'ot_feedback_submission_url': stage.ot_feedback_submission_url,
     'ot_has_third_party_support': stage.ot_has_third_party_support,
     'ot_is_critical_trial': stage.ot_is_critical_trial,
     'ot_is_deprecation_trial': stage.ot_is_deprecation_trial,
