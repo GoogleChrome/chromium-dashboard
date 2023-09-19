@@ -162,11 +162,6 @@ export async function login(page) {
   page.mouse.move(0, 0); // Move away from content on page.
   await delay(1000);
 
-  // Take a screenshot of header that should have "Create feature" button.
-  // console.log('take a screenshot of header that should have "Create feature" button');
-  // This is no longer very useful.
-  // await expect(page.getByTestId('header')).toHaveScreenshot('after-login-click.png');
-
   // After first login, reduce timeout/delay.
   loginTimeout = 5000;
   // console.log('login: done');
