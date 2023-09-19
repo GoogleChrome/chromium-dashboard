@@ -77,14 +77,20 @@ To run the Playwright visual tests (aka end-to-end tests), the command to use is
 npm run pwtests --workspace=playwright
 ```
 
-If there are errors, or if you need to update any of the screeenshot images,
-you can update all images for all tests with:
+If there are errors, they will be displayed in the console.
+If you need to update any of the screenshot images, you will see differences in
+the `packages/playwright/test-results` directory, and if they look correct,
+then you can update _all_ images for all tests with:
 ```bash
 npm run pwtests-update --workspace=playwright
 ```
 
-Then check the `packages/playwright/test-results` directory for any changes.
+The updated images are also added to the __screenshots__ directory.
+If you change test file names, or test names, or screenshot image names, then
+you can manually delete the old screenshots, or simply delete all and update all.
 
+There is no way to run just one test or test file yet, but playwright supports
+doing that, so we should be able to add a parameter to the test running commands.
 
 There is some additional information for developers in developer-documentation.md.
 
@@ -124,7 +130,7 @@ of globals for debugging and running the site locally.
 
 ### Deploying
 
-If you have uncommited local changes, the appengine version name will end with `-tainted`.
+If you have uncommitted local changes, the appengine version name will end with `-tainted`.
 It is OK to test on staging with tainted versions, but everything should be committed
 (and thus not tainted) before staging a version that can later be pushed to prod.
 
