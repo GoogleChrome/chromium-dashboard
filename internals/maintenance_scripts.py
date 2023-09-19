@@ -323,14 +323,23 @@ class AssociateOTs(FlaskHandler):
 
     trials_list = origin_trials_client.get_trials_list()
     entities_to_write: list[Stage] = []
+    # Keep track of stages we're writing to so we avoid trying to write
+    # to the same Stage entity twice in the same batch.
+    unique_entities_to_write: set[int] = set()
     trials_with_no_feature: list[str] = []
     for trial_data in trials_list:
-      stage = Stage.query(
+      stage: Stage | None = Stage.query(
           Stage.origin_trial_id == trial_data['id']).get()
+      if stage and stage.key.integer_id() in unique_entities_to_write:
+        logging.info('Already writing to Stage entity '
+                     f'{stage.key.integer_id()}')
+        continue
+
       # If this trial is already associated with a ChromeStatus stage,
       # just see if any unfilled fields need to be populated.
       if stage:
         self.write_fields_for_trial_stage(stage, trial_data)
+        unique_entities_to_write.add(stage.key.integer_id())
         entities_to_write.append(stage)
         continue
 
@@ -344,7 +353,13 @@ class AssociateOTs(FlaskHandler):
         trials_with_no_feature.append(trial_data)
         continue
 
+      ot_stage_id = ot_stage.key.integer_id()
+      if ot_stage_id in unique_entities_to_write:
+        logging.info(f'Already writing to Stage entity {ot_stage_id}')
+        continue
+
       self.write_fields_for_trial_stage(ot_stage, trial_data)
+      unique_entities_to_write.add(ot_stage_id)
       entities_to_write.append(ot_stage)
 
     # List any origin trials that did not get associated with a feature entry.
