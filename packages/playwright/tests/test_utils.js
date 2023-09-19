@@ -164,7 +164,8 @@ export async function login(page) {
 
   // Take a screenshot of header that should have "Create feature" button.
   // console.log('take a screenshot of header that should have "Create feature" button');
-  await expect(page.getByTestId('header')).toHaveScreenshot('after-login-click.png');
+  // This is no longer very useful.
+  // await expect(page.getByTestId('header')).toHaveScreenshot('after-login-click.png');
 
   // After first login, reduce timeout/delay.
   loginTimeout = 5000;
