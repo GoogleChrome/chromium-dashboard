@@ -46,12 +46,14 @@ class StageDict(TypedDict):
   origin_trial_feedback_url: str | None
   ot_chromium_trial_name: str | None
   ot_description: str | None
+  ot_display_name: str | None
   ot_documentation_url: str | None
   ot_emails: list[str]
   ot_feedback_submission_url: str | None
   ot_has_third_party_support: bool
   ot_is_critical_trial: bool
   ot_is_deprecation_trial: bool
+  ot_owner_email: str | None
   ot_webfeature_use_counter: str | None
 
   # Trial extension specific fields.
