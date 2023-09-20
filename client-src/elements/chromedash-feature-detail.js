@@ -644,7 +644,11 @@ class ChromedashFeatureDetail extends LitElement {
           variant="primary"
           href=${originTrialsURL}
           target="_blank">View Origin Trial</sl-button>`;
-    } else if (this.canEdit) {
+    }
+    // TODO(DanielRyanSmith): uncomment this section to make the trial creation
+    // request form available for users.
+    /*
+    if (this.canEdit) {
       return html`
         <sl-button
           size="small"
@@ -652,6 +656,7 @@ class ChromedashFeatureDetail extends LitElement {
           href="/ot_creation_request/${this.feature.id}/${feStage.id}"
           >Request Trial Creation</sl-button>`;
     }
+    */
     return nothing;
   }
 
