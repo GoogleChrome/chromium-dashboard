@@ -521,6 +521,8 @@ export const ORIGIN_TRIAL_CREATION_FIELDS = {
       fields: [
         'ot_description',
         'ot_emails',
+        'ot_milestone_desktop_start',
+        'ot_milestone_desktop_end',
         'intent_to_experiment_url',
         'ot_documentation_url',
         'ot_feedback_submission_url',
