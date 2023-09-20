@@ -185,14 +185,16 @@ class ChromedashGateChip extends LitElement {
       `;
     }
 
-    const overdueIcon = (this.gate.slo_initial_response_remaining < 0) ?
+    const overdue = this.gate.slo_initial_response_remaining < 0;
+    const overdueIcon = overdue ?
       html`<sl-icon slot="suffix" library="material" class="overdue"
                  name="clock_loader_60_20px"></sl-icon>` :
       nothing;
+    const overdueTitle = overdue ? '. Overdue.' : '';
 
     return html`
       <sl-button pill size="small" class="${className} ${selected}"
-        title="${teamName}: ${gateName}: ${stateName}"
+        title="${teamName}: ${gateName}: ${stateName}${overdueTitle}"
         @click=${this.handleClick}
         >
         ${statusIcon}
