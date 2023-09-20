@@ -153,15 +153,17 @@ export class ChromedashOTCreationPage extends LitElement {
   renderFields(section) {
     return section.fields.map(field => {
       let value = getStageValue(this.stage, field);
+      let touched = false;
       // The requester's email should be a contact by default.
-      if (field === 'ot_emails' && value.length === 0) {
+      if (field === 'ot_owner_email' && !value) {
         value = [this.userEmail];
+        touched = true;
       }
       // Add the field to this component's stage before creating the field component.
       const index = this.fieldValues.length;
       this.fieldValues.push({
         name: field,
-        touched: false,
+        touched,
         value,
         stageId: this.stage.id,
       });
