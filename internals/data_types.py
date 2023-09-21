@@ -44,6 +44,7 @@ class StageDict(TypedDict):
   experiment_risks: str | None
   extensions: list[StageDict]  # type: ignore
   origin_trial_feedback_url: str | None
+  ot_action_requested: bool
   ot_chromium_trial_name: str | None
   ot_description: str | None
   ot_display_name: str | None

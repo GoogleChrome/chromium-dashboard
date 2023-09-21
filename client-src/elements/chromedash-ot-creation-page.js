@@ -151,8 +151,8 @@ export class ChromedashOTCreationPage extends LitElement {
   }
 
   renderFields(section) {
-    return section.fields.map(field => {
-      let value = getStageValue(this.stage, field);
+    const fields = section.fields.map(field => {
+      const value = getStageValue(this.stage, field);
       let touched = false;
       // The requester's email should be a contact by default.
       if (field === 'ot_owner_email' && !value) {
@@ -177,6 +177,15 @@ export class ChromedashOTCreationPage extends LitElement {
       </chromedash-form-field>
     `;
     });
+
+    // Add a field for updating that an OT creation request has been submitted.
+    this.fieldValues.push({
+      name: 'ot_action_requested',
+      touched: true,
+      value: true,
+      stageId: this.stage.id,
+    });
+    return fields;
   }
 
   renderForm() {
