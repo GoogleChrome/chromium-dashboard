@@ -192,6 +192,7 @@ def stage_to_json_dict(
     'experiment_risks': stage.experiment_risks,
     'origin_trial_id': stage.origin_trial_id,
     'origin_trial_feedback_url': stage.origin_trial_feedback_url,
+    'ot_action_requested': stage.ot_action_requested,
     'ot_chromium_trial_name': stage.ot_chromium_trial_name,
     'ot_description': stage.ot_description,
     'ot_documentation_url': stage.ot_documentation_url,

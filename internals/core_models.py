@@ -281,6 +281,7 @@ class Stage(ndb.Model):
   experiment_goals = ndb.TextProperty()
   experiment_risks = ndb.TextProperty()
   ot_chromium_trial_name = ndb.StringProperty()
+  ot_action_requested = ndb.BooleanProperty(default=False)
   ot_description = ndb.TextProperty()
   ot_documentation_url = ndb.StringProperty()
   ot_emails = ndb.StringProperty(repeated=True)

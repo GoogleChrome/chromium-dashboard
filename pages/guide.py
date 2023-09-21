@@ -254,6 +254,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('experiment_goals', 'str'),
       ('experiment_risks', 'str'),
       ('origin_trial_feedback_url', 'link'),
+      ('ot_action_requested', 'bool'),
       ('ot_chromium_trial_name', 'str'),
       ('ot_description', 'str'),
       ('ot_documentation_url', 'link'),
