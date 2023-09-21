@@ -115,6 +115,7 @@ class StagesAPITest(testing_config.CustomTestCase):
         'ot_has_third_party_support': False,
         'ot_is_critical_trial': False,
         'ot_is_deprecation_trial': False,
+        'ot_owner_email': None,
         'ot_webfeature_use_counter': None,
         'experiment_extension_reason': None,
         'experiment_goals': 'To be the very best.',
