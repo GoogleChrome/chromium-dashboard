@@ -183,6 +183,7 @@ spa_page_routes = [
       defaults={'require_edit_feature': True}),
   Route('/guide/stage/<int:feature_id>/metadata',
       defaults={'require_edit_feature': True}),
+  Route('/ot_creation_request/<int:feature_id>/<int:stage_id>'),
   Route('/metrics'),
   Route('/metrics/css'),
   Route('/metrics/css/popularity'),

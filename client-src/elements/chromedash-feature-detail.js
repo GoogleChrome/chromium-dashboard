@@ -592,7 +592,7 @@ class ChromedashFeatureDetail extends LitElement {
     // Show any buttons that should be displayed at the top of the detail card.
     let addExtensionButton = nothing;
     let editButton = nothing;
-    let visitTrialButton = nothing;
+    const trialButton = this.renderOriginTrialButton(feStage);
     if (this.canEdit && STAGE_TYPES_ORIGIN_TRIAL.has(feStage.stage_type)) {
       // Button text changes based on whether or not an extension stage already exists.
       const extensionAlreadyExists = (feStage.extensions && feStage.extensions.length > 0);
@@ -609,23 +609,9 @@ class ChromedashFeatureDetail extends LitElement {
             href="/guide/stage/${this.feature.id}/${processStage.outgoing_stage}/${feStage.id}"
             >Edit fields</sl-button>`;
     }
-    // If we have an origin trial ID associated with the stage, add a link to the trial.
-    if (feStage.origin_trial_id) {
-      let originTrialsURL = `https://origintrials-staging.corp.google.com/origintrials/#/view_trial/${feStage.origin_trial_id}`;
-      // If this is the production host, link to the production OT site.
-      if (this.appTitle === 'Chrome Platform Status') {
-        originTrialsURL = `https://developer.chrome.com/origintrials/#/view_trial/${feStage.origin_trial_id}`;
-      }
-      visitTrialButton = html`
-        <sl-button 
-          size="small"
-          variant="primary"
-          href=${originTrialsURL}
-          target="_blank">View Origin Trial</sl-button>`;
-    }
     const content = html`
       <p class="description">
-        ${visitTrialButton}
+        ${trialButton}
         ${editButton}
         ${addExtensionButton}
         ${processStage.description}
@@ -637,6 +623,41 @@ class ChromedashFeatureDetail extends LitElement {
     `;
     const defaultOpen = this.feature.is_enterprise_feature || (feStage.id == this.openStage);
     return this.renderSection(name, content, isActive, defaultOpen);
+  }
+
+  renderOriginTrialButton(feStage) {
+    // Don't render an origin trial button if this is not an OT stage.
+    if (!STAGE_TYPES_ORIGIN_TRIAL.has(feStage.stage_type)) {
+      return nothing;
+    }
+
+    // If we have an origin trial ID associated with the stage, add a link to the trial.
+    if (feStage.origin_trial_id) {
+      let originTrialsURL = `https://origintrials-staging.corp.google.com/origintrials/#/view_trial/${feStage.origin_trial_id}`;
+      // If this is the production host, link to the production OT site.
+      if (this.appTitle === 'Chrome Platform Status') {
+        originTrialsURL = `https://developer.chrome.com/origintrials/#/view_trial/${feStage.origin_trial_id}`;
+      }
+      return html`
+        <sl-button 
+          size="small"
+          variant="primary"
+          href=${originTrialsURL}
+          target="_blank">View Origin Trial</sl-button>`;
+    }
+    // TODO(DanielRyanSmith): uncomment this section to make the trial creation
+    // request form available for users.
+    /*
+    if (this.canEdit) {
+      return html`
+        <sl-button
+          size="small"
+          variant="primary"
+          href="/ot_creation_request/${this.feature.id}/${feStage.id}"
+          >Request Trial Creation</sl-button>`;
+    }
+    */
+    return nothing;
   }
 
   renderAddStageButton() {
