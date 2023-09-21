@@ -151,7 +151,7 @@ export class ChromedashOTCreationPage extends LitElement {
   }
 
   renderFields(section) {
-    return section.fields.map(field => {
+    const fields = section.fields.map(field => {
       const value = getStageValue(this.stage, field);
       // Add the field to this component's stage before creating the field component.
       const index = this.fieldValues.length;
@@ -171,6 +171,15 @@ export class ChromedashOTCreationPage extends LitElement {
       </chromedash-form-field>
     `;
     });
+
+    // Add a field for updating that an OT creation request has been submitted.
+    this.fieldValues.push({
+      name: 'ot_action_requested',
+      touched: true,
+      value: true,
+      stageId: this.stage.id,
+    });
+    return fields;
   }
 
   renderForm() {
