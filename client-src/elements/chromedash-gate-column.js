@@ -707,6 +707,11 @@ export class ChromedashGateColumn extends LitElement {
             >${checkboxLabel}</sl-checkbox>
           ` :
         nothing);
+    const escalation = this.gate.escalation_email ?
+      html`You can reach out to the team at
+               <a href="mailto:${this.gate.escalation_email}" target="_blank"
+                >${this.gate.escalation_email}</a>.` :
+      nothing;
 
     return html`
       <sl-textarea id="comment_area" rows=2 cols=40 ${ref(this.commentAreaRef)}
@@ -714,13 +719,14 @@ export class ChromedashGateColumn extends LitElement {
         @keypress=${this.checkNeedsPost}
         placeholder="Add a comment"
         ></sl-textarea>
-       <div class="instructions">
-         Comments will be visible publicly.
-         Only reviewers will be notified when a comment is posted.
-       </div>
        <div id="controls">
          ${postButton}
          ${postToThreadCheckbox}
+       </div>
+       <div class="instructions">
+         Comments will be visible publicly.
+         Only reviewers will be notified when a comment is posted.
+         ${escalation}
        </div>
     `;
   }

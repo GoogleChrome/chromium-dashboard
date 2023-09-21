@@ -66,6 +66,7 @@ class ApprovalFieldDef:
   approvers: str | list[str]
   team_name: str
   slo_initial_response: int = DEFAULT_SLO_LIMIT
+  escalation_email: str | None
 
 
 # Note: This can be requested manually through the UI, but it is not
