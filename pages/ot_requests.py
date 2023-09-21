@@ -28,5 +28,11 @@ class OriginTrialsRequests(basehandlers.FlaskHandler):
   def get_template_data(self, **kwargs):
     stages_with_requests = Stage.query(
         Stage.ot_action_requested == True).fetch()
-    
-    return {'stages': [stage_to_json_dict(s) for s in stages_with_requests]}
+    stages = []
+    for stage in stages_with_requests:
+      stage_dict = stage_to_json_dict(stage)
+      # Add the request note that is not typically visible to non-admins.
+      if stage.ot_request_note:
+        stage_dict['ot_request_note'] = stage.ot_request_note
+      stages.append(stage_dict)
+    return {'stages': stages}
