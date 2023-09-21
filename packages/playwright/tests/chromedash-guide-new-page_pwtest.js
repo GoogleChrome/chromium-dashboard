@@ -17,71 +17,79 @@ test.afterEach(async ({ page }) => {
 });
 
 
-test('navigate to create feature page', async ({page}) => {
+/**
+ * @param {import('@playwright/test').Page} page
+ */
+async function gotoNewFeaturePage(page) {
   // console.log('navigate to create feature page');
   const mobile = await isMobile(page);
-
+  const createFeatureButton = page.getByTestId('create-feature-button');
   const menuButton = page.locator('[data-testid=menu]');
+
+  // Navigate to the new feature page.
   await expect(menuButton).toBeVisible();
   if (mobile) {
     await menuButton.click();  // To show menu.
   }
-
-  // Expect create feature button to be present.
-  const createFeatureButton = page.getByTestId('create-feature-button');
-  await expect(createFeatureButton).toBeVisible({timeout: 30000});
-  // Take a screenshot of the "Create feature" button.
-  await expect(createFeatureButton).toHaveScreenshot('create-feature-button.png');
-
-  // Navigate to the new feature page.
   await createFeatureButton.click();
   if (mobile) {
     await menuButton.click();  // To hide menu
-    delay(500);
+    await delay(500);
   }
 
   // Expect "Add a feature" header to be present.
   const addAFeatureHeader = page.getByTestId('add-a-feature');
-  await expect(addAFeatureHeader).toBeVisible({timeout:10000});
+  await expect(addAFeatureHeader).toBeVisible({ timeout: 10000 });
+  // console.log('navigate to create feature page done');
+}
+
+
+test('navigate to create feature page', async ({page}) => {
+  await gotoNewFeaturePage(page);
 
   // Take a screenshot of the content area.
   await expect(page).toHaveScreenshot('new-feature-page.png');
-  // console.log('navigate to create feature page done');
 });
 
 
 test('enter feature name', async ({page}) => {
-  // console.log('enter feature name');
+  await gotoNewFeaturePage(page);
+
   test.setTimeout(90000);
-  const mobile = await isMobile(page);
-
-  const menuButton = page.locator('[data-testid=menu]');
-  await expect(menuButton).toBeVisible();
-  if (mobile) {
-    await menuButton.click();
-  }
-
-  const createFeatureButton = page.getByTestId('create-feature-button');
-  await expect(createFeatureButton).toBeVisible({ timeout: 30000 });
-
-  // Navigate to the new feature page.
-  await createFeatureButton.click();
-  if (mobile) {
-    await menuButton.click();  // To hide menu
-    delay(2500);
-  }
-
   const featureNameInput = page.locator('input[name="name"]');
   await expect(featureNameInput).toBeVisible({timeout: 60000});
 
   // Expand the extra help.
   const extraHelpButton = page.locator('chromedash-form-field[name="name"] sl-icon-button');
   await expect(extraHelpButton).toBeVisible();
-  extraHelpButton.click();
+  await extraHelpButton.click();
 
   // Enter a feature name.
-  featureNameInput.fill('Test feature name');
+  await featureNameInput.fill('Test feature name');
+  await delay(500);
 
   await expect(page).toHaveScreenshot('feature-name.png');
-  // console.log('enter feature name done');
+});
+
+
+test('enter blink component', async ({ page }) => {
+  await gotoNewFeaturePage(page);
+
+  // Scroll to blink components field.
+  const blinkComponentsField = page.locator('chromedash-form-field[name=blink_components]');
+  await blinkComponentsField.scrollIntoViewIfNeeded();
+  await expect(blinkComponentsField).toBeVisible();
+
+  const blinkComponentsInputWrapper = page.locator('div.datalist-input-wrapper');
+  await expect(blinkComponentsInputWrapper).toBeVisible();
+
+  // Trying to show options, doesn't work yet.
+  await blinkComponentsInputWrapper.focus();
+  await delay(500);
+
+  const blinkComponentsInput = blinkComponentsInputWrapper.locator('input');
+  await blinkComponentsInput.fill('blink');
+  await delay(500);
+
+  await expect(page).toHaveScreenshot('blink-components.png');
 });
