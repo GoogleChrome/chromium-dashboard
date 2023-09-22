@@ -672,6 +672,7 @@ export const ALL_FIELDS = {
 
   'r4dt_url': {
     // form field name matches underlying DB field (sets "intent_to_experiment_url" field in DB).
+    name: 'intent_to_experiment_url',
     type: 'input',
     attrs: URL_FIELD_ATTRS,
     required: false,
@@ -1020,18 +1021,21 @@ export const ALL_FIELDS = {
   'ot_chromium_trial_name': {
     type: 'input',
     attrs: TEXT_FIELD_ATTRS,
-    required: false,
+    required: true,
     label: 'Chromium trial name',
     help_text: html`
       Name for the trial, as specified in <a target="_blank"
       href="https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/runtime_enabled_features.json5"
-      >runtime_enabled_features.json5</a>.`,
+      >runtime_enabled_features.json5</a>.
+      <br/>
+      <p style="color: red"><strong>Note:</strong> This name should be unique
+      and should not be used by any previous origin trials!</p>`,
   },
 
   'ot_documentation_url': {
     type: 'input',
     attrs: URL_FIELD_ATTRS,
-    required: false,
+    required: true,
     label: 'Documentation link',
     help_text: html`
       Link to more information to help developers use the trial's feature
@@ -1092,13 +1096,45 @@ export const ALL_FIELDS = {
       placeholder: 'e.g. "kWebFeature"',
       pattern: String.raw`k\S*`,
     },
-    required: false,
+    required: true,
     label: 'WebFeature UseCounter name',
     help_text: html`
     For measuring usage, this must be a single named value from the
     WebFeature enum, e.g. kWorkerStart. See
     <a href="https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom"
     >web_feature.mojom</a>.`,
+  },
+
+  'ot_intent_to_experiment_url': {
+    name: 'intent_to_experiment_url',
+    type: 'input',
+    attrs: URL_FIELD_ATTRS,
+    required: true,
+    label: 'Intent to Experiment link',
+    help_text: html`After you have started the "Intent to Experiment"
+                 discussion thread, link to it here.`,
+  },
+
+  'ot_creation__milestone_desktop_first': {
+    name: 'ot_milestone_desktop_start',
+    type: 'input',
+    attrs: MILESTONE_NUMBER_FIELD_ATTRS,
+    required: true,
+    label: 'Trial milestone start',
+    help_text: html`
+      First milestone that will support an origin
+      trial of this feature.`,
+  },
+
+  'ot_creation__milestone_desktop_last': {
+    name: 'ot_milestone_desktop_end',
+    type: 'input',
+    attrs: MILESTONE_NUMBER_FIELD_ATTRS,
+    required: true,
+    label: 'Trial milestone end',
+    help_text: html`
+      Last milestone that will support an origin
+      trial of this feature.`,
   },
 
   'anticipated_spec_changes': {
@@ -1457,7 +1493,7 @@ export const ALL_FIELDS = {
   'ot_feedback_submission_url': {
     type: 'input',
     attrs: URL_FIELD_ATTRS,
-    required: false,
+    required: true,
     label: 'Feature feedback link',
     help_text: html`
       Link for developers to file feedback on the feature
