@@ -378,6 +378,7 @@ class ChromedashApp extends LitElement {
       this.pageComponent.stageId = parseInt(ctx.params.stageId);
       this.pageComponent.nextPage = this.currentPage;
       this.pageComponent.appTitle = this.appTitle;
+      this.pageComponent.userEmail = this.user.email;
       this.currentPage = ctx.path;
       this.hideSidebar();
     });

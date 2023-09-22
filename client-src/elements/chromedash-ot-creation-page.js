@@ -25,6 +25,7 @@ export class ChromedashOTCreationPage extends LitElement {
     return {
       stageId: {type: Number},
       featureId: {type: Number},
+      userEmail: {type: String},
       feature: {type: Object},
       loading: {type: Boolean},
       appTitle: {type: String},
@@ -102,7 +103,6 @@ export class ChromedashOTCreationPage extends LitElement {
   handleFormSubmit(e) {
     e.preventDefault();
     const submitBody = formatFeatureChanges(this.fieldValues, this.featureId);
-
     csClient.updateFeature(submitBody).then(() => {
       window.location.href = this.nextPage || `/feature/${this.featureId}`;
     }).catch(() => {
@@ -153,11 +153,17 @@ export class ChromedashOTCreationPage extends LitElement {
   renderFields(section) {
     const fields = section.fields.map(field => {
       const value = getStageValue(this.stage, field);
+      let touched = false;
+      // The requester's email should be a contact by default.
+      if (field === 'ot_owner_email' && !value) {
+        value = [this.userEmail];
+        touched = true;
+      }
       // Add the field to this component's stage before creating the field component.
       const index = this.fieldValues.length;
       this.fieldValues.push({
         name: field,
-        touched: false,
+        touched,
         value,
         stageId: this.stage.id,
       });
