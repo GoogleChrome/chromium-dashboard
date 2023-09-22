@@ -21,6 +21,7 @@ const USER_REGEX = String.raw`[A-Za-z0-9_#$&*+\/=?\{\}~^.\-]+`;
 const DOMAIN_REGEX = String.raw`(([A-Za-z0-9\-]+\.)+[A-Za-z]{2,6})`;
 
 const EMAIL_ADDRESS_REGEX = USER_REGEX + '@' + DOMAIN_REGEX;
+const GOOGLE_EMAIL_ADDRESS_REGEX = `${USER_REGEX}@google.com`;
 const EMAIL_ADDRESSES_REGEX = EMAIL_ADDRESS_REGEX + '([ ]*,[ ]*' + EMAIL_ADDRESS_REGEX + ')*';
 
 // Simple http URLs
@@ -1044,8 +1045,7 @@ export const ALL_FIELDS = {
     label: 'Origin trial contacts',
     help_text: html`
       List any other individuals or groups to include on the contact list
-      (e.g. for reminders on trial milestones).
-      Please enter valid email addresses.`,
+      (e.g. for reminders on trial milestones).`,
   },
 
   'ot_has_third_party_support': {
@@ -1413,6 +1413,21 @@ export const ALL_FIELDS = {
     </ul>`,
   },
 
+  'ot_display_name': {
+    type: 'input',
+    attrs: TEXT_FIELD_ATTRS,
+    required: true,
+    label: 'Origin trial display name',
+    help_text: html`
+    <p>
+      Name shown in the
+      <a href="https://developer.chrome.com/origintrials/" target="_blank">
+        Origin Trials Console
+      </a>
+      and included in reminder emails.
+    </p>`,
+  },
+
   'ot_description': {
     type: 'textarea',
     required: true,
@@ -1425,6 +1440,18 @@ export const ALL_FIELDS = {
         Origin Trials Console
       </a>.
     </p>`,
+  },
+
+  'ot_owner_email': {
+    type: 'input',
+    required: true,
+    attrs: {...TEXT_FIELD_ATTRS, pattern: GOOGLE_EMAIL_ADDRESS_REGEX},
+    label: 'Trial owner email',
+    help_text: html`
+      <p>
+        The primary contact for this origin trial. Please supply a
+        '@google.com' domain email address only.
+      </p>`,
   },
 
   'ot_feedback_submission_url': {

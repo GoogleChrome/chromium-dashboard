@@ -519,7 +519,9 @@ export const ORIGIN_TRIAL_CREATION_FIELDS = {
   sections: [
     {
       fields: [
+        'ot_display_name',
         'ot_description',
+        'ot_owner_email',
         'ot_emails',
         'ot_milestone_desktop_start',
         'ot_milestone_desktop_end',
