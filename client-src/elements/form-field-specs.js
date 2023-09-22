@@ -1045,7 +1045,7 @@ export const ALL_FIELDS = {
   'ot_emails': {
     type: 'input',
     attrs: MULTI_EMAIL_FIELD_ATTRS,
-    required: true,
+    required: false,
     label: 'Origin trial contacts',
     help_text: html`
       List any other individuals or groups to include on the contact list
@@ -1105,7 +1105,7 @@ export const ALL_FIELDS = {
     >web_feature.mojom</a>.`,
   },
 
-  'ot_intent_to_experiment_url': {
+  'ot_creation__intent_to_experiment_url': {
     name: 'intent_to_experiment_url',
     type: 'input',
     attrs: URL_FIELD_ATTRS,
