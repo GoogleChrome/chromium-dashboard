@@ -2,6 +2,7 @@ import {LitElement, css, html, nothing} from 'lit';
 import {getStageValue, renderHTMLIf} from './utils';
 import {enhanceUrl} from './feature-link';
 import {openAddStageDialog} from './chromedash-add-stage-dialog';
+// import {openPrereqsDialog} from './chromedash-ot-create-prereqs-dialog';
 import {makeDisplaySpecs} from './form-field-specs';
 import {
   FLAT_ENTERPRISE_METADATA_FIELDS,
@@ -652,7 +653,7 @@ class ChromedashFeatureDetail extends LitElement {
       // Display the button as disabled with tooltip text if a request
       // has already been submitted.
       return html`
-        <sl-tooltip content="Action already requested. For further inquiries, contact origin-trials-core@google.com.">
+        <sl-tooltip content="Action already requested. For further inquiries, contact origin-trials-discuss@google.com.">
           <sl-button
             size="small"
             variant="primary"
@@ -661,11 +662,12 @@ class ChromedashFeatureDetail extends LitElement {
         </sl-tooltip>`;
     // Display the creation request button if user has edit access.
     } else if (this.canEdit) {
+      const stageId = feStage.id;
       return html`
         <sl-button
           size="small"
           variant="primary"
-          href="/ot_creation_request/${this.feature.id}/${feStage.id}"
+          @click="${() => openPrereqsDialog(this.feature.id, stageId)}"
           >Request Trial Creation</sl-button>`;
     }
     */
