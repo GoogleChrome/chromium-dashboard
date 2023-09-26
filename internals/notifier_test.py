@@ -770,7 +770,8 @@ class OriginTrialCreationRequestHandlerTest(testing_config.CustomTestCase):
     self.ot_stage.put()
   
   def tearDown(self) -> None:
-    for kind in [FeatureEntry, Stage]:
+    kinds: list[ndb.Model] = [FeatureEntry, Stage]
+    for kind in kinds:
       for entity in kind.query():
         entity.key.delete()
 
