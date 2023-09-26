@@ -18,7 +18,6 @@ __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 from datetime import datetime, timedelta
 import collections
 import logging
-import os
 from typing import Any, Optional
 import urllib
 
@@ -487,6 +486,71 @@ class FeatureCommentHandler(basehandlers.FlaskHandler):
     return {'message': 'Done'}
 
 
+class OriginTrialCreationRequestHandler(basehandlers.FlaskHandler):
+  """Notify about an origin trial creation request."""
+
+  IS_INTERNAL_HANDLER = True
+
+  def process_post_data(self, **kwargs):
+    stage = self.get_param('stage')
+    logging.info('Starting to notify about origin trial creation request.')
+    send_emails([self.make_creation_request_email(stage)])
+
+    return {'message': 'OK'}
+
+  def _yes_or_no(self, value):
+    return 'Yes' if value else 'No'
+
+  def make_creation_request_email(self, stage):
+    chromestatus_url = ('https://chromestatus.com/feature/'
+                         f'{stage["feature_id"]}')
+    email_body = f"""
+<p>
+  Requested by: {stage["ot_owner_email"]}
+
+  Additional contacts for your team?: {",".join(stage["ot_emails"])}
+
+  Feature name: {stage["ot_display_name"]}
+
+  Feature description: {stage["ot_description"]}
+
+  Start Chrome milestone: {stage["desktop_first"]}
+
+  End Chrome milestone: {stage["desktop_last"]}
+
+  Chromium trial name: {stage["ot_chromium_trial_name"]}
+
+  Is this a deprecation trial?: {self._yes_or_no(stage["ot_is_deprecation_trial"])}
+
+  Third party origin support: {self._yes_or_no(stage["ot_has_third_party_support"])}
+
+  WebFeature UseCounter value: {stage["ot_webfeature_use_counter"]}
+
+  Documentation link: {stage["ot_documentation_url"]}
+
+  Chromestatus link: {chromestatus_url}
+
+  Feature feedback link: {stage["ot_feedback_submission_url"]}
+
+  Intent to Experiment link: {stage["intent_thread_url"]}
+
+  Is this a critical trial?: {self._yes_or_no(stage["ot_is_critical_trial"])}
+
+  Anything else?: {stage["ot_request_note"]}
+
+
+  Instructions for handling this request can be found at: https://g3doc.corp.google.com/chrome/origin_trials/g3doc/trial_admin.md?cl=head#setup-a-new-trial
+</p>
+"""
+
+    return {
+      'to': 'jrobbins-test@googlegroups.com',
+      'subject': f'New Trial Creation Request for {stage["ot_display_name"]}',
+      'reply_to': None,
+      'html': email_body,
+    }
+
+
 BLINK_DEV_ARCHIVE_URL_PREFIX = (
     'https://groups.google.com/a/chromium.org/d/msgid/blink-dev/')
 TEST_ARCHIVE_URL_PREFIX = (
@@ -530,24 +594,8 @@ def send_emails(email_tasks):
   """Process a list of email tasks (send or log)."""
   logging.info('Processing %d email tasks', len(email_tasks))
   for task in email_tasks:
-    if settings.SEND_EMAIL:
-      cloud_tasks_helpers.enqueue_task(
-          '/tasks/outbound-email', task)
-    else:
-      logging.info(
-          'Would send the following email:\n'
-          'To: %s\n'
-          'From: %s\n'
-          'References: %s\n'
-          'Reply-To: %s\n'
-          'Subject: %s\n'
-          'Body:\n%s',
-          task.get('to', None),
-          task.get('from_user', None),
-          task.get('references', None),
-          task.get('reply_to', None),
-          task.get('subject', None),
-          task.get('html', "")[:settings.MAX_LOG_LINE])
+    cloud_tasks_helpers.enqueue_task(
+        '/tasks/outbound-email', task)
 
 
 def post_comment_to_mailing_list(

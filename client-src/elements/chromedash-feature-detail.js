@@ -648,30 +648,27 @@ class ChromedashFeatureDetail extends LitElement {
     }
     // TODO(DanielRyanSmith): uncomment this section to make the trial creation
     // request form available for users.
-    /*
-    if (this.canEdit && feStage.ot_action_requested) {
-      // Display the button as disabled with tooltip text if a request
-      // has already been submitted.
-      return html`
-        <sl-tooltip content="Action already requested. For further inquiries, contact origin-trials-discuss@google.com.">
-          <sl-button
-            size="small"
-            variant="primary"
-            disabled
-            >Request Trial Creation</sl-button>
-        </sl-tooltip>`;
-    // Display the creation request button if user has edit access.
-    } else if (this.canEdit) {
-      const stageId = feStage.id;
-      return html`
-        <sl-button
-          size="small"
-          variant="primary"
-          @click="${() => openPrereqsDialog(this.feature.id, stageId)}"
-          >Request Trial Creation</sl-button>`;
-    }
-    */
-    return nothing;
+    // if (this.canEdit && feStage.ot_action_requested) {
+    //   // Display the button as disabled with tooltip text if a request
+    //   // has already been submitted.
+    //   return html`
+    //     <sl-tooltip content="Action already requested. For further inquiries, contact origin-trials-discuss@google.com.">
+    //       <sl-button
+    //         size="small"
+    //         variant="primary"
+    //         disabled
+    //         >Request Trial Creation</sl-button>
+    //     </sl-tooltip>`;
+    // // Display the creation request button if user has edit access.
+    // } else if (this.canEdit) {
+    return html`
+      <sl-button
+        size="small"
+        variant="primary"
+        href="/ot_creation_request/${this.feature.id}/${feStage.id}"
+        >Request Trial Creation</sl-button>`;
+    // }
+    // return nothing;
   }
 
   renderAddStageButton() {

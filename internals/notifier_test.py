@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import collections
-import json
 import testing_config  # Must be imported before the module under test.
 from datetime import datetime
 
@@ -22,7 +21,7 @@ from unittest import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
 from google.cloud import ndb  # type: ignore
 
-from framework import users
+from api import converters
 
 from internals import approval_defs
 from internals import core_enums
@@ -740,6 +739,93 @@ class NotifyInactiveUsersHandlerTest(testing_config.CustomTestCase):
     self.assertEqual(result.get('message', None), expected)
     # The inactive user who was notified should be flagged as notified.
     self.assertTrue(self.inactive_user.notified_inactive)
+
+
+class OriginTrialCreationRequestHandler(testing_config.CustomTestCase):
+  def setUp(self):
+    self.feature = FeatureEntry(
+        id=1, name='A feature', summary='summary', category=1)
+    self.ot_stage = Stage(
+      feature_id=1,
+      stage_type=150,
+      intent_thread_url='https://example.com/intent',
+      ot_chromium_trial_name='ChromiumTrialName',
+      ot_description='A brief description.',
+      ot_display_name='A new origin trial',
+      ot_documentation_url='https://example.com/docs',
+      ot_feedback_submission_url='https://example.com/feedback',
+      ot_has_third_party_support=True,
+      ot_is_deprecation_trial=True,
+      ot_is_critical_trial=False,
+      ot_owner_email='owner@example.com',
+      ot_emails=['user1@example.com', 'user2@example.com'],
+      ot_webfeature_use_counter='kWebFeature',
+      ot_request_note='Additional information about the trial creation.',
+      milestones=MilestoneSet(
+        desktop_first=100,
+        desktop_last=200,
+      ),
+    )
+    self.feature.put()
+    self.ot_stage.put()
+  
+  def tearDown(self) -> None:
+    for kind in [FeatureEntry, Stage]:
+      for entity in kind.query():
+        entity.key.delete()
+
+  def test_make_creation_request_email(self):
+    stage_dict = converters.stage_to_json_dict(self.ot_stage)
+    stage_dict['ot_request_note'] = self.ot_stage.ot_request_note
+    handler = notifier.OriginTrialCreationRequestHandler()
+    email_task = handler.make_creation_request_email(stage_dict)
+
+    expected_body = """
+<p>
+  Requested by: owner@example.com
+
+  Additional contacts for your team?: user1@example.com,user2@example.com
+
+  Feature name: A new origin trial
+
+  Feature description: A brief description.
+
+  Start Chrome milestone: 100
+
+  End Chrome milestone: 200
+
+  Chromium trial name: ChromiumTrialName
+
+  Is this a deprecation trial?: Yes
+
+  Third party origin support: Yes
+
+  WebFeature UseCounter value: kWebFeature
+
+  Documentation link: https://example.com/docs
+
+  Chromestatus link: https://chromestatus.com/feature/1
+
+  Feature feedback link: https://example.com/feedback
+
+  Intent to Experiment link: https://example.com/intent
+
+  Is this a critical trial?: No
+
+  Anything else?: Additional information about the trial creation.
+
+
+  Instructions for handling this request can be found at: https://g3doc.corp.google.com/chrome/origin_trials/g3doc/trial_admin.md?cl=head#setup-a-new-trial
+</p>
+"""
+    expected = {
+      'to': 'origin-trials-core@google.com',
+      'subject': f'New Trial Creation Request for A new origin trial',
+      'reply_to': None,
+      'html': expected_body,
+    }
+
+    self.assertEqual(email_task, expected)
 
 
 class FunctionsTest(testing_config.CustomTestCase):
