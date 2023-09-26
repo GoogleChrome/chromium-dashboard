@@ -819,7 +819,7 @@ class OriginTrialCreationRequestHandler(testing_config.CustomTestCase):
 </p>
 """
     expected = {
-      'to': 'origin-trials-core@google.com',
+      'to': 'jrobbins-test@googlegroups.com',
       'subject': f'New Trial Creation Request for A new origin trial',
       'reply_to': None,
       'html': expected_body,

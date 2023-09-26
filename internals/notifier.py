@@ -40,6 +40,10 @@ from internals.user_models import (
     AppUser, BlinkComponent, FeatureOwner, UserPref)
 
 
+WEBSTATUS_EMAIL = 'webstatus@google.com'
+STAGING_EMAIL = 'jrobbins-test@googlegroups.com'
+OT_CORE_EMAIL = 'origin-trials-core@google.com'
+
 def _determine_milestone_string(ship_stages: list[Stage]) -> str:
   """Determine the shipping milestone string to display in the template."""
   # Get the earliest desktop and android milestones.
@@ -543,8 +547,10 @@ class OriginTrialCreationRequestHandler(basehandlers.FlaskHandler):
 </p>
 """
 
+    to = OT_CORE_EMAIL if settings.PROD else STAGING_EMAIL
+
     return {
-      'to': 'jrobbins-test@googlegroups.com',
+      'to': to,
       'subject': f'New Trial Creation Request for {stage["ot_display_name"]}',
       'reply_to': None,
       'html': email_body,
