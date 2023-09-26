@@ -594,8 +594,24 @@ def send_emails(email_tasks):
   """Process a list of email tasks (send or log)."""
   logging.info('Processing %d email tasks', len(email_tasks))
   for task in email_tasks:
-    cloud_tasks_helpers.enqueue_task(
-        '/tasks/outbound-email', task)
+    if settings.SEND_EMAIL:
+      cloud_tasks_helpers.enqueue_task(
+          '/tasks/outbound-email', task)
+    else:
+      logging.info(
+          'Would send the following email:\n'
+          'To: %s\n'
+          'From: %s\n'
+          'References: %s\n'
+          'Reply-To: %s\n'
+          'Subject: %s\n'
+          'Body:\n%s',
+          task.get('to', None),
+          task.get('from_user', None),
+          task.get('references', None),
+          task.get('reply_to', None),
+          task.get('subject', None),
+          task.get('html', "")[:settings.MAX_LOG_LINE])
 
 
 def post_comment_to_mailing_list(
