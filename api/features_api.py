@@ -275,6 +275,7 @@ class FeaturesAPI(basehandlers.APIHandler):
         old_value = getattr(stage, field)
         new_value = change_info[field]['value']
         self._update_field_value(stage, field, field_type, new_value)
+        # The OT additional details does not need to be sent to subscribers.
         if form_field_name != 'ot_request_note':
           changed_fields.append((form_field_name, old_value, new_value))
         stage_was_updated = True

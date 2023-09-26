@@ -741,7 +741,7 @@ class NotifyInactiveUsersHandlerTest(testing_config.CustomTestCase):
     self.assertTrue(self.inactive_user.notified_inactive)
 
 
-class OriginTrialCreationRequestHandler(testing_config.CustomTestCase):
+class OriginTrialCreationRequestHandlerTest(testing_config.CustomTestCase):
   def setUp(self):
     self.feature = FeatureEntry(
         id=1, name='A feature', summary='summary', category=1)

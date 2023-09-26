@@ -44,6 +44,7 @@ WEBSTATUS_EMAIL = 'webstatus@google.com'
 STAGING_EMAIL = 'jrobbins-test@googlegroups.com'
 OT_CORE_EMAIL = 'origin-trials-core@google.com'
 
+
 def _determine_milestone_string(ship_stages: list[Stage]) -> str:
   """Determine the shipping milestone string to display in the template."""
   # Get the earliest desktop and android milestones.
@@ -502,7 +503,7 @@ class OriginTrialCreationRequestHandler(basehandlers.FlaskHandler):
 
     return {'message': 'OK'}
 
-  def _yes_or_no(self, value):
+  def _yes_or_no(self, value: bool):
     return 'Yes' if value else 'No'
 
   def make_creation_request_email(self, stage):
