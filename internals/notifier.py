@@ -507,38 +507,38 @@ class OriginTrialCreationRequestHandler(basehandlers.FlaskHandler):
     email_body = f"""
 <p>
   Requested by: {stage["ot_owner_email"]}
-
+  <br>
   Additional contacts for your team?: {",".join(stage["ot_emails"])}
-
+  <br>
   Feature name: {stage["ot_display_name"]}
-
+  <br>
   Feature description: {stage["ot_description"]}
-
+  <br>
   Start Chrome milestone: {stage["desktop_first"]}
-
+  <br>
   End Chrome milestone: {stage["desktop_last"]}
-
+  <br>
   Chromium trial name: {stage["ot_chromium_trial_name"]}
-
+  <br>
   Is this a deprecation trial?: {self._yes_or_no(stage["ot_is_deprecation_trial"])}
-
+  <br>
   Third party origin support: {self._yes_or_no(stage["ot_has_third_party_support"])}
-
+  <br>
   WebFeature UseCounter value: {stage["ot_webfeature_use_counter"]}
-
+  <br>
   Documentation link: {stage["ot_documentation_url"]}
-
+  <br>
   Chromestatus link: {chromestatus_url}
-
+  <br>
   Feature feedback link: {stage["ot_feedback_submission_url"]}
-
+  <br>
   Intent to Experiment link: {stage["intent_thread_url"]}
-
+  <br>
   Is this a critical trial?: {self._yes_or_no(stage["ot_is_critical_trial"])}
-
+  <br>
   Anything else?: {stage["ot_request_note"]}
-
-
+  <br>
+  <br>
   Instructions for handling this request can be found at: https://g3doc.corp.google.com/chrome/origin_trials/g3doc/trial_admin.md?cl=head#setup-a-new-trial
 </p>
 """

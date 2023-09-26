@@ -783,38 +783,38 @@ class OriginTrialCreationRequestHandler(testing_config.CustomTestCase):
     expected_body = """
 <p>
   Requested by: owner@example.com
-
+  <br>
   Additional contacts for your team?: user1@example.com,user2@example.com
-
+  <br>
   Feature name: A new origin trial
-
+  <br>
   Feature description: A brief description.
-
+  <br>
   Start Chrome milestone: 100
-
+  <br>
   End Chrome milestone: 200
-
+  <br>
   Chromium trial name: ChromiumTrialName
-
+  <br>
   Is this a deprecation trial?: Yes
-
+  <br>
   Third party origin support: Yes
-
+  <br>
   WebFeature UseCounter value: kWebFeature
-
+  <br>
   Documentation link: https://example.com/docs
-
+  <br>
   Chromestatus link: https://chromestatus.com/feature/1
-
+  <br>
   Feature feedback link: https://example.com/feedback
-
+  <br>
   Intent to Experiment link: https://example.com/intent
-
+  <br>
   Is this a critical trial?: No
-
+  <br>
   Anything else?: Additional information about the trial creation.
-
-
+  <br>
+  <br>
   Instructions for handling this request can be found at: https://g3doc.corp.google.com/chrome/origin_trials/g3doc/trial_admin.md?cl=head#setup-a-new-trial
 </p>
 """
