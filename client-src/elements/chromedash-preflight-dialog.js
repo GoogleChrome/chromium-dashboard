@@ -32,7 +32,7 @@ export function somePendingGates(featureGates, feStage) {
 }
 
 
-function findPendingGates(featureGates, feStage) {
+export function findPendingGates(featureGates, feStage) {
   const gatesForStage = featureGates.filter(g => g.stage_id == feStage.id);
   const otherGates = gatesForStage.filter(g => g.team_name != 'API Owners');
   const pendingGates = otherGates.filter(g =>
