@@ -83,13 +83,11 @@ class ChromedashPrevoteDialog extends LitElement {
   }
 
   handleCancel() {
-    console.log('cancel');
     // Note: promise is never resolved.
     this.hide();
   }
 
   handleProceed() {
-    console.log('proceed');
     this.resolve();
     this.hide();
   }
