@@ -18,7 +18,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, TypedDict
+from typing import Any, NotRequired, TypedDict
 
 # List of changed fields to be used to create Activity entities
 # and notify subscribed users of changes to a feature.
@@ -56,6 +56,7 @@ class StageDict(TypedDict):
   ot_is_deprecation_trial: bool
   ot_owner_email: str | None
   ot_webfeature_use_counter: str | None
+  ot_request_note: NotRequired[str]
 
   # Trial extension specific fields.
   ot_stage_id: int | None

@@ -251,6 +251,7 @@ class FeaturesAPI(basehandlers.APIHandler):
     ) -> bool:
     """Update stage fields with changes provided in the PATCH request."""
     stages: list[Stage] = []
+    ot_action_requested_stage: Stage | None = None
     for change_info in stage_changes_list:
       stage_was_updated = False
       # Check if valid ID is provided and fetch stage if it exists.
@@ -266,10 +267,17 @@ class FeaturesAPI(basehandlers.APIHandler):
         if field not in change_info:
           continue
         form_field_name = change_info[field]['form_field_name']
+
+        # If a creation request has been submitted, save for notification.
+        if form_field_name == 'ot_action_requested':
+          ot_action_requested_stage = stage
+
         old_value = getattr(stage, field)
         new_value = change_info[field]['value']
         self._update_field_value(stage, field, field_type, new_value)
-        changed_fields.append((form_field_name, old_value, new_value))
+        # The OT additional details does not need to be sent to subscribers.
+        if form_field_name != 'ot_request_note':
+          changed_fields.append((form_field_name, old_value, new_value))
         stage_was_updated = True
 
       # Update milestone fields.
@@ -291,11 +299,15 @@ class FeaturesAPI(basehandlers.APIHandler):
         stages.append(stage)
 
     # Save all of the updates made.
-    # Return a boolean representing if any changes were made to any stages.
     if stages:
       ndb.put_multi(stages)
-      return True
-    return False
+
+    # Notify of OT request if one was sent.
+    if ot_action_requested_stage:
+      notifier_helpers.send_ot_creation_notification(ot_action_requested_stage)
+
+    # Return a boolean representing if any changes were made to any stages.
+    return len(stages) > 0
 
   def _patch_update_special_fields(
       self,

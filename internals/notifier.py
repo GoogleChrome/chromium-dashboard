@@ -18,7 +18,6 @@ __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 from datetime import datetime, timedelta
 import collections
 import logging
-import os
 from typing import Any, Optional
 import urllib
 
@@ -39,6 +38,9 @@ from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate
 from internals.user_models import (
     AppUser, BlinkComponent, FeatureOwner, UserPref)
+
+
+OT_CORE_EMAIL = 'origin-trials-core@google.com'
 
 
 def _determine_milestone_string(ship_stages: list[Stage]) -> str:
@@ -485,6 +487,71 @@ class FeatureCommentHandler(basehandlers.FlaskHandler):
       send_emails(email_tasks)
 
     return {'message': 'Done'}
+
+
+class OriginTrialCreationRequestHandler(basehandlers.FlaskHandler):
+  """Notify about an origin trial creation request."""
+
+  IS_INTERNAL_HANDLER = True
+
+  def process_post_data(self, **kwargs):
+    stage = self.get_param('stage')
+    logging.info('Starting to notify about origin trial creation request.')
+    send_emails([self.make_creation_request_email(stage)])
+
+    return {'message': 'OK'}
+
+  def _yes_or_no(self, value: bool):
+    return 'Yes' if value else 'No'
+
+  def make_creation_request_email(self, stage):
+    chromestatus_url = ('https://chromestatus.com/feature/'
+                         f'{stage["feature_id"]}')
+    email_body = f"""
+<p>
+  Requested by: {stage["ot_owner_email"]}
+  <br>
+  Additional contacts for your team?: {",".join(stage["ot_emails"])}
+  <br>
+  Feature name: {stage["ot_display_name"]}
+  <br>
+  Feature description: {stage["ot_description"]}
+  <br>
+  Start Chrome milestone: {stage["desktop_first"]}
+  <br>
+  End Chrome milestone: {stage["desktop_last"]}
+  <br>
+  Chromium trial name: {stage["ot_chromium_trial_name"]}
+  <br>
+  Is this a deprecation trial?: {self._yes_or_no(stage["ot_is_deprecation_trial"])}
+  <br>
+  Third party origin support: {self._yes_or_no(stage["ot_has_third_party_support"])}
+  <br>
+  WebFeature UseCounter value: {stage["ot_webfeature_use_counter"]}
+  <br>
+  Documentation link: {stage["ot_documentation_url"]}
+  <br>
+  Chromestatus link: {chromestatus_url}
+  <br>
+  Feature feedback link: {stage["ot_feedback_submission_url"]}
+  <br>
+  Intent to Experiment link: {stage["intent_thread_url"]}
+  <br>
+  Is this a critical trial?: {self._yes_or_no(stage["ot_is_critical_trial"])}
+  <br>
+  Anything else?: {stage["ot_request_note"]}
+  <br>
+  <br>
+  Instructions for handling this request can be found at: https://g3doc.corp.google.com/chrome/origin_trials/g3doc/trial_admin.md?cl=head#setup-a-new-trial
+</p>
+"""
+
+    return {
+      'to': OT_CORE_EMAIL,
+      'subject': f'New Trial Creation Request for {stage["ot_display_name"]}',
+      'reply_to': None,
+      'html': email_body,
+    }
 
 
 BLINK_DEV_ARCHIVE_URL_PREFIX = (
