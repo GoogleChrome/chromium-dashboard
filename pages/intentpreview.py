@@ -88,7 +88,10 @@ class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
       else:
         return 'Intent to Experiment'
     elif intent_stage == core_enums.INTENT_SHIP:
-      return 'Intent to Ship'
+      if feature.feature_type == core_enums.FEATURE_TYPE_CODE_CHANGE_ID:
+        return 'Web-Facing Change PSA'
+      else:
+        return 'Intent to Ship'
     elif intent_stage == core_enums.INTENT_REMOVED:
       return 'Intent to Extend Deprecation Trial'
 

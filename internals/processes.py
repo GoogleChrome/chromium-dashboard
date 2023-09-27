@@ -432,7 +432,7 @@ PSA_ONLY_STAGES = [
        PI_UPDATED_TARGET_MILESTONE,
        PI_I2S_EMAIL,
       ],
-      [Action('Draft Intent to Ship email', INTENT_EMAIL_URL,
+      [Action('Draft Web-Facing Change PSA email', INTENT_EMAIL_URL,
               [PI_SPEC_LINK.name,
                PI_FINCH_FEATURE_OR_JUSTIFY.name,
                PI_UPDATED_TARGET_MILESTONE.name])],
