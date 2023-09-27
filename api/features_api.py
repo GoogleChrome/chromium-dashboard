@@ -290,7 +290,8 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
       # Validate the user has edit permissions and redirect if needed.
       redirect_resp = permissions.validate_feature_edit_permission(
           self, feature_id)
-      return redirect_resp
+      if redirect_resp:
+        return redirect_resp
 
     changed_fields: CHANGED_FIELDS_LIST_TYPE = []
     has_updated = self._patch_update_stages(body['stages'], changed_fields)
