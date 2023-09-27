@@ -653,7 +653,7 @@ class ChromedashFeatureDetail extends LitElement {
       // Display the button as disabled with tooltip text if a request
       // has already been submitted.
       return html`
-        <sl-tooltip content="Action already requested. For further inquiries, contact origin-trials-discuss@google.com.">
+        <sl-tooltip content="Action already requested. For further inquiries, contact origin-trials-support@google.com.">
           <sl-button
             size="small"
             variant="primary"
