@@ -282,10 +282,14 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     if not feature:
       self.abort(400, msg=f'Feature not found for ID {feature_id}')
 
-    # Validate the user has edit permissions and redirect if needed.
-    redirect_resp = permissions.validate_feature_edit_permission(
-        self, feature_id)
-    if redirect_resp:
+
+    # If submitting an OT creation request, the user must have feature edit
+    # access or be a Chromium/Google account.
+    email = self.get_current_user().email()
+    if not (email.endswith('@chromium.org') or email.endswith('@google.com')):
+      # Validate the user has edit permissions and redirect if needed.
+      redirect_resp = permissions.validate_feature_edit_permission(
+          self, feature_id)
       return redirect_resp
 
     changed_fields: CHANGED_FIELDS_LIST_TYPE = []
