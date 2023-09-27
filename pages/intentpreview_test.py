@@ -205,6 +205,13 @@ class IntentEmailPreviewHandlerTest(testing_config.CustomTestCase):
         self.handler.compute_subject_prefix(
             self.feature_1, core_enums.INTENT_EXTEND_TRIAL))
 
+  def test_compute_subject_prefix__PSA_feature(self):
+    """We offer users the correct subject line for each intent stage."""
+    self.feature_1.feature_type = core_enums.FEATURE_TYPE_CODE_CHANGE_ID
+    self.assertEqual(
+        'Web-Facing Change PSA',
+        self.handler.compute_subject_prefix(
+            self.feature_1, core_enums.INTENT_SHIP))
 
 class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
 
