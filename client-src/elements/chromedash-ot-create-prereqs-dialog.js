@@ -103,7 +103,7 @@ class ChromedashOTCreationPrereqsDialog extends LitElement {
           <a href="https://www.chromium.org/blink/origin-trials/running-an-origin-trial/">
             running an origin trial
           </a>.
-          If you have any further questions, contact us at origin-trials-discuss@google.com.
+          If you have any further questions, contact us at origin-trials-support@google.com.
         </p>
         <br>
         <sl-button id="continue-button" variant="primary"

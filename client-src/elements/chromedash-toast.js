@@ -52,7 +52,7 @@ class ChromedashToast extends LitElement {
 
       :host([open]) {
         opacity: 1;
-        transform: translateY(0px);
+        transform: translateY(-32px);
       }
 
       #action {

@@ -104,7 +104,10 @@ export class ChromedashOTCreationPage extends LitElement {
     e.preventDefault();
     const submitBody = formatFeatureChanges(this.fieldValues, this.featureId);
     csClient.updateFeature(submitBody).then(() => {
-      window.location.href = this.nextPage || `/feature/${this.featureId}`;
+      showToastMessage('Creation request submitted!');
+      setTimeout(() => {
+        window.location.href = this.nextPage || `/feature/${this.featureId}`;
+      }, 1000);
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
