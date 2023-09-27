@@ -36,6 +36,8 @@ import settings
 
 CHROME_RELEASE_SCHEDULE_URL = (
     'https://chromiumdash.appspot.com/fetch_milestone_schedule')
+WEBSTATUS_EMAIL = 'webstatus@google.com'
+STAGING_EMAIL = 'jrobbins-test@googlegroups.com'
 
 
 def get_current_milestone_info(anchor_channel: str):
@@ -56,8 +58,7 @@ def choose_email_recipients(
     return feature.owner_emails
 
   # Escalated notification. Add extended recipients.
-  ws_group_email = (notifier.WEBSTATUS_EMAIL
-                    if settings.PROD else notifier.STAGING_EMAIL)
+  ws_group_email = WEBSTATUS_EMAIL if settings.PROD else STAGING_EMAIL
   all_notified_users = set([ws_group_email])
   all_notified_users.add(feature.creator_email)
   all_notified_users.update(feature.owner_emails)

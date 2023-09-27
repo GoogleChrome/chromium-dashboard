@@ -40,8 +40,6 @@ from internals.user_models import (
     AppUser, BlinkComponent, FeatureOwner, UserPref)
 
 
-WEBSTATUS_EMAIL = 'webstatus@google.com'
-STAGING_EMAIL = 'jrobbins-test@googlegroups.com'
 OT_CORE_EMAIL = 'origin-trials-core@google.com'
 
 
@@ -548,10 +546,8 @@ class OriginTrialCreationRequestHandler(basehandlers.FlaskHandler):
 </p>
 """
 
-    to = OT_CORE_EMAIL if settings.PROD else STAGING_EMAIL
-
     return {
-      'to': to,
+      'to': OT_CORE_EMAIL,
       'subject': f'New Trial Creation Request for {stage["ot_display_name"]}',
       'reply_to': None,
       'html': email_body,
