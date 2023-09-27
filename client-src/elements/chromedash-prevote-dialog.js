@@ -121,5 +121,4 @@ class ChromedashPrevoteDialog extends LitElement {
   }
 }
 
-
 customElements.define('chromedash-prevote-dialog', ChromedashPrevoteDialog);
