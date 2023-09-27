@@ -649,7 +649,9 @@ class ChromedashFeatureDetail extends LitElement {
     // TODO(DanielRyanSmith): uncomment this section to make the trial creation
     // request form available for users.
     /*
-    if (this.canEdit && feStage.ot_action_requested) {
+    const canSeeOTControls = (this.user &&
+        (this.user.email.endsWith('@chromium.org') || this.user.email.endsWith('@google.com')));
+    if (canSeeOTControls && feStage.ot_action_requested) {
       // Display the button as disabled with tooltip text if a request
       // has already been submitted.
       return html`
@@ -661,7 +663,7 @@ class ChromedashFeatureDetail extends LitElement {
             >Request Trial Creation</sl-button>
         </sl-tooltip>`;
     // Display the creation request button if user has edit access.
-    } else if (this.canEdit) {
+    } else if (canSeeOTControls) {
       const stageId = feStage.id;
       return html`
         <sl-button

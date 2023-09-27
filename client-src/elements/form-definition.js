@@ -519,7 +519,7 @@ export const ORIGIN_TRIAL_CREATION_FIELDS = {
         'ot_emails',
         'ot_creation__milestone_desktop_first',
         'ot_creation__milestone_desktop_last',
-        'ot_intent_to_experiment_url',
+        'ot_creation__intent_to_experiment_url',
         'ot_documentation_url',
         'ot_feedback_submission_url',
         'ot_chromium_trial_name',
