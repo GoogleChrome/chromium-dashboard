@@ -102,8 +102,11 @@ export class ChromedashOTCreationPage extends LitElement {
 
   handleFormSubmit(e) {
     e.preventDefault();
-    const submitBody = formatFeatureChanges(this.fieldValues, this.featureId);
-    csClient.updateFeature(submitBody).then(() => {
+    const featureSubmitBody = formatFeatureChanges(this.fieldValues, this.featureId);
+    // We only need the single stage changes.
+    const stageSubmitBody = featureSubmitBody.stages[0];
+
+    window.csClient.updateStage(this.featureId, this.stageId, stageSubmitBody).then(() => {
       showToastMessage('Creation request submitted!');
       setTimeout(() => {
         window.location.href = this.nextPage || `/feature/${this.featureId}`;

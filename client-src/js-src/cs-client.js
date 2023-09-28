@@ -341,6 +341,10 @@ class ChromeStatusClient {
     return this.doPost(`/features/${featureId}/stages`, body);
   }
 
+  updateStage(featureId, stageId, body) {
+    return this.doPatch(`/features/${featureId}/stages/${stageId}`, body);
+  }
+
   // Processes API
   getFeatureProcess(featureId) {
     return this.doGet(`/features/${featureId}/process`);

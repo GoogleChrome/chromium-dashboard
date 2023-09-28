@@ -18,7 +18,7 @@ import json
 import logging
 import os
 import re
-from typing import Optional
+from typing import Any, Optional
 
 import flask
 import flask.views
@@ -35,7 +35,7 @@ from framework import users
 from framework import utils
 from framework import xsrf
 from internals import approval_defs
-from internals.core_models import FeatureEntry
+from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals import user_models
 
 from google.auth.transport import requests
@@ -286,6 +286,87 @@ class APIHandler(BaseHandler):
       self.validate_token(token, user.email())
     except xsrf.TokenIncorrect:
       self.abort(400, msg='Invalid XSRF token')
+
+
+class EntitiesAPIHandler(APIHandler):
+  """Base class for APIs that handle changes to entities."""
+
+  def abort_invalid_data_type(
+      self, field: str, field_type: str, value: Any) -> None:
+    """Abort the process if an invalid data type is given."""
+    self.abort(400, msg=(
+        f'Bad value for field {field} of type {field_type}: {value}'))
+
+  def extract_link(self, s):
+    if s:
+      match_obj = URL_RE.search(str(s))
+      if match_obj and match_obj.group('scheme') in ALLOWED_SCHEMES:
+        link = match_obj.group()
+        if not link.startswith(('http://', 'https://')):
+          link = 'http://' + link
+        return link
+    return None
+
+  def split_list_input(
+      self,
+      field: str,
+      field_type: str,
+      value: str,
+      delimiter: str='\\r?\\n'
+    ) -> list[str]:
+    try:
+      formatted_list = [
+        x.strip() for x in re.split(delimiter, value) if x.strip()]
+    except TypeError:
+      self.abort_invalid_data_type(field, field_type, value)
+    return formatted_list
+
+  def update_field_value(
+      self,
+      entity: FeatureEntry | MilestoneSet | Stage,
+      field: str,
+      field_type: str,
+      value: Any
+    ) -> None:
+    new_value = self.format_field_val(field, field_type, value)
+    setattr(entity, field, new_value)
+
+  def format_field_val(
+      self,
+      field: str,
+      field_type: str,
+      value: Any,
+    ) -> str | int | bool | list | None:
+    """Format the given feature value based on the field type."""
+
+    # If the field is empty, no need to format.
+    if value is None:
+      return None
+
+    # TODO(DanielRyanSmith): Write checks to ensure enum values are valid.
+    if field_type == 'emails' or field_type == 'split_str':
+      list_val = self.split_list_input(field, field_type, value, ',')
+      if field == 'blink_components' and len(value) == 0:
+        return [settings.DEFAULT_COMPONENT]
+      return list_val
+    elif field_type == 'link':
+      return self.extract_link(value)
+    elif field_type == 'links':
+      list_val = self.split_list_input(field, field_type, value)
+      # Filter out any URLs that do not conform to the proper pattern.
+      return [self.extract_link(link)
+              for link in list_val if link]
+    elif field_type == 'int':
+      # Int fields can be unset by giving null or nothing in the input field.
+      if value == '' or value is None:
+        return None
+      try:
+        return int(value)
+      except ValueError:
+        self.abort_invalid_data_type(field, field_type, value)
+    elif field_type == 'bool':
+      return bool(value)
+    return str(value)
 
 
 class FlaskHandler(BaseHandler):
