@@ -224,6 +224,8 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
         category=1, intent_stage=core_enums.INTENT_IMPLEMENT)
     # Hardcode the key for the template test
     self.feature_1.key = ndb.Key('FeatureEntry', 234)
+    self.feature_1.wpt = True
+    self.feature_1.wpt_descr = 'We love WPT!'
     self.feature_1.put()
 
     self.request_path = '/admin/features/launch/%d/%d?intent' % (
