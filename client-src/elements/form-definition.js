@@ -834,7 +834,7 @@ When in doubt, please check out https://goo.gle/devtools-checklist for details!
 const DEBUGGABILITY_SHIP_QUESTIONNAIRE = DEBUGGABILITY_ORIGIN_TRIAL_QUESTIONNAIRE;
 
 const TESTING_SHIP_QUESTIONNAIRE = (
-  html`<b>(1) Does your feature have sufficient automated test coverage (Unit tests, WPT, browser test  and other integration tests)?</b>
+  html`<b>(1) Does your feature have sufficient automated test coverage (Unit tests, WPT, browser tests and other integration tests)?</b>
 Chrome requires at least 70% automation code coverage (<a href="https://analysis.chromium.org/coverage/p/chromium" target="_blank">dashboard</a>) running on the main/release branch and 70% Changelist <a href="https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/testing/code_coverage_in_gerrit.md" target="_blank">code coverage in Gerrit</a>?
 Do the automated tests have more than 93% green (flakiness < 7%) on CQ and CI builders?
 <ul>
