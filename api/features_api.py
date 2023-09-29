@@ -47,76 +47,8 @@ URL_RE = re.compile(r'\b%s%s%s\b' % (
 ALLOWED_SCHEMES = [None, 'http', 'https']
 
 
-class FeaturesAPI(basehandlers.APIHandler):
+class FeaturesAPI(basehandlers.EntitiesAPIHandler):
   """Features are the the main records that we track."""
-
-  def _abort_invalid_data_type(
-      self, field: str, field_type: str, value: Any) -> None:
-    """Abort the process if an invalid data type is given."""
-    self.abort(400, msg=(
-        f'Bad value for field {field} of type {field_type}: {value}'))
-
-  def _extract_link(self, s):
-    if s:
-      match_obj = URL_RE.search(str(s))
-      if match_obj and match_obj.group('scheme') in ALLOWED_SCHEMES:
-        link = match_obj.group()
-        if not link.startswith(('http://', 'https://')):
-          link = 'http://' + link
-        return link
-
-    return None
-
-  def _split_list_input(
-      self,
-      field: str,
-      field_type: str,
-      value: str,
-      delimiter: str='\\r?\\n'
-    ) -> list[str]:
-    try:
-      formatted_list = [
-        x.strip() for x in re.split(delimiter, value) if x.strip()]
-    except TypeError:
-      self._abort_invalid_data_type(field, field_type, value)
-    return formatted_list
-
-  def _format_field_val(
-      self,
-      field: str,
-      field_type: str,
-      value: Any,
-    ) -> str | int | bool | list | None:
-    """Format the given feature value based on the field type."""
-
-    # If the field is empty, no need to format.
-    if value is None:
-      return None
-
-    # TODO(DanielRyanSmith): Write checks to ensure enum values are valid.
-    if field_type == 'emails' or field_type == 'split_str':
-      list_val = self._split_list_input(field, field_type, value, ',')
-      if field == 'blink_components' and len(value) == 0:
-        return [settings.DEFAULT_COMPONENT]
-      return list_val
-    elif field_type == 'link':
-      return self._extract_link(value)
-    elif field_type == 'links':
-      list_val = self._split_list_input(field, field_type, value)
-      # Filter out any URLs that do not conform to the proper pattern.
-      return [self._extract_link(link)
-              for link in list_val if link]
-    elif field_type == 'int':
-      # Int fields can be unset by giving null or nothing in the input field.
-      if value == '' or value is None:
-        return None
-      try:
-        return int(value)
-      except ValueError:
-        self._abort_invalid_data_type(field, field_type, value)
-    elif field_type == 'bool':
-      return bool(value)
-    return str(value)
 
   def get_one_feature(self, feature_id: int) -> VerboseFeatureDict:
     feature = FeatureEntry.get_by_id(feature_id)
@@ -195,7 +127,7 @@ class FeaturesAPI(basehandlers.APIHandler):
     fields_dict = {}
     for field, field_type in api_specs.FEATURE_FIELD_DATA_TYPES:
       if field in body:
-        fields_dict[field] = self._format_field_val(
+        fields_dict[field] = self.format_field_val(
             field, field_type, body[field])
 
     # Try to create the feature using the provided data.
@@ -234,16 +166,6 @@ class FeaturesAPI(basehandlers.APIHandler):
       if new_gates:
         ndb.put_multi(new_gates)
 
-  def _update_field_value(
-      self,
-      entity: FeatureEntry | MilestoneSet | Stage,
-      field: str,
-      field_type: str,
-      value: Any
-    ) -> None:
-    new_value = self._format_field_val(field, field_type, value)
-    setattr(entity, field, new_value)
-
   def _patch_update_stages(
       self,
       stage_changes_list: list[dict[str, Any]],
@@ -274,7 +196,7 @@ class FeaturesAPI(basehandlers.APIHandler):
 
         old_value = getattr(stage, field)
         new_value = change_info[field]['value']
-        self._update_field_value(stage, field, field_type, new_value)
+        self.update_field_value(stage, field, field_type, new_value)
         # The OT additional details does not need to be sent to subscribers.
         if form_field_name != 'ot_request_note':
           changed_fields.append((form_field_name, old_value, new_value))
@@ -290,7 +212,7 @@ class FeaturesAPI(basehandlers.APIHandler):
         form_field_name = change_info[field]['form_field_name']
         old_value = getattr(milestones, field)
         new_value = change_info[field]['value']
-        self._update_field_value(milestones, field, field_type, new_value)
+        self.update_field_value(milestones, field, field_type, new_value)
         changed_fields.append((form_field_name, old_value, new_value))
         stage_was_updated = True
       stage.milestones = milestones
@@ -341,7 +263,7 @@ class FeaturesAPI(basehandlers.APIHandler):
         continue
       old_value = getattr(feature, field)
       new_value = feature_changes[field]
-      self._update_field_value(feature, field, field_type, new_value)
+      self.update_field_value(feature, field, field_type, new_value)
       changed_fields.append((field, old_value, new_value))
       has_updated = True
 
