@@ -127,7 +127,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     fields_dict = {}
     for field, field_type in api_specs.FEATURE_FIELD_DATA_TYPES:
       if field in body:
-        fields_dict[field] = self._format_field_val(
+        fields_dict[field] = self.format_field_val(
             field, field_type, body[field])
 
     # Try to create the feature using the provided data.

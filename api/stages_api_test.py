@@ -43,7 +43,11 @@ class StagesAPITest(testing_config.CustomTestCase):
     self.fe.put()
 
     # Origin trial stage.
-    self.stage_1 = Stage(id=10, feature_id=1, stage_type=150, browser='Chrome',
+    self.stage_1 = Stage(
+        id=10,
+        feature_id=1,
+        stage_type=150,
+        display_name='Stage display name',                 
         ux_emails=['ux_person@example.com'],
         intent_thread_url='https://example.com/intent',
         milestones=MilestoneSet(desktop_first=100),
@@ -103,7 +107,7 @@ class StagesAPITest(testing_config.CustomTestCase):
         'created': str(self.now),
         'desktop_first': 100,
         'desktop_last': None,
-        'display_name': None,
+        'display_name': 'Stage display name',
         'enterprise_policies': [],
         'origin_trial_id': None,
         'origin_trial_feedback_url': None,
@@ -340,9 +344,7 @@ class StagesAPITest(testing_config.CustomTestCase):
   def test_post__valid(self):
     """A valid POST request should create a new stage."""
     testing_config.sign_in('feature_owner@example.com', 123)
-    json = {
-        'stage_type': 151,
-        'intent_thread_url': 'https://example.com/different'}
+    json = {'stage_type': 151}
 
     with test_app.test_request_context(
         f'{self.request_path}/1/stages', json=json):
@@ -352,15 +354,11 @@ class StagesAPITest(testing_config.CustomTestCase):
     stage: Stage | None = Stage.get_by_id(stage_id)
     self.assertIsNotNone(stage)
     self.assertEqual(stage.stage_type, 151)
-    self.assertEqual(stage.intent_thread_url, 'https://example.com/different')
 
   def test_post__gate_created(self):
     """A Gate entity is created when a gated stage is created."""
     testing_config.sign_in('feature_owner@example.com', 123)
-    json = {
-        'stage_type': 151,
-        'desktop_first': 100, 
-        'intent_thread_url': 'https://example.com/different'}
+    json = {'stage_type': 151}
 
     with test_app.test_request_context(
         f'{self.request_path}1/stages', json=json):
@@ -373,9 +371,7 @@ class StagesAPITest(testing_config.CustomTestCase):
   def test_post__gate_not_needed(self):
     """A Gate entity is created when a non-gated stage is created."""
     testing_config.sign_in('feature_owner@example.com', 123)
-    json = {
-        'stage_type': 110,
-        'intent_thread_url': 'https://example.com/different'}
+    json = {'stage_type': 110}
 
     with test_app.test_request_context(
         f'{self.request_path}1/stages', json=json):
@@ -453,28 +449,23 @@ class StagesAPITest(testing_config.CustomTestCase):
 
     self.assertEqual(actual, 'fake response')
 
-  @mock.patch('flask.abort')
-  def test_patch__stage_type_change_attempt(self, mock_abort):
-    """stage_type field cannot be mutated."""
-    testing_config.sign_in('feature_owner@example.com', 123)
-    json = {
-        'stage_type': 260,
-        'intent_thread_url': 'https://example.com/different'}
-
-    with test_app.test_request_context(
-        f'{self.request_path}1/stages/10', json=json):
-      self.handler.do_patch(feature_id=1, stage_id=10)
-    # Stage type not changed.
-    self.assertEqual(self.stage_1.stage_type, 150)
-
   def test_patch__valid(self):
     """A valid PATCH request should update an existing stage."""
     testing_config.sign_in('feature_owner@example.com', 123)
     json = {
-        'intent_thread_url': 'https://example.com/different',
-        'announcement_url': 'https://example.com/announce',
-        'experiment_risks': 'No risks.',
-        'browser': None}
+        'intent_thread_url': {
+          'form_field_name': 'intent_to_experiment_url',
+          'value': 'https://example.com/different',
+        },
+        'experiment_risks': {
+          'form_field_name': 'experiment_risks',
+          'value': 'No risks.',
+        },
+        'display_name': {
+          'form_field_name': 'display_name',
+          'value': None,
+        },
+      }
 
     with test_app.test_request_context(
         f'{self.request_path}1/stages/10', json=json):
@@ -484,9 +475,7 @@ class StagesAPITest(testing_config.CustomTestCase):
     self.assertEqual(stage.experiment_risks, 'No risks.')
     self.assertEqual(stage.intent_thread_url, 'https://example.com/different')
     # Values can be set to null.
-    self.assertIsNone(stage.browser)
-    # Type-specific stage fields should not be put onto incorrect stages.
-    self.assertIsNone(stage.announcement_url)
+    self.assertIsNone(stage.display_name)
     # Existing fields not specified should not be changed.
     self.assertEqual(stage.experiment_goals, 'To be the very best.')
 

@@ -124,10 +124,8 @@ class StagesAPI(basehandlers.EntitiesAPIHandler):
     if 'stage_type' not in body:
       self.abort(404, msg='Stage type not specified.')
     stage_type = int(body['stage_type'])
-    stage = self._create_stage(feature_id, feature.feature_type, stage_type)
-    changed_fields: CHANGED_FIELDS_LIST_TYPE = []
     # Add the specified field values to the stage. Create a gate if needed.
-    self._update_stage(stage, body, changed_fields)
+    stage = self._create_stage(feature_id, feature.feature_type, stage_type)
 
     # Changing stage values means the cached feature should be invalidated.
     lookup_key = FeatureEntry.feature_cache_key(
