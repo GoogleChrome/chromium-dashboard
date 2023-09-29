@@ -94,7 +94,10 @@ class ChromedashPrevoteDialog extends LitElement {
 
   renderGateItem(gate) {
     return html`
-      <li>${gate.team_name}</li>
+      <li>
+        <a href="/feature/${gate.feature_id}?gate=${gate.id}"
+           @click=${this.hide}
+        >${gate.team_name}</a></li>
     `;
   }
 
@@ -112,7 +115,7 @@ class ChromedashPrevoteDialog extends LitElement {
         <sl-button size="small"
           @click=${this.handleProceed}
         >Approve anyway</sl-button>
-        <sl-button size="small" variant="primary"
+        <sl-button size="small" variant="warning"
           @click=${this.handleCancel}
         >Don't approve yet</sl-button>
       </sl-dialog>`;

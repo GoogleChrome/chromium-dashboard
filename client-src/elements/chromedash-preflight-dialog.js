@@ -103,6 +103,12 @@ export class ChromedashPreflightDialog extends LitElement {
       .done:hover .edit-progress-item {
         visibility: visible;
       }
+
+      sl-button {
+        float: right;
+        margin: var(--content-padding-half);
+      }
+
     `];
   }
 
@@ -118,8 +124,12 @@ export class ChromedashPreflightDialog extends LitElement {
     this.shadowRoot.querySelector('sl-dialog').show();
   }
 
-  closeDialog() {
+  hide() {
     this.shadowRoot.querySelector('sl-dialog').hide();
+  }
+
+  handleCancel() {
+    this.hide();
   }
 
   renderEditLink(stage, feStage, pi) {
@@ -127,7 +137,7 @@ export class ChromedashPreflightDialog extends LitElement {
       return html`
         <a class="edit-progress-item"
            href="/guide/stage/${this.feature.id}/${stage.outgoing_stage}/${feStage.id}#id_${pi.field}"
-           @click=${this.closeDialog}>
+           @click=${this.hide}>
           Edit
         </a>
       `;
@@ -163,7 +173,7 @@ export class ChromedashPreflightDialog extends LitElement {
       .replace('{outgoing_stage}', this.stage.outgoing_stage);
 
     return html`
-      Before you ${this.action.name}, you should first do the following:
+      Before you ${this.action.name}, it is strongly recommended that you do the following:
       <ol class="missing-prereqs-list">
         ${prereqItems.map((item) => html`
         <li class="pending">
@@ -179,16 +189,19 @@ export class ChromedashPreflightDialog extends LitElement {
           <li class="pending">
             Get approval or NA from the
             <a href="/feature/${this.feature.id}?gate=${g.id}"
-               @click=${this.closeDialog}
+               @click=${this.hide}
                >${g.team_name}</a>
             team
           </li>
          `)}
       </ol>
 
-      <sl-button href="${url}" target="_blank" variant="primary" size="small">
-        Proceed to Draft Email
+      <sl-button href="${url}" target="_blank" size="small">
+        Proceed anyway
       </sl-button>
+      <sl-button size="small" variant="warning"
+          @click=${this.handleCancel}
+      >Don't draft email yet</sl-button>
     `;
   }
 
