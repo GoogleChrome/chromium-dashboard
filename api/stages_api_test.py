@@ -479,6 +479,87 @@ class StagesAPITest(testing_config.CustomTestCase):
     # Existing fields not specified should not be changed.
     self.assertEqual(stage.experiment_goals, 'To be the very best.')
 
+  def test_patch__ot_request_googler(self):
+    """A valid OT creation request from a googler should update stage."""
+    testing_config.sign_in('a_googler@google.com', 123)
+    json = {
+        'ot_action_requested': {
+          'form_field_name': 'ot_action_requested',
+          'value': True,
+        },
+        'ot_request_note': {
+          'form_field_name': 'ot_request_note',
+          'value': 'Additional info.',
+        },
+        'ot_display_name': {
+          'form_field_name': 'ot_display_name',
+          'value': 'OT name',
+        },
+      }
+
+    with test_app.test_request_context(
+        f'{self.request_path}1/stages/10', json=json):
+      actual = self.handler.do_patch(feature_id=1, stage_id=10)
+    self.assertEqual(actual['message'], 'Stage values updated.')
+    stage = self.stage_1
+    self.assertEqual(stage.ot_action_requested, True)
+    self.assertEqual(stage.ot_request_note, 'Additional info.')
+    self.assertEqual(stage.ot_display_name, 'OT name')
+    # Existing fields not specified should not be changed.
+    self.assertEqual(stage.experiment_goals, 'To be the very best.')
+
+  def test_patch__ot_request_chromium(self):
+    """A valid OT creation request from a Chromium user should update stage."""
+    testing_config.sign_in('chromium_user@chromium.org', 123)
+    json = {
+        'ot_action_requested': {
+          'form_field_name': 'ot_action_requested',
+          'value': True,
+        },
+        'ot_request_note': {
+          'form_field_name': 'ot_request_note',
+          'value': 'Additional info.',
+        },
+        'ot_display_name': {
+          'form_field_name': 'ot_display_name',
+          'value': 'OT name',
+        },
+      }
+
+    with test_app.test_request_context(
+        f'{self.request_path}1/stages/10', json=json):
+      actual = self.handler.do_patch(feature_id=1, stage_id=10)
+    self.assertEqual(actual['message'], 'Stage values updated.')
+    stage = self.stage_1
+    self.assertEqual(stage.ot_action_requested, True)
+    self.assertEqual(stage.ot_request_note, 'Additional info.')
+    self.assertEqual(stage.ot_display_name, 'OT name')
+    # Existing fields not specified should not be changed.
+    self.assertEqual(stage.experiment_goals, 'To be the very best.')
+
+  def test_patch__ot_request_unauthorized(self):
+    """An OT creation request from an unauthorized is not processed."""
+    testing_config.sign_in('someone_unexpected@example.com', 123)
+    json = {
+        'ot_action_requested': {
+          'form_field_name': 'ot_action_requested',
+          'value': True,
+        },
+        'ot_request_note': {
+          'form_field_name': 'ot_request_note',
+          'value': 'Additional info.',
+        },
+        'ot_display_name': {
+          'form_field_name': 'ot_display_name',
+          'value': 'OT name',
+        },
+      }
+
+    with test_app.test_request_context(
+        f'{self.request_path}1/stages/10', json=json):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.do_patch(feature_id=1, stage_id=10)
+
   @mock.patch('flask.abort')
   def test_delete__not_allowed(self, mock_abort):
     """Raises 403 if user does not have edit access to the stage."""

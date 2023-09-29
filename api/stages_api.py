@@ -151,13 +151,21 @@ class StagesAPI(basehandlers.EntitiesAPIHandler):
       self.abort(404, msg=(f'Feature {stage.feature_id} not found '
                            f'associated with stage {stage_id}'))
     feature_id = feature.key.integer_id()
-    # Validate the user has edit permissions and redirect if needed.
-    redirect_resp = permissions.validate_feature_edit_permission(
-        self, feature_id)
-    if redirect_resp:
-      return redirect_resp
-
     body = self.get_json_param_dict()
+
+    user = self.get_current_user()
+    is_ot_request = body.get('ot_action_requested', False)
+    # If submitting an OT creation request, the user must have feature edit
+    # access or be a Chromium/Google account.
+    if not user or not is_ot_request or not (
+          user.email().endswith('@chromium.org') or
+          user.email().endswith('@google.com')):
+      # Validate the user has edit permissions and redirect if needed.
+      redirect_resp = permissions.validate_feature_edit_permission(
+          self, feature_id)
+      if redirect_resp:
+        return redirect_resp
+
     changed_fields: CHANGED_FIELDS_LIST_TYPE = []
     # Update specified fields.
     self._update_stage(stage, body, changed_fields)
