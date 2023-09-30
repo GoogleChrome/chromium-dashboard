@@ -646,7 +646,9 @@ class ChromedashFeatureDetail extends LitElement {
           href=${originTrialsURL}
           target="_blank">View Origin Trial</sl-button>`;
     }
-    if (this.canEdit && feStage.ot_action_requested) {
+    const canSeeOTControls = (this.user &&
+        (this.user.email.endsWith('@chromium.org') || this.user.email.endsWith('@google.com')));
+    if (canSeeOTControls && feStage.ot_action_requested) {
       // Display the button as disabled with tooltip text if a request
       // has already been submitted.
       return html`
@@ -658,7 +660,7 @@ class ChromedashFeatureDetail extends LitElement {
             >Request Trial Creation</sl-button>
         </sl-tooltip>`;
     // Display the creation request button if user has edit access.
-    } else if (this.canEdit) {
+    } else if (canSeeOTControls) {
       const stageId = feStage.id;
       return html`
         <sl-button
