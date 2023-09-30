@@ -2,7 +2,7 @@ import {LitElement, css, html, nothing} from 'lit';
 import {getStageValue, renderHTMLIf} from './utils';
 import {enhanceUrl} from './feature-link';
 import {openAddStageDialog} from './chromedash-add-stage-dialog';
-// import {openPrereqsDialog} from './chromedash-ot-create-prereqs-dialog';
+import {openPrereqsDialog} from './chromedash-ot-create-prereqs-dialog';
 import {makeDisplaySpecs} from './form-field-specs';
 import {
   FLAT_ENTERPRISE_METADATA_FIELDS,
@@ -646,9 +646,6 @@ class ChromedashFeatureDetail extends LitElement {
           href=${originTrialsURL}
           target="_blank">View Origin Trial</sl-button>`;
     }
-    // TODO(DanielRyanSmith): uncomment this section to make the trial creation
-    // request form available for users.
-    /*
     const canSeeOTControls = (this.user &&
         (this.user.email.endsWith('@chromium.org') || this.user.email.endsWith('@google.com')));
     if (canSeeOTControls && feStage.ot_action_requested) {
@@ -672,7 +669,6 @@ class ChromedashFeatureDetail extends LitElement {
           @click="${() => openPrereqsDialog(this.feature.id, stageId)}"
           >Request Trial Creation</sl-button>`;
     }
-    */
     return nothing;
   }
 
