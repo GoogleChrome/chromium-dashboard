@@ -849,7 +849,7 @@ Do the automated tests have more than 93% green (flakiness < 7%) on CQ and CI bu
 <li>Yes. There are non-automatable test cases and I have completed test execution or allocated resources to ensure the coverage of these test cases.
 <li>Yes. There are non-automatable test cases and my feature impacts Google products.
 </ul>
-<b>(4) If your feature impacts Google products, please fill in <a href="http://go/chrome-wp-test-survey">go/chrome-wp-test-survey</a>.</b> Make a copy, answer the survey questions, and provide a link to your document here.
+<b>(4) If your feature impacts Google products, please fill in <a href="http://go/chrome-wp-test-survey" target="_blank">go/chrome-wp-test-survey</a>.</b> Make a copy, answer the survey questions, and provide a link to your document here.
 `
 );
 
