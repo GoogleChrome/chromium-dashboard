@@ -2,7 +2,7 @@ import {LitElement, css, html, nothing} from 'lit';
 import {getStageValue, renderHTMLIf} from './utils';
 import {enhanceUrl} from './feature-link';
 import {openAddStageDialog} from './chromedash-add-stage-dialog';
-// import {openPrereqsDialog} from './chromedash-ot-create-prereqs-dialog';
+import {openPrereqsDialog} from './chromedash-ot-create-prereqs-dialog';
 import {makeDisplaySpecs} from './form-field-specs';
 import {
   FLAT_ENTERPRISE_METADATA_FIELDS,
@@ -646,9 +646,6 @@ class ChromedashFeatureDetail extends LitElement {
           href=${originTrialsURL}
           target="_blank">View Origin Trial</sl-button>`;
     }
-    // TODO(DanielRyanSmith): uncomment this section to make the trial creation
-    // request form available for users.
-    /*
     if (this.canEdit && feStage.ot_action_requested) {
       // Display the button as disabled with tooltip text if a request
       // has already been submitted.
@@ -670,7 +667,6 @@ class ChromedashFeatureDetail extends LitElement {
           @click="${() => openPrereqsDialog(this.feature.id, stageId)}"
           >Request Trial Creation</sl-button>`;
     }
-    */
     return nothing;
   }
 
