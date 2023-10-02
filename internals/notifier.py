@@ -40,7 +40,7 @@ from internals.user_models import (
     AppUser, BlinkComponent, FeatureOwner, UserPref)
 
 
-OT_CORE_EMAIL = 'origin-trials-core@google.com'
+OT_SUPPORT_EMAIL = 'origin-trials-support@google.com'
 
 
 def _determine_milestone_string(ship_stages: list[Stage]) -> str:
@@ -547,7 +547,7 @@ class OriginTrialCreationRequestHandler(basehandlers.FlaskHandler):
 """
 
     return {
-      'to': OT_CORE_EMAIL,
+      'to': OT_SUPPORT_EMAIL,
       'subject': f'New Trial Creation Request for {stage["ot_display_name"]}',
       'reply_to': None,
       'html': email_body,
