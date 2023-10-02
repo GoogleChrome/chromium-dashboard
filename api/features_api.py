@@ -173,7 +173,6 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     ) -> bool:
     """Update stage fields with changes provided in the PATCH request."""
     stages: list[Stage] = []
-    ot_action_requested_stage: Stage | None = None
     for change_info in stage_changes_list:
       stage_was_updated = False
       # Check if valid ID is provided and fetch stage if it exists.
@@ -189,10 +188,6 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         if field not in change_info:
           continue
         form_field_name = change_info[field]['form_field_name']
-
-        # If a creation request has been submitted, save for notification.
-        if form_field_name == 'ot_action_requested':
-          ot_action_requested_stage = stage
 
         old_value = getattr(stage, field)
         new_value = change_info[field]['value']
