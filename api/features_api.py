@@ -224,10 +224,6 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     if stages:
       ndb.put_multi(stages)
 
-    # Notify of OT request if one was sent.
-    if ot_action_requested_stage:
-      notifier_helpers.send_ot_creation_notification(ot_action_requested_stage)
-
     # Return a boolean representing if any changes were made to any stages.
     return len(stages) > 0
 

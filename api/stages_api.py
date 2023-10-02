@@ -55,6 +55,7 @@ class StagesAPI(basehandlers.EntitiesAPIHandler):
     ) -> bool:
     """Update stage fields with changes provided."""
     stage_was_updated = False
+    ot_action_requested = False
     # Check if valid ID is provided and fetch stage if it exists.
 
     # Update stage fields.
@@ -62,6 +63,8 @@ class StagesAPI(basehandlers.EntitiesAPIHandler):
       if field not in change_info:
         continue
       form_field_name = change_info[field]['form_field_name']
+      if form_field_name == 'ot_action_requested':
+        ot_action_requested = True
       old_value = getattr(stage, field)
       new_value = change_info[field]['value']
       self.update_field_value(stage, field, field_type, new_value)
@@ -85,6 +88,11 @@ class StagesAPI(basehandlers.EntitiesAPIHandler):
 
     if stage_was_updated:
       stage.put()
+
+    # Notify of OT request if one was sent.
+    if ot_action_requested:
+      notifier_helpers.send_ot_creation_notification(stage)
+
     return stage_was_updated
 
   def do_get(self, **kwargs):
