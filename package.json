@@ -65,7 +65,7 @@
     "@open-wc/testing": "^3.2.0",
     "@openapitools/openapi-generator-cli": "^2.7.0",
     "@rollup/plugin-babel": "^6.0.3",
-    "@rollup/plugin-node-resolve": "^15.2.1",
+    "@rollup/plugin-node-resolve": "^15.2.3",
     "@shoelace-style/shoelace": "^2.9.0",
     "@web/test-runner": "^0.16.1",
     "@web/test-runner-playwright": "^0.10.1",
