@@ -48,6 +48,13 @@ def construct_chrome_channels_details():
     channels['dev'] = fetch_chrome_release_info(new_dev_version)
     channels['dev']['version'] = new_dev_version
 
+  # In the situation where some versions are in a gap between
+  # stable and beta, show one as 'stable_soon'.
+  if channels['stable']['version'] + 1 < channels['beta']['version']:
+    stable_soon_version = channels['stable']['version'] + 1
+    channels['stable_soon'] = fetch_chrome_release_info(stable_soon_version)
+    channels['stable_soon']['version'] = stable_soon_version
+
   return channels
 
 
