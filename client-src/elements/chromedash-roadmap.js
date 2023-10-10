@@ -16,6 +16,12 @@ const TEMPLATE_CONTENT = {
     dateText: 'was',
     featureHeader: 'Features in this release',
   },
+  stable_soon: {
+    channelLabel: 'Stable soon',
+    h1Class: '',
+    dateText: 'was',
+    featureHeader: 'Features planned in this release',
+  },
   beta: {
     channelLabel: 'Next up',
     h1Class: 'chrome_version--beta',
@@ -36,6 +42,7 @@ const TEMPLATE_CONTENT = {
   },
 };
 const DEFAULT_CHANNEL_TYPES = ['stable', 'beta', 'dev'];
+const GAPPED_CHANNEL_TYPES = ['stable', 'stable_soon', 'beta', 'dev'];
 const SHOW_DATES = true;
 const compareFeatures = (a, b) => a.name.localeCompare(b.name, 'fr', {ignorePunctuation: true}); // comparator for sorting milestone features
 
@@ -75,6 +82,7 @@ class ChromedashRoadmap extends LitElement {
   constructor() {
     super();
     this.channels = {};
+    this.shownChannelNames = [];
     this.numColumns = 0;
     this.cardWidth = 0;
     this.starredFeatures = new Set();
@@ -99,7 +107,9 @@ class ChromedashRoadmap extends LitElement {
   }
 
   fetchFirstBatch(channels) {
-    const promises = DEFAULT_CHANNEL_TYPES.map((channelType) =>
+    this.shownChannelNames = channels['stable_soon'] ?
+      GAPPED_CHANNEL_TYPES : DEFAULT_CHANNEL_TYPES;
+    const promises = this.shownChannelNames.map((channelType) =>
       window.csClient.getFeaturesInMilestone(channels[channelType].version),
     );
     Promise.all(promises).then((allRes) => {
@@ -107,13 +117,13 @@ class ChromedashRoadmap extends LitElement {
         Object.keys(res).forEach(status => {
           res[status].sort(compareFeatures);
         });
-        channels[DEFAULT_CHANNEL_TYPES[idx]].features = res;
+        channels[this.shownChannelNames[idx]].features = res;
       });
-
       this.channels = channels;
-      this.fetchNextBatch(channels[DEFAULT_CHANNEL_TYPES[1]].version, true);
-      this.fetchPreviousBatch(channels[DEFAULT_CHANNEL_TYPES[1]].version);
-      this.lastMilestoneVisible = channels[DEFAULT_CHANNEL_TYPES[this.numColumns-1]].version;
+
+      this.fetchNextBatch(channels['beta'].version, true);
+      this.fetchPreviousBatch(channels['stable'].version);
+      this.lastMilestoneVisible = channels[this.shownChannelNames[this.numColumns-1]].version;
     });
   }
 
@@ -153,7 +163,7 @@ class ChromedashRoadmap extends LitElement {
   }
 
   fetchPreviousBatch(version) {
-    const versionToFetch = version - 2;
+    const versionToFetch = version - 1;
     // Chrome 1 is the first release. Hence, do not fetch if already fetched Chrome 1.
     if (versionToFetch < 2) return;
 
@@ -222,7 +232,7 @@ class ChromedashRoadmap extends LitElement {
         </chromedash-roadmap-milestone-card>
       `)}
 
-      ${DEFAULT_CHANNEL_TYPES.map((type) => html`
+      ${this.shownChannelNames.map((type) => html`
         <chromedash-roadmap-milestone-card
           style="width:${this.cardWidth}px;"
           .channel=${this.channels[type]}
