@@ -400,15 +400,13 @@ export class ChromedashFeaturePage extends LitElement {
         </section>
       `: nothing}
 
-      ${this.feature.standards.spec ? html`
+      ${(this.feature.standards.spec || this.feature.explainer_links?.length) ? html`
         <section id="specification">
           <h3>Specification</h3>
-          <p>${enhanceUrl(this.feature.standards.spec, this.featureLinks)}</p>
-          <br>
-          <p>
-            <label>Status:</label>
-            ${this.feature.standards.maturity.text}
-          </p>
+          ${this.feature.explainer_links?.map((link) =>
+      html`<p>Explainer: ${enhanceUrl(link, this.featureLinks)}</p>`)}
+          <p>Spec: ${enhanceUrl(this.feature.standards.spec, this.featureLinks)}</p>
+          <p>Spec status: ${this.feature.standards.maturity.text}</p>
         </section>
       `: nothing}
     `;
