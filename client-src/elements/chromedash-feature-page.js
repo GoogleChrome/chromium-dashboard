@@ -378,7 +378,7 @@ export class ChromedashFeaturePage extends LitElement {
         </section>
       `: nothing}
 
-      ${this.feature.resources && this.feature.resources.samples ? html`
+      ${this.feature.resources?.samples?.length ? html`
         <section id="demo">
           <h3>Demos and samples</h3>
           <ul>
@@ -389,7 +389,7 @@ export class ChromedashFeaturePage extends LitElement {
         </section>
       `: nothing}
 
-      ${this.feature.resources && this.feature.resources.docs ? html`
+      ${this.feature.resources?.docs?.length ? html`
         <section id="documentation">
           <h3>Documentation</h3>
           <ul>
@@ -400,13 +400,17 @@ export class ChromedashFeaturePage extends LitElement {
         </section>
       `: nothing}
 
-      ${(this.feature.standards.spec || this.feature.explainer_links?.length) ? html`
+      ${this.feature.standards.spec ? html`
         <section id="specification">
           <h3>Specification</h3>
-          ${this.feature.explainer_links?.map((link) =>
-      html`<p>Explainer: ${enhanceUrl(link, this.featureLinks)}</p>`)}
-          <p>Spec: ${enhanceUrl(this.feature.standards.spec, this.featureLinks)}</p>
+          <p>${enhanceUrl(this.feature.standards.spec, this.featureLinks)}</p>
           <p>Spec status: ${this.feature.standards.maturity.text}</p>
+        </section>
+        `: this.feature.explainer_links?.length ? html`
+        <section id="specification">
+          <h3>Explainer(s)</h3>
+          ${this.feature.explainer_links?.map((link) =>
+      html`<p>${enhanceUrl(link, this.featureLinks)}</p>`)}
         </section>
       `: nothing}
     `;
