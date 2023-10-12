@@ -170,13 +170,12 @@ class ChromedashGateChip extends LitElement {
       return nothing;
     }
     const teamName = this.gate.team_name;
-    const gateName = this.gate.name;
     const stateName = GATE_STATE_TO_NAME[this.gate.state];
     const className = stateName.toLowerCase().replaceAll(' ', '_');
     const selected = (this.gate.id == this.selectedGateId) ? 'selected' : '';
 
     const statusIconName = GATE_STATE_TO_ICON[this.gate.state];
-    const abbrev = GATE_STATE_TO_ABBREV[this.gate.state] || gateName;
+    const abbrev = GATE_STATE_TO_ABBREV[this.gate.state] || stateName;
     let statusIcon = html`<b class="abbrev" slot="prefix">${abbrev}</b>`;
     if (statusIconName) {
       statusIcon = html`
@@ -185,14 +184,16 @@ class ChromedashGateChip extends LitElement {
       `;
     }
 
-    const overdueIcon = (this.gate.slo_initial_response_remaining < 0) ?
+    const overdue = this.gate.slo_initial_response_remaining < 0;
+    const overdueIcon = overdue ?
       html`<sl-icon slot="suffix" library="material" class="overdue"
                  name="clock_loader_60_20px"></sl-icon>` :
       nothing;
+    const overdueTitle = overdue ? '. Overdue.' : '';
 
     return html`
       <sl-button pill size="small" class="${className} ${selected}"
-        title="${teamName}: ${gateName}: ${stateName}"
+        title="${teamName}: ${stateName}${overdueTitle}"
         @click=${this.handleClick}
         >
         ${statusIcon}

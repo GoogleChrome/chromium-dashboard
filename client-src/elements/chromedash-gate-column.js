@@ -6,6 +6,9 @@ import {
   somePendingPrereqs,
   somePendingGates,
 } from './chromedash-preflight-dialog';
+import {
+  maybeOpenPrevoteDialog,
+} from './chromedash-prevote-dialog';
 import {autolink, showToastMessage, findProcessStage,
   renderAbsoluteDate, renderRelativeDate,
 } from './utils.js';
@@ -271,7 +274,7 @@ export class ChromedashGateColumn extends LitElement {
     this.showSaved = false;
   }
 
-  handleSave() {
+  saveVote() {
     this.submittingComment = true;
     window.csClient.setVote(
       this.feature.id, this.gate.id,
@@ -286,6 +289,21 @@ export class ChromedashGateColumn extends LitElement {
         showToastMessage('Some errors occurred. Please refresh the page or try again later.');
         this.submittingComment = false;
       });
+  }
+
+  handleSave() {
+    Promise.all([
+      window.csClient.getGates(this.feature.id),
+    ]).then(([gatesRes]) => {
+      this.featureGates = gatesRes.gates;
+      const vote = this.voteSelectRef.value.value;
+      maybeOpenPrevoteDialog(this.featureGates, this.stage, this.gate, vote)
+        .then(() => {
+          this.saveVote();
+        });
+    }).catch(() => {
+      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+    });
   }
 
   handleCancel() {

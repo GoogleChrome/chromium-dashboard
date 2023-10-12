@@ -53,6 +53,7 @@ from pages import featurelist
 from pages import guide
 from pages import intentpreview
 from pages import metrics
+from pages import ot_requests
 from pages import users
 import settings
 
@@ -183,6 +184,8 @@ spa_page_routes = [
       defaults={'require_edit_feature': True}),
   Route('/guide/stage/<int:feature_id>/metadata',
       defaults={'require_edit_feature': True}),
+  Route('/ot_creation_request/<int:feature_id>/<int:stage_id>',
+        defaults={'require_signin': True}),
   Route('/metrics'),
   Route('/metrics/css'),
   Route('/metrics/css/popularity'),
@@ -207,6 +210,7 @@ spa_page_routes = [
 
 mpa_page_routes: list[Route] = [
     Route('/admin/users/new', users.UserListHandler),
+    Route('/admin/ot_requests', ot_requests.OriginTrialsRequests),
 
     Route('/admin/features/launch/<int:feature_id>',
         intentpreview.IntentEmailPreviewHandler),
@@ -250,6 +254,8 @@ internals_routes: list[Route] = [
   Route('/tasks/email-reviewers', notifier.FeatureReviewHandler),
   Route('/tasks/email-comments', notifier.FeatureCommentHandler),
   Route('/tasks/update-feature-links', feature_links.FeatureLinksUpdateHandler),
+  Route('/tasks/email-ot-creation-request',
+        notifier.OriginTrialCreationRequestHandler),
 
   # Maintenance scripts.
   Route('/scripts/evaluate_gate_status',

@@ -292,13 +292,7 @@ const FLAT_ORIGIN_TRIAL_FIELDS = {
         // TODO(jrobbins): display r4dt_url instead when deprecating.
         'i2e_lgtms',
         'intent_to_experiment_url',
-        'ot_chromium_trial_name',
-        'ot_webfeature_use_counter',
-        'ot_documentation_url',
         'origin_trial_feedback_url',
-        'ot_is_deprecation_trial',
-        'ot_has_third_party_support',
-        'ot_is_critical_trial',
       ],
     },
     // Implementation
@@ -510,6 +504,31 @@ const DEPRECATION_DEV_TRIAL_FIELDS = {
       ],
       isImplementationSection: true,
       implStatusValue: enums.IMPLEMENTATION_STATUS.BEHIND_A_FLAG[0],
+    },
+  ],
+};
+
+export const ORIGIN_TRIAL_CREATION_FIELDS = {
+  name: 'Origin trial creation',
+  sections: [
+    {
+      fields: [
+        'ot_display_name',
+        'ot_description',
+        'ot_owner_email',
+        'ot_emails',
+        'ot_creation__milestone_desktop_first',
+        'ot_creation__milestone_desktop_last',
+        'ot_creation__intent_to_experiment_url',
+        'ot_documentation_url',
+        'ot_feedback_submission_url',
+        'ot_chromium_trial_name',
+        'ot_webfeature_use_counter',
+        'ot_is_deprecation_trial',
+        'ot_has_third_party_support',
+        'ot_is_critical_trial',
+        'ot_request_note',
+      ],
     },
   ],
 };
@@ -815,7 +834,23 @@ When in doubt, please check out https://goo.gle/devtools-checklist for details!
 const DEBUGGABILITY_SHIP_QUESTIONNAIRE = DEBUGGABILITY_ORIGIN_TRIAL_QUESTIONNAIRE;
 
 const TESTING_SHIP_QUESTIONNAIRE = (
-  'See http://go/chrome-wp-test-survey.'
+  html`<b>(1) Does your feature have sufficient automated test coverage (Unit tests, WPT, browser tests and other integration tests)?</b>
+Chrome requires at least 70% automation code coverage (<a href="https://analysis.chromium.org/coverage/p/chromium" target="_blank">dashboard</a>) running on the main/release branch and 70% Changelist <a href="https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/testing/code_coverage_in_gerrit.md" target="_blank">code coverage in Gerrit</a>?
+Do the automated tests have more than 93% green (flakiness < 7%) on CQ and CI builders?
+<ul>
+<li>Yes. My feature met the minimum automated test coverage and health requirements.
+<li>No. My feature does not meet the requirements since __________.
+</ul>
+<b>(2) How are performance tests conducted on Chromium builders?</b> List links to tests if any.
+
+<b>(3) Does this feature have non-automatable test cases that require manual testing? Do you have a plan to get them tested?</b>
+<ul>
+<li>No. All feature related test cases are automated.
+<li>Yes. There are non-automatable test cases and I have completed test execution or allocated resources to ensure the coverage of these test cases.
+<li>Yes. There are non-automatable test cases and my feature impacts Google products.
+</ul>
+<b>(4) If your feature impacts Google products, please fill in <a href="http://go/chrome-wp-test-survey" target="_blank">go/chrome-wp-test-survey</a>.</b> Make a copy, answer the survey questions, and provide a link to your document here.
+`
 );
 
 

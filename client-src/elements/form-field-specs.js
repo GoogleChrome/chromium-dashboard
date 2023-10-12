@@ -21,6 +21,7 @@ const USER_REGEX = String.raw`[A-Za-z0-9_#$&*+\/=?\{\}~^.\-]+`;
 const DOMAIN_REGEX = String.raw`(([A-Za-z0-9\-]+\.)+[A-Za-z]{2,6})`;
 
 const EMAIL_ADDRESS_REGEX = USER_REGEX + '@' + DOMAIN_REGEX;
+const GOOGLE_EMAIL_ADDRESS_REGEX = `${USER_REGEX}@google.com`;
 const EMAIL_ADDRESSES_REGEX = EMAIL_ADDRESS_REGEX + '([ ]*,[ ]*' + EMAIL_ADDRESS_REGEX + ')*';
 
 // Simple http URLs
@@ -671,6 +672,7 @@ export const ALL_FIELDS = {
 
   'r4dt_url': {
     // form field name matches underlying DB field (sets "intent_to_experiment_url" field in DB).
+    name: 'intent_to_experiment_url',
     type: 'input',
     attrs: URL_FIELD_ATTRS,
     required: false,
@@ -1019,18 +1021,21 @@ export const ALL_FIELDS = {
   'ot_chromium_trial_name': {
     type: 'input',
     attrs: TEXT_FIELD_ATTRS,
-    required: false,
+    required: true,
     label: 'Chromium trial name',
     help_text: html`
       Name for the trial, as specified in <a target="_blank"
       href="https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/runtime_enabled_features.json5"
-      >runtime_enabled_features.json5</a>.`,
+      >runtime_enabled_features.json5</a>.
+      <br/>
+      <p style="color: red"><strong>Note:</strong> This name should be unique
+      and should not be used by any previous origin trials!</p>`,
   },
 
   'ot_documentation_url': {
     type: 'input',
     attrs: URL_FIELD_ATTRS,
-    required: false,
+    required: true,
     label: 'Documentation link',
     help_text: html`
       Link to more information to help developers use the trial's feature
@@ -1040,12 +1045,11 @@ export const ALL_FIELDS = {
   'ot_emails': {
     type: 'input',
     attrs: MULTI_EMAIL_FIELD_ATTRS,
-    required: true,
+    required: false,
     label: 'Origin trial contacts',
     help_text: html`
       List any other individuals or groups to include on the contact list
-      (e.g. for reminders on trial milestones).
-      Please enter valid email addresses.`,
+      (e.g. for reminders on trial milestones).`,
   },
 
   'ot_has_third_party_support': {
@@ -1087,14 +1091,50 @@ export const ALL_FIELDS = {
 
   'ot_webfeature_use_counter': {
     type: 'input',
-    attrs: TEXT_FIELD_ATTRS,
-    required: false,
+    attrs: {
+      ...TEXT_FIELD_ATTRS,
+      placeholder: 'e.g. "kWebFeature"',
+      pattern: String.raw`k\S*`,
+    },
+    required: true,
     label: 'WebFeature UseCounter name',
     help_text: html`
     For measuring usage, this must be a single named value from the
     WebFeature enum, e.g. kWorkerStart. See
     <a href="https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom"
     >web_feature.mojom</a>.`,
+  },
+
+  'ot_creation__intent_to_experiment_url': {
+    name: 'intent_to_experiment_url',
+    type: 'input',
+    attrs: URL_FIELD_ATTRS,
+    required: true,
+    label: 'Intent to Experiment link',
+    help_text: html`After you have started the "Intent to Experiment"
+                 discussion thread, link to it here.`,
+  },
+
+  'ot_creation__milestone_desktop_first': {
+    name: 'ot_milestone_desktop_start',
+    type: 'input',
+    attrs: MILESTONE_NUMBER_FIELD_ATTRS,
+    required: true,
+    label: 'Trial milestone start',
+    help_text: html`
+      First milestone that will support an origin
+      trial of this feature.`,
+  },
+
+  'ot_creation__milestone_desktop_last': {
+    name: 'ot_milestone_desktop_end',
+    type: 'input',
+    attrs: MILESTONE_NUMBER_FIELD_ATTRS,
+    required: true,
+    label: 'Trial milestone end',
+    help_text: html`
+      Last milestone that will support an origin
+      trial of this feature.`,
   },
 
   'anticipated_spec_changes': {
@@ -1409,6 +1449,21 @@ export const ALL_FIELDS = {
     </ul>`,
   },
 
+  'ot_display_name': {
+    type: 'input',
+    attrs: TEXT_FIELD_ATTRS,
+    required: true,
+    label: 'Origin trial display name',
+    help_text: html`
+    <p>
+      Name shown in the
+      <a href="https://developer.chrome.com/origintrials/" target="_blank">
+        Origin Trials Console
+      </a>
+      and included in reminder emails.
+    </p>`,
+  },
+
   'ot_description': {
     type: 'textarea',
     required: true,
@@ -1423,10 +1478,22 @@ export const ALL_FIELDS = {
     </p>`,
   },
 
+  'ot_owner_email': {
+    type: 'input',
+    required: true,
+    attrs: {...TEXT_FIELD_ATTRS, pattern: GOOGLE_EMAIL_ADDRESS_REGEX},
+    label: 'Trial owner email',
+    help_text: html`
+      <p>
+        The primary contact for this origin trial. Please supply a
+        '@google.com' domain email address only.
+      </p>`,
+  },
+
   'ot_feedback_submission_url': {
     type: 'input',
     attrs: URL_FIELD_ATTRS,
-    required: false,
+    required: true,
     label: 'Feature feedback link',
     help_text: html`
       Link for developers to file feedback on the feature

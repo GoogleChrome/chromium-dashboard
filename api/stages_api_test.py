@@ -43,7 +43,11 @@ class StagesAPITest(testing_config.CustomTestCase):
     self.fe.put()
 
     # Origin trial stage.
-    self.stage_1 = Stage(id=10, feature_id=1, stage_type=150, browser='Chrome',
+    self.stage_1 = Stage(
+        id=10,
+        feature_id=1,
+        stage_type=150,
+        display_name='Stage display name',                 
         ux_emails=['ux_person@example.com'],
         intent_thread_url='https://example.com/intent',
         milestones=MilestoneSet(desktop_first=100),
@@ -67,8 +71,10 @@ class StagesAPITest(testing_config.CustomTestCase):
         origin_trial_id='-5269211564023480319',
         ux_emails=['ux_person@example.com'],
         intent_thread_url='https://example.com/intent',
+        ot_action_requested=True,
         ot_chromium_trial_name='ExampleChromiumTrialName',
         ot_description='An origin trial\'s description',
+        ot_display_name='The Origin Trial Display Name',
         ot_documentation_url='https://example.com/ot_docs',
         ot_emails=['user1@example.com', 'user2@example.com'],
         ot_feedback_submission_url='https://example.com/submit_feedback',
@@ -78,6 +84,7 @@ class StagesAPITest(testing_config.CustomTestCase):
         # ot_request_note should remain confidential and not be displayed in
         # requests obtaining information about the stage.
         ot_request_note='Additional info',
+        ot_owner_email='ot_owner@example.com',
         ot_webfeature_use_counter='kExampleUseCounter',
         milestones=MilestoneSet(desktop_first=100),
         experiment_goals='To be the very best.',
@@ -100,18 +107,21 @@ class StagesAPITest(testing_config.CustomTestCase):
         'created': str(self.now),
         'desktop_first': 100,
         'desktop_last': None,
-        'display_name': None,
+        'display_name': 'Stage display name',
         'enterprise_policies': [],
         'origin_trial_id': None,
         'origin_trial_feedback_url': None,
+        'ot_action_requested': False,
         'ot_chromium_trial_name': None,
         'ot_description': None,
+        'ot_display_name': None,
         'ot_documentation_url': None,
         'ot_emails': [],
         'ot_feedback_submission_url': None,
         'ot_has_third_party_support': False,
         'ot_is_critical_trial': False,
         'ot_is_deprecation_trial': False,
+        'ot_owner_email': None,
         'ot_webfeature_use_counter': None,
         'experiment_extension_reason': None,
         'experiment_goals': 'To be the very best.',
@@ -197,14 +207,17 @@ class StagesAPITest(testing_config.CustomTestCase):
         'experiment_goals': 'To be the very best.',
         'experiment_risks': None,
         'origin_trial_feedback_url': None,
+        'ot_action_requested': False,
         'ot_chromium_trial_name': None,
         'ot_description': None,
+        'ot_display_name': None,
         'ot_documentation_url': None,
         'ot_emails': [],
         'ot_feedback_submission_url': None,
         'ot_has_third_party_support': False,
         'ot_is_critical_trial': False,
         'ot_is_deprecation_trial': False,
+        'ot_owner_email': None,
         'ot_webfeature_use_counter': None,
         'announcement_url': None,
         'enterprise_policies': [],
@@ -247,14 +260,17 @@ class StagesAPITest(testing_config.CustomTestCase):
         'enterprise_policies': [],
         'origin_trial_id': '-5269211564023480319',
         'origin_trial_feedback_url': None,
+        'ot_action_requested': True,
         'ot_chromium_trial_name': 'ExampleChromiumTrialName',
         'ot_description': 'An origin trial\'s description',
+        'ot_display_name': 'The Origin Trial Display Name',
         'ot_documentation_url': 'https://example.com/ot_docs',
         'ot_emails': ['user1@example.com', 'user2@example.com'],
         'ot_feedback_submission_url': 'https://example.com/submit_feedback',
         'ot_has_third_party_support': True,
         'ot_is_critical_trial': True,
         'ot_is_deprecation_trial': True,
+        'ot_owner_email': 'ot_owner@example.com',
         'ot_webfeature_use_counter': 'kExampleUseCounter',
         'rollout_details': None,
         'rollout_impact': 2,
@@ -328,9 +344,7 @@ class StagesAPITest(testing_config.CustomTestCase):
   def test_post__valid(self):
     """A valid POST request should create a new stage."""
     testing_config.sign_in('feature_owner@example.com', 123)
-    json = {
-        'stage_type': 151,
-        'intent_thread_url': 'https://example.com/different'}
+    json = {'stage_type': 151}
 
     with test_app.test_request_context(
         f'{self.request_path}/1/stages', json=json):
@@ -340,15 +354,11 @@ class StagesAPITest(testing_config.CustomTestCase):
     stage: Stage | None = Stage.get_by_id(stage_id)
     self.assertIsNotNone(stage)
     self.assertEqual(stage.stage_type, 151)
-    self.assertEqual(stage.intent_thread_url, 'https://example.com/different')
 
   def test_post__gate_created(self):
     """A Gate entity is created when a gated stage is created."""
     testing_config.sign_in('feature_owner@example.com', 123)
-    json = {
-        'stage_type': 151,
-        'desktop_first': 100, 
-        'intent_thread_url': 'https://example.com/different'}
+    json = {'stage_type': 151}
 
     with test_app.test_request_context(
         f'{self.request_path}1/stages', json=json):
@@ -361,9 +371,7 @@ class StagesAPITest(testing_config.CustomTestCase):
   def test_post__gate_not_needed(self):
     """A Gate entity is created when a non-gated stage is created."""
     testing_config.sign_in('feature_owner@example.com', 123)
-    json = {
-        'stage_type': 110,
-        'intent_thread_url': 'https://example.com/different'}
+    json = {'stage_type': 110}
 
     with test_app.test_request_context(
         f'{self.request_path}1/stages', json=json):
@@ -441,28 +449,23 @@ class StagesAPITest(testing_config.CustomTestCase):
 
     self.assertEqual(actual, 'fake response')
 
-  @mock.patch('flask.abort')
-  def test_patch__stage_type_change_attempt(self, mock_abort):
-    """stage_type field cannot be mutated."""
-    testing_config.sign_in('feature_owner@example.com', 123)
-    json = {
-        'stage_type': 260,
-        'intent_thread_url': 'https://example.com/different'}
-
-    with test_app.test_request_context(
-        f'{self.request_path}1/stages/10', json=json):
-      self.handler.do_patch(feature_id=1, stage_id=10)
-    # Stage type not changed.
-    self.assertEqual(self.stage_1.stage_type, 150)
-
   def test_patch__valid(self):
     """A valid PATCH request should update an existing stage."""
     testing_config.sign_in('feature_owner@example.com', 123)
     json = {
-        'intent_thread_url': 'https://example.com/different',
-        'announcement_url': 'https://example.com/announce',
-        'experiment_risks': 'No risks.',
-        'browser': None}
+        'intent_thread_url': {
+          'form_field_name': 'intent_to_experiment_url',
+          'value': 'https://example.com/different',
+        },
+        'experiment_risks': {
+          'form_field_name': 'experiment_risks',
+          'value': 'No risks.',
+        },
+        'display_name': {
+          'form_field_name': 'display_name',
+          'value': None,
+        },
+      }
 
     with test_app.test_request_context(
         f'{self.request_path}1/stages/10', json=json):
@@ -472,11 +475,90 @@ class StagesAPITest(testing_config.CustomTestCase):
     self.assertEqual(stage.experiment_risks, 'No risks.')
     self.assertEqual(stage.intent_thread_url, 'https://example.com/different')
     # Values can be set to null.
-    self.assertIsNone(stage.browser)
-    # Type-specific stage fields should not be put onto incorrect stages.
-    self.assertIsNone(stage.announcement_url)
+    self.assertIsNone(stage.display_name)
     # Existing fields not specified should not be changed.
     self.assertEqual(stage.experiment_goals, 'To be the very best.')
+
+  def test_patch__ot_request_googler(self):
+    """A valid OT creation request from a googler should update stage."""
+    testing_config.sign_in('a_googler@google.com', 123)
+    json = {
+        'ot_action_requested': {
+          'form_field_name': 'ot_action_requested',
+          'value': True,
+        },
+        'ot_request_note': {
+          'form_field_name': 'ot_request_note',
+          'value': 'Additional info.',
+        },
+        'ot_display_name': {
+          'form_field_name': 'ot_display_name',
+          'value': 'OT name',
+        },
+      }
+
+    with test_app.test_request_context(
+        f'{self.request_path}1/stages/10', json=json):
+      actual = self.handler.do_patch(feature_id=1, stage_id=10)
+    self.assertEqual(actual['message'], 'Stage values updated.')
+    stage = self.stage_1
+    self.assertEqual(stage.ot_action_requested, True)
+    self.assertEqual(stage.ot_request_note, 'Additional info.')
+    self.assertEqual(stage.ot_display_name, 'OT name')
+    # Existing fields not specified should not be changed.
+    self.assertEqual(stage.experiment_goals, 'To be the very best.')
+
+  def test_patch__ot_request_chromium(self):
+    """A valid OT creation request from a Chromium user should update stage."""
+    testing_config.sign_in('chromium_user@chromium.org', 123)
+    json = {
+        'ot_action_requested': {
+          'form_field_name': 'ot_action_requested',
+          'value': True,
+        },
+        'ot_request_note': {
+          'form_field_name': 'ot_request_note',
+          'value': 'Additional info.',
+        },
+        'ot_display_name': {
+          'form_field_name': 'ot_display_name',
+          'value': 'OT name',
+        },
+      }
+
+    with test_app.test_request_context(
+        f'{self.request_path}1/stages/10', json=json):
+      actual = self.handler.do_patch(feature_id=1, stage_id=10)
+    self.assertEqual(actual['message'], 'Stage values updated.')
+    stage = self.stage_1
+    self.assertEqual(stage.ot_action_requested, True)
+    self.assertEqual(stage.ot_request_note, 'Additional info.')
+    self.assertEqual(stage.ot_display_name, 'OT name')
+    # Existing fields not specified should not be changed.
+    self.assertEqual(stage.experiment_goals, 'To be the very best.')
+
+  def test_patch__ot_request_unauthorized(self):
+    """An OT creation request from an unauthorized is not processed."""
+    testing_config.sign_in('someone_unexpected@example.com', 123)
+    json = {
+        'ot_action_requested': {
+          'form_field_name': 'ot_action_requested',
+          'value': True,
+        },
+        'ot_request_note': {
+          'form_field_name': 'ot_request_note',
+          'value': 'Additional info.',
+        },
+        'ot_display_name': {
+          'form_field_name': 'ot_display_name',
+          'value': 'OT name',
+        },
+      }
+
+    with test_app.test_request_context(
+        f'{self.request_path}1/stages/10', json=json):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.do_patch(feature_id=1, stage_id=10)
 
   @mock.patch('flask.abort')
   def test_delete__not_allowed(self, mock_abort):

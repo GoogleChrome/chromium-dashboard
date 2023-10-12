@@ -13,65 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Any
 
 from api import converters
+from api import api_specs
 from framework import basehandlers
 from framework import permissions
 from framework import rediscache
-from internals import core_enums, stage_helpers
+from internals import notifier_helpers
+from internals import stage_helpers
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.data_types import CHANGED_FIELDS_LIST_TYPE
 from internals.review_models import Gate
 
 
-class StagesAPI(basehandlers.APIHandler):
-
-  # Categorized field names of the Stage kind.
-  GENERAL_FIELDS: list[str] = [
-      'browser',
-      'pm_emails',
-      'tl_emails',
-      'ux_emails',
-      'te_emails',
-      'intent_thread_url']
-
-  MILESTONE_FIELDS: list[str] = [
-      'desktop_first',
-      'desktop_last',
-      'android_first',
-      'android_last',
-      'ios_first',
-      'ios_last',
-      'webview_first',
-      'webview_last']
-
-  OT_FIELDS: list[str] = [
-      'experiment_goals',
-      'experiment_risks',
-      'origin_trial_feedback_url']
-
-  OT_EXTENSION_FIELDS: list[str] = [
-      'experiment_extension_reason',
-      'ot_stage_id']
-
-  SHIPPING_FIELDS: list[str] = [
-      'announcement_url',
-      'finch_url']
-
-  ENTERPRISE_FIELDS: list[str] = [
-      'rollout_impact',
-      'rollout_milestone',
-      'rollout_platforms',
-      'rollout_details',
-      'enterprise_policies']
-
-  # Fields that should default to an empty list if null.
-  FIELDS_DEFAULT_TO_LIST: list[str] = [
-      'pm_emails',
-      'tl_emails',
-      'ux_emails',
-      'te_emails',
-      'rollout_platforms',
-      'enterprise_policies']
+class StagesAPI(basehandlers.EntitiesAPIHandler):
 
   def _create_gate_for_stage(
       self, feature_id: int, stage_id: int, gate_type: int) -> None:
@@ -80,58 +36,64 @@ class StagesAPI(basehandlers.APIHandler):
         state=Gate.PREPARING)
     gate.put()
 
-  def _add_given_stage_vals(self,
-      stage: Stage, body: dict, fields: list[str]) -> None:
-    """Add given fields of the stage entity."""
-    for field in fields:
-      if field in body:
-        setattr(stage, field, body[field])
+  def _create_stage(self, feature_id: int, feature_type: int, stage_type: int):
+    """Create a new Stage entity."""
+    stage = Stage(feature_id=feature_id, stage_type=stage_type)
+    stage.put()
+    gate_type: int | None = stage_helpers.get_gate_for_stage(
+        feature_type, stage.stage_type)
+    if gate_type is not None:
+        self._create_gate_for_stage(
+        stage.feature_id, stage.key.integer_id(), gate_type)
+    return stage
 
-  def _update_stage_vals(self, stage: Stage, feature_type: int,
-      use_stage_type: bool=True, create_gate: bool=False) -> None:
-    """Check for relevant stage fields and update stage as needed."""
-    body = self.get_json_param_dict()
-    if use_stage_type:
-      if 'stage_type' not in body:
-        self.abort(404, msg='Stage type not specified.')
-      stage.stage_type = int(body['stage_type'])
-    s_type = stage.stage_type
+  def _update_stage(
+      self,
+      stage: Stage,
+      change_info: dict[str, Any],
+      changed_fields: CHANGED_FIELDS_LIST_TYPE,
+    ) -> bool:
+    """Update stage fields with changes provided."""
+    stage_was_updated = False
+    ot_action_requested = False
+    # Check if valid ID is provided and fetch stage if it exists.
 
-    for field in self.GENERAL_FIELDS:
-      if field in body:
-        setattr(stage, field, body[field])
+    # Update stage fields.
+    for field, field_type in api_specs.STAGE_FIELD_DATA_TYPES:
+      if field not in change_info:
+        continue
+      form_field_name = change_info[field]['form_field_name']
+      if form_field_name == 'ot_action_requested':
+        ot_action_requested = True
+      old_value = getattr(stage, field)
+      new_value = change_info[field]['value']
+      self.update_field_value(stage, field, field_type, new_value)
+      changed_fields.append((form_field_name, old_value, new_value))
+      stage_was_updated = True
 
     # Update milestone fields.
-    for field in self.MILESTONE_FIELDS:
-      if field in body:
-        if stage.milestones is None:
-          stage.milestones = MilestoneSet()
-        setattr(stage.milestones, field, body[field])
+    milestones = stage.milestones
+    for field, field_type in api_specs.MILESTONESET_FIELD_DATA_TYPES:
+      if field not in change_info:
+        continue
+      if milestones is None:
+        milestones = MilestoneSet()
+      form_field_name = change_info[field]['form_field_name']
+      old_value = getattr(milestones, field)
+      new_value = change_info[field]['value']
+      self.update_field_value(milestones, field, field_type, new_value)
+      changed_fields.append((form_field_name, old_value, new_value))
+      stage_was_updated = True
+    stage.milestones = milestones
 
-    # Keep the gate type that might need to be created for the stage type.
-    gate_type: int | None = stage_helpers.get_gate_for_stage(feature_type, s_type)
-    # Update type-specific fields.
+    if stage_was_updated:
+      stage.put()
 
-    if s_type == core_enums.STAGE_TYPES_ORIGIN_TRIAL[feature_type]:
-      self._add_given_stage_vals(stage, body, self.OT_FIELDS)
+    # Notify of OT request if one was sent.
+    if ot_action_requested:
+      notifier_helpers.send_ot_creation_notification(stage)
 
-    if s_type == core_enums.STAGE_TYPES_EXTEND_ORIGIN_TRIAL[feature_type]:
-      self._add_given_stage_vals(stage, body, self.OT_EXTENSION_FIELDS)
-
-    if s_type == core_enums.STAGE_TYPES_SHIPPING[feature_type]: # pragma: no cover
-      self._add_given_stage_vals(stage, body, self.SHIPPING_FIELDS)
-
-    if s_type == core_enums.STAGE_TYPES_ROLLOUT[feature_type]: # pragma: no cover
-      self._add_given_stage_vals(stage, body, self.ENTERPRISE_FIELDS)
-
-    stage.put()
-
-    # If we should create a gate and this is a stage that requires a gate,
-    # create it.
-    if create_gate and gate_type is not None:
-      self._create_gate_for_stage(
-          stage.feature_id, stage.key.integer_id(), gate_type)
-
+    return stage_was_updated
 
   def do_get(self, **kwargs):
     """Return a specified stage based on the given ID."""
@@ -166,11 +128,12 @@ class StagesAPI(basehandlers.APIHandler):
     if redirect_resp:
       return redirect_resp
 
-    # Create the stage.
-    stage = Stage(feature_id=feature_id)
+    body = self.get_json_param_dict()
+    if 'stage_type' not in body:
+      self.abort(404, msg='Stage type not specified.')
+    stage_type = int(body['stage_type'])
     # Add the specified field values to the stage. Create a gate if needed.
-    self._update_stage_vals(
-        stage, feature.feature_type, use_stage_type=True, create_gate=True)
+    stage = self._create_stage(feature_id, feature.feature_type, stage_type)
 
     # Changing stage values means the cached feature should be invalidated.
     lookup_key = FeatureEntry.feature_cache_key(
@@ -194,18 +157,29 @@ class StagesAPI(basehandlers.APIHandler):
     feature: FeatureEntry | None = FeatureEntry.get_by_id(stage.feature_id)
     if feature is None:
       self.abort(404, msg=(f'Feature {stage.feature_id} not found '
-          f'associated with stage {stage_id}'))
+                           f'associated with stage {stage_id}'))
     feature_id = feature.key.integer_id()
-    # Validate the user has edit permissions and redirect if needed.
-    redirect_resp = permissions.validate_feature_edit_permission(
-        self, feature_id)
-    if redirect_resp:
-      return redirect_resp
+    body = self.get_json_param_dict()
 
-    # Update specified fields. No need to create a gate for existing stage.
-    self._update_stage_vals(
-        stage, feature.feature_type, use_stage_type=False, create_gate=False)
+    user = self.get_current_user()
+    is_ot_request = body.get('ot_action_requested', False)
+    # If submitting an OT creation request, the user must have feature edit
+    # access or be a Chromium/Google account.
+    if not user or not is_ot_request or not (
+          user.email().endswith('@chromium.org') or
+          user.email().endswith('@google.com')):
+      # Validate the user has edit permissions and redirect if needed.
+      redirect_resp = permissions.validate_feature_edit_permission(
+          self, feature_id)
+      if redirect_resp:
+        return redirect_resp
 
+    changed_fields: CHANGED_FIELDS_LIST_TYPE = []
+    # Update specified fields.
+    self._update_stage(stage, body, changed_fields)
+
+    notifier_helpers.notify_subscribers_and_save_amendments(
+        feature, changed_fields, notify=True)
     # Changing stage values means the cached feature should be invalidated.
     lookup_key = FeatureEntry.feature_cache_key(
         FeatureEntry.DEFAULT_CACHE_KEY, feature_id)
