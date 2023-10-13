@@ -68,6 +68,15 @@ class PermissionsAPITest(testing_config.CustomTestCase):
         'can_edit_all': False,
         'is_admin': False,
         'email': 'one@google.com',
-        'editable_features': []
+        'editable_features': [],
+        'paired_user': {
+            'can_create_feature': True,
+            'approvable_gate_types': [],
+            'can_comment': True,
+            'can_edit_all': False,
+            'is_admin': False,
+            'email': 'one@chromium.org',
+            'editable_features': []
+          }
         }}
     self.assertEqual(expected, actual)
