@@ -84,7 +84,8 @@ export const FEATURE_TYPES_WITHOUT_ENTERPRISE = {
     'If there is already an agreed specification, work may quickly start on ' +
     'implementation and origin trials.'],
   FEATURE_TYPE_CODE_CHANGE_ID: [2, 'Web developer-facing change to existing code',
-    'Sometimes a change to a shipped feature requires an additional feature entry. ' +
+    'Not common.  Track a code change that does not change any API and has ' +
+    'very low interoperability risk, but might be noticed by web developers.' +
     'This type of feature entry can be referenced from a PSA immediately.'],
   FEATURE_TYPE_DEPRECATION_ID: [3, 'Feature deprecation',
     'Deprecate and remove an old feature.'],
