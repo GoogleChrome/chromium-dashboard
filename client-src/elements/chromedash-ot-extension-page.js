@@ -158,6 +158,43 @@ export class ChromedashOTExtensionPage extends LitElement {
     `;
   }
 
+  // Add a set of field information that will be sent with a request submission.
+  // These fields are always considered touched, and are not visible to the user.
+  addDefaultRequestFields() {
+    // Add "ot_owner_email" field to represent the requester email.
+    this.fieldValues.push({
+      name: 'ot_owner_email',
+      touched: true,
+      value: this.userEmail,
+      stageId: this.stage.id,
+    });
+
+    // Add a field for updating that an OT extension request has been submitted.
+    this.fieldValues.push({
+      name: 'ot_action_requested',
+      touched: true,
+      value: true,
+      stageId: this.stage.id,
+    });
+
+    // Add "stage_type" field to create extension stage properly.
+    const extensionStageType = OT_EXTENSION_STAGE_MAPPING[this.stage.stage_type];
+    this.fieldValues.push({
+      name: 'stage_type',
+      touched: true,
+      value: extensionStageType,
+      stageId: this.stage.id,
+    });
+
+    // Add "ot_stage_id" field to link extension stage to OT stage.
+    this.fieldValues.push({
+      name: 'ot_stage_id',
+      touched: true,
+      value: this.stage.id,
+      stageId: this.stage.id,
+    });
+  }
+
   renderFields(section) {
     const fields = section.fields.map(field => {
       const value = getStageValue(this.stage, field);
@@ -180,38 +217,9 @@ export class ChromedashOTExtensionPage extends LitElement {
     `;
     });
 
-    // Add "ot_owner_email" field to represent the requester email.
-    this.fieldValues.push({
-      name: 'ot_owner_email',
-      touched: true,
-      value: this.userEmail,
-      stageId: this.stage.id,
-    });
+    // Add additional default hidden fields.
+    this.addDefaultRequestFields();
 
-    // Add a field for updating that an OT extension request has been submitted.
-    this.fieldValues.push({
-      name: 'ot_action_requested',
-      touched: true,
-      value: true,
-      stageId: this.stage.id,
-    });
-
-    const extensionStageType = OT_EXTENSION_STAGE_MAPPING[this.stage.stage_type];
-    // Add "stage_type" field to create extension stage properly.
-    this.fieldValues.push({
-      name: 'stage_type',
-      touched: true,
-      value: extensionStageType,
-      stageId: this.stage.id,
-    });
-
-    // Add "ot_stage_id" field to link extension stage to OT stage.
-    this.fieldValues.push({
-      name: 'ot_stage_id',
-      touched: true,
-      value: this.stage.id,
-      stageId: this.stage.id,
-    });
     return fields;
   }
 
