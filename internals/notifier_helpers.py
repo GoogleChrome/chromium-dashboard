@@ -19,9 +19,10 @@ from framework import cloud_tasks_helpers, users
 from internals import core_enums, approval_defs, core_models
 from internals.data_types import CHANGED_FIELDS_LIST_TYPE
 from internals.review_models import Gate, Amendment, Activity, Vote
+from internals.core_models import Stage
 
 if TYPE_CHECKING:
-  from internals.core_models import FeatureEntry, Stage
+  from internals.core_models import FeatureEntry
 
 def _get_changes_as_amendments(
     changed_fields: CHANGED_FIELDS_LIST_TYPE) -> list[Amendment]:
@@ -166,10 +167,21 @@ def notify_subscribers_of_new_comments(fe: 'FeatureEntry', gate: Gate,
   cloud_tasks_helpers.enqueue_task('/tasks/email-comments', params)
 
 
-def send_ot_creation_notification(stage: 'Stage'):
+def send_ot_notification(stage: Stage):
   """Notify about new trial creation request."""
   stage_dict = converters.stage_to_json_dict(stage)
   # Add the OT request note, which is usually not publicly visible.
   stage_dict['ot_request_note'] = stage.ot_request_note
   params = {'stage': stage_dict}
-  cloud_tasks_helpers.enqueue_task('/tasks/email-ot-creation-request', params)
+
+  # Determine which notification type to send.
+  if stage_dict['stage_type'] in core_enums.OT_EXTENSION_STAGE_TYPES:
+    # Extension stage notifications need the original OT stage also
+    # to fill out all information in the notification.
+    ot_stage = Stage.get_by_id(stage.ot_stage_id)
+    params['ot_stage'] = converters.stage_to_json_dict(ot_stage)
+    cloud_tasks_helpers.enqueue_task(
+        '/tasks/email-ot-extension-request', params)
+  else:
+    cloud_tasks_helpers.enqueue_task(
+        '/tasks/email-ot-creation-request',params)

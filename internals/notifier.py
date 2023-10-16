@@ -553,6 +553,46 @@ class OriginTrialCreationRequestHandler(basehandlers.FlaskHandler):
       'html': email_body,
     }
 
+class OriginTrialExtensionRequestHandler(basehandlers.FlaskHandler):
+  """Notify about an origin trial extension request."""
+
+  IS_INTERNAL_HANDLER = True
+
+  def process_post_data(self, **kwargs):
+    extension_stage = self.get_param('stage')
+    ot_stage = self.get_param('ot_stage')
+    logging.info('Starting to notify about origin trial extension request.')
+    send_emails([self.make_extension_request_email(extension_stage, ot_stage)])
+
+    return {'message': 'OK'}
+
+  def _yes_or_no(self, value: bool):
+    return 'Yes' if value else 'No'
+
+  def make_extension_request_email(self, extension_stage, ot_stage):
+    email_body = f"""
+<p>
+  Requested by: {extension_stage["ot_owner_email"]}
+  <br>
+  Feature name: {ot_stage["ot_display_name"]}
+  <br>
+  Intent to Extend Experiment URL: {extension_stage["intent_thread_url"]}
+  <br>
+  New end milestone: {extension_stage["desktop_last"]}
+  <br>
+  Anything else?: {extension_stage["ot_request_note"]}
+  <br>
+  <br>
+  Instructions for handling this request can be found at: https://g3doc.corp.google.com/chrome/origin_trials/g3doc/trial_admin.md#extend-an-existing-trial
+</p>
+"""
+
+    return {
+      'to': OT_SUPPORT_EMAIL,
+      'subject': f'New Trial Extension Request for {ot_stage["ot_display_name"]}',
+      'reply_to': None,
+      'html': email_body,
+    }
 
 BLINK_DEV_ARCHIVE_URL_PREFIX = (
     'https://groups.google.com/a/chromium.org/d/msgid/blink-dev/')
