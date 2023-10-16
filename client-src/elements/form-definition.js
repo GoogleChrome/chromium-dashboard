@@ -533,6 +533,19 @@ export const ORIGIN_TRIAL_CREATION_FIELDS = {
   ],
 };
 
+export const ORIGIN_TRIAL_EXTENSION_FIELDS = {
+  name: 'Origin trial extension',
+  sections: [
+    {
+      fields: [
+        'ot_extension__intent_to_extend_experiment_url',
+        'ot_extension__milestone_desktop_last',
+        'ot_request_note',
+      ],
+    },
+  ],
+};
+
 // Note: Even though this is similar to another form, it is likely to change.
 const DEPRECATION_ORIGIN_TRIAL_FIELDS = {
   name: 'Origin trial',

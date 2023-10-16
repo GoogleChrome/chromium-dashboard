@@ -115,6 +115,7 @@ STAGE_FIELD_DATA_TYPES: FIELD_INFO_DATA_TYPE = [
   ('ot_is_deprecation_trial', 'bool'),
   ('ot_owner_email', 'str'),
   ('ot_request_note', 'str'),
+  ('ot_stage_id', 'int'),
   ('ot_webfeature_use_counter', 'str'),
   ('rollout_impact', 'int'),
   ('rollout_milestone', 'int'),

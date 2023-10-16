@@ -670,6 +670,20 @@ export const ALL_FIELDS = {
                  discussion thread, link to it here.`,
   },
 
+  'ot_extension__intent_to_extend_experiment_url': {
+    name: 'intent_to_extend_experiment_url',
+    type: 'input',
+    attrs: URL_FIELD_ATTRS,
+    required: true,
+    label: 'Intent to Extend Experiment link',
+    help_text: html`
+      Link to the approved Intent to Extend Experiment, as per
+      <a target="_blank"
+          href="https://www.chromium.org/blink/origin-trials/running-an-origin-trial/#what-is-the-process-to-extend-an-origin-trial">
+        the trial extension process
+      </a>.`,
+  },
+
   'r4dt_url': {
     // form field name matches underlying DB field (sets "intent_to_experiment_url" field in DB).
     name: 'intent_to_experiment_url',
@@ -974,7 +988,7 @@ export const ALL_FIELDS = {
     required: false,
     label: 'Trial extension desktop end',
     help_text: html`
-      The new last desktop milestone for which the trial has been extended. `,
+      The last desktop milestone in which the trial will be available after extension.`,
   },
 
   'extension_android_last': {
@@ -983,7 +997,7 @@ export const ALL_FIELDS = {
     required: false,
     label: 'Trial extension Android end',
     help_text: html`
-      The new last android milestone for which the trial has been extended. `,
+      The last android milestone in which the trial will be available after extension.`,
   },
 
   'extension_webview_last': {
@@ -992,7 +1006,16 @@ export const ALL_FIELDS = {
     required: false,
     label: 'Trial extension WebView end',
     help_text: html`
-      The new last WebView milestone for which the trial has been extended.`,
+      The last WebView milestone in which the trial will be available after extension.`,
+  },
+
+  'ot_extension__milestone_desktop_last': {
+    type: 'input',
+    attrs: MILESTONE_NUMBER_FIELD_ATTRS,
+    required: true,
+    label: 'Trial extension desktop end',
+    help_text: html`
+      The last milestone in which the trial will be available after extension.`,
   },
 
   'ongoing_constraints': {
