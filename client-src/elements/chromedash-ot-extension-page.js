@@ -105,7 +105,6 @@ export class ChromedashOTExtensionPage extends LitElement {
     e.preventDefault();
     const featureSubmitBody = formatFeatureChanges(this.fieldValues, this.featureId);
     // We only need the single stage changes.
-    console.log(featureSubmitBody);
     const stageSubmitBody = featureSubmitBody.stages[0];
 
     window.csClient.createStage(this.featureId, stageSubmitBody).then(() => {
