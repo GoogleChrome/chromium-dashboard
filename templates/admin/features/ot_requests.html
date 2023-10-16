@@ -25,10 +25,10 @@
   </div>
 </div>
 
-{% for stage in stages %}
+{% for stage in creation_stages %}
 <section>
   <h3>
-    Request for: {{stage.ot_display_name}}
+    Creation request for: {{stage.ot_display_name}}
     <span class="tooltip copy-text" style="float:right" title="Copy text to clipboard">
       <a href="#" data-tooltip>
         <iron-icon icon="chromestatus:content_copy" id="copy-body-{{loop.index}}"></iron-icon>
@@ -62,6 +62,21 @@
 <section class="additional-comments">
   <h4>Additional comments:</h4>
   {{stage.ot_request_note}}
+</section>
+{% endfor %}
+{% for stage_info in extension_stages %}
+<section>
+  <h3>
+    Extension request for: {{stage_info.ot_stage.ot_display_name}}
+  </h3>
+  <p>Origin trial ID: {{stage_info.ot_stage.origin_trial_id}}</p>
+  <br>
+  <p>Intent to Extend Experiment: {{stage_info.extension_stage.intent_thread_url}}</p>
+  <br>
+  <p>New end milestone: {{stage_info.extension_stage.desktop_last}}</p>
+  <br>
+  <p>Additional comments: {{stage_info.extension_stage.ot_request_note}}</p>
+  <br>
 </section>
 {% endfor %}
 {% endblock %}
