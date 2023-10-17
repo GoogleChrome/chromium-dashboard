@@ -67,7 +67,7 @@
     "@rollup/plugin-babel": "^6.0.4",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@shoelace-style/shoelace": "^2.9.0",
-    "@web/test-runner": "^0.16.1",
+    "@web/test-runner": "^0.17.2",
     "@web/test-runner-playwright": "^0.10.1",
     "acorn": ">=8.10.0",
     "color-string": ">=1.9.0",
