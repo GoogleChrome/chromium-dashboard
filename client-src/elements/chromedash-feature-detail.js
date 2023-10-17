@@ -2,7 +2,10 @@ import {LitElement, css, html, nothing} from 'lit';
 import {getStageValue, renderHTMLIf} from './utils';
 import {enhanceUrl} from './feature-link';
 import {openAddStageDialog} from './chromedash-add-stage-dialog';
-import {openPrereqsDialog} from './chromedash-ot-create-prereqs-dialog';
+import {
+  openPrereqsDialog,
+  PrereqsDialogTypes,
+} from './chromedash-ot-prereqs-dialog';
 import {makeDisplaySpecs} from './form-field-specs';
 import {
   FLAT_ENTERPRISE_METADATA_FIELDS,
@@ -666,7 +669,7 @@ class ChromedashFeatureDetail extends LitElement {
         <sl-button
           size="small"
           variant="primary"
-          @click="${() => openPrereqsDialog(this.feature.id, stageId)}"
+          @click="${() => openPrereqsDialog(this.feature.id, stageId, PrereqsDialogTypes.CREATION)}"
           >Request Trial Creation</sl-button>`;
     }
     return nothing;
