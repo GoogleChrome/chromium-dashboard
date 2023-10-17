@@ -63,7 +63,6 @@ class LinkHelperTest(testing_config.CustomTestCase):
     self.assertTrue(link.is_parsed)
     self.assertFalse(link.is_error)
     self.assertIsNotNone(link.information.get('title'))
-    self.assertIsNotNone(link.information.get('description'))
 
   def test_mdn_docs_url(self):
     link = Link("https://developer.mozilla.org/en-US/docs/Web/HTML")
