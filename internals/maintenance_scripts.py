@@ -233,7 +233,7 @@ class AssociateOTs(FlaskHandler):
   def write_field(
       self,
       trial_stage: Stage,
-      trial_data: dict[str: Any],
+      trial_data: dict[str, Any],
       stage_field_name: str,
       trial_field_name: str,
     ) -> bool:
@@ -251,7 +251,7 @@ class AssociateOTs(FlaskHandler):
   def write_milestone_field(
       self,
       trial_stage: Stage,
-      trial_data: dict[str: Any],
+      trial_data: dict[str, Any],
       stage_field_name: str,
       trial_field_name: str,
     ) -> bool:
