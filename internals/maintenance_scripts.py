@@ -230,52 +230,93 @@ class BackfillFeatureLinks(FlaskHandler):
 
 class AssociateOTs(FlaskHandler):
 
-  def write_fields_for_trial_stage(self, trial_stage: Stage, trial_data: dict[str, Any]):
+  def write_field(
+      self,
+      trial_stage: Stage,
+      trial_data: dict[str: Any],
+      stage_field_name: str,
+      trial_field_name: str,
+    ) -> bool:
+    """Set the OT stage value to the value from the OT console if it is unset.
+    
+    Returns:
+      boolean value of whether or not the value was changed on the stage.
+    """
+    if (not getattr(trial_stage, stage_field_name)
+        and trial_data[trial_field_name]):
+      setattr(trial_stage, stage_field_name, trial_data[trial_field_name])
+      return True
+    return False
+
+  def write_milestone_field(
+      self,
+      trial_stage: Stage,
+      trial_data: dict[str: Any],
+      stage_field_name: str,
+      trial_field_name: str,
+    ) -> bool:
+    """Set an OT milestone value to the value from the OT console
+    if it is unset.
+    
+    Returns:
+      boolean value of whether or not the value was changed on the stage.
+    """
+    if trial_stage.milestones is None:
+      trial_stage.milestones = MilestoneSet()
+    if (getattr(trial_stage.milestones, stage_field_name) is None and
+        trial_data[trial_field_name] is not None):
+      setattr(trial_stage.milestones,
+              stage_field_name, int(trial_data[trial_field_name]))
+      return True
+    return False
+
+  def write_fields_for_trial_stage(
+      self, trial_stage: Stage, trial_data: dict[str, Any]):
     """Check if any OT stage fields are unfilled and populate them with
     the matching trial data.
     """
-    if trial_stage.origin_trial_id is None:
-      trial_stage.origin_trial_id = trial_data['id']
-
-    if trial_stage.ot_chromium_trial_name is None:
-      trial_stage.ot_chromium_trial_name = trial_data['origin_trial_feature_name']
-
-    if trial_stage.milestones is None:
-      trial_stage.milestones = MilestoneSet()
-    if (trial_stage.milestones.desktop_first is None and
-        trial_data['start_milestone'] is not None):
-      trial_stage.milestones.desktop_first = int(trial_data['start_milestone'])
-    if trial_stage.milestones.desktop_last is None:
-      # An original end milestone is kept if the trial has had extensions.
-      # TODO(DanielRyanSmith): Extension milestones in the trial data
-      # should be associated with new extension stages for data accuracy.
-      if trial_data['original_end_milestone'] is not None:
-        trial_stage.milestones.desktop_last = (
-            int(trial_data['original_end_milestone']))
-      elif trial_data['end_milestone'] is not None:
-        trial_stage.milestones.desktop_last = (
-            int(trial_data['end_milestone']))
-
-    if trial_stage.display_name is None:
-      trial_stage.display_name = trial_data['display_name']
-
-    if trial_stage.intent_thread_url is None:
-      trial_stage.intent_thread_url = trial_data['intent_to_experiment_url']
-
-    if trial_stage.ot_feedback_submission_url is None:
-      trial_stage.ot_feedback_submission_url = trial_data['feedback_url']
-
-    if trial_stage.ot_documentation_url is None:
-      trial_stage.ot_documentation_url = trial_data['documentation_url']
-
-    if trial_stage.ot_has_third_party_support:
-      trial_stage.ot_has_third_party_support = trial_data['allow_third_party_origins']
+    stage_changed = False
+    stage_changed = (self.write_field(
+        trial_stage, trial_data, 'origin_trial_id', 'id') or stage_changed)
+    stage_changed = (self.write_field(
+        trial_stage, trial_data,
+        'ot_chromium_trial_name', 'origin_trial_feature_name') or stage_changed)
+    stage_changed = (self.write_field(
+        trial_stage, trial_data,
+        'ot_feedback_submission_url', 'feedback_url') or stage_changed)
+    stage_changed = (self.write_field(
+        trial_stage, trial_data,
+        'ot_documentation_url', 'documentation_url') or stage_changed)
+    stage_changed = (self.write_field(
+        trial_stage, trial_data,
+        'intent_thread_url', 'intent_to_experiment_url') or stage_changed)
+    stage_changed = (self.write_field(
+        trial_stage, trial_data,
+        'display_name', 'display_name') or stage_changed)
+    stage_changed = (self.write_field(
+        trial_stage, trial_data,
+        'ot_display_name', 'display_name') or stage_changed)
+    stage_changed = (self.write_field(
+        trial_stage, trial_data,
+        'ot_has_third_party_support', 'allow_third_party_origins') or
+        stage_changed)
+    stage_changed = (self.write_milestone_field(
+            trial_stage, trial_data,
+            'desktop_first', 'start_milestone') or stage_changed)
+    stage_changed = (self.write_milestone_field(
+            trial_stage, trial_data,
+            'desktop_last', 'original_end_milestone') or stage_changed)
 
     if not trial_stage.ot_is_deprecation_trial:
       trial_stage.ot_is_deprecation_trial = trial_data['type'] == 'DEPRECATION'
+      stage_changed = True
 
     # Clear the trial creation request if it's active.
-    trial_stage.ot_action_requested = False
+    if trial_stage.ot_action_requested:
+      trial_stage.ot_action_requested = False
+      stage_changed = True
+    
+    return stage_changed
 
   def parse_feature_id(self, chromestatus_url: str|None) -> int|None:
       if chromestatus_url is None:
@@ -320,12 +361,34 @@ class AssociateOTs(FlaskHandler):
         return None
       return trial_stages[0]
 
+  def clear_extension_requests(self, ot_stage: Stage, trial_data: dict) -> int:
+    """Clear any trial extension requests if they have been processed"""
+    extension_stages: list[Stage] = Stage.query(
+        Stage.ot_action_requested == True,
+        Stage.ot_stage_id == ot_stage.key.integer_id()).fetch()
+    if len(extension_stages) == 0:
+      return 0
+    extension_stages_to_update = []
+    for extension_stage in extension_stages:
+      extension_end = extension_stage.milestones.desktop_last
+      # If the end milestone of the trial is equal or greater than the
+      # requested end milestone on the extension stage, we can assume the
+      # extension request has been processed.
+      if (int(trial_data['end_milestone']) >= extension_end):
+        extension_stage.ot_action_requested = False
+        extension_stages_to_update.append(extension_stage)
+    
+    if extension_stages_to_update:
+      ndb.put_multi(extension_stages_to_update)
+    return len(extension_stages_to_update)
+
   def get_template_data(self, **kwargs):
     """Link existing origin trials with their ChromeStatus entry"""
     self.require_cron_header()
 
     trials_list = origin_trials_client.get_trials_list()
     entities_to_write: list[Stage] = []
+    extensions_cleared = 0
     # Keep track of stages we're writing to so we avoid trying to write
     # to the same Stage entity twice in the same batch.
     unique_entities_to_write: set[int] = set()
@@ -339,11 +402,14 @@ class AssociateOTs(FlaskHandler):
         continue
 
       # If this trial is already associated with a ChromeStatus stage,
-      # just see if any unfilled fields need to be populated.
+      # just see if any unfilled fields need to be populated and clear
+      # any pending extension requests.
       if stage:
-        self.write_fields_for_trial_stage(stage, trial_data)
-        unique_entities_to_write.add(stage.key.integer_id())
-        entities_to_write.append(stage)
+        stage_changed = self.write_fields_for_trial_stage(stage, trial_data)
+        if stage_changed:
+          unique_entities_to_write.add(stage.key.integer_id())
+          entities_to_write.append(stage)
+        extensions_cleared += self.clear_extension_requests(stage, trial_data)
         continue
 
       feature_id = self.parse_feature_id(trial_data['chromestatus_url'])
@@ -361,9 +427,10 @@ class AssociateOTs(FlaskHandler):
         logging.info(f'Already writing to Stage entity {ot_stage_id}')
         continue
 
-      self.write_fields_for_trial_stage(ot_stage, trial_data)
-      unique_entities_to_write.add(ot_stage_id)
-      entities_to_write.append(ot_stage)
+      stage_changed = self.write_fields_for_trial_stage(ot_stage, trial_data)
+      if stage_changed:
+        unique_entities_to_write.add(ot_stage_id)
+        entities_to_write.append(ot_stage)
 
     # List any origin trials that did not get associated with a feature entry.
     if len(trials_with_no_feature) > 0:
@@ -373,11 +440,10 @@ class AssociateOTs(FlaskHandler):
     for trial_data in trials_with_no_feature:
       logging.info(f'{trial_data["id"]} {trial_data["display_name"]}')
 
-    # Update all the stages at the end. Note that there is a chance
-    # the stage entities have not changed any values if all fields already
-    # had a value.
+    # Update all the stages at the end.
     logging.info(f'{len(entities_to_write)} stages to update.')
     if len(entities_to_write) > 0:
       ndb.put_multi(entities_to_write)
 
-    return f'{len(entities_to_write)} Stages updated with trial data.'
+    return (f'{len(entities_to_write)} Stages updated with trial data.\n'
+            f'{extensions_cleared} extension requests cleared.')
