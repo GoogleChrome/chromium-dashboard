@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from api.converters import stage_to_json_dict
+from internals.core_enums import OT_EXTENSION_STAGE_TYPES
 from internals.core_models import Stage
 
 from framework import basehandlers
@@ -28,11 +29,27 @@ class OriginTrialsRequests(basehandlers.FlaskHandler):
   def get_template_data(self, **kwargs):
     stages_with_requests = Stage.query(
         Stage.ot_action_requested == True).fetch()
-    stages = []
+    creation_stages = []
+    extension_stages = []
     for stage in stages_with_requests:
       stage_dict = stage_to_json_dict(stage)
       # Add the request note that is not typically visible to non-admins.
       if stage.ot_request_note:
         stage_dict['ot_request_note'] = stage.ot_request_note
-      stages.append(stage_dict)
-    return {'stages': stages}
+      # Group up creation and extension requests.
+      if stage_dict['stage_type'] in OT_EXTENSION_STAGE_TYPES:
+        # Information will be needed from the original OT stage.
+        ot_stage = Stage.get_by_id(stage_dict['ot_stage_id'])
+        ot_stage_dict = stage_to_json_dict(ot_stage)
+        # Supply both the OT stage and the extension stage.
+        extension_stages.append({
+            'ot_stage': ot_stage_dict,
+            'extension_stage': stage_dict,
+          })
+      else:
+        creation_stages.append(stage_dict)
+
+    return {
+        'creation_stages': creation_stages,
+        'extension_stages': extension_stages,
+      }
