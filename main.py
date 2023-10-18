@@ -186,6 +186,8 @@ spa_page_routes = [
       defaults={'require_edit_feature': True}),
   Route('/ot_creation_request/<int:feature_id>/<int:stage_id>',
         defaults={'require_signin': True}),
+  Route('/ot_extension_request/<int:feature_id>/<int:stage_id>',
+        defaults={'require_signin': True}),
   Route('/metrics'),
   Route('/metrics/css'),
   Route('/metrics/css/popularity'),
@@ -256,6 +258,8 @@ internals_routes: list[Route] = [
   Route('/tasks/update-feature-links', feature_links.FeatureLinksUpdateHandler),
   Route('/tasks/email-ot-creation-request',
         notifier.OriginTrialCreationRequestHandler),
+  Route('/tasks/email-ot-extension-request',
+        notifier.OriginTrialExtensionRequestHandler),
 
   # Maintenance scripts.
   Route('/scripts/evaluate_gate_status',

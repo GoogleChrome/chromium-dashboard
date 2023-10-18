@@ -594,25 +594,10 @@ class ChromedashFeatureDetail extends LitElement {
     const isActive = this.feature.active_stage_id === feStage.id;
 
     // Show any buttons that should be displayed at the top of the detail card.
-    let addExtensionButton = nothing;
-    let editButton = nothing;
+    const addExtensionButton = this.renderExtensionButton(feStage);
+    const editButton = this.renderEditButton(feStage, processStage);
     const trialButton = this.renderOriginTrialButton(feStage);
-    if (this.canEdit && STAGE_TYPES_ORIGIN_TRIAL.has(feStage.stage_type)) {
-      // Button text changes based on whether or not an extension stage already exists.
-      const extensionAlreadyExists = (feStage.extensions && feStage.extensions.length > 0);
-      const extensionButtonText = extensionAlreadyExists ?
-        'Add another trial extension' : 'Add a trial extension';
-      addExtensionButton = html`
-      <sl-button size="small"
-          @click=${() => this.createExtensionStage(feStage, extensionAlreadyExists)}
-          >${extensionButtonText}</sl-button>`;
-    }
-    if (this.canEdit) {
-      editButton = html`
-        <sl-button size="small"
-            href="/guide/stage/${this.feature.id}/${processStage.outgoing_stage}/${feStage.id}"
-            >Edit fields</sl-button>`;
-    }
+
     const content = html`
       <p class="description">
         ${trialButton}
@@ -627,6 +612,56 @@ class ChromedashFeatureDetail extends LitElement {
     `;
     const defaultOpen = this.feature.is_enterprise_feature || (feStage.id == this.openStage);
     return this.renderSection(name, content, isActive, defaultOpen);
+  }
+
+  renderEditButton(feStage, processStage) {
+    if (!this.canEdit) {
+      return nothing;
+    }
+    return html`
+      <sl-button size="small"
+          href="/guide/stage/${this.feature.id}/${processStage.outgoing_stage}/${feStage.id}"
+          >Edit fields</sl-button>`;
+  }
+
+  renderExtensionButton(feStage) {
+    // Don't render an extension request button if this is not an OT stage,
+    // or the user does not have access to submit an extension request,
+    // or the OT stage has not been created in the OT Console yet.
+    const userCannotViewOTControls = (this.user === undefined ||
+      (!this.user.email.endsWith('@chromium.org') && !this.user.email.endsWith('@google.com')));
+    const isNotOriginTrialStage = !STAGE_TYPES_ORIGIN_TRIAL.has(feStage.stage_type);
+    const originTrialNotCreatedYet = !feStage.origin_trial_id;
+    if (userCannotViewOTControls || isNotOriginTrialStage || originTrialNotCreatedYet) {
+      return nothing;
+    }
+
+    // Button text changes based on whether or not an extension stage already exists.
+    const extensionAlreadyExists = feStage.extensions && feStage.extensions.length > 0;
+    const extensionInProgress = (
+      feStage.extensions && feStage.extensions.some(ext => ext.ot_action_requested));
+
+    let extensionButtonText = 'Request a trial extension';
+    if (extensionAlreadyExists) {
+      extensionButtonText = 'Request another trial extension';
+    }
+
+    // Show a disabled button if an extension request has already been submitted.
+    if (extensionInProgress) {
+      return html`
+        <sl-tooltip content="A pending request exists. For further inquiries, contact origin-trials-support@google.com.">
+          <sl-button
+            size="small"
+            disabled
+            >${extensionButtonText}</sl-button>
+        </sl-tooltip>`;
+    }
+
+    const stageId = feStage.id;
+    return html`
+    <sl-button size="small"
+        @click="${() => openPrereqsDialog(this.feature.id, stageId, PrereqsDialogTypes.EXTENSION)}"
+        >${extensionButtonText}</sl-button>`;
   }
 
   renderOriginTrialButton(feStage) {

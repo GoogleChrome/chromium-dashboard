@@ -382,6 +382,16 @@ class ChromedashApp extends LitElement {
       this.currentPage = ctx.path;
       this.hideSidebar();
     });
+    page('/ot_extension_request/:featureId(\\d+)/:stageId(\\d+)', (ctx) => {
+      if (!this.setupNewPage(ctx, 'chromedash-ot-extension-page')) return;
+      this.pageComponent.featureId = parseInt(ctx.params.featureId);
+      this.pageComponent.stageId = parseInt(ctx.params.stageId);
+      this.pageComponent.nextPage = this.currentPage;
+      this.pageComponent.appTitle = this.appTitle;
+      this.pageComponent.userEmail = this.user.email;
+      this.currentPage = ctx.path;
+      this.hideSidebar();
+    });
     page('/guide/stage/:featureId(\\d+)/metadata', (ctx) => {
       if (!this.setupNewPage(ctx, 'chromedash-guide-metadata-page')) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);

@@ -240,6 +240,7 @@ export const STAGE_SPECIFIC_FIELDS = new Set([
   'intent_to_extend_experiment_url',
   'intent_thread_url',
   'ot_creation__intent_to_experiment_url',
+  'ot_extension__intent_to_extend_experiment_url',
   'r4dt_url',
 
   // Misc fields.
@@ -259,6 +260,7 @@ export const STAGE_SPECIFIC_FIELDS = new Set([
   'ot_is_critical_trial',
   'ot_creation__milestone_desktop_first',
   'ot_creation__milestone_desktop_last',
+  'ot_extension__milestone_desktop_last',
   'finch_url',
   'experiment_goals',
   'experiment_risks',
@@ -286,6 +288,7 @@ export const STAGE_FIELD_NAME_MAPPING = {
   ot_milestone_webview_end: 'webview_last',
   ot_creation__milestone_desktop_first: 'desktop_first',
   ot_creation__milestone_desktop_last: 'desktop_last',
+  ot_extension__milestone_desktop_last: 'desktop_last',
   dt_milestone_desktop_start: 'desktop_first',
   dt_milestone_android_start: 'android_first',
   dt_milestone_ios_start: 'ios_first',
@@ -300,6 +303,7 @@ export const STAGE_FIELD_NAME_MAPPING = {
   intent_to_experiment_url: 'intent_thread_url',
   intent_to_extend_experiment_url: 'intent_thread_url',
   ot_creation__intent_to_experiment_url: 'intent_thread_url',
+  ot_extension__intent_to_extend_experiment_url: 'intent_thread_url',
   r4dt_url: 'intent_thread_url',
 };
 
