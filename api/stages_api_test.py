@@ -294,8 +294,15 @@ class StagesAPITest(testing_config.CustomTestCase):
     mock_abort.side_effect = werkzeug.exceptions.Forbidden
     request_path = f'{self.request_path}1/stages'
     json = {
-        'stage_type': 151,
-        'intent_thread_url': 'https://example.com/different'}
+        'stage_type': {
+          'form_field_name': 'stage_type',
+          'value': 151,
+        },
+        'intent_to_extend_experiment_url': {
+          'form_field_name': 'intent_thread_url',
+          'value': 'https://example.com/different',
+        }
+      }
 
     with test_app.test_request_context(request_path, json=json):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
@@ -308,8 +315,14 @@ class StagesAPITest(testing_config.CustomTestCase):
     permission_call.return_value = 'fake response'
     testing_config.sign_in('feature_owner@example.com', 123)
 
+    json = {
+      'stage_type': {
+        'form_field_name': 'stage_type',
+        'value': 151,
+      }
+    }
     with test_app.test_request_context(
-        f'{self.request_path}1/stages/10'):
+        f'{self.request_path}1/stages/10', json=json):
       actual = self.handler.do_post(feature_id=1)
 
     self.assertEqual(actual, 'fake response')
@@ -339,12 +352,17 @@ class StagesAPITest(testing_config.CustomTestCase):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post(feature_id=1)
     mock_abort.assert_called_once_with(
-        404, description='Stage type not specified.')
+        400, description='Stage type not specified.')
 
   def test_post__valid(self):
     """A valid POST request should create a new stage."""
     testing_config.sign_in('feature_owner@example.com', 123)
-    json = {'stage_type': 151}
+    json = {
+      'stage_type': {
+        'form_field_name': 'stage_type',
+        'value': 151,
+      }
+    }
 
     with test_app.test_request_context(
         f'{self.request_path}/1/stages', json=json):
@@ -358,7 +376,12 @@ class StagesAPITest(testing_config.CustomTestCase):
   def test_post__gate_created(self):
     """A Gate entity is created when a gated stage is created."""
     testing_config.sign_in('feature_owner@example.com', 123)
-    json = {'stage_type': 151}
+    json = {
+      'stage_type': {
+        'form_field_name': 'stage_type',
+        'value': 151
+      }
+    }
 
     with test_app.test_request_context(
         f'{self.request_path}1/stages', json=json):
@@ -371,7 +394,12 @@ class StagesAPITest(testing_config.CustomTestCase):
   def test_post__gate_not_needed(self):
     """A Gate entity is created when a non-gated stage is created."""
     testing_config.sign_in('feature_owner@example.com', 123)
-    json = {'stage_type': 110}
+    json = {
+      'stage_type': {
+        'form_field_name': 'stage_type',
+        'value': 110,
+      }
+    }
 
     with test_app.test_request_context(
         f'{self.request_path}1/stages', json=json):
