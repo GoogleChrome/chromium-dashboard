@@ -179,9 +179,13 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
 
       // Add the field to this component's stage before creating the field component.
       const index = this.fieldValues.length;
+      let touched = false;
+      if (featureJSONKey === 'accurate_as_of') {
+        touched = true;
+      }
       this.fieldValues.push({
         name: featureJSONKey,
-        touched: false,
+        touched,
         value,
         stageId: feStage.id,
       });

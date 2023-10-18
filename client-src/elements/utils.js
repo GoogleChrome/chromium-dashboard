@@ -309,7 +309,7 @@ export function formatFeatureChanges(fieldValues, featureId) {
   const stages = {};
   for (const {name, touched, value, stageId, implicitValue} of fieldValues) {
     // Only submit changes for touched fields or accuracy verification updates.
-    if (!touched && !(name === 'accurate_as_of' && value === true)) {
+    if (!touched) {
       continue;
     }
 
