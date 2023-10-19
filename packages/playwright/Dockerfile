@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/playwright:v1.37.1-jammy
+FROM mcr.microsoft.com/playwright:v1.39.0-jammy
 
 ARG USERID
 ARG GROUPID
@@ -16,8 +16,7 @@ RUN npm config set script-shell bash --global
 
 USER pwuser
 WORKDIR /work
-# Cache the infrequent but time consuming changes early
-COPY --chown=pwuser:pwuser package.json /work/
-RUN npm install -D
-# Copy the rest
+# Currently, no need to run `npm install` because currently the docker image mcr.microsoft.com/playwright
+# has playwright libraries already installed. Revisit if other dependencies are added to this package.json.
+# Copy everything (which includes the test files).
 COPY --chown=pwuser:pwuser . /work
