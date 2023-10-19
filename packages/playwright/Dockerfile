@@ -10,7 +10,8 @@ RUN userdel -r pwuser && \
     useradd pwuser -u $USERID -g $GROUPID -m -s /bin/bash && \
     mkdir -p /work/tests/__screenshots__ && \
     mkdir -p /work/test-results && \
-    chown -R pwuser /work
+    chown -R pwuser /work && \
+    rm -rf .git/hooks
 
 RUN npm config set script-shell bash --global
 
