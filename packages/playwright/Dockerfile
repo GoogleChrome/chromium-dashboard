@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/playwright:v1.37.1-jammy
+FROM mcr.microsoft.com/playwright:v1.39.0-jammy
 
 ARG USERID
 ARG GROUPID
