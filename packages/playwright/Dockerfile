@@ -18,6 +18,6 @@ USER pwuser
 WORKDIR /work
 # Cache the infrequent but time consuming changes early
 COPY --chown=pwuser:pwuser package.json /work/
-RUN npm install -D && npx playwright install
+RUN npm install -D
 # Copy the rest
 COPY --chown=pwuser:pwuser . /work
