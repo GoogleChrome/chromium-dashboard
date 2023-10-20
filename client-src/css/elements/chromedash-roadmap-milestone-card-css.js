@@ -87,10 +87,10 @@ export const ROADMAP_MILESTONE_CARD_CSS = [
       margin-right: 8px;
     }
     .chrome_version--beta .chrome-logo {
-      background-image: url(/static/img/chrome_logo_beta.svg);
+      background-image: url(/static/img/chrome_logo.svg);
     }
     .chrome_version--dev .chrome-logo {
-      background-image: url(/static/img/chrome_logo_dev.svg);
+      background-image: url(/static/img/chrome_logo.svg);
     }
     .chrome_version--canary .chrome-logo {
       background-image: url(/static/img/chrome_logo_canary.svg);
@@ -100,6 +100,16 @@ export const ROADMAP_MILESTONE_CARD_CSS = [
       filter: gray;
       -webkit-filter: grayscale(1);
       filter: grayscale(1);
+    }
+    .chrome-logo .channel-tag {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      padding: 1px 2px;
+      font-size: 10px;
+      font-weight: bold;
+      color: white;
+      background: var(--md-gray-900-alpha);
     }
     .release {
       padding: 16px;
