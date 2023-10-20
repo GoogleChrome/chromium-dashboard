@@ -25,12 +25,14 @@ const TEMPLATE_CONTENT = {
   beta: {
     channelLabel: 'Next up',
     h1Class: 'chrome_version--beta',
+    channelTag: 'BETA',
     dateText: 'between',
     featureHeader: 'Features planned in this release',
   },
   dev: {
     channelLabel: 'Dev',
     h1Class: 'chrome_version--dev',
+    channelTag: 'DEV',
     dateText: 'coming',
     featureHeader: 'Features planned in this release',
   },
