@@ -2,13 +2,13 @@ import {LitElement, css, html} from 'lit';
 import {ref} from 'lit/directives/ref.js';
 import {
   formatFeatureChanges,
-  getStageValue,
   showToastMessage,
   setupScrollToHash} from './utils.js';
 import './chromedash-form-table.js';
 import './chromedash-form-field.js';
 import {ORIGIN_TRIAL_EXTENSION_FIELDS} from './form-definition.js';
 import {OT_EXTENSION_STAGE_MAPPING} from './form-field-enums.js';
+import {ALL_FIELDS} from './form-field-specs';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
 
@@ -196,20 +196,19 @@ export class ChromedashOTExtensionPage extends LitElement {
 
   renderFields(section) {
     const fields = section.fields.map(field => {
-      const value = getStageValue(this.stage, field);
+      const featureJSONKey = ALL_FIELDS[field].name || field;
       // Add the field to this component's stage before creating the field component.
       const index = this.fieldValues.length;
       this.fieldValues.push({
-        name: field,
+        name: featureJSONKey,
         touched: false,
-        value,
+        value: null,
         stageId: this.stage.id,
       });
 
       return html`
       <chromedash-form-field
-        name=${field}
-        value=${value}
+        name=${featureJSONKey}
         index=${index}
         @form-field-update="${this.handleFormFieldUpdate}">
       </chromedash-form-field>
