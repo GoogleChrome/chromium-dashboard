@@ -13,6 +13,7 @@ export class ChromedashFormField extends LitElement {
       index: {type: Number}, // Represents which field this is on the form.
       disabled: {type: Boolean},
       checkboxLabel: {type: String}, // Optional override of default label.
+      shouldFadeIn: {type: Boolean},
       loading: {type: Boolean},
       fieldProps: {type: Object},
       forEnterprise: {type: Boolean},
@@ -28,6 +29,7 @@ export class ChromedashFormField extends LitElement {
     this.index = -1;
     this.checkboxLabel = '';
     this.disabled = false;
+    this.shouldFadeIn = false;
     this.loading = false;
     this.forEnterprise = false;
     this.stageType = undefined;
@@ -234,15 +236,16 @@ export class ChromedashFormField extends LitElement {
       this.forEnterprise && (this.fieldProps.enterprise_extra_help !== undefined) ?
         this.fieldProps.enterprise_extra_help :
         this.fieldProps.extra_help;
+    const fadeInClass = (this.shouldFadeIn) ? 'fade-in' : '';
     return html`
       ${this.fieldProps.label ? html`
-        <tr>
+        <tr class="${fadeInClass}">
           <th colspan="2">
             <b>${this.fieldProps.label}:</b>
           </th>
         </tr>
       `:nothing}
-      <tr>
+      <tr class=${fadeInClass}>
         <td>${this.renderWidgets()}</td>
         <td>
           ${helpText ? html`<span class="helptext"> ${helpText} </span>`: nothing}
