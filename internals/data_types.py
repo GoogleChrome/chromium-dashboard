@@ -45,6 +45,9 @@ class StageDict(TypedDict):
   extensions: list[StageDict]  # type: ignore
   origin_trial_feedback_url: str | None
   ot_action_requested: bool
+  ot_approval_buganizer_component: int | None
+  ot_approval_criteria_url: str | None
+  ot_approval_group_email: str | None
   ot_chromium_trial_name: str | None
   ot_description: str | None
   ot_display_name: str | None
@@ -55,6 +58,7 @@ class StageDict(TypedDict):
   ot_is_critical_trial: bool
   ot_is_deprecation_trial: bool
   ot_owner_email: str | None
+  ot_require_approvals: bool
   ot_webfeature_use_counter: str | None
   ot_request_note: NotRequired[str]
 
