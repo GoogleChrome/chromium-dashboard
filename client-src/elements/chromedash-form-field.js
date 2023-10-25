@@ -18,6 +18,7 @@ export class ChromedashFormField extends LitElement {
       forEnterprise: {type: Boolean},
       stageType: {type: Number},
       componentChoices: {type: Object}, // just for the blink component select field
+      checkMessage: {type: String},
     };
   }
 
@@ -32,22 +33,33 @@ export class ChromedashFormField extends LitElement {
     this.forEnterprise = false;
     this.stageType = undefined;
     this.componentChoices = {};
+    this.checkMessage;
+  }
+
+
+  getValue() {
+    return !this.value && this.fieldProps.initial ?
+      this.fieldProps.initial : this.value;
   }
 
   connectedCallback() {
     super.connectedCallback();
     this.fieldProps = ALL_FIELDS[this.name] || {};
 
-    if (this.name !== 'blink_components') return;
+    if (this.name === 'blink_components') {
+      // get the choice values from API when the field is blink component select field
+      this.loading = true;
+      window.csClient.getBlinkComponents().then((componentChoices) => {
+        this.componentChoices = componentChoices;
+        this.loading = false;
+      }).catch(() => {
+        showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+      });
+    }
+  }
 
-    // get the choice values from API when the field is blink component select field
-    this.loading = true;
-    window.csClient.getBlinkComponents().then((componentChoices) => {
-      this.componentChoices = componentChoices;
-      this.loading = false;
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-    });
+  firstUpdated() {
+    this.doSemanticChecks(this.fieldProps.check);
   }
 
   updateAttributes(el) {
@@ -81,6 +93,7 @@ export class ChromedashFormField extends LitElement {
     } else {
       fieldValue = e.target.value;
     }
+    this.value = fieldValue; // Should we do this?
 
     const eventOptions = {
       detail: {
@@ -91,15 +104,47 @@ export class ChromedashFormField extends LitElement {
 
     // Dispatch a new event to notify other components of the changes.
     this.dispatchEvent(new CustomEvent('form-field-update', eventOptions));
+
+    this.doSemanticChecks(this.fieldProps.check);
   }
 
-  renderWidgets() {
+  doSemanticChecks(checkFunction) {
+    if (checkFunction) {
+      const fieldValue = this.getValue();
+      const checkResult = checkFunction(fieldValue);
+      if (checkResult != null) {
+        this.checkMessage = html`
+          <span class="check-${
+              checkResult.message ? 'message' :
+              checkResult.warning ? 'warning' :
+                checkResult.error ? 'error' : 'unknown'}">
+            ${
+            checkResult.message ? checkResult.message :
+            checkResult.warning ? html`<b>Warning</b>: ${checkResult.warning}` :
+              checkResult.error ? html`<b>Error</b>: ${checkResult.error}` :
+                ''
+          }
+          </span>`;
+
+        const formFieldElement = this.renderRoot.querySelector(`#id_${this.name}`);
+        if (formFieldElement && formFieldElement.setCustomValidity &&
+          formFieldElement.input) {
+          formFieldElement.setCustomValidity(
+            checkResult.error ? checkResult.error : '');
+        }
+        return;
+      }
+    }
+    // Reset the check message.
+    this.checkMessage = '';
+  }
+
+  renderWidget() {
     const type = this.fieldProps.type;
     const fieldDisabled = this.fieldProps.disabled;
 
     // if no value is provided, use the initial value specified in form-field-spec
-    const fieldValue = !this.value && this.fieldProps.initial ?
-      this.fieldProps.initial : this.value;
+    const fieldValue = this.getValue();
 
     // form field name can be specified in form-field-spec to match DB field name
     const fieldName = this.fieldProps.name || this.name;
@@ -241,9 +286,12 @@ export class ChromedashFormField extends LitElement {
             <b>${this.fieldProps.label}:</b>
           </th>
         </tr>
-      `:nothing}
+      `: nothing}
       <tr>
-        <td>${this.renderWidgets()}</td>
+        <td>
+          ${this.renderWidget()}
+          ${this.checkMessage}
+        </td>
         <td>
           ${helpText ? html`<span class="helptext"> ${helpText} </span>`: nothing}
           ${extraHelpText ? html`
@@ -267,8 +315,8 @@ export class ChromedashFormField extends LitElement {
               </span>
             </sl-details>
           </td>
-        </tr>`:
-      nothing}
+        </tr>
+      `: nothing}
     `;
   }
 }

@@ -28,7 +28,9 @@ export function autolink(s, featureLinks = []) {
 
 export function showToastMessage(msg) {
   if (!toastEl) toastEl = document.querySelector('chromedash-toast');
-  toastEl.showMessage(msg);
+  if (toastEl && toastEl.showMessage) {
+    toastEl.showMessage(msg);
+  }
 }
 
 /**
@@ -362,4 +364,32 @@ export function formatFeatureChanges(fieldValues, featureId) {
 export function handleSaveChangesResponse(response) {
   const app = document.querySelector('chromedash-app');
   app.setUnsavedChanges(response !== '');
+}
+
+/**
+ * Returns value for fieldName, retrieved from either fieldValues
+ * or stage objects.  Basically, we search these data structures rather than
+ * create a new one.
+ * The underlying objects, collectively, have all fields.
+ * We could cache values previously found this way, but then we must
+ * also invalidate the cache when any such value changes.
+ * @param {string} fieldName
+ * @param {Object} fieldValues
+ * @param {Array<Object>} stages
+ * @return {*} The value of the named field.
+ */
+export function getFieldValue(fieldName, fieldValues, stages) {
+  let fieldValue = null;
+  if (fieldValues) {
+    fieldValue = fieldValues[fieldName];
+  }
+  if (fieldValue === null && stages) {
+    for (const stage of stages) {
+      if (stage[fieldName] !== undefined) {
+        fieldValue = stage[fieldName];
+        break;
+      }
+    }
+  }
+  return fieldValue;
 }

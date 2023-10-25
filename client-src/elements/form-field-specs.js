@@ -159,6 +159,14 @@ export const ALL_FIELDS = {
     </blockquote>
     `,
     enterprise_extra_help: '',
+    check: (value) => {
+      if (value && typeof value === 'string' && value.length > 0) {
+        if (value.length < 100 || value.length > 5000) {
+          return {warning: 'Feature summary should be between 100 and 5000 characters long.'};
+        }
+      }
+      return undefined;
+    },
   },
 
   'owner': {
@@ -911,6 +919,14 @@ export const ALL_FIELDS = {
     help_text: html`
       First desktop milestone that will support an origin
       trial of this feature.`,
+    check: (value, getFieldValue) => {
+      if (value && typeof value === 'number' ) {
+        const endMilestone = getFieldValue('ot_milestone_desktop_end');
+        if (endMilestone && endMilestone < value) {
+          return {error: 'Start milestone must be before end milestone'};
+        }
+      }
+    },
   },
 
   'ot_milestone_desktop_end': {
