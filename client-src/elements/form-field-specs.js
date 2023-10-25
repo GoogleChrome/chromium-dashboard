@@ -1150,7 +1150,11 @@ export const ALL_FIELDS = {
   'ot_approval_group_email': {
     type: 'input',
     required: true,
-    attrs: {...TEXT_FIELD_ATTRS, pattern: GOOGLE_EMAIL_ADDRESS_REGEX},
+    attrs: {
+      ...TEXT_FIELD_ATTRS,
+      pattern: GOOGLE_EMAIL_ADDRESS_REGEX,
+      placeholder: 'ex. "approval-requests@google.com"',
+    },
     label: 'Registration request notifications group',
     help_text: html`
       <p>

@@ -65,6 +65,7 @@ export class ChromedashOTCreationPage extends LitElement {
     this.fieldValues[index].touched = true;
     this.fieldValues[index].value = value;
 
+    // Toggle the display of the registration approval fields when the box is checked.
     if (this.fieldValues[index].name === 'ot_require_approvals') {
       this.showApprovalsFields = !this.showApprovalsFields;
       this.requestUpdate();
@@ -88,6 +89,7 @@ export class ChromedashOTCreationPage extends LitElement {
     });
   }
 
+  // Add the togglable registration approvals fields to the fieldValues array.
   addOptionalApprovalsFields() {
     // Approval requirement fields are always hidden unless the feature owner
     // opts in to using them.
@@ -96,21 +98,21 @@ export class ChromedashOTCreationPage extends LitElement {
     this.fieldValues.splice(insertIndex, 0,
       {
         name: 'ot_approval_buganizer_component',
-        touched: true,
+        touched: false,
         value: '',
         stageId: this.stage.id,
         isApprovalsField: true,
       },
       {
         name: 'ot_approval_group_email',
-        touched: true,
+        touched: false,
         value: '',
         stageId: this.stage.id,
         isApprovalsField: true,
       },
       {
         name: 'ot_approval_criteria_url',
-        touched: true,
+        touched: false,
         value: '',
         stageId: this.stage.id,
         isApprovalsField: true,
@@ -128,6 +130,7 @@ export class ChromedashOTCreationPage extends LitElement {
     });
   }
 
+  // Create the array that tracks the value of fields.
   setFieldValues() {
     // OT creation page only has one section.
     const section = ORIGIN_TRIAL_CREATION_FIELDS.sections[0];
@@ -141,6 +144,9 @@ export class ChromedashOTCreationPage extends LitElement {
       if (featureJSONKey === 'ot_owner_email' && !value) {
         value = [this.userEmail];
         touched = true;
+      // Display registration approvals fields by default if the value is checked already.
+      } else if (featureJSONKey === 'ot_require_approvals') {
+        this.showApprovalsFields = !!value;
       }
 
       // Add the field to this component's stage before creating the field component.
@@ -176,6 +182,15 @@ export class ChromedashOTCreationPage extends LitElement {
 
   handleFormSubmit(e) {
     e.preventDefault();
+    // If registration approvals is not enabled, ignore all fields related to that setting.
+    if (!this.showApprovalsFields) {
+      this.fieldValues.forEach(fieldInfo => {
+        if (fieldInfo.isApprovalsField) {
+          fieldInfo.touched = false;
+        }
+      });
+    }
+
     const featureSubmitBody = formatFeatureChanges(this.fieldValues, this.featureId);
     // We only need the single stage changes.
     const stageSubmitBody = featureSubmitBody.stages[0];
