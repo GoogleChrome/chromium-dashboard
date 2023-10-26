@@ -12,6 +12,7 @@ const GATE_STATE_TO_NAME = {
   6: 'Denied', // DENIED
   // TODO(jrobbins): COMPLETE for auto-approved.
   8: 'Internal review', // INTERNAL_REVIEW
+  9: 'N/A requested', // NA_REQUESTED
 };
 
 const GATE_STATE_TO_ICON = {
@@ -29,6 +30,7 @@ const GATE_STATE_TO_ICON = {
 const GATE_STATE_TO_ABBREV = {
   1: 'N/A', //  NA
   8: 'INT', // INTERNAL_REVIEW
+  9: 'N/A?', // INTERNAL_REVIEW
 };
 
 
@@ -136,6 +138,14 @@ class ChromedashGateChip extends LitElement {
        align-items: baseline;
      }
 
+     sl-button.na_requested::part(base) {
+       background: var(--gate-pending-background);
+       color: var(--gate-pending-color);
+     }
+     sl-button.na_requested::part(prefix) {
+       align-items: baseline;
+     }
+
      .abbrev {
        padding-left: var(--content-padding-quarter);
        font-weight: 900;
@@ -171,7 +181,8 @@ class ChromedashGateChip extends LitElement {
     }
     const teamName = this.gate.team_name;
     const stateName = GATE_STATE_TO_NAME[this.gate.state];
-    const className = stateName.toLowerCase().replaceAll(' ', '_');
+    const className = (
+      stateName.toLowerCase().replaceAll(' ', '_').replaceAll('/', ''));
     const selected = (this.gate.id == this.selectedGateId) ? 'selected' : '';
 
     const statusIconName = GATE_STATE_TO_ICON[this.gate.state];

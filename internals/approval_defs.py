@@ -333,7 +333,7 @@ def _calc_gate_state(votes: list[Vote], rule: str) -> int:
   for vote in sorted(votes, reverse=True, key=lambda v: v.set_on):
     if vote.state in (
         Vote.NEEDS_WORK, Vote.REVIEW_STARTED, Vote.REVIEW_REQUESTED,
-        Vote.DENIED, Vote.INTERNAL_REVIEW):
+        Vote.DENIED, Vote.INTERNAL_REVIEW, Vote.NA_REQUESTED):
       return vote.state
 
   # The feature owner has not requested review yet, or the request was
@@ -354,7 +354,7 @@ def update_gate_approval_state(gate: Gate, votes: list[Vote]) -> bool:
     gate.requested_on = min(v.set_on for v in votes)
 
   # Starting a review resets responded_on.
-  if new_state == Vote.REVIEW_REQUESTED:
+  if new_state in (Vote.REVIEW_REQUESTED, Vote.NA_REQUESTED):
     gate.responded_on = None
 
   return True
