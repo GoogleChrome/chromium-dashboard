@@ -95,7 +95,7 @@ def notify_approvers_of_reviews(
   changed_props = {
       'prop_name': 'Review status change in %s' % (gate_url),
       'old_val': 'na',
-      'new_val': 'review_requested',
+      'new_val': new_value_str,
   }
 
   params = {

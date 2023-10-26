@@ -360,7 +360,7 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   handleNARequestSubmitted() {
-    const commentText = ('A "N/A" response is requested because: ' +
+    const commentText = ('An "N/A" response is requested because: ' +
                          this.rationaleRef.value.value);
     this.postComment(commentText);
     window.csClient.setVote(
@@ -435,7 +435,7 @@ export class ChromedashGateColumn extends LitElement {
     }
 
     const dialog = html`
-      <sl-dialog ${ref(this.rationaleDialogRef)} label="Request a N/A">
+      <sl-dialog ${ref(this.rationaleDialogRef)} label="Request an N/A">
         <p style="padding: var(--content-padding)">
           Please briefly explain why your feature does not require a review.
           Your response will be posted as a comment on this review gate
