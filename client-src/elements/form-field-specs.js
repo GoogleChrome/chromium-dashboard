@@ -14,6 +14,8 @@ import {
   WEB_DEV_VIEWS,
 } from './form-field-enums';
 
+import {checkMilestoneStartEnd} from './utils.js';
+
 /* Patterns from https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch04s01.html
  * Removing single quote ('), backtick (`), and pipe (|) since they are risky unless properly escaped everywhere.
  * Also removing ! and % because they have special meaning for some older email routing systems. */
@@ -919,17 +921,9 @@ export const ALL_FIELDS = {
     help_text: html`
       First desktop milestone that will support an origin
       trial of this feature.`,
-    check: (value, getFieldValue) => {
-      if (value) {
-        const startMilestone = Number(value);
-        const endMilestoneValue = getFieldValue('ot_milestone_desktop_end');
-        if (endMilestoneValue == null) return;
-        const endMilestone = Number(endMilestoneValue);
-        if (endMilestone <= startMilestone) {
-          return {error: 'Start milestone must be before end milestone'};
-        }
-      }
-    },
+    check: (value, getFieldValue) =>
+      checkMilestoneStartEnd({start: Number(value), end: 'ot_milestone_desktop_end'},
+        getFieldValue),
   },
 
   'ot_milestone_desktop_end': {
@@ -940,6 +934,9 @@ export const ALL_FIELDS = {
     help_text: html`
       Last desktop milestone that will support an origin
       trial of this feature.`,
+    check: (value, getFieldValue) =>
+      checkMilestoneStartEnd({start: 'ot_milestone_desktop_start', end: Number(value)},
+        getFieldValue),
   },
 
   'ot_milestone_android_start': {

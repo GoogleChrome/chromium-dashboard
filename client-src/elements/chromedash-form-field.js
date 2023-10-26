@@ -115,32 +115,30 @@ export class ChromedashFormField extends LitElement {
       const fieldValue = this.getValue();
       const checkResult = checkFunction(fieldValue,
         (name) => getFieldValue(name, this.fieldValues));
-      if (checkResult != null) {
+      if (checkResult == null) {
+        this.checkMessage = ''; // Reset the check message.
+      } else {
         this.checkMessage = html`
           <span class="check-${
               checkResult.message ? 'message' :
               checkResult.warning ? 'warning' :
-              checkResult.error ? 'error' : 'unknown'
+                checkResult.error ? 'error' : 'unknown'
             }">
             ${
               checkResult.message ? checkResult.message :
               checkResult.warning ? html`<b>Warning</b>: ${checkResult.warning}` :
-              checkResult.error ? html`<b>Error</b>: ${checkResult.error}` :
-              ''
+                checkResult.error ? html`<b>Error</b>: ${checkResult.error}` :
+                  ''
             }
           </span>`;
-
-        const formFieldElement = this.renderRoot.querySelector(`#id_${this.name}`);
-        if (formFieldElement && formFieldElement.setCustomValidity &&
-          formFieldElement.input) {
-          formFieldElement.setCustomValidity(
-            checkResult.error ? checkResult.error : '');
-        }
-        return;
+      }
+      const formFieldElement = this.renderRoot.querySelector(`#id_${this.name}`);
+      if (formFieldElement?.setCustomValidity &&
+        formFieldElement.input) {
+        formFieldElement.setCustomValidity(
+          (checkResult && checkResult.error) ? checkResult.error : '');
       }
     }
-    // Reset the check message.
-    this.checkMessage = '';
   }
 
   renderWidget() {

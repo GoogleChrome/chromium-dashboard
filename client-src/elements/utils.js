@@ -377,23 +377,29 @@ export function handleSaveChangesResponse(response) {
  */
 export function getFieldValue(fieldName, fieldValues) {
   let fieldValue = null;
-  const findFieldValue = (fieldValues) => {
-    fieldValues.some((valueObj) => {
-      if (valueObj.name === fieldName) {
-        fieldValue = valueObj.value;
-        return true;
-      }
-    });
-  };
-
-  if (fieldValues) {
-    findFieldValue(fieldValues);
-  }
-  // if (fieldValue == null && stages) {
-  //   for (const stage in stages) {
-  //     findFieldValue(stage.fieldValues);
-  //     if (fieldValue != null) return;
-  //   }
-  // }
+  fieldValues.some((valueObj) => {
+    if (valueObj.name === fieldName) {
+      fieldValue = valueObj.value;
+      return true;
+    }
+  });
   return fieldValue;
+}
+
+export function checkMilestoneStartEnd(startEndPair, getFieldValue) {
+  const {start, end} = startEndPair;
+  const getValue = (numOrName) => {
+    if (typeof numOrName == 'number') {
+      return numOrName;
+    } else {
+      return getFieldValue(numOrName);
+    }
+  };
+  const startMilestone = getValue(start);
+  const endMilestone = getValue(end);
+  if (startMilestone != null && endMilestone != null) {
+    if (endMilestone <= startMilestone) {
+      return {error: 'Start milestone must be before end milestone'};
+    }
+  }
 }
