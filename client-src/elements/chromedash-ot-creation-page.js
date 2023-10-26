@@ -177,8 +177,9 @@ export class ChromedashOTCreationPage extends LitElement {
       return html`
       <chromedash-form-field
         name=${field}
-        value=${value}
         index=${index}
+        value=${value}
+        .fieldValues=${this.fieldValues}
         @form-field-update="${this.handleFormFieldUpdate}">
       </chromedash-form-field>
     `;

@@ -368,28 +368,32 @@ export function handleSaveChangesResponse(response) {
 
 /**
  * Returns value for fieldName, retrieved from either fieldValues
- * or stage objects.  Basically, we search these data structures rather than
- * create a new one.
- * The underlying objects, collectively, have all fields.
- * We could cache values previously found this way, but then we must
- * also invalidate the cache when any such value changes.
+ * or stage objects, where each stage object is an array of field values.
+ * The underlying objects, collectively, have all fields values.
  * @param {string} fieldName
- * @param {Object} fieldValues
- * @param {Array<Object>} stages
+ * @param {Array<Object>} fieldValues
+ * param {Array<Array<Object>} stages - not used.
  * @return {*} The value of the named field.
  */
-export function getFieldValue(fieldName, fieldValues, stages) {
+export function getFieldValue(fieldName, fieldValues) {
   let fieldValue = null;
-  if (fieldValues) {
-    fieldValue = fieldValues[fieldName];
-  }
-  if (fieldValue === null && stages) {
-    for (const stage of stages) {
-      if (stage[fieldName] !== undefined) {
-        fieldValue = stage[fieldName];
-        break;
+  const findFieldValue = (fieldValues) => {
+    fieldValues.some((valueObj) => {
+      if (valueObj.name === fieldName) {
+        fieldValue = valueObj.value;
+        return true;
       }
-    }
+    });
+  };
+
+  if (fieldValues) {
+    findFieldValue(fieldValues);
   }
+  // if (fieldValue == null && stages) {
+  //   for (const stage in stages) {
+  //     findFieldValue(stage.fieldValues);
+  //     if (fieldValue != null) return;
+  //   }
+  // }
   return fieldValue;
 }

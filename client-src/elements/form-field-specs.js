@@ -919,14 +919,17 @@ export const ALL_FIELDS = {
     help_text: html`
       First desktop milestone that will support an origin
       trial of this feature.`,
-    // check: (value, getFieldValue) => {
-    //   if (value && typeof value === 'number' ) {
-    //     const endMilestone = getFieldValue('ot_milestone_desktop_end');
-    //     if (endMilestone && endMilestone < value) {
-    //       return {error: 'Start milestone must be before end milestone'};
-    //     }
-    //   }
-    // },
+    check: (value, getFieldValue) => {
+      if (value) {
+        const startMilestone = Number(value);
+        const endMilestoneValue = getFieldValue('ot_milestone_desktop_end');
+        if (endMilestoneValue == null) return;
+        const endMilestone = Number(endMilestoneValue);
+        if (endMilestone <= startMilestone) {
+          return {error: 'Start milestone must be before end milestone'};
+        }
+      }
+    },
   },
 
   'ot_milestone_desktop_end': {

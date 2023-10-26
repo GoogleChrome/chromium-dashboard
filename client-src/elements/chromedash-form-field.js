@@ -2,15 +2,16 @@ import {LitElement, html, nothing} from 'lit';
 import {ALL_FIELDS} from './form-field-specs';
 import {ref} from 'lit/directives/ref.js';
 import './chromedash-textarea';
-import {showToastMessage} from './utils.js';
+import {showToastMessage, getFieldValue} from './utils.js';
 
 export class ChromedashFormField extends LitElement {
   static get properties() {
     return {
       name: {type: String},
+      index: {type: Number}, // Represents which field this is on the form.
       stageId: {type: Number},
       value: {type: String},
-      index: {type: Number}, // Represents which field this is on the form.
+      fieldValues: {type: Array}, // All other field value objects
       disabled: {type: Boolean},
       checkboxLabel: {type: String}, // Optional override of default label.
       loading: {type: Boolean},
@@ -25,15 +26,16 @@ export class ChromedashFormField extends LitElement {
   constructor() {
     super();
     this.name = '';
-    this.value = '';
     this.index = -1;
+    this.value = '';
+    this.fieldValues = [];
     this.checkboxLabel = '';
     this.disabled = false;
     this.loading = false;
     this.forEnterprise = false;
     this.stageType = undefined;
     this.componentChoices = {};
-    this.checkMessage;
+    this.checkMessage = '';
   }
 
 
@@ -111,19 +113,21 @@ export class ChromedashFormField extends LitElement {
   doSemanticChecks(checkFunction) {
     if (checkFunction) {
       const fieldValue = this.getValue();
-      const checkResult = checkFunction(fieldValue);
+      const checkResult = checkFunction(fieldValue,
+        (name) => getFieldValue(name, this.fieldValues));
       if (checkResult != null) {
         this.checkMessage = html`
           <span class="check-${
               checkResult.message ? 'message' :
               checkResult.warning ? 'warning' :
-                checkResult.error ? 'error' : 'unknown'}">
+              checkResult.error ? 'error' : 'unknown'
+            }">
             ${
-            checkResult.message ? checkResult.message :
-            checkResult.warning ? html`<b>Warning</b>: ${checkResult.warning}` :
+              checkResult.message ? checkResult.message :
+              checkResult.warning ? html`<b>Warning</b>: ${checkResult.warning}` :
               checkResult.error ? html`<b>Error</b>: ${checkResult.error}` :
-                ''
-          }
+              ''
+            }
           </span>`;
 
         const formFieldElement = this.renderRoot.querySelector(`#id_${this.name}`);
