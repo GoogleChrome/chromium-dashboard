@@ -360,7 +360,7 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   handleNARequestSubmitted() {
-    const commentText = ('An "N/A" response is requested because: ' +
+    const commentText = ('A "N/A" response is requested because: ' +
                          this.rationaleRef.value.value);
     this.postComment(commentText);
     window.csClient.setVote(
