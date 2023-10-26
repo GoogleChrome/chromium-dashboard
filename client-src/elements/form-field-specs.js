@@ -1133,9 +1133,11 @@ export const ALL_FIELDS = {
     initial: false,
     label: 'Trial participation requires approval',
     help_text: html`
+    <p>
       Will this trial require registrants to receive approval before
-      participating? See information about this setting at
-      <a target="_blank" href="">Some link</a>`,
+      participating? Please reach out to origin-trials-support@google.com
+      beforehand to discuss options here.
+    </p>`,
   },
 
   'ot_approval_buganizer_component': {
@@ -1169,7 +1171,10 @@ export const ALL_FIELDS = {
     required: true,
     label: 'Approval criteria link',
     help_text: html`
-      Link to documentation describing the requirements to be approved for trial participation.`,
+    <p>
+      Link to documentation public describing the requirements
+      to be approved for trial participation.
+    </p>`,
   },
 
   'ot_creation__intent_to_experiment_url': {
