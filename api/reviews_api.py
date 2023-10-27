@@ -61,9 +61,9 @@ class VotesAPI(basehandlers.APIHandler):
     approval_defs.set_vote(feature_id, None, new_state,
         user.email(), gate_id)
 
-    if new_state == Vote.REVIEW_REQUESTED:
+    if new_state in (Vote.REVIEW_REQUESTED, Vote.NA_REQUESTED):
       notifier_helpers.notify_approvers_of_reviews(
-          feature, gate, user.email())
+          feature, gate, new_state, user.email())
     else:
       notifier_helpers.notify_subscribers_of_vote_changes(
           feature, gate, user.email(), new_state, old_state)
@@ -73,7 +73,7 @@ class VotesAPI(basehandlers.APIHandler):
 
   def require_permissions(self, user, feature, gate, new_state):
     """Abort the request if the user lacks permission to set this vote."""
-    is_requesting_review = (new_state == Vote.REVIEW_REQUESTED)
+    is_requesting_review = new_state in (Vote.REVIEW_REQUESTED, Vote.NA_REQUESTED)
     is_editor = permissions.can_edit_feature(user, feature.key.integer_id())
     approvers = approval_defs.get_approvers(gate.gate_type)
     is_approver = permissions.can_review_gate(user, feature, gate, approvers)

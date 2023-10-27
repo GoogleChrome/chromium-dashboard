@@ -80,10 +80,11 @@ def notify_subscribers_and_save_amendments(fe: 'FeatureEntry',
 
 
 def notify_approvers_of_reviews(
-    fe: 'FeatureEntry', gate: Gate, email: str) -> None:
+    fe: 'FeatureEntry', gate: Gate, new_state: int, email: str) -> None:
   """Notify approvers of a review requested from a Gate."""
+  new_value_str = Vote.VOTE_VALUES.get(new_state, 'None')
   amendment = Amendment(field_name='review_status',
-                        old_value='None', new_value='review_requested')
+                        old_value='None', new_value=new_value_str)
   gate_id = gate.key.integer_id()
   activity = Activity(feature_id=fe.key.integer_id(), gate_id=gate_id,
                       author=email, amendments=[amendment])
@@ -94,7 +95,7 @@ def notify_approvers_of_reviews(
   changed_props = {
       'prop_name': 'Review status change in %s' % (gate_url),
       'old_val': 'na',
-      'new_val': 'review_requested',
+      'new_val': new_value_str,
   }
 
   params = {

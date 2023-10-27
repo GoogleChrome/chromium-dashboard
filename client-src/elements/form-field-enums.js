@@ -334,6 +334,7 @@ export const GATE_TYPES = {
 
 export const GATE_PREPARING = 0;
 export const GATE_REVIEW_REQUESTED = 2;
+export const GATE_NA_REQUESTED = 9;
 export const VOTE_OPTIONS = {
   NO_RESPONSE: [7, 'No response'],
   NA: [1, 'N/a or Ack'],
@@ -348,6 +349,7 @@ export const GATE_ACTIVE_REVIEW_STATES = [
   VOTE_OPTIONS.REVIEW_STARTED[0],
   VOTE_OPTIONS.NEEDS_WORK[0],
   VOTE_OPTIONS.INTERNAL_REVIEW[0],
+  GATE_NA_REQUESTED,
 ];
 export const GATE_FINISHED_REVIEW_STATES = [
   VOTE_OPTIONS.NA[0],

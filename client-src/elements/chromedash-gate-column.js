@@ -16,6 +16,7 @@ import {GATE_QUESTIONNAIRES} from './form-definition.js';
 import {
   GATE_PREPARING,
   GATE_REVIEW_REQUESTED,
+  GATE_NA_REQUESTED,
   VOTE_OPTIONS,
 } from './form-field-enums';
 
@@ -26,6 +27,8 @@ export class ChromedashGateColumn extends LitElement {
   voteSelectRef = createRef();
   commentAreaRef = createRef();
   postToThreadRef = createRef();
+  rationaleDialogRef = createRef();
+  rationaleRef = createRef();
 
   static get styles() {
     return [
@@ -249,11 +252,15 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   handlePost() {
-    this.submittingVote = true;
     const commentArea = this.commentAreaRef.value;
     const commentText = commentArea.value.trim();
     const postToThreadType = (
-      this.postToThreadRef.value?.checked ? this.gate.gate_type : 0);
+        this.postToThreadRef.value?.checked ? this.gate.gate_type : 0);
+    this.postComment(commentText, postToThreadType);
+  }
+
+  postComment(commentText, postToThreadType=0) {
+    this.submittingVote = true;
     if (commentText != '') {
       window.csClient.postComment(
         this.feature.id, this.gate.id, commentText,
@@ -348,6 +355,22 @@ export class ChromedashGateColumn extends LitElement {
       });
   }
 
+  handleNARequested() {
+    this.rationaleDialogRef.value.show();
+  }
+
+  handleNARequestSubmitted() {
+    const commentText = ('An "N/A" response is requested because: ' +
+                         this.rationaleRef.value.value);
+    this.postComment(commentText);
+    window.csClient.setVote(
+      this.feature.id, this.gate.id, GATE_NA_REQUESTED)
+      .then(() => {
+        this._fireEvent('refetch-needed', {});
+      });
+    this.rationaleDialogRef.value.hide();
+  }
+
   /* A user that can edit the current feature can request a review. */
   userCanRequestReview() {
     return (this.user &&
@@ -411,16 +434,37 @@ export class ChromedashGateColumn extends LitElement {
         this.renderAction(processStage, act));
     }
 
+    const dialog = html`
+      <sl-dialog ${ref(this.rationaleDialogRef)} label="Request an N/A">
+        <p style="padding: var(--content-padding)">
+          Please briefly explain why your feature does not require a review.
+          Your response will be posted as a comment on this review gate
+          and it will generate a notification to the reviewers.
+          The ${this.gate.team_name} reviewers will still evaluate whether to
+          give an "N/A" response or do a review.
+        </p>
+        <sl-textarea ${ref(this.rationaleRef)}></sl-textarea>
+        <sl-button slot="footer" variant="primary" size="small"
+          @click=${this.handleNARequestSubmitted}
+          >Post</sl-button>
+      </sl-dialog>
+    `;
+
     return html`
      <sl-button pill size=small variant=primary
        @click=${this.handleReviewRequested}
        >Request review</sl-button>
+     <sl-button pill size=small
+       @click=${this.handleNARequested}
+       >Request N/A</sl-button>
+     ${dialog}
     `;
   }
 
   renderReviewRequest() {
     for (const v of this.votes) {
-      if (v.state == GATE_REVIEW_REQUESTED) {
+      if (v.state === GATE_REVIEW_REQUESTED ||
+          v.state === GATE_NA_REQUESTED) {
         const shortVoter = v.set_by.split('@')[0] + '@';
         return html`
           ${shortVoter} requested on

@@ -281,7 +281,8 @@ class VotesAPITest(testing_config.CustomTestCase):
     self.assertEqual(vote.state, Vote.REVIEW_REQUESTED)
 
     mock_notifier.assert_called_once_with(
-        self.feature_1, self.gate_1, 'owner1@example.com')
+        self.feature_1, self.gate_1, Vote.REVIEW_REQUESTED,
+        'owner1@example.com')
 
 
 class GatesAPITest(testing_config.CustomTestCase):
