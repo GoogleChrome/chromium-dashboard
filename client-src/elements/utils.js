@@ -367,13 +367,10 @@ export function handleSaveChangesResponse(response) {
 }
 
 /**
- * Returns value for fieldName, retrieved from either fieldValues
- * or stage objects, where each stage object is an array of field values.
- * The underlying objects, collectively, have all fields values.
- * @param {string} fieldName
- * @param {Array<Object>} fieldValues
- * param {Array<Array<Object>} stages - not used.
- * @return {*} The value of the named field.
+ * Returns value for fieldName, retrieved from fieldValues.
+  * @param {string} fieldName
+  * @param {Array<Object>} fieldValues
+  * @return {*} The value of the named field.
  */
 export function getFieldValue(fieldName, fieldValues) {
   let fieldValue = null;
@@ -387,13 +384,13 @@ export function getFieldValue(fieldName, fieldValues) {
 }
 
 export function checkMilestoneStartEnd(startEndPair, getFieldValue) {
-  const {start, end} = startEndPair;
   const getValue = (name) => {
     const value = getFieldValue(name);
     if (typeof value === 'string') {
       return Number(value);
     }
   };
+  const {start, end} = startEndPair;
   const startMilestone = getValue(start);
   const endMilestone = getValue(end);
   if (startMilestone != null && endMilestone != null) {

@@ -95,10 +95,10 @@ export class ChromedashGuideMetadataPage extends LitElement {
     });
   }
 
-  // Handler to update form values when a field update event is fired.
+  // Handler to update form field values when a field update event is fired.
   handleFormFieldUpdate(event) {
     const value = event.detail.value;
-    // Index represents which form was updated.
+    // Index represents which form field was updated.
     const index = event.detail.index;
     if (index >= this.fieldValues.length) {
       throw new Error('Out of bounds index when updating field values.');

@@ -925,8 +925,8 @@ export const ALL_FIELDS = {
       checkMilestoneStartEnd({
         start: 'ot_milestone_desktop_start',
         end: 'ot_milestone_desktop_end',
-      },
-      getFieldValue),
+      }, getFieldValue),
+    dependents: ['ot_milestone_desktop_end'],
   },
 
   'ot_milestone_desktop_end': {
@@ -941,8 +941,8 @@ export const ALL_FIELDS = {
       checkMilestoneStartEnd({
         start: 'ot_milestone_desktop_start',
         end: 'ot_milestone_desktop_end',
-      },
-      getFieldValue),
+      }, getFieldValue),
+    dependents: ['ot_milestone_desktop_start'],
   },
 
   'ot_milestone_android_start': {
