@@ -52,7 +52,9 @@ export class ChromedashFormField extends LitElement {
 
     // Add this component to the
     const app = document.querySelector('chromedash-app');
-    app.pageComponent.allFormFieldComponents[this.name] = this;
+    if (app?.pageComponent) {
+      app.pageComponent.allFormFieldComponents[this.name] = this;
+    }
 
     if (this.name === 'blink_components') {
       // get the choice values from API when the field is blink component select field
@@ -118,7 +120,7 @@ export class ChromedashFormField extends LitElement {
     // Also doSemanticCheck on known dependent form fields.
     const app = document.querySelector('chromedash-app');
     const dependents = ALL_FIELDS[this.name].dependents;
-    if (dependents) {
+    if (dependents && app?.pageComponent) {
       dependents.forEach((dependent) => {
         const dependentField = app.pageComponent.allFormFieldComponents[dependent];
         if (dependentField) {
