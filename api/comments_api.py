@@ -85,7 +85,9 @@ class CommentsAPI(basehandlers.APIHandler):
 
     comment_content = self.get_param('comment', required=False)
     if comment_content:
-      if not permissions.can_comment(user):
+      can_comment = (permissions.can_comment(user) or
+                     permissions.can_edit_feature(user, feature_id))
+      if not can_comment:
         self.abort(403, msg='User is not allowed to comment')
 
       comment_activity = Activity(feature_id=feature_id, gate_id=gate_id,

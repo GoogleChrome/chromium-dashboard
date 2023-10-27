@@ -722,7 +722,6 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   renderCommentsSkeleton() {
-    // TODO(jrobbins): Include activities too.
     return html`
       <h2>Comments</h2>
       <sl-skeleton effect="sheen"></sl-skeleton>
@@ -743,7 +742,8 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   renderControls() {
-    if (!this.user || !this.user.can_comment) return nothing;
+    const canComment = this.user?.can_comment || this.userCanRequestReview();
+    if (!canComment) return nothing;
 
     const postButton = html`
       <sl-button variant="primary"
