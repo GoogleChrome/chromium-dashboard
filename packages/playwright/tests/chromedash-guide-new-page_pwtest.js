@@ -93,3 +93,39 @@ test('enter blink component', async ({ page }) => {
 
   await expect(page).toHaveScreenshot('blink-components.png');
 });
+
+
+test('create new feature', async ({ page }) => {
+  await gotoNewFeaturePage(page);
+
+  // Enter feature name
+  const featureNameInput = page.locator('input[name="name"]');
+  await featureNameInput.fill('Test feature name');
+  await delay(500);
+
+  // Enter summary description
+  const summaryInput = page.locator('textarea[name="summary"]');
+  await summaryInput.fill('Test summary description');
+  await delay(500);
+
+  // Select blink component.
+  const blinkComponentsInputWrapper = page.locator('div.datalist-input-wrapper');
+  await blinkComponentsInputWrapper.focus();
+  await delay(500);
+  const blinkComponentsInput = blinkComponentsInputWrapper.locator('input');
+  await blinkComponentsInput.fill('blink');
+  await delay(500);
+
+  // Select feature type.
+  const featureTypeRadioNew = page.locator('input[name="feature_type"][value="0"]');
+  await featureTypeRadioNew.click();
+  await delay(500);
+
+  // Submit the form.
+  const submitButton = page.locator('input[type="submit"]');
+  await submitButton.click();
+  await delay(500);
+
+  // Check if we have a screenshot for this test case.
+  await expect(page).toHaveScreenshot('new-feature-created.png');
+});
