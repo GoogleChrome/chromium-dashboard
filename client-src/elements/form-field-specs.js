@@ -921,9 +921,12 @@ export const ALL_FIELDS = {
     help_text: html`
       First desktop milestone that will support an origin
       trial of this feature.`,
-    check: (value, getFieldValue) =>
-      checkMilestoneStartEnd({start: Number(value), end: 'ot_milestone_desktop_end'},
-        getFieldValue),
+    check: (_value, getFieldValue) =>
+      checkMilestoneStartEnd({
+        start: 'ot_milestone_desktop_start',
+        end: 'ot_milestone_desktop_end',
+      },
+      getFieldValue),
   },
 
   'ot_milestone_desktop_end': {
@@ -934,9 +937,12 @@ export const ALL_FIELDS = {
     help_text: html`
       Last desktop milestone that will support an origin
       trial of this feature.`,
-    check: (value, getFieldValue) =>
-      checkMilestoneStartEnd({start: 'ot_milestone_desktop_start', end: Number(value)},
-        getFieldValue),
+    check: (_value, getFieldValue) =>
+      checkMilestoneStartEnd({
+        start: 'ot_milestone_desktop_start',
+        end: 'ot_milestone_desktop_end',
+      },
+      getFieldValue),
   },
 
   'ot_milestone_android_start': {

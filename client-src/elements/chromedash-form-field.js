@@ -95,16 +95,15 @@ export class ChromedashFormField extends LitElement {
     } else {
       fieldValue = e.target.value;
     }
-    this.value = fieldValue; // Should we do this?
+    this.value = fieldValue; // TODO: Is this safe?
 
+    // Dispatch a new event to notify other components of the changes.
     const eventOptions = {
       detail: {
         value: fieldValue,
         index: this.index,
       },
     };
-
-    // Dispatch a new event to notify other components of the changes.
     this.dispatchEvent(new CustomEvent('form-field-update', eventOptions));
 
     this.doSemanticChecks(this.fieldProps.check);
@@ -116,7 +115,7 @@ export class ChromedashFormField extends LitElement {
       const checkResult = checkFunction(fieldValue,
         (name) => getFieldValue(name, this.fieldValues));
       if (checkResult == null) {
-        this.checkMessage = ''; // Reset the check message.
+        this.checkMessage = '';
       } else {
         this.checkMessage = html`
           <span class="check-${

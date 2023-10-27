@@ -28,7 +28,7 @@ export function autolink(s, featureLinks = []) {
 
 export function showToastMessage(msg) {
   if (!toastEl) toastEl = document.querySelector('chromedash-toast');
-  if (toastEl && toastEl.showMessage) {
+  if (toastEl?.showMessage) {
     toastEl.showMessage(msg);
   }
 }
@@ -388,11 +388,10 @@ export function getFieldValue(fieldName, fieldValues) {
 
 export function checkMilestoneStartEnd(startEndPair, getFieldValue) {
   const {start, end} = startEndPair;
-  const getValue = (numOrName) => {
-    if (typeof numOrName == 'number') {
-      return numOrName;
-    } else {
-      return getFieldValue(numOrName);
+  const getValue = (name) => {
+    const value = getFieldValue(name);
+    if (typeof value === 'string') {
+      return Number(value);
     }
   };
   const startMilestone = getValue(start);
