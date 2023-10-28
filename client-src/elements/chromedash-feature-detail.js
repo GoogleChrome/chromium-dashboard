@@ -628,7 +628,7 @@ class ChromedashFeatureDetail extends LitElement {
     // Don't render an extension request button if this is not an OT stage,
     // or the user does not have access to submit an extension request,
     // or the OT stage has not been created in the OT Console yet.
-    const userCannotViewOTControls = (this.user === undefined ||
+    const userCannotViewOTControls = (!this.user ||
       (!this.user.email.endsWith('@chromium.org') && !this.user.email.endsWith('@google.com')));
     const isNotOriginTrialStage = !STAGE_TYPES_ORIGIN_TRIAL.has(feStage.stage_type);
     const originTrialNotCreatedYet = !feStage.origin_trial_id;
