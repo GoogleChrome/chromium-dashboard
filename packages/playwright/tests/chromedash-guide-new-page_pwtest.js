@@ -127,5 +127,7 @@ test('create new feature', async ({ page }) => {
   await delay(500);
 
   // Check if we have a screenshot for this test case.
-  await expect(page).toHaveScreenshot('new-feature-created.png');
+  await expect(page).toHaveScreenshot('new-feature-created.png', {
+    mask: [page.locator('section[id="history"]')]
+  });
 });
