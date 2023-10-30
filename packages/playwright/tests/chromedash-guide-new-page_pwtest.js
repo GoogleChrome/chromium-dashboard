@@ -126,8 +126,31 @@ test('create new feature', async ({ page }) => {
   await submitButton.click();
   await delay(500);
 
-  // Check if we have a screenshot for this test case.
+  // Check if we have a screenshot for this new feature.
   await expect(page).toHaveScreenshot('new-feature-created.png', {
     mask: [page.locator('section[id="history"]')]
   });
+  await delay(500);
+
+  // Edit the feature.
+  const editButton = page.locator('a[class="editfeature"]');
+  await editButton.click();
+  await delay(500);
+
+  // Screenshot this editor page
+  await expect(page).toHaveScreenshot('new-feature-edit.png');
+
+  // Register to accept the confirm dialog before clicking to delete.
+  page.once('dialog', dialog => dialog.accept());
+
+    // Delete the new feature.
+  const deleteButton = page.locator('a[id$="delete-feature"]');
+  await deleteButton.click();
+  await delay(500);
+
+  // Screenshot the feature list after deletion.
+  // Not yet, since deletion only marks the feature as deleted,
+  // and the resulting page is always different.
+  // await expect(page).toHaveScreenshot('new-feature-deleted.png');
+  // await delay(500);
 });
