@@ -38,7 +38,6 @@ export class ChromedashFormField extends LitElement {
     this.checkMessage = '';
   }
 
-
   getValue() {
     // value can be a js or python boolean value converted to a string
     // or the initial value specified in form-field-spec
@@ -50,7 +49,6 @@ export class ChromedashFormField extends LitElement {
     super.connectedCallback();
     this.fieldProps = ALL_FIELDS[this.name] || {};
 
-    // Add this component to the
     const app = document.querySelector('chromedash-app');
     if (app?.pageComponent) {
       app.pageComponent.allFormFieldComponents[this.name] = this;
