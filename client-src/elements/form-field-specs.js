@@ -1172,7 +1172,7 @@ export const ALL_FIELDS = {
     label: 'Approval criteria link',
     help_text: html`
     <p>
-      Link to documentation public describing the requirements
+      Link to public documentation describing the requirements
       to be approved for trial participation.
     </p>`,
   },
