@@ -1,4 +1,4 @@
-import {LitElement, html} from 'lit-element';
+import { LitElement, html } from "lit-element";
 
 // Lit component corresponding to intentpreview.py and its template intent_to_implement.html
 
@@ -14,38 +14,37 @@ class ChromeDashIntentPreview extends LitElement {
     // Initialize properties here
   }
 
+  // Instead of vertical margins, <br> elements are used to create line breaks
+  // that can be copied and pasted into a text editor.
+
   renderSubheader() {
-    // Instead of vertical margins, <br> elements are used to create line breaks
-    // that can be copied and pasted into a text editor.
+    const header = html`
+      <p>Email to</p>
 
-    const header =
-            html`
-  <p>Email to</p>
+      <div class="subject">${blinkDevEmail}</div>
 
-  <div class="subject">
-    ${blinkDevEmail}
-  </div>
+      <p>Subject</p>
 
-  <p>Subject</p>
+      <div class="subject">${subjectPrefix}: ${feature.name}</div>
 
-  <div class="subject">
-    ${subjectPrefix}:
-    ${feature.name}
-  </div>
-
-  <p>Body
-    <span class="tooltip copy-text" style="float:right"
-          title="Copy text to clipboard">
-        <a href="#" data-tooltip>
-          <iron-icon icon="chromestatus:content_copy"
-                     id="copy-email-body"></iron-icon>
-        </a>
-    </span>
-  </p>
-`;
+      <p>
+        Body
+        <span
+          class="tooltip copy-text"
+          style="float:right"
+          title="Copy text to clipboard"
+        >
+          <a href="#" data-tooltip>
+            <iron-icon
+              icon="chromestatus:content_copy"
+              id="copy-email-body"
+            ></iron-icon>
+          </a>
+        </span>
+      </p>
+    `;
     return header;
   }
-
 
   // Convert the following django template into a lit template render methods.
   /*
@@ -61,10 +60,11 @@ class ChromeDashIntentPreview extends LitElement {
     if (!owners) {
       return html`None`;
     }
-    const ownersList = owners.map((owner) => html`
-      <a href="mailto:${owner}">${owner}</a>
-    `);
+    const ownersList = owners.map(
+      (owner) => html` <a href="mailto:${owner}">${owner}</a> `
+    );
     return html`
+      <br /><br />
       <h4>Contact emails</h4>
       ${ownersList}
     `;
@@ -85,14 +85,16 @@ class ChromeDashIntentPreview extends LitElement {
     if (!explainerLinks && feature.feature_type_int === 2) {
       return nothing;
     }
-    const explainerLinksList = explainerLinks.map((link, index) => html`
-        ${index ? html`<br>` : nothing}
+    const explainerLinksList = explainerLinks.map(
+      (link, index) => html`
+        ${index ? html`<br />` : nothing}
         <a href="${link}">${link}</a>
-    `);
+      `
+    );
     return html`
-    <br><br>
-    <h4>Explainer</h4>
-    ${explainerLinks ? explainerLinksList.join('') : 'None'}
+      <br /><br />
+      <h4>Explainer</h4>
+      ${explainerLinks ? explainerLinksList.join("") : "None"}
     `;
   }
 
@@ -107,7 +109,8 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
     return html`
-    <br><br><h4>Specification</h4>
+      <br /><br />
+      <h4>Specification</h4>
       <a href="${spec}">${spec}</a>
     `;
   }
@@ -126,11 +129,12 @@ class ChromeDashIntentPreview extends LitElement {
     if (!docs) {
       return nothing;
     }
-    const docsList = docs.map((link) => html`
-      <br><a href="${link}">${link}</a>
-    `);
+    const docsList = docs.map(
+      (link) => html` <br /><a href="${link}">${link}</a> `
+    );
     return html`
-    <br><br><h4>Design docs</h4>
+      <br /><br />
+      <h4>Design docs</h4>
       ${docsList}
     `;
   }
@@ -146,11 +150,11 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
     return html`
-    <br><br><h4>Summary</h4>
+      <br /><br />
+      <h4>Summary</h4>
       <p class="preformatted">${summary}</p>
     `;
   }
-
 
   /*
   <br><br><h4>Blink component</h4>
@@ -164,16 +168,22 @@ class ChromeDashIntentPreview extends LitElement {
     if (!blinkComponents) {
       return nothing;
     }
-    const blinkComponentList = blinkComponents.map((c) => html`
-      <a href="https://bugs.chromium.org/p/chromium/issues/list?q=component:${c}" target="_blank" rel="noopener">${c}</a>
-    `);
+    const blinkComponentList = blinkComponents.map(
+      (c) => html`
+        <a
+          href="https://bugs.chromium.org/p/chromium/issues/list?q=component:${c}"
+          target="_blank"
+          rel="noopener"
+          >${c}</a
+        >
+      `
+    );
     return html`
-    <br><br>
-    <h4>Blink component</h4>
+      <br /><br />
+      <h4>Blink component</h4>
       ${blinkComponentList}
     `;
   }
-
 
   /*
   {% if 'motivation' in sections_to_show %}
@@ -191,16 +201,18 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
     return html`
-    <br><br>
-    <h4>Motivation</h4>
+      <br /><br />
+      <h4>Motivation</h4>
       <p class="preformatted">${motivation}</p>
 
-      <br><br><h4>Initial public proposal</h4>
+      <br /><br />
+      <h4>Initial public proposal</h4>
 
-      <a href="${feature.initial_public_proposal_url}">${feature.initial_public_proposal_url}</a>
+      <a href="${feature.initial_public_proposal_url}"
+        >${feature.initial_public_proposal_url}</a
+      >
     `;
   }
-
 
   //   html`
   //       <br><br><h4>Intent to implement</h4>
@@ -214,7 +226,6 @@ class ChromeDashIntentPreview extends LitElement {
   //       <br><br><h4>Intent to Deprecate</h4>
   //       <a href="${feature.intent_to_deprecate_url}">${feature.intent_to_deprecate_url}</a
   //     `;
-
 
   /*
   {% if feature.tags %}
@@ -230,14 +241,14 @@ class ChromeDashIntentPreview extends LitElement {
     if (!tags) {
       return nothing;
     }
-    const tagsList = tags.map((tag) => html`
-            <a href="/features#tags:${tag}">${tag}</a>
-        `);
+    const tagsList = tags.map(
+      (tag) => html` <a href="/features#tags:${tag}">${tag}</a> `
+    );
     return html`
-        <br><br>
-        <h4>Search tags</h4>
-            ${tagsList}
-        `;
+      <br /><br />
+      <h4>Search tags</h4>
+      ${tagsList}
+    `;
   }
 
   /*
@@ -250,12 +261,11 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
     return html`
-    <br><br>
-    <h4>TAG review</h4>
-    <a href="${tagReview}">${tagReview}</a>
+      <br /><br />
+      <h4>TAG review</h4>
+      <a href="${tagReview}">${tagReview}</a>
     `;
   }
-
 
   /*
 
@@ -271,11 +281,10 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
     return html`
-    <h4>TAG review status</h4>
-    ${tagReviewStatus}
+      <h4>TAG review status</h4>
+      ${tagReviewStatus}
     `;
   }
-
 
   /*
   {% for stage in stage_info.ot_stages %}
@@ -307,38 +316,41 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
 
-    const otInfoList = otStages.map((stage) => html`
-    ${stage.ot_chromium_trial_name ? html`
-    <br><br>
-    <h4>Chromium Trial Name</h4>
-    ${stage.ot_chromium_trial_name}
-    ` : nothing}
+    const otInfoList = otStages.map(
+      (stage) => html`
+        ${stage.ot_chromium_trial_name
+          ? html`
+              <br /><br />
+              <h4>Chromium Trial Name</h4>
+              ${stage.ot_chromium_trial_name}
+            `
+          : nothing}
+        ${stage.origin_trial_feedback_url
+          ? html`
+              <br /><br />
+              <h4>Link to origin trial feedback summary</h4>
+              ${stage.origin_trial_feedback_url}
+            `
+          : nothing}
+        ${stage.ot_documentation_url
+          ? html`
+              <br /><br />
+              <h4>Origin Trial documentation link</h4>
+              ${stage.ot_documentation_url}
+            `
+          : nothing}
+        ${stage.ot_webfeature_use_counter
+          ? html`
+              <br /><br />
+              <h4>WebFeature UseCounter name</h4>
+              ${stage.ot_webfeature_use_counter}
+            `
+          : nothing}
+      `
+    );
 
-    ${stage.origin_trial_feedback_url ? html`
-    <br><br>
-    <h4>Link to origin trial feedback summary</h4>
-    ${stage.origin_trial_feedback_url}
-    ` : nothing}
-
-    ${stage.ot_documentation_url ? html`
-    <br><br>
-    <h4>Origin Trial documentation link</h4>
-    ${stage.ot_documentation_url}
-    ` : nothing}
-
-    ${stage.ot_webfeature_use_counter ? html`
-    <br><br>
-    <h4>WebFeature UseCounter name</h4>
-    ${stage.ot_webfeature_use_counter}
-    ` : nothing}
-
-    `);
-
-    return html`
-    ${otInfoList}
-    `;
+    return html` ${otInfoList} `;
   }
-
 
   /*
     <br><br><h4>Interoperability and Compatibility</h4>
@@ -351,10 +363,10 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
     return html`
-        <br><br>
-    <h4>Interoperability and Compatibility</h4>
-        <p class="preformatted">${interopCompatRisks}</p>
-        `;
+      <br /><br />
+      <h4>Interoperability and Compatibility</h4>
+      <p class="preformatted">${interopCompatRisks}</p>
+    `;
   }
 
   /*
@@ -374,17 +386,14 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
     return html`
-        <br><br>
-    <h4>Gecko</h4>
-        ${geckoInfo.view.text}
-        ${geckoInfo.view.url? html`
-        (<a href="${geckoInfo.view.url}">${geckoInfo.view.url}</a>)
-        ` : nothing}
-
-        ${geckoInfo.view.notes? html`
-        ${geckoInfo.view.notes}
-        ` : nothing}
-        `;
+      <br /><br />
+      <h4>Gecko</h4>
+      ${geckoInfo.view.text}
+      ${geckoInfo.view.url
+        ? html` (<a href="${geckoInfo.view.url}">${geckoInfo.view.url}</a>) `
+        : nothing}
+      ${geckoInfo.view.notes ? html` ${geckoInfo.view.notes} ` : nothing}
+    `;
   }
 
   /*
@@ -403,17 +412,14 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
     return html`
-        <br><br>
-    <h4>WebKit</h4>
-        ${webkitInfo.view.text}
-        ${webkitInfo.view.url? html`
-        (<a href="${webkitInfo.view.url}">${webkitInfo.view.url}</a>)
-        ` : nothing}
-
-        ${webkitInfo.view.notes? html`
-        ${webkitInfo.view.notes}
-        ` : nothing}
-        `;
+      <br /><br />
+      <h4>WebKit</h4>
+      ${webkitInfo.view.text}
+      ${webkitInfo.view.url
+        ? html` (<a href="${webkitInfo.view.url}">${webkitInfo.view.url}</a>) `
+        : nothing}
+      ${webkitInfo.view.notes ? html` ${webkitInfo.view.notes} ` : nothing}
+    `;
   }
 
   /*
@@ -431,16 +437,13 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
     return html`
-    <br><br>
-    <h4>Web developers</h4>
-    ${webDevInfo.view.text}
-    ${webDevInfo.view.url? html`
-    (<a href="${webDevInfo.view.url}">${webDevInfo.view.url}</a>)
-    ` : nothing}
-
-    ${webDevInfo.view.notes? html`
-    ${webDevInfo.view.notes}
-    ` : nothing}
+      <br /><br />
+      <h4>Web developers</h4>
+      ${webDevInfo.view.text}
+      ${webDevInfo.view.url
+        ? html` (<a href="${webDevInfo.view.url}">${webDevInfo.view.url}</a>) `
+        : nothing}
+      ${webDevInfo.view.notes ? html` ${webDevInfo.view.notes} ` : nothing}
     `;
   }
 
@@ -455,15 +458,11 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
     return html`
-    <br><br>
-    <h4>Other signals</h4>:
-    ${otherInfo.view.notes? html`
-    ${otherInfo.view.notes}
-    ` : nothing}
-
+      <br /><br />
+      <h4>Other signals</h4>
+      : ${otherInfo.view.notes ? html` ${otherInfo.view.notes} ` : nothing}
     `;
   }
-
 
   /*
 
@@ -478,12 +477,11 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
     return html`
-    <br><br>
-    <h4>Ergonomics</h4>
-    <p class="preformatted">${ergonomicsRisks}</p>
+      <br /><br />
+      <h4>Ergonomics</h4>
+      <p class="preformatted">${ergonomicsRisks}</p>
     `;
   }
-
 
   /*
 
@@ -498,10 +496,9 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
     return html`
-    <br><br>
-    <h4>Activation</h4>
-    <p class="preformatted">${activationRisks}</p>
-
+      <br /><br />
+      <h4>Activation</h4>
+      <p class="preformatted">${activationRisks}</p>
     `;
   }
 
@@ -518,10 +515,10 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
     return html`
-        <br><br>
-    <h4>Security</h4>
-        <p class="preformatted">${securityRisks}</p>
-        `;
+      <br /><br />
+      <h4>Security</h4>
+      <p class="preformatted">${securityRisks}</p>
+    `;
   }
 
   /*
@@ -539,14 +536,15 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
     return html`
-        <br><br>
-    <h4>WebView application risks</h4>
-        <p style="font-style: italic">
-        Does this intent deprecate or change behavior of existing APIs,
-        such that it has potentially high risk for Android WebView-based
-        applications?</p>
-        <p class="preformatted">${webviewRisks}</p>
-        `;
+      <br /><br />
+      <h4>WebView application risks</h4>
+      <p style="font-style: italic">
+        Does this intent deprecate or change behavior of existing APIs, such
+        that it has potentially high risk for Android WebView-based
+        applications?
+      </p>
+      <p class="preformatted">${webviewRisks}</p>
+    `;
   }
 
   /*
@@ -559,21 +557,16 @@ class ChromeDashIntentPreview extends LitElement {
   */
   renderRisks() {
     return html`
-    <div style="margin-left: 4em;">
-    <h4>Risks</h4>
-    ${renderInteropCompatRisks()}
-    ${renderGeckoRisks()}
-    ${renderWebKitRisks()}
-    ${renderWebDevRisks()}
-    ${renderOtherRisks()}
-    ${renderErgonomicsRisks()}
-    ${renderActivationRisks()}
-    ${renderSecurityRisks()}
-    ${renderWebViewRisks()}
-    </div> <!-- end risks -->
+      <div style="margin-left: 4em;">
+        <h4>Risks</h4>
+        ${renderInteropCompatRisks()} ${renderGeckoRisks()}
+        ${renderWebKitRisks()} ${renderWebDevRisks()} ${renderOtherRisks()}
+        ${renderErgonomicsRisks()} ${renderActivationRisks()}
+        ${renderSecurityRisks()} ${renderWebViewRisks()}
+      </div>
+      <!-- end risks -->
     `;
   }
-
 
   /*
 {% if 'experiment' in sections_to_show %}
@@ -607,47 +600,44 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
 
-    let extensionStagesHTML = '';
+    let extensionStagesHTML = "";
     if (feature.stage_info.extension_stages) {
       const stages = feature.stage_info.extension_stages;
       const extensionsHtml = [];
       for (stage in stages) {
         if (stage.experiment_extension_reason) {
           extensionsHtml.push(html`
-                <br><br>
-                <h4>Reason this experiment is being extended</h4>
-                <p class="preformatted">${stage.experiment_extension_reason}</p>
-                `);
+            <br /><br />
+            <h4>Reason this experiment is being extended</h4>
+            <p class="preformatted">${stage.experiment_extension_reason}</p>
+          `);
         }
       }
-      extensionStagesHTML = html`
-        ${extensionsHtml.join('')}
-    `;
+      extensionStagesHTML = html` ${extensionsHtml.join("")} `;
     }
 
-
     return html`
-    <br><br>
-    <h4>Goals for experimentation</h4>
-    <p class="preformatted">${experimentInfo}</p>
+      <br /><br />
+      <h4>Goals for experimentation</h4>
+      <p class="preformatted">${experimentInfo}</p>
 
-    ${feature.experiment_timeline? html`
-    <br><br>
-    <h4>Experimental timeline</h4>
-    <p class="preformatted">${feature.experiment_timeline}</p>
-    ` : nothing}
-
-    ${extensionStagesHTML}
-
-    ${feature.ongoing_constraints? html`
-    <br><br>
-    <h4>Ongoing technical constraints</h4>
-    <p class="preformatted">${feature.ongoing_constraints}</p>
-    ` : nothing}
-
+      ${feature.experiment_timeline
+        ? html`
+            <br /><br />
+            <h4>Experimental timeline</h4>
+            <p class="preformatted">${feature.experiment_timeline}</p>
+          `
+        : nothing}
+      ${extensionStagesHTML}
+      ${feature.ongoing_constraints
+        ? html`
+            <br /><br />
+            <h4>Ongoing technical constraints</h4>
+            <p class="preformatted">${feature.ongoing_constraints}</p>
+          `
+        : nothing}
     `;
   }
-
 
   /*
 
@@ -661,12 +651,11 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
     return html`
-    <br><br>
-    <h4>Debuggability</h4>
-    <p class="preformatted">${debuggability}</p>
+      <br /><br />
+      <h4>Debuggability</h4>
+      <p class="preformatted">${debuggability}</p>
     `;
   }
-
 
   /*
 
@@ -686,19 +675,19 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
     return html`
-    <br><br>
-    <h4>Will this feature be supported on all six Blink platforms
-    (Windows, Mac, Linux, Chrome OS, Android, and Android WebView)?</h4>
-    ${allPlatforms? 'Yes' : 'No'}
-    ${feature.all_platforms_descr? html`
-    <p class="preformatted">${feature.all_platforms_descr}</p>
-    ` : nothing}
+      <br /><br />
+      <h4>
+        Will this feature be supported on all six Blink platforms (Windows, Mac,
+        Linux, Chrome OS, Android, and Android WebView)?
+      </h4>
+      ${allPlatforms ? "Yes" : "No"}
+      ${feature.all_platforms_descr
+        ? html` <p class="preformatted">${feature.all_platforms_descr}</p> `
+        : nothing}
     `;
   }
 
-
   /*
-
 <br><br><h4>Is this feature fully tested by <a href="https://chromium.googlesource.com/chromium/src/+/main/docs/testing/web_platform_tests.md">web-platform-tests</a>?</h4>
 {% if feature.wpt %}Yes{% else %}No{% endif %}
 {% if feature.wpt_descr %}
@@ -712,18 +701,22 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
     return html`
-    <br><br>
-    <h4>Is this feature fully tested by <a href="https://chromium.googlesource.com/chromium/src/+/main/docs/testing/web_platform_tests.md">web-platform-tests</a>?</h4>
-    ${wpt? 'Yes' : 'No'}
-    ${feature.wpt_descr? html`
-    <p class="preformatted">${feature.wpt_descr}</p>
-    ` : nothing}
+      <br /><br />
+      <h4>
+        Is this feature fully tested by
+        <a
+          href="https://chromium.googlesource.com/chromium/src/+/main/docs/testing/web_platform_tests.md"
+          >web-platform-tests</a
+        >?
+      </h4>
+      ${wpt ? "Yes" : "No"}
+      ${feature.wpt_descr
+        ? html` <p class="preformatted">${feature.wpt_descr}</p> `
+        : nothing}
     `;
   }
 
-
   /*
-
 {% if feature.devtrial_instructions %}
   <br><br><h4>DevTrial instructions</h4>
   <a href="{{feature.devtrial_instructions}}"
@@ -737,15 +730,13 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
     return html`
-    <br><br>
-    <h4>DevTrial instructions</h4>
-    <a href="${devTrialInstructions}">${devTrialInstructions}</a>
+      <br /><br />
+      <h4>DevTrial instructions</h4>
+      <a href="${devTrialInstructions}">${devTrialInstructions}</a>
     `;
   }
 
-
   /*
-
 <br><br><h4>Flag name on chrome://flags</h4>
 {{feature.flag_name}}
 */
@@ -756,15 +747,13 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
     return html`
-    <br><br>
-    <h4>Flag name on chrome://flags</h4>
-    ${flagName}
+      <br /><br />
+      <h4>Flag name on chrome://flags</h4>
+      ${flagName}
     `;
   }
 
-
   /*
-
 <br><br><h4>Finch feature name</h4>
 {{feature.finch_name}}
 
@@ -779,30 +768,24 @@ class ChromeDashIntentPreview extends LitElement {
 {% endif %}
 */
 
-
   renderFinch() {
     const finchName = feature.finch_name;
 
     return html`
-    <br><br>
-    <h4>Finch feature name</h4>
-    ${finchName}
-
-    ${feature.non_finch_justification ? html`
-        <br><br>
-        <h4>Non-finch justification</h4>
-        <p class="preformatted">
-            ${feature.non_finch_justification}
-        </p>` :
-        !finchName? html`
-        <br><br>
-        <h4>Non-finch justification</h4>
-        None` :
-          nothing
-        }
+      <br /><br />
+      <h4>Finch feature name</h4>
+      ${finchName}
+      ${feature.non_finch_justification
+        ? html` <br /><br />
+            <h4>Non-finch justification</h4>
+            <p class="preformatted">${feature.non_finch_justification}</p>`
+        : !finchName
+        ? html` <br /><br />
+            <h4>Non-finch justification</h4>
+            None`
+        : nothing}
     `;
   }
-
 
   /*
 <br><br><h4>Requires code in //chrome?</h4>
@@ -815,12 +798,11 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
     return html`
-    <br><br>
-    <h4>Requires code in //chrome?</h4>
-    ${requiresEmbedderSupport}
+      <br /><br />
+      <h4>Requires code in //chrome?</h4>
+      ${requiresEmbedderSupport}
     `;
   }
-
 
   /*
 {% if feature.browsers.chrome.bug %}
@@ -835,12 +817,11 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
     return html`
-    <br><br>
-    <h4>Tracking bug</h4>
-    <a href="${trackingBug}">${trackingBug}</a>
+      <br /><br />
+      <h4>Tracking bug</h4>
+      <a href="${trackingBug}">${trackingBug}</a>
     `;
   }
-
 
   /*
 {% if feature.launch_bug_url %}
@@ -855,12 +836,11 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
     return html`
-    <br><br>
-    <h4>Launch bug</h4>
-    <a href="${launchBug}">${launchBug}</a>
+      <br /><br />
+      <h4>Launch bug</h4>
+      <a href="${launchBug}">${launchBug}</a>
     `;
   }
-
 
   /*
 {% if feature.measurement %}
@@ -875,12 +855,11 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
     return html`
-    <br><br>
-    <h4>Measurement</h4>
-    ${measurement}
+      <br /><br />
+      <h4>Measurement</h4>
+      ${measurement}
     `;
   }
-
 
   /*
 {% if feature.availability_expectation %}
@@ -895,12 +874,11 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
     return html`
-    <br><br>
-    <h4>Availability expectation</h4>
-    ${availabilityExpectation}
+      <br /><br />
+      <h4>Availability expectation</h4>
+      ${availabilityExpectation}
     `;
   }
-
 
   /*
 {% if feature.adoption_expectation %}
@@ -915,12 +893,11 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
     return html`
-    <br><br>
-    <h4>Adoption expectation</h4>
-    ${adoptionExpectation}
+      <br /><br />
+      <h4>Adoption expectation</h4>
+      ${adoptionExpectation}
     `;
   }
-
 
   /*
 {% if feature.adoption_plan %}
@@ -935,12 +912,11 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
     return html`
-    <br><br>
-    <h4>Adoption plan</h4>
-    ${adoptionPlan}
+      <br /><br />
+      <h4>Adoption plan</h4>
+      ${adoptionPlan}
     `;
   }
-
 
   /*
 {% if feature.non_oss_deps %}
@@ -960,16 +936,15 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
     return html`
-    <br><br>
-    <h4>Non-OSS dependencies</h4>
-    <p style="font-style: italic">
-    Does the feature depend on any code or APIs outside the Chromium
-    open source repository and its open-source dependencies to
-    function?</p>
-    ${nonOSSDeps}
+      <br /><br />
+      <h4>Non-OSS dependencies</h4>
+      <p style="font-style: italic">
+        Does the feature depend on any code or APIs outside the Chromium open
+        source repository and its open-source dependencies to function?
+      </p>
+      ${nonOSSDeps}
     `;
   }
-
 
   /*
 {% if 'sample_links' in sections_to_show %}
@@ -987,13 +962,13 @@ class ChromeDashIntentPreview extends LitElement {
     if (!sampleLinks) {
       return nothing;
     }
-    const sampleLinksList = sampleLinks.map((link) => html`
-        <br><a href="${link}">${link}</a>
-    `);
+    const sampleLinksList = sampleLinks.map(
+      (link) => html` <br /><a href="${link}">${link}</a> `
+    );
     return html`
-    <br><br>
-    <h4>Sample links</h4>
-    ${sampleLinksList}
+      <br /><br />
+      <h4>Sample links</h4>
+      ${sampleLinksList}
     `;
   }
 
@@ -1040,9 +1015,11 @@ class ChromeDashIntentPreview extends LitElement {
       if (!shipStages.hasOwnProperty(stage)) continue;
       if (stage.milestones.desktop_first) {
         shipStagesHTML.push(html`
-                <tr><td>Shipping on desktop</td>
-                <td>${stage.milestones.desktop_first}</td></tr>
-                `);
+          <tr>
+            <td>Shipping on desktop</td>
+            <td>${stage.milestones.desktop_first}</td>
+          </tr>
+        `);
       }
     }
 
@@ -1051,15 +1028,19 @@ class ChromeDashIntentPreview extends LitElement {
       if (!otStages.hasOwnProperty(stage)) continue;
       if (stage.milestones.desktop_last) {
         otStagesHTML.push(html`
-                <tr><td>OriginTrial desktop last</td>
-                <td>${stage.milestones.desktop_last}</td></tr>
-                `);
+          <tr>
+            <td>OriginTrial desktop last</td>
+            <td>${stage.milestones.desktop_last}</td>
+          </tr>
+        `);
       }
       if (stage.milestones.desktop_first) {
         otStagesHTML.push(html`
-                <tr><td>OriginTrial desktop first</td>
-                <td>${stage.milestones.desktop_first}</td></tr>
-                `);
+          <tr>
+            <td>OriginTrial desktop first</td>
+            <td>${stage.milestones.desktop_first}</td>
+          </tr>
+        `);
       }
     }
 
@@ -1067,21 +1048,21 @@ class ChromeDashIntentPreview extends LitElement {
     for (stage in dtStages) {
       if (stage.milestones.desktop_first) {
         dtStagesHTML.push(html`
-                <tr><td>DevTrial on desktop</td>
-                <td>${stage.milestones.desktop_first}</td></tr>
-                `);
+          <tr>
+            <td>DevTrial on desktop</td>
+            <td>${stage.milestones.desktop_first}</td>
+          </tr>
+        `);
       }
     }
 
     return html`
-        <table>
-        ${shipStagesHTML.join('')}
-        ${otStagesHTML.join('')}
-        ${dtStagesHTML.join('')}
-        </table>
-        `;
+      <table>
+        ${shipStagesHTML.join("")} ${otStagesHTML.join("")}
+        ${dtStagesHTML.join("")}
+      </table>
+    `;
   }
-
 
   /*
   <table>
@@ -1117,9 +1098,11 @@ class ChromeDashIntentPreview extends LitElement {
     for (stage in shipStages) {
       if (stage.milestones.android_first) {
         shipStagesHTML.push(html`
-                <tr><td>Shipping on Android</td>
-                <td>${stage.milestones.android_first}</td></tr>
-                `);
+          <tr>
+            <td>Shipping on Android</td>
+            <td>${stage.milestones.android_first}</td>
+          </tr>
+        `);
       }
     }
 
@@ -1128,15 +1111,19 @@ class ChromeDashIntentPreview extends LitElement {
       if (!otStages.hasOwnProperty(stage)) continue;
       if (stage.milestones.android_last) {
         otStagesHTML.push(html`
-                <tr><td>OriginTrial Android last</td>
-                <td>${stage.milestones.android_last}</td></tr>
-                `);
+          <tr>
+            <td>OriginTrial Android last</td>
+            <td>${stage.milestones.android_last}</td>
+          </tr>
+        `);
       }
       if (stage.milestones.android_first) {
         otStagesHTML.push(html`
-                <tr><td>OriginTrial Android first</td>
-                <td>${stage.milestones.android_first}</td></tr>
-                `);
+          <tr>
+            <td>OriginTrial Android first</td>
+            <td>${stage.milestones.android_first}</td>
+          </tr>
+        `);
       }
     }
 
@@ -1144,21 +1131,21 @@ class ChromeDashIntentPreview extends LitElement {
     for (stage in dtStages) {
       if (stage.milestones.android_first) {
         dtStagesHTML.push(html`
-                <tr><td>DevTrial on Android</td>
-                <td>${stage.milestones.android_first}</td></tr>
-                `);
+          <tr>
+            <td>DevTrial on Android</td>
+            <td>${stage.milestones.android_first}</td>
+          </tr>
+        `);
       }
     }
 
     return html`
-        <table>
-        ${shipStagesHTML.join('')}
-        ${otStagesHTML.join('')}
-        ${dtStagesHTML.join('')}
-        </table>
-        `;
+      <table>
+        ${shipStagesHTML.join("")} ${otStagesHTML.join("")}
+        ${dtStagesHTML.join("")}
+      </table>
+    `;
   }
-
 
   /*
   <table>
@@ -1189,9 +1176,11 @@ class ChromeDashIntentPreview extends LitElement {
     for (stage in shipStages) {
       if (stage.milestones.webview_first) {
         shipStagesHTML.push(html`
-                <tr><td>Shipping on WebView</td>
-                <td>${stage.milestones.webview_first}</td></tr>
-                `);
+          <tr>
+            <td>Shipping on WebView</td>
+            <td>${stage.milestones.webview_first}</td>
+          </tr>
+        `);
       }
     }
 
@@ -1200,26 +1189,28 @@ class ChromeDashIntentPreview extends LitElement {
       if (!otStages.hasOwnProperty(stage)) continue;
       if (stage.milestones.webview_last) {
         otStagesHTML.push(html`
-                <tr><td>OriginTrial webView last</td>
-                <td>${stage.milestones.webview_last}</td></tr>
-                `);
+          <tr>
+            <td>OriginTrial webView last</td>
+            <td>${stage.milestones.webview_last}</td>
+          </tr>
+        `);
       }
       if (stage.milestones.webview_first) {
         otStagesHTML.push(html`
-                <tr><td>OriginTrial webView first</td>
-                <td>${stage.milestones.webview_first}</td></tr>
-                `);
+          <tr>
+            <td>OriginTrial webView first</td>
+            <td>${stage.milestones.webview_first}</td>
+          </tr>
+        `);
       }
     }
 
     return html`
-        <table>
-        ${shipStagesHTML.join('')}
-        ${otStagesHTML.join('')}
-        </table>
-        `;
+      <table>
+        ${shipStagesHTML.join("")} ${otStagesHTML.join("")}
+      </table>
+    `;
   }
-
 
   /*
   <table>
@@ -1246,9 +1237,11 @@ class ChromeDashIntentPreview extends LitElement {
     for (stage in shipStages) {
       if (stage.milestones.ios_first) {
         shipStagesHTML.push(html`
-                <tr><td>Shipping on WebView</td>
-                <td>${stage.milestones.ios_first}</td></tr>
-                `);
+          <tr>
+            <td>Shipping on WebView</td>
+            <td>${stage.milestones.ios_first}</td>
+          </tr>
+        `);
       }
     }
 
@@ -1256,20 +1249,20 @@ class ChromeDashIntentPreview extends LitElement {
     for (stage in dtStages) {
       if (stage.milestones.ios_first) {
         dtStagesHTML.push(html`
-                <tr><td>DevTrial on iOS</td>
-                <td>${stage.milestones.ios_first}</td></tr>
-                `);
+          <tr>
+            <td>DevTrial on iOS</td>
+            <td>${stage.milestones.ios_first}</td>
+          </tr>
+        `);
       }
     }
 
     return html`
-        <table>
-        ${shipStagesHTML.join('')}
-        ${dtStagesHTML.join('')}
-        </table>
-        `;
+      <table>
+        ${shipStagesHTML.join("")} ${dtStagesHTML.join("")}
+      </table>
+    `;
   }
-
 
   /*
 {% if should_render_mstone_table %}
@@ -1284,18 +1277,13 @@ class ChromeDashIntentPreview extends LitElement {
   renderEstimatedMilestoneTable() {
     if (this.shouldRenderMstoneTable) {
       return html`
-        ${renderDesktopMilestoneTable()}
-        ${renderAndroidMilestoneTable()}
-        ${renderWebViewMilestoneTable()}
-        ${renderIOSMilestoneTable()}
-        `;
+        ${renderDesktopMilestoneTable()} ${renderAndroidMilestoneTable()}
+        ${renderWebViewMilestoneTable()} ${renderIOSMilestoneTable()}
+      `;
     } else {
-      return html`
-        <p>No milestones specified</p>
-        `;
+      return html` <p>No milestones specified</p> `;
     }
   }
-
 
   /*
 <br><br><h4>Estimated milestones</h4>
@@ -1304,12 +1292,11 @@ class ChromeDashIntentPreview extends LitElement {
 
   renderEstimatedMilestones() {
     return html`
-    <br><br>
-    <h4>Estimated milestones</h4>
-    ${renderEstimatedMilestonesTable()}
+      <br /><br />
+      <h4>Estimated milestones</h4>
+      ${renderEstimatedMilestonesTable()}
     `;
   }
-
 
   /*
 {% if 'anticipated_spec_changes' in sections_to_show or feature.anticipated_spec_changes %}
@@ -1331,18 +1318,18 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
     return html`
-    <br><br>
-    <h4>Anticipated spec changes</h4>
-    <p style="font-style: italic">
-    Open questions about a feature may be a source of future web compat or
-    interop issues. Please list open issues (e.g. links to known github
-    issues in the project for the feature specification) whose resolution
-    may introduce web compat/interop risk (e.g., changing to naming or
-    structure of the API in a non-backward-compatible way).</p>
-    ${anticipatedSpecChanges}
+      <br /><br />
+      <h4>Anticipated spec changes</h4>
+      <p style="font-style: italic">
+        Open questions about a feature may be a source of future web compat or
+        interop issues. Please list open issues (e.g. links to known github
+        issues in the project for the feature specification) whose resolution
+        may introduce web compat/interop risk (e.g., changing to naming or
+        structure of the API in a non-backward-compatible way).
+      </p>
+      ${anticipatedSpecChanges}
     `;
   }
-
 
   /*
 <br><br><h4>Link to entry on the {{APP_TITLE}}</h4>
@@ -1355,12 +1342,11 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
     return html`
-    <br><br>
-    <h4>Link to entry on the ${APP_TITLE}</h4>
-    <a href="${defaultURL}">${defaultURL}</a>
+      <br /><br />
+      <h4>Link to entry on the ${APP_TITLE}</h4>
+      <a href="${defaultURL}">${defaultURL}</a>
     `;
   }
-
 
   /*
 {% if should_render_intents %}
@@ -1405,8 +1391,8 @@ class ChromeDashIntentPreview extends LitElement {
       for (stage in protoStages) {
         if (stage.intent_thread_url) {
           protoStagesHTML.push(html`
-                Intent to prototype: ${stage.intent_thread_url}
-                `);
+            Intent to prototype: ${stage.intent_thread_url}
+          `);
         }
       }
 
@@ -1414,9 +1400,9 @@ class ChromeDashIntentPreview extends LitElement {
       for (stage in dtStages) {
         if (stage.announcement_url) {
           dtStagesHTML.push(html`
-                Ready for Trial: ${stage.announcement_url}
-                <br>
-                `);
+            Ready for Trial: ${stage.announcement_url}
+            <br />
+          `);
         }
       }
 
@@ -1424,9 +1410,9 @@ class ChromeDashIntentPreview extends LitElement {
       for (stage in otStages) {
         if (stage.intent_thread_url) {
           otStagesHTML.push(html`
-                Intent to Experiment: ${stage.intent_thread_url}
-                <br>
-                `);
+            Intent to Experiment: ${stage.intent_thread_url}
+            <br />
+          `);
         }
       }
 
@@ -1434,23 +1420,20 @@ class ChromeDashIntentPreview extends LitElement {
       for (stage in extensionStages) {
         if (stage.intent_thread_url) {
           extensionStagesHTML.push(html`
-                Intent to Extend Experiment: ${stage.intent_thread_url}
-                <br>
-                `);
+            Intent to Extend Experiment: ${stage.intent_thread_url}
+            <br />
+          `);
         }
       }
 
       return html`
-        <br><br>
+        <br /><br />
         <h4>Links to previous Intent discussions</h4>
-        ${protoStagesHTML.join('')}
-        ${dtStagesHTML.join('')}
-        ${otStagesHTML.join('')}
-        ${extensionStagesHTML.join('')}
-        `;
+        ${protoStagesHTML.join("")} ${dtStagesHTML.join("")}
+        ${otStagesHTML.join("")} ${extensionStagesHTML.join("")}
+      `;
     }
   }
-
 
   /*
 <br><br><div><small>
@@ -1463,43 +1446,29 @@ class ChromeDashIntentPreview extends LitElement {
 
   render() {
     return html`
-        ${this.renderSubheader()}
-        <div class="email">
-        ${this.renderContactEmails()}
-        ${this.renderExplainerLinks()}
-        ${this.renderSpec()}
-        ${this.renderDesignDocs()}
-        ${this.renderSummary()}
-        ${this.renderBlinkComponents}
-        ${this.renderMotivation()}
-        ${this.renderSearchTags()}
-        ${this.renderTagReview()}
-        ${this.renderTagReviewStatus()}
-        ${this.renderOTInfo()}
-        ${this.renderRisks()}
-        ${this.renderExperiment()}
-        ${this.renderDebuggability()}
-        ${this.renderAllPlatforms()}
-        ${this.renderWPT()}
-        ${this.renderDevTrialInstructions()}
-        ${this.renderFlagName()}
-        ${this.renderFinch()}
-        ${this.renderRequiresEmbedderSupport()}
-        ${this.renderTrackingBug()}
-        ${this.renderLaunchBug()}
-        ${this.renderMeasurement()}
+      ${this.renderSubheader()}
+      <div class="email">
+        ${this.renderContactEmails()} ${this.renderExplainerLinks()}
+        ${this.renderSpec()} ${this.renderDesignDocs()} ${this.renderSummary()}
+        ${this.renderBlinkComponents} ${this.renderMotivation()}
+        ${this.renderSearchTags()} ${this.renderTagReview()}
+        ${this.renderTagReviewStatus()} ${this.renderOTInfo()}
+        ${this.renderRisks()} ${this.renderExperiment()}
+        ${this.renderDebuggability()} ${this.renderAllPlatforms()}
+        ${this.renderWPT()} ${this.renderDevTrialInstructions()}
+        ${this.renderFlagName()} ${this.renderFinch()}
+        ${this.renderRequiresEmbedderSupport()} ${this.renderTrackingBug()}
+        ${this.renderLaunchBug()} ${this.renderMeasurement()}
         ${this.renderAvailabilityExpectation()}
-        ${this.renderAdoptionExpectation()}
-        ${this.renderAdoptionPlan()}
-        ${this.renderNonOSSDeps()}
-        ${this.renderSampleLinks()}
+        ${this.renderAdoptionExpectation()} ${this.renderAdoptionPlan()}
+        ${this.renderNonOSSDeps()} ${this.renderSampleLinks()}
         ${this.renderEstimatedMilestones()}
-        ${this.renderAnticipatedSpecChanges()}
-        ${this.renderDefaultURL()}
+        ${this.renderAnticipatedSpecChanges()} ${this.renderDefaultURL()}
         ${this.renderIntentLinks()}
-        </div> <!-- end email body div -->
-        `;
+      </div>
+      <!-- end email body div -->
+    `;
   }
 }
 
-customElements.define('chromedash-intent-preview', ChromeDashIntentPreview);
+customElements.define("chromedash-intent-preview", ChromeDashIntentPreview);
