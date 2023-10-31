@@ -1,25 +1,24 @@
-import { LitElement, html } from 'lit-element';
+import {LitElement, html} from 'lit-element';
 
 // Lit component corresponding to intentpreview.py and its template intent_to_implement.html
 
 class ChromeDashIntentPreview extends LitElement {
-    static get properties() {
-        return {
-            // Define properties here
-        };
-    }
+  static get properties() {
+    return {
+      // Define properties here
+    };
+  }
 
-    constructor() {
-        super();
-        // Initialize properties here
-    }
+  constructor() {
+    super();
+    // Initialize properties here
+  }
 
-    renderSubheader() {
+  renderSubheader() {
+    // Instead of vertical margins, <br> elements are used to create line breaks
+    // that can be copied and pasted into a text editor.
 
-        // Instead of vertical margins, <br> elements are used to create line breaks
-        // that can be copied and pasted into a text editor.
-
-        const header =
+    const header =
             html`
   <p>Email to</p>
 
@@ -44,12 +43,12 @@ class ChromeDashIntentPreview extends LitElement {
     </span>
   </p>
 `;
-return header;
-}
+    return header;
+  }
 
 
- // Convert the following django template into a lit template render methods.
-/*
+  // Convert the following django template into a lit template render methods.
+  /*
   <h4>Contact emails</h4>
   {% if not feature.browsers.chrome.owners %}None{% endif %}
   {% for owner in feature.browsers.chrome.owners %}
@@ -83,7 +82,7 @@ return header;
 
   renderExplainerLinks() {
     const explainerLinks = feature.explainer_links;
-    if (!explainerLinks && feature.feature_type_int === 2)) {
+    if (!explainerLinks && feature.feature_type_int === 2) {
       return nothing;
     }
     const explainerLinksList = explainerLinks.map((link, index) => html`
@@ -203,18 +202,18 @@ return header;
   }
 
 
-//   html`
-//       <br><br><h4>Intent to implement</h4>
-//       <a href="${feature.intent_to_implement_url}">${feature.intent_to_implement_url}</a>
-//       <br><br><h4>Intent to Experiment</h4>
+  //   html`
+  //       <br><br><h4>Intent to implement</h4>
+  //       <a href="${feature.intent_to_implement_url}">${feature.intent_to_implement_url}</a>
+  //       <br><br><h4>Intent to Experiment</h4>
 
-//       <a href="${feature.intent_to_experiment_url}">${feature.intent_to_experiment_url}</a>
+  //       <a href="${feature.intent_to_experiment_url}">${feature.intent_to_experiment_url}</a>
 
-//       <br><br><h4>Intent to Ship</h4>
-//       <a href="${feature.intent_to_ship_url}">${feature.intent_to_ship_url}</a>
-//       <br><br><h4>Intent to Deprecate</h4>
-//       <a href="${feature.intent_to_deprecate_url}">${feature.intent_to_deprecate_url}</a
-//     `;
+  //       <br><br><h4>Intent to Ship</h4>
+  //       <a href="${feature.intent_to_ship_url}">${feature.intent_to_ship_url}</a>
+  //       <br><br><h4>Intent to Deprecate</h4>
+  //       <a href="${feature.intent_to_deprecate_url}">${feature.intent_to_deprecate_url}</a
+  //     `;
 
 
   /*
@@ -227,36 +226,35 @@ return header;
   {% endif %}
   */
   renderSearchTags() {
-        const tags = feature.tags;
-        if (!tags) {
-            return nothing;
-        }
-        const tagsList = tags.map((tag) => html`
+    const tags = feature.tags;
+    if (!tags) {
+      return nothing;
+    }
+    const tagsList = tags.map((tag) => html`
             <a href="/features#tags:${tag}">${tag}</a>
         `);
-        return html`
+    return html`
         <br><br>
         <h4>Search tags</h4>
             ${tagsList}
         `;
-    }
+  }
 
   /*
   <br><br><h4>TAG review</h4>
   {{feature.tag_review|urlize}}
   */
- renderTagReview() {
+  renderTagReview() {
     const tagReview = feature.tag_review;
     if (!tagReview) {
-        return nothing;
+      return nothing;
     }
     return html`
     <br><br>
     <h4>TAG review</h4>
     <a href="${tagReview}">${tagReview}</a>
     `;
-}
-
+  }
 
 
   /*
@@ -270,13 +268,13 @@ return header;
   renderTagReviewStatus() {
     const tagReviewStatus = feature.tag_review_status;
     if (!tagReviewStatus) {
-        return nothing;
+      return nothing;
     }
     return html`
     <h4>TAG review status</h4>
     ${tagReviewStatus}
     `;
-}
+  }
 
 
   /*
@@ -306,7 +304,7 @@ return header;
   renderOTInfo() {
     const otStages = stage_info.ot_stages;
     if (!otStages) {
-        return nothing;
+      return nothing;
     }
 
     const otInfoList = otStages.map((stage) => html`
@@ -339,29 +337,27 @@ return header;
     return html`
     ${otInfoList}
     `;
-    }
+  }
 
 
-
-
-    /*
+  /*
     <br><br><h4>Interoperability and Compatibility</h4>
     <p class="preformatted">{{feature.interop_compat_risks|urlize}}</p>
     */
 
-    renderInteropCompatRisks() {
-        const interopCompatRisks = feature.interop_compat_risks;
-        if (!interopCompatRisks) {
-            return nothing;
-        }
-        return html`
+  renderInteropCompatRisks() {
+    const interopCompatRisks = feature.interop_compat_risks;
+    if (!interopCompatRisks) {
+      return nothing;
+    }
+    return html`
         <br><br>
     <h4>Interoperability and Compatibility</h4>
         <p class="preformatted">${interopCompatRisks}</p>
         `;
-    }
+  }
 
-    /*
+  /*
 
     <br><br><i>Gecko</i>: {{feature.browsers.ff.view.text}}
     {% if feature.browsers.ff.view.url %}
@@ -372,12 +368,12 @@ return header;
     {% endif %}
     */
 
-    renderGeckoRisks() {
-        const geckoInfo = feature.browsers.ff;
-        if (!geckoInfo) {
-            return nothing;
-        }
-        return html`
+  renderGeckoRisks() {
+    const geckoInfo = feature.browsers.ff;
+    if (!geckoInfo) {
+      return nothing;
+    }
+    return html`
         <br><br>
     <h4>Gecko</h4>
         ${geckoInfo.view.text}
@@ -389,9 +385,9 @@ return header;
         ${geckoInfo.view.notes}
         ` : nothing}
         `;
-    }
+  }
 
-    /*
+  /*
     <br><br><i>WebKit</i>: {{feature.browsers.safari.view.text}}
     {% if feature.browsers.safari.view.url %}
       (<a href="{{feature.browsers.safari.view.url}}">{{feature.browsers.safari.view.url}}</a>)
@@ -401,12 +397,12 @@ return header;
     {% endif %}
     */
 
-    renderWebKitRisks() {
-        const webkitInfo = feature.browsers.safari;
-        if (!webkitInfo) {
-            return nothing;
-        }
-        return html`
+  renderWebKitRisks() {
+    const webkitInfo = feature.browsers.safari;
+    if (!webkitInfo) {
+      return nothing;
+    }
+    return html`
         <br><br>
     <h4>WebKit</h4>
         ${webkitInfo.view.text}
@@ -418,9 +414,9 @@ return header;
         ${webkitInfo.view.notes}
         ` : nothing}
         `;
-    }
+  }
 
-    /*
+  /*
     <br><br><i>Web developers</i>: {{feature.browsers.webdev.view.text}}
     {% if feature.browsers.webdev.view.url %}
       (<a href="{{feature.browsers.webdev.view.url}}">{{feature.browsers.webdev.view.url}}</a>)
@@ -429,10 +425,10 @@ return header;
       {{feature.browsers.webdev.view.notes|urlize}}
     {% endif %}
     */
-   renderWebDevRisks() {
+  renderWebDevRisks() {
     const webDevInfo = feature.browsers.webdev;
     if (!webDevInfo) {
-        return nothing;
+      return nothing;
     }
     return html`
     <br><br>
@@ -446,17 +442,17 @@ return header;
     ${webDevInfo.view.notes}
     ` : nothing}
     `;
-   }
+  }
 
-    /*
+  /*
     {% if feature.browsers.other.view.notes %}
       {{feature.browsers.other.view.notes|urlize}}
     {% endif %}
     */
-   renderOtherRisks() {
+  renderOtherRisks() {
     const otherInfo = feature.browsers.other;
     if (!otherInfo) {
-        return nothing;
+      return nothing;
     }
     return html`
     <br><br>
@@ -469,37 +465,37 @@ return header;
   }
 
 
-    /*
+  /*
 
     {% if feature.ergonomics_risks %}
       <br><br><h4>Ergonomics</h4>
       <p class="preformatted">{{feature.ergonomics_risks|urlize}}</p>
     {% endif %}
     */
-   renderErgonomicsRisks() {
+  renderErgonomicsRisks() {
     const ergonomicsRisks = feature.ergonomics_risks;
     if (!ergonomicsRisks) {
-        return nothing;
+      return nothing;
     }
     return html`
     <br><br>
     <h4>Ergonomics</h4>
     <p class="preformatted">${ergonomicsRisks}</p>
     `;
-    }
+  }
 
 
-    /*
+  /*
 
     {% if feature.activation_risks %}
       <br><br><h4>Activation</h4>
       <p class="preformatted">{{feature.activation_risks|urlize}}</p>
     {% endif %}
     */
-   renderActivationRisks() {
+  renderActivationRisks() {
     const activationRisks = feature.activation_risks;
     if (!activationRisks) {
-        return nothing;
+      return nothing;
     }
     return html`
     <br><br>
@@ -507,28 +503,28 @@ return header;
     <p class="preformatted">${activationRisks}</p>
 
     `;
-   }
+  }
 
-    /*
+  /*
     {% if feature.security_risks %}
       <br><br><h4>Security</h4>
       <p class="preformatted">{{feature.security_risks|urlize}}</p>
     {% endif %}
     */
 
-    renderSecurityRisks() {
-        const securityRisks = feature.security_risks;
-        if (!securityRisks) {
-            return nothing;
-        }
-        return html`
+  renderSecurityRisks() {
+    const securityRisks = feature.security_risks;
+    if (!securityRisks) {
+      return nothing;
+    }
+    return html`
         <br><br>
     <h4>Security</h4>
         <p class="preformatted">${securityRisks}</p>
         `;
-    }
+  }
 
-    /*
+  /*
     <br><br><h4>WebView application risks</h4>
     <p style="font-style: italic">
       Does this intent deprecate or change behavior of existing APIs,
@@ -537,12 +533,12 @@ return header;
     <p class="preformatted">{{feature.webview_risks|urlize}}</p>
     */
 
-    renderWebViewRisks() {
-        const webviewRisks = feature.webview_risks;
-        if (!webviewRisks) {
-            return nothing;
-        }
-        return html`
+  renderWebViewRisks() {
+    const webviewRisks = feature.webview_risks;
+    if (!webviewRisks) {
+      return nothing;
+    }
+    return html`
         <br><br>
     <h4>WebView application risks</h4>
         <p style="font-style: italic">
@@ -551,9 +547,9 @@ return header;
         applications?</p>
         <p class="preformatted">${webviewRisks}</p>
         `;
-    }
+  }
 
-      /*
+  /*
 
   <br><br><h4>Risks</h4>
   <div style="margin-left: 4em;">
@@ -561,9 +557,7 @@ return header;
     </div> <!-- end risks -->
 
   */
- renderRisks() {
-    const risks = feature.risks;
-
+  renderRisks() {
     return html`
     <div style="margin-left: 4em;">
     <h4>Risks</h4>
@@ -581,10 +575,7 @@ return header;
   }
 
 
-
-
-
-    /*
+  /*
 {% if 'experiment' in sections_to_show %}
 
   <br><br><h4>Goals for experimentation</h4>
@@ -610,26 +601,26 @@ return header;
 {% endif %}
 */
 
-renderExperiment() {
+  renderExperiment() {
     const experimentInfo = feature.experiment_goals;
     if (!experimentInfo) {
-        return nothing;
+      return nothing;
     }
 
     let extensionStagesHTML = '';
     if (feature.stage_info.extension_stages) {
-        const stages = feature.stage_info.extension_stages;
-        const extensionsHtml = [];
-        for (stage in stages) {
-            if (stage.experiment_extension_reason) {
-                extensionsHtml.push(html`
+      const stages = feature.stage_info.extension_stages;
+      const extensionsHtml = [];
+      for (stage in stages) {
+        if (stage.experiment_extension_reason) {
+          extensionsHtml.push(html`
                 <br><br>
                 <h4>Reason this experiment is being extended</h4>
                 <p class="preformatted">${stage.experiment_extension_reason}</p>
                 `);
-            }
         }
-        extensionStagesHTML = html`
+      }
+      extensionStagesHTML = html`
         ${extensionsHtml.join('')}
     `;
     }
@@ -655,29 +646,29 @@ renderExperiment() {
     ` : nothing}
 
     `;
-}
+  }
 
 
-/*
+  /*
 
 <br><br><h4>Debuggability</h4>
 <p class="preformatted">{{feature.debuggability|urlize}}</p>
 */
 
-renderDebuggability() {
+  renderDebuggability() {
     const debuggability = feature.debuggability;
     if (!debuggability) {
-        return nothing;
+      return nothing;
     }
     return html`
     <br><br>
     <h4>Debuggability</h4>
     <p class="preformatted">${debuggability}</p>
     `;
-}
+  }
 
 
-/*
+  /*
 
 {% if 'experiment' in sections_to_show or 'ship' in sections_to_show %}
   <br><br><h4>Will this feature be supported on all six Blink platforms
@@ -689,10 +680,10 @@ renderDebuggability() {
 {% endif %}
 */
 
-renderAllPlatforms() {
+  renderAllPlatforms() {
     const allPlatforms = feature.all_platforms;
     if (!allPlatforms) {
-        return nothing;
+      return nothing;
     }
     return html`
     <br><br>
@@ -703,10 +694,10 @@ renderAllPlatforms() {
     <p class="preformatted">${feature.all_platforms_descr}</p>
     ` : nothing}
     `;
-}
+  }
 
 
-/*
+  /*
 
 <br><br><h4>Is this feature fully tested by <a href="https://chromium.googlesource.com/chromium/src/+/main/docs/testing/web_platform_tests.md">web-platform-tests</a>?</h4>
 {% if feature.wpt %}Yes{% else %}No{% endif %}
@@ -715,10 +706,10 @@ renderAllPlatforms() {
 {% endif %}
 */
 
-renderWPT() {
+  renderWPT() {
     const wpt = feature.wpt;
     if (!wpt) {
-        return nothing;
+      return nothing;
     }
     return html`
     <br><br>
@@ -728,10 +719,10 @@ renderWPT() {
     <p class="preformatted">${feature.wpt_descr}</p>
     ` : nothing}
     `;
-}
+  }
 
 
-/*
+  /*
 
 {% if feature.devtrial_instructions %}
   <br><br><h4>DevTrial instructions</h4>
@@ -740,39 +731,39 @@ renderWPT() {
 {% endif %}
 */
 
-renderDevTrialInstructions() {
+  renderDevTrialInstructions() {
     const devTrialInstructions = feature.devtrial_instructions;
     if (!devTrialInstructions) {
-        return nothing;
+      return nothing;
     }
     return html`
     <br><br>
     <h4>DevTrial instructions</h4>
     <a href="${devTrialInstructions}">${devTrialInstructions}</a>
     `;
-}
+  }
 
 
-/*
+  /*
 
 <br><br><h4>Flag name on chrome://flags</h4>
 {{feature.flag_name}}
 */
 
-renderFlagName() {
+  renderFlagName() {
     const flagName = feature.flag_name;
     if (!flagName) {
-        return nothing;
+      return nothing;
     }
     return html`
     <br><br>
     <h4>Flag name on chrome://flags</h4>
     ${flagName}
     `;
-}
+  }
 
 
-/*
+  /*
 
 <br><br><h4>Finch feature name</h4>
 {{feature.finch_name}}
@@ -789,7 +780,7 @@ renderFlagName() {
 */
 
 
-renderFinch() {
+  renderFinch() {
     const finchName = feature.finch_name;
 
     return html`
@@ -802,157 +793,156 @@ renderFinch() {
         <h4>Non-finch justification</h4>
         <p class="preformatted">
             ${feature.non_finch_justification}
-        </p>`
-    :
+        </p>` :
         !finchName? html`
         <br><br>
         <h4>Non-finch justification</h4>
-        None`
-        : nothing
+        None` :
+          nothing
         }
     `;
-}
+  }
 
 
-/*
+  /*
 <br><br><h4>Requires code in //chrome?</h4>
 {{feature.requires_embedder_support}}
 */
 
-renderRequiresEmbedderSupport() {
+  renderRequiresEmbedderSupport() {
     const requiresEmbedderSupport = feature.requires_embedder_support;
     if (!requiresEmbedderSupport) {
-        return nothing;
+      return nothing;
     }
     return html`
     <br><br>
     <h4>Requires code in //chrome?</h4>
     ${requiresEmbedderSupport}
     `;
-}
+  }
 
 
-/*
+  /*
 {% if feature.browsers.chrome.bug %}
   <br><br><h4>Tracking bug</h4>
   <a href="{{feature.browsers.chrome.bug}}">{{feature.browsers.chrome.bug}}</a>
 {% endif %}
 */
 
-renderTrackingBug() {
+  renderTrackingBug() {
     const trackingBug = feature.browsers.chrome.bug;
     if (!trackingBug) {
-        return nothing;
+      return nothing;
     }
     return html`
     <br><br>
     <h4>Tracking bug</h4>
     <a href="${trackingBug}">${trackingBug}</a>
     `;
-}
+  }
 
 
-/*
+  /*
 {% if feature.launch_bug_url %}
   <br><br><h4>Launch bug</h4>
   <a href="{{feature.launch_bug_url}}">{{feature.launch_bug_url}}</a>
 {% endif %}
 */
 
-renderLaunchBug() {
+  renderLaunchBug() {
     const launchBug = feature.launch_bug_url;
     if (!launchBug) {
-        return nothing;
+      return nothing;
     }
     return html`
     <br><br>
     <h4>Launch bug</h4>
     <a href="${launchBug}">${launchBug}</a>
     `;
-}
+  }
 
 
-/*
+  /*
 {% if feature.measurement %}
   <br><br><h4>Measurement</h4>
   {{feature.measurement|urlize}}
 {% endif %}
 */
 
-renderMeasurement() {
+  renderMeasurement() {
     const measurement = feature.measurement;
     if (!measurement) {
-        return nothing;
+      return nothing;
     }
     return html`
     <br><br>
     <h4>Measurement</h4>
     ${measurement}
     `;
-}
+  }
 
 
-/*
+  /*
 {% if feature.availability_expectation %}
   <br><br><h4>Availability expectation</h4>
   {{feature.availability_expectation|urlize}}
 {% endif %}
 */
 
-renderAvailabilityExpectation() {
+  renderAvailabilityExpectation() {
     const availabilityExpectation = feature.availability_expectation;
     if (!availabilityExpectation) {
-        return nothing;
+      return nothing;
     }
     return html`
     <br><br>
     <h4>Availability expectation</h4>
     ${availabilityExpectation}
     `;
-}
+  }
 
 
-/*
+  /*
 {% if feature.adoption_expectation %}
   <br><br><h4>Adoption expectation</h4>
   {{feature.adoption_expectation|urlize}}
 {% endif %}
 */
 
-renderAdoptionExpectation() {
+  renderAdoptionExpectation() {
     const adoptionExpectation = feature.adoption_expectation;
     if (!adoptionExpectation) {
-        return nothing;
+      return nothing;
     }
     return html`
     <br><br>
     <h4>Adoption expectation</h4>
     ${adoptionExpectation}
     `;
-}
+  }
 
 
-/*
+  /*
 {% if feature.adoption_plan %}
   <br><br><h4>Adoption plan</h4>
   {{feature.adoption_plan|urlize}}
 {% endif %}
 */
 
-renderAdoptionPlan() {
+  renderAdoptionPlan() {
     const adoptionPlan = feature.adoption_plan;
     if (!adoptionPlan) {
-        return nothing;
+      return nothing;
     }
     return html`
     <br><br>
     <h4>Adoption plan</h4>
     ${adoptionPlan}
     `;
-}
+  }
 
 
-/*
+  /*
 {% if feature.non_oss_deps %}
   <br><br><h4>Non-OSS dependencies</h4>
   <p style="font-style: italic">
@@ -964,10 +954,10 @@ renderAdoptionPlan() {
 {% endif %}
 */
 
-renderNonOSSDeps() {
+  renderNonOSSDeps() {
     const nonOSSDeps = feature.non_oss_deps;
     if (!nonOSSDeps) {
-        return nothing;
+      return nothing;
     }
     return html`
     <br><br>
@@ -978,11 +968,10 @@ renderNonOSSDeps() {
     function?</p>
     ${nonOSSDeps}
     `;
-}
+  }
 
 
-
-/*
+  /*
 {% if 'sample_links' in sections_to_show %}
    {% if feature.resources and feature.resources.samples %}
      <br><br><h4>Sample links</h4>
@@ -993,10 +982,10 @@ renderNonOSSDeps() {
 {% endif %}
 */
 
-renderSampleLinks() {
+  renderSampleLinks() {
     const sampleLinks = feature.resources.samples;
     if (!sampleLinks) {
-        return nothing;
+      return nothing;
     }
     const sampleLinksList = sampleLinks.map((link) => html`
         <br><a href="${link}">${link}</a>
@@ -1006,9 +995,9 @@ renderSampleLinks() {
     <h4>Sample links</h4>
     ${sampleLinksList}
     `;
-}
+  }
 
-/*
+  /*
   <table>
 
     {% for stage in stage_info.ship_stages %}
@@ -1041,56 +1030,57 @@ renderSampleLinks() {
 
   */
 
-    renderDesktopMilestoneTable() {
-        const shipStages = stage_info.ship_stages;
-        const otStages = stage_info.ot_stages;
-        const dtStages = stage_info.dt_stages;
+  renderDesktopMilestoneTable() {
+    const shipStages = stage_info.ship_stages;
+    const otStages = stage_info.ot_stages;
+    const dtStages = stage_info.dt_stages;
 
-        const shipStagesHTML = [];
-        for (stage in shipStages) {
-            if (stage.milestones.desktop_first) {
-                shipStagesHTML.push(html`
+    const shipStagesHTML = [];
+    for (stage in shipStages) {
+      if (!shipStages.hasOwnProperty(stage)) continue;
+      if (stage.milestones.desktop_first) {
+        shipStagesHTML.push(html`
                 <tr><td>Shipping on desktop</td>
                 <td>${stage.milestones.desktop_first}</td></tr>
                 `);
-            }
-        }
+      }
+    }
 
-        const otStagesHTML = [];
-        for (stage in otStages) {
-            if (stage.milestones.desktop_last) {
-                otStagesHTML.push(html`
+    const otStagesHTML = [];
+    for (stage in otStages) {
+      if (!otStages.hasOwnProperty(stage)) continue;
+      if (stage.milestones.desktop_last) {
+        otStagesHTML.push(html`
                 <tr><td>OriginTrial desktop last</td>
                 <td>${stage.milestones.desktop_last}</td></tr>
                 `);
-            }
-            if (stage.milestones.desktop_first) {
-                otStagesHTML.push(html`
+      }
+      if (stage.milestones.desktop_first) {
+        otStagesHTML.push(html`
                 <tr><td>OriginTrial desktop first</td>
                 <td>${stage.milestones.desktop_first}</td></tr>
                 `);
-            }
-        }
+      }
+    }
 
-        const dtStagesHTML = [];
-        for (stage in dtStages) {
-            if (stage.milestones.desktop_first) {
-                dtStagesHTML.push(html`
+    const dtStagesHTML = [];
+    for (stage in dtStages) {
+      if (stage.milestones.desktop_first) {
+        dtStagesHTML.push(html`
                 <tr><td>DevTrial on desktop</td>
                 <td>${stage.milestones.desktop_first}</td></tr>
                 `);
-            }
-        }
+      }
+    }
 
-        return html`
+    return html`
         <table>
         ${shipStagesHTML.join('')}
         ${otStagesHTML.join('')}
         ${dtStagesHTML.join('')}
         </table>
         `;
-    }
-
+  }
 
 
   /*
@@ -1118,55 +1108,56 @@ renderSampleLinks() {
   </table>
   */
 
-    renderAndroidMilestoneTable() {
-        const shipStages = stage_info.ship_stages;
-        const otStages = stage_info.ot_stages;
-        const dtStages = stage_info.dt_stages;
+  renderAndroidMilestoneTable() {
+    const shipStages = stage_info.ship_stages;
+    const otStages = stage_info.ot_stages;
+    const dtStages = stage_info.dt_stages;
 
-        const shipStagesHTML = [];
-        for (stage in shipStages) {
-            if (stage.milestones.android_first) {
-                shipStagesHTML.push(html`
+    const shipStagesHTML = [];
+    for (stage in shipStages) {
+      if (stage.milestones.android_first) {
+        shipStagesHTML.push(html`
                 <tr><td>Shipping on Android</td>
                 <td>${stage.milestones.android_first}</td></tr>
                 `);
-            }
-        }
+      }
+    }
 
-        const otStagesHTML = [];
-        for (stage in otStages) {
-            if (stage.milestones.android_last) {
-                otStagesHTML.push(html`
+    const otStagesHTML = [];
+    for (stage in otStages) {
+      if (!otStages.hasOwnProperty(stage)) continue;
+      if (stage.milestones.android_last) {
+        otStagesHTML.push(html`
                 <tr><td>OriginTrial Android last</td>
                 <td>${stage.milestones.android_last}</td></tr>
                 `);
-            }
-            if (stage.milestones.android_first) {
-                otStagesHTML.push(html`
+      }
+      if (stage.milestones.android_first) {
+        otStagesHTML.push(html`
                 <tr><td>OriginTrial Android first</td>
                 <td>${stage.milestones.android_first}</td></tr>
                 `);
-            }
-        }
+      }
+    }
 
-        const dtStagesHTML = [];
-        for (stage in dtStages) {
-            if (stage.milestones.android_first) {
-                dtStagesHTML.push(html`
+    const dtStagesHTML = [];
+    for (stage in dtStages) {
+      if (stage.milestones.android_first) {
+        dtStagesHTML.push(html`
                 <tr><td>DevTrial on Android</td>
                 <td>${stage.milestones.android_first}</td></tr>
                 `);
-            }
-        }
+      }
+    }
 
-        return html`
+    return html`
         <table>
         ${shipStagesHTML.join('')}
         ${otStagesHTML.join('')}
         ${dtStagesHTML.join('')}
         </table>
         `;
-    }
+  }
 
 
   /*
@@ -1190,43 +1181,44 @@ renderSampleLinks() {
   </table>
   */
 
-    renderWebViewMilestoneTable() {
-        const shipStages = stage_info.ship_stages;
-        const otStages = stage_info.ot_stages;
+  renderWebViewMilestoneTable() {
+    const shipStages = stage_info.ship_stages;
+    const otStages = stage_info.ot_stages;
 
-        const shipStagesHTML = [];
-        for (stage in shipStages) {
-            if (stage.milestones.webview_first) {
-                shipStagesHTML.push(html`
+    const shipStagesHTML = [];
+    for (stage in shipStages) {
+      if (stage.milestones.webview_first) {
+        shipStagesHTML.push(html`
                 <tr><td>Shipping on WebView</td>
                 <td>${stage.milestones.webview_first}</td></tr>
                 `);
-            }
-        }
+      }
+    }
 
-        const otStagesHTML = [];
-        for (stage in otStages) {
-            if (stage.milestones.webview_last) {
-                otStagesHTML.push(html`
+    const otStagesHTML = [];
+    for (stage in otStages) {
+      if (!otStages.hasOwnProperty(stage)) continue;
+      if (stage.milestones.webview_last) {
+        otStagesHTML.push(html`
                 <tr><td>OriginTrial webView last</td>
                 <td>${stage.milestones.webview_last}</td></tr>
                 `);
-            }
-            if (stage.milestones.webview_first) {
-                otStagesHTML.push(html`
+      }
+      if (stage.milestones.webview_first) {
+        otStagesHTML.push(html`
                 <tr><td>OriginTrial webView first</td>
                 <td>${stage.milestones.webview_first}</td></tr>
                 `);
-            }
-        }
+      }
+    }
 
-        return html`
+    return html`
         <table>
         ${shipStagesHTML.join('')}
         ${otStagesHTML.join('')}
         </table>
         `;
-    }
+  }
 
 
   /*
@@ -1246,40 +1238,40 @@ renderSampleLinks() {
   </table>
 */
 
-    renderIOSMilestoneTable() {
-        const shipStages = stage_info.ship_stages;
-        const dtStages = stage_info.dt_stages;
+  renderIOSMilestoneTable() {
+    const shipStages = stage_info.ship_stages;
+    const dtStages = stage_info.dt_stages;
 
-        const shipStagesHTML = [];
-        for (stage in shipStages) {
-            if (stage.milestones.ios_first) {
-                shipStagesHTML.push(html`
+    const shipStagesHTML = [];
+    for (stage in shipStages) {
+      if (stage.milestones.ios_first) {
+        shipStagesHTML.push(html`
                 <tr><td>Shipping on WebView</td>
                 <td>${stage.milestones.ios_first}</td></tr>
                 `);
-            }
-        }
+      }
+    }
 
-        const dtStagesHTML = [];
-        for (stage in dtStages) {
-            if (stage.milestones.ios_first) {
-                dtStagesHTML.push(html`
+    const dtStagesHTML = [];
+    for (stage in dtStages) {
+      if (stage.milestones.ios_first) {
+        dtStagesHTML.push(html`
                 <tr><td>DevTrial on iOS</td>
                 <td>${stage.milestones.ios_first}</td></tr>
                 `);
-            }
-        }
+      }
+    }
 
-        return html`
+    return html`
         <table>
         ${shipStagesHTML.join('')}
         ${dtStagesHTML.join('')}
         </table>
         `;
-    }
+  }
 
 
-/*
+  /*
 {% if should_render_mstone_table %}
 
 {% else %}
@@ -1289,38 +1281,37 @@ renderSampleLinks() {
 {% endif %}
 */
 
-renderEstimatedMilestoneTable() {
-    if (should_render_mstone_table) {
-        return html`
+  renderEstimatedMilestoneTable() {
+    if (this.shouldRenderMstoneTable) {
+      return html`
         ${renderDesktopMilestoneTable()}
         ${renderAndroidMilestoneTable()}
         ${renderWebViewMilestoneTable()}
         ${renderIOSMilestoneTable()}
         `;
     } else {
-        return html`
+      return html`
         <p>No milestones specified</p>
         `;
     }
-}
+  }
 
 
-/*
+  /*
 <br><br><h4>Estimated milestones</h4>
 {% include "estimated-milestones-table.html" %}
 */
 
-renderEstimatedMilestones() {
+  renderEstimatedMilestones() {
     return html`
     <br><br>
     <h4>Estimated milestones</h4>
     ${renderEstimatedMilestonesTable()}
     `;
-}
+  }
 
 
-
-/*
+  /*
 {% if 'anticipated_spec_changes' in sections_to_show or feature.anticipated_spec_changes %}
   <br><br><h4>Anticipated spec changes</h4>
   <p style="font-style: italic">
@@ -1334,10 +1325,10 @@ renderEstimatedMilestones() {
 {% endif %}
 */
 
-renderAnticipatedSpecChanges() {
+  renderAnticipatedSpecChanges() {
     const anticipatedSpecChanges = feature.anticipated_spec_changes;
     if (!anticipatedSpecChanges) {
-        return nothing;
+      return nothing;
     }
     return html`
     <br><br>
@@ -1350,28 +1341,28 @@ renderAnticipatedSpecChanges() {
     structure of the API in a non-backward-compatible way).</p>
     ${anticipatedSpecChanges}
     `;
-}
+  }
 
 
-/*
+  /*
 <br><br><h4>Link to entry on the {{APP_TITLE}}</h4>
 <a href="{{default_url}}">{{default_url}}</a>
 */
 
-renderDefaultURL() {
+  renderDefaultURL() {
     const defaultURL = feature.default_url;
     if (!defaultURL) {
-        return nothing;
+      return nothing;
     }
     return html`
     <br><br>
     <h4>Link to entry on the ${APP_TITLE}</h4>
     <a href="${defaultURL}">${defaultURL}</a>
     `;
-}
+  }
 
 
-/*
+  /*
 {% if should_render_intents %}
   <br><br><h4>Links to previous Intent discussions</h4>
 
@@ -1403,53 +1394,53 @@ renderDefaultURL() {
 {% endif %}
 */
 
-renderIntentLinks() {
-    if (should_render_intents) {
-        const protoStages = stage_info.proto_stages;
-        const dtStages = stage_info.dt_stages;
-        const otStages = stage_info.ot_stages;
-        const extensionStages = stage_info.extension_stages;
+  renderIntentLinks() {
+    if (this.shouldRenderIntents) {
+      const protoStages = stage_info.proto_stages;
+      const dtStages = stage_info.dt_stages;
+      const otStages = stage_info.ot_stages;
+      const extensionStages = stage_info.extension_stages;
 
-        const protoStagesHTML = [];
-        for (stage in protoStages) {
-            if (stage.intent_thread_url) {
-                protoStagesHTML.push(html`
+      const protoStagesHTML = [];
+      for (stage in protoStages) {
+        if (stage.intent_thread_url) {
+          protoStagesHTML.push(html`
                 Intent to prototype: ${stage.intent_thread_url}
                 `);
-            }
         }
+      }
 
-        const dtStagesHTML = [];
-        for (stage in dtStages) {
-            if (stage.announcement_url) {
-                dtStagesHTML.push(html`
+      const dtStagesHTML = [];
+      for (stage in dtStages) {
+        if (stage.announcement_url) {
+          dtStagesHTML.push(html`
                 Ready for Trial: ${stage.announcement_url}
                 <br>
                 `);
-            }
         }
+      }
 
-        const otStagesHTML = [];
-        for (stage in otStages) {
-            if (stage.intent_thread_url) {
-                otStagesHTML.push(html`
+      const otStagesHTML = [];
+      for (stage in otStages) {
+        if (stage.intent_thread_url) {
+          otStagesHTML.push(html`
                 Intent to Experiment: ${stage.intent_thread_url}
                 <br>
                 `);
-            }
         }
+      }
 
-        const extensionStagesHTML = [];
-        for (stage in extensionStages) {
-            if (stage.intent_thread_url) {
-                extensionStagesHTML.push(html`
+      const extensionStagesHTML = [];
+      for (stage in extensionStages) {
+        if (stage.intent_thread_url) {
+          extensionStagesHTML.push(html`
                 Intent to Extend Experiment: ${stage.intent_thread_url}
                 <br>
                 `);
-            }
         }
+      }
 
-        return html`
+      return html`
         <br><br>
         <h4>Links to previous Intent discussions</h4>
         ${protoStagesHTML.join('')}
@@ -1458,11 +1449,10 @@ renderIntentLinks() {
         ${extensionStagesHTML.join('')}
         `;
     }
-}
+  }
 
 
-
-/*
+  /*
 <br><br><div><small>
   This intent message was generated by
   <a href="https://chromestatus.com">Chrome Platform Status</a>.
@@ -1471,8 +1461,8 @@ renderIntentLinks() {
 
 */
 
-    render() {
-        return html`
+  render() {
+    return html`
         ${this.renderSubheader()}
         <div class="email">
         ${this.renderContactEmails()}
@@ -1509,7 +1499,7 @@ renderIntentLinks() {
         ${this.renderIntentLinks()}
         </div> <!-- end email body div -->
         `;
-    }
+  }
 }
 
 customElements.define('chromedash-intent-preview', ChromeDashIntentPreview);
