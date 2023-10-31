@@ -2,15 +2,16 @@ import {LitElement, html, nothing} from 'lit';
 import {ALL_FIELDS} from './form-field-specs';
 import {ref} from 'lit/directives/ref.js';
 import './chromedash-textarea';
-import {showToastMessage} from './utils.js';
+import {showToastMessage, getFieldValue} from './utils.js';
 
 export class ChromedashFormField extends LitElement {
   static get properties() {
     return {
       name: {type: String},
+      index: {type: Number}, // Represents which field this is on the form.
       stageId: {type: Number},
       value: {type: String},
-      index: {type: Number}, // Represents which field this is on the form.
+      fieldValues: {type: Array}, // All other field value objects
       disabled: {type: Boolean},
       checkboxLabel: {type: String}, // Optional override of default label.
       loading: {type: Boolean},
@@ -18,36 +19,55 @@ export class ChromedashFormField extends LitElement {
       forEnterprise: {type: Boolean},
       stageType: {type: Number},
       componentChoices: {type: Object}, // just for the blink component select field
+      checkMessage: {type: String},
     };
   }
 
   constructor() {
     super();
     this.name = '';
-    this.value = '';
     this.index = -1;
+    this.value = '';
+    this.fieldValues = [];
     this.checkboxLabel = '';
     this.disabled = false;
     this.loading = false;
     this.forEnterprise = false;
     this.stageType = undefined;
     this.componentChoices = {};
+    this.checkMessage = '';
+  }
+
+  getValue() {
+    // value can be a js or python boolean value converted to a string
+    // or the initial value specified in form-field-spec
+    return !this.value && this.fieldProps.initial ?
+      this.fieldProps.initial : this.value;
   }
 
   connectedCallback() {
     super.connectedCallback();
     this.fieldProps = ALL_FIELDS[this.name] || {};
 
-    if (this.name !== 'blink_components') return;
+    const app = document.querySelector('chromedash-app');
+    if (app?.pageComponent) {
+      app.pageComponent.allFormFieldComponents[this.name] = this;
+    }
 
-    // get the choice values from API when the field is blink component select field
-    this.loading = true;
-    window.csClient.getBlinkComponents().then((componentChoices) => {
-      this.componentChoices = componentChoices;
-      this.loading = false;
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-    });
+    if (this.name === 'blink_components') {
+      // get the choice values from API when the field is blink component select field
+      this.loading = true;
+      window.csClient.getBlinkComponents().then((componentChoices) => {
+        this.componentChoices = componentChoices;
+        this.loading = false;
+      }).catch(() => {
+        showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+      });
+    }
+  }
+
+  firstUpdated() {
+    this.doSemanticCheck();
   }
 
   updateAttributes(el) {
@@ -81,25 +101,69 @@ export class ChromedashFormField extends LitElement {
     } else {
       fieldValue = e.target.value;
     }
+    this.value = fieldValue; // TODO: Is this safe?
 
+
+    // Dispatch a new event to notify other components of the changes.
     const eventOptions = {
       detail: {
         value: fieldValue,
         index: this.index,
       },
     };
-
-    // Dispatch a new event to notify other components of the changes.
     this.dispatchEvent(new CustomEvent('form-field-update', eventOptions));
+
+    // Run semantic check on this field.  Must be after above dispatch.
+    this.doSemanticCheck();
+    // Also doSemanticCheck on known dependent form fields.
+    const app = document.querySelector('chromedash-app');
+    const dependents = ALL_FIELDS[this.name].dependents;
+    if (dependents && app?.pageComponent) {
+      dependents.forEach((dependent) => {
+        const dependentField = app.pageComponent.allFormFieldComponents[dependent];
+        if (dependentField) {
+          dependentField.doSemanticCheck();
+        }
+      });
+    }
   }
 
-  renderWidgets() {
+  doSemanticCheck() {
+    const checkFunction = this.fieldProps.check;
+    if (checkFunction) {
+      const fieldValue = this.getValue();
+      const checkResult = checkFunction(fieldValue,
+        (name) => getFieldValue(name, this.fieldValues));
+      if (checkResult == null) {
+        this.checkMessage = '';
+      } else {
+        this.checkMessage = html`
+          <span class="check-${
+              checkResult.message ? 'message' :
+              checkResult.warning ? 'warning' :
+                checkResult.error ? 'error' : 'unknown'
+            }">
+            ${
+              checkResult.message ? checkResult.message :
+              checkResult.warning ? html`<b>Warning</b>: ${checkResult.warning}` :
+                checkResult.error ? html`<b>Error</b>: ${checkResult.error}` :
+                  ''
+            }
+          </span>`;
+      }
+      const formFieldElement = this.renderRoot.querySelector(`#id_${this.name}`);
+      if (formFieldElement?.setCustomValidity &&
+        formFieldElement.input) {
+        formFieldElement.setCustomValidity(
+          (checkResult && checkResult.error) ? checkResult.error : '');
+      }
+    }
+  }
+
+  renderWidget() {
     const type = this.fieldProps.type;
     const fieldDisabled = this.fieldProps.disabled;
-
-    // if no value is provided, use the initial value specified in form-field-spec
-    const fieldValue = !this.value && this.fieldProps.initial ?
-      this.fieldProps.initial : this.value;
+    const fieldValue = this.getValue();
 
     // form field name can be specified in form-field-spec to match DB field name
     const fieldName = this.fieldProps.name || this.name;
@@ -109,8 +173,6 @@ export class ChromedashFormField extends LitElement {
     let fieldHTML = '';
     if (type === 'checkbox') {
       const label = this.checkboxLabel || this.fieldProps.label;
-      // value can be a js or python boolean value converted to a string
-      // or the initial value specified in form-field-spec
       fieldHTML = html`
         <sl-checkbox
           name="${fieldName}"
@@ -241,9 +303,12 @@ export class ChromedashFormField extends LitElement {
             <b>${this.fieldProps.label}:</b>
           </th>
         </tr>
-      `:nothing}
+      `: nothing}
       <tr>
-        <td>${this.renderWidgets()}</td>
+        <td>
+          ${this.renderWidget()}
+          ${this.checkMessage}
+        </td>
         <td>
           ${helpText ? html`<span class="helptext"> ${helpText} </span>`: nothing}
           ${extraHelpText ? html`
@@ -267,8 +332,8 @@ export class ChromedashFormField extends LitElement {
               </span>
             </sl-details>
           </td>
-        </tr>`:
-      nothing}
+        </tr>
+      `: nothing}
     `;
   }
 }
