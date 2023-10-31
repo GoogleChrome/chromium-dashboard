@@ -103,24 +103,24 @@ class ChromeStatusClient {
     return JSON.parse(rawResponseText.substr(XSSIPrefix.length));
   }
 
-  doGet(resource, body) {
+  async doGet(resource, body) {
     // GET's do not use token.
     return this.doFetch(resource, 'GET', body, false);
   }
 
-  doPost(resource, body) {
+  async doPost(resource, body) {
     return this.ensureTokenIsValid().then(() => {
       return this.doFetch(resource, 'POST', body);
     });
   }
 
-  doPatch(resource, body) {
+  async doPatch(resource, body) {
     return this.ensureTokenIsValid().then(() => {
       return this.doFetch(resource, 'PATCH', body);
     });
   }
 
-  doDelete(resource) {
+  async doDelete(resource) {
     return this.ensureTokenIsValid().then(() => {
       return this.doFetch(resource, 'DELETE', null);
     });
@@ -264,7 +264,7 @@ class ChromeStatusClient {
   }
 
   // Features API
-  getFeature(featureId) {
+  async getFeature(featureId) {
     return this.doGet(`/features/${featureId}`)
       .catch((error) => {
         // If not the ChromeStatusHttpError, continue throwing.
@@ -280,16 +280,16 @@ class ChromeStatusClient {
       });
   }
 
-  getFeaturesInMilestone(milestone) {
+  async getFeaturesInMilestone(milestone) {
     return this.doGet(`/features?milestone=${milestone}`).then(
       (resp) => resp['features_by_type']);
   }
 
-  getFeaturesForEnterpriseReleaseNotes(milestone) {
+  async getFeaturesForEnterpriseReleaseNotes(milestone) {
     return this.doGet(`/features?releaseNotesMilestone=${milestone}`);
   }
 
-  searchFeatures(userQuery, sortSpec, start, num) {
+  async searchFeatures(userQuery, sortSpec, start, num) {
     let url = `/features?q=${userQuery}`;
     if (sortSpec) {
       url += '&sort=' + sortSpec;
@@ -303,21 +303,21 @@ class ChromeStatusClient {
     return this.doGet(url);
   }
 
-  updateFeature(featureChanges) {
+  async updateFeature(featureChanges) {
     return this.doPatch('/features', featureChanges);
   }
 
   // FeatureLinks API
 
-  getFeatureLinks(featureId, updateStaleLinks=true) {
+  async getFeatureLinks(featureId, updateStaleLinks=true) {
     return this.doGet(`/feature_links?feature_id=${featureId}&update_stale_links=${updateStaleLinks}`);
   }
 
-  getFeatureLinksSummary() {
+  async getFeatureLinksSummary() {
     return this.doGet('/feature_links_summary');
   }
 
-  getFeatureLinksSamples(domain, type, isError) {
+  async getFeatureLinksSamples(domain, type, isError) {
     let optionalParams = '';
     if (type) {
       optionalParams += `&type=${type}`;
@@ -329,43 +329,43 @@ class ChromeStatusClient {
   }
 
   // Stages API
-  getStage(featureId, stageId) {
+  async getStage(featureId, stageId) {
     return this.doGet(`/features/${featureId}/stages/${stageId}`);
   }
 
-  deleteStage(featureId, stageId) {
+  async deleteStage(featureId, stageId) {
     return this.doDelete(`/features/${featureId}/stages/${stageId}`);
   }
 
-  createStage(featureId, body) {
+  async createStage(featureId, body) {
     return this.doPost(`/features/${featureId}/stages`, body);
   }
 
-  updateStage(featureId, stageId, body) {
+  async updateStage(featureId, stageId, body) {
     return this.doPatch(`/features/${featureId}/stages/${stageId}`, body);
   }
 
   // Processes API
-  getFeatureProcess(featureId) {
+  async getFeatureProcess(featureId) {
     return this.doGet(`/features/${featureId}/process`);
   }
 
   // Progress API
-  getFeatureProgress(featureId) {
+  async getFeatureProgress(featureId) {
     return this.doGet(`/features/${featureId}/progress`);
   }
 
   // Blinkcomponents API
-  getBlinkComponents() {
+  async getBlinkComponents() {
     return this.doGet(`/blinkcomponents`);
   }
 
   // Channels API
-  getChannels() {
+  async getChannels() {
     return this.doGet('/channels');
   }
 
-  getSpecifiedChannels(start, end) {
+  async getSpecifiedChannels(start, end) {
     return this.doGet(`/channels?start=${start}&end=${end}`);
   }
 };

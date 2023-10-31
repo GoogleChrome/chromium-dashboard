@@ -256,6 +256,7 @@ export class ChromedashGuideEditallPage extends LitElement {
           name=${field}
           index=${index}
           value=${value}
+          .fieldValues=${this.fieldValues}
           ?forEnterprise=${formattedFeature.is_enterprise_feature}
           @form-field-update="${this.handleFormFieldUpdate}">
         </chromedash-form-field>

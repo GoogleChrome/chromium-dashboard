@@ -195,6 +195,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
           name=${field}
           index=${index}
           value=${value}
+          .fieldValues=${this.fieldValues}
           ?forEnterprise=${formattedFeature.is_enterprise_feature}
           @form-field-update="${this.handleFormFieldUpdate}">
         </chromedash-form-field>
@@ -289,7 +290,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
       'Accuracy last verified at time of creation.';
 
     return html`
-      <form name="feature_form" method="POST" action="/guide/verify_accuracy/${this.featureId}">
+      <form name="feature_form" method="post" action="/guide/verify_accuracy/${this.featureId}">
         <input type="hidden" name="stages" value="${stageIds}">
         <input type="hidden" name="token">
         <input type="hidden" name="form_fields" value=${allFormFields.join(',')}>

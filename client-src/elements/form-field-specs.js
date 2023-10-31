@@ -14,6 +14,8 @@ import {
   WEB_DEV_VIEWS,
 } from './form-field-enums';
 
+import {checkMilestoneStartEnd} from './utils.js';
+
 /* Patterns from https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch04s01.html
  * Removing single quote ('), backtick (`), and pipe (|) since they are risky unless properly escaped everywhere.
  * Also removing ! and % because they have special meaning for some older email routing systems. */
@@ -159,6 +161,14 @@ export const ALL_FIELDS = {
     </blockquote>
     `,
     enterprise_extra_help: '',
+    check: (value) => {
+      if (value && typeof value === 'string' && value.length > 0) {
+        if (value.length < 100 || value.length > 5000) {
+          return {warning: 'Feature summary should be between 100 and 5000 characters long.'};
+        }
+      }
+      return undefined;
+    },
   },
 
   'owner': {
@@ -911,6 +921,12 @@ export const ALL_FIELDS = {
     help_text: html`
       First desktop milestone that will support an origin
       trial of this feature.`,
+    check: (_value, getFieldValue) =>
+      checkMilestoneStartEnd({
+        start: 'ot_milestone_desktop_start',
+        end: 'ot_milestone_desktop_end',
+      }, getFieldValue),
+    dependents: ['ot_milestone_desktop_end'],
   },
 
   'ot_milestone_desktop_end': {
@@ -921,6 +937,12 @@ export const ALL_FIELDS = {
     help_text: html`
       Last desktop milestone that will support an origin
       trial of this feature.`,
+    check: (_value, getFieldValue) =>
+      checkMilestoneStartEnd({
+        start: 'ot_milestone_desktop_start',
+        end: 'ot_milestone_desktop_end',
+      }, getFieldValue),
+    dependents: ['ot_milestone_desktop_start'],
   },
 
   'ot_milestone_android_start': {

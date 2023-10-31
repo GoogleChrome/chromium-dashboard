@@ -210,6 +210,7 @@ export class ChromedashOTExtensionPage extends LitElement {
       <chromedash-form-field
         name=${featureJSONKey}
         index=${index}
+        .fieldValues=${this.fieldValues}
         @form-field-update="${this.handleFormFieldUpdate}">
       </chromedash-form-field>
     `;

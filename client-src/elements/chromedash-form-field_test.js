@@ -74,6 +74,27 @@ describe('chromedash-form-field', () => {
     assert.include(renderElement.innerHTML, 'required');
   });
 
+  it('renders a warning about a field', async () => {
+    const component = await fixture(
+      html`
+      <chromedash-form-field name="summary" value="Very short summary">
+      </chromedash-form-field>`);
+    assert.exists(component);
+
+    const renderElement = component.renderRoot;
+    assert.include(renderElement.innerHTML, 'Feature summary should be');
+  });
+
+  it('renders without a warning for a valid field', async () => {
+    const component = await fixture(
+      html`
+      <chromedash-form-field name="summary" value="01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789">
+      </chromedash-form-field>`); // 110 chars
+    assert.exists(component);
+    const renderElement = component.renderRoot;
+    assert.notInclude(renderElement.innerHTML, 'Feature summary should be');
+  });
+
   it('renders a radios type of field', async () => {
     const component = await fixture(
       html`

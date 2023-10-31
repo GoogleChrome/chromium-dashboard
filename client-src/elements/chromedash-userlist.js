@@ -117,7 +117,7 @@ class ChromedashUserlist extends LitElement {
   render() {
     this.sortUsers();
     return html`
-      <form id="form" name="user_form" method="POST">
+      <form id="form" name="user_form" method="post">
         <div>
           <input type="email" placeholder="Email address" name="email"
                  required>
