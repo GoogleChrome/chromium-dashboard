@@ -122,7 +122,7 @@ export class ChromedashGuideNewPage extends LitElement {
 
     return html`
       <section id="stage_form">
-        <form name="overview_form" method="POST" action=${postAction}>
+        <form name="overview_form" method="post" action=${postAction}>
           <input type="hidden" name="token">
           <chromedash-form-table ${ref(this.registerHandlers)}>
             ${this.renderWarnings()}
