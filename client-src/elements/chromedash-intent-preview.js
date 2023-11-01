@@ -66,7 +66,7 @@ class ChromeDashIntentPreview extends LitElement {
     return html`
       <br /><br />
       <h4>Contact emails</h4>
-      ${ownersList}
+      ${ownersList.join(', ')}
     `;
   }
 
@@ -94,7 +94,7 @@ class ChromeDashIntentPreview extends LitElement {
     return html`
       <br /><br />
       <h4>Explainer</h4>
-      ${explainerLinks ? explainerLinksList.join("") : "None"}
+      ${explainerLinks ? `<br />${explainerLinksList.join('\n')}` : "None"}
     `;
   }
 
@@ -105,9 +105,6 @@ class ChromeDashIntentPreview extends LitElement {
 
   renderSpec() {
     const spec = feature.standards.spec;
-    if (!spec) {
-      return nothing;
-    }
     return html`
       <br /><br />
       <h4>Specification</h4>
@@ -146,9 +143,6 @@ class ChromeDashIntentPreview extends LitElement {
 
   renderSummary() {
     const summary = feature.summary;
-    if (!summary) {
-      return nothing;
-    }
     return html`
       <br /><br />
       <h4>Summary</h4>
@@ -165,9 +159,6 @@ class ChromeDashIntentPreview extends LitElement {
 
   renderBlinkComponents() {
     const blinkComponents = feature.browsers.chrome.blink_components;
-    if (!blinkComponents) {
-      return nothing;
-    }
     const blinkComponentList = blinkComponents.map(
       (c) => html`
         <a
@@ -247,7 +238,7 @@ class ChromeDashIntentPreview extends LitElement {
     return html`
       <br /><br />
       <h4>Search tags</h4>
-      ${tagsList}
+      ${tagsList.join(', ')}
     `;
   }
 
@@ -257,9 +248,6 @@ class ChromeDashIntentPreview extends LitElement {
   */
   renderTagReview() {
     const tagReview = feature.tag_review;
-    if (!tagReview) {
-      return nothing;
-    }
     return html`
       <br /><br />
       <h4>TAG review</h4>
@@ -268,7 +256,6 @@ class ChromeDashIntentPreview extends LitElement {
   }
 
   /*
-
   {% if feature.tag_review_status %}
     <br><br><h4>TAG review status</h4>
     {{feature.tag_review_status}}
@@ -359,9 +346,6 @@ class ChromeDashIntentPreview extends LitElement {
 
   renderInteropCompatRisks() {
     const interopCompatRisks = feature.interop_compat_risks;
-    if (!interopCompatRisks) {
-      return nothing;
-    }
     return html`
       <br /><br />
       <h4>Interoperability and Compatibility</h4>
@@ -370,7 +354,6 @@ class ChromeDashIntentPreview extends LitElement {
   }
 
   /*
-
     <br><br><i>Gecko</i>: {{feature.browsers.ff.view.text}}
     {% if feature.browsers.ff.view.url %}
       (<a href="{{feature.browsers.ff.view.url}}">{{feature.browsers.ff.view.url}}</a>)
@@ -382,12 +365,9 @@ class ChromeDashIntentPreview extends LitElement {
 
   renderGeckoRisks() {
     const geckoInfo = feature.browsers.ff;
-    if (!geckoInfo) {
-      return nothing;
-    }
     return html`
       <br /><br />
-      <h4>Gecko</h4>
+      <i>Gecko</i>:
       ${geckoInfo.view.text}
       ${geckoInfo.view.url
         ? html` (<a href="${geckoInfo.view.url}">${geckoInfo.view.url}</a>) `
@@ -408,12 +388,9 @@ class ChromeDashIntentPreview extends LitElement {
 
   renderWebKitRisks() {
     const webkitInfo = feature.browsers.safari;
-    if (!webkitInfo) {
-      return nothing;
-    }
     return html`
       <br /><br />
-      <h4>WebKit</h4>
+      <i>WebKit</i>:
       ${webkitInfo.view.text}
       ${webkitInfo.view.url
         ? html` (<a href="${webkitInfo.view.url}">${webkitInfo.view.url}</a>) `
@@ -433,12 +410,9 @@ class ChromeDashIntentPreview extends LitElement {
     */
   renderWebDevRisks() {
     const webDevInfo = feature.browsers.webdev;
-    if (!webDevInfo) {
-      return nothing;
-    }
     return html`
       <br /><br />
-      <h4>Web developers</h4>
+      <i>Web developers</i>:
       ${webDevInfo.view.text}
       ${webDevInfo.view.url
         ? html` (<a href="${webDevInfo.view.url}">${webDevInfo.view.url}</a>) `
@@ -448,24 +422,21 @@ class ChromeDashIntentPreview extends LitElement {
   }
 
   /*
+    <br><br><i>Other signals</i>:
     {% if feature.browsers.other.view.notes %}
       {{feature.browsers.other.view.notes|urlize}}
     {% endif %}
     */
-  renderOtherRisks() {
-    const otherInfo = feature.browsers.other;
-    if (!otherInfo) {
-      return nothing;
-    }
+  renderOtherNotes() {
+    const notes = feature.browsers.other.view.notes;
     return html`
       <br /><br />
-      <h4>Other signals</h4>
-      : ${otherInfo.view.notes ? html` ${otherInfo.view.notes} ` : nothing}
+      <i>Other signals</i>:
+      : ${notes ? html` ${notes} ` : nothing}
     `;
   }
 
   /*
-
     {% if feature.ergonomics_risks %}
       <br><br><h4>Ergonomics</h4>
       <p class="preformatted">{{feature.ergonomics_risks|urlize}}</p>
@@ -484,7 +455,6 @@ class ChromeDashIntentPreview extends LitElement {
   }
 
   /*
-
     {% if feature.activation_risks %}
       <br><br><h4>Activation</h4>
       <p class="preformatted">{{feature.activation_risks|urlize}}</p>
@@ -532,9 +502,6 @@ class ChromeDashIntentPreview extends LitElement {
 
   renderWebViewRisks() {
     const webviewRisks = feature.webview_risks;
-    if (!webviewRisks) {
-      return nothing;
-    }
     return html`
       <br /><br />
       <h4>WebView application risks</h4>
@@ -548,17 +515,16 @@ class ChromeDashIntentPreview extends LitElement {
   }
 
   /*
-
   <br><br><h4>Risks</h4>
   <div style="margin-left: 4em;">
 
-    </div> <!-- end risks -->
-
+  </div> <!-- end risks -->
   */
   renderRisks() {
     return html`
+      <br /><br />
+      <h4>Risks</h4>
       <div style="margin-left: 4em;">
-        <h4>Risks</h4>
         ${renderInteropCompatRisks()} ${renderGeckoRisks()}
         ${renderWebKitRisks()} ${renderWebDevRisks()} ${renderOtherRisks()}
         ${renderErgonomicsRisks()} ${renderActivationRisks()}
@@ -595,13 +561,10 @@ class ChromeDashIntentPreview extends LitElement {
 */
 
   renderExperiment() {
-    const experimentInfo = feature.experiment_goals;
-    if (!experimentInfo) {
-      return nothing;
-    }
+    if (!sectionsToShow.includes('experiment')) return nothing;
 
     let extensionStagesHTML = "";
-    if (feature.stage_info.extension_stages) {
+    if (sectionsToShow.includes('extension_reason')) {
       const stages = feature.stage_info.extension_stages;
       const extensionsHtml = [];
       for (stage in stages) {
@@ -616,6 +579,8 @@ class ChromeDashIntentPreview extends LitElement {
       extensionStagesHTML = html` ${extensionsHtml.join("")} `;
     }
 
+    const experimentInfo = feature.experiment_goals;
+
     return html`
       <br /><br />
       <h4>Goals for experimentation</h4>
@@ -628,7 +593,9 @@ class ChromeDashIntentPreview extends LitElement {
             <p class="preformatted">${feature.experiment_timeline}</p>
           `
         : nothing}
+
       ${extensionStagesHTML}
+
       ${feature.ongoing_constraints
         ? html`
             <br /><br />
@@ -640,16 +607,12 @@ class ChromeDashIntentPreview extends LitElement {
   }
 
   /*
-
 <br><br><h4>Debuggability</h4>
 <p class="preformatted">{{feature.debuggability|urlize}}</p>
 */
 
   renderDebuggability() {
     const debuggability = feature.debuggability;
-    if (!debuggability) {
-      return nothing;
-    }
     return html`
       <br /><br />
       <h4>Debuggability</h4>
@@ -658,7 +621,6 @@ class ChromeDashIntentPreview extends LitElement {
   }
 
   /*
-
 {% if 'experiment' in sections_to_show or 'ship' in sections_to_show %}
   <br><br><h4>Will this feature be supported on all six Blink platforms
       (Windows, Mac, Linux, Chrome OS, Android, and Android WebView)?</h4>
@@ -670,10 +632,11 @@ class ChromeDashIntentPreview extends LitElement {
 */
 
   renderAllPlatforms() {
-    const allPlatforms = feature.all_platforms;
-    if (!allPlatforms) {
+    if (!sectionsToShow.includes('experiment') && !sectionsToShow.includes('ship')) {
       return nothing;
     }
+
+    const allPlatforms = feature.all_platforms;
     return html`
       <br /><br />
       <h4>
@@ -697,9 +660,6 @@ class ChromeDashIntentPreview extends LitElement {
 
   renderWPT() {
     const wpt = feature.wpt;
-    if (!wpt) {
-      return nothing;
-    }
     return html`
       <br /><br />
       <h4>
@@ -743,9 +703,6 @@ class ChromeDashIntentPreview extends LitElement {
 
   renderFlagName() {
     const flagName = feature.flag_name;
-    if (!flagName) {
-      return nothing;
-    }
     return html`
       <br /><br />
       <h4>Flag name on chrome://flags</h4>
@@ -794,9 +751,6 @@ class ChromeDashIntentPreview extends LitElement {
 
   renderRequiresEmbedderSupport() {
     const requiresEmbedderSupport = feature.requires_embedder_support;
-    if (!requiresEmbedderSupport) {
-      return nothing;
-    }
     return html`
       <br /><br />
       <h4>Requires code in //chrome?</h4>
@@ -958,6 +912,8 @@ class ChromeDashIntentPreview extends LitElement {
 */
 
   renderSampleLinks() {
+    if (!sectionsToShow.includes('sample_links')) return nothing;
+
     const sampleLinks = feature.resources.samples;
     if (!sampleLinks) {
       return nothing;
@@ -1002,7 +958,6 @@ class ChromeDashIntentPreview extends LitElement {
     {% endfor %}
 
   </table>
-
   */
 
   renderDesktopMilestoneTable() {
@@ -1150,20 +1105,24 @@ class ChromeDashIntentPreview extends LitElement {
   /*
   <table>
 
-    {% for stage in stage_info.ship_stages %}{% if stage.milestones.webview_first %}
+    {% for stage in stage_info.ship_stages %}
+    {% if stage.milestones.webview_first %}
       <tr><td>Shipping on WebView</td>
       <td>{{stage.milestones.webview_first}}</td></tr>
+    {% endif %}
+    {% endfor %}
 
-    {% endif %}{% endfor %}
-    {% for stage in stage_info.ot_stages %}{% if stage.milestones.webview_last %}
+    {% for stage in stage_info.ot_stages %}
+      {% if stage.milestones.webview_last %}
         <tr><td>OriginTrial webView last</td>
         <td>{{stage.milestones.webview_last}}</td></tr>
+      {% endif %}
 
-      {% endif %}{% if stage.milestones.webview_first %}
+      {% if stage.milestones.webview_first %}
         <tr><td>OriginTrial webView first</td>
         <td>{{stage.milestones.webview_first}}</td></tr>
-
-    {% endif %}{% endfor %}
+      {% endif %}
+    {% endfor %}
 
   </table>
   */
@@ -1215,16 +1174,19 @@ class ChromeDashIntentPreview extends LitElement {
   /*
   <table>
 
-    {% for stage in stage_info.ship_stages %}{% if stage.milestones.ios_first %}
+    {% for stage in stage_info.ship_stages %}
+      {% if stage.milestones.ios_first %}
         <tr><td>Shipping on WebView</td>
         <td>{{stage.milestones.ios_first}}</td></tr>
+      {% endif %}
+    {% endfor %}
 
-      {% endif %}{% endfor %}
-    {% for stage in stage_info.dt_stages %}{% if stage.milestones.ios_first %}
+    {% for stage in stage_info.dt_stages %}
+      {% if stage.milestones.ios_first %}
         <tr><td>DevTrial on iOS</td>
         <td>{{stage.milestones.ios_first}}</td></tr>
-
-      {% endif %}{% endfor %}
+      {% endif %}
+    {% endfor %}
 
   </table>
 */
@@ -1313,10 +1275,13 @@ class ChromeDashIntentPreview extends LitElement {
 */
 
   renderAnticipatedSpecChanges() {
+    const sectionsToShow = this.sectionsToShow;
     const anticipatedSpecChanges = feature.anticipated_spec_changes;
-    if (!anticipatedSpecChanges) {
+    if (!sectionsToShow.includes("anticipated_spec_changes") ||
+      !anticipatedSpecChanges) {
       return nothing;
     }
+
     return html`
       <br /><br />
       <h4>Anticipated spec changes</h4>
@@ -1338,9 +1303,6 @@ class ChromeDashIntentPreview extends LitElement {
 
   renderDefaultURL() {
     const defaultURL = feature.default_url;
-    if (!defaultURL) {
-      return nothing;
-    }
     return html`
       <br /><br />
       <h4>Link to entry on the ${APP_TITLE}</h4>
@@ -1429,20 +1391,14 @@ class ChromeDashIntentPreview extends LitElement {
       return html`
         <br /><br />
         <h4>Links to previous Intent discussions</h4>
-        ${protoStagesHTML.join("")} ${dtStagesHTML.join("")}
-        ${otStagesHTML.join("")} ${extensionStagesHTML.join("")}
+        ${protoStagesHTML.join("")}
+        ${dtStagesHTML.join("")}
+        ${otStagesHTML.join("")}
+        ${extensionStagesHTML.join("")}
       `;
     }
   }
 
-  /*
-<br><br><div><small>
-  This intent message was generated by
-  <a href="https://chromestatus.com">Chrome Platform Status</a>.
-</small></div>
-
-
-*/
 
   render() {
     return html`
@@ -1465,6 +1421,14 @@ class ChromeDashIntentPreview extends LitElement {
         ${this.renderEstimatedMilestones()}
         ${this.renderAnticipatedSpecChanges()} ${this.renderDefaultURL()}
         ${this.renderIntentLinks()}
+
+        <br /><br />
+        <div>
+          <small>
+            This intent message was generated by
+            <a href="https://chromestatus.com">Chrome Platform Status</a>.
+          </small>
+        </div>
       </div>
       <!-- end email body div -->
     `;
