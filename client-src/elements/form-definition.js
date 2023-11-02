@@ -527,6 +527,7 @@ export const ORIGIN_TRIAL_CREATION_FIELDS = {
         'ot_is_deprecation_trial',
         'ot_has_third_party_support',
         'ot_is_critical_trial',
+        'ot_require_approvals',
         'ot_request_note',
       ],
     },

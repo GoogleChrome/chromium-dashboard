@@ -1150,6 +1150,55 @@ export const ALL_FIELDS = {
     >web_feature.mojom</a>.`,
   },
 
+  'ot_require_approvals': {
+    type: 'checkbox',
+    initial: false,
+    label: 'Trial participation requires approval',
+    help_text: html`
+    <p>
+      Will this trial require registrants to receive approval before
+      participating? Please reach out to origin-trials-support@google.com
+      beforehand to discuss options here.
+    </p>`,
+  },
+
+  'ot_approval_buganizer_component': {
+    type: 'input',
+    attrs: {type: 'number'},
+    required: true,
+    label: 'Approvals Buganizer component ID',
+    help_text: html`
+      Buganizer component ID used for approvals requests.`,
+  },
+
+  'ot_approval_group_email': {
+    type: 'input',
+    required: true,
+    attrs: {
+      ...TEXT_FIELD_ATTRS,
+      pattern: GOOGLE_EMAIL_ADDRESS_REGEX,
+      placeholder: 'ex. "approval-requests@google.com"',
+    },
+    label: 'Registration request notifications group',
+    help_text: html`
+      <p>
+        Google group email to be used for new registration request notifications.
+        Please supply a '@google.com' domain email address only.
+      </p>`,
+  },
+
+  'ot_approval_criteria_url': {
+    type: 'input',
+    attrs: URL_FIELD_ATTRS,
+    required: true,
+    label: 'Approval criteria link',
+    help_text: html`
+    <p>
+      Link to public documentation describing the requirements
+      to be approved for trial participation.
+    </p>`,
+  },
+
   'ot_creation__intent_to_experiment_url': {
     name: 'intent_to_experiment_url',
     type: 'input',
