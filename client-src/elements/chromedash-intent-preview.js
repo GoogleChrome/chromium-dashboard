@@ -1,4 +1,4 @@
-import { LitElement, html } from "lit-element";
+import {LitElement, html} from 'lit-element';
 
 // Lit component corresponding to intentpreview.py and its template intent_to_implement.html
 
@@ -61,7 +61,7 @@ class ChromeDashIntentPreview extends LitElement {
       return html`None`;
     }
     const ownersList = owners.map(
-      (owner) => html` <a href="mailto:${owner}">${owner}</a> `
+      (owner) => html` <a href="mailto:${owner}">${owner}</a> `,
     );
     return html`
       <br /><br />
@@ -89,12 +89,12 @@ class ChromeDashIntentPreview extends LitElement {
       (link, index) => html`
         ${index ? html`<br />` : nothing}
         <a href="${link}">${link}</a>
-      `
+      `,
     );
     return html`
       <br /><br />
       <h4>Explainer</h4>
-      ${explainerLinks ? `<br />${explainerLinksList.join('\n')}` : "None"}
+      ${explainerLinks ? `<br />${explainerLinksList.join('\n')}` : 'None'}
     `;
   }
 
@@ -127,7 +127,7 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
     const docsList = docs.map(
-      (link) => html` <br /><a href="${link}">${link}</a> `
+      (link) => html` <br /><a href="${link}">${link}</a> `,
     );
     return html`
       <br /><br />
@@ -167,7 +167,7 @@ class ChromeDashIntentPreview extends LitElement {
           rel="noopener"
           >${c}</a
         >
-      `
+      `,
     );
     return html`
       <br /><br />
@@ -233,7 +233,7 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
     const tagsList = tags.map(
-      (tag) => html` <a href="/features#tags:${tag}">${tag}</a> `
+      (tag) => html` <a href="/features#tags:${tag}">${tag}</a> `,
     );
     return html`
       <br /><br />
@@ -305,35 +305,35 @@ class ChromeDashIntentPreview extends LitElement {
 
     const otInfoList = otStages.map(
       (stage) => html`
-        ${stage.ot_chromium_trial_name
-          ? html`
+        ${stage.ot_chromium_trial_name ?
+          html`
               <br /><br />
               <h4>Chromium Trial Name</h4>
               ${stage.ot_chromium_trial_name}
-            `
-          : nothing}
-        ${stage.origin_trial_feedback_url
-          ? html`
+            ` :
+          nothing}
+        ${stage.origin_trial_feedback_url ?
+          html`
               <br /><br />
               <h4>Link to origin trial feedback summary</h4>
               ${stage.origin_trial_feedback_url}
-            `
-          : nothing}
-        ${stage.ot_documentation_url
-          ? html`
+            ` :
+          nothing}
+        ${stage.ot_documentation_url ?
+          html`
               <br /><br />
               <h4>Origin Trial documentation link</h4>
               ${stage.ot_documentation_url}
-            `
-          : nothing}
-        ${stage.ot_webfeature_use_counter
-          ? html`
+            ` :
+          nothing}
+        ${stage.ot_webfeature_use_counter ?
+          html`
               <br /><br />
               <h4>WebFeature UseCounter name</h4>
               ${stage.ot_webfeature_use_counter}
-            `
-          : nothing}
-      `
+            ` :
+          nothing}
+      `,
     );
 
     return html` ${otInfoList} `;
@@ -369,9 +369,9 @@ class ChromeDashIntentPreview extends LitElement {
       <br /><br />
       <i>Gecko</i>:
       ${geckoInfo.view.text}
-      ${geckoInfo.view.url
-        ? html` (<a href="${geckoInfo.view.url}">${geckoInfo.view.url}</a>) `
-        : nothing}
+      ${geckoInfo.view.url ?
+        html` (<a href="${geckoInfo.view.url}">${geckoInfo.view.url}</a>) ` :
+        nothing}
       ${geckoInfo.view.notes ? html` ${geckoInfo.view.notes} ` : nothing}
     `;
   }
@@ -392,9 +392,9 @@ class ChromeDashIntentPreview extends LitElement {
       <br /><br />
       <i>WebKit</i>:
       ${webkitInfo.view.text}
-      ${webkitInfo.view.url
-        ? html` (<a href="${webkitInfo.view.url}">${webkitInfo.view.url}</a>) `
-        : nothing}
+      ${webkitInfo.view.url ?
+        html` (<a href="${webkitInfo.view.url}">${webkitInfo.view.url}</a>) ` :
+        nothing}
       ${webkitInfo.view.notes ? html` ${webkitInfo.view.notes} ` : nothing}
     `;
   }
@@ -414,9 +414,9 @@ class ChromeDashIntentPreview extends LitElement {
       <br /><br />
       <i>Web developers</i>:
       ${webDevInfo.view.text}
-      ${webDevInfo.view.url
-        ? html` (<a href="${webDevInfo.view.url}">${webDevInfo.view.url}</a>) `
-        : nothing}
+      ${webDevInfo.view.url ?
+        html` (<a href="${webDevInfo.view.url}">${webDevInfo.view.url}</a>) ` :
+        nothing}
       ${webDevInfo.view.notes ? html` ${webDevInfo.view.notes} ` : nothing}
     `;
   }
@@ -563,7 +563,7 @@ class ChromeDashIntentPreview extends LitElement {
   renderExperiment() {
     if (!sectionsToShow.includes('experiment')) return nothing;
 
-    let extensionStagesHTML = "";
+    let extensionStagesHTML = '';
     if (sectionsToShow.includes('extension_reason')) {
       const stages = feature.stage_info.extension_stages;
       const extensionsHtml = [];
@@ -576,7 +576,7 @@ class ChromeDashIntentPreview extends LitElement {
           `);
         }
       }
-      extensionStagesHTML = html` ${extensionsHtml.join("")} `;
+      extensionStagesHTML = html` ${extensionsHtml.join('')} `;
     }
 
     const experimentInfo = feature.experiment_goals;
@@ -586,23 +586,23 @@ class ChromeDashIntentPreview extends LitElement {
       <h4>Goals for experimentation</h4>
       <p class="preformatted">${experimentInfo}</p>
 
-      ${feature.experiment_timeline
-        ? html`
+      ${feature.experiment_timeline ?
+        html`
             <br /><br />
             <h4>Experimental timeline</h4>
             <p class="preformatted">${feature.experiment_timeline}</p>
-          `
-        : nothing}
+          ` :
+        nothing}
 
       ${extensionStagesHTML}
 
-      ${feature.ongoing_constraints
-        ? html`
+      ${feature.ongoing_constraints ?
+        html`
             <br /><br />
             <h4>Ongoing technical constraints</h4>
             <p class="preformatted">${feature.ongoing_constraints}</p>
-          `
-        : nothing}
+          ` :
+        nothing}
     `;
   }
 
@@ -643,10 +643,10 @@ class ChromeDashIntentPreview extends LitElement {
         Will this feature be supported on all six Blink platforms (Windows, Mac,
         Linux, Chrome OS, Android, and Android WebView)?
       </h4>
-      ${allPlatforms ? "Yes" : "No"}
-      ${feature.all_platforms_descr
-        ? html` <p class="preformatted">${feature.all_platforms_descr}</p> `
-        : nothing}
+      ${allPlatforms ? 'Yes' : 'No'}
+      ${feature.all_platforms_descr ?
+        html` <p class="preformatted">${feature.all_platforms_descr}</p> ` :
+        nothing}
     `;
   }
 
@@ -669,10 +669,10 @@ class ChromeDashIntentPreview extends LitElement {
           >web-platform-tests</a
         >?
       </h4>
-      ${wpt ? "Yes" : "No"}
-      ${feature.wpt_descr
-        ? html` <p class="preformatted">${feature.wpt_descr}</p> `
-        : nothing}
+      ${wpt ? 'Yes' : 'No'}
+      ${feature.wpt_descr ?
+        html` <p class="preformatted">${feature.wpt_descr}</p> ` :
+        nothing}
     `;
   }
 
@@ -732,15 +732,15 @@ class ChromeDashIntentPreview extends LitElement {
       <br /><br />
       <h4>Finch feature name</h4>
       ${finchName}
-      ${feature.non_finch_justification
-        ? html` <br /><br />
+      ${feature.non_finch_justification ?
+        html` <br /><br />
             <h4>Non-finch justification</h4>
-            <p class="preformatted">${feature.non_finch_justification}</p>`
-        : !finchName
-        ? html` <br /><br />
+            <p class="preformatted">${feature.non_finch_justification}</p>` :
+        !finchName ?
+          html` <br /><br />
             <h4>Non-finch justification</h4>
-            None`
-        : nothing}
+            None` :
+          nothing}
     `;
   }
 
@@ -919,7 +919,7 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
     const sampleLinksList = sampleLinks.map(
-      (link) => html` <br /><a href="${link}">${link}</a> `
+      (link) => html` <br /><a href="${link}">${link}</a> `,
     );
     return html`
       <br /><br />
@@ -1013,8 +1013,8 @@ class ChromeDashIntentPreview extends LitElement {
 
     return html`
       <table>
-        ${shipStagesHTML.join("")} ${otStagesHTML.join("")}
-        ${dtStagesHTML.join("")}
+        ${shipStagesHTML.join('')} ${otStagesHTML.join('')}
+        ${dtStagesHTML.join('')}
       </table>
     `;
   }
@@ -1096,8 +1096,8 @@ class ChromeDashIntentPreview extends LitElement {
 
     return html`
       <table>
-        ${shipStagesHTML.join("")} ${otStagesHTML.join("")}
-        ${dtStagesHTML.join("")}
+        ${shipStagesHTML.join('')} ${otStagesHTML.join('')}
+        ${dtStagesHTML.join('')}
       </table>
     `;
   }
@@ -1166,7 +1166,7 @@ class ChromeDashIntentPreview extends LitElement {
 
     return html`
       <table>
-        ${shipStagesHTML.join("")} ${otStagesHTML.join("")}
+        ${shipStagesHTML.join('')} ${otStagesHTML.join('')}
       </table>
     `;
   }
@@ -1221,7 +1221,7 @@ class ChromeDashIntentPreview extends LitElement {
 
     return html`
       <table>
-        ${shipStagesHTML.join("")} ${dtStagesHTML.join("")}
+        ${shipStagesHTML.join('')} ${dtStagesHTML.join('')}
       </table>
     `;
   }
@@ -1277,7 +1277,7 @@ class ChromeDashIntentPreview extends LitElement {
   renderAnticipatedSpecChanges() {
     const sectionsToShow = this.sectionsToShow;
     const anticipatedSpecChanges = feature.anticipated_spec_changes;
-    if (!sectionsToShow.includes("anticipated_spec_changes") ||
+    if (!sectionsToShow.includes('anticipated_spec_changes') ||
       !anticipatedSpecChanges) {
       return nothing;
     }
@@ -1391,10 +1391,10 @@ class ChromeDashIntentPreview extends LitElement {
       return html`
         <br /><br />
         <h4>Links to previous Intent discussions</h4>
-        ${protoStagesHTML.join("")}
-        ${dtStagesHTML.join("")}
-        ${otStagesHTML.join("")}
-        ${extensionStagesHTML.join("")}
+        ${protoStagesHTML.join('')}
+        ${dtStagesHTML.join('')}
+        ${otStagesHTML.join('')}
+        ${extensionStagesHTML.join('')}
       `;
     }
   }
@@ -1435,4 +1435,4 @@ class ChromeDashIntentPreview extends LitElement {
   }
 }
 
-customElements.define("chromedash-intent-preview", ChromeDashIntentPreview);
+customElements.define('chromedash-intent-preview', ChromeDashIntentPreview);
