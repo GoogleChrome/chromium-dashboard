@@ -242,6 +242,20 @@ def make_feature_changes_email(fe: FeatureEntry, is_update: bool=False,
   return all_tasks
 
 
+def add_reviewers(
+    fe: FeatureEntry, gate_type: int, addr_reasons: dict[str, list[str]]):
+  """Add addresses of people who will do the review."""
+  gate = approval_defs.get_gate_by_type(fe.key.integer_id(), gate_type)
+  if gate and gate.assignee_emails:
+    recipients = gate.assignee_emails
+    reasons = 'This review is assigned to you'
+  else:
+    recipients = approval_defs.get_approvers(gate_type)
+    reasons = 'You are a reviewer for this type of gate'
+
+  accumulate_reasons(addr_reasons, recipients, reasons)
+
+
 def make_review_requests_email(fe: FeatureEntry, gate_type: int, changes: Optional[list]=None):
   """Return a list of task dicts to notify approvers of review requests."""
   if changes is None:
@@ -251,11 +265,9 @@ def make_review_requests_email(fe: FeatureEntry, gate_type: int, changes: Option
   subject = 'Review Request for feature: %s' % fe.name
   triggering_user_email = fe.updater_email
 
-  approvers = approval_defs.get_approvers(gate_type)
-  reasons = 'You received a review request for this feature'
-
   addr_reasons: dict[str, list[str]] = collections.defaultdict(list)
-  accumulate_reasons(addr_reasons, approvers, reasons)
+  add_reviewers(fe, gate_type, addr_reasons)
+
   all_tasks = [convert_reasons_to_task(
                    addr, reasons, email_html, subject, triggering_user_email)
                for addr, reasons in sorted(addr_reasons.items())]
@@ -274,11 +286,7 @@ def make_new_comments_email(fe: FeatureEntry, gate_type: int, changes: Optional[
 
   addr_reasons: dict[str, list[str]] = collections.defaultdict(list)
   add_core_receivers(fe, addr_reasons)
-
-  # Add gate reviewers.
-  approvers = approval_defs.get_approvers(gate_type)
-  reasons = 'You are the reviewer for this gate'
-  accumulate_reasons(addr_reasons, approvers, reasons)
+  add_reviewers(fe, gate_type, addr_reasons)
 
   all_tasks = [convert_reasons_to_task(
                    addr, reasons, email_html, subject, triggering_user_email)
