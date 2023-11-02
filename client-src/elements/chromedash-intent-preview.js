@@ -2,16 +2,218 @@ import {LitElement, html} from 'lit-element';
 
 // Lit component corresponding to intentpreview.py and its template intent_to_implement.html
 
+/*
+# -*- coding: utf-8 -*-
+# Copyright 2021 Google Inc.
+# intentpreview.py:
+#
+# Licensed under the Apache License, Version 2.0 (the "License")
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# from google.appengine.api import users
+from api.converters import feature_entry_to_json_verbose
+
+from internals import core_enums
+from internals import processes
+from internals import stage_helpers
+from framework import basehandlers
+from framework import permissions
+*/
+
+
+// INTENT_PARAM = 'intent'
+// LAUNCH_PARAM = 'launch'
+// VIEW_FEATURE_URL = '/feature'
+
+const INTENT_PARAM = 'intent';
+const LAUNCH_PARAM = 'launch';
+const VIEW_FEATURE_URL = '/feature';
+
+
 class ChromeDashIntentPreview extends LitElement {
+
+
+
+
   static get properties() {
     return {
       // Define properties here
+      subject_prefix: { type: String },
+      feature: { type: Object },
+      stage_info: { type: Object },
+      should_render_mstone_table: { type: Boolean },
+      should_render_intents: { type: Boolean },
+      sections_to_show: { type: Array },
+      intent_stage: { type: String },
+      default_url: { type: String },
     };
   }
 
   constructor() {
     super();
     // Initialize properties here
+    this.subject_prefix = '';
+    this.feature = {};
+    this.stage_info = {};
+    this.should_render_mstone_table = false;
+    this.should_render_intents = false;
+    this.sections_to_show = [];
+    this.intent_stage = '';
+    this.default_url = '';
+
+  }
+
+
+    /*
+  def get_page_data(self, feature_id, f, intent_stage):
+    """Return a dictionary of data used to render the page."""
+    stage_info = stage_helpers.get_stage_info_for_templates(f)
+    page_data = {
+        'subject_prefix': self.compute_subject_prefix(f, intent_stage),
+        'feature': feature_entry_to_json_verbose(f),
+        'stage_info': stage_info,
+        'should_render_mstone_table': stage_info['should_render_mstone_table'],
+        'should_render_intents': stage_info['should_render_intents'],
+        'sections_to_show': processes.INTENT_EMAIL_SECTIONS.get(
+            intent_stage, []),
+        'intent_stage': intent_stage,
+        'default_url': '%s://%s%s/%s' % (
+            self.request.scheme, self.request.host,
+            VIEW_FEATURE_URL, feature_id),
+    }
+*/
+  get_page_data(
+    feature,
+    intent_stage,
+  ) {
+    this.feature = feature;
+    // Return a dictionary of data used to render the page.
+    stage_info = stage_helpers.get_stage_info_for_templates(this.feature);
+    page_data = {
+     'subject_prefix': this.compute_subject_prefix(intent_stage),
+      'feature': feature_entry_to_json_verbose(f),
+     'stage_info': stage_info,
+     'should_render_mstone_table': stage_info['should_render_mstone_table'],
+     'should_render_intents': stage_info['should_render_intents'],
+     'sections_to_show': processes.INTENT_EMAIL_SECTIONS.get(
+        intent_stage, []),
+      'intent_stage': intent_stage,
+      'default_url': '%s://%s%s/%s' % (
+        this.request.scheme, this.request.host,
+        VIEW_FEATURE_URL, feature.id),
+    };
+    return page_data;
+  }
+
+/*
+  # class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
+  """Show a preview of an intent email, as appropriate to the feature stage."""
+
+  TEMPLATE_PATH = 'admin/features/launch.html'
+
+  def get_template_data(self, **kwargs):
+    # Validate the user has edit permissions and redirect if needed.
+    feature_id = kwargs.get('feature_id', None)
+    stage_id = kwargs.get('stage_id', None)
+
+    redirect_resp = permissions.validate_feature_edit_permission(
+        self, feature_id)
+    if redirect_resp:
+      return redirect_resp
+
+    f = self.get_specified_feature(feature_id=feature_id)
+    intent_stage = stage_id if stage_id is not None else f.intent_stage
+
+    page_data = self.get_page_data(feature_id, f, intent_stage)
+    return page_data
+    */
+
+  get_template_data(
+    feature_id,
+    stage_id,
+  ) {
+
+    // Validate the user has edit permissions and redirect if needed.
+    redirect_resp = permissions.validate_feature_edit_permission(
+      this, feature_id,
+    );
+    if (redirect_resp) {
+      return redirect_resp;
+    }
+    f = this.get_specified_feature(feature_id = feature_id);
+    intent_stage = stage_id || f.intent_stage;
+    page_data = this.get_page_data(feature_id, f, intent_stage);
+    return page_data;
+  }
+
+    /*
+
+    if LAUNCH_PARAM in self.request.args:
+      page_data[LAUNCH_PARAM] = True
+    if INTENT_PARAM in self.request.args:
+      page_data[INTENT_PARAM] = True
+
+    return page_data
+
+  def compute_subject_prefix(self, feature, intent_stage):
+    """Return part of the subject line for an intent email."""
+
+    if intent_stage == core_enums.INTENT_INCUBATE:
+      if feature.feature_type == core_enums.FEATURE_TYPE_DEPRECATION_ID:
+        return 'Intent to Deprecate and Remove'
+    elif intent_stage == core_enums.INTENT_IMPLEMENT:
+      return 'Intent to Prototype'
+    elif intent_stage == core_enums.INTENT_EXPERIMENT:
+      return 'Ready for Developer Testing'
+    elif intent_stage == core_enums.INTENT_EXTEND_TRIAL:
+      if feature.feature_type == core_enums.FEATURE_TYPE_DEPRECATION_ID:
+        return 'Request for Deprecation Trial'
+      else:
+        return 'Intent to Experiment'
+    elif intent_stage == core_enums.INTENT_SHIP:
+      if feature.feature_type == core_enums.FEATURE_TYPE_CODE_CHANGE_ID:
+        return 'Web-Facing Change PSA'
+      else:
+        return 'Intent to Ship'
+    elif intent_stage == core_enums.INTENT_REMOVED:
+      return 'Intent to Extend Deprecation Trial'
+
+    return 'Intent stage "%s"' % core_enums.INTENT_STAGES[intent_stage]
+*/
+
+  compute_subject_prefix(intent_stage) {
+    if (intent_stage == core_enums.INTENT_INCUBATE) {
+      if (this.feature.feature_type == core_enums.FEATURE_TYPE_DEPRECATION_ID) {
+        return 'Intent to Deprecate and Remove';
+      }
+    } else if (intent_stage == core_enums.INTENT_IMPLEMENT) {
+      return 'Intent to Prototype';
+    } else if (intent_stage == core_enums.INTENT_EXPERIMENT) {
+      return 'Ready for Developer Testing';
+    } else if (intent_stage == core_enums.INTENT_EXTEND_TRIAL) {
+      if (this.feature.feature_type == core_enums.FEATURE_TYPE_DEPRECATION_ID) {
+        return 'Request for Deprecation Trial';
+      } else {
+        return 'Intent to Experiment';
+      }
+    } else if (intent_stage == core_enums.INTENT_SHIP) {
+      if (this.feature.feature_type == core_enums.FEATURE_TYPE_CODE_CHANGE_ID) {
+        return 'Web-Facing Change PSA';
+      } else {
+        return 'Intent to Ship';
+      }
+    } else if (intent_stage == core_enums.INTENT_REMOVED) {
+      return 'Intent to Extend Deprecation Trial';
+    }
   }
 
   // Instead of vertical margins, <br> elements are used to create line breaks
@@ -25,7 +227,7 @@ class ChromeDashIntentPreview extends LitElement {
 
       <p>Subject</p>
 
-      <div class="subject">${subjectPrefix}: ${feature.name}</div>
+      <div class="subject">${subjectPrefix}: ${this.feature.name}</div>
 
       <p>
         Body
@@ -56,7 +258,7 @@ class ChromeDashIntentPreview extends LitElement {
   */
 
   renderContactEmails() {
-    const owners = feature.browsers.chrome.owners;
+    const owners = this.feature.browsers.chrome.owners;
     if (!owners) {
       return html`None`;
     }
@@ -81,8 +283,8 @@ class ChromeDashIntentPreview extends LitElement {
   */
 
   renderExplainerLinks() {
-    const explainerLinks = feature.explainer_links;
-    if (!explainerLinks && feature.feature_type_int === 2) {
+    const explainerLinks = this.feature.explainer_links;
+    if (!explainerLinks && this.feature.feature_type_int === 2) {
       return nothing;
     }
     const explainerLinksList = explainerLinks.map(
@@ -104,7 +306,7 @@ class ChromeDashIntentPreview extends LitElement {
   */
 
   renderSpec() {
-    const spec = feature.standards.spec;
+    const spec = this.feature.standards.spec;
     return html`
       <br /><br />
       <h4>Specification</h4>
@@ -122,7 +324,7 @@ class ChromeDashIntentPreview extends LitElement {
   */
 
   renderDesignDocs() {
-    const docs = feature.resources.docs;
+    const docs = this.feature.resources.docs;
     if (!docs) {
       return nothing;
     }
@@ -142,7 +344,7 @@ class ChromeDashIntentPreview extends LitElement {
   */
 
   renderSummary() {
-    const summary = feature.summary;
+    const summary = this.feature.summary;
     return html`
       <br /><br />
       <h4>Summary</h4>
@@ -158,7 +360,7 @@ class ChromeDashIntentPreview extends LitElement {
   */
 
   renderBlinkComponents() {
-    const blinkComponents = feature.browsers.chrome.blink_components;
+    const blinkComponents = this.feature.browsers.chrome.blink_components;
     const blinkComponentList = blinkComponents.map(
       (c) => html`
         <a
@@ -187,7 +389,7 @@ class ChromeDashIntentPreview extends LitElement {
   */
 
   renderMotivation() {
-    const motivation = feature.motivation;
+    const motivation = this.feature.motivation;
     if (!motivation) {
       return nothing;
     }
@@ -199,8 +401,8 @@ class ChromeDashIntentPreview extends LitElement {
       <br /><br />
       <h4>Initial public proposal</h4>
 
-      <a href="${feature.initial_public_proposal_url}"
-        >${feature.initial_public_proposal_url}</a
+      <a href="${this.feature.initial_public_proposal_url}"
+        >${this.feature.initial_public_proposal_url}</a
       >
     `;
   }
@@ -228,7 +430,7 @@ class ChromeDashIntentPreview extends LitElement {
   {% endif %}
   */
   renderSearchTags() {
-    const tags = feature.tags;
+    const tags = this.feature.tags;
     if (!tags) {
       return nothing;
     }
@@ -247,7 +449,7 @@ class ChromeDashIntentPreview extends LitElement {
   {{feature.tag_review|urlize}}
   */
   renderTagReview() {
-    const tagReview = feature.tag_review;
+    const tagReview = this.feature.tag_review;
     return html`
       <br /><br />
       <h4>TAG review</h4>
@@ -263,7 +465,7 @@ class ChromeDashIntentPreview extends LitElement {
   */
 
   renderTagReviewStatus() {
-    const tagReviewStatus = feature.tag_review_status;
+    const tagReviewStatus = this.feature.tag_review_status;
     if (!tagReviewStatus) {
       return nothing;
     }
@@ -345,7 +547,7 @@ class ChromeDashIntentPreview extends LitElement {
     */
 
   renderInteropCompatRisks() {
-    const interopCompatRisks = feature.interop_compat_risks;
+    const interopCompatRisks = this.feature.interop_compat_risks;
     return html`
       <br /><br />
       <h4>Interoperability and Compatibility</h4>
@@ -364,7 +566,7 @@ class ChromeDashIntentPreview extends LitElement {
     */
 
   renderGeckoRisks() {
-    const geckoInfo = feature.browsers.ff;
+    const geckoInfo = this.feature.browsers.ff;
     return html`
       <br /><br />
       <i>Gecko</i>:
@@ -387,7 +589,7 @@ class ChromeDashIntentPreview extends LitElement {
     */
 
   renderWebKitRisks() {
-    const webkitInfo = feature.browsers.safari;
+    const webkitInfo = this.feature.browsers.safari;
     return html`
       <br /><br />
       <i>WebKit</i>:
@@ -409,7 +611,7 @@ class ChromeDashIntentPreview extends LitElement {
     {% endif %}
     */
   renderWebDevRisks() {
-    const webDevInfo = feature.browsers.webdev;
+    const webDevInfo = this.feature.browsers.webdev;
     return html`
       <br /><br />
       <i>Web developers</i>:
@@ -428,7 +630,7 @@ class ChromeDashIntentPreview extends LitElement {
     {% endif %}
     */
   renderOtherNotes() {
-    const notes = feature.browsers.other.view.notes;
+    const notes = this.feature.browsers.other.view.notes;
     return html`
       <br /><br />
       <i>Other signals</i>:
@@ -443,7 +645,7 @@ class ChromeDashIntentPreview extends LitElement {
     {% endif %}
     */
   renderErgonomicsRisks() {
-    const ergonomicsRisks = feature.ergonomics_risks;
+    const ergonomicsRisks = this.feature.ergonomics_risks;
     if (!ergonomicsRisks) {
       return nothing;
     }
@@ -461,7 +663,7 @@ class ChromeDashIntentPreview extends LitElement {
     {% endif %}
     */
   renderActivationRisks() {
-    const activationRisks = feature.activation_risks;
+    const activationRisks = this.feature.activation_risks;
     if (!activationRisks) {
       return nothing;
     }
@@ -480,7 +682,7 @@ class ChromeDashIntentPreview extends LitElement {
     */
 
   renderSecurityRisks() {
-    const securityRisks = feature.security_risks;
+    const securityRisks = this.feature.security_risks;
     if (!securityRisks) {
       return nothing;
     }
@@ -501,7 +703,7 @@ class ChromeDashIntentPreview extends LitElement {
     */
 
   renderWebViewRisks() {
-    const webviewRisks = feature.webview_risks;
+    const webviewRisks = this.feature.webview_risks;
     return html`
       <br /><br />
       <h4>WebView application risks</h4>
@@ -565,7 +767,7 @@ class ChromeDashIntentPreview extends LitElement {
 
     let extensionStagesHTML = '';
     if (sectionsToShow.includes('extension_reason')) {
-      const stages = feature.stage_info.extension_stages;
+      const stages = this.feature.stage_info.extension_stages;
       const extensionsHtml = [];
       for (stage in stages) {
         if (stage.experiment_extension_reason) {
@@ -579,28 +781,28 @@ class ChromeDashIntentPreview extends LitElement {
       extensionStagesHTML = html` ${extensionsHtml.join('')} `;
     }
 
-    const experimentInfo = feature.experiment_goals;
+    const experimentInfo = this.feature.experiment_goals;
 
     return html`
       <br /><br />
       <h4>Goals for experimentation</h4>
       <p class="preformatted">${experimentInfo}</p>
 
-      ${feature.experiment_timeline ?
+      ${this.feature.experiment_timeline ?
         html`
             <br /><br />
             <h4>Experimental timeline</h4>
-            <p class="preformatted">${feature.experiment_timeline}</p>
+            <p class="preformatted">${this.feature.experiment_timeline}</p>
           ` :
         nothing}
 
       ${extensionStagesHTML}
 
-      ${feature.ongoing_constraints ?
+      ${this.feature.ongoing_constraints ?
         html`
             <br /><br />
             <h4>Ongoing technical constraints</h4>
-            <p class="preformatted">${feature.ongoing_constraints}</p>
+            <p class="preformatted">${this.feature.ongoing_constraints}</p>
           ` :
         nothing}
     `;
@@ -612,7 +814,7 @@ class ChromeDashIntentPreview extends LitElement {
 */
 
   renderDebuggability() {
-    const debuggability = feature.debuggability;
+    const debuggability = this.feature.debuggability;
     return html`
       <br /><br />
       <h4>Debuggability</h4>
@@ -636,7 +838,7 @@ class ChromeDashIntentPreview extends LitElement {
       return nothing;
     }
 
-    const allPlatforms = feature.all_platforms;
+    const allPlatforms = this.feature.all_platforms;
     return html`
       <br /><br />
       <h4>
@@ -644,8 +846,8 @@ class ChromeDashIntentPreview extends LitElement {
         Linux, Chrome OS, Android, and Android WebView)?
       </h4>
       ${allPlatforms ? 'Yes' : 'No'}
-      ${feature.all_platforms_descr ?
-        html` <p class="preformatted">${feature.all_platforms_descr}</p> ` :
+      ${this.feature.all_platforms_descr ?
+        html` <p class="preformatted">${this.feature.all_platforms_descr}</p> ` :
         nothing}
     `;
   }
@@ -659,7 +861,7 @@ class ChromeDashIntentPreview extends LitElement {
 */
 
   renderWPT() {
-    const wpt = feature.wpt;
+    const wpt = this.feature.wpt;
     return html`
       <br /><br />
       <h4>
@@ -670,8 +872,8 @@ class ChromeDashIntentPreview extends LitElement {
         >?
       </h4>
       ${wpt ? 'Yes' : 'No'}
-      ${feature.wpt_descr ?
-        html` <p class="preformatted">${feature.wpt_descr}</p> ` :
+      ${this.feature.wpt_descr ?
+        html` <p class="preformatted">${this.feature.wpt_descr}</p> ` :
         nothing}
     `;
   }
@@ -685,7 +887,7 @@ class ChromeDashIntentPreview extends LitElement {
 */
 
   renderDevTrialInstructions() {
-    const devTrialInstructions = feature.devtrial_instructions;
+    const devTrialInstructions = this.feature.devtrial_instructions;
     if (!devTrialInstructions) {
       return nothing;
     }
@@ -702,7 +904,7 @@ class ChromeDashIntentPreview extends LitElement {
 */
 
   renderFlagName() {
-    const flagName = feature.flag_name;
+    const flagName = this.feature.flag_name;
     return html`
       <br /><br />
       <h4>Flag name on chrome://flags</h4>
@@ -726,16 +928,16 @@ class ChromeDashIntentPreview extends LitElement {
 */
 
   renderFinch() {
-    const finchName = feature.finch_name;
+    const finchName = this.feature.finch_name;
 
     return html`
       <br /><br />
       <h4>Finch feature name</h4>
       ${finchName}
-      ${feature.non_finch_justification ?
+      ${this.feature.non_finch_justification ?
         html` <br /><br />
             <h4>Non-finch justification</h4>
-            <p class="preformatted">${feature.non_finch_justification}</p>` :
+            <p class="preformatted">${this.feature.non_finch_justification}</p>` :
         !finchName ?
           html` <br /><br />
             <h4>Non-finch justification</h4>
@@ -750,7 +952,7 @@ class ChromeDashIntentPreview extends LitElement {
 */
 
   renderRequiresEmbedderSupport() {
-    const requiresEmbedderSupport = feature.requires_embedder_support;
+    const requiresEmbedderSupport = this.feature.requires_embedder_support;
     return html`
       <br /><br />
       <h4>Requires code in //chrome?</h4>
@@ -766,7 +968,7 @@ class ChromeDashIntentPreview extends LitElement {
 */
 
   renderTrackingBug() {
-    const trackingBug = feature.browsers.chrome.bug;
+    const trackingBug = this.feature.browsers.chrome.bug;
     if (!trackingBug) {
       return nothing;
     }
@@ -785,7 +987,7 @@ class ChromeDashIntentPreview extends LitElement {
 */
 
   renderLaunchBug() {
-    const launchBug = feature.launch_bug_url;
+    const launchBug = this.feature.launch_bug_url;
     if (!launchBug) {
       return nothing;
     }
@@ -804,7 +1006,7 @@ class ChromeDashIntentPreview extends LitElement {
 */
 
   renderMeasurement() {
-    const measurement = feature.measurement;
+    const measurement = this.feature.measurement;
     if (!measurement) {
       return nothing;
     }
@@ -823,7 +1025,7 @@ class ChromeDashIntentPreview extends LitElement {
 */
 
   renderAvailabilityExpectation() {
-    const availabilityExpectation = feature.availability_expectation;
+    const availabilityExpectation = this.feature.availability_expectation;
     if (!availabilityExpectation) {
       return nothing;
     }
@@ -842,7 +1044,7 @@ class ChromeDashIntentPreview extends LitElement {
 */
 
   renderAdoptionExpectation() {
-    const adoptionExpectation = feature.adoption_expectation;
+    const adoptionExpectation = this.feature.adoption_expectation;
     if (!adoptionExpectation) {
       return nothing;
     }
@@ -861,7 +1063,7 @@ class ChromeDashIntentPreview extends LitElement {
 */
 
   renderAdoptionPlan() {
-    const adoptionPlan = feature.adoption_plan;
+    const adoptionPlan = this.feature.adoption_plan;
     if (!adoptionPlan) {
       return nothing;
     }
@@ -885,7 +1087,7 @@ class ChromeDashIntentPreview extends LitElement {
 */
 
   renderNonOSSDeps() {
-    const nonOSSDeps = feature.non_oss_deps;
+    const nonOSSDeps = this.feature.non_oss_deps;
     if (!nonOSSDeps) {
       return nothing;
     }
@@ -914,7 +1116,7 @@ class ChromeDashIntentPreview extends LitElement {
   renderSampleLinks() {
     if (!sectionsToShow.includes('sample_links')) return nothing;
 
-    const sampleLinks = feature.resources.samples;
+    const sampleLinks = this.feature.resources.samples;
     if (!sampleLinks) {
       return nothing;
     }
@@ -1276,7 +1478,7 @@ class ChromeDashIntentPreview extends LitElement {
 
   renderAnticipatedSpecChanges() {
     const sectionsToShow = this.sectionsToShow;
-    const anticipatedSpecChanges = feature.anticipated_spec_changes;
+    const anticipatedSpecChanges = this.feature.anticipated_spec_changes;
     if (!sectionsToShow.includes('anticipated_spec_changes') ||
       !anticipatedSpecChanges) {
       return nothing;
@@ -1302,7 +1504,7 @@ class ChromeDashIntentPreview extends LitElement {
 */
 
   renderDefaultURL() {
-    const defaultURL = feature.default_url;
+    const defaultURL = this.feature.default_url;
     return html`
       <br /><br />
       <h4>Link to entry on the ${APP_TITLE}</h4>
