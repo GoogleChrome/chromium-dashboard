@@ -105,7 +105,6 @@ export class ChromedashFeaturePage extends LitElement {
       starred: {type: Boolean},
       loading: {attribute: false},
       selectedGateId: {type: Number},
-      rawQuery: {type: Object},
     };
   }
 
@@ -124,7 +123,6 @@ export class ChromedashFeaturePage extends LitElement {
     this.starred = false;
     this.loading = true;
     this.selectedGateId = 0;
-    this.rawQuery = {};
   }
 
   connectedCallback() {
@@ -582,7 +580,6 @@ export class ChromedashFeaturePage extends LitElement {
         .comments=${this.comments}
         .process=${this.process}
         .dismissedCues=${this.dismissedCues}
-        .rawQuery=${this.rawQuery}
         .featureLinks=${this.featureLinks}
         selectedGateId=${this.selectedGateId}
        >
