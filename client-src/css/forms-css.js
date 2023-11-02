@@ -162,6 +162,14 @@ export const FORM_STYLES = [
       max-width: 35em;
     }
 
+    chromedash-form-field .check-warning {
+      color: orange;
+    }
+
+    chromedash-form-field .check-error {
+      color: red;
+    }
+
     chromedash-form-field .helptext {
       display: block;
       font-size: small;

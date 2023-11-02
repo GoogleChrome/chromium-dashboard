@@ -223,8 +223,9 @@ export class ChromedashGuideStagePage extends LitElement {
       return html`
       <chromedash-form-field
         name=${field}
-        value=${value}
         index=${index}
+        value=${value}
+        .fieldValues=${this.fieldValues}
         stageId=${useStageId ? feStage.id : undefined}
         ?forEnterprise=${formattedFeature.is_enterprise_feature}
         @form-field-update="${this.handleFormFieldUpdate}">
@@ -250,8 +251,9 @@ export class ChromedashGuideStagePage extends LitElement {
         <section class="stage_form">
           <chromedash-form-field
             name="set_stage"
-            value=${this.isActiveStage}
             index=${index}
+            value=${this.isActiveStage}
+            .fieldValues=${this.fieldValues}
             ?disabled=${this.isActiveStage}
             ?forEnterprise=${formattedFeature.is_enterprise_feature}
             @form-field-update="${this.handleFormFieldUpdate}">
@@ -315,8 +317,9 @@ export class ChromedashGuideStagePage extends LitElement {
     return html`
       <chromedash-form-field
         name="set_impl_status"
-        value=${alreadyOnThisImplStatus}
         index=${index}
+        value=${alreadyOnThisImplStatus}
+        .fieldValues=${this.fieldValues}
         checkboxLabel=${label}
         ?disabled=${alreadyOnThisImplStatus}
         @form-field-update="${this.handleFormFieldUpdate}">

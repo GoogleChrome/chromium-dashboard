@@ -254,9 +254,10 @@ export class ChromedashOTCreationPage extends LitElement {
       return html`
       <chromedash-form-field
         name=${fieldInfo.name}
-        .shouldFadeIn=${shouldFadeIn}
         value=${fieldInfo.value}
         index=${i}
+        .fieldValues=${this.fieldValues}
+        .shouldFadeIn=${shouldFadeIn}
         @form-field-update="${this.handleFormFieldUpdate}">
       </chromedash-form-field>
     `;

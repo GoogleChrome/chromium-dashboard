@@ -19,9 +19,9 @@ services:
       context: .
       dockerfile: Dockerfile
       cache_from:
-        - type=gha,scope=${GITHUB_REF_NAME}-playwright-image
+        - type=gha,scope=${GITHUB_REF_NAME:-}-playwright-image
       cache_to:
-        - type=gha,mode=max,scope=${GITHUB_REF_NAME}-playwright-image
+        - type=gha,mode=max,scope=${GITHUB_REF_NAME:-}-playwright-image
     depends_on:
       myapp:
         condition: service_healthy
@@ -60,9 +60,9 @@ services:
       dockerfile: Dockerfile
       target: app
       cache_from:
-        - type=gha,scope=${GITHUB_REF_NAME}-myapp-image
+        - type=gha,scope=${GITHUB_REF_NAME:-}-myapp-image
       cache_to:
-        - type=gha,mode=max,scope=${GITHUB_REF_NAME}-myapp-image
+        - type=gha,mode=max,scope=${GITHUB_REF_NAME:-}-myapp-image
     depends_on:
       mydb:
         condition: service_healthy

@@ -353,6 +353,7 @@ export class ChromedashGuideMetadata extends LitElement {
           name=${field}
           index=${index}
           value=${value}
+          .fieldValues=${this.fieldValues}
           ?forEnterprise=${this.feature.is_enterprise_feature}
           @form-field-update="${this.handleFormFieldUpdate}">
         </chromedash-form-field>`;
