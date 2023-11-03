@@ -29,7 +29,7 @@ from internals.review_models import Gate, Vote
 
 def get_user_feature_and_gate(handler, kwargs) -> Tuple[
     User, FeatureEntry, Gate, int, int]:
-  """Get common parameters from the the request."""
+  """Get common parameters from the request."""
   feature_id: int = kwargs['feature_id']
   gate_id: int = kwargs['gate_id']
   fe: FeatureEntry = handler.get_specified_feature(feature_id=feature_id)
