@@ -65,7 +65,8 @@ def _determine_milestone_string(ship_stages: list[Stage]) -> str:
 
 
 def format_email_body(
-    is_update: bool, fe: FeatureEntry, changes: list[dict[str, Any]]) -> str:
+    template_path, fe: FeatureEntry, changes: list[dict[str, Any]],
+    updater_email: Optional[str] = None) -> str:
   """Return an HTML string for a notification email body."""
 
   stage_info = stage_helpers.get_stage_info_for_templates(fe)
@@ -92,15 +93,13 @@ def format_email_body(
       'stage_info': stage_info,
       'should_render_mstone_table': stage_info['should_render_mstone_table'],
       'creator_email': fe.creator_email,
-      'updater_email': fe.updater_email,
+      'updater_email': updater_email or fe.updater_email,
       'id': fe.key.integer_id(),
       'milestone': milestone_str,
       'status': core_enums.IMPLEMENTATION_STATUS[fe.impl_status_chrome],
       'formatted_changes': formatted_changes,
       'moz_link_urls': moz_link_urls,
   }
-  template_path = ('update-feature-email.html' if is_update
-                   else 'new-feature-email.html')
   body = render_template(template_path, **body_data)
   return body
 
@@ -197,13 +196,16 @@ def make_feature_changes_email(fe: FeatureEntry, is_update: bool=False,
       FeatureOwner.watching_all_features == True).fetch(None)
   watcher_emails: list[str] = [watcher.email for watcher in watchers]
 
-  email_html = format_email_body(is_update, fe, changes)
   if is_update:
     subject = 'updated feature: %s' % fe.name
     triggering_user_email = fe.updater_email
+    template_path = 'update-feature-email.html'
   else:
     subject = 'new feature: %s' % fe.name
     triggering_user_email = fe.creator_email
+    template_path = 'new-feature-email.html'
+
+  email_html = format_email_body(template_path, fe, changes)
 
   addr_reasons: dict[str, list[str]] = collections.defaultdict(list)
 
@@ -242,11 +244,12 @@ def make_feature_changes_email(fe: FeatureEntry, is_update: bool=False,
   return all_tasks
 
 
-def make_review_requests_email(fe: FeatureEntry, gate_type: int, changes: Optional[list]=None):
+def make_review_requests_email(
+    fe: FeatureEntry, gate_type: int, changes: Optional[list]=None):
   """Return a list of task dicts to notify approvers of review requests."""
   if changes is None:
     changes = []
-  email_html = format_email_body(True, fe, changes)
+  email_html = format_email_body('update-feature-email.html', fe, changes)
 
   subject = 'Review Request for feature: %s' % fe.name
   triggering_user_email = fe.updater_email
@@ -262,12 +265,43 @@ def make_review_requests_email(fe: FeatureEntry, gate_type: int, changes: Option
   return all_tasks
 
 
-def make_new_comments_email(fe: FeatureEntry, gate_type: int, changes: Optional[list]=None):
+def make_review_assignment_email(
+    fe: FeatureEntry, gate_type: int, triggering_user_email: str,
+    old_assignees: list[str], new_assignees: list[str]):
+  """Return a list of task dicts to notify assigned reviewers."""
+  change = {
+      'prop_name': 'Assigned reiewer',
+      'old_val': ', '.join(old_assignees) or 'None',
+      'new_val': ', '.join(new_assignees) or 'None',
+  }
+  email_html = format_email_body(
+      'update-feature-email.html', fe, [change],
+      updater_email=triggering_user_email)
+
+  subject = 'Review assigned for feature: %s' % fe.name
+
+  approvers = approval_defs.get_approvers(gate_type)
+  reasons = 'You received a review request for this feature'
+
+  addr_reasons: dict[str, list[str]] = collections.defaultdict(list)
+  accumulate_reasons(
+      addr_reasons, old_assignees, 'The review was previously assigned to you')
+  accumulate_reasons(
+      addr_reasons, new_assignees, 'The review is now assigned to you')
+
+  all_tasks = [convert_reasons_to_task(
+                   addr, reasons, email_html, subject, triggering_user_email)
+               for addr, reasons in sorted(addr_reasons.items())]
+  return all_tasks
+
+
+def make_new_comments_email(
+    fe: FeatureEntry, gate_type: int, changes: Optional[list]=None):
   """Return a list of task dicts to notify of new comments."""
   if changes is None:
     changes = []
   fe_stages = stage_helpers.get_feature_stages(fe.key.integer_id())
-  email_html = format_email_body(True, fe, changes)
+  email_html = format_email_body('update-feature-email.html', fe, changes)
 
   subject = 'New comments for feature: %s' % fe.name
   triggering_user_email = fe.updater_email
@@ -461,6 +495,32 @@ class FeatureReviewHandler(basehandlers.FlaskHandler):
     fe = FeatureEntry.get_by_id(feature['id'])
     if fe:
       email_tasks = make_review_requests_email(fe, gate_type, changes)
+      send_emails(email_tasks)
+
+    return {'message': 'Done'}
+
+
+class ReviewAssignmentHandler(basehandlers.FlaskHandler):
+  """This task handles feature review assignments by making email tasks."""
+
+  IS_INTERNAL_HANDLER = True
+
+  def process_post_data(self, **kwargs):
+    self.require_task_header()
+
+    feature = self.get_param('feature')
+    gate_type = self.get_param('gate_type')
+    triggering_user_email = self.get_param('triggering_user_email')
+    old_assignees = self.get_param('old_assignees')
+    new_assignees = self.get_param('new_assignees')
+
+    logging.info('Starting to notify assignees for feature %s',
+                 repr(feature)[:settings.MAX_LOG_LINE])
+
+    fe = FeatureEntry.get_by_id(feature['id'])
+    if fe:
+      email_tasks = make_review_assignment_email(
+          fe, gate_type, triggering_user_email, old_assignees, new_assignees)
       send_emails(email_tasks)
 
     return {'message': 'Done'}

@@ -123,7 +123,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     """We generate an email body for new features."""
     with test_app.app_context():
       body_html = notifier.format_email_body(
-          False, self.template_fe, [])
+          'new-feature-email.html', self.template_fe, [])
     # TESTDATA.make_golden(body_html, 'test_format_email_body__new.html')
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__new.html'])
@@ -132,7 +132,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     """We don't crash if the change list is emtpy."""
     with test_app.app_context():
       body_html = notifier.format_email_body(
-          True, self.template_fe, [])
+          'update-feature-email.html', self.template_fe, [])
     # TESTDATA.make_golden(body_html, 'test_format_email_body__update_no_changes.html')
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__update_no_changes.html'])
@@ -141,7 +141,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     """We generate an email body for an updated feature."""
     with test_app.app_context():
       body_html = notifier.format_email_body(
-          True, self.template_fe, self.changes)
+          'update-feature-email.html', self.template_fe, self.changes)
     # TESTDATA.make_golden(body_html, 'test_format_email_body__update_with_changes.html')
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__update_with_changes.html'])
@@ -151,7 +151,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.fe_1.doc_links = ['https://developer.mozilla.org/look-here']
     with test_app.app_context():
       body_html = notifier.format_email_body(
-          True, self.template_fe, self.changes)
+          'update-feature-email.html', self.template_fe, self.changes)
     # TESTDATA.make_golden(body_html, 'test_format_email_body__mozdev_links_mozilla.html')
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__mozdev_links_mozilla.html'])
@@ -160,7 +160,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         'https://hacker-site.org/developer.mozilla.org/look-here']
     with test_app.app_context():
       body_html = notifier.format_email_body(
-          True, self.template_fe, self.changes)
+          'update-feature-email.html', self.template_fe, self.changes)
     # TESTDATA.make_golden(body_html, 'test_format_email_body__mozdev_links_non_mozilla.html')
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__mozdev_links_non_mozilla.html'])
@@ -324,7 +324,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
 
     mock_f_e_b.assert_called_once_with(
-        False, self.fe_1, [])
+        'new-feature-email.html', self.fe_1, [])
 
   @mock.patch('internals.notifier.format_email_body')
   def test_make_feature_changes_email__update(self, mock_f_e_b):
@@ -385,7 +385,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
 
     mock_f_e_b.assert_called_once_with(
-        True, self.fe_1, self.changes)
+        'update-feature-email.html', self.fe_1, self.changes)
 
   @mock.patch('internals.notifier.format_email_body')
   @mock.patch('internals.approval_defs.get_approvers')
@@ -416,7 +416,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertEqual('approver2@example.com', review_task_2['to'])
 
     mock_f_e_b.assert_called_once_with(
-        True, self.fe_1, self.changes)
+        'update-feature-email.html', self.fe_1, self.changes)
     mock_get_approvers.assert_called_once_with(1)
 
   @mock.patch('internals.notifier.format_email_body')
@@ -475,7 +475,8 @@ class EmailFormattingTest(testing_config.CustomTestCase):
       feature_editor_task_2['html'])
     self.assertEqual('owner_1@example.com', feature_editor_task_2['to'])
 
-    mock_f_e_b.assert_called_once_with(True, self.fe_1, self.changes)
+    mock_f_e_b.assert_called_once_with(
+        'update-feature-email.html', self.fe_1, self.changes)
     mock_get_approvers.assert_called_once_with(1)
 
   @mock.patch('internals.notifier.format_email_body')
@@ -546,7 +547,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
 
     mock_f_e_b.assert_called_once_with(
-        True, self.fe_1, self.changes)
+        'update-feature-email.html', self.fe_1, self.changes)
 
 
   @mock.patch('internals.notifier.format_email_body')
@@ -570,7 +571,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertEqual('owner_1@example.com', component_owner_task['to'])
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
     mock_f_e_b.assert_called_once_with(
-        True, self.fe_2, self.changes)
+        'update-feature-email.html', self.fe_2, self.changes)
 
 
 class FeatureStarTest(testing_config.CustomTestCase):
@@ -685,7 +686,7 @@ class NotifyInactiveUsersHandlerTest(testing_config.CustomTestCase):
       last_visit=datetime(2023, 2, 20))
     inactive_user.put()
     self.inactive_user = inactive_user
-    
+
     # User who has recently been given access by an admin,
     # but has not yet visited the site. They should not be considered inactive.
     newly_created_user = AppUser(
@@ -768,7 +769,7 @@ class OriginTrialCreationRequestHandlerTest(testing_config.CustomTestCase):
     )
     self.feature.put()
     self.ot_stage.put()
-  
+
   def tearDown(self) -> None:
     kinds: list[ndb.Model] = [FeatureEntry, Stage]
     for kind in kinds:
@@ -867,7 +868,7 @@ class OriginTrialExtensionRequestHandlerTest(testing_config.CustomTestCase):
     self.feature.put()
     self.ot_stage.put()
     self.extension_stage.put()
-  
+
   def tearDown(self) -> None:
     kinds: list[ndb.Model] = [FeatureEntry, Stage]
     for kind in kinds:
