@@ -1,5 +1,6 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import {updateURLParams} from './utils';
 
 
 const GATE_STATE_TO_NAME = {
@@ -167,6 +168,8 @@ class ChromedashGateChip extends LitElement {
   }
 
   handleClick() {
+    // Add the gate id to the URL.
+    updateURLParams('gate', this.gate.id);
     // Handled in chromedash-app.js.
     this._fireEvent('show-gate-column', {
       feature: this.feature,

@@ -30,7 +30,9 @@ import '@polymer/iron-icon';
 import './chromedash-activity-log';
 import './chromedash-callout';
 import './chromedash-gate-chip';
-import {autolink, findProcessStage, flattenSections} from './utils.js';
+import {
+  autolink, findProcessStage, flattenSections, parseRawQuery,
+} from './utils.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
 export const DETAILS_STYLES = [css`
@@ -71,7 +73,6 @@ class ChromedashFeatureDetail extends LitElement {
       dismissedCues: {type: Array},
       anyCollapsed: {type: Boolean},
       selectedGateId: {type: Number},
-      rawQuery: {type: Object},
       openStage: {type: Number},
     };
   }
@@ -89,7 +90,6 @@ class ChromedashFeatureDetail extends LitElement {
     this.previousStageTypeRendered = 0;
     this.sameTypeRendered = 0;
     this.selectedGateId = 0;
-    this.rawQuery = {};
     this.openStage = 0;
   }
 
@@ -193,14 +193,11 @@ class ChromedashFeatureDetail extends LitElement {
   }
 
   intializeGateColumn() {
-    if (!this.rawQuery) {
+    const rawQuery = parseRawQuery(window.location.search);
+    if (!rawQuery.hasOwnProperty('gate')) {
       return;
     }
-
-    if (!this.rawQuery.hasOwnProperty('gate')) {
-      return;
-    }
-    const gateVal = this.rawQuery['gate'];
+    const gateVal = rawQuery['gate'];
     const foundGates = this.gates.filter(g => g.id == gateVal);
     if (!foundGates.length) {
       return;
@@ -678,7 +675,7 @@ class ChromedashFeatureDetail extends LitElement {
         originTrialsURL = `https://developer.chrome.com/origintrials/#/view_trial/${feStage.origin_trial_id}`;
       }
       return html`
-        <sl-button 
+        <sl-button
           size="small"
           variant="primary"
           href=${originTrialsURL}
