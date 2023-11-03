@@ -211,22 +211,15 @@ class ChromeStatusClient {
         {state: Number(state)});
   }
 
-  getApprovalConfigs(featureId) {
-    return this.doGet(`/features/${featureId}/configs`);
-  }
-
-  setApprovalConfig(featureId, fieldId, owners, nextAction, additionalReview) {
-    return this.doPost(
-        `/features/${featureId}/configs`,
-        {fieldId: Number(fieldId),
-          owners: owners || '',
-          nextAction: nextAction || '',
-          additionalReview: additionalReview || false,
-        });
-  }
-
   getGates(featureId) {
     return this.doGet(`/features/${featureId}/gates`);
+  }
+
+  updateGate(featureId, gateId, assignees) {
+    return this.doPost(
+        `/features/${featureId}/gates/${gateId}`,
+        {assignees,
+        });
   }
 
   getComments(featureId, gateId) {
