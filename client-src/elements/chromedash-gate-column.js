@@ -664,13 +664,29 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   renderAddVoteRow() {
+    const assignedToMe = this.gate.assignee_emails.includes(this.user.email);
+    const shortVoter = this.user.email.split('@')[0] + '@';
+    const yourLabel = assignedToMe ?
+      html`<td title=${this.user.email}>${shortVoter}</td>` :
+      html`<td class="your-vote">Awaiting review</td>`;
     const voteCell = this.renderVoteMenu(VOTE_OPTIONS.NO_RESPONSE[0]);
     const saveButton = this.needsSave ? this.renderSaveButton() : nothing;
     return html`
       <tr>
-       <td class="your-vote">Awaiting review</td>
+       ${yourLabel}
        <td>${voteCell}</td>
        <td>${saveButton}</td>
+      </tr>
+    `;
+  }
+
+  renderPendingVote(assigneeEmail) {
+    const shortVoter = assigneeEmail.split('@')[0] + '@';
+    return html`
+      <tr>
+       <td title=${assigneeEmail}>${shortVoter}</td>
+       <td>No response yet</td>
+       <td></td>
       </tr>
     `;
   }
@@ -680,11 +696,14 @@ export class ChromedashGateColumn extends LitElement {
       this.user &&
         this.user.approvable_gate_types.includes(this.gate.gate_type));
     const responses = this.votes.filter((v) => v.state !== GATE_REVIEW_REQUESTED);
+    const responseEmails = responses.map((v) => v.set_by);
+    const othersPending = this.gate.assignee_emails.filter((ae) =>
+      !responseEmails.includes(ae) && ae != this.user?.email);
     const myResponseExists = responses.some((v) => v.set_by == this.user?.email);
     const addVoteRow = (canVote && !myResponseExists) ?
       this.renderAddVoteRow() : nothing;
 
-    if (!canVote && responses.length === 0) {
+    if (!canVote && responses.length === 0 && othersPending.length === 0) {
       return html`
         <p>No review activity yet.</p>
       `;
@@ -694,6 +713,7 @@ export class ChromedashGateColumn extends LitElement {
       <table>
         <tr><th>Reviewer</th><th>Review status</th></tr>
         ${responses.map((v) => this.renderVoteRow(v, canVote))}
+        ${othersPending.map((ae) => this.renderPendingVote(ae, canVote))}
         ${addVoteRow}
       </table>
     `;
