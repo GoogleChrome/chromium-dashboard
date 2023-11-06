@@ -113,18 +113,15 @@ class GatesAPI(basehandlers.APIHandler):
     if len(gates) == 0:
       return {
           'gates': [],
-          'possible_assignee_emails': {}
           }
 
     dicts = [converters.gate_value_to_json_dict(g) for g in gates]
-    possible_assignees_by_gate_type: dict[int, list[str]] = {
-        gate_type: approval_defs.get_approvers(gate_type)
-        for gate_type in approval_defs.APPROVAL_FIELDS_BY_ID
-        }
+    for g in dicts:
+      approvers = approval_defs.get_approvers(g['gate_type'])
+      g['possible_assignee_emails'] = approvers
 
     return {
         'gates': dicts,
-        'possible_assignee_emails': possible_assignees_by_gate_type
         }
 
   def do_post(self, **kwargs) -> dict[str, str]:
