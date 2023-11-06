@@ -193,8 +193,19 @@ def decode_raw_owner_content(raw_content) -> list[str]:
 
 
 def auto_assign_reviewer(gate):
-  """If this gate has a reviewer rotation, use the current on-call user."""
+  """If a previous review was assigned, use the same reviewer.
+     If this gate has a reviewer rotation, use the current on-call user."""
   afd = APPROVAL_FIELDS_BY_ID[gate.gate_type]
+
+  all_gates: list[Gate] = Gate.query(Gate.feature_id == gate.feature_id).fetch()
+  for other_gate in all_gates:
+    other_afd = APPROVAL_FIELDS_BY_ID[other_gate.gate_type]
+    if (other_gate.key.integer_id() != gate.key.integer_id() and
+        other_afd.team_name == afd.team_name and
+        other_gate.assignee_emails):
+      gate.assignee_emails = other_gate.assignee_emails
+      gate.put()
+      return
 
   if afd.approvers != IN_NDB:
     return
