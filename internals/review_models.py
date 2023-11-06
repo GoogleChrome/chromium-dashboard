@@ -58,6 +58,7 @@ class GateDef(ndb.Model):
   """Configuration for a review gate."""
   gate_type = ndb.IntegerProperty(required=True)
   approvers = ndb.StringProperty(repeated=True)
+  rotation_url = ndb.StringProperty()
 
   # TODO(jrobbins): Use these and phase out approval_devs.ApprovalFieldDef.
   name = ndb.StringProperty()

@@ -16,6 +16,7 @@
 import base64
 from dataclasses import dataclass
 import datetime
+import json
 import logging
 from typing import Optional
 import requests
@@ -189,6 +190,46 @@ def decode_raw_owner_content(raw_content) -> list[str]:
       owners.append(line)
 
   return owners
+
+
+def auto_assign_reviewer(gate):
+  """If a previous review was assigned, use the same reviewer.
+     If this gate has a reviewer rotation, use the current on-call user."""
+  afd = APPROVAL_FIELDS_BY_ID[gate.gate_type]
+
+  all_gates: list[Gate] = Gate.query(Gate.feature_id == gate.feature_id).fetch()
+  for other_gate in all_gates:
+    other_afd = APPROVAL_FIELDS_BY_ID[other_gate.gate_type]
+    if (other_gate.key.integer_id() != gate.key.integer_id() and
+        other_afd.team_name == afd.team_name and
+        other_gate.assignee_emails):
+      gate.assignee_emails = other_gate.assignee_emails
+      gate.put()
+      return
+
+  if afd.approvers != IN_NDB:
+    return
+
+  gate_def = GateDef.get_gate_def(gate.gate_type)
+  if not gate_def.rotation_url:
+    return
+
+  response = requests.get(gate_def.rotation_url)
+  if response.status_code != 200:
+    logging.error('Could not fetch %r', url)
+    logging.error('Got response %s', repr(response)[:settings.MAX_LOG_LINE])
+    raise ValueError('Could not fetch oncall')
+
+  try:
+    logging.info(
+        'response.content is:\n%s', response.content[:settings.MAX_LOG_LINE])
+    response_json = json.loads(response.content)
+  except ValueError:
+    logging.info('failed to parse content')
+
+  if 'emails' in response_json:
+    gate.assignee_emails = response_json['emails']
+    gate.put()
 
 
 def get_approvers(field_id) -> list[str]:
