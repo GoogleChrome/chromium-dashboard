@@ -29,6 +29,7 @@ export class ChromedashGateColumn extends LitElement {
   postToThreadRef = createRef();
   rationaleDialogRef = createRef();
   rationaleRef = createRef();
+  assigneeSelectRef = createRef();
 
   static get styles() {
     return [
@@ -124,6 +125,20 @@ export class ChromedashGateColumn extends LitElement {
          padding-left: var(--content-padding);
        }
 
+       details {
+         padding: 10px;
+       }
+       details summary {
+         cursor: pointer;
+         transition: margin 250ms ease-out;
+         color: var(--link-color);
+       }
+       details summary::hover {
+         color: var(--link-hover-color);
+       }
+       details[open] summary {
+         margin-bottom: 10px;
+       }
     `];
   }
 
@@ -376,6 +391,11 @@ export class ChromedashGateColumn extends LitElement {
     return (this.user &&
             (this.user.can_edit_all ||
              this.user.editable_features.includes(this.feature.id)));
+  }
+
+  userCanVote() {
+    return (this.user &&
+            this.user.approvable_gate_types.includes(this.gate.gate_type));
   }
 
   renderAction(processStage, action) {
@@ -691,10 +711,40 @@ export class ChromedashGateColumn extends LitElement {
     `;
   }
 
+  saveAssignedReviewer() {
+    const assignee = this.assigneeSelectRef.value.value;
+    const assigneeList = (assignee === '' ? [] : [assignee]);
+    csClient.updateGate(this.feature.id, this.gate.id, assigneeList).then(
+      () => this._fireEvent('refetch-needed', {}));
+  }
+
+  renderAssignReviewerControls() {
+    if (!this.userCanRequestReview() && !this.userCanVote()) {
+      return nothing;
+    }
+    if (this.gate.state === VOTE_OPTIONS.APPROVED[0]) {
+      return nothing;
+    }
+    const currentAssignee = this.gate.assignee_emails?.length > 0 ?
+      this.gate.assignee_emails[0] : '';
+    return html`
+      <details>
+       <summary>Assign a reviewer</summary>
+       <sl-select hoist size="small" ${ref(this.assigneeSelectRef)}
+         value=${currentAssignee}>
+        <sl-option value="">None</sl-option>
+        ${this.gate.possible_assignee_emails.map((email) => html`
+          <sl-option value="${email}">${email}</sl-option>`)}
+       </sl-select>
+       <sl-button size="small" variant="primary"
+         @click=${() => this.saveAssignedReviewer()}
+       >Assign</sl-button>
+      </details>
+    `;
+  }
+
   renderVotes() {
-    const canVote = (
-      this.user &&
-        this.user.approvable_gate_types.includes(this.gate.gate_type));
+    const canVote = this.userCanVote();
     const responses = this.votes.filter((v) => v.state !== GATE_REVIEW_REQUESTED);
     const responseEmails = responses.map((v) => v.set_by);
     const othersPending = this.gate.assignee_emails.filter((ae) =>
@@ -702,10 +752,12 @@ export class ChromedashGateColumn extends LitElement {
     const myResponseExists = responses.some((v) => v.set_by == this.user?.email);
     const addVoteRow = (canVote && !myResponseExists) ?
       this.renderAddVoteRow() : nothing;
+    const assignControls = this.renderAssignReviewerControls();
 
     if (!canVote && responses.length === 0 && othersPending.length === 0) {
       return html`
         <p>No review activity yet.</p>
+        ${assignControls}
       `;
     }
 
@@ -716,6 +768,7 @@ export class ChromedashGateColumn extends LitElement {
         ${othersPending.map((ae) => this.renderPendingVote(ae, canVote))}
         ${addVoteRow}
       </table>
+      ${assignControls}
     `;
   }
 
