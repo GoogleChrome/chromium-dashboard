@@ -362,28 +362,26 @@ export class ChromedashGateColumn extends LitElement {
     `;
   }
 
-  handleReviewRequested() {
-    window.csClient.setVote(
-      this.feature.id, this.gate.id, GATE_REVIEW_REQUESTED)
-      .then(() => {
-        this._fireEvent('refetch-needed', {});
-      });
+  async handleReviewRequested() {
+    await window.csClient.setVote(
+      this.feature.id, this.gate.id, GATE_REVIEW_REQUESTED);
+    this._fireEvent('refetch-needed', {});
   }
 
   handleNARequested() {
     this.rationaleDialogRef.value.show();
   }
 
-  handleNARequestSubmitted() {
+  async handleNARequestSubmitted() {
+    await window.csClient.setVote(
+      this.feature.id, this.gate.id, GATE_NA_REQUESTED);
+    // Post the comment after the review request so that it will go
+    // to the assigned reviewer rather than all reviewers.
     const commentText = ('An "N/A" response is requested because: ' +
                          this.rationaleRef.value.value);
-    this.postComment(commentText);
-    window.csClient.setVote(
-      this.feature.id, this.gate.id, GATE_NA_REQUESTED)
-      .then(() => {
-        this._fireEvent('refetch-needed', {});
-      });
+    await this.postComment(commentText);
     this.rationaleDialogRef.value.hide();
+    this._fireEvent('refetch-needed', {});
   }
 
   /* A user that can edit the current feature can request a review. */
