@@ -73,6 +73,7 @@ class VotesAPI(basehandlers.APIHandler):
         user.email(), gate_id)
 
     if new_state in (Vote.REVIEW_REQUESTED, Vote.NA_REQUESTED):
+      approval_defs.auto_assign_reviewer(gate)
       notifier_helpers.notify_approvers_of_reviews(
           fe, gate, new_state, user.email())
     else:
