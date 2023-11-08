@@ -841,9 +841,9 @@ export class ChromedashGateColumn extends LitElement {
           ` :
         nothing);
     const escalation = this.gate.escalation_email ?
-      html`You can reach out to the team at
+      html`If needed, you can
                <a href="mailto:${this.gate.escalation_email}" target="_blank"
-                >${this.gate.escalation_email}</a>.` :
+                >email the team directly</a>.` :
       nothing;
 
     return html`
