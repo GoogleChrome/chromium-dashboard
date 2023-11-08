@@ -236,6 +236,7 @@ class ChromedashApp extends LitElement {
       componentName);
     this.setUnsavedChanges(false);
     this.removeBeforeUnloadHandler();
+    this.pageComponent.allFormFieldComponents = {};
 
     window.setTimeout(() => {
       // Timeout required since the form may not be created yet.
@@ -297,7 +298,6 @@ class ChromedashApp extends LitElement {
       this.pageComponent.user = this.user;
       this.pageComponent.contextLink = this.contextLink;
       this.pageComponent.selectedGateId = this.selectedGateId;
-      this.pageComponent.rawQuery = parseRawQuery(ctx.querystring);
       this.pageComponent.appTitle = this.appTitle;
       this.currentPage = ctx.path;
       if (this.pageComponent.featureId != this.gateColumnRef.value?.feature?.id) {
@@ -374,6 +374,16 @@ class ChromedashApp extends LitElement {
     });
     page('/ot_creation_request/:featureId(\\d+)/:stageId(\\d+)', (ctx) => {
       if (!this.setupNewPage(ctx, 'chromedash-ot-creation-page')) return;
+      this.pageComponent.featureId = parseInt(ctx.params.featureId);
+      this.pageComponent.stageId = parseInt(ctx.params.stageId);
+      this.pageComponent.nextPage = this.currentPage;
+      this.pageComponent.appTitle = this.appTitle;
+      this.pageComponent.userEmail = this.user.email;
+      this.currentPage = ctx.path;
+      this.hideSidebar();
+    });
+    page('/ot_extension_request/:featureId(\\d+)/:stageId(\\d+)', (ctx) => {
+      if (!this.setupNewPage(ctx, 'chromedash-ot-extension-page')) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.stageId = parseInt(ctx.params.stageId);
       this.pageComponent.nextPage = this.currentPage;

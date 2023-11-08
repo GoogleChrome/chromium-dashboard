@@ -14,6 +14,8 @@ import {
   WEB_DEV_VIEWS,
 } from './form-field-enums';
 
+import {checkMilestoneStartEnd} from './utils.js';
+
 /* Patterns from https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch04s01.html
  * Removing single quote ('), backtick (`), and pipe (|) since they are risky unless properly escaped everywhere.
  * Also removing ! and % because they have special meaning for some older email routing systems. */
@@ -159,6 +161,14 @@ export const ALL_FIELDS = {
     </blockquote>
     `,
     enterprise_extra_help: '',
+    check: (value) => {
+      if (value && typeof value === 'string' && value.length > 0) {
+        if (value.length < 100 || value.length > 5000) {
+          return {warning: 'Feature summary should be between 100 and 5000 characters long.'};
+        }
+      }
+      return undefined;
+    },
   },
 
   'owner': {
@@ -670,6 +680,20 @@ export const ALL_FIELDS = {
                  discussion thread, link to it here.`,
   },
 
+  'ot_extension__intent_to_extend_experiment_url': {
+    name: 'intent_to_extend_experiment_url',
+    type: 'input',
+    attrs: URL_FIELD_ATTRS,
+    required: true,
+    label: 'Intent to Extend Experiment link',
+    help_text: html`
+      Link to the approved Intent to Extend Experiment, as per
+      <a target="_blank"
+          href="https://www.chromium.org/blink/origin-trials/running-an-origin-trial/#what-is-the-process-to-extend-an-origin-trial">
+        the trial extension process
+      </a>.`,
+  },
+
   'r4dt_url': {
     // form field name matches underlying DB field (sets "intent_to_experiment_url" field in DB).
     name: 'intent_to_experiment_url',
@@ -897,6 +921,12 @@ export const ALL_FIELDS = {
     help_text: html`
       First desktop milestone that will support an origin
       trial of this feature.`,
+    check: (_value, getFieldValue) =>
+      checkMilestoneStartEnd({
+        start: 'ot_milestone_desktop_start',
+        end: 'ot_milestone_desktop_end',
+      }, getFieldValue),
+    dependents: ['ot_milestone_desktop_end'],
   },
 
   'ot_milestone_desktop_end': {
@@ -907,6 +937,12 @@ export const ALL_FIELDS = {
     help_text: html`
       Last desktop milestone that will support an origin
       trial of this feature.`,
+    check: (_value, getFieldValue) =>
+      checkMilestoneStartEnd({
+        start: 'ot_milestone_desktop_start',
+        end: 'ot_milestone_desktop_end',
+      }, getFieldValue),
+    dependents: ['ot_milestone_desktop_start'],
   },
 
   'ot_milestone_android_start': {
@@ -974,7 +1010,7 @@ export const ALL_FIELDS = {
     required: false,
     label: 'Trial extension desktop end',
     help_text: html`
-      The new last desktop milestone for which the trial has been extended. `,
+      The last desktop milestone in which the trial will be available after extension.`,
   },
 
   'extension_android_last': {
@@ -983,7 +1019,7 @@ export const ALL_FIELDS = {
     required: false,
     label: 'Trial extension Android end',
     help_text: html`
-      The new last android milestone for which the trial has been extended. `,
+      The last android milestone in which the trial will be available after extension.`,
   },
 
   'extension_webview_last': {
@@ -992,7 +1028,16 @@ export const ALL_FIELDS = {
     required: false,
     label: 'Trial extension WebView end',
     help_text: html`
-      The new last WebView milestone for which the trial has been extended.`,
+      The last WebView milestone in which the trial will be available after extension.`,
+  },
+
+  'ot_extension__milestone_desktop_last': {
+    type: 'input',
+    attrs: MILESTONE_NUMBER_FIELD_ATTRS,
+    required: true,
+    label: 'Trial extension desktop end',
+    help_text: html`
+      The last milestone in which the trial will be available after extension.`,
   },
 
   'ongoing_constraints': {
@@ -1103,6 +1148,55 @@ export const ALL_FIELDS = {
     WebFeature enum, e.g. kWorkerStart. See
     <a href="https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom"
     >web_feature.mojom</a>.`,
+  },
+
+  'ot_require_approvals': {
+    type: 'checkbox',
+    initial: false,
+    label: 'Trial participation requires approval',
+    help_text: html`
+    <p>
+      Will this trial require registrants to receive approval before
+      participating? Please reach out to origin-trials-support@google.com
+      beforehand to discuss options here.
+    </p>`,
+  },
+
+  'ot_approval_buganizer_component': {
+    type: 'input',
+    attrs: {type: 'number'},
+    required: true,
+    label: 'Approvals Buganizer component ID',
+    help_text: html`
+      Buganizer component ID used for approvals requests.`,
+  },
+
+  'ot_approval_group_email': {
+    type: 'input',
+    required: true,
+    attrs: {
+      ...TEXT_FIELD_ATTRS,
+      pattern: GOOGLE_EMAIL_ADDRESS_REGEX,
+      placeholder: 'ex. "approval-requests@google.com"',
+    },
+    label: 'Registration request notifications group',
+    help_text: html`
+      <p>
+        Google group email to be used for new registration request notifications.
+        Please supply a '@google.com' domain email address only.
+      </p>`,
+  },
+
+  'ot_approval_criteria_url': {
+    type: 'input',
+    attrs: URL_FIELD_ATTRS,
+    required: true,
+    label: 'Approval criteria link',
+    help_text: html`
+    <p>
+      Link to public documentation describing the requirements
+      to be approved for trial participation.
+    </p>`,
   },
 
   'ot_creation__intent_to_experiment_url': {

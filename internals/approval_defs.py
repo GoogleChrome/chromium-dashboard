@@ -16,6 +16,7 @@
 import base64
 from dataclasses import dataclass
 import datetime
+import json
 import logging
 from typing import Optional
 import requests
@@ -192,6 +193,46 @@ def decode_raw_owner_content(raw_content) -> list[str]:
   return owners
 
 
+def auto_assign_reviewer(gate):
+  """If a previous review was assigned, use the same reviewer.
+     If this gate has a reviewer rotation, use the current on-call user."""
+  afd = APPROVAL_FIELDS_BY_ID[gate.gate_type]
+
+  all_gates: list[Gate] = Gate.query(Gate.feature_id == gate.feature_id).fetch()
+  for other_gate in all_gates:
+    other_afd = APPROVAL_FIELDS_BY_ID[other_gate.gate_type]
+    if (other_gate.key.integer_id() != gate.key.integer_id() and
+        other_afd.team_name == afd.team_name and
+        other_gate.assignee_emails):
+      gate.assignee_emails = other_gate.assignee_emails
+      gate.put()
+      return
+
+  if afd.approvers != IN_NDB:
+    return
+
+  gate_def = GateDef.get_gate_def(gate.gate_type)
+  if not gate_def.rotation_url:
+    return
+
+  response = requests.get(gate_def.rotation_url)
+  if response.status_code != 200:
+    logging.error('Could not fetch %r', url)
+    logging.error('Got response %s', repr(response)[:settings.MAX_LOG_LINE])
+    raise ValueError('Could not fetch oncall')
+
+  try:
+    logging.info(
+        'response.content is:\n%s', response.content[:settings.MAX_LOG_LINE])
+    response_json = json.loads(response.content)
+  except ValueError:
+    logging.info('failed to parse content')
+
+  if 'emails' in response_json:
+    gate.assignee_emails = response_json['emails']
+    gate.put()
+
+
 def get_approvers(field_id) -> list[str]:
   """Return a list of email addresses of users allowed to approve."""
   if field_id not in APPROVAL_FIELDS_BY_ID:
@@ -334,7 +375,7 @@ def _calc_gate_state(votes: list[Vote], rule: str) -> int:
   for vote in sorted(votes, reverse=True, key=lambda v: v.set_on):
     if vote.state in (
         Vote.NEEDS_WORK, Vote.REVIEW_STARTED, Vote.REVIEW_REQUESTED,
-        Vote.DENIED, Vote.INTERNAL_REVIEW):
+        Vote.DENIED, Vote.INTERNAL_REVIEW, Vote.NA_REQUESTED):
       return vote.state
 
   # The feature owner has not requested review yet, or the request was
@@ -355,7 +396,7 @@ def update_gate_approval_state(gate: Gate, votes: list[Vote]) -> bool:
     gate.requested_on = min(v.set_on for v in votes)
 
   # Starting a review resets responded_on.
-  if new_state == Vote.REVIEW_REQUESTED:
+  if new_state in (Vote.REVIEW_REQUESTED, Vote.NA_REQUESTED):
     gate.responded_on = None
 
   return True

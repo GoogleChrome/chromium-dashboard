@@ -281,7 +281,8 @@ class VotesAPITest(testing_config.CustomTestCase):
     self.assertEqual(vote.state, Vote.REVIEW_REQUESTED)
 
     mock_notifier.assert_called_once_with(
-        self.feature_1, self.gate_1, 'owner1@example.com')
+        self.feature_1, self.gate_1, Vote.REVIEW_REQUESTED,
+        'owner1@example.com')
 
 
 class GatesAPITest(testing_config.CustomTestCase):
@@ -334,22 +335,10 @@ class GatesAPITest(testing_config.CustomTestCase):
                 'slo_initial_response': 5,
                 'slo_initial_response_took': None,
                 'slo_initial_response_remaining': None,
+                'possible_assignee_emails': ['reviewer1@example.com'],
             },
         ],
-        "possible_assignee_emails": {
-            1: ["reviewer1@example.com"],
-            2: ["reviewer1@example.com"],
-            3: ["reviewer1@example.com"],
-            4: ["reviewer1@example.com"],
-            32: ["reviewer1@example.com"],
-            34: ["reviewer1@example.com"],
-            42: ["reviewer1@example.com"],
-            44: ["reviewer1@example.com"],
-            54: ["reviewer1@example.com"],
-            62: ["reviewer1@example.com"],
-            64: ["reviewer1@example.com"],
-            74: ["reviewer1@example.com"],
-        }}
+        }
 
     self.assertEqual(actual, expected)
 
@@ -363,6 +352,5 @@ class GatesAPITest(testing_config.CustomTestCase):
 
     expected = {
         'gates': [],
-        'possible_assignee_emails': {}
     }
     self.assertEqual(actual, expected)

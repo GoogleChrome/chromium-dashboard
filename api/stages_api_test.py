@@ -72,6 +72,10 @@ class StagesAPITest(testing_config.CustomTestCase):
         ux_emails=['ux_person@example.com'],
         intent_thread_url='https://example.com/intent',
         ot_action_requested=True,
+        ot_require_approvals=True,
+        ot_approval_buganizer_component=123456789,
+        ot_approval_criteria_url='https://example.com/criteria',
+        ot_approval_group_email='fakegroup@google.com',
         ot_chromium_trial_name='ExampleChromiumTrialName',
         ot_description='An origin trial\'s description',
         ot_display_name='The Origin Trial Display Name',
@@ -112,6 +116,9 @@ class StagesAPITest(testing_config.CustomTestCase):
         'origin_trial_id': None,
         'origin_trial_feedback_url': None,
         'ot_action_requested': False,
+        'ot_approval_buganizer_component': None,
+        'ot_approval_criteria_url': None,
+        'ot_approval_group_email': None,
         'ot_chromium_trial_name': None,
         'ot_description': None,
         'ot_display_name': None,
@@ -122,6 +129,7 @@ class StagesAPITest(testing_config.CustomTestCase):
         'ot_is_critical_trial': False,
         'ot_is_deprecation_trial': False,
         'ot_owner_email': None,
+        'ot_require_approvals': False,
         'ot_webfeature_use_counter': None,
         'experiment_extension_reason': None,
         'experiment_goals': 'To be the very best.',
@@ -208,6 +216,9 @@ class StagesAPITest(testing_config.CustomTestCase):
         'experiment_risks': None,
         'origin_trial_feedback_url': None,
         'ot_action_requested': False,
+        'ot_approval_buganizer_component': None,
+        'ot_approval_criteria_url': None,
+        'ot_approval_group_email': None,
         'ot_chromium_trial_name': None,
         'ot_description': None,
         'ot_display_name': None,
@@ -218,6 +229,7 @@ class StagesAPITest(testing_config.CustomTestCase):
         'ot_is_critical_trial': False,
         'ot_is_deprecation_trial': False,
         'ot_owner_email': None,
+        'ot_require_approvals': False,
         'ot_webfeature_use_counter': None,
         'announcement_url': None,
         'enterprise_policies': [],
@@ -261,6 +273,9 @@ class StagesAPITest(testing_config.CustomTestCase):
         'origin_trial_id': '-5269211564023480319',
         'origin_trial_feedback_url': None,
         'ot_action_requested': True,
+        'ot_approval_buganizer_component': 123456789,
+        'ot_approval_criteria_url': 'https://example.com/criteria',
+        'ot_approval_group_email': 'fakegroup@google.com',
         'ot_chromium_trial_name': 'ExampleChromiumTrialName',
         'ot_description': 'An origin trial\'s description',
         'ot_display_name': 'The Origin Trial Display Name',
@@ -271,6 +286,7 @@ class StagesAPITest(testing_config.CustomTestCase):
         'ot_is_critical_trial': True,
         'ot_is_deprecation_trial': True,
         'ot_owner_email': 'ot_owner@example.com',
+        'ot_require_approvals': True,
         'ot_webfeature_use_counter': 'kExampleUseCounter',
         'rollout_details': None,
         'rollout_impact': 2,
@@ -294,8 +310,15 @@ class StagesAPITest(testing_config.CustomTestCase):
     mock_abort.side_effect = werkzeug.exceptions.Forbidden
     request_path = f'{self.request_path}1/stages'
     json = {
-        'stage_type': 151,
-        'intent_thread_url': 'https://example.com/different'}
+        'stage_type': {
+          'form_field_name': 'stage_type',
+          'value': 151,
+        },
+        'intent_to_extend_experiment_url': {
+          'form_field_name': 'intent_thread_url',
+          'value': 'https://example.com/different',
+        }
+      }
 
     with test_app.test_request_context(request_path, json=json):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
@@ -308,8 +331,14 @@ class StagesAPITest(testing_config.CustomTestCase):
     permission_call.return_value = 'fake response'
     testing_config.sign_in('feature_owner@example.com', 123)
 
+    json = {
+      'stage_type': {
+        'form_field_name': 'stage_type',
+        'value': 151,
+      }
+    }
     with test_app.test_request_context(
-        f'{self.request_path}1/stages/10'):
+        f'{self.request_path}1/stages/10', json=json):
       actual = self.handler.do_post(feature_id=1)
 
     self.assertEqual(actual, 'fake response')
@@ -339,12 +368,17 @@ class StagesAPITest(testing_config.CustomTestCase):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post(feature_id=1)
     mock_abort.assert_called_once_with(
-        404, description='Stage type not specified.')
+        400, description='Stage type not specified.')
 
   def test_post__valid(self):
     """A valid POST request should create a new stage."""
     testing_config.sign_in('feature_owner@example.com', 123)
-    json = {'stage_type': 151}
+    json = {
+      'stage_type': {
+        'form_field_name': 'stage_type',
+        'value': 151,
+      }
+    }
 
     with test_app.test_request_context(
         f'{self.request_path}/1/stages', json=json):
@@ -358,7 +392,12 @@ class StagesAPITest(testing_config.CustomTestCase):
   def test_post__gate_created(self):
     """A Gate entity is created when a gated stage is created."""
     testing_config.sign_in('feature_owner@example.com', 123)
-    json = {'stage_type': 151}
+    json = {
+      'stage_type': {
+        'form_field_name': 'stage_type',
+        'value': 151
+      }
+    }
 
     with test_app.test_request_context(
         f'{self.request_path}1/stages', json=json):
@@ -371,7 +410,12 @@ class StagesAPITest(testing_config.CustomTestCase):
   def test_post__gate_not_needed(self):
     """A Gate entity is created when a non-gated stage is created."""
     testing_config.sign_in('feature_owner@example.com', 123)
-    json = {'stage_type': 110}
+    json = {
+      'stage_type': {
+        'form_field_name': 'stage_type',
+        'value': 110,
+      }
+    }
 
     with test_app.test_request_context(
         f'{self.request_path}1/stages', json=json):

@@ -2,7 +2,10 @@ import {LitElement, css, html, nothing} from 'lit';
 import {getStageValue, renderHTMLIf} from './utils';
 import {enhanceUrl} from './feature-link';
 import {openAddStageDialog} from './chromedash-add-stage-dialog';
-import {openPrereqsDialog} from './chromedash-ot-create-prereqs-dialog';
+import {
+  openPrereqsDialog,
+  PrereqsDialogTypes,
+} from './chromedash-ot-prereqs-dialog';
 import {makeDisplaySpecs} from './form-field-specs';
 import {
   FLAT_ENTERPRISE_METADATA_FIELDS,
@@ -27,7 +30,9 @@ import '@polymer/iron-icon';
 import './chromedash-activity-log';
 import './chromedash-callout';
 import './chromedash-gate-chip';
-import {autolink, findProcessStage, flattenSections} from './utils.js';
+import {
+  autolink, findProcessStage, flattenSections, parseRawQuery,
+} from './utils.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
 export const DETAILS_STYLES = [css`
@@ -68,7 +73,6 @@ class ChromedashFeatureDetail extends LitElement {
       dismissedCues: {type: Array},
       anyCollapsed: {type: Boolean},
       selectedGateId: {type: Number},
-      rawQuery: {type: Object},
       openStage: {type: Number},
     };
   }
@@ -86,7 +90,6 @@ class ChromedashFeatureDetail extends LitElement {
     this.previousStageTypeRendered = 0;
     this.sameTypeRendered = 0;
     this.selectedGateId = 0;
-    this.rawQuery = {};
     this.openStage = 0;
   }
 
@@ -190,14 +193,11 @@ class ChromedashFeatureDetail extends LitElement {
   }
 
   intializeGateColumn() {
-    if (!this.rawQuery) {
+    const rawQuery = parseRawQuery(window.location.search);
+    if (!rawQuery.hasOwnProperty('gate')) {
       return;
     }
-
-    if (!this.rawQuery.hasOwnProperty('gate')) {
-      return;
-    }
-    const gateVal = this.rawQuery['gate'];
+    const gateVal = rawQuery['gate'];
     const foundGates = this.gates.filter(g => g.id == gateVal);
     if (!foundGates.length) {
       return;
@@ -591,25 +591,10 @@ class ChromedashFeatureDetail extends LitElement {
     const isActive = this.feature.active_stage_id === feStage.id;
 
     // Show any buttons that should be displayed at the top of the detail card.
-    let addExtensionButton = nothing;
-    let editButton = nothing;
+    const addExtensionButton = this.renderExtensionButton(feStage);
+    const editButton = this.renderEditButton(feStage, processStage);
     const trialButton = this.renderOriginTrialButton(feStage);
-    if (this.canEdit && STAGE_TYPES_ORIGIN_TRIAL.has(feStage.stage_type)) {
-      // Button text changes based on whether or not an extension stage already exists.
-      const extensionAlreadyExists = (feStage.extensions && feStage.extensions.length > 0);
-      const extensionButtonText = extensionAlreadyExists ?
-        'Add another trial extension' : 'Add a trial extension';
-      addExtensionButton = html`
-      <sl-button size="small"
-          @click=${() => this.createExtensionStage(feStage, extensionAlreadyExists)}
-          >${extensionButtonText}</sl-button>`;
-    }
-    if (this.canEdit) {
-      editButton = html`
-        <sl-button size="small"
-            href="/guide/stage/${this.feature.id}/${processStage.outgoing_stage}/${feStage.id}"
-            >Edit fields</sl-button>`;
-    }
+
     const content = html`
       <p class="description">
         ${trialButton}
@@ -626,6 +611,56 @@ class ChromedashFeatureDetail extends LitElement {
     return this.renderSection(name, content, isActive, defaultOpen);
   }
 
+  renderEditButton(feStage, processStage) {
+    if (!this.canEdit) {
+      return nothing;
+    }
+    return html`
+      <sl-button size="small"
+          href="/guide/stage/${this.feature.id}/${processStage.outgoing_stage}/${feStage.id}"
+          >Edit fields</sl-button>`;
+  }
+
+  renderExtensionButton(feStage) {
+    // Don't render an extension request button if this is not an OT stage,
+    // or the user does not have access to submit an extension request,
+    // or the OT stage has not been created in the OT Console yet.
+    const userCannotViewOTControls = (!this.user ||
+      (!this.user.email.endsWith('@chromium.org') && !this.user.email.endsWith('@google.com')));
+    const isNotOriginTrialStage = !STAGE_TYPES_ORIGIN_TRIAL.has(feStage.stage_type);
+    const originTrialNotCreatedYet = !feStage.origin_trial_id;
+    if (userCannotViewOTControls || isNotOriginTrialStage || originTrialNotCreatedYet) {
+      return nothing;
+    }
+
+    // Button text changes based on whether or not an extension stage already exists.
+    const extensionAlreadyExists = feStage.extensions && feStage.extensions.length > 0;
+    const extensionInProgress = (
+      feStage.extensions && feStage.extensions.some(ext => ext.ot_action_requested));
+
+    let extensionButtonText = 'Request a trial extension';
+    if (extensionAlreadyExists) {
+      extensionButtonText = 'Request another trial extension';
+    }
+
+    // Show a disabled button if an extension request has already been submitted.
+    if (extensionInProgress) {
+      return html`
+        <sl-tooltip content="A pending request exists. For further inquiries, contact origin-trials-support@google.com.">
+          <sl-button
+            size="small"
+            disabled
+            >${extensionButtonText}</sl-button>
+        </sl-tooltip>`;
+    }
+
+    const stageId = feStage.id;
+    return html`
+    <sl-button size="small"
+        @click="${() => openPrereqsDialog(this.feature.id, stageId, PrereqsDialogTypes.EXTENSION)}"
+        >${extensionButtonText}</sl-button>`;
+  }
+
   renderOriginTrialButton(feStage) {
     // Don't render an origin trial button if this is not an OT stage.
     if (!STAGE_TYPES_ORIGIN_TRIAL.has(feStage.stage_type)) {
@@ -640,7 +675,7 @@ class ChromedashFeatureDetail extends LitElement {
         originTrialsURL = `https://developer.chrome.com/origintrials/#/view_trial/${feStage.origin_trial_id}`;
       }
       return html`
-        <sl-button 
+        <sl-button
           size="small"
           variant="primary"
           href=${originTrialsURL}
@@ -666,7 +701,7 @@ class ChromedashFeatureDetail extends LitElement {
         <sl-button
           size="small"
           variant="primary"
-          @click="${() => openPrereqsDialog(this.feature.id, stageId)}"
+          @click="${() => openPrereqsDialog(this.feature.id, stageId, PrereqsDialogTypes.CREATION)}"
           >Request Trial Creation</sl-button>`;
     }
     return nothing;

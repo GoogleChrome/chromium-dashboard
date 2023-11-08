@@ -163,12 +163,19 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
     // Starting with M110, display Early Stable Release dates.
     const stableStart = (this.channel.version >= 110) ?
       this.channel.final_beta : this.channel.stable_date;
+    const logo = html `
+        <span class="chrome-logo">
+          ${this.templateContent.channelTag ? html`
+            <span class="channel-tag">${this.templateContent.channelTag}</span>
+            ` : nothing}
+        </span>
+    `;
 
     return html `
       <div class="layout vertical center">
         <h1 class="channel_label">${this.templateContent.channelLabel}</h1>
         <h1 class="chrome_version layout horizontal center ${this.templateContent.h1Class}">
-        <span class="chrome-logo"></span>
+        ${logo}
         Chrome ${this.channel.version}
         </h1>
       </div>

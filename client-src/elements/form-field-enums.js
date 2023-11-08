@@ -84,7 +84,8 @@ export const FEATURE_TYPES_WITHOUT_ENTERPRISE = {
     'If there is already an agreed specification, work may quickly start on ' +
     'implementation and origin trials.'],
   FEATURE_TYPE_CODE_CHANGE_ID: [2, 'Web developer-facing change to existing code',
-    'Sometimes a change to a shipped feature requires an additional feature entry. ' +
+    'Not common.  Track a code change that does not change any API and has ' +
+    'very low interoperability risk, but might be noticed by web developers.' +
     'This type of feature entry can be referenced from a PSA immediately.'],
   FEATURE_TYPE_DEPRECATION_ID: [3, 'Feature deprecation',
     'Deprecate and remove an old feature.'],
@@ -239,6 +240,7 @@ export const STAGE_SPECIFIC_FIELDS = new Set([
   'intent_to_extend_experiment_url',
   'intent_thread_url',
   'ot_creation__intent_to_experiment_url',
+  'ot_extension__intent_to_extend_experiment_url',
   'r4dt_url',
 
   // Misc fields.
@@ -258,6 +260,11 @@ export const STAGE_SPECIFIC_FIELDS = new Set([
   'ot_is_critical_trial',
   'ot_creation__milestone_desktop_first',
   'ot_creation__milestone_desktop_last',
+  'ot_extension__milestone_desktop_last',
+  'ot_require_approvals',
+  'ot_approval_buganizer_component',
+  'ot_approval_group_email',
+  'ot_approval_criteria_url',
   'finch_url',
   'experiment_goals',
   'experiment_risks',
@@ -285,6 +292,7 @@ export const STAGE_FIELD_NAME_MAPPING = {
   ot_milestone_webview_end: 'webview_last',
   ot_creation__milestone_desktop_first: 'desktop_first',
   ot_creation__milestone_desktop_last: 'desktop_last',
+  ot_extension__milestone_desktop_last: 'desktop_last',
   dt_milestone_desktop_start: 'desktop_first',
   dt_milestone_android_start: 'android_first',
   dt_milestone_ios_start: 'ios_first',
@@ -299,6 +307,7 @@ export const STAGE_FIELD_NAME_MAPPING = {
   intent_to_experiment_url: 'intent_thread_url',
   intent_to_extend_experiment_url: 'intent_thread_url',
   ot_creation__intent_to_experiment_url: 'intent_thread_url',
+  ot_extension__intent_to_extend_experiment_url: 'intent_thread_url',
   r4dt_url: 'intent_thread_url',
 };
 
@@ -329,6 +338,7 @@ export const GATE_TYPES = {
 
 export const GATE_PREPARING = 0;
 export const GATE_REVIEW_REQUESTED = 2;
+export const GATE_NA_REQUESTED = 9;
 export const VOTE_OPTIONS = {
   NO_RESPONSE: [7, 'No response'],
   NA: [1, 'N/a or Ack'],
@@ -343,6 +353,7 @@ export const GATE_ACTIVE_REVIEW_STATES = [
   VOTE_OPTIONS.REVIEW_STARTED[0],
   VOTE_OPTIONS.NEEDS_WORK[0],
   VOTE_OPTIONS.INTERNAL_REVIEW[0],
+  GATE_NA_REQUESTED,
 ];
 export const GATE_FINISHED_REVIEW_STATES = [
   VOTE_OPTIONS.NA[0],

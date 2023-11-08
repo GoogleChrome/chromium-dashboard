@@ -28,7 +28,9 @@ export function autolink(s, featureLinks = []) {
 
 export function showToastMessage(msg) {
   if (!toastEl) toastEl = document.querySelector('chromedash-toast');
-  toastEl.showMessage(msg);
+  if (toastEl?.showMessage) {
+    toastEl.showMessage(msg);
+  }
 }
 
 /**
@@ -309,7 +311,7 @@ export function formatFeatureChanges(fieldValues, featureId) {
   const stages = {};
   for (const {name, touched, value, stageId, implicitValue} of fieldValues) {
     // Only submit changes for touched fields or accuracy verification updates.
-    if (!touched && !(name === 'accurate_as_of' && value === true)) {
+    if (!touched) {
       continue;
     }
 
@@ -362,4 +364,38 @@ export function formatFeatureChanges(fieldValues, featureId) {
 export function handleSaveChangesResponse(response) {
   const app = document.querySelector('chromedash-app');
   app.setUnsavedChanges(response !== '');
+}
+
+/**
+ * Returns value for fieldName, retrieved from fieldValues.
+  * @param {string} fieldName
+  * @param {Array<Object>} fieldValues
+  * @return {*} The value of the named field.
+ */
+export function getFieldValue(fieldName, fieldValues) {
+  let fieldValue = null;
+  fieldValues.some((valueObj) => {
+    if (valueObj.name === fieldName) {
+      fieldValue = valueObj.value;
+      return true;
+    }
+  });
+  return fieldValue;
+}
+
+export function checkMilestoneStartEnd(startEndPair, getFieldValue) {
+  const getValue = (name) => {
+    const value = getFieldValue(name);
+    if (typeof value === 'string') {
+      return Number(value);
+    }
+  };
+  const {start, end} = startEndPair;
+  const startMilestone = getValue(start);
+  const endMilestone = getValue(end);
+  if (startMilestone != null && endMilestone != null) {
+    if (endMilestone <= startMilestone) {
+      return {error: 'Start milestone must be before end milestone'};
+    }
+  }
 }

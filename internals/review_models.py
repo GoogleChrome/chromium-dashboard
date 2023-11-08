@@ -58,6 +58,7 @@ class GateDef(ndb.Model):
   """Configuration for a review gate."""
   gate_type = ndb.IntegerProperty(required=True)
   approvers = ndb.StringProperty(repeated=True)
+  rotation_url = ndb.StringProperty()
 
   # TODO(jrobbins): Use these and phase out approval_devs.ApprovalFieldDef.
   name = ndb.StringProperty()
@@ -93,6 +94,7 @@ class Vote(ndb.Model):
   DENIED = 6
   NO_RESPONSE = 7
   INTERNAL_REVIEW = 8
+  NA_REQUESTED = 9
   VOTE_VALUES = {
       # Not used: PREPARING: 'preparing',
       NA: 'na',
@@ -103,6 +105,7 @@ class Vote(ndb.Model):
       DENIED: 'denied',
       NO_RESPONSE: 'no_response',
       INTERNAL_REVIEW: 'internal_review',
+      NA_REQUESTED: 'na_requested',
   }
 
   FINAL_STATES = [NA, APPROVED, DENIED]
@@ -151,7 +154,7 @@ class Gate(ndb.Model):
   PREPARING = 0
   PENDING_STATES = [
       Vote.REVIEW_REQUESTED, Vote.REVIEW_STARTED, Vote.NEEDS_WORK,
-      Vote.INTERNAL_REVIEW]
+      Vote.INTERNAL_REVIEW, Vote.NA_REQUESTED]
   FINAL_STATES = [Vote.NA, Vote.APPROVED, Vote.DENIED]
 
   feature_id = ndb.IntegerProperty(required=True)

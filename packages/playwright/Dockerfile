@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/playwright:v1.35.1-jammy
+FROM mcr.microsoft.com/playwright:v1.39.0-jammy
 
 ARG USERID
 ARG GROUPID
@@ -18,6 +18,6 @@ USER pwuser
 WORKDIR /work
 # Cache the infrequent but time consuming changes early
 COPY --chown=pwuser:pwuser package.json /work/
-RUN npm install -D && npx playwright install
+RUN npm install -D
 # Copy the rest
 COPY --chown=pwuser:pwuser . /work

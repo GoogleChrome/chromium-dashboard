@@ -105,7 +105,6 @@ export class ChromedashFeaturePage extends LitElement {
       starred: {type: Boolean},
       loading: {attribute: false},
       selectedGateId: {type: Number},
-      rawQuery: {type: Object},
     };
   }
 
@@ -124,7 +123,6 @@ export class ChromedashFeaturePage extends LitElement {
     this.starred = false;
     this.loading = true;
     this.selectedGateId = 0;
-    this.rawQuery = {};
   }
 
   connectedCallback() {
@@ -282,6 +280,12 @@ export class ChromedashFeaturePage extends LitElement {
              this.user.editable_features.includes(this.featureId)));
   }
 
+  pairedUserCanEdit() {
+    return (this.user?.paired_user &&
+            (this.user.paired_user.can_edit_all ||
+             this.user.paired_user.editable_features.includes(this.featureId)));
+  }
+
   renderSubHeader() {
     const canEdit = this.userCanEdit();
 
@@ -334,23 +338,45 @@ export class ChromedashFeaturePage extends LitElement {
   }
 
   renderWarnings() {
+    const warnings = [];
     if (this.feature.deleted) {
-      return html`
+      warnings.push(html`
         <div id="deleted" class="warning">
           This feature is marked as deleted.  It does not appear in
           feature lists and is only viewable by users who can edit it.
         </div>
-      `;
+      `);
     }
     if (this.feature.unlisted) {
-      return html`
+      warnings.push(html`
         <div id="access" class="warning">
           This feature is only shown in the feature list
           to users with access to edit this feature.
         </div>
-      `;
+      `);
     }
-    return nothing;
+    if (!this.userCanEdit() && this.pairedUserCanEdit()) {
+      warnings.push(html`
+        <div id="switch_to_edit" class="warning">
+          User ${this.user.email} cannot edit this feature or request reviews.
+          But, ${this.user.paired_user.email} can do that.
+          <br>
+          To switch users: sign out and then sign in again.
+        </div>
+      `);
+    }
+    if (this.user?.approvable_gate_types.length == 0 &&
+        this.user?.paired_user?.approvable_gate_types.length > 0) {
+      warnings.push(html`
+        <div id="switch_to_review" class="warning">
+          User ${this.user.email} cannot review this feature.
+          But, ${this.user.paired_user.email} can do that.
+          <br>
+          To switch users: sign out and then sign in again.
+        </div>
+      `);
+    }
+    return warnings;
   }
 
   renderEnterpriseFeatureContent() {
@@ -378,7 +404,7 @@ export class ChromedashFeaturePage extends LitElement {
         </section>
       `: nothing}
 
-      ${this.feature.resources && this.feature.resources.samples ? html`
+      ${this.feature.resources?.samples?.length ? html`
         <section id="demo">
           <h3>Demos and samples</h3>
           <ul>
@@ -389,7 +415,7 @@ export class ChromedashFeaturePage extends LitElement {
         </section>
       `: nothing}
 
-      ${this.feature.resources && this.feature.resources.docs ? html`
+      ${this.feature.resources?.docs?.length ? html`
         <section id="documentation">
           <h3>Documentation</h3>
           <ul>
@@ -404,11 +430,13 @@ export class ChromedashFeaturePage extends LitElement {
         <section id="specification">
           <h3>Specification</h3>
           <p>${enhanceUrl(this.feature.standards.spec, this.featureLinks)}</p>
-          <br>
-          <p>
-            <label>Status:</label>
-            ${this.feature.standards.maturity.text}
-          </p>
+          <p>Spec status: ${this.feature.standards.maturity.text}</p>
+        </section>
+        `: this.feature.explainer_links?.length ? html`
+        <section id="specification">
+          <h3>Explainer(s)</h3>
+          ${this.feature.explainer_links?.map((link) =>
+      html`<p>${enhanceUrl(link, this.featureLinks)}</p>`)}
         </section>
       `: nothing}
     `;
@@ -552,7 +580,6 @@ export class ChromedashFeaturePage extends LitElement {
         .comments=${this.comments}
         .process=${this.process}
         .dismissedCues=${this.dismissedCues}
-        .rawQuery=${this.rawQuery}
         .featureLinks=${this.featureLinks}
         selectedGateId=${this.selectedGateId}
        >

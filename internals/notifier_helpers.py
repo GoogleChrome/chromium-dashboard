@@ -19,9 +19,10 @@ from framework import cloud_tasks_helpers, users
 from internals import core_enums, approval_defs, core_models
 from internals.data_types import CHANGED_FIELDS_LIST_TYPE
 from internals.review_models import Gate, Amendment, Activity, Vote
+from internals.core_models import Stage
 
 if TYPE_CHECKING:
-  from internals.core_models import FeatureEntry, Stage
+  from internals.core_models import FeatureEntry
 
 def _get_changes_as_amendments(
     changed_fields: CHANGED_FIELDS_LIST_TYPE) -> list[Amendment]:
@@ -79,10 +80,11 @@ def notify_subscribers_and_save_amendments(fe: 'FeatureEntry',
 
 
 def notify_approvers_of_reviews(
-    fe: 'FeatureEntry', gate: Gate, email: str) -> None:
+    fe: 'FeatureEntry', gate: Gate, new_state: int, email: str) -> None:
   """Notify approvers of a review requested from a Gate."""
+  new_value_str = Vote.VOTE_VALUES.get(new_state, 'None')
   amendment = Amendment(field_name='review_status',
-                        old_value='None', new_value='review_requested')
+                        old_value='None', new_value=new_value_str)
   gate_id = gate.key.integer_id()
   activity = Activity(feature_id=fe.key.integer_id(), gate_id=gate_id,
                       author=email, amendments=[amendment])
@@ -93,7 +95,7 @@ def notify_approvers_of_reviews(
   changed_props = {
       'prop_name': 'Review status change in %s' % (gate_url),
       'old_val': 'na',
-      'new_val': 'review_requested',
+      'new_val': new_value_str,
   }
 
   params = {
@@ -145,6 +147,25 @@ def notify_subscribers_of_vote_changes(fe: 'FeatureEntry', gate: Gate,
   cloud_tasks_helpers.enqueue_task('/tasks/email-subscribers', params)
 
 
+def notify_assignees(
+    fe: 'FeatureEntry', gate: Gate, triggering_user_email: str,
+    old_assignees: list[str], new_assignees: list[str]) -> None:
+  """Notify subscribers of a new comment."""
+  gate_id = gate.key.integer_id()
+  gate_url = 'https://chromestatus.com/feature/%s?gate=%s' % (
+      fe.key.integer_id(), gate_id)
+
+  params = {
+    'triggering_user_email': triggering_user_email,
+    'old_assignees': old_assignees,
+    'new_assignees': new_assignees,
+    'gate_type': gate.gate_type,
+    'feature': converters.feature_entry_to_json_verbose(fe)
+  }
+
+  cloud_tasks_helpers.enqueue_task('/tasks/email-assigned', params)
+
+
 def notify_subscribers_of_new_comments(fe: 'FeatureEntry', gate: Gate,
     email: str, comment: str) -> None:
   """Notify subscribers of a new comment."""
@@ -166,10 +187,21 @@ def notify_subscribers_of_new_comments(fe: 'FeatureEntry', gate: Gate,
   cloud_tasks_helpers.enqueue_task('/tasks/email-comments', params)
 
 
-def send_ot_creation_notification(stage: 'Stage'):
+def send_ot_notification(stage: Stage):
   """Notify about new trial creation request."""
   stage_dict = converters.stage_to_json_dict(stage)
   # Add the OT request note, which is usually not publicly visible.
   stage_dict['ot_request_note'] = stage.ot_request_note
   params = {'stage': stage_dict}
-  cloud_tasks_helpers.enqueue_task('/tasks/email-ot-creation-request', params)
+
+  # Determine which notification type to send.
+  if stage_dict['stage_type'] in core_enums.OT_EXTENSION_STAGE_TYPES:
+    # Extension stage notifications need the original OT stage also
+    # to fill out all information in the notification.
+    ot_stage = Stage.get_by_id(stage.ot_stage_id)
+    params['ot_stage'] = converters.stage_to_json_dict(ot_stage)
+    cloud_tasks_helpers.enqueue_task(
+        '/tasks/email-ot-extension-request', params)
+  else:
+    cloud_tasks_helpers.enqueue_task(
+        '/tasks/email-ot-creation-request',params)

@@ -11,6 +11,7 @@ describe('chromedash-feature-page', () => {
     can_edit_all: true,
     is_admin: false,
     email: 'example@google.com',
+    approvable_gate_types: [],
   };
   const editor = {
     can_create_feature: false,
@@ -18,6 +19,7 @@ describe('chromedash-feature-page', () => {
     editable_features: [123456],
     is_admin: false,
     email: 'editor@example.com',
+    approvable_gate_types: [],
   };
   const visitor = {
     can_create_feature: false,
@@ -25,6 +27,7 @@ describe('chromedash-feature-page', () => {
     editable_features: [],
     is_admin: false,
     email: 'example@example.com',
+    approvable_gate_types: [],
   };
   const anon = null;
   const gatesPromise = Promise.resolve([]);

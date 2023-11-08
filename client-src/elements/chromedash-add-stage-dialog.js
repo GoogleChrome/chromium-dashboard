@@ -89,7 +89,14 @@ class ChromedashAddStageDialog extends LitElement {
       this.shadowRoot.querySelector('sl-dialog').hide();
       return;
     }
-    window.csClient.createStage(this.featureId, {stage_type: this.getStageSelectValue()})
+    window.csClient.createStage(
+      this.featureId,
+      {
+        stage_type: {
+          form_field_name: 'stage_type',
+          value: this.getStageSelectValue(),
+        },
+      })
       .then(() => {
         this.shadowRoot.querySelector('sl-dialog').hide();
         location.reload();

@@ -16,6 +16,7 @@ import {GATE_QUESTIONNAIRES} from './form-definition.js';
 import {
   GATE_PREPARING,
   GATE_REVIEW_REQUESTED,
+  GATE_NA_REQUESTED,
   VOTE_OPTIONS,
 } from './form-field-enums';
 
@@ -26,6 +27,9 @@ export class ChromedashGateColumn extends LitElement {
   voteSelectRef = createRef();
   commentAreaRef = createRef();
   postToThreadRef = createRef();
+  rationaleDialogRef = createRef();
+  rationaleRef = createRef();
+  assigneeSelectRef = createRef();
 
   static get styles() {
     return [
@@ -121,6 +125,20 @@ export class ChromedashGateColumn extends LitElement {
          padding-left: var(--content-padding);
        }
 
+       details {
+         padding: 10px;
+       }
+       details summary {
+         cursor: pointer;
+         transition: margin 250ms ease-out;
+         color: var(--link-color);
+       }
+       details summary::hover {
+         color: var(--link-hover-color);
+       }
+       details[open] summary {
+         margin-bottom: 10px;
+       }
     `];
   }
 
@@ -249,11 +267,15 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   handlePost() {
-    this.submittingVote = true;
     const commentArea = this.commentAreaRef.value;
     const commentText = commentArea.value.trim();
     const postToThreadType = (
-      this.postToThreadRef.value?.checked ? this.gate.gate_type : 0);
+        this.postToThreadRef.value?.checked ? this.gate.gate_type : 0);
+    this.postComment(commentText, postToThreadType);
+  }
+
+  postComment(commentText, postToThreadType=0) {
+    this.submittingVote = true;
     if (commentText != '') {
       window.csClient.postComment(
         this.feature.id, this.gate.id, commentText,
@@ -340,12 +362,26 @@ export class ChromedashGateColumn extends LitElement {
     `;
   }
 
-  handleReviewRequested() {
-    window.csClient.setVote(
-      this.feature.id, this.gate.id, GATE_REVIEW_REQUESTED)
-      .then(() => {
-        this._fireEvent('refetch-needed', {});
-      });
+  async handleReviewRequested() {
+    await window.csClient.setVote(
+      this.feature.id, this.gate.id, GATE_REVIEW_REQUESTED);
+    this._fireEvent('refetch-needed', {});
+  }
+
+  handleNARequested() {
+    this.rationaleDialogRef.value.show();
+  }
+
+  async handleNARequestSubmitted() {
+    await window.csClient.setVote(
+      this.feature.id, this.gate.id, GATE_NA_REQUESTED);
+    // Post the comment after the review request so that it will go
+    // to the assigned reviewer rather than all reviewers.
+    const commentText = ('An "N/A" response is requested because: ' +
+                         this.rationaleRef.value.value);
+    await this.postComment(commentText);
+    this.rationaleDialogRef.value.hide();
+    this._fireEvent('refetch-needed', {});
   }
 
   /* A user that can edit the current feature can request a review. */
@@ -353,6 +389,11 @@ export class ChromedashGateColumn extends LitElement {
     return (this.user &&
             (this.user.can_edit_all ||
              this.user.editable_features.includes(this.feature.id)));
+  }
+
+  userCanVote() {
+    return (this.user &&
+            this.user.approvable_gate_types.includes(this.gate.gate_type));
   }
 
   renderAction(processStage, action) {
@@ -411,16 +452,37 @@ export class ChromedashGateColumn extends LitElement {
         this.renderAction(processStage, act));
     }
 
+    const dialog = html`
+      <sl-dialog ${ref(this.rationaleDialogRef)} label="Request an N/A">
+        <p style="padding: var(--content-padding)">
+          Please briefly explain why your feature does not require a review.
+          Your response will be posted as a comment on this review gate
+          and it will generate a notification to the reviewers.
+          The ${this.gate.team_name} reviewers will still evaluate whether to
+          give an "N/A" response or do a review.
+        </p>
+        <sl-textarea ${ref(this.rationaleRef)}></sl-textarea>
+        <sl-button slot="footer" variant="primary" size="small"
+          @click=${this.handleNARequestSubmitted}
+          >Post</sl-button>
+      </sl-dialog>
+    `;
+
     return html`
      <sl-button pill size=small variant=primary
        @click=${this.handleReviewRequested}
        >Request review</sl-button>
+     <sl-button pill size=small
+       @click=${this.handleNARequested}
+       >Request N/A</sl-button>
+     ${dialog}
     `;
   }
 
   renderReviewRequest() {
     for (const v of this.votes) {
-      if (v.state == GATE_REVIEW_REQUESTED) {
+      if (v.state === GATE_REVIEW_REQUESTED ||
+          v.state === GATE_NA_REQUESTED) {
         const shortVoter = v.set_by.split('@')[0] + '@';
         return html`
           ${shortVoter} requested on
@@ -620,29 +682,80 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   renderAddVoteRow() {
+    const assignedToMe = this.gate.assignee_emails.includes(this.user.email);
+    const shortVoter = this.user.email.split('@')[0] + '@';
+    const yourLabel = assignedToMe ?
+      html`<td title=${this.user.email}>${shortVoter}</td>` :
+      html`<td class="your-vote">Awaiting review</td>`;
     const voteCell = this.renderVoteMenu(VOTE_OPTIONS.NO_RESPONSE[0]);
     const saveButton = this.needsSave ? this.renderSaveButton() : nothing;
     return html`
       <tr>
-       <td class="your-vote">Awaiting review</td>
+       ${yourLabel}
        <td>${voteCell}</td>
        <td>${saveButton}</td>
       </tr>
     `;
   }
 
+  renderPendingVote(assigneeEmail) {
+    const shortVoter = assigneeEmail.split('@')[0] + '@';
+    return html`
+      <tr>
+       <td title=${assigneeEmail}>${shortVoter}</td>
+       <td>No response yet</td>
+       <td></td>
+      </tr>
+    `;
+  }
+
+  saveAssignedReviewer() {
+    const assignee = this.assigneeSelectRef.value.value;
+    const assigneeList = (assignee === '' ? [] : [assignee]);
+    csClient.updateGate(this.feature.id, this.gate.id, assigneeList).then(
+      () => this._fireEvent('refetch-needed', {}));
+  }
+
+  renderAssignReviewerControls() {
+    if (!this.userCanRequestReview() && !this.userCanVote()) {
+      return nothing;
+    }
+    if (this.gate.state === VOTE_OPTIONS.APPROVED[0]) {
+      return nothing;
+    }
+    const currentAssignee = this.gate.assignee_emails?.length > 0 ?
+      this.gate.assignee_emails[0] : '';
+    return html`
+      <details>
+       <summary>Assign a reviewer</summary>
+       <sl-select hoist size="small" ${ref(this.assigneeSelectRef)}
+         value=${currentAssignee}>
+        <sl-option value="">None</sl-option>
+        ${this.gate.possible_assignee_emails.map((email) => html`
+          <sl-option value="${email}">${email}</sl-option>`)}
+       </sl-select>
+       <sl-button size="small" variant="primary"
+         @click=${() => this.saveAssignedReviewer()}
+       >Assign</sl-button>
+      </details>
+    `;
+  }
+
   renderVotes() {
-    const canVote = (
-      this.user &&
-        this.user.approvable_gate_types.includes(this.gate.gate_type));
+    const canVote = this.userCanVote();
     const responses = this.votes.filter((v) => v.state !== GATE_REVIEW_REQUESTED);
+    const responseEmails = responses.map((v) => v.set_by);
+    const othersPending = this.gate.assignee_emails.filter((ae) =>
+      !responseEmails.includes(ae) && ae != this.user?.email);
     const myResponseExists = responses.some((v) => v.set_by == this.user?.email);
     const addVoteRow = (canVote && !myResponseExists) ?
       this.renderAddVoteRow() : nothing;
+    const assignControls = this.renderAssignReviewerControls();
 
-    if (!canVote && responses.length === 0) {
+    if (!canVote && responses.length === 0 && othersPending.length === 0) {
       return html`
         <p>No review activity yet.</p>
+        ${assignControls}
       `;
     }
 
@@ -650,8 +763,10 @@ export class ChromedashGateColumn extends LitElement {
       <table>
         <tr><th>Reviewer</th><th>Review status</th></tr>
         ${responses.map((v) => this.renderVoteRow(v, canVote))}
+        ${othersPending.map((ae) => this.renderPendingVote(ae, canVote))}
         ${addVoteRow}
       </table>
+      ${assignControls}
     `;
   }
 
@@ -678,7 +793,6 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   renderCommentsSkeleton() {
-    // TODO(jrobbins): Include activities too.
     return html`
       <h2>Comments</h2>
       <sl-skeleton effect="sheen"></sl-skeleton>
@@ -699,7 +813,8 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   renderControls() {
-    if (!this.user || !this.user.can_comment) return nothing;
+    const canComment = this.user?.can_comment || this.userCanRequestReview();
+    if (!canComment) return nothing;
 
     const postButton = html`
       <sl-button variant="primary"

@@ -527,6 +527,20 @@ export const ORIGIN_TRIAL_CREATION_FIELDS = {
         'ot_is_deprecation_trial',
         'ot_has_third_party_support',
         'ot_is_critical_trial',
+        'ot_require_approvals',
+        'ot_request_note',
+      ],
+    },
+  ],
+};
+
+export const ORIGIN_TRIAL_EXTENSION_FIELDS = {
+  name: 'Origin trial extension',
+  sections: [
+    {
+      fields: [
+        'ot_extension__intent_to_extend_experiment_url',
+        'ot_extension__milestone_desktop_last',
         'ot_request_note',
       ],
     },

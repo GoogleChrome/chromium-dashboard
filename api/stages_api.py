@@ -91,7 +91,7 @@ class StagesAPI(basehandlers.EntitiesAPIHandler):
 
     # Notify of OT request if one was sent.
     if ot_action_requested:
-      notifier_helpers.send_ot_creation_notification(stage)
+      notifier_helpers.send_ot_notification(stage)
 
     return stage_was_updated
 
@@ -114,26 +114,41 @@ class StagesAPI(basehandlers.EntitiesAPIHandler):
 
     return stage_dict
 
+  def _validate_edit_permissions(
+      self, feature_id: int, request_body: dict):
+    """Validate the user has permission to submit this request."""
+    user = self.get_current_user()
+    is_ot_request = request_body.get('ot_action_requested', False)
+    # If submitting an OT request, the user must have feature edit
+    # access or be a Chromium/Google account.
+    if not user or not is_ot_request or not (
+          user.email().endswith('@chromium.org') or
+          user.email().endswith('@google.com')):
+      # Validate the user has edit permissions and redirect if needed.
+      return permissions.validate_feature_edit_permission(
+          self, feature_id)
+    return None
+
   def do_post(self, **kwargs):
     """Create a new stage."""
-    feature_id = kwargs['feature_id']
+    feature_id = int(kwargs['feature_id'])
 
     feature: FeatureEntry | None = FeatureEntry.get_by_id(feature_id)
     if feature is None:
       self.abort(404, msg=f'Feature {feature_id} not found')
 
-    # Validate the user has edit permissions and redirect if needed.
-    redirect_resp = permissions.validate_feature_edit_permission(
-        self, feature_id)
+    body = self.get_json_param_dict()
+    if 'stage_type' not in body:
+      self.abort(400, msg='Stage type not specified.')
+    stage_type = int(body['stage_type']['value'])
+
+    redirect_resp = self._validate_edit_permissions(feature_id, body)
     if redirect_resp:
       return redirect_resp
 
-    body = self.get_json_param_dict()
-    if 'stage_type' not in body:
-      self.abort(404, msg='Stage type not specified.')
-    stage_type = int(body['stage_type'])
     # Add the specified field values to the stage. Create a gate if needed.
     stage = self._create_stage(feature_id, feature.feature_type, stage_type)
+    self._update_stage(stage, body, [])
 
     # Changing stage values means the cached feature should be invalidated.
     lookup_key = FeatureEntry.feature_cache_key(
@@ -161,18 +176,9 @@ class StagesAPI(basehandlers.EntitiesAPIHandler):
     feature_id = feature.key.integer_id()
     body = self.get_json_param_dict()
 
-    user = self.get_current_user()
-    is_ot_request = body.get('ot_action_requested', False)
-    # If submitting an OT creation request, the user must have feature edit
-    # access or be a Chromium/Google account.
-    if not user or not is_ot_request or not (
-          user.email().endswith('@chromium.org') or
-          user.email().endswith('@google.com')):
-      # Validate the user has edit permissions and redirect if needed.
-      redirect_resp = permissions.validate_feature_edit_permission(
-          self, feature_id)
-      if redirect_resp:
-        return redirect_resp
+    redirect_resp = self._validate_edit_permissions(feature_id, body)
+    if redirect_resp:
+      return redirect_resp
 
     changed_fields: CHANGED_FIELDS_LIST_TYPE = []
     # Update specified fields.
