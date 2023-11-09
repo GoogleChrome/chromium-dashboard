@@ -326,6 +326,7 @@ class GatesAPITest(testing_config.CustomTestCase):
                 "gate_type": 1,
                 "team_name": "API Owners",
                 "gate_name": "Intent to Prototype",
+                "escalation_email": None,
                 "state": 1,
                 "requested_on": None,
                 "responded_on": None,

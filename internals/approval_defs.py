@@ -61,6 +61,7 @@ class ApprovalFieldDef:
   rule: str
   approvers: str | list[str]
   team_name: str
+  escalation_email: str | None = None
   slo_initial_response: int = DEFAULT_SLO_LIMIT
 
 
@@ -96,6 +97,7 @@ PrivacyOriginTrialApproval = ApprovalFieldDef(
     'Privacy OT Review',
     core_enums.GATE_PRIVACY_ORIGIN_TRIAL, ONE_LGTM,
     approvers=PRIVACY_APPROVERS, team_name='Privacy',
+    escalation_email='chrome-privacy-owp-rotation@google.com',
     slo_initial_response=6)
 
 PrivacyShipApproval = ApprovalFieldDef(
@@ -103,6 +105,7 @@ PrivacyShipApproval = ApprovalFieldDef(
     'Privacy Ship Review',
     core_enums.GATE_PRIVACY_SHIP, ONE_LGTM,
     approvers=PRIVACY_APPROVERS, team_name='Privacy',
+    escalation_email='chrome-privacy-owp-rotation@google.com',
     slo_initial_response=6)
 
 SecurityOriginTrialApproval = ApprovalFieldDef(
