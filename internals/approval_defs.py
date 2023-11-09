@@ -44,13 +44,7 @@ ENTERPRISE_APPROVERS = [
     'davidayad@google.com',
     'bheenan@google.com',
 ]
-DEBUGGABILITY_APPROVERS = [
-    'bmeurer@google.com',
-    'danilsomsikov@google.com',
-    'yangguo@google.com',
-    'changhaohan@google.com',
-    'pfaffe@google.com',
-]
+DEBUGGABILITY_APPROVERS = IN_NDB
 TESTING_APPROVERS = [
     'sadapala@google.com',
     'santhoshkumarm@google.com',
@@ -218,7 +212,7 @@ def auto_assign_reviewer(gate):
   if response.status_code != 200:
     logging.error('Could not fetch %r', url)
     logging.error('Got response %s', repr(response)[:settings.MAX_LOG_LINE])
-    raise ValueError('Could not fetch oncall')
+    return
 
   try:
     logging.info(
