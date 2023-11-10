@@ -199,6 +199,7 @@ def auto_assign_reviewer(gate):
     other_afd = APPROVAL_FIELDS_BY_ID[other_gate.gate_type]
     if (other_gate.key.integer_id() != gate.key.integer_id() and
         other_afd.team_name == afd.team_name and
+        other_afd.rule == afd.rule and
         other_gate.assignee_emails):
       gate.assignee_emails = other_gate.assignee_emails
       gate.put()

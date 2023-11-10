@@ -19,6 +19,7 @@ import testing_config  # Must be imported before the module under test.
 from unittest import mock
 
 from internals import approval_defs
+from internals import core_enums
 from internals.review_models import Gate, GateDef, Vote
 
 
@@ -61,6 +62,51 @@ class FetchOwnersTest(testing_config.CustomTestCase):
       approval_defs.fetch_owners('https://example.com')
 
     mock_get.assert_called_once_with('https://example.com')
+
+
+class AutoAssignmentTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.feature_id = 123456789
+    self.gate_1 = Gate(
+        feature_id=self.feature_id, stage_id=12300, state=0,
+        gate_type=core_enums.GATE_PRIVACY_ORIGIN_TRIAL)
+    self.gate_1.put()
+    self.gate_2 = Gate(
+        feature_id=self.feature_id, stage_id=12399, state=0,
+        gate_type=core_enums.GATE_PRIVACY_SHIP,
+        assignee_emails=['reviewer@example.com'])
+    self.gate_3 = Gate(
+        feature_id=self.feature_id, stage_id=12399, state=0,
+        gate_type=core_enums.GATE_SECURITY_SHIP)
+
+  def test__with_prior_assignment__match(self):
+    """If there was a prior assignement, use it."""
+    self.gate_2.put()
+    approval_defs.auto_assign_reviewer(self.gate_1)
+    self.assertEqual(['reviewer@example.com'], self.gate_1.assignee_emails)
+
+  def test__with_prior_assignment__wrong_rule(self):
+    """If there was a prior assignement, but a different rule, bail."""
+    self.gate_1.gate_type = core_enums.GATE_API_SHIP
+    self.gate_1.put()
+    self.gate_2.gate_type = core_enums.GATE_API_ORIGIN_TRIAL  # Different rule
+    self.gate_2.put()
+    approval_defs.auto_assign_reviewer(self.gate_1)
+    self.assertEqual([], self.gate_1.assignee_emails)
+
+  def test__no_prior_assignment__no_gate_def(self):
+    """If there is no prior assigned and members are not in NDB, bail."""
+    # Note that gate_2 and gate_3 not saved to NDB.
+    approval_defs.auto_assign_reviewer(self.gate_1)
+    self.assertEqual([], self.gate_1.assignee_emails)
+
+    self.gate_2.assignee_emails = []
+    self.gate_2.put()  # Same team, but it has not assignement.
+    self.assertEqual([], self.gate_1.assignee_emails)
+
+    self.gate_3.put()  # Gate for a different team
+    self.assertEqual([], self.gate_1.assignee_emails)
 
 
 
