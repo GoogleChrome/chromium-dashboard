@@ -213,6 +213,7 @@ const FLAT_PROTOTYPE_FIELDS = {
     {
       name: 'Prototype a solution',
       fields: [
+        'motivation',
         'spec_link',
         'standard_maturity',
         'api_spec',
@@ -412,6 +413,7 @@ const PSA_IMPLEMENT_FIELDS = {
     {
       name: 'Start prototyping',
       fields: [
+        'motivation',
         'spec_link',
         'standard_maturity',
       ],
