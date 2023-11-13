@@ -35,7 +35,7 @@ def require_task_header():
   if settings.UNIT_TEST_MODE or settings.DEV_MODE:
     return
   if 'X-AppEngine-QueueName' not in flask.request.headers:
-    flask.abort(403, msg='Lacking X-AppEngine-QueueName header')
+    flask.abort(403, description='Lacking X-AppEngine-QueueName header')
 
 
 def get_param(request, name, required=True):
@@ -43,7 +43,7 @@ def get_param(request, name, required=True):
   json_body = request.get_json(force=True)
   val = json_body.get(name)
   if required and not val:
-    flask.abort(400, msg='Missing parameter %r' % name)
+    flask.abort(400, description='Missing parameter %r' % name)
   return val
 
 
