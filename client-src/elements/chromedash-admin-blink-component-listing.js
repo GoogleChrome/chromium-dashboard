@@ -79,8 +79,6 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
           padding: 4px 0;
       }`];
   }
-  /** @type {import('chromestatus-openapi').DefaultApiInterface} */
-  _client;
 
   static get properties() {
     return {
