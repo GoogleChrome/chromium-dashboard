@@ -214,7 +214,7 @@ def auto_assign_reviewer(gate):
 
   response = requests.get(gate_def.rotation_url)
   if response.status_code != 200:
-    logging.error('Could not fetch %r', url)
+    logging.error('Could not fetch %r', gate_def.rotation_url)
     logging.error('Got response %s', repr(response)[:settings.MAX_LOG_LINE])
     return
 
