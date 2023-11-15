@@ -1308,7 +1308,7 @@ export const ALL_FIELDS = {
     label: 'Supported on all platforms?',
     help_text: html`
       Will this feature be supported on all six Blink platforms
-      (Windows, Mac, Linux, Chrome OS, Android, and Android WebView)?`,
+      (Windows, Mac, Linux, ChromeOS, Android, and Android WebView)?`,
   },
 
   'all_platforms_descr': {

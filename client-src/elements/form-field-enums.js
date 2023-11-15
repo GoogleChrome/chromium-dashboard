@@ -43,7 +43,7 @@ export const ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME = {
 export const PLATFORM_CATEGORIES = {
   PLATFORM_ANDROID: [1, 'Android'],
   PLATFORM_IOS: [2, 'iOS'],
-  PLATFORM_CHROMEOS: [3, 'Chrome OS'],
+  PLATFORM_CHROMEOS: [3, 'ChromeOS'],
   PLATFORM_LACROS: [4, 'LaCrOS'],
   PLATFORM_LINUX: [5, 'Linux'],
   PLATFORM_MAC: [6, 'Mac'],
@@ -54,7 +54,7 @@ export const PLATFORM_CATEGORIES = {
 export const PLATFORMS_DISPLAYNAME = {
   1: 'Android', // PLATFORM_ANDROID
   2: 'iOS', // PLATFORM_IOS
-  3: 'Chrome OS', // PLATFORM_CHROMEOS
+  3: 'ChromeOS', // PLATFORM_CHROMEOS
   4: 'LaCrOS', // PLATFORM_LACROS
   5: 'Linux', // PLATFORM_LINUX
   6: 'Mac', // PLATFORM_MAC
