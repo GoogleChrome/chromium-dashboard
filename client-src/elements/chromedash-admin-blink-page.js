@@ -64,10 +64,7 @@ export class ChromedashAdminBlinkPage extends LitElement {
     return {
       loading: {type: Boolean},
       user: {type: Object},
-      _client: {attribute: false},
       _editMode: {type: Boolean},
-      components: {type: Array},
-      usersMap: {type: Object},
     };
   }
 

@@ -84,7 +84,6 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
 
   static get properties() {
     return {
-      _client: {attribute: false},
       editing: {type: Boolean, reflect: true},
       component: {type: Object},
       index: {type: Number},
