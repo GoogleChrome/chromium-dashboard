@@ -26,13 +26,13 @@ OMAHA_URL_TEMPLATE = (
 
 # Expected response for the "stable" channel looks like:
 # {
-#  "versions": [
-#   {
-#    "name": "chrome/platforms/android/channels/stable/versions/119.0.6045.163",
-#    "version": "119.0.6045.163"
-#   }
-#  ],
-#  "nextPageToken": "202090764"
+#   "versions": [
+#     {
+#       "name": "chrome/platforms/win/channels/stable/versions/119.0.6045.160",
+#       "version": "119.0.6045.160"
+#     }
+#   ],
+#   "nextPageToken": "652474890"
 # }
 # We really only need the version string.
 
