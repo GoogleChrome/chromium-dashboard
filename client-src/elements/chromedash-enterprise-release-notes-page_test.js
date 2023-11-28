@@ -344,7 +344,8 @@ describe('chromedash-enterprise-release-notes-page', () => {
           'feature with two consecutive rollout stages',
           features[0].querySelector('strong').textContent);
         assert.equal(
-          '< To remove - Owners: owner1 - Editors: editor1  - Last Updated: feature 4 updated >',
+          '< To remove - Feature details - ' +
+          'Owners: owner1 - Editors: editor1  - Last Updated: feature 4 updated >',
           features[0].querySelector('.toremove').textContent);
         assert.equal(
           'feature 4 summary',
@@ -370,7 +371,8 @@ describe('chromedash-enterprise-release-notes-page', () => {
           'feature with one rollout stages',
           features[1].querySelector('strong').textContent);
         assert.equal(
-          '< To remove - Owners: owner - Editors: editor1, editor2  - Last Updated: updated when >',
+          '< To remove - Feature details - ' +
+          'Owners: owner - Editors: editor1, editor2  - Last Updated: updated when >',
           features[1].querySelector('.toremove').textContent);
         assert.equal(
           'feature 3 summary',
@@ -392,7 +394,8 @@ describe('chromedash-enterprise-release-notes-page', () => {
           'normal feature with shipping stage',
           features[2].querySelector('strong').textContent);
         assert.equal(
-          '< To remove - Owners: owner - Editors: editor1, editor2  - Last Updated: updated when >',
+          '< To remove - Feature details - ' +
+          'Owners: owner - Editors: editor1, editor2  - Last Updated: updated when >',
           features[2].querySelector('.toremove').textContent);
         assert.equal(
           'normal feature summary',
@@ -424,7 +427,8 @@ describe('chromedash-enterprise-release-notes-page', () => {
           'feature with upcoming rollout stages',
           features[0].querySelector('strong').textContent);
         assert.equal(
-          '< To remove - Owners: owner - Editors: editor1, editor2  - Last Updated: updated when >',
+          '< To remove - Feature details - ' +
+          'Owners: owner - Editors: editor1, editor2  - Last Updated: updated when >',
           features[0].querySelector('.toremove').textContent);
         assert.equal(
           'feature 6 summary',
@@ -444,7 +448,8 @@ describe('chromedash-enterprise-release-notes-page', () => {
           'feature with past and future rollout stages',
           features[1].querySelector('strong').textContent);
         assert.equal(
-          '< To remove - Owners: owner - Editors: editor1, editor2  - Last Updated: updated when >',
+          '< To remove - Feature details - ' +
+          'Owners: owner - Editors: editor1, editor2  - Last Updated: updated when >',
           features[1].querySelector('.toremove').textContent);
         assert.equal(
           'feature 5 summary',

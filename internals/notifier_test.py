@@ -30,6 +30,7 @@ from internals import stage_helpers
 from internals.user_models import (
     AppUser, BlinkComponent, FeatureOwner, UserPref)
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.review_models import Gate
 import settings
 
 test_app = flask.Flask(__name__,
@@ -114,7 +115,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.maxDiff = None
 
   def tearDown(self):
-    kinds = [FeatureEntry, Stage, FeatureOwner, BlinkComponent]
+    kinds = [FeatureEntry, Stage, FeatureOwner, BlinkComponent, Gate]
     for kind in kinds:
       for entity in kind.query():
         entity.key.delete()
@@ -123,7 +124,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     """We generate an email body for new features."""
     with test_app.app_context():
       body_html = notifier.format_email_body(
-          False, self.template_fe, [])
+          'new-feature-email.html', self.template_fe, [])
     # TESTDATA.make_golden(body_html, 'test_format_email_body__new.html')
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__new.html'])
@@ -132,7 +133,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     """We don't crash if the change list is emtpy."""
     with test_app.app_context():
       body_html = notifier.format_email_body(
-          True, self.template_fe, [])
+          'update-feature-email.html', self.template_fe, [])
     # TESTDATA.make_golden(body_html, 'test_format_email_body__update_no_changes.html')
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__update_no_changes.html'])
@@ -141,7 +142,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     """We generate an email body for an updated feature."""
     with test_app.app_context():
       body_html = notifier.format_email_body(
-          True, self.template_fe, self.changes)
+          'update-feature-email.html', self.template_fe, self.changes)
     # TESTDATA.make_golden(body_html, 'test_format_email_body__update_with_changes.html')
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__update_with_changes.html'])
@@ -151,7 +152,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.fe_1.doc_links = ['https://developer.mozilla.org/look-here']
     with test_app.app_context():
       body_html = notifier.format_email_body(
-          True, self.template_fe, self.changes)
+          'update-feature-email.html', self.template_fe, self.changes)
     # TESTDATA.make_golden(body_html, 'test_format_email_body__mozdev_links_mozilla.html')
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__mozdev_links_mozilla.html'])
@@ -160,7 +161,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         'https://hacker-site.org/developer.mozilla.org/look-here']
     with test_app.app_context():
       body_html = notifier.format_email_body(
-          True, self.template_fe, self.changes)
+          'update-feature-email.html', self.template_fe, self.changes)
     # TESTDATA.make_golden(body_html, 'test_format_email_body__mozdev_links_non_mozilla.html')
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__mozdev_links_non_mozilla.html'])
@@ -324,7 +325,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
 
     mock_f_e_b.assert_called_once_with(
-        False, self.fe_1, [])
+        'new-feature-email.html', self.fe_1, [])
 
   @mock.patch('internals.notifier.format_email_body')
   def test_make_feature_changes_email__update(self, mock_f_e_b):
@@ -385,11 +386,12 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
 
     mock_f_e_b.assert_called_once_with(
-        True, self.fe_1, self.changes)
+        'update-feature-email.html', self.fe_1, self.changes)
 
   @mock.patch('internals.notifier.format_email_body')
   @mock.patch('internals.approval_defs.get_approvers')
-  def test_make_review_requests_email(self, mock_get_approvers, mock_f_e_b):
+  def test_make_review_requests_email__unassigned(
+      self, mock_get_approvers, mock_f_e_b):
     """We send email to approvers for a review request."""
     mock_f_e_b.return_value = 'mock body html'
     mock_get_approvers.return_value = ['approver1@example.com', 'approver2@example.com']
@@ -402,7 +404,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     # Notification to feature change watcher.
     self.assertEqual('Review Request for feature: feature one', review_task_1['subject'])
     self.assertIn('mock body html', review_task_1['html'])
-    self.assertIn('<li>You received a review request for this feature</li>',
+    self.assertIn('<li>You are a reviewer for this type of gate</li>',
       review_task_1['html'])
     self.assertEqual('approver1@example.com', review_task_1['to'])
 
@@ -411,17 +413,39 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     # Notification to feature change watcher.
     self.assertEqual('Review Request for feature: feature one', review_task_2['subject'])
     self.assertIn('mock body html', review_task_2['html'])
-    self.assertIn('<li>You received a review request for this feature</li>',
+    self.assertIn('<li>You are a reviewer for this type of gate</li>',
       review_task_2['html'])
     self.assertEqual('approver2@example.com', review_task_2['to'])
 
     mock_f_e_b.assert_called_once_with(
-        True, self.fe_1, self.changes)
+        'update-feature-email.html', self.fe_1, self.changes)
     mock_get_approvers.assert_called_once_with(1)
 
   @mock.patch('internals.notifier.format_email_body')
+  def test_make_review_requests_email__assigned(self, mock_f_e_b):
+    """We send email to the assigned reviewer for a review request."""
+    mock_f_e_b.return_value = 'mock body html'
+    gate_1 = Gate(
+        feature_id=self.fe_1.key.integer_id(), gate_type=1,
+        stage_id=123, state=0, assignee_emails=['approver3@example.com'])
+    gate_1.put()
+
+    actual_tasks = notifier.make_review_requests_email(
+        self.fe_1, 1, self.changes)
+    self.assertEqual(1, len(actual_tasks))
+    review_task_1 = actual_tasks[0]
+
+    # Notification to feature change watcher.
+    self.assertEqual('Review Request for feature: feature one', review_task_1['subject'])
+    self.assertIn('mock body html', review_task_1['html'])
+    self.assertIn('<li>This review is assigned to you</li>',
+      review_task_1['html'])
+    self.assertEqual('approver3@example.com', review_task_1['to'])
+
+  @mock.patch('internals.notifier.format_email_body')
   @mock.patch('internals.approval_defs.get_approvers')
-  def test_make_new_comments_email(self, mock_get_approvers, mock_f_e_b):
+  def test_make_new_comments_email__unassigned(
+      self, mock_get_approvers, mock_f_e_b):
     """We send email to approvers for a review request."""
     mock_f_e_b.return_value = 'mock body html'
     mock_get_approvers.return_value = ['approver1@example.com']
@@ -434,7 +458,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
 
     self.assertEqual('New comments for feature: feature one', review_task_1['subject'])
     self.assertIn('mock body html', review_task_1['html'])
-    self.assertIn('<li>You are the reviewer for this gate</li>',
+    self.assertIn('<li>You are a reviewer for this type of gate</li>',
       review_task_1['html'])
     self.assertEqual('approver1@example.com', review_task_1['to'])
 
@@ -475,8 +499,29 @@ class EmailFormattingTest(testing_config.CustomTestCase):
       feature_editor_task_2['html'])
     self.assertEqual('owner_1@example.com', feature_editor_task_2['to'])
 
-    mock_f_e_b.assert_called_once_with(True, self.fe_1, self.changes)
+    mock_f_e_b.assert_called_once_with(
+        'update-feature-email.html', self.fe_1, self.changes)
     mock_get_approvers.assert_called_once_with(1)
+
+  @mock.patch('internals.notifier.format_email_body')
+  def test_make_new_comments_email__assigned(self, mock_f_e_b):
+    """We send email to approvers for a review request."""
+    mock_f_e_b.return_value = 'mock body html'
+    gate_1 = Gate(
+        feature_id=self.fe_1.key.integer_id(), gate_type=1,
+        stage_id=123, state=0, assignee_emails=['approver3@example.com'])
+    gate_1.put()
+
+    actual_tasks = notifier.make_new_comments_email(
+        self.fe_1, 1, self.changes)
+    self.assertEqual(6, len(actual_tasks))
+    review_task_1 = actual_tasks[0]
+
+    self.assertEqual('New comments for feature: feature one', review_task_1['subject'])
+    self.assertIn('mock body html', review_task_1['html'])
+    self.assertIn('<li>This review is assigned to you</li>',
+      review_task_1['html'])
+    self.assertEqual('approver3@example.com', review_task_1['to'])
 
   @mock.patch('internals.notifier.format_email_body')
   def test_make_feature_changes_email__starrer(self, mock_f_e_b):
@@ -546,7 +591,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
 
     mock_f_e_b.assert_called_once_with(
-        True, self.fe_1, self.changes)
+        'update-feature-email.html', self.fe_1, self.changes)
 
 
   @mock.patch('internals.notifier.format_email_body')
@@ -570,7 +615,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertEqual('owner_1@example.com', component_owner_task['to'])
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
     mock_f_e_b.assert_called_once_with(
-        True, self.fe_2, self.changes)
+        'update-feature-email.html', self.fe_2, self.changes)
 
 
 class FeatureStarTest(testing_config.CustomTestCase):
@@ -685,7 +730,7 @@ class NotifyInactiveUsersHandlerTest(testing_config.CustomTestCase):
       last_visit=datetime(2023, 2, 20))
     inactive_user.put()
     self.inactive_user = inactive_user
-    
+
     # User who has recently been given access by an admin,
     # but has not yet visited the site. They should not be considered inactive.
     newly_created_user = AppUser(
@@ -768,7 +813,7 @@ class OriginTrialCreationRequestHandlerTest(testing_config.CustomTestCase):
     )
     self.feature.put()
     self.ot_stage.put()
-  
+
   def tearDown(self) -> None:
     kinds: list[ndb.Model] = [FeatureEntry, Stage]
     for kind in kinds:
@@ -867,7 +912,7 @@ class OriginTrialExtensionRequestHandlerTest(testing_config.CustomTestCase):
     self.feature.put()
     self.ot_stage.put()
     self.extension_stage.put()
-  
+
   def tearDown(self) -> None:
     kinds: list[ndb.Model] = [FeatureEntry, Stage]
     for kind in kinds:

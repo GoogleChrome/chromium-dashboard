@@ -610,6 +610,7 @@ def gate_value_to_json_dict(gate: Gate) -> dict[str, Any]:
       'gate_type': gate.gate_type,
       'team_name': appr_def.team_name if appr_def else 'Team',
       'gate_name': appr_def.name if appr_def else 'Gate',
+      'escalation_email': appr_def.escalation_email if appr_def else None,
       'state': gate.state,
       'requested_on': requested_on,  # YYYY-MM-DD HH:MM:SS or None
       'responded_on': responded_on,  # YYYY-MM-DD HH:MM:SS or None

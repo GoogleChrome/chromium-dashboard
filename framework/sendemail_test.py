@@ -17,6 +17,7 @@ import collections
 import flask
 import json
 import testing_config  # Must be imported before the module under test.
+import werkzeug.exceptions  # Flask HTTP stuff.
 from unittest import mock
 
 from google.appengine.api import mail
@@ -27,6 +28,29 @@ from framework import sendemail
 
 
 test_app = flask.Flask(__name__)
+
+class FunctionTests(testing_config.CustomTestCase):
+
+  def test_get_param__simple(self):
+    """We can simply get a JSON parameter, with defaults."""
+    with test_app.test_request_context('/test', json={'x': 1}):
+      self.assertEqual(
+          1,
+          sendemail.get_param(flask.request, 'x'))
+      self.assertEqual(
+          None,
+          sendemail.get_param(flask.request, 'missing', required=False))
+
+  @mock.patch('flask.abort')
+  def test_get_param__missing_required(self, mock_abort):
+    """If a required param is missing, we abort."""
+    mock_abort.side_effect = werkzeug.exceptions.BadRequest
+
+    with test_app.test_request_context('/test', json={'x': 1}):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        sendemail.get_param(flask.request, 'missing')
+    mock_abort.assert_called_once_with(
+        400, description="Missing parameter 'missing'")
 
 
 class OutboundEmailHandlerTest(testing_config.CustomTestCase):

@@ -475,3 +475,16 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     cached_result = rediscache.get(cache_key)
     rediscache.delete(cache_key)
     self.assertEqual(cached_result, features)
+
+    # Deleted features are not included
+    self.feature_4.deleted = True
+    self.feature_4.put()
+    features = feature_helpers.get_features_in_release_notes(milestone=1)
+    self.assertEqual(2, len(features))
+    self.assertEqual(
+      ['feature a', 'feature b'],
+      [f['name'] for f in features])
+    cached_result = rediscache.get(cache_key)
+    rediscache.delete(cache_key)
+    self.assertEqual(cached_result, features)
+

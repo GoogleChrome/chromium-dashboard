@@ -85,7 +85,7 @@ def get_features_in_release_notes(milestone: int):
   features = [dict(converters.feature_entry_to_json_verbose(f))
             for f in _get_future_results(_get_entries_by_id_async(feature_ids))]
   features = [f for f in filter_unlisted(features) 
-    if f['breaking_change'] == True or f['feature_type_int'] == FEATURE_TYPE_ENTERPRISE_ID]
+    if f['deleted'] == False and (f['breaking_change'] == True or f['feature_type_int'] == FEATURE_TYPE_ENTERPRISE_ID)]
 
   rediscache.set(cache_key, features)
   return features

@@ -298,7 +298,6 @@ class ChromedashApp extends LitElement {
       this.pageComponent.user = this.user;
       this.pageComponent.contextLink = this.contextLink;
       this.pageComponent.selectedGateId = this.selectedGateId;
-      this.pageComponent.rawQuery = parseRawQuery(ctx.querystring);
       this.pageComponent.appTitle = this.appTitle;
       this.currentPage = ctx.path;
       if (this.pageComponent.featureId != this.gateColumnRef.value?.feature?.id) {

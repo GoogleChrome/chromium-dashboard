@@ -43,7 +43,7 @@ export const ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME = {
 export const PLATFORM_CATEGORIES = {
   PLATFORM_ANDROID: [1, 'Android'],
   PLATFORM_IOS: [2, 'iOS'],
-  PLATFORM_CHROMEOS: [3, 'Chrome OS'],
+  PLATFORM_CHROMEOS: [3, 'ChromeOS'],
   PLATFORM_LACROS: [4, 'LaCrOS'],
   PLATFORM_LINUX: [5, 'Linux'],
   PLATFORM_MAC: [6, 'Mac'],
@@ -54,7 +54,7 @@ export const PLATFORM_CATEGORIES = {
 export const PLATFORMS_DISPLAYNAME = {
   1: 'Android', // PLATFORM_ANDROID
   2: 'iOS', // PLATFORM_IOS
-  3: 'Chrome OS', // PLATFORM_CHROMEOS
+  3: 'ChromeOS', // PLATFORM_CHROMEOS
   4: 'LaCrOS', // PLATFORM_LACROS
   5: 'Linux', // PLATFORM_LINUX
   6: 'Mac', // PLATFORM_MAC
@@ -261,6 +261,10 @@ export const STAGE_SPECIFIC_FIELDS = new Set([
   'ot_creation__milestone_desktop_first',
   'ot_creation__milestone_desktop_last',
   'ot_extension__milestone_desktop_last',
+  'ot_require_approvals',
+  'ot_approval_buganizer_component',
+  'ot_approval_group_email',
+  'ot_approval_criteria_url',
   'finch_url',
   'experiment_goals',
   'experiment_risks',

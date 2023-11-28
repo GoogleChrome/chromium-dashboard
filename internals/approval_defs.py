@@ -16,6 +16,7 @@
 import base64
 from dataclasses import dataclass
 import datetime
+import json
 import logging
 from typing import Optional
 import requests
@@ -43,13 +44,7 @@ ENTERPRISE_APPROVERS = [
     'davidayad@google.com',
     'bheenan@google.com',
 ]
-DEBUGGABILITY_APPROVERS = [
-    'bmeurer@google.com',
-    'danilsomsikov@google.com',
-    'yangguo@google.com',
-    'changhaohan@google.com',
-    'pfaffe@google.com',
-]
+DEBUGGABILITY_APPROVERS = IN_NDB
 TESTING_APPROVERS = [
     'sadapala@google.com',
     'santhoshkumarm@google.com',
@@ -66,6 +61,7 @@ class ApprovalFieldDef:
   rule: str
   approvers: str | list[str]
   team_name: str
+  escalation_email: str | None = None
   slo_initial_response: int = DEFAULT_SLO_LIMIT
 
 
@@ -101,6 +97,7 @@ PrivacyOriginTrialApproval = ApprovalFieldDef(
     'Privacy OT Review',
     core_enums.GATE_PRIVACY_ORIGIN_TRIAL, ONE_LGTM,
     approvers=PRIVACY_APPROVERS, team_name='Privacy',
+    escalation_email='chrome-privacy-owp-rotation@google.com',
     slo_initial_response=6)
 
 PrivacyShipApproval = ApprovalFieldDef(
@@ -108,6 +105,7 @@ PrivacyShipApproval = ApprovalFieldDef(
     'Privacy Ship Review',
     core_enums.GATE_PRIVACY_SHIP, ONE_LGTM,
     approvers=PRIVACY_APPROVERS, team_name='Privacy',
+    escalation_email='chrome-privacy-owp-rotation@google.com',
     slo_initial_response=6)
 
 SecurityOriginTrialApproval = ApprovalFieldDef(
@@ -189,6 +187,47 @@ def decode_raw_owner_content(raw_content) -> list[str]:
       owners.append(line)
 
   return owners
+
+
+def auto_assign_reviewer(gate):
+  """If a previous review was assigned, use the same reviewer.
+     If this gate has a reviewer rotation, use the current on-call user."""
+  afd = APPROVAL_FIELDS_BY_ID[gate.gate_type]
+
+  all_gates: list[Gate] = Gate.query(Gate.feature_id == gate.feature_id).fetch()
+  for other_gate in all_gates:
+    other_afd = APPROVAL_FIELDS_BY_ID[other_gate.gate_type]
+    if (other_gate.key.integer_id() != gate.key.integer_id() and
+        other_afd.team_name == afd.team_name and
+        other_afd.rule == afd.rule and
+        other_gate.assignee_emails):
+      gate.assignee_emails = other_gate.assignee_emails
+      gate.put()
+      return
+
+  if afd.approvers != IN_NDB:
+    return
+
+  gate_def = GateDef.get_gate_def(gate.gate_type)
+  if not gate_def.rotation_url:
+    return
+
+  response = requests.get(gate_def.rotation_url)
+  if response.status_code != 200:
+    logging.error('Could not fetch %r', gate_def.rotation_url)
+    logging.error('Got response %s', repr(response)[:settings.MAX_LOG_LINE])
+    return
+
+  try:
+    logging.info(
+        'response.content is:\n%s', response.content[:settings.MAX_LOG_LINE])
+    response_json = json.loads(response.content)
+  except ValueError:
+    logging.info('failed to parse content')
+
+  if 'emails' in response_json:
+    gate.assignee_emails = response_json['emails']
+    gate.put()
 
 
 def get_approvers(field_id) -> list[str]:

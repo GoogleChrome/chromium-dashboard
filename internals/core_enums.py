@@ -69,7 +69,7 @@ IMPACT_CATEGORIES = collections.OrderedDict([
 PLATFORM_CATEGORIES = collections.OrderedDict([
   (PLATFORM_ANDROID, 'Android'),
   (PLATFORM_IOS, 'iOS'),
-  (PLATFORM_CHROMEOS, 'Chrome OS'),
+  (PLATFORM_CHROMEOS, 'ChromeOS'),
   (PLATFORM_LACROS, 'LaCROS'),
   (PLATFORM_LINUX, 'Linux'),
   (PLATFORM_MAC, 'Mac'),

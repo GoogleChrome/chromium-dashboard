@@ -1,4 +1,4 @@
-import {LitElement, css, html} from 'lit';
+import {LitElement, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
 import {
   formatFeatureChanges,
@@ -10,6 +10,7 @@ import './chromedash-form-field.js';
 import {ORIGIN_TRIAL_CREATION_FIELDS} from './form-definition.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
+import {ALL_FIELDS} from './form-field-specs.js';
 
 
 export class ChromedashOTCreationPage extends LitElement {
@@ -31,6 +32,7 @@ export class ChromedashOTCreationPage extends LitElement {
       appTitle: {type: String},
       nextPage: {type: String},
       fieldValues: {type: Array},
+      showApprovalsFields: {type: Boolean},
     };
   }
 
@@ -43,6 +45,7 @@ export class ChromedashOTCreationPage extends LitElement {
     this.appTitle = '';
     this.nextPage = '';
     this.fieldValues = [];
+    this.showApprovalsFields = false;
   }
 
   connectedCallback() {
@@ -61,6 +64,12 @@ export class ChromedashOTCreationPage extends LitElement {
     // The field has been updated, so it is considered touched.
     this.fieldValues[index].touched = true;
     this.fieldValues[index].value = value;
+
+    // Toggle the display of the registration approval fields when the box is checked.
+    if (this.fieldValues[index].name === 'ot_require_approvals') {
+      this.showApprovalsFields = !this.showApprovalsFields;
+      this.requestUpdate();
+    }
   };
 
   fetchData() {
@@ -75,10 +84,81 @@ export class ChromedashOTCreationPage extends LitElement {
       if (this.feature.name) {
         document.title = `${this.feature.name} - ${this.appTitle}`;
       }
+      this.setFieldValues();
       this.loading = false;
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
+  }
+
+  // Add the togglable registration approvals fields to the fieldValues array.
+  addOptionalApprovalsFields() {
+    // Approval requirement fields are always hidden unless the feature owner
+    // opts in to using them.
+    const insertIndex = this.fieldValues.findIndex(
+      fieldInfo => fieldInfo.name === 'ot_require_approvals') + 1;
+    this.fieldValues.splice(insertIndex, 0,
+      {
+        name: 'ot_approval_buganizer_component',
+        touched: false,
+        value: '',
+        stageId: this.stage.id,
+        isApprovalsField: true,
+      },
+      {
+        name: 'ot_approval_group_email',
+        touched: false,
+        value: '',
+        stageId: this.stage.id,
+        isApprovalsField: true,
+      },
+      {
+        name: 'ot_approval_criteria_url',
+        touched: false,
+        value: '',
+        stageId: this.stage.id,
+        isApprovalsField: true,
+      });
+  }
+
+  addHiddenFields() {
+    // Add a field for updating that an OT creation request has been submitted.
+    this.fieldValues.push({
+      name: 'ot_action_requested',
+      touched: true,
+      value: true,
+      stageId: this.stage.id,
+      alwaysHidden: true,
+    });
+  }
+
+  // Create the array that tracks the value of fields.
+  setFieldValues() {
+    // OT creation page only has one section.
+    const section = ORIGIN_TRIAL_CREATION_FIELDS.sections[0];
+
+    this.fieldValues = section.fields.map(field => {
+      const featureJSONKey = ALL_FIELDS[field].name || field;
+      let value = getStageValue(this.stage, featureJSONKey);
+      let touched = false;
+
+      // The requester's email should be a contact by default.
+      if (featureJSONKey === 'ot_owner_email' && !value) {
+        value = [this.userEmail];
+        touched = true;
+      // Display registration approvals fields by default if the value is checked already.
+      } else if (featureJSONKey === 'ot_require_approvals') {
+        this.showApprovalsFields = !!value;
+      }
+
+      // Add the field to this component's stage before creating the field component.
+      return {
+        name: featureJSONKey,
+        touched,
+        value,
+        stageId: this.stage.id,
+      };
+    });
+    this.addOptionalApprovalsFields();
+    this.addHiddenFields();
   }
 
   disconnectedCallback() {
@@ -102,6 +182,15 @@ export class ChromedashOTCreationPage extends LitElement {
 
   handleFormSubmit(e) {
     e.preventDefault();
+    // If registration approvals is not enabled, ignore all fields related to that setting.
+    if (!this.showApprovalsFields) {
+      this.fieldValues.forEach(fieldInfo => {
+        if (fieldInfo.isApprovalsField) {
+          fieldInfo.touched = false;
+        }
+      });
+    }
+
     const featureSubmitBody = formatFeatureChanges(this.fieldValues, this.featureId);
     // We only need the single stage changes.
     const stageSubmitBody = featureSubmitBody.stages[0];
@@ -111,8 +200,6 @@ export class ChromedashOTCreationPage extends LitElement {
       setTimeout(() => {
         window.location.href = this.nextPage || `/feature/${this.featureId}`;
       }, 1000);
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
   }
 
@@ -156,41 +243,24 @@ export class ChromedashOTCreationPage extends LitElement {
     `;
   }
 
-  renderFields(section) {
-    const fields = section.fields.map(field => {
-      let value = getStageValue(this.stage, field);
-      let touched = false;
-      // The requester's email should be a contact by default.
-      if (field === 'ot_owner_email' && !value) {
-        value = [this.userEmail];
-        touched = true;
+  renderFields() {
+    const fields = this.fieldValues.map((fieldInfo, i) => {
+      if (fieldInfo.alwaysHidden || (fieldInfo.isApprovalsField && !this.showApprovalsFields)) {
+        return nothing;
       }
-      // Add the field to this component's stage before creating the field component.
-      const index = this.fieldValues.length;
-      this.fieldValues.push({
-        name: field,
-        touched,
-        value,
-        stageId: this.stage.id,
-      });
+      // Fade in transition for the approvals fields if they're being displayed.
+      const shouldFadeIn = fieldInfo.isApprovalsField;
 
       return html`
       <chromedash-form-field
-        name=${field}
-        index=${index}
-        value=${value}
+        name=${fieldInfo.name}
+        value=${fieldInfo.value}
+        index=${i}
         .fieldValues=${this.fieldValues}
+        .shouldFadeIn=${shouldFadeIn}
         @form-field-update="${this.handleFormFieldUpdate}">
       </chromedash-form-field>
     `;
-    });
-
-    // Add a field for updating that an OT creation request has been submitted.
-    this.fieldValues.push({
-      name: 'ot_action_requested',
-      touched: true,
-      value: true,
-      stageId: this.stage.id,
     });
     return fields;
   }
