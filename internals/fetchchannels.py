@@ -31,7 +31,7 @@ def get_channel_version(channel):
   logging.info('fetching %s' % url)
   result = requests.get(url)
   if result.status_code != 200:
-    logging.info('Could not fetch channel info')
+    logging.info('Could not fetch channel info for %s', channel)
     return '0.0'
   channel_info = json.loads(result.content)
   logging.info('channel_info is %r', channel_info)
