@@ -5,6 +5,7 @@ import {
   somePendingPrereqs,
   somePendingGates,
 } from './chromedash-preflight-dialog';
+// import {openIntentDialog} from './chromedash-intent-dialog';
 import {findProcessStage} from './utils';
 import {SHARED_STYLES} from '../css/shared-css.js';
 

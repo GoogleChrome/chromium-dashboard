@@ -313,6 +313,7 @@ class ChromedashApp extends LitElement {
       this.currentPage = ctx.path;
       this.hideSidebar();
     });
+    // page('/admin/features/launch/:featureId(\\d+)/:intentStage(\\d+)?intent=1')
     page('/guide/new', (ctx) => {
       if (!this.setupNewPage(ctx, 'chromedash-guide-new-page')) return;
       if (ctx.querystring.search('loginStatus=False') == -1) {
