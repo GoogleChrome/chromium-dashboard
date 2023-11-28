@@ -24,6 +24,18 @@ OMAHA_URL_TEMPLATE = (
     'https://versionhistory.googleapis.com'
     '/v1/chrome/platforms/win/channels/%s/versions/?pageSize=1')
 
+# Expected response for the "stable" channel looks like:
+# {
+#  "versions": [
+#   {
+#    "name": "chrome/platforms/android/channels/stable/versions/119.0.6045.163",
+#    "version": "119.0.6045.163"
+#   }
+#  ],
+#  "nextPageToken": "202090764"
+# }
+# We really only need the version string.
+
 
 def get_channel_version(channel):
   """Return the version string that is live on the given channel."""
