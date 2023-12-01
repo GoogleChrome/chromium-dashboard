@@ -3,7 +3,7 @@ ARG USERID
 ARG GROUPID
 ARG PLAYWRIGHT_VERSION
 
-FROM mcr.microsoft.com/playwright:${PLAYWRIGHT_VERSION}-jammy
+FROM mcr.microsoft.com/playwright:v${PLAYWRIGHT_VERSION}-jammy
 
 USER root
 # playwright already created this user. Delete it and use the UID & GID from the host
