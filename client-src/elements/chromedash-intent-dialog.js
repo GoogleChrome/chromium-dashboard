@@ -1,4 +1,4 @@
-import {LitElement, html} from 'lit-element';
+import {LitElement, html, css} from 'lit-element';
 import {INTENT_STAGES} from './form-field-enums.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
@@ -103,7 +103,7 @@ class ChromeDashIntentDialog extends LitElement {
       intent_stage: {type: String},
       default_url: {type: String},
     };
-  }
+  } //
 
   constructor() {
     super();
@@ -112,6 +112,7 @@ class ChromeDashIntentDialog extends LitElement {
     this.blinkDevEmail = 'blinkDevEmail';
     this.feature = {};
     this.stage_info = this.feature.stages;
+    this.intent = true;
     this.intent_stage = '';
     this.subject_prefix = this.computeSubjectPrefix(this.intent_stage);
     // this.should_render_mstone_table = this.stage_info['should_render_mstone_table'];
@@ -401,7 +402,7 @@ class ChromeDashIntentDialog extends LitElement {
   renderInstructions() {
     const nextStepsHtml = html`
     <section>
-    <h3>Next steps for the Blink launch process</h3>
+    <h2>Next steps for the Blink launch process</h2>
     <p style="margin-left: 1em">
       Click through this link to file a launch-tracking bug
     </p>
