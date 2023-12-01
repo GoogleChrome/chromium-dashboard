@@ -2,7 +2,7 @@
 
 export USERID=$(id -u)
 export GROUPID=$(id -g)
-export PLAYWRIGHT_VERSION=$(bash -c './get-npm-package-versioon.sh packages/playwright/package.json "@playwright/test"')
+export PLAYWRIGHT_VERSION=$(bash -c './get-npm-package-versioon.sh ./package.json "@playwright/test"')
 
 set -e
 
