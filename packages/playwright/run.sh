@@ -2,12 +2,13 @@
 
 export USERID=$(id -u)
 export GROUPID=$(id -g)
+export PLAYWRIGHT_VERSION=$(bash -c './get-npm-package-versioon.sh packages/playwright/package.json "@playwright/test")
 
 set -e
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-export COMPOSE_FILES_FLAG="-f ${SCRIPT_DIR}/docker-compose.yml 
+export COMPOSE_FILES_FLAG="-f ${SCRIPT_DIR}/docker-compose.yml
     -f  ${SCRIPT_DIR}/../../.devcontainer/db-docker-compose.yml"
 echo $COMPOSE_FILES_FLAG
 build() {
@@ -16,7 +17,8 @@ build() {
     build \
     --parallel \
     --build-arg USERID=${USERID} \
-    --build-arg GROUPID=${GROUPID}
+    --build-arg GROUPID=${GROUPID} \
+    --build-arg PLAYWRIGHT_VERSION=${PLAYWRIGHT_VERSION}
 }
 
 
