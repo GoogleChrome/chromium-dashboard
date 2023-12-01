@@ -42,6 +42,6 @@ then
 fi
 
 set -x
-USERID=${USERID} GROUPID=${GROUPID} docker compose \
+USERID=${USERID} GROUPID=${GROUPID} PLAYWRIGHT_VERSION=${PLAYWRIGHT_VERSION} docker compose \
     ${COMPOSE_FILES_FLAG} \
     run --remove-orphans --rm --user=${USERID}:${GROUPID} "$CONTAINER" "${CMD[@]}"
