@@ -387,12 +387,14 @@ export function checkMilestoneStartEnd(startEndPair, getFieldValue) {
   const getValue = (name) => {
     const value = getFieldValue(name);
     if (typeof value === 'string') {
+      if (value === '') return undefined;
       return Number(value);
     }
   };
   const {start, end} = startEndPair;
   const startMilestone = getValue(start);
   const endMilestone = getValue(end);
+  console.info(`after getValue: start: ${startMilestone} end: ${endMilestone}`);
   if (startMilestone != null && endMilestone != null) {
     if (endMilestone <= startMilestone) {
       return {error: 'Start milestone must be before end milestone'};
