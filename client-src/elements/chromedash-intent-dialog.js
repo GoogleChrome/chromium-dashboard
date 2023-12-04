@@ -1,4 +1,4 @@
-import {LitElement, html, css} from 'lit-element';
+import {LitElement, html, css, nothing} from 'lit-element';
 import {INTENT_STAGES} from './form-field-enums.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
@@ -139,49 +139,49 @@ class ChromeDashIntentDialog extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-      #content {
+      :host {
         flex-direction: column;
         counter-reset: h3;
         height: auto;
       }
-      #content section {
+      :host section {
         max-width: 600px;
         flex: 1 0 auto;
         margin-bottom: 15px;
       }
-      #content section > div {
+      :host section > div {
         background: white;
         border: 1px solid #ddd;
         box-shadow: rgba(0, 0, 0, 0.067) 1px 1px 4px;
         padding: 12px;
         margin: 8px 0 16px 0;
       }
-      #content section > p {
+      :host section > p {
         color: #444;
       }
-      #content h3 {
+      :host h3 {
         margin-bottom: 10px;
       }
-      #content h3:before {
+      :host h3:before {
         counter-increment: h3;
         content: counter(h3) ".";
         margin-right: 5px;
       }
 
-      .subject {
+      :host .subject {
         font-size: 16px;
         margin-bottom: 10px;
       }
 
-      .email .help {
+      :host .email .help {
         font-style: italic;
         color: #aaa;
       }
-      .email h4 {
+      :host .email h4 {
         font-weight: 600;
       }
 
-      .alertbox {
+      :host .alertbox {
         margin: 2em;
         padding: 1em;
         background: var(--warning-background);
@@ -192,9 +192,16 @@ class ChromeDashIntentDialog extends LitElement {
 
 
   openWithContext(
-    feature, stageInfo) {
+    feature, _progress, _process, _action, _stage, feStage, featureGates) {
     this.feature = feature;
-    this.stage_info = stageInfo;
+    this.stage_info = this.feature.stages;
+    this.intent = true;
+    this.intent_stage = feStage.intent_stage;
+    this.subject_prefix = this.computeSubjectPrefix(this.intent_stage);
+
+    // Not necessarily valid:
+    this.featureGates = featureGates;
+
     this.shadowRoot.querySelector('sl-dialog').show();
   }
   /*
@@ -315,27 +322,27 @@ class ChromeDashIntentDialog extends LitElement {
 
   computeSubjectPrefix() {
     const intentStage = this.intent_stage;
-    if (intentStage == INTENT_STAGES.INTENT_INCUBATE) {
-      if (this.feature.feature_type == INTENT_STAGES.FEATURE_TYPE_DEPRECATION_ID) {
+    if (intentStage == INTENT_STAGES.INTENT_INCUBATE[0]) {
+      if (this.feature.feature_type == INTENT_STAGES.FEATURE_TYPE_DEPRECATION_ID[0]) {
         return 'Intent to Deprecate and Remove';
       }
-    } else if (intentStage == INTENT_STAGES.INTENT_IMPLEMENT) {
+    } else if (intentStage == INTENT_STAGES.INTENT_IMPLEMENT[0]) {
       return 'Intent to Prototype';
-    } else if (intentStage == INTENT_STAGES.INTENT_EXPERIMENT) {
+    } else if (intentStage == INTENT_STAGES.INTENT_EXPERIMENT[0]) {
       return 'Ready for Developer Testing';
-    } else if (intentStage == INTENT_STAGES.INTENT_EXTEND_TRIAL) {
-      if (this.feature.feature_type == INTENT_STAGES.FEATURE_TYPE_DEPRECATION_ID) {
+    } else if (intentStage == INTENT_STAGES.INTENT_EXTEND_TRIAL[0]) {
+      if (this.feature.feature_type == INTENT_STAGES.FEATURE_TYPE_DEPRECATION_ID[0]) {
         return 'Request for Deprecation Trial';
       } else {
         return 'Intent to Experiment';
       }
-    } else if (intentStage == INTENT_STAGES.INTENT_SHIP) {
-      if (this.feature.feature_type == INTENT_STAGES.FEATURE_TYPE_CODE_CHANGE_ID) {
+    } else if (intentStage == INTENT_STAGES.INTENT_SHIP[0]) {
+      if (this.feature.feature_type == INTENT_STAGES.FEATURE_TYPE_CODE_CHANGE_ID[0]) {
         return 'Web-Facing Change PSA';
       } else {
         return 'Intent to Ship';
       }
-    } else if (intentStage == INTENT_STAGES.INTENT_REMOVED) {
+    } else if (intentStage == INTENT_STAGES.INTENT_REMOVED[0]) {
       return 'Intent to Extend Deprecation Trial';
     }
   }
@@ -400,19 +407,41 @@ class ChromeDashIntentDialog extends LitElement {
 */
 
   renderInstructions() {
-    const nextStepsHtml = html`
-    <section>
-    <h2>Next steps for the Blink launch process</h2>
-    <p style="margin-left: 1em">
-      Click through this link to file a launch-tracking bug
-    </p>
-    </section>
-    `;
+    // const nextStepsHtml = html`
+    // <section>
+    // <h2>Next steps for the Blink launch process</h2>
+    // <p style="margin-left: 1em">
+    //   Click through this link to file a launch-tracking bug
+    // </p>
+    // </section>
+    // `;
 
     const lauchHtml = this.launch ? html`
   <section>
   <h3>Click through this link to file a launch-tracking bug</h3>
-    {% include "blink/launch_bug.html" %}
+    <!-- Description:
+    { DESCRIPTION }
+
+    Changes to API surface:
+    Bulleted list here
+
+    Links:
+    Chromestatus.com entry: { generated_link }
+    Public standards discussion: { SPEC }
+
+    Support from other browsers:
+    Firefox: { FF_SUPPORT }
+    Edge: { IE_SUPPORT }
+    Safari: { SAFARI_SUPPORT }
+
+    *Make sure to fill in any labels with a -?, including all OSes this change
+    affects.  Feel free to leave other labels at the defaults.
+    -->
+
+    <div>
+    TODO
+    </div>
+
   </section>
   ` : '';
 
@@ -426,25 +455,13 @@ class ChromeDashIntentDialog extends LitElement {
   </section>
   ` : '';
 
-    const copyEmailBodyHtml = html`
-  <section>
-  <h3>Copy and send this text for your "Intent to ..." email</h3>
-  <p style="margin-left: 1em">
-    Copy and send this text to your "Intent to ..." email.
-  </p>
-  </section>
-  `;
-
     return html`
-  ${nextStepsHtml}
   ${lauchHtml}
   ${intentHtml}
-  ${copyEmailBodyHtml}
   `;
   }
 
   /*
-
 {% include "blink/intent_to_implement.html" %}
 
 {% endif %}
@@ -463,7 +480,27 @@ after that, you're free to ship your feature.
 {% endif %}
 
 {% endblock %}
+*/
 
+  renderNeedApiOwnersApproval() {
+    if (!this.sections_to_show.includes('need_api_owners_lgtms')) {
+      return nothing;
+    }
+    return html`
+    <section>
+    <h3>Obtain LGTMs from 3 API Owners</h3>
+    <span class="help">
+      You will need three LGTMs from API owners.
+      According to the
+      <a href="http://www.chromium.org/blink#launch-process">Blink Launch process</a>
+      after that, you're free to ship your feature.
+    </span>
+    </section>
+    `;
+  }
+
+
+  /*
 {% block js %}
 <script nonce="{{nonce}}">
 // Remove loading spinner at page load.
@@ -489,12 +526,11 @@ after that, you're free to ship your feature.
   renderSubheader() {
     const header = html`
       <p>Email to
-        <span class="subject">: ${this.blinkDevEmail}</span>
+        <div class="subject">${this.blinkDevEmail}</div>
       </p>
 
       <p>Subject
-
-        <span class="subject">${this.subjectPrefix}: ${this.feature.name}</span>
+        <div class="subject">${this.subject_prefix}: ${this.feature.name}</div>
       </p>
 
       <p>
@@ -502,8 +538,7 @@ after that, you're free to ship your feature.
         <span
           class="tooltip copy-text"
           style="float:right"
-          title="Copy text to clipboard"
-        >
+          title="Copy text to clipboard">
           <a href="#" data-tooltip>
             <iron-icon
               icon="chromestatus:content_copy"
@@ -528,16 +563,13 @@ after that, you're free to ship your feature.
 
   renderContactEmails() {
     const owners = this.feature.browsers.chrome.owners;
-    if (!owners) {
-      return html`None`;
-    }
-    const ownersList = owners.map(
+    const ownersList = !owners ? html`None` : owners.map(
       (owner) => html` <a href="mailto:${owner}">${owner}</a> `,
     );
     return html`
-        <br /><br />
         <h4>Contact emails</h4>
         ${ownersList}
+        <br /><br />
       `;
   }
 
@@ -551,37 +583,38 @@ after that, you're free to ship your feature.
   //   {% endif %}
   //   */
 
-  //   renderExplainerLinks() {
-  //     const explainerLinks = this.feature.explainer_links;
-  //     if (!explainerLinks && this.feature.feature_type_int === 2) {
-  //       return nothing;
-  //     }
-  //     const explainerLinksList = explainerLinks.map(
-  //       (link, index) => html`
-  //         ${index ? html`<br />` : nothing}
-  //         <a href="${link}">${link}</a>
-  //       `,
-  //     );
-  //     return html`
-  //       <br /><br />
-  //       <h4>Explainer</h4>
-  //       ${explainerLinks ? `<br />${explainerLinksList.join('\n')}` : 'None'}
-  //     `;
-  //   }
+  renderExplainerLinks() {
+    const explainerLinks = this.feature.explainer_links;
+    if (!explainerLinks && this.feature.feature_type_int === 2) {
+      return nothing;
+    }
+    const explainerLinksList = explainerLinks.map(
+      (link) => html`
+        <a href="${link}">${link}</a>
+      `,
+    );
+    return html`
+      <h4>Explainer</h4>
+      ${(explainerLinks && explainerLinks.length > 0) ?
+        html`<br />${explainerLinksList.join(html`<br />`)}` :
+        'None'}
+      <br /><br />
+    `;
+  }
 
   //   /*
   //   <br><br><h4>Specification</h4>
   //   {{feature.standards.spec|urlize}}
   //   */
 
-  //   renderSpec() {
-  //     const spec = this.feature.standards.spec;
-  //     return html`
-  //       <br /><br />
-  //       <h4>Specification</h4>
-  //       <a href="${spec}">${spec}</a>
-  //     `;
-  //   }
+  renderSpec() {
+    const spec = this.feature.standards.spec;
+    return html`
+      <h4>Specification</h4>
+      <a href="${spec}">${spec}</a>
+      <br /><br />
+    `;
+  }
 
   //   /*
   //   {% if feature.resources and feature.resources.docs %}
@@ -592,34 +625,34 @@ after that, you're free to ship your feature.
   //   {% endif %}
   //   */
 
-  //   renderDesignDocs() {
-  //     const docs = this.feature.resources.docs;
-  //     if (!docs) {
-  //       return nothing;
-  //     }
-  //     const docsList = docs.map(
-  //       (link) => html` <br /><a href="${link}">${link}</a> `,
-  //     );
-  //     return html`
-  //       <br /><br />
-  //       <h4>Design docs</h4>
-  //       ${docsList}
-  //     `;
-  //   }
+  renderDesignDocs() {
+    const docs = this.feature.resources.docs;
+    if (!docs) {
+      return nothing;
+    }
+    const docsList = docs.map(
+      (link) => html` <br /><a href="${link}">${link}</a> `,
+    );
+    return html`
+      <h4>Design docs</h4>
+      ${docsList}
+      <br /><br />
+    `;
+  }
 
   //   /*
   //   <br><br><h4>Summary</h4>
   //   <p class="preformatted">{{ feature.summary | urlize }}</p>
   //   */
 
-  //   renderSummary() {
-  //     const summary = this.feature.summary;
-  //     return html`
-  //       <br /><br />
-  //       <h4>Summary</h4>
-  //       <p class="preformatted">${summary}</p>
-  //     `;
-  //   }
+  renderSummary() {
+    const summary = this.feature.summary;
+    return html`
+      <h4>Summary</h4>
+      <p class="preformatted">${summary}</p>
+      <br /><br />
+    `;
+  }
 
   //   /*
   //   <br><br><h4>Blink component</h4>
@@ -628,24 +661,24 @@ after that, you're free to ship your feature.
   //   {% endfor %}
   //   */
 
-  //   renderBlinkComponents() {
-  //     const blinkComponents = this.feature.browsers.chrome.blink_components;
-  //     const blinkComponentList = blinkComponents.map(
-  //       (c) => html`
-  //         <a
-  //           href="https://bugs.chromium.org/p/chromium/issues/list?q=component:${c}"
-  //           target="_blank"
-  //           rel="noopener"
-  //           >${c}</a
-  //         >
-  //       `,
-  //     );
-  //     return html`
-  //       <br /><br />
-  //       <h4>Blink component</h4>
-  //       ${blinkComponentList}
-  //     `;
-  //   }
+  renderBlinkComponents() {
+    const blinkComponents = this.feature.browsers.chrome.blink_components;
+    const blinkComponentList = blinkComponents.map(
+      (c) => html`
+        <a
+          href="https://bugs.chromium.org/p/chromium/issues/list?q=component:${c}"
+          target="_blank"
+          rel="noopener"
+          >${c}</a
+        >
+      `,
+    );
+    return html`
+      <h4>Blink component</h4>
+      ${blinkComponentList}
+      <br /><br />
+    `;
+  }
 
   //   /*
   //   {% if 'motivation' in sections_to_show %}
@@ -657,24 +690,24 @@ after that, you're free to ship your feature.
   //   {% endif %}
   //   */
 
-  //   renderMotivation() {
-  //     const motivation = this.feature.motivation;
-  //     if (!motivation) {
-  //       return nothing;
-  //     }
-  //     return html`
-  //       <br /><br />
-  //       <h4>Motivation</h4>
-  //       <p class="preformatted">${motivation}</p>
+  renderMotivation() {
+    const motivation = this.feature.motivation;
+    if (!motivation) {
+      return nothing;
+    }
+    return html`
+      <h4>Motivation</h4>
+      <p class="preformatted">${motivation}</p>
 
-  //       <br /><br />
-  //       <h4>Initial public proposal</h4>
+      <br /><br />
+      <h4>Initial public proposal</h4>
 
-  //       <a href="${this.feature.initial_public_proposal_url}"
-  //         >${this.feature.initial_public_proposal_url}</a
-  //       >
-  //     `;
-  //   }
+      <a href="${this.feature.initial_public_proposal_url}"
+        >${this.feature.initial_public_proposal_url}</a
+      >
+      <br /><br />
+    `;
+  }
 
   //   //   html`
   //   //       <br><br><h4>Intent to implement</h4>
@@ -698,33 +731,34 @@ after that, you're free to ship your feature.
 
   //   {% endif %}
   //   */
-  //   renderSearchTags() {
-  //     const tags = this.feature.tags;
-  //     if (!tags) {
-  //       return nothing;
-  //     }
-  //     const tagsList = tags.map(
-  //       (tag) => html` <a href="/features#tags:${tag}">${tag}</a> `,
-  //     );
-  //     return html`
-  //       <br /><br />
-  //       <h4>Search tags</h4>
-  //       ${tagsList.join(', ')}
-  //     `;
-  //   }
+
+  renderSearchTags() {
+    const tags = this.feature.tags;
+    if (!tags) {
+      return nothing;
+    }
+    const tagsList = tags.map(
+      (tag) => html` <a href="/features#tags:${tag}">${tag}</a> `,
+    );
+    return html`
+      <h4>Search tags</h4>
+      ${tagsList.join(', ')}
+      <br /><br />
+    `;
+  }
 
   //   /*
   //   <br><br><h4>TAG review</h4>
   //   {{feature.tag_review|urlize}}
   //   */
-  //   renderTagReview() {
-  //     const tagReview = this.feature.tag_review;
-  //     return html`
-  //       <br /><br />
-  //       <h4>TAG review</h4>
-  //       <a href="${tagReview}">${tagReview}</a>
-  //     `;
-  //   }
+  renderTagReview() {
+    const tagReview = this.feature.tag_review;
+    return html`
+      <h4>TAG review</h4>
+      <a href="${tagReview}">${tagReview}</a>
+      <br /><br />
+    `;
+  }
 
   //   /*
   //   {% if feature.tag_review_status %}
@@ -1871,10 +1905,6 @@ after that, you're free to ship your feature.
   //   }
 
   //   <!--
-  //   ${ this.renderExplainerLinks() }
-  //   ${this.renderSpec()} ${this.renderDesignDocs()} ${this.renderSummary()}
-  //   ${this.renderBlinkComponents} ${this.renderMotivation()}
-  //   ${this.renderSearchTags()} ${this.renderTagReview()}
   //   ${this.renderTagReviewStatus()} ${this.renderOTInfo()}
   //   ${this.renderRisks()} ${this.renderExperiment()}
   //   ${this.renderDebuggability()} ${this.renderAllPlatforms()}
@@ -1894,19 +1924,33 @@ after that, you're free to ship your feature.
     if (!this.feature || !this.feature.browsers) return '';
     return html`
       ${this.renderInstructions()}
-      ${this.renderSubheader()}
-      <div class="email">
+      ${this.renderNeedApiOwnersApproval()}
 
-        ${this.renderContactEmails()}
+      <section>
+       <h3>Copy and send this text for your "Intent to ..." email</h3>
+        ${this.renderSubheader()}
 
-        <br /><br />
-        <div>
-          <small>
-            This intent message was generated by
-            <a href="https://chromestatus.com">Chrome Platform Status</a>.
-          </small>
+        <div class="email">
+          ${this.renderContactEmails()}
+          ${this.renderExplainerLinks()}
+          ${this.renderSpec()}
+          ${this.renderDesignDocs()}
+          ${this.renderSummary()}
+          ${this.renderBlinkComponents()}
+          ${this.renderMotivation()}
+          ${this.renderSearchTags()}
+          ${this.renderTagReview()}
+
+
+          <br /><br />
+          <div>
+            <small>
+              This intent message was generated by
+              <a href="https://chromestatus.com">Chrome Platform Status</a>.
+            </small>
+          </div>
         </div>
-      </div>
+      </section>
       <!-- end email body div -->
     `;
   }
