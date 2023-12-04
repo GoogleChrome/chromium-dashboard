@@ -387,6 +387,7 @@ export function checkMilestoneStartEnd(startEndPair, getFieldValue) {
   const getValue = (name) => {
     const value = getFieldValue(name);
     if (typeof value === 'string') {
+      if (value === '') return undefined;
       return Number(value);
     }
   };
