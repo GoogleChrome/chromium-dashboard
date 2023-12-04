@@ -196,7 +196,7 @@ export const STAGE_SHORT_NAMES = {
   [STAGE_ENT_SHIPPED]: 'Ship',
 };
 
-
+// Intent stages and mapping from stage to stage name.
 export const INTENT_STAGES = {
   INTENT_NONE: [0, 'None'],
   INTENT_INCUBATE: [7, 'Start incubating'], // Start incubating
@@ -210,6 +210,21 @@ export const INTENT_STAGES = {
   INTENT_PARKED: [9, 'Parked'],
   INTENT_ROLLOUT: [10, 'Rollout'],
 };
+
+export const INTENT_STAGES_ID_MAP = {
+  0: 'INTENT_NONE',
+  7: 'INTENT_INCUBATE',
+  1: 'INTENT_IMPLEMENT',
+  2: 'INTENT_EXPERIMENT',
+  4: 'INTENT_IMPLEMENT_SHIP',
+  3: 'INTENT_EXTEND_TRIAL',
+  5: 'INTENT_SHIP',
+  6: 'INTENT_REMOVED',
+  8: 'INTENT_SHIPPED',
+  9: 'INTENT_PARKED',
+  10: 'INTENT_ROLLOUT',
+};
+
 
 // Every mutable field that exists on the Stage entity and every key
 // in MilestoneSet.MILESTONE_FIELD_MAPPING should be listed here.
