@@ -1,5 +1,5 @@
 import {LitElement, html, css, nothing} from 'lit-element';
-import {INTENT_STAGES} from './form-field-enums.js';
+import {INTENT_STAGES, FEATURE_TYPES} from './form-field-enums.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
 /*
@@ -323,7 +323,7 @@ class ChromeDashIntentDialog extends LitElement {
   computeSubjectPrefix() {
     const intentStage = this.intent_stage;
     if (intentStage == INTENT_STAGES.INTENT_INCUBATE[0]) {
-      if (this.feature.feature_type == INTENT_STAGES.FEATURE_TYPE_DEPRECATION_ID[0]) {
+      if (this.feature.feature_type == FEATURE_TYPES.FEATURE_TYPE_DEPRECATION_ID[0]) {
         return 'Intent to Deprecate and Remove';
       }
     } else if (intentStage == INTENT_STAGES.INTENT_IMPLEMENT[0]) {
@@ -331,13 +331,13 @@ class ChromeDashIntentDialog extends LitElement {
     } else if (intentStage == INTENT_STAGES.INTENT_EXPERIMENT[0]) {
       return 'Ready for Developer Testing';
     } else if (intentStage == INTENT_STAGES.INTENT_EXTEND_TRIAL[0]) {
-      if (this.feature.feature_type == INTENT_STAGES.FEATURE_TYPE_DEPRECATION_ID[0]) {
+      if (this.feature.feature_type == FEATURE_TYPES.FEATURE_TYPE_DEPRECATION_ID[0]) {
         return 'Request for Deprecation Trial';
       } else {
         return 'Intent to Experiment';
       }
     } else if (intentStage == INTENT_STAGES.INTENT_SHIP[0]) {
-      if (this.feature.feature_type == INTENT_STAGES.FEATURE_TYPE_CODE_CHANGE_ID[0]) {
+      if (this.feature.feature_type == FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]) {
         return 'Web-Facing Change PSA';
       } else {
         return 'Intent to Ship';
@@ -767,16 +767,17 @@ after that, you're free to ship your feature.
   //   {% endif %}
   //   */
 
-  //   renderTagReviewStatus() {
-  //     const tagReviewStatus = this.feature.tag_review_status;
-  //     if (!tagReviewStatus) {
-  //       return nothing;
-  //     }
-  //     return html`
-  //       <h4>TAG review status</h4>
-  //       ${tagReviewStatus}
-  //     `;
-  //   }
+  renderTagReviewStatus() {
+    const tagReviewStatus = this.feature.tag_review_status;
+    if (!tagReviewStatus) {
+      return nothing;
+    }
+    return html`
+      <h4>TAG review status</h4>
+      ${tagReviewStatus}
+      <br /><br />
+    `;
+  }
 
   //   /*
   //   {% for stage in stage_info.ot_stages %}
@@ -802,61 +803,61 @@ after that, you're free to ship your feature.
   //   {% endfor %}
   //   */
 
-  //   renderOTInfo() {
-  //     const otStages = stage_info.ot_stages;
-  //     if (!otStages) {
-  //       return nothing;
-  //     }
+  renderOTInfo() {
+    const otStages = this.stage_info.ot_stages;
+    if (!otStages) {
+      return nothing;
+    }
 
-  //     const otInfoList = otStages.map(
-  //       (stage) => html`
-  //         ${stage.ot_chromium_trial_name ?
-  //           html`
-  //               <br /><br />
-  //               <h4>Chromium Trial Name</h4>
-  //               ${stage.ot_chromium_trial_name}
-  //             ` :
-  //           nothing}
-  //         ${stage.origin_trial_feedback_url ?
-  //           html`
-  //               <br /><br />
-  //               <h4>Link to origin trial feedback summary</h4>
-  //               ${stage.origin_trial_feedback_url}
-  //             ` :
-  //           nothing}
-  //         ${stage.ot_documentation_url ?
-  //           html`
-  //               <br /><br />
-  //               <h4>Origin Trial documentation link</h4>
-  //               ${stage.ot_documentation_url}
-  //             ` :
-  //           nothing}
-  //         ${stage.ot_webfeature_use_counter ?
-  //           html`
-  //               <br /><br />
-  //               <h4>WebFeature UseCounter name</h4>
-  //               ${stage.ot_webfeature_use_counter}
-  //             ` :
-  //           nothing}
-  //       `,
-  //     );
+    const otInfoList = otStages.map(
+      (stage) => html`
+        ${stage.ot_chromium_trial_name ?
+          html`
+              <h4>Chromium Trial Name</h4>
+              ${stage.ot_chromium_trial_name}
+              <br /><br />
+            ` :
+          nothing}
+        ${stage.origin_trial_feedback_url ?
+          html`
+              <h4>Link to origin trial feedback summary</h4>
+              ${stage.origin_trial_feedback_url}
+              <br /><br />
+            ` :
+          nothing}
+        ${stage.ot_documentation_url ?
+          html`
+              <h4>Origin Trial documentation link</h4>
+              ${stage.ot_documentation_url}
+              <br /><br />
+            ` :
+          nothing}
+        ${stage.ot_webfeature_use_counter ?
+          html`
+              <h4>WebFeature UseCounter name</h4>
+              ${stage.ot_webfeature_use_counter}
+              <br /><br />
+            ` :
+          nothing}
+      `,
+    );
 
-  //     return html` ${otInfoList} `;
-  //   }
+    return html` ${otInfoList} `;
+  }
 
   //   /*
   //     <br><br><h4>Interoperability and Compatibility</h4>
   //     <p class="preformatted">{{feature.interop_compat_risks|urlize}}</p>
   //     */
 
-  //   renderInteropCompatRisks() {
-  //     const interopCompatRisks = this.feature.interop_compat_risks;
-  //     return html`
-  //       <br /><br />
-  //       <h4>Interoperability and Compatibility</h4>
-  //       <p class="preformatted">${interopCompatRisks}</p>
-  //     `;
-  //   }
+  renderInteropCompatRisks() {
+    const interopCompatRisks = this.feature.interop_compat_risks;
+    return html`
+      <h4>Interoperability and Compatibility</h4>
+      <p class="preformatted">${interopCompatRisks}</p>
+      <br /><br />
+    `;
+  }
 
   //   /*
   //     <br><br><i>Gecko</i>: {{feature.browsers.ff.view.text}}
@@ -868,18 +869,18 @@ after that, you're free to ship your feature.
   //     {% endif %}
   //     */
 
-  //   renderGeckoRisks() {
-  //     const geckoInfo = this.feature.browsers.ff;
-  //     return html`
-  //       <br /><br />
-  //       <i>Gecko</i>:
-  //       ${geckoInfo.view.text}
-  //       ${geckoInfo.view.url ?
-  //         html` (<a href="${geckoInfo.view.url}">${geckoInfo.view.url}</a>) ` :
-  //         nothing}
-  //       ${geckoInfo.view.notes ? html` ${geckoInfo.view.notes} ` : nothing}
-  //     `;
-  //   }
+  renderGeckoRisks() {
+    const geckoInfo = this.feature.browsers.ff;
+    return html`
+      <i>Gecko</i>:
+      ${geckoInfo.view.text}
+      ${geckoInfo.view.url ?
+        html` (<a href="${geckoInfo.view.url}">${geckoInfo.view.url}</a>) ` :
+        nothing}
+      ${geckoInfo.view.notes ? html` ${geckoInfo.view.notes} ` : nothing}
+      <br /><br />
+    `;
+  }
 
   //   /*
   //     <br><br><i>WebKit</i>: {{feature.browsers.safari.view.text}}
@@ -891,18 +892,17 @@ after that, you're free to ship your feature.
   //     {% endif %}
   //     */
 
-  //   renderWebKitRisks() {
-  //     const webkitInfo = this.feature.browsers.safari;
-  //     return html`
-  //       <br /><br />
-  //       <i>WebKit</i>:
-  //       ${webkitInfo.view.text}
-  //       ${webkitInfo.view.url ?
-  //         html` (<a href="${webkitInfo.view.url}">${webkitInfo.view.url}</a>) ` :
-  //         nothing}
-  //       ${webkitInfo.view.notes ? html` ${webkitInfo.view.notes} ` : nothing}
-  //     `;
-  //   }
+  renderWebKitRisks() {
+    const webkitInfo = this.feature.browsers.safari;
+    return html`
+      <i>WebKit</i>:
+      ${webkitInfo.view.text}
+      ${webkitInfo.view.url ?
+        html` (<a href="${webkitInfo.view.url}">${webkitInfo.view.url}</a>) ` :
+        nothing}
+      ${webkitInfo.view.notes ? html` ${webkitInfo.view.notes} ` : nothing}
+    `;
+  }
 
   //   /*
   //     <br><br><i>Web developers</i>: {{feature.browsers.webdev.view.text}}
@@ -913,18 +913,19 @@ after that, you're free to ship your feature.
   //       {{feature.browsers.webdev.view.notes|urlize}}
   //     {% endif %}
   //     */
-  //   renderWebDevRisks() {
-  //     const webDevInfo = this.feature.browsers.webdev;
-  //     return html`
-  //       <br /><br />
-  //       <i>Web developers</i>:
-  //       ${webDevInfo.view.text}
-  //       ${webDevInfo.view.url ?
-  //         html` (<a href="${webDevInfo.view.url}">${webDevInfo.view.url}</a>) ` :
-  //         nothing}
-  //       ${webDevInfo.view.notes ? html` ${webDevInfo.view.notes} ` : nothing}
-  //     `;
-  //   }
+
+  renderWebDevRisks() {
+    const webDevInfo = this.feature.browsers.webdev;
+    return html`
+      <i>Web developers</i>:
+      ${webDevInfo.view.text}
+      ${webDevInfo.view.url ?
+        html` (<a href="${webDevInfo.view.url}">${webDevInfo.view.url}</a>) ` :
+        nothing}
+      ${webDevInfo.view.notes ? html` ${webDevInfo.view.notes} ` : nothing}
+      <br /><br />
+    `;
+  }
 
   //   /*
   //     <br><br><i>Other signals</i>:
@@ -932,14 +933,15 @@ after that, you're free to ship your feature.
   //       {{feature.browsers.other.view.notes|urlize}}
   //     {% endif %}
   //     */
-  //   renderOtherNotes() {
-  //     const notes = this.feature.browsers.other.view.notes;
-  //     return html`
-  //       <br /><br />
-  //       <i>Other signals</i>:
-  //       : ${notes ? html` ${notes} ` : nothing}
-  //     `;
-  //   }
+
+  renderOtherRisks() {
+    const notes = this.feature.browsers.other.view.notes;
+    return html`
+      <i>Other signals</i>:
+      : ${notes ? html` ${notes} ` : nothing}
+      <br /><br />
+    `;
+  }
 
   //   /*
   //     {% if feature.ergonomics_risks %}
@@ -947,17 +949,18 @@ after that, you're free to ship your feature.
   //       <p class="preformatted">{{feature.ergonomics_risks|urlize}}</p>
   //     {% endif %}
   //     */
-  //   renderErgonomicsRisks() {
-  //     const ergonomicsRisks = this.feature.ergonomics_risks;
-  //     if (!ergonomicsRisks) {
-  //       return nothing;
-  //     }
-  //     return html`
-  //       <br /><br />
-  //       <h4>Ergonomics</h4>
-  //       <p class="preformatted">${ergonomicsRisks}</p>
-  //     `;
-  //   }
+
+  renderErgonomicsRisks() {
+    const ergonomicsRisks = this.feature.ergonomics_risks;
+    if (!ergonomicsRisks) {
+      return nothing;
+    }
+    return html`
+      <h4>Ergonomics</h4>
+      <p class="preformatted">${ergonomicsRisks}</p>
+      <br /><br />
+    `;
+  }
 
   //   /*
   //     {% if feature.activation_risks %}
@@ -965,17 +968,18 @@ after that, you're free to ship your feature.
   //       <p class="preformatted">{{feature.activation_risks|urlize}}</p>
   //     {% endif %}
   //     */
-  //   renderActivationRisks() {
-  //     const activationRisks = this.feature.activation_risks;
-  //     if (!activationRisks) {
-  //       return nothing;
-  //     }
-  //     return html`
-  //       <br /><br />
-  //       <h4>Activation</h4>
-  //       <p class="preformatted">${activationRisks}</p>
-  //     `;
-  //   }
+
+  renderActivationRisks() {
+    const activationRisks = this.feature.activation_risks;
+    if (!activationRisks) {
+      return nothing;
+    }
+    return html`
+      <h4>Activation</h4>
+      <p class="preformatted">${activationRisks}</p>
+      <br /><br />
+    `;
+  }
 
   //   /*
   //     {% if feature.security_risks %}
@@ -984,17 +988,17 @@ after that, you're free to ship your feature.
   //     {% endif %}
   //     */
 
-  //   renderSecurityRisks() {
-  //     const securityRisks = this.feature.security_risks;
-  //     if (!securityRisks) {
-  //       return nothing;
-  //     }
-  //     return html`
-  //       <br /><br />
-  //       <h4>Security</h4>
-  //       <p class="preformatted">${securityRisks}</p>
-  //     `;
-  //   }
+  renderSecurityRisks() {
+    const securityRisks = this.feature.security_risks;
+    if (!securityRisks) {
+      return nothing;
+    }
+    return html`
+      <h4>Security</h4>
+      <p class="preformatted">${securityRisks}</p>
+      <br /><br />
+    `;
+  }
 
   //   /*
   //     <br><br><h4>WebView application risks</h4>
@@ -1005,19 +1009,19 @@ after that, you're free to ship your feature.
   //     <p class="preformatted">{{feature.webview_risks|urlize}}</p>
   //     */
 
-  //   renderWebViewRisks() {
-  //     const webviewRisks = this.feature.webview_risks;
-  //     return html`
-  //       <br /><br />
-  //       <h4>WebView application risks</h4>
-  //       <p style="font-style: italic">
-  //         Does this intent deprecate or change behavior of existing APIs, such
-  //         that it has potentially high risk for Android WebView-based
-  //         applications?
-  //       </p>
-  //       <p class="preformatted">${webviewRisks}</p>
-  //     `;
-  //   }
+  renderWebViewRisks() {
+    const webviewRisks = this.feature.webview_risks;
+    return html`
+      <h4>WebView application risks</h4>
+      <p style="font-style: italic">
+        Does this intent deprecate or change behavior of existing APIs, such
+        that it has potentially high risk for Android WebView-based
+        applications?
+      </p>
+      <p class="preformatted">${webviewRisks}</p>
+      <br /><br />
+    `;
+  }
 
   //   /*
   //   <br><br><h4>Risks</h4>
@@ -1025,19 +1029,25 @@ after that, you're free to ship your feature.
 
   //   </div> <!-- end risks -->
   //   */
-  //   renderRisks() {
-  //     return html`
-  //       <br /><br />
-  //       <h4>Risks</h4>
-  //       <div style="margin-left: 4em;">
-  //         ${renderInteropCompatRisks()} ${renderGeckoRisks()}
-  //         ${renderWebKitRisks()} ${renderWebDevRisks()} ${renderOtherRisks()}
-  //         ${renderErgonomicsRisks()} ${renderActivationRisks()}
-  //         ${renderSecurityRisks()} ${renderWebViewRisks()}
-  //       </div>
-  //       <!-- end risks -->
-  //     `;
-  //   }
+
+  renderRisks() {
+    return html`
+      <h4>Risks</h4>
+      <div style="margin-left: 4em;">
+        ${this.renderInteropCompatRisks()}
+        ${this.renderGeckoRisks()}
+        ${this.renderWebKitRisks()}
+        ${this.renderWebDevRisks()}
+        ${this.renderOtherRisks()}
+        ${this.renderErgonomicsRisks()}
+        ${this.renderActivationRisks()}
+        ${this.renderSecurityRisks()}
+        ${this.renderWebViewRisks()}
+      </div>
+      <!-- end risks -->
+      <br /><br />
+    `;
+  }
 
   //   /*
   // {% if 'experiment' in sections_to_show %}
@@ -1065,65 +1075,65 @@ after that, you're free to ship your feature.
   // {% endif %}
   // */
 
-  //   renderExperiment() {
-  //     if (!sectionsToShow.includes('experiment')) return nothing;
+  renderExperiment() {
+    if (!this.sections_to_show.includes('experiment')) return nothing;
 
-  //     let extensionStagesHTML = '';
-  //     if (sectionsToShow.includes('extension_reason')) {
-  //       const stages = this.feature.stage_info.extension_stages;
-  //       const extensionsHtml = [];
-  //       for (stage in stages) {
-  //         if (stage.experiment_extension_reason) {
-  //           extensionsHtml.push(html`
-  //             <br /><br />
-  //             <h4>Reason this experiment is being extended</h4>
-  //             <p class="preformatted">${stage.experiment_extension_reason}</p>
-  //           `);
-  //         }
-  //       }
-  //       extensionStagesHTML = html` ${extensionsHtml.join('')} `;
-  //     }
+    let extensionStagesHTML = '';
+    if (this.sections_to_show.includes('extension_reason')) {
+      const stages = this.feature.stage_info.extension_stages;
+      const extensionsHtml = [];
+      for (const stage in stages) {
+        if (stage.experiment_extension_reason) {
+          extensionsHtml.push(html`
+            <br /><br />
+            <h4>Reason this experiment is being extended</h4>
+            <p class="preformatted">${stage.experiment_extension_reason}</p>
+          `);
+        }
+      }
+      extensionStagesHTML = html` ${extensionsHtml.join('')} `;
+    }
 
-  //     const experimentInfo = this.feature.experiment_goals;
+    const experimentInfo = this.feature.experiment_goals;
 
-  //     return html`
-  //       <br /><br />
-  //       <h4>Goals for experimentation</h4>
-  //       <p class="preformatted">${experimentInfo}</p>
+    return html`
+      <h4>Goals for experimentation</h4>
+      <p class="preformatted">${experimentInfo}</p>
+      <br /><br />
 
-  //       ${this.feature.experiment_timeline ?
-  //         html`
-  //             <br /><br />
-  //             <h4>Experimental timeline</h4>
-  //             <p class="preformatted">${this.feature.experiment_timeline}</p>
-  //           ` :
-  //         nothing}
+      ${this.feature.experiment_timeline ?
+        html`
+            <h4>Experimental timeline</h4>
+            <p class="preformatted">${this.feature.experiment_timeline}</p>
+            <br /><br />
+          ` :
+        nothing}
 
-  //       ${extensionStagesHTML}
+      ${extensionStagesHTML}
 
-  //       ${this.feature.ongoing_constraints ?
-  //         html`
-  //             <br /><br />
-  //             <h4>Ongoing technical constraints</h4>
-  //             <p class="preformatted">${this.feature.ongoing_constraints}</p>
-  //           ` :
-  //         nothing}
-  //     `;
-  //   }
+      ${this.feature.ongoing_constraints ?
+        html`
+            <h4>Ongoing technical constraints</h4>
+            <p class="preformatted">${this.feature.ongoing_constraints}</p>
+          ` :
+        nothing}
+        <br /><br />
+        `;
+  }
 
   //   /*
   // <br><br><h4>Debuggability</h4>
   // <p class="preformatted">{{feature.debuggability|urlize}}</p>
   // */
 
-  //   renderDebuggability() {
-  //     const debuggability = this.feature.debuggability;
-  //     return html`
-  //       <br /><br />
-  //       <h4>Debuggability</h4>
-  //       <p class="preformatted">${debuggability}</p>
-  //     `;
-  //   }
+  renderDebuggability() {
+    const debuggability = this.feature.debuggability;
+    return html`
+      <h4>Debuggability</h4>
+      <p class="preformatted">${debuggability}</p>
+      <br /><br />
+    `;
+  }
 
   //   /*
   // {% if 'experiment' in sections_to_show or 'ship' in sections_to_show %}
@@ -1136,24 +1146,25 @@ after that, you're free to ship your feature.
   // {% endif %}
   // */
 
-  //   renderAllPlatforms() {
-  //     if (!sectionsToShow.includes('experiment') && !sectionsToShow.includes('ship')) {
-  //       return nothing;
-  //     }
+  renderAllPlatforms() {
+    if (!this.sections_to_show.includes('experiment') && !this.sections_to_show.includes('ship')) {
+      return nothing;
+    }
 
-  //     const allPlatforms = this.feature.all_platforms;
-  //     return html`
-  //       <br /><br />
-  //       <h4>
-  //         Will this feature be supported on all six Blink platforms (Windows, Mac,
-  //         Linux, Chrome OS, Android, and Android WebView)?
-  //       </h4>
-  //       ${allPlatforms ? 'Yes' : 'No'}
-  //       ${this.feature.all_platforms_descr ?
-  //         html` <p class="preformatted">${this.feature.all_platforms_descr}</p> ` :
-  //         nothing}
-  //     `;
-  //   }
+    const allPlatforms = this.feature.all_platforms;
+    return html`
+      <h4>
+        Will this feature be supported on all six Blink platforms (Windows, Mac,
+        Linux, Chrome OS, Android, and Android WebView)?
+      </h4>
+      ${allPlatforms ? 'Yes' : 'No'}
+      ${this.feature.all_platforms_descr ?
+      html` <p class="preformatted">${this.feature.all_platforms_descr}</p>
+        ` :
+      nothing}
+      <br /><br />
+    `;
+  }
 
   //   /*
   // <br><br><h4>Is this feature fully tested by <a href="https://chromium.googlesource.com/chromium/src/+/main/docs/testing/web_platform_tests.md">web-platform-tests</a>?</h4>
@@ -1163,23 +1174,23 @@ after that, you're free to ship your feature.
   // {% endif %}
   // */
 
-  //   renderWPT() {
-  //     const wpt = this.feature.wpt;
-  //     return html`
-  //       <br /><br />
-  //       <h4>
-  //         Is this feature fully tested by
-  //         <a
-  //           href="https://chromium.googlesource.com/chromium/src/+/main/docs/testing/web_platform_tests.md"
-  //           >web-platform-tests</a
-  //         >?
-  //       </h4>
-  //       ${wpt ? 'Yes' : 'No'}
-  //       ${this.feature.wpt_descr ?
-  //         html` <p class="preformatted">${this.feature.wpt_descr}</p> ` :
-  //         nothing}
-  //     `;
-  //   }
+  renderWPT() {
+    const wpt = this.feature.wpt;
+    return html`
+      <h4>
+        Is this feature fully tested by
+        <a
+          href="https://chromium.googlesource.com/chromium/src/+/main/docs/testing/web_platform_tests.md"
+          >web-platform-tests</a
+        >?
+      </h4>
+      ${wpt ? 'Yes' : 'No'}
+      ${this.feature.wpt_descr ?
+        html` <p class="preformatted">${this.feature.wpt_descr}</p> ` :
+      nothing}
+    <br /><br />
+    `;
+  }
 
   //   /*
   // {% if feature.devtrial_instructions %}
@@ -1189,31 +1200,31 @@ after that, you're free to ship your feature.
   // {% endif %}
   // */
 
-  //   renderDevTrialInstructions() {
-  //     const devTrialInstructions = this.feature.devtrial_instructions;
-  //     if (!devTrialInstructions) {
-  //       return nothing;
-  //     }
-  //     return html`
-  //       <br /><br />
-  //       <h4>DevTrial instructions</h4>
-  //       <a href="${devTrialInstructions}">${devTrialInstructions}</a>
-  //     `;
-  //   }
+  renderDevTrialInstructions() {
+    const devTrialInstructions = this.feature.devtrial_instructions;
+    if (!devTrialInstructions) {
+      return nothing;
+    }
+    return html`
+      <h4>DevTrial instructions</h4>
+      <a href="${devTrialInstructions}">${devTrialInstructions}</a>
+      <br /><br />
+    `;
+  }
 
   //   /*
   // <br><br><h4>Flag name on chrome://flags</h4>
   // {{feature.flag_name}}
   // */
 
-  //   renderFlagName() {
-  //     const flagName = this.feature.flag_name;
-  //     return html`
-  //       <br /><br />
-  //       <h4>Flag name on chrome://flags</h4>
-  //       ${flagName}
-  //     `;
-  //   }
+  renderFlagName() {
+    const flagName = this.feature.flag_name;
+    return html`
+      <h4>Flag name on chrome://flags</h4>
+      ${flagName}
+      <br /><br />
+    `;
+  }
 
   //   /*
   // <br><br><h4>Finch feature name</h4>
@@ -1230,38 +1241,38 @@ after that, you're free to ship your feature.
   // {% endif %}
   // */
 
-  //   renderFinch() {
-  //     const finchName = this.feature.finch_name;
+  renderFinch() {
+    const finchName = this.feature.finch_name;
 
-  //     return html`
-  //       <br /><br />
-  //       <h4>Finch feature name</h4>
-  //       ${finchName}
-  //       ${this.feature.non_finch_justification ?
-  //         html` <br /><br />
-  //             <h4>Non-finch justification</h4>
-  //             <p class="preformatted">${this.feature.non_finch_justification}</p>` :
-  //         !finchName ?
-  //           html` <br /><br />
-  //             <h4>Non-finch justification</h4>
-  //             None` :
-  //           nothing}
-  //     `;
-  //   }
+    return html`
+      <h4>Finch feature name</h4>
+      ${finchName}
+      ${this.feature.non_finch_justification ?
+        html` <br /><br />
+            <h4>Non-finch justification</h4>
+            <p class="preformatted">${this.feature.non_finch_justification}</p>` :
+        !finchName ?
+          html` <br /><br />
+            <h4>Non-finch justification</h4>
+            None` :
+          nothing}
+          <br /><br />
+          `;
+  }
 
   //   /*
   // <br><br><h4>Requires code in //chrome?</h4>
   // {{feature.requires_embedder_support}}
   // */
 
-  //   renderRequiresEmbedderSupport() {
-  //     const requiresEmbedderSupport = this.feature.requires_embedder_support;
-  //     return html`
-  //       <br /><br />
-  //       <h4>Requires code in //chrome?</h4>
-  //       ${requiresEmbedderSupport}
-  //     `;
-  //   }
+  renderRequiresEmbedderSupport() {
+    const requiresEmbedderSupport = this.feature.requires_embedder_support;
+    return html`
+      <h4>Requires code in //chrome?</h4>
+      ${requiresEmbedderSupport}
+      <br /><br />
+    `;
+  }
 
   //   /*
   // {% if feature.browsers.chrome.bug %}
@@ -1270,17 +1281,17 @@ after that, you're free to ship your feature.
   // {% endif %}
   // */
 
-  //   renderTrackingBug() {
-  //     const trackingBug = this.feature.browsers.chrome.bug;
-  //     if (!trackingBug) {
-  //       return nothing;
-  //     }
-  //     return html`
-  //       <br /><br />
-  //       <h4>Tracking bug</h4>
-  //       <a href="${trackingBug}">${trackingBug}</a>
-  //     `;
-  //   }
+  renderTrackingBug() {
+    const trackingBug = this.feature.browsers.chrome.bug;
+    if (!trackingBug) {
+      return nothing;
+    }
+    return html`
+      <h4>Tracking bug</h4>
+      <a href="${trackingBug}">${trackingBug}</a>
+      <br /><br />
+    `;
+  }
 
   //   /*
   // {% if feature.launch_bug_url %}
@@ -1289,17 +1300,17 @@ after that, you're free to ship your feature.
   // {% endif %}
   // */
 
-  //   renderLaunchBug() {
-  //     const launchBug = this.feature.launch_bug_url;
-  //     if (!launchBug) {
-  //       return nothing;
-  //     }
-  //     return html`
-  //       <br /><br />
-  //       <h4>Launch bug</h4>
-  //       <a href="${launchBug}">${launchBug}</a>
-  //     `;
-  //   }
+  renderLaunchBug() {
+    const launchBug = this.feature.launch_bug_url;
+    if (!launchBug) {
+      return nothing;
+    }
+    return html`
+      <h4>Launch bug</h4>
+      <a href="${launchBug}">${launchBug}</a>
+      <br /><br />
+    `;
+  }
 
   //   /*
   // {% if feature.measurement %}
@@ -1308,17 +1319,17 @@ after that, you're free to ship your feature.
   // {% endif %}
   // */
 
-  //   renderMeasurement() {
-  //     const measurement = this.feature.measurement;
-  //     if (!measurement) {
-  //       return nothing;
-  //     }
-  //     return html`
-  //       <br /><br />
-  //       <h4>Measurement</h4>
-  //       ${measurement}
-  //     `;
-  //   }
+  renderMeasurement() {
+    const measurement = this.feature.measurement;
+    if (!measurement) {
+      return nothing;
+    }
+    return html`
+      <h4>Measurement</h4>
+      ${measurement}
+      <br /><br />
+    `;
+  }
 
   //   /*
   // {% if feature.availability_expectation %}
@@ -1327,17 +1338,17 @@ after that, you're free to ship your feature.
   // {% endif %}
   // */
 
-  //   renderAvailabilityExpectation() {
-  //     const availabilityExpectation = this.feature.availability_expectation;
-  //     if (!availabilityExpectation) {
-  //       return nothing;
-  //     }
-  //     return html`
-  //       <br /><br />
-  //       <h4>Availability expectation</h4>
-  //       ${availabilityExpectation}
-  //     `;
-  //   }
+  renderAvailabilityExpectation() {
+    const availabilityExpectation = this.feature.availability_expectation;
+    if (!availabilityExpectation) {
+      return nothing;
+    }
+    return html`
+      <h4>Availability expectation</h4>
+      ${availabilityExpectation}
+      <br /><br />
+    `;
+  }
 
   //   /*
   // {% if feature.adoption_expectation %}
@@ -1346,17 +1357,17 @@ after that, you're free to ship your feature.
   // {% endif %}
   // */
 
-  //   renderAdoptionExpectation() {
-  //     const adoptionExpectation = this.feature.adoption_expectation;
-  //     if (!adoptionExpectation) {
-  //       return nothing;
-  //     }
-  //     return html`
-  //       <br /><br />
-  //       <h4>Adoption expectation</h4>
-  //       ${adoptionExpectation}
-  //     `;
-  //   }
+  renderAdoptionExpectation() {
+    const adoptionExpectation = this.feature.adoption_expectation;
+    if (!adoptionExpectation) {
+      return nothing;
+    }
+    return html`
+      <h4>Adoption expectation</h4>
+      ${adoptionExpectation}
+      <br /><br />
+    `;
+  }
 
   //   /*
   // {% if feature.adoption_plan %}
@@ -1365,17 +1376,17 @@ after that, you're free to ship your feature.
   // {% endif %}
   // */
 
-  //   renderAdoptionPlan() {
-  //     const adoptionPlan = this.feature.adoption_plan;
-  //     if (!adoptionPlan) {
-  //       return nothing;
-  //     }
-  //     return html`
-  //       <br /><br />
-  //       <h4>Adoption plan</h4>
-  //       ${adoptionPlan}
-  //     `;
-  //   }
+  renderAdoptionPlan() {
+    const adoptionPlan = this.feature.adoption_plan;
+    if (!adoptionPlan) {
+      return nothing;
+    }
+    return html`
+      <h4>Adoption plan</h4>
+      ${adoptionPlan}
+      <br /><br />
+    `;
+  }
 
   //   /*
   // {% if feature.non_oss_deps %}
@@ -1389,21 +1400,21 @@ after that, you're free to ship your feature.
   // {% endif %}
   // */
 
-  //   renderNonOSSDeps() {
-  //     const nonOSSDeps = this.feature.non_oss_deps;
-  //     if (!nonOSSDeps) {
-  //       return nothing;
-  //     }
-  //     return html`
-  //       <br /><br />
-  //       <h4>Non-OSS dependencies</h4>
-  //       <p style="font-style: italic">
-  //         Does the feature depend on any code or APIs outside the Chromium open
-  //         source repository and its open-source dependencies to function?
-  //       </p>
-  //       ${nonOSSDeps}
-  //     `;
-  //   }
+  renderNonOSSDeps() {
+    const nonOSSDeps = this.feature.non_oss_deps;
+    if (!nonOSSDeps) {
+      return nothing;
+    }
+    return html`
+      <h4>Non-OSS dependencies</h4>
+      <p style="font-style: italic">
+        Does the feature depend on any code or APIs outside the Chromium open
+        source repository and its open-source dependencies to function?
+      </p>
+      ${nonOSSDeps}
+      <br /><br />
+    `;
+  }
 
   //   /*
   // {% if 'sample_links' in sections_to_show %}
@@ -1416,22 +1427,22 @@ after that, you're free to ship your feature.
   // {% endif %}
   // */
 
-  //   renderSampleLinks() {
-  //     if (!sectionsToShow.includes('sample_links')) return nothing;
+  renderSampleLinks() {
+    if (!this.sections_to_show.includes('sample_links')) return nothing;
 
-  //     const sampleLinks = this.feature.resources.samples;
-  //     if (!sampleLinks) {
-  //       return nothing;
-  //     }
-  //     const sampleLinksList = sampleLinks.map(
-  //       (link) => html` <br /><a href="${link}">${link}</a> `,
-  //     );
-  //     return html`
-  //       <br /><br />
-  //       <h4>Sample links</h4>
-  //       ${sampleLinksList}
-  //     `;
-  //   }
+    const sampleLinks = this.feature.resources.samples;
+    if (!sampleLinks) {
+      return nothing;
+    }
+    const sampleLinksList = sampleLinks.map(
+      (link) => html` <br /><a href="${link}">${link}</a> `,
+    );
+    return html`
+      <h4>Sample links</h4>
+      ${sampleLinksList}
+      <br /><br />
+    `;
+  }
 
   //   /*
   //   <table>
@@ -1780,9 +1791,8 @@ after that, you're free to ship your feature.
   // */
 
   //   renderAnticipatedSpecChanges() {
-  //     const sectionsToShow = this.sectionsToShow;
   //     const anticipatedSpecChanges = this.feature.anticipated_spec_changes;
-  //     if (!sectionsToShow.includes('anticipated_spec_changes') ||
+  //     if (!this.sections_to_show.includes('anticipated_spec_changes') ||
   //       !anticipatedSpecChanges) {
   //       return nothing;
   //     }
@@ -1905,16 +1915,8 @@ after that, you're free to ship your feature.
   //   }
 
   //   <!--
-  //   ${this.renderTagReviewStatus()} ${this.renderOTInfo()}
-  //   ${this.renderRisks()} ${this.renderExperiment()}
-  //   ${this.renderDebuggability()} ${this.renderAllPlatforms()}
-  //   ${this.renderWPT()} ${this.renderDevTrialInstructions()}
-  //   ${this.renderFlagName()} ${this.renderFinch()}
-  //   ${this.renderRequiresEmbedderSupport()} ${this.renderTrackingBug()}
-  //   ${this.renderLaunchBug()} ${this.renderMeasurement()}
-  //   ${this.renderAvailabilityExpectation()}
-  //   ${this.renderAdoptionExpectation()} ${this.renderAdoptionPlan()}
-  //   ${this.renderNonOSSDeps()} ${this.renderSampleLinks()}
+
+  //
   //   ${this.renderEstimatedMilestones()}
   //   ${this.renderAnticipatedSpecChanges()} ${this.renderDefaultURL()}
   //   ${this.renderIntentLinks()}
@@ -1940,8 +1942,25 @@ after that, you're free to ship your feature.
           ${this.renderMotivation()}
           ${this.renderSearchTags()}
           ${this.renderTagReview()}
-
-
+          ${this.renderTagReviewStatus()}
+          ${this.renderOTInfo()}
+          ${this.renderRisks()}
+          ${this.renderExperiment()}
+          ${this.renderDebuggability()}
+          ${this.renderAllPlatforms()}
+          ${this.renderWPT()}
+          ${this.renderDevTrialInstructions()}
+          ${this.renderFlagName()}
+          ${this.renderFinch()}
+          ${this.renderRequiresEmbedderSupport()}
+          ${this.renderTrackingBug()}
+          ${this.renderLaunchBug()}
+          ${this.renderMeasurement()}
+          ${this.renderAvailabilityExpectation()}
+          ${this.renderAdoptionExpectation()}
+          ${this.renderAdoptionPlan()}
+          ${this.renderNonOSSDeps()}
+          ${this.renderSampleLinks()}
           <br /><br />
           <div>
             <small>
