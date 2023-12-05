@@ -56,6 +56,8 @@ const VIEW_FEATURE_URL = '/feature';
 
 let intentDialogEl = null;
 
+let APP_TITLE = '';
+
 
 export function templateAsString(data) {
   const {strings, values} = data;
@@ -84,6 +86,10 @@ export async function openIntentDialog(
     intentDialogEl = document.createElement('chromedash-intent-dialog');
     document.body.appendChild(intentDialogEl);
     await intentDialogEl.updateComplete;
+  }
+  const app = document.querySelector('chromedash-app');
+  if (app?.pageComponent) {
+    APP_TITLE = app.appTitle;
   }
   intentDialogEl.openWithContext(
     feature, progress, process, action, stage, feStage, featureGates);
@@ -1476,64 +1482,65 @@ after that, you're free to ship your feature.
   //   </table>
   //   */
 
-  //   renderDesktopMilestoneTable() {
-  //     const shipStages = stage_info.ship_stages;
-  //     const otStages = stage_info.ot_stages;
-  //     const dtStages = stage_info.dt_stages;
+  renderDesktopMilestonesTable() {
+    const stageInfo = this.feature.stage_info;
+    const shipStages = stageInfo.ship_stages;
+    const otStages = stageInfo.ot_stages;
+    const dtStages = stageInfo.dt_stages;
 
-  //     const shipStagesHTML = [];
-  //     for (stage in shipStages) {
-  //       if (!shipStages.hasOwnProperty(stage)) continue;
-  //       if (stage.milestones.desktop_first) {
-  //         shipStagesHTML.push(html`
-  //           <tr>
-  //             <td>Shipping on desktop</td>
-  //             <td>${stage.milestones.desktop_first}</td>
-  //           </tr>
-  //         `);
-  //       }
-  //     }
+    const shipStagesHTML = [];
+    for (stage in shipStages) {
+      if (!shipStages.hasOwnProperty(stage)) continue;
+      if (stage.milestones.desktop_first) {
+        shipStagesHTML.push(html`
+          <tr>
+            <td>Shipping on desktop</td>
+            <td>${stage.milestones.desktop_first}</td>
+          </tr>
+        `);
+      }
+    }
 
-  //     const otStagesHTML = [];
-  //     for (stage in otStages) {
-  //       if (!otStages.hasOwnProperty(stage)) continue;
-  //       if (stage.milestones.desktop_last) {
-  //         otStagesHTML.push(html`
-  //           <tr>
-  //             <td>OriginTrial desktop last</td>
-  //             <td>${stage.milestones.desktop_last}</td>
-  //           </tr>
-  //         `);
-  //       }
-  //       if (stage.milestones.desktop_first) {
-  //         otStagesHTML.push(html`
-  //           <tr>
-  //             <td>OriginTrial desktop first</td>
-  //             <td>${stage.milestones.desktop_first}</td>
-  //           </tr>
-  //         `);
-  //       }
-  //     }
+    const otStagesHTML = [];
+    for (stage in otStages) {
+      if (!otStages.hasOwnProperty(stage)) continue;
+      if (stage.milestones.desktop_last) {
+        otStagesHTML.push(html`
+          <tr>
+            <td>OriginTrial desktop last</td>
+            <td>${stage.milestones.desktop_last}</td>
+          </tr>
+        `);
+      }
+      if (stage.milestones.desktop_first) {
+        otStagesHTML.push(html`
+          <tr>
+            <td>OriginTrial desktop first</td>
+            <td>${stage.milestones.desktop_first}</td>
+          </tr>
+        `);
+      }
+    }
 
-  //     const dtStagesHTML = [];
-  //     for (stage in dtStages) {
-  //       if (stage.milestones.desktop_first) {
-  //         dtStagesHTML.push(html`
-  //           <tr>
-  //             <td>DevTrial on desktop</td>
-  //             <td>${stage.milestones.desktop_first}</td>
-  //           </tr>
-  //         `);
-  //       }
-  //     }
+    const dtStagesHTML = [];
+    for (stage in dtStages) {
+      if (stage.milestones.desktop_first) {
+        dtStagesHTML.push(html`
+          <tr>
+            <td>DevTrial on desktop</td>
+            <td>${stage.milestones.desktop_first}</td>
+          </tr>
+        `);
+      }
+    }
 
-  //     return html`
-  //       <table>
-  //         ${shipStagesHTML.join('')} ${otStagesHTML.join('')}
-  //         ${dtStagesHTML.join('')}
-  //       </table>
-  //     `;
-  //   }
+    return html`
+      <table>
+        ${shipStagesHTML.join('')} ${otStagesHTML.join('')}
+        ${dtStagesHTML.join('')}
+      </table>
+    `;
+  }
 
   //   /*
   //   <table>
@@ -1560,63 +1567,63 @@ after that, you're free to ship your feature.
   //   </table>
   //   */
 
-  //   renderAndroidMilestoneTable() {
-  //     const shipStages = stage_info.ship_stages;
-  //     const otStages = stage_info.ot_stages;
-  //     const dtStages = stage_info.dt_stages;
+  renderAndroidMilestonesTable() {
+    const shipStages = stage_info.ship_stages;
+    const otStages = stage_info.ot_stages;
+    const dtStages = stage_info.dt_stages;
 
-  //     const shipStagesHTML = [];
-  //     for (stage in shipStages) {
-  //       if (stage.milestones.android_first) {
-  //         shipStagesHTML.push(html`
-  //           <tr>
-  //             <td>Shipping on Android</td>
-  //             <td>${stage.milestones.android_first}</td>
-  //           </tr>
-  //         `);
-  //       }
-  //     }
+    const shipStagesHTML = [];
+    for (stage in shipStages) {
+      if (stage.milestones.android_first) {
+        shipStagesHTML.push(html`
+          <tr>
+            <td>Shipping on Android</td>
+            <td>${stage.milestones.android_first}</td>
+          </tr>
+        `);
+      }
+    }
 
-  //     const otStagesHTML = [];
-  //     for (stage in otStages) {
-  //       if (!otStages.hasOwnProperty(stage)) continue;
-  //       if (stage.milestones.android_last) {
-  //         otStagesHTML.push(html`
-  //           <tr>
-  //             <td>OriginTrial Android last</td>
-  //             <td>${stage.milestones.android_last}</td>
-  //           </tr>
-  //         `);
-  //       }
-  //       if (stage.milestones.android_first) {
-  //         otStagesHTML.push(html`
-  //           <tr>
-  //             <td>OriginTrial Android first</td>
-  //             <td>${stage.milestones.android_first}</td>
-  //           </tr>
-  //         `);
-  //       }
-  //     }
+    const otStagesHTML = [];
+    for (stage in otStages) {
+      if (!otStages.hasOwnProperty(stage)) continue;
+      if (stage.milestones.android_last) {
+        otStagesHTML.push(html`
+          <tr>
+            <td>OriginTrial Android last</td>
+            <td>${stage.milestones.android_last}</td>
+          </tr>
+        `);
+      }
+      if (stage.milestones.android_first) {
+        otStagesHTML.push(html`
+          <tr>
+            <td>OriginTrial Android first</td>
+            <td>${stage.milestones.android_first}</td>
+          </tr>
+        `);
+      }
+    }
 
-  //     const dtStagesHTML = [];
-  //     for (stage in dtStages) {
-  //       if (stage.milestones.android_first) {
-  //         dtStagesHTML.push(html`
-  //           <tr>
-  //             <td>DevTrial on Android</td>
-  //             <td>${stage.milestones.android_first}</td>
-  //           </tr>
-  //         `);
-  //       }
-  //     }
+    const dtStagesHTML = [];
+    for (stage in dtStages) {
+      if (stage.milestones.android_first) {
+        dtStagesHTML.push(html`
+          <tr>
+            <td>DevTrial on Android</td>
+            <td>${stage.milestones.android_first}</td>
+          </tr>
+        `);
+      }
+    }
 
-  //     return html`
-  //       <table>
-  //         ${shipStagesHTML.join('')} ${otStagesHTML.join('')}
-  //         ${dtStagesHTML.join('')}
-  //       </table>
-  //     `;
-  //   }
+    return html`
+      <table>
+        ${shipStagesHTML.join('')} ${otStagesHTML.join('')}
+        ${dtStagesHTML.join('')}
+      </table>
+    `;
+  }
 
   //   /*
   //   <table>
@@ -1643,49 +1650,50 @@ after that, you're free to ship your feature.
   //   </table>
   //   */
 
-  //   renderWebViewMilestoneTable() {
-  //     const shipStages = stage_info.ship_stages;
-  //     const otStages = stage_info.ot_stages;
+  renderWebViewMilestonesTable() {
+    const stageInfo = this.feature.stage_info;
+    const shipStages = stageInfo.ship_stages;
+    const otStages = stageInfo.ot_stages;
 
-  //     const shipStagesHTML = [];
-  //     for (stage in shipStages) {
-  //       if (stage.milestones.webview_first) {
-  //         shipStagesHTML.push(html`
-  //           <tr>
-  //             <td>Shipping on WebView</td>
-  //             <td>${stage.milestones.webview_first}</td>
-  //           </tr>
-  //         `);
-  //       }
-  //     }
+    const shipStagesHTML = [];
+    for (stage in shipStages) {
+      if (stage.milestones.webview_first) {
+        shipStagesHTML.push(html`
+          <tr>
+            <td>Shipping on WebView</td>
+            <td>${stage.milestones.webview_first}</td>
+          </tr>
+        `);
+      }
+    }
 
-  //     const otStagesHTML = [];
-  //     for (stage in otStages) {
-  //       if (!otStages.hasOwnProperty(stage)) continue;
-  //       if (stage.milestones.webview_last) {
-  //         otStagesHTML.push(html`
-  //           <tr>
-  //             <td>OriginTrial webView last</td>
-  //             <td>${stage.milestones.webview_last}</td>
-  //           </tr>
-  //         `);
-  //       }
-  //       if (stage.milestones.webview_first) {
-  //         otStagesHTML.push(html`
-  //           <tr>
-  //             <td>OriginTrial webView first</td>
-  //             <td>${stage.milestones.webview_first}</td>
-  //           </tr>
-  //         `);
-  //       }
-  //     }
+    const otStagesHTML = [];
+    for (stage in otStages) {
+      if (!otStages.hasOwnProperty(stage)) continue;
+      if (stage.milestones.webview_last) {
+        otStagesHTML.push(html`
+          <tr>
+            <td>OriginTrial webView last</td>
+            <td>${stage.milestones.webview_last}</td>
+          </tr>
+        `);
+      }
+      if (stage.milestones.webview_first) {
+        otStagesHTML.push(html`
+          <tr>
+            <td>OriginTrial webView first</td>
+            <td>${stage.milestones.webview_first}</td>
+          </tr>
+        `);
+      }
+    }
 
-  //     return html`
-  //       <table>
-  //         ${shipStagesHTML.join('')} ${otStagesHTML.join('')}
-  //       </table>
-  //     `;
-  //   }
+    return html`
+      <table>
+        ${shipStagesHTML.join('')} ${otStagesHTML.join('')}
+      </table>
+    `;
+  }
 
   //   /*
   //   <table>
@@ -1707,40 +1715,41 @@ after that, you're free to ship your feature.
   //   </table>
   // */
 
-  //   renderIOSMilestoneTable() {
-  //     const shipStages = stage_info.ship_stages;
-  //     const dtStages = stage_info.dt_stages;
+  renderIOSMilestonesTable() {
+    const stageInfo = this.feature.stage_info;
+    const shipStages = stageInfo.ship_stages;
+    const dtStages = stageInfo.dt_stages;
 
-  //     const shipStagesHTML = [];
-  //     for (stage in shipStages) {
-  //       if (stage.milestones.ios_first) {
-  //         shipStagesHTML.push(html`
-  //           <tr>
-  //             <td>Shipping on WebView</td>
-  //             <td>${stage.milestones.ios_first}</td>
-  //           </tr>
-  //         `);
-  //       }
-  //     }
+    const shipStagesHTML = [];
+    for (stage in shipStages) {
+      if (stage.milestones.ios_first) {
+        shipStagesHTML.push(html`
+          <tr>
+            <td>Shipping on WebView</td>
+            <td>${stage.milestones.ios_first}</td>
+          </tr>
+        `);
+      }
+    }
 
-  //     const dtStagesHTML = [];
-  //     for (stage in dtStages) {
-  //       if (stage.milestones.ios_first) {
-  //         dtStagesHTML.push(html`
-  //           <tr>
-  //             <td>DevTrial on iOS</td>
-  //             <td>${stage.milestones.ios_first}</td>
-  //           </tr>
-  //         `);
-  //       }
-  //     }
+    const dtStagesHTML = [];
+    for (stage in dtStages) {
+      if (stage.milestones.ios_first) {
+        dtStagesHTML.push(html`
+          <tr>
+            <td>DevTrial on iOS</td>
+            <td>${stage.milestones.ios_first}</td>
+          </tr>
+        `);
+      }
+    }
 
-  //     return html`
-  //       <table>
-  //         ${shipStagesHTML.join('')} ${dtStagesHTML.join('')}
-  //       </table>
-  //     `;
-  //   }
+    return html`
+      <table>
+        ${shipStagesHTML.join('')} ${dtStagesHTML.join('')}
+      </table>
+    `;
+  }
 
   //   /*
   // {% if should_render_mstone_table %}
@@ -1752,29 +1761,31 @@ after that, you're free to ship your feature.
   // {% endif %}
   // */
 
-  //   renderEstimatedMilestoneTable() {
-  //     if (this.shouldRenderMstoneTable) {
-  //       return html`
-  //         ${renderDesktopMilestoneTable()} ${renderAndroidMilestoneTable()}
-  //         ${renderWebViewMilestoneTable()} ${renderIOSMilestoneTable()}
-  //       `;
-  //     } else {
-  //       return html` <p>No milestones specified</p> `;
-  //     }
-  //   }
+  renderEstimatedMilestonesTable() {
+    if (this.shouldRenderMstoneTable) {
+      return html`
+        ${this.renderDesktopMilestonesTable()}
+        ${this.renderAndroidMilestonesTable()}
+        ${this.renderWebViewMilestonesTable()}
+        ${this.renderIOSMilestonesTable()}
+      `;
+    } else {
+      return html` <p>No milestones specified</p> `;
+    }
+  }
 
   //   /*
   // <br><br><h4>Estimated milestones</h4>
   // {% include "estimated-milestones-table.html" %}
   // */
 
-  //   renderEstimatedMilestones() {
-  //     return html`
-  //       <br /><br />
-  //       <h4>Estimated milestones</h4>
-  //       ${renderEstimatedMilestonesTable()}
-  //     `;
-  //   }
+  renderEstimatedMilestones() {
+    return html`
+      <h4>Estimated milestones</h4>
+      ${this.renderEstimatedMilestonesTable()}
+      <br /><br />
+    `;
+  }
 
   //   /*
   // {% if 'anticipated_spec_changes' in sections_to_show or feature.anticipated_spec_changes %}
@@ -1790,40 +1801,40 @@ after that, you're free to ship your feature.
   // {% endif %}
   // */
 
-  //   renderAnticipatedSpecChanges() {
-  //     const anticipatedSpecChanges = this.feature.anticipated_spec_changes;
-  //     if (!this.sections_to_show.includes('anticipated_spec_changes') ||
-  //       !anticipatedSpecChanges) {
-  //       return nothing;
-  //     }
+  renderAnticipatedSpecChanges() {
+    const anticipatedSpecChanges = this.feature.anticipated_spec_changes;
+    if (!this.sections_to_show.includes('anticipated_spec_changes') ||
+      !anticipatedSpecChanges) {
+      return nothing;
+    }
 
-  //     return html`
-  //       <br /><br />
-  //       <h4>Anticipated spec changes</h4>
-  //       <p style="font-style: italic">
-  //         Open questions about a feature may be a source of future web compat or
-  //         interop issues. Please list open issues (e.g. links to known github
-  //         issues in the project for the feature specification) whose resolution
-  //         may introduce web compat/interop risk (e.g., changing to naming or
-  //         structure of the API in a non-backward-compatible way).
-  //       </p>
-  //       ${anticipatedSpecChanges}
-  //     `;
-  //   }
+    return html`
+      <h4>Anticipated spec changes</h4>
+      <p style="font-style: italic">
+        Open questions about a feature may be a source of future web compat or
+        interop issues. Please list open issues (e.g. links to known github
+        issues in the project for the feature specification) whose resolution
+        may introduce web compat/interop risk (e.g., changing to naming or
+        structure of the API in a non-backward-compatible way).
+      </p>
+      ${anticipatedSpecChanges}
+      <br /><br />
+    `;
+  }
 
   //   /*
   // <br><br><h4>Link to entry on the {{APP_TITLE}}</h4>
   // <a href="{{default_url}}">{{default_url}}</a>
   // */
 
-  //   renderDefaultURL() {
-  //     const defaultURL = this.feature.default_url;
-  //     return html`
-  //       <br /><br />
-  //       <h4>Link to entry on the ${APP_TITLE}</h4>
-  //       <a href="${defaultURL}">${defaultURL}</a>
-  //     `;
-  //   }
+  renderDefaultURL() {
+    const defaultURL = this.feature.default_url;
+    return html`
+      <h4>Link to entry on the ${APP_TITLE}</h4>
+      <a href="${defaultURL}">${defaultURL}</a>
+      <br /><br />
+    `;
+  }
 
   //   /*
   // {% if should_render_intents %}
@@ -1857,70 +1868,64 @@ after that, you're free to ship your feature.
   // {% endif %}
   // */
 
-  //   renderIntentLinks() {
-  //     if (this.shouldRenderIntents) {
-  //       const protoStages = stage_info.proto_stages;
-  //       const dtStages = stage_info.dt_stages;
-  //       const otStages = stage_info.ot_stages;
-  //       const extensionStages = stage_info.extension_stages;
+  renderIntentLinks() {
+    const stageInfo = this.feature.stage_info;
+    if (this.shouldRenderIntents) {
+      const protoStages = stageInfo.proto_stages;
+      const dtStages = stageInfo.dt_stages;
+      const otStages = stageInfo.ot_stages;
+      const extensionStages = stageInfo.extension_stages;
 
-  //       const protoStagesHTML = [];
-  //       for (stage in protoStages) {
-  //         if (stage.intent_thread_url) {
-  //           protoStagesHTML.push(html`
-  //             Intent to prototype: ${stage.intent_thread_url}
-  //           `);
-  //         }
-  //       }
+      const protoStagesHTML = [];
+      for (stage in protoStages) {
+        if (stage.intent_thread_url) {
+          protoStagesHTML.push(html`
+            Intent to prototype: ${stage.intent_thread_url}
+          `);
+        }
+      }
 
-  //       const dtStagesHTML = [];
-  //       for (stage in dtStages) {
-  //         if (stage.announcement_url) {
-  //           dtStagesHTML.push(html`
-  //             Ready for Trial: ${stage.announcement_url}
-  //             <br />
-  //           `);
-  //         }
-  //       }
+      const dtStagesHTML = [];
+      for (stage in dtStages) {
+        if (stage.announcement_url) {
+          dtStagesHTML.push(html`
+            Ready for Trial: ${stage.announcement_url}
+            <br />
+          `);
+        }
+      }
 
-  //       const otStagesHTML = [];
-  //       for (stage in otStages) {
-  //         if (stage.intent_thread_url) {
-  //           otStagesHTML.push(html`
-  //             Intent to Experiment: ${stage.intent_thread_url}
-  //             <br />
-  //           `);
-  //         }
-  //       }
+      const otStagesHTML = [];
+      for (stage in otStages) {
+        if (stage.intent_thread_url) {
+          otStagesHTML.push(html`
+            Intent to Experiment: ${stage.intent_thread_url}
+            <br />
+          `);
+        }
+      }
 
-  //       const extensionStagesHTML = [];
-  //       for (stage in extensionStages) {
-  //         if (stage.intent_thread_url) {
-  //           extensionStagesHTML.push(html`
-  //             Intent to Extend Experiment: ${stage.intent_thread_url}
-  //             <br />
-  //           `);
-  //         }
-  //       }
+      const extensionStagesHTML = [];
+      for (stage in extensionStages) {
+        if (stage.intent_thread_url) {
+          extensionStagesHTML.push(html`
+            Intent to Extend Experiment: ${stage.intent_thread_url}
+            <br />
+          `);
+        }
+      }
 
-  //       return html`
-  //         <br /><br />
-  //         <h4>Links to previous Intent discussions</h4>
-  //         ${protoStagesHTML.join('')}
-  //         ${dtStagesHTML.join('')}
-  //         ${otStagesHTML.join('')}
-  //         ${extensionStagesHTML.join('')}
-  //       `;
-  //     }
-  //   }
+      return html`
+        <h4>Links to previous Intent discussions</h4>
+        ${protoStagesHTML.join('')}
+        ${dtStagesHTML.join('')}
+        ${otStagesHTML.join('')}
+        ${extensionStagesHTML.join('')}
+        <br /><br />
+      `;
+    }
+  }
 
-  //   <!--
-
-  //
-  //   ${this.renderEstimatedMilestones()}
-  //   ${this.renderAnticipatedSpecChanges()} ${this.renderDefaultURL()}
-  //   ${this.renderIntentLinks()}
-  // -->
 
   renderDialogContent() {
     if (!this.feature || !this.feature.browsers) return '';
@@ -1961,7 +1966,10 @@ after that, you're free to ship your feature.
           ${this.renderAdoptionPlan()}
           ${this.renderNonOSSDeps()}
           ${this.renderSampleLinks()}
-          <br /><br />
+          ${this.renderEstimatedMilestones()}
+          ${this.renderAnticipatedSpecChanges()}
+          ${this.renderDefaultURL()}
+          ${this.renderIntentLinks()}
           <div>
             <small>
               This intent message was generated by
