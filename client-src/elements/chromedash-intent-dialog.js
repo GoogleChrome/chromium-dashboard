@@ -1,4 +1,5 @@
 import {LitElement, html, css, nothing} from 'lit-element';
+import {join} from 'lit/directives/join.js';
 import {INTENT_STAGES, FEATURE_TYPES} from './form-field-enums.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
@@ -570,11 +571,11 @@ after that, you're free to ship your feature.
   renderContactEmails() {
     const owners = this.feature.browsers.chrome.owners;
     const ownersList = !owners ? html`None` : owners.map(
-      (owner) => html` <a href="mailto:${owner}">${owner}</a> `,
+      (owner) => html`<a href="mailto:${owner}">${owner}</a>`,
     );
     return html`
         <h4>Contact emails</h4>
-        ${ownersList}
+        ${join(ownersList, ', ')}
         <br /><br />
       `;
   }
@@ -594,16 +595,12 @@ after that, you're free to ship your feature.
     if (!explainerLinks && this.feature.feature_type_int === 2) {
       return nothing;
     }
-    const explainerLinksList = explainerLinks.map(
-      (link) => html`
-        <a href="${link}">${link}</a>
-      `,
-    );
+    const explainerLinksHtml = (explainerLinks && explainerLinks.length > 0) ?
+      explainerLinks.map((link) => html`<a href="${link}">${link}</a>`) :
+      ['None'];
     return html`
       <h4>Explainer</h4>
-      ${(explainerLinks && explainerLinks.length > 0) ?
-        html`<br />${explainerLinksList.join(html`<br />`)}` :
-        'None'}
+      ${join(explainerLinksHtml, html`<br />`)}
       <br /><br />
     `;
   }
@@ -637,11 +634,11 @@ after that, you're free to ship your feature.
       return nothing;
     }
     const docsList = docs.map(
-      (link) => html` <br /><a href="${link}">${link}</a> `,
+      (link) => html`<a href="${link}">${link}</a>`,
     );
     return html`
       <h4>Design docs</h4>
-      ${docsList}
+      ${join(docsList, html`<br />`)}
       <br /><br />
     `;
   }
@@ -681,7 +678,7 @@ after that, you're free to ship your feature.
     );
     return html`
       <h4>Blink component</h4>
-      ${blinkComponentList}
+      ${join(blinkComponentList, html`<br />`)}
       <br /><br />
     `;
   }
@@ -748,7 +745,7 @@ after that, you're free to ship your feature.
     );
     return html`
       <h4>Search tags</h4>
-      ${tagsList.join(', ')}
+      ${join(tagsList, ', ')}
       <br /><br />
     `;
   }
@@ -1097,7 +1094,7 @@ after that, you're free to ship your feature.
           `);
         }
       }
-      extensionStagesHTML = html` ${extensionsHtml.join('')} `;
+      extensionStagesHTML = html` ${join(extensionsHtml, '')} `;
     }
 
     const experimentInfo = this.feature.experiment_goals;
@@ -1536,8 +1533,9 @@ after that, you're free to ship your feature.
 
     return html`
       <table>
-        ${shipStagesHTML.join('')} ${otStagesHTML.join('')}
-        ${dtStagesHTML.join('')}
+        ${join(shipStagesHTML, '')}
+        ${join(otStagesHTML, '')}
+        ${join(dtStagesHTML, '')}
       </table>
     `;
   }
@@ -1568,9 +1566,10 @@ after that, you're free to ship your feature.
   //   */
 
   renderAndroidMilestonesTable() {
-    const shipStages = stage_info.ship_stages;
-    const otStages = stage_info.ot_stages;
-    const dtStages = stage_info.dt_stages;
+    const stageInfo = this.feature.stage_info;
+    const shipStages = stageInfo.ship_stages;
+    const otStages = stageInfo.ot_stages;
+    const dtStages = stageInfo.dt_stages;
 
     const shipStagesHTML = [];
     for (stage in shipStages) {
@@ -1619,8 +1618,9 @@ after that, you're free to ship your feature.
 
     return html`
       <table>
-        ${shipStagesHTML.join('')} ${otStagesHTML.join('')}
-        ${dtStagesHTML.join('')}
+        ${join(shipStagesHTML, '')}
+        ${join(otStagesHTML, '')}
+        ${join(dtStagesHTML, '')}
       </table>
     `;
   }
@@ -1690,7 +1690,8 @@ after that, you're free to ship your feature.
 
     return html`
       <table>
-        ${shipStagesHTML.join('')} ${otStagesHTML.join('')}
+        ${join(shipStagesHTML, '')}
+        ${join(otStagesHTML, '')}
       </table>
     `;
   }
@@ -1746,7 +1747,8 @@ after that, you're free to ship your feature.
 
     return html`
       <table>
-        ${shipStagesHTML.join('')} ${dtStagesHTML.join('')}
+        ${join(shipStagesHTML, '')}
+        ${join(otStagesHTML, '')}
       </table>
     `;
   }
@@ -1917,10 +1919,10 @@ after that, you're free to ship your feature.
 
       return html`
         <h4>Links to previous Intent discussions</h4>
-        ${protoStagesHTML.join('')}
-        ${dtStagesHTML.join('')}
-        ${otStagesHTML.join('')}
-        ${extensionStagesHTML.join('')}
+        ${join(protoStagesHTML, '')}
+        ${join(dtStagesHTML, '')}
+        ${join(otStagesHTML, '')}
+        ${join(extensionStagesHTML, '')}
         <br /><br />
       `;
     }
