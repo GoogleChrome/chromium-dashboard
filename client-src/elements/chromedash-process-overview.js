@@ -5,7 +5,7 @@ import {
   somePendingPrereqs,
   somePendingGates,
 } from './chromedash-preflight-dialog';
-// import {openIntentDialog} from './chromedash-intent-dialog';
+import {openIntentDialog} from './chromedash-intent-dialog';
 import {findProcessStage} from './utils';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
@@ -161,11 +161,17 @@ export class ChromedashProcessOverview extends LitElement {
     return (viewedIncomingStageIndex > featureStageIndex);
   }
 
+  openIntentDialog(action, stage, feStage) {
+    openIntentDialog(
+      this.feature, this.progress, this.process, action,
+      stage, feStage, this.featureGates);
+  }
+
   renderAction(action, stage, feStage) {
     const label = action.name;
-    const url = action.url
-      .replace('{feature_id}', this.feature.id)
-      .replace('{outgoing_stage}', stage.outgoing_stage);
+    // const url = action.url
+    //   .replace('{feature_id}', this.feature.id)
+    //   .replace('{outgoing_stage}', stage.outgoing_stage);
 
     const checkCompletion = () => {
       if (somePendingPrereqs(action, this.progress) ||
@@ -176,9 +182,10 @@ export class ChromedashProcessOverview extends LitElement {
           this.featureGates);
         return;
       } else {
-        // Act like user clicked left button to go to the draft email window.
-        const draftWindow = window.open(url, '_blank');
-        draftWindow.focus();
+        // // Act like user clicked left button to go to the draft email window.
+        // const draftWindow = window.open(url, '_blank');
+        // draftWindow.focus();
+        this.openIntentDialog(action, stage, feStage);
       }
     };
     return html`

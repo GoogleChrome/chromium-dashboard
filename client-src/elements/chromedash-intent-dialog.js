@@ -1249,13 +1249,17 @@ after that, you're free to ship your feature.
 
     return html`
       <h4>Finch feature name</h4>
-      ${finchName}
+      ${finchName ?? 'None'}
+      <br /><br />
+
       ${this.feature.non_finch_justification ?
-        html` <br /><br />
+        html`
             <h4>Non-finch justification</h4>
-            <p class="preformatted">${this.feature.non_finch_justification}</p>` :
+            <p class="preformatted">${this.feature.non_finch_justification}</p>
+            <br /><br />
+            ` :
         !finchName ?
-          html` <br /><br />
+          html`
             <h4>Non-finch justification</h4>
             None` :
           nothing}
