@@ -741,9 +741,14 @@ export class ChromedashGateColumn extends LitElement {
     `;
   }
 
+  isReviewRequest(vote) {
+    return (vote.state === GATE_REVIEW_REQUESTED ||
+            vote.state === GATE_NA_REQUESTED);
+  }
+
   renderVotes() {
     const canVote = this.userCanVote();
-    const responses = this.votes.filter((v) => v.state !== GATE_REVIEW_REQUESTED);
+    const responses = this.votes.filter((v) => !this.isReviewRequest(v));
     const responseEmails = responses.map((v) => v.set_by);
     const othersPending = this.gate.assignee_emails.filter((ae) =>
       !responseEmails.includes(ae) && ae != this.user?.email);
