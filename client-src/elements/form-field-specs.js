@@ -110,6 +110,21 @@ export const ALL_FIELDS = {
       <li>CSS Flexbox: intrinsic size algorithm</li>
       <li>Permissions-Policy header</li>
     </ul>`,
+    check: (value, getFieldValue) => {
+      // if the name includes "deprecate" or "remove",
+      // the feature_type should be "Feature deprecation".
+      const name = (value || '').toLowerCase();
+      if (name.includes('deprecat') || name.includes('remov')) {
+        const featureType = Number(getFieldValue('feature_type_radio_group') ?? 0);
+        if (featureType !== FEATURE_TYPES.FEATURE_TYPE_DEPRECATION_ID[0]) {
+          return {
+            warning: `Feature name should contain "deprecate" or "remove"
+            if and only if the feature type is "Feature deprecation"`,
+          };
+        }
+      }
+    },
+    dependents: ['feature_type_radio_group'],
   },
 
   'summary': {
@@ -250,7 +265,7 @@ export const ALL_FIELDS = {
     choices: FEATURE_TYPES,
     label: 'Feature type',
     help_text: html`
-    Feature type chosen at time of creation.
+        Feature type chosen at time of creation.
         <br/>
         <p style="color: red"><strong>Note:</strong> The feature type field
         cannot be changed. If this field needs to be modified, a new feature
@@ -269,6 +284,19 @@ export const ALL_FIELDS = {
         <p style="color: red"><strong>Note:</strong> The feature type field
         cannot be changed. If this field needs to be modified, a new feature
         would need to be created.</p>`,
+    check: (value, getFieldValue) => {
+      const featureType = Number(value ?? 0);
+      if (featureType === FEATURE_TYPES.FEATURE_TYPE_DEPRECATION_ID[0]) {
+        const name = (getFieldValue('name') || '').toLowerCase();
+        if (!(name.includes('deprecat') || name.includes('remov'))) {
+          return {
+            warning: `Feature name should contain "deprecate" or "remove"
+            if and only if the feature type is "Feature deprecation"`,
+          };
+        }
+      }
+    },
+    dependents: ['name'],
   },
 
   'set_stage': {
