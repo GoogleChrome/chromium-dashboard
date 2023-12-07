@@ -14,7 +14,7 @@ import {
   WEB_DEV_VIEWS,
 } from './form-field-enums';
 
-import {checkMilestoneStartEnd} from './utils.js';
+import {checkFeatureNameAndType, checkMilestoneStartEnd} from './utils.js';
 
 /* Patterns from https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch04s01.html
  * Removing single quote ('), backtick (`), and pipe (|) since they are risky unless properly escaped everywhere.
@@ -110,6 +110,10 @@ export const ALL_FIELDS = {
       <li>CSS Flexbox: intrinsic size algorithm</li>
       <li>Permissions-Policy header</li>
     </ul>`,
+    check: (_value, getFieldValue) => {
+      return checkFeatureNameAndType(getFieldValue);
+    },
+    dependents: ['feature_type', 'feature_type_radio_group'],
   },
 
   'summary': {
@@ -250,11 +254,15 @@ export const ALL_FIELDS = {
     choices: FEATURE_TYPES,
     label: 'Feature type',
     help_text: html`
-    Feature type chosen at time of creation.
+        Feature type chosen at time of creation.
         <br/>
         <p style="color: red"><strong>Note:</strong> The feature type field
         cannot be changed. If this field needs to be modified, a new feature
         would need to be created.</p>`,
+    check: (_value, getFieldValue) => {
+      return checkFeatureNameAndType(getFieldValue);
+    },
+    dependents: ['name'],
   },
 
   'feature_type_radio_group': {
@@ -269,6 +277,10 @@ export const ALL_FIELDS = {
         <p style="color: red"><strong>Note:</strong> The feature type field
         cannot be changed. If this field needs to be modified, a new feature
         would need to be created.</p>`,
+    check: (_value, getFieldValue) => {
+      return checkFeatureNameAndType(getFieldValue);
+    },
+    dependents: ['name'],
   },
 
   'set_stage': {
