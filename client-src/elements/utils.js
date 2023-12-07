@@ -405,12 +405,12 @@ export function checkMilestoneStartEnd(startEndPair, getFieldValue) {
 export function checkFeatureNameAndType(getFieldValue) {
   const name = (getFieldValue('name') || '').toLowerCase();
   const featureType = Number(getFieldValue('feature_type') || '0');
-  const deprecationName =
+  const isdeprecationName =
     (name.includes('deprecat') || name.includes('remov'));
-  const deprecationType =
+  const isdeprecationType =
     (featureType === FEATURE_TYPES.FEATURE_TYPE_DEPRECATION_ID[0]);
-  if (deprecationName !== deprecationType) {
-    if (deprecationName) {
+  if (isdeprecationName !== isdeprecationType) {
+    if (isdeprecationName) {
       return {
         warning: `If the feature name contains "deprecate" or "remove",
         the feature type should be "Feature deprecation"`,

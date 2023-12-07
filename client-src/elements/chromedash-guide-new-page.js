@@ -58,7 +58,6 @@ export class ChromedashGuideNewPage extends LitElement {
   constructor() {
     super();
     this.userEmail = '';
-    // this.isEnterpriseFeature = false; // ??
     this.fieldValues = [];
   }
 
@@ -78,14 +77,12 @@ export class ChromedashGuideNewPage extends LitElement {
 
   handleFormSubmit(event, hiddenTokenField) {
     event.preventDefault();
-    // const submitBody =
     formatFeatureChanges(this.fieldValues, this.featureId);
 
     // get the XSRF token and update it if it's expired before submission
     window.csClient.ensureTokenIsValid().then(() => {
       hiddenTokenField.value = window.csClient.token;
       event.target.submit();
-      // return csClient.updateFeature(submitBody);
     });
   }
 
