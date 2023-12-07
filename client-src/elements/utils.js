@@ -2,7 +2,7 @@
 
 import {markupAutolinks} from './autolink.js';
 import {nothing, html} from 'lit';
-import {STAGE_FIELD_NAME_MAPPING} from './form-field-enums';
+import {STAGE_FIELD_NAME_MAPPING, FEATURE_TYPES} from './form-field-enums';
 
 let toastEl;
 
@@ -397,6 +397,29 @@ export function checkMilestoneStartEnd(startEndPair, getFieldValue) {
   if (startMilestone != null && endMilestone != null) {
     if (endMilestone <= startMilestone) {
       return {error: 'Start milestone must be before end milestone'};
+    }
+  }
+}
+
+
+export function checkFeatureNameAndType(getFieldValue) {
+  const name = (getFieldValue('name') || '').toLowerCase();
+  const featureType = Number(getFieldValue('feature_type') || '0');
+  const deprecationName =
+    (name.includes('deprecat') || name.includes('remov'));
+  const deprecationType =
+    (featureType === FEATURE_TYPES.FEATURE_TYPE_DEPRECATION_ID[0]);
+  if (deprecationName !== deprecationType) {
+    if (deprecationName) {
+      return {
+        warning: `If the feature name contains "deprecate" or "remove",
+        the feature type should be "Feature deprecation"`,
+      };
+    } else {
+      return {
+        warning: `If the feature type is "Feature deprecation",
+        the feature name should contain "deprecate" or "remove"`,
+      };
     }
   }
 }

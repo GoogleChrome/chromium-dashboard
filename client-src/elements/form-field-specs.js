@@ -14,7 +14,7 @@ import {
   WEB_DEV_VIEWS,
 } from './form-field-enums';
 
-import {checkMilestoneStartEnd} from './utils.js';
+import {checkFeatureNameAndType, checkMilestoneStartEnd} from './utils.js';
 
 /* Patterns from https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch04s01.html
  * Removing single quote ('), backtick (`), and pipe (|) since they are risky unless properly escaped everywhere.
@@ -110,21 +110,10 @@ export const ALL_FIELDS = {
       <li>CSS Flexbox: intrinsic size algorithm</li>
       <li>Permissions-Policy header</li>
     </ul>`,
-    check: (value, getFieldValue) => {
-      // if the name includes "deprecate" or "remove",
-      // the feature_type should be "Feature deprecation".
-      const name = (value || '').toLowerCase();
-      if (name.includes('deprecat') || name.includes('remov')) {
-        const featureType = Number(getFieldValue('feature_type_radio_group') ?? 0);
-        if (featureType !== FEATURE_TYPES.FEATURE_TYPE_DEPRECATION_ID[0]) {
-          return {
-            warning: `Feature name should contain "deprecate" or "remove"
-            if and only if the feature type is "Feature deprecation"`,
-          };
-        }
-      }
+    check: (_value, getFieldValue) => {
+      return checkFeatureNameAndType(getFieldValue);
     },
-    dependents: ['feature_type_radio_group'],
+    dependents: ['feature_type', 'feature_type_radio_group'],
   },
 
   'summary': {
@@ -270,6 +259,10 @@ export const ALL_FIELDS = {
         <p style="color: red"><strong>Note:</strong> The feature type field
         cannot be changed. If this field needs to be modified, a new feature
         would need to be created.</p>`,
+    check: (_value, getFieldValue) => {
+      return checkFeatureNameAndType(getFieldValue);
+    },
+    dependents: ['name'],
   },
 
   'feature_type_radio_group': {
@@ -284,17 +277,8 @@ export const ALL_FIELDS = {
         <p style="color: red"><strong>Note:</strong> The feature type field
         cannot be changed. If this field needs to be modified, a new feature
         would need to be created.</p>`,
-    check: (value, getFieldValue) => {
-      const featureType = Number(value ?? 0);
-      if (featureType === FEATURE_TYPES.FEATURE_TYPE_DEPRECATION_ID[0]) {
-        const name = (getFieldValue('name') || '').toLowerCase();
-        if (!(name.includes('deprecat') || name.includes('remov'))) {
-          return {
-            warning: `Feature name should contain "deprecate" or "remove"
-            if and only if the feature type is "Feature deprecation"`,
-          };
-        }
-      }
+    check: (_value, getFieldValue) => {
+      return checkFeatureNameAndType(getFieldValue);
     },
     dependents: ['name'],
   },
