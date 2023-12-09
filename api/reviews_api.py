@@ -186,10 +186,10 @@ class XfnGatesAPI(basehandlers.APIHandler):
     if not is_editor and not is_approver:
       self.abort(403, msg='User lacks permission to create gates')
 
-    count = self.createXfnGates(feature_id, stage_id)
+    count = self.create_xfn_gates(feature_id, stage_id)
     return {'message': f'Created {count} gates'}
 
-  def getNeededGateTypes(self) -> list[int]:
+  def get_needed_gate_types(self) -> list[int]:
     """Return a list of gate types normally used to ship a new feature."""
     needed_gate_tuples = STAGES_AND_GATES_BY_FEATURE_TYPE[
         FEATURE_TYPE_INCUBATE_ID]
@@ -198,7 +198,7 @@ class XfnGatesAPI(basehandlers.APIHandler):
         return gate_types
     raise ValueError('Could not find expected list of gate types')
 
-  def createXfnGates(self, feature_id, stage_id) -> int:
+  def create_xfn_gates(self, feature_id, stage_id) -> int:
     """Create all new incubation gates on a PSA stage"""
     logging.info('Creating xfn gates')
     existing_gates = Gate.query(
@@ -206,7 +206,7 @@ class XfnGatesAPI(basehandlers.APIHandler):
     existing_gate_types = set([eg.gate_type for eg in existing_gates])
     logging.info('Found existing: %r', existing_gate_types)
     new_gates = []
-    for gate_type in self.getNeededGateTypes():
+    for gate_type in self.get_needed_gate_types():
       if gate_type not in existing_gate_types:
         logging.info(f'Creating gate type {gate_type}')
         gate = Gate(
