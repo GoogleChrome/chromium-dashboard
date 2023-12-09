@@ -383,7 +383,7 @@ export function getFieldValue(fieldName, fieldValues) {
   return fieldValue;
 }
 
-export function checkMilestoneStartEnd(startEndPair, getFieldValue) {
+export function checkMilestoneStartEnd(props, getFieldValue) {
   const getValue = (name) => {
     const value = getFieldValue(name);
     if (typeof value === 'string') {
@@ -391,12 +391,12 @@ export function checkMilestoneStartEnd(startEndPair, getFieldValue) {
       return Number(value);
     }
   };
-  const {start, end} = startEndPair;
+  const {start, end, msg} = props;
   const startMilestone = getValue(start);
   const endMilestone = getValue(end);
   if (startMilestone != null && endMilestone != null) {
     if (endMilestone <= startMilestone) {
-      return {error: 'Start milestone must be before end milestone'};
+      return {error: msg || 'Start milestone must be before end milestone'};
     }
   }
 }

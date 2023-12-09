@@ -965,6 +965,12 @@ export const ALL_FIELDS = {
     help_text: html`
       First android milestone that will support an origin
       trial of this feature.`,
+    check: (_value, getFieldValue) =>
+      checkMilestoneStartEnd({
+        start: 'ot_milestone_android_start',
+        end: 'ot_milestone_android_end',
+      }, getFieldValue),
+    dependents: ['ot_milestone_android_end'],
   },
 
   'ot_milestone_android_end': {
@@ -975,6 +981,12 @@ export const ALL_FIELDS = {
     help_text: html`
       Last android milestone that will support an origin
       trial of this feature.`,
+    check: (_value, getFieldValue) =>
+      checkMilestoneStartEnd({
+        start: 'ot_milestone_android_start',
+        end: 'ot_milestone_android_end',
+      }, getFieldValue),
+    dependents: ['ot_milestone_android_end'],
   },
 
   'ot_milestone_webview_start': {
@@ -985,6 +997,12 @@ export const ALL_FIELDS = {
     help_text: html`
       First WebView milestone that will support an origin
       trial of this feature.`,
+    check: (_value, getFieldValue) =>
+      checkMilestoneStartEnd({
+        start: 'ot_milestone_webview_start',
+        end: 'ot_milestone_webview_end',
+      }, getFieldValue),
+    dependents: ['ot_milestone_webview_end'],
   },
 
   'ot_milestone_webview_end': {
@@ -995,6 +1013,12 @@ export const ALL_FIELDS = {
     help_text: html`
       Last WebView milestone that will support an origin
       trial of this feature.`,
+    check: (_value, getFieldValue) =>
+      checkMilestoneStartEnd({
+        start: 'ot_milestone_webview_start',
+        end: 'ot_milestone_webview_end',
+      }, getFieldValue),
+    dependents: ['ot_milestone_webview_end'],
   },
 
   'experiment_risks': {
@@ -1230,6 +1254,12 @@ export const ALL_FIELDS = {
     help_text: html`
       First milestone that will support an origin
       trial of this feature.`,
+    check: (_value, getFieldValue) =>
+      checkMilestoneStartEnd({
+        start: 'ot_milestone_desktop_start',
+        end: 'ot_milestone_desktop_end',
+      }, getFieldValue),
+    dependents: ['ot_milestone_desktop_end'],
   },
 
   'ot_creation__milestone_desktop_last': {
@@ -1241,6 +1271,12 @@ export const ALL_FIELDS = {
     help_text: html`
       Last milestone that will support an origin
       trial of this feature.`,
+    check: (_value, getFieldValue) =>
+      checkMilestoneStartEnd({
+        start: 'ot_milestone_desktop_start',
+        end: 'ot_milestone_desktop_end',
+      }, getFieldValue),
+    dependents: ['ot_milestone_desktop_start'],
   },
 
   'anticipated_spec_changes': {
@@ -1399,6 +1435,19 @@ export const ALL_FIELDS = {
     required: false,
     label: 'Chrome for desktop',
     help_text: SHIPPED_HELP_TXT,
+    check: (_value, getFieldValue) => {
+      return (checkMilestoneStartEnd({
+        start: 'ot_milestone_desktop_end',
+        end: 'shipped_milestone',
+        msg: 'Cannot ship in the same milestone as origin trial.',
+      }, getFieldValue) ||
+      checkMilestoneStartEnd({
+        start: 'dt_milestone_desktop_start',
+        end: 'shipped_milestone',
+        msg: 'Cannot ship in the same milestone as dev trial.',
+      }, getFieldValue));
+    },
+    dependents: ['ot_milestone_desktop_end', 'dt_milestone_desktop_start'],
   },
 
   'shipped_android_milestone': {
