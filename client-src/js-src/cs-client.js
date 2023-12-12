@@ -338,6 +338,11 @@ class ChromeStatusClient {
     return this.doPatch(`/features/${featureId}/stages/${stageId}`, body);
   }
 
+  async addXfnGates(featureId, stageId) {
+    return this.doPost(
+        `/features/${featureId}/stages/${stageId}/addXfnGates`);
+  }
+
   // Processes API
   async getFeatureProcess(featureId) {
     return this.doGet(`/features/${featureId}/process`);

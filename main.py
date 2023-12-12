@@ -129,6 +129,9 @@ api_routes: list[Route] = [
             stages_api.StagesAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/stages/<int:stage_id>',
             stages_api.StagesAPI),
+    Route(
+        f'{API_BASE}/features/<int:feature_id>/stages/<int:stage_id>/addXfnGates',
+        reviews_api.XfnGatesAPI),
 
     Route(f'{API_BASE}/blinkcomponents',
         blink_components_api.BlinkComponentsAPI),
