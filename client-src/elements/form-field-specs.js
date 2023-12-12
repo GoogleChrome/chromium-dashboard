@@ -77,52 +77,52 @@ const OT_MILESTONE_WEBVIEW_RANGE = {
   later: 'ot_milestone_webview_end',
 };
 
-const OT_SHIPPED_MILESTONE_DESKTOP_RANGE = {
+export const OT_SHIPPED_MILESTONE_DESKTOP_RANGE = {
   earlier: 'ot_milestone_desktop_end',
   later: 'shipped_milestone',
-  msg: 'Shipped milestone must be after origin trial is completed.',
+  error: 'Shipped milestone must be after origin trial is completed.',
 };
 
 const OT_SHIPPED_MILESTONE_WEBVIEW_RANGE = {
   earlier: 'ot_milestone_webview_end',
   later: 'shipped_webview_milestone',
-  msg: 'Shipped webview milestone must be after origin trial is completed.',
+  error: 'Shipped webview milestone must be after origin trial is completed.',
 };
 
 const OT_SHIPPED_MILESTONE_ANDROID_RANGE = {
   earlier: 'ot_milestone_android_end',
   later: 'shipped_android_milestone',
-  msg: 'Shipped android milestone must be after origin trial is completed.',
+  error: 'Shipped android milestone must be after origin trial is completed.',
 };
 
 const OT_SHIPPED_MILESTONE_IOS_RANGE = {
   earlier: 'ot_milestone_ios_end',
   later: 'shipped_ios_milestone',
-  msg: 'Shipped milestone must be after origin trial is completed.',
+  error: 'Shipped milestone must be after origin trial is completed.',
 };
 
 const DT_SHIPPED_MILESTONE_DESKTOP_RANGE = {
   earlier: 'dt_milestone_desktop_start',
   later: 'shipped_milestone',
-  msg: 'Shipped milestone must be later than dev trial.',
+  error: 'Shipped milestone must be later than dev trial.',
 };
 
 const DT_SHIPPED_MILESTONE_ANDROID_RANGE = {
   earlier: 'dt_milestone_android_start',
   later: 'shipped_android_milestone',
-  msg: 'Shipped milestone must be later than dev trial.',
+  error: 'Shipped milestone must be later than dev trial.',
 };
 
 const DT_SHIPPED_MILESTONE_IOS_RANGE = {
   earlier: 'dt_milestone_ios_start',
   later: 'shipped_ios_milestone',
-  msg: 'Shipped milestone must be later than dev trial.',
+  error: 'Shipped milestone must be later than dev trial.',
 };
 
 const DT_SHIPPED_MILESTONE_WEBVIEW_RANGE = {
   earlier: 'dt_milestone_webview_start',
   later: 'shipped_webview_milestone',
-  msg: 'Shipped webview milestone must be later than dev trial.',
+  error: 'Shipped webview milestone must be later than dev trial.',
 };
 
 
@@ -1826,12 +1826,12 @@ function checkMilestoneRanges(ranges, getFieldValue) {
     }
   };
   for (const range of ranges) {
-    const {earlier, later, msg} = range;
+    const {earlier, later, error} = range;
     const earlierMilestone = getValue(earlier);
     const laterMilestone = getValue(later);
     if (earlierMilestone != null && laterMilestone != null) {
       if (laterMilestone <= earlierMilestone) {
-        return {error: msg || 'Start milestone must be before end milestone'};
+        return {error: error || 'Start milestone must be before end milestone'};
       }
     }
   }

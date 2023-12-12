@@ -5,6 +5,7 @@ import './chromedash-toast';
 import '../js-src/cs-client';
 import sinon from 'sinon';
 
+
 describe('chromedash-guide-editall-page', () => {
   const validFeaturePromise = Promise.resolve({
     id: 123456,
@@ -151,5 +152,52 @@ describe('chromedash-guide-editall-page', () => {
       'sl-select[name="tag_review_status"]');
     assert.exists(measurementFields);
     assert.isTrue(measurementFields.length === 1);
+  });
+
+  it('calls milestone range pair checks', async () => {
+    const featureId = 123456;
+    window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
+
+    const component = await fixture(
+      html`<chromedash-guide-editall-page
+             .featureId=${featureId}>
+           </chromedash-guide-editall-page>`);
+    assert.exists(component);
+    assert.instanceOf(component, ChromedashGuideEditallPage);
+
+    // Get the milestone fields
+    const milestoneFieldStart =
+      component.shadowRoot.querySelector('sl-input[name="ot_milestone_desktop_start"]');
+    const milestoneFieldEnd =
+      component.shadowRoot.querySelector('sl-input[name="ot_milestone_desktop_end"]');
+
+    assert.exists(milestoneFieldStart);
+    assert.exists(milestoneFieldEnd);
+
+    // Set an invalid milestone values
+    milestoneFieldStart.value = '100';
+    milestoneFieldEnd.value = '99';
+
+    // Trigger the change event on the milestone field
+    milestoneFieldStart.dispatchEvent(new Event('sl-change'));
+
+
+    // The error messages should be displayed
+    const errorMessageStart = milestoneFieldStart.shadowRoot.querySelector('.check-error');
+    assert.exists(errorMessageStart);
+
+    const errorMessageEnd = milestoneFieldEnd.shadowRoot.querySelector('.check-error');
+    assert.exists(errorMessageEnd);
+
+    // Set a valid milestone value
+    milestoneFieldStart.value = '42';
+    milestoneFieldEnd.value = '43';
+
+    // Trigger the change event on the milestone field
+    milestoneField.dispatchEvent(new Event('sl-change'));
+
+    // The error messages should not be displayed
+    assert.notExists(errorMessageStart);
+    assert.notExists(errorMessageEnd);
   });
 });
