@@ -15,7 +15,7 @@
 import testing_config  # Must be imported before the module under test.
 
 import flask
-import mock
+from unittest import mock
 import werkzeug
 from google.cloud import ndb  # type: ignore
 
