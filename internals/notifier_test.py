@@ -231,6 +231,18 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertEqual('subject', actual['subject'])
     self.assertEqual('triggerer@example.com', actual['reply_to'])
 
+  def test_apply_subscription_rules__iwa_match(self):
+    """When a feature has category IWA rule, a reason is returned."""
+    self.fe_1.category = core_enums.IWA
+    changes = [{'prop_name': 'shipped_android_milestone'}]  # Anything
+
+    actual = notifier.apply_subscription_rules(
+        self.fe_1, changes)
+
+    self.assertEqual(
+        {notifier.IWA_RULE_REASON: notifier.IWA_RULE_ADDRS},
+        actual)
+
   def test_apply_subscription_rules__relevant_match(self):
     """When a feature and change match a rule, a reason is returned."""
     self.ship_stage.milestones.android_first = 88

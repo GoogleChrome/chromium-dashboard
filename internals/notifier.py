@@ -140,6 +140,10 @@ def convert_reasons_to_task(
 WEBVIEW_RULE_REASON = (
     'This feature has an android milestone, but not a webview milestone')
 WEBVIEW_RULE_ADDRS = ['webview-leads-external@google.com']
+IWA_RULE_REASON = (
+    'You are subscribed to all IWA features')
+IWA_RULE_ADDRS = ['iwa-dev@chromium.org']
+
 
 
 def apply_subscription_rules(
@@ -150,6 +154,10 @@ def apply_subscription_rules(
   changed_field_names = {c['prop_name'] for c in changes}
   results: dict[str, list[str]] = {}
 
+  # Rule 1: Check for IWA features
+  if fe.category == core_enums.IWA:
+    results[IWA_RULE_REASON] = IWA_RULE_ADDRS
+
   # Find an existing shipping stage with milestone info.
   fe_stages = stage_helpers.get_feature_stages(fe.key.integer_id())
   stage_type = core_enums.STAGE_TYPES_SHIPPING[fe.feature_type] or 0
@@ -157,7 +165,7 @@ def apply_subscription_rules(
   ship_milestones: MilestoneSet | None = (
       ship_stages[0].milestones if len(ship_stages) > 0 else None)
 
-  # Check if feature has some other milestone set, but not webview.
+  # Rule 2: Check if feature has some other milestone set, but not webview.
   if (ship_milestones is not None and
       ship_milestones.android_first and
       not ship_milestones.webview_first):

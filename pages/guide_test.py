@@ -15,6 +15,7 @@
 import testing_config  # Must be imported before the module under test.
 
 import flask
+from unittest import mock
 import werkzeug
 from google.cloud import ndb  # type: ignore
 
@@ -68,7 +69,8 @@ class FeatureCreateTest(testing_config.CustomTestCase):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.post()
 
-  def test_post__normal_valid(self):
+  @mock.patch('internals.notifier_helpers.notify_subscribers_and_save_amendments')
+  def test_post__normal_valid(self, mock_notify):
     """Allowed user can create a feature."""
     testing_config.sign_in('user1@google.com', 1234567890)
     with test_app.test_request_context(
@@ -99,6 +101,9 @@ class FeatureCreateTest(testing_config.CustomTestCase):
     gates = Gate.query().fetch()
     self.assertEqual(len(stages), 6)
     self.assertEqual(len(gates), 11)
+
+    # Ensure notifications are sent.
+    mock_notify.assert_called_once()
 
 
 class FeatureEditHandlerTest(testing_config.CustomTestCase):

@@ -83,6 +83,9 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
     # Write each Stage and Gate entity for the given feature.
     self.write_gates_and_stages_for_feature(key.integer_id(), feature_type)
 
+    notifier_helpers.notify_subscribers_and_save_amendments(
+        feature_entry, [], is_update=False)
+
     # Remove all feature-related cache.
     rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
 
@@ -485,9 +488,9 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
         fe, changed_fields, notify=True)
     # Remove all feature-related cache.
     rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
-    
+
     feature_links.update_feature_links(fe, changed_fields)
-    
+
     # Update full-text index.
     if fe:
       search_fulltext.index_feature(fe)
