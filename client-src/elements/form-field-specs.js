@@ -78,27 +78,27 @@ const OT_MILESTONE_WEBVIEW_RANGE = {
 };
 
 export const OT_SHIPPED_MILESTONE_DESKTOP_RANGE = {
-  earlier: 'ot_milestone_desktop_end',
+  earlier: 'ot_milestone_desktop_start',
   later: 'shipped_milestone',
-  error: 'Shipped milestone must be after origin trial is completed.',
+  error: 'Origin trial must start before feature is shipped.',
 };
 
 const OT_SHIPPED_MILESTONE_WEBVIEW_RANGE = {
-  earlier: 'ot_milestone_webview_end',
+  earlier: 'ot_milestone_webview_start',
   later: 'shipped_webview_milestone',
-  error: 'Shipped webview milestone must be after origin trial is completed.',
+  error: 'Origin trial must start before feature is shipped.',
 };
 
 const OT_SHIPPED_MILESTONE_ANDROID_RANGE = {
-  earlier: 'ot_milestone_android_end',
+  earlier: 'ot_milestone_android_start',
   later: 'shipped_android_milestone',
-  error: 'Shipped android milestone must be after origin trial is completed.',
+  error: 'Origin trial must start before feature is shipped.',
 };
 
 const OT_SHIPPED_MILESTONE_IOS_RANGE = {
-  earlier: 'ot_milestone_ios_end',
+  earlier: 'ot_milestone_ios_start',
   later: 'shipped_ios_milestone',
-  error: 'Shipped milestone must be after origin trial is completed.',
+  error: 'Origin trial must start before feature is shipped.',
 };
 
 const DT_SHIPPED_MILESTONE_DESKTOP_RANGE = {
@@ -991,8 +991,11 @@ export const ALL_FIELDS = {
       First desktop milestone that will support an origin
       trial of this feature.`,
     check: (_value, getFieldValue) =>
-      checkMilestoneRanges([OT_MILESTONE_DESKTOP_RANGE], getFieldValue),
-    dependents: ['ot_milestone_desktop_end'],
+      checkMilestoneRanges([
+        OT_MILESTONE_DESKTOP_RANGE,
+        OT_SHIPPED_MILESTONE_DESKTOP_RANGE,
+      ], getFieldValue),
+    dependents: ['ot_milestone_desktop_end', 'shipped_milestone'],
   },
 
   'ot_milestone_desktop_end': {
@@ -1004,10 +1007,8 @@ export const ALL_FIELDS = {
       Last desktop milestone that will support an origin
       trial of this feature.`,
     check: (_value, getFieldValue) =>
-      checkMilestoneRanges([
-        OT_SHIPPED_MILESTONE_DESKTOP_RANGE,
-        OT_MILESTONE_DESKTOP_RANGE], getFieldValue),
-    dependents: ['ot_milestone_desktop_start', 'shipped_milestone'],
+      checkMilestoneRanges([OT_MILESTONE_DESKTOP_RANGE], getFieldValue),
+    dependents: ['ot_milestone_desktop_start'],
   },
 
   'ot_milestone_android_start': {
@@ -1019,8 +1020,10 @@ export const ALL_FIELDS = {
       First android milestone that will support an origin
       trial of this feature.`,
     check: (_value, getFieldValue) =>
-      checkMilestoneRanges([OT_MILESTONE_ANDROID_RANGE], getFieldValue),
-    dependents: ['ot_milestone_android_end'],
+      checkMilestoneRanges([
+        OT_MILESTONE_ANDROID_RANGE,
+        OT_SHIPPED_MILESTONE_ANDROID_RANGE], getFieldValue),
+    dependents: ['ot_milestone_android_end', 'shipped_android_milestone'],
 
   },
 
@@ -1033,10 +1036,8 @@ export const ALL_FIELDS = {
       Last android milestone that will support an origin
       trial of this feature.`,
     check: (_value, getFieldValue) =>
-      checkMilestoneRanges([
-        OT_SHIPPED_MILESTONE_ANDROID_RANGE,
-        OT_MILESTONE_ANDROID_RANGE], getFieldValue),
-    dependents: ['ot_milestone_android_end', 'shipped_android_milestone'],
+      checkMilestoneRanges([OT_MILESTONE_ANDROID_RANGE], getFieldValue),
+    dependents: ['ot_milestone_android_start'],
   },
 
   'ot_milestone_webview_start': {
@@ -1048,8 +1049,10 @@ export const ALL_FIELDS = {
       First WebView milestone that will support an origin
       trial of this feature.`,
     check: (_value, getFieldValue) =>
-      checkMilestoneRanges([OT_MILESTONE_WEBVIEW_RANGE], getFieldValue),
-    dependents: ['ot_milestone_webview_end'],
+      checkMilestoneRanges([
+        OT_MILESTONE_WEBVIEW_RANGE,
+        OT_SHIPPED_MILESTONE_IOS_RANGE], getFieldValue),
+    dependents: ['ot_milestone_webview_end', 'shipped_ios_milestone'],
   },
 
   'ot_milestone_webview_end': {
@@ -1061,10 +1064,8 @@ export const ALL_FIELDS = {
       Last WebView milestone that will support an origin
       trial of this feature.`,
     check: (_value, getFieldValue) =>
-      checkMilestoneRanges([
-        OT_SHIPPED_MILESTONE_IOS_RANGE,
-        OT_MILESTONE_WEBVIEW_RANGE], getFieldValue),
-    dependents: ['ot_milestone_ios_end', 'shipped_ios_milestone'],
+      checkMilestoneRanges([OT_MILESTONE_WEBVIEW_RANGE], getFieldValue),
+    dependents: ['ot_milestone_ios_start'],
   },
 
   'experiment_risks': {
@@ -1301,8 +1302,11 @@ export const ALL_FIELDS = {
       First milestone that will support an origin
       trial of this feature.`,
     check: (_value, getFieldValue) =>
-      checkMilestoneRanges([OT_MILESTONE_DESKTOP_RANGE], getFieldValue),
-    dependents: ['ot_milestone_desktop_end'],
+      checkMilestoneRanges([
+        OT_MILESTONE_DESKTOP_RANGE,
+        OT_SHIPPED_MILESTONE_DESKTOP_RANGE,
+      ], getFieldValue),
+    dependents: ['ot_milestone_desktop_end', 'shipped_milestone'],
   },
 
   'ot_creation__milestone_desktop_last': {
@@ -1315,10 +1319,8 @@ export const ALL_FIELDS = {
       Last milestone that will support an origin
       trial of this feature.`,
     check: (_value, getFieldValue) =>
-      checkMilestoneRanges([
-        OT_SHIPPED_MILESTONE_DESKTOP_RANGE,
-        OT_MILESTONE_DESKTOP_RANGE], getFieldValue),
-    dependents: ['ot_milestone_desktop_start', 'shipped_milestone'],
+      checkMilestoneRanges([OT_MILESTONE_DESKTOP_RANGE], getFieldValue),
+    dependents: ['ot_milestone_desktop_start'],
   },
 
   'anticipated_spec_changes': {
@@ -1481,7 +1483,8 @@ export const ALL_FIELDS = {
       checkMilestoneRanges([
         OT_SHIPPED_MILESTONE_DESKTOP_RANGE,
         DT_SHIPPED_MILESTONE_DESKTOP_RANGE], getFieldValue),
-    dependents: ['dt_milestone_desktop_start', 'ot_milestone_desktop_end', 'shipped_milestone'],
+    dependents: [
+      'dt_milestone_desktop_start', 'ot_milestone_desktop_start', 'shipped_milestone'],
   },
 
   'shipped_android_milestone': {
@@ -1493,8 +1496,8 @@ export const ALL_FIELDS = {
     check: (_value, getFieldValue) =>
       checkMilestoneRanges([OT_SHIPPED_MILESTONE_ANDROID_RANGE,
         DT_SHIPPED_MILESTONE_ANDROID_RANGE], getFieldValue),
-    dependents: ['dt_milestone_android_start', 'ot_milestone_android_end',
-      'shipped_android_milestone'],
+    dependents: [
+      'dt_milestone_android_start', 'ot_milestone_android_start', 'shipped_android_milestone'],
   },
 
   'shipped_ios_milestone': {
@@ -1507,8 +1510,8 @@ export const ALL_FIELDS = {
       checkMilestoneRanges([
         OT_SHIPPED_MILESTONE_IOS_RANGE,
         DT_SHIPPED_MILESTONE_IOS_RANGE], getFieldValue),
-    dependents: ['dt_milestone_ios_start', 'ot_milestone_ios_end',
-      'shipped_ios_milestone'],
+    dependents: [
+      'dt_milestone_ios_start', 'ot_milestone_ios_start', 'shipped_ios_milestone'],
   },
 
   'shipped_webview_milestone': {
@@ -1521,8 +1524,8 @@ export const ALL_FIELDS = {
       checkMilestoneRanges([
         OT_SHIPPED_MILESTONE_WEBVIEW_RANGE,
         DT_SHIPPED_MILESTONE_WEBVIEW_RANGE], getFieldValue),
-    dependents: ['dt_milestone_webview_start', 'ot_milestone_webview_end',
-      'shipped_webview_milestone'],
+    dependents: [
+      'dt_milestone_webview_start', 'ot_milestone_webview_start', 'shipped_webview_milestone'],
   },
 
   'requires_embedder_support': {
