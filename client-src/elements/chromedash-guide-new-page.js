@@ -132,11 +132,12 @@ export class ChromedashGuideNewPage extends LitElement {
 
   renderForm() {
     const newFeatureInitialValues = {owner: this.userEmail};
+    this.fieldValues.allFields = newFeatureInitialValues;
+
     const formFields = this.isEnterpriseFeature ?
       ENTERPRISE_NEW_FEATURE_FORM_FIELDS :
       NEW_FEATURE_FORM_FIELDS;
     const postAction = this.isEnterpriseFeature ? '/guide/enterprise/new' : '/guide/new';
-    this.fieldValues.allFields = formattedFeature;
 
     const renderFormField = (field, className) => {
       const featureJSONKey = ALL_FIELDS[field].name || field;
