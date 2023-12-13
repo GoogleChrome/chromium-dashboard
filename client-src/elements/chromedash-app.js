@@ -236,7 +236,8 @@ class ChromedashApp extends LitElement {
       componentName);
     this.setUnsavedChanges(false);
     this.removeBeforeUnloadHandler();
-    this.pageComponent.allFormFieldComponents = {};
+    // this.pageComponent.allFormFieldComponentsMap = {};
+    this.pageComponent.allFormFieldComponentsList = [];
 
     window.setTimeout(() => {
       // Timeout required since the form may not be created yet.
