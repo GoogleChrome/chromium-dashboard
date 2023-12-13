@@ -345,6 +345,8 @@ export class ChromedashGuideStagePage extends LitElement {
 
   renderForm() {
     const formattedFeature = formatFeatureForEdit(this.feature);
+    this.fieldValues.allFields = formattedFeature;
+
     return html`
       <form name="feature_form">
         <input type="hidden" name="token">

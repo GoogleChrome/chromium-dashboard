@@ -191,6 +191,8 @@ export class ChromedashGuideMetadataPage extends LitElement {
 
   renderForm() {
     const formattedFeature = formatFeatureForEdit(this.feature);
+    this.fieldValues.allFields = formattedFeature;
+
     let sections = FLAT_METADATA_FIELDS.sections;
     if (formattedFeature.is_enterprise_feature) {
       sections = FLAT_ENTERPRISE_METADATA_FIELDS.sections;
