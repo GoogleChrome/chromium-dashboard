@@ -132,13 +132,15 @@ DebuggabilityOriginTrialApproval = ApprovalFieldDef(
     'Debuggability OT Review',
     'Debuggability OT Review',
     core_enums.GATE_DEBUGGABILITY_ORIGIN_TRIAL, ONE_LGTM,
-    approvers=DEBUGGABILITY_APPROVERS, team_name='Debuggability')
+    approvers=DEBUGGABILITY_APPROVERS, team_name='Debuggability',
+    escalation_email='devtools-dev@chromium.org')
 
 DebuggabilityShipApproval = ApprovalFieldDef(
     'Debuggability Ship Review',
     'Debuggability Ship Review',
     core_enums.GATE_DEBUGGABILITY_SHIP, ONE_LGTM,
-    approvers=DEBUGGABILITY_APPROVERS, team_name='Debuggability')
+    approvers=DEBUGGABILITY_APPROVERS, team_name='Debuggability',
+    escalation_email='devtools-dev@chromium.org')
 
 TestingShipApproval = ApprovalFieldDef(
     'Testing Ship Review',
