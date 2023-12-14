@@ -69,6 +69,8 @@ export class ChromedashFormField extends LitElement {
   }
 
   firstUpdated() {
+    // We need to wait until the entire page is rendered, so later dependents
+    // are available to do the semantic check.  So firstUpdated is too soon.
     this.doSemanticCheck();
   }
 
@@ -117,7 +119,9 @@ export class ChromedashFormField extends LitElement {
 
     // Run semantic check on this field.  Must be after above dispatch.
     this.doSemanticCheck();
+
     // Also doSemanticCheck on known dependent form fields.
+    // We can't do this as part of doSemanticCheck without infinite loop.
     const app = document.querySelector('chromedash-app');
     const dependents = ALL_FIELDS[this.name].dependents;
     if (dependents && app?.pageComponent) {
@@ -134,8 +138,11 @@ export class ChromedashFormField extends LitElement {
     const checkFunction = this.fieldProps.check;
     if (checkFunction) {
       const fieldValue = this.getValue();
+      const feature = this.fieldValues.allFields;
       const checkResult = checkFunction(fieldValue,
-        (name) => getFieldValue(name, this.fieldValues));
+        (name) =>
+          // getFieldValue(name, this.fieldValues)
+          getFieldValue(name, this.stageId, feature));
       if (checkResult == null) {
         this.checkMessage = '';
       } else {
@@ -153,7 +160,15 @@ export class ChromedashFormField extends LitElement {
             }
           </span>`;
       }
-      const formFieldElement = this.renderRoot.querySelector(`#id_${this.name}`);
+      // Find the form-field component in order to set custom validity.
+      let fieldSelector = `#id_${this.name}`;
+      let formFieldElement = this.renderRoot.querySelector(fieldSelector);
+      // The id is not unique for multi-stage origin trials.
+      // So let's try qualifying the selector with this.stageId.
+      if (!formFieldElement && this.stageId) {
+        fieldSelector = `#id_${this.name}[stageId="${this.stageId}"]`;
+        formFieldElement = this.renderRoot.querySelector(fieldSelector);
+      }
       if (formFieldElement?.setCustomValidity &&
         formFieldElement.input) {
         formFieldElement.setCustomValidity(

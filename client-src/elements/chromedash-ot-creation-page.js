@@ -8,7 +8,6 @@ import {
 import './chromedash-form-table.js';
 import './chromedash-form-field.js';
 import {
-  formatFeatureForEdit,
   ORIGIN_TRIAL_CREATION_FIELDS} from './form-definition.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
@@ -256,8 +255,9 @@ export class ChromedashOTCreationPage extends LitElement {
       return html`
       <chromedash-form-field
         name=${fieldInfo.name}
-        value=${fieldInfo.value}
         index=${i}
+        stageId="${this.stageId}"
+        value=${fieldInfo.value}
         .fieldValues=${this.fieldValues}
         .shouldFadeIn=${shouldFadeIn}
         @form-field-update="${this.handleFormFieldUpdate}">
@@ -268,8 +268,7 @@ export class ChromedashOTCreationPage extends LitElement {
   }
 
   renderForm() {
-    const formattedFeature = formatFeatureForEdit(this.feature);
-    this.fieldValues.allFields = formattedFeature;
+    this.fieldValues.allFields = this.feature;
 
     // OT creation page only has one section.
     const section = ORIGIN_TRIAL_CREATION_FIELDS.sections[0];

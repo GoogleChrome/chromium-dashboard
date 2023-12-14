@@ -2,7 +2,7 @@
 
 import {markupAutolinks} from './autolink.js';
 import {nothing, html} from 'lit';
-import {STAGE_FIELD_NAME_MAPPING} from './form-field-enums';
+import {STAGE_SPECIFIC_FIELDS, STAGE_FIELD_NAME_MAPPING} from './form-field-enums';
 
 let toastEl;
 
@@ -97,6 +97,67 @@ export function getStageValue(stage, fieldName) {
     return stage[STAGE_FIELD_NAME_MAPPING[fieldName]];
   }
   return stage[fieldName];
+}
+
+/* Get the value of a field using a field name, possibly stage specific. */
+export function getFieldValue(fieldName, stageId, feature) {
+  if (STAGE_SPECIFIC_FIELDS.has(fieldName)) {
+    const feStage =
+      stageId ? feature.stages.find(s => s.id == stageId) : feature.stages[0];
+    const value = getStageValue(feStage, fieldName);
+    // if (fieldName === 'rollout_impact' && value) {
+    //   return ROLLOUT_IMPACT_DISPLAYNAME[value];
+    // } if (fieldName === 'rollout_platforms' && value) {
+    //   return value.map(platformId => PLATFORMS_DISPLAYNAME[platformId]);
+    // } else if (fieldName in OT_MILESTONE_END_FIELDS) {
+    //   // If an origin trial end date is being displayed, handle extension milestones as well.
+    //   return this.getMilestoneExtensionValue(feStage, fieldName);
+    // }
+    return value;
+  }
+
+  let value = feature[fieldName];
+  const fieldNameMapping = {
+    owner: 'browsers.chrome.owners',
+    editors: 'editors',
+    search_tags: 'tags',
+    spec_link: 'standards.spec',
+    standard_maturity: 'standards.maturity.text',
+    sample_links: 'resources.samples',
+    docs_links: 'resources.docs',
+    bug_url: 'browsers.chrome.bug',
+    blink_components: 'browsers.chrome.blink_components',
+    devrel: 'browsers.chrome.devrel',
+    prefixed: 'browsers.chrome.prefixed',
+    impl_status_chrome: 'browsers.chrome.status.text',
+    shipped_milestone: 'browsers.chrome.desktop',
+    shipped_android_milestone: 'browsers.chrome.android',
+    shipped_webview_milestone: 'browsers.chrome.webview',
+    shipped_ios_milestone: 'browsers.chrome.ios',
+    ff_views: 'browsers.ff.view.text',
+    ff_views_link: 'browsers.ff.view.url',
+    ff_views_notes: 'browsers.ff.view.notes',
+    safari_views: 'browsers.safari.view.text',
+    safari_views_link: 'browsers.safari.view.url',
+    safari_views_notes: 'browsers.safari.view.notes',
+    web_dev_views: 'browsers.webdev.view.text',
+    web_dev_views_link: 'browsers.webdev.view.url',
+    web_dev_views_notes: 'browsers.webdev.view.notes',
+    other_views_notes: 'browsers.other.view.notes',
+  };
+  if (fieldNameMapping[fieldName]) {
+    value = feature;
+    for (const step of fieldNameMapping[fieldName].split('.')) {
+      if (value) {
+        value = value[step];
+      }
+    }
+  }
+  // if (fieldName === 'enterprise_feature_categories' && value) {
+  //   return value.map(categoryId =>
+  //     ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME[categoryId]);
+  // }
+  return value;
 }
 
 /* Given a stage form definition, return a flat array of the fields associated with the stage. */
@@ -366,19 +427,19 @@ export function handleSaveChangesResponse(response) {
   app.setUnsavedChanges(response !== '');
 }
 
-/**
- * Returns value for fieldName, retrieved from fieldValues.
-  * @param {string} fieldName
-  * @param {Array<Object>} formFieldValues, with allFields property for everything else
-  * @return {*} The value of the named field.
- */
-export function getFieldValue(fieldName, formFieldValues) {
-  let fieldValue = formFieldValues.allFields ? formFieldValues[fieldName] : null;
-  formFieldValues.some((fieldObj) => {
-    if (fieldObj.name === fieldName) {
-      fieldValue = fieldObj.value;
-      return true;
-    }
-  });
-  return fieldValue;
-}
+// /**
+//  * Returns value for fieldName, retrieved from fieldValues.
+//   * @param {string} fieldName
+//   * @param {Array<Object>} formFieldValues, with allFields property for everything else
+//   * @return {*} The value of the named field.
+//  */
+// export function getFieldValue(fieldName, formFieldValues) {
+//   let fieldValue = formFieldValues.allFields?[fieldName]?.value : null;
+//   formFieldValues.some((fieldObj) => {
+//     if (fieldObj.name === fieldName) {
+//       fieldValue = fieldObj.value;
+//       return true;
+//     }
+//   });
+//   return fieldValue;
+// }

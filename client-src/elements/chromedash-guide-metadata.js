@@ -362,7 +362,7 @@ export class ChromedashGuideMetadata extends LitElement {
 
   renderEditForm() {
     const formattedFeature = formatFeatureForEdit(this.feature);
-    this.fieldValues.allFields = formattedFeature;
+    this.fieldValues.allFields = this.feature;
 
     const metadataFields = flattenSections(this.feature.is_enterprise_feature ?
       FLAT_ENTERPRISE_METADATA_FIELDS :

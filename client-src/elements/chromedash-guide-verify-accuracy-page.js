@@ -282,7 +282,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
 
   renderForm() {
     const formattedFeature = formatFeatureForEdit(this.feature);
-    this.fieldValues.allFields = formattedFeature;
+    this.fieldValues.allFields = this.feature;
 
     const stageIds = this.getAllStageIds();
     const [allFormFields, formsToRender] = this.getForms(formattedFeature, this.feature.stages);

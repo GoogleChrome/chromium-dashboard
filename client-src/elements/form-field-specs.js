@@ -1827,6 +1827,7 @@ function checkMilestoneRanges(ranges, getFieldValue) {
       if (value === '') return undefined;
       return Number(value);
     }
+    return value;
   };
   for (const range of ranges) {
     const {earlier, later, error} = range;
