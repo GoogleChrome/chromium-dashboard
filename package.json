@@ -93,7 +93,7 @@
     "lodash.template": ">=4.5.0",
     "minimist": ">=1.2.8",
     "path-parse": ">=1.0.7",
-    "regenerator-runtime": "^0.14.0",
+    "regenerator-runtime": "^0.14.1",
     "rollup": "^4.9.1",
     "rollup-plugin-babel-minify": "^10.0.0",
     "sinon": "^17.0.1",
