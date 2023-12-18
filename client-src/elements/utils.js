@@ -2,7 +2,8 @@
 
 import {markupAutolinks} from './autolink.js';
 import {nothing, html} from 'lit';
-import {STAGE_SPECIFIC_FIELDS, STAGE_FIELD_NAME_MAPPING} from './form-field-enums';
+import {STAGE_TYPES_SHIPPING,
+  SHIPPED_MILESTONE_FIELDS, STAGE_FIELD_NAME_MAPPING} from './form-field-enums';
 
 let toastEl;
 
@@ -99,24 +100,49 @@ export function getStageValue(stage, fieldName) {
   return stage[fieldName];
 }
 
-/* Get the value of a field using a field name, possibly stage specific. */
-export function getFieldValue(fieldName, stageId, feature) {
-  if (STAGE_SPECIFIC_FIELDS.has(fieldName)) {
-    const feStage =
-      stageId ? feature.stages.find(s => s.id == stageId) : feature.stages[0];
-    const value = getStageValue(feStage, fieldName);
-    // if (fieldName === 'rollout_impact' && value) {
-    //   return ROLLOUT_IMPACT_DISPLAYNAME[value];
-    // } if (fieldName === 'rollout_platforms' && value) {
-    //   return value.map(platformId => PLATFORMS_DISPLAYNAME[platformId]);
-    // } else if (fieldName in OT_MILESTONE_END_FIELDS) {
-    //   // If an origin trial end date is being displayed, handle extension milestones as well.
-    //   return this.getMilestoneExtensionValue(feStage, fieldName);
-    // }
-    return value;
+// Find the shipped stage with the minimum shipped milestone.
+function findMinShippedMilestone(fieldName, feature) {
+  let minMilestone = Infinity;
+  const shippedMilestoneStageName = STAGE_FIELD_NAME_MAPPING[fieldName];
+  // Iterate through all stages that are shipping stages.
+  for (const stage of feature.stages) {
+    if (STAGE_TYPES_SHIPPING.has(stage.stage_type)) {
+      const shippedMilestone = stage[shippedMilestoneStageName];
+      minMilestone = Math.min(minMilestone, shippedMilestone);
+    }
+  }
+  return minMilestone;
+}
+
+/**
+ * Gets the value of a field from a feature entry form.
+ * Looks up the field name in the provided form field values,
+ * and returns the corresponding value.
+ * Handles special cases like shipping milestones and mapped stage fields.
+ * @param {string} fieldName
+ * @param {Array<{name:string, value:*}>} formFieldValues
+ * @return {*}
+ */
+export function getFieldValue(fieldName, formFieldValues) {
+  // Iterate through formFieldValues looking for element with name==fieldName
+  for (const {name, value} of formFieldValues) {
+    if (name === fieldName) {
+      return value;
+    }
   }
 
-  let value = feature[fieldName];
+  const feature = formFieldValues.feature;
+  if (SHIPPED_MILESTONE_FIELDS.has(fieldName)) {
+    const minShippedMilestone = findMinShippedMilestone(fieldName, feature);
+    return minShippedMilestone;
+  }
+
+  // Otherwise, we have to look up the fieldName in the feature.
+  if (fieldName in feature) {
+    return feature[fieldName];
+  }
+
+  // Map from stage specific field name to feature field path.
   const fieldNameMapping = {
     owner: 'browsers.chrome.owners',
     editors: 'editors',
@@ -145,19 +171,37 @@ export function getFieldValue(fieldName, stageId, feature) {
     web_dev_views_notes: 'browsers.webdev.view.notes',
     other_views_notes: 'browsers.other.view.notes',
   };
+
+  // Lookup fieldName by following the path starting from feature.
   if (fieldNameMapping[fieldName]) {
-    value = feature;
-    for (const step of fieldNameMapping[fieldName].split('.')) {
-      if (value) {
-        value = value[step];
+    let obj = feature;
+    for (const property of fieldNameMapping[fieldName].split('.')) {
+      if (obj) {
+        obj = obj[property];
       }
     }
   }
+  const stageId = formFieldValues.stageId;
+  const feStage =
+    stageId != null ?
+      feature.stages.find((s) => s.id == stageId) :
+      feature.stages[0];
+  const value = feStage == null ? undefined : getStageValue(feStage, fieldName);
+  // if (fieldName === 'rollout_impact' && value) {
+  //   return ROLLOUT_IMPACT_DISPLAYNAME[value];
+  // } if (fieldName === 'rollout_platforms' && value) {
+  //   return value.map(platformId => PLATFORMS_DISPLAYNAME[platformId]);
+  // } else if (fieldName in OT_MILESTONE_END_FIELDS) {
+  //   // If an origin trial end date is being displayed, handle extension milestones as well.
+  //   return this.getMilestoneExtensionValue(feStage, fieldName);
+  // }
+  return value;
+
   // if (fieldName === 'enterprise_feature_categories' && value) {
   //   return value.map(categoryId =>
   //     ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME[categoryId]);
   // }
-  return value;
+  // return value;
 }
 
 /* Given a stage form definition, return a flat array of the fields associated with the stage. */
@@ -430,11 +474,11 @@ export function handleSaveChangesResponse(response) {
 // /**
 //  * Returns value for fieldName, retrieved from fieldValues.
 //   * @param {string} fieldName
-//   * @param {Array<Object>} formFieldValues, with allFields property for everything else
+//   * @param {Array<Object>} formFieldValues, with feature property for everything else
 //   * @return {*} The value of the named field.
 //  */
 // export function getFieldValue(fieldName, formFieldValues) {
-//   let fieldValue = formFieldValues.allFields?[fieldName]?.value : null;
+//   let fieldValue = formFieldValues.feature?[fieldName]?.value : null;
 //   formFieldValues.some((fieldObj) => {
 //     if (fieldObj.name === fieldName) {
 //       fieldValue = fieldObj.value;

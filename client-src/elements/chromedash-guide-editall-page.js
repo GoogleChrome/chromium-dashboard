@@ -255,7 +255,6 @@ export class ChromedashGuideEditallPage extends LitElement {
         <chromedash-form-field
           name=${field}
           index=${index}
-          stageId=${stageId}
           value=${value}
           .fieldValues=${this.fieldValues}
           ?forEnterprise=${formattedFeature.is_enterprise_feature}
@@ -271,7 +270,7 @@ export class ChromedashGuideEditallPage extends LitElement {
       id: feStage.id,
       item: html`
         ${renderHTMLIf(!isEnterpriseFeatureRollout, html`<h3 id="${id}">${sectionName}</h3>`)}
-        <section class="flat_form" stage="${feStage.stage_type}" stageId="${this.stage_id}">
+        <section class="flat_form" stage="${feStage.stage_type}">
           ${renderHTMLIf(feStage.stage_type === STAGE_ENT_ROLLOUT,
             html`
             <sl-button stage="${feStage.stage_type}" size="small" @click="${() => this.deleteStage(feStage)}">
@@ -379,7 +378,7 @@ export class ChromedashGuideEditallPage extends LitElement {
 
   renderForm() {
     const formattedFeature = formatFeatureForEdit(this.feature);
-    this.fieldValues.allFields = this.feature;
+    this.fieldValues.feature = this.feature;
 
     const formsToRender = this.getForms(formattedFeature, this.feature.stages);
     return html`

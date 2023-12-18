@@ -77,28 +77,28 @@ const OT_MILESTONE_WEBVIEW_RANGE = {
   later: 'ot_milestone_webview_end',
 };
 
-export const OT_SHIPPED_MILESTONE_DESKTOP_RANGE = {
+const OT_SHIPPED_MILESTONE_DESKTOP_RANGE = {
   earlier: 'ot_milestone_desktop_start',
   later: 'shipped_milestone',
-  error: 'Origin trial must start before feature is shipped.',
+  warning: 'Origin trial should start before feature is shipped.',
 };
 
 const OT_SHIPPED_MILESTONE_WEBVIEW_RANGE = {
   earlier: 'ot_milestone_webview_start',
   later: 'shipped_webview_milestone',
-  error: 'Origin trial must start before feature is shipped.',
+  warning: 'Origin trial should start before feature is shipped.',
 };
 
 const OT_SHIPPED_MILESTONE_ANDROID_RANGE = {
   earlier: 'ot_milestone_android_start',
   later: 'shipped_android_milestone',
-  error: 'Origin trial must start before feature is shipped.',
+  warning: 'Origin trial should start before feature is shipped.',
 };
 
 const OT_SHIPPED_MILESTONE_IOS_RANGE = {
   earlier: 'ot_milestone_ios_start',
   later: 'shipped_ios_milestone',
-  error: 'Origin trial must start before feature is shipped.',
+  warning: 'Origin trial should start before feature is shipped.',
 };
 
 const DT_SHIPPED_MILESTONE_DESKTOP_RANGE = {

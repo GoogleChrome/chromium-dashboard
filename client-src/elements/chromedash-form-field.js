@@ -11,7 +11,7 @@ export class ChromedashFormField extends LitElement {
       index: {type: Number}, // Represents which field this is on the form.
       stageId: {type: Number},
       value: {type: String},
-      fieldValues: {type: Array}, // All other field value objects
+      fieldValues: {type: Array}, // All other field value objects in current form.
       disabled: {type: Boolean},
       checkboxLabel: {type: String}, // Optional override of default label.
       shouldFadeIn: {type: Boolean},
@@ -138,11 +138,8 @@ export class ChromedashFormField extends LitElement {
     const checkFunction = this.fieldProps.check;
     if (checkFunction) {
       const fieldValue = this.getValue();
-      const feature = this.fieldValues.allFields;
       const checkResult = checkFunction(fieldValue,
-        (name) =>
-          // getFieldValue(name, this.fieldValues)
-          getFieldValue(name, this.stageId, feature));
+        (name) => getFieldValue(name, this.fieldValues));
       if (checkResult == null) {
         this.checkMessage = '';
       } else {
@@ -161,16 +158,18 @@ export class ChromedashFormField extends LitElement {
           </span>`;
       }
       // Find the form-field component in order to set custom validity.
-      let fieldSelector = `#id_${this.name}`;
-      let formFieldElement = this.renderRoot.querySelector(fieldSelector);
-      // The id is not unique for multi-stage origin trials.
-      // So let's try qualifying the selector with this.stageId.
-      if (!formFieldElement && this.stageId) {
-        fieldSelector = `#id_${this.name}[stageId="${this.stageId}"]`;
-        formFieldElement = this.renderRoot.querySelector(fieldSelector);
-      }
-      if (formFieldElement?.setCustomValidity &&
-        formFieldElement.input) {
+      const fieldSelector = `#id_${this.name}`;
+      const formFieldElement = this.renderRoot.querySelector(fieldSelector);
+
+      // // The id is not unique for multi-stage origin trials.
+      // // So let's try qualifying the selector with this.stageId.
+      // if (!formFieldElement && this.stageId) {
+      //   fieldSelector = `#id_${this.name}[stageId="${this.stageId}"]`;
+      //   formFieldElement = this.renderRoot.querySelector(fieldSelector);
+      // }
+
+      // For 'input' elements.
+      if (formFieldElement?.setCustomValidity && formFieldElement.input) {
         formFieldElement.setCustomValidity(
           (checkResult && checkResult.error) ? checkResult.error : '');
       }

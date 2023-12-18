@@ -211,7 +211,6 @@ export class ChromedashOTExtensionPage extends LitElement {
       <chromedash-form-field
         name=${featureJSONKey}
         index=${index}
-        stageId="${this.stageId}"
         .fieldValues=${this.fieldValues}
         @form-field-update="${this.handleFormFieldUpdate}">
       </chromedash-form-field>
@@ -225,7 +224,7 @@ export class ChromedashOTExtensionPage extends LitElement {
   }
 
   renderForm() {
-    this.fieldValues.allFields = this.feature;
+    this.fieldValues.feature = this.feature;
 
     // OT extension page only has one section.
     const section = ORIGIN_TRIAL_EXTENSION_FIELDS.sections[0];

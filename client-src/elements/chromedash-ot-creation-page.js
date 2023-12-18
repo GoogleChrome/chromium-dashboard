@@ -7,8 +7,7 @@ import {
   setupScrollToHash} from './utils.js';
 import './chromedash-form-table.js';
 import './chromedash-form-field.js';
-import {
-  ORIGIN_TRIAL_CREATION_FIELDS} from './form-definition.js';
+import {ORIGIN_TRIAL_CREATION_FIELDS} from './form-definition.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
 import {ALL_FIELDS} from './form-field-specs.js';
@@ -256,7 +255,6 @@ export class ChromedashOTCreationPage extends LitElement {
       <chromedash-form-field
         name=${fieldInfo.name}
         index=${i}
-        stageId="${this.stageId}"
         value=${fieldInfo.value}
         .fieldValues=${this.fieldValues}
         .shouldFadeIn=${shouldFadeIn}
@@ -268,7 +266,7 @@ export class ChromedashOTCreationPage extends LitElement {
   }
 
   renderForm() {
-    this.fieldValues.allFields = this.feature;
+    this.fieldValues.feature = this.feature;
 
     // OT creation page only has one section.
     const section = ORIGIN_TRIAL_CREATION_FIELDS.sections[0];

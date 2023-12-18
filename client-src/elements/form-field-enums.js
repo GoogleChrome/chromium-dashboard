@@ -212,6 +212,13 @@ export const INTENT_STAGES = {
   INTENT_ROLLOUT: [10, 'Rollout'],
 };
 
+export const SHIPPED_MILESTONE_FIELDS = new Set([
+  'shipped_milestone',
+  'shipped_android_milestone',
+  'shipped_ios_milestone',
+  'shipped_webview_milestone',
+]);
+
 // Every mutable field that exists on the Stage entity and every key
 // in MilestoneSet.MILESTONE_FIELD_MAPPING should be listed here.
 export const STAGE_SPECIFIC_FIELDS = new Set([
