@@ -2,8 +2,7 @@
 
 import {markupAutolinks} from './autolink.js';
 import {nothing, html} from 'lit';
-import {STAGE_TYPES_SHIPPING,
-  SHIPPED_MILESTONE_FIELDS, STAGE_FIELD_NAME_MAPPING} from './form-field-enums';
+import {STAGE_FIELD_NAME_MAPPING} from './form-field-enums';
 
 let toastEl;
 
@@ -98,125 +97,6 @@ export function getStageValue(stage, fieldName) {
     return stage[STAGE_FIELD_NAME_MAPPING[fieldName]];
   }
   return stage[fieldName];
-}
-
-// Find the shipped stage with the minimum shipped milestone.
-function findMinShippedMilestone(fieldName, feature) {
-  let minMilestone = Infinity;
-  const shippedMilestoneStageName = STAGE_FIELD_NAME_MAPPING[fieldName];
-  // Iterate through all stages that are shipping stages.
-  for (const stage of feature.stages) {
-    if (STAGE_TYPES_SHIPPING.has(stage.stage_type)) {
-      const shippedMilestone = stage[shippedMilestoneStageName];
-      minMilestone = Math.min(minMilestone, shippedMilestone);
-    }
-  }
-  return minMilestone;
-}
-
-/**
- * Gets the value of a field from a feature entry form.
- * Looks up the field name in the provided form field values,
- * and returns the corresponding value.
- * Handles special cases like shipping milestones and mapped stage fields.
- * @param {string} fieldName
- * @param {Array<{name:string, value:*}>} formFieldValues
- * @return {*}
- */
-export function getFieldValue(fieldName, formFieldValues) {
-  // Add direct lookup of formFieldValues objects by name, if not already done.
-  // Problem: This might be too soon, if more fields are coming.
-  if (!formFieldValues.byName) {
-    formFieldValues.byName = {};
-    for (const obj of formFieldValues) {
-      formFieldValues.byName[obj.name] = obj;
-    }
-  }
-
-  if (fieldName in formFieldValues.byName) {
-    return formFieldValues.byName[fieldName].value;
-  }
-
-  // // Iterate through formFieldValues looking for element with name==fieldName
-  // for (const {name, value} of formFieldValues) {
-  //   if (name === fieldName) {
-  //     return value;
-  //   }
-  // }
-
-  const feature = formFieldValues.feature;
-  if (SHIPPED_MILESTONE_FIELDS.has(fieldName)) {
-    const minShippedMilestone = findMinShippedMilestone(fieldName, feature);
-    return minShippedMilestone;
-  }
-
-  if (!feature) return undefined;
-
-  // Otherwise, we have to look up the fieldName in the feature.
-  if (fieldName in feature) {
-    return feature[fieldName];
-  }
-
-  // Map from stage specific field name to feature field path.
-  const fieldNameMapping = {
-    owner: 'browsers.chrome.owners',
-    editors: 'editors',
-    search_tags: 'tags',
-    spec_link: 'standards.spec',
-    standard_maturity: 'standards.maturity.text',
-    sample_links: 'resources.samples',
-    docs_links: 'resources.docs',
-    bug_url: 'browsers.chrome.bug',
-    blink_components: 'browsers.chrome.blink_components',
-    devrel: 'browsers.chrome.devrel',
-    prefixed: 'browsers.chrome.prefixed',
-    impl_status_chrome: 'browsers.chrome.status.text',
-    shipped_milestone: 'browsers.chrome.desktop',
-    shipped_android_milestone: 'browsers.chrome.android',
-    shipped_webview_milestone: 'browsers.chrome.webview',
-    shipped_ios_milestone: 'browsers.chrome.ios',
-    ff_views: 'browsers.ff.view.text',
-    ff_views_link: 'browsers.ff.view.url',
-    ff_views_notes: 'browsers.ff.view.notes',
-    safari_views: 'browsers.safari.view.text',
-    safari_views_link: 'browsers.safari.view.url',
-    safari_views_notes: 'browsers.safari.view.notes',
-    web_dev_views: 'browsers.webdev.view.text',
-    web_dev_views_link: 'browsers.webdev.view.url',
-    web_dev_views_notes: 'browsers.webdev.view.notes',
-    other_views_notes: 'browsers.other.view.notes',
-  };
-
-  // Lookup fieldName by following the path starting from feature.
-  if (fieldNameMapping[fieldName]) {
-    let obj = feature;
-    for (const property of fieldNameMapping[fieldName].split('.')) {
-      if (obj) {
-        obj = obj[property];
-      }
-    }
-  }
-  const stageId = formFieldValues.stageId;
-  const feStage =
-    stageId != null ?
-      feature.stages.find((s) => s.id == stageId) :
-      feature.stages[0];
-  const value = feStage == null ? undefined : getStageValue(feStage, fieldName);
-  // if (fieldName === 'rollout_impact' && value) {
-  //   return ROLLOUT_IMPACT_DISPLAYNAME[value];
-  // } if (fieldName === 'rollout_platforms' && value) {
-  //   return value.map(platformId => PLATFORMS_DISPLAYNAME[platformId]);
-  // } else if (fieldName in OT_MILESTONE_END_FIELDS) {
-  //   // If an origin trial end date is being displayed, handle extension milestones as well.
-  //   return this.getMilestoneExtensionValue(feStage, fieldName);
-  // }
-  return value;
-
-  // if (fieldName === 'enterprise_feature_categories' && value) {
-  //   return value.map(categoryId =>
-  //     ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME[categoryId]);
-  // }
-  // return value;
 }
 
 /* Given a stage form definition, return a flat array of the fields associated with the stage. */
