@@ -1839,12 +1839,17 @@ function checkMilestoneRanges(ranges, getFieldValue) {
     return value;
   };
   for (const range of ranges) {
-    const {earlier, later, error} = range;
+    const {earlier, later, warning, error} = range;
     const earlierMilestone = getValue(earlier);
     const laterMilestone = getValue(later);
     if (earlierMilestone != null && laterMilestone != null) {
       if (laterMilestone <= earlierMilestone) {
-        return {error: error || 'Start milestone must be before end milestone'};
+        // It's either a warning or an error.
+        return warning ? {
+          warning,
+        } : {
+          error: error || 'Start milestone must be before end milestone',
+        };
       }
     }
   }

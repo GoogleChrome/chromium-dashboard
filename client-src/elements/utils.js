@@ -133,16 +133,16 @@ export function getFieldValue(fieldName, formFieldValues) {
     }
   }
 
+  if (fieldName in formFieldValues.byName) {
+    return formFieldValues.byName[fieldName].value;
+  }
+
   // // Iterate through formFieldValues looking for element with name==fieldName
   // for (const {name, value} of formFieldValues) {
   //   if (name === fieldName) {
   //     return value;
   //   }
   // }
-
-  if (fieldName in formFieldValues.byName) {
-    return formFieldValues.byName[fieldName].value;
-  }
 
   const feature = formFieldValues.feature;
   if (SHIPPED_MILESTONE_FIELDS.has(fieldName)) {
