@@ -137,6 +137,8 @@ export function getFieldValue(fieldName, formFieldValues) {
     return minShippedMilestone;
   }
 
+  if (!feature) return undefined;
+
   // Otherwise, we have to look up the fieldName in the feature.
   if (fieldName in feature) {
     return feature[fieldName];
