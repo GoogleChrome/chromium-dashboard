@@ -85,17 +85,20 @@ const OT_SHIPPED_MILESTONE_DESKTOP_RANGE = {
 
 const OT_SHIPPED_MILESTONE_WEBVIEW_RANGE = {
   earlier: 'ot_milestone_webview_start',
+  earlier: 'ot_milestone_webview_start',
   later: 'shipped_webview_milestone',
   warning: 'Origin trial should start before feature is shipped.',
 };
 
 const OT_SHIPPED_MILESTONE_ANDROID_RANGE = {
   earlier: 'ot_milestone_android_start',
+  earlier: 'ot_milestone_android_start',
   later: 'shipped_android_milestone',
   warning: 'Origin trial should start before feature is shipped.',
 };
 
 const OT_SHIPPED_MILESTONE_IOS_RANGE = {
+  earlier: 'ot_milestone_ios_start',
   earlier: 'ot_milestone_ios_start',
   later: 'shipped_ios_milestone',
   warning: 'Origin trial should start before feature is shipped.',
@@ -1485,6 +1488,8 @@ export const ALL_FIELDS = {
         DT_SHIPPED_MILESTONE_DESKTOP_RANGE], getFieldValue),
     dependents: [
       'dt_milestone_desktop_start', 'ot_milestone_desktop_start', 'shipped_milestone'],
+    dependents: [
+      'dt_milestone_desktop_start', 'ot_milestone_desktop_start', 'shipped_milestone'],
   },
 
   'shipped_android_milestone': {
@@ -1512,6 +1517,8 @@ export const ALL_FIELDS = {
         DT_SHIPPED_MILESTONE_IOS_RANGE], getFieldValue),
     dependents: [
       'dt_milestone_ios_start', 'ot_milestone_ios_start', 'shipped_ios_milestone'],
+    dependents: [
+      'dt_milestone_ios_start', 'ot_milestone_ios_start', 'shipped_ios_milestone'],
   },
 
   'shipped_webview_milestone': {
@@ -1524,6 +1531,8 @@ export const ALL_FIELDS = {
       checkMilestoneRanges([
         OT_SHIPPED_MILESTONE_WEBVIEW_RANGE,
         DT_SHIPPED_MILESTONE_WEBVIEW_RANGE], getFieldValue),
+    dependents: [
+      'dt_milestone_webview_start', 'ot_milestone_webview_start', 'shipped_webview_milestone'],
     dependents: [
       'dt_milestone_webview_start', 'ot_milestone_webview_start', 'shipped_webview_milestone'],
   },
