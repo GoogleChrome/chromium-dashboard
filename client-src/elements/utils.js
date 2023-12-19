@@ -124,11 +124,24 @@ function findMinShippedMilestone(fieldName, feature) {
  * @return {*}
  */
 export function getFieldValue(fieldName, formFieldValues) {
-  // Iterate through formFieldValues looking for element with name==fieldName
-  for (const {name, value} of formFieldValues) {
-    if (name === fieldName) {
-      return value;
+  // Add direct lookup of formFieldValues objects by name, if not already done.
+  // Problem: This might be too soon, if more fields are coming.
+  if (!formFieldValues.byName) {
+    formFieldValues.byName = {};
+    for (const obj of formFieldValues) {
+      formFieldValues.byName[obj.name] = obj;
     }
+  }
+
+  // // Iterate through formFieldValues looking for element with name==fieldName
+  // for (const {name, value} of formFieldValues) {
+  //   if (name === fieldName) {
+  //     return value;
+  //   }
+  // }
+
+  if (fieldName in formFieldValues.byName) {
+    return formFieldValues.byName[fieldName].value;
   }
 
   const feature = formFieldValues.feature;
