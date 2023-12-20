@@ -130,11 +130,11 @@ export class ChromedashFormField extends LitElement {
     }
   }
 
-  doSemanticCheck() {
+  async doSemanticCheck() {
     const checkFunction = this.fieldProps.check;
     if (checkFunction) {
       const fieldValue = this.getValue();
-      const checkResult = checkFunction(fieldValue,
+      const checkResult = await checkFunction(fieldValue,
         (name) => getFieldValue(name, this.fieldValues));
       if (checkResult == null) {
         this.checkMessage = '';
