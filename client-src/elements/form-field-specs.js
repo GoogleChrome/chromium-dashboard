@@ -417,6 +417,25 @@ export const ALL_FIELDS = {
     label: 'Screenshots link(s)',
     help_text: html`
         Optional: Link to screenshots showcasing this feature (one URL per line). These will be shared publicly.`,
+    check: async (value) => {
+      const urls = value.split('\n').filter(x => !!x);
+      if (!urls.length) {
+        return undefined;
+      }
+      const urlTypes = await Promise.all(
+        urls
+          .map(url => fetch(url, {method: 'HEAD'})
+            .then(response => response.blob())
+            .then(blob => blob.type)
+            .catch(() => 'error')));
+      // All urls must link to an image.
+      if (urlTypes.some(type => !type.startsWith('image'))) {
+        return {
+          error: 'One or more urls are not actual images. Use a valid link to an actual image.',
+        };
+      }
+      return undefined;
+    },
   },
 
   'motivation': {
