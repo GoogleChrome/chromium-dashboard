@@ -361,7 +361,6 @@ export class ChromedashFormField extends LitElement {
   }
 }
 
-
 // Find the shipped stage with the minimum shipped milestone.
 function findMinShippedMilestone(fieldName, feature) {
   let minMilestone = Infinity;
@@ -373,6 +372,7 @@ function findMinShippedMilestone(fieldName, feature) {
       minMilestone = Math.min(minMilestone, shippedMilestone);
     }
   }
+  if (minMilestone === Infinity) return undefined;
   return minMilestone;
 }
 
@@ -386,37 +386,48 @@ function findMinShippedMilestone(fieldName, feature) {
  * @return {*}
  */
 function getFieldValue(fieldName, formFieldValues) {
-  // Add direct lookup of formFieldValues objects by name, if not already done.
-  // Problem: This might be too soon, if more fields are coming.
+  // Add cache to lookup formFieldValues objects by name, if not already done.
   if (!formFieldValues.byName) {
     formFieldValues.byName = {};
-    for (const obj of formFieldValues) {
-      formFieldValues.byName[obj.name] = obj;
-    }
   }
-
   if (fieldName in formFieldValues.byName) {
     return formFieldValues.byName[fieldName].value;
   }
 
-  // // Iterate through formFieldValues looking for element with name==fieldName
-  // for (const {name, value} of formFieldValues) {
-  //   if (name === fieldName) {
-  //     return value;
-  //   }
-  // }
+  // Caches the field value if it's not already set.
+  // @param {string} fieldName - The name of the field.
+  // @param {any} value - The value to cache.
+  // @return {any} The cached value.
+  const cacheFieldValue = (fieldName, value) => {
+    // We only set it if it's not already set.
+    if (!formFieldValues.byName[fieldName]) {
+      formFieldValues.byName[fieldName] = {
+        name: fieldName,
+        value: value,
+      };
+    }
+    return value;
+  };
 
-  const feature = formFieldValues.feature;
-  if (SHIPPED_MILESTONE_FIELDS.has(fieldName)) {
-    const minShippedMilestone = findMinShippedMilestone(fieldName, feature);
-    return minShippedMilestone;
+  // Iterate through formFieldValues looking for element with name==fieldName
+  for (const obj of formFieldValues) {
+    if (obj.name === fieldName) {
+      return cacheFieldValue(fieldName, obj.value);
+    }
   }
 
+  const feature = formFieldValues.feature;
   if (!feature) return undefined;
+
+  if (SHIPPED_MILESTONE_FIELDS.has(fieldName)) {
+    const minShippedMilestone = findMinShippedMilestone(fieldName, feature);
+    return cacheFieldValue(fieldName, minShippedMilestone);
+  }
 
   // Otherwise, we have to look up the fieldName in the feature.
   if (fieldName in feature) {
-    return feature[fieldName];
+    // Cache the value for later lookup.
+    return cacheFieldValue(fieldName, feature[fieldName]);
   }
 
   // Map from stage specific field name to feature field path.
@@ -464,20 +475,8 @@ function getFieldValue(fieldName, formFieldValues) {
       feature.stages.find((s) => s.id == stageId) :
       feature.stages[0];
   const value = feStage == null ? undefined : getStageValue(feStage, fieldName);
-  // if (fieldName === 'rollout_impact' && value) {
-  //   return ROLLOUT_IMPACT_DISPLAYNAME[value];
-  // } if (fieldName === 'rollout_platforms' && value) {
-  //   return value.map(platformId => PLATFORMS_DISPLAYNAME[platformId]);
-  // } else if (fieldName in OT_MILESTONE_END_FIELDS) {
-  //   // If an origin trial end date is being displayed, handle extension milestones as well.
-  //   return this.getMilestoneExtensionValue(feStage, fieldName);
-  // }
-  return value;
-
-  // if (fieldName === 'enterprise_feature_categories' && value) {
-  //   return value.map(categoryId =>
-  //     ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME[categoryId]);
-  // }
-  // return value;
+  // Cache the value for later lookup.
+  return cacheFieldValue(fieldName, value);
 }
+
 customElements.define('chromedash-form-field', ChromedashFormField);
