@@ -396,38 +396,39 @@ function getFieldValue(fieldName, formFieldValues) {
 
   // Caches the field value if it's not already set.
   // @param {string} fieldName - The name of the field.
-  // @param {any} value - The value to cache.
+  // @param {any} obj - The object containing name and value to cache.
   // @return {any} The cached value.
-  const cacheFieldValue = (fieldName, value) => {
-    // We only set it if it's not already set.
+  const cacheFieldValue = (fieldName, obj) => {
     if (!formFieldValues.byName[fieldName]) {
-      formFieldValues.byName[fieldName] = {
-        name: fieldName,
-        value: value,
-      };
+      formFieldValues.byName[fieldName] = obj;
     }
-    return value;
+    return obj.value;
   };
 
   // Iterate through formFieldValues looking for element with name==fieldName
   for (const obj of formFieldValues) {
     if (obj.name === fieldName) {
-      return cacheFieldValue(fieldName, obj.value);
+      // Note, the obj could be updated by the form any time later.
+      return cacheFieldValue(fieldName, obj);
     }
   }
 
+  // fieldName is not in formFieldValues, so we must look in the feature.
   const feature = formFieldValues.feature;
   if (!feature) return undefined;
 
   if (SHIPPED_MILESTONE_FIELDS.has(fieldName)) {
     const minShippedMilestone = findMinShippedMilestone(fieldName, feature);
-    return cacheFieldValue(fieldName, minShippedMilestone);
+    return cacheFieldValue(fieldName, {
+      name: fieldName, value: minShippedMilestone,
+    });
   }
 
   // Otherwise, we have to look up the fieldName in the feature.
   if (fieldName in feature) {
-    // Cache the value for later lookup.
-    return cacheFieldValue(fieldName, feature[fieldName]);
+    return cacheFieldValue(fieldName, {
+      name: fieldName, value: feature[fieldName],
+    });
   }
 
   // Map from stage specific field name to feature field path.
@@ -475,8 +476,10 @@ function getFieldValue(fieldName, formFieldValues) {
       feature.stages.find((s) => s.id == stageId) :
       feature.stages[0];
   const value = feStage == null ? undefined : getStageValue(feStage, fieldName);
-  // Cache the value for later lookup.
-  return cacheFieldValue(fieldName, value);
+  return cacheFieldValue(fieldName, {
+    name: fieldName,
+    value: value,
+  });
 }
 
 customElements.define('chromedash-form-field', ChromedashFormField);
