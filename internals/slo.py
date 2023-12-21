@@ -104,7 +104,7 @@ def is_gate_overdue(gate, appr_fields, default_slo_limit) -> bool:
   return remaining_days(gate.requested_on, slo_limit) < 0
 
 
-def get_overdue_gates(appr_fields, default_slo_limit):
+def get_overdue_gates(appr_fields, default_slo_limit) -> list[Gate]:
   """Return a list of gates with overdue reviews."""
   active_gates = Gate.query(Gate.state.IN(Gate.PENDING_STATES))
   overdue_gates = [g for g in active_gates
