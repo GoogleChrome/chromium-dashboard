@@ -401,4 +401,7 @@ class SLOOverdueHandler(basehandlers.FlaskHandler):
     """Decide who to notify that a review is overdue."""
     if not is_escalated and gate.assignee_emails:
       return gate.assignee_emails
-    return approval_defs.get_approvers(gate.gate_type)
+
+    review_team = approval_defs.get_approvers(gate.gate_type)
+    assignees = gate.assignee_emails or []
+    return list(set(assignees + review_team))
