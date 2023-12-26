@@ -247,6 +247,7 @@ internals_routes: list[Route] = [
   Route('/cron/export_backup', data_backup.BackupExportHandler),
   Route('/cron/send_accuracy_notifications', reminders.FeatureAccuracyHandler),
   Route('/cron/send_prepublication', reminders.PrepublicationHandler),
+  Route('/cron/send_overdue_reviews', reminders.SLOOverdueHandler),
   Route('/cron/warn_inactive_users', notifier.NotifyInactiveUsersHandler),
   Route('/cron/remove_inactive_users',
       inactive_users.RemoveInactiveUsersHandler),
