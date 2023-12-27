@@ -115,11 +115,6 @@ export class ChromedashActivity extends LitElement {
           margin-right: var(--content-padding);
         }
 
-        .edit-menu {
-          display: block;
-          float: right;
-        }
-
         .comment-menu-icon {
           float: right;
           margin-right: 8px;
@@ -160,20 +155,6 @@ export class ChromedashActivity extends LitElement {
     </div>`;
   }
 
-  toggleMenu() {
-    const menuEl = this.shadowRoot.querySelector(`#comment-menu`);
-    // Change the menu icon to represent open/closing on click.
-    const iconEl = this.shadowRoot.querySelector(`iron-icon`);
-    const isVisible = menuEl.style.display !== 'none';
-    if (isVisible) {
-      menuEl.style.display = 'none';
-      iconEl.icon = 'chromestatus:more-vert';
-    } else {
-      menuEl.style.display = 'inline-block';
-      iconEl.icon = 'chromestatus:close';
-    }
-  }
-
   // Add a dropdown menu to the activity header if the user can edit the activity.
   formatEditMenu() {
     // If the activity is not editable, don't show a menu.
@@ -182,23 +163,20 @@ export class ChromedashActivity extends LitElement {
     }
     // Show delete option if not deleted, else show undelete.
     let menuItem = html`
-    <sl-menu-item @click="${() => this.handleDeleteToggle(false)}"
+    <sl-menu-item @click="${() => this.handleDelete(false)}"
     >Delete Comment</sl-menu-item>`;
     if (this.activity.deleted_by) {
       menuItem = html`
-      <sl-menu-item @click="${() => this.handleDeleteToggle(true)}"
+      <sl-menu-item @click="${() => this.handleDelete(true)}"
       >Undelete Comment</sl-menu-item>`;
     }
 
     return html`
-      <iron-icon class="comment-menu-icon"
-      icon="chromestatus:more-vert"
-      @click=${() => this.toggleMenu()}></iron-icon>
-      <div class="edit-menu">
-        <div id="comment-menu" style="display: none;">
+       <sl-dropdown class="comment-menu-icon">
+         <sl-icon-button library="material" name="more_vert_24px"
+           label="Comment menu" slot="trigger"></sl-icon-button>
           <sl-menu>${menuItem}</sl-menu>
-        </div>
-      </div>`;
+       </sl-dropdown>`;
   }
 
   render() {
@@ -228,7 +206,7 @@ export class ChromedashActivity extends LitElement {
   }
 
   // Handle deleting or undeleting a comment.
-  async handleDeleteToggle(isUndelete) {
+  async handleDelete(isUndelete) {
     let resp;
     if (isUndelete) {
       resp = await window.csClient.undeleteComment(
@@ -239,7 +217,6 @@ export class ChromedashActivity extends LitElement {
     }
     if (resp && resp.message === 'Done') {
       this.activity.deleted_by = (isUndelete) ? null : this.user.email;
-      this.toggleMenu();
       this.requestUpdate();
     }
   }
