@@ -93,6 +93,9 @@ export class ChromedashMyFeaturesPage extends LitElement {
   }
 
   renderPendingAndRecentApprovals() {
+    const adminNotice = this.user?.is_admin ?
+      html`<p>You see all pending approvals because you're a site admin.</p>` :
+      nothing;
     // Use feature_type>=0 to include all types, even enterprise.
     const pendingBox = this.renderBox(
       'Features pending my approval',
@@ -102,7 +105,7 @@ export class ChromedashMyFeaturesPage extends LitElement {
       'Recently reviewed features',
       'is:recently-reviewed feature_type>=0',
       'normal', '-gate.reviewed_on', false);
-    return [pendingBox, recentBox];
+    return [adminNotice, pendingBox, recentBox];
   }
 
   renderIStarred() {
