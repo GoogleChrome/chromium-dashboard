@@ -212,6 +212,21 @@ export const INTENT_STAGES = {
   INTENT_ROLLOUT: [10, 'Rollout'],
 };
 
+export const DT_MILESTONE_FIELDS = new Set([
+  'dt_milestone_desktop_start',
+  'dt_milestone_android_start',
+  'dt_milestone_ios_start',
+  'dt_milestone_webview_start',
+]);
+
+// Map from OT milestone field names to corresponding shipped milestone field names.
+export const OT_MILESTONE_START_FIELDS = new Set([
+  'ot_milestone_desktop_start',
+  'ot_milestone_android_start',
+  'ot_milestone_webview_start',
+  'ot_milestone_ios_start',
+]);
+
 export const SHIPPED_MILESTONE_FIELDS = new Set([
   'shipped_milestone',
   'shipped_android_milestone',

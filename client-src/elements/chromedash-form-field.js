@@ -2,12 +2,7 @@ import {LitElement, html, nothing} from 'lit';
 import {ALL_FIELDS} from './form-field-specs';
 import {ref} from 'lit/directives/ref.js';
 import './chromedash-textarea';
-import {showToastMessage, getStageValue} from './utils.js';
-import {
-  STAGE_FIELD_NAME_MAPPING,
-  STAGE_TYPES_SHIPPING,
-  SHIPPED_MILESTONE_FIELDS,
-} from './form-field-enums.js';
+import {showToastMessage} from './utils.js';
 
 export class ChromedashFormField extends LitElement {
   static get properties() {
@@ -40,6 +35,7 @@ export class ChromedashFormField extends LitElement {
     this.shouldFadeIn = false;
     this.loading = false;
     this.forEnterprise = false;
+    this.stageId = undefined;
     this.stageType = undefined;
     this.componentChoices = {};
     this.checkMessage = '';
@@ -58,7 +54,8 @@ export class ChromedashFormField extends LitElement {
 
     const app = document.querySelector('chromedash-app');
     if (app?.pageComponent) {
-      app.pageComponent.allFormFieldComponents[this.name] = this;
+      const key = `${this.name}_${this.stageId || 'global'}`;
+      app.pageComponent.allFormFieldComponents[key] = this;
     }
 
     if (this.name === 'blink_components') {
@@ -74,9 +71,14 @@ export class ChromedashFormField extends LitElement {
   }
 
   firstUpdated() {
+    this.setupSemanticCheck();
+
     // We need to wait until the entire page is rendered, so later dependents
-    // are available to do the semantic check.  So firstUpdated is too soon.
-    this.doSemanticCheck();
+    // are available to do the semantic check, hence firstUpdated is too soon.
+    // Do first semantic check after the document is ready.
+    document.addEventListener('DOMContentLoaded', () => (setTimeout(() => {
+      this.setupSemanticCheck();
+    })));
   }
 
   updateAttributes(el) {
@@ -124,63 +126,68 @@ export class ChromedashFormField extends LitElement {
 
     // Run semantic check on this field.  Must be after above dispatch.
     this.doSemanticCheck();
+  }
 
-    // Also doSemanticCheck on known dependent form fields.
-    // We can't do this as part of doSemanticCheck without infinite loop.
-    const app = document.querySelector('chromedash-app');
-    const dependents = ALL_FIELDS[this.name].dependents;
-    if (dependents && app?.pageComponent) {
-      dependents.forEach((dependent) => {
-        const dependentField = app.pageComponent.allFormFieldComponents[dependent];
-        if (dependentField) {
-          dependentField.doSemanticCheck();
-        }
-      });
+  setupSemanticCheck() {
+    // Find the form-field component in order to set custom validity.
+    const fieldSelector = `#id_${this.name}`;
+    const formFieldElements = this.renderRoot.querySelectorAll(fieldSelector);
+    if (formFieldElements.length > 1) {
+      if (this.stageId) {
+        // The id is not unique for fields in multiple stages, e.g. origin trials.
+        // So let's try qualifying the selector with this.stageId in a container.
+        fieldSelector = `[stageId="${this.stageId} #id_${this.name}"]`;
+        formFieldElements = this.renderRoot.querySelectorAll(fieldSelector);
+      } else {
+        throw new Error(`Name of field, "${this.name}", is not unique and no stage Id was provided.`);
+      }
     }
+    // There should only be one now.
+    const formFieldElement = formFieldElements[0];
+
+    // For 'input' elements.
+    if (formFieldElement?.setCustomValidity && formFieldElement.input) {
+      formFieldElement.setCustomValidity(
+        (checkResult && checkResult.error) ? checkResult.error : '');
+    }
+    // TODO: handle other form field types.
   }
 
   async doSemanticCheck() {
-    const checkFunction = this.fieldProps.check;
-    if (checkFunction) {
+    const checkFunctionOrArray = this.fieldProps.check;
+    const checkFunctions =
+      (typeof checkFunctionOrArray === 'function') ?
+        [checkFunctionOrArray] : checkFunctionOrArray;
+
+    checkFunctions.find(async (checkFunction) => {
       const fieldValue = this.getValue();
-      const checkResult = await checkFunction(fieldValue,
-        (name) => getFieldValue(name, this.fieldValues));
+      const getFieldValue =
+        (name, ignoreStageId) =>
+          getFieldValueWithStage(name,
+            ignoreStageId ? null : this.stageId,
+            this.fieldValues);
+      // Attach the feature to the getFieldValue function, in case it is needed.
+      getFieldValue.feature = this.fieldValues.feature;
+      const checkResult = await checkFunction(fieldValue, getFieldValue);
       if (checkResult == null) {
         this.checkMessage = '';
       } else {
         this.checkMessage = html`
-          <span class="check-${
-              checkResult.message ? 'message' :
-              checkResult.warning ? 'warning' :
-                checkResult.error ? 'error' : 'unknown'
-            }">
-            ${
-              checkResult.message ? checkResult.message :
-              checkResult.warning ? html`<b>Warning</b>: ${checkResult.warning}` :
-                checkResult.error ? html`<b>Error</b>: ${checkResult.error}` :
-                  ''
-            }
+          <span class="check-${checkResult.message ? 'message' :
+            checkResult.warning ? 'warning' :
+              checkResult.error ? 'error' : 'unknown'
+          }">
+            ${checkResult.message ? checkResult.message :
+            checkResult.warning ? html`<b>Warning</b>: ${checkResult.warning}` :
+              checkResult.error ? html`<b>Error</b>: ${checkResult.error}` :
+                ''
+          }
           </span>`;
+        // Return from doSemanticCheck with the first non-empty message.
+        return true;
       }
-      // Find the form-field component in order to set custom validity.
-      const fieldSelector = `#id_${this.name}`;
-      const formFieldElement = this.renderRoot.querySelector(fieldSelector);
-
-      // // The id is not unique for multi-stage origin trials.
-      // // So let's try qualifying the selector with this.stageId.
-      // if (!formFieldElement && this.stageId) {
-      //   fieldSelector = `#id_${this.name}[stageId="${this.stageId}"]`;
-      //   formFieldElement = this.renderRoot.querySelector(fieldSelector);
-      // }
-
-      // For 'input' elements.
-      if (formFieldElement?.setCustomValidity && formFieldElement.input) {
-        formFieldElement.setCustomValidity(
-          (checkResult && checkResult.error) ? checkResult.error : '');
-      }
-    }
+    });
   }
-
 
   renderWidget() {
     const type = this.fieldProps.type;
@@ -251,6 +258,7 @@ export class ChromedashFormField extends LitElement {
           ${ref(this.updateAttributes)}
           name="${fieldName}"
           id="id_${this.name}"
+          stageId="${this.stageId}"
           size="small"
           autocomplete="off"
           .value=${fieldValue}
@@ -361,77 +369,52 @@ export class ChromedashFormField extends LitElement {
   }
 }
 
-// Find the shipped stage with the minimum shipped milestone.
-function findMinShippedMilestone(fieldName, feature) {
-  let minMilestone = Infinity;
-  const shippedMilestoneStageName = STAGE_FIELD_NAME_MAPPING[fieldName];
-  // Iterate through all stages that are shipping stages.
-  for (const stage of feature.stages) {
-    if (STAGE_TYPES_SHIPPING.has(stage.stage_type)) {
-      const shippedMilestone = stage[shippedMilestoneStageName];
-      minMilestone = Math.min(minMilestone, shippedMilestone);
-    }
-  }
-  if (minMilestone === Infinity) return undefined;
-  return minMilestone;
-}
-
 /**
  * Gets the value of a field from a feature entry form.
- * Looks up the field name in the provided form field values,
- * and returns the corresponding value.
+ * Looks up the field name in the provided form field values, using the stageId
+ * if the field is stage-specific, and returns the corresponding value.
+ * Returns null if not defined or not found.
  * Handles special cases like shipping milestones and mapped stage fields.
  * @param {string} fieldName
+ * @param {number|undefined} stageId
  * @param {Array<{name:string, value:*}>} formFieldValues
  * @return {*}
  */
-function getFieldValue(fieldName, formFieldValues) {
-  // Add cache to lookup formFieldValues objects by name, if not already done.
-  if (!formFieldValues.byName) {
-    formFieldValues.byName = {};
+function getFieldValueWithStage(fieldName, stageId, formFieldValues) {
+  // Define a unique key from fieldName and stageId, or 'global' if none.
+  const key = `${fieldName}_${stageId || 'global'}`;
+
+  // Add a cache to lookup formFieldValues objects by key, if not already done.
+  if (!formFieldValues.byKey) {
+    formFieldValues.byKey = {};
   }
-  if (fieldName in formFieldValues.byName) {
-    return formFieldValues.byName[fieldName].value;
+  // Look up key in cache.
+  if (key in formFieldValues.byKey) {
+    const obj = formFieldValues.byKey[key];
+    return obj ? obj.value : null;
   }
 
   // Caches the field value if it's not already set.
   // @param {string} fieldName - The name of the field.
   // @param {any} obj - The object containing name and value to cache.
   // @return {any} The cached value.
-  const cacheFieldValue = (fieldName, obj) => {
-    if (!formFieldValues.byName[fieldName]) {
-      formFieldValues.byName[fieldName] = obj;
-    }
+  const cacheFieldValue = (obj) => {
+    formFieldValues.byKey[key] = obj;
     return obj.value;
   };
 
   // Iterate through formFieldValues looking for element with name==fieldName
+  // and stage == stageId, if there is a non-null stageId
   for (const obj of formFieldValues) {
-    if (obj.name === fieldName) {
-      // Note, the obj could be updated by the form any time later.
-      return cacheFieldValue(fieldName, obj);
+    if (obj.name === fieldName && (stageId == null || obj.stageId == stageId)) {
+      return cacheFieldValue(obj);
     }
   }
 
-  // fieldName is not in formFieldValues, so we must look in the feature.
+  // The remainder looks for the field in the feature.
   const feature = formFieldValues.feature;
-  if (!feature) return undefined;
 
-  if (SHIPPED_MILESTONE_FIELDS.has(fieldName)) {
-    const minShippedMilestone = findMinShippedMilestone(fieldName, feature);
-    return cacheFieldValue(fieldName, {
-      name: fieldName, value: minShippedMilestone,
-    });
-  }
-
-  // Otherwise, we have to look up the fieldName in the feature.
-  if (fieldName in feature) {
-    return cacheFieldValue(fieldName, {
-      name: fieldName, value: feature[fieldName],
-    });
-  }
-
-  // Map from stage specific field name to feature field path.
+  // Map from other stage-specific field names to feature field path.
   const fieldNameMapping = {
     owner: 'browsers.chrome.owners',
     editors: 'editors',
@@ -461,25 +444,41 @@ function getFieldValue(fieldName, formFieldValues) {
     other_views_notes: 'browsers.other.view.notes',
   };
 
-  // Lookup fieldName by following the path starting from feature.
+  // Lookup fieldName by following the stage specific path starting from feature.
+  let objOrValue = feature;
   if (fieldNameMapping[fieldName]) {
-    let obj = feature;
     for (const property of fieldNameMapping[fieldName].split('.')) {
-      if (obj) {
-        obj = obj[property];
+      if (objOrValue) {
+        objOrValue = objOrValue[property];
       }
     }
+  } else {
+    // It must be a global field.
+    objOrValue = feature[fieldName];
   }
-  const stageId = formFieldValues.stageId;
-  const feStage =
-    stageId != null ?
-      feature.stages.find((s) => s.id == stageId) :
-      feature.stages[0];
-  const value = feStage == null ? undefined : getStageValue(feStage, fieldName);
-  return cacheFieldValue(fieldName, {
-    name: fieldName,
-    value: value,
-  });
+  // Store result in cache and return it.
+  return cacheFieldValue(objOrValue);
+
+  // // Get the stage object for the field.
+  // const feStage =
+  //   stageId != null ?
+  //     feature.stages.find((s) => s.id == stageId) :
+  //     feature.stages[0];
+  // const value = feStage == null ? undefined : getStageValue(feStage, fieldName);
+  // return cacheFieldValue(fieldName, {
+  //   name: fieldName,
+  //   value: value,
+  // });
+
+
+  // // fieldName is not in formFieldValues, so we must look in the feature.
+  // const feature = formFieldValues.feature;
+  // if (!feature) return undefined;
+  // if (fieldName in feature) {
+  //   return cacheFieldValue(fieldName, {
+  //     name: fieldName, value: feature[fieldName],
+  //   });
+  // }
 }
 
 customElements.define('chromedash-form-field', ChromedashFormField);

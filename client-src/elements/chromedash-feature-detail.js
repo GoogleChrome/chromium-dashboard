@@ -1,5 +1,5 @@
 import {LitElement, css, html, nothing} from 'lit';
-import {getStageValue, renderHTMLIf} from './utils';
+import {getFieldValue, hasFieldValue, isDefinedValue, renderHTMLIf} from './utils';
 import {enhanceUrl} from './feature-link';
 import {openAddStageDialog} from './chromedash-add-stage-dialog';
 import {
@@ -21,12 +21,7 @@ import {
 import {
   DEPRECATED_FIELDS,
   GATE_TEAM_ORDER,
-  PLATFORMS_DISPLAYNAME,
-  STAGE_SPECIFIC_FIELDS,
-  OT_MILESTONE_END_FIELDS,
-  STAGE_PSA_SHIPPING,
-  ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME,
-  ROLLOUT_IMPACT_DISPLAYNAME} from './form-field-enums';
+  STAGE_PSA_SHIPPING} from './form-field-enums';
 import '@polymer/iron-icon';
 import './chromedash-activity-log';
 import './chromedash-callout';
@@ -289,110 +284,6 @@ class ChromedashFeatureDetail extends LitElement {
     `;
   }
 
-  isDefinedValue(value) {
-    return !(value === undefined || value === null || value.length == 0);
-  }
-
-  // Look at all extension milestones and calculate the highest milestone that an origin trial
-  // is available. This is used to display the highest milestone available, but to preserve the
-  // milestone that the trial was originally available for without extensions.
-  calcMaxMilestone(feStage, fieldName) {
-    // If the max milestone has already been calculated, or no trial extensions exist, do nothing.
-    if (feStage[`max_${fieldName}`] || !feStage.extensions) {
-      return;
-    }
-    let maxMilestone = getStageValue(feStage, fieldName) || 0;
-    for (const extension of feStage.extensions) {
-      const extensionValue = getStageValue(extension, fieldName);
-      if (extensionValue) {
-        maxMilestone = Math.max(maxMilestone, extensionValue);
-      }
-    }
-    // Save the findings with the "max_" prefix as a prop of the stage for reference.
-    feStage[`max_${fieldName}`] = maxMilestone;
-  }
-
-  // Get the milestone value that is displayed to the user regarding the origin trial end date.
-  getMilestoneExtensionValue(feStage, fieldName) {
-    const milestoneValue = getStageValue(feStage, fieldName);
-    this.calcMaxMilestone(feStage, fieldName);
-
-    const maxMilestoneFieldName = `max_${fieldName}`;
-    // Display only extension milestone if the original milestone has not been added.
-    if (feStage[maxMilestoneFieldName] && !milestoneValue) {
-      return `Extended to ${feStage[maxMilestoneFieldName]}`;
-    }
-    // If the trial has been extended past the original milestone, display the extension
-    // milestone with additional text reminding of the original milestone end date.
-    if (feStage[maxMilestoneFieldName] && feStage[maxMilestoneFieldName] > milestoneValue) {
-      return `${feStage[maxMilestoneFieldName]} (extended from ${milestoneValue})`;
-    }
-    return milestoneValue;
-  }
-
-  getFieldValue(fieldName, feStage) {
-    if (STAGE_SPECIFIC_FIELDS.has(fieldName)) {
-      const value = getStageValue(feStage, fieldName);
-      if (fieldName === 'rollout_impact' && value) {
-        return ROLLOUT_IMPACT_DISPLAYNAME[value];
-      } if (fieldName === 'rollout_platforms' && value) {
-        return value.map(platformId => PLATFORMS_DISPLAYNAME[platformId]);
-      } else if (fieldName in OT_MILESTONE_END_FIELDS) {
-        // If an origin trial end date is being displayed, handle extension milestones as well.
-        return this.getMilestoneExtensionValue(feStage, fieldName);
-      }
-      return value;
-    }
-
-    let value = this.feature[fieldName];
-    const fieldNameMapping = {
-      owner: 'browsers.chrome.owners',
-      editors: 'editors',
-      search_tags: 'tags',
-      spec_link: 'standards.spec',
-      standard_maturity: 'standards.maturity.text',
-      sample_links: 'resources.samples',
-      docs_links: 'resources.docs',
-      bug_url: 'browsers.chrome.bug',
-      blink_components: 'browsers.chrome.blink_components',
-      devrel: 'browsers.chrome.devrel',
-      prefixed: 'browsers.chrome.prefixed',
-      impl_status_chrome: 'browsers.chrome.status.text',
-      shipped_milestone: 'browsers.chrome.desktop',
-      shipped_android_milestone: 'browsers.chrome.android',
-      shipped_webview_milestone: 'browsers.chrome.webview',
-      shipped_ios_milestone: 'browsers.chrome.ios',
-      ff_views: 'browsers.ff.view.text',
-      ff_views_link: 'browsers.ff.view.url',
-      ff_views_notes: 'browsers.ff.view.notes',
-      safari_views: 'browsers.safari.view.text',
-      safari_views_link: 'browsers.safari.view.url',
-      safari_views_notes: 'browsers.safari.view.notes',
-      web_dev_views: 'browsers.webdev.view.text',
-      web_dev_views_link: 'browsers.webdev.view.url',
-      web_dev_views_notes: 'browsers.webdev.view.notes',
-      other_views_notes: 'browsers.other.view.notes',
-    };
-    if (fieldNameMapping[fieldName]) {
-      value = this.feature;
-      for (const step of fieldNameMapping[fieldName].split('.')) {
-        if (value) {
-          value = value[step];
-        }
-      }
-    }
-    if (fieldName === 'enterprise_feature_categories' && value) {
-      return value.map(categoryId =>
-        ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME[categoryId]);
-    }
-    return value;
-  }
-
-  hasFieldValue(fieldName, feStage) {
-    const value = this.getFieldValue(fieldName, feStage);
-    return this.isDefinedValue(value);
-  }
-
   renderText(value) {
     value = String(value);
     const markup = autolink(value, this.featureLinks);
@@ -430,21 +321,21 @@ class ChromedashFeatureDetail extends LitElement {
 
   renderField(fieldDef, feStage) {
     const [fieldId, fieldDisplayName, fieldType] = fieldDef;
-    const value = this.getFieldValue(fieldId, feStage);
-    const isDefinedValue = this.isDefinedValue(value);
+    const value = getFieldValue(fieldId, feStage, this.feature);
+    const isDefined = isDefinedValue(value);
     const isDeprecatedField = DEPRECATED_FIELDS.has(fieldId);
-    if (!isDefinedValue && isDeprecatedField) {
+    if (!isDefined && isDeprecatedField) {
       return nothing;
     }
 
-    const icon = isDefinedValue ?
+    const icon = isDefined ?
       html`<sl-icon library="material" name="check_circle_20px"></sl-icon>` :
       html`<sl-icon library="material" name="blank_20px"></sl-icon>`;
 
     return html`
       <dt id=${fieldId}>${icon} ${fieldDisplayName}</dt>
       <dd>
-       ${isDefinedValue ?
+       ${isDefined ?
           this.renderValue(fieldType, value) :
           html`<i>No information provided yet</i>`}
       </dd>
@@ -452,7 +343,7 @@ class ChromedashFeatureDetail extends LitElement {
   }
 
   stageHasAnyFilledFields(fields, feStage) {
-    return fields.some(fieldDef => this.hasFieldValue(fieldDef[0], feStage));
+    return fields.some(fieldDef => hasFieldValue(fieldDef[0], feStage, this.feature));
   }
 
   // Renders all fields for trial extension stages as a subsection of the

@@ -12,7 +12,14 @@ import {
   VENDOR_VIEWS_COMMON,
   VENDOR_VIEWS_GECKO,
   WEB_DEV_VIEWS,
+  DT_MILESTONE_FIELDS,
+  OT_MILESTONE_START_FIELDS,
+  SHIPPED_MILESTONE_FIELDS,
+  STAGE_TYPES_DEV_TRIAL,
+  STAGE_TYPES_ORIGIN_TRIAL,
+  STAGE_TYPES_SHIPPING,
 } from './form-field-enums';
+import {getFieldValue} from './utils';
 
 /* Patterns from https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch04s01.html
  * Removing single quote ('), backtick (`), and pipe (|) since they are risky unless properly escaped everywhere.
@@ -67,66 +74,75 @@ const OT_MILESTONE_DESKTOP_RANGE = {
   later: 'ot_milestone_desktop_end',
 };
 
-const OT_MILESTONE_ANDROID_RANGE = {
-  earlier: 'ot_milestone_android_start',
-  later: 'ot_milestone_android_end',
-};
+// const OT_MILESTONE_ANDROID_RANGE = {
+//   earlier: 'ot_milestone_android_start',
+//   later: 'ot_milestone_android_end',
+// };
 
-const OT_MILESTONE_WEBVIEW_RANGE = {
-  earlier: 'ot_milestone_webview_start',
-  later: 'ot_milestone_webview_end',
-};
+// const OT_MILESTONE_WEBVIEW_RANGE = {
+//   earlier: 'ot_milestone_webview_start',
+//   later: 'ot_milestone_webview_end',
+// };
 
-const OT_SHIPPED_MILESTONE_DESKTOP_RANGE = {
+const OT_ALL_SHIPPED_MILESTONE_DESKTOP_RANGE = {
   earlier: 'ot_milestone_desktop_start',
+  allLater: 'shipped_milestone',
+  warning: 'Origin trial should start before feature is shipped.',
+};
+
+const ALL_OT_SHIPPED_MILESTONE_DESKTOP_RANGE = {
+  allEarlier: 'ot_milestone_desktop_start',
   later: 'shipped_milestone',
   warning: 'Origin trial should start before feature is shipped.',
 };
 
-const OT_SHIPPED_MILESTONE_WEBVIEW_RANGE = {
-  earlier: 'ot_milestone_webview_start',
-  earlier: 'ot_milestone_webview_start',
-  later: 'shipped_webview_milestone',
-  warning: 'Origin trial should start before feature is shipped.',
-};
+// const OT_SHIPPED_MILESTONE_WEBVIEW_RANGE = {
+//   earlier: 'ot_milestone_webview_start',
+//   later: 'shipped_webview_milestone',
+//   warning: 'Origin trial should start before feature is shipped.',
+// };
 
-const OT_SHIPPED_MILESTONE_ANDROID_RANGE = {
-  earlier: 'ot_milestone_android_start',
-  earlier: 'ot_milestone_android_start',
-  later: 'shipped_android_milestone',
-  warning: 'Origin trial should start before feature is shipped.',
-};
+// const OT_SHIPPED_MILESTONE_ANDROID_RANGE = {
+//   earlier: 'ot_milestone_android_start',
+//   later: 'shipped_android_milestone',
+//   warning: 'Origin trial should start before feature is shipped.',
+// };
 
-const OT_SHIPPED_MILESTONE_IOS_RANGE = {
-  earlier: 'ot_milestone_ios_start',
-  earlier: 'ot_milestone_ios_start',
-  later: 'shipped_ios_milestone',
-  warning: 'Origin trial should start before feature is shipped.',
-};
+// const OT_SHIPPED_MILESTONE_IOS_RANGE = {
+//   earlier: 'ot_milestone_ios_start',
+//   later: 'shipped_ios_milestone',
+//   warning: 'Origin trial should start before feature is shipped.',
+// };
 
-const DT_SHIPPED_MILESTONE_DESKTOP_RANGE = {
+const DT_ALL_SHIPPED_MILESTONE_DESKTOP_RANGE = {
   earlier: 'dt_milestone_desktop_start',
+  all_later: 'shipped_milestone',
+  error: 'Shipped milestone must be later than dev trial.',
+};
+
+const ALL_DT_SHIPPED_MILESTONE_DESKTOP_RANGE = {
+  all_earlier: 'dt_milestone_desktop_start',
   later: 'shipped_milestone',
   error: 'Shipped milestone must be later than dev trial.',
 };
 
-const DT_SHIPPED_MILESTONE_ANDROID_RANGE = {
-  earlier: 'dt_milestone_android_start',
-  later: 'shipped_android_milestone',
-  error: 'Shipped milestone must be later than dev trial.',
-};
+// const DT_SHIPPED_MILESTONE_ANDROID_RANGE = {
+//   earlier: 'dt_milestone_android_start',
+//   later: 'shipped_android_milestone',
+//   error: 'Shipped milestone must be later than dev trial.',
+// };
 
-const DT_SHIPPED_MILESTONE_IOS_RANGE = {
-  earlier: 'dt_milestone_ios_start',
-  later: 'shipped_ios_milestone',
-  error: 'Shipped milestone must be later than dev trial.',
-};
+// const DT_SHIPPED_MILESTONE_IOS_RANGE = {
+//   earlier: 'dt_milestone_ios_start',
+//   later: 'shipped_ios_milestone',
+//   error: 'Shipped milestone must be later than dev trial.',
+// };
 
-const DT_SHIPPED_MILESTONE_WEBVIEW_RANGE = {
-  earlier: 'dt_milestone_webview_start',
-  later: 'shipped_webview_milestone',
-  error: 'Shipped webview milestone must be later than dev trial.',
-};
+// const DT_SHIPPED_MILESTONE_WEBVIEW_RANGE = {
+//   earlier: 'dt_milestone_webview_start',
+//   later: 'shipped_webview_milestone',
+//   error: 'Shipped webview milestone must be later than dev trial.',
+// };
 
 
 const MULTI_URL_FIELD_ATTRS = {
@@ -1015,7 +1031,7 @@ export const ALL_FIELDS = {
     check: (_value, getFieldValue) =>
       checkMilestoneRanges([
         OT_MILESTONE_DESKTOP_RANGE,
-        OT_SHIPPED_MILESTONE_DESKTOP_RANGE,
+        OT_ALL_SHIPPED_MILESTONE_DESKTOP_RANGE,
       ], getFieldValue),
     dependents: ['ot_milestone_desktop_end', 'shipped_milestone'],
   },
@@ -1326,7 +1342,7 @@ export const ALL_FIELDS = {
     check: (_value, getFieldValue) =>
       checkMilestoneRanges([
         OT_MILESTONE_DESKTOP_RANGE,
-        OT_SHIPPED_MILESTONE_DESKTOP_RANGE,
+        OT_ALL_SHIPPED_MILESTONE_DESKTOP_RANGE,
       ], getFieldValue),
     dependents: ['ot_milestone_desktop_end', 'shipped_milestone'],
   },
@@ -1503,8 +1519,8 @@ export const ALL_FIELDS = {
     help_text: SHIPPED_HELP_TXT,
     check: (_value, getFieldValue) =>
       checkMilestoneRanges([
-        OT_SHIPPED_MILESTONE_DESKTOP_RANGE,
-        DT_SHIPPED_MILESTONE_DESKTOP_RANGE], getFieldValue),
+        ALL_OT_SHIPPED_MILESTONE_DESKTOP_RANGE,
+        ALL_DT_SHIPPED_MILESTONE_DESKTOP_RANGE], getFieldValue),
     dependents: [
       'dt_milestone_desktop_start', 'ot_milestone_desktop_start', 'shipped_milestone'],
     dependents: [
@@ -1518,7 +1534,8 @@ export const ALL_FIELDS = {
     label: 'Chrome for Android',
     help_text: SHIPPED_HELP_TXT,
     check: (_value, getFieldValue) =>
-      checkMilestoneRanges([OT_SHIPPED_MILESTONE_ANDROID_RANGE,
+      checkMilestoneRanges([
+        OT_SHIPPED_MILESTONE_ANDROID_RANGE,
         DT_SHIPPED_MILESTONE_ANDROID_RANGE], getFieldValue),
     dependents: [
       'dt_milestone_android_start', 'ot_milestone_android_start', 'shipped_android_milestone'],
@@ -1599,7 +1616,8 @@ export const ALL_FIELDS = {
       When flags are enabled by default in preparation for
       shipping or removal, please use the fields in the ship stage.`,
     check: (_value, getFieldValue) =>
-      checkMilestoneRanges([DT_SHIPPED_MILESTONE_DESKTOP_RANGE], getFieldValue),
+      checkMilestoneRanges([
+        DT_ALL_SHIPPED_MILESTONE_DESKTOP_RANGE], getFieldValue),
     dependents: ['dt_milestone_desktop_start', 'shipped_milestone'],
   },
 
@@ -1848,19 +1866,85 @@ export function makeDisplaySpecs(fieldNames) {
   return fieldNames.map(fieldName => makeDisplaySpec(fieldName));
 }
 
-function checkMilestoneRanges(ranges, getFieldValue) {
-  const getValue = (name) => {
-    const value = getFieldValue(name);
-    if (typeof value === 'string') {
-      if (value === '') return undefined;
-      return Number(value);
+function getNumericValue(name, getFieldValue) {
+  const value = getFieldValue(name);
+  if (typeof value === 'string') {
+    if (value === '') return undefined;
+    return Number(value);
+  }
+  return value;
+};
+
+// Find the minimum shipped milestone.
+function findMinMilestone(fieldName, stageTypes, feature) {
+  let minMilestone = Infinity;
+  // Iterate through all stages that are shipping stages.
+  for (const stage of feature.stages) {
+    if (stageTypes.has(stage.stage_type)) {
+      const milestone = getFieldValue(fieldName, stage, feature);
+      minMilestone = Math.min(minMilestone, milestone);
     }
-    return value;
-  };
+  }
+  if (minMilestone === Infinity) return undefined;
+  return minMilestone;
+}
+
+// Find the minimum shipped milestone.
+function findMaxMilestone(fieldName, stageTypes, feature) {
+  let maxMilestone = -Infinity;
+  // Iterate through all stages that are shipping stages.
+  for (const stage of feature.stages) {
+    if (stageTypes.has(stage.stage_type)) {
+      const milestone = getFieldValue(fieldName, stage, feature);
+      maxMilestone = Math.max(maxMilestone, milestone);
+    }
+  }
+  if (maxMilestone === -Infinity) return undefined;
+  return maxMilestone;
+}
+
+// Check that the origin trial start milestone is before all shipped milestones.
+function checkEarlierBeforeAllLaterMilestones(
+  fieldPair, getFieldValue) {
+  const {earlier, allLater, warning} = fieldPair;
+  // Need to generalize this stageTypes setting.
+  const stageTypes =
+    // Only shipping, for now.
+    SHIPPED_MILESTONE_FIELDS.has(allLater) ? STAGE_TYPES_SHIPPING : null;
+  const earlierValue = getFieldValue(earlier);
+  const laterValue = findMinMilestone(allLater, stageTypes, getFieldValue.feature);
+  if (earlierValue >= laterValue) {
+    return {
+      warning: warning,
+    };
+  }
+}
+
+// Check that all origin trial start milestones before the shipped milestone.
+function checkAllEarlierBeforeLaterMilestone(fieldPair, getFieldValue) {
+  const {allEarlier, later, warning} = fieldPair;
+  const stageTypes =
+    OT_MILESTONE_START_FIELDS.has(allEarlier) ? STAGE_TYPES_ORIGIN_TRIAL :
+      DT_MILESTONE_FIELDS.has(allEarlier) ? STAGE_TYPES_DEV_TRIAL : null;
+  const earlierValue = findMaxMilestone(allEarlier, stageTypes, getFieldValue.feature);
+  const laterValue = getFieldValue(later);
+  if (earlierValue >= laterValue) {
+    return {
+      warning: warning,
+    };
+  }
+}
+
+function checkMilestoneRanges(ranges, getFieldValue) {
   for (const range of ranges) {
-    const {earlier, later, warning, error} = range;
-    const earlierMilestone = getValue(earlier);
-    const laterMilestone = getValue(later);
+    const {earlier, allEarlier, later, allLater, warning, error} = range;
+    if (allLater) {
+      return checkEarlierBeforeAllLaterMilestones(range, getFieldValue);
+    } else if (allEarlier) {
+      return checkAllEarlierBeforeLaterMilestone(range, getFieldValue);
+    }
+    const earlierMilestone = getNumericValue(earlier, getFieldValue);
+    const laterMilestone = getNumericValue(later, getFieldValue);
     if (earlierMilestone != null && laterMilestone != null) {
       if (laterMilestone <= earlierMilestone) {
         // It's either a warning or an error.

@@ -2,7 +2,15 @@
 
 import {markupAutolinks} from './autolink.js';
 import {nothing, html} from 'lit';
-import {STAGE_FIELD_NAME_MAPPING} from './form-field-enums';
+import {
+  STAGE_FIELD_NAME_MAPPING,
+  PLATFORMS_DISPLAYNAME,
+  STAGE_SPECIFIC_FIELDS,
+  OT_MILESTONE_END_FIELDS,
+  ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME,
+  ROLLOUT_IMPACT_DISPLAYNAME,
+} from './form-field-enums';
+
 
 let toastEl;
 
@@ -97,6 +105,130 @@ export function getStageValue(stage, fieldName) {
     return stage[STAGE_FIELD_NAME_MAPPING[fieldName]];
   }
   return stage[fieldName];
+}
+
+
+// Look at all extension milestones and calculate the highest milestone that an origin trial
+// is available. This is used to display the highest milestone available, but to preserve the
+// milestone that the trial was originally available for without extensions.
+function calcMaxMilestone(feStage, fieldName) {
+  // If the max milestone has already been calculated, or no trial extensions exist, do nothing.
+  if (feStage[`max_${fieldName}`] || !feStage.extensions) {
+    return;
+  }
+  let maxMilestone = getStageValue(feStage, fieldName) || 0;
+  for (const extension of feStage.extensions) {
+    const extensionValue = getStageValue(extension, fieldName);
+    if (extensionValue) {
+      maxMilestone = Math.max(maxMilestone, extensionValue);
+    }
+  }
+  // Save the findings with the "max_" prefix as a prop of the stage for reference.
+  feStage[`max_${fieldName}`] = maxMilestone;
+}
+
+
+// Get the milestone value that is displayed to the user regarding the origin trial end date.
+function getMilestoneExtensionValue(feStage, fieldName) {
+  const milestoneValue = getStageValue(feStage, fieldName);
+  calcMaxMilestone(feStage, fieldName);
+
+  const maxMilestoneFieldName = `max_${fieldName}`;
+  // Display only extension milestone if the original milestone has not been added.
+  if (feStage[maxMilestoneFieldName] && !milestoneValue) {
+    return `Extended to ${feStage[maxMilestoneFieldName]}`;
+  }
+  // If the trial has been extended past the original milestone, display the extension
+  // milestone with additional text reminding of the original milestone end date.
+  if (feStage[maxMilestoneFieldName] && feStage[maxMilestoneFieldName] > milestoneValue) {
+    return `${feStage[maxMilestoneFieldName]} (extended from ${milestoneValue})`;
+  }
+  return milestoneValue;
+}
+
+/**
+ * Check if a value is defined and not empty.
+ *
+ * @param {any} value - The value to be checked.
+ * @return {boolean} Returns true if the value is defined and not empty, otherwise false.
+ */
+export function isDefinedValue(value) {
+  return !(value === undefined || value === null || value.length == 0);
+}
+
+export function hasFieldValue(fieldName, feStage, feature) {
+  const value = getFieldValue(fieldName, feStage, feature);
+  return isDefinedValue(value);
+}
+
+/**
+ * Retrieves the value of a specific field for a given feature.
+ *
+ * @param {string} fieldName - The name of the field to retrieve.
+ * @param {string} feStage - The stage of the feature.
+ * @param {Object} feature - The feature object to retrieve the field value from.
+ * @return {*} The value of the specified field for the given feature.
+ */
+export function getFieldValue(fieldName, feStage, feature) {
+  if (STAGE_SPECIFIC_FIELDS.has(fieldName)) {
+    const value = getStageValue(feStage, fieldName);
+    if (fieldName === 'rollout_impact' && value) {
+      return ROLLOUT_IMPACT_DISPLAYNAME[value];
+    } if (fieldName === 'rollout_platforms' && value) {
+      return value.map(platformId => PLATFORMS_DISPLAYNAME[platformId]);
+    } else if (fieldName in OT_MILESTONE_END_FIELDS) {
+      // If an origin trial end date is being displayed, handle extension milestones as well.
+      return getMilestoneExtensionValue(feStage, fieldName);
+    }
+    return value;
+  }
+
+  const fieldNameMapping = {
+    owner: 'browsers.chrome.owners',
+    editors: 'editors',
+    search_tags: 'tags',
+    spec_link: 'standards.spec',
+    standard_maturity: 'standards.maturity.text',
+    sample_links: 'resources.samples',
+    docs_links: 'resources.docs',
+    bug_url: 'browsers.chrome.bug',
+    blink_components: 'browsers.chrome.blink_components',
+    devrel: 'browsers.chrome.devrel',
+    prefixed: 'browsers.chrome.prefixed',
+    impl_status_chrome: 'browsers.chrome.status.text',
+    shipped_milestone: 'browsers.chrome.desktop',
+    shipped_android_milestone: 'browsers.chrome.android',
+    shipped_webview_milestone: 'browsers.chrome.webview',
+    shipped_ios_milestone: 'browsers.chrome.ios',
+    ff_views: 'browsers.ff.view.text',
+    ff_views_link: 'browsers.ff.view.url',
+    ff_views_notes: 'browsers.ff.view.notes',
+    safari_views: 'browsers.safari.view.text',
+    safari_views_link: 'browsers.safari.view.url',
+    safari_views_notes: 'browsers.safari.view.notes',
+    web_dev_views: 'browsers.webdev.view.text',
+    web_dev_views_link: 'browsers.webdev.view.url',
+    web_dev_views_notes: 'browsers.webdev.view.notes',
+    other_views_notes: 'browsers.other.view.notes',
+  };
+  let value;
+  if (fieldNameMapping[fieldName]) {
+    const propertyValue = feature;
+    for (const step of fieldNameMapping[fieldName].split('.')) {
+      if (propertyValue) {
+        propertyValue = propertyValue[step];
+      }
+    }
+    value = propertyValue;
+  } else {
+    value = feature[fieldName];
+  }
+
+  if (fieldName === 'enterprise_feature_categories' && value) {
+    return value.map(categoryId =>
+      ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME[categoryId]);
+  }
+  return value;
 }
 
 /* Given a stage form definition, return a flat array of the fields associated with the stage. */
@@ -365,20 +497,3 @@ export function handleSaveChangesResponse(response) {
   const app = document.querySelector('chromedash-app');
   app.setUnsavedChanges(response !== '');
 }
-
-// /**
-//  * Returns value for fieldName, retrieved from fieldValues.
-//   * @param {string} fieldName
-//   * @param {Array<Object>} formFieldValues, with feature property for everything else
-//   * @return {*} The value of the named field.
-//  */
-// export function getFieldValue(fieldName, formFieldValues) {
-//   let fieldValue = formFieldValues.feature?[fieldName]?.value : null;
-//   formFieldValues.some((fieldObj) => {
-//     if (fieldObj.name === fieldName) {
-//       fieldValue = fieldObj.value;
-//       return true;
-//     }
-//   });
-//   return fieldValue;
-// }
