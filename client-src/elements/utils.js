@@ -163,13 +163,15 @@ export function hasFieldValue(fieldName, feStage, feature) {
 
 /**
  * Retrieves the value of a specific field for a given feature.
+ * Note: This is independent of any value that might be in a corresponding
+ * form field.
  *
  * @param {string} fieldName - The name of the field to retrieve.
  * @param {string} feStage - The stage of the feature.
  * @param {Object} feature - The feature object to retrieve the field value from.
  * @return {*} The value of the specified field for the given feature.
  */
-export function getFieldValue(fieldName, feStage, feature) {
+export function getFieldValueFromFeature(fieldName, feStage, feature) {
   if (STAGE_SPECIFIC_FIELDS.has(fieldName)) {
     const value = getStageValue(feStage, fieldName);
     if (fieldName === 'rollout_impact' && value) {

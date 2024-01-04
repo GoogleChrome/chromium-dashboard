@@ -1,5 +1,5 @@
 import {LitElement, css, html, nothing} from 'lit';
-import {getFieldValue, hasFieldValue, isDefinedValue, renderHTMLIf} from './utils';
+import {getFieldValueFromFeature, hasFieldValue, isDefinedValue, renderHTMLIf} from './utils';
 import {enhanceUrl} from './feature-link';
 import {openAddStageDialog} from './chromedash-add-stage-dialog';
 import {
@@ -321,7 +321,7 @@ class ChromedashFeatureDetail extends LitElement {
 
   renderField(fieldDef, feStage) {
     const [fieldId, fieldDisplayName, fieldType] = fieldDef;
-    const value = getFieldValue(fieldId, feStage, this.feature);
+    const value = getFieldValueFromFeature(fieldId, feStage, this.feature);
     const isDefined = isDefinedValue(value);
     const isDeprecatedField = DEPRECATED_FIELDS.has(fieldId);
     if (!isDefined && isDeprecatedField) {

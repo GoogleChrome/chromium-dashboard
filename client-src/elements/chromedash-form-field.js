@@ -2,7 +2,7 @@ import {LitElement, html, nothing} from 'lit';
 import {ALL_FIELDS} from './form-field-specs';
 import {ref} from 'lit/directives/ref.js';
 import './chromedash-textarea';
-import {showToastMessage} from './utils.js';
+import {showToastMessage, getFieldValueFromFeature} from './utils.js';
 
 export class ChromedashFormField extends LitElement {
   static get properties() {
@@ -161,11 +161,10 @@ export class ChromedashFormField extends LitElement {
 
     checkFunctions.find(async (checkFunction) => {
       const fieldValue = this.getValue();
-      const getFieldValue =
-        (name, ignoreStageId) =>
-          getFieldValueWithStage(name,
-            ignoreStageId ? null : this.stageId,
-            this.fieldValues);
+      const getFieldValue = (name, stageOrId) =>
+        getFieldValueWithStage(name,
+          (stageOrId === 'current stage' ? this.stageId : stageOrId),
+          this.fieldValues);
       // Attach the feature to the getFieldValue function, in case it is needed.
       getFieldValue.feature = this.fieldValues.feature;
       const checkResult = await checkFunction(fieldValue, getFieldValue);
@@ -371,16 +370,16 @@ export class ChromedashFormField extends LitElement {
 
 /**
  * Gets the value of a field from a feature entry form.
- * Looks up the field name in the provided form field values, using the stageId
+ * Looks up the field name in the provided form field values, using the stageOrId
  * if the field is stage-specific, and returns the corresponding value.
  * Returns null if not defined or not found.
  * Handles special cases like shipping milestones and mapped stage fields.
  * @param {string} fieldName
- * @param {number|undefined} stageId
+ * @param {number|Object|undefined} stageOrId
  * @param {Array<{name:string, value:*}>} formFieldValues
  * @return {*}
  */
-function getFieldValueWithStage(fieldName, stageId, formFieldValues) {
+function getFieldValueWithStage(fieldName, stageOrId, formFieldValues) {
   // Define a unique key from fieldName and stageId, or 'global' if none.
   const key = `${fieldName}_${stageId || 'global'}`;
 
@@ -405,6 +404,10 @@ function getFieldValueWithStage(fieldName, stageId, formFieldValues) {
 
   // Iterate through formFieldValues looking for element with name==fieldName
   // and stage == stageId, if there is a non-null stageId
+  let stageId;
+  if (typeof stageOrId === 'number') {
+    stageId = stageOrId;
+  }
   for (const obj of formFieldValues) {
     if (obj.name === fieldName && (stageId == null || obj.stageId == stageId)) {
       return cacheFieldValue(obj);
@@ -414,62 +417,24 @@ function getFieldValueWithStage(fieldName, stageId, formFieldValues) {
   // The remainder looks for the field in the feature.
   const feature = formFieldValues.feature;
 
-  // Map from other stage-specific field names to feature field path.
-  const fieldNameMapping = {
-    owner: 'browsers.chrome.owners',
-    editors: 'editors',
-    search_tags: 'tags',
-    spec_link: 'standards.spec',
-    standard_maturity: 'standards.maturity.text',
-    sample_links: 'resources.samples',
-    docs_links: 'resources.docs',
-    bug_url: 'browsers.chrome.bug',
-    blink_components: 'browsers.chrome.blink_components',
-    devrel: 'browsers.chrome.devrel',
-    prefixed: 'browsers.chrome.prefixed',
-    impl_status_chrome: 'browsers.chrome.status.text',
-    shipped_milestone: 'browsers.chrome.desktop',
-    shipped_android_milestone: 'browsers.chrome.android',
-    shipped_webview_milestone: 'browsers.chrome.webview',
-    shipped_ios_milestone: 'browsers.chrome.ios',
-    ff_views: 'browsers.ff.view.text',
-    ff_views_link: 'browsers.ff.view.url',
-    ff_views_notes: 'browsers.ff.view.notes',
-    safari_views: 'browsers.safari.view.text',
-    safari_views_link: 'browsers.safari.view.url',
-    safari_views_notes: 'browsers.safari.view.notes',
-    web_dev_views: 'browsers.webdev.view.text',
-    web_dev_views_link: 'browsers.webdev.view.url',
-    web_dev_views_notes: 'browsers.webdev.view.notes',
-    other_views_notes: 'browsers.other.view.notes',
-  };
+  // Get the stage object for the field, using the same stageId as for the
+  // original form field.
+  const feStage = (typeof stageOrId === 'object') ? stageOrId :
+    (stageId != null ?
+      feature.stages.find((s) => s.id == stageId) :
+      feature.stages[0]);
 
-  // Lookup fieldName by following the stage specific path starting from feature.
-  let objOrValue = feature;
-  if (fieldNameMapping[fieldName]) {
-    for (const property of fieldNameMapping[fieldName].split('.')) {
-      if (objOrValue) {
-        objOrValue = objOrValue[property];
-      }
-    }
-  } else {
-    // It must be a global field.
-    objOrValue = feature[fieldName];
-  }
+  // // Lookup fieldName by following the stage specific path starting from feature.
+
+  value = getFieldValueFromFeature(fieldName, feStage, feature);
+
   // Store result in cache and return it.
-  return cacheFieldValue(objOrValue);
-
-  // // Get the stage object for the field.
-  // const feStage =
-  //   stageId != null ?
-  //     feature.stages.find((s) => s.id == stageId) :
-  //     feature.stages[0];
+  return cacheFieldValue(value);
   // const value = feStage == null ? undefined : getStageValue(feStage, fieldName);
   // return cacheFieldValue(fieldName, {
   //   name: fieldName,
   //   value: value,
   // });
-
 
   // // fieldName is not in formFieldValues, so we must look in the feature.
   // const feature = formFieldValues.feature;

@@ -19,7 +19,6 @@ import {
   STAGE_TYPES_ORIGIN_TRIAL,
   STAGE_TYPES_SHIPPING,
 } from './form-field-enums';
-import {getFieldValue} from './utils';
 
 /* Patterns from https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch04s01.html
  * Removing single quote ('), backtick (`), and pipe (|) since they are risky unless properly escaped everywhere.
@@ -1866,22 +1865,14 @@ export function makeDisplaySpecs(fieldNames) {
   return fieldNames.map(fieldName => makeDisplaySpec(fieldName));
 }
 
-function getNumericValue(name, getFieldValue) {
-  const value = getFieldValue(name);
-  if (typeof value === 'string') {
-    if (value === '') return undefined;
-    return Number(value);
-  }
-  return value;
-};
-
 // Find the minimum shipped milestone.
-function findMinMilestone(fieldName, stageTypes, feature) {
+function findMinMilestone(fieldName, stageTypes, getFieldValue) {
   let minMilestone = Infinity;
   // Iterate through all stages that are shipping stages.
+  const feature = getFieldValue.feature;
   for (const stage of feature.stages) {
     if (stageTypes.has(stage.stage_type)) {
-      const milestone = getFieldValue(fieldName, stage, feature);
+      const milestone = getFieldValue(fieldName, stage);
       minMilestone = Math.min(minMilestone, milestone);
     }
   }
@@ -1890,12 +1881,13 @@ function findMinMilestone(fieldName, stageTypes, feature) {
 }
 
 // Find the minimum shipped milestone.
-function findMaxMilestone(fieldName, stageTypes, feature) {
+function findMaxMilestone(fieldName, stageTypes, getFieldValue) {
   let maxMilestone = -Infinity;
-  // Iterate through all stages that are shipping stages.
+  // Iterate through all stages that are OT or DT stages.
+  const feature = getFieldValue.feature;
   for (const stage of feature.stages) {
     if (stageTypes.has(stage.stage_type)) {
-      const milestone = getFieldValue(fieldName, stage, feature);
+      const milestone = getFieldValue(fieldName, stage);
       maxMilestone = Math.max(maxMilestone, milestone);
     }
   }
@@ -1906,13 +1898,12 @@ function findMaxMilestone(fieldName, stageTypes, feature) {
 // Check that the origin trial start milestone is before all shipped milestones.
 function checkEarlierBeforeAllLaterMilestones(
   fieldPair, getFieldValue) {
-  const {earlier, allLater, warning} = fieldPair;
-  // Need to generalize this stageTypes setting.
+  const { earlier, allLater, warning } = fieldPair;
   const stageTypes =
     // Only shipping, for now.
     SHIPPED_MILESTONE_FIELDS.has(allLater) ? STAGE_TYPES_SHIPPING : null;
   const earlierValue = getFieldValue(earlier);
-  const laterValue = findMinMilestone(allLater, stageTypes, getFieldValue.feature);
+  const laterValue = findMinMilestone(allLater, stageTypes, getFieldValue);
   if (earlierValue >= laterValue) {
     return {
       warning: warning,
@@ -1924,9 +1915,10 @@ function checkEarlierBeforeAllLaterMilestones(
 function checkAllEarlierBeforeLaterMilestone(fieldPair, getFieldValue) {
   const {allEarlier, later, warning} = fieldPair;
   const stageTypes =
+    // Only origin trials or dev trials, for now.
     OT_MILESTONE_START_FIELDS.has(allEarlier) ? STAGE_TYPES_ORIGIN_TRIAL :
       DT_MILESTONE_FIELDS.has(allEarlier) ? STAGE_TYPES_DEV_TRIAL : null;
-  const earlierValue = findMaxMilestone(allEarlier, stageTypes, getFieldValue.feature);
+  const earlierValue = findMaxMilestone(allEarlier, stageTypes, getFieldValue);
   const laterValue = getFieldValue(later);
   if (earlierValue >= laterValue) {
     return {
@@ -1934,6 +1926,15 @@ function checkAllEarlierBeforeLaterMilestone(fieldPair, getFieldValue) {
     };
   }
 }
+
+function getNumericValue(name, getFieldValue) {
+  const value = getFieldValue(name, 'current stage');
+  if (typeof value === 'string') {
+    if (value === '') return undefined;
+    return Number(value);
+  }
+  return value;
+};
 
 function checkMilestoneRanges(ranges, getFieldValue) {
   for (const range of ranges) {
