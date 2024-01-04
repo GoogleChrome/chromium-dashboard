@@ -18,7 +18,10 @@ import settings
 from datetime import datetime
 from unittest import mock
 
+from internals import approval_defs
+from internals import core_enums
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.review_models import Gate, Vote
 from internals import reminders
 
 from google.cloud import ndb  # type: ignore
@@ -296,3 +299,136 @@ class PrepublicationHandlerTest(testing_config.CustomTestCase):
     actual = self.handler.prefilter_features(
         self.current_milestone_info, features, now=mock_now)
     self.assertEqual(['mock feature'], actual)
+
+
+class SLOOverdueHandlerTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.feature_1, self.feature_2, self.feature_3 = make_test_features()
+    self.gate_1 = Gate(
+        feature_id=self.feature_1.key.integer_id(),
+        stage_id=1111, gate_type=core_enums.GATE_ENTERPRISE_SHIP,
+        state=Gate.PREPARING)
+    self.gate_1.put()
+    self.handler = reminders.SLOOverdueHandler()
+    # Just a non-empty date, the value is ignored by mock_remaining_days
+    self.request_date = datetime(2023, 6, 7, 12, 30, 0)
+
+  def tearDown(self) -> None:
+    kinds: list[ndb.Model] = [FeatureEntry, Stage, Gate]
+    for kind in kinds:
+      for entity in kind.query():
+        entity.key.delete()
+
+  def test_get_template_data__no_reviews_pending(self):
+    with test_app.app_context():
+      actual = self.handler.get_template_data()
+
+    expected_message = ('0 email(s) sent or logged.')
+    expected = {'message': expected_message}
+    self.assertEqual(actual, expected)
+
+  @mock.patch('internals.slo.remaining_days')
+  def test_get_template_data__no_reviews_due(self, mock_remaining_days):
+    self.gate_1.state = Vote.REVIEW_REQUESTED
+    self.gate_1.put()
+    mock_remaining_days.return_value = 1
+
+    with test_app.app_context():
+      actual = self.handler.get_template_data()
+
+    expected_message = '0 email(s) sent or logged.'
+    expected = {'message': expected_message}
+    self.assertEqual(actual, expected)
+
+  @mock.patch('internals.slo.remaining_days')
+  def test_get_template_data__one_due_unassigned(self, mock_remaining_days):
+    self.gate_1.state = Vote.REVIEW_REQUESTED
+    self.gate_1.requested_on = self.request_date
+    self.gate_1.put()
+    mock_remaining_days.return_value = -1
+
+    with test_app.app_context():
+      actual = self.handler.get_template_data()
+
+    expected_message = (f'4 email(s) sent or logged.\n'
+                        'Recipients:\n'
+                        'angelaweber@google.com\n'
+                        'bheenan@google.com\n'
+                        'davidayad@google.com\n'
+                        'mhoste@google.com')
+    expected = {'message': expected_message}
+    self.assertEqual(actual, expected)
+
+  @mock.patch('internals.slo.remaining_days')
+  def test_get_template_data__one_due_assigned(self, mock_remaining_days):
+    self.gate_1.state = Vote.REVIEW_REQUESTED
+    self.gate_1.assignee_emails = [
+        'b_assignee@example.com', 'a_assignee@example.com']
+    self.gate_1.requested_on = self.request_date
+    self.gate_1.put()
+    mock_remaining_days.return_value = -1
+
+    with test_app.app_context():
+      actual = self.handler.get_template_data()
+
+    expected_message = (f'2 email(s) sent or logged.\n'
+                        'Recipients:\n'
+                        'a_assignee@example.com\n'
+                        'b_assignee@example.com')
+    expected = {'message': expected_message}
+    self.assertEqual(actual, expected)
+
+  @mock.patch('internals.slo.remaining_days')
+  def test_get_template_data__one_overdue_unassigned(self, mock_remaining_days):
+    self.gate_1.state = Vote.REVIEW_REQUESTED
+    self.gate_1.requested_on = self.request_date
+    self.gate_1.put()
+    mock_remaining_days.return_value = -approval_defs.DEFAULT_SLO_LIMIT
+
+    with test_app.app_context():
+      actual = self.handler.get_template_data()
+
+    expected_message = (f'4 email(s) sent or logged.\n'
+                        'Recipients:\n'
+                        'angelaweber@google.com\n'
+                        'bheenan@google.com\n'
+                        'davidayad@google.com\n'
+                        'mhoste@google.com')
+    expected = {'message': expected_message}
+    self.assertEqual(actual, expected)
+
+  @mock.patch('internals.slo.remaining_days')
+  def test_get_template_data__one_overdue_assigned(self, mock_remaining_days):
+    self.gate_1.state = Vote.REVIEW_REQUESTED
+    self.gate_1.assignee_emails = [
+        'bheenan@google.com', 'a_assignee@example.com']
+    self.gate_1.requested_on = self.request_date
+    self.gate_1.put()
+    mock_remaining_days.return_value = -approval_defs.DEFAULT_SLO_LIMIT
+
+    with test_app.app_context():
+      actual = self.handler.get_template_data()
+
+    expected_message = (f'5 email(s) sent or logged.\n'
+                        'Recipients:\n'
+                        'a_assignee@example.com\n'
+                        'angelaweber@google.com\n'
+                        'bheenan@google.com\n'
+                        'davidayad@google.com\n'
+                        'mhoste@google.com')
+    expected = {'message': expected_message}
+    self.assertEqual(actual, expected)
+
+  @mock.patch('internals.slo.remaining_days')
+  def test_get_template_data__old_reviews(self, mock_remaining_days):
+    self.gate_1.state = Vote.REVIEW_REQUESTED
+    self.gate_1.put()
+    mock_remaining_days.return_value = 99
+
+    with test_app.app_context():
+      actual = self.handler.get_template_data()
+
+    expected_message = '0 email(s) sent or logged.'
+    expected = {'message': expected_message}
+    self.assertEqual(actual, expected)

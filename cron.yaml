@@ -20,6 +20,9 @@ cron:
 - description: Send reminder to check summary before publication.
   url: /cron/send_prepublication
   schedule: every tuesday 09:00
+- description: Send reminders to reviewers of overdue reviews.
+  url: /cron/send_overdue_reviews
+  schedule: every day 09:00
 - description: Notify any users that have been inactive for 6 months.
   url: /cron/warn_inactive_users
   schedule: 1st monday of month 9:00
