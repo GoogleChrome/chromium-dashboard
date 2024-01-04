@@ -73,15 +73,15 @@ const OT_MILESTONE_DESKTOP_RANGE = {
   later: 'ot_milestone_desktop_end',
 };
 
-// const OT_MILESTONE_ANDROID_RANGE = {
-//   earlier: 'ot_milestone_android_start',
-//   later: 'ot_milestone_android_end',
-// };
+const OT_MILESTONE_ANDROID_RANGE = {
+  earlier: 'ot_milestone_android_start',
+  later: 'ot_milestone_android_end',
+};
 
-// const OT_MILESTONE_WEBVIEW_RANGE = {
-//   earlier: 'ot_milestone_webview_start',
-//   later: 'ot_milestone_webview_end',
-// };
+const OT_MILESTONE_WEBVIEW_RANGE = {
+  earlier: 'ot_milestone_webview_start',
+  later: 'ot_milestone_webview_end',
+};
 
 const OT_ALL_SHIPPED_MILESTONE_DESKTOP_RANGE = {
   earlier: 'ot_milestone_desktop_start',
@@ -95,20 +95,38 @@ const ALL_OT_SHIPPED_MILESTONE_DESKTOP_RANGE = {
   warning: 'Origin trial should start before feature is shipped.',
 };
 
-// const OT_SHIPPED_MILESTONE_WEBVIEW_RANGE = {
-//   earlier: 'ot_milestone_webview_start',
-//   later: 'shipped_webview_milestone',
-//   warning: 'Origin trial should start before feature is shipped.',
-// };
+const OT_ALL_SHIPPED_MILESTONE_WEBVIEW_RANGE = {
+  earlier: 'ot_milestone_webview_start',
+  allLater: 'shipped_webview_milestone',
+  warning: 'Origin trial should start before feature is shipped.',
+};
 
-// const OT_SHIPPED_MILESTONE_ANDROID_RANGE = {
-//   earlier: 'ot_milestone_android_start',
-//   later: 'shipped_android_milestone',
-//   warning: 'Origin trial should start before feature is shipped.',
-// };
+const ALL_OT_SHIPPED_MILESTONE_WEBVIEW_RANGE = {
+  allEarlier: 'ot_milestone_webview_start',
+  later: 'shipped_webview_milestone',
+  warning: 'Origin trial should start before feature is shipped.',
+};
 
-// const OT_SHIPPED_MILESTONE_IOS_RANGE = {
+const OT_ALL_SHIPPED_MILESTONE_ANDROID_RANGE = {
+  earlier: 'ot_milestone_android_start',
+  allLater: 'shipped_android_milestone',
+  warning: 'Origin trial should start before feature is shipped.',
+};
+
+const ALL_OT_SHIPPED_MILESTONE_ANDROID_RANGE = {
+  allEarlier: 'ot_milestone_android_start',
+  later: 'shipped_android_milestone',
+  warning: 'Origin trial should start before feature is shipped.',
+};
+
+// No ot_milestone_ios_start or _end, yet.
+// const OT_ALL_SHIPPED_MILESTONE_IOS_RANGE = {
 //   earlier: 'ot_milestone_ios_start',
+//   allLater: 'shipped_ios_milestone',
+//   warning: 'Origin trial should start before feature is shipped.',
+// };
+// const ALL_OT_SHIPPED_MILESTONE_IOS_RANGE = {
+//   allEarlier: 'ot_milestone_ios_start',
 //   later: 'shipped_ios_milestone',
 //   warning: 'Origin trial should start before feature is shipped.',
 // };
@@ -125,24 +143,41 @@ const ALL_DT_SHIPPED_MILESTONE_DESKTOP_RANGE = {
   error: 'Shipped milestone must be later than dev trial.',
 };
 
-// const DT_SHIPPED_MILESTONE_ANDROID_RANGE = {
-//   earlier: 'dt_milestone_android_start',
-//   later: 'shipped_android_milestone',
-//   error: 'Shipped milestone must be later than dev trial.',
-// };
+const DT_ALL_SHIPPED_MILESTONE_ANDROID_RANGE = {
+  earlier: 'dt_milestone_android_start',
+  allLater: 'shipped_android_milestone',
+  error: 'Shipped milestone must be later than dev trial.',
+};
 
-// const DT_SHIPPED_MILESTONE_IOS_RANGE = {
-//   earlier: 'dt_milestone_ios_start',
-//   later: 'shipped_ios_milestone',
-//   error: 'Shipped milestone must be later than dev trial.',
-// };
+const ALL_DT_SHIPPED_MILESTONE_ANDROID_RANGE = {
+  allEarlier: 'dt_milestone_android_start',
+  later: 'shipped_android_milestone',
+  error: 'Shipped milestone must be later than dev trial.',
+};
 
-// const DT_SHIPPED_MILESTONE_WEBVIEW_RANGE = {
+const DT_ALL_SHIPPED_MILESTONE_IOS_RANGE = {
+  earlier: 'dt_milestone_ios_start',
+  allLater: 'shipped_ios_milestone',
+  error: 'Shipped milestone must be later than dev trial.',
+};
+
+const ALL_DT_SHIPPED_MILESTONE_IOS_RANGE = {
+  allEarlier: 'dt_milestone_ios_start',
+  later: 'shipped_ios_milestone',
+  error: 'Shipped milestone must be later than dev trial.',
+};
+
+// No dt_milestone_webview_start, yet.
+// const DT_ALL_SHIPPED_MILESTONE_WEBVIEW_RANGE = {
 //   earlier: 'dt_milestone_webview_start',
+//   allLater: 'shipped_webview_milestone',
+//   error: 'Shipped webview milestone must be later than dev trial.',
+// };
+// const ALL_DT_SHIPPED_MILESTONE_WEBVIEW_RANGE = {
+//   allEarlier: 'dt_milestone_webview_start',
 //   later: 'shipped_webview_milestone',
 //   error: 'Shipped webview milestone must be later than dev trial.',
 // };
-
 
 const MULTI_URL_FIELD_ATTRS = {
   title: 'Enter one or more full URLs, one per line:\nhttps://...\nhttps://...',
@@ -192,7 +227,6 @@ export const ALL_FIELDS = {
     </ul>`,
     check: (_value, getFieldValue) =>
       checkFeatureNameAndType(getFieldValue),
-    dependents: ['feature_type', 'feature_type_radio_group'],
   },
 
   'summary': {
@@ -339,7 +373,6 @@ export const ALL_FIELDS = {
         cannot be changed. If this field needs to be modified, a new feature
         would need to be created.</p>`,
     check: (_value, getFieldValue) => checkFeatureNameAndType(getFieldValue),
-    dependents: ['name'],
   },
 
   'feature_type_radio_group': {
@@ -355,7 +388,6 @@ export const ALL_FIELDS = {
         cannot be changed. If this field needs to be modified, a new feature
         would need to be created.</p>`,
     check: (_value, getFieldValue) => checkFeatureNameAndType(getFieldValue),
-    dependents: ['name'],
   },
 
   'set_stage': {
@@ -1032,7 +1064,6 @@ export const ALL_FIELDS = {
         OT_MILESTONE_DESKTOP_RANGE,
         OT_ALL_SHIPPED_MILESTONE_DESKTOP_RANGE,
       ], getFieldValue),
-    dependents: ['ot_milestone_desktop_end', 'shipped_milestone'],
   },
 
   'ot_milestone_desktop_end': {
@@ -1045,7 +1076,6 @@ export const ALL_FIELDS = {
       trial of this feature.`,
     check: (_value, getFieldValue) =>
       checkMilestoneRanges([OT_MILESTONE_DESKTOP_RANGE], getFieldValue),
-    dependents: ['ot_milestone_desktop_start'],
   },
 
   'ot_milestone_android_start': {
@@ -1059,9 +1089,7 @@ export const ALL_FIELDS = {
     check: (_value, getFieldValue) =>
       checkMilestoneRanges([
         OT_MILESTONE_ANDROID_RANGE,
-        OT_SHIPPED_MILESTONE_ANDROID_RANGE], getFieldValue),
-    dependents: ['ot_milestone_android_end', 'shipped_android_milestone'],
-
+        OT_ALL_SHIPPED_MILESTONE_ANDROID_RANGE], getFieldValue),
   },
 
   'ot_milestone_android_end': {
@@ -1074,7 +1102,6 @@ export const ALL_FIELDS = {
       trial of this feature.`,
     check: (_value, getFieldValue) =>
       checkMilestoneRanges([OT_MILESTONE_ANDROID_RANGE], getFieldValue),
-    dependents: ['ot_milestone_android_start'],
   },
 
   'ot_milestone_webview_start': {
@@ -1088,8 +1115,7 @@ export const ALL_FIELDS = {
     check: (_value, getFieldValue) =>
       checkMilestoneRanges([
         OT_MILESTONE_WEBVIEW_RANGE,
-        OT_SHIPPED_MILESTONE_IOS_RANGE], getFieldValue),
-    dependents: ['ot_milestone_webview_end', 'shipped_ios_milestone'],
+        OT_ALL_SHIPPED_MILESTONE_WEBVIEW_RANGE], getFieldValue),
   },
 
   'ot_milestone_webview_end': {
@@ -1102,7 +1128,6 @@ export const ALL_FIELDS = {
       trial of this feature.`,
     check: (_value, getFieldValue) =>
       checkMilestoneRanges([OT_MILESTONE_WEBVIEW_RANGE], getFieldValue),
-    dependents: ['ot_milestone_ios_start'],
   },
 
   'experiment_risks': {
@@ -1343,7 +1368,6 @@ export const ALL_FIELDS = {
         OT_MILESTONE_DESKTOP_RANGE,
         OT_ALL_SHIPPED_MILESTONE_DESKTOP_RANGE,
       ], getFieldValue),
-    dependents: ['ot_milestone_desktop_end', 'shipped_milestone'],
   },
 
   'ot_creation__milestone_desktop_last': {
@@ -1357,7 +1381,6 @@ export const ALL_FIELDS = {
       trial of this feature.`,
     check: (_value, getFieldValue) =>
       checkMilestoneRanges([OT_MILESTONE_DESKTOP_RANGE], getFieldValue),
-    dependents: ['ot_milestone_desktop_start'],
   },
 
   'anticipated_spec_changes': {
@@ -1520,10 +1543,6 @@ export const ALL_FIELDS = {
       checkMilestoneRanges([
         ALL_OT_SHIPPED_MILESTONE_DESKTOP_RANGE,
         ALL_DT_SHIPPED_MILESTONE_DESKTOP_RANGE], getFieldValue),
-    dependents: [
-      'dt_milestone_desktop_start', 'ot_milestone_desktop_start', 'shipped_milestone'],
-    dependents: [
-      'dt_milestone_desktop_start', 'ot_milestone_desktop_start', 'shipped_milestone'],
   },
 
   'shipped_android_milestone': {
@@ -1534,10 +1553,8 @@ export const ALL_FIELDS = {
     help_text: SHIPPED_HELP_TXT,
     check: (_value, getFieldValue) =>
       checkMilestoneRanges([
-        OT_SHIPPED_MILESTONE_ANDROID_RANGE,
-        DT_SHIPPED_MILESTONE_ANDROID_RANGE], getFieldValue),
-    dependents: [
-      'dt_milestone_android_start', 'ot_milestone_android_start', 'shipped_android_milestone'],
+        ALL_OT_SHIPPED_MILESTONE_ANDROID_RANGE,
+        ALL_DT_SHIPPED_MILESTONE_ANDROID_RANGE], getFieldValue),
   },
 
   'shipped_ios_milestone': {
@@ -1548,12 +1565,8 @@ export const ALL_FIELDS = {
     help_text: SHIPPED_HELP_TXT,
     check: (_value, getFieldValue) =>
       checkMilestoneRanges([
-        OT_SHIPPED_MILESTONE_IOS_RANGE,
-        DT_SHIPPED_MILESTONE_IOS_RANGE], getFieldValue),
-    dependents: [
-      'dt_milestone_ios_start', 'ot_milestone_ios_start', 'shipped_ios_milestone'],
-    dependents: [
-      'dt_milestone_ios_start', 'ot_milestone_ios_start', 'shipped_ios_milestone'],
+        ALL_OT_SHIPPED_MILESTONE_IOS_RANGE,
+        ALL_DT_SHIPPED_MILESTONE_IOS_RANGE], getFieldValue),
   },
 
   'shipped_webview_milestone': {
@@ -1564,12 +1577,7 @@ export const ALL_FIELDS = {
     help_text: SHIPPED_WEBVIEW_HELP_TXT,
     check: (_value, getFieldValue) =>
       checkMilestoneRanges([
-        OT_SHIPPED_MILESTONE_WEBVIEW_RANGE,
-        DT_SHIPPED_MILESTONE_WEBVIEW_RANGE], getFieldValue),
-    dependents: [
-      'dt_milestone_webview_start', 'ot_milestone_webview_start', 'shipped_webview_milestone'],
-    dependents: [
-      'dt_milestone_webview_start', 'ot_milestone_webview_start', 'shipped_webview_milestone'],
+        ALL_OT_SHIPPED_MILESTONE_WEBVIEW_RANGE], getFieldValue),
   },
 
   'requires_embedder_support': {
@@ -1617,7 +1625,6 @@ export const ALL_FIELDS = {
     check: (_value, getFieldValue) =>
       checkMilestoneRanges([
         DT_ALL_SHIPPED_MILESTONE_DESKTOP_RANGE], getFieldValue),
-    dependents: ['dt_milestone_desktop_start', 'shipped_milestone'],
   },
 
   'dt_milestone_android_start': {
@@ -1631,8 +1638,7 @@ export const ALL_FIELDS = {
       When flags are enabled by default in preparation for
       shipping or removal, please use the fields in the ship stage.`,
     check: (_value, getFieldValue) =>
-      checkMilestoneRanges([DT_SHIPPED_MILESTONE_ANDROID_RANGE], getFieldValue),
-    dependents: ['dt_milestone_android_start', 'shipped_android_milestone'],
+      checkMilestoneRanges([DT_ALL_SHIPPED_MILESTONE_ANDROID_RANGE], getFieldValue),
   },
 
   'dt_milestone_ios_start': {
@@ -1646,8 +1652,7 @@ export const ALL_FIELDS = {
       When flags are enabled by default in preparation for
       shipping or removal, please use the fields in the ship stage.`,
     check: (_value, getFieldValue) =>
-      checkMilestoneRanges([DT_SHIPPED_MILESTONE_IOS_RANGE], getFieldValue),
-    dependents: ['dt_milestone_ios_start', 'shipped_ios_milestone'],
+      checkMilestoneRanges([DT_ALL_SHIPPED_MILESTONE_IOS_RANGE], getFieldValue),
   },
 
   'flag_name': {
@@ -1868,7 +1873,7 @@ export function makeDisplaySpecs(fieldNames) {
 // Find the minimum shipped milestone.
 function findMinMilestone(fieldName, stageTypes, getFieldValue) {
   let minMilestone = Infinity;
-  // Iterate through all stages that are shipping stages.
+  // Iterate through all stages that are in stageTypes.
   const feature = getFieldValue.feature;
   for (const stage of feature.stages) {
     if (stageTypes.has(stage.stage_type)) {
@@ -1883,7 +1888,7 @@ function findMinMilestone(fieldName, stageTypes, getFieldValue) {
 // Find the minimum shipped milestone.
 function findMaxMilestone(fieldName, stageTypes, getFieldValue) {
   let maxMilestone = -Infinity;
-  // Iterate through all stages that are OT or DT stages.
+  // Iterate through all stages that are in stageTypes.
   const feature = getFieldValue.feature;
   for (const stage of feature.stages) {
     if (stageTypes.has(stage.stage_type)) {
@@ -1898,7 +1903,7 @@ function findMaxMilestone(fieldName, stageTypes, getFieldValue) {
 // Check that the origin trial start milestone is before all shipped milestones.
 function checkEarlierBeforeAllLaterMilestones(
   fieldPair, getFieldValue) {
-  const { earlier, allLater, warning } = fieldPair;
+  const {earlier, allLater, warning} = fieldPair;
   const stageTypes =
     // Only shipping, for now.
     SHIPPED_MILESTONE_FIELDS.has(allLater) ? STAGE_TYPES_SHIPPING : null;

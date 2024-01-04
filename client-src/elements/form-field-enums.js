@@ -224,7 +224,7 @@ export const OT_MILESTONE_START_FIELDS = new Set([
   'ot_milestone_desktop_start',
   'ot_milestone_android_start',
   'ot_milestone_webview_start',
-  'ot_milestone_ios_start',
+  // 'ot_milestone_ios_start',
 ]);
 
 export const SHIPPED_MILESTONE_FIELDS = new Set([
