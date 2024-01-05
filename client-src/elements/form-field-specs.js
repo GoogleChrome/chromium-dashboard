@@ -133,38 +133,38 @@ const ALL_OT_SHIPPED_MILESTONE_ANDROID_RANGE = {
 
 const DT_ALL_SHIPPED_MILESTONE_DESKTOP_RANGE = {
   earlier: 'dt_milestone_desktop_start',
-  all_later: 'shipped_milestone',
-  error: 'Shipped milestone must be later than dev trial.',
+  allLater: 'shipped_milestone',
+  warning: 'Shipped milestone must be later than dev trial.',
 };
 
 const ALL_DT_SHIPPED_MILESTONE_DESKTOP_RANGE = {
-  all_earlier: 'dt_milestone_desktop_start',
+  allEarlier: 'dt_milestone_desktop_start',
   later: 'shipped_milestone',
-  error: 'Shipped milestone must be later than dev trial.',
+  warning: 'Shipped milestone must be later than dev trial.',
 };
 
 const DT_ALL_SHIPPED_MILESTONE_ANDROID_RANGE = {
   earlier: 'dt_milestone_android_start',
   allLater: 'shipped_android_milestone',
-  error: 'Shipped milestone must be later than dev trial.',
+  warning: 'Shipped milestone must be later than dev trial.',
 };
 
 const ALL_DT_SHIPPED_MILESTONE_ANDROID_RANGE = {
   allEarlier: 'dt_milestone_android_start',
   later: 'shipped_android_milestone',
-  error: 'Shipped milestone must be later than dev trial.',
+  warning: 'Shipped milestone must be later than dev trial.',
 };
 
 const DT_ALL_SHIPPED_MILESTONE_IOS_RANGE = {
   earlier: 'dt_milestone_ios_start',
   allLater: 'shipped_ios_milestone',
-  error: 'Shipped milestone must be later than dev trial.',
+  warning: 'Shipped milestone must be later than dev trial.',
 };
 
 const ALL_DT_SHIPPED_MILESTONE_IOS_RANGE = {
   allEarlier: 'dt_milestone_ios_start',
   later: 'shipped_ios_milestone',
-  error: 'Shipped milestone must be later than dev trial.',
+  warning: 'Shipped milestone must be later than dev trial.',
 };
 
 // No dt_milestone_webview_start, yet.
@@ -1565,7 +1565,6 @@ export const ALL_FIELDS = {
     help_text: SHIPPED_HELP_TXT,
     check: (_value, getFieldValue) =>
       checkMilestoneRanges([
-        ALL_OT_SHIPPED_MILESTONE_IOS_RANGE,
         ALL_DT_SHIPPED_MILESTONE_IOS_RANGE], getFieldValue),
   },
 
@@ -1878,7 +1877,9 @@ function findMinMilestone(fieldName, stageTypes, getFieldValue) {
   for (const stage of feature.stages) {
     if (stageTypes.has(stage.stage_type)) {
       const milestone = getFieldValue(fieldName, stage);
-      minMilestone = Math.min(minMilestone, milestone);
+      if (milestone != null) {
+        minMilestone = Math.min(minMilestone, milestone);
+      }
     }
   }
   if (minMilestone === Infinity) return undefined;
@@ -1893,7 +1894,9 @@ function findMaxMilestone(fieldName, stageTypes, getFieldValue) {
   for (const stage of feature.stages) {
     if (stageTypes.has(stage.stage_type)) {
       const milestone = getFieldValue(fieldName, stage);
-      maxMilestone = Math.max(maxMilestone, milestone);
+      if (milestone != null) {
+        maxMilestone = Math.max(maxMilestone, milestone);
+      }
     }
   }
   if (maxMilestone === -Infinity) return undefined;
@@ -1907,11 +1910,14 @@ function checkEarlierBeforeAllLaterMilestones(
   const stageTypes =
     // Only shipping, for now.
     SHIPPED_MILESTONE_FIELDS.has(allLater) ? STAGE_TYPES_SHIPPING : null;
-  const earlierValue = getFieldValue(earlier);
+  const earlierValue = getFieldValue(earlier, 'current stage');
   const laterValue = findMinMilestone(allLater, stageTypes, getFieldValue);
-  if (earlierValue >= laterValue) {
-    return {
-      warning: warning,
+  if (earlierValue != null && laterValue != null &&
+    (Number(earlierValue) >= laterValue)) {
+    return warning ? {
+      warning,
+    } : {
+      error: error || 'Start milestone must be before end milestone',
     };
   }
 }
@@ -1924,10 +1930,13 @@ function checkAllEarlierBeforeLaterMilestone(fieldPair, getFieldValue) {
     OT_MILESTONE_START_FIELDS.has(allEarlier) ? STAGE_TYPES_ORIGIN_TRIAL :
       DT_MILESTONE_FIELDS.has(allEarlier) ? STAGE_TYPES_DEV_TRIAL : null;
   const earlierValue = findMaxMilestone(allEarlier, stageTypes, getFieldValue);
-  const laterValue = getFieldValue(later);
-  if (earlierValue >= laterValue) {
-    return {
-      warning: warning,
+  const laterValue = getFieldValue(later, 'current stage');
+  if (earlierValue != null && laterValue != null &&
+    (earlierValue >= Number(laterValue))) {
+    return warning ? {
+      warning,
+    } : {
+      error: error || 'Start milestone must be before end milestone',
     };
   }
 }

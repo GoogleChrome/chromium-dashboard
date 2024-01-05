@@ -157,7 +157,7 @@ export function isDefinedValue(value) {
 }
 
 export function hasFieldValue(fieldName, feStage, feature) {
-  const value = getFieldValue(fieldName, feStage, feature);
+  const value = getFieldValueFromFeature(fieldName, feStage, feature);
   return isDefinedValue(value);
 }
 
@@ -215,7 +215,7 @@ export function getFieldValueFromFeature(fieldName, feStage, feature) {
   };
   let value;
   if (fieldNameMapping[fieldName]) {
-    const propertyValue = feature;
+    let propertyValue = feature;
     for (const step of fieldNameMapping[fieldName].split('.')) {
       if (propertyValue) {
         propertyValue = propertyValue[step];

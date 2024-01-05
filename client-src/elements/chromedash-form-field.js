@@ -52,10 +52,12 @@ export class ChromedashFormField extends LitElement {
     super.connectedCallback();
     this.fieldProps = ALL_FIELDS[this.name] || {};
 
+    // Register this form field with the page.
     const app = document.querySelector('chromedash-app');
     if (app?.pageComponent) {
-      const key = `${this.name}_${this.stageId || 'global'}`;
-      app.pageComponent.allFormFieldComponents[key] = this;
+      // const key = `${this.name}_${this.stageId || 'global'}`;
+      // app.pageComponent.allFormFieldComponentsMap[key] = this;
+      app.pageComponent.allFormFieldComponentsList.push(this);
     }
 
     if (this.name === 'blink_components') {
@@ -71,13 +73,14 @@ export class ChromedashFormField extends LitElement {
   }
 
   firstUpdated() {
+    // We only want to do the following one time.
     this.setupSemanticCheck();
 
     // We need to wait until the entire page is rendered, so later dependents
     // are available to do the semantic check, hence firstUpdated is too soon.
     // Do first semantic check after the document is ready.
     document.addEventListener('DOMContentLoaded', () => (setTimeout(() => {
-      this.setupSemanticCheck();
+      this.doSemanticCheck();
     })));
   }
 
@@ -124,8 +127,12 @@ export class ChromedashFormField extends LitElement {
     };
     this.dispatchEvent(new CustomEvent('form-field-update', eventOptions));
 
-    // Run semantic check on this field.  Must be after above dispatch.
-    this.doSemanticCheck();
+    // Run semantic checks on entire page.  Must be after above dispatch.
+    const app = document.querySelector('chromedash-app');
+    if (app?.pageComponent) {
+      app.pageComponent.allFormFieldComponentsList.forEach((formFieldComponent) =>
+        formFieldComponent.doSemanticCheck());
+    }
   }
 
   setupSemanticCheck() {
@@ -153,16 +160,20 @@ export class ChromedashFormField extends LitElement {
     // TODO: handle other form field types.
   }
 
-  async doSemanticCheck() {
-    const checkFunctionOrArray = this.fieldProps.check;
+  doSemanticCheck() {
+    const checkFunctionOrArray = this.fieldProps.check || [];
     const checkFunctions =
       (typeof checkFunctionOrArray === 'function') ?
         [checkFunctionOrArray] : checkFunctionOrArray;
 
-    checkFunctions.find(async (checkFunction) => {
+    const checkFunctionWrapper = async (checkFunction) => {
       const fieldValue = this.getValue();
-      const getFieldValue = (name, stageOrId) =>
-        getFieldValueWithStage(name,
+      if (fieldValue == null) return false; // Assume there is nothing to check.
+      // Define function to get any other field value relative to this field.
+      // stageOrId is either a stage object or an id, or the special value
+      // 'current stage' which means use the same stage as for this field.
+      const getFieldValue = (fieldName, stageOrId) =>
+        getFieldValueWithStage(fieldName,
           (stageOrId === 'current stage' ? this.stageId : stageOrId),
           this.fieldValues);
       // Attach the feature to the getFieldValue function, in case it is needed.
@@ -170,6 +181,7 @@ export class ChromedashFormField extends LitElement {
       const checkResult = await checkFunction(fieldValue, getFieldValue);
       if (checkResult == null) {
         this.checkMessage = '';
+        return false;
       } else {
         this.checkMessage = html`
           <span class="check-${checkResult.message ? 'message' :
@@ -183,6 +195,12 @@ export class ChromedashFormField extends LitElement {
           }
           </span>`;
         // Return from doSemanticCheck with the first non-empty message.
+        return true;
+      }
+    };
+    // Run each check function, and return the first non-empty message.
+    checkFunctions.find(async (checkFunction) => {
+      if (await checkFunctionWrapper(checkFunction)) {
         return true;
       }
     });
@@ -368,8 +386,24 @@ export class ChromedashFormField extends LitElement {
   }
 }
 
+
+// getDependentFieldObj(fieldName, stageOrId, formFieldValues) {
+//   // Iterate through formFieldValues looking for element with name==fieldName
+//   // and stage == stageId, if there is a non-null stageId
+//   let stageId;
+//   if (typeof stageOrId === 'number') {
+//     stageId = stageOrId;
+//   }
+//   for (const obj of formFieldValues) {
+//     if (obj.name === fieldName && (stageId == null || obj.stageId == stageId)) {
+//       return obj;
+//     }
+//   }
+//   return undefined;
+// }
+
 /**
- * Gets the value of a field from a feature entry form.
+ * Gets the value of a field from a feature entry form, or from the feature.
  * Looks up the field name in the provided form field values, using the stageOrId
  * if the field is stage-specific, and returns the corresponding value.
  * Returns null if not defined or not found.
@@ -380,70 +414,33 @@ export class ChromedashFormField extends LitElement {
  * @return {*}
  */
 function getFieldValueWithStage(fieldName, stageOrId, formFieldValues) {
-  // Define a unique key from fieldName and stageId, or 'global' if none.
-  const key = `${fieldName}_${stageId || 'global'}`;
-
-  // Add a cache to lookup formFieldValues objects by key, if not already done.
-  if (!formFieldValues.byKey) {
-    formFieldValues.byKey = {};
-  }
-  // Look up key in cache.
-  if (key in formFieldValues.byKey) {
-    const obj = formFieldValues.byKey[key];
-    return obj ? obj.value : null;
-  }
-
-  // Caches the field value if it's not already set.
-  // @param {string} fieldName - The name of the field.
-  // @param {any} obj - The object containing name and value to cache.
-  // @return {any} The cached value.
-  const cacheFieldValue = (obj) => {
-    formFieldValues.byKey[key] = obj;
-    return obj.value;
-  };
-
   // Iterate through formFieldValues looking for element with name==fieldName
   // and stage == stageId, if there is a non-null stageId
   let stageId;
   if (typeof stageOrId === 'number') {
     stageId = stageOrId;
+  } else if (typeof stageOrId === 'object') {
+    stageId = stageOrId.id;
   }
+
   for (const obj of formFieldValues) {
     if (obj.name === fieldName && (stageId == null || obj.stageId == stageId)) {
-      return cacheFieldValue(obj);
+      return obj.value;
     }
   }
 
   // The remainder looks for the field in the feature.
   const feature = formFieldValues.feature;
 
-  // Get the stage object for the field, using the same stageId as for the
-  // original form field.
+  // Get the stage object for the field.
   const feStage = (typeof stageOrId === 'object') ? stageOrId :
     (stageId != null ?
       feature.stages.find((s) => s.id == stageId) :
       feature.stages[0]);
 
-  // // Lookup fieldName by following the stage specific path starting from feature.
-
-  value = getFieldValueFromFeature(fieldName, feStage, feature);
-
-  // Store result in cache and return it.
-  return cacheFieldValue(value);
-  // const value = feStage == null ? undefined : getStageValue(feStage, fieldName);
-  // return cacheFieldValue(fieldName, {
-  //   name: fieldName,
-  //   value: value,
-  // });
-
-  // // fieldName is not in formFieldValues, so we must look in the feature.
-  // const feature = formFieldValues.feature;
-  // if (!feature) return undefined;
-  // if (fieldName in feature) {
-  //   return cacheFieldValue(fieldName, {
-  //     name: fieldName, value: feature[fieldName],
-  //   });
-  // }
+  // Lookup fieldName by following the stage specific path starting from feature.
+  const value = getFieldValueFromFeature(fieldName, feStage, feature);
+  return value;
 }
 
 customElements.define('chromedash-form-field', ChromedashFormField);
