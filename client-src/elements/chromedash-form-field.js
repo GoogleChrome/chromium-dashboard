@@ -55,8 +55,6 @@ export class ChromedashFormField extends LitElement {
     // Register this form field with the page.
     const app = document.querySelector('chromedash-app');
     if (app?.pageComponent) {
-      // const key = `${this.name}_${this.stageId || 'global'}`;
-      // app.pageComponent.allFormFieldComponentsMap[key] = this;
       app.pageComponent.allFormFieldComponentsList.push(this);
     }
 
