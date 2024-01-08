@@ -160,27 +160,25 @@ export class ChromedashFormField extends LitElement {
     // TODO: handle other form field types.
   }
 
-  doSemanticCheck() {
-    const checkFunctionOrArray = this.fieldProps.check || [];
-    const checkFunctions =
-      (typeof checkFunctionOrArray === 'function') ?
-        [checkFunctionOrArray] : checkFunctionOrArray;
+  async doSemanticCheck() {
+    // Define function to get any other field value relative to this field.
+    // stageOrId is either a stage object or an id, or the special value
+    // 'current stage' which means use the same stage as for this field.
+    const getFieldValue = (fieldName, stageOrId) =>
+      getFieldValueWithStage(fieldName,
+        (stageOrId === 'current stage' ? this.stageId : stageOrId),
+        this.fieldValues);
+      // Attach the feature to the getFieldValue function, in case it is needed.
+    getFieldValue.feature = this.fieldValues.feature;
 
     const checkFunctionWrapper = async (checkFunction) => {
       const fieldValue = this.getValue();
       if (fieldValue == null) return false; // Assume there is nothing to check.
-      // Define function to get any other field value relative to this field.
-      // stageOrId is either a stage object or an id, or the special value
-      // 'current stage' which means use the same stage as for this field.
-      const getFieldValue = (fieldName, stageOrId) =>
-        getFieldValueWithStage(fieldName,
-          (stageOrId === 'current stage' ? this.stageId : stageOrId),
-          this.fieldValues);
-      // Attach the feature to the getFieldValue function, in case it is needed.
-      getFieldValue.feature = this.fieldValues.feature;
+
+      // Call the checkFunction and await result, in case it is async.
       const checkResult = await checkFunction(fieldValue, getFieldValue);
       if (checkResult == null) {
-        this.checkMessage = '';
+        // Don't clear this.checkMessage here.
         return false;
       } else {
         this.checkMessage = html`
@@ -198,12 +196,24 @@ export class ChromedashFormField extends LitElement {
         return true;
       }
     };
-    // Run each check function, and return the first non-empty message.
-    checkFunctions.find(async (checkFunction) => {
+
+    // Get the check function(s) to run.
+    const checkFunctionOrArray = this.fieldProps.check || [];
+    const checkFunctions =
+      (typeof checkFunctionOrArray === 'function') ?
+        [checkFunctionOrArray] : checkFunctionOrArray;
+    // If there are any check functions, then
+    // first clear this.checkMessage before running any checks.
+    if (checkFunctions.length > 0) {
+      this.checkMessage = '';
+    }
+
+    // Run each check function, and return after the first non-empty message.
+    for (const checkFunction of checkFunctions) {
       if (await checkFunctionWrapper(checkFunction)) {
-        return true;
+        return;
       }
-    });
+    };
   }
 
   renderWidget() {
