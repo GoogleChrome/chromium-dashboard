@@ -35,7 +35,7 @@ class LoginAPI(basehandlers.APIHandler):
     message = "Unable to Authenticate. Please sign in again."
 
     try:
-      idinfo = id_token.verify_oauth2_token(
+      idinfo = google.oauth2.id_token.verify_oauth2_token(
           token, requests.Request(),
           settings.GOOGLE_SIGN_IN_CLIENT_ID)
       users.add_signed_user_info_to_session(idinfo['email'])
