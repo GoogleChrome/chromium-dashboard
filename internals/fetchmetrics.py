@@ -21,7 +21,7 @@ from xml.dom import minidom
 import requests
 
 from google.auth.transport import requests as reqs
-from google.oauth2 import id_token
+import google.oauth2.id_token
 
 from framework import basehandlers
 from framework import rediscache
