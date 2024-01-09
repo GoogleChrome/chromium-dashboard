@@ -44,7 +44,7 @@ export class ChromedashFormField extends LitElement {
   getValue() {
     // value can be a js or python boolean value converted to a string
     // or the initial value specified in form-field-spec
-    return !this.value && this.fieldProps.initial ?
+    return this.value == null && this.fieldProps.initial ?
       this.fieldProps.initial : this.value;
   }
 
@@ -52,7 +52,7 @@ export class ChromedashFormField extends LitElement {
     super.connectedCallback();
     this.fieldProps = ALL_FIELDS[this.name] || {};
 
-    // Register this form field with the page.
+    // Register this form field component with the page component.
     const app = document.querySelector('chromedash-app');
     if (app?.pageComponent) {
       app.pageComponent.allFormFieldComponentsList.push(this);
@@ -168,9 +168,9 @@ export class ChromedashFormField extends LitElement {
     const getFieldValue = (fieldName, stageOrId) =>
       getFieldValueWithStage(fieldName,
         (stageOrId === 'current stage' ? this.stageId : stageOrId),
-        this.fieldValues);
+        this.fieldValues || []);
       // Attach the feature to the getFieldValue function, in case it is needed.
-    getFieldValue.feature = this.fieldValues.feature;
+    getFieldValue.feature = this.fieldValues?.feature;
 
     const checkFunctionWrapper = async (checkFunction) => {
       const fieldValue = this.getValue();
@@ -203,8 +203,8 @@ export class ChromedashFormField extends LitElement {
     const checkFunctions =
       (typeof checkFunctionOrArray === 'function') ?
         [checkFunctionOrArray] : checkFunctionOrArray;
-    // If there are any check functions, then
-    // first clear this.checkMessage before running any checks.
+    // If there are any check functions,
+    // then first clear this.checkMessage before running the checks.
     if (checkFunctions.length > 0) {
       this.checkMessage = '';
     }
@@ -398,21 +398,6 @@ export class ChromedashFormField extends LitElement {
 }
 
 
-// getDependentFieldObj(fieldName, stageOrId, formFieldValues) {
-//   // Iterate through formFieldValues looking for element with name==fieldName
-//   // and stage == stageId, if there is a non-null stageId
-//   let stageId;
-//   if (typeof stageOrId === 'number') {
-//     stageId = stageOrId;
-//   }
-//   for (const obj of formFieldValues) {
-//     if (obj.name === fieldName && (stageId == null || obj.stageId == stageId)) {
-//       return obj;
-//     }
-//   }
-//   return undefined;
-// }
-
 /**
  * Gets the value of a field from a feature entry form, or from the feature.
  * Looks up the field name in the provided form field values, using the stageOrId
@@ -442,6 +427,7 @@ function getFieldValueWithStage(fieldName, stageOrId, formFieldValues) {
 
   // The remainder looks for the field in the feature.
   const feature = formFieldValues.feature;
+  if (feature == null) { return null; }
 
   // Get the stage object for the field.
   const feStage = (typeof stageOrId === 'object') ? stageOrId :
