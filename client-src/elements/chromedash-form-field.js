@@ -131,7 +131,7 @@ export class ChromedashFormField extends LitElement {
       app.pageComponent.allFormFieldComponentsList.forEach((formFieldComponent) =>
         formFieldComponent.doSemanticCheck());
     } else {
-      // Do the semantic check for unit testing.
+      // Do the semantic check for unit testing.  Only works for isolated field.
       this.doSemanticCheck();
     }
   }
