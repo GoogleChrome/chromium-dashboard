@@ -72,6 +72,29 @@ test('enter feature name', async ({page}) => {
 });
 
 
+test('test semantic checks', async ({ page }) => {
+  await gotoNewFeaturePage(page);
+
+  // Enter feature name
+  const featureNameInput = page.locator('input[name="name"]');
+  await featureNameInput.fill('Test deprecated feature name');
+  await delay(500);
+
+  // Enter summary description
+  const summaryInput = page.locator('textarea[name="summary"]');
+  await summaryInput.fill('Test summary description');
+  await summaryInput.blur(); // Must blur to trigger change event.
+
+  await delay(500);
+
+  // Screenshot of this warning about summary length
+  await expect(page).toHaveScreenshot('warning-feature-name-and-summary-length.png', {
+    mask: [page.locator('section[id="history"]')]
+  });
+  await delay(500);
+});
+
+
 test('enter blink component', async ({ page }) => {
   await gotoNewFeaturePage(page);
 
