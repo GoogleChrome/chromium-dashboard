@@ -46,7 +46,7 @@ def needs_default_first_notification_milestone(
       _str_to_datetime(channel_details[milestone]['stable_date']) > datetime.now())
 
   # We are creating a new feature
-  if existing_feature == None:
+  if existing_feature is None:
     # All enterprise features need this
     if new_fields['feature_type'] == FEATURE_TYPE_ENTERPRISE_ID:
       return not has_valid_milestone_in_new_fields
