@@ -134,11 +134,9 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     # If no enterprise notification milestone was set, set one since it will be shown in the next
     # release notes by default. This is true for breaking changes and enterprise features only.
     if ('first_enterprise_notification_milestone' in body):
-      fields_dict['first_enterprise_notification_milestone'] = \
-        body['first_enterprise_notification_milestone']
+      fields_dict['first_enterprise_notification_milestone'] = body['first_enterprise_notification_milestone']
     elif needs_default_first_notification_milestone(new_fields=body):
-      fields_dict['first_enterprise_notification_milestone'] = \
-        get_default_first_notice_milestone_for_feature()
+      fields_dict['first_enterprise_notification_milestone'] = get_default_first_notice_milestone_for_feature()
 
     # Try to create the feature using the provided data.
     try:
