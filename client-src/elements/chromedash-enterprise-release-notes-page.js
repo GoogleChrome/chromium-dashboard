@@ -366,7 +366,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       ${features.map(f => html`
       <section class="feature">
         <strong>${f.name}</strong>
-        <p class="toremove">< To remove - <a target="_blank" href="/feature/${f.id}">Feature details</a> - Owners: ${f.browsers.chrome.owners.join(', ')} - Editors: ${(f.editors || []).join(', ')}  - Last Updated: ${f.updated.when} ></p>
+        <p class="toremove">< To remove - <a target="_blank" href="/feature/${f.id}">Feature details</a> - Owners: ${f.browsers.chrome.owners.join(', ')} - Editors: ${(f.editors || []).join(', ')} - First Notice: ${f.first_enterprise_notification_milestone} - Last Updated: ${f.updated.when} ></p>
         <p class="summary preformatted">${f.summary}</p>
         <ul>
         ${f.stages.map(s => html`

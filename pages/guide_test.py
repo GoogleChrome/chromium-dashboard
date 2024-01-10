@@ -14,6 +14,7 @@
 
 import testing_config  # Must be imported before the module under test.
 
+from datetime import datetime
 import flask
 from unittest import mock
 import werkzeug
@@ -26,6 +27,7 @@ from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate
 from pages import guide
 
+DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
 
 test_app = flask.Flask(__name__)
 
@@ -38,6 +40,7 @@ class TestWithFeature(testing_config.CustomTestCase):
   def setUp(self):
     self.request_path = self.REQUEST_PATH_FORMAT
     self.handler = self.HANDLER_CLASS()
+    self.now = datetime.now()
 
   def tearDown(self):
     rediscache.flushall()
@@ -104,6 +107,249 @@ class FeatureCreateTest(testing_config.CustomTestCase):
 
     # Ensure notifications are sent.
     mock_notify.assert_called_once()
+
+  @mock.patch('api.channels_api.construct_chrome_channels_details')
+  def test_post__breaking_change_missing_first_notice(self, mock_channel_details):
+    """Create a feature, first_enterprise_notification_milestone not added."""
+    stable_date = self.now.replace(year=self.now.year + 1, day=1).strftime(DATE_FORMAT)
+    mock_channel_details.return_value = {'beta': { 'version': 120, 'stable_date': stable_date } }
+
+    testing_config.sign_in('user1@google.com', 1234567890)
+    with test_app.test_request_context(
+        '/guide/enterprise/new', data={
+            'category': '1',
+            'name': 'Feature name',
+            'summary': 'Feature summary',
+            'feature_type': '1',
+            'breaking_change': 'on'
+        },
+        method='POST'):
+      actual_response = self.handler.process_post_data()
+
+    self.assertEqual('302 FOUND', actual_response.status)
+    location = actual_response.headers['location']
+    self.assertTrue(location.startswith('/feature/'))
+    new_feature_id = int(location.split('/')[-1])
+
+    # Ensure FeatureEntry entity was created.
+    feature_entry = FeatureEntry.get_by_id(new_feature_id)
+    self.assertEqual(1, feature_entry.category)
+    self.assertEqual(1, feature_entry.feature_type)
+    self.assertEqual('Feature name', feature_entry.name)
+    self.assertEqual('Feature summary', feature_entry.summary)
+    self.assertEqual('user1@google.com', feature_entry.creator_email)
+    self.assertEqual(120, feature_entry.first_enterprise_notification_milestone)
+
+
+  @mock.patch('api.channels_api.construct_specified_milestones_details')
+  def test_post__breaking_change_with_first_notice(self, mock_specified_milestones):
+    """Create a feature, first_enterprise_notification_milestone set to provided value."""
+    mock_specified_milestones.return_value =  {
+        99: {
+          'version': 99,
+          'stable_date': self.now.replace(year=self.now.year - 1, day=1).strftime(DATE_FORMAT)
+        },
+        100: {
+          'version': 100,
+          'stable_date': self.now.replace(year=self.now.year + 1, day=1).strftime(DATE_FORMAT)
+        },
+    }
+
+    testing_config.sign_in('user1@google.com', 1234567890)
+    with test_app.test_request_context(
+        '/guide/enterprise/new', data={
+            'category': '1',
+            'name': 'Feature name',
+            'summary': 'Feature summary',
+            'feature_type': '1',
+            'breaking_change': 'on',
+            'first_enterprise_notification_milestone': '100'
+        }, method='POST'):
+      actual_response = self.handler.process_post_data()
+
+    self.assertEqual('302 FOUND', actual_response.status)
+    location = actual_response.headers['location']    
+    self.assertTrue(location.startswith('/feature/'))
+    new_feature_id = int(location.split('/')[-1])
+
+    # Ensure FeatureEntry entity was created.
+    feature_entry = FeatureEntry.get_by_id(new_feature_id)
+    self.assertEqual(1, feature_entry.category)
+    self.assertEqual(1, feature_entry.feature_type)
+    self.assertEqual('Feature name', feature_entry.name)
+    self.assertEqual('Feature summary', feature_entry.summary)
+    self.assertEqual('user1@google.com', feature_entry.creator_email)
+    self.assertEqual(100, feature_entry.first_enterprise_notification_milestone)
+
+
+  @mock.patch('api.channels_api.construct_chrome_channels_details')
+  @mock.patch('api.channels_api.construct_specified_milestones_details')
+  def test_post__breaking_change_with_old_first_notice(self, mock_specified_milestones, mock_channel_details):
+    """Create a feature, first_enterprise_notification_milestone set to default newer value."""
+    now = self.now
+    mock_specified_milestones.return_value =  {
+        99: {
+          'version': 99, 
+          'stable_date': now.replace(year=now.year - 1, day=1).strftime(DATE_FORMAT)
+        },
+        100: {
+          'version': 100,
+          'stable_date': now.replace(year=now.year + 1, day=1).strftime(DATE_FORMAT)
+        },
+    }
+    mock_channel_details.return_value = {
+      'beta': {
+        'version': 101,
+        'stable_date': now.replace(year=now.year + 1, day=2).strftime(DATE_FORMAT)
+      }
+    }
+
+    testing_config.sign_in('user1@google.com', 1234567890)
+    with test_app.test_request_context(
+        '/guide/enterprise/new', data={
+            'category': '1',
+            'name': 'Feature name',
+            'summary': 'Feature summary',
+            'feature_type': '1',
+            'breaking_change': 'on',
+            'first_enterprise_notification_milestone': '99'
+        }, method='POST'):
+      actual_response = self.handler.process_post_data()
+
+    self.assertEqual('302 FOUND', actual_response.status)
+    location = actual_response.headers['location']
+    new_feature_id = int(location.split('/')[-1])
+
+    # Ensure FeatureEntry entity was created.
+    feature_entry = FeatureEntry.get_by_id(new_feature_id)
+    self.assertEqual(1, feature_entry.category)
+    self.assertEqual(1, feature_entry.feature_type)
+    self.assertEqual('Feature name', feature_entry.name)
+    self.assertEqual('Feature summary', feature_entry.summary)
+    self.assertEqual('user1@google.com', feature_entry.creator_email)
+    self.assertEqual(101, feature_entry.first_enterprise_notification_milestone)
+
+
+  @mock.patch('api.channels_api.construct_chrome_channels_details')
+  def test_post__enterprise_missing_first_notice(self, mock_channel_details):
+    """Create a feature, first_enterprise_notification_milestone set to default value."""
+    self.handler = guide.EnterpriseFeatureCreateHandler()
+    stable_date = self.now.replace(year=self.now.year + 1, day=2).strftime(DATE_FORMAT)
+    mock_channel_details.return_value = { 'beta': { 'version': 120, 'stable_date': stable_date } }
+
+    testing_config.sign_in('user1@google.com', 1234567890)
+    with test_app.test_request_context(
+        '/guide/enterprise/new', data={
+            'category': '1',
+            'name': 'Feature name',
+            'summary': 'Feature summary',
+            'feature_type': '4'
+        }, method='POST'):
+      actual_response = self.handler.process_post_data()
+
+    self.assertEqual('302 FOUND', actual_response.status)
+    location = actual_response.headers['location']
+    self.assertTrue(location.startswith('/guide/editall'))
+    new_feature_id = int(location.split('/')[-1].split('#')[0])
+
+    # Ensure FeatureEntry entity was created.
+    feature_entry = FeatureEntry.get_by_id(new_feature_id)
+    self.assertEqual(2, feature_entry.category)
+    self.assertEqual(4, feature_entry.feature_type)
+    self.assertEqual('Feature name', feature_entry.name)
+    self.assertEqual('Feature summary', feature_entry.summary)
+    self.assertEqual('user1@google.com', feature_entry.creator_email)
+    self.assertEqual(120, feature_entry.first_enterprise_notification_milestone)
+
+
+  @mock.patch('api.channels_api.construct_specified_milestones_details')
+  def test_post__enterprise_with_first_notice(self, mock_specified_milestones):
+    """Create a feature, first_enterprise_notification_milestone set to provided value."""
+    self.handler = guide.EnterpriseFeatureCreateHandler()
+    now = self.now
+    mock_specified_milestones.return_value =  {
+        99: {
+          'version': 99,
+          'stable_date': self.now.replace(year=self.now.year - 1, day=1).strftime(DATE_FORMAT)
+        },
+        100: {
+          'version': 100,
+          'stable_date': self.now.replace(year=self.now.year + 1, day=1).strftime(DATE_FORMAT)
+        },
+    }
+
+    testing_config.sign_in('user1@google.com', 1234567890)
+    with test_app.test_request_context(
+        '/guide/enterprise/new', data={
+            'category': '1',
+            'name': 'Feature name',
+            'summary': 'Feature summary',
+            'feature_type': '4',
+            'first_enterprise_notification_milestone': '100'
+        }, method='POST'):
+      actual_response = self.handler.process_post_data()
+
+    self.assertEqual('302 FOUND', actual_response.status)
+    location = actual_response.headers['location']
+    self.assertTrue(location.startswith('/guide/editall'))
+    new_feature_id = int(location.split('/')[-1].split('#')[0])
+
+    # Ensure FeatureEntry entity was created.
+    feature_entry = FeatureEntry.get_by_id(new_feature_id)
+    self.assertEqual(2, feature_entry.category)
+    self.assertEqual(4, feature_entry.feature_type)
+    self.assertEqual('Feature name', feature_entry.name)
+    self.assertEqual('Feature summary', feature_entry.summary)
+    self.assertEqual('user1@google.com', feature_entry.creator_email)
+    self.assertEqual(100, feature_entry.first_enterprise_notification_milestone)
+
+
+  @mock.patch('api.channels_api.construct_chrome_channels_details')
+  @mock.patch('api.channels_api.construct_specified_milestones_details')
+  def test_post__enterprise_with_old_first_notice(self, mock_specified_milestones, mock_channel_details):
+    """Create a feature, first_enterprise_notification_milestone set to default newer value."""
+    self.handler = guide.EnterpriseFeatureCreateHandler()
+    mock_specified_milestones.return_value =  {
+        99: {
+          'version': 99,
+          'stable_date': self.now.replace(year=self.now.year - 1, day=1).strftime(DATE_FORMAT)
+        },
+        100: {
+          'version': 100,
+          'stable_date': self.now.replace(year=self.now.year + 1, day=1).strftime(DATE_FORMAT)
+        },
+    }
+    mock_channel_details.return_value = {
+      'beta': {
+        'version': 101,
+        'stable_date': self.now.replace(year=self.now.year + 1, day=2).strftime(DATE_FORMAT)
+      }
+    }
+
+    testing_config.sign_in('user1@google.com', 1234567890)
+    with test_app.test_request_context(
+        '/guide/enterprise/new', data={
+            'category': '1',
+            'name': 'Feature name',
+            'summary': 'Feature summary',
+            'feature_type': '4',
+            'first_enterprise_notification_milestone': '99'
+        }, method='POST'):
+      actual_response = self.handler.process_post_data()
+
+    self.assertEqual('302 FOUND', actual_response.status)
+    location = actual_response.headers['location']
+    self.assertTrue(location.startswith('/guide/editall'))
+    new_feature_id = int(location.split('/')[-1].split('#')[0])
+
+    # Ensure FeatureEntry entity was created.
+    feature_entry = FeatureEntry.get_by_id(new_feature_id)
+    self.assertEqual(2, feature_entry.category)
+    self.assertEqual(4, feature_entry.feature_type)
+    self.assertEqual('Feature name', feature_entry.name)
+    self.assertEqual('Feature summary', feature_entry.summary)
+    self.assertEqual('user1@google.com', feature_entry.creator_email)
+    self.assertEqual(101, feature_entry.first_enterprise_notification_milestone)
 
 
 class FeatureEditHandlerTest(testing_config.CustomTestCase):

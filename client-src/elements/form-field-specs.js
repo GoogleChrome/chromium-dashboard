@@ -435,6 +435,44 @@ export const ALL_FIELDS = {
     },
   },
 
+  'first_enterprise_notification_milestone': {
+    type: 'input',
+    attrs: MILESTONE_NUMBER_FIELD_ATTRS,
+    required: false,
+    label: 'First notification milestone',
+    help_text: html`
+        Optional: Unless you're sure you need to use this, leave it blank.
+        <br><br/>
+        If you leave this blank, we will automatically find the right milestone.
+        <br/><br/>
+        If you're not ready to communicate this feature to enterprises yet,
+        what is the earliest milestone that you expect to be ready to communicate it?
+        You can change this later. In general, you should provide enterprises notice at
+        least 3 milestones before making an impactful change.`,
+    check: async (value, _, initialValue) => {
+      if (!value) {
+        return undefined;
+      }
+      const newChannelStableDate = await window.csClient.getSpecifiedChannels(value, value)
+        .then(channels => channels[value]?.stable_date);
+      const previousChannelStableDate = initialValue ?
+        await window.csClient.getSpecifiedChannels(initialValue, initialValue)
+          .then(channels => channels[value]?.stable_date) :
+        undefined;
+
+      if (!newChannelStableDate) {
+        return {error: `Unknown milestone ${value}`};
+      }
+      if (previousChannelStableDate && Date.parse(previousChannelStableDate) < Date.now()) {
+        return {warning: `Feature was already shown in milestone ${initialValue}, this cannot be changed`};
+      }
+      if (Date.parse(newChannelStableDate) <= Date.now()) {
+        return {warning: `Milestone ${value}  was already released, choose a future milestone`};
+      }
+      return undefined;
+    },
+  },
+
   'motivation': {
     type: 'textarea',
     required: false,

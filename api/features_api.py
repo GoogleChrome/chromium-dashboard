@@ -24,6 +24,7 @@ from framework import basehandlers
 from framework import permissions
 from framework import rediscache
 from framework import users
+from internals.enterprise_helpers import *
 from internals.core_enums import *
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.data_types import CHANGED_FIELDS_LIST_TYPE
@@ -129,6 +130,15 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
       if field in body:
         fields_dict[field] = self.format_field_val(
             field, field_type, body[field])
+    
+    # If no enterprise notification milestone was set, set one since it will be shown in the next
+    # release notes by default. This is true for breaking changes and enterprise features only.
+    if ('first_enterprise_notification_milestone' in body):
+      fields_dict['first_enterprise_notification_milestone'] = \
+        body['first_enterprise_notification_milestone']
+    elif needs_default_first_notification_milestone(new_fields=body):
+      fields_dict['first_enterprise_notification_milestone'] = \
+        get_default_first_notice_milestone_for_feature()
 
     # Try to create the feature using the provided data.
     try:
@@ -235,6 +245,12 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
       feature.accurate_as_of = now
       feature.outstanding_notifications = 0
       has_updated = True
+
+    if can_update_first_notification_milestone(feature, feature_changes):
+      feature.first_enterprise_notification_milestone = int(feature_changes['first_enterprise_notification_milestone'])
+      has_updated = True
+    if should_remove_first_notice_milestone(feature, feature_changes):
+      feature.first_enterprise_notification_milestone = None
 
     if has_updated:
       user_email = self.get_current_user().email()
