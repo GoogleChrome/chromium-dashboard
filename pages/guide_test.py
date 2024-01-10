@@ -50,6 +50,7 @@ class FeatureCreateTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.handler = guide.FeatureCreateHandler()
+    self.now = datetime.now()
 
   def tearDown(self) -> None:
     kinds: list[ndb.Model] = [FeatureEntry, Stage, Gate]
@@ -186,21 +187,20 @@ class FeatureCreateTest(testing_config.CustomTestCase):
   @mock.patch('api.channels_api.construct_specified_milestones_details')
   def test_post__breaking_change_with_old_first_notice(self, mock_specified_milestones, mock_channel_details):
     """Create a feature, first_enterprise_notification_milestone set to default newer value."""
-    now = self.now
     mock_specified_milestones.return_value =  {
         99: {
           'version': 99, 
-          'stable_date': now.replace(year=now.year - 1, day=1).strftime(DATE_FORMAT)
+          'stable_date': self.now.replace(year=self.now.year - 1, day=1).strftime(DATE_FORMAT)
         },
         100: {
           'version': 100,
-          'stable_date': now.replace(year=now.year + 1, day=1).strftime(DATE_FORMAT)
+          'stable_date': self.now.replace(year=self.now.year + 1, day=1).strftime(DATE_FORMAT)
         },
     }
     mock_channel_details.return_value = {
       'beta': {
         'version': 101,
-        'stable_date': now.replace(year=now.year + 1, day=2).strftime(DATE_FORMAT)
+        'stable_date': self.now.replace(year=self.now.year + 1, day=2).strftime(DATE_FORMAT)
       }
     }
 
@@ -266,7 +266,6 @@ class FeatureCreateTest(testing_config.CustomTestCase):
   def test_post__enterprise_with_first_notice(self, mock_specified_milestones):
     """Create a feature, first_enterprise_notification_milestone set to provided value."""
     self.handler = guide.EnterpriseFeatureCreateHandler()
-    now = self.now
     mock_specified_milestones.return_value =  {
         99: {
           'version': 99,

@@ -645,7 +645,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
   @mock.patch('api.channels_api.construct_specified_milestones_details')
   def test_patch__enterprise_first_notice_wrong_non_enterprise_feature(self, mock_call):
     """PATCH request successful with no changes to first_enterprise_notification_milestone."""
-    stable_date = datetime.now().replace(year=datetime.now().year + 1, day=1)
+    stable_date = _datetime_to_str(datetime.now().replace(year=datetime.now().year + 1, day=1))
     mock_call.return_value = { 100: { 'version': 100, 'stable_date': stable_date } }
 
     # Signed-in user with permissions.
