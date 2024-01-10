@@ -60,6 +60,4 @@ jobs:
       - run: npm run build --if-present
 
       - name: Run web test runner
-        run: |
-          npx playwright install
-          npm run webtest
+        run: npm run webtest
