@@ -15,7 +15,7 @@
 
 import logging
 
-from google.oauth2 import id_token
+import google.oauth2.id_token
 from google.auth.transport import requests
 
 from framework import basehandlers
@@ -31,13 +31,11 @@ class LoginAPI(basehandlers.APIHandler):
     self.abort(405, valid_methods=['POST'])
 
   def do_post(self, **kwargs):
-    # TODO(jrobbins): Remove id_token after next deployment.
-    token = (self.get_param('id_token', required=False) or
-             self.get_param('credential'))
+    token = self.get_param('credential')
     message = "Unable to Authenticate. Please sign in again."
 
     try:
-      idinfo = id_token.verify_oauth2_token(
+      idinfo = google.oauth2.id_token.verify_oauth2_token(
           token, requests.Request(),
           settings.GOOGLE_SIGN_IN_CLIENT_ID)
       users.add_signed_user_info_to_session(idinfo['email'])

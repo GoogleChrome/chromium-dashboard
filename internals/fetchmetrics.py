@@ -21,7 +21,7 @@ from xml.dom import minidom
 import requests
 
 from google.auth.transport import requests as reqs
-from google.oauth2 import id_token
+import google.oauth2.id_token
 
 from framework import basehandlers
 from framework import rediscache
@@ -50,7 +50,7 @@ def _FetchMetrics(url):
     # https://cloud.google.com/appengine/docs/python/appidentity/#asserting_identity_to_other_app_engine_apps
     # GAE request limit is 60s, but it could go longer due to start-up latency.
     logging.info('Requesting metrics from: %r', url)
-    token = id_token.fetch_id_token(reqs.Request(), url)
+    token = google.oauth2.id_token.fetch_id_token(reqs.Request(), url)
     logging.info('token is %r', token)
     return requests.request(
         'GET', url, timeout=120.0, allow_redirects=False,
