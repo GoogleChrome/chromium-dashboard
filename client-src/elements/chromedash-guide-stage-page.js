@@ -151,7 +151,7 @@ export class ChromedashGuideStagePage extends LitElement {
   }
 
   handleCancelClick() {
-    window.location.href = `/guide/edit/${this.featureId}`;
+    window.location.href = `/feature/${this.featureId}`;
   }
 
   // get a comma-spearated list of field names
