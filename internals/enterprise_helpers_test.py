@@ -35,7 +35,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
     self.breaking_feature = FeatureEntry(
         name='feature a', summary='sum', impl_status_chrome=3,
         owner_emails=['feature_owner@example.com'], category=1,
-        updated=datetime(2020, 3, 1), feature_type=1, breaking_change=True)
+        updated=datetime(2020, 3, 1), feature_type=1, enterprise_impact=ENTERPRISE_IMPACT_LOW)
     self.breaking_feature.put()
 
     self.normal_feature = FeatureEntry(
@@ -77,19 +77,19 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
 
     # Breaking change missing the milestone
     self.assertTrue(needs_default_first_notification_milestone(
-      self.no_feature, {'feature_type': 1, 'breaking_change': True}))
+      self.no_feature, {'feature_type': 1,  'enterprise_impact': ENTERPRISE_IMPACT_LOW}))
     # Breaking change with invalid milestone
     self.assertTrue(needs_default_first_notification_milestone(
       self.no_feature,
-      {'feature_type': 1, 'breaking_change': True, 'first_enterprise_notification_milestone': 1}))
+      {'feature_type': 1,  'enterprise_impact': ENTERPRISE_IMPACT_LOW, 'first_enterprise_notification_milestone': 1}))
     # Breaking change with older milestone
     self.assertTrue(needs_default_first_notification_milestone(
       self.no_feature,
-      {'feature_type': 1, 'breaking_change': True, 'first_enterprise_notification_milestone': 99}))
+      {'feature_type': 1,  'enterprise_impact': ENTERPRISE_IMPACT_LOW, 'first_enterprise_notification_milestone': 99}))
     # Breaking change with valid milestone
     self.assertFalse(needs_default_first_notification_milestone(
       self.no_feature,
-      {'feature_type': 1,'breaking_change': True, 'first_enterprise_notification_milestone': 100}))
+      {'feature_type': 1, 'enterprise_impact': ENTERPRISE_IMPACT_LOW, 'first_enterprise_notification_milestone': 100}))
 
     # Normal feature missing the milestone
     self.assertFalse(needs_default_first_notification_milestone(
@@ -106,19 +106,19 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
 
     # Non-breaking Normal feature missing the milestone
     self.assertFalse(needs_default_first_notification_milestone(
-      self.no_feature, {'feature_type': 1, 'breaking_change': False}))
+      self.no_feature, {'feature_type': 1,  'enterprise_impact': ENTERPRISE_IMPACT_NONE}))
     # Non-breaking Normal feature with invalid milestone
     self.assertFalse(needs_default_first_notification_milestone(
       self.no_feature,
-      {'feature_type': 1, 'breaking_change': False, 'first_enterprise_notification_milestone': 1}))
+      {'feature_type': 1,  'enterprise_impact': ENTERPRISE_IMPACT_NONE, 'first_enterprise_notification_milestone': 1}))
     # Non-breaking Normal feature with older milestone
     self.assertFalse(needs_default_first_notification_milestone(
       self.no_feature,
-      {'feature_type': 1, 'breaking_change': False, 'first_enterprise_notification_milestone': 99}))
+      {'feature_type': 1,  'enterprise_impact': ENTERPRISE_IMPACT_NONE, 'first_enterprise_notification_milestone': 99}))
     # Non-breaking Normal feature with valid milestone
     self.assertFalse(needs_default_first_notification_milestone(
       self.no_feature,
-      {'feature_type': 1, 'breaking_change': False,
+      {'feature_type': 1,  'enterprise_impact': ENTERPRISE_IMPACT_NONE,
        'first_enterprise_notification_milestone': 100}))
 
 
@@ -174,35 +174,35 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
 
     # Normal feature becoming breaking missing the milestone
     self.assertTrue(needs_default_first_notification_milestone(
-      self.normal_feature, {'breaking_change': True}))
+      self.normal_feature, { 'enterprise_impact': ENTERPRISE_IMPACT_LOW}))
     # Normal feature becoming breaking with invalid milestone
     self.assertTrue(needs_default_first_notification_milestone(
       self.normal_feature,
-      {'breaking_change': True,'first_enterprise_notification_milestone': 1}))
+      { 'enterprise_impact': ENTERPRISE_IMPACT_LOW,'first_enterprise_notification_milestone': 1}))
     # Normal feature becoming breaking with older milestone
     self.assertTrue(needs_default_first_notification_milestone(
       self.normal_feature,
-      {'breaking_change': True, 'first_enterprise_notification_milestone': 99}))
+      { 'enterprise_impact': ENTERPRISE_IMPACT_LOW, 'first_enterprise_notification_milestone': 99}))
     # Normal feature becoming breaking with valid milestone
     self.assertFalse(needs_default_first_notification_milestone(
       self.normal_feature,
-      {'breaking_change': True, 'first_enterprise_notification_milestone': 100}))
+      { 'enterprise_impact': ENTERPRISE_IMPACT_LOW, 'first_enterprise_notification_milestone': 100}))
   
     # Breaking feature becoming normal feature missing the milestone
     self.assertFalse(needs_default_first_notification_milestone(
-      self.breaking_feature, {'breaking_change': False}))
+      self.breaking_feature, { 'enterprise_impact': ENTERPRISE_IMPACT_NONE}))
     # Breaking feature becoming normal feature with invalid milestone
     self.assertFalse(needs_default_first_notification_milestone(
       self.breaking_feature,
-      {'breaking_change': False,'first_enterprise_notification_milestone': 1}))
+      { 'enterprise_impact': ENTERPRISE_IMPACT_NONE,'first_enterprise_notification_milestone': 1}))
     # Breaking feature becoming normal feature with older milestone
     self.assertFalse(needs_default_first_notification_milestone(
       self.breaking_feature,
-      {'breaking_change': False,'first_enterprise_notification_milestone': 99}))
+      { 'enterprise_impact': ENTERPRISE_IMPACT_NONE,'first_enterprise_notification_milestone': 99}))
     # Breaking feature becoming normal feature with valid milestone
     self.assertFalse(needs_default_first_notification_milestone(
       self.breaking_feature,
-      {'breaking_change': False,'first_enterprise_notification_milestone': 100}))
+      { 'enterprise_impact': ENTERPRISE_IMPACT_NONE,'first_enterprise_notification_milestone': 100}))
 
     #Feature already has a milestone
     self.breaking_feature.first_enterprise_notification_milestone = 100
@@ -277,34 +277,34 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
 
     # Normal feature becoming breaking missing the milestone
     self.assertFalse(is_update_first_notification_milestone(
-      self.normal_feature, {'breaking_change': True}))
+      self.normal_feature, { 'enterprise_impact': ENTERPRISE_IMPACT_LOW}))
     # Normal feature becoming breaking with invalid milestone
     self.assertFalse(is_update_first_notification_milestone(
-      self.normal_feature, {'breaking_change': True, 'first_enterprise_notification_milestone': 1}))
+      self.normal_feature, { 'enterprise_impact': ENTERPRISE_IMPACT_LOW, 'first_enterprise_notification_milestone': 1}))
     # Normal feature becoming breaking with older milestone
     self.assertFalse(is_update_first_notification_milestone(
       self.normal_feature,
-      {'breaking_change': True, 'first_enterprise_notification_milestone': 99}))
+      { 'enterprise_impact': ENTERPRISE_IMPACT_LOW, 'first_enterprise_notification_milestone': 99}))
     # Normal feature becoming breaking with valid milestone
     self.assertTrue(is_update_first_notification_milestone(
       self.normal_feature,
-      {'breaking_change': True, 'first_enterprise_notification_milestone': 100}))
+      { 'enterprise_impact': ENTERPRISE_IMPACT_LOW, 'first_enterprise_notification_milestone': 100}))
   
     # Breaking feature becoming normal feature missing the milestone
     self.assertFalse(is_update_first_notification_milestone(
-      self.breaking_feature, {'breaking_change': False}))
+      self.breaking_feature, { 'enterprise_impact': ENTERPRISE_IMPACT_NONE}))
     # Breaking feature becoming normal feature with invalid milestone
     self.assertFalse(is_update_first_notification_milestone(
       self.breaking_feature,
-      {'breaking_change': False, 'first_enterprise_notification_milestone': 1}))
+      { 'enterprise_impact': ENTERPRISE_IMPACT_NONE, 'first_enterprise_notification_milestone': 1}))
     # Breaking feature becoming normal feature with older milestone
     self.assertFalse(is_update_first_notification_milestone(
       self.breaking_feature,
-      {'breaking_change': False, 'first_enterprise_notification_milestone': 99}))
+      { 'enterprise_impact': ENTERPRISE_IMPACT_NONE, 'first_enterprise_notification_milestone': 99}))
     # Breaking feature becoming normal feature with valid milestone
     self.assertFalse(is_update_first_notification_milestone(
       self.breaking_feature,
-      {'breaking_change': False, 'first_enterprise_notification_milestone': 100}))
+      { 'enterprise_impact': ENTERPRISE_IMPACT_NONE, 'first_enterprise_notification_milestone': 100}))
 
     #Feature already has a milestone that was already released
     self.breaking_feature.first_enterprise_notification_milestone = 99
@@ -389,10 +389,10 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
     self.breaking_feature.first_enterprise_notification_milestone = 100
     self.breaking_feature.put()
     self.assertTrue(should_remove_first_notice_milestone(
-      self.breaking_feature, {'breaking_change': False}))
+      self.breaking_feature, { 'enterprise_impact': ENTERPRISE_IMPACT_NONE}))
 
     # Breaking change becoming non-breaking and existing milestone already released
     self.breaking_feature.first_enterprise_notification_milestone = 99
     self.breaking_feature.put()
     self.assertFalse(should_remove_first_notice_milestone(
-      self.breaking_feature, {'breaking_change': False}))
+      self.breaking_feature, { 'enterprise_impact': ENTERPRISE_IMPACT_NONE}))

@@ -285,6 +285,8 @@ internals_routes: list[Route] = [
         maintenance_scripts.BackfillStageCreated),
   Route('/scripts/backfill_feature_links',
         maintenance_scripts.BackfillFeatureLinks),
+  Route('/scripts/backfill_enterprise_impact',
+        maintenance_scripts.BackfillFeatureEnterpriseImpact),
 ]
 
 dev_routes: list[Route] = []

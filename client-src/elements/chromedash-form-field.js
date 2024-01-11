@@ -46,8 +46,11 @@ export class ChromedashFormField extends LitElement {
     // value can be a js or python boolean value converted to a string
     // or the initial value specified in form-field-spec
     // If value is falsy, it will be replaced by the initial value, if any.
-    return !this.value && this.fieldProps.initial ?
-      this.fieldProps.initial : this.value;
+    const useEnterpriseDefault = this.forEnterprise &&
+      this.fieldProps.enterprise_initial !== undefined;
+    const initialValue = useEnterpriseDefault ?
+      this.fieldProps.enterprise_initial : this.fieldProps.initial;
+    return !this.value && initialValue ? initialValue : this.value;
   }
 
   connectedCallback() {

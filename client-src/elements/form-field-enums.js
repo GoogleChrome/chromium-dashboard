@@ -63,6 +63,20 @@ export const PLATFORMS_DISPLAYNAME = {
   8: 'Fuchsia', // PLATFORM_FUCHSIA
 };
 
+export const ENTERPRISE_IMPACT_DISPLAYNAME = {
+  1: 'None', // IMPACT_NONE
+  2: 'Low', // IMPACT_LOW
+  3: 'Medium', // IMPACT_MEDIUM
+  4: 'High', // IMPACT_HIGH
+};
+
+export const ENTERPRISE_IMPACT = {
+  IMPACT_NONE: [1, 'None'],
+  IMPACT_LOW: [2, 'Low'],
+  IMPACT_MEDIUM: [3, 'Medium'],
+  IMPACT_HIGH: [4, 'High'],
+};
+
 export const ROLLOUT_IMPACT = {
   IMPACT_LOW: [1, 'Low'],
   IMPACT_MEDIUM: [2, 'Medium'],

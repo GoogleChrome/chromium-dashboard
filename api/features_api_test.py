@@ -716,7 +716,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
       'feature_changes': {
         'id': self.feature_1_id,
         'first_enterprise_notification_milestone': 100,  # str
-        'breaking_change': True
+        'enterprise_impact': core_enums.ENTERPRISE_IMPACT_LOW
       },
       'stages': [],
     }
@@ -738,7 +738,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     stable_date = _datetime_to_str(datetime.now().replace(year=datetime.now().year + 1, day=1))
     mock_call.return_value = { 100: { 'version': 100, 'stable_date': stable_date } }
     
-    self.feature_1.breaking_change = True
+    self.feature_1.enterprise_impact = core_enums.ENTERPRISE_IMPACT_MEDIUM
     self.feature_1.first_enterprise_notification_milestone = 100
     self.feature_1.put()
   
@@ -748,7 +748,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     valid_request_body = {
       'feature_changes': {
         'id': self.feature_1_id,
-        'breaking_change': False
+        'enterprise_impact': core_enums.ENTERPRISE_IMPACT_NONE
       },
       'stages': [],
     }
@@ -770,7 +770,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     stable_date = _datetime_to_str(datetime.now().replace(year=datetime.now().year - 1, day=1))
     mock_call.return_value = { 100: { 'version': 100, 'stable_date': stable_date } }
     
-    self.feature_1.breaking_change = True
+    self.feature_1.enterprise_impact = core_enums.ENTERPRISE_IMPACT_MEDIUM
     self.feature_1.first_enterprise_notification_milestone = 100
     self.feature_1.put()
   
@@ -780,7 +780,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     valid_request_body = {
       'feature_changes': {
         'id': self.feature_1_id,
-        'breaking_change': False
+        'enterprise_impact': core_enums.ENTERPRISE_IMPACT_NONE
       },
       'stages': [],
     }
@@ -1150,7 +1150,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
 
 
   @mock.patch('api.channels_api.construct_chrome_channels_details')
-  def test_post__first_enterprise_notification_milestone_missing_breaking_change(self, mock_call):
+  def test_post__first_enterprise_notification_milestone_missing_impact_enterprise(self, mock_call):
     """POST request successful with default first_enterprise_notification_milestone."""
 
     expected =  {
@@ -1172,7 +1172,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
       'ff_views': 1,
       'safari_views': 1,
       'web_dev_views': 1,
-      'breaking_change': True,
+      'enterprise_impact': core_enums.ENTERPRISE_IMPACT_LOW,
       'wpt': True,
     }
 
@@ -1215,7 +1215,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
       'owner_emails': 'user@example.com,user2@example.com',
       'category': 2,
       'feature_type': 4,
-      'breaking_change': True,
+      'enterprise_impact': core_enums.ENTERPRISE_IMPACT_HIGH,
       'impl_status_chrome': 3,
       'standard_maturity': 2,
       'ff_views': 1,

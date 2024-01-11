@@ -450,3 +450,52 @@ class AssociateOTs(FlaskHandler):
 
     return (f'{len(entities_to_write)} Stages updated with trial data.\n'
             f'{extensions_cleared} extension requests cleared.')
+
+class BackfillFeatureEnterpriseImpact(FlaskHandler):
+  def get_template_data(self, **kwargs):
+    """Backfill enterprise_impact firld for all features."""
+    self.require_cron_header()
+    count = 0
+    batch = []
+    BATCH_SIZE = 100
+    updated_feature_ids = set()
+    features_by_id = {}
+  
+    stages: ndb.Query = Stage.query(Stage.stage_type == STAGE_ENT_ROLLOUT, Stage.archived == False)
+    for stage in stages:
+      if stage.feature_id in features_by_id:
+        continue
+      features_by_id[stage.feature_id] = FeatureEntry.get_by_id(stage.feature_id)
+    # Update enterprise_impact to be the highest impact set on any of the rollout steps.
+    for stage in stages:
+      feature_entry = features_by_id[stage.feature_id]
+      if feature_entry == None:
+        continue
+      new_impact = stage.rollout_impact + 1
+      if new_impact <= feature_entry.enterprise_impact:
+        continue  
+      feature_entry.enterprise_impact = new_impact
+      updated_feature_ids.add(stage.feature_id)
+
+    # Set all enterprise features and former breaking changes to have a low impact if no rollout step was step.
+    features: ndb.Query = FeatureEntry.query(
+      FeatureEntry.enterprise_impact == ENTERPRISE_IMPACT_NONE, 
+      ndb.OR(FeatureEntry.feature_type == FEATURE_TYPE_ENTERPRISE_ID, FeatureEntry.breaking_change == True))
+    for feature_entry in features:
+      if feature_entry.key.id() in updated_feature_ids:
+        continue
+      features_by_id[feature_entry.key.id()] = feature_entry
+      updated_feature_ids.add(feature_entry.key.id())
+      feature_entry.enterprise_impact = ENTERPRISE_IMPACT_MEDIUM
+    
+    for feature_id in updated_feature_ids:
+      batch.append(features_by_id[feature_id])
+      count += 1
+      if len(batch) > BATCH_SIZE:
+        ndb.put_multi(batch)
+        logging.info(f'Feature updated: Finished a batch of {BATCH_SIZE}')
+        batch = []
+
+    ndb.put_multi(batch)
+
+    return f'{count} Feature entities updated of {len(features_by_id)} available features.'
