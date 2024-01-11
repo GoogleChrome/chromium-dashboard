@@ -1878,7 +1878,7 @@ function findMinMilestone(fieldName, stageTypes, getFieldValue) {
   for (const stage of feature.stages) {
     if (stageTypes.has(stage.stage_type)) {
       const milestone = getFieldValue(fieldName, stage);
-      if (milestone != null) {
+      if (milestone != null && milestone !== '') {
         minMilestone = Math.min(minMilestone, milestone);
       }
     }
@@ -1895,7 +1895,7 @@ function findMaxMilestone(fieldName, stageTypes, getFieldValue) {
   for (const stage of feature.stages) {
     if (stageTypes.has(stage.stage_type)) {
       const milestone = getFieldValue(fieldName, stage);
-      if (milestone != null) {
+      if (milestone != null && milestone !== '') {
         maxMilestone = Math.max(maxMilestone, milestone);
       }
     }
@@ -1911,7 +1911,7 @@ function checkEarlierBeforeAllLaterMilestones(
   const stageTypes =
     // Only shipping, for now.
     SHIPPED_MILESTONE_FIELDS.has(allLater) ? STAGE_TYPES_SHIPPING : null;
-  const earlierValue = getFieldValue(earlier, 'current stage');
+  const earlierValue = getNumericValue(earlier, getFieldValue);
   const laterValue = findMinMilestone(allLater, stageTypes, getFieldValue);
   if (earlierValue != null && laterValue != null &&
     (Number(earlierValue) >= laterValue)) {
@@ -1930,10 +1930,10 @@ function checkAllEarlierBeforeLaterMilestone(fieldPair, getFieldValue) {
     // Only origin trials or dev trials, for now.
     OT_MILESTONE_START_FIELDS.has(allEarlier) ? STAGE_TYPES_ORIGIN_TRIAL :
       DT_MILESTONE_FIELDS.has(allEarlier) ? STAGE_TYPES_DEV_TRIAL : null;
-  console.info(`stageTypes: ${stageTypes}`);
+  // console.info(`stageTypes: ${stageTypes}`);
   const earlierValue = findMaxMilestone(allEarlier, stageTypes, getFieldValue);
-  const laterValue = getFieldValue(later, 'current stage');
-  console.info(`Earlier: ${earlierValue} ... later: ${laterValue}`);
+  const laterValue = getNumericValue(later, getFieldValue);
+  // console.info(`Earlier: ${earlierValue} ... later: ${laterValue}`);
   if (earlierValue != null && laterValue != null &&
     (earlierValue >= Number(laterValue))) {
     return warning ? {

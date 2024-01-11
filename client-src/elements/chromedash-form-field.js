@@ -44,7 +44,7 @@ export class ChromedashFormField extends LitElement {
   getValue() {
     // value can be a js or python boolean value converted to a string
     // or the initial value specified in form-field-spec
-    return !this.value && this.fieldProps.initial ?
+    return this.value == null && this.fieldProps.initial ?
       this.fieldProps.initial : this.value;
   }
 
@@ -165,11 +165,13 @@ export class ChromedashFormField extends LitElement {
     // Define function to get any other field value relative to this field.
     // stageOrId is either a stage object or an id, or the special value
     // 'current stage' which means use the same stage as for this field.
-    const getFieldValue = (fieldName, stageOrId) =>
-      getFieldValueWithStage(fieldName,
-        (stageOrId === 'current stage' ? this.stageId : stageOrId),
-        this.fieldValues || []);
-      // Attach the feature to the getFieldValue function, in case it is needed.
+    const getFieldValue = (fieldName, stageOrId) => {
+      if (stageOrId === 'current stage') {
+        stageOrId = this.stageId;
+      }
+      return getFieldValueWithStage(fieldName, stageOrId, this.fieldValues || []);
+    };
+    // Attach the feature to the getFieldValue function, in case it is needed.
     getFieldValue.feature = this.fieldValues?.feature;
 
     const checkFunctionWrapper = async (checkFunction) => {
