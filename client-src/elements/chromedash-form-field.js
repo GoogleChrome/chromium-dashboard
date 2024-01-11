@@ -44,7 +44,7 @@ export class ChromedashFormField extends LitElement {
   getValue() {
     // value can be a js or python boolean value converted to a string
     // or the initial value specified in form-field-spec
-    return this.value == null && this.fieldProps.initial ?
+    return !this.value && this.fieldProps.initial ?
       this.fieldProps.initial : this.value;
   }
 
