@@ -215,7 +215,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
 
   @mock.patch('api.channels_api.construct_chrome_channels_details')
   @mock.patch('api.channels_api.construct_specified_milestones_details')
-  def test__can_update_first_notification_milestone(self,
+  def test__is_update_first_notification_milestone(self,
                                                     mock_specified_milestones,
                                                     mock_channel_details):
     mock_specified_milestones.return_value =  {
@@ -240,69 +240,69 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
     }
 
     # Enterprise feature missing the milestone
-    self.assertFalse(can_update_first_notification_milestone(self.enterprise_feature, {}))
+    self.assertFalse(is_update_first_notification_milestone(self.enterprise_feature, {}))
     # Enterprise feature with invalid milestone
-    self.assertFalse(can_update_first_notification_milestone(
+    self.assertFalse(is_update_first_notification_milestone(
       self.enterprise_feature, {'first_enterprise_notification_milestone': 1}))
     # Enterprise feature with older milestone
-    self.assertFalse(can_update_first_notification_milestone(
+    self.assertFalse(is_update_first_notification_milestone(
       self.enterprise_feature, {'first_enterprise_notification_milestone': 99}))
     # Enterprise feature with valid milestone
-    self.assertTrue(can_update_first_notification_milestone(
+    self.assertTrue(is_update_first_notification_milestone(
       self.enterprise_feature, {'first_enterprise_notification_milestone': 100}))
 
     # Breaking change missing the milestone
-    self.assertFalse(can_update_first_notification_milestone(self.breaking_feature, {}))
+    self.assertFalse(is_update_first_notification_milestone(self.breaking_feature, {}))
     # Breaking change with invalid milestone
-    self.assertFalse(can_update_first_notification_milestone(
+    self.assertFalse(is_update_first_notification_milestone(
       self.breaking_feature, {'first_enterprise_notification_milestone': 1}))
     # Breaking change with older milestone
-    self.assertFalse(can_update_first_notification_milestone(
+    self.assertFalse(is_update_first_notification_milestone(
       self.breaking_feature, {'first_enterprise_notification_milestone': 99}))
     # Breaking change with valid milestone
-    self.assertTrue(can_update_first_notification_milestone(
+    self.assertTrue(is_update_first_notification_milestone(
       self.breaking_feature, {'first_enterprise_notification_milestone': 100}))
 
     # Normal feature missing the milestone
-    self.assertFalse(can_update_first_notification_milestone(self.normal_feature, {}))
+    self.assertFalse(is_update_first_notification_milestone(self.normal_feature, {}))
     # Normal feature with invalid milestone
-    self.assertFalse(can_update_first_notification_milestone(
+    self.assertFalse(is_update_first_notification_milestone(
       self.normal_feature, {'first_enterprise_notification_milestone': 1}))
     # Normal feature with older milestone
-    self.assertFalse(can_update_first_notification_milestone(
+    self.assertFalse(is_update_first_notification_milestone(
       self.normal_feature, {'first_enterprise_notification_milestone': 99}))
     # Normal feature with valid milestone
-    self.assertFalse(can_update_first_notification_milestone(
+    self.assertFalse(is_update_first_notification_milestone(
       self.normal_feature, {'first_enterprise_notification_milestone': 100}))
 
     # Normal feature becoming breaking missing the milestone
-    self.assertFalse(can_update_first_notification_milestone(
+    self.assertFalse(is_update_first_notification_milestone(
       self.normal_feature, {'breaking_change': True}))
     # Normal feature becoming breaking with invalid milestone
-    self.assertFalse(can_update_first_notification_milestone(
+    self.assertFalse(is_update_first_notification_milestone(
       self.normal_feature, {'breaking_change': True, 'first_enterprise_notification_milestone': 1}))
     # Normal feature becoming breaking with older milestone
-    self.assertFalse(can_update_first_notification_milestone(
+    self.assertFalse(is_update_first_notification_milestone(
       self.normal_feature,
       {'breaking_change': True, 'first_enterprise_notification_milestone': 99}))
     # Normal feature becoming breaking with valid milestone
-    self.assertTrue(can_update_first_notification_milestone(
+    self.assertTrue(is_update_first_notification_milestone(
       self.normal_feature,
       {'breaking_change': True, 'first_enterprise_notification_milestone': 100}))
   
     # Breaking feature becoming normal feature missing the milestone
-    self.assertFalse(can_update_first_notification_milestone(
+    self.assertFalse(is_update_first_notification_milestone(
       self.breaking_feature, {'breaking_change': False}))
     # Breaking feature becoming normal feature with invalid milestone
-    self.assertFalse(can_update_first_notification_milestone(
+    self.assertFalse(is_update_first_notification_milestone(
       self.breaking_feature,
       {'breaking_change': False, 'first_enterprise_notification_milestone': 1}))
     # Breaking feature becoming normal feature with older milestone
-    self.assertFalse(can_update_first_notification_milestone(
+    self.assertFalse(is_update_first_notification_milestone(
       self.breaking_feature,
       {'breaking_change': False, 'first_enterprise_notification_milestone': 99}))
     # Breaking feature becoming normal feature with valid milestone
-    self.assertFalse(can_update_first_notification_milestone(
+    self.assertFalse(is_update_first_notification_milestone(
       self.breaking_feature,
       {'breaking_change': False, 'first_enterprise_notification_milestone': 100}))
 
@@ -310,32 +310,32 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
     self.breaking_feature.first_enterprise_notification_milestone = 99
     self.breaking_feature.put()
     # Breaking feature becoming normal feature missing the milestone
-    self.assertFalse(can_update_first_notification_milestone(self.breaking_feature, {}))
+    self.assertFalse(is_update_first_notification_milestone(self.breaking_feature, {}))
     # Breaking feature becoming normal feature with invalid milestone
-    self.assertFalse(can_update_first_notification_milestone(
+    self.assertFalse(is_update_first_notification_milestone(
       self.breaking_feature, {'first_enterprise_notification_milestone': 1}))
     # Breaking feature becoming normal feature with older milestone
-    self.assertFalse(can_update_first_notification_milestone(
+    self.assertFalse(is_update_first_notification_milestone(
       self.breaking_feature, {'first_enterprise_notification_milestone': 99}))
     # Breaking feature becoming normal feature with valid milestone
-    self.assertFalse(can_update_first_notification_milestone(
+    self.assertFalse(is_update_first_notification_milestone(
       self.breaking_feature, {'first_enterprise_notification_milestone': 100}))
 
     #Feature already has a milestone, but it is in the future
     self.enterprise_feature.first_enterprise_notification_milestone = 100
     self.enterprise_feature.put()
     # Enterprise feature missing the milestone
-    self.assertFalse(can_update_first_notification_milestone(self.enterprise_feature, {}))
+    self.assertFalse(is_update_first_notification_milestone(self.enterprise_feature, {}))
     # Enterprise feature with invalid milestone
-    self.assertFalse(can_update_first_notification_milestone(
+    self.assertFalse(is_update_first_notification_milestone(
       self.enterprise_feature, {'first_enterprise_notification_milestone': 1}))
     # Enterprise feature with older milestone
-    self.assertFalse(can_update_first_notification_milestone(
+    self.assertFalse(is_update_first_notification_milestone(
       self.enterprise_feature, {'first_enterprise_notification_milestone': 99}))
     # Enterprise feature with valid milestone
-    self.assertTrue(can_update_first_notification_milestone(
+    self.assertTrue(is_update_first_notification_milestone(
       self.enterprise_feature, {'first_enterprise_notification_milestone': 100}))
-    self.assertTrue(can_update_first_notification_milestone(
+    self.assertTrue(is_update_first_notification_milestone(
       self.enterprise_feature, {'first_enterprise_notification_milestone': 101}))
 
 

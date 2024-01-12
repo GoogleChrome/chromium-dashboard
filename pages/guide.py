@@ -449,7 +449,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     breaking_change = self._get_field_val('breaking_change', 'bool')
     if self.touched('first_enterprise_notification_milestone', form_fields):
       milestone = self._get_field_val('first_enterprise_notification_milestone', 'int')
-      if can_update_first_notification_milestone(fe, {
+      if is_update_first_notification_milestone(fe, {
         'first_enterprise_notification_milestone': milestone,
         'breaking_change': breaking_change}):
         self._add_changed_field(

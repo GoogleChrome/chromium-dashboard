@@ -37,8 +37,7 @@ def needs_default_first_notification_milestone(
   """
   milestone = None
   has_valid_milestone_in_new_fields = False
-  if ('first_enterprise_notification_milestone' in new_fields and
-      new_fields['first_enterprise_notification_milestone']):
+  if new_fields.get('first_enterprise_notification_milestone'):
     milestone = int(new_fields['first_enterprise_notification_milestone'])
     channel_details = channels_api.construct_specified_milestones_details(milestone, milestone)
     has_valid_milestone_in_new_fields = (
@@ -51,12 +50,12 @@ def needs_default_first_notification_milestone(
     if new_fields['feature_type'] == FEATURE_TYPE_ENTERPRISE_ID:
       return not has_valid_milestone_in_new_fields
     # All breaking changes need this
-    if 'breaking_change' in new_fields and new_fields['breaking_change'] == True:
+    if new_fields.get('breaking_change'):
       return not has_valid_milestone_in_new_fields
     return False
 
   # We are updating a feature that already has a notification milestone
-  if existing_feature.first_enterprise_notification_milestone != None:
+  if existing_feature.first_enterprise_notification_milestone is not None:
     return False
   
   # The enterprise feature we are updating does not have the field
@@ -64,27 +63,22 @@ def needs_default_first_notification_milestone(
     return not has_valid_milestone_in_new_fields
   
   # The breaking change stays a breaking change
-  if existing_feature.breaking_change == True and ('breaking_change' not in new_fields or
-                                                    new_fields['breaking_change'] == True):
-    return not has_valid_milestone_in_new_fields
-  
-  # The normal feature becomes a breaking change
-  if 'breaking_change' in new_fields and new_fields['breaking_change'] == True:
+  if new_fields.get('breaking_change', existing_feature.breaking_change) != False:
     return not has_valid_milestone_in_new_fields
   
   return False
 
-def can_update_first_notification_milestone(feature: FeatureEntry, new_fields: dict) -> bool:
+def is_update_first_notification_milestone(feature: FeatureEntry, new_fields: dict) -> bool:
   """Returns whether the milestone can be used to update first_enterprise_notification_milestone.
 
   Args:
     existing_feature: FeatureEntry feature that needs to be updated.
     new_fields: dict Fields that will be used to update or create the feature.
   """
-  if ('first_enterprise_notification_milestone' not in new_fields or
-      not new_fields['first_enterprise_notification_milestone']):
+  milestone = new_fields.get('first_enterprise_notification_milestone')
+  if not milestone:
     return False
-  milestone = new_fields['first_enterprise_notification_milestone']
+  milestone = int(milestone)
 
   # We cannot set a milestone that has already been released
   milestone_details = channels_api.construct_specified_milestones_details(milestone, milestone)
@@ -104,18 +98,11 @@ def can_update_first_notification_milestone(feature: FeatureEntry, new_fields: d
   if feature.feature_type == FEATURE_TYPE_ENTERPRISE_ID:
     return True
   
-  # The breaking change stays a breaking change
-  if feature.breaking_change == True and ('breaking_change' not in new_fields 
-                                          or new_fields['breaking_change'] == True):
-    return True
-  # The Feature becomes a breaking change
-  if ('breaking_change' in new_fields and new_fields['breaking_change'] == True):
-    return True
-  
-  return False
+  # The breaking change stays a breaking change or become a breaking change
+  return new_fields.get('breaking_change', feature.breaking_change)
 
 
-def get_default_first_notice_milestone_for_feature() -> datetime:
+def get_default_first_notice_milestone_for_feature() -> int:
   next_stable_version = channels_api.construct_chrome_channels_details()['beta']['version']
   return next_stable_version
 
@@ -135,8 +122,7 @@ def should_remove_first_notice_milestone(feature, new_fields):
   if feature.feature_type == FEATURE_TYPE_ENTERPRISE_ID:
     return False
   
-  if (feature.breaking_change == True and
-      ('breaking_change' not in new_fields or new_fields['breaking_change'] == True)):
+  if new_fields.get('breaking_change', feature.breaking_change) != False:
     return False
 
   milestone = feature.first_enterprise_notification_milestone
