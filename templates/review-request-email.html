@@ -1,0 +1,22 @@
+<section id="context">
+  <p>
+    <b>Review requested</b> for feature entry:<br/>
+    <a class="feature-name" href="{{SITE_URL}}feature/{{id}}"
+          >{{feature.name}}</a>
+  </p>
+</section>
+
+
+<section id="details">
+  <p><b>Review requested{% if updater_email %} by {{updater_email}}{% endif %}:</b></p>
+
+  <p>Please review this feature entry on behalf of {{team_name}}.</p>
+</section>
+
+
+<section id="next-steps">
+  <p><b>Your next steps:</b></p>
+  <p><a href="{{gate_url}}"
+     class="button-like"
+     >Review feature details</a></p>
+</section>
