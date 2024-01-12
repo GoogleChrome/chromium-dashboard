@@ -1,6 +1,6 @@
 // @ts-check
 import { test, expect } from '@playwright/test';
-import { captureConsoleMessages, delay, login, logout, createNewFeature } from './test_utils';
+import { captureConsoleMessages, acceptBeforeUnloadDialogs, delay, login, logout, createNewFeature } from './test_utils';
 
 
 test.beforeEach(async ({ page }) => {
@@ -9,6 +9,7 @@ test.beforeEach(async ({ page }) => {
 
     // Login before running each test.
     await login(page);
+    await acceptBeforeUnloadDialogs(page);
 });
 
 test.afterEach(async ({ page }) => {

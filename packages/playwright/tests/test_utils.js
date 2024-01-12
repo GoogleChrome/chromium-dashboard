@@ -204,8 +204,21 @@ export async function logout(page) {
   // console.log('logout: done');
 }
 
+/**
+ * Handle beforeunload by accepting it.
+ * @param {import('@playwright/test').Page} page
+ */
+export async function acceptBeforeUnloadDialogs(page) {
+  page.on('dialog', async dialog => {
+    if (dialog.type() === 'beforeunload') {
+      await dialog.accept();
+    }
+  });
+}
+
 
 /**
+ * From top-level page, after logging in, go to the New Feature page.
  * @param {import('@playwright/test').Page} page
  */
 export async function gotoNewFeaturePage(page) {
@@ -264,5 +277,37 @@ export async function createNewFeature(page) {
   // Submit the form.
   const submitButton = page.locator('input[type="submit"]');
   await submitButton.click();
+  await delay(500);
+}
+
+
+/**
+ * Starting from the feature page, edit the feature
+ * @param {import('@playwright/test').Page} page
+ */
+export async function editFeature(page) {
+  // Edit the feature.
+  const editButton = page.locator('a[class="editfeature"]');
+  await editButton.click();
+  await delay(500);
+}
+
+
+/**
+ * Starting from the feature page, delete the feature
+ * @param {import('@playwright/test').Page} page
+ */
+export async function deleteFeature(page) {
+  await editFeature(page);
+
+  // Setup handler for confirm dialog
+  page.on('dialog', async dialog => {
+    if (dialog.type() === 'confirm') {
+      await dialog.accept();
+    }
+  });
+
+  const deleteButton = page.locator('#delete-feature');
+  await deleteButton.click();
   await delay(500);
 }
