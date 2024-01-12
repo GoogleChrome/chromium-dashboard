@@ -203,3 +203,66 @@ export async function logout(page) {
 
   // console.log('logout: done');
 }
+
+
+/**
+ * @param {import('@playwright/test').Page} page
+ */
+export async function gotoNewFeaturePage(page) {
+  // console.log('navigate to create feature page');
+  const mobile = await isMobile(page);
+  const createFeatureButton = page.getByTestId('create-feature-button');
+  const menuButton = page.locator('[data-testid=menu]');
+
+  // Navigate to the new feature page.
+  await expect(menuButton).toBeVisible();
+  if (mobile) {
+    await menuButton.click();  // To show menu.
+  }
+  await createFeatureButton.click();
+  if (mobile) {
+    await menuButton.click();  // To hide menu
+    await delay(500);
+  }
+
+  // Expect "Add a feature" header to be present.
+  const addAFeatureHeader = page.getByTestId('add-a-feature');
+  await expect(addAFeatureHeader).toBeVisible({ timeout: 10000 });
+  // console.log('navigate to create feature page done');
+}
+
+
+/**
+ * @param {import('@playwright/test').Page} page
+ */
+export async function createNewFeature(page) {
+  await gotoNewFeaturePage(page);
+
+  // Enter feature name
+  const featureNameInput = page.locator('input[name="name"]');
+  await featureNameInput.fill('Test feature name');
+  await delay(500);
+
+  // Enter summary description
+  const summaryInput = page.locator('textarea[name="summary"]');
+  await summaryInput.fill('Test summary description');
+  await delay(500);
+
+  // Select blink component.
+  const blinkComponentsInputWrapper = page.locator('div.datalist-input-wrapper');
+  await blinkComponentsInputWrapper.focus();
+  await delay(500);
+  const blinkComponentsInput = blinkComponentsInputWrapper.locator('input');
+  await blinkComponentsInput.fill('blink');
+  await delay(500);
+
+  // Select feature type.
+  const featureTypeRadioNew = page.locator('input[name="feature_type"][value="0"]');
+  await featureTypeRadioNew.click();
+  await delay(500);
+
+  // Submit the form.
+  const submitButton = page.locator('input[type="submit"]');
+  await submitButton.click();
+  await delay(500);
+}
