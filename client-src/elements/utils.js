@@ -10,7 +10,6 @@ import {
   ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME,
   ROLLOUT_IMPACT_DISPLAYNAME,
 } from './form-field-enums';
-import { NULL } from 'sass';
 
 let toastEl;
 
