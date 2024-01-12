@@ -345,7 +345,7 @@ export class ChromedashGuideStagePage extends LitElement {
 
   renderForm() {
     const formattedFeature = formatFeatureForEdit(this.feature);
-    this.fieldValues.allFields = formattedFeature;
+    this.fieldValues.feature = this.feature;
 
     return html`
       <form name="feature_form">
