@@ -2,7 +2,7 @@
 import { test, expect } from '@playwright/test';
 import {
   captureConsoleMessages, delay, login, logout,
-  gotoNewFeaturePage, createNewFeature
+  gotoNewFeaturePage, createNewFeature, deleteFeature, acceptBeforeUnloadDialogs
 } from './test_utils';
 
 
@@ -12,6 +12,7 @@ test.beforeEach(async ({page}) => {
 
   // Login before running each test.
   await login(page);
+  await acceptBeforeUnloadDialogs(page);
 });
 
 test.afterEach(async ({ page }) => {
@@ -27,6 +28,24 @@ test('navigate to create feature page', async ({page}) => {
   await expect(page).toHaveScreenshot('new-feature-page.png');
 });
 
+/**
+ * Enters a blink component on the page.
+ *
+ * @param {Page} page - The page object representing the web page.
+ * @return {Promise<void>} A promise that resolves once the blink component is entered.
+ */
+async function enterBlinkComponent(page) {
+  const blinkComponentsInputWrapper = page.locator('div.datalist-input-wrapper');
+  await expect(blinkComponentsInputWrapper).toBeVisible();
+
+  // Trying to show options, doesn't work yet.
+  await blinkComponentsInputWrapper.focus();
+  await delay(500);
+
+  const blinkComponentsInput = blinkComponentsInputWrapper.locator('input');
+  await blinkComponentsInput.fill('blink');
+  await delay(500);
+}
 
 test('enter feature name', async ({page}) => {
   await gotoNewFeaturePage(page);
@@ -45,6 +64,7 @@ test('enter feature name', async ({page}) => {
   await delay(500);
 
   await expect(page).toHaveScreenshot('feature-name.png');
+
 });
 
 
@@ -68,6 +88,22 @@ test('test semantic checks', async ({ page }) => {
     mask: [page.locator('section[id="history"]')]
   });
   await delay(500);
+
+  // Fix cause of the error
+  await summaryInput.fill('0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789');
+  await summaryInput.blur(); // Must blur to trigger change event.
+
+  // Check that there is no error now for the summary field
+  const summaryLocator = page.locator('chromedash-form-field[name="summary"]');
+  await expect(summaryLocator).not.toContainText('Feature summary should be');
+
+  // // Save changes
+  // const submitButton = page.locator('input[type="submit"]');
+  // await expect(submitButton).toBeVisible();
+  // await submitButton.click();
+  // await delay(500);
+
+  // await acceptBeforeUnloadDialogs(page);
 });
 
 
@@ -102,4 +138,6 @@ test('create new feature', async ({ page }) => {
     mask: [page.locator('section[id="history"]')]
   });
   await delay(500);
+
+  // await deleteFeature(page);
 });
