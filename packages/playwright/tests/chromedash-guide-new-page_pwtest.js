@@ -2,7 +2,7 @@
 import { test, expect } from '@playwright/test';
 import {
   captureConsoleMessages, delay, login, logout,
-  gotoNewFeaturePage, createNewFeature, deleteFeature, acceptBeforeUnloadDialogs
+  gotoNewFeaturePage,enterBlinkComponent, createNewFeature, deleteFeature, acceptBeforeUnloadDialogs
 } from './test_utils';
 
 
@@ -28,24 +28,6 @@ test('navigate to create feature page', async ({page}) => {
   await expect(page).toHaveScreenshot('new-feature-page.png');
 });
 
-/**
- * Enters a blink component on the page.
- *
- * @param {Page} page - The page object representing the web page.
- * @return {Promise<void>} A promise that resolves once the blink component is entered.
- */
-async function enterBlinkComponent(page) {
-  const blinkComponentsInputWrapper = page.locator('div.datalist-input-wrapper');
-  await expect(blinkComponentsInputWrapper).toBeVisible();
-
-  // Trying to show options, doesn't work yet.
-  await blinkComponentsInputWrapper.focus();
-  await delay(500);
-
-  const blinkComponentsInput = blinkComponentsInputWrapper.locator('input');
-  await blinkComponentsInput.fill('blink');
-  await delay(500);
-}
 
 test('enter feature name', async ({page}) => {
   await gotoNewFeaturePage(page);
@@ -115,16 +97,7 @@ test('enter blink component', async ({ page }) => {
   await blinkComponentsField.scrollIntoViewIfNeeded();
   await expect(blinkComponentsField).toBeVisible();
 
-  const blinkComponentsInputWrapper = page.locator('div.datalist-input-wrapper');
-  await expect(blinkComponentsInputWrapper).toBeVisible();
-
-  // Trying to show options, doesn't work yet.
-  await blinkComponentsInputWrapper.focus();
-  await delay(500);
-
-  const blinkComponentsInput = blinkComponentsInputWrapper.locator('input');
-  await blinkComponentsInput.fill('blink');
-  await delay(500);
+  await enterBlinkComponent(page);
 
   await expect(page).toHaveScreenshot('blink-components.png');
 });

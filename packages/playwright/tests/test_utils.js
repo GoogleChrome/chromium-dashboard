@@ -242,8 +242,27 @@ export async function gotoNewFeaturePage(page) {
   const addAFeatureHeader = page.getByTestId('add-a-feature');
   await expect(addAFeatureHeader).toBeVisible({ timeout: 10000 });
   // console.log('navigate to create feature page done');
+  await delay(500);
 }
 
+/**
+ * Enters a blink component on the page.
+ *
+ * @param {Page} page - The page object representing the web page.
+ * @return {Promise<void>} A promise that resolves once the blink component is entered.
+ */
+export async function enterBlinkComponent(page) {
+  const blinkComponentsInputWrapper = page.locator('div.datalist-input-wrapper');
+  await expect(blinkComponentsInputWrapper).toBeVisible();
+
+  // Trying to show options, doesn't work yet.
+  await blinkComponentsInputWrapper.focus();
+  await delay(500);
+
+  const blinkComponentsInput = blinkComponentsInputWrapper.locator('input');
+  await blinkComponentsInput.fill('blink');
+  await delay(500);
+}
 
 /**
  * @param {import('@playwright/test').Page} page
@@ -261,13 +280,7 @@ export async function createNewFeature(page) {
   await summaryInput.fill('Test summary description');
   await delay(500);
 
-  // Select blink component.
-  const blinkComponentsInputWrapper = page.locator('div.datalist-input-wrapper');
-  await blinkComponentsInputWrapper.focus();
-  await delay(500);
-  const blinkComponentsInput = blinkComponentsInputWrapper.locator('input');
-  await blinkComponentsInput.fill('blink');
-  await delay(500);
+  await enterBlinkComponent(page);
 
   // Select feature type.
   const featureTypeRadioNew = page.locator('input[name="feature_type"][value="0"]');
@@ -287,7 +300,7 @@ export async function createNewFeature(page) {
  */
 export async function editFeature(page) {
   // Edit the feature.
-  const editButton = page.locator('a[class="editfeature"]');
+  const editButton = page.locator('a.editfeature');
   await editButton.click();
   await delay(500);
 }

@@ -1,6 +1,6 @@
 // @ts-check
 import { test, expect } from '@playwright/test';
-import { captureConsoleMessages, acceptBeforeUnloadDialogs, delay, login, logout, createNewFeature } from './test_utils';
+import { editFeature, captureConsoleMessages, acceptBeforeUnloadDialogs, delay, login, logout, createNewFeature } from './test_utils';
 
 
 test.beforeEach(async ({ page }) => {
@@ -20,11 +20,7 @@ test.afterEach(async ({ page }) => {
 
 test('edit feature', async ({ page }) => {
     await createNewFeature(page);
-
-    // Edit the feature.
-    const editButton = page.locator('a[class="editfeature"]');
-    await editButton.click();
-    await delay(500);
+    await editFeature(page);
 
     // Screenshot editor page
     await expect(page).toHaveScreenshot('new-feature-edit.png');
