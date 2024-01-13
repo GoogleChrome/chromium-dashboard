@@ -1,41 +1,24 @@
-<p>
-  {{updater_email}} updated this feature:
-</p>
+<section id="context">
+  <div>
+    <b>Updated</b> feature entry:<br/>
+    <a class="feature-name" href="{{SITE_URL}}feature/{{id}}"
+          >{{feature.name}}</a>
+  </div>
+</section>
+<br/>
 
-<p>
-  <b><a href="https://chromestatus.com/feature/{{id}}"
-        >{{feature.name}}</a></b>
-</p>
 
-<p><b>Components</b>: {{feature.blink_components|join(", ")}}</p>
-<p><b>Implementation status</b>: {{status}}</p>
-<p><b>Estimated milestones</b>:
-  {% include "estimated-milestones-table.html" %}
-</p>
+<section id="details">
+  <div><b>Updates made by {{updater_email}}:</b></div>
+  <ul>
+    {{formatted_changes|safe}}
+  </ul>
+</section>
 
-<p><b>Changes:</b></p>
-<ul>
-{{formatted_changes|safe}}
-</ul>
 
-<hr>
-
-<p>Next steps:</p>
-<ul>
-  <li>Check existing
-    <a href="https://github.com/GoogleChrome/lighthouse/tree/main/core/audits"
-       >Lighthouse audits</a> for correctness.</li>
-
-{% if moz_link_urls %}
-  <li>Review the following MDN pages and
-    <a href="https://docs.google.com/document/d/10jDTZeW914ahqWfxwm9_WXJWvyAKT6EcDIlbI3w0BKY/edit#heading=h.frumfipthu7"
-       >subscribe to updates</a> for them.
-    <ul>
-      {% for url in moz_link_urls %}
-        <li>{{url}}</li>
-      {% endfor %}
-    </ul>
-  </li>
-{% endif %}
-
-</ul>
+<section id="next-steps">
+  <div><b>Your next steps:</b></div>
+  <div><a href="{{SITE_URL}}feature/{{id}}"
+     class="button-like"
+     >View feature details</a></div>
+</section>

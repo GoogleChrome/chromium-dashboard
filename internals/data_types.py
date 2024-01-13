@@ -210,6 +210,7 @@ class VerboseFeatureDict(TypedDict):
   bug_url: str | None
   launch_bug_url: str | None
   screenshot_links: list[str]
+  first_enterprise_notification_milestone: int | None
   breaking_change: bool
 
   # Implementation in Chrome

@@ -29,6 +29,7 @@ export class ChromedashFormField extends LitElement {
     this.name = '';
     this.index = -1;
     this.value = '';
+    this.initialValue= '';
     this.fieldValues = [];
     this.checkboxLabel = '';
     this.disabled = false;
@@ -69,6 +70,7 @@ export class ChromedashFormField extends LitElement {
   }
 
   firstUpdated() {
+    this.initialValue = JSON.parse(JSON.stringify(this.value));
     this.doSemanticCheck();
   }
 
@@ -134,8 +136,9 @@ export class ChromedashFormField extends LitElement {
     const checkFunction = this.fieldProps.check;
     if (checkFunction) {
       const fieldValue = this.getValue();
+      const initialValue = this.initialValue;
       const checkResult = await checkFunction(fieldValue,
-        (name) => getFieldValue(name, this.fieldValues));
+        (name) => getFieldValue(name, this.fieldValues), initialValue);
       if (checkResult == null) {
         this.checkMessage = '';
       } else {

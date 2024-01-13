@@ -73,10 +73,6 @@ def format_email_body(
   stage_info = stage_helpers.get_stage_info_for_templates(fe)
   milestone_str = _determine_milestone_string(stage_info['ship_stages'])
 
-  moz_link_urls = [
-      link for link in fe.doc_links
-      if urllib.parse.urlparse(link).hostname == 'developer.mozilla.org']
-
   formatted_changes = ''
   for prop in changes:
     prop_name = prop['prop_name']
@@ -91,6 +87,8 @@ def format_email_body(
 
   body_data = {
       'feature': fe,
+      'category': core_enums.FEATURE_CATEGORIES[fe.category],
+      'feature_type': core_enums.FEATURE_TYPES[fe.feature_type],
       'stage_info': stage_info,
       'should_render_mstone_table': stage_info['should_render_mstone_table'],
       'creator_email': fe.creator_email,
@@ -100,7 +98,6 @@ def format_email_body(
       'status': core_enums.IMPLEMENTATION_STATUS[fe.impl_status_chrome],
       'formatted_changes': formatted_changes,
       'SITE_URL': settings.SITE_URL,
-      'moz_link_urls': moz_link_urls,
   }
   body_data.update(additional_template_data or {})
   body = render_template(template_path, **body_data)
@@ -439,7 +436,7 @@ class NotifyInactiveUsersHandler(basehandlers.FlaskHandler):
   def _build_email_tasks(self, users_to_notify):
     email_tasks = []
     for email in users_to_notify:
-      body_data = {'site_url': settings.SITE_URL}
+      body_data = {'SITE_URL': settings.SITE_URL}
       html = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
       subject = f'Notice of WebStatus user inactivity for {email}'
       email_tasks.append({

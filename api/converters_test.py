@@ -50,7 +50,8 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
         impl_status_chrome=5, blink_components=['Blink'],
         spec_link='https://example.com/spec',
         sample_links=['https://example.com/samples'],
-        screenshot_links=['https://example.com/screenshot'], standard_maturity=1,
+        screenshot_links=['https://example.com/screenshot'],
+        first_enterprise_notification_milestone=100, standard_maturity=1,
         ff_views=5, ff_views_link='https://example.com/ff_views',
         ff_views_notes='ff notes', safari_views=1,
         bug_url='https://example.com/bug',
@@ -102,6 +103,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'summary': 'sum',
       'unlisted': False,
       'blink_components': ['Blink'],
+      'first_enterprise_notification_milestone': 100,
       'breaking_change': False,
       'is_released': True,
       'milestone': None,
@@ -185,6 +187,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'summary': 'sum',
       'unlisted': False,
       'blink_components': ['Blink'],
+      'first_enterprise_notification_milestone': 100,
       'breaking_change': False,
       'is_released': True,
       'milestone': True,
@@ -306,6 +309,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'spec_link': 'https://example.com/spec',
       'sample_links': ['https://example.com/samples'],
       'screenshot_links': ['https://example.com/screenshot'],
+      'first_enterprise_notification_milestone': 100,
       'created': {
         'by': 'creator@example.com',
         'when': str(self.date)

@@ -1,37 +1,52 @@
-{% if is_escalated %}<p>
-  In order to ensure feature data accuracy, this notification has been
-  escalated to extended contributors of this feature and to the WebStatus team.
-</p>
-{% endif %}<p>
-  You are receiving this notification because you are listed as
-  a{% if not is_escalated %}n owner{% endif %}{% if is_escalated %} contributor{% endif %}
-  of the following ChromeStatus feature entry:
-</p>
-</br>
-<p>
-  <strong>{{feature.name}}</strong>
-</p>
-</br>
-<p>
-  Your feature is slated to launch soon for m{{milestone}}:
-</p>
-</br>
-<p>
-  {% include "estimated-milestones-table.html" %}
-</p>
-</br>
-<p>
-  Your feature entry is an important resource for
-  cross functional teams that help drive adoption of new features and
-  enterprise IT admins who might be affected by web platform changes.
-</p>
-</br>
-<p>
-  We need to know whether your plans are changing or staying
-  the same. <strong>Please click the link below to update and confirm key
-  fields of your feature entry.</strong>
-</p>
-</br>
-<b><a href="{{site_url}}guide/verify_accuracy/{{id}}">
-  {{site_url}}guide/verify_accuracy/{{id}}
-</a></b>
+<section id="context">
+  <div>
+    <b>Your update is needed</b> on feature entry:<br/>
+    <a class="feature-name" href="{{SITE_URL}}feature/{{id}}"
+          >{{feature.name}}</a>
+  </div>
+</section>
+<br/>
+
+
+<section id="why-triggered">
+  {% if is_escalated %}
+  <p>
+    In order to ensure feature data accuracy, this notification has been
+    escalated to extended contributors of this feature and to the WebStatus team.
+  </p>
+  {% endif %}
+
+  <p>
+    You are receiving this notification because you are listed as
+    a{% if not is_escalated %}n owner{% endif %}{% if is_escalated %} contributor{% endif %}
+     of the ChromeStatus feature entry.
+  </p>
+</section>
+<br/>
+
+
+<section id="details">
+  <p>Your feature is slated to launch soon for m{{milestone}}:</p>
+  <p>
+    {% include "estimated-milestones-table.html" %}
+  </p>
+  <p>
+    Your feature entry is an important resource for
+    cross functional teams that help drive adoption of new features and
+    enterprise IT admins who might be affected by web platform changes.
+  </p>
+
+  <p>
+    We need to know whether your plans are changing or staying
+    the same. <strong>Please click the link below to update and confirm key
+    fields of your feature entry.</strong>
+  </p>
+</section>
+
+
+<section id="next-steps">
+  <div><b>Your next steps:</b></div>
+  <div><a href="{{SITE_URL}}guide/verify_accuracy/{{id}}"
+          class="button-like">
+      Verify feature accuracy</a></div>
+</section>

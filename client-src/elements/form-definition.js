@@ -122,6 +122,7 @@ export const ENTERPRISE_NEW_FEATURE_FORM_FIELDS = [
   'owner',
   'editors',
   'enterprise_feature_categories',
+  'first_enterprise_notification_milestone',
   'screenshot_links',
 ];
 
@@ -174,6 +175,7 @@ export const FLAT_ENTERPRISE_METADATA_FIELDS = {
         'owner',
         'editors',
         'enterprise_feature_categories',
+        'first_enterprise_notification_milestone',
         'screenshot_links',
       ],
     },
