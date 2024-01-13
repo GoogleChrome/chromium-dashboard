@@ -10,7 +10,7 @@
 <section id="details">
   <p><b>Review requested{% if updater_email %} by {{updater_email}}{% endif %}:</b></p>
 
-  <p>Please review this feature entry on behalf of {{team_name}}.</p>
+  <p>Please review this feature entry on behalf of {% if team_name %}{{team_name}}{% else %}your team{% endif %}.</p>
 </section>
 
 

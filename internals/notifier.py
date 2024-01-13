@@ -67,7 +67,7 @@ def _determine_milestone_string(ship_stages: list[Stage]) -> str:
 def format_email_body(
     template_path, fe: FeatureEntry, changes: list[dict[str, Any]],
     updater_email: Optional[str] = None,
-    additional_template_data: dict[str, Any] = None) -> str:
+    additional_template_data: dict[str, Any] | None = None) -> str:
   """Return an HTML string for a notification email body."""
 
   stage_info = stage_helpers.get_stage_info_for_templates(fe)
@@ -478,7 +478,7 @@ class FeatureReviewHandler(basehandlers.FlaskHandler):
   """This task handles feature review requests by making email tasks."""
 
   IS_INTERNAL_HANDLER = True
-  EMAIL_TEMPLATE_PATH = 'update-feature-email.html'
+  EMAIL_TEMPLATE_PATH = 'review-request-email.html'
 
   def process_post_data(self, **kwargs):
     self.require_task_header()
@@ -488,7 +488,10 @@ class FeatureReviewHandler(basehandlers.FlaskHandler):
     gate_url = self.get_param('gate_url', required=False)
     new_val = self.get_param('new_val', required=False)
     updater_email = self.get_param('updater_email', required=False)
-    team_name = self.get_param('team_name', 'your team')
+    team_name = None
+    appr_def = approval_defs.APPROVAL_FIELDS_BY_ID.get(gate_type)
+    if appr_def:
+      team_name = appr_def.team_name
 
     # TODO(jrobbins): Remove this backward compatibility code
     # after next deployment.
@@ -501,6 +504,8 @@ class FeatureReviewHandler(basehandlers.FlaskHandler):
 
     logging.info('Starting to notify reviewers for feature %s',
                  repr(feature)[:settings.MAX_LOG_LINE])
+    logging.info('gate type is %r', gate_type)
+    logging.info('team_name is %r', team_name)
 
     fe = FeatureEntry.get_by_id(feature['id'])
     if fe:

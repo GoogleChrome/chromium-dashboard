@@ -595,8 +595,14 @@ class FeatureReviewHandlerTest(testing_config.CustomTestCase):
     mock_f_e_b.return_value = 'mock body html'
     mock_get_approvers.return_value = ['approver1@example.com', 'approver2@example.com']
 
+    addl_data = {
+        'gate_url': 'gate_url',
+        'new_val': 'Review requested',
+        'updater_email': None,
+        'team_name': None,
+        }
     actual_tasks = self.handler.make_review_requests_email(
-        self.fe_1, 1, self.changes)
+        self.fe_1, 1, addl_data)
     self.assertEqual(2, len(actual_tasks))
     review_task_1 = actual_tasks[0]
 
@@ -617,7 +623,8 @@ class FeatureReviewHandlerTest(testing_config.CustomTestCase):
     self.assertEqual('approver2@example.com', review_task_2['to'])
 
     mock_f_e_b.assert_called_once_with(
-        'update-feature-email.html', self.fe_1, self.changes)
+        'review-request-email.html', self.fe_1, [],
+        additional_template_data=addl_data)
     mock_get_approvers.assert_called_once_with(1)
 
   @mock.patch('internals.notifier.format_email_body')
@@ -629,8 +636,14 @@ class FeatureReviewHandlerTest(testing_config.CustomTestCase):
         stage_id=123, state=0, assignee_emails=['approver3@example.com'])
     gate_1.put()
 
+    addl_data = {
+        'gate_url': 'gate_url',
+        'new_val': 'Review requested',
+        'updater_email': None,
+        'team_name': None,
+        }
     actual_tasks = self.handler.make_review_requests_email(
-        self.fe_1, 1, self.changes)
+        self.fe_1, 1, addl_data)
     self.assertEqual(1, len(actual_tasks))
     review_task_1 = actual_tasks[0]
 
