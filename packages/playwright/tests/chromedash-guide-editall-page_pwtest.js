@@ -8,7 +8,7 @@ import { captureConsoleMessages, acceptBeforeUnloadDialogs, delay, login, logout
  * @param {import('@playwright/test').Page} page
  */
 async function gotoEditAllPage(page) {
-    const editButton = page.getByText('Edit all fields');
+    const editButton = page.locator('a[href^="/guide/editall/"]');
     await editButton.click();
     await delay(500);
 }
