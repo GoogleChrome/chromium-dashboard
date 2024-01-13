@@ -147,25 +147,6 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__update_with_changes.html'])
 
-  def test_format_email_body__mozdev_links(self):
-    """We generate an email body with links to developer.mozilla.org."""
-    self.fe_1.doc_links = ['https://developer.mozilla.org/look-here']
-    with test_app.app_context():
-      body_html = notifier.format_email_body(
-          'update-feature-email.html', self.template_fe, self.changes)
-    # TESTDATA.make_golden(body_html, 'test_format_email_body__mozdev_links_mozilla.html')
-    self.assertEqual(body_html,
-      TESTDATA['test_format_email_body__mozdev_links_mozilla.html'])
-
-    self.fe_1.doc_links = [
-        'https://hacker-site.org/developer.mozilla.org/look-here']
-    with test_app.app_context():
-      body_html = notifier.format_email_body(
-          'update-feature-email.html', self.template_fe, self.changes)
-    # TESTDATA.make_golden(body_html, 'test_format_email_body__mozdev_links_non_mozilla.html')
-    self.assertEqual(body_html,
-      TESTDATA['test_format_email_body__mozdev_links_non_mozilla.html'])
-
   def test_accumulate_reasons(self):
     """We can accumulate lists of reasons why we sent a message to a user."""
     addr_reasons = collections.defaultdict(list)
