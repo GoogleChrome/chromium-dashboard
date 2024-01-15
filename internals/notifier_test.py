@@ -39,6 +39,7 @@ test_app = flask.Flask(__name__,
 # Load testdata to be used across all of the CustomTestCases
 TESTDATA = testing_config.Testdata(__file__)
 
+
 class EmailFormattingTest(testing_config.CustomTestCase):
 
   def setUp(self):
@@ -383,60 +384,6 @@ class EmailFormattingTest(testing_config.CustomTestCase):
 
   @mock.patch('internals.notifier.format_email_body')
   @mock.patch('internals.approval_defs.get_approvers')
-  def test_make_review_requests_email__unassigned(
-      self, mock_get_approvers, mock_f_e_b):
-    """We send email to approvers for a review request."""
-    mock_f_e_b.return_value = 'mock body html'
-    mock_get_approvers.return_value = ['approver1@example.com', 'approver2@example.com']
-
-    actual_tasks = notifier.make_review_requests_email(
-        self.fe_1, 1, self.changes)
-    self.assertEqual(2, len(actual_tasks))
-    review_task_1 = actual_tasks[0]
-
-    # Notification to feature change watcher.
-    self.assertEqual('Review Request for feature: feature one', review_task_1['subject'])
-    self.assertIn('mock body html', review_task_1['html'])
-    self.assertIn('<li>You are a reviewer for this type of gate</li>',
-      review_task_1['html'])
-    self.assertEqual('approver1@example.com', review_task_1['to'])
-
-    review_task_2 = actual_tasks[1]
-
-    # Notification to feature change watcher.
-    self.assertEqual('Review Request for feature: feature one', review_task_2['subject'])
-    self.assertIn('mock body html', review_task_2['html'])
-    self.assertIn('<li>You are a reviewer for this type of gate</li>',
-      review_task_2['html'])
-    self.assertEqual('approver2@example.com', review_task_2['to'])
-
-    mock_f_e_b.assert_called_once_with(
-        'update-feature-email.html', self.fe_1, self.changes)
-    mock_get_approvers.assert_called_once_with(1)
-
-  @mock.patch('internals.notifier.format_email_body')
-  def test_make_review_requests_email__assigned(self, mock_f_e_b):
-    """We send email to the assigned reviewer for a review request."""
-    mock_f_e_b.return_value = 'mock body html'
-    gate_1 = Gate(
-        feature_id=self.fe_1.key.integer_id(), gate_type=1,
-        stage_id=123, state=0, assignee_emails=['approver3@example.com'])
-    gate_1.put()
-
-    actual_tasks = notifier.make_review_requests_email(
-        self.fe_1, 1, self.changes)
-    self.assertEqual(1, len(actual_tasks))
-    review_task_1 = actual_tasks[0]
-
-    # Notification to feature change watcher.
-    self.assertEqual('Review Request for feature: feature one', review_task_1['subject'])
-    self.assertIn('mock body html', review_task_1['html'])
-    self.assertIn('<li>This review is assigned to you</li>',
-      review_task_1['html'])
-    self.assertEqual('approver3@example.com', review_task_1['to'])
-
-  @mock.patch('internals.notifier.format_email_body')
-  @mock.patch('internals.approval_defs.get_approvers')
   def test_make_new_comments_email__unassigned(
       self, mock_get_approvers, mock_f_e_b):
     """We send email to approvers for a review request."""
@@ -609,6 +556,103 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
     mock_f_e_b.assert_called_once_with(
         'update-feature-email.html', self.fe_2, self.changes)
+
+
+class FeatureReviewHandlerTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.fe_1 = FeatureEntry(
+        name='feature one', summary='sum',
+        owner_emails=['feature_owner@example.com'],
+        editor_emails=['feature_editor@example.com', 'owner_1@example.com'],
+        cc_emails=['cc@example.com'], category=1,
+        devrel_emails=['devrel1@gmail.com'],
+        creator_email='creator1@gmail.com',
+        updater_email='editor1@gmail.com',
+        blink_components=['Blink'],
+        ff_views=1, safari_views=1,
+        web_dev_views=1, standard_maturity=1)
+    self.fe_1.put()
+
+    self.changes = [{
+        'prop_name': 'Review status change in gate_url',
+        'new_val': 'Review requested',
+        'old_val': 'na',
+    }]
+    self.handler = notifier.FeatureReviewHandler()
+
+  def tearDown(self):
+    kinds = [FeatureEntry, Stage, FeatureOwner, BlinkComponent, Gate]
+    for kind in kinds:
+      for entity in kind.query():
+        entity.key.delete()
+
+  @mock.patch('internals.notifier.format_email_body')
+  @mock.patch('internals.approval_defs.get_approvers')
+  def test_make_review_requests_email__unassigned(
+      self, mock_get_approvers, mock_f_e_b):
+    """We send email to approvers for a review request."""
+    mock_f_e_b.return_value = 'mock body html'
+    mock_get_approvers.return_value = ['approver1@example.com', 'approver2@example.com']
+
+    addl_data = {
+        'gate_url': 'gate_url',
+        'new_val': 'Review requested',
+        'updater_email': None,
+        'team_name': None,
+        }
+    actual_tasks = self.handler.make_review_requests_email(
+        self.fe_1, 1, addl_data)
+    self.assertEqual(2, len(actual_tasks))
+    review_task_1 = actual_tasks[0]
+
+    # Notification to feature change watcher.
+    self.assertEqual('Review Request for feature: feature one', review_task_1['subject'])
+    self.assertIn('mock body html', review_task_1['html'])
+    self.assertIn('<li>You are a reviewer for this type of gate</li>',
+      review_task_1['html'])
+    self.assertEqual('approver1@example.com', review_task_1['to'])
+
+    review_task_2 = actual_tasks[1]
+
+    # Notification to feature change watcher.
+    self.assertEqual('Review Request for feature: feature one', review_task_2['subject'])
+    self.assertIn('mock body html', review_task_2['html'])
+    self.assertIn('<li>You are a reviewer for this type of gate</li>',
+      review_task_2['html'])
+    self.assertEqual('approver2@example.com', review_task_2['to'])
+
+    mock_f_e_b.assert_called_once_with(
+        'review-request-email.html', self.fe_1, [],
+        additional_template_data=addl_data)
+    mock_get_approvers.assert_called_once_with(1)
+
+  @mock.patch('internals.notifier.format_email_body')
+  def test_make_review_requests_email__assigned(self, mock_f_e_b):
+    """We send email to the assigned reviewer for a review request."""
+    mock_f_e_b.return_value = 'mock body html'
+    gate_1 = Gate(
+        feature_id=self.fe_1.key.integer_id(), gate_type=1,
+        stage_id=123, state=0, assignee_emails=['approver3@example.com'])
+    gate_1.put()
+
+    addl_data = {
+        'gate_url': 'gate_url',
+        'new_val': 'Review requested',
+        'updater_email': None,
+        'team_name': None,
+        }
+    actual_tasks = self.handler.make_review_requests_email(
+        self.fe_1, 1, addl_data)
+    self.assertEqual(1, len(actual_tasks))
+    review_task_1 = actual_tasks[0]
+
+    # Notification to feature change watcher.
+    self.assertEqual('Review Request for feature: feature one', review_task_1['subject'])
+    self.assertIn('mock body html', review_task_1['html'])
+    self.assertIn('<li>This review is assigned to you</li>',
+      review_task_1['html'])
+    self.assertEqual('approver3@example.com', review_task_1['to'])
 
 
 class FeatureStarTest(testing_config.CustomTestCase):
