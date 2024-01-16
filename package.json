@@ -88,7 +88,7 @@
     "gulp-uglify-es": "^3.0.0",
     "ini": ">=4.1.1",
     "kind-of": ">=6.0.3",
-    "lit-analyzer": "^2.0.2",
+    "lit-analyzer": "^2.0.3",
     "lodash": ">=4.17.21",
     "lodash.template": ">=4.5.0",
     "minimist": ">=1.2.8",
