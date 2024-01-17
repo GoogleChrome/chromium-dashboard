@@ -2,7 +2,7 @@
 import { test, expect } from '@playwright/test';
 import {
   captureConsoleMessages, delay, login, logout,
-  gotoNewFeaturePage,enterBlinkComponent, createNewFeature, deleteFeature, acceptBeforeUnloadDialogs
+  gotoNewFeaturePage, enterBlinkComponent, createNewFeature
 } from './test_utils';
 
 
@@ -12,7 +12,6 @@ test.beforeEach(async ({page}) => {
 
   // Login before running each test.
   await login(page);
-  await acceptBeforeUnloadDialogs(page);
 });
 
 test.afterEach(async ({ page }) => {
@@ -84,8 +83,6 @@ test('test semantic checks', async ({ page }) => {
   // await expect(submitButton).toBeVisible();
   // await submitButton.click();
   // await delay(500);
-
-  // await acceptBeforeUnloadDialogs(page);
 });
 
 

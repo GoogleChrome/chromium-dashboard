@@ -1,6 +1,6 @@
 // @ts-check
 import { test, expect } from '@playwright/test';
-import { captureConsoleMessages, acceptBeforeUnloadDialogs, delay, login, logout, createNewFeature, deleteFeature } from './test_utils';
+import { captureConsoleMessages, delay, login, logout, createNewFeature, deleteFeature } from './test_utils';
 
 
 /**
@@ -9,6 +9,7 @@ import { captureConsoleMessages, acceptBeforeUnloadDialogs, delay, login, logout
  */
 async function gotoEditAllPage(page) {
     const editButton = page.locator('a[href^="/guide/editall/"]');
+    await delay(500);
     await editButton.click();
     await delay(500);
 }
@@ -20,7 +21,6 @@ test.beforeEach(async ({ page }) => {
 
     // Login before running each test.
     await login(page);
-    await acceptBeforeUnloadDialogs(page);
 });
 
 test.afterEach(async ({ page }) => {
