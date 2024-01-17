@@ -1,5 +1,6 @@
 // @ts-check
 import { expect } from '@playwright/test';
+import { Page } from "playwright-core";
 
 
 /**
@@ -13,7 +14,7 @@ export async function delay(ms) {
 /**
  * Call this, say in your test.beforeEach() method, to capture all
  * console messages and copy them to the playwright console.
- * @param {import("playwright-core").Page} page
+ * @param {Page} page
  */
 export function captureConsoleMessages(page) {
   page.on('console', async msg => {
@@ -52,7 +53,7 @@ export function captureConsoleMessages(page) {
 }
 
 /**
- * @param {import("playwright-core").Page} page
+ * @param {Page} page
  */
 export function capturePageEvents(page) {
   // page.on('open', async () => {
@@ -87,7 +88,7 @@ export function capturePageEvents(page) {
 }
 
 /**
- * @param {import("playwright-core").Page} page
+ * @param {Page} page
  */
 export async function decodeCookies(page) {
   const cookies = await page.context().cookies();
@@ -97,12 +98,52 @@ export async function decodeCookies(page) {
 }
 
 /**
- * @param {import("playwright-core").Page} page
+ * @param {Page} page
  */
 export async function isMobile(page) {
   const viewportSize = page.viewportSize();
   return (viewportSize && viewportSize.width <= 700)
 }
+
+
+/**
+ * Handle beforeunload by accepting it.
+ * @param {import('@playwright/test').Page} page
+ */
+export function acceptBeforeUnloadDialogs(page) {
+  page.on('dialog', async dialog => {
+    if (dialog.type() === 'beforeunload') {
+      await dialog.accept();
+    }
+  });
+}
+
+/**
+ * Handle confirm dialog by accepting it.
+ * @param {import('@playwright/test').Page} page
+ */
+export function acceptConfirmDialogs(page) {
+  // Setup handler for confirm dialog
+  page.on('dialog', async dialog => {
+    if (dialog.type() === 'confirm') {
+      await dialog.accept();
+    }
+  });
+}
+
+/**
+ * Handle alert dialog by accepting it.
+ * @param {import('@playwright/test').Page} page
+ */
+export function acceptAlertDialogs(page) {
+  // Setup handler for confirm dialog
+  page.on('dialog', async dialog => {
+    if (dialog.type() === 'alert') {
+      await dialog.accept();
+    }
+  });
+}
+
 
 // Timeout for logging in, in milliseconds.
 // Initially set to longer timeout, in case server needs to warm up and
@@ -111,13 +152,17 @@ export async function isMobile(page) {
 let loginTimeout = 20000;
 
 /**
- * @param {import("playwright-core").Page} page
+ * @param {Page} page
  */
 export async function login(page) {
 
   page.exposeFunction('isPlaywright', () => {});
 
   // Always reset to the roadmap page.
+  // But first accept alert dialogs, which
+  // can occur in Chrome when not logged in.
+  acceptAlertDialogs(page);
+
   await page.pause();
   // console.log('login: goto /');
   await page.goto('/', {timeout: 20000});
@@ -168,17 +213,22 @@ export async function login(page) {
 }
 
 /**
- * @param {import("playwright-core").Page} page
+ * @param {Page} page
  */
 export async function logout(page) {
   // Attempt to sign out after running each test.
-  // First reset to the roadmap page.
+  // First reset to the roadmap page, so that we avoid the alert
+  // when signed out on other pages.
+  // But in case the current page has unsaved changes we need to
+  // accept leaving them unsaved.
+  acceptBeforeUnloadDialogs(page);
+
   // console.log('logout: goto /');
   await page.goto('/');
   await page.waitForURL('**/roadmap');
   await delay(1000);
-
   await expect(page).toHaveTitle(/Chrome Status/);
+
   page.mouse.move(0, 0); // Move away from content on page.
   await delay(1000);
 
@@ -196,30 +246,24 @@ export async function logout(page) {
   // Need to hover to see the sign-out-link
   const signOutLink = page.getByTestId('sign-out-link');
   await expect(signOutLink).toBeVisible();
-  await signOutLink.click({timeout: 5000});
+  await signOutLink.click({ timeout: 5000 });
+  await delay(500);
 
   await page.waitForURL('**/roadmap');
   await expect(page).toHaveTitle(/Chrome Status/);
 
-  // console.log('logout: done');
-}
+  // Redundant? Go to roadmap page.
+  await page.goto('/');
+  await page.waitForURL('**/roadmap');
+  await delay(500);
 
-/**
- * Handle beforeunload by accepting it.
- * @param {import('@playwright/test').Page} page
- */
-export async function acceptBeforeUnloadDialogs(page) {
-  page.on('dialog', async dialog => {
-    if (dialog.type() === 'beforeunload') {
-      await dialog.accept();
-    }
-  });
+  // console.log('logout: done');
 }
 
 
 /**
  * From top-level page, after logging in, go to the New Feature page.
- * @param {import('@playwright/test').Page} page
+ * @param {Page} page
  */
 export async function gotoNewFeaturePage(page) {
   // console.log('navigate to create feature page');
@@ -244,6 +288,7 @@ export async function gotoNewFeaturePage(page) {
   // console.log('navigate to create feature page done');
   await delay(500);
 }
+
 
 /**
  * Enters a blink component on the page.
@@ -301,6 +346,7 @@ export async function createNewFeature(page) {
 export async function editFeature(page) {
   // Edit the feature.
   const editButton = page.locator('a.editfeature');
+  await delay(500);
   await editButton.click();
   await delay(500);
 }
@@ -312,13 +358,6 @@ export async function editFeature(page) {
  */
 export async function deleteFeature(page) {
   await editFeature(page);
-
-  // Setup handler for confirm dialog
-  page.on('dialog', async dialog => {
-    if (dialog.type() === 'confirm') {
-      await dialog.accept();
-    }
-  });
 
   const deleteButton = page.locator('#delete-feature');
   await deleteButton.click();
