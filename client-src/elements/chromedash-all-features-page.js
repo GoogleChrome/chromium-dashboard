@@ -84,6 +84,7 @@ export class ChromedashAllFeaturesPage extends LitElement {
   }
 
   renderBox(query) {
+    console.log('Can Edit:', this.user && this.user.can_edit_all);
     return html`
       <chromedash-feature-table
         .query=${query}
