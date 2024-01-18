@@ -62,6 +62,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
           new_crbug_url: 'fake crbug link',
           editors: ['editor1', 'editor2'],
           enterprise_feature_categories: ['1', '2', '3'],
+          first_enterprise_notification_milestone: 'n_milestone_feat_3',
           stages: [
             {
               id: 3,
@@ -93,6 +94,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
           new_crbug_url: 'fake crbug link',
           editors: ['editor1'],
           enterprise_feature_categories: ['3'],
+          first_enterprise_notification_milestone: 'n_milestone_feat_4',
           stages: [
             {
               id: 5,
@@ -128,6 +130,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
           new_crbug_url: 'fake crbug link',
           editors: ['editor1', 'editor2'],
           enterprise_feature_categories: ['2'],
+          first_enterprise_notification_milestone: 'n_milestone_feat_5',
           stages: [
             {
               id: 7,
@@ -163,6 +166,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
           new_crbug_url: 'fake crbug link',
           editors: ['editor1', 'editor2'],
           enterprise_feature_categories: ['2'],
+          first_enterprise_notification_milestone: 'n_milestone_feat_6',
           stages: [
             {
               id: 8,
@@ -190,6 +194,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
           new_crbug_url: 'fake crbug link',
           editors: ['editor1', 'editor2'],
           enterprise_feature_categories: [],
+          first_enterprise_notification_milestone: 'n_milestone_feat_7',
           stages: [
             {
               id: 9,
@@ -345,7 +350,8 @@ describe('chromedash-enterprise-release-notes-page', () => {
           features[0].querySelector('strong').textContent);
         assert.equal(
           '< To remove - Feature details - ' +
-          'Owners: owner1 - Editors: editor1  - Last Updated: feature 4 updated >',
+          'Owners: owner1 - Editors: editor1 - First Notice: n_milestone_feat_4 - ' +
+          'Last Updated: feature 4 updated >',
           features[0].querySelector('.toremove').textContent);
         assert.equal(
           'feature 4 summary',
@@ -372,7 +378,8 @@ describe('chromedash-enterprise-release-notes-page', () => {
           features[1].querySelector('strong').textContent);
         assert.equal(
           '< To remove - Feature details - ' +
-          'Owners: owner - Editors: editor1, editor2  - Last Updated: updated when >',
+          'Owners: owner - Editors: editor1, editor2 - First Notice: n_milestone_feat_3 - ' +
+          'Last Updated: updated when >',
           features[1].querySelector('.toremove').textContent);
         assert.equal(
           'feature 3 summary',
@@ -395,7 +402,8 @@ describe('chromedash-enterprise-release-notes-page', () => {
           features[2].querySelector('strong').textContent);
         assert.equal(
           '< To remove - Feature details - ' +
-          'Owners: owner - Editors: editor1, editor2  - Last Updated: updated when >',
+          'Owners: owner - Editors: editor1, editor2 - First Notice: n_milestone_feat_7 - ' +
+          'Last Updated: updated when >',
           features[2].querySelector('.toremove').textContent);
         assert.equal(
           'normal feature summary',
@@ -428,7 +436,8 @@ describe('chromedash-enterprise-release-notes-page', () => {
           features[0].querySelector('strong').textContent);
         assert.equal(
           '< To remove - Feature details - ' +
-          'Owners: owner - Editors: editor1, editor2  - Last Updated: updated when >',
+          'Owners: owner - Editors: editor1, editor2 - First Notice: n_milestone_feat_6 - ' +
+          'Last Updated: updated when >',
           features[0].querySelector('.toremove').textContent);
         assert.equal(
           'feature 6 summary',
@@ -449,7 +458,8 @@ describe('chromedash-enterprise-release-notes-page', () => {
           features[1].querySelector('strong').textContent);
         assert.equal(
           '< To remove - Feature details - ' +
-          'Owners: owner - Editors: editor1, editor2  - Last Updated: updated when >',
+          'Owners: owner - Editors: editor1, editor2 - First Notice: n_milestone_feat_5 - ' +
+          'Last Updated: updated when >',
           features[1].querySelector('.toremove').textContent);
         assert.equal(
           'feature 5 summary',

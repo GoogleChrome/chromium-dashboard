@@ -66,15 +66,12 @@ def _determine_milestone_string(ship_stages: list[Stage]) -> str:
 
 def format_email_body(
     template_path, fe: FeatureEntry, changes: list[dict[str, Any]],
-    updater_email: Optional[str] = None) -> str:
+    updater_email: Optional[str] = None,
+    additional_template_data: dict[str, Any] | None = None) -> str:
   """Return an HTML string for a notification email body."""
 
   stage_info = stage_helpers.get_stage_info_for_templates(fe)
   milestone_str = _determine_milestone_string(stage_info['ship_stages'])
-
-  moz_link_urls = [
-      link for link in fe.doc_links
-      if urllib.parse.urlparse(link).hostname == 'developer.mozilla.org']
 
   formatted_changes = ''
   for prop in changes:
@@ -90,6 +87,8 @@ def format_email_body(
 
   body_data = {
       'feature': fe,
+      'category': core_enums.FEATURE_CATEGORIES[fe.category],
+      'feature_type': core_enums.FEATURE_TYPES[fe.feature_type],
       'stage_info': stage_info,
       'should_render_mstone_table': stage_info['should_render_mstone_table'],
       'creator_email': fe.creator_email,
@@ -98,8 +97,9 @@ def format_email_body(
       'milestone': milestone_str,
       'status': core_enums.IMPLEMENTATION_STATUS[fe.impl_status_chrome],
       'formatted_changes': formatted_changes,
-      'moz_link_urls': moz_link_urls,
+      'SITE_URL': settings.SITE_URL,
   }
+  body_data.update(additional_template_data or {})
   body = render_template(template_path, **body_data)
   return body
 
@@ -125,7 +125,7 @@ def convert_reasons_to_task(
 
   reply_to = None
   recipient_user = users.User(email=addr)
-  if permissions.can_create_feature(recipient_user):
+  if permissions.can_create_feature(recipient_user) and triggering_user_email:
     reply_to = triggering_user_email
 
   one_email_task = {
@@ -264,25 +264,6 @@ def add_reviewers(
     reasons = 'You are a reviewer for this type of gate'
 
   accumulate_reasons(addr_reasons, recipients, reasons)
-
-
-def make_review_requests_email(
-    fe: FeatureEntry, gate_type: int, changes: Optional[list]=None):
-  """Return a list of task dicts to notify approvers of review requests."""
-  if changes is None:
-    changes = []
-  email_html = format_email_body('update-feature-email.html', fe, changes)
-
-  subject = 'Review Request for feature: %s' % fe.name
-  triggering_user_email = fe.updater_email
-
-  addr_reasons: dict[str, list[str]] = collections.defaultdict(list)
-  add_reviewers(fe, gate_type, addr_reasons)
-
-  all_tasks = [convert_reasons_to_task(
-                   addr, reasons, email_html, subject, triggering_user_email)
-               for addr, reasons in sorted(addr_reasons.items())]
-  return all_tasks
 
 
 def make_review_assignment_email(
@@ -455,7 +436,7 @@ class NotifyInactiveUsersHandler(basehandlers.FlaskHandler):
   def _build_email_tasks(self, users_to_notify):
     email_tasks = []
     for email in users_to_notify:
-      body_data = {'site_url': settings.SITE_URL}
+      body_data = {'SITE_URL': settings.SITE_URL}
       html = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
       subject = f'Notice of WebStatus user inactivity for {email}'
       email_tasks.append({
@@ -497,23 +478,67 @@ class FeatureReviewHandler(basehandlers.FlaskHandler):
   """This task handles feature review requests by making email tasks."""
 
   IS_INTERNAL_HANDLER = True
+  EMAIL_TEMPLATE_PATH = 'review-request-email.html'
 
   def process_post_data(self, **kwargs):
     self.require_task_header()
 
     feature = self.get_param('feature')
     gate_type = self.get_param('gate_type')
+    gate_url = self.get_param('gate_url', required=False)
+    new_val = self.get_param('new_val', required=False)
+    updater_email = self.get_param('updater_email', required=False)
+    team_name = None
+    appr_def = approval_defs.APPROVAL_FIELDS_BY_ID.get(gate_type)
+    if appr_def:
+      team_name = appr_def.team_name
+
+    # TODO(jrobbins): Remove this backward compatibility code
+    # after next deployment.
     changes = self.get_param('changes', required=False) or []
+    if changes and not gate_url:
+      prop_name = changes[0]['prop_name']
+      gate_url = prop_name.split()[-1]
+    if changes and not new_val:
+      new_val = changes[0]['new_val']
 
     logging.info('Starting to notify reviewers for feature %s',
                  repr(feature)[:settings.MAX_LOG_LINE])
+    logging.info('gate type is %r', gate_type)
+    logging.info('team_name is %r', team_name)
 
     fe = FeatureEntry.get_by_id(feature['id'])
     if fe:
-      email_tasks = make_review_requests_email(fe, gate_type, changes)
+      additional_template_data = {
+          'gate_url': gate_url,
+          'new_val': new_val,
+          'updater_email': updater_email,
+          'team_name': team_name,
+      }
+      email_tasks = self.make_review_requests_email(
+          fe, gate_type, additional_template_data)
       send_emails(email_tasks)
 
     return {'message': 'Done'}
+
+  def make_review_requests_email(
+      self, fe: FeatureEntry, gate_type: int,
+      additional_template_data: dict[str, str]):
+    """Return a list of task dicts to notify approvers of review requests."""
+    email_html = format_email_body(
+        self.EMAIL_TEMPLATE_PATH, fe, [],
+        additional_template_data=additional_template_data)
+
+    subject = 'Review Request for feature: %s' % fe.name
+
+    addr_reasons: dict[str, list[str]] = collections.defaultdict(list)
+    add_reviewers(fe, gate_type, addr_reasons)
+
+    all_tasks = [
+        convert_reasons_to_task(
+            addr, reasons, email_html, subject, None)
+        for addr, reasons in sorted(addr_reasons.items())]
+    return all_tasks
 
 
 class ReviewAssignmentHandler(basehandlers.FlaskHandler):

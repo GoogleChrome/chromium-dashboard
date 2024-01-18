@@ -32,6 +32,7 @@ from internals.review_models import Gate
 from internals import processes
 from internals import search_fulltext
 from internals import feature_links
+from internals.enterprise_helpers import *
 import settings
 
 
@@ -60,6 +61,17 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
 
     feature_type = int(self.form.get('feature_type', 0))
 
+    breaking_change = self.form.get('breaking_change') == 'on'
+    enterprise_notification_milestone = self.form.get('first_enterprise_notification_milestone')
+    if enterprise_notification_milestone:
+      enterprise_notification_milestone = int(enterprise_notification_milestone)
+    if breaking_change and needs_default_first_notification_milestone(new_fields={
+      'feature_type': feature_type,
+      'breaking_change': breaking_change,
+      'first_enterprise_notification_milestone': enterprise_notification_milestone
+      }):
+      enterprise_notification_milestone = get_default_first_notice_milestone_for_feature()
+
     # Write for new FeatureEntry entity.
     feature_entry = FeatureEntry(
         category=int(self.form.get('category')),
@@ -74,7 +86,8 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
         updater_email=self.get_current_user().email(),
         accurate_as_of=datetime.now(),
         unlisted=self.form.get('unlisted') == 'on',
-        breaking_change=self.form.get('breaking_change') == 'on',
+        breaking_change=breaking_change,
+        first_enterprise_notification_milestone=enterprise_notification_milestone,
         blink_components=blink_components,
         tag_review_status=processes.initial_tag_review_status(feature_type))
     key: ndb.Key = feature_entry.put()
@@ -129,6 +142,14 @@ class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
         _auth_domain='gmail.com')
     feature_type = core_enums.FEATURE_TYPE_ENTERPRISE_ID
 
+    enterprise_notification_milestone = self.form.get('first_enterprise_notification_milestone')
+    if enterprise_notification_milestone:
+      enterprise_notification_milestone = int(enterprise_notification_milestone)
+    if needs_default_first_notification_milestone(new_fields={
+      'feature_type': feature_type,
+      'first_enterprise_notification_milestone': enterprise_notification_milestone}):
+      enterprise_notification_milestone = get_default_first_notice_milestone_for_feature()
+
     # Write for new FeatureEntry entity.
     feature_entry = FeatureEntry(
         category=int(core_enums.MISC),
@@ -143,6 +164,7 @@ class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
         updater_email=signed_in_user.email(),
         accurate_as_of=datetime.now(),
         screenshot_links=self.parse_links('screenshot_links'),
+        first_enterprise_notification_milestone=enterprise_notification_milestone,
         blink_components=[settings.DEFAULT_ENTERPRISE_COMPONENT],
         tag_review_status=core_enums.REVIEW_NA)
     key: ndb.Key = feature_entry.put()
@@ -168,6 +190,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
   # Field name, data type
   EXISTING_FIELDS: list[tuple[str, str]] = [
       # impl_status_chrome and intent_stage handled separately.
+      # first_enterprise_notification_milestone handled separately
       ('spec_link', 'link'),
       ('standard_maturity', 'int'),
       ('api_spec', 'bool'),
@@ -422,6 +445,20 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
         new_field = self.RENAMED_FIELD_MAPPING.get(field, field)
         self._add_changed_field(fe, new_field, field_val, changed_fields)
         setattr(fe, new_field, field_val)
+    
+    breaking_change = self._get_field_val('breaking_change', 'bool')
+    if self.touched('first_enterprise_notification_milestone', form_fields):
+      milestone = self._get_field_val('first_enterprise_notification_milestone', 'int')
+      if is_update_first_notification_milestone(fe, {
+        'first_enterprise_notification_milestone': milestone,
+        'breaking_change': breaking_change}):
+        self._add_changed_field(
+          fe, 'first_enterprise_notification_milestone', milestone, changed_fields)
+        setattr(fe, 'first_enterprise_notification_milestone', milestone)
+    if should_remove_first_notice_milestone(fe, {'breaking_change': breaking_change}):
+      self._add_changed_field(
+        fe, 'first_enterprise_notification_milestone', milestone, changed_fields)
+      setattr(fe, 'first_enterprise_notification_milestone', None)
 
     # impl_status_chrome and intent_stage
     # can be be set either by <select> or a checkbox.

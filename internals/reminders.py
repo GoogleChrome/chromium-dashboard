@@ -89,7 +89,7 @@ def build_email_tasks(
       'feature': fe,
       'stage_info': stage_info,
       'should_render_mstone_table': stage_info['should_render_mstone_table'],
-      'site_url': settings.SITE_URL,
+      'SITE_URL': settings.SITE_URL,
       'milestone': mstone,
       'beta_date_str': beta_date_str,
       'is_escalated': is_escalated,
