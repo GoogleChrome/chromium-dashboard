@@ -336,6 +336,10 @@ export async function createNewFeature(page) {
   const submitButton = page.locator('input[type="submit"]');
   await submitButton.click();
   await delay(500);
+
+  // Wait until we are on the Feature page.
+  // await page.waitForURL('**/feature/');
+  // await delay(500);
 }
 
 

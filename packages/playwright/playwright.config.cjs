@@ -24,9 +24,9 @@ module.exports = defineConfig({
   /* Retry on CI only */
   retries: 0, // process.env.CI ? 2 : 0,
   /* Opt out of parallel tests. */
-  workers: 1, // process.env.CI ? 1 : undefined,
+  workers: 1, // was: process.env.CI ? 1 : undefined,
   /* Reporter to use. Not for CI. See https://playwright.dev/docs/test-reporters */
-  reporter: process.env.CI ? [ ['html', { open: 'never'}] ] : [ ['html', { open: 'always'}] ],
+  reporter: 'line', /* was: process.env.CI ? [ ['html', { open: 'never'}] ] : [ ['html', { open: 'always'}] ], */
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
@@ -44,26 +44,26 @@ module.exports = defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
 
-    {
-      name: 'chromium-mobile',
-      use: {
-        ...devices['Desktop Chrome'],
-        viewport: { width: 600, height: 1000 },
-      }
-    },
+    // {
+    //   name: 'chromium-mobile',
+    //   use: {
+    //     ...devices['Desktop Chrome'],
+    //     viewport: { width: 600, height: 1000 },
+    //   }
+    // },
 
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
+    // {
+    //   name: 'firefox',
+    //   use: { ...devices['Desktop Firefox'] },
+    // },
 
-    {
-      name: 'firefox-mobile',
-      use: {
-        ...devices['Desktop Firefox'],
-        viewport: { width: 600, height: 1000 },
-      }
-    },
+    // {
+    //   name: 'firefox-mobile',
+    //   use: {
+    //     ...devices['Desktop Firefox'],
+    //     viewport: { width: 600, height: 1000 },
+    //   }
+    // },
 
     // Dependencies for webkit are not working yet.
     // {
