@@ -44,26 +44,26 @@ module.exports = defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
 
-    // {
-    //   name: 'chromium-mobile',
-    //   use: {
-    //     ...devices['Desktop Chrome'],
-    //     viewport: { width: 600, height: 1000 },
-    //   }
-    // },
+    {
+      name: 'chromium-mobile',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 600, height: 1000 },
+      }
+    },
 
-    // {
-    //   name: 'firefox',
-    //   use: { ...devices['Desktop Firefox'] },
-    // },
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
+    },
 
-    // {
-    //   name: 'firefox-mobile',
-    //   use: {
-    //     ...devices['Desktop Firefox'],
-    //     viewport: { width: 600, height: 1000 },
-    //   }
-    // },
+    {
+      name: 'firefox-mobile',
+      use: {
+        ...devices['Desktop Firefox'],
+        viewport: { width: 600, height: 1000 },
+      }
+    },
 
     // Dependencies for webkit are not working yet.
     // {

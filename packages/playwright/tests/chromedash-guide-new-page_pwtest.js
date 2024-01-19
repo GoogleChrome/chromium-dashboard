@@ -61,8 +61,11 @@ test('test semantic checks', async ({ page }) => {
   const summaryInput = page.locator('textarea[name="summary"]');
   await summaryInput.fill('Test summary description');
   await summaryInput.blur(); // Must blur to trigger change event.
-
   await delay(500);
+
+  // Check that the warning shows up.
+  const summaryLocator = page.locator('chromedash-form-field[name="summary"]');
+  await expect(summaryLocator).toContainText('Feature summary should be');
 
   // Screenshot of warnings about feature name summary length
   await expect(page).toHaveScreenshot('warning-feature-name-and-summary-length.png', {
@@ -75,7 +78,6 @@ test('test semantic checks', async ({ page }) => {
   await summaryInput.blur(); // Must blur to trigger change event.
 
   // Check that there is no error now for the summary field
-  const summaryLocator = page.locator('chromedash-form-field[name="summary"]');
   await expect(summaryLocator).not.toContainText('Feature summary should be');
 
   // // Save changes
