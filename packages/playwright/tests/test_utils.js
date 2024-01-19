@@ -310,6 +310,7 @@ export async function enterBlinkComponent(page) {
 }
 
 /**
+ * Create a new feature, starting from top-level page, ending up on feature page.
  * @param {import('@playwright/test').Page} page
  */
 export async function createNewFeature(page) {
