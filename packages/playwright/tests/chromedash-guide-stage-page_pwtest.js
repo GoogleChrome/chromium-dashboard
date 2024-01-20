@@ -72,10 +72,10 @@ test('edit origin trial stage', async ({ page }) => {
     const originTrailDesktopMilestoneEndLocator = page.locator('chromedash-form-field[name="ot_milestone_desktop_end"]');
     await expect(originTrailDesktopMilestoneEndLocator.locator('.check-error')).toHaveCount(1);
 
-    // Focus on a later field to center the OT milestone fields.
-    const originTrialAndroidMilestoneEnd =
-        page.locator('chromedash-form-field[name="ot_milestone_android_end"]');
-    await originTrialAndroidMilestoneEnd.focus();
+    // Scroll to a later field to center the OT milestone fields.
+    const originTrialAndroidMilestoneStart =
+        page.locator('chromedash-form-field[name="ot_milestone_android_start"]');
+    await originTrialAndroidMilestoneStart.scrollIntoViewIfNeeded();
     await delay(500);
 
     // Screenshot
