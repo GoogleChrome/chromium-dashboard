@@ -29,6 +29,11 @@ from framework import rediscache
 test_app = flask.Flask(__name__)
 
 
+CHANNEL_DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S'
+
+def _datetime_to_str(dt):
+  return datetime.strftime(dt, CHANNEL_DATETIME_FORMAT)
+
 class FeaturesAPITestDelete(testing_config.CustomTestCase):
 
   def setUp(self):
@@ -636,6 +641,231 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     self.assertIsNotNone(self.feature_1.updated)
     self.assertEqual(self.feature_1.updater_email, 'admin@example.com')
 
+
+  @mock.patch('api.channels_api.construct_specified_milestones_details')
+  def test_patch__enterprise_first_notice_wrong_non_enterprise_feature(self, mock_call):
+    """PATCH request successful with no changes to first_enterprise_notification_milestone."""
+    stable_date = _datetime_to_str(datetime.now().replace(year=datetime.now().year + 1, day=1))
+    mock_call.return_value = { 100: { 'version': 100, 'stable_date': stable_date } }
+
+    # Signed-in user with permissions.
+    testing_config.sign_in('admin@example.com', 123567890)
+
+    valid_request_body = {
+      'feature_changes': {
+        'id': self.feature_1_id,
+        'first_enterprise_notification_milestone': 100,  # str
+      },
+      'stages': [],
+    }
+
+    request_path = f'{self.request_path}/update'
+    with test_app.test_request_context(request_path, json=valid_request_body):
+      response = self.handler.do_patch()
+    # Success response should be returned.
+    self.assertEqual({'message': f'Feature {self.feature_1_id} updated.'}, response)
+    # Assert that changes were made.
+    self.assertEqual(getattr(self.feature_1, 'first_enterprise_notification_milestone'), None)
+    # Updater email field should be changed.
+    self.assertIsNotNone(self.feature_1.updated)
+    self.assertIsNone(self.feature_1.updater_email)
+
+
+  @mock.patch('api.channels_api.construct_specified_milestones_details')
+  def test_patch__enterprise_first_notice_enterprise_feature(self, mock_call):
+    """PATCH request successful with provided first_enterprise_notification_milestone."""
+    stable_date = _datetime_to_str(datetime.now().replace(year=datetime.now().year + 1, day=1))
+    mock_call.return_value = { 100: { 'version': 100, 'stable_date': stable_date } }
+
+    # Signed-in user with permissions.
+    testing_config.sign_in('admin@example.com', 123567890)
+    self.feature_1.feature_type = 4
+    self.feature_1.put()
+
+    valid_request_body = {
+      'feature_changes': {
+        'id': self.feature_1_id,
+        'first_enterprise_notification_milestone': 100,  # str
+      },
+      'stages': [],
+    }
+
+    request_path = f'{self.request_path}/update'
+    with test_app.test_request_context(request_path, json=valid_request_body):
+      response = self.handler.do_patch()
+    # Success response should be returned.
+    self.assertEqual({'message': f'Feature {self.feature_1_id} updated.'}, response)
+    # Assert that changes were made.
+    self.assertEqual(getattr(self.feature_1, 'first_enterprise_notification_milestone'), 100)
+    # Updater email field should be changed.
+    self.assertIsNotNone(self.feature_1.updated)
+    self.assertEqual(self.feature_1.updater_email, 'admin@example.com')
+
+
+
+  @mock.patch('api.channels_api.construct_specified_milestones_details')
+  def test_patch__enterprise_first_notice_newly_breaking_feature(self, mock_call):
+    """PATCH request successful with provided first_enterprise_notification_milestone."""
+    stable_date = _datetime_to_str(datetime.now().replace(year=datetime.now().year + 1, day=1))
+    mock_call.return_value = { 100: { 'version': 100, 'stable_date': stable_date } }
+
+    # Signed-in user with permissions.
+    testing_config.sign_in('admin@example.com', 123567890)
+
+    valid_request_body = {
+      'feature_changes': {
+        'id': self.feature_1_id,
+        'first_enterprise_notification_milestone': 100,  # str
+        'breaking_change': True
+      },
+      'stages': [],
+    }
+
+    request_path = f'{self.request_path}/update'
+    with test_app.test_request_context(request_path, json=valid_request_body):
+      response = self.handler.do_patch()
+    # Success response should be returned.
+    self.assertEqual({'message': f'Feature {self.feature_1_id} updated.'}, response)
+    # Assert that changes were made.
+    self.assertEqual(getattr(self.feature_1, 'first_enterprise_notification_milestone'), 100)
+    # Updater email field should be changed.
+    self.assertIsNotNone(self.feature_1.updated)
+    self.assertEqual(self.feature_1.updater_email, 'admin@example.com')
+
+  @mock.patch('api.channels_api.construct_specified_milestones_details')
+  def test_patch__enterprise_first_notice_becomes_not_breaking_feature(self, mock_call):
+    """PATCH request successful with first_enterprise_notification_milestone deleted."""
+    stable_date = _datetime_to_str(datetime.now().replace(year=datetime.now().year + 1, day=1))
+    mock_call.return_value = { 100: { 'version': 100, 'stable_date': stable_date } }
+    
+    self.feature_1.breaking_change = True
+    self.feature_1.first_enterprise_notification_milestone = 100
+    self.feature_1.put()
+  
+    # Signed-in user with permissions.
+    testing_config.sign_in('admin@example.com', 123567890)
+
+    valid_request_body = {
+      'feature_changes': {
+        'id': self.feature_1_id,
+        'breaking_change': False
+      },
+      'stages': [],
+    }
+
+    request_path = f'{self.request_path}/update'
+    with test_app.test_request_context(request_path, json=valid_request_body):
+      response = self.handler.do_patch()
+    # Success response should be returned.
+    self.assertEqual({'message': f'Feature {self.feature_1_id} updated.'}, response)
+    # Assert that changes were made.
+    self.assertEqual(getattr(self.feature_1, 'first_enterprise_notification_milestone'), None)
+    # Updater email field should be changed.
+    self.assertIsNotNone(self.feature_1.updated)
+    self.assertEqual(self.feature_1.updater_email, 'admin@example.com')
+
+  @mock.patch('api.channels_api.construct_specified_milestones_details')
+  def test_patch__first_notice_becomes_not_breaking_feature_already_published(self, mock_call):
+    """PATCH request successful with first_enterprise_notification_milestone not deleted."""
+    stable_date = _datetime_to_str(datetime.now().replace(year=datetime.now().year - 1, day=1))
+    mock_call.return_value = { 100: { 'version': 100, 'stable_date': stable_date } }
+    
+    self.feature_1.breaking_change = True
+    self.feature_1.first_enterprise_notification_milestone = 100
+    self.feature_1.put()
+  
+    # Signed-in user with permissions.
+    testing_config.sign_in('admin@example.com', 123567890)
+
+    valid_request_body = {
+      'feature_changes': {
+        'id': self.feature_1_id,
+        'breaking_change': False
+      },
+      'stages': [],
+    }
+
+    request_path = f'{self.request_path}/update'
+    with test_app.test_request_context(request_path, json=valid_request_body):
+      response = self.handler.do_patch()
+    # Success response should be returned.
+    self.assertEqual({'message': f'Feature {self.feature_1_id} updated.'}, response)
+    # Assert that changes were made.
+    self.assertEqual(getattr(self.feature_1, 'first_enterprise_notification_milestone'), 100)
+    # Updater email field should be changed.
+    self.assertIsNotNone(self.feature_1.updated)
+    self.assertEqual(self.feature_1.updater_email, 'admin@example.com')
+
+  @mock.patch('api.channels_api.construct_specified_milestones_details')
+  def test_patch__enterprise_first_notice_in_the_past(self, mock_call):
+    """PATCH request successful with newer default first_enterprise_notification_milestone."""
+    stable_date = _datetime_to_str(datetime.now().replace(year=datetime.now().year - 2, day=1))
+    mock_call.return_value = { 100: { 'version': 100, 'stable_date': stable_date } }
+
+    # Signed-in user with permissions.
+    testing_config.sign_in('admin@example.com', 123567890)
+    self.feature_1.feature_type = 4
+    self.feature_1.put()
+
+    valid_request_body = {
+      'feature_changes': {
+        'id': self.feature_1_id,
+        'first_enterprise_notification_milestone': 100,  # str
+      },
+      'stages': [],
+    }
+
+    request_path = f'{self.request_path}/update'
+    with test_app.test_request_context(request_path, json=valid_request_body):
+      response = self.handler.do_patch()
+    # Success response should be returned.
+    self.assertEqual({'message': f'Feature {self.feature_1_id} updated.'}, response)
+    # Assert that changes were made.
+    self.assertEqual(getattr(self.feature_1, 'first_enterprise_notification_milestone'), None)
+    # Updater email field should be changed.
+    self.assertIsNotNone(self.feature_1.updated)
+    self.assertIsNone(self.feature_1.updater_email)
+
+
+  @mock.patch('api.channels_api.construct_specified_milestones_details')
+  def test_patch__enterprise_first_notice_already_published(self, mock_call):
+    """PATCH request successful with no changes to first_enterprise_notification_milestone."""
+    now = datetime.now()
+    mock_call.return_value =  {
+        100: { 
+          'version': 100,
+          'stable_date': _datetime_to_str(now.replace(year=now.year - 1, day=1))
+        },
+        101: {
+          'version': 101,
+          'stable_date': _datetime_to_str(now.replace(year=now.year + 1, day=1))
+        },
+    }
+
+    # Signed-in user with permissions.
+    testing_config.sign_in('admin@example.com', 123567890)
+    self.feature_1.feature_type = 4
+    self.feature_1.first_enterprise_notification_milestone = 100
+    self.feature_1.put()
+    valid_request_body = {
+      'feature_changes': {
+        'id': self.feature_1_id,
+        'first_enterprise_notification_milestone': 101,  # str
+      },
+      'stages': [],
+    }
+
+    request_path = f'{self.request_path}/update'
+    with test_app.test_request_context(request_path, json=valid_request_body):
+      response = self.handler.do_patch()
+    # Success response should be returned.
+    self.assertEqual({'message': f'Feature {self.feature_1_id} updated.'}, response)
+    # Assert that changes were made.
+    self.assertEqual(getattr(self.feature_1, 'first_enterprise_notification_milestone'), 100)
+    # Updater email field should be changed.
+    self.assertIsNotNone(self.feature_1.updated)
+    self.assertIsNone(self.feature_1.updater_email)
+
   def test_post__valid(self):
     """POST request successful with valid input from user with permissions."""
     # Signed-in user with permissions.
@@ -871,3 +1101,146 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     with test_app.test_request_context(request_path, json=invalid_request_body):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post()
+
+  @mock.patch('api.channels_api.construct_chrome_channels_details')
+  def test_post__first_enterprise_notification_milestone_missing_enterprise(self, mock_call):
+    """POST request successful with default first_enterprise_notification_milestone."""
+
+    expected =  {
+        'beta': { 'version': 420 }
+    }
+    mock_call.return_value = expected
+
+    # Signed-in user with permissions.
+    testing_config.sign_in('admin@example.com', 123567890)
+
+    valid_request_body = {
+      'name': 'A name',
+      'summary': 'A summary',
+      'owner_emails': 'user@example.com,user2@example.com',
+      'category': 2,
+      'feature_type': 4,
+      'impl_status_chrome': 3,
+      'standard_maturity': 2,
+      'ff_views': 1,
+      'safari_views': 1,
+      'web_dev_views': 1,
+      'wpt': True,
+    }
+
+    request_path = f'{self.request_path}/create'
+    with test_app.test_request_context(request_path, json=valid_request_body):
+      response = self.handler.do_post()
+
+    # New feature should exist.
+    new_feature: FeatureEntry | None = (
+        FeatureEntry.get_by_id(response['feature_id']))
+    self.assertIsNotNone(new_feature)
+
+    # New feature's values should match fields in JSON body.
+    for field, value in valid_request_body.items():
+      if field == 'owner_emails':
+        # list field types should convert the string into a list.
+        self.assertEqual(new_feature.owner_emails, ['user@example.com', 'user2@example.com'])
+      else:
+        self.assertEqual(getattr(new_feature, field), value)
+
+    # Enterprise first notice should be created.
+    self.assertEqual(new_feature.first_enterprise_notification_milestone, 420)
+
+
+  @mock.patch('api.channels_api.construct_chrome_channels_details')
+  def test_post__first_enterprise_notification_milestone_missing_breaking_change(self, mock_call):
+    """POST request successful with default first_enterprise_notification_milestone."""
+
+    expected =  {
+        'beta': { 'version': 420 }
+    }
+    mock_call.return_value = expected
+
+    # Signed-in user with permissions.
+    testing_config.sign_in('admin@example.com', 123567890)
+
+    valid_request_body = {
+      'name': 'A name',
+      'summary': 'A summary',
+      'owner_emails': 'user@example.com,user2@example.com',
+      'category': 2,
+      'feature_type': 1,
+      'impl_status_chrome': 3,
+      'standard_maturity': 2,
+      'ff_views': 1,
+      'safari_views': 1,
+      'web_dev_views': 1,
+      'breaking_change': True,
+      'wpt': True,
+    }
+
+    request_path = f'{self.request_path}/create'
+    with test_app.test_request_context(request_path, json=valid_request_body):
+      response = self.handler.do_post()
+
+    # New feature should exist.
+    new_feature: FeatureEntry | None = (
+        FeatureEntry.get_by_id(response['feature_id']))
+    self.assertIsNotNone(new_feature)
+
+    # New feature's values should match fields in JSON body.
+    for field, value in valid_request_body.items():
+      if field == 'owner_emails':
+        # list field types should convert the string into a list.
+        self.assertEqual(new_feature.owner_emails, ['user@example.com', 'user2@example.com'])
+      else:
+        self.assertEqual(getattr(new_feature, field), value)
+
+    # Enterprise first notice should be created.
+    self.assertEqual(new_feature.first_enterprise_notification_milestone, 420)
+
+
+  @mock.patch('api.channels_api.construct_chrome_channels_details')
+  def test_post__first_enterprise_notification_milestone_set(self, mock_call):
+    """POST request successful with provided first_enterprise_notification_milestone."""
+
+    expected =  {
+        'beta': { 'version': 420 }
+    }
+    mock_call.return_value = expected
+
+    # Signed-in user with permissions.
+    testing_config.sign_in('admin@example.com', 123567890)
+
+    valid_request_body = {
+      'name': 'A name',
+      'summary': 'A summary',
+      'owner_emails': 'user@example.com,user2@example.com',
+      'category': 2,
+      'feature_type': 4,
+      'breaking_change': True,
+      'impl_status_chrome': 3,
+      'standard_maturity': 2,
+      'ff_views': 1,
+      'safari_views': 1,
+      'web_dev_views': 1,
+      'first_enterprise_notification_milestone': 123,
+      'wpt': True,
+    }
+
+    request_path = f'{self.request_path}/create'
+    with test_app.test_request_context(request_path, json=valid_request_body):
+      response = self.handler.do_post()
+
+    # New feature should exist.
+    new_feature: FeatureEntry | None = (
+        FeatureEntry.get_by_id(response['feature_id']))
+    self.assertIsNotNone(new_feature)
+
+    # New feature's values should match fields in JSON body.
+    for field, value in valid_request_body.items():
+      if field == 'owner_emails':
+        # list field types should convert the string into a list.
+        self.assertEqual(new_feature.owner_emails, ['user@example.com', 'user2@example.com'])
+      else:
+        self.assertEqual(getattr(new_feature, field), value)
+
+    # Enterprise first notice should be created.
+    self.assertEqual(new_feature.first_enterprise_notification_milestone, 123)

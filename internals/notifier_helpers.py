@@ -93,14 +93,11 @@ def notify_approvers_of_reviews(
 
   gate_url = 'https://chromestatus.com/feature/%s?gate=%s' % (
     gate.feature_id, gate.key.integer_id())
-  changed_props = {
-      'prop_name': 'Review status change in %s' % (gate_url),
-      'old_val': 'na',
-      'new_val': new_value_str,
-  }
 
   params = {
-    'changes': [changed_props],
+    'gate_url': gate_url,
+    'new_val': new_value_str,
+    'updater_email': email,
     'gate_type': gate.gate_type,
     'feature': converters.feature_entry_to_json_verbose(fe)
   }

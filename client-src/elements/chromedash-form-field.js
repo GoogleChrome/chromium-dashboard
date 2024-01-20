@@ -29,6 +29,7 @@ export class ChromedashFormField extends LitElement {
     this.name = '';
     this.index = -1;
     this.value = '';
+    this.initialValue= '';
     this.fieldValues = [];
     this.checkboxLabel = '';
     this.disabled = false;
@@ -72,6 +73,8 @@ export class ChromedashFormField extends LitElement {
   }
 
   firstUpdated() {
+    this.initialValue = JSON.parse(JSON.stringify(this.value));
+
     // We only want to do the following one time.
     this.setupSemanticCheck();
 
@@ -177,10 +180,12 @@ export class ChromedashFormField extends LitElement {
 
     const checkFunctionWrapper = async (checkFunction) => {
       const fieldValue = this.getValue();
+      const initialValue = this.initialValue;
+
       if (fieldValue == null) return false; // Assume there is nothing to check.
 
       // Call the checkFunction and await result, in case it is async.
-      const checkResult = await checkFunction(fieldValue, getFieldValue);
+      const checkResult = await checkFunction(fieldValue, getFieldValue, initialValue);
       if (checkResult == null) {
         // Don't clear this.checkMessage here.
         return false;
