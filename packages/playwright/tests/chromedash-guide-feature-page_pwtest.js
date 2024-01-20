@@ -66,5 +66,6 @@ test('add an origin trial stage', async ({ page }) => {
     // First focus on "Prepare to ship" panel
     const prepareToShipPanel = page.getByText('Prepare to ship');
     await prepareToShipPanel.focus();
+    await delay(500);
     await expect(page).toHaveScreenshot('origin-trial-panels.png');
 });

@@ -197,7 +197,7 @@ export class ChromedashGuideStagePage extends LitElement {
     `;
   }
 
-  renderFields(formattedFeature, section, feStage, useStageId=false) {
+  renderFields(formattedFeature, section, feStage) {
     if (!feStage) {
       feStage = this.stage;
     }
@@ -226,7 +226,7 @@ export class ChromedashGuideStagePage extends LitElement {
         index=${index}
         value=${value}
         .fieldValues=${this.fieldValues}
-        stageId=${useStageId ? feStage.id : undefined}
+        stageId=${feStage.id}
         ?forEnterprise=${formattedFeature.is_enterprise_feature}
         @form-field-update="${this.handleFormFieldUpdate}">
       </chromedash-form-field>
@@ -281,7 +281,7 @@ export class ChromedashGuideStagePage extends LitElement {
           formSections.push(html`
             <h3>${section.name} ${i}</h3>
             <section class="stage_form">
-              ${this.renderFields(formattedFeature, section, extensionStage, true)}
+              ${this.renderFields(formattedFeature, section, extensionStage)}
             </section>
           `);
         }

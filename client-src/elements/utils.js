@@ -100,6 +100,7 @@ export function findFirstFeatureStage(intentStage, currentStage, fe) {
 
 /* Get the value of a stage field using a form-specific name */
 export function getStageValue(stage, fieldName) {
+  if (!stage) return undefined;
   if (fieldName in STAGE_FIELD_NAME_MAPPING) {
     return stage[STAGE_FIELD_NAME_MAPPING[fieldName]];
   }
@@ -111,6 +112,7 @@ export function getStageValue(stage, fieldName) {
 // milestone that the trial was originally available for without extensions.
 function calcMaxMilestone(feStage, fieldName) {
   // If the max milestone has already been calculated, or no trial extensions exist, do nothing.
+  if (!feStage) return;
   if (feStage[`max_${fieldName}`] || !feStage.extensions) {
     return;
   }
@@ -128,6 +130,7 @@ function calcMaxMilestone(feStage, fieldName) {
 
 // Get the milestone value that is displayed to the user regarding the origin trial end date.
 function getMilestoneExtensionValue(feStage, fieldName) {
+  if (!feStage) return undefined;
   const milestoneValue = getStageValue(feStage, fieldName);
   calcMaxMilestone(feStage, fieldName);
 
