@@ -40,7 +40,9 @@ test('add an origin trial stage', async ({ page }) => {
     await delay(500);
 
     // Screenshot of this dialog.
-    await expect(page).toHaveScreenshot('create-origin-trial-stage-dialog.png');
+    await expect(page).toHaveScreenshot('create-origin-trial-stage-dialog.png', {
+        mask: [page.locator('section[id="history"]')]
+    });
 
     // Click the origin trial stage option to prepare to create stage.
     originTrialStageOption.click();
@@ -63,9 +65,11 @@ test('add an origin trial stage', async ({ page }) => {
     await delay(500);
 
     // Take a screenshot of the content area.
-    // First focus on "Prepare to ship" panel
+    // First scroll to "Prepare to ship" panel
     const prepareToShipPanel = page.getByText('Prepare to ship');
-    await prepareToShipPanel.focus();
+    await prepareToShipPanel.scrollIntoViewIfNeeded();
     await delay(500);
-    await expect(page).toHaveScreenshot('origin-trial-panels.png');
+    await expect(page).toHaveScreenshot('origin-trial-panels.png', {
+        mask: [page.locator('section[id="history"]')]
+    });
 });
