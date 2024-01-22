@@ -339,8 +339,8 @@ export async function createNewFeature(page) {
   await delay(500);
 
   // Wait until we are on the Feature page.
-  // await page.waitForURL('**/feature/');
-  // await delay(500);
+  await page.waitForURL('**/feature/*');
+  await delay(500);
 }
 
 
@@ -353,6 +353,9 @@ export async function editFeature(page) {
   const editButton = page.locator('a.editfeature');
   await delay(500);
   await editButton.click();
+  await delay(500);
+
+  await page.waitForURL('**/guide/edit/*');
   await delay(500);
 }
 
