@@ -3,9 +3,9 @@ import { test, expect } from '@playwright/test';
 import { editFeature, captureConsoleMessages, login, logout, createNewFeature } from './test_utils';
 
 
-test.beforeEach(async ({ page }) => {
+test.beforeEach(async ({ page }, testInfo) => {
     captureConsoleMessages(page);
-    test.setTimeout(90000);
+    testInfo.setTimeout(90000);
 
     // Login before running each test.
     await login(page);
