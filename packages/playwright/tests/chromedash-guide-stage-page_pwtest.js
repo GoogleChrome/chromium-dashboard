@@ -90,4 +90,66 @@ test('edit origin trial stage', async ({ page }) => {
     await expect(originTrailDesktopMilestoneStartLocator.locator('.check-error')).toHaveCount(0);
     await expect(originTrailDesktopMilestoneEndLocator.locator('.check-error')).toHaveCount(0);
 
+    // Get the Submit button, to submit the change of OT start milestone.
+    const submitButton = page.locator('input[type="submit"]');
+    await submitButton.click();
+    await delay(500);
+
+    // Check that we are back on the Feature page
+    await page.waitForURL('**/feature/*');
+
+    // Edit the Origin Trial (2) stage
+    const originTrial2Panel = page.locator('sl-details[summary="Origin Trial 2"]');
+    await originTrial2Panel.click();
+    const editFieldsButton2 = originTrial2Panel.locator('sl-button[href^="/guide/stage"]');
+    await editFieldsButton2.click();
+    await delay(500);
+    await page.waitForURL('**/guide/stage/*/*/*');
+
+    // Find the desktop end milestone field
+    const originTrial2DesktopInput = page.locator('input[name="ot_milestone_desktop_end"]');
+    await originTrial2DesktopInput.fill('100');
+    await originTrial2DesktopInput.blur();  // To trigger change event.
+
+    // Check that there is no error.
+    const originTrail2DesktopMilestoneEndLocator = page.locator('chromedash-form-field[name="ot_milestone_desktop_end"]');
+    await expect(originTrail2DesktopMilestoneEndLocator.locator('.check-error')).toHaveCount(0);
+
+    // Submit this change
+    const submitButton2 = page.locator('input[type="submit"]');
+    await submitButton2.click();
+    await delay(500);
+
+    // Wait until we are back on the feature page
+    await page.waitForURL('**/feature/*');
+
+    // Open the Prepare to ship section.
+    const prepareToShipPanel = page.locator('sl-details[summary="Prepare to ship"]');
+    await prepareToShipPanel.click();
+    await delay(500);
+
+    // click 'Edit fields' button to go to the stage page.
+    const editFieldsButton3 = prepareToShipPanel.locator('sl-button[href^="/guide/stage"]');
+    await editFieldsButton3.click();
+    await delay(500);
+
+    // Find the shipped_milestone field
+    const shippedMilestoneInput = page.locator('input[name="shipped_milestone"]');
+    // Enter the same milestone as the OT 1 start.
+    await shippedMilestoneInput.fill('100');
+    await shippedMilestoneInput.blur();  // To trigger change event
+    .
+    await delay(500);
+
+    // Check that there is a warning message.
+    const shippedMilestoneLocator = page.locator('chromedash-form-field[name="shipped_milestone"]');
+    await expect(shippedMilestoneLocator).toContainText('All origin trials should start before feature is shipped.');
+
+    // Warning should allow submit
+    const submitButton3 = page.locator('input[type="submit"]');
+    await submitButton3.click();
+    await delay(500);
+
+    // We should be back on the feature page.
+    await page.waitForURL('**/feature/*');
 });
