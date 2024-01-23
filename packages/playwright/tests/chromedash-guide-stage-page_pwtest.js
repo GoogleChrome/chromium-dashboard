@@ -137,8 +137,7 @@ test('edit origin trial stage', async ({ page }) => {
     const shippedMilestoneInput = page.locator('input[name="shipped_milestone"]');
     // Enter the same milestone as the OT 1 start.
     await shippedMilestoneInput.fill('100');
-    await shippedMilestoneInput.blur();  // To trigger change event
-    .
+    await shippedMilestoneInput.blur();  // To trigger change event.
     await delay(500);
 
     // Check that there is a warning message.
