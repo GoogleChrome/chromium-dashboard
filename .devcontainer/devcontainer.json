@@ -17,17 +17,6 @@
 			"settings": {
 				"python.defaultInterpreterPath": "/workspace/cs-env/bin/python",
 				"python.editor.tabSize": 2,
-				"python.linting.enabled": true,
-				"python.linting.pylintArgs": [
-					"--indent-string=\"  \""
-				],
-				"python.linting.banditEnabled": true,
-				"python.linting.mypyEnabled": true,
-				"python.linting.pylintEnabled": true,
-				"python.formatting.yapfPath": "/usr/local/py-utils/bin/yapf",
-				"python.linting.banditPath": "/usr/local/py-utils/bin/bandit",
-				"python.linting.mypyPath": "/usr/local/py-utils/bin/mypy",
-				"python.linting.pylintPath": "/workspace/cs-env/bin/pylint",
 				"python.testing.pytestEnabled": false,
 				"python.testing.unittestArgs": [
 					"-v",
