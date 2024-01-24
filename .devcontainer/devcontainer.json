@@ -43,6 +43,9 @@
 			// Add the IDs of extensions you want installed when the container is created.
 			"extensions": [
 				"ms-python.python",
+				"eeyore.yapf",
+				"ms-python.mypy-type-checker",
+				"ms-python.pylint",
 				"bierner.lit-html",
 				"42Crunch.vscode-openapi",
 				"ms-playwright.playwright"
@@ -74,6 +77,7 @@
 		// https://github.com/devcontainers/features/tree/main/src/docker-in-docker
 		"ghcr.io/devcontainers/features/docker-in-docker:2": {
 			"dockerDashComposeVersion": "v2"
-		}
+		},
+		"ghcr.io/devcontainers/features/github-cli:1": {}
 	}
 }
