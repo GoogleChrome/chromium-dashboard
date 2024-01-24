@@ -369,33 +369,16 @@ export function handleSaveChangesResponse(response) {
 /**
  * Returns value for fieldName, retrieved from fieldValues.
   * @param {string} fieldName
-  * @param {Array<Object>} fieldValues
+  * @param {Array<Object>} formFieldValues, with allFields property for everything else
   * @return {*} The value of the named field.
  */
-export function getFieldValue(fieldName, fieldValues) {
-  let fieldValue = null;
-  fieldValues.some((valueObj) => {
-    if (valueObj.name === fieldName) {
-      fieldValue = valueObj.value;
+export function getFieldValue(fieldName, formFieldValues) {
+  let fieldValue = formFieldValues.allFields ? formFieldValues[fieldName] : null;
+  formFieldValues.some((fieldObj) => {
+    if (fieldObj.name === fieldName) {
+      fieldValue = fieldObj.value;
       return true;
     }
   });
   return fieldValue;
-}
-
-export function checkMilestoneStartEnd(startEndPair, getFieldValue) {
-  const getValue = (name) => {
-    const value = getFieldValue(name);
-    if (typeof value === 'string') {
-      return Number(value);
-    }
-  };
-  const {start, end} = startEndPair;
-  const startMilestone = getValue(start);
-  const endMilestone = getValue(end);
-  if (startMilestone != null && endMilestone != null) {
-    if (endMilestone <= startMilestone) {
-      return {error: 'Start milestone must be before end milestone'};
-    }
-  }
 }

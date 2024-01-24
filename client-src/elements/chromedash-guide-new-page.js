@@ -6,9 +6,10 @@ import {
   NEW_FEATURE_FORM_FIELDS,
   ENTERPRISE_NEW_FEATURE_FORM_FIELDS,
 } from './form-definition';
+import {ALL_FIELDS} from './form-field-specs';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
-import {setupScrollToHash} from './utils';
+import {setupScrollToHash, formatFeatureChanges} from './utils';
 
 
 export class ChromedashGuideNewPage extends LitElement {
@@ -50,12 +51,14 @@ export class ChromedashGuideNewPage extends LitElement {
     return {
       userEmail: {type: String},
       isEnterpriseFeature: {type: Boolean},
+      fieldValues: {type: Array},
     };
   }
 
   constructor() {
     super();
     this.userEmail = '';
+    this.fieldValues = [];
   }
 
   /* Add the form's event listener after Shoelace event listeners are attached
@@ -74,6 +77,7 @@ export class ChromedashGuideNewPage extends LitElement {
 
   handleFormSubmit(event, hiddenTokenField) {
     event.preventDefault();
+    formatFeatureChanges(this.fieldValues, this.featureId);
 
     // get the XSRF token and update it if it's expired before submission
     window.csClient.ensureTokenIsValid().then(() => {
@@ -81,6 +85,19 @@ export class ChromedashGuideNewPage extends LitElement {
       event.target.submit();
     });
   }
+
+  // Handler to update form values when a field update event is fired.
+  handleFormFieldUpdate(event) {
+    const value = event.detail.value;
+    // Index represents which form was updated.
+    const index = event.detail.index;
+    if (index >= this.fieldValues.length) {
+      throw new Error('Out of bounds index when updating field values.');
+    }
+    // The field has been updated, so it is considered touched.
+    this.fieldValues[index].touched = true;
+    this.fieldValues[index].value = value;
+  };
 
   renderSubHeader() {
     return html`
@@ -115,10 +132,34 @@ export class ChromedashGuideNewPage extends LitElement {
 
   renderForm() {
     const newFeatureInitialValues = {owner: this.userEmail};
+    this.fieldValues.allFields = newFeatureInitialValues;
+
     const formFields = this.isEnterpriseFeature ?
       ENTERPRISE_NEW_FEATURE_FORM_FIELDS :
       NEW_FEATURE_FORM_FIELDS;
     const postAction = this.isEnterpriseFeature ? '/guide/enterprise/new' : '/guide/new';
+
+    const renderFormField = (field, className) => {
+      const featureJSONKey = ALL_FIELDS[field].name || field;
+      const value = newFeatureInitialValues[field];
+      const index = this.fieldValues.length;
+      this.fieldValues.push({
+        name: featureJSONKey,
+        touched: false,
+        value, // stageId
+      });
+      return html`
+        <chromedash-form-field
+          name=${field}
+          index=${index}
+          value=${value}
+          .fieldValues=${this.fieldValues}
+          ?forEnterprise=${this.isEnterpriseFeature}
+          @form-field-update="${this.handleFormFieldUpdate}"
+          class="${className || ''}"></chromedash-form-field>
+          </chromedash-form-field>
+          `;
+    };
 
     return html`
       <section id="stage_form">
@@ -126,20 +167,10 @@ export class ChromedashGuideNewPage extends LitElement {
           <input type="hidden" name="token">
           <chromedash-form-table ${ref(this.registerHandlers)}>
             ${this.renderWarnings()}
-            ${formFields.map((field) => html`
-              <chromedash-form-field
-                name=${field}
-                value=${newFeatureInitialValues[field]}
-                ?forEnterprise=${this.isEnterpriseFeature}>
-              </chromedash-form-field>
-            `)}
+            ${formFields.map((field) => renderFormField(field))}
 
-            ${!this.isEnterpriseFeature ? html`
-              <chromedash-form-field
-                name="feature_type_radio_group"
-                class="choices">
-              </chromedash-form-field>` :
-            nothing}
+            ${!this.isEnterpriseFeature ?
+              renderFormField('feature_type_radio_group', 'choices') : nothing}
           </chromedash-form-table>
           <input
             type="submit"

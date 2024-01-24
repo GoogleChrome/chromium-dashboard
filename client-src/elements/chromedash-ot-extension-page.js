@@ -6,7 +6,9 @@ import {
   setupScrollToHash} from './utils.js';
 import './chromedash-form-table.js';
 import './chromedash-form-field.js';
-import {ORIGIN_TRIAL_EXTENSION_FIELDS} from './form-definition.js';
+import {
+  formatFeatureForEdit,
+  ORIGIN_TRIAL_EXTENSION_FIELDS} from './form-definition.js';
 import {OT_EXTENSION_STAGE_MAPPING} from './form-field-enums.js';
 import {ALL_FIELDS} from './form-field-specs';
 import {SHARED_STYLES} from '../css/shared-css.js';
@@ -223,6 +225,9 @@ export class ChromedashOTExtensionPage extends LitElement {
   }
 
   renderForm() {
+    const formattedFeature = formatFeatureForEdit(this.feature);
+    this.fieldValues.allFields = formattedFeature;
+
     // OT extension page only has one section.
     const section = ORIGIN_TRIAL_EXTENSION_FIELDS.sections[0];
     return html`

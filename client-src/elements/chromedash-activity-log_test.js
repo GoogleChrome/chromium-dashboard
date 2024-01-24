@@ -54,7 +54,7 @@ describe('chromedash-activity', () => {
     assert.include(commentDiv.innerHTML, 'hey, nice feature');
     // TODO: Fails on firefox.  See issue #2186.
     // assert.exists(component.shadowRoot.querySelector('sl-relative-time'));
-    assert.notExists(component.shadowRoot.querySelector('.edit-menu'));
+    assert.notExists(component.shadowRoot.querySelector('sl-dropdown'));
     assert.notExists(component.shadowRoot.querySelector('sl-menu'));
   });
 
@@ -67,7 +67,7 @@ describe('chromedash-activity', () => {
              </chromedash-activity>`);
     const commentDiv = component.shadowRoot.querySelector('.comment');
     assert.include(commentDiv.innerHTML, 'hey, nice feature');
-    assert.exists(component.shadowRoot.querySelector('#comment-menu'));
+    assert.exists(component.shadowRoot.querySelector('sl-menu'));
   });
 
   // Note: It does not hide or prefix a deleted comment for users who don't
@@ -91,7 +91,7 @@ describe('chromedash-activity', () => {
     const commentDiv = component.shadowRoot.querySelector('.comment');
     assert.include(commentDiv.innerHTML, '[Deleted]');
     assert.include(commentDiv.innerHTML, 'better left unsaid');
-    assert.exists(component.shadowRoot.querySelector('#comment-menu'));
+    assert.exists(component.shadowRoot.querySelector('sl-dropdown'));
     assert.exists(component.shadowRoot.querySelector('sl-menu'));
   });
 
@@ -117,7 +117,7 @@ describe('chromedash-activity', () => {
     assert.notInclude(before.innerHTML, '[Deleted]');
     assert.include(before.innerHTML, 'something off the cuff');
 
-    await component.handleDeleteToggle(false);
+    await component.handleDelete(false);
     assert.equal(doomedComment.deleted_by, nonAdminUser.email);
     const after = component.shadowRoot.querySelector('.comment');
     assert.include(after.innerHTML, '[Deleted]');
@@ -147,7 +147,7 @@ describe('chromedash-activity', () => {
     assert.include(before.innerHTML, '[Deleted]');
     assert.include(before.innerHTML, 'lucky guess');
 
-    await component.handleDeleteToggle(true);
+    await component.handleDelete(true);
     assert.equal(blessedComment.deleted_by, null);
     const after = component.shadowRoot.querySelector('.comment');
     assert.notInclude(after.innerHTML, '[Deleted]');

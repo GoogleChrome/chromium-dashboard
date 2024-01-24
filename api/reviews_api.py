@@ -17,13 +17,15 @@ import datetime
 import logging
 import re
 from typing import Any, Optional, Tuple
+from google.cloud import ndb
 
 from api import converters
 from framework import basehandlers
 from framework import permissions
 from framework.users import User
 from internals import approval_defs, notifier_helpers
-from internals.core_models import FeatureEntry
+from internals.core_enums import *
+from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Gate, Vote
 
 
@@ -159,3 +161,60 @@ class GatesAPI(basehandlers.APIHandler):
       is_approver = permissions.can_review_gate(reviewer, fe, gate, approvers)
       if not is_approver:
         self.abort(400, 'Assignee is not a reviewer')
+
+
+class XfnGatesAPI(basehandlers.APIHandler):
+
+  def do_get(self, **kwargs):
+    """Reject unneeded GET requests without triggering Error Reporting."""
+    self.abort(405, valid_methods=['POST'])
+
+  def do_post(self, **kwargs) -> dict[str, str]:
+    """Add a full set of cross-functional gates to a stage."""
+    feature_id: int = kwargs['feature_id']
+    fe: FeatureEntry | None = self.get_specified_feature(feature_id=feature_id)
+    if fe is None:
+      self.abort(404, msg=f'Feature {feature_id} not found')
+    stage_id: int = kwargs['stage_id']
+    stage: Stage | None = Stage.get_by_id(stage_id)
+    if stage is None:
+      self.abort(404, msg=f'Stage {stage_id} not found')
+
+    user: User = self.get_current_user(required=True)
+    is_editor = fe and permissions.can_edit_feature(user, fe.key.integer_id())
+    is_approver = approval_defs.fields_approvable_by(user)
+    if not is_editor and not is_approver:
+      self.abort(403, msg='User lacks permission to create gates')
+
+    count = self.create_xfn_gates(feature_id, stage_id)
+    return {'message': f'Created {count} gates'}
+
+  def get_needed_gate_types(self) -> list[int]:
+    """Return a list of gate types normally used to ship a new feature."""
+    needed_gate_tuples = STAGES_AND_GATES_BY_FEATURE_TYPE[
+        FEATURE_TYPE_INCUBATE_ID]
+    for stage_type, gate_types in needed_gate_tuples:
+      if stage_type == STAGE_BLINK_SHIPPING:
+        return gate_types
+    raise ValueError('Could not find expected list of gate types')
+
+  def create_xfn_gates(self, feature_id, stage_id) -> int:
+    """Create all new incubation gates on a PSA stage"""
+    logging.info('Creating xfn gates')
+    existing_gates = Gate.query(
+        Gate.feature_id == feature_id, Gate.stage_id == stage_id).fetch()
+    existing_gate_types = set([eg.gate_type for eg in existing_gates])
+    logging.info('Found existing: %r', existing_gate_types)
+    new_gates = []
+    for gate_type in self.get_needed_gate_types():
+      if gate_type not in existing_gate_types:
+        logging.info(f'Creating gate type {gate_type}')
+        gate = Gate(
+            feature_id=feature_id, stage_id=stage_id, gate_type=gate_type,
+            state=Gate.PREPARING)
+        new_gates.append(gate)
+
+    ndb.put_multi(new_gates)
+    num_new = len(new_gates)
+    logging.info(f'Created {num_new} gates')
+    return num_new

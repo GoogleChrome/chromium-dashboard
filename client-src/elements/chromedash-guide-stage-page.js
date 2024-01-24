@@ -151,7 +151,7 @@ export class ChromedashGuideStagePage extends LitElement {
   }
 
   handleCancelClick() {
-    window.location.href = `/guide/edit/${this.featureId}`;
+    window.location.href = `/feature/${this.featureId}`;
   }
 
   // get a comma-spearated list of field names
@@ -345,6 +345,8 @@ export class ChromedashGuideStagePage extends LitElement {
 
   renderForm() {
     const formattedFeature = formatFeatureForEdit(this.feature);
+    this.fieldValues.allFields = formattedFeature;
+
     return html`
       <form name="feature_form">
         <input type="hidden" name="token">

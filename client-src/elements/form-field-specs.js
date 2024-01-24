@@ -14,8 +14,6 @@ import {
   WEB_DEV_VIEWS,
 } from './form-field-enums';
 
-import {checkMilestoneStartEnd} from './utils.js';
-
 /* Patterns from https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch04s01.html
  * Removing single quote ('), backtick (`), and pipe (|) since they are risky unless properly escaped everywhere.
  * Also removing ! and % because they have special meaning for some older email routing systems. */
@@ -64,6 +62,70 @@ const MILESTONE_NUMBER_FIELD_ATTRS = {
   placeholder: 'Milestone number',
 };
 
+const OT_MILESTONE_DESKTOP_RANGE = {
+  earlier: 'ot_milestone_desktop_start',
+  later: 'ot_milestone_desktop_end',
+};
+
+const OT_MILESTONE_ANDROID_RANGE = {
+  earlier: 'ot_milestone_android_start',
+  later: 'ot_milestone_android_end',
+};
+
+const OT_MILESTONE_WEBVIEW_RANGE = {
+  earlier: 'ot_milestone_webview_start',
+  later: 'ot_milestone_webview_end',
+};
+
+export const OT_SHIPPED_MILESTONE_DESKTOP_RANGE = {
+  earlier: 'ot_milestone_desktop_start',
+  later: 'shipped_milestone',
+  error: 'Origin trial must start before feature is shipped.',
+};
+
+const OT_SHIPPED_MILESTONE_WEBVIEW_RANGE = {
+  earlier: 'ot_milestone_webview_start',
+  later: 'shipped_webview_milestone',
+  error: 'Origin trial must start before feature is shipped.',
+};
+
+const OT_SHIPPED_MILESTONE_ANDROID_RANGE = {
+  earlier: 'ot_milestone_android_start',
+  later: 'shipped_android_milestone',
+  error: 'Origin trial must start before feature is shipped.',
+};
+
+const OT_SHIPPED_MILESTONE_IOS_RANGE = {
+  earlier: 'ot_milestone_ios_start',
+  later: 'shipped_ios_milestone',
+  error: 'Origin trial must start before feature is shipped.',
+};
+
+const DT_SHIPPED_MILESTONE_DESKTOP_RANGE = {
+  earlier: 'dt_milestone_desktop_start',
+  later: 'shipped_milestone',
+  error: 'Shipped milestone must be later than dev trial.',
+};
+
+const DT_SHIPPED_MILESTONE_ANDROID_RANGE = {
+  earlier: 'dt_milestone_android_start',
+  later: 'shipped_android_milestone',
+  error: 'Shipped milestone must be later than dev trial.',
+};
+
+const DT_SHIPPED_MILESTONE_IOS_RANGE = {
+  earlier: 'dt_milestone_ios_start',
+  later: 'shipped_ios_milestone',
+  error: 'Shipped milestone must be later than dev trial.',
+};
+
+const DT_SHIPPED_MILESTONE_WEBVIEW_RANGE = {
+  earlier: 'dt_milestone_webview_start',
+  later: 'shipped_webview_milestone',
+  error: 'Shipped webview milestone must be later than dev trial.',
+};
+
+
 const MULTI_URL_FIELD_ATTRS = {
   title: 'Enter one or more full URLs, one per line:\nhttps://...\nhttps://...',
   multiple: true,
@@ -110,6 +172,9 @@ export const ALL_FIELDS = {
       <li>CSS Flexbox: intrinsic size algorithm</li>
       <li>Permissions-Policy header</li>
     </ul>`,
+    check: (_value, getFieldValue) =>
+      checkFeatureNameAndType(getFieldValue),
+    dependents: ['feature_type', 'feature_type_radio_group'],
   },
 
   'summary': {
@@ -250,11 +315,13 @@ export const ALL_FIELDS = {
     choices: FEATURE_TYPES,
     label: 'Feature type',
     help_text: html`
-    Feature type chosen at time of creation.
+        Feature type chosen at time of creation.
         <br/>
         <p style="color: red"><strong>Note:</strong> The feature type field
         cannot be changed. If this field needs to be modified, a new feature
         would need to be created.</p>`,
+    check: (_value, getFieldValue) => checkFeatureNameAndType(getFieldValue),
+    dependents: ['name'],
   },
 
   'feature_type_radio_group': {
@@ -269,6 +336,8 @@ export const ALL_FIELDS = {
         <p style="color: red"><strong>Note:</strong> The feature type field
         cannot be changed. If this field needs to be modified, a new feature
         would need to be created.</p>`,
+    check: (_value, getFieldValue) => checkFeatureNameAndType(getFieldValue),
+    dependents: ['name'],
   },
 
   'set_stage': {
@@ -345,6 +414,42 @@ export const ALL_FIELDS = {
     label: 'Screenshots link(s)',
     help_text: html`
         Optional: Link to screenshots showcasing this feature (one URL per line). These will be shared publicly.`,
+    check: async (value) => {
+      const urls = value.split('\n').filter(x => !!x);
+      if (!urls.length) {
+        return undefined;
+      }
+      const urlTypes = await Promise.all(
+        urls
+          .map(url => fetch(url, {method: 'HEAD'})
+            .then(response => response.blob())
+            .then(blob => blob.type)
+            .catch(() => 'error')));
+      // All urls must link to an image.
+      if (urlTypes.some(type => !type.startsWith('image'))) {
+        return {
+          error: 'One or more urls are not actual images. Use a valid link to an actual image.',
+        };
+      }
+      return undefined;
+    },
+  },
+
+  'first_enterprise_notification_milestone': {
+    type: 'input',
+    attrs: MILESTONE_NUMBER_FIELD_ATTRS,
+    required: false,
+    label: 'First notification milestone',
+    help_text: html`
+        Optional: Unless you're sure you need to use this, leave it blank.
+        <br><br/>
+        If you leave this blank, we will automatically find the right milestone.
+        <br/><br/>
+        If you're not ready to communicate this feature to enterprises yet,
+        what is the earliest milestone that you expect to be ready to communicate it?
+        You can change this later. In general, you should provide enterprises notice at
+        least 3 milestones before making an impactful change.`,
+    check: (value, _, initialValue) => checkFirstEnterpriseNotice(value, initialValue),
   },
 
   'motivation': {
@@ -922,11 +1027,11 @@ export const ALL_FIELDS = {
       First desktop milestone that will support an origin
       trial of this feature.`,
     check: (_value, getFieldValue) =>
-      checkMilestoneStartEnd({
-        start: 'ot_milestone_desktop_start',
-        end: 'ot_milestone_desktop_end',
-      }, getFieldValue),
-    dependents: ['ot_milestone_desktop_end'],
+      checkMilestoneRanges([
+        OT_MILESTONE_DESKTOP_RANGE,
+        OT_SHIPPED_MILESTONE_DESKTOP_RANGE,
+      ], getFieldValue),
+    dependents: ['ot_milestone_desktop_end', 'shipped_milestone'],
   },
 
   'ot_milestone_desktop_end': {
@@ -938,10 +1043,7 @@ export const ALL_FIELDS = {
       Last desktop milestone that will support an origin
       trial of this feature.`,
     check: (_value, getFieldValue) =>
-      checkMilestoneStartEnd({
-        start: 'ot_milestone_desktop_start',
-        end: 'ot_milestone_desktop_end',
-      }, getFieldValue),
+      checkMilestoneRanges([OT_MILESTONE_DESKTOP_RANGE], getFieldValue),
     dependents: ['ot_milestone_desktop_start'],
   },
 
@@ -953,6 +1055,12 @@ export const ALL_FIELDS = {
     help_text: html`
       First android milestone that will support an origin
       trial of this feature.`,
+    check: (_value, getFieldValue) =>
+      checkMilestoneRanges([
+        OT_MILESTONE_ANDROID_RANGE,
+        OT_SHIPPED_MILESTONE_ANDROID_RANGE], getFieldValue),
+    dependents: ['ot_milestone_android_end', 'shipped_android_milestone'],
+
   },
 
   'ot_milestone_android_end': {
@@ -963,6 +1071,9 @@ export const ALL_FIELDS = {
     help_text: html`
       Last android milestone that will support an origin
       trial of this feature.`,
+    check: (_value, getFieldValue) =>
+      checkMilestoneRanges([OT_MILESTONE_ANDROID_RANGE], getFieldValue),
+    dependents: ['ot_milestone_android_start'],
   },
 
   'ot_milestone_webview_start': {
@@ -973,6 +1084,11 @@ export const ALL_FIELDS = {
     help_text: html`
       First WebView milestone that will support an origin
       trial of this feature.`,
+    check: (_value, getFieldValue) =>
+      checkMilestoneRanges([
+        OT_MILESTONE_WEBVIEW_RANGE,
+        OT_SHIPPED_MILESTONE_IOS_RANGE], getFieldValue),
+    dependents: ['ot_milestone_webview_end', 'shipped_ios_milestone'],
   },
 
   'ot_milestone_webview_end': {
@@ -983,6 +1099,9 @@ export const ALL_FIELDS = {
     help_text: html`
       Last WebView milestone that will support an origin
       trial of this feature.`,
+    check: (_value, getFieldValue) =>
+      checkMilestoneRanges([OT_MILESTONE_WEBVIEW_RANGE], getFieldValue),
+    dependents: ['ot_milestone_ios_start'],
   },
 
   'experiment_risks': {
@@ -1218,6 +1337,12 @@ export const ALL_FIELDS = {
     help_text: html`
       First milestone that will support an origin
       trial of this feature.`,
+    check: (_value, getFieldValue) =>
+      checkMilestoneRanges([
+        OT_MILESTONE_DESKTOP_RANGE,
+        OT_SHIPPED_MILESTONE_DESKTOP_RANGE,
+      ], getFieldValue),
+    dependents: ['ot_milestone_desktop_end', 'shipped_milestone'],
   },
 
   'ot_creation__milestone_desktop_last': {
@@ -1229,6 +1354,9 @@ export const ALL_FIELDS = {
     help_text: html`
       Last milestone that will support an origin
       trial of this feature.`,
+    check: (_value, getFieldValue) =>
+      checkMilestoneRanges([OT_MILESTONE_DESKTOP_RANGE], getFieldValue),
+    dependents: ['ot_milestone_desktop_start'],
   },
 
   'anticipated_spec_changes': {
@@ -1387,6 +1515,12 @@ export const ALL_FIELDS = {
     required: false,
     label: 'Chrome for desktop',
     help_text: SHIPPED_HELP_TXT,
+    check: (_value, getFieldValue) =>
+      checkMilestoneRanges([
+        OT_SHIPPED_MILESTONE_DESKTOP_RANGE,
+        DT_SHIPPED_MILESTONE_DESKTOP_RANGE], getFieldValue),
+    dependents: [
+      'dt_milestone_desktop_start', 'ot_milestone_desktop_start', 'shipped_milestone'],
   },
 
   'shipped_android_milestone': {
@@ -1395,6 +1529,11 @@ export const ALL_FIELDS = {
     required: false,
     label: 'Chrome for Android',
     help_text: SHIPPED_HELP_TXT,
+    check: (_value, getFieldValue) =>
+      checkMilestoneRanges([OT_SHIPPED_MILESTONE_ANDROID_RANGE,
+        DT_SHIPPED_MILESTONE_ANDROID_RANGE], getFieldValue),
+    dependents: [
+      'dt_milestone_android_start', 'ot_milestone_android_start', 'shipped_android_milestone'],
   },
 
   'shipped_ios_milestone': {
@@ -1403,6 +1542,12 @@ export const ALL_FIELDS = {
     required: false,
     label: 'Chrome for iOS (RARE)',
     help_text: SHIPPED_HELP_TXT,
+    check: (_value, getFieldValue) =>
+      checkMilestoneRanges([
+        OT_SHIPPED_MILESTONE_IOS_RANGE,
+        DT_SHIPPED_MILESTONE_IOS_RANGE], getFieldValue),
+    dependents: [
+      'dt_milestone_ios_start', 'ot_milestone_ios_start', 'shipped_ios_milestone'],
   },
 
   'shipped_webview_milestone': {
@@ -1411,6 +1556,12 @@ export const ALL_FIELDS = {
     required: false,
     label: 'Android Webview',
     help_text: SHIPPED_WEBVIEW_HELP_TXT,
+    check: (_value, getFieldValue) =>
+      checkMilestoneRanges([
+        OT_SHIPPED_MILESTONE_WEBVIEW_RANGE,
+        DT_SHIPPED_MILESTONE_WEBVIEW_RANGE], getFieldValue),
+    dependents: [
+      'dt_milestone_webview_start', 'ot_milestone_webview_start', 'shipped_webview_milestone'],
   },
 
   'requires_embedder_support': {
@@ -1455,6 +1606,9 @@ export const ALL_FIELDS = {
       this feature on desktop platforms by setting a flag.
       When flags are enabled by default in preparation for
       shipping or removal, please use the fields in the ship stage.`,
+    check: (_value, getFieldValue) =>
+      checkMilestoneRanges([DT_SHIPPED_MILESTONE_DESKTOP_RANGE], getFieldValue),
+    dependents: ['dt_milestone_desktop_start', 'shipped_milestone'],
   },
 
   'dt_milestone_android_start': {
@@ -1467,6 +1621,9 @@ export const ALL_FIELDS = {
       this feature on Android by setting a flag.
       When flags are enabled by default in preparation for
       shipping or removal, please use the fields in the ship stage.`,
+    check: (_value, getFieldValue) =>
+      checkMilestoneRanges([DT_SHIPPED_MILESTONE_ANDROID_RANGE], getFieldValue),
+    dependents: ['dt_milestone_android_start', 'shipped_android_milestone'],
   },
 
   'dt_milestone_ios_start': {
@@ -1479,6 +1636,9 @@ export const ALL_FIELDS = {
       this feature on iOS by setting a flag.
       When flags are enabled by default in preparation for
       shipping or removal, please use the fields in the ship stage.`,
+    check: (_value, getFieldValue) =>
+      checkMilestoneRanges([DT_SHIPPED_MILESTONE_IOS_RANGE], getFieldValue),
+    dependents: ['dt_milestone_ios_start', 'shipped_ios_milestone'],
   },
 
   'flag_name': {
@@ -1694,4 +1854,69 @@ function makeDisplaySpec(fieldName) {
 
 export function makeDisplaySpecs(fieldNames) {
   return fieldNames.map(fieldName => makeDisplaySpec(fieldName));
+}
+
+function checkMilestoneRanges(ranges, getFieldValue) {
+  const getValue = (name) => {
+    const value = getFieldValue(name);
+    if (typeof value === 'string') {
+      if (value === '') return undefined;
+      return Number(value);
+    }
+  };
+  for (const range of ranges) {
+    const {earlier, later, error} = range;
+    const earlierMilestone = getValue(earlier);
+    const laterMilestone = getValue(later);
+    if (earlierMilestone != null && laterMilestone != null) {
+      if (laterMilestone <= earlierMilestone) {
+        return {error: error || 'Start milestone must be before end milestone'};
+      }
+    }
+  }
+}
+
+function checkFeatureNameAndType(getFieldValue) {
+  const name = (getFieldValue('name') || '').toLowerCase();
+  const featureType = Number(getFieldValue('feature_type') || '0');
+  const isdeprecationName =
+    (name.includes('deprecat') || name.includes('remov'));
+  const isdeprecationType =
+    (featureType === FEATURE_TYPES.FEATURE_TYPE_DEPRECATION_ID[0]);
+  if (isdeprecationName !== isdeprecationType) {
+    if (isdeprecationName) {
+      return {
+        warning: `If the feature name contains "deprecate" or "remove",
+        the feature type should be "Feature deprecation"`,
+      };
+    } else {
+      return {
+        warning: `If the feature type is "Feature deprecation",
+        the feature name should contain "deprecate" or "remove"`,
+      };
+    }
+  }
+}
+
+async function checkFirstEnterpriseNotice(value, initialValue) {
+  if (!value) {
+    return undefined;
+  }
+  const newChannelStableDate = await window.csClient.getSpecifiedChannels(value, value)
+    .then(channels => channels[value]?.stable_date);
+  const previousChannelStableDate = initialValue ?
+    await window.csClient.getSpecifiedChannels(initialValue, initialValue)
+      .then(channels => channels[value]?.stable_date) :
+    undefined;
+
+  if (!newChannelStableDate) {
+    return {error: `Unknown milestone ${value}`};
+  }
+  if (previousChannelStableDate && Date.parse(previousChannelStableDate) < Date.now()) {
+    return {warning: `Feature was already shown in milestone ${initialValue}, this cannot be changed`};
+  }
+  if (Date.parse(newChannelStableDate) <= Date.now()) {
+    return {warning: `Milestone ${value}  was already released, choose a future milestone`};
+  }
+  return undefined;
 }

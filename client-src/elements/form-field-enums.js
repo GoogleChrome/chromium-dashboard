@@ -26,6 +26,7 @@ export const FEATURE_CATEGORIES = {
   LAYERED: [19, 'Layered APIs'],
   WEBASSEMBLY: [20, 'WebAssembly'],
   CAPABILITIES: [21, 'Capabilities (Fugu)'],
+  IWA: [22, 'Isolated Web Apps-specific API'],
 };
 
 export const ENTERPRISE_FEATURE_CATEGORIES = {

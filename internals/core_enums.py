@@ -41,6 +41,7 @@ WEBRTC = 18
 LAYERED = 19
 WEBASSEMBLY = 20
 CAPABILITIES = 21
+IWA = 22
 
 
 PLATFORM_ANDROID = 1
@@ -104,7 +105,8 @@ FEATURE_CATEGORIES = {
   WEBRTC: 'WebRTC',
   LAYERED: 'Layered APIs',
   WEBASSEMBLY: 'WebAssembly',
-  CAPABILITIES: 'Capabilities (Fugu)'
+  CAPABILITIES: 'Capabilities (Fugu)',
+  IWA: 'Isolated Web Apps-specific API',
   }
 
 FEATURE_TYPE_INCUBATE_ID = 0

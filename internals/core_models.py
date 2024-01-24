@@ -88,6 +88,7 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   bug_url = ndb.StringProperty()  # Tracking bug
   launch_bug_url = ndb.StringProperty()  # FLT or go/launch
   screenshot_links = ndb.StringProperty(repeated=True)
+  first_enterprise_notification_milestone = ndb.IntegerProperty()
   breaking_change = ndb.BooleanProperty(default=False)
 
   # Implementation in Chrome

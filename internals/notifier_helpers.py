@@ -39,8 +39,9 @@ def _get_changes_as_amendments(
           old_value=str(old_val), new_value=str(new_val)))
   return amendments
 
-def notify_feature_subscribers_of_changes(fe: 'FeatureEntry',
-    amendments: list[Amendment]) -> None:
+def notify_feature_subscribers_of_changes(
+    fe: 'FeatureEntry', amendments: list[Amendment],
+    is_update: bool=True) -> None:
   """Async notifies subscribers of new features and property changes to
       features by posting to a task queue.
   """
@@ -54,16 +55,16 @@ def notify_feature_subscribers_of_changes(fe: 'FeatureEntry',
 
   params = {
     'changes': changed_props,
-    # Subscribers are only notified on feature update.
-    'is_update': True,
+    'is_update': is_update,
     'feature': converters.feature_entry_to_json_verbose(fe)
   }
 
   # Create task to email subscribers.
   cloud_tasks_helpers.enqueue_task('/tasks/email-subscribers', params)
 
-def notify_subscribers_and_save_amendments(fe: 'FeatureEntry',
-    changed_fields: CHANGED_FIELDS_LIST_TYPE, notify: bool=True) -> None:
+def notify_subscribers_and_save_amendments(
+    fe: 'FeatureEntry', changed_fields: CHANGED_FIELDS_LIST_TYPE,
+    notify: bool=True, is_update: bool=True) -> None:
   """Notify subscribers of changes to FeatureEntry and save amendments."""
   amendments = _get_changes_as_amendments(changed_fields)
 
@@ -76,7 +77,7 @@ def notify_subscribers_and_save_amendments(fe: 'FeatureEntry',
     activity.put()
 
   if notify:
-    notify_feature_subscribers_of_changes(fe, amendments)
+    notify_feature_subscribers_of_changes(fe, amendments, is_update=is_update)
 
 
 def notify_approvers_of_reviews(
@@ -92,14 +93,11 @@ def notify_approvers_of_reviews(
 
   gate_url = 'https://chromestatus.com/feature/%s?gate=%s' % (
     gate.feature_id, gate.key.integer_id())
-  changed_props = {
-      'prop_name': 'Review status change in %s' % (gate_url),
-      'old_val': 'na',
-      'new_val': new_value_str,
-  }
 
   params = {
-    'changes': [changed_props],
+    'gate_url': gate_url,
+    'new_val': new_value_str,
+    'updater_email': email,
     'gate_type': gate.gate_type,
     'feature': converters.feature_entry_to_json_verbose(fe)
   }

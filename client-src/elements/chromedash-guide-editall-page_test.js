@@ -5,6 +5,7 @@ import './chromedash-toast';
 import '../js-src/cs-client';
 import sinon from 'sinon';
 
+
 describe('chromedash-guide-editall-page', () => {
   const validFeaturePromise = Promise.resolve({
     id: 123456,
@@ -152,4 +153,59 @@ describe('chromedash-guide-editall-page', () => {
     assert.exists(measurementFields);
     assert.isTrue(measurementFields.length === 1);
   });
+
+  // TODO: make this work
+  // it('calls milestone range pair checks', async () => {
+  //   const featureId = 123456;
+  //   window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
+
+  //   const component = await fixture(
+  //     html`<chromedash-guide-editall-page
+  //            .featureId=${featureId}>
+  //          </chromedash-guide-editall-page>`);
+  //   assert.exists(component);
+  //   assert.instanceOf(component, ChromedashGuideEditallPage);
+
+  //   const milestoneFieldStart = component.shadowRoot.querySelector(
+  //     'chromedash-form-field[name="ot_milestone_desktop_start"]');
+  //   assert.exists(milestoneFieldStart);
+
+  //   assert.exists(milestoneField);
+  //   // Get the milestone fields
+  //   const milestoneFieldStartInput =
+  //     component.shadowRoot.querySelector(
+  //       'chromedash-form-field[name="ot_milestone_desktop_start"] sl-input');
+  //   const milestoneFieldEnd =
+  //     component.shadowRoot.querySelector(
+  //       'chromedash-form-field[name="ot_milestone_desktop_end"] sl-input');
+
+  //   assert.exists(milestoneFieldStart);
+  //   assert.exists(milestoneFieldEnd);
+
+  //   // Set an invalid milestone values
+  //   milestoneFieldStartInput.value = '100';
+  //   milestoneFieldEnd.value = '99';
+
+  //   // Trigger the change event on the milestone field
+  //   milestoneFieldStartInput.dispatchEvent(new Event('sl-change'));
+
+
+  //   // The error messages should be displayed
+  //   const errorMessageStart = milestoneFieldStartInput.shadowRoot.querySelector('.check-error');
+  //   assert.exists(errorMessageStart);
+
+  //   const errorMessageEnd = milestoneFieldEnd.shadowRoot.querySelector('.check-error');
+  //   assert.exists(errorMessageEnd);
+
+  //   // Set a valid milestone value
+  //   milestoneFieldStartInput.value = '42';
+  //   milestoneFieldEnd.value = '43';
+
+  //   // Trigger the change event on the milestone field
+  //   milestoneField.dispatchEvent(new Event('sl-change'));
+
+  //   // The error messages should not be displayed
+  //   assert.notExists(errorMessageStart);
+  //   assert.notExists(errorMessageEnd);
+  // });
 });

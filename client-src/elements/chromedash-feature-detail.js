@@ -24,6 +24,7 @@ import {
   PLATFORMS_DISPLAYNAME,
   STAGE_SPECIFIC_FIELDS,
   OT_MILESTONE_END_FIELDS,
+  STAGE_PSA_SHIPPING,
   ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME,
   ROLLOUT_IMPACT_DISPLAYNAME} from './form-field-enums';
 import '@polymer/iron-icon';
@@ -124,9 +125,13 @@ class ChromedashFeatureDetail extends LitElement {
         padding: 8px 16px;
       }
 
-      sl-details sl-button {
+      sl-details sl-button,
+      sl-details sl-dropdown {
         float: right;
         margin-right: 4px;
+      }
+      sl-details sl-dropdown sl-icon-button {
+        font-size: 1.4rem;
       }
 
       sl-details sl-button[variant="default"]::part(base) {
@@ -187,6 +192,15 @@ class ChromedashFeatureDetail extends LitElement {
     `];
   }
 
+  _fireEvent(eventName, detail) {
+    const event = new CustomEvent(eventName, {
+      bubbles: true,
+      composed: true,
+      detail,
+    });
+    this.dispatchEvent(event);
+  }
+
   connectedCallback() {
     super.connectedCallback();
     this.intializeGateColumn();
@@ -242,6 +256,18 @@ class ChromedashFeatureDetail extends LitElement {
     this.shadowRoot.querySelectorAll('.stage').forEach((el) => {
       el.open = shouldOpen;
     });
+  }
+
+  handleAddXfnGates(feStage) {
+    const prompt = (
+      'Would you like to add gates for Privacy, Security, etc.? \n\n' +
+          'This is needed if the API Owners ask you to add them, ' +
+          'or if you send an "Intent to Ship" rather than a PSA.');
+    if (confirm(prompt)) {
+      window.csClient.addXfnGates(feStage.feature_id, feStage.id).then(() => {
+        this._fireEvent('refetch-needed', {});
+      });
+    }
   }
 
   renderControls() {
@@ -591,12 +617,14 @@ class ChromedashFeatureDetail extends LitElement {
     const isActive = this.feature.active_stage_id === feStage.id;
 
     // Show any buttons that should be displayed at the top of the detail card.
+    const stageMenu = this.renderStageMenu(feStage);
     const addExtensionButton = this.renderExtensionButton(feStage);
     const editButton = this.renderEditButton(feStage, processStage);
     const trialButton = this.renderOriginTrialButton(feStage);
 
     const content = html`
       <p class="description">
+        ${stageMenu}
         ${trialButton}
         ${editButton}
         ${addExtensionButton}
@@ -705,6 +733,33 @@ class ChromedashFeatureDetail extends LitElement {
           >Request Trial Creation</sl-button>`;
     }
     return nothing;
+  }
+
+  offerAddXfnGates(feStage) {
+    const stageGates = this.gates.filter(g => g.stage_id == feStage.id);
+    return (feStage.stage_type == STAGE_PSA_SHIPPING &&
+            stageGates.length < 6);
+  }
+
+  renderStageMenu(feStage) {
+    const items = [];
+    if (this.offerAddXfnGates(feStage)) {
+      items.push(html`
+        <sl-menu-item @click=${() => this.handleAddXfnGates(feStage)}>
+           Add cross-functional gates
+        </sl-menu-item>
+      `);
+    }
+
+    if (items.length === 0) return nothing;
+
+    return html`
+    <sl-dropdown>
+      <sl-icon-button library="material" name="more_vert_24px" label="Stage menu"
+         slot="trigger"></sl-icon-button>
+      <sl-menu>${items}</sl-menu>
+    </sl-dropdown>
+    `;
   }
 
   renderAddStageButton() {
