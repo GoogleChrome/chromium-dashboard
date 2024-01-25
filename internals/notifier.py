@@ -556,8 +556,8 @@ class ReviewAssignmentHandler(basehandlers.FlaskHandler):
     """Return a list of task dicts to notify assigned reviewers."""
     changed_prop = {
         'prop_name': 'Assigned reviewer',
-        'old_val': old_assignees,
-        'new_val': new_assignees,
+        'old_val': ', '.join(old_assignees or ['None']),
+        'new_val': ', '.join(new_assignees or ['None']),
     }
     email_html = format_email_body(
         self.EMAIL_TEMPLATE_PATH, fe, [changed_prop],

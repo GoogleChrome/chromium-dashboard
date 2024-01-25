@@ -696,7 +696,9 @@ class ReviewAssignementHandlerTest(testing_config.CustomTestCase):
     review_task_1 = actual_tasks[0]
 
     # Notification to old assignee.
-    self.assertEqual('Review assigned for feature: feature one', review_task_1['subject'])
+    self.assertEqual(
+        'Review assigned for feature: feature one',
+        review_task_1['subject'])
     self.assertIn('mock body html', review_task_1['html'])
     self.assertIn('<li>The review is now assigned to you</li>',
       review_task_1['html'])
@@ -705,7 +707,9 @@ class ReviewAssignementHandlerTest(testing_config.CustomTestCase):
     review_task_2 = actual_tasks[1]
 
     # Notification to new assignee.
-    self.assertEqual('Review assigned for feature: feature one', review_task_2['subject'])
+    self.assertEqual(
+        'Review assigned for feature: feature one',
+        review_task_2['subject'])
     self.assertIn('mock body html', review_task_2['html'])
     self.assertIn('<li>The review was previously assigned to you</li>',
       review_task_2['html'])
@@ -713,8 +717,8 @@ class ReviewAssignementHandlerTest(testing_config.CustomTestCase):
 
     change = {
         'prop_name': 'Assigned reviewer',
-        'old_val': ['old@example.com'],
-        'new_val': ['new@example.com'],
+        'old_val': 'old@example.com',
+        'new_val': 'new@example.com',
         }
     mock_f_e_b.assert_called_once_with(
         'review-assigned-email.html', self.fe_1, [change],
