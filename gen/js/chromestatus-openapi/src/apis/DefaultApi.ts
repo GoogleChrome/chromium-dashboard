@@ -17,13 +17,13 @@ import * as runtime from '../runtime';
 import type {
   ComponentUsersRequest,
   ComponentsUsersResponse,
-} from '../models';
+} from '../models/index';
 import {
     ComponentUsersRequestFromJSON,
     ComponentUsersRequestToJSON,
     ComponentsUsersResponseFromJSON,
     ComponentsUsersResponseToJSON,
-} from '../models';
+} from '../models/index';
 
 export interface AddUserToComponentRequest {
     componentId: number;
