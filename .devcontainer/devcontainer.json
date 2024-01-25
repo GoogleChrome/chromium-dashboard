@@ -15,6 +15,8 @@
 		"vscode": {
 			// Set *default* container specific settings.json values on container create.
 			"settings": {
+				"mypy-type-checker.args": ["--ignore-missing-imports --exclude cs-env/ --exclude gen/ --exclude appengine_config.py --disable-error-code \"annotation-unchecked\""],
+				"pylint.args": ["--indent-string=\"  \""],
 				"python.defaultInterpreterPath": "/workspace/cs-env/bin/python",
 				"python.editor.tabSize": 2,
 				"python.testing.pytestEnabled": false,
@@ -51,13 +53,11 @@
 	],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	// pip version https://github.com/microsoft/vscode-python/issues/18802
-	// Need to install pylint inside the virutalenv because the global one does not honor it.
 	// Recently, when running `npm run clean-setup` in the container, it has
 	// not been installing the packages in the virtual environment. Instead,
 	// it has been installing in the default Python environment. We will
 	// need to call npm run setup again once the environment has been activated.
-	"postCreateCommand": "npm run clean-setup; . cs-env/bin/activate; npm run setup; python -m pip install pylint==2.13.4",
+	"postCreateCommand": "npm run clean-setup; . cs-env/bin/activate; npm run setup",
 
 	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
 	"remoteUser": "vscode",
