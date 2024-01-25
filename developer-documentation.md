@@ -101,19 +101,24 @@ Below are steps to help guide a developer along with a relatable example that fo
 If using Visual Studio Code, install the following extensions. (These are pre-installed if using the devcontainer)
 - [OpenAPI (Swagger) Editor](https://marketplace.visualstudio.com/items?itemName=42Crunch.vscode-openapi)
 
-### Step 1: Add the path and operations
+### Step 1: Add the path to openapi/api.yaml
 
 *Before completing this step, read the [Paths and Operations](https://swagger.io/docs/specification/paths-and-operations/) and [Describing Parameters](https://swagger.io/docs/specification/describing-parameters/) OpenAPI docs*
 
-#### Step 1a: Create a `.paths.yaml` file
+- Under paths, add the path. You'll add operations named after HTTP methods under this.
 
-- In the openapi directory, create a new file with all characters being lowercase. The prefix of the file should follow the same format as: `<noun _1>_<parameter name_1>`...`<noun_n>_<parameter_name_n>`. The suffix should be `.paths.yaml`.
-  - Example 1: /componentsusers -> File `componentusers.paths.yaml`
-  - Example 2: /components/{componentId} -> File `components_componentid.paths.yaml`
-  - Example 3: /components/{componentId}/users/{userId} -> File `components_componentid_users_userid.yaml`
+<details>
+  <summary>Example (click to expand)</summary>
 
+  #### openapi/api.yaml
+  ```yaml
+  paths:
+    /features/{feature_id}:
+      ...
+  ```
+</details>
 
-#### Step 1b: Add Operations
+### Step 2: Add the operations
 
 Operations = HTTP verbs. (e.g. GET, POST, PUT, etc)
 
@@ -125,162 +130,51 @@ Operations = HTTP verbs. (e.g. GET, POST, PUT, etc)
 <details>
   <summary>Example (click to expand)</summary>
 
-  #### openapi/features_featureid.paths.yaml
+  #### openapi/api.yaml
   ```yaml
-  get:
-    summary: Get a feature by ID.
-    description: |
-      Get a feature by ID. More details about this here.
-      Also, can do more comments
-    operationId: getFeatureById
-    parameters:
-      - name: feature_id
-        in: path
-        description: Feature ID
-        required: true
-        schema:
-          type: integer
-  post:
-    summary: Update a feature by ID.
-    description: |
-      Update a feature with the given ID.
-      More details about this here.
-    operationId: updateFeatureById
-    parameters:
-      - name: feature_id
-        in: path
-        description: Feature ID
-        required: true
-        schema:
-          type: integer
+  paths:
+    ...
+    /features/{feature_id}:
+      get:
+        summary: Get a feature by ID.
+        description: |
+          Get a feature by ID. More details about this here.
+          Also, can do more comments
+        operationId: getFeatureById
+        parameters:
+          - name: feature_id
+            in: path
+            description: Feature ID
+            required: true
+            schema:
+              type: integer
+      post:
+        summary: Update a feature by ID.
+        description: |
+          Update a feature with the given ID.
+          More details about this here.
+        operationId: updateFeatureById
+        parameters:
+          - name: feature_id
+            in: path
+            description: Feature ID
+            required: true
+            schema:
+              type: integer
   ```
 </details>
 
 
-
-### Step 2: Describe the request body
+### Step 3: Describe the request body
 
 *Before completing this step, read the [Describing Request Body](https://swagger.io/docs/specification/describing-request-body/) OpenAPI doc*
 
 *Skip this step if there is no request body*
 
-#### Step 2a: Create a `.schemas.yaml` file
-
-- In the openapi directory, create a new file with all characters being lowercase. The prefix of the file should follow the same format as: `<noun _1>_<parameter name_1>`...`<noun_n>_<parameter_name_n>`. The prefix should be the same as the prefix described in Step 1. The suffix should be `.schemas.yaml`
-- Create a top level object and name it the appropriately.
-- Describe the schema for of the object.
-
-
-<details>
-  <summary>Example (click to expand)</summary>
-
-  #### openapi/features_featureid.schemas.yaml
-  ```yaml
-  Feature:
-    description: A feature
-    type: object
-    properties:
-      id:
-        type: integer
-      name:
-        type: string
-      live:
-        type: boolean
-        description: Some optional field
-    required:
-      - id
-      - name
-  ```
-</details>
-
-#### Step 2b: Use schema object in `.paths.yaml` file
-
-- Add $ref under {HTTP verb}.requestBody.application/json.schema
-- The value of the $ref should equal `{schemas file name}#/{Object name}`.
-
-<details>
-  <summary>Example (click to expand)</summary>
-
-  #### openapi/features_featureid.paths.yaml
-  ```yaml
-  ...
-  post:
-    summary: Update a feature by ID.
-    description: |
-      Update a feature with the given ID.
-      More details about this here.
-    operationId: updateFeatureById
-    parameters:
-      - name: feature_id
-        in: path
-        description: Feature ID
-        required: true
-        schema:
-          type: integer
-    requestBody:
-      content:
-        application/json:
-          schema:
-            $ref: 'features_featureid.schemas.yaml#/Feature'
-  ```
-</details>
-
-*For this example, only needed to describe a request body for the `post` operation.*
-
-### Step 3: Describe the Responses
-
-*Before completing this step, read the [Describing Responses](https://swagger.io/docs/specification/describing-request-body/) OpenAPI doc*
-
-*Skip this step if there is no response body*
-
-#### Step 3a: Create a `.schemas.yaml` file
-
-- If Step 2a was skipped, go back and complete it.
-- Describe the response object
-
-#### Step 3b: Use schema object in `.paths.yaml` file
-
-- Add the appropriate response code(s)
-  - Don't worry about describing global errors like unauthorized calls right now.
-- For each response code, reference the schemas file. The value of the $ref should equal `{schemas file name}#/{Object name}`.
-
-<details>
-  <summary>Example (click to expand)</summary>
-
-  #### openapi/features_featureid.paths.yaml
-  ```yaml
-  ...
-  post:
-    summary: Update a feature by ID.
-    description: |
-      Update a feature with the given ID.
-      More details about this here.
-    operationId: updateFeatureById
-    parameters:
-      - name: feature_id
-        in: path
-        description: Feature ID
-        required: true
-        schema:
-          type: integer
-    requestBody:
-      content:
-        application/json:
-          schema:
-            $ref: 'features_featureid.schemas.yaml#/Feature'
-    responses:
-      '200':
-        description: An updated feature
-        content:
-          application/json:
-            schema:
-              $ref: 'features_featureid.schemas.yaml#/Feature'
-  ```
-</details>
-
-### Step 4: Add the path to the high level openapi/api.yaml
-
-- Under paths, add the path. Under the path, add a $ref to the `.paths.yaml` file.  The value of the $ref should equal `{paths file name}`.
+- Inside the operation (`post` in this example), add a `requestBody.application/json.schema` object.
+- Use a JSON Schema to define the request body.
+- You can re-use parts or all of the schema by writing `$ref: '#/components/schemas/WellNamedObject'`
+  and defining the `WellNamedObject` under the top-level `components.schemas` object.
 
 <details>
   <summary>Example (click to expand)</summary>
@@ -288,11 +182,100 @@ Operations = HTTP verbs. (e.g. GET, POST, PUT, etc)
   #### openapi/api.yaml
   ```yaml
   paths:
+    ...
     /features/{feature_id}:
-      $ref: 'features_featureid.paths.yaml'
+      post:
+        summary: Update a feature by ID.
+        description: |
+          Update a feature with the given ID.
+          More details about this here.
+        operationId: updateFeatureById
+        parameters:
+          - name: feature_id
+            in: path
+            description: Feature ID
+            required: true
+            schema:
+              type: integer
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feature'
+  components:
+    schemas:
+      Feature:
+        description: A feature
+        type: object
+        properties:
+          id:
+            type: integer
+          name:
+            type: string
+          live:
+            type: boolean
+            description: Some optional field
+        required:
+          - id
+          - name
   ```
 </details>
 
+*For this example, only needed to describe a request body for the `post` operation.*
+
+### Step 4: Describe the Responses
+
+*Before completing this step, read the [Describing Responses](https://swagger.io/docs/specification/describing-request-body/) OpenAPI doc*
+
+*Skip this step if there is no response body*
+
+- Add the appropriate response code(s)
+  - Don't worry about describing global errors like unauthorized calls right now.
+- For each response code, describe the response object. As with the request body, you can refer to
+  schemas defined in the `components.schemas` top-level object with `$ref:
+  '#/components/schemas/WellNamedObject'`.
+
+<details>
+  <summary>Example (click to expand)</summary>
+
+  #### openapi/api.yaml
+  ```yaml
+  paths:
+    ...
+    /features/{feature_id}:
+      post:
+        summary: Update a feature by ID.
+        description: |
+          Update a feature with the given ID.
+          More details about this here.
+        operationId: updateFeatureById
+        parameters:
+          - name: feature_id
+            in: path
+            description: Feature ID
+            required: true
+            schema:
+              type: integer
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feature'
+        responses:
+          '200':
+            description: An updated feature
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Feature'
+  components:
+    schemas:
+      Feature:
+        description: A feature
+        type: object
+        ...
+  ```
+</details>
 
 ### Step 5: Generate the Code
 
@@ -303,7 +286,7 @@ Generate the code:
 - `npm run openapi`
 
 
-### Step 5: Incorporate Into Backend
+### Step 6: Incorporate Into Backend
 
 Currently, the repository is configured to use the generated Python data models for the backend. *Once all routes are generated by OpenAPI, it would be wise to revisit using the controllers as well*
 
@@ -314,7 +297,7 @@ Currently, the repository is configured to use the generated Python data models 
 - In the handler, the generated model classes can be imported from `chromestatus_openapi.models`.
 - Since we do not use the controllers, you will need to return a dictionary of the model class. Then, Flask can convert it appropriately to json. Each generated class has a `to_dict()` method to accomplish this.
 
-### Step 6: Incorporate Into Frontend
+### Step 7: Incorporate Into Frontend
 
 The frontend use @lit-labs/context to pass the client around. The benefits of it can be seen [here](https://lit.dev/docs/data/context/) and the advertised use cases [here](https://lit.dev/docs/data/context/#example-use-cases).
 
@@ -361,4 +344,3 @@ Feature links are automatically updated when a feature is created or edited. How
 
 1. Run `/scripts/backfill_feature_links` to backfill the feature links without extracting information into the database. After running the script, you can verify the results by visiting [admin page](https://chromestatus.com/admin/feature_links).
 2. Run `/cron/update_all_feature_links?no_filter=true` to update all existing feature links with latest information.
-
