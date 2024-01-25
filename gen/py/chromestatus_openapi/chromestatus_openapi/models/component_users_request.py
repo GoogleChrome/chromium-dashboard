@@ -1,11 +1,8 @@
-# coding: utf-8
-
-from __future__ import absolute_import
 from datetime import date, datetime  # noqa: F401
 
 from typing import List, Dict  # noqa: F401
 
-from chromestatus_openapi.models.base_model_ import Model
+from chromestatus_openapi.models.base_model import Model
 from chromestatus_openapi import util
 
 
@@ -43,7 +40,7 @@ class ComponentUsersRequest(Model):
         return util.deserialize_model(dikt, cls)
 
     @property
-    def owner(self):
+    def owner(self) -> bool:
         """Gets the owner of this ComponentUsersRequest.
 
         Impacts this user's ownership. For PUT, add ownership. For DELETE, remove ownership.  # noqa: E501
@@ -54,7 +51,7 @@ class ComponentUsersRequest(Model):
         return self._owner
 
     @owner.setter
-    def owner(self, owner):
+    def owner(self, owner: bool):
         """Sets the owner of this ComponentUsersRequest.
 
         Impacts this user's ownership. For PUT, add ownership. For DELETE, remove ownership.  # noqa: E501
