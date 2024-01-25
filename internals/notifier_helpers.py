@@ -154,10 +154,10 @@ def notify_assignees(
       fe.key.integer_id(), gate_id)
 
   params = {
+    'gate_url': gate_url,
     'triggering_user_email': triggering_user_email,
     'old_assignees': old_assignees,
     'new_assignees': new_assignees,
-    'gate_type': gate.gate_type,
     'feature': converters.feature_entry_to_json_verbose(fe)
   }
 

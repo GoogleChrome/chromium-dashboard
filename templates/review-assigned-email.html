@@ -1,0 +1,25 @@
+<section id="context">
+  <p>
+    <b>Review assigned</b> for feature entry:<br/>
+    <a class="feature-name" href="{{SITE_URL}}feature/{{id}}"
+          >{{feature.name}}</a>
+  </p>
+</section>
+
+
+<section id="details">
+  <p><b>Review assigned{% if updater_email %} by {{updater_email}}{% endif %}:</b></p>
+
+  <p>A new reviewer has been assigned for {% if team_name %}{{team_name}}{% else %}your team{% endif %}.</p>
+  <ul>
+    {{formatted_changes|safe}}
+  </ul>
+</section>
+
+
+<section id="next-steps">
+  <p><b>Your next steps:</b></p>
+  <p><a href="{{gate_url}}"
+     class="button-like"
+     >Review feature details</a></p>
+</section>
