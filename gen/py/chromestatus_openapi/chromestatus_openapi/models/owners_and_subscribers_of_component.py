@@ -1,11 +1,8 @@
-# coding: utf-8
-
-from __future__ import absolute_import
 from datetime import date, datetime  # noqa: F401
 
 from typing import List, Dict  # noqa: F401
 
-from chromestatus_openapi.models.base_model_ import Model
+from chromestatus_openapi.models.base_model import Model
 from chromestatus_openapi import util
 
 
@@ -58,7 +55,7 @@ class OwnersAndSubscribersOfComponent(Model):
         return util.deserialize_model(dikt, cls)
 
     @property
-    def id(self):
+    def id(self) -> str:
         """Gets the id of this OwnersAndSubscribersOfComponent.
 
 
@@ -68,7 +65,7 @@ class OwnersAndSubscribersOfComponent(Model):
         return self._id
 
     @id.setter
-    def id(self, id):
+    def id(self, id: str):
         """Sets the id of this OwnersAndSubscribersOfComponent.
 
 
@@ -81,7 +78,7 @@ class OwnersAndSubscribersOfComponent(Model):
         self._id = id
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Gets the name of this OwnersAndSubscribersOfComponent.
 
 
@@ -91,7 +88,7 @@ class OwnersAndSubscribersOfComponent(Model):
         return self._name
 
     @name.setter
-    def name(self, name):
+    def name(self, name: str):
         """Sets the name of this OwnersAndSubscribersOfComponent.
 
 
@@ -104,7 +101,7 @@ class OwnersAndSubscribersOfComponent(Model):
         self._name = name
 
     @property
-    def subscriber_ids(self):
+    def subscriber_ids(self) -> List[int]:
         """Gets the subscriber_ids of this OwnersAndSubscribersOfComponent.
 
 
@@ -114,7 +111,7 @@ class OwnersAndSubscribersOfComponent(Model):
         return self._subscriber_ids
 
     @subscriber_ids.setter
-    def subscriber_ids(self, subscriber_ids):
+    def subscriber_ids(self, subscriber_ids: List[int]):
         """Sets the subscriber_ids of this OwnersAndSubscribersOfComponent.
 
 
@@ -125,7 +122,7 @@ class OwnersAndSubscribersOfComponent(Model):
         self._subscriber_ids = subscriber_ids
 
     @property
-    def owner_ids(self):
+    def owner_ids(self) -> List[int]:
         """Gets the owner_ids of this OwnersAndSubscribersOfComponent.
 
 
@@ -135,7 +132,7 @@ class OwnersAndSubscribersOfComponent(Model):
         return self._owner_ids
 
     @owner_ids.setter
-    def owner_ids(self, owner_ids):
+    def owner_ids(self, owner_ids: List[int]):
         """Sets the owner_ids of this OwnersAndSubscribersOfComponent.
 
 
