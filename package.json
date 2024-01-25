@@ -94,7 +94,7 @@
     "minimist": ">=1.2.8",
     "path-parse": ">=1.0.7",
     "regenerator-runtime": "^0.14.1",
-    "rollup": "^4.9.5",
+    "rollup": "^4.9.6",
     "rollup-plugin-babel-minify": "^10.0.0",
     "sinon": "^17.0.1",
     "tar": ">=6.2.0",
