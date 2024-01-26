@@ -86,98 +86,74 @@ const OT_MILESTONE_WEBVIEW_RANGE = {
 const OT_ALL_SHIPPED_MILESTONE_DESKTOP_RANGE = {
   earlier: 'ot_milestone_desktop_start',
   allLater: 'shipped_milestone',
-  warning: 'Origin trial should start before feature is shipped.',
+  warning: 'Origin trial starting milestone should be before all feature shipping milestones.',
 };
 
 const ALL_OT_SHIPPED_MILESTONE_DESKTOP_RANGE = {
   allEarlier: 'ot_milestone_desktop_start',
   later: 'shipped_milestone',
-  warning: 'All origin trials should start before feature is shipped.',
+  warning: 'All origin trials starting milestones should be before feature shipping milestone.',
 };
 
 const OT_ALL_SHIPPED_MILESTONE_WEBVIEW_RANGE = {
   earlier: 'ot_milestone_webview_start',
   allLater: 'shipped_webview_milestone',
-  warning: 'Origin trial should start before feature is shipped.',
+  warning: 'Origin trial starting milestone should be before all feature shipping milestones.',
 };
 
 const ALL_OT_SHIPPED_MILESTONE_WEBVIEW_RANGE = {
   allEarlier: 'ot_milestone_webview_start',
   later: 'shipped_webview_milestone',
-  warning: 'Origin trial should start before feature is shipped.',
+  warning: 'All origin trials starting milestones should be before feature shipping milestone.',
 };
 
 const OT_ALL_SHIPPED_MILESTONE_ANDROID_RANGE = {
   earlier: 'ot_milestone_android_start',
   allLater: 'shipped_android_milestone',
-  warning: 'Origin trial should start before feature is shipped.',
+  warning: 'Origin trial starting milestone should be before all feature shipping milestones.',
 };
 
 const ALL_OT_SHIPPED_MILESTONE_ANDROID_RANGE = {
   allEarlier: 'ot_milestone_android_start',
   later: 'shipped_android_milestone',
-  warning: 'Origin trial should start before feature is shipped.',
+  warning: 'All origin trials starting milestones should be before feature shipping milestone.',
 };
-
-// No ot_milestone_ios_start or _end, yet.
-// const OT_ALL_SHIPPED_MILESTONE_IOS_RANGE = {
-//   earlier: 'ot_milestone_ios_start',
-//   allLater: 'shipped_ios_milestone',
-//   warning: 'Origin trial should start before feature is shipped.',
-// };
-// const ALL_OT_SHIPPED_MILESTONE_IOS_RANGE = {
-//   allEarlier: 'ot_milestone_ios_start',
-//   later: 'shipped_ios_milestone',
-//   warning: 'Origin trial should start before feature is shipped.',
-// };
 
 const DT_ALL_SHIPPED_MILESTONE_DESKTOP_RANGE = {
   earlier: 'dt_milestone_desktop_start',
   allLater: 'shipped_milestone',
-  warning: 'Shipped milestone must be later than dev trial.',
+  warning: 'Shipped milestone should be later than dev trial.',
 };
 
 const ALL_DT_SHIPPED_MILESTONE_DESKTOP_RANGE = {
   allEarlier: 'dt_milestone_desktop_start',
   later: 'shipped_milestone',
-  warning: 'Shipped milestone must be later than dev trial.',
+  warning: 'Shipped milestone should be later than dev trial.',
 };
 
 const DT_ALL_SHIPPED_MILESTONE_ANDROID_RANGE = {
   earlier: 'dt_milestone_android_start',
   allLater: 'shipped_android_milestone',
-  warning: 'Shipped milestone must be later than dev trial.',
+  warning: 'Shipped milestone should be later than dev trial start milestone.',
 };
 
 const ALL_DT_SHIPPED_MILESTONE_ANDROID_RANGE = {
   allEarlier: 'dt_milestone_android_start',
   later: 'shipped_android_milestone',
-  warning: 'Shipped milestone must be later than dev trial.',
+  warning: 'Shipped milestone should be later than dev trial start milestone.',
 };
 
 const DT_ALL_SHIPPED_MILESTONE_IOS_RANGE = {
   earlier: 'dt_milestone_ios_start',
   allLater: 'shipped_ios_milestone',
-  warning: 'Shipped milestones must be later than dev trial.',
+  warning: 'Shipped milestone should be later than dev trial start milestone.',
 };
 
 const ALL_DT_SHIPPED_MILESTONE_IOS_RANGE = {
   allEarlier: 'dt_milestone_ios_start',
   later: 'shipped_ios_milestone',
-  warning: 'Shipped milestone must be later than dev trial.',
+  warning: 'Shipped milestone should be later than dev trial start milestone.',
 };
-
-// No dt_milestone_webview_start, yet.
-// const DT_ALL_SHIPPED_MILESTONE_WEBVIEW_RANGE = {
-//   earlier: 'dt_milestone_webview_start',
-//   allLater: 'shipped_webview_milestone',
-//   error: 'Shipped webview milestone must be later than dev trial.',
-// };
-// const ALL_DT_SHIPPED_MILESTONE_WEBVIEW_RANGE = {
-//   allEarlier: 'dt_milestone_webview_start',
-//   later: 'shipped_webview_milestone',
-//   error: 'Shipped webview milestone must be later than dev trial.',
-// };
 
 const MULTI_URL_FIELD_ATTRS = {
   title: 'Enter one or more full URLs, one per line:\nhttps://...\nhttps://...',

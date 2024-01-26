@@ -175,7 +175,8 @@ export class ChromedashFormField extends LitElement {
       }
       return getFieldValueWithStage(fieldName, stageOrId, this.fieldValues || []);
     };
-    // Attach the feature to the getFieldValue function, in case it is needed.
+    // Attach the feature to the getFieldValue function, which is needed to
+    // iterate through stages not in the form.
     getFieldValue.feature = this.fieldValues?.feature;
 
     const checkFunctionWrapper = async (checkFunction) => {
