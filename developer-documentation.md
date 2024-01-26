@@ -171,7 +171,7 @@ Operations = HTTP verbs. (e.g. GET, POST, PUT, etc)
 
 *Skip this step if there is no request body*
 
-- Inside the operation (`post` in this example), add a `requestBody.application/json.schema` object.
+- Inside the operation (`post` in this example), add a `requestBody.content.application/json.schema` object.
 - Use a JSON Schema to define the request body.
 - You can re-use parts or all of the schema by writing `$ref: '#/components/schemas/WellNamedObject'`
   and defining the `WellNamedObject` under the top-level `components.schemas` object.
