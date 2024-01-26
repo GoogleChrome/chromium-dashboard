@@ -296,27 +296,6 @@ def make_review_assignment_email(
   return all_tasks
 
 
-def make_new_comments_email(
-    fe: FeatureEntry, gate_type: int, changes: Optional[list]=None):
-  """Return a list of task dicts to notify of new comments."""
-  if changes is None:
-    changes = []
-  fe_stages = stage_helpers.get_feature_stages(fe.key.integer_id())
-  email_html = format_email_body('update-feature-email.html', fe, changes)
-
-  subject = 'New comments for feature: %s' % fe.name
-  triggering_user_email = fe.updater_email
-
-  addr_reasons: dict[str, list[str]] = collections.defaultdict(list)
-  add_core_receivers(fe, addr_reasons)
-  add_reviewers(fe, gate_type, addr_reasons)
-
-  all_tasks = [convert_reasons_to_task(
-                   addr, reasons, email_html, subject, triggering_user_email)
-               for addr, reasons in sorted(addr_reasons.items())]
-  return all_tasks
-
-
 class FeatureStar(ndb.Model):
   """A FeatureStar represent one user's interest in one feature."""
   email = ndb.StringProperty(required=True)
@@ -571,23 +550,52 @@ class FeatureCommentHandler(basehandlers.FlaskHandler):
   """This task handles feature comment notifications by making email tasks."""
 
   IS_INTERNAL_HANDLER = True
+  EMAIL_TEMPLATE_PATH = 'review-comment-notification-email.html'
 
   def process_post_data(self, **kwargs):
     self.require_task_header()
 
     feature = self.get_param('feature')
     gate_type = self.get_param('gate_type')
-    changes = self.get_param('changes', required=False) or []
+    gate_url = self.get_param('gate_url')
+    triggering_user_email = self.get_param('triggering_user_email')
+    content = self.get_param('content')
 
     logging.info('Starting to notify of comments for feature %s',
                  repr(feature)[:settings.MAX_LOG_LINE])
 
     fe = FeatureEntry.get_by_id(feature['id'])
     if fe:
-      email_tasks = make_new_comments_email(fe, gate_type, changes)
+      additional_template_data = {
+          'gate_url': gate_url,
+          'triggering_user_email': triggering_user_email,
+          'content': content,
+      }
+      email_tasks = self.make_new_comments_email(
+          fe, gate_type, triggering_user_email, additional_template_data)
       send_emails(email_tasks)
 
     return {'message': 'Done'}
+
+  def make_new_comments_email(
+      self, fe: FeatureEntry, gate_type: int, triggering_user_email: str,
+      additional_template_data: dict[str, str]):
+    """Return a list of task dicts to notify of new comments."""
+    email_html = format_email_body(
+        self.EMAIL_TEMPLATE_PATH, fe, [],
+        additional_template_data=additional_template_data)
+
+    subject = 'New comments for feature: %s' % fe.name
+
+    addr_reasons: dict[str, list[str]] = collections.defaultdict(list)
+    add_core_receivers(fe, addr_reasons)
+    add_reviewers(fe, gate_type, addr_reasons)
+
+    all_tasks = [convert_reasons_to_task(
+        addr, reasons, email_html, subject, triggering_user_email)
+                 for addr, reasons in sorted(addr_reasons.items())]
+    return all_tasks
+
 
 
 class OriginTrialCreationRequestHandler(basehandlers.FlaskHandler):

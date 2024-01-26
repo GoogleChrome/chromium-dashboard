@@ -165,19 +165,16 @@ def notify_assignees(
 
 
 def notify_subscribers_of_new_comments(fe: 'FeatureEntry', gate: Gate,
-    email: str, comment: str) -> None:
+    email: str, content: str) -> None:
   """Notify subscribers of a new comment."""
   gate_id = gate.key.integer_id()
   gate_url = 'https://chromestatus.com/feature/%s?gate=%s' % (
       fe.key.integer_id(), gate_id)
-  changed_props = {
-      'prop_name': '%s posted a new comment in %s' % (email, gate_url),
-      'old_val': 'na',
-      'new_val': comment,
-  }
 
   params = {
-    'changes': [changed_props],
+    'triggering_user_email': email,
+    'content': content,
+    'gate_url': gate_url,
     'gate_type': gate.gate_type,
     'feature': converters.feature_entry_to_json_verbose(fe)
   }
