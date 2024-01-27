@@ -142,7 +142,7 @@ test('edit origin trial stage', async ({ page }) => {
 
     // Check that there is a warning message.
     const shippedMilestoneLocator = page.locator('chromedash-form-field[name="shipped_milestone"]');
-    await expect(shippedMilestoneLocator).toContainText('All origin trials should start before feature is shipped.');
+    await expect(shippedMilestoneLocator).toContainText('All origin trials starting milestones should be before feature shipping milestone.');
 
     // Warning should allow submit
     const submitButton3 = page.locator('input[type="submit"]');
