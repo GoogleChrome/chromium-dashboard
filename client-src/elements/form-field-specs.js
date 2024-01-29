@@ -1951,7 +1951,7 @@ function getNumericValue(name, getFieldValue) {
 function checkMilestoneRanges(ranges, getFieldValue) {
   let result;
   for (const range of ranges) {
-    const { earlier, allEarlier, later, allLater, warning, error } = range;
+    const {earlier, allEarlier, later, allLater, warning, error} = range;
     // There can be an allLater or allEarlier, but not both.
     if (allLater) {
       result = checkEarlierBeforeAllLaterMilestones(range, getFieldValue);
