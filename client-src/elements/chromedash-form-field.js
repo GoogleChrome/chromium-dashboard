@@ -81,9 +81,13 @@ export class ChromedashFormField extends LitElement {
     // We need to wait until the entire page is rendered, so later dependents
     // are available to do the semantic check, hence firstUpdated is too soon.
     // Do first semantic check after the document is ready.
-    document.addEventListener('DOMContentLoaded', () => (setTimeout(() => {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => (setTimeout(() => {
+        this.doSemanticCheck();
+      })));
+    } else {
       this.doSemanticCheck();
-    })));
+    }
   }
 
   updateAttributes(el) {
