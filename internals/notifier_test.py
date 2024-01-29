@@ -655,6 +655,76 @@ class FeatureReviewHandlerTest(testing_config.CustomTestCase):
     self.assertEqual('approver3@example.com', review_task_1['to'])
 
 
+class ReviewAssignementHandlerTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.fe_1 = FeatureEntry(
+        name='feature one', summary='sum',
+        owner_emails=['feature_owner@example.com'],
+        editor_emails=['feature_editor@example.com', 'owner_1@example.com'],
+        cc_emails=['cc@example.com'], category=1,
+        devrel_emails=['devrel1@gmail.com'],
+        creator_email='creator1@gmail.com',
+        updater_email='editor1@gmail.com',
+        blink_components=['Blink'],
+        ff_views=1, safari_views=1,
+        web_dev_views=1, standard_maturity=1)
+    self.fe_1.put()
+
+    self.handler = notifier.ReviewAssignmentHandler()
+
+  def tearDown(self):
+    kinds = [FeatureEntry, Stage, FeatureOwner, BlinkComponent, Gate]
+    for kind in kinds:
+      for entity in kind.query():
+        entity.key.delete()
+
+  @mock.patch('internals.notifier.format_email_body')
+  def test_make_review_assignment_email(self, mock_f_e_b):
+    """We send email to the assigned reviewers."""
+    mock_f_e_b.return_value = 'mock body html'
+
+    addl_data = {
+        'gate_url': 'gate_url',
+        'updater_email': None,
+        'team_name': None,
+        }
+    actual_tasks = self.handler.make_review_assignment_email(
+        self.fe_1, 'triggerer@example.com',
+        ['old@example.com'],['new@example.com'], addl_data)
+    self.assertEqual(2, len(actual_tasks))
+    review_task_1 = actual_tasks[0]
+
+    # Notification to new assignee.
+    self.assertEqual(
+        'Review assigned for feature: feature one',
+        review_task_1['subject'])
+    self.assertIn('mock body html', review_task_1['html'])
+    self.assertIn('<li>The review is now assigned to you</li>',
+      review_task_1['html'])
+    self.assertEqual('new@example.com', review_task_1['to'])
+
+    review_task_2 = actual_tasks[1]
+
+    # Notification to old assignee.
+    self.assertEqual(
+        'Review assigned for feature: feature one',
+        review_task_2['subject'])
+    self.assertIn('mock body html', review_task_2['html'])
+    self.assertIn('<li>The review was previously assigned to you</li>',
+      review_task_2['html'])
+    self.assertEqual('old@example.com', review_task_2['to'])
+
+    change = {
+        'prop_name': 'Assigned reviewer',
+        'old_val': 'old@example.com',
+        'new_val': 'new@example.com',
+        }
+    mock_f_e_b.assert_called_once_with(
+        'review-assigned-email.html', self.fe_1, [change],
+        additional_template_data=addl_data)
+
+
 class FeatureStarTest(testing_config.CustomTestCase):
 
   def setUp(self):

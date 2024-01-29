@@ -267,36 +267,6 @@ def add_reviewers(
   accumulate_reasons(addr_reasons, recipients, reasons)
 
 
-def make_review_assignment_email(
-    fe: FeatureEntry, gate_type: int, triggering_user_email: str,
-    old_assignees: list[str], new_assignees: list[str]):
-  """Return a list of task dicts to notify assigned reviewers."""
-  change = {
-      'prop_name': 'Assigned reiewer',
-      'old_val': ', '.join(old_assignees) or 'None',
-      'new_val': ', '.join(new_assignees) or 'None',
-  }
-  email_html = format_email_body(
-      'update-feature-email.html', fe, [change],
-      updater_email=triggering_user_email)
-
-  subject = 'Review assigned for feature: %s' % fe.name
-
-  approvers = approval_defs.get_approvers(gate_type)
-  reasons = 'You received a review request for this feature'
-
-  addr_reasons: dict[str, list[str]] = collections.defaultdict(list)
-  accumulate_reasons(
-      addr_reasons, old_assignees, 'The review was previously assigned to you')
-  accumulate_reasons(
-      addr_reasons, new_assignees, 'The review is now assigned to you')
-
-  all_tasks = [convert_reasons_to_task(
-                   addr, reasons, email_html, subject, triggering_user_email)
-               for addr, reasons in sorted(addr_reasons.items())]
-  return all_tasks
-
-
 def make_new_comments_email(
     fe: FeatureEntry, gate_type: int, changes: Optional[list]=None):
   """Return a list of task dicts to notify of new comments."""
@@ -546,26 +516,68 @@ class ReviewAssignmentHandler(basehandlers.FlaskHandler):
   """This task handles feature review assignments by making email tasks."""
 
   IS_INTERNAL_HANDLER = True
+  EMAIL_TEMPLATE_PATH = 'review-assigned-email.html'
 
   def process_post_data(self, **kwargs):
     self.require_task_header()
 
     feature = self.get_param('feature')
     gate_type = self.get_param('gate_type')
+    gate_url = self.get_param('gate_url')
     triggering_user_email = self.get_param('triggering_user_email')
     old_assignees = self.get_param('old_assignees')
     new_assignees = self.get_param('new_assignees')
+
+    team_name = None
+    appr_def = approval_defs.APPROVAL_FIELDS_BY_ID.get(gate_type)
+    if appr_def:
+      team_name = appr_def.team_name
 
     logging.info('Starting to notify assignees for feature %s',
                  repr(feature)[:settings.MAX_LOG_LINE])
 
     fe = FeatureEntry.get_by_id(feature['id'])
     if fe:
-      email_tasks = make_review_assignment_email(
-          fe, gate_type, triggering_user_email, old_assignees, new_assignees)
+      additional_template_data = {
+          'gate_url': gate_url,
+          'updater_email': triggering_user_email,
+          'team_name': team_name,
+      }
+      email_tasks = self.make_review_assignment_email(
+          fe, triggering_user_email, old_assignees, new_assignees,
+          additional_template_data)
       send_emails(email_tasks)
 
     return {'message': 'Done'}
+
+  def make_review_assignment_email(
+      self, fe: FeatureEntry, triggering_user_email: str,
+      old_assignees: list[str], new_assignees: list[str],
+      additional_template_data: dict[str, str]):
+    """Return a list of task dicts to notify assigned reviewers."""
+    changed_prop = {
+        'prop_name': 'Assigned reviewer',
+        'old_val': ', '.join(old_assignees or ['None']),
+        'new_val': ', '.join(new_assignees or ['None']),
+    }
+    email_html = format_email_body(
+        self.EMAIL_TEMPLATE_PATH, fe, [changed_prop],
+        additional_template_data=additional_template_data)
+
+    subject = 'Review assigned for feature: %s' % fe.name
+
+    addr_reasons: dict[str, list[str]] = collections.defaultdict(list)
+    accumulate_reasons(
+        addr_reasons, old_assignees,
+        'The review was previously assigned to you')
+    accumulate_reasons(
+        addr_reasons, new_assignees, 'The review is now assigned to you')
+
+    all_tasks = [
+        convert_reasons_to_task(
+            addr, reasons, email_html, subject, triggering_user_email)
+        for addr, reasons in sorted(addr_reasons.items())]
+    return all_tasks
 
 
 class FeatureCommentHandler(basehandlers.FlaskHandler):

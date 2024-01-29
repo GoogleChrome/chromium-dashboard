@@ -148,16 +148,17 @@ def notify_subscribers_of_vote_changes(fe: 'FeatureEntry', gate: Gate,
 def notify_assignees(
     fe: 'FeatureEntry', gate: Gate, triggering_user_email: str,
     old_assignees: list[str], new_assignees: list[str]) -> None:
-  """Notify subscribers of a new comment."""
+  """Notify assigned reviewers that they have been assigned."""
   gate_id = gate.key.integer_id()
   gate_url = 'https://chromestatus.com/feature/%s?gate=%s' % (
       fe.key.integer_id(), gate_id)
 
   params = {
+    'gate_type': gate.gate_type,
+    'gate_url': gate_url,
     'triggering_user_email': triggering_user_email,
     'old_assignees': old_assignees,
     'new_assignees': new_assignees,
-    'gate_type': gate.gate_type,
     'feature': converters.feature_entry_to_json_verbose(fe)
   }
 
