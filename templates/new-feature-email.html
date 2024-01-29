@@ -1,56 +1,70 @@
-<section id="context">
-  <div>
-    <b>New</b> feature entry:<br/>
-    <a class="feature-name" href="{{SITE_URL}}feature/{{id}}"
-          >{{feature.name}}</a>
-  </div>
-</section>
-<br/>
+{% import 'email-styles.html' as styles %}
+<div style="{{styles.body}}">
+<div style="{{styles.branding}}">{{APP_TITLE}}</div>
 
-
-<section id="details">
-  <div><b>New details entered by {{feature.creator_email}}:</div>
-
+<div style="{{styles.content}} {{styles.content_new}}">
+<section id="context" style="{{styles.section}}">
   <table>
     <tr>
-      <td>Summary:</td>
-      <td>{{feature.summary}}</td>
+      <td rowspan=2>{{styles.icon_new()}}</td>
+      <td><b>New</b> feature entry:</td>
     </tr>
     <tr>
-      <td>Unlisted:</td>
-      <td>{% if feature.unlisted %}Yes{% else %}No{% endif %}</td>
-    </tr>
-    <tr>
-      <td>Breaking change:</td>
-      <td>{% if feature.breaking_change %}Yes{% else %}No{% endif %}</td>
-    </tr>
-    <tr>
-      <td>Feature owners:</td>
-      <td>{{feature.owner_emails|join(", ")}}</td>
-    </tr>
-    <tr>
-      <td>Cc:</td>
-      <td>{{feature.cc_emails|join(", ")}}</td>
-    </tr>
-    <tr>
-      <td>Blink component:</td>
-      <td>{{feature.blink_components|join(", ")}}</td>
-    </tr>
-    <tr>
-      <td>Category:</td>
-      <td>{{category}}</td>
-    </tr>
-    <tr>
-      <td>Feature type:</td>
-      <td>{{feature_type}}</td>
+      <td><a style="{{styles.feature_name}}"
+             href="{{SITE_URL}}feature/{{id}}"
+             >{{feature.name}}</a>
+      </td>
     </tr>
   </table>
 </section>
 
 
-<section id="next-steps">
+<section id="details" style="{{styles.section}}">
+  <div><b>New details entered by {{feature.creator_email}}:</div>
+
+  <table>
+    <tr>
+      <td style="{{styles.td}}">Summary:</td>
+      <td style="{{styles.td}}">{{feature.summary}}</td>
+    </tr>
+    <tr>
+      <td style="{{styles.td}}">Unlisted:</td>
+      <td style="{{styles.td}}">{% if feature.unlisted %}Yes{% else %}No{% endif %}</td>
+    </tr>
+    <tr>
+      <td style="{{styles.td}}">Breaking change:</td>
+      <td style="{{styles.td}}">{% if feature.breaking_change %}Yes{% else %}No{% endif %}</td>
+    </tr>
+    <tr>
+      <td style="{{styles.td}}">Feature owners:</td>
+      <td style="{{styles.td}}">{{feature.owner_emails|join(", ")}}</td>
+    </tr>
+    <tr>
+      <td style="{{styles.td}}">Cc:</td>
+      <td style="{{styles.td}}">{{feature.cc_emails|join(", ")}}</td>
+    </tr>
+    <tr>
+      <td style="{{styles.td}}">Blink component:</td>
+      <td style="{{styles.td}}">{{feature.blink_components|join(", ")}}</td>
+    </tr>
+    <tr>
+      <td style="{{styles.td}}">Category:</td>
+      <td style="{{styles.td}}">{{category}}</td>
+    </tr>
+    <tr>
+      <td style="{{styles.td}}">Feature type:</td>
+      <td style="{{styles.td}}">{{feature_type}}</td>
+    </tr>
+  </table>
+</section>
+
+
+<section id="next-steps" style="{{styles.section}}">
   <div><b>Your next steps:</b></div>
-  <div><a href="{{SITE_URL}}feature/{{id}}"
-     class="button-like"
+  <div style="{{styles.button_div}}">
+    <a href="{{SITE_URL}}feature/{{id}}" style="{{styles.button_a}}"
      >View feature details</a></div>
 </section>
+
+</div>
+</div>
