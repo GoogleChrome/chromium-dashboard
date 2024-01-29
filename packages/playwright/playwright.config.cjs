@@ -18,15 +18,15 @@ module.exports = defineConfig({
   snapshotPathTemplate: '{testDir}/{testFileDir}/__screenshots__/{testFileName}/{testName}/{arg}-{projectName}-{platform}{ext}',
 
   /* Run tests in files in parallel */
-  fullyParallel: true,
+  fullyParallel: false,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests. */
-  workers: process.env.CI ? 1 : undefined,
-  /* Reporter to use. Not for CI. See https://playwright.dev/docs/test-reporters */
-  reporter: process.env.CI ? [ ['html', { open: 'never'}] ] : [ ['html', { open: 'always'}] ],
+  /* Retries should only be needed for flakey tests, which we should avoid. */
+  retries: 0, // process.env.CI ? 2 : 0,
+  /* Opt out of parallel tests, since we cannot avoid shared sessions ATM. */
+  workers: 1, // was: process.env.CI ? 1 : undefined,
+  /* Use pwtests-report instead of reporter: 'html'.  Not for CI. See https://playwright.dev/docs/test-reporters */
+  reporter: 'line', /* was: process.env.CI ? [ ['html', { open: 'never'}] ] : [ ['html', { open: 'always'}] ], */
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
