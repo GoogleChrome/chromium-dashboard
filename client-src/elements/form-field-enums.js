@@ -219,7 +219,6 @@ export const DT_MILESTONE_FIELDS = new Set([
   'dt_milestone_webview_start',
 ]);
 
-// Map from OT milestone field names to corresponding shipped milestone field names.
 export const OT_MILESTONE_START_FIELDS = new Set([
   'ot_milestone_desktop_start',
   'ot_milestone_android_start',

@@ -1863,7 +1863,7 @@ export function makeDisplaySpecs(fieldNames) {
   return fieldNames.map(fieldName => makeDisplaySpec(fieldName));
 }
 
-// Find the minimum shipped milestone.
+// Find the minimum milestone, used for shipped milestones.
 function findMinMilestone(fieldName, stageTypes, getFieldValue) {
   let minMilestone = Infinity;
   // Iterate through all stages that are in stageTypes.
@@ -1880,7 +1880,7 @@ function findMinMilestone(fieldName, stageTypes, getFieldValue) {
   return minMilestone;
 }
 
-// Find the minimum shipped milestone.
+// Find the maximum milestone, used for OT start milestones.
 function findMaxMilestone(fieldName, stageTypes, getFieldValue) {
   let maxMilestone = -Infinity;
   // Iterate through all stages that are in stageTypes.
@@ -1897,7 +1897,8 @@ function findMaxMilestone(fieldName, stageTypes, getFieldValue) {
   return maxMilestone;
 }
 
-// Check that the origin trial start milestone is before all shipped milestones.
+// Check that the earlier milestone is before all later milestones.
+// Used with OT start milestone and all shipped milestones.
 function checkEarlierBeforeAllLaterMilestones(
   fieldPair, getFieldValue) {
   const {earlier, allLater, warning} = fieldPair;
@@ -1916,7 +1917,8 @@ function checkEarlierBeforeAllLaterMilestones(
   }
 }
 
-// Check that all origin trial start milestones before the shipped milestone.
+// Check that all earlier milestones before a later milestone.
+// Used with all OT start milestones and a shipped milestone.
 function checkAllEarlierBeforeLaterMilestone(fieldPair, getFieldValue) {
   const {allEarlier, later, warning} = fieldPair;
   const stageTypes =
@@ -1949,7 +1951,8 @@ function getNumericValue(name, getFieldValue) {
 function checkMilestoneRanges(ranges, getFieldValue) {
   let result;
   for (const range of ranges) {
-    const {earlier, allEarlier, later, allLater, warning, error} = range;
+    const { earlier, allEarlier, later, allLater, warning, error } = range;
+    // There can be an allLater or allEarlier, but not both.
     if (allLater) {
       result = checkEarlierBeforeAllLaterMilestones(range, getFieldValue);
     } else if (allEarlier) {
