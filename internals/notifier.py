@@ -266,11 +266,6 @@ def add_reviewers(
 
   accumulate_reasons(addr_reasons, recipients, reasons)
 
-  all_tasks = [convert_reasons_to_task(
-                   addr, reasons, email_html, subject, triggering_user_email)
-               for addr, reasons in sorted(addr_reasons.items())]
-  return all_tasks
-
 
 class FeatureStar(ndb.Model):
   """A FeatureStar represent one user's interest in one feature."""
