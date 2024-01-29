@@ -7,7 +7,6 @@ import {
 import './chromedash-form-table.js';
 import './chromedash-form-field.js';
 import {
-  formatFeatureForEdit,
   ORIGIN_TRIAL_EXTENSION_FIELDS} from './form-definition.js';
 import {OT_EXTENSION_STAGE_MAPPING} from './form-field-enums.js';
 import {ALL_FIELDS} from './form-field-specs';
@@ -225,8 +224,7 @@ export class ChromedashOTExtensionPage extends LitElement {
   }
 
   renderForm() {
-    const formattedFeature = formatFeatureForEdit(this.feature);
-    this.fieldValues.allFields = formattedFeature;
+    this.fieldValues.feature = this.feature;
 
     // OT extension page only has one section.
     const section = ORIGIN_TRIAL_EXTENSION_FIELDS.sections[0];

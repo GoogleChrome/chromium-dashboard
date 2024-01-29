@@ -1,11 +1,8 @@
-# coding: utf-8
-
-from __future__ import absolute_import
 from datetime import date, datetime  # noqa: F401
 
 from typing import List, Dict  # noqa: F401
 
-from chromestatus_openapi.models.base_model_ import Model
+from chromestatus_openapi.models.base_model import Model
 from chromestatus_openapi import util
 
 
@@ -53,7 +50,7 @@ class ComponentsUser(Model):
         return util.deserialize_model(dikt, cls)
 
     @property
-    def id(self):
+    def id(self) -> int:
         """Gets the id of this ComponentsUser.
 
 
@@ -63,7 +60,7 @@ class ComponentsUser(Model):
         return self._id
 
     @id.setter
-    def id(self, id):
+    def id(self, id: int):
         """Sets the id of this ComponentsUser.
 
 
@@ -76,7 +73,7 @@ class ComponentsUser(Model):
         self._id = id
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Gets the name of this ComponentsUser.
 
 
@@ -86,7 +83,7 @@ class ComponentsUser(Model):
         return self._name
 
     @name.setter
-    def name(self, name):
+    def name(self, name: str):
         """Sets the name of this ComponentsUser.
 
 
@@ -99,7 +96,7 @@ class ComponentsUser(Model):
         self._name = name
 
     @property
-    def email(self):
+    def email(self) -> str:
         """Gets the email of this ComponentsUser.
 
 
@@ -109,7 +106,7 @@ class ComponentsUser(Model):
         return self._email
 
     @email.setter
-    def email(self, email):
+    def email(self, email: str):
         """Sets the email of this ComponentsUser.
 
 

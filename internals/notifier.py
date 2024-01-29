@@ -97,6 +97,7 @@ def format_email_body(
       'milestone': milestone_str,
       'status': core_enums.IMPLEMENTATION_STATUS[fe.impl_status_chrome],
       'formatted_changes': formatted_changes,
+      'APP_TITLE': settings.APP_TITLE,
       'SITE_URL': settings.SITE_URL,
   }
   body_data.update(additional_template_data or {})

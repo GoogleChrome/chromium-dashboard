@@ -1,11 +1,8 @@
-# coding: utf-8
-
-from __future__ import absolute_import
 from datetime import date, datetime  # noqa: F401
 
 from typing import List, Dict  # noqa: F401
 
-from chromestatus_openapi.models.base_model_ import Model
+from chromestatus_openapi.models.base_model import Model
 from chromestatus_openapi.models.components_user import ComponentsUser
 from chromestatus_openapi.models.owners_and_subscribers_of_component import OwnersAndSubscribersOfComponent
 from chromestatus_openapi import util
@@ -52,7 +49,7 @@ class ComponentsUsersResponse(Model):
         return util.deserialize_model(dikt, cls)
 
     @property
-    def users(self):
+    def users(self) -> List[ComponentsUser]:
         """Gets the users of this ComponentsUsersResponse.
 
 
@@ -62,7 +59,7 @@ class ComponentsUsersResponse(Model):
         return self._users
 
     @users.setter
-    def users(self, users):
+    def users(self, users: List[ComponentsUser]):
         """Sets the users of this ComponentsUsersResponse.
 
 
@@ -73,7 +70,7 @@ class ComponentsUsersResponse(Model):
         self._users = users
 
     @property
-    def components(self):
+    def components(self) -> List[OwnersAndSubscribersOfComponent]:
         """Gets the components of this ComponentsUsersResponse.
 
 
@@ -83,7 +80,7 @@ class ComponentsUsersResponse(Model):
         return self._components
 
     @components.setter
-    def components(self, components):
+    def components(self, components: List[OwnersAndSubscribersOfComponent]):
         """Sets the components of this ComponentsUsersResponse.
 
 

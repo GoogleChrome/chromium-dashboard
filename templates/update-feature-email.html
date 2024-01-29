@@ -1,14 +1,25 @@
-<section id="context">
-  <div>
-    <b>Updated</b> feature entry:<br/>
-    <a class="feature-name" href="{{SITE_URL}}feature/{{id}}"
-          >{{feature.name}}</a>
-  </div>
+{% import 'email-styles.html' as styles %}
+<div style="{{styles.body}}">
+<div style="{{styles.branding}}">{{APP_TITLE}}</div>
+
+<div style="{{styles.content}} {{styles.content_updated}}">
+<section id="context" style="{{styles.section}}">
+  <table>
+    <tr>
+      <td rowspan=2>{{styles.icon_updated()}}</td>
+      <td><b>Updated</b> feature entry:</td>
+    </tr>
+    <tr>
+      <td><a style="{{styles.feature_name}}"
+             href="{{SITE_URL}}feature/{{id}}"
+             >{{feature.name}}</a>
+      </td>
+    </tr>
+  </table>
 </section>
-<br/>
 
 
-<section id="details">
+<section id="details" style="{{styles.section}}">
   <div><b>Updates made by {{updater_email}}:</b></div>
   <ul>
     {{formatted_changes|safe}}
@@ -16,9 +27,12 @@
 </section>
 
 
-<section id="next-steps">
+<section id="next-steps" style="{{styles.section}}">
   <div><b>Your next steps:</b></div>
-  <div><a href="{{SITE_URL}}feature/{{id}}"
-     class="button-like"
+  <div style="{{styles.button_div}}">
+    <a href="{{SITE_URL}}feature/{{id}}" style="{{styles.button_a}}"
      >View feature details</a></div>
 </section>
+
+</div>
+</div>

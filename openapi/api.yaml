@@ -16,6 +16,111 @@ servers:
 - url: /api/v0
 paths:
   /componentsusers:
-    $ref: 'componentsusers.paths.yaml'
+    get:
+      summary: List all components and possible users
+      operationId: listComponentUsers
+      responses:
+        '200':
+          description: List of all the potential users and components with existing subscribers and owners.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComponentsUsersResponse'
   /components/{componentId}/users/{userId}:
-    $ref: 'component_componentid_users_userid.paths.yaml'
+    put:
+      summary: Add a user to a component
+      operationId: addUserToComponent
+      parameters:
+        - in: path
+          name: componentId
+          schema:
+            type: integer
+          required: true
+          description: Component ID
+        - in: path
+          name: userId
+          schema:
+            type: integer
+          required: true
+          description: User ID
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComponentUsersRequest'
+      responses:
+        '200':
+          description: Success
+    delete:
+      summary: Remove a user from a component
+      operationId: removeUserFromComponent
+      parameters:
+        - in: path
+          name: componentId
+          schema:
+            type: integer
+          required: true
+          description: Component ID
+        - in: path
+          name: userId
+          schema:
+            type: integer
+          required: true
+          description: User ID
+      responses:
+        '200':
+          description: Success
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComponentUsersRequest'
+components:
+  schemas:
+    ComponentsUsersResponse:
+      properties:
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComponentsUser'
+        components:
+          type: array
+          items:
+            $ref: '#/components/schemas/OwnersAndSubscribersOfComponent'
+    ComponentsUser:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+      required:
+        - id
+        - name
+        - email
+    OwnersAndSubscribersOfComponent:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        subscriber_ids:
+          type: array
+          items:
+            type: integer
+        owner_ids:
+          type: array
+          items:
+            type: integer
+      required:
+        - id
+        - name
+    ComponentUsersRequest:
+      description: Traits about the user in relation to the component
+      properties:
+        owner:
+          type: boolean
+          description: Impacts this user's ownership. For PUT, add ownership. For DELETE, remove ownership.

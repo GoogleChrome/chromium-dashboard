@@ -85,12 +85,19 @@ then you can update _all_ images for all tests with:
 npm run pwtests-update --workspace=playwright
 ```
 
-The updated images are also added to the __screenshots__ directory.
-If you change test file names, or test names, or screenshot image names, then
-you can manually delete the old screenshots, or simply delete all and update all.
+The updated images are also added to the __screenshots__ directory.  Images that
+did not need to be updated do not show up as having been changed.
+If you change the test file names, or the test method names, or the screenshot
+image file names, then new files will be generated, and you will need to manually delete the old files.  You could simply delete all screenshots and
+update all, but that will take a fairly long time.
 
-There is no way to run just one test or test file yet, but playwright supports
-doing that, so we should be able to add a parameter to the test running commands.
+You can update images for just one test file by adding `--filename=some_pwtest.js`
+to the `pwtests-update` command.  The `some_pwtest.js` name does not need to be
+a full path.
+
+If there are error reported by the GitHub CI playwright action, you can look at
+the error log, but if the problem is a difference in some of the images, you
+should probably download the artifact `.zip` file containing all the differences.
 
 There is some additional information for developers in developer-documentation.md.
 
