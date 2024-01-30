@@ -41,6 +41,8 @@ paths:
       responses:
         "200":
           description: Success
+      security:
+      - XsrfToken: []
       summary: Remove a user from a component
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
     put:
@@ -70,6 +72,8 @@ paths:
       responses:
         "200":
           description: Success
+      security:
+      - XsrfToken: []
       summary: Add a user to a component
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /componentsusers:
@@ -83,6 +87,8 @@ paths:
                 $ref: '#/components/schemas/ComponentsUsersResponse'
           description: List of all the potential users and components with existing
             subscribers and owners.
+      security:
+      - XsrfToken: []
       summary: List all components and possible users
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
 components:
@@ -189,3 +195,9 @@ components:
           title: owner
           type: boolean
       title: ComponentUsersRequest
+  securitySchemes:
+    XsrfToken:
+      in: header
+      name: X-Xsrf-Token
+      type: apiKey
+      x-apikeyInfoFunc: chromestatus_openapi.controllers.security_controller.info_from_XsrfToken

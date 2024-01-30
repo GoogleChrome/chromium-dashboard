@@ -117,6 +117,10 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
 
         headerParameters['Content-Type'] = 'application/json';
 
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["X-Xsrf-Token"] = this.configuration.apiKey("X-Xsrf-Token"); // XsrfToken authentication
+        }
+
         const response = await this.request({
             path: `/components/{componentId}/users/{userId}`.replace(`{${"componentId"}}`, encodeURIComponent(String(requestParameters.componentId))).replace(`{${"userId"}}`, encodeURIComponent(String(requestParameters.userId))),
             method: 'PUT',
@@ -142,6 +146,10 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["X-Xsrf-Token"] = this.configuration.apiKey("X-Xsrf-Token"); // XsrfToken authentication
+        }
 
         const response = await this.request({
             path: `/componentsusers`,
@@ -178,6 +186,10 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
         const headerParameters: runtime.HTTPHeaders = {};
 
         headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["X-Xsrf-Token"] = this.configuration.apiKey("X-Xsrf-Token"); // XsrfToken authentication
+        }
 
         const response = await this.request({
             path: `/components/{componentId}/users/{userId}`.replace(`{${"componentId"}}`, encodeURIComponent(String(requestParameters.componentId))).replace(`{${"userId"}}`, encodeURIComponent(String(requestParameters.userId))),

@@ -28,6 +28,7 @@ class ChromeStatusOpenApiClient extends Api {
   constructor() {
     super(new Configuration({
       credentials: 'same-origin',
+      apiKey: 'placeholder-api-key',
       middleware: [
         {pre: ChromeStatusMiddlewares.xsrfMiddleware},
         {post: ChromeStatusMiddlewares.xssiMiddleware},
@@ -45,12 +46,13 @@ class ChromeStatusMiddlewares {
    * @return {Promise<import('chromestatus-openapi').FetchParams>}
    */
   static async xsrfMiddleware(req) {
-    return window.csClient.ensureTokenIsValid().then(() => {
-      const headers = req.init.headers || {};
-      headers['X-Xsrf-Token'] = [window.csClient.token];
+    const headers = req.init.headers || {};
+    if ('X-Xsrf-Token' in headers) {
+      await window.csClient.ensureTokenIsValid();
+      headers['X-Xsrf-Token'] = window.csClient.token;
       req.init.headers = headers;
-      return req;
-    });
+    }
+    return req;
   }
 
 
