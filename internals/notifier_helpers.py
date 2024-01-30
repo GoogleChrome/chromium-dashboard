@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from typing import TYPE_CHECKING
+import settings
 from api import converters
 from framework import cloud_tasks_helpers, users
 from internals import core_enums, approval_defs, core_models
@@ -23,6 +24,7 @@ from internals.core_models import Stage
 
 if TYPE_CHECKING:
   from internals.core_models import FeatureEntry
+
 
 def _get_changes_as_amendments(
     changed_fields: CHANGED_FIELDS_LIST_TYPE) -> list[Amendment]:
@@ -38,6 +40,7 @@ def _get_changes_as_amendments(
           Amendment(field_name=field,
           old_value=str(old_val), new_value=str(new_val)))
   return amendments
+
 
 def notify_feature_subscribers_of_changes(
     fe: 'FeatureEntry', amendments: list[Amendment],
@@ -62,6 +65,7 @@ def notify_feature_subscribers_of_changes(
   # Create task to email subscribers.
   cloud_tasks_helpers.enqueue_task('/tasks/email-subscribers', params)
 
+
 def notify_subscribers_and_save_amendments(
     fe: 'FeatureEntry', changed_fields: CHANGED_FIELDS_LIST_TYPE,
     notify: bool=True, is_update: bool=True) -> None:
@@ -80,6 +84,14 @@ def notify_subscribers_and_save_amendments(
     notify_feature_subscribers_of_changes(fe, amendments, is_update=is_update)
 
 
+def get_gate_url(gate: Gate) -> str:
+  """Reutrn a URL for the user to view the given gate."""
+  gate_id = gate.key.integer_id()
+  gate_url = '%sfeature/%s?gate=%s' % (
+      settings.SITE_URL, gate.feature_id, gate_id)
+  return gate_url
+
+
 def notify_approvers_of_reviews(
     fe: 'FeatureEntry', gate: Gate, new_state: int, email: str) -> None:
   """Notify approvers of a review requested from a Gate."""
@@ -91,8 +103,7 @@ def notify_approvers_of_reviews(
                       author=email, amendments=[amendment])
   activity.put()
 
-  gate_url = 'https://chromestatus.com/feature/%s?gate=%s' % (
-    gate.feature_id, gate.key.integer_id())
+  gate_url = get_gate_url(gate)
 
   params = {
     'gate_url': gate_url,
@@ -126,8 +137,7 @@ def notify_subscribers_of_vote_changes(fe: 'FeatureEntry', gate: Gate,
                       author=email, amendments=[amendment])
   activity.put()
 
-  gate_url = 'https://chromestatus.com/feature/%s?gate=%s' % (
-    gate.feature_id, gate_id)
+  gate_url = get_gate_url(gate)
   changed_props = {
       'prop_name': '%s set review status in %s' % (email, gate_url),
       'old_val': old_state_name,
@@ -149,9 +159,7 @@ def notify_assignees(
     fe: 'FeatureEntry', gate: Gate, triggering_user_email: str,
     old_assignees: list[str], new_assignees: list[str]) -> None:
   """Notify assigned reviewers that they have been assigned."""
-  gate_id = gate.key.integer_id()
-  gate_url = 'https://chromestatus.com/feature/%s?gate=%s' % (
-      fe.key.integer_id(), gate_id)
+  gate_url = get_gate_url(gate)
 
   params = {
     'gate_type': gate.gate_type,
@@ -168,9 +176,7 @@ def notify_assignees(
 def notify_subscribers_of_new_comments(fe: 'FeatureEntry', gate: Gate,
     email: str, content: str) -> None:
   """Notify subscribers of a new comment."""
-  gate_id = gate.key.integer_id()
-  gate_url = 'https://chromestatus.com/feature/%s?gate=%s' % (
-      fe.key.integer_id(), gate_id)
+  gate_url = get_gate_url(gate)
 
   params = {
     'triggering_user_email': email,
