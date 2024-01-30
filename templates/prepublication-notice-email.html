@@ -1,14 +1,25 @@
-<section id="context">
-  <div>
-    <b>Pre-publication notice</b> for feature entry:<br/>
-    <a class="feature-name" href="{{SITE_URL}}feature/{{id}}"
-          >{{feature.name}}</a>
-  </div>
+{% import 'email-styles.html' as styles %}
+<div style="{{styles.body}}">
+<div style="{{styles.branding}}">{{APP_TITLE}}</div>
+
+<div style="{{styles.content}} {{styles.content_alert}}">
+<section id="context" style="{{styles.section}}">
+  <table>
+    <tr>
+      <td rowspan=2>{{styles.icon_alert()}}</td>
+      <td><b>Prepublication notice</b> for feature entry:</td>
+    </tr>
+    <tr>
+      <td><a style="{{styles.feature_name}}"
+             href="{{SITE_URL}}feature/{{id}}"
+             >{{feature.name}}</a>
+      </td>
+    </tr>
+  </table>
 </section>
-<br/>
 
 
-<section id="details">
+<section id="details" style="{{styles.section}}">
   <div><b>It's really happening:</b></div>
 
   <p>Your feature is slated to ship in M{{milestone}} which will reach the
@@ -20,10 +31,9 @@
     web developers and IT admins, and they are sometimes used as the basis
     for popular press articles.</p>
 </section>
-<br/>
 
 
-<section id="next-steps">
+<section id="next-steps"  style="{{styles.section}}">
   <div><b>Your next steps:</b></div>
 
   <h2>1. Locate your releases on the roadmap.</h2>
@@ -54,9 +64,9 @@
     <p>{{feature.summary}}</p>
   </div>
 
-  <p><a href="{{SITE_URL}}feature/{{id}}" class="button-like"
-        >Edit your feature</a></p>
-
+  <div style="{{styles.button_div}}">
+    <a href="{{SITE_URL}}feature/{{id}}" style="{{styles.button_a}}"
+       >View feature details</a></div>
 
   <p>Guidelines for writing the summary:</p>
   <ul>
@@ -109,3 +119,6 @@
     or email us at webstatus@google.com.</p>
 
 </section>
+
+</div>
+</div>

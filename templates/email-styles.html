@@ -1,0 +1,65 @@
+{# This file is imported into other email teamplates to share style="..."
+attributes because email clients do not consistently support <style>. #}
+
+{% set body =
+ 'background: #eee; padding: 0 16px 16px'
+%}
+
+{% set branding =
+ 'color: #666; padding: 8px 0 0 16px;'
+%}
+
+{% set content =
+ 'padding: 8px; background: white; border-top: 4px solid #888;'
+%}
+
+{% set content_new = 'border-color: #388e3c;' %}
+{% set content_updated = 'border-color: #01579b;' %}
+{% set content_alert = 'border-color: #d32f2f;' %}
+
+{# TODO(jrobbins): Replace these colored circles with actual icons. #}
+{% macro icon(color) %}
+<div style="border: 4px solid {{color}}; border-radius: 50%; width: 32px; height: 32px; margin-right: 8px;">
+  </div>
+{% endmacro %}
+
+{% macro icon_new() %}
+  {{icon('#338e3c')}}
+{% endmacro %}
+
+{% macro icon_updated() %}
+  {{icon('#01579b')}}
+{% endmacro %}
+
+{% macro icon_alert() %}
+  {{icon('#d32f2f')}}
+{% endmacro %}
+
+
+{% set feature_name =
+ 'font-size: 140%;'
+%}
+
+{% set section =
+ 'margin: 16px; padding: 16px; background: white; border: 2px solid #ccc; border-radius:8px;'
+%}
+
+{% set td =
+ 'padding-left: 16px;'
+%}
+
+{% set button_div =
+ 'margin: 16px;'
+%}
+
+{% set button_a =
+ 'text-decoration: none; font-weight: bold; color: white; background: #01579b; border-radius: 8px; padding: 8px 16px; '
+%}
+
+{% set comment =
+ 'background: #eee; padding: 8px; border-radius: 8px;'
+%}
+
+{% set comment_content =
+ 'white-space: pre-wrap;'
+%}

@@ -18,17 +18,21 @@ paths:
       operationId: remove_user_from_component
       parameters:
       - description: Component ID
+        explode: false
         in: path
         name: componentId
         required: true
         schema:
           type: integer
+        style: simple
       - description: User ID
+        explode: false
         in: path
         name: userId
         required: true
         schema:
           type: integer
+        style: simple
       requestBody:
         content:
           application/json:
@@ -43,17 +47,21 @@ paths:
       operationId: add_user_to_component
       parameters:
       - description: Component ID
+        explode: false
         in: path
         name: componentId
         required: true
         schema:
           type: integer
+        style: simple
       - description: User ID
+        explode: false
         in: path
         name: userId
         required: true
         schema:
           type: integer
+        style: simple
       requestBody:
         content:
           application/json:
