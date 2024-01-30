@@ -62,11 +62,6 @@ export class ChromedashDrawer extends LitElement {
           margin: 15px;
         }
 
-        .flex-item {
-          padding-top: 10px;
-          padding-bottom: 10px;
-          text-align: left;
-        }
         .section-header {
           margin: 0px 16px 10px;
           font-weight: bold;
@@ -235,12 +230,22 @@ export class ChromedashDrawer extends LitElement {
     return drawer.open;
   }
 
+  renderNavItem(url, label) {
+    return html`<a
+      href="${url}"
+      ?active=${this.isCurrentPage(url)}
+      >${label}</a>`;
+  }
+
   renderDrawer() {
     let accountMenu = nothing;
     if (IS_MOBILE && !this.loading) {
-      accountMenu = html`
-      ${this.renderAccountMenu()}
-      `;
+      accountMenu = this.renderAccountMenu();
+    }
+
+    let adminMenu = nothing;
+    if (!this.loading && this.user?.is_admin) {
+      adminMenu = this.renderAdminMenu();
     }
 
     return html`
@@ -248,16 +253,18 @@ export class ChromedashDrawer extends LitElement {
         style="--size: ${DRAWER_WIDTH_PX}px;" contained noHeader
         ?open=${!IS_MOBILE && this.defaultOpen}>
         ${accountMenu}
-        <a class="flex-item" href="/roadmap" ?active=${this.isCurrentPage('/roadmap')}>Roadmap</a>
-        ${this.user?.email ? html`
-          <a class="flex-item" href="/myfeatures" ?active=${this.isCurrentPage('/myfeatures')}>My features</a>
-        ` : nothing}
-        <a class="flex-item" href="/features" ?active=${this.isCurrentPage('/features') || this.isCurrentPage('/newfeatures')}>All features</a>
+        ${this.renderNavItem('/roadmap', 'Roadmap')}
+        ${this.user?.email ?
+           this.renderNavItem('/myfeatures', 'My features') :
+           nothing}
+        ${this.renderNavItem('/features', 'All features')}
         <hr>
         <div class="section-header">Stats</div>
-        <a href="/metrics/css/popularity" ?active=${this.isCurrentPage('/metrics/css/popularity')}>CSS</a>
-        <a href="/metrics/css/animated" ?active=${this.isCurrentPage('/metrics/css/animated')}>CSS Animation</a>
-        <a href="/metrics/feature/popularity" ?active=${this.isCurrentPage('/metrics/feature/popularity')}>JS/HTML</a>
+        ${this.renderNavItem('/metrics/css/popularity', 'CSS')}
+        ${this.renderNavItem('/metrics/css/animated', 'CSS Animation')}
+        ${this.renderNavItem('/metrics/feature/popularity', 'JS/HTML')}
+
+        ${adminMenu}
       </sl-drawer>
     `;
   }
@@ -278,6 +285,23 @@ export class ChromedashDrawer extends LitElement {
         </sl-button>
         `: nothing }
       <hr>
+    `;
+  }
+
+  renderAdminMenu() {
+    if (!this.user?.is_admin) {
+      return nothing;
+    }
+
+    return html`
+        <hr>
+        <div class="section-header">Admin</div>
+        ${this.renderNavItem('/admin/users/new', 'Users')}
+        ${this.renderNavItem('/admin/ot_requests', 'OT requests')}
+        ${this.renderNavItem('/admin/feature_links', 'Feature links')}
+        ${this.renderNavItem('/admin/slo_report', 'SLO report JSON')}
+        ${this.renderNavItem('/admin/blink', 'Subscriptions')}
+        ${this.renderNavItem('/admin/find_stop_words', 'Find stop words JSON')}
     `;
   }
 
