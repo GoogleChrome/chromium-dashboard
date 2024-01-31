@@ -19,6 +19,8 @@ paths:
     get:
       summary: List all components and possible users
       operationId: listComponentUsers
+      security:
+        - XsrfToken: []
       responses:
         '200':
           description: List of all the potential users and components with existing subscribers and owners.
@@ -30,6 +32,8 @@ paths:
     put:
       summary: Add a user to a component
       operationId: addUserToComponent
+      security:
+        - XsrfToken: []
       parameters:
         - in: path
           name: componentId
@@ -54,6 +58,8 @@ paths:
     delete:
       summary: Remove a user from a component
       operationId: removeUserFromComponent
+      security:
+        - XsrfToken: []
       parameters:
         - in: path
           name: componentId
@@ -76,6 +82,11 @@ paths:
             schema:
               $ref: '#/components/schemas/ComponentUsersRequest'
 components:
+  securitySchemes:
+    XsrfToken:
+      type: apiKey
+      in: header
+      name: X-Xsrf-Token
   schemas:
     ComponentsUsersResponse:
       properties:

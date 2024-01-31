@@ -30,7 +30,24 @@ describe('openapi-client', () => {
   });
   describe('Middlewares', () => {
     describe('xsrfMiddleware', () => {
-      it('should add the XSRF token to the request with existing headers', async () => {
+      it('should update the XSRF token to the request with existing headers', async () => {
+        const tokenValidStub = sinon.stub(window.csClient, 'ensureTokenIsValid').resolves();
+        /** @type {import('chromestatus-openapi').RequestContext} */
+        const req = {
+          init: {
+            headers: {
+              'content-type': ['application/json'],
+              'X-Xsrf-Token': 'Wrong-value',
+            },
+          },
+        };
+        /** @type {import('chromestatus-openapi').FetchParams} */
+        const params = await ChromeStatusMiddlewares.xsrfMiddleware(req);
+        assert.equal(params.init.headers['content-type'][0], 'application/json');
+        assert.equal(params.init.headers['X-Xsrf-Token'], 'fake_token');
+        tokenValidStub.restore();
+      });
+      it('should not add the XSRF token to the request with no existing header', async () => {
         const tokenValidStub = sinon.stub(window.csClient, 'ensureTokenIsValid').resolves();
         /** @type {import('chromestatus-openapi').RequestContext} */
         const req = {
@@ -40,19 +57,7 @@ describe('openapi-client', () => {
         };
         /** @type {import('chromestatus-openapi').FetchParams} */
         const params = await ChromeStatusMiddlewares.xsrfMiddleware(req);
-        assert.equal(params.init.headers['content-type'][0], 'application/json');
-        assert.equal(params.init.headers['X-Xsrf-Token'][0], 'fake_token');
-        tokenValidStub.restore();
-      });
-      it('should add the XSRF token to the request with no existing headers', async () => {
-        const tokenValidStub = sinon.stub(window.csClient, 'ensureTokenIsValid').resolves();
-        /** @type {import('chromestatus-openapi').RequestContext} */
-        const req = {
-          init: {},
-        };
-        /** @type {import('chromestatus-openapi').FetchParams} */
-        const params = await ChromeStatusMiddlewares.xsrfMiddleware(req);
-        assert.equal(params.init.headers['X-Xsrf-Token'][0], 'fake_token');
+        assert.notExists(params.init.headers['X-Xsrf-Token']);
         tokenValidStub.restore();
       });
     });
