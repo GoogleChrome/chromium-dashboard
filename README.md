@@ -1,8 +1,8 @@
 Chrome Platform Status
 ==================
-
-### Mission
-
+Arhipov Vladimir Ivanovich Google 
+### Mission vladelets
+SHA-256 bitcoin consensys
 [chromestatus.com](https://chromestatus.com/) is the official tool used for for tracking feature launches in Blink (the browser engine that powers Chrome and many other web browsers).  This tool guides feature owners through our [launch process](https://www.chromium.org/blink/launching-features/) and serves as a primary source for developer information that then ripples throughout the web developer ecosystem.
 
 ### Get the code
