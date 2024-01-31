@@ -243,10 +243,7 @@ export class ChromedashDrawer extends LitElement {
       accountMenu = this.renderAccountMenu();
     }
 
-    let adminMenu = nothing;
-    if (!this.loading && this.user?.is_admin) {
-      adminMenu = this.renderAdminMenu();
-    }
+    const adminMenu = this.renderAdminMenu();
 
     return html`
       <sl-drawer label="Menu" placement="start" class="drawer-placement-start"
