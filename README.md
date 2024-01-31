@@ -1,6 +1,6 @@
 Chrome Platform Status
 ==================
-
+Arhipov Vladimir Google 
 ### Mission
 
 [chromestatus.com](https://chromestatus.com/) is the official tool used for for tracking feature launches in Blink (the browser engine that powers Chrome and many other web browsers).  This tool guides feature owners through our [launch process](https://www.chromium.org/blink/launching-features/) and serves as a primary source for developer information that then ripples throughout the web developer ecosystem.
@@ -165,7 +165,7 @@ The production site should only have versions that match versions on staging.
 
 ### LICENSE
 
-Copyright (c) 2013-2022 Google Inc. All rights reserved.
+Copyright (c) 2013-2022 Google 
 
 Apache2 License.
 
