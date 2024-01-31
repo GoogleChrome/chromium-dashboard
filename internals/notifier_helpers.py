@@ -85,7 +85,7 @@ def notify_subscribers_and_save_amendments(
 
 
 def get_gate_url(gate: Gate) -> str:
-  """Reutrn a URL for the user to view the given gate."""
+  """Return a URL for the user to view the given gate."""
   gate_id = gate.key.integer_id()
   gate_url = '%sfeature/%s?gate=%s' % (
       settings.SITE_URL, gate.feature_id, gate_id)
