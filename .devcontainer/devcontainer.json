@@ -16,9 +16,7 @@
 			// Set *default* container specific settings.json values on container create.
 			"settings": {
 				"mypy-type-checker.args": ["--ignore-missing-imports --exclude cs-env/ --exclude gen/ --exclude appengine_config.py --disable-error-code \"annotation-unchecked\""],
-				"pylint.args": ["--indent-string=\"  \""],
 				"python.defaultInterpreterPath": "/workspace/cs-env/bin/python",
-				"python.editor.tabSize": 2,
 				"python.languageServer": "Jedi",
 				"python.testing.pytestEnabled": false,
 				"python.testing.unittestArgs": [
@@ -35,11 +33,11 @@
 			"extensions": [
 				"42Crunch.vscode-openapi",
 				"bierner.lit-html",
-				"eeyore.yapf",
 				"ms-playwright.playwright",
+				"charliermarsh.ruff",
 				"ms-python.mypy-type-checker",
-				"ms-python.pylint",
-				"ms-python.python"
+				"ms-python.python",
+				"EditorConfig.EditorConfig"
 			]
 		}
 	},
