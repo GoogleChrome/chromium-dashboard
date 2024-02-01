@@ -1,0 +1,7 @@
+additionalProperties:
+  enumPropertyNaming: original
+  modelPropertyNaming: original
+  npmName: chromestatus-openapi
+  paramNaming: camelCase
+  supportsES6: true
+  withInterfaces: true

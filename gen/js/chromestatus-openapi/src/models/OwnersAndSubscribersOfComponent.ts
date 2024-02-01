@@ -36,13 +36,13 @@ export interface OwnersAndSubscribersOfComponent {
      * @type {Array<number>}
      * @memberof OwnersAndSubscribersOfComponent
      */
-    subscriberIds?: Array<number>;
+    subscriber_ids?: Array<number>;
     /**
      * 
      * @type {Array<number>}
      * @memberof OwnersAndSubscribersOfComponent
      */
-    ownerIds?: Array<number>;
+    owner_ids?: Array<number>;
 }
 
 /**
@@ -68,8 +68,8 @@ export function OwnersAndSubscribersOfComponentFromJSONTyped(json: any, ignoreDi
         
         'id': json['id'],
         'name': json['name'],
-        'subscriberIds': !exists(json, 'subscriber_ids') ? undefined : json['subscriber_ids'],
-        'ownerIds': !exists(json, 'owner_ids') ? undefined : json['owner_ids'],
+        'subscriber_ids': !exists(json, 'subscriber_ids') ? undefined : json['subscriber_ids'],
+        'owner_ids': !exists(json, 'owner_ids') ? undefined : json['owner_ids'],
     };
 }
 
@@ -84,8 +84,8 @@ export function OwnersAndSubscribersOfComponentToJSON(value?: OwnersAndSubscribe
         
         'id': value.id,
         'name': value.name,
-        'subscriber_ids': value.subscriberIds,
-        'owner_ids': value.ownerIds,
+        'subscriber_ids': value.subscriber_ids,
+        'owner_ids': value.owner_ids,
     };
 }
 
