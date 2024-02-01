@@ -26,7 +26,10 @@
 					"-p",
 					"*_test.py"
 				],
-				"python.testing.unittestEnabled": true
+				"python.testing.unittestEnabled": true,
+				"[python]": {
+					"editor.defaultFormatter": "charliermarsh.ruff"
+				}
 			},
 
 			// Add the IDs of extensions you want installed when the container is created.
