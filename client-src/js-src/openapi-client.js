@@ -38,7 +38,6 @@ class ChromeStatusOpenApiClient extends Api {
 }
 
 class ChromeStatusMiddlewares {
-  // eslint-disable-next-line valid-jsdoc
   /**
    * Refresh the XSRF Token, if needed. Add to headers.
    *
@@ -56,7 +55,6 @@ class ChromeStatusMiddlewares {
   }
 
 
-  // eslint-disable-next-line valid-jsdoc
   /**
    * Server sends XSSI prefix. Remove it and allow the client to parse.
    *
