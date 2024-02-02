@@ -81,7 +81,7 @@ services:
     environment:
       - SERVER_SOFTWARE=Development
       - DATASTORE_PROJECT_ID=cr-status-staging
-      - DATASTORE_EMULATOR_HOST=localhost:15606
+      - DATASTORE_EMULATOR_HOST=localhost:15607
   debugapp:
     <<: *myapp
     command: bash -c "source cs-env/bin/activate; env && whoami && npm run debug-app"
@@ -95,15 +95,17 @@ services:
         condition: service_healthy
     environment:
       DATASTORE_PROJECT_ID: cr-status-staging
-      DATASTORE_EMULATOR_HOST: "localhost:15606"
+      DATASTORE_EMULATOR_HOST: "localhost:15607"
 
   mydb:
     extends:
       file: ../../.devcontainer/db-docker-compose.yml
       service: db
     network_mode: host
+    environment:
+      DB_PORT: 15607
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:15606"]
+      test: ["CMD", "curl", "-f", "http://localhost:15607"]
       interval: 10s
       timeout: 10s
       retries: 5

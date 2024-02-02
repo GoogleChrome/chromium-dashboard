@@ -8,7 +8,7 @@ export PYTHONPATH=cs-env/lib/python3/site-packages:$PYTHONPATH
 export GOOGLE_CLOUD_PROJECT='cr-status-staging'
 export SERVER_SOFTWARE='gunicorn'
 export GAE_ENV='localdev'
-export DATASTORE_EMULATOR_HOST='localhost:15606'
+export DATASTORE_EMULATOR_HOST=${DATASTORE_EMULATOR_HOST:-'localhost:15606'}
 
 
 gunicorn --bind :8080 --workers 4 main:app
