@@ -114,11 +114,11 @@ export class ChromedashAdminBlinkPage extends LitElement {
 
     // If the user is already a subscriber, we do not want to append it.
     // We can get here if we are adding the user the owner list.
-    if (!component.subscriberIds.includes(e.detail.userId)) {
-      component.subscriberIds = [...component.subscriberIds, e.detail.userId];
+    if (!component.subscriber_ids.includes(e.detail.userId)) {
+      component.subscriber_ids = [...component.subscriber_ids, e.detail.userId];
     }
     if (e.detail.toggleAsOwner) {
-      component.ownerIds = [...component.ownerIds, e.detail.userId];
+      component.owner_ids = [...component.owner_ids, e.detail.userId];
     }
     showToastMessage(`"${this.usersMap.get(e.detail.userId).name} added to ${component.name}".`);
     this.components[e.detail.index] = component;
@@ -132,10 +132,10 @@ export class ChromedashAdminBlinkPage extends LitElement {
       return;
     }
 
-    component.subscriberIds = component.subscriberIds.filter(
+    component.subscriber_ids = component.subscriber_ids.filter(
       (currentUserId) => e.detail.userId !== currentUserId);
     if (e.detail.toggleAsOwner) {
-      component.ownerIds = component.ownerIds.filter(
+      component.owner_ids = component.owner_ids.filter(
         (currentUserId) => e.detail.userId !== currentUserId);
     }
     showToastMessage(`"${this.usersMap.get(e.detail.userId).name} removed from ${component.name}".`);
@@ -180,8 +180,8 @@ export class ChromedashAdminBlinkPage extends LitElement {
             <chromedash-admin-blink-component-listing
               .id=${component.id}
               .name=${component.name}
-              .subscriberIds=${component.subscriberIds ?? []}
-              .ownerIds=${component.ownerIds ?? []}
+              .subscriberIds=${component.subscriber_ids ?? []}
+              .ownerIds=${component.owner_ids ?? []}
               .index=${index}
               .usersMap=${this.usersMap}
               ?editing=${this._editMode}
