@@ -333,6 +333,16 @@ export function renderRelativeDate(dateStr) {
 }
 
 
+/** Returns the non-time part of date in the YYYY-MM-DD format.
+ *
+ * @param {Date} date
+ * @return {string}
+ */
+export function isoDateString(date) {
+  return date.toISOString().slice(0, 10);
+}
+
+
 /**
  * Parses URL query strings into a dict.
  * @param {string} rawQuery a raw URL query string, e.g. q=abc&num=1;

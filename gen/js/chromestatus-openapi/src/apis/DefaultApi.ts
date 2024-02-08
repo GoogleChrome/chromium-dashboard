@@ -17,18 +17,25 @@ import * as runtime from '../runtime';
 import type {
   ComponentUsersRequest,
   ComponentsUsersResponse,
+  SpecMentor,
 } from '../models/index';
 import {
     ComponentUsersRequestFromJSON,
     ComponentUsersRequestToJSON,
     ComponentsUsersResponseFromJSON,
     ComponentsUsersResponseToJSON,
+    SpecMentorFromJSON,
+    SpecMentorToJSON,
 } from '../models/index';
 
 export interface AddUserToComponentRequest {
     componentId: number;
     userId: number;
     componentUsersRequest?: ComponentUsersRequest;
+}
+
+export interface ListSpecMentorsRequest {
+    after?: Date;
 }
 
 export interface RemoveUserFromComponentRequest {
@@ -74,6 +81,21 @@ export interface DefaultApiInterface {
      * List all components and possible users
      */
     listComponentUsers(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ComponentsUsersResponse>;
+
+    /**
+     * 
+     * @summary List spec mentors and their activity
+     * @param {Date} [after] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    listSpecMentorsRaw(requestParameters: ListSpecMentorsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<SpecMentor>>>;
+
+    /**
+     * List spec mentors and their activity
+     */
+    listSpecMentors(requestParameters: ListSpecMentorsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<SpecMentor>>;
 
     /**
      * 
@@ -166,6 +188,36 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async listComponentUsers(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ComponentsUsersResponse> {
         const response = await this.listComponentUsersRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * List spec mentors and their activity
+     */
+    async listSpecMentorsRaw(requestParameters: ListSpecMentorsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<SpecMentor>>> {
+        const queryParameters: any = {};
+
+        if (requestParameters.after !== undefined) {
+            queryParameters['after'] = (requestParameters.after as any).toISOString().substring(0,10);
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/spec_mentors`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(SpecMentorFromJSON));
+    }
+
+    /**
+     * List spec mentors and their activity
+     */
+    async listSpecMentors(requestParameters: ListSpecMentorsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<SpecMentor>> {
+        const response = await this.listSpecMentorsRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

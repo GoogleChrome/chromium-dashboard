@@ -81,6 +81,26 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ComponentUsersRequest'
+  /spec_mentors:
+    get:
+      summary: List spec mentors and their activity
+      operationId: listSpecMentors
+      parameters:
+        - in: query
+          name: after
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: >-
+            List of all the matching spec mentors.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SpecMentor'
 components:
   securitySchemes:
     XsrfToken:
@@ -135,3 +155,28 @@ components:
         owner:
           type: boolean
           description: Impacts this user's ownership. For PUT, add ownership. For DELETE, remove ownership.
+    SpecMentor:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        mentored_features:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeatureLink'
+      required:
+        - email
+        - mentored_features
+    FeatureLink:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          example: 5703707724349440
+        name:
+          type: string
+          example: WebGPU

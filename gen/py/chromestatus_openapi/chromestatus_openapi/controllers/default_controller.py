@@ -5,6 +5,7 @@ from typing import Union
 
 from chromestatus_openapi.models.component_users_request import ComponentUsersRequest  # noqa: E501
 from chromestatus_openapi.models.components_users_response import ComponentsUsersResponse  # noqa: E501
+from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
 from chromestatus_openapi import util
 
 
@@ -35,6 +36,20 @@ def list_component_users():  # noqa: E501
 
     :rtype: Union[ComponentsUsersResponse, Tuple[ComponentsUsersResponse, int], Tuple[ComponentsUsersResponse, int, Dict[str, str]]
     """
+    return 'do some magic!'
+
+
+def list_spec_mentors(after=None):  # noqa: E501
+    """List spec mentors and their activity
+
+     # noqa: E501
+
+    :param after: 
+    :type after: str
+
+    :rtype: Union[List[SpecMentor], Tuple[List[SpecMentor], int], Tuple[List[SpecMentor], int, Dict[str, str]]
+    """
+    after = util.deserialize_date(after)
     return 'do some magic!'
 
 

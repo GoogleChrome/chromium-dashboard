@@ -92,6 +92,7 @@ import './elements/chromedash-textarea';
 import './elements/chromedash-timeline';
 import './elements/chromedash-timeline-page';
 import './elements/chromedash-toast';
+import './elements/chromedash-report-spec-mentors-page';
 import './elements/chromedash-roadmap';
 import './elements/chromedash-roadmap-milestone-card';
 import './elements/chromedash-roadmap-page';

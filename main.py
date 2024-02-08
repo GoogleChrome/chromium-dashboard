@@ -34,6 +34,7 @@ from api import permissions_api
 from api import processes_api
 from api import reviews_api
 from api import settings_api
+from api import spec_mentors_api
 from api import stages_api
 from api import stars_api
 from api import token_refresh_api
@@ -140,6 +141,8 @@ api_routes: list[Route] = [
     Route(f'{API_BASE}/components/<int:component_id>/users/<int:user_id>',
         component_users.ComponentUsersAPI),
 
+    Route(f'{API_BASE}/spec_mentors', spec_mentors_api.SpecMentorsAPI),
+
     Route(f'{API_BASE}/login', login_api.LoginAPI),
     Route(f'{API_BASE}/logout', logout_api.LogoutAPI),
     Route(f'{API_BASE}/currentuser/permissions', permissions_api.PermissionsAPI),
@@ -204,6 +207,7 @@ spa_page_routes = [
   Route('/metrics/feature/popularity'),
   Route('/metrics/feature/timeline/popularity'),
   Route('/metrics/feature/timeline/popularity/<int:bucket_id>'),
+  Route('/reports/spec_mentors'),
   Route('/settings', defaults={'require_signin': True}),
   Route('/enterprise'),
   Route(

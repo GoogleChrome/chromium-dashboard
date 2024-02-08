@@ -91,6 +91,29 @@ paths:
       - XsrfToken: []
       summary: List all components and possible users
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /spec_mentors:
+    get:
+      operationId: list_spec_mentors
+      parameters:
+      - explode: true
+        in: query
+        name: after
+        required: false
+        schema:
+          format: date
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/SpecMentor'
+                type: array
+          description: List of all the matching spec mentors.
+      summary: List spec mentors and their activity
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
 components:
   schemas:
     ComponentsUsersResponse:
@@ -195,6 +218,47 @@ components:
           title: owner
           type: boolean
       title: ComponentUsersRequest
+    SpecMentor:
+      example:
+        mentored_features:
+        - name: WebGPU
+          id: 5703707724349440
+        - name: WebGPU
+          id: 5703707724349440
+        email: email
+      properties:
+        email:
+          format: email
+          title: email
+          type: string
+        mentored_features:
+          items:
+            $ref: '#/components/schemas/FeatureLink'
+          title: mentored_features
+          type: array
+      required:
+      - email
+      - mentored_features
+      title: SpecMentor
+      type: object
+    FeatureLink:
+      example:
+        name: WebGPU
+        id: 5703707724349440
+      properties:
+        id:
+          example: 5703707724349440
+          title: id
+          type: integer
+        name:
+          example: WebGPU
+          title: name
+          type: string
+      required:
+      - id
+      - name
+      title: FeatureLink
+      type: object
   securitySchemes:
     XsrfToken:
       in: header
