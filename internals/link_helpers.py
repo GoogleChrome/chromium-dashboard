@@ -314,9 +314,12 @@ class Link():
         # if the link is not valid, return early
         self.is_parsed = True
         return
-      if self.type == LINK_TYPE_CHROMIUM_BUG:
-        self.information = self._parse_chromium_bug()
-      elif self.type == LINK_TYPE_GITHUB_ISSUE:
+
+      # TODO(jrobbins): Re-enable after issues.chromium.org has an API
+      # if self.type == LINK_TYPE_CHROMIUM_BUG:
+      #  self.information = self._parse_chromium_bug()
+
+      if self.type == LINK_TYPE_GITHUB_ISSUE:
         self.information = self._parse_github_issue()
       elif self.type == LINK_TYPE_GITHUB_PULL_REQUEST:
         # we can also use github issue api to get pull request information
