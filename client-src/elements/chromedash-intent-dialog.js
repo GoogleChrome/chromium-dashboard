@@ -148,7 +148,6 @@ class ChromeDashIntentDialog extends LitElement {
       css`
       :host {
         flex-direction: column;
-        counter-reset: h3;
         height: auto;
       }
       :host section {
@@ -169,12 +168,20 @@ class ChromeDashIntentDialog extends LitElement {
       :host h3 {
         margin-bottom: 10px;
       }
+      /*
+      The counter feature is not yet supported in shadow-dom.
+      :host {
+        counter-reset: h3;
+      }
       :host h3:before {
         counter-increment: h3;
         content: counter(h3) ".";
         margin-right: 5px;
       }
-
+      */
+      :host h3:before {
+        content: "•";
+      }
       :host .subject {
         font-size: 16px;
         margin-bottom: 10px;
@@ -741,7 +748,7 @@ after that, you're free to ship your feature.
       return nothing;
     }
     const tagsList = tags.map(
-      (tag) => html` <a href="/features#tags:${tag}">${tag}</a> `,
+      (tag) => html`<a href="/features#tags:${tag}">${tag}</a>`,
     );
     return html`
       <h4>Search tags</h4>
@@ -941,7 +948,7 @@ after that, you're free to ship your feature.
     const notes = this.feature.browsers.other.view.notes;
     return html`
       <i>Other signals</i>:
-      : ${notes ? html` ${notes} ` : nothing}
+      ${notes ? html` ${notes} ` : nothing}
       <br /><br />
     `;
   }
@@ -1768,7 +1775,7 @@ after that, you're free to ship your feature.
   // */
 
   renderEstimatedMilestonesTable() {
-    if (this.shouldRenderMstoneTable) {
+    if (this.should_render_mstone_table) {
       return html`
         ${this.renderDesktopMilestonesTable()}
         ${this.renderAndroidMilestonesTable()}
@@ -1991,7 +1998,7 @@ after that, you're free to ship your feature.
   render() {
     return html`
     <sl-dialog class="intent-email"
-      label="Intent email"
+      label="Next steps for the Blink launch process"
       style="--width:fit-content">
       ${this.renderDialogContent()}
     </sl-dialog>
