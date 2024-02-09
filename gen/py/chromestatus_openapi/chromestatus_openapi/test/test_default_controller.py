@@ -18,6 +18,7 @@ class TestDefaultController(BaseTestCase):
         component_users_request = {"owner":True}
         headers = { 
             'Content-Type': 'application/json',
+            'XsrfToken': 'special-key',
         }
         response = self.client.open(
             '/api/v0/components/{component_id}/users/{user_id}'.format(component_id=56, user_id=56),
@@ -35,6 +36,7 @@ class TestDefaultController(BaseTestCase):
         """
         headers = { 
             'Accept': 'application/json',
+            'XsrfToken': 'special-key',
         }
         response = self.client.open(
             '/api/v0/componentsusers',
@@ -51,6 +53,7 @@ class TestDefaultController(BaseTestCase):
         component_users_request = {"owner":True}
         headers = { 
             'Content-Type': 'application/json',
+            'XsrfToken': 'special-key',
         }
         response = self.client.open(
             '/api/v0/components/{component_id}/users/{user_id}'.format(component_id=56, user_id=56),

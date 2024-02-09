@@ -4,7 +4,9 @@ services:
   db:
     image: google/cloud-sdk:402.0.0-emulators
     restart: unless-stopped
-    command: gcloud beta emulators datastore start --project=cr-status-staging --host-port 0.0.0.0:15606 --no-store-on-disk --use-firestore-in-datastore-mode
+    command: sh -c "gcloud beta emulators datastore start --project=cr-status-staging --host-port 0.0.0.0:$${DB_PORT} --no-store-on-disk --use-firestore-in-datastore-mode"
+    environment:
+      DB_PORT: 15606
 
   dsadmin:
     image: ghcr.io/remko/dsadmin:v0.18.1

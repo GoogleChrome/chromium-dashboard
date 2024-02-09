@@ -22,6 +22,7 @@
       { "outerIIFEBody": 0, "SwitchCase": 1, "ignoredNodes": ["TemplateLiteral > *"] }
     ],
     "require-jsdoc": 0,
+    "valid-jsdoc": "off",
     "no-var": 1,
     "arrow-parens": 0,
     "max-len": [2, 100, {
