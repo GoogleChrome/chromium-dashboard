@@ -17,6 +17,7 @@ import testing_config  # isort: split
 from datetime import datetime
 
 import flask
+from werkzeug.exceptions import HTTPException
 
 from api import features_api, spec_mentors_api
 from framework import rediscache
@@ -79,6 +80,7 @@ class SpecMentorsAPITest(testing_config.CustomTestCase):
     feature = self.createFeature({'name': 'The feature'})
     feature.spec_mentor_emails = ['mentor@example.org']
     feature.put()
+    testing_config.sign_out()
 
     with test_app.test_request_context(self.request_path):
       response = self.spec_mentors_handler.do_get()
@@ -102,20 +104,60 @@ class SpecMentorsAPITest(testing_config.CustomTestCase):
     feature.spec_mentor_emails = ['mentor@example.org']
     feature.unlisted = True
     feature.put()
+    testing_config.sign_out()
 
     with test_app.test_request_context(self.request_path):
       response = self.spec_mentors_handler.do_get()
 
     self.assertEqual(response, [])
 
+  def test_obeys_after_param(self):
+    """The ?after URL parameter filters features."""
+    # Create a feature using the admin user.
+    testing_config.sign_in(self.app_admin.email, 123567890)
+
+    feature = self.createFeature({'name': 'The feature'})
+    feature.spec_mentor_emails = ['mentor@example.org']
+    feature.updated = datetime.fromisoformat('2024-01-14')
+    feature.put()
+    testing_config.sign_out()
+
+    with test_app.test_request_context(f'{self.request_path}?after=2024-01-15'):
+      response = self.spec_mentors_handler.do_get()
+
+    self.assertEqual(response, [])
+
+    # Now the feature was last updated after the 'after' param.
+    feature.updated = datetime.fromisoformat('2024-01-16')
+    feature.put()
+
+    with test_app.test_request_context(f'{self.request_path}?after=2024-01-15'):
+      response = self.spec_mentors_handler.do_get()
+    self.assertEqual(
+      response,
+      [
+        {
+          'email': 'mentor@example.org',
+          'mentored_features': [{'id': feature.key.id(), 'name': 'The feature'}],
+        }
+      ],
+    )
+
+  def test_fails_on_malformed_after_param(self):
+    """An ?after value that isn't a date returns a 400 error."""
+    with test_app.test_request_context(f'{self.request_path}?after=arglebargle'):
+      with self.assertRaises(HTTPException) as cm:
+        self.spec_mentors_handler.do_get()
+      self.assertEqual(cm.exception.code, 400)
+
   def test_sorts_mentors_alphabetically(self):
-    """Does not return an unlisted feature that has a mentor."""
     # Create a feature using the admin user.
     testing_config.sign_in(self.app_admin.email, 123567890)
 
     feature = self.createFeature({'name': 'The feature'})
     feature.spec_mentor_emails = ['bmentor@example.org', 'amentor@example.org']
     feature.put()
+    testing_config.sign_out()
 
     with test_app.test_request_context(self.request_path):
       response = self.spec_mentors_handler.do_get()
@@ -135,7 +177,6 @@ class SpecMentorsAPITest(testing_config.CustomTestCase):
     )
 
   def test_sorts_features_by_updated_date_recent_first(self):
-    """Does not return an unlisted feature that has a mentor."""
     # Create a feature using the admin user.
     testing_config.sign_in(self.app_admin.email, 123567890)
 
@@ -146,6 +187,7 @@ class SpecMentorsAPITest(testing_config.CustomTestCase):
     feature2 = self.createFeature({'name': 'Second feature'})
     feature2.spec_mentor_emails = ['mentor@example.org']
     feature2.put()
+    testing_config.sign_out()
 
     with test_app.test_request_context(self.request_path):
       response = self.spec_mentors_handler.do_get()
@@ -184,7 +226,6 @@ class SpecMentorsAPITest(testing_config.CustomTestCase):
     )
 
   def test_organizes_features_by_mentor(self):
-    """Returns the single feature that exists, which has a mentor."""
     # Create a feature using the admin user.
     testing_config.sign_in(self.app_admin.email, 123567890)
 
@@ -195,6 +236,7 @@ class SpecMentorsAPITest(testing_config.CustomTestCase):
     feature2 = self.createFeature({'name': 'Second feature'})
     feature2.spec_mentor_emails = ['mentor@example.org']
     feature2.put()
+    testing_config.sign_out()
 
     with test_app.test_request_context(self.request_path):
       response = self.spec_mentors_handler.do_get()
