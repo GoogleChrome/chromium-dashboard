@@ -112,6 +112,9 @@ paths:
                   $ref: '#/components/schemas/SpecMentor'
                 type: array
           description: List of all the matching spec mentors.
+        "400":
+          description: The ?after query parameter isn't a valid date in ISO YYYY-MM-DD
+            format.
       summary: List spec mentors and their activity
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
 components:

@@ -101,6 +101,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/SpecMentor'
+        '400':
+          description: The ?after query parameter isn't a valid date in ISO YYYY-MM-DD format.
 components:
   securitySchemes:
     XsrfToken:

@@ -260,7 +260,7 @@ export class ChromedashDrawer extends LitElement {
         ${this.renderNavItem('/metrics/css/popularity', 'CSS')}
         ${this.renderNavItem('/metrics/css/animated', 'CSS Animation')}
         ${this.renderNavItem('/metrics/feature/popularity', 'JS/HTML')}
-
+        <hr>
         <div class="section-header">Reports</div>
         ${this.renderNavItem('/reports/spec_mentors', 'Spec Mentors')}
 

@@ -22,7 +22,7 @@ from internals.core_models import FeatureEntry
 
 
 class SpecMentorsAPI(basehandlers.APIHandler):
-  """Implements the OpenAPI /specmentors path."""
+  """Implements the OpenAPI /spec_mentors path."""
 
   def do_get(self, **kwargs):
     """Get a list of matching spec mentors.
