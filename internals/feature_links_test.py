@@ -17,7 +17,7 @@ import testing_config
 from unittest import mock
 from internals.core_models import FeatureEntry
 from internals.feature_links import FeatureLinks, update_feature_links, get_domain_with_scheme, get_feature_links_summary, UpdateAllFeatureLinksHandlers
-from internals.link_helpers import LINK_TYPE_CHROMIUM_BUG, LINK_TYPE_WEB
+from internals.link_helpers import LINK_TYPE_CHROMIUM_BUG, LINK_TYPE_GITHUB_ISSUE, LINK_TYPE_WEB
 from google.cloud import ndb
 from datetime import datetime
 import flask
@@ -119,7 +119,7 @@ class LinkTest(testing_config.CustomTestCase):
     )
 
   def test_feature_changed_add_and_remove_url(self):
-    url = "https://bugs.chromium.org/p/chromium/issues/detail?id=100000"
+    url = "https://github.com/GoogleChrome/chromium-dashboard/issues/999"
     query = FeatureLinks.query(FeatureLinks.url == url)
 
     changed_fields = [
@@ -132,10 +132,10 @@ class LinkTest(testing_config.CustomTestCase):
     link = query.get()
     self.assertEqual(link.url, url)
     self.assertIn(self.feature_id, link.feature_ids)
-    self.assertEqual(link.type, LINK_TYPE_CHROMIUM_BUG)
+    self.assertEqual(link.type, LINK_TYPE_GITHUB_ISSUE)
     self.assertIsNotNone(link.information)
-    self.assertEqual(link.information["summary"],
-                     "Repeated zooms leave tearing artifact")
+    self.assertEqual(link.information["title"],
+                     "Comments field is incorrectly escaped")
 
     # remove bug_url field, the link should still exist
     # because launch_bug_url field is still using it
@@ -153,7 +153,7 @@ class LinkTest(testing_config.CustomTestCase):
 
   @mock.patch('logging.error')
   def test_feature_changed_invalid_url(self, mock_error):
-    url = "https://bugs.chromium.org/p/chromium/issues/detail?id=100000000000"
+    url = "https://github.com/GoogleChrome/chromium-dashboard/issues/10000000"
     query = FeatureLinks.query(FeatureLinks.url == url)
     changed_fields = [
         ('bug_url', None, url),
@@ -165,7 +165,7 @@ class LinkTest(testing_config.CustomTestCase):
     self.assertIsNone(link)
 
   def test_features_with_same_link(self):
-    url = "https://bugs.chromium.org/p/chromium/issues/detail?id=100000"
+    url = "https://github.com/GoogleChrome/chromium-dashboard/issues/999"
     query = FeatureLinks.query(FeatureLinks.url == url)
     changed_fields = [
         ('bug_url', None, url),
@@ -195,7 +195,7 @@ class LinkTest(testing_config.CustomTestCase):
         ),
         # link type changed
         FeatureLinks(
-            url='https://bugs.chromium.org/p/chromium/issues/detail?id=100000',
+            url='https://github.com/GoogleChrome/chromium-dashboard/issues/999',
             type=LINK_TYPE_WEB
         ),
         # link with error
@@ -211,5 +211,5 @@ class LinkTest(testing_config.CustomTestCase):
     with test_app.test_request_context('/cron/update_all_feature_links', query_string={'should_notify_on_error': False}):
       result = update_all_feature_links.get_template_data()
     expected = 'Started updating 2 Feature Links in 1 batches'
-    
+
     self.assertEqual(result, expected)

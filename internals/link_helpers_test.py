@@ -15,6 +15,7 @@
 
 import testing_config
 from unittest import mock
+from unittest import skip
 from internals.link_helpers import (
     Link,
     LINK_TYPE_CHROMIUM_BUG,
@@ -217,6 +218,7 @@ class LinkHelperTest(testing_config.CustomTestCase):
     link = Link("https://bugs0chromium.org/p/chromium/issues/detail?id=100000")
     self.assertNotEqual(link.type, LINK_TYPE_CHROMIUM_BUG)
 
+  @skip('Until issues.chromium.org has an API')
   def test_parse_chromium_tracker(self):
     link = Link("https://bugs.chromium.org/p/chromium/issues/detail?id=100000")
     link.parse()
@@ -227,6 +229,7 @@ class LinkHelperTest(testing_config.CustomTestCase):
     self.assertEqual(info["statusRef"]["status"], "Fixed")
     self.assertEqual(info["ownerRef"]["displayName"], "backer@chromium.org")
 
+  @skip('Until issues.chromium.org has an API')
   @mock.patch("logging.error")
   def test_parse_chromium_tracker_fail_wrong_id(self, mock_error):
     link = Link(
@@ -238,6 +241,7 @@ class LinkHelperTest(testing_config.CustomTestCase):
     self.assertEqual(link.is_error, True)
     self.assertEqual(link.information, None)
 
+  @skip('Until issues.chromium.org has an API')
   @mock.patch("logging.error")
   def test_parse_chromium_tracker_fail_no_permission(self, mock_error):
     link = Link("https://bugs.chromium.org/p/chromium/issues/detail?id=1")
