@@ -14,6 +14,8 @@
 
 import testing_config  # isort: split
 
+import json
+import os.path
 from datetime import datetime
 
 import flask
@@ -241,21 +243,18 @@ class SpecMentorsAPITest(testing_config.CustomTestCase):
     with test_app.test_request_context(self.request_path):
       response = self.spec_mentors_handler.do_get()
 
-    self.assertEqual(
-      response,
-      [
-        {
-          'email': 'expert@example.com',
-          'mentored_features': [
-            {'id': feature1.key.id(), 'name': 'First feature'},
-          ],
-        },
-        {
-          'email': 'mentor@example.org',
-          'mentored_features': [
-            {'id': feature2.key.id(), 'name': 'Second feature'},
-            {'id': feature1.key.id(), 'name': 'First feature'},
-          ],
-        },
-      ],
-    )
+    # Unlike the other test expectations in this file, this one is saved to a JSON file so the
+    # Playwright tests can use it as a mock API response. Because the real feature IDs are
+    # dynamically generated, we have to slot them into the right places here.
+    with open(
+      os.path.join(
+        os.path.dirname(__file__),
+        '../packages/playwright/tests/spec_mentor_api_result.json',
+      )
+    ) as f:
+      expected_response = json.load(f)
+    expected_response[0]['mentored_features'][0]['id'] = feature1.key.id()
+    expected_response[1]['mentored_features'][0]['id'] = feature2.key.id()
+    expected_response[1]['mentored_features'][1]['id'] = feature1.key.id()
+
+    self.assertEqual(response, expected_response)
