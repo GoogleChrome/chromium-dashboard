@@ -1,0 +1,15 @@
+[
+  {
+    "email": "expert@example.com",
+    "mentored_features": [
+      {"id": 9009, "name": "First feature"}
+    ]
+  },
+  {
+    "email": "mentor@example.org",
+    "mentored_features": [
+      {"id": 9010, "name": "Second feature"},
+      {"id": 9009, "name": "First feature"}
+    ]
+  }
+]

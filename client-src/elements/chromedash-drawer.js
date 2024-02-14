@@ -1,6 +1,6 @@
-import {LitElement, html, css, nothing} from 'lit';
-import {showToastMessage, IS_MOBILE} from './utils';
+import {LitElement, css, html, nothing} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import {IS_MOBILE, showToastMessage} from './utils';
 
 
 export const DRAWER_WIDTH_PX = 200;
@@ -260,6 +260,9 @@ export class ChromedashDrawer extends LitElement {
         ${this.renderNavItem('/metrics/css/popularity', 'CSS')}
         ${this.renderNavItem('/metrics/css/animated', 'CSS Animation')}
         ${this.renderNavItem('/metrics/feature/popularity', 'JS/HTML')}
+        <hr>
+        <div class="section-header">Reports</div>
+        ${this.renderNavItem('/reports/spec_mentors', 'Spec Mentors')}
 
         ${adminMenu}
       </sl-drawer>

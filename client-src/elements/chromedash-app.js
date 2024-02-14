@@ -1,10 +1,10 @@
 import {LitElement, css, html, nothing} from 'lit';
-import {ref, createRef} from 'lit/directives/ref.js';
 import {styleMap} from 'lit-html/directives/style-map.js';
-import {showToastMessage, parseRawQuery, updateURLParams, IS_MOBILE} from './utils';
+import {createRef, ref} from 'lit/directives/ref.js';
 import page from 'page';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {DRAWER_WIDTH_PX} from './chromedash-drawer.js';
+import {IS_MOBILE, isoDateString, parseRawQuery, showToastMessage, updateURLParams} from './utils';
 
 
 class ChromedashApp extends LitElement {
@@ -426,6 +426,14 @@ class ChromedashApp extends LitElement {
     page('/metrics/css/timeline/animated', () => page.redirect('/metrics/css/animated'));
     page('/metrics/feature/timeline/popularity', () =>
       page.redirect('/metrics/feature/popularity'));
+    page('/reports/spec_mentors', (ctx)=> {
+      if (!this.setupNewPage(ctx, 'chromedash-report-spec-mentors-page')) return;
+      this.pageComponent.rawQuery = parseRawQuery(ctx.querystring);
+      this.pageComponent.addEventListener('afterchanged',
+        e => updateURLParams('after', isoDateString(e.detail.after)));
+      this.currentPage = ctx.path;
+      this.hideSidebar();
+    });
     page('/enterprise', (ctx) => {
       if (!this.setupNewPage(ctx, 'chromedash-enterprise-page')) return;
       this.pageComponent.user = this.user;
