@@ -9,7 +9,9 @@ src/index.ts
 src/models/ComponentUsersRequest.ts
 src/models/ComponentsUser.ts
 src/models/ComponentsUsersResponse.ts
+src/models/FeatureLink.ts
 src/models/OwnersAndSubscribersOfComponent.ts
+src/models/SpecMentor.ts
 src/models/index.ts
 src/runtime.ts
 tsconfig.esm.json
