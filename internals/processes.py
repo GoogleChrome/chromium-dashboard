@@ -467,7 +467,7 @@ DEPRECATION_STAGES = [
       'Write up motivation',
       'Create an initial WebStatus feature entry to deprecate '
       'an existing feature, including motivation and impact. '
-      'Then, move existing Chromium code under a flag.',
+      'Then, get approval for your deprecation plans.',
       [PI_EXISTING_FEATURE,
        PI_MOTIVATION,
       ],
@@ -513,7 +513,8 @@ DEPRECATION_STAGES = [
   ProcessStage(
       'Prepare to ship',
       'Lock in shipping milestone. '
-      'Finalize docs and announcements before disabling feature by default.',
+      'Finalize docs and announcements before disabling feature by default. '
+      'If there were changes since your plan approvals, get approvals again.',
       [PI_UPDATED_TARGET_MILESTONE,
        PI_I2S_EMAIL,
        PI_I2S_LGTMS,
