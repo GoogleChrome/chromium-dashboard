@@ -433,7 +433,7 @@ export class ChromedashGateColumn extends LitElement {
 
     return html`
       <sl-button @click=${loadThenCheckCompletion}
-       pill size=small variant=primary
+       size=small variant=primary
        >${label}</sl-button>
     `;
   }
@@ -469,10 +469,10 @@ export class ChromedashGateColumn extends LitElement {
     `;
 
     return html`
-     <sl-button pill size=small variant=primary
+     <sl-button size=small variant=primary
        @click=${this.handleReviewRequested}
        >Request review</sl-button>
-     <sl-button pill size=small
+     <sl-button size=small
        @click=${this.handleNARequested}
        >Request N/A</sl-button>
      ${dialog}
