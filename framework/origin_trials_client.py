@@ -45,6 +45,27 @@ def get_trials_list() -> list[dict[str, Any]]:
   if key == None:
     return []
 
+  credentials, project_id = google.auth.default(scopes=[
+      "https://www.googleapis.com/auth/chromeorigintrials"])
+  credentials.refresh(Request())
+  # credentials = app_engine.Credentials(scopes=[
+  #     "https://www.googleapis.com/auth/chromeorigintrials"], service_account_id='113400961428040496994', quota_project_id='cr-status-staging')
+  token_header = f'Bearer {credentials.token}'
+  response = requests.post(
+      f'{settings.OT_API_URL}/v1/trials/4544132024016830465:add_extension?key={key}',
+      headers={'Authorization': token_header},
+      json={
+        "trial_id": "4544132024016830465",
+        "end_date": {
+            "seconds": 2008384422
+        },
+        "milestone_end": "250",
+        "extension_intent_url": "https://example.com/from_chromestatus2"
+      })
+  return str({
+    'token_header': token_header,
+    'response': response.json()})
+  # return str(credentials.__dict__)
   try:
     response = requests.get(
         f'{settings.OT_API_URL}/v1/trials',
