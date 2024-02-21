@@ -161,6 +161,8 @@ api_routes: list[Route] = [
     # (f'{API_BASE}/metrics/<str:kind>', TODO),  # uma-export data
     # (f'{API_BASE}/metrics/<str:kind>/<int:bucket_id>', TODO),
     Route(f'{API_BASE}/origintrials', origin_trials_api.OriginTrialsAPI),
+    Route(f'{API_BASE}/origintrials/<int:feature_id>/<int:stage_id>/extend',
+          origin_trials_api.OriginTrialsAPI),
 ]
 
 # The Routes below that have no handler specified use SPAHandler.
