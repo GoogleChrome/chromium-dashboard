@@ -116,7 +116,7 @@ class ChromedashOTPrereqsDialog extends LitElement {
           <a href="https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/runtime_enabled_features.json5" target="_blank">
             runtime_enabled_features.json5
           </a>
-          contains the key "origin_trials_allows_third_party: true".
+          contains the key "origin_trial_allows_third_party: true".
         </li>
         <li>
           For a critical trial, the feature name has been added to the
