@@ -812,7 +812,6 @@ export const ALL_FIELDS = {
   },
 
   'ot_extension__intent_to_extend_experiment_url': {
-    name: 'intent_to_extend_experiment_url',
     type: 'input',
     attrs: URL_FIELD_ATTRS,
     required: true,

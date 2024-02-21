@@ -1,7 +1,6 @@
 import {LitElement, css, html} from 'lit';
 import {ref} from 'lit/directives/ref.js';
 import {
-  formatFeatureChanges,
   showToastMessage,
   setupScrollToHash} from './utils.js';
 import './chromedash-form-table.js';
@@ -102,13 +101,24 @@ export class ChromedashOTExtensionPage extends LitElement {
     setupScrollToHash(this);
   }
 
+  getFieldValueForRequestBody(fieldName) {
+    return this.fieldValues.find(field => field.name === fieldName).value;
+  }
+
+  formatRequestBody() {
+    return {
+      end_milestone: this.getFieldValueForRequestBody(
+        'ot_extension__milestone_desktop_last'),
+      intent_thread_url: this.getFieldValueForRequestBody(
+        'ot_extension__intent_to_extend_experiment_url'),
+      origin_trial_id: this.stage.origin_trial_id,
+    };
+  }
+
   handleFormSubmit(e) {
     e.preventDefault();
-    const featureSubmitBody = formatFeatureChanges(this.fieldValues, this.featureId);
-    // We only need the single stage changes.
-    const stageSubmitBody = featureSubmitBody.stages[0];
-
-    window.csClient.createStage(this.featureId, stageSubmitBody).then(() => {
+    const requestBody = this.formatRequestBody();
+    window.csClient.extendOriginTrial(this.featureId, this.stageId, requestBody).then(() => {
       showToastMessage('Extension request submitted!');
       setTimeout(() => {
         window.location.href = this.nextPage || `/feature/${this.featureId}`;

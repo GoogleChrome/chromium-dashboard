@@ -45,19 +45,19 @@ class OriginTrialsAPI(basehandlers.APIHandler):
       self.abort(400, ('Stage does not belong to feature. '
                        f'feature_id: {trial_id}, '
                        f'stage_id: {stage.key.integer_id()}'))
-    trial_id = body['trial_id']
-    if (trial_id is None
-        or not (all(char.isdigit() or char == '-' for char in trial_id))):
-      self.abort(400, f'Invalid argument for trial_id: {trial_id}')
-    # The origin trial should belong to the stage.
-    if trial_id != stage.origin_trial_id:
-      self.abort(400, ('Origin trial does not belong to stage.'
-                       f'origin trial ID: {trial_id}',
-                       f'stage\'s origin trial ID: {trial_id}'))
+    trial_id = body['origin_trial_id']
+    # if (trial_id is None
+    #     or not (all(char.isdigit() or char == '-' for char in trial_id))):
+    #   self.abort(400, f'Invalid argument for trial_id: {trial_id}')
+    # # The origin trial should belong to the stage.
+    # if trial_id != stage.origin_trial_id:
+    #   self.abort(400, ('Origin trial does not belong to stage.'
+    #                    f'origin trial ID: {trial_id}',
+    #                    f'stage\'s origin trial ID: {trial_id}'))
     end_milestone = body['end_milestone']
     if end_milestone is None or not end_milestone.isnumeric():
       self.abort(400, f'Invalid argument for end_milestone: {end_milestone}')
-    intent_url = body['extension_intent_url']
+    intent_url = body['intent_thread_url']
     if not validators.url(intent_url):
       self.abort(400, ('Invalid argument for extension_intent_url: '
                        f'{intent_url}'))
@@ -66,13 +66,16 @@ class OriginTrialsAPI(basehandlers.APIHandler):
   def do_post(self, **kwargs):
     """Extends an existing origin trial"""
     feature_id = int(kwargs['feature_id'])
-
+    if feature_id is None or feature_id == 0:
+      self.abort(404, msg='No feature specified.')
     feature: FeatureEntry | None = FeatureEntry.get_by_id(feature_id)
     if feature is None:
       self.abort(404, msg=f'Feature {feature_id} not found')
 
-    stage: Stage | None = Stage.get_by_id(stage_id)
     stage_id = int(kwargs['stage_id'])
+    if stage_id is None or stage_id == 0:
+      self.abort(404, msg='No stage specified.')
+    stage: Stage | None = Stage.get_by_id(stage_id)
     if stage is None:
       self.abort(404, msg=f'Stage {stage_id} not found')
 
@@ -86,6 +89,7 @@ class OriginTrialsAPI(basehandlers.APIHandler):
 
     try:
       origin_trials_client.extend_origin_trial(
-        body['trial_id'], body['end_milestone'], body['extension_intent_url'])
+        body['origin_trial_id'], body['end_milestone'],
+        body['intent_thread_url'])
     except requests.exceptions.RequestException:
       self.abort(500, 'Error in request to origin trials API')
