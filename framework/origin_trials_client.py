@@ -125,8 +125,7 @@ def extend_origin_trial(trial_id: str, end_milestone: str, intent_url: str):
 
   end_seconds = _get_trial_end_time(end_milestone)
   access_token = _get_ot_access_token()
-  url = (f'{settings.OT_API_URL}/v1/trials/{trial_id}:add_extension'
-         f'key={key}')
+  url = (f'{settings.OT_API_URL}/v1/trials/{trial_id}:add_extension')
   headers = {'Authorization': f'Bearer {access_token}'}
   json = {
     'trial_id': trial_id,
@@ -138,7 +137,8 @@ def extend_origin_trial(trial_id: str, end_milestone: str, intent_url: str):
   }
 
   try:
-    response = requests.post(url, headers=headers, json=json)
+    response = requests.post(
+        url, headers=headers, params={'key': key}, json=json)
     response.raise_for_status()
   except requests.exceptions.RequestException as e:
     logging.exception('Failed to get response from origin trials API.')
