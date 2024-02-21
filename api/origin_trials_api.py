@@ -46,14 +46,14 @@ class OriginTrialsAPI(basehandlers.APIHandler):
                        f'feature_id: {trial_id}, '
                        f'stage_id: {stage.key.integer_id()}'))
     trial_id = body['origin_trial_id']
-    # if (trial_id is None
-    #     or not (all(char.isdigit() or char == '-' for char in trial_id))):
-    #   self.abort(400, f'Invalid argument for trial_id: {trial_id}')
-    # # The origin trial should belong to the stage.
-    # if trial_id != stage.origin_trial_id:
-    #   self.abort(400, ('Origin trial does not belong to stage.'
-    #                    f'origin trial ID: {trial_id}',
-    #                    f'stage\'s origin trial ID: {trial_id}'))
+    if (trial_id is None
+        or not (all(char.isdigit() or char == '-' for char in trial_id))):
+      self.abort(400, f'Invalid argument for trial_id: {trial_id}')
+    # The origin trial should belong to the stage.
+    if trial_id != stage.origin_trial_id:
+      self.abort(400, ('Origin trial does not belong to stage.'
+                       f'origin trial ID: {trial_id}',
+                       f'stage\'s origin trial ID: {trial_id}'))
     end_milestone = body['end_milestone']
     if end_milestone is None or not end_milestone.isnumeric():
       self.abort(400, f'Invalid argument for end_milestone: {end_milestone}')
@@ -93,3 +93,5 @@ class OriginTrialsAPI(basehandlers.APIHandler):
         body['intent_thread_url'])
     except requests.exceptions.RequestException:
       self.abort(500, 'Error in request to origin trials API')
+    except KeyError:
+      self.abort(500, 'Malformed response from Schedule API')

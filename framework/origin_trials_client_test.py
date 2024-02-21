@@ -117,10 +117,9 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
       self, mock_requests_post, mock_api_key_get):
     """If no API key is available, do not send extension request."""
     mock_api_key_get.return_value = None
-    return_result = origin_trials_client.extend_origin_trial(
+    origin_trials_client.extend_origin_trial(
         '1234567890', '123', 'https://example.com/intent')
 
-    self.assertFalse(return_result)
     mock_api_key_get.assert_called_once()
     # POST request should not be executed with no API key.
     mock_requests_post.assert_not_called()
@@ -129,7 +128,7 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
   @mock.patch('framework.origin_trials_client._get_ot_access_token')
   @mock.patch('framework.origin_trials_client._get_trial_end_time')
   @mock.patch('requests.post')
-  def test_get_trials_list__with_api_key(
+  def test_extend_origin_trial__with_api_key(
       self, mock_requests_post, mock_get_trial_end_time,
       mock_get_ot_access_token, mock_api_key_get):
     """If an API key is available, POST should extend trial and return true."""
@@ -139,9 +138,8 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
     mock_get_ot_access_token.return_value = mock.MagicMock('access_token')
     mock_api_key_get.return_value = 'api_key_value'
 
-    return_result = origin_trials_client.extend_origin_trial(
+    origin_trials_client.extend_origin_trial(
         '1234567890', '123', 'https://example.com/intent')
-    self.assertTrue(return_result)
 
     mock_api_key_get.assert_called_once()
     mock_get_ot_access_token.assert_called_once()
@@ -152,7 +150,11 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
     """Should return an int value based on the date from the request."""
     mock_requests_get.return_value = mock.MagicMock(
         status_code=200,
-        json=lambda : {'late_stable_date': '2023-04-30T00:00:00'})
+        json=lambda : {
+          'mstones': [
+            {'late_stable_date': '2023-04-30T00:00:00'}
+          ]
+        })
 
     return_result = origin_trials_client._get_trial_end_time('123')
     self.assertEqual(return_result, 1682838000)

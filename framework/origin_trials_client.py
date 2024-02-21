@@ -71,19 +71,27 @@ def _get_trial_end_time(end_milestone: str) -> int:
   Raises:
     requests.exceptions.RequestException: If the request fails to connect or
       the HTTP status code is not successful.
+    KeyError: If the response from Chromium API is not in the expected format.
   """
   milestone_plus_two = int(end_milestone) + 2
   try:
-    response = requests.get('https://chromiumdash.appspot.com/fetch_milestone_schedule'
-                f'?mstone={milestone_plus_two}')
+    response = requests.get(
+      'https://chromiumdash.appspot.com/fetch_milestone_schedule'
+      f'?mstone={milestone_plus_two}')
     response.raise_for_status()
   except requests.exceptions.RequestException as e:
     logging.exception('Failed to get response from Chromium Schedule API.')
     raise e
   response_json = response.json()
 
+  # Raise error if the response is in the expected format.
+  if ('mstones' not in response_json
+      or len(response_json['mstones']) == 0
+      or 'late_stable_date' not in response_json['mstones'][0]):
+    raise KeyError('Chromium schedule response not in expected format.')
   date = datetime.strptime(
-      response_json['late_stable_date'], CHROMIUM_SCHEDULE_DATE_FORMAT)
+      response_json['mstones'][0]['late_stable_date'],
+      CHROMIUM_SCHEDULE_DATE_FORMAT)
   return int(date.strftime('%s'))
 
 
@@ -110,15 +118,16 @@ def extend_origin_trial(trial_id: str, end_milestone: str, intent_url: str):
       the HTTP status code is not successful.
   """
   key = secrets.get_ot_api_key()
-  # Return False if no API key is found.
+  # Return if no API key is found.
   if key == None:
-    return False
+    logging.warning('Trial extension was not requested.')
+    return
 
+  end_seconds = _get_trial_end_time(end_milestone)
   access_token = _get_ot_access_token()
   url = (f'{settings.OT_API_URL}/v1/trials/{trial_id}:add_extension'
          f'key={key}')
   headers = {'Authorization': f'Bearer {access_token}'}
-  end_seconds = _get_trial_end_time(end_milestone)
   json = {
     'trial_id': trial_id,
     'end_date': {
