@@ -38,14 +38,15 @@ class OriginTrialsAPI(basehandlers.APIHandler):
 
     return trials_list
 
-  def _validate_extension_args(self, feature_id: int, stage: Stage, body) -> None:
-    """Validates the given arguments used for origin trial extension."""
+  def _validate_extension_args(
+        self, feature_id: int, stage: Stage, body: dict) -> None:
+    """Abort if any arguments used for origin trial extension are invalid."""
     # The stage should belong to the feature.
     if feature_id != stage.feature_id:
       self.abort(400, ('Stage does not belong to feature. '
-                       f'feature_id: {trial_id}, '
+                       f'feature_id: {feature_id}, '
                        f'stage_id: {stage.key.integer_id()}'))
-    trial_id = body['origin_trial_id']
+    trial_id = body.get('origin_trial_id')
     if (trial_id is None
         or not (all(char.isdigit() or char == '-' for char in trial_id))):
       self.abort(400, f'Invalid argument for trial_id: {trial_id}')
@@ -54,10 +55,10 @@ class OriginTrialsAPI(basehandlers.APIHandler):
       self.abort(400, ('Origin trial does not belong to stage.'
                        f'origin trial ID: {trial_id}',
                        f'stage\'s origin trial ID: {trial_id}'))
-    end_milestone = body['end_milestone']
+    end_milestone = body.get('end_milestone')
     if end_milestone is None or not end_milestone.isnumeric():
       self.abort(400, f'Invalid argument for end_milestone: {end_milestone}')
-    intent_url = body['intent_thread_url']
+    intent_url = body.get('intent_thread_url')
     if not validators.url(intent_url):
       self.abort(400, ('Invalid argument for extension_intent_url: '
                        f'{intent_url}'))

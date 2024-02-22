@@ -71,7 +71,8 @@ def _get_trial_end_time(end_milestone: str) -> int:
   Raises:
     requests.exceptions.RequestException: If the request fails to connect or
       the HTTP status code is not successful.
-    KeyError: If the response from Chromium API is not in the expected format.
+    KeyError: If the response from Chromium schedule API is not in the expected
+      format.
   """
   milestone_plus_two = int(end_milestone) + 2
   try:
@@ -80,11 +81,11 @@ def _get_trial_end_time(end_milestone: str) -> int:
       f'?mstone={milestone_plus_two}')
     response.raise_for_status()
   except requests.exceptions.RequestException as e:
-    logging.exception('Failed to get response from Chromium Schedule API.')
+    logging.exception('Failed to get response from Chromium schedule API.')
     raise e
   response_json = response.json()
 
-  # Raise error if the response is in the expected format.
+  # Raise error if the response is not in the expected format.
   if ('mstones' not in response_json
       or len(response_json['mstones']) == 0
       or 'late_stable_date' not in response_json['mstones'][0]):
