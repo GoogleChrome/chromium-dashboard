@@ -93,7 +93,7 @@ def _get_trial_end_time(end_milestone: str) -> int:
   date = datetime.strptime(
       response_json['mstones'][0]['late_stable_date'],
       CHROMIUM_SCHEDULE_DATE_FORMAT)
-  return int(date.replace(tzinfo=timezone.utc).strftime('%s'))
+  return int(date.replace(tzinfo=timezone.utc).timestamp())
 
 
 def _get_ot_access_token() -> str:
