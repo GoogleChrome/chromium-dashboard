@@ -59,7 +59,7 @@ class OriginTrialsAPI(basehandlers.APIHandler):
     if end_milestone is None or not end_milestone.isnumeric():
       self.abort(400, f'Invalid argument for end_milestone: {end_milestone}')
     intent_url = body.get('intent_thread_url')
-    if not validators.url(intent_url):
+    if intent_url is None or not validators.url(intent_url):
       self.abort(400, ('Invalid argument for extension_intent_url: '
                        f'{intent_url}'))
 
