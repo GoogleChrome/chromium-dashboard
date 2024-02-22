@@ -70,11 +70,13 @@ class OriginTrialsAPI(basehandlers.APIHandler):
       self, feature_id: int, ot_stage: Stage, body: ExtendOriginTrialRequest):
     """Creates a new extension stage for the request."""
     stage_type = OT_EXTENSION_STAGE_TYPES_MAPPING[ot_stage.stage_type]
-    end_milestone = int(body['end_milestone'])
+    end_milestone = (body['end_milestone']
+                     if body['end_milestone'] is not None else  '')
+    end_milestone_int = int(end_milestone)
     extension_stage = Stage(
         feature_id=feature_id, stage_type=stage_type,
         ot_stage_id=ot_stage.key.integer_id(),
-        milestones=MilestoneSet(desktop_last=end_milestone),
+        milestones=MilestoneSet(desktop_last=end_milestone_int),
         intent_thread_url=body['intent_thread_url'])
     extension_stage.put()
 
