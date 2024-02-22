@@ -16,7 +16,7 @@ import google.auth
 from google.auth.transport.requests import Request
 
 from dataclasses import asdict
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 from typing import Any
 import requests
@@ -93,7 +93,7 @@ def _get_trial_end_time(end_milestone: str) -> int:
   date = datetime.strptime(
       response_json['mstones'][0]['late_stable_date'],
       CHROMIUM_SCHEDULE_DATE_FORMAT)
-  return int(date.strftime('%s'))
+  return int(date.astimezone(timezone.utc).strftime('%s'))
 
 
 def _get_ot_access_token() -> str:
