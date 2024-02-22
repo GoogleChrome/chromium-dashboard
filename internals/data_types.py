@@ -283,6 +283,10 @@ class VerboseFeatureDict(TypedDict):
   updated_display: str | None
   new_crbug_url: str | None
 
+class ExtendOriginTrialRequest(TypedDict):
+  origin_trial_id: NotRequired[str | None]
+  end_milestone: NotRequired[str | None]
+  intent_thread_url: NotRequired[str | None]
 
 @dataclass
 class OriginTrialInfo():

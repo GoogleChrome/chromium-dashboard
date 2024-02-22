@@ -61,6 +61,25 @@ class OriginTrialsAPITest(testing_config.CustomTestCase):
     with test_app.test_request_context(self.request_path):
       self.handler._validate_extension_args(
           self.feature_1_id, self.ot_stage_1, body)
+
+  def test_create_new_extension_stage(self):
+    body = {
+      'origin_trial_id': '-1234567890',
+      'end_milestone': '150',
+      'intent_thread_url': 'https://example.com/intent',
+    }
+    with test_app.test_request_context(self.request_path):
+      self.handler._create_new_extension_stage(
+          self.feature_1_id, self.ot_stage_1, body)
+    
+    extension_stage: Stage | None = Stage.query(
+        Stage.ot_stage_id == self.ot_stage_1.key.integer_id()).get()
+    # Extension stage should be created.
+    self.assertIsNotNone(extension_stage)
+    # Should be the extension stage type that corresponds to the OT stage type.
+    self.assertEqual(151, extension_stage.stage_type)
+    # desktop_last should match the given end_milestone, as an integer.
+    self.assertEqual(150, extension_stage.milestones.desktop_last)
   
   def test_validate_extension_args__mismatched_stage(self):
     body = {

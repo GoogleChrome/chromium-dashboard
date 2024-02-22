@@ -18,7 +18,9 @@ import validators
 from framework import basehandlers
 from framework import permissions
 from framework import origin_trials_client
-from internals.core_models import FeatureEntry, Stage
+from internals.core_enums import OT_EXTENSION_STAGE_TYPES_MAPPING
+from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.data_types import ExtendOriginTrialRequest
 
 
 class OriginTrialsAPI(basehandlers.APIHandler):
@@ -39,7 +41,8 @@ class OriginTrialsAPI(basehandlers.APIHandler):
     return trials_list
 
   def _validate_extension_args(
-        self, feature_id: int, stage: Stage, body: dict) -> None:
+        self, feature_id: int, stage: Stage,
+        body: ExtendOriginTrialRequest) -> None:
     """Abort if any arguments used for origin trial extension are invalid."""
     # The stage should belong to the feature.
     if feature_id != stage.feature_id:
@@ -63,6 +66,17 @@ class OriginTrialsAPI(basehandlers.APIHandler):
       self.abort(400, ('Invalid argument for extension_intent_url: '
                        f'{intent_url}'))
 
+  def _create_new_extension_stage(
+      self, feature_id: int, ot_stage: Stage, body: ExtendOriginTrialRequest):
+    """Creates a new extension stage for the request."""
+    stage_type = OT_EXTENSION_STAGE_TYPES_MAPPING[ot_stage.stage_type]
+    end_milestone = int(body['end_milestone'])
+    extension_stage = Stage(
+        feature_id=feature_id, stage_type=stage_type,
+        ot_stage_id=ot_stage.key.integer_id(),
+        milestones=MilestoneSet(desktop_last=end_milestone),
+        intent_thread_url=body['intent_thread_url'])
+    extension_stage.put()
 
   def do_post(self, **kwargs):
     """Extends an existing origin trial"""
@@ -85,7 +99,7 @@ class OriginTrialsAPI(basehandlers.APIHandler):
     if redirect_resp:
       return redirect_resp
 
-    body = self.get_json_param_dict()
+    body: ExtendOriginTrialRequest = self.get_json_param_dict()
     self._validate_extension_args(feature_id, stage, body)
 
     try:
@@ -96,3 +110,5 @@ class OriginTrialsAPI(basehandlers.APIHandler):
       self.abort(500, 'Error in request to origin trials API')
     except KeyError:
       self.abort(500, 'Malformed response from Schedule API')
+    
+    return {'message': 'Origin trial extended successfully.'}
