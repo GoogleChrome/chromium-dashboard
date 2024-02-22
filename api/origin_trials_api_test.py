@@ -44,7 +44,7 @@ class OriginTrialsAPITest(testing_config.CustomTestCase):
     self.handler = origin_trials_api.OriginTrialsAPI()
     self.request_path = (
         '/api/v0/origintrials/'
-        f'{self.feature_1_id}/{self.ot_stage_1.key.integer_id()}')
+        f'{self.feature_1_id}/{self.ot_stage_1.key.integer_id()}/extend')
 
   def tearDown(self):
     for kind in [FeatureEntry, Stage]:
