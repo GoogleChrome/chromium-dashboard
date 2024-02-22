@@ -31,14 +31,14 @@ class OriginTrialsAPITest(testing_config.CustomTestCase):
     self.feature_1.put()
     self.feature_1_id = self.feature_1.key.integer_id()
     self.ot_stage_1 = Stage(
-        feature_id=self.feature_1_id, stage_type=151,
+        feature_id=self.feature_1_id, stage_type=150,
         origin_trial_id='-1234567890')
     self.ot_stage_1.put()
     self.feature_2 = FeatureEntry(
         feature_type=1, name='feature two', summary='sum', category=1)
     self.feature_2.put()
     self.ot_stage_2 = Stage(
-        feature_id=self.feature_2.key.integer_id(), stage_type=151,
+        feature_id=self.feature_2.key.integer_id(), stage_type=150,
         origin_trial_id='9876543210')
     self.ot_stage_2.put()
     self.handler = origin_trials_api.OriginTrialsAPI()
