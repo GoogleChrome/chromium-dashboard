@@ -205,6 +205,7 @@ export class ChromedashHeader extends LitElement {
     google.accounts.id.initialize({
       client_id: this.googleSignInClientId,
       callback: this.handleCredentialResponse,
+      use_fedcm_for_prompt: true,
     });
     google.accounts.id.prompt();
 
