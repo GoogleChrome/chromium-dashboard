@@ -516,7 +516,6 @@ export function handleSaveChangesResponse(response) {
 }
 
 export function extensionMilestoneIsValid(value, currentMilestone) {
-  console.log(value, currentMilestone);
   if (isNaN(value)) {
     return false;
   }
