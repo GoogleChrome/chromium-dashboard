@@ -77,7 +77,7 @@ class ChromedashOTPrereqsDialog extends LitElement {
 
   renderEndMilestoneExplanationDialog() {
     return html`
-    <sl-dialog label="End milestone date explanation">
+    <sl-dialog label="End milestone date">
       <p>
         When a specific milestone is approved by API owners,
         the trial's end date is set based on the stable release date of (end milestone +2).
