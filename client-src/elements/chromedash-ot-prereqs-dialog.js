@@ -1,37 +1,47 @@
 import {LitElement, css, html} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
-let prereqsDialogEl;
+let dialogEl;
 let currentFeatureId;
 let currentStageId;
 
-export const PrereqsDialogTypes = {
+export const dialogTypes = {
   CREATION: 1,
   EXTENSION: 2,
+  END_MILESTONE_EXPLANATION: 3,
 };
 
-export async function openPrereqsDialog(featureId, stageId, prereqsType) {
-  if (!prereqsDialogEl || currentFeatureId !== featureId ||
+export async function openPrereqsDialog(featureId, stageId, dialogType) {
+  if (!dialogEl || currentFeatureId !== featureId ||
       currentStageId !== stageId) {
-    prereqsDialogEl = document.createElement('chromedash-ot-prereqs-dialog');
-    prereqsDialogEl.featureId = featureId;
-    prereqsDialogEl.stageId = stageId;
-    prereqsDialogEl.prereqsType = prereqsType;
-    document.body.appendChild(prereqsDialogEl);
-    await prereqsDialogEl.updateComplete;
+    dialogEl = document.createElement('chromedash-ot-prereqs-dialog');
+    dialogEl.featureId = featureId;
+    dialogEl.stageId = stageId;
+    dialogEl.dialogType = dialogType;
+    document.body.appendChild(dialogEl);
+    await dialogEl.updateComplete;
   }
   currentFeatureId = featureId;
   currentStageId = stageId;
-  prereqsDialogEl.show();
+  dialogEl.show();
 }
 
+export async function openInfoDialog(dialogType) {
+  if (!dialogEl) {
+    dialogEl = document.createElement('chromedash-ot-prereqs-dialog');
+    dialogEl.dialogType = dialogType;
+    document.body.appendChild(dialogEl);
+    await dialogEl.updateComplete;
+  }
+  dialogEl.show();
+}
 
 class ChromedashOTPrereqsDialog extends LitElement {
   static get properties() {
     return {
       featureId: {type: Number},
       stageId: {type: Number},
-      prereqsType: {type: Number},
+      dialogType: {type: Number},
     };
   }
 
@@ -39,7 +49,7 @@ class ChromedashOTPrereqsDialog extends LitElement {
     super();
     this.featureId = 0;
     this.stageId = 0;
-    this.prereqsType = 0;
+    this.dialogType = 0;
   }
 
   static get styles() {
@@ -63,6 +73,19 @@ class ChromedashOTPrereqsDialog extends LitElement {
 
   show() {
     this.shadowRoot.querySelector('sl-dialog').show();
+  }
+
+  renderEndMilestoneExplanationDialog() {
+    return html`
+    <sl-dialog label="End milestone date explanation">
+      <p>
+        When a specific milestone is approved by API owners,
+        the trial's end date is set based on the stable release date of (end milestone +2).
+        Most of the time when a trial ends, the feature will be enabled by default within
+        the next Chrome release. This additional trial time window ensures users don't see
+        breakage before upgrading to the version with the feature enabled by default.
+      </p>
+    </sl-dialog>`;
   }
 
   renderExtensionPrereqs() {
@@ -142,7 +165,10 @@ class ChromedashOTPrereqsDialog extends LitElement {
   }
 
   render() {
-    if (this.prereqsType === PrereqsDialogTypes.EXTENSION) {
+    if (this.dialogType === dialogTypes.END_MILESTONE_EXPLANATION) {
+      return this.renderEndMilestoneExplanationDialog();
+    }
+    if (this.dialogType === dialogTypes.EXTENSION) {
       return this.renderExtensionPrereqs();
     }
     return this.renderCreationPrereqs();

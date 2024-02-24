@@ -1,13 +1,17 @@
 import {LitElement, css, html} from 'lit';
 import {ref} from 'lit/directives/ref.js';
 import {
+  extensionMilestoneIsValid,
   showToastMessage,
   setupScrollToHash} from './utils.js';
 import './chromedash-form-table.js';
 import './chromedash-form-field.js';
 import {
+  openInfoDialog,
+  dialogTypes,
+} from './chromedash-ot-prereqs-dialog';
+import {
   ORIGIN_TRIAL_EXTENSION_FIELDS} from './form-definition.js';
-import {OT_EXTENSION_STAGE_MAPPING} from './form-field-enums.js';
 import {ALL_FIELDS} from './form-field-specs';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
@@ -32,6 +36,8 @@ export class ChromedashOTExtensionPage extends LitElement {
       appTitle: {type: String},
       nextPage: {type: String},
       fieldValues: {type: Array},
+      currentMilestone: {type: Number},
+      endMilestoneDateValues: {type: Object},
     };
   }
 
@@ -44,6 +50,8 @@ export class ChromedashOTExtensionPage extends LitElement {
     this.appTitle = '';
     this.nextPage = '';
     this.fieldValues = [];
+    this.currentMilestone = '123';
+    this.endMilestoneDateValues = {};
   }
 
   connectedCallback() {
@@ -62,7 +70,41 @@ export class ChromedashOTExtensionPage extends LitElement {
     // The field has been updated, so it is considered touched.
     this.fieldValues[index].touched = true;
     this.fieldValues[index].value = value;
+
+    if (this.fieldValues[index].name == 'ot_extension__milestone_desktop_last') {
+      this.getChromeScheduleDate(event.detail.value);
+    }
   };
+
+  openMilestoneExplanationDialog() {
+    openInfoDialog(dialogTypes.END_MILESTONE_EXPLANATION);
+  }
+
+  updateMilestoneDate(milestone) {
+    const milestoneDiv = this.shadowRoot.querySelector('#milestone-date');
+    const milestoneTextEl = this.shadowRoot.querySelector('#milestone-date-text');
+    const date = new Date(this.endMilestoneDateValues[milestone]);
+    milestoneDiv.classList.add('fade-in');
+    milestoneDiv.style.display = 'block';
+    milestoneTextEl.innerHTML = `For milestone ${milestone}, this trial will end on ${date.toLocaleDateString()}.`;
+  }
+
+  async getChromeScheduleDate(milestone) {
+    const milestoneDiv = this.shadowRoot.querySelector('#milestone-date');
+    milestoneDiv.classList.remove('fade-in');
+    milestoneDiv.style.display = 'none';
+    if (!extensionMilestoneIsValid(milestone, this.currentMilestone)) {
+      return;
+    }
+    if (!(milestone in this.endMilestoneDateValues)) {
+      const milestonePlusTwo = parseInt(milestone) + 2;
+      const resp = await fetch(
+        `https://chromiumdash.appspot.com/fetch_milestone_schedule?mstone=${milestonePlusTwo}`);
+      const respJson = await resp.json();
+      this.endMilestoneDateValues[milestone] = respJson.mstones[0].late_stable_date;
+    }
+    this.updateMilestoneDate(milestone);
+  }
 
   fetchData() {
     this.loading = true;
@@ -80,6 +122,11 @@ export class ChromedashOTExtensionPage extends LitElement {
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
+
+    fetch('https://chromiumdash.appspot.com/fetch_milestone_schedule')
+      .then(resp => resp.json()).then(scheduleInfo => {
+        this.currentMilestone = parseInt(scheduleInfo.mstones[0].mstone);
+      });
   }
 
   disconnectedCallback() {
@@ -89,15 +136,9 @@ export class ChromedashOTExtensionPage extends LitElement {
 
   async registerHandlers(el) {
     if (!el) return;
-
     /* Add the form's event listener after Shoelace event listeners are attached
     * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
     await el.updateComplete;
-    const submitButton = this.shadowRoot.querySelector('input[id=submit-button]');
-    submitButton.form.addEventListener('submit', (event) => {
-      this.handleFormSubmit(event);
-    });
-
     setupScrollToHash(this);
   }
 
@@ -117,13 +158,17 @@ export class ChromedashOTExtensionPage extends LitElement {
 
   handleFormSubmit(e) {
     e.preventDefault();
+    const submitButton = this.shadowRoot.querySelector('sl-button[id=submit-button]');
+    submitButton.disabled = true;
+
     const requestBody = this.formatRequestBody();
     window.csClient.extendOriginTrial(this.featureId, this.stageId, requestBody).then(() => {
-      showToastMessage('Extension request submitted!');
+      showToastMessage('Origin trial extended!');
       setTimeout(() => {
         window.location.href = this.nextPage || `/feature/${this.featureId}`;
       }, 1000);
     }).catch(() => {
+      submitButton.disabled = false;
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
   }
@@ -168,43 +213,6 @@ export class ChromedashOTExtensionPage extends LitElement {
     `;
   }
 
-  // Add a set of field information that will be sent with a request submission.
-  // These fields are always considered touched, and are not visible to the user.
-  addDefaultRequestFields() {
-    // Add "ot_owner_email" field to represent the requester email.
-    this.fieldValues.push({
-      name: 'ot_owner_email',
-      touched: true,
-      value: this.userEmail,
-      stageId: this.stage.id,
-    });
-
-    // Add a field for updating that an OT extension request has been submitted.
-    this.fieldValues.push({
-      name: 'ot_action_requested',
-      touched: true,
-      value: true,
-      stageId: this.stage.id,
-    });
-
-    // Add "stage_type" field to create extension stage properly.
-    const extensionStageType = OT_EXTENSION_STAGE_MAPPING[this.stage.stage_type];
-    this.fieldValues.push({
-      name: 'stage_type',
-      touched: true,
-      value: extensionStageType,
-      stageId: this.stage.id,
-    });
-
-    // Add "ot_stage_id" field to link extension stage to OT stage.
-    this.fieldValues.push({
-      name: 'ot_stage_id',
-      touched: true,
-      value: this.stage.id,
-      stageId: this.stage.id,
-    });
-  }
-
   renderFields(section) {
     const fields = section.fields.map(field => {
       const featureJSONKey = ALL_FIELDS[field].name || field;
@@ -227,9 +235,6 @@ export class ChromedashOTExtensionPage extends LitElement {
     `;
     });
 
-    // Add additional default hidden fields.
-    this.addDefaultRequestFields();
-
     return fields;
   }
 
@@ -243,14 +248,23 @@ export class ChromedashOTExtensionPage extends LitElement {
         <chromedash-form-table ${ref(this.registerHandlers)}>
           <section class="stage_form">
             ${this.renderFields(section)}
+            <div id="milestone-date" style="display:none;">
+              <span id="milestone-date-text" class="helptext fade-in fade-out"></span>
+              <a class="helptext" @click=${this.openMilestoneExplanationDialog}>
+                Learn how this date is chosen
+              </a>
+            </div>
           </section>
         </chromedash-form-table>
         <div class="final_buttons">
-          <input
-            id='submit-button'
+          <sl-button
+            id="submit-button"
             class="button"
-            type="submit"
-            value="Submit">
+            variant="primary"
+            size="small"
+            @click=${this.handleFormSubmit}>
+              Submit
+            </sl-button>
           <button id="cancel-button" @click=${this.handleCancelClick}>Cancel</button>
         </div>
       </form>

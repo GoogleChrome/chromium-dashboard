@@ -4,7 +4,7 @@ import {enhanceUrl} from './feature-link';
 import {openAddStageDialog} from './chromedash-add-stage-dialog';
 import {
   openPrereqsDialog,
-  PrereqsDialogTypes,
+  dialogTypes,
 } from './chromedash-ot-prereqs-dialog';
 import {makeDisplaySpecs} from './form-field-specs';
 import {
@@ -577,7 +577,7 @@ class ChromedashFeatureDetail extends LitElement {
     const stageId = feStage.id;
     return html`
     <sl-button size="small"
-        @click="${() => openPrereqsDialog(this.feature.id, stageId, PrereqsDialogTypes.EXTENSION)}"
+        @click="${() => openPrereqsDialog(this.feature.id, stageId, dialogTypes.EXTENSION)}"
         >${extensionButtonText}</sl-button>`;
   }
 
@@ -621,7 +621,7 @@ class ChromedashFeatureDetail extends LitElement {
         <sl-button
           size="small"
           variant="primary"
-          @click="${() => openPrereqsDialog(this.feature.id, stageId, PrereqsDialogTypes.CREATION)}"
+          @click="${() => openPrereqsDialog(this.feature.id, stageId, dialogTypes.CREATION)}"
           >Request Trial Creation</sl-button>`;
     }
     return nothing;
