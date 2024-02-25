@@ -67,12 +67,14 @@ class OriginTrialsAPI(basehandlers.APIHandler):
   def do_post(self, **kwargs):
     """Extends an existing origin trial"""
     feature_id = int(kwargs['feature_id'])
+    # Check that feature ID is valid.
     if feature_id is None or feature_id == 0:
       self.abort(404, msg='No feature specified.')
     feature: FeatureEntry | None = FeatureEntry.get_by_id(feature_id)
     if feature is None:
       self.abort(404, msg=f'Feature {feature_id} not found')
 
+    # Check that stage ID is valid.
     stage_id = int(kwargs['stage_id'])
     if stage_id is None or stage_id == 0:
       self.abort(404, msg='No stage specified.')
@@ -80,6 +82,8 @@ class OriginTrialsAPI(basehandlers.APIHandler):
     if stage is None:
       self.abort(404, msg=f'Stage {stage_id} not found')
 
+    # Check that user has permission to edit the feature
+    # associated with the origin trial.
     redirect_resp = permissions.validate_feature_edit_permission(
         self, feature_id)
     if redirect_resp:
@@ -96,3 +100,5 @@ class OriginTrialsAPI(basehandlers.APIHandler):
       self.abort(500, 'Error in request to origin trials API')
     except KeyError:
       self.abort(500, 'Malformed response from Schedule API')
+
+    return {'message': 'Origin trial extended successfully.'}
