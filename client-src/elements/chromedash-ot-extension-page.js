@@ -36,7 +36,10 @@ export class ChromedashOTExtensionPage extends LitElement {
       appTitle: {type: String},
       nextPage: {type: String},
       fieldValues: {type: Array},
+      // The most recent Chrome milestone.
       currentMilestone: {type: Number},
+      // A reference of end dates for an origin trial based on the milestone.
+      // (key=milestone, value=date origin trial will end)
       endMilestoneDateValues: {type: Object},
     };
   }
@@ -80,27 +83,30 @@ export class ChromedashOTExtensionPage extends LitElement {
     openInfoDialog(dialogTypes.END_MILESTONE_EXPLANATION);
   }
 
+  // Display the date the origin trial will end to the user after a milestone is chosen.
   updateMilestoneDate(milestone) {
     const milestoneDiv = this.shadowRoot.querySelector('#milestone-date');
     const milestoneTextEl = this.shadowRoot.querySelector('#milestone-date-text');
     const date = new Date(this.endMilestoneDateValues[milestone]);
-    milestoneDiv.classList.add('fade-in');
     milestoneDiv.style.display = 'block';
     milestoneTextEl.innerHTML = `For milestone ${milestone}, this trial will end on ${date.toLocaleDateString()}.`;
   }
 
+  // Obtain the date the origin trial will end based on the given milestone.
   async getChromeScheduleDate(milestone) {
     const milestoneDiv = this.shadowRoot.querySelector('#milestone-date');
-    milestoneDiv.classList.remove('fade-in');
     milestoneDiv.style.display = 'none';
+    // Don't try to obtain a date if the milestone is not valid.
     if (!extensionMilestoneIsValid(milestone, this.currentMilestone)) {
       return;
     }
     if (!(milestone in this.endMilestoneDateValues)) {
+      // Origin trials  will end on the late stable date of (milestone + 2).
       const milestonePlusTwo = parseInt(milestone) + 2;
       const resp = await fetch(
         `https://chromiumdash.appspot.com/fetch_milestone_schedule?mstone=${milestonePlusTwo}`);
       const respJson = await resp.json();
+      // Keep a reference of milestone dates to avoid extra requests.
       this.endMilestoneDateValues[milestone] = respJson.mstones[0].late_stable_date;
     }
     this.updateMilestoneDate(milestone);
@@ -122,7 +128,7 @@ export class ChromedashOTExtensionPage extends LitElement {
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
-
+    // Fetch the current milestone so that we know if a milestone in the past is given.
     fetch('https://chromiumdash.appspot.com/fetch_milestone_schedule')
       .then(resp => resp.json()).then(scheduleInfo => {
         this.currentMilestone = parseInt(scheduleInfo.mstones[0].mstone);
@@ -249,7 +255,7 @@ export class ChromedashOTExtensionPage extends LitElement {
           <section class="stage_form">
             ${this.renderFields(section)}
             <div id="milestone-date" style="display:none;">
-              <span id="milestone-date-text" class="helptext fade-in fade-out"></span>
+              <span id="milestone-date-text" class="helptext fade-in"></span>
               <a class="helptext" @click=${this.openMilestoneExplanationDialog}>
                 Learn how this date is chosen
               </a>
@@ -264,7 +270,7 @@ export class ChromedashOTExtensionPage extends LitElement {
             size="small"
             @click=${this.handleFormSubmit}>
               Submit
-            </sl-button>
+          </sl-button>
           <button id="cancel-button" @click=${this.handleCancelClick}>Cancel</button>
         </div>
       </form>
