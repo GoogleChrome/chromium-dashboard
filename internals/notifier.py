@@ -197,7 +197,7 @@ def add_core_receivers(fe: FeatureEntry, addr_reasons: dict[str, list[str]]):
 
 
 def make_feature_changes_email(fe: FeatureEntry, is_update: bool=False,
-    changes: Optional[list]=None):
+    changes: Optional[list]=None, local_updater_email: Optional[str]=None):
   """Return a list of task dicts to notify users of feature changes."""
   if changes is None:
     changes = []
@@ -214,7 +214,10 @@ def make_feature_changes_email(fe: FeatureEntry, is_update: bool=False,
     triggering_user_email = fe.creator_email
     template_path = 'new-feature-email.html'
 
-  email_html = format_email_body(template_path, fe, changes)
+  if local_updater_email:
+      email_html = format_email_body(template_path, fe, changes, updater_email=local_updater_email)
+  else:
+      email_html = format_email_body(template_path, fe, changes)
 
   addr_reasons: dict[str, list[str]] = collections.defaultdict(list)
 
@@ -409,6 +412,7 @@ class FeatureChangeHandler(basehandlers.FlaskHandler):
     feature = self.get_param('feature')
     is_update = self.get_bool_param('is_update')
     changes = self.get_param('changes', required=False) or []
+    local_updater_email = self.get_param('local_updater_email')
 
     logging.info('Starting to notify subscribers for feature %s',
                  repr(feature)[:settings.MAX_LOG_LINE])
@@ -418,7 +422,7 @@ class FeatureChangeHandler(basehandlers.FlaskHandler):
     # Load feature directly from NDB so as to never get a stale cached copy.
     fe = FeatureEntry.get_by_id(feature['id'])
     if fe and (is_update and len(changes) or not is_update):
-      email_tasks = make_feature_changes_email(fe, is_update=is_update, changes=changes)
+      email_tasks = make_feature_changes_email(fe, is_update=is_update, changes=changes, local_updater_email=local_updater_email)
       send_emails(email_tasks)
 
     return {'message': 'Done'}

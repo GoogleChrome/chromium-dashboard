@@ -183,7 +183,8 @@ def notify_subscribers_of_new_comments(fe: 'FeatureEntry', gate: Gate,
     'content': content,
     'gate_url': gate_url,
     'gate_type': gate.gate_type,
-    'feature': converters.feature_entry_to_json_verbose(fe)
+    'feature': converters.feature_entry_to_json_verbose(fe),
+    'local_updater_email': email,
   }
 
   cloud_tasks_helpers.enqueue_task('/tasks/email-comments', params)
