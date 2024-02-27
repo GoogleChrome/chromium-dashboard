@@ -148,7 +148,9 @@ def notify_subscribers_of_vote_changes(fe: 'FeatureEntry', gate: Gate,
     'changes': [changed_props],
     # Subscribers are only notified on feature update.
     'is_update': True,
-    'feature': converters.feature_entry_to_json_verbose(fe)
+    'feature': converters.feature_entry_to_json_verbose(fe),
+    'local_updater_email': email,
+    
   }
 
   # Create task to email subscribers.
@@ -184,7 +186,6 @@ def notify_subscribers_of_new_comments(fe: 'FeatureEntry', gate: Gate,
     'gate_url': gate_url,
     'gate_type': gate.gate_type,
     'feature': converters.feature_entry_to_json_verbose(fe),
-    'local_updater_email': email,
   }
 
   cloud_tasks_helpers.enqueue_task('/tasks/email-comments', params)
