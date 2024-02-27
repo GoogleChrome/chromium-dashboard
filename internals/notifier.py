@@ -42,16 +42,16 @@ import settings
 from internals import models
 
 def highlight_diff(old_text, new_text):
-    differ = difflib.ndiff(old_text.split(), new_text.split())
-    highlighted_text = []
-    for item in differ:
-	if item.startswith('-'):
-		highlighted_text.append(f'<span style="background-color: #FFCCCC">{item[2:]}</span>')
-	elif item.startswith('+'):
-		highlighted_text.append(f'<span style="background-color: #CCFFCC">{item[2:]}</span>')
-	else:
-		highlighted_text.append(item[2:])
-    return ' '.join(highlighted_text)
+  differ = difflib.ndiff(old_text.split(), new_text.split())
+  highlighted_text = []
+  for item in differ:
+	  if item.startswith('-'):
+		  highlighted_text.append(f'<span style="background-color: #FFCCCC">{item[2:]}</span>')
+	  elif item.startswith('+'):
+		  highlighted_text.append(f'<span style="background-color: #CCFFCC">{item[2:]}</span>')
+	  else:
+		  highlighted_text.append(item[2:])
+  return ' '.join(highlighted_text)
 
 def format_email_body(is_update, feature, changes):
   """Return an HTML string for a notification email body."""
