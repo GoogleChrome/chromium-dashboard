@@ -118,6 +118,10 @@ def extend_origin_trial(trial_id: str, end_milestone: str, intent_url: str):
     requests.exceptions.RequestException: If the request fails to connect or
       the HTTP status code is not successful.
   """
+  if settings.DEV_MODE:
+    logging.info('Extension request will not be sent to origin trials API in '
+                 'local environment.')
+    return
   key = secrets.get_ot_api_key()
   # Return if no API key is found.
   if key == None:
