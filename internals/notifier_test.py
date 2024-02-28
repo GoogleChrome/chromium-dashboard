@@ -319,7 +319,8 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
 
     mock_f_e_b.assert_called_once_with(
-        'new-feature-email.html', self.fe_1, [])
+        'new-feature-email.html', self.fe_1, [],
+        updater_email='creator1@gmail.com')
 
   @mock.patch('internals.notifier.format_email_body')
   def test_make_feature_changes_email__update(self, mock_f_e_b):
@@ -380,7 +381,8 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
 
     mock_f_e_b.assert_called_once_with(
-        'update-feature-email.html', self.fe_1, self.changes)
+        'update-feature-email.html', self.fe_1, self.changes,
+        updater_email='editor1@gmail.com')
 
   @mock.patch('internals.notifier.format_email_body')
   def test_make_feature_changes_email__starrer(self, mock_f_e_b):
@@ -450,7 +452,8 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
 
     mock_f_e_b.assert_called_once_with(
-        'update-feature-email.html', self.fe_1, self.changes)
+        'update-feature-email.html', self.fe_1, self.changes,
+        updater_email='editor1@gmail.com')
 
 
   @mock.patch('internals.notifier.format_email_body')
@@ -474,7 +477,8 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertEqual('owner_1@example.com', component_owner_task['to'])
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
     mock_f_e_b.assert_called_once_with(
-        'update-feature-email.html', self.fe_2, self.changes)
+        'update-feature-email.html', self.fe_2, self.changes,
+        updater_email='editor2@example.com')
 
 
 class FeatureCommentHandlerTest(testing_config.CustomTestCase):

@@ -196,8 +196,9 @@ def add_core_receivers(fe: FeatureEntry, addr_reasons: dict[str, list[str]]):
   )
 
 
-def make_feature_changes_email(fe: FeatureEntry, is_update: bool=False,
-    changes: Optional[list]=None):
+def make_feature_changes_email(
+    fe: FeatureEntry, is_update: bool=False, changes: Optional[list]=None,
+    triggering_user_email: Optional[str]=None):
   """Return a list of task dicts to notify users of feature changes."""
   if changes is None:
     changes = []
@@ -207,14 +208,15 @@ def make_feature_changes_email(fe: FeatureEntry, is_update: bool=False,
 
   if is_update:
     subject = 'updated feature: %s' % fe.name
-    triggering_user_email = fe.updater_email
+    triggering_user_email = triggering_user_email or fe.updater_email
     template_path = 'update-feature-email.html'
   else:
     subject = 'new feature: %s' % fe.name
     triggering_user_email = fe.creator_email
     template_path = 'new-feature-email.html'
 
-  email_html = format_email_body(template_path, fe, changes)
+  email_html = format_email_body(
+      template_path, fe, changes, updater_email=triggering_user_email)
 
   addr_reasons: dict[str, list[str]] = collections.defaultdict(list)
 
@@ -409,6 +411,8 @@ class FeatureChangeHandler(basehandlers.FlaskHandler):
     feature = self.get_param('feature')
     is_update = self.get_bool_param('is_update')
     changes = self.get_param('changes', required=False) or []
+    triggering_user_email = self.get_param(
+        'triggering_user_email', required=False)
 
     logging.info('Starting to notify subscribers for feature %s',
                  repr(feature)[:settings.MAX_LOG_LINE])
@@ -418,7 +422,9 @@ class FeatureChangeHandler(basehandlers.FlaskHandler):
     # Load feature directly from NDB so as to never get a stale cached copy.
     fe = FeatureEntry.get_by_id(feature['id'])
     if fe and (is_update and len(changes) or not is_update):
-      email_tasks = make_feature_changes_email(fe, is_update=is_update, changes=changes)
+      email_tasks = make_feature_changes_email(
+          fe, is_update=is_update, changes=changes,
+          triggering_user_email=triggering_user_email)
       send_emails(email_tasks)
 
     return {'message': 'Done'}
