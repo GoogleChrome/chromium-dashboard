@@ -138,8 +138,9 @@ def notify_subscribers_of_vote_changes(fe: 'FeatureEntry', gate: Gate,
   activity.put()
 
   gate_url = get_gate_url(gate)
+  team_name = appr_def.team_name or 'Gate'
   changed_props = {
-      'prop_name': '%s set review status in %s' % (email, gate_url),
+      'prop_name': '%s review status %s' % (team_name, gate_url),
       'old_val': old_state_name,
       'new_val': state_name,
   }
@@ -148,6 +149,7 @@ def notify_subscribers_of_vote_changes(fe: 'FeatureEntry', gate: Gate,
     'changes': [changed_props],
     # Subscribers are only notified on feature update.
     'is_update': True,
+    'triggering_user_email': email,
     'feature': converters.feature_entry_to_json_verbose(fe)
   }
 
