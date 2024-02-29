@@ -37,19 +37,9 @@ class FunctionTest(testing_config.CustomTestCase):
         name='feature one', summary='detailed sum', category=1,
         intent_stage=core_enums.INTENT_IMPLEMENT)
     self.feature_1.put()
-    self.prototype_stage = Stage(feature_id=self.feature_1.key.integer_id(), stage_type=120)
-    self.prototype_stage.put()
-    self.ot_stage = Stage(feature_id=self.feature_1.key.integer_id(), stage_type=150)
-    self.ot_stage.put()
-    self.extend_stage = Stage(feature_id=self.feature_1.key.integer_id(), stage_type=151)
-    self.extend_stage.put()
-    self.ship_stage = Stage(feature_id=self.feature_1.key.integer_id(), stage_type=160)
-    self.ship_stage.put()
 
   def tearDown(self):
-    for kind in [FeatureEntry, Stage]:
-      for entity in kind.query():
-        entity.key.delete()
+    self.feature_1.key.delete()
 
   def test_detect_field(self):
     """We can detect intent thread type by subject line."""
