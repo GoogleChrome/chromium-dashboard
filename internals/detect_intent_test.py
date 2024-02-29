@@ -37,9 +37,19 @@ class FunctionTest(testing_config.CustomTestCase):
         name='feature one', summary='detailed sum', category=1,
         intent_stage=core_enums.INTENT_IMPLEMENT)
     self.feature_1.put()
+    self.prototype_stage = Stage(feature_id=self.feature_1.key.integer_id(), stage_type=120)
+    self.prototype_stage.put()
+    self.ot_stage = Stage(feature_id=self.feature_1.key.integer_id(), stage_type=150)
+    self.ot_stage.put()
+    self.extend_stage = Stage(feature_id=self.feature_1.key.integer_id(), stage_type=151)
+    self.extend_stage.put()
+    self.ship_stage = Stage(feature_id=self.feature_1.key.integer_id(), stage_type=160)
+    self.ship_stage.put()
 
   def tearDown(self):
-    self.feature_1.key.delete()
+    for kind in [FeatureEntry, Stage]:
+      for entity in kind.query():
+        entity.key.delete()
 
   def test_detect_field(self):
     """We can detect intent thread type by subject line."""
@@ -74,10 +84,12 @@ class FunctionTest(testing_config.CustomTestCase):
           'Intent to Extend Experiment: Something cool',
           'Intent to Continue Experiment: Something cool',
           'Intend to Continue Experiment: Something cool',
+          'Intent to Extend Origin Trial: Something cool',
           'Intending to Continue Experiment: Something cool',
           'Request to Continue Experiment: Something cool',
           'Request to Continue Experimenting: Something cool',
           'Request to Continuing Experiment: Something cool',
+          'Request to Extend Origin Trial: Something cool',
           'Requesting to Continuing Experiment: Something cool',
       ],
       approval_defs.ShipApproval: [
@@ -400,13 +412,16 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()
 
-    stage_types = [110, 120, 130, 140, 150, 151, 160]
+    # Typical feature with two OT extension stages.
+    stage_types = [110, 120, 130, 140, 150, 151, 151, 160]
     self.stages: list[Stage] = []
     for s_type in stage_types:
       stage = Stage(feature_id=self.feature_id, stage_type=s_type)
       stage.put()
       self.stages.append(stage)
     self.stages_dict = stage_helpers.get_feature_stages(self.feature_id)
+    # The intent thread url already exists for the first extension stage.
+    self.stages_dict[151][0].intent_thread_url = 'https://example.com/exists'
 
     self.gate_1 = Gate(feature_id=self.feature_id, stage_id=1,
         gate_type=1, state=Vote.NA)
@@ -463,6 +478,34 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
 
     self.assertEqual(
         self.stages_dict[160][0].intent_thread_url, self.thread_url)
+
+  def test_process_post_data__new_thread_multiple_stages(self):
+    """Intent thread is still recorded for multiple stage types."""
+    extend_json_data = {
+        'from_addr': 'user@example.com',
+        'subject': 'Intent to Extend Experiment: Featurename',
+        'body': 'Please review. ' + self.entry_link + self.footer,
+        }
+    with test_app.test_request_context(
+        self.request_path, json=extend_json_data):
+      actual = self.handler.process_post_data()
+
+    self.assertEqual(actual, {'message': 'Done'})
+
+    created_votes = list(Vote.query().fetch(None))
+    self.assertEqual(1, len(created_votes))
+    vote = created_votes[0]
+    self.assertEqual(self.feature_id, vote.feature_id)
+    self.assertEqual(Vote.REVIEW_REQUESTED, vote.state)
+    self.assertEqual('user@example.com', vote.set_by)
+
+    # The previously set intent thread should not be changed,
+    # and the only stage with an unset intent thread url should be updated.
+    self.assertEqual(
+        self.stages_dict[151][0].intent_thread_url,
+        'https://example.com/exists')
+    self.assertEqual(
+        self.stages_dict[151][1].intent_thread_url, self.thread_url)
 
   def test_process_post_data__new_thread_already_empty_str(self):
     """We still set intent_thread_url if it was previously an empty string."""

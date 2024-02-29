@@ -242,24 +242,38 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
       logging.info('stage_type not found for %r %r',
                    approval_field.field_id, feature.feature_type)
       return
-    # TODO(danielrsmith): A new way to approach this detection is needed
-    # now that multiple stages of the same type can exist for a feature.
-    # This will currently only detect an intent if there is only 1 stage
-    # of the specific stage type associated with the feature.
-    matching_stages: list[Stage] = Stage.query(
+
+    # Get all stages of the detected stage type that belong to the feature.
+    stages_of_type_in_feature: list[Stage] = Stage.query(
         Stage.feature_id == feature.key.integer_id(),
         Stage.stage_type == stage_type).fetch()
-    if len(matching_stages) == 0 or len(matching_stages) > 1:
-      logging.info('Ambiguous stages: %r', matching_stages)
-      return
-    if matching_stages[0].intent_thread_url:
-      logging.info('intent_thread_url was already set to %r',
-                   matching_stages[0].intent_thread_url)
+    if len(stages_of_type_in_feature) == 0:
+      logging.info('No matching stage found for feature: '
+                   f'{feature.key.integer_id()}, stage_type: {stage_type}')
       return
 
-    matching_stages[0].intent_thread_url = thread_url
-    matching_stages[0].intent_subject_line = subject
-    matching_stages[0].put()
+    # Check if this intent URL already belongs to a stage.
+    matching_stage = next((s for s in stages_of_type_in_feature
+                            if s.intent_thread_url == thread_url), None)
+    if matching_stage:
+      matching_stage.intent_subject_line = subject
+      matching_stage.put()
+      logging.info('intent_thread_url was already set to %r',
+                   matching_stage.intent_thread_url)
+      return
+
+    # If only 1 stage exists without a set intent URL, we can assume that
+    # this thread is associated with that stage.
+    stages_with_no_intent_thread_url = list(filter(
+        lambda s: s.intent_thread_url is None or s.intent_thread_url == '',
+        stages_of_type_in_feature))
+    if len(stages_with_no_intent_thread_url) != 1:
+      logging.info(f'Ambiguous stages: {stages_of_type_in_feature}')
+
+    stage = stages_with_no_intent_thread_url[0]
+    stage.intent_thread_url = thread_url
+    stage.intent_subject_line = subject
+    stage.put()
     logging.info('Set intent_thread_url to %r and intent_subject_line to %r',
                  thread_url, subject)
 
