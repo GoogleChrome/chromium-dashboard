@@ -195,10 +195,20 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     if not feature:
       logging.info('Could not retrieve feature')
       return {'message': 'Feature not found'}
+    
+    stage = self.find_matching_stage(feature, approval_field, thread_url)
+    if stage is None:
+      return {'message': (
+        f'No matching stage found for intent type {approval_field.field_id}')}
 
-    self.set_intent_thread_url(feature, approval_field, thread_url, subject)
+    gate = Gate.query(Gate.stage_id == stage.key.integer_id(),
+                      Gate.gate_type == approval_field.field_id).get()
+    if gate is None:
+      return {'message': (f'Gate not found for stage {stage.key.integer_id()} '
+                          f' and gate type {approval_field.field_id}')}
+    self.set_intent_thread_url(stage, thread_url, subject)
     is_new_thread = detect_new_thread(feature_id, approval_field)
-    self.create_approvals(feature, approval_field, from_addr, body)
+    self.create_approvals(feature, gate, approval_field, from_addr, body)
     self.record_slo(feature, approval_field, from_addr, is_new_thread)
     return {'message': 'Done'}
 
@@ -228,20 +238,20 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
 
     return FeatureEntry.get_by_id(fe_ids[0]), None
 
-  def set_intent_thread_url(self, feature: FeatureEntry,
+  def find_matching_stage(self, feature: FeatureEntry,
       approval_field: approval_defs.ApprovalFieldDef,
-      thread_url: str | None, subject: str | None) -> None:
-    """If the feature has no previous thread URL for this intent, set it."""
+      thread_url: str | None) -> Stage | None:
+    """Find the stage in which the thread is associated with."""
     if not thread_url:
       logging.info('Given false thread_url %r', thread_url)
-      return
+      return None
 
     stage_type = core_enums.STAGE_TYPES_BY_GATE_TYPE_MAPPING[
         approval_field.field_id][feature.feature_type]
     if stage_type is None:
       logging.info('stage_type not found for %r %r',
                    approval_field.field_id, feature.feature_type)
-      return
+      return None
 
     # Get all stages of the detected stage type that belong to the feature.
     stages_of_type_in_feature: list[Stage] = Stage.query(
@@ -250,17 +260,15 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     if len(stages_of_type_in_feature) == 0:
       logging.info('No matching stage found for feature: '
                    f'{feature.key.integer_id()}, stage_type: {stage_type}')
-      return
+      return None
 
     # Check if this intent URL already belongs to a stage.
     matching_stage = next((s for s in stages_of_type_in_feature
                             if s.intent_thread_url == thread_url), None)
     if matching_stage:
-      matching_stage.intent_subject_line = subject
-      matching_stage.put()
       logging.info('intent_thread_url was already set to %r',
                    matching_stage.intent_thread_url)
-      return
+      return matching_stage
 
     # If only 1 stage exists without a set intent URL, we can assume that
     # this thread is associated with that stage.
@@ -269,15 +277,18 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
         stages_of_type_in_feature))
     if len(stages_with_no_intent_thread_url) != 1:
       logging.info(f'Ambiguous stages: {stages_of_type_in_feature}')
+      return None
+    return stages_with_no_intent_thread_url[0]
 
-    stage = stages_with_no_intent_thread_url[0]
+  def set_intent_thread_url(
+      self, stage: Stage, thread_url: str | None, subject: str | None) -> None:
     stage.intent_thread_url = thread_url
     stage.intent_subject_line = subject
     stage.put()
-    logging.info('Set intent_thread_url to %r and intent_subject_line to %r',
-                 thread_url, subject)
+    logging.info(f'Set intent_thread_url to {thread_url} '
+                 f'and intent_subject_line to {subject}')
 
-  def create_approvals(self, feature: FeatureEntry,
+  def create_approvals(self, feature: FeatureEntry, gate: Gate,
       approval_field: approval_defs.ApprovalFieldDef,
       from_addr: str, body: str) -> None:
     """Store either a REVIEW_REQUESTED or an APPROVED approval value."""
@@ -290,7 +301,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
         is_lgtm_allowed(from_addr, feature, approval_field)):
       logging.info('found LGTM')
       approval_defs.set_vote(feature_id, approval_field.field_id,
-          Vote.APPROVED, from_addr)
+          Vote.APPROVED, from_addr, gate.key.integer_id())
 
     # Case 2: Create a review request for any discussion that does not already
     # have any approval values stored.
@@ -301,7 +312,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
         # TODO(jrobbins): set gate state rather than creating
         # REVIEW_REQUESTED votes.
         approval_defs.set_vote(feature_id, approval_field.field_id,
-            Vote.REVIEW_REQUESTED, from_addr)
+            Vote.REVIEW_REQUESTED, from_addr, gate.key.integer_id())
 
   def record_slo(self, feature, approval_field, from_addr, is_new_thread) -> None:
     """Update SLO timestamps."""
