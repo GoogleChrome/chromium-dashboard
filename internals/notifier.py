@@ -18,6 +18,7 @@ __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 from datetime import datetime, timedelta
 import collections
 import logging
+import difflib
 from typing import Any, Optional
 import urllib
 
@@ -63,6 +64,17 @@ def _determine_milestone_string(ship_stages: list[Stage]) -> str:
     milestone_str = f'{first_android} (android)'
   return milestone_str
 
+def highlight_diff(old_text, new_text):
+  differ = difflib.ndiff(old_text.split(), new_text.split())
+  highlighted_text = []
+  for item in differ:
+    if item.startswith('-'):
+      highlighted_text.append(f'<span style="background-color: #FFCCCC">{item[2:]}</span>')
+    elif item.startswith('+'):
+      highlighted_text.append(f'<span style="background-color: #CCFFCC">{item[2:]}</span>')
+    else:
+      highlighted_text.append(item[2:])
+  return ' '.join(highlighted_text) 
 
 def format_email_body(
     template_path, fe: FeatureEntry, changes: list[dict[str, Any]],
@@ -79,9 +91,13 @@ def format_email_body(
     new_val = prop['new_val']
     old_val = prop['old_val']
 
-    formatted_changes += ('<li><b>%s:</b> <br/><b>old:</b> %s <br/>'
-                          '<b>new:</b> %s<br/></li><br/>' %
+    # Call highlight_diff to get the highlighted differences
+    highlighted_new_val = highlight_diff(old_val, new_val)
+
+    formatted_changes += ('<li><b>{prop_name}:</b> <br/><b>old:</b> {escape(old_val)} <br/>'
+                          '<b>new:</b> {highlighted_new_val}<br/></li><br/>' %
                           (prop_name, escape(old_val), escape(new_val)))
+                          
   if not formatted_changes:
     formatted_changes = '<li>None</li>'
 
