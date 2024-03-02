@@ -10,6 +10,14 @@
 
 deployVersion=$1
 appName=${2:-cr-status}
+
+deployAppYaml="app.staging.yaml"
+deployNotifierYaml="notifier.staging.yaml"
+if [[ "${appName}"  == "cr-status" ]]; then
+  deployAppYaml="app.yaml"
+  deployNotifierYaml="notifier.yaml"
+fi
+
 usage="Usage: deploy.sh `date +%Y-%m-%d`"
 
 if [ -z "$deployVersion" ]
@@ -24,10 +32,11 @@ readonly BASEDIR=$(dirname $BASH_SOURCE)
 
 gulp
 
-$BASEDIR/oauthtoken.sh deploy
-gcloud app deploy \
+gcloud beta app deploy \
   --project $appName \
   --version $deployVersion \
   --no-promote \
-  $BASEDIR/../app.yaml $BASEDIR/../notifier.yaml \
-  $BASEDIR/../dispatch.yaml $BASEDIR/../cron.yaml
+  $BASEDIR/../$deployNotifierYaml \
+  $BASEDIR/../$deployAppYaml  \
+  $BASEDIR/../dispatch.yaml \
+  $BASEDIR/../cron.yaml

@@ -13,19 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
-
 import base64
 import copy
 import logging
 import os
-import six
 
 import flask
 
+import settings
 
-REPORT_ONLY = True
+
+REPORT_ONLY = False
 USE_NONCE_ONLY_POLICY = True  # Recommended
 REPORT_URI = '/csp'
 NONCE_LENGTH = 30
@@ -33,6 +31,7 @@ NONCE_LENGTH = 30
 # Note: This is an addition beyond the reference csp.py example code.
 HOST_SOURCES = [
     'https://www.gstatic.com',
+    'https://accounts.google.com/gsi/client',
     ]
 
 DEFAULT_POLICY = {
@@ -74,7 +73,8 @@ HEADER_KEY_REPORT_ONLY = 'Content-Security-Policy-Report-Only'
 def get_nonce():
   """Returns a random nonce."""
   length = NONCE_LENGTH
-  return base64.b64encode(os.urandom(length * 2))[:length]
+  b_nonce = base64.b64encode(os.urandom(length * 2))[:length]
+  return b_nonce.decode()
 
 
 def get_default_policy(nonce=None):
@@ -101,7 +101,7 @@ def get_csp_header_key():
 def build_policy(policy):
   """Builds the CSP policy string from the internal representation."""
   csp_directives = [
-      k + ' ' + ' '.join(v) for k, v in six.iteritems(policy) if v is not None
+      k + ' ' + ' '.join(v) for k, v in policy.items() if v is not None
   ]
   if REPORT_URI:
     csp_directives.append('report-uri %s' % REPORT_URI)
@@ -115,10 +115,8 @@ def get_headers(nonce):
   return {csp_header_key: csp_directives}
 
 
-app = flask.Flask(__name__)
-
-@app.route('/csp', methods=['POST'])
 def report_handler():
   """Log any CSP violations that are reported to our app."""
-  logging.error('CSP Violation: %r' % flask.request.data)
+  logging.error('CSP Violation: %s' %
+                repr(flask.request.data)[:settings.MAX_LOG_LINE])
   return ''

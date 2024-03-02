@@ -1,6 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -15,7 +12,7 @@ from __future__ import print_function
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import mock
+from unittest import mock
 import unittest
 import testing_config  # Must be imported before the module under test.
 
@@ -51,7 +48,7 @@ class LocalCloudTasksClientTest(unittest.TestCase):
     mock_fetch.assert_called_once_with(
       'POST',
         'http://localhost:8080/handler',
-        data='{"a": 1}',
+        data=b'{"a": 1}',
         allow_redirects=False,
         headers={'X-AppEngine-QueueName': 'default'})
 
@@ -88,7 +85,7 @@ class CloudTasksHelpersTest(unittest.TestCase):
     self.assertEqual(
         { 'app_engine_http_request': {
             'relative_uri': '/handler',
-            'body': '{"a": 1}',
+            'body': b'{"a": 1}',
             }
          },
         actual)
@@ -102,4 +99,4 @@ class CloudTasksHelpersTest(unittest.TestCase):
 
     self.assertEqual('fake task', actual)
     self.assertEqual('/handler', cloud_tasks_helpers._client.uri)
-    self.assertEqual('{"a": 1}', cloud_tasks_helpers._client.body)
+    self.assertEqual(b'{"a": 1}', cloud_tasks_helpers._client.body)

@@ -13,17 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
-
 # from google.appengine.api import users
-from framework import users
+from api.converters import feature_entry_to_json_verbose
 
-from internals import models
-import settings
+from internals import core_enums
+from internals import processes
+from internals import stage_helpers
 from framework import basehandlers
 from framework import permissions
-from internals import processes
 
 INTENT_PARAM = 'intent'
 LAUNCH_PARAM = 'launch'
@@ -35,8 +32,16 @@ class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'admin/features/launch.html'
 
-  @permissions.require_edit_feature
-  def get_template_data(self, feature_id=None, stage_id=None):
+  def get_template_data(self, **kwargs):
+    # Validate the user has edit permissions and redirect if needed.
+    feature_id = kwargs.get('feature_id', None)
+    stage_id = kwargs.get('stage_id', None)
+
+    redirect_resp = permissions.validate_feature_edit_permission(
+        self, feature_id)
+    if redirect_resp:
+      return redirect_resp
+
     f = self.get_specified_feature(feature_id=feature_id)
     intent_stage = stage_id if stage_id is not None else f.intent_stage
 
@@ -45,9 +50,13 @@ class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
 
   def get_page_data(self, feature_id, f, intent_stage):
     """Return a dictionary of data used to render the page."""
+    stage_info = stage_helpers.get_stage_info_for_templates(f)
     page_data = {
         'subject_prefix': self.compute_subject_prefix(f, intent_stage),
-        'feature': f.format_for_template(),
+        'feature': feature_entry_to_json_verbose(f),
+        'stage_info': stage_info,
+        'should_render_mstone_table': stage_info['should_render_mstone_table'],
+        'should_render_intents': stage_info['should_render_intents'],
         'sections_to_show': processes.INTENT_EMAIL_SECTIONS.get(
             intent_stage, []),
         'intent_stage': intent_stage,
@@ -66,27 +75,24 @@ class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
   def compute_subject_prefix(self, feature, intent_stage):
     """Return part of the subject line for an intent email."""
 
-    if intent_stage == models.INTENT_INCUBATE:
-      if feature.feature_type == models.FEATURE_TYPE_DEPRECATION_ID:
+    if intent_stage == core_enums.INTENT_INCUBATE:
+      if feature.feature_type == core_enums.FEATURE_TYPE_DEPRECATION_ID:
         return 'Intent to Deprecate and Remove'
-    elif intent_stage == models.INTENT_IMPLEMENT:
+    elif intent_stage == core_enums.INTENT_IMPLEMENT:
       return 'Intent to Prototype'
-    elif intent_stage == models.INTENT_EXPERIMENT:
-      return 'Ready for Trial'
-    elif intent_stage == models.INTENT_EXTEND_TRIAL:
-      if feature.feature_type == models.FEATURE_TYPE_DEPRECATION_ID:
+    elif intent_stage == core_enums.INTENT_EXPERIMENT:
+      return 'Ready for Developer Testing'
+    elif intent_stage == core_enums.INTENT_EXTEND_TRIAL:
+      if feature.feature_type == core_enums.FEATURE_TYPE_DEPRECATION_ID:
         return 'Request for Deprecation Trial'
       else:
         return 'Intent to Experiment'
-    elif intent_stage == models.INTENT_SHIP:
-      return 'Intent to Ship'
-    elif intent_stage == models.INTENT_REMOVED:
+    elif intent_stage == core_enums.INTENT_SHIP:
+      if feature.feature_type == core_enums.FEATURE_TYPE_CODE_CHANGE_ID:
+        return 'Web-Facing Change PSA'
+      else:
+        return 'Intent to Ship'
+    elif intent_stage == core_enums.INTENT_REMOVED:
       return 'Intent to Extend Deprecation Trial'
 
-    return 'Intent stage "%s"' % models.INTENT_STAGES[intent_stage]
-
-app = basehandlers.FlaskApplication([
-  ('/admin/features/launch/<int:feature_id>', IntentEmailPreviewHandler),
-  ('/admin/features/launch/<int:feature_id>/<int:stage_id>',
-   IntentEmailPreviewHandler),
-], debug=settings.DEBUG)
+    return 'Intent stage "%s"' % core_enums.INTENT_STAGES[intent_stage]

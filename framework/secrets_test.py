@@ -12,12 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
-
 import testing_config  # Must be imported before the module under test.
 
-import mock
+from unittest import mock
 
 from framework import secrets
 
@@ -33,7 +30,7 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
   def test_make_random_key__distinct(self):
     """The random keys are different."""
     key_set = set()
-    for i in range(1000):
+    for _ in range(1000):
       key_set.add(secrets.make_random_key())
     self.assertEqual(1000, len(key_set))
 
@@ -85,3 +82,83 @@ class SecretsTest(testing_config.CustomTestCase):
     mock_make_random_key.assert_called_once_with()
     self.assertEqual(singleton2.xsrf_secret, 'old secret field')
     self.assertEqual(singleton2.session_secret, 'fake new random')
+
+
+class ApiCredentialTest(testing_config.CustomTestCase):
+
+  def tearDown(self):
+    for old_entity in secrets.ApiCredential.query():
+      old_entity.key.delete()
+
+  def test_select_token_for_api__first_use(self):
+    """When there are no credientials for an API, it makes one."""
+    actual = secrets.ApiCredential.select_token_for_api('foo')
+
+    self.assertEqual('foo', actual.api_name)
+    self.assertIsNone(actual.token)
+    self.assertEqual(0, actual.failure_timestamp)
+    self.assertEqual(
+        1, len(list(secrets.ApiCredential.query())))
+
+  def test_select_token_for_api__one_exists(self):
+    """When there are no credientials for an API, it makes one."""
+    foo_cred = secrets.ApiCredential(api_name='foo', token='token')
+    foo_cred.put()
+
+    actual = secrets.ApiCredential.select_token_for_api('foo')
+
+    self.assertEqual('foo', actual.api_name)
+    self.assertEqual('token', actual.token)
+    self.assertEqual(0, actual.failure_timestamp)
+    self.assertEqual(
+        1, len(list(secrets.ApiCredential.query())))
+
+  def test_select_token_for_api__three_exist(self):
+    """When there are credientials, choose the earliest failure."""
+    cred_2 = secrets.ApiCredential(
+        api_name='foo', token='token 2', failure_timestamp=2)
+    cred_2.put()
+    cred_1 = secrets.ApiCredential(
+        api_name='foo', token='token 1', failure_timestamp=1)
+    cred_1.put()
+    cred_3 = secrets.ApiCredential(
+        api_name='foo', token='token 3', failure_timestamp=3)
+    cred_3.put()
+
+    actual = secrets.ApiCredential.select_token_for_api('foo')
+
+    self.assertEqual('foo', actual.api_name)
+    self.assertEqual('token 1', actual.token)
+    self.assertEqual(1, actual.failure_timestamp)
+    self.assertEqual(
+        3, len(list(secrets.ApiCredential.query())))
+
+  def test_get_github_credendial(self):
+    """We can get a github token."""
+    gh_cred = secrets.ApiCredential(
+        api_name=secrets.GITHUB_API_NAME, token='hash')
+    gh_cred.put()
+
+    actual = secrets.ApiCredential.get_github_credendial()
+
+    self.assertEqual('github', actual.api_name)
+    self.assertEqual('hash', actual.token)
+    self.assertEqual(0, actual.failure_timestamp)
+    self.assertEqual(
+        1, len(list(secrets.ApiCredential.query())))
+
+  def test_record_failure(self):
+    """We can record the time of failure for an API token."""
+    NOW = 1234567890
+    gh_cred = secrets.ApiCredential(
+        api_name=secrets.GITHUB_API_NAME, token='hash')
+    gh_cred.put()
+
+    gh_cred.record_failure(now=NOW)
+
+    updated_cred = list(secrets.ApiCredential.query())[0]
+    self.assertEqual('github', updated_cred.api_name)
+    self.assertEqual('hash', updated_cred.token)
+    self.assertEqual(NOW, updated_cred.failure_timestamp)
+    self.assertEqual(
+        1, len(list(secrets.ApiCredential.query())))

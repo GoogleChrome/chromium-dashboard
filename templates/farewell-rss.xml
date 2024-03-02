@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xml:lang="en" xmlns="http://www.w3.org/2005/Atom">
+  <title>Chrome Platform Status - Features</title>
+  <link href="https://chromestatus.com/features" rel="alternate"></link>
+  <id>https://chromestatus.com/features</id>
+  <updated>2022-08-19T21:53:44Z</updated>
+
+  <entry>
+    <title>Please use our web UI</title>
+    <link href="https://chromestatus.com" rel="alternate"></link>
+    <published>2022-08-19T21:53:44Z</published>
+    <author><name>Chrome Platform Status</name></author>
+    <id>tag:chromestatus.com,2022-08-19</id>
+    <summary type="html">
+      ChromeStatus.com no longer offers an RSS feed.
+      To keep up to date with new features, please visit our website.
+      If you have a strong need for this RSS feed, please let us know
+      by filing an issue at https://github.com/GoogleChrome/chromium-dashboard/issues.
+    </summary>
+  </entry>
+
+</feed>

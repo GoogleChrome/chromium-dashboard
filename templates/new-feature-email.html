@@ -1,30 +1,70 @@
-<p>
-  {{feature.created_by}} added a new feature:
-</p>
+{% import 'email-styles.html' as styles %}
+<div style="{{styles.body}}">
+<div style="{{styles.branding}}">{{APP_TITLE}}</div>
 
-<p><b><a href="https://www.chromestatus.com/feature/{{id}}"
-         >{{feature.name}}</a></b>
-</p>
-<p><b>Milestone</b>: {{milestone}}</p>
-<p><b>Components</b>: {{feature.blink_components|join:", "}}</p>
-<p><b>Implementation status</b>: {{status}}</p>
+<div style="{{styles.content}} {{styles.content_new}}">
+<section id="context" style="{{styles.section}}">
+  <table>
+    <tr>
+      <td rowspan=2>{{styles.icon_new()}}</td>
+      <td><b>New</b> feature entry:</td>
+    </tr>
+    <tr>
+      <td><a style="{{styles.feature_name}}"
+             href="{{SITE_URL}}feature/{{id}}"
+             >{{feature.name}}</a>
+      </td>
+    </tr>
+  </table>
+</section>
 
-<hr>
-<p>Next steps:</p>
-<ul>
-  <li>Try the API, write a sample, provide early feedback to eng.</li>
-  <li>Consider authoring a new article/update for /web.</li>
-  <li>Write a
-    <a href="https://github.com/GoogleChrome/lighthouse/tree/master/docs/recipes/custom-audit"
-       >new Lighthouse audit</a>. This can help drive adoption of an API
-    over time.
-  </li>
-  <li>Add a sample to https://github.com/GoogleChrome/samples (see
-    <a href="https://github.com/GoogleChrome/samples#contributing-samples"
-       >contributing</a>).
-  </li>
-  <li>Don't forget add your demo link to the
-    <a href="https://www.chromestatus.com/admin/features/edit/{{id}}"
-       >chromestatus feature entry</a>.
-  </li>
-</ul>
+
+<section id="details" style="{{styles.section}}">
+  <div><b>New details entered by {{feature.creator_email}}:</div>
+
+  <table>
+    <tr>
+      <td style="{{styles.td}}">Summary:</td>
+      <td style="{{styles.td}}">{{feature.summary}}</td>
+    </tr>
+    <tr>
+      <td style="{{styles.td}}">Unlisted:</td>
+      <td style="{{styles.td}}">{% if feature.unlisted %}Yes{% else %}No{% endif %}</td>
+    </tr>
+    <tr>
+      <td style="{{styles.td}}">Breaking change:</td>
+      <td style="{{styles.td}}">{% if feature.breaking_change %}Yes{% else %}No{% endif %}</td>
+    </tr>
+    <tr>
+      <td style="{{styles.td}}">Feature owners:</td>
+      <td style="{{styles.td}}">{{feature.owner_emails|join(", ")}}</td>
+    </tr>
+    <tr>
+      <td style="{{styles.td}}">Cc:</td>
+      <td style="{{styles.td}}">{{feature.cc_emails|join(", ")}}</td>
+    </tr>
+    <tr>
+      <td style="{{styles.td}}">Blink component:</td>
+      <td style="{{styles.td}}">{{feature.blink_components|join(", ")}}</td>
+    </tr>
+    <tr>
+      <td style="{{styles.td}}">Category:</td>
+      <td style="{{styles.td}}">{{category}}</td>
+    </tr>
+    <tr>
+      <td style="{{styles.td}}">Feature type:</td>
+      <td style="{{styles.td}}">{{feature_type}}</td>
+    </tr>
+  </table>
+</section>
+
+
+<section id="next-steps" style="{{styles.section}}">
+  <div><b>Your next steps:</b></div>
+  <div style="{{styles.button_div}}">
+    <a href="{{SITE_URL}}feature/{{id}}" style="{{styles.button_a}}"
+     >View feature details</a></div>
+</section>
+
+</div>
+</div>

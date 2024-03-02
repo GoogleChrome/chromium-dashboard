@@ -1,0 +1,35 @@
+{% import 'email-styles.html' as styles %}
+<div style="{{styles.body}}">
+<div style="{{styles.branding}}">{{APP_TITLE}}</div>
+
+<div style="{{styles.content}} {{styles.content_alert}}">
+<section id="context" style="{{styles.section}}">
+  <table>
+    <tr>
+      <td rowspan=2>{{styles.icon_alert()}}</td>
+      <td><b>Review requested</b> for feature entry:</td>
+    </tr>
+    <tr>
+      <td><a style="{{styles.feature_name}}"
+             href="{{SITE_URL}}feature/{{id}}"
+             >{{feature.name}}</a>
+      </td>
+    </tr>
+  </table>
+</section>
+
+<section id="details" style="{{styles.section}}">
+  <p><b>Review requested{% if updater_email %} by {{updater_email}}{% endif %}:</b></p>
+
+  <p>Please review this feature entry on behalf of {% if team_name %}{{team_name}}{% else %}your team{% endif %}.</p>
+</section>
+
+<section id="next-steps" style="{{styles.section}}">
+  <div><b>Your next steps:</b></div>
+  <div style="{{styles.button_div}}">
+    <a href="{{gate_url}}" style="{{styles.button_a}}"
+     >Review feature details</a></div>
+</section>
+
+</div>
+</div>

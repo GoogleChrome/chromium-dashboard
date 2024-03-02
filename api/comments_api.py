@@ -13,66 +13,123 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
-
-import logging
+from typing import Any
 
 from framework import basehandlers
 from framework import permissions
+from internals.review_models import Activity, Amendment, Gate
 from internals import approval_defs
-from internals import models
+from internals import notifier
+from internals import notifier_helpers
+from internals import slo
+
+
+def amendment_to_json_dict(amendment: Amendment) -> dict[str, Any]:
+  return {
+      'field_name': amendment.field_name,
+      'old_value': amendment.old_value.strip('[]'),
+      'new_value': amendment.new_value.strip('[]'),
+      }
+
+
+def activity_to_json_dict(comment: Activity) -> dict[str, Any]:
+  amendments_json = [
+      amendment_to_json_dict(amnd) for amnd in comment.amendments
+      if amnd.old_value != 'None' or amnd.new_value != '[]']
+  return {
+      'comment_id': comment.key.id(),
+      'feature_id': comment.feature_id,
+      'gate_id': comment.gate_id,
+      'created': str(comment.created),  # YYYY-MM-DD HH:MM:SS.SSS
+      'author': comment.author,
+      'content': comment.content,
+      'deleted_by': comment.deleted_by,
+      'amendments': amendments_json,
+      }
 
 
 class CommentsAPI(basehandlers.APIHandler):
   """Users may see the list of comments on one of the approvals of a feature,
    and add their own, if allowed."""
 
-  def do_get(self, feature_id, field_id):
-    """Return a list of all review comments on the given feature."""
-    # Note: We assume that anyone may view approval comments.
-    comments = models.Comment.get_comments(feature_id, field_id)
-    dicts = [ac.format_for_template(add_id=False) for ac in comments]
-    data = {
-        'comments': dicts,
-        }
-    return data
+  def _should_show_comment(
+      self, comment: Activity, email: str, is_admin: bool) -> bool:
+    """Check whether a comment should be visible to the user."""
+    return comment.deleted_by is None or email == comment.deleted_by or is_admin
 
-  def do_post(self, feature_id, field_id):
+  def do_get(self, **kwargs) -> dict[str, list[dict[str, Any]]]:
+    """Return a list of all review comments on the given feature."""
+    feature_id = kwargs['feature_id']
+    gate_id = kwargs.get('gate_id', None)
+    # Note: We assume that anyone may view approval comments.
+    comments = Activity.get_activities(feature_id, gate_id)
+    user = self.get_current_user()
+    is_admin = permissions.can_admin_site(user)
+
+    # Filter deleted comments the user can't see.
+    user_email = user.email() if user else None
+    comments = list(filter(
+      lambda c: self._should_show_comment(c, user_email, is_admin), comments))
+
+    dicts = [activity_to_json_dict(c) for c in comments]
+    return {'comments': dicts}
+
+  def do_post(self, **kwargs) -> dict[str, str]:
     """Add a review comment and possibly set a approval value."""
-    new_state = self.get_int_param(
-        'state', required=False,
-        validator=models.Approval.is_valid_state)
+    feature_id = kwargs['feature_id']
+    gate_id = kwargs.get('gate_id', None)
     feature = self.get_specified_feature(feature_id=feature_id)
     user = self.get_current_user(required=True)
-
-    old_state = None
-    old_approvals = models.Approval.get_approvals(
-        feature_id=feature_id, field_id=field_id,
-        set_by=user.email())
-    if old_approvals:
-      old_state = old_approvals[0].state
-
-    approvers = approval_defs.get_approvers(field_id)
-    if new_state is not None:
-      if not permissions.can_approve_feature(user, feature, approvers):
-        self.abort(403, msg='User is not an approver')
-      models.Approval.set_approval(
-          feature.key.integer_id(), field_id, new_state, user.email())
+    post_to_thread_type = self.get_param(
+        'postToThreadType', required=False)
 
     comment_content = self.get_param('comment', required=False)
+    if comment_content:
+      can_comment = (permissions.can_comment(user) or
+                     permissions.can_edit_feature(user, feature_id))
+      if not can_comment:
+        self.abort(403, msg='User is not allowed to comment')
 
-    if comment_content or new_state is not None:
-      comment = models.Comment(
-          feature_id=feature_id, field_id=field_id,
-          author=user.email(), content=comment_content,
-          old_approval_state=old_state,
-          new_approval_state=new_state)
-      comment.put()
+      comment_activity = Activity(feature_id=feature_id, gate_id=gate_id,
+          author=user.email(), content=comment_content)
+      comment_activity.put()
 
-    # TODO(jrobbins): Trigger notificaton emails (or not).
+    # Notify subscribers of new comments when user posts a comment
+    # via the gate column.  Also, record SLO initial response time.
+    if gate_id:
+      gate = Gate.get_by_id(gate_id)
+      if not gate:
+        self.abort(404, msg='Gate not found; notifications abort.')
+      notifier_helpers.notify_subscribers_of_new_comments(
+          feature, gate, user.email(), comment_content)
+      approvers = approval_defs.get_approvers(gate.gate_type)
+      if slo.record_comment(feature, gate, user, approvers):
+        gate.put()
+
+    # We can only be certain which intent thread we want to post to with
+    # a relevant gate ID in order to get the intent_thread_url field from
+    # the corresponding Stage entity.
+    if post_to_thread_type and gate_id:
+      notifier.post_comment_to_mailing_list(
+          feature, gate_id, post_to_thread_type, user.email(), comment_content)
 
     # Callers don't use the JSON response for this API call.
     return {'message': 'Done'}
 
-  # TODO(jrobbins): do_patch to soft-delete comments
+  def do_patch(self, **kwargs) -> dict[str, str]:
+    comment_id = self.get_param('commentId', required=True)
+    comment: Activity = Activity.get_by_id(comment_id)
+
+    user = self.get_current_user(required=True)
+    if not permissions.can_admin_site(user) and (
+        comment and user.email() != comment.author):
+      self.abort(403, msg='User does not have comment edit permissions')
+
+    is_undelete = self.get_param('isUndelete', required=True)
+    if is_undelete:
+      comment.deleted_by = None
+    else:
+      comment.deleted_by = user.email()
+    comment.put()
+
+    return {'message': 'Done'}

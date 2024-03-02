@@ -1,27 +1,23 @@
 'use strict';
 
-const path = require('path');
-const gulp = require('gulp');
-const babel = require("gulp-babel");
-const del = require('del');
-const uglifyEs = require('gulp-uglify-es');
+import gulp from 'gulp';
+import babel from 'gulp-babel';
+import dartSass from 'sass';
+import gulpSass from 'gulp-sass';
+const sass = gulpSass( dartSass );
+import concat from 'gulp-concat';
+import { deleteAsync } from 'del';
+import uglifyEs from 'gulp-uglify-es';
 const uglify = uglifyEs.default;
-const gulpLoadPlugins = require('gulp-load-plugins');
-const eslintIfFixed = require('gulp-eslint-if-fixed');
-const $ = gulpLoadPlugins();
-const rollup = require('rollup');
-const rollupResolve = require('rollup-plugin-node-resolve');
-const rollupLitCss = require('rollup-plugin-lit-css');
-const rollupBabel = require('rollup-plugin-babel');
-const rollupMinify = require('rollup-plugin-babel-minify');
-
-function minifyHtml() {
-  return $.minifyHtml({
-    quotes: true,
-    empty: true,
-    spare: true
-  }).on('error', console.log.bind(console));
-}
+import rename from 'gulp-rename';
+import license from 'gulp-license';
+import eslint from 'gulp-eslint';
+import eslintIfFixed from 'gulp-eslint-if-fixed';
+import autoPrefixer from 'gulp-autoprefixer';
+import { rollup } from 'rollup';
+import rollupResolve from '@rollup/plugin-node-resolve';
+import rollupBabel from '@rollup/plugin-babel';
+import rollupMinify from 'rollup-plugin-babel-minify';
 
 function uglifyJS() {
   return uglify({
@@ -29,35 +25,49 @@ function uglifyJS() {
   });
 }
 
-function license() {
-  return $.license('Apache2', {
+function addLicense() {
+  return license('Apache2', {
     organization: 'Copyright (c) 2016 The Google Inc. All rights reserved.',
     tiny: true
   });
 }
 
+function rollupIgnoreUndefinedWarning(warning, warn) {
+  // There is currently a warning when using the es6 module from openapi.
+  // It is a common issue and can be suppresed.
+  // The error that is suppresed:
+  // The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten
+  // https://github.com/rollup/rollup/issues/1518#issuecomment-321875784
+  // Suppres that error but continue to print the remaining errors.
+  if (warning.code === 'THIS_IS_UNDEFINED') return;
+  warn(warning); // this requires Rollup 0.46
+}
+
 gulp.task('lint', () => {
   return gulp.src([
-    'static/js-src/*.js',
-    'static/elements/*.js',
+    'client-src/js-src/*.js',
+    'client-src/elements/*.js',
+    'client-src/contexts/*.js',
   ])
-    .pipe($.eslint())
-    .pipe($.eslint.format())
-    .pipe($.eslint.failAfterError());
+    .pipe(eslint())
+    .pipe(eslint.format())
+    .pipe(eslint.failAfterError());
 });
 
 gulp.task('lint-fix', () => {
   return gulp.src([
-    'static/js-src/*.js',
-    'static/elements/*.js',
+    'client-src/js-src/*.js',
+    'client-src/elements/*.js',
+    'client-src/contexts/*.js',
   ], {base: './'})
-    .pipe($.eslint({fix:true}))
-    .pipe($.eslint.format())
+    .pipe(eslint({fix:true}))
+    .pipe(eslint.format())
     .pipe(eslintIfFixed('./'))
-    .pipe($.eslint.failAfterError());
+    .pipe(eslint.failAfterError());
 });
 
 // Compile and automatically prefix stylesheets
+// This task is deprecated. Use css directly.
 gulp.task('styles', () => {
   const AUTOPREFIXER_BROWSERS = [
     'last 1 version',
@@ -66,27 +76,35 @@ gulp.task('styles', () => {
 
   // For best performance, don't add Sass partials to `gulp.src`
   return gulp.src([
-    'static/sass/**/*.scss'
+    'client-src/sass/**/*.scss'
   ])
-    .pipe($.sass({
-      outputStyle: 'compressed',
+    .pipe(sass({
       precision: 10
-    }).on('error', $.sass.logError))
-    .pipe($.autoprefixer(AUTOPREFIXER_BROWSERS))
+    }).on('error', sass.logError))
+    .pipe(autoPrefixer(AUTOPREFIXER_BROWSERS))
     .pipe(gulp.dest('static/css'));
 });
 
+gulp.task('css', function() {
+  return gulp.src([
+    'node_modules/@shoelace-style/shoelace/dist/themes/light.css',
+   ])
+  .pipe(concat('base.css'))
+  .pipe(gulp.dest('static/css'));
+});
+
 gulp.task('rollup', () => {
-  return rollup.rollup({
-    input: 'static/components.js',
-    plugins: [
-      rollupLitCss({include: []}),
-      rollupResolve(),
-      rollupBabel({
-        plugins: ["@babel/plugin-syntax-dynamic-import"]
-      }),
-      rollupMinify({comments: false}),
+  return rollup({
+    input: [
+      'client-src/components.js',
+      'client-src/js-src/openapi-client.js',
     ],
+    plugins: [
+      rollupResolve(),
+      rollupBabel({babelHelpers: 'bundled'}),
+      rollupMinify({mangle: false, comments: false}),
+    ],
+    onwarn: rollupIgnoreUndefinedWarning,
   }).then(bundle => {
     return bundle.write({
       dir: 'static/dist',
@@ -97,22 +115,50 @@ gulp.task('rollup', () => {
   });
 });
 
+gulp.task('rollup-cjs', () => {
+  return rollup({
+    input: [
+      'client-src/js-src/openapi-client.js',
+    ],
+    plugins: [
+      rollupResolve(),
+      rollupBabel({babelHelpers: 'bundled'}),
+      rollupMinify({mangle: false, comments: false}),
+    ],
+    onwarn: rollupIgnoreUndefinedWarning,
+  }).then(bundle => {
+    return bundle.write({
+      dir: 'static/dist',
+      format: 'cjs',
+      sourcemap: true,
+      compact: true,
+    });
+  });
+});
+
 // Run scripts through babel.
 gulp.task('js', () => {
   return gulp.src([
-    'static/js-src/**/*.js',
+    'client-src/js-src/**/*.js',
+    // openapi-client has imports and needs to use rollup.
+    // exclude it from the list.
+    // Else, the file will need to be treated as a module.
+    // Browsers defer loading <script type="module"> tags and this client is
+    // needed early on page load.
+    '!client-src/js-src/**/openapi-client*.js',
   ])
     .pipe(babel()) // Defaults are in .babelrc
     .pipe(uglifyJS())
-    .pipe(license()) // Add license to top.
-    .pipe($.rename({suffix: '.min'}))
+    .pipe(addLicense()) // Add license to top.
+    .pipe(rename({suffix: '.min'}))
     .pipe(gulp.dest('static/js'));
 });
 
 // Clean generated files
 gulp.task('clean', () => {
-  return del([
-    'static/css/',
+  return deleteAsync([
+    // Disabled as part of removing sass/scss.
+    // 'static/css/',
     'static/dist',
     'static/js/',
   ], {dot: true});
@@ -122,18 +168,31 @@ gulp.task('clean', () => {
 // Build production files, the default task
 gulp.task('default', gulp.series(
   'clean',
-  'styles',
+  // Incrementally removing sass/scss.
+  // 'styles',
+  'css',
   'js',
   'lint-fix',
   'rollup',
+  'rollup-cjs',
 ));
 
 // Build production files, the default task
 gulp.task('watch', gulp.series(
   'default',
   function watch() {
-    gulp.watch(['static/sass/**/*.scss'], gulp.series('styles'));
-    gulp.watch(['static/js-src/**/*.js', 'static/elements/*.js'], gulp.series(['lint', 'js']));
-    gulp.watch(['static/components.js', 'static/elements/*.js'], gulp.series(['rollup']));
-  }
+    gulp.watch(['client-src/sass/**/*.scss'], gulp.series('styles'));
+    gulp.watch([
+      'client-src/js-src/**/*.js',
+      'client-src/elements/*.js',
+      'client-src/elements/css/**/*.js',
+      'client-src/contexts/*.js',
+    ], gulp.series(['lint', 'js']));
+    gulp.watch([
+      'client-src/components.js',
+      'client-src/elements/*.js',
+      'client-src/elements/css/**/*.js',
+      'client-src/contexts/*.js',
+    ], gulp.series(['rollup']));
+  },
 ));

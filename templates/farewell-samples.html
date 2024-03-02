@@ -1,0 +1,29 @@
+{% extends "_base.html" %}
+
+{% block css %}
+<style>
+  p {
+      padding: 1rem;
+      font-size: 1.2rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+  <p>This site no long offers a list of all features that have
+    samples.</p>
+
+  <p>If a feature entry has samples, a "Demos and samples" section
+    is shown on the feature detail page.</p>
+
+  <p>To view a collection of samples for a variety of features, visit
+    the <a href="https://github.com/GoogleChrome/samples"
+    >GoogleChrome/samples</a> repo on GitHub.</p>
+{% endblock %}
+
+
+{% block js %}
+  <script nonce="{{nonce}}">
+    document.body.classList.remove('loading');
+  </script>
+{% endblock %}

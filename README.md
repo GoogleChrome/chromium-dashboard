@@ -1,35 +1,37 @@
 Chrome Platform Status
 ==================
 
-[![Lighthouse score: 100/100](https://lighthouse-badge.appspot.com/?score=100&category=PWA)](https://github.com/ebidel/lighthouse-badge)
+### Mission
 
-[chromestatus.com](http://chromestatus.com/)
+[chromestatus.com](https://chromestatus.com/) is the official tool used for for tracking feature launches in Blink (the browser engine that powers Chrome and many other web browsers).  This tool guides feature owners through our [launch process](https://www.chromium.org/blink/launching-features/) and serves as a primary source for developer information that then ripples throughout the web developer ecosystem.
 
 ### Get the code
+
+For a one-click setup that leverages devcontainers, check out the devcontainer
+[README](.devcontainer/README.md). Otherwise, to continue setting up locally:
 
     git clone https://github.com/GoogleChrome/chromium-dashboard
 
 ### Installation
-1. Before you begin, make sure that you have a java JRE (version 8 or greater) installed. JRE is required to use the DataStore Emulator. 
-1. Install global CLIs
-    1. [Google App Engine SDK for Python](https://cloud.google.com/appengine/docs/standard/python/setting-up-environment). Make sure to select Python 2.7.
-    1. pip, node, npm.
-    1. Gulp `npm install --global gulp-cli`
-1. Install npm dependencies `npm ci`
-1. Install other dependencies `npm run deps` and `npm run dev-deps`
+1. Install gcloud and needed components:
+    1.  Before you begin, make sure that you have a java JRE (version 8 or greater) installed. JRE is required to use the DataStore Emulator and [openapi-generator-cli](https://github.com/OpenAPITools/openapi-generator-cli).
+    1. [Google App Engine SDK for Python](https://cloud.google.com/appengine/docs/standard/python3/setting-up-environment). Make sure to select Python 3.
+    1. `gcloud init`
+    1. `gcloud components install cloud-datastore-emulator`
+    1. `gcloud components install beta`
+1. Install other developer tools commands
+    1. node and npm.
+    1. Gulp: `npm install --global gulp-cli`
+    1. Python virtual environment: `sudo apt install python3.10-venv`
+1. We recommend using an older node version, e.g. node 18
+    1. Use `node -v` to check the default node version
+    2. `nvm use 18` to switch to node 18
+1. `cd chromium-dashboard`
+1. Install JS an python dependencies: `npm run setup`
+    1. Note: Whenever we make changes to package.json or requirements.txt, you will need to run `npm run clean-setup`.
 
-If you face any error during the installation process, the section **Notes** (later in this README.md) may help. 
 
-##### Add env_vars.yaml
-
-Create a file named `env_vars.yaml` in the root directory and fill it with:
-
-```yaml
-env_variables:
-  DJANGO_SETTINGS_MODULE: 'settings'
-  DJANGO_SECRET: 'this-is-a-secret'
-  DATASTORE_EMULATOR_HOST: 'localhost:15606'
-```
+If you encounter any error during the installation process, the section **Notes** (later in this README.md) may help.
 
 ### Developing
 
@@ -55,27 +57,74 @@ npm run lint
 To run unit tests:
 
 ```bash
-npm run start-emulator      # Start the emulator
-npm run test                # Reset the datastore emulator and start testing
-npm run stop-emulator       # Stop the emulator. You do not have to stop the emulator between consecutive tests
+npm test
 ```
 
-Note: featurelist is temporarily excluded because lit-analyzer throws `Maximum call stack size exceeded`.
+This will start a local datastore emulator, run unit tests, and then shut down the emulator.
 
-There are some developing information in developer-documentation.md.
+To update test_html_rendering.html, modify the `test_html_rendering` method in
+the corresponding test file, uncomment the line that looks like:
 
+```python
+ # TESTDATA.make_golden(template_text, 'test_html_rendering.html')
+```
+
+Then run the test again (and maybe one more time), and then you can revert
+your change of the test files.
+
+To run the Playwright visual tests (aka end-to-end tests), the command to use is:
+```bash
+npm run pwtests --workspace=playwright
+```
+
+If there are errors, they will be displayed in the console.
+If you need to update any of the screenshot images, you will see differences in
+the `packages/playwright/test-results` directory, and if they look correct,
+then you can update _all_ images for all tests with:
+```bash
+npm run pwtests-update --workspace=playwright
+```
+
+The updated images are also added to the __screenshots__ directory.  Images that
+did not need to be updated do not show up as having been changed.
+If you change the test file names, or the test method names, or the screenshot
+image file names, then new files will be generated, and you will need to manually delete the old files.  You could simply delete all screenshots and
+update all, but that will take a fairly long time.
+
+You can update images for just one test file by adding `--filename=some_pwtest.js`
+to the `pwtests-update` command.  The `some_pwtest.js` name does not need to be
+a full path.
+
+If there are error reported by the GitHub CI playwright action, you can look at
+the error log, but if the problem is a difference in some of the images, you
+should probably download the artifact `.zip` file containing all the differences.
+
+There is some additional information for developers in developer-documentation.md.
+
+### Origin Trials
+To test the functionality of this application locally that interacts with data from the Origin Trials API, an API key will need to be acquired. To do this, run the following command:
+
+```bash
+npm run dev-ot-key
+```
+
+Note: *Only developers with access to the cr-status-staging GCP project will be able to successfully run this command. If you need to test this and you don't have access, open an issue.*
 
 **Notes**
 
 - If you get an error saying `No module named protobuf` or `No module named six` or `No module named enum` , try installing them locally with `pip install six enum34 protobuf`.
 
-- When installing the GAE SDK, make sure to get the version for python 2.7.  It is no longer the default version.
+- When installing the GAE SDK, make sure to get the version for python 3.
 
-- When running `npm start` you may get an ImportError for jinja2.tests.  This was caused by an over-general line in skip_files.yaml.  Pulling the latest source code should resolve the problem.
+- If you run the server locally, and then you are disconnected from your terminial window, the jobs might remain running which will prevent you from starting the server again.  To work around this, use `npm run stop-emulator; npm stop`.  Or, use `ps aux | grep gunicorn` and/or `ps aux | grep emulator`, then use the unix `kill -9` command to terminate those jobs.
+
+- If you need to test or debug anything to do with dependencies, you can get a clean start by running `npm run clean-setup`.
+
+- Occasionally, the Google Cloud CLI will requires an update, which will cause a failure when trying to run the development server with `npm start`. An unrelated error message `Failed to connect to localhost port 15606 after 0 ms: Connection refused` will appear. Running the `gcloud components update` command will update as needed and resolve this issue.
 
 #### Blink components
 
-Chromestatus gets the list of Blink components from a separate [app running on Firebase](https://blinkcomponents-b48b5.firebaseapp.com/blinkcomponents). See [source](https://github.com/ebidel/blink-components).
+Chromestatus currently gets the list of Blink components from the file `hack_components.py`.
 
 #### Seed the blink component owners
 
@@ -88,7 +137,7 @@ of globals for debugging and running the site locally.
 
 ### Deploying
 
-If you have uncommited local changes, the appengine version name will end with `-tainted`.
+If you have uncommitted local changes, the appengine version name will end with `-tainted`.
 It is OK to test on staging with tainted versions, but everything should be committed
 (and thus not tainted) before staging a version that can later be pushed to prod.
 
@@ -103,7 +152,7 @@ Open the [Google Developer
 Console for the staging site](https://console.cloud.google.com/appengine/versions?project=cr-status-staging)
 and flip to the new version by selecting from the list and clicking *MIGRATE TRAFFIC*. Make sure to do this for both the 'default' service as well as for the 'notifier' service.
 
-Each deployment also uploads the same code to a version named `rc` for "Release candidate".  This is the only version that you can test using Google Sign-In at `https://rc-dot-cr-status-staging.appspot.com`.
+Alternatively, run `npm run staging-rc` to  upload the same code to a version named `rc` for "Release candidate".  This is the only version that you can test using Google Sign-In at `https://rc-dot-cr-status-staging.appspot.com`.
 
 If manual testing on the staging server looks good, then repeat the same steps to deploy to prod:
 
@@ -116,7 +165,7 @@ The production site should only have versions that match versions on staging.
 
 ### LICENSE
 
-Copyright (c) 2013-2016 Google Inc. All rights reserved.
+Copyright (c) 2013-2022 Google Inc. All rights reserved.
 
 Apache2 License.
 

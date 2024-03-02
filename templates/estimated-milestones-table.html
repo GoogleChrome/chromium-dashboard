@@ -1,0 +1,91 @@
+{% if should_render_mstone_table %}
+
+  <table>
+
+    {% for stage in stage_info.ship_stages %}{% if stage.milestones.desktop_first %}
+      <tr><td>Shipping on desktop</td>
+      <td>{{stage.milestones.desktop_first}}</td></tr>
+
+    {% endif %}{% endfor %}
+    {% for stage in stage_info.ot_stages %}{% if stage.milestones.desktop_last %}
+      <tr><td>OriginTrial desktop last</td>
+      <td>{{stage.milestones.desktop_last}}</td></tr>
+
+      {% endif %}{% if stage.milestones.desktop_first %}
+      <tr><td>OriginTrial desktop first</td>
+      <td>{{stage.milestones.desktop_first}}</td></tr>
+
+    {% endif %}{% endfor %}
+    {% for stage in stage_info.dt_stages %}{% if stage.milestones.desktop_first %}
+      <tr><td>DevTrial on desktop</td>
+      <td>{{stage.milestones.desktop_first}}</td></tr>
+
+    {% endif %}{% endfor %}
+
+  </table>
+
+  <table>
+
+    {% for stage in stage_info.ship_stages %}{% if stage.milestones.android_first %}
+        <tr><td>Shipping on Android</td>
+        <td>{{stage.milestones.android_first}}</td></tr>
+
+    {% endif %}{% endfor %}
+    {% for stage in stage_info.ot_stages %}{% if stage.milestones.android_last %}
+        <tr><td>OriginTrial Android last</td>
+        <td>{{stage.milestones.android_last}}</td></tr>
+
+      {% endif %}{% if stage.milestones.android_first %}
+        <tr><td>OriginTrial Android first</td>
+        <td>{{stage.milestones.android_first}}</td></tr>
+
+    {% endif %}{% endfor %}
+    {% for stage in stage_info.dt_stages %}{% if stage.milestones.android_first %}
+        <tr><td>DevTrial on Android</td>
+        <td>{{stage.milestones.android_first}}</td></tr>
+
+    {% endif %}{% endfor %}
+
+  </table>
+
+
+  <table>
+
+    {% for stage in stage_info.ship_stages %}{% if stage.milestones.webview_first %}
+      <tr><td>Shipping on WebView</td>
+      <td>{{stage.milestones.webview_first}}</td></tr>
+
+    {% endif %}{% endfor %}
+    {% for stage in stage_info.ot_stages %}{% if stage.milestones.webview_last %}
+        <tr><td>OriginTrial webView last</td>
+        <td>{{stage.milestones.webview_last}}</td></tr>
+
+      {% endif %}{% if stage.milestones.webview_first %}
+        <tr><td>OriginTrial webView first</td>
+        <td>{{stage.milestones.webview_first}}</td></tr>
+
+    {% endif %}{% endfor %}
+
+  </table>
+
+
+  <table>
+
+    {% for stage in stage_info.ship_stages %}{% if stage.milestones.ios_first %}
+        <tr><td>Shipping on WebView</td>
+        <td>{{stage.milestones.ios_first}}</td></tr>
+
+      {% endif %}{% endfor %}
+    {% for stage in stage_info.dt_stages %}{% if stage.milestones.ios_first %}
+        <tr><td>DevTrial on iOS</td>
+        <td>{{stage.milestones.ios_first}}</td></tr>
+
+      {% endif %}{% endfor %}
+
+  </table>
+
+{% else %}
+
+  <p>No milestones specified</p>
+
+{% endif %}

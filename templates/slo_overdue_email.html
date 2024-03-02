@@ -1,0 +1,18 @@
+{% if is_escalated %}
+
+  <p><a href="{{gate_url}}"
+      >The {{appr_def.team_name}} review</a>
+  of <b>{{feature.name}}</b>
+  is now overdue.</p>
+
+  <p>All potential reviewers are being notified,
+  even if the review was previously assigned to one reviewer.</p>
+
+{% else %}
+
+  <p><a href="{{gate_url}}"
+      >The {{appr_def.team_name}} review</a>
+  of <b>{{feature.name}}</b>
+  is now due.</p>
+
+{% endif %}

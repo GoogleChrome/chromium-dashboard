@@ -1,3 +1,20 @@
 dispatch:
-- url: "*/tasks/*"
+
+# Note that inbound email and bounces are processed by the default service,
+# because /_ah/ requests are not routed by dispatch.yaml.
+# https://cloud.google.com/appengine/docs/standard/python/reference/dispatch-yaml
+
+- url: "*/tasks/detect-intent"
   service: notifier
+
+- url: "*/tasks/email-subscribers"
+  service: notifier
+
+- url: "*/tasks/email-reviewers"
+  service: notifier
+
+- url: "*/tasks/email-comments"
+  service: notifier
+
+- url: "*/*"
+  service: default

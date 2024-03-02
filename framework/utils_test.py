@@ -12,17 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
-
+import datetime
 import unittest
 import testing_config  # Must be imported before the module under test.
 
-import mock
+from unittest import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
 
 from framework import utils
-
 
 class MockHandler(object):
 
@@ -73,7 +70,7 @@ class UtilsFunctionTests(unittest.TestCase):
 
     with self.assertRaises(Exception):
       testFunc(tracker)
-    self.assertEquals(3, tracker.func_called)
+    self.assertEqual(3, tracker.func_called)
     self.assertEqual(2, len(mock_sleep.mock_calls))
     self.assertEqual(2, len(mock_warn.mock_calls))
     self.assertEqual(1, len(mock_err.mock_calls))
@@ -93,7 +90,7 @@ class UtilsFunctionTests(unittest.TestCase):
         raise Exception('Failed')
 
     testFunc(tracker)
-    self.assertEquals(2, tracker.func_called)
+    self.assertEqual(2, tracker.func_called)
     self.assertEqual(1, len(mock_sleep.mock_calls))
     self.assertEqual(1, len(mock_warn.mock_calls))
 

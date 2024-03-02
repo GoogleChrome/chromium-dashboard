@@ -12,46 +12,54 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
-
 import base64
 import datetime
+import json
 import testing_config  # Must be imported before the module under test.
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
-import mock
+from unittest import mock
 import flask
 import werkzeug
 
 from internals import fetchmetrics
-from internals import models
+from internals import metrics_models
+
+test_app = flask.Flask(__name__)
 
 
 class FetchMetricsTest(testing_config.CustomTestCase):
 
   @mock.patch('settings.PROD', True)
+  @mock.patch('google.oauth2.id_token.fetch_id_token')
   @mock.patch('requests.request')
-  def test__prod(self, mock_fetch):
+  def test__prod(self, mock_fetch, mock_fetch_id_token):
     """In prod, we actually request metrics from uma-export."""
     mock_fetch.return_value = 'mock response'
+    mock_fetch_id_token.return_value = 'fake-token'
+
     actual = fetchmetrics._FetchMetrics('a url')
 
     self.assertEqual('mock response', actual)
-    mock_fetch.assert_called_once_with('GET',
-        'a url', timeout=120, allow_redirects=False)
+    mock_fetch.assert_called_once_with(
+        'GET', 'a url', timeout=120, allow_redirects=False,
+        headers={'Authorization': 'Bearer fake-token'})
 
 
   @mock.patch('settings.STAGING', True)
+  @mock.patch('google.oauth2.id_token.fetch_id_token')
   @mock.patch('requests.request')
-  def test__staging(self, mock_fetch):
-    """In prod, we actually request metrics from uma-export."""
+  def test__staging(self, mock_fetch, mock_fetch_id_token):
+    """In staging, we actually request metrics from uma-export."""
     mock_fetch.return_value = 'mock response'
+    mock_fetch_id_token.return_value = 'fake-token'
+
     actual = fetchmetrics._FetchMetrics('a url')
 
     self.assertEqual('mock response', actual)
-    mock_fetch.assert_called_once_with('GET',
-        'a url', timeout=120, allow_redirects=False)
+    mock_fetch.assert_called_once_with(
+        'GET', 'a url', timeout=120, allow_redirects=False,
+        headers={'Authorization': 'Bearer fake-token'})
 
   @mock.patch('requests.request')
   def test__dev(self, mock_fetch):
@@ -67,8 +75,8 @@ class UmaQueryTest(testing_config.CustomTestCase):
   def setUp(self):
     self.uma_query = fetchmetrics.UmaQuery(
         query_name='usecounter.features',
-        model_class=models.FeatureObserver,
-        property_map_class=models.FeatureObserverHistogram)
+        model_class=metrics_models.FeatureObserver,
+        property_map_class=metrics_models.FeatureObserverHistogram)
 
   def testHasCapstone__not_found(self):
     """If there is no capstone entry, we get False."""
@@ -88,6 +96,68 @@ class UmaQueryTest(testing_config.CustomTestCase):
 
     self.assertTrue(actual)
 
+  @mock.patch('internals.fetchmetrics._FetchMetrics')
+  def test_FetchData__ready(self, mock_fetch_metrics):
+    """When the uma-export data is ready, we parse and return it."""
+    r = {'123': {'rate': 0.001},
+         '234': {'rate': 0.002}}
+    XSSI_PROTECTION = ')]}\' // XSSI prefix (go/xssi).'
+    response_content = '\n'.join([XSSI_PROTECTION, json.dumps({'r': r})])
+    mock_fetch_metrics.return_value = testing_config.Blank(
+        status_code=200, content=response_content.encode())
+    query_date = datetime.date.fromisoformat('2021-12-02')
+
+    actual_r, actual_status = self.uma_query._FetchData(query_date)
+
+    self.assertEqual(r, actual_r)
+    self.assertEqual(200, actual_status)
+
+  @mock.patch('internals.fetchmetrics._FetchMetrics')
+  def test_FetchData__empty(self, mock_fetch_metrics):
+    """When the uma-export data is empty, we treat that as not ready."""
+    r = {}
+    XSSI_PROTECTION = ')]}\' // XSSI prefix (go/xssi).'
+    response_content = '\n'.join([XSSI_PROTECTION, json.dumps({'r': r})])
+    mock_fetch_metrics.return_value = testing_config.Blank(
+        status_code=200, content=response_content.encode())
+    query_date = datetime.date.fromisoformat('2021-12-02')
+
+    actual_r, actual_status = self.uma_query._FetchData(query_date)
+
+    self.assertEqual(None, actual_r)
+    self.assertEqual(404, actual_status)
+
+  @mock.patch('logging.error')
+  @mock.patch('internals.fetchmetrics._FetchMetrics')
+  def test_FetchData__error_msg(self, mock_fetch_metrics, mock_logging_error):
+    """When uma-export gives any error message, we treat that as not ready."""
+    r = {'123': 'anything'}
+    e = 'mock uma error message'
+    XSSI_PROTECTION = ')]}\' // XSSI prefix (go/xssi).'
+    response_content = '\n'.join([XSSI_PROTECTION, json.dumps({'r': r, 'e': e})])
+    mock_fetch_metrics.return_value = testing_config.Blank(
+        status_code=200, content=response_content.encode())
+    query_date = datetime.date.fromisoformat('2021-12-02')
+
+    actual_r, actual_status = self.uma_query._FetchData(query_date)
+
+    self.assertEqual(None, actual_r)
+    self.assertEqual(404, actual_status)
+
+  @mock.patch('logging.error')
+  @mock.patch('internals.fetchmetrics._FetchMetrics')
+  def test_FetchData__error_status(self, mock_fetch_metrics, mock_logging_error):
+    """When uma-export gives a non-200, we treat that as not ready."""
+    response_content = 'Error!!!!1'
+    mock_fetch_metrics.return_value = testing_config.Blank(
+        status_code=500, content=response_content.encode())
+    query_date = datetime.date.fromisoformat('2021-12-02')
+
+    actual_r, actual_status = self.uma_query._FetchData(query_date)
+
+    self.assertEqual(None, actual_r)
+    self.assertEqual(500, actual_status)
+
 
 class YesterdayHandlerTest(testing_config.CustomTestCase):
 
@@ -101,14 +171,14 @@ class YesterdayHandlerTest(testing_config.CustomTestCase):
     mock_FetchAndSaveData.return_value = 200
     today = datetime.date(2021, 1, 20)
 
-    with fetchmetrics.app.test_request_context(self.request_path):
+    with test_app.test_request_context(self.request_path):
       actual_response = self.handler.get_template_data(today=today)
 
     self.assertEqual('Success', actual_response)
     expected_calls = [
         mock.call(datetime.date(2021, 1, day))
         for day in [19, 18, 17, 16, 15]
-        for query in fetchmetrics.UMA_QUERIES]
+        for unused_query in fetchmetrics.UMA_QUERIES]
     mock_FetchAndSaveData.assert_has_calls(expected_calls)
 
   @mock.patch('internals.fetchmetrics.UmaQuery.FetchAndSaveData')
@@ -117,14 +187,14 @@ class YesterdayHandlerTest(testing_config.CustomTestCase):
     mock_FetchAndSaveData.return_value = 200
     today = datetime.date(2021, 1, 20)
 
-    with fetchmetrics.app.test_request_context(
+    with test_app.test_request_context(
         self.request_path, query_string={'date': '20210120'}):
       actual_response = self.handler.get_template_data(today=today)
 
     self.assertEqual('Success', actual_response)
     expected_calls = [
         mock.call(datetime.date(2021, 1, 20))
-        for query in fetchmetrics.UMA_QUERIES]
+        for unused_query in fetchmetrics.UMA_QUERIES]
     mock_FetchAndSaveData.assert_has_calls(expected_calls)
 
 
@@ -173,8 +243,8 @@ class HistogramsHandlerTest(testing_config.CustomTestCase):
     """We can fetch and parse XML for metrics."""
     mock_requests_get.return_value = testing_config.Blank(
         status_code=200,
-        content=base64.b64encode(self.ENUMS_TEXT))
-    with fetchmetrics.app.test_request_context(self.request_path):
+        content=base64.b64encode(self.ENUMS_TEXT.encode()))
+    with test_app.test_request_context(self.request_path):
       actual_response = self.handler.get_template_data()
 
     self.assertEqual('Success', actual_response)

@@ -1,0 +1,21 @@
+{
+    "name": "playwright",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "//pwtests": "The version of playwright used here in devDependencies:@playwright/test must be the same as the docker image version used in Dockerfile, so the '^' prefix should not be included to avoid auto-upgrade of playwright which would then be out of sync.",
+        "test": "npm run pwtests",
+        "pwtests": "npm run pwtests-shutdown; ./run.sh bash -c \"./wait-for-app.sh && npx playwright test\"",
+        "pwtests-update": "npm run pwtests-shutdown; ./run.sh bash -c \"./wait-for-app.sh && npx playwright test --update-snapshots $npm_config_filename \"",
+        "pwtests-report": "npm run pwtests-shutdown; ./run.sh bash -c \"./wait-for-app.sh && npx playwright show-report\"",
+        "pwtests-ui": "npm run pwtests-shutdown; ./run.sh bash -c \"./wait-for-app.sh && npx playwright test --ui --ui-port=8123\"",
+        "pwtests-shell": "./run.sh bash",
+        "pwtests-debug": "./run.sh debug",
+        "pwtests-shutdown": "./run.sh down"
+    },
+    "author": "",
+    "devDependencies": {
+        "@playwright/test": "1.41.2"
+    }
+}

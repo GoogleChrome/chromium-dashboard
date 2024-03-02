@@ -11,3 +11,27 @@ cron:
 - description: sort metrics and load into memcache without request time limits
   url: /data/featurepopularity?refresh=1
   schedule: every 30 minutes synchronized
+- description: Trigger a DataStore export for backup.
+  url: /cron/export_backup
+  schedule: every day 03:00
+- description: Send reminders to verify the accuracy of feature data.
+  url: /cron/send_accuracy_notifications
+  schedule: every monday 09:00
+- description: Send reminder to check summary before publication.
+  url: /cron/send_prepublication
+  schedule: every tuesday 09:00
+- description: Send reminders to reviewers of overdue reviews.
+  url: /cron/send_overdue_reviews
+  schedule: every day 09:00
+- description: Notify any users that have been inactive for 6 months.
+  url: /cron/warn_inactive_users
+  schedule: 1st monday of month 9:00
+- description: Removes any users that have been inactive for 9 months.
+  url: /cron/remove_inactive_users
+  schedule: 1st monday of month 9:00
+- description: Update all feature links that are staled.
+  url: /cron/update_all_feature_links
+  schedule: every tuesday 05:00
+- description: Check origin trials and associate with their ChromeStatus entry.
+  url: /cron/associate_origin_trials
+  schedule: every day 6:00

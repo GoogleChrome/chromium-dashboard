@@ -13,13 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
-
 import logging
 
 from framework import basehandlers
-from internals import models
+from internals import user_models
 
 # We only accept known cue name strings.
 ALLOWED_CUES = ['progress-checkmarks']
@@ -34,11 +31,21 @@ class CuesAPI(basehandlers.APIHandler):
   # Note: there is no do_get yet because we decide to show cues
   # based on data that is include in the HTML page.
 
-  def do_post(self):
+  def do_post(self, **kwargs):
     """Dismisses a cue card for the signed in user."""
     cue = self.get_param('cue', allowed=ALLOWED_CUES)
-    user = self.get_current_user(required=True)
+    unused_user = self.get_current_user(required=True)
 
-    models.UserPref.dismiss_cue(cue)
+    user_models.UserPref.dismiss_cue(cue)
     # Callers don't use the JSON response for this API call.
     return {'message': 'Done'}
+
+  def do_get(self, **kwargs):
+    """Return a list of the dismissed cue cards"""
+    user_pref = user_models.UserPref.get_signed_in_user_pref()
+
+    dismissed_cues = []
+    if user_pref:
+      dismissed_cues = user_pref.dismissed_cues
+
+    return dismissed_cues

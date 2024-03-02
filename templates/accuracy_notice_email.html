@@ -1,0 +1,66 @@
+{% import 'email-styles.html' as styles %}
+<div style="{{styles.body}}">
+<div style="{{styles.branding}}">{{APP_TITLE}}</div>
+
+<div style="{{styles.content}} {{styles.content_alert}}">
+<section id="context" style="{{styles.section}}">
+  <table>
+    <tr>
+      <td rowspan=2>{{styles.icon_alert()}}</td>
+      <td><b>Your update is needed</b> on feature entry:</td>
+    </tr>
+    <tr>
+      <td><a style="{{styles.feature_name}}"
+             href="{{SITE_URL}}feature/{{id}}"
+             >{{feature.name}}</a>
+      </td>
+    </tr>
+  </table>
+</section>
+
+
+<section id="why-triggered" style="{{styles.section}}">
+  {% if is_escalated %}
+  <p>
+    In order to ensure feature data accuracy, this notification has been
+    escalated to extended contributors of this feature and to the WebStatus team.
+  </p>
+  {% endif %}
+
+  <p>
+    You are receiving this notification because you are listed as
+    a{% if not is_escalated %}n owner{% endif %}{% if is_escalated %} contributor{% endif %}
+     of the ChromeStatus feature entry.
+  </p>
+</section>
+
+
+<section id="details" style="{{styles.section}}">
+  <p>Your feature is slated to launch soon for m{{milestone}}:</p>
+  <p>
+    {% include "estimated-milestones-table.html" %}
+  </p>
+  <p>
+    Your feature entry is an important resource for
+    cross functional teams that help drive adoption of new features and
+    enterprise IT admins who might be affected by web platform changes.
+  </p>
+
+  <p>
+    We need to know whether your plans are changing or staying
+    the same. <strong>Please click the link below to update and confirm key
+    fields of your feature entry.</strong>
+  </p>
+</section>
+
+
+<section id="next-steps" style="{{styles.section}}">
+  <div><b>Your next steps:</b></div>
+
+  <div style="{{styles.button_div}}">
+    <a href="{{SITE_URL}}guide/verify_accuracy/{{id}}" style="{{styles.button_a}}"
+     >Verify feature accuracy</a></div>
+</section>
+
+</div>
+</div>

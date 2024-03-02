@@ -1,0 +1,69 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.245.2/containers/python-3
+{
+	"name": "Chromium Dashboard",
+	"dockerComposeFile": [
+		"docker-compose.yml",
+		"db-docker-compose.yml"
+	],
+	"service": "ide",
+	"workspaceFolder": "/workspace",
+
+	// Configure tool-specific properties.
+	"customizations": {
+		// Configure properties specific to VS Code.
+		"vscode": {
+			// Set *default* container specific settings.json values on container create.
+			"settings": {
+				"mypy-type-checker.args": ["--ignore-missing-imports --exclude cs-env/ --exclude gen/ --exclude appengine_config.py --disable-error-code \"annotation-unchecked\""],
+				"python.defaultInterpreterPath": "/workspace/cs-env/bin/python",
+				"python.languageServer": "Jedi",
+				"python.testing.pytestEnabled": false,
+				"python.testing.unittestArgs": [
+					"-v",
+					"-s",
+					".",
+					"-p",
+					"*_test.py"
+				],
+				"python.testing.unittestEnabled": true,
+				"[python]": {
+					"editor.defaultFormatter": "charliermarsh.ruff"
+				}
+			},
+
+			// Add the IDs of extensions you want installed when the container is created.
+			"extensions": [
+				"42Crunch.vscode-openapi",
+				"bierner.lit-html",
+				"ms-playwright.playwright",
+				"charliermarsh.ruff",
+				"ms-python.mypy-type-checker",
+				"ms-python.python",
+				"EditorConfig.EditorConfig"
+			]
+		}
+	},
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	"forwardPorts": [
+		// datastore emulator
+		15606,
+		// datastore emulator viewer
+		8888
+	],
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	"postCreateCommand": "npm run clean-setup",
+
+	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+	"remoteUser": "vscode",
+
+	"features": {
+		// https://github.com/devcontainers/features/tree/main/src/docker-in-docker
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {
+			"dockerDashComposeVersion": "v2"
+		},
+		"ghcr.io/devcontainers/features/github-cli:1": {}
+	}
+}

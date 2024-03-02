@@ -1,0 +1,63 @@
+name: Continuous Integration Web Tests
+# Needed for gcloud because as of Nov 2022, gcloud only supports python 3.5-3.9
+# https://cloud.google.com/sdk/docs/install#supported_python_versions
+# https://github.com/google-github-actions/setup-gcloud/issues/381#issuecomment-955631107
+# ubuntu-20.04 comes with python3.8. As a result, we can tell gcloud to use that.
+env:
+ CLOUDSDK_PYTHON: python3.8
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  web_tests:
+    # Need to use 20.04 because ubuntu-latest uses ubuntu-22.04.
+    # 22.04 comes with python 3.10 and that does not work with gcloud.
+    # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
+    # Refer to CLOUDSDK_PYTHON above for more details.
+    runs-on: ubuntu-20.04
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+        # TODO: Add 14.x, 16.x.
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11'
+
+      - name: pre-installation
+        run: |
+          # Remove existing google-cloud-sdk packages in Ubuntu.
+          sudo rm -rf /usr/lib/google-cloud-sdk
+          curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-410.0.0-linux-x86_64.tar.gz | tar -zx > /dev/null
+          # Substitute the downloaded google-cloud-sdk packages, due to https://stackoverflow.com/questions/42697026/install-google-cloud-components-error-from-gcloud-command.
+          sudo mv google-cloud-sdk /usr/lib/
+          sudo gcloud components update
+          sudo gcloud components install app-engine-python beta cloud-datastore-emulator app-engine-python-extras
+          gcloud config set project cr-status-staging
+          gcloud version
+
+      - name: installation
+        run: |
+          npm install -g gulp
+
+      - run: npm config set script-shell bash --global
+      - run: npm run setup
+      - run: npm run build --if-present
+
+      - name: Run web test runner
+        run: npm run webtest

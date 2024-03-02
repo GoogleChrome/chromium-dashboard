@@ -1,26 +1,28 @@
-from __future__ import division
-from __future__ import print_function
+
+
 
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
 # Copyright 2017 Google Inc. All Rights Reserved.
 
-"""When new UMA data is collected without a corresponding histogram in the db, the
-entry is saved with a property_name === 'ERROR'. The histogram buckets are updated
-by a nightly cron job (/cron/histograms), but sometimes changes to the enums.xml
-can cause data not make it into a proper bucket. This script finds the invalid.
+"""When new UMA data is collected without a corresponding histogram in
+the db, the entry is saved with a property_name === 'ERROR'. The
+histogram buckets are updated by a nightly cron job
+(/cron/histograms), but sometimes changes to the enums.xml can cause
+data not make it into a proper bucket. This script finds the invalid.
 entities in the datastore and corrects their bucket_id.
 
 How to use:
 Copy and paste this script into the interactive GAE console. If there are
 deadline errors, run it a few times until there's no more.
+
 """
 
-from internals import models
+from internals import metrics_models
 
-allCssPropertyHistograms = models.CssPropertyHistogram.get_all()
-allFeatureObserverHistograms = models.FeatureObserverHistogram.get_all()
+allCssPropertyHistograms = metrics_models.CssPropertyHistogram.get_all()
+allFeatureObserverHistograms = metrics_models.FeatureObserverHistogram.get_all()
 
 def CorrectCSSPropertyName(bucket_id):
   if bucket_id in allCssPropertyHistograms:
@@ -34,10 +36,10 @@ def CorrectFeaturePropertyName(bucket_id):
 
 
 def FetchAllCSSPropertiesWithError(bucket_id=None):
-  q = models.StableInstance.query()
+  q = metrics_models.StableInstance.query()
   if bucket_id:
-    q = q.filter(models.StableInstance.bucket_id == bucket_id)
-  q = q.filter(models.StableInstance.property_name == 'ERROR')
+    q = q.filter(metrics_models.StableInstance.bucket_id == bucket_id)
+  q = q.filter(metrics_models.StableInstance.property_name == 'ERROR')
 
   props = q.fetch(None)
 
@@ -47,10 +49,10 @@ def FetchAllCSSPropertiesWithError(bucket_id=None):
   return props
 
 def FetchAllFeaturesWithError(bucket_id=None):
-  q = models.FeatureObserver.query()
+  q = metrics_models.FeatureObserver.query()
   if bucket_id:
-    q = q.filter(models.FeatureObserver.bucket_id == bucket_id)
-  q = q.filter(models.FeatureObserver.property_name == 'ERROR')
+    q = q.filter(metrics_models.FeatureObserver.bucket_id == bucket_id)
+  q = q.filter(metrics_models.FeatureObserver.property_name == 'ERROR')
   return q.fetch(None)
 
 def fix_up(props, corrector_func):

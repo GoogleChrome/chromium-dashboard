@@ -1,0 +1,27 @@
+name: Playwright Tests
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  playwright:
+    name: 'Playwright Tests'
+    runs-on: ubuntu-latest
+    steps:
+        - uses: actions/checkout@v3
+
+        # Steps for Playwright testing with container
+        - uses: actions/setup-node@v3
+          with:
+            node-version: 18
+        - name: Run your tests
+          timeout-minutes: 30
+          run: npm run pwtests-shutdown --workspace=playwright; npm run test --workspace=playwright
+        - uses: actions/upload-artifact@v3
+          if: failure()
+          with:
+            name: test-results
+            path: packages/playwright/test-results/
+            retention-days: 30

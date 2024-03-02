@@ -1,0 +1,564 @@
+{
+  "feature_entries": [
+    {
+      "id": 1000,
+      "created": "2013-02-01",
+      "updated": "2013-04-01",
+      "accurate_as_of": "2013-04-01",
+      "creator_email": "owner_1@example.com",
+      "updater_email": "editor_1@example.com",
+      "owner_emails": [
+        "owner_1@example.com",
+        "owner_2@example.com"
+      ],
+      "editor_emails": [
+        "editor_1@example.com"
+      ],
+      "cc_emails": [
+        "user_1@example.com"
+      ],
+      "unlisted": false,
+      "deleted": false,
+      "name": "The First Feature Created",
+      "summary": "This ancient feature is one for the history books.",
+      "category": 1,
+      "blink_components": [
+        "Blink>Canvas"
+      ],
+      "star_count": 0,
+      "search_tags": [
+        "old",
+        "first",
+        "ancient"
+      ],
+      "feature_notes": "An interesting comment about prehistoric times.",
+      "feature_type": 0,
+      "intent_stage": 1,
+      "bug_url": "https://example.com/bug_url",
+      "launch_bug_url": "https://example.com/launch_bug_url",
+      "impl_status_chrome": 1,
+      "flag_name": "OldFeatureFlag",
+      "ongoing_constraints": "There's still a problem with the implementation.",
+      "motivation": "No one remembers what the original motivation was for this old thing.",
+      "devtrial_instructions": "https://example.com/instructions",
+      "activation_risks": "It's been activated for too long.",
+      "measurement": "The metric system.",
+      "initial_public_proposal_url": "https://example.com/public_proposal",
+      "explainer_links": [
+        "https://example.com/old_feature_1",
+        "https://example.com/old_feature_2"
+      ],
+      "requires_embedder_support": false,
+      "standard_maturity": 1,
+      "spec_link": "https://example.com/spec_link",
+      "api_spec": true,
+      "spec_mentor_emails": [
+        "mentor_1@example.com",
+        "mentor_2@example.com"
+      ],
+      "interop_compat_risks": "Everyone has to support this old feature.",
+      "prefixed": false,
+      "all_platforms": true,
+      "all_platforms_descr": "All the platforms",
+      "tag_review": "A tag review.",
+      "tag_review_status": 1,
+      "non-oss-deps": "Example text.",
+      "anticipated_spec_changes": "None needed.",
+      "ff_views": 1,
+      "safari_views": 2,
+      "web_dev_views": 3,
+      "ff_views_link": "https://example.com/ff_views_link",
+      "safari_views_link": "https://example.com/safari_views_link",
+      "web_dev_views_link": "https://example.com/web_dev_views_link",
+      "ff_views_notes": "Firefox notes.",
+      "safari_views_notes": "Safari notes.",
+      "web_dev_views_notes": "Web Dev notes.",
+      "other_views_notes": "Other views notes.",
+      "security_risks": "It hasn't been updated in centuries.",
+      "security_review_status": 2,
+      "privacy_review_status": 3,
+      "ergonomics_risks": "Ergonomics risks",
+      "wpt": true,
+      "wpt_descr": "We have wpt :^)",
+      "webview_risks": "It's just bound to be risky, but we don't know why.",
+      "devrel_emails": [
+        "devrel_1@example.com",
+        "devrel_2@example.com"
+      ],
+      "debuggability": "Debuggability.",
+      "doc_links": [
+        "https://example.com/doc1",
+        "https://example.com/doc2"
+      ],
+      "sample_links": [
+        "https://example.com/sample"
+      ],
+      "experiment_timeline": null
+    },
+    {
+      "id": 2000,
+      "created": "2020-10-31",
+      "updated": "2021-01-01",
+      "accurate_as_of": "2020-11-15",
+      "creator_email": "owner_3@example.com",
+      "updater_email": "owner_3@example.com",
+      "owner_emails": [
+        "owner_3@example.com"
+      ],
+      "editor_emails": [],
+      "cc_emails": [],
+      "unlisted": false,
+      "deleted": false,
+      "name": "Useful Feature",
+      "summary": "There's a lot of utility here.",
+      "category": 1,
+      "blink_components": [
+        "Blink>BackgroundFetch"
+      ],
+      "star_count": 0,
+      "search_tags": [
+        "useful",
+        "good",
+        "extreme"
+      ],
+      "feature_notes": "There isn't really anything useful here.",
+      "feature_type": 1,
+      "intent_stage": 2,
+      "bug_url": "https://example.com/bug_url",
+      "launch_bug_url": "https://example.com/launch_bug_url",
+      "impl_status_chrome": 5,
+      "flag_name": "UsefulFeature",
+      "ongoing_constraints": "No one can constrain this feature.",
+      "motivation": "We were motivated to succeed.",
+      "devtrial_instructions": "https://example.com/instructions",
+      "activation_risks": "There's no real risk here.",
+      "measurement": "Measurement.",
+      "initial_public_proposal_url": "https://example.com/public_proposal",
+      "explainer_links": [
+        "https://example.com/useful_feature_1",
+        "https://example.com/useful_feature_2"
+      ],
+      "requires_embedder_support": false,
+      "standard_maturity": 1,
+      "spec_link": "https://example.com/spec_link",
+      "api_spec": true,
+      "spec_mentor_emails": [
+        "mentor_1@example.com",
+        "mentor_2@example.com"
+      ],
+      "interop_compat_risks": "Everyone has to support this old feature.",
+      "prefixed": true,
+      "all_platforms": false,
+      "all_platforms_descr": "Only some platforms",
+      "tag_review": "A tag review.",
+      "tag_review_status": 1,
+      "non-oss-deps": "Example text.",
+      "anticipated_spec_changes": "None needed.",
+      "ff_views": 1,
+      "safari_views": 2,
+      "web_dev_views": 3,
+      "ff_views_link": "https://example.com/ff_views_link",
+      "safari_views_link": "https://example.com/safari_views_link",
+      "web_dev_views_link": "https://example.com/web_dev_views_link",
+      "ff_views_notes": "Firefox notes.",
+      "safari_views_notes": "Safari notes.",
+      "web_dev_views_notes": "Web Dev notes.",
+      "other_views_notes": "Other views notes.",
+      "security_risks": "No risks foreseen.",
+      "security_review_status": 2,
+      "privacy_review_status": 3,
+      "ergonomics_risks": "Ergonomics risks",
+      "wpt": false,
+      "wpt_descr": null,
+      "webview_risks": "It's just bound to be risky, but we don't know why.",
+      "devrel_emails": [
+        "devrel_1@example.com",
+        "devrel_2@example.com"
+      ],
+      "debuggability": "Debuggability.",
+      "doc_links": [
+        "https://example.com/doc1",
+        "https://example.com/doc2"
+      ],
+      "sample_links": [
+        "https://example.com/sample"
+      ],
+      "experiment_timeline": null
+    },
+    {
+      "id": 3000,
+      "created": "2022-02-01",
+      "updated": "2022-03-10",
+      "accurate_as_of": "2022-02-01",
+      "creator_email": "owner_3@example.com",
+      "updater_email": "owner_2@example.com",
+      "owner_emails": [
+        "owner_2@example.com",
+        "owner_3@example.com"
+      ],
+      "editor_emails": [],
+      "cc_emails": [
+        "user_2@example.com"
+      ],
+      "unlisted": false,
+      "deleted": false,
+      "name": "Basic Code Changes",
+      "summary": "We're just fixing some mistakes.",
+      "category": 3,
+      "blink_components": [
+        "Blink>Editing>Content"
+      ],
+      "star_count": 0,
+      "search_tags": [
+        "basic",
+        "small"
+      ],
+      "feature_notes": "It's not that notable.",
+      "feature_type": 2,
+      "intent_stage": 4,
+      "bug_url": "https://example.com/bug_url",
+      "launch_bug_url": "https://example.com/launch_bug_url",
+      "impl_status_chrome": 3,
+      "flag_name": "OldFeatureFlag",
+      "ongoing_constraints": "None.",
+      "motivation": "We want to finally fix our mistakes.",
+      "devtrial_instructions": "https://example.com/instructions",
+      "activation_risks": "It's probably safe. Probably...",
+      "measurement": "...",
+      "initial_public_proposal_url": "https://example.com/public_proposal",
+      "explainer_links": [
+        "https://example.com/basic_feature_1",
+        "https://example.com/basic_feature_2"
+      ],
+      "requires_embedder_support": true,
+      "standard_maturity": 4,
+      "spec_link": "https://example.com/spec_link",
+      "api_spec": false,
+      "spec_mentor_emails": [
+        "mentor_3@example.com",
+        "mentor_4@example.com"
+      ],
+      "interop_compat_risks": "We only tested this change locally.",
+      "prefixed": false,
+      "all_platforms": true,
+      "all_platforms_descr": "All the platforms",
+      "tag_review": "A tag review.",
+      "tag_review_status": 3,
+      "non-oss-deps": "Example text.",
+      "anticipated_spec_changes": "It should basically be the same.",
+      "ff_views": 3,
+      "safari_views": 3,
+      "web_dev_views": 3,
+      "ff_views_link": "https://example.com/ff_views_link",
+      "safari_views_link": "https://example.com/safari_views_link",
+      "web_dev_views_link": "https://example.com/web_dev_views_link",
+      "ff_views_notes": "Firefox notes.",
+      "safari_views_notes": "Safari notes.",
+      "web_dev_views_notes": "Web Dev notes.",
+      "other_views_notes": "Other views notes.",
+      "security_risks": "It hasn't been updated in centuries.",
+      "security_review_status": 3,
+      "privacy_review_status": 4,
+      "ergonomics_risks": "Ergonomics risks",
+      "wpt": true,
+      "wpt_descr": "We have wpt :^)",
+      "webview_risks": "There is a small chance that it will break everything.",
+      "devrel_emails": [
+        "devrel_1@example.com"
+      ],
+      "debuggability": "Debuggability.",
+      "doc_links": [
+        "https://example.com/doc1",
+        "https://example.com/doc2"
+      ],
+      "sample_links": [
+        "https://example.com/sample"
+      ],
+      "experiment_timeline": null
+    },
+    {
+      "id": 4000,
+      "created": "2021-03-07",
+      "updated": "2022-04-10",
+      "creator_email": "owner_4@example.com",
+      "updater_email": "owner_4@example.com",
+      "owner_emails": [
+        "owner_4@example.com"
+      ],
+      "editor_emails": [
+        "editor_2@example.com"
+      ],
+      "cc_emails": [
+        "user_2@example.com"
+      ],
+      "unlisted": false,
+      "deleted": false,
+      "name": "A Deprecated Feature",
+      "summary": "This one was pretty bad. We're getting rid of it.",
+      "category": 3,
+      "blink_components": [
+        "Blink>Editing>Paste"
+      ],
+      "star_count": 0,
+      "search_tags": [
+        "dead",
+        "removed"
+      ],
+      "feature_notes": "It's not that notable.",
+      "feature_type": 3,
+      "intent_stage": 6,
+      "bug_url": "https://example.com/bug_url",
+      "launch_bug_url": "https://example.com/launch_bug_url",
+      "impl_status_chrome": 7,
+      "flag_name": "RemovedFeatureFlag",
+      "ongoing_constraints": "None.",
+      "motivation": "We want to finally fix our mistakes.",
+      "devtrial_instructions": "https://example.com/instructions",
+      "activation_risks": "It's probably safe. Probably...",
+      "measurement": "...",
+      "initial_public_proposal_url": "https://example.com/public_proposal",
+      "explainer_links": [
+        "https://example.com/basic_feature_1",
+        "https://example.com/basic_feature_2"
+      ],
+      "requires_embedder_support": true,
+      "standard_maturity": 4,
+      "spec_link": "https://example.com/spec_link",
+      "api_spec": false,
+      "spec_mentor_emails": [
+        "mentor_3@example.com",
+        "mentor_4@example.com"
+      ],
+      "interop_compat_risks": "There won't be any risks once this is gone.",
+      "prefixed": false,
+      "all_platforms": true,
+      "all_platforms_descr": "All the platforms",
+      "tag_review": "A tag review.",
+      "tag_review_status": 3,
+      "non-oss-deps": "Example text.",
+      "anticipated_spec_changes": "It should basically be the same.",
+      "ff_views": 3,
+      "safari_views": 3,
+      "web_dev_views": 3,
+      "ff_views_link": "https://example.com/ff_views_link",
+      "safari_views_link": "https://example.com/safari_views_link",
+      "web_dev_views_link": "https://example.com/web_dev_views_link",
+      "ff_views_notes": "Firefox notes.",
+      "safari_views_notes": "Safari notes.",
+      "web_dev_views_notes": "Web Dev notes.",
+      "other_views_notes": "Other views notes.",
+      "security_risks": "It hasn't been updated in centuries.",
+      "security_review_status": 3,
+      "privacy_review_status": 4,
+      "ergonomics_risks": "Ergonomics risks",
+      "wpt": false,
+      "wpt_descr": null,
+      "webview_risks": "No risks.",
+      "devrel_emails": [
+        "devrel_1@example.com"
+      ],
+      "debuggability": "Debuggability.",
+      "doc_links": [
+        "https://example.com/doc1",
+        "https://example.com/doc2"
+      ],
+      "sample_links": [
+        "https://example.com/sample"
+      ],
+      "experiment_timeline": null
+    }
+  ],
+  "stages": [
+    {
+      "id": 10,
+      "feature_id": 1000,
+      "stage_type": 110
+    },
+    {
+      "id": 11,
+      "feature_id": 1000,
+      "stage_type": 120
+    },
+    {
+      "id": 12,
+      "feature_id": 1000,
+      "stage_type": 130
+    },
+    {
+      "id": 13,
+      "feature_id": 1000,
+      "stage_type": 140
+    },
+    {
+      "id": 14,
+      "feature_id": 1000,
+      "stage_type": 150
+    },
+    {
+      "id": 15,
+      "feature_id": 1000,
+      "stage_type": 151
+    },
+    {
+      "id": 16,
+      "feature_id": 1000,
+      "stage_type": 160
+    },
+    {
+      "id": 17,
+      "feature_id": 2000,
+      "stage_type": 220
+    },
+    {
+      "id": 18,
+      "feature_id": 2000,
+      "stage_type": 230
+    },
+    {
+      "id": 19,
+      "feature_id": 2000,
+      "stage_type": 250
+    },
+    {
+      "id": 20,
+      "feature_id": 2000,
+      "stage_type": 251
+    },
+    {
+      "id": 21,
+      "feature_id": 2000,
+      "stage_type": 260
+    },
+    {
+      "id": 22,
+      "feature_id": 3000,
+      "stage_type": 320
+    },
+    {
+      "id": 23,
+      "feature_id": 3000,
+      "stage_type": 330
+    },
+    {
+      "id": 24,
+      "feature_id": 3000,
+      "stage_type": 360
+    },
+    {
+      "id": 25,
+      "feature_id": 4000,
+      "stage_type": 410
+    },
+    {
+      "id": 26,
+      "feature_id": 4000,
+      "stage_type": 430
+    },
+    {
+      "id": 27,
+      "feature_id": 4000,
+      "stage_type": 450
+    },
+    {
+      "id": 28,
+      "feature_id": 4000,
+      "stage_type": 451
+    },
+    {
+      "id": 29,
+      "feature_id": 4000,
+      "stage_type": 460
+    },
+    {
+      "id": 30,
+      "feature_id": 4000,
+      "stage_type": 470
+    }
+  ],
+  "gates": [
+    {
+      "id": 100,
+      "feature_id": 1000,
+      "stage_id": 11,
+      "gate_type": 1,
+      "state": 1
+    },
+    {
+      "id": 101,
+      "feature_id": 1000,
+      "stage_id": 14,
+      "gate_type": 2,
+      "state": 1
+    },
+    {
+      "id": 102,
+      "feature_id": 1000,
+      "stage_id": 15,
+      "gate_type": 3,
+      "state": 1
+    },
+    {
+      "id": 103,
+      "feature_id": 1000,
+      "stage_id": 16,
+      "gate_type": 4,
+      "state": 1
+    },
+    {
+      "id": 104,
+      "feature_id": 2000,
+      "stage_id": 17,
+      "gate_type": 1,
+      "state": 1
+    },
+    {
+      "id": 105,
+      "feature_id": 2000,
+      "stage_id": 19,
+      "gate_type": 2,
+      "state": 1
+    },
+    {
+      "id": 106,
+      "feature_id": 2000,
+      "stage_id": 20,
+      "gate_type": 3,
+      "state": 1
+    },
+    {
+      "id": 107,
+      "feature_id": 2000,
+      "stage_id": 21,
+      "gate_type": 4,
+      "state": 1
+    },
+    {
+      "id": 108,
+      "feature_id": 3000,
+      "stage_id": 24,
+      "gate_type": 4,
+      "state": 1
+    },
+    {
+      "id": 109,
+      "feature_id": 4000,
+      "stage_id": 27,
+      "gate_type": 2,
+      "state": 1
+    },
+    {
+      "id": 110,
+      "feature_id": 4000,
+      "stage_id": 28,
+      "gate_type": 3,
+      "state": 1
+    },
+    {
+      "id": 111,
+      "feature_id": 4000,
+      "stage_id": 29,
+      "gate_type": 4,
+      "state": 1
+    }
+  ]
+}

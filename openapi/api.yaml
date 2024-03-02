@@ -1,0 +1,184 @@
+openapi: 3.0.0
+info:
+  description: >-
+    The API for chromestatus.com. chromestatus.com is the official tool used
+    for tracking feature launches in Blink (the browser engine that powers
+    Chrome and many other web browsers). This tool guides feature owners
+    through our launch process and serves as a primary source for developer
+    information that then ripples throughout the web developer ecosystem.
+    More details at: https://github.com/GoogleChrome/chromium-dashboard
+  version: 1.0.0
+  title: chomestatus API
+  license:
+    name: Apache-2.0
+    url: 'https://www.apache.org/licenses/LICENSE-2.0.html'
+servers:
+- url: /api/v0
+paths:
+  /componentsusers:
+    get:
+      summary: List all components and possible users
+      operationId: listComponentUsers
+      security:
+        - XsrfToken: []
+      responses:
+        '200':
+          description: List of all the potential users and components with existing subscribers and owners.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComponentsUsersResponse'
+  /components/{componentId}/users/{userId}:
+    put:
+      summary: Add a user to a component
+      operationId: addUserToComponent
+      security:
+        - XsrfToken: []
+      parameters:
+        - in: path
+          name: componentId
+          schema:
+            type: integer
+          required: true
+          description: Component ID
+        - in: path
+          name: userId
+          schema:
+            type: integer
+          required: true
+          description: User ID
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComponentUsersRequest'
+      responses:
+        '200':
+          description: Success
+    delete:
+      summary: Remove a user from a component
+      operationId: removeUserFromComponent
+      security:
+        - XsrfToken: []
+      parameters:
+        - in: path
+          name: componentId
+          schema:
+            type: integer
+          required: true
+          description: Component ID
+        - in: path
+          name: userId
+          schema:
+            type: integer
+          required: true
+          description: User ID
+      responses:
+        '200':
+          description: Success
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComponentUsersRequest'
+  /spec_mentors:
+    get:
+      summary: List spec mentors and their activity
+      operationId: listSpecMentors
+      parameters:
+        - in: query
+          name: after
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: >-
+            List of all the matching spec mentors.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SpecMentor'
+        '400':
+          description: The ?after query parameter isn't a valid date in ISO YYYY-MM-DD format.
+components:
+  securitySchemes:
+    XsrfToken:
+      type: apiKey
+      in: header
+      name: X-Xsrf-Token
+  schemas:
+    ComponentsUsersResponse:
+      properties:
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComponentsUser'
+        components:
+          type: array
+          items:
+            $ref: '#/components/schemas/OwnersAndSubscribersOfComponent'
+    ComponentsUser:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+      required:
+        - id
+        - name
+        - email
+    OwnersAndSubscribersOfComponent:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        subscriber_ids:
+          type: array
+          items:
+            type: integer
+        owner_ids:
+          type: array
+          items:
+            type: integer
+      required:
+        - id
+        - name
+    ComponentUsersRequest:
+      description: Traits about the user in relation to the component
+      properties:
+        owner:
+          type: boolean
+          description: Impacts this user's ownership. For PUT, add ownership. For DELETE, remove ownership.
+    SpecMentor:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        mentored_features:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeatureLink'
+      required:
+        - email
+        - mentored_features
+    FeatureLink:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          example: 5703707724349440
+        name:
+          type: string
+          example: WebGPU

@@ -1,6 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -17,60 +14,20 @@ from __future__ import print_function
 
 import logging
 import os
-import sys
 import unittest
 
-app_engine_path = os.environ.get('APP_ENGINE_PATH', '')
-if not app_engine_path:
-  app_engine_path = '/usr/lib/google-cloud-sdk/platform/google_appengine'
-if not os.path.exists(app_engine_path):
-  app_engine_path = '/home/travis/google-cloud-sdk/platform/google_appengine'
-if os.path.exists(app_engine_path):
-  sys.path.insert(0, app_engine_path)
-else:
-  print('Could not find appengine, please set APP_ENGINE_PATH',
-        file=sys.stderr)
-  sys.exit(1)
+from google.cloud import ndb  # type: ignore
+from pathlib import Path
 
-import dev_appserver
-dev_appserver.fix_sys_path()
-
-lib_path = os.path.join(os.path.dirname(__file__), 'lib')
-from google.appengine.ext import vendor
-vendor.add(lib_path) # add third party libs to "lib" folder.
-
-from google.cloud import ndb
-from google.appengine.ext import testbed
-
-os.environ['DJANGO_SECRET'] = 'test secret'
 os.environ['SERVER_SOFTWARE'] = 'test ' + os.environ.get('SERVER_SOFTWARE', '')
 os.environ['CURRENT_VERSION_ID'] = 'test.123'
-os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
+os.environ['APPLICATION_ID'] = 'testing'
+# Envs for datastore-emulator, same as running `gcloud beta emulators datastore env-init`.
+os.environ['DATASTORE_DATASET'] = 'cr-status-staging'
 os.environ['DATASTORE_EMULATOR_HOST'] = 'localhost:15606'
- 
-
-ourTestbed = testbed.Testbed()
-
-def setUpOurTestbed():
-  # needed because endpoints expects a . in this value
-  ourTestbed.setup_env(current_version_id='testbed.version')
-  ourTestbed.activate()
-
-  # Can't use init_all_stubs() because PIL isn't in wheel.
-  ourTestbed.init_app_identity_stub()
-  ourTestbed.init_blobstore_stub()
-  ourTestbed.init_capability_stub()
-  ourTestbed.init_files_stub()
-  ourTestbed.init_logservice_stub()
-  ourTestbed.init_mail_stub()
-  ourTestbed.init_search_stub()
-  ourTestbed.init_urlfetch_stub()
-  ourTestbed.init_user_stub()
-
-# Normally this would be done in the setUp() methods of individual test files,
-# but we need it to be done before importing any application code because
-# models.py makes GAE API calls to in code that runs during loading.
-setUpOurTestbed()
+os.environ['DATASTORE_EMULATOR_HOST_PATH'] = 'localhost:15606/datastore'
+os.environ['DATASTORE_HOST'] = 'http//localhost:15606'
+os.environ['DATASTORE_PROJECT_ID'] = 'cr-status-staging'
 
 
 from framework import cloud_tasks_helpers
@@ -84,7 +41,7 @@ class FakeCloudTasksClient(object):
     return "projects/{project}/locations/{location}/queues/{queue}".format(
         project=project, location=location, queue=queue)
 
-  def create_task(self, unused_parent, task, **kwargs):
+  def create_task(self, parent=None, task=None, **kwargs):
     """Just log that the task would have been created URL."""
     self.uri = task.get('app_engine_http_request').get('relative_uri')
     self.body = task.get('app_engine_http_request').get('body')
@@ -112,17 +69,17 @@ class Blank(object):
 
 def sign_out():
   """Set env variables to represent a signed out user."""
-  ourTestbed.setup_env(
-      user_email='', user_id='', user_is_admin='0', overwrite=True)
-
+  os.environ['USER_EMAIL'] = ''
+  os.environ['USER_ID'] = ''
+  os.environ['USER_IS_ADMIN'] = '0'
+  os.environ['AUTH_DOMAIN'] = '1'
 
 def sign_in(user_email, user_id):
   """Set env variables to represent a signed out user."""
-  ourTestbed.setup_env(
-      user_email=user_email,
-      user_id=str(user_id),
-      user_is_admin='0',  # This was for GAE user admin, we use AppUser.
-      overwrite=True)
+  os.environ['USER_EMAIL'] = user_email
+  os.environ['USER_ID'] = str(user_id)
+  os.environ['USER_IS_ADMIN'] = '0'
+  os.environ['AUTH_DOMAIN'] = '0'
 
 
 class CustomTestCase(unittest.TestCase):
@@ -131,3 +88,35 @@ class CustomTestCase(unittest.TestCase):
     client = ndb.Client()
     with client.context():
       super(CustomTestCase, self).run(result=result)
+
+
+class Testdata(object):
+  def __init__(self, test_file_path: str):
+    """Helper class to load testdata
+    Common pattern to place the testdata in the following format:
+
+    Given a test file, atest_test.py, and it is located at
+    /some/module/atest_test.py.
+
+    The testdata should be located at /some/module/testdata/atest_test/
+    """
+    self.testdata = {}
+    test_file_name = Path(test_file_path).stem
+    self.testdata_dir = os.path.join(
+        os.path.abspath(os.path.dirname(test_file_path)),
+        'testdata',
+        test_file_name)
+    for filename in os.listdir(self.testdata_dir):
+      test_data_file_path = os.path.join(self.testdata_dir, filename)
+      with open(test_data_file_path, 'r', encoding='UTF-8') as f:
+        self.testdata[filename] = f.read()
+
+  def make_golden(self, raw_data, test_data_file_name):
+    """Helper function to make golden file
+    """
+    test_data_file_path = os.path.join(self.testdata_dir, test_data_file_name)
+    with open(test_data_file_path, 'w', encoding='UTF-8') as f:
+      f.write(raw_data)
+
+  def __getitem__(self, key):
+      return self.testdata[key]

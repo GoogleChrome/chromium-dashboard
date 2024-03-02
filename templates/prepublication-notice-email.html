@@ -1,0 +1,124 @@
+{% import 'email-styles.html' as styles %}
+<div style="{{styles.body}}">
+<div style="{{styles.branding}}">{{APP_TITLE}}</div>
+
+<div style="{{styles.content}} {{styles.content_alert}}">
+<section id="context" style="{{styles.section}}">
+  <table>
+    <tr>
+      <td rowspan=2>{{styles.icon_alert()}}</td>
+      <td><b>Prepublication notice</b> for feature entry:</td>
+    </tr>
+    <tr>
+      <td><a style="{{styles.feature_name}}"
+             href="{{SITE_URL}}feature/{{id}}"
+             >{{feature.name}}</a>
+      </td>
+    </tr>
+  </table>
+</section>
+
+
+<section id="details" style="{{styles.section}}">
+  <div><b>It's really happening:</b></div>
+
+  <p>Your feature is slated to ship in M{{milestone}} which will reach the
+    beta channel on {{beta_date_str}}.</p>
+
+  <p>About one week before that date, the summary field of your feature
+    entry will be used verbatim (in blog posts and enterprise release
+    notes) to announce this new milestone.  These posts are widely read by
+    web developers and IT admins, and they are sometimes used as the basis
+    for popular press articles.</p>
+</section>
+
+
+<section id="next-steps"  style="{{styles.section}}">
+  <div><b>Your next steps:</b></div>
+
+  <h2>1. Locate your releases on the roadmap.</h2>
+  <p>Please check where your feature appears on the
+    <a href="{{SITE_URL}}roadmap">roadmap page</a>.
+    If your feature does not appear, you may need to fill in
+    milestone values or update the feature's implementation status.
+    Be sure that you have gotten all needed approvals.</p>
+
+  <p>Features can appear multiple times in different milestones or
+    different sections depending on how they are released.  Check that
+    the sequence of releases for your feature makes sense from the
+    perspective of a web developer.  For example, dev trials should come
+    before the feature is enabled by default.</p>
+
+  <h2>2. Refine your feature summary.</h2>
+  <p>Please take a look at
+    <a href="https://developer.chrome.com/tags/beta/"
+       >past blog posts</a> and
+    <a href="https://support.google.com/chrome/a/answer/7679408"
+       >enterprise release notes</a>,
+    and then revise your feature summary to prepare it for
+    publication.</p>
+
+  <p>Here's what we have now for publication:</p>
+  <div style="background:#eee">
+    <h3>{{feature.name}}</h3>
+    <p>{{feature.summary}}</p>
+  </div>
+
+  <div style="{{styles.button_div}}">
+    <a href="{{SITE_URL}}feature/{{id}}" style="{{styles.button_a}}"
+       >View feature details</a></div>
+
+  <p>Guidelines for writing the summary:</p>
+  <ul>
+
+    <li>Provide a one sentence description followed by one or two lines
+      explaining how this feature works and how it helps web
+      developers.</li>
+
+    <li>Write from a web developer's point of view, not a browser
+      developer's.</li>
+
+    <li>Do not use markup or markdown because they will not be rendered.</li>
+
+    <li>Do not use hard or soft returns because they will not be rendered.</li>
+
+    <li>Avoid phrases such as "a new feature". Every feature on the site
+      was new when it was created. You don't need to repeat that
+      information.</li>
+
+    <li>The first line should be a sentence fragment beginning with a
+      verb. (See below.) This is the rare exception to the requirement to
+      always use complete sentences.</li>
+
+    <li>"Conformance with spec" is not adequate. Most if not all
+      features are in conformance to spec.</li>
+  </ul>
+
+  <p>Example:</p>
+
+  <p style="border: 1px solid #444; padding: 1em; margin: 1em">
+    Splits the HTTP cache using the top frame origin (and possibly
+    subframe origin) to prevent documents from one origin from knowing
+    whether a resource from another origin was cached. The HTTP cache is
+    currently one per profile, with a single namespace for all resources
+    and subresources regardless of origin or renderer process. Splitting
+    the cache on top frame origins helps the browser deflect
+    side-channel attacks where one site can detect resources in another
+    site's cache.
+  </p>
+
+
+  <h2>3. Reach out if needed.</h2>
+
+  <p>If you have questions about approvals, reach out to the specific
+    approving teams or to the API Owners on blink-dev@chromium.org.</p>
+
+  <p>If you have questions about chromestatus.com,
+    <a href="https://github.com/GoogleChrome/chromium-dashboard/issues"
+       >file an issue</a>
+    or email us at webstatus@google.com.</p>
+
+</section>
+
+</div>
+</div>

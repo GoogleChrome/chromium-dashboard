@@ -18,6 +18,7 @@ __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 from datetime import datetime, timedelta
 import collections
 import logging
+
 import difflib
 from typing import Any, Optional
 import urllib
@@ -63,6 +64,7 @@ def _determine_milestone_string(ship_stages: list[Stage]) -> str:
   if not first_desktop and first_android:
     milestone_str = f'{first_android} (android)'
   return milestone_str
+
 
 def highlight_diff(old_text, new_text):
   differ = difflib.ndiff(old_text.split(), new_text.split())
@@ -161,8 +163,6 @@ WEBVIEW_RULE_ADDRS = ['webview-leads-external@google.com']
 IWA_RULE_REASON = (
     'You are subscribed to all IWA features')
 IWA_RULE_ADDRS = ['iwa-dev@chromium.org']
-
-
 
 def apply_subscription_rules(
     fe: FeatureEntry, changes: list) -> dict[str, list[str]]:
@@ -632,6 +632,216 @@ class FeatureCommentHandler(basehandlers.FlaskHandler):
                  for addr, reasons in sorted(addr_reasons.items())]
     return all_tasks
 
+
+
+class OriginTrialCreationRequestHandler(basehandlers.FlaskHandler):
+  """Notify about an origin trial creation request."""
+
+  IS_INTERNAL_HANDLER = True
+
+  def process_post_data(self, **kwargs):
+    stage = self.get_param('stage')
+    logging.info('Starting to notify about origin trial creation request.')
+    send_emails([self.make_creation_request_email(stage)])
+
+    return {'message': 'OK'}
+
+  def _yes_or_no(self, value: bool):
+    return 'Yes' if value else 'No'
+
+  def make_creation_request_email(self, stage):
+    chromestatus_url = ('https://chromestatus.com/feature/'
+                         f'{stage["feature_id"]}')
+    email_body = f"""
+<p>
+  Requested by: {stage["ot_owner_email"]}
+  <br>
+  Additional contacts for your team?: {",".join(stage["ot_emails"])}
+  <br>
+  Feature name: {stage["ot_display_name"]}
+  <br>
+  Feature description: {stage["ot_description"]}
+  <br>
+  Start Chrome milestone: {stage["desktop_first"]}
+  <br>
+  End Chrome milestone: {stage["desktop_last"]}
+  <br>
+  Chromium trial name: {stage["ot_chromium_trial_name"]}
+  <br>
+  Is this a deprecation trial?: {self._yes_or_no(stage["ot_is_deprecation_trial"])}
+  <br>
+  Third party origin support: {self._yes_or_no(stage["ot_has_third_party_support"])}
+  <br>
+  WebFeature UseCounter value: {stage["ot_webfeature_use_counter"]}
+  <br>
+  Documentation link: {stage["ot_documentation_url"]}
+  <br>
+  Chromestatus link: {chromestatus_url}
+  <br>
+  Feature feedback link: {stage["ot_feedback_submission_url"]}
+  <br>
+  Intent to Experiment link: {stage["intent_thread_url"]}
+  <br>
+  Is this a critical trial?: {self._yes_or_no(stage["ot_is_critical_trial"])}
+  <br>
+  Anything else?: {stage["ot_request_note"]}
+  <br>
+  <br>
+  Instructions for handling this request can be found at: https://g3doc.corp.google.com/chrome/origin_trials/g3doc/trial_admin.md?cl=head#setup-a-new-trial
+</p>
+"""
+
+    return {
+      'to': OT_SUPPORT_EMAIL,
+      'subject': f'New Trial Creation Request for {stage["ot_display_name"]}',
+      'reply_to': None,
+      'html': email_body,
+    }
+
+class OriginTrialExtensionRequestHandler(basehandlers.FlaskHandler):
+  """Notify about an origin trial extension request."""
+
+  IS_INTERNAL_HANDLER = True
+
+  def process_post_data(self, **kwargs):
+    extension_stage = self.get_param('stage')
+    ot_stage = self.get_param('ot_stage')
+    logging.info('Starting to notify about origin trial extension request.')
+    send_emails([self.make_extension_request_email(extension_stage, ot_stage)])
+
+    return {'message': 'OK'}
+
+  def _yes_or_no(self, value: bool):
+    return 'Yes' if value else 'No'
+
+  def make_extension_request_email(self, extension_stage, ot_stage):
+    email_body = f"""
+<p>
+  Requested by: {extension_stage["ot_owner_email"]}
+  <br>
+  Feature name: {ot_stage["ot_display_name"]}
+  <br>
+  Intent to Extend Experiment URL: {extension_stage["intent_thread_url"]}
+  <br>
+  New end milestone: {extension_stage["desktop_last"]}
+  <br>
+  Anything else?: {extension_stage["ot_request_note"]}
+  <br>
+  <br>
+  Instructions for handling this request can be found at: https://g3doc.corp.google.com/chrome/origin_trials/g3doc/trial_admin.md#extend-an-existing-trial
+</p>
+"""
+
+    return {
+      'to': OT_SUPPORT_EMAIL,
+      'subject': f'New Trial Extension Request for {ot_stage["ot_display_name"]}',
+      'reply_to': None,
+      'html': email_body,
+    }
+
+BLINK_DEV_ARCHIVE_URL_PREFIX = (
+    'https://groups.google.com/a/chromium.org/d/msgid/blink-dev/')
+TEST_ARCHIVE_URL_PREFIX = (
+    'https://groups.google.com/d/msgid/jrobbins-test/')
+
+
+def generate_thread_subject(feature, approval_field):
+  """Use the expected subject based on the feature type and approval type."""
+  intent_phrase = approval_field.name
+  if feature.feature_type == core_enums.FEATURE_TYPE_DEPRECATION_ID:
+    if approval_field == approval_defs.PrototypeApproval:
+      intent_phrase = 'Intent to Deprecate and Remove'
+    if approval_field == approval_defs.ExperimentApproval:
+      intent_phrase = 'Request for Deprecation Trial'
+    if approval_field == approval_defs.ExtendExperimentApproval:
+      intent_phrase = 'Intent to Extend Deprecation Trial'
+
+  return '%s: %s' % (intent_phrase, feature.name)
+
+
+def get_thread_id(stage: Stage):
+  """If we have the URL of the Google Groups thread, we can get its ID."""
+  if stage.intent_thread_url is None:
+    return None
+
+  thread_url = stage.intent_thread_url
+  thread_url = thread_url.split('#')[0]  # Chop off any anchor
+  thread_url = thread_url.split('?')[0]  # Chop off any query string params
+  thread_url = urllib.parse.unquote(thread_url)  # Convert %40 to @.
+
+  thread_id = None
+  if thread_url.startswith(BLINK_DEV_ARCHIVE_URL_PREFIX):
+    thread_id = thread_url[len(BLINK_DEV_ARCHIVE_URL_PREFIX):]
+  if thread_url.startswith(TEST_ARCHIVE_URL_PREFIX):
+    thread_id = thread_url[len(TEST_ARCHIVE_URL_PREFIX):]
+
+  return thread_id
+
+
+def send_emails(email_tasks):
+  """Process a list of email tasks (send or log)."""
+  logging.info('Processing %d email tasks', len(email_tasks))
+  for task in email_tasks:
+    if settings.SEND_EMAIL:
+      cloud_tasks_helpers.enqueue_task(
+          '/tasks/outbound-email', task)
+    else:
+      logging.info(
+          'Would send the following email:\n'
+          'To: %s\n'
+          'From: %s\n'
+          'References: %s\n'
+          'Reply-To: %s\n'
+          'Subject: %s\n'
+          'Body:\n%s',
+          task.get('to', None),
+          task.get('from_user', None),
+          task.get('references', None),
+          task.get('reply_to', None),
+          task.get('subject', None),
+          task.get('html', "")[:settings.MAX_LOG_LINE])
+
+
+def post_comment_to_mailing_list(
+    feature: FeatureEntry,
+    gate_id: int,
+    approval_field_id: int,
+    author_addr: str,
+    comment_content: str):
+  """Post a message to the intent thread."""
+  to_addr = settings.REVIEW_COMMENT_MAILING_LIST
+  from_user = author_addr.split('@')[0]
+  approval_field = approval_defs.APPROVAL_FIELDS_BY_ID[approval_field_id]
+
+  # Use the Gate ID to find the Stage ID that has the thread URL and subject.
+  gate: Gate | None = Gate.get_by_id(gate_id)
+  stage: Stage | None = None if gate is None else Stage.get_by_id(gate.stage_id)
+  # There should always be a matching stage for every gate.
+  if stage is None:
+    raise ValueError("No matching Stage entity found for given Gate ID.")
+
+  # Set the subject line from the stage, or generate it if null.
+  subject = None if stage is None else stage.intent_subject_line
+  if subject is None:
+    subject = generate_thread_subject(feature, approval_field)
+
+  if not subject.startswith('Re: '):
+    subject = 'Re: ' + subject
+  thread_id = get_thread_id(stage)
+  references = None
+  if thread_id:
+    references = '<%s>' % thread_id
+  html = render_template(
+      'review-comment-email.html', comment_content=comment_content)
+
+  email_task = {
+      'to': to_addr,
+      'from_user': from_user,
+      'references': references,
+      'subject': subject,
+      'html': html,
+      }
+  send_emails([email_task])
 
 
 class OriginTrialCreationRequestHandler(basehandlers.FlaskHandler):

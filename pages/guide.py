@@ -1,6 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-
 # -*- coding: utf-8 -*-
 # Copyright 2020 Google Inc.
 #
@@ -16,535 +13,712 @@ from __future__ import print_function
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import datetime
-import flask
-import json
+from datetime import datetime
 import logging
-import os
-import re
-import sys
-from django import forms
+from typing import Any, Optional
+from google.cloud import ndb
+import requests  # type: ignore
 
 # Appengine imports.
-from framework import ramcache
-# TODO(jrobbins): phase out gae_users
-from google.appengine.api import users as gae_users
-from framework import users
+from framework import rediscache
 
 from framework import basehandlers
 from framework import permissions
-from framework import utils
-from pages import guideforms
-from internals import models
+from internals import core_enums, notifier_helpers
+from internals import stage_helpers
+from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.data_types import CHANGED_FIELDS_LIST_TYPE
+from internals.review_models import Gate
 from internals import processes
+from internals import search_fulltext
+from internals import feature_links
+from internals.enterprise_helpers import *
 import settings
 
 
-# Forms to be used for each stage of each process.
-# { feature_type_id: { stage_id: stage_specific_form} }
-STAGE_FORMS = {
-    models.FEATURE_TYPE_INCUBATE_ID: {
-        models.INTENT_INCUBATE: guideforms.NewFeature_Incubate,
-        models.INTENT_IMPLEMENT: guideforms.NewFeature_Prototype,
-        models.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
-        models.INTENT_IMPLEMENT_SHIP: guideforms.NewFeature_EvalReadinessToShip,
-        models.INTENT_EXTEND_TRIAL: guideforms.NewFeature_OriginTrial,
-        models.INTENT_SHIP: guideforms.Most_PrepareToShip,
-        models.INTENT_SHIPPED: guideforms.Any_Ship,
-        },
-
-    models.FEATURE_TYPE_EXISTING_ID: {
-        models.INTENT_IMPLEMENT: guideforms.Existing_Prototype,
-        models.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
-        models.INTENT_EXTEND_TRIAL: guideforms.Existing_OriginTrial,
-        models.INTENT_SHIP: guideforms.Most_PrepareToShip,
-        models.INTENT_SHIPPED: guideforms.Any_Ship,
-        },
-
-    models.FEATURE_TYPE_CODE_CHANGE_ID: {
-        models.INTENT_IMPLEMENT: guideforms.PSA_Implement,
-        models.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
-        models.INTENT_SHIP: guideforms.PSA_PrepareToShip,
-        models.INTENT_SHIPPED: guideforms.Any_Ship,
-        },
-
-    models.FEATURE_TYPE_DEPRECATION_ID: {
-        models.INTENT_IMPLEMENT: guideforms.Deprecation_Implement,
-        models.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
-        models.INTENT_EXTEND_TRIAL: guideforms.Deprecation_DeprecationTrial,
-        models.INTENT_SHIP: guideforms.Deprecation_PrepareToShip,
-        models.INTENT_REMOVED: guideforms.Deprecation_Removed,
-        },
-}
+# Internal DevRel mailing list for ChromeStatus.
+DEVREL_EMAIL = 'devrel-chromestatus-all@google.com'
 
 
-IMPL_STATUS_FORMS = {
-    models.INTENT_INCUBATE:
-        (None, guideforms.ImplStatus_Incubate),
-    models.INTENT_EXPERIMENT:
-        (models.BEHIND_A_FLAG, guideforms.ImplStatus_DevTrial),
-    models.INTENT_EXTEND_TRIAL:
-        (models.ORIGIN_TRIAL, guideforms.ImplStatus_OriginTrial),
-    models.INTENT_IMPLEMENT_SHIP:
-        (None, guideforms.ImplStatus_EvalReadinessToShip),
-    models.INTENT_SHIP:
-        (models.ENABLED_BY_DEFAULT, guideforms.ImplStatus_AllMilestones),
-    models.INTENT_SHIPPED:
-        (models.ENABLED_BY_DEFAULT, guideforms.ImplStatus_AllMilestones),
-    models.INTENT_REMOVED:
-        (models.REMOVED, guideforms.ImplStatus_AllMilestones),
-    }
+class FeatureCreateHandler(basehandlers.FlaskHandler):
 
-# Forms to be used on the "Edit all" page that shows a flat list of fields.
-# [('Section name': form_class)].
-FLAT_FORMS = [
-    ('Feature metadata', guideforms.Flat_Metadata),
-    ('Indentify the need', guideforms.Flat_Identify),
-    ('Prototype a solution', guideforms.Flat_Implement),
-    ('Dev trial', guideforms.Flat_DevTrial),
-    ('Origin trial', guideforms.Flat_OriginTrial),
-    ('Prepare to ship', guideforms.Flat_PrepareToShip),
-    ('Ship', guideforms.Flat_Ship),
-]
+  TEMPLATE_PATH = 'spa.html'
 
+  def get_template_data(self, **defaults):
+    return basehandlers.get_spa_template_data(self, defaults)
 
-class FeatureNew(basehandlers.FlaskHandler):
-
-  TEMPLATE_PATH = 'guide/new.html'
-
-  @permissions.require_edit_feature
-  def get_template_data(self):
-    user = self.get_current_user()
-
-    new_feature_form = guideforms.NewFeatureForm(
-        initial={'owner': user.email()})
-    template_data = {
-        'overview_form': new_feature_form,
-        }
-    return template_data
-
-  @permissions.require_edit_feature
-  def process_post_data(self):
-    owners = self.split_emails('owner')
+  @permissions.require_create_feature
+  def process_post_data(self, **kwargs):
+    owners = self.split_emails('owner_emails')
+    editors = self.split_emails('editor_emails')
+    cc_emails = self.split_emails('cc_emails')
 
     blink_components = (
         self.split_input('blink_components', delim=',') or
-        [models.BlinkComponent.DEFAULT_COMPONENT])
+        [settings.DEFAULT_COMPONENT])
 
     # TODO(jrobbins): Validate input, even though it is done on client.
 
     feature_type = int(self.form.get('feature_type', 0))
-    gae_user = gae_users.User(email=self.get_current_user().email())
-    feature = models.Feature(
+
+    breaking_change = self.form.get('breaking_change') == 'on'
+    enterprise_notification_milestone = self.form.get('first_enterprise_notification_milestone')
+    if enterprise_notification_milestone:
+      enterprise_notification_milestone = int(enterprise_notification_milestone)
+    if breaking_change and needs_default_first_notification_milestone(new_fields={
+      'feature_type': feature_type,
+      'breaking_change': breaking_change,
+      'first_enterprise_notification_milestone': enterprise_notification_milestone
+      }):
+      enterprise_notification_milestone = get_default_first_notice_milestone_for_feature()
+
+    # Write for new FeatureEntry entity.
+    feature_entry = FeatureEntry(
         category=int(self.form.get('category')),
         name=self.form.get('name'),
         feature_type=feature_type,
-        intent_stage=models.INTENT_NONE,
         summary=self.form.get('summary'),
-        owner=owners,
-        impl_status_chrome=models.NO_ACTIVE_DEV,
-        standardization=models.EDITORS_DRAFT,
+        owner_emails=owners,
+        editor_emails=editors,
+        cc_emails=cc_emails,
+        devrel_emails=[DEVREL_EMAIL],
+        creator_email=self.get_current_user().email(),
+        updater_email=self.get_current_user().email(),
+        accurate_as_of=datetime.now(),
         unlisted=self.form.get('unlisted') == 'on',
-        web_dev_views=models.DEV_NO_SIGNALS,
+        breaking_change=breaking_change,
+        first_enterprise_notification_milestone=enterprise_notification_milestone,
         blink_components=blink_components,
-        tag_review_status=processes.initial_tag_review_status(feature_type),
-        created_by=gae_user,
-        updated_by=gae_user)
-    key = feature.put()
+        tag_review_status=processes.initial_tag_review_status(feature_type))
+    key: ndb.Key = feature_entry.put()
+    search_fulltext.index_feature(feature_entry)
 
-    # TODO(jrobbins): enumerate and remove only the relevant keys.
-    ramcache.flush_all()
+    # Write each Stage and Gate entity for the given feature.
+    self.write_gates_and_stages_for_feature(key.integer_id(), feature_type)
 
-    redirect_url = '/guide/edit/' + str(key.integer_id())
+    notifier_helpers.notify_subscribers_and_save_amendments(
+        feature_entry, [], is_update=False)
+
+    # Remove all feature-related cache.
+    rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
+
+    redirect_url = '/feature/' + str(key.integer_id())
+    return self.redirect(redirect_url)
+
+  def write_gates_and_stages_for_feature(
+      self, feature_id: int, feature_type: int) -> None:
+    """Write each Stage and Gate entity for the given feature."""
+    # Obtain a list of stages and gates for the given feature type.
+    stages_gates = core_enums.STAGES_AND_GATES_BY_FEATURE_TYPE[feature_type]
+
+    for stage_type, gate_types in stages_gates:
+      # Don't create a trial extension stage pre-emptively.
+      if stage_type == core_enums.STAGE_TYPES_EXTEND_ORIGIN_TRIAL[feature_type]:
+        continue
+
+      stage = Stage(feature_id=feature_id, stage_type=stage_type)
+      stage.put()
+      # Stages can have zero or more gates.
+      for gate_type in gate_types:
+        gate = Gate(feature_id=feature_id, stage_id=stage.key.integer_id(),
+                    gate_type=gate_type, state=Gate.PREPARING)
+        gate.put()
+
+
+class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
+
+  TEMPLATE_PATH = 'spa.html'
+
+  def get_template_data(self, **defaults):
+    return basehandlers.get_spa_template_data(self, defaults)
+
+  @permissions.require_create_feature
+  def process_post_data(self, **kwargs):
+    owners = self.split_emails('owner_emails')
+    editors = self.split_emails('editor_emails')
+
+    signed_in_user = ndb.User(
+        email=self.get_current_user().email(),
+        _auth_domain='gmail.com')
+    feature_type = core_enums.FEATURE_TYPE_ENTERPRISE_ID
+
+    enterprise_notification_milestone = self.form.get('first_enterprise_notification_milestone')
+    if enterprise_notification_milestone:
+      enterprise_notification_milestone = int(enterprise_notification_milestone)
+    if needs_default_first_notification_milestone(new_fields={
+      'feature_type': feature_type,
+      'first_enterprise_notification_milestone': enterprise_notification_milestone}):
+      enterprise_notification_milestone = get_default_first_notice_milestone_for_feature()
+
+    # Write for new FeatureEntry entity.
+    feature_entry = FeatureEntry(
+        category=int(core_enums.MISC),
+        enterprise_feature_categories=self.form.getlist(
+            'enterprise_feature_categories'),
+        name=self.form.get('name'),
+        feature_type=feature_type,
+        summary=self.form.get('summary'),
+        owner_emails=owners,
+        editor_emails=editors,
+        creator_email=signed_in_user.email(),
+        updater_email=signed_in_user.email(),
+        accurate_as_of=datetime.now(),
+        screenshot_links=self.parse_links('screenshot_links'),
+        first_enterprise_notification_milestone=enterprise_notification_milestone,
+        blink_components=[settings.DEFAULT_ENTERPRISE_COMPONENT],
+        tag_review_status=core_enums.REVIEW_NA)
+    key: ndb.Key = feature_entry.put()
+    search_fulltext.index_feature(feature_entry)
+
+    # Write each Stage and Gate entity for the given feature.
+    self.write_gates_and_stages_for_feature(key.integer_id(), feature_type)
+
+    # Remove all feature-related cache.
+    rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
+
+    redirect_url = '/guide/editall/' + str(key.integer_id()) + '#rollout1'
     return self.redirect(redirect_url)
 
 
-class ProcessOverview(basehandlers.FlaskHandler):
+class FeatureEditHandler(basehandlers.FlaskHandler):
 
-  TEMPLATE_PATH = 'guide/edit.html'
+  TEMPLATE_PATH = 'spa.html'
 
-  def detect_progress(self, f):
-    progress_so_far = {}
-    for progress_item, detector in processes.PROGRESS_DETECTORS.items():
-      detected = detector(f)
-      if detected:
-        progress_so_far[progress_item] = str(detected)
-    return progress_so_far
+  def get_template_data(self, **defaults):
+    return basehandlers.get_spa_template_data(self, defaults)
 
-  @permissions.require_edit_feature
-  def get_template_data(self, feature_id):
-    f = models.Feature.get_by_id(long(feature_id))
-    if f is None:
-      self.abort(404, msg='Feature not found')
+  # Field name, data type
+  EXISTING_FIELDS: list[tuple[str, str]] = [
+      # impl_status_chrome and intent_stage handled separately.
+      # first_enterprise_notification_milestone handled separately
+      ('spec_link', 'link'),
+      ('standard_maturity', 'int'),
+      ('api_spec', 'bool'),
+      ('spec_mentor_emails', 'emails'),
+      ('security_review_status', 'int'),
+      ('privacy_review_status', 'int'),
+      ('initial_public_proposal_url', 'link'),
+      ('explainer_links', 'links'),
+      ('bug_url', 'link'),
+      ('launch_bug_url', 'link'),
+      ('screenshot_links', 'links'),
+      ('anticipated_spec_changes', 'str'),
+      ('requires_embedder_support', 'bool'),
+      ('devtrial_instructions', 'link'),
+      ('flag_name', 'str'),
+      ('finch_name', 'str'),
+      ('non_finch_justification', 'str'),
+      ('owner', 'emails'),
+      ('owner_emails', 'emails'),
+      ('editors', 'emails'),
+      ('editor_emails', 'emails'),
+      ('cc_recipients', 'emails'),
+      ('cc_emails', 'emails'),
+      ('unlisted', 'bool'),
+      ('doc_links', 'links'),
+      ('measurement', 'str'),
+      ('availability_expectation', 'str'),
+      ('adoption_expectation', 'str'),
+      ('adoption_plan', 'str'),
+      ('sample_links', 'links'),
+      ('search_tags', 'split_str'),
+      ('blink_components', 'split_str'),
+      ('devrel', 'emails'),
+      ('devrel_emails', 'emails'),
+      ('category', 'int'),
+      ('enterprise_feature_categories', 'split_str'),
+      ('name', 'str'),
+      ('summary', 'str'),
+      ('motivation', 'str'),
+      ('interop_compat_risks', 'str'),
+      ('ergonomics_risks', 'str'),
+      ('activation_risks', 'str'),
+      ('security_risks', 'str'),
+      ('debuggability', 'str'),
+      ('all_platforms', 'bool'),
+      ('all_platforms_descr', 'str'),
+      ('wpt', 'bool'),
+      ('wpt_descr', 'str'),
+      ('ff_views', 'int'),
+      ('ff_views_link', 'link'),
+      ('ff_views_notes', 'str'),
+      ('safari_views', 'int'),
+      ('safari_views_link', 'link'),
+      ('safari_views_notes', 'str'),
+      ('web_dev_views', 'int'),
+      ('web_dev_views_link', 'link'),
+      ('web_dev_views_notes', 'str'),
+      ('other_views_notes', 'str'),
+      ('prefixed', 'bool'),
+      ('non_oss_deps', 'str'),
+      ('tag_review', 'str'),
+      ('tag_review_status', 'int'),
+      ('webview_risks', 'str'),
+      ('comments', 'str'),
+      ('feature_notes', 'str'),
+      ('breaking_change', 'bool'),
+      ('ongoing_constraints', 'str')]
 
-    feature_process = processes.ALL_PROCESSES.get(
-        f.feature_type, processes.BLINK_LAUNCH_PROCESS)
-    template_data = {
-        'overview_form': guideforms.MetadataForm(f.format_for_edit()),
-        'process_json': json.dumps(processes.process_to_dict(feature_process)),
-        }
+  # Old field name, new field name
+  RENAMED_FIELD_MAPPING: dict[str, str] = {
+      'owner': 'owner_emails',
+      'editors': 'editor_emails',
+      'cc_recipients': 'cc_emails',
+      'devrel': 'devrel_emails',
+      'spec_mentors': 'spec_mentor_emails',
+      'comments': 'feature_notes',
+      'intent_to_implement_url': 'intent_thread_url',
+      'intent_to_ship_url': 'intent_thread_url',
+      'intent_to_experiment_url': 'intent_thread_url',
+      'intent_to_extend_experiment_url': 'intent_thread_url'}
 
-    progress_so_far = self.detect_progress(f)
+  # Field name, data type
+  STAGE_FIELDS: list[tuple[str, str]] = [
+      ('announcement_url', 'link'),
+      ('experiment_extension_reason', 'str'),
+      ('finch_url', 'link'),
+      ('experiment_goals', 'str'),
+      ('experiment_risks', 'str'),
+      ('origin_trial_feedback_url', 'link'),
+      ('ot_action_requested', 'bool'),
+      ('ot_approval_buganizer_component', 'int'),
+      ('ot_approval_criteria_url', 'link'),
+      ('ot_approval_group_email', 'str'),
+      ('ot_chromium_trial_name', 'str'),
+      ('ot_description', 'str'),
+      ('ot_display_name', 'str'),
+      ('ot_documentation_url', 'link'),
+      ('ot_emails', 'emails'),
+      ('ot_feedback_submission_url', 'link'),
+      ('ot_has_third_party_support', 'bool'),
+      ('ot_is_critical_trial', 'bool'),
+      ('ot_is_deprecation_trial', 'bool'),
+      ('ot_owner_email', 'str'),
+      ('ot_request_note', 'str'),
+      ('ot_require_approvals', 'bool'),
+      ('ot_webfeature_use_counter', 'str'),
+      ('rollout_impact', 'int'),
+      ('rollout_milestone', 'int'),
+      ('rollout_platforms', 'split_str'),
+      ('rollout_details', 'str'),
+      ('enterprise_policies', 'split_str'),
+      ('intent_thread_url', 'str'),
+      ('display_name', 'str'),
+  ]
 
-    # Provide new or populated form to template.
-    template_data.update({
-        'feature': f.format_for_template(),
-        'feature_id': f.key.integer_id(),
-        'feature_json': json.dumps(f.format_for_template()),
-        'progress_so_far': json.dumps(progress_so_far),
-    })
-    return template_data
+  INTENT_FIELDS: list[str] = [
+      'intent_to_implement_url',
+      'intent_to_experiment_url',
+      'intent_to_ship_url'
+  ]
 
+  DEV_TRIAL_MILESTONE_FIELDS: list[tuple[str, str]] = [
+      ('dt_milestone_desktop_start', 'desktop_first'),
+      ('dt_milestone_android_start', 'android_first'),
+      ('dt_milestone_ios_start', 'ios_first'),
+      ('dt_milestone_webview_start', 'webview_first')
+  ]
 
-class FeatureEditStage(basehandlers.FlaskHandler):
+  OT_MILESTONE_FIELDS: list[tuple[str, str]] = [
+      ('ot_milestone_desktop_start', 'desktop_first'),
+      ('ot_milestone_desktop_end', 'desktop_last'),
+      ('ot_milestone_android_start', 'android_first'),
+      ('ot_milestone_android_end', 'android_last'),
+      ('ot_milestone_ios_start', 'ios_first'),
+      ('ot_milestone_ios_end', 'ios_last'),
+      ('ot_milestone_webview_start', 'webview_first'),
+      ('ot_milestone_webview_end', 'webview_last'),
+  ]
 
-  TEMPLATE_PATH = 'guide/stage.html'
+  OT_EXTENSION_MILESTONE_FIELDS: list[tuple[str, str]] = [
+    ('extension_desktop_last', 'desktop_last'),
+    ('extension_android_last', 'android_last'),
+    ('extension_webview_last', 'webview_last'),
+  ]
 
-  def touched(self, param_name):
+  SHIPPING_MILESTONE_FIELDS: list[tuple[str, str]] = [
+      ('shipped_milestone', 'desktop_first'),
+      ('shipped_android_milestone', 'android_first'),
+      ('shipped_ios_milestone', 'ios_first'),
+      ('shipped_webview_milestone', 'webview_first'),
+  ]
+
+  CHECKBOX_FIELDS: frozenset[str] = frozenset([
+      'accurate_as_of', 'unlisted', 'api_spec', 'all_platforms',
+      'wpt', 'requires_embedder_support', 'prefixed', 'breaking_change'])
+
+  SELECT_FIELDS: frozenset[str] = frozenset([
+      'category', 'intent_stage', 'standard_maturity', 'security_review_status',
+      'privacy_review_status', 'tag_review_status', 'safari_views', 'ff_views',
+      'web_dev_views', 'blink_components', 'impl_status_chrome'])
+
+  MULTI_SELECT_FIELDS: frozenset[str] = frozenset(['rollout_platforms', 'enterprise_feature_categories'])
+
+  def touched(self, param_name: str, form_fields: list[str]) -> bool:
     """Return True if the user edited the specified field."""
     # TODO(jrobbins): for now we just consider everything on the current form
     # to have been touched.  Later we will add javascript to populate a
     # hidden form field named "touched" that lists the names of all fields
     # actually touched by the user.
 
-    # For now, checkboxes are always considered "touched", if they are
-    # present on the form.
-    # TODO(jrobbins): Simplify this after next deployment.
-    checkboxes = ('unlisted', 'all_platforms', 'wpt', 'prefixed', 'api_spec',
-                  'requires_embedder_support')
-    if param_name in checkboxes:
-      form_fields_str = self.form.get('form_fields')
-      if form_fields_str:
-        form_fields = [field_name.strip()
-                       for field_name in form_fields_str.split(',')]
-        return param_name in form_fields
-      else:
-        return True
+    # For now, checkboxes and multi-selects are always considered "touched",
+    # if they are present on the form.
+    if (param_name in self.CHECKBOX_FIELDS or
+        param_name in self.MULTI_SELECT_FIELDS):
+      return param_name in form_fields if len(form_fields) > 0 else True
+
+    # For now, selects are considered "touched", if they are
+    # present on the form and are not empty strings.
+    if param_name in self.SELECT_FIELDS:
+      return bool(self.form.get(param_name))
+
+    # See TODO at top of this method.
     return param_name in self.form
 
-  def get_blink_component_from_bug(self, blink_components, bug_url):
-    # TODO(jrobbins): Use monorail API instead of scrapping.
-    return []
+  def _get_field_val(self, field: str, field_type: str) -> Any:
+    """Get the form value of a given field name."""
+    if field_type == 'int':
+      return self.parse_int(field)
+    elif field_type == 'bool':
+      return self.form.get(field) == 'on'
+    elif field_type == 'link':
+      return self.parse_link(field)
+    elif field_type == 'links':
+      return self.parse_links(field)
+    elif field_type == 'emails':
+      return self.split_emails(field)
+    elif field_type == 'str':
+      return self.form.get(field)
+    elif field_type == 'split_str':
+      val = self.split_input(field, delim=',')
+      if 'rollout_platforms' in field or field == 'enterprise_feature_categories':
+        val = self.form.getlist(field)
+        # Occasionally, input will give an empty string as the first element.
+        # It needs to be removed.
+        if val and val[0] == '':
+          val = val[1:]
+        return val
+      elif field == 'blink_components' and len(val) == 0:
+        return [settings.DEFAULT_COMPONENT]
+      return val
+    raise ValueError(f'Unknown field data type: {field_type}')
 
-  def get_feature_and_process(self, feature_id):
-    """Look up the feature that the user wants to edit, and its process."""
-    f = models.Feature.get_by_id(feature_id)
-    if f is None:
-      self.abort(404, msg='Feature not found')
+  def _add_changed_field(self, fe: FeatureEntry, field: str, new_val: Any,
+      changed_fields: CHANGED_FIELDS_LIST_TYPE) -> None:
+    """Add values to the list of changed fields if the values differ."""
+    old_val = getattr(fe, field)
+    if new_val != old_val:
+      changed_fields.append((field, old_val, new_val))
 
-    feature_process = processes.ALL_PROCESSES.get(
-        f.feature_type, processes.BLINK_LAUNCH_PROCESS)
+  # TODO(danielrsmith): This method's logic is way too complicated to easily
+  # maintain. This needs to be scrapped and submission of edits should be
+  # handled using features_api and stages_api.
+  def process_post_data(self, **kwargs) -> requests.Response:
+    feature_id = kwargs.get('feature_id', None)
+    stage_id = kwargs.get('stage_id', None)
+    # Validate the user has edit permissions and redirect if needed.
+    redirect_resp = permissions.validate_feature_edit_permission(
+        self, feature_id)
+    if redirect_resp:
+      return redirect_resp
 
-    return f, feature_process
-
-  @permissions.require_edit_feature
-  def get_template_data(self, feature_id, stage_id):
-    f, feature_process = self.get_feature_and_process(feature_id)
-
-    stage_name = ''
-    for stage in feature_process.stages:
-      if stage.outgoing_stage == stage_id:
-        stage_name = stage.name
-
-    template_data = {
-        'stage_name': stage_name,
-        'stage_id': stage_id,
-        }
-
-    # TODO(jrobbins): show useful error if stage not found.
-    detail_form_class = STAGE_FORMS[f.feature_type][stage_id]
-
-    impl_status_offered, impl_status_form_class = IMPL_STATUS_FORMS.get(
-        stage_id, (None, None))
-
-    feature_edit_dict = f.format_for_edit()
-    detail_form = None
-    if detail_form_class:
-      detail_form = detail_form_class(feature_edit_dict)
-    impl_status_form = None
-    if impl_status_form_class:
-      impl_status_form = impl_status_form_class(feature_edit_dict)
-
-    # Provide new or populated form to template.
-    template_data.update({
-        'feature': f,
-        'feature_id': f.key.integer_id(),
-        'feature_form': detail_form,
-        'already_on_this_stage': stage_id == f.intent_stage,
-        'already_on_this_impl_status':
-            impl_status_offered == f.impl_status_chrome,
-        'impl_status_form': impl_status_form,
-        'impl_status_name': models.IMPLEMENTATION_STATUS.get(
-            impl_status_offered, None),
-        'impl_status_offered': impl_status_offered,
-    })
-    return template_data
-
-  @permissions.require_edit_feature
-  def process_post_data(self, feature_id, stage_id=0):
     if feature_id:
-      feature = models.Feature.get_by_id(feature_id)
-      if feature is None:
+      # Load feature directly from NDB so as to never get a stale cached copy.
+      fe: FeatureEntry = FeatureEntry.get_by_id(feature_id)
+      if fe is None:
         self.abort(404, msg='Feature not found')
-      else:
-        feature.stash_values()
 
     logging.info('POST is %r', self.form)
 
-    if self.touched('spec_link'):
-      feature.spec_link = self.parse_link('spec_link')
+    stage_update_items: list[tuple[str, Any]] = []
+    changed_fields: CHANGED_FIELDS_LIST_TYPE = []
 
-    if self.touched('api_spec'):
-      feature.api_spec = self.form.get('api_spec') == 'on'
+    form_fields_str = self.form.get('form_fields')
+    form_fields: list[str] = []
+    if form_fields_str:
+      form_fields = [
+          field_name.strip() for field_name in form_fields_str.split(',')]
 
-    if self.touched('spec_mentors'):
-      feature.spec_mentors = self.split_emails('spec_mentors')
+    for field, field_type in self.EXISTING_FIELDS:
+      if self.touched(field, form_fields):
+        field_val = self._get_field_val(field, field_type)
+        new_field = self.RENAMED_FIELD_MAPPING.get(field, field)
+        self._add_changed_field(fe, new_field, field_val, changed_fields)
+        setattr(fe, new_field, field_val)
+    
+    breaking_change = self._get_field_val('breaking_change', 'bool')
+    if self.touched('first_enterprise_notification_milestone', form_fields):
+      milestone = self._get_field_val('first_enterprise_notification_milestone', 'int')
+      if is_update_first_notification_milestone(fe, {
+        'first_enterprise_notification_milestone': milestone,
+        'breaking_change': breaking_change}):
+        self._add_changed_field(
+          fe, 'first_enterprise_notification_milestone', milestone, changed_fields)
+        setattr(fe, 'first_enterprise_notification_milestone', milestone)
+    if should_remove_first_notice_milestone(fe, {'breaking_change': breaking_change}):
+      self._add_changed_field(
+        fe, 'first_enterprise_notification_milestone', milestone, changed_fields)
+      setattr(fe, 'first_enterprise_notification_milestone', None)
 
-    if self.touched('security_review_status'):
-      feature.security_review_status = self.parse_int('security_review_status')
+    # impl_status_chrome and intent_stage
+    # can be be set either by <select> or a checkbox.
+    impl_status_val: Optional[int] = None
+    if self.touched('impl_status_chrome', form_fields):
+      impl_status_val = self._get_field_val('impl_status_chrome', 'int')
+    elif self._get_field_val('set_impl_status', 'bool'):
+      impl_status_val = self._get_field_val('impl_status_offered', 'int')
+    if impl_status_val:
+      self._add_changed_field(
+          fe, 'impl_status_chrome', impl_status_val, changed_fields)
+      setattr(fe, 'impl_status_chrome', impl_status_val)
 
-    if self.touched('privacy_review_status'):
-      feature.privacy_review_status = self.parse_int('privacy_review_status')
+    active_stage_id = -1
+    intent_stage_val: int | None = None
+    if self.form.get('set_stage') == 'on':
+      active_stage_id = kwargs.get('stage_id', 0)
+      intent_stage_val = kwargs.get('intent_stage', core_enums.INTENT_NONE)
+    if intent_stage_val is not None:
+      self._add_changed_field(
+          fe, 'active_stage_id', active_stage_id, changed_fields)
+      self._add_changed_field(
+          fe, 'intent_stage', intent_stage_val, changed_fields)
+      setattr(fe, 'active_stage_id', active_stage_id)
+      setattr(fe, 'intent_stage', intent_stage_val)
 
-    if self.touched('initial_public_proposal_url'):
-      feature.initial_public_proposal_url = self.parse_link(
-          'initial_public_proposal_url')
+    # If a stage_id is supplied, we make changes to only that specific stage.
+    if stage_id:
+      for field, field_type in self.STAGE_FIELDS:
+        if self.touched(field, form_fields):
+          field_val = self._get_field_val(field, field_type)
+          stage_update_items.append((field, field_val))
 
-    if self.touched('explainer_links'):
-      feature.explainer_links = self.split_input('explainer_links')
+      for field in MilestoneSet.MILESTONE_FIELD_MAPPING.keys():
+        if self.touched(field, form_fields):
+          # TODO(jrobbins): Consider supporting milestones that are not ints.
+          field_val = self._get_field_val(field, 'int')
+          stage_update_items.append((field, field_val))
+      self.update_single_stage(
+          stage_id, fe.feature_type, stage_update_items, changed_fields)
+    else:
+      # List of stage IDs will be present if the request comes from edit_all page.
+      stage_ids = self.form.get('stages')
+      stage_ids_list = [int(id) for id in stage_ids.split(',')] if stage_ids else []
+      self.update_stages_editall(
+          feature_id, fe.feature_type, stage_ids_list, changed_fields, form_fields)
 
-    if self.touched('bug_url'):
-      feature.bug_url = self.parse_link('bug_url')
-    if self.touched('launch_bug_url'):
-      feature.launch_bug_url = self.parse_link('launch_bug_url')
+    extension_stage_ids = self.form.get('extension_stage_ids')
+    if extension_stage_ids:
+      stage_ids_list = [int(id) for id in extension_stage_ids.split(',')]
+      self.update_stages_editall(feature_id, fe.feature_type, stage_ids_list, changed_fields, form_fields)
+    # Update metadata fields.
+    now = datetime.now()
+    if self.form.get('accurate_as_of'):
+      fe.accurate_as_of = now
+      fe.outstanding_notifications = 0
+    user_email = self.get_current_user().email()
+    fe.updater_email = user_email
+    fe.updated = now
 
-    if self.touched('intent_to_implement_url'):
-      feature.intent_to_implement_url = self.parse_link(
-          'intent_to_implement_url')
+    key: ndb.Key = fe.put()
 
-    if self.touched('intent_to_ship_url'):
-      feature.intent_to_ship_url = self.parse_link(
-          'intent_to_ship_url')
+    notifier_helpers.notify_subscribers_and_save_amendments(
+        fe, changed_fields, notify=True)
+    # Remove all feature-related cache.
+    rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
 
-    if self.touched('ready_for_trial_url'):
-      feature.ready_for_trial_url = self.parse_link(
-          'ready_for_trial_url')
+    feature_links.update_feature_links(fe, changed_fields)
 
-    if self.touched('intent_to_experiment_url'):
-      feature.intent_to_experiment_url = self.parse_link(
-          'intent_to_experiment_url')
+    # Update full-text index.
+    if fe:
+      search_fulltext.index_feature(fe)
 
-    if self.touched('origin_trial_feedback_url'):
-      feature.origin_trial_feedback_url = self.parse_link(
-          'origin_trial_feedback_url')
-
-    if self.touched('finch_url'):
-      feature.finch_url = self.parse_link('finch_url')
-
-    if self.touched('i2e_lgtms'):
-      feature.i2e_lgtms = self.split_emails('i2e_lgtms')
-
-    if self.touched('i2s_lgtms'):
-      feature.i2s_lgtms = self.split_emails('i2s_lgtms')
-
-    # Cast incoming milestones to ints.
-    # TODO(jrobbins): Consider supporting milestones that are not ints.
-    if self.touched('shipped_milestone'):
-      feature.shipped_milestone = self.parse_int('shipped_milestone')
-
-    if self.touched('shipped_android_milestone'):
-      feature.shipped_android_milestone = self.parse_int(
-          'shipped_android_milestone')
-
-    if self.touched('shipped_ios_milestone'):
-      feature.shipped_ios_milestone = self.parse_int('shipped_ios_milestone')
-
-    if self.touched('shipped_webview_milestone'):
-      feature.shipped_webview_milestone = self.parse_int(
-          'shipped_webview_milestone')
-
-    if self.touched('shipped_opera_milestone'):
-      feature.shipped_opera_milestone = self.parse_int('shipped_opera_milestone')
-
-    if self.touched('shipped_opera_android'):
-      feature.shipped_opera_android_milestone = self.parse_int(
-          'shipped_opera_android_milestone')
-
-    if self.touched('ot_milestone_desktop_start'):
-      feature.ot_milestone_desktop_start = self.parse_int(
-          'ot_milestone_desktop_start')
-    if self.touched('ot_milestone_desktop_end'):
-      feature.ot_milestone_desktop_end = self.parse_int(
-          'ot_milestone_desktop_end')
-
-    if self.touched('ot_milestone_android_start'):
-      feature.ot_milestone_android_start = self.parse_int(
-          'ot_milestone_android_start')
-    if self.touched('ot_milestone_android_end'):
-      feature.ot_milestone_android_end = self.parse_int(
-          'ot_milestone_android_end')
-
-    if self.touched('requires_embedder_support'):
-      feature.requires_embedder_support = (
-          self.form.get('requires_embedder_support') == 'on')
-
-    if self.touched('devtrial_instructions'):
-      feature.devtrial_instructions = self.parse_link('devtrial_instructions')
-
-    if self.touched('flag_name'):
-      feature.flag_name = self.form.get('flag_name')
-
-    if self.touched('owner'):
-      feature.owner = self.split_emails('owner')
-
-    if self.touched('doc_links'):
-      feature.doc_links = self.split_input('doc_links')
-
-    if self.touched('measurement'):
-      feature.measurement = self.form.get('measurement')
-
-    if self.touched('sample_links'):
-      feature.sample_links = self.split_input('sample_links')
-
-    if self.touched('search_tags'):
-      feature.search_tags = self.split_input('search_tags', delim=',')
-
-    if self.touched('blink_components'):
-      feature.blink_components = (
-          self.split_input('blink_components', delim=',') or
-          [models.BlinkComponent.DEFAULT_COMPONENT])
-
-    if self.touched('devrel'):
-      feature.devrel = self.split_emails('devrel')
-
-    if self.touched('feature_type'):
-      feature.feature_type = int(self.form.get('feature_type'))
-
-    # intent_stage can be be set either by <select> or a checkbox
-    if self.touched('intent_stage'):
-      feature.intent_stage = int(self.form.get('intent_stage'))
-    elif self.form.get('set_stage') == 'on':
-      feature.intent_stage = stage_id
-
-    if self.touched('category'):
-      feature.category = int(self.form.get('category'))
-    if self.touched('name'):
-      feature.name = self.form.get('name')
-    if self.touched('summary'):
-      feature.summary = self.form.get('summary')
-    if self.touched('motivation'):
-      feature.motivation = self.form.get('motivation')
-
-    # impl_status_chrome can be be set either by <select> or a checkbox
-    if self.touched('impl_status_chrome'):
-      feature.impl_status_chrome = int(self.form.get('impl_status_chrome'))
-    elif self.form.get('set_impl_status') == 'on':
-      feature.impl_status_chrome = self.parse_int('impl_status_offered')
-
-    if self.touched('interop_compat_risks'):
-      feature.interop_compat_risks = self.form.get('interop_compat_risks')
-    if self.touched('ergonomics_risks'):
-      feature.ergonomics_risks = self.form.get('ergonomics_risks')
-    if self.touched('activation_risks'):
-      feature.activation_risks = self.form.get('activation_risks')
-    if self.touched('security_risks'):
-      feature.security_risks = self.form.get('security_risks')
-    if self.touched('debuggability'):
-      feature.debuggability = self.form.get('debuggability')
-    if self.touched('all_platforms'):
-      feature.all_platforms = self.form.get('all_platforms') == 'on'
-    if self.touched('all_platforms_descr'):
-      feature.all_platforms_descr = self.form.get('all_platforms_descr')
-    if self.touched('wpt'):
-      feature.wpt = self.form.get('wpt') == 'on'
-    if self.touched('wpt_descr'):
-      feature.wpt_descr = self.form.get('wpt_descr')
-    if self.touched('ff_views'):
-      feature.ff_views = int(self.form.get('ff_views'))
-    if self.touched('ff_views_link'):
-      feature.ff_views_link = self.parse_link('ff_views_link')
-    if self.touched('ff_views_notes'):
-      feature.ff_views_notes = self.form.get('ff_views_notes')
-    if self.touched('ie_views'):
-      feature.ie_views = int(self.form.get('ie_views'))
-    if self.touched('ie_views_link'):
-      feature.ie_views_link = self.parse_link('ie_views_link')
-    if self.touched('ie_views_notes'):
-      feature.ie_views_notes = self.form.get('ie_views_notes')
-    if self.touched('safari_views'):
-      feature.safari_views = int(self.form.get('safari_views'))
-    if self.touched('safari_views_link'):
-      feature.safari_views_link = self.parse_link('safari_views_link')
-    if self.touched('safari_views_notes'):
-      feature.safari_views_notes = self.form.get('safari_views_notes')
-    if self.touched('web_dev_views'):
-      feature.web_dev_views = int(self.form.get('web_dev_views'))
-    if self.touched('web_dev_views'):
-      feature.web_dev_views_link = self.parse_link('web_dev_views_link')
-    if self.touched('web_dev_views_notes'):
-      feature.web_dev_views_notes = self.form.get('web_dev_views_notes')
-    if self.touched('prefixed'):
-      feature.prefixed = self.form.get('prefixed') == 'on'
-
-    if self.touched('tag_review'):
-      feature.tag_review = self.form.get('tag_review')
-    if self.touched('tag_review_status'):
-      feature.tag_review_status = self.parse_int('tag_review_status')
-
-    if self.touched('standardization'):
-      feature.standardization = int(self.form.get('standardization'))
-    if self.touched('unlisted'):
-      feature.unlisted = self.form.get('unlisted') == 'on'
-    if self.touched('comments'):
-      feature.comments = self.form.get('comments')
-    if self.touched('experiment_goals'):
-      feature.experiment_goals = self.form.get('experiment_goals')
-    if self.touched('experiment_timeline'):
-      feature.experiment_timeline = self.form.get('experiment_timeline')
-    if self.touched('experiment_risks'):
-      feature.experiment_risks = self.form.get('experiment_risks')
-    if self.touched('experiment_extension_reason'):
-      feature.experiment_extension_reason = self.form.get(
-          'experiment_extension_reason')
-    if self.touched('ongoing_constraints'):
-      feature.ongoing_constraints = self.form.get('ongoing_constraints')
-
-    feature.updated_by = gae_users.User(email=self.get_current_user().email())
-    key = feature.put()
-
-    # TODO(jrobbins): enumerate and remove only the relevant keys.
-    ramcache.flush_all()
-
-    redirect_url = '/guide/edit/' + str(key.integer_id())
+    # Navigate back to the page that the user was on before editing, iff
+    # it is the URL of a feature detail page on our site.
+    nextPage = self.form.get('nextPage')
+    if nextPage and nextPage.startswith('/feature/'):
+      redirect_url = nextPage
+    else:
+      redirect_url = '/guide/edit/' + str(key.integer_id())
     return self.redirect(redirect_url)
 
+  def update_multiple_stages(self, feature_id: int, feature_type: int,
+      update_items: list[tuple[str, Any]],
+      changed_fields: CHANGED_FIELDS_LIST_TYPE) -> None:
+    """Handle updating stages when IDs have not been specified."""
+    # Get all existing stages associated with the feature.
+    stages = stage_helpers.get_feature_stages(feature_id)
 
-class FeatureEditAllFields(FeatureEditStage):
-  """Flat form page that lists all fields in seprate sections."""
+    for field, new_val in update_items:
+      field = self.RENAMED_FIELD_MAPPING.get(field, field)
+      # Determine the stage type that the field should change on.
+      stage_type = core_enums.STAGE_TYPES_BY_FIELD_MAPPING[field][feature_type]
+      # If this feature type does not have this field, skip it
+      # (e.g. developer-facing code changes cannot have origin trial fields).
+      if stage_type is None:
+        continue
+      stages_list: list[Stage] = stages.get(stage_type, [])
+      stage: Stage | None = stages_list[0] if stages_list else None
+      # If a stage of this type does not exist for this feature, create it.
+      if stage is None:
+        stage = Stage(feature_id=feature_id, stage_type=stage_type)
+        stage.put()
+        stages[stage_type].append(stage)
 
-  TEMPLATE_PATH = 'guide/editall.html'
+      # Change the field based on the field type.
+      # If this field changing is a milestone, change it in the
+      # MilestoneSet entity.
+      if field in MilestoneSet.MILESTONE_FIELD_MAPPING:
+        old_val = None
+        milestone_field = (
+            MilestoneSet.MILESTONE_FIELD_MAPPING[field])
+        milestoneset_entity = getattr(stage, 'milestones')
+        # If the MilestoneSet entity has not been initiated, create it.
+        if milestoneset_entity is None:
+          milestoneset_entity = MilestoneSet()
+        old_val = getattr(milestoneset_entity, milestone_field)
+        setattr(milestoneset_entity, milestone_field, new_val)
+        stage.milestones = milestoneset_entity
+      # If the field starts with "intent_", it should modify the
+      # more general "intent_thread_url" field.
+      elif field.startswith('intent_'):
+        old_val = getattr(stage, 'intent_thread_url')
+        setattr(stage, 'intent_thread_url', new_val)
+      # Otherwise, replace field value with attribute of the same field name.
+      else:
+        old_val = getattr(stage, field)
+        setattr(stage, field, new_val)
 
-  @permissions.require_edit_feature
-  def get_template_data(self, feature_id):
-    f, feature_process = self.get_feature_and_process(feature_id)
+      if old_val != new_val:
+        changed_fields.append((field, old_val, new_val))
 
-    feature_edit_dict = f.format_for_edit()
-    # TODO(jrobbins): make flat forms process specific?
-    flat_form_section_list = FLAT_FORMS
-    flat_forms = [
-        (section_name, form_class(feature_edit_dict))
-        for section_name, form_class in flat_form_section_list]
-    template_data = {
-        'feature': f,
-        'feature_id': f.key.integer_id(),
-        'flat_forms': flat_forms,
-    }
-    return template_data
+    # Write to all the stages.
+    for stages_by_type in stages.values():
+      for stage in stages_by_type:
+        stage.put()
 
+  def update_single_stage(self, stage_id: int, feature_type: int,
+      update_items: list[tuple[str, Any]],
+      changed_fields: CHANGED_FIELDS_LIST_TYPE) -> None:
+    """Update the fields of the stage of a given ID."""
+    stage_to_update = Stage.get_by_id(stage_id)
+    if stage_to_update is None:
+      self.abort(404, msg=f'Stage {stage_id} not found.')
 
-app = basehandlers.FlaskApplication([
-  ('/guide/new', FeatureNew),
-  ('/guide/edit/<int:feature_id>', ProcessOverview),
-  ('/guide/stage/<int:feature_id>/<int:stage_id>', FeatureEditStage),
-  ('/guide/editall/<int:feature_id>', FeatureEditAllFields),
-], debug=settings.DEBUG)
+    # Determine if 'intent_thread_url' field needs to be changed.
+    intent_thread_val = None
+    changed_field = None
+    for field in self.INTENT_FIELDS:
+      field_val = self._get_field_val(field, 'link')
+      if field_val is not None:
+        intent_thread_val = field_val
+        changed_field = field
+        break
+    if changed_field is not None:
+      changed_fields.append(
+          (changed_field, stage_to_update.intent_thread_url, intent_thread_val))
+    setattr(stage_to_update, 'intent_thread_url', intent_thread_val)
+
+    for field, new_val in update_items:
+      # Update the field's name if it has been renamed.
+      old_field_name = field
+      field = self.RENAMED_FIELD_MAPPING.get(field, field)
+
+      old_val = None
+      if field in MilestoneSet.MILESTONE_FIELD_MAPPING:
+        milestone_field = MilestoneSet.MILESTONE_FIELD_MAPPING[field]
+        if stage_to_update.milestones is None:
+          stage_to_update.milestones = MilestoneSet()
+        old_val = getattr(stage_to_update.milestones, milestone_field)
+        setattr(stage_to_update.milestones, milestone_field, new_val)
+      else:
+        old_val = getattr(stage_to_update, field)
+        setattr(stage_to_update, field, new_val)
+      if old_val != new_val:
+        changed_fields.append((old_field_name, old_val, new_val))
+    stage_to_update.put()
+
+  def update_stages_editall(
+      self,
+      feature_id: int,
+      feature_type: int,
+      stage_ids: list[int],
+      changed_fields: CHANGED_FIELDS_LIST_TYPE,
+      form_fields: list[str]) -> None:
+    """Handle the updates for stages on the edit-all page."""
+    id_to_field_suffix = {}
+    ids_created = set()
+    for field in self.form.keys():
+      if not field.endswith('__create'):
+        continue
+      [name, id, stage_type, suffix] = field.split('__')
+      if stage_type is None:
+        continue
+      if id not in ids_created:
+        ids_created.add(id)
+        stage = stage_helpers.create_feature_stage(feature_id, feature_type, int(stage_type))
+        id_to_field_suffix[stage.key.id()] = f'{id}__{stage_type}__create'
+        stage_ids.append(stage.key.id())
+
+    for id in stage_ids:
+      suffix = id_to_field_suffix.get(id, id)
+      stage = Stage.get_by_id(id)
+      if not stage:
+        self.abort(404, msg=f'No stage {id} found')
+      # Update the stage-specific fields.
+      for field, field_type in self.STAGE_FIELDS:
+        # To differentiate stages that have the same fields, the stage ID
+        # is appended to the field name with 2 underscores.
+        field_with_suffix = f'{field}__{suffix}'
+        if not self.touched(field_with_suffix, form_fields):
+          continue
+        new_field_name = self.RENAMED_FIELD_MAPPING.get(field, field)
+        old_val = getattr(stage, new_field_name)
+        new_val = self._get_field_val(field_with_suffix, field_type)
+        setattr(stage, new_field_name, new_val)
+        if old_val != new_val:
+          changed_fields.append((field, old_val, new_val))
+
+      intent_thread_field = None
+      milestone_fields = []
+      # Determine if the stage type is one with specific milestone fields.
+      if stage.stage_type == core_enums.STAGE_TYPES_PROTOTYPE[feature_type]:
+        intent_thread_field = 'intent_to_implement_url'
+      if stage.stage_type == core_enums.STAGE_TYPES_DEV_TRIAL[feature_type]:
+        milestone_fields = self.DEV_TRIAL_MILESTONE_FIELDS
+      if stage.stage_type == core_enums.STAGE_TYPES_ORIGIN_TRIAL[feature_type]:
+        intent_thread_field = 'intent_to_experiment_url'
+        milestone_fields = self.OT_MILESTONE_FIELDS
+      if (stage.stage_type ==
+          core_enums.STAGE_TYPES_EXTEND_ORIGIN_TRIAL[feature_type]):
+        intent_thread_field = 'intent_to_extend_experiment_url'
+        milestone_fields = self.OT_EXTENSION_MILESTONE_FIELDS
+      if stage.stage_type == core_enums.STAGE_TYPES_SHIPPING[feature_type]:
+        intent_thread_field = 'intent_to_ship_url'
+        milestone_fields = self.SHIPPING_MILESTONE_FIELDS
+
+      # Determine if 'intent_thread_url' field needs to be changed.
+      intent_field_with_suffix = f'{intent_thread_field}__{suffix}'
+      if intent_thread_field and self.touched(intent_field_with_suffix, form_fields):
+        old_val = stage.intent_thread_url
+        new_val = self._get_field_val(intent_field_with_suffix, 'link')
+        if old_val != new_val:
+          changed_fields.append((intent_thread_field, old_val, new_val))
+        setattr(stage, 'intent_thread_url', new_val)
+
+      for field, milestone_field in milestone_fields:
+        field_with_suffix = f'{field}__{suffix}'
+        if not self.touched(field_with_suffix, form_fields):
+          continue
+        old_val = None
+        new_val = self._get_field_val(field_with_suffix, 'int')
+        milestoneset_entity = stage.milestones
+        milestoneset_entity = getattr(stage, 'milestones')
+        if milestoneset_entity is None:
+          milestoneset_entity = MilestoneSet()
+        else:
+          old_val = getattr(milestoneset_entity, milestone_field)
+        setattr(milestoneset_entity, milestone_field, new_val)
+        stage.milestones = milestoneset_entity
+        if old_val != new_val:
+          changed_fields.append((field, old_val, new_val))
+      stage.put()

@@ -6,20 +6,6 @@ name: Chris Wilson
 twitter: cwilso
 email: cwilso@google.com
 ---
-name: Eric Bidelman
-twitter: ebidel
-email: e.bidelman@google.com
-blink_components:
-  - Blink>DOM
-  - Blink>CSS
-  - Blink>HTML
-  - Blink>Forms
-  - Blink>JavaScript
-  - Internals>OriginTrials
----
-name: Meggin Kearney
-email: mkearney@google.com
----
 name: Robert Nyman
 email: rnyman@google.com
 ---
@@ -35,9 +21,6 @@ email: jakearchibald@google.com
 name: Sam Dutton
 email: dutton@google.com
 ---
-name: Surma Surma
-email: surma@google.com
----
 name: Brendan Kenny
 email: bckenny@google.com
 ---
@@ -52,15 +35,6 @@ blink_components:
 ---
 name: Philip Walton
 email: philipwalton@google.com
----
-name: Rob Dodson
-twitter: rob_dodson
-email: robdodson@google.com
-blink_components:
-  - Blink>DOM
-  - Blink>HTML
-  - Blink>Forms
-  - UI>Accessibility
 ---
 name: Alex Danilo
 email: adanilo@google.com
@@ -80,24 +54,11 @@ email: thorogood@google.com
 name: Arthur Evans
 email: arthure@google.com
 ---
-name: David Gash
-email: dgash@google.com
----
 name: Joe Medley
 email: jmedley@google.com
 ---
-name: Kate Jeffreys
-email: katejeffreys@google.com
----
-name: Kayce Basques
-email: kayce@google.com
----
 name: Paul Kinlan
 email: paulkinlan@google.com
----
-name: Ilya Grigorik
-email: igrigorik@google.com
-twitter: igrigorik
 ---
 name: Lizzi Harvey
 email: ekharvey@google.com

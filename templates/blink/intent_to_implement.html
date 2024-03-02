@@ -9,40 +9,43 @@
   {{feature.name}}
 </div>
 
-{% comment %}
+{#
   Insted of vertical margins, <br> elements are used to create line breaks
   that can be copied and pasted into a text editor.
-{% endcomment %}
+#}
 
-<p>Body</p>
+<p>Body
+  <span class="tooltip copy-text" style="float:right"
+        title="Copy text to clipboard">
+      <a href="#" data-tooltip>
+        <iron-icon icon="chromestatus:content_copy"
+                   id="copy-email-body"></iron-icon>
+      </a>
+  </span>
+</p>
+
 <div class="email">
 
   <h4>Contact emails</h4>
-  {% if not feature.owner %}None{% endif %}
-  {% for owner in feature.owner %}
-    <a href="mailto:{{owner}}">{% if forloop.last %}{{owner}}</a>{% else %}{{owner}}</a>,{% endif %}
+  {% if not feature.browsers.chrome.owners %}None{% endif %}
+  {% for owner in feature.browsers.chrome.owners %}
+    <a href="mailto:{{owner}}">{% if loop.last %}{{owner}}</a>{% else %}{{owner}}</a>,{% endif %}
   {% endfor %}
 
   {% if feature.explainer_links or feature.feature_type_int != 2 %}
     <br><br><h4>Explainer</h4>
     {% if not feature.explainer_links %}None{% endif %}
     {% for link in feature.explainer_links %}
-      {% if forloop.counter0 %}<br>{% endif %}<a href="{{link}}">{{link}}</a>
+      {% if loop.index0 %}<br>{% endif %}<a href="{{link}}">{{link}}</a>
     {% endfor %}
   {% endif %}
 
   <br><br><h4>Specification</h4>
-  {{feature.spec_link|urlize}}
+  {{feature.standards.spec|urlize}}
 
-  {% if feature.api_spec %}
-    <br><br><h4>API spec</h4>
-    Yes
-  {% endif %}
-
-
-  {% if feature.doc_links %}
+  {% if feature.resources and feature.resources.docs %}
     <br><br><h4>Design docs</h4>
-    {% for link in feature.doc_links %}
+    {% for link in feature.resources.docs %}
       <br><a href="{{link}}">{{link}}</a>
     {% endfor %}
   {% endif %}
@@ -51,7 +54,7 @@
   <p class="preformatted">{{ feature.summary | urlize }}</p>
 
   <br><br><h4>Blink component</h4>
-  {% for c in feature.blink_components %}
+  {% for c in feature.browsers.chrome.blink_components %}
     <a href="https://bugs.chromium.org/p/chromium/issues/list?q=component:{{c}}" target="_blank" rel="noopener">{{c}}</a>
   {% endfor %}
 
@@ -63,10 +66,10 @@
     {{feature.initial_public_proposal_url|urlize}}
   {% endif %}
 
-  {% if feature.search_tags %}
+  {% if feature.tags %}
     <br><br><h4>Search tags</h4>
-    {% for tag in feature.search_tags %}
-      <a href="/features#tags:{{tag}}">{{tag}}</a>{% if not forloop.last %}, {% endif %}
+    {% for tag in feature.tags %}
+      <a href="/features#tags:{{tag}}">{{tag}}</a>{% if not loop.last %}, {% endif %}
     {% endfor %}
 
   {% endif %}
@@ -79,38 +82,57 @@
     {{feature.tag_review_status}}
   {% endif %}
 
-  {% if feature.origin_trial_feedback_url %}
-    <br><br><h4>Link to origin trial feedback summary</h4>
-    {{feature.origin_trial_feedback_url}}
-  {% endif %}
+  {% for stage in stage_info.ot_stages %}
+    {% if stage.ot_chromium_trial_name %}
+      <br><br><h4>Chromium Trial Name</h4>
+      {{stage.ot_chromium_trial_name}}
 
+    {% endif %}{% if stage.origin_trial_feedback_url %}
+      <br><br><h4>Link to origin trial feedback summary</h4>
+      {{stage.origin_trial_feedback_url}}
+
+    {% endif %}{% if stage.ot_documentation_url %}
+      <br><br><h4>Origin Trial documentation link</h4>
+      {{stage.ot_documentation_url}}
+
+    {% endif %}{% if stage.ot_webfeature_use_counter %}
+      <br><br><h4>WebFeature UseCounter name</h4>
+      {{stage.ot_webfeature_use_counter}}
+
+    {% endif %}
+  {% endfor %}
   <br><br><h4>Risks</h4>
   <div style="margin-left: 4em;">
     <br><br><h4>Interoperability and Compatibility</h4>
     <p class="preformatted">{{feature.interop_compat_risks|urlize}}</p>
 
-    <br><br><i>Gecko</i>: {{feature.ff_views.text}}
-    {% if feature.ff_views_link %}
-      (<a href="{{feature.ff_views_link}}">{{feature.ff_views_link}}</a>)
+    <br><br><i>Gecko</i>: {{feature.browsers.ff.view.text}}
+    {% if feature.browsers.ff.view.url %}
+      (<a href="{{feature.browsers.ff.view.url}}">{{feature.browsers.ff.view.url}}</a>)
     {% endif %}
-    {% if feature.ff_views_notes %}
-     {{feature.ff_views_notes|urlize}}
-    {% endif %}
-
-    <br><br><i>WebKit</i>: {{feature.safari_views.text}}
-    {% if feature.safari_views_link %}
-      (<a href="{{feature.safari_views_link}}">{{feature.safari_views_link}}</a>)
-    {% endif %}
-    {% if feature.safari_views_notes %}
-     {{feature.safari_views_notes|urlize}}
+    {% if feature.browsers.ff.view.notes %}
+     {{feature.browsers.ff.view.notes|urlize}}
     {% endif %}
 
-    <br><br><i>Web developers</i>: {{feature.web_dev_views.text}}
-    {% if feature.web_dev_views_link %}
-      (<a href="{{feature.web_dev_views_link}}">{{feature.web_dev_views_link}}</a>)
+    <br><br><i>WebKit</i>: {{feature.browsers.safari.view.text}}
+    {% if feature.browsers.safari.view.url %}
+      (<a href="{{feature.browsers.safari.view.url}}">{{feature.browsers.safari.view.url}}</a>)
     {% endif %}
-    {% if feature.web_dev_views_notes %}
-      {{feature.web_dev_views_notes|urlize}}
+    {% if feature.browsers.safari.view.notes %}
+     {{feature.browsers.safari.view.notes|urlize}}
+    {% endif %}
+
+    <br><br><i>Web developers</i>: {{feature.browsers.webdev.view.text}}
+    {% if feature.browsers.webdev.view.url %}
+      (<a href="{{feature.browsers.webdev.view.url}}">{{feature.browsers.webdev.view.url}}</a>)
+    {% endif %}
+    {% if feature.browsers.webdev.view.notes %}
+      {{feature.browsers.webdev.view.notes|urlize}}
+    {% endif %}
+
+    <br><br><i>Other signals</i>:
+    {% if feature.browsers.other.view.notes %}
+      {{feature.browsers.other.view.notes|urlize}}
     {% endif %}
 
     {% if feature.ergonomics_risks %}
@@ -128,6 +150,13 @@
       <p class="preformatted">{{feature.security_risks|urlize}}</p>
     {% endif %}
 
+    <br><br><h4>WebView application risks</h4>
+    <p style="font-style: italic">
+      Does this intent deprecate or change behavior of existing APIs,
+      such that it has potentially high risk for Android WebView-based
+      applications?</p>
+    <p class="preformatted">{{feature.webview_risks|urlize}}</p>
+
   </div> <!-- end risks -->
 
 {% if 'experiment' in sections_to_show %}
@@ -141,8 +170,12 @@
   {% endif %}
 
   {% if 'extension_reason' in sections_to_show %}
-    <br><br><h4>Reason this experiment is being extended</h4>
-    <p class="preformatted">{{feature.experiment_extension_reason|urlize}}</p>
+    {% for stage in stage_info.extension_stages %}
+      {% if stage.experiment_extension_reason %}
+        <br><br><h4>Reason this experiment is being extended</h4>
+        <p class="preformatted">{{stage.experiment_extension_reason|urlize}}</p>
+      {% endif %}
+    {% endfor %}
   {% endif %}
 
   <br><br><h4>Ongoing technical constraints</h4>
@@ -150,23 +183,21 @@
 
 {% endif %}
 
-{% if feature.debuggability %}
-  <br><br><h4>Debuggability</h4>
-  <p class="preformatted">{{feature.debuggability|urlize}}</p>
-{% endif %}
+<br><br><h4>Debuggability</h4>
+<p class="preformatted">{{feature.debuggability|urlize}}</p>
 
-{% if 'experiment' in sections_to_show %}
+{% if 'experiment' in sections_to_show or 'ship' in sections_to_show %}
   <br><br><h4>Will this feature be supported on all six Blink platforms
-      (Windows, Mac, Linux, Chrome OS, Android, and Android WebView)?</h4>
+      (Windows, Mac, Linux, ChromeOS, Android, and Android WebView)?</h4>
   {% if feature.all_platforms %}Yes{% else %}No{% endif %}
   {% if feature.all_platforms_descr %}
     <p class="preformatted">{{feature.all_platforms_descr|urlize}}</p>
   {% endif %}
 {% endif %}
 
-<br><br><h4>Is this feature fully tested by <a href="https://chromium.googlesource.com/chromium/src/+/master/docs/testing/web_platform_tests.md">web-platform-tests</a>?</h4>
+<br><br><h4>Is this feature fully tested by <a href="https://chromium.googlesource.com/chromium/src/+/main/docs/testing/web_platform_tests.md">web-platform-tests</a>?</h4>
 {% if feature.wpt %}Yes{% else %}No{% endif %}
-{% if feature.wpt_desc %}
+{% if feature.wpt_descr %}
   <p class="preformatted">{{feature.wpt_descr|urlize}}</p>
 {% endif %}
 
@@ -176,15 +207,30 @@
      >{{feature.devtrial_instructions}}</a>
 {% endif %}
 
-<br><br><h4>Flag name</h4>
+<br><br><h4>Flag name on chrome://flags</h4>
 {{feature.flag_name}}
+
+<br><br><h4>Finch feature name</h4>
+{{feature.finch_name}}
+
+{% if feature.non_finch_justification %}
+  <br><br><h4>Non-finch justification</h4>
+  <p class="preformatted">{{feature.non_finch_justification|urlize}}</p>
+{% else %}
+  {% if not feature.finch_name %}
+    <br><br><h4>Non-finch justification</h4>
+    None
+  {% endif %}
+{% endif %}
+
+
 
 <br><br><h4>Requires code in //chrome?</h4>
 {{feature.requires_embedder_support}}
 
-{% if feature.bug_url %}
+{% if feature.browsers.chrome.bug %}
   <br><br><h4>Tracking bug</h4>
-  <a href="{{feature.bug_url}}">{{feature.bug_url}}</a>
+  <a href="{{feature.browsers.chrome.bug}}">{{feature.browsers.chrome.bug}}</a>
 {% endif %}
 
 {% if feature.launch_bug_url %}
@@ -197,48 +243,97 @@
   {{feature.measurement|urlize}}
 {% endif %}
 
+{% if feature.availability_expectation %}
+  <br><br><h4>Availability expectation</h4>
+  {{feature.availability_expectation|urlize}}
+{% endif %}
+
+{% if feature.adoption_expectation %}
+  <br><br><h4>Adoption expectation</h4>
+  {{feature.adoption_expectation|urlize}}
+{% endif %}
+
+{% if feature.adoption_plan %}
+  <br><br><h4>Adoption plan</h4>
+  {{feature.adoption_plan|urlize}}
+{% endif %}
+
+{% if feature.non_oss_deps %}
+  <br><br><h4>Non-OSS dependencies</h4>
+  <p style="font-style: italic">
+    Does the feature depend on any code or APIs outside the Chromium
+    open source repository and its open-source dependencies to
+    function?</p>
+
+  {{feature.non_oss_deps|urlize}}
+{% endif %}
+
+
 {% if 'sample_links' in sections_to_show %}
-   {% if feature.sample_links %}
+   {% if feature.resources and feature.resources.samples %}
      <br><br><h4>Sample links</h4>
-     {% for link in feature.sample_links %}
+     {% for link in feature.resources.samples %}
        <br><a href="{{link}}">{{link}}</a>
      {% endfor %}
    {% endif %}
+{% endif %}
+
+
+<br><br><h4>Estimated milestones</h4>
+{% include "estimated-milestones-table.html" %}
+
+
+{% if 'anticipated_spec_changes' in sections_to_show or feature.anticipated_spec_changes %}
+  <br><br><h4>Anticipated spec changes</h4>
+  <p style="font-style: italic">
+    Open questions about a feature may be a source of future web compat or
+    interop issues. Please list open issues (e.g. links to known github
+    issues in the project for the feature specification) whose resolution
+    may introduce web compat/interop risk (e.g., changing to naming or
+    structure of the API in a non-backward-compatible way).</p>
+
+  {{feature.anticipated_spec_changes|urlize}}
 {% endif %}
 
 <br><br><h4>Link to entry on the {{APP_TITLE}}</h4>
 <a href="{{default_url}}">{{default_url}}</a>
 
 
-{% if feature.intent_to_implement_url or feature.ready_for_trial_url or feature.intent_to_experiment_url or feature.intent_to_ship_url %}
+{% if should_render_intents %}
   <br><br><h4>Links to previous Intent discussions</h4>
 
-  {% if feature.intent_to_implement_url %}
-    Intent to prototype: {{feature.intent_to_implement_url|urlize}}
-    <br>
-  {% endif %}
+  {% for stage in stage_info.proto_stages %}{% if stage.intent_thread_url %}
+      Intent to prototype: {{stage.intent_thread_url|urlize}}
 
-  {% if feature.ready_for_trial_url %}
-    Ready for Trial: {{feature.ready_for_trial_url|urlize}}
-    <br>
-  {% endif %}
+  {% endif %}{% endfor %}
+  {% for stage in stage_info.dt_stages %}{% if stage.announcement_url %}
+      Ready for Trial: {{stage.announcement_url|urlize}}
+      <br>
 
-  {% if feature.intent_to_experiment_url %}
-    Intent to Experiment: {{feature.intent_to_experiment_url|urlize}}
-    <br>
-  {% endif %}
+  {% endif %}{% endfor %}
+  {% for stage in stage_info.ot_stages %}{% if stage.intent_thread_url %}
+      Intent to Experiment: {{stage.intent_thread_url|urlize}}
+      <br>
 
-  {% if feature.intent_to_ship_url %}
-    Intent to Ship: {{feature.intent_to_ship_url|urlize}}
-    <br>
-  {% endif %}
+  {% endif %}{% endfor %}
+  {% for stage in stage_info.extension_stages %}
+    {% if stage.intent_thread_url %}
+      Intent to Extend Experiment: {{stage.intent_thread_url|urlize}}
+      <br>
+
+  {% endif %}{% endfor %}
+  {% for stage in stage_info.extension_stages %}{% if stage.intent_thread_url %}
+      Intent to Ship: {{stage.intent_thread_url|urlize}}
+      <br>
+
+  {% endif %}{% endfor %}
 {% endif %}
 
 
 
 <br><br><div><small>
   This intent message was generated by
-  <a href="https://www.chromestatus.com">Chrome Platform Status</a>.
+  <a href="https://chromestatus.com">Chrome Platform Status</a>.
 </small></div>
 
 </div> <!-- end email body div -->
