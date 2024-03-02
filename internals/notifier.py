@@ -24,6 +24,7 @@ import datetime
 import json
 import os
 import re
+import difflib
 
 from framework import ramcache
 from google.cloud import ndb
@@ -71,9 +72,13 @@ def format_email_body(is_update, feature, changes):
     new_val = prop['new_val']
     old_val = prop['old_val']
 
-    formatted_changes += ('<li><b>%s:</b> <br/><b>old:</b> %s <br/>'
-                          '<b>new:</b> %s<br/></li><br/>' %
+    # Call highlight_diff to get the highlighted differences
+    highlighted_new_val = highlight_diff(old_val, new_val)
+
+    formatted_changes += ('<li><b>{prop_name}:</b> <br/><b>old:</b> {escape(old_val)} <br/>'
+                          '<b>new:</b> {highlighted_new_val}<br/></li><br/>' %
                           (prop_name, escape(old_val), escape(new_val)))
+
   if not formatted_changes:
     formatted_changes = '<li>None</li>'
 
