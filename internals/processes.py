@@ -375,7 +375,7 @@ BLINK_FAST_TRACK_STAGES = [
     [Action('Draft Intent to Extend Experiment email', INTENT_EMAIL_URL, [])],
     [approval_defs.ExtendExperimentApproval],
     core_enums.INTENT_ORIGIN_TRIAL, core_enums.INTENT_EXTEND_ORIGIN_TRIAL,
-    stage_type=core_enums.STAGE_FAST_ORIGIN_TRIAL),
+    stage_type=core_enums.STAGE_FAST_EXTEND_ORIGIN_TRIAL),
 
   ProcessStage(
       'Prepare to ship',
@@ -534,7 +534,7 @@ DEPRECATION_STAGES = [
     [Action('Draft Intent to Extend Experiment email', INTENT_EMAIL_URL, [])],
     [approval_defs.ExtendExperimentApproval],
     core_enums.INTENT_ORIGIN_TRIAL, core_enums.INTENT_EXTEND_ORIGIN_TRIAL,
-    stage_type=core_enums.STAGE_FAST_ORIGIN_TRIAL),
+    stage_type=core_enums.STAGE_DEP_EXTEND_DEPRECATION_TRIAL),
 
   ProcessStage(
       'Prepare to ship',
