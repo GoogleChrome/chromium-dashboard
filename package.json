@@ -55,7 +55,7 @@
     "url": "https://github.com/GoogleChrome/chromium-dashboard/issues"
   },
   "devDependencies": {
-    "@babel/core": "^7.23.9",
+    "@babel/core": "^7.24.0",
     "@babel/eslint-parser": "^7.23.10",
     "@babel/eslint-plugin": "^7.23.5",
     "@babel/plugin-proposal-class-properties": "^7.18.6",
