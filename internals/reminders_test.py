@@ -98,7 +98,9 @@ class FunctionTest(testing_config.CustomTestCase):
     for stage_type in stages:
       stage = Stage(feature_id=123, stage_type=stage_type)
       if stage_type == 150:
-        stage.milestones = MilestoneSet(desktop_first=100)
+        stage.milestones = MilestoneSet(desktop_first=100, desktop_last=105)
+      if stage_type == 151:
+        stage.milestones = MilestoneSet(desktop_last=108)
       stage.put()
 
     self.feature_template.put()

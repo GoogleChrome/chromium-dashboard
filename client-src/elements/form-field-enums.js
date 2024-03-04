@@ -204,7 +204,7 @@ export const INTENT_STAGES = {
   INTENT_IMPLEMENT: [1, 'Start prototyping'], // Start prototyping
   INTENT_EXPERIMENT: [2, 'Dev trials'], // Dev trials
   INTENT_IMPLEMENT_SHIP: [4, 'Evaluate readiness to ship'], // Eval readiness to ship
-  INTENT_EXTEND_TRIAL: [3, 'Origin Trial'], // Origin trials
+  INTENT_ORIGIN_TRIAL: [3, 'Origin Trial'], // Origin trials
   INTENT_SHIP: [5, 'Prepare to ship'], // Prepare to ship
   INTENT_REMOVED: [6, 'Removed'],
   INTENT_SHIPPED: [8, 'Shipped'],

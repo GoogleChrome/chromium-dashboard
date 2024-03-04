@@ -318,7 +318,7 @@
   {% endif %}{% endfor %}
   {% for stage in stage_info.extension_stages %}
     {% if stage.intent_thread_url %}
-      Intent to Extend Experiment: {{stage.intent_thread_url|urlize}}
+      Intent to Extend Experiment {{loop.index}}: {{stage.intent_thread_url|urlize}}
       <br>
 
   {% endif %}{% endfor %}
