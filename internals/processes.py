@@ -17,8 +17,6 @@ from dataclasses import asdict, dataclass
 
 from internals import approval_defs
 from internals import core_enums
-from internals import core_models
-from internals import stage_helpers
 
 
 @dataclass
@@ -531,7 +529,8 @@ DEPRECATION_STAGES = [
     'Extend deprecation trial',
     '(Optional) Extend an existing deprecation trial.',
     [],
-    [Action('Draft Intent to Extend Experiment email', INTENT_EMAIL_URL, [])],
+    [Action('Draft Intent to Extend Deprecation Trial email',
+            INTENT_EMAIL_URL, [])],
     [approval_defs.ExtendExperimentApproval],
     core_enums.INTENT_ORIGIN_TRIAL, core_enums.INTENT_EXTEND_ORIGIN_TRIAL,
     stage_type=core_enums.STAGE_DEP_EXTEND_DEPRECATION_TRIAL),
