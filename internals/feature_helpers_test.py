@@ -405,13 +405,13 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     self.assertEqual(cached_result, features)
     
     # Features 1, 2, 3 and 4 are breaking changes
-    self.feature_1.breaking_change = True
+    self.feature_1.enterprise_impact = ENTERPRISE_IMPACT_LOW
     self.feature_1.put()
-    self.feature_2.breaking_change = True
+    self.feature_2.enterprise_impact = ENTERPRISE_IMPACT_MEDIUM
     self.feature_2.put()
-    self.feature_3.breaking_change = True
+    self.feature_3.enterprise_impact = ENTERPRISE_IMPACT_HIGH
     self.feature_3.put()
-    self.feature_4.breaking_change = True
+    self.feature_4.enterprise_impact = ENTERPRISE_IMPACT_LOW
     self.feature_4.put()
 
     features = feature_helpers.get_features_in_release_notes(milestone=1)
@@ -436,7 +436,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
 
     # Features 1, 2, 3 are breaking changes
     # only feature 1, 2 and 4 are planned to be released
-    self.feature_4.breaking_change = False
+    self.feature_4.enterprise_impact = ENTERPRISE_IMPACT_NONE
     self.feature_4.put()
     self.fe_3_stages_dict[360][0].milestones = MilestoneSet()
     self.fe_3_stages_dict[360][0].put()

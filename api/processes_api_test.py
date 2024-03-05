@@ -57,16 +57,16 @@ class ProcessesAPITest(testing_config.CustomTestCase):
 
   def test_get__feature_type_0(self):
     """We can get process for features with feature type 0 (New feature incubation)."""
-    self.feature_1.feature_type = 0
+    self.feature_1.feature_type = core_enums.FEATURE_TYPE_INCUBATE_ID
     with test_app.test_request_context(self.request_path):
       actual = self.handler.do_get(feature_id=self.feature_id)
     expected = processes.process_to_dict(processes.BLINK_LAUNCH_PROCESS)
     self.assertEqual(expected, actual)
 
-  def test_get__feature_type_0_breaking_change(self):
+  def test_get__feature_type_0_impact_enterprise(self):
     """We can get process for breaking features with feature type 0 (New feature incubation)."""
-    self.feature_1.feature_type = 0
-    self.feature_1.breaking_change = True
+    self.feature_1.feature_type = core_enums.FEATURE_TYPE_INCUBATE_ID
+    self.feature_1.enterprise_impact = core_enums.ENTERPRISE_IMPACT_LOW
     self.feature_1.put()
     with test_app.test_request_context(self.request_path):
       actual = self.handler.do_get(feature_id=self.feature_id)
@@ -78,16 +78,16 @@ class ProcessesAPITest(testing_config.CustomTestCase):
 
   def test_get__feature_type_1(self):
     """We can get process for features with feature type 1 (Existing feature implementation)."""
-    self.feature_1.feature_type = 1
+    self.feature_1.feature_type = core_enums.FEATURE_TYPE_EXISTING_ID
     with test_app.test_request_context(self.request_path):
       actual = self.handler.do_get(feature_id=self.feature_id)
     expected = processes.process_to_dict(processes.BLINK_FAST_TRACK_PROCESS)
     self.assertEqual(expected, actual)
 
-  def test_get__feature_type_1_breaking_change(self):
+  def test_get__feature_type_1_impact_enterprise(self):
     """We can get process for breaking features with feature type 1 (Existing feature implementation)."""
-    self.feature_1.feature_type = 1
-    self.feature_1.breaking_change = True
+    self.feature_1.feature_type = core_enums.FEATURE_TYPE_EXISTING_ID
+    self.feature_1.enterprise_impact = core_enums.ENTERPRISE_IMPACT_MEDIUM
     self.feature_1.put()
     with test_app.test_request_context(self.request_path):
       actual = self.handler.do_get(feature_id=self.feature_id)
@@ -99,16 +99,16 @@ class ProcessesAPITest(testing_config.CustomTestCase):
 
   def test_get__feature_type_2(self):
     """We can get process for features with feature type 2 (Web developer facing change to existing code)."""
-    self.feature_1.feature_type = 2
+    self.feature_1.feature_type = core_enums.FEATURE_TYPE_CODE_CHANGE_ID
     with test_app.test_request_context(self.request_path):
       actual = self.handler.do_get(feature_id=self.feature_id)
     expected = processes.process_to_dict(processes.PSA_ONLY_PROCESS)
     self.assertEqual(expected, actual)
 
-  def test_get__feature_type_2_breaking_change(self):
+  def test_get__feature_type_2_impact_enterprise(self):
     """We can get process for breaking features with feature type 2 (Web developer facing change to existing code)."""
-    self.feature_1.feature_type = 2
-    self.feature_1.breaking_change = True
+    self.feature_1.feature_type = core_enums.FEATURE_TYPE_CODE_CHANGE_ID
+    self.feature_1.enterprise_impact = core_enums.ENTERPRISE_IMPACT_HIGH
     self.feature_1.put()
     with test_app.test_request_context(self.request_path):
       actual = self.handler.do_get(feature_id=self.feature_id)
@@ -120,16 +120,16 @@ class ProcessesAPITest(testing_config.CustomTestCase):
 
   def test_get__feature_type_3(self):
     """We can get process for features with feature type 3 (Feature deprecation)."""
-    self.feature_1.feature_type = 3
+    self.feature_1.feature_type = core_enums.FEATURE_TYPE_DEPRECATION_ID
     with test_app.test_request_context(self.request_path):
       actual = self.handler.do_get(feature_id=self.feature_id)
     expected = processes.process_to_dict(processes.DEPRECATION_PROCESS)
     self.assertEqual(expected, actual)
 
-  def test_get__feature_type_3_breaking_change(self):
+  def test_get__feature_type_3_impact_enterprise(self):
     """We can get process for breaking features with feature type 3 (Feature deprecation)."""
-    self.feature_1.feature_type = 3
-    self.feature_1.breaking_change = True
+    self.feature_1.feature_type = core_enums.FEATURE_TYPE_DEPRECATION_ID
+    self.feature_1.enterprise_impact = core_enums.ENTERPRISE_IMPACT_LOW
     self.feature_1.put()
     with test_app.test_request_context(self.request_path):
       actual = self.handler.do_get(feature_id=self.feature_id)
@@ -141,16 +141,16 @@ class ProcessesAPITest(testing_config.CustomTestCase):
 
   def test_get__feature_type_4(self):
     """We can get process for features with feature type 4 (Enterprise feature)."""
-    self.feature_1.feature_type = 4
+    self.feature_1.feature_type = core_enums.FEATURE_TYPE_ENTERPRISE_ID
     with test_app.test_request_context(self.request_path):
       actual = self.handler.do_get(feature_id=self.feature_id)
     expected = processes.process_to_dict(processes.ENTERPRISE_PROCESS)
     self.assertEqual(expected, actual)
 
-  def test_get__feature_type_4_breaking_change(self):
+  def test_get__feature_type_4_impact_enterprise(self):
     """We can get process for breaking features with feature type 4 (Enterprise feature)."""
-    self.feature_1.feature_type = 4
-    self.feature_1.breaking_change = True
+    self.feature_1.feature_type = core_enums.FEATURE_TYPE_ENTERPRISE_ID
+    self.feature_1.enterprise_impact = core_enums.ENTERPRISE_IMPACT_LOW
     self.feature_1.put()
     with test_app.test_request_context(self.request_path):
       actual = self.handler.do_get(feature_id=self.feature_id)
