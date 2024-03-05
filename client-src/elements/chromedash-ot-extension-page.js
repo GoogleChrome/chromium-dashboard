@@ -1,4 +1,4 @@
-import {LitElement, css, html} from 'lit';
+import {LitElement, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
 import {
   extensionMilestoneIsValid,
@@ -235,6 +235,14 @@ export class ChromedashOTExtensionPage extends LitElement {
       stageId: this.stage.id,
     });
 
+    // Add "ot_owner_email" field to represent the requester email.
+    this.fieldValues.push({
+      name: 'ot_action_requested',
+      touched: true,
+      value: true,
+      stageId: this.stage.id,
+    });
+
     // Add "stage_type" field to create extension stage properly.
     const extensionStageType = OT_EXTENSION_STAGE_MAPPING[this.stage.stage_type];
     this.fieldValues.push({
@@ -260,10 +268,22 @@ export class ChromedashOTExtensionPage extends LitElement {
       const index = this.fieldValues.length;
       this.fieldValues.push({
         name: featureJSONKey,
-        touched: false,
-        value: null,
+        touched: true,
+        value: this.currentMilestone || null,
         stageId: this.stage.id,
       });
+
+      // Add the extra elements to display milestone date information.
+      let milestoneInfoText = nothing;
+      if (featureJSONKey === 'ot_extension__milestone_desktop_last') {
+        milestoneInfoText = html`
+        <div id="milestone-date" style="display:none;">
+          <span id="milestone-date-text" class="helptext fade-in"></span>
+          <a class="helptext" @click=${this.openMilestoneExplanationDialog}>
+            Learn how this date is chosen
+          </a>
+        </div>`;
+      }
 
       return html`
       <chromedash-form-field
@@ -272,6 +292,7 @@ export class ChromedashOTExtensionPage extends LitElement {
         .fieldValues=${this.fieldValues}
         @form-field-update="${this.handleFormFieldUpdate}">
       </chromedash-form-field>
+      ${milestoneInfoText}
     `;
     });
 
@@ -291,12 +312,6 @@ export class ChromedashOTExtensionPage extends LitElement {
         <chromedash-form-table ${ref(this.registerHandlers)}>
           <section class="stage_form">
             ${this.renderFields(section)}
-            <div id="milestone-date" style="display:none;">
-              <span id="milestone-date-text" class="helptext fade-in"></span>
-              <a class="helptext" @click=${this.openMilestoneExplanationDialog}>
-                Learn how this date is chosen
-              </a>
-            </div>
           </section>
         </chromedash-form-table>
         <div class="final_buttons">

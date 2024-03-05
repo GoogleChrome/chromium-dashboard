@@ -1,5 +1,6 @@
 import {LitElement, css, html} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import {INTENT_STAGES} from './form-field-enums.js';
 
 let dialogEl;
 let currentFeatureId;
@@ -9,6 +10,7 @@ export const dialogTypes = {
   CREATION: 1,
   EXTENSION: 2,
   END_MILESTONE_EXPLANATION: 3,
+  FINALIZE_EXTENSION: 4,
 };
 
 export async function openPrereqsDialog(featureId, stageId, dialogType) {
@@ -36,11 +38,28 @@ export async function openInfoDialog(dialogType) {
   dialogEl.show();
 }
 
+export async function openFinalizeExtensionDialog(featureId, stageId, milestone, dialogType) {
+  if (!dialogEl || currentFeatureId !== featureId || currentStageId !== stageId) {
+    dialogEl = document.createElement('chromedash-ot-prereqs-dialog');
+    dialogEl.featureId = featureId;
+    dialogEl.stageId = stageId;
+    dialogEl.dialogType = dialogType;
+    dialogEl.milestone = milestone;
+    document.body.appendChild(dialogEl);
+    await dialogEl.updateComplete;
+  }
+  dialogEl.dialogType = dialogType;
+  currentFeatureId = featureId;
+  currentStageId = stageId;
+  dialogEl.show();
+}
+
 class ChromedashOTPrereqsDialog extends LitElement {
   static get properties() {
     return {
       featureId: {type: Number},
       stageId: {type: Number},
+      milestone: {type: Number},
       dialogType: {type: Number},
     };
   }
@@ -49,6 +68,7 @@ class ChromedashOTPrereqsDialog extends LitElement {
     super();
     this.featureId = 0;
     this.stageId = 0;
+    this.milestone = 0;
     this.dialogType = 0;
   }
 
@@ -64,7 +84,10 @@ class ChromedashOTPrereqsDialog extends LitElement {
       #prereqs-header {
         margin-bottom: 8px;
       }
-      #continue-button {
+      #update-button {
+        margin-right: 8px;
+      }
+      .float-right {
         float: right;
       }
       `,
@@ -85,6 +108,30 @@ class ChromedashOTPrereqsDialog extends LitElement {
         the next Chrome release. This additional trial time window ensures users don't see
         breakage before upgrading to the version with the feature enabled by default.
       </p>
+    </sl-dialog>`;
+  }
+
+  submitTrialExtension() {
+    window.csClient.extendOriginTrial().then(() => location.assign(`/feature/${this.featureId}`));
+  }
+
+  renderFinalizeExtensionDialog() {
+    return html`
+    <sl-dialog label="Finalize trial extension">
+      <p>
+        LGTMs have been detected for this trial extension.
+        This origin trial will be extended <strong>through milestone ${this.milestone}</strong>.
+        Is this correct?
+      </p>
+      <br>
+      <sl-button class="float-right" variant="primary" size="small"
+        @click=${() => this.submitTrialExtension()}
+        @click=${() => location.assign(`/ot_extension_request/${this.featureId}/${this.stageId}`)}
+      >Proceed</sl-button>
+      <sl-button
+        class="float-right" id="update-button" variant="info" size="small"
+        @click=${() => location.assign(`/guide/stage/${this.featureId}/${INTENT_STAGES.INTENT_EXTEND_ORIGIN_TRIAL[0]}/${this.stageId}`)}
+      >Change milestone</sl-button>
     </sl-dialog>`;
   }
 
@@ -157,7 +204,7 @@ class ChromedashOTPrereqsDialog extends LitElement {
         If you have any further questions, contact us at origin-trials-support@google.com.
       </p>
       <br>
-      <sl-button id="continue-button" variant="primary"
+      <sl-button class="float-right" variant="primary"
         @click=${() => location.assign(`/ot_creation_request/${this.featureId}/${this.stageId}`)}
         size="small"
       >Proceed</sl-button>
@@ -167,6 +214,9 @@ class ChromedashOTPrereqsDialog extends LitElement {
   render() {
     if (this.dialogType === dialogTypes.END_MILESTONE_EXPLANATION) {
       return this.renderEndMilestoneExplanationDialog();
+    }
+    if (this.dialogType === dialogTypes.FINALIZE_EXTENSION) {
+      return this.renderFinalizeExtensionDialog();
     }
     if (this.dialogType === dialogTypes.EXTENSION) {
       return this.renderExtensionPrereqs();

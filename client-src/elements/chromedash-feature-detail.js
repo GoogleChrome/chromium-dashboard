@@ -4,6 +4,7 @@ import {enhanceUrl} from './feature-link';
 import {openAddStageDialog} from './chromedash-add-stage-dialog';
 import {
   openPrereqsDialog,
+  openFinalizeExtensionDialog,
   dialogTypes,
 } from './chromedash-ot-prereqs-dialog';
 import {makeDisplaySpecs} from './form-field-specs';
@@ -17,6 +18,7 @@ import {
   OT_EXTENSION_STAGE_MAPPING,
   STAGE_SHORT_NAMES,
   STAGE_TYPES_ORIGIN_TRIAL,
+  VOTE_OPTIONS,
 } from './form-field-enums';
 
 import {
@@ -560,6 +562,31 @@ class ChromedashFeatureDetail extends LitElement {
           >Edit fields</sl-button>`;
   }
 
+  renderFinalizeExtensionButton(extensionStage) {
+    return html`
+      <sl-button
+        size="small"
+        variant="primary"
+        @click=${() => openFinalizeExtensionDialog(
+      this.feature.id,
+      extensionStage.id,
+      extensionStage.desktop_last,
+      dialogTypes.FINALIZE_EXTENSION)}
+        >Finalize Extension</sl-button>`;
+  }
+
+  renderDisabledExtensionButton() {
+    const tooltipText = 'A pending extension request exists. Follow the process for ' +
+    'obtaining extension approval, or contact origin-trials-support@google.com for help.';
+    return html`
+    <sl-tooltip content=${tooltipText}>
+      <sl-button
+        size="small"
+        disabled
+        >Trial Extension Pending</sl-button>
+    </sl-tooltip>`;
+  }
+
   renderExtensionButton(feStage) {
     // Don't render an extension request button if this is not an OT stage,
     // or the user does not have access to submit an extension request,
@@ -567,36 +594,37 @@ class ChromedashFeatureDetail extends LitElement {
     const userCannotViewOTControls = (!this.user ||
       (!this.user.email.endsWith('@chromium.org') && !this.user.email.endsWith('@google.com')));
     const isNotOriginTrialStage = !STAGE_TYPES_ORIGIN_TRIAL.has(feStage.stage_type);
-    const originTrialNotCreatedYet = !feStage.origin_trial_id;
+    const originTrialNotCreatedYet = feStage.origin_trial_id;
     if (userCannotViewOTControls || isNotOriginTrialStage || originTrialNotCreatedYet) {
       return nothing;
     }
 
-    // Button text changes based on whether or not an extension stage already exists.
-    const extensionAlreadyExists = feStage.extensions && feStage.extensions.length > 0;
-    const extensionInProgress = (
-      feStage.extensions && feStage.extensions.some(ext => ext.ot_action_requested));
-
-    let extensionButtonText = 'Request a trial extension';
-    if (extensionAlreadyExists) {
-      extensionButtonText = 'Request another trial extension';
+    // Add button to finalize an extension if the extension has been approved.
+    const extensionReadyForFinalize = feStage.extensions.find(e => {
+      const extensionGate = this.gates.find(g => g.stage_id === e.id);
+      return e.ot_action_requested && extensionGate.state === VOTE_OPTIONS.APPROVED[0];
+    });
+    if (extensionReadyForFinalize) {
+      return this.renderFinalizeExtensionButton(extensionReadyForFinalize);
     }
 
+    const extensionInProgress = (
+      feStage.extensions && feStage.extensions.some(e => e.ot_action_requested));
     // Show a disabled button if an extension request has already been submitted.
     if (extensionInProgress) {
-      return html`
-        <sl-tooltip content="A pending request exists. For further inquiries, contact origin-trials-support@google.com.">
-          <sl-button
-            size="small"
-            disabled
-            >${extensionButtonText}</sl-button>
-        </sl-tooltip>`;
+      return this.renderDisabledExtensionButton();
+    }
+
+    // Button text changes based on whether or not an extension stage already exists.
+    let extensionButtonText = 'Request a trial extension';
+    if (feStage.extensions && feStage.extensions.length > 0) {
+      extensionButtonText = 'Request another trial extension';
     }
 
     const stageId = feStage.id;
     return html`
     <sl-button size="small"
-        @click="${() => openPrereqsDialog(this.feature.id, stageId, dialogTypes.EXTENSION)}"
+        @click=${() => location.assign(`/ot_extension_request/${this.feature.id}/${stageId}`)}
         >${extensionButtonText}</sl-button>`;
   }
 

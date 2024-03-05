@@ -327,8 +327,6 @@ export const FLAT_TRIAL_EXTENSION_FIELDS = {
         'experiment_extension_reason',
         'intent_to_extend_experiment_url',
         'extension_desktop_last',
-        'extension_android_last',
-        'extension_webview_last',
       ],
     },
   ],
@@ -543,7 +541,10 @@ export const ORIGIN_TRIAL_EXTENSION_FIELDS = {
   name: 'Origin trial extension',
   sections: [
     {
-      fields: ['ot_extension__milestone_desktop_last'],
+      fields: [
+        'ot_extension__milestone_desktop_last',
+        'experiment_extension_reason',
+      ],
     },
   ],
 };
@@ -711,11 +712,13 @@ export const FORMS_BY_STAGE_TYPE = {
   [enums.STAGE_BLINK_DEV_TRIAL]: FLAT_DEV_TRIAL_FIELDS,
   [enums.STAGE_BLINK_EVAL_READINESS]: FLAT_EVAL_READINESS_TO_SHIP_FIELDS,
   [enums.STAGE_BLINK_ORIGIN_TRIAL]: FLAT_ORIGIN_TRIAL_FIELDS,
+  [enums.STAGE_BLINK_EXTEND_ORIGIN_TRIAL]: FLAT_TRIAL_EXTENSION_FIELDS,
   [enums.STAGE_BLINK_SHIPPING]: FLAT_PREPARE_TO_SHIP_FIELDS,
 
   [enums.STAGE_FAST_PROTOTYPE]: FLAT_PROTOTYPE_FIELDS,
   [enums.STAGE_FAST_DEV_TRIAL]: FLAT_DEV_TRIAL_FIELDS,
   [enums.STAGE_FAST_ORIGIN_TRIAL]: FLAT_ORIGIN_TRIAL_FIELDS,
+  [enums.STAGE_FAST_EXTEND_ORIGIN_TRIAL]: FLAT_TRIAL_EXTENSION_FIELDS,
   [enums.STAGE_FAST_SHIPPING]: FLAT_PREPARE_TO_SHIP_FIELDS,
 
   [enums.STAGE_PSA_IMPLEMENT_FIELDS]: PSA_IMPLEMENT_FIELDS,
@@ -725,6 +728,7 @@ export const FORMS_BY_STAGE_TYPE = {
   [enums.STAGE_DEP_PLAN]: DEPRECATION_PLAN_FIELDS,
   [enums.STAGE_DEP_DEV_TRIAL]: DEPRECATION_DEV_TRIAL_FIELDS,
   [enums.STAGE_DEP_DEPRECATION_TRIAL]: DEPRECATION_ORIGIN_TRIAL_FIELDS,
+  [enums.STAGE_DEP_EXTEND_DEPRECATION_TRIAL]: FLAT_TRIAL_EXTENSION_FIELDS,
   [enums.STAGE_DEP_SHIPPING]: DEPRECATION_PREPARE_TO_SHIP_FIELDS,
 
   [enums.STAGE_ENT_ROLLOUT]: FLAT_ENTERPRISE_PREPARE_TO_SHIP_FIELDS,
