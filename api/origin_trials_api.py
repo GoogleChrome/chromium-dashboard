@@ -39,34 +39,30 @@ class OriginTrialsAPI(basehandlers.APIHandler):
     return trials_list
 
   def _validate_extension_args(
-        self, feature_id: int, stage: Stage, body: dict) -> None:
+        self, feature_id: int, ot_stage: Stage, extension_stage: Stage) -> None:
     """Abort if any arguments used for origin trial extension are invalid."""
     # The stage should belong to the feature.
-    if feature_id != stage.feature_id:
+    if feature_id != extension_stage.feature_id:
       self.abort(400, ('Stage does not belong to feature. '
                        f'feature_id: {feature_id}, '
-                       f'stage_id: {stage.key.integer_id()}'))
-    trial_id = body.get('origin_trial_id')
-    if (trial_id is None
-        or not (all(char.isdigit() or char == '-' for char in trial_id))):
+                       f'stage_id: {extension_stage.key.integer_id()}'))
+
+    trial_id = ot_stage.origin_trial_id
+    if trial_id is None:
       self.abort(400, f'Invalid argument for trial_id: {trial_id}')
-    # The origin trial should belong to the stage.
-    if trial_id != stage.origin_trial_id:
-      self.abort(400, ('Origin trial does not belong to stage.'
-                       f'origin trial ID: {trial_id}',
-                       f'stage\'s origin trial ID: {trial_id}'))
-    end_milestone = body.get('end_milestone')
-    if end_milestone is None or not end_milestone.isnumeric():
-      self.abort(400, f'Invalid argument for end_milestone: {end_milestone}')
-    intent_url = body.get('intent_thread_url')
+
+    milestones = extension_stage.milestones
+    if milestones is None or milestones.desktop_last is None:
+      self.abort(404, f'Extension stage has no end milestone defined.')
+    intent_url = extension_stage.intent_thread_url
     if intent_url is None or not validators.url(intent_url):
       self.abort(400, ('Invalid argument for extension_intent_url: '
                        f'{intent_url}'))
 
-
   def do_post(self, **kwargs):
     """Extends an existing origin trial"""
     feature_id = int(kwargs['feature_id'])
+    extension_stage_id = int(kwargs['extension_stage_id'])
     # Check that feature ID is valid.
     if feature_id is None or feature_id == 0:
       self.abort(404, msg='No feature specified.')
@@ -75,12 +71,18 @@ class OriginTrialsAPI(basehandlers.APIHandler):
       self.abort(404, msg=f'Feature {feature_id} not found')
 
     # Check that stage ID is valid.
-    stage_id = int(kwargs['stage_id'])
-    if stage_id is None or stage_id == 0:
+    extension_stage_id = int(kwargs['extension_stage_id'])
+    if extension_stage_id is None or extension_stage_id == 0:
       self.abort(404, msg='No stage specified.')
-    stage: Stage | None = Stage.get_by_id(stage_id)
-    if stage is None:
-      self.abort(404, msg=f'Stage {stage_id} not found')
+    extension_stage: Stage | None = Stage.get_by_id(extension_stage_id)
+    if extension_stage is None:
+      self.abort(404, msg=f'Stage {extension_stage_id} not found')
+    if extension_stage.ot_stage_id is None:
+      self.abort(400, msg=(f'Extension stage {extension_stage_id} does not '
+                           'have associated origin trial stage.'))
+    ot_stage: Stage | None = Stage.get_by_id(extension_stage.ot_stage_id)
+    if ot_stage is None:
+      self.abort(404, msg=f'OT stage {extension_stage.ot_stage_id} not found')
 
     # Check that user has permission to edit the feature
     # associated with the origin trial.
@@ -89,16 +91,18 @@ class OriginTrialsAPI(basehandlers.APIHandler):
     if redirect_resp:
       return redirect_resp
 
-    body = self.get_json_param_dict()
-    self._validate_extension_args(feature_id, stage, body)
+    self._validate_extension_args(feature_id, ot_stage, extension_stage)
 
     try:
       origin_trials_client.extend_origin_trial(
-        body['origin_trial_id'], body['end_milestone'],
-        body['intent_thread_url'])
+        ot_stage.origin_trial_id, extension_stage.milestones.desktop_last,
+        extension_stage.intent_thread_url)
     except requests.exceptions.RequestException:
       self.abort(500, 'Error in request to origin trials API')
     except KeyError:
       self.abort(500, 'Malformed response from Schedule API')
 
+    # This extension has been processed and action is no longer needed.
+    extension_stage.ot_action_requested = False
+    extension_stage.put()
     return {'message': 'Origin trial extended successfully.'}

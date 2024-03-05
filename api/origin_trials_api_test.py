@@ -18,7 +18,7 @@ import flask
 import werkzeug.exceptions  # Flask HTTP stuff.
 
 from api import origin_trials_api
-from internals.core_models import FeatureEntry, Stage
+from internals.core_models import FeatureEntry, MilestoneSet, Stage
 
 test_app = flask.Flask(__name__)
 
@@ -34,6 +34,14 @@ class OriginTrialsAPITest(testing_config.CustomTestCase):
         feature_id=self.feature_1_id, stage_type=150,
         origin_trial_id='-1234567890')
     self.ot_stage_1.put()
+
+    self.extension_stage_1 = Stage(
+        feature_id=self.feature_1_id, stage_type=151, 
+        ot_stage_id=self.ot_stage_1.key.integer_id(),
+        milestones=MilestoneSet(desktop_last=153),
+        intent_thread_url='https://example.com/intent')
+    self.extension_stage_1.put()
+
     self.feature_2 = FeatureEntry(
         feature_type=1, name='feature two', summary='sum', category=1)
     self.feature_2.put()
@@ -44,7 +52,7 @@ class OriginTrialsAPITest(testing_config.CustomTestCase):
     self.handler = origin_trials_api.OriginTrialsAPI()
     self.request_path = (
         '/api/v0/origintrials/'
-        f'{self.feature_1_id}/{self.ot_stage_1.key.integer_id()}/extend')
+        f'{self.feature_1_id}/{self.extension_stage_1.key.integer_id()}/extend')
 
   def tearDown(self):
     for kind in [FeatureEntry, Stage]:
@@ -52,94 +60,40 @@ class OriginTrialsAPITest(testing_config.CustomTestCase):
         entity.key.delete()
 
   def test_validate_extension_args__valid(self):
-    body = {
-      'origin_trial_id': '-1234567890',
-      'end_milestone': '150',
-      'intent_thread_url': 'https://example.com/intent',
-    }
     # No exception should be raised.
     with test_app.test_request_context(self.request_path):
       self.handler._validate_extension_args(
-          self.feature_1_id, self.ot_stage_1, body)
-  
-  def test_validate_extension_args__mismatched_stage(self):
-    body = {
-      'origin_trial_id': '-1234567890',
-      'end_milestone': '150',
-      'intent_thread_url': 'https://example.com/intent',
-    }
-    with test_app.test_request_context(self.request_path):
-      with self.assertRaises(werkzeug.exceptions.BadRequest):
-        # Stage doesn't belong to feature.
-        self.handler._validate_extension_args(
-            self.feature_1_id, self.ot_stage_2, body)
-  
-  def test_validate_extension_args__invalid_ot_id(self):
-    body = {
-      # Invalid trial ID.
-      'origin_trial_id': '1111111111',
-      'end_milestone': '150',
-      'intent_thread_url': 'https://example.com/intent',
-    }
-    with test_app.test_request_context(self.request_path):
-      with self.assertRaises(werkzeug.exceptions.BadRequest):
-        self.handler._validate_extension_args(
-            self.feature_1_id, self.ot_stage_1, body)
+          self.feature_1_id, self.ot_stage_1, self.extension_stage_1)
 
   def test_validate_extension_args__missing_ot_id(self):
-    body = {
-      # Missing trial ID.
-      'end_milestone': '150',
-      'intent_thread_url': 'https://example.com/intent',
-    }
+    self.ot_stage_1.origin_trial_id = None
+    self.ot_stage_1.put()
     with test_app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler._validate_extension_args(
-            self.feature_1_id, self.ot_stage_1, body)
-
-  def test_validate_extension_args__invalid_end_milestone(self):
-    body = {
-      'origin_trial_id': '-1234567890',
-      # Invalid end milestone.
-      'end_milestone': 'abc',
-      'intent_thread_url': 'https://example.com/intent',
-    }
-    with test_app.test_request_context(self.request_path):
-      with self.assertRaises(werkzeug.exceptions.BadRequest):
-        self.handler._validate_extension_args(
-            self.feature_1_id, self.ot_stage_1, body)
+            self.feature_1_id, self.ot_stage_1, self.extension_stage_1)
 
   def test_validate_extension_args__missing_end_milestone(self):
-    body = {
-      'origin_trial_id': '-1234567890',
-      # Missing end milestone.
-      'intent_thread_url': 'https://example.com/intent',
-    }
+    self.extension_stage_1.milestones.desktop_last = None
+    self.extension_stage_1.put()
     with test_app.test_request_context(self.request_path):
-      with self.assertRaises(werkzeug.exceptions.BadRequest):
+      with self.assertRaises(werkzeug.exceptions.NotFound):
         self.handler._validate_extension_args(
-            self.feature_1_id, self.ot_stage_1, body)
+            self.feature_1_id, self.ot_stage_1, self.extension_stage_1)
 
   def test_validate_extension_args__invalid_intent_url(self):
-    body = {
-      'origin_trial_id': '-1234567890',
-      'end_milestone': '150',
-      # Invalid intent thread URL.
-      'intent_thread_url': 'This can\'t be right.',
-    }
+    self.extension_stage_1.intent_thread_url = 'This can\'t be right.'
+    self.extension_stage_1.put()
     with test_app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler._validate_extension_args(
-            self.feature_1_id, self.ot_stage_1, body)
+            self.feature_1_id, self.ot_stage_1, self.extension_stage_1)
 
   def test_validate_extension_args__missing_intent_url(self):
-    body = {
-      'origin_trial_id': '-1234567890',
-      'end_milestone': '150',
-      # Missing intent thread URL.
-    }
+    self.extension_stage_1.intent_thread_url = None
+    self.extension_stage_1.put()
     with test_app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler._validate_extension_args(
-            self.feature_1_id, self.ot_stage_1, body)
+            self.feature_1_id, self.ot_stage_1, self.extension_stage_1)
 
