@@ -543,10 +543,7 @@ export const ORIGIN_TRIAL_EXTENSION_FIELDS = {
   name: 'Origin trial extension',
   sections: [
     {
-      fields: [
-        'ot_extension__intent_to_extend_experiment_url',
-        'ot_extension__milestone_desktop_last',
-      ],
+      fields: ['ot_extension__milestone_desktop_last'],
     },
   ],
 };

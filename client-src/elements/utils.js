@@ -518,3 +518,21 @@ export function handleSaveChangesResponse(response) {
   const app = document.querySelector('chromedash-app');
   app.setUnsavedChanges(response !== '');
 }
+
+export function extensionMilestoneIsValid(value, currentMilestone) {
+  if (isNaN(value)) {
+    return false;
+  }
+  // Milestone should only have digits.
+  for (let i = 0; i < value.length; i++) {
+    if (value[i] < '0' || value[i] > '9') {
+      return false;
+    }
+  }
+  const intValue = parseInt(value);
+  if (intValue >= 1000) {
+    return false;
+  }
+  // End milestone should not be in the past.
+  return parseInt(currentMilestone) <= intValue;
+}
