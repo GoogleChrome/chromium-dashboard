@@ -198,14 +198,19 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     
     stage = self.find_matching_stage(feature, approval_field, thread_url)
     if stage is None:
-      return {'message': (
-        f'No matching stage found for intent type {approval_field.field_id}')}
+      message = ('No matching stage found for intent type '
+                 f'{approval_field.field_id}')
+      logging.info(message)
+      return {'message': message}
 
     gate = Gate.query(Gate.stage_id == stage.key.integer_id(),
                       Gate.gate_type == approval_field.field_id).get()
     if gate is None:
-      return {'message': (f'Gate not found for stage {stage.key.integer_id()} '
-                          f' and gate type {approval_field.field_id}')}
+      message = (f'Gate not found for stage {stage.key.integer_id()} '
+                    f' and gate type {approval_field.field_id}')
+      logging.info(message)
+      return {'message': message}
+
     self.set_intent_thread_url(stage, thread_url, subject)
     is_new_thread = detect_new_thread(feature_id, approval_field)
     self.create_approvals(feature, gate, approval_field, from_addr, body)
