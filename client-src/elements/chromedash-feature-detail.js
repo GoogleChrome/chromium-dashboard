@@ -594,7 +594,7 @@ class ChromedashFeatureDetail extends LitElement {
     const userCannotViewOTControls = (!this.user ||
       (!this.user.email.endsWith('@chromium.org') && !this.user.email.endsWith('@google.com')));
     const isNotOriginTrialStage = !STAGE_TYPES_ORIGIN_TRIAL.has(feStage.stage_type);
-    const originTrialNotCreatedYet = feStage.origin_trial_id;
+    const originTrialNotCreatedYet = !feStage.origin_trial_id;
     if (userCannotViewOTControls || isNotOriginTrialStage || originTrialNotCreatedYet) {
       return nothing;
     }

@@ -1,6 +1,7 @@
 import {LitElement, css, html} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {INTENT_STAGES} from './form-field-enums.js';
+import {showToastMessage} from './utils.js';
 
 let dialogEl;
 let currentFeatureId;
@@ -112,7 +113,15 @@ class ChromedashOTPrereqsDialog extends LitElement {
   }
 
   submitTrialExtension() {
-    window.csClient.extendOriginTrial().then(() => location.assign(`/feature/${this.featureId}`));
+    window.csClient.extendOriginTrial(this.featureId, this.stageId)
+      .then(() => {
+        showToastMessage('Extension processed!');
+        setTimeout(() => {
+          location.assign(`/feature/${this.featureId}`);
+        }, 1000);
+      }).catch(() => {
+        showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+      });
   }
 
   renderFinalizeExtensionDialog() {
