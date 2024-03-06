@@ -195,7 +195,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     if not feature:
       logging.info('Could not retrieve feature')
       return {'message': 'Feature not found'}
-    
+
     stage = self.find_matching_stage(feature, approval_field, thread_url)
     if stage is None:
       message = ('No matching stage found for intent type '
@@ -268,6 +268,10 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
       return None
 
     # Check if this intent URL already belongs to a stage.
+    # TODO(DanielRyanSmith): The intent thread URLs contain the message ID
+    # and won't match up perfectly when comparing them.
+    # Update to instead detect by gate ID.
+    # See https://github.com/GoogleChrome/chromium-dashboard/pull/3678#discussion_r1513361281
     matching_stage = next((s for s in stages_of_type_in_feature
                             if s.intent_thread_url == thread_url), None)
     if matching_stage:
