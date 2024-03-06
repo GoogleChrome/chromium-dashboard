@@ -19,6 +19,7 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 
 from api import origin_trials_api
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.review_models import Gate, Vote
 
 test_app = flask.Flask(__name__)
 
@@ -41,6 +42,10 @@ class OriginTrialsAPITest(testing_config.CustomTestCase):
         milestones=MilestoneSet(desktop_last=153),
         intent_thread_url='https://example.com/intent')
     self.extension_stage_1.put()
+    self.extension_gate_1 = Gate(feature_id=self.feature_1_id,
+                stage_id=self.extension_stage_1.key.integer_id(),
+                gate_type=3, state=Vote.APPROVED)
+    self.extension_gate_1.put()
 
     self.feature_2 = FeatureEntry(
         feature_type=1, name='feature two', summary='sum', category=1)
@@ -97,3 +102,10 @@ class OriginTrialsAPITest(testing_config.CustomTestCase):
         self.handler._validate_extension_args(
             self.feature_1_id, self.ot_stage_1, self.extension_stage_1)
 
+  def test_validate_extension_args__not_approved(self):
+    self.extension_gate_1.state = Vote.NA
+    self.extension_gate_1.put()
+    with test_app.test_request_context(self.request_path):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler._validate_extension_args(
+            self.feature_1_id, self.ot_stage_1, self.extension_stage_1)

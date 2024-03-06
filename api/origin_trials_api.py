@@ -19,7 +19,7 @@ from framework import basehandlers
 from framework import permissions
 from framework import origin_trials_client
 from internals.core_models import FeatureEntry, Stage
-
+from internals.review_models import Gate, Vote
 
 class OriginTrialsAPI(basehandlers.APIHandler):
 
@@ -58,6 +58,10 @@ class OriginTrialsAPI(basehandlers.APIHandler):
     if intent_url is None or not validators.url(intent_url):
       self.abort(400, ('Invalid argument for extension_intent_url: '
                        f'{intent_url}'))
+
+    gate = Gate.query(Gate.stage_id == extension_stage.key.integer_id()).get()
+    if not gate or gate.state != Vote.APPROVED:
+      self.abort(400, 'Extension has not received the required approvals.')
 
   def do_post(self, **kwargs):
     """Extends an existing origin trial"""
