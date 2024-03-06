@@ -74,10 +74,12 @@ class FunctionTest(testing_config.CustomTestCase):
           'Intent to Extend Experiment: Something cool',
           'Intent to Continue Experiment: Something cool',
           'Intend to Continue Experiment: Something cool',
+          'Intent to Extend Origin Trial: Something cool',
           'Intending to Continue Experiment: Something cool',
           'Request to Continue Experiment: Something cool',
           'Request to Continue Experimenting: Something cool',
           'Request to Continuing Experiment: Something cool',
+          'Request to Extend Origin Trial: Something cool',
           'Requesting to Continuing Experiment: Something cool',
       ],
       approval_defs.ShipApproval: [
@@ -400,20 +402,32 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()
 
-    stage_types = [110, 120, 130, 140, 150, 151, 160]
+    # Typical feature with two OT extension stages.
+    feature_stages_and_gates = core_enums.STAGES_AND_GATES_BY_FEATURE_TYPE[0]
     self.stages: list[Stage] = []
-    for s_type in stage_types:
+    for s_type, gate_types in feature_stages_and_gates:
       stage = Stage(feature_id=self.feature_id, stage_type=s_type)
       stage.put()
       self.stages.append(stage)
+      for gate_type in gate_types:
+        gate = Gate(feature_id=self.feature_id,
+                    stage_id=stage.key.integer_id(), gate_type=gate_type,
+                    state=Vote.NA)
+        gate.put()
+    extra_extension_stage = Stage(feature_id=self.feature_id, stage_type=151)
+    extra_extension_stage.put()
+    extra_extension_gate = Gate(feature_id=self.feature_id,
+                                stage_id=extra_extension_stage.key.integer_id(),
+                                gate_type=3, state=Vote.NA)
+    extra_extension_gate.put()
     self.stages_dict = stage_helpers.get_feature_stages(self.feature_id)
+    # The intent thread url already exists for the first extension stage.
+    self.stages_dict[151][0].intent_thread_url = 'https://example.com/exists'
+    self.stages_dict[151][0].put()
 
     self.gate_1 = Gate(feature_id=self.feature_id, stage_id=1,
         gate_type=1, state=Vote.NA)
     self.gate_1.put()
-    self.gate_2 = Gate(feature_id=self.feature_id, stage_id=2,
-        gate_type=4, state=Vote.NA)
-    self.gate_2.put()
 
     self.request_path = '/tasks/detect-intent'
 
@@ -464,6 +478,34 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     self.assertEqual(
         self.stages_dict[160][0].intent_thread_url, self.thread_url)
 
+  def test_process_post_data__new_thread_multiple_stages(self):
+    """Intent thread is still recorded for multiple stage types."""
+    extend_json_data = {
+        'from_addr': 'user@example.com',
+        'subject': 'Intent to Extend Experiment: Featurename',
+        'body': 'Please review. ' + self.entry_link + self.footer,
+        }
+    with test_app.test_request_context(
+        self.request_path, json=extend_json_data):
+      actual = self.handler.process_post_data()
+
+    self.assertEqual(actual, {'message': 'Done'})
+
+    created_votes = list(Vote.query().fetch(None))
+    self.assertEqual(1, len(created_votes))
+    vote = created_votes[0]
+    self.assertEqual(self.feature_id, vote.feature_id)
+    self.assertEqual(Vote.REVIEW_REQUESTED, vote.state)
+    self.assertEqual('user@example.com', vote.set_by)
+
+    # The previously set intent thread should not be changed,
+    # and the only stage with an unset intent thread url should be updated.
+    self.assertEqual(
+        self.stages_dict[151][0].intent_thread_url,
+        'https://example.com/exists')
+    self.assertEqual(
+        self.stages_dict[151][1].intent_thread_url, self.thread_url)
+
   def test_process_post_data__new_thread_already_empty_str(self):
     """We still set intent_thread_url if it was previously an empty string."""
     self.stages_dict[160][0].intent_thread_url = ''
@@ -511,6 +553,9 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
   def test_record_slo__gate_not_found(self, mock_info):
     """If we can't find the gate, exit early."""
     appr_field = approval_defs.TestingShipApproval
+    ship_gate: Gate = Gate.query(Gate.feature_id == self.feature_id,
+               Gate.gate_type == appr_field.field_id).get()
+    ship_gate.key.delete()
     self.handler.record_slo(self.feature_1, appr_field, 'from_addr', False)
     mock_info.assert_called_once_with('Did not find a gate')
 
@@ -533,8 +578,8 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     """If an approver posted, count that as an initial response."""
     mock_now.return_value = datetime.datetime.now()
     appr_field = approval_defs.TestingShipApproval
-    gate = Gate(feature_id=self.feature_id, stage_id=2,
-        gate_type=appr_field.field_id, state=Vote.NA)
+    gate = Gate.query(Gate.feature_id == self.feature_id,
+                      Gate.gate_type == appr_field.field_id).get()
     gate.requested_on = mock_now.return_value
     gate.put()
     from_addr = approval_defs.TESTING_APPROVERS[0]
