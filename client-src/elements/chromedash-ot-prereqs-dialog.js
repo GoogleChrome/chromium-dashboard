@@ -135,7 +135,6 @@ class ChromedashOTPrereqsDialog extends LitElement {
       <br>
       <sl-button class="float-right" variant="primary" size="small"
         @click=${() => this.submitTrialExtension()}
-        @click=${() => location.assign(`/ot_extension_request/${this.featureId}/${this.stageId}`)}
       >Proceed</sl-button>
       <sl-button
         class="float-right" id="update-button" variant="info" size="small"

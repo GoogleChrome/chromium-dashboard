@@ -198,7 +198,8 @@ export class ChromedashOTExtensionPage extends LitElement {
     });
   }
 
-  handleCancelClick() {
+  handleCancelClick(e) {
+    e.preventDefault(); // Stops the form from being submitted.
     window.location.href = `/feature/${this.featureId}`;
   }
 
