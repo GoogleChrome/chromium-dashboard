@@ -1,7 +1,6 @@
 import {LitElement, css, html} from 'lit';
 import {ref} from 'lit/directives/ref.js';
 import {
-  formatFeatureChanges,
   showToastMessage,
   setupScrollToHash} from './utils.js';
 import './chromedash-form-table.js';
@@ -108,11 +107,22 @@ export class ChromedashOTExtensionPage extends LitElement {
     // We only need the single stage changes.
     const stageSubmitBody = featureSubmitBody.stages[0];
 
-    window.csClient.createStage(this.featureId, stageSubmitBody).then(() => {
-      showToastMessage('Extension request submitted!');
-      setTimeout(() => {
-        window.location.href = this.nextPage || `/feature/${this.featureId}`;
-      }, 1000);
+    let newStageId = null;
+    window.csClient.createStage(this.featureId, stageSubmitBody).then(resp => {
+      newStageId = resp.stage_id;
+      return window.csClient.getGates(this.featureId);
+    }).then(resp => {
+      const gate = resp.gates.find(gate => gate.stage_id === newStageId);
+      showToastMessage('Extension request started!');
+      if (!newStageId || !gate) {
+        setTimeout(() => {
+          window.location.href = this.nextPage || `/feature/${this.featureId}`;
+        }, 1000);
+      } else {
+        setTimeout(() => {
+          window.location.href = this.nextPage || `/feature/${this.featureId}?gate=${gate.id}`;
+        }, 1000);
+      }
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });

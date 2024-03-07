@@ -343,6 +343,11 @@ class ChromeStatusClient {
         `/features/${featureId}/stages/${stageId}/addXfnGates`);
   }
 
+  // Origin trials API
+  async extendOriginTrial(featureId, stageId, body) {
+    return this.doPost(`/origintrials/${featureId}/${stageId}/extend`, body);
+  }
+
   // Processes API
   async getFeatureProcess(featureId) {
     return this.doGet(`/features/${featureId}/process`);

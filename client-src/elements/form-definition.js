@@ -546,7 +546,6 @@ export const ORIGIN_TRIAL_EXTENSION_FIELDS = {
       fields: [
         'ot_extension__intent_to_extend_experiment_url',
         'ot_extension__milestone_desktop_last',
-        'ot_request_note',
       ],
     },
   ],
