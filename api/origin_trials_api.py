@@ -68,7 +68,7 @@ class OriginTrialsAPI(basehandlers.APIHandler):
     feature_id = int(kwargs['feature_id'])
     extension_stage_id = int(kwargs['extension_stage_id'])
     # Check that feature ID is valid.
-    if feature_id is None or feature_id == 0:
+    if not feature_id:
       self.abort(404, msg='No feature specified.')
     feature: FeatureEntry | None = FeatureEntry.get_by_id(feature_id)
     if feature is None:
@@ -76,7 +76,7 @@ class OriginTrialsAPI(basehandlers.APIHandler):
 
     # Check that stage ID is valid.
     extension_stage_id = int(kwargs['extension_stage_id'])
-    if extension_stage_id is None or extension_stage_id == 0:
+    if not extension_stage_id:
       self.abort(404, msg='No stage specified.')
     extension_stage: Stage | None = Stage.get_by_id(extension_stage_id)
     if extension_stage is None:
