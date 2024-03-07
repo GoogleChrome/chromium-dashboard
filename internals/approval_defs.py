@@ -92,6 +92,12 @@ ShipApproval = ApprovalFieldDef(
     core_enums.GATE_API_SHIP, THREE_LGTM,
     approvers=API_OWNERS_URL, team_name='API Owners')
 
+PlanApproval = ApprovalFieldDef(
+    'Intent to Deprecate and Remove',
+    'Three API Owners must approve your intent',
+    core_enums.GATE_API_PLAN, THREE_LGTM,
+    approvers=API_OWNERS_URL, team_name='API Owners')
+
 PrivacyOriginTrialApproval = ApprovalFieldDef(
     'Privacy OT Review',
     'Privacy OT Review',
@@ -108,6 +114,8 @@ PrivacyShipApproval = ApprovalFieldDef(
     escalation_email='chrome-privacy-owp-rotation@google.com',
     slo_initial_response=6)
 
+# Note: There is no PrivacyPlanApproval
+
 SecurityOriginTrialApproval = ApprovalFieldDef(
     'Security OT Review',
     'Security OT Review',
@@ -122,10 +130,18 @@ SecurityShipApproval = ApprovalFieldDef(
     approvers=SECURITY_APPROVERS, team_name='Security',
     slo_initial_response=6)
 
+# Note: There is no SecurityPlanApproval
+
 EnterpriseShipApproval = ApprovalFieldDef(
     'Enterprise Ship Review',
     'Enterprise Ship Review',
     core_enums.GATE_ENTERPRISE_SHIP, ONE_LGTM,
+    approvers=ENTERPRISE_APPROVERS, team_name='Enterprise')
+
+EnterprisePlanApproval = ApprovalFieldDef(
+    'Enterprise Deprecation Plan Review',
+    'Enterprise Deprecation Plan Review',
+    core_enums.GATE_ENTERPRISE_PLAN, ONE_LGTM,
     approvers=ENTERPRISE_APPROVERS, team_name='Enterprise')
 
 DebuggabilityOriginTrialApproval = ApprovalFieldDef(
@@ -142,22 +158,36 @@ DebuggabilityShipApproval = ApprovalFieldDef(
     approvers=DEBUGGABILITY_APPROVERS, team_name='Debuggability',
     escalation_email='devtools-dev@chromium.org')
 
+DebuggabilityPlanApproval = ApprovalFieldDef(
+    'Debuggability Deprecation Plan Review',
+    'Debuggability Deprecation Plan Review',
+    core_enums.GATE_DEBUGGABILITY_PLAN, ONE_LGTM,
+    approvers=DEBUGGABILITY_APPROVERS, team_name='Debuggability',
+    escalation_email='devtools-dev@chromium.org')
+
 TestingShipApproval = ApprovalFieldDef(
     'Testing Ship Review',
     'Testing Ship Review',
     core_enums.GATE_TESTING_SHIP, ONE_LGTM,
     approvers=TESTING_APPROVERS, team_name='Testing')
 
+TestingPlanApproval = ApprovalFieldDef(
+    'Testing Deprecation Plan Review',
+    'Testing Deprecation Plan Review',
+    core_enums.GATE_TESTING_PLAN, ONE_LGTM,
+    approvers=TESTING_APPROVERS, team_name='Testing')
+
 APPROVAL_FIELDS_BY_ID = {
     afd.field_id: afd
     for afd in [
         PrototypeApproval, ExperimentApproval, ExtendExperimentApproval,
-        ShipApproval,
+        ShipApproval, PlanApproval,
         PrivacyOriginTrialApproval, PrivacyShipApproval,
         SecurityOriginTrialApproval, SecurityShipApproval,
-        EnterpriseShipApproval,
+        EnterpriseShipApproval, EnterprisePlanApproval,
         DebuggabilityOriginTrialApproval, DebuggabilityShipApproval,
-        TestingShipApproval,
+        DebuggabilityPlanApproval,
+        TestingShipApproval, TestingPlanApproval,
         ]
     }
 

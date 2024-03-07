@@ -198,7 +198,7 @@ class IntentEmailPreviewHandlerTest(testing_config.CustomTestCase):
     self.assertEqual(
         'Intent to Deprecate and Remove',
         self.handler.compute_subject_prefix(
-            self.feature_1, core_enums.INTENT_INCUBATE))
+            self.feature_1, core_enums.INTENT_IMPLEMENT))
 
     self.assertEqual(
         'Request for Deprecation Trial',
