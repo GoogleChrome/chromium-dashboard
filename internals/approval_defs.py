@@ -114,13 +114,7 @@ PrivacyShipApproval = ApprovalFieldDef(
     escalation_email='chrome-privacy-owp-rotation@google.com',
     slo_initial_response=6)
 
-PrivacyPlanApproval = ApprovalFieldDef(
-    'Privacy Deprecation Plan Review',
-    'Privacy Deprecation Plan Review',
-    core_enums.GATE_PRIVACY_PLAN, ONE_LGTM,
-    approvers=PRIVACY_APPROVERS, team_name='Privacy',
-    escalation_email='chrome-privacy-owp-rotation@google.com',
-    slo_initial_response=6)
+# Note: There is no PrivacyPlanApproval
 
 SecurityOriginTrialApproval = ApprovalFieldDef(
     'Security OT Review',
@@ -136,12 +130,7 @@ SecurityShipApproval = ApprovalFieldDef(
     approvers=SECURITY_APPROVERS, team_name='Security',
     slo_initial_response=6)
 
-SecurityPlanApproval = ApprovalFieldDef(
-    'Security Deprecation Plan Review',
-    'Security Deprecation Plan Review',
-    core_enums.GATE_SECURITY_PLAN, ONE_LGTM,
-    approvers=SECURITY_APPROVERS, team_name='Security',
-    slo_initial_response=6)
+# Note: There is no SecurityPlanApproval
 
 EnterpriseShipApproval = ApprovalFieldDef(
     'Enterprise Ship Review',
@@ -193,8 +182,8 @@ APPROVAL_FIELDS_BY_ID = {
     for afd in [
         PrototypeApproval, ExperimentApproval, ExtendExperimentApproval,
         ShipApproval, PlanApproval,
-        PrivacyOriginTrialApproval, PrivacyShipApproval, PrivacyPlanApproval,
-        SecurityOriginTrialApproval, SecurityShipApproval, SecurityPlanApproval,
+        PrivacyOriginTrialApproval, PrivacyShipApproval,
+        SecurityOriginTrialApproval, SecurityShipApproval,
         EnterpriseShipApproval, EnterprisePlanApproval,
         DebuggabilityOriginTrialApproval, DebuggabilityShipApproval,
         DebuggabilityPlanApproval,

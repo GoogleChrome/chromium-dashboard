@@ -480,7 +480,7 @@ PSA_ONLY_PROCESS = Process(
 
 DEPRECATION_STAGES = [
   ProcessStage(
-      'Write up motivation',
+      'Write up deprecation plan',
       'Create an initial WebStatus feature entry to deprecate '
       'an existing feature, including motivation and impact. '
       'Then, get approval for your deprecation plans.',
