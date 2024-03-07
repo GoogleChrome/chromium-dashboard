@@ -50,7 +50,7 @@ def needs_default_first_notification_milestone(
     if new_fields['feature_type'] == FEATURE_TYPE_ENTERPRISE_ID:
       return not has_valid_milestone_in_new_fields
     # All breaking changes need this
-    if new_fields.get('breaking_change'):
+    if new_fields.get('enterprise_impact', ENTERPRISE_IMPACT_NONE) > ENTERPRISE_IMPACT_NONE:
       return not has_valid_milestone_in_new_fields
     return False
 
@@ -63,7 +63,8 @@ def needs_default_first_notification_milestone(
     return not has_valid_milestone_in_new_fields
   
   # The breaking change stays a breaking change
-  if new_fields.get('breaking_change', existing_feature.breaking_change) != False:
+  if new_fields.get('enterprise_impact',
+                    existing_feature.enterprise_impact) > ENTERPRISE_IMPACT_NONE:
     return not has_valid_milestone_in_new_fields
   
   return False
@@ -98,8 +99,9 @@ def is_update_first_notification_milestone(feature: FeatureEntry, new_fields: di
   if feature.feature_type == FEATURE_TYPE_ENTERPRISE_ID:
     return True
   
-  # The breaking change stays a breaking change or become a breaking change
-  return new_fields.get('breaking_change', feature.breaking_change)
+  # The breaking change stays a breaking change or becomes a breaking change
+  return new_fields.get('enterprise_impact',
+                        feature.enterprise_impact) > ENTERPRISE_IMPACT_NONE
 
 
 def get_default_first_notice_milestone_for_feature() -> int:
@@ -122,7 +124,9 @@ def should_remove_first_notice_milestone(feature, new_fields):
   if feature.feature_type == FEATURE_TYPE_ENTERPRISE_ID:
     return False
   
-  if new_fields.get('breaking_change', feature.breaking_change) != False:
+  if new_fields.get('enterprise_impact',
+                    ENTERPRISE_IMPACT_NONE if feature.enterprise_impact is None
+                    else feature.enterprise_impact) > ENTERPRISE_IMPACT_NONE:
     return False
 
   milestone = feature.first_enterprise_notification_milestone

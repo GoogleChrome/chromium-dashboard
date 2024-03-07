@@ -7,13 +7,17 @@
       <td>{{stage.milestones.desktop_first}}</td></tr>
 
     {% endif %}{% endfor %}
-    {% for stage in stage_info.ot_stages %}{% if stage.milestones.desktop_last %}
-      <tr><td>OriginTrial desktop last</td>
+    {% for stage in stage_info.ot_stages %}{% if stage.milestones.desktop_first %}
+      <tr><td>Origin trial desktop first</td>
+      <td>{{stage.milestones.desktop_first}}</td></tr>
+    {% endif %}{% if stage.milestones.desktop_last %}
+      <tr><td>Origin trial desktop last</td>
       <td>{{stage.milestones.desktop_last}}</td></tr>
 
-      {% endif %}{% if stage.milestones.desktop_first %}
-      <tr><td>OriginTrial desktop first</td>
-      <td>{{stage.milestones.desktop_first}}</td></tr>
+    {% endif %}{% endfor %}
+    {% for stage in stage_info.extension_stages %}{% if stage.milestones.desktop_last %}
+      <tr><td>Origin trial extension {{loop.index}} end milestone</td>
+      <td>{{stage.milestones.desktop_last}}</td></tr>
 
     {% endif %}{% endfor %}
     {% for stage in stage_info.dt_stages %}{% if stage.milestones.desktop_first %}

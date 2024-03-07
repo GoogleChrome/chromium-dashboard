@@ -322,6 +322,11 @@ class CalcGateStateTest(testing_config.CustomTestCase):
     self.assertEqual(('approved', 'review_requested'),
                      self.do_calc(RR, AP))
 
+  def test_request_one_approved__no_request(self):
+    """An API Owner gave LGTM1 Approval on an intent that was not detected."""
+    self.assertEqual(('approved', 'review_requested'),
+                     self.do_calc(AP))
+
   def test_request_three_approved(self):
     """The user has requested a review and it got 3 approvals."""
     self.assertEqual(('approved', 'approved'),

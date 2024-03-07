@@ -165,7 +165,7 @@ class IntentEmailPreviewHandlerTest(testing_config.CustomTestCase):
     self.assertEqual(
         'Intent to Experiment',
         self.handler.compute_subject_prefix(
-            self.feature_1, core_enums.INTENT_EXTEND_TRIAL))
+            self.feature_1, core_enums.INTENT_ORIGIN_TRIAL))
 
     self.assertEqual(
         'Intent to Ship',
@@ -203,7 +203,7 @@ class IntentEmailPreviewHandlerTest(testing_config.CustomTestCase):
     self.assertEqual(
         'Request for Deprecation Trial',
         self.handler.compute_subject_prefix(
-            self.feature_1, core_enums.INTENT_EXTEND_TRIAL))
+            self.feature_1, core_enums.INTENT_ORIGIN_TRIAL))
 
   def test_compute_subject_prefix__PSA_feature(self):
     """We offer users the correct subject line for each intent stage."""

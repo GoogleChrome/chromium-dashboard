@@ -418,6 +418,11 @@ def _calc_gate_state(votes: list[Vote], rule: str) -> int:
         Vote.DENIED, Vote.INTERNAL_REVIEW, Vote.NA_REQUESTED):
       return vote.state
 
+  # An API Owner can kick off review of an I2S thread that was not detected
+  # by voting Approve for their "LGTM1".
+  if rule == THREE_LGTM and num_lgtms >= 1:
+    return Vote.REVIEW_REQUESTED
+
   # The feature owner has not requested review yet, or the request was
   # withdrawn.
   return Gate.PREPARING

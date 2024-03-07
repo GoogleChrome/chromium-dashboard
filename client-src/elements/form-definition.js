@@ -108,7 +108,7 @@ export const NEW_FEATURE_FORM_FIELDS = [
   'name',
   'summary',
   'unlisted',
-  'breaking_change',
+  'enterprise_impact',
   'owner',
   'editors',
   'cc_recipients',
@@ -123,6 +123,7 @@ export const ENTERPRISE_NEW_FEATURE_FORM_FIELDS = [
   'editors',
   'enterprise_feature_categories',
   'first_enterprise_notification_milestone',
+  'enterprise_impact',
   'screenshot_links',
 ];
 
@@ -137,7 +138,7 @@ export const FLAT_METADATA_FIELDS = {
         'name',
         'summary',
         'unlisted',
-        'breaking_change',
+        'enterprise_impact',
         'owner',
         'editors',
         'cc_recipients',
@@ -175,6 +176,7 @@ export const FLAT_ENTERPRISE_METADATA_FIELDS = {
         'owner',
         'editors',
         'enterprise_feature_categories',
+        'enterprise_impact',
         'first_enterprise_notification_milestone',
         'screenshot_links',
       ],
@@ -392,7 +394,6 @@ export const FLAT_ENTERPRISE_PREPARE_TO_SHIP_FIELDS = {
     {
       name: 'Rollout step',
       fields: [
-        'rollout_impact',
         'rollout_milestone',
         'rollout_platforms',
         'rollout_details',

@@ -19,7 +19,7 @@ export class ChromedashEnterprisePage extends ChromedashAllFeaturesPage {
   renderEnterpriseFeatures() {
     return this.renderBox(
       'feature_type="New Feature or removal affecting enterprises" ' +
-        'OR breaking_change=true');
+        'OR enterprise_impact>1');
   }
 
   render() {
