@@ -1,6 +1,7 @@
 import {LitElement, css, html} from 'lit';
 import {ref} from 'lit/directives/ref.js';
 import {
+  formatFeatureChanges,
   showToastMessage,
   setupScrollToHash} from './utils.js';
 import './chromedash-form-table.js';
