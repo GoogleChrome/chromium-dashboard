@@ -213,7 +213,9 @@ export class ChromedashGateColumn extends LitElement {
 
   reloadComments() {
     const commentArea = this.commentAreaRef.value;
-    commentArea.value = '';
+    if (commentArea) {
+      commentArea.value = '';
+    }
     this.needsPost = false;
     Promise.all([
       // TODO(jrobbins): Include activities for this gate
@@ -274,10 +276,10 @@ export class ChromedashGateColumn extends LitElement {
     this.postComment(commentText, postToThreadType);
   }
 
-  postComment(commentText, postToThreadType=0) {
+  async postComment(commentText, postToThreadType=0) {
     this.submittingVote = true;
     if (commentText != '') {
-      window.csClient.postComment(
+      await window.csClient.postComment(
         this.feature.id, this.gate.id, commentText,
         Number(postToThreadType))
         .then(() => {
