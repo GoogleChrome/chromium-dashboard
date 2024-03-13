@@ -6,6 +6,7 @@ import {
 } from './form-field-enums';
 import {findFirstFeatureStage} from './utils';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import {openIntentDialog} from './chromedash-intent-dialog';
 
 
 let preflightDialogEl;
@@ -128,6 +129,13 @@ export class ChromedashPreflightDialog extends LitElement {
     this.shadowRoot.querySelector('sl-dialog').hide();
   }
 
+  openIntentDialog() {
+    openIntentDialog(
+      this.feature, this.progress, this.process, this.action,
+      this.stage, this.feStage, this.featureGates);
+    this.hide();
+  }
+
   handleCancel() {
     this.hide();
   }
@@ -168,9 +176,9 @@ export class ChromedashPreflightDialog extends LitElement {
     }
     const pendingGates = findPendingGates(this.featureGates, this.feStage);
 
-    const url = this.action.url
-      .replace('{feature_id}', this.feature.id)
-      .replace('{outgoing_stage}', this.stage.outgoing_stage);
+    // const url = this.action.url
+    //   .replace('{feature_id}', this.feature.id)
+    //   .replace('{outgoing_stage}', this.stage.outgoing_stage);
 
     return html`
       Before you ${this.action.name}, it is strongly recommended that you do the following:
@@ -196,7 +204,8 @@ export class ChromedashPreflightDialog extends LitElement {
          `)}
       </ol>
 
-      <sl-button href="${url}" target="_blank" size="small">
+      <sl-button size="small"
+          @click=${this.openIntentDialog}>
         Proceed anyway
       </sl-button>
       <sl-button size="small" variant="warning"
