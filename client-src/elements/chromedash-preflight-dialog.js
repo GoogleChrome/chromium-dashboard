@@ -11,14 +11,14 @@ import {SHARED_STYLES} from '../css/shared-css.js';
 let preflightDialogEl;
 
 export async function openPreflightDialog(
-  feature, progress, process, action, stage, feStage, featureGates) {
+  feature, progress, process, action, stage, feStage, featureGates, selectedGate) {
   if (!preflightDialogEl) {
     preflightDialogEl = document.createElement('chromedash-preflight-dialog');
     document.body.appendChild(preflightDialogEl);
     await preflightDialogEl.updateComplete;
   }
   preflightDialogEl.openWithContext(
-    feature, progress, process, action, stage, feStage, featureGates);
+    feature, progress, process, action, stage, feStage, featureGates, selectedGate);
 }
 
 
@@ -113,7 +113,7 @@ export class ChromedashPreflightDialog extends LitElement {
   }
 
   openWithContext(
-    feature, progress, process, action, stage, feStage, featureGates) {
+    feature, progress, process, action, stage, feStage, featureGates, selectedGate) {
     this.feature = feature;
     this.progress = progress;
     this.process = process;
@@ -121,6 +121,7 @@ export class ChromedashPreflightDialog extends LitElement {
     this.stage = stage;
     this.feStage = feStage;
     this.featureGates = featureGates;
+    this.selectedGate = selectedGate;
     this.shadowRoot.querySelector('sl-dialog').show();
   }
 
@@ -170,7 +171,7 @@ export class ChromedashPreflightDialog extends LitElement {
 
     const url = this.action.url
       .replace('{feature_id}', this.feature.id)
-      .replace('{outgoing_stage}', this.stage.outgoing_stage);
+      .replace('{gate_id}', this.selectedGate.id);
 
     return html`
       Before you ${this.action.name}, it is strongly recommended that you do the following:

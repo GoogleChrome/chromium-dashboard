@@ -19,6 +19,8 @@ from api.converters import feature_entry_to_json_verbose
 from internals import core_enums
 from internals import processes
 from internals import stage_helpers
+from internals.core_models import Stage
+from internals.review_models import Gate
 from framework import basehandlers
 from framework import permissions
 
@@ -35,7 +37,9 @@ class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
   def get_template_data(self, **kwargs):
     # Validate the user has edit permissions and redirect if needed.
     feature_id = kwargs.get('feature_id', None)
-    stage_id = kwargs.get('stage_id', None)
+    gate_id = kwargs.get('gate_id', None)
+    if not gate_id:
+      self.abort(400, 'Invalid gate ID')
 
     redirect_resp = permissions.validate_feature_edit_permission(
         self, feature_id)
@@ -43,13 +47,24 @@ class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
       return redirect_resp
 
     f = self.get_specified_feature(feature_id=feature_id)
-    intent_stage = stage_id if stage_id is not None else f.intent_stage
+    gate: Gate | None = Gate.get_by_id(gate_id)
+    if not gate:
+      self.abort(400, f'Gate not found for given ID {gate_id}')
+    stage = Stage.get_by_id(gate.stage_id)
 
-    page_data = self.get_page_data(feature_id, f, intent_stage)
+    intent_stage = (core_enums.INTENT_STAGES_BY_STAGE_TYPE[stage.stage_type]
+                    if stage else f.intent_stage)
+    page_data = self.get_page_data(feature_id, f, gate, intent_stage)
     return page_data
 
-  def get_page_data(self, feature_id, f, intent_stage):
+  def get_page_data(self, feature_id, f, gate, intent_stage):
     """Return a dictionary of data used to render the page."""
+
+    default_url = (f'{self.request.scheme}://{self.request.host}'
+                   f'{VIEW_FEATURE_URL}/{feature_id}')
+    if gate:
+      default_url += f'?gate={gate.key.integer_id()}'
+
     stage_info = stage_helpers.get_stage_info_for_templates(f)
     page_data = {
         'subject_prefix': self.compute_subject_prefix(f, intent_stage),
@@ -60,9 +75,7 @@ class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
         'sections_to_show': processes.INTENT_EMAIL_SECTIONS.get(
             intent_stage, []),
         'intent_stage': intent_stage,
-        'default_url': '%s://%s%s/%s' % (
-            self.request.scheme, self.request.host,
-            VIEW_FEATURE_URL, feature_id),
+        'default_url': default_url,
     }
 
     if LAUNCH_PARAM in self.request.args:

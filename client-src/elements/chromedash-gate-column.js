@@ -402,7 +402,7 @@ export class ChromedashGateColumn extends LitElement {
     const label = action.name;
     const url = action.url
       .replace('{feature_id}', this.feature.id)
-      .replace('{outgoing_stage}', processStage.outgoing_stage);
+      .replace('{gate_id}', this.gate.id);
 
     const checkCompletion = () => {
       if (somePendingPrereqs(action, this.progress) ||
@@ -410,7 +410,7 @@ export class ChromedashGateColumn extends LitElement {
         // Open the dialog.
         openPreflightDialog(
           this.feature, this.progress, this.process, action,
-          processStage, this.stage, this.featureGates);
+          processStage, this.stage, this.featureGates, this.gate);
         return;
       } else {
         // Act like user clicked left button to go to the draft email window.

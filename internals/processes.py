@@ -68,12 +68,12 @@ def process_to_dict(process):
 
 # This page generates a preview of an email that can be sent
 # to a mailing list to announce an intent.
-# {feature_id} and {outgoing_stage} are filled in by JS code.
+# {feature_id} and {stage_id} are filled in by JS code.
 # The param "intent" adds clauses the template to include details
 # needed for an intent email.  The param "launch" causes those
 # details to be omitted and a link to create a launch bug shown instead.
 INTENT_EMAIL_URL = ('/admin/features/launch/{feature_id}'
-                    '/{outgoing_stage}'
+                    '/{gate_id}'
                     '?intent=1')
 LAUNCH_BUG_TEMPLATE_URL = '/admin/features/launch/{feature_id}?launch=1'
 # TODO(jrobbins): Creation of the launch bug has been a TODO for 5 years.
