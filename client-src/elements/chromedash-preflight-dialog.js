@@ -11,14 +11,14 @@ import {SHARED_STYLES} from '../css/shared-css.js';
 let preflightDialogEl;
 
 export async function openPreflightDialog(
-  feature, progress, process, action, stage, feStage, featureGates, selectedGate) {
+  feature, progress, process, action, stage, feStage, featureGates, url) {
   if (!preflightDialogEl) {
     preflightDialogEl = document.createElement('chromedash-preflight-dialog');
     document.body.appendChild(preflightDialogEl);
     await preflightDialogEl.updateComplete;
   }
   preflightDialogEl.openWithContext(
-    feature, progress, process, action, stage, feStage, featureGates, selectedGate);
+    feature, progress, process, action, stage, feStage, featureGates, url);
 }
 
 
@@ -113,7 +113,7 @@ export class ChromedashPreflightDialog extends LitElement {
   }
 
   openWithContext(
-    feature, progress, process, action, stage, feStage, featureGates, selectedGate) {
+    feature, progress, process, action, stage, feStage, featureGates, url) {
     this.feature = feature;
     this.progress = progress;
     this.process = process;
@@ -121,7 +121,7 @@ export class ChromedashPreflightDialog extends LitElement {
     this.stage = stage;
     this.feStage = feStage;
     this.featureGates = featureGates;
-    this.selectedGate = selectedGate;
+    this.url = url;
     this.shadowRoot.querySelector('sl-dialog').show();
   }
 
@@ -169,10 +169,6 @@ export class ChromedashPreflightDialog extends LitElement {
     }
     const pendingGates = findPendingGates(this.featureGates, this.feStage);
 
-    const url = this.action.url
-      .replace('{feature_id}', this.feature.id)
-      .replace('{gate_id}', this.selectedGate.id);
-
     return html`
       Before you ${this.action.name}, it is strongly recommended that you do the following:
       <ol class="missing-prereqs-list">
@@ -197,7 +193,7 @@ export class ChromedashPreflightDialog extends LitElement {
          `)}
       </ol>
 
-      <sl-button href="${url}" target="_blank" size="small">
+      <sl-button href="${this.url}" target="_blank" size="small">
         Proceed anyway
       </sl-button>
       <sl-button size="small" variant="warning"

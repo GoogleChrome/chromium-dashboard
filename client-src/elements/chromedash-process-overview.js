@@ -164,7 +164,9 @@ export class ChromedashProcessOverview extends LitElement {
     const label = action.name;
     const url = action.url
       .replace('{feature_id}', this.feature.id)
-      .replace('{outgoing_stage}', stage.outgoing_stage);
+      .replace('{intent_stage}', stage.outgoing_stage)
+      // No gate_id for this URL.
+      .replace('/{gate_id}', '');
 
     const checkCompletion = () => {
       if (somePendingPrereqs(action, this.progress) ||
@@ -172,7 +174,7 @@ export class ChromedashProcessOverview extends LitElement {
         // Open the dialog.
         openPreflightDialog(
           this.feature, this.progress, this.process, action, stage, feStage,
-          this.featureGates);
+          this.featureGates, url);
         return;
       } else {
         // Act like user clicked left button to go to the draft email window.

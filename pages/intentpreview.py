@@ -35,29 +35,34 @@ class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
   TEMPLATE_PATH = 'admin/features/launch.html'
 
   def get_template_data(self, **kwargs):
-    # Validate the user has edit permissions and redirect if needed.
     feature_id = kwargs.get('feature_id', None)
+    intent_stage = kwargs.get('intent_stage', None)
     gate_id = kwargs.get('gate_id', None)
-    if not gate_id:
-      self.abort(400, 'Invalid gate ID')
+    if not gate_id and not intent_stage:
+      self.abort(400, 'Invalid gate ID and intent stage')
 
+    # Validate the user has edit permissions and redirect if needed.
     redirect_resp = permissions.validate_feature_edit_permission(
         self, feature_id)
     if redirect_resp:
       return redirect_resp
 
     f = self.get_specified_feature(feature_id=feature_id)
-    gate: Gate | None = Gate.get_by_id(gate_id)
-    if not gate:
-      self.abort(400, f'Gate not found for given ID {gate_id}')
-    stage = Stage.get_by_id(gate.stage_id)
+    gate = None
+    # Find the gate to add to the Chromestatus URL, and make sure the intent
+    # stage matches the gate.
+    if gate_id:
+      gate = Gate.get_by_id(gate_id)
+      if not gate:
+        self.abort(404, f'Gate not found for given ID {gate_id}')
+      stage = Stage.get_by_id(gate.stage_id)
+      intent_stage = (core_enums.INTENT_STAGES_BY_STAGE_TYPE[stage.stage_type]
+                      if stage else f.intent_stage)
 
-    intent_stage = (core_enums.INTENT_STAGES_BY_STAGE_TYPE[stage.stage_type]
-                    if stage else f.intent_stage)
-    page_data = self.get_page_data(feature_id, f, gate, intent_stage)
+    page_data = self.get_page_data(feature_id, f, intent_stage, gate)
     return page_data
 
-  def get_page_data(self, feature_id, f, gate, intent_stage):
+  def get_page_data(self, feature_id, f, intent_stage, gate: Gate | None=None):
     """Return a dictionary of data used to render the page."""
 
     default_url = (f'{self.request.scheme}://{self.request.host}'
