@@ -64,17 +64,18 @@ def _determine_milestone_string(ship_stages: list[Stage]) -> str:
     milestone_str = f'{first_android} (android)'
   return milestone_str
 
-def highlight_diff(old_text, new_text):
-  differ = difflib.ndiff(old_text.split(), new_text.split())
-  highlighted_text = []
-  for item in differ:
-    if item.startswith('-'):
-      highlighted_text.append(f'<span style="background-color: #FFCCCC">{item[2:]}</span>')
-    elif item.startswith('+'):
-      highlighted_text.append(f'<span style="background-color: #CCFFCC">{item[2:]}</span>')
-    else:
-      highlighted_text.append(item[2:])
-  return ' '.join(highlighted_text) 
+def highlight_diff(old_text, new_text, highlight_type):
+    differ = difflib.ndiff(old_text.split(), new_text.split())
+    highlighted_text = []
+    for item in differ:
+        text = escape(item[2:])  # Escaping the text
+        if item.startswith('-') and highlight_type == 'deletion':
+            highlighted_text.append(f'<span style="background-color: #FFCCCC">{text}</span>')
+        elif item.startswith('+') and highlight_type == 'addition':
+            highlighted_text.append(f'<span style="background-color: #CCFFCC">{text}</span>')
+        elif not item.startswith('-') and not item.startswith('+'):
+            highlighted_text.append(text)
+    return ' '.join(highlighted_text)
 
 def format_email_body(
     template_path, fe: FeatureEntry, changes: list[dict[str, Any]],
@@ -86,17 +87,19 @@ def format_email_body(
   milestone_str = _determine_milestone_string(stage_info['ship_stages'])
 
   formatted_changes = ''
-  for prop in changes:
-    prop_name = prop['prop_name']
-    new_val = prop['new_val']
-    old_val = prop['old_val']
+    for prop in changes:
+        prop_name = escape(prop['prop_name'])  # Ensure to escape
+        new_val = prop['new_val']
+        old_val = prop['old_val']
 
-    # Call highlight_diff to get the highlighted differences
-    highlighted_new_val = highlight_diff(old_val, new_val)
+        # Escaping values before passing to highlight_diff
+        highlighted_old_val = highlight_diff(escape(old_val), escape(new_val), 'deletion')
+        highlighted_new_val = highlight_diff(escape(old_val), escape(new_val), 'addition')
 
-    formatted_changes += ('<li><b>{prop_name}:</b> <br/><b>old:</b> {escape(old_val)} <br/>'
-                          '<b>new:</b> {highlighted_new_val}<br/></li><br/>' %
-                          (prop_name, escape(old_val), escape(new_val)))
+        # Using f-strings for clear formatting
+        formatted_changes += (f'<li><b>{prop_name}:</b> <br/>'
+                              f'<b>old:</b> {highlighted_old_val} <br/>'
+                              f'<b>new:</b> {highlighted_new_val}<br/></li><br/>')
                           
   if not formatted_changes:
     formatted_changes = '<li>None</li>'
