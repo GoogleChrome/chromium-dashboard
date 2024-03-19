@@ -103,6 +103,33 @@ paths:
                   $ref: '#/components/schemas/SpecMentor'
         '400':
           description: The ?after query parameter isn't a valid date in ISO YYYY-MM-DD format.
+  /feature_latency:
+    get:
+      summary: List how long each feature took to launch
+      operationId: listFeatureLatency
+      parameters:
+        - in: query
+          name: startDate
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: endDate
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: >-
+            List the latency of features that launched in date range.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeatureLatency'
+        '400':
+          description: One of the query parameters isn't a valid date in ISO YYYY-MM-DD format.
 components:
   securitySchemes:
     XsrfToken:
@@ -170,6 +197,30 @@ components:
       required:
         - email
         - mentored_features
+    FeatureLatency:
+      type: object
+      properties:
+        feature_name:
+          type: string
+        feature_id:
+          type: integer
+        entry_created_date:
+          type: string
+          format: date
+        shipped_milestone:
+          type: integer
+        shipped_date:
+          type: string
+          format: date
+        owner_email:
+          type: string
+          format: email
+      required:
+        - feature_id
+        - entry_created_date
+        - shipped_milestone
+        - shipped_date
+        - owner_email
     FeatureLink:
       type: object
       required:

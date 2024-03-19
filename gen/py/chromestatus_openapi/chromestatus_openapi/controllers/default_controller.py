@@ -5,6 +5,7 @@ from typing import Union
 
 from chromestatus_openapi.models.component_users_request import ComponentUsersRequest  # noqa: E501
 from chromestatus_openapi.models.components_users_response import ComponentsUsersResponse  # noqa: E501
+from chromestatus_openapi.models.feature_latency import FeatureLatency  # noqa: E501
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
 from chromestatus_openapi import util
 
@@ -36,6 +37,23 @@ def list_component_users():  # noqa: E501
 
     :rtype: Union[ComponentsUsersResponse, Tuple[ComponentsUsersResponse, int], Tuple[ComponentsUsersResponse, int, Dict[str, str]]
     """
+    return 'do some magic!'
+
+
+def list_feature_latency(start_date=None, end_date=None):  # noqa: E501
+    """List how long each feature took to launch
+
+     # noqa: E501
+
+    :param start_date: 
+    :type start_date: str
+    :param end_date: 
+    :type end_date: str
+
+    :rtype: Union[List[FeatureLatency], Tuple[List[FeatureLatency], int], Tuple[List[FeatureLatency], int, Dict[str, str]]
+    """
+    start_date = util.deserialize_date(start_date)
+    end_date = util.deserialize_date(end_date)
     return 'do some magic!'
 
 

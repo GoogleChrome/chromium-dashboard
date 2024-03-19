@@ -91,6 +91,40 @@ paths:
       - XsrfToken: []
       summary: List all components and possible users
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /feature_latency:
+    get:
+      operationId: list_feature_latency
+      parameters:
+      - explode: true
+        in: query
+        name: startDate
+        required: false
+        schema:
+          format: date
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: endDate
+        required: false
+        schema:
+          format: date
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/FeatureLatency'
+                type: array
+          description: List the latency of features that launched in date range.
+        "400":
+          description: One of the query parameters isn't a valid date in ISO YYYY-MM-DD
+            format.
+      summary: List how long each feature took to launch
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /spec_mentors:
     get:
       operationId: list_spec_mentors
@@ -243,6 +277,44 @@ components:
       - email
       - mentored_features
       title: SpecMentor
+      type: object
+    FeatureLatency:
+      example:
+        feature_id: 0
+        owner_email: owner_email
+        feature_name: feature_name
+        shipped_date: 2000-01-23
+        entry_created_date: 2000-01-23
+        shipped_milestone: 6
+      properties:
+        feature_name:
+          title: feature_name
+          type: string
+        feature_id:
+          title: feature_id
+          type: integer
+        entry_created_date:
+          format: date
+          title: entry_created_date
+          type: string
+        shipped_milestone:
+          title: shipped_milestone
+          type: integer
+        shipped_date:
+          format: date
+          title: shipped_date
+          type: string
+        owner_email:
+          format: email
+          title: owner_email
+          type: string
+      required:
+      - entry_created_date
+      - feature_id
+      - owner_email
+      - shipped_date
+      - shipped_milestone
+      title: FeatureLatency
       type: object
     FeatureLink:
       example:
