@@ -121,6 +121,56 @@ class EmailFormattingTest(testing_config.CustomTestCase):
       for entity in kind.query():
         entity.key.delete()
 
+  def test_highlight_diff__simple(self):
+    """It produces a simple diff for adding and removing words."""
+    old = 'start remove middle end'
+    new = 'start middle add end'
+
+    actual_high_old = notifier.highlight_diff(old, new, 'deletion')
+    actual_high_new = notifier.highlight_diff(old, new, 'addition')
+
+    self.assertEqual(
+        ('start'
+         '<span style="background:#FDD"> </span>'
+         '<span style="background:#FDD">remove</span> '
+         'middle '
+         'end'
+         ),
+        actual_high_old);
+    self.assertEqual(
+        ('start '
+         'middle '
+         '<span style="background:#DFD">add</span>'
+         '<span style="background:#DFD"> </span>'
+         'end'
+         ),
+        actual_high_new);
+
+  def test_highlight_diff__escapes(self):
+    """Characters are HTML-escaped in old and new values."""
+    old = '< & " \''
+    new = '\' " & <'
+
+    actual_high_old = notifier.highlight_diff(old, new, 'deletion')
+    actual_high_new = notifier.highlight_diff(old, new, 'addition')
+
+    self.assertEqual(
+        ('<span style="background:#FDD">&lt;</span> '
+         '&amp; '
+         '<span style="background:#FDD">&#34;</span>'
+         '<span style="background:#FDD"> </span>'
+         '<span style="background:#FDD">&#39;</span>'
+         ),
+        actual_high_old);
+    self.assertEqual(
+        ('<span style="background:#DFD">&#39;</span>'
+         '<span style="background:#DFD"> </span>'
+         '<span style="background:#DFD">&#34;</span> '
+         '&amp; '
+         '<span style="background:#DFD">&lt;</span>'
+         ),
+        actual_high_new);
+
   def test_format_email_body__new(self):
     """We generate an email body for new features."""
     with test_app.app_context():
