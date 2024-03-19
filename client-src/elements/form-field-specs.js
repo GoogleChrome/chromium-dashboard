@@ -2056,5 +2056,7 @@ async function checkExtensionMilestoneIsValid(value) {
   if (parseInt(json.mstones[0].mstone) > intValue) {
     return {error: 'End milestone cannot be in the past.'};
   }
+  // TODO(DanielRyanSmith): Check that the extension milestone comes after
+  // OT end milestone and all previous extension end milestones.
   return undefined;
 }
