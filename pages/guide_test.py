@@ -99,6 +99,7 @@ class FeatureCreateTest(testing_config.CustomTestCase):
     self.assertEqual('user1@google.com', feature_entry.creator_email)
     self.assertEqual(['devrel-chromestatus-all@google.com'],
                      feature_entry.devrel_emails)
+    self.assertEqual(None, feature_entry.first_enterprise_notification_milestone)
 
     # Ensure Stage and Gate entities were created.
     stages = Stage.query().fetch()
@@ -108,6 +109,38 @@ class FeatureCreateTest(testing_config.CustomTestCase):
 
     # Ensure notifications are sent.
     mock_notify.assert_called_once()
+
+  @mock.patch('api.channels_api.construct_chrome_channels_details')
+  def test_post__feature_impact_missing_first_notice(self, mock_channel_details):
+    """Create a feature, first_enterprise_notification_milestone not added."""
+    stable_date = self.now.replace(year=self.now.year + 1, day=1).strftime(DATE_FORMAT)
+    mock_channel_details.return_value = {'beta': { 'version': 120, 'stable_date': stable_date } }
+
+    testing_config.sign_in('user1@google.com', 1234567890)
+    with test_app.test_request_context(
+        '/guide/new', data={
+            'category': '1',
+            'name': 'Feature name',
+            'summary': 'Feature summary',
+            'feature_type': '1',
+            'enterprise_impact': '2'
+        },
+        method='POST'):
+      actual_response = self.handler.process_post_data()
+
+    self.assertEqual('302 FOUND', actual_response.status)
+    location = actual_response.headers['location']
+    self.assertTrue(location.startswith('/feature/'))
+    new_feature_id = int(location.split('/')[-1])
+
+    # Ensure FeatureEntry entity was created.
+    feature_entry = FeatureEntry.get_by_id(new_feature_id)
+    self.assertEqual(1, feature_entry.category)
+    self.assertEqual(1, feature_entry.feature_type)
+    self.assertEqual('Feature name', feature_entry.name)
+    self.assertEqual('Feature summary', feature_entry.summary)
+    self.assertEqual('user1@google.com', feature_entry.creator_email)
+    self.assertEqual(120, feature_entry.first_enterprise_notification_milestone)
 
   @mock.patch('api.channels_api.construct_chrome_channels_details')
   def test_post__enterprise_impact_missing_first_notice(self, mock_channel_details):

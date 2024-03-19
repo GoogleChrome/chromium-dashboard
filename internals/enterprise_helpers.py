@@ -44,13 +44,18 @@ def needs_default_first_notification_milestone(
       milestone in channel_details and
       _str_to_datetime(channel_details[milestone]['stable_date']) > datetime.now())
 
+  existing_impact = ENTERPRISE_IMPACT_NONE
+  if existing_feature is not None and existing_feature.enterprise_impact is not None:
+    existing_impact = existing_feature.enterprise_impact
+  new_impact = int(new_fields.get('enterprise_impact', existing_impact))
+
   # We are creating a new feature
   if existing_feature is None:
     # All enterprise features need this
     if new_fields['feature_type'] == FEATURE_TYPE_ENTERPRISE_ID:
       return not has_valid_milestone_in_new_fields
     # All breaking changes need this
-    if new_fields.get('enterprise_impact', ENTERPRISE_IMPACT_NONE) > ENTERPRISE_IMPACT_NONE:
+    if new_impact > ENTERPRISE_IMPACT_NONE:
       return not has_valid_milestone_in_new_fields
     return False
 
@@ -63,8 +68,7 @@ def needs_default_first_notification_milestone(
     return not has_valid_milestone_in_new_fields
 
   # The breaking change stays a breaking change
-  if new_fields.get('enterprise_impact',
-                    existing_feature.enterprise_impact) > ENTERPRISE_IMPACT_NONE:
+  if new_impact > ENTERPRISE_IMPACT_NONE:
     return not has_valid_milestone_in_new_fields
 
   return False
@@ -100,8 +104,9 @@ def is_update_first_notification_milestone(feature: FeatureEntry, new_fields: di
     return True
 
   # The breaking change stays a breaking change or becomes a breaking change
-  return new_fields.get('enterprise_impact',
-                        feature.enterprise_impact) > ENTERPRISE_IMPACT_NONE
+  existing_impact = feature.enterprise_impact or ENTERPRISE_IMPACT_NONE
+  new_impact = int(new_fields.get('enterprise_impact', existing_impact))
+  return new_impact > ENTERPRISE_IMPACT_NONE
 
 
 def get_default_first_notice_milestone_for_feature() -> int:
