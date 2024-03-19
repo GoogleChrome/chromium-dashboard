@@ -247,6 +247,9 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     if is_update_first_notification_milestone(feature, feature_changes):
       feature.first_enterprise_notification_milestone = int(feature_changes['first_enterprise_notification_milestone'])
       has_updated = True
+    elif needs_default_first_notification_milestone(feature, feature_changes):
+      feature.first_enterprise_notification_milestone = get_default_first_notice_milestone_for_feature()
+      has_updated = True
     if should_remove_first_notice_milestone(feature, feature_changes):
       feature.first_enterprise_notification_milestone = None
 
