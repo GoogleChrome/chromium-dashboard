@@ -212,6 +212,7 @@ class VerboseFeatureDict(TypedDict):
   screenshot_links: list[str]
   first_enterprise_notification_milestone: int | None
   breaking_change: bool
+  enterprise_impact: int
 
   # Implementation in Chrome
   flag_name: str | None

@@ -18,6 +18,7 @@ import {
   STAGE_TYPES_DEV_TRIAL,
   STAGE_TYPES_ORIGIN_TRIAL,
   STAGE_TYPES_SHIPPING,
+  ENTERPRISE_IMPACT,
 } from './form-field-enums';
 
 /* Patterns from https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch04s01.html
@@ -812,7 +813,6 @@ export const ALL_FIELDS = {
   },
 
   'ot_extension__intent_to_extend_experiment_url': {
-    name: 'intent_to_extend_experiment_url',
     type: 'input',
     attrs: URL_FIELD_ATTRS,
     required: true,
@@ -1777,6 +1777,22 @@ export const ALL_FIELDS = {
     label: 'Categories',
     help_text: html`
       Select all that apply.`,
+  },
+
+  'enterprise_impact': {
+    type: 'select',
+    choices: ENTERPRISE_IMPACT,
+    initial: ENTERPRISE_IMPACT.IMPACT_NONE[0],
+    enterprise_initial: ENTERPRISE_IMPACT.IMPACT_MEDIUM[0],
+    label: 'Enterprise impact / risk',
+    help_text: html`
+      Most web platform changes have no enterprise impact or risk unless they introduce a breaking
+      change that could cause breakage without remediation from the web developer.
+      Enterprise reviewers can help judge risk if you're unsure.`,
+    enterprise_help_text: html`
+      A feature is probably high impact if it introduces a breaking change on the stable channel,
+      or seriously changes the experience of using Chrome. Use your judgment;
+      Enterprise reviewers can help judge risk if you're unsure.`,
   },
 
   'rollout_impact': {

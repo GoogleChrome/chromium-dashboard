@@ -108,7 +108,7 @@ export const NEW_FEATURE_FORM_FIELDS = [
   'name',
   'summary',
   'unlisted',
-  'breaking_change',
+  'enterprise_impact',
   'owner',
   'editors',
   'cc_recipients',
@@ -123,6 +123,7 @@ export const ENTERPRISE_NEW_FEATURE_FORM_FIELDS = [
   'editors',
   'enterprise_feature_categories',
   'first_enterprise_notification_milestone',
+  'enterprise_impact',
   'screenshot_links',
 ];
 
@@ -137,7 +138,7 @@ export const FLAT_METADATA_FIELDS = {
         'name',
         'summary',
         'unlisted',
-        'breaking_change',
+        'enterprise_impact',
         'owner',
         'editors',
         'cc_recipients',
@@ -175,6 +176,7 @@ export const FLAT_ENTERPRISE_METADATA_FIELDS = {
         'owner',
         'editors',
         'enterprise_feature_categories',
+        'enterprise_impact',
         'first_enterprise_notification_milestone',
         'screenshot_links',
       ],
@@ -392,7 +394,6 @@ export const FLAT_ENTERPRISE_PREPARE_TO_SHIP_FIELDS = {
     {
       name: 'Rollout step',
       fields: [
-        'rollout_impact',
         'rollout_milestone',
         'rollout_platforms',
         'rollout_details',
@@ -545,7 +546,6 @@ export const ORIGIN_TRIAL_EXTENSION_FIELDS = {
       fields: [
         'ot_extension__intent_to_extend_experiment_url',
         'ot_extension__milestone_desktop_last',
-        'ot_request_note',
       ],
     },
   ],
@@ -871,13 +871,19 @@ export const GATE_QUESTIONNAIRES = {
   [enums.GATE_TYPES.API_ORIGIN_TRIAL]: BLINK_GENERIC_QUESTIONNAIRE,
   [enums.GATE_TYPES.API_EXTEND_ORIGIN_TRIAL]: BLINK_GENERIC_QUESTIONNAIRE,
   [enums.GATE_TYPES.API_SHIP]: BLINK_GENERIC_QUESTIONNAIRE,
+  [enums.GATE_TYPES.API_PLAN]: BLINK_GENERIC_QUESTIONNAIRE,
   [enums.GATE_TYPES.PRIVACY_ORIGIN_TRIAL]: PRIVACY_GENERIC_QUESTIONNAIRE,
   [enums.GATE_TYPES.PRIVACY_SHIP]: PRIVACY_GENERIC_QUESTIONNAIRE,
+  // Note: There is no privacy planning gate.
   [enums.GATE_TYPES.SECURITY_ORIGIN_TRIAL]: SECURITY_GENERIC_QUESTIONNAIRE,
   [enums.GATE_TYPES.SECURITY_SHIP]: SECURITY_GENERIC_QUESTIONNAIRE,
+  // Note: There is no security planning gate.
   [enums.GATE_TYPES.ENTERPRISE_SHIP]: ENTERPRISE_SHIP_QUESTIONNAIRE,
+  [enums.GATE_TYPES.ENTERPRISE_PLAN]: ENTERPRISE_SHIP_QUESTIONNAIRE,
   [enums.GATE_TYPES.DEBUGGABILITY_ORIGIN_TRIAL]:
       DEBUGGABILITY_ORIGIN_TRIAL_QUESTIONNAIRE,
   [enums.GATE_TYPES.DEBUGGABILITY_SHIP]: DEBUGGABILITY_SHIP_QUESTIONNAIRE,
+  [enums.GATE_TYPES.DEBUGGABILITY_PLAN]: DEBUGGABILITY_SHIP_QUESTIONNAIRE,
   [enums.GATE_TYPES.TESTING_SHIP]: TESTING_SHIP_QUESTIONNAIRE,
+  [enums.GATE_TYPES.TESTING_PLAN]: TESTING_SHIP_QUESTIONNAIRE,
 };

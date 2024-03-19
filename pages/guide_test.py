@@ -110,7 +110,7 @@ class FeatureCreateTest(testing_config.CustomTestCase):
     mock_notify.assert_called_once()
 
   @mock.patch('api.channels_api.construct_chrome_channels_details')
-  def test_post__breaking_change_missing_first_notice(self, mock_channel_details):
+  def test_post__enterprise_impact_missing_first_notice(self, mock_channel_details):
     """Create a feature, first_enterprise_notification_milestone not added."""
     stable_date = self.now.replace(year=self.now.year + 1, day=1).strftime(DATE_FORMAT)
     mock_channel_details.return_value = {'beta': { 'version': 120, 'stable_date': stable_date } }
@@ -122,7 +122,7 @@ class FeatureCreateTest(testing_config.CustomTestCase):
             'name': 'Feature name',
             'summary': 'Feature summary',
             'feature_type': '1',
-            'breaking_change': 'on'
+            'enterprise_impact': '2'
         },
         method='POST'):
       actual_response = self.handler.process_post_data()
@@ -143,7 +143,7 @@ class FeatureCreateTest(testing_config.CustomTestCase):
 
 
   @mock.patch('api.channels_api.construct_specified_milestones_details')
-  def test_post__breaking_change_with_first_notice(self, mock_specified_milestones):
+  def test_post__enterprise_impact_with_first_notice(self, mock_specified_milestones):
     """Create a feature, first_enterprise_notification_milestone set to provided value."""
     mock_specified_milestones.return_value =  {
         99: {
@@ -163,7 +163,7 @@ class FeatureCreateTest(testing_config.CustomTestCase):
             'name': 'Feature name',
             'summary': 'Feature summary',
             'feature_type': '1',
-            'breaking_change': 'on',
+            'enterprise_impact': '2',
             'first_enterprise_notification_milestone': '100'
         }, method='POST'):
       actual_response = self.handler.process_post_data()
@@ -185,7 +185,7 @@ class FeatureCreateTest(testing_config.CustomTestCase):
 
   @mock.patch('api.channels_api.construct_chrome_channels_details')
   @mock.patch('api.channels_api.construct_specified_milestones_details')
-  def test_post__breaking_change_with_old_first_notice(self, mock_specified_milestones, mock_channel_details):
+  def test_post__enterprise_impact_with_old_first_notice(self, mock_specified_milestones, mock_channel_details):
     """Create a feature, first_enterprise_notification_milestone set to default newer value."""
     mock_specified_milestones.return_value =  {
         99: {
@@ -211,7 +211,7 @@ class FeatureCreateTest(testing_config.CustomTestCase):
             'name': 'Feature name',
             'summary': 'Feature summary',
             'feature_type': '1',
-            'breaking_change': 'on',
+            'enterprise_impact': '2',
             'first_enterprise_notification_milestone': '99'
         }, method='POST'):
       actual_response = self.handler.process_post_data()

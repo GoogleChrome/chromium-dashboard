@@ -18,6 +18,7 @@ from unittest import mock
 from datetime import datetime
 
 from api import converters
+from internals.core_enums import *
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Vote, Gate
 from internals import approval_defs
@@ -104,6 +105,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'unlisted': False,
       'blink_components': ['Blink'],
       'first_enterprise_notification_milestone': 100,
+      'enterprise_impact': ENTERPRISE_IMPACT_NONE,
       'breaking_change': False,
       'is_released': True,
       'milestone': None,
@@ -188,6 +190,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'unlisted': False,
       'blink_components': ['Blink'],
       'first_enterprise_notification_milestone': 100,
+      'enterprise_impact': ENTERPRISE_IMPACT_NONE,
       'breaking_change': False,
       'is_released': True,
       'milestone': True,
@@ -289,6 +292,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'summary': 'sum',
       'unlisted': False,
       'api_spec': False,
+      'enterprise_impact': ENTERPRISE_IMPACT_NONE,
       'breaking_change': False,
       'is_released': True,
       'category': 'Web Components',

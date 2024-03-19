@@ -63,6 +63,20 @@ export const PLATFORMS_DISPLAYNAME = {
   8: 'Fuchsia', // PLATFORM_FUCHSIA
 };
 
+export const ENTERPRISE_IMPACT_DISPLAYNAME = {
+  1: 'None', // IMPACT_NONE
+  2: 'Low', // IMPACT_LOW
+  3: 'Medium', // IMPACT_MEDIUM
+  4: 'High', // IMPACT_HIGH
+};
+
+export const ENTERPRISE_IMPACT = {
+  IMPACT_NONE: [1, 'None'],
+  IMPACT_LOW: [2, 'Low'],
+  IMPACT_MEDIUM: [3, 'Medium'],
+  IMPACT_HIGH: [4, 'High'],
+};
+
 export const ROLLOUT_IMPACT = {
   IMPACT_LOW: [1, 'Low'],
   IMPACT_MEDIUM: [2, 'Medium'],
@@ -204,7 +218,8 @@ export const INTENT_STAGES = {
   INTENT_IMPLEMENT: [1, 'Start prototyping'], // Start prototyping
   INTENT_EXPERIMENT: [2, 'Dev trials'], // Dev trials
   INTENT_IMPLEMENT_SHIP: [4, 'Evaluate readiness to ship'], // Eval readiness to ship
-  INTENT_EXTEND_TRIAL: [3, 'Origin Trial'], // Origin trials
+  INTENT_ORIGIN_TRIAL: [3, 'Origin Trial'], // Origin trials
+  INTENT_EXTEND_ORIGIN_TRIAL: [11, 'Extend Trial'],
   INTENT_SHIP: [5, 'Prepare to ship'], // Prepare to ship
   INTENT_REMOVED: [6, 'Removed'],
   INTENT_SHIPPED: [8, 'Shipped'],
@@ -347,15 +362,20 @@ export const GATE_TYPES = {
   API_ORIGIN_TRIAL: 2,
   API_EXTEND_ORIGIN_TRIAL: 3,
   API_SHIP: 4,
+  API_PLAN: 5,
   PRIVACY_ORIGIN_TRIAL: 32,
   PRIVACY_SHIP: 34,
+  // Not needed: PRIVACY_PLAN: 35,
   SECURITY_ORIGIN_TRIAL: 42,
   SECURITY_SHIP: 44,
-
+  // Not needed: SECURITY_PLAN: 45,
   ENTERPRISE_SHIP: 54,
+  ENTERPRISE_PLAN: 55,
   DEBUGGABILITY_ORIGIN_TRIAL: 62,
   DEBUGGABILITY_SHIP: 64,
+  DEBUGGABILITY_PLAN: 65,
   TESTING_SHIP: 74,
+  TESTING_PLAN: 75,
 };
 
 export const GATE_PREPARING = 0;

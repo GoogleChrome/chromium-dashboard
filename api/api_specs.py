@@ -30,6 +30,7 @@ FEATURE_FIELD_DATA_TYPES: FIELD_INFO_DATA_TYPE = [
   ('api_spec', 'bool'),
   ('availability_expectation', 'str'),
   ('blink_components', 'split_str'),
+  ('enterprise_impact', 'int'),
   ('breaking_change', 'bool'),
   ('bug_url', 'link'),
   ('category', 'int'),

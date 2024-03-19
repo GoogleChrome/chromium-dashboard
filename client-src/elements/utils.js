@@ -9,6 +9,7 @@ import {
   OT_MILESTONE_END_FIELDS,
   ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME,
   ROLLOUT_IMPACT_DISPLAYNAME,
+  ENTERPRISE_IMPACT_DISPLAYNAME,
 } from './form-field-enums';
 
 let toastEl;
@@ -234,6 +235,9 @@ export function getFieldValueFromFeature(fieldName, feStage, feature) {
   if (fieldName === 'enterprise_feature_categories' && value) {
     return value.map(categoryId =>
       ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME[categoryId]);
+  }
+  if (fieldName === 'enterprise_impact' && value) {
+    return ENTERPRISE_IMPACT_DISPLAYNAME[value];
   }
   return value;
 }

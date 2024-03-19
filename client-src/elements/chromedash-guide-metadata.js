@@ -3,7 +3,9 @@ import {ref} from 'lit/directives/ref.js';
 import {autolink, formatFeatureChanges, flattenSections} from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
-import {ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME} from './form-field-enums';
+import {
+  ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME,
+  ENTERPRISE_IMPACT_DISPLAYNAME} from './form-field-enums';
 import {
   formatFeatureForEdit,
   FLAT_ENTERPRISE_METADATA_FIELDS,
@@ -173,6 +175,11 @@ export class ChromedashGuideMetadata extends LitElement {
             </tr>
 
             <tr>
+              <th>Enterprise impact / risk</th>
+              <td>${ENTERPRISE_IMPACT_DISPLAYNAME[this.feature.enterprise_impact]}</td>
+            </tr>
+
+            <tr>
               <th>Feature type</th>
               <td>${this.feature.feature_type}</td>
             </tr>
@@ -327,8 +334,8 @@ export class ChromedashGuideMetadata extends LitElement {
               </td>
             </tr>
             <tr>
-              <th>Breaking change</th>
-              <td>${this.feature.breaking_change}</td>
+              <th>Enterprise impact / risk</th>
+              <td>${ENTERPRISE_IMPACT_DISPLAYNAME[this.feature.enterprise_impact]}</td>
             </tr>
           </table>
         </div>

@@ -75,18 +75,23 @@ class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
   def compute_subject_prefix(self, feature, intent_stage):
     """Return part of the subject line for an intent email."""
 
-    if intent_stage == core_enums.INTENT_INCUBATE:
+    if intent_stage == core_enums.INTENT_IMPLEMENT:
       if feature.feature_type == core_enums.FEATURE_TYPE_DEPRECATION_ID:
         return 'Intent to Deprecate and Remove'
-    elif intent_stage == core_enums.INTENT_IMPLEMENT:
-      return 'Intent to Prototype'
+      else:
+        return 'Intent to Prototype'
     elif intent_stage == core_enums.INTENT_EXPERIMENT:
       return 'Ready for Developer Testing'
-    elif intent_stage == core_enums.INTENT_EXTEND_TRIAL:
+    elif intent_stage == core_enums.INTENT_ORIGIN_TRIAL:
       if feature.feature_type == core_enums.FEATURE_TYPE_DEPRECATION_ID:
         return 'Request for Deprecation Trial'
       else:
         return 'Intent to Experiment'
+    elif intent_stage == core_enums.INTENT_EXTEND_ORIGIN_TRIAL:
+      if feature.feature_type == core_enums.FEATURE_TYPE_DEPRECATION_ID:
+        return 'Intent to Extend Deprecation Trial'
+      else:
+        return 'Intent to Extend Experiment'
     elif intent_stage == core_enums.INTENT_SHIP:
       if feature.feature_type == core_enums.FEATURE_TYPE_CODE_CHANGE_ID:
         return 'Web-Facing Change PSA'
