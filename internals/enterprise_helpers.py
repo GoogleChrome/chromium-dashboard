@@ -57,16 +57,16 @@ def needs_default_first_notification_milestone(
   # We are updating a feature that already has a notification milestone
   if existing_feature.first_enterprise_notification_milestone is not None:
     return False
-  
+
   # The enterprise feature we are updating does not have the field
   if existing_feature.feature_type == FEATURE_TYPE_ENTERPRISE_ID:
     return not has_valid_milestone_in_new_fields
-  
+
   # The breaking change stays a breaking change
   if new_fields.get('enterprise_impact',
                     existing_feature.enterprise_impact) > ENTERPRISE_IMPACT_NONE:
     return not has_valid_milestone_in_new_fields
-  
+
   return False
 
 def is_update_first_notification_milestone(feature: FeatureEntry, new_fields: dict) -> bool:
@@ -86,7 +86,7 @@ def is_update_first_notification_milestone(feature: FeatureEntry, new_fields: di
   if (milestone not in milestone_details or
       _str_to_datetime(milestone_details[milestone]['stable_date']) <= datetime.now()):
     return False
-  
+
   # We cannot update the milestone of a feature that has already been announced
   if feature.first_enterprise_notification_milestone != None:
     milestone = feature.first_enterprise_notification_milestone
@@ -98,7 +98,7 @@ def is_update_first_notification_milestone(feature: FeatureEntry, new_fields: di
 
   if feature.feature_type == FEATURE_TYPE_ENTERPRISE_ID:
     return True
-  
+
   # The breaking change stays a breaking change or becomes a breaking change
   return new_fields.get('enterprise_impact',
                         feature.enterprise_impact) > ENTERPRISE_IMPACT_NONE
@@ -123,10 +123,10 @@ def should_remove_first_notice_milestone(feature, new_fields):
 
   if feature.feature_type == FEATURE_TYPE_ENTERPRISE_ID:
     return False
-  
-  if new_fields.get('enterprise_impact',
-                    ENTERPRISE_IMPACT_NONE if feature.enterprise_impact is None
-                    else feature.enterprise_impact) > ENTERPRISE_IMPACT_NONE:
+
+  existing_impact = feature.enterprise_impact or ENTERPRISE_IMPACT_NONE
+  new_impact = int(new_fields.get('enterprise_impact', existing_impact))
+  if new_impact > ENTERPRISE_IMPACT_NONE:
     return False
 
   milestone = feature.first_enterprise_notification_milestone
@@ -134,5 +134,5 @@ def should_remove_first_notice_milestone(feature, new_fields):
   if (milestone in milestone_details and
       _str_to_datetime(milestone_details[milestone]['stable_date']) > datetime.now()):
     return True
-    
+
   return False
