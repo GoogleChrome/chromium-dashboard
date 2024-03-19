@@ -111,7 +111,7 @@ class FeatureCreateTest(testing_config.CustomTestCase):
     mock_notify.assert_called_once()
 
   @mock.patch('api.channels_api.construct_chrome_channels_details')
-  def test_post__enterprise_impact_missing_first_notice(self, mock_channel_details):
+  def test_post__feature_impact_missing_first_notice(self, mock_channel_details):
     """Create a feature, first_enterprise_notification_milestone not added."""
     stable_date = self.now.replace(year=self.now.year + 1, day=1).strftime(DATE_FORMAT)
     mock_channel_details.return_value = {'beta': { 'version': 120, 'stable_date': stable_date } }
