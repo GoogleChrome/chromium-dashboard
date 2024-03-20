@@ -74,8 +74,8 @@ export class ChromedashReportFeatureLatencyPage extends LitElement {
     return html`
      <tr>
        <td>
-         <a href="/feature/${featureLatency.feature_id}">
-           ${featureLatency.feature_name}
+         <a href="/feature/${featureLatency.feature.id}">
+           ${featureLatency.feature.name}
          </a>
        </td>
        <td>${featureLatency.owner_email}</td>

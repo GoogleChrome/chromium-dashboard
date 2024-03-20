@@ -280,19 +280,16 @@ components:
       type: object
     FeatureLatency:
       example:
-        feature_id: 0
         owner_email: owner_email
-        feature_name: feature_name
+        feature:
+          name: WebGPU
+          id: 5703707724349440
         shipped_date: 2000-01-23
         entry_created_date: 2000-01-23
-        shipped_milestone: 6
+        shipped_milestone: 0
       properties:
-        feature_name:
-          title: feature_name
-          type: string
-        feature_id:
-          title: feature_id
-          type: integer
+        feature:
+          $ref: '#/components/schemas/FeatureLink'
         entry_created_date:
           format: date
           title: entry_created_date

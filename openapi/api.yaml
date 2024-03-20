@@ -200,10 +200,8 @@ components:
     FeatureLatency:
       type: object
       properties:
-        feature_name:
-          type: string
-        feature_id:
-          type: integer
+        feature:
+          $ref: '#/components/schemas/FeatureLink'
         entry_created_date:
           type: string
           format: date

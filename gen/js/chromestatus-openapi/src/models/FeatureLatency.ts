@@ -13,6 +13,13 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { FeatureLink } from './FeatureLink';
+import {
+    FeatureLinkFromJSON,
+    FeatureLinkFromJSONTyped,
+    FeatureLinkToJSON,
+} from './FeatureLink';
+
 /**
  * 
  * @export
@@ -21,16 +28,10 @@ import { exists, mapValues } from '../runtime';
 export interface FeatureLatency {
     /**
      * 
-     * @type {string}
+     * @type {FeatureLink}
      * @memberof FeatureLatency
      */
-    feature_name?: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof FeatureLatency
-     */
-    feature_id: number;
+    feature?: FeatureLink;
     /**
      * 
      * @type {Date}
@@ -62,7 +63,6 @@ export interface FeatureLatency {
  */
 export function instanceOfFeatureLatency(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "feature_id" in value;
     isInstance = isInstance && "entry_created_date" in value;
     isInstance = isInstance && "shipped_milestone" in value;
     isInstance = isInstance && "shipped_date" in value;
@@ -81,8 +81,7 @@ export function FeatureLatencyFromJSONTyped(json: any, ignoreDiscriminator: bool
     }
     return {
         
-        'feature_name': !exists(json, 'feature_name') ? undefined : json['feature_name'],
-        'feature_id': json['feature_id'],
+        'feature': !exists(json, 'feature') ? undefined : FeatureLinkFromJSON(json['feature']),
         'entry_created_date': (new Date(json['entry_created_date'])),
         'shipped_milestone': json['shipped_milestone'],
         'shipped_date': (new Date(json['shipped_date'])),
@@ -99,8 +98,7 @@ export function FeatureLatencyToJSON(value?: FeatureLatency | null): any {
     }
     return {
         
-        'feature_name': value.feature_name,
-        'feature_id': value.feature_id,
+        'feature': FeatureLinkToJSON(value.feature),
         'entry_created_date': (value.entry_created_date.toISOString().substring(0,10)),
         'shipped_milestone': value.shipped_milestone,
         'shipped_date': (value.shipped_date.toISOString().substring(0,10)),

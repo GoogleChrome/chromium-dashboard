@@ -50,11 +50,13 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
     # TODO(jrobbins): Replace fake data with queries and calculations.
     result = [
         FeatureLatency(
-            'Some feature', 12345, datetime(2023,1,8).isoformat(),
+            FeatureLink(12345, 'Some feature'),
+            datetime(2023,1,8).isoformat(),
             122, datetime(2023, 3, 15).isoformat(),
             'owner@example.com').to_dict(),
         FeatureLatency(
-            'Another feature', 128391, datetime(2023,3,18).isoformat(),
+            FeatureLink(128391, 'Another feature'),
+            datetime(2023,3,18).isoformat(),
             123, datetime(2023, 5, 25).isoformat(),
             'owner@example.com').to_dict(),
     ]
