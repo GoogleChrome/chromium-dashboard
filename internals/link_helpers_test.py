@@ -189,7 +189,9 @@ class LinkHelperTest(testing_config.CustomTestCase):
     self.assertEqual(info["title"], "Comments field is incorrectly escaped")
     self.assertEqual(info["state"], "closed")
     self.assertEqual(info["state_reason"], "completed")
+    self.assertEqual(info["created_at"], "2020-09-03T18:29:42Z")
     self.assertEqual(info["closed_at"], "2020-12-01T21:50:57Z")
+    self.assertEqual(info["labels"], ["bug"])
 
   @mock.patch("logging.error")
   def test_parse_github_issue_fail_wrong_id_or_no_permission(self, mock_error):
