@@ -4,5 +4,7 @@ from chromestatus_openapi.models.component_users_request import ComponentUsersRe
 from chromestatus_openapi.models.components_user import ComponentsUser
 from chromestatus_openapi.models.components_users_response import ComponentsUsersResponse
 from chromestatus_openapi.models.feature_link import FeatureLink
+from chromestatus_openapi.models.gate_latency import GateLatency
 from chromestatus_openapi.models.owners_and_subscribers_of_component import OwnersAndSubscribersOfComponent
+from chromestatus_openapi.models.review_latency import ReviewLatency
 from chromestatus_openapi.models.spec_mentor import SpecMentor

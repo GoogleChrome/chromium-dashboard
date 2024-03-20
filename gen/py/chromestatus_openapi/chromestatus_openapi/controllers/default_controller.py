@@ -5,6 +5,7 @@ from typing import Union
 
 from chromestatus_openapi.models.component_users_request import ComponentUsersRequest  # noqa: E501
 from chromestatus_openapi.models.components_users_response import ComponentsUsersResponse  # noqa: E501
+from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
 from chromestatus_openapi import util
 
@@ -35,6 +36,17 @@ def list_component_users():  # noqa: E501
 
 
     :rtype: Union[ComponentsUsersResponse, Tuple[ComponentsUsersResponse, int], Tuple[ComponentsUsersResponse, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
+def list_reviews_with_latency():  # noqa: E501
+    """List recently reviewed features and their review latency
+
+     # noqa: E501
+
+
+    :rtype: Union[List[ReviewLatency], Tuple[List[ReviewLatency], int], Tuple[List[ReviewLatency], int, Dict[str, str]]
     """
     return 'do some magic!'
 
