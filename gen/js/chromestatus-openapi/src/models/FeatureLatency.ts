@@ -52,10 +52,10 @@ export interface FeatureLatency {
     shipped_date: Date;
     /**
      * 
-     * @type {string}
+     * @type {Array<string>}
      * @memberof FeatureLatency
      */
-    owner_email: string;
+    owner_emails: Array<string>;
 }
 
 /**
@@ -66,7 +66,7 @@ export function instanceOfFeatureLatency(value: object): boolean {
     isInstance = isInstance && "entry_created_date" in value;
     isInstance = isInstance && "shipped_milestone" in value;
     isInstance = isInstance && "shipped_date" in value;
-    isInstance = isInstance && "owner_email" in value;
+    isInstance = isInstance && "owner_emails" in value;
 
     return isInstance;
 }
@@ -85,7 +85,7 @@ export function FeatureLatencyFromJSONTyped(json: any, ignoreDiscriminator: bool
         'entry_created_date': (new Date(json['entry_created_date'])),
         'shipped_milestone': json['shipped_milestone'],
         'shipped_date': (new Date(json['shipped_date'])),
-        'owner_email': json['owner_email'],
+        'owner_emails': json['owner_emails'],
     };
 }
 
@@ -102,7 +102,7 @@ export function FeatureLatencyToJSON(value?: FeatureLatency | null): any {
         'entry_created_date': (value.entry_created_date.toISOString().substring(0,10)),
         'shipped_milestone': value.shipped_milestone,
         'shipped_date': (value.shipped_date.toISOString().substring(0,10)),
-        'owner_email': value.owner_email,
+        'owner_emails': value.owner_emails,
     };
 }
 

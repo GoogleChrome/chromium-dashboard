@@ -19,6 +19,7 @@ export class ChromedashReportFeatureLatencyPage extends LitElement {
       td, th {
         padding: var(--content-padding);
         border-bottom: var(--table-divider);
+        vertical-align: baseline;
       }
       th {
         background: var(--table-header-background);
@@ -36,6 +37,9 @@ export class ChromedashReportFeatureLatencyPage extends LitElement {
       endDate: {state: true},
     };
   }
+
+  /** @type {Record<string, string>} */
+  rawQuery;
 
   /** @type {import('chromestatus-openapi').DefaultApiInterface} */
   _client;
@@ -57,12 +61,39 @@ export class ChromedashReportFeatureLatencyPage extends LitElement {
     });
   }
 
+  connectedCallback() {
+    super.connectedCallback();
+    this.initializeParams();
+  }
+
+  initializeParams() {
+    if (!this.rawQuery) {
+      return;
+    }
+
+    if (this.rawQuery.hasOwnProperty('startDate')) {
+      const parsed = Date.parse(this.rawQuery['startDate']);
+      if (!isNaN(parsed)) {
+        this.startDate = new Date(parsed);
+      }
+    }
+    if (this.rawQuery.hasOwnProperty('endDate')) {
+      const parsed = Date.parse(this.rawQuery['endDate']);
+      if (!isNaN(parsed)) {
+        this.endDate = new Date(parsed);
+      }
+    }
+  }
+
   renderCount() {
     return html`
      <p>
      Launched ${this.latencyList.length} features between
      ${this.startDate.toLocaleDateString()} and
      ${this.endDate.toLocaleDateString()}.
+     </p>
+     <p>
+     Latency is measured in calendar days.
      </p>
    `;
   }
@@ -78,7 +109,8 @@ export class ChromedashReportFeatureLatencyPage extends LitElement {
            ${featureLatency.feature.name}
          </a>
        </td>
-       <td>${featureLatency.owner_email}</td>
+       <td>${featureLatency.owner_emails.map((addr) =>
+      html`<div>${addr}</div>`)}</td>
        <td>${featureLatency.entry_created_date.toLocaleDateString()}</td>
        <td>${featureLatency.shipped_date.toLocaleDateString()}</td>
        <td>${latencyDays}</td>
@@ -94,7 +126,7 @@ export class ChromedashReportFeatureLatencyPage extends LitElement {
          <th>Owners</th>
          <th>Created</th>
          <th>Shipped</th>
-         <th>Latency days</th>
+         <th>Latency</th>
        </tr>
        ${this.latencyList.map((fl) => this.renderLatencyRow(fl))}
      </table>

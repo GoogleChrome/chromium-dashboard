@@ -280,7 +280,9 @@ components:
       type: object
     FeatureLatency:
       example:
-        owner_email: owner_email
+        owner_emails:
+        - owner_emails
+        - owner_emails
         feature:
           name: WebGPU
           id: 5703707724349440
@@ -301,14 +303,16 @@ components:
           format: date
           title: shipped_date
           type: string
-        owner_email:
-          format: email
-          title: owner_email
-          type: string
+        owner_emails:
+          items:
+            format: email
+            type: string
+          title: owner_emails
+          type: array
       required:
       - entry_created_date
       - feature_id
-      - owner_email
+      - owner_emails
       - shipped_date
       - shipped_milestone
       title: FeatureLatency

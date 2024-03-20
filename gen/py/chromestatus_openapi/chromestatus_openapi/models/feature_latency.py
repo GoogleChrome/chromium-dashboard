@@ -14,7 +14,7 @@ class FeatureLatency(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, feature=None, entry_created_date=None, shipped_milestone=None, shipped_date=None, owner_email=None):  # noqa: E501
+    def __init__(self, feature=None, entry_created_date=None, shipped_milestone=None, shipped_date=None, owner_emails=None):  # noqa: E501
         """FeatureLatency - a model defined in OpenAPI
 
         :param feature: The feature of this FeatureLatency.  # noqa: E501
@@ -25,15 +25,15 @@ class FeatureLatency(Model):
         :type shipped_milestone: int
         :param shipped_date: The shipped_date of this FeatureLatency.  # noqa: E501
         :type shipped_date: date
-        :param owner_email: The owner_email of this FeatureLatency.  # noqa: E501
-        :type owner_email: str
+        :param owner_emails: The owner_emails of this FeatureLatency.  # noqa: E501
+        :type owner_emails: List[str]
         """
         self.openapi_types = {
             'feature': FeatureLink,
             'entry_created_date': date,
             'shipped_milestone': int,
             'shipped_date': date,
-            'owner_email': str
+            'owner_emails': List[str]
         }
 
         self.attribute_map = {
@@ -41,14 +41,14 @@ class FeatureLatency(Model):
             'entry_created_date': 'entry_created_date',
             'shipped_milestone': 'shipped_milestone',
             'shipped_date': 'shipped_date',
-            'owner_email': 'owner_email'
+            'owner_emails': 'owner_emails'
         }
 
         self._feature = feature
         self._entry_created_date = entry_created_date
         self._shipped_milestone = shipped_milestone
         self._shipped_date = shipped_date
-        self._owner_email = owner_email
+        self._owner_emails = owner_emails
 
     @classmethod
     def from_dict(cls, dikt) -> 'FeatureLatency':
@@ -152,24 +152,24 @@ class FeatureLatency(Model):
         self._shipped_date = shipped_date
 
     @property
-    def owner_email(self) -> str:
-        """Gets the owner_email of this FeatureLatency.
+    def owner_emails(self) -> List[str]:
+        """Gets the owner_emails of this FeatureLatency.
 
 
-        :return: The owner_email of this FeatureLatency.
-        :rtype: str
+        :return: The owner_emails of this FeatureLatency.
+        :rtype: List[str]
         """
-        return self._owner_email
+        return self._owner_emails
 
-    @owner_email.setter
-    def owner_email(self, owner_email: str):
-        """Sets the owner_email of this FeatureLatency.
+    @owner_emails.setter
+    def owner_emails(self, owner_emails: List[str]):
+        """Sets the owner_emails of this FeatureLatency.
 
 
-        :param owner_email: The owner_email of this FeatureLatency.
-        :type owner_email: str
+        :param owner_emails: The owner_emails of this FeatureLatency.
+        :type owner_emails: List[str]
         """
-        if owner_email is None:
-            raise ValueError("Invalid value for `owner_email`, must not be `None`")  # noqa: E501
+        if owner_emails is None:
+            raise ValueError("Invalid value for `owner_emails`, must not be `None`")  # noqa: E501
 
-        self._owner_email = owner_email
+        self._owner_emails = owner_emails

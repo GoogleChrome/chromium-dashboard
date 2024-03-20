@@ -25,13 +25,11 @@ from internals.core_models import FeatureEntry
 class FeatureLatencyAPI(basehandlers.APIHandler):
   """Implements the OpenAPI /spec_mentors path."""
 
-  def do_get(self, **kwargs):
-    """Get a list of matching spec mentors.
-
-    Returns:
-      A list of data on all public origin trials.
-    """
-    start_param: str | None = self.request.args.get('startDate', None)
+  def get_date_range(
+      self, request_args: dict[str, str]
+  ) -> tuple[datetime|None, datetime|None]:
+    """Parse start and end dates from query-string params."""
+    start_param: str | None = request_args.get('startDate', None)
     start_date: datetime | None = None
     if start_param is not None:
       try:
@@ -39,7 +37,7 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
       except ValueError:
         self.abort(400, f'invalid ?startDate parameter {start_param}')
 
-    end_param: str | None = self.request.args.get('endDate', None)
+    end_param: str | None = request_args.get('endDate', None)
     end_date: datetime | None = None
     if end_param is not None:
       try:
@@ -47,17 +45,30 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
       except ValueError:
         self.abort(400, f'invalid ?endDate parameter {end_param}')
 
-    # TODO(jrobbins): Replace fake data with queries and calculations.
+    return start_date, end_date
+
+  def do_get(self, **kwargs):
+    """Get a list of matching spec mentors.
+
+    Returns:
+      A list of data on all public origin trials.
+    """
+    start_date, end_date = self.get_date_range(self.request.args)
+    query = FeatureEntry.query().order(FeatureEntry.created)
+    query = query.filter(FeatureEntry.created >= start_date)
+    query = query.filter(FeatureEntry.created < end_date)
+    features = query.fetch(None)
+    features = [fe for fe in features if not fe.deleted]
+
+    # TODO(jrobbins): get milestones and filter by desktop shipping.
+
+    # TODO(jrobbins): Calculate shipped date from milestone.
     result = [
         FeatureLatency(
-            FeatureLink(12345, 'Some feature'),
-            datetime(2023,1,8).isoformat(),
-            122, datetime(2023, 3, 15).isoformat(),
-            'owner@example.com').to_dict(),
-        FeatureLatency(
-            FeatureLink(128391, 'Another feature'),
-            datetime(2023,3,18).isoformat(),
-            123, datetime(2023, 5, 25).isoformat(),
-            'owner@example.com').to_dict(),
+            FeatureLink(fe.key.integer_id(), fe.name),
+            fe.created.isoformat(),
+            122, datetime(2024, 12, 31).isoformat(),
+            fe.owner_emails).to_dict()
+        for fe in features
     ]
     return result

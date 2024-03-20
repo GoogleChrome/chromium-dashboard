@@ -210,15 +210,17 @@ components:
         shipped_date:
           type: string
           format: date
-        owner_email:
-          type: string
-          format: email
+        owner_emails:
+          type: array
+          items:
+            type: string
+            format: email
       required:
         - feature_id
         - entry_created_date
         - shipped_milestone
         - shipped_date
-        - owner_email
+        - owner_emails
     FeatureLink:
       type: object
       required:
