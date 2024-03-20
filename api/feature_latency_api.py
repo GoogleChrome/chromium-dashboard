@@ -23,7 +23,7 @@ from internals.core_models import FeatureEntry
 
 
 class FeatureLatencyAPI(basehandlers.APIHandler):
-  """Implements the OpenAPI /spec_mentors path."""
+  """Implements the OpenAPI /feature_latency path."""
 
   def get_date_range(
       self, request_args: dict[str, str]
@@ -48,10 +48,10 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
     return start_date, end_date
 
   def do_get(self, **kwargs):
-    """Get a list of matching spec mentors.
+    """Calculate feature latency for features in a date range.
 
     Returns:
-      A list of data on all public origin trials.
+      A list of FeatureLatency objects for each matching feature.
     """
     start_date, end_date = self.get_date_range(self.request.args)
     query = FeatureEntry.query().order(FeatureEntry.created)
