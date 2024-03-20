@@ -216,7 +216,7 @@ components:
             type: string
             format: email
       required:
-        - feature_id
+        - feature
         - entry_created_date
         - shipped_milestone
         - shipped_date

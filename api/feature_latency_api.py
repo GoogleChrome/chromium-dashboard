@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
 
 from chromestatus_openapi.models.feature_link import FeatureLink
@@ -61,6 +61,8 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
 
     # 1. Get all shipped feature entries that were created before end date.
     fe_query = FeatureEntry.query().order(FeatureEntry.created)
+    fe_query = fe_query.filter(
+        FeatureEntry.created > start_date - timedelta(days=365))
     fe_query = fe_query.filter(FeatureEntry.created < end_date)
     features = fe_query.fetch(None)
     logging.info('features %r', [fe.name for fe in features])
@@ -84,9 +86,18 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
     if not stages:
       return []
     stages_by_fid = stage_helpers.organize_all_stages_by_feature(stages)
-    ship_milestone_by_fid = {
-        f_id: min(s.milestones.desktop_first for s in feature_stages)
-        for f_id, feature_stages in stages_by_fid.items()}
+    ship_milestone_by_fid = {}
+    for f_id, feature_stages in stages_by_fid.items():
+      for s in feature_stages:
+        if s and s.milestones:
+          if s.milestones.desktop_first:
+            if (ship_milestone_by_fid.get(f_id, 9999) >
+                s.milestones.desktop_first):
+              ship_milestone_by_fid[f_id] = s.milestones.desktop_first
+          if s.milestones.android_first:
+            if (ship_milestone_by_fid.get(f_id, 9999) >
+                s.milestones.android_first):
+              ship_milestone_by_fid[f_id] = s.milestones.android_first
 
     # 3. Get all the milestone details, including branch date.
     milestone_details = channels_api.construct_specified_milestones_details(
@@ -94,7 +105,7 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
         max(ship_milestone_by_fid.values()))
     for m in milestone_details:
       logging.info('M%d: branch_point %r', m,
-                   milestone_details[m]['branch_point'])
+                   milestone_details[m].get('branch_point'))
 
     # 4. Use only features that shipped in milestones that branched
     # between start_date and end_date.
@@ -102,26 +113,28 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
     end_date_iso = end_date.isoformat()
     lowest_milestone_in_range = min(
       m for m in milestone_details
-      if milestone_details[m]['branch_point'] >= start_date_iso)
+      if milestone_details[m].get('branch_point', '0') >= start_date_iso)
     highest_milestone_in_range = max(
       m for m in milestone_details
-      if milestone_details[m]['branch_point'] <= end_date_iso)
+      if milestone_details[m].get('branch_point', '9') <= end_date_iso)
     logging.info('highest_milestone_in_range: %r', highest_milestone_in_range)
     features = [
         fe for fe in features
-        if (lowest_milestone_in_range <=
+        if (ship_milestone_by_fid.get(fe.key.integer_id()) and
+            lowest_milestone_in_range <=
             ship_milestone_by_fid[fe.key.integer_id()] <=
             highest_milestone_in_range)]
 
     # 5. Stuff results into OpenAPI objects and convert to python dicts.
     result = []
     for fe in features:
-      m = ship_milestone_by_fid[fe.key.integer_id()]
-      result.append(FeatureLatency(
-          FeatureLink(fe.key.integer_id(), fe.name),
-          fe.created.isoformat(),
-          m,
-          milestone_details[m]['branch_point'],
-          fe.owner_emails).to_dict())
+      m = ship_milestone_by_fid.get(fe.key.integer_id())
+      if m and milestone_details[m].get('branch_point'):
+        result.append(FeatureLatency(
+            feature=FeatureLink(id=fe.key.integer_id(), name=fe.name),
+            entry_created_date=fe.created.isoformat(),
+            shipped_milestone=m,
+            shipped_date=milestone_details[m]['branch_point'],
+            owner_emails=fe.owner_emails).to_dict())
 
     return result

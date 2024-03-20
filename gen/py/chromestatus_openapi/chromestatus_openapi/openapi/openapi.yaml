@@ -311,7 +311,7 @@ components:
           type: array
       required:
       - entry_created_date
-      - feature_id
+      - feature
       - owner_emails
       - shipped_date
       - shipped_milestone

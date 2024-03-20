@@ -31,7 +31,7 @@ export interface FeatureLatency {
      * @type {FeatureLink}
      * @memberof FeatureLatency
      */
-    feature?: FeatureLink;
+    feature: FeatureLink;
     /**
      * 
      * @type {Date}
@@ -63,6 +63,7 @@ export interface FeatureLatency {
  */
 export function instanceOfFeatureLatency(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "feature" in value;
     isInstance = isInstance && "entry_created_date" in value;
     isInstance = isInstance && "shipped_milestone" in value;
     isInstance = isInstance && "shipped_date" in value;
@@ -81,7 +82,7 @@ export function FeatureLatencyFromJSONTyped(json: any, ignoreDiscriminator: bool
     }
     return {
         
-        'feature': !exists(json, 'feature') ? undefined : FeatureLinkFromJSON(json['feature']),
+        'feature': FeatureLinkFromJSON(json['feature']),
         'entry_created_date': (new Date(json['entry_created_date'])),
         'shipped_milestone': json['shipped_milestone'],
         'shipped_date': (new Date(json['shipped_date'])),

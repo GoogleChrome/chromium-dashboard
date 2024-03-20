@@ -79,6 +79,8 @@ class FeatureLatency(Model):
         :param feature: The feature of this FeatureLatency.
         :type feature: FeatureLink
         """
+        if feature is None:
+            raise ValueError("Invalid value for `feature`, must not be `None`")  # noqa: E501
 
         self._feature = feature
 
