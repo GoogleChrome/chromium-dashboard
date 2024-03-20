@@ -81,7 +81,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ComponentUsersRequest'
-  /review_latency:
+  /review-latency:
     get:
       summary: List recently reviewed features and their review latency
       operationId: listReviewsWithLatency

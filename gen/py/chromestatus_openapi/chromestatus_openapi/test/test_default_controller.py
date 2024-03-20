@@ -56,7 +56,7 @@ class TestDefaultController(BaseTestCase):
             'Accept': 'application/json',
         }
         response = self.client.open(
-            '/api/v0/review_latency',
+            '/api/v0/review-latency',
             method='GET',
             headers=headers)
         self.assert200(response,

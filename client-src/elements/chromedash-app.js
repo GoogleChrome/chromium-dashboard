@@ -434,7 +434,7 @@ class ChromedashApp extends LitElement {
       this.currentPage = ctx.path;
       this.hideSidebar();
     });
-    page('/reports/review_latency', (ctx)=> {
+    page('/reports/review-latency', (ctx)=> {
       if (!this.setupNewPage(ctx, 'chromedash-report-review-latency-page')) return;
       this.currentPage = ctx.path;
       this.hideSidebar();

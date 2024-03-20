@@ -299,7 +299,7 @@ export class ChromedashDrawer extends LitElement {
         ${this.renderNavItem('/admin/users/new', 'Users')}
         ${this.renderNavItem('/admin/ot_requests', 'OT requests')}
         ${this.renderNavItem('/admin/feature_links', 'Feature links')}
-        ${this.renderNavItem('/reports/review_latency', 'Review latency')}
+        ${this.renderNavItem('/reports/review-latency', 'Review latency')}
         ${this.renderNavItem('/admin/slo_report', 'SLO report JSON')}
         ${this.renderNavItem('/admin/blink', 'Subscriptions')}
         ${this.renderNavItem('/admin/find_stop_words', 'Find stop words JSON')}
