@@ -59,9 +59,8 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
     start_date, end_date = self.get_date_range(self.request.args)
     logging.info('range %r %r', start_date, end_date)
 
-    # 1. Get all shipped feature entries that were created after start date.
+    # 1. Get all shipped feature entries that were created before end date.
     fe_query = FeatureEntry.query().order(FeatureEntry.created)
-    fe_query = fe_query.filter(FeatureEntry.created >= start_date)
     fe_query = fe_query.filter(FeatureEntry.created < end_date)
     features = fe_query.fetch(None)
     logging.info('features %r', [fe.name for fe in features])
@@ -97,15 +96,21 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
       logging.info('M%d: branch_point %r', m,
                    milestone_details[m]['branch_point'])
 
-    # 4. Use only features that shipped in milestones that branched < end_date.
+    # 4. Use only features that shipped in milestones that branched
+    # between start_date and end_date.
+    start_date_iso = start_date.isoformat()
     end_date_iso = end_date.isoformat()
+    lowest_milestone_in_range = min(
+      m for m in milestone_details
+      if milestone_details[m]['branch_point'] >= start_date_iso)
     highest_milestone_in_range = max(
       m for m in milestone_details
       if milestone_details[m]['branch_point'] <= end_date_iso)
     logging.info('highest_milestone_in_range: %r', highest_milestone_in_range)
     features = [
         fe for fe in features
-        if (ship_milestone_by_fid[fe.key.integer_id()] <=
+        if (lowest_milestone_in_range <=
+            ship_milestone_by_fid[fe.key.integer_id()] <=
             highest_milestone_in_range)]
 
     # 5. Stuff results into OpenAPI objects and convert to python dicts.
