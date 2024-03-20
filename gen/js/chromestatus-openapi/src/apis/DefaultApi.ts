@@ -232,7 +232,7 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/feature_latency`,
+            path: `/feature-latency`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,

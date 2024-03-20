@@ -143,7 +143,7 @@ api_routes: list[Route] = [
         component_users.ComponentUsersAPI),
 
     Route(f'{API_BASE}/spec_mentors', spec_mentors_api.SpecMentorsAPI),
-    Route(f'{API_BASE}/feature_latency', feature_latency_api.FeatureLatencyAPI),
+    Route(f'{API_BASE}/feature-latency', feature_latency_api.FeatureLatencyAPI),
 
     Route(f'{API_BASE}/login', login_api.LoginAPI),
     Route(f'{API_BASE}/logout', logout_api.LogoutAPI),
@@ -212,7 +212,7 @@ spa_page_routes = [
   Route('/metrics/feature/timeline/popularity'),
   Route('/metrics/feature/timeline/popularity/<int:bucket_id>'),
   Route('/reports/spec_mentors'),
-  Route('/reports/feature_latency'),
+  Route('/reports/feature-latency'),
   Route('/settings', defaults={'require_signin': True}),
   Route('/enterprise'),
   Route(

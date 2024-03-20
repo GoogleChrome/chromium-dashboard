@@ -91,7 +91,7 @@ paths:
       - XsrfToken: []
       summary: List all components and possible users
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
-  /feature_latency:
+  /feature-latency:
     get:
       operationId: list_feature_latency
       parameters:

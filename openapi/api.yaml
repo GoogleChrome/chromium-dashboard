@@ -103,7 +103,7 @@ paths:
                   $ref: '#/components/schemas/SpecMentor'
         '400':
           description: The ?after query parameter isn't a valid date in ISO YYYY-MM-DD format.
-  /feature_latency:
+  /feature-latency:
     get:
       summary: List how long each feature took to launch
       operationId: listFeatureLatency

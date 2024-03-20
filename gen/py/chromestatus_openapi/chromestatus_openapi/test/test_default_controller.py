@@ -58,7 +58,7 @@ class TestDefaultController(BaseTestCase):
             'Accept': 'application/json',
         }
         response = self.client.open(
-            '/api/v0/feature_latency',
+            '/api/v0/feature-latency',
             method='GET',
             headers=headers,
             query_string=query_string)

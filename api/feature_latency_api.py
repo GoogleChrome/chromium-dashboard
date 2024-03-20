@@ -18,8 +18,11 @@ import logging
 from chromestatus_openapi.models.feature_link import FeatureLink
 from chromestatus_openapi.models.feature_latency import FeatureLatency
 
+from api import channels_api
 from framework import basehandlers
-from internals.core_models import FeatureEntry
+from internals import stage_helpers
+from internals.core_enums import *
+from internals.core_models import FeatureEntry, Stage
 
 
 class FeatureLatencyAPI(basehandlers.APIHandler):
@@ -54,21 +57,66 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
       A list of FeatureLatency objects for each matching feature.
     """
     start_date, end_date = self.get_date_range(self.request.args)
-    query = FeatureEntry.query().order(FeatureEntry.created)
-    query = query.filter(FeatureEntry.created >= start_date)
-    query = query.filter(FeatureEntry.created < end_date)
-    features = query.fetch(None)
-    features = [fe for fe in features if not fe.deleted]
+    logging.info('range %r %r', start_date, end_date)
 
-    # TODO(jrobbins): get milestones and filter by desktop shipping.
+    # 1. Get all shipped feature entries that were created after start date.
+    fe_query = FeatureEntry.query().order(FeatureEntry.created)
+    fe_query = fe_query.filter(FeatureEntry.created >= start_date)
+    fe_query = fe_query.filter(FeatureEntry.created < end_date)
+    features = fe_query.fetch(None)
+    logging.info('features %r', [fe.name for fe in features])
+    features = [
+        fe for fe in features
+        if (not fe.deleted and
+            fe.impl_status_chrome in [ENABLED_BY_DEFAULT, DEPRECATED, REMOVED])]
 
-    # TODO(jrobbins): Calculate shipped date from milestone.
-    result = [
-        FeatureLatency(
-            FeatureLink(fe.key.integer_id(), fe.name),
-            fe.created.isoformat(),
-            122, datetime(2024, 12, 31).isoformat(),
-            fe.owner_emails).to_dict()
-        for fe in features
-    ]
+    # 2. Get all the ship Stages for those features to find shipping milestones.
+    feature_ids = {fe.key.integer_id() for fe in features}
+    logging.info('feature_ids %r', feature_ids)
+    if not feature_ids:
+      return []
+    stage_query = Stage.query()
+    stage_query = stage_query.filter(Stage.feature_id.IN(feature_ids))
+    stage_query = stage_query.filter(Stage.stage_type.IN([
+        STAGE_BLINK_SHIPPING, STAGE_PSA_SHIPPING,
+        STAGE_FAST_SHIPPING, STAGE_DEP_SHIPPING, STAGE_ENT_ROLLOUT]))
+    stages = stage_query.fetch(None)
+    stages = [s for s in stages if not s.archived]
+    if not stages:
+      return []
+    stages_by_fid = stage_helpers.organize_all_stages_by_feature(stages)
+    ship_milestone_by_fid = {
+        f_id: min(s.milestones.desktop_first for s in feature_stages)
+        for f_id, feature_stages in stages_by_fid.items()}
+
+    # 3. Get all the milestone details, including branch date.
+    milestone_details = channels_api.construct_specified_milestones_details(
+        min(ship_milestone_by_fid.values()),
+        max(ship_milestone_by_fid.values()))
+    for m in milestone_details:
+      logging.info('M%d: branch_point %r', m,
+                   milestone_details[m]['branch_point'])
+
+    # 4. Use only features that shipped in milestones that branched < end_date.
+    end_date_iso = end_date.isoformat()
+    highest_milestone_in_range = max(
+      m for m in milestone_details
+      if milestone_details[m]['branch_point'] <= end_date_iso)
+    logging.info('highest_milestone_in_range: %r', highest_milestone_in_range)
+    features = [
+        fe for fe in features
+        if (ship_milestone_by_fid[fe.key.integer_id()] <=
+            highest_milestone_in_range)]
+
+    # 5. Stuff results into OpenAPI objects and convert to python dicts.
+    result = []
+    for fe in features:
+      m = ship_milestone_by_fid[fe.key.integer_id()]
+      result.append(FeatureLatency(
+          FeatureLink(fe.key.integer_id(), fe.name),
+          fe.created.isoformat(),
+          m,
+          milestone_details[m]['branch_point'],
+          fe.owner_emails).to_dict())
+
     return result
