@@ -57,10 +57,6 @@ export class ChromedashRoadmapPage extends LitElement {
 
   firstUpdated() {
     this.handleResize();
-
-    const toastEl = document.createElement('chromedash-toast');
-    document.body.appendChild(toastEl);
-    toastEl.showMessage("Welcome to chromestatus.com!");
   }
 
   handleResize() {
