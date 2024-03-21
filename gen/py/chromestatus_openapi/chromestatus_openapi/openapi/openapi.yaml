@@ -95,18 +95,22 @@ paths:
     get:
       operationId: list_feature_latency
       parameters:
-      - explode: true
+      - description: "Start date (RFC 3339, section 5.6, for example, 2017-07-21).\
+          \ The date is inclusive."
+        explode: true
         in: query
-        name: startDate
-        required: false
+        name: startAt
+        required: true
         schema:
           format: date
           type: string
         style: form
-      - explode: true
+      - description: "End date (RFC 3339, section 5.6, for example, 2017-07-21). The\
+          \ date is exclusive."
+        explode: true
         in: query
-        name: endDate
-        required: false
+        name: endAt
+        required: true
         schema:
           format: date
           type: string
@@ -152,6 +156,29 @@ paths:
       summary: List spec mentors and their activity
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
 components:
+  parameters:
+    startAtParam:
+      description: "Start date (RFC 3339, section 5.6, for example, 2017-07-21). The\
+        \ date is inclusive."
+      explode: true
+      in: query
+      name: startAt
+      required: true
+      schema:
+        format: date
+        type: string
+      style: form
+    endAtParam:
+      description: "End date (RFC 3339, section 5.6, for example, 2017-07-21). The\
+        \ date is exclusive."
+      explode: true
+      in: query
+      name: endAt
+      required: true
+      schema:
+        format: date
+        type: string
+      style: form
   schemas:
     ComponentsUsersResponse:
       example:

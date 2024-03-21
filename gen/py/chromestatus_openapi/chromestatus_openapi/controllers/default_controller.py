@@ -40,20 +40,20 @@ def list_component_users():  # noqa: E501
     return 'do some magic!'
 
 
-def list_feature_latency(start_date=None, end_date=None):  # noqa: E501
+def list_feature_latency(start_at, end_at):  # noqa: E501
     """List how long each feature took to launch
 
      # noqa: E501
 
-    :param start_date: 
-    :type start_date: str
-    :param end_date: 
-    :type end_date: str
+    :param start_at: Start date (RFC 3339, section 5.6, for example, 2017-07-21). The date is inclusive.
+    :type start_at: str
+    :param end_at: End date (RFC 3339, section 5.6, for example, 2017-07-21). The date is exclusive.
+    :type end_at: str
 
     :rtype: Union[List[FeatureLatency], Tuple[List[FeatureLatency], int], Tuple[List[FeatureLatency], int, Dict[str, str]]
     """
-    start_date = util.deserialize_date(start_date)
-    end_date = util.deserialize_date(end_date)
+    start_at = util.deserialize_date(start_at)
+    end_at = util.deserialize_date(end_at)
     return 'do some magic!'
 
 

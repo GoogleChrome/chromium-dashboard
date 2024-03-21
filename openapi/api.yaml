@@ -108,16 +108,8 @@ paths:
       summary: List how long each feature took to launch
       operationId: listFeatureLatency
       parameters:
-        - in: query
-          name: startDate
-          schema:
-            type: string
-            format: date
-        - in: query
-          name: endDate
-          schema:
-            type: string
-            format: date
+        - $ref: '#/components/parameters/startAtParam'
+        - $ref: '#/components/parameters/endAtParam'
       responses:
         '200':
           description: >-
@@ -131,6 +123,23 @@ paths:
         '400':
           description: One of the query parameters isn't a valid date in ISO YYYY-MM-DD format.
 components:
+  parameters:
+    startAtParam:
+      in: query
+      name: startAt
+      schema:
+        type: string
+        format: date
+      description: Start date (RFC 3339, section 5.6, for example, 2017-07-21). The date is inclusive.
+      required: true
+    endAtParam:
+      in: query
+      name: endAt
+      schema:
+        type: string
+        format: date
+      description: End date (RFC 3339, section 5.6, for example, 2017-07-21). The date is exclusive.
+      required: true
   securitySchemes:
     XsrfToken:
       type: apiKey

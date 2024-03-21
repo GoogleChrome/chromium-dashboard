@@ -33,8 +33,8 @@ export class ChromedashReportFeatureLatencyPage extends LitElement {
   static get properties() {
     return {
       latencyList: {type: Array},
-      startDate: {state: true},
-      endDate: {state: true},
+      startAtDate: {state: true},
+      endAtDate: {state: true},
     };
   }
 
@@ -47,17 +47,17 @@ export class ChromedashReportFeatureLatencyPage extends LitElement {
   constructor() {
     super();
     // Default to entire year 2023.
-    this.startDate = new Date('January 1, 2023');
-    this.endDate = new Date('January 1, 2024');
+    this.startAtDate = new Date('January 1, 2023');
+    this.endAtDate = new Date('January 1, 2024');
     // @ts-ignore
     this._client = window.csOpenApiClient;
     this._latencyTask = new Task(this, {
-      task: async ([startDate, endDate], {signal}) => {
+      task: async ([startAt, endAt], {signal}) => {
         this.latencyList = await this._client.listFeatureLatency(
-          {startDate, endDate}, {signal});
+          {startAt, endAt}, {signal});
         return this.latencyList;
       },
-      args: () => [this.startDate, this.endDate],
+      args: () => [this.startAtDate, this.endAtDate],
     });
   }
 
@@ -71,16 +71,16 @@ export class ChromedashReportFeatureLatencyPage extends LitElement {
       return;
     }
 
-    if (this.rawQuery.hasOwnProperty('startDate')) {
-      const parsed = Date.parse(this.rawQuery['startDate']);
+    if (this.rawQuery.hasOwnProperty('startAt')) {
+      const parsed = Date.parse(this.rawQuery['startAt']);
       if (!isNaN(parsed)) {
-        this.startDate = new Date(parsed);
+        this.startAtDate = new Date(parsed);
       }
     }
-    if (this.rawQuery.hasOwnProperty('endDate')) {
-      const parsed = Date.parse(this.rawQuery['endDate']);
+    if (this.rawQuery.hasOwnProperty('endAt')) {
+      const parsed = Date.parse(this.rawQuery['endAt']);
       if (!isNaN(parsed)) {
-        this.endDate = new Date(parsed);
+        this.endAtDate = new Date(parsed);
       }
     }
   }
@@ -89,8 +89,8 @@ export class ChromedashReportFeatureLatencyPage extends LitElement {
     return html`
      <p>
      Launched ${this.latencyList.length} features between
-     ${this.startDate.toLocaleDateString()} and
-     ${this.endDate.toLocaleDateString()}.
+     ${this.startAtDate.toLocaleDateString()} and
+     ${this.endAtDate.toLocaleDateString()}.
      </p>
      <p>
      Latency is measured in calendar days.

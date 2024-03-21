@@ -38,8 +38,8 @@ export interface AddUserToComponentRequest {
 }
 
 export interface ListFeatureLatencyRequest {
-    startDate?: Date;
-    endDate?: Date;
+    startAt: Date;
+    endAt: Date;
 }
 
 export interface ListSpecMentorsRequest {
@@ -93,8 +93,8 @@ export interface DefaultApiInterface {
     /**
      * 
      * @summary List how long each feature took to launch
-     * @param {Date} [startDate] 
-     * @param {Date} [endDate] 
+     * @param {Date} startAt Start date (RFC 3339, section 5.6, for example, 2017-07-21). The date is inclusive.
+     * @param {Date} endAt End date (RFC 3339, section 5.6, for example, 2017-07-21). The date is exclusive.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApiInterface
@@ -219,14 +219,22 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      * List how long each feature took to launch
      */
     async listFeatureLatencyRaw(requestParameters: ListFeatureLatencyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<FeatureLatency>>> {
-        const queryParameters: any = {};
-
-        if (requestParameters.startDate !== undefined) {
-            queryParameters['startDate'] = (requestParameters.startDate as any).toISOString().substring(0,10);
+        if (requestParameters.startAt === null || requestParameters.startAt === undefined) {
+            throw new runtime.RequiredError('startAt','Required parameter requestParameters.startAt was null or undefined when calling listFeatureLatency.');
         }
 
-        if (requestParameters.endDate !== undefined) {
-            queryParameters['endDate'] = (requestParameters.endDate as any).toISOString().substring(0,10);
+        if (requestParameters.endAt === null || requestParameters.endAt === undefined) {
+            throw new runtime.RequiredError('endAt','Required parameter requestParameters.endAt was null or undefined when calling listFeatureLatency.');
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters.startAt !== undefined) {
+            queryParameters['startAt'] = (requestParameters.startAt as any).toISOString().substring(0,10);
+        }
+
+        if (requestParameters.endAt !== undefined) {
+            queryParameters['endAt'] = (requestParameters.endAt as any).toISOString().substring(0,10);
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -244,7 +252,7 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     /**
      * List how long each feature took to launch
      */
-    async listFeatureLatency(requestParameters: ListFeatureLatencyRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<FeatureLatency>> {
+    async listFeatureLatency(requestParameters: ListFeatureLatencyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<FeatureLatency>> {
         const response = await this.listFeatureLatencyRaw(requestParameters, initOverrides);
         return await response.value();
     }

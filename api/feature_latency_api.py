@@ -14,6 +14,7 @@
 
 from datetime import datetime, timedelta
 import logging
+from typing import Any
 
 from chromestatus_openapi.models.feature_link import FeatureLink
 from chromestatus_openapi.models.feature_latency import FeatureLatency
@@ -30,23 +31,25 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
 
   def get_date_range(
       self, request_args: dict[str, str]
-  ) -> tuple[datetime|None, datetime|None]:
+  ) -> tuple[datetime, datetime]:
     """Parse start and end dates from query-string params."""
-    start_param: str | None = request_args.get('startDate', None)
-    start_date: datetime | None = None
-    if start_param is not None:
+    start_param: str | None = request_args.get('startAt')
+    if start_param:
       try:
         start_date = datetime.fromisoformat(start_param)
       except ValueError:
-        self.abort(400, f'invalid ?startDate parameter {start_param}')
+        self.abort(400, f'invalid ?startAt parameter {start_param}')
+    else:
+      self.abort(400, 'missing ?startAt parameter')
 
-    end_param: str | None = request_args.get('endDate', None)
-    end_date: datetime | None = None
-    if end_param is not None:
+    end_param: str | None = request_args.get('endAt')
+    if end_param:
       try:
         end_date = datetime.fromisoformat(end_param)
       except ValueError:
-        self.abort(400, f'invalid ?endDate parameter {end_param}')
+        self.abort(400, f'invalid ?endAt parameter {end_param}')
+    else:
+      self.abort(400, 'missing ?endAt parameter')
 
     return start_date, end_date
 
@@ -70,7 +73,7 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
     return result
 
   def get_features_to_consider(
-      self, start_date: datetime, end_date: int) -> list[FeatureEntry]:
+      self, start_date: datetime, end_date: datetime) -> list[FeatureEntry]:
     """Get all shipped feature entries that were created before end date."""
     fe_query = FeatureEntry.query().order(FeatureEntry.created)
     fe_query = fe_query.filter(
@@ -84,7 +87,9 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
             fe.impl_status_chrome in [ENABLED_BY_DEFAULT, DEPRECATED, REMOVED])]
     return features
 
-  def get_shipped_milestones(self, features):
+  def get_shipped_milestones(
+      self, features: list[FeatureEntry]
+  ) -> dict[int, int]:
     """Get all the ship Stages for those features to find shipping milestones."""
     feature_ids = {fe.key.integer_id() for fe in features}
     logging.info('feature_ids %r', feature_ids)
@@ -101,7 +106,7 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
       return {}
     stages_by_fid = stage_helpers.organize_all_stages_by_feature(stages)
 
-    ship_milestone_by_fid = {}
+    ship_milestone_by_fid: dict[int, int] = {}
     for f_id, feature_stages in stages_by_fid.items():
       for s in feature_stages:
         if not s or not s.milestones:
@@ -117,10 +122,12 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
 
     return ship_milestone_by_fid
 
-  def get_milestone_details(self, ship_milestone_by_fid):
+  def get_milestone_details(
+      self, ship_milestone_by_fid: dict[int, int]
+  )-> dict[int, dict[str, Any]] :
     """Get all the milestone details, including branch date."""
     if not ship_milestone_by_fid:
-      return []
+      return {}
     milestone_details = channels_api.construct_specified_milestones_details(
         min(ship_milestone_by_fid.values()),
         max(ship_milestone_by_fid.values()))
@@ -131,8 +138,12 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
     return milestone_details
 
   def filter_out_unshipped_features(
-      self, features, ship_milestone_by_fid, start_date, end_date,
-      milestone_details):
+      self, features: list[FeatureEntry],
+      ship_milestone_by_fid: dict[int, int],
+      start_date: datetime,
+      end_date: datetime,
+      milestone_details: dict[int, dict[str, Any]]
+  ) -> list[FeatureEntry]:
     """Return only features that shipped in milestones that branched
        between start_date and end_date."""
     if not milestone_details:
@@ -155,7 +166,10 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
     return matching_features
 
   def convert_to_result_format(
-      self, matching_features, ship_milestone_by_fid, milestone_details):
+      self, matching_features: list[FeatureEntry],
+      ship_milestone_by_fid: dict[int, int],
+      milestone_details: dict[int, dict[str, Any]]
+  ) -> list[dict[str, Any]]:
     """Stuff results into OpenAPI objects and convert to python dicts."""
     result = []
     for fe in matching_features:

@@ -52,8 +52,8 @@ class TestDefaultController(BaseTestCase):
 
         List how long each feature took to launch
         """
-        query_string = [('startDate', '2013-10-20'),
-                        ('endDate', '2013-10-20')]
+        query_string = [('startAt', '2013-10-20'),
+                        ('endAt', '2013-10-20')]
         headers = { 
             'Accept': 'application/json',
         }
