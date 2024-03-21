@@ -227,7 +227,9 @@ mpa_page_routes: list[Route] = [
 
     Route('/admin/features/launch/<int:feature_id>',
         intentpreview.IntentEmailPreviewHandler),
-    Route('/admin/features/launch/<int:feature_id>/<int:stage_id>',
+    Route('/admin/features/launch/<int:feature_id>/<int:intent_stage>',
+        intentpreview.IntentEmailPreviewHandler),
+    Route('/admin/features/launch/<int:feature_id>/<int:intent_stage>/<int:gate_id>',
         intentpreview.IntentEmailPreviewHandler),
 
     # Note: The only requests being made now hit /features.json and
