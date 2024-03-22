@@ -25,6 +25,7 @@ from api import channels_api
 from api import comments_api
 from api import cues_api
 from api import features_api
+from api import feature_latency_api
 from api import feature_links_api
 from api import login_api
 from api import logout_api
@@ -143,6 +144,7 @@ api_routes: list[Route] = [
         component_users.ComponentUsersAPI),
 
     Route(f'{API_BASE}/spec_mentors', spec_mentors_api.SpecMentorsAPI),
+    Route(f'{API_BASE}/feature-latency', feature_latency_api.FeatureLatencyAPI),
     Route(f'{API_BASE}/review-latency', review_latency_api.ReviewLatencyAPI),
 
     Route(f'{API_BASE}/login', login_api.LoginAPI),
@@ -212,6 +214,7 @@ spa_page_routes = [
   Route('/metrics/feature/timeline/popularity'),
   Route('/metrics/feature/timeline/popularity/<int:bucket_id>'),
   Route('/reports/spec_mentors'),
+  Route('/reports/feature-latency'),
   Route('/reports/review-latency'),
   Route('/settings', defaults={'require_signin': True}),
   Route('/enterprise'),

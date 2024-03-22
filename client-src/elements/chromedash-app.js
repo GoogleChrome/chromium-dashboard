@@ -434,6 +434,14 @@ class ChromedashApp extends LitElement {
       this.currentPage = ctx.path;
       this.hideSidebar();
     });
+    page('/reports/feature-latency', (ctx)=> {
+      if (!this.setupNewPage(ctx, 'chromedash-report-feature-latency-page')) return;
+      this.pageComponent.rawQuery = parseRawQuery(ctx.querystring);
+      this.pageComponent.addEventListener('afterchanged',
+        e => updateURLParams('after', isoDateString(e.detail.after)));
+      this.currentPage = ctx.path;
+      this.hideSidebar();
+    });
     page('/reports/review-latency', (ctx)=> {
       if (!this.setupNewPage(ctx, 'chromedash-report-review-latency-page')) return;
       this.currentPage = ctx.path;
