@@ -61,7 +61,6 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
     """
     start_date, end_date = self.get_date_range(self.request.args)
     logging.info('range %r %r', start_date, end_date)
-
     features = self.get_features_to_consider(start_date, end_date)
     ship_milestone_by_fid = self.get_shipped_milestones(features)
     milestone_details = self.get_milestone_details(ship_milestone_by_fid)
@@ -77,7 +76,7 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
     """Get all shipped feature entries that were created before end date."""
     fe_query = FeatureEntry.query().order(FeatureEntry.created)
     fe_query = fe_query.filter(
-        FeatureEntry.created > start_date - timedelta(days=365))
+        FeatureEntry.created > start_date - timedelta(days=2*365))
     fe_query = fe_query.filter(FeatureEntry.created < end_date)
     features = fe_query.fetch(None)
     logging.info('features %r', [fe.name for fe in features])
