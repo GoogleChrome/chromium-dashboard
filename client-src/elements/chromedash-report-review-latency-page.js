@@ -18,7 +18,7 @@ export class ChromedashReportReviewLatencyPage extends LitElement {
          border: 1px solid #888;
        }
        td, th {
-         padding: var(--content-padding);
+         padding: var(--content-padding-half);
          text-align: center;
        }
        td {
@@ -36,6 +36,7 @@ export class ChromedashReportReviewLatencyPage extends LitElement {
        }
        .left {
          text-align: left;
+         min-width: 18em;
        }
       `];
   }
@@ -74,8 +75,9 @@ export class ChromedashReportReviewLatencyPage extends LitElement {
 
     return html`
       <p>
-      ${count} recent reviews of
-      ${this.reviewLatencyList.length} distinct features.
+      ${count} reviews of
+      ${this.reviewLatencyList.length} distinct features
+      in the past 90 days.
       </p>
       <p>
       Latency is measured in weekdays from request to initial response.
