@@ -26,6 +26,7 @@ from google.cloud import ndb  # type: ignore
 from pages import intentpreview
 from internals import core_enums
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.review_models import Gate, Vote
 
 test_app = flask.Flask(__name__,
   template_folder=settings.get_flask_template_path())
@@ -41,9 +42,10 @@ class IntentEmailPreviewHandlerTest(testing_config.CustomTestCase):
         category=1, intent_stage=core_enums.INTENT_IMPLEMENT,
         feature_type=0)
     self.feature_1.put()
+
+    stages_and_gates = core_enums.STAGES_AND_GATES_BY_FEATURE_TYPE[0]
     # Write stages for the feature.
-    stage_types = [110, 120, 130, 140, 150, 151, 160, 1061]
-    for s_type in stage_types:
+    for s_type, gate_types in stages_and_gates:
       s = Stage(feature_id=self.feature_1.key.integer_id(), stage_type=s_type,
           milestones=MilestoneSet(desktop_first=1,
               android_first=1, desktop_last=2),
@@ -61,20 +63,36 @@ class IntentEmailPreviewHandlerTest(testing_config.CustomTestCase):
       elif s_type == 160:
         s.finch_url = 'https://example.com/finch'
       s.put()
+      for g_type in gate_types:
+        gate = Gate(feature_id=self.feature_1.key.integer_id(),
+                    stage_id=s.key.integer_id(),
+                    gate_type=g_type, state=Vote.NA)
+        gate.put()
+        if s_type == 120 and g_type == 1:
+          self.proto_gate = gate
+        elif s_type == 150 and g_type == 2:
+          self.ot_gate = gate
+        elif s_type == 151 and g_type == 3:
+          self.extension_gate = gate
+        elif s_type == 160 and g_type == 4:
+          self.ship_gate = gate
 
     self.request_path = '/admin/features/launch/%d/%d?intent' % (
         core_enums.INTENT_SHIP, self.feature_1.key.integer_id())
     self.handler = intentpreview.IntentEmailPreviewHandler()
 
   def tearDown(self):
-    self.feature_1.key.delete()
+    for kind in [FeatureEntry, Gate, Stage, Vote]:
+      for entity in kind.query():
+        entity.key.delete()
 
   def test_get__anon(self):
     """Anon cannot view this preview features, gets redirected to login."""
     testing_config.sign_out()
     feature_id = self.feature_1.key.integer_id()
     with test_app.test_request_context(self.request_path):
-      actual_response = self.handler.get_template_data(feature_id=feature_id)
+      actual_response = self.handler.get_template_data(
+          feature_id=feature_id, gate_id=self.ot_gate.key.integer_id())
     self.assertEqual('302 FOUND', actual_response.status)
 
   def test_get__no_existing(self):
@@ -83,25 +101,35 @@ class IntentEmailPreviewHandlerTest(testing_config.CustomTestCase):
     bad_feature_id = self.feature_1.key.integer_id() + 1
     with test_app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.NotFound):
-        self.handler.get_template_data(feature_id=bad_feature_id)
+        self.handler.get_template_data(
+            feature_id=bad_feature_id, gate_id=self.ot_gate.key.integer_id())
 
-  def test_get__no_stage_specified(self):
-    """Allowed user can preview intent email for a feature using an old URL."""
+  def test_get__gate_not_found(self):
+    """Trying to view a feature that does not exist gives a 404."""
+    testing_config.sign_in('user1@google.com', 123567890)
+    feature_id = self.feature_1.key.integer_id()
+    with test_app.test_request_context(self.request_path):
+      with self.assertRaises(werkzeug.exceptions.NotFound):
+        self.handler.get_template_data(
+            feature_id=feature_id, gate_id=self.ot_gate.key.integer_id() + 1)
+
+  def test_get__no_gate_specified(self):
+    """Not specifying a gate gives a 400."""
     request_path = (
         '/admin/features/launch/%d?intent' % self.feature_1.key.integer_id())
     testing_config.sign_in('user1@google.com', 123567890)
     feature_id = self.feature_1.key.integer_id()
-    with test_app.test_request_context(self.request_path):
-      actual_data = self.handler.get_template_data(feature_id=feature_id)
-    self.assertIn('feature', actual_data)
-    self.assertEqual('feature one', actual_data['feature']['name'])
+    with test_app.test_request_context(request_path):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.get_template_data(feature_id=feature_id)
 
   def test_get__normal(self):
     """Allowed user can preview intent email for a feature."""
     testing_config.sign_in('user1@google.com', 123567890)
     feature_id = self.feature_1.key.integer_id()
     with test_app.test_request_context(self.request_path):
-      actual_data = self.handler.get_template_data(feature_id=feature_id)
+      actual_data = self.handler.get_template_data(feature_id=feature_id,
+                                                   intent_stage=core_enums.INTENT_IMPLEMENT)
     self.assertIn('feature', actual_data)
     self.assertEqual('feature one', actual_data['feature']['name'])
 
@@ -236,7 +264,7 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
     testing_config.sign_in('user1@google.com', 123567890)
     with test_app.test_request_context(self.request_path):
       self.template_data = self.handler.get_template_data(
-        feature_id=self.feature_id)
+        feature_id=self.feature_id, intent_stage=core_enums.INTENT_IMPLEMENT)
       page_data = self.handler.get_page_data(
           self.feature_id, self.feature_1, core_enums.INTENT_IMPLEMENT)
 
@@ -254,7 +282,8 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
   def test_html_rendering(self):
     """We can render the template with valid html."""
     with test_app.test_request_context(self.request_path):
-      actual_data = self.handler.get_template_data(feature_id=self.feature_id)
+      actual_data = self.handler.get_template_data(
+          feature_id=self.feature_id, intent_stage=core_enums.INTENT_IMPLEMENT)
       actual_data.update(self.handler.get_common_data())
       actual_data['nonce'] = 'fake nonce'
       actual_data['xsrf_token'] = ''
