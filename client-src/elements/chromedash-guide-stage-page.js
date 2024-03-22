@@ -115,7 +115,6 @@ export class ChromedashGuideStagePage extends LitElement {
     this._updateFieldValues(index, value);
   };
 
-
   fetchData() {
     this.loading = true;
     Promise.all([
