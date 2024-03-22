@@ -15,6 +15,7 @@ chromestatus_openapi/models/base_model.py
 chromestatus_openapi/models/component_users_request.py
 chromestatus_openapi/models/components_user.py
 chromestatus_openapi/models/components_users_response.py
+chromestatus_openapi/models/feature_latency.py
 chromestatus_openapi/models/feature_link.py
 chromestatus_openapi/models/owners_and_subscribers_of_component.py
 chromestatus_openapi/models/spec_mentor.py
