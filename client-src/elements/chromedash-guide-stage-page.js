@@ -9,6 +9,7 @@ import {
 import './chromedash-form-table';
 import './chromedash-form-field';
 import {
+  COPY_ON_EDIT,
   FLAT_TRIAL_EXTENSION_FIELDS,
   formatFeatureForEdit,
   FORMS_BY_STAGE_TYPE} from './form-definition';
@@ -67,6 +68,17 @@ export class ChromedashGuideStagePage extends LitElement {
     this.fetchData();
   }
 
+  // Helper to update a field with value
+  _updateFieldValues(index, value) {
+    // The field has been updated, so it is considered touched.
+    this.fieldValues[index].touched = true;
+    this.fieldValues[index].value = value;
+  }
+
+  _getFieldIndexByName(name) {
+    return this.fieldValues.findIndex(field => field.name === name);
+  }
+
   // Handler to update form values when a field update event is fired.
   handleFormFieldUpdate(event) {
     const value = event.detail.value;
@@ -75,10 +87,34 @@ export class ChromedashGuideStagePage extends LitElement {
     if (index >= this.fieldValues.length) {
       throw new Error('Out of bounds index when updating field values.');
     }
-    // The field has been updated, so it is considered touched.
-    this.fieldValues[index].touched = true;
-    this.fieldValues[index].value = value;
+    const fieldKey = this.fieldValues[index].name;
+    // If the OT/DT desktop milestone start field is updated, and the android/webview milestone start fields are either empty or previously matched the desktop milestone, they're updated to match as well.
+    if (COPY_ON_EDIT.hasOwnProperty(fieldKey)) {
+      const copyDestFields = COPY_ON_EDIT[fieldKey];
+      const oldSrcFieldValue = this.fieldValues[index].value;
+      for (const copyDestField of copyDestFields) {
+        const copyDestIndex = this._getFieldIndexByName(copyDestField);
+        if (copyDestIndex === -1) {
+          continue;
+        }
+        // If the field is already touched and has a different value, don't update it
+        if (this.fieldValues[copyDestIndex].touched &&
+          this.fieldValues[copyDestIndex].value !== oldSrcFieldValue) {
+          continue;
+        }
+        // Update dest DOM element and field value
+        const copyDestEl = this.shadowRoot.querySelector(`#id_${copyDestField}`);
+        if (!copyDestEl) {
+          continue;
+        }
+        this._updateFieldValues(copyDestIndex, value);
+        copyDestEl.value = value;
+      }
+    }
+
+    this._updateFieldValues(index, value);
   };
+
 
   fetchData() {
     this.loading = true;

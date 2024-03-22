@@ -887,3 +887,10 @@ export const GATE_QUESTIONNAIRES = {
   [enums.GATE_TYPES.TESTING_SHIP]: TESTING_SHIP_QUESTIONNAIRE,
   [enums.GATE_TYPES.TESTING_PLAN]: TESTING_SHIP_QUESTIONNAIRE,
 };
+
+/** Copy field SRC to DST if SRC is edited and DST was empty and has not been edited */
+export const COPY_ON_EDIT = Object.freeze({
+  'ot_milestone_desktop_start': ['ot_milestone_android_start', 'ot_milestone_webview_start'],
+  'ot_milestone_desktop_end': ['ot_milestone_android_end', 'ot_milestone_webview_end'],
+  'dt_milestone_desktop_start': ['dt_milestone_android_start', 'dt_milestone_webview_start'],
+});
