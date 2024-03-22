@@ -65,7 +65,11 @@ export class ChromedashReportReviewLatencyPage extends LitElement {
   renderCount() {
     let count = 0;
     for (const rl of this.reviewLatencyList) {
-      count += rl.gate_reviews.length;
+      for (const gr of rl.gate_reviews) {
+        if (gr.latency_days >= 0) {
+          count++;
+        }
+      }
     }
 
     return html`
@@ -82,7 +86,13 @@ export class ChromedashReportReviewLatencyPage extends LitElement {
   renderFeatureReviewsRow(reviewLatency) {
     const gateLatency = {};
     for (const gr of reviewLatency.gate_reviews) {
-      gateLatency[gr.gate_type] = gr.latency_days;
+      let display = gr.latency_days;
+      if (gr.latency_days === -1) {
+        display = '';
+      } else if (gr.latency_days == -2) {
+        display = 'Pending';
+      }
+      gateLatency[gr.gate_type] = display;
     }
     return html`
       <tr>

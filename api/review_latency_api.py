@@ -12,15 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime
+import collections
+import logging
+from datetime import datetime, timedelta
+from typing import Iterable, Any
+from google.cloud import ndb  # type: ignore
 
 from chromestatus_openapi.models.feature_link import FeatureLink
 from chromestatus_openapi.models.gate_latency import GateLatency
 from chromestatus_openapi.models.review_latency import ReviewLatency
 
 from framework import basehandlers
+from internals import slo
 from internals.core_enums import *
 from internals.core_models import FeatureEntry
+from internals.review_models import Gate
+
+
+DEFAULT_RECENT_DAYS = 90
+# This means that the feature team has not yet requested this review.
+NOT_STARTED_LATENCY = -1
+# This means that the feature team is still waiting for an initial response.
+PENDING_LATENCY = -2
 
 
 class ReviewLatencyAPI(basehandlers.APIHandler):
@@ -32,30 +45,91 @@ class ReviewLatencyAPI(basehandlers.APIHandler):
     Returns:
       A list of data on all public origin trials.
     """
-    return [
-        ReviewLatency(
-            FeatureLink(12345, 'Some feature'),
-            [GateLatency(GATE_API_PROTOTYPE, 2),
-             GateLatency(GATE_API_ORIGIN_TRIAL, 2),
-             GateLatency(GATE_API_EXTEND_ORIGIN_TRIAL, 2),
-             GateLatency(GATE_API_SHIP, 2),
-             GateLatency(GATE_PRIVACY_ORIGIN_TRIAL, 2),
-             GateLatency(GATE_SECURITY_ORIGIN_TRIAL, 2),
-             GateLatency(GATE_SECURITY_SHIP, 4),
-             GateLatency(GATE_ENTERPRISE_SHIP, 3),
-             GateLatency(GATE_DEBUGGABILITY_ORIGIN_TRIAL, 2),
-             ]
-        ).to_dict(),
-        ReviewLatency(
-            FeatureLink(1299345, 'Another feature'),
-            [GateLatency(GATE_API_PROTOTYPE, 3),
-             GateLatency(GATE_API_ORIGIN_TRIAL, 2),
-             GateLatency(GATE_API_EXTEND_ORIGIN_TRIAL, 5),
-             GateLatency(GATE_API_SHIP, 2),
-             GateLatency(GATE_PRIVACY_ORIGIN_TRIAL, 3),
-             GateLatency(GATE_SECURITY_ORIGIN_TRIAL, 1),
-             GateLatency(GATE_ENTERPRISE_SHIP, 8),
-             GateLatency(GATE_DEBUGGABILITY_ORIGIN_TRIAL, 12),
-             ]
-        ).to_dict(),
-    ]
+    gates = self.get_recently_reviewed_gates(DEFAULT_RECENT_DAYS)
+    logging.info('gates %r', gates)
+    gates_by_fid = self.organize_gates_by_feature_id(gates)
+    features = self.get_features_by_id(gates_by_fid.keys())
+    features = self.sort_features_by_request(features, gates_by_fid)
+    latencies_by_fid = {
+        fid: self.latencies_for_feature(feature_gates)
+        for fid, feature_gates in gates_by_fid.items()}
+    result = self.convert_to_result_format(
+        latencies_by_fid, features)
+    return result
+
+  def get_recently_reviewed_gates(self, days) -> list[Gate]:
+    """Retrieve a list of Gates responded to in recent days."""
+    start_date = datetime.today() - timedelta(days=90)
+    gates_in_range = Gate.query(
+        Gate.requested_on >= start_date).fetch()
+    feature_ids = {g.feature_id for g in gates_in_range}
+    if not feature_ids:
+      return []
+    gates_on_those_features = Gate.query(
+        Gate.feature_id.IN(feature_ids)).fetch()
+    return gates_on_those_features
+
+  def organize_gates_by_feature_id(
+      self, gates: list[Gate]
+  ) -> dict[int, list[Gate]]:
+    """Return a dict of feature IDs and a list of gates for each feature."""
+    gates_by_fid: dict[int, list[Gate]] = collections.defaultdict(list)
+    for g in gates:
+      gates_by_fid[g.feature_id].append(g)
+    return gates_by_fid
+
+  def get_features_by_id(
+      self, feature_ids: Iterable[int]) -> dict[int, FeatureEntry]:
+    """Retrieve features by ID and return them in a dict."""
+    if not feature_ids:
+      return {}  # We cannot pass an empty list to IN().
+    query = FeatureEntry.query(FeatureEntry.key.IN(
+        [ndb.Key('FeatureEntry', id) for id in feature_ids]))
+    features = query.fetch()
+    return features
+
+  def earliest_request(self, feature_gates: list[Gate]) -> datetime:
+    """Return the time of the earliest reivew request among the given gates."""
+    if not feature_gates:
+      raise ValueError('There should be some gates for every feature')
+    request_dates = [
+        g.requested_on for g in feature_gates
+        if g.requested_on]
+    return min(request_dates, default=datetime(2000, 1, 1))
+
+  def sort_features_by_request(self, features, gates_by_fid):
+    """Return the same features sorted by the earliest review request of each."""
+    sorted_features = sorted(
+        features,
+        key=lambda fe: self.earliest_request(gates_by_fid[fe.key.integer_id()]))
+    return sorted_features
+
+  def latency(self, gate: Gate) -> int:
+    """Return the number of weekdays that the review was pending."""
+    if not gate.requested_on:
+      return NOT_STARTED_LATENCY
+    if not gate.responded_on:
+      return PENDING_LATENCY
+    return slo.weekdays_between(gate.requested_on, gate.responded_on)
+
+  def latencies_for_feature(
+      self, feature_gates: list[Gate]) -> list[tuple[int, int]]:
+    """Compute the review latency for each gate on a feature."""
+    pairs = [(g.gate_type, self.latency(g)) for g in feature_gates]
+    pairs = sorted(pairs)  # Sort by gate_type for non-flaky testing.
+    return pairs
+
+  def convert_to_result_format(
+      self, latencies_by_fid: dict[int, list[tuple[int, int]]],
+      sorted_features: list[FeatureEntry]) -> list[dict[str, Any]]:
+    result: list[dict[str, Any]] = []
+    for fe in sorted_features:
+      latencies = latencies_by_fid[fe.key.integer_id()]
+      review_latency = ReviewLatency(
+          FeatureLink(fe.key.integer_id(), fe.name),
+          [GateLatency(gate_type, days)
+           for (gate_type, days) in latencies]
+        )
+      result.append(review_latency.to_dict())
+
+    return result
