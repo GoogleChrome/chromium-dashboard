@@ -45,9 +45,13 @@ class ReviewLatencyAPI(basehandlers.APIHandler):
     Returns:
       A list of data on all public origin trials.
     """
-    gates = self.get_recently_reviewed_gates(DEFAULT_RECENT_DAYS)
-    logging.info('gates %r', gates)
+    today = kwargs.get('today')
+    gates = self.get_recently_reviewed_gates(DEFAULT_RECENT_DAYS, today=today)
     gates_by_fid = self.organize_gates_by_feature_id(gates)
+    for fid, feature_gates in gates_by_fid.items():
+      logging.info('feautre %r:', fid)
+      for fg in feature_gates:
+        logging.info('  %r', fg)
     features = self.get_features_by_id(gates_by_fid.keys())
     features = self.sort_features_by_request(features, gates_by_fid)
     latencies_by_fid = {
@@ -57,9 +61,12 @@ class ReviewLatencyAPI(basehandlers.APIHandler):
         latencies_by_fid, features)
     return result
 
-  def get_recently_reviewed_gates(self, days) -> list[Gate]:
+  def get_recently_reviewed_gates(
+      self, days:int, today:datetime|None = None
+  ) -> list[Gate]:
     """Retrieve a list of Gates responded to in recent days."""
-    start_date = datetime.today() - timedelta(days=90)
+    today = today or datetime.today()
+    start_date = today - timedelta(days=90)
     gates_in_range = Gate.query(
         Gate.requested_on >= start_date).fetch()
     feature_ids = {g.feature_id for g in gates_in_range}
