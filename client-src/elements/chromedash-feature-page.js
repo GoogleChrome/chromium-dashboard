@@ -77,7 +77,7 @@ export class ChromedashFeaturePage extends LitElement {
 
         sl-dropdown {
           float: right;
-          margin-right: -15px;
+          margin-right: -16px;
           margin-top: -20px;
         }
 
