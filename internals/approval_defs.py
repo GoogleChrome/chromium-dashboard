@@ -287,7 +287,7 @@ def get_approvers(field_id) -> list[str]:
   else:
     owners = afd.approvers
 
-  rediscache.set(cache_key, owners)
+  rediscache.set(cache_key, owners, time=CACHE_EXPIRATION)
   return owners
 
 
