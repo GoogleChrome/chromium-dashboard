@@ -18,6 +18,7 @@ import testing_config  # Must be imported before the module under test.
 
 from unittest import mock
 
+from framework import rediscache
 from internals import approval_defs
 from internals import core_enums
 from internals.review_models import Gate, GateDef, Vote
@@ -128,9 +129,18 @@ MOCK_APPROVALS_BY_ID = {
 
 class GetApproversTest(testing_config.CustomTestCase):
 
+  def setUp(self):
+    self.clearCache()
+
   def tearDown(self):
+    self.clearCache()
     for gate_def in GateDef.query():
       gate_def.key.delete()
+
+  def clearCache(self):
+    for gate_type in approval_defs.APPROVAL_FIELDS_BY_ID:
+      cache_key = '%s|%s' % (approval_defs.APPROVERS_CACHE_KEY, gate_type)
+      rediscache.delete(cache_key)
 
   @mock.patch('internals.approval_defs.APPROVAL_FIELDS_BY_ID',
               MOCK_APPROVALS_BY_ID)
