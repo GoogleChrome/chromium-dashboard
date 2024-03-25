@@ -102,6 +102,7 @@
     "typescript": "^5.4.3"
   },
   "dependencies": {
+    "@github/relative-time-element": "^4.3.1",
     "@lit/task": "^1.0.0",
     "@polymer/iron-collapse": "^3.0.1",
     "@polymer/iron-icon": "^3.0.1",
