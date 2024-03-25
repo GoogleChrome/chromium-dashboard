@@ -17,6 +17,7 @@
 import logging
 from typing import Optional
 import flask
+from google.cloud import ndb  # type: ignore
 
 import settings
 from framework.users import User
@@ -97,7 +98,7 @@ def feature_edit_list(user: User) -> list[int]:
     return []
 
   # Query features to find which can be edited.
-  editable_feature_keys = feature_helpers.get_all(
+  editable_feature_keys: list[ndb.Key] = feature_helpers.get_all(
       filterby=('can_edit', user.email()), keys_only=True)
   # Return a list of unique ids of features that can be edited.
   return list(set([fk.integer_id() for fk in editable_feature_keys]))

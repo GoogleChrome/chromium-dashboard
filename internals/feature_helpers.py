@@ -79,14 +79,14 @@ def get_features_in_release_notes(milestone: int):
           Stage.rollout_milestone >= milestone),
       Stage.stage_type.IN([STAGE_BLINK_SHIPPING, STAGE_PSA_SHIPPING,
           STAGE_FAST_SHIPPING, STAGE_DEP_SHIPPING, STAGE_ENT_ROLLOUT])).filter().fetch()
-  
+
   feature_ids = list(set({
       *[s.feature_id for s in stages]}))
   features = [dict(converters.feature_entry_to_json_verbose(f))
             for f in _get_future_results(_get_entries_by_id_async(feature_ids))]
-  features = [f for f in filter_unlisted(features) 
+  features = [f for f in filter_unlisted(features)
     if not f['deleted'] and
-      (f['enterprise_impact'] > ENTERPRISE_IMPACT_NONE or 
+      (f['enterprise_impact'] > ENTERPRISE_IMPACT_NONE or
        f['feature_type_int'] == FEATURE_TYPE_ENTERPRISE_ID) and
       (f['first_enterprise_notification_milestone'] == None or
        f['first_enterprise_notification_milestone'] <= milestone)]
@@ -285,7 +285,8 @@ def get_in_milestone(milestone: int,
 
 def get_all(limit: Optional[int]=None,
     order: str='-updated', filterby: Optional[tuple[str, Any]]=None,
-    update_cache: bool=False, keys_only: bool=False) -> list[dict]:
+    update_cache: bool=False, keys_only: bool=False
+ ) -> list[dict] | list[ndb.Key]:
   """Return JSON dicts for entities that fit the filterby criteria.
 
   Because the cache may rarely have stale data, this should only be
