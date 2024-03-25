@@ -22,11 +22,13 @@ from typing import Optional
 import requests
 
 from framework import permissions
+from framework import rediscache
 from internals import core_enums
 from internals import slo
 from internals.review_models import Gate, GateDef, OwnersFile, Vote
 import settings
 
+APPROVERS_CACHE_KEY = 'approvers'
 CACHE_EXPIRATION = 60 * 60  # One hour
 IN_NDB = 'stored in ndb'
 
@@ -267,20 +269,26 @@ def get_approvers(field_id) -> list[str]:
   if field_id not in APPROVAL_FIELDS_BY_ID:
     return []
 
+  cache_key = '%s|%s' % (APPROVERS_CACHE_KEY, field_id)
+  cached_approvers = rediscache.get(cache_key)
+  if cached_approvers:
+    return cached_approvers
+
   afd = APPROVAL_FIELDS_BY_ID[field_id]
 
   if afd.approvers == IN_NDB:
     gate_def = GateDef.get_gate_def(field_id)
-    return gate_def.approvers
-
-  # afd.approvers can be either a hard-coded list of approver emails
-  # or it can be a URL of an OWNERS file.  Right now we only use the
-  # URL approach, but both are supported.
-  if isinstance(afd.approvers, str):
+    owners = gate_def.approvers
+  elif isinstance(afd.approvers, str):
+    # afd.approvers can be either a hard-coded list of approver emails
+    # or it can be a URL of an OWNERS file.  Right now we only use the
+    # URL approach, but both are supported.
     owners = fetch_owners(afd.approvers)
-    return owners
+  else:
+    owners = afd.approvers
 
-  return afd.approvers
+  rediscache.set(cache_key, owners)
+  return owners
 
 
 def fields_approvable_by(user):
