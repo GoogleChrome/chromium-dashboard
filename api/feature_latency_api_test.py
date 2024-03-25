@@ -19,6 +19,7 @@ from datetime import datetime
 import flask
 from unittest import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
+from google.cloud import ndb  # type: ignore
 
 from api import feature_latency_api
 from internals.core_enums import *
@@ -45,11 +46,11 @@ class FeatureLatencyAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.handler = feature_latency_api.FeatureLatencyAPI()
-    self.request_path = '/api/v0/feature_latency'
+    self.request_path = '/api/v0/feature-latency'
 
-    self.fe_1, self.fe_1_id = make_feature(
+    self.fe_1a, self.fe_1a_id = make_feature(
         'has no milestone', (2023, 2, 18), ENABLED_BY_DEFAULT, None)
-    self.fe_1, self.fe_1_id = make_feature(
+    self.fe_1b, self.fe_1b_id = make_feature(
         'not a launch status', (2023, 2, 18), NO_ACTIVE_DEV, 119)
     self.fe_2, self.fe_2_id = make_feature(
         'launched before start', (2022, 8, 19), ENABLED_BY_DEFAULT, 108)

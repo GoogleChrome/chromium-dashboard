@@ -81,6 +81,20 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ComponentUsersRequest'
+  /review-latency:
+    get:
+      summary: List recently reviewed features and their review latency
+      operationId: listReviewsWithLatency
+      responses:
+        '200':
+          description: >-
+            List of recent reviews and their latency.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReviewLatency'
   /spec_mentors:
     get:
       summary: List spec mentors and their activity
@@ -193,6 +207,28 @@ components:
         owner:
           type: boolean
           description: Impacts this user's ownership. For PUT, add ownership. For DELETE, remove ownership.
+    ReviewLatency:
+      type: object
+      properties:
+        feature:
+          $ref: '#/components/schemas/FeatureLink'
+        gate_reviews:
+          type: array
+          items:
+            $ref: '#/components/schemas/GateLatency'
+      required:
+        - feature
+        - gate_reviews
+    GateLatency:
+      type: object
+      required:
+        - gate_type
+        - latency_days
+      properties:
+        gate_type:
+          type: integer
+        latency_days:
+          type: integer
     SpecMentor:
       type: object
       properties:
