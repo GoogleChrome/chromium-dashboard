@@ -1,3 +1,5 @@
+// @ts-check
+
 import {html} from 'lit';
 // LINK_TYPES should be consistent with the server link_helpers.py
 const LINK_TYPE_CHROMIUM_BUG = 'chromium_bug';
@@ -17,13 +19,14 @@ function _formatLongText(text, maxLength = 50) {
   return text;
 }
 
+const dateTimeFormat = new Intl.DateTimeFormat('en-US', {
+  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+  hour: 'numeric', minute: 'numeric', // No seconds
+});
+
 function enhanceChromeStatusLink(featureLink, text) {
   function _formatTimestamp(timestamp) {
-    const date = new Date(timestamp * 1000);
-    const formatOptions = {
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-      hour: 'numeric', minute: 'numeric'}; // No seconds
-    return date.toLocaleString('en-US', formatOptions);
+    return dateTimeFormat.format(new Date(timestamp * 1000));
   }
 
   const information = featureLink.information;
@@ -87,11 +90,7 @@ function enhanceChromeStatusLink(featureLink, text) {
 
 function enhanceGithubIssueLink(featureLink, text) {
   function _formatISOTime(dateString) {
-    const date = new Date(dateString);
-    const formatOptions = {
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-      hour: 'numeric', minute: 'numeric'}; // No seconds
-    return date.toLocaleString('en-US', formatOptions);
+    return dateTimeFormat.format(new Date(dateString));
   }
   const information = featureLink.information;
   const assignee = information.assignee_login;
