@@ -1,6 +1,6 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {getFieldValueFromFeature, hasFieldValue, isDefinedValue, renderHTMLIf} from './utils';
-import {enhanceUrl} from './feature-link';
+import {enhanceUrl} from './chromedash-link';
 import {openAddStageDialog} from './chromedash-add-stage-dialog';
 import {
   openPrereqsDialog,
