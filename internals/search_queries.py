@@ -167,7 +167,7 @@ def total_order_query_async(sort_spec: str) -> Union[list[int], Future]:
 
 def _sorted_by_joined_model(
     joinable_model_class: Model, condition: FilterNode, descending: bool,
-    order_by: Property) -> list[int]:
+    order_by: Property) -> Future:
   """Return feature_ids sorted by a field in a joined entity kind."""
   query = joinable_model_class.query()
   if condition:
@@ -177,12 +177,11 @@ def _sorted_by_joined_model(
   else:
     query = query.order(order_by)
 
-  joined_models = query.fetch(projection=['feature_id'])
-  feature_ids = utils.dedupe(jm.feature_id for jm in joined_models)
-  return feature_ids
+  projection_future = query.fetch_async(projection=['feature_id'])
+  return projection_future
 
 
-def sorted_by_pending_request_date(descending: bool) -> list[int]:
+def sorted_by_pending_request_date(descending: bool) -> Future:
   """Return feature_ids of pending approvals sorted by request date."""
   return _sorted_by_joined_model(
       Gate,
@@ -190,7 +189,7 @@ def sorted_by_pending_request_date(descending: bool) -> list[int]:
       descending, Gate.requested_on)
 
 
-def sorted_by_review_date(descending: bool) -> list[int]:
+def sorted_by_review_date(descending: bool) -> Future:
   """Return feature_ids of reviewed approvals sorted by last review."""
   return _sorted_by_joined_model(
       Gate,
