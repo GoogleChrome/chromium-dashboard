@@ -1,6 +1,5 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {getFieldValueFromFeature, hasFieldValue, isDefinedValue, renderHTMLIf} from './utils';
-import {enhanceUrl} from './chromedash-link';
 import {openAddStageDialog} from './chromedash-add-stage-dialog';
 import {
   openPrereqsDialog,
@@ -296,11 +295,11 @@ class ChromedashFeatureDetail extends LitElement {
 
   renderUrl(value) {
     if (value.startsWith('http')) {
-      return enhanceUrl(value, this.featureLinks, html`
-      <a href=${value} target="_blank"
-       class="url ${value.length > LONG_TEXT ? 'longurl' : ''}"
-       >${value}</a>
-    `);
+      return html`<chromedash-link
+          href=${value}
+          class="url ${value.length > LONG_TEXT ? 'longurl' : ''}"
+          .featureLinks=${this.featureLinks}
+        ></chromedash-link>`;
     }
     return this.renderText(value);
   }

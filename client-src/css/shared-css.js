@@ -137,55 +137,6 @@ export const SHARED_STYLES = [
     white-space: pre-wrap;
   }
 
-  .feature-link {
-    display: inline;
-    white-space: normal;
-    line-break: anywhere;
-    color: var(--default-font-color);
-  }
-
-  .feature-link:hover {
-    text-decoration: none;
-  }
-
-  .feature-link sl-badge::part(base) {
-    height: 14px;
-    padding: 4px;
-    border-width: 0;
-    text-transform: capitalize;
-    font-weight: 400;
-  }
-
-  .feature-link sl-tag::part(base) {
-    vertical-align: middle;
-    height: 18px;
-    background-color: rgb(232,234,237);
-    color: var(--default-font-color);
-    border: none;
-    border-radius: 500px;
-    display: inline-flex;
-    align-items: center;
-    column-gap: 0.3em;
-    padding: 1px 5px;
-    margin: 1px 0;
-  }
-
-  .feature-link sl-tag::part(base):hover {
-    background-color: rgb(209,211,213);
-  }
-
-  .feature-link .icon {
-    display: block;
-    width: 12px;
-    height: 12px;
-  }
-
-  .feature-link-tooltip {
-    display: flex;
-    flex-direction: column;
-    row-gap: 0.5em;
-  }
-
   .warning {
     margin: var(--content-padding);
     padding: var(--content-padding);
