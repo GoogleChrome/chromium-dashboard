@@ -75,6 +75,12 @@ export class ChromedashFeaturePage extends LitElement {
           height: 1.5em;
         }
 
+        sl-dropdown {
+          float: right;
+          margin-right: -16px;
+          margin-top: -20px;
+        }
+
         @media only screen and (max-width: 700px) {
           #feature {
             border-radius: 0 !important;
@@ -243,6 +249,20 @@ export class ChromedashFeaturePage extends LitElement {
     const url = e.currentTarget.href;
     navigator.clipboard.writeText(url).then(() => {
       showToastMessage('Link copied');
+    });
+  }
+
+  canDeleteFeature() {
+    return this.user?.is_admin || this.userCanEdit();
+  }
+
+  handleDeleteFeature() {
+    if (!confirm('Delete feature?')) return;
+
+    window.csClient.doDelete(`/features/${this.feature.id}`).then((resp) => {
+      if (resp.message === 'Done') {
+        location.href = '/features';
+      }
     });
   }
 
@@ -606,7 +626,18 @@ export class ChromedashFeaturePage extends LitElement {
         ?open=${true}
       >
         <section class="card">
-          ${this.feature.is_enterprise_feature ?
+        ${this.canDeleteFeature() ? html`
+          <sl-dropdown placement="left-start">
+            <sl-icon-button library="material" name="more_vert_24px" label="Feature menu"
+              style="font-size: 1.3rem;" slot="trigger"></sl-icon-button>
+            <sl-menu-item value="undo">
+              <a id="delete-feature" class="delete-button" @click=${this.handleDeleteFeature}>
+                Delete
+              </a>
+            </sl-menu-item>
+          </sl-dropdown>
+        `: nothing}
+          ${this.feature.is_enterprise_featqcure ?
             this.renderEnterpriseFeatureContent() :
             this.renderFeatureContent()}
           ${this.feature.is_enterprise_feature ?
