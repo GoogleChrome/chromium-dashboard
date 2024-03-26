@@ -6,7 +6,7 @@ import {autolink, renderHTMLIf, showToastMessage,
 } from './utils.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {DETAILS_STYLES} from './chromedash-feature-detail';
-import {enhanceUrl} from './feature-link';
+import {enhanceUrl} from './chromedash-link';
 
 const INACTIVE_STATES = [
   'No longer pursuing',
