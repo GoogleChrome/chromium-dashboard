@@ -1,5 +1,5 @@
 import {LitElement, css, html, nothing} from 'lit';
-import {getFieldValueFromFeature, hasFieldValue, isDefinedValue, renderHTMLIf} from './utils';
+import {getFieldValueFromFeature, hasFieldValue, isDefinedValue} from './utils';
 import {enhanceUrl} from './feature-link';
 import {openAddStageDialog} from './chromedash-add-stage-dialog';
 import {
@@ -185,6 +185,17 @@ class ChromedashFeatureDetail extends LitElement {
         border: var(--spot-card-border);
         box-shadow: var(--spot-card-box-shadow);
       }
+
+      #new-stage {
+        margin-left: 8px;
+        margin-bottom: 4px;
+      }
+
+      #footnote {
+          margin-left: 8px;
+          margin-bottom: 4px;
+          margin-top: 4px;
+        }
     `];
   }
 
@@ -633,6 +644,19 @@ class ChromedashFeatureDetail extends LitElement {
             stageGates.length < 6);
   }
 
+  renderFootnote() {
+    return html`
+      <section id="footnote">
+        Please see the
+        <a href="https://www.chromium.org/blink/launching-features"
+          target="_blank" rel="noopener">
+          Launching features
+        </a>
+        page for process instructions.
+      </section>
+    `;
+  }
+
   renderStageMenu(feStage) {
     const items = [];
     if (this.offerAddXfnGates(feStage)) {
@@ -661,22 +685,32 @@ class ChromedashFeatureDetail extends LitElement {
     const text = this.feature.is_enterprise_feature ? 'Add Step': 'Add Stage';
 
     return html`
-    <sl-button size="small" @click="${
+    <sl-button id="new-stage" size="small" @click="${
         () => openAddStageDialog(this.feature.id, this.feature.feature_type_int)}">
       ${text}
     </sl-button>`;
+  }
+
+  renderSectionHeader() {
+    const text = this.feature.is_enterprise_feature ? 'Rollout steps' : 'Development stages';
+    return html`
+      <span>${text}
+        <sl-icon-button name="info-circle" href="https://www.chromium.org/blink/launching-features"
+        style="font-size: 0.8rem;" target="_blank" label="Launching feature guide">
+        </sl-icon-button>
+      </span>`;
   }
 
   render() {
     return html`
       ${this.renderMetadataSection()}
       <h2>
-        ${renderHTMLIf(!this.feature.is_enterprise_feature, html`<span>Development stages</span>`)}
-        ${renderHTMLIf(this.feature.is_enterprise_feature, html`<span>Rollout steps</span>`)}
+        ${this.renderSectionHeader()}
         ${this.renderControls()}
       </h2>
       ${this.feature.stages.map(feStage => this.renderProcessStage(feStage))}
       ${this.renderAddStageButton()}
+      ${this.renderFootnote()}
     `;
   }
 }
