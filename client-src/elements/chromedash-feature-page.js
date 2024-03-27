@@ -6,7 +6,7 @@ import {autolink, renderHTMLIf, showToastMessage,
 } from './utils.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {DETAILS_STYLES} from './chromedash-feature-detail';
-import {enhanceUrl} from './feature-link';
+import {enhanceUrl} from './chromedash-link';
 
 const INACTIVE_STATES = [
   'No longer pursuing',
@@ -494,12 +494,13 @@ export class ChromedashFeaturePage extends LitElement {
         <p>
           <label>Implementation status:</label>
           <b>${this.feature.browsers.chrome.status.text}</b>
-          ${this.feature.browsers.chrome.bug ? enhanceUrl(
-      this.feature.browsers.chrome.bug,
-      this.featureLinks,
-      html`
-            (<a href=${this.feature.browsers.chrome.bug} target="_blank" rel="noopener">tracking bug</a>)
-          `, 'tracking bug') : nothing}
+          ${this.feature.browsers.chrome.bug ?
+      html`<chromedash-link
+             href=${this.feature.browsers.chrome.bug}
+             .featureLinks=${this.featureLinks}
+             alwaysInTag
+           >tracking bug</chromedash-link>` :
+      nothing}
           <chromedash-gantt .feature=${this.feature}></chromedash-gantt>
         </p>
       </section>

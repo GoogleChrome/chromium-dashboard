@@ -233,6 +233,7 @@ def process_query(
       permission_terms)
 
   # 2c. Create a parallel query for total sort order.
+  logging.info('creating total sort order for %r', sort_spec)
   total_order_promise = search_queries.total_order_query_async(sort_spec)
 
   # 3. Get the result of each future and combine them into a result ID set.
@@ -242,11 +243,13 @@ def process_query(
   feature_id_future_ops = process_negation_operations(feature_id_future_ops)
   query_clauses = process_and_operations(feature_id_future_ops)
   result_id_set = process_or_operations(query_clauses)
+  logging.info('got %r result IDs w/o permissions', len(result_id_set))
 
   # 3b. Process all permission ops, then interesect to apply permisisons.
   permission_clauses = process_and_operations(permissions_future_ops)
   permission_ids = process_or_operations(permission_clauses)
   result_id_set.intersection_update(permission_ids)
+  logging.info('got %r result IDs with permissions', len(result_id_set))
 
   result_id_list = list(result_id_set)
   total_count = len(result_id_list)
@@ -254,16 +257,19 @@ def process_query(
   # 4. Finish getting the total sort order. Then, sort the IDs according
   # to their position in the complete sorted list.
   total_order_ids = _resolve_promise_to_id_list(total_order_promise)
+  logging.info('sorting')
   sorted_id_list = _sort_by_total_order(result_id_list, total_order_ids)
+  logging.info('sorted %r result IDs', len(sorted_id_list))
 
   # 5. Paginate
   paginated_id_list = sorted_id_list[start : start + num]
 
   # 6. Fetch the actual issues that have those IDs in the sorted results.
-  # TODO(jrobbins): This still returns Feature objects.
+  # TODO(jrobbins): This still returns Feature dicts.
   features_on_page = feature_helpers.get_by_ids(paginated_id_list)
 
-  logging.info('features_on_page is %r', features_on_page)
+  logging.info('features_on_page is %r',
+               [f['name'] for f in features_on_page])
   return features_on_page, total_count
 
 

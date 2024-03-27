@@ -2,8 +2,7 @@
 // for use with text entries in WebStatus. Use this directly via './utils.js'
 // See: https://chromium.googlesource.com/infra/infra/+/refs/heads/main/appengine/monorail/static_src/autolink.js
 
-import {html} from 'lit';
-import {enhanceAutolink} from './feature-link.js';
+import {enhanceAutolink} from './chromedash-link.js';
 const CRBUG_DEFAULT_PROJECT = 'chromium';
 const CRBUG_URL = 'https://bugs.chromium.org';
 const ISSUE_TRACKER_RE = /(\b(issues?|bugs?)[ \t]*(:|=|\b)|\bfixed[ \t]*:)([ \t]*((\b[-a-z0-9]+)[:\#])?(\#?)(\d+)\b(,?[ \t]*(and|or)?)?)+/gi;
@@ -168,12 +167,8 @@ export function markupAutolinks(plainString, featureLinks = []) {
   });
   const result = textRuns.map(part => {
     if (part.tag === 'a') {
-      const featureLink = featureLinks.find(fe => fe.url === part.href);
-      if (featureLink) {
-        // if the link is a feature link, enhance it to provide more information
-        return enhanceAutolink(part, featureLink);
-      }
-      return html`<a href="${part.href}" target="_blank" rel="noopener noreferrer">${part.content}</a>`;
+      // if the link is a feature link, enhance it to provide more information
+      return enhanceAutolink(part, featureLinks);
     }
     return part.content;
   });

@@ -1,4 +1,9 @@
-import {html} from 'lit';
+// @ts-check
+
+import {css, html, LitElement} from 'lit';
+import {ifDefined} from 'lit/directives/if-defined.js';
+import {SHARED_STYLES} from '../css/shared-css';
+
 // LINK_TYPES should be consistent with the server link_helpers.py
 const LINK_TYPE_CHROMIUM_BUG = 'chromium_bug';
 const LINK_TYPE_GITHUB_ISSUE = 'github_issue';
@@ -17,13 +22,14 @@ function _formatLongText(text, maxLength = 50) {
   return text;
 }
 
+const dateTimeFormat = new Intl.DateTimeFormat('en-US', {
+  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+  hour: 'numeric', minute: 'numeric', // No seconds
+});
+
 function enhanceChromeStatusLink(featureLink, text) {
   function _formatTimestamp(timestamp) {
-    const date = new Date(timestamp * 1000);
-    const formatOptions = {
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-      hour: 'numeric', minute: 'numeric'}; // No seconds
-    return date.toLocaleString('en-US', formatOptions);
+    return dateTimeFormat.format(new Date(timestamp * 1000));
   }
 
   const information = featureLink.information;
@@ -40,7 +46,7 @@ function enhanceChromeStatusLink(featureLink, text) {
   }
 
   function renderTooltipContent() {
-    return html`<div class="feature-link-tooltip">
+    return html`<div class="tooltip">
     ${summary && html`
     <div>
       <strong>Summary:</strong>
@@ -73,7 +79,7 @@ function enhanceChromeStatusLink(featureLink, text) {
     `}
     </div>`;
   }
-  return html`<a class="feature-link" href="${featureLink.url}" target="_blank" rel="noopener noreferrer">
+  return html`<a href="${featureLink.url}" target="_blank" rel="noopener noreferrer">
     <sl-tooltip style="--sl-tooltip-arrow-size: 0;--max-width: 50vw;">
         <div slot="content">${renderTooltipContent()}</div>
         <sl-tag>
@@ -87,11 +93,7 @@ function enhanceChromeStatusLink(featureLink, text) {
 
 function enhanceGithubIssueLink(featureLink, text) {
   function _formatISOTime(dateString) {
-    const date = new Date(dateString);
-    const formatOptions = {
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-      hour: 'numeric', minute: 'numeric'}; // No seconds
-    return date.toLocaleString('en-US', formatOptions);
+    return dateTimeFormat.format(new Date(dateString));
   }
   const information = featureLink.information;
   const assignee = information.assignee_login;
@@ -112,7 +114,7 @@ function enhanceGithubIssueLink(featureLink, text) {
   }
 
   function renderTooltipContent() {
-    return html`<div class="feature-link-tooltip">
+    return html`<div class="tooltip">
     ${title && html`
     <div>
       <strong>Title:</strong>
@@ -163,7 +165,7 @@ function enhanceGithubIssueLink(featureLink, text) {
     `}
     </div>`;
   }
-  return html`<a class="feature-link" href="${featureLink.url}" target="_blank" rel="noopener noreferrer">
+  return html`<a href="${featureLink.url}" target="_blank" rel="noopener noreferrer">
     <sl-tooltip style="--sl-tooltip-arrow-size: 0;--max-width: 50vw;">
         <div slot="content">${renderTooltipContent()}</div>
         <sl-tag>
@@ -186,7 +188,7 @@ function enhanceGithubMarkdownLink(featureLink, text) {
   }
 
   function renderTooltipContent() {
-    return html`<div class="feature-link-tooltip">
+    return html`<div class="tooltip">
     ${title && html`
     <div>
       <strong>Title:</strong>
@@ -207,7 +209,7 @@ function enhanceGithubMarkdownLink(featureLink, text) {
     `}
     </div>`;
   }
-  return html`<a class="feature-link" href="${featureLink.url}" target="_blank" rel="noopener noreferrer">
+  return html`<a href="${featureLink.url}" target="_blank" rel="noopener noreferrer">
     <sl-tooltip style="--sl-tooltip-arrow-size: 0;--max-width: 50vw;">
         <div slot="content">${renderTooltipContent()}</div>
         <sl-tag>
@@ -224,7 +226,7 @@ function _enhanceLinkWithTitleAndDescription(featureLink, iconUrl) {
   const description = information.description;
 
   function renderTooltipContent() {
-    return html`<div class="feature-link-tooltip">
+    return html`<div class="tooltip">
     ${title && html`
     <div>
       <strong>Title:</strong>
@@ -239,7 +241,7 @@ function _enhanceLinkWithTitleAndDescription(featureLink, iconUrl) {
     `}
     </div>`;
   }
-  return html`<a class="feature-link" href="${featureLink.url}" target="_blank" rel="noopener noreferrer">
+  return html`<a href="${featureLink.url}" target="_blank" rel="noopener noreferrer">
     <sl-tooltip style="--sl-tooltip-arrow-size: 0;--max-width: 50vw;">
         <div slot="content">${renderTooltipContent()}</div>
         <sl-tag>
@@ -259,28 +261,28 @@ function enhanceSpecsLink(featureLink) {
   const description = information.description;
 
   function renderTooltipContent() {
-    return html`<div class="feature-link-tooltip">
+    return html`<div class="tooltip">
     ${title && html`
-    <div>
-      <strong>Title:</strong>
-      <span>${title}</span>
-    </div>
-  `}
+      <div>
+        <strong>Title:</strong>
+        <span>${title}</span>
+      </div>
+    `}
     ${description && html`
       <div>
         <strong>Description:</strong>
         <span>${description}</span>
       </div>
     `}
-    </div>
     ${hashtag && html`
       <div>
         <strong>Hashtag:</strong>
         <span>#${hashtag}</span>
-      `}
-      </div>`;
+      </div>
+    `}
+    </div>`;
   }
-  return html`<a class="feature-link" href="${featureLink.url}" target="_blank" rel="noopener noreferrer">
+  return html`<a href="${featureLink.url}" target="_blank" rel="noopener noreferrer">
     <sl-tooltip style="--sl-tooltip-arrow-size: 0;--max-width: 50vw;">
         <div slot="content">${renderTooltipContent()}</div>
         <sl-tag>
@@ -319,72 +321,169 @@ function enhanceGoogleDocsLink(featureLink) {
   return _enhanceLinkWithTitleAndDescription(featureLink, iconUrl);
 }
 
-function _enhanceLink(featureLink, fallback, text, ignoreHttpErrorCodes = []) {
-  if (!fallback) {
-    throw new Error('fallback html is required');
-  }
-  if (!featureLink) {
-    return fallback;
-  }
-  if (!featureLink.information) {
-    if (featureLink.http_error_code &&
-       !ignoreHttpErrorCodes.includes(featureLink.http_error_code)) {
-      return html`<div class="feature-link">
-        <sl-tag>
-          <sl-icon library="material" name="link"></sl-icon>
-          <sl-badge size="small" variant="${featureLink.http_error_code >= 500 ? 'danger' : 'warning'}">
-            ${featureLink.http_error_code}
-          </sl-badge>
-          ${fallback}
-        </sl-tag>
-      </div>`;
+export class ChromedashLink extends LitElement {
+  static styles = [
+    ...SHARED_STYLES,
+    css`
+    :host {
+      display: inline;
+      white-space: normal;
+      line-break: anywhere;
+      color: var(--default-font-color);
     }
-    return fallback;
-  }
-  if (!text) {
-    text = featureLink.url;
-  }
-  try {
-    switch (featureLink.type) {
-      case LINK_TYPE_CHROMIUM_BUG:
-        return enhanceChromeStatusLink(featureLink);
-      case LINK_TYPE_GITHUB_ISSUE:
-        return enhanceGithubIssueLink(featureLink);
-      case LINK_TYPE_GITHUB_PULL_REQUEST:
-        // we use github issue api to get pull request information,
-        // the result will be the similar to github issue
-        return enhanceGithubIssueLink(featureLink);
-      case LINK_TYPE_GITHUB_MARKDOWN:
-        return enhanceGithubMarkdownLink(featureLink);
-      case LINK_TYPE_MDN_DOCS:
-        return enhanceMDNDocsLink(featureLink);
-      case LINK_TYPE_GOOGLE_DOCS:
-        return enhanceGoogleDocsLink(featureLink);
-      case LINK_TYPE_MOZILLA_BUG:
-        return enhanceMozillaBugLink(featureLink);
-      case LINK_TYPE_WEBKIT_BUG:
-        return enhanceWebKitBugLink(featureLink);
-      case LINK_TYPE_SPECS:
-        return enhanceSpecsLink(featureLink);
-      default:
-        return fallback;
+
+    a:hover {
+      text-decoration: none;
     }
-  } catch (e) {
-    console.log('feature link render error:', e);
-    return fallback;
+
+    sl-badge::part(base) {
+      height: 14px;
+      padding: 4px;
+      border-width: 0;
+      text-transform: capitalize;
+      font-weight: 400;
+    }
+
+    sl-tag::part(base) {
+      vertical-align: middle;
+      height: 18px;
+      background-color: rgb(232,234,237);
+      color: var(--default-font-color);
+      border: none;
+      border-radius: 500px;
+      display: inline-flex;
+      align-items: center;
+      column-gap: 0.3em;
+      padding: 1px 5px;
+      margin: 1px 0;
+    }
+
+    sl-tag::part(base):hover {
+      background-color: rgb(209,211,213);
+    }
+
+    .icon {
+      display: block;
+      width: 12px;
+      height: 12px;
+    }
+
+    .tooltip {
+      display: flex;
+      flex-direction: column;
+      row-gap: 0.5em;
+    }
+    `];
+
+  static get properties() {
+    return {
+      href: {type: String},
+      class: {type: String},
+      featureLinks: {type: Array},
+      _featureLink: {state: true},
+      ignoreHttpErrorCodes: {type: Array},
+      /** Normally, if there's a feature link, this element displays as a <sl-tag>, and if there
+       * isn't, it displays as a normal <a> link. If [alwaysInTag] is set, it always uses the
+       * <sl-tag>.
+       */
+      alwaysInTag: {type: Boolean},
+    };
+  }
+
+  constructor() {
+    super();
+    /** @type {string | undefined} */
+    this.href = undefined;
+    /** @type {string} */
+    this.class = '';
+    /** @type {import("../js-src/cs-client").FeatureLink[]} */
+    this.featureLinks = [];
+    /** @type {import ("../js-src/cs-client").FeatureLink | undefined} */
+    this._featureLink = undefined;
+    /** @type {number[]} */
+    this.ignoreHttpErrorCodes = [];
+    /** @type {boolean} */
+    this.alwaysInTag = false;
+  }
+
+  willUpdate(changedProperties) {
+    if (changedProperties.has('href') || changedProperties.has('featureLinks')) {
+      this._featureLink = this.featureLinks.find(fe => fe.url === this.href);
+    }
+  }
+
+  fallback() {
+    const slot = html`<slot>${this.href}</slot>`;
+    return html`<a
+      href=${ifDefined(this.href)}
+      target="_blank"
+      rel="noopener noreferrer"
+      class=${this.class}
+    >${this.alwaysInTag ? html`<sl-tag>${slot}</sl-tag>` : slot}</a>`;
+  }
+
+  render() {
+    if (!this.href) {
+      console.error('Missing [href] attribute in', this);
+      return html`<slot></slot>`;
+    }
+
+    const featureLink = this._featureLink;
+    if (!featureLink) {
+      return this.fallback();
+    }
+    if (!featureLink.information) {
+      if (featureLink.http_error_code &&
+        !this.ignoreHttpErrorCodes.includes(featureLink.http_error_code)) {
+        return html`<sl-tag>
+            <sl-icon library="material" name="link"></sl-icon>
+            <sl-badge size="small" variant="${featureLink.http_error_code >= 500 ? 'danger' : 'warning'}">
+              ${featureLink.http_error_code}
+            </sl-badge>
+            ${this.fallback()}
+          </sl-tag>`;
+      }
+      return this.fallback();
+    }
+    try {
+      switch (featureLink.type) {
+        case LINK_TYPE_CHROMIUM_BUG:
+          return enhanceChromeStatusLink(featureLink);
+        case LINK_TYPE_GITHUB_ISSUE:
+          return enhanceGithubIssueLink(featureLink);
+        case LINK_TYPE_GITHUB_PULL_REQUEST:
+          // we use github issue api to get pull request information,
+          // the result will be the similar to github issue
+          return enhanceGithubIssueLink(featureLink);
+        case LINK_TYPE_GITHUB_MARKDOWN:
+          return enhanceGithubMarkdownLink(featureLink);
+        case LINK_TYPE_MDN_DOCS:
+          return enhanceMDNDocsLink(featureLink);
+        case LINK_TYPE_GOOGLE_DOCS:
+          return enhanceGoogleDocsLink(featureLink);
+        case LINK_TYPE_MOZILLA_BUG:
+          return enhanceMozillaBugLink(featureLink);
+        case LINK_TYPE_WEBKIT_BUG:
+          return enhanceWebKitBugLink(featureLink);
+        case LINK_TYPE_SPECS:
+          return enhanceSpecsLink(featureLink);
+        default:
+          return this.fallback();
+      }
+    } catch (e) {
+      console.log('feature link render error:', e);
+      return this.fallback();
+    }
   }
 }
 
 export function enhanceUrl(url, featureLinks = [], fallback, text) {
-  const featureLink = featureLinks.find(fe => fe.url === url);
-  if (!fallback) {
-    fallback = html`<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
-  }
-
-  return _enhanceLink(featureLink, fallback, text);
+  return html`<chromedash-link href=${url} .featureLinks=${featureLinks}
+    >${text ?? url}</chromedash-link>`;
 }
 
-export function enhanceAutolink(part, featureLink) {
-  const fallback = html`<a href="${part.href}" target="_blank" rel="noopener noreferrer">${part.content}</a>`;
-  return _enhanceLink(featureLink, fallback, part.content, [404]);
+export function enhanceAutolink(part, featureLinks) {
+  return html`<chromedash-link href=${part.href} .featureLinks=${featureLinks} .ignoreHttpErrorCodes=${[404]}>${part.content}</chromedash-link>`;
 }
+
+customElements.define('chromedash-link', ChromedashLink);

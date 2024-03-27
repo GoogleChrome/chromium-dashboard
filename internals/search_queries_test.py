@@ -278,14 +278,16 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
 
   def test_total_order_query_async__requested_on(self):
     """We can get feature IDs sorted by gate review requests."""
-    actual = search_queries.total_order_query_async('gate.requested_on')
+    future = search_queries.total_order_query_async('gate.requested_on')
+    actual = search._resolve_promise_to_id_list(future)
     self.assertEqual(
         [self.feature_2_id],
         actual)
 
   def test_total_order_query_async__reviewed_on(self):
     """We can get feature IDs sorted by gate resolution times."""
-    actual = search_queries.total_order_query_async('gate.reviewed_on')
+    future = search_queries.total_order_query_async('gate.reviewed_on')
+    actual = search._resolve_promise_to_id_list(future)
     self.assertEqual(
         [self.feature_1_id],
         actual)
