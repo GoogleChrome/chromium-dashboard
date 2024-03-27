@@ -33,7 +33,7 @@ describe('Github issue links', () => {
       url: 'https://github.com/GoogleChrome/chromium-dashboard/issues/3007',
       type: 'github_issue',
       information: {
-        'url': 'https://github.com/GoogleChrome/chromium-dashboard/issues/3007',
+        'url': 'https://api.github.com/repos/GoogleChrome/chromium-dashboard/issues/3007',
         'number': 3007,
         'title': 'Issue Title',
         'user_login': 'user',
@@ -60,7 +60,7 @@ describe('Github issue links', () => {
               </div>
               <div>
                 <strong>Repo:</strong>
-                <span>chromium-dashboard/issues</span>
+                <span>GoogleChrome/chromium-dashboard</span>
               </div>
               <div>
                 <strong>Type:</strong>
@@ -111,7 +111,7 @@ describe('Github issue links', () => {
       url: 'https://github.com/GoogleChrome/chromium-dashboard/issues/3007',
       type: 'github_issue',
       information: {
-        'url': 'https://github.com/GoogleChrome/chromium-dashboard/issues/3007',
+        'url': 'https://api.github.com/repos/GoogleChrome/chromium-dashboard/issues/3007',
         'number': 3007,
         'title': 'Issue Title',
         'user_login': 'user',
