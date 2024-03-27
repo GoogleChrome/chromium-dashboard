@@ -114,7 +114,7 @@ class ChromedashApp extends LitElement {
 
   constructor() {
     super();
-    this.user = {};
+    this.user = undefined;
     this.loading = true;
     this.appTitle = '';
     this.googleSignInClientId = '',
