@@ -25,3 +25,10 @@ updates:
     reviewers:
       - "jrobbins"
       - "jcscottiii"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      actions-org:
+        patterns: ["actions/*"]
