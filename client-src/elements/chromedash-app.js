@@ -130,6 +130,11 @@ class ChromedashApp extends LitElement {
     this.drawerOpen = !IS_MOBILE;
   }
 
+  firstUpdated() {
+    const toastEl = document.createElement('chromedash-toast');
+    document.body.appendChild(toastEl);
+  }
+
   connectedCallback() {
     super.connectedCallback();
     this.loading = true;
