@@ -1,6 +1,5 @@
 // @ts-check
 
-import '@github/relative-time-element';
 import {css, html, LitElement} from 'lit';
 import {ifDefined} from 'lit/directives/if-defined.js';
 import {SHARED_STYLES} from '../css/shared-css';
@@ -128,7 +127,7 @@ function enhanceGithubIssueLink(featureLink, text) {
   if (stateVariant === undefined) {
     if (state === 'open') {
       const age = Date.now() - createdAt.getTime();
-      stateDescription = html`Opened <relative-time .date=${createdAt} format="relative" precision="day" threshold="P100Y">on ${_dateTimeFormat.format(createdAt)}</relative-time>`;
+      stateDescription = html`Opened <sl-relative-time date=${createdAt.toISOString()}>on ${_dateTimeFormat.format(createdAt)}</sl-relative-time>`;
       const week = 7 * 24 * 60 * 60 * 1000;
       stateVariant = 'success';
       if (externalReviewer) {
@@ -401,6 +400,10 @@ export class ChromedashLink extends LitElement {
 
     sl-tag::part(base):hover {
       background-color: rgb(209,211,213);
+    }
+
+    sl-relative-time {
+      margin: 0;
     }
 
     .icon {
