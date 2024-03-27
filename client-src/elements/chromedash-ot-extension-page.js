@@ -1,11 +1,16 @@
-import {LitElement, css, html} from 'lit';
+import {LitElement, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
 import {
+  extensionMilestoneIsValid,
   formatFeatureChanges,
   showToastMessage,
   setupScrollToHash} from './utils.js';
 import './chromedash-form-table.js';
 import './chromedash-form-field.js';
+import {
+  openInfoDialog,
+  dialogTypes,
+} from './chromedash-ot-prereqs-dialog';
 import {
   ORIGIN_TRIAL_EXTENSION_FIELDS} from './form-definition.js';
 import {OT_EXTENSION_STAGE_MAPPING} from './form-field-enums.js';
@@ -33,6 +38,11 @@ export class ChromedashOTExtensionPage extends LitElement {
       appTitle: {type: String},
       nextPage: {type: String},
       fieldValues: {type: Array},
+      // The most recent Chrome milestone.
+      currentMilestone: {type: Number},
+      // A reference of end dates for an origin trial based on the milestone.
+      // (key=milestone, value=date origin trial will end)
+      endMilestoneDateValues: {type: Object},
     };
   }
 
@@ -45,6 +55,8 @@ export class ChromedashOTExtensionPage extends LitElement {
     this.appTitle = '';
     this.nextPage = '';
     this.fieldValues = [];
+    this.currentMilestone = 123;
+    this.endMilestoneDateValues = {};
   }
 
   connectedCallback() {
@@ -63,7 +75,44 @@ export class ChromedashOTExtensionPage extends LitElement {
     // The field has been updated, so it is considered touched.
     this.fieldValues[index].touched = true;
     this.fieldValues[index].value = value;
+
+    if (this.fieldValues[index].name == 'ot_extension__milestone_desktop_last') {
+      this.getChromeScheduleDate(event.detail.value);
+    }
   };
+
+  openMilestoneExplanationDialog() {
+    openInfoDialog(dialogTypes.END_MILESTONE_EXPLANATION);
+  }
+
+  // Display the date the origin trial will end to the user after a milestone is chosen.
+  updateMilestoneDate(milestone) {
+    const milestoneDiv = this.shadowRoot.querySelector('#milestone-date');
+    const milestoneTextEl = this.shadowRoot.querySelector('#milestone-date-text');
+    const date = new Date(this.endMilestoneDateValues[milestone]);
+    milestoneDiv.style.display = 'block';
+    milestoneTextEl.innerHTML = `For milestone ${milestone}, this trial will end on ${date.toLocaleDateString()}.`;
+  }
+
+  // Obtain the date the origin trial will end based on the given milestone.
+  async getChromeScheduleDate(milestone) {
+    const milestoneDiv = this.shadowRoot.querySelector('#milestone-date');
+    milestoneDiv.style.display = 'none';
+    // Don't try to obtain a date if the milestone is not valid.
+    if (!extensionMilestoneIsValid(milestone, this.currentMilestone)) {
+      return;
+    }
+    if (!(milestone in this.endMilestoneDateValues)) {
+      // Origin trials  will end on the late stable date of (milestone + 2).
+      const milestonePlusTwo = parseInt(milestone) + 2;
+      const resp = await fetch(
+        `https://chromiumdash.appspot.com/fetch_milestone_schedule?mstone=${milestonePlusTwo}`);
+      const respJson = await resp.json();
+      // Keep a reference of milestone dates to avoid extra requests.
+      this.endMilestoneDateValues[milestone] = respJson.mstones[0].late_stable_date;
+    }
+    this.updateMilestoneDate(milestone);
+  }
 
   fetchData() {
     this.loading = true;
@@ -81,6 +130,12 @@ export class ChromedashOTExtensionPage extends LitElement {
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
+
+    // Fetch the current milestone so that we know if a milestone in the past is given.
+    fetch('https://chromiumdash.appspot.com/fetch_milestone_schedule')
+      .then(resp => resp.json()).then(scheduleInfo => {
+        this.currentMilestone = parseInt(scheduleInfo.mstones[0].mstone);
+      });
   }
 
   disconnectedCallback() {
@@ -100,6 +155,20 @@ export class ChromedashOTExtensionPage extends LitElement {
     });
 
     setupScrollToHash(this);
+  }
+
+  getFieldValueForRequestBody(fieldName) {
+    return this.fieldValues.find(field => field.name === fieldName).value;
+  }
+
+  formatRequestBody() {
+    return {
+      end_milestone: this.getFieldValueForRequestBody(
+        'ot_extension__milestone_desktop_last'),
+      intent_thread_url: this.getFieldValueForRequestBody(
+        'ot_extension__intent_to_extend_experiment_url'),
+      origin_trial_id: this.stage.origin_trial_id,
+    };
   }
 
   handleFormSubmit(e) {
@@ -129,7 +198,8 @@ export class ChromedashOTExtensionPage extends LitElement {
     });
   }
 
-  handleCancelClick() {
+  handleCancelClick(e) {
+    e.preventDefault(); // Stops the form from being submitted.
     window.location.href = `/feature/${this.featureId}`;
   }
 
@@ -180,7 +250,7 @@ export class ChromedashOTExtensionPage extends LitElement {
       stageId: this.stage.id,
     });
 
-    // Add a field for updating that an OT extension request has been submitted.
+    // Add "ot_owner_email" field to represent the requester email.
     this.fieldValues.push({
       name: 'ot_action_requested',
       touched: true,
@@ -213,10 +283,22 @@ export class ChromedashOTExtensionPage extends LitElement {
       const index = this.fieldValues.length;
       this.fieldValues.push({
         name: featureJSONKey,
-        touched: false,
-        value: null,
+        touched: true,
+        value: this.currentMilestone || null,
         stageId: this.stage.id,
       });
+
+      // Add the extra elements to display milestone date information.
+      let milestoneInfoText = nothing;
+      if (featureJSONKey === 'ot_extension__milestone_desktop_last') {
+        milestoneInfoText = html`
+        <div id="milestone-date" style="display:none;">
+          <span id="milestone-date-text" class="helptext fade-in"></span>
+          <a class="helptext" @click=${this.openMilestoneExplanationDialog}>
+            Learn how this date is chosen
+          </a>
+        </div>`;
+      }
 
       return html`
       <chromedash-form-field
@@ -225,6 +307,7 @@ export class ChromedashOTExtensionPage extends LitElement {
         .fieldValues=${this.fieldValues}
         @form-field-update="${this.handleFormFieldUpdate}">
       </chromedash-form-field>
+      ${milestoneInfoText}
     `;
     });
 

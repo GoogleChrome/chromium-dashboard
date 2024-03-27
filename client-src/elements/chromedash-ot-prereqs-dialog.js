@@ -1,37 +1,67 @@
 import {LitElement, css, html} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import {INTENT_STAGES} from './form-field-enums.js';
+import {showToastMessage} from './utils.js';
 
-let prereqsDialogEl;
+let dialogEl;
 let currentFeatureId;
 let currentStageId;
 
-export const PrereqsDialogTypes = {
+export const dialogTypes = {
   CREATION: 1,
   EXTENSION: 2,
+  END_MILESTONE_EXPLANATION: 3,
+  FINALIZE_EXTENSION: 4,
 };
 
-export async function openPrereqsDialog(featureId, stageId, prereqsType) {
-  if (!prereqsDialogEl || currentFeatureId !== featureId ||
+export async function openPrereqsDialog(featureId, stageId, dialogType) {
+  if (!dialogEl || currentFeatureId !== featureId ||
       currentStageId !== stageId) {
-    prereqsDialogEl = document.createElement('chromedash-ot-prereqs-dialog');
-    prereqsDialogEl.featureId = featureId;
-    prereqsDialogEl.stageId = stageId;
-    prereqsDialogEl.prereqsType = prereqsType;
-    document.body.appendChild(prereqsDialogEl);
-    await prereqsDialogEl.updateComplete;
+    dialogEl = document.createElement('chromedash-ot-prereqs-dialog');
+    dialogEl.featureId = featureId;
+    dialogEl.stageId = stageId;
+    dialogEl.dialogType = dialogType;
+    document.body.appendChild(dialogEl);
+    await dialogEl.updateComplete;
   }
   currentFeatureId = featureId;
   currentStageId = stageId;
-  prereqsDialogEl.show();
+  dialogEl.show();
 }
 
+export async function openInfoDialog(dialogType) {
+  if (!dialogEl) {
+    dialogEl = document.createElement('chromedash-ot-prereqs-dialog');
+    dialogEl.dialogType = dialogType;
+    document.body.appendChild(dialogEl);
+    await dialogEl.updateComplete;
+  }
+  dialogEl.show();
+}
+
+export async function openFinalizeExtensionDialog(featureId, stageId, milestone, dialogType) {
+  if (!dialogEl || currentFeatureId !== featureId || currentStageId !== stageId) {
+    dialogEl = document.createElement('chromedash-ot-prereqs-dialog');
+    dialogEl.featureId = featureId;
+    dialogEl.stageId = stageId;
+    dialogEl.dialogType = dialogType;
+    dialogEl.milestone = milestone;
+    document.body.appendChild(dialogEl);
+    await dialogEl.updateComplete;
+  }
+  dialogEl.dialogType = dialogType;
+  currentFeatureId = featureId;
+  currentStageId = stageId;
+  dialogEl.show();
+}
 
 class ChromedashOTPrereqsDialog extends LitElement {
   static get properties() {
     return {
       featureId: {type: Number},
       stageId: {type: Number},
-      prereqsType: {type: Number},
+      milestone: {type: Number},
+      dialogType: {type: Number},
     };
   }
 
@@ -39,7 +69,8 @@ class ChromedashOTPrereqsDialog extends LitElement {
     super();
     this.featureId = 0;
     this.stageId = 0;
-    this.prereqsType = 0;
+    this.milestone = 0;
+    this.dialogType = 0;
   }
 
   static get styles() {
@@ -54,7 +85,10 @@ class ChromedashOTPrereqsDialog extends LitElement {
       #prereqs-header {
         margin-bottom: 8px;
       }
-      #continue-button {
+      #update-button {
+        margin-right: 8px;
+      }
+      .float-right {
         float: right;
       }
       `,
@@ -63,6 +97,50 @@ class ChromedashOTPrereqsDialog extends LitElement {
 
   show() {
     this.shadowRoot.querySelector('sl-dialog').show();
+  }
+
+  renderEndMilestoneExplanationDialog() {
+    return html`
+    <sl-dialog label="End milestone date">
+      <p>
+        When a specific milestone is approved by API owners,
+        the trial's end date is set based on the stable release date of (end milestone +2).
+        Most of the time when a trial ends, the feature will be enabled by default within
+        the next Chrome release. This additional trial time window ensures users don't see
+        breakage before upgrading to the version with the feature enabled by default.
+      </p>
+    </sl-dialog>`;
+  }
+
+  submitTrialExtension() {
+    window.csClient.extendOriginTrial(this.featureId, this.stageId)
+      .then(() => {
+        showToastMessage('Extension processed!');
+        setTimeout(() => {
+          location.assign(`/feature/${this.featureId}`);
+        }, 1000);
+      }).catch(() => {
+        showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+      });
+  }
+
+  renderFinalizeExtensionDialog() {
+    return html`
+    <sl-dialog label="Finalize trial extension">
+      <p>
+        LGTMs have been detected for this trial extension.
+        This origin trial will be extended <strong>through milestone ${this.milestone}</strong>.
+        Is this correct?
+      </p>
+      <br>
+      <sl-button class="float-right" variant="primary" size="small"
+        @click=${() => this.submitTrialExtension()}
+      >Proceed</sl-button>
+      <sl-button
+        class="float-right" id="update-button" variant="info" size="small"
+        @click=${() => location.assign(`/guide/stage/${this.featureId}/${INTENT_STAGES.INTENT_EXTEND_ORIGIN_TRIAL[0]}/${this.stageId}`)}
+      >Change milestone</sl-button>
+    </sl-dialog>`;
   }
 
   renderExtensionPrereqs() {
@@ -116,7 +194,7 @@ class ChromedashOTPrereqsDialog extends LitElement {
           <a href="https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/runtime_enabled_features.json5" target="_blank">
             runtime_enabled_features.json5
           </a>
-          contains the key "origin_trial_allows_third_party: true".
+          contains the key "origin_trials_allows_third_party: true".
         </li>
         <li>
           For a critical trial, the feature name has been added to the
@@ -134,7 +212,7 @@ class ChromedashOTPrereqsDialog extends LitElement {
         If you have any further questions, contact us at origin-trials-support@google.com.
       </p>
       <br>
-      <sl-button id="continue-button" variant="primary"
+      <sl-button class="float-right" variant="primary"
         @click=${() => location.assign(`/ot_creation_request/${this.featureId}/${this.stageId}`)}
         size="small"
       >Proceed</sl-button>
@@ -142,7 +220,13 @@ class ChromedashOTPrereqsDialog extends LitElement {
   }
 
   render() {
-    if (this.prereqsType === PrereqsDialogTypes.EXTENSION) {
+    if (this.dialogType === dialogTypes.END_MILESTONE_EXPLANATION) {
+      return this.renderEndMilestoneExplanationDialog();
+    }
+    if (this.dialogType === dialogTypes.FINALIZE_EXTENSION) {
+      return this.renderFinalizeExtensionDialog();
+    }
+    if (this.dialogType === dialogTypes.EXTENSION) {
       return this.renderExtensionPrereqs();
     }
     return this.renderCreationPrereqs();
