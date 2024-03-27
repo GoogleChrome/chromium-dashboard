@@ -22,14 +22,14 @@ function _formatLongText(text, maxLength = 50) {
   return text;
 }
 
-const dateTimeFormat = new Intl.DateTimeFormat('en-US', {
+export const _dateTimeFormat = new Intl.DateTimeFormat('en-US', {
   weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   hour: 'numeric', minute: 'numeric', // No seconds
 });
 
 function enhanceChromeStatusLink(featureLink, text) {
   function _formatTimestamp(timestamp) {
-    return dateTimeFormat.format(new Date(timestamp * 1000));
+    return _dateTimeFormat.format(new Date(timestamp * 1000));
   }
 
   const information = featureLink.information;
@@ -93,7 +93,7 @@ function enhanceChromeStatusLink(featureLink, text) {
 
 function enhanceGithubIssueLink(featureLink, text) {
   function _formatISOTime(dateString) {
-    return dateTimeFormat.format(new Date(dateString));
+    return _dateTimeFormat.format(new Date(dateString));
   }
   const information = featureLink.information;
   const assignee = information.assignee_login;
