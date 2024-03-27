@@ -100,13 +100,9 @@ describe('Github issue links', () => {
               src="https://docs.github.com/assets/cb-600/images/site/favicon.png">
             <sl-badge size="small" variant="success">
               Opened
-              <relative-time
-                datetime="${yesterday.toISOString()}"
-                format="relative"
-                precision="day"
-                threshold="P100Y">
+              <sl-relative-time date="${yesterday.toISOString()}">
                 on ${_dateTimeFormat.format(yesterday)}
-              </relative-time>
+              </sl-relative-time>
             </sl-badge>
             #3007 Issue Title
           </sl-tag>
@@ -348,13 +344,9 @@ describe('Github issue links', () => {
                 src="https://avatars.githubusercontent.com/u/131524?s=48&amp;v=4">
               <sl-badge size="small" variant="danger">
                 Opened
-                <relative-time
-                    datetime="${lastWeek.toISOString()}"
-                    format="relative"
-                    precision="day"
-                    threshold="P100Y">
+                <sl-relative-time date="${lastWeek.toISOString()}">
                   on ${_dateTimeFormat.format(lastWeek)}
-                </relative-time>
+                </sl-relative-time>
               </sl-badge>
               #975 The textInput event
             </sl-tag>
@@ -388,13 +380,9 @@ describe('Github issue links', () => {
                 src="https://avatars.githubusercontent.com/u/131524?s=48&amp;v=4">
               <sl-badge size="small" variant="warning">
                 Opened
-                <relative-time
-                    datetime="${threeWeeks.toISOString()}"
-                    format="relative"
-                    precision="day"
-                    threshold="P100Y">
+                <sl-relative-time date="${threeWeeks.toISOString()}">
                   on ${_dateTimeFormat.format(threeWeeks)}
-                </relative-time>
+                </sl-relative-time>
               </sl-badge>
               #975 The textInput event
             </sl-tag>
@@ -428,13 +416,9 @@ describe('Github issue links', () => {
                 src="https://avatars.githubusercontent.com/u/131524?s=48&amp;v=4">
               <sl-badge size="small" variant="neutral">
                 Opened
-                <relative-time
-                    datetime="${twoMonths.toISOString()}"
-                    format="relative"
-                    precision="day"
-                    threshold="P100Y">
+                <sl-relative-time date="${twoMonths.toISOString()}">
                   on ${_dateTimeFormat.format(twoMonths)}
-                </relative-time>
+                </sl-relative-time>
               </sl-badge>
               #975 The textInput event
             </sl-tag>
