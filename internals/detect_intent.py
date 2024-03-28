@@ -309,11 +309,10 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
                    f'{feature.key.integer_id()}, stage_type: {stage_type}')
       return None
 
-    # Check if this intent URL already belongs to a stage.
-    # TODO(DanielRyanSmith): The intent thread URLs contain the message ID
-    # and won't match up perfectly when comparing them.
-    # Update to instead detect by gate ID.
-    # See https://github.com/GoogleChrome/chromium-dashboard/pull/3678#discussion_r1513361281
+    # If only 1 stage is found, it's assumed to be the correct stage.
+    if len(stages_of_type_in_feature) == 1:
+      return stages_of_type_in_feature[0]
+
     matching_stage = next((s for s in stages_of_type_in_feature
                             if s.intent_thread_url == thread_url), None)
     if matching_stage:
@@ -321,6 +320,9 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
                    matching_stage.intent_thread_url)
       return matching_stage
 
+    # TODO(DanielRyanSmith): This logic could still fail in some circumstances.
+    # Move to a guaranteed gate ID detection method, or post intent threads
+    # on behalf of the user with a unique identifier.
     # If only 1 stage exists without a set intent URL, we can assume that
     # this thread is associated with that stage.
     stages_with_no_intent_thread_url = list(filter(
