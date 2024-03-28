@@ -212,7 +212,7 @@ def send_ot_notification(stage: Stage):
 
 
 def send_trial_extended_notification(stage: Stage):
-  """Notify about """
+  """Notify about a successful automatic trial extension."""
   stage_dict = converters.stage_to_json_dict(stage)
   params = {'stage': stage_dict}
   ot_stage = Stage.get_by_id(stage.ot_stage_id)

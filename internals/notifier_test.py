@@ -1062,33 +1062,12 @@ class OriginTrialExtendedHandlerTest(testing_config.CustomTestCase):
   def test_make_extended_request_email(self):
     ot_stage_dict = converters.stage_to_json_dict(self.ot_stage)
     extension_stage_dict = converters.stage_to_json_dict(self.extension_stage)
-    handler = notifier.OriginTrialExtendedHandler()
-    email_task = handler.build_email(extension_stage_dict, ot_stage_dict)
-
-    expected_body = """
-<p>
-  A recent extension request was finalized and processed.
-  <br>
-  Requested by: user2@example.com
-  <br>
-  Feature name: An existing origin trial
-  <br>
-  Intent to Extend Experiment URL: https://example.com/intent
-  <br>
-  New end milestone: 106
-  <br>
-  <br>
-  No additional action needs to be taken if this information looks correct.
-</p>
-"""
-    expected = {
-      'to': 'origin-trials-support@google.com',
-      'subject': 'Origin trial extension processed: An existing origin trial',
-      'reply_to': None,
-      'html': expected_body,
-    }
-
-    self.assertEqual(email_task, expected)
+    with test_app.app_context():
+      handler = notifier.OriginTrialExtendedHandler()
+      email_task = handler.build_email(extension_stage_dict, ot_stage_dict)
+      # TESTDATA.make_golden(email_task['html'], 'test_make_extended_request_email.html')
+      self.assertEqual(email_task['html'],
+        TESTDATA['test_make_extended_request_email.html'])
 
 
 class OriginTrialExtensionRequestHandlerTest(testing_config.CustomTestCase):
