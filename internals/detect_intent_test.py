@@ -425,9 +425,15 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     self.stages_dict[151][0].intent_thread_url = 'https://example.com/exists'
     self.stages_dict[151][0].put()
 
-    self.gate_1 = Gate(feature_id=self.feature_id, stage_id=1,
-        gate_type=1, state=Vote.NA)
+    self.stage_1 = self.stages_dict[151][0]
+    self.gate_1 = Gate(
+        feature_id=self.feature_id, stage_id=self.stage_1.key.integer_id(),
+        gate_type=3, state=Vote.NA)
     self.gate_1.put()
+    self.gate_with_experiment_type = Gate(
+        feature_id=self.feature_id, stage_id=self.stage_1.key.integer_id(),
+        gate_type=2, state=Vote.NA)
+    self.gate_with_experiment_type.put()
 
     self.request_path = '/tasks/detect-intent'
 
@@ -436,6 +442,18 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     self.entry_link = (
         '\n*Link to entry on the Chrome Platform Status*\n'
         'https://www.chromestatus.com/feature/%d\n' % self.feature_id)
+    self.entry_link_with_gate = (
+        '\n*Link to entry on the Chrome Platform Status*\n'
+        f'https://www.chromestatus.com/feature/{self.feature_id}'
+        f'?gate={self.gate_1.key.integer_id()}\n')
+    self.entry_link_with_bad_gate = (
+        '\n*Link to entry on the Chrome Platform Status*\n'
+        f'https://www.chromestatus.com/feature/{self.feature_id}'
+        '?gate=9876554321\n')
+    self.entry_link_with_experiment_gate = (
+        '\n*Link to entry on the Chrome Platform Status*\n'
+        f'https://www.chromestatus.com/feature/{self.feature_id}'
+        f'?gate={self.gate_with_experiment_type.key.integer_id()}\n')
     self.footer = (
         '\n--\n'
         'instructions...\n'
@@ -505,6 +523,60 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
         'https://example.com/exists')
     self.assertEqual(
         self.stages_dict[151][1].intent_thread_url, self.thread_url)
+
+  @mock.patch('logging.info')
+  def test_process_post_data__gate_in_link(self, mock_info):
+    """Intent thread is recorded."""
+    extend_json_data = {
+        'from_addr': 'user@example.com',
+        'subject': 'Intent to Extend Experiment: Featurename',
+        'body': 'Please review. ' + self.entry_link_with_gate + self.footer,
+        }
+    with test_app.test_request_context(
+        self.request_path, json=extend_json_data):
+      actual = self.handler.process_post_data()
+
+    self.assertEqual(actual, {'message': 'Done'})
+
+    created_votes = list(Vote.query().fetch(None))
+    self.assertEqual(1, len(created_votes))
+    vote = created_votes[0]
+    self.assertEqual(self.feature_id, vote.feature_id)
+    self.assertEqual(Vote.REVIEW_REQUESTED, vote.state)
+    self.assertEqual('user@example.com', vote.set_by)
+    self.assertEqual(
+        self.stages_dict[151][0].intent_thread_url,
+        self.thread_url)
+
+  @mock.patch('logging.info')
+  def test_process_post_data__incorrect_detected_gate(self, mock_info):
+    """If a bad gate ID is detected, no votes are generated"""
+    extend_json_data = {
+        'from_addr': 'user@example.com',
+        'subject': 'Intent to Extend Experiment: Featurename',
+        'body': 'Please review. ' + self.entry_link_with_bad_gate + self.footer,
+        }
+    with test_app.test_request_context(
+        self.request_path, json=extend_json_data):
+      actual = self.handler.process_post_data()
+
+    self.assertEqual(actual, {'message': 'Stage not found for intent type 3'})
+
+  @mock.patch('logging.info')
+  def test_process_post_data__incorrect_gate_type(self, mock_info):
+    """Intent will not be processed if gate type does not match intent type"""
+    extend_json_data = {
+        'from_addr': 'user@example.com',
+        'subject': 'Intent to Extend Experiment: Featurename',
+        'body': ('Please review. ' +
+                 self.entry_link_with_experiment_gate + self.footer),
+        }
+    with test_app.test_request_context(
+        self.request_path, json=extend_json_data):
+      actual = self.handler.process_post_data()
+
+    self.assertEqual(actual, {
+        'message': 'Gate type does not match approval field gate type'})
 
   def test_process_post_data__new_thread_already_empty_str(self):
     """We still set intent_thread_url if it was previously an empty string."""
