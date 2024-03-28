@@ -77,19 +77,19 @@ def detect_field(subject):
 
   return None
 
-
-CHROMESTATUS_LINK_GENERATED_RE = re.compile(
+CHROMESTATUS_LINK_GENERATED_PATTERN = (
     r'Chrome( Platform)? ?Status(.com)?[ \w]*:?\s+'
     r'[> ]*https?://(www\.)?chromestatus\.com/'
-    r'(feature|guide/edit)/(?P<id>\d+)', re.I)
+    r'(feature|guide/edit)/(?P<id>\d+)')
+
+CHROMESTATUS_LINK_GENERATED_RE = re.compile(
+    CHROMESTATUS_LINK_GENERATED_PATTERN, re.I)
+CHROMESTATUS_LINK_GENERATED_GATE_RE = re.compile(
+    CHROMESTATUS_LINK_GENERATED_PATTERN + r'\?gate=(?P<gate_id>\d+)', re.I)
 CHROMESTATUS_LINK_ALTERNATE_RE = re.compile(
     r'entry on the feature dashboard.*\s+'
     r'[> ]*https?://(www\.)?chromestatus\.com/'
     r'(feature|guide/edit)/(?P<id>\d+)', re.I)
-CHROMESTATUS_LINK_GENERATED_GATE_RE = re.compile(
-    r'Chrome( Platform)? ?Status(.com)?[ \w]*:?\s+'
-    r'[> ]*https?://(www\.)?chromestatus\.com/'
-    r'(feature|guide/edit)/(\d+)\?gate=(?P<id>\d+)', re.I)
 NOT_LGTM_RE = re.compile(
     r'\b(not|almost|need|want|missing) (a |an )?LGTM\b',
     re.I)
@@ -109,7 +109,7 @@ def detect_gate_id(body) -> int | None:
   """Detect the gate ID within the chromestatus URL."""
   match = CHROMESTATUS_LINK_GENERATED_GATE_RE.search(body)
   if match:
-    return int(match.group('id'))
+    return int(match.group('gate_id'))
   return None
 
 
