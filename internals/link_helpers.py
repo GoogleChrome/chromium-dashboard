@@ -222,6 +222,7 @@ class Link():
         'created_at': resp.get('created_at'),
         'updated_at': resp.get('updated_at'),
         'closed_at': resp.get('closed_at'),
+        'labels': [label.get('name') for label in resp.get('labels', [])],
     }
 
     return information
