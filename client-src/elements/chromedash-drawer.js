@@ -108,7 +108,7 @@ export class ChromedashDrawer extends LitElement {
     this.currentPage = '';
     this.devMode = 'False';
     this.googleSignInClientId = '',
-    this.user = {};
+    this.user = undefined;
     this.loading = false;
     this.defaultOpen = false;
   }
@@ -117,7 +117,7 @@ export class ChromedashDrawer extends LitElement {
     super.connectedCallback();
 
     // user is passed in from chromedash-app
-    if (this.user && this.user.email) return;
+    if (this.user !== undefined) return;
 
     // Try to load user.
     this.loading = true;
