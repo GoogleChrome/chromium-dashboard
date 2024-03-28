@@ -559,8 +559,11 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     with test_app.test_request_context(
         self.request_path, json=extend_json_data):
       actual = self.handler.process_post_data()
+    created_votes = list(Vote.query().fetch(None))
+    self.assertEqual(0, len(created_votes))
 
-    self.assertEqual(actual, {'message': 'Stage not found for intent type 3'})
+    self.assertEqual(actual, {'message': ('Stage not found for intent type 3 '
+                                          f'of feature {self.feature_id}')})
 
   @mock.patch('logging.info')
   def test_process_post_data__incorrect_gate_type(self, mock_info):
@@ -574,9 +577,13 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     with test_app.test_request_context(
         self.request_path, json=extend_json_data):
       actual = self.handler.process_post_data()
+    created_votes = list(Vote.query().fetch(None))
+    self.assertEqual(0, len(created_votes))
 
     self.assertEqual(actual, {
-        'message': 'Gate type does not match approval field gate type'})
+        'message': (f'Gate {self.gate_with_experiment_type.key.integer_id()} '
+                    'has gate type 2 and does not match approval field '
+                    'gate type 3')})
 
   def test_process_post_data__new_thread_already_empty_str(self):
     """We still set intent_thread_url if it was previously an empty string."""
