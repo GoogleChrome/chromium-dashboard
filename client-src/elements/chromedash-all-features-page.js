@@ -83,6 +83,13 @@ export class ChromedashAllFeaturesPage extends LitElement {
       });
   }
 
+  // Get all editable features of the user
+  getEditableFeatures() {
+    return this.user ?
+      new Set(this.user.editable_features) :
+      new Set();
+  }
+
   renderBox(query) {
     return html`
       <chromedash-feature-table
@@ -91,7 +98,8 @@ export class ChromedashAllFeaturesPage extends LitElement {
         .num=${this.num}
         showQuery
         ?signedIn=${Boolean(this.user)}
-        ?canEdit=${this.user && this.user.can_edit_all}
+        ?canEditAll=${this.user && this.user.can_edit_all}
+        .editableFeatures=${this.getEditableFeatures()}
         .starredFeatures=${this.starredFeatures}
         @star-toggle-event=${this.handleStarToggle}
         alwaysOfferPagination columns="normal">

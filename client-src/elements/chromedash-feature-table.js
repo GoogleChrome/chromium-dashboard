@@ -19,7 +19,8 @@ class ChromedashFeatureTable extends LitElement {
       alwaysOfferPagination: {type: Boolean},
       columns: {type: String},
       signedIn: {type: Boolean},
-      canEdit: {type: Boolean},
+      canEditAll: {type: Boolean},
+      editableFeatures: {type: Object},
       starredFeatures: {type: Object},
       noResultsMessage: {type: String},
       gates: {type: Object},
@@ -34,13 +35,14 @@ class ChromedashFeatureTable extends LitElement {
     this.showQuery = false;
     this.loading = true;
     this.starredFeatures = new Set();
+    this.editableFeatures = new Set();
     this.features = [];
     this.totalCount = 0;
     this.start = 0;
     this.num = 100;
     this.alwaysOfferPagination = false;
     this.noResultsMessage = 'No results';
-    this.canEdit = false;
+    this.canEditAll = false;
     this.gates = {};
     this.selectedGateId = 0;
   }
@@ -229,13 +231,19 @@ class ChromedashFeatureTable extends LitElement {
     `;
   }
 
+  // Feature is editable if the user can "edit all" features or if the user
+  // specifically has edit permissions on that feature
+  userCanEditFeature(featureId) {
+    return this.canEditAll || this.editableFeatures.has(featureId);
+  }
+
   renderFeature(feature) {
     return html`
       <chromedash-feature-row
          .feature=${feature}
          columns=${this.columns}
          ?signedIn=${this.signedIn}
-         ?canEdit=${this.canEdit}
+         ?canEdit=${this.userCanEditFeature(feature.id)}
          .starredFeatures=${this.starredFeatures}
          .gates=${this.gates}
          selectedGateId=${this.selectedGateId}
