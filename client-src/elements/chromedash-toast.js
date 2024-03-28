@@ -28,7 +28,7 @@ class ChromedashToast extends LitElement {
       ...SHARED_STYLES,
       css`
       :host {
-        display: flex;
+        display: none; /* To prevent initial visibility change display from flex to none */
         justify-content: space-between;
         position: fixed;
         background: var(--toast-background);
@@ -51,6 +51,7 @@ class ChromedashToast extends LitElement {
       }
 
       :host([open]) {
+        display: flex; /* Only when open attribute is true it will display*/
         opacity: 1;
         transform: translateY(-32px);
       }
