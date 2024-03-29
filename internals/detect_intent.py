@@ -77,11 +77,15 @@ def detect_field(subject):
 
   return None
 
-
-CHROMESTATUS_LINK_GENERATED_RE = re.compile(
+CHROMESTATUS_LINK_GENERATED_PATTERN = (
     r'Chrome( Platform)? ?Status(.com)?[ \w]*:?\s+'
     r'[> ]*https?://(www\.)?chromestatus\.com/'
-    r'(feature|guide/edit)/(?P<id>\d+)', re.I)
+    r'(feature|guide/edit)/(?P<id>\d+)')
+
+CHROMESTATUS_LINK_GENERATED_RE = re.compile(
+    CHROMESTATUS_LINK_GENERATED_PATTERN, re.I)
+CHROMESTATUS_LINK_GENERATED_GATE_RE = re.compile(
+    CHROMESTATUS_LINK_GENERATED_PATTERN + r'\?gate=(?P<gate_id>\d+)', re.I)
 CHROMESTATUS_LINK_ALTERNATE_RE = re.compile(
     r'entry on the feature dashboard.*\s+'
     r'[> ]*https?://(www\.)?chromestatus\.com/'
@@ -98,6 +102,14 @@ def detect_feature_id(body):
            CHROMESTATUS_LINK_ALTERNATE_RE.search(body))
   if match:
     return int(match.group('id'))
+  return None
+
+
+def detect_gate_id(body) -> int | None:
+  """Detect the gate ID within the chromestatus URL."""
+  match = CHROMESTATUS_LINK_GENERATED_GATE_RE.search(body)
+  if match:
+    return int(match.group('gate_id'))
   return None
 
 
@@ -186,6 +198,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
       return {'message': 'Not an intent'}
 
     feature_id = detect_feature_id(body)
+    gate_id = detect_gate_id(body)
     thread_url = detect_thread_url(body)
     feature, message = self.load_detected_feature(
         feature_id, thread_url)
@@ -196,18 +209,22 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
       logging.info('Could not retrieve feature')
       return {'message': 'Feature not found'}
 
-    stage = self.find_matching_stage(feature, approval_field, thread_url)
+    gate, stage = self.get_gate_and_stage(
+        feature, approval_field, gate_id, thread_url)
     if stage is None:
-      message = ('No matching stage found for intent type '
-                 f'{approval_field.field_id}')
+      message = (f'Stage not found for intent type {approval_field.field_id} '
+                 f'of feature {feature_id}')
       logging.info(message)
       return {'message': message}
-
-    gate = Gate.query(Gate.stage_id == stage.key.integer_id(),
-                      Gate.gate_type == approval_field.field_id).get()
     if gate is None:
-      message = (f'Gate not found for stage {stage.key.integer_id()} '
-                    f' and gate type {approval_field.field_id}')
+      message = (f'Gate not found for intent type {approval_field.field_id} '
+                 f'of feature {feature_id}')
+      logging.info(message)
+      return {'message': message}
+    if gate.gate_type != approval_field.field_id:
+      message = (f'Gate {gate.key.integer_id()} has gate type {gate.gate_type} '
+                 'and does not match approval field gate type '
+                 f'{approval_field.field_id}')
       logging.info(message)
       return {'message': message}
 
@@ -243,6 +260,31 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
 
     return FeatureEntry.get_by_id(fe_ids[0]), None
 
+  def get_gate_and_stage(
+      self,
+      feature: FeatureEntry,
+      approval_field: approval_defs.ApprovalFieldDef,
+      gate_id: int | None,
+      thread_url: str) -> tuple[Gate | None, Stage | None]:
+    # If a gate ID is detected, query for the gate.
+    if gate_id:
+      logging.info(f'Using detected gate ID {gate_id}')
+      gate = Gate.get_by_id(gate_id)
+      # Return nulls if the gate ID is invalid.
+      if gate is None:
+        logging.info('Gate not found')
+        return None, None
+      stage = Stage.get_by_id(gate.stage_id)
+    # Otherwise, try to find the matching gate based on other feature info.
+    else:
+      logging.info('Attempting to find stage/gate without detected gate ID')
+      stage = self.find_matching_stage(feature, approval_field, thread_url)
+      if stage is None:
+        return None, None
+      gate = Gate.query(Gate.stage_id == stage.key.integer_id(),
+                        Gate.gate_type == approval_field.field_id).get()
+    return gate, stage
+
   def find_matching_stage(self, feature: FeatureEntry,
       approval_field: approval_defs.ApprovalFieldDef,
       thread_url: str | None) -> Stage | None:
@@ -267,11 +309,10 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
                    f'{feature.key.integer_id()}, stage_type: {stage_type}')
       return None
 
-    # Check if this intent URL already belongs to a stage.
-    # TODO(DanielRyanSmith): The intent thread URLs contain the message ID
-    # and won't match up perfectly when comparing them.
-    # Update to instead detect by gate ID.
-    # See https://github.com/GoogleChrome/chromium-dashboard/pull/3678#discussion_r1513361281
+    # If only 1 stage is found, it's assumed to be the correct stage.
+    if len(stages_of_type_in_feature) == 1:
+      return stages_of_type_in_feature[0]
+
     matching_stage = next((s for s in stages_of_type_in_feature
                             if s.intent_thread_url == thread_url), None)
     if matching_stage:
@@ -279,6 +320,9 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
                    matching_stage.intent_thread_url)
       return matching_stage
 
+    # TODO(DanielRyanSmith): This logic could still fail in some circumstances.
+    # Move to a guaranteed gate ID detection method, or post intent threads
+    # on behalf of the user with a unique identifier.
     # If only 1 stage exists without a set intent URL, we can assume that
     # this thread is associated with that stage.
     stages_with_no_intent_thread_url = list(filter(
