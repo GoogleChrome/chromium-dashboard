@@ -151,7 +151,7 @@ export class ChromedashHeader extends LitElement {
     this.googleSignInClientId = '',
     this.devMode = '';
     this.currentPage = '';
-    this.user = {};
+    this.user = undefined;
     this.loading = false;
   }
 
@@ -164,10 +164,10 @@ export class ChromedashHeader extends LitElement {
     }
 
     // user is passed in from chromedash-app
-    if (this.user && this.user.email) return;
+    if (this.user !== undefined) return;
 
     // user is passed in from chromedash-app, but the user is not logged in
-    if (!this.user) {
+    if (this.user === null) {
       if (!window['isPlaywright']) {
         // Insert the google signin button first.
         // Only insert if not running playwright.
