@@ -3,6 +3,7 @@
 import {css, html, LitElement} from 'lit';
 import {ifDefined} from 'lit/directives/if-defined.js';
 import {SHARED_STYLES} from '../css/shared-css';
+import {ExternalReviewer} from './external-reviewers';
 
 // LINK_TYPES should be consistent with the server link_helpers.py
 const LINK_TYPE_CHROMIUM_BUG = 'chromium_bug';
@@ -97,7 +98,7 @@ function enhanceGithubIssueLink(featureLink, text) {
   }
   const information = featureLink.information;
   const assignee = information.assignee_login;
-  const createdAt = information.created_at;
+  const createdAt = new Date(information.created_at);
   const closedAt = information.closed_at;
   const updatedAt = information.updated_at;
   const state = information.state;
@@ -108,6 +109,43 @@ function enhanceGithubIssueLink(featureLink, text) {
   const repo = information.url.split('/').slice(4, 6).join('/');
   const typePath = featureLink.url.split('/').slice(-2)[0];
   const type = typePath === 'issues' ? 'Issue' : typePath === 'pull' ? 'Pull Request' : typePath;
+
+  // If this issue is an external review of the feature, find the summary description.
+  const externalReviewer = ExternalReviewer.get(repo);
+  let stateDescription = undefined;
+  let stateVariant = undefined;
+  if (externalReviewer) {
+    for (const label of information.labels) {
+      const labelInfo = externalReviewer.label(label);
+      if (labelInfo) {
+        ({description: stateDescription, variant: stateVariant} = labelInfo);
+        break;
+      }
+    }
+  }
+
+  if (stateVariant === undefined) {
+    if (state === 'open') {
+      const age = Date.now() - createdAt.getTime();
+      stateDescription = html`Opened <sl-relative-time date=${createdAt.toISOString()}>on ${_dateTimeFormat.format(createdAt)}</sl-relative-time>`;
+      const week = 7 * 24 * 60 * 60 * 1000;
+      stateVariant = 'success';
+      if (externalReviewer) {
+        // If this is an issue asking for external review, having it filed too recently is a warning
+        // sign, which we'll indicate using the tag's color.
+        if (age < 4 * week) {
+          stateVariant = 'warning';
+        } else {
+          // Still only neutral if the reviewer hasn't given a position yet.
+          stateVariant = 'neutral';
+        }
+      }
+    } else {
+      console.assert(state === 'closed');
+      stateDescription = 'Closed';
+      stateVariant = 'neutral';
+    }
+  }
 
   if (!text) {
     text = title;
@@ -169,8 +207,8 @@ function enhanceGithubIssueLink(featureLink, text) {
     <sl-tooltip style="--sl-tooltip-arrow-size: 0;--max-width: 50vw;">
         <div slot="content">${renderTooltipContent()}</div>
         <sl-tag>
-          <img src="https://docs.github.com/assets/cb-600/images/site/favicon.png" alt="icon" class="icon" />
-          <sl-badge size="small" variant="${state === 'open' ? 'success' : 'neutral'}">${state}</sl-badge>
+          <img src=${externalReviewer?.icon ?? 'https://docs.github.com/assets/cb-600/images/site/favicon.png'} alt="icon" class="icon" />
+          <sl-badge size="small" variant=${stateVariant}>${stateDescription}</sl-badge>
           ${_formatLongText(`#${number} ` + text)}
         </sl-tag>
     </sl-tooltip>
@@ -337,8 +375,8 @@ export class ChromedashLink extends LitElement {
     }
 
     sl-badge::part(base) {
-      height: 14px;
-      padding: 4px;
+      display: inline;
+      padding: 0 4px;
       border-width: 0;
       text-transform: capitalize;
       font-weight: 400;
@@ -360,6 +398,10 @@ export class ChromedashLink extends LitElement {
 
     sl-tag::part(base):hover {
       background-color: rgb(209,211,213);
+    }
+
+    sl-relative-time {
+      margin: 0;
     }
 
     .icon {
