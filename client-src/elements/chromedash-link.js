@@ -133,9 +133,7 @@ function enhanceGithubIssueLink(featureLink, text) {
       if (externalReviewer) {
         // If this is an issue asking for external review, having it filed too recently is a warning
         // sign, which we'll indicate using the tag's color.
-        if (age < 2 * week) {
-          stateVariant = 'danger';
-        } else if (age < 4 * week) {
+        if (age < 4 * week) {
           stateVariant = 'warning';
         } else {
           // Still only neutral if the reviewer hasn't given a position yet.

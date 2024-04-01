@@ -322,10 +322,10 @@ describe('Github issue links', () => {
         });
     });
 
-    it('shows error if open too short', async () => {
+    it('shows warning if open too short', async () => {
       const issue = firefoxIssue();
       issue.information.labels = [];
-      const lastWeek = new Date(Date.now() - 7 * DAY);
+      const lastWeek = new Date(Date.now() - 3 * 7 * DAY);
       issue.information.state = 'open';
       issue.information.created_at = lastWeek.toISOString();
       const featureLinks = [issue];
@@ -342,46 +342,10 @@ describe('Github issue links', () => {
                 alt="icon"
                 class="icon"
                 src="https://avatars.githubusercontent.com/u/131524?s=48&amp;v=4">
-              <sl-badge size="small" variant="danger">
+              <sl-badge size="small" variant="warning">
                 Opened
                 <sl-relative-time date="${lastWeek.toISOString()}">
                   on ${_dateTimeFormat.format(lastWeek)}
-                </sl-relative-time>
-              </sl-badge>
-              #975 The textInput event
-            </sl-tag>
-          </sl-tooltip>
-        </a>`,
-        {
-          ignoreChildren: ['div'],
-          ignoreAttributes: ['style', 'title'],
-        });
-    });
-
-    it('shows warning if open an intermediate time', async () => {
-      const issue = firefoxIssue();
-      issue.information.labels = [];
-      const threeWeeks = new Date(Date.now() - 3 * 7 * DAY);
-      issue.information.state = 'open';
-      issue.information.created_at = threeWeeks.toISOString();
-      const featureLinks = [issue];
-      const el = await fixture(html`<chromedash-link
-        href="https://github.com/mozilla/standards-positions/issues/975"
-        .featureLinks=${featureLinks}>Content</chromedash-link>`);
-      expect(el).shadowDom.to.equal(
-        `<a href="https://github.com/mozilla/standards-positions/issues/975"
-            rel="noopener noreferrer" target="_blank">
-          <sl-tooltip>
-            <div slot="content">...</div>
-            <sl-tag>
-              <img
-                alt="icon"
-                class="icon"
-                src="https://avatars.githubusercontent.com/u/131524?s=48&amp;v=4">
-              <sl-badge size="small" variant="warning">
-                Opened
-                <sl-relative-time date="${threeWeeks.toISOString()}">
-                  on ${_dateTimeFormat.format(threeWeeks)}
                 </sl-relative-time>
               </sl-badge>
               #975 The textInput event
