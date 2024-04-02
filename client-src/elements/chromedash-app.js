@@ -97,6 +97,7 @@ class ChromedashApp extends LitElement {
   static get properties() {
     return {
       user: {type: Object},
+      paired_user: {type: Object},
       loading: {type: Boolean},
       appTitle: {type: String},
       googleSignInClientId: {type: String},
@@ -115,6 +116,7 @@ class ChromedashApp extends LitElement {
   constructor() {
     super();
     this.user = {};
+    this.paired_user = undefined;
     this.loading = true;
     this.appTitle = '';
     this.googleSignInClientId = '',
@@ -145,6 +147,23 @@ class ChromedashApp extends LitElement {
     }).finally(() => {
       this.setUpRoutes();
       this.loading = false;
+    });
+  }
+
+  fetchPairedUser() {
+    if (this.paired_user !== undefined) {
+      if (this.pageComponent) {
+        this.pageComponent.paired_user = this.paired_user;
+        return;
+      }
+    }
+    window.csClient.getPermissions(true).then((pu) => {
+      this.paired_user = pu;
+      if (this.pageComponent) {
+        this.pageComponent.paired_user = pu;
+      }
+    }).catch(() => {
+      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
   }
 
@@ -301,6 +320,7 @@ class ChromedashApp extends LitElement {
       if (!this.setupNewPage(ctx, 'chromedash-feature-page')) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.user = this.user;
+      this.fetchPairedUser();
       this.pageComponent.contextLink = this.contextLink;
       this.pageComponent.selectedGateId = this.selectedGateId;
       this.pageComponent.appTitle = this.appTitle;

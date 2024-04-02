@@ -163,8 +163,12 @@ class ChromeStatusClient {
   }
 
   // Permissions API
-  getPermissions() {
-    return this.doGet('/currentuser/permissions')
+  getPermissions(returnPairedUser=false) {
+    let url = '/currentuser/permissions';
+    if (returnPairedUser) {
+      url += '?returnPairedUser';
+    }
+    return this.doGet(url)
       .then((res) => res.user);
   }
 
