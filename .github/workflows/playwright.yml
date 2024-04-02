@@ -19,7 +19,7 @@ jobs:
         - name: Run your tests
           timeout-minutes: 30
           run: npm run pwtests-shutdown --workspace=playwright; npm run test --workspace=playwright
-        - uses: actions/upload-artifact@v3
+        - uses: actions/upload-artifact@v4
           if: failure()
           with:
             name: test-results
