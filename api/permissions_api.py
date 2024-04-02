@@ -33,10 +33,12 @@ class PermissionsAPI(basehandlers.APIHandler):
     # get user permission data if signed in
     user = self.get_current_user()
     if user:
-      user_data = self.get_all_perms(user)
-      paired_user = self.find_paired_user(user)
-      if paired_user:
-        user_data['paired_user'] = self.get_all_perms(paired_user)
+      if not self.get_bool_arg('returnPairedUser'):
+        user_data = self.get_all_perms(user)
+      else:
+        paired_user = self.find_paired_user(user)
+        if paired_user:
+          user_data = self.get_all_perms(paired_user)
 
     return {'user': user_data}
 

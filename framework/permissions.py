@@ -62,9 +62,8 @@ def can_create_feature(user: User) -> bool:
   if user.email().endswith(('@chromium.org', '@google.com')):
     return True
 
-  query = AppUser.query(AppUser.email == user.email())
-  found_user = query.get(keys_only=True)
-  if found_user is not None:
+  app_user = AppUser.get_app_user(user.email())
+  if app_user:
     return True
 
   return False

@@ -69,14 +69,22 @@ class PermissionsAPITest(testing_config.CustomTestCase):
         'is_admin': False,
         'email': 'one@google.com',
         'editable_features': [],
-        'paired_user': {
-            'can_create_feature': True,
-            'approvable_gate_types': [],
-            'can_comment': True,
-            'can_edit_all': False,
-            'is_admin': False,
-            'email': 'one@chromium.org',
-            'editable_features': []
-          }
         }}
+    self.assertEqual(expected, actual)
+
+  def test_get__googler_paired_user(self):
+    """Googlers have default permissions to create features."""
+    testing_config.sign_in('one@google.com', 67890)
+    with test_app.test_request_context(self.request_path + '?returnPairedUser'):
+      actual = self.handler.do_get()
+    expected = {
+      'user': {
+          'can_create_feature': True,
+          'approvable_gate_types': [],
+          'can_comment': True,
+          'can_edit_all': False,
+          'is_admin': False,
+          'email': 'one@chromium.org',
+          'editable_features': []
+      }}
     self.assertEqual(expected, actual)
