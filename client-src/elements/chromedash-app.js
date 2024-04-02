@@ -153,7 +153,8 @@ class ChromedashApp extends LitElement {
   fetchPairedUser() {
     if (this.paired_user !== undefined) {
       if (this.pageComponent) {
-        this.pageComponent.paired_user = pu;
+        this.pageComponent.paired_user = this.paired_user;
+        return;
       }
     }
     window.csClient.getPermissions(true).then((pu) => {
