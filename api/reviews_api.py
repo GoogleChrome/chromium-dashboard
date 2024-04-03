@@ -18,6 +18,7 @@ import logging
 import re
 from typing import Any, Optional, Tuple
 from google.cloud import ndb
+from google.cloud.ndb.tasklets import Future  # for type checking only
 
 from api import converters
 from framework import basehandlers
@@ -165,7 +166,7 @@ class GatesAPI(basehandlers.APIHandler):
 
 class PendingGatesAPI(basehandlers.APIHandler):
 
-  def get_stage_ids_of_gates_pending_my_approval(self) -> list[int]:
+  def get_stage_ids_of_gates_pending_my_approval(self) -> list[int] | Future:
     """Return a list of stage_id needing approval by current user."""
     user = self.get_current_user()
     if not user:
@@ -204,9 +205,7 @@ class PendingGatesAPI(basehandlers.APIHandler):
     for g in dicts:
       g['possible_assignee_emails'] = prefetched_approvers.get(g['gate_type'], [])
 
-    return {
-        'gates': dicts,
-        }
+    return {'gates': dicts}
 
 
 class XfnGatesAPI(basehandlers.APIHandler):
