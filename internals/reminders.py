@@ -171,10 +171,13 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
         relevant_stages = stages.get(
             STAGE_TYPES_BY_FIELD_MAPPING[field][feature.feature_type] or -1, [])
         for stage in relevant_stages:
-          milestones = stage.milestones
-          m = (None if milestones is None
-              else getattr(milestones,
-                  MilestoneSet.MILESTONE_FIELD_MAPPING[field]))
+          if field == 'rollout_milestone':
+            m = getattr(stage, field)
+          else:
+            milestones = stage.milestones
+            m = (None if milestones is None
+                else getattr(milestones,
+                    MilestoneSet.MILESTONE_FIELD_MAPPING[field]))
           if m is not None and m >= min_mstone and m <= max_mstone:
             if min_milestone is None:
               min_milestone = m
@@ -228,7 +231,8 @@ class FeatureAccuracyHandler(AbstractReminderHandler):
       'shipped_android_milestone',
       'shipped_ios_milestone',
       'shipped_milestone',
-      'shipped_webview_milestone']
+      'shipped_webview_milestone',
+      'rollout_milestone']
 
   def prefilter_features(
       self,
