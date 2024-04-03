@@ -35,7 +35,26 @@ MAX_TERMS = 6
 DEFAULT_RESULTS_PER_PAGE = 100
 
 
-def process_pending_approval_me_query() -> list[int]:
+def process_exclude_deleted_unlisted_query() -> Future:
+  """Return a future for all features, minus deleted and unlisted."""
+  query = FeatureEntry.query(
+      FeatureEntry.deleted == False,
+      FeatureEntry.unlisted == False)
+  future_feature_ids = query.fetch_async(keys_only=True)
+  return future_feature_ids
+
+
+def process_exclude_deleted_unlisted_enterprise_query() -> Future:
+  """Return a future for all features, minus deleted, unlisted, enterprise."""
+  query = FeatureEntry.query(
+      FeatureEntry.deleted == False,
+      FeatureEntry.unlisted == False,
+      FeatureEntry.feature_type <= core_enums.FEATURE_TYPE_DEPRECATION_ID)
+  future_feature_ids = query.fetch_async(keys_only=True)
+  return future_feature_ids
+
+
+def process_pending_approval_me_query() -> list[int] | Future:
   """Return a list of features needing approval by current user."""
   user = users.get_current_user()
   if not user:
@@ -62,7 +81,7 @@ def process_starred_me_query() -> list[int]:
   return feature_ids
 
 
-def process_recent_reviews_query() -> list[int]:
+def process_recent_reviews_query() -> list[int] | Future:
   """Return features that were reviewed recently."""
   query = Gate.query(
       Gate.state.IN(Gate.FINAL_STATES))
@@ -115,8 +134,10 @@ TERM_RE = re.compile(
         VALUE_PATTERN, TEXT_PATTERN),
     re.I)
 
-SIMPLE_QUERY_TERMS = ['pending-approval-by:me', 'starred-by:me',
-                      'is:recently-reviewed', 'owner:me', 'editor:me', 'can_edit:me', 'cc:me']
+SIMPLE_QUERY_TERMS = [
+    'deleted_unlisted=false', 'deleted_unlisted_enterprise=false',
+    'pending-approval-by:me', 'starred-by:me',
+    'is:recently-reviewed', 'owner:me', 'editor:me', 'can_edit:me', 'cc:me']
 
 
 def process_query_term(
@@ -140,6 +161,12 @@ def process_predefined_query_term(
     field_name: str, op_str: str, val_str: str) -> Future:
   """Parse and run a simple query term."""
   query_term = field_name + op_str + val_str
+
+  if query_term == 'deleted_unlisted_enterprise=false':
+    return process_exclude_deleted_unlisted_enterprise_query()
+  if query_term == 'deleted_unlisted=false':
+    return process_exclude_deleted_unlisted_query()
+
   if query_term == 'pending-approval-by:me':
     return process_pending_approval_me_query()
   if query_term == 'starred-by:me':
@@ -210,15 +237,22 @@ def process_query(
 
   # 1b. Add permission and search scope terms.
   permission_terms = []
-  if not show_deleted:
-    permission_terms.append(('', 'deleted', '=', 'false', None))
-  # TODO(jrobbins): include unlisted features that the user is allowed to view.
-  if not show_unlisted:
-    permission_terms.append(('', 'unlisted', '=', 'false', None))
-  if not show_enterprise:
+  if not show_deleted and not show_unlisted and not show_enterprise:
     permission_terms.append(
-        ('', 'feature_type', '<=',
-         str(core_enums.FEATURE_TYPE_DEPRECATION_ID), None))
+        ('', 'deleted_unlisted_enterprise', '=', 'false', None))
+  elif not show_deleted and not show_unlisted:
+    permission_terms.append(
+        ('', 'deleted_unlisted', '=', 'false', None))
+  else:
+    if not show_deleted:
+      permission_terms.append(('', 'deleted', '=', 'false', None))
+    # TODO(jrobbins): include unlisted features that the user is allowed to view.
+    if not show_unlisted:
+      permission_terms.append(('', 'unlisted', '=', 'false', None))
+    if not show_enterprise:
+      permission_terms.append(
+          ('', 'feature_type', '<=',
+           str(core_enums.FEATURE_TYPE_DEPRECATION_ID), None))
 
   # 1c. Parse the sort directive.
   sort_spec = sort_spec or '-created.when'

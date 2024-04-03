@@ -747,6 +747,35 @@ class OriginTrialExtensionRequestHandler(basehandlers.FlaskHandler):
       'html': email_body,
     }
 
+
+class OriginTrialExtendedHandler(basehandlers.FlaskHandler):
+  """Notify about an origin trial extension being completed."""
+
+  IS_INTERNAL_HANDLER = True
+  EMAIL_TEMPLATE_PATH = 'origintrials/ot-extended-email.html'
+
+  def process_post_data(self, **kwargs):
+    extension_stage = self.get_param('stage')
+    ot_stage = self.get_param('ot_stage')
+    logging.info('Starting to notify about successful origin trial extension.')
+    send_emails([self.build_email(self, extension_stage, ot_stage)])
+
+  def build_email(self, extension_stage, ot_stage):
+    body_data = {
+      'extension_stage': extension_stage,
+      'ot_stage': ot_stage
+    }
+    body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
+
+    return {
+      'to': OT_SUPPORT_EMAIL,
+      'subject': ('Origin trial extension processed: '
+                  f'{ot_stage["ot_display_name"]}'),
+      'reply_to': None,
+      'html': body,
+    }
+
+
 BLINK_DEV_ARCHIVE_URL_PREFIX = (
     'https://groups.google.com/a/chromium.org/d/msgid/blink-dev/')
 TEST_ARCHIVE_URL_PREFIX = (

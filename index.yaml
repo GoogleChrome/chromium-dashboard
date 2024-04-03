@@ -283,6 +283,11 @@ indexes:
     direction: desc
 - kind: FeatureEntry
   properties:
+  - name: deleted
+  - name: unlisted
+  - name: feature_type
+- kind: FeatureEntry
+  properties:
   - name: category
   - name: updated
     direction: desc
@@ -498,6 +503,11 @@ indexes:
   - name: gate_type
   - name: state
   - name: feature_id
+- kind: Gate
+  properties:
+  - name: gate_type
+  - name: state
+  - name: stage_id
 - kind: Gate
   properties:
   - name: state

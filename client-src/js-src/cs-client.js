@@ -163,8 +163,12 @@ class ChromeStatusClient {
   }
 
   // Permissions API
-  getPermissions() {
-    return this.doGet('/currentuser/permissions')
+  getPermissions(returnPairedUser=false) {
+    let url = '/currentuser/permissions';
+    if (returnPairedUser) {
+      url += '?returnPairedUser';
+    }
+    return this.doGet(url)
       .then((res) => res.user);
   }
 
@@ -221,6 +225,10 @@ class ChromeStatusClient {
 
   getGates(featureId) {
     return this.doGet(`/features/${featureId}/gates`);
+  }
+
+  getPendingGates() {
+    return this.doGet(`/gates/pending`);
   }
 
   updateGate(featureId, gateId, assignees) {
@@ -290,8 +298,11 @@ class ChromeStatusClient {
     return this.doGet(`/features?releaseNotesMilestone=${milestone}`);
   }
 
-  async searchFeatures(userQuery, sortSpec, start, num) {
+  async searchFeatures(userQuery, showEnterprise, sortSpec, start, num) {
     let url = `/features?q=${userQuery}`;
+    if (showEnterprise) {
+      url += '&showEnterprise';
+    }
     if (sortSpec) {
       url += '&sort=' + sortSpec;
     }

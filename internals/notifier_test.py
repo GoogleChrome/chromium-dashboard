@@ -1067,6 +1067,59 @@ class OriginTrialCreationRequestHandlerTest(testing_config.CustomTestCase):
     self.assertEqual(email_task, expected)
 
 
+class OriginTrialExtendedHandlerTest(testing_config.CustomTestCase):
+  def setUp(self):
+    self.feature = FeatureEntry(
+        id=1, name='A feature', summary='summary', category=1)
+    self.ot_stage = Stage(
+      id=2,
+      feature_id=1,
+      stage_type=150,
+      intent_thread_url='https://example.com/intent',
+      ot_chromium_trial_name='ChromiumTrialName',
+      ot_description='A brief description.',
+      ot_display_name='An existing origin trial',
+      ot_documentation_url='https://example.com/docs',
+      ot_feedback_submission_url='https://example.com/feedback',
+      ot_has_third_party_support=True,
+      ot_is_deprecation_trial=True,
+      ot_is_critical_trial=False,
+      ot_owner_email='owner@example.com',
+      ot_emails=['user1@example.com', 'user2@example.com'],
+      ot_webfeature_use_counter='kWebFeature',
+      ot_request_note='Additional information about the trial creation.',
+      milestones=MilestoneSet(
+        desktop_first=100,
+        desktop_last=103,
+      ),
+    )
+    self.extension_stage = Stage(
+      feature_id=1, ot_stage_id=2, stage_type=151,
+      milestones=MilestoneSet(desktop_last=106),
+      ot_owner_email='user2@example.com',
+      intent_thread_url='https://example.com/intent'
+    )
+    self.feature.put()
+    self.ot_stage.put()
+    self.extension_stage.put()
+
+  def tearDown(self) -> None:
+    kinds: list[ndb.Model] = [FeatureEntry, Stage]
+    for kind in kinds:
+      for entity in kind.query():
+        entity.key.delete()
+
+  def test_make_extended_request_email(self):
+    ot_stage_dict = converters.stage_to_json_dict(self.ot_stage)
+    extension_stage_dict = converters.stage_to_json_dict(self.extension_stage)
+    with test_app.app_context():
+      handler = notifier.OriginTrialExtendedHandler()
+      email_task = handler.build_email(extension_stage_dict, ot_stage_dict)
+      # TESTDATA.make_golden(email_task['html'], 'test_make_extended_request_email.html')
+      self.assertEqual(email_task['html'],
+        TESTDATA['test_make_extended_request_email.html'])
+
+
 class OriginTrialExtensionRequestHandlerTest(testing_config.CustomTestCase):
   def setUp(self):
     self.feature = FeatureEntry(

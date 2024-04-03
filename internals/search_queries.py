@@ -30,7 +30,7 @@ from internals.review_models import Gate
 
 def single_field_query_async(
     field_name: str, operator: str, val: Union[str, int, datetime.datetime],
-    limit: int|None = None) -> Union[list[int], Future]:
+    limit: int|None = None) -> list[int] | Future:
   """Create a query for one FeatureEntry field and run it, returning a promise."""
   # Note: We don't exclude deleted features, that's done by process_query.
   field_name = field_name.lower()
@@ -118,7 +118,7 @@ def negate_operator(operator: str) -> str:
   return operator
 
 
-def handle_me_query_async(field_name: str) -> Future:
+def handle_me_query_async(field_name: str) -> list[int] | Future:
   """Return a future for feature IDs that reference the current user."""
   user = users.get_current_user()
   if not user:
@@ -126,7 +126,7 @@ def handle_me_query_async(field_name: str) -> Future:
   return single_field_query_async(field_name, '=', user.email())
 
 
-def handle_can_edit_me_query_async() -> Future:
+def handle_can_edit_me_query_async() -> list[int] | Future:
   """Return a future for features that the current user can edit."""
   user = users.get_current_user()
   if not user:
@@ -140,7 +140,7 @@ def handle_can_edit_me_query_async() -> Future:
   return keys_promise
 
 
-def total_order_query_async(sort_spec: str) -> Union[list[int], Future]:
+def total_order_query_async(sort_spec: str) -> list[int] | Future:
   """Create a query promise for all FeatureEntry IDs sorted by sort_spec."""
   # TODO(jrobbins): Support multi-column sort.
   descending = False
