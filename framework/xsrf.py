@@ -14,9 +14,8 @@
 # limitations under the License.
 
 
-
-
 import base64
+import functools
 import hmac
 import logging
 import random
@@ -52,6 +51,11 @@ CLOCK_SKEW_SEC = 5
 
 DELIMITER = ':'.encode()
 
+# Validating the token content takes a surprisingly long 50ms.
+# And, that computation is not dependent on any other inputs,
+# so we can use a LRU cache on the function.
+TOKEN_TIME_CACHE_MAX_SIZE = 1000
+
 
 def generate_token(user_email, token_time=None):
   """Return a security token specifically for the given user.
@@ -79,16 +83,9 @@ def generate_token(user_email, token_time=None):
   return token
 
 
-def validate_token(
-    token, user_email, timeout=TOKEN_TIMEOUT_SEC):
-  """Return True if the given token is valid for the given scope.
-  Args:
-    token: String token that was presented by the user.
-    user_email: user email addr.
-    timeout: int max token age in seconds.
-  Raises:
-    TokenIncorrect: if the token is missing or invalid.
-  """
+@functools.lru_cache(maxsize=TOKEN_TIME_CACHE_MAX_SIZE)
+def _validate_and_get_token_time(token, user_email):
+  """If token content is valid, return token_time.  Otherwise, raise."""
   if not token:
     raise TokenIncorrect('missing token')
   try:
@@ -96,7 +93,6 @@ def validate_token(
     token_time = int(decoded.split(DELIMITER)[-1])
   except (TypeError, ValueError):
     raise TokenIncorrect('could not decode token')
-  now = int(time.time())
 
   # The given token should match the generated one with the same time.
   expected_token = generate_token(user_email, token_time=token_time)
@@ -112,6 +108,21 @@ def validate_token(
         'presented token does not match expected token: %r != %r' % (
             token, expected_token))
 
+  return token_time
+
+
+def validate_token(
+    token, user_email, timeout=TOKEN_TIMEOUT_SEC):
+  """Return True if the given token is valid for the given scope.
+  Args:
+    token: String token that was presented by the user.
+    user_email: user email addr.
+    timeout: int max token age in seconds.
+  Raises:
+    TokenIncorrect: if the token is missing or invalid.
+  """
+  token_time = _validate_and_get_token_time(token, user_email)
+  now = int(time.time())
   # We reject tokens from the future.
   if token_time > now + CLOCK_SKEW_SEC:
     raise TokenIncorrect('token is from future')

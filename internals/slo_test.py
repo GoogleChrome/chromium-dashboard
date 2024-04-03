@@ -73,11 +73,11 @@ class SLOFunctionTests(testing_config.CustomTestCase):
     self.assertEqual(0, actual)
 
   def test_weekdays_between__huge(self):
-    """We can stop counting at 9999 days."""
+    """For huge differences, we approximate."""
     start = datetime.datetime(1970, 6, 7, 12, 30, 0)
     end = datetime.datetime(2111, 6, 9, 14, 15, 10)
     actual = slo.weekdays_between(start, end)
-    self.assertEqual(9999, actual)
+    self.assertEqual(36786, actual)
 
   def test_now_utc(self):
     """This function returns a datetime."""

@@ -22,7 +22,7 @@ from internals.core_models import FeatureEntry
 from internals.review_models import Gate, Vote
 
 PACIFIC_TZ = pytz.timezone('US/Pacific')
-MAX_DAYS = 9999
+MAX_DAYS = 30
 
 
 def is_weekday(d: datetime.datetime) -> bool:
@@ -32,6 +32,11 @@ def is_weekday(d: datetime.datetime) -> bool:
 
 def weekdays_between(start: datetime.datetime, end: datetime.datetime) -> int:
   """Return the number of Pacific timezone weekdays between two UTC dates."""
+  # If the difference is big, just approximate.
+  calendar_days = (end - start).days
+  if calendar_days > MAX_DAYS:
+    return calendar_days * 5 // 7
+
   d_ptz = start.astimezone(PACIFIC_TZ)
   # The day of the request does not count.
   d_ptz = d_ptz.replace(hour=23, minute=59, second=59)

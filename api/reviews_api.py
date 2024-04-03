@@ -18,6 +18,7 @@ import logging
 import re
 from typing import Any, Optional, Tuple
 from google.cloud import ndb
+from google.cloud.ndb.tasklets import Future  # for type checking only
 
 from api import converters
 from framework import basehandlers
@@ -161,6 +162,50 @@ class GatesAPI(basehandlers.APIHandler):
       is_approver = permissions.can_review_gate(reviewer, fe, gate, approvers)
       if not is_approver:
         self.abort(400, 'Assignee is not a reviewer')
+
+
+class PendingGatesAPI(basehandlers.APIHandler):
+
+  def get_stage_ids_of_gates_pending_my_approval(self) -> list[int] | Future:
+    """Return a list of stage_id needing approval by current user."""
+    user = self.get_current_user()
+    if not user:
+      return []
+
+    approvable_gate_types = approval_defs.fields_approvable_by(user)
+    if not approvable_gate_types:
+      logging.info('User has no approvable_gate_types')
+      return []
+    query = Gate.query(
+        Gate.state.IN(Gate.PENDING_STATES),
+        Gate.gate_type.IN(approvable_gate_types))
+    future_stage_ids = query.fetch_async(projection=['stage_id'])
+    return future_stage_ids
+
+  def do_get(self, **kwargs):
+    """Return a list of gates on features that have some active gates."""
+    # 1. Get the feature IDs of any active gates.  Also, prefetch approvers.
+    future_projections = self.get_stage_ids_of_gates_pending_my_approval()
+    prefetched_approvers = {
+        gate_type: approval_defs.get_approvers(gate_type)
+        for gate_type in approval_defs.APPROVAL_FIELDS_BY_ID}
+    if type(future_projections) == list:
+      stage_ids = set(future_projections)
+    else:
+      projections = future_projections.get_result()
+      stage_ids = set(proj.stage_id for proj in projections)
+    if not stage_ids:
+      return {'gates': []}
+
+    # 2. Fetch all the gates on those stages.
+    gates: list[Gate] = Gate.query(Gate.stage_id.IN(stage_ids)).fetch()
+
+    # 3. Convert to dicts and add possible assignees.
+    dicts = [converters.gate_value_to_json_dict(g) for g in gates]
+    for g in dicts:
+      g['possible_assignee_emails'] = prefetched_approvers.get(g['gate_type'], [])
+
+    return {'gates': dicts}
 
 
 class XfnGatesAPI(basehandlers.APIHandler):

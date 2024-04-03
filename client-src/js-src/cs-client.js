@@ -227,6 +227,10 @@ class ChromeStatusClient {
     return this.doGet(`/features/${featureId}/gates`);
   }
 
+  getPendingGates() {
+    return this.doGet(`/gates/pending`);
+  }
+
   updateGate(featureId, gateId, assignees) {
     return this.doPost(
         `/features/${featureId}/gates/${gateId}`,
