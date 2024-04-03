@@ -9,6 +9,7 @@ class ChromedashFeatureTable extends LitElement {
   static get properties() {
     return {
       query: {type: String},
+      showEnterprise: {type: Boolean},
       sortSpec: {type: String},
       showQuery: {type: Boolean},
       features: {type: Array},
@@ -30,6 +31,7 @@ class ChromedashFeatureTable extends LitElement {
   constructor() {
     super();
     this.query = '';
+    this.showEnterprise = false;
     this.sortSpec = '';
     this.showQuery = false;
     this.loading = true;
@@ -53,7 +55,8 @@ class ChromedashFeatureTable extends LitElement {
   fetchFeatures() {
     this.loading = true;
     window.csClient.searchFeatures(
-      this.query, this.sortSpec, this.start, this.num).then((resp) => {
+      this.query, this.showEnterprise, this.sortSpec,
+      this.start, this.num).then((resp) => {
       this.features = resp.features;
       this.totalCount = resp.total_count;
       this.loading = false;
