@@ -695,6 +695,21 @@ const VERIFY_ACCURACY_PREPARE_TO_SHIP_FIELDS = {
   ],
 };
 
+const VERIFY_ACCURACY_ENTERPRISE_PREPARE_TO_SHIP_FIELDS = {
+  name: 'Rollout step',
+  sections: [
+    {
+      name: 'Rollout milestones',
+      fields: [
+        'rollout_milestone',
+        'rollout_platforms',
+        'rollout_details',
+        'enterprise_policies',
+      ],
+    },
+  ],
+};
+
 // A single form to display the checkbox for verifying accuracy at the end.
 export const VERIFY_ACCURACY_CONFIRMATION_FIELD = {
   name: 'Verify Accuracy',
@@ -776,6 +791,7 @@ export const VERIFY_ACCURACY_FORMS_BY_STAGE_TYPE = {
   [enums.STAGE_DEP_DEPRECATION_TRIAL]: VERIFY_ACCURACY_ORIGIN_TRIAL_FIELDS,
   [enums.STAGE_DEP_SHIPPING]: VERIFY_ACCURACY_PREPARE_TO_SHIP_FIELDS,
 
+  [enums.STAGE_ENT_ROLLOUT]: VERIFY_ACCURACY_ENTERPRISE_PREPARE_TO_SHIP_FIELDS,
   [enums.STAGE_ENT_SHIPPED]: VERIFY_ACCURACY_PREPARE_TO_SHIP_FIELDS,
 };
 
