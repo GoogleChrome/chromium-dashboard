@@ -105,6 +105,7 @@ export class ChromedashFeaturePage extends LitElement {
       gates: {type: Array},
       comments: {type: Array},
       process: {type: Object},
+      progress: {type: Object},
       dismissedCues: {type: Array},
       contextLink: {type: String},
       appTitle: {type: String},
@@ -123,6 +124,7 @@ export class ChromedashFeaturePage extends LitElement {
     this.gates = [];
     this.comments = {};
     this.process = {};
+    this.progress = {};
     this.dismissedCues = [];
     this.contextLink = '';
     this.appTitle = '';
@@ -149,6 +151,7 @@ export class ChromedashFeaturePage extends LitElement {
       window.csClient.getFeatureProcess(this.featureId),
       window.csClient.getDismissedCues(),
       window.csClient.getStars(),
+      window.csClient.getFeatureProgress(this.featureId),
     ]).then(([
       feature,
       gatesRes,
@@ -156,12 +159,14 @@ export class ChromedashFeaturePage extends LitElement {
       process,
       dismissedCues,
       starredFeatures,
+      progress,
     ]) => {
       this.feature = feature;
       this.gates = gatesRes.gates;
       this.comments = commentRes.comments;
       this.process = process;
       this.dismissedCues = dismissedCues;
+      this.progress = progress;
       if (starredFeatures.includes(this.featureId)) {
         this.starred = true;
       }
@@ -600,6 +605,7 @@ export class ChromedashFeaturePage extends LitElement {
         .gates=${this.gates}
         .comments=${this.comments}
         .process=${this.process}
+        .progress=${this.progress}
         .dismissedCues=${this.dismissedCues}
         .featureLinks=${this.featureLinks}
         selectedGateId=${this.selectedGateId}
