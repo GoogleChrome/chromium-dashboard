@@ -35,7 +35,7 @@ MAX_TERMS = 6
 DEFAULT_RESULTS_PER_PAGE = 100
 
 
-def process_pending_approval_me_query() -> list[int]:
+def process_pending_approval_me_query() -> list[int] | Future:
   """Return a list of features needing approval by current user."""
   user = users.get_current_user()
   if not user:
@@ -62,7 +62,7 @@ def process_starred_me_query() -> list[int]:
   return feature_ids
 
 
-def process_recent_reviews_query() -> list[int]:
+def process_recent_reviews_query() -> list[int] | Future:
   """Return features that were reviewed recently."""
   query = Gate.query(
       Gate.state.IN(Gate.FINAL_STATES))

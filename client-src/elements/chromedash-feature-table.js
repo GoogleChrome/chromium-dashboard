@@ -57,12 +57,12 @@ class ChromedashFeatureTable extends LitElement {
       this.features = resp.features;
       this.totalCount = resp.total_count;
       this.loading = false;
-      if (this.columns == 'approvals') {
-        this.loadGateData();
-      }
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
+    if (this.columns == 'approvals') {
+      this.loadGateData();
+    }
   }
 
   refetch() {
@@ -70,13 +70,18 @@ class ChromedashFeatureTable extends LitElement {
   }
 
   loadGateData() {
-    for (const feature of this.features) {
-      window.csClient.getGates(feature.id).then(res => {
-        const newGates = {...this.gates};
-        newGates[feature.id] = res.gates;
-        this.gates = newGates;
-      });
-    }
+    window.csClient.getPendingGates().then(res => {
+      const gatesByFID = {};
+      for (const g of res.gates) {
+        if (!gatesByFID.hasOwnProperty(g.feature_id)) {
+          gatesByFID[g.feature_id] = [];
+        }
+        gatesByFID[g.feature_id].push(g);
+      }
+      this.gates = gatesByFID;
+    }).catch(() => {
+      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+    });
   }
 
   // For rerendering of the "Features I starred" section when a feature is starred

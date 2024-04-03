@@ -120,6 +120,8 @@ api_routes: list[Route] = [
         reviews_api.GatesAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/gates/<int:gate_id>',
         reviews_api.GatesAPI),
+    Route(f'{API_BASE}/gates/pending',
+        reviews_api.PendingGatesAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/approvals/comments',
         comments_api.CommentsAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/approvals/<int:gate_id>/comments',
