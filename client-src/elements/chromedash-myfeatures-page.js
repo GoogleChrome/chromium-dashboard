@@ -80,6 +80,7 @@ export class ChromedashMyFeaturesPage extends LitElement {
 
         <chromedash-feature-table
           query="${query}"
+          showEnterprise
           sortSpec="${sortSpec}"
           ?signedIn=${Boolean(this.user)}
           ?canEdit=${this.user && this.user.can_edit_all}
@@ -96,14 +97,14 @@ export class ChromedashMyFeaturesPage extends LitElement {
     const adminNotice = this.user?.is_admin ?
       html`<p>You see all pending approvals because you're a site admin.</p>` :
       nothing;
-    // Use feature_type>=0 to include all types, even enterprise.
+
     const pendingBox = this.renderBox(
       'Features pending my approval',
-      'pending-approval-by:me feature_type>=0',
+      'pending-approval-by:me',
       'approvals', 'gate.requested_on');
     const recentBox = this.renderBox(
       'Recently reviewed features',
-      'is:recently-reviewed feature_type>=0',
+      'is:recently-reviewed',
       'normal', '-gate.reviewed_on', false);
     return [adminNotice, pendingBox, recentBox];
   }
@@ -111,14 +112,14 @@ export class ChromedashMyFeaturesPage extends LitElement {
   renderIStarred() {
     return this.renderBox(
       'Features I starred',
-      'starred-by:me feature_type>=0',
+      'starred-by:me',
       'normal');
   }
 
   renderICanEdit() {
     return this.renderBox(
       'Features I can edit',
-      'can_edit:me feature_type>=0',
+      'can_edit:me',
       'normal');
   }
 
