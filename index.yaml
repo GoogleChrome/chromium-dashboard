@@ -283,6 +283,11 @@ indexes:
     direction: desc
 - kind: FeatureEntry
   properties:
+  - name: deleted
+  - name: unlisted
+  - name: feature_type
+- kind: FeatureEntry
+  properties:
   - name: category
   - name: updated
     direction: desc

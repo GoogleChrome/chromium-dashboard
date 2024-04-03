@@ -294,8 +294,11 @@ class ChromeStatusClient {
     return this.doGet(`/features?releaseNotesMilestone=${milestone}`);
   }
 
-  async searchFeatures(userQuery, sortSpec, start, num) {
+  async searchFeatures(userQuery, showEnterprise, sortSpec, start, num) {
     let url = `/features?q=${userQuery}`;
+    if (showEnterprise) {
+      url += '&showEnterprise';
+    }
     if (sortSpec) {
       url += '&sort=' + sortSpec;
     }
