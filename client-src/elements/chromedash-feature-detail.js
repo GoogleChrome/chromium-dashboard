@@ -502,7 +502,7 @@ class ChromedashFeatureDetail extends LitElement {
   hasStageActions(stage) {
     // See if there is an API owners gate where actions are displayed.
     const ownersGate = this.gates.filter(
-      (g) => g.team_name == 'API Owners' && g.stage_id == stage.id);
+      (g) => g.team_name === 'API Owners' && g.stage_id === stage.id);
     // If there are actions to be displayed for this stage, and
     // these actions are not displayed at the gate-level, return true.
     if (stage?.actions?.length > 0 && ownersGate.length == 0) {
@@ -583,7 +583,7 @@ class ChromedashFeatureDetail extends LitElement {
         ${stageMenu}
         ${trialButton}
         ${editButton}
-        ${this.hasStageActions(processStage) ? this.renderStageActions(processStage, feStage) : nothing}
+        ${this.hasStageActions(feStage) ? this.renderStageActions(processStage, feStage) : nothing}
         ${addExtensionButton}
         ${processStage.description}
       </p>
