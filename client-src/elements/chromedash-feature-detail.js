@@ -534,16 +534,14 @@ class ChromedashFeatureDetail extends LitElement {
       }
     };
     return html`
-      <li>
-        <a @click=${checkCompletion}>${label}</a>
-      </li>`;
+      <sl-button size="small" @click=${checkCompletion}>${label}</sl-button>
+    `;
   }
 
   renderStageActions(stage, feStage) {
     return html`
-      <ol>
-        ${stage.actions.map(act => this.renderStageAction(act, stage, feStage))}
-      </ol>`;
+      ${stage.actions.map((act) => this.renderStageAction(act, stage, feStage))}
+    `;
   }
 
   renderProcessStage(feStage) {
@@ -582,8 +580,8 @@ class ChromedashFeatureDetail extends LitElement {
       <p class="description">
         ${stageMenu}
         ${trialButton}
-        ${editButton}
         ${this.hasStageActions(processStage, feStage) ? this.renderStageActions(processStage, feStage) : nothing}
+        ${editButton}
         ${addExtensionButton}
         ${processStage.description}
       </p>
