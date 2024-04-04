@@ -220,7 +220,15 @@ def _sort_by_total_order(
   value itself as the sorting value, which will effectively put those
   features at the end of the list in order of creation.
   """
-  total_order_dict = {f_id: idx for idx, f_id in enumerate(total_order_ids)}
+  total_order_dict = {}
+  # For each feature entry ID in the total-order list, record the index of
+  # the first time that it occurs.  A feature could be in the list multiple
+  # times if it was produced via a join.  E.g., sorting by gate.requested_on
+  # would have total_order_ids items for every gate, not just one per feature.
+  for idx, f_id in enumerate(total_order_ids):
+    if f_id not in total_order_dict:
+      total_order_dict[f_id] = idx
+
   sorted_id_list = sorted(
       result_id_list,
       key=lambda f_id: total_order_dict.get(f_id, f_id))
