@@ -86,7 +86,8 @@ describe('chromedash-all-features-page', () => {
     assert.exists(featureTableEl);
 
     // title exists
-    const titleEl = component.shadowRoot.querySelector('div#feature-count');
-    assert.include(titleEl.innerHTML, '<h2>Features</h2>');
+    const titleEl = component.shadowRoot.querySelector('div#content-title');
+    assert.include(titleEl.innerHTML, '<h2>');
+    assert.include(titleEl.innerHTML, 'Features</h2>');
   });
 });

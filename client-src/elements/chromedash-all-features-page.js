@@ -1,4 +1,4 @@
-import {LitElement, css, html} from 'lit';
+import {LitElement, css, html, nothing} from 'lit';
 import {showToastMessage} from './utils.js';
 import './chromedash-feature-table';
 import {SHARED_STYLES} from '../css/shared-css.js';
@@ -15,21 +15,33 @@ export class ChromedashAllFeaturesPage extends LitElement {
   static get properties() {
     return {
       rawQuery: {type: Object},
+      title: {type: String},
+      showQuery: {type: Boolean},
       query: {type: String},
+      columns: {type: String},
+      showEnterprise: {type: Boolean},
+      sortSpec: {type: String},
       user: {type: Object},
       start: {type: Number},
       num: {type: Number},
       starredFeatures: {type: Object},
+      selectedGateId: {type: Number},
     };
   }
 
   constructor() {
     super();
+    this.title = 'Features';
+    this.showQuery = true;
     this.query = '';
+    this.columns = 'normal';
+    this.sortSpec = '';
+    this.showEnterprise = false;
     this.user = {};
     this.start = 0;
     this.num = 100;
     this.starredFeatures = new Set();
+    this.selectedGateId = 0;
   }
 
   connectedCallback() {
@@ -43,15 +55,26 @@ export class ChromedashAllFeaturesPage extends LitElement {
       return;
     }
 
+    if (this.rawQuery.hasOwnProperty('title')) {
+      this.title = this.rawQuery['title'];
+      this.showQuery = false;
+    }
     if (this.rawQuery.hasOwnProperty('q')) {
       this.query = this.rawQuery['q'];
     }
-
+    if (this.rawQuery.hasOwnProperty('columns')) {
+      this.columns = this.rawQuery['columns'];
+    }
+    if (this.rawQuery.hasOwnProperty('showEnterprise')) {
+      this.showEnterprise = true;
+    }
+    if (this.rawQuery.hasOwnProperty('sort')) {
+      this.sortSpec = this.rawQuery['sort'];
+    }
     if (this.rawQuery.hasOwnProperty('start') &&
       !Number.isNaN(parseInt(this.rawQuery['start']))) {
       this.start = parseInt(this.rawQuery['start']);
     }
-
     if (this.rawQuery.hasOwnProperty('num') &&
       !Number.isNaN(parseInt(this.rawQuery['num']))) {
       this.num = parseInt(this.rawQuery['num']);
@@ -64,6 +87,13 @@ export class ChromedashAllFeaturesPage extends LitElement {
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
+  }
+
+  refetch() {
+    const tables = this.shadowRoot.querySelectorAll('chromedash-feature-table');
+    for (const table of tables) {
+      table.refetch();
+    }
   }
 
   // Handles the Star-Toggle event fired by any one of the child components
@@ -83,31 +113,36 @@ export class ChromedashAllFeaturesPage extends LitElement {
       });
   }
 
-  renderBox(query) {
+  renderFeatureList() {
     return html`
       <chromedash-feature-table
-        .query=${query}
+        .query=${this.query}
+        ?showEnterprise=${this.showEnterprise}
+        .sortSpec=${this.sortSpec}
         .start=${this.start}
         .num=${this.num}
-        showQuery
+        ?showQuery=${this.showQuery}
         ?signedIn=${Boolean(this.user)}
         ?canEdit=${this.user && this.user.can_edit_all}
         .starredFeatures=${this.starredFeatures}
         @star-toggle-event=${this.handleStarToggle}
-        alwaysOfferPagination columns="normal">
+        selectedGateId=${this.selectedGateId}
+        alwaysOfferPagination
+        columns=${this.columns}>
       </chromedash-feature-table>
     `;
   }
 
-  renderFeatureList() {
-    return this.renderBox(this.query);
-  }
-
   render() {
+    const adminNotice = (this.user?.is_admin && this.columns === 'approvals') ?
+      html`<p>You see all pending approvals because you're a site admin.</p>` :
+      nothing;
+
     return html`
-      <div id="feature-count">
-        <h2>Features</h2>
+      <div id="content-title">
+        <h2>${this.title}</h2>
       </div>
+      ${adminNotice}
       ${this.renderFeatureList()}
     `;
   }
