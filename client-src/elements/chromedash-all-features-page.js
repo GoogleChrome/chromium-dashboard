@@ -1,4 +1,4 @@
-import {LitElement, css, html} from 'lit';
+import {LitElement, css, html, nothing} from 'lit';
 import {showToastMessage} from './utils.js';
 import './chromedash-feature-table';
 import {SHARED_STYLES} from '../css/shared-css.js';
@@ -25,6 +25,7 @@ export class ChromedashAllFeaturesPage extends LitElement {
       start: {type: Number},
       num: {type: Number},
       starredFeatures: {type: Object},
+      selectedGateId: {type: Number},
     };
   }
 
@@ -40,6 +41,7 @@ export class ChromedashAllFeaturesPage extends LitElement {
     this.start = 0;
     this.num = 100;
     this.starredFeatures = new Set();
+    this.selectedGateId = 0;
   }
 
   connectedCallback() {
@@ -124,6 +126,7 @@ export class ChromedashAllFeaturesPage extends LitElement {
         ?canEdit=${this.user && this.user.can_edit_all}
         .starredFeatures=${this.starredFeatures}
         @star-toggle-event=${this.handleStarToggle}
+        selectedGateId=${this.selectedGateId}
         alwaysOfferPagination
         columns=${this.columns}>
       </chromedash-feature-table>
@@ -131,10 +134,15 @@ export class ChromedashAllFeaturesPage extends LitElement {
   }
 
   render() {
+    const adminNotice = (this.user?.is_admin && this.columns === 'approvals') ?
+      html`<p>You see all pending approvals because you're a site admin.</p>` :
+      nothing;
+
     return html`
       <div id="content-title">
         <h2>${this.title}</h2>
       </div>
+      ${adminNotice}
       ${this.renderFeatureList()}
     `;
   }
