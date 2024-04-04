@@ -43,6 +43,16 @@ describe('chromedash-feature-page', () => {
   });
   const dismissedCuesPromise = Promise.resolve(['progress-checkmarks']);
   const starsPromise = Promise.resolve([123456]);
+  const progressPromise = Promise.resolve({
+    'Code in Chromium': 'True',
+    'Draft API spec': 'fake spec link',
+    'Estimated target milestone': 'True',
+    'Final target milestone': 'True',
+    'Intent to Experiment email': 'fake intent to experiment url',
+    'Ready for Developer Testing email': 'fake ready for dev test url',
+    'Spec link': 'fake spec link',
+    'Web developer signals': 'True',
+  });
   const channelsPromise = Promise.resolve({
     'canary_asan': {
       'version': 81,
@@ -120,11 +130,13 @@ describe('chromedash-feature-page', () => {
     sinon.stub(window.csClient, 'getFeatureProcess');
     sinon.stub(window.csClient, 'getDismissedCues');
     sinon.stub(window.csClient, 'getStars');
+    sinon.stub(window.csClient, 'getFeatureProgress');
     window.csClient.getGates.returns(gatesPromise);
     window.csClient.getComments.returns(commentsPromise);
     window.csClient.getFeatureProcess.returns(processPromise);
     window.csClient.getDismissedCues.returns(dismissedCuesPromise);
     window.csClient.getStars.returns(starsPromise);
+    window.csClient.getFeatureProgress.returns(progressPromise);
 
     // For the child component - chromedash-gantt
     sinon.stub(window.csClient, 'getChannels');

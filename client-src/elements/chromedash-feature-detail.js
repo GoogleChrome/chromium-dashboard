@@ -5,6 +5,11 @@ import {
   openPrereqsDialog,
   PrereqsDialogTypes,
 } from './chromedash-ot-prereqs-dialog';
+import {
+  openPreflightDialog,
+  somePendingPrereqs,
+  somePendingGates,
+} from './chromedash-preflight-dialog';
 import {makeDisplaySpecs} from './form-field-specs';
 import {
   FLAT_ENTERPRISE_METADATA_FIELDS,
@@ -66,6 +71,7 @@ class ChromedashFeatureDetail extends LitElement {
       feature: {type: Object},
       gates: {type: Array},
       process: {type: Object},
+      progress: {type: Object},
       dismissedCues: {type: Array},
       anyCollapsed: {type: Boolean},
       selectedGateId: {type: Number},
@@ -81,6 +87,7 @@ class ChromedashFeatureDetail extends LitElement {
     this.feature = {};
     this.gates = [];
     this.process = {};
+    this.progress = {};
     this.dismissedCues = [];
     this.anyCollapsed = true;
     this.previousStageTypeRendered = 0;
@@ -492,6 +499,51 @@ class ChromedashFeatureDetail extends LitElement {
     }
   }
 
+  hasStageActions(stage, feStage) {
+    // See if there is an API owners gate where actions are displayed.
+    const hasOwnersGate = this.gates.some(
+      (g) => g.team_name === 'API Owners' && g.stage_id === feStage.id);
+    // If there are actions to be displayed for this stage, and
+    // these actions are not displayed at the gate-level, return true.
+    if (stage?.actions?.length > 0 && !hasOwnersGate) {
+      return true;
+    }
+    return false;
+  }
+
+  renderStageAction(action, stage, feStage) {
+    const label = action.name;
+    const url = action.url
+      .replace('{feature_id}', this.feature.id)
+      .replace('{intent_stage}', stage.outgoing_stage)
+      // No gate_id for this URL.
+      .replace('/{gate_id}', '');
+
+    const checkCompletion = () => {
+      if (somePendingPrereqs(action, this.progress) ||
+          somePendingGates(this.featureGates, feStage)) {
+        // Open the dialog.
+        openPreflightDialog(
+          this.feature, this.progress, this.process, action, stage, feStage,
+          this.gates, url);
+        return;
+      } else {
+        // Act like user clicked left button to go to the draft email window.
+        const draftWindow = window.open(url, '_blank');
+        draftWindow.focus();
+      }
+    };
+    return html`
+      <sl-button size="small" @click=${checkCompletion}>${label}</sl-button>
+    `;
+  }
+
+  renderStageActions(stage, feStage) {
+    return html`
+      ${stage.actions.map((act) => this.renderStageAction(act, stage, feStage))}
+    `;
+  }
+
   renderProcessStage(feStage) {
     const stageForm = this.getStageForm(feStage.stage_type);
     const fieldNames = stageForm === null ? [] : flattenSections(stageForm);
@@ -528,6 +580,7 @@ class ChromedashFeatureDetail extends LitElement {
       <p class="description">
         ${stageMenu}
         ${trialButton}
+        ${this.hasStageActions(processStage, feStage) ? this.renderStageActions(processStage, feStage) : nothing}
         ${editButton}
         ${addExtensionButton}
         ${processStage.description}
