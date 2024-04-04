@@ -49,11 +49,11 @@ class ChromedashFeatureTable extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this.fetchFeatures();
+    this.fetchFeatures(true);
   }
 
-  fetchFeatures() {
-    this.loading = true;
+  fetchFeatures(isInitialLoad=false) {
+    this.loading = isInitialLoad;
     window.csClient.searchFeatures(
       this.query, this.showEnterprise, this.sortSpec,
       this.start, this.num).then((resp) => {
