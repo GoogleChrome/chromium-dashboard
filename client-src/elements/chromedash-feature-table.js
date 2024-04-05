@@ -129,9 +129,6 @@ class ChromedashFeatureTable extends LitElement {
       .pagination {
         padding: var(--content-padding-half) 0;
         min-height: 50px;
-        display: flex;
-        align-items: center;
-        justify-content: end;
       }
       .pagination span {
         color: var(--unimportant-text-color);
