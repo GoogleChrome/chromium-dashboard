@@ -128,6 +128,11 @@ export class ChromedashMyFeaturesPage extends LitElement {
       <div id="subheader">
         <h2>My features</h2>
       </div>
+      <div id="deprecated" class="warning">
+        This page will soon be removed from our site.<br>
+        Please use one of the "My features" options in the main menu.
+      </div>
+
       ${this.userCanApprove() ? this.renderPendingAndRecentApprovals() : nothing}
       ${this.renderICanEdit()}
       ${this.renderIStarred()}

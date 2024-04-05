@@ -176,7 +176,11 @@ api_routes: list[Route] = [
 spa_page_routes = [
   Route('/'),
   Route('/roadmap'),
+  # TODO(jrobbins): remove '/myfeatures' after a while.
   Route('/myfeatures', defaults={'require_signin': True}),
+  Route('/myfeatures/review', defaults={'require_signin': True}),
+  Route('/myfeatures/starred', defaults={'require_signin': True}),
+  Route('/myfeatures/editable', defaults={'require_signin': True}),
   Route('/newfeatures'),
   Route('/feature/<int:feature_id>'),
   Route('/feature/<int:feature_id>/activity'),
