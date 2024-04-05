@@ -1,10 +1,12 @@
 import {css} from 'lit';
 import {VARS} from './_vars-css.js';
 import {RESET} from './_reset-css.js';
+import {FLEX_BOX} from './_flexbox-css.js';
 
 export const SHARED_STYLES = [
   VARS,
   RESET,
+  FLEX_BOX,
   css`
 
   * {
