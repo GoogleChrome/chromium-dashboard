@@ -15,6 +15,7 @@ class ChromedashFeatureTable extends LitElement {
       features: {type: Array},
       totalCount: {type: Number},
       loading: {type: Boolean},
+      reloading: {type: Boolean},
       start: {type: Number},
       num: {type: Number},
       alwaysOfferPagination: {type: Boolean},
@@ -35,6 +36,7 @@ class ChromedashFeatureTable extends LitElement {
     this.sortSpec = '';
     this.showQuery = false;
     this.loading = true;
+    this.reloading = false;
     this.starredFeatures = new Set();
     this.features = [];
     this.totalCount = 0;
@@ -49,17 +51,19 @@ class ChromedashFeatureTable extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this.fetchFeatures();
+    this.fetchFeatures(true);
   }
 
-  fetchFeatures() {
-    this.loading = true;
+  fetchFeatures(isInitialLoad=false) {
+    this.loading = isInitialLoad;
+    this.reloading = !isInitialLoad;
     window.csClient.searchFeatures(
       this.query, this.showEnterprise, this.sortSpec,
       this.start, this.num).then((resp) => {
       this.features = resp.features;
       this.totalCount = resp.total_count;
       this.loading = false;
+      this.reloading = false;
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
@@ -125,9 +129,6 @@ class ChromedashFeatureTable extends LitElement {
       .pagination {
         padding: var(--content-padding-half) 0;
         min-height: 50px;
-        display: flex;
-        align-items: center;
-        justify-content: end;
       }
       .pagination span {
         color: var(--unimportant-text-color);
@@ -219,7 +220,9 @@ class ChromedashFeatureTable extends LitElement {
     }
 
     return html`
-      <div class="pagination">
+      <div class="pagination hbox">
+        <span>${this.reloading ? 'Reloading...' : nothing}</span>
+        <div class="spacer"></div>
         <span>${firstShown} - ${lastShown} of ${this.totalCount}</span>
         <sl-icon-button
           library="material" name="navigate_before"
