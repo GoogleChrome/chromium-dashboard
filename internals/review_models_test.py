@@ -20,7 +20,7 @@ from internals.core_models import FeatureEntry
 from internals.review_models import Activity, Gate, OwnersFile, Vote
 
 
-class CommentTest(testing_config.CustomTestCase):
+class ActivityTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = FeatureEntry(
