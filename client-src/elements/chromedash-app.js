@@ -102,6 +102,7 @@ class ChromedashApp extends LitElement {
       appTitle: {type: String},
       googleSignInClientId: {type: String},
       devMode: {type: String},
+      priorPage: {type: String},
       currentPage: {type: String},
       bannerMessage: {type: String},
       bannerTime: {type: Number},
@@ -121,6 +122,7 @@ class ChromedashApp extends LitElement {
     this.appTitle = '';
     this.googleSignInClientId = '',
     this.devMode = '';
+    this.priorPage = '';
     this.currentPage = '';
     this.bannerMessage = '';
     this.bannerTime = null;
@@ -285,6 +287,7 @@ class ChromedashApp extends LitElement {
     if (shouldSetContext) {
       this.contextLink = ctx.path;
     }
+    this.priorPage = this.currentPage;
     this.currentPage = ctx.path;
     if (shouldHideSidebar) {
       this.hideSidebar();
@@ -391,7 +394,7 @@ class ChromedashApp extends LitElement {
       if (!this.setupNewPage(ctx, 'chromedash-guide-editall-page')) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.appTitle = this.appTitle;
-      this.pageComponent.nextPage = this.currentPage;
+      this.pageComponent.nextPage = this.priorPage;
     });
     page('/guide/verify_accuracy/:featureId(\\d+)', (ctx) => {
       if (!this.setupNewPage(
@@ -403,7 +406,7 @@ class ChromedashApp extends LitElement {
       if (!this.setupNewPage(ctx, 'chromedash-guide-stage-page')) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.intentStage = parseInt(ctx.params.intentStage);
-      this.pageComponent.nextPage = this.currentPage;
+      this.pageComponent.nextPage = this.priorPage;
       this.pageComponent.appTitle = this.appTitle;
     });
     page('/guide/stage/:featureId(\\d+)/:intentStage(\\d+)/:stageId(\\d+)', (ctx) => {
@@ -411,14 +414,14 @@ class ChromedashApp extends LitElement {
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.stageId = parseInt(ctx.params.stageId);
       this.pageComponent.intentStage = parseInt(ctx.params.intentStage);
-      this.pageComponent.nextPage = this.currentPage;
+      this.pageComponent.nextPage = this.priorPage;
       this.pageComponent.appTitle = this.appTitle;
     });
     page('/ot_creation_request/:featureId(\\d+)/:stageId(\\d+)', (ctx) => {
       if (!this.setupNewPage(ctx, 'chromedash-ot-creation-page')) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.stageId = parseInt(ctx.params.stageId);
-      this.pageComponent.nextPage = this.currentPage;
+      this.pageComponent.nextPage = this.priorPage;
       this.pageComponent.appTitle = this.appTitle;
       this.pageComponent.userEmail = this.user.email;
     });
@@ -426,14 +429,14 @@ class ChromedashApp extends LitElement {
       if (!this.setupNewPage(ctx, 'chromedash-ot-extension-page')) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.stageId = parseInt(ctx.params.stageId);
-      this.pageComponent.nextPage = this.currentPage;
+      this.pageComponent.nextPage = this.priorPage;
       this.pageComponent.appTitle = this.appTitle;
       this.pageComponent.userEmail = this.user.email;
     });
     page('/guide/stage/:featureId(\\d+)/metadata', (ctx) => {
       if (!this.setupNewPage(ctx, 'chromedash-guide-metadata-page')) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
-      this.pageComponent.nextPage = this.currentPage;
+      this.pageComponent.nextPage = this.priorPage;
       this.pageComponent.appTitle = this.appTitle;
     });
     page('/settings', (ctx) => {
