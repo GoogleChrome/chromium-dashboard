@@ -204,6 +204,8 @@ spa_page_routes = [
       defaults={'require_edit_feature': True}),
   Route('/guide/stage/<int:feature_id>/metadata',
       defaults={'require_edit_feature': True}),
+  Route('/guide/intentpreview/<int:feature_id>/<int:gate_id>',
+        defaults={'require_edit_feature': True}),
   Route('/ot_creation_request/<int:feature_id>/<int:stage_id>',
         defaults={'require_signin': True}),
   Route('/ot_extension_request/<int:feature_id>/<int:stage_id>',
