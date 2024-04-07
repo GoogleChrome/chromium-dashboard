@@ -133,6 +133,12 @@ export class ChromedashPreflightDialog extends LitElement {
     this.hide();
   }
 
+  handleProceed() {
+    // The button opens a new tab due to the href and target attrs.
+    // Also, close this dialog, so it is gone when the user returns.
+    this.hide();
+  }
+
   renderEditLink(stage, feStage, pi) {
     if (pi.field && stage && feStage) {
       return html`
@@ -193,8 +199,9 @@ export class ChromedashPreflightDialog extends LitElement {
          `)}
       </ol>
 
-      <sl-button href="${this.url}" target="_blank" size="small">
-        Proceed anyway
+      <sl-button href="${this.url}" target="_blank" size="small"
+          @click=${this.handleProceed}
+        >Proceed anyway
       </sl-button>
       <sl-button size="small" variant="warning"
           @click=${this.handleCancel}
