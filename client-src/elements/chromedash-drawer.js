@@ -30,7 +30,7 @@ export class ChromedashDrawer extends LitElement {
           background: var(--card-background);
           border: none;
           align-items: center;
-          margin: 0 var(--content-padding);
+          margin: 0 var(--content-padding-half);
           -webkit-font-smoothing: initial;
         }
         nav a {
@@ -38,7 +38,7 @@ export class ChromedashDrawer extends LitElement {
           cursor: pointer;
           font-size: var(--nav-link-font-size);
           text-align: left;
-          padding: var(--content-padding-half) var(--content-padding);
+          padding: var(--content-padding-half);
           color: var(--nav-link-color);
           white-space: nowrap;
           border-radius: var(--pill-border-radius);
@@ -59,11 +59,11 @@ export class ChromedashDrawer extends LitElement {
           background: var(--md-gray-100-alpha);
         }
         hr {
-          margin: 15px;
+          margin: 15px var(--content-padding-half);
         }
 
         .section-header {
-          margin: 0px 16px 10px;
+          margin: 0px var(--content-padding-half) 10px;
           font-weight: bold;
         }
         sl-drawer a {
@@ -216,6 +216,11 @@ export class ChromedashDrawer extends LitElement {
     });
   }
 
+  userCanApprove() {
+    return this.user && (
+      this.user.is_admin || this.user.approvable_gate_types?.length > 0);
+  }
+
   isCurrentPage(href) {
     return this.currentPage.startsWith(href);
   }
@@ -243,6 +248,7 @@ export class ChromedashDrawer extends LitElement {
       accountMenu = this.renderAccountMenu();
     }
 
+    const myFeaturesMenu = this.renderMyFeaturesMenu();
     const adminMenu = this.renderAdminMenu();
 
     return html`
@@ -251,10 +257,8 @@ export class ChromedashDrawer extends LitElement {
         ?open=${!IS_MOBILE && this.defaultOpen}>
         ${accountMenu}
         ${this.renderNavItem('/roadmap', 'Roadmap')}
-        ${this.user?.email ?
-           this.renderNavItem('/myfeatures', 'My features') :
-           nothing}
         ${this.renderNavItem('/features', 'All features')}
+        ${myFeaturesMenu}
         <hr>
         <div class="section-header">Stats</div>
         ${this.renderNavItem('/metrics/css/popularity', 'CSS')}
@@ -288,6 +292,21 @@ export class ChromedashDrawer extends LitElement {
     `;
   }
 
+  renderMyFeaturesMenu() {
+    if (!this.user?.email) {
+      return nothing;
+    }
+
+    return html`
+      <hr>
+      <div class="section-header">My features</div>
+      ${this.userCanApprove() ?
+        this.renderNavItem('/myfeatures/review', 'Pending review') :
+        nothing}
+      ${this.renderNavItem('/myfeatures/starred', 'Starred')}
+      ${this.renderNavItem('/myfeatures/editable', 'Owner / editor')}
+    `;
+  }
   renderAdminMenu() {
     if (!this.user?.is_admin) {
       return nothing;

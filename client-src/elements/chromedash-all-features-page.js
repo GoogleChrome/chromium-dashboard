@@ -9,6 +9,9 @@ export class ChromedashAllFeaturesPage extends LitElement {
     return [
       SHARED_STYLES,
       css`
+        #content-title {
+          padding-top: var(--content-padding);
+        }
       `];
   }
 
@@ -55,10 +58,6 @@ export class ChromedashAllFeaturesPage extends LitElement {
       return;
     }
 
-    if (this.rawQuery.hasOwnProperty('title')) {
-      this.title = this.rawQuery['title'];
-      this.showQuery = false;
-    }
     if (this.rawQuery.hasOwnProperty('q')) {
       this.query = this.rawQuery['q'];
     }

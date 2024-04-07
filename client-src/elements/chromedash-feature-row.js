@@ -226,7 +226,7 @@ class ChromedashFeatureRow extends LitElement {
     const feature = this.feature;
     return html`
       <td class="name_col">
-        <a href="/feature/${feature.id}?context=myfeatures">${feature.name}</a>
+        <a href="/feature/${feature.id}">${feature.name}</a>
         ${this.renderHighlights(feature)}
       </td>
       <td class="icon_col">

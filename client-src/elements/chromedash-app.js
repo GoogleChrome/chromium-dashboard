@@ -102,6 +102,7 @@ class ChromedashApp extends LitElement {
       appTitle: {type: String},
       googleSignInClientId: {type: String},
       devMode: {type: String},
+      priorPage: {type: String},
       currentPage: {type: String},
       bannerMessage: {type: String},
       bannerTime: {type: Number},
@@ -121,6 +122,7 @@ class ChromedashApp extends LitElement {
     this.appTitle = '';
     this.googleSignInClientId = '',
     this.devMode = '';
+    this.priorPage = '';
     this.currentPage = '';
     this.bannerMessage = '';
     this.bannerTime = null;
@@ -224,10 +226,11 @@ class ChromedashApp extends LitElement {
   }
 
   // Maybe set up new page, or if the URL is the same, we stay.
-  // If signin is required 'chromedash-login-required-page' is rendered.,
-  // we render that component instead page.
+  // If signin is required 'chromedash-login-required-page' is rendered,
+  // instead of the page.
   // Returns true if we are proceeding to the new page, false otherwise.
-  setupNewPage(ctx, componentName) {
+  setupNewPage(
+    ctx, componentName, shouldSetContext=false, shouldHideSidebar=true) {
     // If current page is ctx.path and a ctx.hash exists,
     // don't create a new element but instead
     // just scroll to the element identified by the hash.
@@ -280,6 +283,16 @@ class ChromedashApp extends LitElement {
       }
     }, 1000);
 
+    this.pageComponent.contextLink = this.contextLink;
+    if (shouldSetContext) {
+      this.contextLink = ctx.path;
+    }
+    this.priorPage = this.currentPage;
+    this.currentPage = ctx.path;
+    if (shouldHideSidebar) {
+      this.hideSidebar();
+    }
+
     // If we didn't return false above, return true now.
     return true;
   };
@@ -292,39 +305,61 @@ class ChromedashApp extends LitElement {
     // And :var can match any string (including a slash) if there is no slash after it.
     page('/', () => page.redirect('/roadmap'));
     page('/roadmap', (ctx) => {
-      if (!this.setupNewPage(ctx, 'chromedash-roadmap-page')) return;
+      if (!this.setupNewPage(ctx, 'chromedash-roadmap-page', true)) return;
       this.pageComponent.user = this.user;
-      this.contextLink = ctx.path;
-      this.currentPage = ctx.path;
-      this.hideSidebar();
     });
+    // TODO(jrobbins): After a while, redirect /myfeatures to /myfeatures/editable
     page('/myfeatures', (ctx) => {
-      if (!this.setupNewPage(ctx, 'chromedash-myfeatures-page')) return;
+      if (!this.setupNewPage(ctx, 'chromedash-myfeatures-page', true)) return;
       this.pageComponent.user = this.user;
       this.pageComponent.selectedGateId = this.selectedGateId;
-      this.contextLink = ctx.path;
-      this.currentPage = ctx.path;
-      this.hideSidebar();
+    });
+    page('/myfeatures/review', (ctx) => {
+      if (!this.setupNewPage(ctx, 'chromedash-all-features-page', true)) return;
+      this.pageComponent.user = this.user;
+      this.pageComponent.title = 'Features pending my review';
+      this.pageComponent.query = 'pending-approval-by:me';
+      this.pageComponent.columns = 'approvals';
+      this.pageComponent.sortSpec = 'gate.requested_on';
+      this.pageComponent.showEnterprise = true;
+      this.pageComponent.showQuery = false;
+      this.pageComponent.rawQuery = parseRawQuery(ctx.querystring);
+      this.pageComponent.addEventListener('pagination', this.handlePagination.bind(this));
+    });
+    page('/myfeatures/starred', (ctx) => {
+      if (!this.setupNewPage(ctx, 'chromedash-all-features-page', true)) return;
+      this.pageComponent.user = this.user;
+      this.pageComponent.title = 'Features I starred';
+      this.pageComponent.query = 'starred-by:me';
+      this.pageComponent.showEnterprise = true;
+      this.pageComponent.showQuery = false;
+      this.pageComponent.rawQuery = parseRawQuery(ctx.querystring);
+      this.pageComponent.addEventListener('pagination', this.handlePagination.bind(this));
+    });
+    page('/myfeatures/editable', (ctx) => {
+      if (!this.setupNewPage(ctx, 'chromedash-all-features-page', true)) return;
+      this.pageComponent.user = this.user;
+      this.pageComponent.title = 'Features I can edit';
+      this.pageComponent.query = 'can_edit:me';
+      this.pageComponent.showEnterprise = true;
+      this.pageComponent.showQuery = false;
+      this.pageComponent.rawQuery = parseRawQuery(ctx.querystring);
+      this.pageComponent.addEventListener('pagination', this.handlePagination.bind(this));
     });
     page('/newfeatures', (ctx) => {
-      if (!this.setupNewPage(ctx, 'chromedash-all-features-page')) return;
+      if (!this.setupNewPage(ctx, 'chromedash-all-features-page', true)) return;
       this.pageComponent.user = this.user;
       this.pageComponent.rawQuery = parseRawQuery(ctx.querystring);
       this.pageComponent.addEventListener('pagination', this.handlePagination.bind(this));
       this.pageComponent.addEventListener('search', this.handleSearchQuery.bind(this));
-      this.contextLink = ctx.path;
-      this.currentPage = ctx.path;
-      this.hideSidebar();
     });
     page('/feature/:featureId(\\d+)', (ctx) => {
-      if (!this.setupNewPage(ctx, 'chromedash-feature-page')) return;
+      if (!this.setupNewPage(ctx, 'chromedash-feature-page', true, false)) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.user = this.user;
       this.fetchPairedUser();
-      this.pageComponent.contextLink = this.contextLink;
       this.pageComponent.selectedGateId = this.selectedGateId;
       this.pageComponent.appTitle = this.appTitle;
-      this.currentPage = ctx.path;
       if (this.pageComponent.featureId != this.gateColumnRef.value?.feature?.id) {
         this.hideSidebar();
       }
@@ -333,17 +368,12 @@ class ChromedashApp extends LitElement {
       if (!this.setupNewPage(ctx, 'chromedash-activity-page')) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.user = this.user;
-      this.pageComponent.contextLink = this.contextLink;
-      this.currentPage = ctx.path;
-      this.hideSidebar();
     });
     page('/guide/new', (ctx) => {
       if (!this.setupNewPage(ctx, 'chromedash-guide-new-page')) return;
       if (ctx.querystring.search('loginStatus=False') == -1) {
         this.pageComponent.userEmail = this.user.email;
       }
-      this.currentPage = ctx.path;
-      this.hideSidebar();
     });
     page('/guide/enterprise/new', (ctx) => {
       if (!this.setupNewPage(
@@ -354,96 +384,74 @@ class ChromedashApp extends LitElement {
         this.pageComponent.userEmail = this.user.email;
       }
       this.pageComponent.isEnterpriseFeature = true;
-      this.currentPage = ctx.path;
-      this.hideSidebar();
     });
     page('/guide/edit/:featureId(\\d+)', (ctx) => {
       if (!this.setupNewPage(ctx, 'chromedash-guide-edit-page')) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.appTitle = this.appTitle;
-      this.currentPage = ctx.path;
-      this.hideSidebar();
     });
     page('/guide/editall/:featureId(\\d+)', (ctx) => {
       if (!this.setupNewPage(ctx, 'chromedash-guide-editall-page')) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.appTitle = this.appTitle;
-      this.pageComponent.nextPage = this.currentPage;
-      this.currentPage = ctx.path;
-      this.hideSidebar();
+      this.pageComponent.nextPage = this.priorPage;
     });
     page('/guide/verify_accuracy/:featureId(\\d+)', (ctx) => {
-      if (!this.setupNewPage(ctx, 'chromedash-guide-verify-accuracy-page')) return;
+      if (!this.setupNewPage(
+        ctx, 'chromedash-guide-verify-accuracy-page')) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.appTitle = this.appTitle;
-      this.hideSidebar();
     });
     page('/guide/stage/:featureId(\\d+)/:intentStage(\\d+)', (ctx) => {
       if (!this.setupNewPage(ctx, 'chromedash-guide-stage-page')) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.intentStage = parseInt(ctx.params.intentStage);
-      this.pageComponent.nextPage = this.currentPage;
+      this.pageComponent.nextPage = this.priorPage;
       this.pageComponent.appTitle = this.appTitle;
-      this.currentPage = ctx.path;
-      this.hideSidebar();
     });
     page('/guide/stage/:featureId(\\d+)/:intentStage(\\d+)/:stageId(\\d+)', (ctx) => {
       if (!this.setupNewPage(ctx, 'chromedash-guide-stage-page')) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.stageId = parseInt(ctx.params.stageId);
       this.pageComponent.intentStage = parseInt(ctx.params.intentStage);
-      this.pageComponent.nextPage = this.currentPage;
+      this.pageComponent.nextPage = this.priorPage;
       this.pageComponent.appTitle = this.appTitle;
-      this.currentPage = ctx.path;
-      this.hideSidebar();
     });
     page('/ot_creation_request/:featureId(\\d+)/:stageId(\\d+)', (ctx) => {
       if (!this.setupNewPage(ctx, 'chromedash-ot-creation-page')) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.stageId = parseInt(ctx.params.stageId);
-      this.pageComponent.nextPage = this.currentPage;
+      this.pageComponent.nextPage = this.priorPage;
       this.pageComponent.appTitle = this.appTitle;
       this.pageComponent.userEmail = this.user.email;
-      this.currentPage = ctx.path;
-      this.hideSidebar();
     });
     page('/ot_extension_request/:featureId(\\d+)/:stageId(\\d+)', (ctx) => {
       if (!this.setupNewPage(ctx, 'chromedash-ot-extension-page')) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.stageId = parseInt(ctx.params.stageId);
-      this.pageComponent.nextPage = this.currentPage;
+      this.pageComponent.nextPage = this.priorPage;
       this.pageComponent.appTitle = this.appTitle;
       this.pageComponent.userEmail = this.user.email;
-      this.currentPage = ctx.path;
-      this.hideSidebar();
     });
     page('/guide/stage/:featureId(\\d+)/metadata', (ctx) => {
       if (!this.setupNewPage(ctx, 'chromedash-guide-metadata-page')) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
-      this.pageComponent.nextPage = this.currentPage;
+      this.pageComponent.nextPage = this.priorPage;
       this.pageComponent.appTitle = this.appTitle;
-      this.currentPage = ctx.path;
-      this.hideSidebar();
     });
     page('/settings', (ctx) => {
       if (!this.setupNewPage(ctx, 'chromedash-settings-page')) return;
-      this.currentPage = ctx.path;
-      this.hideSidebar();
     });
     page('/metrics/:type/:view', (ctx) => {
       if (!this.setupNewPage(ctx, 'chromedash-stack-rank-page')) return;
       this.pageComponent.type = ctx.params.type;
       this.pageComponent.view = ctx.params.view;
-      this.currentPage = ctx.path;
-      this.hideSidebar();
     });
     page('/metrics/:type/timeline/:view/:bucketId', (ctx) => {
       if (!this.setupNewPage(ctx, 'chromedash-timeline-page')) return;
       this.pageComponent.type = ctx.params.type;
       this.pageComponent.view = ctx.params.view;
       this.pageComponent.selectedBucketId = ctx.params.bucketId;
-      this.currentPage = ctx.path;
-      this.hideSidebar();
     });
     page('/metrics', () => page.redirect('/metrics/css/popularity'));
     page('/metrics/css', () => page.redirect('/metrics/css/popularity'));
@@ -456,51 +464,35 @@ class ChromedashApp extends LitElement {
       this.pageComponent.rawQuery = parseRawQuery(ctx.querystring);
       this.pageComponent.addEventListener('afterchanged',
         e => updateURLParams('after', isoDateString(e.detail.after)));
-      this.currentPage = ctx.path;
-      this.hideSidebar();
     });
     page('/reports/feature-latency', (ctx)=> {
       if (!this.setupNewPage(ctx, 'chromedash-report-feature-latency-page')) return;
       this.pageComponent.rawQuery = parseRawQuery(ctx.querystring);
       this.pageComponent.addEventListener('afterchanged',
         e => updateURLParams('after', isoDateString(e.detail.after)));
-      this.currentPage = ctx.path;
-      this.hideSidebar();
     });
     page('/reports/review-latency', (ctx)=> {
       if (!this.setupNewPage(ctx, 'chromedash-report-review-latency-page')) return;
-      this.currentPage = ctx.path;
-      this.hideSidebar();
     });
     page('/enterprise', (ctx) => {
-      if (!this.setupNewPage(ctx, 'chromedash-enterprise-page')) return;
+      if (!this.setupNewPage(ctx, 'chromedash-enterprise-page', true)) return;
       this.pageComponent.user = this.user;
-      this.contextLink = ctx.path;
-      this.currentPage = ctx.path;
-      this.hideSidebar();
     });
     page('/admin/blink', (ctx) => {
       this.pageComponent = document.createElement('chromedash-admin-blink-page');
       this.pageComponent.user = this.user;
-      this.contextLink = ctx.path;
       this.currentPage = ctx.path;
       this.hideSidebar();
     });
     page('/admin/feature_links', (ctx) => {
       if (!this.setupNewPage(ctx, 'chromedash-admin-feature-links-page')) return;
       this.pageComponent.user = this.user;
-      this.contextLink = ctx.path;
-      this.currentPage = ctx.path;
-      this.hideSidebar();
     });
     page('/enterprise/releasenotes', (ctx) => {
       if (!this.setupNewPage(
         ctx,
-        'chromedash-enterprise-release-notes-page')) return;
+        'chromedash-enterprise-release-notes-page', true)) return;
       this.pageComponent.user = this.user;
-      this.contextLink = ctx.path;
-      this.currentPage = ctx.path;
-      this.hideSidebar();
     });
     page.start();
   }
