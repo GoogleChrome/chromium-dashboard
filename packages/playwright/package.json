@@ -16,6 +16,6 @@
     },
     "author": "",
     "devDependencies": {
-        "@playwright/test": "1.42.1"
+        "@playwright/test": "1.43.0"
     }
 }
