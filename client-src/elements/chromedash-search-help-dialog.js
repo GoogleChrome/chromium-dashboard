@@ -122,23 +122,23 @@ export class ChromedashSearchHelpDialog extends LitElement {
   }
 
   renderFieldRow(queryField) {
-    if (qf.choices) {
-      const choiceItems = Object.values(qf.choices).map(c => html`
-        <div>${qf.name}="${c[1]}"</div>
+    if (queryField.choices) {
+      const choiceItems = Object.values(queryField.choices).map(c => html`
+        <div>${queryField.name}="${c[1]}"</div>
       `);
       return html`
         <tr>
           <td>
            <code>${choiceItems}</code>
           </td>
-          <td>${qf.doc}</td>
+          <td>${queryField.doc}</td>
         </tr>
       `;
     } else {
       return html`
         <tr>
-          <td><code>${qf.name}=<i>${qf.kind}</code></td>
-          <td>${qf.doc}</td>
+          <td><code>${queryField.name}=<i>${queryField.kind}</code></td>
+          <td>${queryField.doc}</td>
         </tr>
       `;
     }
