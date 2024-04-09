@@ -21,6 +21,22 @@ export const SHARED_STYLES = [
     display: none;
   }
 
+  .data-table {
+    width: 100%;
+    border: var(--default-border);
+    border-radius: var(--border-radius);
+  }
+  .data-table th {
+    text-align: left;
+    background: var(--table-header-background);
+    padding: var(--content-padding-half) var(--content-padding);
+  }
+  .data-table td {
+    vertical-align: top;
+    border-top: var(--default-border);
+    padding: var(--content-padding-half) var(--content-padding);
+  }
+
   h1,
   h2,
   h3,
@@ -115,6 +131,11 @@ export const SHARED_STYLES = [
   #subheader div input {
     width: 280px;
     padding: 10px 7px;
+  }
+
+  code {
+   white-space: nowrap;
+   font-family: monospace;
   }
 
   .description {
