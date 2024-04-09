@@ -98,7 +98,7 @@ export class ChromedashSearchHelpDialog extends LitElement {
 
       <p>When searching for words, the results will include features that
       include those words in any field of the feature entry.  We do not support
-      searching for wildcards, partial words, puctuation, or quoted phrases.</p>
+      searching for wildcards, partial words, punctuation, or quoted phrases.</p>
 
       <p>When searching using conditions, each condition consists of three
       parts: FIELD OPERATOR VALUE</p>
