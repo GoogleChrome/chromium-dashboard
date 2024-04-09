@@ -115,56 +115,57 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
   def test_single_field_query_async__normal(self):
     """We get a promise to run the DB query, which produces results."""
     actual_promise = search_queries.single_field_query_async(
-        'owner', '=', 'owner@example.com')
+        'owner', '=', ['owner@example.com'])
     actual = actual_promise.get_result()
     self.assertCountEqual(
         [self.feature_1_id, self.feature_2_id],
         [key.integer_id() for key in actual])
 
     actual_promise = search_queries.single_field_query_async(
-        'unlisted', '=', True)
+        'unlisted', '=', [True])
     actual = actual_promise.get_result()
     self.assertCountEqual([], actual)
 
     actual_promise = search_queries.single_field_query_async(
-        'deleted', '=', True)
+        'deleted', '=', [True])
     actual = actual_promise.get_result()
     self.assertCountEqual([], actual)
 
   def test_single_field_query_async__multiple_vals(self):
     """We get a promise to run the DB query with multiple values."""
     actual_promise = search_queries.single_field_query_async(
-        'owner', '=', 'owner@example.com,random@example.com')
+        'owner', '=', ['owner@example.com', 'random@example.com'])
     actual = actual_promise.get_result()
     self.assertCountEqual(
         [self.feature_1_id, self.feature_2_id, self.feature_3_id],
         [key.integer_id() for key in actual])
 
-  def check_wrong_type(self, field_name, bad_value):
+  def check_wrong_type(self, field_name, bad_values):
     with self.assertRaises(ValueError) as cm:
       search_queries.single_field_query_async(
-          field_name, '=', bad_value)
+          field_name, '=', bad_values)
     self.assertEqual(
         cm.exception.args[0], 'Query value does not match field type')
 
   def test_single_field_query_async__wrong_types(self):
     """We reject requests with values that parse to the wrong type."""
     # Feature entry fields
-    self.check_wrong_type('owner', True)
-    self.check_wrong_type('owner', 123)
-    self.check_wrong_type('deleted', 'not a boolean')
-    self.check_wrong_type('star_count', 'not an integer')
-    self.check_wrong_type('created.when', 'not a date')
+    self.check_wrong_type('owner', [True])
+    self.check_wrong_type('owner', [123])
+    self.check_wrong_type('deleted', ['not a boolean'])
+    self.check_wrong_type('star_count', ['not an integer'])
+    self.check_wrong_type('created.when', ['not a date'])
+    self.check_wrong_type('owner', ['ok@example.com', True])
 
     # Stage fields
-    self.check_wrong_type('browsers.chrome.android', 'not an integer')
-    self.check_wrong_type('finch_url', 123)
-    self.check_wrong_type('finch_url', True)
+    self.check_wrong_type('browsers.chrome.android', ['not an integer'])
+    self.check_wrong_type('finch_url', [123])
+    self.check_wrong_type('finch_url', [True])
 
   def test_single_field_query_async__normal_stage_field(self):
     """We can find a FeatureEntry based on values in an associated Stage."""
     actual_promise = search_queries.single_field_query_async(
-        'browsers.chrome.desktop', '=', 99)
+        'browsers.chrome.desktop', '=', [99])
     actual = actual_promise.get_result()
     self.assertCountEqual(
         [self.feature_1_id],
@@ -173,21 +174,21 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
   def test_single_field_query_async__other_stage_field(self):
     """We only consider the appropriate Stage."""
     actual_promise = search_queries.single_field_query_async(
-        'browsers.chrome.ot.desktop.start', '=', 99)
+        'browsers.chrome.ot.desktop.start', '=', [99])
     actual = actual_promise.get_result()
     self.assertCountEqual([], actual)
 
   def test_single_field_query_async__zero_results(self):
     """When there are no matching results, we get back a promise for []."""
     actual_promise = search_queries.single_field_query_async(
-        'owner', '=', 'nope')
+        'owner', '=', ['nope'])
     actual = actual_promise.get_result()
     self.assertCountEqual([], actual)
 
   @mock.patch('logging.warning')
   def test_single_field_query_async__bad_field(self, mock_warn):
     """An unknown field imediately gives zero results."""
-    actual = search_queries.single_field_query_async('zodiac', '=', 'leo')
+    actual = search_queries.single_field_query_async('zodiac', '=', ['leo'])
     self.assertCountEqual([], actual)
 
   def test_handle_me_query_async__owner_anon(self):

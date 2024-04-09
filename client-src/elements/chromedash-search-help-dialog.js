@@ -81,7 +81,10 @@ export class ChromedashSearchHelpDialog extends LitElement {
             '-feature_type="Feature deprecation"'],
           'Features of a specific type or excluding a type.')}
         ${this.renderExampleRow(
-          ['category="CSS" OR category="DOM"'],
+          ['category=CSS,DOM'],
+          'Features that have a value in a comma-separated list.')}
+        ${this.renderExampleRow(
+          ['category=CSS OR category=DOM'],
           'Combine two query clauses with a logical-OR.')}
       </table>
       </section>
@@ -101,14 +104,16 @@ export class ChromedashSearchHelpDialog extends LitElement {
       searching for wildcards, partial words, punctuation, or quoted phrases.</p>
 
       <p>When searching using conditions, each condition consists of three
-      parts: FIELD OPERATOR VALUE</p>
+      parts: FIELD OPERATOR VALUE(S)</p>
 
       <ul>
         <li>FIELD: One of the fields listed below.</li>
         <li>OPERATOR: Usually an equals sign, but it can be an
             inequality for numeric, date, or enum fields.</li>
-        <li>VALUE: A single word, number, date, or one
-            of the quoted enum value listed below.</li>
+        <li>VALUE(S): A single word, number, date, or enum value listed below.
+            If the value contains spaces, it must be inside double quotes.
+            Use the equals operator with a comma-separated list to match
+            any value in that list.</li>
       </ul>
 
       <p>You may negate any seearch term by prefixing it with a minus sign.
@@ -137,7 +142,7 @@ export class ChromedashSearchHelpDialog extends LitElement {
     } else {
       return html`
         <tr>
-          <td><code>${queryField.name}=<i>${queryField.kind}</code></td>
+          <td><code>${queryField.name}=<i>${queryField.kind}</i></code></td>
           <td>${queryField.doc}</td>
         </tr>
       `;
