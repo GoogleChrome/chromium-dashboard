@@ -121,7 +121,7 @@ export class ChromedashSearchHelpDialog extends LitElement {
     `;
   }
 
-  renderFieldRow(qf) {
+  renderFieldRow(queryField) {
     if (qf.choices) {
       const choiceItems = Object.values(qf.choices).map(c => html`
         <div>${qf.name}="${c[1]}"</div>
