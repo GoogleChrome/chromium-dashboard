@@ -39,6 +39,11 @@ export class ChromedashOTCreationPage extends LitElement {
       nextPage: {type: String},
       fieldValues: {type: Array},
       showApprovalsFields: {type: Boolean},
+
+      // Chromium file contents for validating inputs.
+      webfeatureFile: {type: String},
+      enabledFeaturesJson: {type: Object},
+      gracePeriodFile: {type: String},
     };
   }
 
@@ -52,6 +57,9 @@ export class ChromedashOTCreationPage extends LitElement {
     this.nextPage = '';
     this.fieldValues = [];
     this.showApprovalsFields = false;
+    this.webfeatureFile = '';
+    this.enabledFeaturesJson = undefined;
+    this.gracePeriodFile = '';
   }
 
   connectedCallback() {
@@ -192,92 +200,120 @@ export class ChromedashOTCreationPage extends LitElement {
     return atob(respJson);
   }
 
-  // Check that given args related to Chromium are valid.
-  async handleChromiumChecks() {
-    let webfeatureFile;
-    let enabledFeaturesJson;
-    let gracePeriodFile;
-    let hasErrors = false;
+  // Check that the code has landed that is used to monitor feature usage.
+  async checkWebfeatureUseCounter(field) {
+    if (!this.webfeatureFile) {
+      this.webfeatureFile = await this.getChromiumFile(WEBFEATURE_FILE_URL);
+    }
+    const webfeatureCounterExists = this.webfeatureFile.includes(`${field.value} =`);
+    if (!webfeatureCounterExists) {
+      field.checkMessage = html`
+      <span class="check-error">
+        <b>Error</b>: UseCounter name not found in file.
+      </span>`;
+      return true;
+    } else {
+      field.checkMessage = nothing;
+    }
+    return false;
+  }
 
+  // Check that code has landed that is required for the origin trial feature.
+  async checkChromiumTrialName(field) {
+    if (!this.enabledFeaturesJson) {
+      const enabledFeaturesFileText = await this.getChromiumFile(ENABLED_FEATURES_FILE_URL);
+      this.enabledFeaturesJson = json5.parse(enabledFeaturesFileText);
+    }
+    if (!this.enabledFeaturesJson.data.some(
+      feature => feature.origin_trial_feature_name === field.value)) {
+      field.checkMessage = html`
+        <span class="check-error">
+          <b>Error</b>: Name not found in file.
+        </span>`;
+      return true;
+    } else {
+      field.checkMessage = nothing;
+    }
+    return false;
+  }
+
+  // Check that code has landed that is required for third party support.
+  async checkThirdPartySupport(field) {
+    if (!field.value) {
+      field.checkMessage = nothing;
+      return false;
+    }
     const chromiumTrialName = this.fieldValues.find(
       field => field.name === 'ot_chromium_trial_name').value;
+    if (!this.enabledFeaturesJson) {
+      const enabledFeaturesFileText = await this.getChromiumFile(ENABLED_FEATURES_FILE_URL);
+      this.enabledFeaturesJson = json5.parse(enabledFeaturesFileText);
+    }
+
+    const thirdPartySupportEnabled = this.enabledFeaturesJson.data.every(
+      feature => {
+        return (feature.origin_trial_feature_name !== chromiumTrialName ||
+          feature.origin_trial_allows_third_party);
+      });
+    if (!thirdPartySupportEnabled) {
+      field.checkMessage = html`
+        <br>
+        <span class="check-error">
+          <b>Error</b>: Property not set in file.
+        </span>`;
+      return true;
+    } else {
+      field.checkMessage = nothing;
+    }
+    return false;
+  }
+
+  // Check that code has landed that is required for critical trials.
+  async checkCriticalTrial(field) {
+    if (!field.value) {
+      field.checkMessage = nothing;
+      return false;
+    }
     const webfeatureUseCounterName = this.fieldValues.find(
       field => field.name === 'ot_webfeature_use_counter').value;
+    if (!this.gracePeriodFile) {
+      this.gracePeriodFile = await this.getChromiumFile(GRACE_PERIOD_FILE);
+    }
+    const includedInGracePeriodArray = this.gracePeriodFile.includes(
+      `blink::mojom::OriginTrialFeature::${webfeatureUseCounterName}`);
+    if (!includedInGracePeriodArray) {
+      field.checkMessage = html`
+        <br>
+        <span class="check-error">
+          <b>Error</b>: Trial name not found in file.
+        </span>`;
+      return true;
+    } else {
+      field.checkMessage = nothing;
+    }
+    return false;
+  }
+
+  /**
+   * Check that given args related to Chromium are valid.
+   * @returns Whether any inputs cannot be found in Chromium files.
+   */
+  async handleChromiumChecks() {
+    // Clear saved file info in order to fetch the most recent version.
+    this.webfeatureFile = '';
+    this.enabledFeaturesJson = undefined;
+    this.gracePeriodFile = '';
+    let hasErrors = false;
 
     for (const field of this.fieldValues) {
       if (field.name === 'ot_webfeature_use_counter') {
-        if (!webfeatureFile) {
-          webfeatureFile = await this.getChromiumFile(WEBFEATURE_FILE_URL);
-        }
-        const webfeatureCounterExists = webfeatureFile.includes(`${webfeatureUseCounterName} =`);
-        if (!webfeatureCounterExists) {
-          field.checkMessage = html`
-          <span class="check-error">
-            <b>Error</b>: UseCounter name not found in file.
-          </span>`;
-          hasErrors = true;
-        } else {
-          field.checkMessage = nothing;
-        }
+        hasErrors = hasErrors || await this.checkWebfeatureUseCounter(field);
       } else if (field.name === 'ot_chromium_trial_name') {
-        if (!enabledFeaturesJson) {
-          const enabledFeaturesFileText = await this.getChromiumFile(ENABLED_FEATURES_FILE_URL);
-          enabledFeaturesJson = json5.parse(enabledFeaturesFileText);
-        }
-        if (!enabledFeaturesJson.data.some(
-          feature => feature.origin_trial_feature_name === field.value)) {
-          field.checkMessage = html`
-            <span class="check-error">
-              <b>Error</b>: Name not found in file.
-            </span>`;
-          hasErrors = true;
-        } else {
-          field.checkMessage = nothing;
-        }
+        hasErrors = hasErrors || await this.checkChromiumTrialName(field);
       } else if (field.name === 'ot_has_third_party_support') {
-        if (!field.value) {
-          field.checkMessage = nothing;
-          continue;
-        }
-        if (!enabledFeaturesJson) {
-          const enabledFeaturesFileText = await this.getChromiumFile(ENABLED_FEATURES_FILE_URL);
-          enabledFeaturesJson = json5.parse(enabledFeaturesFileText);
-        }
-        const thirdPartySupportEnabled = enabledFeaturesJson.data.some(
-          feature => {
-            return (feature.origin_trial_feature_name === chromiumTrialName &&
-              feature.origin_trial_allows_third_party);
-          });
-        if (!thirdPartySupportEnabled) {
-          field.checkMessage = html`
-            <br>
-            <span class="check-error">
-              <b>Error</b>: Property not set in file.
-            </span>`;
-          hasErrors = true;
-        } else {
-          field.checkMessage = nothing;
-        }
+        hasErrors = hasErrors || await this.checkThirdPartySupport(field);
       } else if (field.name === 'ot_is_critical_trial') {
-        if (!field.value) {
-          field.checkMessage = nothing;
-          continue;
-        }
-        if (!gracePeriodFile) {
-          gracePeriodFile = await this.getChromiumFile(GRACE_PERIOD_FILE);
-        }
-        const includedInGracePeriodArray = gracePeriodFile.includes(
-          `blink::mojom::OriginTrialFeature::${webfeatureUseCounterName}`);
-        if (!includedInGracePeriodArray) {
-          field.checkMessage = html`
-            <br>
-            <span class="check-error">
-              <b>Error</b>: Trial name not found in file.
-            </span>`;
-          hasErrors = true;
-        } else {
-          field.checkMessage = nothing;
-        }
+        hasErrors = hasErrors || await this.checkCriticalTrial(field);
       }
     }
     return hasErrors;
