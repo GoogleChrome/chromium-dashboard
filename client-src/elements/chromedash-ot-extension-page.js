@@ -31,7 +31,6 @@ export class ChromedashOTExtensionPage extends LitElement {
       feature: {type: Object},
       loading: {type: Boolean},
       appTitle: {type: String},
-      nextPage: {type: String},
       fieldValues: {type: Array},
     };
   }
@@ -43,7 +42,6 @@ export class ChromedashOTExtensionPage extends LitElement {
     this.feature = {};
     this.loading = true;
     this.appTitle = '';
-    this.nextPage = '';
     this.fieldValues = [];
   }
 
@@ -117,11 +115,11 @@ export class ChromedashOTExtensionPage extends LitElement {
       showToastMessage('Extension request started!');
       if (!newStageId || !gate) {
         setTimeout(() => {
-          window.location.href = this.nextPage || `/feature/${this.featureId}`;
+          window.location.href = `/feature/${this.featureId}`;
         }, 1000);
       } else {
         setTimeout(() => {
-          window.location.href = this.nextPage || `/feature/${this.featureId}?gate=${gate.id}`;
+          window.location.href = `/feature/${this.featureId}?gate=${gate.id}`;
         }, 1000);
       }
     }).catch(() => {
@@ -153,7 +151,7 @@ export class ChromedashOTExtensionPage extends LitElement {
   }
 
   getNextPage() {
-    return this.nextPage || `/feature/${this.featureId}`;
+    return `/feature/${this.featureId}`;
   }
 
   renderSubheader() {
@@ -252,7 +250,7 @@ export class ChromedashOTExtensionPage extends LitElement {
             class="button"
             type="submit"
             value="Submit">
-          <button id="cancel-button" @click=${this.handleCancelClick}>Cancel</button>
+          <button id="cancel-button" type="reset" @click=${this.handleCancelClick}>Cancel</button>
         </div>
       </form>
     `;

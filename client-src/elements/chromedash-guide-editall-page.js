@@ -45,7 +45,6 @@ export class ChromedashGuideEditallPage extends LitElement {
       feature: {type: Object},
       loading: {type: Boolean},
       appTitle: {type: String},
-      nextPage: {type: String},
       nextStageToCreateId: {type: Number},
       fieldValues: {type: Array},
     };
@@ -57,7 +56,6 @@ export class ChromedashGuideEditallPage extends LitElement {
     this.feature = {};
     this.loading = true;
     this.appTitle = '';
-    this.nextPage = '';
     this.previousStageTypeRendered = 0;
     this.sameTypeRendered = 0;
     this.nextStageToCreateId = 0;
@@ -161,13 +159,7 @@ export class ChromedashGuideEditallPage extends LitElement {
   }
 
   getNextPage() {
-    if (this.nextPage) {
-      return this.nextPage;
-    }
-    if (this.feature.is_enterprise_feature) {
-      return `/feature/${this.featureId}`;
-    }
-    return `/guide/edit/${this.featureId}`;
+    return `/feature/${this.featureId}`;
   }
 
   renderSubheader() {
