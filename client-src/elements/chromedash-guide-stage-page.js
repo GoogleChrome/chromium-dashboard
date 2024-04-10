@@ -40,7 +40,6 @@ export class ChromedashGuideStagePage extends LitElement {
       implStatusOffered: {type: String},
       loading: {type: Boolean},
       appTitle: {type: String},
-      nextPage: {type: String},
       fieldValues: {type: Array},
     };
   }
@@ -58,7 +57,6 @@ export class ChromedashGuideStagePage extends LitElement {
     this.implStatusOffered = '';
     this.loading = true;
     this.appTitle = '';
-    this.nextPage = '';
     this.fieldValues = [];
   }
 
@@ -135,7 +133,7 @@ export class ChromedashGuideStagePage extends LitElement {
       hiddenTokenField.value = window.csClient.token;
       return csClient.updateFeature(submitBody);
     }).then(() => {
-      window.location.href = this.nextPage || `/guide/edit/${this.featureId}`;
+      window.location.href = `/feature/${this.featureId}`;
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
@@ -181,7 +179,7 @@ export class ChromedashGuideStagePage extends LitElement {
   }
 
   getNextPage() {
-    return this.nextPage || `/guide/edit/${this.featureId}`;
+    return `/feature/${this.featureId}`;
   }
 
   renderSubheader() {
@@ -355,7 +353,7 @@ export class ChromedashGuideStagePage extends LitElement {
         </chromedash-form-table>
         <div class="final_buttons">
           <input id='submit-button' class="button" type="submit" value="Submit">
-          <button id="cancel-button" @click=${this.handleCancelClick}>Cancel</button>
+          <button id="cancel-button" type="reset" @click=${this.handleCancelClick}>Cancel</button>
         </div>
       </form>
     `;

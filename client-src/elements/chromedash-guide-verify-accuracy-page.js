@@ -88,7 +88,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
       hiddenTokenField.value = window.csClient.token;
       return csClient.updateFeature(submitBody);
     }).then(() => {
-      window.location.href = this.nextPage || `/guide/edit/${this.featureId}`;
+      window.location.href = `/feature/${this.featureId}`;
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });

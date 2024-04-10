@@ -30,7 +30,6 @@ export class ChromedashOTCreationPage extends LitElement {
       feature: {type: Object},
       loading: {type: Boolean},
       appTitle: {type: String},
-      nextPage: {type: String},
       fieldValues: {type: Array},
       showApprovalsFields: {type: Boolean},
     };
@@ -43,7 +42,6 @@ export class ChromedashOTCreationPage extends LitElement {
     this.feature = {};
     this.loading = true;
     this.appTitle = '';
-    this.nextPage = '';
     this.fieldValues = [];
     this.showApprovalsFields = false;
   }
@@ -198,7 +196,7 @@ export class ChromedashOTCreationPage extends LitElement {
     window.csClient.updateStage(this.featureId, this.stageId, stageSubmitBody).then(() => {
       showToastMessage('Creation request submitted!');
       setTimeout(() => {
-        window.location.href = this.nextPage || `/feature/${this.featureId}`;
+        window.location.href = `/feature/${this.featureId}`;
       }, 1000);
     });
   }
@@ -227,7 +225,7 @@ export class ChromedashOTCreationPage extends LitElement {
   }
 
   getNextPage() {
-    return this.nextPage || `/feature/${this.featureId}`;
+    return `/feature/${this.featureId}`;
   }
 
   renderSubheader() {
@@ -283,7 +281,7 @@ export class ChromedashOTCreationPage extends LitElement {
             class="button"
             type="submit"
             value="Submit">
-          <button id="cancel-button" @click=${this.handleCancelClick}>Cancel</button>
+          <button id="cancel-button" type="reset" @click=${this.handleCancelClick}>Cancel</button>
         </div>
       </form>
     `;

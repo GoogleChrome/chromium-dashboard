@@ -100,7 +100,7 @@ export class ChromedashGuideMetadata extends LitElement {
       hiddenTokenField.value = window.csClient.token;
       return csClient.updateFeature(submitBody);
     }).then(() => {
-      window.location.href = this.nextPage || `/guide/edit/${this.feature.id}`;
+      window.location.href = `/feature/${this.feature.id}`;
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });

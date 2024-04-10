@@ -27,7 +27,6 @@ export class ChromedashGuideMetadataPage extends LitElement {
       feature: {type: Object},
       loading: {type: Boolean},
       appTitle: {type: String},
-      nextPage: {type: String},
       fieldValues: {type: Array},
     };
   }
@@ -38,7 +37,6 @@ export class ChromedashGuideMetadataPage extends LitElement {
     this.feature = {};
     this.loading = true;
     this.appTitle = '';
-    this.nextPage = '';
     this.fieldValues = [];
   }
 
@@ -89,7 +87,7 @@ export class ChromedashGuideMetadataPage extends LitElement {
       hiddenTokenField.value = window.csClient.token;
       return csClient.updateFeature(submitBody);
     }).then(() => {
-      window.location.href = this.nextPage || `/guide/edit/${this.featureId}`;
+      window.location.href = `/feature/${this.featureId}`;
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
@@ -109,7 +107,7 @@ export class ChromedashGuideMetadataPage extends LitElement {
   };
 
   handleCancelClick() {
-    window.location.href = `/guide/edit/${this.featureId}`;
+    window.location.href = `/feature/${this.featureId}`;
   }
 
   // get a comma-spearated list of field names
@@ -142,7 +140,7 @@ export class ChromedashGuideMetadataPage extends LitElement {
   }
 
   getNextPage() {
-    return this.nextPage || `/guide/edit/${this.featureId}`;
+    return `/feature/${this.featureId}`;
   }
 
   renderSubheader() {
