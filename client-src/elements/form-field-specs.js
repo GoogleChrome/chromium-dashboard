@@ -1242,7 +1242,10 @@ export const ALL_FIELDS = {
     help_text: html`
       Whether this trial supports third party origins. See
       <a href="https://web.dev/third-party-origin-trials/">this article</a>
-      for more information.`,
+      for more information. The feature should have "origin_trial_allows_third_party"
+      set to "true" in <a target="_blank"
+      href="https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/runtime_enabled_features.json5"
+      >runtime_enabled_features.json5</a>`,
   },
 
   'ot_is_critical_trial': {
@@ -1252,7 +1255,10 @@ export const ALL_FIELDS = {
     help_text: html`
       See <a href="https://goto.google.com/running-an-origin-trial"
       >go/running-an-origin-trial</a>
-      for criteria and additional process requirements.`,
+      for criteria and additional process requirements.
+      The feature name must be added to the "kHasExpiryGracePeriod" array in <a target="_blank"
+      href="https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/common/origin_trials/manual_completion_origin_trial_features.cc"
+      >manual_completion_origin_trial_features.cc</a>`,
   },
 
   'ot_is_deprecation_trial': {
@@ -1283,8 +1289,9 @@ export const ALL_FIELDS = {
     label: 'WebFeature UseCounter name',
     help_text: html`
     For measuring usage, this must be a single named value from the
-    WebFeature enum, e.g. kWorkerStart. See
-    <a href="https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom"
+    WebFeature enum, e.g. kWorkerStart. The use counter must be landed in
+    <a target="_blank"
+      href="https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom"
     >web_feature.mojom</a>.`,
   },
 
