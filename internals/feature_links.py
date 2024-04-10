@@ -13,17 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
 import datetime
-from framework import cloud_tasks_helpers
-from framework.basehandlers import FlaskHandler
-from typing import Any
-from urllib.parse import urlparse
-from internals.core_models import FeatureEntry
-from internals.link_helpers import Link
+import logging
 from collections import Counter
+from typing import Any, Optional
+from urllib.parse import urlparse
 
 from google.cloud import ndb  # type: ignore
+
+from framework import cloud_tasks_helpers
+from framework.basehandlers import FlaskHandler
+from internals.core_models import FeatureEntry
+from internals.link_helpers import (
+  LINK_TYPE_GITHUB_ISSUE,
+  Link,
+)
+
+logger = logging.getLogger(__name__)
 
 LINK_STALE_MINUTES = 30
 CRON_JOB_LINK_STALE_DAYS = 8
@@ -49,24 +55,41 @@ def update_feature_links(fe: FeatureEntry, changed_fields: list[tuple[str, Any, 
     if new_val != old_val:
       if old_val is None and not bool(new_val):
         continue
+
+      # Clear the denormalized fields that get filled from feature links; they'll get updated below
+      # with their new values.
+      if field == 'safari_views_link':
+        fe.safari_views_link_result = None
+      if field == 'ff_views_link':
+        fe.ff_views_link_result = None
+      if field == 'tag_review':
+        fe.tag_review_resolution = None
+      fe.put()
+
       old_val_urls = Link.extract_urls_from_value(old_val)
       new_val_urls = Link.extract_urls_from_value(new_val)
       urls_to_remove = set(old_val_urls) - set(new_val_urls)
       urls_to_add = set(new_val_urls) - set(old_val_urls)
-      fe_values = fe.to_dict(exclude=[field]).values()
-      all_urls = [url for value in fe_values for url in Link.extract_urls_from_value(value)]
-      for url in urls_to_remove:
-        if url not in all_urls:
-          # if the url is not in any other field in this feature, then remove it from the index
+      if urls_to_remove or urls_to_add:
+        fe_values = fe.to_dict(exclude=[field]).values()
+        all_urls = [
+          url for value in fe_values for url in Link.extract_urls_from_value(value)
+        ]
+        for url in urls_to_remove:
+          if url not in all_urls:
+            # if the url is not in any other field in this feature, then remove it from the index
+            link = Link(url)
+            _remove_link(link, fe)
+        for url in urls_to_add:
           link = Link(url)
-          _remove_link(link, fe)
-      for url in urls_to_add:
-        link = Link(url)
-        if link.type:
-          feature_link = _get_index_link(link, fe, should_parse_new_link=True)
-          if feature_link:
-            feature_link.put()
-            logging.info(f'Indexed feature_link {feature_link.url} to {feature_link.key.integer_id()} for feature {fe.key.integer_id()}')
+          if link.type:
+            feature_link = _get_index_link(link, fe, should_parse_new_link=True)
+            if feature_link:
+              feature_link.put()
+              logging.info(
+                f'Indexed feature_link {feature_link.url} to {feature_link.key.integer_id()} for feature {fe.key.integer_id()}'
+              )
+              _denormalize_feature_link_into_entries(feature_link, [fe])
 
 
 def _get_index_link(link: Link, fe: FeatureEntry, should_parse_new_link: bool = False) -> FeatureLinks | None:
@@ -114,6 +137,71 @@ def _remove_link(link: Link, fe: FeatureEntry) -> None:
         # delete the link if it is not used by any feature
         feature_link.key.delete()
         logging.info(f'Delete indexed link {link.url}')
+
+
+def _get_views_from_label(feature_link: FeatureLinks, position_prefix: str) -> Optional[str]:
+  """Returns the external reviewer's views expressed in feature_link.
+
+  Params:
+    position_prefix: The lowercase prefix this organization uses for their opinion labels.
+  """
+  for label in feature_link.information.get('labels', []):
+    if label.lower().startswith(position_prefix):
+      return label[len(position_prefix) :]
+  return None
+
+
+def _put_if_changed(model: ndb.Model, field: str, new_val) -> None:
+  old_val = getattr(model, field)
+  if old_val != new_val:
+    setattr(model, field, new_val)
+    logger.info(
+      'Denormalized %s=%s into %s %s', field, new_val, model.key.kind(), model.key.id()
+    )
+    model.put()
+
+
+def _denormalize_feature_link_into_entries(
+  feature_link: FeatureLinks, possible_entries: list[FeatureEntry] | None = None
+) -> None:
+  """Fills information from feature_link into relevant fields in the FeatureEntries it appears in.
+
+  Params:
+    possible_entries: If the caller knows which FeatureEntries might need updating, pass that list here.
+  """
+  if feature_link.type == LINK_TYPE_GITHUB_ISSUE:
+    if possible_entries is None:
+      possible_entries = ndb.get_multi(
+        keys=[ndb.Key('FeatureEntry', id) for id in feature_link.feature_ids]
+      )
+    for fe in possible_entries:
+      if (
+        'github.com/w3ctag/design-reviews/' in feature_link.url
+        and fe.tag_review == feature_link.url
+      ):
+        _put_if_changed(
+          fe,
+          'tag_review_resolution',
+          _get_views_from_label(feature_link, 'resolution: '),
+        )
+      if (
+        'github.com/mozilla/standards-positions/' in feature_link.url
+        and fe.ff_views_link == feature_link.url
+      ):
+        _put_if_changed(
+          fe,
+          'ff_views_link_result',
+          _get_views_from_label(feature_link, 'position: '),
+        )
+      if (
+        'github.com/WebKit/standards-positions/' in feature_link.url
+        and fe.safari_views_link == feature_link.url
+      ):
+        _put_if_changed(
+          fe,
+          'safari_views_link_result',
+          _get_views_from_label(feature_link, 'position: '),
+        )
 
 
 def _get_feature_links(feature_id: int) -> list[FeatureLinks]:
@@ -191,6 +279,7 @@ def _index_feature_links_by_ids(
         feature_link.is_error = False
         feature_link.http_error_code = None
         logging.info(f'Update indexed link {feature_link_id} {feature_link.url} successfully')
+        _denormalize_feature_link_into_entries(feature_link)
 
       feature_link.type = link.type
       feature_link.put()
