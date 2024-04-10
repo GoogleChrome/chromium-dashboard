@@ -65,6 +65,21 @@ class SearchRETest(testing_config.CustomTestCase):
         [('OR ', 'flag_name', '=', 'enable-super-stuff', '')],
         search.TERM_RE.findall('OR flag_name=enable-super-stuff '))
 
+  def test_structured_query_terms__quick_or(self):
+    """We can parse queries that use quick-OR syntax for multiple values."""
+    self.assertEqual(
+        [('', 'field', '=', 'value1,value2,value3', '')],
+        search.TERM_RE.findall('field=value1,value2,value3 '))
+    self.assertEqual(
+        [('', 'field', '=', '1,2,3', '')],
+        search.TERM_RE.findall('field=1,2,3 '))
+    self.assertEqual(
+        [('', 'field', '=', '"one","two","three"', '')],
+        search.TERM_RE.findall('field="one","two","three" '))
+    self.assertEqual(
+        [('', 'field', '=', '"enum one","enum two","enum three"', '')],
+        search.TERM_RE.findall('field="enum one","enum two","enum three" '))
+
   def test_text_terms(self):
     """We can parse text terms."""
     self.assertEqual(
