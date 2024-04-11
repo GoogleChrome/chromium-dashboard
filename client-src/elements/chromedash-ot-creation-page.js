@@ -274,13 +274,13 @@ export class ChromedashOTCreationPage extends LitElement {
       field.checkMessage = nothing;
       return false;
     }
-    const webfeatureUseCounterName = this.fieldValues.find(
-      field => field.name === 'ot_webfeature_use_counter').value;
+    const chromiumTrialName = this.fieldValues.find(
+      field => field.name === 'ot_chromium_trial_name').value;
     if (!this.gracePeriodFile) {
       this.gracePeriodFile = await this.getChromiumFile(GRACE_PERIOD_FILE);
     }
     const includedInGracePeriodArray = this.gracePeriodFile.includes(
-      `blink::mojom::OriginTrialFeature::${webfeatureUseCounterName}`);
+      `blink::mojom::OriginTrialFeature::k${chromiumTrialName}`);
     if (!includedInGracePeriodArray) {
       field.checkMessage = html`
         <br>
