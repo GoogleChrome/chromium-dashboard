@@ -12,6 +12,7 @@ src/models/ComponentsUsersResponse.ts
 src/models/FeatureLatency.ts
 src/models/FeatureLink.ts
 src/models/GateLatency.ts
+src/models/OutstandingReview.ts
 src/models/OwnersAndSubscribersOfComponent.ts
 src/models/ReviewLatency.ts
 src/models/SpecMentor.ts

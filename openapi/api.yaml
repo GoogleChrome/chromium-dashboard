@@ -95,6 +95,37 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ReviewLatency'
+  /external_reviews/{review_group}:
+    get:
+      summary: List features whose external reviews are incomplete
+      operationId: listExternalReviews
+      parameters:
+        - in: path
+          name: review_group
+          required: true
+          schema:
+            type: string
+            enum:
+              - tag
+              - gecko
+              - webkit
+          description: >
+            Which review group to focus on:
+             * `tag` - The W3C TAG
+             * `gecko` - The rendering engine that powers Mozilla Firefox
+             * `webkit` - The rendering engine that powers Apple Safari
+      responses:
+        '200':
+          description: >-
+            List of all the outstanding reviews, ordered by urgency.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OutstandingReview'
+        '404':
+          description: The review group wasn't recognized.
   /spec_mentors:
     get:
       summary: List spec mentors and their activity
@@ -266,6 +297,41 @@ components:
         - shipped_milestone
         - shipped_date
         - owner_emails
+    OutstandingReview:
+      type: object
+      required:
+        - review_link
+        - feature
+        - current_stage
+      properties:
+        review_link:
+          type: string
+          format: url
+        feature:
+          $ref: '#/components/schemas/FeatureLink'
+        current_stage:
+          type: string
+          enum:
+            - incubating
+            - prototyping
+            - dev-trial
+            - wide-review
+            - origin-trial
+            - shipping
+            - shipped
+          description: >
+            The development stage that the feature has reached:
+              - [`incubating`](https://www.chromium.org/blink/launching-features/#start-incubating)
+              - [`prototyping`](https://www.chromium.org/blink/launching-features/#prototyping)
+              - [`dev-trial`](https://www.chromium.org/blink/launching-features/#dev-trials)
+              - [`wide-review`](https://www.chromium.org/blink/launching-features/#widen-review)
+              - [`origin-trial`](https://www.chromium.org/blink/launching-features/#origin-trials)
+              - [`shipping`](https://www.chromium.org/blink/launching-features/#new-feature-prepare-to-ship)
+              - `shipped` - The feature is enabled by default in Chromium.
+        estimated_start_milestone:
+          type: integer
+        estimated_end_milestone:
+          type: integer
     FeatureLink:
       type: object
       required:
