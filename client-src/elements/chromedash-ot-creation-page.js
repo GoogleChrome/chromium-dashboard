@@ -11,6 +11,12 @@ import {ORIGIN_TRIAL_CREATION_FIELDS} from './form-definition.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
 import {ALL_FIELDS} from './form-field-specs.js';
+import json5 from 'json5';
+
+
+const WEBFEATURE_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom?format=TEXT';
+const ENABLED_FEATURES_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/runtime_enabled_features.json5?format=TEXT';
+const GRACE_PERIOD_FILE = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/common/origin_trials/manual_completion_origin_trial_features.cc?format=TEXT';
 
 
 export class ChromedashOTCreationPage extends LitElement {
@@ -32,6 +38,11 @@ export class ChromedashOTCreationPage extends LitElement {
       appTitle: {type: String},
       fieldValues: {type: Array},
       showApprovalsFields: {type: Boolean},
+
+      // Chromium file contents for validating inputs.
+      webfeatureFile: {type: String},
+      enabledFeaturesJson: {type: Object},
+      gracePeriodFile: {type: String},
     };
   }
 
@@ -44,6 +55,9 @@ export class ChromedashOTCreationPage extends LitElement {
     this.appTitle = '';
     this.fieldValues = [];
     this.showApprovalsFields = false;
+    this.webfeatureFile = '';
+    this.enabledFeaturesJson = undefined;
+    this.gracePeriodFile = '';
   }
 
   connectedCallback() {
@@ -178,7 +192,132 @@ export class ChromedashOTCreationPage extends LitElement {
     setupScrollToHash(this);
   }
 
-  handleFormSubmit(e) {
+  async getChromiumFile(url) {
+    const resp = await fetch(url);
+    const respJson = await resp.text();
+    return atob(respJson);
+  }
+
+  // Check that the code has landed that is used to monitor feature usage.
+  async checkWebfeatureUseCounter(field) {
+    if (!this.webfeatureFile) {
+      this.webfeatureFile = await this.getChromiumFile(WEBFEATURE_FILE_URL);
+    }
+    const webfeatureCounterExists = this.webfeatureFile.includes(`${field.value} =`);
+    if (!webfeatureCounterExists) {
+      field.checkMessage = html`
+      <span class="check-error">
+        <b>Error</b>: UseCounter name not found in file.
+      </span>`;
+      return true;
+    } else {
+      field.checkMessage = nothing;
+    }
+    return false;
+  }
+
+  // Check that code has landed that is required for the origin trial feature.
+  async checkChromiumTrialName(field) {
+    if (!this.enabledFeaturesJson) {
+      const enabledFeaturesFileText = await this.getChromiumFile(ENABLED_FEATURES_FILE_URL);
+      this.enabledFeaturesJson = json5.parse(enabledFeaturesFileText);
+    }
+    if (!this.enabledFeaturesJson.data.some(
+      feature => feature.origin_trial_feature_name === field.value)) {
+      field.checkMessage = html`
+        <span class="check-error">
+          <b>Error</b>: Name not found in file.
+        </span>`;
+      return true;
+    } else {
+      field.checkMessage = nothing;
+    }
+    return false;
+  }
+
+  // Check that code has landed that is required for third party support.
+  async checkThirdPartySupport(field) {
+    if (!field.value) {
+      field.checkMessage = nothing;
+      return false;
+    }
+    const chromiumTrialName = this.fieldValues.find(
+      field => field.name === 'ot_chromium_trial_name').value;
+    if (!this.enabledFeaturesJson) {
+      const enabledFeaturesFileText = await this.getChromiumFile(ENABLED_FEATURES_FILE_URL);
+      this.enabledFeaturesJson = json5.parse(enabledFeaturesFileText);
+    }
+
+    const thirdPartySupportEnabled = this.enabledFeaturesJson.data.every(
+      feature => {
+        return (feature.origin_trial_feature_name !== chromiumTrialName ||
+          feature.origin_trial_allows_third_party);
+      });
+    if (!thirdPartySupportEnabled) {
+      field.checkMessage = html`
+        <br>
+        <span class="check-error">
+          <b>Error</b>: Property not set in file.
+        </span>`;
+      return true;
+    } else {
+      field.checkMessage = nothing;
+    }
+    return false;
+  }
+
+  // Check that code has landed that is required for critical trials.
+  async checkCriticalTrial(field) {
+    if (!field.value) {
+      field.checkMessage = nothing;
+      return false;
+    }
+    const chromiumTrialName = this.fieldValues.find(
+      field => field.name === 'ot_chromium_trial_name').value;
+    if (!this.gracePeriodFile) {
+      this.gracePeriodFile = await this.getChromiumFile(GRACE_PERIOD_FILE);
+    }
+    const includedInGracePeriodArray = this.gracePeriodFile.includes(
+      `blink::mojom::OriginTrialFeature::k${chromiumTrialName}`);
+    if (!includedInGracePeriodArray) {
+      field.checkMessage = html`
+        <br>
+        <span class="check-error">
+          <b>Error</b>: Trial name not found in file.
+        </span>`;
+      return true;
+    } else {
+      field.checkMessage = nothing;
+    }
+    return false;
+  }
+
+  /**
+   * Check that given args related to Chromium are valid.
+   * @returns Whether any inputs cannot be found in Chromium files.
+   */
+  async handleChromiumChecks() {
+    // Clear saved file info in order to fetch the most recent version.
+    this.webfeatureFile = '';
+    this.enabledFeaturesJson = undefined;
+    this.gracePeriodFile = '';
+    let hasErrors = false;
+
+    for (const field of this.fieldValues) {
+      if (field.name === 'ot_webfeature_use_counter') {
+        hasErrors = hasErrors || await this.checkWebfeatureUseCounter(field);
+      } else if (field.name === 'ot_chromium_trial_name') {
+        hasErrors = hasErrors || await this.checkChromiumTrialName(field);
+      } else if (field.name === 'ot_has_third_party_support') {
+        hasErrors = hasErrors || await this.checkThirdPartySupport(field);
+      } else if (field.name === 'ot_is_critical_trial') {
+        hasErrors = hasErrors || await this.checkCriticalTrial(field);
+      }
+    }
+    return hasErrors;
+  }
+
+  async handleFormSubmit(e) {
     e.preventDefault();
     // If registration approvals is not enabled, ignore all fields related to that setting.
     if (!this.showApprovalsFields) {
@@ -187,6 +326,14 @@ export class ChromedashOTCreationPage extends LitElement {
           fieldInfo.touched = false;
         }
       });
+    }
+
+    const hasErrors = await this.handleChromiumChecks();
+    this.requestUpdate();
+    if (hasErrors) {
+      showToastMessage(
+        'Some issues were found with the given inputs. Check input errors and try again.');
+      return;
     }
 
     const featureSubmitBody = formatFeatureChanges(this.fieldValues, this.featureId);
@@ -254,6 +401,7 @@ export class ChromedashOTCreationPage extends LitElement {
         name=${fieldInfo.name}
         index=${i}
         value=${fieldInfo.value}
+        .checkMessage=${fieldInfo.checkMessage}
         .fieldValues=${this.fieldValues}
         .shouldFadeIn=${shouldFadeIn}
         @form-field-update="${this.handleFormFieldUpdate}">
