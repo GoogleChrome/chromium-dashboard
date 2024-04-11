@@ -15,17 +15,16 @@
 
 import datetime
 import re
-from typing import Any, TypedDict
+from typing import Any, Optional, TypedDict
+
 from google.cloud import ndb  # type: ignore
 
+import settings
+from internals import approval_defs, slo
 from internals.core_enums import *
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.data_types import StageDict, VerboseFeatureDict
-from internals.review_models import Vote, Gate
-from internals import approval_defs
-from internals import slo
-import settings
-
+from internals.review_models import Gate, Vote
 
 SIMPLE_TYPES = frozenset((int, float, bool, dict, str, list))
 
@@ -264,6 +263,34 @@ def _format_new_crbug_url(blink_components: Optional[list[str]],
   return url + '?' + '&'.join(params)
 
 
+_COMPUTED_VIEWS_TO_ENUM = {
+  'defer': GECKO_DEFER,
+  'negative': OPPOSED,
+  'neutral': NEUTRAL,
+  'oppose': OPPOSED,
+  'positive': PUBLIC_SUPPORT,
+  'support': PUBLIC_SUPPORT,
+  'under consideration': GECKO_UNDER_CONSIDERATION,
+}
+
+
+def _compute_vendor_views(
+  url: Optional[str], computed_views: Optional[str], form_views: int, notes: str
+):
+  result: dict[str, int | str | None] = {'url': url, 'notes': notes}
+  if computed_views and form_views not in [SHIPPED, IN_DEV]:
+    result['text'] = computed_views.title()
+    result['val'] = _COMPUTED_VIEWS_TO_ENUM.get(
+      computed_views, form_views if form_views in VENDOR_VIEWS else NO_PUBLIC_SIGNALS
+    )
+  else:
+    result['text'] = VENDOR_VIEWS.get(
+      form_views, VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS]
+    )
+    result['val'] = form_views if form_views in VENDOR_VIEWS else NO_PUBLIC_SIGNALS
+  return result
+
+
 def feature_entry_to_json_verbose(
     fe: FeatureEntry, prefetched_stages: list[Stage] | None=None
     ) -> VerboseFeatureDict:
@@ -316,8 +343,7 @@ def feature_entry_to_json_verbose(
     'creator': fe.creator_email,
     'feature_type': FEATURE_TYPES[fe.feature_type],
     'feature_type_int': fe.feature_type,
-    'intent_stage': INTENT_STAGES.get(
-        fe.intent_stage, INTENT_STAGES[INTENT_NONE]),
+    'intent_stage': INTENT_STAGES.get(fe.intent_stage, INTENT_STAGES[INTENT_NONE]),
     'intent_stage_int': fe.intent_stage,
     'active_stage_id': fe.active_stage_id,
     'bug_url': fe.bug_url,
@@ -361,13 +387,16 @@ def feature_entry_to_json_verbose(
     'tags': fe.search_tags,
     'tag_review': fe.tag_review,
     'tag_review_status': REVIEW_STATUS_CHOICES.get(
-        fe.tag_review_status, REVIEW_STATUS_CHOICES[REVIEW_PENDING]),
+      fe.tag_review_status, REVIEW_STATUS_CHOICES[REVIEW_PENDING]
+    ),
     'tag_review_status_int': fe.tag_review_status,
     'security_review_status': REVIEW_STATUS_CHOICES.get(
-        fe.security_review_status, REVIEW_STATUS_CHOICES[REVIEW_PENDING]),
+      fe.security_review_status, REVIEW_STATUS_CHOICES[REVIEW_PENDING]
+    ),
     'security_review_status_int': fe.security_review_status,
     'privacy_review_status': REVIEW_STATUS_CHOICES.get(
-        fe.privacy_review_status, REVIEW_STATUS_CHOICES[REVIEW_PENDING]),
+      fe.privacy_review_status, REVIEW_STATUS_CHOICES[REVIEW_PENDING]
+    ),
     'privacy_review_status_int': fe.privacy_review_status,
     'updated_display': None,
     'resources': {
@@ -391,40 +420,33 @@ def feature_entry_to_json_verbose(
         'status': {
           'text': IMPLEMENTATION_STATUS[fe.impl_status_chrome],
           'val': fe.impl_status_chrome,
-          'milestone_str': None
+          'milestone_str': None,
         },
-
         # TODO(danielrsmith): Find out if these are used and delete if not.
         'desktop': _get_milestone_attr(stage_info['ship'], 'desktop_first'),
         'android': _get_milestone_attr(stage_info['ship'], 'android_first'),
         'webview': _get_milestone_attr(stage_info['ship'], 'webview_first'),
         'ios': _get_milestone_attr(stage_info['ship'], 'ios_first'),
-
       },
       'ff': {
-        'view': {
-          'text': VENDOR_VIEWS.get(
-              fe.ff_views, VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS]),
-          'val': fe.ff_views if fe.ff_views in VENDOR_VIEWS else NO_PUBLIC_SIGNALS,
-          'url': fe.ff_views_link,
-          'notes': fe.ff_views_notes,
-        },
+        'view': _compute_vendor_views(
+          fe.ff_views_link, fe.ff_views_link_result, fe.ff_views, fe.ff_views_notes
+        ),
       },
       'safari': {
-        'view': {
-          'text': VENDOR_VIEWS.get(
-              fe.safari_views,VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS]),
-          'val': (fe.safari_views if fe.safari_views in VENDOR_VIEWS
-                  else NO_PUBLIC_SIGNALS),
-          'url': fe.safari_views_link,
-          'notes': fe.safari_views_notes,
-        },
+        'view': _compute_vendor_views(
+          fe.safari_views_link,
+          fe.safari_views_link_result,
+          fe.safari_views,
+          fe.safari_views_notes,
+        ),
       },
       'webdev': {
         'view': {
           'text': WEB_DEV_VIEWS.get(fe.web_dev_views, WEB_DEV_VIEWS[DEV_NO_SIGNALS]),
-          'val': (fe.web_dev_views if fe.web_dev_views in WEB_DEV_VIEWS
-                  else DEV_NO_SIGNALS),
+          'val': (
+            fe.web_dev_views if fe.web_dev_views in WEB_DEV_VIEWS else DEV_NO_SIGNALS
+          ),
           'url': fe.web_dev_views_link,
           'notes': fe.web_dev_views_notes,
         },
@@ -434,7 +456,7 @@ def feature_entry_to_json_verbose(
           'text': None,
           'val': None,
           'url': None,
-          'notes':fe.other_views_notes,
+          'notes': fe.other_views_notes,
         },
       },
     },
@@ -449,7 +471,6 @@ def feature_entry_to_json_verbose(
     },
     'is_released': fe.impl_status_chrome in RELEASE_IMPL_STATES,
     'is_enterprise_feature': fe.feature_type == FEATURE_TYPE_ENTERPRISE_ID,
-
     'experiment_timeline': fe.experiment_timeline,
   }
 
@@ -488,14 +509,8 @@ def feature_entry_to_json_basic(fe: FeatureEntry,
       'samples': fe.sample_links or [],
       'docs': fe.doc_links or [],
     },
-    'created': {
-      'by': fe.creator_email,
-      'when': _date_to_str(fe.created)
-    },
-    'updated': {
-      'by': fe.updater_email,
-      'when': _date_to_str(fe.updated)
-    },
+    'created': {'by': fe.creator_email, 'when': _date_to_str(fe.created)},
+    'updated': {'by': fe.updater_email, 'when': _date_to_str(fe.updated)},
     'standards': {
       'spec': fe.spec_link,
       'maturity': {
@@ -516,35 +531,28 @@ def feature_entry_to_json_basic(fe: FeatureEntry,
         'flag': fe.impl_status_chrome == BEHIND_A_FLAG,
         'status': {
           'text': IMPLEMENTATION_STATUS[fe.impl_status_chrome],
-          'val': fe.impl_status_chrome
-        }
+          'val': fe.impl_status_chrome,
+        },
       },
       'ff': {
-        'view': {
-        'text': VENDOR_VIEWS.get(fe.ff_views,
-            VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS]),
-        'val': (fe.ff_views if fe.ff_views in VENDOR_VIEWS
-            else NO_PUBLIC_SIGNALS),
-          'url': fe.ff_views_link,
-          'notes': fe.ff_views_notes,
-        }
+        'view': _compute_vendor_views(
+          fe.ff_views_link, fe.ff_views_link_result, fe.ff_views, fe.ff_views_notes
+        ),
       },
       'safari': {
-        'view': {
-        'text': VENDOR_VIEWS.get(fe.safari_views,
-            VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS]),
-        'val': (fe.safari_views if fe.safari_views in VENDOR_VIEWS
-            else NO_PUBLIC_SIGNALS),
-          'url': fe.safari_views_link,
-          'notes': fe.safari_views_notes,
-        }
+        'view': _compute_vendor_views(
+          fe.safari_views_link,
+          fe.safari_views_link_result,
+          fe.safari_views,
+          fe.safari_views_notes,
+        ),
       },
       'webdev': {
         'view': {
-        'text': WEB_DEV_VIEWS.get(fe.web_dev_views,
-            WEB_DEV_VIEWS[DEV_NO_SIGNALS]),
-        'val': (fe.web_dev_views if fe.web_dev_views in WEB_DEV_VIEWS
-            else DEV_NO_SIGNALS),
+          'text': WEB_DEV_VIEWS.get(fe.web_dev_views, WEB_DEV_VIEWS[DEV_NO_SIGNALS]),
+          'val': (
+            fe.web_dev_views if fe.web_dev_views in WEB_DEV_VIEWS else DEV_NO_SIGNALS
+          ),
           'url': fe.web_dev_views_link,
           'notes': fe.web_dev_views_notes,
         }
@@ -554,7 +562,7 @@ def feature_entry_to_json_basic(fe: FeatureEntry,
           'notes': fe.other_views_notes,
         }
       },
-    }
+    },
   }
 
   is_released = fe.impl_status_chrome in RELEASE_IMPL_STATES

@@ -91,8 +91,8 @@ describe('chromedash-feature-page', () => {
         owners: ['fake chrome owner one', 'fake chrome owner two'],
         status: {text: 'fake chrome status text'},
       },
-      ff: {view: {text: 'fake ff view text'}},
-      safari: {view: {text: 'fake safari view text'}},
+      ff: {view: {val: 1, text: 'fake ff view text', url: 'fake ff url'}},
+      safari: {view: {val: 1, text: 'fake safari view text', url: 'fake safari url'}},
       webdev: {view: {text: 'fake webdev view text'}},
     },
     resources: {
@@ -236,6 +236,16 @@ describe('chromedash-feature-page', () => {
     assert.exists(specSection);
     // spec link is clickable
     assert.include(specSection.innerHTML, 'href="fake spec link"');
+
+    const consensusSection = component.shadowRoot.querySelector('section#consensus');
+    assert.exists(consensusSection);
+    // spec link is clickable
+    assert.include(consensusSection.innerHTML, '<chromedash-vendor-views ');
+    assert.include(consensusSection.innerHTML, 'fake ff view text');
+    assert.include(consensusSection.innerHTML, 'href="fake ff url"');
+    assert.include(consensusSection.innerHTML, 'fake safari view text');
+    assert.include(consensusSection.innerHTML, 'href="fake safari url"');
+    assert.include(consensusSection.innerHTML, 'fake webdev view text');
 
     const tagSection = component.shadowRoot.querySelector('section#tags');
     assert.exists(tagSection);
