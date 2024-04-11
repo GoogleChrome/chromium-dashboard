@@ -29,8 +29,6 @@ from internals.link_helpers import (
   Link,
 )
 
-logger = logging.getLogger(__name__)
-
 LINK_STALE_MINUTES = 30
 CRON_JOB_LINK_STALE_DAYS = 8
 
@@ -155,7 +153,7 @@ def _put_if_changed(model: ndb.Model, field: str, new_val) -> None:
   old_val = getattr(model, field)
   if old_val != new_val:
     setattr(model, field, new_val)
-    logger.info(
+    logging.info(
       'Denormalized %s=%s into %s %s', field, new_val, model.key.kind(), model.key.id()
     )
     model.put()
