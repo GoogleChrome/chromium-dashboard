@@ -31,7 +31,7 @@ class NerfedSlDropdown extends SlDropdown {
       event.preventDefault();
 
       if (this.currentItemIndex !== null) {
-        console.log('clicking item');
+        console.log('selecting item via Enter calls click()');
         menuItems[this.currentItemIndex]?.click();
         this.resetSelection();
       }
@@ -156,7 +156,6 @@ class ChromedashFeatureFilter extends LitElement {
     const candidateValue = e.detail.item.value;
     const inputEl = this.slInputRef.value.input;
     const wholeStr = inputEl.value;
-    console.log('maybe:' + wholeStr[this.chunkEnd] + '.');
     const maybeAddSpace =
           (!candidateValue.endsWith('=') && wholeStr[this.chunkEnd] !== ' ') ? ' ' : '';
     const newWholeStr = (
@@ -168,7 +167,6 @@ class ChromedashFeatureFilter extends LitElement {
     // Wait for the sl-input to propagate its new value to its <input>.
     await this.updateComplete;
 
-    console.log(this.chunkStart + ' + ' + candidateValue.length);
     this.chunkStart = this.chunkStart + candidateValue.length + maybeAddSpace.length;
     this.chunkEnd = this.chunkStart;
     inputEl.selectionStart = this.chunkStart;
@@ -176,41 +174,37 @@ class ChromedashFeatureFilter extends LitElement {
     this.calcCandidates();
   }
 
+  // Check if the user is pressing Enter to send a query.  This is detected
+  // on keyDown so that the handler is run before the dropdown keyDown is run.
   handleSearchKeyDown(event) {
     if (event.key === 'Enter') {
-      console.log('fire 1');
-      if (!this.slDropdownRef.open || this.slDropdownRef.value.currentItemIndex === null) {
-        console.log('fire 2');
-        // this.handleSearchClick();
+      const dd = this.slDropdownRef.value;
+      if (!dd.open || dd.currentItemIndex === null) {
+        this.handleSearchClick();
       }
     }
   }
 
+  // As the user types and moves the caret, keep recalculating a-c choices.
+  // Left and right movement is handled on keyUp so that caret has already been
+  // moved to its new position before this handler is run.
   handleSearchKeyUp(event) {
     if (['ArrowDown', 'ArrowUp', 'Enter'].includes(event.key)) {
       return;
     }
-    if (event.key === 'Enter') {
-      console.log('fire 1');
-      if (!this.slDropdownRef.open || this.slDropdownRef.value.currentItemIndex === null) {
-        console.log('fire 2');
-        this.handleSearchClick();
-      }
-    } else {
-      this.calcCandidates();
-    }
+    this.calcCandidates();
   }
 
   calcCandidates() {
-    console.log('calcCandidates');
     this.findPrefix();
     this.candidates = VOCABULARY.filter(c => this.shouldShowCandidate(c, this.prefix));
     this.slDropdownRef.value.resetSelection();
   }
 
   handleSearchClick() {
+    this.slDropdownRef.value.hide();
     const newQuery = this.computeQuery();
-    console.log({newQuery});
+    console.log('handleSearchClick() sending query: ' + newQuery);
     this._fireEvent('search', {query: newQuery});
   }
 
