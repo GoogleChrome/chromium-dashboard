@@ -106,6 +106,7 @@
     "@polymer/iron-collapse": "^3.0.1",
     "@polymer/iron-icon": "^3.0.1",
     "@polymer/iron-iconset-svg": "^3.0.1",
+    "json5": "^2.2.3",
     "lit": "^3",
     "node-fetch": ">=3.3.2",
     "page": "^1.11.6",

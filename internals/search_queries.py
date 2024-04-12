@@ -29,9 +29,14 @@ from internals.review_models import Gate
 
 
 def single_field_query_async(
-    field_name: str, operator: str, val: Union[str, int, datetime.datetime],
+    field_name: str, operator: str,
+    val_list: list[str | int | bool | datetime.datetime],
     limit: int|None = None) -> list[int] | Future:
   """Create a query for one FeatureEntry field and run it, returning a promise."""
+  if not val_list or val_list == ['']:
+    logging.warning('No values were provided when searching %r', field_name)
+    return []
+
   # Note: We don't exclude deleted features, that's done by process_query.
   field_name = field_name.lower()
   if field_name in QUERIABLE_FIELDS:
@@ -39,11 +44,14 @@ def single_field_query_async(
     query = FeatureEntry.query()
     field = QUERIABLE_FIELDS[field_name]
     if core_enums.is_enum_field(field_name):
-      enum_val = core_enums.convert_enum_string_to_int(field_name, val)
-      if enum_val < 0:
-        logging.warning('Cannot find enum %r:%r', field_name, val)
-        return []
-      val = enum_val
+      enum_val_list = []
+      for val in val_list:
+        enum_val = core_enums.convert_enum_string_to_int(field_name, val)
+        if enum_val < 0:
+          logging.warning('Cannot find enum %r:%r', field_name, val)
+          return []
+        enum_val_list.append(enum_val)
+      val_list = enum_val_list
   elif field_name in STAGE_QUERIABLE_FIELDS:
     # It is a query on a field in Stage.
     query = Stage.query()
@@ -62,33 +70,36 @@ def single_field_query_async(
     return []
 
   # TODO(jrobbins): Handle ":" operator as substrings for text fields.
-  # TODO(jrobbins): Implement quick-OR for integer fields, e.g., x=2,3,4.
 
-  try:
-    # If the field can be set to val, then it can be compared to val.
-    field._validate(val)
-  except ndb.exceptions.BadValueError:
-    logging.info('Wrong type of value for %r: %r' % (field, val))
-    raise ValueError('Query value does not match field type')
+  for val in val_list:
+    try:
+      # If the field can be set to val, then it can be compared to val.
+      field._validate(val)
+    except ndb.exceptions.BadValueError:
+      logging.info('Wrong type of value for %r: %r' % (field, val))
+      raise ValueError('Query value does not match field type')
 
-  if (operator == '='):
-    val_list = str(val).split(',')
-    if len(val_list) > 1:
+  if len(val_list) > 1:
+    if (operator == '='):
       query = query.filter(field.IN(val_list))
     else:
-      query = query.filter(field == val)
-  elif (operator == '<='):
-    query = query.filter(field <= val)
-  elif (operator == '<'):
-    query = query.filter(field < val)
-  elif (operator == '>='):
-    query = query.filter(field >= val)
-  elif (operator == '>'):
-    query = query.filter(field > val)
-  elif (operator == '!='):
-    query = query.filter(field != val)
+      raise ValueError('Quick-OR is not supported for operator: %r' % operator)
   else:
-    raise ValueError('Unexpected query operator: %r' % operator)
+    val = val_list[0]
+    if (operator == '='):
+      query = query.filter(field == val)
+    elif (operator == '<='):
+      query = query.filter(field <= val)
+    elif (operator == '<'):
+      query = query.filter(field < val)
+    elif (operator == '>='):
+      query = query.filter(field >= val)
+    elif (operator == '>'):
+      query = query.filter(field > val)
+    elif (operator == '!='):
+      query = query.filter(field != val)
+    else:
+      raise ValueError('Unexpected query operator: %r' % operator)
 
   if field_name in QUERIABLE_FIELDS:
     # It was a query directly on FeatureEntry, use keys to get feature IDs.
@@ -123,7 +134,7 @@ def handle_me_query_async(field_name: str) -> list[int] | Future:
   user = users.get_current_user()
   if not user:
     return []
-  return single_field_query_async(field_name, '=', user.email())
+  return single_field_query_async(field_name, '=', [user.email()])
 
 
 def handle_can_edit_me_query_async() -> list[int] | Future:

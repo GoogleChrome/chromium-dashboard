@@ -89,8 +89,12 @@ def process_recent_reviews_query() -> list[int] | Future:
   return future_feature_ids
 
 
-def parse_query_value(val_str: str) -> Union[bool, datetime.datetime, int, str]:
+def parse_query_value(val_str: str) -> bool | int | str | datetime.datetime:
   """Return a python object that can be used as a value in an NDB query."""
+
+  if val_str.startswith('"') and val_str.endswith('"'):
+    val_str = val_str[1:-1]
+
   if val_str == 'true':
     return True
   if val_str == 'false':
@@ -110,6 +114,13 @@ def parse_query_value(val_str: str) -> Union[bool, datetime.datetime, int, str]:
   return val_str
 
 
+def parse_query_value_list(
+    vals_str: str) -> list[int | str | bool | datetime.datetime]:
+  """Return a list of values that can be used in an NDB query."""
+  return [parse_query_value(part)
+          for part in vals_str.split(',')]
+
+
 # A full-text query term consisting of a single word or quoted string.
 # The single word case cannot contain an operator.
 # We do not support any kind of escaped quotes in quoted strings.
@@ -120,9 +131,9 @@ FIELD_NAME_PATTERN = r'[-.a-z_0-9]+'
 OPERATORS_PATTERN = r':|=|<=|<|>=|>|!='
 # A value that a feature field can be compared against.  It can be
 # a single word or a quoted string.
-VALUE_PATTERN = r'[^" ]+|"[^"]+"'
+VALUE_PATTERN = r'[^", ]+|"[^"]+"'
+VALUES_PATTERN = r'(?:%s)(?:,(?:%s))*' % (VALUE_PATTERN, VALUE_PATTERN)
 # Logical operators.
-# TODO(kyleju): support 'OR' logic
 LOGICAL_OPERATORS_PATTERN = r'OR\s+|-'
 
 # Overall, a query term can be either a structured term or a full-text term.
@@ -131,7 +142,7 @@ LOGICAL_OPERATORS_PATTERN = r'OR\s+|-'
 TERM_RE = re.compile(
     '(?P<logical>%s)?(?:(?P<field>%s)(?P<op>%s)(?P<val>%s)|(?P<textterm>%s))\s+' % (
         LOGICAL_OPERATORS_PATTERN, FIELD_NAME_PATTERN, OPERATORS_PATTERN,
-        VALUE_PATTERN, TEXT_PATTERN),
+        VALUES_PATTERN, TEXT_PATTERN),
     re.I)
 
 SIMPLE_QUERY_TERMS = [
@@ -141,19 +152,16 @@ SIMPLE_QUERY_TERMS = [
 
 
 def process_query_term(
-    is_negation: bool, field_name: str, op_str: str, val_str: str) -> Future:
+    is_negation: bool, field_name: str, op_str: str, vals_str: str) -> Future:
   """Parse and run a user-supplied query, if we can handle it."""
   if is_negation:
     op_str = search_queries.negate_operator(op_str)
 
-  if val_str.startswith('"') and val_str.endswith('"'):
-    val_str = val_str[1:-1]
-
-  val = parse_query_value(val_str)
-  logging.info('trying %r %r %r', field_name, op_str, val)
+  val_list = parse_query_value_list(vals_str)
+  logging.info('trying %r %r %r', field_name, op_str, val_list)
 
   future = search_queries.single_field_query_async(
-      field_name, op_str, val)
+      field_name, op_str, val_list)
   return future
 
 
@@ -187,9 +195,9 @@ def process_predefined_query_term(
 
 
 def is_predefined_query_term(
-  field_name: str, op_str: str, val_str: str) -> bool:
+  field_name: str, op_str: str, vals_str: str) -> bool:
   """Determine if a query is a simple query term."""
-  query_term = field_name + op_str + val_str
+  query_term = field_name + op_str + vals_str
   return query_term in SIMPLE_QUERY_TERMS
 
 
@@ -318,17 +326,17 @@ def process_query(
 def create_future_operations_from_queries(terms):
   """Create parallel queries for each term. Each yields a future operation"""
   feature_id_future_ops = []
-  for logical_op, field_name, op_str, val_str, textterm in terms:
+  for logical_op, field_name, op_str, vals_str, textterm in terms:
     is_negation = (logical_op.strip() == '-')
     is_normal_query = False
     if textterm:
       future = search_fulltext.search_fulltext(textterm)
-    elif is_predefined_query_term(field_name, op_str, val_str):
+    elif is_predefined_query_term(field_name, op_str, vals_str):
       logging.info('Running predefined query term: %r %r %r',
-                   field_name, op_str, val_str)
-      future = process_predefined_query_term(field_name, op_str, val_str)
+                   field_name, op_str, vals_str)
+      future = process_predefined_query_term(field_name, op_str, vals_str)
     else:
-      future = process_query_term(is_negation, field_name, op_str, val_str)
+      future = process_query_term(is_negation, field_name, op_str, vals_str)
       is_normal_query = True
 
     if future is None:
