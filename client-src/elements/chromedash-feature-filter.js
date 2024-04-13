@@ -17,6 +17,7 @@ class ChromedashACItem extends LitElement {
       css`
       .menu-item {
     display: flex;
+    flex-wrap: wrap;
     font-family: var(--sl-font-sans);
     font-size: var(--sl-font-size-medium);
     font-weight: var(--sl-font-weight-normal);
@@ -352,7 +353,7 @@ class ChromedashFeatureFilter extends LitElement {
   render() {
     return html`
       <nerfed-sl-dropdown
-          stay-open-on-select
+          stay-open-on-select sync="width"
           ${ref(this.slDropdownRef)}>
         ${this.renderSearchBar()}
         ${this.renderAutocompleteMenu()}
