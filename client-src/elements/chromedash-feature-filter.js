@@ -101,6 +101,12 @@ class NerfedSlDropdown extends SlDropdown {
     super();
   }
 
+  setCurrentMenuItem(newCurrentItem) {
+    const menu = this.getMenu();
+    menu.setCurrentItem(newCurrentItem);
+    newCurrentItem.scrollIntoView(false, {block: 'nearest', behavior: 'smooth'});
+  }
+
   async handleTriggerKeyDown(event) {
     const menu = this.getMenu();
     if (!menu) {
@@ -138,17 +144,17 @@ class NerfedSlDropdown extends SlDropdown {
 
       if (currentItem) {
         if (event.key === 'ArrowDown' && currentItem.nextElementSibling) {
-          menu.setCurrentItem(currentItem.nextElementSibling);
+          this.setCurrentMenuItem(currentItem.nextElementSibling);
         }
         if (event.key === 'ArrowUp' && currentItem.previousElementSibling) {
-          menu.setCurrentItem(currentItem.previousElementSibling);
+          this.setCurrentMenuItem(currentItem.previousElementSibling);
         }
       } else {
         if (event.key === 'ArrowDown') {
-          menu.setCurrentItem(menuItems[0]);
+          this.setCurrentMenuItem(menuItems[0]);
         }
         if (event.key === 'ArrowUp') {
-          menu.setCurrentItem(menuItems[menuItems.length - 1]);
+          this.setCurrentMenuItem(menuItems[menuItems.length - 1]);
         }
       }
       // Note: We keep keyboard focus on the search box.
