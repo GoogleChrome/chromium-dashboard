@@ -10,10 +10,94 @@ const VOCABULARY = QUERIABLE_FIELDS.map((qf) => {
 });
 
 
+class ChromedashACItem extends LitElement {
+  static get styles() {
+    return [
+      ...SHARED_STYLES,
+      css`
+      .menu-item {
+    display: flex;
+    font-family: var(--sl-font-sans);
+    font-size: var(--sl-font-size-medium);
+    font-weight: var(--sl-font-weight-normal);
+    line-height: var(--sl-line-height-normal);
+    letter-spacing: var(--sl-letter-spacing-normal);
+    color: var(--sl-color-neutral-700);
+    padding: var(--sl-spacing-2x-small) var(--sl-spacing-2x-small);
+    transition: var(--sl-transition-fast) fill;
+    user-select: none;
+    -webkit-user-select: none;
+    white-space: nowrap;
+    cursor: pointer;
+      }
+
+ .active
+ {
+    outline: none;
+    background-color: var(--sl-color-primary-200);
+    opacity: 1;
+  }
+      #value {
+        width: 24em;
+        overflow-x: hidden;
+      }
+      code {
+        font-size: 85%;
+        background: #eee;
+        padding: var(--content-padding-quarter);
+      }
+    `];
+  }
+
+  static get properties() {
+    return {
+      value: {type: String},
+      doc: {type: String},
+      prefix: {type: String},
+      role: {type: String, reflect: true},
+      tabindex: {type: Number},
+    };
+  }
+
+  constructor() {
+    super();
+    this.value = '';
+    this.doc = '';
+    this.prefix = '';
+    this.role = 'menuitem';
+  }
+
+  handleMouseOver(event) {
+    this.parentElement?.setCurrentItem(this);
+    event.stopPropagation();
+  };
+
+  highlight(s) {
+    const start = s.indexOf(this.prefix);
+    if (start === -1) return s;
+    const before = s.substring(0, start);
+    const after = s.substring(start + this.prefix.length);
+    return html`${before}<b>${this.prefix}</b>${after}`;
+  }
+
+  render() {
+    const highlightedValue = this.highlight(this.value);
+    const highlightedDoc = this.highlight(this.doc);
+    return html`
+      <div class="menu-item ${this.tabindex == 0 ? 'active' : ''}"
+        @mouseover=${this.handleMouseOver}>
+        <span id="value"><code>${highlightedValue}</code></span>
+        <span id="doc">${highlightedDoc}</span>
+      </div>
+    `;
+  }
+}
+customElements.define('chromedash-ac-item', ChromedashACItem);
+
+
 class NerfedSlDropdown extends SlDropdown {
   constructor() {
     super();
-    this.currentItemIndex = null;
   }
 
   async handleTriggerKeyDown(event) {
@@ -25,14 +109,15 @@ class NerfedSlDropdown extends SlDropdown {
     if (menuItems.length === 0) {
       return;
     }
+    const currentItem = menu.getCurrentItem();
 
     // Handle menu selection keys.
     if (['Enter'].includes(event.key)) {
       event.preventDefault();
 
-      if (this.currentItemIndex !== null) {
+      if (currentItem !== null) {
         console.log('selecting item via Enter calls click()');
-        menuItems[this.currentItemIndex]?.click();
+        currentItem.click();
         this.resetSelection();
       }
     }
@@ -50,41 +135,28 @@ class NerfedSlDropdown extends SlDropdown {
         await this.updateComplete;
       }
 
-      if (this.currentItemIndex === null) {
-        if (event.key === 'ArrowDown') {
-          this.currentItemIndex = 0;
+      if (currentItem) {
+        if (event.key === 'ArrowDown' && currentItem.nextElementSibling) {
+          menu.setCurrentItem(currentItem.nextElementSibling);
         }
-        if (event.key === 'ArrowUp') {
-          this.currentItemIndex = menuItems.length - 1;
+        if (event.key === 'ArrowUp' && currentItem.previousElementSibling) {
+          menu.setCurrentItem(currentItem.previousElementSibling);
         }
       } else {
-        menuItems[this.currentItemIndex].style.backgroundColor = '';
         if (event.key === 'ArrowDown') {
-          this.currentItemIndex = Math.min(this.currentItemIndex + 1, menuItems.length - 1);
+          menu.setCurrentItem(menuItems[0]);
         }
         if (event.key === 'ArrowUp') {
-          this.currentItemIndex = Math.max(this.currentItemIndex - 1, 0);
+          menu.setCurrentItem(menuItems[menuItems.length - 1]);
         }
       }
-
-      // Select and highlight the new current menu item.
-      this.updateComplete.then(() => {
-        console.log(this.currentItemIndex);
-        const selectedItem = menuItems[this.currentItemIndex];
-        menu.setCurrentItem(selectedItem);
-        selectedItem.style.backgroundColor = 'var(--sl-color-primary-200)';
-        // Note: We keep keyboard focus on the search box.
-      });
+      // Note: We keep keyboard focus on the search box.
     }
   }
 
   resetSelection() {
-    const menu = this.getMenu();
-    const menuItems = menu.getAllItems();
-    if (this.currentItemIndex != null && menuItems[this.currentItemIndex]) {
-      menuItems[this.currentItemIndex].style.backgroundColor = '';
-      this.currentItemIndex = null;
-    }
+    const currentItem = this.getMenu().getCurrentItem();
+    currentItem?.setAttribute('tabindex', 0);
   }
 }
 customElements.define('nerfed-sl-dropdown', NerfedSlDropdown);
@@ -172,6 +244,7 @@ class ChromedashFeatureFilter extends LitElement {
     inputEl.selectionStart = this.chunkStart;
     inputEl.selectionEnd = this.chunkEnd;
     this.calcCandidates();
+    inputEl.focus();
   }
 
   // Check if the user is pressing Enter to send a query.  This is detected
@@ -195,9 +268,13 @@ class ChromedashFeatureFilter extends LitElement {
     this.calcCandidates();
   }
 
-  calcCandidates() {
+  calcCandidates(event) {
+    if (event) {
+      event.stopPropagation();
+    }
     this.findPrefix();
     this.candidates = VOCABULARY.filter(c => this.shouldShowCandidate(c, this.prefix));
+    this.slDropdownRef.value.open = (this.candidates.length > 0);
     this.slDropdownRef.value.resetSelection();
   }
 
@@ -224,17 +301,6 @@ class ChromedashFeatureFilter extends LitElement {
        border: none;
        border-radius: 8px;
       }
-      sl-menu-item span {
-        display: inline-flex;
-        width: 26em;
-        overflow-x: hidden;
-      }
-      code {
-        font-size: 85%;
-        background: #eee;
-        padding: 0 var(--content-padding-quarter);
-      }
-
     `];
   }
 
@@ -251,6 +317,7 @@ class ChromedashFeatureFilter extends LitElement {
           @keydown="${this.handleSearchKeyDown}"
           @keyup="${this.handleSearchKeyUp}"
           @focus="${this.calcCandidates}"
+          @click="${this.calcCandidates}"
         >
         <sl-icon-button library="material" name="search" slot="prefix"
             @click="${this.handleSearchClick}">
@@ -262,33 +329,21 @@ class ChromedashFeatureFilter extends LitElement {
     `;
   }
 
-  highlight(s) {
-    const start = s.indexOf(this.prefix);
-    if (start === -1) return s;
-    const before = s.substring(0, start);
-    const after = s.substring(start + this.prefix.length);
-    return html`${before}<b>${this.prefix}</b>${after}`;
-  }
-
-  renderCandidate(candidate) {
-    const highlightedName = this.highlight(candidate.name);
-    const highlightedDoc = this.highlight(candidate.doc);
-    return html`
-      <sl-menu-item value=${candidate.name}>
-        <span><code>${highlightedName}</code></span>
-        ${highlightedDoc}
-      </sl-menu-item>
-    `;
-  }
 
   renderAutocompleteMenu() {
     return html`
       <sl-menu
-        @sl-select=${(e) => {
-      this.handleCandidateSelected(e);
+        @click=${(e) => {
+      e.preventDefault();
     }}
+        @sl-select=${this.handleCandidateSelected}
       >
-        ${this.candidates.map(c => this.renderCandidate(c))}
+        ${this.candidates.map(c => html`
+        <!-- sl-menu-item>${c.name}</sl-menu-item -->
+        <chromedash-ac-item
+          value=${c.name} doc=${c.doc} prefix=${this.prefix}
+        ></chromedash-ac-item>
+        `)}
       </sl-menu>
     `;
   }
