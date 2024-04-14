@@ -271,11 +271,12 @@ class ChromedashTypeaheadDropdown extends SlDropdown {
       }
 
       if (currentItem) {
-        if (event.key === 'ArrowDown' && currentItem.nextElementSibling) {
-          this.setCurrentItem(currentItem.nextElementSibling);
+        const currentItemIndex = menuItems.indexOf(currentItem);
+        if (event.key === 'ArrowDown' && menuItems[currentItemIndex + 1]) {
+          this.setCurrentItem(menuItems[currentItemIndex + 1]);
         }
-        if (event.key === 'ArrowUp' && currentItem.previousElementSibling) {
-          this.setCurrentItem(currentItem.previousElementSibling);
+        if (event.key === 'ArrowUp' && menuItems[currentItemIndex - 1]) {
+          this.setCurrentItem(menuItems[currentItemIndex - 1]);
         }
       } else {
         if (event.key === 'ArrowDown') {
