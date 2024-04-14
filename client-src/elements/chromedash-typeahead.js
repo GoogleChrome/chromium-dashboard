@@ -57,7 +57,7 @@ class ChromedashTypeahead extends LitElement {
       chromedash-typeahead-dropdown {
         width: 100%;
       }
-      #searchbar::part(base) {
+      #inputfield::part(base) {
        background: #eee;
        border: none;
        border-radius: 8px;
@@ -114,7 +114,6 @@ class ChromedashTypeahead extends LitElement {
   }
 
   async handleCandidateSelected(e) {
-    console.log(e);
     const candidateValue = e.detail.item.value;
     const inputEl = this.slInputRef.value.input;
     const wholeStr = inputEl.value;
@@ -125,10 +124,10 @@ class ChromedashTypeahead extends LitElement {
       wholeStr.substring(0, this.chunkStart) +
           candidateValue + maybeAddSpace +
           wholeStr.substring(this.chunkEnd, wholeStr.length));
-    console.log({candidateValue, inputEl, wholeStr, newWholeStr});
     this.slInputRef.value.value = newWholeStr;
     this.reflectValue();
-    // Wait for the sl-input to propagate its new value to its <input>.
+    // Wait for the sl-input to propagate its new value to its <input> before
+    // setting or accessing the text selection.
     await this.updateComplete;
 
     this.chunkStart = this.chunkStart + candidateValue.length + maybeAddSpace.length;
@@ -136,12 +135,14 @@ class ChromedashTypeahead extends LitElement {
     inputEl.selectionStart = this.chunkStart;
     inputEl.selectionEnd = this.chunkEnd;
     this.calcCandidates();
+    // The user may have clicked a menu item, causing the sl-input to lose
+    // keyboard focus.  So, focus on the sl-input again.
     inputEl.focus();
   }
 
   // Check if the user is pressing Enter to send a query.  This is detected
   // on keyDown so that the handler is run before the dropdown keyDown is run.
-  handleSearchKeyDown(event) {
+  handleInputFieldKeyDown(event) {
     if (event.key === 'Enter') {
       const slDropdown = this.slDropdownRef.value;
       if (!slDropdown.open || !slDropdown.getCurrentItem()) {
@@ -154,7 +155,7 @@ class ChromedashTypeahead extends LitElement {
   // As the user types and moves the caret, keep recalculating a-c choices.
   // Left and right movement is handled on keyUp so that caret has already been
   // moved to its new position before this handler is run.
-  handleSearchKeyUp(event) {
+  handleInputFieldKeyUp(event) {
     if (['Escape'].includes(event.key)) {
       this.wasDismissed = true;
       return;
@@ -182,13 +183,13 @@ class ChromedashTypeahead extends LitElement {
     slDropdown.resetSelection();
   }
 
-  renderSearchBar() {
+  renderInputField() {
     return html`
-      <sl-input id="searchbar" slot="trigger" placeholder=${this.placeholder}
+      <sl-input id="inputfield" slot="trigger" placeholder=${this.placeholder}
           value=${live(this.value)} ${ref(this.slInputRef)}
           autocomplete=off spellcheck="false"
-          @keydown="${this.handleSearchKeyDown}"
-          @keyup="${this.handleSearchKeyUp}"
+          @keydown="${this.handleInputFieldKeyDown}"
+          @keyup="${this.handleInputFieldKeyUp}"
           @focus="${this.calcCandidates}"
           @click="${this.calcCandidates}"
           @sl-change="${this.reflectValue}"
@@ -221,7 +222,7 @@ class ChromedashTypeahead extends LitElement {
       <chromedash-typeahead-dropdown
           stay-open-on-select sync="width"
           ${ref(this.slDropdownRef)}>
-        ${this.renderSearchBar()}
+        ${this.renderInputField()}
         ${this.renderAutocompleteMenu()}
       </chromedash-typeahead-dropdown>
     `;
@@ -261,7 +262,6 @@ class ChromedashTypeaheadDropdown extends SlDropdown {
       event.preventDefault();
 
       if (this.open && currentItem) {
-        console.log('selecting item via Enter calls click()');
         currentItem.click();
         this.resetSelection();
       }
@@ -293,7 +293,7 @@ class ChromedashTypeaheadDropdown extends SlDropdown {
           this.setCurrentItem(menuItems[menuItems.length - 1]);
         }
       }
-      // Note: We keep keyboard focus on the search box.
+      // Note: We keep keyboard focus on #inputfield.
     }
   }
 
