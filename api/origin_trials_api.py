@@ -12,14 +12,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json5
 import requests
 import validators
+from base64 import b64decode
 
 from framework import basehandlers
 from framework import permissions
 from framework import origin_trials_client
 from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Gate, Vote
+
+
+WEBFEATURE_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom?format=TEXT'
+ENABLED_FEATURES_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/runtime_enabled_features.json5?format=TEXT'
+GRACE_PERIOD_FILE = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/common/origin_trials/manual_completion_origin_trial_features.cc?format=TEXT'
+
+
+def get_chromium_file(url: str) -> str:
+  """Get chromium file contents from a given URL"""
+  try:
+    resp = requests.get(url)
+  except requests.RequestException as e:
+    raise e
+  return b64decode(resp.text).decode('utf-8')
+
 
 class OriginTrialsAPI(basehandlers.APIHandler):
 
@@ -38,6 +55,47 @@ class OriginTrialsAPI(basehandlers.APIHandler):
 
     return trials_list
 
+  def _validate_creation_args(
+      self, body: dict) -> None:
+    """Check that all provided OT creation arguments are valid"""
+    chromium_trial_name = body.get('ot_chromium_trial_name')
+    if chromium_trial_name is None:
+      self.abort(400, 'Chromium trial name not specified.')
+
+    trials_list = origin_trials_client.get_trials_list()
+    if (any(trial['origin_trial_feature_name'] == chromium_trial_name
+            for trial in trials_list)):
+      self.abort(400, f'Chromium trial name {chromium_trial_name} '
+                 ' is already used by another origin trial')
+
+    enabled_features_text = get_chromium_file(ENABLED_FEATURES_FILE_URL)
+    enabled_features_json = json5.loads(enabled_features_text)
+    if (not any(feature['origin_trial_feature_name'] == chromium_trial_name
+            for feature in enabled_features_json['data'])):
+      self.abort(404, 'No features found with origin trial feature name '
+                 f'{chromium_trial_name}')
+
+    if not body.get('ot_is_deprecation_trial', False):
+      use_counter = body.get('ot_webfeature_use_counter')
+      if use_counter is None:
+        self.abort(400, 'No UseCounter specified for non-deprecation trial.')
+      webfeature_file = get_chromium_file(WEBFEATURE_FILE_URL)
+      if f'{use_counter} =' not in webfeature_file:
+        self.abort(400, 'UseCounter not landed in web_feature.mojom')
+    if body.get('ot_has_third_party_support', False):
+      for feature in enabled_features_json['data']:
+        if (feature['origin_trial_feature_name'] == body['ot_chromium_trial_name'] and
+            not feature.get('origin_trial_allows_third_party', False)):
+          self.abort(400, 'One or more features do not have third party support '
+                     'set in runtime_enabled_features.json5. Feature name: '
+                     f'{feature["name"]}')
+    if body.get('ot_is_critical_trial', False):
+      grace_period_file = get_chromium_file(GRACE_PERIOD_FILE)
+      if (f'blink::mojom::OriginTrialFeature::k{chromium_trial_name}'
+          not in grace_period_file):
+        self.abort(400, 'Use counter has not landed in grace period array '
+                   'for critical trial')
+
   def _validate_extension_args(
         self, feature_id: int, ot_stage: Stage, extension_stage: Stage) -> None:
     """Abort if any arguments used for origin trial extension are invalid."""
@@ -53,7 +111,7 @@ class OriginTrialsAPI(basehandlers.APIHandler):
 
     milestones = extension_stage.milestones
     if milestones is None or milestones.desktop_last is None:
-      self.abort(404, f'Extension stage has no end milestone defined.')
+      self.abort(404, 'Extension stage has no end milestone defined.')
     intent_url = extension_stage.intent_thread_url
     if intent_url is None or not validators.url(intent_url):
       self.abort(400, ('Invalid argument for extension_intent_url: '
@@ -63,7 +121,7 @@ class OriginTrialsAPI(basehandlers.APIHandler):
     if not gate or gate.state != Vote.APPROVED:
       self.abort(400, 'Extension has not received the required approvals.')
 
-  def do_post(self, **kwargs):
+  def do_patch(self, **kwargs):
     """Extends an existing origin trial"""
     feature_id = int(kwargs['feature_id'])
     extension_stage_id = int(kwargs['extension_stage_id'])
@@ -75,7 +133,6 @@ class OriginTrialsAPI(basehandlers.APIHandler):
       self.abort(404, msg=f'Feature {feature_id} not found')
 
     # Check that stage ID is valid.
-    extension_stage_id = int(kwargs['extension_stage_id'])
     if not extension_stage_id:
       self.abort(404, msg='No stage specified.')
     extension_stage: Stage | None = Stage.get_by_id(extension_stage_id)
