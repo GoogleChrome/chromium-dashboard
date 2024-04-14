@@ -232,7 +232,7 @@ class ChromedashTypeaheadDropdown extends SlDropdown {
   setCurrentItem(newCurrentItem) {
     const menu = this.getMenu();
     menu.setCurrentItem(newCurrentItem);
-    newCurrentItem.scrollIntoView(false, {block: 'nearest', behavior: 'smooth'});
+    newCurrentItem.scrollIntoView({block: 'nearest', behavior: 'smooth'});
   }
 
   async handleTriggerKeyDown(event) {
