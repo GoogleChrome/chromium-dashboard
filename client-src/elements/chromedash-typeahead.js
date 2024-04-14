@@ -46,6 +46,8 @@ class ChromedashTypeahead extends LitElement {
     this.prefix = null;
     this.chunkStart = 0;
     this.chunkEnd = 0;
+    // If the user hits Escape, keep the menu closed until they use up or down.
+    this.wasDismissed = false;
   }
 
   static get styles() {
@@ -153,7 +155,12 @@ class ChromedashTypeahead extends LitElement {
   // Left and right movement is handled on keyUp so that caret has already been
   // moved to its new position before this handler is run.
   handleSearchKeyUp(event) {
-    if (['ArrowDown', 'ArrowUp', 'Enter', 'Escape'].includes(event.key)) {
+    if (['Escape'].includes(event.key)) {
+      this.wasDismissed = true;
+      return;
+    }
+    if (['ArrowDown', 'ArrowUp', 'Enter'].includes(event.key)) {
+      this.wasDismissed = false;
       return;
     }
     this.calcCandidates();
@@ -164,10 +171,13 @@ class ChromedashTypeahead extends LitElement {
       event.stopPropagation();
     }
     this.findPrefix();
-    this.candidates = this.vocabulary.filter(c => this.shouldShowCandidate(c, this.prefix));
+    this.candidates = this.vocabulary.filter(c =>
+      this.shouldShowCandidate(c, this.prefix));
     const slDropdown = this.slDropdownRef.value;
-    if (this.candidates.length > 0) {
+    if (this.candidates.length > 0 && !this.wasDismissed) {
       slDropdown.show();
+    } else {
+      slDropdown.hide();
     }
     slDropdown.resetSelection();
   }
@@ -265,9 +275,6 @@ class ChromedashTypeaheadDropdown extends SlDropdown {
       // Show the menu if it's not already open
       if (!this.open) {
         this.show();
-
-        // Wait for the dropdown to open before focusing, but not the animation
-        await this.updateComplete;
       }
 
       if (currentItem) {

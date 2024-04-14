@@ -52,6 +52,8 @@ class ChromedashFeatureFilter extends LitElement {
   }
 
   showHelp() {
+    const typeahead = this.typeaheadRef.value;
+    typeahead.hide();
     openSearchHelpDialog();
   }
 
