@@ -3,194 +3,24 @@ import {ref, createRef} from 'lit/directives/ref.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {openSearchHelpDialog} from './chromedash-search-help-dialog.js';
 import {QUERIABLE_FIELDS} from './queriable-fields.js';
-import SlDropdown from '@shoelace-style/shoelace/dist/components/dropdown/dropdown.js';
 
 const VOCABULARY = QUERIABLE_FIELDS.map((qf) => {
   return {name: qf.name + '=', doc: qf.doc};
 });
 
 
-class ChromedashACItem extends LitElement {
-  static get styles() {
-    return [
-      ...SHARED_STYLES,
-      css`
-      .menu-item {
-    display: flex;
-    flex-wrap: wrap;
-    font-family: var(--sl-font-sans);
-    font-size: var(--sl-font-size-medium);
-    font-weight: var(--sl-font-weight-normal);
-    line-height: var(--sl-line-height-normal);
-    letter-spacing: var(--sl-letter-spacing-normal);
-    color: var(--sl-color-neutral-700);
-    padding: var(--sl-spacing-2x-small) var(--sl-spacing-2x-small);
-    transition: var(--sl-transition-fast) fill;
-    user-select: none;
-    -webkit-user-select: none;
-    white-space: nowrap;
-    cursor: pointer;
-      }
-
- .active
- {
-    outline: none;
-    background-color: var(--sl-color-primary-200);
-    opacity: 1;
-  }
-      #value {
-        width: 24em;
-        overflow-x: hidden;
-      }
-      code {
-        font-size: 85%;
-        background: #eee;
-        padding: var(--content-padding-quarter);
-      }
-    `];
-  }
-
-  static get properties() {
-    return {
-      value: {type: String},
-      doc: {type: String},
-      prefix: {type: String},
-      role: {type: String, reflect: true},
-      tabindex: {type: Number},
-    };
-  }
-
-  constructor() {
-    super();
-    this.value = '';
-    this.doc = '';
-    this.prefix = '';
-    this.role = 'menuitem';
-  }
-
-  handleMouseOver(event) {
-    this.parentElement?.setCurrentItem(this);
-    event.stopPropagation();
-  };
-
-  highlight(s) {
-    const start = s.indexOf(this.prefix);
-    if (start === -1) return s;
-    const before = s.substring(0, start);
-    const after = s.substring(start + this.prefix.length);
-    return html`${before}<b>${this.prefix}</b>${after}`;
-  }
-
-  render() {
-    const highlightedValue = this.highlight(this.value);
-    const highlightedDoc = this.highlight(this.doc);
-    return html`
-      <div class="menu-item ${this.tabindex == 0 ? 'active' : ''}"
-        @mouseover=${this.handleMouseOver}>
-        <span id="value"><code>${highlightedValue}</code></span>
-        <span id="doc">${highlightedDoc}</span>
-      </div>
-    `;
-  }
-}
-customElements.define('chromedash-ac-item', ChromedashACItem);
-
-
-class NerfedSlDropdown extends SlDropdown {
-  constructor() {
-    super();
-  }
-
-  setCurrentMenuItem(newCurrentItem) {
-    const menu = this.getMenu();
-    menu.setCurrentItem(newCurrentItem);
-    newCurrentItem.scrollIntoView(false, {block: 'nearest', behavior: 'smooth'});
-  }
-
-  async handleTriggerKeyDown(event) {
-    const menu = this.getMenu();
-    if (!menu) {
-      return;
-    }
-    const menuItems = menu.getAllItems();
-    if (menuItems.length === 0) {
-      return;
-    }
-    const currentItem = menu.getCurrentItem();
-
-    // Handle menu selection keys.
-    if (['Enter'].includes(event.key)) {
-      event.preventDefault();
-
-      if (currentItem !== null) {
-        console.log('selecting item via Enter calls click()');
-        currentItem.click();
-        this.resetSelection();
-      }
-    }
-
-    // Handle menu navigation keys.
-    if (['ArrowDown', 'ArrowUp'].includes(event.key)) {
-      event.preventDefault();
-      event.stopPropagation();
-
-      // Show the menu if it's not already open
-      if (!this.open) {
-        this.show();
-
-        // Wait for the dropdown to open before focusing, but not the animation
-        await this.updateComplete;
-      }
-
-      if (currentItem) {
-        if (event.key === 'ArrowDown' && currentItem.nextElementSibling) {
-          this.setCurrentMenuItem(currentItem.nextElementSibling);
-        }
-        if (event.key === 'ArrowUp' && currentItem.previousElementSibling) {
-          this.setCurrentMenuItem(currentItem.previousElementSibling);
-        }
-      } else {
-        if (event.key === 'ArrowDown') {
-          this.setCurrentMenuItem(menuItems[0]);
-        }
-        if (event.key === 'ArrowUp') {
-          this.setCurrentMenuItem(menuItems[menuItems.length - 1]);
-        }
-      }
-      // Note: We keep keyboard focus on the search box.
-    }
-  }
-
-  resetSelection() {
-    const currentItem = this.getMenu().getCurrentItem();
-    currentItem?.setAttribute('tabindex', 0);
-  }
-}
-customElements.define('nerfed-sl-dropdown', NerfedSlDropdown);
-
-
 class ChromedashFeatureFilter extends LitElement {
-  slDropdownRef = createRef();
-  slInputRef = createRef();
+  typeaheadRef = createRef();
 
   static get properties() {
     return {
       query: {type: String},
-      candidates: {type: Array},
-      narrowCandidates: {attribute: false},
-      prefix: {attribute: false},
-      chunkStart: {attribute: false},
-      chunkEnd: {attribute: false},
     };
   }
 
   constructor() {
     super();
     this.query = '';
-    this.candidates = [];
-    this.prefix = null;
-    this.chunkStart = 0;
-    this.chunkEnd = 0;
   }
 
   _fireEvent(eventName, detail) {
@@ -202,92 +32,10 @@ class ChromedashFeatureFilter extends LitElement {
     this.dispatchEvent(event);
   }
 
-  computeQuery() {
-    const searchBarEl = this.shadowRoot.querySelector('#searchbar');
-    return searchBarEl.value.trim();
-  }
-
-  findPrefix() {
-    const inputEl = this.slInputRef.value.input;
-    const wholeStr = inputEl.value;
-    const caret = inputEl.selectionStart;
-    if (caret != inputEl.selectionEnd) { // User has a range selected.
-      this.chunk = null;
-      this.prefix = null;
-      return;
-    }
-    this.chunkStart = wholeStr.lastIndexOf(' ', caret - 1) + 1;
-    this.chunkEnd = wholeStr.indexOf(' ', caret);
-    if (this.chunkEnd === -1) this.chunkEnd = wholeStr.length;
-    this.prefix = wholeStr.substring(this.chunkStart, caret);
-  }
-
-  shouldShowCandidate(candidate, prefix) {
-    if (prefix === null) return false;
-    return (candidate.name.split(/\s+/).some(w => w.startsWith(prefix)) ||
-            candidate.doc.split(/\s+/).some(w => w.startsWith(prefix)) ||
-            candidate.name.split(/\W+/).some(w => w.startsWith(prefix)) ||
-            candidate.doc.split(/\W+/).some(w => w.startsWith(prefix)));
-  }
-
-  async handleCandidateSelected(e) {
-    console.log(e);
-    const candidateValue = e.detail.item.value;
-    const inputEl = this.slInputRef.value.input;
-    const wholeStr = inputEl.value;
-    const maybeAddSpace =
-          (!candidateValue.endsWith('=') && wholeStr[this.chunkEnd] !== ' ') ? ' ' : '';
-    const newWholeStr = (
-      wholeStr.substring(0, this.chunkStart) +
-          candidateValue + maybeAddSpace +
-          wholeStr.substring(this.chunkEnd, wholeStr.length));
-    console.log({candidateValue, inputEl, wholeStr, newWholeStr});
-    this.slInputRef.value.value = newWholeStr;
-    // Wait for the sl-input to propagate its new value to its <input>.
-    await this.updateComplete;
-
-    this.chunkStart = this.chunkStart + candidateValue.length + maybeAddSpace.length;
-    this.chunkEnd = this.chunkStart;
-    inputEl.selectionStart = this.chunkStart;
-    inputEl.selectionEnd = this.chunkEnd;
-    this.calcCandidates();
-    inputEl.focus();
-  }
-
-  // Check if the user is pressing Enter to send a query.  This is detected
-  // on keyDown so that the handler is run before the dropdown keyDown is run.
-  handleSearchKeyDown(event) {
-    if (event.key === 'Enter') {
-      const dd = this.slDropdownRef.value;
-      if (!dd.open || dd.currentItemIndex === null) {
-        this.handleSearchClick();
-      }
-    }
-  }
-
-  // As the user types and moves the caret, keep recalculating a-c choices.
-  // Left and right movement is handled on keyUp so that caret has already been
-  // moved to its new position before this handler is run.
-  handleSearchKeyUp(event) {
-    if (['ArrowDown', 'ArrowUp', 'Enter'].includes(event.key)) {
-      return;
-    }
-    this.calcCandidates();
-  }
-
-  calcCandidates(event) {
-    if (event) {
-      event.stopPropagation();
-    }
-    this.findPrefix();
-    this.candidates = VOCABULARY.filter(c => this.shouldShowCandidate(c, this.prefix));
-    this.slDropdownRef.value.open = (this.candidates.length > 0);
-    this.slDropdownRef.value.resetSelection();
-  }
-
   handleSearchClick() {
-    this.slDropdownRef.value.hide();
-    const newQuery = this.computeQuery();
+    const typeahead = this.typeaheadRef.value;
+    typeahead.hide();
+    const newQuery = typeahead.value.trim();
     console.log('handleSearchClick() sending query: ' + newQuery);
     this._fireEvent('search', {query: newQuery});
   }
@@ -296,17 +44,9 @@ class ChromedashFeatureFilter extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-      nerfed-sl-dropdown {
-        width: 100%;
-      }
       sl-icon-button {
         font-size: 1.6rem;
         margin: 0 !important;
-      }
-      #searchbar::part(base) {
-       background: #eee;
-       border: none;
-       border-radius: 8px;
       }
     `];
   }
@@ -316,54 +56,22 @@ class ChromedashFeatureFilter extends LitElement {
   }
 
 
-  renderSearchBar() {
+  render() {
     return html`
-      <sl-input id="searchbar" slot="trigger" placeholder="Search"
-          value=${this.query} ${ref(this.slInputRef)}
-          autocomplete=off spellcheck="false"
-          @keydown="${this.handleSearchKeyDown}"
-          @keyup="${this.handleSearchKeyUp}"
-          @focus="${this.calcCandidates}"
-          @click="${this.calcCandidates}"
-        >
+      <chromedash-typeahead
+          ${ref(this.typeaheadRef)}
+          value=${this.query}
+          placeholder="Search"
+          .vocabulary=${VOCABULARY}
+          @sl-change=${this.handleSearchClick}
+         >
         <sl-icon-button library="material" name="search" slot="prefix"
             @click="${this.handleSearchClick}">
         </sl-icon-button>
         <sl-icon-button library="material" name="help_20px" slot="suffix"
             @click="${this.showHelp}">
         </sl-icon-button>
-      </sl-input>
-    `;
-  }
-
-
-  renderAutocompleteMenu() {
-    return html`
-      <sl-menu
-        @click=${(e) => {
-      e.preventDefault();
-    }}
-        @sl-select=${this.handleCandidateSelected}
-      >
-        ${this.candidates.map(c => html`
-        <!-- sl-menu-item>${c.name}</sl-menu-item -->
-        <chromedash-ac-item
-          value=${c.name} doc=${c.doc} prefix=${this.prefix}
-        ></chromedash-ac-item>
-        `)}
-      </sl-menu>
-    `;
-  }
-
-
-  render() {
-    return html`
-      <nerfed-sl-dropdown
-          stay-open-on-select sync="width"
-          ${ref(this.slDropdownRef)}>
-        ${this.renderSearchBar()}
-        ${this.renderAutocompleteMenu()}
-      </nerfed-sl-dropdown>
+      </chromedash-typeahead>
     `;
   }
 }
