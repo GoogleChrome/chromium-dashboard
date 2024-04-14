@@ -14,8 +14,8 @@ import SlDropdown from '@shoelace-style/shoelace/dist/components/dropdown/dropdo
    Internally, it is responible for narrowing the vacabulary down to a list
    of candidates based on the prefix that the user has typed.
 
-   2. Private class NerfedSlDropdown subclasses SlDropdown and removes code
-   that would change the keyboard focus.
+   2. Private class ChromedashTypeaheadDropdown subclasses SlDropdown and
+   removes code that would change the keyboard focus.
 
    3. Private class ChromedashTypeaheadItem renders a single item in the
    typeahead menu.  We do not use SlMenuItem because it steals keyboard focus.
@@ -52,7 +52,7 @@ class ChromedashTypeahead extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-      nerfed-sl-dropdown {
+      chromedash-typeahead-dropdown {
         width: 100%;
       }
       #searchbar::part(base) {
@@ -142,8 +142,9 @@ class ChromedashTypeahead extends LitElement {
   handleSearchKeyDown(event) {
     if (event.key === 'Enter') {
       const slDropdown = this.slDropdownRef.value;
-      if (!slDropdown.open || slDropdown.currentItemIndex === null) {
+      if (!slDropdown.open || !slDropdown.getCurrentItem()) {
         this._fireEvent('sl-change', this);
+        event.stopPropagation();
       }
     }
   }
@@ -152,7 +153,7 @@ class ChromedashTypeahead extends LitElement {
   // Left and right movement is handled on keyUp so that caret has already been
   // moved to its new position before this handler is run.
   handleSearchKeyUp(event) {
-    if (['ArrowDown', 'ArrowUp', 'Enter'].includes(event.key)) {
+    if (['ArrowDown', 'ArrowUp', 'Enter', 'Escape'].includes(event.key)) {
       return;
     }
     this.calcCandidates();
@@ -207,24 +208,28 @@ class ChromedashTypeahead extends LitElement {
 
   render() {
     return html`
-      <nerfed-sl-dropdown
+      <chromedash-typeahead-dropdown
           stay-open-on-select sync="width"
           ${ref(this.slDropdownRef)}>
         ${this.renderSearchBar()}
         ${this.renderAutocompleteMenu()}
-      </nerfed-sl-dropdown>
+      </chromedash-typeahead-dropdown>
     `;
   }
 }
 customElements.define('chromedash-typeahead', ChromedashTypeahead);
 
 
-class NerfedSlDropdown extends SlDropdown {
+class ChromedashTypeaheadDropdown extends SlDropdown {
   constructor() {
     super();
   }
 
-  setCurrentMenuItem(newCurrentItem) {
+  getCurrentItem() {
+    return this.getMenu()?.getCurrentItem();
+  }
+
+  setCurrentItem(newCurrentItem) {
     const menu = this.getMenu();
     menu.setCurrentItem(newCurrentItem);
     newCurrentItem.scrollIntoView(false, {block: 'nearest', behavior: 'smooth'});
@@ -267,17 +272,17 @@ class NerfedSlDropdown extends SlDropdown {
 
       if (currentItem) {
         if (event.key === 'ArrowDown' && currentItem.nextElementSibling) {
-          this.setCurrentMenuItem(currentItem.nextElementSibling);
+          this.setCurrentItem(currentItem.nextElementSibling);
         }
         if (event.key === 'ArrowUp' && currentItem.previousElementSibling) {
-          this.setCurrentMenuItem(currentItem.previousElementSibling);
+          this.setCurrentItem(currentItem.previousElementSibling);
         }
       } else {
         if (event.key === 'ArrowDown') {
-          this.setCurrentMenuItem(menuItems[0]);
+          this.setCurrentItem(menuItems[0]);
         }
         if (event.key === 'ArrowUp') {
-          this.setCurrentMenuItem(menuItems[menuItems.length - 1]);
+          this.setCurrentItem(menuItems[menuItems.length - 1]);
         }
       }
       // Note: We keep keyboard focus on the search box.
@@ -285,11 +290,12 @@ class NerfedSlDropdown extends SlDropdown {
   }
 
   resetSelection() {
-    const currentItem = this.getMenu().getCurrentItem();
+    const currentItem = this.getCurrentItem();
     currentItem?.setAttribute('tabindex', 0);
   }
 }
-customElements.define('nerfed-sl-dropdown', NerfedSlDropdown);
+customElements.define(
+  'chromedash-typeahead-dropdown', ChromedashTypeaheadDropdown);
 
 
 class ChromedashTypeaheadItem extends LitElement {
