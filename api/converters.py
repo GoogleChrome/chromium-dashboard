@@ -23,7 +23,7 @@ import settings
 from internals import approval_defs, slo
 from internals.core_enums import *
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
-from internals.data_types import StageDict, VerboseFeatureDict
+from internals.data_types import FeatureDictInnerViewInfo, StageDict, VerboseFeatureDict
 from internals.review_models import Gate, Vote
 
 SIMPLE_TYPES = frozenset((int, float, bool, dict, str, list))
@@ -276,8 +276,13 @@ _COMPUTED_VIEWS_TO_ENUM = {
 
 def _compute_vendor_views(
   url: Optional[str], computed_views: Optional[str], form_views: int, notes: str
-):
-  result: dict[str, int | str | None] = {'url': url, 'notes': notes}
+) -> FeatureDictInnerViewInfo:
+  result: FeatureDictInnerViewInfo = {
+    'url': url,
+    'notes': notes,
+    'text': None,
+    'val': NO_PUBLIC_SIGNALS,
+  }
   if computed_views and form_views not in [SHIPPED, IN_DEV]:
     result['text'] = computed_views.title()
     result['val'] = _COMPUTED_VIEWS_TO_ENUM.get(
