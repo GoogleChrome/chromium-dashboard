@@ -222,11 +222,20 @@ export class ChromedashOTCreationPage extends LitElement {
       const enabledFeaturesFileText = await this.getChromiumFile(ENABLED_FEATURES_FILE_URL);
       this.enabledFeaturesJson = json5.parse(enabledFeaturesFileText);
     }
+    const existingTrials = await window.csClient.getOriginTrials();
+
     if (!this.enabledFeaturesJson.data.some(
       feature => feature.origin_trial_feature_name === field.value)) {
       field.checkMessage = html`
         <span class="check-error">
           <b>Error</b>: Name not found in file.
+        </span>`;
+      return true;
+    } else if (existingTrials.some(
+      trial => trial.origin_trial_feature_name === field.value)) {
+      field.checkMessage = html`
+        <span class="check-error">
+          <b>Error</b>: This name is used by an existing origin trial.
         </span>`;
       return true;
     } else {

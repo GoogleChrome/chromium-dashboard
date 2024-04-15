@@ -367,6 +367,10 @@ class ChromeStatusClient {
   }
 
   // Origin trials API
+  async getOriginTrials() {
+    return this.doGet('/origintrials');
+  }
+
   async extendOriginTrial(featureId, stageId, body) {
     return this.doPost(`/origintrials/${featureId}/${stageId}/extend`, body);
   }
