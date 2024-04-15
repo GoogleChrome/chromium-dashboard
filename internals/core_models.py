@@ -122,6 +122,7 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   all_platforms_descr = ndb.TextProperty()
   tag_review = ndb.StringProperty()
   tag_review_status = ndb.IntegerProperty(default=REVIEW_PENDING)
+  tag_review_resolution = ndb.StringProperty()
   non_oss_deps = ndb.TextProperty()
   anticipated_spec_changes = ndb.TextProperty()
 
@@ -129,7 +130,9 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   safari_views = ndb.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
   web_dev_views = ndb.IntegerProperty(required=True, default=DEV_NO_SIGNALS)
   ff_views_link = ndb.StringProperty()
+  ff_views_link_result = ndb.StringProperty()
   safari_views_link = ndb.StringProperty()
+  safari_views_link_result = ndb.StringProperty()
   web_dev_views_link = ndb.StringProperty()
   ff_views_notes = ndb.StringProperty()
   safari_views_notes = ndb.TextProperty()

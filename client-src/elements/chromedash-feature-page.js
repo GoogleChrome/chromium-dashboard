@@ -1,12 +1,17 @@
 import {LitElement, css, html, nothing} from 'lit';
-import './chromedash-feature-detail';
-import './chromedash-gantt';
-import {autolink, renderHTMLIf, showToastMessage,
-  renderAbsoluteDate, renderRelativeDate,
-} from './utils.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import './chromedash-feature-detail';
 import {DETAILS_STYLES} from './chromedash-feature-detail';
+import './chromedash-gantt';
 import {enhanceUrl} from './chromedash-link';
+import './chromedash-vendor-views';
+import {
+  autolink,
+  renderAbsoluteDate,
+  renderHTMLIf,
+  renderRelativeDate,
+  showToastMessage,
+} from './utils.js';
 
 const INACTIVE_STATES = [
   'No longer pursuing',
@@ -518,21 +523,19 @@ export class ChromedashFeaturePage extends LitElement {
           ${this.feature.browsers.ff.view.val ? html`
             <li>
               <label>Firefox:</label>
-              ${this.feature.browsers.ff.view.url ? html`
-                <a href=${this.feature.browsers.ff.view.url}>${this.feature.browsers.ff.view.text}</a>
-              `: html`
-                ${this.feature.browsers.ff.view.text}
-              `}
+              <chromedash-vendor-views
+                href=${this.feature.browsers.ff.view.url || nothing}
+                .featureLinks=${this.featureLinks}
+              >${this.feature.browsers.ff.view.text}</chromedash-vendor-views>
             </li>
           `: nothing}
           ${this.feature.browsers.safari.view.val ? html`
             <li>
               <label>Safari:</label>
-              ${this.feature.browsers.safari.view.url ? html`
-                <a href=${this.feature.browsers.safari.view.url}>${this.feature.browsers.safari.view.text}</a>
-              `: html`
-                ${this.feature.browsers.safari.view.text}
-              `}
+              <chromedash-vendor-views
+                href=${this.feature.browsers.safari.view.url || nothing}
+                .featureLinks=${this.featureLinks}
+              >${this.feature.browsers.safari.view.text}</chromedash-vendor-views>
             </li>
           `: nothing}
           <li><label>Web Developers:</label> ${this.feature.browsers.webdev.view.text}</li>

@@ -420,6 +420,10 @@ export class ChromedashLink extends LitElement {
   static get properties() {
     return {
       href: {type: String},
+      /** Says to show this element's content as <slot/>: [feature link] even if a feature link is
+       * available. If this is false, the content is only shown when no feature link is available.
+       */
+      showContentAsLabel: {type: Boolean},
       class: {type: String},
       featureLinks: {type: Array},
       _featureLink: {state: true},
@@ -436,6 +440,8 @@ export class ChromedashLink extends LitElement {
     super();
     /** @type {string | undefined} */
     this.href = undefined;
+    /** @type {boolean} */
+    this.showContentAsLabel = false;
     /** @type {string} */
     this.class = '';
     /** @type {import("../js-src/cs-client").FeatureLink[]} */
@@ -464,6 +470,14 @@ export class ChromedashLink extends LitElement {
     >${this.alwaysInTag ? html`<sl-tag>${slot}</sl-tag>` : slot}</a>`;
   }
 
+  withLabel(link) {
+    if (this.showContentAsLabel) {
+      return html`<slot></slot>: ${link}`;
+    } else {
+      return link;
+    }
+  }
+
   render() {
     if (!this.href) {
       console.error('Missing [href] attribute in', this);
@@ -490,30 +504,30 @@ export class ChromedashLink extends LitElement {
     try {
       switch (featureLink.type) {
         case LINK_TYPE_CHROMIUM_BUG:
-          return enhanceChromeStatusLink(featureLink);
+          return this.withLabel(enhanceChromeStatusLink(featureLink));
         case LINK_TYPE_GITHUB_ISSUE:
-          return enhanceGithubIssueLink(featureLink);
+          return this.withLabel(enhanceGithubIssueLink(featureLink));
         case LINK_TYPE_GITHUB_PULL_REQUEST:
           // we use github issue api to get pull request information,
           // the result will be the similar to github issue
-          return enhanceGithubIssueLink(featureLink);
+          return this.withLabel(enhanceGithubIssueLink(featureLink));
         case LINK_TYPE_GITHUB_MARKDOWN:
-          return enhanceGithubMarkdownLink(featureLink);
+          return this.withLabel(enhanceGithubMarkdownLink(featureLink));
         case LINK_TYPE_MDN_DOCS:
-          return enhanceMDNDocsLink(featureLink);
+          return this.withLabel(enhanceMDNDocsLink(featureLink));
         case LINK_TYPE_GOOGLE_DOCS:
-          return enhanceGoogleDocsLink(featureLink);
+          return this.withLabel(enhanceGoogleDocsLink(featureLink));
         case LINK_TYPE_MOZILLA_BUG:
-          return enhanceMozillaBugLink(featureLink);
+          return this.withLabel(enhanceMozillaBugLink(featureLink));
         case LINK_TYPE_WEBKIT_BUG:
-          return enhanceWebKitBugLink(featureLink);
+          return this.withLabel(enhanceWebKitBugLink(featureLink));
         case LINK_TYPE_SPECS:
-          return enhanceSpecsLink(featureLink);
+          return this.withLabel(enhanceSpecsLink(featureLink));
         default:
           return this.fallback();
       }
     } catch (e) {
-      console.log('feature link render error:', e);
+      console.log('feature link render error:', this, e);
       return this.fallback();
     }
   }
