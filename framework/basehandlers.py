@@ -173,7 +173,6 @@ class APIHandler(BaseHandler):
 
   def defensive_jsonify(self, handler_data):
     """Return a Flask Response object with a JSON string prefixed with junk."""
-    print(handler_data)
     body = json.dumps(handler_data)
     return flask.current_app.response_class(
         XSSI_PREFIX + body,
