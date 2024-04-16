@@ -31,7 +31,7 @@ ENABLED_FEATURES_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/ma
 GRACE_PERIOD_FILE = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/common/origin_trials/manual_completion_origin_trial_features.cc?format=TEXT'
 
 
-async def get_chromium_file(url: str):
+async def get_chromium_file(url: str) -> requests.Response:
   """Get chromium file contents from a given URL"""
   loop = asyncio.get_event_loop()
   try:
@@ -61,7 +61,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
     return trials_list
 
   async def _validate_creation_args(
-      self, body: dict) -> dict:
+      self, body: dict) -> dict[str, str]:
     """Check that all provided OT creation arguments are valid."""
     try:
       files_async = [
