@@ -781,6 +781,7 @@ export class ChromedashGateColumn extends LitElement {
   renderQuestionnaireSkeleton() {
     return html`
       <h2>Survey questions</h2>
+      <!-- prettier-ignore -->
       <div id="questionnaire">Loading...</div>
       <p class="instructions">&nbsp;</p>
     `;
@@ -793,6 +794,7 @@ export class ChromedashGateColumn extends LitElement {
       autolink(questionnaireText) : questionnaireText;
     return html`
       <h2>Survey questions</h2>
+      <!-- prettier-ignore -->
       <div id="questionnaire">${markup}</div>
       <p class="instructions">
         Please post responses in the comments below.

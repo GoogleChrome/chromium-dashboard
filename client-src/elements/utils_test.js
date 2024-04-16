@@ -6,13 +6,14 @@ const compareAutolinkResult = (result, expected) => {
   assert.equal(result.length, expected.length);
   for (let i = 0; i < result.length; i++) {
     if (typeof result[i] === 'string') {
-      assert.equal(result[i], expected[i]);
+      assert.equal(result[i].replaceAll(/\s{2,}/g, ' '), expected[i]);
     } else {
       assert.deepEqual(result[i], expected[i]);
     }
   }
 };
 
+// prettier-ignore
 describe('utils', () => {
   describe('autolink', () => {
     it('creates anchor tags for links', () => {

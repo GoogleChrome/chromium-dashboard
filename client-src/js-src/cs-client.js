@@ -22,6 +22,7 @@
  * @property {number} http_error_code
  */
 
+// prettier-ignore
 (function(exports) {
 'use strict';
 
