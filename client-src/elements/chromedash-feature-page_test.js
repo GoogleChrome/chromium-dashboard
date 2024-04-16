@@ -91,8 +91,8 @@ describe('chromedash-feature-page', () => {
         owners: ['fake chrome owner one', 'fake chrome owner two'],
         status: {text: 'fake chrome status text'},
       },
-      ff: {view: {text: 'fake ff view text'}},
-      safari: {view: {text: 'fake safari view text'}},
+      ff: {view: {val: 1, text: 'fake ff view text', url: 'fake ff url'}},
+      safari: {view: {val: 1, text: 'fake safari view text', url: 'fake safari url'}},
       webdev: {view: {text: 'fake webdev view text'}},
     },
     resources: {
@@ -117,6 +117,28 @@ describe('chromedash-feature-page', () => {
       },
     ],
   });
+
+  /**
+   * @param {HTMLElement} parentEl
+   * @param {object} options
+   * @param {string} options.href
+   * @param {string} options.text
+   * @returns {void}
+   */
+  function assertClickableVendorLink(parentEl, {href, text}) {
+    // Select chromedash-vendor-views element
+    const vendorViewsEl = parentEl.querySelector(`chromedash-vendor-views[href="${href}"]`);
+    assert.exists(vendorViewsEl);
+    // Verify that the link's text content matches the expected display text
+    assert.equal(vendorViewsEl.textContent, text);
+
+    // Select the chromedash-link
+    const link = vendorViewsEl.shadowRoot.querySelector('chromedash-link');
+    assert.exists(link);
+
+    // Check if the link's 'href' attribute matches the expected URL
+    assert.equal(link.href, href);
+  }
 
   /* window.csClient and <chromedash-toast> are initialized at spa.html
    * which are not available here, so we initialize them before each test.
@@ -237,10 +259,44 @@ describe('chromedash-feature-page', () => {
     // spec link is clickable
     assert.include(specSection.innerHTML, 'href="fake spec link"');
 
+    const consensusSection = component.shadowRoot.querySelector('section#consensus');
+    assert.exists(consensusSection);
+    // FF and Safari views are present and clickable.
+    assertClickableVendorLink(consensusSection, {href: 'fake ff url', text: 'fake ff view text'});
+    assertClickableVendorLink(consensusSection, {
+      href: 'fake safari url',
+      text: 'fake safari view text',
+    });
+    assert.include(consensusSection.innerHTML, 'fake webdev view text');
+
     const tagSection = component.shadowRoot.querySelector('section#tags');
     assert.exists(tagSection);
     // feature tag link is clickable
     assert.include(tagSection.innerHTML, 'href="/features#tags:tag_one"');
+  });
+
+  it('omits absent vendor views', async () => {
+    const featureId = 123456;
+    const contextLink = '/features';
+    const features = structuredClone(await validFeaturePromise);
+    delete features.browsers.ff.view.val;
+    delete features.browsers.safari.view.val;
+    window.csClient.getFeature.withArgs(featureId).returns(Promise.resolve(features));
+
+    const component = await fixture(
+      html`<chromedash-feature-page
+            .user=${user}
+            .featureId=${featureId}
+            .contextLink=${contextLink}>
+           </chromedash-feature-page>`);
+    assert.exists(component);
+
+    const consensusSection = component.shadowRoot.querySelector('section#consensus');
+    assert.exists(consensusSection);
+    // Views are omitted based on an empty 'val' field.
+    assert.notInclude(consensusSection.innerHTML, '<chromedash-vendor-views');
+    // But it does still include webdev views.
+    assert.include(consensusSection.innerHTML, 'fake webdev view text');
   });
 
   it('does offer editing to a listed editor', async () => {

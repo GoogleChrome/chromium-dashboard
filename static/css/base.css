@@ -455,7 +455,7 @@
 }
 
 @supports not (scrollbar-gutter: stable) {
-  .sl-scroll-lock {
+  .sl-scroll-lock body {
     padding-right: var(--sl-scroll-lock-size) !important;
     overflow: hidden !important;
   }
