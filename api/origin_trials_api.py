@@ -35,13 +35,12 @@ async def get_chromium_file(url: str):
   """Get chromium file contents from a given URL"""
   loop = asyncio.get_event_loop()
   try:
-    future = loop.run_in_executor(None, requests.get, url)
+    file_future = loop.run_in_executor(None, requests.get, url)
   except requests.RequestException as e:
     logging.exception(
         f'Failed to get response to obtain Chromium file: {url}')
     raise e
-  return await future
-# b64decode(resp.text).decode('utf-8')
+  return await file_future
 
 
 class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
@@ -70,11 +69,8 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
           get_chromium_file(WEBFEATURE_FILE_URL),
           get_chromium_file(GRACE_PERIOD_FILE)]
       responses = await asyncio.gather(*files_async)
-      print(responses)
       enabled_features_text, webfeature_file, grace_period_file = [
           b64decode(resp.text).decode('utf-8') for resp in responses]
-      print(enabled_features_text)
-      print(webfeature_file)
     except requests.exceptions.RequestException:
       self.abort(500, 'Error obtaining Chromium file for validation')
     validation_errors: dict[str, str] = {}
