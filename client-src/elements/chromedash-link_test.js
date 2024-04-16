@@ -83,6 +83,39 @@ it('shows content as label when requested', async () => {
   );
 });
 
+it('shows content as label when requested', async () => {
+  const yesterday = new Date(Date.now() - DAY);
+  const featureLinks = [{
+    url: 'https://github.com/GoogleChrome/chromium-dashboard/issues/3007',
+    type: 'github_issue',
+    information: {
+      'url': 'https://api.github.com/repos/GoogleChrome/chromium-dashboard/issues/3007',
+      'state': 'open',
+      'created_at': yesterday.toISOString(),
+    },
+  }];
+
+  const elWithLabel = await fixture(html`<chromedash-link
+    showContentAsLabel
+    href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
+    .featureLinks=${featureLinks}>Content</chromedash-link>`);
+  expect(elWithLabel).shadowDom.to.equal(
+    `<slot>...</slot>:
+     <a href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
+        rel="noopener noreferrer"
+        target="_blank">...</a>`,
+    {ignoreChildren: ['slot', 'a']});
+
+  const elWithoutLabel = await fixture(html`<chromedash-link
+    href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
+    .featureLinks=${featureLinks}>Content</chromedash-link>`);
+  expect(elWithoutLabel).shadowDom.to.equal(
+    `<a href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
+        rel="noopener noreferrer"
+        target="_blank">...</a>`,
+    {ignoreChildren: ['slot', 'a']});
+});
+
 describe('Github issue links', () => {
   // Get the 'information' object by running
   // `curl -L https://api.github.com/repos/OWNER/REPO/issues/ISSUE_NUMBER`
