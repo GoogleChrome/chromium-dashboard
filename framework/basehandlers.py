@@ -41,15 +41,13 @@ from internals.data_types import CHANGED_FIELDS_LIST_TYPE
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals import user_models
 
-from google.auth.transport import requests
 from flask import session
 from flask import render_template
 from flask_cors import CORS
-import sys
 
 # Our API responses are prefixed with this ro prevent attacks that
 # exploit <script src="...">.  See go/xssi.
-XSSI_PREFIX = ')]}\'\n';
+XSSI_PREFIX = ')]}\'\n'
 
 
 # See https://www.regextester.com/93901 for url regex
@@ -175,6 +173,7 @@ class APIHandler(BaseHandler):
 
   def defensive_jsonify(self, handler_data):
     """Return a Flask Response object with a JSON string prefixed with junk."""
+    print(handler_data)
     body = json.dumps(handler_data)
     return flask.current_app.response_class(
         XSSI_PREFIX + body,

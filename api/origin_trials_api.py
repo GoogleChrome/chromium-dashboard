@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import asyncio
 import json5
+import logging
 import requests
 import validators
 from base64 import b64decode
@@ -29,13 +31,17 @@ ENABLED_FEATURES_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/ma
 GRACE_PERIOD_FILE = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/common/origin_trials/manual_completion_origin_trial_features.cc?format=TEXT'
 
 
-def get_chromium_file(url: str) -> str:
+async def get_chromium_file(url: str):
   """Get chromium file contents from a given URL"""
+  loop = asyncio.get_event_loop()
   try:
-    resp = requests.get(url)
+    future = loop.run_in_executor(None, requests.get, url)
   except requests.RequestException as e:
+    logging.exception(
+        f'Failed to get response to obtain Chromium file: {url}')
     raise e
-  return b64decode(resp.text).decode('utf-8')
+  return await future
+# b64decode(resp.text).decode('utf-8')
 
 
 class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
@@ -55,22 +61,39 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
 
     return trials_list
 
-  def _validate_creation_args(
+  async def _validate_creation_args(
       self, body: dict) -> dict:
     """Check that all provided OT creation arguments are valid."""
+    try:
+      files_async = [
+          get_chromium_file(ENABLED_FEATURES_FILE_URL),
+          get_chromium_file(WEBFEATURE_FILE_URL),
+          get_chromium_file(GRACE_PERIOD_FILE)]
+      responses = await asyncio.gather(*files_async)
+      print(responses)
+      enabled_features_text, webfeature_file, grace_period_file = [
+          b64decode(resp.text).decode('utf-8') for resp in responses]
+      print(enabled_features_text)
+      print(webfeature_file)
+    except requests.exceptions.RequestException:
+      self.abort(500, 'Error obtaining Chromium file for validation')
     validation_errors: dict[str, str] = {}
     chromium_trial_name = body.get(
         'ot_chromium_trial_name', {}).get('value')
     if chromium_trial_name is None:
       self.abort(400, 'Chromium trial name not specified.')
 
-    trials_list = origin_trials_client.get_trials_list()
+    # Check if a trial already exists with the same name.
+    try:
+      trials_list = origin_trials_client.get_trials_list()
+    except requests.exceptions.RequestException:
+      self.abort(500, 'Error obtaining origin trial data from API')
+
     if (any(trial['origin_trial_feature_name'] == chromium_trial_name
             for trial in trials_list)):
       validation_errors['ot_chromium_trial_name'] = (
           'Chromium trial name is already used by another origin trial')
 
-    enabled_features_text = get_chromium_file(ENABLED_FEATURES_FILE_URL)
     enabled_features_json = json5.loads(enabled_features_text)
     if (not any(feature.get('origin_trial_feature_name') == chromium_trial_name
                 for feature in enabled_features_json['data'])):
@@ -83,7 +106,6 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
         validation_errors['ot_webfeature_use_counter'] = (
             'No UseCounter specified for non-deprecation trial.')
       else:
-        webfeature_file = get_chromium_file(WEBFEATURE_FILE_URL)
         if f'{use_counter} =' not in webfeature_file:
           validation_errors['ot_webfeature_use_counter'] = (
               'UseCounter not landed in web_feature.mojom')
@@ -98,7 +120,6 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
               f'{feature["name"]}')
 
     if body.get('ot_is_critical_trial', {}).get('value', False):
-      grace_period_file = get_chromium_file(GRACE_PERIOD_FILE)
       if (f'blink::mojom::OriginTrialFeature::k{chromium_trial_name}'
           not in grace_period_file):
         validation_errors['ot_is_critical_trial'] = (
@@ -132,7 +153,8 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
       return redirect_resp
 
     body = self.get_json_param_dict()
-    validation_errors = self._validate_creation_args(body)
+    loop = asyncio.get_event_loop()
+    validation_errors = loop.run_until_complete(self._validate_creation_args(body))
     if validation_errors:
       return {
           'message': 'Errors found when validating arguments',
