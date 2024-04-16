@@ -38,7 +38,7 @@ def get_chromium_file(url: str) -> str:
   return b64decode(resp.text).decode('utf-8')
 
 
-class OriginTrialsAPI(basehandlers.APIHandler):
+class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
 
   def do_get(self, **kwargs):
     """Get a list of all origin trials.
@@ -56,45 +56,90 @@ class OriginTrialsAPI(basehandlers.APIHandler):
     return trials_list
 
   def _validate_creation_args(
-      self, body: dict) -> None:
-    """Check that all provided OT creation arguments are valid"""
-    chromium_trial_name = body.get('ot_chromium_trial_name')
+      self, body: dict) -> dict:
+    """Check that all provided OT creation arguments are valid."""
+    validation_errors: dict[str, str] = {}
+    chromium_trial_name = body.get(
+        'ot_chromium_trial_name', {}).get('value')
     if chromium_trial_name is None:
       self.abort(400, 'Chromium trial name not specified.')
 
     trials_list = origin_trials_client.get_trials_list()
     if (any(trial['origin_trial_feature_name'] == chromium_trial_name
             for trial in trials_list)):
-      self.abort(400, f'Chromium trial name {chromium_trial_name} '
-                 ' is already used by another origin trial')
+      validation_errors['ot_chromium_trial_name'] = (
+          'Chromium trial name is already used by another origin trial')
 
     enabled_features_text = get_chromium_file(ENABLED_FEATURES_FILE_URL)
     enabled_features_json = json5.loads(enabled_features_text)
-    if (not any(feature['origin_trial_feature_name'] == chromium_trial_name
-            for feature in enabled_features_json['data'])):
-      self.abort(404, 'No features found with origin trial feature name '
-                 f'{chromium_trial_name}')
+    if (not any(feature.get('origin_trial_feature_name') == chromium_trial_name
+                for feature in enabled_features_json['data'])):
+      validation_errors['ot_chromium_trial_name'] = (
+          'Origin trial feature name not found in file')
 
-    if not body.get('ot_is_deprecation_trial', False):
-      use_counter = body.get('ot_webfeature_use_counter')
+    if not body.get('ot_is_deprecation_trial', {}).get('value', False):
+      use_counter = body.get('ot_webfeature_use_counter', {}).get('value')
       if use_counter is None:
-        self.abort(400, 'No UseCounter specified for non-deprecation trial.')
-      webfeature_file = get_chromium_file(WEBFEATURE_FILE_URL)
-      if f'{use_counter} =' not in webfeature_file:
-        self.abort(400, 'UseCounter not landed in web_feature.mojom')
-    if body.get('ot_has_third_party_support', False):
+        validation_errors['ot_webfeature_use_counter'] = (
+            'No UseCounter specified for non-deprecation trial.')
+      else:
+        webfeature_file = get_chromium_file(WEBFEATURE_FILE_URL)
+        if f'{use_counter} =' not in webfeature_file:
+          validation_errors['ot_webfeature_use_counter'] = (
+              'UseCounter not landed in web_feature.mojom')
+
+    if body.get('ot_has_third_party_support', {}).get('value', False):
       for feature in enabled_features_json['data']:
-        if (feature['origin_trial_feature_name'] == body['ot_chromium_trial_name'] and
+        if (feature.get('origin_trial_feature_name') == chromium_trial_name and
             not feature.get('origin_trial_allows_third_party', False)):
-          self.abort(400, 'One or more features do not have third party support '
-                     'set in runtime_enabled_features.json5. Feature name: '
-                     f'{feature["name"]}')
-    if body.get('ot_is_critical_trial', False):
+          validation_errors['ot_has_third_party_support'] = (
+              'One or more features do not have third party support '
+              'set in runtime_enabled_features.json5. Feature name: '
+              f'{feature["name"]}')
+
+    if body.get('ot_is_critical_trial', {}).get('value', False):
       grace_period_file = get_chromium_file(GRACE_PERIOD_FILE)
       if (f'blink::mojom::OriginTrialFeature::k{chromium_trial_name}'
           not in grace_period_file):
-        self.abort(400, 'Use counter has not landed in grace period array '
-                   'for critical trial')
+        validation_errors['ot_is_critical_trial'] = (
+            'Use counter has not landed in grace period array '
+            'for critical trial')
+
+    return validation_errors
+
+  def do_post(self, **kwargs):
+    feature_id = int(kwargs['feature_id'])
+    # Check that feature ID is valid.
+    if not feature_id:
+      self.abort(404, msg='No feature specified.')
+    feature: FeatureEntry | None = FeatureEntry.get_by_id(feature_id)
+    if feature is None:
+      self.abort(404, msg=f'Feature {feature_id} not found')
+
+    # Check that stage ID is valid.
+    ot_stage_id = int(kwargs['stage_id'])
+    if not ot_stage_id:
+      self.abort(404, msg='No stage specified.')
+    ot_stage: Stage | None = Stage.get_by_id(ot_stage_id)
+    if ot_stage is None:
+      self.abort(404, msg=f'Stage {ot_stage_id} not found')
+
+    # Check that user has permission to edit the feature
+    # associated with the origin trial.
+    redirect_resp = permissions.validate_feature_edit_permission(
+        self, feature_id)
+    if redirect_resp:
+      return redirect_resp
+
+    body = self.get_json_param_dict()
+    validation_errors = self._validate_creation_args(body)
+    if validation_errors:
+      return {
+          'message': 'Errors found when validating arguments',
+          'errors': validation_errors
+          }
+    self.update_stage(ot_stage, body, [])
+    return {'message': 'Origin trial creation request submitted.'}
 
   def _validate_extension_args(
         self, feature_id: int, ot_stage: Stage, extension_stage: Stage) -> None:

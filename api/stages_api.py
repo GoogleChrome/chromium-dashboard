@@ -22,7 +22,7 @@ from framework import permissions
 from framework import rediscache
 from internals import notifier_helpers
 from internals import stage_helpers
-from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.core_models import FeatureEntry, Stage
 from internals.data_types import CHANGED_FIELDS_LIST_TYPE
 from internals.review_models import Gate
 
@@ -46,54 +46,6 @@ class StagesAPI(basehandlers.EntitiesAPIHandler):
         self._create_gate_for_stage(
         stage.feature_id, stage.key.integer_id(), gate_type)
     return stage
-
-  def _update_stage(
-      self,
-      stage: Stage,
-      change_info: dict[str, Any],
-      changed_fields: CHANGED_FIELDS_LIST_TYPE,
-    ) -> bool:
-    """Update stage fields with changes provided."""
-    stage_was_updated = False
-    ot_action_requested = False
-    # Check if valid ID is provided and fetch stage if it exists.
-
-    # Update stage fields.
-    for field, field_type in api_specs.STAGE_FIELD_DATA_TYPES:
-      if field not in change_info:
-        continue
-      form_field_name = change_info[field]['form_field_name']
-      if form_field_name == 'ot_action_requested':
-        ot_action_requested = True
-      old_value = getattr(stage, field)
-      new_value = change_info[field]['value']
-      self.update_field_value(stage, field, field_type, new_value)
-      changed_fields.append((form_field_name, old_value, new_value))
-      stage_was_updated = True
-
-    # Update milestone fields.
-    milestones = stage.milestones
-    for field, field_type in api_specs.MILESTONESET_FIELD_DATA_TYPES:
-      if field not in change_info:
-        continue
-      if milestones is None:
-        milestones = MilestoneSet()
-      form_field_name = change_info[field]['form_field_name']
-      old_value = getattr(milestones, field)
-      new_value = change_info[field]['value']
-      self.update_field_value(milestones, field, field_type, new_value)
-      changed_fields.append((form_field_name, old_value, new_value))
-      stage_was_updated = True
-    stage.milestones = milestones
-
-    if stage_was_updated:
-      stage.put()
-
-    # Notify of OT request if one was sent.
-    if ot_action_requested:
-      notifier_helpers.send_ot_notification(stage)
-
-    return stage_was_updated
 
   def do_get(self, **kwargs):
     """Return a specified stage based on the given ID."""
@@ -148,7 +100,7 @@ class StagesAPI(basehandlers.EntitiesAPIHandler):
 
     # Add the specified field values to the stage. Create a gate if needed.
     stage = self._create_stage(feature_id, feature.feature_type, stage_type)
-    self._update_stage(stage, body, [])
+    self.update_stage(stage, body, [])
 
     # Changing stage values means the cached feature should be invalidated.
     lookup_key = FeatureEntry.feature_cache_key(
@@ -182,7 +134,7 @@ class StagesAPI(basehandlers.EntitiesAPIHandler):
 
     changed_fields: CHANGED_FIELDS_LIST_TYPE = []
     # Update specified fields.
-    self._update_stage(stage, body, changed_fields)
+    self.update_stage(stage, body, changed_fields)
 
     notifier_helpers.notify_subscribers_and_save_amendments(
         feature, changed_fields, notify=True)
