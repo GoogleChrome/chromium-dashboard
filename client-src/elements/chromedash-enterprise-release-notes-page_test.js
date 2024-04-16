@@ -6,6 +6,11 @@ import './chromedash-toast';
 import '../js-src/cs-client';
 import sinon from 'sinon';
 
+function normalizedTextContent(element) {
+  return element.textContent.replace(/^\s+/, '').replace(/\s+$/, '').replaceAll(/\s+/g, ' ');
+}
+
+// prettier-ignore
 describe('chromedash-enterprise-release-notes-page', () => {
   const featuresPromise = Promise.resolve(
     {
@@ -352,7 +357,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
           '< To remove - Feature details - ' +
           'Owners: owner1 - Editors: editor1 - First Notice: n_milestone_feat_4 - ' +
           'Last Updated: feature 4 updated >',
-          features[0].querySelector('.toremove').textContent);
+          normalizedTextContent(features[0].querySelector('.toremove')));
         assert.equal(
           'feature 4 summary',
           features[0].querySelector('.summary').textContent);
@@ -380,7 +385,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
           '< To remove - Feature details - ' +
           'Owners: owner - Editors: editor1, editor2 - First Notice: n_milestone_feat_3 - ' +
           'Last Updated: updated when >',
-          features[1].querySelector('.toremove').textContent);
+          normalizedTextContent(features[1].querySelector('.toremove')));
         assert.equal(
           'feature 3 summary',
           features[1].querySelector('.summary').textContent);
@@ -404,7 +409,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
           '< To remove - Feature details - ' +
           'Owners: owner - Editors: editor1, editor2 - First Notice: n_milestone_feat_7 - ' +
           'Last Updated: updated when >',
-          features[2].querySelector('.toremove').textContent);
+          normalizedTextContent(features[2].querySelector('.toremove')));
         assert.equal(
           'normal feature summary',
           features[2].querySelector('.summary').textContent);
@@ -438,7 +443,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
           '< To remove - Feature details - ' +
           'Owners: owner - Editors: editor1, editor2 - First Notice: n_milestone_feat_6 - ' +
           'Last Updated: updated when >',
-          features[0].querySelector('.toremove').textContent);
+          normalizedTextContent(features[0].querySelector('.toremove')));
         assert.equal(
           'feature 6 summary',
           features[0].querySelector('.summary').textContent);
@@ -460,7 +465,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
           '< To remove - Feature details - ' +
           'Owners: owner - Editors: editor1, editor2 - First Notice: n_milestone_feat_5 - ' +
           'Last Updated: updated when >',
-          features[1].querySelector('.toremove').textContent);
+          normalizedTextContent(features[1].querySelector('.toremove')));
         assert.equal(
           'feature 5 summary',
           features[1].querySelector('.summary').textContent);

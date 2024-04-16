@@ -200,6 +200,7 @@ export class ChromedashActivity extends LitElement {
             <chromedash-amendment .amendment=${a}></chromedash-amendment>
           `)}
         </div>
+        <!-- prettier-ignore -->
         <div class="comment_body">${preface}${autolink(this.activity.content)}</div>
       </div>
     `;

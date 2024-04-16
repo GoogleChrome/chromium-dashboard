@@ -413,6 +413,7 @@ export class ChromedashFeaturePage extends LitElement {
     return html`
       ${this.feature.summary ? html`
         <section id="summary">
+          <!-- prettier-ignore -->
           <p class="preformatted">${autolink(this.feature.summary, this.featureLinks)}</p>
         </section>
       `: nothing}
@@ -423,6 +424,7 @@ export class ChromedashFeaturePage extends LitElement {
     return html`
       ${this.feature.summary ? html`
         <section id="summary">
+          <!-- prettier-ignore -->
           <p class="preformatted">${autolink(this.feature.summary, this.featureLinks)}</p>
         </section>
       `: nothing}
@@ -430,6 +432,7 @@ export class ChromedashFeaturePage extends LitElement {
       ${this.feature.motivation ? html`
         <section id="motivation">
           <h3>Motivation</h3>
+          <!-- prettier-ignore -->
           <p class="preformatted">${autolink(this.feature.motivation, this.featureLinks)}</p>
         </section>
       `: nothing}
@@ -563,6 +566,7 @@ export class ChromedashFeaturePage extends LitElement {
       ${this.feature.comments ? html`
         <section id="comments">
           <h3>Comments</h3>
+          <!-- prettier-ignore -->
           <p class="preformatted">${autolink(this.feature.comments, this.featureLinks)}</p>
         </section>
       `: nothing}

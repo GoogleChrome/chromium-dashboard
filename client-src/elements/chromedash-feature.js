@@ -281,12 +281,14 @@ class ChromedashFeature extends LitElement {
              html`<p><b>This feature is only shown in the feature list
                         to users with access to edit this feature.</b></p>
              `: nothing }
+          <!-- prettier-ignore -->
           <p class="${this.open ? 'preformatted' : ''}"
             ><span>${autolink(this.feature.summary)}</span
           ></p>
         </summary>
         ${this.feature.motivation ?
           html`<p><h3>Motivation</h3></p>
+        <!-- prettier-ignore -->
         <p class="${this.open ? 'preformatted' : ''}"
           ><span>${autolink(this.feature.motivation)}</span
         ></p>` :

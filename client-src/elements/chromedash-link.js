@@ -538,6 +538,7 @@ export function enhanceUrl(url, featureLinks = [], fallback, text) {
     >${text ?? url}</chromedash-link>`;
 }
 
+// prettier-ignore
 export function enhanceAutolink(part, featureLinks) {
   return html`<chromedash-link href=${part.href} .featureLinks=${featureLinks} .ignoreHttpErrorCodes=${[404]}>${part.content}</chromedash-link>`;
 }
