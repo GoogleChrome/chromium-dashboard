@@ -4,7 +4,7 @@ import {SHARED_STYLES} from '../css/shared-css.js';
 import {openSearchHelpDialog} from './chromedash-search-help-dialog.js';
 import {QUERIABLE_FIELDS} from './queriable-fields.js';
 
-const VOCABULARY = QUERIABLE_FIELDS.map((qf) => {
+const VOCABULARY = QUERIABLE_FIELDS.map(qf => {
   return {name: qf.name + '=', doc: qf.doc};
 });
 
@@ -57,21 +57,28 @@ class ChromedashFeatureFilter extends LitElement {
     openSearchHelpDialog();
   }
 
-
   render() {
     return html`
       <chromedash-typeahead
-          ${ref(this.typeaheadRef)}
-          value=${this.query}
-          placeholder="Search"
-          .vocabulary=${VOCABULARY}
-          @sl-change=${this.handleSearchClick}
-         >
-        <sl-icon-button library="material" name="search" slot="prefix"
-            @click="${this.handleSearchClick}">
+        ${ref(this.typeaheadRef)}
+        value=${this.query}
+        placeholder="Search"
+        .vocabulary=${VOCABULARY}
+        @sl-change=${this.handleSearchClick}
+      >
+        <sl-icon-button
+          library="material"
+          name="search"
+          slot="prefix"
+          @click="${this.handleSearchClick}"
+        >
         </sl-icon-button>
-        <sl-icon-button library="material" name="help_20px" slot="suffix"
-            @click="${this.showHelp}">
+        <sl-icon-button
+          library="material"
+          name="help_20px"
+          slot="suffix"
+          @click="${this.showHelp}"
+        >
         </sl-icon-button>
       </chromedash-typeahead>
     `;
