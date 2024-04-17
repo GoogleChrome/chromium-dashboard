@@ -1,10 +1,11 @@
 // @ts-check
 import {Task} from '@lit/task';
 import '@shoelace-style/shoelace';
-import {LitElement, css, html, nothing} from 'lit';
+import {LitElement, html, nothing} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
 /**
+ * @typedef {import('chromestatus-openapi').ExternalReviewsResponse} ExternalReviewsResponse
  * @typedef {import('chromestatus-openapi').OutstandingReview} OutstandingReview
  * @typedef {import('chromestatus-openapi').OutstandingReviewCurrentStageEnum} Stage
  */
@@ -33,10 +34,16 @@ function descendingNumberUndefinedLast(a, b) {
 function compareOutstandingReview(a, b) {
   console.assert(a.current_stage === b.current_stage);
   if (a.estimated_end_milestone !== b.estimated_end_milestone) {
-    return descendingNumberUndefinedLast(a.estimated_end_milestone, b.estimated_end_milestone);
+    return descendingNumberUndefinedLast(
+      a.estimated_end_milestone,
+      b.estimated_end_milestone
+    );
   }
   if (a.estimated_start_milestone !== b.estimated_start_milestone) {
-    return descendingNumberUndefinedLast(a.estimated_start_milestone, b.estimated_start_milestone);
+    return descendingNumberUndefinedLast(
+      a.estimated_start_milestone,
+      b.estimated_start_milestone
+    );
   }
   return 0;
 }
@@ -64,11 +71,14 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
     this._client = window.csOpenApiClient;
     this._reviewsTask = new Task(this, {
       task: async ([reviewer], {signal}) => {
-        const reviews = await this._client.listExternalReviews(
+        const response = await this._client.listExternalReviews(
           {reviewGroup: reviewer},
-          {signal},
+          {signal}
         );
-        return this.groupReviews(reviews);
+        return {
+          reviews: this.groupReviews(response.reviews),
+          links: response.link_previews,
+        };
       },
       args: () => [this.reviewer],
     });
@@ -81,13 +91,13 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
   groupReviews(reviews) {
     /** @type {Record<Stage, OutstandingReview[]>} */
     const result = {
-      'incubating': [],
-      'prototyping': [],
+      incubating: [],
+      prototyping: [],
       'dev-trial': [],
       'wide-review': [],
       'origin-trial': [],
-      'shipping': [],
-      'shipped': [],
+      shipping: [],
+      shipped: [],
     };
     for (const review of reviews) {
       if (review.current_stage) {
@@ -107,79 +117,79 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
         incubations. Already-shipped features are listed at the bottom.
       </div>
       ${this._reviewsTask.render({
-      pending: () => html`
+        pending: () => html`
           <h2><sl-skeleton effect="sheen"></sl-skeleton></h2>
           <table>
             <tr>
               <td><sl-skeleton effect="sheen"></sl-skeleton></td>
+            </tr>
+            <tr>
               <td><sl-skeleton effect="sheen"></sl-skeleton></td>
+            </tr>
+            <tr>
               <td><sl-skeleton effect="sheen"></sl-skeleton></td>
             </tr>
           </table>
         `,
-      complete: (reviews) =>
-        [
-          ['Preparing to ship', 'shipping'],
-          ['In Origin Trial', 'origin-trial'],
-          ['Getting wide review', 'wide-review'],
-          ['In developer trials', 'dev-trial'],
-          ['Prototyping', 'prototyping'],
-          ['Incubating', 'incubating'],
-          ['Already shipped', 'shipped'],
-        ].map(
-          ([title, key]) => html`
-              ${reviews[key] ?
-                html`<h2 id=${key}>${title}</h2>
-                    <table>
-                      ${reviews[key].map(
-                        /** @param {OutstandingReview} review */ (
-                    review,
-                  ) => html`
-                          <tr>
-                            <td>
-                              <chromedash-link
-                                href=${review.review_link}
-                                .featureLinks=${[]}
-                              ></chromedash-link>
-                            </td>
-                            <td class="name_col">
-                              <a href="/feature/${review.feature.id}"
-                                >${review.feature.name}</a
-                              >
-                            </td>
-                            <td>
-                              ${review.estimated_start_milestone ?
-                                'M' + review.estimated_start_milestone :
-                                nothing}${['shipping', 'shipped'].includes(
-                                  review.current_stage,
-                                ) ?
-                                nothing :
-                                html`${review.estimated_start_milestone ||
-                                  review.estimated_end_milestone ?
-                                    '–' :
-                                    nothing}${review.estimated_end_milestone ?
-                                    'M' + review.estimated_end_milestone :
-                                    nothing}`}
-                            </td>
-                          </tr>
-                        `,
-                      )}
-                    </table>` :
-                nothing}
-            `,
-        ),
-      error: (e) => {
-        console.error(e);
-        return html`<p>
+        complete: ({reviews, links}) =>
+          [
+            ['Preparing to ship', 'shipping'],
+            ['In Origin Trial', 'origin-trial'],
+            ['Getting wide review', 'wide-review'],
+            ['In developer trials', 'dev-trial'],
+            ['Prototyping', 'prototyping'],
+            ['Incubating', 'incubating'],
+            ['Already shipped', 'shipped'],
+          ].map(([title, key]) =>
+            reviews[key].length > 0
+              ? html`<h2 id=${key}>${title}</h2>
+                  <table>
+                    ${reviews[key].map(
+                      /** @param {OutstandingReview} review */ review => html`
+                        <tr>
+                          <td>
+                            <chromedash-link
+                              href=${review.review_link}
+                              .featureLinks=${links}
+                            ></chromedash-link>
+                          </td>
+                          <td class="name_col">
+                            <a href="/feature/${review.feature.id}"
+                              >${review.feature.name}</a
+                            >
+                          </td>
+                          <td>
+                            ${review.estimated_start_milestone
+                              ? 'M' + review.estimated_start_milestone
+                              : nothing}${['shipping', 'shipped'].includes(
+                              review.current_stage
+                            )
+                              ? nothing
+                              : html`${review.estimated_start_milestone ||
+                                review.estimated_end_milestone
+                                  ? '–'
+                                  : nothing}${review.estimated_end_milestone
+                                  ? 'M' + review.estimated_end_milestone
+                                  : nothing}`}
+                          </td>
+                        </tr>
+                      `
+                    )}
+                  </table>`
+              : nothing
+          ),
+        error: e => {
+          console.error(e);
+          return html`<p>
             Some errors occurred. Please refresh the page or try again later.
           </p>`;
-      },
-    })}
+        },
+      })}
     `;
   }
 }
 
 customElements.define(
   'chromedash-report-external-reviews-page',
-  ChromedashReportExternalReviewsPage,
+  ChromedashReportExternalReviewsPage
 );

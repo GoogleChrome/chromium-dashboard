@@ -116,9 +116,7 @@ paths:
           content:
             application/json:
               schema:
-                items:
-                  $ref: '#/components/schemas/OutstandingReview'
-                type: array
+                $ref: '#/components/schemas/ExternalReviewsResponse'
           description: "List of all the outstanding reviews, ordered by urgency."
         "404":
           description: The review group wasn't recognized.
@@ -430,6 +428,48 @@ components:
       - shipped_milestone
       title: FeatureLatency
       type: object
+    ExternalReviewsResponse:
+      example:
+        link_previews:
+        - information: "{}"
+          type: type
+          http_error_code: 1
+          url: http://example.com/aeiou
+        - information: "{}"
+          type: type
+          http_error_code: 1
+          url: http://example.com/aeiou
+        reviews:
+        - feature:
+            name: WebGPU
+            id: 5703707724349440
+          estimated_end_milestone: 6
+          review_link: http://example.com/aeiou
+          current_stage: incubating
+          estimated_start_milestone: 0
+        - feature:
+            name: WebGPU
+            id: 5703707724349440
+          estimated_end_milestone: 6
+          review_link: http://example.com/aeiou
+          current_stage: incubating
+          estimated_start_milestone: 0
+      properties:
+        reviews:
+          items:
+            $ref: '#/components/schemas/OutstandingReview'
+          title: reviews
+          type: array
+        link_previews:
+          items:
+            $ref: '#/components/schemas/LinkPreview'
+          title: link_previews
+          type: array
+      required:
+      - link_previews
+      - reviews
+      title: ExternalReviewsResponse
+      type: object
     OutstandingReview:
       example:
         feature:
@@ -495,6 +535,161 @@ components:
       - id
       - name
       title: FeatureLink
+      type: object
+    LinkPreview:
+      discriminator:
+        mapping:
+          github_issue: LinkPreviewGithubIssue
+          github_markdown: LinkPreviewGithubMarkdown
+          github_pull_request: LinkPreviewGithubPullRequest
+          mdn_docs: LinkPreviewMdnDocs
+          google_docs: LinkPreviewGoogleDocs
+          mozilla_bug: LinkPreviewMozillaBug
+          webkit_bug: LinkPreviewWebkitBug
+          specs: LinkPreviewSpecs
+        propertyName: type
+      example:
+        information: "{}"
+        type: type
+        http_error_code: 1
+        url: http://example.com/aeiou
+      properties:
+        url:
+          format: url
+          title: url
+          type: string
+        type:
+          title: type
+          type: string
+        information:
+          title: information
+          type: object
+        http_error_code:
+          title: http_error_code
+          type: integer
+      required:
+      - http_error_code
+      - information
+      - type
+      - url
+      title: LinkPreview
+      type: object
+    LinkPreviewGithubIssue:
+      allOf:
+      - $ref: '#/components/schemas/LinkPreview'
+      - properties:
+          information:
+            $ref: '#/components/schemas/LinkPreviewGithubIssue_allOf_information'
+        required:
+        - information
+        type: object
+      title: LinkPreviewGithubIssue
+    LinkPreviewGithubPullRequest:
+      allOf:
+      - $ref: '#/components/schemas/LinkPreviewGithubIssue'
+    LinkPreviewGithubMarkdown:
+      allOf:
+      - $ref: '#/components/schemas/LinkPreview'
+      - properties:
+          information:
+            $ref: '#/components/schemas/LinkPreviewGithubMarkdown_allOf_information'
+        required:
+        - information
+        type: object
+    LinkPreviewOpenGraph:
+      allOf:
+      - $ref: '#/components/schemas/LinkPreview'
+      - properties:
+          information:
+            $ref: '#/components/schemas/LinkPreviewOpenGraph_allOf_information'
+        required:
+        - information
+        type: object
+      title: LinkPreviewOpenGraph
+    LinkPreviewMdnDocs:
+      allOf:
+      - $ref: '#/components/schemas/LinkPreviewOpenGraph'
+    LinkPreviewGoogleDocs:
+      allOf:
+      - $ref: '#/components/schemas/LinkPreviewOpenGraph'
+    LinkPreviewMozillaBug:
+      allOf:
+      - $ref: '#/components/schemas/LinkPreviewOpenGraph'
+    LinkPreviewWebkitBug:
+      allOf:
+      - $ref: '#/components/schemas/LinkPreviewOpenGraph'
+    LinkPreviewSpecs:
+      allOf:
+      - $ref: '#/components/schemas/LinkPreviewOpenGraph'
+    LinkPreviewGithubIssue_allOf_information:
+      properties:
+        url:
+          format: url
+          title: url
+          type: string
+        number:
+          title: number
+          type: integer
+        title:
+          title: title
+          type: string
+        user_login:
+          title: user_login
+          type: string
+        state:
+          enum:
+          - open
+          - closed
+          title: state
+          type: string
+        state_reason:
+          enum:
+          - completed
+          - reopened
+          - not_planned
+          title: state_reason
+          type: string
+        assignee_login:
+          title: assignee_login
+          type: string
+        created_at:
+          format: date
+          title: created_at
+          type: string
+        updated_at:
+          format: date
+          title: updated_at
+          type: string
+        closed_at:
+          format: date
+          title: closed_at
+          type: string
+        labels:
+          items:
+            type: string
+          title: labels
+          type: array
+      title: LinkPreviewGithubIssue_allOf_information
+      type: object
+    LinkPreviewGithubMarkdown_allOf_information:
+      properties:
+        _parsed_title:
+          title: _parsed_title
+          type: string
+        content:
+          title: content
+          type: string
+      title: LinkPreviewGithubMarkdown_allOf_information
+      type: object
+    LinkPreviewOpenGraph_allOf_information:
+      properties:
+        title:
+          title: title
+          type: string
+        description:
+          title: description
+          type: string
+      title: LinkPreviewOpenGraph_allOf_information
       type: object
   securitySchemes:
     XsrfToken:

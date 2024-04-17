@@ -5,8 +5,8 @@ from typing import Union
 
 from chromestatus_openapi.models.component_users_request import ComponentUsersRequest  # noqa: E501
 from chromestatus_openapi.models.components_users_response import ComponentsUsersResponse  # noqa: E501
+from chromestatus_openapi.models.external_reviews_response import ExternalReviewsResponse  # noqa: E501
 from chromestatus_openapi.models.feature_latency import FeatureLatency  # noqa: E501
-from chromestatus_openapi.models.outstanding_review import OutstandingReview  # noqa: E501
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
 from chromestatus_openapi import util
@@ -50,7 +50,7 @@ def list_external_reviews(review_group):  # noqa: E501
     :param review_group: Which review group to focus on:  * &#x60;tag&#x60; - The W3C TAG  * &#x60;gecko&#x60; - The rendering engine that powers Mozilla Firefox  * &#x60;webkit&#x60; - The rendering engine that powers Apple Safari 
     :type review_group: str
 
-    :rtype: Union[List[OutstandingReview], Tuple[List[OutstandingReview], int], Tuple[List[OutstandingReview], int, Dict[str, str]]
+    :rtype: Union[ExternalReviewsResponse, Tuple[ExternalReviewsResponse, int], Tuple[ExternalReviewsResponse, int, Dict[str, str]]
     """
     return 'do some magic!'
 

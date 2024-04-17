@@ -17,8 +17,8 @@ import * as runtime from '../runtime';
 import type {
   ComponentUsersRequest,
   ComponentsUsersResponse,
+  ExternalReviewsResponse,
   FeatureLatency,
-  OutstandingReview,
   ReviewLatency,
   SpecMentor,
 } from '../models/index';
@@ -27,10 +27,10 @@ import {
     ComponentUsersRequestToJSON,
     ComponentsUsersResponseFromJSON,
     ComponentsUsersResponseToJSON,
+    ExternalReviewsResponseFromJSON,
+    ExternalReviewsResponseToJSON,
     FeatureLatencyFromJSON,
     FeatureLatencyToJSON,
-    OutstandingReviewFromJSON,
-    OutstandingReviewToJSON,
     ReviewLatencyFromJSON,
     ReviewLatencyToJSON,
     SpecMentorFromJSON,
@@ -108,12 +108,12 @@ export interface DefaultApiInterface {
      * @throws {RequiredError}
      * @memberof DefaultApiInterface
      */
-    listExternalReviewsRaw(requestParameters: ListExternalReviewsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<OutstandingReview>>>;
+    listExternalReviewsRaw(requestParameters: ListExternalReviewsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ExternalReviewsResponse>>;
 
     /**
      * List features whose external reviews are incomplete
      */
-    listExternalReviews(requestParameters: ListExternalReviewsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<OutstandingReview>>;
+    listExternalReviews(requestParameters: ListExternalReviewsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ExternalReviewsResponse>;
 
     /**
      * 
@@ -257,7 +257,7 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     /**
      * List features whose external reviews are incomplete
      */
-    async listExternalReviewsRaw(requestParameters: ListExternalReviewsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<OutstandingReview>>> {
+    async listExternalReviewsRaw(requestParameters: ListExternalReviewsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ExternalReviewsResponse>> {
         if (requestParameters.reviewGroup === null || requestParameters.reviewGroup === undefined) {
             throw new runtime.RequiredError('reviewGroup','Required parameter requestParameters.reviewGroup was null or undefined when calling listExternalReviews.');
         }
@@ -273,13 +273,13 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(OutstandingReviewFromJSON));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ExternalReviewsResponseFromJSON(jsonValue));
     }
 
     /**
      * List features whose external reviews are incomplete
      */
-    async listExternalReviews(requestParameters: ListExternalReviewsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<OutstandingReview>> {
+    async listExternalReviews(requestParameters: ListExternalReviewsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ExternalReviewsResponse> {
         const response = await this.listExternalReviewsRaw(requestParameters, initOverrides);
         return await response.value();
     }

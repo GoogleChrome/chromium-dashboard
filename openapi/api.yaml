@@ -13,7 +13,7 @@ info:
     name: Apache-2.0
     url: 'https://www.apache.org/licenses/LICENSE-2.0.html'
 servers:
-- url: /api/v0
+  - url: /api/v0
 paths:
   /componentsusers:
     get:
@@ -121,9 +121,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/OutstandingReview'
+                $ref: '#/components/schemas/ExternalReviewsResponse'
         '404':
           description: The review group wasn't recognized.
   /spec_mentors:
@@ -297,6 +295,20 @@ components:
         - shipped_milestone
         - shipped_date
         - owner_emails
+    ExternalReviewsResponse:
+      type: object
+      required:
+        - reviews
+        - link_previews
+      properties:
+        reviews:
+          type: array
+          items:
+            $ref: '#/components/schemas/OutstandingReview'
+        link_previews:
+          type: array
+          items:
+            $ref: '#/components/schemas/LinkPreview'
     OutstandingReview:
       type: object
       required:
@@ -344,3 +356,119 @@ components:
         name:
           type: string
           example: WebGPU
+    LinkPreview:
+      type: object
+      required:
+        - url
+        - type
+        - information
+        - http_error_code
+      properties:
+        url:
+          type: string
+          format: url
+        type:
+          type: string
+        information:
+          type: object
+        http_error_code:
+          type: integer
+      discriminator:
+        propertyName: type
+        mapping:
+          github_issue: LinkPreviewGithubIssue
+          github_markdown: LinkPreviewGithubMarkdown
+          github_pull_request: LinkPreviewGithubPullRequest
+          mdn_docs: LinkPreviewMdnDocs
+          google_docs: LinkPreviewGoogleDocs
+          mozilla_bug: LinkPreviewMozillaBug
+          webkit_bug: LinkPreviewWebkitBug
+          specs: LinkPreviewSpecs
+    LinkPreviewGithubIssue:
+      allOf:
+        - $ref: '#/components/schemas/LinkPreview'
+        - type: object
+          required: [information]
+          properties:
+            information:
+              type: object
+              properties:
+                url:
+                  type: string
+                  format: url
+                number:
+                  type: integer
+                title:
+                  type: string
+                user_login:
+                  type: string
+                state:
+                  type: string
+                  enum:
+                    - open
+                    - closed
+                state_reason:
+                  type: string
+                  enum:
+                    - completed
+                    - reopened
+                    - not_planned
+                assignee_login:
+                  type: string
+                created_at:
+                  type: string
+                  format: date
+                updated_at:
+                  type: string
+                  format: date
+                closed_at:
+                  type: string
+                  format: date
+                labels:
+                  type: array
+                  items:
+                    type: string
+    LinkPreviewGithubPullRequest:
+      allOf:
+        - $ref: '#/components/schemas/LinkPreviewGithubIssue'
+    LinkPreviewGithubMarkdown:
+      allOf:
+        - $ref: '#/components/schemas/LinkPreview'
+        - type: object
+          required: [information]
+          properties:
+            information:
+              type: object
+              properties:
+                _parsed_title:
+                  type: string
+                content:
+                  type: string
+    LinkPreviewOpenGraph:
+      allOf:
+        - $ref: '#/components/schemas/LinkPreview'
+        - type: object
+          required: [information]
+          properties:
+            information:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+    LinkPreviewMdnDocs:
+      allOf:
+        - $ref: '#/components/schemas/LinkPreviewOpenGraph'
+    LinkPreviewGoogleDocs:
+      allOf:
+        - $ref: '#/components/schemas/LinkPreviewOpenGraph'
+    LinkPreviewMozillaBug:
+      allOf:
+        - $ref: '#/components/schemas/LinkPreviewOpenGraph'
+    LinkPreviewWebkitBug:
+      allOf:
+        - $ref: '#/components/schemas/LinkPreviewOpenGraph'
+    LinkPreviewSpecs:
+      allOf:
+        - $ref: '#/components/schemas/LinkPreviewOpenGraph'

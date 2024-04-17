@@ -17,7 +17,11 @@ import logging
 import pprint
 from enum import StrEnum
 
+from chromestatus_openapi.models.external_reviews_response import (
+  ExternalReviewsResponse,
+)
 from chromestatus_openapi.models.feature_link import FeatureLink
+from chromestatus_openapi.models.link_preview import LinkPreview
 from chromestatus_openapi.models.outstanding_review import OutstandingReview
 from google.cloud import ndb  # type: ignore
 
@@ -49,6 +53,13 @@ from internals.core_enums import (
   STAGE_PSA_SHIPPING,
 )
 from internals.core_models import FeatureEntry, Stage
+from internals.feature_links import (
+  get_by_feature_ids as get_feature_links_by_feature_ids,
+)
+from internals.feature_links import (
+  get_feature_links_samples,
+  get_feature_links_summary,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -127,40 +138,53 @@ class ExternalReviewsAPI(basehandlers.APIHandler):
     if review_group not in ['tag', 'gecko', 'webkit']:
       self.abort(404, f'invalid review group {review_group}')
 
+    # Get all the features that might have an unfinished review for the requested group.
     if review_group == 'tag':
       unreviewed_features = FeatureEntry.query(
-        FeatureEntry.tag_review != '', FeatureEntry.tag_review_resolution == None  # noqa: E711
+        FeatureEntry.tag_review != None,  # noqa: E711
+        FeatureEntry.tag_review_resolution == None,  # noqa: E711
       ).fetch()
       review_link = 'tag_review'
     elif review_group == 'gecko':
       unreviewed_features = FeatureEntry.query(
-        FeatureEntry.ff_views_link != '', FeatureEntry.ff_views_link_result == None  # noqa: E711
+        FeatureEntry.ff_views_link != None,  # noqa: E711
+        FeatureEntry.ff_views_link_result == None,  # noqa: E711
       ).fetch()
       review_link = 'ff_views_link'
     elif review_group == 'webkit':
       unreviewed_features = FeatureEntry.query(
-        FeatureEntry.safari_views_link != '',
+        FeatureEntry.safari_views_link != None,  # noqa: E711
         FeatureEntry.safari_views_link_result == None,  # noqa: E711
       ).fetch()
       review_link = 'safari_views_link'
 
-    logger.info(pprint.pformat(unreviewed_features))
+    # Build a map from each feature ID to its active Stage information.
+    active_stage = {
+      stage.feature_id: stage
+      for stage in ndb.get_multi(
+        [
+          ndb.Key('Stage', feature.active_stage_id)
+          for feature in unreviewed_features
+          if feature.active_stage_id
+        ]
+      )
+      if stage
+    }
 
-    stages = ndb.get_multi(
-      [
-        ndb.Key('Stage', feature.active_stage_id)
-        for feature in unreviewed_features
-        if feature.active_stage_id
-      ]
+    # Filter to reviews for which we could fetch a preview.
+    feature_links, _has_stale_links = get_feature_links_by_feature_ids(
+      [feature.key.id() for feature in unreviewed_features], update_stale_links=True
     )
-    active_stage = {stage.feature_id: stage for stage in stages}
+    review_links = {getattr(feature, review_link) for feature in unreviewed_features}
+    previewable_urls = {fl['url'] for fl in feature_links}
 
-    result = [
+    # Build the response objects.
+    reviews = [
       OutstandingReview(
         review_link=getattr(feature, review_link),
         feature=FeatureLink(id=feature.key.id(), name=feature.name),
         current_stage=stage_type(feature, stage),
-        estimated_start_milestone=max_of_present(
+        estimated_start_milestone=min_of_present(
           stage.milestones.desktop_first,
           stage.milestones.android_first,
           stage.milestones.ios_first,
@@ -176,11 +200,23 @@ class ExternalReviewsAPI(basehandlers.APIHandler):
         )
         if stage and stage.milestones
         else None,
-      ).to_dict()
+      )
       for feature in unreviewed_features
       for stage in [active_stage.get(feature.key.id(), None)]
+      if getattr(feature, review_link) in previewable_urls
     ]
 
-    logger.info(pprint.pformat(result))
+    link_previews = [
+      LinkPreview(
+        url=feature_link['url'],
+        type=feature_link['type'],
+        information=feature_link['information'],
+        http_error_code=feature_link['http_error_code'],
+      )
+      for feature_link in feature_links
+      if feature_link['url'] in review_links
+    ]
 
-    return result
+    result = ExternalReviewsResponse(reviews=reviews, link_previews=link_previews)
+    logger.info(result)
+    return result.to_dict()

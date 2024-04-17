@@ -175,6 +175,8 @@ def _denormalize_feature_link_into_entries(
         keys=[ndb.Key('FeatureEntry', id) for id in feature_link.feature_ids]
       )
     for fe in possible_entries:
+      if fe is None:
+        continue
       if (
         'github.com/w3ctag/design-reviews/' in feature_link.url
         and fe.tag_review == feature_link.url
@@ -204,10 +206,10 @@ def _denormalize_feature_link_into_entries(
         )
 
 
-def _get_feature_links(feature_id: int) -> list[FeatureLinks]:
-  """Return a list of FeatureLinks for a given feature id"""
+def _get_feature_links(feature_ids: list[int]) -> list[FeatureLinks]:
+  """Return a list of FeatureLinks for the given feature ids"""
   feature_links = FeatureLinks.query(
-      FeatureLinks.feature_ids == feature_id).fetch(None)
+      FeatureLinks.feature_ids.IN(feature_ids)).fetch(None) if feature_ids else []
   return feature_links if feature_links else []
 
 
@@ -217,7 +219,18 @@ def get_by_feature_id(feature_id: int, update_stale_links: bool) -> tuple[list[d
   This is used by the api to return json to the client.
   update_stale_links: if True, then trigger a background task to update the information of the links.
   """
-  feature_links = _get_feature_links(feature_id)
+  return get_by_feature_ids([feature_id], update_stale_links)
+
+
+def get_by_feature_ids(
+  feature_ids: list[int], update_stale_links: bool
+) -> tuple[list[dict], bool]:
+  """Return a list of dicts of FeatureLinks for the given feature ids
+  The returned dicts only include the url, type, and information fields.
+  This is used by the api to return json to the client.
+  update_stale_links: if True, then trigger a background task to update the information of the links.
+  """
+  feature_links = _get_feature_links(feature_ids)
   stale_time = datetime.datetime.now(
       tz=datetime.timezone.utc) - datetime.timedelta(minutes=LINK_STALE_MINUTES)
   stale_time = stale_time.replace(tzinfo=None)
@@ -227,7 +240,7 @@ def get_by_feature_id(feature_id: int, update_stale_links: bool) -> tuple[list[d
 
   if has_stale_links and update_stale_links:
     logging.info(
-        f'Found {len(stale_feature_links)} stale links for feature_id {feature_id}, send links to cloud task')
+        f'Found {len(stale_feature_links)} stale links for feature_ids {feature_ids}, send links to cloud task')
 
     feature_link_ids = [link.key.id() for link in stale_feature_links]
     cloud_tasks_helpers.enqueue_task(
@@ -306,7 +319,7 @@ def batch_index_feature_entries(fes: list[FeatureEntry], skip_existing: bool) ->
 
   for fe in fes:
     if skip_existing:
-      feature_links = _get_feature_links(fe.key.integer_id())
+      feature_links = _get_feature_links([fe.key.integer_id()])
       if len(feature_links) > 0:
         continue
 
@@ -315,7 +328,7 @@ def batch_index_feature_entries(fes: list[FeatureEntry], skip_existing: bool) ->
     for url in urls:
       link = Link(url)
       if link.type:
-        fl = _get_index_link(link, fe, should_parse_new_link=False)
+        fl = _get_index_link(link, fe, should_parse_new_link=True)
         if fl:
           feature_links.append(fl)
 
