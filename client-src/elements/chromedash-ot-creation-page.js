@@ -13,36 +13,35 @@ import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
 import {ALL_FIELDS} from './form-field-specs.js';
 
-
 export class ChromedashOTCreationPage extends LitElement {
   static get styles() {
     return [
       ...SHARED_STYLES,
       ...FORM_STYLES,
       css`
-      #overlay {
-        position: fixed;
-        width: 100%;
-        height: 100%;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: rgba(0,0,0,0.3);
-        z-index: 2;
-        cursor: pointer;
-      }
-      .submission-spinner {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        height: 300px;
-      }
-      .big-spinner {
-
-      }
-      `];
+        #overlay {
+          position: fixed;
+          width: 100%;
+          height: 100%;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: rgba(0, 0, 0, 0.3);
+          z-index: 2;
+          cursor: pointer;
+        }
+        .submission-spinner {
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          height: 300px;
+        }
+        .big-spinner {
+        }
+      `,
+    ];
   }
 
   static get properties() {
@@ -170,7 +169,7 @@ export class ChromedashOTCreationPage extends LitElement {
       // The requester's email should be a contact by default.
       if (featureJSONKey === 'ot_owner_email' && !value) {
         value = [this.userEmail];
-      // Display registration approvals fields by default if the value is checked already.
+        // Display registration approvals fields by default if the value is checked already.
       } else if (featureJSONKey === 'ot_require_approvals') {
         this.showApprovalsFields = !!value;
       }
@@ -211,8 +210,7 @@ export class ChromedashOTCreationPage extends LitElement {
   // Check that the code has landed that is used to monitor feature usage.
   checkWebfeatureUseCounter(field, errors) {
     if (errors.ot_webfeature_use_counter) {
-      field.checkMessage = html`
-      <span class="check-error">
+      field.checkMessage = html` <span class="check-error">
         <b>Error</b>: ${errors.ot_webfeature_use_counter}
       </span>`;
     } else {
@@ -223,10 +221,9 @@ export class ChromedashOTCreationPage extends LitElement {
   // Check that code has landed that is required for the origin trial feature.
   checkChromiumTrialName(field, errors) {
     if (errors.ot_chromium_trial_name) {
-      field.checkMessage = html`
-        <span class="check-error">
-          <b>Error</b>: ${errors.ot_chromium_trial_name}
-        </span>`;
+      field.checkMessage = html` <span class="check-error">
+        <b>Error</b>: ${errors.ot_chromium_trial_name}
+      </span>`;
     } else {
       field.checkMessage = nothing;
     }
@@ -235,8 +232,7 @@ export class ChromedashOTCreationPage extends LitElement {
   // Check that code has landed that is required for third party support.
   checkThirdPartySupport(field, errors) {
     if (errors.ot_has_third_party_support) {
-      field.checkMessage = html`
-        <br>
+      field.checkMessage = html` <br />
         <span class="check-error">
           <b>Error</b>: ${errors.ot_has_third_party_support}
         </span>`;
@@ -248,11 +244,10 @@ export class ChromedashOTCreationPage extends LitElement {
   // Check that code has landed that is required for critical trials.
   checkCriticalTrial(field, errors) {
     if (errors.ot_is_critical_trial) {
-      field.checkMessage = html`
-        <br>
+      field.checkMessage = html` <br />
         <span class="check-error">
           <b>Error</b>: ${errors.ot_is_critical_trial}
-      </span>`;
+        </span>`;
     } else {
       field.checkMessage = nothing;
     }
@@ -287,17 +282,22 @@ export class ChromedashOTCreationPage extends LitElement {
       });
     }
 
-    const featureSubmitBody = formatFeatureChanges(this.fieldValues, this.featureId);
+    const featureSubmitBody = formatFeatureChanges(
+      this.fieldValues,
+      this.featureId
+    );
     // We only need the single stage changes.
     const stageSubmitBody = featureSubmitBody.stages[0];
 
     this.submitting = true;
-    window.csClient.createOriginTrial(this.featureId, this.stageId, stageSubmitBody)
+    window.csClient
+      .createOriginTrial(this.featureId, this.stageId, stageSubmitBody)
       .then(resp => {
         if (resp.errors) {
           this.handleChromiumChecks(resp.errors);
           showToastMessage(
-            'Some issues were found with the given inputs. Check input errors and try again.');
+            'Some issues were found with the given inputs. Check input errors and try again.'
+          );
           this.submitting = false;
           this.requestUpdate();
         } else {
@@ -384,12 +384,15 @@ export class ChromedashOTCreationPage extends LitElement {
     const section = ORIGIN_TRIAL_CREATION_FIELDS.sections[0];
     return html`
       <form name="feature_form">
-        ${this.submitting ?
-        html`<div id="overlay">
-          <div class="loading">
-            <div id="spinner"><img class="submission-spinner" src="/static/img/ring.svg"></div>
-          </div>
-        </div>` : nothing}
+        ${this.submitting
+          ? html`<div id="overlay">
+              <div class="loading">
+                <div id="spinner">
+                  <img class="submission-spinner" src="/static/img/ring.svg" />
+                </div>
+              </div>
+            </div>`
+          : nothing}
         <chromedash-form-table ${ref(this.registerHandlers)}>
           <section class="stage_form">${this.renderFields(section)}</section>
         </chromedash-form-table>
