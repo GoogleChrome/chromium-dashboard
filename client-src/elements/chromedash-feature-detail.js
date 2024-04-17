@@ -32,32 +32,37 @@ import './chromedash-activity-log';
 import './chromedash-callout';
 import './chromedash-gate-chip';
 import {
-  autolink, findProcessStage, flattenSections, parseRawQuery,
+  autolink,
+  findProcessStage,
+  flattenSections,
+  parseRawQuery,
 } from './utils.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
-export const DETAILS_STYLES = [css`
-      sl-details {
-        border: var(--card-border);
-        box-shadow: var(--card-box-shadow);
-        margin: var(--content-padding-half);
-        border-radius: 4px;
-        background: var(--card-background);
-      }
-      sl-details::part(base),
-      sl-details::part(header) {
-        background: transparent;
-      }
-      sl-details::part(header) {
-        padding-bottom: 8px;
-      }
+export const DETAILS_STYLES = [
+  css`
+    sl-details {
+      border: var(--card-border);
+      box-shadow: var(--card-box-shadow);
+      margin: var(--content-padding-half);
+      border-radius: 4px;
+      background: var(--card-background);
+    }
+    sl-details::part(base),
+    sl-details::part(header) {
+      background: transparent;
+    }
+    sl-details::part(header) {
+      padding-bottom: 8px;
+    }
 
-      .card {
-        background: var(--card-background);
-        max-width: var(--max-content-width);
-        padding: 16px;
-      }
-`];
+    .card {
+      background: var(--card-background);
+      max-width: var(--max-content-width);
+      padding: 16px;
+    }
+  `,
+];
 
 const LONG_TEXT = 60;
 
@@ -105,104 +110,105 @@ class ChromedashFeatureDetail extends LitElement {
       ...SHARED_STYLES,
       ...DETAILS_STYLES,
       css`
-      :host {
-        display: block;
-        position: relative;
-        box-sizing: border-box;
-        contain: content;
-        overflow: hidden;
-        background: inherit;
-      }
+        :host {
+          display: block;
+          position: relative;
+          box-sizing: border-box;
+          contain: content;
+          overflow: hidden;
+          background: inherit;
+        }
 
-      h2 {
-        margin-top: var(--content-padding);
-        display: flex;
-      }
-      h2 span {
-        flex: 1;
-      }
+        h2 {
+          margin-top: var(--content-padding);
+          display: flex;
+        }
+        h2 span {
+          flex: 1;
+        }
 
-      .description,
-      .gates {
-        padding: 8px 16px;
-      }
+        .description,
+        .gates {
+          padding: 8px 16px;
+        }
 
-      sl-details sl-button,
-      sl-details sl-dropdown {
-        float: right;
-        margin-right: 4px;
-      }
-      sl-details sl-dropdown sl-icon-button {
-        font-size: 1.4rem;
-      }
+        sl-details sl-button,
+        sl-details sl-dropdown {
+          float: right;
+          margin-right: 4px;
+        }
+        sl-details sl-dropdown sl-icon-button {
+          font-size: 1.4rem;
+        }
 
-      sl-details sl-button[variant="default"]::part(base) {
-        color: var(--sl-color-primary-600);
-        border: 1px solid var(--sl-color-primary-600);
-      }
+        sl-details sl-button[variant='default']::part(base) {
+          color: var(--sl-color-primary-600);
+          border: 1px solid var(--sl-color-primary-600);
+        }
 
-      ol {
-        list-style: none;
-        padding: 0;
-      }
+        ol {
+          list-style: none;
+          padding: 0;
+        }
 
-      ol li {
-        margin-top: .5em;
-      }
+        ol li {
+          margin-top: 0.5em;
+        }
 
-      dl {
-        padding: 0 var(--content-padding-half);
-      }
+        dl {
+          padding: 0 var(--content-padding-half);
+        }
 
-      dt {
-        font-weight: 500;
-        display: flex;
-        gap: ${GAP}px;
-        align-items: center;
-      }
-      dt sl-icon {
-        color: var(--gate-approved-color);
-        font-size: 1.3em;
-      }
+        dt {
+          font-weight: 500;
+          display: flex;
+          gap: ${GAP}px;
+          align-items: center;
+        }
+        dt sl-icon {
+          color: var(--gate-approved-color);
+          font-size: 1.3em;
+        }
 
-      dd {
-        padding: var(--content-padding-half);
-        padding-left: ${ICON_WIDTH + GAP + CONTENT_PADDING}px;
-        padding-bottom: var(--content-padding-large);
-      }
+        dd {
+          padding: var(--content-padding-half);
+          padding-left: ${ICON_WIDTH + GAP + CONTENT_PADDING}px;
+          padding-bottom: var(--content-padding-large);
+        }
 
-      .inline-list {
-        display: inline-block;
-        padding: 0;
-      }
+        .inline-list {
+          display: inline-block;
+          padding: 0;
+        }
 
-      .longtext {
-        display: block;
-        white-space: pre-wrap;
-        padding: var(--content-padding-half);
-      }
+        .longtext {
+          display: block;
+          white-space: pre-wrap;
+          padding: var(--content-padding-half);
+        }
 
-      .longurl {
-        display: block;
-        padding: var(--content-padding-half);
-      }
+        .longurl {
+          display: block;
+          padding: var(--content-padding-half);
+        }
 
-      .active .card {
-        border: var(--spot-card-border);
-        box-shadow: var(--spot-card-box-shadow);
-      }
+        .active .card {
+          border: var(--spot-card-border);
+          box-shadow: var(--spot-card-box-shadow);
+        }
 
-      #new-stage {
-        margin-left: 8px;
-        margin-bottom: 4px;
-      }
+        #new-stage {
+          margin-left: 8px;
+          margin-bottom: 4px;
+        }
 
-      #footnote {
+        #footnote {
           margin-left: 8px;
           margin-bottom: 4px;
           margin-top: 4px;
         }
-    `];
+      `,
+    ];
   }
 
   _fireEvent(eventName, detail) {
@@ -266,16 +272,16 @@ class ChromedashFeatureDetail extends LitElement {
 
   toggleAll() {
     const shouldOpen = this.anyCollapsed;
-    this.shadowRoot.querySelectorAll('.stage').forEach((el) => {
+    this.shadowRoot.querySelectorAll('.stage').forEach(el => {
       el.open = shouldOpen;
     });
   }
 
   handleAddXfnGates(feStage) {
-    const prompt = (
+    const prompt =
       'Would you like to add gates for Privacy, Security, etc.? \n\n' +
-          'This is needed if the API Owners ask you to add them, ' +
-          'or if you send an "Intent to Ship" rather than a PSA.');
+      'This is needed if the API Owners ask you to add them, ' +
+      'or if you send an "Intent to Ship" rather than a PSA.';
     if (confirm(prompt)) {
       window.csClient.addXfnGates(feStage.feature_id, feStage.id).then(() => {
         this._fireEvent('refetch-needed', {});
@@ -285,18 +291,19 @@ class ChromedashFeatureDetail extends LitElement {
 
   renderControls() {
     const editAllButton = html`
-      <sl-button variant="text"
-           href="/guide/editall/${this.feature.id}">
-         Edit all fields
+      <sl-button variant="text" href="/guide/editall/${this.feature.id}">
+        Edit all fields
       </sl-button>
     `;
     const toggleLabel = this.anyCollapsed ? 'Expand all' : 'Collapse all';
     return html`
       ${this.canEdit ? editAllButton : nothing}
 
-      <sl-button variant="text"
+      <sl-button
+        variant="text"
         title="Expand or collapse all sections"
-        @click=${this.toggleAll}>
+        @click=${this.toggleAll}
+      >
         ${toggleLabel}
       </sl-button>
     `;
@@ -314,10 +321,10 @@ class ChromedashFeatureDetail extends LitElement {
   renderUrl(value) {
     if (value.startsWith('http')) {
       return html`<chromedash-link
-          href=${value}
-          class="url ${value.length > LONG_TEXT ? 'longurl' : ''}"
-          .featureLinks=${this.featureLinks}
-        ></chromedash-link>`;
+        href=${value}
+        class="url ${value.length > LONG_TEXT ? 'longurl' : ''}"
+        .featureLinks=${this.featureLinks}
+      ></chromedash-link>`;
     }
     return this.renderText(value);
   }
@@ -329,7 +336,7 @@ class ChromedashFeatureDetail extends LitElement {
       return this.renderUrl(value);
     } else if (fieldType == 'multi-url') {
       return html`
-        <ul class='inline-list'>
+        <ul class="inline-list">
           ${value.map(url => html`<li>${this.renderUrl(url)}</li>`)}
         </ul>
       `;
@@ -346,22 +353,24 @@ class ChromedashFeatureDetail extends LitElement {
       return nothing;
     }
 
-    const icon = isDefined ?
-      html`<sl-icon library="material" name="check_circle_20px"></sl-icon>` :
-      html`<sl-icon library="material" name="blank_20px"></sl-icon>`;
+    const icon = isDefined
+      ? html`<sl-icon library="material" name="check_circle_20px"></sl-icon>`
+      : html`<sl-icon library="material" name="blank_20px"></sl-icon>`;
 
     return html`
       <dt id=${fieldId}>${icon} ${fieldDisplayName}</dt>
       <dd>
-       ${isDefined ?
-          this.renderValue(fieldType, value) :
-          html`<i>No information provided yet</i>`}
+        ${isDefined
+          ? this.renderValue(fieldType, value)
+          : html`<i>No information provided yet</i>`}
       </dd>
     `;
   }
 
   stageHasAnyFilledFields(fields, feStage) {
-    return fields.some(fieldDef => hasFieldValue(fieldDef[0], feStage, this.feature));
+    return fields.some(fieldDef =>
+      hasFieldValue(fieldDef[0], feStage, this.feature)
+    );
   }
 
   // Renders all fields for trial extension stages as a subsection of the
@@ -373,11 +382,13 @@ class ChromedashFeatureDetail extends LitElement {
     extensionStages.forEach((extensionStage, i) => {
       if (this.stageHasAnyFilledFields(fields, extensionStage)) {
         extensionFields.push(html`
-        <div>
-          <h3>Trial extension ${(i !== 0) ? i + 1 : nothing}</h3>
-          <br>
-          ${fields.map(fieldDef => this.renderField(fieldDef, extensionStage))}
-        </div>
+          <div>
+            <h3>Trial extension ${i !== 0 ? i + 1 : nothing}</h3>
+            <br />
+            ${fields.map(fieldDef =>
+              this.renderField(fieldDef, extensionStage)
+            )}
+          </div>
         `);
       }
     });
@@ -387,26 +398,32 @@ class ChromedashFeatureDetail extends LitElement {
   renderSectionFields(fields, feStage) {
     if (this.stageHasAnyFilledFields(fields, feStage)) {
       // Add the subsection of trial extension information if it is relevant.
-      const extensionFields = (
-        (feStage.extensions) ? this.renderExtensionFields(feStage.extensions) : []);
+      const extensionFields = feStage.extensions
+        ? this.renderExtensionFields(feStage.extensions)
+        : [];
 
-      return html`
-        <dl>
-          ${fields.map(fieldDef => this.renderField(fieldDef, feStage))}
-          ${extensionFields}
-        </dl>`;
+      return html` <dl>
+        ${fields.map(fieldDef => this.renderField(fieldDef, feStage))}
+        ${extensionFields}
+      </dl>`;
     } else {
       return html`<p>No relevant fields have been filled in.</p>`;
     }
   }
 
   renderSection(
-    summary, content, isActive=false, defaultOpen=false, isStage=true) {
+    summary,
+    content,
+    isActive = false,
+    defaultOpen = false,
+    isStage = true
+  ) {
     if (isActive) {
       summary += ' - Active';
     }
     return html`
-      <sl-details summary=${summary}
+      <sl-details
+        summary=${summary}
         @sl-after-show=${this.updateCollapsed}
         @sl-after-hide=${this.updateCollapsed}
         ?open=${isActive || defaultOpen}
@@ -423,33 +440,34 @@ class ChromedashFeatureDetail extends LitElement {
 
   renderMetadataSection() {
     // modify for enterprise
-    const fieldNames = flattenSections(this.feature.is_enterprise_feature ?
-      FLAT_ENTERPRISE_METADATA_FIELDS :
-      FLAT_METADATA_FIELDS);
+    const fieldNames = flattenSections(
+      this.feature.is_enterprise_feature
+        ? FLAT_ENTERPRISE_METADATA_FIELDS
+        : FLAT_METADATA_FIELDS
+    );
     if (fieldNames === undefined || fieldNames.length === 0) {
       return nothing;
     }
     const fields = makeDisplaySpecs(fieldNames);
     const editButton = html`
-      <sl-button size="small" style="float:right"
-          href="/guide/stage/${this.feature.id}/metadata"
-          >Edit fields</sl-button>
+      <sl-button
+        size="small"
+        style="float:right"
+        href="/guide/stage/${this.feature.id}/metadata"
+        >Edit fields</sl-button
+      >
     `;
 
     const content = html`
-      <p class="description">
-        ${this.canEdit ? editButton : nothing}
-      </p>
-      <section class="card">
-        ${this.renderSectionFields(fields, {})}
-      </section>
+      <p class="description">${this.canEdit ? editButton : nothing}</p>
+      <section class="card">${this.renderSectionFields(fields, {})}</section>
     `;
     return this.renderSection(
       'Metadata',
       content,
-      /* isActive=*/false,
-      /* defaultOpen=*/this.feature.is_enterprise_feature,
-      /* isStage=*/false,
+      /* isActive=*/ false,
+      /* defaultOpen=*/ this.feature.is_enterprise_feature,
+      /* isStage=*/ false
     );
   }
 
@@ -467,9 +485,11 @@ class ChromedashFeatureDetail extends LitElement {
 
   renderGateChips(feStage) {
     const gatesForStage = this.gates.filter(g => g.stage_id == feStage.id);
-    gatesForStage.sort((g1, g2) =>
-      GATE_TEAM_ORDER.indexOf(g1.team_name) -
-      GATE_TEAM_ORDER.indexOf(g2.team_name));
+    gatesForStage.sort(
+      (g1, g2) =>
+        GATE_TEAM_ORDER.indexOf(g1.team_name) -
+        GATE_TEAM_ORDER.indexOf(g2.team_name)
+    );
     return html`
       <div class="gates">
         ${gatesForStage.map(g => this.renderGateChip(feStage, g))}
@@ -479,30 +499,32 @@ class ChromedashFeatureDetail extends LitElement {
 
   // Create an extension stage for an origin trial stage on button click.
   createExtensionStage(feStage, extensionAlreadyExists) {
-    if (!feStage.stage_type in OT_EXTENSION_STAGE_MAPPING) {
+    if ((!feStage.stage_type) in OT_EXTENSION_STAGE_MAPPING) {
       return;
     }
-    const confirmText = ('Trial extension fields are already available for this trial. ' +
-      'Do you want to add more fields for another, separate trial extension?');
+    const confirmText =
+      'Trial extension fields are already available for this trial. ' +
+      'Do you want to add more fields for another, separate trial extension?';
     if (!extensionAlreadyExists || window.confirm(confirmText)) {
       const body = {
         stage_type: OT_EXTENSION_STAGE_MAPPING[feStage.stage_type],
         ot_stage_id: feStage.id,
       };
 
-      window.csClient.createStage(this.feature.id, body)
-        .then(() => {
-          // Redirect to origin trial stage after creation.
-          location.assign(
-            `/guide/stage/${this.feature.id}/${feStage.intent_stage}/${feStage.id}`);
-        });
+      window.csClient.createStage(this.feature.id, body).then(() => {
+        // Redirect to origin trial stage after creation.
+        location.assign(
+          `/guide/stage/${this.feature.id}/${feStage.intent_stage}/${feStage.id}`
+        );
+      });
     }
   }
 
   hasStageActions(stage, feStage) {
     // See if there is an API owners gate where actions are displayed.
     const hasOwnersGate = this.gates.some(
-      (g) => g.team_name === 'API Owners' && g.stage_id === feStage.id);
+      g => g.team_name === 'API Owners' && g.stage_id === feStage.id
+    );
     // If there are actions to be displayed for this stage, and
     // these actions are not displayed at the gate-level, return true.
     if (stage?.actions?.length > 0 && !hasOwnersGate) {
@@ -520,12 +542,21 @@ class ChromedashFeatureDetail extends LitElement {
       .replace('/{gate_id}', '');
 
     const checkCompletion = () => {
-      if (somePendingPrereqs(action, this.progress) ||
-          somePendingGates(this.featureGates, feStage)) {
+      if (
+        somePendingPrereqs(action, this.progress) ||
+        somePendingGates(this.featureGates, feStage)
+      ) {
         // Open the dialog.
         openPreflightDialog(
-          this.feature, this.progress, this.process, action, stage, feStage,
-          this.gates, url);
+          this.feature,
+          this.progress,
+          this.process,
+          action,
+          stage,
+          feStage,
+          this.gates,
+          url
+        );
         return;
       } else {
         // Act like user clicked left button to go to the draft email window.
@@ -540,7 +571,7 @@ class ChromedashFeatureDetail extends LitElement {
 
   renderStageActions(stage, feStage) {
     return html`
-      ${stage.actions.map((act) => this.renderStageAction(act, stage, feStage))}
+      ${stage.actions.map(act => this.renderStageAction(act, stage, feStage))}
     `;
   }
 
@@ -552,7 +583,6 @@ class ChromedashFeatureDetail extends LitElement {
 
     const processStage = findProcessStage(feStage, this.process);
     if (!processStage) return nothing;
-
 
     // Add a number differentiation if this stage type is the same as another stage.
     let numberDifferentiation = '';
@@ -578,19 +608,19 @@ class ChromedashFeatureDetail extends LitElement {
 
     const content = html`
       <p class="description">
-        ${stageMenu}
-        ${trialButton}
-        ${this.hasStageActions(processStage, feStage) ? this.renderStageActions(processStage, feStage) : nothing}
-        ${editButton}
-        ${addExtensionButton}
-        ${processStage.description}
+        ${stageMenu} ${trialButton}
+        ${this.hasStageActions(processStage, feStage)
+          ? this.renderStageActions(processStage, feStage)
+          : nothing}
+        ${editButton} ${addExtensionButton} ${processStage.description}
       </p>
       ${this.renderGateChips(feStage)}
       <section class="card">
         ${this.renderSectionFields(fields, feStage)}
       </section>
     `;
-    const defaultOpen = this.feature.is_enterprise_feature || (feStage.id == this.openStage);
+    const defaultOpen =
+      this.feature.is_enterprise_feature || feStage.id == this.openStage;
     return this.renderSection(name, content, isActive, defaultOpen);
   }
 
@@ -598,28 +628,40 @@ class ChromedashFeatureDetail extends LitElement {
     if (!this.canEdit) {
       return nothing;
     }
-    return html`
-      <sl-button size="small"
-          href="/guide/stage/${this.feature.id}/${processStage.outgoing_stage}/${feStage.id}"
-          >Edit fields</sl-button>`;
+    return html` <sl-button
+      size="small"
+      href="/guide/stage/${this.feature
+        .id}/${processStage.outgoing_stage}/${feStage.id}"
+      >Edit fields</sl-button
+    >`;
   }
 
   renderExtensionButton(feStage) {
     // Don't render an extension request button if this is not an OT stage,
     // or the user does not have access to submit an extension request,
     // or the OT stage has not been created in the OT Console yet.
-    const userCannotViewOTControls = (!this.user ||
-      (!this.user.email.endsWith('@chromium.org') && !this.user.email.endsWith('@google.com')));
-    const isNotOriginTrialStage = !STAGE_TYPES_ORIGIN_TRIAL.has(feStage.stage_type);
+    const userCannotViewOTControls =
+      !this.user ||
+      (!this.user.email.endsWith('@chromium.org') &&
+        !this.user.email.endsWith('@google.com'));
+    const isNotOriginTrialStage = !STAGE_TYPES_ORIGIN_TRIAL.has(
+      feStage.stage_type
+    );
     const originTrialNotCreatedYet = !feStage.origin_trial_id;
-    if (userCannotViewOTControls || isNotOriginTrialStage || originTrialNotCreatedYet) {
+    if (
+      userCannotViewOTControls ||
+      isNotOriginTrialStage ||
+      originTrialNotCreatedYet
+    ) {
       return nothing;
     }
 
     // Button text changes based on whether or not an extension stage already exists.
-    const extensionAlreadyExists = feStage.extensions && feStage.extensions.length > 0;
-    const extensionInProgress = (
-      feStage.extensions && feStage.extensions.some(ext => ext.ot_action_requested));
+    const extensionAlreadyExists =
+      feStage.extensions && feStage.extensions.length > 0;
+    const extensionInProgress =
+      feStage.extensions &&
+      feStage.extensions.some(ext => ext.ot_action_requested);
 
     let extensionButtonText = 'Request a trial extension';
     if (extensionAlreadyExists) {
@@ -628,20 +670,24 @@ class ChromedashFeatureDetail extends LitElement {
 
     // Show a disabled button if an extension request has already been submitted.
     if (extensionInProgress) {
-      return html`
-        <sl-tooltip content="A pending request exists. For further inquiries, contact origin-trials-support@google.com.">
-          <sl-button
-            size="small"
-            disabled
-            >${extensionButtonText}</sl-button>
-        </sl-tooltip>`;
+      return html` <sl-tooltip
+        content="A pending request exists. For further inquiries, contact origin-trials-support@google.com."
+      >
+        <sl-button size="small" disabled>${extensionButtonText}</sl-button>
+      </sl-tooltip>`;
     }
 
     const stageId = feStage.id;
-    return html`
-    <sl-button size="small"
-        @click="${() => openPrereqsDialog(this.feature.id, stageId, PrereqsDialogTypes.EXTENSION)}"
-        >${extensionButtonText}</sl-button>`;
+    return html` <sl-button
+      size="small"
+      @click="${() =>
+        openPrereqsDialog(
+          this.feature.id,
+          stageId,
+          PrereqsDialogTypes.EXTENSION
+        )}"
+      >${extensionButtonText}</sl-button
+    >`;
   }
 
   renderOriginTrialButton(feStage) {
@@ -657,51 +703,60 @@ class ChromedashFeatureDetail extends LitElement {
       if (this.appTitle === 'Chrome Platform Status') {
         originTrialsURL = `https://developer.chrome.com/origintrials/#/view_trial/${feStage.origin_trial_id}`;
       }
-      return html`
-        <sl-button
-          size="small"
-          variant="primary"
-          href=${originTrialsURL}
-          target="_blank">View Origin Trial</sl-button>`;
+      return html` <sl-button
+        size="small"
+        variant="primary"
+        href=${originTrialsURL}
+        target="_blank"
+        >View Origin Trial</sl-button
+      >`;
     }
-    const canSeeOTControls = (this.user &&
-        (this.user.email.endsWith('@chromium.org') || this.user.email.endsWith('@google.com')));
+    const canSeeOTControls =
+      this.user &&
+      (this.user.email.endsWith('@chromium.org') ||
+        this.user.email.endsWith('@google.com'));
     if (canSeeOTControls && feStage.ot_action_requested) {
       // Display the button as disabled with tooltip text if a request
       // has already been submitted.
-      return html`
-        <sl-tooltip content="Action already requested. For further inquiries, contact origin-trials-support@google.com.">
-          <sl-button
-            size="small"
-            variant="primary"
-            disabled
-            >Request Trial Creation</sl-button>
-        </sl-tooltip>`;
-    // Display the creation request button if user has edit access.
+      return html` <sl-tooltip
+        content="Action already requested. For further inquiries, contact origin-trials-support@google.com."
+      >
+        <sl-button size="small" variant="primary" disabled
+          >Request Trial Creation</sl-button
+        >
+      </sl-tooltip>`;
+      // Display the creation request button if user has edit access.
     } else if (canSeeOTControls) {
       const stageId = feStage.id;
-      return html`
-        <sl-button
-          size="small"
-          variant="primary"
-          @click="${() => openPrereqsDialog(this.feature.id, stageId, PrereqsDialogTypes.CREATION)}"
-          >Request Trial Creation</sl-button>`;
+      return html` <sl-button
+        size="small"
+        variant="primary"
+        @click="${() =>
+          openPrereqsDialog(
+            this.feature.id,
+            stageId,
+            PrereqsDialogTypes.CREATION
+          )}"
+        >Request Trial Creation</sl-button
+      >`;
     }
     return nothing;
   }
 
   offerAddXfnGates(feStage) {
     const stageGates = this.gates.filter(g => g.stage_id == feStage.id);
-    return (feStage.stage_type == STAGE_PSA_SHIPPING &&
-            stageGates.length < 6);
+    return feStage.stage_type == STAGE_PSA_SHIPPING && stageGates.length < 6;
   }
 
   renderFootnote() {
     return html`
       <section id="footnote">
         Please see the
-        <a href="https://www.chromium.org/blink/launching-features"
-          target="_blank" rel="noopener">
+        <a
+          href="https://www.chromium.org/blink/launching-features"
+          target="_blank"
+          rel="noopener"
+        >
           Launching features
         </a>
         page for process instructions.
@@ -714,7 +769,7 @@ class ChromedashFeatureDetail extends LitElement {
     if (this.offerAddXfnGates(feStage)) {
       items.push(html`
         <sl-menu-item @click=${() => this.handleAddXfnGates(feStage)}>
-           Add cross-functional gates
+          Add cross-functional gates
         </sl-menu-item>
       `);
     }
@@ -722,11 +777,15 @@ class ChromedashFeatureDetail extends LitElement {
     if (items.length === 0) return nothing;
 
     return html`
-    <sl-dropdown>
-      <sl-icon-button library="material" name="more_vert_24px" label="Stage menu"
-         slot="trigger"></sl-icon-button>
-      <sl-menu>${items}</sl-menu>
-    </sl-dropdown>
+      <sl-dropdown>
+        <sl-icon-button
+          library="material"
+          name="more_vert_24px"
+          label="Stage menu"
+          slot="trigger"
+        ></sl-icon-button>
+        <sl-menu>${items}</sl-menu>
+      </sl-dropdown>
     `;
   }
 
@@ -734,35 +793,41 @@ class ChromedashFeatureDetail extends LitElement {
     if (!this.canEdit) {
       return nothing;
     }
-    const text = this.feature.is_enterprise_feature ? 'Add Step': 'Add Stage';
+    const text = this.feature.is_enterprise_feature ? 'Add Step' : 'Add Stage';
 
-    return html`
-    <sl-button id="new-stage" size="small" @click="${
-        () => openAddStageDialog(this.feature.id, this.feature.feature_type_int)}">
+    return html` <sl-button
+      id="new-stage"
+      size="small"
+      @click="${() =>
+        openAddStageDialog(this.feature.id, this.feature.feature_type_int)}"
+    >
       ${text}
     </sl-button>`;
   }
 
   renderSectionHeader() {
-    const text = this.feature.is_enterprise_feature ? 'Rollout steps' : 'Development stages';
-    return html`
-      <span>${text}
-        <sl-icon-button name="info-circle" href="https://www.chromium.org/blink/launching-features"
-        style="font-size: 0.8rem;" target="_blank" label="Launching feature guide">
-        </sl-icon-button>
-      </span>`;
+    const text = this.feature.is_enterprise_feature
+      ? 'Rollout steps'
+      : 'Development stages';
+    return html` <span
+      >${text}
+      <sl-icon-button
+        name="info-circle"
+        href="https://www.chromium.org/blink/launching-features"
+        style="font-size: 0.8rem;"
+        target="_blank"
+        label="Launching feature guide"
+      >
+      </sl-icon-button>
+    </span>`;
   }
 
   render() {
     return html`
       ${this.renderMetadataSection()}
-      <h2>
-        ${this.renderSectionHeader()}
-        ${this.renderControls()}
-      </h2>
+      <h2>${this.renderSectionHeader()} ${this.renderControls()}</h2>
       ${this.feature.stages.map(feStage => this.renderProcessStage(feStage))}
-      ${this.renderAddStageButton()}
-      ${this.renderFootnote()}
+      ${this.renderAddStageButton()} ${this.renderFootnote()}
     `;
   }
 }

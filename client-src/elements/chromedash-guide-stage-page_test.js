@@ -29,7 +29,8 @@ describe('chromedash-guide-stage-page', () => {
         status: {
           milestone_str: 'No active development',
           text: 'No active development',
-          val: 1},
+          val: 1,
+        },
       },
       ff: {view: {text: 'No signal', val: 5}},
       safari: {view: {text: 'No signal', val: 5}},
@@ -46,7 +47,7 @@ describe('chromedash-guide-stage-page', () => {
         text: 'Specification being incubated in a Community Group',
         val: 3,
       },
-      status: {text: 'Editor\'s Draft', val: 4},
+      status: {text: "Editor's Draft", val: 4},
     },
     tags: ['tag_one'],
   });
@@ -102,19 +103,24 @@ describe('chromedash-guide-stage-page', () => {
   });
 
   it('renders with no data', async () => {
-    const invalidFeaturePromise = Promise.reject(new Error('Got error response from server'));
+    const invalidFeaturePromise = Promise.reject(
+      new Error('Got error response from server')
+    );
     window.csClient.getFeature.withArgs(0).returns(invalidFeaturePromise);
 
     const component = await fixture(
-      html`<chromedash-guide-stage-page></chromedash-guide-stage-page>`);
+      html`<chromedash-guide-stage-page></chromedash-guide-stage-page>`
+    );
     assert.exists(component);
     assert.instanceOf(component, ChromedashGuideStagePage);
 
     // invalid feature requests would trigger the toast to show message
     const toastEl = document.querySelector('chromedash-toast');
     const toastMsgSpan = toastEl.shadowRoot.querySelector('span#msg');
-    assert.include(toastMsgSpan.innerHTML,
-      'Some errors occurred. Please refresh the page or try again later.');
+    assert.include(
+      toastMsgSpan.innerHTML,
+      'Some errors occurred. Please refresh the page or try again later.'
+    );
   });
 
   it('renders with fake data (with implStatusForm and implStatusName)', async () => {
@@ -122,14 +128,18 @@ describe('chromedash-guide-stage-page', () => {
     const featureId = 123456;
     const intentStage = 2;
     window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
-    window.csClient.getStage.withArgs(featureId, stageId).returns(validStagePromise);
+    window.csClient.getStage
+      .withArgs(featureId, stageId)
+      .returns(validStagePromise);
 
     const component = await fixture(
       html`<chromedash-guide-stage-page
-             .stageId=${stageId}
-             .featureId=${featureId}
-             .intentStage=${intentStage}>
-           </chromedash-guide-stage-page>`);
+        .stageId=${stageId}
+        .featureId=${featureId}
+        .intentStage=${intentStage}
+      >
+      </chromedash-guide-stage-page>`
+    );
     assert.exists(component);
     assert.instanceOf(component, ChromedashGuideStagePage);
 
@@ -140,7 +150,9 @@ describe('chromedash-guide-stage-page', () => {
     assert.include(subheaderDiv.innerHTML, 'Edit feature:');
 
     // feature form, hidden token field, and submit/cancel buttons exist
-    const form = component.shadowRoot.querySelector('form[name="feature_form"]');
+    const form = component.shadowRoot.querySelector(
+      'form[name="feature_form"]'
+    );
     assert.exists(form);
     assert.include(form.innerHTML, '<input type="hidden" name="token">');
     assert.include(form.innerHTML, '<div class="final_buttons">');
@@ -148,6 +160,9 @@ describe('chromedash-guide-stage-page', () => {
     // Implementation section renders correct title and fields
     assert.include(form.innerHTML, 'Implementation in Chromium');
     assert.include(form.innerHTML, '4');
-    assert.notInclude(form.innerHTML, 'This feature already has implementation status');
+    assert.notInclude(
+      form.innerHTML,
+      'This feature already has implementation status'
+    );
   });
 });

@@ -92,25 +92,39 @@ export const ROLLOUT_IMPACT_DISPLAYNAME = {
 // FEATURE_TYPES object is organized as [intValue, stringLabel, description],
 // the descriptions are used only for the descriptions of feature_type_radio_group
 export const FEATURE_TYPES_WITHOUT_ENTERPRISE = {
-  FEATURE_TYPE_INCUBATE_ID: [0, 'New feature incubation',
+  FEATURE_TYPE_INCUBATE_ID: [
+    0,
+    'New feature incubation',
     'When building new features, we follow a process that emphasizes engagement ' +
-    'with the WICG and other stakeholders early.'],
-  FEATURE_TYPE_EXISTING_ID: [1, 'Existing feature implementation',
+      'with the WICG and other stakeholders early.',
+  ],
+  FEATURE_TYPE_EXISTING_ID: [
+    1,
+    'Existing feature implementation',
     'If there is already an agreed specification, work may quickly start on ' +
-    'implementation and origin trials.'],
-  FEATURE_TYPE_CODE_CHANGE_ID: [2, 'Web developer-facing change to existing code',
+      'implementation and origin trials.',
+  ],
+  FEATURE_TYPE_CODE_CHANGE_ID: [
+    2,
+    'Web developer-facing change to existing code',
     'Not common.  Track a code change that does not change any API and has ' +
-    'very low interoperability risk, but might be noticed by web developers.' +
-    'This type of feature entry can be referenced from a PSA immediately.'],
-  FEATURE_TYPE_DEPRECATION_ID: [3, 'Feature deprecation',
-    'Deprecate and remove an old feature.'],
+      'very low interoperability risk, but might be noticed by web developers.' +
+      'This type of feature entry can be referenced from a PSA immediately.',
+  ],
+  FEATURE_TYPE_DEPRECATION_ID: [
+    3,
+    'Feature deprecation',
+    'Deprecate and remove an old feature.',
+  ],
 };
 export const FEATURE_TYPES = {
   ...FEATURE_TYPES_WITHOUT_ENTERPRISE,
-  FEATURE_TYPE_ENTERPRISE_ID: [4, 'New Feature or removal affecting enterprises',
-    'For features or changes that need to be communicated to enterprises or schools.'],
+  FEATURE_TYPE_ENTERPRISE_ID: [
+    4,
+    'New Feature or removal affecting enterprises',
+    'For features or changes that need to be communicated to enterprises or schools.',
+  ],
 };
-
 
 // ***********************************************************************
 // Stage type values for each process. Even though some of the stages
@@ -210,7 +224,6 @@ export const STAGE_SHORT_NAMES = {
   [STAGE_ENT_ROLLOUT]: 'Rollout',
   [STAGE_ENT_SHIPPED]: 'Ship',
 };
-
 
 export const INTENT_STAGES = {
   INTENT_NONE: [0, 'None'],
@@ -356,7 +369,6 @@ export const DEPRECATED_FIELDS = new Set([
   'standardization',
 ]);
 
-
 export const GATE_TYPES = {
   API_PROTOTYPE: 1,
   API_ORIGIN_TRIAL: 2,
@@ -403,16 +415,19 @@ export const GATE_FINISHED_REVIEW_STATES = [
   VOTE_OPTIONS.DENIED[0],
 ];
 
-
 export const GATE_TEAM_ORDER = [
-  'Privacy', 'Security', 'Enterprise', 'Debuggability',
-  'Testing', 'API Owners'];
-
+  'Privacy',
+  'Security',
+  'Enterprise',
+  'Debuggability',
+  'Testing',
+  'API Owners',
+];
 
 export const OT_MILESTONE_END_FIELDS = {
-  'ot_milestone_desktop_end': 'desktop_last',
-  'ot_milestone_android_end': 'android_last',
-  'ot_milestone_webview_end': 'webview_last',
+  ot_milestone_desktop_end: 'desktop_last',
+  ot_milestone_android_end: 'android_last',
+  ot_milestone_webview_end: 'webview_last',
 };
 
 export const IMPLEMENTATION_STATUS = {
@@ -432,11 +447,20 @@ export const IMPLEMENTATION_STATUS = {
 export const STANDARD_MATURITY_CHOICES = {
   // No text for UNSET_STD==0. One of the values below will be set on first edit.
   UNKNOWN_STD: [1, 'Unknown standards status - check spec link for status'],
-  PROPOSAL_STD: [2, 'Proposal in a personal repository, no adoption from community'],
+  PROPOSAL_STD: [
+    2,
+    'Proposal in a personal repository, no adoption from community',
+  ],
   INCUBATION_STD: [3, 'Specification being incubated in a Community Group'],
-  WORKINGDRAFT_STD: [4, 'Specification currently under development in a Working Group'],
-  STANDARD_STD: [5, 'Final published standard: Recommendation, Living Standard, ' +
-      'Candidate Recommendation, or similar final form'],
+  WORKINGDRAFT_STD: [
+    4,
+    'Specification currently under development in a Working Group',
+  ],
+  STANDARD_STD: [
+    5,
+    'Final published standard: Recommendation, Living Standard, ' +
+      'Candidate Recommendation, or similar final form',
+  ],
 };
 
 // Status for security and privacy reviews.

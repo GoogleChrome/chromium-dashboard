@@ -1,7 +1,6 @@
 import {html} from 'lit';
 import {ChromedashAllFeaturesPage} from './chromedash-all-features-page';
 
-
 export class ChromedashEnterprisePage extends ChromedashAllFeaturesPage {
   renderBox(query) {
     return html`
@@ -11,7 +10,10 @@ export class ChromedashEnterprisePage extends ChromedashAllFeaturesPage {
         ?canEdit=${this.user && this.user.can_edit_all}
         .starredFeatures=${this.starredFeatures}
         @star-toggle-event=${this.handleStarToggle}
-        num=100 alwaysOfferPagination columns="normal">
+        num="100"
+        alwaysOfferPagination
+        columns="normal"
+      >
       </chromedash-feature-table>
     `;
   }
@@ -19,7 +21,8 @@ export class ChromedashEnterprisePage extends ChromedashAllFeaturesPage {
   renderEnterpriseFeatures() {
     return this.renderBox(
       'feature_type="New Feature or removal affecting enterprises" ' +
-        'OR enterprise_impact>1');
+        'OR enterprise_impact>1'
+    );
   }
 
   render() {

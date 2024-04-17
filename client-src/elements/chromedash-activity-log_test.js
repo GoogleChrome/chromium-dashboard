@@ -1,6 +1,9 @@
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
-import {ChromedashActivity, ChromedashActivityLog} from './chromedash-activity-log';
+import {
+  ChromedashActivity,
+  ChromedashActivityLog,
+} from './chromedash-activity-log';
 import '../js-src/cs-client';
 import sinon from 'sinon';
 
@@ -29,11 +32,11 @@ const actTwo = {
   amendments: [],
 };
 
-
 describe('chromedash-activity', () => {
   it('renders with no data', async () => {
     const component = await fixture(
-      html`<chromedash-activity></chromedash-activity>`);
+      html`<chromedash-activity></chromedash-activity>`
+    );
     assert.exists(component);
     assert.instanceOf(component, ChromedashActivity);
     assert.notExists(component.shadowRoot.querySelector('sl-relative-time'));
@@ -44,10 +47,12 @@ describe('chromedash-activity', () => {
     const anonUser = null;
     const component = await fixture(
       html`<chromedash-activity
-              .user=${anonUser}
-              .featureId=${featureOne}
-              .activity=${actOne}>
-             </chromedash-activity>`);
+        .user=${anonUser}
+        .featureId=${featureOne}
+        .activity=${actOne}
+      >
+      </chromedash-activity>`
+    );
     const commentDiv = component.shadowRoot.querySelector('.comment');
     assert.include(commentDiv.innerHTML, actOne.author);
     assert.include(commentDiv.innerHTML, '2022-08-30 12:34:45');
@@ -61,10 +66,12 @@ describe('chromedash-activity', () => {
   it('renders an activity when signed in', async () => {
     const component = await fixture(
       html`<chromedash-activity
-              .user=${nonAdminUser}
-              .featureId=${featureOne}
-              .activity=${actOne}>
-             </chromedash-activity>`);
+        .user=${nonAdminUser}
+        .featureId=${featureOne}
+        .activity=${actOne}
+      >
+      </chromedash-activity>`
+    );
     const commentDiv = component.shadowRoot.querySelector('.comment');
     assert.include(commentDiv.innerHTML, 'hey, nice feature');
     assert.exists(component.shadowRoot.querySelector('sl-menu'));
@@ -84,10 +91,12 @@ describe('chromedash-activity', () => {
     };
     const component = await fixture(
       html`<chromedash-activity
-              .user=${nonAdminUser}
-              .featureId=${featureOne}
-              .activity=${deletedComment}>
-             </chromedash-activity>`);
+        .user=${nonAdminUser}
+        .featureId=${featureOne}
+        .activity=${deletedComment}
+      >
+      </chromedash-activity>`
+    );
     const commentDiv = component.shadowRoot.querySelector('.comment');
     assert.include(commentDiv.innerHTML, '[Deleted]');
     assert.include(commentDiv.innerHTML, 'better left unsaid');
@@ -109,10 +118,12 @@ describe('chromedash-activity', () => {
     };
     const component = await fixture(
       html`<chromedash-activity
-              .user=${nonAdminUser}
-              .featureId=${featureOne}
-              .activity=${doomedComment}>
-             </chromedash-activity>`);
+        .user=${nonAdminUser}
+        .featureId=${featureOne}
+        .activity=${doomedComment}
+      >
+      </chromedash-activity>`
+    );
     const before = component.shadowRoot.querySelector('.comment');
     assert.notInclude(before.innerHTML, '[Deleted]');
     assert.include(before.innerHTML, 'something off the cuff');
@@ -139,10 +150,12 @@ describe('chromedash-activity', () => {
     };
     const component = await fixture(
       html`<chromedash-activity
-              .user=${nonAdminUser}
-              .featureId=${featureOne}
-              .activity=${blessedComment}>
-             </chromedash-activity>`);
+        .user=${nonAdminUser}
+        .featureId=${featureOne}
+        .activity=${blessedComment}
+      >
+      </chromedash-activity>`
+    );
     const before = component.shadowRoot.querySelector('.comment');
     assert.include(before.innerHTML, '[Deleted]');
     assert.include(before.innerHTML, 'lucky guess');
@@ -160,10 +173,12 @@ describe('chromedash-activity', () => {
 
     const component = await fixture(
       html`<chromedash-activity
-              .user=${nonAdminUser}
-              .featureId=${featureOne}
-              .activity=${actOne}>
-            </chromedash-activity>`);
+        .user=${nonAdminUser}
+        .featureId=${featureOne}
+        .activity=${actOne}
+      >
+      </chromedash-activity>`
+    );
 
     const relativeDate = component.shadowRoot.querySelector('sl-relative-time');
     assert.exists(relativeDate);
@@ -174,11 +189,11 @@ describe('chromedash-activity', () => {
   });
 });
 
-
 describe('chromedash-activity-log', () => {
   it('renders with no data', async () => {
     const component = await fixture(
-      html`<chromedash-activity-log></chromedash-activity-log>`);
+      html`<chromedash-activity-log></chromedash-activity-log>`
+    );
     assert.exists(component);
     assert.instanceOf(component, ChromedashActivityLog);
     assert.notExists(component.shadowRoot.querySelector('chromedash-activity'));
@@ -187,14 +202,17 @@ describe('chromedash-activity-log', () => {
   it('renders with some data', async () => {
     const component = await fixture(
       html`<chromedash-activity-log
-            .user=${nonAdminUser}
-            .featureId=${featureOne}
-            .comments=${[actOne, actTwo]}>
-            </chromedash-activity-log>`);
+        .user=${nonAdminUser}
+        .featureId=${featureOne}
+        .comments=${[actOne, actTwo]}
+      >
+      </chromedash-activity-log>`
+    );
     assert.exists(component);
     assert.instanceOf(component, ChromedashActivityLog);
     assert.lengthOf(
       component.shadowRoot.querySelectorAll('chromedash-activity'),
-      2);
+      2
+    );
   });
 });

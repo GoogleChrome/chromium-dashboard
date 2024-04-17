@@ -5,7 +5,6 @@ import {showToastMessage} from './utils.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
 
-
 export class ChromedashGuideEditPage extends LitElement {
   static get styles() {
     return [
@@ -24,7 +23,8 @@ export class ChromedashGuideEditPage extends LitElement {
           display: flex;
           gap: 1.5em;
         }
-      `];
+      `,
+    ];
   }
 
   static get properties() {
@@ -68,26 +68,32 @@ export class ChromedashGuideEditPage extends LitElement {
       window.csClient.getFeatureProcess(this.featureId),
       window.csClient.getFeatureProgress(this.featureId),
       window.csClient.getDismissedCues(),
-    ]).then(([user, feature, gatesRes, process, progress, dismissedCues]) => {
-      this.user = user;
-      this.feature = feature;
-      this.featureGates = gatesRes.gates;
-      this.process = process;
-      this.progress = progress;
-      this.dismissedCues = dismissedCues;
-      this.loading = false;
+    ])
+      .then(([user, feature, gatesRes, process, progress, dismissedCues]) => {
+        this.user = user;
+        this.feature = feature;
+        this.featureGates = gatesRes.gates;
+        this.process = process;
+        this.progress = progress;
+        this.dismissedCues = dismissedCues;
+        this.loading = false;
 
-      // re-check permission every time users visit the edit page
-      const canEdit = (this.user &&
-      (this.user.can_edit_all || this.user.editable_features.includes(this.featureId)));
-      if (!canEdit) location.reload();
+        // re-check permission every time users visit the edit page
+        const canEdit =
+          this.user &&
+          (this.user.can_edit_all ||
+            this.user.editable_features.includes(this.featureId));
+        if (!canEdit) location.reload();
 
-      if (this.feature.name) {
-        document.title = `${this.feature.name} - ${this.appTitle}`;
-      }
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-    });
+        if (this.feature.name) {
+          document.title = `${this.feature.name} - ${this.appTitle}`;
+        }
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
+      });
   }
 
   disconnectedCallback() {
@@ -118,7 +124,8 @@ export class ChromedashGuideEditPage extends LitElement {
       <chromedash-guide-metadata
         .feature=${this.feature}
         .isAdmin=${this.user && this.user.is_admin}
-        .email=${this.user.email}>
+        .email=${this.user.email}
+      >
       </chromedash-guide-metadata>
     `;
   }
@@ -131,7 +138,8 @@ export class ChromedashGuideEditPage extends LitElement {
           .process=${this.process}
           .progress=${this.progress}
           .featureGates=${this.featureGates}
-          .dismissedCues=${this.dismissedCues}>
+          .dismissedCues=${this.dismissedCues}
+        >
         </chromedash-process-overview>
       </section>
     `;
@@ -141,8 +149,11 @@ export class ChromedashGuideEditPage extends LitElement {
     return html`
       <section id="footnote">
         Please see the
-        <a href="https://www.chromium.org/blink/launching-features"
-          target="_blank" rel="noopener">
+        <a
+          href="https://www.chromium.org/blink/launching-features"
+          target="_blank"
+          rel="noopener"
+        >
           Launching features
         </a>
         page for process instructions.
@@ -169,14 +180,12 @@ export class ChromedashGuideEditPage extends LitElement {
   render() {
     return html`
       ${this.renderSubHeader()}
-
-      ${this.loading ?
-        this.renderSkeletons() :
-        html`
-          ${this.renderMetadata()}
-          ${this.renderProcessOverview()}
-          ${this.renderFootnote()}
-      `}
+      ${this.loading
+        ? this.renderSkeletons()
+        : html`
+            ${this.renderMetadata()} ${this.renderProcessOverview()}
+            ${this.renderFootnote()}
+          `}
     `;
   }
 }

@@ -154,7 +154,7 @@ class ChromeStatusClient {
   // Cues API
 
   getDismissedCues() {
-    return this.doGet(`/currentuser/cues`);
+    return this.doGet('/currentuser/cues');
   }
 
   dismissCue(cue) {
@@ -229,7 +229,7 @@ class ChromeStatusClient {
   }
 
   getPendingGates() {
-    return this.doGet(`/gates/pending`);
+    return this.doGet('/gates/pending');
   }
 
   updateGate(featureId, gateId, assignees) {
@@ -388,7 +388,7 @@ class ChromeStatusClient {
 
   // Blinkcomponents API
   async getBlinkComponents() {
-    return this.doGet(`/blinkcomponents`);
+    return this.doGet('/blinkcomponents');
   }
 
   // Channels API

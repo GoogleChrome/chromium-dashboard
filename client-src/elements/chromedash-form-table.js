@@ -1,6 +1,5 @@
 import {LitElement, css, html} from 'lit';
 
-
 export class ChromedashFormTable extends LitElement {
   static get properties() {
     return {
@@ -11,18 +10,16 @@ export class ChromedashFormTable extends LitElement {
   static get styles() {
     return [
       css`
-      :host {
-        display: table;
-        max-width: 80em;
-      }
-
-  `];
+        :host {
+          display: table;
+          max-width: 80em;
+        }
+      `,
+    ];
   }
 
   render() {
-    return html`
-      <slot>fallback content</slot>
-    `;
+    return html` <slot>fallback content</slot> `;
   }
 }
 

@@ -7,12 +7,10 @@ if (lastSlash > 0) {
   }
 }
 
-
 const featureListEl = document.querySelector('chromedash-featurelist');
 const chromeMetadataEl = document.querySelector('chromedash-metadata');
 const searchEl = document.querySelector('.search input');
 const legendEl = document.querySelector('chromedash-legend');
-
 
 /**
  * Simple debouncer to handle text input.  Don't try to hit the server
@@ -25,7 +23,7 @@ const legendEl = document.querySelector('chromedash-legend');
  */
 function debounce(func, threshold_ms = 300) {
   let timeout;
-  return function(...args) {
+  return function (...args) {
     const context = this; // eslint-disable-line no-invalid-this
     const later = () => {
       func.apply(context, args);
@@ -40,16 +38,17 @@ if (location.hash) {
   searchEl.value = decodeURIComponent(location.hash.substr(1));
 }
 
-chromeMetadataEl.addEventListener('query-changed', (e) => {
+chromeMetadataEl.addEventListener('query-changed', e => {
   const value = e.detail.version;
   const isMilestone = value.match(/^[0-9]+$/);
-  searchEl.value = isMilestone ? 'milestone=' + value :
-    'browsers.chrome.status:"' + value + '"';
+  searchEl.value = isMilestone
+    ? 'milestone=' + value
+    : 'browsers.chrome.status:"' + value + '"';
   featureListEl.filter(searchEl.value, true);
 });
 
 // Clear input when user clicks the 'x' button.
-searchEl.addEventListener('search', (e) => {
+searchEl.addEventListener('search', e => {
   if (!e.target.value) {
     featureListEl.filter('', true);
     chromeMetadataEl.selected = null;
@@ -57,34 +56,37 @@ searchEl.addEventListener('search', (e) => {
   }
 });
 
-searchEl.addEventListener('input', debounce((e) => {
-  featureListEl.filter(e.target.value);
-  chromeMetadataEl.selected = null;
-}));
+searchEl.addEventListener(
+  'input',
+  debounce(e => {
+    featureListEl.filter(e.target.value);
+    chromeMetadataEl.selected = null;
+  })
+);
 
-featureListEl.addEventListener('filtered', (e) => {
+featureListEl.addEventListener('filtered', e => {
   document.querySelector('.num-features').textContent = e.detail.count;
 });
 
-featureListEl.addEventListener('filter-category', (e) => {
+featureListEl.addEventListener('filter-category', e => {
   e.stopPropagation();
   searchEl.value = 'category: ' + e.detail.val;
   featureListEl.filter(searchEl.value, true);
 });
 
-featureListEl.addEventListener('filter-owner', (e) => {
+featureListEl.addEventListener('filter-owner', e => {
   e.stopPropagation();
   searchEl.value = 'browsers.chrome.owners: ' + e.detail.val;
   featureListEl.filter(searchEl.value, true);
 });
 
-featureListEl.addEventListener('filter-component', (e) => {
+featureListEl.addEventListener('filter-component', e => {
   e.stopPropagation();
   searchEl.value = 'component: ' + e.detail.val;
   featureListEl.filter(searchEl.value, true);
 });
 
-window.addEventListener('popstate', (e) => {
+window.addEventListener('popstate', e => {
   if (e.state && e.state.id) {
     featureListEl.scrollToId(e.state.id);
   } else if (e.state && e.state.query) {
@@ -95,19 +97,18 @@ window.addEventListener('popstate', (e) => {
 featureListEl.addEventListener('app-ready', () => {
   document.body.classList.remove('loading');
 
-  window.csClient.getStars().then((starredFeatureIds) => {
+  window.csClient.getStars().then(starredFeatureIds => {
     featureListEl.starredFeatures = new Set(starredFeatureIds);
   });
 });
 
 // Helper function used by features.html
 /* eslint-disable no-unused-vars */
-const loadFeatureLegendViews = function(views) {
+const loadFeatureLegendViews = function (views) {
   legendEl.views = views;
 };
 
-
-document.querySelector('.legend-button').addEventListener('click', (e) => {
+document.querySelector('.legend-button').addEventListener('click', e => {
   e.preventDefault();
   legendEl.open();
 });

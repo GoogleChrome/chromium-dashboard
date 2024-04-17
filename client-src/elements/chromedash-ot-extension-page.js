@@ -3,24 +3,19 @@ import {ref} from 'lit/directives/ref.js';
 import {
   formatFeatureChanges,
   showToastMessage,
-  setupScrollToHash} from './utils.js';
+  setupScrollToHash,
+} from './utils.js';
 import './chromedash-form-table.js';
 import './chromedash-form-field.js';
-import {
-  ORIGIN_TRIAL_EXTENSION_FIELDS} from './form-definition.js';
+import {ORIGIN_TRIAL_EXTENSION_FIELDS} from './form-definition.js';
 import {OT_EXTENSION_STAGE_MAPPING} from './form-field-enums.js';
 import {ALL_FIELDS} from './form-field-specs';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
 
-
 export class ChromedashOTExtensionPage extends LitElement {
   static get styles() {
-    return [
-      ...SHARED_STYLES,
-      ...FORM_STYLES,
-      css`
-      `];
+    return [...SHARED_STYLES, ...FORM_STYLES, css``];
   }
 
   static get properties() {
@@ -61,24 +56,28 @@ export class ChromedashOTExtensionPage extends LitElement {
     // The field has been updated, so it is considered touched.
     this.fieldValues[index].touched = true;
     this.fieldValues[index].value = value;
-  };
+  }
 
   fetchData() {
     this.loading = true;
     Promise.all([
       window.csClient.getFeature(this.featureId),
       window.csClient.getStage(this.featureId, this.stageId),
-    ]).then(([feature, stage]) => {
-      this.feature = feature;
-      this.stage = stage;
+    ])
+      .then(([feature, stage]) => {
+        this.feature = feature;
+        this.stage = stage;
 
-      if (this.feature.name) {
-        document.title = `${this.feature.name} - ${this.appTitle}`;
-      }
-      this.loading = false;
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-    });
+        if (this.feature.name) {
+          document.title = `${this.feature.name} - ${this.appTitle}`;
+        }
+        this.loading = false;
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
+      });
   }
 
   disconnectedCallback() {
@@ -90,10 +89,12 @@ export class ChromedashOTExtensionPage extends LitElement {
     if (!el) return;
 
     /* Add the form's event listener after Shoelace event listeners are attached
-    * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
+     * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
     await el.updateComplete;
-    const submitButton = this.shadowRoot.querySelector('input[id=submit-button]');
-    submitButton.form.addEventListener('submit', (event) => {
+    const submitButton = this.shadowRoot.querySelector(
+      'input[id=submit-button]'
+    );
+    submitButton.form.addEventListener('submit', event => {
       this.handleFormSubmit(event);
     });
 
@@ -102,29 +103,38 @@ export class ChromedashOTExtensionPage extends LitElement {
 
   handleFormSubmit(e) {
     e.preventDefault();
-    const featureSubmitBody = formatFeatureChanges(this.fieldValues, this.featureId);
+    const featureSubmitBody = formatFeatureChanges(
+      this.fieldValues,
+      this.featureId
+    );
     // We only need the single stage changes.
     const stageSubmitBody = featureSubmitBody.stages[0];
 
     let newStageId = null;
-    window.csClient.createStage(this.featureId, stageSubmitBody).then(resp => {
-      newStageId = resp.stage_id;
-      return window.csClient.getGates(this.featureId);
-    }).then(resp => {
-      const gate = resp.gates.find(gate => gate.stage_id === newStageId);
-      showToastMessage('Extension request started!');
-      if (!newStageId || !gate) {
-        setTimeout(() => {
-          window.location.href = `/feature/${this.featureId}`;
-        }, 1000);
-      } else {
-        setTimeout(() => {
-          window.location.href = `/feature/${this.featureId}?gate=${gate.id}`;
-        }, 1000);
-      }
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-    });
+    window.csClient
+      .createStage(this.featureId, stageSubmitBody)
+      .then(resp => {
+        newStageId = resp.stage_id;
+        return window.csClient.getGates(this.featureId);
+      })
+      .then(resp => {
+        const gate = resp.gates.find(gate => gate.stage_id === newStageId);
+        showToastMessage('Extension request started!');
+        if (!newStageId || !gate) {
+          setTimeout(() => {
+            window.location.href = `/feature/${this.featureId}`;
+          }, 1000);
+        } else {
+          setTimeout(() => {
+            window.location.href = `/feature/${this.featureId}?gate=${gate.id}`;
+          }, 1000);
+        }
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
+      });
   }
 
   handleCancelClick() {
@@ -187,7 +197,8 @@ export class ChromedashOTExtensionPage extends LitElement {
     });
 
     // Add "stage_type" field to create extension stage properly.
-    const extensionStageType = OT_EXTENSION_STAGE_MAPPING[this.stage.stage_type];
+    const extensionStageType =
+      OT_EXTENSION_STAGE_MAPPING[this.stage.stage_type];
     this.fieldValues.push({
       name: 'stage_type',
       touched: true,
@@ -217,13 +228,14 @@ export class ChromedashOTExtensionPage extends LitElement {
       });
 
       return html`
-      <chromedash-form-field
-        name=${featureJSONKey}
-        index=${index}
-        .fieldValues=${this.fieldValues}
-        @form-field-update="${this.handleFormFieldUpdate}">
-      </chromedash-form-field>
-    `;
+        <chromedash-form-field
+          name=${featureJSONKey}
+          index=${index}
+          .fieldValues=${this.fieldValues}
+          @form-field-update="${this.handleFormFieldUpdate}"
+        >
+        </chromedash-form-field>
+      `;
     });
 
     // Add additional default hidden fields.
@@ -240,17 +252,22 @@ export class ChromedashOTExtensionPage extends LitElement {
     return html`
       <form name="feature_form">
         <chromedash-form-table ${ref(this.registerHandlers)}>
-          <section class="stage_form">
-            ${this.renderFields(section)}
-          </section>
+          <section class="stage_form">${this.renderFields(section)}</section>
         </chromedash-form-table>
         <div class="final_buttons">
           <input
-            id='submit-button'
+            id="submit-button"
             class="button"
             type="submit"
-            value="Submit">
-          <button id="cancel-button" type="reset" @click=${this.handleCancelClick}>Cancel</button>
+            value="Submit"
+          />
+          <button
+            id="cancel-button"
+            type="reset"
+            @click=${this.handleCancelClick}
+          >
+            Cancel
+          </button>
         </div>
       </form>
     `;
@@ -264,4 +281,7 @@ export class ChromedashOTExtensionPage extends LitElement {
   }
 }
 
-customElements.define('chromedash-ot-extension-page', ChromedashOTExtensionPage);
+customElements.define(
+  'chromedash-ot-extension-page',
+  ChromedashOTExtensionPage
+);

@@ -43,42 +43,43 @@ class ChromedashCallout extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-      #bubble {
-        position: absolute;
-        display: inline-block;
-        background: var(--callout-bg-color);
-        border-radius: var(--large-border-radius);
-        padding: var(--content-padding-half);
-        max-width: 24em;
-        color: var(--callout-text-color);
-        font-weight: bold;
-      }
-      #bubble[hidden] {
-        display: none;
-      }
-      #bubble:after {
-        content: '';
-        position: absolute;
-        border: 20px solid transparent;
-      }
-      /* Bubble will be located on the south side of target element. */
-      #bubble.south:after {
-        top: -20px;
-        left: 20px;
-        width: 0;
-        height: 0;
-        border-bottom-color: var(--callout-bg-color);
-        border-top: 0;
-     }
-     #closebox {
-       float: right;
-       margin-left: var(--content-padding-half);
-       color: var(--light-icon-fill-color);
-     }
-     #cue-content-container {
-       margin: var(--content-padding-quarter);
-     }
-    `];
+        #bubble {
+          position: absolute;
+          display: inline-block;
+          background: var(--callout-bg-color);
+          border-radius: var(--large-border-radius);
+          padding: var(--content-padding-half);
+          max-width: 24em;
+          color: var(--callout-text-color);
+          font-weight: bold;
+        }
+        #bubble[hidden] {
+          display: none;
+        }
+        #bubble:after {
+          content: '';
+          position: absolute;
+          border: 20px solid transparent;
+        }
+        /* Bubble will be located on the south side of target element. */
+        #bubble.south:after {
+          top: -20px;
+          left: 20px;
+          width: 0;
+          height: 0;
+          border-bottom-color: var(--callout-bg-color);
+          border-top: 0;
+        }
+        #closebox {
+          float: right;
+          margin-left: var(--content-padding-half);
+          color: var(--light-icon-fill-color);
+        }
+        #cue-content-container {
+          margin: var(--content-padding-quarter);
+        }
+      `,
+    ];
   }
 
   // TODO(jrobbins): Consider using:
@@ -123,10 +124,17 @@ class ChromedashCallout extends LitElement {
 
   render() {
     return html`
-      <div id="bubble" class="${this.side}" ?hidden=${this.hidden}
-          style="top:${this.top}px; left:${this.left}px;">
-        <iron-icon id="closebox"
-          icon="chromestatus:close" @click=${this.dismiss}></iron-icon>
+      <div
+        id="bubble"
+        class="${this.side}"
+        ?hidden=${this.hidden}
+        style="top:${this.top}px; left:${this.left}px;"
+      >
+        <iron-icon
+          id="closebox"
+          icon="chromestatus:close"
+          @click=${this.dismiss}
+        ></iron-icon>
         <div id="cue-content-container">
           <slot></slot>
         </div>

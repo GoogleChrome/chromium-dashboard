@@ -3,7 +3,6 @@ import {showToastMessage} from './utils.js';
 import './chromedash-feature-table';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
-
 export class ChromedashAllFeaturesPage extends LitElement {
   static get styles() {
     return [
@@ -12,7 +11,8 @@ export class ChromedashAllFeaturesPage extends LitElement {
         #content-title {
           padding-top: var(--content-padding);
         }
-      `];
+      `,
+    ];
   }
 
   static get properties() {
@@ -70,22 +70,31 @@ export class ChromedashAllFeaturesPage extends LitElement {
     if (this.rawQuery.hasOwnProperty('sort')) {
       this.sortSpec = this.rawQuery['sort'];
     }
-    if (this.rawQuery.hasOwnProperty('start') &&
-      !Number.isNaN(parseInt(this.rawQuery['start']))) {
+    if (
+      this.rawQuery.hasOwnProperty('start') &&
+      !Number.isNaN(parseInt(this.rawQuery['start']))
+    ) {
       this.start = parseInt(this.rawQuery['start']);
     }
-    if (this.rawQuery.hasOwnProperty('num') &&
-      !Number.isNaN(parseInt(this.rawQuery['num']))) {
+    if (
+      this.rawQuery.hasOwnProperty('num') &&
+      !Number.isNaN(parseInt(this.rawQuery['num']))
+    ) {
       this.num = parseInt(this.rawQuery['num']);
     }
   }
 
   fetchData() {
-    window.csClient.getStars().then((starredFeatures) => {
-      this.starredFeatures = new Set(starredFeatures);
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-    });
+    window.csClient
+      .getStars()
+      .then(starredFeatures => {
+        this.starredFeatures = new Set(starredFeatures);
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
+      });
   }
 
   refetch() {
@@ -98,7 +107,8 @@ export class ChromedashAllFeaturesPage extends LitElement {
   // Handles the Star-Toggle event fired by any one of the child components
   handleStarToggle(e) {
     const newStarredFeatures = new Set(this.starredFeatures);
-    window.csClient.setStar(e.detail.featureId, e.detail.doStar)
+    window.csClient
+      .setStar(e.detail.featureId, e.detail.doStar)
       .then(() => {
         if (e.detail.doStar) {
           newStarredFeatures.add(e.detail.featureId);
@@ -127,24 +137,30 @@ export class ChromedashAllFeaturesPage extends LitElement {
         @star-toggle-event=${this.handleStarToggle}
         selectedGateId=${this.selectedGateId}
         alwaysOfferPagination
-        columns=${this.columns}>
+        columns=${this.columns}
+      >
       </chromedash-feature-table>
     `;
   }
 
   render() {
-    const adminNotice = (this.user?.is_admin && this.columns === 'approvals') ?
-      html`<p>You see all pending approvals because you're a site admin.</p>` :
-      nothing;
+    const adminNotice =
+      this.user?.is_admin && this.columns === 'approvals'
+        ? html`<p>
+            You see all pending approvals because you're a site admin.
+          </p>`
+        : nothing;
 
     return html`
       <div id="content-title">
         <h2>${this.title}</h2>
       </div>
-      ${adminNotice}
-      ${this.renderFeatureList()}
+      ${adminNotice} ${this.renderFeatureList()}
     `;
   }
 }
 
-customElements.define('chromedash-all-features-page', ChromedashAllFeaturesPage);
+customElements.define(
+  'chromedash-all-features-page',
+  ChromedashAllFeaturesPage
+);

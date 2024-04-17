@@ -19,12 +19,12 @@ let toastEl;
 const NARROW_WINDOW_MAX_WIDTH = 700;
 
 export const IS_MOBILE = (() => {
-  const width = window.innerWidth ||
+  const width =
+    window.innerWidth ||
     document.documentElement.clientWidth ||
     document.body.clientWidth;
   return width <= NARROW_WINDOW_MAX_WIDTH;
 })();
-
 
 /* Convert user-entered text into safe HTML with clickable links
  * where appropriate.  Returns an array with text and anchor tags.
@@ -49,14 +49,15 @@ export function showToastMessage(msg) {
  */
 export function slotAssignedElements(component, slotName) {
   const slotSelector = slotName ? `slot[name=${slotName}]` : 'slot';
-  return component.shadowRoot.querySelector(slotSelector).assignedElements({flatten: true});
+  return component.shadowRoot
+    .querySelector(slotSelector)
+    .assignedElements({flatten: true});
 }
 
 /* Return val, or one of the bounds if val is out of the bounds. */
 export function clamp(val, lowerBound, upperBound) {
   return Math.max(lowerBound, Math.min(upperBound, val));
 }
-
 
 /* Given a feature entry stage entity, look up the related process stage. */
 export function findProcessStage(feStage, process) {
@@ -128,7 +129,6 @@ function calcMaxMilestone(feStage, fieldName) {
   feStage[`max_${fieldName}`] = maxMilestone;
 }
 
-
 // Get the milestone value that is displayed to the user regarding the origin trial end date.
 function getMilestoneExtensionValue(feStage, fieldName) {
   if (!feStage) return undefined;
@@ -142,7 +142,10 @@ function getMilestoneExtensionValue(feStage, fieldName) {
   }
   // If the trial has been extended past the original milestone, display the extension
   // milestone with additional text reminding of the original milestone end date.
-  if (feStage[maxMilestoneFieldName] && feStage[maxMilestoneFieldName] > milestoneValue) {
+  if (
+    feStage[maxMilestoneFieldName] &&
+    feStage[maxMilestoneFieldName] > milestoneValue
+  ) {
     return `${feStage[maxMilestoneFieldName]} (extended from ${milestoneValue})`;
   }
   return milestoneValue;
@@ -178,7 +181,8 @@ export function getFieldValueFromFeature(fieldName, feStage, feature) {
     const value = getStageValue(feStage, fieldName);
     if (fieldName === 'rollout_impact' && value) {
       return ROLLOUT_IMPACT_DISPLAYNAME[value];
-    } if (fieldName === 'rollout_platforms' && value) {
+    }
+    if (fieldName === 'rollout_platforms' && value) {
       return value.map(platformId => PLATFORMS_DISPLAYNAME[platformId]);
     } else if (fieldName in OT_MILESTONE_END_FIELDS) {
       // If an origin trial end date is being displayed, handle extension milestones as well.
@@ -233,8 +237,9 @@ export function getFieldValueFromFeature(fieldName, feStage, feature) {
   }
 
   if (fieldName === 'enterprise_feature_categories' && value) {
-    return value.map(categoryId =>
-      ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME[categoryId]);
+    return value.map(
+      categoryId => ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME[categoryId]
+    );
   }
   if (fieldName === 'enterprise_impact' && value) {
     return ENTERPRISE_IMPACT_DISPLAYNAME[value];
@@ -244,7 +249,10 @@ export function getFieldValueFromFeature(fieldName, feStage, feature) {
 
 /* Given a stage form definition, return a flat array of the fields associated with the stage. */
 export function flattenSections(stage) {
-  return stage.sections.reduce((combined, section) => [...combined, ...section.fields], []);
+  return stage.sections.reduce(
+    (combined, section) => [...combined, ...section.fields],
+    []
+  );
 }
 
 /* Set up scrolling to a hash url (e.g. #id_explainer_links). */
@@ -252,7 +260,7 @@ export function setupScrollToHash(pageElement) {
   // Scroll to the element identified by the hash parameter, which must include
   // the '#' prefix.  E.g. for a form field: '#id_<form-field-name>'.
   // Note that this function is bound to the pageElement for a page.
-  const scrollToElement = (hash) => {
+  const scrollToElement = hash => {
     if (hash) {
       const el = pageElement.shadowRoot.querySelector(hash);
       if (el) {
@@ -273,7 +281,8 @@ export function setupScrollToHash(pageElement) {
         const fieldRow = pageElement.shadowRoot.querySelector(fieldRowSelector);
         if (fieldRow) {
           fieldRow.scrollIntoView({
-            block: 'center', behavior: 'smooth',
+            block: 'center',
+            behavior: 'smooth',
           });
         } else {
           el.scrollIntoView({
@@ -285,7 +294,7 @@ export function setupScrollToHash(pageElement) {
   };
 
   // Add global function to jump to an element within the pageElement.
-  window.scrollToElement = (hash) => {
+  window.scrollToElement = hash => {
     scrollToElement(hash);
   };
 
@@ -301,7 +310,6 @@ export function renderHTMLIf(condition, originalHTML) {
   return condition ? originalHTML : nothing;
 }
 
-
 function _parseDateStr(dateStr) {
   // Format date to "YYYY-MM-DDTHH:mm:ss.sssZ" to represent UTC.
   dateStr = dateStr || '';
@@ -313,8 +321,7 @@ function _parseDateStr(dateStr) {
   return dateObj;
 }
 
-
-export function renderAbsoluteDate(dateStr, includeTime=false) {
+export function renderAbsoluteDate(dateStr, includeTime = false) {
   if (!dateStr) {
     return '';
   }
@@ -325,17 +332,13 @@ export function renderAbsoluteDate(dateStr, includeTime=false) {
   }
 }
 
-
 export function renderRelativeDate(dateStr) {
   const dateObj = _parseDateStr(dateStr);
   if (!dateObj) return nothing;
-  return html`
-      <span class="relative_date">
-        (<sl-relative-time date="${dateObj.toISOString()}">
-         </sl-relative-time>)
-      </span>`;
+  return html` <span class="relative_date">
+    (<sl-relative-time date="${dateObj.toISOString()}"> </sl-relative-time>)
+  </span>`;
 }
-
 
 /** Returns the non-time part of date in the YYYY-MM-DD format.
  *
@@ -345,7 +348,6 @@ export function renderRelativeDate(dateStr) {
 export function isoDateString(date) {
   return date.toISOString().slice(0, 10);
 }
-
 
 /**
  * Parses URL query strings into a dict.
@@ -365,7 +367,6 @@ export function parseRawQuery(rawQuery) {
   }
   return result;
 }
-
 
 /**
  * Create a new URL using params and a location.
@@ -387,7 +388,6 @@ export function getNewLocation(params, location) {
   }
   return url;
 }
-
 
 /**
  * Update window.location with new query params.

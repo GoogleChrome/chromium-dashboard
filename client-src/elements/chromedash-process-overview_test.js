@@ -3,18 +3,21 @@ import {assert, fixture} from '@open-wc/testing';
 import {ChromedashProcessOverview} from './chromedash-process-overview';
 
 describe('chromedash-proces-overview', () => {
-  let process; let feature;
+  let process;
+  let feature;
 
   beforeEach(() => {
     process = {
-      stages: [{
-        name: 'stage one',
-        description: 'a description',
-        progress_items: [],
-        outgoing_stage: 1,
-        actions: [],
-        stage_type: 110,
-      }],
+      stages: [
+        {
+          name: 'stage one',
+          description: 'a description',
+          progress_items: [],
+          outgoing_stage: 1,
+          actions: [],
+          stage_type: 110,
+        },
+      ],
     };
     feature = {
       id: 123456,
@@ -38,9 +41,10 @@ describe('chromedash-proces-overview', () => {
   it('renders with basic data', async () => {
     const component = await fixture(
       html`<chromedash-process-overview
-              .process=${process}
-              .feature=${feature}
-           ></chromedash-process-overview>`);
+        .process=${process}
+        .feature=${feature}
+      ></chromedash-process-overview>`
+    );
     assert.exists(component);
     assert.instanceOf(component, ChromedashProcessOverview);
     const stageHeader = component.shadowRoot.querySelector('th');
@@ -50,9 +54,10 @@ describe('chromedash-proces-overview', () => {
   it('highlights the active stage', async () => {
     const component = await fixture(
       html`<chromedash-process-overview
-              .process=${process}
-              .feature=${feature}
-             ></chromedash-process-overview>`);
+        .process=${process}
+        .feature=${feature}
+      ></chromedash-process-overview>`
+    );
     assert.exists(component);
 
     const activeRow = component.shadowRoot.querySelector('tr.active');
@@ -64,9 +69,10 @@ describe('chromedash-proces-overview', () => {
     feature.active_stage_id = null;
     const component = await fixture(
       html`<chromedash-process-overview
-              .process=${process}
-              .feature=${feature}
-             ></chromedash-process-overview>`);
+        .process=${process}
+        .feature=${feature}
+      ></chromedash-process-overview>`
+    );
     assert.exists(component);
 
     const activeRow = component.shadowRoot.querySelector('tr.active');

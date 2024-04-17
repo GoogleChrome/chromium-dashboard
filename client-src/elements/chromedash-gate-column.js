@@ -6,11 +6,13 @@ import {
   somePendingPrereqs,
   somePendingGates,
 } from './chromedash-preflight-dialog';
+import {maybeOpenPrevoteDialog} from './chromedash-prevote-dialog';
 import {
-  maybeOpenPrevoteDialog,
-} from './chromedash-prevote-dialog';
-import {autolink, showToastMessage, findProcessStage,
-  renderAbsoluteDate, renderRelativeDate,
+  autolink,
+  showToastMessage,
+  findProcessStage,
+  renderAbsoluteDate,
+  renderRelativeDate,
 } from './utils.js';
 import {GATE_QUESTIONNAIRES} from './form-definition.js';
 import {
@@ -21,7 +23,6 @@ import {
 } from './form-field-enums';
 
 import {SHARED_STYLES} from '../css/shared-css.js';
-
 
 export class ChromedashGateColumn extends LitElement {
   voteSelectRef = createRef();
@@ -35,111 +36,112 @@ export class ChromedashGateColumn extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-       #close-button {
-         font-size: 2em;
-         position: absolute;
-         top: var(--content-padding-quarter);
-         right: var(--content-padding-quarter);
-       }
+        #close-button {
+          font-size: 2em;
+          position: absolute;
+          top: var(--content-padding-quarter);
+          right: var(--content-padding-quarter);
+        }
 
-       #review-status-area {
-         margin: var(--content-padding-half) 0;
-       }
-       .status {
-         display: flex;
-         gap: var(--content-padding-half);
-         align-items: center;
-         font-weight: 500;
-       }
-       sl-icon {
-         font-size: 1.3rem;
-       }
-       .approved {
-         color: var(--gate-approved-color);
-       }
-       .approved sl-icon {
-         color: var(--gate-approved-icon-color);
-       }
-       .denied {
-         color: var(--gate-denied-color);
-       }
-       .denied sl-icon {
-         color: var(--gate-denied-icon-color);
-       }
-       #slo-area sl-icon {
-         font-size: 16px;
-         vertical-align: text-bottom;
-         color: var(--unimportant-text-color);
-       }
-       .overdue,
-       #slo-area .overdue sl-icon {
-         color: var(--slo-overdue-color);
-       }
+        #review-status-area {
+          margin: var(--content-padding-half) 0;
+        }
+        .status {
+          display: flex;
+          gap: var(--content-padding-half);
+          align-items: center;
+          font-weight: 500;
+        }
+        sl-icon {
+          font-size: 1.3rem;
+        }
+        .approved {
+          color: var(--gate-approved-color);
+        }
+        .approved sl-icon {
+          color: var(--gate-approved-icon-color);
+        }
+        .denied {
+          color: var(--gate-denied-color);
+        }
+        .denied sl-icon {
+          color: var(--gate-denied-icon-color);
+        }
+        #slo-area sl-icon {
+          font-size: 16px;
+          vertical-align: text-bottom;
+          color: var(--unimportant-text-color);
+        }
+        .overdue,
+        #slo-area .overdue sl-icon {
+          color: var(--slo-overdue-color);
+        }
 
-       .process-notice {
-         margin: var(--content-padding-half) 0;
-         padding: var(--content-padding-half);
-         background: var(--light-accent-color);
-         border-radius: 8px;
-       }
+        .process-notice {
+          margin: var(--content-padding-half) 0;
+          padding: var(--content-padding-half);
+          background: var(--light-accent-color);
+          border-radius: 8px;
+        }
 
-       #votes-area {
-         margin: var(--content-padding) 0;
-       }
-       #votes-area table {
-         border-spacing: var(--content-padding-half) var(--content-padding);
-       }
-       #votes-area th {
-         font-weight: 500;
-       }
-       table .your-vote {
-         font-style: italic;
-         white-space: nowrap;
-       }
+        #votes-area {
+          margin: var(--content-padding) 0;
+        }
+        #votes-area table {
+          border-spacing: var(--content-padding-half) var(--content-padding);
+        }
+        #votes-area th {
+          font-weight: 500;
+        }
+        table .your-vote {
+          font-style: italic;
+          white-space: nowrap;
+        }
 
-       #questionnaire {
-         white-space: pre-wrap;
-         padding: var(--content-padding-half);
-         border-radius: var(--border-radius);
-         background: var(--table-alternate-background);
-       }
-       #questionnaire ul {
-         padding-left: 1em;
-       }
-       #questionnaire li {
-         list-style: disc;
-       }
-       .instructions {
-         padding: var(--content-padding-half);
-         margin-bottom: var(--content-padding-large);
-       }
+        #questionnaire {
+          white-space: pre-wrap;
+          padding: var(--content-padding-half);
+          border-radius: var(--border-radius);
+          background: var(--table-alternate-background);
+        }
+        #questionnaire ul {
+          padding-left: 1em;
+        }
+        #questionnaire li {
+          list-style: disc;
+        }
+        .instructions {
+          padding: var(--content-padding-half);
+          margin-bottom: var(--content-padding-large);
+        }
 
-       #controls {
-         padding: var(--content-padding);
-         text-align: right;
-         display: flex;
-         justify-content: space-between;
-         align-items: center;
-       }
-       #controls * + * {
-         padding-left: var(--content-padding);
-       }
+        #controls {
+          padding: var(--content-padding);
+          text-align: right;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        #controls * + * {
+          padding-left: var(--content-padding);
+        }
 
-       details {
-         padding: 10px;
-       }
-       details summary {
-         cursor: pointer;
-         transition: margin 250ms ease-out;
-         color: var(--link-color);
-       }
-       details summary::hover {
-         color: var(--link-hover-color);
-       }
-       details[open] summary {
-         margin-bottom: 10px;
-       }
-    `];
+        details {
+          padding: 10px;
+        }
+        details summary {
+          cursor: pointer;
+          transition: margin 250ms ease-out;
+          color: var(--link-color);
+        }
+        details summary::hover {
+          color: var(--link-hover-color);
+        }
+        details[open] summary {
+          margin-bottom: 10px;
+        }
+      `,
+    ];
   }
 
   static get properties() {
@@ -192,23 +194,26 @@ export class ChromedashGateColumn extends LitElement {
       window.csClient.getStage(featureId, stageId),
       window.csClient.getVotes(featureId, null),
       window.csClient.getComments(featureId, gate.id),
-    ]).then(([progress, process, stage, votesRes, commentRes]) => {
-      this.progress = progress;
-      this.process = process;
-      this.stage = stage;
-      this.votes = votesRes.votes.filter((v) =>
-        v.gate_id == this.gate.id);
-      this.comments = commentRes.comments;
-      this.needsSave = false;
-      this.showSaved = false;
-      this.submittingComment = false;
-      this.submittingVote = false;
-      this.needsPost = false;
-      this.loading = false;
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-      this.handleCancel();
-    });
+    ])
+      .then(([progress, process, stage, votesRes, commentRes]) => {
+        this.progress = progress;
+        this.process = process;
+        this.stage = stage;
+        this.votes = votesRes.votes.filter(v => v.gate_id == this.gate.id);
+        this.comments = commentRes.comments;
+        this.needsSave = false;
+        this.showSaved = false;
+        this.submittingComment = false;
+        this.submittingVote = false;
+        this.needsPost = false;
+        this.loading = false;
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
+        this.handleCancel();
+      });
   }
 
   reloadComments() {
@@ -220,12 +225,16 @@ export class ChromedashGateColumn extends LitElement {
     Promise.all([
       // TODO(jrobbins): Include activities for this gate
       window.csClient.getComments(this.feature.id, this.gate.id),
-    ]).then(([commentRes]) => {
-      this.comments = commentRes.comments;
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-      this.handleCancel();
-    });
+    ])
+      .then(([commentRes]) => {
+        this.comments = commentRes.comments;
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
+        this.handleCancel();
+      });
   }
 
   /* Reload all data for the currently displayed items. */
@@ -236,19 +245,22 @@ export class ChromedashGateColumn extends LitElement {
       window.csClient.getVotes(featureId, null),
       // TODO(jrobbins): Include activities for this gate
       window.csClient.getComments(featureId, this.gate.id),
-    ]).then(([gatesRes, votesRes, commentRes]) => {
-      for (const g of gatesRes.gates) {
-        if (g.id == this.gate.id) this.gate = g;
-      }
-      this.votes = votesRes.votes.filter((v) =>
-        v.gate_id == this.gate.id);
-      this.comments = commentRes.comments;
-      this.needsSave = false;
-      this.loading = false;
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-      this.handleCancel();
-    });
+    ])
+      .then(([gatesRes, votesRes, commentRes]) => {
+        for (const g of gatesRes.gates) {
+          if (g.id == this.gate.id) this.gate = g;
+        }
+        this.votes = votesRes.votes.filter(v => v.gate_id == this.gate.id);
+        this.comments = commentRes.comments;
+        this.needsSave = false;
+        this.loading = false;
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
+        this.handleCancel();
+      });
   }
 
   _fireEvent(eventName, detail) {
@@ -263,7 +275,7 @@ export class ChromedashGateColumn extends LitElement {
   checkNeedsPost() {
     let newNeedsPost = false;
     const commentArea = this.commentAreaRef.value;
-    const newVal = commentArea && commentArea.value.trim() || '';
+    const newVal = (commentArea && commentArea.value.trim()) || '';
     if (newVal != '') newNeedsPost = true;
     this.needsPost = newNeedsPost;
   }
@@ -271,23 +283,30 @@ export class ChromedashGateColumn extends LitElement {
   handlePost() {
     const commentArea = this.commentAreaRef.value;
     const commentText = commentArea.value.trim();
-    const postToThreadType = (
-        this.postToThreadRef.value?.checked ? this.gate.gate_type : 0);
+    const postToThreadType = this.postToThreadRef.value?.checked
+      ? this.gate.gate_type
+      : 0;
     this.postComment(commentText, postToThreadType);
   }
 
-  async postComment(commentText, postToThreadType=0) {
+  async postComment(commentText, postToThreadType = 0) {
     this.submittingVote = true;
     if (commentText != '') {
-      await window.csClient.postComment(
-        this.feature.id, this.gate.id, commentText,
-        Number(postToThreadType))
+      await window.csClient
+        .postComment(
+          this.feature.id,
+          this.gate.id,
+          commentText,
+          Number(postToThreadType)
+        )
         .then(() => {
           this.reloadComments();
           this.submittingVote = false;
         })
         .catch(() => {
-          showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+          showToastMessage(
+            'Some errors occurred. Please refresh the page or try again later.'
+          );
           this.submittingVote = false;
         });
     }
@@ -300,9 +319,8 @@ export class ChromedashGateColumn extends LitElement {
 
   saveVote() {
     this.submittingComment = true;
-    window.csClient.setVote(
-      this.feature.id, this.gate.id,
-      this.voteSelectRef.value.value)
+    window.csClient
+      .setVote(this.feature.id, this.gate.id, this.voteSelectRef.value.value)
       .then(() => {
         this.needsSave = false;
         this.showSaved = true;
@@ -310,24 +328,32 @@ export class ChromedashGateColumn extends LitElement {
         this._fireEvent('refetch-needed', {});
       })
       .catch(() => {
-        showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
         this.submittingComment = false;
       });
   }
 
   handleSave() {
-    Promise.all([
-      window.csClient.getGates(this.feature.id),
-    ]).then(([gatesRes]) => {
-      this.featureGates = gatesRes.gates;
-      const vote = this.voteSelectRef.value.value;
-      maybeOpenPrevoteDialog(this.featureGates, this.stage, this.gate, vote)
-        .then(() => {
+    Promise.all([window.csClient.getGates(this.feature.id)])
+      .then(([gatesRes]) => {
+        this.featureGates = gatesRes.gates;
+        const vote = this.voteSelectRef.value.value;
+        maybeOpenPrevoteDialog(
+          this.featureGates,
+          this.stage,
+          this.gate,
+          vote
+        ).then(() => {
           this.saveVote();
         });
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-    });
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
+      });
   }
 
   handleCancel() {
@@ -336,12 +362,13 @@ export class ChromedashGateColumn extends LitElement {
 
   renderHeadingsSkeleton() {
     return html`
-      <h3 class="sl-skeleton-header-container"
-          style="width: 60%">
+      <h3 class="sl-skeleton-header-container" style="width: 60%">
         <sl-skeleton effect="sheen"></sl-skeleton>
       </h3>
-      <h2 class="sl-skeleton-header-container"
-          style="margin-top: 4px; width: 75%">
+      <h2
+        class="sl-skeleton-header-container"
+        style="margin-top: 4px; width: 75%"
+      >
         <sl-skeleton effect="sheen"></sl-skeleton>
       </h2>
     `;
@@ -366,7 +393,10 @@ export class ChromedashGateColumn extends LitElement {
 
   async handleReviewRequested() {
     await window.csClient.setVote(
-      this.feature.id, this.gate.id, GATE_REVIEW_REQUESTED);
+      this.feature.id,
+      this.gate.id,
+      GATE_REVIEW_REQUESTED
+    );
     this._fireEvent('refetch-needed', {});
   }
 
@@ -376,11 +406,15 @@ export class ChromedashGateColumn extends LitElement {
 
   async handleNARequestSubmitted() {
     await window.csClient.setVote(
-      this.feature.id, this.gate.id, GATE_NA_REQUESTED);
+      this.feature.id,
+      this.gate.id,
+      GATE_NA_REQUESTED
+    );
     // Post the comment after the review request so that it will go
     // to the assigned reviewer rather than all reviewers.
-    const commentText = ('An "N/A" response is requested because: ' +
-                         this.rationaleRef.value.value);
+    const commentText =
+      'An "N/A" response is requested because: ' +
+      this.rationaleRef.value.value;
     await this.postComment(commentText);
     this.rationaleDialogRef.value.hide();
     this._fireEvent('refetch-needed', {});
@@ -388,14 +422,17 @@ export class ChromedashGateColumn extends LitElement {
 
   /* A user that can edit the current feature can request a review. */
   userCanRequestReview() {
-    return (this.user &&
-            (this.user.can_edit_all ||
-             this.user.editable_features.includes(this.feature.id)));
+    return (
+      this.user &&
+      (this.user.can_edit_all ||
+        this.user.editable_features.includes(this.feature.id))
+    );
   }
 
   userCanVote() {
-    return (this.user &&
-            this.user.approvable_gate_types.includes(this.gate.gate_type));
+    return (
+      this.user && this.user.approvable_gate_types.includes(this.gate.gate_type)
+    );
   }
 
   renderAction(processStage, action) {
@@ -406,12 +443,21 @@ export class ChromedashGateColumn extends LitElement {
       .replace('{gate_id}', this.gate.id);
 
     const checkCompletion = () => {
-      if (somePendingPrereqs(action, this.progress) ||
-          somePendingGates(this.featureGates, this.stage)) {
+      if (
+        somePendingPrereqs(action, this.progress) ||
+        somePendingGates(this.featureGates, this.stage)
+      ) {
         // Open the dialog.
         openPreflightDialog(
-          this.feature, this.progress, this.process, action,
-          processStage, this.stage, this.featureGates, url);
+          this.feature,
+          this.progress,
+          this.process,
+          action,
+          processStage,
+          this.stage,
+          this.featureGates,
+          url
+        );
         return;
       } else {
         // Act like user clicked left button to go to the draft email window.
@@ -424,74 +470,86 @@ export class ChromedashGateColumn extends LitElement {
     };
 
     const loadThenCheckCompletion = () => {
-      Promise.all([
-        window.csClient.getGates(this.feature.id),
-      ]).then(([gatesRes]) => {
-        this.featureGates = gatesRes.gates;
-        checkCompletion();
-      }).catch(() => {
-        showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-      });
+      Promise.all([window.csClient.getGates(this.feature.id)])
+        .then(([gatesRes]) => {
+          this.featureGates = gatesRes.gates;
+          checkCompletion();
+        })
+        .catch(() => {
+          showToastMessage(
+            'Some errors occurred. Please refresh the page or try again later.'
+          );
+        });
     };
 
     return html`
-      <sl-button @click=${loadThenCheckCompletion}
-       size=small variant=primary
-       >${label}</sl-button>
+      <sl-button
+        @click=${loadThenCheckCompletion}
+        size="small"
+        variant="primary"
+        >${label}</sl-button
+      >
     `;
   }
 
   renderReviewStatusPreparing() {
     if (!this.userCanRequestReview()) {
-      return html`
-        Review has not been requested yet.
-      `;
+      return html` Review has not been requested yet. `;
     }
 
     const processStage = findProcessStage(this.stage, this.process);
-    if (processStage?.actions?.length > 0 &&
-       this.gate.team_name == 'API Owners') {
+    if (
+      processStage?.actions?.length > 0 &&
+      this.gate.team_name == 'API Owners'
+    ) {
       return processStage.actions.map(act =>
-        this.renderAction(processStage, act));
+        this.renderAction(processStage, act)
+      );
     }
 
     const dialog = html`
       <sl-dialog ${ref(this.rationaleDialogRef)} label="Request an N/A">
         <p style="padding: var(--content-padding)">
           Please briefly explain why your feature does not require a review.
-          Your response will be posted as a comment on this review gate
-          and it will generate a notification to the reviewers.
-          The ${this.gate.team_name} reviewers will still evaluate whether to
-          give an "N/A" response or do a review.
+          Your response will be posted as a comment on this review gate and it
+          will generate a notification to the reviewers. The
+          ${this.gate.team_name} reviewers will still evaluate whether to give
+          an "N/A" response or do a review.
         </p>
         <sl-textarea ${ref(this.rationaleRef)}></sl-textarea>
-        <sl-button slot="footer" variant="primary" size="small"
+        <sl-button
+          slot="footer"
+          variant="primary"
+          size="small"
           @click=${this.handleNARequestSubmitted}
-          >Post</sl-button>
+          >Post</sl-button
+        >
       </sl-dialog>
     `;
 
     return html`
-     <sl-button size=small variant=primary
-       @click=${this.handleReviewRequested}
-       >Request review</sl-button>
-     <sl-button size=small
-       @click=${this.handleNARequested}
-       >Request N/A</sl-button>
-     ${dialog}
+      <sl-button
+        size="small"
+        variant="primary"
+        @click=${this.handleReviewRequested}
+        >Request review</sl-button
+      >
+      <sl-button size="small" @click=${this.handleNARequested}
+        >Request N/A</sl-button
+      >
+      ${dialog}
     `;
   }
 
   renderReviewRequest() {
     for (const v of this.votes) {
-      if (v.state === GATE_REVIEW_REQUESTED ||
-          v.state === GATE_NA_REQUESTED) {
+      if (v.state === GATE_REVIEW_REQUESTED || v.state === GATE_NA_REQUESTED) {
         const shortVoter = v.set_by.split('@')[0] + '@';
         return html`
           ${shortVoter} requested on
           ${renderAbsoluteDate(this.gate.requested_on)}
           ${renderRelativeDate(this.gate.requested_on)}
-      `;
+        `;
       }
     }
     return nothing;
@@ -530,19 +588,19 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   renderSLOStatusSkeleton() {
-    return html`
-      <p>
-        Reviewer SLO status:
-      </p>`;
+    return html` <p>Reviewer SLO status:</p>`;
   }
 
   renderInfoIcon() {
     return html`
-      <sl-tooltip hoist style="--max-width: 14em;"
+      <sl-tooltip
+        hoist
+        style="--max-width: 14em;"
         content="Reviewers are encouraged to provide an initial
           review status update
           or a comment within this number of days.
-          The full review may take longer.">
+          The full review may take longer."
+      >
         <sl-icon name="info-circle" id="info-button"></sl-icon>
       </sl-tooltip>
     `;
@@ -571,36 +629,42 @@ export class ChromedashGateColumn extends LitElement {
         msg = html`${this.dayPhrase(-remaining)} overdue`;
       } else {
         msg = html`initial response is due today`;
-      };
+      }
     } else if (typeof limit === 'number') {
       return html`
-        <p>Reviewer SLO: ${this.dayPhrase(limit)} for initial response
-        ${this.renderInfoIcon()}</p>
+        <p>
+          Reviewer SLO: ${this.dayPhrase(limit)} for initial response
+          ${this.renderInfoIcon()}
+        </p>
       `;
     }
 
     if (msg === nothing) {
       return nothing;
     } else {
-      const icon = iconName ?
-        html`<sl-icon library="material" name="${iconName}"></sl-icon>` :
-        nothing;
-      return html`
-        <p id="slo-area">
-          Reviewer SLO status: <span class="${className}">${icon} ${msg}</span>
-        </p>`;
+      const icon = iconName
+        ? html`<sl-icon library="material" name="${iconName}"></sl-icon>`
+        : nothing;
+      return html` <p id="slo-area">
+        Reviewer SLO status: <span class="${className}">${icon} ${msg}</span>
+      </p>`;
     }
   }
 
   renderWarnings() {
     if (this.gate.team_name == 'Privacy') {
       return html`
-       <div class="process-notice">
-         Googlers: Please follow the instructions at <a
-         href="https://goto.corp.google.com/wp-launch-guidelines"
-         target="_blank" rel="noopener">go/wp-launch-guidelines</a> (internal
-         document) to determine whether you also require an internal review.
-       </div>
+        <div class="process-notice">
+          Googlers: Please follow the instructions at
+          <a
+            href="https://goto.corp.google.com/wp-launch-guidelines"
+            target="_blank"
+            rel="noopener"
+            >go/wp-launch-guidelines</a
+          >
+          (internal document) to determine whether you also require an internal
+          review.
+        </div>
       `;
     }
     return nothing;
@@ -609,10 +673,13 @@ export class ChromedashGateColumn extends LitElement {
   renderVotesSkeleton() {
     return html`
       <table>
-        <tr><th>Reviewer</th><th>Review status</th></tr>
         <tr>
-         <td><sl-skeleton effect="sheen"></sl-skeleton></td>
-         <td><sl-skeleton effect="sheen"></sl-skeleton></td>
+          <th>Reviewer</th>
+          <th>Review status</th>
+        </tr>
+        <tr>
+          <td><sl-skeleton effect="sheen"></sl-skeleton></td>
+          <td><sl-skeleton effect="sheen"></sl-skeleton></td>
         </tr>
       </table>
     `;
@@ -640,12 +707,17 @@ export class ChromedashGateColumn extends LitElement {
   renderVoteMenu(state) {
     // hoist is needed when <sl-select> is in overflow:auto context.
     return html`
-      <sl-select name="${this.gate.id}"
-                 value="${state}" ${ref(this.voteSelectRef)}
-                 @sl-change=${this.handleSelectChanged}
-                 hoist size="small">
-        ${Object.values(VOTE_OPTIONS).map((valName) => html`
-          <sl-option value="${valName[0]}">${valName[1]}</sl-option>`,
+      <sl-select
+        name="${this.gate.id}"
+        value="${state}"
+        ${ref(this.voteSelectRef)}
+        @sl-change=${this.handleSelectChanged}
+        hoist
+        size="small"
+      >
+        ${Object.values(VOTE_OPTIONS).map(
+          valName =>
+            html` <sl-option value="${valName[0]}">${valName[1]}</sl-option>`
         )}
       </sl-select>
     `;
@@ -654,11 +726,13 @@ export class ChromedashGateColumn extends LitElement {
   renderSaveButton() {
     return html`
       <sl-button
-        size="small" variant="primary"
+        size="small"
+        variant="primary"
         @click=${this.handleSave}
         ?disabled=${this.submittingComment}
-        >Save</sl-button>
-      `;
+        >Save</sl-button
+      >
+    `;
   }
 
   renderVoteRow(vote, canVote) {
@@ -677,9 +751,9 @@ export class ChromedashGateColumn extends LitElement {
 
     return html`
       <tr>
-       <td title=${vote.set_by}>${shortVoter}</td>
-       <td>${voteCell}</td>
-       <td>${saveButton}</td>
+        <td title=${vote.set_by}>${shortVoter}</td>
+        <td>${voteCell}</td>
+        <td>${saveButton}</td>
       </tr>
     `;
   }
@@ -687,16 +761,16 @@ export class ChromedashGateColumn extends LitElement {
   renderAddVoteRow() {
     const assignedToMe = this.gate.assignee_emails.includes(this.user.email);
     const shortVoter = this.user.email.split('@')[0] + '@';
-    const yourLabel = assignedToMe ?
-      html`<td title=${this.user.email}>${shortVoter}</td>` :
-      html`<td class="your-vote">Awaiting review</td>`;
+    const yourLabel = assignedToMe
+      ? html`<td title=${this.user.email}>${shortVoter}</td>`
+      : html`<td class="your-vote">Awaiting review</td>`;
     const voteCell = this.renderVoteMenu(VOTE_OPTIONS.NO_RESPONSE[0]);
     const saveButton = this.needsSave ? this.renderSaveButton() : nothing;
     return html`
       <tr>
-       ${yourLabel}
-       <td>${voteCell}</td>
-       <td>${saveButton}</td>
+        ${yourLabel}
+        <td>${voteCell}</td>
+        <td>${saveButton}</td>
       </tr>
     `;
   }
@@ -705,18 +779,19 @@ export class ChromedashGateColumn extends LitElement {
     const shortVoter = assigneeEmail.split('@')[0] + '@';
     return html`
       <tr>
-       <td title=${assigneeEmail}>${shortVoter}</td>
-       <td>No response yet</td>
-       <td></td>
+        <td title=${assigneeEmail}>${shortVoter}</td>
+        <td>No response yet</td>
+        <td></td>
       </tr>
     `;
   }
 
   saveAssignedReviewer() {
     const assignee = this.assigneeSelectRef.value.value;
-    const assigneeList = (assignee === '' ? [] : [assignee]);
-    csClient.updateGate(this.feature.id, this.gate.id, assigneeList).then(
-      () => this._fireEvent('refetch-needed', {}));
+    const assigneeList = assignee === '' ? [] : [assignee];
+    csClient
+      .updateGate(this.feature.id, this.gate.id, assigneeList)
+      .then(() => this._fireEvent('refetch-needed', {}));
   }
 
   renderAssignReviewerControls() {
@@ -726,38 +801,48 @@ export class ChromedashGateColumn extends LitElement {
     if (this.gate.state === VOTE_OPTIONS.APPROVED[0]) {
       return nothing;
     }
-    const currentAssignee = this.gate.assignee_emails?.length > 0 ?
-      this.gate.assignee_emails[0] : '';
+    const currentAssignee =
+      this.gate.assignee_emails?.length > 0 ? this.gate.assignee_emails[0] : '';
     return html`
       <details>
-       <summary>Assign a reviewer</summary>
-       <sl-select hoist size="small" ${ref(this.assigneeSelectRef)}
-         value=${currentAssignee}>
-        <sl-option value="">None</sl-option>
-        ${this.gate.possible_assignee_emails.map((email) => html`
-          <sl-option value="${email}">${email}</sl-option>`)}
-       </sl-select>
-       <sl-button size="small" variant="primary"
-         @click=${() => this.saveAssignedReviewer()}
-       >Assign</sl-button>
+        <summary>Assign a reviewer</summary>
+        <sl-select
+          hoist
+          size="small"
+          ${ref(this.assigneeSelectRef)}
+          value=${currentAssignee}
+        >
+          <sl-option value="">None</sl-option>
+          ${this.gate.possible_assignee_emails.map(
+            email => html` <sl-option value="${email}">${email}</sl-option>`
+          )}
+        </sl-select>
+        <sl-button
+          size="small"
+          variant="primary"
+          @click=${() => this.saveAssignedReviewer()}
+          >Assign</sl-button
+        >
       </details>
     `;
   }
 
   isReviewRequest(vote) {
-    return (vote.state === GATE_REVIEW_REQUESTED ||
-            vote.state === GATE_NA_REQUESTED);
+    return (
+      vote.state === GATE_REVIEW_REQUESTED || vote.state === GATE_NA_REQUESTED
+    );
   }
 
   renderVotes() {
     const canVote = this.userCanVote();
-    const responses = this.votes.filter((v) => !this.isReviewRequest(v));
-    const responseEmails = responses.map((v) => v.set_by);
-    const othersPending = this.gate.assignee_emails.filter((ae) =>
-      !responseEmails.includes(ae) && ae != this.user?.email);
-    const myResponseExists = responses.some((v) => v.set_by == this.user?.email);
-    const addVoteRow = (canVote && !myResponseExists) ?
-      this.renderAddVoteRow() : nothing;
+    const responses = this.votes.filter(v => !this.isReviewRequest(v));
+    const responseEmails = responses.map(v => v.set_by);
+    const othersPending = this.gate.assignee_emails.filter(
+      ae => !responseEmails.includes(ae) && ae != this.user?.email
+    );
+    const myResponseExists = responses.some(v => v.set_by == this.user?.email);
+    const addVoteRow =
+      canVote && !myResponseExists ? this.renderAddVoteRow() : nothing;
     const assignControls = this.renderAssignReviewerControls();
 
     if (!canVote && responses.length === 0 && othersPending.length === 0) {
@@ -769,9 +854,12 @@ export class ChromedashGateColumn extends LitElement {
 
     return html`
       <table>
-        <tr><th>Reviewer</th><th>Review status</th></tr>
-        ${responses.map((v) => this.renderVoteRow(v, canVote))}
-        ${othersPending.map((ae) => this.renderPendingVote(ae, canVote))}
+        <tr>
+          <th>Reviewer</th>
+          <th>Review status</th>
+        </tr>
+        ${responses.map(v => this.renderVoteRow(v, canVote))}
+        ${othersPending.map(ae => this.renderPendingVote(ae, canVote))}
         ${addVoteRow}
       </table>
       ${assignControls}
@@ -790,15 +878,15 @@ export class ChromedashGateColumn extends LitElement {
   renderQuestionnaire() {
     const questionnaireText = GATE_QUESTIONNAIRES[this.gate.gate_type];
     if (!questionnaireText) return nothing;
-    const markup = (typeof questionnaireText == 'string') ?
-      autolink(questionnaireText) : questionnaireText;
+    const markup =
+      typeof questionnaireText == 'string'
+        ? autolink(questionnaireText)
+        : questionnaireText;
     return html`
       <h2>Survey questions</h2>
       <!-- prettier-ignore -->
       <div id="questionnaire">${markup}</div>
-      <p class="instructions">
-        Please post responses in the comments below.
-      </p>
+      <p class="instructions">Please post responses in the comments below.</p>
     `;
   }
 
@@ -816,10 +904,13 @@ export class ChromedashGateColumn extends LitElement {
   canPostTo(threadArchiveUrl) {
     return (
       threadArchiveUrl &&
-        (threadArchiveUrl.startsWith(
-          'https://groups.google.com/a/chromium.org/d/msgid/blink-dev/') ||
-         threadArchiveUrl.startsWith(
-           'https://groups.google.com/d/msgid/jrobbins-test')));
+      (threadArchiveUrl.startsWith(
+        'https://groups.google.com/a/chromium.org/d/msgid/blink-dev/'
+      ) ||
+        threadArchiveUrl.startsWith(
+          'https://groups.google.com/d/msgid/jrobbins-test'
+        ))
+    );
   }
 
   renderControls() {
@@ -827,53 +918,56 @@ export class ChromedashGateColumn extends LitElement {
     if (!canComment) return nothing;
 
     const postButton = html`
-      <sl-button variant="primary"
+      <sl-button
+        variant="primary"
         @click=${this.handlePost}
         ?disabled=${!this.needsPost || this.submittingVote}
         size="small"
-        >Post</sl-button>
+        >Post</sl-button
+      >
     `;
-    const checkboxLabel = (
-      this.stage.intent_thread_url ?
-        html`
-            Also post to
-              <a href=${this.stage.intent_thread_url} target="_blank"
-                 >intent thread</a>
-          ` : 'Also post to intent thread');
-    const postToThreadCheckbox = (
-      this.gateHasIntentThread() ?
-        html`
+    const checkboxLabel = this.stage.intent_thread_url
+      ? html`
+          Also post to
+          <a href=${this.stage.intent_thread_url} target="_blank"
+            >intent thread</a
+          >
+        `
+      : 'Also post to intent thread';
+    const postToThreadCheckbox = this.gateHasIntentThread()
+      ? html`
           <sl-checkbox
             ${ref(this.postToThreadRef)}
             ?disabled=${!this.canPostTo(this.stage.intent_thread_url)}
             size="small"
-            >${checkboxLabel}</sl-checkbox>
-          ` :
-        nothing);
-    const escalation = this.gate.escalation_email ?
-      html`If needed, you can
-               <a href="mailto:${this.gate.escalation_email}" target="_blank"
-                >email the team directly</a>.` :
-      nothing;
+            >${checkboxLabel}</sl-checkbox
+          >
+        `
+      : nothing;
+    const escalation = this.gate.escalation_email
+      ? html`If needed, you can
+          <a href="mailto:${this.gate.escalation_email}" target="_blank"
+            >email the team directly</a
+          >.`
+      : nothing;
 
     return html`
-      <sl-textarea id="comment_area" rows=2 cols=40 ${ref(this.commentAreaRef)}
+      <sl-textarea
+        id="comment_area"
+        rows="2"
+        cols="40"
+        ${ref(this.commentAreaRef)}
         @sl-change=${this.checkNeedsPost}
         @keypress=${this.checkNeedsPost}
         placeholder="Add a comment"
-        ></sl-textarea>
-       <div id="controls">
-         ${postButton}
-         ${postToThreadCheckbox}
-       </div>
-       <div class="instructions">
-         Comments will be visible publicly.
-         Only reviewers will be notified when a comment is posted.
-         ${escalation}
-       </div>
+      ></sl-textarea>
+      <div id="controls">${postButton} ${postToThreadCheckbox}</div>
+      <div class="instructions">
+        Comments will be visible publicly. Only reviewers will be notified when
+        a comment is posted. ${escalation}
+      </div>
     `;
   }
-
 
   renderComments() {
     // TODO(jrobbins): Include relevant activities too.
@@ -885,48 +979,45 @@ export class ChromedashGateColumn extends LitElement {
         .featureId=${this.feature.id}
         .narrow=${true}
         .reverse=${true}
-        .comments=${this.comments}>
+        .comments=${this.comments}
+      >
       </chromedash-activity-log>
     `;
   }
 
   render() {
     return html`
-      <sl-icon-button title="Close" name="x" id="close-button"
+      <sl-icon-button
+        title="Close"
+        name="x"
+        id="close-button"
         @click=${() => this.handleCancel()}
-        ></sl-icon-button>
+      ></sl-icon-button>
 
-      ${this.loading ?
-        this.renderHeadingsSkeleton() :
-        this.renderHeadings()}
+      ${this.loading ? this.renderHeadingsSkeleton() : this.renderHeadings()}
 
       <div id="review-status-area">
-        ${this.loading ?
-          this.renderReviewStatusSkeleton() :
-          this.renderReviewStatus()}
+        ${this.loading
+          ? this.renderReviewStatusSkeleton()
+          : this.renderReviewStatus()}
         ${this.renderReviewRequest()}
       </div>
       <div id="slo-area">
-        ${this.loading ?
-          this.renderSLOStatusSkeleton() :
-          this.renderSLOStatus()}
+        ${this.loading
+          ? this.renderSLOStatusSkeleton()
+          : this.renderSLOStatus()}
       </div>
 
       ${this.renderWarnings()}
 
       <div id="votes-area">
-        ${this.loading ?
-          this.renderVotesSkeleton() :
-          this.renderVotes()}
+        ${this.loading ? this.renderVotesSkeleton() : this.renderVotes()}
       </div>
 
-      ${this.loading ?
-        this.renderQuestionnaireSkeleton() :
-        this.renderQuestionnaire()}
-
-      ${this.loading ?
-        this.renderCommentsSkeleton() :
-        this.renderComments()}
+      ${this.loading
+        ? this.renderQuestionnaireSkeleton()
+        : this.renderQuestionnaire()}
+      ${this.loading ? this.renderCommentsSkeleton() : this.renderComments()}
     `;
   }
 }

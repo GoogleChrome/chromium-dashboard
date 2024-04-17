@@ -6,7 +6,10 @@ import '../js-src/cs-client';
 import sinon from 'sinon';
 
 describe('chromedash-myfeatures-page', () => {
-  let recentReview; let pendingReview; let featureICanEdit; let featureIStarred;
+  let recentReview;
+  let pendingReview;
+  let featureICanEdit;
+  let featureIStarred;
 
   /* window.csClient and <chromedash-toast> are initialized at spa.html
    * which are not available here, so we initialize them before each test.
@@ -40,9 +43,9 @@ describe('chromedash-myfeatures-page', () => {
       editable_features: [],
     };
     const component = await fixture(
-      html`<chromedash-myfeatures-page
-            .user=${user}>
-           </chromedash-myfeatures-page>`);
+      html`<chromedash-myfeatures-page .user=${user}>
+      </chromedash-myfeatures-page>`
+    );
     assert.exists(component);
     assert.instanceOf(component, ChromedashMyFeaturesPage);
 
@@ -51,12 +54,16 @@ describe('chromedash-myfeatures-page', () => {
     assert.include(subheaderDiv.innerHTML, 'My features');
 
     const slDetails = component.shadowRoot.querySelectorAll('sl-details');
-    slDetails.forEach((item) => {
+    slDetails.forEach(item => {
       const itemHTML = item.outerHTML;
-      if (itemHTML.includes('summary="Features I can edit"')) featureICanEdit = item;
-      if (itemHTML.includes('summary="Features I starred"')) featureIStarred = item;
-      if (itemHTML.includes('summary="Features pending my approval"')) pendingReview = item;
-      if (itemHTML.includes('summary="Recently reviewed features"')) recentReview = item;
+      if (itemHTML.includes('summary="Features I can edit"'))
+        featureICanEdit = item;
+      if (itemHTML.includes('summary="Features I starred"'))
+        featureIStarred = item;
+      if (itemHTML.includes('summary="Features pending my approval"'))
+        pendingReview = item;
+      if (itemHTML.includes('summary="Recently reviewed features"'))
+        recentReview = item;
     });
 
     // No review-related sl-details
@@ -84,9 +91,9 @@ describe('chromedash-myfeatures-page', () => {
       editable_features: [],
     };
     const component = await fixture(
-      html`<chromedash-myfeatures-page
-            .user=${user}>
-           </chromedash-myfeatures-page>`);
+      html`<chromedash-myfeatures-page .user=${user}>
+      </chromedash-myfeatures-page>`
+    );
     assert.exists(component);
     assert.instanceOf(component, ChromedashMyFeaturesPage);
 
@@ -95,12 +102,16 @@ describe('chromedash-myfeatures-page', () => {
     assert.include(subheaderDiv.innerHTML, 'My features');
 
     const slDetails = component.shadowRoot.querySelectorAll('sl-details');
-    slDetails.forEach((item) => {
+    slDetails.forEach(item => {
       const itemHTML = item.outerHTML;
-      if (itemHTML.includes('summary="Features I can edit')) featureICanEdit = item;
-      if (itemHTML.includes('summary="Features I starred"')) featureIStarred = item;
-      if (itemHTML.includes('summary="Features pending my approval"')) pendingReview = item;
-      if (itemHTML.includes('summary="Recently reviewed features"')) recentReview = item;
+      if (itemHTML.includes('summary="Features I can edit'))
+        featureICanEdit = item;
+      if (itemHTML.includes('summary="Features I starred"'))
+        featureIStarred = item;
+      if (itemHTML.includes('summary="Features pending my approval"'))
+        pendingReview = item;
+      if (itemHTML.includes('summary="Recently reviewed features"'))
+        recentReview = item;
     });
 
     // "Recently reviewed features" exists and has a correct query

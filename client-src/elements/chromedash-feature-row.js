@@ -6,7 +6,6 @@ import {
   GATE_ACTIVE_REVIEW_STATES,
 } from './form-field-enums';
 
-
 class ChromedashFeatureRow extends LitElement {
   static get properties() {
     return {
@@ -35,45 +34,46 @@ class ChromedashFeatureRow extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-      :host {
-        display: table-row;
-        background: var(--table-row-background);
-      }
-      td {
-        padding: var(--content-padding-half);
-        border-bottom: var(--table-divider);
-      }
-      td.name_col {
-        width: 100%;
-      }
-      td.icon_col {
-        white-space: nowrap;
-        vertical-align: top;
-      }
-      td.icon_col a {
-        padding: 2px 4px;
-      }
-      td.icon_col a:hover {
-        text-decoration: none;
-      }
-      .quick_actions {
-        white-space: nowrap;
-        float: right;
-      }
-      .highlights {
-        padding-left: var(--content-padding);
-      }
-      .highlights div {
-        color: var(--unimportant-text-color);
-        padding: var(--content-padding-quarter);
-      }
-      sl-icon-button {
-        font-size: 1.3rem;
-      }
-      sl-icon-button::part(base) {
-        color: var(--link-color);
-      }
-    `];
+        :host {
+          display: table-row;
+          background: var(--table-row-background);
+        }
+        td {
+          padding: var(--content-padding-half);
+          border-bottom: var(--table-divider);
+        }
+        td.name_col {
+          width: 100%;
+        }
+        td.icon_col {
+          white-space: nowrap;
+          vertical-align: top;
+        }
+        td.icon_col a {
+          padding: 2px 4px;
+        }
+        td.icon_col a:hover {
+          text-decoration: none;
+        }
+        .quick_actions {
+          white-space: nowrap;
+          float: right;
+        }
+        .highlights {
+          padding-left: var(--content-padding);
+        }
+        .highlights div {
+          color: var(--unimportant-text-color);
+          padding: var(--content-padding-quarter);
+        }
+        sl-icon-button {
+          font-size: 1.3rem;
+        }
+        sl-icon-button::part(base) {
+          color: var(--link-color);
+        }
+      `,
+    ];
   }
 
   _fireEvent(eventName, detail) {
@@ -102,9 +102,11 @@ class ChromedashFeatureRow extends LitElement {
 
   renderEditIcon(feature) {
     return html`
-      <sl-icon-button href="/guide/edit/${feature.id}"
+      <sl-icon-button
+        href="/guide/edit/${feature.id}"
         title="Edit feature"
-        name="pencil-fill"></sl-icon-button>
+        name="pencil-fill"
+      ></sl-icon-button>
     `;
   }
 
@@ -114,9 +116,11 @@ class ChromedashFeatureRow extends LitElement {
         @click=${this.toggleStar}
         title="Receive an email notification when there are updates"
         library="material"
-        name="${this.starredFeatures.has(Number(feature.id)) ?
-                'star' : 'star_border'}"
-        data-feature-id="${feature.id}"></sl-icon-button>
+        name="${this.starredFeatures.has(Number(feature.id))
+          ? 'star'
+          : 'star_border'}"
+        data-feature-id="${feature.id}"
+      ></sl-icon-button>
     `;
   }
 
@@ -138,11 +142,7 @@ class ChromedashFeatureRow extends LitElement {
       // Work around unused function parameter lint error.
       const threadLinks = feature ? [] : [];
 
-      return html`
-        <span class="quick_actions">
-          ${threadLinks}
-        </span>
-      `;
+      return html` <span class="quick_actions"> ${threadLinks} </span> `;
     }
     return nothing;
   }
@@ -185,20 +185,24 @@ class ChromedashFeatureRow extends LitElement {
 
   renderActiveStageAndGates(stageAndGates) {
     const sortedGates = stageAndGates.gates;
-    sortedGates.sort((g1, g2) =>
-      GATE_TEAM_ORDER.indexOf(g1.team_name) -
-      GATE_TEAM_ORDER.indexOf(g2.team_name));
+    sortedGates.sort(
+      (g1, g2) =>
+        GATE_TEAM_ORDER.indexOf(g1.team_name) -
+        GATE_TEAM_ORDER.indexOf(g2.team_name)
+    );
     return html`
       <div>
         ${this.getStageShortName(stageAndGates.stage)}
-        ${sortedGates.map(gate => html`
-          <chromedash-gate-chip
-            .feature=${this.feature}
-            .stage=${stageAndGates.stage}
-            .gate=${gate}
-            selectedGateId=${this.selectedGateId}
-          ></chromedash-gate-chip>
-         `)}
+        ${sortedGates.map(
+          gate => html`
+            <chromedash-gate-chip
+              .feature=${this.feature}
+              .stage=${stageAndGates.stage}
+              .gate=${gate}
+              selectedGateId=${this.selectedGateId}
+            ></chromedash-gate-chip>
+          `
+        )}
       </div>
     `;
   }
@@ -209,12 +213,15 @@ class ChromedashFeatureRow extends LitElement {
 
       return html`
         <div class="highlights">
-          ${activeStages.length > 0 ? html`
-            <div>
-              ${activeStages.map(stageAndGates =>
-        this.renderActiveStageAndGates(stageAndGates))}
-            </div>
-            ` : nothing}
+          ${activeStages.length > 0
+            ? html`
+                <div>
+                  ${activeStages.map(stageAndGates =>
+                    this.renderActiveStageAndGates(stageAndGates)
+                  )}
+                </div>
+              `
+            : nothing}
           ${this.renderQuickActions(feature)}
         </div>
       `;
@@ -229,9 +236,7 @@ class ChromedashFeatureRow extends LitElement {
         <a href="/feature/${feature.id}">${feature.name}</a>
         ${this.renderHighlights(feature)}
       </td>
-      <td class="icon_col">
-        ${this.renderIcons(feature)}
-      </td>
+      <td class="icon_col">${this.renderIcons(feature)}</td>
     `;
   }
 }
