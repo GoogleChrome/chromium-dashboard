@@ -12,53 +12,55 @@ export class ChromedashAdminBlinkPage extends LitElement {
       VARS,
       LAYOUT_CSS,
       css`
-      body {
+        body {
           scroll-behavior: smooth;
-      }
+        }
 
-      #spinner {
+        #spinner {
           display: none !important;
-      }
+        }
 
-      #subheader .subheader_toggles {
+        #subheader .subheader_toggles {
           display: flex !important;
           justify-content: flex-end;
           flex: 1 0 auto;
-      }
+        }
 
-      #subheader ul {
+        #subheader ul {
           list-style-type: none;
           margin-left: var(--content-padding);
-      }
+        }
 
-      #subheader ul li {
+        #subheader ul li {
           text-align: center;
           border-radius: var(--default-border-radius);
           box-shadow: 1px 1px 4px var(--bar-shadow-color);
-          padding: .5em;
+          padding: 0.5em;
           background: var(--chromium-color-dark);
           color: #fff;
           font-weight: 500;
           text-transform: uppercase;
-      }
+        }
 
-      #subheader ul li a {
+        #subheader ul li a {
           color: inherit;
           text-decoration: none;
-      }
+        }
 
-      #subheader .view_owners_linke {
+        #subheader .view_owners_linke {
           margin-left: var(--content-padding);
-      }
+        }
 
-      #components_list {
+        #components_list {
           list-style: none;
           margin-bottom: calc(var(--content-padding) * 4);
-      }
+        }
 
-      #components_list li {
+        #components_list li {
           padding: var(--content-padding) 0;
-      }`];
+        }
+      `,
+    ];
   }
   static get properties() {
     return {
@@ -91,13 +93,17 @@ export class ChromedashAdminBlinkPage extends LitElement {
 
   fetchData() {
     this.loading = true;
-    this._client.listComponentUsers()
-      .then((response) => {
+    this._client
+      .listComponentUsers()
+      .then(response => {
         this.usersMap = new Map(response.users.map(user => [user.id, user]));
         this.components = response.components;
         this.loading = false;
-      }).catch(() => {
-        showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
       });
   }
 
@@ -108,7 +114,9 @@ export class ChromedashAdminBlinkPage extends LitElement {
   _addComponentUserListener(e) {
     const component = Object.assign({}, this.components[e.detail.index]);
     if (e.detail.isError) {
-      showToastMessage(`"Unable to add ${this.usersMap.get(e.detail.userId).name} to ${component.name}".`);
+      showToastMessage(
+        `"Unable to add ${this.usersMap.get(e.detail.userId).name} to ${component.name}".`
+      );
       return;
     }
 
@@ -120,7 +128,9 @@ export class ChromedashAdminBlinkPage extends LitElement {
     if (e.detail.toggleAsOwner) {
       component.owner_ids = [...component.owner_ids, e.detail.userId];
     }
-    showToastMessage(`"${this.usersMap.get(e.detail.userId).name} added to ${component.name}".`);
+    showToastMessage(
+      `"${this.usersMap.get(e.detail.userId).name} added to ${component.name}".`
+    );
     this.components[e.detail.index] = component;
     this.requestUpdate();
   }
@@ -128,17 +138,23 @@ export class ChromedashAdminBlinkPage extends LitElement {
   _removeComponentUserListener(e) {
     const component = Object.assign({}, this.components[e.detail.index]);
     if (e.detail.isError) {
-      showToastMessage(`"Unable to remove ${this.usersMap.get(e.detail.userId).name} from ${component.name}".`);
+      showToastMessage(
+        `"Unable to remove ${this.usersMap.get(e.detail.userId).name} from ${component.name}".`
+      );
       return;
     }
 
     component.subscriber_ids = component.subscriber_ids.filter(
-      (currentUserId) => e.detail.userId !== currentUserId);
+      currentUserId => e.detail.userId !== currentUserId
+    );
     if (e.detail.toggleAsOwner) {
       component.owner_ids = component.owner_ids.filter(
-        (currentUserId) => e.detail.userId !== currentUserId);
+        currentUserId => e.detail.userId !== currentUserId
+      );
     }
-    showToastMessage(`"${this.usersMap.get(e.detail.userId).name} removed from ${component.name}".`);
+    showToastMessage(
+      `"${this.usersMap.get(e.detail.userId).name} removed from ${component.name}".`
+    );
     this.components[e.detail.index] = component;
     this.requestUpdate();
   }
@@ -149,16 +165,24 @@ export class ChromedashAdminBlinkPage extends LitElement {
         <div class="layout horizontal center">
           <div>
             <h2>Blink components</h2>
-            ${this.loading ?
-              html`<div>loading components</div>` :
-              html`<div id="component-count">listing ${this.components.length} components</div>`
-            }
+            ${this.loading
+              ? html`<div>loading components</div>`
+              : html`<div id="component-count">
+                  listing ${this.components.length} components
+                </div>`}
           </div>
         </div>
         <div class="layout horizontal subheader_toggles">
           <!-- <paper-toggle-button> doesn't working here. Related links:
             https://github.com/PolymerElements/paper-toggle-button/pull/132 -->
-          <label><input type="checkbox" class="paper-toggle-button" ?checked="${this._editMode}" @change="${this._onEditModeToggle}">Edit mode</label>
+          <label
+            ><input
+              type="checkbox"
+              class="paper-toggle-button"
+              ?checked="${this._editMode}"
+              @change="${this._onEditModeToggle}"
+            />Edit mode</label
+          >
         </div>
       </div>
     `;
@@ -175,31 +199,30 @@ export class ChromedashAdminBlinkPage extends LitElement {
   renderComponents() {
     return html`
       <ul id="components_list">
-        ${this.components.map((component, index) => html`
-          <li class="layout horizontal" id="${component.name}">
-            <chromedash-admin-blink-component-listing
-              .id=${component.id}
-              .name=${component.name}
-              .subscriberIds=${component.subscriber_ids ?? []}
-              .ownerIds=${component.owner_ids ?? []}
-              .index=${index}
-              .usersMap=${this.usersMap}
-              ?editing=${this._editMode}
-              @adminRemoveComponentUser=${this._removeComponentUserListener}
-              @adminAddComponentUser=${this._addComponentUserListener}
-            ></chromedash-admin-blink-component-listing>
-          </li>
-        `)}
+        ${this.components.map(
+          (component, index) => html`
+            <li class="layout horizontal" id="${component.name}">
+              <chromedash-admin-blink-component-listing
+                .id=${component.id}
+                .name=${component.name}
+                .subscriberIds=${component.subscriber_ids ?? []}
+                .ownerIds=${component.owner_ids ?? []}
+                .index=${index}
+                .usersMap=${this.usersMap}
+                ?editing=${this._editMode}
+                @adminRemoveComponentUser=${this._removeComponentUserListener}
+                @adminAddComponentUser=${this._addComponentUserListener}
+              ></chromedash-admin-blink-component-listing>
+            </li>
+          `
+        )}
       </ul>
     `;
   }
   render() {
     return html`
       ${this.renderSubheader()}
-      ${this.loading ?
-              html`` :
-              this.renderComponents()
-      }
+      ${this.loading ? html`` : this.renderComponents()}
     `;
   }
 }

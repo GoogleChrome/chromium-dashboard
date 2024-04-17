@@ -29,7 +29,7 @@ export class ChromedashFormField extends LitElement {
     this.name = '';
     this.index = -1;
     this.value = '';
-    this.initialValue= '';
+    this.initialValue = '';
     this.fieldValues = [];
     this.checkboxLabel = '';
     this.disabled = false;
@@ -46,10 +46,11 @@ export class ChromedashFormField extends LitElement {
     // value can be a js or python boolean value converted to a string
     // or the initial value specified in form-field-spec
     // If value is falsy, it will be replaced by the initial value, if any.
-    const useEnterpriseDefault = this.forEnterprise &&
-      this.fieldProps.enterprise_initial !== undefined;
-    const initialValue = useEnterpriseDefault ?
-      this.fieldProps.enterprise_initial : this.fieldProps.initial;
+    const useEnterpriseDefault =
+      this.forEnterprise && this.fieldProps.enterprise_initial !== undefined;
+    const initialValue = useEnterpriseDefault
+      ? this.fieldProps.enterprise_initial
+      : this.fieldProps.initial;
     return !this.value && initialValue ? initialValue : this.value;
   }
 
@@ -66,12 +67,17 @@ export class ChromedashFormField extends LitElement {
     if (this.name === 'blink_components') {
       // get the choice values from API when the field is blink component select field
       this.loading = true;
-      window.csClient.getBlinkComponents().then((componentChoices) => {
-        this.componentChoices = componentChoices;
-        this.loading = false;
-      }).catch(() => {
-        showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-      });
+      window.csClient
+        .getBlinkComponents()
+        .then(componentChoices => {
+          this.componentChoices = componentChoices;
+          this.loading = false;
+        })
+        .catch(() => {
+          showToastMessage(
+            'Some errors occurred. Please refresh the page or try again later.'
+          );
+        });
     }
   }
 
@@ -85,9 +91,11 @@ export class ChromedashFormField extends LitElement {
     // are available to do the semantic check, hence firstUpdated is too soon.
     // Do first semantic check after the document is ready.
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => (setTimeout(() => {
-        this.doSemanticCheck();
-      })));
+      document.addEventListener('DOMContentLoaded', () =>
+        setTimeout(() => {
+          this.doSemanticCheck();
+        })
+      );
     } else {
       this.doSemanticCheck();
     }
@@ -97,7 +105,7 @@ export class ChromedashFormField extends LitElement {
     if (!el) return;
 
     const attrs = this.fieldProps.attrs || {};
-    Object.keys(attrs).map((attr) => {
+    Object.keys(attrs).map(attr => {
       el.setAttribute(attr, attrs[attr]);
     });
   }
@@ -126,7 +134,6 @@ export class ChromedashFormField extends LitElement {
     }
     this.value = fieldValue; // TODO: Is this safe?
 
-
     // Dispatch a new event to notify other components of the changes.
     const eventOptions = {
       detail: {
@@ -139,8 +146,9 @@ export class ChromedashFormField extends LitElement {
     // Run semantic checks on entire page.  Must be after above dispatch.
     const app = document.querySelector('chromedash-app');
     if (app?.pageComponent) {
-      app.pageComponent.allFormFieldComponentsList.forEach((formFieldComponent) =>
-        formFieldComponent.doSemanticCheck());
+      app.pageComponent.allFormFieldComponentsList.forEach(formFieldComponent =>
+        formFieldComponent.doSemanticCheck()
+      );
     } else {
       // Do the semantic check for unit testing.  Only works for isolated field.
       this.doSemanticCheck();
@@ -158,7 +166,9 @@ export class ChromedashFormField extends LitElement {
         fieldSelector = `[stageId="${this.stageId} #id_${this.name}"]`;
         formFieldElements = this.renderRoot.querySelectorAll(fieldSelector);
       } else {
-        throw new Error(`Name of field, "${this.name}", is not unique and no stage Id was provided.`);
+        throw new Error(
+          `Name of field, "${this.name}", is not unique and no stage Id was provided.`
+        );
       }
     }
     // There should only be one now.
@@ -167,9 +177,10 @@ export class ChromedashFormField extends LitElement {
     // For 'input' elements.
     if (formFieldElement?.setCustomValidity && formFieldElement.input) {
       formFieldElement.setCustomValidity(
-        (checkResult && checkResult.error) ? checkResult.error : '');
+        checkResult && checkResult.error ? checkResult.error : ''
+      );
     }
-  // TODO: handle other form field types.
+    // TODO: handle other form field types.
   }
 
   async doSemanticCheck() {
@@ -180,35 +191,49 @@ export class ChromedashFormField extends LitElement {
       if (stageOrId === 'current stage') {
         stageOrId = this.stageId;
       }
-      return getFieldValueWithStage(fieldName, stageOrId, this.fieldValues || []);
+      return getFieldValueWithStage(
+        fieldName,
+        stageOrId,
+        this.fieldValues || []
+      );
     };
     // Attach the feature to the getFieldValue function, which is needed to
     // iterate through stages not in the form.
     getFieldValue.feature = this.fieldValues?.feature;
 
-    const checkFunctionWrapper = async (checkFunction) => {
+    const checkFunctionWrapper = async checkFunction => {
       const fieldValue = this.getValue();
       const initialValue = this.initialValue;
 
       if (fieldValue == null) return false; // Assume there is nothing to check.
 
       // Call the checkFunction and await result, in case it is async.
-      const checkResult = await checkFunction(fieldValue, getFieldValue, initialValue);
+      const checkResult = await checkFunction(
+        fieldValue,
+        getFieldValue,
+        initialValue
+      );
       if (checkResult == null) {
         // Don't clear this.checkMessage here.
         return false;
       } else {
-        this.checkMessage = html`
-          <span class="check-${checkResult.message ? 'message' :
-            checkResult.warning ? 'warning' :
-              checkResult.error ? 'error' : 'unknown'
-          }">
-            ${checkResult.message ? checkResult.message :
-            checkResult.warning ? html`<b>Warning</b>: ${checkResult.warning}` :
-              checkResult.error ? html`<b>Error</b>: ${checkResult.error}` :
-                ''
-          }
-          </span>`;
+        this.checkMessage = html` <span
+          class="check-${checkResult.message
+            ? 'message'
+            : checkResult.warning
+              ? 'warning'
+              : checkResult.error
+                ? 'error'
+                : 'unknown'}"
+        >
+          ${checkResult.message
+            ? checkResult.message
+            : checkResult.warning
+              ? html`<b>Warning</b>: ${checkResult.warning}`
+              : checkResult.error
+                ? html`<b>Error</b>: ${checkResult.error}`
+                : ''}
+        </span>`;
         // Return from doSemanticCheck with the first non-empty message.
         return true;
       }
@@ -217,8 +242,9 @@ export class ChromedashFormField extends LitElement {
     // Get the check function(s) to run.
     const checkFunctionOrArray = this.fieldProps.check || [];
     const checkFunctions =
-      (typeof checkFunctionOrArray === 'function') ?
-        [checkFunctionOrArray] : checkFunctionOrArray;
+      typeof checkFunctionOrArray === 'function'
+        ? [checkFunctionOrArray]
+        : checkFunctionOrArray;
     // If there are any check functions,
     // then first clear this.checkMessage before running the checks.
     if (checkFunctions.length > 0) {
@@ -230,7 +256,7 @@ export class ChromedashFormField extends LitElement {
       if (await checkFunctionWrapper(checkFunction)) {
         return;
       }
-    };
+    }
   }
 
   renderWidget() {
@@ -253,7 +279,8 @@ export class ChromedashFormField extends LitElement {
           size="small"
           ?checked=${fieldValue === 'true' || fieldValue === 'True'}
           ?disabled=${this.disabled || fieldDisabled}
-          @sl-change="${this.handleFieldUpdated}">
+          @sl-change="${this.handleFieldUpdated}"
+        >
           ${label}
         </sl-checkbox>
       `;
@@ -266,11 +293,12 @@ export class ChromedashFormField extends LitElement {
           size="small"
           hoist
           ?disabled=${fieldDisabled || this.disabled || this.loading}
-          @sl-change="${this.handleFieldUpdated}">
+          @sl-change="${this.handleFieldUpdated}"
+        >
           ${Object.values(choices).map(
             ([value, label]) => html`
               <sl-option value="${value}"> ${label} </sl-option>
-            `,
+            `
           )}
         </sl-select>
       `;
@@ -288,11 +316,12 @@ export class ChromedashFormField extends LitElement {
           cleareable
           ?required=${this.fieldProps.required}
           ?disabled=${fieldDisabled || this.disabled || this.loading}
-          @sl-change="${this.handleFieldUpdated}">
+          @sl-change="${this.handleFieldUpdated}"
+        >
           ${Object.values(choices).map(
             ([value, label]) => html`
               <sl-option value="${value}"> ${label} </sl-option>
-            `,
+            `
           )}
         </sl-select>
       `;
@@ -307,7 +336,8 @@ export class ChromedashFormField extends LitElement {
           autocomplete="off"
           .value=${fieldValue}
           ?required=${this.fieldProps.required}
-          @sl-change="${this.handleFieldUpdated}">
+          @sl-change="${this.handleFieldUpdated}"
+        >
         </sl-input>
       `;
     } else if (type === 'textarea') {
@@ -319,19 +349,26 @@ export class ChromedashFormField extends LitElement {
           size="small"
           .value=${fieldValue}
           ?required=${this.fieldProps.required}
-          @sl-change="${this.handleFieldUpdated}">
+          @sl-change="${this.handleFieldUpdated}"
+        >
         </chromedash-textarea>
       `;
     } else if (type === 'radios') {
       fieldHTML = html`
         ${Object.values(choices).map(
           ([value, label, description]) => html`
-            <input id="id_${this.name}_${value}" name="${fieldName}"
-              value="${value}" type="radio" required
-              @change=${this.handleFieldUpdated}>
+            <input
+              id="id_${this.name}_${value}"
+              name="${fieldName}"
+              value="${value}"
+              type="radio"
+              required
+              @change=${this.handleFieldUpdated}
+            />
             <label for="id_${this.name}_${value}">${label}</label>
             <p>${description}</p>
-          `)}
+          `
+        )}
       `;
     } else if (type === 'datalist') {
       fieldHTML = html`
@@ -345,13 +382,12 @@ export class ChromedashFormField extends LitElement {
             type="search"
             list="${this.name}_list"
             ?required=${this.fieldProps.required}
-            @change=${this.handleFieldUpdated}/>
+            @change=${this.handleFieldUpdated}
+          />
         </div>
         <datalist id="${this.name}_list">
           ${Object.values(choices).map(
-            ([value]) => html`
-              <option value="${value}"></option>
-            `,
+            ([value]) => html` <option value="${value}"></option> `
           )}
         </datalist>
       `;
@@ -363,56 +399,59 @@ export class ChromedashFormField extends LitElement {
 
   render() {
     const helpText =
-      this.forEnterprise && (this.fieldProps.enterprise_help_text !== undefined) ?
-        this.fieldProps.enterprise_help_text :
-        this.fieldProps.help_text;
+      this.forEnterprise && this.fieldProps.enterprise_help_text !== undefined
+        ? this.fieldProps.enterprise_help_text
+        : this.fieldProps.help_text;
     const extraHelpText =
-      this.forEnterprise && (this.fieldProps.enterprise_extra_help !== undefined) ?
-        this.fieldProps.enterprise_extra_help :
-        this.fieldProps.extra_help;
-    const fadeInClass = (this.shouldFadeIn) ? 'fade-in' : '';
+      this.forEnterprise && this.fieldProps.enterprise_extra_help !== undefined
+        ? this.fieldProps.enterprise_extra_help
+        : this.fieldProps.extra_help;
+    const fadeInClass = this.shouldFadeIn ? 'fade-in' : '';
     return html`
-      ${this.fieldProps.label ? html`
-        <tr class="${fadeInClass}">
-          <th colspan="2">
-            <b>${this.fieldProps.label}:</b>
-          </th>
-        </tr>
-      `: nothing}
+      ${this.fieldProps.label
+        ? html`
+            <tr class="${fadeInClass}">
+              <th colspan="2">
+                <b>${this.fieldProps.label}:</b>
+              </th>
+            </tr>
+          `
+        : nothing}
       <tr class=${fadeInClass}>
+        <td>${this.renderWidget()} ${this.checkMessage}</td>
         <td>
-          ${this.renderWidget()}
-          ${this.checkMessage}
-        </td>
-        <td>
-          ${helpText ? html`<span class="helptext"> ${helpText} </span>`: nothing}
-          ${extraHelpText ? html`
-            <sl-icon-button
-              name="plus-square"
-              label="Toggle extra help"
-              style="position:absolute"
-              @click="${this.toggleExtraHelp}">
-              +
-            </sl-icon-button>
-          `: nothing}
+          ${helpText
+            ? html`<span class="helptext"> ${helpText} </span>`
+            : nothing}
+          ${extraHelpText
+            ? html`
+                <sl-icon-button
+                  name="plus-square"
+                  label="Toggle extra help"
+                  style="position:absolute"
+                  @click="${this.toggleExtraHelp}"
+                >
+                  +
+                </sl-icon-button>
+              `
+            : nothing}
         </td>
       </tr>
 
-      ${extraHelpText ? html`
-        <tr>
-          <td colspan="2" class="extrahelp">
-            <sl-details summary="">
-              <span class="helptext">
-                ${extraHelpText}
-              </span>
-            </sl-details>
-          </td>
-        </tr>
-      `: nothing}
+      ${extraHelpText
+        ? html`
+            <tr>
+              <td colspan="2" class="extrahelp">
+                <sl-details summary="">
+                  <span class="helptext"> ${extraHelpText} </span>
+                </sl-details>
+              </td>
+            </tr>
+          `
+        : nothing}
     `;
   }
 }
-
 
 /**
  * Gets the value of a field from a feature entry form, or from the feature.
@@ -448,10 +487,12 @@ function getFieldValueWithStage(fieldName, stageOrId, formFieldValues) {
   }
 
   // Get the stage object for the field.
-  const feStage = (typeof stageOrId === 'object') ? stageOrId :
-    (stageId != null ?
-      feature.stages.find((s) => s.id == stageId) :
-      feature.stages[0]);
+  const feStage =
+    typeof stageOrId === 'object'
+      ? stageOrId
+      : stageId != null
+        ? feature.stages.find(s => s.id == stageId)
+        : feature.stages[0];
 
   // Lookup fieldName by following the stage specific path starting from feature.
   const value = getFieldValueFromFeature(fieldName, feStage, feature);

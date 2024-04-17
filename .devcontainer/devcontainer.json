@@ -27,8 +27,26 @@
 					"*_test.py"
 				],
 				"python.testing.unittestEnabled": true,
+				"[css]": {
+					"editor.defaultFormatter": "esbenp.prettier-vscode"
+				},
+				"[html]": {
+					"editor.defaultFormatter": "esbenp.prettier-vscode"
+				},
+				"[javascript]": {
+					"editor.defaultFormatter": "esbenp.prettier-vscode"
+				},
+				"[json]": {
+					"editor.defaultFormatter": "esbenp.prettier-vscode"
+				},
 				"[python]": {
 					"editor.defaultFormatter": "charliermarsh.ruff"
+				},
+				"[scss]": {
+					"editor.defaultFormatter": "esbenp.prettier-vscode"
+				},
+				"[yaml]": {
+					"editor.defaultFormatter": "esbenp.prettier-vscode"
 				}
 			},
 
@@ -38,6 +56,7 @@
 				"bierner.lit-html",
 				"ms-playwright.playwright",
 				"charliermarsh.ruff",
+				"esbenp.prettier-vscode",
 				"ms-python.mypy-type-checker",
 				"ms-python.python",
 				"EditorConfig.EditorConfig"

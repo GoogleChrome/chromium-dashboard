@@ -3,7 +3,6 @@ import './chromedash-feature-table';
 import {showToastMessage} from './utils.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
-
 export class ChromedashMyFeaturesPage extends LitElement {
   static get styles() {
     return [
@@ -12,7 +11,8 @@ export class ChromedashMyFeaturesPage extends LitElement {
         sl-details {
           padding: 0 var(--content-padding);
         }
-      `];
+      `,
+    ];
   }
 
   static get properties() {
@@ -36,11 +36,16 @@ export class ChromedashMyFeaturesPage extends LitElement {
   }
 
   fetchData() {
-    window.csClient.getStars().then((starredFeatures) => {
-      this.starredFeatures = new Set(starredFeatures);
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-    });
+    window.csClient
+      .getStars()
+      .then(starredFeatures => {
+        this.starredFeatures = new Set(starredFeatures);
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
+      });
   }
 
   refetch() {
@@ -53,7 +58,8 @@ export class ChromedashMyFeaturesPage extends LitElement {
   // Handles the Star-Toggle event fired by any one of the child components
   handleStarToggle(e) {
     const newStarredFeatures = new Set(this.starredFeatures);
-    window.csClient.setStar(e.detail.featureId, e.detail.doStar)
+    window.csClient
+      .setStar(e.detail.featureId, e.detail.doStar)
       .then(() => {
         if (e.detail.doStar) {
           newStarredFeatures.add(e.detail.featureId);
@@ -68,16 +74,15 @@ export class ChromedashMyFeaturesPage extends LitElement {
   }
 
   userCanApprove() {
-    return this.user && (
-      this.user.is_admin || this.user.approvable_gate_types?.length > 0);
+    return (
+      this.user &&
+      (this.user.is_admin || this.user.approvable_gate_types?.length > 0)
+    );
   }
 
-  renderBox(title, query, columns, sortSpec='', opened=true) {
+  renderBox(title, query, columns, sortSpec = '', opened = true) {
     return html`
-      <sl-details
-        summary="${title}"
-        ?open=${opened}>
-
+      <sl-details summary="${title}" ?open=${opened}>
         <chromedash-feature-table
           query="${query}"
           showEnterprise
@@ -87,40 +92,41 @@ export class ChromedashMyFeaturesPage extends LitElement {
           .starredFeatures=${this.starredFeatures}
           @star-toggle-event=${this.handleStarToggle}
           selectedGateId=${this.selectedGateId}
-          num=25 columns=${columns}>
+          num="25"
+          columns=${columns}
+        >
         </chromedash-feature-table>
       </sl-details>
     `;
   }
 
   renderPendingAndRecentApprovals() {
-    const adminNotice = this.user?.is_admin ?
-      html`<p>You see all pending approvals because you're a site admin.</p>` :
-      nothing;
+    const adminNotice = this.user?.is_admin
+      ? html`<p>You see all pending approvals because you're a site admin.</p>`
+      : nothing;
 
     const pendingBox = this.renderBox(
       'Features pending my approval',
       'pending-approval-by:me',
-      'approvals', 'gate.requested_on');
+      'approvals',
+      'gate.requested_on'
+    );
     const recentBox = this.renderBox(
       'Recently reviewed features',
       'is:recently-reviewed',
-      'normal', '-gate.reviewed_on', false);
+      'normal',
+      '-gate.reviewed_on',
+      false
+    );
     return [adminNotice, pendingBox, recentBox];
   }
 
   renderIStarred() {
-    return this.renderBox(
-      'Features I starred',
-      'starred-by:me',
-      'normal');
+    return this.renderBox('Features I starred', 'starred-by:me', 'normal');
   }
 
   renderICanEdit() {
-    return this.renderBox(
-      'Features I can edit',
-      'can_edit:me',
-      'normal');
+    return this.renderBox('Features I can edit', 'can_edit:me', 'normal');
   }
 
   render() {
@@ -129,13 +135,14 @@ export class ChromedashMyFeaturesPage extends LitElement {
         <h2>My features</h2>
       </div>
       <div id="deprecated" class="warning">
-        This page will soon be removed from our site.<br>
+        This page will soon be removed from our site.<br />
         Please use one of the "My features" options in the main menu.
       </div>
 
-      ${this.userCanApprove() ? this.renderPendingAndRecentApprovals() : nothing}
-      ${this.renderICanEdit()}
-      ${this.renderIStarred()}
+      ${this.userCanApprove()
+        ? this.renderPendingAndRecentApprovals()
+        : nothing}
+      ${this.renderICanEdit()} ${this.renderIStarred()}
     `;
   }
 }

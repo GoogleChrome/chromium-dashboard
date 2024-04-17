@@ -11,8 +11,6 @@ import uglifyEs from 'gulp-uglify-es';
 const uglify = uglifyEs.default;
 import rename from 'gulp-rename';
 import license from 'gulp-license';
-import eslint from 'gulp-eslint';
-import eslintIfFixed from 'gulp-eslint-if-fixed';
 import autoPrefixer from 'gulp-autoprefixer';
 import { rollup } from 'rollup';
 import rollupResolve from '@rollup/plugin-node-resolve';
@@ -42,29 +40,6 @@ function rollupIgnoreUndefinedWarning(warning, warn) {
   if (warning.code === 'THIS_IS_UNDEFINED') return;
   warn(warning); // this requires Rollup 0.46
 }
-
-gulp.task('lint', () => {
-  return gulp.src([
-    'client-src/js-src/*.js',
-    'client-src/elements/*.js',
-    'client-src/contexts/*.js',
-  ])
-    .pipe(eslint())
-    .pipe(eslint.format())
-    .pipe(eslint.failAfterError());
-});
-
-gulp.task('lint-fix', () => {
-  return gulp.src([
-    'client-src/js-src/*.js',
-    'client-src/elements/*.js',
-    'client-src/contexts/*.js',
-  ], {base: './'})
-    .pipe(eslint({fix:true}))
-    .pipe(eslint.format())
-    .pipe(eslintIfFixed('./'))
-    .pipe(eslint.failAfterError());
-});
 
 // Compile and automatically prefix stylesheets
 // This task is deprecated. Use css directly.
@@ -172,7 +147,6 @@ gulp.task('default', gulp.series(
   // 'styles',
   'css',
   'js',
-  'lint-fix',
   'rollup',
   'rollup-cjs',
 ));
@@ -187,7 +161,7 @@ gulp.task('watch', gulp.series(
       'client-src/elements/*.js',
       'client-src/elements/css/**/*.js',
       'client-src/contexts/*.js',
-    ], gulp.series(['lint', 'js']));
+    ], gulp.series(['js']));
     gulp.watch([
       'client-src/components.js',
       'client-src/elements/*.js',

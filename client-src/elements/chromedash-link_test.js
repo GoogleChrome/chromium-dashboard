@@ -6,26 +6,81 @@ import {_dateTimeFormat} from './chromedash-link';
 const DAY = 24 * 60 * 60 * 1000;
 
 it('shows a plain link for non-cached links', async () => {
-  const el = await fixture(html`<chromedash-link
-    href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
-    .featureLinks=${[]}>Content</chromedash-link>`);
+  const el = await fixture(
+    html`<chromedash-link
+      href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
+      .featureLinks=${[]}
+      >Content</chromedash-link
+    >`
+  );
   expect(el).shadowDom.to.equal(
     `<a href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
         rel="noopener noreferrer"
         target="_blank"><slot>...</slot></a>`,
-    {ignoreChildren: ['slot']});
+    {ignoreChildren: ['slot']}
+  );
 });
 
 it('wraps the text in sl-tag when requested', async () => {
-  const el = await fixture(html`<chromedash-link
-    alwaysInTag
-    href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
-    .featureLinks=${[]}>Content</chromedash-link>`);
+  const el = await fixture(
+    html`<chromedash-link
+      alwaysInTag
+      href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
+      .featureLinks=${[]}
+      >Content</chromedash-link
+    >`
+  );
   expect(el).shadowDom.to.equal(
     `<a href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
         rel="noopener noreferrer"
         target="_blank"><sl-tag><slot>...</slot></sl-tag></a>`,
-    {ignoreChildren: ['slot']});
+    {ignoreChildren: ['slot']}
+  );
+});
+
+it('shows content as label when requested', async () => {
+  const yesterday = new Date(Date.now() - DAY);
+  const featureLinks = [
+    {
+      url: 'https://github.com/GoogleChrome/chromium-dashboard/issues/3007',
+      type: 'github_issue',
+      information: {
+        url: 'https://api.github.com/repos/GoogleChrome/chromium-dashboard/issues/3007',
+        state: 'open',
+        created_at: yesterday.toISOString(),
+      },
+    },
+  ];
+
+  const elWithLabel = await fixture(
+    html`<chromedash-link
+      showContentAsLabel
+      href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
+      .featureLinks=${featureLinks}
+      >Content</chromedash-link
+    >`
+  );
+  expect(elWithLabel).shadowDom.to.equal(
+    `<slot>...</slot>:
+     <a href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
+        rel="noopener noreferrer"
+        target="_blank">...</a>`,
+    {ignoreChildren: ['slot', 'a']}
+  );
+
+  const elWithoutLabel = await fixture(
+    html`<chromedash-link
+      href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
+      .featureLinks=${featureLinks}
+      >Content</chromedash-link
+    >`
+  );
+  expect(elWithoutLabel).shadowDom.to.equal(
+    `<a href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
+        rel="noopener noreferrer"
+        target="_blank">...</a>`,
+    {ignoreChildren: ['slot', 'a']}
+  );
 });
 
 describe('Github issue links', () => {
@@ -34,25 +89,31 @@ describe('Github issue links', () => {
 
   it('shows tooltip, open state, and title', async () => {
     const yesterday = new Date(Date.now() - DAY);
-    const featureLinks = [{
-      url: 'https://github.com/GoogleChrome/chromium-dashboard/issues/3007',
-      type: 'github_issue',
-      information: {
-        'url': 'https://api.github.com/repos/GoogleChrome/chromium-dashboard/issues/3007',
-        'number': 3007,
-        'title': 'Issue Title',
-        'user_login': 'user',
-        'state': 'open',
-        'assignee_login': 'assignee',
-        'created_at': yesterday.toISOString(),
-        'updated_at': yesterday.toISOString(),
-        'closed_at': yesterday.toISOString(),
-        'labels': [],
+    const featureLinks = [
+      {
+        url: 'https://github.com/GoogleChrome/chromium-dashboard/issues/3007',
+        type: 'github_issue',
+        information: {
+          url: 'https://api.github.com/repos/GoogleChrome/chromium-dashboard/issues/3007',
+          number: 3007,
+          title: 'Issue Title',
+          user_login: 'user',
+          state: 'open',
+          assignee_login: 'assignee',
+          created_at: yesterday.toISOString(),
+          updated_at: yesterday.toISOString(),
+          closed_at: yesterday.toISOString(),
+          labels: [],
+        },
       },
-    }];
-    const el = await fixture(html`<chromedash-link
-      href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
-      .featureLinks=${featureLinks}>Content</chromedash-link>`);
+    ];
+    const el = await fixture(
+      html`<chromedash-link
+        href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
+        .featureLinks=${featureLinks}
+        >Content</chromedash-link
+      >`
+    );
     expect(el).shadowDom.to.equal(
       `<a href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
           rel="noopener noreferrer" target="_blank">
@@ -110,30 +171,37 @@ describe('Github issue links', () => {
       </a>`,
       {
         ignoreAttributes: ['style', 'title'],
-      });
+      }
+    );
   });
 
   it('shows closed state and title', async () => {
     const yesterday = new Date(Date.now() - DAY);
-    const featureLinks = [{
-      url: 'https://github.com/GoogleChrome/chromium-dashboard/issues/3007',
-      type: 'github_issue',
-      information: {
-        'url': 'https://api.github.com/repos/GoogleChrome/chromium-dashboard/issues/3007',
-        'number': 3007,
-        'title': 'Issue Title',
-        'user_login': 'user',
-        'state': 'closed',
-        'assignee_login': 'assignee',
-        'created_at': yesterday.toISOString(),
-        'updated_at': yesterday.toISOString(),
-        'closed_at': yesterday.toISOString(),
-        'labels': [],
+    const featureLinks = [
+      {
+        url: 'https://github.com/GoogleChrome/chromium-dashboard/issues/3007',
+        type: 'github_issue',
+        information: {
+          url: 'https://api.github.com/repos/GoogleChrome/chromium-dashboard/issues/3007',
+          number: 3007,
+          title: 'Issue Title',
+          user_login: 'user',
+          state: 'closed',
+          assignee_login: 'assignee',
+          created_at: yesterday.toISOString(),
+          updated_at: yesterday.toISOString(),
+          closed_at: yesterday.toISOString(),
+          labels: [],
+        },
       },
-    }];
-    const el = await fixture(html`<chromedash-link
-      href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
-      .featureLinks=${featureLinks}>Content</chromedash-link>`);
+    ];
+    const el = await fixture(
+      html`<chromedash-link
+        href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
+        .featureLinks=${featureLinks}
+        >Content</chromedash-link
+      >`
+    );
     expect(el).shadowDom.to.equal(
       `<a href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
           rel="noopener noreferrer" target="_blank">
@@ -154,31 +222,43 @@ describe('Github issue links', () => {
       {
         ignoreChildren: ['div'],
         ignoreAttributes: ['style', 'title'],
-      });
+      }
+    );
   });
 
   describe('external reviewers', () => {
     it('shows TAG position', async () => {
-      const featureLinks = [{
-        url: 'https://github.com/w3ctag/design-reviews/issues/400',
-        type: 'github_issue',
-        information: {
-          'url': 'https://api.github.com/repos/w3ctag/design-reviews/issues/400',
-          'number': 400,
-          'title': 'Font Table Access API',
-          'user_login': 'user',
-          'state': 'closed',
-          'assignee_login': 'assignee',
-          'created_at': '2019-08-07T00:53:51Z',
-          'updated_at': '2022-08-15T16:40:59Z',
-          'closed_at': '2022-08-15T16:40:29Z',
-          'labels': ['Needs a venue', 'Provenance: Fugu', 'Resolution: unsatisfied',
-            'Review type: CG early review', 'Topic: fonts'],
+      const featureLinks = [
+        {
+          url: 'https://github.com/w3ctag/design-reviews/issues/400',
+          type: 'github_issue',
+          information: {
+            url: 'https://api.github.com/repos/w3ctag/design-reviews/issues/400',
+            number: 400,
+            title: 'Font Table Access API',
+            user_login: 'user',
+            state: 'closed',
+            assignee_login: 'assignee',
+            created_at: '2019-08-07T00:53:51Z',
+            updated_at: '2022-08-15T16:40:59Z',
+            closed_at: '2022-08-15T16:40:29Z',
+            labels: [
+              'Needs a venue',
+              'Provenance: Fugu',
+              'Resolution: unsatisfied',
+              'Review type: CG early review',
+              'Topic: fonts',
+            ],
+          },
         },
-      }];
-      const el = await fixture(html`<chromedash-link
-        href="https://github.com/w3ctag/design-reviews/issues/400"
-        .featureLinks=${featureLinks}>Content</chromedash-link>`);
+      ];
+      const el = await fixture(
+        html`<chromedash-link
+          href="https://github.com/w3ctag/design-reviews/issues/400"
+          .featureLinks=${featureLinks}
+          >Content</chromedash-link
+        >`
+      );
       expect(el).shadowDom.to.equal(
         `<a href="https://github.com/w3ctag/design-reviews/issues/400"
             rel="noopener noreferrer" target="_blank">
@@ -199,29 +279,40 @@ describe('Github issue links', () => {
         {
           ignoreChildren: ['div'],
           ignoreAttributes: ['style', 'title'],
-        });
+        }
+      );
     });
 
     it('shows WebKit position', async () => {
-      const featureLinks = [{
-        url: 'https://github.com/WebKit/standards-positions/issues/268',
-        type: 'github_issue',
-        information: {
-          'url': 'https://api.github.com/repos/WebKit/standards-positions/issues/268',
-          'number': 268,
-          'title': 'Cross-Origin Embedder Policies - "credentialless"',
-          'user_login': 'user',
-          'state': 'closed',
-          'assignee_login': 'assignee',
-          'created_at': '2019-08-07T00:53:51Z',
-          'updated_at': '2022-08-15T16:40:59Z',
-          'closed_at': '2022-08-15T16:40:29Z',
-          'labels': ['from: Google', 'position: support', 'venue: WHATWG HTML Workstream'],
+      const featureLinks = [
+        {
+          url: 'https://github.com/WebKit/standards-positions/issues/268',
+          type: 'github_issue',
+          information: {
+            url: 'https://api.github.com/repos/WebKit/standards-positions/issues/268',
+            number: 268,
+            title: 'Cross-Origin Embedder Policies - "credentialless"',
+            user_login: 'user',
+            state: 'closed',
+            assignee_login: 'assignee',
+            created_at: '2019-08-07T00:53:51Z',
+            updated_at: '2022-08-15T16:40:59Z',
+            closed_at: '2022-08-15T16:40:29Z',
+            labels: [
+              'from: Google',
+              'position: support',
+              'venue: WHATWG HTML Workstream',
+            ],
+          },
         },
-      }];
-      const el = await fixture(html`<chromedash-link
-        href="https://github.com/WebKit/standards-positions/issues/268"
-        .featureLinks=${featureLinks}>Content</chromedash-link>`);
+      ];
+      const el = await fixture(
+        html`<chromedash-link
+          href="https://github.com/WebKit/standards-positions/issues/268"
+          .featureLinks=${featureLinks}
+          >Content</chromedash-link
+        >`
+      );
       expect(el).shadowDom.to.equal(
         `<a href="https://github.com/WebKit/standards-positions/issues/268"
             rel="noopener noreferrer" target="_blank">
@@ -242,7 +333,8 @@ describe('Github issue links', () => {
         {
           ignoreChildren: ['div'],
           ignoreAttributes: ['style', 'title'],
-        });
+        }
+      );
     });
 
     function firefoxIssue() {
@@ -250,25 +342,29 @@ describe('Github issue links', () => {
         url: 'https://github.com/mozilla/standards-positions/issues/975',
         type: 'github_issue',
         information: {
-          'url': 'https://api.github.com/repos/mozilla/standards-positions/issues/975',
-          'number': 975,
-          'title': 'The textInput event',
-          'user_login': 'user',
-          'state': 'closed',
-          'assignee_login': 'assignee',
-          'created_at': '2019-08-07T00:53:51Z',
-          'updated_at': '2022-08-15T16:40:59Z',
-          'closed_at': '2022-08-15T16:40:29Z',
-          'labels': ['position: neutral'],
+          url: 'https://api.github.com/repos/mozilla/standards-positions/issues/975',
+          number: 975,
+          title: 'The textInput event',
+          user_login: 'user',
+          state: 'closed',
+          assignee_login: 'assignee',
+          created_at: '2019-08-07T00:53:51Z',
+          updated_at: '2022-08-15T16:40:59Z',
+          closed_at: '2022-08-15T16:40:29Z',
+          labels: ['position: neutral'],
         },
       };
     }
 
     it('shows Firefox position', async () => {
       const featureLinks = [firefoxIssue()];
-      const el = await fixture(html`<chromedash-link
-        href="https://github.com/mozilla/standards-positions/issues/975"
-        .featureLinks=${featureLinks}>Content</chromedash-link>`);
+      const el = await fixture(
+        html`<chromedash-link
+          href="https://github.com/mozilla/standards-positions/issues/975"
+          .featureLinks=${featureLinks}
+          >Content</chromedash-link
+        >`
+      );
       expect(el).shadowDom.to.equal(
         `<a href="https://github.com/mozilla/standards-positions/issues/975"
             rel="noopener noreferrer" target="_blank">
@@ -289,16 +385,21 @@ describe('Github issue links', () => {
         {
           ignoreChildren: ['div'],
           ignoreAttributes: ['style', 'title'],
-        });
+        }
+      );
     });
 
     it('shows closed if no position', async () => {
       const issue = firefoxIssue();
       issue.information.labels = [];
       const featureLinks = [issue];
-      const el = await fixture(html`<chromedash-link
-        href="https://github.com/mozilla/standards-positions/issues/975"
-        .featureLinks=${featureLinks}>Content</chromedash-link>`);
+      const el = await fixture(
+        html`<chromedash-link
+          href="https://github.com/mozilla/standards-positions/issues/975"
+          .featureLinks=${featureLinks}
+          >Content</chromedash-link
+        >`
+      );
       expect(el).shadowDom.to.equal(
         `<a href="https://github.com/mozilla/standards-positions/issues/975"
             rel="noopener noreferrer" target="_blank">
@@ -319,7 +420,8 @@ describe('Github issue links', () => {
         {
           ignoreChildren: ['div'],
           ignoreAttributes: ['style', 'title'],
-        });
+        }
+      );
     });
 
     it('shows warning if open too short', async () => {
@@ -329,9 +431,13 @@ describe('Github issue links', () => {
       issue.information.state = 'open';
       issue.information.created_at = lastWeek.toISOString();
       const featureLinks = [issue];
-      const el = await fixture(html`<chromedash-link
-        href="https://github.com/mozilla/standards-positions/issues/975"
-        .featureLinks=${featureLinks}>Content</chromedash-link>`);
+      const el = await fixture(
+        html`<chromedash-link
+          href="https://github.com/mozilla/standards-positions/issues/975"
+          .featureLinks=${featureLinks}
+          >Content</chromedash-link
+        >`
+      );
       expect(el).shadowDom.to.equal(
         `<a href="https://github.com/mozilla/standards-positions/issues/975"
             rel="noopener noreferrer" target="_blank">
@@ -355,7 +461,8 @@ describe('Github issue links', () => {
         {
           ignoreChildren: ['div'],
           ignoreAttributes: ['style', 'title'],
-        });
+        }
+      );
     });
 
     it('shows neutral if open a long time', async () => {
@@ -365,9 +472,13 @@ describe('Github issue links', () => {
       issue.information.state = 'open';
       issue.information.created_at = twoMonths.toISOString();
       const featureLinks = [issue];
-      const el = await fixture(html`<chromedash-link
-        href="https://github.com/mozilla/standards-positions/issues/975"
-        .featureLinks=${featureLinks}>Content</chromedash-link>`);
+      const el = await fixture(
+        html`<chromedash-link
+          href="https://github.com/mozilla/standards-positions/issues/975"
+          .featureLinks=${featureLinks}
+          >Content</chromedash-link
+        >`
+      );
       expect(el).shadowDom.to.equal(
         `<a href="https://github.com/mozilla/standards-positions/issues/975"
             rel="noopener noreferrer" target="_blank">
@@ -391,7 +502,8 @@ describe('Github issue links', () => {
         {
           ignoreChildren: ['div'],
           ignoreAttributes: ['style', 'title'],
-        });
+        }
+      );
     });
   });
 });

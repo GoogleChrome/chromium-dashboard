@@ -2,7 +2,6 @@ import {LitElement, html, css, nothing} from 'lit';
 import {showToastMessage, IS_MOBILE} from './utils';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
-
 export class ChromedashHeader extends LitElement {
   static get styles() {
     return [
@@ -103,7 +102,7 @@ export class ChromedashHeader extends LitElement {
           width: 100%;
         }
 
-        .menu{
+        .menu {
           margin-left: 15px;
           margin-right: 7px;
           align-items: center;
@@ -131,7 +130,8 @@ export class ChromedashHeader extends LitElement {
             background: inherit;
           }
         }
-    `];
+      `,
+    ];
   }
 
   static get properties() {
@@ -148,8 +148,7 @@ export class ChromedashHeader extends LitElement {
   constructor() {
     super();
     this.appTitle = '';
-    this.googleSignInClientId = '',
-    this.devMode = '';
+    (this.googleSignInClientId = ''), (this.devMode = '');
     this.currentPage = '';
     this.user = {};
     this.loading = false;
@@ -184,21 +183,27 @@ export class ChromedashHeader extends LitElement {
     // user is not passed in from anywhere, i.e. this.user is still {}
     // this is for MPA pages where this component is initialized in _base.html
     this.loading = true;
-    window.csClient.getPermissions().then((user) => {
-      this.user = user;
-      if (!this.user) {
-        if (!window['isPlaywright']) {
-          this.initializeGoogleSignIn();
+    window.csClient
+      .getPermissions()
+      .then(user => {
+        this.user = user;
+        if (!this.user) {
+          if (!window['isPlaywright']) {
+            this.initializeGoogleSignIn();
+          }
+          if (this.devMode == 'True') {
+            this.initializeTestingSignIn();
+          }
         }
-        if (this.devMode == 'True') {
-          this.initializeTestingSignIn();
-        }
-      }
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-    }).finally(() => {
-      this.loading = false;
-    });
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
+      })
+      .finally(() => {
+        this.loading = false;
+      });
   }
 
   initializeGoogleSignIn() {
@@ -228,13 +233,15 @@ export class ChromedashHeader extends LitElement {
     signInTestingButton.innerText = 'Sign in as example@chromium.org';
     signInTestingButton.setAttribute('type', 'button');
     signInTestingButton.setAttribute('data-testid', 'dev-mode-sign-in-button');
-    signInTestingButton.setAttribute('style',
-      'margin-right: 300px; z-index:1000; background: lightblue; border: 1px solid blue;');
+    signInTestingButton.setAttribute(
+      'style',
+      'margin-right: 300px; z-index:1000; background: lightblue; border: 1px solid blue;'
+    );
 
     signInTestingButton.addEventListener('click', () => {
       // POST to '/dev/mock_login' to login as example@chromium.
       fetch('/dev/mock_login', {method: 'POST'})
-        .then((response) => {
+        .then(response => {
           if (!response.ok) {
             throw new Error('Sign in failed! Response:', response);
           }
@@ -245,21 +252,25 @@ export class ChromedashHeader extends LitElement {
             window.location = url;
           }, 1000);
         })
-        .catch((error) => {
+        .catch(error => {
           console.error('Sign in failed.', error);
         });
     });
 
     const signInButtonContainer = document.querySelector('chromedash-app');
     if (signInButtonContainer) {
-      signInButtonContainer.insertAdjacentElement('afterbegin', signInTestingButton); // for SPA
+      signInButtonContainer.insertAdjacentElement(
+        'afterbegin',
+        signInTestingButton
+      ); // for SPA
     } else {
       this.insertAdjacentElement('afterbegin', signInTestingButton); // for MPA
     }
   }
 
   handleCredentialResponse(credentialResponse) {
-    window.csClient.signIn(credentialResponse)
+    window.csClient
+      .signIn(credentialResponse)
       .then(() => {
         setTimeout(() => {
           const url = window.location.href.split('?')[0];
@@ -302,54 +313,72 @@ export class ChromedashHeader extends LitElement {
 
   renderAccountMenu() {
     return html`
-      ${this.user ? html`
-        ${this.user.can_create_feature && !this.isCurrentPage('/guide/new') ? html`
-          <sl-button data-testid="create-feature-button"
-            href="/guide/new" variant="primary" size="small">
-            Create feature
-          </sl-button>
-        `: nothing }
-        <div class="nav-dropdown-container" data-testid="account-indicator">
-          <a class="nav-dropdown-trigger">
-            ${this.user.email}
-            <iron-icon icon="chromestatus:arrow-drop-down"></iron-icon>
-          </a>
-          <ul>
-            <li><a href="/settings">Settings</a></li>
-            <li><a href="#" id="sign-out-link" data-testid="sign-out-link" @click=${this.handleSignOutClick}>Sign out</a></li>
-          </ul>
-        </div>
-      ` : html`
-        <slot></slot>
-      `}
+      ${this.user
+        ? html`
+            ${this.user.can_create_feature && !this.isCurrentPage('/guide/new')
+              ? html`
+                  <sl-button
+                    data-testid="create-feature-button"
+                    href="/guide/new"
+                    variant="primary"
+                    size="small"
+                  >
+                    Create feature
+                  </sl-button>
+                `
+              : nothing}
+            <div class="nav-dropdown-container" data-testid="account-indicator">
+              <a class="nav-dropdown-trigger">
+                ${this.user.email}
+                <iron-icon icon="chromestatus:arrow-drop-down"></iron-icon>
+              </a>
+              <ul>
+                <li><a href="/settings">Settings</a></li>
+                <li>
+                  <a
+                    href="#"
+                    id="sign-out-link"
+                    data-testid="sign-out-link"
+                    @click=${this.handleSignOutClick}
+                    >Sign out</a
+                  >
+                </li>
+              </ul>
+            </div>
+          `
+        : html` <slot></slot> `}
     `;
   }
 
   render() {
     let accountMenu = nothing;
     if (!IS_MOBILE && !this.loading) {
-      accountMenu = html`
-      <div class="flex-container">
+      accountMenu = html` <div class="flex-container">
         ${this.renderAccountMenu()}
       </div>`;
     }
 
     return html`
       <header data-testid="header">
-        <sl-icon-button data-testid="menu" variant="text" library="material" class="menu"
-          style="font-size: 2.4rem;" name="menu_20px" @click="${this.handleDrawer}">
-        </sl-icon-button >
+        <sl-icon-button
+          data-testid="menu"
+          variant="text"
+          library="material"
+          class="menu"
+          style="font-size: 2.4rem;"
+          name="menu_20px"
+          @click="${this.handleDrawer}"
+        >
+        </sl-icon-button>
         <aside>
-            <a href="/roadmap" target="_top">
-              <h1>
-                <img src="/static/img/chrome_logo.svg">
-                ${this.appTitle}
-              </h1>
-            </a>
+          <a href="/roadmap" target="_top">
+            <h1>
+              <img src="/static/img/chrome_logo.svg" />
+              ${this.appTitle}
+            </h1>
+          </a>
         </aside>
-        <nav>
-          ${accountMenu}
-        </nav>
+        <nav>${accountMenu}</nav>
       </header>
     `;
   }

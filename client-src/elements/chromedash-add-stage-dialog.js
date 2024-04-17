@@ -2,15 +2,19 @@ import {LitElement, css, html} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {CREATEABLE_STAGES, FORMS_BY_STAGE_TYPE} from './form-definition.js';
 
-
 let addStageDialogEl;
 let currentFeatureId;
 
-
-export async function openAddStageDialog(featureId, featureType, onSubmitCustomHandler) {
-  if (!addStageDialogEl ||
-      currentFeatureId !== featureId ||
-      onSubmitCustomHandler !== addStageDialogEl.onSubmitCustomHandler) {
+export async function openAddStageDialog(
+  featureId,
+  featureType,
+  onSubmitCustomHandler
+) {
+  if (
+    !addStageDialogEl ||
+    currentFeatureId !== featureId ||
+    onSubmitCustomHandler !== addStageDialogEl.onSubmitCustomHandler
+  ) {
     addStageDialogEl = document.createElement('chromedash-add-stage-dialog');
     addStageDialogEl.featureId = featureId;
     addStageDialogEl.featureType = featureType;
@@ -21,7 +25,6 @@ export async function openAddStageDialog(featureId, featureType, onSubmitCustomH
   currentFeatureId = featureId;
   addStageDialogEl.show();
 }
-
 
 class ChromedashAddStageDialog extends LitElement {
   static get properties() {
@@ -45,16 +48,16 @@ class ChromedashAddStageDialog extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-      #controls {
-        padding: var(--content-padding);
-        text-align: right;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-      #controls * + * {
-        padding-left: var(--content-padding);
-      }
+        #controls {
+          padding: var(--content-padding);
+          text-align: right;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        #controls * + * {
+          padding-left: var(--content-padding);
+        }
       `,
     ];
   }
@@ -69,9 +72,7 @@ class ChromedashAddStageDialog extends LitElement {
       // Get the name of the stage from the form definition based on the stage type.
       const stageInfo = FORMS_BY_STAGE_TYPE[stageType];
       menuItems.push(html`
-      <sl-option value="${stageType}">
-        ${stageInfo.name}
-      </sl-option>
+        <sl-option value="${stageType}"> ${stageInfo.name} </sl-option>
       `);
     }
     return menuItems;
@@ -84,14 +85,15 @@ class ChromedashAddStageDialog extends LitElement {
 
   handleStageCreate() {
     if (this.onSubmitCustomHandler) {
-      this.onSubmitCustomHandler({stage_type: Number(this.getStageSelectValue())});
+      this.onSubmitCustomHandler({
+        stage_type: Number(this.getStageSelectValue()),
+      });
       this.onSubmitCustomHandler = null;
       this.shadowRoot.querySelector('sl-dialog').hide();
       return;
     }
-    window.csClient.createStage(
-      this.featureId,
-      {
+    window.csClient
+      .createStage(this.featureId, {
         stage_type: {
           form_field_name: 'stage_type',
           value: this.getStageSelectValue(),
@@ -109,24 +111,27 @@ class ChromedashAddStageDialog extends LitElement {
 
   renderStageSelect() {
     return html`
-    <div id="controls">
-      <sl-select
-        placement="top" hoist
-        value=0
-        id="stage_create_select"
-        size="small"
-        @sl-change=${this.checkCanSubmit}
-        style="width:16rem"
-      >
-        <sl-option value="0" disabled>Select a stage to create</sl-option>
-        ${this.renderSelectMenuItems()}
-      </sl-select>
-      <sl-button variant="primary"
-        @click=${this.handleStageCreate}
-        ?disabled=${!this.canSubmit}
-        size="small"
-      >Create stage</sl-button>
-    </div>
+      <div id="controls">
+        <sl-select
+          placement="top"
+          hoist
+          value="0"
+          id="stage_create_select"
+          size="small"
+          @sl-change=${this.checkCanSubmit}
+          style="width:16rem"
+        >
+          <sl-option value="0" disabled>Select a stage to create</sl-option>
+          ${this.renderSelectMenuItems()}
+        </sl-select>
+        <sl-button
+          variant="primary"
+          @click=${this.handleStageCreate}
+          ?disabled=${!this.canSubmit}
+          size="small"
+          >Create stage</sl-button
+        >
+      </div>
     `;
   }
 
@@ -139,6 +144,5 @@ class ChromedashAddStageDialog extends LitElement {
     `;
   }
 }
-
 
 customElements.define('chromedash-add-stage-dialog', ChromedashAddStageDialog);

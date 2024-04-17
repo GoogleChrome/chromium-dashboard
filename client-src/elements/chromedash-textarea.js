@@ -1,4 +1,3 @@
-
 import SlTextarea from '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 
 export class ChromedashTextarea extends SlTextarea {
@@ -30,12 +29,13 @@ export class ChromedashTextarea extends SlTextarea {
    */
   customCheckValidity(value) {
     if (this.multiple) {
-      if (this.chromedash_split_pattern &&
-          this.chromedash_single_pattern) {
+      if (this.chromedash_split_pattern && this.chromedash_single_pattern) {
         const items = value.split(new RegExp(this.chromedash_split_pattern));
-        const singleItemRegex =
-            new RegExp('^' + this.chromedash_single_pattern + '$', '');
-        const valid = items.every((item) => {
+        const singleItemRegex = new RegExp(
+          '^' + this.chromedash_single_pattern + '$',
+          ''
+        );
+        const valid = items.every(item => {
           if (!item) {
             // ignore empty items
             return true;
@@ -59,7 +59,9 @@ export class ChromedashTextarea extends SlTextarea {
   }
 
   validate() {
-    const invalidMsg = this.customCheckValidity(this.input.value) ? '' : 'invalid';
+    const invalidMsg = this.customCheckValidity(this.input.value)
+      ? ''
+      : 'invalid';
     if (this.setCustomValidity) {
       this.setCustomValidity(invalidMsg);
     }

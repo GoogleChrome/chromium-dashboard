@@ -18,6 +18,7 @@
 
 import {DefaultApi as Api, Configuration} from 'chromestatus-openapi';
 
+// prettier-ignore
 (function(exports) {
 'use strict';
 /**

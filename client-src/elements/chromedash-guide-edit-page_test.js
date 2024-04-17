@@ -56,13 +56,15 @@ describe('chromedash-guide-edit-page', () => {
     gates: [],
   });
   const processPromise = Promise.resolve({
-    stages: [{
-      name: 'stage one',
-      description: 'a description',
-      progress_items: [],
-      outgoing_stage: 1,
-      actions: [],
-    }],
+    stages: [
+      {
+        name: 'stage one',
+        description: 'a description',
+        progress_items: [],
+        outgoing_stage: 1,
+        actions: [],
+      },
+    ],
   });
   const progressPromise = Promise.resolve({
     'Code in Chromium': 'True',
@@ -104,19 +106,24 @@ describe('chromedash-guide-edit-page', () => {
   });
 
   it('renders with no data', async () => {
-    const invalidFeaturePromise = Promise.reject(new Error('Got error response from server'));
+    const invalidFeaturePromise = Promise.reject(
+      new Error('Got error response from server')
+    );
     window.csClient.getFeature.withArgs(0).returns(invalidFeaturePromise);
 
     const component = await fixture(
-      html`<chromedash-guide-edit-page></chromedash-guide-edit-page>`);
+      html`<chromedash-guide-edit-page></chromedash-guide-edit-page>`
+    );
     assert.exists(component);
     assert.instanceOf(component, ChromedashGuideEditPage);
 
     // invalid feature requests would trigger the toast to show message
     const toastEl = document.querySelector('chromedash-toast');
     const toastMsgSpan = toastEl.shadowRoot.querySelector('span#msg');
-    assert.include(toastMsgSpan.innerHTML,
-      'Some errors occurred. Please refresh the page or try again later.');
+    assert.include(
+      toastMsgSpan.innerHTML,
+      'Some errors occurred. Please refresh the page or try again later.'
+    );
   });
 
   it('renders with fake data', async () => {
@@ -126,9 +133,9 @@ describe('chromedash-guide-edit-page', () => {
     window.csClient.getGates.withArgs(featureId).returns(validGatesPromise);
 
     const component = await fixture(
-      html`<chromedash-guide-edit-page
-             .featureId=${featureId}>
-           </chromedash-guide-edit-page>`);
+      html`<chromedash-guide-edit-page .featureId=${featureId}>
+      </chromedash-guide-edit-page>`
+    );
     assert.exists(component);
     assert.instanceOf(component, ChromedashGuideEditPage);
 
@@ -142,16 +149,24 @@ describe('chromedash-guide-edit-page', () => {
     assert.include(subheaderDiv.innerHTML, 'Edit all fields');
 
     // chromedash-guide-metadata is rendered
-    const metadata = component.shadowRoot.querySelector('chromedash-guide-metadata');
+    const metadata = component.shadowRoot.querySelector(
+      'chromedash-guide-metadata'
+    );
     assert.exists(metadata);
 
     // chromedash-process-overview is rendered
-    const processOverview = component.shadowRoot.querySelector('chromedash-process-overview');
+    const processOverview = component.shadowRoot.querySelector(
+      'chromedash-process-overview'
+    );
     assert.exists(processOverview);
 
     // footnote section is rendered and with the correct link
-    const footnoteSection = component.shadowRoot.querySelector('section#footnote');
+    const footnoteSection =
+      component.shadowRoot.querySelector('section#footnote');
     assert.exists(footnoteSection);
-    assert.include(footnoteSection.innerHTML, 'href="https://www.chromium.org/blink/launching-features"');
+    assert.include(
+      footnoteSection.innerHTML,
+      'href="https://www.chromium.org/blink/launching-features"'
+    );
   });
 });

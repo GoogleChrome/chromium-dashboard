@@ -8,7 +8,6 @@ const VOCABULARY = QUERIABLE_FIELDS.map((qf) => {
   return {name: qf.name + '=', doc: qf.doc};
 });
 
-
 class ChromedashFeatureFilter extends LitElement {
   typeaheadRef = createRef();
 
@@ -44,11 +43,12 @@ class ChromedashFeatureFilter extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-      sl-icon-button {
-        font-size: 1.6rem;
-        margin: 0 !important;
-      }
-    `];
+        sl-icon-button {
+          font-size: 1.6rem;
+          margin: 0 !important;
+        }
+      `,
+    ];
   }
 
   showHelp() {
@@ -77,6 +77,5 @@ class ChromedashFeatureFilter extends LitElement {
     `;
   }
 }
-
 
 customElements.define('chromedash-feature-filter', ChromedashFeatureFilter);

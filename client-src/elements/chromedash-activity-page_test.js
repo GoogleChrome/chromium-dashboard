@@ -19,7 +19,8 @@ describe('chromedash-settings-page', () => {
 
   it('can be added to the page before being opened', async () => {
     const component = await fixture(
-      html`<chromedash-activity-page></chromedash-activity-page>`);
+      html`<chromedash-activity-page></chromedash-activity-page>`
+    );
     assert.exists(component);
     assert.instanceOf(component, ChromedashActivityPage);
   });

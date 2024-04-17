@@ -18,6 +18,7 @@
 
 'use strict';
 
+// prettier-ignore
 (function(exports) {
 class Metric {
   static get supportsPerfNow() {

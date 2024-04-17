@@ -20,24 +20,30 @@ describe('chromedash-header', () => {
   });
 
   it('invalid server response', async () => {
-    const invalidResponse = Promise.reject(new Error('Got error response from server'));
+    const invalidResponse = Promise.reject(
+      new Error('Got error response from server')
+    );
     window.csClient.getPermissions.returns(invalidResponse);
     const component = await fixture(
-      html`<chromedash-header appTitle="Fake Title"></chromedash-header>`);
+      html`<chromedash-header appTitle="Fake Title"></chromedash-header>`
+    );
     assert.exists(component);
     assert.instanceOf(component, ChromedashHeader);
 
     // invalid feature requests would trigger the toast to show message
     const toastEl = document.querySelector('chromedash-toast');
     const toastMsgSpan = toastEl.shadowRoot.querySelector('span#msg');
-    assert.include(toastMsgSpan.innerHTML,
-      'Some errors occurred. Please refresh the page or try again later.');
+    assert.include(
+      toastMsgSpan.innerHTML,
+      'Some errors occurred. Please refresh the page or try again later.'
+    );
   });
 
   it('user is not signed in', async () => {
     window.csClient.getPermissions.returns(Promise.resolve(null));
     const component = await fixture(
-      html`<chromedash-header appTitle="Fake Title"></chromedash-header>`);
+      html`<chromedash-header appTitle="Fake Title"></chromedash-header>`
+    );
     assert.exists(component);
     assert.instanceOf(component, ChromedashHeader);
     const header = component.shadowRoot.querySelector('header');
@@ -58,14 +64,17 @@ describe('chromedash-header', () => {
   });
 
   it('user is signed in', async () => {
-    window.csClient.getPermissions.returns(Promise.resolve({
-      can_create_feature: true,
-      can_edit: true,
-      is_admin: false,
-      email: 'example@google.com',
-    }));
+    window.csClient.getPermissions.returns(
+      Promise.resolve({
+        can_create_feature: true,
+        can_edit: true,
+        is_admin: false,
+        email: 'example@google.com',
+      })
+    );
     const component = await fixture(
-      html`<chromedash-header appTitle="Fake Title"></chromedash-header>`);
+      html`<chromedash-header appTitle="Fake Title"></chromedash-header>`
+    );
     assert.exists(component);
     assert.instanceOf(component, ChromedashHeader);
     const header = component.shadowRoot.querySelector('header');

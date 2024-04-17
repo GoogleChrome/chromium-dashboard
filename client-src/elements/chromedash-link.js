@@ -18,14 +18,22 @@ const LINK_TYPE_SPECS = 'specs';
 
 function _formatLongText(text, maxLength = 50) {
   if (text.length > maxLength) {
-    return text.substring(0, 35) + '...' + text.substring(text.length - 15, text.length);
+    return (
+      text.substring(0, 35) +
+      '...' +
+      text.substring(text.length - 15, text.length)
+    );
   }
   return text;
 }
 
 export const _dateTimeFormat = new Intl.DateTimeFormat('en-US', {
-  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-  hour: 'numeric', minute: 'numeric', // No seconds
+  weekday: 'long',
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  hour: 'numeric',
+  minute: 'numeric', // No seconds
 });
 
 function enhanceChromeStatusLink(featureLink, text) {
@@ -48,46 +56,63 @@ function enhanceChromeStatusLink(featureLink, text) {
 
   function renderTooltipContent() {
     return html`<div class="tooltip">
-    ${summary && html`
-    <div>
-      <strong>Summary:</strong>
-      <span>${summary}</span>
-    </div>
-  `}
-    ${openedTimestamp && html`
-      <div>
-        <strong>Opened:</strong>
-        <span>${_formatTimestamp(openedTimestamp)}</span>
-      </div>
-    `}
-    ${closedTimestamp && html`
-      <div>
-        <strong>Closed:</strong>
-        <span>${_formatTimestamp(closedTimestamp)}</span>
-      </div>
-    `}
-    ${reporterRef && html`
-      <div>
-        <strong>Reporter:</strong>
-        <span>${reporterRef.displayName}</span>
-      </div>
-    `}
-    ${ownerRef && html`
+      ${summary &&
+      html`
+        <div>
+          <strong>Summary:</strong>
+          <span>${summary}</span>
+        </div>
+      `}
+      ${openedTimestamp &&
+      html`
+        <div>
+          <strong>Opened:</strong>
+          <span>${_formatTimestamp(openedTimestamp)}</span>
+        </div>
+      `}
+      ${closedTimestamp &&
+      html`
+        <div>
+          <strong>Closed:</strong>
+          <span>${_formatTimestamp(closedTimestamp)}</span>
+        </div>
+      `}
+      ${reporterRef &&
+      html`
+        <div>
+          <strong>Reporter:</strong>
+          <span>${reporterRef.displayName}</span>
+        </div>
+      `}
+      ${ownerRef &&
+      html`
         <div>
           <strong>Owner:</strong>
           <span>${ownerRef.displayName}</span>
         </div>
-    `}
+      `}
     </div>`;
   }
-  return html`<a href="${featureLink.url}" target="_blank" rel="noopener noreferrer">
+  return html`<a
+    href="${featureLink.url}"
+    target="_blank"
+    rel="noopener noreferrer"
+  >
     <sl-tooltip style="--sl-tooltip-arrow-size: 0;--max-width: 50vw;">
-        <div slot="content">${renderTooltipContent()}</div>
-        <sl-tag>
-          <img src="https://bugs.chromium.org/static/images/monorail.ico" alt="icon" class="icon" />
-          <sl-badge size="small" variant="${statusRef.meansOpen ? 'success' : 'neutral'}">${statusRef.status}</sl-badge>
-          ${_formatLongText(text)}
-        </sl-tag>
+      <div slot="content">${renderTooltipContent()}</div>
+      <sl-tag>
+        <img
+          src="https://bugs.chromium.org/static/images/monorail.ico"
+          alt="icon"
+          class="icon"
+        />
+        <sl-badge
+          size="small"
+          variant="${statusRef.meansOpen ? 'success' : 'neutral'}"
+          >${statusRef.status}</sl-badge
+        >
+        ${_formatLongText(text)}
+      </sl-tag>
     </sl-tooltip>
   </a>`;
 }
@@ -108,7 +133,12 @@ function enhanceGithubIssueLink(featureLink, text) {
   const number = information.number;
   const repo = information.url.split('/').slice(4, 6).join('/');
   const typePath = featureLink.url.split('/').slice(-2)[0];
-  const type = typePath === 'issues' ? 'Issue' : typePath === 'pull' ? 'Pull Request' : typePath;
+  const type =
+    typePath === 'issues'
+      ? 'Issue'
+      : typePath === 'pull'
+        ? 'Pull Request'
+        : typePath;
 
   // If this issue is an external review of the feature, find the summary description.
   const externalReviewer = ExternalReviewer.get(repo);
@@ -127,7 +157,10 @@ function enhanceGithubIssueLink(featureLink, text) {
   if (stateVariant === undefined) {
     if (state === 'open') {
       const age = Date.now() - createdAt.getTime();
-      stateDescription = html`Opened <sl-relative-time date=${createdAt.toISOString()}>on ${_dateTimeFormat.format(createdAt)}</sl-relative-time>`;
+      stateDescription = html`Opened
+        <sl-relative-time date=${createdAt.toISOString()}
+          >on ${_dateTimeFormat.format(createdAt)}</sl-relative-time
+        >`;
       const week = 7 * 24 * 60 * 60 * 1000;
       stateVariant = 'success';
       if (externalReviewer) {
@@ -153,64 +186,83 @@ function enhanceGithubIssueLink(featureLink, text) {
 
   function renderTooltipContent() {
     return html`<div class="tooltip">
-    ${title && html`
-    <div>
-      <strong>Title:</strong>
-      <span>${title}</span>
-    </div>
-  `}
-    ${repo && html`
-      <div>
-        <strong>Repo:</strong>
-        <span>${repo}</span>
-      </div>
-    `}
-    ${type && html`
-    <div>
-      <strong>Type:</strong>
-      <span>${type}</span>
-    </div>
-  `}
-    ${createdAt && html`
-      <div>
-        <strong>Opened:</strong>
-        <span>${_formatISOTime(createdAt)}</span>
-      </div>
-    `}
-    ${updatedAt && html`
-    <div>
-      <strong>Updated:</strong>
-      <span>${_formatISOTime(updatedAt)}</span>
-    </div>
-    `}
-    ${closedAt && html`
-      <div>
-        <strong>Closed:</strong>
-        <span>${_formatISOTime(closedAt)}</span>
-      </div>
-    `}
-    ${assignee && html`
-      <div>
-        <strong>Assignee:</strong>
-        <span>${assignee}</span>
-      </div>
-    `}
-    ${owner && html`
+      ${title &&
+      html`
+        <div>
+          <strong>Title:</strong>
+          <span>${title}</span>
+        </div>
+      `}
+      ${repo &&
+      html`
+        <div>
+          <strong>Repo:</strong>
+          <span>${repo}</span>
+        </div>
+      `}
+      ${type &&
+      html`
+        <div>
+          <strong>Type:</strong>
+          <span>${type}</span>
+        </div>
+      `}
+      ${createdAt &&
+      html`
+        <div>
+          <strong>Opened:</strong>
+          <span>${_formatISOTime(createdAt)}</span>
+        </div>
+      `}
+      ${updatedAt &&
+      html`
+        <div>
+          <strong>Updated:</strong>
+          <span>${_formatISOTime(updatedAt)}</span>
+        </div>
+      `}
+      ${closedAt &&
+      html`
+        <div>
+          <strong>Closed:</strong>
+          <span>${_formatISOTime(closedAt)}</span>
+        </div>
+      `}
+      ${assignee &&
+      html`
+        <div>
+          <strong>Assignee:</strong>
+          <span>${assignee}</span>
+        </div>
+      `}
+      ${owner &&
+      html`
         <div>
           <strong>Owner:</strong>
           <span>${owner}</span>
         </div>
-    `}
+      `}
     </div>`;
   }
-  return html`<a href="${featureLink.url}" target="_blank" rel="noopener noreferrer">
+  return html`<a
+    href="${featureLink.url}"
+    target="_blank"
+    rel="noopener noreferrer"
+  >
     <sl-tooltip style="--sl-tooltip-arrow-size: 0;--max-width: 50vw;">
-        <div slot="content">${renderTooltipContent()}</div>
-        <sl-tag>
-          <img src=${externalReviewer?.icon ?? 'https://docs.github.com/assets/cb-600/images/site/favicon.png'} alt="icon" class="icon" />
-          <sl-badge size="small" variant=${stateVariant}>${stateDescription}</sl-badge>
-          ${_formatLongText(`#${number} ` + text)}
-        </sl-tag>
+      <div slot="content">${renderTooltipContent()}</div>
+      <sl-tag>
+        <img
+          src=${externalReviewer?.icon ??
+          'https://docs.github.com/assets/cb-600/images/site/favicon.png'}
+          alt="icon"
+          class="icon"
+        />
+        <sl-badge size="small" variant=${stateVariant}
+          >${stateDescription}</sl-badge
+        >
+        ${_formatLongText(`#${number} ` + text)}
+      </sl-tag>
     </sl-tooltip>
   </a>`;
 }
@@ -227,33 +279,44 @@ function enhanceGithubMarkdownLink(featureLink, text) {
 
   function renderTooltipContent() {
     return html`<div class="tooltip">
-    ${title && html`
-    <div>
-      <strong>Title:</strong>
-      <span>${title}</span>
-    </div>
-  `}
-    ${path && html`
-      <div>
-        <strong>File:</strong>
-        <span>${path}</span>
-      </div>
-    `}
-    ${size && html`
-    <div>
-      <strong>Size:</strong>
-      <span>${readableSize}</span>
-    </div>
-    `}
+      ${title &&
+      html`
+        <div>
+          <strong>Title:</strong>
+          <span>${title}</span>
+        </div>
+      `}
+      ${path &&
+      html`
+        <div>
+          <strong>File:</strong>
+          <span>${path}</span>
+        </div>
+      `}
+      ${size &&
+      html`
+        <div>
+          <strong>Size:</strong>
+          <span>${readableSize}</span>
+        </div>
+      `}
     </div>`;
   }
-  return html`<a href="${featureLink.url}" target="_blank" rel="noopener noreferrer">
+  return html`<a
+    href="${featureLink.url}"
+    target="_blank"
+    rel="noopener noreferrer"
+  >
     <sl-tooltip style="--sl-tooltip-arrow-size: 0;--max-width: 50vw;">
-        <div slot="content">${renderTooltipContent()}</div>
-        <sl-tag>
-          <img src="https://docs.github.com/assets/cb-600/images/site/favicon.png" alt="icon" class="icon" />
-          ${_formatLongText('Markdown: ' + text)}
-        </sl-tag>
+      <div slot="content">${renderTooltipContent()}</div>
+      <sl-tag>
+        <img
+          src="https://docs.github.com/assets/cb-600/images/site/favicon.png"
+          alt="icon"
+          class="icon"
+        />
+        ${_formatLongText('Markdown: ' + text)}
+      </sl-tag>
     </sl-tooltip>
   </a>`;
 }
@@ -265,27 +328,33 @@ function _enhanceLinkWithTitleAndDescription(featureLink, iconUrl) {
 
   function renderTooltipContent() {
     return html`<div class="tooltip">
-    ${title && html`
-    <div>
-      <strong>Title:</strong>
-      <span>${title}</span>
-    </div>
-  `}
-    ${description && html`
-      <div>
-        <strong>Description:</strong>
-        <span>${description}</span>
-      </div>
-    `}
+      ${title &&
+      html`
+        <div>
+          <strong>Title:</strong>
+          <span>${title}</span>
+        </div>
+      `}
+      ${description &&
+      html`
+        <div>
+          <strong>Description:</strong>
+          <span>${description}</span>
+        </div>
+      `}
     </div>`;
   }
-  return html`<a href="${featureLink.url}" target="_blank" rel="noopener noreferrer">
+  return html`<a
+    href="${featureLink.url}"
+    target="_blank"
+    rel="noopener noreferrer"
+  >
     <sl-tooltip style="--sl-tooltip-arrow-size: 0;--max-width: 50vw;">
-        <div slot="content">${renderTooltipContent()}</div>
-        <sl-tag>
-          <img src="${iconUrl}" alt="icon" class="icon" />
-          ${_formatLongText(title)}
-        </sl-tag>
+      <div slot="content">${renderTooltipContent()}</div>
+      <sl-tag>
+        <img src="${iconUrl}" alt="icon" class="icon" />
+        ${_formatLongText(title)}
+      </sl-tag>
     </sl-tooltip>
   </a>`;
 }
@@ -300,53 +369,70 @@ function enhanceSpecsLink(featureLink) {
 
   function renderTooltipContent() {
     return html`<div class="tooltip">
-    ${title && html`
-      <div>
-        <strong>Title:</strong>
-        <span>${title}</span>
-      </div>
-    `}
-    ${description && html`
-      <div>
-        <strong>Description:</strong>
-        <span>${description}</span>
-      </div>
-    `}
-    ${hashtag && html`
-      <div>
-        <strong>Hashtag:</strong>
-        <span>#${hashtag}</span>
-      </div>
-    `}
+      ${title &&
+      html`
+        <div>
+          <strong>Title:</strong>
+          <span>${title}</span>
+        </div>
+      `}
+      ${description &&
+      html`
+        <div>
+          <strong>Description:</strong>
+          <span>${description}</span>
+        </div>
+      `}
+      ${hashtag &&
+      html`
+        <div>
+          <strong>Hashtag:</strong>
+          <span>#${hashtag}</span>
+        </div>
+      `}
     </div>`;
   }
-  return html`<a href="${featureLink.url}" target="_blank" rel="noopener noreferrer">
+  return html`<a
+    href="${featureLink.url}"
+    target="_blank"
+    rel="noopener noreferrer"
+  >
     <sl-tooltip style="--sl-tooltip-arrow-size: 0;--max-width: 50vw;">
-        <div slot="content">${renderTooltipContent()}</div>
-        <sl-tag>
-          <img src="${iconUrl}" alt="icon" class="icon" />
-          Spec: ${_formatLongText(title)}
-        </sl-tag>
+      <div slot="content">${renderTooltipContent()}</div>
+      <sl-tag>
+        <img src="${iconUrl}" alt="icon" class="icon" />
+        Spec: ${_formatLongText(title)}
+      </sl-tag>
     </sl-tooltip>
   </a>`;
 }
 
 function enhanceMDNDocsLink(featureLink) {
-  return _enhanceLinkWithTitleAndDescription(featureLink, 'https://developer.mozilla.org/favicon-48x48.png');
+  return _enhanceLinkWithTitleAndDescription(
+    featureLink,
+    'https://developer.mozilla.org/favicon-48x48.png'
+  );
 }
 
 function enhanceMozillaBugLink(featureLink) {
-  return _enhanceLinkWithTitleAndDescription(featureLink, 'https://bugzilla.mozilla.org/favicon.ico');
+  return _enhanceLinkWithTitleAndDescription(
+    featureLink,
+    'https://bugzilla.mozilla.org/favicon.ico'
+  );
 }
 
 function enhanceWebKitBugLink(featureLink) {
-  return _enhanceLinkWithTitleAndDescription(featureLink, 'https://bugs.webkit.org/images/favicon.ico');
+  return _enhanceLinkWithTitleAndDescription(
+    featureLink,
+    'https://bugs.webkit.org/images/favicon.ico'
+  );
 }
 
 function enhanceGoogleDocsLink(featureLink) {
   const url = featureLink.url;
   const type = url.split('/')[3];
-  let iconUrl = 'https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico';
+  let iconUrl =
+    'https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico';
 
   if (type === 'spreadsheets') {
     iconUrl = 'https://ssl.gstatic.com/docs/spreadsheets/favicon3.ico';
@@ -363,63 +449,68 @@ export class ChromedashLink extends LitElement {
   static styles = [
     ...SHARED_STYLES,
     css`
-    :host {
-      display: inline;
-      white-space: normal;
-      line-break: anywhere;
-      color: var(--default-font-color);
-    }
+      :host {
+        display: inline;
+        white-space: normal;
+        line-break: anywhere;
+        color: var(--default-font-color);
+      }
 
-    a:hover {
-      text-decoration: none;
-    }
+      a:hover {
+        text-decoration: none;
+      }
 
-    sl-badge::part(base) {
-      display: inline;
-      padding: 0 4px;
-      border-width: 0;
-      text-transform: capitalize;
-      font-weight: 400;
-    }
+      sl-badge::part(base) {
+        display: inline;
+        padding: 0 4px;
+        border-width: 0;
+        text-transform: capitalize;
+        font-weight: 400;
+      }
 
-    sl-tag::part(base) {
-      vertical-align: middle;
-      height: 18px;
-      background-color: rgb(232,234,237);
-      color: var(--default-font-color);
-      border: none;
-      border-radius: 500px;
-      display: inline-flex;
-      align-items: center;
-      column-gap: 0.3em;
-      padding: 1px 5px;
-      margin: 1px 0;
-    }
+      sl-tag::part(base) {
+        vertical-align: middle;
+        height: 18px;
+        background-color: rgb(232, 234, 237);
+        color: var(--default-font-color);
+        border: none;
+        border-radius: 500px;
+        display: inline-flex;
+        align-items: center;
+        column-gap: 0.3em;
+        padding: 1px 5px;
+        margin: 1px 0;
+      }
 
-    sl-tag::part(base):hover {
-      background-color: rgb(209,211,213);
-    }
+      sl-tag::part(base):hover {
+        background-color: rgb(209, 211, 213);
+      }
 
-    sl-relative-time {
-      margin: 0;
-    }
+      sl-relative-time {
+        margin: 0;
+      }
 
-    .icon {
-      display: block;
-      width: 12px;
-      height: 12px;
-    }
+      .icon {
+        display: block;
+        width: 12px;
+        height: 12px;
+      }
 
-    .tooltip {
-      display: flex;
-      flex-direction: column;
-      row-gap: 0.5em;
-    }
-    `];
+      .tooltip {
+        display: flex;
+        flex-direction: column;
+        row-gap: 0.5em;
+      }
+    `,
+  ];
 
   static get properties() {
     return {
       href: {type: String},
+      /** Says to show this element's content as <slot/>: [feature link] even if a feature link is
+       * available. If this is false, the content is only shown when no feature link is available.
+       */
+      showContentAsLabel: {type: Boolean},
       class: {type: String},
       featureLinks: {type: Array},
       _featureLink: {state: true},
@@ -436,6 +527,8 @@ export class ChromedashLink extends LitElement {
     super();
     /** @type {string | undefined} */
     this.href = undefined;
+    /** @type {boolean} */
+    this.showContentAsLabel = false;
     /** @type {string} */
     this.class = '';
     /** @type {import("../js-src/cs-client").FeatureLink[]} */
@@ -449,7 +542,10 @@ export class ChromedashLink extends LitElement {
   }
 
   willUpdate(changedProperties) {
-    if (changedProperties.has('href') || changedProperties.has('featureLinks')) {
+    if (
+      changedProperties.has('href') ||
+      changedProperties.has('featureLinks')
+    ) {
       this._featureLink = this.featureLinks.find(fe => fe.url === this.href);
     }
   }
@@ -461,7 +557,16 @@ export class ChromedashLink extends LitElement {
       target="_blank"
       rel="noopener noreferrer"
       class=${this.class}
-    >${this.alwaysInTag ? html`<sl-tag>${slot}</sl-tag>` : slot}</a>`;
+      >${this.alwaysInTag ? html`<sl-tag>${slot}</sl-tag>` : slot}</a
+    >`;
+  }
+
+  withLabel(link) {
+    if (this.showContentAsLabel) {
+      return html`<slot></slot>: ${link}`;
+    } else {
+      return link;
+    }
   }
 
   render() {
@@ -475,45 +580,52 @@ export class ChromedashLink extends LitElement {
       return this.fallback();
     }
     if (!featureLink.information) {
-      if (featureLink.http_error_code &&
-        !this.ignoreHttpErrorCodes.includes(featureLink.http_error_code)) {
+      if (
+        featureLink.http_error_code &&
+        !this.ignoreHttpErrorCodes.includes(featureLink.http_error_code)
+      ) {
         return html`<sl-tag>
-            <sl-icon library="material" name="link"></sl-icon>
-            <sl-badge size="small" variant="${featureLink.http_error_code >= 500 ? 'danger' : 'warning'}">
-              ${featureLink.http_error_code}
-            </sl-badge>
-            ${this.fallback()}
-          </sl-tag>`;
+          <sl-icon library="material" name="link"></sl-icon>
+          <sl-badge
+            size="small"
+            variant="${featureLink.http_error_code >= 500
+              ? 'danger'
+              : 'warning'}"
+          >
+            ${featureLink.http_error_code}
+          </sl-badge>
+          ${this.fallback()}
+        </sl-tag>`;
       }
       return this.fallback();
     }
     try {
       switch (featureLink.type) {
         case LINK_TYPE_CHROMIUM_BUG:
-          return enhanceChromeStatusLink(featureLink);
+          return this.withLabel(enhanceChromeStatusLink(featureLink));
         case LINK_TYPE_GITHUB_ISSUE:
-          return enhanceGithubIssueLink(featureLink);
+          return this.withLabel(enhanceGithubIssueLink(featureLink));
         case LINK_TYPE_GITHUB_PULL_REQUEST:
           // we use github issue api to get pull request information,
           // the result will be the similar to github issue
-          return enhanceGithubIssueLink(featureLink);
+          return this.withLabel(enhanceGithubIssueLink(featureLink));
         case LINK_TYPE_GITHUB_MARKDOWN:
-          return enhanceGithubMarkdownLink(featureLink);
+          return this.withLabel(enhanceGithubMarkdownLink(featureLink));
         case LINK_TYPE_MDN_DOCS:
-          return enhanceMDNDocsLink(featureLink);
+          return this.withLabel(enhanceMDNDocsLink(featureLink));
         case LINK_TYPE_GOOGLE_DOCS:
-          return enhanceGoogleDocsLink(featureLink);
+          return this.withLabel(enhanceGoogleDocsLink(featureLink));
         case LINK_TYPE_MOZILLA_BUG:
-          return enhanceMozillaBugLink(featureLink);
+          return this.withLabel(enhanceMozillaBugLink(featureLink));
         case LINK_TYPE_WEBKIT_BUG:
-          return enhanceWebKitBugLink(featureLink);
+          return this.withLabel(enhanceWebKitBugLink(featureLink));
         case LINK_TYPE_SPECS:
-          return enhanceSpecsLink(featureLink);
+          return this.withLabel(enhanceSpecsLink(featureLink));
         default:
           return this.fallback();
       }
     } catch (e) {
-      console.log('feature link render error:', e);
+      console.log('feature link render error:', this, e);
       return this.fallback();
     }
   }
@@ -521,9 +633,11 @@ export class ChromedashLink extends LitElement {
 
 export function enhanceUrl(url, featureLinks = [], fallback, text) {
   return html`<chromedash-link href=${url} .featureLinks=${featureLinks}
-    >${text ?? url}</chromedash-link>`;
+    >${text ?? url}</chromedash-link
+  >`;
 }
 
+// prettier-ignore
 export function enhanceAutolink(part, featureLinks) {
   return html`<chromedash-link href=${part.href} .featureLinks=${featureLinks} .ignoreHttpErrorCodes=${[404]}>${part.content}</chromedash-link>`;
 }

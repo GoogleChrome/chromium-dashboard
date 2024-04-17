@@ -3,7 +3,6 @@ import {showToastMessage, handleSaveChangesResponse} from './utils';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
 
-
 export class ChromedashSettingsPage extends LitElement {
   static get styles() {
     return [
@@ -15,7 +14,7 @@ export class ChromedashSettingsPage extends LitElement {
           padding: 4px;
         }
 
-        input[type="submit"] {
+        input[type='submit'] {
           margin: 20px;
         }
 
@@ -40,7 +39,8 @@ export class ChromedashSettingsPage extends LitElement {
           max-width: 40em;
           margin-top: 2px;
         }
-    `];
+      `,
+    ];
   }
 
   static get properties() {
@@ -58,25 +58,36 @@ export class ChromedashSettingsPage extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    window.csClient.getSettings().then((res) => {
-      this.notify_as_starrer = res.notify_as_starrer;
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-    });
+    window.csClient
+      .getSettings()
+      .then(res => {
+        this.notify_as_starrer = res.notify_as_starrer;
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
+      });
   }
 
   handleSubmit(e) {
     e.preventDefault();
     this.submitting = true;
-    window.csClient.setSettings(this.notify_as_starrer).then(() => {
-      showToastMessage('Settings saved.');
-      handleSaveChangesResponse('');
-    }).catch(() => {
-      showToastMessage('Unable to save the settings. Please try again.');
-      handleSaveChangesResponse('Unable to save the settings. Please try again.');
-    }).finally(() => {
-      this.submitting = false;
-    });
+    window.csClient
+      .setSettings(this.notify_as_starrer)
+      .then(() => {
+        showToastMessage('Settings saved.');
+        handleSaveChangesResponse('');
+      })
+      .catch(() => {
+        showToastMessage('Unable to save the settings. Please try again.');
+        handleSaveChangesResponse(
+          'Unable to save the settings. Please try again.'
+        );
+      })
+      .finally(() => {
+        this.submitting = false;
+      });
   }
 
   handleChange() {
@@ -90,7 +101,7 @@ export class ChromedashSettingsPage extends LitElement {
       </div>
       <section>
         <form name="user_pref_form" @submit=${this.handleSubmit}>
-          <table cellspacing=6>
+          <table cellspacing="6">
             <tbody>
               <tr>
                 <th>
@@ -101,20 +112,25 @@ export class ChromedashSettingsPage extends LitElement {
                     id="id_notify_as_starrer"
                     name="notify_as_starrer"
                     ?checked=${this.notify_as_starrer}
-                    @input=${this.handleChange}>
+                    @input=${this.handleChange}
+                  >
                   </sl-checkbox>
-                  <span class="helptext"> Send you notification emails for features that you starred?</span>
+                  <span class="helptext">
+                    Send you notification emails for features that you
+                    starred?</span
+                  >
                 </td>
               </tr>
             </tbody>
           </table>
-          <input type="submit" value="Submit" ?disabled=${this.submitting}>
+          <input type="submit" value="Submit" ?disabled=${this.submitting} />
         </form>
       </section>
-      ${this.submitting ? html`
-        <div class="loading">
-          <div id="spinner"><img src="/static/img/ring.svg"></div>
-        </div>` : nothing}
+      ${this.submitting
+        ? html` <div class="loading">
+            <div id="spinner"><img src="/static/img/ring.svg" /></div>
+          </div>`
+        : nothing}
     `;
   }
 }

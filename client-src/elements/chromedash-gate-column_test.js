@@ -23,7 +23,8 @@ describe('chromedash-settings-page', () => {
 
   it('can be added to the page before being opened', async () => {
     const component = await fixture(
-      html`<chromedash-gate-column></chromedash-gate-column>`);
+      html`<chromedash-gate-column></chromedash-gate-column>`
+    );
     assert.exists(component);
     assert.instanceOf(component, ChromedashGateColumn);
   });

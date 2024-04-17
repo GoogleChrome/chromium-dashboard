@@ -5,15 +5,16 @@ import './chromedash-form-table';
 import './chromedash-form-field';
 import {
   ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME,
-  ENTERPRISE_IMPACT_DISPLAYNAME} from './form-field-enums';
+  ENTERPRISE_IMPACT_DISPLAYNAME,
+} from './form-field-enums';
 import {
   formatFeatureForEdit,
   FLAT_ENTERPRISE_METADATA_FIELDS,
-  FLAT_METADATA_FIELDS} from './form-definition';
+  FLAT_METADATA_FIELDS,
+} from './form-definition';
 import {ALL_FIELDS} from './form-field-specs';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
-
 
 export class ChromedashGuideMetadata extends LitElement {
   static get styles() {
@@ -46,14 +47,17 @@ export class ChromedashGuideMetadata extends LitElement {
           background: var(--table-alternate-background);
         }
 
-        table.property-sheet th, #metadata-readonly td {
-          padding: var(--content-padding-half) 30px var(--content-padding-half) var(--content-padding-half);
+        table.property-sheet th,
+        #metadata-readonly td {
+          padding: var(--content-padding-half) 30px var(--content-padding-half)
+            var(--content-padding-half);
         }
 
         table.property-sheet th {
           white-space: nowrap;
         }
-    `];
+      `,
+    ];
   }
 
   static get properties() {
@@ -86,7 +90,7 @@ export class ChromedashGuideMetadata extends LitElement {
 
     await el.updateComplete;
     const hiddenTokenField = this.shadowRoot.querySelector('input[name=token]');
-    hiddenTokenField.form.addEventListener('submit', (event) => {
+    hiddenTokenField.form.addEventListener('submit', event => {
       this.handleFormSubmit(event, hiddenTokenField);
     });
   }
@@ -96,14 +100,20 @@ export class ChromedashGuideMetadata extends LitElement {
     const submitBody = formatFeatureChanges(this.fieldValues, this.feature.id);
 
     // get the XSRF token and update it if it's expired before submission
-    window.csClient.ensureTokenIsValid().then(() => {
-      hiddenTokenField.value = window.csClient.token;
-      return csClient.updateFeature(submitBody);
-    }).then(() => {
-      window.location.href = `/feature/${this.feature.id}`;
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-    });
+    window.csClient
+      .ensureTokenIsValid()
+      .then(() => {
+        hiddenTokenField.value = window.csClient.token;
+        return csClient.updateFeature(submitBody);
+      })
+      .then(() => {
+        window.location.href = `/feature/${this.feature.id}`;
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
+      });
   }
 
   // Handler to update form values when a field update event is fired.
@@ -122,7 +132,7 @@ export class ChromedashGuideMetadata extends LitElement {
   handleDeleteFeature() {
     if (!confirm('Delete feature?')) return;
 
-    window.csClient.doDelete(`/features/${this.feature.id}`).then((resp) => {
+    window.csClient.doDelete(`/features/${this.feature.id}`).then(resp => {
       if (resp.message === 'Done') {
         location.href = '/features';
       }
@@ -134,13 +144,19 @@ export class ChromedashGuideMetadata extends LitElement {
       <div id="metadata-readonly">
         <div style="margin-bottom: 1em">
           <div id="metadata-buttons">
-            <a id="open-metadata" @click=${() => this.editing = true}>Edit</a>
-            ${this.canDeleteFeature() ? html`
-              <div>
-                <a id="delete-feature" class="delete-button"
-                  @click=${this.handleDeleteFeature}>Delete</a>
-              </div>
-            `: nothing}
+            <a id="open-metadata" @click=${() => (this.editing = true)}>Edit</a>
+            ${this.canDeleteFeature()
+              ? html`
+                  <div>
+                    <a
+                      id="delete-feature"
+                      class="delete-button"
+                      @click=${this.handleDeleteFeature}
+                      >Delete</a
+                    >
+                  </div>
+                `
+              : nothing}
           </div>
           <div>${autolink(this.feature.summary)}</div>
         </div>
@@ -150,33 +166,37 @@ export class ChromedashGuideMetadata extends LitElement {
             <tr>
               <th>Owners</th>
               <td>
-                ${this.feature.browsers.chrome.owners.map((owner) => html`
-                  <a href="mailto:${owner}">${owner}</a>
-                `)}
+                ${this.feature.browsers.chrome.owners.map(
+                  owner => html` <a href="mailto:${owner}">${owner}</a> `
+                )}
               </td>
             </tr>
 
             <tr>
               <th>Editors</th>
               <td>
-                ${this.feature.editors ?
-                  this.feature.editors.map((editor)=> html`
-                  <a href="mailto:${editor}">${editor}</a>
-                  `): html`
-                  None
-                `}
+                ${this.feature.editors
+                  ? this.feature.editors.map(
+                      editor => html` <a href="mailto:${editor}">${editor}</a> `
+                    )
+                  : html` None `}
               </td>
             </tr>
 
             <tr>
               <th>Categories</th>
-              <td>${this.feature.enterprise_feature_categories.map(id =>
-                    ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME[id]) || 'None'}</td>
+              <td>
+                ${this.feature.enterprise_feature_categories.map(
+                  id => ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME[id]
+                ) || 'None'}
+              </td>
             </tr>
 
             <tr>
               <th>Enterprise impact / risk</th>
-              <td>${ENTERPRISE_IMPACT_DISPLAYNAME[this.feature.enterprise_impact]}</td>
+              <td>
+                ${ENTERPRISE_IMPACT_DISPLAYNAME[this.feature.enterprise_impact]}
+              </td>
             </tr>
 
             <tr>
@@ -193,16 +213,16 @@ export class ChromedashGuideMetadata extends LitElement {
     if (this.feature.deleted) {
       return html`
         <div id="deleted" class="warning">
-          This feature is marked as deleted.  It does not appear in
-          feature lists and is only viewable by users who can edit it.
+          This feature is marked as deleted. It does not appear in feature lists
+          and is only viewable by users who can edit it.
         </div>
       `;
     }
     if (this.feature.unlisted) {
       return html`
         <div id="access" class="warning">
-          This feature is only shown in the feature list
-          to users with access to edit this feature.
+          This feature is only shown in the feature list to users with access to
+          edit this feature.
         </div>
       `;
     }
@@ -214,13 +234,19 @@ export class ChromedashGuideMetadata extends LitElement {
       <div id="metadata-readonly">
         <div style="margin-bottom: 1em">
           <div id="metadata-buttons">
-            <a id="open-metadata" @click=${() => this.editing = true}>Edit</a>
-            ${this.canDeleteFeature() ? html`
-              <div>
-                <a id="delete-feature" class="delete-button"
-                  @click=${this.handleDeleteFeature}>Delete</a>
-              </div>
-            `: nothing}
+            <a id="open-metadata" @click=${() => (this.editing = true)}>Edit</a>
+            ${this.canDeleteFeature()
+              ? html`
+                  <div>
+                    <a
+                      id="delete-feature"
+                      class="delete-button"
+                      @click=${this.handleDeleteFeature}
+                      >Delete</a
+                    >
+                  </div>
+                `
+              : nothing}
           </div>
           <div>${autolink(this.feature.summary)}</div>
         </div>
@@ -230,45 +256,44 @@ export class ChromedashGuideMetadata extends LitElement {
             <tr>
               <th>Owners</th>
               <td>
-                ${this.feature.browsers.chrome.owners.map((owner) => html`
-                  <a href="mailto:${owner}">${owner}</a>
-                `)}
+                ${this.feature.browsers.chrome.owners.map(
+                  owner => html` <a href="mailto:${owner}">${owner}</a> `
+                )}
               </td>
             </tr>
 
             <tr>
               <th>CC</th>
               <td>
-                ${this.feature.cc_recipients ?
-                  this.feature.cc_recipients.map((ccRecipient)=> html`
-                  <a href="mailto:${ccRecipient}">${ccRecipient}</a>
-                  `): html`
-                  None
-                `}
+                ${this.feature.cc_recipients
+                  ? this.feature.cc_recipients.map(
+                      ccRecipient => html`
+                        <a href="mailto:${ccRecipient}">${ccRecipient}</a>
+                      `
+                    )
+                  : html` None `}
               </td>
             </tr>
 
             <tr>
               <th>DevRel</th>
               <td>
-                ${this.feature.browsers.chrome.devrel ?
-                  this.feature.browsers.chrome.devrel.map((dev) => html`
-                  <a href="mailto:${dev}">${dev}</a>
-                `): html`
-                None
-              `}
+                ${this.feature.browsers.chrome.devrel
+                  ? this.feature.browsers.chrome.devrel.map(
+                      dev => html` <a href="mailto:${dev}">${dev}</a> `
+                    )
+                  : html` None `}
               </td>
             </tr>
 
             <tr>
               <th>Editors</th>
               <td>
-                ${this.feature.editors ?
-                  this.feature.editors.map((editor)=> html`
-                  <a href="mailto:${editor}">${editor}</a>
-                  `): html`
-                  None
-                `}
+                ${this.feature.editors
+                  ? this.feature.editors.map(
+                      editor => html` <a href="mailto:${editor}">${editor}</a> `
+                    )
+                  : html` None `}
               </td>
             </tr>
 
@@ -287,19 +312,22 @@ export class ChromedashGuideMetadata extends LitElement {
               <td>${this.feature.intent_stage}</td>
             </tr>
 
-            ${this.feature.tags ? html`
-              <tr>
-                <th>Search tags</th>
-                <td>
-                  ${this.feature.tags.map((tag) => html`
-                    <a href="/features#tags:${tag}">${tag}</a><span
-                      class="conditional-comma">, </span>
-                  `)}
-                </td>
-              </tr>
-            `: nothing}
+            ${this.feature.tags
+              ? html`
+                  <tr>
+                    <th>Search tags</th>
+                    <td>
+                      ${this.feature.tags.map(
+                        tag => html`
+                          <a href="/features#tags:${tag}">${tag}</a
+                          ><span class="conditional-comma">, </span>
+                        `
+                      )}
+                    </td>
+                  </tr>
+                `
+              : nothing}
           </table>
-
 
           <table class="property-sheet">
             <tr>
@@ -309,33 +337,41 @@ export class ChromedashGuideMetadata extends LitElement {
 
             <tr>
               <th>Blink components</th>
-              <td>${this.feature.browsers.chrome.blink_components.join(', ')}</td>
+              <td>
+                ${this.feature.browsers.chrome.blink_components.join(', ')}
+              </td>
             </tr>
 
             <tr>
               <th>Tracking bug</th>
               <td>
-                ${this.feature.browsers.chrome.bug ? html`
-                  <a href="${this.feature.browsers.chrome.bug}">${this.feature.browsers.chrome.bug}</a>
-                `: html`
-                  None
-                `}
+                ${this.feature.browsers.chrome.bug
+                  ? html`
+                      <a href="${this.feature.browsers.chrome.bug}"
+                        >${this.feature.browsers.chrome.bug}</a
+                      >
+                    `
+                  : html` None `}
               </td>
             </tr>
 
             <tr>
               <th>Launch bug</th>
               <td>
-                ${this.feature.launch_bug_url ? html`
-                  <a href="${this.feature.launch_bug_url}">${this.feature.launch_bug_url}</a>
-                `: html`
-                  None
-                `}
+                ${this.feature.launch_bug_url
+                  ? html`
+                      <a href="${this.feature.launch_bug_url}"
+                        >${this.feature.launch_bug_url}</a
+                      >
+                    `
+                  : html` None `}
               </td>
             </tr>
             <tr>
               <th>Enterprise impact / risk</th>
-              <td>${ENTERPRISE_IMPACT_DISPLAYNAME[this.feature.enterprise_impact]}</td>
+              <td>
+                ${ENTERPRISE_IMPACT_DISPLAYNAME[this.feature.enterprise_impact]}
+              </td>
             </tr>
           </table>
         </div>
@@ -344,7 +380,7 @@ export class ChromedashGuideMetadata extends LitElement {
   }
 
   renderFields(formattedFeature, metadataFields) {
-    return metadataFields.map((field) => {
+    return metadataFields.map(field => {
       // Add the field to this component's stage before creating the field component.
       const index = this.fieldValues.length;
       const featureJSONKey = ALL_FIELDS[field].name || field;
@@ -355,15 +391,15 @@ export class ChromedashGuideMetadata extends LitElement {
         value,
       });
 
-      return html`
-        <chromedash-form-field
-          name=${field}
-          index=${index}
-          value=${value}
-          .fieldValues=${this.fieldValues}
-          ?forEnterprise=${this.feature.is_enterprise_feature}
-          @form-field-update="${this.handleFormFieldUpdate}">
-        </chromedash-form-field>`;
+      return html` <chromedash-form-field
+        name=${field}
+        index=${index}
+        value=${value}
+        .fieldValues=${this.fieldValues}
+        ?forEnterprise=${this.feature.is_enterprise_feature}
+        @form-field-update="${this.handleFormFieldUpdate}"
+      >
+      </chromedash-form-field>`;
     });
   }
 
@@ -371,21 +407,28 @@ export class ChromedashGuideMetadata extends LitElement {
     const formattedFeature = formatFeatureForEdit(this.feature);
     this.fieldValues.feature = this.feature;
 
-    const metadataFields = flattenSections(this.feature.is_enterprise_feature ?
-      FLAT_ENTERPRISE_METADATA_FIELDS :
-      FLAT_METADATA_FIELDS);
+    const metadataFields = flattenSections(
+      this.feature.is_enterprise_feature
+        ? FLAT_ENTERPRISE_METADATA_FIELDS
+        : FLAT_METADATA_FIELDS
+    );
     return html`
       <div id="metadata-editing">
         <form name="overview_form">
-          <input type="hidden" name="token">
+          <input type="hidden" name="token" />
           <chromedash-form-table ${ref(this.registerFormSubmitHandler)}>
             ${this.renderFields(formattedFeature, metadataFields)}
           </chromedash-form-table>
 
           <section class="final_buttons">
-            <input class="button" type="submit" value="Submit">
-            <button id="close-metadata" type="reset"
-              @click=${() => this.editing = false}>Cancel</button>
+            <input class="button" type="submit" value="Submit" />
+            <button
+              id="close-metadata"
+              type="reset"
+              @click=${() => (this.editing = false)}
+            >
+              Cancel
+            </button>
           </section>
         </form>
       </div>
@@ -396,10 +439,11 @@ export class ChromedashGuideMetadata extends LitElement {
     return html`
       ${this.renderWarnings()}
       <section id="metadata">
-        ${this.editing ?
-          this.renderEditForm() :this.feature.is_enterprise_feature ?
-            this.renderReadOnlyTableForEnterprise() :
-            this.renderReadOnlyTable()}
+        ${this.editing
+          ? this.renderEditForm()
+          : this.feature.is_enterprise_feature
+            ? this.renderReadOnlyTableForEnterprise()
+            : this.renderReadOnlyTable()}
       </section>
     `;
   }
