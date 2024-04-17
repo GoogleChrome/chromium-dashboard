@@ -10,35 +10,37 @@ export class ChromedashReportReviewLatencyPage extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-      p {
-         margin: var(--content-padding) 0;
-       }
-       table {
-         border-collapse: collapse;
-         border: 1px solid #888;
-       }
-       td, th {
-         padding: var(--content-padding-half);
-         text-align: center;
-       }
-       td {
-         border-top: 1px solid #888;
-         border-bottom: 1px solid #888;
-       }
-       colgroup {
-         border: 1px solid #888;
-       }
-       th {
-         background: var(--table-header-background);
-       }
-       tr {
-         background: var(--table-row-background);
-       }
-       .left {
-         text-align: left;
-         min-width: 18em;
-       }
-      `];
+        p {
+          margin: var(--content-padding) 0;
+        }
+        table {
+          border-collapse: collapse;
+          border: 1px solid #888;
+        }
+        td,
+        th {
+          padding: var(--content-padding-half);
+          text-align: center;
+        }
+        td {
+          border-top: 1px solid #888;
+          border-bottom: 1px solid #888;
+        }
+        colgroup {
+          border: 1px solid #888;
+        }
+        th {
+          background: var(--table-header-background);
+        }
+        tr {
+          background: var(--table-row-background);
+        }
+        .left {
+          text-align: left;
+          min-width: 18em;
+        }
+      `,
+    ];
   }
 
   static get properties() {
@@ -57,7 +59,9 @@ export class ChromedashReportReviewLatencyPage extends LitElement {
     this._reviewLatencyTask = new Task(this, {
       task: async ([], {signal}) => {
         this.reviewLatencyList = await this._client.listReviewsWithLatency(
-          {}, {signal});
+          {},
+          {signal}
+        );
       },
       args: () => [],
     });
@@ -75,13 +79,10 @@ export class ChromedashReportReviewLatencyPage extends LitElement {
 
     return html`
       <p>
-      ${count} reviews of
-      ${this.reviewLatencyList.length} distinct features
-      in the past 90 days.
+        ${count} reviews of ${this.reviewLatencyList.length} distinct features
+        in the past 90 days.
       </p>
-      <p>
-      Latency is measured in weekdays from request to initial response.
-      </p>
+      <p>Latency is measured in weekdays from request to initial response.</p>
     `;
   }
 
@@ -120,41 +121,60 @@ export class ChromedashReportReviewLatencyPage extends LitElement {
   renderTable() {
     return html`
       <table>
-        <colgroup><col/></colgroup>
-        <colgroup><col/><col/></colgroup>
-        <colgroup><col/><col/></colgroup>
-        <colgroup><col/></colgroup>
-        <colgroup><col/><col/></colgroup>
-        <colgroup><col/></colgroup>
-        <colgroup><col/><col/></colgroup>
+        <colgroup>
+          <col />
+        </colgroup>
+        <colgroup>
+          <col />
+          <col />
+        </colgroup>
+        <colgroup>
+          <col />
+          <col />
+        </colgroup>
+        <colgroup>
+          <col />
+        </colgroup>
+        <colgroup>
+          <col />
+          <col />
+        </colgroup>
+        <colgroup>
+          <col />
+        </colgroup>
+        <colgroup>
+          <col />
+          <col />
+        </colgroup>
         <tr>
-          <th scope="col" rowspan=2 class="left">Feature</th>
-          <th scope="col" colspan=2>Privacy</th>
-          <th scope="col" colspan=2>Security</th>
-          <th scope="col" colspan=1>Enterprise</th>
-          <th scope="col" colspan=2>Debugability</th>
-          <th scope="col" colspan=1>Testing</th>
-          <th scope="col" colspan=2>API Owners</th>
+          <th scope="col" rowspan="2" class="left">Feature</th>
+          <th scope="col" colspan="2">Privacy</th>
+          <th scope="col" colspan="2">Security</th>
+          <th scope="col" colspan="1">Enterprise</th>
+          <th scope="col" colspan="2">Debugability</th>
+          <th scope="col" colspan="1">Testing</th>
+          <th scope="col" colspan="2">API Owners</th>
         </tr>
         <tr>
-          <th>OT</th>  <th>Ship</th>
-          <th>OT</th>  <th>Ship</th>
+          <th>OT</th>
           <th>Ship</th>
-          <th>OT</th>  <th>Ship</th>
+          <th>OT</th>
           <th>Ship</th>
-          <th>OT</th>  <th>Ship</th>
+          <th>Ship</th>
+          <th>OT</th>
+          <th>Ship</th>
+          <th>Ship</th>
+          <th>OT</th>
+          <th>Ship</th>
         </tr>
 
-        ${this.reviewLatencyList.map((rl) => this.renderFeatureReviewsRow(rl))}
+        ${this.reviewLatencyList.map(rl => this.renderFeatureReviewsRow(rl))}
       </table>
     `;
   }
 
   renderWhenComplete() {
-    return html`
-      ${this.renderCount()}
-      ${this.renderTable()}
-    `;
+    return html` ${this.renderCount()} ${this.renderTable()} `;
   }
 
   render() {
@@ -164,9 +184,11 @@ export class ChromedashReportReviewLatencyPage extends LitElement {
       complete: () => {
         return this.renderWhenComplete();
       },
-      error: (e) => {
+      error: e => {
         console.error(e);
-        return html`<p>Some errors occurred. Please refresh the page or try again later.</p>`;
+        return html`<p>
+          Some errors occurred. Please refresh the page or try again later.
+        </p>`;
       },
     });
   }
@@ -174,4 +196,5 @@ export class ChromedashReportReviewLatencyPage extends LitElement {
 
 customElements.define(
   'chromedash-report-review-latency-page',
-  ChromedashReportReviewLatencyPage);
+  ChromedashReportReviewLatencyPage
+);

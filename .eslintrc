@@ -1,5 +1,5 @@
 {
-  "extends": "google",
+  "extends": "./node_modules/gts",
   "env": {
     "browser": true,
     "es6": true
@@ -16,22 +16,24 @@
       "args": "after-used",
       "argsIgnorePattern": "^var_args$"
     }],
-    "indent": [
-      "error",
-      2,
-      { "outerIIFEBody": 0, "SwitchCase": 1, "ignoredNodes": ["TemplateLiteral > *"] }
-    ],
     "require-jsdoc": 0,
     "valid-jsdoc": "off",
     "no-var": 1,
-    "arrow-parens": 0,
-    "max-len": [2, 100, {
-      "ignoreComments": true,
-      "ignoreUrls": true,
-      "ignoreTemplateLiterals": true,
-      "ignoreRegExpLiterals": true,
-      "tabWidth": 2
-    }],
+    "prettier/prettier": "off",
+    // TODO: Re-enable these rules from gts.
+    "eqeqeq": "off",
+    "no-const-assign": "off",
+    "no-dupe-class-members": "off",
+    "no-dupe-keys": "off",
+    "no-empty-pattern": "off",
+    "no-prototype-builtins": "off",
+    "no-self-assign": "off",
+    "no-undef": "off",
+    "no-unreachable": "off",
+    "no-useless-escape": "off",
+    "node/no-extraneous-import": "off",
+    "node/no-missing-import": "off",
+    "node/no-unpublished-import": "off",
   },
   "globals": {
     "ga": true,

@@ -8,7 +8,8 @@ import {
   flattenSections,
   setupScrollToHash,
   shouldShowDisplayNameField,
-  renderHTMLIf} from './utils.js';
+  renderHTMLIf,
+} from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
 import {
@@ -20,10 +21,13 @@ import {
 } from './form-definition';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
-import {STAGE_SHORT_NAMES, STAGE_SPECIFIC_FIELDS, STAGE_ENT_ROLLOUT} from './form-field-enums.js';
+import {
+  STAGE_SHORT_NAMES,
+  STAGE_SPECIFIC_FIELDS,
+  STAGE_ENT_ROLLOUT,
+} from './form-field-enums.js';
 import {ALL_FIELDS} from './form-field-specs';
 import {openAddStageDialog} from './chromedash-add-stage-dialog';
-
 
 export class ChromedashGuideEditallPage extends LitElement {
   static get styles() {
@@ -31,12 +35,14 @@ export class ChromedashGuideEditallPage extends LitElement {
       ...SHARED_STYLES,
       ...FORM_STYLES,
       css`
-      .enterprise-help-text > *, .enterprise-help-text li {
-        margin: revert;
-        padding: revert;
-        list-style: revert;
-      }
-    `];
+        .enterprise-help-text > *,
+        .enterprise-help-text li {
+          margin: revert;
+          padding: revert;
+          list-style: revert;
+        }
+      `,
+    ];
   }
 
   static get properties() {
@@ -69,17 +75,19 @@ export class ChromedashGuideEditallPage extends LitElement {
 
   fetchData() {
     this.loading = true;
-    Promise.all([
-      window.csClient.getFeature(this.featureId),
-    ]).then(([feature]) => {
-      this.feature = feature;
-      if (this.feature.name) {
-        document.title = `${this.feature.name} - ${this.appTitle}`;
-      }
-      this.loading = false;
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-    });
+    Promise.all([window.csClient.getFeature(this.featureId)])
+      .then(([feature]) => {
+        this.feature = feature;
+        if (this.feature.name) {
+          document.title = `${this.feature.name} - ${this.appTitle}`;
+        }
+        this.loading = false;
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
+      });
   }
 
   disconnectedCallback() {
@@ -94,7 +102,7 @@ export class ChromedashGuideEditallPage extends LitElement {
     await el.updateComplete;
 
     const hiddenTokenField = this.shadowRoot.querySelector('input[name=token]');
-    hiddenTokenField.form.addEventListener('submit', (event) => {
+    hiddenTokenField.form.addEventListener('submit', event => {
       this.handleFormSubmit(event, hiddenTokenField);
     });
 
@@ -106,14 +114,20 @@ export class ChromedashGuideEditallPage extends LitElement {
     const submitBody = formatFeatureChanges(this.fieldValues, this.featureId);
 
     // get the XSRF token and update it if it's expired before submission
-    window.csClient.ensureTokenIsValid().then(() => {
-      hiddenTokenField.value = window.csClient.token;
-      return csClient.updateFeature(submitBody);
-    }).then(() => {
-      window.location.href = this.getNextPage();
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-    });
+    window.csClient
+      .ensureTokenIsValid()
+      .then(() => {
+        hiddenTokenField.value = window.csClient.token;
+        return csClient.updateFeature(submitBody);
+      })
+      .then(() => {
+        window.location.href = this.getNextPage();
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
+      });
   }
 
   // Handler to update form values when a field update event is fired.
@@ -127,7 +141,7 @@ export class ChromedashGuideEditallPage extends LitElement {
     // The field has been updated, so it is considered touched.
     this.fieldValues[index].touched = true;
     this.fieldValues[index].value = value;
-  };
+  }
 
   handleCancelClick() {
     window.location.href = `/feature/${this.featureId}`;
@@ -183,23 +197,32 @@ export class ChromedashGuideEditallPage extends LitElement {
     switch (stageType) {
       case STAGE_ENT_ROLLOUT:
         return html`
-        <section class="enterprise-help-text">
-          <h3>Rollout steps</h3>
-          <p>The enterprise release notes focus on changes to the stable channel.
-          Please add a stage for each milestone where something is changing on the stable channel.
-          For finch rollouts, use the milestone where the rollout starts.
-          </p>
-          <p>
-            For example, you may only have a single stage where you roll out to 100% of users on milestone N.
-          </p>
-          <p>A more complex example might look like this:</p>
-          <ul>
-            <li>On milestone N-1, you introduce a flag for early testing of an upcoming change, or start a deprecation origin trial</li>
-            <li>On milestone N, you start a finch rollout of a feature at 1% and introduce an enterprise policy for it</li>
-            <li>On milestone N+3, you remove the enterprise policy</li>
-          </ul>
-        </section>
-      `;
+          <section class="enterprise-help-text">
+            <h3>Rollout steps</h3>
+            <p>
+              The enterprise release notes focus on changes to the stable
+              channel. Please add a stage for each milestone where something is
+              changing on the stable channel. For finch rollouts, use the
+              milestone where the rollout starts.
+            </p>
+            <p>
+              For example, you may only have a single stage where you roll out
+              to 100% of users on milestone N.
+            </p>
+            <p>A more complex example might look like this:</p>
+            <ul>
+              <li>
+                On milestone N-1, you introduce a flag for early testing of an
+                upcoming change, or start a deprecation origin trial
+              </li>
+              <li>
+                On milestone N, you start a finch rollout of a feature at 1% and
+                introduce an enterprise policy for it
+              </li>
+              <li>On milestone N+3, you remove the enterprise policy</li>
+            </ul>
+          </section>
+        `;
       default:
         return nothing;
     }
@@ -210,7 +233,10 @@ export class ChromedashGuideEditallPage extends LitElement {
 
     // Add a number differentiation if this stage type is the same as another stage.
     let numberDifferentiation = '';
-    if (this.previousStageTypeRendered && this.previousStageTypeRendered === feStage.stage_type) {
+    if (
+      this.previousStageTypeRendered &&
+      this.previousStageTypeRendered === feStage.stage_type
+    ) {
       this.sameTypeRendered += 1;
       numberDifferentiation = ` ${this.sameTypeRendered}`;
     } else {
@@ -225,8 +251,10 @@ export class ChromedashGuideEditallPage extends LitElement {
     const formFieldEls = stageFields.map(field => {
       // Only show "display name" field if there is more than one stage of the same type.
       const featureJSONKey = ALL_FIELDS[field].name || field;
-      if (featureJSONKey === 'display_name' &&
-          !shouldShowDisplayNameField(this.feature.stages, feStage.stage_type)) {
+      if (
+        featureJSONKey === 'display_name' &&
+        !shouldShowDisplayNameField(this.feature.stages, feStage.stage_type)
+      ) {
         return nothing;
       }
       let value = formattedFeature[field];
@@ -241,7 +269,12 @@ export class ChromedashGuideEditallPage extends LitElement {
         return nothing;
       }
       const index = this.fieldValues.length;
-      this.fieldValues.push({name: featureJSONKey, touched: false, value, stageId});
+      this.fieldValues.push({
+        name: featureJSONKey,
+        touched: false,
+        value,
+        stageId,
+      });
 
       return html`
         <chromedash-form-field
@@ -251,27 +284,38 @@ export class ChromedashGuideEditallPage extends LitElement {
           value=${value}
           .fieldValues=${this.fieldValues}
           ?forEnterprise=${formattedFeature.is_enterprise_feature}
-          @form-field-update="${this.handleFormFieldUpdate}">
+          @form-field-update="${this.handleFormFieldUpdate}"
+        >
         </chromedash-form-field>
       `;
     });
-    const id = `${STAGE_SHORT_NAMES[feStage.stage_type] || 'metadata'}${this.sameTypeRendered}`
-      .toLowerCase();
-    const isEnterpriseFeatureRollout = formattedFeature.is_enterprise_feature &&
+    const id =
+      `${STAGE_SHORT_NAMES[feStage.stage_type] || 'metadata'}${this.sameTypeRendered}`.toLowerCase();
+    const isEnterpriseFeatureRollout =
+      formattedFeature.is_enterprise_feature &&
       feStage.stage_type === STAGE_ENT_ROLLOUT;
     return {
       id: feStage.id,
       item: html`
-        ${renderHTMLIf(!isEnterpriseFeatureRollout, html`<h3 id="${id}">${sectionName}</h3>`)}
+        ${renderHTMLIf(
+          !isEnterpriseFeatureRollout,
+          html`<h3 id="${id}">${sectionName}</h3>`
+        )}
         <section class="flat_form" stage="${feStage.stage_type}">
-          ${renderHTMLIf(feStage.stage_type === STAGE_ENT_ROLLOUT,
-            html`
-            <sl-button stage="${feStage.stage_type}" size="small" @click="${() => this.deleteStage(feStage)}">
+          ${renderHTMLIf(
+            feStage.stage_type === STAGE_ENT_ROLLOUT,
+            html` <sl-button
+              stage="${feStage.stage_type}"
+              size="small"
+              @click="${() => this.deleteStage(feStage)}"
+            >
               Delete
-            </sl-button>`)}
+            </sl-button>`
+          )}
           ${formFieldEls}
         </section>
-    `};
+      `,
+    };
   }
 
   /**
@@ -283,11 +327,19 @@ export class ChromedashGuideEditallPage extends LitElement {
    */
   getForms(formattedFeature, feStages) {
     // All features display the metadata section.
-    let fieldsOnly = flattenSections(formattedFeature.is_enterprise_feature ?
-      FLAT_ENTERPRISE_METADATA_FIELDS :
-      FLAT_METADATA_FIELDS);
+    let fieldsOnly = flattenSections(
+      formattedFeature.is_enterprise_feature
+        ? FLAT_ENTERPRISE_METADATA_FIELDS
+        : FLAT_METADATA_FIELDS
+    );
     const formsToRender = [
-      this.renderStageSection(formattedFeature, FLAT_METADATA_FIELDS.name, {id: -1}, fieldsOnly)];
+      this.renderStageSection(
+        formattedFeature,
+        FLAT_METADATA_FIELDS.name,
+        {id: -1},
+        fieldsOnly
+      ),
+    ];
 
     let previousStageType = null;
     for (const feStage of feStages) {
@@ -296,17 +348,26 @@ export class ChromedashGuideEditallPage extends LitElement {
         continue;
       }
 
-      if (formattedFeature.is_enterprise_feature &&
-          feStage.stage_type !== previousStageType) {
+      if (
+        formattedFeature.is_enterprise_feature &&
+        feStage.stage_type !== previousStageType
+      ) {
         formsToRender.push({
           id: -2,
-          item: this.getHelpTextForStage(feStage.stage_type)});
+          item: this.getHelpTextForStage(feStage.stage_type),
+        });
         previousStageType = feStage.stage_type;
       }
 
       fieldsOnly = flattenSections(stageForm);
-      formsToRender.push(this.renderStageSection(
-        formattedFeature, stageForm.name, feStage, fieldsOnly));
+      formsToRender.push(
+        this.renderStageSection(
+          formattedFeature,
+          stageForm.name,
+          feStage,
+          fieldsOnly
+        )
+      );
 
       // If extension stages are associated with this stage,
       // render them in a separate section as well.
@@ -317,11 +378,14 @@ export class ChromedashGuideEditallPage extends LitElement {
         if (feStage.display_name) {
           sectionName = ` ${FLAT_TRIAL_EXTENSION_FIELDS.name}: ${feStage.display_name} `;
         }
-        formsToRender.push(this.renderStageSection(
-          formattedFeature,
-          sectionName,
-          extensionStage,
-          fieldsOnly));
+        formsToRender.push(
+          this.renderStageSection(
+            formattedFeature,
+            sectionName,
+            extensionStage,
+            fieldsOnly
+          )
+        );
       });
     }
 
@@ -334,40 +398,47 @@ export class ChromedashGuideEditallPage extends LitElement {
       openAddStageDialog(
         this.feature.id,
         this.feature.feature_type_int,
-        this.createNewStage.bind(this));
+        this.createNewStage.bind(this)
+      );
     };
     return renderHTMLIf(
       this.feature.is_enterprise_feature,
-      html`
-      <sl-button size="small" @click="${clickHandler}">
+      html` <sl-button size="small" @click="${clickHandler}">
         Add Step
-      </sl-button>`);
+      </sl-button>`
+    );
   }
 
   // Create a stage requested on the edit all page.
   createNewStage(newStage) {
-    window.csClient.createStage(
-      this.featureId, {stage_type: newStage.stage_type})
+    window.csClient
+      .createStage(this.featureId, {stage_type: newStage.stage_type})
       .then(() => window.csClient.getFeature(this.featureId))
       .then(feature => {
         this.feature = feature;
-      }).catch(() => {
-        showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
       });
   }
 
   deleteStage(stage) {
     if (!confirm('Delete feature?')) return;
 
-    window.csClient.deleteStage(this.featureId, stage.id)
+    window.csClient
+      .deleteStage(this.featureId, stage.id)
       .then(() => window.csClient.getFeature(this.featureId))
       .then(feature => {
         this.feature = feature;
-      }).catch(() => {
-        showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
       });
   }
-
 
   renderForm() {
     const formattedFeature = formatFeatureForEdit(this.feature);
@@ -376,16 +447,25 @@ export class ChromedashGuideEditallPage extends LitElement {
     const formsToRender = this.getForms(formattedFeature, this.feature.stages);
     return html`
       <form name="feature_form">
-        <input type="hidden" name="token">
+        <input type="hidden" name="token" />
         <chromedash-form-table ${ref(this.registerHandlers)}>
-          ${repeat(formsToRender, form => form.id, (_, i) => formsToRender[i].item)}
+          ${repeat(
+            formsToRender,
+            form => form.id,
+            (_, i) => formsToRender[i].item
+          )}
         </chromedash-form-table>
         ${this.renderAddStageButton()}
 
         <section class="final_buttons">
-          <input class="button" type="submit" value="Submit">
-          <button id="cancel-button" type="reset"
-            @click=${this.handleCancelClick}>Cancel</button>
+          <input class="button" type="submit" value="Submit" />
+          <button
+            id="cancel-button"
+            type="reset"
+            @click=${this.handleCancelClick}
+          >
+            Cancel
+          </button>
         </section>
       </form>
     `;
@@ -399,4 +479,7 @@ export class ChromedashGuideEditallPage extends LitElement {
   }
 }
 
-customElements.define('chromedash-guide-editall-page', ChromedashGuideEditallPage);
+customElements.define(
+  'chromedash-guide-editall-page',
+  ChromedashGuideEditallPage
+);

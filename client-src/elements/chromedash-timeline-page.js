@@ -3,12 +3,9 @@ import './chromedash-timeline';
 import {showToastMessage} from './utils';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
-
 export class ChromedashTimelinePage extends LitElement {
   static get styles() {
-    return [
-      ...SHARED_STYLES,
-      css``];
+    return [...SHARED_STYLES, css``];
   }
 
   static get properties() {
@@ -38,15 +35,20 @@ export class ChromedashTimelinePage extends LitElement {
     if (devMode) endpoint = 'https://cr-status-staging.appspot.com' + endpoint;
     const options = {credentials: 'omit'};
 
-    fetch(endpoint, options).then((res) => res.json()).then((props) => {
-      this.props = props;
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-    });
+    fetch(endpoint, options)
+      .then(res => res.json())
+      .then(props => {
+        this.props = props;
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
+      });
   }
 
   renderSubheader() {
-    const typeText = this.type == 'css'? 'CSS': 'HTML & JavaScript';
+    const typeText = this.type == 'css' ? 'CSS' : 'HTML & JavaScript';
     const viewText = this.view == 'animated' ? 'animated' : 'all';
     const propText = this.type == 'css' ? 'properties' : 'features';
     const subTitleText = `${typeText} usage metrics > ${viewText} ${propText} > timeline`;
@@ -54,8 +56,8 @@ export class ChromedashTimelinePage extends LitElement {
       <div id="subheader">
         <h2 id="breadcrumbs">
           <a href="/metrics/${this.type}/${this.view}">
-            <iron-icon icon="chromestatus:arrow-back"></iron-icon>
-          </a>${subTitleText}
+            <iron-icon icon="chromestatus:arrow-back"></iron-icon> </a
+          >${subTitleText}
         </h2>
       </div>
     `;
@@ -67,16 +69,14 @@ export class ChromedashTimelinePage extends LitElement {
         .type=${this.type}
         .view=${this.view}
         .props=${this.props}
-        .selectedBucketId=${this.selectedBucketId}>
+        .selectedBucketId=${this.selectedBucketId}
+      >
       </chromedash-timeline>
     `;
   }
 
   render() {
-    return html`
-      ${this.renderSubheader()}
-      ${this.renderDataPanel()}
-    `;
+    return html` ${this.renderSubheader()} ${this.renderDataPanel()} `;
   }
 }
 

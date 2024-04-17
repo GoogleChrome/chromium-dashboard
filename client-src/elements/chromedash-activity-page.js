@@ -1,11 +1,9 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {ref, createRef} from 'lit/directives/ref.js';
 import './chromedash-activity-log';
-import {showToastMessage,
-} from './utils.js';
+import {showToastMessage} from './utils.js';
 
 import {SHARED_STYLES} from '../css/shared-css.js';
-
 
 export class ChromedashActivityPage extends LitElement {
   commentAreaRef = createRef();
@@ -14,31 +12,31 @@ export class ChromedashActivityPage extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-       .instructions {
-         padding: var(--content-padding-half);
-         margin-bottom: var(--content-padding-large);
-         margin-left: 10px;
-       }
+        .instructions {
+          padding: var(--content-padding-half);
+          margin-bottom: var(--content-padding-large);
+          margin-left: 10px;
+        }
 
-       #comment_area {
-        margin: 0 var(--content-padding);
-       }
-       #header {
+        #comment_area {
+          margin: 0 var(--content-padding);
+        }
+        #header {
           margin-bottom: 10px;
           margin-left: 15px;
-       }
-       #controls {
-         padding: var(--content-padding);
-         text-align: right;
-         display: flex;
-         justify-content: space-between;
-         align-items: center;
-       }
-       #controls * + * {
-         padding-left: var(--content-padding);
-       }
-
-    `];
+        }
+        #controls {
+          padding: var(--content-padding);
+          text-align: right;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        #controls * + * {
+          padding-left: var(--content-padding);
+        }
+      `,
+    ];
   }
 
   static get properties() {
@@ -69,34 +67,38 @@ export class ChromedashActivityPage extends LitElement {
 
   fetchComments() {
     this.loading = true;
-    Promise.all([
-      window.csClient.getComments(this.featureId, null),
-    ]).then(([commentRes]) => {
-      this.comments = commentRes.comments;
-      this.needsPost = false;
-      this.loading = false;
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-    });
+    Promise.all([window.csClient.getComments(this.featureId, null)])
+      .then(([commentRes]) => {
+        this.comments = commentRes.comments;
+        this.needsPost = false;
+        this.loading = false;
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
+      });
   }
 
   reloadComments() {
     const commentArea = this.commentAreaRef.value;
     commentArea.value = '';
     this.needsPost = false;
-    Promise.all([
-      window.csClient.getComments(this.featureId, null),
-    ]).then(([commentRes]) => {
-      this.comments = commentRes.comments;
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-    });
+    Promise.all([window.csClient.getComments(this.featureId, null)])
+      .then(([commentRes]) => {
+        this.comments = commentRes.comments;
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
+      });
   }
 
   checkNeedsPost() {
     let newNeedsPost = false;
     const commentArea = this.commentAreaRef.value;
-    const newVal = commentArea && commentArea.value.trim() || '';
+    const newVal = (commentArea && commentArea.value.trim()) || '';
     if (newVal != '') newNeedsPost = true;
     this.needsPost = newNeedsPost;
   }
@@ -105,13 +107,15 @@ export class ChromedashActivityPage extends LitElement {
     const commentArea = this.commentAreaRef.value;
     const commentText = commentArea.value.trim();
     if (commentText != '') {
-      window.csClient.postComment(
-        this.featureId, null, commentText, 0)
+      window.csClient
+        .postComment(this.featureId, null, commentText, 0)
         .then(() => {
           this.reloadComments();
         })
         .catch(() => {
-          showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+          showToastMessage(
+            'Some errors occurred. Please refresh the page or try again later.'
+          );
         });
     }
   }
@@ -128,26 +132,30 @@ export class ChromedashActivityPage extends LitElement {
     if (!this.user || !this.user.can_comment) return nothing;
 
     const postButton = html`
-      <sl-button variant="primary"
+      <sl-button
+        variant="primary"
         @click=${this.handlePost}
         ?disabled=${!this.needsPost}
         size="small"
-        >Post</sl-button>
+        >Post</sl-button
+      >
     `;
 
     return html`
-      <sl-textarea id="comment_area" rows=2 cols=40 ${ref(this.commentAreaRef)}
+      <sl-textarea
+        id="comment_area"
+        rows="2"
+        cols="40"
+        ${ref(this.commentAreaRef)}
         @sl-change=${this.checkNeedsPost}
         @keypress=${this.checkNeedsPost}
         placeholder="Add a comment"
-        ></sl-textarea>
-       <div class="instructions">
-         Comments will be visible publicly.
-         Only reviewers will be notified when a comment is posted.
-       </div>
-       <div id="controls">
-         ${postButton}
-       </div>
+      ></sl-textarea>
+      <div class="instructions">
+        Comments will be visible publicly. Only reviewers will be notified when
+        a comment is posted.
+      </div>
+      <div id="controls">${postButton}</div>
     `;
   }
 
@@ -168,16 +176,15 @@ export class ChromedashActivityPage extends LitElement {
         .featureId=${this.featureId}
         .narrow=${true}
         .reverse=${true}
-        .comments=${this.comments}>
+        .comments=${this.comments}
+      >
       </chromedash-activity-log>
     `;
   }
 
   render() {
     return html`
-        ${this.loading ?
-          this.renderCommentsSkeleton() :
-          this.renderComments()}
+      ${this.loading ? this.renderCommentsSkeleton() : this.renderComments()}
     `;
   }
 }

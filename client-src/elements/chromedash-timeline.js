@@ -2,7 +2,6 @@ import {LitElement, css, html, nothing} from 'lit';
 import {showToastMessage} from './utils.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
-
 class ChromedashTimeline extends LitElement {
   static get properties() {
     return {
@@ -27,76 +26,77 @@ class ChromedashTimeline extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-      :host {
-        display: block;
-        flex: 1;
-        width: var(--max-content-width);
-      }
+        :host {
+          display: block;
+          flex: 1;
+          width: var(--max-content-width);
+        }
 
-      :host label {
-        margin-left: 8px;
-        cursor: pointer;
-      }
+        :host label {
+          margin-left: 8px;
+          cursor: pointer;
+        }
 
-      #chart {
-        margin-top: 15px;
-        width: 100%;
-        height: 450px;
-        background: var(--table-alternate-background);
-        border-radius: var(--border-radius);
-      }
+        #chart {
+          margin-top: 15px;
+          width: 100%;
+          height: 450px;
+          background: var(--table-alternate-background);
+          border-radius: var(--border-radius);
+        }
 
-      #http-archive-data {
-        border: 0;
-        width: 100%;
-        height: 870px;
-      }
+        #http-archive-data {
+          border: 0;
+          width: 100%;
+          height: 870px;
+        }
 
-      .header_title {
-        margin: 32px 0 15px 0;
-        font-weight: 500;
-        color: #000;
-      }
+        .header_title {
+          margin: 32px 0 15px 0;
+          font-weight: 500;
+          color: #000;
+        }
 
-      .description {
-        margin: 15px 0;
-      }
+        .description {
+          margin: 15px 0;
+        }
 
-      .callout {
-        padding: var(--content-padding);
-        margin-top: var(--content-padding);
-        background-color: var(--md-yellow-100);
-        border-color: rgba(27,31,35,0.15);
-        line-height: 1.4;
-      }
+        .callout {
+          padding: var(--content-padding);
+          margin-top: var(--content-padding);
+          background-color: var(--md-yellow-100);
+          border-color: rgba(27, 31, 35, 0.15);
+          line-height: 1.4;
+        }
 
-      #bigquery:empty {
-        display: none;
-      }
+        #bigquery:empty {
+          display: none;
+        }
 
-      #bigquery {
-        font-family: 'Courier New', Courier, monospace;
-        font-weight: 600;
-        padding: 15px;
-        margin-bottom: 100px;
-        background: var(--table-alternate-background);
-        display: inline-block;
-      }
+        #bigquery {
+          font-family: 'Courier New', Courier, monospace;
+          font-weight: 600;
+          padding: 15px;
+          margin-bottom: 100px;
+          background: var(--table-alternate-background);
+          display: inline-block;
+        }
 
-      #datalist-input {
-        width: 20em;
-        border-radius: 10px;
-        height: 25px;
-        padding-left: 10px;
-        font-size: 15px;
-      }
+        #datalist-input {
+          width: 20em;
+          border-radius: 10px;
+          height: 25px;
+          padding-left: 10px;
+          font-size: 15px;
+        }
 
-      sl-progress-bar {
-        --height: 4px;
-        --track-color: var(--barchart-foreground);
-        --indicator-color: var(--barchart-background);
-      }
-    `];
+        sl-progress-bar {
+          --height: 4px;
+          --track-color: var(--barchart-foreground);
+          --indicator-color: var(--barchart-background);
+        }
+      `,
+    ];
   }
 
   updated() {
@@ -105,7 +105,7 @@ class ChromedashTimeline extends LitElement {
 
   updateSelectedBucketId(e) {
     const inputValue = e.currentTarget.value;
-    const feature = this.props.find((el) => el[1] === inputValue);
+    const feature = this.props.find(el => el[1] === inputValue);
     if (feature) {
       this.selectedBucketId = feature[0];
     } else if (inputValue) {
@@ -118,7 +118,7 @@ class ChromedashTimeline extends LitElement {
   }
 
   firstUpdated() {
-    window.google.charts.load('current', {'packages': ['corechart']});
+    window.google.charts.load('current', {packages: ['corechart']});
   }
 
   drawVisualization(data, bucketId, showAllHistoricalData) {
@@ -129,10 +129,14 @@ class ChromedashTimeline extends LitElement {
     datatable.addColumn({type: 'string', role: 'annotationText'});
 
     const rowArray = [];
-    for (let i = 0, item; item = data[i]; ++i) {
+    for (let i = 0, item; (item = data[i]); ++i) {
       const dateStr = item.date.split('-');
       const date = new Date();
-      date.setFullYear(parseInt(dateStr[0]), parseInt(dateStr[1]) - 1, parseInt(dateStr[2]));
+      date.setFullYear(
+        parseInt(dateStr[0]),
+        parseInt(dateStr[1]) - 1,
+        parseInt(dateStr[2])
+      );
       const row = [date, parseFloat((item.day_percentage * 100).toFixed(6))];
       // Add annotation where UMA data switched to new stuff.
       if (item.date === '2017-10-27') {
@@ -151,26 +155,33 @@ class ChromedashTimeline extends LitElement {
       return new Date(year, month);
     }
 
-    const groupedTable = window.google.visualization.data.group(datatable,
+    const groupedTable = window.google.visualization.data.group(
+      datatable,
       [{column: 0, modifier: aggregateByMonth, type: 'date'}],
-      [{
-        column: 1,
-        aggregation: window.google.visualization.data.avg,
-        type: 'number',
-        label: 'Monthly Average',
-      }],
-      [{column: 2, type: 'string'}],
+      [
+        {
+          column: 1,
+          aggregation: window.google.visualization.data.avg,
+          type: 'number',
+          label: 'Monthly Average',
+        },
+      ],
+      [{column: 2, type: 'string'}]
     );
 
-    const formatter = new window.google.visualization.NumberFormat({fractionDigits: 6});
+    const formatter = new window.google.visualization.NumberFormat({
+      fractionDigits: 6,
+    });
     formatter.format(groupedTable, 1); // Apply formatter to percentage column.
 
     let view = groupedTable;
 
     if (!showAllHistoricalData) {
-      const startYear = (new Date()).getFullYear() - 2; // Show only 2 years of data by default.
+      const startYear = new Date().getFullYear() - 2; // Show only 2 years of data by default.
       view = new window.google.visualization.DataView(groupedTable);
-      view.setRows(view.getFilteredRows([{column: 0, minValue: new Date(startYear, 0, 1)}]));
+      view.setRows(
+        view.getFilteredRows([{column: 0, minValue: new Date(startYear, 0, 1)}])
+      );
     }
 
     const chartEl = this.shadowRoot.querySelector('#chart');
@@ -206,8 +217,12 @@ class ChromedashTimeline extends LitElement {
   _updateTimeline() {
     if (this.selectedBucketId === '1' || !this.props.length) return;
 
-    let url = '/data/timeline/' + this.type + this.view +
-              '?bucket_id=' + this.selectedBucketId;
+    let url =
+      '/data/timeline/' +
+      this.type +
+      this.view +
+      '?bucket_id=' +
+      this.selectedBucketId;
 
     // [DEV] Change to true to use the staging server endpoint for development
     const devMode = false;
@@ -218,23 +233,39 @@ class ChromedashTimeline extends LitElement {
     // the chartEl's innerHTML will get overwritten once the chart is loaded
     const chartEl = this.shadowRoot.querySelector('#chart');
     if (!chartEl.innerHTML.includes('sl-progress-bar')) {
-      chartEl.insertAdjacentHTML('afterbegin', '<sl-progress-bar indeterminate></sl-progress-bar>');
+      chartEl.insertAdjacentHTML(
+        'afterbegin',
+        '<sl-progress-bar indeterminate></sl-progress-bar>'
+      );
     }
 
     const options = {credentials: 'omit'};
-    fetch(url, options).then((res) => res.json()).then((response) => {
-      this.drawVisualization(response, this.selectedBucketId, this.showAllHistoricalData);
-    });
+    fetch(url, options)
+      .then(res => res.json())
+      .then(response => {
+        this.drawVisualization(
+          response,
+          this.selectedBucketId,
+          this.showAllHistoricalData
+        );
+      });
 
-    const currentUrl = '/metrics/' + this.type + '/timeline/' + this.view + '/' +
-              this.selectedBucketId;
+    const currentUrl =
+      '/metrics/' +
+      this.type +
+      '/timeline/' +
+      this.view +
+      '/' +
+      this.selectedBucketId;
     if (history.pushState && location.pathname != currentUrl) {
       history.pushState({id: this.selectedBucketId}, '', currentUrl);
     }
   }
 
   _renderHTTPArchiveData() {
-    const feature = this.props.find((el) => el[0] === parseInt(this.selectedBucketId));
+    const feature = this.props.find(
+      el => el[0] === parseInt(this.selectedBucketId)
+    );
     if (feature) {
       let featureName = feature[1];
       const inputEl = this.shadowRoot.querySelector('#datalist-input');
@@ -249,7 +280,7 @@ class ChromedashTimeline extends LitElement {
       hadEl.src = dsEmbedUrl;
 
       const bigqueryEl = this.shadowRoot.querySelector('#bigquery');
-      bigqueryEl.textContent =`#standardSQL
+      bigqueryEl.textContent = `#standardSQL
 SELECT yyyymmdd, client, pct_urls, sample_urls
 FROM \`httparchive.blink_features.usage\`
 WHERE feature = '${featureName}'
@@ -261,46 +292,82 @@ ORDER BY yyyymmdd DESC, client`;
   render() {
     const note2017 = html`
       <p class="callout">
-        <b>Note</b>: on 2017-10-26 the underlying metrics were switched over
-        to a newer collection system which is <a
-        href="https://groups.google.com/a/chromium.org/forum/#!msg/blink-api-owners-discuss/IpIkbz0qtrM/HUCfSMv2AQAJ"
-        target="_blank">more accurate</a>.
-        This is also the reason for the abrupt spike around 2017-10-26.
+        <b>Note</b>: on 2017-10-26 the underlying metrics were switched over to
+        a newer collection system which is
+        <a
+          href="https://groups.google.com/a/chromium.org/forum/#!msg/blink-api-owners-discuss/IpIkbz0qtrM/HUCfSMv2AQAJ"
+          target="_blank"
+          >more accurate</a
+        >. This is also the reason for the abrupt spike around 2017-10-26.
       </p>
     `;
 
     return html`
-      <input id="datalist-input" type="search" list="features" placeholder="Select or search a property" @change="${this.updateSelectedBucketId}" />
+      <input
+        id="datalist-input"
+        type="search"
+        list="features"
+        placeholder="Select or search a property"
+        @change="${this.updateSelectedBucketId}"
+      />
       <datalist id="features">
-        ${this.props.map((prop) => html`
-          <option value="${prop[1]}" dataset-debug-bucket-id="${prop[0]}"></option>
-        `)}
+        ${this.props.map(
+          prop => html`
+            <option
+              value="${prop[1]}"
+              dataset-debug-bucket-id="${prop[0]}"
+            ></option>
+          `
+        )}
       </datalist>
       <label>
         Show all historical data:
-        <input type="checkbox" ?checked="${this.showAllHistoricalData}" @change="${this.toggleShowAllHistoricalData}">
+        <input
+          type="checkbox"
+          ?checked="${this.showAllHistoricalData}"
+          @change="${this.toggleShowAllHistoricalData}"
+        />
       </label>
-      <h3 id="usage" class="header_title">Percentage of page loads over time</h3>
-      <p class="description">The chart below shows the percentage of page loads (in Chrome) that use
+      <h3 id="usage" class="header_title">
+        Percentage of page loads over time
+      </h3>
+      <p class="description">
+        The chart below shows the percentage of page loads (in Chrome) that use
         this feature at least once. Data is across all channels and platforms.
-        Newly added use counters that are not on Chrome stable yet
-        only have data from the Chrome channels they're on.
+        Newly added use counters that are not on Chrome stable yet only have
+        data from the Chrome channels they're on.
       </p>
       <div id="chart"></div>
       ${this.showAllHistoricalData ? note2017 : nothing}
-      <h3 id="httparchive" class="header_title">Adoption of the feature on top sites</h3>
-      <p class="description">The chart below shows the adoption of the feature by the top URLs on the internet. Data from <a href="https://httparchive.org/" target="_blank">HTTP Archive</a>.</p>
+      <h3 id="httparchive" class="header_title">
+        Adoption of the feature on top sites
+      </h3>
+      <p class="description">
+        The chart below shows the adoption of the feature by the top URLs on the
+        internet. Data from
+        <a href="https://httparchive.org/" target="_blank">HTTP Archive</a>.
+      </p>
       <iframe id="http-archive-data"></iframe>
       <p class="callout">
-        <b>Note</b>: The jump around July and December 2018 are because the corpus of URLs crawled by HTTP Archive increased. These jumps have no correlation with the jump in the top graph.
-        See the <a href="https://discuss.httparchive.org/t/changes-to-the-http-archive-corpus/1539" target="_blank">announcement</a> for more details.
+        <b>Note</b>: The jump around July and December 2018 are because the
+        corpus of URLs crawled by HTTP Archive increased. These jumps have no
+        correlation with the jump in the top graph. See the
+        <a
+          href="https://discuss.httparchive.org/t/changes-to-the-http-archive-corpus/1539"
+          target="_blank"
+          >announcement</a
+        >
+        for more details.
       </p>
-      <p class="description">Copy and run this command in <a href="https://bigquery.cloud.google.com" target="_blank">BigQuery</a> to produce similar results:</p>
+      <p class="description">
+        Copy and run this command in
+        <a href="https://bigquery.cloud.google.com" target="_blank">BigQuery</a>
+        to produce similar results:
+      </p>
       <pre id="bigquery"></pre>
     `;
   }
 }
-
 
 // Capitalizes the first letter of a word.
 function capitalize(word) {
@@ -313,6 +380,5 @@ function capitalize(word) {
 function convertToCamelCaseFeatureName(property) {
   return 'CSSProperty' + property.split('-').map(capitalize).join('');
 }
-
 
 customElements.define('chromedash-timeline', ChromedashTimeline);

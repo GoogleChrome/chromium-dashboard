@@ -10,12 +10,13 @@ describe('chromedash-admin-blink-page', () => {
   });
   it('render with no data', async () => {
     window.csOpenApiClient = sinon.createStubInstance(DefaultApi, {
-      listComponentUsers: sinon.stub().rejects(
-        new Error('Got error response from server')),
+      listComponentUsers: sinon
+        .stub()
+        .rejects(new Error('Got error response from server')),
     });
 
     const component = await fixture(
-      html`<chromedash-admin-blink-page></chromedash-admin-blink-page>`,
+      html`<chromedash-admin-blink-page></chromedash-admin-blink-page>`
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashAdminBlinkPage);
@@ -23,16 +24,16 @@ describe('chromedash-admin-blink-page', () => {
     // error response would trigger the toast to show message
     const toastEl = document.querySelector('chromedash-toast');
     const toastMsgSpan = toastEl.shadowRoot.querySelector('span#msg');
-    assert.include(toastMsgSpan.innerHTML,
-      'Some errors occurred. Please refresh the page or try again later.');
+    assert.include(
+      toastMsgSpan.innerHTML,
+      'Some errors occurred. Please refresh the page or try again later.'
+    );
   });
 
   it('render with fake data', async () => {
     /** @type {import('chromestatus-openapi').ComponentsUsersResponse} */
     const response = {
-      users: [
-        {id: 0, name: 'user0', email: 'user0@example.com'},
-      ],
+      users: [{id: 0, name: 'user0', email: 'user0@example.com'}],
       components: [
         {id: 0, name: 'component0', subscriber_ids: [0], owner_ids: [0]},
       ],
@@ -42,13 +43,14 @@ describe('chromedash-admin-blink-page', () => {
     });
 
     const component = await fixture(
-      html`<chromedash-admin-blink-page></chromedash-admin-blink-page>`,
+      html`<chromedash-admin-blink-page></chromedash-admin-blink-page>`
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashAdminBlinkPage);
 
     // subheader exists
-    const subheaderCountEl = component.shadowRoot.querySelector('#component-count');
+    const subheaderCountEl =
+      component.shadowRoot.querySelector('#component-count');
     assert.exists(subheaderCountEl);
   });
 });

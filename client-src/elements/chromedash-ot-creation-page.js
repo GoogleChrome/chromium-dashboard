@@ -4,7 +4,8 @@ import {
   formatFeatureChanges,
   getStageValue,
   showToastMessage,
-  setupScrollToHash} from './utils.js';
+  setupScrollToHash,
+} from './utils.js';
 import './chromedash-form-table.js';
 import './chromedash-form-field.js';
 import {ORIGIN_TRIAL_CREATION_FIELDS} from './form-definition.js';
@@ -92,7 +93,7 @@ export class ChromedashOTCreationPage extends LitElement {
       this.showApprovalsFields = !this.showApprovalsFields;
       this.requestUpdate();
     }
-  };
+  }
 
   fetchData() {
     this.loading = true;
@@ -115,9 +116,13 @@ export class ChromedashOTCreationPage extends LitElement {
   addOptionalApprovalsFields() {
     // Approval requirement fields are always hidden unless the feature owner
     // opts in to using them.
-    const insertIndex = this.fieldValues.findIndex(
-      fieldInfo => fieldInfo.name === 'ot_require_approvals') + 1;
-    this.fieldValues.splice(insertIndex, 0,
+    const insertIndex =
+      this.fieldValues.findIndex(
+        fieldInfo => fieldInfo.name === 'ot_require_approvals'
+      ) + 1;
+    this.fieldValues.splice(
+      insertIndex,
+      0,
       {
         name: 'ot_approval_buganizer_component',
         touched: true,
@@ -138,7 +143,8 @@ export class ChromedashOTCreationPage extends LitElement {
         value: '',
         stageId: this.stage.id,
         isApprovalsField: true,
-      });
+      }
+    );
   }
 
   addHiddenFields() {
@@ -190,10 +196,12 @@ export class ChromedashOTCreationPage extends LitElement {
     if (!el) return;
 
     /* Add the form's event listener after Shoelace event listeners are attached
-    * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
+     * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
     await el.updateComplete;
-    const submitButton = this.shadowRoot.querySelector('input[id=submit-button]');
-    submitButton.form.addEventListener('submit', (event) => {
+    const submitButton = this.shadowRoot.querySelector(
+      'input[id=submit-button]'
+    );
+    submitButton.form.addEventListener('submit', event => {
       this.handleFormSubmit(event);
     });
 
@@ -344,23 +352,27 @@ export class ChromedashOTCreationPage extends LitElement {
 
   renderFields() {
     const fields = this.fieldValues.map((fieldInfo, i) => {
-      if (fieldInfo.alwaysHidden || (fieldInfo.isApprovalsField && !this.showApprovalsFields)) {
+      if (
+        fieldInfo.alwaysHidden ||
+        (fieldInfo.isApprovalsField && !this.showApprovalsFields)
+      ) {
         return nothing;
       }
       // Fade in transition for the approvals fields if they're being displayed.
       const shouldFadeIn = fieldInfo.isApprovalsField;
 
       return html`
-      <chromedash-form-field
-        name=${fieldInfo.name}
-        index=${i}
-        value=${fieldInfo.value}
-        .checkMessage=${fieldInfo.checkMessage}
-        .fieldValues=${this.fieldValues}
-        .shouldFadeIn=${shouldFadeIn}
-        @form-field-update="${this.handleFormFieldUpdate}">
-      </chromedash-form-field>
-    `;
+        <chromedash-form-field
+          name=${fieldInfo.name}
+          index=${i}
+          value=${fieldInfo.value}
+          .checkMessage=${fieldInfo.checkMessage}
+          .fieldValues=${this.fieldValues}
+          .shouldFadeIn=${shouldFadeIn}
+          @form-field-update="${this.handleFormFieldUpdate}"
+        >
+        </chromedash-form-field>
+      `;
     });
     return fields;
   }
@@ -379,17 +391,22 @@ export class ChromedashOTCreationPage extends LitElement {
           </div>
         </div>` : nothing}
         <chromedash-form-table ${ref(this.registerHandlers)}>
-          <section class="stage_form">
-            ${this.renderFields(section)}
-          </section>
+          <section class="stage_form">${this.renderFields(section)}</section>
         </chromedash-form-table>
         <div class="final_buttons">
           <input
-            id='submit-button'
+            id="submit-button"
             class="button"
             type="submit"
-            value="Submit">
-          <button id="cancel-button" type="reset" @click=${this.handleCancelClick}>Cancel</button>
+            value="Submit"
+          />
+          <button
+            id="cancel-button"
+            type="reset"
+            @click=${this.handleCancelClick}
+          >
+            Cancel
+          </button>
         </div>
       </form>
     `;
