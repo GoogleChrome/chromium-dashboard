@@ -39,22 +39,32 @@ describe('chromedash-guide-metadata', () => {
   it('renders with fake data (user is not admin)', async () => {
     const component = await fixture(
       html`<chromedash-guide-metadata
-             .feature=${feature}
-             .isAdmin=${false}
-             email="fake chrome owner one">
-           </chromedash-guide-metadata>`);
+        .feature=${feature}
+        .isAdmin=${false}
+        email="fake chrome owner one"
+      >
+      </chromedash-guide-metadata>`
+    );
     assert.exists(component);
     assert.instanceOf(component, ChromedashGuideMetadata);
 
-    const metadataDiv = component.shadowRoot.querySelector('div#metadata-readonly');
+    const metadataDiv = component.shadowRoot.querySelector(
+      'div#metadata-readonly'
+    );
     assert.exists(metadataDiv);
     // edit button exists
     assert.include(metadataDiv.innerHTML, 'id="open-metadata"');
     // feature summary is listed
     assert.include(metadataDiv.innerHTML, 'fake detailed summary');
     // feature owners are listed
-    assert.include(metadataDiv.innerHTML, 'href="mailto:fake chrome owner one"');
-    assert.include(metadataDiv.innerHTML, 'href="mailto:fake chrome owner two"');
+    assert.include(
+      metadataDiv.innerHTML,
+      'href="mailto:fake chrome owner one"'
+    );
+    assert.include(
+      metadataDiv.innerHTML,
+      'href="mailto:fake chrome owner two"'
+    );
     // devrel recipients are listed
     assert.include(metadataDiv.innerHTML, 'href="mailto:devrel1@example.com"');
     assert.include(metadataDiv.innerHTML, 'href="mailto:devrel2@example.com"');
@@ -83,22 +93,32 @@ describe('chromedash-guide-metadata', () => {
   it('renders with fake data (user is not admin, but is creator)', async () => {
     const component = await fixture(
       html`<chromedash-guide-metadata
-             .feature=${feature}
-             .isAdmin=${false}
-             email="fake chrome creator one">
-           </chromedash-guide-metadata>`);
+        .feature=${feature}
+        .isAdmin=${false}
+        email="fake chrome creator one"
+      >
+      </chromedash-guide-metadata>`
+    );
     assert.exists(component);
     assert.instanceOf(component, ChromedashGuideMetadata);
 
-    const metadataDiv = component.shadowRoot.querySelector('div#metadata-readonly');
+    const metadataDiv = component.shadowRoot.querySelector(
+      'div#metadata-readonly'
+    );
     assert.exists(metadataDiv);
     // edit button exists
     assert.include(metadataDiv.innerHTML, 'id="open-metadata"');
     // feature summary is listed
     assert.include(metadataDiv.innerHTML, 'fake detailed summary');
     // feature owners are listed
-    assert.include(metadataDiv.innerHTML, 'href="mailto:fake chrome owner one"');
-    assert.include(metadataDiv.innerHTML, 'href="mailto:fake chrome owner two"');
+    assert.include(
+      metadataDiv.innerHTML,
+      'href="mailto:fake chrome owner one"'
+    );
+    assert.include(
+      metadataDiv.innerHTML,
+      'href="mailto:fake chrome owner two"'
+    );
     // devrel recipients are listed
     assert.include(metadataDiv.innerHTML, 'href="mailto:devrel1@example.com"');
     assert.include(metadataDiv.innerHTML, 'href="mailto:devrel2@example.com"');
@@ -128,28 +148,50 @@ describe('chromedash-guide-metadata', () => {
     const enterpriseFeature = {...feature, is_enterprise_feature: true};
     const component = await fixture(
       html`<chromedash-guide-metadata
-             .feature=${enterpriseFeature}
-             .isAdmin=${false}
-             email="fake chrome owner one">
-           </chromedash-guide-metadata>`);
+        .feature=${enterpriseFeature}
+        .isAdmin=${false}
+        email="fake chrome owner one"
+      >
+      </chromedash-guide-metadata>`
+    );
     assert.exists(component);
     assert.instanceOf(component, ChromedashGuideMetadata);
 
-    const metadataDiv = component.shadowRoot.querySelector('div#metadata-readonly');
+    const metadataDiv = component.shadowRoot.querySelector(
+      'div#metadata-readonly'
+    );
     assert.exists(metadataDiv);
     // edit button exists
     assert.include(metadataDiv.innerHTML, 'id="open-metadata"');
     // feature summary is listed
     assert.include(metadataDiv.innerHTML, 'fake detailed summary');
     // feature owners are listed
-    assert.include(metadataDiv.innerHTML, 'href="mailto:fake chrome owner one"');
-    assert.include(metadataDiv.innerHTML, 'href="mailto:fake chrome owner two"');
+    assert.include(
+      metadataDiv.innerHTML,
+      'href="mailto:fake chrome owner one"'
+    );
+    assert.include(
+      metadataDiv.innerHTML,
+      'href="mailto:fake chrome owner two"'
+    );
     // devrel recipients are not listed
-    assert.notInclude(metadataDiv.innerHTML, 'href="mailto:devrel1@example.com"');
-    assert.notInclude(metadataDiv.innerHTML, 'href="mailto:devrel2@example.com"');
+    assert.notInclude(
+      metadataDiv.innerHTML,
+      'href="mailto:devrel1@example.com"'
+    );
+    assert.notInclude(
+      metadataDiv.innerHTML,
+      'href="mailto:devrel2@example.com"'
+    );
     // cc recipients are listed
-    assert.notInclude(metadataDiv.innerHTML, 'href="mailto:fake chrome cc one"');
-    assert.notInclude(metadataDiv.innerHTML, 'href="mailto:fake chrome cc two"');
+    assert.notInclude(
+      metadataDiv.innerHTML,
+      'href="mailto:fake chrome cc one"'
+    );
+    assert.notInclude(
+      metadataDiv.innerHTML,
+      'href="mailto:fake chrome cc two"'
+    );
     // feature category is not listed
     assert.notInclude(metadataDiv.innerHTML, 'fake category');
     // enterprise feature category are listed
@@ -169,63 +211,88 @@ describe('chromedash-guide-metadata', () => {
     assert.notInclude(metadataDiv.innerHTML, 'class="delete-button"');
   });
 
-  it('renders enterprise feature with fake data (user is not admin but owns the feature)',
-    async () => {
-      const enterpriseFeature = {...feature, is_enterprise_feature: true};
-      const component = await fixture(
-        html`<chromedash-guide-metadata
-             .feature=${enterpriseFeature}
-             .isAdmin=${false}
-             email="fake chrome creator one">
-           </chromedash-guide-metadata>`);
-      assert.exists(component);
-      assert.instanceOf(component, ChromedashGuideMetadata);
+  it('renders enterprise feature with fake data (user is not admin but owns the feature)', async () => {
+    const enterpriseFeature = {...feature, is_enterprise_feature: true};
+    const component = await fixture(
+      html`<chromedash-guide-metadata
+        .feature=${enterpriseFeature}
+        .isAdmin=${false}
+        email="fake chrome creator one"
+      >
+      </chromedash-guide-metadata>`
+    );
+    assert.exists(component);
+    assert.instanceOf(component, ChromedashGuideMetadata);
 
-      const metadataDiv = component.shadowRoot.querySelector('div#metadata-readonly');
-      assert.exists(metadataDiv);
-      // edit button exists
-      assert.include(metadataDiv.innerHTML, 'id="open-metadata"');
-      // feature summary is listed
-      assert.include(metadataDiv.innerHTML, 'fake detailed summary');
-      // feature owners are listed
-      assert.include(metadataDiv.innerHTML, 'href="mailto:fake chrome owner one"');
-      assert.include(metadataDiv.innerHTML, 'href="mailto:fake chrome owner two"');
-      // devrel recipients are not listed
-      assert.notInclude(metadataDiv.innerHTML, 'href="mailto:devrel1@example.com"');
-      assert.notInclude(metadataDiv.innerHTML, 'href="mailto:devrel2@example.com"');
-      // cc recipients are listed
-      assert.notInclude(metadataDiv.innerHTML, 'href="mailto:fake chrome cc one"');
-      assert.notInclude(metadataDiv.innerHTML, 'href="mailto:fake chrome cc two"');
-      // feature category is not listed
-      assert.notInclude(metadataDiv.innerHTML, 'fake category');
-      // enterprise feature category are listed
-      assert.include(metadataDiv.innerHTML, 'Security/Privacy');
-      assert.include(metadataDiv.innerHTML, 'User Productivity/Apps');
-      // feature feature type is listed
-      assert.include(metadataDiv.innerHTML, 'fake feature type');
-      // feature intent stage is listed
-      assert.notInclude(metadataDiv.innerHTML, 'fake intent stage');
-      // feature tag is listed
-      assert.notInclude(metadataDiv.innerHTML, 'tag_one');
-      // feature status is listed
-      assert.notInclude(metadataDiv.innerHTML, 'fake chrome status text');
-      // feature blink component is not listed
-      assert.notInclude(metadataDiv.innerHTML, 'Blink');
-      // delete button does not exists
-      assert.include(metadataDiv.innerHTML, 'class="delete-button"');
-    });
+    const metadataDiv = component.shadowRoot.querySelector(
+      'div#metadata-readonly'
+    );
+    assert.exists(metadataDiv);
+    // edit button exists
+    assert.include(metadataDiv.innerHTML, 'id="open-metadata"');
+    // feature summary is listed
+    assert.include(metadataDiv.innerHTML, 'fake detailed summary');
+    // feature owners are listed
+    assert.include(
+      metadataDiv.innerHTML,
+      'href="mailto:fake chrome owner one"'
+    );
+    assert.include(
+      metadataDiv.innerHTML,
+      'href="mailto:fake chrome owner two"'
+    );
+    // devrel recipients are not listed
+    assert.notInclude(
+      metadataDiv.innerHTML,
+      'href="mailto:devrel1@example.com"'
+    );
+    assert.notInclude(
+      metadataDiv.innerHTML,
+      'href="mailto:devrel2@example.com"'
+    );
+    // cc recipients are listed
+    assert.notInclude(
+      metadataDiv.innerHTML,
+      'href="mailto:fake chrome cc one"'
+    );
+    assert.notInclude(
+      metadataDiv.innerHTML,
+      'href="mailto:fake chrome cc two"'
+    );
+    // feature category is not listed
+    assert.notInclude(metadataDiv.innerHTML, 'fake category');
+    // enterprise feature category are listed
+    assert.include(metadataDiv.innerHTML, 'Security/Privacy');
+    assert.include(metadataDiv.innerHTML, 'User Productivity/Apps');
+    // feature feature type is listed
+    assert.include(metadataDiv.innerHTML, 'fake feature type');
+    // feature intent stage is listed
+    assert.notInclude(metadataDiv.innerHTML, 'fake intent stage');
+    // feature tag is listed
+    assert.notInclude(metadataDiv.innerHTML, 'tag_one');
+    // feature status is listed
+    assert.notInclude(metadataDiv.innerHTML, 'fake chrome status text');
+    // feature blink component is not listed
+    assert.notInclude(metadataDiv.innerHTML, 'Blink');
+    // delete button does not exists
+    assert.include(metadataDiv.innerHTML, 'class="delete-button"');
+  });
 
   it('user is an admin', async () => {
     const component = await fixture(
       html`<chromedash-guide-metadata
-             .feature=${feature}
-             .isAdmin=${true}
-             email="fake chrome owner one">
-           </chromedash-guide-metadata>`);
+        .feature=${feature}
+        .isAdmin=${true}
+        email="fake chrome owner one"
+      >
+      </chromedash-guide-metadata>`
+    );
     assert.exists(component);
     assert.instanceOf(component, ChromedashGuideMetadata);
 
-    const metadataDiv = component.shadowRoot.querySelector('div#metadata-readonly');
+    const metadataDiv = component.shadowRoot.querySelector(
+      'div#metadata-readonly'
+    );
     assert.exists(metadataDiv);
     // delete button exists
     assert.include(metadataDiv.innerHTML, 'class="delete-button"');

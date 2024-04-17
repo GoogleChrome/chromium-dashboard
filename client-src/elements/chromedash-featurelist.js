@@ -58,9 +58,12 @@ class ChromedashFeaturelist extends LitElement {
 
     try {
       const features = await (await fetch(featureUrl)).json();
-      this._featuresFetchMetric.end().log().sendToAnalytics('features', 'loaded');
+      this._featuresFetchMetric
+        .end()
+        .log()
+        .sendToAnalytics('features', 'loaded');
 
-      features.map((feature) => {
+      features.map(feature => {
         feature.receivePush = false;
         if (feature.is_released) {
           feature.milestone = feature.milestone || Infinity;
@@ -75,7 +78,7 @@ class ChromedashFeaturelist extends LitElement {
       document.getElementById('content').classList.add('error');
       console.error(error);
       throw new Error('Failed to fetch features');
-    };
+    }
   }
 
   _fireEvent(eventName, detail) {
@@ -87,7 +90,9 @@ class ChromedashFeaturelist extends LitElement {
     return new RegExp(
       // Case-insensitive match on literal string; escape characters that
       // have special meaning in regular expressions.
-      searchStr.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&'), 'i');
+      searchStr.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&'),
+      'i'
+    );
   }
 
   _pathToPropertyVal(propPath, feature) {
@@ -184,31 +189,46 @@ class ChromedashFeaturelist extends LitElement {
 
   _getPropertyFilter(args /* [propPath, searchStr] */) {
     return this._filterProperty.bind(
-      this, args[0], this._getSearchStrRegExp(args[1]));
+      this,
+      args[0],
+      this._getSearchStrRegExp(args[1])
+    );
   }
 
   _filterKeyword(regExp, feature) {
-    return (feature.name + '\n' + feature.summary + '\n' + feature.comments +
-    '\n' + feature.tags).match(regExp) !== null;
+    return (
+      (
+        feature.name +
+        '\n' +
+        feature.summary +
+        '\n' +
+        feature.comments +
+        '\n' +
+        feature.tags
+      ).match(regExp) !== null
+    );
   }
 
   _getKeywordFilter(keyword) {
-    return this._filterKeyword.bind(
-      this, this._getSearchStrRegExp(keyword));
+    return this._filterKeyword.bind(this, this._getSearchStrRegExp(keyword));
   }
 
   // Directly called from template/features.html
   filter(val, shouldPushState) {
     this.searchEl.value = val;
-    const pushOrReplaceState = (
+    const pushOrReplaceState =
       history &&
-      (shouldPushState ? history.pushState.bind(history) :
-        history.replaceState.bind(history)));
+      (shouldPushState
+        ? history.pushState.bind(history)
+        : history.replaceState.bind(history));
     // Clear filter if there's no search or if called directly.
     if (!val) {
       if (pushOrReplaceState) {
-        pushOrReplaceState({query: ''}, document.title,
-          location.pathname + location.search);
+        pushOrReplaceState(
+          {query: ''},
+          document.title,
+          location.pathname + location.search
+        );
       } else {
         location.hash = '';
       }
@@ -216,16 +236,19 @@ class ChromedashFeaturelist extends LitElement {
     } else {
       val = val.trim();
       if (pushOrReplaceState) {
-        pushOrReplaceState({query: val}, document.title,
-          '/features#' + encodeURIComponent(val));
+        pushOrReplaceState(
+          {query: val},
+          document.title,
+          '/features#' + encodeURIComponent(val)
+        );
       }
 
       const blinkComponent = val.match(/^component:\s?(.*)/);
       if (blinkComponent) {
         const componentName = blinkComponent[1].trim();
-        this.filtered = this.features.filter(feature => (
+        this.filtered = this.features.filter(feature =>
           feature.browsers.chrome.blink_components.includes(componentName)
-        ));
+        );
         this._fireEvent('filtered', {count: this.filtered.length});
         return;
       }
@@ -236,20 +259,19 @@ class ChromedashFeaturelist extends LitElement {
       let match;
       while ((match = regExp.exec(val)) !== null) {
         if (start - (regExp.lastIndex - match[0].length) > 0) {
-          parts.push(val.substring(start, regExp.lastIndex -
-                                   match[0].length));
+          parts.push(val.substring(start, regExp.lastIndex - match[0].length));
         }
         parts.push(match[1]);
       }
       const matchLen = match ? match[0].length : 0;
       if (start - (regExp.lastIndex - matchLen) > 0) {
-        parts.push(val.substring(start, regExp.lastIndex -
-                                 matchLen));
+        parts.push(val.substring(start, regExp.lastIndex - matchLen));
       }
 
       // Match words separated by whitespace and/or ":" and/or ordered
       // comparison operator.
-      const wordRegExp = /("([^"]+)"|([^:<>= \f\n\r\t\v\u00a0\u1680\u180e\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]+))([:<>= \f\n\r\t\v\u00a0\u1680\u180e\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]+)?/g;
+      const wordRegExp =
+        /("([^"]+)"|([^:<>= \f\n\r\t\v\u00a0\u1680\u180e\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]+))([:<>= \f\n\r\t\v\u00a0\u1680\u180e\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]+)?/g;
       // Array of matches, each an array of the form:
       // [ full match, quoted-string-or-word, contents-of-quoted-string,
       //   word, separator ].
@@ -270,15 +292,20 @@ class ChromedashFeaturelist extends LitElement {
         match = reMatches[i];
         const part = match[2] || match[3];
         const sep = match[4];
-        const nextPart = i < reMatches.length - 1 ?
-          (reMatches[i + 1][2] || reMatches[i + 1][3]) : null;
+        const nextPart =
+          i < reMatches.length - 1
+            ? reMatches[i + 1][2] || reMatches[i + 1][3]
+            : null;
         if (sep && sep.trim().match(/^:$/) !== null && nextPart !== null) {
           // Separator is ":", and there exists a right-hand-side.
           // Store property query: "propertyName : propertyValue".
           propertyQueries.push([part, nextPart]);
           i++;
-        } else if (sep && sep.trim().match(/^(<=|>=|==|<|>|=)$/) !== null &&
-            nextPart !== null) {
+        } else if (
+          sep &&
+          sep.trim().match(/^(<=|>=|==|<|>|=)$/) !== null &&
+          nextPart !== null
+        ) {
           // Separator is an ordered comparison operator and there exists a
           // right-hand-side.
           // Store operator query "name <<operator>> value".
@@ -293,7 +320,8 @@ class ChromedashFeaturelist extends LitElement {
 
       // Construct a list filter for each query part, and store them all in
       // a list.
-      const filters = propertyQueries.map(this._getPropertyFilter.bind(this))
+      const filters = propertyQueries
+        .map(this._getPropertyFilter.bind(this))
         .concat(operatorQueries.map(this._getOperatorFilter.bind(this)))
         .concat(keywordQueries.map(this._getKeywordFilter.bind(this)));
 
@@ -321,13 +349,18 @@ class ChromedashFeaturelist extends LitElement {
     const targetEl = this.shadowRoot.querySelector('#id-' + targetId);
     if (targetEl) {
       targetEl.scrollIntoView();
-      const heightOfHeader = document.querySelector('.main-toolbar').getBoundingClientRect().height;
+      const heightOfHeader = document
+        .querySelector('.main-toolbar')
+        .getBoundingClientRect().height;
       window.scrollBy(0, heightOfHeader * -1);
     }
   }
 
   _initialize() {
-    this._featuresUnveilMetric.end().log().sendToAnalytics('features', 'unveil');
+    this._featuresUnveilMetric
+      .end()
+      .log()
+      .sendToAnalytics('features', 'unveil');
     this._fireEvent('app-ready');
     this._hasInitialized = true;
   }
@@ -338,8 +371,9 @@ class ChromedashFeaturelist extends LitElement {
 
   render() {
     // TODO: Avoid computing values in render().
-    let filteredWithState = this.filtered.map((feature) => {
-      const editable = this.isSiteEditor ||
+    let filteredWithState = this.filtered.map(feature => {
+      const editable =
+        this.isSiteEditor ||
         (this.editableFeatures && this.editableFeatures.includes(feature.id));
       return {
         feature: feature,
@@ -354,25 +388,39 @@ class ChromedashFeaturelist extends LitElement {
       filteredWithState = filteredWithState.slice(0, MAX_FEATURES_SHOWN);
     }
     return html`
-      ${filteredWithState.map((item) => html`
+      ${filteredWithState.map(
+        item => html`
           <div class="item">
-            <div ?hidden="${this._computeSectionHidden(item.feature, this.features, this.filtered)}"
-                 class="section-marker">${item.feature.browsers.chrome.status.text}</div>
-            <chromedash-feature id="id-${item.feature.id}" tabindex="0"
-                 ?open="${item.open}"
-                 ?starred="${item.starred}"
-                 @feature-toggled="${this._onFeatureToggledBound}"
-                 @star-toggled="${this._onStarToggledBound}"
-                 .feature="${item.feature}"
-                 ?canEdit="${item.canEditFeature}"
-                 ?signedIn="${this.signedInUser != ''}"
-          ></chromedash-feature>
+            <div
+              ?hidden="${this._computeSectionHidden(
+                item.feature,
+                this.features,
+                this.filtered
+              )}"
+              class="section-marker"
+            >
+              ${item.feature.browsers.chrome.status.text}
+            </div>
+            <chromedash-feature
+              id="id-${item.feature.id}"
+              tabindex="0"
+              ?open="${item.open}"
+              ?starred="${item.starred}"
+              @feature-toggled="${this._onFeatureToggledBound}"
+              @star-toggled="${this._onStarToggledBound}"
+              .feature="${item.feature}"
+              ?canEdit="${item.canEditFeature}"
+              ?signedIn="${this.signedInUser != ''}"
+            ></chromedash-feature>
           </div>
-        `)}
-
-      ${numOverLimit > 0 ?
-        html`<p>To see ${numOverLimit} earlier features, please enter a more specific query.</p>` :
-        ''}
+        `
+      )}
+      ${numOverLimit > 0
+        ? html`<p>
+            To see ${numOverLimit} earlier features, please enter a more
+            specific query.
+          </p>`
+        : ''}
     `;
   }
 }

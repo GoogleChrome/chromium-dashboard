@@ -1,7 +1,6 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
-
 class ChromedashBanner extends LitElement {
   static get properties() {
     return {
@@ -20,15 +19,16 @@ class ChromedashBanner extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-      div {
-        display: inline-block;
-        background: var(--warning-background);
-        color: var(--warning-color);
-        border-radius: var(--border-radius);
-        padding: var(--content-padding);
-        width:100%;
-      }
-    `];
+        div {
+          display: inline-block;
+          background: var(--warning-background);
+          color: var(--warning-color);
+          border-radius: var(--border-radius);
+          padding: var(--content-padding);
+          width: 100%;
+        }
+      `,
+    ];
   }
 
   computeLocalDateString() {
@@ -37,8 +37,13 @@ class ChromedashBanner extends LitElement {
     }
     const date = new Date(this.timestamp * 1000);
     const formatOptions = {
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-      hour: 'numeric', minute: 'numeric'}; // No seconds
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+    }; // No seconds
     return date.toLocaleString(undefined, formatOptions);
   }
 
@@ -47,12 +52,7 @@ class ChromedashBanner extends LitElement {
       return nothing;
     }
 
-    return html`
-      <div>
-        ${this.message}
-        ${this.computeLocalDateString()}
-      </div>
-    `;
+    return html` <div>${this.message} ${this.computeLocalDateString()}</div> `;
   }
 }
 

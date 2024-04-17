@@ -23,48 +23,57 @@ describe('chromedash-all-features-page', () => {
   });
 
   it('render with no data', async () => {
-    const invalidFeaturePromise = Promise.reject(new Error('Got error response from server'));
+    const invalidFeaturePromise = Promise.reject(
+      new Error('Got error response from server')
+    );
     window.csClient.searchFeatures.returns(invalidFeaturePromise);
     const component = await fixture(
-      html`<chromedash-all-features-page></chromedash-all-features-page>`);
+      html`<chromedash-all-features-page></chromedash-all-features-page>`
+    );
     assert.exists(component);
     assert.instanceOf(component, ChromedashAllFeaturesPage);
 
     // error response would trigger the toast to show message
     const toastEl = document.querySelector('chromedash-toast');
     const toastMsgSpan = toastEl.shadowRoot.querySelector('span#msg');
-    assert.include(toastMsgSpan.innerHTML,
-      'Some errors occurred. Please refresh the page or try again later.');
+    assert.include(
+      toastMsgSpan.innerHTML,
+      'Some errors occurred. Please refresh the page or try again later.'
+    );
   });
 
   it('render with fake data', async () => {
     const validFeaturePromise = Promise.resolve({
       total_count: 1,
-      features: [{
-        id: 123456,
-        name: 'feature one',
-        summary: 'detailed sum',
-        new_crbug_url: 'fake crbug link',
-        browsers: {
-          chrome: {
-            blink_components: ['Blink'],
-            owners: ['fake chrome owner one', 'fake chrome owner two'],
-            status: {text: 'fake chrome status text'},
+      features: [
+        {
+          id: 123456,
+          name: 'feature one',
+          summary: 'detailed sum',
+          new_crbug_url: 'fake crbug link',
+          browsers: {
+            chrome: {
+              blink_components: ['Blink'],
+              owners: ['fake chrome owner one', 'fake chrome owner two'],
+              status: {text: 'fake chrome status text'},
+            },
+            ff: {view: {text: 'fake ff view text'}},
+            safari: {view: {text: 'fake safari view text'}},
+            webdev: {view: {text: 'fake webdev view text'}},
           },
-          ff: {view: {text: 'fake ff view text'}},
-          safari: {view: {text: 'fake safari view text'}},
-          webdev: {view: {text: 'fake webdev view text'}},
+          resources: {
+            samples: ['fake sample link one', 'fake sample link two'],
+            docs: ['fake doc link one', 'fake doc link two'],
+          },
+          standards: {
+            spec: 'fake spec link',
+            maturity: {
+              text: 'Unknown standards status - check spec link for status',
+            },
+          },
+          tags: ['tag_one'],
         },
-        resources: {
-          samples: ['fake sample link one', 'fake sample link two'],
-          docs: ['fake doc link one', 'fake doc link two'],
-        },
-        standards: {
-          spec: 'fake spec link',
-          maturity: {text: 'Unknown standards status - check spec link for status'},
-        },
-        tags: ['tag_one'],
-      }],
+      ],
     });
     const user = {
       can_create_feature: true,
@@ -75,14 +84,16 @@ describe('chromedash-all-features-page', () => {
     };
     window.csClient.searchFeatures.returns(validFeaturePromise);
     const component = await fixture(
-      html`<chromedash-all-features-page
-            .user=${user}>
-           </chromedash-all-features-page>`);
+      html`<chromedash-all-features-page .user=${user}>
+      </chromedash-all-features-page>`
+    );
     assert.exists(component);
     assert.instanceOf(component, ChromedashAllFeaturesPage);
 
     // feature table exists
-    const featureTableEl = component.shadowRoot.querySelector('chromedash-feature-table');
+    const featureTableEl = component.shadowRoot.querySelector(
+      'chromedash-feature-table'
+    );
     assert.exists(featureTableEl);
 
     // title exists

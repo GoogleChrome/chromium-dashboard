@@ -1,7 +1,6 @@
 import {LitElement, html, css} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
-
 export class ChromedashFooter extends LitElement {
   static get styles() {
     return [
@@ -42,7 +41,8 @@ export class ChromedashFooter extends LitElement {
             display: block;
           }
         }
-    `];
+      `,
+    ];
   }
 
   render() {
@@ -50,14 +50,30 @@ export class ChromedashFooter extends LitElement {
       <div id="footer-spacer"></div>
       <footer>
         <div>
-          <a href="https://github.com/GoogleChrome/chromium-dashboard/wiki/"
-            target="_blank" rel="noopener">Help</a>
-          <a href="https://groups.google.com/a/chromium.org/forum/#!newtopic/blink-dev"
-            target="_blank" rel="noopener">Discuss</a>
-          <a href="https://github.com/GoogleChrome/chromium-dashboard/issues"
-            target="_blank" rel="noopener">File an issue</a>
-          <a href="https://policies.google.com/privacy"
-            target="_blank" rel="noopener">Privacy</a>
+          <a
+            href="https://github.com/GoogleChrome/chromium-dashboard/wiki/"
+            target="_blank"
+            rel="noopener"
+            >Help</a
+          >
+          <a
+            href="https://groups.google.com/a/chromium.org/forum/#!newtopic/blink-dev"
+            target="_blank"
+            rel="noopener"
+            >Discuss</a
+          >
+          <a
+            href="https://github.com/GoogleChrome/chromium-dashboard/issues"
+            target="_blank"
+            rel="noopener"
+            >File an issue</a
+          >
+          <a
+            href="https://policies.google.com/privacy"
+            target="_blank"
+            rel="noopener"
+            >Privacy</a
+          >
         </div>
       </footer>
     `;

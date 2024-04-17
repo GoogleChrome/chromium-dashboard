@@ -28,16 +28,19 @@ export class ChromedashVendorViews extends LitElement {
    * @returns {boolean}
    */
   urlIsStandardsPosition(url) {
-    return /github.com\/(mozilla|WebKit)\/standards-positions\/issues/.test(url);
+    return /github.com\/(mozilla|WebKit)\/standards-positions\/issues/.test(
+      url
+    );
   }
 
   render() {
     if (this.href) {
       return html`<chromedash-link
-                    href=${this.href}
-                    ?showContentAsLabel=${!this.urlIsStandardsPosition(this.href)}
-                    .featureLinks=${this.featureLinks}
-                  ><slot></slot></chromedash-link>`;
+        href=${this.href}
+        ?showContentAsLabel=${!this.urlIsStandardsPosition(this.href)}
+        .featureLinks=${this.featureLinks}
+        ><slot></slot
+      ></chromedash-link>`;
     } else {
       return html`<slot></slot>`;
     }

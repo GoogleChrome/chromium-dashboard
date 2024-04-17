@@ -8,10 +8,7 @@ import {isoDateString} from './utils.js';
 
 export class ChromedashReportSpecMentorsPage extends LitElement {
   static get styles() {
-    return [
-      ...SHARED_STYLES,
-      css`
-      `];
+    return [...SHARED_STYLES, css``];
   }
 
   static get properties() {
@@ -35,7 +32,10 @@ export class ChromedashReportSpecMentorsPage extends LitElement {
     this._client = window.csOpenApiClient;
     this._mentorsTask = new Task(this, {
       task: async ([updatedAfter], {signal}) => {
-        const mentors = await this._client.listSpecMentors({after: updatedAfter}, {signal});
+        const mentors = await this._client.listSpecMentors(
+          {after: updatedAfter},
+          {signal}
+        );
         mentors.sort((a, b) => a.email.localeCompare(b.email));
         return mentors;
       },
@@ -70,11 +70,13 @@ export class ChromedashReportSpecMentorsPage extends LitElement {
     const newDate = e.target.valueAsDate;
     if (newDate) {
       this._updatedAfter = newDate;
-      this.dispatchEvent(new CustomEvent('afterchanged', {
-        detail: {after: this._updatedAfter},
-        bubbles: true,
-        composed: true,
-      }));
+      this.dispatchEvent(
+        new CustomEvent('afterchanged', {
+          detail: {after: this._updatedAfter},
+          bubbles: true,
+          composed: true,
+        })
+      );
     }
   }
 
@@ -89,23 +91,31 @@ export class ChromedashReportSpecMentorsPage extends LitElement {
           @sl-change=${this.afterChanged}
         ></sl-input>
       </div>
-      ${
-        this._mentorsTask.render({
-          pending: () => html`
-            <details open>
-              <summary><sl-skeleton effect="sheen"></sl-skeleton></summary>
-              <sl-skeleton effect="sheen"></sl-skeleton>
-            </details>`,
-          complete: (specMentors) => specMentors.map(mentor =>
-            html`<chromedash-report-spec-mentor .mentor=${mentor}></chromedash-report-spec-mentor>`),
-          error: (e) => {
-            console.error(e);
-            return html`<p>Some errors occurred. Please refresh the page or try again later.</p>`;
-          },
-        })
-      }
+      ${this._mentorsTask.render({
+        pending: () =>
+          html` <details open>
+            <summary><sl-skeleton effect="sheen"></sl-skeleton></summary>
+            <sl-skeleton effect="sheen"></sl-skeleton>
+          </details>`,
+        complete: specMentors =>
+          specMentors.map(
+            mentor =>
+              html`<chromedash-report-spec-mentor
+                .mentor=${mentor}
+              ></chromedash-report-spec-mentor>`
+          ),
+        error: e => {
+          console.error(e);
+          return html`<p>
+            Some errors occurred. Please refresh the page or try again later.
+          </p>`;
+        },
+      })}
     `;
   }
 }
 
-customElements.define('chromedash-report-spec-mentors-page', ChromedashReportSpecMentorsPage);
+customElements.define(
+  'chromedash-report-spec-mentors-page',
+  ChromedashReportSpecMentorsPage
+);

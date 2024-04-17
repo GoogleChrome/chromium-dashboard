@@ -1,10 +1,8 @@
 import {LitElement, css, html, nothing} from 'lit';
-import {autolink, renderAbsoluteDate, renderRelativeDate,
-} from './utils.js';
+import {autolink, renderAbsoluteDate, renderRelativeDate} from './utils.js';
 import '@polymer/iron-icon';
 
 import {SHARED_STYLES} from '../css/shared-css.js';
-
 
 export class ChromedashAmendment extends LitElement {
   static get properties() {
@@ -28,7 +26,7 @@ export class ChromedashAmendment extends LitElement {
         }
 
         summary {
-          list-style: revert;  /* Show small triangle */
+          list-style: revert; /* Show small triangle */
           white-space: nowrap;
           box-sizing: border-box;
           contain: content;
@@ -42,9 +40,9 @@ export class ChromedashAmendment extends LitElement {
           padding: var(--content-padding-quarter);
           padding-left: var(--content-padding);
         }
-      `];
+      `,
+    ];
   }
-
 
   render() {
     return html`
@@ -54,21 +52,20 @@ export class ChromedashAmendment extends LitElement {
           <span id="preview">${this.amendment.new_value}</span>
         </summary>
 
-       <div>
-        <b>Old</b>:
-        <div>${this.amendment.old_value}</div>
-       </div>
+        <div>
+          <b>Old</b>:
+          <div>${this.amendment.old_value}</div>
+        </div>
 
-       <div>
-        <b>New</b>:
-        <div>${this.amendment.new_value}</div>
-       </div>
-     </details>
+        <div>
+          <b>New</b>:
+          <div>${this.amendment.new_value}</div>
+        </div>
+      </details>
     `;
   }
-};
+}
 customElements.define('chromedash-amendment', ChromedashAmendment);
-
 
 export class ChromedashActivity extends LitElement {
   static get properties() {
@@ -129,7 +126,8 @@ export class ChromedashActivity extends LitElement {
         p {
           padding: 1em;
         }
-      `];
+      `,
+    ];
   }
 
   // Returns a boolean representing whether the given activity can be edited.
@@ -151,7 +149,8 @@ export class ChromedashActivity extends LitElement {
     if (!this.isEditable() || !this.activity.deleted_by) {
       return nothing;
     }
-    return html`<div style="color: darkred">[Deleted] (comment hidden for other users)
+    return html`<div style="color: darkred">
+      [Deleted] (comment hidden for other users)
     </div>`;
   }
 
@@ -162,21 +161,25 @@ export class ChromedashActivity extends LitElement {
       return nothing;
     }
     // Show delete option if not deleted, else show undelete.
-    let menuItem = html`
-    <sl-menu-item @click="${() => this.handleDelete(false)}"
-    >Delete Comment</sl-menu-item>`;
+    let menuItem = html` <sl-menu-item
+      @click="${() => this.handleDelete(false)}"
+      >Delete Comment</sl-menu-item
+    >`;
     if (this.activity.deleted_by) {
-      menuItem = html`
-      <sl-menu-item @click="${() => this.handleDelete(true)}"
-      >Undelete Comment</sl-menu-item>`;
+      menuItem = html` <sl-menu-item @click="${() => this.handleDelete(true)}"
+        >Undelete Comment</sl-menu-item
+      >`;
     }
 
-    return html`
-       <sl-dropdown class="comment-menu-icon">
-         <sl-icon-button library="material" name="more_vert_24px"
-           label="Comment menu" slot="trigger"></sl-icon-button>
-          <sl-menu>${menuItem}</sl-menu>
-       </sl-dropdown>`;
+    return html` <sl-dropdown class="comment-menu-icon">
+      <sl-icon-button
+        library="material"
+        name="more_vert_24px"
+        label="Comment menu"
+        slot="trigger"
+      ></sl-icon-button>
+      <sl-menu>${menuItem}</sl-menu>
+    </sl-dropdown>`;
   }
 
   render() {
@@ -187,21 +190,25 @@ export class ChromedashActivity extends LitElement {
     return html`
       <div class="comment">
         <div class="comment_header ${this.narrow ? 'narrow' : ''}">
-           ${this.formatEditMenu()}
-           <span class="author">${this.activity.author}</span>
-           <span class="preposition">on</span>
-           <span class="date">
-             ${renderAbsoluteDate(this.activity.created, true)}
-             ${renderRelativeDate(this.activity.created)}
-           </span>
+          ${this.formatEditMenu()}
+          <span class="author">${this.activity.author}</span>
+          <span class="preposition">on</span>
+          <span class="date">
+            ${renderAbsoluteDate(this.activity.created, true)}
+            ${renderRelativeDate(this.activity.created)}
+          </span>
         </div>
         <div id="amendments">
-          ${this.activity.amendments.map((a) => html`
-            <chromedash-amendment .amendment=${a}></chromedash-amendment>
-          `)}
+          ${this.activity.amendments.map(
+            a => html`
+              <chromedash-amendment .amendment=${a}></chromedash-amendment>
+            `
+          )}
         </div>
         <!-- prettier-ignore -->
-        <div class="comment_body">${preface}${autolink(this.activity.content)}</div>
+        <div class="comment_body">${preface}${autolink(
+          this.activity.content
+        )}</div>
       </div>
     `;
   }
@@ -211,19 +218,22 @@ export class ChromedashActivity extends LitElement {
     let resp;
     if (isUndelete) {
       resp = await window.csClient.undeleteComment(
-        this.featureId, this.activity.comment_id);
+        this.featureId,
+        this.activity.comment_id
+      );
     } else {
       resp = await window.csClient.deleteComment(
-        this.featureId, this.activity.comment_id);
+        this.featureId,
+        this.activity.comment_id
+      );
     }
     if (resp && resp.message === 'Done') {
-      this.activity.deleted_by = (isUndelete) ? null : this.user.email;
+      this.activity.deleted_by = isUndelete ? null : this.user.email;
       this.requestUpdate();
     }
   }
-};
+}
 customElements.define('chromedash-activity', ChromedashActivity);
-
 
 export class ChromedashActivityLog extends LitElement {
   static get properties() {
@@ -243,7 +253,8 @@ export class ChromedashActivityLog extends LitElement {
         p {
           padding: var(--content-padding);
         }
-    `];
+      `,
+    ];
   }
 
   constructor() {
@@ -264,16 +275,20 @@ export class ChromedashActivityLog extends LitElement {
       return html`<p>No comments yet.</p>`;
     }
 
-    const orderedComments = (
-      this.reverse ? this.comments.slice(0).reverse() : this.comments);
-    return orderedComments.map((activity) => html`
+    const orderedComments = this.reverse
+      ? this.comments.slice(0).reverse()
+      : this.comments;
+    return orderedComments.map(
+      activity => html`
         <chromedash-activity
           .user=${this.user}
           .featureId=${this.featureId}
           .narrow=${this.narrow}
-          .activity=${activity}>
+          .activity=${activity}
+        >
         </chromedash-activity>
-      `);
+      `
+    );
   }
 }
 

@@ -5,7 +5,8 @@ import {ChromedashFooter} from './chromedash-footer';
 describe('chromedash-footer', () => {
   it('renders with no data', async () => {
     const component = await fixture(
-      html`<chromedash-footer></chromedash-footer>`);
+      html`<chromedash-footer></chromedash-footer>`
+    );
     assert.exists(component);
     assert.instanceOf(component, ChromedashFooter);
     const footer = component.shadowRoot.querySelector('footer');
@@ -19,6 +20,6 @@ describe('chromedash-footer', () => {
     ];
 
     // all footer links exist and are clickable
-    links.map((link) => assert.include(footer.innerHTML, `href="${link}"`));
+    links.map(link => assert.include(footer.innerHTML, `href="${link}"`));
   });
 });

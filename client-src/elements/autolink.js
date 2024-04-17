@@ -5,14 +5,20 @@
 import {enhanceAutolink} from './chromedash-link.js';
 const CRBUG_DEFAULT_PROJECT = 'chromium';
 const CRBUG_URL = 'https://bugs.chromium.org';
-const ISSUE_TRACKER_RE = /(\b(issues?|bugs?)[ \t]*(:|=|\b)|\bfixed[ \t]*:)([ \t]*((\b[-a-z0-9]+)[:\#])?(\#?)(\d+)\b(,?[ \t]*(and|or)?)?)+/gi;
-const PROJECT_LOCALID_RE = /((\b(issue|bug)[ \t]*(:|=)?[ \t]*|\bfixed[ \t]*:[ \t]*)?((\b[-a-z0-9]+)[:\#])?(\#?)(\d+))/gi;
-const PROJECT_COMMENT_BUG_RE = /(((\b(issue|bug)[ \t]*(:|=)?[ \t]*)(\#?)(\d+)[ \t*])?((\b((comment)[ \t]*(:|=)?[ \t]*(\#?))|(\B((\#))(c)))(\d+)))/gi;
+const ISSUE_TRACKER_RE =
+  /(\b(issues?|bugs?)[ \t]*(:|=|\b)|\bfixed[ \t]*:)([ \t]*((\b[-a-z0-9]+)[:\#])?(\#?)(\d+)\b(,?[ \t]*(and|or)?)?)+/gi;
+const PROJECT_LOCALID_RE =
+  /((\b(issue|bug)[ \t]*(:|=)?[ \t]*|\bfixed[ \t]*:[ \t]*)?((\b[-a-z0-9]+)[:\#])?(\#?)(\d+))/gi;
+const PROJECT_COMMENT_BUG_RE =
+  /(((\b(issue|bug)[ \t]*(:|=)?[ \t]*)(\#?)(\d+)[ \t*])?((\b((comment)[ \t]*(:|=)?[ \t]*(\#?))|(\B((\#))(c)))(\d+)))/gi;
 const PROJECT_LOCALID_RE_PROJECT_GROUP = 6;
 const PROJECT_LOCALID_RE_ID_GROUP = 8;
-const SHORT_LINK_RE = /(^|[^-\/._])\b(https?:\/\/|ftp:\/\/|mailto:)?(go|g|shortn|who|teams)\/([^\s<]+)/gi;
-const NUMERIC_SHORT_LINK_RE = /(^|[^-\/._])\b(https?:\/\/|ftp:\/\/)?(b|t|o|omg|cl|cr|fxr|fxrev|fxb|tqr)\/([0-9]+)/gi;
-const IMPLIED_LINK_RE = /(?!@)(^|[^-\/._])\b[a-z]((-|\.)?[a-z0-9])+\.(com|net|org|edu|dev)\b(\/[^\s<]*)?/gi;
+const SHORT_LINK_RE =
+  /(^|[^-\/._])\b(https?:\/\/|ftp:\/\/|mailto:)?(go|g|shortn|who|teams)\/([^\s<]+)/gi;
+const NUMERIC_SHORT_LINK_RE =
+  /(^|[^-\/._])\b(https?:\/\/|ftp:\/\/)?(b|t|o|omg|cl|cr|fxr|fxrev|fxb|tqr)\/([0-9]+)/gi;
+const IMPLIED_LINK_RE =
+  /(?!@)(^|[^-\/._])\b[a-z]((-|\.)?[a-z0-9])+\.(com|net|org|edu|dev)\b(\/[^\s<]*)?/gi;
 const IS_LINK_RE = /()\b(https?:\/\/|ftp:\/\/|mailto:)([^\s<]+)/gi;
 const LINK_TRAILING_CHARS = [
   [null, ':'],
@@ -22,45 +28,30 @@ const LINK_TRAILING_CHARS = [
   ['(', ')'],
   ['[', ']'],
   ['{', '}'],
-  ['\'', '\''],
+  ["'", "'"],
   ['"', '"'],
 ];
-const GOOG_SHORT_LINK_RE = /^(b|t|o|omg|cl|cr|go|g|shortn|who|teams|fxr|fxrev|fxb|tqr)\/.*/gi;
+const GOOG_SHORT_LINK_RE =
+  /^(b|t|o|omg|cl|cr|go|g|shortn|who|teams|fxr|fxrev|fxb|tqr)\/.*/gi;
 
 const Components = new Map();
-Components.set(
-  '00-commentbug',
-  {
-    refRegs: [PROJECT_COMMENT_BUG_RE],
-    replacer: replaceCommentBugRef,
-  },
-);
-Components.set(
-  '02-full-urls',
-  {
-    refRegs: [IS_LINK_RE],
-    replacer: replaceLinkRef,
-  },
-);
+Components.set('00-commentbug', {
+  refRegs: [PROJECT_COMMENT_BUG_RE],
+  replacer: replaceCommentBugRef,
+});
+Components.set('02-full-urls', {
+  refRegs: [IS_LINK_RE],
+  replacer: replaceLinkRef,
+});
 // 03-user-emails unused.
-Components.set(
-  '04-tracker-regular',
-  {
-    refRegs: [ISSUE_TRACKER_RE],
-    replacer: replaceTrackerIssueRef,
-  },
-);
-Components.set(
-  '05-linkify-shorthand',
-  {
-    refRegs: [
-      SHORT_LINK_RE,
-      NUMERIC_SHORT_LINK_RE,
-      IMPLIED_LINK_RE,
-    ],
-    replacer: replaceLinkRef,
-  },
-);
+Components.set('04-tracker-regular', {
+  refRegs: [ISSUE_TRACKER_RE],
+  replacer: replaceTrackerIssueRef,
+});
+Components.set('05-linkify-shorthand', {
+  refRegs: [SHORT_LINK_RE, NUMERIC_SHORT_LINK_RE, IMPLIED_LINK_RE],
+  replacer: replaceLinkRef,
+});
 // 06-versioncontrol unused.
 
 // Replace plain text references with links functions.
@@ -68,7 +59,10 @@ function replaceIssueRef(stringMatch, projectName, localId, commentId) {
   return createIssueRefRun(projectName, localId, stringMatch, commentId);
 }
 
-function replaceTrackerIssueRef(match, currentProjectName=CRBUG_DEFAULT_PROJECT) {
+function replaceTrackerIssueRef(
+  match,
+  currentProjectName = CRBUG_DEFAULT_PROJECT
+) {
   const issueRefRE = PROJECT_LOCALID_RE;
   const commentId = '';
   const textRuns = [];
@@ -82,9 +76,14 @@ function replaceTrackerIssueRef(match, currentProjectName=CRBUG_DEFAULT_PROJECT)
     if (refMatch[PROJECT_LOCALID_RE_PROJECT_GROUP]) {
       currentProjectName = refMatch[PROJECT_LOCALID_RE_PROJECT_GROUP];
     }
-    textRuns.push(replaceIssueRef(
-      refMatch[0], currentProjectName,
-      refMatch[PROJECT_LOCALID_RE_ID_GROUP], commentId));
+    textRuns.push(
+      replaceIssueRef(
+        refMatch[0],
+        currentProjectName,
+        refMatch[PROJECT_LOCALID_RE_ID_GROUP],
+        commentId
+      )
+    );
     pos = refMatch.index + refMatch[0].length;
   }
   if (match[0].slice(pos) !== '') {
@@ -98,8 +97,7 @@ function replaceCommentBugRef(match) {
   const issueNum = match[7];
   const commentNum = match[18];
   if (issueNum && commentNum) {
-    const href = (
-      `${CRBUG_URL}/p/${CRBUG_DEFAULT_PROJECT}/issues/detail?id=${issueNum}#c${commentNum}`);
+    const href = `${CRBUG_URL}/p/${CRBUG_DEFAULT_PROJECT}/issues/detail?id=${issueNum}#c${commentNum}`;
     textRun = {content: match[0], tag: 'a', href};
   } else if (commentNum) {
     const href = `${CRBUG_URL}/p/${CRBUG_DEFAULT_PROJECT}/issues/detail#c${commentNum}`;
@@ -128,8 +126,11 @@ function replaceLinkRef(match) {
   });
   let href = content;
   const lowerHref = href.toLowerCase();
-  if (!lowerHref.startsWith('http') && !lowerHref.startsWith('ftp') &&
-      !lowerHref.startsWith('mailto')) {
+  if (
+    !lowerHref.startsWith('http') &&
+    !lowerHref.startsWith('ftp') &&
+    !lowerHref.startsWith('mailto')
+  ) {
     // Prepend google-internal short links with http to
     // prevent HTTPS error interstitial.
     // SHORT_LINK_RE should not be used here as it might be
@@ -161,9 +162,8 @@ export function markupAutolinks(plainString, featureLinks = []) {
   plainString = plainString || '';
   const chunks = [plainString.trim()];
   const textRuns = [];
-  chunks.filter(Boolean).forEach((chunk) => {
-    textRuns.push(
-      ...autolinkChunk(chunk));
+  chunks.filter(Boolean).forEach(chunk => {
+    textRuns.push(...autolinkChunk(chunk));
   });
   const result = textRuns.map(part => {
     if (part.tag === 'a') {
@@ -178,18 +178,16 @@ export function markupAutolinks(plainString, featureLinks = []) {
 function autolinkChunk(chunk) {
   let textRuns = [{content: chunk}];
   Components.forEach(({refRegs, replacer}) => {
-    refRegs.forEach((re) => {
-      textRuns = applyLinks(
-        textRuns, replacer, re);
+    refRegs.forEach(re => {
+      textRuns = applyLinks(textRuns, replacer, re);
     });
   });
   return textRuns;
 }
 
-function applyLinks(
-  textRuns, replacer, re) {
+function applyLinks(textRuns, replacer, re) {
   const resultRuns = [];
-  textRuns.forEach((textRun) => {
+  textRuns.forEach(textRun => {
     if (textRun.tag) {
       resultRuns.push(textRun);
     } else {
@@ -201,8 +199,7 @@ function applyLinks(
           // Create textrun for content between previous and current match.
           resultRuns.push({content: content.slice(pos, match.index)});
         }
-        resultRuns.push(
-          ...replacer(match));
+        resultRuns.push(...replacer(match));
         pos = match.index + match[0].length;
       }
       if (content.slice(pos) !== '') {

@@ -33,13 +33,15 @@ describe('chromedash-feature-page', () => {
   const gatesPromise = Promise.resolve([]);
   const commentsPromise = Promise.resolve([]);
   const processPromise = Promise.resolve({
-    stages: [{
-      name: 'stage one',
-      description: 'a description',
-      progress_items: [],
-      outgoing_stage: 1,
-      actions: [],
-    }],
+    stages: [
+      {
+        name: 'stage one',
+        description: 'a description',
+        progress_items: [],
+        outgoing_stage: 1,
+        actions: [],
+      },
+    ],
   });
   const dismissedCuesPromise = Promise.resolve(['progress-checkmarks']);
   const starsPromise = Promise.resolve([123456]);
@@ -54,30 +56,30 @@ describe('chromedash-feature-page', () => {
     'Web developer signals': 'True',
   });
   const channelsPromise = Promise.resolve({
-    'canary_asan': {
-      'version': 81,
-      'earliest_beta': '2020-02-13T00:00:00',
-      'mstone': 'fake milestone number',
+    canary_asan: {
+      version: 81,
+      earliest_beta: '2020-02-13T00:00:00',
+      mstone: 'fake milestone number',
     },
-    'canary': {
-      'version': 81,
-      'earliest_beta': '2020-02-13T00:00:00',
-      'mstone': 'fake milestone number',
+    canary: {
+      version: 81,
+      earliest_beta: '2020-02-13T00:00:00',
+      mstone: 'fake milestone number',
     },
-    'dev': {
-      'version': 81,
-      'earliest_beta': '2020-02-13T00:00:00',
-      'mstone': 'fake milestone number',
+    dev: {
+      version: 81,
+      earliest_beta: '2020-02-13T00:00:00',
+      mstone: 'fake milestone number',
     },
-    'beta': {
-      'version': 80,
-      'earliest_beta': '2020-02-13T00:00:00',
-      'mstone': 'fake milestone number',
+    beta: {
+      version: 80,
+      earliest_beta: '2020-02-13T00:00:00',
+      mstone: 'fake milestone number',
     },
-    'stable': {
-      'version': 79,
-      'earliest_beta': '2020-02-13T00:00:00',
-      'mstone': 'fake milestone number',
+    stable: {
+      version: 79,
+      earliest_beta: '2020-02-13T00:00:00',
+      mstone: 'fake milestone number',
     },
   });
   const validFeaturePromise = Promise.resolve({
@@ -92,7 +94,9 @@ describe('chromedash-feature-page', () => {
         status: {text: 'fake chrome status text'},
       },
       ff: {view: {val: 1, text: 'fake ff view text', url: 'fake ff url'}},
-      safari: {view: {val: 1, text: 'fake safari view text', url: 'fake safari url'}},
+      safari: {
+        view: {val: 1, text: 'fake safari view text', url: 'fake safari url'},
+      },
       webdev: {view: {text: 'fake webdev view text'}},
     },
     resources: {
@@ -127,7 +131,9 @@ describe('chromedash-feature-page', () => {
    */
   function assertClickableVendorLink(parentEl, {href, text}) {
     // Select chromedash-vendor-views element
-    const vendorViewsEl = parentEl.querySelector(`chromedash-vendor-views[href="${href}"]`);
+    const vendorViewsEl = parentEl.querySelector(
+      `chromedash-vendor-views[href="${href}"]`
+    );
     assert.exists(vendorViewsEl);
     // Verify that the link's text content matches the expected display text
     assert.equal(vendorViewsEl.textContent, text);
@@ -174,27 +180,35 @@ describe('chromedash-feature-page', () => {
   });
 
   it('renders with no data', async () => {
-    const invalidFeaturePromise = Promise.reject(new Error('Got error response from server'));
+    const invalidFeaturePromise = Promise.reject(
+      new Error('Got error response from server')
+    );
     window.csClient.getFeature.withArgs(0).returns(invalidFeaturePromise);
 
     const component = await fixture(
-      html`<chromedash-feature-page></chromedash-feature-page>`);
+      html`<chromedash-feature-page></chromedash-feature-page>`
+    );
     assert.exists(component);
     assert.instanceOf(component, ChromedashFeaturePage);
 
     // invalid feature requests would trigger the toast to show message
     const toastEl = document.querySelector('chromedash-toast');
     const toastMsgSpan = toastEl.shadowRoot.querySelector('span#msg');
-    assert.include(toastMsgSpan.innerHTML,
-      'Some errors occurred. Please refresh the page or try again later.');
+    assert.include(
+      toastMsgSpan.innerHTML,
+      'Some errors occurred. Please refresh the page or try again later.'
+    );
   });
 
   it('renders with "Feature not found." when feature not found', async () => {
-    const featureNotFoundPromise = Promise.reject(new FeatureNotFoundError(12345));
+    const featureNotFoundPromise = Promise.reject(
+      new FeatureNotFoundError(12345)
+    );
     window.csClient.getFeature.withArgs(0).returns(featureNotFoundPromise);
 
     const component = await fixture(
-      html`<chromedash-feature-page></chromedash-feature-page>`);
+      html`<chromedash-feature-page></chromedash-feature-page>`
+    );
     assert.exists(component);
     assert.instanceOf(component, ChromedashFeaturePage);
 
@@ -211,10 +225,12 @@ describe('chromedash-feature-page', () => {
 
     const component = await fixture(
       html`<chromedash-feature-page
-            .user=${user}
-            .featureId=${featureId}
-            .contextLink=${contextLink}>
-           </chromedash-feature-page>`);
+        .user=${user}
+        .featureId=${featureId}
+        .contextLink=${contextLink}
+      >
+      </chromedash-feature-page>`
+    );
     assert.exists(component);
 
     const subheaderDiv = component.shadowRoot.querySelector('div#subheader');
@@ -237,7 +253,8 @@ describe('chromedash-feature-page', () => {
     // feature link is clickable
     assert.include(breadcrumbsH2.innerHTML, 'href="/feature/123456');
 
-    const summarySection = component.shadowRoot.querySelector('section#summary');
+    const summarySection =
+      component.shadowRoot.querySelector('section#summary');
     assert.exists(summarySection);
     // feature summary is rendered
     assert.include(summarySection.innerHTML, 'detailed sum');
@@ -248,21 +265,29 @@ describe('chromedash-feature-page', () => {
     assert.include(sampleSection.innerHTML, 'href="fake sample link one"');
     assert.include(sampleSection.innerHTML, 'href="fake sample link two"');
 
-    const docSection = component.shadowRoot.querySelector('section#documentation');
+    const docSection = component.shadowRoot.querySelector(
+      'section#documentation'
+    );
     assert.exists(docSection);
     // doc links are clickable
     assert.include(docSection.innerHTML, 'href="fake doc link one"');
     assert.include(docSection.innerHTML, 'href="fake doc link two"');
 
-    const specSection = component.shadowRoot.querySelector('section#specification');
+    const specSection = component.shadowRoot.querySelector(
+      'section#specification'
+    );
     assert.exists(specSection);
     // spec link is clickable
     assert.include(specSection.innerHTML, 'href="fake spec link"');
 
-    const consensusSection = component.shadowRoot.querySelector('section#consensus');
+    const consensusSection =
+      component.shadowRoot.querySelector('section#consensus');
     assert.exists(consensusSection);
     // FF and Safari views are present and clickable.
-    assertClickableVendorLink(consensusSection, {href: 'fake ff url', text: 'fake ff view text'});
+    assertClickableVendorLink(consensusSection, {
+      href: 'fake ff url',
+      text: 'fake ff view text',
+    });
     assertClickableVendorLink(consensusSection, {
       href: 'fake safari url',
       text: 'fake safari view text',
@@ -281,17 +306,22 @@ describe('chromedash-feature-page', () => {
     const features = structuredClone(await validFeaturePromise);
     delete features.browsers.ff.view.val;
     delete features.browsers.safari.view.val;
-    window.csClient.getFeature.withArgs(featureId).returns(Promise.resolve(features));
+    window.csClient.getFeature
+      .withArgs(featureId)
+      .returns(Promise.resolve(features));
 
     const component = await fixture(
       html`<chromedash-feature-page
-            .user=${user}
-            .featureId=${featureId}
-            .contextLink=${contextLink}>
-           </chromedash-feature-page>`);
+        .user=${user}
+        .featureId=${featureId}
+        .contextLink=${contextLink}
+      >
+      </chromedash-feature-page>`
+    );
     assert.exists(component);
 
-    const consensusSection = component.shadowRoot.querySelector('section#consensus');
+    const consensusSection =
+      component.shadowRoot.querySelector('section#consensus');
     assert.exists(consensusSection);
     // Views are omitted based on an empty 'val' field.
     assert.notInclude(consensusSection.innerHTML, '<chromedash-vendor-views');
@@ -306,10 +336,12 @@ describe('chromedash-feature-page', () => {
 
     const component = await fixture(
       html`<chromedash-feature-page
-            .user=${editor}
-            .featureId=${featureId}
-            .contextLink=${contextLink}>
-           </chromedash-feature-page>`);
+        .user=${editor}
+        .featureId=${featureId}
+        .contextLink=${contextLink}
+      >
+      </chromedash-feature-page>`
+    );
     const subheaderDiv = component.shadowRoot.querySelector('div#subheader');
     // Edit icon is offered because user's editable_features has this one.
     assert.include(subheaderDiv.innerHTML, 'icon="chromestatus:create"');
@@ -322,10 +354,12 @@ describe('chromedash-feature-page', () => {
 
     const component = await fixture(
       html`<chromedash-feature-page
-            .user=${anon}
-            .featureId=${featureId}
-            .contextLink=${contextLink}>
-           </chromedash-feature-page>`);
+        .user=${anon}
+        .featureId=${featureId}
+        .contextLink=${contextLink}
+      >
+      </chromedash-feature-page>`
+    );
     const subheaderDiv = component.shadowRoot.querySelector('div#subheader');
     // Edit icon is not offered because anon cannot edit.
     assert.notInclude(subheaderDiv.innerHTML, 'icon="chromestatus:create"');
@@ -338,10 +372,12 @@ describe('chromedash-feature-page', () => {
 
     const component = await fixture(
       html`<chromedash-feature-page
-            .user=${visitor}
-            .featureId=${featureId}
-            .contextLink=${contextLink}>
-           </chromedash-feature-page>`);
+        .user=${visitor}
+        .featureId=${featureId}
+        .contextLink=${contextLink}
+      >
+      </chromedash-feature-page>`
+    );
     const subheaderDiv = component.shadowRoot.querySelector('div#subheader');
     // Edit icon is not offered because the visitor cannot edit.
     assert.notInclude(subheaderDiv.innerHTML, 'icon="chromestatus:create"');

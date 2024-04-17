@@ -7,7 +7,10 @@ import '../js-src/cs-client';
 import sinon from 'sinon';
 
 function normalizedTextContent(element) {
-  return element.textContent.replace(/^\s+/, '').replace(/\s+$/, '').replaceAll(/\s+/g, ' ');
+  return element.textContent
+    .replace(/^\s+/, '')
+    .replace(/\s+$/, '')
+    .replaceAll(/\s+/g, ' ');
 }
 
 // prettier-ignore
@@ -371,9 +374,9 @@ describe('chromedash-enterprise-release-notes-page', () => {
         const screenshots = [...features[0].querySelectorAll('.screenshots img')];
         assert.lengthOf(screenshots, 2);
         assert.equal(screenshots[0].src, 'https://example.com/screenshot1');
-        assert.equal(screenshots[0].alt, `Feature screenshot 1`);
+        assert.equal(screenshots[0].alt, 'Feature screenshot 1');
         assert.equal(screenshots[1].src, 'https://example.com/screenshot2');
-        assert.equal(screenshots[1].alt, `Feature screenshot 2`);
+        assert.equal(screenshots[1].alt, 'Feature screenshot 2');
       }
 
       // Test feature 2
@@ -397,7 +400,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
         const screenshots = [...features[1].querySelectorAll('.screenshots img')];
         assert.lengthOf(screenshots, 1);
         assert.equal(screenshots[0].src, 'https://example.com/screenshot1');
-        assert.equal(screenshots[0].alt, `Feature screenshot 1`);
+        assert.equal(screenshots[0].alt, 'Feature screenshot 1');
       }
 
       // Test feature 3
@@ -423,7 +426,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
         const screenshots = [...features[1].querySelectorAll('.screenshots img')];
         assert.lengthOf(screenshots, 1);
         assert.equal(screenshots[0].src, 'https://example.com/screenshot1');
-        assert.equal(screenshots[0].alt, `Feature screenshot 1`);
+        assert.equal(screenshots[0].alt, 'Feature screenshot 1');
       }
     }
 
@@ -479,7 +482,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
         const screenshots = [...features[1].querySelectorAll('.screenshots img')];
         assert.lengthOf(screenshots, 1);
         assert.equal(screenshots[0].src, 'https://example.com/screenshot1');
-        assert.equal(screenshots[0].alt, `Feature screenshot 1`);
+        assert.equal(screenshots[0].alt, 'Feature screenshot 1');
       }
     }
   });

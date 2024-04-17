@@ -27,45 +27,48 @@ class ChromedashToast extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-      :host {
-        display: flex;
-        justify-content: space-between;
-        position: fixed;
-        background: var(--toast-background);
-        color: var(--toast-color);
-        min-height: 48px;
-        min-width: 288px;
-        padding: var(--content-padding);
-        box-sizing: border-box;
-        box-shadow: var(--card-box-shadow);
-        border-radius: var(--border-radius);
-        margin: var(--content-padding);
-        cursor: default;
-        transition: transform 0.3s, opacity 0.3s;
-        opacity: 0;
-        will-change: opacity, transform;
-        -webkit-transform: translateY(100px);
-        transform: translateY(100px);
-        z-index: 3;
-        bottom: 0;
-      }
+        :host {
+          display: flex;
+          justify-content: space-between;
+          position: fixed;
+          background: var(--toast-background);
+          color: var(--toast-color);
+          min-height: 48px;
+          min-width: 288px;
+          padding: var(--content-padding);
+          box-sizing: border-box;
+          box-shadow: var(--card-box-shadow);
+          border-radius: var(--border-radius);
+          margin: var(--content-padding);
+          cursor: default;
+          transition:
+            transform 0.3s,
+            opacity 0.3s;
+          opacity: 0;
+          will-change: opacity, transform;
+          -webkit-transform: translateY(100px);
+          transform: translateY(100px);
+          z-index: 3;
+          bottom: 0;
+        }
 
-      :host([open]) {
-        opacity: 1;
-        transform: translateY(-32px);
-      }
+        :host([open]) {
+          opacity: 1;
+          transform: translateY(-32px);
+        }
 
-      #action {
-        text-transform: uppercase;
-        text-decoration: none;
-        color: var(--toast-action-color);
-        font-weight: bold;
-      }
+        #action {
+          text-transform: uppercase;
+          text-decoration: none;
+          color: var(--toast-action-color);
+          font-weight: bold;
+        }
 
-      #msg {
-        margin-right: var(--content-padding);
-      }
-    `];
+        #msg {
+          margin-right: var(--content-padding);
+        }
+      `,
+    ];
   }
 
   /**
@@ -85,10 +88,14 @@ class ChromedashToast extends LitElement {
     this.actionLabel = optAction;
 
     if (optTapHandler) {
-      this.shadowRoot.querySelector('#action').addEventListener('click', (e) => {
-        e.preventDefault();
-        optTapHandler();
-      }, {once: true});
+      this.shadowRoot.querySelector('#action').addEventListener(
+        'click',
+        e => {
+          e.preventDefault();
+          optTapHandler();
+        },
+        {once: true}
+      );
     }
 
     if (this.open) {
@@ -98,10 +105,14 @@ class ChromedashToast extends LitElement {
       clearTimeout(this.currentTimeout);
       // Don't show the new toast until the transition is over
       // (wait for the previous toast to be completely gone)
-      this.addEventListener('transitionend', () => {
-        this.show(optDuration);
-        this.waitingForTransition = false;
-      }, {once: true});
+      this.addEventListener(
+        'transitionend',
+        () => {
+          this.show(optDuration);
+          this.waitingForTransition = false;
+        },
+        {once: true}
+      );
     } else {
       this.show(optDuration);
     }

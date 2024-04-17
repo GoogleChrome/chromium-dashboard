@@ -4,7 +4,6 @@ import {openSearchHelpDialog} from './chromedash-search-help-dialog.js';
 
 const ENTER_KEY_CODE = 13;
 
-
 class ChromedashFeatureFilter extends LitElement {
   static get properties() {
     return {
@@ -47,16 +46,18 @@ class ChromedashFeatureFilter extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-      sl-icon-button {
-        font-size: 1.6rem;
-        margin: 0 !important;
-      }
-      #searchbar::part(base), #filterwidgets {
-       background: #eee;
-       border: none;
-       border-radius: 8px;
-      }
-    `];
+        sl-icon-button {
+          font-size: 1.6rem;
+          margin: 0 !important;
+        }
+        #searchbar::part(base),
+        #filterwidgets {
+          background: #eee;
+          border: none;
+          border-radius: 8px;
+        }
+      `,
+    ];
   }
 
   showHelp() {
@@ -66,27 +67,34 @@ class ChromedashFeatureFilter extends LitElement {
   renderSearchBar() {
     return html`
       <div>
-        <sl-input id="searchbar" placeholder="Search"
-            value=${this.query}
-            @keyup="${this.handleSearchKey}">
-          <sl-icon-button library="material" name="search" slot="prefix"
-              @click="${this.handleSearchClick}">
+        <sl-input
+          id="searchbar"
+          placeholder="Search"
+          value=${this.query}
+          @keyup="${this.handleSearchKey}"
+        >
+          <sl-icon-button
+            library="material"
+            name="search"
+            slot="prefix"
+            @click="${this.handleSearchClick}"
+          >
           </sl-icon-button>
-          <sl-icon-button library="material" name="help_20px" slot="suffix"
-              @click="${this.showHelp}">
+          <sl-icon-button
+            library="material"
+            name="help_20px"
+            slot="suffix"
+            @click="${this.showHelp}"
+          >
           </sl-icon-button>
         </sl-input>
       </div>
     `;
   }
 
-
   render() {
-    return html`
-      ${this.renderSearchBar()}
-    `;
+    return html` ${this.renderSearchBar()} `;
   }
 }
-
 
 customElements.define('chromedash-feature-filter', ChromedashFeatureFilter);
