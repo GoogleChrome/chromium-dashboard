@@ -31,7 +31,7 @@ ENABLED_FEATURES_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/ma
 GRACE_PERIOD_FILE = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/common/origin_trials/manual_completion_origin_trial_features.cc?format=TEXT'
 
 
-async def get_chromium_file(url: str) -> requests.Response:
+def get_chromium_file(url: str) -> asyncio.Future[requests.Response]:
   """Get chromium file contents from a given URL"""
   loop = asyncio.get_event_loop()
   try:
@@ -40,7 +40,7 @@ async def get_chromium_file(url: str) -> requests.Response:
     logging.exception(
         f'Failed to get response to obtain Chromium file: {url}')
     raise e
-  return await file_future
+  return file_future
 
 
 class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
@@ -101,8 +101,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
       if use_counter is None:
         validation_errors['ot_webfeature_use_counter'] = (
             'No UseCounter specified for non-deprecation trial.')
-      else:
-        if f'{use_counter} =' not in webfeature_file:
+      elif f'{use_counter} =' not in webfeature_file:
           validation_errors['ot_webfeature_use_counter'] = (
               'UseCounter not landed in web_feature.mojom')
 
