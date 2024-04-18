@@ -1,10 +1,12 @@
 import {css} from 'lit';
 import {VARS} from './_vars-css.js';
 import {RESET} from './_reset-css.js';
+import {FLEX_BOX} from './_flexbox-css.js';
 
 export const SHARED_STYLES = [
   VARS,
   RESET,
+  FLEX_BOX,
   css`
 
   * {
@@ -17,6 +19,22 @@ export const SHARED_STYLES = [
 
   .conditional-comma:last-child {
     display: none;
+  }
+
+  .data-table {
+    width: 100%;
+    border: var(--default-border);
+    border-radius: var(--border-radius);
+  }
+  .data-table th {
+    text-align: left;
+    background: var(--table-header-background);
+    padding: var(--content-padding-half) var(--content-padding);
+  }
+  .data-table td {
+    vertical-align: top;
+    border-top: var(--default-border);
+    padding: var(--content-padding-half) var(--content-padding);
   }
 
   h1,
@@ -115,6 +133,11 @@ export const SHARED_STYLES = [
     padding: 10px 7px;
   }
 
+  code {
+   white-space: nowrap;
+   font-family: monospace;
+  }
+
   .description {
     line-height: 1.4;
   }
@@ -135,55 +158,6 @@ export const SHARED_STYLES = [
 
   .preformatted {
     white-space: pre-wrap;
-  }
-
-  .feature-link {
-    display: inline;
-    white-space: normal;
-    line-break: anywhere;
-    color: var(--default-font-color);
-  }
-
-  .feature-link:hover {
-    text-decoration: none;
-  }
-
-  .feature-link sl-badge::part(base) {
-    height: 14px;
-    padding: 4px;
-    border-width: 0;
-    text-transform: capitalize;
-    font-weight: 400;
-  }
-
-  .feature-link sl-tag::part(base) {
-    vertical-align: middle;
-    height: 18px;
-    background-color: rgb(232,234,237);
-    color: var(--default-font-color);
-    border: none;
-    border-radius: 500px;
-    display: inline-flex;
-    align-items: center;
-    column-gap: 0.3em;
-    padding: 1px 5px;
-    margin: 1px 0;
-  }
-
-  .feature-link sl-tag::part(base):hover {
-    background-color: rgb(209,211,213);
-  }
-
-  .feature-link .icon {
-    display: block;
-    width: 12px;
-    height: 12px;
-  }
-
-  .feature-link-tooltip {
-    display: flex;
-    flex-direction: column;
-    row-gap: 0.5em;
   }
 
   .warning {

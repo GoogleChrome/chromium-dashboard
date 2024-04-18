@@ -4,22 +4,26 @@ import {
   formatFeatureChanges,
   getStageValue,
   showToastMessage,
-  setupScrollToHash} from './utils.js';
+  setupScrollToHash,
+} from './utils.js';
 import './chromedash-form-table.js';
 import './chromedash-form-field.js';
 import {ORIGIN_TRIAL_CREATION_FIELDS} from './form-definition.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
 import {ALL_FIELDS} from './form-field-specs.js';
+import json5 from 'json5';
 
+const WEBFEATURE_FILE_URL =
+  'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom?format=TEXT';
+const ENABLED_FEATURES_FILE_URL =
+  'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/runtime_enabled_features.json5?format=TEXT';
+const GRACE_PERIOD_FILE =
+  'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/common/origin_trials/manual_completion_origin_trial_features.cc?format=TEXT';
 
 export class ChromedashOTCreationPage extends LitElement {
   static get styles() {
-    return [
-      ...SHARED_STYLES,
-      ...FORM_STYLES,
-      css`
-      `];
+    return [...SHARED_STYLES, ...FORM_STYLES, css``];
   }
 
   static get properties() {
@@ -30,9 +34,13 @@ export class ChromedashOTCreationPage extends LitElement {
       feature: {type: Object},
       loading: {type: Boolean},
       appTitle: {type: String},
-      nextPage: {type: String},
       fieldValues: {type: Array},
       showApprovalsFields: {type: Boolean},
+
+      // Chromium file contents for validating inputs.
+      webfeatureFile: {type: String},
+      enabledFeaturesJson: {type: Object},
+      gracePeriodFile: {type: String},
     };
   }
 
@@ -43,9 +51,11 @@ export class ChromedashOTCreationPage extends LitElement {
     this.feature = {};
     this.loading = true;
     this.appTitle = '';
-    this.nextPage = '';
     this.fieldValues = [];
     this.showApprovalsFields = false;
+    this.webfeatureFile = '';
+    this.enabledFeaturesJson = undefined;
+    this.gracePeriodFile = '';
   }
 
   connectedCallback() {
@@ -70,7 +80,7 @@ export class ChromedashOTCreationPage extends LitElement {
       this.showApprovalsFields = !this.showApprovalsFields;
       this.requestUpdate();
     }
-  };
+  }
 
   fetchData() {
     this.loading = true;
@@ -93,9 +103,13 @@ export class ChromedashOTCreationPage extends LitElement {
   addOptionalApprovalsFields() {
     // Approval requirement fields are always hidden unless the feature owner
     // opts in to using them.
-    const insertIndex = this.fieldValues.findIndex(
-      fieldInfo => fieldInfo.name === 'ot_require_approvals') + 1;
-    this.fieldValues.splice(insertIndex, 0,
+    const insertIndex =
+      this.fieldValues.findIndex(
+        fieldInfo => fieldInfo.name === 'ot_require_approvals'
+      ) + 1;
+    this.fieldValues.splice(
+      insertIndex,
+      0,
       {
         name: 'ot_approval_buganizer_component',
         touched: false,
@@ -116,7 +130,8 @@ export class ChromedashOTCreationPage extends LitElement {
         value: '',
         stageId: this.stage.id,
         isApprovalsField: true,
-      });
+      }
+    );
   }
 
   addHiddenFields() {
@@ -144,7 +159,7 @@ export class ChromedashOTCreationPage extends LitElement {
       if (featureJSONKey === 'ot_owner_email' && !value) {
         value = [this.userEmail];
         touched = true;
-      // Display registration approvals fields by default if the value is checked already.
+        // Display registration approvals fields by default if the value is checked already.
       } else if (featureJSONKey === 'ot_require_approvals') {
         this.showApprovalsFields = !!value;
       }
@@ -170,17 +185,166 @@ export class ChromedashOTCreationPage extends LitElement {
     if (!el) return;
 
     /* Add the form's event listener after Shoelace event listeners are attached
-    * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
+     * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
     await el.updateComplete;
-    const submitButton = this.shadowRoot.querySelector('input[id=submit-button]');
-    submitButton.form.addEventListener('submit', (event) => {
+    const submitButton = this.shadowRoot.querySelector(
+      'input[id=submit-button]'
+    );
+    submitButton.form.addEventListener('submit', event => {
       this.handleFormSubmit(event);
     });
 
     setupScrollToHash(this);
   }
 
-  handleFormSubmit(e) {
+  async getChromiumFile(url) {
+    const resp = await fetch(url);
+    const respJson = await resp.text();
+    return atob(respJson);
+  }
+
+  // Check that the code has landed that is used to monitor feature usage.
+  async checkWebfeatureUseCounter(field) {
+    if (!this.webfeatureFile) {
+      this.webfeatureFile = await this.getChromiumFile(WEBFEATURE_FILE_URL);
+    }
+    const webfeatureCounterExists = this.webfeatureFile.includes(
+      `${field.value} =`
+    );
+    if (!webfeatureCounterExists) {
+      field.checkMessage = html` <span class="check-error">
+        <b>Error</b>: UseCounter name not found in file.
+      </span>`;
+      return true;
+    } else {
+      field.checkMessage = nothing;
+    }
+    return false;
+  }
+
+  // Check that code has landed that is required for the origin trial feature.
+  async checkChromiumTrialName(field) {
+    if (!this.enabledFeaturesJson) {
+      const enabledFeaturesFileText = await this.getChromiumFile(
+        ENABLED_FEATURES_FILE_URL
+      );
+      this.enabledFeaturesJson = json5.parse(enabledFeaturesFileText);
+    }
+    const existingTrials = await window.csClient.getOriginTrials();
+
+    if (
+      !this.enabledFeaturesJson.data.some(
+        feature => feature.origin_trial_feature_name === field.value
+      )
+    ) {
+      field.checkMessage = html` <span class="check-error">
+        <b>Error</b>: Name not found in file.
+      </span>`;
+      return true;
+    } else if (
+      existingTrials.some(
+        trial => trial.origin_trial_feature_name === field.value
+      )
+    ) {
+      field.checkMessage = html` <span class="check-error">
+        <b>Error</b>: This name is used by an existing origin trial.
+      </span>`;
+      return true;
+    } else {
+      field.checkMessage = nothing;
+    }
+    return false;
+  }
+
+  // Check that code has landed that is required for third party support.
+  async checkThirdPartySupport(field) {
+    if (!field.value) {
+      field.checkMessage = nothing;
+      return false;
+    }
+    const chromiumTrialName = this.fieldValues.find(
+      field => field.name === 'ot_chromium_trial_name'
+    ).value;
+    if (!this.enabledFeaturesJson) {
+      const enabledFeaturesFileText = await this.getChromiumFile(
+        ENABLED_FEATURES_FILE_URL
+      );
+      this.enabledFeaturesJson = json5.parse(enabledFeaturesFileText);
+    }
+
+    const thirdPartySupportEnabled = this.enabledFeaturesJson.data.every(
+      feature => {
+        return (
+          feature.origin_trial_feature_name !== chromiumTrialName ||
+          feature.origin_trial_allows_third_party
+        );
+      }
+    );
+    if (!thirdPartySupportEnabled) {
+      field.checkMessage = html` <br />
+        <span class="check-error">
+          <b>Error</b>: Property not set in file.
+        </span>`;
+      return true;
+    } else {
+      field.checkMessage = nothing;
+    }
+    return false;
+  }
+
+  // Check that code has landed that is required for critical trials.
+  async checkCriticalTrial(field) {
+    if (!field.value) {
+      field.checkMessage = nothing;
+      return false;
+    }
+    const chromiumTrialName = this.fieldValues.find(
+      field => field.name === 'ot_chromium_trial_name'
+    ).value;
+    if (!this.gracePeriodFile) {
+      this.gracePeriodFile = await this.getChromiumFile(GRACE_PERIOD_FILE);
+    }
+    const includedInGracePeriodArray = this.gracePeriodFile.includes(
+      `blink::mojom::OriginTrialFeature::k${chromiumTrialName}`
+    );
+    if (!includedInGracePeriodArray) {
+      field.checkMessage = html` <br />
+        <span class="check-error">
+          <b>Error</b>: Trial name not found in file.
+        </span>`;
+      return true;
+    } else {
+      field.checkMessage = nothing;
+    }
+    return false;
+  }
+
+  /**
+   * Check that given args related to Chromium are valid.
+   * @returns Whether any inputs cannot be found in Chromium files.
+   */
+  async handleChromiumChecks() {
+    // Clear saved file info in order to fetch the most recent version.
+    this.webfeatureFile = '';
+    this.enabledFeaturesJson = undefined;
+    this.gracePeriodFile = '';
+    let hasErrors = false;
+
+    for (const field of this.fieldValues) {
+      if (field.name === 'ot_webfeature_use_counter') {
+        hasErrors = hasErrors || (await this.checkWebfeatureUseCounter(field));
+      } else if (field.name === 'ot_chromium_trial_name') {
+        hasErrors = hasErrors || (await this.checkChromiumTrialName(field));
+      } else if (field.name === 'ot_has_third_party_support') {
+        hasErrors = hasErrors || (await this.checkThirdPartySupport(field));
+      } else if (field.name === 'ot_is_critical_trial') {
+        hasErrors = hasErrors || (await this.checkCriticalTrial(field));
+      }
+    }
+    return hasErrors;
+  }
+
+  async handleFormSubmit(e) {
     e.preventDefault();
     // If registration approvals is not enabled, ignore all fields related to that setting.
     if (!this.showApprovalsFields) {
@@ -191,16 +355,30 @@ export class ChromedashOTCreationPage extends LitElement {
       });
     }
 
-    const featureSubmitBody = formatFeatureChanges(this.fieldValues, this.featureId);
+    const hasErrors = await this.handleChromiumChecks();
+    this.requestUpdate();
+    if (hasErrors) {
+      showToastMessage(
+        'Some issues were found with the given inputs. Check input errors and try again.'
+      );
+      return;
+    }
+
+    const featureSubmitBody = formatFeatureChanges(
+      this.fieldValues,
+      this.featureId
+    );
     // We only need the single stage changes.
     const stageSubmitBody = featureSubmitBody.stages[0];
 
-    window.csClient.updateStage(this.featureId, this.stageId, stageSubmitBody).then(() => {
-      showToastMessage('Creation request submitted!');
-      setTimeout(() => {
-        window.location.href = this.nextPage || `/feature/${this.featureId}`;
-      }, 1000);
-    });
+    window.csClient
+      .updateStage(this.featureId, this.stageId, stageSubmitBody)
+      .then(() => {
+        showToastMessage('Creation request submitted!');
+        setTimeout(() => {
+          window.location.href = `/feature/${this.featureId}`;
+        }, 1000);
+      });
   }
 
   handleCancelClick() {
@@ -227,7 +405,7 @@ export class ChromedashOTCreationPage extends LitElement {
   }
 
   getNextPage() {
-    return this.nextPage || `/feature/${this.featureId}`;
+    return `/feature/${this.featureId}`;
   }
 
   renderSubheader() {
@@ -245,22 +423,27 @@ export class ChromedashOTCreationPage extends LitElement {
 
   renderFields() {
     const fields = this.fieldValues.map((fieldInfo, i) => {
-      if (fieldInfo.alwaysHidden || (fieldInfo.isApprovalsField && !this.showApprovalsFields)) {
+      if (
+        fieldInfo.alwaysHidden ||
+        (fieldInfo.isApprovalsField && !this.showApprovalsFields)
+      ) {
         return nothing;
       }
       // Fade in transition for the approvals fields if they're being displayed.
       const shouldFadeIn = fieldInfo.isApprovalsField;
 
       return html`
-      <chromedash-form-field
-        name=${fieldInfo.name}
-        index=${i}
-        value=${fieldInfo.value}
-        .fieldValues=${this.fieldValues}
-        .shouldFadeIn=${shouldFadeIn}
-        @form-field-update="${this.handleFormFieldUpdate}">
-      </chromedash-form-field>
-    `;
+        <chromedash-form-field
+          name=${fieldInfo.name}
+          index=${i}
+          value=${fieldInfo.value}
+          .checkMessage=${fieldInfo.checkMessage}
+          .fieldValues=${this.fieldValues}
+          .shouldFadeIn=${shouldFadeIn}
+          @form-field-update="${this.handleFormFieldUpdate}"
+        >
+        </chromedash-form-field>
+      `;
     });
     return fields;
   }
@@ -273,17 +456,22 @@ export class ChromedashOTCreationPage extends LitElement {
     return html`
       <form name="feature_form">
         <chromedash-form-table ${ref(this.registerHandlers)}>
-          <section class="stage_form">
-            ${this.renderFields(section)}
-          </section>
+          <section class="stage_form">${this.renderFields(section)}</section>
         </chromedash-form-table>
         <div class="final_buttons">
           <input
-            id='submit-button'
+            id="submit-button"
             class="button"
             type="submit"
-            value="Submit">
-          <button id="cancel-button" @click=${this.handleCancelClick}>Cancel</button>
+            value="Submit"
+          />
+          <button
+            id="cancel-button"
+            type="reset"
+            @click=${this.handleCancelClick}
+          >
+            Cancel
+          </button>
         </div>
       </form>
     `;

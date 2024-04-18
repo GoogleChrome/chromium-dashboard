@@ -35,7 +35,26 @@ MAX_TERMS = 6
 DEFAULT_RESULTS_PER_PAGE = 100
 
 
-def process_pending_approval_me_query() -> list[int]:
+def process_exclude_deleted_unlisted_query() -> Future:
+  """Return a future for all features, minus deleted and unlisted."""
+  query = FeatureEntry.query(
+      FeatureEntry.deleted == False,
+      FeatureEntry.unlisted == False)
+  future_feature_ids = query.fetch_async(keys_only=True)
+  return future_feature_ids
+
+
+def process_exclude_deleted_unlisted_enterprise_query() -> Future:
+  """Return a future for all features, minus deleted, unlisted, enterprise."""
+  query = FeatureEntry.query(
+      FeatureEntry.deleted == False,
+      FeatureEntry.unlisted == False,
+      FeatureEntry.feature_type <= core_enums.FEATURE_TYPE_DEPRECATION_ID)
+  future_feature_ids = query.fetch_async(keys_only=True)
+  return future_feature_ids
+
+
+def process_pending_approval_me_query() -> list[int] | Future:
   """Return a list of features needing approval by current user."""
   user = users.get_current_user()
   if not user:
@@ -62,7 +81,7 @@ def process_starred_me_query() -> list[int]:
   return feature_ids
 
 
-def process_recent_reviews_query() -> list[int]:
+def process_recent_reviews_query() -> list[int] | Future:
   """Return features that were reviewed recently."""
   query = Gate.query(
       Gate.state.IN(Gate.FINAL_STATES))
@@ -70,8 +89,12 @@ def process_recent_reviews_query() -> list[int]:
   return future_feature_ids
 
 
-def parse_query_value(val_str: str) -> Union[bool, datetime.datetime, int, str]:
+def parse_query_value(val_str: str) -> bool | int | str | datetime.datetime:
   """Return a python object that can be used as a value in an NDB query."""
+
+  if val_str.startswith('"') and val_str.endswith('"'):
+    val_str = val_str[1:-1]
+
   if val_str == 'true':
     return True
   if val_str == 'false':
@@ -91,6 +114,13 @@ def parse_query_value(val_str: str) -> Union[bool, datetime.datetime, int, str]:
   return val_str
 
 
+def parse_query_value_list(
+    vals_str: str) -> list[int | str | bool | datetime.datetime]:
+  """Return a list of values that can be used in an NDB query."""
+  return [parse_query_value(part)
+          for part in vals_str.split(',')]
+
+
 # A full-text query term consisting of a single word or quoted string.
 # The single word case cannot contain an operator.
 # We do not support any kind of escaped quotes in quoted strings.
@@ -101,9 +131,9 @@ FIELD_NAME_PATTERN = r'[-.a-z_0-9]+'
 OPERATORS_PATTERN = r':|=|<=|<|>=|>|!='
 # A value that a feature field can be compared against.  It can be
 # a single word or a quoted string.
-VALUE_PATTERN = r'[^" ]+|"[^"]+"'
+VALUE_PATTERN = r'[^", ]+|"[^"]+"'
+VALUES_PATTERN = r'(?:%s)(?:,(?:%s))*' % (VALUE_PATTERN, VALUE_PATTERN)
 # Logical operators.
-# TODO(kyleju): support 'OR' logic
 LOGICAL_OPERATORS_PATTERN = r'OR\s+|-'
 
 # Overall, a query term can be either a structured term or a full-text term.
@@ -112,27 +142,26 @@ LOGICAL_OPERATORS_PATTERN = r'OR\s+|-'
 TERM_RE = re.compile(
     '(?P<logical>%s)?(?:(?P<field>%s)(?P<op>%s)(?P<val>%s)|(?P<textterm>%s))\s+' % (
         LOGICAL_OPERATORS_PATTERN, FIELD_NAME_PATTERN, OPERATORS_PATTERN,
-        VALUE_PATTERN, TEXT_PATTERN),
+        VALUES_PATTERN, TEXT_PATTERN),
     re.I)
 
-SIMPLE_QUERY_TERMS = ['pending-approval-by:me', 'starred-by:me',
-                      'is:recently-reviewed', 'owner:me', 'editor:me', 'can_edit:me', 'cc:me']
+SIMPLE_QUERY_TERMS = [
+    'deleted_unlisted=false', 'deleted_unlisted_enterprise=false',
+    'pending-approval-by:me', 'starred-by:me',
+    'is:recently-reviewed', 'owner:me', 'editor:me', 'can_edit:me', 'cc:me']
 
 
 def process_query_term(
-    is_negation: bool, field_name: str, op_str: str, val_str: str) -> Future:
+    is_negation: bool, field_name: str, op_str: str, vals_str: str) -> Future:
   """Parse and run a user-supplied query, if we can handle it."""
   if is_negation:
     op_str = search_queries.negate_operator(op_str)
 
-  if val_str.startswith('"') and val_str.endswith('"'):
-    val_str = val_str[1:-1]
-
-  val = parse_query_value(val_str)
-  logging.info('trying %r %r %r', field_name, op_str, val)
+  val_list = parse_query_value_list(vals_str)
+  logging.info('trying %r %r %r', field_name, op_str, val_list)
 
   future = search_queries.single_field_query_async(
-      field_name, op_str, val)
+      field_name, op_str, val_list)
   return future
 
 
@@ -140,6 +169,12 @@ def process_predefined_query_term(
     field_name: str, op_str: str, val_str: str) -> Future:
   """Parse and run a simple query term."""
   query_term = field_name + op_str + val_str
+
+  if query_term == 'deleted_unlisted_enterprise=false':
+    return process_exclude_deleted_unlisted_enterprise_query()
+  if query_term == 'deleted_unlisted=false':
+    return process_exclude_deleted_unlisted_query()
+
   if query_term == 'pending-approval-by:me':
     return process_pending_approval_me_query()
   if query_term == 'starred-by:me':
@@ -160,9 +195,9 @@ def process_predefined_query_term(
 
 
 def is_predefined_query_term(
-  field_name: str, op_str: str, val_str: str) -> bool:
+  field_name: str, op_str: str, vals_str: str) -> bool:
   """Determine if a query is a simple query term."""
-  query_term = field_name + op_str + val_str
+  query_term = field_name + op_str + vals_str
   return query_term in SIMPLE_QUERY_TERMS
 
 
@@ -193,7 +228,15 @@ def _sort_by_total_order(
   value itself as the sorting value, which will effectively put those
   features at the end of the list in order of creation.
   """
-  total_order_dict = {f_id: idx for idx, f_id in enumerate(total_order_ids)}
+  total_order_dict = {}
+  # For each feature entry ID in the total-order list, record the index of
+  # the first time that it occurs.  A feature could be in the list multiple
+  # times if it was produced via a join.  E.g., sorting by gate.requested_on
+  # would have total_order_ids items for every gate, not just one per feature.
+  for idx, f_id in enumerate(total_order_ids):
+    if f_id not in total_order_dict:
+      total_order_dict[f_id] = idx
+
   sorted_id_list = sorted(
       result_id_list,
       key=lambda f_id: total_order_dict.get(f_id, f_id))
@@ -210,15 +253,22 @@ def process_query(
 
   # 1b. Add permission and search scope terms.
   permission_terms = []
-  if not show_deleted:
-    permission_terms.append(('', 'deleted', '=', 'false', None))
-  # TODO(jrobbins): include unlisted features that the user is allowed to view.
-  if not show_unlisted:
-    permission_terms.append(('', 'unlisted', '=', 'false', None))
-  if not show_enterprise:
+  if not show_deleted and not show_unlisted and not show_enterprise:
     permission_terms.append(
-        ('', 'feature_type', '<=',
-         str(core_enums.FEATURE_TYPE_DEPRECATION_ID), None))
+        ('', 'deleted_unlisted_enterprise', '=', 'false', None))
+  elif not show_deleted and not show_unlisted:
+    permission_terms.append(
+        ('', 'deleted_unlisted', '=', 'false', None))
+  else:
+    if not show_deleted:
+      permission_terms.append(('', 'deleted', '=', 'false', None))
+    # TODO(jrobbins): include unlisted features that the user is allowed to view.
+    if not show_unlisted:
+      permission_terms.append(('', 'unlisted', '=', 'false', None))
+    if not show_enterprise:
+      permission_terms.append(
+          ('', 'feature_type', '<=',
+           str(core_enums.FEATURE_TYPE_DEPRECATION_ID), None))
 
   # 1c. Parse the sort directive.
   sort_spec = sort_spec or '-created.when'
@@ -233,6 +283,7 @@ def process_query(
       permission_terms)
 
   # 2c. Create a parallel query for total sort order.
+  logging.info('creating total sort order for %r', sort_spec)
   total_order_promise = search_queries.total_order_query_async(sort_spec)
 
   # 3. Get the result of each future and combine them into a result ID set.
@@ -242,11 +293,13 @@ def process_query(
   feature_id_future_ops = process_negation_operations(feature_id_future_ops)
   query_clauses = process_and_operations(feature_id_future_ops)
   result_id_set = process_or_operations(query_clauses)
+  logging.info('got %r result IDs w/o permissions', len(result_id_set))
 
   # 3b. Process all permission ops, then interesect to apply permisisons.
   permission_clauses = process_and_operations(permissions_future_ops)
   permission_ids = process_or_operations(permission_clauses)
   result_id_set.intersection_update(permission_ids)
+  logging.info('got %r result IDs with permissions', len(result_id_set))
 
   result_id_list = list(result_id_set)
   total_count = len(result_id_list)
@@ -254,33 +307,36 @@ def process_query(
   # 4. Finish getting the total sort order. Then, sort the IDs according
   # to their position in the complete sorted list.
   total_order_ids = _resolve_promise_to_id_list(total_order_promise)
+  logging.info('sorting')
   sorted_id_list = _sort_by_total_order(result_id_list, total_order_ids)
+  logging.info('sorted %r result IDs', len(sorted_id_list))
 
   # 5. Paginate
   paginated_id_list = sorted_id_list[start : start + num]
 
   # 6. Fetch the actual issues that have those IDs in the sorted results.
-  # TODO(jrobbins): This still returns Feature objects.
+  # TODO(jrobbins): This still returns Feature dicts.
   features_on_page = feature_helpers.get_by_ids(paginated_id_list)
 
-  logging.info('features_on_page is %r', features_on_page)
+  logging.info('features_on_page is %r',
+               [f['name'] for f in features_on_page])
   return features_on_page, total_count
 
 
 def create_future_operations_from_queries(terms):
   """Create parallel queries for each term. Each yields a future operation"""
   feature_id_future_ops = []
-  for logical_op, field_name, op_str, val_str, textterm in terms:
+  for logical_op, field_name, op_str, vals_str, textterm in terms:
     is_negation = (logical_op.strip() == '-')
     is_normal_query = False
     if textterm:
       future = search_fulltext.search_fulltext(textterm)
-    elif is_predefined_query_term(field_name, op_str, val_str):
+    elif is_predefined_query_term(field_name, op_str, vals_str):
       logging.info('Running predefined query term: %r %r %r',
-                   field_name, op_str, val_str)
-      future = process_predefined_query_term(field_name, op_str, val_str)
+                   field_name, op_str, vals_str)
+      future = process_predefined_query_term(field_name, op_str, vals_str)
     else:
-      future = process_query_term(is_negation, field_name, op_str, val_str)
+      future = process_query_term(is_negation, field_name, op_str, vals_str)
       is_normal_query = True
 
     if future is None:

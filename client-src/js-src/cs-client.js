@@ -14,6 +14,15 @@
  * limitations under the License.
  */
 
+/**
+ * @typedef {object} FeatureLink
+ * @property {string} url
+ * @property {string} type
+ * @property {object} information - fields depend on type; see link_helpers.py
+ * @property {number} http_error_code
+ */
+
+// prettier-ignore
 (function(exports) {
 'use strict';
 
@@ -145,7 +154,7 @@ class ChromeStatusClient {
   // Cues API
 
   getDismissedCues() {
-    return this.doGet(`/currentuser/cues`);
+    return this.doGet('/currentuser/cues');
   }
 
   dismissCue(cue) {
@@ -155,8 +164,12 @@ class ChromeStatusClient {
   }
 
   // Permissions API
-  getPermissions() {
-    return this.doGet('/currentuser/permissions')
+  getPermissions(returnPairedUser=false) {
+    let url = '/currentuser/permissions';
+    if (returnPairedUser) {
+      url += '?returnPairedUser';
+    }
+    return this.doGet(url)
       .then((res) => res.user);
   }
 
@@ -213,6 +226,10 @@ class ChromeStatusClient {
 
   getGates(featureId) {
     return this.doGet(`/features/${featureId}/gates`);
+  }
+
+  getPendingGates() {
+    return this.doGet('/gates/pending');
   }
 
   updateGate(featureId, gateId, assignees) {
@@ -282,8 +299,11 @@ class ChromeStatusClient {
     return this.doGet(`/features?releaseNotesMilestone=${milestone}`);
   }
 
-  async searchFeatures(userQuery, sortSpec, start, num) {
+  async searchFeatures(userQuery, showEnterprise, sortSpec, start, num) {
     let url = `/features?q=${userQuery}`;
+    if (showEnterprise) {
+      url += '&showEnterprise';
+    }
     if (sortSpec) {
       url += '&sort=' + sortSpec;
     }
@@ -302,6 +322,10 @@ class ChromeStatusClient {
 
   // FeatureLinks API
 
+  /**
+   * @param {number} featureId
+   * @returns {Promise<{data: FeatureLink[], has_stale_links: boolean}>}
+   */
   async getFeatureLinks(featureId, updateStaleLinks=true) {
     return this.doGet(`/feature_links?feature_id=${featureId}&update_stale_links=${updateStaleLinks}`);
   }
@@ -344,6 +368,10 @@ class ChromeStatusClient {
   }
 
   // Origin trials API
+  async getOriginTrials() {
+    return this.doGet('/origintrials');
+  }
+
   async extendOriginTrial(featureId, stageId, body) {
     return this.doPost(`/origintrials/${featureId}/${stageId}/extend`, body);
   }
@@ -360,7 +388,7 @@ class ChromeStatusClient {
 
   // Blinkcomponents API
   async getBlinkComponents() {
-    return this.doGet(`/blinkcomponents`);
+    return this.doGet('/blinkcomponents');
   }
 
   // Channels API

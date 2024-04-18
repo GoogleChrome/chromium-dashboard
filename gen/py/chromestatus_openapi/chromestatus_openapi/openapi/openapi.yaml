@@ -91,6 +91,58 @@ paths:
       - XsrfToken: []
       summary: List all components and possible users
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /feature-latency:
+    get:
+      operationId: list_feature_latency
+      parameters:
+      - description: "Start date (RFC 3339, section 5.6, for example, 2017-07-21).\
+          \ The date is inclusive."
+        explode: true
+        in: query
+        name: startAt
+        required: true
+        schema:
+          format: date
+          type: string
+        style: form
+      - description: "End date (RFC 3339, section 5.6, for example, 2017-07-21). The\
+          \ date is exclusive."
+        explode: true
+        in: query
+        name: endAt
+        required: true
+        schema:
+          format: date
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/FeatureLatency'
+                type: array
+          description: List the latency of features that launched in date range.
+        "400":
+          description: One of the query parameters isn't a valid date in ISO YYYY-MM-DD
+            format.
+      summary: List how long each feature took to launch
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /review-latency:
+    get:
+      operationId: list_reviews_with_latency
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ReviewLatency'
+                type: array
+          description: List of recent reviews and their latency.
+      summary: List recently reviewed features and their review latency
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /spec_mentors:
     get:
       operationId: list_spec_mentors
@@ -118,6 +170,29 @@ paths:
       summary: List spec mentors and their activity
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
 components:
+  parameters:
+    startAtParam:
+      description: "Start date (RFC 3339, section 5.6, for example, 2017-07-21). The\
+        \ date is inclusive."
+      explode: true
+      in: query
+      name: startAt
+      required: true
+      schema:
+        format: date
+        type: string
+      style: form
+    endAtParam:
+      description: "End date (RFC 3339, section 5.6, for example, 2017-07-21). The\
+        \ date is exclusive."
+      explode: true
+      in: query
+      name: endAt
+      required: true
+      schema:
+        format: date
+        type: string
+      style: form
   schemas:
     ComponentsUsersResponse:
       example:
@@ -221,6 +296,45 @@ components:
           title: owner
           type: boolean
       title: ComponentUsersRequest
+    ReviewLatency:
+      example:
+        gate_reviews:
+        - gate_type: 0
+          latency_days: 6
+        - gate_type: 0
+          latency_days: 6
+        feature:
+          name: WebGPU
+          id: 5703707724349440
+      properties:
+        feature:
+          $ref: '#/components/schemas/FeatureLink'
+        gate_reviews:
+          items:
+            $ref: '#/components/schemas/GateLatency'
+          title: gate_reviews
+          type: array
+      required:
+      - feature
+      - gate_reviews
+      title: ReviewLatency
+      type: object
+    GateLatency:
+      example:
+        gate_type: 0
+        latency_days: 6
+      properties:
+        gate_type:
+          title: gate_type
+          type: integer
+        latency_days:
+          title: latency_days
+          type: integer
+      required:
+      - gate_type
+      - latency_days
+      title: GateLatency
+      type: object
     SpecMentor:
       example:
         mentored_features:
@@ -243,6 +357,45 @@ components:
       - email
       - mentored_features
       title: SpecMentor
+      type: object
+    FeatureLatency:
+      example:
+        owner_emails:
+        - owner_emails
+        - owner_emails
+        feature:
+          name: WebGPU
+          id: 5703707724349440
+        shipped_date: 2000-01-23
+        entry_created_date: 2000-01-23
+        shipped_milestone: 0
+      properties:
+        feature:
+          $ref: '#/components/schemas/FeatureLink'
+        entry_created_date:
+          format: date
+          title: entry_created_date
+          type: string
+        shipped_milestone:
+          title: shipped_milestone
+          type: integer
+        shipped_date:
+          format: date
+          title: shipped_date
+          type: string
+        owner_emails:
+          items:
+            format: email
+            type: string
+          title: owner_emails
+          type: array
+      required:
+      - entry_created_date
+      - feature
+      - owner_emails
+      - shipped_date
+      - shipped_milestone
+      title: FeatureLatency
       type: object
     FeatureLink:
       example:

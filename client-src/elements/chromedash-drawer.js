@@ -2,9 +2,7 @@ import {LitElement, css, html, nothing} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {IS_MOBILE, showToastMessage} from './utils';
 
-
 export const DRAWER_WIDTH_PX = 200;
-
 
 export class ChromedashDrawer extends LitElement {
   static get styles() {
@@ -30,7 +28,7 @@ export class ChromedashDrawer extends LitElement {
           background: var(--card-background);
           border: none;
           align-items: center;
-          margin: 0 var(--content-padding);
+          margin: 0 var(--content-padding-half);
           -webkit-font-smoothing: initial;
         }
         nav a {
@@ -38,7 +36,7 @@ export class ChromedashDrawer extends LitElement {
           cursor: pointer;
           font-size: var(--nav-link-font-size);
           text-align: left;
-          padding: var(--content-padding-half) var(--content-padding);
+          padding: var(--content-padding-half);
           color: var(--nav-link-color);
           white-space: nowrap;
           border-radius: var(--pill-border-radius);
@@ -59,11 +57,11 @@ export class ChromedashDrawer extends LitElement {
           background: var(--md-gray-100-alpha);
         }
         hr {
-          margin: 15px;
+          margin: 15px var(--content-padding-half);
         }
 
         .section-header {
-          margin: 0px 16px 10px;
+          margin: 0px var(--content-padding-half) 10px;
           font-weight: bold;
         }
         sl-drawer a {
@@ -89,7 +87,8 @@ export class ChromedashDrawer extends LitElement {
             display: none;
           }
         }
-    `];
+      `,
+    ];
   }
 
   static get properties() {
@@ -107,8 +106,7 @@ export class ChromedashDrawer extends LitElement {
     super();
     this.currentPage = '';
     this.devMode = 'False';
-    this.googleSignInClientId = '',
-    this.user = {};
+    (this.googleSignInClientId = ''), (this.user = {});
     this.loading = false;
     this.defaultOpen = false;
   }
@@ -121,25 +119,31 @@ export class ChromedashDrawer extends LitElement {
 
     // Try to load user.
     this.loading = true;
-    window.csClient.getPermissions().then((user) => {
-      this.user = user;
-      // If it is on mobile, log-in is intialized in this component.
-      // Othewise, log-in is initialized in chromedash-header.
-      if (!this.user && IS_MOBILE) {
-        if (!window['isPlaywright']) {
-          this.initializeGoogleSignIn();
+    window.csClient
+      .getPermissions()
+      .then(user => {
+        this.user = user;
+        // If it is on mobile, log-in is intialized in this component.
+        // Othewise, log-in is initialized in chromedash-header.
+        if (!this.user && IS_MOBILE) {
+          if (!window['isPlaywright']) {
+            this.initializeGoogleSignIn();
+          }
+          if (this.devMode == 'True') {
+            // Insert the testing signin second, so it appears to the left
+            // of the google signin button, with a large margin on the right.
+            this.initializeTestingSignIn();
+          }
         }
-        if (this.devMode == 'True') {
-          // Insert the testing signin second, so it appears to the left
-          // of the google signin button, with a large margin on the right.
-          this.initializeTestingSignIn();
-        }
-      }
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-    }).finally(() => {
-      this.loading = false;
-    });
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
+      })
+      .finally(() => {
+        this.loading = false;
+      });
   }
 
   initializeGoogleSignIn() {
@@ -163,13 +167,15 @@ export class ChromedashDrawer extends LitElement {
     signInTestingButton.innerText = 'Sign in as example@chromium.org';
     signInTestingButton.setAttribute('type', 'button');
     signInTestingButton.setAttribute('data-testid', 'dev-mode-sign-in-button');
-    signInTestingButton.setAttribute('style',
-      'position:fixed; right:0; z-index:1000; background: lightblue; border: 1px solid blue;');
+    signInTestingButton.setAttribute(
+      'style',
+      'position:fixed; right:0; z-index:1000; background: lightblue; border: 1px solid blue;'
+    );
 
     signInTestingButton.addEventListener('click', () => {
       // POST to '/dev/mock_login' to login as example@chromium.
       fetch('/dev/mock_login', {method: 'POST'})
-        .then((response) => {
+        .then(response => {
           if (!response.ok) {
             throw new Error('Sign in failed! Response:', response);
           }
@@ -180,19 +186,23 @@ export class ChromedashDrawer extends LitElement {
             window.location = url;
           }, 1000);
         })
-        .catch((error) => {
+        .catch(error => {
           console.error('Sign in failed.', error);
         });
     });
 
     const signInButtonContainer = document.querySelector('body');
     if (signInButtonContainer) {
-      signInButtonContainer.insertAdjacentElement('afterbegin', signInTestingButton); // for SPA
+      signInButtonContainer.insertAdjacentElement(
+        'afterbegin',
+        signInTestingButton
+      ); // for SPA
     }
   }
 
   handleCredentialResponse(credentialResponse) {
-    window.csClient.signIn(credentialResponse)
+    window.csClient
+      .signIn(credentialResponse)
       .then(() => {
         setTimeout(() => {
           const url = window.location.href.split('?')[0];
@@ -216,6 +226,13 @@ export class ChromedashDrawer extends LitElement {
     });
   }
 
+  userCanApprove() {
+    return (
+      this.user &&
+      (this.user.is_admin || this.user.approvable_gate_types?.length > 0)
+    );
+  }
+
   isCurrentPage(href) {
     return this.currentPage.startsWith(href);
   }
@@ -231,10 +248,9 @@ export class ChromedashDrawer extends LitElement {
   }
 
   renderNavItem(url, label) {
-    return html`<a
-      href="${url}"
-      ?active=${this.isCurrentPage(url)}
-      >${label}</a>`;
+    return html`<a href="${url}" ?active=${this.isCurrentPage(url)}
+      >${label}</a
+    >`;
   }
 
   renderDrawer() {
@@ -243,27 +259,29 @@ export class ChromedashDrawer extends LitElement {
       accountMenu = this.renderAccountMenu();
     }
 
+    const myFeaturesMenu = this.renderMyFeaturesMenu();
     const adminMenu = this.renderAdminMenu();
 
     return html`
-      <sl-drawer label="Menu" placement="start" class="drawer-placement-start"
-        style="--size: ${DRAWER_WIDTH_PX}px;" contained noHeader
-        ?open=${!IS_MOBILE && this.defaultOpen}>
-        ${accountMenu}
-        ${this.renderNavItem('/roadmap', 'Roadmap')}
-        ${this.user?.email ?
-           this.renderNavItem('/myfeatures', 'My features') :
-           nothing}
-        ${this.renderNavItem('/features', 'All features')}
-        <hr>
+      <sl-drawer
+        label="Menu"
+        placement="start"
+        class="drawer-placement-start"
+        style="--size: ${DRAWER_WIDTH_PX}px;"
+        contained
+        noHeader
+        ?open=${!IS_MOBILE && this.defaultOpen}
+      >
+        ${accountMenu} ${this.renderNavItem('/roadmap', 'Roadmap')}
+        ${this.renderNavItem('/features', 'All features')} ${myFeaturesMenu}
+        <hr />
         <div class="section-header">Stats</div>
         ${this.renderNavItem('/metrics/css/popularity', 'CSS')}
         ${this.renderNavItem('/metrics/css/animated', 'CSS Animation')}
         ${this.renderNavItem('/metrics/feature/popularity', 'JS/HTML')}
-        <hr>
+        <hr />
         <div class="section-header">Reports</div>
         ${this.renderNavItem('/reports/spec_mentors', 'Spec Mentors')}
-
         ${adminMenu}
       </sl-drawer>
     `;
@@ -277,40 +295,65 @@ export class ChromedashDrawer extends LitElement {
     return html`
       <div class="section-header">${this.user.email}</div>
       <a href="/settings">Settings</a>
-      <a href="#" id="sign-out-link" data-testid="sign-out-link" @click=${this.handleSignOutClick}>Sign out</a>
-      ${this.user.can_create_feature && !this.isCurrentPage('/guide/new') ? html`
-        <sl-button data-testid="create-feature-button"
-          href="/guide/new" variant="primary" size="small">
-          Create feature
-        </sl-button>
-        `: nothing }
-      <hr>
+      <a
+        href="#"
+        id="sign-out-link"
+        data-testid="sign-out-link"
+        @click=${this.handleSignOutClick}
+        >Sign out</a
+      >
+      ${this.user.can_create_feature && !this.isCurrentPage('/guide/new')
+        ? html`
+            <sl-button
+              data-testid="create-feature-button"
+              href="/guide/new"
+              variant="primary"
+              size="small"
+            >
+              Create feature
+            </sl-button>
+          `
+        : nothing}
+      <hr />
     `;
   }
 
+  renderMyFeaturesMenu() {
+    if (!this.user?.email) {
+      return nothing;
+    }
+
+    return html`
+      <hr />
+      <div class="section-header">My features</div>
+      ${this.userCanApprove()
+        ? this.renderNavItem('/myfeatures/review', 'Pending review')
+        : nothing}
+      ${this.renderNavItem('/myfeatures/starred', 'Starred')}
+      ${this.renderNavItem('/myfeatures/editable', 'Owner / editor')}
+    `;
+  }
   renderAdminMenu() {
     if (!this.user?.is_admin) {
       return nothing;
     }
 
     return html`
-        <hr>
-        <div class="section-header">Admin</div>
-        ${this.renderNavItem('/admin/users/new', 'Users')}
-        ${this.renderNavItem('/admin/ot_requests', 'OT requests')}
-        ${this.renderNavItem('/admin/feature_links', 'Feature links')}
-        ${this.renderNavItem('/admin/slo_report', 'SLO report JSON')}
-        ${this.renderNavItem('/admin/blink', 'Subscriptions')}
-        ${this.renderNavItem('/admin/find_stop_words', 'Find stop words JSON')}
+      <hr />
+      <div class="section-header">Admin</div>
+      ${this.renderNavItem('/admin/users/new', 'Users')}
+      ${this.renderNavItem('/admin/ot_requests', 'OT requests')}
+      ${this.renderNavItem('/admin/feature_links', 'Feature links')}
+      ${this.renderNavItem('/reports/feature-latency', 'Feature latency')}
+      ${this.renderNavItem('/reports/review-latency', 'Review latency')}
+      ${this.renderNavItem('/admin/slo_report', 'SLO report JSON')}
+      ${this.renderNavItem('/admin/blink', 'Subscriptions')}
+      ${this.renderNavItem('/admin/find_stop_words', 'Find stop words JSON')}
     `;
   }
 
   render() {
-    return html`
-      <nav>
-        ${this.renderDrawer()}
-      </nav>
-    `;
+    return html` <nav>${this.renderDrawer()}</nav> `;
   }
 }
 

@@ -92,7 +92,8 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     num = self.get_int_arg('num', search.DEFAULT_RESULTS_PER_PAGE)
     start = self.get_int_arg('start', 0)
 
-    show_enterprise = 'feature_type' in user_query
+    show_enterprise = (
+        'feature_type' in user_query or self.get_bool_arg('showEnterprise'))
     try:
       features_on_page, total_count = search.process_query(
           user_query, sort_spec=sort_spec, show_unlisted=show_unlisted_features,
@@ -130,7 +131,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
       if field in body:
         fields_dict[field] = self.format_field_val(
             field, field_type, body[field])
-    
+
     # If no enterprise notification milestone was set, set one since it will be shown in the next
     # release notes by default. This is true for breaking changes and enterprise features only.
     if ('first_enterprise_notification_milestone' in body):
@@ -246,6 +247,9 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
 
     if is_update_first_notification_milestone(feature, feature_changes):
       feature.first_enterprise_notification_milestone = int(feature_changes['first_enterprise_notification_milestone'])
+      has_updated = True
+    elif needs_default_first_notification_milestone(feature, feature_changes):
+      feature.first_enterprise_notification_milestone = get_default_first_notice_milestone_for_feature()
       has_updated = True
     if should_remove_first_notice_milestone(feature, feature_changes):
       feature.first_enterprise_notification_milestone = None

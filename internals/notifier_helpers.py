@@ -192,7 +192,7 @@ def notify_subscribers_of_new_comments(fe: 'FeatureEntry', gate: Gate,
 
 
 def send_ot_notification(stage: Stage):
-  """Notify about new trial creation request."""
+  """Notify about new trial creation/extension request."""
   stage_dict = converters.stage_to_json_dict(stage)
   # Add the OT request note, which is usually not publicly visible.
   stage_dict['ot_request_note'] = stage.ot_request_note
@@ -209,3 +209,12 @@ def send_ot_notification(stage: Stage):
   else:
     cloud_tasks_helpers.enqueue_task(
         '/tasks/email-ot-creation-request',params)
+
+
+def send_trial_extended_notification(stage: Stage):
+  """Notify about a successful automatic trial extension."""
+  stage_dict = converters.stage_to_json_dict(stage)
+  params = {'stage': stage_dict}
+  ot_stage = Stage.get_by_id(stage.ot_stage_id)
+  params['ot_stage'] = converters.stage_to_json_dict(ot_stage)
+  cloud_tasks_helpers.enqueue_task('/tasks/email-ot-extended', params)

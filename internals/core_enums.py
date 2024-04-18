@@ -204,7 +204,7 @@ STAGE_DEP_REMOVE_CODE = 470
 # Note STAGE_* enum values 500-999 are reseverd for future WP processes.
 
 # Define enterprise feature processes.
-# Note: This stage can ge added to any feature that is following any process.
+# Note: This stage can be added to any feature that is following any process.
 STAGE_ENT_ROLLOUT = 1061
 STAGE_ENT_SHIPPED = 1070
 
@@ -228,7 +228,7 @@ INTENT_STAGES_BY_STAGE_TYPE = {
     STAGE_PSA_DEV_TRIAL: INTENT_EXPERIMENT,
     STAGE_PSA_SHIPPING: INTENT_SHIP,
 
-    STAGE_DEP_PLAN: INTENT_INCUBATE,
+    STAGE_DEP_PLAN: INTENT_IMPLEMENT,
     STAGE_DEP_DEV_TRIAL: INTENT_EXPERIMENT,
     STAGE_DEP_DEPRECATION_TRIAL: INTENT_ORIGIN_TRIAL,
     STAGE_DEP_EXTEND_DEPRECATION_TRIAL: INTENT_EXTEND_ORIGIN_TRIAL,

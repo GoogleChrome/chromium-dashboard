@@ -25,6 +25,7 @@ from api import channels_api
 from api import comments_api
 from api import cues_api
 from api import features_api
+from api import feature_latency_api
 from api import feature_links_api
 from api import login_api
 from api import logout_api
@@ -33,6 +34,7 @@ from api import origin_trials_api
 from api import permissions_api
 from api import processes_api
 from api import reviews_api
+from api import review_latency_api
 from api import settings_api
 from api import spec_mentors_api
 from api import stages_api
@@ -118,6 +120,8 @@ api_routes: list[Route] = [
         reviews_api.GatesAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/gates/<int:gate_id>',
         reviews_api.GatesAPI),
+    Route(f'{API_BASE}/gates/pending',
+        reviews_api.PendingGatesAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/approvals/comments',
         comments_api.CommentsAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/approvals/<int:gate_id>/comments',
@@ -142,6 +146,8 @@ api_routes: list[Route] = [
         component_users.ComponentUsersAPI),
 
     Route(f'{API_BASE}/spec_mentors', spec_mentors_api.SpecMentorsAPI),
+    Route(f'{API_BASE}/feature-latency', feature_latency_api.FeatureLatencyAPI),
+    Route(f'{API_BASE}/review-latency', review_latency_api.ReviewLatencyAPI),
 
     Route(f'{API_BASE}/login', login_api.LoginAPI),
     Route(f'{API_BASE}/logout', logout_api.LogoutAPI),
@@ -170,7 +176,11 @@ api_routes: list[Route] = [
 spa_page_routes = [
   Route('/'),
   Route('/roadmap'),
+  # TODO(jrobbins): remove '/myfeatures' after a while.
   Route('/myfeatures', defaults={'require_signin': True}),
+  Route('/myfeatures/review', defaults={'require_signin': True}),
+  Route('/myfeatures/starred', defaults={'require_signin': True}),
+  Route('/myfeatures/editable', defaults={'require_signin': True}),
   Route('/newfeatures'),
   Route('/feature/<int:feature_id>'),
   Route('/feature/<int:feature_id>/activity'),
@@ -210,6 +220,8 @@ spa_page_routes = [
   Route('/metrics/feature/timeline/popularity'),
   Route('/metrics/feature/timeline/popularity/<int:bucket_id>'),
   Route('/reports/spec_mentors'),
+  Route('/reports/feature-latency'),
+  Route('/reports/review-latency'),
   Route('/settings', defaults={'require_signin': True}),
   Route('/enterprise'),
   Route(
@@ -227,7 +239,9 @@ mpa_page_routes: list[Route] = [
 
     Route('/admin/features/launch/<int:feature_id>',
         intentpreview.IntentEmailPreviewHandler),
-    Route('/admin/features/launch/<int:feature_id>/<int:stage_id>',
+    Route('/admin/features/launch/<int:feature_id>/<int:intent_stage>',
+        intentpreview.IntentEmailPreviewHandler),
+    Route('/admin/features/launch/<int:feature_id>/<int:intent_stage>/<int:gate_id>',
         intentpreview.IntentEmailPreviewHandler),
 
     # Note: The only requests being made now hit /features.json and
@@ -273,6 +287,8 @@ internals_routes: list[Route] = [
         notifier.OriginTrialCreationRequestHandler),
   Route('/tasks/email-ot-extension-request',
         notifier.OriginTrialExtensionRequestHandler),
+  Route('/tasks/email-ot-extended',
+        notifier.OriginTrialCreationRequestHandler),
 
   # Maintenance scripts.
   Route('/scripts/evaluate_gate_status',

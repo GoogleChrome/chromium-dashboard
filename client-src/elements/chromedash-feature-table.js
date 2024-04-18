@@ -4,16 +4,17 @@ import './chromedash-feature-filter';
 import './chromedash-feature-row';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
-
 class ChromedashFeatureTable extends LitElement {
   static get properties() {
     return {
       query: {type: String},
+      showEnterprise: {type: Boolean},
       sortSpec: {type: String},
       showQuery: {type: Boolean},
       features: {type: Array},
       totalCount: {type: Number},
       loading: {type: Boolean},
+      reloading: {type: Boolean},
       start: {type: Number},
       num: {type: Number},
       alwaysOfferPagination: {type: Boolean},
@@ -30,9 +31,11 @@ class ChromedashFeatureTable extends LitElement {
   constructor() {
     super();
     this.query = '';
+    this.showEnterprise = false;
     this.sortSpec = '';
     this.showQuery = false;
     this.loading = true;
+    this.reloading = false;
     this.starredFeatures = new Set();
     this.features = [];
     this.totalCount = 0;
@@ -47,22 +50,34 @@ class ChromedashFeatureTable extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this.fetchFeatures();
+    this.fetchFeatures(true);
   }
 
-  fetchFeatures() {
-    this.loading = true;
-    window.csClient.searchFeatures(
-      this.query, this.sortSpec, this.start, this.num).then((resp) => {
-      this.features = resp.features;
-      this.totalCount = resp.total_count;
-      this.loading = false;
-      if (this.columns == 'approvals') {
-        this.loadGateData();
-      }
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-    });
+  fetchFeatures(isInitialLoad = false) {
+    this.loading = isInitialLoad;
+    this.reloading = !isInitialLoad;
+    window.csClient
+      .searchFeatures(
+        this.query,
+        this.showEnterprise,
+        this.sortSpec,
+        this.start,
+        this.num
+      )
+      .then(resp => {
+        this.features = resp.features;
+        this.totalCount = resp.total_count;
+        this.loading = false;
+        this.reloading = false;
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
+      });
+    if (this.columns == 'approvals') {
+      this.loadGateData();
+    }
   }
 
   refetch() {
@@ -70,20 +85,33 @@ class ChromedashFeatureTable extends LitElement {
   }
 
   loadGateData() {
-    for (const feature of this.features) {
-      window.csClient.getGates(feature.id).then(res => {
-        const newGates = {...this.gates};
-        newGates[feature.id] = res.gates;
-        this.gates = newGates;
+    window.csClient
+      .getPendingGates()
+      .then(res => {
+        const gatesByFID = {};
+        for (const g of res.gates) {
+          if (!gatesByFID.hasOwnProperty(g.feature_id)) {
+            gatesByFID[g.feature_id] = [];
+          }
+          gatesByFID[g.feature_id].push(g);
+        }
+        this.gates = gatesByFID;
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
       });
-    }
   }
 
   // For rerendering of the "Features I starred" section when a feature is starred
   // only re-fetch if !this.loading to avoid double fetching on first update.
   updated(changedProperties) {
-    if (this.query == 'starred-by:me' && !this.loading &&
-      changedProperties.has('starredFeatures')) {
+    if (
+      this.query == 'starred-by:me' &&
+      !this.loading &&
+      changedProperties.has('starredFeatures')
+    ) {
       this.fetchFeatures();
     }
   }
@@ -114,57 +142,65 @@ class ChromedashFeatureTable extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-      .pagination {
-        padding: var(--content-padding-half) 0;
-        min-height: 50px;
-        display: flex;
-        align-items: center;
-        justify-content: end;
-      }
-      .pagination span {
-        color: var(--unimportant-text-color);
-        margin-right: var(--content-padding);
-      }
-      .pagination sl-icon-button {
-        font-size: 1.6rem;
-      }
-      .pagination sl-icon-button::part(base) {
-        padding: 0;
-      }
-      table {
-        width: 100%;
-      }
-      .skel td {
-        background: white;
-        padding: 14px;
-        border-bottom: var(--table-divider);
-      }
-      sl-skeleton {
-        height: 24px;
-      }
-    `];
+        .pagination {
+          padding: var(--content-padding-half) 0;
+          min-height: 50px;
+        }
+        .pagination span {
+          color: var(--unimportant-text-color);
+          margin-right: var(--content-padding);
+        }
+        .pagination sl-icon-button {
+          font-size: 1.6rem;
+        }
+        .pagination sl-icon-button::part(base) {
+          padding: 0;
+        }
+        table {
+          width: 100%;
+        }
+        .skel td {
+          background: white;
+          padding: 14px;
+          border-bottom: var(--table-divider);
+        }
+        sl-skeleton {
+          height: 24px;
+        }
+      `,
+    ];
   }
 
   renderMessages() {
     if (this.loading) {
       return html`
-        <tr class="skel"><td>
-          <sl-skeleton effect="sheen" style="width: 50%"></sl-skeleton>
-        </td></tr>
-        <tr class="skel"><td>
-          <sl-skeleton effect="sheen" style="width: 65%"></sl-skeleton>
-        </td></tr>
-        <tr class="skel"><td>
-          <sl-skeleton effect="sheen" style="width: 40%"></sl-skeleton>
-        </td></tr>
-        <tr class="skel"><td>
-          <sl-skeleton effect="sheen" style="width: 50%"></sl-skeleton>
-        </td></tr>
+        <tr class="skel">
+          <td>
+            <sl-skeleton effect="sheen" style="width: 50%"></sl-skeleton>
+          </td>
+        </tr>
+        <tr class="skel">
+          <td>
+            <sl-skeleton effect="sheen" style="width: 65%"></sl-skeleton>
+          </td>
+        </tr>
+        <tr class="skel">
+          <td>
+            <sl-skeleton effect="sheen" style="width: 40%"></sl-skeleton>
+          </td>
+        </tr>
+        <tr class="skel">
+          <td>
+            <sl-skeleton effect="sheen" style="width: 50%"></sl-skeleton>
+          </td>
+        </tr>
       `;
     }
     if (this.features.length == 0) {
       return html`
-        <tr><td>${this.noResultsMessage}</td></tr>
+        <tr>
+          <td>${this.noResultsMessage}</td>
+        </tr>
       `;
     }
     return false; // Causes features to render instead.
@@ -173,10 +209,10 @@ class ChromedashFeatureTable extends LitElement {
   renderSearch() {
     if (this.showQuery) {
       return html`
-       <chromedash-feature-filter
-        .query=${this.query}
-        @search="${this.handleSearch}"
-       ></chromedash-feature-filter>
+        <chromedash-feature-filter
+          .query=${this.query}
+          @search="${this.handleSearch}"
+        ></chromedash-feature-filter>
       `;
     }
     return nothing;
@@ -191,12 +227,12 @@ class ChromedashFeatureTable extends LitElement {
     const hasNextPage = lastShown < this.totalCount;
 
     if (this.alwaysOfferPagination) {
-      if (this.loading) { // reserve vertical space to use when loaded.
-        return html`
-          <div class="pagination">
-            <sl-skeleton effect="sheen" style="float: right; width: 12em">
-            </sl-skeleton>
-          </div>`;
+      if (this.loading) {
+        // reserve vertical space to use when loaded.
+        return html` <div class="pagination">
+          <sl-skeleton effect="sheen" style="float: right; width: 12em">
+          </sl-skeleton>
+        </div>`;
       }
     } else {
       // On MyFeatures page, don't always show pagination.  Omit it if
@@ -211,20 +247,24 @@ class ChromedashFeatureTable extends LitElement {
     }
 
     return html`
-      <div class="pagination">
+      <div class="pagination hbox">
+        <span>${this.reloading ? 'Reloading...' : nothing}</span>
+        <div class="spacer"></div>
         <span>${firstShown} - ${lastShown} of ${this.totalCount}</span>
         <sl-icon-button
-          library="material" name="navigate_before"
+          library="material"
+          name="navigate_before"
           title="Previous page"
           @click=${() => this.loadNewPaginationPage(-this.num)}
           ?disabled=${!hasPrevPage}
-          ></sl-icon-button>
+        ></sl-icon-button>
         <sl-icon-button
-          library="material" name="navigate_next"
+          library="material"
+          name="navigate_next"
           title="Next page"
           @click=${() => this.loadNewPaginationPage(this.num)}
           ?disabled=${!hasNextPage}
-          ></sl-icon-button>
+        ></sl-icon-button>
       </div>
     `;
   }
@@ -232,26 +272,25 @@ class ChromedashFeatureTable extends LitElement {
   renderFeature(feature) {
     return html`
       <chromedash-feature-row
-         .feature=${feature}
-         columns=${this.columns}
-         ?signedIn=${this.signedIn}
-         ?canEdit=${this.canEdit}
-         .starredFeatures=${this.starredFeatures}
-         .gates=${this.gates}
-         selectedGateId=${this.selectedGateId}
-         ></chromedash-feature-row>
+        .feature=${feature}
+        columns=${this.columns}
+        ?signedIn=${this.signedIn}
+        ?canEdit=${this.canEdit}
+        .starredFeatures=${this.starredFeatures}
+        .gates=${this.gates}
+        selectedGateId=${this.selectedGateId}
+      ></chromedash-feature-row>
     `;
   }
 
   render() {
     return html`
-      ${this.renderSearch()}
-      ${this.renderPagination()}
-       <table>
+      ${this.renderSearch()} ${this.renderPagination()}
+      <table>
         ${this.renderMessages() ||
-          this.features.map((feature) => this.renderFeature(feature))}
-       </table>
-     `;
+        this.features.map(feature => this.renderFeature(feature))}
+      </table>
+    `;
   }
 }
 

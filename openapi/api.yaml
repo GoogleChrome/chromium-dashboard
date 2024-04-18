@@ -81,6 +81,20 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ComponentUsersRequest'
+  /review-latency:
+    get:
+      summary: List recently reviewed features and their review latency
+      operationId: listReviewsWithLatency
+      responses:
+        '200':
+          description: >-
+            List of recent reviews and their latency.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReviewLatency'
   /spec_mentors:
     get:
       summary: List spec mentors and their activity
@@ -103,7 +117,43 @@ paths:
                   $ref: '#/components/schemas/SpecMentor'
         '400':
           description: The ?after query parameter isn't a valid date in ISO YYYY-MM-DD format.
+  /feature-latency:
+    get:
+      summary: List how long each feature took to launch
+      operationId: listFeatureLatency
+      parameters:
+        - $ref: '#/components/parameters/startAtParam'
+        - $ref: '#/components/parameters/endAtParam'
+      responses:
+        '200':
+          description: >-
+            List the latency of features that launched in date range.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeatureLatency'
+        '400':
+          description: One of the query parameters isn't a valid date in ISO YYYY-MM-DD format.
 components:
+  parameters:
+    startAtParam:
+      in: query
+      name: startAt
+      schema:
+        type: string
+        format: date
+      description: Start date (RFC 3339, section 5.6, for example, 2017-07-21). The date is inclusive.
+      required: true
+    endAtParam:
+      in: query
+      name: endAt
+      schema:
+        type: string
+        format: date
+      description: End date (RFC 3339, section 5.6, for example, 2017-07-21). The date is exclusive.
+      required: true
   securitySchemes:
     XsrfToken:
       type: apiKey
@@ -157,6 +207,28 @@ components:
         owner:
           type: boolean
           description: Impacts this user's ownership. For PUT, add ownership. For DELETE, remove ownership.
+    ReviewLatency:
+      type: object
+      properties:
+        feature:
+          $ref: '#/components/schemas/FeatureLink'
+        gate_reviews:
+          type: array
+          items:
+            $ref: '#/components/schemas/GateLatency'
+      required:
+        - feature
+        - gate_reviews
+    GateLatency:
+      type: object
+      required:
+        - gate_type
+        - latency_days
+      properties:
+        gate_type:
+          type: integer
+        latency_days:
+          type: integer
     SpecMentor:
       type: object
       properties:
@@ -170,6 +242,30 @@ components:
       required:
         - email
         - mentored_features
+    FeatureLatency:
+      type: object
+      properties:
+        feature:
+          $ref: '#/components/schemas/FeatureLink'
+        entry_created_date:
+          type: string
+          format: date
+        shipped_milestone:
+          type: integer
+        shipped_date:
+          type: string
+          format: date
+        owner_emails:
+          type: array
+          items:
+            type: string
+            format: email
+      required:
+        - feature
+        - entry_created_date
+        - shipped_milestone
+        - shipped_date
+        - owner_emails
     FeatureLink:
       type: object
       required:

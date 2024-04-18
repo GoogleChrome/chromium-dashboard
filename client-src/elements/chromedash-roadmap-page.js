@@ -3,7 +3,6 @@ import {ref, createRef} from 'lit/directives/ref.js';
 import './chromedash-roadmap';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
-
 export class ChromedashRoadmapPage extends LitElement {
   sectionRef = createRef();
   roadmapRef = createRef();
@@ -13,7 +12,7 @@ export class ChromedashRoadmapPage extends LitElement {
       ...SHARED_STYLES,
       css`
         .animate {
-          transition: margin .4s ease;
+          transition: margin 0.4s ease;
         }
 
         #releases-section {
@@ -24,7 +23,8 @@ export class ChromedashRoadmapPage extends LitElement {
           text-align: center;
           padding-bottom: var(--content-padding);
         }
-    `];
+      `,
+    ];
   }
 
   static get properties() {
@@ -70,10 +70,10 @@ export class ChromedashRoadmapPage extends LitElement {
       numColumns = 2;
     }
     this.numColumns = numColumns;
-    this.cardWidth = (containerWidth/numColumns) - margin;
+    this.cardWidth = containerWidth / numColumns - margin;
 
     this.updateRoadmapMargin(false);
-  };
+  }
 
   handleMove(e) {
     const roadmap = this.roadmapRef.value;
@@ -105,10 +105,10 @@ export class ChromedashRoadmapPage extends LitElement {
       roadmap.classList.remove('animate');
     }
     const margin = 16;
-    roadmap.style.marginLeft = this.viewOffset*(this.cardWidth + margin) + 'px';
-    roadmap.style.left = roadmap.cardOffset*(this.cardWidth + margin) + 'px';
+    roadmap.style.marginLeft =
+      this.viewOffset * (this.cardWidth + margin) + 'px';
+    roadmap.style.left = roadmap.cardOffset * (this.cardWidth + margin) + 'px';
   }
-
 
   render() {
     return html`
@@ -119,8 +119,20 @@ export class ChromedashRoadmapPage extends LitElement {
       </div>
       <section id="releases-section" ${ref(this.sectionRef)}>
         <div class="timeline-controls">
-          <button id="previous-button" aria-label="Button to move to previous release" @click=${this.handleMove}>Previous</button>
-          <button id="next-button" aria-label="Button to move to later release" @click=${this.handleMove}>Next</button>
+          <button
+            id="previous-button"
+            aria-label="Button to move to previous release"
+            @click=${this.handleMove}
+          >
+            Previous
+          </button>
+          <button
+            id="next-button"
+            aria-label="Button to move to later release"
+            @click=${this.handleMove}
+          >
+            Next
+          </button>
         </div>
         <chromedash-roadmap
           ${ref(this.roadmapRef)}
@@ -128,7 +140,8 @@ export class ChromedashRoadmapPage extends LitElement {
           aria-label="List of milestone releases"
           .numColumns=${this.numColumns}
           .cardWidth=${this.cardWidth}
-          ?signedIn=${Boolean(this.user)}>
+          ?signedIn=${Boolean(this.user)}
+        >
         </chromedash-roadmap>
       </section>
     `;

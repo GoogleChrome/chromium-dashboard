@@ -17,6 +17,8 @@ import * as runtime from '../runtime';
 import type {
   ComponentUsersRequest,
   ComponentsUsersResponse,
+  FeatureLatency,
+  ReviewLatency,
   SpecMentor,
 } from '../models/index';
 import {
@@ -24,6 +26,10 @@ import {
     ComponentUsersRequestToJSON,
     ComponentsUsersResponseFromJSON,
     ComponentsUsersResponseToJSON,
+    FeatureLatencyFromJSON,
+    FeatureLatencyToJSON,
+    ReviewLatencyFromJSON,
+    ReviewLatencyToJSON,
     SpecMentorFromJSON,
     SpecMentorToJSON,
 } from '../models/index';
@@ -32,6 +38,11 @@ export interface AddUserToComponentRequest {
     componentId: number;
     userId: number;
     componentUsersRequest?: ComponentUsersRequest;
+}
+
+export interface ListFeatureLatencyRequest {
+    startAt: Date;
+    endAt: Date;
 }
 
 export interface ListSpecMentorsRequest {
@@ -81,6 +92,36 @@ export interface DefaultApiInterface {
      * List all components and possible users
      */
     listComponentUsers(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ComponentsUsersResponse>;
+
+    /**
+     * 
+     * @summary List how long each feature took to launch
+     * @param {Date} startAt Start date (RFC 3339, section 5.6, for example, 2017-07-21). The date is inclusive.
+     * @param {Date} endAt End date (RFC 3339, section 5.6, for example, 2017-07-21). The date is exclusive.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    listFeatureLatencyRaw(requestParameters: ListFeatureLatencyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<FeatureLatency>>>;
+
+    /**
+     * List how long each feature took to launch
+     */
+    listFeatureLatency(requestParameters: ListFeatureLatencyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<FeatureLatency>>;
+
+    /**
+     * 
+     * @summary List recently reviewed features and their review latency
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    listReviewsWithLatencyRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ReviewLatency>>>;
+
+    /**
+     * List recently reviewed features and their review latency
+     */
+    listReviewsWithLatency(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ReviewLatency>>;
 
     /**
      * 
@@ -188,6 +229,74 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async listComponentUsers(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ComponentsUsersResponse> {
         const response = await this.listComponentUsersRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * List how long each feature took to launch
+     */
+    async listFeatureLatencyRaw(requestParameters: ListFeatureLatencyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<FeatureLatency>>> {
+        if (requestParameters.startAt === null || requestParameters.startAt === undefined) {
+            throw new runtime.RequiredError('startAt','Required parameter requestParameters.startAt was null or undefined when calling listFeatureLatency.');
+        }
+
+        if (requestParameters.endAt === null || requestParameters.endAt === undefined) {
+            throw new runtime.RequiredError('endAt','Required parameter requestParameters.endAt was null or undefined when calling listFeatureLatency.');
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters.startAt !== undefined) {
+            queryParameters['startAt'] = (requestParameters.startAt as any).toISOString().substring(0,10);
+        }
+
+        if (requestParameters.endAt !== undefined) {
+            queryParameters['endAt'] = (requestParameters.endAt as any).toISOString().substring(0,10);
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/feature-latency`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(FeatureLatencyFromJSON));
+    }
+
+    /**
+     * List how long each feature took to launch
+     */
+    async listFeatureLatency(requestParameters: ListFeatureLatencyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<FeatureLatency>> {
+        const response = await this.listFeatureLatencyRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * List recently reviewed features and their review latency
+     */
+    async listReviewsWithLatencyRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ReviewLatency>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/review-latency`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ReviewLatencyFromJSON));
+    }
+
+    /**
+     * List recently reviewed features and their review latency
+     */
+    async listReviewsWithLatency(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ReviewLatency>> {
+        const response = await this.listReviewsWithLatencyRaw(initOverrides);
         return await response.value();
     }
 

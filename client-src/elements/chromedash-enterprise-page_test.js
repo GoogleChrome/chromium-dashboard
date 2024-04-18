@@ -23,27 +23,34 @@ describe('chromedash-enterprise-page', () => {
   });
 
   it('render with no data', async () => {
-    const invalidFeaturePromise = Promise.reject(new Error('Got error response from server'));
+    const invalidFeaturePromise = Promise.reject(
+      new Error('Got error response from server')
+    );
     window.csClient.searchFeatures.returns(invalidFeaturePromise);
     const component = await fixture(
-      html`<chromedash-enterprise-page></chromedash-enterprise-page>`);
+      html`<chromedash-enterprise-page></chromedash-enterprise-page>`
+    );
     assert.exists(component);
     assert.instanceOf(component, ChromedashEnterprisePage);
 
     // error response would trigger the toast to show message
     const toastEl = document.querySelector('chromedash-toast');
     const toastMsgSpan = toastEl.shadowRoot.querySelector('span#msg');
-    assert.include(toastMsgSpan.innerHTML,
-      'Some errors occurred. Please refresh the page or try again later.');
+    assert.include(
+      toastMsgSpan.innerHTML,
+      'Some errors occurred. Please refresh the page or try again later.'
+    );
   });
 
   it('render with fake data', async () => {
     const validFeaturePromise = Promise.resolve({
       total_count: 1,
-      features: [{
-        id: 123456,
-        name: 'feature one',
-      }],
+      features: [
+        {
+          id: 123456,
+          name: 'feature one',
+        },
+      ],
     });
     const user = {
       can_create_feature: true,
@@ -54,18 +61,23 @@ describe('chromedash-enterprise-page', () => {
     };
     window.csClient.searchFeatures.returns(validFeaturePromise);
     const component = await fixture(
-      html`<chromedash-enterprise-page
-            .user=${user}>
-           </chromedash-enterprise-page>`);
+      html`<chromedash-enterprise-page .user=${user}>
+      </chromedash-enterprise-page>`
+    );
     assert.exists(component);
     assert.instanceOf(component, ChromedashEnterprisePage);
 
     // feature table exists
-    const featureTableEl = component.shadowRoot.querySelector('chromedash-feature-table');
+    const featureTableEl = component.shadowRoot.querySelector(
+      'chromedash-feature-table'
+    );
     assert.exists(featureTableEl);
 
     // title exists
     const titleEl = component.shadowRoot.querySelector('h2');
-    assert.include(titleEl.innerHTML, 'Enterprise features and breaking changes');
+    assert.include(
+      titleEl.innerHTML,
+      'Enterprise features and breaking changes'
+    );
   });
 });

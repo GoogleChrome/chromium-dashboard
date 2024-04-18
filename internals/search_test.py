@@ -65,6 +65,21 @@ class SearchRETest(testing_config.CustomTestCase):
         [('OR ', 'flag_name', '=', 'enable-super-stuff', '')],
         search.TERM_RE.findall('OR flag_name=enable-super-stuff '))
 
+  def test_structured_query_terms__quick_or(self):
+    """We can parse queries that use quick-OR syntax for multiple values."""
+    self.assertEqual(
+        [('', 'field', '=', 'value1,value2,value3', '')],
+        search.TERM_RE.findall('field=value1,value2,value3 '))
+    self.assertEqual(
+        [('', 'field', '=', '1,2,3', '')],
+        search.TERM_RE.findall('field=1,2,3 '))
+    self.assertEqual(
+        [('', 'field', '=', '"one","two","three"', '')],
+        search.TERM_RE.findall('field="one","two","three" '))
+    self.assertEqual(
+        [('', 'field', '=', '"enum one","enum two","enum three"', '')],
+        search.TERM_RE.findall('field="enum one","enum two","enum three" '))
+
   def test_text_terms(self):
     """We can parse text terms."""
     self.assertEqual(
@@ -301,6 +316,14 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     total_order_ids = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
     actual = search._sort_by_total_order(feature_ids, total_order_ids)
     self.assertEqual([10, 9, 4, 1, 997, 998, 999], actual)
+
+  def test_sort_by_total_order__multiple_items(self):
+    """If the sort order is done via join, the total_order could have
+    multiple copies of the same feature IDs.  We use the earliest."""
+    feature_ids = [10, 1, 9, 4]
+    total_order_ids = [10, 9, 8, 7, 9, 6, 10, 5, 8, 4, 7, 3, 9, 6, 2, 1, 1, 4]
+    actual = search._sort_by_total_order(feature_ids, total_order_ids)
+    self.assertEqual([10, 9, 4, 1], actual)
 
   @mock.patch('internals.search.process_pending_approval_me_query')
   @mock.patch('internals.search.process_starred_me_query')

@@ -25,3 +25,13 @@ updates:
     reviewers:
       - "jrobbins"
       - "jcscottiii"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      actions-org:
+        patterns: ["actions/*"]
+    commit-message:
+      # Prefix all commit messages with "gh-actions"
+      prefix: "gh-actions"

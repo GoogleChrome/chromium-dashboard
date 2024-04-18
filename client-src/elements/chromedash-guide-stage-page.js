@@ -5,7 +5,8 @@ import {
   getStageValue,
   showToastMessage,
   setupScrollToHash,
-  shouldShowDisplayNameField} from './utils.js';
+  shouldShowDisplayNameField,
+} from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
 import {
@@ -20,14 +21,9 @@ import {ALL_FIELDS} from './form-field-specs';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
 
-
 export class ChromedashGuideStagePage extends LitElement {
   static get styles() {
-    return [
-      ...SHARED_STYLES,
-      ...FORM_STYLES,
-      css`
-      `];
+    return [...SHARED_STYLES, ...FORM_STYLES, css``];
   }
 
   static get properties() {
@@ -43,7 +39,6 @@ export class ChromedashGuideStagePage extends LitElement {
       implStatusOffered: {type: String},
       loading: {type: Boolean},
       appTitle: {type: String},
-      nextPage: {type: String},
       fieldValues: {type: Array},
     };
   }
@@ -61,7 +56,6 @@ export class ChromedashGuideStagePage extends LitElement {
     this.implStatusOffered = '';
     this.loading = true;
     this.appTitle = '';
-    this.nextPage = '';
     this.fieldValues = [];
   }
 
@@ -81,32 +75,36 @@ export class ChromedashGuideStagePage extends LitElement {
     // The field has been updated, so it is considered touched.
     this.fieldValues[index].touched = true;
     this.fieldValues[index].value = value;
-  };
+  }
 
   fetchData() {
     this.loading = true;
     Promise.all([
       window.csClient.getFeature(this.featureId),
       window.csClient.getStage(this.featureId, this.stageId),
-    ]).then(([feature, stage]) => {
-      this.feature = feature;
-      this.stage = stage;
+    ])
+      .then(([feature, stage]) => {
+        this.feature = feature;
+        this.stage = stage;
 
-      if (this.feature.name) {
-        document.title = `${this.feature.name} - ${this.appTitle}`;
-      }
-      if (this.feature.active_stage_id === this.stage.id) {
-        this.isActiveStage = true;
-      }
-      this.featureFormFields = FORMS_BY_STAGE_TYPE[stage.stage_type] || {
-        name: '',
-        sections: [],
-      };
-      this.stageName = this.featureFormFields.name;
-      this.loading = false;
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-    });
+        if (this.feature.name) {
+          document.title = `${this.feature.name} - ${this.appTitle}`;
+        }
+        if (this.feature.active_stage_id === this.stage.id) {
+          this.isActiveStage = true;
+        }
+        this.featureFormFields = FORMS_BY_STAGE_TYPE[stage.stage_type] || {
+          name: '',
+          sections: [],
+        };
+        this.stageName = this.featureFormFields.name;
+        this.loading = false;
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
+      });
   }
 
   disconnectedCallback() {
@@ -118,10 +116,10 @@ export class ChromedashGuideStagePage extends LitElement {
     if (!el) return;
 
     /* Add the form's event listener after Shoelace event listeners are attached
-    * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
+     * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
     await el.updateComplete;
     const hiddenTokenField = this.shadowRoot.querySelector('input[name=token]');
-    hiddenTokenField.form.addEventListener('submit', (event) => {
+    hiddenTokenField.form.addEventListener('submit', event => {
       this.handleFormSubmit(event, hiddenTokenField);
     });
 
@@ -134,20 +132,28 @@ export class ChromedashGuideStagePage extends LitElement {
     const submitBody = formatFeatureChanges(this.fieldValues, this.featureId);
 
     // get the XSRF token and update it if it's expired before submission
-    window.csClient.ensureTokenIsValid().then(() => {
-      hiddenTokenField.value = window.csClient.token;
-      return csClient.updateFeature(submitBody);
-    }).then(() => {
-      window.location.href = this.nextPage || `/guide/edit/${this.featureId}`;
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-    });
+    window.csClient
+      .ensureTokenIsValid()
+      .then(() => {
+        hiddenTokenField.value = window.csClient.token;
+        return csClient.updateFeature(submitBody);
+      })
+      .then(() => {
+        window.location.href = `/feature/${this.featureId}`;
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
+      });
   }
 
   miscSetup() {
     // Allow editing if there was already a value specified in this
     // deprecated field.
-    const timelineField = this.shadowRoot.querySelector('#id_experiment_timeline');
+    const timelineField = this.shadowRoot.querySelector(
+      '#id_experiment_timeline'
+    );
     if (timelineField && timelineField.value) {
       timelineField.disabled = '';
     }
@@ -160,7 +166,9 @@ export class ChromedashGuideStagePage extends LitElement {
   // get a comma-spearated list of field names
   getFormFields() {
     const fields = this.featureFormFields.sections.reduce(
-      (combined, section) => [...combined, ...section.fields], []);
+      (combined, section) => [...combined, ...section.fields],
+      []
+    );
     return fields.join();
   }
 
@@ -184,7 +192,7 @@ export class ChromedashGuideStagePage extends LitElement {
   }
 
   getNextPage() {
-    return this.nextPage || `/guide/edit/${this.featureId}`;
+    return `/feature/${this.featureId}`;
   }
 
   renderSubheader() {
@@ -206,8 +214,10 @@ export class ChromedashGuideStagePage extends LitElement {
     }
     return section.fields.map(field => {
       // Only show "display name" field if there is more than one stage of the same type.
-      if (field === 'display_name' &&
-          !shouldShowDisplayNameField(this.feature.stages, feStage.stage_type)) {
+      if (
+        field === 'display_name' &&
+        !shouldShowDisplayNameField(this.feature.stages, feStage.stage_type)
+      ) {
         return nothing;
       }
       const featureJSONKey = ALL_FIELDS[field].name || field;
@@ -221,19 +231,25 @@ export class ChromedashGuideStagePage extends LitElement {
 
       // Add the field to this component's stage before creating the field component.
       const index = this.fieldValues.length;
-      this.fieldValues.push({name: featureJSONKey, touched: false, value, stageId});
+      this.fieldValues.push({
+        name: featureJSONKey,
+        touched: false,
+        value,
+        stageId,
+      });
 
       return html`
-      <chromedash-form-field
-        name=${field}
-        index=${index}
-        value=${value}
-        .fieldValues=${this.fieldValues}
-        stageId=${feStage.id}
-        ?forEnterprise=${formattedFeature.is_enterprise_feature}
-        @form-field-update="${this.handleFormFieldUpdate}">
-      </chromedash-form-field>
-    `;
+        <chromedash-form-field
+          name=${field}
+          index=${index}
+          value=${value}
+          .fieldValues=${this.fieldValues}
+          stageId=${feStage.id}
+          ?forEnterprise=${formattedFeature.is_enterprise_feature}
+          @form-field-update="${this.handleFormFieldUpdate}"
+        >
+        </chromedash-form-field>
+      `;
     });
   }
 
@@ -269,7 +285,9 @@ export class ChromedashGuideStagePage extends LitElement {
 
     stageSections.forEach(section => {
       if (section.isImplementationSection) {
-        formSections.push(this.renderImplStatusFormSection(formattedFeature, section));
+        formSections.push(
+          this.renderImplStatusFormSection(formattedFeature, section)
+        );
       } else {
         formSections.push(html`
           <h3>${section.name}</h3>
@@ -305,8 +323,8 @@ export class ChromedashGuideStagePage extends LitElement {
       return nothing;
     }
 
-    const alreadyOnThisImplStatus = (
-      section.implStatusValue === this.feature.browsers.chrome.status.val);
+    const alreadyOnThisImplStatus =
+      section.implStatusValue === this.feature.browsers.chrome.status.val;
     // Set the checkbox label based on the current implementation status.
     let label = `Set implementation status to: ${implStatusName}`;
     if (alreadyOnThisImplStatus) {
@@ -320,22 +338,25 @@ export class ChromedashGuideStagePage extends LitElement {
       implicitValue: section.implStatusValue,
     });
 
-    return html`
-      <chromedash-form-field
-        name="set_impl_status"
-        index=${index}
-        value=${alreadyOnThisImplStatus}
-        .fieldValues=${this.fieldValues}
-        checkboxLabel=${label}
-        ?disabled=${alreadyOnThisImplStatus}
-        @form-field-update="${this.handleFormFieldUpdate}">
-      </chromedash-form-field>`;
+    return html` <chromedash-form-field
+      name="set_impl_status"
+      index=${index}
+      value=${alreadyOnThisImplStatus}
+      .fieldValues=${this.fieldValues}
+      checkboxLabel=${label}
+      ?disabled=${alreadyOnThisImplStatus}
+      @form-field-update="${this.handleFormFieldUpdate}"
+    >
+    </chromedash-form-field>`;
   }
 
   renderImplStatusFormSection(formattedFeature, section) {
     const implStatusKey = Object.keys(IMPLEMENTATION_STATUS).find(
-      key => IMPLEMENTATION_STATUS[key][0] === section.implStatusValue);
-    const implStatusName = implStatusKey ? IMPLEMENTATION_STATUS[implStatusKey][1]: null;
+      key => IMPLEMENTATION_STATUS[key][0] === section.implStatusValue
+    );
+    const implStatusName = implStatusKey
+      ? IMPLEMENTATION_STATUS[implStatusKey][1]
+      : null;
 
     if (!implStatusName && !this.implStatusFormFields) return nothing;
 
@@ -355,13 +376,27 @@ export class ChromedashGuideStagePage extends LitElement {
 
     return html`
       <form name="feature_form">
-        <input type="hidden" name="token">
+        <input type="hidden" name="token" />
         <chromedash-form-table ${ref(this.registerHandlers)}>
-          ${this.renderSections(formattedFeature, this.featureFormFields.sections)}
+          ${this.renderSections(
+            formattedFeature,
+            this.featureFormFields.sections
+          )}
         </chromedash-form-table>
         <div class="final_buttons">
-          <input id='submit-button' class="button" type="submit" value="Submit">
-          <button id="cancel-button" @click=${this.handleCancelClick}>Cancel</button>
+          <input
+            id="submit-button"
+            class="button"
+            type="submit"
+            value="Submit"
+          />
+          <button
+            id="cancel-button"
+            type="reset"
+            @click=${this.handleCancelClick}
+          >
+            Cancel
+          </button>
         </div>
       </form>
     `;

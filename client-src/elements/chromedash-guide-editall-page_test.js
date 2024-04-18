@@ -5,7 +5,6 @@ import './chromedash-toast';
 import '../js-src/cs-client';
 import sinon from 'sinon';
 
-
 describe('chromedash-guide-editall-page', () => {
   const validFeaturePromise = Promise.resolve({
     id: 123456,
@@ -50,7 +49,8 @@ describe('chromedash-guide-editall-page', () => {
         status: {
           milestone_str: 'No active development',
           text: 'No active development',
-          val: 1},
+          val: 1,
+        },
       },
       ff: {view: {text: 'No signal', val: 5}},
       safari: {view: {text: 'No signal', val: 5}},
@@ -67,7 +67,7 @@ describe('chromedash-guide-editall-page', () => {
         text: 'Specification being incubated in a Community Group',
         val: 3,
       },
-      status: {text: 'Editor\'s Draft', val: 4},
+      status: {text: "Editor's Draft", val: 4},
     },
     tags: ['tag_one'],
   });
@@ -89,19 +89,24 @@ describe('chromedash-guide-editall-page', () => {
   });
 
   it('renders with no data', async () => {
-    const invalidFeaturePromise = Promise.reject(new Error('Got error response from server'));
+    const invalidFeaturePromise = Promise.reject(
+      new Error('Got error response from server')
+    );
     window.csClient.getFeature.withArgs(0).returns(invalidFeaturePromise);
 
     const component = await fixture(
-      html`<chromedash-guide-editall-page></chromedash-guide-editall-page>`);
+      html`<chromedash-guide-editall-page></chromedash-guide-editall-page>`
+    );
     assert.exists(component);
     assert.instanceOf(component, ChromedashGuideEditallPage);
 
     // invalid feature requests would trigger the toast to show message
     const toastEl = document.querySelector('chromedash-toast');
     const toastMsgSpan = toastEl.shadowRoot.querySelector('span#msg');
-    assert.include(toastMsgSpan.innerHTML,
-      'Some errors occurred. Please refresh the page or try again later.');
+    assert.include(
+      toastMsgSpan.innerHTML,
+      'Some errors occurred. Please refresh the page or try again later.'
+    );
   });
 
   it('renders with fake data', async () => {
@@ -109,25 +114,29 @@ describe('chromedash-guide-editall-page', () => {
     window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
 
     const component = await fixture(
-      html`<chromedash-guide-editall-page
-             .featureId=${featureId}>
-           </chromedash-guide-editall-page>`);
+      html`<chromedash-guide-editall-page .featureId=${featureId}>
+      </chromedash-guide-editall-page>`
+    );
     assert.exists(component);
     assert.instanceOf(component, ChromedashGuideEditallPage);
 
     const subheaderDiv = component.shadowRoot.querySelector('div#subheader');
     assert.exists(subheaderDiv);
     // subheader title is correct and clickable
-    assert.include(subheaderDiv.innerHTML, 'href="/guide/edit/123456"');
+    assert.include(subheaderDiv.innerHTML, 'href="/feature/123456"');
     assert.include(subheaderDiv.innerHTML, 'Edit feature:');
 
     // feature form, hidden token field, and submit/cancel buttons exist
-    const featureForm = component.shadowRoot.querySelector('form[name="feature_form"]');
+    const featureForm = component.shadowRoot.querySelector(
+      'form[name="feature_form"]'
+    );
     assert.exists(featureForm);
     assert.include(featureForm.innerHTML, '<input type="hidden" name="token">');
     assert.include(featureForm.innerHTML, '<section class="final_buttons">');
 
-    const formTable = component.shadowRoot.querySelector('chromedash-form-table');
+    const formTable = component.shadowRoot.querySelector(
+      'chromedash-form-table'
+    );
     assert.exists(formTable);
 
     // delete button shown on rollout steps only
@@ -140,16 +149,17 @@ describe('chromedash-guide-editall-page', () => {
     window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
 
     const component = await fixture(
-      html`<chromedash-guide-editall-page
-             .featureId=${featureId}>
-           </chromedash-guide-editall-page>`);
+      html`<chromedash-guide-editall-page .featureId=${featureId}>
+      </chromedash-guide-editall-page>`
+    );
     assert.exists(component);
     assert.instanceOf(component, ChromedashGuideEditallPage);
 
     // There are two shipping stage types, but 'tag_review_status' is not a stage-specific field,
     // so only one field should display and it should not display for the second stage.
     const measurementFields = component.shadowRoot.querySelectorAll(
-      'sl-select[name="tag_review_status"]');
+      'sl-select[name="tag_review_status"]'
+    );
     assert.exists(measurementFields);
     assert.isTrue(measurementFields.length === 1);
   });
@@ -188,7 +198,6 @@ describe('chromedash-guide-editall-page', () => {
 
   //   // Trigger the change event on the milestone field
   //   milestoneFieldStartInput.dispatchEvent(new Event('sl-change'));
-
 
   //   // The error messages should be displayed
   //   const errorMessageStart = milestoneFieldStartInput.shadowRoot.querySelector('.check-error');

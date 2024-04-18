@@ -29,9 +29,14 @@ from internals.review_models import Gate
 
 
 def single_field_query_async(
-    field_name: str, operator: str, val: Union[str, int, datetime.datetime],
-    limit: int|None = None) -> Union[list[int], Future]:
+    field_name: str, operator: str,
+    val_list: list[str | int | bool | datetime.datetime],
+    limit: int|None = None) -> list[int] | Future:
   """Create a query for one FeatureEntry field and run it, returning a promise."""
+  if not val_list or val_list == ['']:
+    logging.warning('No values were provided when searching %r', field_name)
+    return []
+
   # Note: We don't exclude deleted features, that's done by process_query.
   field_name = field_name.lower()
   if field_name in QUERIABLE_FIELDS:
@@ -39,11 +44,14 @@ def single_field_query_async(
     query = FeatureEntry.query()
     field = QUERIABLE_FIELDS[field_name]
     if core_enums.is_enum_field(field_name):
-      enum_val = core_enums.convert_enum_string_to_int(field_name, val)
-      if enum_val < 0:
-        logging.warning('Cannot find enum %r:%r', field_name, val)
-        return []
-      val = enum_val
+      enum_val_list = []
+      for val in val_list:
+        enum_val = core_enums.convert_enum_string_to_int(field_name, val)
+        if enum_val < 0:
+          logging.warning('Cannot find enum %r:%r', field_name, val)
+          return []
+        enum_val_list.append(enum_val)
+      val_list = enum_val_list
   elif field_name in STAGE_QUERIABLE_FIELDS:
     # It is a query on a field in Stage.
     query = Stage.query()
@@ -62,33 +70,36 @@ def single_field_query_async(
     return []
 
   # TODO(jrobbins): Handle ":" operator as substrings for text fields.
-  # TODO(jrobbins): Implement quick-OR for integer fields, e.g., x=2,3,4.
 
-  try:
-    # If the field can be set to val, then it can be compared to val.
-    field._validate(val)
-  except ndb.exceptions.BadValueError:
-    logging.info('Wrong type of value for %r: %r' % (field, val))
-    raise ValueError('Query value does not match field type')
+  for val in val_list:
+    try:
+      # If the field can be set to val, then it can be compared to val.
+      field._validate(val)
+    except ndb.exceptions.BadValueError:
+      logging.info('Wrong type of value for %r: %r' % (field, val))
+      raise ValueError('Query value does not match field type')
 
-  if (operator == '='):
-    val_list = str(val).split(',')
-    if len(val_list) > 1:
+  if len(val_list) > 1:
+    if (operator == '='):
       query = query.filter(field.IN(val_list))
     else:
-      query = query.filter(field == val)
-  elif (operator == '<='):
-    query = query.filter(field <= val)
-  elif (operator == '<'):
-    query = query.filter(field < val)
-  elif (operator == '>='):
-    query = query.filter(field >= val)
-  elif (operator == '>'):
-    query = query.filter(field > val)
-  elif (operator == '!='):
-    query = query.filter(field != val)
+      raise ValueError('Quick-OR is not supported for operator: %r' % operator)
   else:
-    raise ValueError('Unexpected query operator: %r' % operator)
+    val = val_list[0]
+    if (operator == '='):
+      query = query.filter(field == val)
+    elif (operator == '<='):
+      query = query.filter(field <= val)
+    elif (operator == '<'):
+      query = query.filter(field < val)
+    elif (operator == '>='):
+      query = query.filter(field >= val)
+    elif (operator == '>'):
+      query = query.filter(field > val)
+    elif (operator == '!='):
+      query = query.filter(field != val)
+    else:
+      raise ValueError('Unexpected query operator: %r' % operator)
 
   if field_name in QUERIABLE_FIELDS:
     # It was a query directly on FeatureEntry, use keys to get feature IDs.
@@ -118,15 +129,15 @@ def negate_operator(operator: str) -> str:
   return operator
 
 
-def handle_me_query_async(field_name: str) -> Future:
+def handle_me_query_async(field_name: str) -> list[int] | Future:
   """Return a future for feature IDs that reference the current user."""
   user = users.get_current_user()
   if not user:
     return []
-  return single_field_query_async(field_name, '=', user.email())
+  return single_field_query_async(field_name, '=', [user.email()])
 
 
-def handle_can_edit_me_query_async() -> Future:
+def handle_can_edit_me_query_async() -> list[int] | Future:
   """Return a future for features that the current user can edit."""
   user = users.get_current_user()
   if not user:
@@ -140,7 +151,7 @@ def handle_can_edit_me_query_async() -> Future:
   return keys_promise
 
 
-def total_order_query_async(sort_spec: str) -> Union[list[int], Future]:
+def total_order_query_async(sort_spec: str) -> list[int] | Future:
   """Create a query promise for all FeatureEntry IDs sorted by sort_spec."""
   # TODO(jrobbins): Support multi-column sort.
   descending = False
@@ -167,7 +178,7 @@ def total_order_query_async(sort_spec: str) -> Union[list[int], Future]:
 
 def _sorted_by_joined_model(
     joinable_model_class: Model, condition: FilterNode, descending: bool,
-    order_by: Property) -> list[int]:
+    order_by: Property) -> Future:
   """Return feature_ids sorted by a field in a joined entity kind."""
   query = joinable_model_class.query()
   if condition:
@@ -177,12 +188,11 @@ def _sorted_by_joined_model(
   else:
     query = query.order(order_by)
 
-  joined_models = query.fetch(projection=['feature_id'])
-  feature_ids = utils.dedupe(jm.feature_id for jm in joined_models)
-  return feature_ids
+  projection_future = query.fetch_async(projection=['feature_id'])
+  return projection_future
 
 
-def sorted_by_pending_request_date(descending: bool) -> list[int]:
+def sorted_by_pending_request_date(descending: bool) -> Future:
   """Return feature_ids of pending approvals sorted by request date."""
   return _sorted_by_joined_model(
       Gate,
@@ -190,7 +200,7 @@ def sorted_by_pending_request_date(descending: bool) -> list[int]:
       descending, Gate.requested_on)
 
 
-def sorted_by_review_date(descending: bool) -> list[int]:
+def sorted_by_review_date(descending: bool) -> Future:
   """Return feature_ids of reviewed approvals sorted by last review."""
   return _sorted_by_joined_model(
       Gate,

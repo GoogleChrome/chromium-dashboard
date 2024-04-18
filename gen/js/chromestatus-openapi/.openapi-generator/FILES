@@ -9,8 +9,11 @@ src/index.ts
 src/models/ComponentUsersRequest.ts
 src/models/ComponentsUser.ts
 src/models/ComponentsUsersResponse.ts
+src/models/FeatureLatency.ts
 src/models/FeatureLink.ts
+src/models/GateLatency.ts
 src/models/OwnersAndSubscribersOfComponent.ts
+src/models/ReviewLatency.ts
 src/models/SpecMentor.ts
 src/models/index.ts
 src/runtime.ts

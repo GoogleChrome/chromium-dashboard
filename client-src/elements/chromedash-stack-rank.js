@@ -3,7 +3,6 @@ import '@polymer/iron-icon';
 import './chromedash-x-meter';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
-
 class ChromedashStackRank extends LitElement {
   static get properties() {
     return {
@@ -29,7 +28,6 @@ class ChromedashStackRank extends LitElement {
     this.shouldHideObsolete = true;
     this.obsoleteCount = 0;
   }
-
 
   static get styles() {
     return [
@@ -146,7 +144,8 @@ class ChromedashStackRank extends LitElement {
         .stack-rank-item-result {
           margin-right: 5px;
         }
-    `];
+    `,
+    ];
   }
 
   willUpdate(changedProperties) {
@@ -159,7 +158,7 @@ class ChromedashStackRank extends LitElement {
       this.scrollToPosition();
     }, 300);
 
-    this.obsoleteCount = this.viewList.filter((item) => item.obsolete).length;
+    this.obsoleteCount = this.viewList.filter(item => item.obsolete).length;
   }
 
   scrollToPosition(e) {
@@ -194,37 +193,58 @@ class ChromedashStackRank extends LitElement {
   renderSubHeader() {
     return html`
       <div id="subheader">
-        <p class="title-text">Showing <span>${this.viewList.length - (
-          this.shouldHideObsolete ? this.obsoleteCount : 0
-        )}</span> properties</p>
-        <sl-checkbox ?checked=${this.shouldHideObsolete} @input=${this.handleChangeHideObsolete} >
+        <p class="title-text">
+          Showing
+          <span
+            >${this.viewList.length -
+            (this.shouldHideObsolete ? this.obsoleteCount : 0)}</span
+          >
+          properties
+        </p>
+        <sl-checkbox
+          ?checked=${this.shouldHideObsolete}
+          @input=${this.handleChangeHideObsolete}
+        >
           Hide obsolete
         </sl-checkbox>
         <div id="dropdown-selection">
           <sl-dropdown>
-            <sl-button slot="trigger" variant="text" ?disabled=${!this.viewList.length}>
+            <sl-button
+              slot="trigger"
+              variant="text"
+              ?disabled=${!this.viewList.length}
+            >
               <iron-icon icon="chromestatus:sort"></iron-icon>
               SORT BY
             </sl-button>
             <sl-menu @click="${this.sort}">
-              <sl-menu-item type="checkbox"
+              <sl-menu-item
+                type="checkbox"
                 ?checked=${this.sortType == 'percentage' && !this.sortReverse}
-                data-order="percentage">
+                data-order="percentage"
+              >
                 Most used
               </sl-menu-item>
-              <sl-menu-item type="checkbox"
+              <sl-menu-item
+                type="checkbox"
                 ?checked=${this.sortType == 'percentage' && this.sortReverse}
-                data-order="percentage-reverse">
+                data-order="percentage-reverse"
+              >
                 Least used
               </sl-menu-item>
-              <sl-menu-item type="checkbox"
+              <sl-menu-item
+                type="checkbox"
                 ?checked=${this.sortType == 'property_name' && this.sortReverse}
-                data-order="property_name-reverse">
+                data-order="property_name-reverse"
+              >
                 Name (A-Z)
               </sl-menu-item>
-              <sl-menu-item type="checkbox"
-                ?checked=${this.sortType == 'property_name' && !this.sortReverse}
-                data-order="property_name">
+              <sl-menu-item
+                type="checkbox"
+                ?checked=${this.sortType == 'property_name' &&
+                !this.sortReverse}
+                data-order="property_name"
+              >
                 Name (Z-A)
               </sl-menu-item>
             </sl-menu>
@@ -236,41 +256,63 @@ class ChromedashStackRank extends LitElement {
 
   renderStackRank(displayedList) {
     return html`
-      ${displayedList.map((item) => html`
-        <li class="stack-rank-item ${(this.shouldHideObsolete && item.obsolete) ? 'stack-rank-item-hidden' : ''}"
-          id="${item.property_name}">
-          <div title="${item.property_name}. Click to deep link to this property.">
-            <a class="stack-rank-item-name" href="#${item.property_name}" @click=${this.scrollToPosition}>
-              <iron-icon class="hash-link" icon="chromestatus:link"></iron-icon>
-              <p>${item.property_name}</p>
-            </a>
-          </div>
-          <div class="stack-rank-item-result">
-            <chromedash-x-meter
-              value="${item.percentage}"
-              max="${this.maxPercentage}"
-              href="/metrics/${this.type}/timeline/${this.view}/${item.bucket_id}"
-              title="Click to see a timeline view of this property">
-            </chromedash-x-meter>
-            <a class="icon-wrapper"
-              href="/metrics/${this.type}/timeline/${this.view}/${item.bucket_id}"
-              title="Click to see a timeline view of this property">
-              <iron-icon icon="chromestatus:timeline"></iron-icon>
-              <p class="icon-text">Timeline</p>
-            </a>
-          </div>
-        </li>
-      `)}
+      ${displayedList.map(
+        item => html`
+          <li
+            class="stack-rank-item ${this.shouldHideObsolete && item.obsolete
+              ? 'stack-rank-item-hidden'
+              : ''}"
+            id="${item.property_name}"
+          >
+            <div
+              title="${item.property_name}. Click to deep link to this property."
+            >
+              <a
+                class="stack-rank-item-name"
+                href="#${item.property_name}"
+                @click=${this.scrollToPosition}
+              >
+                <iron-icon
+                  class="hash-link"
+                  icon="chromestatus:link"
+                ></iron-icon>
+                <p>${item.property_name}</p>
+              </a>
+            </div>
+            <div class="stack-rank-item-result">
+              <chromedash-x-meter
+                value="${item.percentage}"
+                max="${this.maxPercentage}"
+                href="/metrics/${this.type}/timeline/${this
+                  .view}/${item.bucket_id}"
+                title="Click to see a timeline view of this property"
+              >
+              </chromedash-x-meter>
+              <a
+                class="icon-wrapper"
+                href="/metrics/${this.type}/timeline/${this
+                  .view}/${item.bucket_id}"
+                title="Click to see a timeline view of this property"
+              >
+                <iron-icon icon="chromestatus:timeline"></iron-icon>
+                <p class="icon-text">Timeline</p>
+              </a>
+            </div>
+          </li>
+        `
+      )}
     `;
   }
 
   renderSkeletons() {
-    return html`${Array.from(Array(20)).map(() => html`
-      <li class="stack-rank-item">
-        <sl-skeleton effect="sheen"></sl-skeleton>
-        <sl-skeleton effect="sheen"></sl-skeleton>
-      </li>
-    `)}`;
+    return html`${Array.from(Array(20)).map(
+      () => html`
+        <li class="stack-rank-item">
+          <sl-skeleton effect="sheen"></sl-skeleton>
+          <sl-skeleton effect="sheen"></sl-skeleton>
+        </li>
+      `
+    )}`;
   }
 
   renderTemporaryRank() {
@@ -293,16 +335,15 @@ class ChromedashStackRank extends LitElement {
             </a>
           </div>
         </li>
-        ${this.viewList.length ? this.renderStackRank(this.viewList) : this.renderTemporaryRank()}
+        ${this.viewList.length
+          ? this.renderStackRank(this.viewList)
+          : this.renderTemporaryRank()}
       </ol>
     `;
   }
 
   render() {
-    return html`
-      ${this.renderSubHeader()}
-      ${this.renderStackRankList()}
-    `;
+    return html` ${this.renderSubHeader()} ${this.renderStackRankList()} `;
   }
 }
 

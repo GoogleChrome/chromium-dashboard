@@ -1,26 +1,28 @@
 import {LitElement, css, html} from 'lit';
 import {ref} from 'lit/directives/ref.js';
-import {getStageValue, flattenSections, formatFeatureChanges, showToastMessage} from './utils.js';
+import {
+  getStageValue,
+  flattenSections,
+  formatFeatureChanges,
+  showToastMessage,
+} from './utils.js';
 import './chromedash-form-field';
 import './chromedash-form-table';
-import {formatFeatureForEdit,
+import {
+  formatFeatureForEdit,
   VERIFY_ACCURACY_CONFIRMATION_FIELD,
   VERIFY_ACCURACY_FORMS_BY_STAGE_TYPE,
   VERIFY_ACCURACY_METADATA_FIELDS,
-  VERIFY_ACCURACY_TRIAL_EXTENSION_FIELDS} from './form-definition';
+  VERIFY_ACCURACY_TRIAL_EXTENSION_FIELDS,
+} from './form-definition';
 import {STAGE_SHORT_NAMES, STAGE_SPECIFIC_FIELDS} from './form-field-enums.js';
 import {ALL_FIELDS} from './form-field-specs';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
 
-
 export class ChromedashGuideVerifyAccuracyPage extends LitElement {
   static get styles() {
-    return [
-      ...SHARED_STYLES,
-      ...FORM_STYLES,
-      css`
-      `];
+    return [...SHARED_STYLES, ...FORM_STYLES, css``];
   }
 
   static get properties() {
@@ -51,15 +53,20 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
 
   fetchData() {
     this.loading = true;
-    window.csClient.getFeature(this.featureId).then((feature) => {
-      this.feature = feature;
-      if (this.feature.name) {
-        document.title = `${this.feature.name} - ${this.appTitle}`;
-      }
-      this.loading = false;
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-    });
+    window.csClient
+      .getFeature(this.featureId)
+      .then(feature => {
+        this.feature = feature;
+        if (this.feature.name) {
+          document.title = `${this.feature.name} - ${this.appTitle}`;
+        }
+        this.loading = false;
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
+      });
   }
 
   disconnectedCallback() {
@@ -74,7 +81,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
 
     await el.updateComplete;
     const hiddenTokenField = this.shadowRoot.querySelector('input[name=token]');
-    hiddenTokenField.form.addEventListener('submit', (event) => {
+    hiddenTokenField.form.addEventListener('submit', event => {
       this.handleFormSubmit(event, hiddenTokenField);
     });
   }
@@ -84,14 +91,20 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
     const submitBody = formatFeatureChanges(this.fieldValues, this.featureId);
 
     // get the XSRF token and update it if it's expired before submission
-    window.csClient.ensureTokenIsValid().then(() => {
-      hiddenTokenField.value = window.csClient.token;
-      return csClient.updateFeature(submitBody);
-    }).then(() => {
-      window.location.href = this.nextPage || `/guide/edit/${this.featureId}`;
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-    });
+    window.csClient
+      .ensureTokenIsValid()
+      .then(() => {
+        hiddenTokenField.value = window.csClient.token;
+        return csClient.updateFeature(submitBody);
+      })
+      .then(() => {
+        window.location.href = `/feature/${this.featureId}`;
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
+      });
   }
 
   // Handler to update form values when a field update event is fired.
@@ -105,7 +118,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
     // The field has been updated, so it is considered touched.
     this.fieldValues[index].touched = true;
     this.fieldValues[index].value = value;
-  };
+  }
 
   handleCancelClick() {
     window.location.href = `/guide/edit/${this.featureId}`;
@@ -152,7 +165,10 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
 
     // Add a number differentiation if this stage type is the same as another stage.
     let numberDifferentiation = '';
-    if (this.previousStageTypeRendered && this.previousStageTypeRendered === feStage.stage_type) {
+    if (
+      this.previousStageTypeRendered &&
+      this.previousStageTypeRendered === feStage.stage_type
+    ) {
       this.sameTypeRendered += 1;
       numberDifferentiation = ` ${this.sameTypeRendered}`;
     } else {
@@ -197,17 +213,16 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
           value=${value}
           .fieldValues=${this.fieldValues}
           ?forEnterprise=${formattedFeature.is_enterprise_feature}
-          @form-field-update="${this.handleFormFieldUpdate}">
+          @form-field-update="${this.handleFormFieldUpdate}"
+        >
         </chromedash-form-field>
       `;
     });
-    const id = `${STAGE_SHORT_NAMES[feStage.stage_type] || 'metadata'}${this.sameTypeRendered}`
-      .toLowerCase();
+    const id =
+      `${STAGE_SHORT_NAMES[feStage.stage_type] || 'metadata'}${this.sameTypeRendered}`.toLowerCase();
     return html`
-    <h3 id="${id}">${sectionName}</h3>
-    <section class="flat_form">
-      ${formFieldEls}
-    </section>
+      <h3 id="${id}">${sectionName}</h3>
+      <section class="flat_form">${formFieldEls}</section>
     `;
   }
 
@@ -225,11 +240,15 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
     let fieldsOnly = flattenSections(VERIFY_ACCURACY_METADATA_FIELDS);
     const formsToRender = [
       this.renderStageSection(
-        formattedFeature, VERIFY_ACCURACY_METADATA_FIELDS.name, {}, fieldsOnly)];
+        formattedFeature,
+        VERIFY_ACCURACY_METADATA_FIELDS.name,
+        {},
+        fieldsOnly
+      ),
+    ];
 
     // Generate a single array with the name of every field that is displayed.
     let allFormFields = [...fieldsOnly];
-
 
     for (const feStage of feStages) {
       const stageForm = this.getStageForm(feStage.stage_type);
@@ -238,8 +257,14 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
       }
 
       fieldsOnly = flattenSections(stageForm);
-      formsToRender.push(this.renderStageSection(
-        formattedFeature, stageForm.name, feStage, fieldsOnly));
+      formsToRender.push(
+        this.renderStageSection(
+          formattedFeature,
+          stageForm.name,
+          feStage,
+          fieldsOnly
+        )
+      );
       allFormFields = [...allFormFields, ...fieldsOnly];
 
       // If extension stages are associated with this stage,
@@ -251,19 +276,28 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
         if (feStage.display_name) {
           sectionName = `${feStage.display_name} ${VERIFY_ACCURACY_TRIAL_EXTENSION_FIELDS.name}`;
         }
-        formsToRender.push(this.renderStageSection(
-          formattedFeature,
-          sectionName,
-          extensionStage,
-          fieldsOnly));
+        formsToRender.push(
+          this.renderStageSection(
+            formattedFeature,
+            sectionName,
+            extensionStage,
+            fieldsOnly
+          )
+        );
         allFormFields = [...allFormFields, ...fieldsOnly];
       });
     }
 
     // Add the verify accuracy checkbox at the end of all forms.
     fieldsOnly = flattenSections(VERIFY_ACCURACY_CONFIRMATION_FIELD);
-    formsToRender.push(this.renderStageSection(
-      formattedFeature, `${VERIFY_ACCURACY_CONFIRMATION_FIELD.name}`, {}, fieldsOnly));
+    formsToRender.push(
+      this.renderStageSection(
+        formattedFeature,
+        `${VERIFY_ACCURACY_CONFIRMATION_FIELD.name}`,
+        {},
+        fieldsOnly
+      )
+    );
     allFormFields = [...allFormFields, ...fieldsOnly];
 
     return [allFormFields, formsToRender];
@@ -285,26 +319,42 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
     this.fieldValues.feature = this.feature;
 
     const stageIds = this.getAllStageIds();
-    const [allFormFields, formsToRender] = this.getForms(formattedFeature, this.feature.stages);
+    const [allFormFields, formsToRender] = this.getForms(
+      formattedFeature,
+      this.feature.stages
+    );
 
-    const title = this.feature.accurate_as_of ?
-      `Accuracy last verified ${this.feature.accurate_as_of.split(' ')[0]}.` :
-      'Accuracy last verified at time of creation.';
+    const title = this.feature.accurate_as_of
+      ? `Accuracy last verified ${this.feature.accurate_as_of.split(' ')[0]}.`
+      : 'Accuracy last verified at time of creation.';
 
     return html`
-      <form name="feature_form" method="post" action="/guide/verify_accuracy/${this.featureId}">
-        <input type="hidden" name="stages" value="${stageIds}">
-        <input type="hidden" name="token">
-        <input type="hidden" name="form_fields" value=${allFormFields.join(',')}>
+      <form
+        name="feature_form"
+        method="post"
+        action="/guide/verify_accuracy/${this.featureId}"
+      >
+        <input type="hidden" name="stages" value="${stageIds}" />
+        <input type="hidden" name="token" />
+        <input
+          type="hidden"
+          name="form_fields"
+          value=${allFormFields.join(',')}
+        />
         <h3>${title}</h3>
         <chromedash-form-table ${ref(this.registerFormSubmitHandler)}>
           ${formsToRender}
         </chromedash-form-table>
 
         <section class="final_buttons">
-          <input class="button" type="submit" value="Submit">
-          <button id="cancel-button" type="reset"
-            @click=${this.handleCancelClick}>Cancel</button>
+          <input class="button" type="submit" value="Submit" />
+          <button
+            id="cancel-button"
+            type="reset"
+            @click=${this.handleCancelClick}
+          >
+            Cancel
+          </button>
         </section>
       </form>
     `;
@@ -318,4 +368,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
   }
 }
 
-customElements.define('chromedash-guide-verify-accuracy-page', ChromedashGuideVerifyAccuracyPage);
+customElements.define(
+  'chromedash-guide-verify-accuracy-page',
+  ChromedashGuideVerifyAccuracyPage
+);

@@ -6,13 +6,14 @@ const compareAutolinkResult = (result, expected) => {
   assert.equal(result.length, expected.length);
   for (let i = 0; i < result.length; i++) {
     if (typeof result[i] === 'string') {
-      assert.equal(result[i], expected[i]);
+      assert.equal(result[i].replaceAll(/\s{2,}/g, ' '), expected[i]);
     } else {
       assert.deepEqual(result[i], expected[i]);
     }
   }
 };
 
+// prettier-ignore
 describe('utils', () => {
   describe('autolink', () => {
     it('creates anchor tags for links', () => {
@@ -25,30 +26,30 @@ send requests to user@example.com or just check out request.net`;
       const expected = [
         'This is a test & result of the autolinking.',
         '\n',
-        html`<a href="${'http://go/this-is-a-test'}" target="_blank" rel="noopener noreferrer">${'go/this-is-a-test'}</a>`,
+        html`<chromedash-link href=${'http://go/this-is-a-test'} .featureLinks=${[]} .ignoreHttpErrorCodes=${[404]}>${'go/this-is-a-test'}</chromedash-link>`,
         '.',
         '\nA bug',
         ' ',
-        html`<a href="${'http://cr/1234'}" target="_blank" rel="noopener noreferrer">${'cr/1234'}</a>`,
+        html`<chromedash-link href=${'http://cr/1234'} .featureLinks=${[]} .ignoreHttpErrorCodes=${[404]}>${'cr/1234'}</chromedash-link>`,
         ' exists and also',
         ' ',
-        html`<a href="${'http://cl/1234'}" target="_blank" rel="noopener noreferrer">${'cl/1234'}</a>`,
+        html`<chromedash-link href=${'http://cl/1234'} .featureLinks=${[]} .ignoreHttpErrorCodes=${[404]}>${'cl/1234'}</chromedash-link>`,
         '. Info at ',
-        html`<a href="${'https://bugs.chromium.org/p/chromium/issues/detail?id=1234#c3'}" target="_blank" rel="noopener noreferrer">${'issue 1234 comment 3'}</a>`,
+        html`<chromedash-link href=${'https://bugs.chromium.org/p/chromium/issues/detail?id=1234#c3'} .featureLinks=${[]} .ignoreHttpErrorCodes=${[404]}>${'issue 1234 comment 3'}</chromedash-link>`,
         '.\nAKA ',
-        html`<a href="${'https://bugs.chromium.org/p/chromium/issues/detail?id=1234#c3'}" target="_blank" rel="noopener noreferrer">${'issue 1234 #c3'}</a>`,
+        html`<chromedash-link href=${'https://bugs.chromium.org/p/chromium/issues/detail?id=1234#c3'} .featureLinks=${[]} .ignoreHttpErrorCodes=${[404]}>${'issue 1234 #c3'}</chromedash-link>`,
         '. ',
-        html`<a href="${'https://example.com/'}" target="_blank" rel="noopener noreferrer">${'https://example.com/'}</a>`,
+        html`<chromedash-link href=${'https://example.com/'} .featureLinks=${[]} .ignoreHttpErrorCodes=${[404]}>${'https://example.com/'}</chromedash-link>`,
         ' --- testing. ',
-        html`<a href="${'https://bugs.chromium.org/p/chromium/issues/detail?id=1234'}" target="_blank" rel="noopener noreferrer">${'bug 1234'}</a>`,
+        html`<chromedash-link href=${'https://bugs.chromium.org/p/chromium/issues/detail?id=1234'} .featureLinks=${[]} .ignoreHttpErrorCodes=${[404]}>${'bug 1234'}</chromedash-link>`,
         ' ',
         'also.\n',
-        html`<a href="${'https://example.com#testing'}" target="_blank" rel="noopener noreferrer">${'https://example.com#testing'}</a>`,
+        html`<chromedash-link href=${'https://example.com#testing'} .featureLinks=${[]} .ignoreHttpErrorCodes=${[404]}>${'https://example.com#testing'}</chromedash-link>`,
         ' ',
-        html`<a href="${'https://example.com/test?querystring=here&q=1234'}" target="_blank" rel="noopener noreferrer">${'https://example.com/test?querystring=here&q=1234'}</a>`,
+        html`<chromedash-link href=${'https://example.com/test?querystring=here&q=1234'} .featureLinks=${[]} .ignoreHttpErrorCodes=${[404]}>${'https://example.com/test?querystring=here&q=1234'}</chromedash-link>`,
         ' ??.\nsend requests to user@example.com or just check out',
         ' ',
-        html`<a href="${'https://request.net'}" target="_blank" rel="noopener noreferrer">${'request.net'}</a>`,
+        html`<chromedash-link href=${'https://request.net'} .featureLinks=${[]} .ignoreHttpErrorCodes=${[404]}>${'request.net'}</chromedash-link>`,
       ];
 
       const result = autolink(before);
@@ -79,7 +80,7 @@ go/this-is-a-test
       const expected = [
         '<b>Test</b>',
         '\n',
-        html`<a href="${'http://go/this-is-a-test'}" target="_blank" rel="noopener noreferrer">${'go/this-is-a-test'}</a>`,
+        html`<chromedash-link href=${'http://go/this-is-a-test'} .featureLinks=${[]} .ignoreHttpErrorCodes=${[404]}>${'go/this-is-a-test'}</chromedash-link>`,
         '\n<p>Do not convert this</p>\n<script>Dangerous stuff</script>',
       ];
 

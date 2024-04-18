@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+
 from framework import basehandlers
 from framework import permissions
 from framework.users import User
@@ -31,24 +33,35 @@ class PermissionsAPI(basehandlers.APIHandler):
     # get user permission data if signed in
     user = self.get_current_user()
     if user:
-      user_data = self.get_all_perms(user)
-      paired_user = self.find_paired_user(user)
-      if paired_user:
-        user_data['paired_user'] = self.get_all_perms(paired_user)
+      if not self.get_bool_arg('returnPairedUser'):
+        user_data = self.get_all_perms(user)
+      else:
+        paired_user = self.find_paired_user(user)
+        if paired_user:
+          user_data = self.get_all_perms(paired_user)
 
     return {'user': user_data}
 
   def get_all_perms(self, user):
     """Return a dict of permissions for the given user."""
+    logging.info('In get_all_perms')
+    can_create_feature = permissions.can_create_feature(user)
+    approvable_gate_types = sorted(
+        approval_defs.fields_approvable_by(user))
+    can_comment = permissions.can_comment(user)
+    can_edit_all = permissions.can_edit_any_feature(user)
+    is_admin = permissions.can_admin_site(user)
+    editable_features = permissions.feature_edit_list(user)
+    logging.info('got editable_features')
+
     return {
-      'can_create_feature': permissions.can_create_feature(user),
-      'approvable_gate_types': sorted(
-          approval_defs.fields_approvable_by(user)),
-      'can_comment': permissions.can_comment(user),
-      'can_edit_all': permissions.can_edit_any_feature(user),
-      'is_admin': permissions.can_admin_site(user),
+      'can_create_feature': can_create_feature,
+      'approvable_gate_types': approvable_gate_types,
+      'can_comment': can_comment,
+      'can_edit_all': can_edit_all,
+      'is_admin': is_admin,
       'email': user.email(),
-      'editable_features': permissions.feature_edit_list(user)
+      'editable_features': editable_features,
     }
 
   def find_paired_user(self, user):

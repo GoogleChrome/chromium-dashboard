@@ -1,24 +1,24 @@
 import {LitElement, css, html} from 'lit';
 import {ref} from 'lit/directives/ref.js';
-import {formatFeatureChanges, showToastMessage, setupScrollToHash} from './utils.js';
+import {
+  formatFeatureChanges,
+  showToastMessage,
+  setupScrollToHash,
+} from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
 import {
   FLAT_METADATA_FIELDS,
   FLAT_ENTERPRISE_METADATA_FIELDS,
-  formatFeatureForEdit} from './form-definition';
+  formatFeatureForEdit,
+} from './form-definition';
 import {ALL_FIELDS} from './form-field-specs';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
 
-
 export class ChromedashGuideMetadataPage extends LitElement {
   static get styles() {
-    return [
-      ...SHARED_STYLES,
-      ...FORM_STYLES,
-      css`
-      `];
+    return [...SHARED_STYLES, ...FORM_STYLES, css``];
   }
 
   static get properties() {
@@ -27,7 +27,6 @@ export class ChromedashGuideMetadataPage extends LitElement {
       feature: {type: Object},
       loading: {type: Boolean},
       appTitle: {type: String},
-      nextPage: {type: String},
       fieldValues: {type: Array},
     };
   }
@@ -38,7 +37,6 @@ export class ChromedashGuideMetadataPage extends LitElement {
     this.feature = {};
     this.loading = true;
     this.appTitle = '';
-    this.nextPage = '';
     this.fieldValues = [];
   }
 
@@ -50,14 +48,17 @@ export class ChromedashGuideMetadataPage extends LitElement {
   fetchData() {
     this.loading = true;
     Promise.resolve(window.csClient.getFeature(this.featureId))
-      .then((feature) => {
+      .then(feature => {
         this.feature = feature;
         if (this.feature.name) {
           document.title = `${this.feature.name} - ${this.appTitle}`;
         }
         this.loading = false;
-      }).catch(() => {
-        showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
       });
   }
 
@@ -70,10 +71,10 @@ export class ChromedashGuideMetadataPage extends LitElement {
     if (!el) return;
 
     /* Add the form's event listener after Shoelace event listeners are attached
-    * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
+     * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
     await el.updateComplete;
     const hiddenTokenField = this.shadowRoot.querySelector('input[name=token]');
-    hiddenTokenField.form.addEventListener('submit', (event) => {
+    hiddenTokenField.form.addEventListener('submit', event => {
       this.handleFormSubmit(event, hiddenTokenField);
     });
 
@@ -85,14 +86,20 @@ export class ChromedashGuideMetadataPage extends LitElement {
     const submitBody = formatFeatureChanges(this.fieldValues, this.featureId);
 
     // get the XSRF token and update it if it's expired before submission
-    window.csClient.ensureTokenIsValid().then(() => {
-      hiddenTokenField.value = window.csClient.token;
-      return csClient.updateFeature(submitBody);
-    }).then(() => {
-      window.location.href = this.nextPage || `/guide/edit/${this.featureId}`;
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-    });
+    window.csClient
+      .ensureTokenIsValid()
+      .then(() => {
+        hiddenTokenField.value = window.csClient.token;
+        return csClient.updateFeature(submitBody);
+      })
+      .then(() => {
+        window.location.href = `/feature/${this.featureId}`;
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
+      });
   }
 
   // Handler to update form field values when a field update event is fired.
@@ -106,19 +113,21 @@ export class ChromedashGuideMetadataPage extends LitElement {
     // The field has been updated, so it is considered touched.
     this.fieldValues[index].touched = true;
     this.fieldValues[index].value = value;
-  };
+  }
 
   handleCancelClick() {
-    window.location.href = `/guide/edit/${this.featureId}`;
+    window.location.href = `/feature/${this.featureId}`;
   }
 
   // get a comma-spearated list of field names
   getFormFields() {
-    const sections = this.feature.is_enterprise_feature ?
-      FLAT_ENTERPRISE_METADATA_FIELDS.sections :
-      FLAT_METADATA_FIELDS.sections;
+    const sections = this.feature.is_enterprise_feature
+      ? FLAT_ENTERPRISE_METADATA_FIELDS.sections
+      : FLAT_METADATA_FIELDS.sections;
     const fields = sections.reduce(
-      (combined, section) => [...combined, ...section.fields], []);
+      (combined, section) => [...combined, ...section.fields],
+      []
+    );
     return fields.join();
   }
 
@@ -142,7 +151,7 @@ export class ChromedashGuideMetadataPage extends LitElement {
   }
 
   getNextPage() {
-    return this.nextPage || `/guide/edit/${this.featureId}`;
+    return `/feature/${this.featureId}`;
   }
 
   renderSubheader() {
@@ -166,15 +175,16 @@ export class ChromedashGuideMetadataPage extends LitElement {
       const index = this.fieldValues.length;
       this.fieldValues.push({name: featureJSONKey, touched: false, value});
       return html`
-      <chromedash-form-field
-        name=${field}
-        index=${index}
-        value=${value}
-        .fieldValues=${this.fieldValues}
-        ?forEnterprise=${formattedFeature.is_enterprise_feature}
-        @form-field-update="${this.handleFormFieldUpdate}">
-      </chromedash-form-field>
-    `;
+        <chromedash-form-field
+          name=${field}
+          index=${index}
+          value=${value}
+          .fieldValues=${this.fieldValues}
+          ?forEnterprise=${formattedFeature.is_enterprise_feature}
+          @form-field-update="${this.handleFormFieldUpdate}"
+        >
+        </chromedash-form-field>
+      `;
     });
   }
 
@@ -200,15 +210,20 @@ export class ChromedashGuideMetadataPage extends LitElement {
 
     return html`
       <form name="feature_form">
-        <input type="hidden" name="token">
+        <input type="hidden" name="token" />
         <chromedash-form-table ${ref(this.registerHandlers)}>
           ${this.renderSections(formattedFeature, sections)}
         </chromedash-form-table>
 
         <div class="final_buttons">
-          <input class="button" type="submit" value="Submit">
-          <button id="cancel-button" type="reset"
-            @click=${this.handleCancelClick}>Cancel</button>
+          <input class="button" type="submit" value="Submit" />
+          <button
+            id="cancel-button"
+            type="reset"
+            @click=${this.handleCancelClick}
+          >
+            Cancel
+          </button>
         </div>
       </form>
     `;
@@ -222,4 +237,7 @@ export class ChromedashGuideMetadataPage extends LitElement {
   }
 }
 
-customElements.define('chromedash-guide-metadata-page', ChromedashGuideMetadataPage);
+customElements.define(
+  'chromedash-guide-metadata-page',
+  ChromedashGuideMetadataPage
+);

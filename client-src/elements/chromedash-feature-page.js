@@ -1,18 +1,19 @@
 import {LitElement, css, html, nothing} from 'lit';
-import './chromedash-feature-detail';
-import './chromedash-gantt';
-import {autolink, renderHTMLIf, showToastMessage,
-  renderAbsoluteDate, renderRelativeDate,
-} from './utils.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import './chromedash-feature-detail';
 import {DETAILS_STYLES} from './chromedash-feature-detail';
-import {enhanceUrl} from './feature-link';
+import './chromedash-gantt';
+import {enhanceUrl} from './chromedash-link';
+import './chromedash-vendor-views';
+import {
+  autolink,
+  renderAbsoluteDate,
+  renderHTMLIf,
+  renderRelativeDate,
+  showToastMessage,
+} from './utils.js';
 
-const INACTIVE_STATES = [
-  'No longer pursuing',
-  'Deprecated',
-  'Removed'];
-
+const INACTIVE_STATES = ['No longer pursuing', 'Deprecated', 'Removed'];
 
 export class ChromedashFeaturePage extends LitElement {
   static get styles() {
@@ -75,6 +76,12 @@ export class ChromedashFeaturePage extends LitElement {
           height: 1.5em;
         }
 
+        sl-dropdown {
+          float: right;
+          margin-right: -16px;
+          margin-top: -20px;
+        }
+
         @media only screen and (max-width: 700px) {
           #feature {
             border-radius: 0 !important;
@@ -87,18 +94,21 @@ export class ChromedashFeaturePage extends LitElement {
             padding: 30px 40px;
           }
         }
-    `];
+      `,
+    ];
   }
 
   static get properties() {
     return {
       user: {attribute: false},
+      paired_user: {attribute: false},
       featureId: {type: Number},
       feature: {type: Object},
       featureLinks: {type: Array},
       gates: {type: Array},
       comments: {type: Array},
       process: {type: Object},
+      progress: {type: Object},
       dismissedCues: {type: Array},
       contextLink: {type: String},
       appTitle: {type: String},
@@ -117,6 +127,7 @@ export class ChromedashFeaturePage extends LitElement {
     this.gates = [];
     this.comments = {};
     this.process = {};
+    this.progress = {};
     this.dismissedCues = [];
     this.contextLink = '';
     this.appTitle = '';
@@ -143,47 +154,57 @@ export class ChromedashFeaturePage extends LitElement {
       window.csClient.getFeatureProcess(this.featureId),
       window.csClient.getDismissedCues(),
       window.csClient.getStars(),
-    ]).then(([
-      feature,
-      gatesRes,
-      commentRes,
-      process,
-      dismissedCues,
-      starredFeatures,
-    ]) => {
-      this.feature = feature;
-      this.gates = gatesRes.gates;
-      this.comments = commentRes.comments;
-      this.process = process;
-      this.dismissedCues = dismissedCues;
-      if (starredFeatures.includes(this.featureId)) {
-        this.starred = true;
-      }
-      if (this.feature.name) {
-        document.title = `${this.feature.name} - ${this.appTitle}`;
-      }
-      this.loading = false;
-    }).catch((error) => {
-      if (error instanceof FeatureNotFoundError) {
-        this.loading = false;
-      } else {
-        showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+      window.csClient.getFeatureProgress(this.featureId),
+    ])
+      .then(
+        ([
+          feature,
+          gatesRes,
+          commentRes,
+          process,
+          dismissedCues,
+          starredFeatures,
+          progress,
+        ]) => {
+          this.feature = feature;
+          this.gates = gatesRes.gates;
+          this.comments = commentRes.comments;
+          this.process = process;
+          this.dismissedCues = dismissedCues;
+          this.progress = progress;
+          if (starredFeatures.includes(this.featureId)) {
+            this.starred = true;
+          }
+          if (this.feature.name) {
+            document.title = `${this.feature.name} - ${this.appTitle}`;
+          }
+          this.loading = false;
+        }
+      )
+      .catch(error => {
+        if (error instanceof FeatureNotFoundError) {
+          this.loading = false;
+        } else {
+          showToastMessage(
+            'Some errors occurred. Please refresh the page or try again later.'
+          );
+        }
+      });
+
+    window.csClient.getFeatureLinks(this.featureId).then(featureLinks => {
+      this.featureLinks = featureLinks?.data || [];
+      if (featureLinks?.has_stale_links) {
+        // delay 10 seconds to fetch server to get latest link information
+        setTimeout(this.refetchFeatureLinks.bind(this), 10000);
       }
     });
-
-    window.csClient.getFeatureLinks(this.featureId).then(
-      (featureLinks) => {
-        this.featureLinks = featureLinks?.data || [];
-        if (featureLinks?.has_stale_links) {
-          // delay 10 seconds to fetch server to get latest link information
-          setTimeout(this.refetchFeatureLinks.bind(this), 10000);
-        }
-      },
-    );
   }
 
   async refetchFeatureLinks() {
-    const featureLinks = await window.csClient.getFeatureLinks(this.featureId, false);
+    const featureLinks = await window.csClient.getFeatureLinks(
+      this.featureId,
+      false
+    );
     this.featureLinks = featureLinks?.data || [];
   }
 
@@ -193,18 +214,22 @@ export class ChromedashFeaturePage extends LitElement {
       window.csClient.getFeature(this.featureId),
       window.csClient.getGates(this.featureId),
       window.csClient.getComments(this.featureId, null),
-    ]).then(([feature, gatesRes, commentRes]) => {
-      this.feature = feature;
-      this.gates = gatesRes.gates;
-      this.comments = commentRes.comments;
-      this.loading = false;
-    }).catch((error) => {
-      if (error instanceof FeatureNotFoundError) {
+    ])
+      .then(([feature, gatesRes, commentRes]) => {
+        this.feature = feature;
+        this.gates = gatesRes.gates;
+        this.comments = commentRes.comments;
         this.loading = false;
-      } else {
-        showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-      }
-    });
+      })
+      .catch(error => {
+        if (error instanceof FeatureNotFoundError) {
+          this.loading = false;
+        } else {
+          showToastMessage(
+            'Some errors occurred. Please refresh the page or try again later.'
+          );
+        }
+      });
   }
 
   disconnectedCallback() {
@@ -223,18 +248,19 @@ export class ChromedashFeaturePage extends LitElement {
     e.preventDefault();
     if (navigator.share) {
       const url = '/feature/' + this.featureId;
-      navigator.share({
-        title: this.feature.name,
-        text: this.feature.summary,
-        url: url,
-      }).then(() => {
-        ga('send', 'social',
-          {
-            'socialNetwork': 'web',
-            'socialAction': 'share',
-            'socialTarget': url,
+      navigator
+        .share({
+          title: this.feature.name,
+          text: this.feature.summary,
+          url: url,
+        })
+        .then(() => {
+          ga('send', 'social', {
+            socialNetwork: 'web',
+            socialAction: 'share',
+            socialTarget: url,
           });
-      });
+        });
     }
   }
 
@@ -243,6 +269,20 @@ export class ChromedashFeaturePage extends LitElement {
     const url = e.currentTarget.href;
     navigator.clipboard.writeText(url).then(() => {
       showToastMessage('Link copied');
+    });
+  }
+
+  canDeleteFeature() {
+    return this.user?.is_admin || this.userCanEdit();
+  }
+
+  handleDeleteFeature() {
+    if (!confirm('Delete feature?')) return;
+
+    window.csClient.doDelete(`/features/${this.feature.id}`).then(resp => {
+      if (resp.message === 'Done') {
+        location.href = '/features';
+      }
     });
   }
 
@@ -261,12 +301,10 @@ export class ChromedashFeaturePage extends LitElement {
   renderSkeletons() {
     return html`
       <div id="feature" style="margin-top: 65px;">
-        ${this.renderSkeletonSection()}
-        ${this.renderSkeletonSection()}
-        ${this.renderSkeletonSection()}
-        ${this.renderSkeletonSection()}
+        ${this.renderSkeletonSection()} ${this.renderSkeletonSection()}
+        ${this.renderSkeletonSection()} ${this.renderSkeletonSection()}
       </div>
-   `;
+    `;
   }
 
   featureIsInactive() {
@@ -275,15 +313,18 @@ export class ChromedashFeaturePage extends LitElement {
   }
 
   userCanEdit() {
-    return (this.user &&
-            (this.user.can_edit_all ||
-             this.user.editable_features.includes(this.featureId)));
+    return (
+      this.user &&
+      (this.user.can_edit_all ||
+        this.user.editable_features.includes(this.featureId))
+    );
   }
 
   pairedUserCanEdit() {
-    return (this.user?.paired_user &&
-            (this.user.paired_user.can_edit_all ||
-             this.user.paired_user.editable_features.includes(this.featureId)));
+    return (
+      this.paired_user?.can_edit_all ||
+      this.paired_user?.editable_features.includes(this.featureId)
+    );
   }
 
   renderSubHeader() {
@@ -292,35 +333,79 @@ export class ChromedashFeaturePage extends LitElement {
     return html`
       <div id="subheader" style="display:block">
         <div class="tooltips" style="float:right">
-          ${this.user ? html`
-            <span class="tooltip" title="Receive an email notification when there are updates">
-              <a href="#" data-tooltip id="star-when-signed-in" @click=${this.handleStarClick}>
-                <iron-icon icon=${this.starred ? 'chromestatus:star' : 'chromestatus:star-border'} class="pushicon"></iron-icon>
-              </a>
-            </span>
-          `: nothing}
+          ${this.user
+            ? html`
+                <span
+                  class="tooltip"
+                  title="Receive an email notification when there are updates"
+                >
+                  <a
+                    href="#"
+                    data-tooltip
+                    id="star-when-signed-in"
+                    @click=${this.handleStarClick}
+                  >
+                    <iron-icon
+                      icon=${this.starred
+                        ? 'chromestatus:star'
+                        : 'chromestatus:star-border'}
+                      class="pushicon"
+                    ></iron-icon>
+                  </a>
+                </span>
+              `
+            : nothing}
           <span class="tooltip" title="File a bug against this feature">
-            <a href=${this.feature.new_crbug_url} class="newbug" data-tooltip target="_blank" rel="noopener">
+            <a
+              href=${this.feature.new_crbug_url}
+              class="newbug"
+              data-tooltip
+              target="_blank"
+              rel="noopener"
+            >
               <iron-icon icon="chromestatus:bug-report"></iron-icon>
             </a>
           </span>
-          <span class="tooltip ${navigator.share ? '' : 'no-web-share'}" title="Share this feature">
-            <a href="#" data-tooltip id="share-feature" @click=${this.handleShareClick}>
+          <span
+            class="tooltip ${navigator.share ? '' : 'no-web-share'}"
+            title="Share this feature"
+          >
+            <a
+              href="#"
+              data-tooltip
+              id="share-feature"
+              @click=${this.handleShareClick}
+            >
               <iron-icon icon="chromestatus:share"></iron-icon>
             </a>
           </span>
-          <span class="tooltip copy-to-clipboard" title="Copy link to clipboard">
-            <a href="/feature/${this.featureId}" data-tooltip id="copy-link" @click=${this.handleCopyLinkClick}>
+          <span
+            class="tooltip copy-to-clipboard"
+            title="Copy link to clipboard"
+          >
+            <a
+              href="/feature/${this.featureId}"
+              data-tooltip
+              id="copy-link"
+              @click=${this.handleCopyLinkClick}
+            >
               <iron-icon icon="chromestatus:link"></iron-icon>
             </a>
           </span>
-          ${renderHTMLIf(canEdit && !this.feature.is_enterprise_feature, html`
-            <span class="tooltip" title="Edit this feature">
-              <a href="/guide/edit/${this.featureId}" class="editfeature" data-tooltip>
-                <iron-icon icon="chromestatus:create"></iron-icon>
-              </a>
-            </span>
-          `)}
+          ${renderHTMLIf(
+            canEdit && !this.feature.is_enterprise_feature,
+            html`
+              <span class="tooltip" title="Edit this feature">
+                <a
+                  href="/guide/edit/${this.featureId}"
+                  class="editfeature"
+                  data-tooltip
+                >
+                  <iron-icon icon="chromestatus:create"></iron-icon>
+                </a>
+              </span>
+            `
+          )}
         </div>
         <h2 id="breadcrumbs">
           <a href="${this.contextLink}">
@@ -329,9 +414,9 @@ export class ChromedashFeaturePage extends LitElement {
           <a href="/feature/${this.featureId}">
             Feature: ${this.feature.name}
           </a>
-          ${this.featureIsInactive() ?
-            html`(${this.feature.browsers.chrome.status.text})` :
-            nothing}
+          ${this.featureIsInactive()
+            ? html`(${this.feature.browsers.chrome.status.text})`
+            : nothing}
         </h2>
       </div>
     `;
@@ -342,16 +427,16 @@ export class ChromedashFeaturePage extends LitElement {
     if (this.feature.deleted) {
       warnings.push(html`
         <div id="deleted" class="warning">
-          This feature is marked as deleted.  It does not appear in
-          feature lists and is only viewable by users who can edit it.
+          This feature is marked as deleted. It does not appear in feature lists
+          and is only viewable by users who can edit it.
         </div>
       `);
     }
     if (this.feature.unlisted) {
       warnings.push(html`
         <div id="access" class="warning">
-          This feature is only shown in the feature list
-          to users with access to edit this feature.
+          This feature is only shown in the feature list to users with access to
+          edit this feature.
         </div>
       `);
     }
@@ -359,19 +444,21 @@ export class ChromedashFeaturePage extends LitElement {
       warnings.push(html`
         <div id="switch_to_edit" class="warning">
           User ${this.user.email} cannot edit this feature or request reviews.
-          But, ${this.user.paired_user.email} can do that.
-          <br>
+          But, ${this.paired_user.email} can do that.
+          <br />
           To switch users: sign out and then sign in again.
         </div>
       `);
     }
-    if (this.user?.approvable_gate_types.length == 0 &&
-        this.user?.paired_user?.approvable_gate_types.length > 0) {
+    if (
+      this.user?.approvable_gate_types.length == 0 &&
+      this.paired_user?.approvable_gate_types.length > 0
+    ) {
       warnings.push(html`
         <div id="switch_to_review" class="warning">
-          User ${this.user.email} cannot review this feature.
-          But, ${this.user.paired_user.email} can do that.
-          <br>
+          User ${this.user.email} cannot review this feature. But,
+          ${this.paired_user.email} can do that.
+          <br />
           To switch users: sign out and then sign in again.
         </div>
       `);
@@ -381,79 +468,116 @@ export class ChromedashFeaturePage extends LitElement {
 
   renderEnterpriseFeatureContent() {
     return html`
-      ${this.feature.summary ? html`
-        <section id="summary">
-          <p class="preformatted">${autolink(this.feature.summary, this.featureLinks)}</p>
-        </section>
-      `: nothing}
+      ${this.feature.summary
+        ? html`
+            <section id="summary">
+              <!-- prettier-ignore -->
+              <p class="preformatted">${autolink(
+                this.feature.summary,
+                this.featureLinks
+              )}</p>
+            </section>
+          `
+        : nothing}
     `;
   }
 
   renderFeatureContent() {
     return html`
-      ${this.feature.summary ? html`
-        <section id="summary">
-          <p class="preformatted">${autolink(this.feature.summary, this.featureLinks)}</p>
-        </section>
-      `: nothing}
-
-      ${this.feature.motivation ? html`
-        <section id="motivation">
-          <h3>Motivation</h3>
-          <p class="preformatted">${autolink(this.feature.motivation, this.featureLinks)}</p>
-        </section>
-      `: nothing}
-
-      ${this.feature.resources?.samples?.length ? html`
-        <section id="demo">
-          <h3>Demos and samples</h3>
-          <ul>
-            ${this.feature.resources.samples.map((sampleLink) => html`
-              <li>${enhanceUrl(sampleLink, this.featureLinks)}</li>
-            `)}
-          </ul>
-        </section>
-      `: nothing}
-
-      ${this.feature.resources?.docs?.length ? html`
-        <section id="documentation">
-          <h3>Documentation</h3>
-          <ul>
-            ${this.feature.resources.docs.map((docLink) => html`
-              <li>${enhanceUrl(docLink, this.featureLinks)}</li>
-            `)}
-          </ul>
-        </section>
-      `: nothing}
-
-      ${this.feature.standards.spec ? html`
-        <section id="specification">
-          <h3>Specification</h3>
-          <p>${enhanceUrl(this.feature.standards.spec, this.featureLinks)}</p>
-          <p>Spec status: ${this.feature.standards.maturity.text}</p>
-        </section>
-        `: this.feature.explainer_links?.length ? html`
-        <section id="specification">
-          <h3>Explainer(s)</h3>
-          ${this.feature.explainer_links?.map((link) =>
-      html`<p>${enhanceUrl(link, this.featureLinks)}</p>`)}
-        </section>
-      `: nothing}
+      ${this.feature.summary
+        ? html`
+            <section id="summary">
+              <!-- prettier-ignore -->
+              <p class="preformatted">${autolink(
+                this.feature.summary,
+                this.featureLinks
+              )}</p>
+            </section>
+          `
+        : nothing}
+      ${this.feature.motivation
+        ? html`
+            <section id="motivation">
+              <h3>Motivation</h3>
+              <!-- prettier-ignore -->
+              <p class="preformatted">${autolink(
+                this.feature.motivation,
+                this.featureLinks
+              )}</p>
+            </section>
+          `
+        : nothing}
+      ${this.feature.resources?.samples?.length
+        ? html`
+            <section id="demo">
+              <h3>Demos and samples</h3>
+              <ul>
+                ${this.feature.resources.samples.map(
+                  sampleLink => html`
+                    <li>${enhanceUrl(sampleLink, this.featureLinks)}</li>
+                  `
+                )}
+              </ul>
+            </section>
+          `
+        : nothing}
+      ${this.feature.resources?.docs?.length
+        ? html`
+            <section id="documentation">
+              <h3>Documentation</h3>
+              <ul>
+                ${this.feature.resources.docs.map(
+                  docLink => html`
+                    <li>${enhanceUrl(docLink, this.featureLinks)}</li>
+                  `
+                )}
+              </ul>
+            </section>
+          `
+        : nothing}
+      ${this.feature.standards.spec
+        ? html`
+            <section id="specification">
+              <h3>Specification</h3>
+              <p>
+                ${enhanceUrl(this.feature.standards.spec, this.featureLinks)}
+              </p>
+              <p>Spec status: ${this.feature.standards.maturity.text}</p>
+            </section>
+          `
+        : this.feature.explainer_links?.length
+          ? html`
+              <section id="specification">
+                <h3>Explainer(s)</h3>
+                ${this.feature.explainer_links?.map(
+                  link => html`<p>${enhanceUrl(link, this.featureLinks)}</p>`
+                )}
+              </section>
+            `
+          : nothing}
     `;
   }
 
   renderEnterpriseFeatureStatus() {
     return html`
-    ${this.feature.browsers.chrome.owners ? html`
-      <section id="owner">
-        <h3>${this.feature.browsers.chrome.owners.length == 1 ? 'Owner' : 'Owners'}</h3>
-        <ul>
-          ${this.feature.browsers.chrome.owners.map((owner) => html`
-            <li><a href="mailto:${owner}">${owner}</a></li>
-          `)}
-        </ul>
-      </section>
-    `: nothing}
+      ${this.feature.browsers.chrome.owners
+        ? html`
+            <section id="owner">
+              <h3>
+                ${this.feature.browsers.chrome.owners.length == 1
+                  ? 'Owner'
+                  : 'Owners'}
+              </h3>
+              <ul>
+                ${this.feature.browsers.chrome.owners.map(
+                  owner => html`
+                    <li><a href="mailto:${owner}">${owner}</a></li>
+                  `
+                )}
+              </ul>
+            </section>
+          `
+        : nothing}
     `;
   }
 
@@ -461,109 +585,156 @@ export class ChromedashFeaturePage extends LitElement {
     return html`
       <section id="status">
         <h3>Status in Chromium</h3>
-        ${this.feature.browsers.chrome.blink_components ? html`
-          <p>
-            <label>Blink components:</label>
-            ${this.feature.browsers.chrome.blink_components.map((c) => html`
-              <a href="https://bugs.chromium.org/p/chromium/issues/list?q=component:${c}"
-               target="_blank" rel="noopener">${c}</a>
-            `)}
-          </p>
-        `: nothing}
-        <br>
+        ${this.feature.browsers.chrome.blink_components
+          ? html`
+              <p>
+                <label>Blink components:</label>
+                ${this.feature.browsers.chrome.blink_components.map(
+                  c => html`
+                    <a
+                      href="https://bugs.chromium.org/p/chromium/issues/list?q=component:${c}"
+                      target="_blank"
+                      rel="noopener"
+                      >${c}</a
+                    >
+                  `
+                )}
+              </p>
+            `
+          : nothing}
+        <br />
         <p>
           <label>Implementation status:</label>
           <b>${this.feature.browsers.chrome.status.text}</b>
-          ${this.feature.browsers.chrome.bug ? enhanceUrl(
-      this.feature.browsers.chrome.bug,
-      this.featureLinks,
-      html`
-            (<a href=${this.feature.browsers.chrome.bug} target="_blank" rel="noopener">tracking bug</a>)
-          `, 'tracking bug') : nothing}
+          ${this.feature.browsers.chrome.bug
+            ? html`<chromedash-link
+                href=${this.feature.browsers.chrome.bug}
+                .featureLinks=${this.featureLinks}
+                alwaysInTag
+                >tracking bug</chromedash-link
+              >`
+            : nothing}
           <chromedash-gantt .feature=${this.feature}></chromedash-gantt>
         </p>
       </section>
 
       <section id="consensus">
         <h3>Consensus &amp; Standardization</h3>
-        <div style="font-size:smaller;">After a feature ships in Chrome, the values listed here are not guaranteed to be up to date.</div>
-        <br>
+        <div style="font-size:smaller;">
+          After a feature ships in Chrome, the values listed here are not
+          guaranteed to be up to date.
+        </div>
+        <br />
         <ul>
-          ${this.feature.browsers.ff.view.val ? html`
-            <li>
-              <label>Firefox:</label>
-              ${this.feature.browsers.ff.view.url ? html`
-                <a href=${this.feature.browsers.ff.view.url}>${this.feature.browsers.ff.view.text}</a>
-              `: html`
-                ${this.feature.browsers.ff.view.text}
-              `}
-            </li>
-          `: nothing}
-          ${this.feature.browsers.safari.view.val ? html`
-            <li>
-              <label>Safari:</label>
-              ${this.feature.browsers.safari.view.url ? html`
-                <a href=${this.feature.browsers.safari.view.url}>${this.feature.browsers.safari.view.text}</a>
-              `: html`
-                ${this.feature.browsers.safari.view.text}
-              `}
-            </li>
-          `: nothing}
-          <li><label>Web Developers:</label> ${this.feature.browsers.webdev.view.text}</li>
+          ${this.feature.browsers.ff.view.val
+            ? html`
+                <li>
+                  <label>Firefox:</label>
+                  <chromedash-vendor-views
+                    href=${this.feature.browsers.ff.view.url || nothing}
+                    .featureLinks=${this.featureLinks}
+                    >${this.feature.browsers.ff.view
+                      .text}</chromedash-vendor-views
+                  >
+                </li>
+              `
+            : nothing}
+          ${this.feature.browsers.safari.view.val
+            ? html`
+                <li>
+                  <label>Safari:</label>
+                  <chromedash-vendor-views
+                    href=${this.feature.browsers.safari.view.url || nothing}
+                    .featureLinks=${this.featureLinks}
+                    >${this.feature.browsers.safari.view
+                      .text}</chromedash-vendor-views
+                  >
+                </li>
+              `
+            : nothing}
+          <li>
+            <label>Web Developers:</label> ${this.feature.browsers.webdev.view
+              .text}
+          </li>
         </ul>
       </section>
 
-      ${this.feature.browsers.chrome.owners ? html`
-        <section id="owner">
-          <h3>${this.feature.browsers.chrome.owners.length == 1 ? 'Owner' : 'Owners'}</h3>
-          <ul>
-            ${this.feature.browsers.chrome.owners.map((owner) => html`
-              <li><a href="mailto:${owner}">${owner}</a></li>
-            `)}
-          </ul>
-        </section>
-      `: nothing}
-
-      ${this.feature.intent_to_implement_url ? html`
-        <section id="intent_to_implement_url">
-          <h3>Intent to Prototype url</h3>
-          <a href=${this.feature.intent_to_implement_url }>Intent to Prototype thread</a>
-        </section>
-      `: nothing}
-
-      ${this.feature.comments ? html`
-        <section id="comments">
-          <h3>Comments</h3>
-          <p class="preformatted">${autolink(this.feature.comments, this.featureLinks)}</p>
-        </section>
-      `: nothing}
-
-      ${this.feature.tags ? html`
-        <section id="tags">
-          <h3>Search tags</h3>
-            ${this.feature.tags.map((tag) => html`
-              <a href="/features#tags:${tag}">${tag}</a><span
-                class="conditional-comma">, </span>
-            `)}
-        </section>
-      `: nothing}
+      ${this.feature.browsers.chrome.owners
+        ? html`
+            <section id="owner">
+              <h3>
+                ${this.feature.browsers.chrome.owners.length == 1
+                  ? 'Owner'
+                  : 'Owners'}
+              </h3>
+              <ul>
+                ${this.feature.browsers.chrome.owners.map(
+                  owner => html`
+                    <li><a href="mailto:${owner}">${owner}</a></li>
+                  `
+                )}
+              </ul>
+            </section>
+          `
+        : nothing}
+      ${this.feature.intent_to_implement_url
+        ? html`
+            <section id="intent_to_implement_url">
+              <h3>Intent to Prototype url</h3>
+              <a href=${this.feature.intent_to_implement_url}
+                >Intent to Prototype thread</a
+              >
+            </section>
+          `
+        : nothing}
+      ${this.feature.comments
+        ? html`
+            <section id="comments">
+              <h3>Comments</h3>
+              <!-- prettier-ignore -->
+              <p class="preformatted">${autolink(
+                this.feature.comments,
+                this.featureLinks
+              )}</p>
+            </section>
+          `
+        : nothing}
+      ${this.feature.tags
+        ? html`
+            <section id="tags">
+              <h3>Search tags</h3>
+              ${this.feature.tags.map(
+                tag => html`
+                  <a href="/features#tags:${tag}">${tag}</a
+                  ><span class="conditional-comma">, </span>
+                `
+              )}
+            </section>
+          `
+        : nothing}
     `;
   }
 
   renderHistory() {
     return html`
       <section id="history">
-          <h3>History</h3>
-          <p>Entry created on
+        <h3>History</h3>
+        <p>
+          Entry created on
           ${renderAbsoluteDate(this.feature.created?.when, true)}
-          ${renderRelativeDate(this.feature.created?.when)}</p>
-          <p>Last updated on
+          ${renderRelativeDate(this.feature.created?.when)}
+        </p>
+        <p>
+          Last updated on
           ${renderAbsoluteDate(this.feature.updated?.when, true)}
-          ${renderRelativeDate(this.feature.updated?.when)}</p>
+          ${renderRelativeDate(this.feature.updated?.when)}
+        </p>
 
-          <p><a href="/feature/${this.feature.id}/activity">
+        <p>
+          <a href="/feature/${this.feature.id}/activity">
             All comments &amp; activity
-          </a></p>
+          </a>
+        </p>
       </section>
     `;
   }
@@ -579,10 +750,11 @@ export class ChromedashFeaturePage extends LitElement {
         .gates=${this.gates}
         .comments=${this.comments}
         .process=${this.process}
+        .progress=${this.progress}
         .dismissedCues=${this.dismissedCues}
         .featureLinks=${this.featureLinks}
         selectedGateId=${this.selectedGateId}
-       >
+      >
       </chromedash-feature-detail>
     `;
   }
@@ -596,22 +768,41 @@ export class ChromedashFeaturePage extends LitElement {
     }
     // If after loading, the feature did not load, render nothing.
     if (!this.isFeatureLoaded()) {
-      return html `Feature not found.`;
+      return html`Feature not found.`;
     }
     // At this point, the feature has loaded successfully, render the components.
     return html`
-      ${this.renderSubHeader()}
-      ${this.renderWarnings()}
-      <sl-details summary="Overview"
-        ?open=${true}
-      >
+      ${this.renderSubHeader()} ${this.renderWarnings()}
+      <sl-details summary="Overview" ?open=${true}>
         <section class="card">
-          ${this.feature.is_enterprise_feature ?
-            this.renderEnterpriseFeatureContent() :
-            this.renderFeatureContent()}
-          ${this.feature.is_enterprise_feature ?
-              this.renderEnterpriseFeatureStatus() :
-              this.renderFeatureStatus()}
+          ${this.canDeleteFeature()
+            ? html`
+                <sl-dropdown placement="left-start">
+                  <sl-icon-button
+                    library="material"
+                    name="more_vert_24px"
+                    label="Feature menu"
+                    style="font-size: 1.3rem;"
+                    slot="trigger"
+                  ></sl-icon-button>
+                  <sl-menu-item value="undo">
+                    <a
+                      id="delete-feature"
+                      class="delete-button"
+                      @click=${this.handleDeleteFeature}
+                    >
+                      Delete
+                    </a>
+                  </sl-menu-item>
+                </sl-dropdown>
+              `
+            : nothing}
+          ${this.feature.is_enterprise_featqcure
+            ? this.renderEnterpriseFeatureContent()
+            : this.renderFeatureContent()}
+          ${this.feature.is_enterprise_feature
+            ? this.renderEnterpriseFeatureStatus()
+            : this.renderFeatureStatus()}
           ${this.renderHistory()}
         </section>
       </sl-details>

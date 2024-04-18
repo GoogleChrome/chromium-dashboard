@@ -11,7 +11,6 @@ import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
 import {setupScrollToHash, formatFeatureChanges} from './utils';
 
-
 export class ChromedashGuideNewPage extends LitElement {
   static get styles() {
     return [
@@ -21,8 +20,9 @@ export class ChromedashGuideNewPage extends LitElement {
       // without sl-radio which does not yet do validation.
       // We do depend on sl-focus-ring being defined.
       css`
-        table td label input[type=radio]:focus {
-          box-shadow: 0 0 0 var(--sl-focus-ring-width) var(--sl-input-focus-ring-color);
+        table td label input[type='radio']:focus {
+          box-shadow: 0 0 0 var(--sl-focus-ring-width)
+            var(--sl-input-focus-ring-color);
         }
 
         .choices label {
@@ -32,7 +32,7 @@ export class ChromedashGuideNewPage extends LitElement {
           margin-top: 1em;
         }
         .choices p {
-          margin: .5em 1.5em 1em;
+          margin: 0.5em 1.5em 1em;
         }
 
         .process-notice {
@@ -44,7 +44,8 @@ export class ChromedashGuideNewPage extends LitElement {
         .process-notice p + p {
           margin-top: var(--content-padding-half);
         }
-      `];
+      `,
+    ];
   }
 
   static get properties() {
@@ -68,7 +69,7 @@ export class ChromedashGuideNewPage extends LitElement {
 
     await el.updateComplete;
     const hiddenTokenField = this.shadowRoot.querySelector('input[name=token]');
-    hiddenTokenField.form.addEventListener('submit', (event) => {
+    hiddenTokenField.form.addEventListener('submit', event => {
       this.handleFormSubmit(event, hiddenTokenField);
     });
 
@@ -97,14 +98,19 @@ export class ChromedashGuideNewPage extends LitElement {
     // The field has been updated, so it is considered touched.
     this.fieldValues[index].touched = true;
     this.fieldValues[index].value = value;
-  };
+  }
 
   renderSubHeader() {
     return html`
       <div id="subheader" style="display:block">
         <span style="float:right; margin-right: 2em">
-        <a href="https://github.com/GoogleChrome/chromium-dashboard/issues/new?labels=Feedback&amp;template=process-and-guide-ux-feedback.md"
-          target="_blank" rel="noopener">Process and UI feedback</a></span>
+          <a
+            href="https://github.com/GoogleChrome/chromium-dashboard/issues/new?labels=Feedback&amp;template=process-and-guide-ux-feedback.md"
+            target="_blank"
+            rel="noopener"
+            >Process and UI feedback</a
+          ></span
+        >
         <h2 data-testid="add-a-feature">Add a feature</h2>
       </div>
     `;
@@ -115,17 +121,30 @@ export class ChromedashGuideNewPage extends LitElement {
       return nothing;
     } else {
       return html`
-       <div class="process-notice">
-         <p>Please see the <a
-         href="https://www.chromium.org/blink/launching-features"
-         target="_blank" rel="noopener">Launching features</a> page for process
-         instructions.</p>
+        <div class="process-notice">
+          <p>
+            Please see the
+            <a
+              href="https://www.chromium.org/blink/launching-features"
+              target="_blank"
+              rel="noopener"
+              >Launching features</a
+            >
+            page for process instructions.
+          </p>
 
-         <p>Googlers: Please follow the instructions at <a
-         href="https://goto.corp.google.com/wp-launch-guidelines"
-         target="_blank" rel="noopener">go/wp-launch-guidelines</a> (internal
-         document) to determine whether you also require an internal review.</p>
-       </div>
+          <p>
+            Googlers: Please follow the instructions at
+            <a
+              href="https://goto.corp.google.com/wp-launch-guidelines"
+              target="_blank"
+              rel="noopener"
+              >go/wp-launch-guidelines</a
+            >
+            (internal document) to determine whether you also require an
+            internal review.
+          </p>
+        </div>
       `;
     }
   }
@@ -134,10 +153,12 @@ export class ChromedashGuideNewPage extends LitElement {
     const newFeatureInitialValues = {owner: this.userEmail};
     this.fieldValues.feature = this.feature;
 
-    const formFields = this.isEnterpriseFeature ?
-      ENTERPRISE_NEW_FEATURE_FORM_FIELDS :
-      NEW_FEATURE_FORM_FIELDS;
-    const postAction = this.isEnterpriseFeature ? '/guide/enterprise/new' : '/guide/new';
+    const formFields = this.isEnterpriseFeature
+      ? ENTERPRISE_NEW_FEATURE_FORM_FIELDS
+      : NEW_FEATURE_FORM_FIELDS;
+    const postAction = this.isEnterpriseFeature
+      ? '/guide/enterprise/new'
+      : '/guide/new';
 
     const renderFormField = (field, className) => {
       const featureJSONKey = ALL_FIELDS[field].name || field;
@@ -164,28 +185,26 @@ export class ChromedashGuideNewPage extends LitElement {
     return html`
       <section id="stage_form">
         <form name="overview_form" method="post" action=${postAction}>
-          <input type="hidden" name="token">
+          <input type="hidden" name="token" />
           <chromedash-form-table ${ref(this.registerHandlers)}>
             ${this.renderWarnings()}
-            ${formFields.map((field) => renderFormField(field))}
-
-            ${!this.isEnterpriseFeature ?
-              renderFormField('feature_type_radio_group', 'choices') : nothing}
+            ${formFields.map(field => renderFormField(field))}
+            ${!this.isEnterpriseFeature
+              ? renderFormField('feature_type_radio_group', 'choices')
+              : nothing}
           </chromedash-form-table>
           <input
             type="submit"
             class="primary"
-            value=${this.isEnterpriseFeature ? 'Continue' : 'Submit'}>
+            value=${this.isEnterpriseFeature ? 'Continue' : 'Submit'}
+          />
         </form>
       </section>
     `;
   }
 
   render() {
-    return html`
-      ${this.renderSubHeader()}
-      ${this.renderForm()}
-    `;
+    return html` ${this.renderSubHeader()} ${this.renderForm()} `;
   }
 }
 
