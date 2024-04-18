@@ -504,11 +504,7 @@ class ChromedashFeatureDetail extends LitElement {
         GATE_TEAM_ORDER.indexOf(g1.team_name) -
         GATE_TEAM_ORDER.indexOf(g2.team_name)
     );
-    return html`
-      <div class="gates">
-        ${gatesForStage.map(g => this.renderGateChip(feStage, g))}
-      </div>
-    `;
+    return gatesForStage.map(g => this.renderGateChip(feStage, g));
   }
 
   // Create an extension stage for an origin trial stage on button click.
