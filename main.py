@@ -167,7 +167,9 @@ api_routes: list[Route] = [
     # (f'{API_BASE}/metrics/<str:kind>', TODO),  # uma-export data
     # (f'{API_BASE}/metrics/<str:kind>/<int:bucket_id>', TODO),
     Route(f'{API_BASE}/origintrials', origin_trials_api.OriginTrialsAPI),
-    Route(f'{API_BASE}/origintrials/<int:feature_id>/<int:extension_stage_id>/extend',
+    Route(f'{API_BASE}/origintrials/<int:feature_id>/<int:stage_id>/create',
+          origin_trials_api.OriginTrialsAPI),
+    Route(f'{API_BASE}/origintrials/<int:feature_id>/<int:stage_id>/extend',
           origin_trials_api.OriginTrialsAPI),
 ]
 

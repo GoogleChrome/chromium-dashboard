@@ -372,8 +372,12 @@ class ChromeStatusClient {
     return this.doGet('/origintrials');
   }
 
+  async createOriginTrial(featureId, stageId, body) {
+    return this.doPost(`/origintrials/${featureId}/${stageId}/create`, body);
+  }
+
   async extendOriginTrial(featureId, stageId, body) {
-    return this.doPost(`/origintrials/${featureId}/${stageId}/extend`, body);
+    return this.doPatch(`/origintrials/${featureId}/${stageId}/extend`, body);
   }
 
   // Processes API
