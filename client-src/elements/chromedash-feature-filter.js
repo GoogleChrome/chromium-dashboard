@@ -35,7 +35,6 @@ class ChromedashFeatureFilter extends LitElement {
     const typeahead = this.typeaheadRef.value;
     typeahead.hide();
     const newQuery = typeahead.value.trim();
-    console.log('handleSearchClick() sending query: ' + newQuery);
     this._fireEvent('search', {query: newQuery});
   }
 
@@ -51,7 +50,8 @@ class ChromedashFeatureFilter extends LitElement {
     ];
   }
 
-  showHelp() {
+  showHelp(event) {
+    event.stopPropagation();
     const typeahead = this.typeaheadRef.value;
     typeahead.hide();
     openSearchHelpDialog();
