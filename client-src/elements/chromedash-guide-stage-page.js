@@ -14,7 +14,11 @@ import {
   formatFeatureForEdit,
   FORMS_BY_STAGE_TYPE,
 } from './form-definition';
-import {IMPLEMENTATION_STATUS, STAGE_SPECIFIC_FIELDS} from './form-field-enums';
+import {
+  IMPLEMENTATION_STATUS,
+  OT_EXTENSION_STAGE_TYPES,
+  STAGE_SPECIFIC_FIELDS,
+} from './form-field-enums';
 import {ALL_FIELDS} from './form-field-specs';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
@@ -263,20 +267,23 @@ export class ChromedashGuideStagePage extends LitElement {
         implicitValue: this.stage.id,
       });
 
-      formSections.push(
-        html` <section class="stage_form">
-          <chromedash-form-field
-            name="set_stage"
-            index=${index}
-            value=${this.isActiveStage}
-            .fieldValues=${this.fieldValues}
-            ?disabled=${this.isActiveStage}
-            ?forEnterprise=${formattedFeature.is_enterprise_feature}
-            @form-field-update="${this.handleFormFieldUpdate}"
-          >
-          </chromedash-form-field>
-        </section>`
-      );
+      // Don't show "set_stage" field for extension stages.
+      if (!OT_EXTENSION_STAGE_TYPES.has(this.stage.stage_type)) {
+        formSections.push(
+          html` <section class="stage_form">
+            <chromedash-form-field
+              name="set_stage"
+              index=${index}
+              value=${this.isActiveStage}
+              .fieldValues=${this.fieldValues}
+              ?disabled=${this.isActiveStage}
+              ?forEnterprise=${formattedFeature.is_enterprise_feature}
+              @form-field-update="${this.handleFormFieldUpdate}"
+            >
+            </chromedash-form-field>
+          </section>`
+        );
+      }
     }
 
     stageSections.forEach(section => {

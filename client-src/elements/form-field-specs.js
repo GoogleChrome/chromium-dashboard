@@ -1225,7 +1225,7 @@ export const ALL_FIELDS = {
     type: 'input',
     attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: false,
-    label: 'Trial extension desktop end',
+    label: 'Trial extension end milestone',
     help_text: html` The last desktop milestone in which the trial will be
     available after extension.`,
   },
@@ -1252,9 +1252,10 @@ export const ALL_FIELDS = {
     type: 'input',
     attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: true,
-    label: 'Trial extension desktop end',
+    label: 'Trial extension end milestone',
     help_text: html` The last milestone in which the trial will be available
     after extension.`,
+    check: _value => checkExtensionMilestoneIsValid(_value),
   },
 
   ongoing_constraints: {
@@ -2171,5 +2172,31 @@ async function checkFirstEnterpriseNotice(value, initialValue) {
       warning: `Milestone ${value}  was already released, choose a future milestone`,
     };
   }
+  return undefined;
+}
+
+async function checkExtensionMilestoneIsValid(value) {
+  if (isNaN(value)) {
+    return {error: 'Invalid milestone format.'};
+  }
+  for (let i = 0; i < value.length; i++) {
+    // Milestone should only have digits.
+    if (value[i] < '0' || value[i] > '9') {
+      return {error: 'Invalid milestone format.'};
+    }
+  }
+  const intValue = parseInt(value);
+  if (intValue >= 1000) {
+    return {error: 'Milestone is too distant.'};
+  }
+  const resp = await fetch(
+    'https://chromiumdash.appspot.com/fetch_milestone_schedule'
+  );
+  const json = await resp.json();
+  if (parseInt(json.mstones[0].mstone) > intValue) {
+    return {error: 'End milestone cannot be in the past.'};
+  }
+  // TODO(DanielRyanSmith): Check that the extension milestone comes after
+  // OT end milestone and all previous extension end milestones.
   return undefined;
 }
