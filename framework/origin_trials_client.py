@@ -31,7 +31,7 @@ CHROMIUM_SCHEDULE_DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
 
 def get_trials_list() -> list[dict[str, Any]]:
   """Get a list of all origin trials.
-  
+
   Returns:
     A list of data on all public origin trials.
 
@@ -42,7 +42,7 @@ def get_trials_list() -> list[dict[str, Any]]:
   """
   key = secrets.get_ot_api_key()
   # Return an empty list if no API key is found.
-  if key == None:
+  if key is None:
     return []
 
   try:
@@ -99,7 +99,7 @@ def _get_trial_end_time(end_milestone: str) -> int:
 def _get_ot_access_token() -> str:
   """Obtain the service account credentials to be used in the request
   using the origin trials auth scope
-  
+
   Returns:
     The access token to be used for origin trials requests.
   """
@@ -124,7 +124,7 @@ def extend_origin_trial(trial_id: str, end_milestone: str, intent_url: str):
     return
   key = secrets.get_ot_api_key()
   # Return if no API key is found.
-  if key == None:
+  if key is None:
     return
 
   end_seconds = _get_trial_end_time(end_milestone)

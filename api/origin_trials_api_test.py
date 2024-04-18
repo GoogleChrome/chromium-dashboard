@@ -16,6 +16,7 @@ import testing_config  # Must be imported before the module under test.
 
 import flask
 import werkzeug.exceptions  # Flask HTTP stuff.
+from unittest import mock
 
 from api import origin_trials_api
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
@@ -37,7 +38,7 @@ class OriginTrialsAPITest(testing_config.CustomTestCase):
     self.ot_stage_1.put()
 
     self.extension_stage_1 = Stage(
-        feature_id=self.feature_1_id, stage_type=151, 
+        feature_id=self.feature_1_id, stage_type=151,
         ot_stage_id=self.ot_stage_1.key.integer_id(),
         milestones=MilestoneSet(desktop_last=153),
         intent_thread_url='https://example.com/intent')
@@ -59,10 +60,343 @@ class OriginTrialsAPITest(testing_config.CustomTestCase):
         '/api/v0/origintrials/'
         f'{self.feature_1_id}/{self.extension_stage_1.key.integer_id()}/extend')
 
+    self.mock_usecounters_file = """
+enum WebFeature {
+  kSomeFeature = 1,
+  kValidFeature = 2,
+  kNoThirdParty = 3
+  kSample = 4,
+  kNoCriticalTrial = 5,
+};
+"""
+
+    self.mock_features_file = """
+{
+  "data": [
+    {
+      "name": "ValidFeaturePart1",
+      "origin_trial_feature_name": "ValidFeature",
+      "origin_trial_allows_third_party": true
+    },
+    {
+      "name": "ValidFeaturePart2",
+      "origin_trial_feature_name": "ValidFeature",
+      "origin_trial_allows_third_party": true
+    },
+    {
+      "name": "InvalidFeaturePart1",
+      "origin_trial_feature_name": "InvalidFeature"
+    },
+    {
+      "name": "NoThirdParty",
+      "origin_trial_feature_name": "NoThirdParty"
+    },
+    {
+      "name": "NoCriticalTrialEntry",
+      "origin_trial_feature_name": "NoCriticalTrial"
+    }
+  ]
+}
+"""
+
+    self.mock_grace_period_file = """
+bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
+  static blink::mojom::OriginTrialFeature const kHasExpiryGracePeriod[] = {
+      // Production grace period trials start here:
+      blink::mojom::OriginTrialFeature::kSomeFeature,
+      blink::mojom::OriginTrialFeature::kValidFeature,
+      blink::mojom::OriginTrialFeature::kInvalidFeature,
+  };
+  return base::Contains(kHasExpiryGracePeriod, feature);
+}
+"""
+
+    self.existing_origin_trials = [
+      {
+        'origin_trial_feature_name': 'ExistingFeature',
+      }
+    ]
+
   def tearDown(self):
     for kind in [FeatureEntry, Stage]:
       for entity in kind.query():
         entity.key.delete()
+
+  @mock.patch('api.origin_trials_api.get_chromium_file')
+  def test_validate_creation_args__valid(self, mock_get_chromium_file):
+    """No error messages should be returned if all args are valid."""
+    mock_get_chromium_file.side_effect = [
+      self.mock_features_file,
+      self.mock_usecounters_file,
+      self.mock_grace_period_file]
+
+    body = {
+      'ot_chromium_trial_name': {
+        'form_field_name': 'ot_chromium_trial_name',
+        'value': 'ValidFeature',
+      },
+      'ot_webfeature_use_counter': {
+        'form_field_name': 'ot_webfeature_use_counter',
+        'value': 'kValidFeature',
+      },
+      'ot_is_critical_trial': {
+        'form_field_name': 'ot_is_critical_trial',
+        'value': True,
+      },
+      'ot_is_deprecation_trial': {
+        'form_field_name': 'ot_is_deprecation_trial',
+        'value': False,
+      },
+      'ot_has_third_party_support': {
+        'form_field_name': 'ot_has_third_party_support',
+        'value': True,
+      },
+    }
+    # No exception should be raised.
+    with test_app.test_request_context(self.request_path):
+       result = self.handler._validate_creation_args(body)
+    expected = {}
+    self.assertEqual(expected, result)
+
+  @mock.patch('api.origin_trials_api.get_chromium_file')
+  def test_validate_creation_args__invalid_webfeature_use_counter(
+      self, mock_get_chromium_file):
+    """Error message returned if UseCounter not found in file."""
+    mock_get_chromium_file.side_effect = [
+      self.mock_features_file,
+      self.mock_usecounters_file,
+      self.mock_grace_period_file]
+    body = {
+      'ot_chromium_trial_name': {
+        'form_field_name': 'ot_chromium_trial_name',
+        'value': 'ValidFeature',
+      },
+      'ot_webfeature_use_counter': {
+        'form_field_name': 'ot_webfeature_use_counter',
+        'value': 'kBadUseCounter',
+      },
+      'ot_is_critical_trial': {
+        'form_field_name': 'ot_is_critical_trial',
+        'value': False,
+      },
+      'ot_is_deprecation_trial': {
+        'form_field_name': 'ot_is_deprecation_trial',
+        'value': False,
+      },
+      'ot_has_third_party_support': {
+        'form_field_name': 'ot_has_third_party_support',
+        'value': False,
+      },
+    }
+    with test_app.test_request_context(self.request_path):
+      result = self.handler._validate_creation_args(body)
+    expected = {
+      'ot_webfeature_use_counter': 'UseCounter not landed in web_feature.mojom'}
+    self.assertEqual(expected, result)
+
+  @mock.patch('api.origin_trials_api.get_chromium_file')
+  def test_validate_creation_args__missing_webfeature_use_counter(
+      self, mock_get_chromium_file):
+    """Error message returned if UseCounter is missing."""
+    mock_get_chromium_file.side_effect = [
+      self.mock_features_file,
+      self.mock_usecounters_file,
+      self.mock_grace_period_file]
+    body = {
+      'ot_chromium_trial_name': {
+        'form_field_name': 'ot_chromium_trial_name',
+        'value': 'ValidFeature',
+      },
+      'ot_is_critical_trial': {
+        'form_field_name': 'ot_is_critical_trial',
+        'value': False,
+      },
+      'ot_is_deprecation_trial': {
+        'form_field_name': 'ot_is_deprecation_trial',
+        'value': False,
+      },
+      'ot_has_third_party_support': {
+        'form_field_name': 'ot_has_third_party_support',
+        'value': False,
+      },
+    }
+    with test_app.test_request_context(self.request_path):
+      result = self.handler._validate_creation_args(body)
+    expected = {'ot_webfeature_use_counter': (
+        'No UseCounter specified for non-deprecation trial.')}
+    self.assertEqual(expected, result)
+
+  @mock.patch('api.origin_trials_api.get_chromium_file')
+  def test_validate_creation_args__missing_webfeature_use_counter_deprecation(
+      self, mock_get_chromium_file):
+    """No error message returned for missing UseCounter if deprecation trial."""
+    """Deprecation trial does not need a webfeature use counter value."""
+    mock_get_chromium_file.side_effect = [
+      self.mock_features_file,
+      self.mock_usecounters_file,
+      self.mock_grace_period_file]
+    body = {
+      'ot_chromium_trial_name': {
+        'form_field_name': 'ot_chromium_trial_name',
+        'value': 'ValidFeature',
+      },
+      'ot_is_critical_trial': {
+        'form_field_name': 'ot_is_critical_trial',
+        'value': False,
+      },
+      'ot_is_deprecation_trial': {
+        'form_field_name': 'ot_is_deprecation_trial',
+        'value': True,
+      },
+      'ot_has_third_party_support': {
+        'form_field_name': 'ot_has_third_party_support',
+        'value': False,
+      },
+    }
+    with test_app.test_request_context(self.request_path):
+      result = self.handler._validate_creation_args(body)
+    expected = {}
+    self.assertEqual(expected, result)
+
+  @mock.patch('api.origin_trials_api.get_chromium_file')
+  def test_validate_creation_args__invalid_chromium_trial_name(
+      self, mock_get_chromium_file):
+    """Error message returned if Chromium trial name not found in file."""
+    mock_get_chromium_file.side_effect = [
+      self.mock_features_file,
+      self.mock_usecounters_file,
+      self.mock_grace_period_file]
+    body = {
+      'ot_chromium_trial_name': {
+        'form_field_name': 'ot_chromium_trial_name',
+        'value': 'NonexistantFeature',
+      },
+      'ot_webfeature_use_counter': {
+        'form_field_name': 'ot_webfeature_use_counter',
+        'value': 'kValidFeature',
+      },
+      'ot_is_critical_trial': {
+        'form_field_name': 'ot_is_critical_trial',
+        'value': False,
+      },
+      'ot_is_deprecation_trial': {
+        'form_field_name': 'ot_is_deprecation_trial',
+        'value': False,
+      },
+      'ot_has_third_party_support': {
+        'form_field_name': 'ot_has_third_party_support',
+        'value': False,
+      },
+    }
+    with test_app.test_request_context(self.request_path):
+      result = self.handler._validate_creation_args(body)
+    expected = {'ot_chromium_trial_name': (
+        'Origin trial feature name not found in file')}
+    self.assertEqual(expected, result)
+
+  @mock.patch('api.origin_trials_api.get_chromium_file')
+  def test_validate_creation_args__missing_chromium_trial_name(
+      self, mock_get_chromium_file):
+    """Error message returned if Chromium trial is missing from request."""
+    mock_get_chromium_file.side_effect = [
+      self.mock_features_file,
+      self.mock_usecounters_file,
+      self.mock_grace_period_file]
+    body = {
+      'ot_webfeature_use_counter': {
+        'form_field_name': 'ot_webfeature_use_counter',
+        'value': 'kValidFeature',
+      },
+      'ot_is_critical_trial': {
+        'form_field_name': 'ot_is_critical_trial',
+        'value': False,
+      },
+      'ot_is_deprecation_trial': {
+        'form_field_name': 'ot_is_deprecation_trial',
+        'value': False,
+      },
+      'ot_has_third_party_support': {
+        'form_field_name': 'ot_has_third_party_support',
+        'value': False,
+      },
+    }
+    with test_app.test_request_context(self.request_path):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler._validate_creation_args(body)
+
+  @mock.patch('api.origin_trials_api.get_chromium_file')
+  def test_validate_creation_args__invalid_third_party_trial(
+      self, mock_get_chromium_file):
+    """Error message returned if third party support not found in file."""
+    mock_get_chromium_file.side_effect = [
+      self.mock_features_file,
+      self.mock_usecounters_file,
+      self.mock_grace_period_file]
+    body = {
+      'ot_chromium_trial_name': {
+        'form_field_name': 'ot_chromium_trial_name',
+        'value': 'NoThirdParty',
+      },
+      'ot_webfeature_use_counter': {
+        'form_field_name': 'ot_webfeature_use_counter',
+        'value': 'kNoThirdParty',
+      },
+      'ot_is_critical_trial': {
+        'form_field_name': 'ot_is_critical_trial',
+        'value': False,
+      },
+      'ot_is_deprecation_trial': {
+        'form_field_name': 'ot_is_deprecation_trial',
+        'value': False,
+      },
+      'ot_has_third_party_support': {
+        'form_field_name': 'ot_has_third_party_support',
+        'value': True,
+      },
+    }
+    with test_app.test_request_context(self.request_path):
+      result = self.handler._validate_creation_args(body)
+    expected = {'ot_has_third_party_support': (
+        'One or more features do not have third party '
+        'support set in runtime_enabled_features.json5. '
+        'Feature name: NoThirdParty')}
+    self.assertEqual(expected, result)
+
+  @mock.patch('api.origin_trials_api.get_chromium_file')
+  def test_validate_creation_args__invalid_critical_trial(
+      self, mock_get_chromium_file):
+    """Error message returned if critical trial name not found in file."""
+    mock_get_chromium_file.side_effect = [
+      self.mock_features_file,
+      self.mock_usecounters_file,
+      self.mock_grace_period_file]
+    body = {
+      'ot_chromium_trial_name': {
+        'form_field_name': 'ot_chromium_trial_name',
+        'value': 'NoCriticalTrial',
+      },
+      'ot_webfeature_use_counter': {
+        'form_field_name': 'ot_webfeature_use_counter',
+        'value': 'kNoCriticalTrial',
+      },
+      'ot_is_critical_trial': {
+        'form_field_name': 'ot_is_critical_trial',
+        'value': True,
+      },
+      'ot_is_deprecation_trial': {
+        'form_field_name': 'ot_is_deprecation_trial',
+        'value': False,
+      },
+      'ot_has_third_party_support': {
+        'form_field_name': 'ot_has_third_party_support',
+        'value': False,
+      },
+    }
+    with test_app.test_request_context(self.request_path):
+      result = self.handler._validate_creation_args(body)
+    expected = {'ot_is_critical_trial': (
+        'Use counter has not landed in grace period array for critical trial')}
+    self.assertEqual(expected, result)
 
   def test_validate_extension_args__valid(self):
     # No exception should be raised.
