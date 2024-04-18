@@ -29,10 +29,10 @@ export class ChromedashTypeahead extends LitElement {
       value: {type: String},
       placeholder: {type: String},
       candidates: {type: Array},
-      narrowCandidates: {attribute: false},
-      prefix: {attribute: false},
-      chunkStart: {attribute: false},
-      chunkEnd: {attribute: false},
+      vocabulary: {type: Array, attribute: false},
+      prefix: {type: String, attribute: false},
+      chunkStart: {type: Number, attribute: false},
+      chunkEnd: {type: Number, attribute: false},
     };
   }
 
@@ -41,6 +41,7 @@ export class ChromedashTypeahead extends LitElement {
     this.value = '';
     this.placeholder = '';
     this.candidates = [];
+    this.vocabulary = [];
     this.prefix = null;
     this.chunkStart = 0;
     this.chunkEnd = 0;
