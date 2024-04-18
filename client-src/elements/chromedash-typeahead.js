@@ -3,8 +3,6 @@ import {ref, createRef} from 'lit/directives/ref.js';
 import {live} from 'lit/directives/live.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import SlDropdown from '@shoelace-style/shoelace/dist/components/dropdown/dropdown.js';
-import SlInput from '@shoelace-style/shoelace/dist/components/input/input.js';
-import SlMenu from '@shoelace-style/shoelace/dist/components/menu/menu.js';
 
 /* This file consists of 3 classes that together implement a "typeahead"
    text field with autocomplete:
