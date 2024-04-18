@@ -8,12 +8,8 @@ import {
 } from './utils.js';
 import './chromedash-form-table.js';
 import './chromedash-form-field.js';
-import {
-  openInfoDialog,
-  dialogTypes,
-} from './chromedash-ot-prereqs-dialog';
-import {
-  ORIGIN_TRIAL_EXTENSION_FIELDS} from './form-definition.js';
+import {openInfoDialog, dialogTypes} from './chromedash-ot-prereqs-dialog';
+import {ORIGIN_TRIAL_EXTENSION_FIELDS} from './form-definition.js';
 import {OT_EXTENSION_STAGE_MAPPING} from './form-field-enums.js';
 import {ALL_FIELDS} from './form-field-specs';
 import {SHARED_STYLES} from '../css/shared-css.js';
@@ -70,10 +66,12 @@ export class ChromedashOTExtensionPage extends LitElement {
     this.fieldValues[index].touched = true;
     this.fieldValues[index].value = value;
 
-    if (this.fieldValues[index].name == 'ot_extension__milestone_desktop_last') {
+    if (
+      this.fieldValues[index].name == 'ot_extension__milestone_desktop_last'
+    ) {
       this.getChromeScheduleDate(event.detail.value);
     }
-  };
+  }
 
   openMilestoneExplanationDialog() {
     openInfoDialog(dialogTypes.END_MILESTONE_EXPLANATION);
@@ -82,7 +80,9 @@ export class ChromedashOTExtensionPage extends LitElement {
   // Display the date the origin trial will end to the user after a milestone is chosen.
   updateMilestoneDate(milestone) {
     const milestoneDiv = this.shadowRoot.querySelector('#milestone-date');
-    const milestoneTextEl = this.shadowRoot.querySelector('#milestone-date-text');
+    const milestoneTextEl = this.shadowRoot.querySelector(
+      '#milestone-date-text'
+    );
     const date = new Date(this.endMilestoneDateValues[milestone]);
     milestoneDiv.style.display = 'block';
     milestoneTextEl.innerHTML = `For milestone ${milestone}, this trial will end on ${date.toLocaleDateString()}.`;
@@ -100,10 +100,12 @@ export class ChromedashOTExtensionPage extends LitElement {
       // Origin trials  will end on the late stable date of (milestone + 2).
       const milestonePlusTwo = parseInt(milestone) + 2;
       const resp = await fetch(
-        `https://chromiumdash.appspot.com/fetch_milestone_schedule?mstone=${milestonePlusTwo}`);
+        `https://chromiumdash.appspot.com/fetch_milestone_schedule?mstone=${milestonePlusTwo}`
+      );
       const respJson = await resp.json();
       // Keep a reference of milestone dates to avoid extra requests.
-      this.endMilestoneDateValues[milestone] = respJson.mstones[0].late_stable_date;
+      this.endMilestoneDateValues[milestone] =
+        respJson.mstones[0].late_stable_date;
     }
     this.updateMilestoneDate(milestone);
   }
@@ -118,17 +120,21 @@ export class ChromedashOTExtensionPage extends LitElement {
         this.feature = feature;
         this.stage = stage;
 
-      if (this.feature.name) {
-        document.title = `${this.feature.name} - ${this.appTitle}`;
-      }
-      this.loading = false;
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-    });
+        if (this.feature.name) {
+          document.title = `${this.feature.name} - ${this.appTitle}`;
+        }
+        this.loading = false;
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
+      });
 
     // Fetch the current milestone so that we know if a milestone in the past is given.
     fetch('https://chromiumdash.appspot.com/fetch_milestone_schedule')
-      .then(resp => resp.json()).then(scheduleInfo => {
+      .then(resp => resp.json())
+      .then(scheduleInfo => {
         this.currentMilestone = parseInt(scheduleInfo.mstones[0].mstone);
       });
   }
@@ -161,9 +167,11 @@ export class ChromedashOTExtensionPage extends LitElement {
   formatRequestBody() {
     return {
       end_milestone: this.getFieldValueForRequestBody(
-        'ot_extension__milestone_desktop_last'),
+        'ot_extension__milestone_desktop_last'
+      ),
       intent_thread_url: this.getFieldValueForRequestBody(
-        'ot_extension__intent_to_extend_experiment_url'),
+        'ot_extension__intent_to_extend_experiment_url'
+      ),
       origin_trial_id: this.stage.origin_trial_id,
     };
   }
@@ -298,8 +306,10 @@ export class ChromedashOTExtensionPage extends LitElement {
       // Add the extra elements to display milestone date information.
       let milestoneInfoText = nothing;
       if (featureJSONKey === 'ot_extension__milestone_desktop_last') {
-        milestoneInfoText = html`
-        <div id="milestone-date" style="display:none;">
+        milestoneInfoText = html` <div
+          id="milestone-date"
+          style="display:none;"
+        >
           <span id="milestone-date-text" class="helptext fade-in"></span>
           <a class="helptext" @click=${this.openMilestoneExplanationDialog}>
             Learn how this date is chosen
@@ -308,14 +318,15 @@ export class ChromedashOTExtensionPage extends LitElement {
       }
 
       return html`
-      <chromedash-form-field
-        name=${featureJSONKey}
-        index=${index}
-        .fieldValues=${this.fieldValues}
-        @form-field-update="${this.handleFormFieldUpdate}">
-      </chromedash-form-field>
-      ${milestoneInfoText}
-    `;
+        <chromedash-form-field
+          name=${featureJSONKey}
+          index=${index}
+          .fieldValues=${this.fieldValues}
+          @form-field-update="${this.handleFormFieldUpdate}"
+        >
+        </chromedash-form-field>
+        ${milestoneInfoText}
+      `;
     });
 
     // Add additional default hidden fields.

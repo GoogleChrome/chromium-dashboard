@@ -15,8 +15,11 @@ export const dialogTypes = {
 };
 
 export async function openPrereqsDialog(featureId, stageId, dialogType) {
-  if (!dialogEl || currentFeatureId !== featureId ||
-      currentStageId !== stageId) {
+  if (
+    !dialogEl ||
+    currentFeatureId !== featureId ||
+    currentStageId !== stageId
+  ) {
     dialogEl = document.createElement('chromedash-ot-prereqs-dialog');
     dialogEl.featureId = featureId;
     dialogEl.stageId = stageId;
@@ -39,8 +42,17 @@ export async function openInfoDialog(dialogType) {
   dialogEl.show();
 }
 
-export async function openFinalizeExtensionDialog(featureId, stageId, milestone, dialogType) {
-  if (!dialogEl || currentFeatureId !== featureId || currentStageId !== stageId) {
+export async function openFinalizeExtensionDialog(
+  featureId,
+  stageId,
+  milestone,
+  dialogType
+) {
+  if (
+    !dialogEl ||
+    currentFeatureId !== featureId ||
+    currentStageId !== stageId
+  ) {
     dialogEl = document.createElement('chromedash-ot-prereqs-dialog');
     dialogEl.featureId = featureId;
     dialogEl.stageId = stageId;
@@ -77,20 +89,20 @@ class ChromedashOTPrereqsDialog extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-      #prereqs-list li {
-        margin-left: 8px;
-        margin-bottom: 8px;
-        list-style: circle;
-      }
-      #prereqs-header {
-        margin-bottom: 8px;
-      }
-      #update-button {
-        margin-right: 8px;
-      }
-      .float-right {
-        float: right;
-      }
+        #prereqs-list li {
+          margin-left: 8px;
+          margin-bottom: 8px;
+          list-style: circle;
+        }
+        #prereqs-header {
+          margin-bottom: 8px;
+        }
+        #update-button {
+          margin-right: 8px;
+        }
+        .float-right {
+          float: right;
+        }
       `,
     ];
   }
@@ -100,46 +112,60 @@ class ChromedashOTPrereqsDialog extends LitElement {
   }
 
   renderEndMilestoneExplanationDialog() {
-    return html`
-    <sl-dialog label="End milestone date">
+    return html` <sl-dialog label="End milestone date">
       <p>
-        When a specific milestone is approved by API owners,
-        the trial's end date is set based on the stable release date of (end milestone +2).
-        Most of the time when a trial ends, the feature will be enabled by default within
-        the next Chrome release. This additional trial time window ensures users don't see
-        breakage before upgrading to the version with the feature enabled by default.
+        When a specific milestone is approved by API owners, the trial's end
+        date is set based on the stable release date of (end milestone +2). Most
+        of the time when a trial ends, the feature will be enabled by default
+        within the next Chrome release. This additional trial time window
+        ensures users don't see breakage before upgrading to the version with
+        the feature enabled by default.
       </p>
     </sl-dialog>`;
   }
 
   submitTrialExtension() {
-    window.csClient.extendOriginTrial(this.featureId, this.stageId)
+    window.csClient
+      .extendOriginTrial(this.featureId, this.stageId)
       .then(() => {
         showToastMessage('Extension processed!');
         setTimeout(() => {
           location.assign(`/feature/${this.featureId}`);
         }, 1000);
-      }).catch(() => {
-        showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
       });
   }
 
   renderFinalizeExtensionDialog() {
-    return html`
-    <sl-dialog label="Finalize trial extension">
+    return html` <sl-dialog label="Finalize trial extension">
       <p>
-        LGTMs have been detected for this trial extension.
-        This origin trial will be extended <strong>through milestone ${this.milestone}</strong>.
+        LGTMs have been detected for this trial extension. This origin trial
+        will be extended <strong>through milestone ${this.milestone}</strong>.
         Is this correct?
       </p>
-      <br>
-      <sl-button class="float-right" variant="primary" size="small"
-        @click=${() => this.submitTrialExtension()}
-      >Proceed</sl-button>
+      <br />
       <sl-button
-        class="float-right" id="update-button" variant="info" size="small"
-        @click=${() => location.assign(`/guide/stage/${this.featureId}/${INTENT_STAGES.INTENT_EXTEND_ORIGIN_TRIAL[0]}/${this.stageId}`)}
-      >Change milestone</sl-button>
+        class="float-right"
+        variant="primary"
+        size="small"
+        @click=${() => this.submitTrialExtension()}
+        >Proceed</sl-button
+      >
+      <sl-button
+        class="float-right"
+        id="update-button"
+        variant="info"
+        size="small"
+        @click=${() =>
+          location.assign(
+            `/guide/stage/${this.featureId}/${INTENT_STAGES.INTENT_EXTEND_ORIGIN_TRIAL[0]}/${this.stageId}`
+          )}
+        >Change milestone</sl-button
+      >
     </sl-dialog>`;
   }
 
@@ -232,9 +258,14 @@ class ChromedashOTPrereqsDialog extends LitElement {
         >. If you have any further questions, contact us at
         origin-trials-support@google.com.
       </p>
-      <br>
-      <sl-button class="float-right" variant="primary"
-        @click=${() => location.assign(`/ot_creation_request/${this.featureId}/${this.stageId}`)}
+      <br />
+      <sl-button
+        class="float-right"
+        variant="primary"
+        @click=${() =>
+          location.assign(
+            `/ot_creation_request/${this.featureId}/${this.stageId}`
+          )}
         size="small"
         >Proceed</sl-button
       >

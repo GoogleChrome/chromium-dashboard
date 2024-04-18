@@ -1226,8 +1226,8 @@ export const ALL_FIELDS = {
     attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: false,
     label: 'Trial extension end milestone',
-    help_text: html`
-      The last desktop milestone in which the trial will be available after extension.`,
+    help_text: html` The last desktop milestone in which the trial will be
+    available after extension.`,
   },
 
   extension_android_last: {
@@ -1253,8 +1253,8 @@ export const ALL_FIELDS = {
     attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: true,
     label: 'Trial extension end milestone',
-    help_text: html`
-      The last milestone in which the trial will be available after extension.`,
+    help_text: html` The last milestone in which the trial will be available
+    after extension.`,
     check: _value => checkExtensionMilestoneIsValid(_value),
   },
 
@@ -2189,7 +2189,9 @@ async function checkExtensionMilestoneIsValid(value) {
   if (intValue >= 1000) {
     return {error: 'Milestone is too distant.'};
   }
-  const resp = await fetch('https://chromiumdash.appspot.com/fetch_milestone_schedule');
+  const resp = await fetch(
+    'https://chromiumdash.appspot.com/fetch_milestone_schedule'
+  );
   const json = await resp.json();
   if (parseInt(json.mstones[0].mstone) > intValue) {
     return {error: 'End milestone cannot be in the past.'};

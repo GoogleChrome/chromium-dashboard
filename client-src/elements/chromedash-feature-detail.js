@@ -242,7 +242,9 @@ class ChromedashFeatureDetail extends LitElement {
     const gate = foundGates[0];
 
     const foundStages = this.feature.stages.filter(s => {
-      return s.id === gate.stage_id || s.extensions.some(e => e.id === gate.stage_id);
+      return (
+        s.id === gate.stage_id || s.extensions.some(e => e.id === gate.stage_id)
+      );
     });
 
     if (!foundStages.length) {
@@ -618,10 +620,10 @@ class ChromedashFeatureDetail extends LitElement {
     const editButton = this.renderEditButton(feStage, processStage);
     const trialButton = this.renderOriginTrialButton(feStage);
     const extensionGateChips = feStage.extensions?.map(extension => {
-      return html`
-        <div class="gates">
-          ${STAGE_SHORT_NAMES[extension.stage_type]}: ${this.renderGateChips(extension)}
-        </div>`;
+      return html` <div class="gates">
+        ${STAGE_SHORT_NAMES[extension.stage_type]}:
+        ${this.renderGateChips(extension)}
+      </div>`;
     });
     // Gates should only be prefixed with stage name if gates from multiple stages are displayed.
     let gatesPrefix = '';
@@ -636,9 +638,7 @@ class ChromedashFeatureDetail extends LitElement {
           : nothing}
         ${editButton} ${addExtensionButton} ${processStage.description}
       </p>
-      <div class="gates">
-        ${gatesPrefix}${this.renderGateChips(feStage)}
-      </div>
+      <div class="gates">${gatesPrefix}${this.renderGateChips(feStage)}</div>
       ${extensionGateChips}
       <section class="card">
         ${this.renderSectionFields(fields, feStage)}
@@ -662,27 +662,26 @@ class ChromedashFeatureDetail extends LitElement {
   }
 
   renderFinalizeExtensionButton(extensionStage) {
-    return html`
-      <sl-button
-        size="small"
-        variant="primary"
-        @click=${() => openFinalizeExtensionDialog(
-      this.feature.id,
-      extensionStage.id,
-      extensionStage.desktop_last,
-      dialogTypes.FINALIZE_EXTENSION)}
-        >Finalize Extension</sl-button>`;
+    return html` <sl-button
+      size="small"
+      variant="primary"
+      @click=${() =>
+        openFinalizeExtensionDialog(
+          this.feature.id,
+          extensionStage.id,
+          extensionStage.desktop_last,
+          dialogTypes.FINALIZE_EXTENSION
+        )}
+      >Finalize Extension</sl-button
+    >`;
   }
 
   renderDisabledExtensionButton() {
-    const tooltipText = 'A pending extension request exists. Follow the process for ' +
-    'obtaining extension approval, or contact origin-trials-support@google.com for help.';
-    return html`
-    <sl-tooltip content=${tooltipText}>
-      <sl-button
-        size="small"
-        disabled
-        >Trial Extension Pending</sl-button>
+    const tooltipText =
+      'A pending extension request exists. Follow the process for ' +
+      'obtaining extension approval, or contact origin-trials-support@google.com for help.';
+    return html` <sl-tooltip content=${tooltipText}>
+      <sl-button size="small" disabled>Trial Extension Pending</sl-button>
     </sl-tooltip>`;
   }
 
@@ -709,14 +708,17 @@ class ChromedashFeatureDetail extends LitElement {
     // Add button to finalize an extension if the extension has been approved.
     const extensionReadyForFinalize = feStage.extensions.find(e => {
       const extensionGate = this.gates.find(g => g.stage_id === e.id);
-      return e.ot_action_requested && extensionGate.state === VOTE_OPTIONS.APPROVED[0];
+      return (
+        e.ot_action_requested &&
+        extensionGate.state === VOTE_OPTIONS.APPROVED[0]
+      );
     });
     if (extensionReadyForFinalize) {
       return this.renderFinalizeExtensionButton(extensionReadyForFinalize);
     }
 
-    const extensionInProgress = (
-      feStage.extensions && feStage.extensions.some(e => e.ot_action_requested));
+    const extensionInProgress =
+      feStage.extensions && feStage.extensions.some(e => e.ot_action_requested);
     // Show a disabled button if an extension request has already been submitted.
     if (extensionInProgress) {
       return this.renderDisabledExtensionButton();
@@ -729,10 +731,12 @@ class ChromedashFeatureDetail extends LitElement {
     }
 
     const stageId = feStage.id;
-    return html`
-    <sl-button size="small"
-        @click=${() => location.assign(`/ot_extension_request/${this.feature.id}/${stageId}`)}
-        >${extensionButtonText}</sl-button>`;
+    return html` <sl-button
+      size="small"
+      @click=${() =>
+        location.assign(`/ot_extension_request/${this.feature.id}/${stageId}`)}
+      >${extensionButtonText}</sl-button
+    >`;
   }
 
   renderOriginTrialButton(feStage) {
@@ -773,12 +777,13 @@ class ChromedashFeatureDetail extends LitElement {
       // Display the creation request button if user has edit access.
     } else if (canSeeOTControls) {
       const stageId = feStage.id;
-      return html`
-        <sl-button
-          size="small"
-          variant="primary"
-          @click="${() => openPrereqsDialog(this.feature.id, stageId, dialogTypes.CREATION)}"
-          >Request Trial Creation</sl-button>`;
+      return html` <sl-button
+        size="small"
+        variant="primary"
+        @click="${() =>
+          openPrereqsDialog(this.feature.id, stageId, dialogTypes.CREATION)}"
+        >Request Trial Creation</sl-button
+      >`;
     }
     return nothing;
   }
