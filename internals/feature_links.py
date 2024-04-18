@@ -143,6 +143,8 @@ def _get_views_from_label(feature_link: FeatureLinks, position_prefix: str) -> O
   Params:
     position_prefix: The lowercase prefix this organization uses for their opinion labels.
   """
+  if feature_link.information is None:
+    return None
   for label in feature_link.information.get('labels', []):
     if label.lower().startswith(position_prefix):
       return label[len(position_prefix) :]
