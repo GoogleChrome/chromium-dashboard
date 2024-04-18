@@ -10,7 +10,7 @@ import SlDropdown from '@shoelace-style/shoelace/dist/components/dropdown/dropdo
    1. Chromedash-typeahead represents the overall UI widget, accepts a
    `vocabulary` list of words, exposes a `value` string, and emits a
    `sl-change` event when the user hits enter to submit the value.
-   Internally, it is responible for narrowing the vacabulary down to a list
+   Internally, it is responsible for narrowing the vocabulary down to a list
    of candidates based on the prefix that the user has typed.
 
    2. Private class ChromedashTypeaheadDropdown subclasses SlDropdown and
