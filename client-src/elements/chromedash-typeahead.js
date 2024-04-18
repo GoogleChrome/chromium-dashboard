@@ -3,6 +3,8 @@ import {ref, createRef} from 'lit/directives/ref.js';
 import {live} from 'lit/directives/live.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import SlDropdown from '@shoelace-style/shoelace/dist/components/dropdown/dropdown.js';
+import SlInput from '@shoelace-style/shoelace/dist/components/input/input.js';
+import SlMenu from '@shoelace-style/shoelace/dist/components/menu/menu.js';
 
 /* This file consists of 3 classes that together implement a "typeahead"
    text field with autocomplete:
@@ -20,7 +22,7 @@ import SlDropdown from '@shoelace-style/shoelace/dist/components/dropdown/dropdo
    typeahead menu.  We do not use SlMenuItem because it steals keyboard focus.
 */
 
-class ChromedashTypeahead extends LitElement {
+export class ChromedashTypeahead extends LitElement {
   slDropdownRef = createRef();
   slInputRef = createRef();
 
@@ -95,7 +97,6 @@ class ChromedashTypeahead extends LitElement {
     const caret = inputEl.selectionStart;
     if (caret != inputEl.selectionEnd) {
       // User has a range selected.
-      this.chunk = null;
       this.prefix = null;
       return;
     }
@@ -107,11 +108,14 @@ class ChromedashTypeahead extends LitElement {
 
   shouldShowCandidate(candidate, prefix) {
     if (prefix === null) return false;
+    prefix = prefix.toLowerCase();
+    const lowerName = candidate.name.toLowerCase();
+    const lowerDoc = candidate.doc.toLowerCase();
     return (
-      candidate.name.split(/\s+/).some(w => w.startsWith(prefix)) ||
-      candidate.doc.split(/\s+/).some(w => w.startsWith(prefix)) ||
-      candidate.name.split(/\W+/).some(w => w.startsWith(prefix)) ||
-      candidate.doc.split(/\W+/).some(w => w.startsWith(prefix))
+      lowerName.split(/\s+/).some(w => w.startsWith(prefix)) ||
+      lowerDoc.split(/\s+/).some(w => w.startsWith(prefix)) ||
+      lowerName.split(/\W+/).some(w => w.startsWith(prefix)) ||
+      lowerDoc.split(/\W+/).some(w => w.startsWith(prefix))
     );
   }
 
@@ -186,7 +190,6 @@ class ChromedashTypeahead extends LitElement {
     } else {
       slDropdown.hide();
     }
-    slDropdown.resetSelection();
   }
 
   renderInputField() {
@@ -245,7 +248,7 @@ class ChromedashTypeahead extends LitElement {
 }
 customElements.define('chromedash-typeahead', ChromedashTypeahead);
 
-class ChromedashTypeaheadDropdown extends SlDropdown {
+export class ChromedashTypeaheadDropdown extends SlDropdown {
   constructor() {
     super();
   }
@@ -258,6 +261,11 @@ class ChromedashTypeaheadDropdown extends SlDropdown {
     const menu = this.getMenu();
     menu.setCurrentItem(newCurrentItem);
     newCurrentItem.scrollIntoView({block: 'nearest', behavior: 'smooth'});
+  }
+
+  resetSelection() {
+    const currentItem = this.getCurrentItem();
+    currentItem?.setAttribute('tabindex', -1);
   }
 
   async handleTriggerKeyDown(event) {
@@ -310,18 +318,13 @@ class ChromedashTypeaheadDropdown extends SlDropdown {
       // Note: We keep keyboard focus on #inputfield.
     }
   }
-
-  resetSelection() {
-    const currentItem = this.getCurrentItem();
-    currentItem?.setAttribute('tabindex', 0);
-  }
 }
 customElements.define(
   'chromedash-typeahead-dropdown',
   ChromedashTypeaheadDropdown
 );
 
-class ChromedashTypeaheadItem extends LitElement {
+export class ChromedashTypeaheadItem extends LitElement {
   static get properties() {
     return {
       value: {type: String},
@@ -385,11 +388,12 @@ class ChromedashTypeaheadItem extends LitElement {
   }
 
   highlight(s) {
-    const start = s.indexOf(this.prefix);
+    const start = s.toLowerCase().indexOf(this.prefix.toLowerCase());
     if (start === -1) return s;
     const before = s.substring(0, start);
+    const matching = s.substring(start, start + this.prefix.length);
     const after = s.substring(start + this.prefix.length);
-    return html`${before}<b>${this.prefix}</b>${after}`;
+    return html`${before}<b>${matching}</b>${after}`;
   }
 
   render() {
@@ -397,7 +401,7 @@ class ChromedashTypeaheadItem extends LitElement {
     const highlightedDoc = this.highlight(this.doc);
     return html`
       <div
-        class="menu-item ${this.tabindex == 0 ? 'active' : ''}"
+        class="menu-item ${this.tabindex === 0 ? 'active' : ''}"
         @mouseover=${this.handleMouseOver}
       >
         <span id="value"><code>${highlightedValue}</code></span>
