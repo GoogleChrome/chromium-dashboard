@@ -33,7 +33,7 @@ GRACE_PERIOD_FILE = 'https://chromium.googlesource.com/chromium/src/+/main/third
 
 def get_chromium_file(url: str) -> asyncio.Future[requests.Response]:
   """Get chromium file contents from a given URL"""
-  loop = asyncio.get_event_loop()
+  loop = asyncio.get_running_loop()
   try:
     file_future = loop.run_in_executor(None, requests.get, url)
   except requests.RequestException as e:
@@ -148,8 +148,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
       return redirect_resp
 
     body = self.get_json_param_dict()
-    loop = asyncio.get_event_loop()
-    validation_errors = loop.run_until_complete(self._validate_creation_args(body))
+    validation_errors = asyncio.run(self._validate_creation_args(body))
     if validation_errors:
       return {
           'message': 'Errors found when validating arguments',
