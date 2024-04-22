@@ -156,6 +156,6 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
           ]
         })
 
-    return_result = origin_trials_client._get_trial_end_time('123')
+    return_result = origin_trials_client._get_trial_end_time(123)
     self.assertEqual(return_result, 1682812800)
     mock_requests_get.assert_called_once()
