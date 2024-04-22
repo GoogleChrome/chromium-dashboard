@@ -62,7 +62,7 @@ def get_trials_list() -> list[dict[str, Any]]:
   return trials_list
 
 
-def _get_trial_end_time(end_milestone: str) -> int:
+def _get_trial_end_time(end_milestone: int) -> int:
   """Get the end time of the origin trial based on end milestone.
 
   Returns:
@@ -111,7 +111,7 @@ def _get_ot_access_token() -> str:
   return credentials.token
 
 
-def extend_origin_trial(trial_id: str, end_milestone: str, intent_url: str):
+def extend_origin_trial(trial_id: str, end_milestone: int, intent_url: str):
   """Extend an existing origin trial.
 
   Raises:
@@ -136,13 +136,14 @@ def extend_origin_trial(trial_id: str, end_milestone: str, intent_url: str):
     'end_date': {
       'seconds': end_seconds
     },
-    'milestone_end': end_milestone,
+    'milestone_end': str(end_milestone),
     'extension_intent_url': intent_url,
   }
 
   try:
     response = requests.post(
         url, headers=headers, params={'key': key}, json=json)
+    logging.info(response.text)
     response.raise_for_status()
   except requests.exceptions.RequestException as e:
     logging.exception('Failed to get response from origin trials API.')

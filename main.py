@@ -169,7 +169,7 @@ api_routes: list[Route] = [
     Route(f'{API_BASE}/origintrials', origin_trials_api.OriginTrialsAPI),
     Route(f'{API_BASE}/origintrials/<int:feature_id>/<int:stage_id>/create',
           origin_trials_api.OriginTrialsAPI),
-    Route(f'{API_BASE}/origintrials/<int:feature_id>/<int:stage_id>/extend',
+    Route(f'{API_BASE}/origintrials/<int:feature_id>/<int:extension_stage_id>/extend',
           origin_trials_api.OriginTrialsAPI),
 ]
 
