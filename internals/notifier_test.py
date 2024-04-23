@@ -30,7 +30,7 @@ from internals import stage_helpers
 from internals.user_models import (
     AppUser, BlinkComponent, FeatureOwner, UserPref)
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
-from internals.review_models import Gate
+from internals.review_models import Gate, Vote
 import settings
 
 test_app = flask.Flask(__name__,
@@ -1118,6 +1118,40 @@ class OriginTrialExtendedHandlerTest(testing_config.CustomTestCase):
       # TESTDATA.make_golden(email_task['html'], 'test_make_extended_request_email.html')
       self.assertEqual(email_task['html'],
         TESTDATA['test_make_extended_request_email.html'])
+
+
+class OriginTrialExtensionApprovedHandlerTest(testing_config.CustomTestCase):
+  def setUp(self):
+    self.feature = FeatureEntry(
+        id=1, name='A feature', summary='summary', category=1)
+    self.ot_stage = Stage(id=2, feature_id=1, stage_type=150)
+    self.extension_stage = Stage(
+      feature_id=1, ot_stage_id=2, stage_type=151,
+      milestones=MilestoneSet(desktop_last=106),
+      ot_owner_email='user2@example.com',
+      intent_thread_url='https://example.com/intent'
+    )
+    self.extension_gate = Gate(feature_id=1, stage_id=2, gate_type=3, state=Vote.APPROVED)
+    self.extension_gate.put()
+    self.feature.put()
+    self.ot_stage.put()
+    self.extension_stage.put()
+
+  def tearDown(self) -> None:
+    kinds: list[ndb.Model] = [FeatureEntry, Gate, Stage]
+    for kind in kinds:
+      for entity in kind.query():
+        entity.key.delete()
+
+  def test_make_extension_approved_email(self):
+    feature_dict = converters.feature_entry_to_json_verbose(self.feature)
+    with test_app.app_context():
+      handler = notifier.OriginTrialExtensionApprovedHandler()
+      email_task = handler.build_email(feature_dict,
+                                       self.extension_gate.key.integer_id())
+      # TESTDATA.make_golden(email_task['html'], 'test_make_extension_approved_email.html')
+      self.assertEqual(email_task['html'],
+        TESTDATA['test_make_extension_approved_email.html'])
 
 
 class OriginTrialExtensionRequestHandlerTest(testing_config.CustomTestCase):
