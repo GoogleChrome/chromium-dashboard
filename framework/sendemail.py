@@ -52,6 +52,7 @@ def handle_outbound_mail_task():
   require_task_header()
 
   to = get_param(flask.request, 'to')
+  cc = get_param(flask.request, 'cc', required=False)
   from_user = get_param(flask.request, 'from_user', required=False)
   subject = get_param(flask.request, 'subject')
   email_html = get_param(flask.request, 'html')
@@ -68,7 +69,7 @@ def handle_outbound_mail_task():
         from_user, from_user, settings.APP_ID)
 
   message = mail.EmailMessage(
-      sender=sender, to=to, subject=subject, html=email_html)
+      sender=sender, to=to, cc=cc, subject=subject, html=email_html)
   if reply_to:
     message.reply_to = reply_to
   message.check_initialized()
