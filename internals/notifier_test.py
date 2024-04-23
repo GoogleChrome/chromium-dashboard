@@ -1131,7 +1131,8 @@ class OriginTrialExtensionApprovedHandlerTest(testing_config.CustomTestCase):
       ot_owner_email='user2@example.com',
       intent_thread_url='https://example.com/intent',
     )
-    self.extension_gate = Gate(feature_id=1, stage_id=2, gate_type=3, state=Vote.APPROVED)
+    self.extension_gate = Gate(
+        id=3, feature_id=1, stage_id=2, gate_type=3, state=Vote.APPROVED)
     self.extension_gate.put()
     self.feature.put()
     self.ot_stage.put()
