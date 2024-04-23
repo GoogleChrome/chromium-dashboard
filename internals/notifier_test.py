@@ -1129,7 +1129,7 @@ class OriginTrialExtensionApprovedHandlerTest(testing_config.CustomTestCase):
       feature_id=1, ot_stage_id=2, stage_type=151,
       milestones=MilestoneSet(desktop_last=106),
       ot_owner_email='user2@example.com',
-      intent_thread_url='https://example.com/intent'
+      intent_thread_url='https://example.com/intent',
     )
     self.extension_gate = Gate(feature_id=1, stage_id=2, gate_type=3, state=Vote.APPROVED)
     self.extension_gate.put()
@@ -1148,9 +1148,10 @@ class OriginTrialExtensionApprovedHandlerTest(testing_config.CustomTestCase):
     with test_app.app_context():
       handler = notifier.OriginTrialExtensionApprovedHandler()
       email_task = handler.build_email(feature_dict,
+                                       self.extension_stage.ot_owner_email,
                                        self.extension_gate.key.integer_id())
-      # TESTDATA.make_golden(email_task['html'], 'test_make_extension_approved_email.html')
-      self.assertEqual(email_task['html'],
+      # TESTDATA.make_golden(email_task[0]['html'], 'test_make_extension_approved_email.html')
+      self.assertEqual(email_task[0]['html'],
         TESTDATA['test_make_extension_approved_email.html'])
 
 

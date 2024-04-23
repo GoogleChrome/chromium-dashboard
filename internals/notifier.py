@@ -762,10 +762,14 @@ class OriginTrialExtensionApprovedHandler(basehandlers.FlaskHandler):
     gate_id = self.get_param('gate_id')
     if gate_id is None:
       self.abort(400, 'Extension gate ID not provided.')
+    requester_email = self.get_param('requester_email')
+    if not requester_email:
+      self.abort(400, 'Extension requester\'s email address not provided.')
     logging.info('Starting to notify about successful origin trial extension.')
-    send_emails([self.build_email(self, feature, gate_id)])
+    send_emails([self.build_email(self, feature, requester_email, gate_id)])
 
-  def build_email(self, feature: FeatureEntry, gate_id: int):
+  def build_email(
+      self, feature: FeatureEntry, requester_email: str, gate_id: int):
     body_data = {
       'feature': feature,
       'id': feature['id'],
@@ -773,13 +777,20 @@ class OriginTrialExtensionApprovedHandler(basehandlers.FlaskHandler):
     }
     body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
 
-    return {
+    return [{
       'to': OT_SUPPORT_EMAIL,
       'subject': ('Origin trial approved and ready to be finalized: '
                   f'{feature["name"]}'),
       'reply_to': None,
       'html': body,
-    }
+    },
+    {
+      'to': requester_email,
+      'subject': ('Origin trial approved and ready to be finalized: '
+                  f'{feature["name"]}'),
+      'reply_to': None,
+      'html': body,
+    }]
 
 
 class OriginTrialExtendedHandler(basehandlers.FlaskHandler):
