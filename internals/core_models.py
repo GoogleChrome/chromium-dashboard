@@ -139,6 +139,26 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   web_dev_views_notes = ndb.TextProperty()
   other_views_notes = ndb.TextProperty()
 
+  @ndb.ComputedProperty
+  def has_open_tag_review(self):
+    return self.tag_review is not None and self.tag_review_resolution is None
+
+  @ndb.ComputedProperty
+  def has_open_ff_review(self):
+    return (
+      self.ff_views not in [IN_DEV, SHIPPED, SIGNALS_NA]
+      and self.ff_views_link is not None
+      and self.ff_views_link_result is None
+    )
+
+  @ndb.ComputedProperty
+  def has_open_safari_review(self):
+    return (
+      self.safari_views not in [IN_DEV, SHIPPED, SIGNALS_NA]
+      and self.safari_views_link is not None
+      and self.safari_views_link_result is None
+    )
+
   # Gate: Security & Privacy
   security_risks = ndb.TextProperty()
   security_review_status = ndb.IntegerProperty(default=REVIEW_PENDING)

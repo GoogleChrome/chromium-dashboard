@@ -13,8 +13,7 @@
 # limitations under the License.
 
 
-import logging
-import pprint
+import math
 from enum import StrEnum
 
 from chromestatus_openapi.models.external_reviews_response import (
@@ -56,12 +55,6 @@ from internals.core_models import FeatureEntry, Stage
 from internals.feature_links import (
   get_by_feature_ids as get_feature_links_by_feature_ids,
 )
-from internals.feature_links import (
-  get_feature_links_samples,
-  get_feature_links_summary,
-)
-
-logger = logging.getLogger(__name__)
 
 
 class StageType(StrEnum):
@@ -141,20 +134,17 @@ class ExternalReviewsAPI(basehandlers.APIHandler):
     # Get all the features that might have an unfinished review for the requested group.
     if review_group == 'tag':
       unreviewed_features = FeatureEntry.query(
-        FeatureEntry.tag_review != None,  # noqa: E711
-        FeatureEntry.tag_review_resolution == None,  # noqa: E711
+        FeatureEntry.has_open_tag_review == True  # noqa: E712
       ).fetch()
       review_link = 'tag_review'
     elif review_group == 'gecko':
       unreviewed_features = FeatureEntry.query(
-        FeatureEntry.ff_views_link != None,  # noqa: E711
-        FeatureEntry.ff_views_link_result == None,  # noqa: E711
+        FeatureEntry.has_open_ff_review == True  # noqa: E712
       ).fetch()
       review_link = 'ff_views_link'
     elif review_group == 'webkit':
       unreviewed_features = FeatureEntry.query(
-        FeatureEntry.safari_views_link != None,  # noqa: E711
-        FeatureEntry.safari_views_link_result == None,  # noqa: E711
+        FeatureEntry.has_open_safari_review == True  # noqa: E712
       ).fetch()
       review_link = 'safari_views_link'
 
@@ -205,6 +195,18 @@ class ExternalReviewsAPI(basehandlers.APIHandler):
       for stage in [active_stage.get(feature.key.id(), None)]
       if getattr(feature, review_link) in previewable_urls
     ]
+    reviews.sort(
+      key=lambda review: (
+        review.current_stage,
+        review.estimated_end_milestone
+        if review.estimated_end_milestone is not None
+        else math.inf,
+        review.estimated_start_milestone
+        if review.estimated_start_milestone is not None
+        else math.inf,
+        review.review_link,
+      )
+    )
 
     link_previews = [
       LinkPreview(
@@ -216,7 +218,7 @@ class ExternalReviewsAPI(basehandlers.APIHandler):
       for feature_link in feature_links
       if feature_link['url'] in review_links
     ]
+    link_previews.sort(key=lambda link: link.url)
 
     result = ExternalReviewsResponse(reviews=reviews, link_previews=link_previews)
-    logger.info(result)
     return result.to_dict()

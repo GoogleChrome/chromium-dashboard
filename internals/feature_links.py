@@ -87,7 +87,6 @@ def update_feature_links(fe: FeatureEntry, changed_fields: list[tuple[str, Any, 
               logging.info(
                 f'Indexed feature_link {feature_link.url} to {feature_link.key.integer_id()} for feature {fe.key.integer_id()}'
               )
-              _denormalize_feature_link_into_entries(feature_link, [fe])
 
 
 def _get_index_link(link: Link, fe: FeatureEntry, should_parse_new_link: bool = False) -> FeatureLinks | None:
@@ -117,6 +116,7 @@ def _get_index_link(link: Link, fe: FeatureEntry, should_parse_new_link: bool = 
         http_error_code=link.http_error_code
     )
 
+  _denormalize_feature_link_into_entries(feature_link, [fe])
   return feature_link
 
 

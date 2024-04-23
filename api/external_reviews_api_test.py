@@ -14,18 +14,44 @@
 
 import testing_config  # isort: split
 
-from datetime import datetime
-
+import json
+import logging
+import os.path
+import re
+from typing import NotRequired, TypedDict
 from unittest import mock
+
+import flask
 from google.cloud import ndb  # type: ignore
 
 from api import external_reviews_api
-
-from internals.core_enums import STAGE_BLINK_PROTOTYPE
-from internals.core_models import FeatureEntry, Stage, MilestoneSet
-from internals.review_models import Gate
+from api.api_specs import MILESTONESET_FIELD_DATA_TYPES
+from api.features_api import FeaturesAPI
+from internals.core_enums import (
+  ENABLED_BY_DEFAULT,
+  FEATURE_TYPE_EXISTING_ID,
+  FEATURE_TYPE_INCUBATE_ID,
+  IN_DEV,
+  IN_DEVELOPMENT,
+  MISC,
+  NEUTRAL,
+  NO_PUBLIC_SIGNALS,
+  PROPOSED,
+  SHIPPED,
+  SIGNALS_NA,
+  STAGE_BLINK_DEV_TRIAL,
+  STAGE_BLINK_ORIGIN_TRIAL,
+  STAGE_BLINK_PROTOTYPE,
+  STAGE_FAST_SHIPPING,
+  UNSET_STD,
+)
+from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.feature_links import FeatureLinks
-from internals.link_helpers import LINK_TYPE_GITHUB_ISSUE
+from internals.link_helpers import LINK_TYPE_GITHUB_ISSUE, Link
+from internals.review_models import Gate
+from internals.user_models import AppUser
+
+test_app = flask.Flask(__name__)
 
 
 def make_feature(
@@ -78,7 +104,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
     self.maxDiff = None
 
   def tearDown(self):
-    kinds: list[ndb.Model] = [FeatureEntry, Gate]
+    kinds: list[ndb.Model] = [FeatureEntry, FeatureLinks, Stage, Gate]
     for kind in kinds:
       for entity in kind.query():
         entity.key.delete()
@@ -123,7 +149,6 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
     )
 
   def test_one_unfinished_webkit_review(self):
-    """Basic success case."""
     tag = 'https://github.com/w3ctag/design_reviews/issues/1'
     webkit = 'https://github.com/WebKit/standards-positions/issues/3'
     fe = make_feature(
@@ -153,8 +178,8 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
       },
       result,
     )
+
   def test_one_unfinished_gecko_review(self):
-    """Basic success case."""
     gecko = 'https://github.com/mozille/standards-positions/issues/2'
     webkit = 'https://github.com/WebKit/standards-positions/issues/3'
     fe = make_feature(
@@ -186,7 +211,11 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
     )
 
   def test_milestones_summarize(self):
-    """We take the earliest start milestone and the latest end milestone."""
+    """We take the earliest start milestone and the latest end milestone.
+
+    This isn't quite right for sorting urgency, since a later start milestone for some platforms
+    probably indicates that the feature will ship later, but it makes more sense in the UI.
+    """
     tag = 'https://github.com/w3ctag/design_reviews/issues/1'
     webkit = 'https://github.com/WebKit/standards-positions/issues/3'
     fe = make_feature(
@@ -220,8 +249,21 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
       result,
     )
 
+  def test_omit_non_review_links(self):
+    """Vendor positions of 'shipping', 'in development', and 'na' shouldn't be returned, even if
+    they link to a standards-positions repository.
+    """
+    webkit = 'https://github.com/WebKit/standards-positions/issues/3'
+    fe = make_feature('Feature one', STAGE_BLINK_PROTOTYPE, webkit=webkit)
+    result = self.handler.do_get(review_group='webkit')
+    self.assertEqual(1, len(result['reviews']))
+    for view in [SHIPPED, IN_DEV, SIGNALS_NA]:
+      fe.safari_views = view
+      fe.put()
+      result = self.handler.do_get(review_group='webkit')
+      self.assertEqual(0, len(result['reviews']))
+
   def test_finished_review_isnt_shown(self):
-    """When no reviews have been started, the result is empty."""
     tag = 'https://github.com/w3ctag/design_reviews/issues/1'
     webkit = 'https://github.com/WebKit/standards-positions/issues/3'
     fe = make_feature(
@@ -243,7 +285,6 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
     )
 
   def test_feature_without_a_crawled_link_isnt_shown(self):
-    """Basic success case."""
     tag = 'https://github.com/w3ctag/design_reviews/issues/1'
     fe = make_feature(
       'Feature one',
@@ -257,3 +298,231 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
     fe.put()
     result = self.handler.do_get(review_group='tag')
     self.assertEqual(0, len(result['reviews']))
+
+  class FeatureDict(TypedDict):
+    name: str
+    summary: NotRequired[str]
+    blink_components: NotRequired[str]
+    owner_emails: NotRequired[str]
+    category: NotRequired[int]
+    feature_type: NotRequired[int]
+    standard_maturity: NotRequired[int]
+    impl_status_chrome: int
+    ff_views: int
+    ff_views_link: str
+    safari_views: NotRequired[int]
+    web_dev_views: NotRequired[int]
+
+  def _use_ui_to_create_feature(
+    self,
+    fe: FeatureDict,
+    active_stage_type: int,
+    milestones: MilestoneSet | None = None,
+  ) -> FeatureEntry:
+    """Uses the same path as the web UI to create a feature.
+
+    This is slower than directly .put()ing FeatureEntries, but ensures at least 1 test makes no
+    assumptions about what the UI actually does.
+    """
+    name = fe['name']
+    # Only set the minimum set of fields in the initial POST. The FeaturesAPI expects to handle
+    # most updates in the later PATCH call.
+    initial_fields = dict(
+      blink_components=fe.pop('blink_components', 'Blink'),
+      category=fe.pop('category', MISC),
+      feature_type=fe.pop('feature_type', FEATURE_TYPE_INCUBATE_ID),
+      ff_views=fe.pop('ff_views'),
+      impl_status_chrome=fe.pop('impl_status_chrome'),
+      name=fe.pop('name'),
+      safari_views=fe.pop('safari_views', NO_PUBLIC_SIGNALS),
+      standard_maturity=fe.pop('standard_maturity', UNSET_STD),
+      summary=fe.pop('summary', f'Summary for {name}'),
+      web_dev_views=fe.pop('web_dev_views', NO_PUBLIC_SIGNALS),
+    )
+    with test_app.test_request_context('/api/v0/features/create', json=initial_fields):
+      response = FeaturesAPI().do_post()
+    # A new feature ID should be returned.
+    self.assertIsInstance(response['feature_id'], int)
+    # New feature should exist.
+    new_feature = FeatureEntry.get_by_id(response['feature_id'])
+    self.assertIsNotNone(new_feature)
+    fe['id'] = new_feature.key.id()
+
+    # Now that the feature and its stages are created, update the rest of the fields, and the active
+    # stage, using a PATCH.
+    active_stage = Stage.query(
+      Stage.feature_id == fe['id'], Stage.stage_type == active_stage_type
+    ).fetch(keys_only=True)
+    self.assertEqual(1, len(active_stage), active_stage)
+    fe['active_stage_id'] = active_stage[0].id()
+    update = dict(feature_changes=fe, stages=[])
+    if milestones is not None:
+      stage_info = dict(id=active_stage[0].id())
+      for field_name, _type in MILESTONESET_FIELD_DATA_TYPES:
+        value = getattr(milestones, field_name, None)
+        if value is not None:
+          stage_info[field_name] = dict(form_field_name=field_name, value=value)
+      update['stages'].append(stage_info)
+
+    with test_app.test_request_context(f'/api/v0/features/{fe["id"]}', json=update):
+      response = FeaturesAPI().do_patch()
+    self.assertEqual(f'Feature {fe["id"]} updated.', response['message'])
+
+    return new_feature
+
+  @mock.patch.object(Link, '_parse_github_issue', autospec=True)
+  def test_e2e_features_that_need_review_are_included(self, mockParse: mock.MagicMock):
+    """This one test goes through the same path as the UI to create features, to catch if other
+    tests have made incorrect assumptions about how that flow works. This is slower, so it shouldn't
+    be used to test every part of the feature.
+
+    This test also checks that a JSON file used by the Playwright tests is actually the output
+    format for this API, which allows a test on the Playwright side to also check its assumptions
+    about the output format.
+    """
+    # Create a feature using the admin user.
+    app_admin = AppUser(email='admin@example.com')
+    app_admin.is_admin = True
+    app_admin.put()
+
+    testing_config.sign_in(app_admin.email, app_admin.key.id())
+
+    unexpected_links: list[str] = []
+
+    def github_result(link):
+      result = dict(
+        url=re.sub(r'github\.com', 'api.github.com', link.url),
+        number=1,
+        title='A Title',
+        user_login=None,
+        state='open',
+        state_reason=None,
+        assignee_login=None,
+        created_at='2024-04-15T08:30:42',
+        updated_at='2024-04-15T10:30:43',
+        closed_at=None,
+        labels=[],
+      )
+      if link.url == 'https://github.com/mozilla/standards-positions/issues/1':
+        result.update(
+          number=1, labels=['position: oppose'], title="Opposed review isn't shown"
+        )
+      elif link.url == 'https://github.com/mozilla/standards-positions/issues/2':
+        result.update(number=2)
+      elif link.url == 'https://github.com/mozilla/standards-positions/issues/3':
+        result.update(number=3)
+      elif link.url == 'https://github.com/mozilla/standards-positions/issues/4':
+        result.update(number=4, state='closed', closed_at='2024-04-20T07:15:34')
+      elif link.url == 'https://github.com/mozilla/standards-positions/issues/5':
+        result.update(number=5)
+      elif link.url == 'https://github.com/WebKit/standards-positions/issues/6':
+        result.update(number=6)
+      elif link.url == 'https://github.com/mozilla/standards-positions/issues/8':
+        raise Exception(f'Expected fetch error for {link.url=}')
+      else:
+        unexpected_links.append(link.url)
+      return result
+
+    mockParse.side_effect = github_result
+
+    _f1 = self._use_ui_to_create_feature(
+      dict(
+        name='Feature 1',
+        impl_status_chrome=IN_DEVELOPMENT,
+        ff_views=NEUTRAL,
+        ff_views_link='https://github.com/mozilla/standards-positions/issues/1',
+      ),
+      active_stage_type=STAGE_BLINK_DEV_TRIAL,
+    )
+    f2 = self._use_ui_to_create_feature(
+      dict(
+        name='Feature 2',
+        feature_type=FEATURE_TYPE_EXISTING_ID,
+        impl_status_chrome=ENABLED_BY_DEFAULT,
+        ff_views=NEUTRAL,
+        ff_views_link='https://github.com/mozilla/standards-positions/issues/2',
+      ),
+      active_stage_type=STAGE_FAST_SHIPPING,
+    )
+    f3 = self._use_ui_to_create_feature(
+      dict(
+        name='Feature 3',
+        impl_status_chrome=PROPOSED,
+        ff_views=NO_PUBLIC_SIGNALS,
+        ff_views_link='https://github.com/mozilla/standards-positions/issues/3',
+      ),
+      active_stage_type=STAGE_BLINK_PROTOTYPE,
+      milestones=MilestoneSet(desktop_first=101, desktop_last=103),
+    )
+    f4 = self._use_ui_to_create_feature(
+      dict(
+        name='Feature 4',
+        impl_status_chrome=PROPOSED,
+        ff_views=NO_PUBLIC_SIGNALS,
+        ff_views_link='https://github.com/mozilla/standards-positions/issues/4',
+      ),
+      active_stage_type=STAGE_BLINK_PROTOTYPE,
+    )
+    f5 = self._use_ui_to_create_feature(
+      dict(
+        name='Feature 5',
+        impl_status_chrome=PROPOSED,
+        ff_views=NO_PUBLIC_SIGNALS,
+        ff_views_link='https://github.com/mozilla/standards-positions/issues/5',
+      ),
+      active_stage_type=STAGE_BLINK_PROTOTYPE,
+      milestones=MilestoneSet(desktop_first=100, desktop_last=104),
+    )
+    _f6 = self._use_ui_to_create_feature(
+      dict(
+        name='Feature 6',
+        impl_status_chrome=PROPOSED,
+        ff_views=SHIPPED,
+        # Not a Firefox view, so this won't be included in the results.
+        safari_views_link='https://github.com/WebKit/standards-positions/issues/6',
+      ),
+      active_stage_type=STAGE_BLINK_DEV_TRIAL,
+    )
+    f7 = self._use_ui_to_create_feature(
+      dict(
+        name='Feature 7 shares a review with Feature 5',
+        impl_status_chrome=PROPOSED,
+        ff_views=NO_PUBLIC_SIGNALS,
+        ff_views_link='https://github.com/mozilla/standards-positions/issues/5',
+      ),
+      active_stage_type=STAGE_BLINK_ORIGIN_TRIAL,
+      milestones=MilestoneSet(desktop_first=100, desktop_last=104),
+    )
+    with self.assertLogs(level=logging.ERROR):  # So the log doesn't echo.
+      _f8 = self._use_ui_to_create_feature(
+        dict(
+          name='Feature 8 has a nonexistent standards-position link',
+          impl_status_chrome=PROPOSED,
+          ff_views=NO_PUBLIC_SIGNALS,
+          ff_views_link='https://github.com/mozilla/standards-positions/issues/8',
+        ),
+        active_stage_type=STAGE_BLINK_PROTOTYPE,
+      )
+
+    testing_config.sign_out()
+
+    result = self.handler.do_get(review_group='gecko')
+
+    # This test expectation is saved to a JSON file so the
+    # Playwright tests can use it as a mock API response. Because the real feature IDs are
+    # dynamically generated, we have to slot them into the right places here.
+    with open(
+      os.path.join(
+        os.path.dirname(__file__),
+        '../packages/playwright/tests/external_reviews_api_result.json',
+      )
+    ) as f:
+      expected_response = json.load(f)
+    expected_response['reviews'][0]['feature']['id'] = f7.key.id()
+    expected_response['reviews'][1]['feature']['id'] = f3.key.id()
+    expected_response['reviews'][2]['feature']['id'] = f5.key.id()
+    expected_response['reviews'][3]['feature']['id'] = f4.key.id()
+    expected_response['reviews'][4]['feature']['id'] = f2.key.id()
+
+    self.assertEqual(expected_response, result)
+    self.assertEqual([], unexpected_links)

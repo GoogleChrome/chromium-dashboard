@@ -1,7 +1,7 @@
 // @ts-check
 import {Task} from '@lit/task';
 import '@shoelace-style/shoelace';
-import {LitElement, html, nothing} from 'lit';
+import {LitElement, css, html, nothing} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
 /**
@@ -50,7 +50,27 @@ function compareOutstandingReview(a, b) {
 
 export class ChromedashReportExternalReviewsPage extends LitElement {
   static get styles() {
-    return [...SHARED_STYLES];
+    return [
+      ...SHARED_STYLES,
+      css`
+        h2 {
+          margin-top: var(--content-padding);
+          margin-bottom: var(--content-padding-quarter);
+
+          sl-skeleton {
+            width: 30%;
+            height: 1lh;
+          }
+        }
+        td.feature,
+        td.review {
+          width: 45%;
+        }
+        td.milestones {
+          width: 10%;
+        }
+      `,
+    ];
   }
 
   static get properties() {
@@ -78,6 +98,7 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
         return {
           reviews: this.groupReviews(response.reviews),
           links: response.link_previews,
+          noOutstandingReviews: response.reviews.length === 0,
         };
       },
       args: () => [this.reviewer],
@@ -110,6 +131,14 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
     return result;
   }
 
+  headerRow() {
+    return html`<tr>
+      <th>Feature</th>
+      <th>Review</th>
+      <th>Target Milestones</th>
+    </tr>`;
+  }
+
   render() {
     return html`
       <div id="subheader">
@@ -119,65 +148,75 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
       ${this._reviewsTask.render({
         pending: () => html`
           <h2><sl-skeleton effect="sheen"></sl-skeleton></h2>
-          <table>
-            <tr>
-              <td><sl-skeleton effect="sheen"></sl-skeleton></td>
-            </tr>
-            <tr>
-              <td><sl-skeleton effect="sheen"></sl-skeleton></td>
-            </tr>
-            <tr>
-              <td><sl-skeleton effect="sheen"></sl-skeleton></td>
-            </tr>
+          <table class="data-table">
+            ${this.headerRow()}
+            ${[1, 2, 3].map(
+              () => html`
+                <tr>
+                  <td class="feature">
+                    <sl-skeleton effect="sheen"></sl-skeleton>
+                  </td>
+                  <td class="review">
+                    <sl-skeleton effect="sheen"></sl-skeleton>
+                  </td>
+                  <td class="milestones">
+                    <sl-skeleton effect="sheen"></sl-skeleton>
+                  </td>
+                </tr>
+              `
+            )}
           </table>
         `,
-        complete: ({reviews, links}) =>
-          [
-            ['Preparing to ship', 'shipping'],
-            ['In Origin Trial', 'origin-trial'],
-            ['Getting wide review', 'wide-review'],
-            ['In developer trials', 'dev-trial'],
-            ['Prototyping', 'prototyping'],
-            ['Incubating', 'incubating'],
-            ['Already shipped', 'shipped'],
-          ].map(([title, key]) =>
-            reviews[key].length > 0
-              ? html`<h2 id=${key}>${title}</h2>
-                  <table>
-                    ${reviews[key].map(
-                      /** @param {OutstandingReview} review */ review => html`
-                        <tr>
-                          <td>
-                            <chromedash-link
-                              href=${review.review_link}
-                              .featureLinks=${links}
-                            ></chromedash-link>
-                          </td>
-                          <td class="name_col">
-                            <a href="/feature/${review.feature.id}"
-                              >${review.feature.name}</a
-                            >
-                          </td>
-                          <td>
-                            ${review.estimated_start_milestone
-                              ? 'M' + review.estimated_start_milestone
-                              : nothing}${['shipping', 'shipped'].includes(
-                              review.current_stage
-                            )
-                              ? nothing
-                              : html`${review.estimated_start_milestone ||
-                                review.estimated_end_milestone
-                                  ? '–'
-                                  : nothing}${review.estimated_end_milestone
-                                  ? 'M' + review.estimated_end_milestone
-                                  : nothing}`}
-                          </td>
-                        </tr>
-                      `
-                    )}
-                  </table>`
-              : nothing
-          ),
+        complete: ({reviews, links, noOutstandingReviews}) =>
+          noOutstandingReviews
+            ? html`No outstanding reviews. Congratulations!`
+            : [
+                ['Preparing to ship', 'shipping'],
+                ['In Origin Trial', 'origin-trial'],
+                ['Getting wide review', 'wide-review'],
+                ['In developer trials', 'dev-trial'],
+                ['Prototyping', 'prototyping'],
+                ['Incubating', 'incubating'],
+                ['Already shipped', 'shipped'],
+              ].map(([title, key]) =>
+                reviews[key].length > 0
+                  ? html`<h2 id=${key}>${title}</h2>
+                      <table class="data-table">
+                        ${this.headerRow()}
+                        ${reviews[key].map(
+                          /** @param {OutstandingReview} review */ review => html`
+                            <tr>
+                              <td class="feature">
+                                <a href="/feature/${review.feature.id}"
+                                  >${review.feature.name}</a
+                                >
+                              </td>
+                              <td class="review">
+                                <chromedash-link
+                                  href=${review.review_link}
+                                  .featureLinks=${links}
+                                ></chromedash-link>
+                              </td>
+                              <td class="milestones">
+                                ${review.estimated_start_milestone
+                                  ? 'M' + review.estimated_start_milestone
+                                  : nothing}${['shipping', 'shipped'].includes(
+                                  review.current_stage
+                                )
+                                  ? nothing
+                                  : html`${review.estimated_start_milestone ||
+                                    review.estimated_end_milestone
+                                      ? '–'
+                                      : nothing}${review.estimated_end_milestone
+                                      ? 'M' + review.estimated_end_milestone
+                                      : nothing}`}
+                              </td>
+                            </tr>
+                          `
+                        )}
+                      </table>`
+                  : nothing
+              ),
         error: e => {
           console.error(e);
           return html`<p>
