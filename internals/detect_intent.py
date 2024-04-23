@@ -356,7 +356,8 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
       logging.info('found LGTM')
       new_state = approval_defs.set_vote(feature_id, approval_field.field_id,
           Vote.APPROVED, from_addr, gate.key.integer_id())
-      if new_state == Vote.APPROVED:
+      if (gate.gate_type == core_enums.GATE_API_EXTEND_ORIGIN_TRIAL and
+          new_state == Vote.APPROVED):
         notifier_helpers.send_trial_extension_approved_notification(
             feature, stage, gate.key.integer_id())
 
