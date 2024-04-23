@@ -1151,8 +1151,8 @@ class OriginTrialExtensionApprovedHandlerTest(testing_config.CustomTestCase):
       email_task = handler.build_email(feature_dict,
                                        self.extension_stage.ot_owner_email,
                                        self.extension_gate.key.integer_id())
-      # TESTDATA.make_golden(email_task[0]['html'], 'test_make_extension_approved_email.html')
-      self.assertEqual(email_task[0]['html'],
+      # TESTDATA.make_golden(email_task['html'], 'test_make_extension_approved_email.html')
+      self.assertEqual(email_task['html'],
         TESTDATA['test_make_extension_approved_email.html'])
 
 

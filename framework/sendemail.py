@@ -62,6 +62,8 @@ def handle_outbound_mail_task():
   if settings.SEND_ALL_EMAIL_TO and to != settings.REVIEW_COMMENT_MAILING_LIST:
     to_user, to_domain = to.split('@')
     to = settings.SEND_ALL_EMAIL_TO % {'user': to_user, 'domain': to_domain}
+    # Don't add CC addresses for non-prod environments.
+    cc = None
 
   sender = 'Chromestatus <admin@%s.appspotmail.com>' % settings.APP_ID
   if from_user:
