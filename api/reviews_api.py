@@ -13,10 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import datetime
 import logging
-import re
-from typing import Any, Optional, Tuple
+from typing import Any, Tuple
 from google.cloud import ndb
 from google.cloud.ndb.tasklets import Future  # for type checking only
 
@@ -72,8 +70,15 @@ class VotesAPI(basehandlers.APIHandler):
     self.require_permissions(user, fe, gate, new_state)
 
     # Note: We no longer write Approval entities.
-    approval_defs.set_vote(feature_id, None, new_state,
+    new_gate_state = approval_defs.set_vote(feature_id, None, new_state,
         user.email(), gate_id)
+
+    # Notify that trial extension has been approved.
+    if (gate.gate_type == GATE_API_EXTEND_ORIGIN_TRIAL and
+        new_gate_state == Vote.APPROVED):
+      stage = Stage.get_by_id(gate.stage_id)
+      notifier_helpers.send_trial_extension_approved_notification(
+          fe, stage, gate_id)
 
     if new_state in (Vote.REVIEW_REQUESTED, Vote.NA_REQUESTED):
       approval_defs.auto_assign_reviewer(gate)

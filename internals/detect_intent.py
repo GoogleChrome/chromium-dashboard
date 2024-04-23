@@ -21,11 +21,12 @@ import settings
 from framework import basehandlers
 from framework import permissions
 from framework import users
-from internals import core_enums
 from internals import approval_defs
+from internals import core_enums
+from internals import notifier_helpers
+from internals import slo
 from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Vote, Gate
-from internals import slo
 
 
 FIELDS_REQUIRING_LGTMS = [
@@ -230,7 +231,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
 
     self.set_intent_thread_url(stage, thread_url, subject)
     is_new_thread = detect_new_thread(feature_id, approval_field)
-    self.create_approvals(feature, gate, approval_field, from_addr, body)
+    self.create_approvals(feature, stage, gate, approval_field, from_addr, body)
     self.record_slo(feature, approval_field, from_addr, is_new_thread)
     return {'message': 'Done'}
 
@@ -341,7 +342,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     logging.info(f'Set intent_thread_url to {thread_url} '
                  f'and intent_subject_line to {subject}')
 
-  def create_approvals(self, feature: FeatureEntry, gate: Gate,
+  def create_approvals(self, feature: FeatureEntry, stage: Stage, gate: Gate,
       approval_field: approval_defs.ApprovalFieldDef,
       from_addr: str, body: str) -> None:
     """Store either a REVIEW_REQUESTED or an APPROVED approval value."""
@@ -353,8 +354,11 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     if (detect_lgtm(body) and
         is_lgtm_allowed(from_addr, feature, approval_field)):
       logging.info('found LGTM')
-      approval_defs.set_vote(feature_id, approval_field.field_id,
+      new_state = approval_defs.set_vote(feature_id, approval_field.field_id,
           Vote.APPROVED, from_addr, gate.key.integer_id())
+      if new_state == Vote.APPROVED:
+        notifier_helpers.send_trial_extension_approved_notification(
+            feature, stage, gate.key.integer_id())
 
     # Case 2: Create a review request for any discussion that does not already
     # have any approval values stored.

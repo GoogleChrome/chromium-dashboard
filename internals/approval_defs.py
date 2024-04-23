@@ -341,8 +341,10 @@ def is_resolved(approval_values, field_id):
 
 
 def set_vote(feature_id: int,  gate_type: int | None, new_state: int,
-    set_by_email: str, gate_id: int | None=None) -> None:
-  """Add or update an approval value."""
+    set_by_email: str, gate_id: int | None=None) -> int | None:
+  """Add or update an approval value and return new approval state if
+  changed.
+  """
   gate: Optional[Gate] = None
   if gate_id is None and gate_type is not None:
     gate = get_gate_by_type(feature_id, gate_type)
@@ -350,7 +352,7 @@ def set_vote(feature_id: int,  gate_type: int | None, new_state: int,
     if not gate:
       logging.warning('Gate entity not found for the given feature. '
           'Cannot set vote.')
-      return
+      return None
     gate_id = gate.key.integer_id()
     gate_type = gate.gate_type
   else:
@@ -378,7 +380,8 @@ def set_vote(feature_id: int,  gate_type: int | None, new_state: int,
     slo_was_updated = slo.record_vote(gate, votes)
     if state_was_updated or slo_was_updated:
       gate.put()
-
+      return gate.state
+  return None
 
 def get_gate_by_type(feature_id: int, gate_type: int):
   """Return a single gate based on the feature and gate type."""
