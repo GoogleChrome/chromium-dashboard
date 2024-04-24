@@ -70,12 +70,14 @@ class VotesAPI(basehandlers.APIHandler):
     self.require_permissions(user, fe, gate, new_state)
 
     # Note: We no longer write Approval entities.
+    old_gate_state = gate.state
     new_gate_state = approval_defs.set_vote(feature_id, None, new_state,
         user.email(), gate_id)
 
+    recently_approved = (old_gate_state not in (Vote.APPROVED, Vote.NA) and
+                         new_gate_state in (Vote.APPROVED, Vote.NA))
     # Notify that trial extension has been approved.
-    if (gate.gate_type == GATE_API_EXTEND_ORIGIN_TRIAL and
-        new_gate_state == Vote.APPROVED):
+    if gate.gate_type == GATE_API_EXTEND_ORIGIN_TRIAL and recently_approved:
       stage = Stage.get_by_id(gate.stage_id)
       notifier_helpers.send_trial_extension_approved_notification(
           fe, stage, gate_id)
