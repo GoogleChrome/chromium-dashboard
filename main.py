@@ -291,6 +291,8 @@ internals_routes: list[Route] = [
         notifier.OriginTrialExtensionRequestHandler),
   Route('/tasks/email-ot-extended',
         notifier.OriginTrialCreationRequestHandler),
+  Route('/tasks/email-ot-extension-approved',
+        notifier.OriginTrialExtensionApprovedHandler),
 
   # Maintenance scripts.
   Route('/scripts/evaluate_gate_status',

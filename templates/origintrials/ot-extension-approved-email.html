@@ -1,0 +1,39 @@
+{% import 'email-styles.html' as styles %}
+<div style="{{styles.body}}">
+<div style="{{styles.branding}}">{{APP_TITLE}}</div>
+
+<div style="{{styles.content}} {{styles.content_alert}}">
+<section id="context" style="{{styles.section}}">
+  <table>
+    <tr>
+      <td rowspan=2>{{styles.icon_alert()}}</td>
+      <td><b>Finalize your origin trial extension</b> on feature entry:</td>
+    </tr>
+    <tr>
+      <td><a style="{{styles.feature_name}}"
+             href="{{SITE_URL}}feature/{{id}}"
+             >{{feature.name}}</a>
+      </td>
+    </tr>
+  </table>
+</section>
+
+
+<section id="details" style="{{styles.section}}">
+  <p>
+    Your requested origin trial extension has received approval and is ready
+    to be finalized for submission.
+  </p>
+</section>
+
+
+<section id="next-steps" style="{{styles.section}}">
+  <div><b>Your next steps:</b></div>
+
+  <div style="{{styles.button_div}}">
+    <a href="{{SITE_URL}}feature/{{id}}?gate={{gate_id}}" style="{{styles.button_a}}"
+     >Finalize trial extension</a></div>
+</section>
+
+</div>
+</div>
