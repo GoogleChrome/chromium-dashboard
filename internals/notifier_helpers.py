@@ -211,6 +211,17 @@ def send_ot_notification(stage: Stage):
         '/tasks/email-ot-creation-request',params)
 
 
+def send_trial_extension_approved_notification(
+    fe: 'FeatureEntry', stage: Stage, gate_id: int):
+  """Notify that a trial extension is ready to be finalized."""
+  params = {
+    'feature': converters.feature_entry_to_json_verbose(fe),
+    'requester_email': stage.ot_owner_email,
+    'gate_id': gate_id,
+  }
+  cloud_tasks_helpers.enqueue_task('/tasks/email-ot-extension-approved', params)
+
+
 def send_trial_extended_notification(ot_stage: Stage, extension_stage: Stage):
   """Notify about a successful automatic trial extension."""
   params = {

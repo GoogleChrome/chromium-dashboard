@@ -748,6 +748,45 @@ class OriginTrialExtensionRequestHandler(basehandlers.FlaskHandler):
     }
 
 
+class OriginTrialExtensionApprovedHandler(basehandlers.FlaskHandler):
+  """Notify about an origin trial extension that is approved and needs
+  finalized.
+  """
+  IS_INTERNAL_HANDLER = True
+  EMAIL_TEMPLATE_PATH = 'origintrials/ot-extension-approved-email.html'
+
+  def process_post_data(self, **kwargs):
+    feature = self.get_param('feature')
+    if feature is None:
+      self.abort(400, 'No feature provided.')
+    gate_id = self.get_param('gate_id')
+    if gate_id is None:
+      self.abort(400, 'Extension gate ID not provided.')
+    requester_email = self.get_param('requester_email')
+    if not requester_email:
+      self.abort(400, 'Extension requester\'s email address not provided.')
+    logging.info('Starting to notify about successful origin trial extension.')
+    send_emails([self.build_email(self, feature, requester_email, gate_id)])
+
+  def build_email(
+      self, feature: FeatureEntry, requester_email: str, gate_id: int):
+    body_data = {
+      'feature': feature,
+      'id': feature['id'],
+      'gate_id': gate_id,
+    }
+    body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
+
+    return {
+      'to': requester_email,
+      'cc': OT_SUPPORT_EMAIL,
+      'subject': ('Origin trial approved and ready to be initiated: '
+                  f'{feature["name"]}'),
+      'reply_to': None,
+      'html': body,
+    }
+
+
 class OriginTrialExtendedHandler(basehandlers.FlaskHandler):
   """Notify about an origin trial extension being completed."""
 
