@@ -337,7 +337,7 @@ class AssociateOTs(FlaskHandler):
         return None
       return chromestatus_id
 
-  def find_trial_stage(self, feature_id: int) -> Stage|None:
+  def find_unassociated_trial_stage(self, feature_id: int) -> Stage|None:
       fe: FeatureEntry|None = FeatureEntry.get_by_id(feature_id)
       if fe is None:
         logging.info(f'No feature found for ChromeStatus ID: {feature_id}')
@@ -360,6 +360,10 @@ class AssociateOTs(FlaskHandler):
         logging.info('Multiple origin trial stages found for feature '
                      f'{feature_id}. Cannot discern which stage to associate '
                      'trial with.')
+        return None
+      if len(unassociated_trial_stages) == 0:
+        logging.info(f'No unassociated OT stages found for feature ID: '
+                     f'{feature_id}')
         return None
       return unassociated_trial_stages[0]
 
@@ -422,7 +426,7 @@ class AssociateOTs(FlaskHandler):
         trials_with_no_feature.append(trial_data)
         continue
 
-      ot_stage = self.find_trial_stage(feature_id)
+      ot_stage = self.find_unassociated_trial_stage(feature_id)
       if ot_stage is None:
         trials_with_no_feature.append(trial_data)
         continue
