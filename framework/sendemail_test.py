@@ -60,6 +60,7 @@ class OutboundEmailHandlerTest(testing_config.CustomTestCase):
 
     self.to = 'user@example.com'
     self.subject = 'test subject'
+    self.cc = 'another_user@example.com'
     self.html = '<b>body</b>'
     self.sender = ('Chromestatus <admin@%s.appspotmail.com>' %
                    settings.APP_ID)
@@ -72,6 +73,7 @@ class OutboundEmailHandlerTest(testing_config.CustomTestCase):
     """On cr-status, we send emails to real users."""
     params = {
         'to': self.to,
+        'cc': self.cc,
         'subject': self.subject,
         'html': self.html,
         'references': self.refs,
@@ -80,7 +82,7 @@ class OutboundEmailHandlerTest(testing_config.CustomTestCase):
       actual_response = sendemail.handle_outbound_mail_task()
 
     mock_emailmessage_constructor.assert_called_once_with(
-        sender=self.sender, to=self.to, subject=self.subject,
+        sender=self.sender, to=self.to, cc=self.cc, subject=self.subject,
         html=self.html)
     mock_message = mock_emailmessage_constructor.return_value
     mock_message.check_initialized.assert_called_once_with()
@@ -95,6 +97,7 @@ class OutboundEmailHandlerTest(testing_config.CustomTestCase):
     """On cr-status-staging, we send emails to an archive."""
     params = {
         'to': self.to,
+        'cc': self.cc,
         'subject': self.subject,
         'html': self.html,
         }
@@ -103,7 +106,7 @@ class OutboundEmailHandlerTest(testing_config.CustomTestCase):
 
     expected_to = 'cr-status-staging-emails+user+example.com@google.com'
     mock_emailmessage_constructor.assert_called_once_with(
-        sender=self.sender, to=expected_to, subject=self.subject,
+        sender=self.sender, to=expected_to, cc=None, subject=self.subject,
         html=self.html)
     mock_message = mock_emailmessage_constructor.return_value
     mock_message.check_initialized.assert_called_once_with()
@@ -116,6 +119,7 @@ class OutboundEmailHandlerTest(testing_config.CustomTestCase):
     """When running locally, we don't actually send emails."""
     params = {
         'to': self.to,
+        'cc': self.cc,
         'subject': self.subject,
         'html': self.html,
         }
@@ -124,7 +128,7 @@ class OutboundEmailHandlerTest(testing_config.CustomTestCase):
 
     expected_to = 'cr-status-staging-emails+user+example.com@google.com'
     mock_emailmessage_constructor.assert_called_once_with(
-        sender=self.sender, to=expected_to, subject=self.subject,
+        sender=self.sender, to=expected_to, cc=None, subject=self.subject,
         html=self.html)
     mock_message = mock_emailmessage_constructor.return_value
     mock_message.check_initialized.assert_called_once_with()

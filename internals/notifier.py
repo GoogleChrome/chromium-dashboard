@@ -777,20 +777,14 @@ class OriginTrialExtensionApprovedHandler(basehandlers.FlaskHandler):
     }
     body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
 
-    return [{
-      'to': OT_SUPPORT_EMAIL,
-      'subject': ('Origin trial approved and ready to be finalized: '
-                  f'{feature["name"]}'),
-      'reply_to': None,
-      'html': body,
-    },
-    {
+    return {
       'to': requester_email,
-      'subject': ('Origin trial approved and ready to be finalized: '
+      'cc': OT_SUPPORT_EMAIL,
+      'subject': ('Origin trial approved and ready to be initiated: '
                   f'{feature["name"]}'),
       'reply_to': None,
       'html': body,
-    }]
+    }
 
 
 class OriginTrialExtendedHandler(basehandlers.FlaskHandler):

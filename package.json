@@ -64,7 +64,7 @@
     "@babel/preset-env": "^7.24.4",
     "@babel/register": "^7.23.7",
     "@open-wc/testing": "^4.0.0",
-    "@openapitools/openapi-generator-cli": "^2.13.1",
+    "@openapitools/openapi-generator-cli": "^2.13.4",
     "@rollup/plugin-babel": "^6.0.4",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@shoelace-style/shoelace": "^2.15.0",
@@ -93,12 +93,12 @@
     "minimist": ">=1.2.8",
     "path-parse": ">=1.0.7",
     "regenerator-runtime": "^0.14.1",
-    "rollup": "^4.14.3",
+    "rollup": "^4.16.2",
     "rollup-plugin-babel-minify": "^10.0.0",
     "sinon": "^17.0.1",
     "tar": ">=7.0.1",
     "trim-newlines": ">=5.0.0",
-    "typescript": "^5.4.4"
+    "typescript": "^5.4.5"
   },
   "dependencies": {
     "@lit/task": "^1.0.0",
