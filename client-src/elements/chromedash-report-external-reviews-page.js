@@ -10,17 +10,17 @@ import {SHARED_STYLES} from '../css/shared-css.js';
  * @typedef {import('chromestatus-openapi').OutstandingReviewCurrentStageEnum} Stage
  */
 
-/** Array.sort() comparison helper function ordering numbers descending and putting undefined last.
+/** Array.sort() comparison helper function ordering numbers ascending and putting undefined last.
  *
  * @param {number | undefined} a
  * @param {number | undefined} b
  * @returns {number}
  */
-function descendingNumberUndefinedLast(a, b) {
+function ascendingNumberUndefinedLast(a, b) {
   if (a === b) return 0;
   if (a === undefined) return 1;
   if (b === undefined) return -1;
-  return b - a;
+  return a - b;
 }
 
 /** Array.sort() comparison function to order outstanding reviews by descending urgency.
@@ -34,16 +34,25 @@ function descendingNumberUndefinedLast(a, b) {
 function compareOutstandingReview(a, b) {
   console.assert(a.current_stage === b.current_stage);
   if (a.estimated_end_milestone !== b.estimated_end_milestone) {
-    return descendingNumberUndefinedLast(
+    // Lower milestones are happening sooner and so more urgent.
+    return ascendingNumberUndefinedLast(
       a.estimated_end_milestone,
       b.estimated_end_milestone
     );
   }
   if (a.estimated_start_milestone !== b.estimated_start_milestone) {
-    return descendingNumberUndefinedLast(
+    return ascendingNumberUndefinedLast(
       a.estimated_start_milestone,
       b.estimated_start_milestone
     );
+  }
+  // Break ties by putting review links in ascending order, which for github issues puts them in
+  // order by creation time.
+  if (a.review_link < b.review_link) {
+    return -1;
+  }
+  if (a.review_link > b.review_link) {
+    return 1;
   }
   return 0;
 }
@@ -147,25 +156,27 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
       </div>
       ${this._reviewsTask.render({
         pending: () => html`
-          <h2><sl-skeleton effect="sheen"></sl-skeleton></h2>
-          <table class="data-table">
-            ${this.headerRow()}
-            ${[1, 2, 3].map(
-              () => html`
-                <tr>
-                  <td class="feature">
-                    <sl-skeleton effect="sheen"></sl-skeleton>
-                  </td>
-                  <td class="review">
-                    <sl-skeleton effect="sheen"></sl-skeleton>
-                  </td>
-                  <td class="milestones">
-                    <sl-skeleton effect="sheen"></sl-skeleton>
-                  </td>
-                </tr>
-              `
-            )}
-          </table>
+          <section>
+            <h2><sl-skeleton effect="sheen"></sl-skeleton></h2>
+            <table class="data-table">
+              ${this.headerRow()}
+              ${[1, 2, 3].map(
+                () => html`
+                  <tr>
+                    <td class="feature">
+                      <sl-skeleton effect="sheen"></sl-skeleton>
+                    </td>
+                    <td class="review">
+                      <sl-skeleton effect="sheen"></sl-skeleton>
+                    </td>
+                    <td class="milestones">
+                      <sl-skeleton effect="sheen"></sl-skeleton>
+                    </td>
+                  </tr>
+                `
+              )}
+            </table>
+          </section>
         `,
         complete: ({reviews, links, noOutstandingReviews}) =>
           noOutstandingReviews
@@ -180,7 +191,8 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
                 ['Already shipped', 'shipped'],
               ].map(([title, key]) =>
                 reviews[key].length > 0
-                  ? html`<h2 id=${key}>${title}</h2>
+                  ? html`<section>
+                      <h2 id=${key}>${title}</h2>
                       <table class="data-table">
                         ${this.headerRow()}
                         ${reviews[key].map(
@@ -214,7 +226,8 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
                             </tr>
                           `
                         )}
-                      </table>`
+                      </table>
+                    </section>`
                   : nothing
               ),
         error: e => {
