@@ -347,11 +347,6 @@ class AssociateOTs(FlaskHandler):
       trial_stages: list[Stage] = Stage.query(
           Stage.stage_type == trial_stage_type,
           Stage.feature_id == feature_id).fetch()
-      # If there are no OT stages for the feature, we can't associate the
-      # trial with any stages.
-      if len(trial_stages) == 0:
-        logging.info(f'No OT stages found for feature ID: {feature_id}')
-        return None
       # Look for a stage that does not already have an origin trial associated
       # with it.
       unassociated_trial_stages =  [s for s in trial_stages
