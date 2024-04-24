@@ -238,7 +238,7 @@ class AssociateOTs(FlaskHandler):
       trial_field_name: str,
     ) -> bool:
     """Set the OT stage value to the value from the OT console if it is unset.
-    
+
     Returns:
       boolean value of whether or not the value was changed on the stage.
     """
@@ -257,7 +257,7 @@ class AssociateOTs(FlaskHandler):
     ) -> bool:
     """Set an OT milestone value to the value from the OT console
     if it is unset.
-    
+
     Returns:
       boolean value of whether or not the value was changed on the stage.
     """
@@ -315,7 +315,7 @@ class AssociateOTs(FlaskHandler):
     if trial_stage.ot_action_requested:
       trial_stage.ot_action_requested = False
       stage_changed = True
-    
+
     return stage_changed
 
   def parse_feature_id(self, chromestatus_url: str|None) -> int|None:
@@ -344,7 +344,7 @@ class AssociateOTs(FlaskHandler):
         return None
 
       trial_stage_type = STAGE_TYPES_ORIGIN_TRIAL[fe.feature_type]
-      trial_stages = Stage.query(
+      trial_stages: list[Stage] = Stage.query(
           Stage.stage_type == trial_stage_type,
           Stage.feature_id == feature_id).fetch()
       # If there are no OT stages for the feature, we can't associate the
@@ -354,12 +354,14 @@ class AssociateOTs(FlaskHandler):
         return None
       # If there is currently more than one origin trial stage for the
       # feature, we don't know which one represents the given trial.
-      if len(trial_stages) > 1:
+      unassociated_trial_stages =  [s for s in trial_stages
+                                    if not s.origin_trial_id]
+      if len(unassociated_trial_stages) > 1:
         logging.info('Multiple origin trial stages found for feature '
                      f'{feature_id}. Cannot discern which stage to associate '
                      'trial with.')
         return None
-      return trial_stages[0]
+      return unassociated_trial_stages[0]
 
   def clear_extension_requests(self, ot_stage: Stage, trial_data: dict) -> int:
     """Clear any trial extension requests if they have been processed"""
@@ -380,7 +382,7 @@ class AssociateOTs(FlaskHandler):
       if (int(trial_data['end_milestone']) >= extension_end):
         extension_stage.ot_action_requested = False
         extension_stages_to_update.append(extension_stage)
-    
+
     if extension_stages_to_update:
       ndb.put_multi(extension_stages_to_update)
     return len(extension_stages_to_update)
@@ -460,7 +462,7 @@ class BackfillFeatureEnterpriseImpact(FlaskHandler):
     BATCH_SIZE = 100
     updated_feature_ids = set()
     features_by_id = {}
-  
+
     stages: ndb.Query = Stage.query(Stage.stage_type == STAGE_ENT_ROLLOUT, Stage.archived == False)
     for stage in stages:
       if stage.feature_id in features_by_id:
@@ -473,13 +475,13 @@ class BackfillFeatureEnterpriseImpact(FlaskHandler):
         continue
       new_impact = stage.rollout_impact + 1
       if new_impact <= feature_entry.enterprise_impact:
-        continue  
+        continue
       feature_entry.enterprise_impact = new_impact
       updated_feature_ids.add(stage.feature_id)
 
     # Set all enterprise features and former breaking changes to have a low impact if no rollout step was step.
     features: ndb.Query = FeatureEntry.query(
-      FeatureEntry.enterprise_impact == ENTERPRISE_IMPACT_NONE, 
+      FeatureEntry.enterprise_impact == ENTERPRISE_IMPACT_NONE,
       ndb.OR(FeatureEntry.feature_type == FEATURE_TYPE_ENTERPRISE_ID, FeatureEntry.breaking_change == True))
     for feature_entry in features:
       if feature_entry.key.id() in updated_feature_ids:
@@ -487,7 +489,7 @@ class BackfillFeatureEnterpriseImpact(FlaskHandler):
       features_by_id[feature_entry.key.id()] = feature_entry
       updated_feature_ids.add(feature_entry.key.id())
       feature_entry.enterprise_impact = ENTERPRISE_IMPACT_MEDIUM
-    
+
     for feature_id in updated_feature_ids:
       batch.append(features_by_id[feature_id])
       count += 1

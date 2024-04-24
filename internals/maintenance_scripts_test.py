@@ -31,6 +31,12 @@ class AssociateOTsTest(testing_config.CustomTestCase):
         owner_emails=['feature_owner@example.com'])
     self.feature_2.put()
 
+    self.feature_3 = FeatureEntry(
+        id=789,
+        name='feature c', summary='sum', category=1,
+        owner_emails=['feature_owner@example.com'])
+    self.feature_3.put()
+
     self.ot_stage_1 = Stage(
         id=321, feature_id=123, stage_type=150)
     self.ot_stage_1.put()
@@ -38,6 +44,14 @@ class AssociateOTsTest(testing_config.CustomTestCase):
     self.ot_stage_2 = Stage(
         id=654, feature_id=456, stage_type=150, origin_trial_id='1')
     self.ot_stage_2.put()
+
+    self.ot_stage_3 = Stage(
+        id=987, feature_id=789, stage_type=150, origin_trial_id='-12395825')
+    self.ot_stage_3.put()
+
+    self.ot_stage_4 = Stage(
+        id=1002, feature_id=789, stage_type=150)
+    self.ot_stage_4.put()
 
     self.extension_stage_1 = Stage(
         feature_id=456,
@@ -96,6 +110,31 @@ class AssociateOTsTest(testing_config.CustomTestCase):
         ],
         'type': 'ORIGIN_TRIAL',
         'allow_third_party_origins': False
+      },
+      {
+        'id': '121240182987',
+        'display_name': 'Sample trial 3',
+        'description': 'Another origin trial 3',
+        'origin_trial_feature_name': 'ChromiumTrialName3',
+        'enabled': True,
+        'status': 'ACTIVE',
+        'chromestatus_url': 'https://chromestatus.com/feature/789',
+        'start_milestone': '130',
+        'end_milestone': '136',
+        'original_end_milestone': '123',
+        'end_time': '2023-11-10T23:59:59Z',
+        'documentation_url': 'https://example.com/docs3',
+        'feedback_url': 'https://example.com/feedback3',
+        'intent_to_experiment_url': 'https://example.com/experiment3',
+        'trial_extensions': [
+          {
+            'endMilestone': '136',
+            'endTime': '2030-11-10T23:59:59Z',
+            'extensionIntentUrl': 'https://example.com/extension3'
+          }
+        ],
+        'type': 'ORIGIN_TRIAL',
+        'allow_third_party_origins': True
       }]
 
     testing_config.sign_in('one@example.com', 123567890)
@@ -113,7 +152,7 @@ class AssociateOTsTest(testing_config.CustomTestCase):
     handler = maintenance_scripts.AssociateOTs()
     msg = handler.get_template_data()
     self.assertEqual(
-        msg, '2 Stages updated with trial data.\n1 extension requests cleared.')
+        msg, '3 Stages updated with trial data.\n1 extension requests cleared.')
 
     # Check that fields were updated.
     ot_1 = self.ot_stage_1
@@ -126,6 +165,9 @@ class AssociateOTsTest(testing_config.CustomTestCase):
     self.assertTrue(ot_1.ot_is_deprecation_trial)
     self.assertEqual(ot_1.milestones.desktop_first, 97)
     self.assertEqual(ot_1.milestones.desktop_last, 100)
+
+    # Feature with multiple OT stages should still be recognized.
+    self.assertEqual(self.ot_stage_4.origin_trial_id, '121240182987')
 
     # Check that the extension request was cleared.
     self.assertFalse(self.extension_stage_1.ot_action_requested)
