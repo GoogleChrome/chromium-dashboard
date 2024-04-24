@@ -20,8 +20,9 @@ import validators
 from base64 import b64decode
 
 from framework import basehandlers
-from framework import permissions
 from framework import origin_trials_client
+from internals import notifier_helpers
+from framework import permissions
 from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Gate, Vote
 
@@ -227,4 +228,6 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
     # This extension has been processed and action is no longer needed.
     extension_stage.ot_action_requested = False
     extension_stage.put()
+
+    notifier_helpers.send_trial_extended_notification(ot_stage, extension_stage)
     return {'message': 'Origin trial extended successfully.'}

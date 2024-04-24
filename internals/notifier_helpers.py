@@ -222,10 +222,10 @@ def send_trial_extension_approved_notification(
   cloud_tasks_helpers.enqueue_task('/tasks/email-ot-extension-approved', params)
 
 
-def send_trial_extended_notification(stage: Stage):
+def send_trial_extended_notification(ot_stage: Stage, extension_stage: Stage):
   """Notify about a successful automatic trial extension."""
-  stage_dict = converters.stage_to_json_dict(stage)
-  params = {'stage': stage_dict}
-  ot_stage = Stage.get_by_id(stage.ot_stage_id)
-  params['ot_stage'] = converters.stage_to_json_dict(ot_stage)
+  params = {
+    'stage': converters.stage_to_json_dict(extension_stage),
+    'ot_stage': converters.stage_to_json_dict(ot_stage),
+  }
   cloud_tasks_helpers.enqueue_task('/tasks/email-ot-extended', params)
