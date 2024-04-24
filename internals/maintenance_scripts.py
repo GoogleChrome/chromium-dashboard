@@ -352,8 +352,8 @@ class AssociateOTs(FlaskHandler):
       if len(trial_stages) == 0:
         logging.info(f'No OT stages found for feature ID: {feature_id}')
         return None
-      # If there is currently more than one origin trial stage for the
-      # feature, we don't know which one represents the given trial.
+      # Look for a stage that does not already have an origin trial associated
+      # with it.
       unassociated_trial_stages =  [s for s in trial_stages
                                     if not s.origin_trial_id]
       if len(unassociated_trial_stages) > 1:
