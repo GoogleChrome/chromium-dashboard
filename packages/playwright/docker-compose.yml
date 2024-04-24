@@ -76,7 +76,6 @@ services:
       timeout: 10s
       retries: 10
       start_period: 60s
-      start_interval: 30s
 
     environment:
       - SERVER_SOFTWARE=Development
