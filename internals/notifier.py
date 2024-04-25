@@ -766,7 +766,7 @@ class OriginTrialExtensionApprovedHandler(basehandlers.FlaskHandler):
     if not requester_email:
       self.abort(400, 'Extension requester\'s email address not provided.')
     logging.info('Starting to notify about successful origin trial extension.')
-    send_emails([self.build_email(self, feature, requester_email, gate_id)])
+    send_emails([self.build_email(feature, requester_email, gate_id)])
 
   def build_email(
       self, feature: FeatureEntry, requester_email: str, gate_id: int):
@@ -797,7 +797,7 @@ class OriginTrialExtendedHandler(basehandlers.FlaskHandler):
     extension_stage = self.get_param('stage')
     ot_stage = self.get_param('ot_stage')
     logging.info('Starting to notify about successful origin trial extension.')
-    send_emails([self.build_email(self, extension_stage, ot_stage)])
+    send_emails([self.build_email(extension_stage, ot_stage)])
 
   def build_email(self, extension_stage, ot_stage):
     body_data = {
