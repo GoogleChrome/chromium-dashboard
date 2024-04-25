@@ -431,14 +431,8 @@ components:
     ExternalReviewsResponse:
       example:
         link_previews:
-        - information: "{}"
-          type: type
-          http_error_code: 1
-          url: http://example.com/aeiou
-        - information: "{}"
-          type: type
-          http_error_code: 1
-          url: http://example.com/aeiou
+        - null
+        - null
         reviews:
         - feature:
             name: WebGPU
@@ -536,23 +530,7 @@ components:
       - name
       title: FeatureLink
       type: object
-    LinkPreview:
-      discriminator:
-        mapping:
-          github_issue: LinkPreviewGithubIssue
-          github_markdown: LinkPreviewGithubMarkdown
-          github_pull_request: LinkPreviewGithubPullRequest
-          mdn_docs: LinkPreviewMdnDocs
-          google_docs: LinkPreviewGoogleDocs
-          mozilla_bug: LinkPreviewMozillaBug
-          webkit_bug: LinkPreviewWebkitBug
-          specs: LinkPreviewSpecs
-        propertyName: type
-      example:
-        information: "{}"
-        type: type
-        http_error_code: 1
-        url: http://example.com/aeiou
+    LinkPreviewBase:
       properties:
         url:
           format: url
@@ -572,11 +550,26 @@ components:
       - information
       - type
       - url
-      title: LinkPreview
+      title: LinkPreviewBase
       type: object
+    LinkPreview:
+      allOf:
+      - $ref: '#/components/schemas/LinkPreviewBase'
+      - discriminator:
+          mapping:
+            github_issue: LinkPreviewGithubIssue
+            github_markdown: LinkPreviewGithubMarkdown
+            github_pull_request: LinkPreviewGithubPullRequest
+            mdn_docs: LinkPreviewMdnDocs
+            google_docs: LinkPreviewGoogleDocs
+            mozilla_bug: LinkPreviewMozillaBug
+            webkit_bug: LinkPreviewWebkitBug
+            specs: LinkPreviewSpecs
+          propertyName: type
+      title: LinkPreview
     LinkPreviewGithubIssue:
       allOf:
-      - $ref: '#/components/schemas/LinkPreview'
+      - $ref: '#/components/schemas/LinkPreviewBase'
       - properties:
           information:
             $ref: '#/components/schemas/LinkPreviewGithubIssue_allOf_information'
@@ -589,7 +582,7 @@ components:
       - $ref: '#/components/schemas/LinkPreviewGithubIssue'
     LinkPreviewGithubMarkdown:
       allOf:
-      - $ref: '#/components/schemas/LinkPreview'
+      - $ref: '#/components/schemas/LinkPreviewBase'
       - properties:
           information:
             $ref: '#/components/schemas/LinkPreviewGithubMarkdown_allOf_information'
@@ -598,7 +591,7 @@ components:
         type: object
     LinkPreviewOpenGraph:
       allOf:
-      - $ref: '#/components/schemas/LinkPreview'
+      - $ref: '#/components/schemas/LinkPreviewBase'
       - properties:
           information:
             $ref: '#/components/schemas/LinkPreviewOpenGraph_allOf_information'

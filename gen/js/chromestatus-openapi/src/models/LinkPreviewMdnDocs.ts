@@ -13,12 +13,6 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { LinkPreviewOpenGraph } from './LinkPreviewOpenGraph';
-import {
-    LinkPreviewOpenGraphFromJSON,
-    LinkPreviewOpenGraphFromJSONTyped,
-    LinkPreviewOpenGraphToJSON,
-} from './LinkPreviewOpenGraph';
 import type { LinkPreviewOpenGraphAllOfInformation } from './LinkPreviewOpenGraphAllOfInformation';
 import {
     LinkPreviewOpenGraphAllOfInformationFromJSON,
@@ -31,7 +25,31 @@ import {
  * @export
  * @interface LinkPreviewMdnDocs
  */
-export interface LinkPreviewMdnDocs extends LinkPreviewOpenGraph {
+export interface LinkPreviewMdnDocs {
+    /**
+     * 
+     * @type {string}
+     * @memberof LinkPreviewMdnDocs
+     */
+    url: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof LinkPreviewMdnDocs
+     */
+    type: string;
+    /**
+     * 
+     * @type {LinkPreviewOpenGraphAllOfInformation}
+     * @memberof LinkPreviewMdnDocs
+     */
+    information: LinkPreviewOpenGraphAllOfInformation;
+    /**
+     * 
+     * @type {number}
+     * @memberof LinkPreviewMdnDocs
+     */
+    http_error_code: number;
 }
 
 /**
@@ -39,6 +57,10 @@ export interface LinkPreviewMdnDocs extends LinkPreviewOpenGraph {
  */
 export function instanceOfLinkPreviewMdnDocs(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "url" in value;
+    isInstance = isInstance && "type" in value;
+    isInstance = isInstance && "information" in value;
+    isInstance = isInstance && "http_error_code" in value;
 
     return isInstance;
 }
@@ -48,10 +70,31 @@ export function LinkPreviewMdnDocsFromJSON(json: any): LinkPreviewMdnDocs {
 }
 
 export function LinkPreviewMdnDocsFromJSONTyped(json: any, ignoreDiscriminator: boolean): LinkPreviewMdnDocs {
-    return json;
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'url': json['url'],
+        'type': json['type'],
+        'information': LinkPreviewOpenGraphAllOfInformationFromJSON(json['information']),
+        'http_error_code': json['http_error_code'],
+    };
 }
 
 export function LinkPreviewMdnDocsToJSON(value?: LinkPreviewMdnDocs | null): any {
-    return value;
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'url': value.url,
+        'type': value.type,
+        'information': LinkPreviewOpenGraphAllOfInformationToJSON(value.information),
+        'http_error_code': value.http_error_code,
+    };
 }
 

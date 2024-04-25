@@ -13,12 +13,6 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { LinkPreview } from './LinkPreview';
-import {
-    LinkPreviewFromJSON,
-    LinkPreviewFromJSONTyped,
-    LinkPreviewToJSON,
-} from './LinkPreview';
 import type { LinkPreviewGithubIssueAllOfInformation } from './LinkPreviewGithubIssueAllOfInformation';
 import {
     LinkPreviewGithubIssueAllOfInformationFromJSON,
@@ -31,13 +25,31 @@ import {
  * @export
  * @interface LinkPreviewGithubIssue
  */
-export interface LinkPreviewGithubIssue extends LinkPreview {
+export interface LinkPreviewGithubIssue {
+    /**
+     * 
+     * @type {string}
+     * @memberof LinkPreviewGithubIssue
+     */
+    url: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof LinkPreviewGithubIssue
+     */
+    type: string;
     /**
      * 
      * @type {LinkPreviewGithubIssueAllOfInformation}
      * @memberof LinkPreviewGithubIssue
      */
     information: LinkPreviewGithubIssueAllOfInformation;
+    /**
+     * 
+     * @type {number}
+     * @memberof LinkPreviewGithubIssue
+     */
+    http_error_code: number;
 }
 
 /**
@@ -45,7 +57,10 @@ export interface LinkPreviewGithubIssue extends LinkPreview {
  */
 export function instanceOfLinkPreviewGithubIssue(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "url" in value;
+    isInstance = isInstance && "type" in value;
     isInstance = isInstance && "information" in value;
+    isInstance = isInstance && "http_error_code" in value;
 
     return isInstance;
 }
@@ -59,8 +74,11 @@ export function LinkPreviewGithubIssueFromJSONTyped(json: any, ignoreDiscriminat
         return json;
     }
     return {
-        ...LinkPreviewFromJSONTyped(json, ignoreDiscriminator),
+        
+        'url': json['url'],
+        'type': json['type'],
         'information': LinkPreviewGithubIssueAllOfInformationFromJSON(json['information']),
+        'http_error_code': json['http_error_code'],
     };
 }
 
@@ -72,8 +90,11 @@ export function LinkPreviewGithubIssueToJSON(value?: LinkPreviewGithubIssue | nu
         return null;
     }
     return {
-        ...LinkPreviewToJSON(value),
+        
+        'url': value.url,
+        'type': value.type,
         'information': LinkPreviewGithubIssueAllOfInformationToJSON(value.information),
+        'http_error_code': value.http_error_code,
     };
 }
 

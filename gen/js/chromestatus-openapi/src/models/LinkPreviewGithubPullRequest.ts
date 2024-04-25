@@ -13,12 +13,6 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { LinkPreviewGithubIssue } from './LinkPreviewGithubIssue';
-import {
-    LinkPreviewGithubIssueFromJSON,
-    LinkPreviewGithubIssueFromJSONTyped,
-    LinkPreviewGithubIssueToJSON,
-} from './LinkPreviewGithubIssue';
 import type { LinkPreviewGithubIssueAllOfInformation } from './LinkPreviewGithubIssueAllOfInformation';
 import {
     LinkPreviewGithubIssueAllOfInformationFromJSON,
@@ -31,7 +25,31 @@ import {
  * @export
  * @interface LinkPreviewGithubPullRequest
  */
-export interface LinkPreviewGithubPullRequest extends LinkPreviewGithubIssue {
+export interface LinkPreviewGithubPullRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof LinkPreviewGithubPullRequest
+     */
+    url: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof LinkPreviewGithubPullRequest
+     */
+    type: string;
+    /**
+     * 
+     * @type {LinkPreviewGithubIssueAllOfInformation}
+     * @memberof LinkPreviewGithubPullRequest
+     */
+    information: LinkPreviewGithubIssueAllOfInformation;
+    /**
+     * 
+     * @type {number}
+     * @memberof LinkPreviewGithubPullRequest
+     */
+    http_error_code: number;
 }
 
 /**
@@ -39,6 +57,10 @@ export interface LinkPreviewGithubPullRequest extends LinkPreviewGithubIssue {
  */
 export function instanceOfLinkPreviewGithubPullRequest(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "url" in value;
+    isInstance = isInstance && "type" in value;
+    isInstance = isInstance && "information" in value;
+    isInstance = isInstance && "http_error_code" in value;
 
     return isInstance;
 }
@@ -48,10 +70,31 @@ export function LinkPreviewGithubPullRequestFromJSON(json: any): LinkPreviewGith
 }
 
 export function LinkPreviewGithubPullRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): LinkPreviewGithubPullRequest {
-    return json;
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'url': json['url'],
+        'type': json['type'],
+        'information': LinkPreviewGithubIssueAllOfInformationFromJSON(json['information']),
+        'http_error_code': json['http_error_code'],
+    };
 }
 
 export function LinkPreviewGithubPullRequestToJSON(value?: LinkPreviewGithubPullRequest | null): any {
-    return value;
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'url': value.url,
+        'type': value.type,
+        'information': LinkPreviewGithubIssueAllOfInformationToJSON(value.information),
+        'http_error_code': value.http_error_code,
+    };
 }
 

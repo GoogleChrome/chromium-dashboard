@@ -13,12 +13,6 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { LinkPreview } from './LinkPreview';
-import {
-    LinkPreviewFromJSON,
-    LinkPreviewFromJSONTyped,
-    LinkPreviewToJSON,
-} from './LinkPreview';
 import type { LinkPreviewOpenGraphAllOfInformation } from './LinkPreviewOpenGraphAllOfInformation';
 import {
     LinkPreviewOpenGraphAllOfInformationFromJSON,
@@ -31,13 +25,31 @@ import {
  * @export
  * @interface LinkPreviewOpenGraph
  */
-export interface LinkPreviewOpenGraph extends LinkPreview {
+export interface LinkPreviewOpenGraph {
+    /**
+     * 
+     * @type {string}
+     * @memberof LinkPreviewOpenGraph
+     */
+    url: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof LinkPreviewOpenGraph
+     */
+    type: string;
     /**
      * 
      * @type {LinkPreviewOpenGraphAllOfInformation}
      * @memberof LinkPreviewOpenGraph
      */
     information: LinkPreviewOpenGraphAllOfInformation;
+    /**
+     * 
+     * @type {number}
+     * @memberof LinkPreviewOpenGraph
+     */
+    http_error_code: number;
 }
 
 /**
@@ -45,7 +57,10 @@ export interface LinkPreviewOpenGraph extends LinkPreview {
  */
 export function instanceOfLinkPreviewOpenGraph(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "url" in value;
+    isInstance = isInstance && "type" in value;
     isInstance = isInstance && "information" in value;
+    isInstance = isInstance && "http_error_code" in value;
 
     return isInstance;
 }
@@ -59,8 +74,11 @@ export function LinkPreviewOpenGraphFromJSONTyped(json: any, ignoreDiscriminator
         return json;
     }
     return {
-        ...LinkPreviewFromJSONTyped(json, ignoreDiscriminator),
+        
+        'url': json['url'],
+        'type': json['type'],
         'information': LinkPreviewOpenGraphAllOfInformationFromJSON(json['information']),
+        'http_error_code': json['http_error_code'],
     };
 }
 
@@ -72,8 +90,11 @@ export function LinkPreviewOpenGraphToJSON(value?: LinkPreviewOpenGraph | null):
         return null;
     }
     return {
-        ...LinkPreviewToJSON(value),
+        
+        'url': value.url,
+        'type': value.type,
         'information': LinkPreviewOpenGraphAllOfInformationToJSON(value.information),
+        'http_error_code': value.http_error_code,
     };
 }
 

@@ -13,12 +13,6 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { LinkPreviewOpenGraph } from './LinkPreviewOpenGraph';
-import {
-    LinkPreviewOpenGraphFromJSON,
-    LinkPreviewOpenGraphFromJSONTyped,
-    LinkPreviewOpenGraphToJSON,
-} from './LinkPreviewOpenGraph';
 import type { LinkPreviewOpenGraphAllOfInformation } from './LinkPreviewOpenGraphAllOfInformation';
 import {
     LinkPreviewOpenGraphAllOfInformationFromJSON,
@@ -31,7 +25,31 @@ import {
  * @export
  * @interface LinkPreviewGoogleDocs
  */
-export interface LinkPreviewGoogleDocs extends LinkPreviewOpenGraph {
+export interface LinkPreviewGoogleDocs {
+    /**
+     * 
+     * @type {string}
+     * @memberof LinkPreviewGoogleDocs
+     */
+    url: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof LinkPreviewGoogleDocs
+     */
+    type: string;
+    /**
+     * 
+     * @type {LinkPreviewOpenGraphAllOfInformation}
+     * @memberof LinkPreviewGoogleDocs
+     */
+    information: LinkPreviewOpenGraphAllOfInformation;
+    /**
+     * 
+     * @type {number}
+     * @memberof LinkPreviewGoogleDocs
+     */
+    http_error_code: number;
 }
 
 /**
@@ -39,6 +57,10 @@ export interface LinkPreviewGoogleDocs extends LinkPreviewOpenGraph {
  */
 export function instanceOfLinkPreviewGoogleDocs(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "url" in value;
+    isInstance = isInstance && "type" in value;
+    isInstance = isInstance && "information" in value;
+    isInstance = isInstance && "http_error_code" in value;
 
     return isInstance;
 }
@@ -48,10 +70,31 @@ export function LinkPreviewGoogleDocsFromJSON(json: any): LinkPreviewGoogleDocs 
 }
 
 export function LinkPreviewGoogleDocsFromJSONTyped(json: any, ignoreDiscriminator: boolean): LinkPreviewGoogleDocs {
-    return json;
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'url': json['url'],
+        'type': json['type'],
+        'information': LinkPreviewOpenGraphAllOfInformationFromJSON(json['information']),
+        'http_error_code': json['http_error_code'],
+    };
 }
 
 export function LinkPreviewGoogleDocsToJSON(value?: LinkPreviewGoogleDocs | null): any {
-    return value;
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'url': value.url,
+        'type': value.type,
+        'information': LinkPreviewOpenGraphAllOfInformationToJSON(value.information),
+        'http_error_code': value.http_error_code,
+    };
 }
 

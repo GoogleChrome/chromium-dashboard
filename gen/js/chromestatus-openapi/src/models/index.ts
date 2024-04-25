@@ -8,6 +8,7 @@ export * from './FeatureLatency';
 export * from './FeatureLink';
 export * from './GateLatency';
 export * from './LinkPreview';
+export * from './LinkPreviewBase';
 export * from './LinkPreviewGithubIssue';
 export * from './LinkPreviewGithubIssueAllOfInformation';
 export * from './LinkPreviewGithubMarkdown';

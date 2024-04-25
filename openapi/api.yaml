@@ -356,7 +356,7 @@ components:
         name:
           type: string
           example: WebGPU
-    LinkPreview:
+    LinkPreviewBase:
       type: object
       required:
         - url
@@ -373,20 +373,23 @@ components:
           type: object
         http_error_code:
           type: integer
-      discriminator:
-        propertyName: type
-        mapping:
-          github_issue: LinkPreviewGithubIssue
-          github_markdown: LinkPreviewGithubMarkdown
-          github_pull_request: LinkPreviewGithubPullRequest
-          mdn_docs: LinkPreviewMdnDocs
-          google_docs: LinkPreviewGoogleDocs
-          mozilla_bug: LinkPreviewMozillaBug
-          webkit_bug: LinkPreviewWebkitBug
-          specs: LinkPreviewSpecs
+    LinkPreview:
+      allOf:
+        - $ref: '#/components/schemas/LinkPreviewBase'
+        - discriminator:
+            propertyName: type
+            mapping:
+              github_issue: LinkPreviewGithubIssue
+              github_markdown: LinkPreviewGithubMarkdown
+              github_pull_request: LinkPreviewGithubPullRequest
+              mdn_docs: LinkPreviewMdnDocs
+              google_docs: LinkPreviewGoogleDocs
+              mozilla_bug: LinkPreviewMozillaBug
+              webkit_bug: LinkPreviewWebkitBug
+              specs: LinkPreviewSpecs
     LinkPreviewGithubIssue:
       allOf:
-        - $ref: '#/components/schemas/LinkPreview'
+        - $ref: '#/components/schemas/LinkPreviewBase'
         - type: object
           required: [information]
           properties:
@@ -433,7 +436,7 @@ components:
         - $ref: '#/components/schemas/LinkPreviewGithubIssue'
     LinkPreviewGithubMarkdown:
       allOf:
-        - $ref: '#/components/schemas/LinkPreview'
+        - $ref: '#/components/schemas/LinkPreviewBase'
         - type: object
           required: [information]
           properties:
@@ -446,7 +449,7 @@ components:
                   type: string
     LinkPreviewOpenGraph:
       allOf:
-        - $ref: '#/components/schemas/LinkPreview'
+        - $ref: '#/components/schemas/LinkPreviewBase'
         - type: object
           required: [information]
           properties:

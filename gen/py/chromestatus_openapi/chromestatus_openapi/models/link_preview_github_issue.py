@@ -3,11 +3,9 @@ from datetime import date, datetime  # noqa: F401
 from typing import List, Dict  # noqa: F401
 
 from chromestatus_openapi.models.base_model import Model
-from chromestatus_openapi.models.link_preview import LinkPreview
 from chromestatus_openapi.models.link_preview_github_issue_all_of_information import LinkPreviewGithubIssueAllOfInformation
 from chromestatus_openapi import util
 
-from chromestatus_openapi.models.link_preview import LinkPreview  # noqa: E501
 from chromestatus_openapi.models.link_preview_github_issue_all_of_information import LinkPreviewGithubIssueAllOfInformation  # noqa: E501
 
 class LinkPreviewGithubIssue(Model):

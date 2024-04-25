@@ -14,6 +14,7 @@ src/models/FeatureLatency.ts
 src/models/FeatureLink.ts
 src/models/GateLatency.ts
 src/models/LinkPreview.ts
+src/models/LinkPreviewBase.ts
 src/models/LinkPreviewGithubIssue.ts
 src/models/LinkPreviewGithubIssueAllOfInformation.ts
 src/models/LinkPreviewGithubMarkdown.ts

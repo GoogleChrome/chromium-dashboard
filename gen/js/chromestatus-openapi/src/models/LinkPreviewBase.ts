@@ -13,49 +13,42 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { LinkPreviewOpenGraphAllOfInformation } from './LinkPreviewOpenGraphAllOfInformation';
-import {
-    LinkPreviewOpenGraphAllOfInformationFromJSON,
-    LinkPreviewOpenGraphAllOfInformationFromJSONTyped,
-    LinkPreviewOpenGraphAllOfInformationToJSON,
-} from './LinkPreviewOpenGraphAllOfInformation';
-
 /**
  * 
  * @export
- * @interface LinkPreviewWebkitBug
+ * @interface LinkPreviewBase
  */
-export interface LinkPreviewWebkitBug {
+export interface LinkPreviewBase {
     /**
      * 
      * @type {string}
-     * @memberof LinkPreviewWebkitBug
+     * @memberof LinkPreviewBase
      */
     url: string;
     /**
      * 
      * @type {string}
-     * @memberof LinkPreviewWebkitBug
+     * @memberof LinkPreviewBase
      */
     type: string;
     /**
      * 
-     * @type {LinkPreviewOpenGraphAllOfInformation}
-     * @memberof LinkPreviewWebkitBug
+     * @type {object}
+     * @memberof LinkPreviewBase
      */
-    information: LinkPreviewOpenGraphAllOfInformation;
+    information: object;
     /**
      * 
      * @type {number}
-     * @memberof LinkPreviewWebkitBug
+     * @memberof LinkPreviewBase
      */
     http_error_code: number;
 }
 
 /**
- * Check if a given object implements the LinkPreviewWebkitBug interface.
+ * Check if a given object implements the LinkPreviewBase interface.
  */
-export function instanceOfLinkPreviewWebkitBug(value: object): boolean {
+export function instanceOfLinkPreviewBase(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "url" in value;
     isInstance = isInstance && "type" in value;
@@ -65,11 +58,11 @@ export function instanceOfLinkPreviewWebkitBug(value: object): boolean {
     return isInstance;
 }
 
-export function LinkPreviewWebkitBugFromJSON(json: any): LinkPreviewWebkitBug {
-    return LinkPreviewWebkitBugFromJSONTyped(json, false);
+export function LinkPreviewBaseFromJSON(json: any): LinkPreviewBase {
+    return LinkPreviewBaseFromJSONTyped(json, false);
 }
 
-export function LinkPreviewWebkitBugFromJSONTyped(json: any, ignoreDiscriminator: boolean): LinkPreviewWebkitBug {
+export function LinkPreviewBaseFromJSONTyped(json: any, ignoreDiscriminator: boolean): LinkPreviewBase {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -77,12 +70,12 @@ export function LinkPreviewWebkitBugFromJSONTyped(json: any, ignoreDiscriminator
         
         'url': json['url'],
         'type': json['type'],
-        'information': LinkPreviewOpenGraphAllOfInformationFromJSON(json['information']),
+        'information': json['information'],
         'http_error_code': json['http_error_code'],
     };
 }
 
-export function LinkPreviewWebkitBugToJSON(value?: LinkPreviewWebkitBug | null): any {
+export function LinkPreviewBaseToJSON(value?: LinkPreviewBase | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -93,7 +86,7 @@ export function LinkPreviewWebkitBugToJSON(value?: LinkPreviewWebkitBug | null):
         
         'url': value.url,
         'type': value.type,
-        'information': LinkPreviewOpenGraphAllOfInformationToJSON(value.information),
+        'information': value.information,
         'http_error_code': value.http_error_code,
     };
 }

@@ -13,12 +13,6 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { LinkPreview } from './LinkPreview';
-import {
-    LinkPreviewFromJSON,
-    LinkPreviewFromJSONTyped,
-    LinkPreviewToJSON,
-} from './LinkPreview';
 import type { LinkPreviewGithubMarkdownAllOfInformation } from './LinkPreviewGithubMarkdownAllOfInformation';
 import {
     LinkPreviewGithubMarkdownAllOfInformationFromJSON,
@@ -31,13 +25,31 @@ import {
  * @export
  * @interface LinkPreviewGithubMarkdown
  */
-export interface LinkPreviewGithubMarkdown extends LinkPreview {
+export interface LinkPreviewGithubMarkdown {
+    /**
+     * 
+     * @type {string}
+     * @memberof LinkPreviewGithubMarkdown
+     */
+    url: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof LinkPreviewGithubMarkdown
+     */
+    type: string;
     /**
      * 
      * @type {LinkPreviewGithubMarkdownAllOfInformation}
      * @memberof LinkPreviewGithubMarkdown
      */
     information: LinkPreviewGithubMarkdownAllOfInformation;
+    /**
+     * 
+     * @type {number}
+     * @memberof LinkPreviewGithubMarkdown
+     */
+    http_error_code: number;
 }
 
 /**
@@ -45,7 +57,10 @@ export interface LinkPreviewGithubMarkdown extends LinkPreview {
  */
 export function instanceOfLinkPreviewGithubMarkdown(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "url" in value;
+    isInstance = isInstance && "type" in value;
     isInstance = isInstance && "information" in value;
+    isInstance = isInstance && "http_error_code" in value;
 
     return isInstance;
 }
@@ -59,8 +74,11 @@ export function LinkPreviewGithubMarkdownFromJSONTyped(json: any, ignoreDiscrimi
         return json;
     }
     return {
-        ...LinkPreviewFromJSONTyped(json, ignoreDiscriminator),
+        
+        'url': json['url'],
+        'type': json['type'],
         'information': LinkPreviewGithubMarkdownAllOfInformationFromJSON(json['information']),
+        'http_error_code': json['http_error_code'],
     };
 }
 
@@ -72,8 +90,11 @@ export function LinkPreviewGithubMarkdownToJSON(value?: LinkPreviewGithubMarkdow
         return null;
     }
     return {
-        ...LinkPreviewToJSON(value),
+        
+        'url': value.url,
+        'type': value.type,
         'information': LinkPreviewGithubMarkdownAllOfInformationToJSON(value.information),
+        'http_error_code': value.http_error_code,
     };
 }
 
