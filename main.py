@@ -287,8 +287,6 @@ internals_routes: list[Route] = [
   Route('/tasks/update-feature-links', feature_links.FeatureLinksUpdateHandler),
   Route('/tasks/email-ot-creation-request',
         notifier.OriginTrialCreationRequestHandler),
-  Route('/tasks/email-ot-extension-request',
-        notifier.OriginTrialExtensionRequestHandler),
   Route('/tasks/email-ot-extended',
         notifier.OriginTrialCreationRequestHandler),
   Route('/tasks/email-ot-extension-approved',
