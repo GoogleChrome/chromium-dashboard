@@ -309,9 +309,10 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
     standard_maturity: NotRequired[int]
     impl_status_chrome: int
     ff_views: int
-    ff_views_link: str
+    ff_views_link: str | None
     safari_views: NotRequired[int]
     web_dev_views: NotRequired[int]
+    safari_views_link: NotRequired[str]
 
   def _use_ui_to_create_feature(
     self,
@@ -325,19 +326,20 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
     assumptions about what the UI actually does.
     """
     name = fe['name']
+    patch_update: dict[str, object] = dict(fe)
     # Only set the minimum set of fields in the initial POST. The FeaturesAPI expects to handle
     # most updates in the later PATCH call.
     initial_fields = dict(
-      blink_components=fe.pop('blink_components', 'Blink'),
-      category=fe.pop('category', MISC),
-      feature_type=fe.pop('feature_type', FEATURE_TYPE_INCUBATE_ID),
-      ff_views=fe.pop('ff_views'),
-      impl_status_chrome=fe.pop('impl_status_chrome'),
-      name=fe.pop('name'),
-      safari_views=fe.pop('safari_views', NO_PUBLIC_SIGNALS),
-      standard_maturity=fe.pop('standard_maturity', UNSET_STD),
-      summary=fe.pop('summary', f'Summary for {name}'),
-      web_dev_views=fe.pop('web_dev_views', NO_PUBLIC_SIGNALS),
+      blink_components=patch_update.pop('blink_components', 'Blink'),
+      category=patch_update.pop('category', MISC),
+      feature_type=patch_update.pop('feature_type', FEATURE_TYPE_INCUBATE_ID),
+      ff_views=patch_update.pop('ff_views'),
+      impl_status_chrome=patch_update.pop('impl_status_chrome'),
+      name=patch_update.pop('name'),
+      safari_views=patch_update.pop('safari_views', NO_PUBLIC_SIGNALS),
+      standard_maturity=patch_update.pop('standard_maturity', UNSET_STD),
+      summary=patch_update.pop('summary', f'Summary for {name}'),
+      web_dev_views=patch_update.pop('web_dev_views', NO_PUBLIC_SIGNALS),
     )
     with test_app.test_request_context('/api/v0/features/create', json=initial_fields):
       response = FeaturesAPI().do_post()
@@ -346,16 +348,21 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
     # New feature should exist.
     new_feature = FeatureEntry.get_by_id(response['feature_id'])
     self.assertIsNotNone(new_feature)
-    fe['id'] = new_feature.key.id()
+    feature_id = new_feature.key.id()
 
     # Now that the feature and its stages are created, update the rest of the fields, and the active
     # stage, using a PATCH.
     active_stage = Stage.query(
-      Stage.feature_id == fe['id'], Stage.stage_type == active_stage_type
+      Stage.feature_id == feature_id, Stage.stage_type == active_stage_type
     ).fetch(keys_only=True)
     self.assertEqual(1, len(active_stage), active_stage)
-    fe['active_stage_id'] = active_stage[0].id()
-    update = dict(feature_changes=fe, stages=[])
+    patch_update.update(id=feature_id, active_stage_id=active_stage[0].id())
+
+    class FeatureUpdate(TypedDict):
+      feature_changes: dict[str, object]
+      stages: list[dict[str, object]]
+
+    update: FeatureUpdate = dict(feature_changes=patch_update, stages=[])
     if milestones is not None:
       stage_info = dict(id=active_stage[0].id())
       for field_name, _type in MILESTONESET_FIELD_DATA_TYPES:
@@ -364,9 +371,9 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
           stage_info[field_name] = dict(form_field_name=field_name, value=value)
       update['stages'].append(stage_info)
 
-    with test_app.test_request_context(f'/api/v0/features/{fe["id"]}', json=update):
+    with test_app.test_request_context(f'/api/v0/features/{feature_id}', json=update):
       response = FeaturesAPI().do_patch()
-    self.assertEqual(f'Feature {fe["id"]} updated.', response['message'])
+    self.assertEqual(f'Feature {feature_id} updated.', response['message'])
 
     return new_feature
 
@@ -480,6 +487,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
         name='Feature 6',
         impl_status_chrome=PROPOSED,
         ff_views=SHIPPED,
+        ff_views_link=None,
         # Not a Firefox view, so this won't be included in the results.
         safari_views_link='https://github.com/WebKit/standards-positions/issues/6',
       ),
