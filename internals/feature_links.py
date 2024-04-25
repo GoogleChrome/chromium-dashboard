@@ -25,7 +25,10 @@ from framework import cloud_tasks_helpers
 from framework.basehandlers import FlaskHandler
 from internals.core_models import FeatureEntry
 from internals.link_helpers import (
+  GECKO_REVIEW_URL_PATTERN,
   LINK_TYPE_GITHUB_ISSUE,
+  TAG_REVIEW_URL_PATTERN,
+  WEBKIT_REVIEW_URL_PATTERN,
   Link,
 )
 
@@ -135,6 +138,8 @@ def _remove_link(link: Link, fe: FeatureEntry) -> None:
         # delete the link if it is not used by any feature
         feature_link.key.delete()
         logging.info(f'Delete indexed link {link.url}')
+
+
 def _get_review_result_from_feature_link(
   feature_link: FeatureLinks, position_prefix: str
 ) -> Optional[str]:
@@ -180,7 +185,7 @@ def _denormalize_feature_link_into_entries(
       if fe is None:
         continue
       if (
-        'github.com/w3ctag/design-reviews/' in feature_link.url
+        TAG_REVIEW_URL_PATTERN.search(feature_link.url)
         and fe.tag_review == feature_link.url
       ):
         _put_if_changed(
@@ -189,7 +194,7 @@ def _denormalize_feature_link_into_entries(
           _get_review_result_from_feature_link(feature_link, 'resolution: '),
         )
       if (
-        'github.com/mozilla/standards-positions/' in feature_link.url
+        GECKO_REVIEW_URL_PATTERN.search(feature_link.url)
         and fe.ff_views_link == feature_link.url
       ):
         _put_if_changed(
@@ -198,7 +203,7 @@ def _denormalize_feature_link_into_entries(
           _get_review_result_from_feature_link(feature_link, 'position: '),
         )
       if (
-        'github.com/WebKit/standards-positions/' in feature_link.url
+        WEBKIT_REVIEW_URL_PATTERN.search(feature_link.url)
         and fe.safari_views_link == feature_link.url
       ):
         _put_if_changed(

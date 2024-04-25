@@ -118,7 +118,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
 
   def test_one_unfinished_tag_review(self):
     """Basic success case."""
-    tag = 'https://github.com/w3ctag/design_reviews/issues/1'
+    tag = 'https://github.com/w3ctag/design-reviews/issues/1'
     webkit = 'https://github.com/WebKit/standards-positions/issues/3'
     fe = make_feature(
       'Feature one',
@@ -149,7 +149,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
     )
 
   def test_one_unfinished_webkit_review(self):
-    tag = 'https://github.com/w3ctag/design_reviews/issues/1'
+    tag = 'https://github.com/w3ctag/design-reviews/issues/1'
     webkit = 'https://github.com/WebKit/standards-positions/issues/3'
     fe = make_feature(
       'Feature one',
@@ -180,7 +180,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
     )
 
   def test_one_unfinished_gecko_review(self):
-    gecko = 'https://github.com/mozille/standards-positions/issues/2'
+    gecko = 'https://github.com/mozilla/standards-positions/issues/2'
     webkit = 'https://github.com/WebKit/standards-positions/issues/3'
     fe = make_feature(
       'Feature one',
@@ -216,7 +216,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
     This isn't quite right for sorting urgency, since a later start milestone for some platforms
     probably indicates that the feature will ship later, but it makes more sense in the UI.
     """
-    tag = 'https://github.com/w3ctag/design_reviews/issues/1'
+    tag = 'https://github.com/w3ctag/design-reviews/issues/1'
     webkit = 'https://github.com/WebKit/standards-positions/issues/3'
     fe = make_feature(
       'Feature one',
@@ -263,8 +263,21 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
       result = self.handler.do_get(review_group='webkit')
       self.assertEqual(0, len(result['reviews']))
 
+  def test_omit_review_links_to_non_review_repo(self):
+    """Links that aren't to the reviewer's positions repository shouldn't be returned."""
+    webkit = 'https://github.com/WebKit/standards-positions/issues/3'
+    fe = make_feature('Feature one', STAGE_BLINK_PROTOTYPE, webkit=webkit)
+    result = self.handler.do_get(review_group='webkit')
+    self.assertEqual(1, len(result['reviews']))
+    fe.safari_views_link = (
+      'https://github.com/whatwg/html/pull/10139#pullrequestreview-1966263347'
+    )
+    fe.put()
+    result = self.handler.do_get(review_group='webkit')
+    self.assertEqual(0, len(result['reviews']))
+
   def test_finished_review_isnt_shown(self):
-    tag = 'https://github.com/w3ctag/design_reviews/issues/1'
+    tag = 'https://github.com/w3ctag/design-reviews/issues/1'
     webkit = 'https://github.com/WebKit/standards-positions/issues/3'
     fe = make_feature(
       'Feature one',
@@ -285,7 +298,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
     )
 
   def test_feature_without_a_crawled_link_isnt_shown(self):
-    tag = 'https://github.com/w3ctag/design_reviews/issues/1'
+    tag = 'https://github.com/w3ctag/design-reviews/issues/1'
     fe = make_feature(
       'Feature one',
       STAGE_BLINK_PROTOTYPE,
@@ -294,7 +307,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
 
     result = self.handler.do_get(review_group='tag')
     self.assertEqual(1, len(result['reviews']))
-    fe.tag_review = 'https://github.com/w3ctag/design_reviews/issues/2'
+    fe.tag_review = 'https://github.com/w3ctag/design-reviews/issues/2'
     fe.put()
     result = self.handler.do_get(review_group='tag')
     self.assertEqual(0, len(result['reviews']))

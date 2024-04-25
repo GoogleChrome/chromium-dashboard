@@ -14,6 +14,7 @@
 
 
 import math
+import re
 from enum import StrEnum
 
 from chromestatus_openapi.models.external_reviews_response import (
@@ -54,6 +55,11 @@ from internals.core_enums import (
 from internals.core_models import FeatureEntry, Stage
 from internals.feature_links import (
   get_by_feature_ids as get_feature_links_by_feature_ids,
+)
+from internals.link_helpers import (
+  GECKO_REVIEW_URL_PATTERN,
+  TAG_REVIEW_URL_PATTERN,
+  WEBKIT_REVIEW_URL_PATTERN,
 )
 
 
@@ -133,6 +139,8 @@ class ExternalReviewsAPI(basehandlers.APIHandler):
 
     # The name of the field in FeatureEntry that holds the review link for review_group.
     review_link: str
+    # Matches URLs in the reviewer's review repository.
+    review_pattern: re.Pattern
 
     # Get all the features that might have an unfinished review for the requested group.
     if review_group == 'tag':
@@ -140,16 +148,27 @@ class ExternalReviewsAPI(basehandlers.APIHandler):
         FeatureEntry.has_open_tag_review == True  # noqa: E712
       ).fetch()
       review_link = 'tag_review'
+      review_pattern = TAG_REVIEW_URL_PATTERN
     elif review_group == 'gecko':
       unreviewed_features = FeatureEntry.query(
         FeatureEntry.has_open_ff_review == True  # noqa: E712
       ).fetch()
       review_link = 'ff_views_link'
+      review_pattern = GECKO_REVIEW_URL_PATTERN
     elif review_group == 'webkit':
       unreviewed_features = FeatureEntry.query(
         FeatureEntry.has_open_safari_review == True  # noqa: E712
       ).fetch()
       review_link = 'safari_views_link'
+      review_pattern = WEBKIT_REVIEW_URL_PATTERN
+
+    # Remove features for which the review link isn't a request for the review group to review the
+    # feature.
+    unreviewed_features = [
+      feature
+      for feature in unreviewed_features
+      if review_pattern.search(getattr(feature, review_link))
+    ]
 
     # Build a map from each feature ID to its active Stage information.
     active_stage = {
