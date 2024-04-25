@@ -264,6 +264,7 @@ def _format_new_crbug_url(blink_components: Optional[list[str]],
 
 
 _COMPUTED_VIEWS_TO_ENUM = {
+  'closed': NO_PUBLIC_SIGNALS,
   'defer': GECKO_DEFER,
   'negative': OPPOSED,
   'neutral': NEUTRAL,
@@ -284,7 +285,11 @@ def _compute_vendor_views(
     'val': NO_PUBLIC_SIGNALS,
   }
   if computed_views and form_views not in [SHIPPED, IN_DEV]:
-    result['text'] = computed_views.title()
+    result['text'] = (
+      'Closed Without a Position'
+      if computed_views == 'closed'
+      else computed_views.title()
+    )
     result['val'] = _COMPUTED_VIEWS_TO_ENUM.get(
       computed_views, form_views if form_views in VENDOR_VIEWS else NO_PUBLIC_SIGNALS
     )

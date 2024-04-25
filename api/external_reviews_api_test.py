@@ -412,13 +412,15 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
       elif link.url == 'https://github.com/mozilla/standards-positions/issues/3':
         result.update(number=3)
       elif link.url == 'https://github.com/mozilla/standards-positions/issues/4':
-        result.update(number=4, state='closed', closed_at='2024-04-20T07:15:34')
+        result.update(number=4)
       elif link.url == 'https://github.com/mozilla/standards-positions/issues/5':
         result.update(number=5)
       elif link.url == 'https://github.com/WebKit/standards-positions/issues/6':
         result.update(number=6)
       elif link.url == 'https://github.com/mozilla/standards-positions/issues/8':
         raise Exception(f'Expected fetch error for {link.url=}')
+      elif link.url == 'https://github.com/mozilla/standards-positions/issues/9':
+        result.update(number=4, state='closed', closed_at='2024-04-20T07:15:34')
       else:
         unexpected_links.append(link.url)
       return result
@@ -457,7 +459,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
     f4 = self._use_ui_to_create_feature(
       dict(
         name='Feature 4',
-        impl_status_chrome=PROPOSED,
+        impl_status_chrome=ENABLED_BY_DEFAULT,
         ff_views=NO_PUBLIC_SIGNALS,
         ff_views_link='https://github.com/mozilla/standards-positions/issues/4',
       ),
@@ -503,6 +505,15 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
         ),
         active_stage_type=STAGE_BLINK_PROTOTYPE,
       )
+    _f9 = self._use_ui_to_create_feature(
+      dict(
+        name='Feature 9 is closed without a position',
+        impl_status_chrome=PROPOSED,
+        ff_views=NO_PUBLIC_SIGNALS,
+        ff_views_link='https://github.com/mozilla/standards-positions/issues/9',
+      ),
+      active_stage_type=STAGE_BLINK_PROTOTYPE,
+    )
 
     testing_config.sign_out()
 

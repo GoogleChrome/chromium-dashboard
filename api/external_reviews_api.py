@@ -131,6 +131,9 @@ class ExternalReviewsAPI(basehandlers.APIHandler):
     if review_group not in ['tag', 'gecko', 'webkit']:
       self.abort(404, f'invalid review group {review_group}')
 
+    # The name of the field in FeatureEntry that holds the review link for review_group.
+    review_link: str
+
     # Get all the features that might have an unfinished review for the requested group.
     if review_group == 'tag':
       unreviewed_features = FeatureEntry.query(

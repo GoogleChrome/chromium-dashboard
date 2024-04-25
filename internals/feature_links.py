@@ -135,9 +135,9 @@ def _remove_link(link: Link, fe: FeatureEntry) -> None:
         # delete the link if it is not used by any feature
         feature_link.key.delete()
         logging.info(f'Delete indexed link {link.url}')
-
-
-def _get_views_from_label(feature_link: FeatureLinks, position_prefix: str) -> Optional[str]:
+def _get_review_result_from_feature_link(
+  feature_link: FeatureLinks, position_prefix: str
+) -> Optional[str]:
   """Returns the external reviewer's views expressed in feature_link.
 
   Params:
@@ -148,6 +148,8 @@ def _get_views_from_label(feature_link: FeatureLinks, position_prefix: str) -> O
   for label in feature_link.information.get('labels', []):
     if label.lower().startswith(position_prefix):
       return label[len(position_prefix) :]
+  if feature_link.information.get('state', None) == 'closed':
+    return 'closed'
   return None
 
 
@@ -184,7 +186,7 @@ def _denormalize_feature_link_into_entries(
         _put_if_changed(
           fe,
           'tag_review_resolution',
-          _get_views_from_label(feature_link, 'resolution: '),
+          _get_review_result_from_feature_link(feature_link, 'resolution: '),
         )
       if (
         'github.com/mozilla/standards-positions/' in feature_link.url
@@ -193,7 +195,7 @@ def _denormalize_feature_link_into_entries(
         _put_if_changed(
           fe,
           'ff_views_link_result',
-          _get_views_from_label(feature_link, 'position: '),
+          _get_review_result_from_feature_link(feature_link, 'position: '),
         )
       if (
         'github.com/WebKit/standards-positions/' in feature_link.url
@@ -202,7 +204,7 @@ def _denormalize_feature_link_into_entries(
         _put_if_changed(
           fe,
           'safari_views_link_result',
-          _get_views_from_label(feature_link, 'position: '),
+          _get_review_result_from_feature_link(feature_link, 'position: '),
         )
 
 
