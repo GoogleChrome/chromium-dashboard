@@ -128,12 +128,15 @@ class OutboundEmailHandlerTest(testing_config.CustomTestCase):
       actual_response = sendemail.handle_outbound_mail_task()
 
     expected_to = 'cr-status-staging-emails+user+example.com@google.com'
+    expected_cc = [
+        'cr-status-staging-cc-emails+another_user+example.com@google.com']
     mock_emailmessage_constructor.assert_called_once_with(
         sender=self.sender, to=expected_to, subject=self.subject,
         html=self.html)
     mock_message = mock_emailmessage_constructor.return_value
     mock_message.check_initialized.assert_called_once_with()
     mock_message.send.assert_not_called()
+    self.assertEqual(expected_cc, mock_message.cc)
     self.assertEqual({'message': 'Done'}, actual_response)
 
 
