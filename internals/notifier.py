@@ -767,6 +767,7 @@ class OriginTrialExtensionApprovedHandler(basehandlers.FlaskHandler):
       self.abort(400, 'Extension requester\'s email address not provided.')
     logging.info('Starting to notify about successful origin trial extension.')
     send_emails([self.build_email(self, feature, requester_email, gate_id)])
+    return {'message': 'OK'}
 
   def build_email(
       self, feature: FeatureEntry, requester_email: str, gate_id: int):
@@ -787,6 +788,201 @@ class OriginTrialExtensionApprovedHandler(basehandlers.FlaskHandler):
     }
 
 
+GLOBAL_OT_PROCESS_REMINDER_CC_LIST = [
+  'origin-trials-support@google.com',
+  'origin-trials-timeline-updates@google.com'
+  ]
+
+class OriginTrialEndingNextReleaseReminderHandler(basehandlers.FlaskHandler):
+  """Send origin trial ending next release reminder email to OT contacts."""
+
+  IS_INTERNAL_HANDLER = True
+  EMAIL_TEMPLATE_PATH = 'origintrials/ot-ending-next-release-email.html'
+
+  def process_post_data(self, **kwargs):
+    name = self.get_param('name')
+    if not name:
+      self.abort(400, 'Required parameter not given: name.')
+    release_milestone = self.get_param('release_milestone')
+    if not release_milestone:
+      self.abort(400, 'Required parameter not given: release_milestone.')
+    after_end_release = self.get_param('after_end_release')
+    if not after_end_release:
+      self.abort(400, 'Required parameter not given: after_end_release.')
+    after_end_date = self.get_param('after_end_date')
+    if not after_end_date:
+      self.abort(400, 'Required parameter not given: after_end_date.')
+    contacts = self.get_param('contacts')
+    if not contacts:
+      self.abort(400, 'Required parameter not given: contacts.')
+    body_data = {
+      'name': name,
+      'release_milestone': release_milestone,
+      'after_end_release': after_end_release,
+      'after_end_date': after_end_date,
+    }
+    send_emails([self.build_email(body_data, contacts)])
+    return {'message': 'OK'}
+
+  def build_email(self, body_data: dict[str, Any], contacts: list[str]):
+    body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
+    return {
+      'to': contacts,
+      'cc': GLOBAL_OT_PROCESS_REMINDER_CC_LIST,
+      'subject': f'{body_data["name"]} origin trial ship decision approaching',
+      'reply_to': None,
+      'html': body,
+    }
+
+
+class OriginTrialEndingThisReleaseReminderHandler(basehandlers.FlaskHandler):
+  """Send origin trial ending this release reminder email to OT contacts."""
+
+  IS_INTERNAL_HANDLER = True
+  EMAIL_TEMPLATE_PATH = 'origintrials/ot-ending-this-release-email.html'
+
+  def process_post_data(self, **kwargs):
+    name = self.get_param('name')
+    if not name:
+      self.abort(400, 'Required parameter not given: name.')
+    release_milestone = self.get_param('release_milestone')
+    if not release_milestone:
+      self.abort(400, 'Required parameter not given: release_milestone.')
+    next_release = self.get_param('next_release')
+    if not next_release:
+      self.abort(400, 'Required parameter not given: next_release.')
+    contacts = self.get_param('contacts')
+    if not contacts:
+      self.abort(400, 'Required parameter not given: contacts.')
+    body_data = {
+      'name': name,
+      'release_milestone': release_milestone,
+      'next_release': next_release,
+    }
+    send_emails([self.build_email(body_data, contacts)])
+    return {'message': 'OK'}
+
+  def build_email(self, body_data: dict[str, Any], contacts: list[str]):
+    body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
+    return {
+      'to': contacts,
+      'cc': GLOBAL_OT_PROCESS_REMINDER_CC_LIST,
+      'subject': f'{body_data["name"]} origin trial needs blink-dev update',
+      'reply_to': None,
+      'html': body,
+    }
+
+
+class OriginTrialBetaAvailabilityReminderHandler(basehandlers.FlaskHandler):
+  """Send origin trial beta availability reminder email to OT contacts."""
+
+  IS_INTERNAL_HANDLER = True
+  EMAIL_TEMPLATE_PATH = 'origintrials/ot-beta-availability-reminder-email.html'
+
+  def process_post_data(self, **kwargs):
+    contacts = self.get_param('contacts')
+    body_data = {
+      'name': self.get_param('name'),
+      'release_milestone': self.get_param('release_milestone'),
+    }
+    send_emails([self.build_email(body_data, contacts)])
+    return {'message': 'OK'}
+
+  def build_email(self, body_data: dict[str, Any], contacts: list[str]):
+    body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
+    return {
+      'to': contacts,
+      'cc': GLOBAL_OT_PROCESS_REMINDER_CC_LIST,
+      'subject': f'{body_data["name"]} origin trial is entering beta',
+      'reply_to': None,
+      'html': body,
+    }
+
+
+class OriginTrialFirstBranchReminderHandler(basehandlers.FlaskHandler):
+  """Send origin trial branch reminder email to OT contacts."""
+
+  IS_INTERNAL_HANDLER = True
+  EMAIL_TEMPLATE_PATH = 'origintrials/ot-first-branch-reminder-email.html'
+
+  def process_post_data(self, **kwargs):
+    contacts = self.get_param('contacts')
+    body_data = {
+      'name': self.get_param('name'),
+      'release_milestone': self.get_param('release_milestone'),
+      'branch_date': self.get_param('branch_date')
+    }
+    send_emails([self.build_email(body_data, contacts)])
+    return {'message': 'OK'}
+
+  def build_email(self, body_data: dict[str, Any], contacts: list[str]):
+    body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
+    return {
+      'to': contacts,
+      'cc': GLOBAL_OT_PROCESS_REMINDER_CC_LIST,
+      'subject': f'{body_data["name"]} origin trial is branching',
+      'reply_to': None,
+      'html': body,
+    }
+
+
+class OriginTrialLastBranchReminderHandler(basehandlers.FlaskHandler):
+  """Send origin trial branch reminder email to OT contacts."""
+
+  IS_INTERNAL_HANDLER = True
+  EMAIL_TEMPLATE_PATH = 'origintrials/ot-last-branch-reminder-email.html'
+
+  def process_post_data(self, **kwargs):
+    contacts = self.get_param('contacts')
+    body_data = {
+      'name': self.get_param('name'),
+      'release_milestone': self.get_param('release_milestone'),
+      'branch_date': self.get_param('branch_date')
+    }
+    send_emails([self.build_email(body_data, contacts)])
+    return {'message': 'OK'}
+
+  def build_email(self, body_data: dict[str, Any], contacts: list[str]):
+    body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
+    return {
+      'to': contacts,
+      'cc': GLOBAL_OT_PROCESS_REMINDER_CC_LIST,
+      'subject': (f'{body_data["name"]}'
+                  'origin trial has branched for its last release'),
+      'reply_to': None,
+      'html': body,
+    }
+
+
+class OriginTrialAutomatedProcessEmailHandler(basehandlers.FlaskHandler):
+  """Send a final notification to OT support with automated reminder info."""
+
+  IS_INTERNAL_HANDLER = True
+  EMAIL_TEMPLATE_PATH = 'origintrials/ot-automated-process-email.html'
+
+  def process_post_data(self, **kwargs):
+    now_date = datetime.now().strftime('%d %B, %Y')
+    body_data = {
+      'now_date': now_date,
+      'send_count': self.get_param('send_count'),
+      'next_branch_milestone': self.get_param('next_branch_milestone'),
+      'next_branch_date': self.get_param('next_branch_date'),
+      'stable_milestone': self.get_param('stable_milestone'),
+      'stable_date': self.get_param('stable_date'),
+    }
+    send_emails([self.build_email(body_data)])
+    return {'message': 'OK'}
+
+  def build_email(self, body_data: dict[str, Any]):
+    body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
+    return {
+      'to': OT_SUPPORT_EMAIL,
+      'subject': 'Origin trials automated process reminder just ran',
+      'reply_to': None,
+      'html': body,
+    }
+
+
 class OriginTrialExtendedHandler(basehandlers.FlaskHandler):
   """Notify about an origin trial extension being completed."""
 
@@ -798,6 +994,7 @@ class OriginTrialExtendedHandler(basehandlers.FlaskHandler):
     ot_stage = self.get_param('ot_stage')
     logging.info('Starting to notify about successful origin trial extension.')
     send_emails([self.build_email(self, extension_stage, ot_stage)])
+    return {'message': 'OK'}
 
   def build_email(self, extension_stage, ot_stage):
     body_data = {
@@ -865,12 +1062,14 @@ def send_emails(email_tasks):
       logging.info(
           'Would send the following email:\n'
           'To: %s\n'
+          'CC: %s\n'
           'From: %s\n'
           'References: %s\n'
           'Reply-To: %s\n'
           'Subject: %s\n'
           'Body:\n%s',
           task.get('to', None),
+          task.get('cc', None),
           task.get('from_user', None),
           task.get('references', None),
           task.get('reply_to', None),

@@ -19,6 +19,7 @@ from google.cloud import ndb  # type: ignore
 
 from framework.basehandlers import FlaskHandler
 from framework import origin_trials_client
+from internals import ot_process_reminders
 from internals import approval_defs
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate, Vote, Activity
@@ -499,10 +500,3 @@ class BackfillFeatureEnterpriseImpact(FlaskHandler):
     ndb.put_multi(batch)
 
     return f'{count} Feature entities updated of {len(features_by_id)} available features.'
-
-
-class SendOTReminderEmails(FlaskHandler):
-  def get_template_data(self, **kwargs):
-    """Send any time-based origin trials reminder emails."""
-    self.require_cron_header()
-    pass

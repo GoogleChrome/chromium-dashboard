@@ -276,6 +276,8 @@ internals_routes: list[Route] = [
   Route('/cron/reindex_all', search_fulltext.ReindexAllFeatures),
   Route('/cron/update_all_feature_links', feature_links.UpdateAllFeatureLinksHandlers),
   Route('/cron/associate_origin_trials', maintenance_scripts.AssociateOTs),
+  Route('/cron/send-ot-process-reminders',
+        reminders.SendOTReminderEmailsHandler),
 
   Route('/admin/find_stop_words', search_fulltext.FindStopWords),
 
@@ -293,6 +295,20 @@ internals_routes: list[Route] = [
         notifier.OriginTrialCreationRequestHandler),
   Route('/tasks/email-ot-extension-approved',
         notifier.OriginTrialExtensionApprovedHandler),
+
+  # OT process reminder emails
+  Route('/tasks/email-ot-first-branch-reminder',
+        notifier.OriginTrialFirstBranchReminderHandler),
+  Route('/tasks/email-ot-last-branch-reminder',
+        notifier.OriginTrialLastBranchReminderHandler),
+  Route('/tasks/email-ot-ending-next-release-reminder',
+        notifier.OriginTrialEndingNextReleaseReminderHandler),
+  Route('/tasks/email-ot-ending-this-release-reminder',
+        notifier.OriginTrialEndingThisReleaseReminderHandler),
+  Route('/tasks/email-ot-beta-availability-reminder',
+        notifier.OriginTrialBetaAvailabilityReminderHandler),
+  Route('/tasks/email-ot-automated-process',
+        notifier.OriginTrialAutomatedProcessEmailHandler),
 
   # Maintenance scripts.
   Route('/scripts/evaluate_gate_status',
