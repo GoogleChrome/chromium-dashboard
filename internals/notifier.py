@@ -735,6 +735,7 @@ class OriginTrialExtensionApprovedHandler(basehandlers.FlaskHandler):
       'feature': feature,
       'id': feature['id'],
       'gate_id': gate_id,
+      'SITE_URL': settings.SITE_URL,
     }
     body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
 
