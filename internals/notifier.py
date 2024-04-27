@@ -727,6 +727,8 @@ class OriginTrialExtensionApprovedHandler(basehandlers.FlaskHandler):
     logging.info('Starting to notify about successful origin trial extension.')
     send_emails([self.build_email(feature, requester_email, gate_id)])
 
+    return {'message': 'OK'}
+
   def build_email(
       self, feature: FeatureEntry, requester_email: str, gate_id: int):
     body_data = {
@@ -738,7 +740,7 @@ class OriginTrialExtensionApprovedHandler(basehandlers.FlaskHandler):
 
     return {
       'to': requester_email,
-      'cc': OT_SUPPORT_EMAIL,
+      'cc': [OT_SUPPORT_EMAIL],
       'subject': ('Origin trial approved and ready to be initiated: '
                   f'{feature["name"]}'),
       'reply_to': None,
@@ -757,6 +759,8 @@ class OriginTrialExtendedHandler(basehandlers.FlaskHandler):
     ot_stage = self.get_param('ot_stage')
     logging.info('Starting to notify about successful origin trial extension.')
     send_emails([self.build_email(extension_stage, ot_stage)])
+
+    return {'message': 'OK'}
 
   def build_email(self, extension_stage, ot_stage):
     body_data = {
@@ -824,12 +828,14 @@ def send_emails(email_tasks):
       logging.info(
           'Would send the following email:\n'
           'To: %s\n'
+          'Cc: %s\n'
           'From: %s\n'
           'References: %s\n'
           'Reply-To: %s\n'
           'Subject: %s\n'
           'Body:\n%s',
           task.get('to', None),
+          task.get('cc', None),
           task.get('from_user', None),
           task.get('references', None),
           task.get('reply_to', None),
