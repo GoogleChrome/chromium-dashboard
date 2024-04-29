@@ -569,14 +569,6 @@ export class ChromedashLink extends LitElement {
     }
   }
 
-  withLabel(link) {
-    if (this.showContentAsLabel) {
-      return html`<slot></slot>: ${link}`;
-    } else {
-      return link;
-    }
-  }
-
   render() {
     if (!this.href) {
       console.error('Missing [href] attribute in', this);
