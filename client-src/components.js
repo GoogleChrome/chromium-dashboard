@@ -93,6 +93,8 @@ import './elements/chromedash-timeline';
 import './elements/chromedash-timeline-page';
 import './elements/chromedash-toast';
 import './elements/chromedash-typeahead';
+import './elements/chromedash-report-external-reviews-dispatch-page';
+import './elements/chromedash-report-external-reviews-page';
 import './elements/chromedash-report-feature-latency-page';
 import './elements/chromedash-report-spec-mentors-page';
 import './elements/chromedash-report-review-latency-page';
