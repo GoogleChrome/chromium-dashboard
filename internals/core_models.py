@@ -17,7 +17,7 @@
 # https://stackoverflow.com/a/33533514
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Optional
 
 from google.cloud import ndb  # type: ignore
 
@@ -26,7 +26,7 @@ from internals.core_enums import *
 import settings
 
 
-def ReviewResultProperty():
+class ReviewResultProperty(ndb.StringProperty):
   """A StringProperty representing the result of an external review.
 
   These are the values after the `:` in
@@ -35,7 +35,8 @@ def ReviewResultProperty():
   https://github.com/w3ctag/design-reviews/labels?q=resolution%3A, plus the special value "closed"
   to represent a review that was closed without a position.
   """
-  return ndb.StringProperty()
+
+  CLOSED_WITHOUT_POSITION = 'closed'
 
 
 class FeatureEntry(ndb.Model):  # Copy from Feature
@@ -134,7 +135,7 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   all_platforms_descr = ndb.TextProperty()
   tag_review = ndb.StringProperty()
   tag_review_status = ndb.IntegerProperty(default=REVIEW_PENDING)
-  tag_review_resolution = ReviewResultProperty()
+  tag_review_resolution: Optional[ReviewResultProperty] = ReviewResultProperty()
   non_oss_deps = ndb.TextProperty()
   anticipated_spec_changes = ndb.TextProperty()
 
@@ -142,9 +143,9 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   safari_views = ndb.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
   web_dev_views = ndb.IntegerProperty(required=True, default=DEV_NO_SIGNALS)
   ff_views_link = ndb.StringProperty()
-  ff_views_link_result = ReviewResultProperty()
+  ff_views_link_result: Optional[ReviewResultProperty] = ReviewResultProperty()
   safari_views_link = ndb.StringProperty()
-  safari_views_link_result = ReviewResultProperty()
+  safari_views_link_result: Optional[ReviewResultProperty] = ReviewResultProperty()
   web_dev_views_link = ndb.StringProperty()
   ff_views_notes = ndb.StringProperty()
   safari_views_notes = ndb.TextProperty()

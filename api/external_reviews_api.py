@@ -16,6 +16,7 @@
 import math
 import re
 from enum import StrEnum
+from typing import Literal
 
 from chromestatus_openapi.models.external_reviews_response import (
   ExternalReviewsResponse,
@@ -127,6 +128,48 @@ def max_of_present(*args):
   return max(present_args)
 
 
+class ExternalReviewerInfo:
+  unreviewed_features_query: ndb.Query
+  """Fetch this to get features for which this group has been asked for a review, and they haven't
+  finished it yet."""
+
+  _review_link: str
+  """The name of the field in FeatureEntry that holds the review link for review_group."""
+
+  review_pattern: re.Pattern
+  """Matches URLs in the reviewer's review repository."""
+
+  group_name: str
+  """The name used for this group inside Chrome Status."""
+
+  def __init__(self, group_name: Literal['tag', 'gecko', 'webkit']):
+    self.group_name = group_name
+    if group_name == 'tag':
+      self.unreviewed_features_query = FeatureEntry.query(
+        FeatureEntry.has_open_tag_review == True  # noqa: E712
+      )
+      self._review_link = 'tag_review'
+      self.review_pattern = TAG_REVIEW_URL_PATTERN
+    elif group_name == 'gecko':
+      self.unreviewed_features_query = FeatureEntry.query(
+        FeatureEntry.has_open_ff_review == True  # noqa: E712
+      )
+      self._review_link = 'ff_views_link'
+      self.review_pattern = GECKO_REVIEW_URL_PATTERN
+    elif group_name == 'webkit':
+      self.unreviewed_features_query = FeatureEntry.query(
+        FeatureEntry.has_open_safari_review == True  # noqa: E712
+      )
+      self._review_link = 'safari_views_link'
+      self.review_pattern = WEBKIT_REVIEW_URL_PATTERN
+    else:
+      raise TypeError(f'Invalid group name {group_name!r}')
+
+  def review_link(self, feature: FeatureEntry) -> str:
+    """The link to this reviewer's review of `feature`."""
+    return getattr(feature, self._review_link)
+
+
 class ExternalReviewsAPI(basehandlers.APIHandler):
   """Implements the OpenAPI /external_reviews path."""
 
@@ -137,37 +180,15 @@ class ExternalReviewsAPI(basehandlers.APIHandler):
     if review_group not in ['tag', 'gecko', 'webkit']:
       self.abort(404, f'invalid review group {review_group}')
 
-    # The name of the field in FeatureEntry that holds the review link for review_group.
-    review_link: str
-    # Matches URLs in the reviewer's review repository.
-    review_pattern: re.Pattern
-
-    # Get all the features that might have an unfinished review for the requested group.
-    if review_group == 'tag':
-      unreviewed_features = FeatureEntry.query(
-        FeatureEntry.has_open_tag_review == True  # noqa: E712
-      ).fetch()
-      review_link = 'tag_review'
-      review_pattern = TAG_REVIEW_URL_PATTERN
-    elif review_group == 'gecko':
-      unreviewed_features = FeatureEntry.query(
-        FeatureEntry.has_open_ff_review == True  # noqa: E712
-      ).fetch()
-      review_link = 'ff_views_link'
-      review_pattern = GECKO_REVIEW_URL_PATTERN
-    elif review_group == 'webkit':
-      unreviewed_features = FeatureEntry.query(
-        FeatureEntry.has_open_safari_review == True  # noqa: E712
-      ).fetch()
-      review_link = 'safari_views_link'
-      review_pattern = WEBKIT_REVIEW_URL_PATTERN
+    reviewer_info = ExternalReviewerInfo(review_group)
+    unreviewed_features = reviewer_info.unreviewed_features_query.fetch()
 
     # Remove features for which the review link isn't a request for the review group to review the
     # feature.
     unreviewed_features = [
       feature
       for feature in unreviewed_features
-      if review_pattern.search(getattr(feature, review_link))
+      if reviewer_info.review_pattern.search(reviewer_info.review_link(feature))
     ]
 
     # Build a map from each feature ID to its active Stage information.
@@ -187,13 +208,15 @@ class ExternalReviewsAPI(basehandlers.APIHandler):
     feature_links, _has_stale_links = get_feature_links_by_feature_ids(
       [feature.key.id() for feature in unreviewed_features], update_stale_links=True
     )
-    review_links = {getattr(feature, review_link) for feature in unreviewed_features}
+    review_links = {
+      reviewer_info.review_link(feature) for feature in unreviewed_features
+    }
     previewable_urls = {fl['url'] for fl in feature_links}
 
     # Build the response objects.
     reviews = [
       OutstandingReview(
-        review_link=getattr(feature, review_link),
+        review_link=reviewer_info.review_link(feature),
         feature=FeatureLink(id=feature.key.id(), name=feature.name),
         current_stage=stage_type(feature, stage),
         estimated_start_milestone=min_of_present(
@@ -215,7 +238,7 @@ class ExternalReviewsAPI(basehandlers.APIHandler):
       )
       for feature in unreviewed_features
       for stage in [active_stage.get(feature.key.id(), None)]
-      if getattr(feature, review_link) in previewable_urls
+      if reviewer_info.review_link(feature) in previewable_urls
     ]
     reviews.sort(
       key=lambda review: (

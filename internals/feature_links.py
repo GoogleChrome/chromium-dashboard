@@ -23,7 +23,7 @@ from google.cloud import ndb  # type: ignore
 
 from framework import cloud_tasks_helpers
 from framework.basehandlers import FlaskHandler
-from internals.core_models import FeatureEntry
+from internals.core_models import FeatureEntry, ReviewResultProperty
 from internals.link_helpers import (
   GECKO_REVIEW_URL_PATTERN,
   LINK_TYPE_GITHUB_ISSUE,
@@ -154,7 +154,7 @@ def _get_review_result_from_feature_link(
     if label.lower().startswith(position_prefix):
       return label[len(position_prefix) :]
   if feature_link.information.get('state', None) == 'closed':
-    return 'closed'
+    return ReviewResultProperty.CLOSED_WITHOUT_POSITION
   return None
 
 

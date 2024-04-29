@@ -32,7 +32,11 @@ function ascendingNumberUndefinedLast(a, b) {
  * @returns {number}
  */
 function compareOutstandingReview(a, b) {
-  console.assert(a.current_stage === b.current_stage);
+  console.assert(
+    a.current_stage === b.current_stage,
+    `Tried to compare features at stages ${a.current_stage} and ` +
+      `${b.current_stage} using a function that ignores features' stages.`
+  );
   if (a.estimated_end_milestone !== b.estimated_end_milestone) {
     // Lower milestones are happening sooner and so more urgent.
     return ascendingNumberUndefinedLast(
@@ -148,6 +152,62 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
     </tr>`;
   }
 
+  /**
+   * @param {Record<import("chromestatus-openapi").OutstandingReviewCurrentStageEnum, import("chromestatus-openapi").OutstandingReview[]>} reviews
+   * @param {import('../js-src/cs-client.js').FeatureLink[]} links
+   */
+  renderOutstandingReviews(reviews, links) {
+    return [
+      ['Preparing to ship', 'shipping'],
+      ['In Origin Trial', 'origin-trial'],
+      ['Getting wide review', 'wide-review'],
+      ['In developer trials', 'dev-trial'],
+      ['Prototyping', 'prototyping'],
+      ['Incubating', 'incubating'],
+      ['Already shipped', 'shipped'],
+    ].map(([title, key]) =>
+      reviews[key].length > 0
+        ? html`<section>
+            <h2 id=${key}>${title}</h2>
+            <table class="data-table">
+              ${this.headerRow()}
+              ${reviews[key].map(
+                /** @param {OutstandingReview} review */ review => html`
+                  <tr>
+                    <td class="feature">
+                      <a href="/feature/${review.feature.id}"
+                        >${review.feature.name}</a
+                      >
+                    </td>
+                    <td class="review">
+                      <chromedash-link
+                        href=${review.review_link}
+                        .featureLinks=${links}
+                      ></chromedash-link>
+                    </td>
+                    <td class="milestones">
+                      ${review.estimated_start_milestone
+                        ? 'M' + review.estimated_start_milestone
+                        : nothing}${['shipping', 'shipped'].includes(
+                        review.current_stage
+                      )
+                        ? nothing
+                        : html`${review.estimated_start_milestone ||
+                          review.estimated_end_milestone
+                            ? '–'
+                            : nothing}${review.estimated_end_milestone
+                            ? 'M' + review.estimated_end_milestone
+                            : nothing}`}
+                    </td>
+                  </tr>
+                `
+              )}
+            </table>
+          </section>`
+        : nothing
+    );
+  }
+
   render() {
     return html`
       <div id="subheader">
@@ -181,57 +241,9 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
         complete: ({reviews, links, noOutstandingReviews}) =>
           noOutstandingReviews
             ? html`No outstanding reviews. Congratulations!`
-            : [
-                ['Preparing to ship', 'shipping'],
-                ['In Origin Trial', 'origin-trial'],
-                ['Getting wide review', 'wide-review'],
-                ['In developer trials', 'dev-trial'],
-                ['Prototyping', 'prototyping'],
-                ['Incubating', 'incubating'],
-                ['Already shipped', 'shipped'],
-              ].map(([title, key]) =>
-                reviews[key].length > 0
-                  ? html`<section>
-                      <h2 id=${key}>${title}</h2>
-                      <table class="data-table">
-                        ${this.headerRow()}
-                        ${reviews[key].map(
-                          /** @param {OutstandingReview} review */ review => html`
-                            <tr>
-                              <td class="feature">
-                                <a href="/feature/${review.feature.id}"
-                                  >${review.feature.name}</a
-                                >
-                              </td>
-                              <td class="review">
-                                <chromedash-link
-                                  href=${review.review_link}
-                                  .featureLinks=${links}
-                                ></chromedash-link>
-                              </td>
-                              <td class="milestones">
-                                ${review.estimated_start_milestone
-                                  ? 'M' + review.estimated_start_milestone
-                                  : nothing}${['shipping', 'shipped'].includes(
-                                  review.current_stage
-                                )
-                                  ? nothing
-                                  : html`${review.estimated_start_milestone ||
-                                    review.estimated_end_milestone
-                                      ? '–'
-                                      : nothing}${review.estimated_end_milestone
-                                      ? 'M' + review.estimated_end_milestone
-                                      : nothing}`}
-                              </td>
-                            </tr>
-                          `
-                        )}
-                      </table>
-                    </section>`
-                  : nothing
-              ),
+            : this.renderOutstandingReviews(reviews, links),
         error: e => {
-          console.error(e);
+          console.error(`Couldn't fetch ${this.reviewer}'s reviews: `, e);
           return html`<p>
             Some errors occurred. Please refresh the page or try again later.
           </p>`;
