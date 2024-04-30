@@ -288,7 +288,7 @@ internals_routes: list[Route] = [
   Route('/tasks/email-ot-creation-request',
         notifier.OriginTrialCreationRequestHandler),
   Route('/tasks/email-ot-extended',
-        notifier.OriginTrialCreationRequestHandler),
+        notifier.OriginTrialExtendedHandler),
   Route('/tasks/email-ot-extension-approved',
         notifier.OriginTrialExtensionApprovedHandler),
 
