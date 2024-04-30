@@ -17,7 +17,6 @@
 'use strict';
 
 // Google Analytics
-/* eslint-disable */
 // Global site tag (gtag.js) - Google Analytics
 window.dataLayer = window.dataLayer || [];
 function gtag() {

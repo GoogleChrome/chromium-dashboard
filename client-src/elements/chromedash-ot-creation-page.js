@@ -38,8 +38,6 @@ export class ChromedashOTCreationPage extends LitElement {
           transform: translate(-50%, -50%);
           height: 300px;
         }
-        .big-spinner {
-        }
       `,
     ];
   }
