@@ -1,11 +1,11 @@
 import js from "@eslint/js";
-import prettier from "./node_modules/eslint-config-prettier/prettier.js";
+import eslintConfigPrettier from "eslint-config-prettier";
 import gts from "./node_modules/gts/build/src/index.js";
 
 
 export default [
   js.configs.recommended,
-  prettier,
+  eslintConfigPrettier,
   {
     rules: gts.rules,
   },
