@@ -1,5 +1,4 @@
 import {LitElement, html} from 'lit';
-// eslint-disable-next-line no-unused-vars
 import './chromedash-feature';
 import {FEATURELIST_CSS} from '../css/elements/chromedash-featurelist-css.js';
 

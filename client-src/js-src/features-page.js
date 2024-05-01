@@ -24,7 +24,7 @@ const legendEl = document.querySelector('chromedash-legend');
 function debounce(func, threshold_ms = 300) {
   let timeout;
   return function (...args) {
-    const context = this; // eslint-disable-line no-invalid-this
+    const context = this;
     const later = () => {
       func.apply(context, args);
     };
