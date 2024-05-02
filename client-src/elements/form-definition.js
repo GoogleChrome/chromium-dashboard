@@ -469,6 +469,7 @@ const DEPRECATION_DEV_TRIAL_FIELDS = {
         'ergonomics_risks',
         'activation_risks',
         'security_risks',
+        'webview_risks',
         'debuggability',
         'all_platforms',
         'all_platforms_descr',
