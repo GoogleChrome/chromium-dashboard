@@ -1224,6 +1224,7 @@ class OriginTrialFirstBranchReminderHandlerTest(testing_config.CustomTestCase):
     body_data = {
       'name': 'Some feature',
       'release_milestone': '126',
+      'branch_date': 'January 1 2030',
     }
     with test_app.app_context():
       handler = notifier.OriginTrialFirstBranchReminderHandler()
