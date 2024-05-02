@@ -68,6 +68,14 @@ LINK_TYPES_REGEX = {
     LINK_TYPE_WEB: re.compile(r'https?://.*'),
 }
 
+TAG_REVIEW_URL_PATTERN = re.compile(r'github.com/w3ctag/design-reviews/', re.IGNORECASE)
+GECKO_REVIEW_URL_PATTERN = re.compile(
+  r'github.com/mozilla/standards-positions/', re.IGNORECASE
+)
+WEBKIT_REVIEW_URL_PATTERN = re.compile(
+  r'github.com/WebKit/standards-positions/', re.IGNORECASE
+)
+
 URL_REGEX = re.compile(r'(https?://\S+)')
 
 TIMEOUT = 30  # We wait at most 30 seconds for each web page request.

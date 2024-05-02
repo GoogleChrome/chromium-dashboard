@@ -22,7 +22,12 @@ from google.cloud import ndb  # type: ignore
 import settings
 from internals import approval_defs, slo
 from internals.core_enums import *
-from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.core_models import (
+  FeatureEntry,
+  MilestoneSet,
+  ReviewResultProperty,
+  Stage,
+)
 from internals.data_types import FeatureDictInnerViewInfo, StageDict, VerboseFeatureDict
 from internals.review_models import Gate, Vote
 
@@ -264,6 +269,7 @@ def _format_new_crbug_url(blink_components: Optional[list[str]],
 
 
 _COMPUTED_VIEWS_TO_ENUM = {
+  ReviewResultProperty.CLOSED_WITHOUT_POSITION: NO_PUBLIC_SIGNALS,
   'defer': GECKO_DEFER,
   'negative': OPPOSED,
   'neutral': NEUTRAL,
@@ -284,7 +290,11 @@ def _compute_vendor_views(
     'val': NO_PUBLIC_SIGNALS,
   }
   if computed_views and form_views not in [SHIPPED, IN_DEV]:
-    result['text'] = computed_views.title()
+    result['text'] = (
+      'Closed Without a Position'
+      if computed_views == ReviewResultProperty.CLOSED_WITHOUT_POSITION
+      else computed_views.title()
+    )
     result['val'] = _COMPUTED_VIEWS_TO_ENUM.get(
       computed_views, form_views if form_views in VENDOR_VIEWS else NO_PUBLIC_SIGNALS
     )

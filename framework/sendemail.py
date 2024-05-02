@@ -62,8 +62,13 @@ def handle_outbound_mail_task():
   if settings.SEND_ALL_EMAIL_TO and to != settings.REVIEW_COMMENT_MAILING_LIST:
     to_user, to_domain = to.split('@')
     to = settings.SEND_ALL_EMAIL_TO % {'user': to_user, 'domain': to_domain}
-    # Don't add CC addresses for non-prod environments.
-    cc = None
+    if cc:
+      new_cc = []
+      for cc_addr in cc:
+        cc_user, cc_domain = cc_addr.split('@')
+        new_cc.append(
+            settings.CC_ALL_EMAIL_TO % {'user': cc_user, 'domain': cc_domain})
+      cc = new_cc
 
   sender = 'Chromestatus <admin@%s.appspotmail.com>' % settings.APP_ID
   if from_user:
@@ -71,10 +76,12 @@ def handle_outbound_mail_task():
         from_user, from_user, settings.APP_ID)
 
   message = mail.EmailMessage(
-      sender=sender, to=to, cc=cc, subject=subject, html=email_html)
+      sender=sender, to=to, subject=subject, html=email_html)
   if reply_to:
     message.reply_to = reply_to
   message.check_initialized()
+  if cc:
+    message.cc = cc
 
   if references:
     message.headers = {
@@ -85,6 +92,8 @@ def handle_outbound_mail_task():
   logging.info('Will send the following email:\n')
   logging.info('Sender: %s', message.sender)
   logging.info('To: %s', message.to)
+  if cc:
+    logging.info('Cc: %s', message.cc)
   logging.info('Subject: %s', message.subject)
   if reply_to:
     logging.info('Reply-To: %s', message.reply_to)

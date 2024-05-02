@@ -1,0 +1,116 @@
+{
+  "reviews": [
+    {
+      "current_stage": "origin-trial",
+      "estimated_end_milestone": 104,
+      "estimated_start_milestone": 100,
+      "feature": {
+        "id": 1001,
+        "name": "Feature 7 shares a review with Feature 5"
+      },
+      "review_link": "https://github.com/mozilla/standards-positions/issues/5"
+    },
+    {
+      "current_stage": "prototyping",
+      "estimated_end_milestone": 103,
+      "estimated_start_milestone": 101,
+      "feature": {"id": 1002, "name": "Feature 3"},
+      "review_link": "https://github.com/mozilla/standards-positions/issues/3"
+    },
+    {
+      "current_stage": "prototyping",
+      "estimated_end_milestone": 104,
+      "estimated_start_milestone": 100,
+      "feature": {"id": 1003, "name": "Feature 5"},
+      "review_link": "https://github.com/mozilla/standards-positions/issues/5"
+    },
+    {
+      "current_stage": "prototyping",
+      "estimated_end_milestone": null,
+      "estimated_start_milestone": null,
+      "feature": {"id": 1004, "name": "Feature 4"},
+      "review_link": "https://github.com/mozilla/standards-positions/issues/4"
+    },
+    {
+      "current_stage": "shipped",
+      "estimated_end_milestone": null,
+      "estimated_start_milestone": null,
+      "feature": {"id": 1005, "name": "Feature 2"},
+      "review_link": "https://github.com/mozilla/standards-positions/issues/2"
+    }
+  ],
+  "link_previews": [
+    {
+      "http_error_code": null,
+      "information": {
+        "assignee_login": null,
+        "closed_at": null,
+        "created_at": "2024-04-15T08:30:42",
+        "labels": [],
+        "number": 2,
+        "state": "open",
+        "state_reason": null,
+        "title": "A Title",
+        "updated_at": "2024-04-15T10:30:43",
+        "url": "https://api.github.com/mozilla/standards-positions/issues/2",
+        "user_login": null
+      },
+      "type": "github_issue",
+      "url": "https://github.com/mozilla/standards-positions/issues/2"
+    },
+    {
+      "http_error_code": null,
+      "information": {
+        "assignee_login": null,
+        "closed_at": null,
+        "created_at": "2024-04-15T08:30:42",
+        "labels": [],
+        "number": 3,
+        "state": "open",
+        "state_reason": null,
+        "title": "A Title",
+        "updated_at": "2024-04-15T10:30:43",
+        "url": "https://api.github.com/mozilla/standards-positions/issues/3",
+        "user_login": null
+      },
+      "type": "github_issue",
+      "url": "https://github.com/mozilla/standards-positions/issues/3"
+    },
+    {
+      "http_error_code": null,
+      "information": {
+        "assignee_login": null,
+        "closed_at": null,
+        "created_at": "2024-04-15T08:30:42",
+        "labels": [],
+        "number": 4,
+        "state": "open",
+        "state_reason": null,
+        "title": "A Title",
+        "updated_at": "2024-04-15T10:30:43",
+        "url": "https://api.github.com/mozilla/standards-positions/issues/4",
+        "user_login": null
+      },
+      "type": "github_issue",
+      "url": "https://github.com/mozilla/standards-positions/issues/4"
+    },
+    {
+      "http_error_code": null,
+      "information": {
+        "assignee_login": null,
+        "closed_at": null,
+        "created_at": "2024-04-15T08:30:42",
+        "labels": [],
+        "number": 5,
+        "state": "open",
+        "state_reason": null,
+        "title": "A Title",
+        "updated_at": "2024-04-15T10:30:43",
+        "url": "https://api.github.com/mozilla/standards-positions/issues/5",
+        "user_login": null
+      },
+      "type": "github_issue",
+      "url": "https://github.com/mozilla/standards-positions/issues/5"
+    }
+  ]
+}

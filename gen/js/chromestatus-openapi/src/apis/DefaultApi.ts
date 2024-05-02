@@ -17,6 +17,7 @@ import * as runtime from '../runtime';
 import type {
   ComponentUsersRequest,
   ComponentsUsersResponse,
+  ExternalReviewsResponse,
   FeatureLatency,
   ReviewLatency,
   SpecMentor,
@@ -26,6 +27,8 @@ import {
     ComponentUsersRequestToJSON,
     ComponentsUsersResponseFromJSON,
     ComponentsUsersResponseToJSON,
+    ExternalReviewsResponseFromJSON,
+    ExternalReviewsResponseToJSON,
     FeatureLatencyFromJSON,
     FeatureLatencyToJSON,
     ReviewLatencyFromJSON,
@@ -38,6 +41,10 @@ export interface AddUserToComponentRequest {
     componentId: number;
     userId: number;
     componentUsersRequest?: ComponentUsersRequest;
+}
+
+export interface ListExternalReviewsRequest {
+    reviewGroup: ListExternalReviewsReviewGroupEnum;
 }
 
 export interface ListFeatureLatencyRequest {
@@ -92,6 +99,21 @@ export interface DefaultApiInterface {
      * List all components and possible users
      */
     listComponentUsers(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ComponentsUsersResponse>;
+
+    /**
+     * 
+     * @summary List features whose external reviews are incomplete
+     * @param {'tag' | 'gecko' | 'webkit'} reviewGroup Which review group to focus on:  * &#x60;tag&#x60; - The W3C TAG  * &#x60;gecko&#x60; - The rendering engine that powers Mozilla Firefox  * &#x60;webkit&#x60; - The rendering engine that powers Apple Safari 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    listExternalReviewsRaw(requestParameters: ListExternalReviewsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ExternalReviewsResponse>>;
+
+    /**
+     * List features whose external reviews are incomplete
+     */
+    listExternalReviews(requestParameters: ListExternalReviewsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ExternalReviewsResponse>;
 
     /**
      * 
@@ -229,6 +251,36 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async listComponentUsers(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ComponentsUsersResponse> {
         const response = await this.listComponentUsersRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * List features whose external reviews are incomplete
+     */
+    async listExternalReviewsRaw(requestParameters: ListExternalReviewsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ExternalReviewsResponse>> {
+        if (requestParameters.reviewGroup === null || requestParameters.reviewGroup === undefined) {
+            throw new runtime.RequiredError('reviewGroup','Required parameter requestParameters.reviewGroup was null or undefined when calling listExternalReviews.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/external_reviews/{review_group}`.replace(`{${"review_group"}}`, encodeURIComponent(String(requestParameters.reviewGroup))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ExternalReviewsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * List features whose external reviews are incomplete
+     */
+    async listExternalReviews(requestParameters: ListExternalReviewsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ExternalReviewsResponse> {
+        const response = await this.listExternalReviewsRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -371,3 +423,13 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     }
 
 }
+
+/**
+ * @export
+ */
+export const ListExternalReviewsReviewGroupEnum = {
+    tag: 'tag',
+    gecko: 'gecko',
+    webkit: 'webkit'
+} as const;
+export type ListExternalReviewsReviewGroupEnum = typeof ListExternalReviewsReviewGroupEnum[keyof typeof ListExternalReviewsReviewGroupEnum];

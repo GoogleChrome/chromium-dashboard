@@ -13,53 +13,50 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import threading
 from dataclasses import dataclass, field
 from typing import Any, Type
-import threading
 
-from api import accounts_api
-from api import blink_components_api
-from api import component_users
-from api import components_users
-from api import channels_api
-from api import comments_api
-from api import cues_api
-from api import features_api
-from api import feature_latency_api
-from api import feature_links_api
-from api import login_api
-from api import logout_api
-from api import metricsdata
-from api import origin_trials_api
-from api import permissions_api
-from api import processes_api
-from api import reviews_api
-from api import review_latency_api
-from api import settings_api
-from api import spec_mentors_api
-from api import stages_api
-from api import stars_api
-from api import token_refresh_api
-from framework import basehandlers
-from framework import csp
-from framework import sendemail
-from internals import detect_intent
-from internals import fetchmetrics
-from internals import feature_links
-from internals import maintenance_scripts
-from internals import notifier
-from internals import data_backup
-from internals import inactive_users
-from internals import search_fulltext
-from internals import reminders
-from pages import featurelist
-from pages import guide
-from pages import intentpreview
-from pages import metrics
-from pages import ot_requests
-from pages import users
 import settings
-
+from api import (
+  accounts_api,
+  blink_components_api,
+  channels_api,
+  comments_api,
+  component_users,
+  components_users,
+  cues_api,
+  external_reviews_api,
+  feature_latency_api,
+  feature_links_api,
+  features_api,
+  login_api,
+  logout_api,
+  metricsdata,
+  origin_trials_api,
+  permissions_api,
+  processes_api,
+  review_latency_api,
+  reviews_api,
+  settings_api,
+  spec_mentors_api,
+  stages_api,
+  stars_api,
+  token_refresh_api,
+)
+from framework import basehandlers, csp, sendemail
+from internals import (
+  data_backup,
+  detect_intent,
+  feature_links,
+  fetchmetrics,
+  inactive_users,
+  maintenance_scripts,
+  notifier,
+  reminders,
+  search_fulltext,
+)
+from pages import featurelist, guide, intentpreview, metrics, ot_requests, users
 
 # Patch treading library to work-around bug with Google Cloud Logging.
 original_delete = threading.Thread._delete  # type: ignore
@@ -145,6 +142,7 @@ api_routes: list[Route] = [
     Route(f'{API_BASE}/components/<int:component_id>/users/<int:user_id>',
         component_users.ComponentUsersAPI),
 
+    Route(f'{API_BASE}/external_reviews/<string:review_group>', external_reviews_api.ExternalReviewsAPI),
     Route(f'{API_BASE}/spec_mentors', spec_mentors_api.SpecMentorsAPI),
     Route(f'{API_BASE}/feature-latency', feature_latency_api.FeatureLatencyAPI),
     Route(f'{API_BASE}/review-latency', review_latency_api.ReviewLatencyAPI),
@@ -221,6 +219,8 @@ spa_page_routes = [
   Route('/metrics/feature/popularity'),
   Route('/metrics/feature/timeline/popularity'),
   Route('/metrics/feature/timeline/popularity/<int:bucket_id>'),
+  Route('/reports/external_reviews'),
+  Route('/reports/external_reviews/<reviewer>'),
   Route('/reports/spec_mentors'),
   Route('/reports/feature-latency'),
   Route('/reports/review-latency'),
@@ -289,10 +289,8 @@ internals_routes: list[Route] = [
   Route('/tasks/update-feature-links', feature_links.FeatureLinksUpdateHandler),
   Route('/tasks/email-ot-creation-request',
         notifier.OriginTrialCreationRequestHandler),
-  Route('/tasks/email-ot-extension-request',
-        notifier.OriginTrialExtensionRequestHandler),
   Route('/tasks/email-ot-extended',
-        notifier.OriginTrialCreationRequestHandler),
+        notifier.OriginTrialExtendedHandler),
   Route('/tasks/email-ot-extension-approved',
         notifier.OriginTrialExtensionApprovedHandler),
 

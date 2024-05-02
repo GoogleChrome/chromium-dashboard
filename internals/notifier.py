@@ -706,47 +706,6 @@ class OriginTrialCreationRequestHandler(basehandlers.FlaskHandler):
       'html': email_body,
     }
 
-class OriginTrialExtensionRequestHandler(basehandlers.FlaskHandler):
-  """Notify about an origin trial extension request."""
-
-  IS_INTERNAL_HANDLER = True
-
-  def process_post_data(self, **kwargs):
-    extension_stage = self.get_param('stage')
-    ot_stage = self.get_param('ot_stage')
-    logging.info('Starting to notify about origin trial extension request.')
-    send_emails([self.make_extension_request_email(extension_stage, ot_stage)])
-
-    return {'message': 'OK'}
-
-  def _yes_or_no(self, value: bool):
-    return 'Yes' if value else 'No'
-
-  def make_extension_request_email(self, extension_stage, ot_stage):
-    email_body = f"""
-<p>
-  Requested by: {extension_stage["ot_owner_email"]}
-  <br>
-  Feature name: {ot_stage["ot_display_name"]}
-  <br>
-  Intent to Extend Experiment URL: {extension_stage["intent_thread_url"]}
-  <br>
-  New end milestone: {extension_stage["desktop_last"]}
-  <br>
-  Anything else?: {extension_stage["ot_request_note"]}
-  <br>
-  <br>
-  Instructions for handling this request can be found at: https://g3doc.corp.google.com/chrome/origin_trials/g3doc/trial_admin.md#extend-an-existing-trial
-</p>
-"""
-
-    return {
-      'to': OT_SUPPORT_EMAIL,
-      'subject': f'New Trial Extension Request for {ot_stage["ot_display_name"]}',
-      'reply_to': None,
-      'html': email_body,
-    }
-
 
 class OriginTrialExtensionApprovedHandler(basehandlers.FlaskHandler):
   """Notify about an origin trial extension that is approved and needs
@@ -766,7 +725,8 @@ class OriginTrialExtensionApprovedHandler(basehandlers.FlaskHandler):
     if not requester_email:
       self.abort(400, 'Extension requester\'s email address not provided.')
     logging.info('Starting to notify about successful origin trial extension.')
-    send_emails([self.build_email(self, feature, requester_email, gate_id)])
+    send_emails([self.build_email(feature, requester_email, gate_id)])
+
     return {'message': 'OK'}
 
   def build_email(
@@ -775,12 +735,13 @@ class OriginTrialExtensionApprovedHandler(basehandlers.FlaskHandler):
       'feature': feature,
       'id': feature['id'],
       'gate_id': gate_id,
+      'SITE_URL': settings.SITE_URL,
     }
     body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
 
     return {
       'to': requester_email,
-      'cc': OT_SUPPORT_EMAIL,
+      'cc': [OT_SUPPORT_EMAIL],
       'subject': ('Origin trial approved and ready to be initiated: '
                   f'{feature["name"]}'),
       'reply_to': None,
@@ -971,7 +932,8 @@ class OriginTrialExtendedHandler(basehandlers.FlaskHandler):
     extension_stage = self.get_param('stage')
     ot_stage = self.get_param('ot_stage')
     logging.info('Starting to notify about successful origin trial extension.')
-    send_emails([self.build_email(self, extension_stage, ot_stage)])
+    send_emails([self.build_email(extension_stage, ot_stage)])
+
     return {'message': 'OK'}
 
   def build_email(self, extension_stage, ot_stage):
@@ -1040,7 +1002,7 @@ def send_emails(email_tasks):
       logging.info(
           'Would send the following email:\n'
           'To: %s\n'
-          'CC: %s\n'
+          'Cc: %s\n'
           'From: %s\n'
           'References: %s\n'
           'Reply-To: %s\n'

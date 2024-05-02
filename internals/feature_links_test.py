@@ -259,6 +259,30 @@ class LinkTest(testing_config.CustomTestCase):
     )
 
   @mock.patch.object(Link, '_parse_github_issue')
+  def test_adding_link_to_second_feature_saves_position_in_second_feature(
+    self, mockParse: mock.MagicMock
+  ):
+    mockParse.return_value = {'labels': ['position: defer']}
+
+    url = 'https://github.com/mozilla/standards-positions/issues/247'
+    changed_fields = [('ff_views_link', None, url)]
+    self.mock_user_change_fields(changed_fields)
+    self.assertEqual(1, mockParse.call_count)
+    self.assertEqual(
+      FeatureEntry.get_by_id(self.feature_id).ff_views_link_result, 'defer'
+    )
+    self.assertEqual(
+      FeatureEntry.get_by_id(self.feature2_id).ff_views_link_result, None
+    )
+    self.mock_user_change_fields(changed_fields, self.feature2)
+    self.assertEqual(
+      1, mockParse.call_count, 'Should re-use the link created for the first feature.'
+    )
+    self.assertEqual(
+      FeatureEntry.get_by_id(self.feature2_id).ff_views_link_result, 'defer'
+    )
+
+  @mock.patch.object(Link, '_parse_github_issue')
   def test_denormalizing_github_link_without_information_doesnt_crash(
     self, mockParse: mock.MagicMock
   ):

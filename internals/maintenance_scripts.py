@@ -338,29 +338,30 @@ class AssociateOTs(FlaskHandler):
         return None
       return chromestatus_id
 
-  def find_trial_stage(self, feature_id: int) -> Stage|None:
+  def find_unassociated_trial_stage(self, feature_id: int) -> Stage|None:
       fe: FeatureEntry|None = FeatureEntry.get_by_id(feature_id)
       if fe is None:
         logging.info(f'No feature found for ChromeStatus ID: {feature_id}')
         return None
 
       trial_stage_type = STAGE_TYPES_ORIGIN_TRIAL[fe.feature_type]
-      trial_stages = Stage.query(
+      trial_stages: list[Stage] = Stage.query(
           Stage.stage_type == trial_stage_type,
           Stage.feature_id == feature_id).fetch()
-      # If there are no OT stages for the feature, we can't associate the
-      # trial with any stages.
-      if len(trial_stages) == 0:
-        logging.info(f'No OT stages found for feature ID: {feature_id}')
-        return None
-      # If there is currently more than one origin trial stage for the
-      # feature, we don't know which one represents the given trial.
-      if len(trial_stages) > 1:
+      # Look for a stage that does not already have an origin trial associated
+      # with it.
+      unassociated_trial_stages =  [s for s in trial_stages
+                                    if not s.origin_trial_id]
+      if len(unassociated_trial_stages) > 1:
         logging.info('Multiple origin trial stages found for feature '
                      f'{feature_id}. Cannot discern which stage to associate '
                      'trial with.')
         return None
-      return trial_stages[0]
+      if len(unassociated_trial_stages) == 0:
+        logging.info(f'No unassociated OT stages found for feature ID: '
+                     f'{feature_id}')
+        return None
+      return unassociated_trial_stages[0]
 
   def clear_extension_requests(self, ot_stage: Stage, trial_data: dict) -> int:
     """Clear any trial extension requests if they have been processed"""
@@ -421,7 +422,7 @@ class AssociateOTs(FlaskHandler):
         trials_with_no_feature.append(trial_data)
         continue
 
-      ot_stage = self.find_trial_stage(feature_id)
+      ot_stage = self.find_unassociated_trial_stage(feature_id)
       if ot_stage is None:
         trials_with_no_feature.append(trial_data)
         continue

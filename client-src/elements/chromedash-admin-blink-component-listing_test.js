@@ -190,18 +190,21 @@ describe('chromedash-admin-blink-component-listing', () => {
       sandbox.assert.callCount(eventListeners.add, 0);
       sandbox.assert.callCount(eventListeners.remove, 0);
     });
-    // eslint-disable-next-line max-len
-    it('should make successful adminRemoveComponentUser event if removeUserFromComponent OK', async () => {
-      const alertStub = sandbox.stub(window, 'alert');
-      // Must select user is currently a subscriber.
-      element._getOptionsElement().options[1].selected = true;
-      client.removeUserFromComponent.resolves({});
-      element._removeUser();
-      const ev = await oneEvent(element, 'adminRemoveComponentUser');
-      expect(ev).to.exist;
-      expect(alertStub).to.have.callCount(0);
-      sandbox.assert.callCount(eventListeners.add, 0);
-      sandbox.assert.callCount(eventListeners.remove, 1);
-    });
+    it(
+      'should make successful adminRemoveComponentUser event if ' +
+        'removeUserFromComponent OK',
+      async () => {
+        const alertStub = sandbox.stub(window, 'alert');
+        // Must select user is currently a subscriber.
+        element._getOptionsElement().options[1].selected = true;
+        client.removeUserFromComponent.resolves({});
+        element._removeUser();
+        const ev = await oneEvent(element, 'adminRemoveComponentUser');
+        expect(ev).to.exist;
+        expect(alertStub).to.have.callCount(0);
+        sandbox.assert.callCount(eventListeners.add, 0);
+        sandbox.assert.callCount(eventListeners.remove, 1);
+      }
+    );
   });
 });

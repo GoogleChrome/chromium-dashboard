@@ -494,6 +494,24 @@ class ChromedashApp extends LitElement {
     page('/metrics/feature/timeline/popularity', () =>
       page.redirect('/metrics/feature/popularity')
     );
+    page('/reports/external_reviews', ctx => {
+      if (
+        !this.setupNewPage(
+          ctx,
+          'chromedash-report-external-reviews-dispatch-page'
+        )
+      )
+        return;
+    });
+    page('/reports/external_reviews/:reviewer', ctx => {
+      if (!['tag', 'gecko', 'webkit'].includes(ctx.params.reviewer)) {
+        page.redirect('/reports/external_reviews');
+        return;
+      }
+      if (!this.setupNewPage(ctx, 'chromedash-report-external-reviews-page'))
+        return;
+      this.pageComponent.reviewer = ctx.params.reviewer;
+    });
     page('/reports/spec_mentors', ctx => {
       if (!this.setupNewPage(ctx, 'chromedash-report-spec-mentors-page'))
         return;
