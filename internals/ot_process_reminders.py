@@ -36,8 +36,8 @@ def build_trial_data(trial_data: dict[str, Any]) -> dict[str, Any] | None:
   if trial_stage is None:
     logging.exception(f'No stage found for trial {trial_data["id"]}')
     return None
-  contact_list = [trial_stage.ot_owner_email]
-  contact_list.extend(trial_stage.ot_emails)
+  contact_list = trial_stage.ot_emails.copy()
+  contact_list.append(trial_stage.ot_owner_email)
   contact_list = [s.strip() for s in contact_list]
 
   # Remove duplicates
@@ -127,7 +127,7 @@ def send_branch_emails(release: int, next_branch_date: date) -> int:
   formatted_branch_date = format_date_for_email(next_branch_date) if next_branch_date else 'soon'
   num_branching_trials = len(all_trials['starting_trials'])
 
-  logging.info('sendBranchEmails: currently branching - '
+  logging.info('Currently branching - '
                f'{num_branching_trials} emails to send')
   for trial in all_trials['starting_trials']:
     params = {
@@ -137,10 +137,10 @@ def send_branch_emails(release: int, next_branch_date: date) -> int:
       'contacts': trial['contacts'],
     }
     cloud_tasks_helpers.enqueue_task(
-        '/tasks/email-ot-first-branch-reminder', params)
+        '/tasks/email-ot-first-branch', params)
 
   num_last_release_trials = len(all_trials['ending_trials'])
-  logging.info('sendBranchEmails: entering last release - '
+  logging.info('Entering last release - '
                f'{num_last_release_trials} emails to send')
   for trial in all_trials['ending_trials']:
     params = {
@@ -150,7 +150,7 @@ def send_branch_emails(release: int, next_branch_date: date) -> int:
       'contacts': trial['contacts'],
     }
     cloud_tasks_helpers.enqueue_task(
-      '/tasks/email-ot-last-branch-reminder', params)
+      '/tasks/email-ot-last-branch', params)
   return num_branching_trials + num_last_release_trials
 
 
@@ -163,7 +163,7 @@ def send_beta_availability_emails(release):
       'contacts': trial['contacts'],
     }
     cloud_tasks_helpers.enqueue_task(
-        '/tasks/email-ot-beta-availability-reminder', params)
+        '/tasks/email-ot-beta-availability', params)
   send_count = len(trials_entering_beta)
   logging.info(f'sendBetaAvailabilityEmail: {send_count} emails to send')
   return send_count
@@ -185,7 +185,7 @@ def send_stable_update_emails(release):
       'contacts': trial['contacts'],
     }
     cloud_tasks_helpers.enqueue_task(
-        '/tasks/email-ot-ending-next-release-reminder', params)
+        '/tasks/email-ot-ending-next-release', params)
   end_in_next_release_count = len(trials_ending_in_next_release)
   logging.info('Ending next release reminders - '
                f'{end_in_next_release_count} emails to send')
@@ -199,7 +199,7 @@ def send_stable_update_emails(release):
       'next_release': next_release,
     }
     cloud_tasks_helpers.enqueue_task(
-        '/tasks/email-ot-ending-this-release-reminder', params)
+        '/tasks/email-ot-ending-this-release', params)
   close_to_end_count = len(trials_ending_this_release)
   logging.info('Ending this release reminders - '
                f'{close_to_end_count} emails to send')

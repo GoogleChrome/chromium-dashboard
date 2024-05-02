@@ -800,26 +800,12 @@ class OriginTrialEndingNextReleaseReminderHandler(basehandlers.FlaskHandler):
   EMAIL_TEMPLATE_PATH = 'origintrials/ot-ending-next-release-email.html'
 
   def process_post_data(self, **kwargs):
-    name = self.get_param('name')
-    if not name:
-      self.abort(400, 'Required parameter not given: name.')
-    release_milestone = self.get_param('release_milestone')
-    if not release_milestone:
-      self.abort(400, 'Required parameter not given: release_milestone.')
-    after_end_release = self.get_param('after_end_release')
-    if not after_end_release:
-      self.abort(400, 'Required parameter not given: after_end_release.')
-    after_end_date = self.get_param('after_end_date')
-    if not after_end_date:
-      self.abort(400, 'Required parameter not given: after_end_date.')
     contacts = self.get_param('contacts')
-    if not contacts:
-      self.abort(400, 'Required parameter not given: contacts.')
     body_data = {
-      'name': name,
-      'release_milestone': release_milestone,
-      'after_end_release': after_end_release,
-      'after_end_date': after_end_date,
+      'name': self.get_param('name'),
+      'release_milestone': self.get_param('release_milestone'),
+      'after_end_release': self.get_param('after_end_release'),
+      'after_end_date': self.get_param('after_end_date'),
     }
     send_emails([self.build_email(body_data, contacts)])
     return {'message': 'OK'}
@@ -843,17 +829,9 @@ class OriginTrialEndingThisReleaseReminderHandler(basehandlers.FlaskHandler):
 
   def process_post_data(self, **kwargs):
     name = self.get_param('name')
-    if not name:
-      self.abort(400, 'Required parameter not given: name.')
     release_milestone = self.get_param('release_milestone')
-    if not release_milestone:
-      self.abort(400, 'Required parameter not given: release_milestone.')
     next_release = self.get_param('next_release')
-    if not next_release:
-      self.abort(400, 'Required parameter not given: next_release.')
     contacts = self.get_param('contacts')
-    if not contacts:
-      self.abort(400, 'Required parameter not given: contacts.')
     body_data = {
       'name': name,
       'release_milestone': release_milestone,
@@ -877,7 +855,7 @@ class OriginTrialBetaAvailabilityReminderHandler(basehandlers.FlaskHandler):
   """Send origin trial beta availability reminder email to OT contacts."""
 
   IS_INTERNAL_HANDLER = True
-  EMAIL_TEMPLATE_PATH = 'origintrials/ot-beta-availability-reminder-email.html'
+  EMAIL_TEMPLATE_PATH = 'origintrials/ot-beta-availability-email.html'
 
   def process_post_data(self, **kwargs):
     contacts = self.get_param('contacts')
@@ -903,7 +881,7 @@ class OriginTrialFirstBranchReminderHandler(basehandlers.FlaskHandler):
   """Send origin trial branch reminder email to OT contacts."""
 
   IS_INTERNAL_HANDLER = True
-  EMAIL_TEMPLATE_PATH = 'origintrials/ot-first-branch-reminder-email.html'
+  EMAIL_TEMPLATE_PATH = 'origintrials/ot-first-branch-email.html'
 
   def process_post_data(self, **kwargs):
     contacts = self.get_param('contacts')
@@ -930,7 +908,7 @@ class OriginTrialLastBranchReminderHandler(basehandlers.FlaskHandler):
   """Send origin trial branch reminder email to OT contacts."""
 
   IS_INTERNAL_HANDLER = True
-  EMAIL_TEMPLATE_PATH = 'origintrials/ot-last-branch-reminder-email.html'
+  EMAIL_TEMPLATE_PATH = 'origintrials/ot-last-branch-email.html'
 
   def process_post_data(self, **kwargs):
     contacts = self.get_param('contacts')
@@ -947,7 +925,7 @@ class OriginTrialLastBranchReminderHandler(basehandlers.FlaskHandler):
     return {
       'to': contacts,
       'cc': GLOBAL_OT_PROCESS_REMINDER_CC_LIST,
-      'subject': (f'{body_data["name"]}'
+      'subject': (f'{body_data["name"]} '
                   'origin trial has branched for its last release'),
       'reply_to': None,
       'html': body,

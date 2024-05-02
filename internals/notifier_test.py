@@ -1237,6 +1237,125 @@ class OriginTrialExtensionRequestHandlerTest(testing_config.CustomTestCase):
     self.assertEqual(email_task, expected)
 
 
+class OriginTrialEndingNextReleaseReminderHandlerTest(testing_config.CustomTestCase):
+  def setUp(self):
+    self.contacts = ['example_user@example.com', 'another_user@exmaple.com']
+
+  def test_make_ending_next_release_email(self):
+    body_data = {
+      'name': 'Some feature',
+      'release_milestone': '126',
+      'after_end_release': '127',
+      'after_end_date': 'January 1 2030'
+    }
+    with test_app.app_context():
+      handler = notifier.OriginTrialEndingNextReleaseReminderHandler()
+      email_task = handler.build_email(body_data, self.contacts)
+      # TESTDATA.make_golden(email_task['html'], 'test_make_ending_next_release_email.html')
+      self.assertEqual(email_task['subject'],
+        'Some feature origin trial ship decision approaching')
+      self.assertEqual(email_task['html'],
+        TESTDATA['test_make_ending_next_release_email.html'])
+
+
+class OriginTrialEndingThisReleaseReminderHandlerTest(testing_config.CustomTestCase):
+  def setUp(self):
+    self.contacts = ['example_user@example.com', 'another_user@exmaple.com']
+
+  def test_make_ending_this_release_email(self):
+    body_data = {
+      'name': 'Some feature',
+      'release_milestone': '126',
+      'next_release': '127',
+    }
+    with test_app.app_context():
+      handler = notifier.OriginTrialEndingThisReleaseReminderHandler()
+      email_task = handler.build_email(body_data, self.contacts)
+      # TESTDATA.make_golden(email_task['html'], 'test_make_ending_this_release_email.html')
+      self.assertEqual(email_task['subject'],
+        'Some feature origin trial needs blink-dev update')
+      self.assertEqual(email_task['html'],
+        TESTDATA['test_make_ending_this_release_email.html'])
+
+
+class OriginTrialBetaAvailabilityReminderHandlerTest(testing_config.CustomTestCase):
+  def setUp(self):
+    self.contacts = ['example_user@example.com', 'another_user@exmaple.com']
+
+  def test_make_beta_availability_email(self):
+    body_data = {
+      'name': 'Some feature',
+      'release_milestone': '126',
+    }
+    with test_app.app_context():
+      handler = notifier.OriginTrialBetaAvailabilityReminderHandler()
+      email_task = handler.build_email(body_data, self.contacts)
+      # TESTDATA.make_golden(email_task['html'], 'test_make_beta_availability_email.html')
+      self.assertEqual(email_task['subject'],
+        'Some feature origin trial is entering beta')
+      self.assertEqual(email_task['html'],
+        TESTDATA['test_make_beta_availability_email.html'])
+
+
+class OriginTrialFirstBranchReminderHandlerTest(testing_config.CustomTestCase):
+  def setUp(self):
+    self.contacts = ['example_user@example.com', 'another_user@exmaple.com']
+
+  def test_make_first_branch_email(self):
+    body_data = {
+      'name': 'Some feature',
+      'release_milestone': '126',
+    }
+    with test_app.app_context():
+      handler = notifier.OriginTrialFirstBranchReminderHandler()
+      email_task = handler.build_email(body_data, self.contacts)
+      # TESTDATA.make_golden(email_task['html'], 'test_make_first_branch_email.html')
+      self.assertEqual(email_task['subject'],
+        'Some feature origin trial is branching')
+      self.assertEqual(email_task['html'],
+        TESTDATA['test_make_first_branch_email.html'])
+
+
+class OriginTrialLastBranchReminderHandlerTest(testing_config.CustomTestCase):
+  def setUp(self):
+    self.contacts = ['example_user@example.com', 'another_user@exmaple.com']
+
+  def test_make_last_branch_email(self):
+    body_data = {
+      'name': 'Some feature',
+      'release_milestone': '126',
+      'branch_date': 'January 1 2030',
+    }
+    with test_app.app_context():
+      handler = notifier.OriginTrialLastBranchReminderHandler()
+      email_task = handler.build_email(body_data, self.contacts)
+      # TESTDATA.make_golden(email_task['html'], 'test_make_last_branch_email.html')
+      self.assertEqual(email_task['subject'],
+        'Some feature origin trial has branched for its last release')
+      self.assertEqual(email_task['html'],
+        TESTDATA['test_make_last_branch_email.html'])
+
+
+class OriginTrialAutomatedProcessEmailHandlerTest(testing_config.CustomTestCase):
+  def test_make_ot_process_email(self):
+    body_data = {
+      'now_date': 'January 1 2030',
+      'send_count': 100,
+      'next_branch_milestone': 200,
+      'next_branch_date': 'January 31 2030',
+      'stable_milestone': 201,
+      'stable_date': 'February 1 2030',
+    }
+    with test_app.app_context():
+      handler = notifier.OriginTrialAutomatedProcessEmailHandler()
+      email_task = handler.build_email(body_data)
+      # TESTDATA.make_golden(email_task['html'], 'test_make_ot_process_email.html')
+      self.assertEqual(email_task['subject'],
+        'Origin trials automated process reminder just ran')
+      self.assertEqual(email_task['html'],
+        TESTDATA['test_make_ot_process_email.html'])
+
+
 class FunctionsTest(testing_config.CustomTestCase):
 
   def setUp(self):
