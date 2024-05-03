@@ -7,6 +7,7 @@ import {
   somePendingGates,
 } from './chromedash-preflight-dialog';
 import {maybeOpenPrevoteDialog} from './chromedash-prevote-dialog';
+import {openNaRationaleDialog} from './chromedash-na-rationale-dialog';
 import {
   autolink,
   showToastMessage,
@@ -28,8 +29,6 @@ export class ChromedashGateColumn extends LitElement {
   voteSelectRef = createRef();
   commentAreaRef = createRef();
   postToThreadRef = createRef();
-  rationaleDialogRef = createRef();
-  rationaleRef = createRef();
   assigneeSelectRef = createRef();
 
   static get styles() {
@@ -401,10 +400,12 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   handleNARequested() {
-    this.rationaleDialogRef.value.show();
+    openNaRationaleDialog(this.gate).then(
+        rationale => {this.handleNARequestSubmitted(rationale);}
+    );
   }
 
-  async handleNARequestSubmitted() {
+  async handleNARequestSubmitted(rationale) {
     await window.csClient.setVote(
       this.feature.id,
       this.gate.id,
@@ -414,9 +415,8 @@ export class ChromedashGateColumn extends LitElement {
     // to the assigned reviewer rather than all reviewers.
     const commentText =
       'An "N/A" response is requested because: ' +
-      this.rationaleRef.value.value;
+      rationale;
     await this.postComment(commentText);
-    this.rationaleDialogRef.value.hide();
     this._fireEvent('refetch-needed', {});
   }
 
@@ -507,26 +507,6 @@ export class ChromedashGateColumn extends LitElement {
       );
     }
 
-    const dialog = html`
-      <sl-dialog ${ref(this.rationaleDialogRef)} label="Request an N/A">
-        <p style="padding: var(--content-padding)">
-          Please briefly explain why your feature does not require a review.
-          Your response will be posted as a comment on this review gate and it
-          will generate a notification to the reviewers. The
-          ${this.gate.team_name} reviewers will still evaluate whether to give
-          an "N/A" response or do a review.
-        </p>
-        <sl-textarea ${ref(this.rationaleRef)}></sl-textarea>
-        <sl-button
-          slot="footer"
-          variant="primary"
-          size="small"
-          @click=${this.handleNARequestSubmitted}
-          >Post</sl-button
-        >
-      </sl-dialog>
-    `;
-
     return html`
       <sl-button
         size="small"
@@ -537,7 +517,6 @@ export class ChromedashGateColumn extends LitElement {
       <sl-button size="small" @click=${this.handleNARequested}
         >Request N/A</sl-button
       >
-      ${dialog}
     `;
   }
 
