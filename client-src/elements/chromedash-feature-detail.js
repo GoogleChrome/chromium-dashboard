@@ -580,6 +580,9 @@ class ChromedashFeatureDetail extends LitElement {
   }
 
   renderStageActions(stage, feStage) {
+    if (!this.canEdit) {
+      return nothing;
+    }
     return html`
       ${stage.actions.map(act => this.renderStageAction(act, stage, feStage))}
     `;
