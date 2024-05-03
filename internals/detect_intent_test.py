@@ -402,12 +402,12 @@ class FunctionTest(testing_config.CustomTestCase):
   def test_detect_new_thread__no_votes(self):
     """New thread is detected when if no votes exist for a given gate."""
     self.assertTrue(detect_intent.detect_new_thread(
-        self.feature_1.key.integer_id(), self.gate_1.key.integer_id()))
+        self.gate_1.key.integer_id()))
 
   def test_detect_new_thread__existing_votes(self):
     """Existing thread is detected when if votes exist for a given gate."""
     self.assertFalse(detect_intent.detect_new_thread(
-        self.feature_1.key.integer_id(), self.gate_2.key.integer_id()))
+        self.gate_2.key.integer_id()))
 
 
 class IntentEmailHandlerTest(testing_config.CustomTestCase):

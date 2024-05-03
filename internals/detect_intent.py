@@ -160,9 +160,9 @@ def is_lgtm_allowed(from_addr, feature, approval_field):
   return allowed
 
 
-def detect_new_thread(feature_id: int, gate_id: int) -> bool:
+def detect_new_thread(gate_id: int) -> bool:
   """Return True if there are no previous approval values for this gate."""
-  existing_votes = Vote.get_votes(feature_id=feature_id, gate_id=gate_id)
+  existing_votes = Vote.get_votes(gate_id=gate_id)
   return not existing_votes
 
 
@@ -229,7 +229,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
       return {'message': message}
 
     self.set_intent_thread_url(stage, thread_url, subject)
-    is_new_thread = detect_new_thread(feature_id, gate_id)
+    is_new_thread = detect_new_thread(gate_id)
     self.create_approvals(
         feature, stage, gate, approval_field, from_addr, body, is_new_thread)
     self.record_slo(feature, approval_field, from_addr, is_new_thread)
