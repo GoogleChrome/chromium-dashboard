@@ -1,4 +1,4 @@
-import {LitElement, css, html, nothing} from 'lit';
+import {LitElement, css, html} from 'lit';
 import {ref, createRef} from 'lit/directives/ref.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
@@ -6,7 +6,9 @@ let naRationalDialogEl;
 
 export async function openNaRationaleDialog(gate) {
   if (!naRationalDialogEl) {
-    naRationalDialogEl = document.createElement('chromedash-na-rationale-dialog');
+    naRationalDialogEl = document.createElement(
+      'chromedash-na-rationale-dialog'
+    );
     document.body.appendChild(naRationalDialogEl);
     await naRationalDialogEl.updateComplete;
   }
@@ -27,11 +29,7 @@ export class ChromedashNaRationaleDialog extends LitElement {
   }
 
   static get styles() {
-    return [
-      ...SHARED_STYLES,
-      css`
-      `,
-    ];
+    return [...SHARED_STYLES, css``];
   }
 
   constructor() {
@@ -56,11 +54,11 @@ export class ChromedashNaRationaleDialog extends LitElement {
   renderDialogContent() {
     return html`
       <p style="padding: var(--content-padding)">
-        Please briefly explain why your feature does not require a review.
-        Your response will be posted as a comment on this review gate and it
-        will generate a notification to the reviewers. The
-        ${this.gate.team_name} reviewers will still evaluate whether to give
-        an "N/A" response or do a review.
+        Please briefly explain why your feature does not require a review. Your
+        response will be posted as a comment on this review gate and it will
+        generate a notification to the reviewers. The ${this.gate.team_name}
+        reviewers will still evaluate whether to give an "N/A" response or do a
+        review.
       </p>
       <sl-textarea ${ref(this.rationaleRef)}></sl-textarea>
       <sl-button
@@ -68,7 +66,8 @@ export class ChromedashNaRationaleDialog extends LitElement {
         variant="primary"
         size="small"
         @click=${this.handlePost}
-        >Post</sl-button>
+        >Post</sl-button
+      >
     `;
   }
 
@@ -82,5 +81,6 @@ export class ChromedashNaRationaleDialog extends LitElement {
 }
 
 customElements.define(
-    'chromedash-na-rationale-dialog',
-    ChromedashNaRationaleDialog);
+  'chromedash-na-rationale-dialog',
+  ChromedashNaRationaleDialog
+);

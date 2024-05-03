@@ -400,9 +400,9 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   handleNARequested() {
-    openNaRationaleDialog(this.gate).then(
-        rationale => {this.handleNARequestSubmitted(rationale);}
-    );
+    openNaRationaleDialog(this.gate).then(rationale => {
+      this.handleNARequestSubmitted(rationale);
+    });
   }
 
   async handleNARequestSubmitted(rationale) {
@@ -413,9 +413,7 @@ export class ChromedashGateColumn extends LitElement {
     );
     // Post the comment after the review request so that it will go
     // to the assigned reviewer rather than all reviewers.
-    const commentText =
-      'An "N/A" response is requested because: ' +
-      rationale;
+    const commentText = 'An "N/A" response is requested because: ' + rationale;
     await this.postComment(commentText);
     this._fireEvent('refetch-needed', {});
   }
