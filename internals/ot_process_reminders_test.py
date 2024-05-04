@@ -105,7 +105,54 @@ class OTProcessRemindersTest(testing_config.CustomTestCase):
         'allow_third_party_origins': False,
       },
     ]
-    self.maxDiff = None
+
+  def test_build_trials(self):
+    """Test that trial data is formatted correctly."""
+    expected_trials = [
+      {
+        'id': '4199606652522987521',
+        'name': 'feature one',
+        'start_milestone': 97,
+        'end_milestone':  103,
+        'contacts': [
+          'ot_owner1@google.com',
+          'contact1@example.com',
+          'contact2@example.com',
+        ],
+      },
+      {
+        'id': '1',
+        'name': 'Sample trial 2',
+        'start_milestone': 103,
+        'end_milestone':  109,
+        'contacts': [
+          'sample_contact@example.com',
+          'another@example.com',
+          'ot_owner2@google.com',
+        ],
+      }
+    ]
+    formatted_1 = ot_process_reminders.build_trial_data(
+        self.mock_get_trials_list_return_value[0])
+    formatted_2 = ot_process_reminders.build_trial_data(
+        self.mock_get_trials_list_return_value[1])
+    formatted_3 = ot_process_reminders.build_trial_data(
+        self.mock_get_trials_list_return_value[2])
+    # 3rd trial does not have associated stage, so should return as None.
+    self.assertIsNone(formatted_3)
+
+    self.assertEqual(expected_trials[0]['id'], formatted_1['id'])
+    self.assertEqual(expected_trials[1]['id'], formatted_2['id'])
+    self.assertEqual(expected_trials[0]['name'], formatted_1['name'])
+    self.assertEqual(expected_trials[1]['name'], formatted_2['name'])
+    self.assertEqual(expected_trials[0]['start_milestone'],
+                     formatted_1['start_milestone'])
+    self.assertEqual(expected_trials[1]['start_milestone'],
+                     formatted_2['start_milestone'])
+    self.assertEqual(set(expected_trials[0]['contacts']),
+                     set(formatted_1['contacts']))
+    self.assertEqual(set(expected_trials[1]['contacts']),
+                     set(formatted_2['contacts']))
 
   @mock.patch('framework.origin_trials_client.get_trials_list')
   def test_get_trials(self, mock_get_trials_list):
