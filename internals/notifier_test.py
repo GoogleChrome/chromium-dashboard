@@ -1165,7 +1165,7 @@ class OriginTrialEndingNextReleaseReminderHandlerTest(testing_config.CustomTestC
       'name': 'Some feature',
       'release_milestone': '126',
       'after_end_release': '127',
-      'after_end_date': 'January 1 2030'
+      'after_end_date': '2030-01-01'
     }
     with test_app.app_context():
       handler = notifier.OriginTrialEndingNextReleaseReminderHandler()
@@ -1224,7 +1224,7 @@ class OriginTrialFirstBranchReminderHandlerTest(testing_config.CustomTestCase):
     body_data = {
       'name': 'Some feature',
       'release_milestone': '126',
-      'branch_date': 'January 1 2030',
+      'branch_date': '2030-01-01',
     }
     with test_app.app_context():
       handler = notifier.OriginTrialFirstBranchReminderHandler()
@@ -1244,7 +1244,7 @@ class OriginTrialLastBranchReminderHandlerTest(testing_config.CustomTestCase):
     body_data = {
       'name': 'Some feature',
       'release_milestone': '126',
-      'branch_date': 'January 1 2030',
+      'branch_date': '2030-01-01',
     }
     with test_app.app_context():
       handler = notifier.OriginTrialLastBranchReminderHandler()
@@ -1259,12 +1259,12 @@ class OriginTrialLastBranchReminderHandlerTest(testing_config.CustomTestCase):
 class OriginTrialAutomatedProcessEmailHandlerTest(testing_config.CustomTestCase):
   def test_make_ot_process_email(self):
     body_data = {
-      'now_date': 'January 1 2030',
+      'now_date': '2030-01-01',
       'send_count': 100,
       'next_branch_milestone': 200,
-      'next_branch_date': 'January 31 2030',
+      'next_branch_date': '2030-01-31',
       'stable_milestone': 201,
-      'stable_date': 'February 1 2030',
+      'stable_date': '2030-02-01',
     }
     with test_app.app_context():
       handler = notifier.OriginTrialAutomatedProcessEmailHandler()

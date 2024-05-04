@@ -839,7 +839,7 @@ class OriginTrialBetaAvailabilityReminderHandler(basehandlers.FlaskHandler):
 
 
 class OriginTrialFirstBranchReminderHandler(basehandlers.FlaskHandler):
-  """Send origin trial branch reminder email to OT contacts."""
+  """Send origin trial first branch reminder email to OT contacts."""
 
   IS_INTERNAL_HANDLER = True
   EMAIL_TEMPLATE_PATH = 'origintrials/ot-first-branch-email.html'
@@ -866,7 +866,7 @@ class OriginTrialFirstBranchReminderHandler(basehandlers.FlaskHandler):
 
 
 class OriginTrialLastBranchReminderHandler(basehandlers.FlaskHandler):
-  """Send origin trial branch reminder email to OT contacts."""
+  """Send origin trial last branch reminder email to OT contacts."""
 
   IS_INTERNAL_HANDLER = True
   EMAIL_TEMPLATE_PATH = 'origintrials/ot-last-branch-email.html'
