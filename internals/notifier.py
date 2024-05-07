@@ -37,6 +37,7 @@ from internals import approval_defs
 from internals import core_enums
 from internals import stage_helpers
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.data_types import StageDict
 from internals.review_models import Gate
 from internals.user_models import (
     AppUser, BlinkComponent, FeatureOwner, UserPref)
@@ -640,6 +641,35 @@ class FeatureCommentHandler(basehandlers.FlaskHandler):
                  for addr, reasons in sorted(addr_reasons.items())]
     return all_tasks
 
+
+class OriginTrialCreatedAndActivatedHandler(basehandlers.FlaskHandler):
+  """Notify about an origin trial creation request that is processed and
+  activated.
+  """
+
+  IS_INTERNAL_HANDLER = True
+  EMAIL_TEMPLATE_PATH = 'origintrials/ot-created-and-activated-email.html'
+
+  def process_post_data(self, **kwargs):
+    stage = self.get_param('stage', required=True)
+    contacts = self.get_param('contacts', required=True)
+    send_emails([self.build_email(stage, contacts)])
+    return {'message': 'OK'}
+
+  def build_email(self, stage: StageDict, contacts: list[str]) -> dict:
+    body_data = {
+      'stage': stage,
+      'ot_url': f'{settings.OT_URL}#/view_trial/{stage["origin_trial_id"]}',
+      'chromestatus_url': ('https://chromestatus.com/feature/'
+                           f'{stage["feature_id"]}')
+    }
+    body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
+    return {
+      'to': contacts,
+      'subject': f'{stage["ot_display_name"]} origin trial is now available',
+      'reply_to': None,
+      'html': body,
+    }
 
 
 class OriginTrialCreationRequestHandler(basehandlers.FlaskHandler):
