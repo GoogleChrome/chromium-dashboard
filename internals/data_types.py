@@ -18,7 +18,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, NotRequired, Optional, TypedDict
+from typing import Any, NotRequired, TypedDict
 
 # List of changed fields to be used to create Activity entities
 # and notify subscribed users of changes to a feature.
@@ -45,7 +45,7 @@ class StageDict(TypedDict):
   extensions: list[StageDict]  # type: ignore
   origin_trial_feedback_url: str | None
   ot_action_requested: bool
-  ot_activation_date: Optional[str | None]
+  ot_activation_date: NotRequired[str | None]
   ot_approval_buganizer_component: int | None
   ot_approval_criteria_url: str | None
   ot_approval_group_email: str | None
