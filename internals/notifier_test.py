@@ -1161,6 +1161,9 @@ class OriginTrialCreationProcessedHandlerTest(testing_config.CustomTestCase):
     self.contacts = ['owner1@example.com',
                      'contact1@example.com',
                      'contact2@example.com']
+    self.feature_1 = FeatureEntry(
+        id=1, name='feature one', summary='sum', category=1, feature_type=0)
+    self.feature_1.put()
     self.ot_stage = Stage(
         feature_id=1, stage_type=150, ot_display_name='Example Trial',
         ot_owner_email='feature_owner@google.com',
@@ -1175,13 +1178,15 @@ class OriginTrialCreationProcessedHandlerTest(testing_config.CustomTestCase):
     self.ot_stage.put()
 
   def tearDown(self):
+    self.feature_1.key.delete()
     self.ot_stage.key.delete()
 
   def test_make_creation_processed_email(self):
     with test_app.app_context():
       handler = notifier.OriginTrialCreationProcessedHandler()
-      email_task = handler.build_email(self.ot_stage, self.contacts)
-      # TESTDATA.make_golden(email_task['html'], 'test_make_creation_processed_email.html')
+      stage_dict = converters.stage_to_json_dict(self.ot_stage)
+      email_task = handler.build_email(stage_dict, self.contacts)
+      TESTDATA.make_golden(email_task['html'], 'test_make_creation_processed_email.html')
       self.assertEqual(
         email_task['subject'],
         'Example Trial origin trial has been created and will begin 2030-01-01')
