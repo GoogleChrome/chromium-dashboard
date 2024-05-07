@@ -35,6 +35,7 @@ from framework import users
 import settings
 from internals import approval_defs
 from internals import core_enums
+from internals.data_types import StageDict
 from internals import stage_helpers
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate
@@ -652,17 +653,17 @@ class OriginTrialCreationRequestFailedHandler(basehandlers.FlaskHandler):
     send_emails([self.build_email(stage)])
     return {'message': 'OK'}
 
-  def build_email(self, stage: Stage) -> dict:
+  def build_email(self, stage: StageDict) -> dict:
     body_data = {
       'stage': stage,
       'chromestatus_url': ('https://chromestatus.com/feature/'
-                           f'{stage.feature_id}')
+                           f'{stage["feature_id"]}')
     }
     body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
     return {
       'to': OT_SUPPORT_EMAIL,
       'subject': ('Automated trial creation request failed for '
-                  f'{stage.ot_display_name}'),
+                  f'{stage["ot_display_name"]}'),
       'reply_to': None,
       'html': body,
     }

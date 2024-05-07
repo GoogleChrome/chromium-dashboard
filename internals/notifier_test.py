@@ -1158,6 +1158,9 @@ class OriginTrialExtensionApprovedHandlerTest(testing_config.CustomTestCase):
 
 class OriginTrialCreationRequestFailedHandlerTest(testing_config.CustomTestCase):
   def setUp(self):
+    self.feature_1 = FeatureEntry(
+        id=1, name='feature one', summary='sum', category=1, feature_type=0)
+    self.feature_1.put()
     self.ot_stage = Stage(
         feature_id=1, stage_type=150, ot_display_name='Example Trial',
         ot_owner_email='feature_owner@google.com',
@@ -1170,10 +1173,15 @@ class OriginTrialCreationRequestFailedHandlerTest(testing_config.CustomTestCase)
         ot_is_deprecation_trial=True)
     self.ot_stage.put()
 
+  def tearDown(self):
+    self.feature_1.key.delete()
+    self.ot_stage.key.delete()
+
   def test_make_creation_request_failed_email(self):
     with test_app.app_context():
       handler = notifier.OriginTrialCreationRequestFailedHandler()
-      email_task = handler.build_email(self.ot_stage)
+      stage_dict = converters.stage_to_json_dict(self.ot_stage)
+      email_task = handler.build_email(stage_dict)
       # TESTDATA.make_golden(email_task['html'], 'test_make_creation_request_failed_email.html')
       self.assertEqual(
         email_task['subject'],
