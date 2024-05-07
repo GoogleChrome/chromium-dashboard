@@ -662,10 +662,11 @@ class OriginTrialCreationProcessedHandler(basehandlers.FlaskHandler):
                            f'{stage.feature_id}')
     }
     body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
+    activation_date = stage.ot_activation_date.strftime('%Y-%m-%d')
     return {
       'to': contacts,
       'subject': (f'{stage.ot_display_name} origin trial has been created '
-                  f'and will begin {stage.ot_activation_date}'),
+                  f'and will begin {activation_date}'),
       'reply_to': None,
       'html': body,
     }

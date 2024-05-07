@@ -14,7 +14,7 @@
 
 import collections
 import testing_config  # Must be imported before the module under test.
-from datetime import datetime
+from datetime import date, datetime
 
 import flask
 from unittest import mock
@@ -1158,6 +1158,9 @@ class OriginTrialExtensionApprovedHandlerTest(testing_config.CustomTestCase):
 
 class OriginTrialCreationProcessedHandlerTest(testing_config.CustomTestCase):
   def setUp(self):
+    self.contacts = ['owner1@example.com',
+                     'contact1@example.com',
+                     'contact2@example.com']
     self.ot_stage = Stage(
         feature_id=1, stage_type=150, ot_display_name='Example Trial',
         ot_owner_email='feature_owner@google.com',
@@ -1167,15 +1170,18 @@ class OriginTrialCreationProcessedHandlerTest(testing_config.CustomTestCase):
         ot_feedback_submission_url='https://example.com/feedback',
         intent_thread_url='https://example.com/experiment',
         ot_description='OT description', ot_has_third_party_support=True,
-        ot_activation_date=datetime(2030, 1, 1),
+        ot_activation_date=date(2030, 1, 1),
         ot_is_deprecation_trial=True)
     self.ot_stage.put()
+
+  def tearDown(self):
+    self.ot_stage.key.delete()
 
   def test_make_creation_processed_email(self):
     with test_app.app_context():
       handler = notifier.OriginTrialCreationProcessedHandler()
-      email_task = handler.build_email(self.ot_stage)
-      TESTDATA.make_golden(email_task['html'], 'test_make_creation_processed_email.html')
+      email_task = handler.build_email(self.ot_stage, self.contacts)
+      # TESTDATA.make_golden(email_task['html'], 'test_make_creation_processed_email.html')
       self.assertEqual(
         email_task['subject'],
         'Example Trial origin trial has been created and will begin 2030-01-01')
