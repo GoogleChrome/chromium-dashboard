@@ -651,7 +651,8 @@ class OriginTrialCreationProcessedHandler(basehandlers.FlaskHandler):
 
   def process_post_data(self, **kwargs):
     stage = self.get_param('stage', required=True)
-    contacts = self.get_param('contacts', required=True)
+    contacts = stage['ot_emails'] or []
+    contacts.append('ot_owner_email')
     send_emails([self.build_email(stage, contacts)])
     return {'message': 'OK'}
 
