@@ -1156,7 +1156,7 @@ class OriginTrialExtensionApprovedHandlerTest(testing_config.CustomTestCase):
         TESTDATA['test_make_extension_approved_email.html'])
 
 
-class OriginTrialCreatedAndActivatedHandlerTest(testing_config.CustomTestCase):
+class OriginTrialActivatedHandlerTest(testing_config.CustomTestCase):
   def setUp(self):
     self.contacts = [
         'ot_owner1@google.com',
@@ -1183,16 +1183,16 @@ class OriginTrialCreatedAndActivatedHandlerTest(testing_config.CustomTestCase):
     self.feature_1.key.delete()
     self.ot_stage.key.delete()
 
-  def test_make_created_and_activated_email(self):
+  def test_make_activated_email(self):
     with test_app.app_context():
-      handler = notifier.OriginTrialCreatedAndActivatedHandler()
+      handler = notifier.OriginTrialActivatedHandler()
       stage_dict = converters.stage_to_json_dict(self.ot_stage)
       email_task = handler.build_email(stage_dict, self.contacts)
-      # TESTDATA.make_golden(email_task['html'], 'test_make_created_and_activated_email.html')
+      TESTDATA.make_golden(email_task['html'], 'test_make_activated_email.html')
       self.assertEqual(email_task['subject'],
                        'Example Trial origin trial is now available')
       self.assertEqual(email_task['html'],
-                       TESTDATA['test_make_created_and_activated_email.html'])
+                       TESTDATA['test_make_activated_email.html'])
 
 
 class FunctionsTest(testing_config.CustomTestCase):

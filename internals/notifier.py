@@ -642,13 +642,11 @@ class FeatureCommentHandler(basehandlers.FlaskHandler):
     return all_tasks
 
 
-class OriginTrialCreatedAndActivatedHandler(basehandlers.FlaskHandler):
-  """Notify about an origin trial creation request that is processed and
-  activated.
-  """
+class OriginTrialActivatedHandler(basehandlers.FlaskHandler):
+  """Notify about an origin trial being activated."""
 
   IS_INTERNAL_HANDLER = True
-  EMAIL_TEMPLATE_PATH = 'origintrials/ot-created-and-activated-email.html'
+  EMAIL_TEMPLATE_PATH = 'origintrials/ot-activated-email.html'
 
   def process_post_data(self, **kwargs):
     stage = self.get_param('stage', required=True)
