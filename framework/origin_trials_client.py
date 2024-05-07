@@ -22,6 +22,7 @@ from typing import Any
 import requests
 
 from framework import secrets
+from internals.core_models import Stage
 from internals.data_types import OriginTrialInfo
 import settings
 
@@ -110,6 +111,53 @@ def _get_ot_access_token() -> str:
     return ''
   return credentials.token
 
+
+def create_origin_trial(ot_stage: Stage):
+  """Create an origin trial.
+
+  Raises:
+    requests.exceptions.RequestException: If the request fails to connect or
+      the HTTP status code is not successful.
+  """
+  if settings.DEV_MODE:
+    logging.info('Creation request will not be sent to origin trials API in '
+                 'local environment.')
+    return
+  key = secrets.get_ot_api_key()
+  if key is None:
+    return
+
+  json = {
+    'trial': {
+      'display_name': ot_stage.ot_display_name,
+      'start_milestone': str(ot_stage.milestones.desktop_first),
+      'end_milestone': str(ot_stage.milestones.desktop_last),
+      'end_time': {
+        'seconds': _get_trial_end_time(ot_stage.milestones.desktop_last)
+      },
+      'description': ot_stage.ot_description,
+      'documentation_url': ot_stage.ot_documentation_url,
+      'feedback_url': ot_stage.ot_feedback_submission_url,
+      'intent_to_experiment_url': ot_stage.intent_thread_url,
+      'chromestatus_url': f'{settings.SITE_URL}feature/{ot_stage.feature_id}',
+      'allow_third_party_origins': ot_stage.ot_has_third_party_support,
+      'type': ('DEPRECATION'
+                if ot_stage.ot_is_deprecation_trial else 'ORIGIN_TRIAL'),
+    }
+  }
+  if ot_stage.ot_chromium_trial_name:
+    json['origin_trial_feature_name'] = ot_stage.ot_chromium_trial_name
+  access_token = _get_ot_access_token()
+  url = f'{settings.OT_API_URL}/v1/trials-integration'
+  headers = {'Authorization': f'Bearer {access_token}'}
+
+  try:
+    response = requests.post(url, headers=headers, params={'key': key}, json=json)
+    logging.info(response.text)
+    response.raise_for_status()
+  except requests.exceptions.RequestException as e:
+    logging.exception(f'Failed to get response from origin trials API. {response.text}')
+    raise e
 
 def extend_origin_trial(trial_id: str, end_milestone: int, intent_url: str):
   """Extend an existing origin trial.

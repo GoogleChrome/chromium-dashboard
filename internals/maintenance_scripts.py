@@ -16,8 +16,10 @@ import datetime
 import logging
 from typing import Any
 from google.cloud import ndb  # type: ignore
+import requests
 
 from framework.basehandlers import FlaskHandler
+from framework import cloud_tasks_helpers
 from framework import origin_trials_client
 from internals import approval_defs
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
@@ -500,3 +502,35 @@ class BackfillFeatureEnterpriseImpact(FlaskHandler):
     ndb.put_multi(batch)
 
     return f'{count} Feature entities updated of {len(features_by_id)} available features.'
+
+
+class CreateOriginTrials(FlaskHandler):
+  def get_template_data(self, **kwargs):
+    """Create any origin trials that are flagged for creation."""
+    self.require_cron_header()
+    creation_count = 0
+    failed_count = 0
+
+    # OT stages that are flagged to process a trial creation.
+    ot_stages: list[Stage] = Stage.query(Stage.ot_creation_requested).fetch()
+    for stage in ot_stages:
+      request_success = False
+      attempted_requests = 0
+      while not request_success and attempted_requests < 3:
+        attempted_requests += 1
+        try:
+          origin_trials_client.create_origin_trial(stage)
+          request_success = True
+        except requests.RequestException:
+          attempted_requests += 1
+      if not request_success:
+        logging.warning('Origin trial could not be created for stage '
+                        f'{stage.key.integer_id()}')
+        cloud_tasks_helpers.enqueue_task('/tasks/email-trial-creation-failed',
+                                         {'stage': stage})
+        failed_count += 1
+      else:
+
+
+    return (f'{creation_count} trials created and '
+            f'{failed_count} creations requests failed.')
