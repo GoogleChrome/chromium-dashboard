@@ -641,6 +641,32 @@ class FeatureCommentHandler(basehandlers.FlaskHandler):
     return all_tasks
 
 
+class OriginTrialCreationRequestFailedHandler(basehandlers.FlaskHandler):
+  """Notify about an origin trial creation request failing automated request."""
+
+  IS_INTERNAL_HANDLER = True
+  EMAIL_TEMPLATE_PATH = 'origintrials/ot-creation-request-failed-email.html'
+
+  def process_post_data(self, **kwargs):
+    stage = self.get_param('stage', required=True)
+    send_emails([self.build_email(stage)])
+    return {'message': 'OK'}
+
+  def build_email(self, stage: Stage) -> dict:
+    body_data = {
+      'stage': stage,
+      'chromestatus_url': ('https://chromestatus.com/feature/'
+                           f'{stage.feature_id}')
+    }
+    body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
+    return {
+      'to': OT_SUPPORT_EMAIL,
+      'subject': ('Automated trial creation request failed for '
+                  f'{stage.ot_display_name}'),
+      'reply_to': None,
+      'html': body,
+    }
+
 
 class OriginTrialCreationRequestHandler(basehandlers.FlaskHandler):
   """Notify about an origin trial creation request."""
