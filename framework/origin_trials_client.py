@@ -22,12 +22,10 @@ from typing import Any
 import requests
 
 from framework import secrets
+from framework import utils
 from internals.core_models import Stage
 from internals.data_types import OriginTrialInfo
 import settings
-
-
-CHROMIUM_SCHEDULE_DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
 
 
 def get_trials_list() -> list[dict[str, Any]]:
@@ -76,24 +74,16 @@ def _get_trial_end_time(end_milestone: int) -> int:
       format.
   """
   milestone_plus_two = int(end_milestone) + 2
-  try:
-    response = requests.get(
-      'https://chromiumdash.appspot.com/fetch_milestone_schedule'
-      f'?mstone={milestone_plus_two}')
-    response.raise_for_status()
-  except requests.exceptions.RequestException as e:
-    logging.exception('Failed to get response from Chromium schedule API.')
-    raise e
-  response_json = response.json()
+  mstone_info = utils.get_chromium_milestone_info(milestone_plus_two)
 
   # Raise error if the response is not in the expected format.
-  if ('mstones' not in response_json
-      or len(response_json['mstones']) == 0
-      or 'late_stable_date' not in response_json['mstones'][0]):
+  if ('mstones' not in mstone_info
+      or len(mstone_info['mstones']) == 0
+      or 'late_stable_date' not in mstone_info['mstones'][0]):
     raise KeyError('Chromium schedule response not in expected format.')
   date = datetime.strptime(
-      response_json['mstones'][0]['late_stable_date'],
-      CHROMIUM_SCHEDULE_DATE_FORMAT)
+      mstone_info['mstones'][0]['late_stable_date'],
+      utils.CHROMIUM_SCHEDULE_DATE_FORMAT)
   return int(date.replace(tzinfo=timezone.utc).timestamp())
 
 
@@ -112,7 +102,7 @@ def _get_ot_access_token() -> str:
   return credentials.token
 
 
-def create_origin_trial(ot_stage: Stage):
+def create_origin_trial(ot_stage: Stage) -> str | None:
   """Create an origin trial.
 
   Raises:
@@ -158,6 +148,12 @@ def create_origin_trial(ot_stage: Stage):
   except requests.exceptions.RequestException as e:
     logging.exception(f'Failed to get response from origin trials API. {response.text}')
     raise e
+
+  return response.json()['id']
+
+def activate_origin_trial(origin_trial_id: str):
+  pass
+
 
 def extend_origin_trial(trial_id: str, end_milestone: int, intent_url: str):
   """Extend an existing origin trial.
