@@ -551,10 +551,11 @@ class ChromedashFeatureDetail extends LitElement {
       // No gate_id for this URL.
       .replace('/{gate_id}', '');
 
+    const gatesForStage = this.gates.filter(g => g.stage_id == feStage.id);
     const checkCompletion = () => {
       if (
         somePendingPrereqs(action, this.progress) ||
-        somePendingGates(this.featureGates, feStage)
+        somePendingGates(gatesForStage, feStage)
       ) {
         // Open the dialog.
         openPreflightDialog(
@@ -564,7 +565,7 @@ class ChromedashFeatureDetail extends LitElement {
           action,
           stage,
           feStage,
-          this.gates,
+          gatesForStage,
           url
         );
         return;
