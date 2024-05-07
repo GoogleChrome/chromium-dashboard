@@ -34,12 +34,30 @@ class FunctionTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = FeatureEntry(
-        name='feature one', summary='detailed sum', category=1,
+        id=1, name='feature one', summary='detailed sum', category=1,
         intent_stage=core_enums.INTENT_IMPLEMENT)
     self.feature_1.put()
+    # OT extension stage and gate.
+    self.stage_1 = Stage(id=20, feature_id=1, stage_type=151)
+    self.stage_1.put()
+    self.gate_1 = Gate(
+        id=300, feature_id=1, stage_id=20, gate_type=3, state=Vote.NA)
+    self.gate_1.put()
+    # OT extension stage and gate with an existing vote.
+    self.stage_2 = Stage(id=40, feature_id=1, stage_type=151)
+    self.stage_2.put()
+    self.gate_2 = Gate(
+        id=500, feature_id=1, stage_id=2, gate_type=3, state=Vote.NA)
+    self.gate_2.put()
+    self.vote_1 = Vote(
+        id=6000, feature_id=1, gate_id=500, state=Vote.REVIEW_REQUESTED,
+        set_on=datetime.datetime.now(), set_by="some_user@example.com")
+    self.vote_1.put()
 
   def tearDown(self):
-    self.feature_1.key.delete()
+    for kind in [FeatureEntry, Stage, Gate, Vote]:
+      for entity in kind.query():
+        entity.key.delete()
 
   def test_detect_field(self):
     """We can detect intent thread type by subject line."""
@@ -381,16 +399,15 @@ class FunctionTest(testing_config.CustomTestCase):
     self.assertFalse(detect_intent.is_lgtm_allowed(
         'other@example.com', self.feature_1, approval_defs.ShipApproval))
 
-  @mock.patch('internals.review_models.Vote.get_votes')
-  def test_detect_new_thread(self, mock_get_approvals):
-    """A thread is new if there are no previous approval values."""
-    mock_get_approvals.return_value = []
+  def test_detect_new_thread__no_votes(self):
+    """New thread is detected when if no votes exist for a given gate."""
     self.assertTrue(detect_intent.detect_new_thread(
-        self.feature_1.key.integer_id(), approval_defs.ShipApproval))
+        self.gate_1.key.integer_id()))
 
-    mock_get_approvals.return_value = ['fake approval value']
+  def test_detect_new_thread__existing_votes(self):
+    """Existing thread is detected when if votes exist for a given gate."""
     self.assertFalse(detect_intent.detect_new_thread(
-        self.feature_1.key.integer_id(), approval_defs.ShipApproval))
+        self.gate_2.key.integer_id()))
 
 
 class IntentEmailHandlerTest(testing_config.CustomTestCase):
