@@ -157,49 +157,47 @@ class OTProcessRemindersTest(testing_config.CustomTestCase):
   @mock.patch('framework.origin_trials_client.get_trials_list')
   def test_get_trials(self, mock_get_trials_list):
     mock_get_trials_list.return_value = self.mock_get_trials_list_return_value
-    relevant_trials = ot_process_reminders.get_trials(103)
-    expected_trials = {
-      'starting_trials': [
-        {
-          'id': '1',
-          'name': 'Sample trial 2',
-          'start_milestone': 103,
-          'end_milestone': 109,
-          'contacts': [
-            'sample_contact@example.com',
-            'another@example.com',
-            'ot_owner2@google.com',
-          ],
-        }
-      ],
-      'ending_trials': [
-        {
-          'id': '4199606652522987521',
-          'name': 'feature one',
-          'start_milestone': 97,
-          'end_milestone': 103,
-          'contacts': [
-            'contact1@example.com',
-            'contact2@example.com',
-            'ot_owner1@google.com',
-          ],
-        }
-      ],
-    }
+    starting_trials, ending_trials = ot_process_reminders.get_trials(103)
+    expected_starting_trials = [
+      {
+        'id': '1',
+        'name': 'Sample trial 2',
+        'start_milestone': 103,
+        'end_milestone': 109,
+        'contacts': [
+          'sample_contact@example.com',
+          'another@example.com',
+          'ot_owner2@google.com',
+        ],
+      }
+    ]
+    expected_ending_trials = [
+      {
+        'id': '4199606652522987521',
+        'name': 'feature one',
+        'start_milestone': 97,
+        'end_milestone': 103,
+        'contacts': [
+          'contact1@example.com',
+          'contact2@example.com',
+          'ot_owner1@google.com',
+        ],
+      }
+    ]
 
-    self.assertEqual(len(relevant_trials['starting_trials']), 1)
-    self.assertEqual(len(relevant_trials['ending_trials']), 1)
-    starting_trial = relevant_trials['starting_trials'][0]
-    ending_trial = relevant_trials['ending_trials'][0]
+    self.assertEqual(len(starting_trials), 1)
+    self.assertEqual(len(ending_trials), 1)
+    starting_trial = starting_trials[0]
+    ending_trial = ending_trials[0]
     self.assertEqual(starting_trial['id'],
-                     expected_trials['starting_trials'][0]['id'])
+                     expected_starting_trials[0]['id'])
     self.assertEqual(ending_trial['id'],
-                     expected_trials['ending_trials'][0]['id'])
+                     expected_ending_trials[0]['id'])
     self.assertEqual(starting_trial['name'],
-                     expected_trials['starting_trials'][0]['name'])
+                     expected_starting_trials[0]['name'])
     self.assertEqual(ending_trial['name'],
-                     expected_trials['ending_trials'][0]['name'])
+                     expected_ending_trials[0]['name'])
     self.assertEqual(set(starting_trial['contacts']),
-                     set(expected_trials['starting_trials'][0]['contacts']))
+                     set(expected_starting_trials[0]['contacts']))
     self.assertEqual(set(ending_trial['contacts']),
-                     set(expected_trials['ending_trials'][0]['contacts']))
+                     set(expected_ending_trials[0]['contacts']))
