@@ -1186,7 +1186,7 @@ class OTCreationProcessedHandlerTest(testing_config.CustomTestCase):
       handler = notifier.OTCreationProcessedHandler()
       stage_dict = converters.stage_to_json_dict(self.ot_stage)
       email_task = handler.build_email(stage_dict, self.contacts)
-      TESTDATA.make_golden(email_task['html'], 'test_make_creation_processed_email.html')
+      # TESTDATA.make_golden(email_task['html'], 'test_make_creation_processed_email.html')
       self.assertEqual(
         email_task['subject'],
         'Example Trial origin trial has been created and will begin 2030-01-01')
