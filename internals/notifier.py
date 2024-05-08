@@ -642,7 +642,7 @@ class FeatureCommentHandler(basehandlers.FlaskHandler):
     return all_tasks
 
 
-class OriginTrialCreationRequestFailedHandler(basehandlers.FlaskHandler):
+class OTCreationRequestFailedHandler(basehandlers.FlaskHandler):
   """Notify about an origin trial creation request failing automated request."""
 
   IS_INTERNAL_HANDLER = True
