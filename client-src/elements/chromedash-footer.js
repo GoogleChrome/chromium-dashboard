@@ -14,8 +14,8 @@ export class ChromedashFooter extends LitElement {
           justify-content: center;
           text-align: center;
           align-items: center;
-          margin-top: 2em;
           padding: var(--content-padding-half);
+          position: relative;  /* Ensure the z-index has an effect so the box-shadow appears. */
           z-index: 800;
         }
 
