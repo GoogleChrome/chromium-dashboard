@@ -54,14 +54,11 @@ def build_trial_data(trial_data: dict[str, Any]) -> dict[str, Any] | None:
   return trial_info
 
 
-def get_trials(release: int) -> dict[str, list[Any]]:
+def get_trials(release: int) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
   """Assemble information about trials that are starting or ending this release."""
   trials_list = origin_trials_client.get_trials_list()
-
-  release_trials: dict[str, list[Any]] = {
-    'starting_trials': [],
-    'ending_trials': [],
-  }
+  starting_trials = []
+  ending_trials = []
 
   for trial in trials_list:
     start_milestone = int(trial['start_milestone'])
@@ -77,12 +74,12 @@ def get_trials(release: int) -> dict[str, list[Any]]:
         continue
 
       if matches_start:
-        release_trials['starting_trials'].append(trial_info)
+        starting_trials.append(trial_info)
 
       if matches_end:
-        release_trials['ending_trials'].append(trial_info)
+        ending_trials.append(trial_info)
 
-  return release_trials
+  return starting_trials, ending_trials
 
 
 def send_email_reminders() -> str:
@@ -123,13 +120,13 @@ def send_email_reminders() -> str:
 
 def send_branch_emails(release: int, next_branch_date: date) -> int:
   """Send reminders about trials that are first branching or are in their last milestone"""
-  all_trials = get_trials(release)
+  starting_trials, ending_trials = get_trials(release)
   formatted_branch_date = format_date_for_email(next_branch_date) if next_branch_date else 'soon'
-  num_branching_trials = len(all_trials['starting_trials'])
+  num_branching_trials = len(starting_trials)
 
   logging.info('Currently branching - '
                f'{num_branching_trials} emails to send')
-  for trial in all_trials['starting_trials']:
+  for trial in starting_trials:
     params = {
       'name': trial['name'],
       'release_milestone': release,
@@ -139,10 +136,10 @@ def send_branch_emails(release: int, next_branch_date: date) -> int:
     cloud_tasks_helpers.enqueue_task(
         '/tasks/email-ot-first-branch', params)
 
-  num_last_release_trials = len(all_trials['ending_trials'])
+  num_last_release_trials = len(ending_trials)
   logging.info('Entering last release - '
                f'{num_last_release_trials} emails to send')
-  for trial in all_trials['ending_trials']:
+  for trial in ending_trials:
     params = {
       'name': trial['name'],
       'release_milestone': release,
@@ -156,7 +153,7 @@ def send_branch_emails(release: int, next_branch_date: date) -> int:
 
 def send_beta_availability_emails(release):
   """Send reminders about trials that are entering beta."""
-  trials_entering_beta = get_trials(release)['starting_trials']
+  trials_entering_beta, _ = get_trials(release)
   for trial in trials_entering_beta:
     params = {
       'name': trial['name'],
@@ -177,7 +174,7 @@ def send_stable_update_emails(release):
   after_end_branch_date = get_branch_date(get_release(after_end_release))
   formatted_branch_date = format_date_for_email(after_end_branch_date) if after_end_branch_date else 'in 4-6 weeks'
 
-  trials_ending_in_next_release = get_trials(trial_end_release)['ending_trials']
+  _, trials_ending_in_next_release = get_trials(trial_end_release)
   for trial in trials_ending_in_next_release:
     params = {
       'name': trial['name'],
@@ -192,7 +189,7 @@ def send_stable_update_emails(release):
   logging.info('Ending next release reminders - '
                f'{end_in_next_release_count} emails to send')
 
-  trials_ending_this_release = get_trials(release)['ending_trials']
+  _, trials_ending_this_release = get_trials(release)
   next_release = get_next_release_number(release)
   for trial in trials_ending_this_release:
     params = {
