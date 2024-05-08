@@ -112,10 +112,10 @@ def create_origin_trial(ot_stage: Stage) -> str | None:
   if settings.DEV_MODE:
     logging.info('Creation request will not be sent to origin trials API in '
                  'local environment.')
-    return
+    return None
   key = secrets.get_ot_api_key()
   if key is None:
-    return
+    return None
 
   json = {
     'trial': {
@@ -138,21 +138,50 @@ def create_origin_trial(ot_stage: Stage) -> str | None:
   if ot_stage.ot_chromium_trial_name:
     json['origin_trial_feature_name'] = ot_stage.ot_chromium_trial_name
   access_token = _get_ot_access_token()
-  url = f'{settings.OT_API_URL}/v1/trials-integration'
   headers = {'Authorization': f'Bearer {access_token}'}
+  url = f'{settings.OT_API_URL}/v1/trials-integration'
 
   try:
-    response = requests.post(url, headers=headers, params={'key': key}, json=json)
+    response = requests.post(
+        url, headers=headers, params={'key': key}, json=json)
     logging.info(response.text)
     response.raise_for_status()
   except requests.exceptions.RequestException as e:
-    logging.exception(f'Failed to get response from origin trials API. {response.text}')
+    logging.exception(
+        f'Failed to get response from origin trials API. {response.text}')
     raise e
 
   return response.json()['id']
 
-def activate_origin_trial(origin_trial_id: str):
-  pass
+def activate_origin_trial(origin_trial_id: str) -> None:
+  """Activate an existing origin trial.
+
+  Raises:
+    requests.exceptions.RequestException: If the request fails to connect or
+      the HTTP status code is not successful.
+  """
+  if settings.DEV_MODE:
+    logging.info('Activation request will not be sent to origin trials API in '
+                 'local environment.')
+    return None
+  key = secrets.get_ot_api_key()
+  if key is None:
+    return None
+
+  json = {'id': origin_trial_id}
+  access_token = _get_ot_access_token()
+  headers = {'Authorization': f'Bearer {access_token}'}
+  url = (f'{settings.OT_API_URL}/v1/trials-integration/'
+         f'{origin_trial_id}:activate')
+  try:
+    response = requests.post(
+        url, headers=headers, params={'key': key}, json=json)
+    logging.info(response.text)
+    response.raise_for_status()
+  except requests.exceptions.RequestException as e:
+    logging.exception(
+        f'Failed to get response from origin trials API. {response.text}')
+    raise e
 
 
 def extend_origin_trial(trial_id: str, end_milestone: int, intent_url: str):

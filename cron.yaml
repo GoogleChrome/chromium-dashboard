@@ -35,6 +35,8 @@ cron:
 - description: Check origin trials and associate with their ChromeStatus entry.
   url: /cron/associate_origin_trials
   schedule: every day 6:00
-- description: Check if any origin trials require creation
-  url: /cron/create_origin_trials
-  schedule: every 5 minutes
+
+# TODO(DanielRyanSmith): Add this job when OT creation is fully implemented.
+# - description: Check if any origin trials require creation
+#   url: /cron/create_origin_trials
+#   schedule: every 5 minutes
