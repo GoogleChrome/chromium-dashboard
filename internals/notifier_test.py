@@ -1156,7 +1156,7 @@ class OriginTrialExtensionApprovedHandlerTest(testing_config.CustomTestCase):
         TESTDATA['test_make_extension_approved_email.html'])
 
 
-class OriginTrialCreationRequestFailedHandlerTest(testing_config.CustomTestCase):
+class OTCreationRequestFailedHandlerTest(testing_config.CustomTestCase):
   def setUp(self):
     self.feature_1 = FeatureEntry(
         id=1, name='feature one', summary='sum', category=1, feature_type=0)
@@ -1179,7 +1179,7 @@ class OriginTrialCreationRequestFailedHandlerTest(testing_config.CustomTestCase)
 
   def test_make_creation_request_failed_email(self):
     with test_app.app_context():
-      handler = notifier.OriginTrialCreationRequestFailedHandler()
+      handler = notifier.OTCreationRequestFailedHandler()
       stage_dict = converters.stage_to_json_dict(self.ot_stage)
       email_task = handler.build_email(stage_dict)
       # TESTDATA.make_golden(email_task['html'], 'test_make_creation_request_failed_email.html')
