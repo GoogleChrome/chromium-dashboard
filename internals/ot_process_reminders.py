@@ -31,6 +31,7 @@ trials = None
 
 
 def build_trial_data(trial_data: dict[str, Any]) -> dict[str, Any] | None:
+  """Find corresponding OT stage and assemble necessary info for reminders."""
   trial_stage: Stage | None = Stage.query(
       Stage.origin_trial_id == trial_data['id']).get()
   if trial_stage is None:
@@ -48,13 +49,13 @@ def build_trial_data(trial_data: dict[str, Any]) -> dict[str, Any] | None:
     'name': trial_data['display_name'],
     'start_milestone': int(trial_data['start_milestone']),
     'end_milestone': int(trial_data['end_milestone']),
-    'contacts': contact_list
+    'contacts': contact_list,
   }
   return trial_info
 
 
-# Assemble information about trials that are starting or ending this release.
 def get_trials(release: int) -> dict[str, list[Any]]:
+  """Assemble information about trials that are starting or ending this release."""
   trials_list = origin_trials_client.get_trials_list()
 
   release_trials: dict[str, list[Any]] = {
@@ -65,9 +66,6 @@ def get_trials(release: int) -> dict[str, list[Any]]:
   for trial in trials_list:
     start_milestone = int(trial['start_milestone'])
     end_milestone = int(trial['end_milestone'])
-
-    if not (start_milestone or end_milestone):
-      continue
 
     matches_start = start_milestone == release
     matches_end = end_milestone == release
@@ -88,6 +86,7 @@ def get_trials(release: int) -> dict[str, list[Any]]:
 
 
 def send_email_reminders() -> str:
+  """Main function for sending information about OT process reminders."""
   today = datetime.now().date()
   next_branch_release = get_next_branch_release(today)
   current_stable_release = get_current_stable_release(today)
@@ -110,7 +109,7 @@ def send_email_reminders() -> str:
     send_count += send_stable_update_emails(get_milestone(current_stable_release))
 
   params = {
-    'now_date': format_date_for_email(today),
+    'branch_date': format_date_for_email(today),
     'send_count': send_count,
     'next_branch_milestone': get_milestone(next_branch_release),
     'next_branch_date': format_date_for_email(next_branch_date),
@@ -123,6 +122,7 @@ def send_email_reminders() -> str:
 
 
 def send_branch_emails(release: int, next_branch_date: date) -> int:
+  """Send reminders about trials that are first branching or are in their last milestone"""
   all_trials = get_trials(release)
   formatted_branch_date = format_date_for_email(next_branch_date) if next_branch_date else 'soon'
   num_branching_trials = len(all_trials['starting_trials'])
@@ -155,6 +155,7 @@ def send_branch_emails(release: int, next_branch_date: date) -> int:
 
 
 def send_beta_availability_emails(release):
+  """Send reminders about trials that are entering beta."""
   trials_entering_beta = get_trials(release)['starting_trials']
   for trial in trials_entering_beta:
     params = {
@@ -170,6 +171,7 @@ def send_beta_availability_emails(release):
 
 
 def send_stable_update_emails(release):
+  """Send reminders about trials that are entering stable."""
   trial_end_release = get_next_release_number(get_next_release_number(release))
   after_end_release = get_next_release_number(trial_end_release)
   after_end_branch_date = get_branch_date(get_release(after_end_release))
@@ -207,6 +209,7 @@ def send_stable_update_emails(release):
 
 
 def get_release(release: str | int) -> dict[str, str]:
+  """Get Chromium release information based on a given milestone."""
   if release in release_cache:
     return release_cache[release]
 
@@ -222,6 +225,7 @@ def get_release(release: str | int) -> dict[str, str]:
 
 
 def get_next_branch_release(today: date):
+  """Calculate the the next branch release milestone."""
   start = get_release('current')
   start_branch_date = get_branch_date(start)
   start_milestone = get_milestone(start)
@@ -242,6 +246,7 @@ def get_next_branch_release(today: date):
 
 
 def get_current_stable_release(today: date):
+  """Calculate the the current stable release milestone."""
   start = get_release('current')
   start_stable_date = get_stable_date(start)
   start_milestone = get_milestone(start)
@@ -262,58 +267,69 @@ def get_current_stable_release(today: date):
 
 
 def get_next_release_number(version_num: int) -> int:
+  """Get the next milestone number, skipping milestone 82."""
   if version_num == 81:
     return 83
   return version_num + 1
 
 
 def get_previous_release_number(version_num):
+  """Get the previous milestone number, skipping milestone 82."""
   if version_num == 83:
     return 81
   return version_num - 1
 
 
 def get_branch_date(release_json: dict[str, str]) -> date:
+  """Create a datetime object for the branch point of the given release."""
   return datetime.strptime(release_json['branch_point'].split('T')[0],
                            "%Y-%m-%d").date()
 
 
 def get_beta_date(release_json: dict[str, str]) -> date:
+  """Create a datetime object for the earliest beta of the given release."""
   return datetime.strptime(release_json['earliest_beta'].split('T')[0],
                            "%Y-%m-%d").date()
 
 
 def get_stable_date(release_json: dict[str, str]) -> date:
+  """Create a datetime object for the stable date of the given release."""
   return datetime.strptime(release_json['stable_date'].split('T')[0],
                            "%Y-%m-%d").date()
 
 
 def get_milestone(release_json: dict[str, str]) -> int:
+  """Read milestone from release info and convert to integer."""
   return int(release_json['mstone'])
 
 
 def diff_weeks(t1: date, t2: date) -> int:
+  """Get the difference in weeks for two given dates."""
   day_diff = diff_days(t1, t2)
   return day_diff // 7
 
 
 def diff_days(t1: date, t2: date) -> int:
+  """Get the difference in days for two given dates."""
   return (t1 - t2).days
 
 
 def format_date(time_stamp):
+  """Format a datetime object into a date string."""
   if not isinstance(time_stamp, datetime):
     return ''
   return time_stamp.strftime("%Y-%m-%d")
 
 
 def format_date_for_email(time_stamp):
+  """Format a datetime object into a readable date for emails."""
   if not isinstance(time_stamp, datetime):
     return ''
   return time_stamp.strftime("%A, %B %d, %Y")
 
 
 def fetch_release(url, retry=5, timeout=2):
+  """Attempt obtaining release information, retrying as needed."""
   if retry == 0:
     raise ValueError(f'Exceeded retry limit for {url}')
   try:
@@ -325,4 +341,4 @@ def fetch_release(url, retry=5, timeout=2):
   except requests.RequestException:
     time.sleep(timeout)
     return fetch_release(url, retry - 1, timeout * 2)
-  # It should never get this far, in practice
+  # It should never get this far in practice

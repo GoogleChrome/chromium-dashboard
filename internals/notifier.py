@@ -642,7 +642,7 @@ class FeatureCommentHandler(basehandlers.FlaskHandler):
 
 
 
-class OriginTrialCreationRequestHandler(basehandlers.FlaskHandler):
+class OTCreationRequestHandler(basehandlers.FlaskHandler):
   """Notify about an origin trial creation request."""
 
   IS_INTERNAL_HANDLER = True
@@ -707,7 +707,7 @@ class OriginTrialCreationRequestHandler(basehandlers.FlaskHandler):
     }
 
 
-class OriginTrialExtensionApprovedHandler(basehandlers.FlaskHandler):
+class OTExtensionApprovedHandler(basehandlers.FlaskHandler):
   """Notify about an origin trial extension that is approved and needs
   finalized.
   """
@@ -750,11 +750,11 @@ class OriginTrialExtensionApprovedHandler(basehandlers.FlaskHandler):
 
 
 GLOBAL_OT_PROCESS_REMINDER_CC_LIST = [
-  'origin-trials-support@google.com',
+  OT_SUPPORT_EMAIL,
   'origin-trials-timeline-updates@google.com'
   ]
 
-class OriginTrialEndingNextReleaseReminderHandler(basehandlers.FlaskHandler):
+class OTEndingNextReleaseReminderHandler(basehandlers.FlaskHandler):
   """Send origin trial ending next release reminder email to OT contacts."""
 
   IS_INTERNAL_HANDLER = True
@@ -782,7 +782,7 @@ class OriginTrialEndingNextReleaseReminderHandler(basehandlers.FlaskHandler):
     }
 
 
-class OriginTrialEndingThisReleaseReminderHandler(basehandlers.FlaskHandler):
+class OTEndingThisReleaseReminderHandler(basehandlers.FlaskHandler):
   """Send origin trial ending this release reminder email to OT contacts."""
 
   IS_INTERNAL_HANDLER = True
@@ -812,7 +812,7 @@ class OriginTrialEndingThisReleaseReminderHandler(basehandlers.FlaskHandler):
     }
 
 
-class OriginTrialBetaAvailabilityReminderHandler(basehandlers.FlaskHandler):
+class OTBetaAvailabilityReminderHandler(basehandlers.FlaskHandler):
   """Send origin trial beta availability reminder email to OT contacts."""
 
   IS_INTERNAL_HANDLER = True
@@ -838,7 +838,7 @@ class OriginTrialBetaAvailabilityReminderHandler(basehandlers.FlaskHandler):
     }
 
 
-class OriginTrialFirstBranchReminderHandler(basehandlers.FlaskHandler):
+class OTFirstBranchReminderHandler(basehandlers.FlaskHandler):
   """Send origin trial first branch reminder email to OT contacts."""
 
   IS_INTERNAL_HANDLER = True
@@ -865,7 +865,7 @@ class OriginTrialFirstBranchReminderHandler(basehandlers.FlaskHandler):
     }
 
 
-class OriginTrialLastBranchReminderHandler(basehandlers.FlaskHandler):
+class OTLastBranchReminderHandler(basehandlers.FlaskHandler):
   """Send origin trial last branch reminder email to OT contacts."""
 
   IS_INTERNAL_HANDLER = True
@@ -893,7 +893,7 @@ class OriginTrialLastBranchReminderHandler(basehandlers.FlaskHandler):
     }
 
 
-class OriginTrialAutomatedProcessEmailHandler(basehandlers.FlaskHandler):
+class OTAutomatedProcessEmailHandler(basehandlers.FlaskHandler):
   """Send a final notification to OT support with automated reminder info."""
 
   IS_INTERNAL_HANDLER = True
@@ -902,7 +902,7 @@ class OriginTrialAutomatedProcessEmailHandler(basehandlers.FlaskHandler):
   def process_post_data(self, **kwargs):
     now_date = datetime.now().strftime('%d %B, %Y')
     body_data = {
-      'now_date': now_date,
+      'email_date': now_date,
       'send_count': self.get_param('send_count'),
       'next_branch_milestone': self.get_param('next_branch_milestone'),
       'next_branch_date': self.get_param('next_branch_date'),
@@ -922,7 +922,7 @@ class OriginTrialAutomatedProcessEmailHandler(basehandlers.FlaskHandler):
     }
 
 
-class OriginTrialExtendedHandler(basehandlers.FlaskHandler):
+class OTExtendedHandler(basehandlers.FlaskHandler):
   """Notify about an origin trial extension being completed."""
 
   IS_INTERNAL_HANDLER = True
