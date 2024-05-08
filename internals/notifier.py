@@ -642,7 +642,7 @@ class FeatureCommentHandler(basehandlers.FlaskHandler):
     return all_tasks
 
 
-class OriginTrialActivatedHandler(basehandlers.FlaskHandler):
+class OTActivatedHandler(basehandlers.FlaskHandler):
   """Notify about an origin trial being activated."""
 
   IS_INTERNAL_HANDLER = True

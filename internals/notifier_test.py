@@ -1156,7 +1156,7 @@ class OriginTrialExtensionApprovedHandlerTest(testing_config.CustomTestCase):
         TESTDATA['test_make_extension_approved_email.html'])
 
 
-class OriginTrialActivatedHandlerTest(testing_config.CustomTestCase):
+class OTActivatedHandlerTest(testing_config.CustomTestCase):
   def setUp(self):
     self.contacts = [
         'ot_owner1@google.com',
@@ -1185,7 +1185,7 @@ class OriginTrialActivatedHandlerTest(testing_config.CustomTestCase):
 
   def test_make_activated_email(self):
     with test_app.app_context():
-      handler = notifier.OriginTrialActivatedHandler()
+      handler = notifier.OTActivatedHandler()
       stage_dict = converters.stage_to_json_dict(self.ot_stage)
       email_task = handler.build_email(stage_dict, self.contacts)
       TESTDATA.make_golden(email_task['html'], 'test_make_activated_email.html')
