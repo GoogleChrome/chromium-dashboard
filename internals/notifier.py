@@ -641,7 +641,7 @@ class FeatureCommentHandler(basehandlers.FlaskHandler):
     return all_tasks
 
 
-class OriginTrialCreationProcessedHandler(basehandlers.FlaskHandler):
+class OTCreationProcessedHandler(basehandlers.FlaskHandler):
   """Notify about an origin trial creation request being processed,
   but activation is at a later date.
   """
