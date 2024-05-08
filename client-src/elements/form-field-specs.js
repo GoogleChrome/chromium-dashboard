@@ -1284,7 +1284,8 @@ export const ALL_FIELDS = {
     attrs: TEXT_FIELD_ATTRS,
     required: true,
     label: 'Chromium trial name',
-    help_text: html` Name for the trial, as specified in
+    help_text: html` Name for the trial, given as the value of the property
+      "origin_trial_feature_name" as specified in
       <a
         target="_blank"
         href="https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/runtime_enabled_features.json5"
@@ -1375,7 +1376,6 @@ export const ALL_FIELDS = {
       placeholder: 'e.g. "kWebFeature"',
       pattern: String.raw`k\S*`,
     },
-    required: true,
     label: 'WebFeature UseCounter name',
     help_text: html` For measuring usage, this must be a single named value from
       the WebFeature enum, e.g. kWorkerStart. The use counter must be landed in
@@ -1432,13 +1432,12 @@ export const ALL_FIELDS = {
   },
 
   ot_creation__intent_to_experiment_url: {
-    name: 'intent_to_experiment_url',
     type: 'input',
     attrs: URL_FIELD_ATTRS,
     required: true,
     label: 'Intent to Experiment link',
-    help_text: html`After you have started the "Intent to Experiment" discussion
-    thread, link to it here.`,
+    help_text: html`Your "Intent to Experiment" discussion thread.
+    The necessary LGTMs should already have been received.`,
   },
 
   ot_creation__milestone_desktop_first: {
