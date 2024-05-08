@@ -1383,7 +1383,7 @@ export const ALL_FIELDS = {
         target="_blank"
         href="https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom"
         >web_feature.mojom</a
-      >.`,
+      >. Not required for deprecation trials.`,
   },
 
   ot_require_approvals: {
