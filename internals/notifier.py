@@ -35,6 +35,7 @@ from framework import users
 import settings
 from internals import approval_defs
 from internals import core_enums
+from internals.data_types import StageDict
 from internals import stage_helpers
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate
@@ -672,8 +673,34 @@ class OTCreationProcessedHandler(basehandlers.FlaskHandler):
       'html': body,
     }
 
+class OTCreationRequestFailedHandler(basehandlers.FlaskHandler):
+  """Notify about an origin trial creation request failing automated request."""
 
-class OriginTrialCreationRequestHandler(basehandlers.FlaskHandler):
+  IS_INTERNAL_HANDLER = True
+  EMAIL_TEMPLATE_PATH = 'origintrials/ot-creation-request-failed-email.html'
+
+  def process_post_data(self, **kwargs):
+    stage = self.get_param('stage', required=True)
+    send_emails([self.build_email(stage)])
+    return {'message': 'OK'}
+
+  def build_email(self, stage: StageDict) -> dict:
+    body_data = {
+      'stage': stage,
+      'chromestatus_url': ('https://chromestatus.com/feature/'
+                           f'{stage["feature_id"]}')
+    }
+    body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
+    return {
+      'to': OT_SUPPORT_EMAIL,
+      'subject': ('Automated trial creation request failed for '
+                  f'{stage["ot_display_name"]}'),
+      'reply_to': None,
+      'html': body,
+    }
+
+
+class OTCreationRequestHandler(basehandlers.FlaskHandler):
   """Notify about an origin trial creation request."""
 
   IS_INTERNAL_HANDLER = True
@@ -738,7 +765,7 @@ class OriginTrialCreationRequestHandler(basehandlers.FlaskHandler):
     }
 
 
-class OriginTrialExtensionApprovedHandler(basehandlers.FlaskHandler):
+class OTExtensionApprovedHandler(basehandlers.FlaskHandler):
   """Notify about an origin trial extension that is approved and needs
   finalized.
   """
@@ -780,7 +807,180 @@ class OriginTrialExtensionApprovedHandler(basehandlers.FlaskHandler):
     }
 
 
-class OriginTrialExtendedHandler(basehandlers.FlaskHandler):
+GLOBAL_OT_PROCESS_REMINDER_CC_LIST = [
+  OT_SUPPORT_EMAIL,
+  'origin-trials-timeline-updates@google.com'
+  ]
+
+class OTEndingNextReleaseReminderHandler(basehandlers.FlaskHandler):
+  """Send origin trial ending next release reminder email to OT contacts."""
+
+  IS_INTERNAL_HANDLER = True
+  EMAIL_TEMPLATE_PATH = 'origintrials/ot-ending-next-release-email.html'
+
+  def process_post_data(self, **kwargs):
+    contacts = self.get_param('contacts')
+    body_data = {
+      'name': self.get_param('name'),
+      'release_milestone': self.get_param('release_milestone'),
+      'after_end_release': self.get_param('after_end_release'),
+      'after_end_date': self.get_param('after_end_date'),
+    }
+    send_emails([self.build_email(body_data, contacts)])
+    return {'message': 'OK'}
+
+  def build_email(self, body_data: dict[str, Any], contacts: list[str]):
+    body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
+    return {
+      'to': contacts,
+      'cc': GLOBAL_OT_PROCESS_REMINDER_CC_LIST,
+      'subject': f'{body_data["name"]} origin trial ship decision approaching',
+      'reply_to': None,
+      'html': body,
+    }
+
+
+class OTEndingThisReleaseReminderHandler(basehandlers.FlaskHandler):
+  """Send origin trial ending this release reminder email to OT contacts."""
+
+  IS_INTERNAL_HANDLER = True
+  EMAIL_TEMPLATE_PATH = 'origintrials/ot-ending-this-release-email.html'
+
+  def process_post_data(self, **kwargs):
+    name = self.get_param('name')
+    release_milestone = self.get_param('release_milestone')
+    next_release = self.get_param('next_release')
+    contacts = self.get_param('contacts')
+    body_data = {
+      'name': name,
+      'release_milestone': release_milestone,
+      'next_release': next_release,
+    }
+    send_emails([self.build_email(body_data, contacts)])
+    return {'message': 'OK'}
+
+  def build_email(self, body_data: dict[str, Any], contacts: list[str]):
+    body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
+    return {
+      'to': contacts,
+      'cc': GLOBAL_OT_PROCESS_REMINDER_CC_LIST,
+      'subject': f'{body_data["name"]} origin trial needs blink-dev update',
+      'reply_to': None,
+      'html': body,
+    }
+
+
+class OTBetaAvailabilityReminderHandler(basehandlers.FlaskHandler):
+  """Send origin trial beta availability reminder email to OT contacts."""
+
+  IS_INTERNAL_HANDLER = True
+  EMAIL_TEMPLATE_PATH = 'origintrials/ot-beta-availability-email.html'
+
+  def process_post_data(self, **kwargs):
+    contacts = self.get_param('contacts')
+    body_data = {
+      'name': self.get_param('name'),
+      'release_milestone': self.get_param('release_milestone'),
+    }
+    send_emails([self.build_email(body_data, contacts)])
+    return {'message': 'OK'}
+
+  def build_email(self, body_data: dict[str, Any], contacts: list[str]):
+    body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
+    return {
+      'to': contacts,
+      'cc': GLOBAL_OT_PROCESS_REMINDER_CC_LIST,
+      'subject': f'{body_data["name"]} origin trial is entering beta',
+      'reply_to': None,
+      'html': body,
+    }
+
+
+class OTFirstBranchReminderHandler(basehandlers.FlaskHandler):
+  """Send origin trial first branch reminder email to OT contacts."""
+
+  IS_INTERNAL_HANDLER = True
+  EMAIL_TEMPLATE_PATH = 'origintrials/ot-first-branch-email.html'
+
+  def process_post_data(self, **kwargs):
+    contacts = self.get_param('contacts')
+    body_data = {
+      'name': self.get_param('name'),
+      'release_milestone': self.get_param('release_milestone'),
+      'branch_date': self.get_param('branch_date')
+    }
+    send_emails([self.build_email(body_data, contacts)])
+    return {'message': 'OK'}
+
+  def build_email(self, body_data: dict[str, Any], contacts: list[str]):
+    body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
+    return {
+      'to': contacts,
+      'cc': GLOBAL_OT_PROCESS_REMINDER_CC_LIST,
+      'subject': f'{body_data["name"]} origin trial is branching',
+      'reply_to': None,
+      'html': body,
+    }
+
+
+class OTLastBranchReminderHandler(basehandlers.FlaskHandler):
+  """Send origin trial last branch reminder email to OT contacts."""
+
+  IS_INTERNAL_HANDLER = True
+  EMAIL_TEMPLATE_PATH = 'origintrials/ot-last-branch-email.html'
+
+  def process_post_data(self, **kwargs):
+    contacts = self.get_param('contacts')
+    body_data = {
+      'name': self.get_param('name'),
+      'release_milestone': self.get_param('release_milestone'),
+      'branch_date': self.get_param('branch_date')
+    }
+    send_emails([self.build_email(body_data, contacts)])
+    return {'message': 'OK'}
+
+  def build_email(self, body_data: dict[str, Any], contacts: list[str]):
+    body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
+    return {
+      'to': contacts,
+      'cc': GLOBAL_OT_PROCESS_REMINDER_CC_LIST,
+      'subject': (f'{body_data["name"]} '
+                  'origin trial has branched for its last release'),
+      'reply_to': None,
+      'html': body,
+    }
+
+
+class OTAutomatedProcessEmailHandler(basehandlers.FlaskHandler):
+  """Send a final notification to OT support with automated reminder info."""
+
+  IS_INTERNAL_HANDLER = True
+  EMAIL_TEMPLATE_PATH = 'origintrials/ot-automated-process-email.html'
+
+  def process_post_data(self, **kwargs):
+    now_date = datetime.now().strftime('%d %B, %Y')
+    body_data = {
+      'email_date': now_date,
+      'send_count': self.get_param('send_count'),
+      'next_branch_milestone': self.get_param('next_branch_milestone'),
+      'next_branch_date': self.get_param('next_branch_date'),
+      'stable_milestone': self.get_param('stable_milestone'),
+      'stable_date': self.get_param('stable_date'),
+    }
+    send_emails([self.build_email(body_data)])
+    return {'message': 'OK'}
+
+  def build_email(self, body_data: dict[str, Any]):
+    body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
+    return {
+      'to': OT_SUPPORT_EMAIL,
+      'subject': 'Origin trials automated process reminder just ran',
+      'reply_to': None,
+      'html': body,
+    }
+
+
+class OTExtendedHandler(basehandlers.FlaskHandler):
   """Notify about an origin trial extension being completed."""
 
   IS_INTERNAL_HANDLER = True
