@@ -287,6 +287,8 @@ internals_routes: list[Route] = [
   Route('/tasks/email-assigned', notifier.ReviewAssignmentHandler),
   Route('/tasks/email-comments', notifier.FeatureCommentHandler),
   Route('/tasks/update-feature-links', feature_links.FeatureLinksUpdateHandler),
+  Route('/tasks/email-ot-creation-request-failed',
+        notifier.OTCreationRequestFailedHandler),
   Route('/tasks/email-ot-creation-request', notifier.OTCreationRequestHandler),
   Route('/tasks/email-ot-extended', notifier.OTExtendedHandler),
   Route('/tasks/email-ot-extension-approved',

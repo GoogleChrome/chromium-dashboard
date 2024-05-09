@@ -35,6 +35,7 @@ from framework import users
 import settings
 from internals import approval_defs
 from internals import core_enums
+from internals.data_types import StageDict
 from internals import stage_helpers
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate
@@ -640,6 +641,32 @@ class FeatureCommentHandler(basehandlers.FlaskHandler):
                  for addr, reasons in sorted(addr_reasons.items())]
     return all_tasks
 
+
+class OTCreationRequestFailedHandler(basehandlers.FlaskHandler):
+  """Notify about an origin trial creation request failing automated request."""
+
+  IS_INTERNAL_HANDLER = True
+  EMAIL_TEMPLATE_PATH = 'origintrials/ot-creation-request-failed-email.html'
+
+  def process_post_data(self, **kwargs):
+    stage = self.get_param('stage', required=True)
+    send_emails([self.build_email(stage)])
+    return {'message': 'OK'}
+
+  def build_email(self, stage: StageDict) -> dict:
+    body_data = {
+      'stage': stage,
+      'chromestatus_url': ('https://chromestatus.com/feature/'
+                           f'{stage["feature_id"]}')
+    }
+    body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
+    return {
+      'to': OT_SUPPORT_EMAIL,
+      'subject': ('Automated trial creation request failed for '
+                  f'{stage["ot_display_name"]}'),
+      'reply_to': None,
+      'html': body,
+    }
 
 
 class OTCreationRequestHandler(basehandlers.FlaskHandler):
