@@ -320,6 +320,7 @@ class Stage(ndb.Model):
   experiment_risks = ndb.TextProperty()
   ot_chromium_trial_name = ndb.StringProperty()
   ot_action_requested = ndb.BooleanProperty(default=False)
+  ot_activation_date = ndb.DateProperty()
   ot_approval_buganizer_component = ndb.IntegerProperty()
   ot_approval_criteria_url = ndb.StringProperty()
   ot_approval_group_email = ndb.StringProperty()

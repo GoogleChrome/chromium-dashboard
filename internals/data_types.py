@@ -45,6 +45,7 @@ class StageDict(TypedDict):
   extensions: list[StageDict]  # type: ignore
   origin_trial_feedback_url: str | None
   ot_action_requested: bool
+  ot_activation_date: NotRequired[str | None]
   ot_approval_buganizer_component: int | None
   ot_approval_criteria_url: str | None
   ot_approval_group_email: str | None
