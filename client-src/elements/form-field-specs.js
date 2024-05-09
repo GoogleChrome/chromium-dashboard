@@ -1436,8 +1436,8 @@ export const ALL_FIELDS = {
     attrs: URL_FIELD_ATTRS,
     required: true,
     label: 'Intent to Experiment link',
-    help_text: html`Your "Intent to Experiment" discussion thread.
-    The necessary LGTMs should already have been received.`,
+    help_text: html`Your "Intent to Experiment" discussion thread. The necessary
+    LGTMs should already have been received.`,
   },
 
   ot_creation__milestone_desktop_first: {
