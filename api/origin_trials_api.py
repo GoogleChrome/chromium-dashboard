@@ -98,8 +98,8 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
           'Origin trial feature name not found in file')
 
     if not body.get('ot_is_deprecation_trial', {}).get('value', False):
-      use_counter = body.get('ot_webfeature_use_counter', {}).get('value')
-      if use_counter is None:
+      use_counter = body.get('ot_webfeature_use_counter', {}).get('')
+      if not use_counter:
         validation_errors['ot_webfeature_use_counter'] = (
             'No UseCounter specified for non-deprecation trial.')
       elif f'{use_counter} =' not in webfeature_file:
