@@ -1156,6 +1156,44 @@ class OTExtensionApprovedHandlerTest(testing_config.CustomTestCase):
         TESTDATA['test_make_extension_approved_email.html'])
 
 
+class OTActivatedHandlerTest(testing_config.CustomTestCase):
+  def setUp(self):
+    self.contacts = [
+        'ot_owner1@google.com',
+        'contact1@google.com',
+        'contact2@example.com']
+    self.feature_1 = FeatureEntry(
+        id=1, name='feature one', summary='sum', category=1, feature_type=0)
+    self.feature_1.put()
+    self.ot_stage = Stage(
+        feature_id=1, stage_type=150, ot_display_name='Example Trial',
+        origin_trial_id='111222333',
+        ot_owner_email='feature_owner@google.com',
+        ot_chromium_trial_name='ExampleTrial',
+        milestones=MilestoneSet(desktop_first=100, desktop_last=106),
+        ot_documentation_url='https://example.com/docs',
+        ot_feedback_submission_url='https://example.com/feedback',
+        intent_thread_url='https://example.com/experiment',
+        ot_description='OT description', ot_has_third_party_support=True,
+        ot_is_deprecation_trial=True)
+    self.ot_stage.put()
+
+  def tearDown(self):
+    self.feature_1.key.delete()
+    self.ot_stage.key.delete()
+
+  def test_make_activated_email(self):
+    with test_app.app_context():
+      handler = notifier.OTActivatedHandler()
+      stage_dict = converters.stage_to_json_dict(self.ot_stage)
+      email_task = handler.build_email(stage_dict, self.contacts)
+      TESTDATA.make_golden(email_task['html'], 'test_make_activated_email.html')
+      self.assertEqual(email_task['subject'],
+                       'Example Trial origin trial is now available')
+      self.assertEqual(email_task['html'],
+                       TESTDATA['test_make_activated_email.html'])
+
+
 class OTCreationProcessedHandlerTest(testing_config.CustomTestCase):
   def setUp(self):
     self.contacts = ['owner1@example.com',
