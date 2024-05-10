@@ -1,0 +1,40 @@
+<h3>An automated origin trial request has failed to process</h3>
+<p>
+  This request will need to be manually processed, and its failure should be
+  investigated and mitigated to prevent automated disruption in the future.
+</p>
+<p>
+  Requested by: {{stage.ot_owner_email}}
+  <br>
+  Additional contacts for your team?: {{stage.ot_emails}}
+  <br>
+  Feature name: {{stage.ot_display_name}}
+  <br>
+  Feature description: {{stage.ot_description}}
+  <br>
+  Start Chrome milestone: {{stage.desktop_first}}
+  <br>
+  End Chrome milestone: {{stage.desktop_last}}
+  <br>
+  Chromium trial name: {{stage.ot_chromium_trial_name}}
+  <br>
+  Is this a deprecation trial?: {{(stage.ot_is_deprecation_trial)}}
+  <br>
+  Third party origin support: {{stage.ot_has_third_party_support}}
+  <br>
+  WebFeature UseCounter value: {{stage.ot_webfeature_use_counter}}
+  <br>
+  Documentation link: {{stage.ot_documentation_url}}
+  <br>
+  Chromestatus link: {chromestatus_url}
+  <br>
+  Feature feedback link: {{stage.ot_feedback_submission_url}}
+  <br>
+  Intent to Experiment link: {{stage.intent_thread_url}}
+  <br>
+  Is this a critical trial?: {{stage.ot_is_critical_trial}}
+  <br>
+  <br>
+  Instructions for handling this request can be found at:
+  https://g3doc.corp.google.com/chrome/origin_trials/g3doc/trial_admin.md?cl=head#setup-a-new-trial
+</p>

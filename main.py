@@ -276,6 +276,8 @@ internals_routes: list[Route] = [
   Route('/cron/reindex_all', search_fulltext.ReindexAllFeatures),
   Route('/cron/update_all_feature_links', feature_links.UpdateAllFeatureLinksHandlers),
   Route('/cron/associate_origin_trials', maintenance_scripts.AssociateOTs),
+  Route('/cron/send-ot-process-reminders',
+        reminders.SendOTReminderEmailsHandler),
 
   Route('/admin/find_stop_words', search_fulltext.FindStopWords),
 
@@ -285,12 +287,26 @@ internals_routes: list[Route] = [
   Route('/tasks/email-assigned', notifier.ReviewAssignmentHandler),
   Route('/tasks/email-comments', notifier.FeatureCommentHandler),
   Route('/tasks/update-feature-links', feature_links.FeatureLinksUpdateHandler),
-  Route('/tasks/email-ot-creation-request',
-        notifier.OriginTrialCreationRequestHandler),
-  Route('/tasks/email-ot-extended',
-        notifier.OriginTrialExtendedHandler),
+  Route('/tasks/email-ot-creation-processed',
+        notifier.OTCreationProcessedHandler),
+  Route('/tasks/email-ot-creation-request-failed',
+        notifier.OTCreationRequestFailedHandler),
+  Route('/tasks/email-ot-creation-request', notifier.OTCreationRequestHandler),
+  Route('/tasks/email-ot-extended', notifier.OTExtendedHandler),
   Route('/tasks/email-ot-extension-approved',
-        notifier.OriginTrialExtensionApprovedHandler),
+        notifier.OTExtensionApprovedHandler),
+
+  # OT process reminder emails
+  Route('/tasks/email-ot-first-branch', notifier.OTFirstBranchReminderHandler),
+  Route('/tasks/email-ot-last-branch', notifier.OTLastBranchReminderHandler),
+  Route('/tasks/email-ot-ending-next-release',
+        notifier.OTEndingNextReleaseReminderHandler),
+  Route('/tasks/email-ot-ending-this-release',
+        notifier.OTEndingThisReleaseReminderHandler),
+  Route('/tasks/email-ot-beta-availability',
+        notifier.OTBetaAvailabilityReminderHandler),
+  Route('/tasks/email-ot-automated-process',
+        notifier.OTAutomatedProcessEmailHandler),
 
   # Maintenance scripts.
   Route('/scripts/evaluate_gate_status',

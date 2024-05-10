@@ -27,6 +27,7 @@ from internals import approval_defs
 from internals.core_models import FeatureEntry, MilestoneSet
 from internals.review_models import Gate
 from internals import notifier
+from internals import ot_process_reminders
 from internals import stage_helpers
 from internals import slo
 from internals.core_enums import (
@@ -409,3 +410,10 @@ class SLOOverdueHandler(basehandlers.FlaskHandler):
     review_team = approval_defs.get_approvers(gate.gate_type)
     assignees = gate.assignee_emails or []
     return list(set(assignees + review_team))
+
+
+class SendOTReminderEmailsHandler(basehandlers.FlaskHandler):
+  def get_template_data(self, **kwargs):
+    """Send any time-based origin trials reminder emails."""
+    self.require_cron_header()
+    return ot_process_reminders.send_email_reminders()
