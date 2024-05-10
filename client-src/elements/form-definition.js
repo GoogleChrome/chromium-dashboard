@@ -774,22 +774,23 @@ export const VERIFY_ACCURACY_FORMS_BY_STAGE_TYPE = {
   [enums.STAGE_ENT_SHIPPED]: VERIFY_ACCURACY_PREPARE_TO_SHIP_FIELDS,
 };
 
-const BLINK_GENERIC_QUESTIONNAIRE =
-  'To request a review, use the "Draft intent..." button ' +
-  'above to generate an intent messsage, ' +
-  'and then post that message to blink-dev@chromium.org.\n' +
-  '\n' +
-  'Be sure to update your feature entry in response to ' +
-  'any suggestions on that email thread.';
+const BLINK_GENERIC_QUESTIONNAIRE = html` <p>
+    To request a review, use the "Draft intent..." button above to generate an
+    intent messsage, and then post that message to blink-dev@chromium.org.
+  </p>
+  <p>
+    Be sure to update your feature entry in response to any suggestions on that
+    email thread.
+  </p>`;
 
-const PRIVACY_GENERIC_QUESTIONNAIRE = html`<p>
+const PRIVACY_GENERIC_QUESTIONNAIRE = html` <p>
     <b
       >Please fill out the Security &amp; Privacy self-review questionnaire:
       <a
         href="https://www.w3.org/TR/security-privacy-questionnaire/"
         target="_blank"
-        >https://www.w3.org/TR/security-privacy-questionnaire</a
-      >/</b
+        >https://www.w3.org/TR/security-privacy-questionnaire/</a
+      ></b
     >
   </p>
   <p>
@@ -812,14 +813,14 @@ const PRIVACY_GENERIC_QUESTIONNAIRE = html`<p>
     nevertheless.
   </p>`;
 
-const SECURITY_GENERIC_QUESTIONNAIRE = html`<p>
+const SECURITY_GENERIC_QUESTIONNAIRE = html` <p>
     <b
       >Please fill out the Security &amp; Privacy self-review questionnaire:
       <a
         href="https://www.w3.org/TR/security-privacy-questionnaire/"
         target="_blank"
-        >https://www.w3.org/TR/security-privacy-questionnaire</a
-      >/</b
+        >https://www.w3.org/TR/security-privacy-questionnaire/</a
+      ></b
     >
   </p>
   <p>
@@ -839,13 +840,13 @@ const SECURITY_GENERIC_QUESTIONNAIRE = html`<p>
     may ask you to fill out the questionnaire nevertheless.
   </p>`;
 
-const ENTERPRISE_SHIP_QUESTIONNAIRE = html`<b
-    >(1) Does this launch include a breaking change?</b
-  >
-  Does this launch remove or modify existing behavior or does it interrupt an
-  existing user flow? (e.g. removing or restricting an API, or significant UI
-  change). Answer with one of the following options, and/or describe anything
-  you're unsure about:
+const ENTERPRISE_SHIP_QUESTIONNAIRE = html` <p>
+    <b>(1) Does this launch include a breaking change?</b> Does this launch
+    remove or modify existing behavior or does it interrupt an existing user
+    flow? (e.g. removing or restricting an API, or significant UI change).
+    Answer with one of the following options, and/or describe anything you're
+    unsure about:
+  </p>
   <ul>
     <li>
       No. There's no change visible to users, developers, or IT admins (e.g.
@@ -861,14 +862,16 @@ const ENTERPRISE_SHIP_QUESTIONNAIRE = html`<b
       information is: ______
     </li>
   </ul>
-  <b
-    >(2) Is there any other reason you expect that enterprises will care about
-    this launch?</b
-  >
-  (e.g. they may perceive a risk of data leaks if the browser is uploading new
-  information, or it may be a surprise to employees resulting in them calling
-  their help desk). Answer with one of the following options, and/or describe
-  anything you're unsure about:
+  <p>
+    <b
+      >(2) Is there any other reason you expect that enterprises will care about
+      this launch?</b
+    >
+    (e.g. they may perceive a risk of data leaks if the browser is uploading new
+    information, or it may be a surprise to employees resulting in them calling
+    their help desk). Answer with one of the following options, and/or describe
+    anything you're unsure about:
+  </p>
   <ul>
     <li>No. Enterprises won't care about this</li>
     <li>Yes. They'll probably care because ______</li>
@@ -877,13 +880,15 @@ const ENTERPRISE_SHIP_QUESTIONNAIRE = html`<b
       information is: ______
     </li>
   </ul>
-  <b
-    >(3) Does your launch have an enterprise policy to control it, and will it
-    be available when this rolls out to stable (even to 1%)?</b
-  >
-  Only required if you answered Yes to either of the first 2 questions. Answer
-  with one of the following options, and/or describe anything you're unsure
-  about:
+  <p>
+    <b
+      >(3) Does your launch have an enterprise policy to control it, and will it
+      be available when this rolls out to stable (even to 1%)?</b
+    >
+    Only required if you answered Yes to either of the first 2 questions. Answer
+    with one of the following options, and/or describe anything you're unsure
+    about:
+  </p>
   <ul>
     <li>
       Yes. It's called ______. It will be a permanent policy, and it will be
@@ -903,41 +908,58 @@ const ENTERPRISE_SHIP_QUESTIONNAIRE = html`<b
       of control available to admins)
     </li>
   </ul>
-  <b
-    >(4) Provide a brief title and description of this launch, which can be
-    shared with enterprises.</b
-  >
-  Only required if you answered Yes to either of the first 2 questions. This may
-  be added to browser release notes. Where applicable, explain the benefit to
-  users, and describe the policy to control it. `;
+  <p>
+    <b
+      >(4) Provide a brief title and description of this launch, which can be
+      shared with enterprises.</b
+    >
+    Only required if you answered Yes to either of the first 2 questions. This
+    may be added to browser release notes. Where applicable, explain the benefit
+    to users, and describe the policy to control it.
+  </p>`;
 
-const DEBUGGABILITY_ORIGIN_TRIAL_QUESTIONNAIRE = `(1) Does the introduction of the new Web Platform feature break Chrome DevTools' existing developer experience?
+const DEBUGGABILITY_ORIGIN_TRIAL_QUESTIONNAIRE = html`
+  <p>
+    (1) Does the introduction of the new Web Platform feature break Chrome
+    DevTools' existing developer experience?
+  </p>
 
-(2) Does Chrome DevTools' existing set of tooling features interact with the new Web Platform feature in an expected way?
+  <p>
+    (2) Does Chrome DevTools' existing set of tooling features interact with the
+    new Web Platform feature in an expected way?
+  </p>
 
-(3) Would the new Web Platform feature's acceptance and/or adoption benefit from adding a new developer workflow to Chrome DevTools?
+  <p>
+    (3) Would the new Web Platform feature's acceptance and/or adoption benefit
+    from adding a new developer workflow to Chrome DevTools?
+  </p>
 
-When in doubt, please check out https://goo.gle/devtools-checklist for details!
+  <p>
+    When in doubt, please check out https://goo.gle/devtools-checklist for
+    details!
+  </p>
 `;
 
 const DEBUGGABILITY_SHIP_QUESTIONNAIRE =
   DEBUGGABILITY_ORIGIN_TRIAL_QUESTIONNAIRE;
 
-const TESTING_SHIP_QUESTIONNAIRE = html`<b
-    >(1) Does your feature have sufficient automated test coverage (Unit tests,
-    WPT, browser tests and other integration tests)?</b
-  >
-  Chrome requires at least 70% automation code coverage (<a
-    href="https://analysis.chromium.org/coverage/p/chromium"
-    target="_blank"
-    >dashboard</a
-  >) running on the main/release branch and 70% Changelist
-  <a
-    href="https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/testing/code_coverage_in_gerrit.md"
-    target="_blank"
-    >code coverage in Gerrit</a
-  >? Do the automated tests have more than 93% green (flakiness < 7%) on CQ and
-  CI builders?
+const TESTING_SHIP_QUESTIONNAIRE = html` <p>
+    <b
+      >(1) Does your feature have sufficient automated test coverage (Unit
+      tests, WPT, browser tests and other integration tests)?</b
+    >
+    Chrome requires at least 70% automation code coverage (<a
+      href="https://analysis.chromium.org/coverage/p/chromium"
+      target="_blank"
+      >dashboard</a
+    >) running on the main/release branch and 70% Changelist
+    <a
+      href="https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/testing/code_coverage_in_gerrit.md"
+      target="_blank"
+      >code coverage in Gerrit</a
+    >? Do the automated tests have more than 93% green (flakiness < 7%) on CQ
+    and CI builders?
+  </p>
   <ul>
     <li>
       Yes. My feature met the minimum automated test coverage and health
@@ -945,13 +967,16 @@ const TESTING_SHIP_QUESTIONNAIRE = html`<b
     </li>
     <li>No. My feature does not meet the requirements since __________.</li>
   </ul>
-  <b>(2) How are performance tests conducted on Chromium builders?</b> List
-  links to tests if any.
-
-  <b
-    >(3) Does this feature have non-automatable test cases that require manual
-    testing? Do you have a plan to get them tested?</b
-  >
+  <p>
+    <b>(2) How are performance tests conducted on Chromium builders?</b> List
+    links to tests if any.
+  </p>
+  <p>
+    <b
+      >(3) Does this feature have non-automatable test cases that require manual
+      testing? Do you have a plan to get them tested?</b
+    >
+  </p>
   <ul>
     <li>No. All feature related test cases are automated.</li>
     <li>
@@ -964,14 +989,16 @@ const TESTING_SHIP_QUESTIONNAIRE = html`<b
       products.
     </li>
   </ul>
-  <b
-    >(4) If your feature impacts Google products, please fill in
-    <a href="http://go/chrome-wp-test-survey" target="_blank"
-      >go/chrome-wp-test-survey</a
-    >.</b
-  >
-  Make a copy, answer the survey questions, and provide a link to your document
-  here. `;
+  <p>
+    <b
+      >(4) If your feature impacts Google products, please fill in
+      <a href="http://go/chrome-wp-test-survey" target="_blank"
+        >go/chrome-wp-test-survey</a
+      >.</b
+    >
+    Make a copy, answer the survey questions, and provide a link to your
+    document here.
+  </p>`;
 
 export const GATE_QUESTIONNAIRES = {
   [enums.GATE_TYPES.API_PROTOTYPE]: BLINK_GENERIC_QUESTIONNAIRE,
