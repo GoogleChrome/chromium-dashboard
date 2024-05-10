@@ -181,7 +181,6 @@ def stage_to_json_dict(
     'created': str(stage.created),
     'feature_id': stage.feature_id,
     'stage_type': stage.stage_type,
-    'ot_description': stage.ot_description,
     'display_name': stage.display_name,
     'intent_stage': INTENT_STAGES_BY_STAGE_TYPE.get(
         stage.stage_type, INTENT_NONE),
@@ -233,6 +232,9 @@ def stage_to_json_dict(
     'ios_last': milestones.ios_last,
     'webview_last': milestones.webview_last,
   }
+
+  if stage.ot_activation_date:
+    d['ot_activation_date'] = str(stage.ot_activation_date)
 
   return d
 

@@ -14,7 +14,7 @@
 
 import collections
 import testing_config  # Must be imported before the module under test.
-from datetime import datetime
+from datetime import date, datetime
 
 import flask
 from unittest import mock
@@ -979,7 +979,7 @@ class NotifyInactiveUsersHandlerTest(testing_config.CustomTestCase):
     self.assertTrue(self.inactive_user.notified_inactive)
 
 
-class OriginTrialCreationRequestHandlerTest(testing_config.CustomTestCase):
+class OTCreationRequestHandlerTest(testing_config.CustomTestCase):
   def setUp(self):
     self.feature = FeatureEntry(
         id=1, name='A feature', summary='summary', category=1)
@@ -1016,7 +1016,7 @@ class OriginTrialCreationRequestHandlerTest(testing_config.CustomTestCase):
   def test_make_creation_request_email(self):
     stage_dict = converters.stage_to_json_dict(self.ot_stage)
     stage_dict['ot_request_note'] = self.ot_stage.ot_request_note
-    handler = notifier.OriginTrialCreationRequestHandler()
+    handler = notifier.OTCreationRequestHandler()
     email_task = handler.make_creation_request_email(stage_dict)
 
     expected_body = """
@@ -1059,7 +1059,7 @@ class OriginTrialCreationRequestHandlerTest(testing_config.CustomTestCase):
 """
     expected = {
       'to': 'origin-trials-support@google.com',
-      'subject': f'New Trial Creation Request for A new origin trial',
+      'subject': 'New Trial Creation Request for A new origin trial',
       'reply_to': None,
       'html': expected_body,
     }
@@ -1067,7 +1067,7 @@ class OriginTrialCreationRequestHandlerTest(testing_config.CustomTestCase):
     self.assertEqual(email_task, expected)
 
 
-class OriginTrialExtendedHandlerTest(testing_config.CustomTestCase):
+class OTExtendedHandlerTest(testing_config.CustomTestCase):
   def setUp(self):
     self.feature = FeatureEntry(
         id=1, name='A feature', summary='summary', category=1)
@@ -1113,14 +1113,14 @@ class OriginTrialExtendedHandlerTest(testing_config.CustomTestCase):
     ot_stage_dict = converters.stage_to_json_dict(self.ot_stage)
     extension_stage_dict = converters.stage_to_json_dict(self.extension_stage)
     with test_app.app_context():
-      handler = notifier.OriginTrialExtendedHandler()
+      handler = notifier.OTExtendedHandler()
       email_task = handler.build_email(extension_stage_dict, ot_stage_dict)
       # TESTDATA.make_golden(email_task['html'], 'test_make_extended_request_email.html')
       self.assertEqual(email_task['html'],
         TESTDATA['test_make_extended_request_email.html'])
 
 
-class OriginTrialExtensionApprovedHandlerTest(testing_config.CustomTestCase):
+class OTExtensionApprovedHandlerTest(testing_config.CustomTestCase):
   def setUp(self):
     self.feature = FeatureEntry(
         id=1, name='A feature', summary='summary', category=1)
@@ -1147,7 +1147,7 @@ class OriginTrialExtensionApprovedHandlerTest(testing_config.CustomTestCase):
   def test_make_extension_approved_email(self):
     feature_dict = converters.feature_entry_to_json_verbose(self.feature)
     with test_app.app_context():
-      handler = notifier.OriginTrialExtensionApprovedHandler()
+      handler = notifier.OTExtensionApprovedHandler()
       email_task = handler.build_email(feature_dict,
                                        self.extension_stage.ot_owner_email,
                                        self.extension_gate.key.integer_id())
@@ -1177,7 +1177,6 @@ class OTActivatedHandlerTest(testing_config.CustomTestCase):
         ot_description='OT description', ot_has_third_party_support=True,
         ot_is_deprecation_trial=True)
     self.ot_stage.put()
-    self.contacts = ['ot_owner1@google.com', 'contact1@google.com', 'contact2@example.com']
 
   def tearDown(self):
     self.feature_1.key.delete()
@@ -1193,6 +1192,199 @@ class OTActivatedHandlerTest(testing_config.CustomTestCase):
                        'Example Trial origin trial is now available')
       self.assertEqual(email_task['html'],
                        TESTDATA['test_make_activated_email.html'])
+
+
+class OTCreationProcessedHandlerTest(testing_config.CustomTestCase):
+  def setUp(self):
+    self.contacts = ['owner1@example.com',
+                     'contact1@example.com',
+                     'contact2@example.com']
+    self.feature_1 = FeatureEntry(
+        id=1, name='feature one', summary='sum', category=1, feature_type=0)
+    self.feature_1.put()
+    self.ot_stage = Stage(
+        feature_id=1, stage_type=150, ot_display_name='Example Trial',
+        ot_owner_email='feature_owner@google.com',
+        ot_chromium_trial_name='ExampleTrial',
+        milestones=MilestoneSet(desktop_first=100, desktop_last=106),
+        ot_documentation_url='https://example.com/docs',
+        ot_feedback_submission_url='https://example.com/feedback',
+        intent_thread_url='https://example.com/experiment',
+        ot_description='OT description', ot_has_third_party_support=True,
+        ot_activation_date=date(2030, 1, 1),
+        ot_is_deprecation_trial=True)
+    self.ot_stage.put()
+
+  def tearDown(self):
+    self.feature_1.key.delete()
+    self.ot_stage.key.delete()
+
+  def test_make_creation_processed_email(self):
+    with test_app.app_context():
+      handler = notifier.OTCreationProcessedHandler()
+      stage_dict = converters.stage_to_json_dict(self.ot_stage)
+      email_task = handler.build_email(stage_dict, self.contacts)
+      # TESTDATA.make_golden(email_task['html'], 'test_make_creation_processed_email.html')
+      self.assertEqual(
+        email_task['subject'],
+        'Example Trial origin trial has been created and will begin 2030-01-01')
+      self.assertEqual(email_task['html'],
+        TESTDATA['test_make_creation_processed_email.html'])
+
+
+class OTCreationRequestFailedHandlerTest(testing_config.CustomTestCase):
+  def setUp(self):
+    self.feature_1 = FeatureEntry(
+        id=1, name='feature one', summary='sum', category=1, feature_type=0)
+    self.feature_1.put()
+    self.ot_stage = Stage(
+        feature_id=1, stage_type=150, ot_display_name='Example Trial',
+        ot_owner_email='feature_owner@google.com',
+        ot_chromium_trial_name='ExampleTrial',
+        milestones=MilestoneSet(desktop_first=100, desktop_last=106),
+        ot_documentation_url='https://example.com/docs',
+        ot_feedback_submission_url='https://example.com/feedback',
+        intent_thread_url='https://example.com/experiment',
+        ot_description='OT description', ot_has_third_party_support=True,
+        ot_activation_date=date(2030, 1, 1),
+        ot_is_deprecation_trial=True)
+    self.ot_stage.put()
+
+  def tearDown(self):
+    self.feature_1.key.delete()
+    self.ot_stage.key.delete()
+
+  def test_make_creation_request_failed_email(self):
+    with test_app.app_context():
+      handler = notifier.OTCreationRequestFailedHandler()
+      stage_dict = converters.stage_to_json_dict(self.ot_stage)
+      email_task = handler.build_email(stage_dict)
+      # TESTDATA.make_golden(email_task['html'], 'test_make_creation_request_failed_email.html')
+      self.assertEqual(
+        email_task['subject'],
+        'Automated trial creation request failed for Example Trial')
+      self.assertEqual(email_task['html'],
+        TESTDATA['test_make_creation_request_failed_email.html'])
+
+
+class OTEndingNextReleaseReminderHandlerTest(testing_config.CustomTestCase):
+  def setUp(self):
+    self.contacts = ['example_user@example.com', 'another_user@exmaple.com']
+
+  def test_make_ending_next_release_email(self):
+    body_data = {
+      'name': 'Some feature',
+      'release_milestone': '126',
+      'after_end_release': '127',
+      'after_end_date': '2030-01-01'
+    }
+    with test_app.app_context():
+      handler = notifier.OTEndingNextReleaseReminderHandler()
+      email_task = handler.build_email(body_data, self.contacts)
+      # TESTDATA.make_golden(email_task['html'], 'test_make_ending_next_release_email.html')
+      self.assertEqual(email_task['subject'],
+        'Some feature origin trial ship decision approaching')
+      self.assertEqual(email_task['html'],
+        TESTDATA['test_make_ending_next_release_email.html'])
+
+
+class OTEndingThisReleaseReminderHandlerTest(testing_config.CustomTestCase):
+  def setUp(self):
+    self.contacts = ['example_user@example.com', 'another_user@exmaple.com']
+
+  def test_make_ending_this_release_email(self):
+    body_data = {
+      'name': 'Some feature',
+      'release_milestone': '126',
+      'next_release': '127',
+    }
+    with test_app.app_context():
+      handler = notifier.OTEndingThisReleaseReminderHandler()
+      email_task = handler.build_email(body_data, self.contacts)
+      # TESTDATA.make_golden(email_task['html'], 'test_make_ending_this_release_email.html')
+      self.assertEqual(email_task['subject'],
+        'Some feature origin trial needs blink-dev update')
+      self.assertEqual(email_task['html'],
+        TESTDATA['test_make_ending_this_release_email.html'])
+
+
+class OTBetaAvailabilityReminderHandlerTest(testing_config.CustomTestCase):
+  def setUp(self):
+    self.contacts = ['example_user@example.com', 'another_user@exmaple.com']
+
+  def test_make_beta_availability_email(self):
+    body_data = {
+      'name': 'Some feature',
+      'release_milestone': '126',
+    }
+    with test_app.app_context():
+      handler = notifier.OTBetaAvailabilityReminderHandler()
+      email_task = handler.build_email(body_data, self.contacts)
+      # TESTDATA.make_golden(email_task['html'], 'test_make_beta_availability_email.html')
+      self.assertEqual(email_task['subject'],
+        'Some feature origin trial is entering beta')
+      self.assertEqual(email_task['html'],
+        TESTDATA['test_make_beta_availability_email.html'])
+
+
+class OTFirstBranchReminderHandlerTest(testing_config.CustomTestCase):
+  def setUp(self):
+    self.contacts = ['example_user@example.com', 'another_user@exmaple.com']
+
+  def test_make_first_branch_email(self):
+    body_data = {
+      'name': 'Some feature',
+      'release_milestone': '126',
+      'branch_date': '2030-01-01',
+    }
+    with test_app.app_context():
+      handler = notifier.OTFirstBranchReminderHandler()
+      email_task = handler.build_email(body_data, self.contacts)
+      # TESTDATA.make_golden(email_task['html'], 'test_make_first_branch_email.html')
+      self.assertEqual(email_task['subject'],
+        'Some feature origin trial is branching')
+      self.assertEqual(email_task['html'],
+        TESTDATA['test_make_first_branch_email.html'])
+
+
+class OTLastBranchReminderHandlerTest(testing_config.CustomTestCase):
+  def setUp(self):
+    self.contacts = ['example_user@example.com', 'another_user@exmaple.com']
+
+  def test_make_last_branch_email(self):
+    body_data = {
+      'name': 'Some feature',
+      'release_milestone': '126',
+      'branch_date': '2030-01-01',
+    }
+    with test_app.app_context():
+      handler = notifier.OTLastBranchReminderHandler()
+      email_task = handler.build_email(body_data, self.contacts)
+      # TESTDATA.make_golden(email_task['html'], 'test_make_last_branch_email.html')
+      self.assertEqual(email_task['subject'],
+        'Some feature origin trial has branched for its last release')
+      self.assertEqual(email_task['html'],
+        TESTDATA['test_make_last_branch_email.html'])
+
+
+class OTAutomatedProcessEmailHandlerTest(testing_config.CustomTestCase):
+  def test_make_ot_process_email(self):
+    body_data = {
+      'email_date': '2030-01-01',
+      'send_count': 100,
+      'next_branch_milestone': 200,
+      'next_branch_date': '2030-01-31',
+      'stable_milestone': 201,
+      'stable_date': '2030-02-01',
+    }
+    with test_app.app_context():
+      handler = notifier.OTAutomatedProcessEmailHandler()
+      email_task = handler.build_email(body_data)
+      # TESTDATA.make_golden(email_task['html'], 'test_make_ot_process_email.html')
+      self.assertEqual(email_task['subject'],
+        'Origin trials automated process reminder just ran')
+      self.assertEqual(email_task['html'],
+        TESTDATA['test_make_ot_process_email.html'])
 
 
 class FunctionsTest(testing_config.CustomTestCase):
