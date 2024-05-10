@@ -313,14 +313,14 @@ def diff_days(t1: date, t2: date) -> int:
 
 def format_date(time_stamp):
   """Format a datetime object into a date string."""
-  if not isinstance(time_stamp, datetime):
+  if not isinstance(time_stamp, date):
     return ''
   return time_stamp.strftime("%Y-%m-%d")
 
 
 def format_date_for_email(time_stamp):
   """Format a datetime object into a readable date for emails."""
-  if not isinstance(time_stamp, datetime):
+  if not isinstance(time_stamp, date):
     return ''
   return time_stamp.strftime("%A, %B %d, %Y")
 
