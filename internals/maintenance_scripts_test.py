@@ -291,7 +291,7 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
     mock_create_origin_trial.side_effect = ['111222333', '-444555666']
 
     result = self.handler.get_template_data()
-    self.assertEqual('Trial creations processed.', result)
+    self.assertEqual('2 trial creation request(s) processed.', result)
     # Check that different email notifications were sent.
     mock_enqueue_task.assert_has_calls([
         mock.call(
@@ -339,7 +339,7 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
         mock.Mock(status=503), 'Unavailable')
 
     result = self.handler.get_template_data()
-    self.assertEqual('Trial creations processed.', result)
+    self.assertEqual('2 trial creation request(s) processed.', result)
     # Failure notications should be sent to the OT support team.
     mock_enqueue_task.assert_has_calls([
         mock.call(
@@ -387,7 +387,7 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
         mock.Mock(status=503), 'Unavailable')
 
     result = self.handler.get_template_data()
-    self.assertEqual('Trial creations processed.', result)
+    self.assertEqual('2 trial creation request(s) processed.', result)
     # One trial should have a failed, and one should be processed.
     mock_enqueue_task.assert_has_calls([
         mock.call(

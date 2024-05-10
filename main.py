@@ -278,6 +278,7 @@ internals_routes: list[Route] = [
   Route('/cron/associate_origin_trials', maintenance_scripts.AssociateOTs),
   Route('/cron/send-ot-process-reminders',
         reminders.SendOTReminderEmailsHandler),
+  Route('/cron/create_origin_trials', maintenance_scripts.CreateOriginTrials),
 
   Route('/admin/find_stop_words', search_fulltext.FindStopWords),
 

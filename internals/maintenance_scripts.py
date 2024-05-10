@@ -575,4 +575,4 @@ class CreateOriginTrials(FlaskHandler):
         self.prepare_for_activation(stage, stage_dict)
       stage.put()
 
-    return 'Trial creations processed.'
+    return f'{len(ot_stages)} trial creation request(s) processed.'
