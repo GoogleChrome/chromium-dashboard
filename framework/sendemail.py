@@ -49,6 +49,8 @@ def get_param(request, name, required=True):
 
 def format_staging_email(addr: str) -> str:
   """Format emails addresses to be redirected for staging logging."""
+  if not settings.SEND_ALL_EMAIL_TO:
+    return ''
   to_user, to_domain = addr.split('@')
   return settings.SEND_ALL_EMAIL_TO % {'user': to_user, 'domain': to_domain}
 
