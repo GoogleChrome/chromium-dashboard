@@ -47,6 +47,12 @@ def get_param(request, name, required=True):
   return val
 
 
+def format_staging_email(addr: str) -> str:
+  """Format emails addresses to be redirected for staging logging."""
+  to_user, to_domain = addr.split('@')
+  return settings.SEND_ALL_EMAIL_TO % {'user': to_user, 'domain': to_domain}
+
+
 def handle_outbound_mail_task():
   """Task to send a notification email to one recipient."""
   require_task_header()
@@ -60,8 +66,11 @@ def handle_outbound_mail_task():
   reply_to = get_param(flask.request, 'reply_to', required=False)
 
   if settings.SEND_ALL_EMAIL_TO and to != settings.REVIEW_COMMENT_MAILING_LIST:
-    to_user, to_domain = to.split('@')
-    to = settings.SEND_ALL_EMAIL_TO % {'user': to_user, 'domain': to_domain}
+    if isinstance(to, list):
+      to = [format_staging_email(addr) for addr in to]
+    else:
+      to = format_staging_email(to)
+
     if cc:
       new_cc = []
       for cc_addr in cc:
