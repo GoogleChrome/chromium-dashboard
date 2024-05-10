@@ -98,10 +98,12 @@ export class ChromedashGateColumn extends LitElement {
         }
 
         #questionnaire {
-          white-space: pre-wrap;
           padding: var(--content-padding-half);
           border-radius: var(--border-radius);
           background: var(--table-alternate-background);
+        }
+        #questionnaire * + * {
+          padding-top: var(--content-padding);
         }
         #questionnaire ul {
           padding-left: 1em;
