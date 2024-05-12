@@ -702,6 +702,7 @@ class OTCreationProcessedHandler(basehandlers.FlaskHandler):
       'html': body,
     }
 
+
 class OTCreationRequestFailedHandler(basehandlers.FlaskHandler):
   """Notify about an origin trial creation request failing automated request."""
 
@@ -723,6 +724,33 @@ class OTCreationRequestFailedHandler(basehandlers.FlaskHandler):
     return {
       'to': OT_SUPPORT_EMAIL,
       'subject': ('Automated trial creation request failed for '
+                  f'{stage["ot_display_name"]}'),
+      'reply_to': None,
+      'html': body,
+    }
+
+
+class OTActivationFailedHandler(basehandlers.FlaskHandler):
+  """Notify about an origin trial activation automated request failing."""
+
+  IS_INTERNAL_HANDLER = True
+  EMAIL_TEMPLATE_PATH = 'origintrials/ot-activation-failed-email.html'
+
+  def process_post_data(self, **kwargs):
+    stage = self.get_param('stage', required=True)
+    send_emails([self.build_email(stage)])
+    return {'message': 'OK'}
+
+  def build_email(self, stage: StageDict) -> dict:
+    body_data = {
+      'stage': stage,
+      'chromestatus_url': ('https://chromestatus.com/feature/'
+                           f'{stage["feature_id"]}')
+    }
+    body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
+    return {
+      'to': OT_SUPPORT_EMAIL,
+      'subject': ('Automated trial activation request failed for '
                   f'{stage["ot_display_name"]}'),
       'reply_to': None,
       'html': body,
