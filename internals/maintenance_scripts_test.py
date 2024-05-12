@@ -263,8 +263,9 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
     self.handler = maintenance_scripts.CreateOriginTrials()
 
   def tearDown(self):
-    self.feature_1.key.delete()
-    self.ot_stage_1.key.delete()
+    for kind in [FeatureEntry, Stage]:
+      for entity in kind.query():
+        entity.key.delete()
 
   @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
   @mock.patch('internals.maintenance_scripts.CreateOriginTrials._get_today')

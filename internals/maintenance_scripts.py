@@ -531,7 +531,7 @@ class CreateOriginTrials(FlaskHandler):
   def handle_activation(self, stage: Stage, stage_dict: StageDict) -> None:
     """Send trial activation request."""
     try:
-      origin_trials_client.activate_origin_trial(stage)
+      origin_trials_client.activate_origin_trial(stage.origin_trial_id)
       cloud_tasks_helpers.enqueue_task(
           '/tasks/email-ot-activated', {'stage': stage_dict})
     except requests.RequestException:
