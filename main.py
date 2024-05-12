@@ -280,6 +280,8 @@ internals_routes: list[Route] = [
         reminders.SendOTReminderEmailsHandler),
   # TODO(DanielRyanSmith): Add this route when OT creation is fully implemented.
   # Route('/cron/create_origin_trials', maintenance_scripts.CreateOriginTrials),
+  # Route('/cron/activate_origin_trials',
+  #       maintenance_scripts.ActivateOriginTrials),
 
   Route('/admin/find_stop_words', search_fulltext.FindStopWords),
 

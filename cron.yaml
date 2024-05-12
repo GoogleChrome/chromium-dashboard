@@ -43,3 +43,6 @@ cron:
 # - description: Check if any origin trials require creation
 #   url: /cron/create_origin_trials
 #   schedule: every 5 minutes
+# - description: Check if any origin trials require activation
+#   url: /cron/activate_origin_trials
+#   schedule: every day 4:00
