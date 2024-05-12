@@ -343,10 +343,10 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
     # Failure notications should be sent to the OT support team.
     mock_enqueue_task.assert_has_calls([
         mock.call(
-            '/tasks/email-ot-creation-failed',
+            '/tasks/email-ot-creation-request-failed',
             {'stage': self.ot_stage_1_dict}),
         mock.call(
-            '/tasks/email-ot-creation-failed',
+            '/tasks/email-ot-creation-request-failed',
             {'stage': self.ot_stage_2_dict})
         ], any_order=True)
     # Creation wasn't handled, so activation dates shouldn't be set.

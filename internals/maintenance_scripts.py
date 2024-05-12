@@ -525,7 +525,7 @@ class CreateOriginTrials(FlaskHandler):
       logging.warning('Origin trial could not be created for stage '
                       f'{stage.key.integer_id()}')
       cloud_tasks_helpers.enqueue_task(
-          '/tasks/email-ot-creation-failed', {'stage': stage_dict})
+          '/tasks/email-ot-creation-request-failed', {'stage': stage_dict})
     return new_id
 
   def handle_activation(self, stage: Stage, stage_dict: StageDict) -> None:
