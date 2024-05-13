@@ -241,7 +241,9 @@ class ChromedashFeatureDetail extends LitElement {
     }
     let extensionStage;
     for (const stage of this.feature.stages) {
-      const foundStage = stage.extensions.find(s => s.id === extensionGate.stage_id);
+      const foundStage = stage.extensions.find(
+        s => s.id === extensionGate.stage_id
+      );
       if (foundStage) {
         extensionStage = foundStage;
         break;
