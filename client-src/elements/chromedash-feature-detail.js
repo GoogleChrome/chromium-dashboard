@@ -234,12 +234,9 @@ class ChromedashFeatureDetail extends LitElement {
       return;
     }
     const gateId = parseInt(rawQuery.gate);
-    console.log(gateId);
     const extensionGate = this.gates.find(g => g.id === gateId);
-    console.log(extensionGate);
     // Don't try to display dialog if we can't find the associated gate or the gate isn't approved.
     if (!extensionGate || extensionGate.state !== VOTE_OPTIONS.APPROVED[0]) {
-      console.log('gate not found or approved.');
       return;
     }
     let extensionStage;
