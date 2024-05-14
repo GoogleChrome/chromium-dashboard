@@ -45,7 +45,7 @@ class ChromedashApp extends LitElement {
         #content {
           margin: 0;
           position: relative;
-          min-height: 500px;
+          flex: 1;
         }
 
         #content-flex-wrapper {
@@ -666,43 +666,41 @@ class ChromedashApp extends LitElement {
       ? nothing
       : html`
           <div id="app-content-container">
-            <div>
-              <div class="main-toolbar">
-                <div class="toolbar-content">
-                  <chromedash-header
-                    .user=${this.user}
-                    .appTitle=${this.appTitle}
-                    .devMode=${this.devMode}
-                    .googleSignInClientId=${this.googleSignInClientId}
-                    .currentPage=${this.currentPage}
-                    @drawer-clicked=${this.handleShowDrawer}
-                  >
-                    <slot></slot>
-                  </chromedash-header>
-                </div>
+            <div class="main-toolbar">
+              <div class="toolbar-content">
+                <chromedash-header
+                  .user=${this.user}
+                  .appTitle=${this.appTitle}
+                  .devMode=${this.devMode}
+                  .googleSignInClientId=${this.googleSignInClientId}
+                  .currentPage=${this.currentPage}
+                  @drawer-clicked=${this.handleShowDrawer}
+                >
+                  <slot></slot>
+                </chromedash-header>
               </div>
+            </div>
 
-              <div id="content">
-                <div>
-                  <chromedash-drawer
-                    .user=${this.user}
-                    .currentPage=${this.currentPage}
-                    ?defaultOpen=${true}
-                    .devMode=${this.devMode}
-                    .googleSignInClientId=${this.googleSignInClientId}
-                  >
-                  </chromedash-drawer>
-                </div>
-                <div style=${styleMap(styleMargin)}>
-                  <chromedash-banner
-                    .message=${this.bannerMessage}
-                    .timestamp=${this.bannerTime}
-                  >
-                  </chromedash-banner>
-                  ${this.renderRolloutBanner(this.currentPage)}
-                  <div id="content-flex-wrapper">
-                    ${this.renderContentAndSidebar()}
-                  </div>
+            <div id="content">
+              <div>
+                <chromedash-drawer
+                  .user=${this.user}
+                  .currentPage=${this.currentPage}
+                  ?defaultOpen=${true}
+                  .devMode=${this.devMode}
+                  .googleSignInClientId=${this.googleSignInClientId}
+                >
+                </chromedash-drawer>
+              </div>
+              <div style=${styleMap(styleMargin)}>
+                <chromedash-banner
+                  .message=${this.bannerMessage}
+                  .timestamp=${this.bannerTime}
+                >
+                </chromedash-banner>
+                ${this.renderRolloutBanner(this.currentPage)}
+                <div id="content-flex-wrapper">
+                  ${this.renderContentAndSidebar()}
                 </div>
               </div>
             </div>
