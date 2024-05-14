@@ -57,6 +57,8 @@ jobs:
 
       - run: npm config set script-shell bash --global
       - run: npm run setup
+      - name: Install playwright browsers
+        run: npx playwright install --with-deps
       - run: npm run build --if-present
 
       - name: Run web test runner
