@@ -1082,26 +1082,30 @@ def send_emails(email_tasks):
   """Process a list of email tasks (send or log)."""
   logging.info('Processing %d email tasks', len(email_tasks))
   for task in email_tasks:
+    logging.info(
+        'Working on the following email:\n'
+        'To: %s\n'
+        'Cc: %s\n'
+        'From: %s\n'
+        'References: %s\n'
+        'Reply-To: %s\n'
+        'Subject: %s\n'
+        'Body:\n%s',
+        task.get('to', None),
+        task.get('cc', None),
+        task.get('from_user', None),
+        task.get('references', None),
+        task.get('reply_to', None),
+        task.get('subject', None),
+        task.get('html', "")[:settings.MAX_LOG_LINE])
     if settings.SEND_EMAIL:
-      cloud_tasks_helpers.enqueue_task(
-          '/tasks/outbound-email', task)
+      try:
+        cloud_tasks_helpers.enqueue_task(
+            '/tasks/outbound-email', task)
+      except e:
+        logging.exception('could not enqueue.')
     else:
-      logging.info(
-          'Would send the following email:\n'
-          'To: %s\n'
-          'Cc: %s\n'
-          'From: %s\n'
-          'References: %s\n'
-          'Reply-To: %s\n'
-          'Subject: %s\n'
-          'Body:\n%s',
-          task.get('to', None),
-          task.get('cc', None),
-          task.get('from_user', None),
-          task.get('references', None),
-          task.get('reply_to', None),
-          task.get('subject', None),
-          task.get('html', "")[:settings.MAX_LOG_LINE])
+      logging.info('Not enqueued because of settings.SEND_EMAIL')
 
 
 def post_comment_to_mailing_list(
