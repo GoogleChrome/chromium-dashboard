@@ -510,7 +510,9 @@ class BackfillFeatureEnterpriseImpact(FlaskHandler):
 class CreateOriginTrials(FlaskHandler):
 
   def handle_creation(self, stage: Stage, stage_dict: StageDict) -> str | None:
-    """Send a flagged creation request for creation."""
+    """Send a flagged creation request for processing to the Origin Trials
+    API.
+    """
     request_success = False
     attempted_requests = 0
     new_id = None
