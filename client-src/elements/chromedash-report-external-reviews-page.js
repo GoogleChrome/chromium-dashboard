@@ -2,6 +2,7 @@
 import {Task} from '@lit/task';
 import '@shoelace-style/shoelace';
 import {LitElement, css, html, nothing} from 'lit';
+import {choose} from 'lit/directives/choose.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
 /**
@@ -66,7 +67,10 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-        h2 {
+        #subheader {
+          display: block;
+        }
+        h3 {
           margin-top: var(--content-padding);
           margin-bottom: var(--content-padding-quarter);
 
@@ -168,7 +172,7 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
     ].map(([title, key]) =>
       reviews[key].length > 0
         ? html`<section>
-            <h2 id=${key}>${title}</h2>
+            <h3 id=${key}>${title}</h3>
             <table class="data-table">
               ${this.headerRow()}
               ${reviews[key].map(
@@ -211,13 +215,24 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
   render() {
     return html`
       <div id="subheader">
-        Reviews are in rough order of urgency, from about-to-ship down to
-        incubations. Already-shipped features are listed at the bottom.
+        <h2>
+          Open
+          ${choose(this.reviewer, [
+            ['tag', () => html`W3C TAG`],
+            ['webkit', () => html`WebKit`],
+            ['gecko', () => html`Mozilla`],
+          ])}
+          reviews for Chromium features
+        </h2>
+        <p>
+          Reviews are in rough order of urgency, from about-to-ship down to
+          incubations. Already-shipped features are listed at the bottom.
+        </p>
       </div>
       ${this._reviewsTask.render({
         pending: () => html`
           <section>
-            <h2><sl-skeleton effect="sheen"></sl-skeleton></h2>
+            <h3><sl-skeleton effect="sheen"></sl-skeleton></h3>
             <table class="data-table">
               ${this.headerRow()}
               ${[1, 2, 3].map(
