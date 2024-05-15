@@ -78,6 +78,7 @@ import './elements/chromedash-guide-stage-page';
 import './elements/chromedash-guide-metadata-page';
 import './elements/chromedash-guide-verify-accuracy-page';
 import './elements/chromedash-header';
+import './elements/chromedash-intent-template';
 import './elements/chromedash-legend';
 import './elements/chromedash-login-required-page';
 import './elements/chromedash-metadata';
