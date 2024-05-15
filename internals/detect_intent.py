@@ -229,6 +229,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
       return {'message': message}
 
     self.set_intent_thread_url(stage, thread_url, subject)
+    gate_id = gate.key.integer_id()  # In case it was found by gate_type.
     is_new_thread = detect_new_thread(gate_id)
     self.create_approvals(
         feature, stage, gate, approval_field, from_addr, body, is_new_thread)
