@@ -583,17 +583,16 @@ class ActivateOriginTrials(FlaskHandler):
     return date.today()
 
   def get_template_data(self, **kwargs):
-    """Activate any origin trials that are flagged for activation."""
+    """Check for origin trials that are scheduled for activation and activate
+    them.
+    """
     self.require_cron_header()
 
     success_count, fail_count = 0, 0
     today = self._get_today()
     # Get all OT stages.
     ot_stages: list[Stage] = Stage.query(
-        ndb.OR(
-            Stage.stage_type == STAGE_BLINK_ORIGIN_TRIAL,
-            Stage.stage_type == STAGE_FAST_ORIGIN_TRIAL,
-            Stage.stage_type == STAGE_DEP_DEPRECATION_TRIAL)).fetch()
+        Stage.stage_type.IN(ALL_ORIGIN_TRIAL_STAGE_TYPES)).fetch()
     for stage in ot_stages:
       # Only process stages with a delayed activation date set.
       if stage.ot_activation_date is None:
