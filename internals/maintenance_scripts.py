@@ -563,10 +563,7 @@ class CreateOriginTrials(FlaskHandler):
 
     # OT stages that are flagged to process a trial creation.
     ot_stages: list[Stage] = Stage.query(
-        ndb.OR(
-            Stage.stage_type == STAGE_BLINK_ORIGIN_TRIAL,
-            Stage.stage_type == STAGE_FAST_ORIGIN_TRIAL,
-            Stage.stage_type == STAGE_DEP_DEPRECATION_TRIAL),
+        Stage.stage_type.IN(ALL_ORIGIN_TRIAL_STAGE_TYPES),
         Stage.ot_action_requested == True).fetch()
     for stage in ot_stages:
       stage.ot_action_requested = False

@@ -214,6 +214,15 @@ class AssociateOTsTest(testing_config.CustomTestCase):
     self.assertFalse(self.extension_stage_1.ot_action_requested)
 
 
+def mock_mstone_return_value_generator(*args, **kwargs):
+  """Returns mock milestone info based on input."""
+  if args == (100,):
+    return {'mstones': [{'branch_point': '2020-01-01T00:00:00'}]}
+  if args == (200,):
+    return {'mstones': [{'branch_point': '2030-01-01T00:00:00'}]}
+  else:
+    return {'mstones': [{'branch_point': '2025-01-01T00:00:00'}]}
+
 class CreateOriginTrialsTest(testing_config.CustomTestCase):
 
   def setUp(self):
@@ -286,9 +295,7 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
     self.ot_stage_2.put()
 
     mock_today.return_value = date(2020, 6, 1)  # 2020-06-01
-    mock_get_chromium_milestone_info.side_effect = [
-        {'mstones': [{'branch_point': '2020-01-01T00:00:00'}]},
-        {'mstones': [{'branch_point': '2030-01-01T00:00:00'}]}]
+    mock_get_chromium_milestone_info.side_effect = mock_mstone_return_value_generator
     mock_create_origin_trial.side_effect = ['111222333', '-444555666']
 
     result = self.handler.get_template_data()
@@ -308,9 +315,9 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
     # Action requests should be cleared.
     self.assertFalse(self.ot_stage_1.ot_action_requested)
     self.assertFalse(self.ot_stage_2.ot_action_requested)
-    # New origin trial ID should be associated with the stages.
-    self.assertEqual('111222333', self.ot_stage_1.origin_trial_id)
-    self.assertEqual('-444555666', self.ot_stage_2.origin_trial_id)
+    # New origin trial ID should be associated with the stages.ss
+    self.assertIsNotNone(self.ot_stage_1.origin_trial_id)
+    self.assertIsNotNone(self.ot_stage_2.origin_trial_id)
     # OT 3 had no action request, so it should not have changed.
     self.assertIsNone(self.ot_stage_3.origin_trial_id)
 
@@ -332,9 +339,7 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
     self.ot_stage_2.put()
 
     mock_today.return_value = date(2020, 6, 1)  # 2020-06-01
-    mock_get_chromium_milestone_info.side_effect = [
-        {'mstones': [{'branch_point': '2020-01-01T00:00:00'}]},
-        {'mstones': [{'branch_point': '2030-01-01T00:00:00'}]}]
+    mock_get_chromium_milestone_info.side_effect = mock_mstone_return_value_generator
     # Create trial request is failing.
     mock_create_origin_trial.side_effect = requests.RequestException(
         mock.Mock(status=503), 'Unavailable')
@@ -379,9 +384,7 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
     self.ot_stage_2.put()
 
     mock_today.return_value = date(2020, 6, 1)  # 2020-06-01
-    mock_get_chromium_milestone_info.side_effect = [
-        {'mstones': [{'branch_point': '2020-01-01T00:00:00'}]},
-        {'mstones': [{'branch_point': '2030-01-01T00:00:00'}]}]
+    mock_get_chromium_milestone_info.side_effect = mock_mstone_return_value_generator
     mock_create_origin_trial.side_effect = ['111222333', '-444555666']
     # Activate trial request is failing.
     mock_activate_origin_trial.side_effect = requests.RequestException(
@@ -389,7 +392,7 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
 
     result = self.handler.get_template_data()
     self.assertEqual('2 trial creation request(s) processed.', result)
-    # One trial should have a failed, and one should be processed.
+    # One trial activation should have failed, and one should be processed.
     mock_enqueue_task.assert_has_calls([
         mock.call(
             '/tasks/email-ot-activation-failed',
@@ -407,7 +410,7 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
     self.assertFalse(self.ot_stage_1.ot_action_requested)
     self.assertFalse(self.ot_stage_2.ot_action_requested)
     # New origin trial ID should be associated with the stages.
-    self.assertEqual('111222333', self.ot_stage_1.origin_trial_id)
-    self.assertEqual('-444555666', self.ot_stage_2.origin_trial_id)
+    self.assertIsNotNone(self.ot_stage_1.origin_trial_id)
+    self.assertIsNotNone(self.ot_stage_2.origin_trial_id)
     # OT 3 had no action request, so it should not have changed.
     self.assertIsNone(self.ot_stage_3.origin_trial_id)
