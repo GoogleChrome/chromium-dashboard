@@ -229,6 +229,38 @@ class ChromedashFeatureDetail extends LitElement {
     this.intializeGateColumn();
   }
 
+  initializeExtensionDialog(rawQuery) {
+    if (!('initiateExtension' in rawQuery)) {
+      return;
+    }
+    const gateId = parseInt(rawQuery.gate);
+    const extensionGate = this.gates.find(g => g.id === gateId);
+    // Don't try to display dialog if we can't find the associated gate or the gate isn't approved.
+    if (!extensionGate || extensionGate.state !== VOTE_OPTIONS.APPROVED[0]) {
+      return;
+    }
+    let extensionStage;
+    for (const stage of this.feature.stages) {
+      const foundStage = stage.extensions.find(
+        s => s.id === extensionGate.stage_id
+      );
+      if (foundStage) {
+        extensionStage = foundStage;
+        break;
+      }
+    }
+    // Don't try to display dialog if we can't find the associated stage.
+    if (!extensionStage) {
+      return;
+    }
+    openFinalizeExtensionDialog(
+      this.feature.id,
+      extensionStage.id,
+      extensionStage.desktop_last,
+      dialogTypes.FINALIZE_EXTENSION
+    );
+  }
+
   intializeGateColumn() {
     const rawQuery = parseRawQuery(window.location.search);
     if (!rawQuery.hasOwnProperty('gate')) {
@@ -263,6 +295,7 @@ class ChromedashFeatureDetail extends LitElement {
       stage: stage,
       gate: gate,
     });
+    this.initializeExtensionDialog(rawQuery);
   }
 
   _fireEvent(eventName, detail) {

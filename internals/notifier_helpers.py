@@ -192,23 +192,13 @@ def notify_subscribers_of_new_comments(fe: 'FeatureEntry', gate: Gate,
 
 
 def send_ot_notification(stage: Stage):
-  """Notify about new trial creation/extension request."""
+  """Notify about new trial creation request."""
   stage_dict = converters.stage_to_json_dict(stage)
   # Add the OT request note, which is usually not publicly visible.
   stage_dict['ot_request_note'] = stage.ot_request_note
   params = {'stage': stage_dict}
-
-  # Determine which notification type to send.
-  if stage_dict['stage_type'] in core_enums.OT_EXTENSION_STAGE_TYPES:
-    # Extension stage notifications need the original OT stage also
-    # to fill out all information in the notification.
-    ot_stage = Stage.get_by_id(stage.ot_stage_id)
-    params['ot_stage'] = converters.stage_to_json_dict(ot_stage)
-    cloud_tasks_helpers.enqueue_task(
-        '/tasks/email-ot-extension-request', params)
-  else:
-    cloud_tasks_helpers.enqueue_task(
-        '/tasks/email-ot-creation-request',params)
+  cloud_tasks_helpers.enqueue_task(
+      '/tasks/email-ot-creation-request',params)
 
 
 def send_trial_extension_approved_notification(

@@ -134,10 +134,12 @@ class Vote(ndb.Model):
       query = query.filter(Vote.state.IN(states))
     if set_by is not None:
       query = query.filter(Vote.set_by == set_by)
+    logging.info('query is %r', query)
     # Query with STRONG consistency because ndb defaults to
     # EVENTUAL consistency and we run this query immediately after
     # saving the user's change that we want included in the query.
     votes: list[Vote] = query.fetch(limit, read_consistency=ndb.STRONG)
+    logging.info('found %r Votes', len(votes))
     return votes
 
   @classmethod

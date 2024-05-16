@@ -24,6 +24,10 @@ test('add an origin trial stage', async ({ page }) => {
     // Safest way to work with a unique feature is to create it.
     await createNewFeature(page);
 
+    // Expand the "Start incubating" panel to scroll the history section away from the dialog we're testing.
+    const incubatingPanel = page.locator('sl-details[summary="Start incubating"]');
+    await incubatingPanel.click();
+
     // Add an origin trial stage.
     const addStageButton = page.getByText('Add stage');
     await addStageButton.click();

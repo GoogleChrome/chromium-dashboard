@@ -37,8 +37,9 @@ from framework import utils
 from framework import xsrf
 from internals import approval_defs
 from internals import notifier_helpers
-from internals.data_types import CHANGED_FIELDS_LIST_TYPE
+from internals.core_enums import ALL_ORIGIN_TRIAL_STAGE_TYPES
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.data_types import CHANGED_FIELDS_LIST_TYPE
 from internals import user_models
 
 from flask import session
@@ -375,8 +376,9 @@ class EntitiesAPIHandler(APIHandler):
     if stage_was_updated:
       stage.put()
 
-    # Notify of OT request if one was sent.
-    if ot_action_requested:
+    # Notify of OT creation request if one was sent.
+    if (ot_action_requested and
+        stage.stage_type in ALL_ORIGIN_TRIAL_STAGE_TYPES):
       notifier_helpers.send_ot_notification(stage)
 
     return stage_was_updated

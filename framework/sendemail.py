@@ -58,6 +58,8 @@ def format_staging_email(addr: str) -> str:
 def handle_outbound_mail_task():
   """Task to send a notification email to one recipient."""
   require_task_header()
+  json_body = flask.request.get_json(force=True)
+  logging.info('params: %r', json_body)
 
   to = get_param(flask.request, 'to')
   cc = get_param(flask.request, 'cc', required=False)
@@ -67,11 +69,13 @@ def handle_outbound_mail_task():
   references = get_param(flask.request, 'references', required=False)
   reply_to = get_param(flask.request, 'reply_to', required=False)
 
+  if isinstance(to, str):
+    to = [to]
+  if isinstance(cc, str):
+    cc = [cc]
+
   if settings.SEND_ALL_EMAIL_TO and to != settings.REVIEW_COMMENT_MAILING_LIST:
-    if isinstance(to, list):
-      to = [format_staging_email(addr) for addr in to]
-    else:
-      to = format_staging_email(to)
+    to = [format_staging_email(addr) for addr in to]
 
     if cc:
       new_cc = []

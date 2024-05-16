@@ -29,9 +29,14 @@ test('external reviewers report renders', async ({page}) => {
 
   await page.goto('/reports/external_reviews/gecko');
 
-  // Check that the right subset of sections is present, in the right order.
+  // Check that the page identifies the reviewer.
   await expect
     .soft(page.getByRole('heading', {level: 2}))
+    .toContainText('Mozilla');
+
+  // Check that the right subset of sections is present, in the right order.
+  await expect
+    .soft(page.getByRole('heading', {level: 3}))
     .toHaveText(['In Origin Trial', 'Prototyping', 'Already shipped']);
 
   // Features in origin trial.

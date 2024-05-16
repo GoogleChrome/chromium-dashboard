@@ -47,7 +47,7 @@ class StagesAPITest(testing_config.CustomTestCase):
         id=10,
         feature_id=1,
         stage_type=150,
-        display_name='Stage display name',                 
+        display_name='Stage display name',
         ux_emails=['ux_person@example.com'],
         intent_thread_url='https://example.com/intent',
         milestones=MilestoneSet(desktop_first=100),
@@ -522,6 +522,67 @@ class StagesAPITest(testing_config.CustomTestCase):
     self.assertIsNone(stage.display_name)
     # Existing fields not specified should not be changed.
     self.assertEqual(stage.experiment_goals, 'To be the very best.')
+
+  @mock.patch('internals.notifier_helpers.send_ot_notification')
+  def test_patch__ot_creation(self, mock_send_ot_notification):
+    """A valid PATCH request should update an existing stage."""
+    testing_config.sign_in('feature_owner@example.com', 123)
+    mock_send_ot_notification.return_value = None
+    json = {
+        'ot_action_requested': {
+          'form_field_name': 'ot_action_requested',
+          'value': True,
+        },
+        'ot_chromium_trial_name': {
+          'form_field_name': 'ot_chromium_trial_name',
+          'value': 'Some name',
+        },
+      }
+
+    with test_app.test_request_context(
+        f'{self.request_path}1/stages/10', json=json):
+      actual = self.handler.do_patch(feature_id=1, stage_id=10)
+    self.assertEqual(actual['message'], 'Stage values updated.')
+    stage = self.stage_1
+    self.assertEqual(stage.ot_chromium_trial_name, 'Some name')
+    # Values can be set to null.
+    self.assertTrue(stage.ot_action_requested)
+    # Existing fields not specified should not be changed.
+    self.assertEqual(stage.experiment_goals, 'To be the very best.')
+    # OT creation request notification should be sent.
+    mock_send_ot_notification.assert_called_once()
+
+  @mock.patch('internals.notifier_helpers.send_ot_notification')
+  def test_patch__ot_extension(self, mock_send_ot_notification):
+    """A valid PATCH request should update an existing stage."""
+    testing_config.sign_in('feature_owner@example.com', 123)
+    # extension stage type.
+    self.stage_1.stage_type = 151
+    self.stage_1.put()
+    mock_send_ot_notification.return_value = None
+    json = {
+        'ot_action_requested': {
+          'form_field_name': 'ot_action_requested',
+          'value': True,
+        },
+        'ot_chromium_trial_name': {
+          'form_field_name': 'ot_extension_reason',
+          'value': 'reason',
+        },
+      }
+
+    with test_app.test_request_context(
+        f'{self.request_path}1/stages/10', json=json):
+      actual = self.handler.do_patch(feature_id=1, stage_id=10)
+    self.assertEqual(actual['message'], 'Stage values updated.')
+    stage = self.stage_1
+    self.assertEqual(stage.ot_chromium_trial_name, 'reason')
+    # Values can be set to null.
+    self.assertTrue(stage.ot_action_requested)
+    # Existing fields not specified should not be changed.
+    self.assertEqual(stage.experiment_goals, 'To be the very best.')
+    # OT extension request should NOT send a notification.
+    mock_send_ot_notification.assert_not_called()
 
   def test_patch__ot_request_googler(self):
     """A valid OT creation request from a googler should update stage."""
