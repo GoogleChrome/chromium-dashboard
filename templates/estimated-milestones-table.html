@@ -61,11 +61,11 @@
 
     {% endif %}{% endfor %}
     {% for stage in stage_info.ot_stages %}{% if stage.milestones.webview_last %}
-        <tr><td>OriginTrial webView last</td>
+        <tr><td>OriginTrial WebView last</td>
         <td>{{stage.milestones.webview_last}}</td></tr>
 
       {% endif %}{% if stage.milestones.webview_first %}
-        <tr><td>OriginTrial webView first</td>
+        <tr><td>OriginTrial WebView first</td>
         <td>{{stage.milestones.webview_first}}</td></tr>
 
     {% endif %}{% endfor %}
@@ -76,7 +76,7 @@
   <table>
 
     {% for stage in stage_info.ship_stages %}{% if stage.milestones.ios_first %}
-        <tr><td>Shipping on WebView</td>
+        <tr><td>Shipping on iOS</td>
         <td>{{stage.milestones.ios_first}}</td></tr>
 
       {% endif %}{% endfor %}

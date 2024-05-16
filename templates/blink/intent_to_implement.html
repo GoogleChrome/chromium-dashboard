@@ -303,7 +303,8 @@
   <br><br><h4>Links to previous Intent discussions</h4>
 
   {% for stage in stage_info.proto_stages %}{% if stage.intent_thread_url %}
-      Intent to prototype: {{stage.intent_thread_url|urlize}}
+      Intent to Prototype: {{stage.intent_thread_url|urlize}}
+      <br>
 
   {% endif %}{% endfor %}
   {% for stage in stage_info.dt_stages %}{% if stage.announcement_url %}
@@ -322,7 +323,7 @@
       <br>
 
   {% endif %}{% endfor %}
-  {% for stage in stage_info.extension_stages %}{% if stage.intent_thread_url %}
+  {% for stage in stage_info.ship_stages %}{% if stage.intent_thread_url %}
       Intent to Ship: {{stage.intent_thread_url|urlize}}
       <br>
 

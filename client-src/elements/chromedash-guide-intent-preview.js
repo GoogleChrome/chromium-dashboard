@@ -6,6 +6,7 @@ import './chromedash-intent-template';
 class ChromedashGuideIntentPreview extends LitElement {
   static get properties() {
     return {
+      appTitle: {type: String},
       featureId: {type: Number},
       gateId: {type: Number},
       feature: {type: Object},
@@ -19,6 +20,7 @@ class ChromedashGuideIntentPreview extends LitElement {
 
   constructor() {
     super();
+    this.appTitle = '';
     this.featureId = 0;
     this.gateId = 0;
     this.feature = undefined;
@@ -138,6 +140,7 @@ class ChromedashGuideIntentPreview extends LitElement {
             id="send-email-button"
           />
           <chromedash-intent-template
+            appTitle="${this.appTitle}"
             .feature=${this.feature}
             .stage=${this.stage}
             .gate=${this.gate}
