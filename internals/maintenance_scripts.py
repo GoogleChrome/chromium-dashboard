@@ -575,3 +575,50 @@ class CreateOriginTrials(FlaskHandler):
       stage.put()
 
     return f'{len(ot_stages)} trial creation request(s) processed.'
+
+
+class ActivateOriginTrials(FlaskHandler):
+
+  def _get_today(self):
+    return date.today()
+
+  def get_template_data(self, **kwargs):
+    """Check for origin trials that are scheduled for activation and activate
+    them.
+    """
+    self.require_cron_header()
+
+    success_count, fail_count = 0, 0
+    today = self._get_today()
+    # Get all OT stages.
+    ot_stages: list[Stage] = Stage.query(
+        Stage.stage_type.IN(ALL_ORIGIN_TRIAL_STAGE_TYPES)).fetch()
+    for stage in ot_stages:
+      # Only process stages with a delayed activation date set.
+      if stage.ot_activation_date is None:
+        continue
+      # A stage with an activation date but no origin trial ID shouldn't be
+      # possible.
+      if stage.origin_trial_id is None:
+        logging.exception('Stage has a set activation date with no set origin '
+                          f'trial ID. stage={stage.key.integer_id()}')
+        continue
+      if today >= stage.ot_activation_date:
+        logging.info(f'Activating trial {stage.origin_trial_id}')
+        try:
+          origin_trials_client.activate_origin_trial(stage.origin_trial_id)
+        except requests.RequestException:
+          cloud_tasks_helpers.enqueue_task(
+              '/tasks/email-ot-activation-failed',
+              {'stage': converters.stage_to_json_dict(stage)})
+          fail_count += 1
+        else:
+          cloud_tasks_helpers.enqueue_task(
+              '/tasks/email-ot-activated',
+              {'stage': converters.stage_to_json_dict(stage)})
+          stage.ot_activation_date = None
+          stage.put()
+          success_count += 1
+
+    return (f'{success_count} activation(s) successfully processed and '
+            f'{fail_count} activation(s) failed to process.')

@@ -414,3 +414,118 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
     self.assertIsNotNone(self.ot_stage_2.origin_trial_id)
     # OT 3 had no action request, so it should not have changed.
     self.assertIsNone(self.ot_stage_3.origin_trial_id)
+
+
+class ActivateOriginTrialsTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.feature_1 = FeatureEntry(
+        id=1, name='feature one', summary='sum', category=1, feature_type=0)
+    self.feature_1.put()
+    self.feature_2 = FeatureEntry(
+        id=2, name='feature one', summary='sum', category=1, feature_type=1)
+    self.feature_2.put()
+    self.ot_stage_1 = Stage(
+        feature_id=1, stage_type=150, ot_display_name='Example Trial',
+        origin_trial_id='111222333', ot_activation_date=date(2020, 1, 1),
+        ot_owner_email='feature_owner@google.com',
+        ot_chromium_trial_name='ExampleTrial',
+        milestones=MilestoneSet(desktop_first=100, desktop_last=106),
+        ot_documentation_url='https://example.com/docs',
+        ot_feedback_submission_url='https://example.com/feedback',
+        intent_thread_url='https://example.com/experiment',
+        ot_description='OT description', ot_has_third_party_support=True,
+        ot_is_deprecation_trial=False)
+    self.ot_stage_1.put()
+    self.ot_stage_1_dict = converters.stage_to_json_dict(self.ot_stage_1)
+
+    self.ot_stage_2 = Stage(
+        feature_id=2, stage_type=250, ot_display_name='Example Trial 2',
+        origin_trial_id='444555666', ot_activation_date=date(2020, 2, 15),
+        ot_owner_email='feature_owner2@google.com',
+        ot_chromium_trial_name='ExampleTrial2',
+        milestones=MilestoneSet(desktop_first=200, desktop_last=206),
+        ot_documentation_url='https://example.com/docs2',
+        ot_feedback_submission_url='https://example.com/feedback2',
+        intent_thread_url='https://example.com/experiment2',
+        ot_description='OT description2', ot_has_third_party_support=True,
+        ot_is_deprecation_trial=False)
+    self.ot_stage_2.put()
+    self.ot_stage_2_dict = converters.stage_to_json_dict(self.ot_stage_2)
+
+    self.ot_stage_3 = Stage(
+        feature_id=3, stage_type=450, ot_display_name='Example Trial 3',
+        origin_trial_id='777888999', ot_activation_date=date(2024, 1, 1),
+        ot_owner_email='feature_owner2@google.com',
+        ot_chromium_trial_name='ExampleTrial3',
+        milestones=MilestoneSet(desktop_first=200, desktop_last=206),
+        ot_documentation_url='https://example.com/docs3',
+        ot_feedback_submission_url='https://example.com/feedback3',
+        intent_thread_url='https://example.com/experiment3',
+        ot_description='OT description3', ot_has_third_party_support=True,
+        ot_is_deprecation_trial=True)
+    self.ot_stage_3
+    self.handler = maintenance_scripts.ActivateOriginTrials()
+
+  def tearDown(self):
+    for kind in [FeatureEntry, Stage]:
+      for entity in kind.query():
+        entity.key.delete()
+
+  @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
+  @mock.patch('internals.maintenance_scripts.ActivateOriginTrials._get_today')
+  @mock.patch('framework.origin_trials_client.activate_origin_trial')
+  def test_activate_trials__faled(
+      self, mock_activate_origin_trial, mock_today, mock_enqueue_task):
+    """Origin trials are activated if it is on or after the activation date."""
+
+    mock_today.return_value = date(2020, 6, 1)  # 2020-06-01
+
+    result = self.handler.get_template_data()
+    self.assertEqual('2 activation(s) successfully processed and 0 '
+                     'activation(s) failed to process.', result)
+    # Activation requests should have been sent.
+    mock_activate_origin_trial.assert_has_calls([
+        mock.call('111222333', ), mock.call('444555666')], any_order=True)
+    # Check that different email notifications were sent.
+    mock_enqueue_task.assert_has_calls([
+        mock.call(
+            '/tasks/email-ot-activated', {'stage': self.ot_stage_1_dict}),
+        mock.call(
+            '/tasks/email-ot-activated', {'stage': self.ot_stage_2_dict})
+        ], any_order=True)
+    # Activation was handled, so a delayed activation date should not be set.
+    self.assertIsNone(self.ot_stage_1.ot_activation_date)
+    self.assertIsNone(self.ot_stage_2.ot_activation_date)
+    # OT 3 should still have delayed activation date set in the future.
+    self.assertEqual(date(2024, 1, 1), self.ot_stage_3.ot_activation_date)
+
+  @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
+  @mock.patch('internals.maintenance_scripts.ActivateOriginTrials._get_today')
+  @mock.patch('framework.origin_trials_client.activate_origin_trial')
+  def test_activate_trials__failed(
+      self, mock_activate_origin_trial, mock_today, mock_enqueue_task):
+
+    mock_today.return_value = date(2020, 6, 1)  # 2020-06-01
+    # Activate trial request is failing.
+    mock_activate_origin_trial.side_effect = requests.RequestException(
+        mock.Mock(status=503), 'Unavailable')
+
+    result = self.handler.get_template_data()
+    self.assertEqual('0 activation(s) successfully processed and 2 '
+                     'activation(s) failed to process.', result)
+    # Activation requests should have been sent.
+    mock_activate_origin_trial.assert_has_calls([
+        mock.call('111222333', ), mock.call('444555666')], any_order=True)
+    # Failure notications should be sent to the OT support team.
+    mock_enqueue_task.assert_has_calls([
+        mock.call(
+            '/tasks/email-ot-activation-failed',
+            {'stage': self.ot_stage_1_dict}),
+        mock.call(
+            '/tasks/email-ot-activation-failed',
+            {'stage': self.ot_stage_2_dict})
+        ], any_order=True)
+    # Activation wasn't handled, so activation dates should still be set.
+    self.assertIsNotNone(self.ot_stage_1.ot_activation_date)
+    self.assertIsNotNone(self.ot_stage_2.ot_activation_date)
