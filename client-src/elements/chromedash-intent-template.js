@@ -1079,32 +1079,6 @@ class ChromedashIntentTemplate extends LitElement {
     ]}`;
   }
 
-  litHTMLToString(elements) {
-    if (typeof elements === 'symbol') return '';
-    const {strings, values} = elements;
-    const valuesArr = [...values, ''];
-    const result = [];
-    strings.forEach((s, i) => {
-      let v = valuesArr[i];
-      if (v._$litType$ !== undefined) {
-        v = this.litHTMLToString(v);
-      } else if (v instanceof Array) {
-        // array of strings or templates.
-        let newV = '';
-        for (const innerV of [...v]) {
-          newV += this.litHTMLToString(innerV);
-        }
-        v = newV;
-      }
-      result.push(strings[i]);
-      // Skip adding value if it's a symbol type (which means it's lit-nothing).
-      if (typeof v !== 'symbol') {
-        result.push(v);
-      }
-    });
-    return result.join('');
-  }
-
   render() {
     return html`
       <p>Email to</p>
