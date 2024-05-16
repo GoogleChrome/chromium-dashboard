@@ -38,3 +38,8 @@ cron:
 - description: Send origin trial process reminder emails.
   url: /cron/send-ot-process-reminders
   schedule: every monday 4:00
+
+# TODO(DanielRyanSmith): Add this job when OT creation is fully implemented.
+# - description: Check if any origin trials require creation
+#   url: /cron/create_origin_trials
+#   schedule: every 5 minutes

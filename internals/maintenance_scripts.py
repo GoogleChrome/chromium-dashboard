@@ -12,15 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import datetime
+from datetime import date, datetime
 import logging
 from typing import Any
 from google.cloud import ndb  # type: ignore
+import requests
 
+from api import converters
 from framework.basehandlers import FlaskHandler
+from framework import cloud_tasks_helpers
 from framework import origin_trials_client
+from framework import utils
 from internals import approval_defs
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.data_types import StageDict
 from internals.review_models import Gate, Vote, Activity
 from internals.core_enums import *
 from internals.feature_links import batch_index_feature_entries
@@ -150,7 +155,7 @@ class BackfillRespondedOn(FlaskHandler):
   def update_responded_on(self, gate):
     """Update gate.responded_on and return True if an update was needed."""
     gate_id = gate.key.integer_id()
-    earliest_response = datetime.datetime.max
+    earliest_response = datetime.max
 
     approvers = approval_defs.get_approvers(gate.gate_type)
     activities = Activity.get_activities(
@@ -169,7 +174,7 @@ class BackfillRespondedOn(FlaskHandler):
         logging.info(f'Set feature {gate.feature_id} gate {gate_id} '
                      f'to {v.set_on} because of vote')
 
-    if earliest_response != datetime.datetime.max:
+    if earliest_response != datetime.max:
       gate.responded_on = earliest_response
       return True
     else:
@@ -500,3 +505,73 @@ class BackfillFeatureEnterpriseImpact(FlaskHandler):
     ndb.put_multi(batch)
 
     return f'{count} Feature entities updated of {len(features_by_id)} available features.'
+
+
+class CreateOriginTrials(FlaskHandler):
+
+  def handle_creation(self, stage: Stage, stage_dict: StageDict) -> str | None:
+    """Send a flagged creation request for processing to the Origin Trials
+    API.
+    """
+    request_success = False
+    attempted_requests = 0
+    new_id = None
+    while not request_success and attempted_requests < 3:
+      attempted_requests += 1
+      try:
+        new_id = origin_trials_client.create_origin_trial(stage)
+        request_success = True
+      except requests.RequestException:
+        attempted_requests += 1
+    if not request_success:
+      logging.warning('Origin trial could not be created for stage '
+                      f'{stage.key.integer_id()}')
+      cloud_tasks_helpers.enqueue_task(
+          '/tasks/email-ot-creation-request-failed', {'stage': stage_dict})
+    return new_id
+
+  def handle_activation(self, stage: Stage, stage_dict: StageDict) -> None:
+    """Send trial activation request."""
+    try:
+      origin_trials_client.activate_origin_trial(stage.origin_trial_id)
+      cloud_tasks_helpers.enqueue_task(
+          '/tasks/email-ot-activated', {'stage': stage_dict})
+    except requests.RequestException:
+      cloud_tasks_helpers.enqueue_task(
+          '/tasks/email-ot-activation-failed', {'stage': stage_dict})
+
+  def _get_today(self):
+    return date.today()
+
+  def prepare_for_activation(self, stage: Stage, stage_dict: StageDict) -> None:
+    """Set up activation date or activate trial now."""
+    mstone_info = utils.get_chromium_milestone_info(
+        stage.milestones.desktop_first)
+    date = datetime.strptime(
+        mstone_info['mstones'][0]['branch_point'],
+        utils.CHROMIUM_SCHEDULE_DATE_FORMAT).date()
+    if date <= self._get_today():
+      self.handle_activation(stage, stage_dict)
+    else:
+      stage.ot_activation_date = date
+      cloud_tasks_helpers.enqueue_task(
+          '/tasks/email-ot-creation-processed', {'stage': stage_dict})
+
+  def get_template_data(self, **kwargs):
+    """Create any origin trials that are flagged for creation."""
+    self.require_cron_header()
+
+    # OT stages that are flagged to process a trial creation.
+    ot_stages: list[Stage] = Stage.query(
+        Stage.stage_type.IN(ALL_ORIGIN_TRIAL_STAGE_TYPES),
+        Stage.ot_action_requested == True).fetch()
+    for stage in ot_stages:
+      stage.ot_action_requested = False
+      stage_dict = converters.stage_to_json_dict(stage)
+      origin_trial_id = self.handle_creation(stage, stage_dict)
+      if origin_trial_id:
+        stage.origin_trial_id = origin_trial_id
+        self.prepare_for_activation(stage, stage_dict)
+      stage.put()
+
+    return f'{len(ot_stages)} trial creation request(s) processed.'

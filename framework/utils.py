@@ -15,13 +15,14 @@
 
 import calendar
 import datetime
-import flask
 import logging
+import requests
 import time
 import traceback
 
-from framework import users
 import settings
+
+CHROMIUM_SCHEDULE_DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
 
 
 def normalized_name(val):
@@ -117,3 +118,15 @@ def get_banner_time(timestamp):
 def dedupe(list_with_duplicates):
   """Return a list without duplicates, in the original order."""
   return list(dict.fromkeys(list_with_duplicates))
+
+
+def get_chromium_milestone_info(milestone: int) -> dict:
+  try:
+    response = requests.get(
+      'https://chromiumdash.appspot.com/fetch_milestone_schedule'
+      f'?mstone={milestone}')
+    response.raise_for_status()
+  except requests.exceptions.RequestException as e:
+    logging.exception('Failed to get response from Chromium schedule API.')
+    raise e
+  return response.json()
