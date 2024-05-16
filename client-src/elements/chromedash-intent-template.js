@@ -39,6 +39,10 @@ class ChromedashIntentTemplate extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
+        #copy-email-body {
+          cursor: pointer;
+          color: var(--link-color);
+        }
         .email-content-div {
           background: white;
           border: 1px solid #ddd;
