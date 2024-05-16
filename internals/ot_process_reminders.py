@@ -197,12 +197,13 @@ def send_stable_update_emails(release):
       'release_milestone': release,
       'next_release': next_release,
     }
-    cloud_tasks_helpers.enqueue_task(
-        '/tasks/email-ot-ending-this-release', params)
-  close_to_end_count = len(trials_ending_this_release)
-  logging.info('Ending this release reminders - '
-               f'{close_to_end_count} emails to send')
-  return end_in_next_release_count + close_to_end_count
+  # TODO(DanielRyanSmith): Determine if this notification should be added.
+  #   cloud_tasks_helpers.enqueue_task(
+  #       '/tasks/email-ot-ending-this-release', params)
+  # close_to_end_count = len(trials_ending_this_release)
+  # logging.info('Ending this release reminders - '
+  #              f'{close_to_end_count} emails to send')
+  return end_in_next_release_count
 
 
 def get_release(release: str | int) -> dict[str, str]:
@@ -227,14 +228,15 @@ def get_next_branch_release(today: date):
   start_branch_date = get_branch_date(start)
   start_milestone = get_milestone(start)
 
-  if (start_branch_date - today).days >= 0:
+  if diff_days(start_branch_date, today) >= 0:
+    #  branch date is in the future so this is the next branch
     return start
 
   version_num = get_next_release_number(start_milestone)
   next_version = get_release(version_num)
   version_branch_date = get_branch_date(next_version)
 
-  while (version_branch_date - today).days < 0:
+  while diff_days(version_branch_date, today) < 0:
     version_num = get_next_release_number(version_num)
     next_version = get_release(version_num)
     version_branch_date = get_branch_date(next_version)
@@ -247,15 +249,14 @@ def get_current_stable_release(today: date):
   start = get_release('current')
   start_stable_date = get_stable_date(start)
   start_milestone = get_milestone(start)
-
-  if (start_stable_date - today).days <= 0:
+  if diff_days(start_stable_date, today) <= 0:
     return start
 
   version_num = get_previous_release_number(start_milestone)
   next_version = get_release(version_num)
   version_stable_date = get_stable_date(next_version)
 
-  while (version_stable_date - today).days > 0:
+  while diff_days(version_stable_date, today) > 0:
     version_num = get_previous_release_number(version_num)
     next_version = get_release(version_num)
     version_stable_date = get_stable_date(next_version)

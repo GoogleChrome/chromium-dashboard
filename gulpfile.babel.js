@@ -12,10 +12,10 @@ const uglify = uglifyEs.default;
 import rename from 'gulp-rename';
 import license from 'gulp-license';
 import autoPrefixer from 'gulp-autoprefixer';
-import { rollup } from 'rollup';
-import rollupResolve from '@rollup/plugin-node-resolve';
-import rollupBabel from '@rollup/plugin-babel';
-import rollupMinify from 'rollup-plugin-babel-minify';
+// import { rollup } from 'rollup';
+// import rollupResolve from '@rollup/plugin-node-resolve';
+// import rollupBabel from '@rollup/plugin-babel';
+// import rollupMinify from 'rollup-plugin-babel-minify';
 
 function uglifyJS() {
   return uglify({
@@ -68,48 +68,48 @@ gulp.task('css', function() {
   .pipe(gulp.dest('static/css'));
 });
 
-gulp.task('rollup', () => {
-  return rollup({
-    input: [
-      'client-src/components.js',
-      'client-src/js-src/openapi-client.js',
-    ],
-    plugins: [
-      rollupResolve(),
-      rollupBabel({babelHelpers: 'bundled'}),
-      rollupMinify({mangle: false, comments: false}),
-    ],
-    onwarn: rollupIgnoreUndefinedWarning,
-  }).then(bundle => {
-    return bundle.write({
-      dir: 'static/dist',
-      format: 'es',
-      sourcemap: true,
-      compact: true,
-    });
-  });
-});
+// gulp.task('rollup', () => {
+//   return rollup({
+//     input: [
+//       'client-src/components.js',
+//       'client-src/js-src/openapi-client.js',
+//     ],
+//     plugins: [
+//       rollupResolve(),
+//       rollupBabel({babelHelpers: 'bundled'}),
+//       rollupMinify({mangle: false, comments: false}),
+//     ],
+//     onwarn: rollupIgnoreUndefinedWarning,
+//   }).then(bundle => {
+//     return bundle.write({
+//       dir: 'static/dist',
+//       format: 'es',
+//       sourcemap: true,
+//       compact: true,
+//     });
+//   });
+// });
 
-gulp.task('rollup-cjs', () => {
-  return rollup({
-    input: [
-      'client-src/js-src/openapi-client.js',
-    ],
-    plugins: [
-      rollupResolve(),
-      rollupBabel({babelHelpers: 'bundled'}),
-      rollupMinify({mangle: false, comments: false}),
-    ],
-    onwarn: rollupIgnoreUndefinedWarning,
-  }).then(bundle => {
-    return bundle.write({
-      dir: 'static/dist',
-      format: 'cjs',
-      sourcemap: true,
-      compact: true,
-    });
-  });
-});
+// gulp.task('rollup-cjs', () => {
+//   return rollup({
+//     input: [
+//       'client-src/js-src/openapi-client.js',
+//     ],
+//     plugins: [
+//       rollupResolve(),
+//       rollupBabel({babelHelpers: 'bundled'}),
+//       rollupMinify({mangle: false, comments: false}),
+//     ],
+//     onwarn: rollupIgnoreUndefinedWarning,
+//   }).then(bundle => {
+//     return bundle.write({
+//       dir: 'static/dist',
+//       format: 'cjs',
+//       sourcemap: true,
+//       compact: true,
+//     });
+//   });
+// });
 
 // Run scripts through babel.
 gulp.task('js', () => {
@@ -147,8 +147,6 @@ gulp.task('default', gulp.series(
   // 'styles',
   'css',
   'js',
-  'rollup',
-  'rollup-cjs',
 ));
 
 // Build production files, the default task
@@ -162,11 +160,5 @@ gulp.task('watch', gulp.series(
       'client-src/elements/css/**/*.js',
       'client-src/contexts/*.js',
     ], gulp.series(['js']));
-    gulp.watch([
-      'client-src/components.js',
-      'client-src/elements/*.js',
-      'client-src/elements/css/**/*.js',
-      'client-src/contexts/*.js',
-    ], gulp.series(['rollup']));
   },
 ));
