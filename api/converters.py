@@ -137,6 +137,7 @@ def _prep_stage_info(
   # Keep track of trial stage indexes so that we can add trial extension
   # stages as a property of the trial stage later.
   ot_stage_indexes: dict[int, int] = {}
+  extension_stages: list[StageDict] = []
   for s in stages:
     stage_dict = stage_to_json_dict(s, fe.feature_type)
     # Keep major stages for referencing additional fields.
@@ -150,10 +151,7 @@ def _prep_stage_info(
       stage_dict['extensions'] = []
       stage_info['ot'] = s
     elif s.stage_type == extend_type:
-      # Trial extensions are kept as a list on the associated trial stage dict.
-      if s.ot_stage_id and s.ot_stage_id in ot_stage_indexes:
-        (stage_info['all_stages'][ot_stage_indexes[s.ot_stage_id]]['extensions']
-            .append(stage_dict))
+      extension_stages.append(stage_dict)
       stage_info['extend'] = s
       # No need to append the extension stage to the overall stages list.
       continue
@@ -163,6 +161,12 @@ def _prep_stage_info(
       stage_info['rollout'] = s
     stage_info['all_stages'].append(stage_dict)
 
+  for extension in extension_stages:
+    # Trial extensions are kept as a list on the associated trial stage dict.
+    ot_id = extension['ot_stage_id']
+    if ot_id and ot_id in ot_stage_indexes:
+      (stage_info['all_stages'][ot_stage_indexes[ot_id]]['extensions']
+          .append(extension))
   stage_info['all_stages'].sort(key=lambda s: (s['stage_type'], s['created']))
   return stage_info
 
