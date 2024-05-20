@@ -148,6 +148,11 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
     if redirect_resp:
       return redirect_resp
 
+    gates: list[Gate] = Gate.query(Gate.stage_id == ot_stage_id)
+    for gate in gates:
+      if gate.state not in (Vote.APPROVED, Vote.NA):
+        self.abort(400, 'Unapproved gate found for trial stage.')
+
     body = self.get_json_param_dict()
     validation_errors = asyncio.run(self._validate_creation_args(body))
     if validation_errors:
