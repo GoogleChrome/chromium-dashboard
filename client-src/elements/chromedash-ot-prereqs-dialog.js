@@ -143,7 +143,7 @@ class ChromedashOTPrereqsDialog extends LitElement {
   renderThreadMissingDialog() {
     return html`<sl-dialog label="Intent thread not found">
       <p>
-        LGTMS have been detected for this trial extension, but
+        LGTMs have been detected for this trial extension, but
         <strong>no intent thread link has been detected or provided</strong>.
         All extension proposals must be discussed publicly on blink-dev.
         Please add the value to the "Intent to Extend Experiment link"
