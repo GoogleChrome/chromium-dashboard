@@ -145,12 +145,11 @@ class ChromedashOTPrereqsDialog extends LitElement {
       <p>
         LGTMs have been detected for this trial extension, but
         <strong>no intent thread link has been detected or provided</strong>.
-        All extension proposals must be discussed publicly on blink-dev.
-        Please add the value to the "Intent to Extend Experiment link"
-        field by selecting "Edit fields" button on your feature's "Origin Trial"
-        section.
+        All extension proposals must be discussed publicly on blink-dev. Please
+        add the value to the "Intent to Extend Experiment link" field by
+        selecting "Edit fields" button on your feature's "Origin Trial" section.
       </p>
-      </sl-dialog>`;
+    </sl-dialog>`;
   }
 
   renderFinalizeExtensionDialog() {
