@@ -14,21 +14,21 @@ export const dialogTypes = {
   FINALIZE_EXTENSION: 4,
 };
 
-export async function openPrereqsDialog(featureId, stageId, dialogType) {
+export async function openPrereqsDialog(featureId, stage, dialogType) {
   if (
     !dialogEl ||
     currentFeatureId !== featureId ||
-    currentStageId !== stageId
+    currentStageId !== stage.id
   ) {
     dialogEl = document.createElement('chromedash-ot-prereqs-dialog');
     dialogEl.featureId = featureId;
-    dialogEl.stageId = stageId;
+    dialogEl.stage = stage;
     dialogEl.dialogType = dialogType;
     document.body.appendChild(dialogEl);
     await dialogEl.updateComplete;
   }
   currentFeatureId = featureId;
-  currentStageId = stageId;
+  currentStageId = stage.id;
   dialogEl.show();
 }
 
@@ -44,18 +44,18 @@ export async function openInfoDialog(dialogType) {
 
 export async function openFinalizeExtensionDialog(
   featureId,
-  stageId,
+  stage,
   milestone,
   dialogType
 ) {
   if (
     !dialogEl ||
     currentFeatureId !== featureId ||
-    currentStageId !== stageId
+    currentStageId !== stage.id
   ) {
     dialogEl = document.createElement('chromedash-ot-prereqs-dialog');
     dialogEl.featureId = featureId;
-    dialogEl.stageId = stageId;
+    dialogEl.stage = stage;
     dialogEl.dialogType = dialogType;
     dialogEl.milestone = milestone;
     document.body.appendChild(dialogEl);
@@ -63,7 +63,7 @@ export async function openFinalizeExtensionDialog(
   }
   dialogEl.dialogType = dialogType;
   currentFeatureId = featureId;
-  currentStageId = stageId;
+  currentStageId = stage.id;
   dialogEl.show();
 }
 
@@ -71,7 +71,7 @@ class ChromedashOTPrereqsDialog extends LitElement {
   static get properties() {
     return {
       featureId: {type: Number},
-      stageId: {type: Number},
+      stage: {type: Object},
       milestone: {type: Number},
       dialogType: {type: Number},
     };
@@ -80,7 +80,7 @@ class ChromedashOTPrereqsDialog extends LitElement {
   constructor() {
     super();
     this.featureId = 0;
-    this.stageId = 0;
+    this.stage = {};
     this.milestone = 0;
     this.dialogType = 0;
   }
@@ -126,7 +126,7 @@ class ChromedashOTPrereqsDialog extends LitElement {
 
   submitTrialExtension() {
     window.csClient
-      .extendOriginTrial(this.featureId, this.stageId)
+      .extendOriginTrial(this.featureId, this.stage.id)
       .then(() => {
         showToastMessage('Extension processed!');
         setTimeout(() => {
@@ -140,7 +140,23 @@ class ChromedashOTPrereqsDialog extends LitElement {
       });
   }
 
+  renderThreadMissingDialog() {
+    return html`<sl-dialog label="Intent thread not found">
+      <p>
+        LGTMS have been detected for this trial extension, but
+        <strong>no intent thread link has been detected or provided</strong>.
+        All extension proposals must be discussed publicly on blink-dev.
+        Please add the link to the "Intent to Extend Experiment link"
+        field by selecting "Edit fields" button on your feature's "Origin Trial"
+        section.
+      </p>
+      </sl-dialog>`;
+  }
+
   renderFinalizeExtensionDialog() {
+    if (!this.stage.intent_thread_url) {
+      return this.renderThreadMissingDialog();
+    }
     return html` <sl-dialog label="Finalize trial extension">
       <p>
         LGTMs have been detected for this trial extension. This origin trial
@@ -162,7 +178,7 @@ class ChromedashOTPrereqsDialog extends LitElement {
         size="small"
         @click=${() =>
           location.assign(
-            `/guide/stage/${this.featureId}/${INTENT_STAGES.INTENT_EXTEND_ORIGIN_TRIAL[0]}/${this.stageId}`
+            `/guide/stage/${this.featureId}/${INTENT_STAGES.INTENT_EXTEND_ORIGIN_TRIAL[0]}/${this.stage.id}`
           )}
         >Change milestone</sl-button
       >
@@ -189,7 +205,7 @@ class ChromedashOTPrereqsDialog extends LitElement {
         variant="primary"
         @click=${() =>
           location.assign(
-            `/ot_extension_request/${this.featureId}/${this.stageId}`
+            `/ot_extension_request/${this.featureId}/${this.stage.id}`
           )}
         size="small"
         >Proceed</sl-button
@@ -264,7 +280,7 @@ class ChromedashOTPrereqsDialog extends LitElement {
         variant="primary"
         @click=${() =>
           location.assign(
-            `/ot_creation_request/${this.featureId}/${this.stageId}`
+            `/ot_creation_request/${this.featureId}/${this.stage.id}`
           )}
         size="small"
         >Proceed</sl-button

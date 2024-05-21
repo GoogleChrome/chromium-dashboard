@@ -255,6 +255,7 @@ class ChromedashFeatureDetail extends LitElement {
     }
     openFinalizeExtensionDialog(
       this.feature.id,
+      extensionStage,
       extensionStage.id,
       extensionStage.desktop_last,
       dialogTypes.FINALIZE_EXTENSION
@@ -701,7 +702,7 @@ class ChromedashFeatureDetail extends LitElement {
       @click=${() =>
         openFinalizeExtensionDialog(
           this.feature.id,
-          extensionStage.id,
+          extensionStage,
           extensionStage.desktop_last,
           dialogTypes.FINALIZE_EXTENSION
         )}
@@ -809,12 +810,11 @@ class ChromedashFeatureDetail extends LitElement {
       </sl-tooltip>`;
       // Display the creation request button if user has edit access.
     } else if (canSeeOTControls) {
-      const stageId = feStage.id;
       return html` <sl-button
         size="small"
         variant="primary"
         @click="${() =>
-          openPrereqsDialog(this.feature.id, stageId, dialogTypes.CREATION)}"
+          openPrereqsDialog(this.feature.id, feStage, dialogTypes.CREATION)}"
         >Request Trial Creation</sl-button
       >`;
     }
