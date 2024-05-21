@@ -1313,7 +1313,13 @@ export const ALL_FIELDS = {
     required: false,
     label: 'Origin trial contacts',
     help_text: html` List any other individuals or groups to include on the
-    contact list (e.g. for reminders on trial milestones).`,
+      contact list (e.g. for reminders on trial milestones).
+      <p>
+        <strong>
+          Please prefer using "@google.com" domain email addresses for any
+          contacts that have one.
+        </strong>
+      </p>`,
   },
 
   ot_has_third_party_support: {
