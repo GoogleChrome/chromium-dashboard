@@ -12,7 +12,7 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
+import { mapValues } from '../runtime';
 /**
  * 
  * @export
@@ -36,12 +36,10 @@ export interface GateLatency {
 /**
  * Check if a given object implements the GateLatency interface.
  */
-export function instanceOfGateLatency(value: object): boolean {
-    let isInstance = true;
-    isInstance = isInstance && "gate_type" in value;
-    isInstance = isInstance && "latency_days" in value;
-
-    return isInstance;
+export function instanceOfGateLatency(value: object): value is GateLatency {
+    if (!('gate_type' in value) || value['gate_type'] === undefined) return false;
+    if (!('latency_days' in value) || value['latency_days'] === undefined) return false;
+    return true;
 }
 
 export function GateLatencyFromJSON(json: any): GateLatency {
@@ -49,7 +47,7 @@ export function GateLatencyFromJSON(json: any): GateLatency {
 }
 
 export function GateLatencyFromJSONTyped(json: any, ignoreDiscriminator: boolean): GateLatency {
-    if ((json === undefined) || (json === null)) {
+    if (json == null) {
         return json;
     }
     return {
@@ -60,16 +58,13 @@ export function GateLatencyFromJSONTyped(json: any, ignoreDiscriminator: boolean
 }
 
 export function GateLatencyToJSON(value?: GateLatency | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
+    if (value == null) {
+        return value;
     }
     return {
         
-        'gate_type': value.gate_type,
-        'latency_days': value.latency_days,
+        'gate_type': value['gate_type'],
+        'latency_days': value['latency_days'],
     };
 }
 

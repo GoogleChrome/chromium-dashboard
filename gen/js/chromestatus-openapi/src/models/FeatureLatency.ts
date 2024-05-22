@@ -12,7 +12,7 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
+import { mapValues } from '../runtime';
 import type { FeatureLink } from './FeatureLink';
 import {
     FeatureLinkFromJSON,
@@ -61,15 +61,13 @@ export interface FeatureLatency {
 /**
  * Check if a given object implements the FeatureLatency interface.
  */
-export function instanceOfFeatureLatency(value: object): boolean {
-    let isInstance = true;
-    isInstance = isInstance && "feature" in value;
-    isInstance = isInstance && "entry_created_date" in value;
-    isInstance = isInstance && "shipped_milestone" in value;
-    isInstance = isInstance && "shipped_date" in value;
-    isInstance = isInstance && "owner_emails" in value;
-
-    return isInstance;
+export function instanceOfFeatureLatency(value: object): value is FeatureLatency {
+    if (!('feature' in value) || value['feature'] === undefined) return false;
+    if (!('entry_created_date' in value) || value['entry_created_date'] === undefined) return false;
+    if (!('shipped_milestone' in value) || value['shipped_milestone'] === undefined) return false;
+    if (!('shipped_date' in value) || value['shipped_date'] === undefined) return false;
+    if (!('owner_emails' in value) || value['owner_emails'] === undefined) return false;
+    return true;
 }
 
 export function FeatureLatencyFromJSON(json: any): FeatureLatency {
@@ -77,7 +75,7 @@ export function FeatureLatencyFromJSON(json: any): FeatureLatency {
 }
 
 export function FeatureLatencyFromJSONTyped(json: any, ignoreDiscriminator: boolean): FeatureLatency {
-    if ((json === undefined) || (json === null)) {
+    if (json == null) {
         return json;
     }
     return {
@@ -91,19 +89,16 @@ export function FeatureLatencyFromJSONTyped(json: any, ignoreDiscriminator: bool
 }
 
 export function FeatureLatencyToJSON(value?: FeatureLatency | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
+    if (value == null) {
+        return value;
     }
     return {
         
-        'feature': FeatureLinkToJSON(value.feature),
-        'entry_created_date': (value.entry_created_date.toISOString().substring(0,10)),
-        'shipped_milestone': value.shipped_milestone,
-        'shipped_date': (value.shipped_date.toISOString().substring(0,10)),
-        'owner_emails': value.owner_emails,
+        'feature': FeatureLinkToJSON(value['feature']),
+        'entry_created_date': ((value['entry_created_date']).toISOString().substring(0,10)),
+        'shipped_milestone': value['shipped_milestone'],
+        'shipped_date': ((value['shipped_date']).toISOString().substring(0,10)),
+        'owner_emails': value['owner_emails'],
     };
 }
 

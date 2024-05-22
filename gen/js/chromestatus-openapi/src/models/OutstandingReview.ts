@@ -12,7 +12,7 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
+import { mapValues } from '../runtime';
 import type { FeatureLink } from './FeatureLink';
 import {
     FeatureLinkFromJSON,
@@ -85,13 +85,11 @@ export type OutstandingReviewCurrentStageEnum = typeof OutstandingReviewCurrentS
 /**
  * Check if a given object implements the OutstandingReview interface.
  */
-export function instanceOfOutstandingReview(value: object): boolean {
-    let isInstance = true;
-    isInstance = isInstance && "review_link" in value;
-    isInstance = isInstance && "feature" in value;
-    isInstance = isInstance && "current_stage" in value;
-
-    return isInstance;
+export function instanceOfOutstandingReview(value: object): value is OutstandingReview {
+    if (!('review_link' in value) || value['review_link'] === undefined) return false;
+    if (!('feature' in value) || value['feature'] === undefined) return false;
+    if (!('current_stage' in value) || value['current_stage'] === undefined) return false;
+    return true;
 }
 
 export function OutstandingReviewFromJSON(json: any): OutstandingReview {
@@ -99,7 +97,7 @@ export function OutstandingReviewFromJSON(json: any): OutstandingReview {
 }
 
 export function OutstandingReviewFromJSONTyped(json: any, ignoreDiscriminator: boolean): OutstandingReview {
-    if ((json === undefined) || (json === null)) {
+    if (json == null) {
         return json;
     }
     return {
@@ -107,25 +105,22 @@ export function OutstandingReviewFromJSONTyped(json: any, ignoreDiscriminator: b
         'review_link': json['review_link'],
         'feature': FeatureLinkFromJSON(json['feature']),
         'current_stage': json['current_stage'],
-        'estimated_start_milestone': !exists(json, 'estimated_start_milestone') ? undefined : json['estimated_start_milestone'],
-        'estimated_end_milestone': !exists(json, 'estimated_end_milestone') ? undefined : json['estimated_end_milestone'],
+        'estimated_start_milestone': json['estimated_start_milestone'] == null ? undefined : json['estimated_start_milestone'],
+        'estimated_end_milestone': json['estimated_end_milestone'] == null ? undefined : json['estimated_end_milestone'],
     };
 }
 
 export function OutstandingReviewToJSON(value?: OutstandingReview | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
+    if (value == null) {
+        return value;
     }
     return {
         
-        'review_link': value.review_link,
-        'feature': FeatureLinkToJSON(value.feature),
-        'current_stage': value.current_stage,
-        'estimated_start_milestone': value.estimated_start_milestone,
-        'estimated_end_milestone': value.estimated_end_milestone,
+        'review_link': value['review_link'],
+        'feature': FeatureLinkToJSON(value['feature']),
+        'current_stage': value['current_stage'],
+        'estimated_start_milestone': value['estimated_start_milestone'],
+        'estimated_end_milestone': value['estimated_end_milestone'],
     };
 }
 

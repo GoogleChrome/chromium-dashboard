@@ -431,8 +431,14 @@ components:
     ExternalReviewsResponse:
       example:
         link_previews:
-        - null
-        - null
+        - information: "{}"
+          type: type
+          http_error_code: 1
+          url: http://example.com/aeiou
+        - information: "{}"
+          type: type
+          http_error_code: 1
+          url: http://example.com/aeiou
         reviews:
         - feature:
             name: WebGPU
@@ -566,6 +572,11 @@ components:
             webkit_bug: LinkPreviewWebkitBug
             specs: LinkPreviewSpecs
           propertyName: type
+      example:
+        information: "{}"
+        type: type
+        http_error_code: 1
+        url: http://example.com/aeiou
       title: LinkPreview
     LinkPreviewGithubIssue:
       allOf:

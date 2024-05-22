@@ -12,7 +12,7 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
+import { mapValues } from '../runtime';
 /**
  * 
  * @export
@@ -36,10 +36,8 @@ export interface LinkPreviewGithubMarkdownAllOfInformation {
 /**
  * Check if a given object implements the LinkPreviewGithubMarkdownAllOfInformation interface.
  */
-export function instanceOfLinkPreviewGithubMarkdownAllOfInformation(value: object): boolean {
-    let isInstance = true;
-
-    return isInstance;
+export function instanceOfLinkPreviewGithubMarkdownAllOfInformation(value: object): value is LinkPreviewGithubMarkdownAllOfInformation {
+    return true;
 }
 
 export function LinkPreviewGithubMarkdownAllOfInformationFromJSON(json: any): LinkPreviewGithubMarkdownAllOfInformation {
@@ -47,27 +45,24 @@ export function LinkPreviewGithubMarkdownAllOfInformationFromJSON(json: any): Li
 }
 
 export function LinkPreviewGithubMarkdownAllOfInformationFromJSONTyped(json: any, ignoreDiscriminator: boolean): LinkPreviewGithubMarkdownAllOfInformation {
-    if ((json === undefined) || (json === null)) {
+    if (json == null) {
         return json;
     }
     return {
         
-        '_parsed_title': !exists(json, '_parsed_title') ? undefined : json['_parsed_title'],
-        'content': !exists(json, 'content') ? undefined : json['content'],
+        '_parsed_title': json['_parsed_title'] == null ? undefined : json['_parsed_title'],
+        'content': json['content'] == null ? undefined : json['content'],
     };
 }
 
 export function LinkPreviewGithubMarkdownAllOfInformationToJSON(value?: LinkPreviewGithubMarkdownAllOfInformation | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
+    if (value == null) {
+        return value;
     }
     return {
         
-        '_parsed_title': value._parsed_title,
-        'content': value.content,
+        '_parsed_title': value['_parsed_title'],
+        'content': value['content'],
     };
 }
 

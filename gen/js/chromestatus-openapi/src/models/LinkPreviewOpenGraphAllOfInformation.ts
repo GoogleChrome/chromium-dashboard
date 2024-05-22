@@ -12,7 +12,7 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
+import { mapValues } from '../runtime';
 /**
  * 
  * @export
@@ -36,10 +36,8 @@ export interface LinkPreviewOpenGraphAllOfInformation {
 /**
  * Check if a given object implements the LinkPreviewOpenGraphAllOfInformation interface.
  */
-export function instanceOfLinkPreviewOpenGraphAllOfInformation(value: object): boolean {
-    let isInstance = true;
-
-    return isInstance;
+export function instanceOfLinkPreviewOpenGraphAllOfInformation(value: object): value is LinkPreviewOpenGraphAllOfInformation {
+    return true;
 }
 
 export function LinkPreviewOpenGraphAllOfInformationFromJSON(json: any): LinkPreviewOpenGraphAllOfInformation {
@@ -47,27 +45,24 @@ export function LinkPreviewOpenGraphAllOfInformationFromJSON(json: any): LinkPre
 }
 
 export function LinkPreviewOpenGraphAllOfInformationFromJSONTyped(json: any, ignoreDiscriminator: boolean): LinkPreviewOpenGraphAllOfInformation {
-    if ((json === undefined) || (json === null)) {
+    if (json == null) {
         return json;
     }
     return {
         
-        'title': !exists(json, 'title') ? undefined : json['title'],
-        'description': !exists(json, 'description') ? undefined : json['description'],
+        'title': json['title'] == null ? undefined : json['title'],
+        'description': json['description'] == null ? undefined : json['description'],
     };
 }
 
 export function LinkPreviewOpenGraphAllOfInformationToJSON(value?: LinkPreviewOpenGraphAllOfInformation | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
+    if (value == null) {
+        return value;
     }
     return {
         
-        'title': value.title,
-        'description': value.description,
+        'title': value['title'],
+        'description': value['description'],
     };
 }
 

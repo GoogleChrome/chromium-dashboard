@@ -12,7 +12,7 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
+import { mapValues } from '../runtime';
 import type { FeatureLink } from './FeatureLink';
 import {
     FeatureLinkFromJSON,
@@ -49,12 +49,10 @@ export interface ReviewLatency {
 /**
  * Check if a given object implements the ReviewLatency interface.
  */
-export function instanceOfReviewLatency(value: object): boolean {
-    let isInstance = true;
-    isInstance = isInstance && "feature" in value;
-    isInstance = isInstance && "gate_reviews" in value;
-
-    return isInstance;
+export function instanceOfReviewLatency(value: object): value is ReviewLatency {
+    if (!('feature' in value) || value['feature'] === undefined) return false;
+    if (!('gate_reviews' in value) || value['gate_reviews'] === undefined) return false;
+    return true;
 }
 
 export function ReviewLatencyFromJSON(json: any): ReviewLatency {
@@ -62,7 +60,7 @@ export function ReviewLatencyFromJSON(json: any): ReviewLatency {
 }
 
 export function ReviewLatencyFromJSONTyped(json: any, ignoreDiscriminator: boolean): ReviewLatency {
-    if ((json === undefined) || (json === null)) {
+    if (json == null) {
         return json;
     }
     return {
@@ -73,16 +71,13 @@ export function ReviewLatencyFromJSONTyped(json: any, ignoreDiscriminator: boole
 }
 
 export function ReviewLatencyToJSON(value?: ReviewLatency | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
+    if (value == null) {
+        return value;
     }
     return {
         
-        'feature': FeatureLinkToJSON(value.feature),
-        'gate_reviews': ((value.gate_reviews as Array<any>).map(GateLatencyToJSON)),
+        'feature': FeatureLinkToJSON(value['feature']),
+        'gate_reviews': ((value['gate_reviews'] as Array<any>).map(GateLatencyToJSON)),
     };
 }
 
