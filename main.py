@@ -43,6 +43,7 @@ from api import (
   stages_api,
   stars_api,
   token_refresh_api,
+  verification_api,
 )
 from framework import basehandlers, csp, sendemail
 from internals import (
@@ -146,6 +147,7 @@ api_routes: list[Route] = [
     Route(f'{API_BASE}/spec_mentors', spec_mentors_api.SpecMentorsAPI),
     Route(f'{API_BASE}/feature-latency', feature_latency_api.FeatureLatencyAPI),
     Route(f'{API_BASE}/review-latency', review_latency_api.ReviewLatencyAPI),
+    Route(f'{API_BASE}/verification', verification_api.VerificationAPI),
 
     Route(f'{API_BASE}/login', login_api.LoginAPI),
     Route(f'{API_BASE}/logout', logout_api.LogoutAPI),
@@ -221,9 +223,10 @@ spa_page_routes = [
   Route('/metrics/feature/timeline/popularity/<int:bucket_id>'),
   Route('/reports/external_reviews'),
   Route('/reports/external_reviews/<reviewer>'),
-  Route('/reports/spec_mentors'),
   Route('/reports/feature-latency'),
   Route('/reports/review-latency'),
+  Route('/reports/spec_mentors'),
+  Route('/reports/verification'),
   Route('/settings', defaults={'require_signin': True}),
   Route('/enterprise'),
   Route(

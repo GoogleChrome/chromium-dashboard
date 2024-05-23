@@ -146,6 +146,20 @@ paths:
                   $ref: '#/components/schemas/SpecMentor'
         '400':
           description: The ?after query parameter isn't a valid date in ISO YYYY-MM-DD format.
+  /verification:
+    get:
+      summary: List features that need their accuracy verified
+      operationId: listPendingVerifications
+      responses:
+        '200':
+          description: >-
+            List of features that need their accuracy verified.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PendingVerification'
   /feature-latency:
     get:
       summary: List how long each feature took to launch
@@ -344,6 +358,16 @@ components:
           type: integer
         estimated_end_milestone:
           type: integer
+    PendingVerification:
+      type: object
+      required:
+        - feature
+      properties:
+        feature:
+          $ref: '#/components/schemas/FeatureLink'
+        accurate_as_of:
+          type: string
+          format: date-time
     FeatureLink:
       type: object
       required:

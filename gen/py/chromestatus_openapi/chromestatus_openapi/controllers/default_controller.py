@@ -7,6 +7,7 @@ from chromestatus_openapi.models.component_users_request import ComponentUsersRe
 from chromestatus_openapi.models.components_users_response import ComponentsUsersResponse  # noqa: E501
 from chromestatus_openapi.models.external_reviews_response import ExternalReviewsResponse  # noqa: E501
 from chromestatus_openapi.models.feature_latency import FeatureLatency  # noqa: E501
+from chromestatus_openapi.models.pending_verification import PendingVerification  # noqa: E501
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
 from chromestatus_openapi import util
@@ -69,6 +70,17 @@ def list_feature_latency(start_at, end_at):  # noqa: E501
     """
     start_at = util.deserialize_date(start_at)
     end_at = util.deserialize_date(end_at)
+    return 'do some magic!'
+
+
+def list_pending_verifications():  # noqa: E501
+    """List features that need their accuracy verified
+
+     # noqa: E501
+
+
+    :rtype: Union[List[PendingVerification], Tuple[List[PendingVerification], int], Tuple[List[PendingVerification], int, Dict[str, str]]
+    """
     return 'do some magic!'
 
 

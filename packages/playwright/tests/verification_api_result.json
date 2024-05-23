@@ -1,0 +1,23 @@
+[
+  {
+    "feature": {
+      "id": 1001,
+      "name": "Feature one"
+    },
+    "accurate_as_of": "2023-11-03T11:52:00"
+  },
+  {
+    "feature": {
+      "id": 1002,
+      "name": "Feature three"
+    },
+    "accurate_as_of": "2024-05-07T03:12:00"
+  },
+  {
+    "feature": {
+      "id": 1003,
+      "name": "Feature two"
+    },
+    "accurate_as_of": "2024-11-09T16:31:02"
+  }
+]

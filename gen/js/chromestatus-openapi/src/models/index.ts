@@ -23,5 +23,6 @@ export * from './LinkPreviewSpecs';
 export * from './LinkPreviewWebkitBug';
 export * from './OutstandingReview';
 export * from './OwnersAndSubscribersOfComponent';
+export * from './PendingVerification';
 export * from './ReviewLatency';
 export * from './SpecMentor';

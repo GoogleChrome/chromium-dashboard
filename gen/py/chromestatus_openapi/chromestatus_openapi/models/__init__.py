@@ -23,5 +23,6 @@ from chromestatus_openapi.models.link_preview_specs import LinkPreviewSpecs
 from chromestatus_openapi.models.link_preview_webkit_bug import LinkPreviewWebkitBug
 from chromestatus_openapi.models.outstanding_review import OutstandingReview
 from chromestatus_openapi.models.owners_and_subscribers_of_component import OwnersAndSubscribersOfComponent
+from chromestatus_openapi.models.pending_verification import PendingVerification
 from chromestatus_openapi.models.review_latency import ReviewLatency
 from chromestatus_openapi.models.spec_mentor import SpecMentor

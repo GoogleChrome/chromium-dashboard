@@ -27,6 +27,7 @@ import logging
 import os
 import sys
 from datetime import datetime
+from random import randrange
 from urllib.parse import urljoin
 
 import requests
@@ -114,6 +115,10 @@ def add_features(server: str, after: datetime, detailsAfter: datetime):
           'enterprise_feature_categories']
       if details['accurate_as_of'] is not None:
         fe.accurate_as_of = datetime.fromisoformat(details['accurate_as_of'])
+        if randrange(5) > 0:
+          # Usually pretend notifications were sent every 2 weeks, but assign 1/5 of features to not
+          # have been notified.
+          fe.outstanding_notifications = (datetime.now() - fe.accurate_as_of).days // 14
       fe.editor_emails = details['editor_emails']
       fe.cc_emails = details['cc_emails']
       fe.spec_mentor_emails = details['spec_mentor_emails']

@@ -35,6 +35,7 @@ chromestatus_openapi/models/link_preview_specs.py
 chromestatus_openapi/models/link_preview_webkit_bug.py
 chromestatus_openapi/models/outstanding_review.py
 chromestatus_openapi/models/owners_and_subscribers_of_component.py
+chromestatus_openapi/models/pending_verification.py
 chromestatus_openapi/models/review_latency.py
 chromestatus_openapi/models/spec_mentor.py
 chromestatus_openapi/openapi/openapi.yaml

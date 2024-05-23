@@ -19,6 +19,7 @@ import type {
   ComponentsUsersResponse,
   ExternalReviewsResponse,
   FeatureLatency,
+  PendingVerification,
   ReviewLatency,
   SpecMentor,
 } from '../models/index';
@@ -31,6 +32,8 @@ import {
     ExternalReviewsResponseToJSON,
     FeatureLatencyFromJSON,
     FeatureLatencyToJSON,
+    PendingVerificationFromJSON,
+    PendingVerificationToJSON,
     ReviewLatencyFromJSON,
     ReviewLatencyToJSON,
     SpecMentorFromJSON,
@@ -130,6 +133,20 @@ export interface DefaultApiInterface {
      * List how long each feature took to launch
      */
     listFeatureLatency(requestParameters: ListFeatureLatencyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<FeatureLatency>>;
+
+    /**
+     * 
+     * @summary List features that need their accuracy verified
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    listPendingVerificationsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<PendingVerification>>>;
+
+    /**
+     * List features that need their accuracy verified
+     */
+    listPendingVerifications(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<PendingVerification>>;
 
     /**
      * 
@@ -338,6 +355,32 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async listFeatureLatency(requestParameters: ListFeatureLatencyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<FeatureLatency>> {
         const response = await this.listFeatureLatencyRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * List features that need their accuracy verified
+     */
+    async listPendingVerificationsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<PendingVerification>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/verification`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(PendingVerificationFromJSON));
+    }
+
+    /**
+     * List features that need their accuracy verified
+     */
+    async listPendingVerifications(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<PendingVerification>> {
+        const response = await this.listPendingVerificationsRaw(initOverrides);
         return await response.value();
     }
 

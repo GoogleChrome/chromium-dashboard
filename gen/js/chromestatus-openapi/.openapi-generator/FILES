@@ -29,6 +29,7 @@ src/models/LinkPreviewSpecs.ts
 src/models/LinkPreviewWebkitBug.ts
 src/models/OutstandingReview.ts
 src/models/OwnersAndSubscribersOfComponent.ts
+src/models/PendingVerification.ts
 src/models/ReviewLatency.ts
 src/models/SpecMentor.ts
 src/models/index.ts

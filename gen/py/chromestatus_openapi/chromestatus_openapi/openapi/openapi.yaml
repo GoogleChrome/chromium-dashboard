@@ -200,6 +200,20 @@ paths:
             format.
       summary: List spec mentors and their activity
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /verification:
+    get:
+      operationId: list_pending_verifications
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/PendingVerification'
+                type: array
+          description: List of features that need their accuracy verified.
+      summary: List features that need their accuracy verified
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
 components:
   parameters:
     startAtParam:
@@ -517,6 +531,23 @@ components:
       - feature
       - review_link
       title: OutstandingReview
+      type: object
+    PendingVerification:
+      example:
+        feature:
+          name: WebGPU
+          id: 5703707724349440
+        accurate_as_of: 2000-01-23T04:56:07.000+00:00
+      properties:
+        feature:
+          $ref: '#/components/schemas/FeatureLink'
+        accurate_as_of:
+          format: date-time
+          title: accurate_as_of
+          type: string
+      required:
+      - feature
+      title: PendingVerification
       type: object
     FeatureLink:
       example:

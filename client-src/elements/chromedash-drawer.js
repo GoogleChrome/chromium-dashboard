@@ -283,6 +283,7 @@ export class ChromedashDrawer extends LitElement {
         <div class="section-header">Reports</div>
         ${this.renderNavItem('/reports/spec_mentors', 'Spec Mentors')}
         ${this.renderNavItem('/reports/external_reviews', 'External Reviews')}
+        ${this.renderNavItem('/reports/verification', 'Feature Verification')}
         ${adminMenu}
       </sl-drawer>
     `;
