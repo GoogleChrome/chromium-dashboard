@@ -12,7 +12,7 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
+import { mapValues } from '../runtime';
 import type { LinkPreviewOpenGraphAllOfInformation } from './LinkPreviewOpenGraphAllOfInformation';
 import {
     LinkPreviewOpenGraphAllOfInformationFromJSON,
@@ -55,14 +55,12 @@ export interface LinkPreviewMdnDocs {
 /**
  * Check if a given object implements the LinkPreviewMdnDocs interface.
  */
-export function instanceOfLinkPreviewMdnDocs(value: object): boolean {
-    let isInstance = true;
-    isInstance = isInstance && "url" in value;
-    isInstance = isInstance && "type" in value;
-    isInstance = isInstance && "information" in value;
-    isInstance = isInstance && "http_error_code" in value;
-
-    return isInstance;
+export function instanceOfLinkPreviewMdnDocs(value: object): value is LinkPreviewMdnDocs {
+    if (!('url' in value) || value['url'] === undefined) return false;
+    if (!('type' in value) || value['type'] === undefined) return false;
+    if (!('information' in value) || value['information'] === undefined) return false;
+    if (!('http_error_code' in value) || value['http_error_code'] === undefined) return false;
+    return true;
 }
 
 export function LinkPreviewMdnDocsFromJSON(json: any): LinkPreviewMdnDocs {
@@ -70,7 +68,7 @@ export function LinkPreviewMdnDocsFromJSON(json: any): LinkPreviewMdnDocs {
 }
 
 export function LinkPreviewMdnDocsFromJSONTyped(json: any, ignoreDiscriminator: boolean): LinkPreviewMdnDocs {
-    if ((json === undefined) || (json === null)) {
+    if (json == null) {
         return json;
     }
     return {
@@ -83,18 +81,15 @@ export function LinkPreviewMdnDocsFromJSONTyped(json: any, ignoreDiscriminator: 
 }
 
 export function LinkPreviewMdnDocsToJSON(value?: LinkPreviewMdnDocs | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
+    if (value == null) {
+        return value;
     }
     return {
         
-        'url': value.url,
-        'type': value.type,
-        'information': LinkPreviewOpenGraphAllOfInformationToJSON(value.information),
-        'http_error_code': value.http_error_code,
+        'url': value['url'],
+        'type': value['type'],
+        'information': LinkPreviewOpenGraphAllOfInformationToJSON(value['information']),
+        'http_error_code': value['http_error_code'],
     };
 }
 

@@ -12,7 +12,7 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
+import { mapValues } from '../runtime';
 /**
  * 
  * @export
@@ -111,10 +111,8 @@ export type LinkPreviewGithubIssueAllOfInformationStateReasonEnum = typeof LinkP
 /**
  * Check if a given object implements the LinkPreviewGithubIssueAllOfInformation interface.
  */
-export function instanceOfLinkPreviewGithubIssueAllOfInformation(value: object): boolean {
-    let isInstance = true;
-
-    return isInstance;
+export function instanceOfLinkPreviewGithubIssueAllOfInformation(value: object): value is LinkPreviewGithubIssueAllOfInformation {
+    return true;
 }
 
 export function LinkPreviewGithubIssueAllOfInformationFromJSON(json: any): LinkPreviewGithubIssueAllOfInformation {
@@ -122,45 +120,42 @@ export function LinkPreviewGithubIssueAllOfInformationFromJSON(json: any): LinkP
 }
 
 export function LinkPreviewGithubIssueAllOfInformationFromJSONTyped(json: any, ignoreDiscriminator: boolean): LinkPreviewGithubIssueAllOfInformation {
-    if ((json === undefined) || (json === null)) {
+    if (json == null) {
         return json;
     }
     return {
         
-        'url': !exists(json, 'url') ? undefined : json['url'],
-        'number': !exists(json, 'number') ? undefined : json['number'],
-        'title': !exists(json, 'title') ? undefined : json['title'],
-        'user_login': !exists(json, 'user_login') ? undefined : json['user_login'],
-        'state': !exists(json, 'state') ? undefined : json['state'],
-        'state_reason': !exists(json, 'state_reason') ? undefined : json['state_reason'],
-        'assignee_login': !exists(json, 'assignee_login') ? undefined : json['assignee_login'],
-        'created_at': !exists(json, 'created_at') ? undefined : (new Date(json['created_at'])),
-        'updated_at': !exists(json, 'updated_at') ? undefined : (new Date(json['updated_at'])),
-        'closed_at': !exists(json, 'closed_at') ? undefined : (new Date(json['closed_at'])),
-        'labels': !exists(json, 'labels') ? undefined : json['labels'],
+        'url': json['url'] == null ? undefined : json['url'],
+        'number': json['number'] == null ? undefined : json['number'],
+        'title': json['title'] == null ? undefined : json['title'],
+        'user_login': json['user_login'] == null ? undefined : json['user_login'],
+        'state': json['state'] == null ? undefined : json['state'],
+        'state_reason': json['state_reason'] == null ? undefined : json['state_reason'],
+        'assignee_login': json['assignee_login'] == null ? undefined : json['assignee_login'],
+        'created_at': json['created_at'] == null ? undefined : (new Date(json['created_at'])),
+        'updated_at': json['updated_at'] == null ? undefined : (new Date(json['updated_at'])),
+        'closed_at': json['closed_at'] == null ? undefined : (new Date(json['closed_at'])),
+        'labels': json['labels'] == null ? undefined : json['labels'],
     };
 }
 
 export function LinkPreviewGithubIssueAllOfInformationToJSON(value?: LinkPreviewGithubIssueAllOfInformation | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
+    if (value == null) {
+        return value;
     }
     return {
         
-        'url': value.url,
-        'number': value.number,
-        'title': value.title,
-        'user_login': value.user_login,
-        'state': value.state,
-        'state_reason': value.state_reason,
-        'assignee_login': value.assignee_login,
-        'created_at': value.created_at === undefined ? undefined : (value.created_at.toISOString().substring(0,10)),
-        'updated_at': value.updated_at === undefined ? undefined : (value.updated_at.toISOString().substring(0,10)),
-        'closed_at': value.closed_at === undefined ? undefined : (value.closed_at.toISOString().substring(0,10)),
-        'labels': value.labels,
+        'url': value['url'],
+        'number': value['number'],
+        'title': value['title'],
+        'user_login': value['user_login'],
+        'state': value['state'],
+        'state_reason': value['state_reason'],
+        'assignee_login': value['assignee_login'],
+        'created_at': value['created_at'] == null ? undefined : ((value['created_at']).toISOString().substring(0,10)),
+        'updated_at': value['updated_at'] == null ? undefined : ((value['updated_at']).toISOString().substring(0,10)),
+        'closed_at': value['closed_at'] == null ? undefined : ((value['closed_at']).toISOString().substring(0,10)),
+        'labels': value['labels'],
     };
 }
 

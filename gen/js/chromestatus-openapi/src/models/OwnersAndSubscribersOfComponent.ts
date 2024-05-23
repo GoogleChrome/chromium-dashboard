@@ -12,7 +12,7 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
+import { mapValues } from '../runtime';
 /**
  * 
  * @export
@@ -48,12 +48,10 @@ export interface OwnersAndSubscribersOfComponent {
 /**
  * Check if a given object implements the OwnersAndSubscribersOfComponent interface.
  */
-export function instanceOfOwnersAndSubscribersOfComponent(value: object): boolean {
-    let isInstance = true;
-    isInstance = isInstance && "id" in value;
-    isInstance = isInstance && "name" in value;
-
-    return isInstance;
+export function instanceOfOwnersAndSubscribersOfComponent(value: object): value is OwnersAndSubscribersOfComponent {
+    if (!('id' in value) || value['id'] === undefined) return false;
+    if (!('name' in value) || value['name'] === undefined) return false;
+    return true;
 }
 
 export function OwnersAndSubscribersOfComponentFromJSON(json: any): OwnersAndSubscribersOfComponent {
@@ -61,31 +59,28 @@ export function OwnersAndSubscribersOfComponentFromJSON(json: any): OwnersAndSub
 }
 
 export function OwnersAndSubscribersOfComponentFromJSONTyped(json: any, ignoreDiscriminator: boolean): OwnersAndSubscribersOfComponent {
-    if ((json === undefined) || (json === null)) {
+    if (json == null) {
         return json;
     }
     return {
         
         'id': json['id'],
         'name': json['name'],
-        'subscriber_ids': !exists(json, 'subscriber_ids') ? undefined : json['subscriber_ids'],
-        'owner_ids': !exists(json, 'owner_ids') ? undefined : json['owner_ids'],
+        'subscriber_ids': json['subscriber_ids'] == null ? undefined : json['subscriber_ids'],
+        'owner_ids': json['owner_ids'] == null ? undefined : json['owner_ids'],
     };
 }
 
 export function OwnersAndSubscribersOfComponentToJSON(value?: OwnersAndSubscribersOfComponent | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
+    if (value == null) {
+        return value;
     }
     return {
         
-        'id': value.id,
-        'name': value.name,
-        'subscriber_ids': value.subscriber_ids,
-        'owner_ids': value.owner_ids,
+        'id': value['id'],
+        'name': value['name'],
+        'subscriber_ids': value['subscriber_ids'],
+        'owner_ids': value['owner_ids'],
     };
 }
 

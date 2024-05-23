@@ -12,7 +12,7 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
+import { mapValues } from '../runtime';
 /**
  * 
  * @export
@@ -42,13 +42,11 @@ export interface ComponentsUser {
 /**
  * Check if a given object implements the ComponentsUser interface.
  */
-export function instanceOfComponentsUser(value: object): boolean {
-    let isInstance = true;
-    isInstance = isInstance && "id" in value;
-    isInstance = isInstance && "name" in value;
-    isInstance = isInstance && "email" in value;
-
-    return isInstance;
+export function instanceOfComponentsUser(value: object): value is ComponentsUser {
+    if (!('id' in value) || value['id'] === undefined) return false;
+    if (!('name' in value) || value['name'] === undefined) return false;
+    if (!('email' in value) || value['email'] === undefined) return false;
+    return true;
 }
 
 export function ComponentsUserFromJSON(json: any): ComponentsUser {
@@ -56,7 +54,7 @@ export function ComponentsUserFromJSON(json: any): ComponentsUser {
 }
 
 export function ComponentsUserFromJSONTyped(json: any, ignoreDiscriminator: boolean): ComponentsUser {
-    if ((json === undefined) || (json === null)) {
+    if (json == null) {
         return json;
     }
     return {
@@ -68,17 +66,14 @@ export function ComponentsUserFromJSONTyped(json: any, ignoreDiscriminator: bool
 }
 
 export function ComponentsUserToJSON(value?: ComponentsUser | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
+    if (value == null) {
+        return value;
     }
     return {
         
-        'id': value.id,
-        'name': value.name,
-        'email': value.email,
+        'id': value['id'],
+        'name': value['name'],
+        'email': value['email'],
     };
 }
 
