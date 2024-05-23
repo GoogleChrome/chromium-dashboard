@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import asyncio
 import json5
 import logging
 import requests
@@ -32,16 +31,16 @@ ENABLED_FEATURES_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/ma
 GRACE_PERIOD_FILE = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/common/origin_trials/manual_completion_origin_trial_features.cc?format=TEXT'
 
 
-def get_chromium_file(url: str) -> asyncio.Future[requests.Response]:
+# TODO(jrobbins): Fetch these in parallel, but in a way that is easy to test.
+def get_chromium_file(url: str) -> str:
   """Get chromium file contents from a given URL"""
-  loop = asyncio.get_running_loop()
   try:
-    file_future = loop.run_in_executor(None, requests.get, url)
+    resp = requests.get(url)
   except requests.RequestException as e:
     logging.exception(
         f'Failed to get response to obtain Chromium file: {url}')
     raise e
-  return file_future
+  return b64decode(resp.text).decode('utf-8')
 
 
 class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
@@ -61,17 +60,13 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
 
     return trials_list
 
-  async def _validate_creation_args(
+  def _validate_creation_args(
       self, body: dict) -> dict[str, str]:
     """Check that all provided OT creation arguments are valid."""
     try:
-      files_async = [
-          get_chromium_file(ENABLED_FEATURES_FILE_URL),
-          get_chromium_file(WEBFEATURE_FILE_URL),
-          get_chromium_file(GRACE_PERIOD_FILE)]
-      responses = await asyncio.gather(*files_async)
-      enabled_features_text, webfeature_file, grace_period_file = [
-          b64decode(resp.text).decode('utf-8') for resp in responses]
+      enabled_features_text = get_chromium_file(ENABLED_FEATURES_FILE_URL)
+      webfeature_file = get_chromium_file(WEBFEATURE_FILE_URL)
+      grace_period_file = get_chromium_file(GRACE_PERIOD_FILE)
     except requests.exceptions.RequestException:
       self.abort(500, 'Error obtaining Chromium file for validation')
     validation_errors: dict[str, str] = {}
@@ -149,7 +144,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
       return redirect_resp
 
     body = self.get_json_param_dict()
-    validation_errors = asyncio.run(self._validate_creation_args(body))
+    validation_errors = self._validate_creation_args(body)
     if validation_errors:
       return {
           'message': 'Errors found when validating arguments',
