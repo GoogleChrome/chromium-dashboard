@@ -384,6 +384,9 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
       mock_get_chromium_milestone_info,
       mock_today,
       mock_enqueue_task):
+    """Proper notifications are sent when trials are created but activation
+    fails.
+    """
     self.ot_stage_1.ot_action_requested = True
     self.ot_stage_1.put()
     self.ot_stage_2.ot_action_requested = True
@@ -481,7 +484,7 @@ class ActivateOriginTrialsTest(testing_config.CustomTestCase):
   @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
   @mock.patch('internals.maintenance_scripts.ActivateOriginTrials._get_today')
   @mock.patch('framework.origin_trials_client.activate_origin_trial')
-  def test_activate_trials__failed(
+  def test_activate_trials(
       self, mock_activate_origin_trial, mock_today, mock_enqueue_task):
     """Origin trials are activated if it is on or after the activation date."""
 
@@ -511,6 +514,7 @@ class ActivateOriginTrialsTest(testing_config.CustomTestCase):
   @mock.patch('framework.origin_trials_client.activate_origin_trial')
   def test_activate_trials__failed(
       self, mock_activate_origin_trial, mock_today, mock_enqueue_task):
+    """Proper notifications are sent if activation fails."""
 
     mock_today.return_value = date(2020, 6, 1)  # 2020-06-01
     # Activate trial request is failing.
