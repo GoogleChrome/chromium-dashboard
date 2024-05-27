@@ -529,6 +529,8 @@ class CreateOriginTrials(FlaskHandler):
                       f'{stage.key.integer_id()}')
       cloud_tasks_helpers.enqueue_task(
           '/tasks/email-ot-creation-request-failed', {'stage': stage_dict})
+      stage.ot_setup_status = OT_CREATION_FAILED
+      stage.put()
     return new_id
 
   def handle_activation(self, stage: Stage, stage_dict: StageDict) -> None:
@@ -564,14 +566,14 @@ class CreateOriginTrials(FlaskHandler):
 
     # OT stages that are flagged to process a trial creation.
     ot_stages: list[Stage] = Stage.query(
-        Stage.stage_type.IN(ALL_ORIGIN_TRIAL_STAGE_TYPES),
-        Stage.ot_action_requested == True).fetch()
+        Stage.ot_setup_status == OT_READY_FOR_CREATION).fetch()
     for stage in ot_stages:
       stage.ot_action_requested = False
       stage_dict = converters.stage_to_json_dict(stage)
       origin_trial_id = self.handle_creation(stage, stage_dict)
       if origin_trial_id:
         stage.origin_trial_id = origin_trial_id
+        stage.ot_setup_status = OT_CREATED
         self.prepare_for_activation(stage, stage_dict)
       stage.put()
 
