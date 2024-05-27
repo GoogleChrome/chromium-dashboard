@@ -233,7 +233,7 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
         id=2, name='feature one', summary='sum', category=1, feature_type=1)
     self.feature_2.put()
     self.ot_stage_1 = Stage(
-        feature_id=1, stage_type=150, ot_display_name='Example Trial',
+        id=100, feature_id=1, stage_type=150, ot_display_name='Example Trial',
         ot_owner_email='feature_owner@google.com',
         ot_chromium_trial_name='ExampleTrial',
         milestones=MilestoneSet(desktop_first=100, desktop_last=106),
@@ -246,7 +246,7 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
     self.ot_stage_1_dict = converters.stage_to_json_dict(self.ot_stage_1)
 
     self.ot_stage_2 = Stage(
-        feature_id=2, stage_type=250, ot_display_name='Example Trial 2',
+        id=200, feature_id=2, stage_type=250, ot_display_name='Example Trial 2',
         ot_owner_email='feature_owner2@google.com',
         ot_chromium_trial_name='ExampleTrial2',
         milestones=MilestoneSet(desktop_first=200, desktop_last=206),
@@ -259,7 +259,7 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
     self.ot_stage_2_dict = converters.stage_to_json_dict(self.ot_stage_2)
 
     self.ot_stage_3 = Stage(
-        feature_id=3, stage_type=450, ot_display_name='Example Trial 3',
+        id=300, feature_id=3, stage_type=450, ot_display_name='Example Trial 3',
         ot_owner_email='feature_owner2@google.com',
         ot_chromium_trial_name='ExampleTrial3',
         milestones=MilestoneSet(desktop_first=200, desktop_last=206),
@@ -321,6 +321,7 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
     # OT 3 had no action request, so it should not have changed.
     self.assertIsNone(self.ot_stage_3.origin_trial_id)
 
+  @mock.patch('logging.warning')
   @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
   @mock.patch('internals.maintenance_scripts.CreateOriginTrials._get_today')
   @mock.patch('framework.utils.get_chromium_milestone_info')
@@ -332,7 +333,8 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
       mock_activate_origin_trial,
       mock_get_chromium_milestone_info,
       mock_today,
-      mock_enqueue_task):
+      mock_enqueue_task,
+      mock_logging):
     self.ot_stage_1.ot_action_requested = True
     self.ot_stage_1.put()
     self.ot_stage_2.ot_action_requested = True
@@ -355,6 +357,10 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
             '/tasks/email-ot-creation-request-failed',
             {'stage': self.ot_stage_2_dict})
         ], any_order=True)
+    mock_logging.assert_has_calls([
+        mock.call('Origin trial could not be created for stage 100'),
+        mock.call('Origin trial could not be created for stage 200')],
+        any_order=True)
     # Creation wasn't handled, so activation dates shouldn't be set.
     self.assertIsNone(self.ot_stage_1.ot_activation_date)
     self.assertIsNone(self.ot_stage_2.ot_activation_date)
@@ -475,7 +481,7 @@ class ActivateOriginTrialsTest(testing_config.CustomTestCase):
   @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
   @mock.patch('internals.maintenance_scripts.ActivateOriginTrials._get_today')
   @mock.patch('framework.origin_trials_client.activate_origin_trial')
-  def test_activate_trials__faled(
+  def test_activate_trials__failed(
       self, mock_activate_origin_trial, mock_today, mock_enqueue_task):
     """Origin trials are activated if it is on or after the activation date."""
 

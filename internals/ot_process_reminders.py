@@ -38,11 +38,18 @@ def build_trial_data(trial_data: dict[str, Any]) -> dict[str, Any] | None:
     logging.exception(f'No stage found for trial {trial_data["id"]}')
     return None
   contact_list = trial_stage.ot_emails.copy()
-  contact_list.append(trial_stage.ot_owner_email)
+  if trial_stage.ot_owner_email:
+    contact_list.append(trial_stage.ot_owner_email)
   contact_list = [s.strip() for s in contact_list]
 
   # Remove duplicates
   contact_list = list(set(contact_list))
+
+  # If we have no contacts on record,
+  # log a warning and don't add to trials to notify.
+  if len(contact_list) == 0:
+    logging.warning(f'No contacts found for origin trial ID {trial_data["id"]}')
+    return None
 
   trial_info = {
     'id': trial_data['id'],
