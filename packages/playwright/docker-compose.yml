@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # In GitHub Actions, the volumes will still mount as root.
   # This service will fix the ownership.
