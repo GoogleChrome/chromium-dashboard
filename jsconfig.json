@@ -1,0 +1,11 @@
+{
+  "include": ["client-src/js-src/**/*", "client-src/elements/**/*"],
+  "compilerOptions": {
+    "noEmit": true /* Check types only. */,
+    "incremental": true,
+    "lib": ["ES2023", "DOM"],
+    // Type-checking options:
+    "strict": true,
+    "noImplicitAny": false
+  }
+}
