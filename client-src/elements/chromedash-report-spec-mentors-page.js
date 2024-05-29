@@ -19,7 +19,7 @@ export class ChromedashReportSpecMentorsPage extends LitElement {
   }
 
   /** @type {Record<string, string>} */
-  rawQuery;
+  rawQuery = {};
 
   /** @type {import('chromestatus-openapi').DefaultApiInterface} */
   _client;

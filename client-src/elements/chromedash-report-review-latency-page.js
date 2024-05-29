@@ -58,10 +58,9 @@ export class ChromedashReportReviewLatencyPage extends LitElement {
     this._client = window.csOpenApiClient;
     this._reviewLatencyTask = new Task(this, {
       task: async ([], {signal}) => {
-        this.reviewLatencyList = await this._client.listReviewsWithLatency(
-          {},
-          {signal}
-        );
+        this.reviewLatencyList = await this._client.listReviewsWithLatency({
+          signal,
+        });
       },
       args: () => [],
     });

@@ -43,3 +43,6 @@ test-results/
 
 # API Key for local development
 ot_api_key.txt
+
+# Typescript incremental build
+jsconfig.tsbuildinfo
