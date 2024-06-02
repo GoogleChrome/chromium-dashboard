@@ -1,0 +1,28 @@
+{
+    "compilerOptions": {
+      "target": "ES2023",                        
+      "module": "commonjs",                      
+      "strict": true,                             
+      "noImplicitAny": false,                      
+      "esModuleInterop": true,                    
+      "skipLibCheck": true,                        
+      "outDir": "./dist",                         
+      "rootDir": ".",                             
+      "allowJs": true,                            
+      "checkJs": true,                            
+      "resolveJsonModule": true,                                  
+      "noEmit": true,                           
+      "incremental": true,                        
+      "lib": ["ES2023", "DOM"]                    
+    },
+    "include": [
+      "client-src/js-src/**/*",                   
+      "client-src/elements/**/*"                  
+    ],
+    "exclude": [
+      "node_modules",                             
+      "**/*.test.ts",                             
+      "**/*.test.js"                             
+    ]
+  }
+  
