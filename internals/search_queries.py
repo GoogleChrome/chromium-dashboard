@@ -211,7 +211,7 @@ def sorted_by_review_date(descending: bool) -> Future:
 QUERIABLE_FIELDS: dict[str, Property] = {
     'created.when': FeatureEntry.created,
     'updated.when': FeatureEntry.updated,
-    # accurate_as_of
+    'accurate_as_of': FeatureEntry.accurate_as_of,
     'creator': FeatureEntry.creator_email,
     'updater': FeatureEntry.updater_email,
     'owner': FeatureEntry.owner_emails,
