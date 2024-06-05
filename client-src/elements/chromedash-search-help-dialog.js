@@ -81,6 +81,7 @@ export class ChromedashSearchHelpDialog extends LitElement {
           ${this.renderExampleRow(
             [
               'created.when>2024-01-01',
+              'created.when<now-8w',
               'updated.when>=2023-01-01 updated.when<=2023-12-31',
             ],
             'Features created or modified before or after a date.'
@@ -138,6 +139,13 @@ export class ChromedashSearchHelpDialog extends LitElement {
             If the value contains spaces, it must be inside double quotes. Use
             the equals operator with a comma-separated list to match any value
             in that list.
+            <ul>
+              <li>
+                For dates, you can compute a date a certain number of days or
+                weeks before or after now. "<code>now-3d</code>" is 3 days ago,
+                and "<code>now+2w</code>" is 2 weeks from now.
+              </li>
+            </ul>
           </li>
         </ul>
 
