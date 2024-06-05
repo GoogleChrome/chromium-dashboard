@@ -1,9 +1,20 @@
-import {LitElement, css, html} from 'lit';
-import './chromedash-timeline';
-import {showToastMessage} from './utils';
-import {SHARED_STYLES} from '../css/shared-css.js';
+import { LitElement, css, html } from 'lit';
+import { SHARED_STYLES } from '../css/shared-css.js';
+import './chromedash-timeline.ts';
+import { showToastMessage } from './utils.js';
+
+interface Property {
+    [key: string]: any;
+    0: number;
+    1: string;
+}
 
 export class ChromedashTimelinePage extends LitElement {
+    type: string;
+    view: string;
+    props: Property[];
+    selectedBucketId: string;
+
   static get styles() {
     return [...SHARED_STYLES, css``];
   }
@@ -33,7 +44,7 @@ export class ChromedashTimelinePage extends LitElement {
     // [DEV] Change to true to use the staging server endpoint for development
     const devMode = true;
     if (devMode) endpoint = 'https://cr-status-staging.appspot.com' + endpoint;
-    const options = {credentials: 'omit'};
+    const options: RequestInit = {credentials: 'omit'};
 
     fetch(endpoint, options)
       .then(res => res.json())
