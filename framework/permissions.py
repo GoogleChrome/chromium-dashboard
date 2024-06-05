@@ -141,7 +141,7 @@ def can_review_gate(
   return is_approver or is_assigned
 
 
-def _maybe_redirect_to_login(handler_obj):
+def _maybe_redirect_to_login(handler_obj) -> flask.Response | dict:
   common_data = handler_obj.get_common_data()
   if 'current_path' in common_data and 'loginStatus=False' in common_data['current_path']:
     return {}
@@ -207,7 +207,8 @@ def validate_feature_create_permission(handler_obj):
     handler_obj.abort(403)
 
 
-def validate_feature_edit_permission(handler_obj, feature_id: int):
+def validate_feature_edit_permission(
+    handler_obj, feature_id: int) -> flask.Response | dict:
   """Check if user has permission to edit feature and abort if not."""
   user = handler_obj.get_current_user()
   req = handler_obj.request
@@ -223,4 +224,6 @@ def validate_feature_edit_permission(handler_obj, feature_id: int):
 
   # Redirect to 403 if user does not have edit permission for feature.
   if not can_edit_feature(user, feature_id):
-    handler_obj.abort(403)
+    handler_obj.abort(403, msg='User cannot edit feature %r' % feature_id)
+
+  return {}

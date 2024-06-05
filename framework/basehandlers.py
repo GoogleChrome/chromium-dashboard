@@ -75,6 +75,7 @@ class BaseHandler(flask.views.MethodView):
         logging.info('Abort %r: %s' % (status, msg))
       flask.abort(status, description=msg, **kwargs)
     else:
+      logging.info('Abort %r' % status)
       flask.abort(status, **kwargs)
 
   def redirect(self, url):
