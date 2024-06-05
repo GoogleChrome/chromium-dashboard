@@ -8,10 +8,6 @@ interface Property {
     1: string;
 }
 
-interface DataItem {
-    date: Date;
-    day_percentage: number;
-}
 
 declare global {
     interface Window {
@@ -33,16 +29,16 @@ class ChromedashTimeline extends LitElement {
         props: {attribute: false},
         selectedBucketId: {attribute: false},
         showAllHistoricalData: {attribute: false},
-    };
+        };
     }
-  constructor() {
-    super();
-    this.selectedBucketId = '1';
-    this.showAllHistoricalData = false;
-    this.type = '';
-    this.view = '';
-    this.props = [];
-  }
+    constructor() {
+        super();
+        this.selectedBucketId = '1';
+        this.showAllHistoricalData = false;
+        this.type = '';
+        this.view = '';
+        this.props = [];
+    }
 
   static get styles() {
     return [
