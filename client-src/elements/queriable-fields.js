@@ -236,4 +236,9 @@ export const QUERIABLE_FIELDS = [
     doc: 'Web / Framework developer views',
     choices: WEB_DEV_VIEWS,
   },
+  {
+    name: 'accurate_as_of',
+    kind: DATE_KIND,
+    doc: "When the feature's fields were last verified",
+  },
 ];
