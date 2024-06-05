@@ -46,3 +46,6 @@ ot_api_key.txt
 
 # Typescript incremental build
 jsconfig.tsbuildinfo
+
+# rollup cache
+.rollup_cache/

@@ -8,7 +8,6 @@ interface Property {
     1: string;
 }
 
-
 declare global {
     interface Window {
         google: any;

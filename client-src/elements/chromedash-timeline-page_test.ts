@@ -1,8 +1,8 @@
-import {html} from 'lit';
-import {assert, fixture} from '@open-wc/testing';
-import {ChromedashTimelinePage} from './chromedash-timeline-page';
-import './chromedash-toast';
+import { assert, fixture } from '@open-wc/testing';
+import { html } from 'lit';
 import sinon from 'sinon';
+import { ChromedashTimelinePage } from './chromedash-timeline-page';
+import './chromedash-toast';
 
 describe('chromedash-timeline-page', () => {
   /* <chromedash-toast> are initialized at spa.html
@@ -21,11 +21,11 @@ describe('chromedash-timeline-page', () => {
   });
 
   afterEach(() => {
-    window.fetch.restore();
+    (window.fetch as sinon.SinonStub).restore();
   });
 
   it('invalid timeline fetch response', async () => {
-    window.fetch.returns(Promise.reject(new Error('No results')));
+    (window.fetch as sinon.SinonStub).returns(Promise.reject(new Error('No results')));
     const component = await fixture(
       html`<chromedash-timeline-page></chromedash-timeline-page>`
     );
@@ -34,9 +34,9 @@ describe('chromedash-timeline-page', () => {
 
     // error response would trigger the toast to show message
     const toastEl = document.querySelector('chromedash-toast');
-    const toastMsgSpan = toastEl.shadowRoot.querySelector('span#msg');
+    const toastMsgSpan = toastEl!.shadowRoot!.querySelector('span#msg');
     assert.include(
-      toastMsgSpan.innerHTML,
+      toastMsgSpan!.innerHTML,
       'Some errors occurred. Please refresh the page or try again later.'
     );
   });
@@ -44,7 +44,7 @@ describe('chromedash-timeline-page', () => {
   it('valid timeline fetch response', async () => {
     const type = 'feature';
     const view = 'popularity';
-    window.fetch.returns(Promise.resolve({}));
+    (window.fetch as sinon.SinonStub).returns(Promise.resolve({}));
     const component = await fixture(
       html`<chromedash-timeline-page .type="${type}" .view="${view}">
       </chromedash-timeline-page>`
@@ -53,7 +53,7 @@ describe('chromedash-timeline-page', () => {
     assert.instanceOf(component, ChromedashTimelinePage);
 
     // header exists and with the correct link and title
-    const subheaderDiv = component.shadowRoot.querySelector('div#subheader');
+    const subheaderDiv = component.shadowRoot!.querySelector('div#subheader');
     assert.exists(subheaderDiv);
     assert.include(subheaderDiv.innerHTML, `href="/metrics/${type}/${view}"`);
     assert.include(
@@ -62,7 +62,7 @@ describe('chromedash-timeline-page', () => {
     );
 
     // chromedash-timeline exists
-    const timelineEl = component.shadowRoot.querySelector(
+    const timelineEl = component.shadowRoot!.querySelector(
       'chromedash-timeline'
     );
     assert.exists(timelineEl);
