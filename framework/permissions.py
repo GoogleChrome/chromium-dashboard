@@ -142,6 +142,7 @@ def can_review_gate(
 
 
 def _maybe_redirect_to_login(handler_obj) -> flask.Response | dict:
+  # TODO(jrobbins): For API calls, we should return 401 rather than a redirect.
   common_data = handler_obj.get_common_data()
   if 'current_path' in common_data and 'loginStatus=False' in common_data['current_path']:
     return {}
