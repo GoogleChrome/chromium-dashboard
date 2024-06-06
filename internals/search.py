@@ -16,20 +16,22 @@
 import datetime
 import logging
 import re
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 from google.cloud.ndb import Key
 from google.cloud.ndb.tasklets import Future  # for type checking only
 
 from framework import users
+from internals import (
+  approval_defs,
+  core_enums,
+  feature_helpers,
+  notifier,
+  search_fulltext,
+  search_queries,
+)
 from internals.core_models import FeatureEntry
 from internals.review_models import Gate
-from internals import approval_defs
-from internals import core_enums
-from internals import feature_helpers
-from internals import notifier
-from internals import search_queries
-from internals import search_fulltext
 
 MAX_TERMS = 6
 DEFAULT_RESULTS_PER_PAGE = 100
@@ -89,7 +91,12 @@ def process_recent_reviews_query() -> list[int] | Future:
   return future_feature_ids
 
 
-def parse_query_value(val_str: str) -> bool | int | str | datetime.datetime:
+NOW_RELATIVE_DATE = re.compile(r'now(?:(?P<offset>[+-]\d+)(?P<unit>[dw]))?')
+
+
+def parse_query_value(
+  val_str: str, now: datetime.datetime
+) -> bool | int | str | datetime.datetime:
   """Return a python object that can be used as a value in an NDB query."""
 
   if val_str.startswith('"') and val_str.endswith('"'):
@@ -99,6 +106,22 @@ def parse_query_value(val_str: str) -> bool | int | str | datetime.datetime:
     return True
   if val_str == 'false':
     return False
+
+  now_relative_date = NOW_RELATIVE_DATE.fullmatch(val_str)
+  if now_relative_date:
+    try:
+      unit = now_relative_date.group('unit')
+      if unit is None:
+        # Value was just a literal "now".
+        return now
+      offset = int(now_relative_date.group('offset'))
+      if unit == 'd':
+        return now + datetime.timedelta(days=offset)
+      if unit == 'w':
+        return now + datetime.timedelta(weeks=offset)
+    except OverflowError:
+      pass
+    # Otherwise, treat the value as a literal string.
 
   try:
     return datetime.datetime.strptime(val_str, '%Y-%m-%d')
@@ -115,10 +138,10 @@ def parse_query_value(val_str: str) -> bool | int | str | datetime.datetime:
 
 
 def parse_query_value_list(
-    vals_str: str) -> list[int | str | bool | datetime.datetime]:
+  vals_str: str, now: datetime.datetime
+) -> list[int | str | bool | datetime.datetime]:
   """Return a list of values that can be used in an NDB query."""
-  return [parse_query_value(part)
-          for part in vals_str.split(',')]
+  return [parse_query_value(part, now) for part in vals_str.split(',')]
 
 
 # A full-text query term consisting of a single word or quoted string.
@@ -152,12 +175,13 @@ SIMPLE_QUERY_TERMS = [
 
 
 def process_query_term(
-    is_negation: bool, field_name: str, op_str: str, vals_str: str) -> Future:
+  is_negation: bool, field_name: str, op_str: str, vals_str: str, now: datetime.datetime
+) -> Future:
   """Parse and run a user-supplied query, if we can handle it."""
   if is_negation:
     op_str = search_queries.negate_operator(op_str)
 
-  val_list = parse_query_value_list(vals_str)
+  val_list = parse_query_value_list(vals_str, now)
   logging.info('trying %r %r %r', field_name, op_str, val_list)
 
   future = search_queries.single_field_query_async(
@@ -244,9 +268,18 @@ def _sort_by_total_order(
 
 
 def process_query(
-    user_query: str, sort_spec: str|None = None,
-    show_unlisted=False, show_deleted=False, show_enterprise=False,
-    start=0, num=DEFAULT_RESULTS_PER_PAGE) -> tuple[list[dict[str, Any]], int]:
+  user_query: str,
+  sort_spec: str | None = None,
+  show_unlisted=False,
+  show_deleted=False,
+  show_enterprise=False,
+  start=0,
+  num=DEFAULT_RESULTS_PER_PAGE,
+  now: Optional[datetime.datetime] = None,
+) -> tuple[list[dict[str, Any]], int]:
+  if now is None:
+    now = datetime.datetime.now()
+
   """Parse the user's query, run it, and return a list of features."""
   # 1a. Parse the user query into terms.
   terms = TERM_RE.findall(user_query + ' ')[:MAX_TERMS] or []
@@ -275,12 +308,11 @@ def process_query(
 
   # 2a. Create parallel queries for each term.  Each yields a future.
   logging.info('creating parallel queries for %r', terms)
-  feature_id_future_ops = create_future_operations_from_queries(terms)
+  feature_id_future_ops = create_future_operations_from_queries(terms, now)
 
   # 2b. Create parallel queries for each permission queries.
   logging.info('creating parallel queries for %r', permission_terms)
-  permissions_future_ops = create_future_operations_from_queries(
-      permission_terms)
+  permissions_future_ops = create_future_operations_from_queries(permission_terms, now)
 
   # 2c. Create a parallel query for total sort order.
   logging.info('creating total sort order for %r', sort_spec)
@@ -323,7 +355,7 @@ def process_query(
   return features_on_page, total_count
 
 
-def create_future_operations_from_queries(terms):
+def create_future_operations_from_queries(terms, now: datetime.datetime):
   """Create parallel queries for each term. Each yields a future operation"""
   feature_id_future_ops = []
   for logical_op, field_name, op_str, vals_str, textterm in terms:
@@ -336,7 +368,7 @@ def create_future_operations_from_queries(terms):
                    field_name, op_str, vals_str)
       future = process_predefined_query_term(field_name, op_str, vals_str)
     else:
-      future = process_query_term(is_negation, field_name, op_str, vals_str)
+      future = process_query_term(is_negation, field_name, op_str, vals_str, now)
       is_normal_query = True
 
     if future is None:
