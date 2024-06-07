@@ -377,7 +377,8 @@ class AssociateOTs(FlaskHandler):
     extension_stages_to_update = []
     for extension_stage in extension_stages:
       # skip the stage if it doesn't have an end milestone explicitly defined.
-      if extension_stage.milestones is None:
+      if (extension_stage.milestones is None or
+          not extension_stage.milestones.desktop_last):
         continue
       extension_end = extension_stage.milestones.desktop_last
       # If the end milestone of the trial is equal or greater than the
