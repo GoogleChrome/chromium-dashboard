@@ -1,33 +1,33 @@
 {
-    "compilerOptions": {                       
-      "module": "esnext",     
+    "compilerOptions": {
+      "module": "preserve",
       "plugins": [
         {
           "name": "ts-lit-plugin"
         }
-      ],       
-      "target": "ES6",         
-      "strict": true,                             
-      "noImplicitAny": false,                      
-      "esModuleInterop": true,                    
-      "skipLibCheck": true,                        
-      "outDir": "./static/dist",                         
-      "rootDir": ".",                             
-      "allowJs": true,                            
-      "checkJs": true,                            
-      "resolveJsonModule": true,                                  
-      "noEmit": true,                           
-      "incremental": true,                        
-      "lib": ["ES2023", "DOM"]                    
+      ],
+      "strict": true,
+      "noImplicitAny": false,
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "rootDir": ".",
+      "allowJs": true,
+      "checkJs": true,
+      "resolveJsonModule": true,
+      "noEmit": true,
+      "outDir": "static/dist",
+      "emitDeclarationOnly": false,
+      "incremental": true,
+      "lib": ["ES2023", "DOM"],
+      "experimentalDecorators": true,
+      "useDefineForClassFields": false,
     },
     "include": [
-      "client-src/js-src/**/*",                   
-      "client-src/elements/**/*"                  
+      "client-src/js-src/**/*",
+      "client-src/elements/**/*"
     ],
     "exclude": [
-      "node_modules",                             
-      "**/*.test.ts",                             
-      "**/*.test.js"                             
+      "node_modules",
+      "static/dist"
     ]
   }
-  

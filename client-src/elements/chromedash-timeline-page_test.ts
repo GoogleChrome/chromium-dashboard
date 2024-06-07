@@ -8,9 +8,10 @@ describe('chromedash-timeline-page', () => {
   /* <chromedash-toast> are initialized at spa.html
    * which are not available here, so we initialize them before each test.
    * We also stub out the API calls here so that they return test data. */
+  let fetchStub: sinon.SinonStub;
   beforeEach(async () => {
     await fixture(html`<chromedash-toast></chromedash-toast>`);
-    sinon.stub(window, 'fetch');
+    fetchStub = sinon.stub(window, 'fetch');
     // hacky way to stub out google chart load method
     window.google = {
       charts: {
@@ -21,11 +22,11 @@ describe('chromedash-timeline-page', () => {
   });
 
   afterEach(() => {
-    (window.fetch as sinon.SinonStub).restore();
+    fetchStub.restore();
   });
 
   it('invalid timeline fetch response', async () => {
-    (window.fetch as sinon.SinonStub).returns(Promise.reject(new Error('No results')));
+    fetchStub.returns(Promise.reject(new Error('No results')));
     const component = await fixture(
       html`<chromedash-timeline-page></chromedash-timeline-page>`
     );
@@ -44,7 +45,7 @@ describe('chromedash-timeline-page', () => {
   it('valid timeline fetch response', async () => {
     const type = 'feature';
     const view = 'popularity';
-    (window.fetch as sinon.SinonStub).returns(Promise.resolve({}));
+    fetchStub.returns(Promise.resolve({}));
     const component = await fixture(
       html`<chromedash-timeline-page .type="${type}" .view="${view}">
       </chromedash-timeline-page>`

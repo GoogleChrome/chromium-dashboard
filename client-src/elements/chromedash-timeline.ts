@@ -1,12 +1,13 @@
 import { LitElement, css, html, nothing } from 'lit';
 import { SHARED_STYLES } from '../css/shared-css.js';
 import { showToastMessage } from './utils.js';
-
+import { customElement, property, state } from 'lit/decorators.js';
 interface Property {
     [key: string]: any;
     0: number;
     1: string;
 }
+
 
 declare global {
     interface Window {
@@ -14,30 +15,13 @@ declare global {
     }
 }
 
+@customElement('chromedash-timeline')
 class ChromedashTimeline extends LitElement {
-    type: string;
-    view: string;
-    props: Property[];
-    selectedBucketId: string;
-    showAllHistoricalData: boolean;
-
-    static get properties() {
-        return {
-        type: {type: String},
-        view: {type: String},
-        props: {attribute: false},
-        selectedBucketId: {attribute: false},
-        showAllHistoricalData: {attribute: false},
-        };
-    }
-    constructor() {
-        super();
-        this.selectedBucketId = '1';
-        this.showAllHistoricalData = false;
-        this.type = '';
-        this.view = '';
-        this.props = [];
-    }
+    @property({ type: String }) type = '';
+    @property({ type: String }) view = '';
+    @property({ attribute: false }) props: Property[] = [];
+    @state() selectedBucketId = '1';
+    @state() showAllHistoricalData = false;
 
   static get styles() {
     return [
@@ -154,7 +138,7 @@ updateSelectedBucketId(e) {
         parseInt(dateStr[1]) - 1,
         parseInt(dateStr[2])
       );
-      
+
       const row: any[] = [date, parseFloat((item.day_percentage * 100).toFixed(6))];
       // Add annotation where UMA data switched to new stuff.
       if (item.date === '2017-10-27') {

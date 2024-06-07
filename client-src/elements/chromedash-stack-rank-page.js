@@ -60,7 +60,7 @@ export class ChromedashStackRankPage extends LitElement {
     let endpoint = `/data/${this.type}${this.view}`;
 
     // [DEV] Change to true to use the staging server endpoint for development
-    const devMode = false;
+    const devMode = true;
     if (devMode) endpoint = 'https://cr-status-staging.appspot.com' + endpoint;
     const options = {credentials: 'omit'};
 
