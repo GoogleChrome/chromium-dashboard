@@ -17,7 +17,7 @@ from datetime import datetime
 import logging
 from typing import Any, Optional
 from google.cloud import ndb
-import requests  # type: ignore
+import flask
 
 # Appengine imports.
 from framework import rediscache
@@ -414,7 +414,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
   # TODO(danielrsmith): This method's logic is way too complicated to easily
   # maintain. This needs to be scrapped and submission of edits should be
   # handled using features_api and stages_api.
-  def process_post_data(self, **kwargs) -> requests.Response:
+  def process_post_data(self, **kwargs) -> flask.Response | dict:
     feature_id = kwargs.get('feature_id', None)
     stage_id = kwargs.get('stage_id', None)
     # Validate the user has edit permissions and redirect if needed.
@@ -446,7 +446,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
         new_field = self.RENAMED_FIELD_MAPPING.get(field, field)
         self._add_changed_field(fe, new_field, field_val, changed_fields)
         setattr(fe, new_field, field_val)
-    
+
     enterprise_impact = self._get_field_val('enterprise_impact', 'int')
     if self.touched('first_enterprise_notification_milestone', form_fields):
       milestone = self._get_field_val('first_enterprise_notification_milestone', 'int')

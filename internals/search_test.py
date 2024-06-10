@@ -114,6 +114,32 @@ class SearchRETest(testing_config.CustomTestCase):
         search.TERM_RE.findall('=word '))
 
 
+class SearchParsingTest(testing_config.CustomTestCase):
+  def test_parse_query_value__dates(self):
+    d = datetime.datetime
+    now = d(2024, 5, 15)
+    self.assertEqual(d(2024, 5, 15), search.parse_query_value('now', now))
+    self.assertEqual(d(2024, 5, 13), search.parse_query_value('now-2d', now))
+    self.assertEqual(d(2024, 5, 18), search.parse_query_value('now+3d', now))
+    self.assertEqual(d(2024, 4, 10), search.parse_query_value('now-5w', now))
+    self.assertEqual(d(2024, 6, 5), search.parse_query_value('now+3w', now))
+    self.assertEqual(
+      'now+1000000000d',
+      search.parse_query_value('now+1000000000d', now),
+      'Overflow should fall back to a string.',
+    )
+    self.assertEqual(d(2023, 7, 8), search.parse_query_value('2023-07-08', now))
+    self.assertEqual(d(2023, 7, 8), search.parse_query_value('2023-7-8', now))
+
+    # And some cases that shouldn't parse:
+    self.assertEqual('nows', search.parse_query_value('nows', now))
+    self.assertEqual('now-2days', search.parse_query_value('now-2days', now))
+    self.assertEqual('now + 2d', search.parse_query_value('now + 2d', now))
+    self.assertEqual('now-5weeks', search.parse_query_value('now-5weeks', now))
+    self.assertEqual('2023-13-8', search.parse_query_value('2023-13-8', now))
+    self.assertEqual('2023/07/08', search.parse_query_value('2023/07/08', now))
+
+
 class SearchFunctionsTest(testing_config.CustomTestCase):
 
   def setUp(self):
@@ -125,8 +151,13 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.featureentry_1.cc_emailss = ['cc@example.com']
     self.featureentry_1.put()
     self.featureentry_2 = FeatureEntry(
-        name='feature 2', summary='sum', category=2, web_dev_views=1,
-        impl_status_chrome=3)
+      name='feature 2',
+      summary='sum',
+      category=2,
+      web_dev_views=1,
+      impl_status_chrome=3,
+      accurate_as_of=datetime.datetime(2024, 5, 23),
+    )
     self.featureentry_2.owner_emails = ['owner@example.com']
     self.featureentry_2.put()
     notifier.FeatureStar.set_star(
@@ -402,6 +433,12 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.assertCountEqual(
         [f['name'] for f in actual],
         ['feature 1', 'feature 2'])
+
+    actual, tc = search.process_query('accurate_as_of=now-3d', now=datetime.datetime(2024,5,26))
+    self.assertEqual(1, len(actual))
+    self.assertCountEqual(
+        [f['name'] for f in actual],
+        ['feature 2'])
 
   def test_process_query__show_deleted_unlisted(self):
     """We can run queries without deleted/unlisted features."""
