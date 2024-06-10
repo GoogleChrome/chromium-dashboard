@@ -1,22 +1,22 @@
-import { LitElement, css, html } from 'lit';
-import { SHARED_STYLES } from '../css/shared-css.js';
+import {LitElement, css, html} from 'lit';
+import {SHARED_STYLES} from '../css/shared-css.js';
 import './chromedash-timeline.ts';
-import { showToastMessage } from './utils.js';
-import { property } from 'lit/decorators.js';
-import { Property } from './datatypes.ts';
+import {showToastMessage} from './utils.js';
+import {property} from 'lit/decorators.js';
+import {Property} from './datatypes.ts';
 
 export class ChromedashTimelinePage extends LitElement {
-    @property({ type: String })
-    type = '';
+  @property({type: String})
+  type = '';
 
-    @property({ type: String })
-    view = '';
+  @property({type: String})
+  view = '';
 
-    @property({ attribute: false })
-    props: Property[] = [];
+  @property({attribute: false})
+  props: Property[] = [];
 
-    @property({ attribute: false })
-    selectedBucketId = '1';
+  @property({attribute: false})
+  selectedBucketId = '1';
 
   static get styles() {
     return [...SHARED_STYLES, css``];
