@@ -161,9 +161,9 @@ class OTProcessRemindersTest(testing_config.CustomTestCase):
 
   def test_build_trials__no_contacts(self):
     """We cope with stages that have no emails listed."""
-    self.stage_1.ot_emails = []
-    self.stage_1.ot_owner_email = None
-    self.stage_1.put()
+    self.stage_2.ot_emails = []
+    self.stage_2.ot_owner_email = None
+    self.stage_2.put()
     trial_data = {
         'id': '1',
         'display_name': 'some trial',
