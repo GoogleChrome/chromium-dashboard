@@ -82,7 +82,7 @@ export class ChromedashSearchHelpDialog extends LitElement {
             [
               'created.when>2024-01-01',
               'created.when<now-8w',
-              'updated.when>=2023-01-01 updated.when<=2023-12-31',
+              'updated.when=2023-01-01..2023-12-31',
             ],
             'Features created or modified before or after a date.'
           )}
@@ -136,10 +136,18 @@ export class ChromedashSearchHelpDialog extends LitElement {
           </li>
           <li>
             VALUE(S): A single word, number, date, or enum value listed below.
-            If the value contains spaces, it must be inside double quotes. Use
-            the equals operator with a comma-separated list to match any value
-            in that list.
+            If the value contains spaces, it must be inside double quotes.
             <ul>
+              <li>
+                Use the equals operator with a comma-separated list to match any
+                value in that list.
+              </li>
+              <li>
+                Use the equals operator with two number or date values separated
+                by "<code>..</code>" to find any value between or including
+                those endpoints. The left value must be less than the right
+                value.
+              </li>
               <li>
                 For dates, you can compute a date a certain number of days or
                 weeks before or after now. "<code>now-3d</code>" is 3 days ago,
@@ -150,7 +158,7 @@ export class ChromedashSearchHelpDialog extends LitElement {
         </ul>
 
         <p>
-          You may negate any seearch term by prefixing it with a minus sign.
+          You may negate any search term by prefixing it with a minus sign.
           Search terms are implicitly joined together by a logical-AND. However,
           you may type the keyword <code>OR</code> between terms as a logical-OR
           operator. We do not support parenthesis in queries.

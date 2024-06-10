@@ -12,26 +12,39 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
 import datetime
-from typing import Union, Callable, Optional
+import logging
+from dataclasses import dataclass
+from typing import Callable, Generic, Optional, TypeAlias, TypeVar, Union
 
 from google.cloud import ndb  # type: ignore
 from google.cloud.ndb.model import Model, Property  # for type checking only
-from google.cloud.ndb.tasklets import Future  # for type checking only
 from google.cloud.ndb.query import FilterNode  # for type checking only
+from google.cloud.ndb.tasklets import Future  # for type checking only
 
 from framework import users
-from framework import utils
 from internals import core_enums
 from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Gate
 
+T = TypeVar('T')
+QueryValue: TypeAlias = bool | int | str | datetime.datetime
+
+
+@dataclass
+class Interval(Generic[T]):
+  """Represents a closed (inclusive) interval from low to high."""
+
+  low: T
+  high: T
+
 
 def single_field_query_async(
-    field_name: str, operator: str,
-    val_list: list[str | int | bool | datetime.datetime],
-    limit: int|None = None) -> list[int] | Future:
+  field_name: str,
+  operator: str,
+  val_list: list[QueryValue | Interval[QueryValue]],
+  limit: int | None = None,
+) -> list[int] | Future:
   """Create a query for one FeatureEntry field and run it, returning a promise."""
   if not val_list or val_list == ['']:
     logging.warning('No values were provided when searching %r', field_name)
@@ -44,6 +57,8 @@ def single_field_query_async(
     query = FeatureEntry.query()
     field = QUERIABLE_FIELDS[field_name]
     if core_enums.is_enum_field(field_name):
+      # Intervals of enums aren't supported for now because the integer values
+      # aren't in a logical order.
       enum_val_list = []
       for val in val_list:
         enum_val = core_enums.convert_enum_string_to_int(field_name, val)
@@ -74,7 +89,11 @@ def single_field_query_async(
   for val in val_list:
     try:
       # If the field can be set to val, then it can be compared to val.
-      field._validate(val)
+      if isinstance(val, Interval):
+        field._validate(val.low)
+        field._validate(val.high)
+      else:
+        field._validate(val)
     except ndb.exceptions.BadValueError:
       logging.info('Wrong type of value for %r: %r' % (field, val))
       raise ValueError('Query value does not match field type')
@@ -84,6 +103,14 @@ def single_field_query_async(
       query = query.filter(field.IN(val_list))
     else:
       raise ValueError('Quick-OR is not supported for operator: %r' % operator)
+  elif isinstance(val_list[0], Interval):
+    if operator == '=':
+      val = val_list[0]
+      query = query.filter(field >= val.low, field <= val.high)
+    else:
+      raise ValueError(
+        "Interval queries are not supported for operator: %r" % operator
+      )
   else:
     val = val_list[0]
     if (operator == '='):

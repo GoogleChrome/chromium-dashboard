@@ -96,7 +96,7 @@ NOW_RELATIVE_DATE = re.compile(r'now(?:(?P<offset>[+-]\d+)(?P<unit>[dw]))?')
 
 def parse_query_value(
   val_str: str, now: datetime.datetime
-) -> bool | int | str | datetime.datetime:
+) -> search_queries.QueryValue:
   """Return a python object that can be used as a value in an NDB query."""
 
   if val_str.startswith('"') and val_str.endswith('"'):
@@ -137,11 +137,25 @@ def parse_query_value(
   return val_str
 
 
+def parse_query_value_interval(
+  val_str: str, now: datetime.datetime
+) -> search_queries.QueryValue | search_queries.Interval[search_queries.QueryValue]:
+  """Return a value or interval of values that can be used in an NDB query."""
+  try_interval = val_str.split('..')
+  if len(try_interval) == 2:
+    return search_queries.Interval(
+      parse_query_value(try_interval[0], now), parse_query_value(try_interval[1], now)
+    )
+  return parse_query_value(val_str, now)
+
+
 def parse_query_value_list(
   vals_str: str, now: datetime.datetime
-) -> list[int | str | bool | datetime.datetime]:
+) -> list[
+  search_queries.QueryValue | search_queries.Interval[search_queries.QueryValue]
+]:
   """Return a list of values that can be used in an NDB query."""
-  return [parse_query_value(part, now) for part in vals_str.split(',')]
+  return [parse_query_value_interval(part, now) for part in vals_str.split(',')]
 
 
 # A full-text query term consisting of a single word or quoted string.
@@ -154,8 +168,10 @@ FIELD_NAME_PATTERN = r'[-.a-z_0-9]+'
 OPERATORS_PATTERN = r':|=|<=|<|>=|>|!='
 # A value that a feature field can be compared against.  It can be
 # a single word or a quoted string.
-VALUE_PATTERN = r'[^", ]+|"[^"]+"'
-VALUES_PATTERN = r'(?:%s)(?:,(?:%s))*' % (VALUE_PATTERN, VALUE_PATTERN)
+VALUE_PATTERN = r'(?:[^", .]|\.[^", .])+|"[^"]+"'
+VALUES_PATTERN = (
+  rf'(?:{VALUE_PATTERN})(?:\.\.(?:{VALUE_PATTERN})|(?:,(?:{VALUE_PATTERN}))*)'
+)
 # Logical operators.
 LOGICAL_OPERATORS_PATTERN = r'OR\s+|-'
 
