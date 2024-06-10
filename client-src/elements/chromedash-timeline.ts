@@ -14,10 +14,10 @@ class ChromedashTimeline extends LitElement {
     @property({ attribute: false })
     props: Property[] = [];
 
-    @state()
+    @property({ attribute: false })
     selectedBucketId = '1';
 
-    @state()
+    @property({ attribute: false })
     showAllHistoricalData = false;
 
   static get styles() {
