@@ -21,6 +21,7 @@
       "lib": ["ES2023", "DOM"],
       "experimentalDecorators": true,
       "useDefineForClassFields": false,
+      "allowImportingTsExtensions": true
     },
     "include": [
       "client-src/js-src/**/*",
