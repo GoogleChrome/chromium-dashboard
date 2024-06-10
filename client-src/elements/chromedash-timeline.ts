@@ -1,27 +1,24 @@
 import { LitElement, css, html, nothing } from 'lit';
 import { SHARED_STYLES } from '../css/shared-css.js';
 import { showToastMessage } from './utils.js';
-import { customElement, property, state } from 'lit/decorators.js';
-interface Property {
-    [key: string]: any;
-    0: number;
-    1: string;
-}
+import { property, state } from 'lit/decorators.js';
+import { Property } from './datatypes.js';
 
-
-declare global {
-    interface Window {
-        google: any;
-    }
-}
-
-@customElement('chromedash-timeline')
 class ChromedashTimeline extends LitElement {
-    @property({ type: String }) type = '';
-    @property({ type: String }) view = '';
-    @property({ attribute: false }) props: Property[] = [];
-    @state() selectedBucketId = '1';
-    @state() showAllHistoricalData = false;
+    @property({ type: String })
+    type = '';
+
+    @property({ type: String })
+    view = '';
+
+    @property({ attribute: false })
+    props: Property[] = [];
+
+    @state()
+    selectedBucketId = '1';
+
+    @state()
+    showAllHistoricalData = false;
 
   static get styles() {
     return [
