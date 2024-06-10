@@ -32,6 +32,7 @@ trials = None
 
 def build_trial_data(trial_data: dict[str, Any]) -> dict[str, Any] | None:
   """Find corresponding OT stage and assemble necessary info for reminders."""
+  logging.info(f'Building trial data for {trial_data.get("id")}')
   trial_stage: Stage | None = Stage.query(
       Stage.origin_trial_id == trial_data['id']).get()
   if trial_stage is None:
@@ -39,7 +40,7 @@ def build_trial_data(trial_data: dict[str, Any]) -> dict[str, Any] | None:
     return None
   contact_list = trial_stage.ot_emails.copy()
   contact_list.append(trial_stage.ot_owner_email)
-  contact_list = [s.strip() for s in contact_list]
+  contact_list = [s.strip() for s in contact_list if s]
 
   # Remove duplicates
   contact_list = list(set(contact_list))

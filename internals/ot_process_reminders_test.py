@@ -106,7 +106,12 @@ class OTProcessRemindersTest(testing_config.CustomTestCase):
       },
     ]
 
-  def test_build_trials(self):
+  def tearDown(self):
+    self.feature_1.key.delete()
+    self.stage_1.key.delete()
+    self.stage_2.key.delete()
+
+  def test_build_trials__normal(self):
     """Test that trial data is formatted correctly."""
     expected_trials = [
       {
@@ -153,6 +158,22 @@ class OTProcessRemindersTest(testing_config.CustomTestCase):
                      set(formatted_1['contacts']))
     self.assertEqual(set(expected_trials[1]['contacts']),
                      set(formatted_2['contacts']))
+
+  def test_build_trials__no_contacts(self):
+    """We cope with stages that have no emails listed."""
+    self.stage_1.ot_emails = []
+    self.stage_1.ot_owner_email = None
+    self.stage_1.put()
+    trial_data = {
+        'id': '1',
+        'display_name': 'some trial',
+        'start_milestone': '123',
+        'end_milestone': '126',
+        }
+
+    actual = ot_process_reminders.build_trial_data(trial_data)
+
+    self.assertEqual([], actual['contacts'])
 
   @mock.patch('framework.origin_trials_client.get_trials_list')
   def test_get_trials(self, mock_get_trials_list):
