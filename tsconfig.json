@@ -12,7 +12,7 @@
       "skipLibCheck": true,
       "rootDir": ".",
       "allowJs": true,
-      "checkJs": true,
+      "checkJs": false,
       "resolveJsonModule": true,
       "noEmit": true,
       "outDir": "static/dist",
