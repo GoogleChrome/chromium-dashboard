@@ -1,8 +1,8 @@
-import { LitElement, css, html, nothing } from 'lit';
-import { property } from 'lit/decorators.js';
-import { SHARED_STYLES } from '../css/shared-css.js';
-import { Property } from './datatypes.js';
-import { showToastMessage } from './utils.js';
+import {LitElement, css, html, nothing} from 'lit';
+import {SHARED_STYLES} from '../css/shared-css.js';
+import {showToastMessage} from './utils.js';
+import {property, state} from 'lit/decorators.js';
+import {Property} from './datatypes.js';
 
 class ChromedashTimeline extends LitElement {
   @property({type: String})
