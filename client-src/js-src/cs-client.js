@@ -300,20 +300,21 @@ class ChromeStatusClient {
   }
 
   async searchFeatures(userQuery, showEnterprise, sortSpec, start, num) {
-    let url = `/features?q=${userQuery}`;
+    let query = new URLSearchParams();
+    query.set('q', userQuery);
     if (showEnterprise) {
-      url += '&showEnterprise';
+      query.set('showEnterprise', '');
     }
     if (sortSpec) {
-      url += '&sort=' + sortSpec;
+      query.set('sort', sortSpec);
     }
     if (start) {
-      url += '&start=' + start;
+      query.set('start', start);
     }
     if (num) {
-      url += '&num=' + num;
+      query.set('num', num);
     }
-    return this.doGet(url);
+    return this.doGet(`/features?${query.toString()}`);
   }
 
   async updateFeature(featureChanges) {
