@@ -1,28 +1,25 @@
 import {LitElement, css, html} from 'lit';
-import './chromedash-timeline';
-import {showToastMessage} from './utils';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import './chromedash-timeline.ts';
+import {showToastMessage} from './utils.js';
+import {property} from 'lit/decorators.js';
+import {Property} from './datatypes.ts';
 
 export class ChromedashTimelinePage extends LitElement {
+  @property({type: String})
+  type = '';
+
+  @property({type: String})
+  view = '';
+
+  @property({attribute: false})
+  props: Property[] = [];
+
+  @property({attribute: false})
+  selectedBucketId = '1';
+
   static get styles() {
     return [...SHARED_STYLES, css``];
-  }
-
-  static get properties() {
-    return {
-      type: {type: String}, // "css" or "feature"
-      view: {type: String}, // "popularity" or "animated"
-      props: {attribute: false},
-      selectedBucketId: {attribute: false},
-    };
-  }
-
-  constructor() {
-    super();
-    this.type = '';
-    this.view = '';
-    this.props = [];
-    this.selectedBucketId = '1';
   }
 
   connectedCallback() {
@@ -33,7 +30,7 @@ export class ChromedashTimelinePage extends LitElement {
     // [DEV] Change to true to use the staging server endpoint for development
     const devMode = false;
     if (devMode) endpoint = 'https://cr-status-staging.appspot.com' + endpoint;
-    const options = {credentials: 'omit'};
+    const options: RequestInit = {credentials: 'omit'};
 
     fetch(endpoint, options)
       .then(res => res.json())

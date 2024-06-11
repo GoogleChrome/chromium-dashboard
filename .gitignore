@@ -45,4 +45,7 @@ test-results/
 ot_api_key.txt
 
 # Typescript incremental build
-jsconfig.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# rollup cache
+.rollup.cache/

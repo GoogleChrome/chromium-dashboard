@@ -11,6 +11,7 @@
     ]
   ],
   "plugins": [
-    "@babel/plugin-proposal-class-properties"
+    "@babel/plugin-proposal-class-properties",
+    ["@babel/plugin-proposal-decorators", {"version": "2023-05"}]
   ]
 }
