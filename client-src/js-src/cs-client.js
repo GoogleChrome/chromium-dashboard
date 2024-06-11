@@ -300,7 +300,7 @@ class ChromeStatusClient {
   }
 
   async searchFeatures(userQuery, showEnterprise, sortSpec, start, num) {
-    let query = new URLSearchParams();
+    const query = new URLSearchParams();
     query.set('q', userQuery);
     if (showEnterprise) {
       query.set('showEnterprise', '');
