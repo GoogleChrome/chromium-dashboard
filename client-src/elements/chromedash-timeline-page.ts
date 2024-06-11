@@ -42,7 +42,7 @@ export class ChromedashTimelinePage extends LitElement {
     let endpoint = `/data/blink/${this.type}props`;
 
     // [DEV] Change to true to use the staging server endpoint for development
-    const devMode = true;
+    const devMode = false;
     if (devMode) endpoint = 'https://cr-status-staging.appspot.com' + endpoint;
     const options: RequestInit = {credentials: 'omit'};
 
