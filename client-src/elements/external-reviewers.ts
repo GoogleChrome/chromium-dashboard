@@ -2,6 +2,7 @@
 
 /** Represents an external organization that reviews Chromium changes. Currently the W3C TAG,
  * Firefox, and Safari. */
+import {LabelInfo} from './datatypes.ts';
 export class ExternalReviewer {
   icon: string;
   _labels: Record<string, LabelInfo>;
@@ -116,9 +117,3 @@ export class ExternalReviewer {
     this._labels = labels;
   }
 }
-
-// will be moved to datatypes.ts once PR #3940 is meregd
-export type LabelInfo = {
-  description: string;
-  variant: 'primary' | 'success' | 'neutral' | 'warning' | 'danger';
-};
