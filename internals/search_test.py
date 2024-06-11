@@ -22,6 +22,7 @@ from internals.core_models import FeatureEntry
 from internals.review_models import Gate, Vote
 from internals import notifier
 from internals import search
+from internals.search_queries import Interval
 
 
 class SearchRETest(testing_config.CustomTestCase):
@@ -80,6 +81,20 @@ class SearchRETest(testing_config.CustomTestCase):
         [('', 'field', '=', '"enum one","enum two","enum three"', '')],
         search.TERM_RE.findall('field="enum one","enum two","enum three" '))
 
+  def test_structured_query_terms__interval(self):
+    """We can parse queries that use interval syntax for paired inequalities."""
+    self.assertEqual(
+      [('', 'field', '=', '1..7', '')], search.TERM_RE.findall('field=1..7 ')
+    )
+    self.assertEqual(
+      [('', 'field', '=', '2024-01-01..2024-04-01', '')],
+      search.TERM_RE.findall('field=2024-01-01..2024-04-01 '),
+    )
+    self.assertEqual(
+      [('', 'field', '=', '"one".."three"', '')],
+      search.TERM_RE.findall('field="one".."three" '),
+    )
+
   def test_text_terms(self):
     """We can parse text terms."""
     self.assertEqual(
@@ -112,6 +127,12 @@ class SearchRETest(testing_config.CustomTestCase):
     self.assertEqual(
         [('', '', '', '', 'word')],
         search.TERM_RE.findall('=word '))
+    self.assertEqual(
+      [('', '', '', '', '1,2..3')], search.TERM_RE.findall('field=1,2..3 ')
+    )
+    self.assertEqual(
+      [('', '', '', '', '1..2..3')], search.TERM_RE.findall('field=1..2..3 ')
+    )
 
 
 class SearchParsingTest(testing_config.CustomTestCase):
@@ -139,18 +160,40 @@ class SearchParsingTest(testing_config.CustomTestCase):
     self.assertEqual('2023-13-8', search.parse_query_value('2023-13-8', now))
     self.assertEqual('2023/07/08', search.parse_query_value('2023/07/08', now))
 
+  def test_parse_query_value__intervals(self):
+    now = datetime.datetime(2024, 5, 15)
+    self.assertEqual([Interval(1, 5)], search.parse_query_value_list('1..5', now))
+    self.assertEqual(
+      [Interval(datetime.datetime(2023, 1, 1), datetime.datetime(2024, 1, 1))],
+      search.parse_query_value_list('2023-01-01..2024-01-01', now),
+    )
+    # This parses, but it's excluded by the regex and isn't converted into an efficient query.
+    self.assertEqual([1, Interval(2, 3)], search.parse_query_value_list('1,2..3', now))
+
+    self.assertEqual(
+      ['1..2..3'],
+      search.parse_query_value_list('1..2..3', now),
+      "Don't get confused by funny syntax",
+    )
+
 
 class SearchFunctionsTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.featureentry_1 = FeatureEntry(
-        name='feature 1', summary='sum', category=1, web_dev_views=1,
-        impl_status_chrome=3)
+      created=datetime.datetime(2024, 4, 4),
+      name='feature 1',
+      summary='sum',
+      category=1,
+      web_dev_views=1,
+      impl_status_chrome=3,
+    )
     self.featureentry_1.owner_emails = ['owner@example.com']
     self.featureentry_1.editor_emails = ['editor@example.com']
     self.featureentry_1.cc_emailss = ['cc@example.com']
     self.featureentry_1.put()
     self.featureentry_2 = FeatureEntry(
+      created=datetime.datetime(2024, 3, 4),
       name='feature 2',
       summary='sum',
       category=2,
@@ -163,14 +206,25 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     notifier.FeatureStar.set_star(
         'starrer@example.com', self.featureentry_1.key.integer_id())
     self.featureentry_3 = FeatureEntry(
-        name='feature 3', summary='sum', category=3, web_dev_views=1,
-        impl_status_chrome=3, unlisted=True)
+      created=datetime.datetime(2024, 2, 4),
+      name='feature 3',
+      summary='sum',
+      category=3,
+      web_dev_views=1,
+      impl_status_chrome=3,
+      unlisted=True,
+    )
     self.featureentry_3.owner_emails = ['owner@example.com']
     self.featureentry_3.put()
     self.featureentry_4 = FeatureEntry(
-        name='feature 4', summary='sum', category=4, web_dev_views=1,
-        impl_status_chrome=4,
-        feature_type=core_enums.FEATURE_TYPE_ENTERPRISE_ID)
+      created=datetime.datetime(2024, 1, 4),
+      name='feature 4',
+      summary='sum',
+      category=4,
+      web_dev_views=1,
+      impl_status_chrome=4,
+      feature_type=core_enums.FEATURE_TYPE_ENTERPRISE_ID,
+    )
     self.featureentry_4.owner_emails = ['owner@example.com']
     self.featureentry_4.put()
 
@@ -439,6 +493,13 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.assertCountEqual(
         [f['name'] for f in actual],
         ['feature 2'])
+
+  def test_process_query__interval(self):
+    """We can run interval queries."""
+    self.featureentry_3.unlisted = False  # Increase the set of possible results.
+    self.featureentry_3.put()
+    actual, tc = search.process_query('created.when=2024-02-02..2024-04-01')
+    self.assertCountEqual([f['name'] for f in actual], ['feature 2', 'feature 3'])
 
   def test_process_query__show_deleted_unlisted(self):
     """We can run queries without deleted/unlisted features."""
