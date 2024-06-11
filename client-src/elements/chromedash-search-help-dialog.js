@@ -1,6 +1,6 @@
 import {LitElement, css, html} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import {QUERIABLE_FIELDS} from './queriable-fields.js';
+import {QUERIABLE_FIELDS} from './queriable-fields.ts';
 
 let searchHelpDialogEl;
 

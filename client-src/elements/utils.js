@@ -1,6 +1,6 @@
 // This file contains helper functions for our elements.
 
-import {markupAutolinks} from './autolink.js';
+import {markupAutolinks} from './autolink.ts';
 import {nothing, html} from 'lit';
 import {
   STAGE_FIELD_NAME_MAPPING,

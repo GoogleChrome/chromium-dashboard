@@ -2,7 +2,7 @@ import {LitElement, css, html} from 'lit';
 import {ref, createRef} from 'lit/directives/ref.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {openSearchHelpDialog} from './chromedash-search-help-dialog.js';
-import {QUERIABLE_FIELDS} from './queriable-fields.js';
+import {QUERIABLE_FIELDS} from './queriable-fields.ts';
 
 const VOCABULARY = QUERIABLE_FIELDS.map(qf => {
   return {name: qf.name + '=', doc: qf.doc};
