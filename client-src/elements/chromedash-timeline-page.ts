@@ -2,38 +2,24 @@ import {LitElement, css, html} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import './chromedash-timeline.ts';
 import {showToastMessage} from './utils.js';
-
-interface Property {
-  [key: string]: any;
-  0: number;
-  1: string;
-}
+import {property} from 'lit/decorators.js';
+import {Property} from './datatypes.ts';
 
 export class ChromedashTimelinePage extends LitElement {
-  type: string;
-  view: string;
-  props: Property[];
-  selectedBucketId: string;
+  @property({type: String})
+  type = '';
+
+  @property({type: String})
+  view = '';
+
+  @property({attribute: false})
+  props: Property[] = [];
+
+  @property({attribute: false})
+  selectedBucketId = '1';
 
   static get styles() {
     return [...SHARED_STYLES, css``];
-  }
-
-  static get properties() {
-    return {
-      type: {type: String}, // "css" or "feature"
-      view: {type: String}, // "popularity" or "animated"
-      props: {attribute: false},
-      selectedBucketId: {attribute: false},
-    };
-  }
-
-  constructor() {
-    super();
-    this.type = '';
-    this.view = '';
-    this.props = [];
-    this.selectedBucketId = '1';
   }
 
   connectedCallback() {

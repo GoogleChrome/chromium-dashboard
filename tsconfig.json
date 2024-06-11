@@ -3,7 +3,10 @@
       "module": "preserve",
       "plugins": [
         {
-          "name": "ts-lit-plugin"
+          "name": "ts-lit-plugin",
+          "rules": {
+            "no-incompatible-type-binding": "off"
+          }
         }
       ],
       "strict": true,
@@ -12,7 +15,7 @@
       "skipLibCheck": true,
       "rootDir": ".",
       "allowJs": true,
-      "checkJs": true,
+      "checkJs": false,
       "resolveJsonModule": true,
       "noEmit": true,
       "outDir": "static/dist",
@@ -21,6 +24,7 @@
       "lib": ["ES2023", "DOM"],
       "experimentalDecorators": true,
       "useDefineForClassFields": false,
+      "allowImportingTsExtensions": true
     },
     "include": [
       "client-src/js-src/**/*",

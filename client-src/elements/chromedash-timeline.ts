@@ -1,25 +1,24 @@
-import {LitElement, css, html, nothing} from 'lit';
-import {property, state} from 'lit/decorators.js';
-import {SHARED_STYLES} from '../css/shared-css.js';
-import {showToastMessage} from './utils.js';
-interface Property {
-  [key: string]: any;
-  0: number;
-  1: string;
-}
-
-declare global {
-  interface Window {
-    google: any;
-  }
-}
+import { LitElement, css, html, nothing } from 'lit';
+import { property } from 'lit/decorators.js';
+import { SHARED_STYLES } from '../css/shared-css.js';
+import { Property } from './datatypes.js';
+import { showToastMessage } from './utils.js';
 
 class ChromedashTimeline extends LitElement {
-  @property({type: String}) type = '';
-  @property({type: String}) view = '';
-  @property({attribute: false}) props: Property[] = [];
-  @state() selectedBucketId = '1';
-  @state() showAllHistoricalData = false;
+  @property({type: String})
+  type = '';
+
+  @property({type: String})
+  view = '';
+
+  @property({attribute: false})
+  props: Property[] = [];
+
+  @property({attribute: false})
+  selectedBucketId = '1';
+
+  @property({attribute: false})
+  showAllHistoricalData = false;
 
   static get styles() {
     return [
