@@ -17,7 +17,7 @@ import dataclasses
 import datetime
 import logging
 import re
-from typing import Any, Optional, Union, Self
+from typing import Any, Optional, Self, Union
 
 from google.cloud.ndb import Key
 from google.cloud.ndb.tasklets import Future  # for type checking only
