@@ -3,7 +3,10 @@
       "module": "preserve",
       "plugins": [
         {
-          "name": "ts-lit-plugin"
+          "name": "ts-lit-plugin",
+          "rules": {
+            "no-incompatible-type-binding": "off"
+          }
         }
       ],
       "strict": true,

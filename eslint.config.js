@@ -43,8 +43,6 @@ export default [
       'node/no-extraneous-import': 'off',
       'node/no-missing-import': 'off',
       'node/no-unpublished-import': 'off',
-      'no-incompatible-type-binding': 'off',
-      'no-nullable-attribute-binding': 'off'
     },
     ignores: [
       '**/node_modules/**',
