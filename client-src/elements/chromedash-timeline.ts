@@ -1,27 +1,25 @@
-import { LitElement, css, html, nothing } from 'lit';
-import { SHARED_STYLES } from '../css/shared-css.js';
-import { showToastMessage } from './utils.js';
-import { customElement, property, state } from 'lit/decorators.js';
+import {LitElement, css, html, nothing} from 'lit';
+import {property, state} from 'lit/decorators.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
+import {showToastMessage} from './utils.js';
 interface Property {
-    [key: string]: any;
-    0: number;
-    1: string;
+  [key: string]: any;
+  0: number;
+  1: string;
 }
-
 
 declare global {
-    interface Window {
-        google: any;
-    }
+  interface Window {
+    google: any;
+  }
 }
 
-@customElement('chromedash-timeline')
 class ChromedashTimeline extends LitElement {
-    @property({ type: String }) type = '';
-    @property({ type: String }) view = '';
-    @property({ attribute: false }) props: Property[] = [];
-    @state() selectedBucketId = '1';
-    @state() showAllHistoricalData = false;
+  @property({type: String}) type = '';
+  @property({type: String}) view = '';
+  @property({attribute: false}) props: Property[] = [];
+  @state() selectedBucketId = '1';
+  @state() showAllHistoricalData = false;
 
   static get styles() {
     return [
@@ -100,19 +98,19 @@ class ChromedashTimeline extends LitElement {
     ];
   }
 
-updated() {
+  updated() {
     window.google.charts.setOnLoadCallback(this._updateTimeline.bind(this));
-}
+  }
 
-updateSelectedBucketId(e) {
+  updateSelectedBucketId(e) {
     const inputValue = e.currentTarget.value;
     const feature = this.props.find(el => el[1] === inputValue);
     if (feature) {
-        this.selectedBucketId = feature[0].toString();
+      this.selectedBucketId = feature[0].toString();
     } else if (inputValue) {
-        showToastMessage('No matching features. Please try again!');
+      showToastMessage('No matching features. Please try again!');
     }
-}
+  }
 
   toggleShowAllHistoricalData() {
     this.showAllHistoricalData = !this.showAllHistoricalData;
@@ -139,7 +137,10 @@ updateSelectedBucketId(e) {
         parseInt(dateStr[2])
       );
 
-      const row: any[] = [date, parseFloat((item.day_percentage * 100).toFixed(6))];
+      const row: any[] = [
+        date,
+        parseFloat((item.day_percentage * 100).toFixed(6)),
+      ];
       // Add annotation where UMA data switched to new stuff.
       if (item.date === '2017-10-27') {
         row.push('A', 'Modernized metrics');
@@ -270,7 +271,9 @@ updateSelectedBucketId(e) {
     );
     if (feature) {
       let featureName = feature[1];
-      const inputEl = this.shadowRoot!.querySelector('#datalist-input') as HTMLInputElement;
+      const inputEl = this.shadowRoot!.querySelector(
+        '#datalist-input'
+      ) as HTMLInputElement;
       inputEl!.value = featureName;
 
       if (this.type == 'css') {
@@ -278,10 +281,14 @@ updateSelectedBucketId(e) {
       }
       const REPORT_ID = '1M8kXOqPkwYNKjJhtag_nvDNJCpvmw_ri';
       const dsEmbedUrl = `https://datastudio.google.com/embed/reporting/${REPORT_ID}/page/tc5b?params=%7B"df3":"include%25EE%2580%25800%25EE%2580%2580IN%25EE%2580%2580${featureName}"%7D`;
-      const hadEl = this.shadowRoot!.querySelector('#http-archive-data') as HTMLIFrameElement;
+      const hadEl = this.shadowRoot!.querySelector(
+        '#http-archive-data'
+      ) as HTMLIFrameElement;
       hadEl!.src = dsEmbedUrl;
 
-      const bigqueryEl = this.shadowRoot!.querySelector('#bigquery') as HTMLElement;
+      const bigqueryEl = this.shadowRoot!.querySelector(
+        '#bigquery'
+      ) as HTMLElement;
       bigqueryEl!.textContent = `#standardSQL
 SELECT yyyymmdd, client, pct_urls, sample_urls
 FROM \`httparchive.blink_features.usage\`

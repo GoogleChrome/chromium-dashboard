@@ -3,8 +3,8 @@
 /** Represents an external organization that reviews Chromium changes. Currently the W3C TAG,
  * Firefox, and Safari. */
 export class ExternalReviewer {
-    icon: string;
-    _labels: Record<string, LabelInfo>;
+  icon: string;
+  _labels: Record<string, LabelInfo>;
   /** Finds reviewer information based on their github repo name.
    *
    * @param {string} repo Github repository name in the form 'org/name'.
@@ -119,6 +119,6 @@ export class ExternalReviewer {
 
 // will be moved to datatypes.ts once PR #3940 is meregd
 export type LabelInfo = {
-    description: string;
-    variant: 'primary' | 'success' | 'neutral' | 'warning' | 'danger';
-    };
+  description: string;
+  variant: 'primary' | 'success' | 'neutral' | 'warning' | 'danger';
+};

@@ -20,7 +20,7 @@ const NUMERIC_SHORT_LINK_RE =
 const IMPLIED_LINK_RE =
   /(?!@)(^|[^-\/._])\b[a-z]((-|\.)?[a-z0-9])+\.(com|net|org|edu|dev)\b(\/[^\s<]*)?/gi;
 const IS_LINK_RE = /()\b(https?:\/\/|ftp:\/\/|mailto:)([^\s<]+)/gi;
-const LINK_TRAILING_CHARS: [string | null, string] [] = [
+const LINK_TRAILING_CHARS: [string | null, string][] = [
   [null, ':'],
   [null, '.'],
   [null, ','],
@@ -55,7 +55,12 @@ Components.set('05-linkify-shorthand', {
 // 06-versioncontrol unused.
 
 // Replace plain text references with links functions.
-function replaceIssueRef(stringMatch: string, projectName: string, localId: string, commentId: string) {
+function replaceIssueRef(
+  stringMatch: string,
+  projectName: string,
+  localId: string,
+  commentId: string
+) {
   return createIssueRefRun(projectName, localId, stringMatch, commentId);
 }
 
@@ -211,12 +216,12 @@ function applyLinks(textRuns, replacer, re) {
 }
 
 interface TextRun {
-    content: string;
-    tag?: string;
-    href?: string;
-  }
+  content: string;
+  tag?: string;
+  href?: string;
+}
 
-  interface Component {
-    refRegs: RegExp[];
-    replacer: (match: any) => never[] | TextRun[];
-  }
+interface Component {
+  refRegs: RegExp[];
+  replacer: (match: any) => never[] | TextRun[];
+}

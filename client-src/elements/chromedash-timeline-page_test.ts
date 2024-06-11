@@ -1,7 +1,7 @@
-import { assert, fixture } from '@open-wc/testing';
-import { html } from 'lit';
+import {assert, fixture} from '@open-wc/testing';
+import {html} from 'lit';
 import sinon from 'sinon';
-import { ChromedashTimelinePage } from './chromedash-timeline-page';
+import {ChromedashTimelinePage} from './chromedash-timeline-page';
 import './chromedash-toast';
 
 describe('chromedash-timeline-page', () => {

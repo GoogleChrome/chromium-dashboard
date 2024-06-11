@@ -5,7 +5,7 @@
 
 import '@polymer/iron-icon';
 import '@polymer/iron-iconset-svg';
-import { html, render } from 'lit';
+import {html, render} from 'lit';
 
 const template = html`
   <iron-iconset-svg name="chromestatus" size="24">
