@@ -1,6 +1,7 @@
 import {LitElement, css, html} from 'lit';
 import {ref, createRef} from 'lit/directives/ref.js';
 import {live} from 'lit/directives/live.js';
+import {ifDefined} from 'lit/directives/if-defined.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import SlDropdown from '@shoelace-style/shoelace/dist/components/dropdown/dropdown.js';
 
@@ -225,7 +226,7 @@ export class ChromedashTypeahead extends LitElement {
             <chromedash-typeahead-item
               value=${c.name}
               doc=${c.doc}
-              prefix=${this.prefix}
+              prefix=${ifDefined(this.prefix)}
             ></chromedash-typeahead-item>
           `
         )}
