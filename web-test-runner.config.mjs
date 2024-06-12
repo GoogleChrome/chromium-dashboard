@@ -5,5 +5,5 @@ export default {
     playwrightLauncher({product: 'chromium'}),
     playwrightLauncher({product: 'firefox'}),
   ],
-  files: 'static/js/**/*.test.js', // Adjust this line to point to the static/js directory
+  files: 'static/dist/client-src/elements/**/*.test.js', // Adjust this line to point to the static/js directory
 };
