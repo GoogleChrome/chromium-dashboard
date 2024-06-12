@@ -17,14 +17,13 @@
       "allowJs": true,
       "checkJs": false,
       "resolveJsonModule": true,
-      "noEmit": true,
+      "noEmit": false,
       "outDir": "static/dist",
       "emitDeclarationOnly": false,
       "incremental": true,
       "lib": ["ES2023", "DOM"],
       "experimentalDecorators": true,
       "useDefineForClassFields": false,
-      "allowImportingTsExtensions": true
     },
     "include": [
       "client-src/js-src/**/*",

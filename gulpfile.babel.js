@@ -85,7 +85,7 @@ gulp.task('rollup', () => {
       rollupMinify({mangle: false, comments: false}),
       typescript({
         tsconfig: 'tsconfig.json',
-        compilerOptions: { declaration: true, declarationDir: './static/dist/types' }
+        compilerOptions: { declaration: true, declarationDir: 'static/dist/types' }
       }),
     ],
     onwarn: rollupIgnoreUndefinedWarning,
@@ -123,7 +123,7 @@ gulp.task('rollup-cjs', () => {
 // Run scripts through babel.
 gulp.task('js', () => {
   return gulp.src([
-    'client-src/js-src/**/*.js',
+    'client-src/js-src/**/*.{js,ts}',
     // openapi-client has imports and needs to use rollup.
     // exclude it from the list.
     // Else, the file will need to be treated as a module.
@@ -148,6 +148,12 @@ gulp.task('clean', () => {
   ], {dot: true});
 });
 
+// Bundle all js files into a single file.
+gulp.task('bundle', () => {
+    return gulp.src('static/js/**/*.js')
+      .pipe(concat('components.js'))
+      .pipe(gulp.dest('static/js')); // Output to static/js
+  });
 
 // Build production files, the default task
 gulp.task('default', gulp.series(
@@ -158,6 +164,7 @@ gulp.task('default', gulp.series(
   'js',
   'rollup',
   'rollup-cjs',
+  'bundle',
 ));
 
 // Build production files, the default task
