@@ -3,7 +3,7 @@
 // See: https://chromium.googlesource.com/infra/infra/+/refs/heads/main/appengine/monorail/static_src/autolink.js
 
 import {enhanceAutolink} from './chromedash-link.js';
-import {Component, TextRun} from './datatypes.ts';
+import {Component, TextRun} from './datatypes.js';
 const CRBUG_DEFAULT_PROJECT = 'chromium';
 const CRBUG_URL = 'https://bugs.chromium.org';
 const ISSUE_TRACKER_RE =

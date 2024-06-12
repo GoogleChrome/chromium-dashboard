@@ -3,6 +3,7 @@
 import rollupBabel from '@rollup/plugin-babel';
 import rollupResolve from '@rollup/plugin-node-resolve';
 import typescript from '@rollup/plugin-typescript';
+import {esbuildPlugin} from '@web/dev-server-esbuild';
 import {deleteAsync} from 'del';
 import gulp from 'gulp';
 import autoPrefixer from 'gulp-autoprefixer';
@@ -77,6 +78,7 @@ gulp.task('rollup', () => {
     ],
     plugins: [
       rollupResolve(),
+      esbuildPlugin({ts: true, target: 'auto', tsconfig: 'tsconfig.json'}),
       rollupBabel({
         babelHelpers: 'bundled',
         extensions: ['.js', '.ts'],
