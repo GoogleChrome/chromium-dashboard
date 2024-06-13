@@ -3,7 +3,6 @@
 import rollupBabel from '@rollup/plugin-babel';
 import rollupResolve from '@rollup/plugin-node-resolve';
 import typescript from '@rollup/plugin-typescript';
-import {esbuildPlugin} from '@web/dev-server-esbuild';
 import {deleteAsync} from 'del';
 import gulp from 'gulp';
 import autoPrefixer from 'gulp-autoprefixer';
@@ -78,7 +77,6 @@ gulp.task('rollup', () => {
     ],
     plugins: [
       rollupResolve(),
-      esbuildPlugin({ts: true, target: 'auto', tsconfig: 'tsconfig.json'}),
       rollupBabel({
         babelHelpers: 'bundled',
         extensions: ['.js', '.ts'],
@@ -126,6 +124,8 @@ gulp.task('rollup-cjs', () => {
 gulp.task('js', () => {
   return gulp.src([
     'client-src/js-src/**/*.js',
+    'client-src/elements/**/.js',
+    'client-src/elements/**/.ts',
     // openapi-client has imports and needs to use rollup.
     // exclude it from the list.
     // Else, the file will need to be treated as a module.
@@ -170,6 +170,7 @@ gulp.task('watch', gulp.series(
     gulp.watch([
       'client-src/js-src/**/*.js',
       'client-src/elements/*.js',
+      'client-src/elements/*.ts',
       'client-src/elements/css/**/*.js',
       'client-src/contexts/*.js',
     ], gulp.series(['js']));

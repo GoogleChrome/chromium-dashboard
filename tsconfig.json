@@ -13,7 +13,7 @@
       "noImplicitAny": false,
       "esModuleInterop": true,
       "skipLibCheck": true,
-      "rootDir": ".",
+      "rootDir": "client-src",
       "allowJs": true,
       "checkJs": false,
       "resolveJsonModule": true,
