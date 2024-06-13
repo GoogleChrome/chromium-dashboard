@@ -29,6 +29,10 @@ export const FEATURE_CSS = [
     [hidden] {
       display: none !important;
     }
+    .deprecated-ui {
+     color: var(--gray-2);
+    }
+
     button {
       background: transparent;
       border: 0;

@@ -67,11 +67,17 @@ export class ChromedashSearchHelpDialog extends LitElement {
             'Features that include or exclude words in any field.'
           )}
           ${this.renderExampleRow(
-            ['browsers.chrome.desktop=123'],
+            [
+              'browsers.chrome.desktop=123',
+              'browsers.chrome.desktop=current_stable+1',
+            ],
             'Features shipping in the specified milestone.'
           )}
           ${this.renderExampleRow(
-            ['browsers.chrome.desktop>=120 browsers.chrome.desktop<=122'],
+            [
+              'browsers.chrome.desktop=120..122',
+              'browsers.chrome.desktop=current_stable-1..current_stable+1',
+            ],
             'Features shipping in a milestone range.'
           )}
           ${this.renderExampleRow(
@@ -152,6 +158,12 @@ export class ChromedashSearchHelpDialog extends LitElement {
                 For dates, you can compute a date a certain number of days or
                 weeks before or after now. "<code>now-3d</code>" is 3 days ago,
                 and "<code>now+2w</code>" is 2 weeks from now.
+              </li>
+              <li>
+                For milestones, you can compute a milestone relative to the
+                current stable version of Chrome.
+                "<code>current_stable+1</code>" is 1 version after the current
+                stable version.
               </li>
             </ul>
           </li>
