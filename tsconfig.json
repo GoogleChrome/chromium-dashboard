@@ -17,7 +17,7 @@
       "allowJs": true,
       "checkJs": false,
       "resolveJsonModule": true,
-      "outDir": "static/dist",
+      "outDir": "build",
       "emitDeclarationOnly": false,
       "incremental": true,
       "lib": ["ES2023", "DOM"],
@@ -26,7 +26,8 @@
     },
     "include": [
       "client-src/js-src/**/*",
-      "client-src/elements/**/*"
+      "client-src/elements/**/*",
+      "client-src/components.js"
     ],
     "exclude": [
       "node_modules",

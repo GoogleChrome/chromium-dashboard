@@ -2,7 +2,6 @@
 
 import rollupBabel from '@rollup/plugin-babel';
 import rollupResolve from '@rollup/plugin-node-resolve';
-// import typescript from '@rollup/plugin-typescript';
 import {deleteAsync} from 'del';
 import gulp from 'gulp';
 import autoPrefixer from 'gulp-autoprefixer';
@@ -72,21 +71,18 @@ gulp.task('css', () => {
 gulp.task('rollup', () => {
   return rollup({
     input: [
-      'client-src/components.js',
-      'client-src/js-src/openapi-client.js',
+      'build/components.js',
+      'build/js-src/openapi-client.js',
     ],
     plugins: [
       rollupResolve(),
       rollupBabel({
         babelHelpers: 'bundled',
         extensions: ['.js', '.ts'],
-        plugins: ['@babel/plugin-transform-classes']
+        plugins: ['@babel/plugin-transform-classes'],
+        inputSourceMap: true,
     }),
       rollupMinify({mangle: false, comments: false}),
-    //   typescript({
-    //     tsconfig: 'tsconfig.json',
-    //     compilerOptions: { declaration: true, declarationDir: './static/dist/types' }
-    //   }),
     ],
     onwarn: rollupIgnoreUndefinedWarning,
   }).then(bundle => {
@@ -124,8 +120,6 @@ gulp.task('rollup-cjs', () => {
 gulp.task('js', () => {
   return gulp.src([
     'client-src/js-src/**/*.js',
-    'client-src/elements/**/.js',
-    'client-src/elements/**/.ts',
     // openapi-client has imports and needs to use rollup.
     // exclude it from the list.
     // Else, the file will need to be treated as a module.
