@@ -1,6 +1,7 @@
 {
     "compilerOptions": {
-      "module": "preserve",
+      "module": "ES2022",
+      "moduleResolution": "bundler",
       "plugins": [
         {
           "name": "ts-lit-plugin",
@@ -23,6 +24,7 @@
       "lib": ["ES2023", "DOM"],
       "experimentalDecorators": true,
       "useDefineForClassFields": false,
+      "target": "ES2022",
     },
     "include": [
       "client-src/js-src/**/*",

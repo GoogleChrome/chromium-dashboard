@@ -1,6 +1,5 @@
 'use strict';
 
-import rollupBabel from '@rollup/plugin-babel';
 import rollupResolve from '@rollup/plugin-node-resolve';
 import {deleteAsync} from 'del';
 import gulp from 'gulp';
@@ -76,12 +75,6 @@ gulp.task('rollup', () => {
     ],
     plugins: [
       rollupResolve(),
-      rollupBabel({
-        babelHelpers: 'bundled',
-        extensions: ['.js', '.ts'],
-        plugins: ['@babel/plugin-transform-classes'],
-        inputSourceMap: true,
-    }),
       rollupMinify({mangle: false, comments: false}),
     ],
     onwarn: rollupIgnoreUndefinedWarning,
@@ -102,7 +95,6 @@ gulp.task('rollup-cjs', () => {
     ],
     plugins: [
       rollupResolve(),
-      rollupBabel({babelHelpers: 'bundled'}),
       rollupMinify({mangle: false, comments: false}),
     ],
     onwarn: rollupIgnoreUndefinedWarning,
