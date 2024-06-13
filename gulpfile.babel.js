@@ -2,7 +2,7 @@
 
 import rollupBabel from '@rollup/plugin-babel';
 import rollupResolve from '@rollup/plugin-node-resolve';
-import typescript from '@rollup/plugin-typescript';
+// import typescript from '@rollup/plugin-typescript';
 import {deleteAsync} from 'del';
 import gulp from 'gulp';
 import autoPrefixer from 'gulp-autoprefixer';
@@ -83,10 +83,10 @@ gulp.task('rollup', () => {
         plugins: ['@babel/plugin-transform-classes']
     }),
       rollupMinify({mangle: false, comments: false}),
-      typescript({
-        tsconfig: 'tsconfig.json',
-        compilerOptions: { declaration: true, declarationDir: './static/dist/types' }
-      }),
+    //   typescript({
+    //     tsconfig: 'tsconfig.json',
+    //     compilerOptions: { declaration: true, declarationDir: './static/dist/types' }
+    //   }),
     ],
     onwarn: rollupIgnoreUndefinedWarning,
   }).then(bundle => {
