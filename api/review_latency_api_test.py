@@ -60,7 +60,7 @@ class ReviewLatencyAPITest(testing_config.CustomTestCase):
 
   def test_do_get__nothing_requested(self):
     """When no reviews have been started, the result is empty."""
-    actual = self.handler.do_get()
+    actual = self.handler.do_get(today=self.today)
     self.assertEqual([], actual)
 
   def test_do_get__normal(self):
@@ -71,7 +71,7 @@ class ReviewLatencyAPITest(testing_config.CustomTestCase):
     self.g_1_2.requested_on = self.last_week
     self.g_1_2.put()
 
-    actual = self.handler.do_get()
+    actual = self.handler.do_get(today=self.today)
 
     expected = [
         { 'feature': {'name': 'Feature one', 'id': self.fe_1_id},
@@ -99,7 +99,7 @@ class ReviewLatencyAPITest(testing_config.CustomTestCase):
     self.g_2_1.responded_on = self.yesterday
     self.g_2_1.put()
 
-    actual = self.handler.do_get()
+    actual = self.handler.do_get(today=self.today)
 
     expected = [
         { 'feature': {'name': 'Feature two', 'id': self.fe_2_id},
