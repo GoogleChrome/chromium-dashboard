@@ -218,7 +218,7 @@ class ChromedashFeature extends LitElement {
             ? html`
                 <span
                   class="tooltip"
-                  title="Deprecated.  Please click the feature name and use 'Edit fields' buttons."
+                  title="Deprecated. Please click the feature name and use 'Edit fields' buttons."
                 >
                   <a
                     href="/guide/edit/${this.feature.id}"
