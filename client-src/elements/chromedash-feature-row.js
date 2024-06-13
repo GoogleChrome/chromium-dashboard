@@ -38,6 +38,9 @@ class ChromedashFeatureRow extends LitElement {
           display: table-row;
           background: var(--table-row-background);
         }
+        sl-icon-button.deprecated-ui::part(base) {
+          color: var(--gray-2);
+        }
         td {
           padding: var(--content-padding-half);
           border-bottom: var(--table-divider);
@@ -103,8 +106,9 @@ class ChromedashFeatureRow extends LitElement {
   renderEditIcon(feature) {
     return html`
       <sl-icon-button
+        class="deprecated-ui"
         href="/guide/edit/${feature.id}"
-        title="Edit feature"
+        title="Deprecated. Please click the feature name and use 'Edit feature' buttons."
         name="pencil-fill"
       ></sl-icon-button>
     `;

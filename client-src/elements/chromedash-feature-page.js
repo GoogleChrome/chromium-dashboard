@@ -21,6 +21,10 @@ export class ChromedashFeaturePage extends LitElement {
       ...SHARED_STYLES,
       ...DETAILS_STYLES,
       css`
+        .deprecated-ui {
+          color: var(--gray-2);
+        }
+
         #feature {
           background: var(--card-background);
           border-radius: var(--default-border-radius);
@@ -395,13 +399,13 @@ export class ChromedashFeaturePage extends LitElement {
           ${renderHTMLIf(
             canEdit && !this.feature.is_enterprise_feature,
             html`
-              <span class="tooltip" title="Edit this feature">
+              <span class="tooltip" title="Deprecated.  Please use 'Edit fields' buttons instead.">
                 <a
                   href="/guide/edit/${this.featureId}"
                   class="editfeature"
                   data-tooltip
                 >
-                  <iron-icon icon="chromestatus:create"></iron-icon>
+                  <iron-icon class="deprecated-ui" icon="chromestatus:create"></iron-icon>
                 </a>
               </span>
             `
