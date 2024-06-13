@@ -399,13 +399,19 @@ export class ChromedashFeaturePage extends LitElement {
           ${renderHTMLIf(
             canEdit && !this.feature.is_enterprise_feature,
             html`
-              <span class="tooltip" title="Deprecated.  Please use 'Edit fields' buttons instead.">
+              <span
+                class="tooltip"
+                title="Deprecated.  Please use 'Edit fields' buttons instead."
+              >
                 <a
                   href="/guide/edit/${this.featureId}"
                   class="editfeature"
                   data-tooltip
                 >
-                  <iron-icon class="deprecated-ui" icon="chromestatus:create"></iron-icon>
+                  <iron-icon
+                    class="deprecated-ui"
+                    icon="chromestatus:create"
+                  ></iron-icon>
                 </a>
               </span>
             `
