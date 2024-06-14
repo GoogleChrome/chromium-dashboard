@@ -96,10 +96,6 @@ export class ExternalReviewer {
 
   /** Finds information about an issue label for this external reviewer.
    * @param {string} name
-   * @typedef {{
-   *   description: string,
-   *   variant: 'primary' | 'success' | 'neutral' | 'warning' | 'danger',
-   * }} LabelInfo
    * @returns {LabelInfo}
    */
   label(name) {
@@ -111,9 +107,7 @@ export class ExternalReviewer {
    * @param {Record<string, LabelInfo>} labels
    */
   constructor(icon, labels) {
-    /** @type {string} @readonly */
     this.icon = icon;
-    /** @type {Record<string, LabelInfo>} */
     this._labels = labels;
   }
 }
