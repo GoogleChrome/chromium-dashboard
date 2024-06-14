@@ -1,5 +1,6 @@
 import {html} from 'lit';
 import * as enums from './form-field-enums';
+import {Feature, FormattedFeature} from './datatypes';
 
 const COMMA_SEPARATED_FIELDS = [
   'owner',
@@ -23,8 +24,8 @@ const LINE_SEPARATED_FIELDS = [
  * The feature object from API is formatted by the feature_to_legacy_json
  * function in internals/feature_helpers.py
  */
-export function formatFeatureForEdit(feature) {
-  const formattedFeature = {
+export function formatFeatureForEdit(feature: Feature): FormattedFeature {
+  const formattedFeature: FormattedFeature = {
     ...feature,
     category: feature.category_int,
     enterprise_feature_categories: Array.from(
