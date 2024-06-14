@@ -105,4 +105,3 @@ import './elements/chromedash-userlist';
 import './elements/chromedash-x-meter';
 import './elements/chromedash-enterprise-page';
 import './elements/chromedash-enterprise-release-notes-page';
-import './elements/datatypes';
