@@ -4,6 +4,12 @@ declare global {
   }
 }
 
+declare global {
+  interface Window {
+    google: any;
+  }
+}
+
 //chromedash-timeline
 export interface Property {
   [key: string]: any;
