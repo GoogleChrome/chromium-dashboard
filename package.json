@@ -80,7 +80,6 @@
     "color-string": ">=1.9.0",
     "del": "^7.1.0",
     "dot-prop": ">=9.0.0",
-    "esbuild": "^0.21.5",
     "eslint": "^9.4.0",
     "eslint-config-prettier": "^9.1.0",
     "glob-parent": ">=6.0.2",

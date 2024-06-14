@@ -8,11 +8,10 @@ export class ExternalReviewer {
   _labels: Record<string, LabelInfo>;
   /** Finds reviewer information based on their github repo name.
    *
-   * @param {string} repo Github repository name in the form 'org/name'.
    * @returns {ExternalReviewer | undefined} undefined if the repo doesn't hold external
    * reviewers.
    */
-  static get(repo) {
+  static get(repo: string) {
     switch (repo) {
       case 'mozilla/standards-positions':
         return new ExternalReviewer(
@@ -95,18 +94,13 @@ export class ExternalReviewer {
   }
 
   /** Finds information about an issue label for this external reviewer.
-   * @param {string} name
    * @returns {LabelInfo}
    */
-  label(name) {
+  label(name: string) {
     return this._labels[name];
   }
 
-  /** @private
-   * @param {string} icon
-   * @param {Record<string, LabelInfo>} labels
-   */
-  constructor(icon, labels) {
+  constructor(icon: string, labels: Record<string, LabelInfo>) {
     this.icon = icon;
     this._labels = labels;
   }
