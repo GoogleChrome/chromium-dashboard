@@ -117,7 +117,7 @@ export const FEATURE_TYPES_WITHOUT_ENTERPRISE: Record<string, [number, string, s
     'Deprecate and remove an old feature.',
   ],
 };
-export const FEATURE_TYPES = {
+export const FEATURE_TYPES: Record<string, [number, string, string]>= {
   ...FEATURE_TYPES_WITHOUT_ENTERPRISE,
   FEATURE_TYPE_ENTERPRISE_ID: [
     4,
