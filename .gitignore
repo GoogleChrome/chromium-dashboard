@@ -49,3 +49,6 @@ tsconfig.tsbuildinfo
 
 # rollup cache
 .rollup.cache/
+
+# build output
+build/
