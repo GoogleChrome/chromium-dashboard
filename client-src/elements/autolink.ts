@@ -21,7 +21,7 @@ const NUMERIC_SHORT_LINK_RE =
 const IMPLIED_LINK_RE =
   /(?!@)(^|[^-\/._])\b[a-z]((-|\.)?[a-z0-9])+\.(com|net|org|edu|dev)\b(\/[^\s<]*)?/gi;
 const IS_LINK_RE = /()\b(https?:\/\/|ftp:\/\/|mailto:)([^\s<]+)/gi;
-const LINK_TRAILING_CHARS: [string | null, string][] = [
+const LINK_TRAILING_CHARS = [
   [null, ':'],
   [null, '.'],
   [null, ','],
@@ -31,7 +31,7 @@ const LINK_TRAILING_CHARS: [string | null, string][] = [
   ['{', '}'],
   ["'", "'"],
   ['"', '"'],
-];
+] as const;
 const GOOG_SHORT_LINK_RE =
   /^(b|t|o|omg|cl|cr|go|g|shortn|who|teams|fxr|fxrev|fxb|tqr)\/.*/gi;
 
