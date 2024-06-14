@@ -1,26 +1,24 @@
 import {LitElement, css, html, nothing} from 'lit';
-import {showToastMessage} from './utils.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import {showToastMessage} from './utils.js';
+import {property, state} from 'lit/decorators.js';
+import {Property} from './datatypes.js';
 
 class ChromedashTimeline extends LitElement {
-  static get properties() {
-    return {
-      type: {type: String},
-      view: {type: String},
-      props: {attribute: false},
-      selectedBucketId: {attribute: false},
-      showAllHistoricalData: {attribute: false},
-    };
-  }
+  @property({type: String})
+  type = '';
 
-  constructor() {
-    super();
-    this.selectedBucketId = '1';
-    this.showAllHistoricalData = false;
-    this.type = '';
-    this.view = '';
-    this.props = [];
-  }
+  @property({type: String})
+  view = '';
+
+  @property({attribute: false})
+  props: Property[] = [];
+
+  @property({attribute: false})
+  selectedBucketId = '1';
+
+  @property({attribute: false})
+  showAllHistoricalData = false;
 
   static get styles() {
     return [
@@ -107,7 +105,7 @@ class ChromedashTimeline extends LitElement {
     const inputValue = e.currentTarget.value;
     const feature = this.props.find(el => el[1] === inputValue);
     if (feature) {
-      this.selectedBucketId = feature[0];
+      this.selectedBucketId = feature[0].toString();
     } else if (inputValue) {
       showToastMessage('No matching features. Please try again!');
     }
@@ -128,7 +126,7 @@ class ChromedashTimeline extends LitElement {
     datatable.addColumn({type: 'string', role: 'annotation'});
     datatable.addColumn({type: 'string', role: 'annotationText'});
 
-    const rowArray = [];
+    const rowArray: any[] = [];
     for (let i = 0, item; (item = data[i]); ++i) {
       const dateStr = item.date.split('-');
       const date = new Date();
@@ -137,7 +135,11 @@ class ChromedashTimeline extends LitElement {
         parseInt(dateStr[1]) - 1,
         parseInt(dateStr[2])
       );
-      const row = [date, parseFloat((item.day_percentage * 100).toFixed(6))];
+
+      const row: any[] = [
+        date,
+        parseFloat((item.day_percentage * 100).toFixed(6)),
+      ];
       // Add annotation where UMA data switched to new stuff.
       if (item.date === '2017-10-27') {
         row.push('A', 'Modernized metrics');
@@ -184,7 +186,7 @@ class ChromedashTimeline extends LitElement {
       );
     }
 
-    const chartEl = this.shadowRoot.querySelector('#chart');
+    const chartEl = this.shadowRoot!.querySelector('#chart');
     const chart = new window.google.visualization.LineChart(chartEl);
     chart.draw(view, {
       backgroundColor: 'white',
@@ -231,15 +233,15 @@ class ChromedashTimeline extends LitElement {
     this._renderHTTPArchiveData();
 
     // the chartEl's innerHTML will get overwritten once the chart is loaded
-    const chartEl = this.shadowRoot.querySelector('#chart');
-    if (!chartEl.innerHTML.includes('sl-progress-bar')) {
-      chartEl.insertAdjacentHTML(
+    const chartEl = this.shadowRoot!.querySelector('#chart');
+    if (!chartEl!.innerHTML.includes('sl-progress-bar')) {
+      chartEl!.insertAdjacentHTML(
         'afterbegin',
         '<sl-progress-bar indeterminate></sl-progress-bar>'
       );
     }
 
-    const options = {credentials: 'omit'};
+    const options: RequestInit = {credentials: 'omit'};
     fetch(url, options)
       .then(res => res.json())
       .then(response => {
@@ -268,19 +270,25 @@ class ChromedashTimeline extends LitElement {
     );
     if (feature) {
       let featureName = feature[1];
-      const inputEl = this.shadowRoot.querySelector('#datalist-input');
-      inputEl.value = featureName;
+      const inputEl = this.shadowRoot!.querySelector(
+        '#datalist-input'
+      ) as HTMLInputElement;
+      inputEl!.value = featureName;
 
       if (this.type == 'css') {
         featureName = convertToCamelCaseFeatureName(featureName);
       }
       const REPORT_ID = '1M8kXOqPkwYNKjJhtag_nvDNJCpvmw_ri';
       const dsEmbedUrl = `https://datastudio.google.com/embed/reporting/${REPORT_ID}/page/tc5b?params=%7B"df3":"include%25EE%2580%25800%25EE%2580%2580IN%25EE%2580%2580${featureName}"%7D`;
-      const hadEl = this.shadowRoot.querySelector('#http-archive-data');
-      hadEl.src = dsEmbedUrl;
+      const hadEl = this.shadowRoot!.querySelector(
+        '#http-archive-data'
+      ) as HTMLIFrameElement;
+      hadEl!.src = dsEmbedUrl;
 
-      const bigqueryEl = this.shadowRoot.querySelector('#bigquery');
-      bigqueryEl.textContent = `#standardSQL
+      const bigqueryEl = this.shadowRoot!.querySelector(
+        '#bigquery'
+      ) as HTMLElement;
+      bigqueryEl!.textContent = `#standardSQL
 SELECT yyyymmdd, client, pct_urls, sample_urls
 FROM \`httparchive.blink_features.usage\`
 WHERE feature = '${featureName}'

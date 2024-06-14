@@ -29,7 +29,8 @@ class OriginTrialsAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = FeatureEntry(
-        feature_type=1, name='feature one', summary='sum', category=1)
+        feature_type=1, name='feature one', summary='sum', category=1,
+        owner_emails=['owner@example.com'])
     self.feature_1.put()
     self.feature_1_id = self.feature_1.key.integer_id()
     self.ot_stage_1 = Stage(
@@ -121,6 +122,71 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
     for kind in [FeatureEntry, Stage]:
       for entity in kind.query():
         entity.key.delete()
+
+  def test_check_post_permissions__anon(self):
+    """Anon users cannot request origin trials."""
+    testing_config.sign_out()
+    with test_app.test_request_context(
+        self.request_path, method='POST', json={}):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.check_post_permissions(self.feature_1_id)
+
+  def test_check_post_permissions__rando(self):
+    """Random users cannot request origin trials."""
+    testing_config.sign_in('user@example.com', 1234567890)
+    with test_app.test_request_context(
+        self.request_path, method='POST', json={}):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.check_post_permissions(self.feature_1_id)
+
+  def test_check_post_permissions__googler_chromie(self):
+    """Googlers and chromies can request origin trials."""
+    testing_config.sign_in('user@google.com', 1234567890)
+    with test_app.test_request_context(
+        self.request_path, method='POST', json={}):
+      result = self.handler.check_post_permissions(self.feature_1_id)
+    self.assertEqual({}, result)
+
+    testing_config.sign_in('user@chromium.org', 1234567890)
+    with test_app.test_request_context(
+        self.request_path, method='POST', json={}):
+      result = self.handler.check_post_permissions(self.feature_1_id)
+    self.assertEqual({}, result)
+
+  def test_check_post_permissions__feature_owner(self):
+    """Feature owners may request an OT."""
+    testing_config.sign_in('owner@example.com', 1234567890)
+    with test_app.test_request_context(
+        self.request_path, method='POST', json={}):
+      result = self.handler.check_post_permissions(self.feature_1_id)
+    self.assertEqual({}, result)
+
+  def test_do_post__feature_not_found(self):
+    """Give a 404 if the no such feature exists."""
+    kwargs = {'feature_id': '999'}
+    with test_app.test_request_context(self.request_path):
+      with self.assertRaises(werkzeug.exceptions.NotFound):
+       self.handler.do_post(**kwargs)
+
+  def test_do_post__stage_not_found(self):
+    """Give a 404 if the no such stage exists."""
+    kwargs = {
+        'feature_id': str(self.feature_1_id),
+        'stage_id': '999'}
+    with test_app.test_request_context(self.request_path):
+      with self.assertRaises(werkzeug.exceptions.NotFound):
+       self.handler.do_post(**kwargs)
+
+  def test_do_post__anon(self):
+    """Anon users cannot request origin trials."""
+    testing_config.sign_out()
+    kwargs = {
+        'feature_id': str(self.feature_1_id),
+        'stage_id': str(self.ot_stage_1.key.integer_id())}
+    with test_app.test_request_context(
+        self.request_path, method='POST', json={}):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.do_post(**kwargs)
 
   @mock.patch('api.origin_trials_api.get_chromium_file')
   def test_validate_creation_args__valid(self, mock_get_chromium_file):

@@ -43,14 +43,24 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
     self.stage_1_ship.put()
 
     self.feature_2 = FeatureEntry(
-        name='feature b', summary='sum', owner_emails=['owner@example.com'],
-        category=1, impl_status_chrome=3)
+      name='feature b',
+      summary='sum',
+      owner_emails=['owner@example.com'],
+      category=1,
+      impl_status_chrome=3,
+      accurate_as_of=datetime.datetime(2023, 6, 1),
+    )
     self.feature_2.put()
     self.feature_2_id = self.feature_2.key.integer_id()
 
     self.feature_3 = FeatureEntry(
-        name='feature c', summary='sum', owner_emails=['random@example.com'],
-        category=1, impl_status_chrome=4)
+      name='feature c',
+      summary='sum',
+      owner_emails=['random@example.com'],
+      category=1,
+      impl_status_chrome=4,
+      accurate_as_of=datetime.datetime(2024, 6, 1),
+    )
     self.feature_3.put()
     self.feature_3_id = self.feature_3.key.integer_id()
 
@@ -139,6 +149,22 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
     self.assertCountEqual(
         [self.feature_1_id, self.feature_2_id, self.feature_3_id],
         [key.integer_id() for key in actual])
+
+  def test_single_field_query_async__inequality_nulls_first(self):
+    """accurate_as_of treats None as before any comparison value."""
+    actual_promise = search_queries.single_field_query_async(
+      'accurate_as_of', '<', [datetime.datetime(2024, 1, 1)]
+    )
+    actual = actual_promise.get_result()
+    self.assertCountEqual(
+      [self.feature_1_id, self.feature_2_id], [key.integer_id() for key in actual]
+    )
+
+    actual_promise = search_queries.single_field_query_async(
+      'accurate_as_of', '>', [datetime.datetime(2024, 1, 1)]
+    )
+    actual = actual_promise.get_result()
+    self.assertCountEqual([self.feature_3_id], [key.integer_id() for key in actual])
 
   def check_wrong_type(self, field_name, bad_values):
     with self.assertRaises(ValueError) as cm:

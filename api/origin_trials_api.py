@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import flask
 import json5
 import logging
 import requests
@@ -119,6 +120,15 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
 
     return validation_errors
 
+  def check_post_permissions(self, feature_id) -> flask.Response | dict:
+    """Raise an exception or redirect if the user cannot request OT."""
+    if permissions.is_google_or_chromium_account(self.get_current_user()):
+      return {}
+
+    redirect_resp = permissions.validate_feature_edit_permission(
+        self, feature_id)
+    return redirect_resp
+
   def do_post(self, **kwargs):
     feature_id = int(kwargs['feature_id'])
     # Check that feature ID is valid.
@@ -136,10 +146,9 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
     if ot_stage is None:
       self.abort(404, msg=f'Stage {ot_stage_id} not found')
 
-    # Check that user has permission to edit the feature
-    # associated with the origin trial.
-    redirect_resp = permissions.validate_feature_edit_permission(
-        self, feature_id)
+    # Check that user has permission to edit the feature associated
+    # with the origin trial, or has a @google or @chromium account.
+    redirect_resp = self.check_post_permissions(feature_id)
     if redirect_resp:
       return redirect_resp
 

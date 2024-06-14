@@ -30,7 +30,9 @@ from internals.review_models import Vote, Gate
 
 
 FIELDS_REQUIRING_LGTMS = [
-    approval_defs.ShipApproval, approval_defs.ExperimentApproval,
+    approval_defs.PlanApproval,
+    approval_defs.ShipApproval,
+    approval_defs.ExperimentApproval,
     approval_defs.ExtendExperimentApproval,
     ]
 
@@ -39,12 +41,14 @@ FIELDS_REQUIRING_LGTMS = [
 PREFIX_RE = re.compile(r're:|fwd:|\[[-._\w]+\]')
 
 INTEND_PATTERN = r'(intent|intend(ing)?|request(ing)?) (to|for)'
-SHIP_PATTERN = r'(ship|remove|\w+ and ship|\w+ and remove)'
+PLAN_PATTERN = r'(deprecate and remove)'
+SHIP_PATTERN = r'(ship|remove|\w+ and ship)'
 PROTO_PATTERN = r'(prototype|prototyping|implement|deprecate)'
 EXPERIMENT_PATTERN = r'(experiment|deprecation)'
 EXTEND_PATTERN = (r'(continue|continuing|extend|extending) '
                   r'(experiment|origin|deprecation)')
 
+PLAN_RE = re.compile('%s %s' % (INTEND_PATTERN, PLAN_PATTERN))
 SHIP_RE = re.compile('%s %s' % (INTEND_PATTERN, SHIP_PATTERN))
 PROTO_RE = re.compile('%s %s' % (INTEND_PATTERN, PROTO_PATTERN))
 EXPERIMENT_RE = re.compile('%s %s' % (INTEND_PATTERN, EXPERIMENT_PATTERN))
@@ -63,6 +67,9 @@ def detect_field(subject):
   subject = subject.replace('&', ' and ')
   subject = subject.replace('+', ' and ')
   subject = ' '.join(subject.split())  # collapse multiple spaces
+
+  if PLAN_RE.match(subject):
+    return approval_defs.PlanApproval
 
   if SHIP_RE.match(subject):
     return approval_defs.ShipApproval
@@ -350,7 +357,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     feature_id = feature.key.integer_id()
 
     # Case 1: Detect LGTMs in body, verify that sender has permission,
-    # set an approval value, and clear the original REVIEW_REQUESTED if
+    # set an approval value, and update the gate state if
     # the approval rule (1 or 3 LTGMs) is satisfied.
     if (detect_lgtm(body) and
         is_lgtm_allowed(from_addr, feature, approval_field)):
@@ -366,14 +373,13 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
         notifier_helpers.send_trial_extension_approved_notification(
             feature, stage, gate.key.integer_id())
 
-    # Case 2: Create a review request for any discussion that does not already
-    # have any approval values stored.
+    # Case 2: Create a review request and set gate state for any
+    # discussion that does not already have any approval values
+    # stored.
     elif is_new_thread:
       logging.info('found new thread')
       if approval_field in FIELDS_REQUIRING_LGTMS:
         logging.info('requesting a review')
-        # TODO(jrobbins): set gate state rather than creating
-        # REVIEW_REQUESTED votes.
         approval_defs.set_vote(feature_id, approval_field.field_id,
             Vote.REVIEW_REQUESTED, from_addr, gate.key.integer_id())
 
