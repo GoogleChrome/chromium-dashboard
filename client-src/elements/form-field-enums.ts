@@ -35,11 +35,12 @@ export const ENTERPRISE_FEATURE_CATEGORIES: Record<string, [number, string]> = {
   MANAGEMENT: [3, 'Management'],
 };
 
-export const ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME: Record<number, string> = {
-  1: 'Security/Privacy', // SECURITYANDPRIVACY
-  2: 'User Productivity/Apps', // USERPRODUCTIVITYANDAPPS
-  3: 'Management', // MANAGEMENT
-};
+export const ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME: Record<number, string> =
+  {
+    1: 'Security/Privacy', // SECURITYANDPRIVACY
+    2: 'User Productivity/Apps', // USERPRODUCTIVITYANDAPPS
+    3: 'Management', // MANAGEMENT
+  };
 
 export const PLATFORM_CATEGORIES: Record<string, [number, string]> = {
   PLATFORM_ANDROID: [1, 'Android'],
@@ -91,7 +92,10 @@ export const ROLLOUT_IMPACT_DISPLAYNAME: Record<number, string> = {
 
 // FEATURE_TYPES object is organized as [intValue, stringLabel, description],
 // the descriptions are used only for the descriptions of feature_type_radio_group
-export const FEATURE_TYPES_WITHOUT_ENTERPRISE: Record<string, [number, string, string]> = {
+export const FEATURE_TYPES_WITHOUT_ENTERPRISE: Record<
+  string,
+  [number, string, string]
+> = {
   FEATURE_TYPE_INCUBATE_ID: [
     0,
     'New feature incubation',
@@ -117,7 +121,7 @@ export const FEATURE_TYPES_WITHOUT_ENTERPRISE: Record<string, [number, string, s
     'Deprecate and remove an old feature.',
   ],
 };
-export const FEATURE_TYPES: Record<string, [number, string, string]>= {
+export const FEATURE_TYPES: Record<string, [number, string, string]> = {
   ...FEATURE_TYPES_WITHOUT_ENTERPRISE,
   FEATURE_TYPE_ENTERPRISE_ID: [
     4,

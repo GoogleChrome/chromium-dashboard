@@ -20,7 +20,8 @@ import {
   STAGE_TYPES_SHIPPING,
   ENTERPRISE_IMPACT,
 } from './form-field-enums';
-import { error } from 'console';
+import {error} from 'console';
+import {FieldAttrs, MilestoneRange, Field} from './datatypes';
 
 /* Patterns from https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch04s01.html
  * Removing single quote ('), backtick (`), and pipe (|) since they are risky unless properly escaped everywhere.
@@ -38,48 +39,6 @@ const PORTNUM_REGEX: string = '(:[0-9]+)?';
 const URL_REGEX: string =
   '(https?)://' + DOMAIN_REGEX + PORTNUM_REGEX + String.raw`(/\S*)?`;
 const URL_PADDED_REGEX: string = String.raw`\s*` + URL_REGEX + String.raw`\s*`;
-
-interface FieldAttrs {
-    title?: string;
-    type?: string;
-    multiple?: boolean;
-    placeholder?: string;
-    pattern?: string;
-    rows?: number;
-    cols?: number;
-    maxlength?: number;
-    chromedash_single_pattern?: string;
-    chromedash_split_pattern?: string;
-    disabled?: boolean;
-    min?: number;
-}
-
-interface MilestoneRange {
-    earlier?: string;
-    later?: string;
-    allEarlier?: string;
-    allLater?: string;
-    warning?: string;
-    error?: string;
-}
-
-interface Field{
-    type?: string;
-    name?: string;
-    attrs?: FieldAttrs;
-    required?: boolean;
-    label?: string;
-    help_text?: any;
-    enterprise_help_text?: any;
-    extra_help?: any;
-    enterprise_extra_help?: any;
-    check?: Function;
-    initial?: number | boolean;
-    enterprise_initial?: number;
-    choices?: any; //any for now, needs specification
-    displayLabel?: string;
-    disabled?: boolean;
-}
 
 const URL_FIELD_ATTRS: FieldAttrs = {
   title: 'Enter a full URL https://...',
@@ -2041,7 +2000,11 @@ export function makeDisplaySpecs(fieldNames: string[]) {
 }
 
 // Find the minimum milestone, used for shipped milestones.
-function findMinMilestone(fieldName: string, stageTypes: Set<number>, getFieldValue: any) {
+function findMinMilestone(
+  fieldName: string,
+  stageTypes: Set<number>,
+  getFieldValue: any
+) {
   let minMilestone = Infinity;
   // Iterate through all stages that are in stageTypes.
   const feature = getFieldValue.feature;
@@ -2058,7 +2021,11 @@ function findMinMilestone(fieldName: string, stageTypes: Set<number>, getFieldVa
 }
 
 // Find the maximum milestone, used for OT start milestones.
-function findMaxMilestone(fieldName: string, stageTypes: Set<number>, getFieldValue: any) {
+function findMaxMilestone(
+  fieldName: string,
+  stageTypes: Set<number>,
+  getFieldValue: any
+) {
   let maxMilestone = -Infinity;
   // Iterate through all stages that are in stageTypes.
   const feature = getFieldValue.feature;
@@ -2076,37 +2043,44 @@ function findMaxMilestone(fieldName: string, stageTypes: Set<number>, getFieldVa
 
 // Check that the earlier milestone is before all later milestones.
 // Used with OT start milestone and all shipped milestones.
-function checkEarlierBeforeAllLaterMilestones(fieldPair: MilestoneRange, getFieldValue: any) {
+function checkEarlierBeforeAllLaterMilestones(
+  fieldPair: MilestoneRange,
+  getFieldValue: any
+) {
   const {earlier, allLater, warning} = fieldPair;
   const stageTypes =
     // Only shipping, for now.
-    allLater && SHIPPED_MILESTONE_FIELDS.has(allLater) ? STAGE_TYPES_SHIPPING : null;
+    allLater && SHIPPED_MILESTONE_FIELDS.has(allLater)
+      ? STAGE_TYPES_SHIPPING
+      : null;
   const earlierValue = getNumericValue(earlier, getFieldValue);
   if (stageTypes && allLater) {
     const laterValue = findMinMilestone(allLater, stageTypes, getFieldValue);
     if (
-        earlierValue != null &&
-        laterValue != null &&
-        Number(earlierValue) >= laterValue
-      ) {
-        return warning
-          ? {
-              warning,
-            }
-          : {
-              error: `Earlier milestone #${earlierValue} should be before shipped milestone #${laterValue}.`,
-            };
-      }
+      earlierValue != null &&
+      laterValue != null &&
+      Number(earlierValue) >= laterValue
+    ) {
+      return warning
+        ? {
+            warning,
+          }
+        : {
+            error: `Earlier milestone #${earlierValue} should be before shipped milestone #${laterValue}.`,
+          };
+    }
   }
-
-
 }
 
 // Check that all earlier milestones before a later milestone.
 // Used with all OT start milestones and a shipped milestone.
-function checkAllEarlierBeforeLaterMilestone(fieldPair: MilestoneRange, getFieldValue: any) {
+function checkAllEarlierBeforeLaterMilestone(
+  fieldPair: MilestoneRange,
+  getFieldValue: any
+) {
   const {allEarlier, later, warning, error} = fieldPair;
-  const stageTypes = allEarlier &&
+  const stageTypes =
+    allEarlier &&
     // Only origin trials or dev trials, for now.
     OT_MILESTONE_START_FIELDS.has(allEarlier)
       ? STAGE_TYPES_ORIGIN_TRIAL
@@ -2115,7 +2089,11 @@ function checkAllEarlierBeforeLaterMilestone(fieldPair: MilestoneRange, getField
         : null;
   // console.info(`stageTypes: ${stageTypes}`);
   if (stageTypes && allEarlier) {
-    const earlierValue = findMaxMilestone(allEarlier, stageTypes, getFieldValue);
+    const earlierValue = findMaxMilestone(
+      allEarlier,
+      stageTypes,
+      getFieldValue
+    );
     const laterValue = getNumericValue(later, getFieldValue);
     // console.info(`Earlier: ${earlierValue} ... later: ${laterValue}`);
     if (
@@ -2128,10 +2106,11 @@ function checkAllEarlierBeforeLaterMilestone(fieldPair: MilestoneRange, getField
             warning,
           }
         : {
-            error: error ||
+            error:
+              error ||
               `Earlier milestone #${earlierValue} should be before shipped milestone #${laterValue}.`,
-        }
-    };
+          };
+    }
   }
 }
 

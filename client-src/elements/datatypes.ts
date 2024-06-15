@@ -30,6 +30,7 @@ export type LabelInfo = {
   variant: 'primary' | 'success' | 'neutral' | 'warning' | 'danger';
 };
 
+//form-definition
 export interface Browser {
   chrome: {
     bug: string;
@@ -116,4 +117,60 @@ export interface FormattedFeature {
   web_dev_views_notes: string;
   other_views_notes: string;
   [key: string]: any; // Allow additional properties
+}
+
+//form-field-specs
+export interface FieldAttrs {
+  title?: string;
+  type?: string;
+  multiple?: boolean;
+  placeholder?: string;
+  pattern?: string;
+  rows?: number;
+  cols?: number;
+  maxlength?: number;
+  chromedash_single_pattern?: string;
+  chromedash_split_pattern?: string;
+  disabled?: boolean;
+  min?: number;
+}
+
+export interface MilestoneRange {
+  earlier?: string;
+  later?: string;
+  allEarlier?: string;
+  allLater?: string;
+  warning?: string;
+  error?: string;
+}
+
+export interface Field {
+  type?: string;
+  name?: string;
+  attrs?: FieldAttrs;
+  required?: boolean;
+  label?: string;
+  help_text?: any;
+  enterprise_help_text?: any;
+  extra_help?: any;
+  enterprise_extra_help?: any;
+  check?: Function;
+  initial?: number | boolean;
+  enterprise_initial?: number;
+  choices?: any; //any for now, needs specification
+  displayLabel?: string;
+  disabled?: boolean;
+}
+
+//form-definition
+export interface Section {
+  name?: string;
+  fields: string[];
+  isImplementationSection?: boolean;
+  implStatusValue?: number | null;
+}
+
+export interface MetadataFields {
+  name: string;
+  sections: Section[];
 }
