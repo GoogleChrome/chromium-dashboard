@@ -1,21 +1,20 @@
 'use strict';
 
-import gulp from 'gulp';
-import babel from 'gulp-babel';
-import dartSass from 'sass';
-import gulpSass from 'gulp-sass';
-const sass = gulpSass( dartSass );
-import concat from 'gulp-concat';
-import { deleteAsync } from 'del';
-import uglifyEs from 'gulp-uglify-es';
-const uglify = uglifyEs.default;
-import rename from 'gulp-rename';
-import license from 'gulp-license';
-import autoPrefixer from 'gulp-autoprefixer';
-import { rollup } from 'rollup';
 import rollupResolve from '@rollup/plugin-node-resolve';
-import rollupBabel from '@rollup/plugin-babel';
+import {deleteAsync} from 'del';
+import gulp from 'gulp';
+import autoPrefixer from 'gulp-autoprefixer';
+import babel from 'gulp-babel';
+import concat from 'gulp-concat';
+import license from 'gulp-license';
+import rename from 'gulp-rename';
+import gulpSass from 'gulp-sass';
+import uglifyEs from 'gulp-uglify-es';
+import {rollup} from 'rollup';
 import rollupMinify from 'rollup-plugin-babel-minify';
+import dartSass from 'sass';
+const sass = gulpSass( dartSass );
+const uglify = uglifyEs.default;
 
 function uglifyJS() {
   return uglify({
@@ -60,7 +59,7 @@ gulp.task('styles', () => {
     .pipe(gulp.dest('static/css'));
 });
 
-gulp.task('css', function() {
+gulp.task('css', () => {
   return gulp.src([
     'node_modules/@shoelace-style/shoelace/dist/themes/light.css',
    ])
@@ -71,12 +70,11 @@ gulp.task('css', function() {
 gulp.task('rollup', () => {
   return rollup({
     input: [
-      'client-src/components.js',
-      'client-src/js-src/openapi-client.js',
+      'build/components.js',
+      'build/js-src/openapi-client.js',
     ],
     plugins: [
       rollupResolve(),
-      rollupBabel({babelHelpers: 'bundled'}),
       rollupMinify({mangle: false, comments: false}),
     ],
     onwarn: rollupIgnoreUndefinedWarning,
@@ -97,7 +95,6 @@ gulp.task('rollup-cjs', () => {
     ],
     plugins: [
       rollupResolve(),
-      rollupBabel({babelHelpers: 'bundled'}),
       rollupMinify({mangle: false, comments: false}),
     ],
     onwarn: rollupIgnoreUndefinedWarning,
@@ -154,11 +151,12 @@ gulp.task('default', gulp.series(
 // Build production files, the default task
 gulp.task('watch', gulp.series(
   'default',
-  function watch() {
+  () => {
     gulp.watch(['client-src/sass/**/*.scss'], gulp.series('styles'));
     gulp.watch([
       'client-src/js-src/**/*.js',
       'client-src/elements/*.js',
+      'client-src/elements/*.ts',
       'client-src/elements/css/**/*.js',
       'client-src/contexts/*.js',
     ], gulp.series(['js']));

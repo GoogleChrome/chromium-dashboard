@@ -96,8 +96,8 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
     };
   }
 
-  /** @type {'tag' | 'gecko' | 'webkit'} */
-  reviewer;
+  /** @type {'tag' | 'gecko' | 'webkit' | undefined} */
+  reviewer = undefined;
 
   /** @type {import('chromestatus-openapi').DefaultApiInterface} */
   _client;
@@ -108,6 +108,17 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
     this._client = window.csOpenApiClient;
     this._reviewsTask = new Task(this, {
       task: async ([reviewer], {signal}) => {
+        if (reviewer === undefined) {
+          throw new Error('Element must have "reviewer" attribute.', {
+            cause: this,
+          });
+        }
+        if (!['tag', 'gecko', 'webkit'].includes(reviewer)) {
+          throw new Error(
+            `Reviewer (${reviewer}) must be 'tag', 'gecko', or 'webkit'.`,
+            {cause: this}
+          );
+        }
         const response = await this._client.listExternalReviews(
           {reviewGroup: reviewer},
           {signal}

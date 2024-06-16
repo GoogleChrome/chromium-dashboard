@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   db:
     image: google/cloud-sdk:402.0.0-emulators
