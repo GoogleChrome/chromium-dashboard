@@ -72,7 +72,10 @@ export interface Standards {
   maturity: {val: number; text: string};
 }
 
+type FeatureName = string;
+
 export interface Feature {
+  name?: FeatureName;
   category_int: number;
   enterprise_feature_categories: string[];
   feature_type_int: number;
@@ -156,7 +159,7 @@ export interface MilestoneRange {
 
 export interface Field {
   type?: string;
-  name?: keyof FormattedFeature;
+  name?: FeatureName;
   attrs?: FieldAttrs;
   required?: boolean;
   label?: string;
