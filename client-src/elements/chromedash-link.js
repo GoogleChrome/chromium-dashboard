@@ -143,6 +143,7 @@ function enhanceGithubIssueLink(featureLink, text) {
   // If this issue is an external review of the feature, find the summary description.
   const externalReviewer = ExternalReviewer.get(repo);
   let stateDescription = undefined;
+  /** @type {import('@shoelace-style/shoelace').SlBadge["variant"] | undefined} */
   let stateVariant = undefined;
   if (externalReviewer) {
     for (const label of information.labels) {

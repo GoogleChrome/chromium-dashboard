@@ -22,5 +22,5 @@ WORKDIR /work
 # Cache the infrequent but time consuming changes early
 COPY --chown=pwuser:pwuser package.json /work/
 RUN npm install -D
-# Copy the rest
-COPY --chown=pwuser:pwuser . /work
+# Copy the rest of the root directory. Subdirectories are mounted in docker-compose.yml.
+COPY --chown=pwuser:pwuser wait-for-app.sh playwright.config.cjs /work/

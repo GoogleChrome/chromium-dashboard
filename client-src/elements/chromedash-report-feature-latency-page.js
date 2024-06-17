@@ -41,7 +41,7 @@ export class ChromedashReportFeatureLatencyPage extends LitElement {
   }
 
   /** @type {Record<string, string>} */
-  rawQuery;
+  rawQuery = {};
 
   /** @type {import('chromestatus-openapi').DefaultApiInterface} */
   _client;

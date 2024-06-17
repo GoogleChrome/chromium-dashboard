@@ -74,6 +74,8 @@
 
 	// Use 'postCreateCommand' to run commands after the container is created.
 	"postCreateCommand": "npm run clean-setup",
+	// 'postStartCommand' runs each time the devcontainer is started.
+	"postStartCommand": "npm run setup && npx playwright install --with-deps",
 
 	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
 	"remoteUser": "vscode",

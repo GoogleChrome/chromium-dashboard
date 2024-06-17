@@ -1,4 +1,4 @@
-import {LitElement, css, html} from 'lit';
+import {LitElement, css, html, nothing} from 'lit';
 import {ref, createRef} from 'lit/directives/ref.js';
 import {live} from 'lit/directives/live.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
@@ -225,7 +225,7 @@ export class ChromedashTypeahead extends LitElement {
             <chromedash-typeahead-item
               value=${c.name}
               doc=${c.doc}
-              prefix=${this.prefix}
+              prefix=${this.prefix ?? nothing}
             ></chromedash-typeahead-item>
           `
         )}
