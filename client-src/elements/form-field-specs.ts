@@ -1,4 +1,4 @@
-import {html} from 'lit';
+import {html, TemplateResult} from 'lit';
 import {
   ENTERPRISE_FEATURE_CATEGORIES,
   FEATURE_CATEGORIES,
@@ -21,7 +21,52 @@ import {
   ENTERPRISE_IMPACT,
 } from './form-field-enums';
 import {error} from 'console';
-import {FieldAttrs, MilestoneRange, Field} from './datatypes';
+
+export interface FieldAttrs {
+  title?: string;
+  type?: string;
+  multiple?: boolean;
+  placeholder?: string;
+  pattern?: string;
+  rows?: number;
+  cols?: number;
+  maxlength?: number;
+  chromedash_single_pattern?: string;
+  chromedash_split_pattern?: string;
+  disabled?: boolean;
+  min?: number;
+}
+
+export interface MilestoneRange {
+  earlier?: string;
+  later?: string;
+  allEarlier?: string;
+  allLater?: string;
+  warning?: string;
+  error?: string;
+}
+
+type FeatureName = string;
+
+export interface Field {
+  type?: string;
+  name?: FeatureName;
+  attrs?: FieldAttrs;
+  required?: boolean;
+  label?: string;
+  help_text?: TemplateResult | string;
+  enterprise_help_text?: TemplateResult;
+  extra_help?: TemplateResult;
+  enterprise_extra_help?: TemplateResult | string;
+  check?: Function;
+  initial?: number | boolean;
+  enterprise_initial?: number;
+  choices?:
+    | Record<string, [number, string, string]>
+    | Record<string, [number, string]>;
+  displayLabel?: string;
+  disabled?: boolean;
+}
 
 /* Patterns from https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch04s01.html
  * Removing single quote ('), backtick (`), and pipe (|) since they are risky unless properly escaped everywhere.
