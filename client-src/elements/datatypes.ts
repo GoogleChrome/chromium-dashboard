@@ -1,3 +1,5 @@
+import {TemplateResult} from 'lit';
+
 declare global {
   interface Window {
     google?: any;
@@ -31,31 +33,33 @@ export type LabelInfo = {
 };
 
 //form-definition
-export interface Browser {
-  chrome: {
-    bug: string;
-    blink_components: string[];
-    devrel: string[];
-    owners: string[];
-    prefixed: boolean;
-    status: {val: string};
-    desktop: string;
-    android: string;
-    webview: string;
-    ios: string;
+export interface BaseBrowser {
+  view: {
+    val: string;
+    text: string;
+    url: string;
+    notes: string;
   };
-  ff: {
-    view: {val: string; text: string; url: string; notes: string};
-  };
-  safari: {
-    view: {val: string; text: string; url: string; notes: string};
-  };
-  webdev: {
-    view: {val: string; text: string; url: string; notes: string};
-  };
-  other: {
-    view: {notes: string};
-  };
+}
+
+export interface ChromeBrowser extends BaseBrowser {
+  bug: string;
+  blink_components: string[];
+  devrel: string[];
+  owners: string[];
+  prefixed: boolean;
+  status: {val: string};
+  desktop: string;
+  android: string;
+  webview: string;
+  ios: string;
+}
+
+export interface FirefoxBrowser extends BaseBrowser {}
+export interface SafariBrowser extends BaseBrowser {}
+export interface WebDevBrowser extends BaseBrowser {}
+export interface OtherBrowser {
+  view: {notes: string};
 }
 
 export interface Resources {
@@ -79,7 +83,13 @@ export interface Feature {
   privacy_review_status_int: number;
   resources: Resources;
   tags: string[];
-  browsers: Browser;
+  browsers: {
+    chrome: ChromeBrowser;
+    ff: FirefoxBrowser;
+    safari: SafariBrowser;
+    webdev: WebDevBrowser;
+    other: OtherBrowser;
+  };
 }
 
 export interface FormattedFeature {
@@ -146,18 +156,20 @@ export interface MilestoneRange {
 
 export interface Field {
   type?: string;
-  name?: string;
+  name?: keyof FormattedFeature;
   attrs?: FieldAttrs;
   required?: boolean;
   label?: string;
-  help_text?: any;
-  enterprise_help_text?: any;
-  extra_help?: any;
-  enterprise_extra_help?: any;
+  help_text?: TemplateResult | string;
+  enterprise_help_text?: TemplateResult;
+  extra_help?: TemplateResult;
+  enterprise_extra_help?: TemplateResult | string;
   check?: Function;
   initial?: number | boolean;
   enterprise_initial?: number;
-  choices?: any; //any for now, needs specification
+  choices?:
+    | Record<string, [number, string, string]>
+    | Record<string, [number, string]>;
   displayLabel?: string;
   disabled?: boolean;
 }
