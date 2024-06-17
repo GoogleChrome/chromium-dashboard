@@ -136,56 +136,56 @@ export const FEATURE_TYPES: Record<string, [number, string, string]> = {
 // values so that they can have different gates.
 // *********************************************************************
 // For incubating new standard features: the "blink" process.
-export const STAGE_BLINK_INCUBATE: number = 110;
-export const STAGE_BLINK_PROTOTYPE: number = 120;
-export const STAGE_BLINK_DEV_TRIAL: number = 130;
-export const STAGE_BLINK_EVAL_READINESS: number = 140;
-export const STAGE_BLINK_ORIGIN_TRIAL: number = 150;
-export const STAGE_BLINK_EXTEND_ORIGIN_TRIAL: number = 151;
-export const STAGE_BLINK_SHIPPING: number = 160;
+export const STAGE_BLINK_INCUBATE = 110;
+export const STAGE_BLINK_PROTOTYPE = 120;
+export const STAGE_BLINK_DEV_TRIAL = 130;
+export const STAGE_BLINK_EVAL_READINESS = 140;
+export const STAGE_BLINK_ORIGIN_TRIAL = 150;
+export const STAGE_BLINK_EXTEND_ORIGIN_TRIAL = 151;
+export const STAGE_BLINK_SHIPPING = 160;
 // Note: We might define post-ship support stage(s) later.
 
 // For implementing existing standards: the "fast track" process.
-export const STAGE_FAST_PROTOTYPE: number = 220;
-export const STAGE_FAST_DEV_TRIAL: number = 230;
-export const STAGE_FAST_ORIGIN_TRIAL: number = 250;
-export const STAGE_FAST_EXTEND_ORIGIN_TRIAL: number = 251;
-export const STAGE_FAST_SHIPPING: number = 260;
+export const STAGE_FAST_PROTOTYPE = 220;
+export const STAGE_FAST_DEV_TRIAL = 230;
+export const STAGE_FAST_ORIGIN_TRIAL = 250;
+export const STAGE_FAST_EXTEND_ORIGIN_TRIAL = 251;
+export const STAGE_FAST_SHIPPING = 260;
 
 // For developer-facing code changes not impacting a standard: the "PSA" process.
-export const STAGE_PSA_IMPLEMENT_FIELDS: number = 320;
-export const STAGE_PSA_DEV_TRIAL: number = 330;
-export const STAGE_PSA_SHIPPING: number = 360;
+export const STAGE_PSA_IMPLEMENT_FIELDS = 320;
+export const STAGE_PSA_DEV_TRIAL = 330;
+export const STAGE_PSA_SHIPPING = 360;
 
 // For deprecating a feature: the "DEP" process.
-export const STAGE_DEP_PLAN: number = 410;
-export const STAGE_DEP_DEV_TRIAL: number = 430;
-export const STAGE_DEP_DEPRECATION_TRIAL: number = 450;
-export const STAGE_DEP_EXTEND_DEPRECATION_TRIAL: number = 451;
-export const STAGE_DEP_SHIPPING: number = 460;
+export const STAGE_DEP_PLAN = 410;
+export const STAGE_DEP_DEV_TRIAL = 430;
+export const STAGE_DEP_DEPRECATION_TRIAL = 450;
+export const STAGE_DEP_EXTEND_DEPRECATION_TRIAL = 451;
+export const STAGE_DEP_SHIPPING = 460;
 // const STAGE_DEP_REMOVE_CODE = 470;
 
 // Note STAGE_* enum values 500-999 are reseverd for future WP processes.
 
 // Define enterprise feature processes.
 // Note: This stage can be added to any feature that is following any process.
-export const STAGE_ENT_ROLLOUT: number = 1061;
-export const STAGE_ENT_SHIPPED: number = 1070;
+export const STAGE_ENT_ROLLOUT = 1061;
+export const STAGE_ENT_SHIPPED = 1070;
 
-export const STAGE_TYPES_DEV_TRIAL: Set<number> = new Set([
+export const STAGE_TYPES_DEV_TRIAL = new Set<number>([
   STAGE_BLINK_DEV_TRIAL,
   STAGE_FAST_DEV_TRIAL,
   STAGE_PSA_DEV_TRIAL,
   STAGE_DEP_DEV_TRIAL,
 ]);
 
-export const STAGE_TYPES_ORIGIN_TRIAL: Set<number> = new Set([
+export const STAGE_TYPES_ORIGIN_TRIAL = new Set<number>([
   STAGE_BLINK_ORIGIN_TRIAL,
   STAGE_FAST_ORIGIN_TRIAL,
   STAGE_DEP_DEPRECATION_TRIAL,
 ]);
 
-export const STAGE_TYPES_SHIPPING: Set<number> = new Set([
+export const STAGE_TYPES_SHIPPING = new Set<number>([
   STAGE_BLINK_SHIPPING,
   STAGE_FAST_SHIPPING,
   STAGE_PSA_SHIPPING,
@@ -200,7 +200,7 @@ export const OT_EXTENSION_STAGE_MAPPING: Record<number, number> = {
   [STAGE_DEP_DEPRECATION_TRIAL]: STAGE_DEP_EXTEND_DEPRECATION_TRIAL,
 };
 
-export const OT_EXTENSION_STAGE_TYPES: Set<number> = new Set([
+export const OT_EXTENSION_STAGE_TYPES = new Set<number>([
   STAGE_BLINK_EXTEND_ORIGIN_TRIAL,
   STAGE_FAST_EXTEND_ORIGIN_TRIAL,
   STAGE_DEP_EXTEND_DEPRECATION_TRIAL,
@@ -250,21 +250,21 @@ export const INTENT_STAGES: Record<string, [number, string]> = {
   INTENT_ROLLOUT: [10, 'Rollout'],
 };
 
-export const DT_MILESTONE_FIELDS: Set<string> = new Set([
+export const DT_MILESTONE_FIELDS = new Set<string>([
   'dt_milestone_desktop_start',
   'dt_milestone_android_start',
   'dt_milestone_ios_start',
   'dt_milestone_webview_start',
 ]);
 
-export const OT_MILESTONE_START_FIELDS: Set<string> = new Set([
+export const OT_MILESTONE_START_FIELDS = new Set<string>([
   'ot_milestone_desktop_start',
   'ot_milestone_android_start',
   'ot_milestone_webview_start',
   // 'ot_milestone_ios_start',
 ]);
 
-export const SHIPPED_MILESTONE_FIELDS: Set<string> = new Set([
+export const SHIPPED_MILESTONE_FIELDS = new Set<string>([
   'shipped_milestone',
   'shipped_android_milestone',
   'shipped_ios_milestone',
@@ -273,7 +273,7 @@ export const SHIPPED_MILESTONE_FIELDS: Set<string> = new Set([
 
 // Every mutable field that exists on the Stage entity and every key
 // in MilestoneSet.MILESTONE_FIELD_MAPPING should be listed here.
-export const STAGE_SPECIFIC_FIELDS: Set<string> = new Set([
+export const STAGE_SPECIFIC_FIELDS = new Set<string>([
   // Milestone fields.
   'shipped_milestone',
   'shipped_android_milestone',
@@ -371,7 +371,7 @@ export const STAGE_FIELD_NAME_MAPPING: Record<string, string> = {
   r4dt_url: 'intent_thread_url',
 };
 
-export const DEPRECATED_FIELDS: Set<string> = new Set([
+export const DEPRECATED_FIELDS = new Set<string>([
   'experiment_timeline',
   'i2e_lgtms',
   'i2s_lgtms',
@@ -400,9 +400,9 @@ export const GATE_TYPES: Record<string, number> = {
   TESTING_PLAN: 75,
 };
 
-export const GATE_PREPARING: number = 0;
-export const GATE_REVIEW_REQUESTED: number = 2;
-export const GATE_NA_REQUESTED: number = 9;
+export const GATE_PREPARING = 0;
+export const GATE_REVIEW_REQUESTED = 2;
+export const GATE_NA_REQUESTED = 9;
 export const VOTE_OPTIONS: Record<string, [number, string]> = {
   NO_RESPONSE: [7, 'No response'],
   NA: [1, 'N/a or Ack'],
@@ -425,7 +425,7 @@ export const GATE_FINISHED_REVIEW_STATES: number[] = [
   VOTE_OPTIONS.DENIED[0],
 ];
 
-export const GATE_TEAM_ORDER: string[] = [
+export const GATE_TEAM_ORDER = [
   'Privacy',
   'Security',
   'Enterprise',

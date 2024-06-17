@@ -30,6 +30,7 @@ interface OtherBrowser {
   view: {notes: string};
 }
 
+//resources and standards used in Feature object
 interface Resources {
   docs: string[];
   samples: string[];
@@ -217,7 +218,7 @@ export function formatFeatureForEdit(feature: Feature): FormattedFeature {
 
 // The fields shown to the user when first creating a new feature.
 // Note: feature_type is done with custom HTML in chromedash-guide-new-page
-export const NEW_FEATURE_FORM_FIELDS: string[] = [
+export const NEW_FEATURE_FORM_FIELDS = [
   'name',
   'summary',
   'unlisted',
@@ -229,7 +230,7 @@ export const NEW_FEATURE_FORM_FIELDS: string[] = [
   'category',
 ];
 
-export const ENTERPRISE_NEW_FEATURE_FORM_FIELDS: string[] = [
+export const ENTERPRISE_NEW_FEATURE_FORM_FIELDS = [
   'name',
   'summary',
   'owner',
