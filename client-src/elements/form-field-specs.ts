@@ -22,7 +22,7 @@ import {
 } from './form-field-enums';
 import {error} from 'console';
 
-export interface FieldAttrs {
+interface FieldAttrs {
   title?: string;
   type?: string;
   multiple?: boolean;
@@ -37,7 +37,7 @@ export interface FieldAttrs {
   min?: number;
 }
 
-export interface MilestoneRange {
+interface MilestoneRange {
   earlier?: string;
   later?: string;
   allEarlier?: string;
@@ -48,7 +48,7 @@ export interface MilestoneRange {
 
 type FeatureName = string;
 
-export interface Field {
+interface Field {
   type?: string;
   name?: FeatureName;
   attrs?: FieldAttrs;

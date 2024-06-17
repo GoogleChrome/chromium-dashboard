@@ -63,7 +63,7 @@ interface Feature {
   };
 }
 
-export interface FormattedFeature {
+interface FormattedFeature {
   category: number;
   enterprise_feature_categories: string[];
   feature_type: number;
