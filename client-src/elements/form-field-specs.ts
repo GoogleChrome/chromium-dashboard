@@ -2095,7 +2095,6 @@ function checkAllEarlierBeforeLaterMilestone(
       getFieldValue
     );
     const laterValue = getNumericValue(later, getFieldValue);
-    // console.info(`Earlier: ${earlierValue} ... later: ${laterValue}`);
     if (
       earlierValue != null &&
       laterValue != null &&
