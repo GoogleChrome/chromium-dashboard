@@ -107,9 +107,9 @@ class OTProcessRemindersTest(testing_config.CustomTestCase):
     ]
 
   def tearDown(self):
-    self.feature_1.key.delete()
-    self.stage_1.key.delete()
-    self.stage_2.key.delete()
+    for kind in [FeatureEntry, Stage]:
+      for entity in kind.query():
+        entity.key.delete()
 
   def test_build_trials__normal(self):
     """Test that trial data is formatted correctly."""
@@ -159,22 +159,6 @@ class OTProcessRemindersTest(testing_config.CustomTestCase):
     self.assertEqual(set(expected_trials[1]['contacts']),
                      set(formatted_2['contacts']))
 
-  def test_build_trials__no_contacts(self):
-    """We cope with stages that have no emails listed."""
-    self.stage_2.ot_emails = []
-    self.stage_2.ot_owner_email = None
-    self.stage_2.put()
-    trial_data = {
-        'id': '1',
-        'display_name': 'some trial',
-        'start_milestone': '123',
-        'end_milestone': '126',
-        }
-
-    actual = ot_process_reminders.build_trial_data(trial_data)
-
-    self.assertEqual([], actual['contacts'])
-
   @mock.patch('framework.origin_trials_client.get_trials_list')
   def test_get_trials(self, mock_get_trials_list):
     mock_get_trials_list.return_value = self.mock_get_trials_list_return_value
@@ -222,3 +206,32 @@ class OTProcessRemindersTest(testing_config.CustomTestCase):
                      set(expected_starting_trials[0]['contacts']))
     self.assertEqual(set(ending_trial['contacts']),
                      set(expected_ending_trials[0]['contacts']))
+
+  @mock.patch('logging.exception')
+  @mock.patch('framework.origin_trials_client.get_trials_list')
+  def test_get_trials__null_ot_owner(self, mock_get_trials_list, mock_logging):
+    """If OT owner is not set, any other contacts should still be notified."""
+    # OT owner email is not set.
+    self.stage_2.ot_owner_email = None
+    self.stage_2.put()
+    mock_get_trials_list.return_value = self.mock_get_trials_list_return_value
+    starting_trials, ending_trials = ot_process_reminders.get_trials(103)
+
+    expected_starting_trial_contacts = [
+      'sample_contact@example.com',
+      'another@example.com',
+    ]
+    expected_ending_trial_contacts = [
+      'contact1@example.com',
+      'contact2@example.com',
+      'ot_owner1@google.com',
+    ]
+
+    self.assertEqual(len(starting_trials), 1)
+    self.assertEqual(len(ending_trials), 1)
+    starting_trial = starting_trials[0]
+    ending_trial = ending_trials[0]
+    self.assertEqual(set(starting_trial['contacts']),
+                     set(expected_starting_trial_contacts))
+    self.assertEqual(set(ending_trial['contacts']),
+                     set(expected_ending_trial_contacts))
