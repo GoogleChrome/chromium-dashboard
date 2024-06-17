@@ -831,12 +831,11 @@ class ChromedashFeatureDetail extends LitElement {
       </sl-tooltip>`;
     }
     // Display the creation request button if user has edit access.
-    const stageId = feStage.id;
     return html` <sl-button
       size="small"
       variant="primary"
       @click="${() =>
-        openPrereqsDialog(this.feature.id, stageId, dialogTypes.CREATION)}"
+        openPrereqsDialog(this.feature.id, feStage, dialogTypes.CREATION)}"
       >Request Trial Creation</sl-button
     >`;
   }
