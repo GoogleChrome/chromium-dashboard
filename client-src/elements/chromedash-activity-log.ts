@@ -12,9 +12,9 @@ interface Amendment {
 }
 
 declare global {
-    interface Window {
-        csClient?: any;
-    }
+  interface Window {
+    csClient?: any;
+  }
 }
 
 export class ChromedashAmendment extends LitElement {
@@ -76,11 +76,11 @@ export class ChromedashAmendment extends LitElement {
 }
 customElements.define('chromedash-amendment', ChromedashAmendment);
 
-interface User{
-    can_create_feature: boolean;
-    can_edit_all: boolean;
-    is_admin: boolean;
-    email: string;
+interface User {
+  can_create_feature: boolean;
+  can_edit_all: boolean;
+  is_admin: boolean;
+  email: string;
 }
 interface Activity {
   comment_id: number;

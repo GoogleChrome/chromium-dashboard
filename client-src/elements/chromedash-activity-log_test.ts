@@ -6,6 +6,7 @@ import {
 } from './chromedash-activity-log';
 import '../js-src/cs-client';
 import sinon from 'sinon';
+import ChromeStatusClient from '../js-src/cs-client';
 
 const nonAdminUser = {
   can_create_feature: true,
@@ -117,14 +118,14 @@ describe('chromedash-activity', () => {
       amendments: [],
       deleted_by: null,
     };
-    const component = await fixture(
+    const component = (await fixture(
       html`<chromedash-activity
         .user=${nonAdminUser}
         .featureId=${featureOne}
         .activity=${doomedComment}
       >
       </chromedash-activity>`
-    ) as ChromedashActivity;
+    )) as ChromedashActivity;
     const before = component.shadowRoot!.querySelector('.comment');
     assert.notInclude(before!.innerHTML, '[Deleted]');
     assert.include(before!.innerHTML, 'something off the cuff');
@@ -149,14 +150,14 @@ describe('chromedash-activity', () => {
       deleted_by: 'non-admin@google.com',
       amendments: [],
     };
-    const component = await fixture(
+    const component = (await fixture(
       html`<chromedash-activity
         .user=${nonAdminUser}
         .featureId=${featureOne}
         .activity=${blessedComment}
       >
       </chromedash-activity>`
-    ) as ChromedashActivity;
+    )) as ChromedashActivity;
     const before = component.shadowRoot!.querySelector('.comment');
     assert.include(before!.innerHTML, '[Deleted]');
     assert.include(before!.innerHTML, 'lucky guess');
@@ -181,7 +182,8 @@ describe('chromedash-activity', () => {
       </chromedash-activity>`
     );
 
-    const relativeDate = component.shadowRoot!.querySelector('sl-relative-time');
+    const relativeDate =
+      component.shadowRoot!.querySelector('sl-relative-time');
     assert.exists(relativeDate);
     const dateStr = relativeDate.getAttribute('date');
     assert.equal(dateStr, '2022-08-30T12:34:45.567Z');
@@ -197,7 +199,9 @@ describe('chromedash-activity-log', () => {
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashActivityLog);
-    assert.notExists(component.shadowRoot!.querySelector('chromedash-activity'));
+    assert.notExists(
+      component.shadowRoot!.querySelector('chromedash-activity')
+    );
   });
 
   it('renders with some data', async () => {
