@@ -12,7 +12,7 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
+import { mapValues } from '../runtime';
 /**
  * Traits about the user in relation to the component
  * @export
@@ -30,10 +30,8 @@ export interface ComponentUsersRequest {
 /**
  * Check if a given object implements the ComponentUsersRequest interface.
  */
-export function instanceOfComponentUsersRequest(value: object): boolean {
-    let isInstance = true;
-
-    return isInstance;
+export function instanceOfComponentUsersRequest(value: object): value is ComponentUsersRequest {
+    return true;
 }
 
 export function ComponentUsersRequestFromJSON(json: any): ComponentUsersRequest {
@@ -41,25 +39,22 @@ export function ComponentUsersRequestFromJSON(json: any): ComponentUsersRequest 
 }
 
 export function ComponentUsersRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): ComponentUsersRequest {
-    if ((json === undefined) || (json === null)) {
+    if (json == null) {
         return json;
     }
     return {
         
-        'owner': !exists(json, 'owner') ? undefined : json['owner'],
+        'owner': json['owner'] == null ? undefined : json['owner'],
     };
 }
 
 export function ComponentUsersRequestToJSON(value?: ComponentUsersRequest | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
+    if (value == null) {
+        return value;
     }
     return {
         
-        'owner': value.owner,
+        'owner': value['owner'],
     };
 }
 

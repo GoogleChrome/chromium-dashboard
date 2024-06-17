@@ -43,3 +43,12 @@ test-results/
 
 # API Key for local development
 ot_api_key.txt
+
+# Typescript incremental build
+tsconfig.tsbuildinfo
+
+# rollup cache
+.rollup.cache/
+
+# build output
+build/

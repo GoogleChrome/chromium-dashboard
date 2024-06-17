@@ -188,12 +188,18 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      * Add a user to a component
      */
     async addUserToComponentRaw(requestParameters: AddUserToComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        if (requestParameters.componentId === null || requestParameters.componentId === undefined) {
-            throw new runtime.RequiredError('componentId','Required parameter requestParameters.componentId was null or undefined when calling addUserToComponent.');
+        if (requestParameters['componentId'] == null) {
+            throw new runtime.RequiredError(
+                'componentId',
+                'Required parameter "componentId" was null or undefined when calling addUserToComponent().'
+            );
         }
 
-        if (requestParameters.userId === null || requestParameters.userId === undefined) {
-            throw new runtime.RequiredError('userId','Required parameter requestParameters.userId was null or undefined when calling addUserToComponent.');
+        if (requestParameters['userId'] == null) {
+            throw new runtime.RequiredError(
+                'userId',
+                'Required parameter "userId" was null or undefined when calling addUserToComponent().'
+            );
         }
 
         const queryParameters: any = {};
@@ -203,15 +209,15 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
         headerParameters['Content-Type'] = 'application/json';
 
         if (this.configuration && this.configuration.apiKey) {
-            headerParameters["X-Xsrf-Token"] = this.configuration.apiKey("X-Xsrf-Token"); // XsrfToken authentication
+            headerParameters["X-Xsrf-Token"] = await this.configuration.apiKey("X-Xsrf-Token"); // XsrfToken authentication
         }
 
         const response = await this.request({
-            path: `/components/{componentId}/users/{userId}`.replace(`{${"componentId"}}`, encodeURIComponent(String(requestParameters.componentId))).replace(`{${"userId"}}`, encodeURIComponent(String(requestParameters.userId))),
+            path: `/components/{componentId}/users/{userId}`.replace(`{${"componentId"}}`, encodeURIComponent(String(requestParameters['componentId']))).replace(`{${"userId"}}`, encodeURIComponent(String(requestParameters['userId']))),
             method: 'PUT',
             headers: headerParameters,
             query: queryParameters,
-            body: ComponentUsersRequestToJSON(requestParameters.componentUsersRequest),
+            body: ComponentUsersRequestToJSON(requestParameters['componentUsersRequest']),
         }, initOverrides);
 
         return new runtime.VoidApiResponse(response);
@@ -233,7 +239,7 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
         const headerParameters: runtime.HTTPHeaders = {};
 
         if (this.configuration && this.configuration.apiKey) {
-            headerParameters["X-Xsrf-Token"] = this.configuration.apiKey("X-Xsrf-Token"); // XsrfToken authentication
+            headerParameters["X-Xsrf-Token"] = await this.configuration.apiKey("X-Xsrf-Token"); // XsrfToken authentication
         }
 
         const response = await this.request({
@@ -258,8 +264,11 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      * List features whose external reviews are incomplete
      */
     async listExternalReviewsRaw(requestParameters: ListExternalReviewsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ExternalReviewsResponse>> {
-        if (requestParameters.reviewGroup === null || requestParameters.reviewGroup === undefined) {
-            throw new runtime.RequiredError('reviewGroup','Required parameter requestParameters.reviewGroup was null or undefined when calling listExternalReviews.');
+        if (requestParameters['reviewGroup'] == null) {
+            throw new runtime.RequiredError(
+                'reviewGroup',
+                'Required parameter "reviewGroup" was null or undefined when calling listExternalReviews().'
+            );
         }
 
         const queryParameters: any = {};
@@ -267,7 +276,7 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/external_reviews/{review_group}`.replace(`{${"review_group"}}`, encodeURIComponent(String(requestParameters.reviewGroup))),
+            path: `/external_reviews/{review_group}`.replace(`{${"review_group"}}`, encodeURIComponent(String(requestParameters['reviewGroup']))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -288,22 +297,28 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      * List how long each feature took to launch
      */
     async listFeatureLatencyRaw(requestParameters: ListFeatureLatencyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<FeatureLatency>>> {
-        if (requestParameters.startAt === null || requestParameters.startAt === undefined) {
-            throw new runtime.RequiredError('startAt','Required parameter requestParameters.startAt was null or undefined when calling listFeatureLatency.');
+        if (requestParameters['startAt'] == null) {
+            throw new runtime.RequiredError(
+                'startAt',
+                'Required parameter "startAt" was null or undefined when calling listFeatureLatency().'
+            );
         }
 
-        if (requestParameters.endAt === null || requestParameters.endAt === undefined) {
-            throw new runtime.RequiredError('endAt','Required parameter requestParameters.endAt was null or undefined when calling listFeatureLatency.');
+        if (requestParameters['endAt'] == null) {
+            throw new runtime.RequiredError(
+                'endAt',
+                'Required parameter "endAt" was null or undefined when calling listFeatureLatency().'
+            );
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.startAt !== undefined) {
-            queryParameters['startAt'] = (requestParameters.startAt as any).toISOString().substring(0,10);
+        if (requestParameters['startAt'] != null) {
+            queryParameters['startAt'] = (requestParameters['startAt'] as any).toISOString().substring(0,10);
         }
 
-        if (requestParameters.endAt !== undefined) {
-            queryParameters['endAt'] = (requestParameters.endAt as any).toISOString().substring(0,10);
+        if (requestParameters['endAt'] != null) {
+            queryParameters['endAt'] = (requestParameters['endAt'] as any).toISOString().substring(0,10);
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -358,8 +373,8 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     async listSpecMentorsRaw(requestParameters: ListSpecMentorsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<SpecMentor>>> {
         const queryParameters: any = {};
 
-        if (requestParameters.after !== undefined) {
-            queryParameters['after'] = (requestParameters.after as any).toISOString().substring(0,10);
+        if (requestParameters['after'] != null) {
+            queryParameters['after'] = (requestParameters['after'] as any).toISOString().substring(0,10);
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -386,12 +401,18 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      * Remove a user from a component
      */
     async removeUserFromComponentRaw(requestParameters: RemoveUserFromComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        if (requestParameters.componentId === null || requestParameters.componentId === undefined) {
-            throw new runtime.RequiredError('componentId','Required parameter requestParameters.componentId was null or undefined when calling removeUserFromComponent.');
+        if (requestParameters['componentId'] == null) {
+            throw new runtime.RequiredError(
+                'componentId',
+                'Required parameter "componentId" was null or undefined when calling removeUserFromComponent().'
+            );
         }
 
-        if (requestParameters.userId === null || requestParameters.userId === undefined) {
-            throw new runtime.RequiredError('userId','Required parameter requestParameters.userId was null or undefined when calling removeUserFromComponent.');
+        if (requestParameters['userId'] == null) {
+            throw new runtime.RequiredError(
+                'userId',
+                'Required parameter "userId" was null or undefined when calling removeUserFromComponent().'
+            );
         }
 
         const queryParameters: any = {};
@@ -401,15 +422,15 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
         headerParameters['Content-Type'] = 'application/json';
 
         if (this.configuration && this.configuration.apiKey) {
-            headerParameters["X-Xsrf-Token"] = this.configuration.apiKey("X-Xsrf-Token"); // XsrfToken authentication
+            headerParameters["X-Xsrf-Token"] = await this.configuration.apiKey("X-Xsrf-Token"); // XsrfToken authentication
         }
 
         const response = await this.request({
-            path: `/components/{componentId}/users/{userId}`.replace(`{${"componentId"}}`, encodeURIComponent(String(requestParameters.componentId))).replace(`{${"userId"}}`, encodeURIComponent(String(requestParameters.userId))),
+            path: `/components/{componentId}/users/{userId}`.replace(`{${"componentId"}}`, encodeURIComponent(String(requestParameters['componentId']))).replace(`{${"userId"}}`, encodeURIComponent(String(requestParameters['userId']))),
             method: 'DELETE',
             headers: headerParameters,
             query: queryParameters,
-            body: ComponentUsersRequestToJSON(requestParameters.componentUsersRequest),
+            body: ComponentUsersRequestToJSON(requestParameters['componentUsersRequest']),
         }, initOverrides);
 
         return new runtime.VoidApiResponse(response);

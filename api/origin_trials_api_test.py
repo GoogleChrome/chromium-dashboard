@@ -29,7 +29,8 @@ class OriginTrialsAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = FeatureEntry(
-        feature_type=1, name='feature one', summary='sum', category=1)
+        feature_type=1, name='feature one', summary='sum', category=1,
+        owner_emails=['owner@example.com'])
     self.feature_1.put()
     self.feature_1_id = self.feature_1.key.integer_id()
     self.ot_stage_1 = Stage(
@@ -122,8 +123,73 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
       for entity in kind.query():
         entity.key.delete()
 
+  def test_check_post_permissions__anon(self):
+    """Anon users cannot request origin trials."""
+    testing_config.sign_out()
+    with test_app.test_request_context(
+        self.request_path, method='POST', json={}):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.check_post_permissions(self.feature_1_id)
+
+  def test_check_post_permissions__rando(self):
+    """Random users cannot request origin trials."""
+    testing_config.sign_in('user@example.com', 1234567890)
+    with test_app.test_request_context(
+        self.request_path, method='POST', json={}):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.check_post_permissions(self.feature_1_id)
+
+  def test_check_post_permissions__googler_chromie(self):
+    """Googlers and chromies can request origin trials."""
+    testing_config.sign_in('user@google.com', 1234567890)
+    with test_app.test_request_context(
+        self.request_path, method='POST', json={}):
+      result = self.handler.check_post_permissions(self.feature_1_id)
+    self.assertEqual({}, result)
+
+    testing_config.sign_in('user@chromium.org', 1234567890)
+    with test_app.test_request_context(
+        self.request_path, method='POST', json={}):
+      result = self.handler.check_post_permissions(self.feature_1_id)
+    self.assertEqual({}, result)
+
+  def test_check_post_permissions__feature_owner(self):
+    """Feature owners may request an OT."""
+    testing_config.sign_in('owner@example.com', 1234567890)
+    with test_app.test_request_context(
+        self.request_path, method='POST', json={}):
+      result = self.handler.check_post_permissions(self.feature_1_id)
+    self.assertEqual({}, result)
+
+  def test_do_post__feature_not_found(self):
+    """Give a 404 if the no such feature exists."""
+    kwargs = {'feature_id': '999'}
+    with test_app.test_request_context(self.request_path):
+      with self.assertRaises(werkzeug.exceptions.NotFound):
+       self.handler.do_post(**kwargs)
+
+  def test_do_post__stage_not_found(self):
+    """Give a 404 if the no such stage exists."""
+    kwargs = {
+        'feature_id': str(self.feature_1_id),
+        'stage_id': '999'}
+    with test_app.test_request_context(self.request_path):
+      with self.assertRaises(werkzeug.exceptions.NotFound):
+       self.handler.do_post(**kwargs)
+
+  def test_do_post__anon(self):
+    """Anon users cannot request origin trials."""
+    testing_config.sign_out()
+    kwargs = {
+        'feature_id': str(self.feature_1_id),
+        'stage_id': str(self.ot_stage_1.key.integer_id())}
+    with test_app.test_request_context(
+        self.request_path, method='POST', json={}):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.do_post(**kwargs)
+
   @mock.patch('api.origin_trials_api.get_chromium_file')
-  async def test_validate_creation_args__valid(self, mock_get_chromium_file):
+  def test_validate_creation_args__valid(self, mock_get_chromium_file):
     """No error messages should be returned if all args are valid."""
     mock_get_chromium_file.side_effect = [
       self.mock_features_file,
@@ -154,12 +220,12 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
     }
     # No exception should be raised.
     with test_app.test_request_context(self.request_path):
-       result = await self.handler._validate_creation_args(body)
+       result = self.handler._validate_creation_args(body)
     expected = {}
     self.assertEqual(expected, result)
 
   @mock.patch('api.origin_trials_api.get_chromium_file')
-  async def test_validate_creation_args__invalid_webfeature_use_counter(
+  def test_validate_creation_args__invalid_webfeature_use_counter(
       self, mock_get_chromium_file):
     """Error message returned if UseCounter not found in file."""
     mock_get_chromium_file.side_effect = [
@@ -195,7 +261,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
     self.assertEqual(expected, result)
 
   @mock.patch('api.origin_trials_api.get_chromium_file')
-  async def test_validate_creation_args__missing_webfeature_use_counter(
+  def test_validate_creation_args__missing_webfeature_use_counter(
       self, mock_get_chromium_file):
     """Error message returned if UseCounter is missing."""
     mock_get_chromium_file.side_effect = [
@@ -221,13 +287,13 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
       },
     }
     with test_app.test_request_context(self.request_path):
-      result = await self.handler._validate_creation_args(body)
+      result = self.handler._validate_creation_args(body)
     expected = {'ot_webfeature_use_counter': (
         'No UseCounter specified for non-deprecation trial.')}
     self.assertEqual(expected, result)
 
   @mock.patch('api.origin_trials_api.get_chromium_file')
-  async def test_validate_creation_args__missing_webfeature_use_counter_deprecation(
+  def test_validate_creation_args__missing_webfeature_use_counter_deprecation(
       self, mock_get_chromium_file):
     """No error message returned for missing UseCounter if deprecation trial."""
     """Deprecation trial does not need a webfeature use counter value."""
@@ -254,12 +320,12 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
       },
     }
     with test_app.test_request_context(self.request_path):
-      result = await self.handler._validate_creation_args(body)
+      result = self.handler._validate_creation_args(body)
     expected = {}
     self.assertEqual(expected, result)
 
   @mock.patch('api.origin_trials_api.get_chromium_file')
-  async def test_validate_creation_args__invalid_chromium_trial_name(
+  def test_validate_creation_args__invalid_chromium_trial_name(
       self, mock_get_chromium_file):
     """Error message returned if Chromium trial name not found in file."""
     mock_get_chromium_file.side_effect = [
@@ -289,13 +355,13 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
       },
     }
     with test_app.test_request_context(self.request_path):
-      result = await self.handler._validate_creation_args(body)
+      result = self.handler._validate_creation_args(body)
     expected = {'ot_chromium_trial_name': (
         'Origin trial feature name not found in file')}
     self.assertEqual(expected, result)
 
   @mock.patch('api.origin_trials_api.get_chromium_file')
-  async def test_validate_creation_args__missing_chromium_trial_name(
+  def test_validate_creation_args__missing_chromium_trial_name(
       self, mock_get_chromium_file):
     """Error message returned if Chromium trial is missing from request."""
     mock_get_chromium_file.side_effect = [
@@ -322,10 +388,10 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
     }
     with test_app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
-        await self.handler._validate_creation_args(body)
+        self.handler._validate_creation_args(body)
 
   @mock.patch('api.origin_trials_api.get_chromium_file')
-  async def test_validate_creation_args__invalid_third_party_trial(
+  def test_validate_creation_args__invalid_third_party_trial(
       self, mock_get_chromium_file):
     """Error message returned if third party support not found in file."""
     mock_get_chromium_file.side_effect = [
@@ -355,7 +421,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
       },
     }
     with test_app.test_request_context(self.request_path):
-      result = await self.handler._validate_creation_args(body)
+      result = self.handler._validate_creation_args(body)
     expected = {'ot_has_third_party_support': (
         'One or more features do not have third party '
         'support set in runtime_enabled_features.json5. '
@@ -363,7 +429,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
     self.assertEqual(expected, result)
 
   @mock.patch('api.origin_trials_api.get_chromium_file')
-  async def test_validate_creation_args__invalid_critical_trial(
+  def test_validate_creation_args__invalid_critical_trial(
       self, mock_get_chromium_file):
     """Error message returned if critical trial name not found in file."""
     mock_get_chromium_file.side_effect = [
@@ -393,7 +459,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
       },
     }
     with test_app.test_request_context(self.request_path):
-      result = await self.handler._validate_creation_args(body)
+      result = self.handler._validate_creation_args(body)
     expected = {'ot_is_critical_trial': (
         'Use counter has not landed in grace period array for critical trial')}
     self.assertEqual(expected, result)

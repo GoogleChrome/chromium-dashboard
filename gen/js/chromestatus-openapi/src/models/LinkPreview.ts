@@ -12,18 +12,15 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
-import {
-     LinkPreviewGithubIssueFromJSONTyped,
-     LinkPreviewGithubMarkdownFromJSONTyped,
-     LinkPreviewGithubPullRequestFromJSONTyped,
-     LinkPreviewGoogleDocsFromJSONTyped,
-     LinkPreviewMdnDocsFromJSONTyped,
-     LinkPreviewMozillaBugFromJSONTyped,
-     LinkPreviewSpecsFromJSONTyped,
-     LinkPreviewWebkitBugFromJSONTyped
-} from './index';
-
+import { mapValues } from '../runtime';
+import { LinkPreviewGithubIssueFromJSONTyped } from './LinkPreviewGithubIssue';
+import { LinkPreviewGithubMarkdownFromJSONTyped } from './LinkPreviewGithubMarkdown';
+import { LinkPreviewGithubPullRequestFromJSONTyped } from './LinkPreviewGithubPullRequest';
+import { LinkPreviewGoogleDocsFromJSONTyped } from './LinkPreviewGoogleDocs';
+import { LinkPreviewMdnDocsFromJSONTyped } from './LinkPreviewMdnDocs';
+import { LinkPreviewMozillaBugFromJSONTyped } from './LinkPreviewMozillaBug';
+import { LinkPreviewSpecsFromJSONTyped } from './LinkPreviewSpecs';
+import { LinkPreviewWebkitBugFromJSONTyped } from './LinkPreviewWebkitBug';
 /**
  * 
  * @export
@@ -59,14 +56,12 @@ export interface LinkPreview {
 /**
  * Check if a given object implements the LinkPreview interface.
  */
-export function instanceOfLinkPreview(value: object): boolean {
-    let isInstance = true;
-    isInstance = isInstance && "url" in value;
-    isInstance = isInstance && "type" in value;
-    isInstance = isInstance && "information" in value;
-    isInstance = isInstance && "http_error_code" in value;
-
-    return isInstance;
+export function instanceOfLinkPreview(value: object): value is LinkPreview {
+    if (!('url' in value) || value['url'] === undefined) return false;
+    if (!('type' in value) || value['type'] === undefined) return false;
+    if (!('information' in value) || value['information'] === undefined) return false;
+    if (!('http_error_code' in value) || value['http_error_code'] === undefined) return false;
+    return true;
 }
 
 export function LinkPreviewFromJSON(json: any): LinkPreview {
@@ -74,7 +69,7 @@ export function LinkPreviewFromJSON(json: any): LinkPreview {
 }
 
 export function LinkPreviewFromJSONTyped(json: any, ignoreDiscriminator: boolean): LinkPreview {
-    if ((json === undefined) || (json === null)) {
+    if (json == null) {
         return json;
     }
     if (!ignoreDiscriminator) {
@@ -113,18 +108,15 @@ export function LinkPreviewFromJSONTyped(json: any, ignoreDiscriminator: boolean
 }
 
 export function LinkPreviewToJSON(value?: LinkPreview | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
+    if (value == null) {
+        return value;
     }
     return {
         
-        'url': value.url,
-        'type': value.type,
-        'information': value.information,
-        'http_error_code': value.http_error_code,
+        'url': value['url'],
+        'type': value['type'],
+        'information': value['information'],
+        'http_error_code': value['http_error_code'],
     };
 }
 

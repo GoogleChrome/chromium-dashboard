@@ -255,6 +255,7 @@ class ChromedashFeatureDetail extends LitElement {
     }
     openFinalizeExtensionDialog(
       this.feature.id,
+      extensionStage,
       extensionStage.id,
       extensionStage.desktop_last,
       dialogTypes.FINALIZE_EXTENSION
@@ -701,7 +702,7 @@ class ChromedashFeatureDetail extends LitElement {
       @click=${() =>
         openFinalizeExtensionDialog(
           this.feature.id,
-          extensionStage.id,
+          extensionStage,
           extensionStage.desktop_last,
           dialogTypes.FINALIZE_EXTENSION
         )}

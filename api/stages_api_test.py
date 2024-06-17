@@ -323,7 +323,8 @@ class StagesAPITest(testing_config.CustomTestCase):
     with test_app.test_request_context(request_path, json=json):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.do_post(feature_id=1)
-    mock_abort.assert_called_once_with(403)
+    mock_abort.assert_called_once_with(
+        403, description='User cannot edit feature 1')
 
   @mock.patch('framework.permissions.validate_feature_edit_permission')
   def test_post__Redirect(self, permission_call):
@@ -436,7 +437,8 @@ class StagesAPITest(testing_config.CustomTestCase):
         f'{self.request_path}1/stages/10', json=json):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.do_patch(feature_id=1, stage_id=10)
-    mock_abort.assert_called_once_with(403)
+    mock_abort.assert_called_once_with(
+        403, description='User cannot edit feature 1')
 
   @mock.patch('flask.abort')
   def test_patch__bad_id(self, mock_abort):
@@ -673,7 +675,8 @@ class StagesAPITest(testing_config.CustomTestCase):
     with test_app.test_request_context(f'{self.request_path}1/stages/10'):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.do_delete(stage_id=10)
-    mock_abort.assert_called_once_with(403)
+    mock_abort.assert_called_once_with(
+        403, description='User cannot edit feature 1')
 
   @mock.patch('flask.abort')
   def test_delete__no_id(self, mock_abort):

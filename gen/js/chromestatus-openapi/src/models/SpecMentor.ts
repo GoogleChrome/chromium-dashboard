@@ -12,7 +12,7 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
+import { mapValues } from '../runtime';
 import type { FeatureLink } from './FeatureLink';
 import {
     FeatureLinkFromJSON,
@@ -43,12 +43,10 @@ export interface SpecMentor {
 /**
  * Check if a given object implements the SpecMentor interface.
  */
-export function instanceOfSpecMentor(value: object): boolean {
-    let isInstance = true;
-    isInstance = isInstance && "email" in value;
-    isInstance = isInstance && "mentored_features" in value;
-
-    return isInstance;
+export function instanceOfSpecMentor(value: object): value is SpecMentor {
+    if (!('email' in value) || value['email'] === undefined) return false;
+    if (!('mentored_features' in value) || value['mentored_features'] === undefined) return false;
+    return true;
 }
 
 export function SpecMentorFromJSON(json: any): SpecMentor {
@@ -56,7 +54,7 @@ export function SpecMentorFromJSON(json: any): SpecMentor {
 }
 
 export function SpecMentorFromJSONTyped(json: any, ignoreDiscriminator: boolean): SpecMentor {
-    if ((json === undefined) || (json === null)) {
+    if (json == null) {
         return json;
     }
     return {
@@ -67,16 +65,13 @@ export function SpecMentorFromJSONTyped(json: any, ignoreDiscriminator: boolean)
 }
 
 export function SpecMentorToJSON(value?: SpecMentor | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
+    if (value == null) {
+        return value;
     }
     return {
         
-        'email': value.email,
-        'mentored_features': ((value.mentored_features as Array<any>).map(FeatureLinkToJSON)),
+        'email': value['email'],
+        'mentored_features': ((value['mentored_features'] as Array<any>).map(FeatureLinkToJSON)),
     };
 }
 

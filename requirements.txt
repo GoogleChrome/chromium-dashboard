@@ -17,7 +17,7 @@ google-cloud-ndb==1.11.1
 google-cloud-logging==3.6.0
 google-cloud-secret-manager==2.16.2
 google-auth==1.31.0
-requests==2.31.0
+requests==2.32.0
 redis==4.4.4
 fakeredis==1.10.1
 Flask==2.3.2

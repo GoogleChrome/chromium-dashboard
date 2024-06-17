@@ -12,7 +12,7 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
+import { mapValues } from '../runtime';
 import type { LinkPreview } from './LinkPreview';
 import {
     LinkPreviewFromJSON,
@@ -49,12 +49,10 @@ export interface ExternalReviewsResponse {
 /**
  * Check if a given object implements the ExternalReviewsResponse interface.
  */
-export function instanceOfExternalReviewsResponse(value: object): boolean {
-    let isInstance = true;
-    isInstance = isInstance && "reviews" in value;
-    isInstance = isInstance && "link_previews" in value;
-
-    return isInstance;
+export function instanceOfExternalReviewsResponse(value: object): value is ExternalReviewsResponse {
+    if (!('reviews' in value) || value['reviews'] === undefined) return false;
+    if (!('link_previews' in value) || value['link_previews'] === undefined) return false;
+    return true;
 }
 
 export function ExternalReviewsResponseFromJSON(json: any): ExternalReviewsResponse {
@@ -62,7 +60,7 @@ export function ExternalReviewsResponseFromJSON(json: any): ExternalReviewsRespo
 }
 
 export function ExternalReviewsResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): ExternalReviewsResponse {
-    if ((json === undefined) || (json === null)) {
+    if (json == null) {
         return json;
     }
     return {
@@ -73,16 +71,13 @@ export function ExternalReviewsResponseFromJSONTyped(json: any, ignoreDiscrimina
 }
 
 export function ExternalReviewsResponseToJSON(value?: ExternalReviewsResponse | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
+    if (value == null) {
+        return value;
     }
     return {
         
-        'reviews': ((value.reviews as Array<any>).map(OutstandingReviewToJSON)),
-        'link_previews': ((value.link_previews as Array<any>).map(LinkPreviewToJSON)),
+        'reviews': ((value['reviews'] as Array<any>).map(OutstandingReviewToJSON)),
+        'link_previews': ((value['link_previews'] as Array<any>).map(LinkPreviewToJSON)),
     };
 }
 

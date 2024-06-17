@@ -15,28 +15,6 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && sudo apt-get install -y \
        # openapi-generator-cli dependencies
        openjdk-17-jre \
-       # Playwright dependencies - needed for "npm run webtest"
-       libgtk-3-0 \
-       libasound2 \
-       libdrm2 \
-       libgbm1 \
-       libxcomposite1 \
-       libxdamage1 \
-       libxfixes3 \
-       libxrandr2 \
-       libxtst6 \
-       libpangocairo-1.0-0 \
-       libpango-1.0-0 \
-       libatk1.0-0 \
-       libcairo-gobject2 \
-       libcairo2 \
-       libgdk-pixbuf-2.0-0 \
-       libdbus-glib-1-2 \
-       libdbus-1-3 \
-       libxcb-shm0 \
-       libx11-xcb1 \
-       libxcursor1 \
-       libxi6 \
        # Convenience tools
        bash-completion
 

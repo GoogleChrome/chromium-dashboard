@@ -67,11 +67,17 @@ export class ChromedashSearchHelpDialog extends LitElement {
             'Features that include or exclude words in any field.'
           )}
           ${this.renderExampleRow(
-            ['browsers.chrome.desktop=123'],
+            [
+              'browsers.chrome.desktop=123',
+              'browsers.chrome.desktop=current_stable+1',
+            ],
             'Features shipping in the specified milestone.'
           )}
           ${this.renderExampleRow(
-            ['browsers.chrome.desktop>=120 browsers.chrome.desktop<=122'],
+            [
+              'browsers.chrome.desktop=120..122',
+              'browsers.chrome.desktop=current_stable-1..current_stable+1',
+            ],
             'Features shipping in a milestone range.'
           )}
           ${this.renderExampleRow(
@@ -81,7 +87,8 @@ export class ChromedashSearchHelpDialog extends LitElement {
           ${this.renderExampleRow(
             [
               'created.when>2024-01-01',
-              'updated.when>=2023-01-01 updated.when<=2023-12-31',
+              'created.when<now-8w',
+              'updated.when=2023-01-01..2023-12-31',
             ],
             'Features created or modified before or after a date.'
           )}
@@ -135,14 +142,35 @@ export class ChromedashSearchHelpDialog extends LitElement {
           </li>
           <li>
             VALUE(S): A single word, number, date, or enum value listed below.
-            If the value contains spaces, it must be inside double quotes. Use
-            the equals operator with a comma-separated list to match any value
-            in that list.
+            If the value contains spaces, it must be inside double quotes.
+            <ul>
+              <li>
+                Use the equals operator with a comma-separated list to match any
+                value in that list.
+              </li>
+              <li>
+                Use the equals operator with two number or date values separated
+                by "<code>..</code>" to find any value between or including
+                those endpoints. The left value must be less than the right
+                value.
+              </li>
+              <li>
+                For dates, you can compute a date a certain number of days or
+                weeks before or after now. "<code>now-3d</code>" is 3 days ago,
+                and "<code>now+2w</code>" is 2 weeks from now.
+              </li>
+              <li>
+                For milestones, you can compute a milestone relative to the
+                current stable version of Chrome.
+                "<code>current_stable+1</code>" is 1 version after the current
+                stable version.
+              </li>
+            </ul>
           </li>
         </ul>
 
         <p>
-          You may negate any seearch term by prefixing it with a minus sign.
+          You may negate any search term by prefixing it with a minus sign.
           Search terms are implicitly joined together by a logical-AND. However,
           you may type the keyword <code>OR</code> between terms as a logical-OR
           operator. We do not support parenthesis in queries.

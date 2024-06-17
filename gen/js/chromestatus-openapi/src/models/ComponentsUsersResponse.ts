@@ -12,7 +12,7 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
+import { mapValues } from '../runtime';
 import type { ComponentsUser } from './ComponentsUser';
 import {
     ComponentsUserFromJSON,
@@ -49,10 +49,8 @@ export interface ComponentsUsersResponse {
 /**
  * Check if a given object implements the ComponentsUsersResponse interface.
  */
-export function instanceOfComponentsUsersResponse(value: object): boolean {
-    let isInstance = true;
-
-    return isInstance;
+export function instanceOfComponentsUsersResponse(value: object): value is ComponentsUsersResponse {
+    return true;
 }
 
 export function ComponentsUsersResponseFromJSON(json: any): ComponentsUsersResponse {
@@ -60,27 +58,24 @@ export function ComponentsUsersResponseFromJSON(json: any): ComponentsUsersRespo
 }
 
 export function ComponentsUsersResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): ComponentsUsersResponse {
-    if ((json === undefined) || (json === null)) {
+    if (json == null) {
         return json;
     }
     return {
         
-        'users': !exists(json, 'users') ? undefined : ((json['users'] as Array<any>).map(ComponentsUserFromJSON)),
-        'components': !exists(json, 'components') ? undefined : ((json['components'] as Array<any>).map(OwnersAndSubscribersOfComponentFromJSON)),
+        'users': json['users'] == null ? undefined : ((json['users'] as Array<any>).map(ComponentsUserFromJSON)),
+        'components': json['components'] == null ? undefined : ((json['components'] as Array<any>).map(OwnersAndSubscribersOfComponentFromJSON)),
     };
 }
 
 export function ComponentsUsersResponseToJSON(value?: ComponentsUsersResponse | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
+    if (value == null) {
+        return value;
     }
     return {
         
-        'users': value.users === undefined ? undefined : ((value.users as Array<any>).map(ComponentsUserToJSON)),
-        'components': value.components === undefined ? undefined : ((value.components as Array<any>).map(OwnersAndSubscribersOfComponentToJSON)),
+        'users': value['users'] == null ? undefined : ((value['users'] as Array<any>).map(ComponentsUserToJSON)),
+        'components': value['components'] == null ? undefined : ((value['components'] as Array<any>).map(OwnersAndSubscribersOfComponentToJSON)),
     };
 }
 

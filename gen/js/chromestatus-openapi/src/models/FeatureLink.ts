@@ -12,7 +12,7 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
+import { mapValues } from '../runtime';
 /**
  * 
  * @export
@@ -36,12 +36,10 @@ export interface FeatureLink {
 /**
  * Check if a given object implements the FeatureLink interface.
  */
-export function instanceOfFeatureLink(value: object): boolean {
-    let isInstance = true;
-    isInstance = isInstance && "id" in value;
-    isInstance = isInstance && "name" in value;
-
-    return isInstance;
+export function instanceOfFeatureLink(value: object): value is FeatureLink {
+    if (!('id' in value) || value['id'] === undefined) return false;
+    if (!('name' in value) || value['name'] === undefined) return false;
+    return true;
 }
 
 export function FeatureLinkFromJSON(json: any): FeatureLink {
@@ -49,7 +47,7 @@ export function FeatureLinkFromJSON(json: any): FeatureLink {
 }
 
 export function FeatureLinkFromJSONTyped(json: any, ignoreDiscriminator: boolean): FeatureLink {
-    if ((json === undefined) || (json === null)) {
+    if (json == null) {
         return json;
     }
     return {
@@ -60,16 +58,13 @@ export function FeatureLinkFromJSONTyped(json: any, ignoreDiscriminator: boolean
 }
 
 export function FeatureLinkToJSON(value?: FeatureLink | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
+    if (value == null) {
+        return value;
     }
     return {
         
-        'id': value.id,
-        'name': value.name,
+        'id': value['id'],
+        'name': value['name'],
     };
 }
 

@@ -1,0 +1,38 @@
+{
+    "compilerOptions": {
+      "module": "ES2022",
+      "moduleResolution": "bundler",
+      "plugins": [
+        {
+          "name": "ts-lit-plugin",
+          "rules": {
+            "no-incompatible-type-binding": "off"
+          }
+        }
+      ],
+      "strict": true,
+      "noImplicitAny": false,
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "rootDir": "client-src",
+      "allowJs": true,
+      "checkJs": false,
+      "resolveJsonModule": true,
+      "outDir": "build",
+      "emitDeclarationOnly": false,
+      "incremental": true,
+      "lib": ["ES2023", "DOM"],
+      "experimentalDecorators": true,
+      "useDefineForClassFields": false,
+      "target": "ES2022",
+    },
+    "include": [
+      "client-src/js-src/**/*",
+      "client-src/elements/**/*",
+      "client-src/components.js"
+    ],
+    "exclude": [
+      "node_modules",
+      "static/dist"
+    ]
+  }

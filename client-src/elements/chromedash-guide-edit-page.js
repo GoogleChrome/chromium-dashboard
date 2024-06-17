@@ -23,6 +23,10 @@ export class ChromedashGuideEditPage extends LitElement {
           display: flex;
           gap: 1.5em;
         }
+
+        sl-dialog p {
+          margin-top: var(--content-padding);
+        }
       `,
     ];
   }
@@ -116,6 +120,21 @@ export class ChromedashGuideEditPage extends LitElement {
             target="_blank" rel="noopener">Process and UI feedback</a></span>
         </div>
       </div>
+
+      <sl-dialog open label="Obsolete page">
+        <p>This page will soon be removed from chromestatus.com.</p>
+
+        <p>You can now edit all fields by using the "Edit fields" buttons or
+        "Edit all fields" link on the feature detail page.</p>
+
+        <p>To generate intent thread messages: go to the feature detail page,
+        click the "API Owners" gate chip for the appropriate stage, then click
+        the blue "Draft Intent to ... email" button at the top of the gate
+        column.</p>
+
+        <p><sl-button variant="primary" size="small"
+         href="/feature/${this.featureId}">Try it</sl-button></p>
+      </sl-dialog>
     `;
   }
 

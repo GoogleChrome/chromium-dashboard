@@ -361,6 +361,14 @@ STAGES_AND_GATES_BY_FEATURE_TYPE: dict[int, list[tuple[int, list[int]]]] = {
         (STAGE_ENT_ROLLOUT, [])]
   }
 
+# Plan stage types for every feature type that has plan.
+STAGE_TYPES_PLAN: dict[int, Optional[int]] = {
+    FEATURE_TYPE_INCUBATE_ID: None,
+    FEATURE_TYPE_EXISTING_ID: None,
+    FEATURE_TYPE_CODE_CHANGE_ID: None,
+    FEATURE_TYPE_DEPRECATION_ID: STAGE_DEP_PLAN,
+    FEATURE_TYPE_ENTERPRISE_ID: None,
+  }
 # Prototype stage types for every feature type.
 STAGE_TYPES_PROTOTYPE: dict[int, Optional[int]] = {
     FEATURE_TYPE_INCUBATE_ID: STAGE_BLINK_PROTOTYPE,
@@ -466,6 +474,7 @@ STAGE_TYPES_BY_FIELD_MAPPING: dict[str, dict[int, Optional[int]]] = {
 
 # Mapping of which stage types are associated with each gate type.
 STAGE_TYPES_BY_GATE_TYPE_MAPPING: dict[int, dict[int, Optional[int]]] = {
+  GATE_API_PLAN: STAGE_TYPES_PLAN,
   GATE_API_PROTOTYPE: STAGE_TYPES_PROTOTYPE,
   GATE_API_ORIGIN_TRIAL: STAGE_TYPES_ORIGIN_TRIAL,
   GATE_API_EXTEND_ORIGIN_TRIAL: STAGE_TYPES_EXTEND_ORIGIN_TRIAL,

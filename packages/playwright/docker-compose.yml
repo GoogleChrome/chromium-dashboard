@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # In GitHub Actions, the volumes will still mount as root.
   # This service will fix the ownership.
@@ -35,7 +33,7 @@ services:
       # https://docs.github.com/en/actions/learn-github-actions/variables#default-environment-variables
       - CI
     volumes:
-      - ./tests/__screenshots__:/work/tests/__screenshots__
+      - ./tests:/work/tests
       - ./test-results:/work/test-results
 
   # mounts x11 display. May not be available in all places. Separate it out.
@@ -49,7 +47,7 @@ services:
       fix_volume_ownership:
           condition: service_completed_successfully
     volumes:
-      - ./tests/__screenshots__:/work/tests/__screenshots__
+      - ./tests:/work/tests
       - ./test-results:/work/test-results
       - /tmp/.X11-unix:/tmp/.X11-unix
 
