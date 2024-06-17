@@ -110,7 +110,7 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@lit/task": "^1.0.0",
+    "@lit/task": "^1.0.1",
     "@polymer/iron-collapse": "^3.0.1",
     "@polymer/iron-icon": "^3.0.1",
     "@polymer/iron-iconset-svg": "^3.0.1",
