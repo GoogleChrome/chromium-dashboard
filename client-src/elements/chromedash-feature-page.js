@@ -3,10 +3,7 @@ import {SHARED_STYLES} from '../css/shared-css.js';
 import './chromedash-feature-detail';
 import {DETAILS_STYLES} from './chromedash-feature-detail';
 import './chromedash-feature-highlights.js';
-import {
-  renderHTMLIf,
-  showToastMessage
-} from './utils.js';
+import {renderHTMLIf, showToastMessage} from './utils.js';
 
 const INACTIVE_STATES = ['No longer pursuing', 'Deprecated', 'Removed'];
 
