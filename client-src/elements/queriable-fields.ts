@@ -155,6 +155,13 @@ export const QUERIABLE_FIELDS = [
     kind: MILESTONE_KIND,
     doc: 'WebView Origin Trial end',
   },
+  {
+    name: 'any_start_milestone',
+    kind: MILESTONE_KIND,
+    doc:
+      'A milestone in which the feature is scheduled to ship or start an ' +
+      'origin trial or dev trial, on any platform',
+  },
   // 'browsers.chrome.ot.feedback_url': Feature.origin_trial_feedback_url,
   // 'finch_url': Feature.finch_url,
 
