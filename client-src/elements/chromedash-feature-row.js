@@ -108,7 +108,7 @@ class ChromedashFeatureRow extends LitElement {
       <sl-icon-button
         class="deprecated-ui"
         href="/guide/edit/${feature.id}"
-        title="Deprecated. Please click the feature name and use 'Edit feature' buttons."
+        title="Deprecated. Please click the feature name and use 'Edit fields' buttons."
         name="pencil-fill"
       ></sl-icon-button>
     `;
