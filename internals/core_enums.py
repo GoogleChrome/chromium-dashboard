@@ -481,6 +481,7 @@ STAGE_TYPES_BY_GATE_TYPE_MAPPING: dict[int, dict[int, Optional[int]]] = {
   GATE_API_SHIP: STAGE_TYPES_SHIPPING
 }
 
+# ot_setup_status values for denoting OT creation progress.
 OT_NOT_CREATED = 1
 OT_READY_FOR_CREATION = 2
 OT_CREATION_FAILED = 3
