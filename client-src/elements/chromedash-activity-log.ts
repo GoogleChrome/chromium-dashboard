@@ -76,9 +76,10 @@ export class ChromedashAmendment extends LitElement {
 }
 customElements.define('chromedash-amendment', ChromedashAmendment);
 
-interface User {
+export interface User {
   can_create_feature: boolean;
   can_edit_all: boolean;
+  can_comment: boolean;
   is_admin: boolean;
   email: string;
 }

@@ -3,6 +3,7 @@ import {assert, fixture} from '@open-wc/testing';
 import {ChromedashActivityPage} from './chromedash-activity-page';
 import '../js-src/cs-client';
 import sinon from 'sinon';
+import ChromeStatusClient from '../js-src/cs-client';
 
 describe('chromedash-settings-page', () => {
   /* window.csClient is initialized in spa.html
