@@ -1,5 +1,5 @@
 import {LitElement, css, html, nothing} from 'lit';
-import {property} from 'lit/decorators.js';
+import {property, state} from 'lit/decorators.js';
 import {autolink, renderAbsoluteDate, renderRelativeDate} from './utils.js';
 import '@polymer/iron-icon';
 
@@ -268,10 +268,10 @@ export class ChromedashActivityLog extends LitElement {
   @property({type: Boolean})
   narrow = false;
 
-  @property({type: Boolean})
+  @state()
   reverse = false;
 
-  @property({type: Boolean})
+  @state()
   loading = false;
 
   static get styles() {
