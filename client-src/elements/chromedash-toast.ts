@@ -1,9 +1,10 @@
 import {LitElement, css, html} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import {property} from 'lit/decorators.js';
+import {customElement, state, property} from 'lit/decorators.js';
 
 const DEFAULT_DURATION = 7000;
 
+@customElement('chromedash-toast')
 class ChromedashToast extends LitElement {
   @property({type: String})
   msg = '';
@@ -14,7 +15,7 @@ class ChromedashToast extends LitElement {
   @property({attribute: false})
   actionLabel = '';
 
-  @property({type: Number})
+  @state()
   currentTimeout: number | null = null;
 
   @property({type: Boolean})
@@ -68,10 +69,6 @@ class ChromedashToast extends LitElement {
     ];
   }
 
-  /**
-   * Shows a message in the toast.
-   * @method showMessage
-   */
   showMessage(
     msg: string,
     optAction: string,
@@ -136,5 +133,3 @@ class ChromedashToast extends LitElement {
     `;
   }
 }
-
-customElements.define('chromedash-toast', ChromedashToast);
