@@ -113,7 +113,7 @@ interface MetadataFields {
   sections: Section[];
 }
 
-const COMMA_SEPARATED_FIELDS: string[] = [
+const COMMA_SEPARATED_FIELDS = [
   'owner',
   'editors',
   'cc_recipients',
@@ -124,7 +124,7 @@ const COMMA_SEPARATED_FIELDS: string[] = [
   'i2s_lgtms',
 ];
 
-const LINE_SEPARATED_FIELDS: string[] = [
+const LINE_SEPARATED_FIELDS = [
   'explainer_links',
   'doc_links',
   'sample_links',
