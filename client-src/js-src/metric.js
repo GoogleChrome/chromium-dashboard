@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-'use strict';
 
-// prettier-ignore
-(function(exports) {
-class Metric {
+export class Metric {
   static get supportsPerfNow() {
     return performance && performance.now;
   }
@@ -155,6 +152,3 @@ class Metric {
     return this;
   }
 }
-
-exports.Metric = Metric;
-})(window);

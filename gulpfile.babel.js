@@ -72,6 +72,9 @@ gulp.task('rollup', () => {
     input: [
       'build/components.js',
       'build/js-src/openapi-client.js',
+      'build/js-src/cs-client.js',
+      'build/js-src/features-page.js',
+      'build/js-src/shared.js',
     ],
     plugins: [
       rollupResolve(),
@@ -88,51 +91,12 @@ gulp.task('rollup', () => {
   });
 });
 
-gulp.task('rollup-cjs', () => {
-  return rollup({
-    input: [
-      'client-src/js-src/openapi-client.js',
-    ],
-    plugins: [
-      rollupResolve(),
-      rollupMinify({mangle: false, comments: false}),
-    ],
-    onwarn: rollupIgnoreUndefinedWarning,
-  }).then(bundle => {
-    return bundle.write({
-      dir: 'static/dist',
-      format: 'cjs',
-      sourcemap: true,
-      compact: true,
-    });
-  });
-});
-
-// Run scripts through babel.
-gulp.task('js', () => {
-  return gulp.src([
-    'client-src/js-src/**/*.js',
-    // openapi-client has imports and needs to use rollup.
-    // exclude it from the list.
-    // Else, the file will need to be treated as a module.
-    // Browsers defer loading <script type="module"> tags and this client is
-    // needed early on page load.
-    '!client-src/js-src/**/openapi-client*.js',
-  ])
-    .pipe(babel()) // Defaults are in .babelrc
-    .pipe(uglifyJS())
-    .pipe(addLicense()) // Add license to top.
-    .pipe(rename({suffix: '.min'}))
-    .pipe(gulp.dest('static/js'));
-});
-
 // Clean generated files
 gulp.task('clean', () => {
   return deleteAsync([
     // Disabled as part of removing sass/scss.
     // 'static/css/',
     'static/dist',
-    'static/js/',
   ], {dot: true});
 });
 
@@ -143,9 +107,7 @@ gulp.task('default', gulp.series(
   // Incrementally removing sass/scss.
   // 'styles',
   'css',
-  'js',
   'rollup',
-  'rollup-cjs',
 ));
 
 // Build production files, the default task

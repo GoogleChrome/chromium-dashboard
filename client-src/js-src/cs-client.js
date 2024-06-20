@@ -22,10 +22,6 @@
  * @property {number} http_error_code
  */
 
-// prettier-ignore
-(function(exports) {
-'use strict';
-
 /**
  * Generic Chrome Status Http Error.
  */
@@ -43,7 +39,7 @@ class ChromeStatusHttpError extends Error {
  * FeatureNotFoundError represents an error for when a feature was not found
  * for the given ID.
  */
-class FeatureNotFoundError extends Error {
+export class FeatureNotFoundError extends Error {
   constructor(featureID) {
     super('Feature not found');
     this.name = 'FeatureNotFoundError';
@@ -51,7 +47,7 @@ class FeatureNotFoundError extends Error {
   }
 }
 
-class ChromeStatusClient {
+export class ChromeStatusClient {
   constructor(token, tokenExpiresSec) {
     this.token = token;
     this.tokenExpiresSec = tokenExpiresSec;
@@ -405,7 +401,3 @@ class ChromeStatusClient {
     return this.doGet(`/channels?start=${start}&end=${end}`);
   }
 };
-
-exports.ChromeStatusClient = ChromeStatusClient;
-exports.FeatureNotFoundError = FeatureNotFoundError;
-})(window);

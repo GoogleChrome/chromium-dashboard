@@ -16,14 +16,11 @@
 
 import {DefaultApi as Api, Configuration} from 'chromestatus-openapi';
 
-// prettier-ignore
-(function(exports) {
-'use strict';
 /**
  * Creates a client.
  * @extends {import('chromestatus-openapi').DefaultApiInterface}
  */
-class ChromeStatusOpenApiClient extends Api {
+export class ChromeStatusOpenApiClient extends Api {
   constructor() {
     super(new Configuration({
       credentials: 'same-origin',
@@ -36,7 +33,7 @@ class ChromeStatusOpenApiClient extends Api {
   }
 }
 
-class ChromeStatusMiddlewares {
+export class ChromeStatusMiddlewares {
   /**
    * Refresh the XSRF Token, if needed. Add to headers.
    *
@@ -78,7 +75,3 @@ class ChromeStatusMiddlewares {
     });
   }
 }
-
-exports.ChromeStatusOpenApiClient = ChromeStatusOpenApiClient;
-exports.ChromeStatusMiddlewares = ChromeStatusMiddlewares;
-})(window);

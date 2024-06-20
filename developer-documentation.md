@@ -36,8 +36,8 @@ All the pages are rendered in a combination of Jinja2 template (`/templates`) an
    - The folder organization and template file names matches the router. (See `template_path=os.path.join(path + '.html')` in `server.py`)
    - lit-element components, css, js files are all imported/included in those templates.
    - We pass backend variables to js like this: `const variableInJs = {{variable_in_template|safe}}`.
-1. All Lit components are in `/client-src/elements`.
-1. All JavaScript files are in `/client-src/js-src/` and processed by gulp, then output to `/static/js/` and get included in templates.
+1. All Lit components are in `/client-src/elements`, and other Javascript files are in `/client-src/js-src/`.
+1. JavaScript is processed and code-split by Rollup, then output to `/static/dist/` and included in templates.
 2. All `*-css.js` files used in client-side components are in `/client-src/css/`.  The remaining css files still being included in templates are in `/static/css/`.
 
 ### Adding an icon
