@@ -519,13 +519,14 @@ class CreateOriginTrials(FlaskHandler):
     # the error code returned from the OT server.
     try:
       new_id = origin_trials_client.create_origin_trial(stage)
+      stage.ot_setup_status = OT_CREATED
     except requests.RequestException:
       logging.warning('Origin trial could not be created for stage '
                       f'{stage.key.integer_id()}')
       cloud_tasks_helpers.enqueue_task(
           '/tasks/email-ot-creation-request-failed', {'stage': stage_dict})
       stage.ot_setup_status = OT_CREATION_FAILED
-      stage.put()
+    stage.put()
     return new_id
 
   def handle_activation(self, stage: Stage, stage_dict: StageDict) -> None:

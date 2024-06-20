@@ -151,7 +151,7 @@ def create_origin_trial(ot_stage: Stage) -> str | None:
         f'Failed to get response from origin trials API. {response.text}')
     raise e
 
-  return response.json()['id']
+  return str(response.json()['id'])
 
 def activate_origin_trial(origin_trial_id: str) -> None:
   """Activate an existing origin trial.
