@@ -123,10 +123,10 @@ function replaceLinkRef(match: RegExpExecArray) {
     content = content.slice(match[1].length);
   }
   LINK_TRAILING_CHARS.forEach(([begin, end]) => {
-    if (end && content.endsWith(end)) {
-      if (!begin || !content.slice(0, -end!.length).includes(begin)) {
+    if (content.endsWith(end)) {
+      if (!begin || !content.slice(0, -end.length).includes(begin)) {
         trailing = end + trailing;
-        content = content.slice(0, -end!.length);
+        content = content.slice(0, -end.length);
       }
     }
   });

@@ -1,5 +1,117 @@
-import {html} from 'lit';
+import {html, TemplateResult} from 'lit';
 import * as enums from './form-field-enums';
+
+interface BaseBrowser {
+  view: {
+    val: string;
+    text: string;
+    url: string;
+    notes: string;
+  };
+}
+
+interface ChromeBrowser extends BaseBrowser {
+  bug: string;
+  blink_components: string[];
+  devrel: string[];
+  owners: string[];
+  prefixed: boolean;
+  status: {val: string};
+  desktop: string;
+  android: string;
+  webview: string;
+  ios: string;
+}
+
+interface FirefoxBrowser extends BaseBrowser {}
+interface SafariBrowser extends BaseBrowser {}
+interface WebDevBrowser extends BaseBrowser {}
+interface OtherBrowser {
+  view: {notes: string};
+}
+
+//resources and standards used in Feature object
+interface Resources {
+  docs: string[];
+  samples: string[];
+}
+
+interface Standards {
+  spec: string;
+  maturity: {val: number; text: string};
+}
+
+type FeatureName = string;
+
+interface Feature {
+  name?: FeatureName;
+  category_int: number;
+  enterprise_feature_categories: string[];
+  feature_type_int: number;
+  intent_stage_int: number;
+  standards: Standards;
+  tag_review_status_int: number;
+  security_review_status_int: number;
+  privacy_review_status_int: number;
+  resources: Resources;
+  tags: string[];
+  browsers: {
+    chrome: ChromeBrowser;
+    ff: FirefoxBrowser;
+    safari: SafariBrowser;
+    webdev: WebDevBrowser;
+    other: OtherBrowser;
+  };
+}
+
+interface FormattedFeature {
+  category: number;
+  enterprise_feature_categories: string[];
+  feature_type: number;
+  intent_stage: number;
+  accurate_as_of: boolean;
+  spec_link: string;
+  standard_maturity: number;
+  tag_review_status: number;
+  security_review_status: number;
+  privacy_review_status: number;
+  sample_links: string[];
+  doc_links: string[];
+  search_tags: string[];
+  blink_components: string;
+  bug_url: string;
+  devrel: string[];
+  owner: string[];
+  prefixed: boolean;
+  impl_status_chrome: string;
+  shipped_milestone: string;
+  shipped_android_milestone: string;
+  shipped_webview_milestone: string;
+  shipped_ios_milestone: string;
+  ff_views: string;
+  ff_views_link: string;
+  ff_views_notes: string;
+  safari_views: string;
+  safari_views_link: string;
+  safari_views_notes: string;
+  web_dev_views: string;
+  web_dev_views_link: string;
+  web_dev_views_notes: string;
+  other_views_notes: string;
+  [key: string]: any; // Allow additional properties
+}
+
+interface Section {
+  name?: string;
+  fields: string[];
+  isImplementationSection?: boolean;
+  implStatusValue?: number | null;
+}
+
+interface MetadataFields {
+  name: string;
+  sections: Section[];
+}
 
 const COMMA_SEPARATED_FIELDS = [
   'owner',
@@ -23,8 +135,8 @@ const LINE_SEPARATED_FIELDS = [
  * The feature object from API is formatted by the feature_to_legacy_json
  * function in internals/feature_helpers.py
  */
-export function formatFeatureForEdit(feature) {
-  const formattedFeature = {
+export function formatFeatureForEdit(feature: Feature): FormattedFeature {
+  const formattedFeature: FormattedFeature = {
     ...feature,
     category: feature.category_int,
     enterprise_feature_categories: Array.from(
@@ -130,7 +242,7 @@ export const ENTERPRISE_NEW_FEATURE_FORM_FIELDS = [
 ];
 
 // The fields that are available to every feature.
-export const FLAT_METADATA_FIELDS = {
+export const FLAT_METADATA_FIELDS: MetadataFields = {
   name: 'Feature metadata',
   sections: [
     // Standardizaton
@@ -166,7 +278,7 @@ export const FLAT_METADATA_FIELDS = {
 };
 
 // The fields that are available to every enterprise feature.
-export const FLAT_ENTERPRISE_METADATA_FIELDS = {
+export const FLAT_ENTERPRISE_METADATA_FIELDS: MetadataFields = {
   name: 'Feature metadata',
   sections: [
     // Standardizaton
@@ -187,7 +299,7 @@ export const FLAT_ENTERPRISE_METADATA_FIELDS = {
 };
 
 // All fields relevant to the incubate/planning stage.
-const FLAT_INCUBATE_FIELDS = {
+const FLAT_INCUBATE_FIELDS: MetadataFields = {
   name: 'Identify the need',
   sections: [
     // Standardization
@@ -208,7 +320,7 @@ const FLAT_INCUBATE_FIELDS = {
 // All fields relevant to the implement/prototyping stage.
 // TODO(jrobbins): advise user to request a tag review
 // TODO(jrobbins): api overview link
-const FLAT_PROTOTYPE_FIELDS = {
+const FLAT_PROTOTYPE_FIELDS: MetadataFields = {
   name: 'Prototype a solution',
   sections: [
     // Standardization
@@ -227,7 +339,7 @@ const FLAT_PROTOTYPE_FIELDS = {
 };
 
 // All fields relevant to the dev trials stage.
-const FLAT_DEV_TRIAL_FIELDS = {
+const FLAT_DEV_TRIAL_FIELDS: MetadataFields = {
   name: 'Dev trials and iterate on design',
   sections: [
     // Standardizaton
@@ -281,7 +393,7 @@ const FLAT_DEV_TRIAL_FIELDS = {
 // TODO(jrobbins): api overview link
 
 // All fields relevant to the origin trial stage.
-const FLAT_ORIGIN_TRIAL_FIELDS = {
+const FLAT_ORIGIN_TRIAL_FIELDS: MetadataFields = {
   name: 'Origin trial',
   sections: [
     // Standardization
@@ -316,7 +428,7 @@ const FLAT_ORIGIN_TRIAL_FIELDS = {
   ],
 };
 
-export const FLAT_TRIAL_EXTENSION_FIELDS = {
+export const FLAT_TRIAL_EXTENSION_FIELDS: MetadataFields = {
   name: 'Trial extension',
   sections: [
     {
@@ -330,7 +442,7 @@ export const FLAT_TRIAL_EXTENSION_FIELDS = {
   ],
 };
 
-const FLAT_EVAL_READINESS_TO_SHIP_FIELDS = {
+const FLAT_EVAL_READINESS_TO_SHIP_FIELDS: MetadataFields = {
   name: 'Evaluate readiness to ship',
   sections: [
     {
@@ -341,7 +453,7 @@ const FLAT_EVAL_READINESS_TO_SHIP_FIELDS = {
 };
 
 // All fields relevant to the prepare to ship stage.
-const FLAT_PREPARE_TO_SHIP_FIELDS = {
+const FLAT_PREPARE_TO_SHIP_FIELDS: MetadataFields = {
   name: 'Prepare to ship',
   sections: [
     {
@@ -380,7 +492,7 @@ const FLAT_PREPARE_TO_SHIP_FIELDS = {
 };
 
 // All fields relevant to the enterprise prepare to ship stage.
-export const FLAT_ENTERPRISE_PREPARE_TO_SHIP_FIELDS = {
+export const FLAT_ENTERPRISE_PREPARE_TO_SHIP_FIELDS: MetadataFields = {
   name: 'Rollout step',
   sections: [
     {
@@ -400,7 +512,7 @@ export const FLAT_ENTERPRISE_PREPARE_TO_SHIP_FIELDS = {
  * specific stage types.
  */
 
-const PSA_IMPLEMENT_FIELDS = {
+const PSA_IMPLEMENT_FIELDS: MetadataFields = {
   name: 'Start prototyping',
   sections: [
     // Standardization
@@ -411,7 +523,7 @@ const PSA_IMPLEMENT_FIELDS = {
   ],
 };
 
-const PSA_PREPARE_TO_SHIP_FIELDS = {
+const PSA_PREPARE_TO_SHIP_FIELDS: MetadataFields = {
   name: 'Prepare to ship',
   sections: [
     // Standardization
@@ -434,7 +546,7 @@ const PSA_PREPARE_TO_SHIP_FIELDS = {
   ],
 };
 
-const DEPRECATION_PLAN_FIELDS = {
+const DEPRECATION_PLAN_FIELDS: MetadataFields = {
   name: 'Write up motivation',
   sections: [
     {
@@ -444,7 +556,7 @@ const DEPRECATION_PLAN_FIELDS = {
   ],
 };
 
-const DEPRECATION_DEV_TRIAL_FIELDS = {
+const DEPRECATION_DEV_TRIAL_FIELDS: MetadataFields = {
   name: 'Dev trial of deprecation',
   sections: [
     // Standardizaton
@@ -496,7 +608,7 @@ const DEPRECATION_DEV_TRIAL_FIELDS = {
   ],
 };
 
-export const ORIGIN_TRIAL_CREATION_FIELDS = {
+export const ORIGIN_TRIAL_CREATION_FIELDS: MetadataFields = {
   name: 'Origin trial creation',
   sections: [
     {
@@ -522,7 +634,7 @@ export const ORIGIN_TRIAL_CREATION_FIELDS = {
   ],
 };
 
-export const ORIGIN_TRIAL_EXTENSION_FIELDS = {
+export const ORIGIN_TRIAL_EXTENSION_FIELDS: MetadataFields = {
   name: 'Origin trial extension',
   sections: [
     {
@@ -535,7 +647,7 @@ export const ORIGIN_TRIAL_EXTENSION_FIELDS = {
 };
 
 // Note: Even though this is similar to another form, it is likely to change.
-const DEPRECATION_ORIGIN_TRIAL_FIELDS = {
+const DEPRECATION_ORIGIN_TRIAL_FIELDS: MetadataFields = {
   name: 'Origin trial',
   sections: [
     {
@@ -569,7 +681,7 @@ const DEPRECATION_ORIGIN_TRIAL_FIELDS = {
 };
 
 // Note: Even though this is similar to another form, it is likely to change.
-const DEPRECATION_PREPARE_TO_SHIP_FIELDS = {
+const DEPRECATION_PREPARE_TO_SHIP_FIELDS: MetadataFields = {
   name: 'Prepare to ship',
   sections: [
     // Standardization
@@ -598,7 +710,7 @@ const DEPRECATION_PREPARE_TO_SHIP_FIELDS = {
 // The fields shown to the user when verifying the accuracy of a feature.
 // Only one stage can be used for each definition object, so
 // multiple definitions exist for each stage that might be updated.
-export const VERIFY_ACCURACY_METADATA_FIELDS = {
+export const VERIFY_ACCURACY_METADATA_FIELDS: MetadataFields = {
   name: 'Feature Metadata',
   sections: [
     {
@@ -614,7 +726,7 @@ export const VERIFY_ACCURACY_METADATA_FIELDS = {
   ],
 };
 
-const VERIFY_ACCURACY_DEV_TRIAL_FIELDS = {
+const VERIFY_ACCURACY_DEV_TRIAL_FIELDS: MetadataFields = {
   name: 'Dev trials and iterate on design',
   sections: [
     {
@@ -628,7 +740,7 @@ const VERIFY_ACCURACY_DEV_TRIAL_FIELDS = {
   ],
 };
 
-const VERIFY_ACCURACY_ORIGIN_TRIAL_FIELDS = {
+const VERIFY_ACCURACY_ORIGIN_TRIAL_FIELDS: MetadataFields = {
   name: 'Origin trial',
   sections: [
     {
@@ -645,7 +757,7 @@ const VERIFY_ACCURACY_ORIGIN_TRIAL_FIELDS = {
   ],
 };
 
-export const VERIFY_ACCURACY_TRIAL_EXTENSION_FIELDS = {
+export const VERIFY_ACCURACY_TRIAL_EXTENSION_FIELDS: MetadataFields = {
   name: 'Trial extension',
   sections: [
     {
@@ -659,7 +771,7 @@ export const VERIFY_ACCURACY_TRIAL_EXTENSION_FIELDS = {
   ],
 };
 
-const VERIFY_ACCURACY_PREPARE_TO_SHIP_FIELDS = {
+const VERIFY_ACCURACY_PREPARE_TO_SHIP_FIELDS: MetadataFields = {
   name: 'Prepare to ship',
   sections: [
     {
@@ -674,7 +786,7 @@ const VERIFY_ACCURACY_PREPARE_TO_SHIP_FIELDS = {
   ],
 };
 
-const VERIFY_ACCURACY_ENTERPRISE_PREPARE_TO_SHIP_FIELDS = {
+const VERIFY_ACCURACY_ENTERPRISE_PREPARE_TO_SHIP_FIELDS: MetadataFields = {
   name: 'Rollout step',
   sections: [
     {
@@ -690,7 +802,7 @@ const VERIFY_ACCURACY_ENTERPRISE_PREPARE_TO_SHIP_FIELDS = {
 };
 
 // A single form to display the checkbox for verifying accuracy at the end.
-export const VERIFY_ACCURACY_CONFIRMATION_FIELD = {
+export const VERIFY_ACCURACY_CONFIRMATION_FIELD: MetadataFields = {
   name: 'Verify Accuracy',
   sections: [
     {
@@ -700,7 +812,7 @@ export const VERIFY_ACCURACY_CONFIRMATION_FIELD = {
   ],
 };
 
-export const FORMS_BY_STAGE_TYPE = {
+export const FORMS_BY_STAGE_TYPE: Record<number, MetadataFields> = {
   [enums.STAGE_BLINK_INCUBATE]: FLAT_INCUBATE_FIELDS,
   [enums.STAGE_BLINK_PROTOTYPE]: FLAT_PROTOTYPE_FIELDS,
   [enums.STAGE_BLINK_DEV_TRIAL]: FLAT_DEV_TRIAL_FIELDS,
@@ -729,7 +841,7 @@ export const FORMS_BY_STAGE_TYPE = {
   [enums.STAGE_ENT_SHIPPED]: FLAT_PREPARE_TO_SHIP_FIELDS,
 };
 
-export const CREATEABLE_STAGES = {
+export const CREATEABLE_STAGES: Record<number, number[]> = {
   [enums.FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0]]: [
     enums.STAGE_BLINK_ORIGIN_TRIAL,
     enums.STAGE_BLINK_SHIPPING,
@@ -754,7 +866,10 @@ export const CREATEABLE_STAGES = {
   ],
 };
 
-export const VERIFY_ACCURACY_FORMS_BY_STAGE_TYPE = {
+export const VERIFY_ACCURACY_FORMS_BY_STAGE_TYPE: Record<
+  number,
+  MetadataFields
+> = {
   [enums.STAGE_BLINK_DEV_TRIAL]: VERIFY_ACCURACY_DEV_TRIAL_FIELDS,
   [enums.STAGE_BLINK_ORIGIN_TRIAL]: VERIFY_ACCURACY_ORIGIN_TRIAL_FIELDS,
   [enums.STAGE_BLINK_SHIPPING]: VERIFY_ACCURACY_PREPARE_TO_SHIP_FIELDS,
@@ -774,7 +889,7 @@ export const VERIFY_ACCURACY_FORMS_BY_STAGE_TYPE = {
   [enums.STAGE_ENT_SHIPPED]: VERIFY_ACCURACY_PREPARE_TO_SHIP_FIELDS,
 };
 
-const BLINK_GENERIC_QUESTIONNAIRE = html` <p>
+const BLINK_GENERIC_QUESTIONNAIRE: TemplateResult = html` <p>
     To request a review, use the "Draft intent..." button above to generate an
     intent messsage, and then post that message to blink-dev@chromium.org.
   </p>
@@ -783,7 +898,7 @@ const BLINK_GENERIC_QUESTIONNAIRE = html` <p>
     email thread.
   </p>`;
 
-const PRIVACY_GENERIC_QUESTIONNAIRE = html` <p>
+const PRIVACY_GENERIC_QUESTIONNAIRE: TemplateResult = html` <p>
     <b
       >Please fill out the Security &amp; Privacy self-review questionnaire:
       <a
@@ -813,7 +928,7 @@ const PRIVACY_GENERIC_QUESTIONNAIRE = html` <p>
     nevertheless.
   </p>`;
 
-const SECURITY_GENERIC_QUESTIONNAIRE = html` <p>
+const SECURITY_GENERIC_QUESTIONNAIRE: TemplateResult = html` <p>
     <b
       >Please fill out the Security &amp; Privacy self-review questionnaire:
       <a
@@ -840,7 +955,7 @@ const SECURITY_GENERIC_QUESTIONNAIRE = html` <p>
     may ask you to fill out the questionnaire nevertheless.
   </p>`;
 
-const ENTERPRISE_SHIP_QUESTIONNAIRE = html` <p>
+const ENTERPRISE_SHIP_QUESTIONNAIRE: TemplateResult = html` <p>
     <b>(1) Does this launch include a breaking change?</b> Does this launch
     remove or modify existing behavior or does it interrupt an existing user
     flow? (e.g. removing or restricting an API, or significant UI change).
@@ -918,7 +1033,7 @@ const ENTERPRISE_SHIP_QUESTIONNAIRE = html` <p>
     to users, and describe the policy to control it.
   </p>`;
 
-const DEBUGGABILITY_ORIGIN_TRIAL_QUESTIONNAIRE = html`
+const DEBUGGABILITY_ORIGIN_TRIAL_QUESTIONNAIRE: TemplateResult = html`
   <p>
     (1) Does the introduction of the new Web Platform feature break Chrome
     DevTools' existing developer experience?
@@ -940,10 +1055,10 @@ const DEBUGGABILITY_ORIGIN_TRIAL_QUESTIONNAIRE = html`
   </p>
 `;
 
-const DEBUGGABILITY_SHIP_QUESTIONNAIRE =
+const DEBUGGABILITY_SHIP_QUESTIONNAIRE: TemplateResult =
   DEBUGGABILITY_ORIGIN_TRIAL_QUESTIONNAIRE;
 
-const TESTING_SHIP_QUESTIONNAIRE = html` <p>
+const TESTING_SHIP_QUESTIONNAIRE: TemplateResult = html` <p>
     <b
       >(1) Does your feature have sufficient automated test coverage (Unit
       tests, WPT, browser tests and other integration tests)?</b
@@ -1000,7 +1115,7 @@ const TESTING_SHIP_QUESTIONNAIRE = html` <p>
     document here.
   </p>`;
 
-export const GATE_QUESTIONNAIRES = {
+export const GATE_QUESTIONNAIRES: Record<number, TemplateResult> = {
   [enums.GATE_TYPES.API_PROTOTYPE]: BLINK_GENERIC_QUESTIONNAIRE,
   [enums.GATE_TYPES.API_ORIGIN_TRIAL]: BLINK_GENERIC_QUESTIONNAIRE,
   [enums.GATE_TYPES.API_EXTEND_ORIGIN_TRIAL]: BLINK_GENERIC_QUESTIONNAIRE,
