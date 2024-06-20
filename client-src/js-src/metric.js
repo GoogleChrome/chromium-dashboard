@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 export class Metric {
   static get supportsPerfNow() {
     return performance && performance.now;

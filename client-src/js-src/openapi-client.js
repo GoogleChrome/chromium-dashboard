@@ -22,14 +22,16 @@ import {DefaultApi as Api, Configuration} from 'chromestatus-openapi';
  */
 export class ChromeStatusOpenApiClient extends Api {
   constructor() {
-    super(new Configuration({
-      credentials: 'same-origin',
-      apiKey: 'placeholder-api-key',
-      middleware: [
-        {pre: ChromeStatusMiddlewares.xsrfMiddleware},
-        {post: ChromeStatusMiddlewares.xssiMiddleware},
-      ],
-    }));
+    super(
+      new Configuration({
+        credentials: 'same-origin',
+        apiKey: 'placeholder-api-key',
+        middleware: [
+          {pre: ChromeStatusMiddlewares.xsrfMiddleware},
+          {post: ChromeStatusMiddlewares.xssiMiddleware},
+        ],
+      })
+    );
   }
 }
 
@@ -50,7 +52,6 @@ export class ChromeStatusMiddlewares {
     return req;
   }
 
-
   /**
    * Server sends XSSI prefix. Remove it and allow the client to parse.
    *
@@ -59,19 +60,18 @@ export class ChromeStatusMiddlewares {
    */
   static async xssiMiddleware(context) {
     const response = context.response;
-    return response.text().then((rawResponseText) => {
-      const XSSIPrefix = ')]}\'\n';
+    return response.text().then(rawResponseText => {
+      const XSSIPrefix = ")]}'\n";
       if (!rawResponseText.startsWith(XSSIPrefix)) {
         throw new Error(
-          `Response does not start with XSSI prefix: ${XSSIPrefix}`);
+          `Response does not start with XSSI prefix: ${XSSIPrefix}`
+        );
       }
-      return new Response(
-        rawResponseText.substring(XSSIPrefix.length),
-        {
-          status: response.status,
-          statusText: response.statusText,
-          headers: response.headers,
-        });
+      return new Response(rawResponseText.substring(XSSIPrefix.length), {
+        status: response.status,
+        statusText: response.statusText,
+        headers: response.headers,
+      });
     });
   }
 }

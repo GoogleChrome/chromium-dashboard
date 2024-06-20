@@ -103,7 +103,7 @@ featureListEl.addEventListener('app-ready', () => {
 });
 
 // Helper function used by features.html
-/* eslint-disable no-unused-vars */
+
 export const loadFeatureLegendViews = function (views) {
   legendEl.views = views;
 };

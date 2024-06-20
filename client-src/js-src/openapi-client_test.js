@@ -1,7 +1,10 @@
 import {assert, expect} from '@open-wc/testing';
 import sinon from 'sinon';
 import {ChromeStatusClient} from './cs-client';
-import {ChromeStatusMiddlewares, ChromeStatusOpenApiClient} from './openapi-client';
+import {
+  ChromeStatusMiddlewares,
+  ChromeStatusOpenApiClient,
+} from './openapi-client';
 
 describe('openapi-client', () => {
   beforeEach(async () => {
