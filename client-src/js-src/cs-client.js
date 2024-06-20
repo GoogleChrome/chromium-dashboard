@@ -409,5 +409,3 @@ class ChromeStatusClient {
 exports.ChromeStatusClient = ChromeStatusClient;
 exports.FeatureNotFoundError = FeatureNotFoundError;
 })(window);
-
-export default window.ChromeStatusClient;

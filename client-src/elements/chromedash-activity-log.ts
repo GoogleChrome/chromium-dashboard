@@ -13,7 +13,7 @@ interface Amendment {
 
 declare global {
   interface Window {
-    csClient?: any;
+    csClient: ChromeStatusClient;
   }
 }
 

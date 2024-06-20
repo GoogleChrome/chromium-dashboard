@@ -6,8 +6,8 @@ import {
 } from './chromedash-activity-log';
 import '../js-src/cs-client';
 import sinon from 'sinon';
-import ChromeStatusClient from '../js-src/cs-client';
 
+declare const ChromeStatusClient: typeof window.csClient;
 const nonAdminUser = {
   can_create_feature: true,
   can_edit_all: true,
@@ -107,8 +107,8 @@ describe('chromedash-activity', () => {
 
   it('can delete an activity', async () => {
     window.csClient = new ChromeStatusClient('fake_token', 1);
-    sinon.stub(window.csClient, 'deleteComment');
-    window.csClient.deleteComment.returns(Promise.resolve({message: 'Done'}));
+    const deleteCommentStub = sinon.stub(window.csClient, 'deleteComment');
+    deleteCommentStub.returns(Promise.resolve({message: 'Done'}));
 
     const doomedComment = {
       comment_id: 4,
@@ -139,8 +139,8 @@ describe('chromedash-activity', () => {
 
   it('can undelete an activity', async () => {
     window.csClient = new ChromeStatusClient('fake_token', 1);
-    sinon.stub(window.csClient, 'undeleteComment');
-    window.csClient.undeleteComment.returns(Promise.resolve({message: 'Done'}));
+    const undeleteStub = sinon.stub(window.csClient, 'undeleteComment');
+    undeleteStub.returns(Promise.resolve({message: 'Done'}));
 
     const blessedComment = {
       comment_id: 4,
