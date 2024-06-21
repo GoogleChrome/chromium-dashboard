@@ -1,30 +1,25 @@
 import {LitElement, css, html} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import {customElement, property, state} from 'lit/decorators.js';
 
+@customElement('chromedash-callout')
 class ChromedashCallout extends LitElement {
-  static get properties() {
-    return {
-      signedIn: {type: Boolean},
-      targetId: {type: String},
-      // TODO(jrobbins): Support sides other than "south".
-      side: {type: String}, // "north", "south", "east", or "west"
-      hidden: {type: Boolean},
-      top: {type: Number},
-      left: {type: Number},
-      cue: {type: String}, // String to send to the server when dismissed.
-      dismissedCues: {attribute: false, type: Array},
-    };
-  }
-
-  constructor() {
-    super();
-    this.side = 'south';
-    this.hidden = true;
-    this.top = 0;
-    this.left = 0;
-    this.signedIn = false;
-    this.dismissedCues = [];
-  }
+  @property({type: String})
+  targetId = '';
+  @property({type: String})
+  side: 'north' | 'south' | 'east' | 'west' = 'south';
+  @property({type: String})
+  cue = '';
+  @property({attribute: false, type: Array})
+  dismissedCues: string[] = [];
+  @property({type: Boolean})
+  signedIn = false;
+  @property({type: Boolean})
+  hidden = true;
+  @state()
+  top = 0;
+  @state()
+  left = 0;
 
   connectedCallback() {
     super.connectedCallback();
@@ -33,7 +28,7 @@ class ChromedashCallout extends LitElement {
       return;
     }
     try {
-      this.attachToTarget(this.parentNode.querySelector('#' + this.targetId));
+      this.attachToTarget(this.parentNode!.querySelector('#' + this.targetId));
     } catch (error) {
       console.error('Failed to attach target', error);
     }
@@ -142,5 +137,3 @@ class ChromedashCallout extends LitElement {
     `;
   }
 }
-
-customElements.define('chromedash-callout', ChromedashCallout);
