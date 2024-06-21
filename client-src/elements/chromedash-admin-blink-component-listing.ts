@@ -1,8 +1,25 @@
-import {html, css, LitElement} from 'lit';
+import {html, css, LitElement, TemplateResult} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {VARS} from '../css/_vars-css.js';
 import {LAYOUT_CSS} from '../css/_layout-css.js';
+import {customElement, property, query} from 'lit/decorators.js';
+import '../js-src/openapi-client';
+import {ChromeStatusOpenApiClient} from '../js-src/openapi-client';
+import {DefaultApiInterface} from 'chromestatus-openapi';
 
+declare global {
+  interface Window {
+    csOpenApiClient: ChromeStatusOpenApiClient;
+  }
+}
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+@customElement('chromedash-admin-blink-component-listing')
 export class ChromedashAdminBlinkComponentListing extends LitElement {
   static get styles() {
     return [
@@ -81,29 +98,35 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
       `,
     ];
   }
-  /** @type {import('chromestatus-openapi').DefaultApiInterface} */
-  _client;
 
-  static get properties() {
-    return {
-      editing: {type: Boolean, reflect: true},
-      component: {type: Object},
-      index: {type: Number},
-      usersMap: {type: Object},
-      id: {type: Number},
-      name: {type: String},
-      subscriberIds: {type: Array},
-      ownerIds: {type: Array},
-    };
-  }
+  @property({type: Boolean, reflect: true})
+  editing = false;
+  @property({type: Object})
+  component = {};
+  @property({type: Number})
+  index = 0;
+  @property({type: Object})
+  usersMap: Map<number, User> = new Map();
+  @property({type: Number})
+  componentId = 0;
+  @property({type: String})
+  name = '';
+  @property({type: Array})
+  subscriberIds = [];
+  @property({type: Array})
+  ownerIds = [];
 
-  constructor() {
-    super();
-    this._client = window.csOpenApiClient;
-  }
+  _client: DefaultApiInterface = window.csOpenApiClient;
+
+  @query('.owner_candidates')
+  _ownerCandidates;
+  @query('.is_primary_checkbox')
+  _isPrimaryCheckbox;
+  @query('owner_list_${this.index}')
+  _ownerList;
 
   _getOptionsElement() {
-    return this.shadowRoot.querySelector('.owner_candidates');
+    return this._ownerCandidates;
   }
 
   _findSelectedOptionElement() {
@@ -111,19 +134,13 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
   }
 
   _isOwnerCheckboxChecked() {
-    return this.shadowRoot.querySelector('.is_primary_checkbox').checked;
+    return this._isPrimaryCheckbox.checked;
   }
 
-  /**
-   * @param {int} userId
-   * @return {boolean}
-   */
-  _isUserInOwnerList(userId) {
-    const ownersList = this.shadowRoot.querySelector(
-      `#owner_list_${this.index}`
-    );
+  _isUserInOwnerList(userId: number) {
+    const ownersList = this._ownerList;
     return Array.from(ownersList.options).find(
-      option => parseInt(option.value) === userId
+      option => parseInt((option as HTMLOptionElement).value) === userId
     );
   }
 
@@ -146,7 +163,7 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
     let isError = false;
     this._client
       .addUserToComponent({
-        componentId: this.id,
+        componentId: this.componentId,
         userId: userId,
         componentUsersRequest: {owner: toggleAsOwner},
       })
@@ -190,7 +207,7 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
     let isError = false;
     this._client
       .removeUserFromComponent({
-        componentId: this.id,
+        componentId: this.componentId,
         userId: userId,
         componentUsersRequest: {owner: toggleAsOwner},
       })
@@ -215,12 +232,12 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
   }
 
   _printUserDetails(userId) {
-    return html`${this.usersMap.get(userId).name}:
-    ${this.usersMap.get(userId).email}`;
+    return html`${this.usersMap.get(userId)!.name}:
+    ${this.usersMap.get(userId)!.email}`;
   }
 
   render() {
-    const userListTemplate = [];
+    const userListTemplate: TemplateResult[] = [];
     for (const user of this.usersMap.values()) {
       userListTemplate.push(
         html`<option
@@ -293,8 +310,3 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
     `;
   }
 }
-
-customElements.define(
-  'chromedash-admin-blink-component-listing',
-  ChromedashAdminBlinkComponentListing
-);
