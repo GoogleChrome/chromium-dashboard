@@ -1,19 +1,13 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import {customElement, property} from 'lit/decorators.js';
 
+@customElement('chromedash-banner')
 class ChromedashBanner extends LitElement {
-  static get properties() {
-    return {
-      timestamp: {type: Number},
-      message: {type: String},
-    };
-  }
-
-  constructor() {
-    super();
-    this.timestamp = null; // Unix timestamp: seconds since 1970-01-01.
-    this.message = '';
-  }
+  @property({type: Number})
+  timestamp: null | number = null; // Unix timestamp: seconds since 1970-01-01.
+  @property({type: String})
+  message: string = '';
 
   static get styles() {
     return [
@@ -36,7 +30,7 @@ class ChromedashBanner extends LitElement {
       return nothing;
     }
     const date = new Date(this.timestamp * 1000);
-    const formatOptions = {
+    const formatOptions: Intl.DateTimeFormatOptions = {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -55,5 +49,3 @@ class ChromedashBanner extends LitElement {
     return html` <div>${this.message} ${this.computeLocalDateString()}</div> `;
   }
 }
-
-customElements.define('chromedash-banner', ChromedashBanner);
