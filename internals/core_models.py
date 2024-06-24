@@ -335,6 +335,7 @@ class Stage(ndb.Model):
   ot_owner_email = ndb.StringProperty()
   ot_request_note = ndb.TextProperty()
   ot_require_approvals = ndb.BooleanProperty(default=False)
+  ot_setup_status = ndb.IntegerProperty()
   ot_webfeature_use_counter = ndb.StringProperty()
 
   # Origin trial stage id that this stage extends, if trial extension stage.

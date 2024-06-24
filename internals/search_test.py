@@ -12,16 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import testing_config  # Must be imported before the module under test.
+import testing_config  # isort: split
 
 import datetime
 from unittest import mock
 
-from internals import core_enums
-from internals.core_models import FeatureEntry
+from internals import core_enums, notifier, search
+from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate, Vote
-from internals import notifier
-from internals import search
 from internals.search_queries import Interval
 
 
@@ -138,41 +136,61 @@ class SearchRETest(testing_config.CustomTestCase):
 class SearchParsingTest(testing_config.CustomTestCase):
   def test_parse_query_value__dates(self):
     d = datetime.datetime
-    now = d(2024, 5, 15)
-    self.assertEqual(d(2024, 5, 15), search.parse_query_value('now', now))
-    self.assertEqual(d(2024, 5, 13), search.parse_query_value('now-2d', now))
-    self.assertEqual(d(2024, 5, 18), search.parse_query_value('now+3d', now))
-    self.assertEqual(d(2024, 4, 10), search.parse_query_value('now-5w', now))
-    self.assertEqual(d(2024, 6, 5), search.parse_query_value('now+3w', now))
+    context = search.QueryContext(now=d(2024, 5, 15), current_stable_milestone=0)
+    self.assertEqual(d(2024, 5, 15), search.parse_query_value('now', context))
+    self.assertEqual(d(2024, 5, 13), search.parse_query_value('now-2d', context))
+    self.assertEqual(d(2024, 5, 18), search.parse_query_value('now+3d', context))
+    self.assertEqual(d(2024, 4, 10), search.parse_query_value('now-5w', context))
+    self.assertEqual(d(2024, 6, 5), search.parse_query_value('now+3w', context))
     self.assertEqual(
       'now+1000000000d',
-      search.parse_query_value('now+1000000000d', now),
+      search.parse_query_value('now+1000000000d', context),
       'Overflow should fall back to a string.',
     )
-    self.assertEqual(d(2023, 7, 8), search.parse_query_value('2023-07-08', now))
-    self.assertEqual(d(2023, 7, 8), search.parse_query_value('2023-7-8', now))
+    self.assertEqual(d(2023, 7, 8), search.parse_query_value('2023-07-08', context))
+    self.assertEqual(d(2023, 7, 8), search.parse_query_value('2023-7-8', context))
 
     # And some cases that shouldn't parse:
-    self.assertEqual('nows', search.parse_query_value('nows', now))
-    self.assertEqual('now-2days', search.parse_query_value('now-2days', now))
-    self.assertEqual('now + 2d', search.parse_query_value('now + 2d', now))
-    self.assertEqual('now-5weeks', search.parse_query_value('now-5weeks', now))
-    self.assertEqual('2023-13-8', search.parse_query_value('2023-13-8', now))
-    self.assertEqual('2023/07/08', search.parse_query_value('2023/07/08', now))
+    self.assertEqual('nows', search.parse_query_value('nows', context))
+    self.assertEqual('now-2days', search.parse_query_value('now-2days', context))
+    self.assertEqual('now + 2d', search.parse_query_value('now + 2d', context))
+    self.assertEqual('now-5weeks', search.parse_query_value('now-5weeks', context))
+    self.assertEqual('2023-13-8', search.parse_query_value('2023-13-8', context))
+    self.assertEqual('2023/07/08', search.parse_query_value('2023/07/08', context))
+
+  def test_parse_query_value__milestones(self):
+    context = search.QueryContext(
+      now=datetime.datetime(1, 1, 1), current_stable_milestone=123
+    )
+    self.assertEqual(123, search.parse_query_value('current_stable', context))
+    self.assertEqual(122, search.parse_query_value('current_stable-1', context))
+    self.assertEqual(128, search.parse_query_value('current_stable+5', context))
+
+    # And some cases that shouldn't parse:
+    self.assertEqual(
+      'current_stable_m', search.parse_query_value('current_stable_m', context)
+    )
+    self.assertEqual(
+      'current_stable+2m', search.parse_query_value('current_stable+2m', context)
+    )
 
   def test_parse_query_value__intervals(self):
-    now = datetime.datetime(2024, 5, 15)
-    self.assertEqual([Interval(1, 5)], search.parse_query_value_list('1..5', now))
+    context = search.QueryContext(
+      now=datetime.datetime(2024, 5, 15), current_stable_milestone=0
+    )
+    self.assertEqual([Interval(1, 5)], search.parse_query_value_list('1..5', context))
     self.assertEqual(
       [Interval(datetime.datetime(2023, 1, 1), datetime.datetime(2024, 1, 1))],
-      search.parse_query_value_list('2023-01-01..2024-01-01', now),
+      search.parse_query_value_list('2023-01-01..2024-01-01', context),
     )
     # This parses, but it's excluded by the regex and isn't converted into an efficient query.
-    self.assertEqual([1, Interval(2, 3)], search.parse_query_value_list('1,2..3', now))
+    self.assertEqual(
+      [1, Interval(2, 3)], search.parse_query_value_list('1,2..3', context)
+    )
 
     self.assertEqual(
       ['1..2..3'],
-      search.parse_query_value_list('1..2..3', now),
+      search.parse_query_value_list('1..2..3', context),
       "Don't get confused by funny syntax",
     )
 
@@ -192,6 +210,16 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.featureentry_1.editor_emails = ['editor@example.com']
     self.featureentry_1.cc_emailss = ['cc@example.com']
     self.featureentry_1.put()
+
+    self.featureentry_1_shipping_stage = Stage(
+      feature_id=self.featureentry_1.key.id(),
+      stage_type=core_enums.STAGE_BLINK_SHIPPING,
+      milestones=MilestoneSet(desktop_first=123),
+    )
+    self.featureentry_1_shipping_stage.put()
+    self.featureentry_1.active_stage_id = self.featureentry_1_shipping_stage.key.id()
+    self.featureentry_1.put()
+
     self.featureentry_2 = FeatureEntry(
       created=datetime.datetime(2024, 3, 4),
       name='feature 2',
@@ -488,11 +516,26 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         [f['name'] for f in actual],
         ['feature 1', 'feature 2'])
 
-    actual, tc = search.process_query('accurate_as_of=now-3d', now=datetime.datetime(2024,5,26))
+    actual, tc = search.process_query(
+      'accurate_as_of=now-3d',
+      context=search.QueryContext(
+        now=datetime.datetime(2024, 5, 26), current_stable_milestone=0
+      ),
+    )
     self.assertEqual(1, len(actual))
     self.assertCountEqual(
         [f['name'] for f in actual],
         ['feature 2'])
+
+  def test_process_query__milestones(self):
+    """We can find milestones."""
+    actual, tc = search.process_query(
+      'browsers.chrome.desktop=current_stable+2',
+      context=search.QueryContext(
+        now=datetime.datetime(1, 1, 1), current_stable_milestone=121
+      ),
+    )
+    self.assertCountEqual([f['name'] for f in actual], ['feature 1'])
 
   def test_process_query__interval(self):
     """We can run interval queries."""

@@ -1,9 +1,9 @@
 import {LitElement, css, html} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import './chromedash-timeline.ts';
+import './chromedash-timeline.js';
 import {showToastMessage} from './utils.js';
 import {property} from 'lit/decorators.js';
-import {Property} from './datatypes.ts';
+import {Property} from './datatypes.js';
 
 export class ChromedashTimelinePage extends LitElement {
   @property({type: String})

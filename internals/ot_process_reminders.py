@@ -45,6 +45,12 @@ def build_trial_data(trial_data: dict[str, Any]) -> dict[str, Any] | None:
   # Remove duplicates
   contact_list = list(set(contact_list))
 
+  # If we have no contacts on record,
+  # log a warning and don't add to trials to notify.
+  if len(contact_list) == 0:
+    logging.warning(f'No contacts found for origin trial ID {trial_data["id"]}')
+    return None
+
   trial_info = {
     'id': trial_data['id'],
     'name': trial_data['display_name'],

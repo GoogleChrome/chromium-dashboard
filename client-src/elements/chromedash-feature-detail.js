@@ -81,7 +81,6 @@ class ChromedashFeatureDetail extends LitElement {
       gates: {type: Array},
       process: {type: Object},
       progress: {type: Object},
-      dismissedCues: {type: Array},
       anyCollapsed: {type: Boolean},
       selectedGateId: {type: Number},
       openStage: {type: Number},
@@ -97,7 +96,6 @@ class ChromedashFeatureDetail extends LitElement {
     this.gates = [];
     this.process = {};
     this.progress = {};
-    this.dismissedCues = [];
     this.anyCollapsed = true;
     this.previousStageTypeRendered = 0;
     this.sameTypeRendered = 0;

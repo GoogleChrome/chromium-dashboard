@@ -13,10 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import dataclasses
 import datetime
 import logging
 import re
-from typing import Any, Optional, Union
+from typing import Any, Optional, Self, Union
 
 from google.cloud.ndb import Key
 from google.cloud.ndb.tasklets import Future  # for type checking only
@@ -26,6 +27,7 @@ from internals import (
   approval_defs,
   core_enums,
   feature_helpers,
+  fetchchannels,
   notifier,
   search_fulltext,
   search_queries,
@@ -91,12 +93,28 @@ def process_recent_reviews_query() -> list[int] | Future:
   return future_feature_ids
 
 
+@dataclasses.dataclass
+class QueryContext:
+  now: datetime.datetime
+  current_stable_milestone: int
+
+  @classmethod
+  def current(cls) -> Self:
+    """Computes the "current" QueryContext based on ambient information."""
+    current_stable = None
+    for version in fetchchannels.get_omaha_data()[0]['versions']:
+      if version['channel'] == 'stable':
+        current_stable = int(version['version'].split('.')[0])
+        break
+    assert current_stable is not None
+    return cls(now=datetime.datetime.now(), current_stable_milestone=current_stable)
+
+
 NOW_RELATIVE_DATE = re.compile(r'now(?:(?P<offset>[+-]\d+)(?P<unit>[dw]))?')
+MILESTONE_RELATIVE_TO_STABLE = re.compile(r'current_stable(?P<offset>[+-]\d+)?')
 
 
-def parse_query_value(
-  val_str: str, now: datetime.datetime
-) -> search_queries.QueryValue:
+def parse_query_value(val_str: str, context: QueryContext) -> search_queries.QueryValue:
   """Return a python object that can be used as a value in an NDB query."""
 
   if val_str.startswith('"') and val_str.endswith('"'):
@@ -113,12 +131,12 @@ def parse_query_value(
       unit = now_relative_date.group('unit')
       if unit is None:
         # Value was just a literal "now".
-        return now
+        return context.now
       offset = int(now_relative_date.group('offset'))
       if unit == 'd':
-        return now + datetime.timedelta(days=offset)
+        return context.now + datetime.timedelta(days=offset)
       if unit == 'w':
-        return now + datetime.timedelta(weeks=offset)
+        return context.now + datetime.timedelta(weeks=offset)
     except OverflowError:
       pass
     # Otherwise, treat the value as a literal string.
@@ -129,6 +147,14 @@ def parse_query_value(
     logging.info('%r is not a date' % val_str)
     pass
 
+  milestone_relative_to_stable = MILESTONE_RELATIVE_TO_STABLE.fullmatch(val_str)
+  if milestone_relative_to_stable:
+    result = context.current_stable_milestone
+    offset_str = milestone_relative_to_stable.group('offset')
+    if offset_str:
+      result += int(offset_str)
+    return result
+
   try:
     return int(val_str)
   except ValueError:
@@ -138,24 +164,25 @@ def parse_query_value(
 
 
 def parse_query_value_interval(
-  val_str: str, now: datetime.datetime
+  val_str: str, context: QueryContext
 ) -> search_queries.QueryValue | search_queries.Interval[search_queries.QueryValue]:
   """Return a value or interval of values that can be used in an NDB query."""
   try_interval = val_str.split('..')
   if len(try_interval) == 2:
     return search_queries.Interval(
-      parse_query_value(try_interval[0], now), parse_query_value(try_interval[1], now)
+      parse_query_value(try_interval[0], context),
+      parse_query_value(try_interval[1], context),
     )
-  return parse_query_value(val_str, now)
+  return parse_query_value(val_str, context)
 
 
 def parse_query_value_list(
-  vals_str: str, now: datetime.datetime
+  vals_str: str, context: QueryContext
 ) -> list[
   search_queries.QueryValue | search_queries.Interval[search_queries.QueryValue]
 ]:
   """Return a list of values that can be used in an NDB query."""
-  return [parse_query_value_interval(part, now) for part in vals_str.split(',')]
+  return [parse_query_value_interval(part, context) for part in vals_str.split(',')]
 
 
 # A full-text query term consisting of a single word or quoted string.
@@ -191,13 +218,13 @@ SIMPLE_QUERY_TERMS = [
 
 
 def process_query_term(
-  is_negation: bool, field_name: str, op_str: str, vals_str: str, now: datetime.datetime
+  is_negation: bool, field_name: str, op_str: str, vals_str: str, context: QueryContext
 ) -> Future:
   """Parse and run a user-supplied query, if we can handle it."""
   if is_negation:
     op_str = search_queries.negate_operator(op_str)
 
-  val_list = parse_query_value_list(vals_str, now)
+  val_list = parse_query_value_list(vals_str, context)
   logging.info('trying %r %r %r', field_name, op_str, val_list)
 
   future = search_queries.single_field_query_async(
@@ -291,10 +318,10 @@ def process_query(
   show_enterprise=False,
   start=0,
   num=DEFAULT_RESULTS_PER_PAGE,
-  now: Optional[datetime.datetime] = None,
+  context: Optional[QueryContext] = None,
 ) -> tuple[list[dict[str, Any]], int]:
-  if now is None:
-    now = datetime.datetime.now()
+  if context is None:
+    context = QueryContext.current()
 
   """Parse the user's query, run it, and return a list of features."""
   # 1a. Parse the user query into terms.
@@ -324,11 +351,13 @@ def process_query(
 
   # 2a. Create parallel queries for each term.  Each yields a future.
   logging.info('creating parallel queries for %r', terms)
-  feature_id_future_ops = create_future_operations_from_queries(terms, now)
+  feature_id_future_ops = create_future_operations_from_queries(terms, context)
 
   # 2b. Create parallel queries for each permission queries.
   logging.info('creating parallel queries for %r', permission_terms)
-  permissions_future_ops = create_future_operations_from_queries(permission_terms, now)
+  permissions_future_ops = create_future_operations_from_queries(
+    permission_terms, context
+  )
 
   # 2c. Create a parallel query for total sort order.
   logging.info('creating total sort order for %r', sort_spec)
@@ -371,7 +400,7 @@ def process_query(
   return features_on_page, total_count
 
 
-def create_future_operations_from_queries(terms, now: datetime.datetime):
+def create_future_operations_from_queries(terms, context: QueryContext):
   """Create parallel queries for each term. Each yields a future operation"""
   feature_id_future_ops = []
   for logical_op, field_name, op_str, vals_str, textterm in terms:
@@ -384,7 +413,7 @@ def create_future_operations_from_queries(terms, now: datetime.datetime):
                    field_name, op_str, vals_str)
       future = process_predefined_query_term(field_name, op_str, vals_str)
     else:
-      future = process_query_term(is_negation, field_name, op_str, vals_str, now)
+      future = process_query_term(is_negation, field_name, op_str, vals_str, context)
       is_normal_query = True
 
     if future is None:

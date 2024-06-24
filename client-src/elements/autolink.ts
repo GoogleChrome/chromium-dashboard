@@ -3,6 +3,7 @@
 // See: https://chromium.googlesource.com/infra/infra/+/refs/heads/main/appengine/monorail/static_src/autolink.js
 
 import {enhanceAutolink} from './chromedash-link.js';
+import {Component, TextRun} from './datatypes';
 const CRBUG_DEFAULT_PROJECT = 'chromium';
 const CRBUG_URL = 'https://bugs.chromium.org';
 const ISSUE_TRACKER_RE =
@@ -30,11 +31,11 @@ const LINK_TRAILING_CHARS = [
   ['{', '}'],
   ["'", "'"],
   ['"', '"'],
-];
+] as const;
 const GOOG_SHORT_LINK_RE =
   /^(b|t|o|omg|cl|cr|go|g|shortn|who|teams|fxr|fxrev|fxb|tqr)\/.*/gi;
 
-const Components = new Map();
+const Components = new Map<string, Component>();
 Components.set('00-commentbug', {
   refRegs: [PROJECT_COMMENT_BUG_RE],
   replacer: replaceCommentBugRef,
@@ -55,18 +56,23 @@ Components.set('05-linkify-shorthand', {
 // 06-versioncontrol unused.
 
 // Replace plain text references with links functions.
-function replaceIssueRef(stringMatch, projectName, localId, commentId) {
+function replaceIssueRef(
+  stringMatch: string,
+  projectName: string,
+  localId: string,
+  commentId: string
+) {
   return createIssueRefRun(projectName, localId, stringMatch, commentId);
 }
 
 function replaceTrackerIssueRef(
-  match,
+  match: RegExpExecArray,
   currentProjectName = CRBUG_DEFAULT_PROJECT
 ) {
   const issueRefRE = PROJECT_LOCALID_RE;
   const commentId = '';
-  const textRuns = [];
-  let refMatch;
+  const textRuns: TextRun[] = [];
+  let refMatch: RegExpExecArray | null;
   let pos = 0;
   while ((refMatch = issueRefRE.exec(match[0])) !== null) {
     if (refMatch.index > pos) {
@@ -92,8 +98,8 @@ function replaceTrackerIssueRef(
   return textRuns;
 }
 
-function replaceCommentBugRef(match) {
-  let textRun;
+function replaceCommentBugRef(match: RegExpExecArray) {
+  let textRun: TextRun;
   const issueNum = match[7];
   const commentNum = match[18];
   if (issueNum && commentNum) {
@@ -108,8 +114,8 @@ function replaceCommentBugRef(match) {
   return [textRun];
 }
 
-function replaceLinkRef(match) {
-  const textRuns = [];
+function replaceLinkRef(match: RegExpExecArray) {
+  const textRuns: TextRun[] = [];
   let content = match[0];
   let trailing = '';
   if (match[1]) {
@@ -161,7 +167,7 @@ function createIssueRefRun(projectName, localId, content, commentId) {
 export function markupAutolinks(plainString, featureLinks = []) {
   plainString = plainString || '';
   const chunks = [plainString.trim()];
-  const textRuns = [];
+  const textRuns: TextRun[] = [];
   chunks.filter(Boolean).forEach(chunk => {
     textRuns.push(...autolinkChunk(chunk));
   });
@@ -186,7 +192,7 @@ function autolinkChunk(chunk) {
 }
 
 function applyLinks(textRuns, replacer, re) {
-  const resultRuns = [];
+  const resultRuns: TextRun[] = [];
   textRuns.forEach(textRun => {
     if (textRun.tag) {
       resultRuns.push(textRun);
