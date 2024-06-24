@@ -2,14 +2,16 @@
 
 /** Represents an external organization that reviews Chromium changes. Currently the W3C TAG,
  * Firefox, and Safari. */
+import {LabelInfo} from './datatypes.js';
 export class ExternalReviewer {
+  icon: string;
+  _labels: Record<string, LabelInfo>;
   /** Finds reviewer information based on their github repo name.
    *
-   * @param {string} repo Github repository name in the form 'org/name'.
    * @returns {ExternalReviewer | undefined} undefined if the repo doesn't hold external
    * reviewers.
    */
-  static get(repo) {
+  static get(repo: string) {
     switch (repo) {
       case 'mozilla/standards-positions':
         return new ExternalReviewer(
@@ -92,25 +94,14 @@ export class ExternalReviewer {
   }
 
   /** Finds information about an issue label for this external reviewer.
-   * @param {string} name
-   * @typedef {{
-   *   description: string,
-   *   variant: 'primary' | 'success' | 'neutral' | 'warning' | 'danger',
-   * }} LabelInfo
    * @returns {LabelInfo}
    */
-  label(name) {
+  label(name: string) {
     return this._labels[name];
   }
 
-  /** @private
-   * @param {string} icon
-   * @param {Record<string, LabelInfo>} labels
-   */
-  constructor(icon, labels) {
-    /** @type {string} @readonly */
+  constructor(icon: string, labels: Record<string, LabelInfo>) {
     this.icon = icon;
-    /** @type {Record<string, LabelInfo>} */
     this._labels = labels;
   }
 }

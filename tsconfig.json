@@ -1,6 +1,7 @@
 {
     "compilerOptions": {
-      "module": "preserve",
+      "module": "ES2022",
+      "moduleResolution": "bundler",
       "plugins": [
         {
           "name": "ts-lit-plugin",
@@ -13,22 +14,22 @@
       "noImplicitAny": false,
       "esModuleInterop": true,
       "skipLibCheck": true,
-      "rootDir": ".",
+      "rootDir": "client-src",
       "allowJs": true,
       "checkJs": false,
       "resolveJsonModule": true,
-      "noEmit": true,
-      "outDir": "static/dist",
+      "outDir": "build",
       "emitDeclarationOnly": false,
       "incremental": true,
       "lib": ["ES2023", "DOM"],
       "experimentalDecorators": true,
       "useDefineForClassFields": false,
-      "allowImportingTsExtensions": true
+      "target": "ES2022",
     },
     "include": [
       "client-src/js-src/**/*",
-      "client-src/elements/**/*"
+      "client-src/elements/**/*",
+      "client-src/components.js"
     ],
     "exclude": [
       "node_modules",

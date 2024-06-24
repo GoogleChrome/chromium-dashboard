@@ -1,8 +1,6 @@
 'use strict';
 
-import rollupBabel from '@rollup/plugin-babel';
 import rollupResolve from '@rollup/plugin-node-resolve';
-import typescript from '@rollup/plugin-typescript';
 import {deleteAsync} from 'del';
 import gulp from 'gulp';
 import autoPrefixer from 'gulp-autoprefixer';
@@ -72,21 +70,12 @@ gulp.task('css', () => {
 gulp.task('rollup', () => {
   return rollup({
     input: [
-      'client-src/components.js',
-      'client-src/js-src/openapi-client.js',
+      'build/components.js',
+      'build/js-src/openapi-client.js',
     ],
     plugins: [
       rollupResolve(),
-      rollupBabel({
-        babelHelpers: 'bundled',
-        extensions: ['.js', '.ts'],
-        plugins: ['@babel/plugin-transform-classes']
-    }),
       rollupMinify({mangle: false, comments: false}),
-      typescript({
-        tsconfig: 'tsconfig.json',
-        compilerOptions: { declaration: true, declarationDir: './static/dist/types' }
-      }),
     ],
     onwarn: rollupIgnoreUndefinedWarning,
   }).then(bundle => {
@@ -106,7 +95,6 @@ gulp.task('rollup-cjs', () => {
     ],
     plugins: [
       rollupResolve(),
-      rollupBabel({babelHelpers: 'bundled'}),
       rollupMinify({mangle: false, comments: false}),
     ],
     onwarn: rollupIgnoreUndefinedWarning,
@@ -168,6 +156,7 @@ gulp.task('watch', gulp.series(
     gulp.watch([
       'client-src/js-src/**/*.js',
       'client-src/elements/*.js',
+      'client-src/elements/*.ts',
       'client-src/elements/css/**/*.js',
       'client-src/contexts/*.js',
     ], gulp.series(['js']));
