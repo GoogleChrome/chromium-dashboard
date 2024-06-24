@@ -204,6 +204,8 @@ class AssociateOTsTest(testing_config.CustomTestCase):
     self.assertTrue(ot_1.ot_is_deprecation_trial)
     self.assertEqual(ot_1.milestones.desktop_first, 97)
     self.assertEqual(ot_1.milestones.desktop_last, 100)
+    # OT setup status should be marked as activated.
+    self.assertEqual(ot_1.ot_setup_status, core_enums.OT_ACTIVATED)
 
     # Feature with multiple OT stages should still be recognized.
     self.assertEqual(self.ot_stage_4.origin_trial_id, '121240182987')
