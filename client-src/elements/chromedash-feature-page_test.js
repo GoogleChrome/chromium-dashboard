@@ -1,9 +1,9 @@
-import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
+import {html} from 'lit';
+import sinon from 'sinon';
+import {ChromeStatusClient, FeatureNotFoundError} from '../js-src/cs-client';
 import {ChromedashFeaturePage} from './chromedash-feature-page';
 import './chromedash-toast';
-import '../js-src/cs-client';
-import sinon from 'sinon';
 
 describe('chromedash-feature-page', () => {
   const user = {

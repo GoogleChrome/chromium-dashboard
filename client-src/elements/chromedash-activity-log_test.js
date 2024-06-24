@@ -4,7 +4,7 @@ import {
   ChromedashActivity,
   ChromedashActivityLog,
 } from './chromedash-activity-log';
-import '../js-src/cs-client';
+import {ChromeStatusClient} from '../js-src/cs-client';
 import sinon from 'sinon';
 
 const nonAdminUser = {
