@@ -8,12 +8,9 @@ import babel from 'gulp-babel';
 import concat from 'gulp-concat';
 import license from 'gulp-license';
 import rename from 'gulp-rename';
-import gulpSass from 'gulp-sass';
 import uglifyEs from 'gulp-uglify-es';
 import {rollup} from 'rollup';
 import rollupMinify from 'rollup-plugin-babel-minify';
-import dartSass from 'sass';
-const sass = gulpSass( dartSass );
 const uglify = uglifyEs.default;
 
 function uglifyJS() {
@@ -24,7 +21,7 @@ function uglifyJS() {
 
 function addLicense() {
   return license('Apache2', {
-    organization: 'Copyright (c) 2016 The Google Inc. All rights reserved.',
+    organization: 'Copyright (c) 2024 The Google Inc. All rights reserved.',
     tiny: true
   });
 }
@@ -39,25 +36,6 @@ function rollupIgnoreUndefinedWarning(warning, warn) {
   if (warning.code === 'THIS_IS_UNDEFINED') return;
   warn(warning); // this requires Rollup 0.46
 }
-
-// Compile and automatically prefix stylesheets
-// This task is deprecated. Use css directly.
-gulp.task('styles', () => {
-  const AUTOPREFIXER_BROWSERS = [
-    'last 1 version',
-    'last 2 iOS versions'
-  ];
-
-  // For best performance, don't add Sass partials to `gulp.src`
-  return gulp.src([
-    'client-src/sass/**/*.scss'
-  ])
-    .pipe(sass({
-      precision: 10
-    }).on('error', sass.logError))
-    .pipe(autoPrefixer(AUTOPREFIXER_BROWSERS))
-    .pipe(gulp.dest('static/css'));
-});
 
 gulp.task('css', () => {
   return gulp.src([
@@ -129,8 +107,6 @@ gulp.task('js', () => {
 // Clean generated files
 gulp.task('clean', () => {
   return deleteAsync([
-    // Disabled as part of removing sass/scss.
-    // 'static/css/',
     'static/dist',
     'static/js/',
   ], {dot: true});
@@ -140,8 +116,6 @@ gulp.task('clean', () => {
 // Build production files, the default task
 gulp.task('default', gulp.series(
   'clean',
-  // Incrementally removing sass/scss.
-  // 'styles',
   'css',
   'js',
   'rollup',
