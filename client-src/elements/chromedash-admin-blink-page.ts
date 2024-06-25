@@ -78,8 +78,8 @@ export class ChromedashAdminBlinkPage extends LitElement {
   _editMode = false;
   @state()
   components: OwnersAndSubscribersOfComponent[] | undefined;
-  @property({type: Map<number, ComponentsUser>})
-  usersMap;
+  @state()
+  usersMap!: Map<number, ComponentsUser>;
 
   _client: DefaultApiInterface = window.csOpenApiClient;
 
