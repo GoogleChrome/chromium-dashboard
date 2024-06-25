@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from google.cloud import ndb
+
 from api.converters import stage_to_json_dict
-from internals.core_enums import OT_EXTENSION_STAGE_TYPES
+from internals.core_enums import OT_EXTENSION_STAGE_TYPES, OT_READY_FOR_CREATION
 from internals.core_models import Stage
 
 from framework import basehandlers
@@ -28,7 +30,8 @@ class OriginTrialsRequests(basehandlers.FlaskHandler):
   @permissions.require_admin_site
   def get_template_data(self, **kwargs):
     stages_with_requests = Stage.query(
-        Stage.ot_action_requested == True).fetch()
+        ndb.OR(Stage.ot_action_requested == True,
+               Stage.ot_setup_status == OT_READY_FOR_CREATION)).fetch()
     creation_stages = []
     extension_stages = []
     for stage in stages_with_requests:

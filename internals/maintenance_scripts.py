@@ -321,6 +321,13 @@ class AssociateOTs(FlaskHandler):
       trial_stage.ot_action_requested = False
       stage_changed = True
 
+    # Set the setup status to complete if the trial is created or activated.
+    trial_activated = (trial_data['status'] == 'ACTIVE' or
+                       trial_data['status'] == 'COMPLETE')
+    if trial_stage.ot_setup_status != OT_ACTIVATED and trial_activated:
+      trial_stage.ot_setup_status = OT_ACTIVATED
+      stage_changed = True
+
     return stage_changed
 
   def parse_feature_id(self, chromestatus_url: str|None) -> int|None:
