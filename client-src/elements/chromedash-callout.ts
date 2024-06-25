@@ -8,6 +8,7 @@ class ChromedashCallout extends LitElement {
   targetId = '';
   @property({type: String})
   side: 'north' | 'south' | 'east' | 'west' = 'south';
+  /** String to send to the server when dismissed. */
   @property({type: String})
   cue = '';
   @property({attribute: false, type: Array})
