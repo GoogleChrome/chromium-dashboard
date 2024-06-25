@@ -4,7 +4,7 @@
 // The value of each property, [intValue, stringLabel], is used
 // for the option value and label.
 
-export const FEATURE_CATEGORIES = {
+export const FEATURE_CATEGORIES: Record<string, [number, string]> = {
   WEBCOMPONENTS: [1, 'Web Components'],
   MISC: [2, 'Miscellaneous'],
   SECURITY: [3, 'Security'],
@@ -29,19 +29,20 @@ export const FEATURE_CATEGORIES = {
   IWA: [22, 'Isolated Web Apps-specific API'],
 };
 
-export const ENTERPRISE_FEATURE_CATEGORIES = {
+export const ENTERPRISE_FEATURE_CATEGORIES: Record<string, [number, string]> = {
   SECURITYANDPRIVACY: [1, 'Security / Privacy'],
   USERPRODUCTIVITYANDAPPS: [2, 'User Productivity / Apps'],
   MANAGEMENT: [3, 'Management'],
 };
 
-export const ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME = {
-  1: 'Security/Privacy', // SECURITYANDPRIVACY
-  2: 'User Productivity/Apps', // USERPRODUCTIVITYANDAPPS
-  3: 'Management', // MANAGEMENT
-};
+export const ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME: Record<number, string> =
+  {
+    1: 'Security/Privacy', // SECURITYANDPRIVACY
+    2: 'User Productivity/Apps', // USERPRODUCTIVITYANDAPPS
+    3: 'Management', // MANAGEMENT
+  };
 
-export const PLATFORM_CATEGORIES = {
+export const PLATFORM_CATEGORIES: Record<string, [number, string]> = {
   PLATFORM_ANDROID: [1, 'Android'],
   PLATFORM_IOS: [2, 'iOS'],
   PLATFORM_CHROMEOS: [3, 'ChromeOS'],
@@ -52,7 +53,7 @@ export const PLATFORM_CATEGORIES = {
   PLATFORM_FUCHSIA: [8, 'Fuchsia'],
 };
 
-export const PLATFORMS_DISPLAYNAME = {
+export const PLATFORMS_DISPLAYNAME: Record<number, string> = {
   1: 'Android', // PLATFORM_ANDROID
   2: 'iOS', // PLATFORM_IOS
   3: 'ChromeOS', // PLATFORM_CHROMEOS
@@ -63,27 +64,27 @@ export const PLATFORMS_DISPLAYNAME = {
   8: 'Fuchsia', // PLATFORM_FUCHSIA
 };
 
-export const ENTERPRISE_IMPACT_DISPLAYNAME = {
+export const ENTERPRISE_IMPACT_DISPLAYNAME: Record<number, string> = {
   1: 'None', // IMPACT_NONE
   2: 'Low', // IMPACT_LOW
   3: 'Medium', // IMPACT_MEDIUM
   4: 'High', // IMPACT_HIGH
 };
 
-export const ENTERPRISE_IMPACT = {
+export const ENTERPRISE_IMPACT: Record<string, [number, string]> = {
   IMPACT_NONE: [1, 'None'],
   IMPACT_LOW: [2, 'Low'],
   IMPACT_MEDIUM: [3, 'Medium'],
   IMPACT_HIGH: [4, 'High'],
 };
 
-export const ROLLOUT_IMPACT = {
+export const ROLLOUT_IMPACT: Record<string, [number, string]> = {
   IMPACT_LOW: [1, 'Low'],
   IMPACT_MEDIUM: [2, 'Medium'],
   IMPACT_HIGH: [3, 'High'],
 };
 
-export const ROLLOUT_IMPACT_DISPLAYNAME = {
+export const ROLLOUT_IMPACT_DISPLAYNAME: Record<number, string> = {
   1: 'Low', // IMPACT_LOW
   2: 'Medium', // IMPACT_MEDIUM
   3: 'High', // IMPACT_HIGH
@@ -91,7 +92,10 @@ export const ROLLOUT_IMPACT_DISPLAYNAME = {
 
 // FEATURE_TYPES object is organized as [intValue, stringLabel, description],
 // the descriptions are used only for the descriptions of feature_type_radio_group
-export const FEATURE_TYPES_WITHOUT_ENTERPRISE = {
+export const FEATURE_TYPES_WITHOUT_ENTERPRISE: Record<
+  string,
+  [number, string, string]
+> = {
   FEATURE_TYPE_INCUBATE_ID: [
     0,
     'New feature incubation',
@@ -117,7 +121,7 @@ export const FEATURE_TYPES_WITHOUT_ENTERPRISE = {
     'Deprecate and remove an old feature.',
   ],
 };
-export const FEATURE_TYPES = {
+export const FEATURE_TYPES: Record<string, [number, string, string]> = {
   ...FEATURE_TYPES_WITHOUT_ENTERPRISE,
   FEATURE_TYPE_ENTERPRISE_ID: [
     4,
@@ -168,20 +172,20 @@ export const STAGE_DEP_SHIPPING = 460;
 export const STAGE_ENT_ROLLOUT = 1061;
 export const STAGE_ENT_SHIPPED = 1070;
 
-export const STAGE_TYPES_DEV_TRIAL = new Set([
+export const STAGE_TYPES_DEV_TRIAL = new Set<number>([
   STAGE_BLINK_DEV_TRIAL,
   STAGE_FAST_DEV_TRIAL,
   STAGE_PSA_DEV_TRIAL,
   STAGE_DEP_DEV_TRIAL,
 ]);
 
-export const STAGE_TYPES_ORIGIN_TRIAL = new Set([
+export const STAGE_TYPES_ORIGIN_TRIAL = new Set<number>([
   STAGE_BLINK_ORIGIN_TRIAL,
   STAGE_FAST_ORIGIN_TRIAL,
   STAGE_DEP_DEPRECATION_TRIAL,
 ]);
 
-export const STAGE_TYPES_SHIPPING = new Set([
+export const STAGE_TYPES_SHIPPING = new Set<number>([
   STAGE_BLINK_SHIPPING,
   STAGE_FAST_SHIPPING,
   STAGE_PSA_SHIPPING,
@@ -190,19 +194,19 @@ export const STAGE_TYPES_SHIPPING = new Set([
 
 // key: Origin trial stage types,
 // value: extension stage type associated with the origin trial type.
-export const OT_EXTENSION_STAGE_MAPPING = {
+export const OT_EXTENSION_STAGE_MAPPING: Record<number, number> = {
   [STAGE_BLINK_ORIGIN_TRIAL]: STAGE_BLINK_EXTEND_ORIGIN_TRIAL,
   [STAGE_FAST_ORIGIN_TRIAL]: STAGE_FAST_EXTEND_ORIGIN_TRIAL,
   [STAGE_DEP_DEPRECATION_TRIAL]: STAGE_DEP_EXTEND_DEPRECATION_TRIAL,
 };
 
-export const OT_EXTENSION_STAGE_TYPES = new Set([
+export const OT_EXTENSION_STAGE_TYPES = new Set<number>([
   STAGE_BLINK_EXTEND_ORIGIN_TRIAL,
   STAGE_FAST_EXTEND_ORIGIN_TRIAL,
   STAGE_DEP_EXTEND_DEPRECATION_TRIAL,
 ]);
 
-export const STAGE_SHORT_NAMES = {
+export const STAGE_SHORT_NAMES: Record<number, string> = {
   [STAGE_BLINK_INCUBATE]: 'Incubate',
   [STAGE_BLINK_PROTOTYPE]: 'Prototype',
   [STAGE_BLINK_DEV_TRIAL]: 'DevTrial',
@@ -231,7 +235,7 @@ export const STAGE_SHORT_NAMES = {
   [STAGE_ENT_SHIPPED]: 'Ship',
 };
 
-export const INTENT_STAGES = {
+export const INTENT_STAGES: Record<string, [number, string]> = {
   INTENT_NONE: [0, 'None'],
   INTENT_INCUBATE: [7, 'Start incubating'], // Start incubating
   INTENT_IMPLEMENT: [1, 'Start prototyping'], // Start prototyping
@@ -246,21 +250,21 @@ export const INTENT_STAGES = {
   INTENT_ROLLOUT: [10, 'Rollout'],
 };
 
-export const DT_MILESTONE_FIELDS = new Set([
+export const DT_MILESTONE_FIELDS = new Set<string>([
   'dt_milestone_desktop_start',
   'dt_milestone_android_start',
   'dt_milestone_ios_start',
   'dt_milestone_webview_start',
 ]);
 
-export const OT_MILESTONE_START_FIELDS = new Set([
+export const OT_MILESTONE_START_FIELDS = new Set<string>([
   'ot_milestone_desktop_start',
   'ot_milestone_android_start',
   'ot_milestone_webview_start',
   // 'ot_milestone_ios_start',
 ]);
 
-export const SHIPPED_MILESTONE_FIELDS = new Set([
+export const SHIPPED_MILESTONE_FIELDS = new Set<string>([
   'shipped_milestone',
   'shipped_android_milestone',
   'shipped_ios_milestone',
@@ -269,7 +273,7 @@ export const SHIPPED_MILESTONE_FIELDS = new Set([
 
 // Every mutable field that exists on the Stage entity and every key
 // in MilestoneSet.MILESTONE_FIELD_MAPPING should be listed here.
-export const STAGE_SPECIFIC_FIELDS = new Set([
+export const STAGE_SPECIFIC_FIELDS = new Set<string>([
   // Milestone fields.
   'shipped_milestone',
   'shipped_android_milestone',
@@ -334,7 +338,7 @@ export const STAGE_SPECIFIC_FIELDS = new Set([
 ]);
 
 // Mapping of specific field names to their more generic stage names.
-export const STAGE_FIELD_NAME_MAPPING = {
+export const STAGE_FIELD_NAME_MAPPING: Record<string, string> = {
   // Milestone fields.
   shipped_milestone: 'desktop_first',
   shipped_android_milestone: 'android_first',
@@ -367,7 +371,7 @@ export const STAGE_FIELD_NAME_MAPPING = {
   r4dt_url: 'intent_thread_url',
 };
 
-export const DEPRECATED_FIELDS = new Set([
+export const DEPRECATED_FIELDS = new Set<string>([
   'experiment_timeline',
   'i2e_lgtms',
   'i2s_lgtms',
@@ -375,7 +379,7 @@ export const DEPRECATED_FIELDS = new Set([
   'standardization',
 ]);
 
-export const GATE_TYPES = {
+export const GATE_TYPES: Record<string, number> = {
   API_PROTOTYPE: 1,
   API_ORIGIN_TRIAL: 2,
   API_EXTEND_ORIGIN_TRIAL: 3,
@@ -399,7 +403,7 @@ export const GATE_TYPES = {
 export const GATE_PREPARING = 0;
 export const GATE_REVIEW_REQUESTED = 2;
 export const GATE_NA_REQUESTED = 9;
-export const VOTE_OPTIONS = {
+export const VOTE_OPTIONS: Record<string, [number, string]> = {
   NO_RESPONSE: [7, 'No response'],
   NA: [1, 'N/a or Ack'],
   REVIEW_STARTED: [3, 'Review started'],
@@ -408,14 +412,14 @@ export const VOTE_OPTIONS = {
   APPROVED: [5, 'Approved'],
   DENIED: [6, 'Denied'],
 };
-export const GATE_ACTIVE_REVIEW_STATES = [
+export const GATE_ACTIVE_REVIEW_STATES: number[] = [
   GATE_REVIEW_REQUESTED,
   VOTE_OPTIONS.REVIEW_STARTED[0],
   VOTE_OPTIONS.NEEDS_WORK[0],
   VOTE_OPTIONS.INTERNAL_REVIEW[0],
   GATE_NA_REQUESTED,
 ];
-export const GATE_FINISHED_REVIEW_STATES = [
+export const GATE_FINISHED_REVIEW_STATES: number[] = [
   VOTE_OPTIONS.NA[0],
   VOTE_OPTIONS.APPROVED[0],
   VOTE_OPTIONS.DENIED[0],
@@ -430,13 +434,13 @@ export const GATE_TEAM_ORDER = [
   'API Owners',
 ];
 
-export const OT_MILESTONE_END_FIELDS = {
+export const OT_MILESTONE_END_FIELDS: Record<string, string> = {
   ot_milestone_desktop_end: 'desktop_last',
   ot_milestone_android_end: 'android_last',
   ot_milestone_webview_end: 'webview_last',
 };
 
-export const IMPLEMENTATION_STATUS = {
+export const IMPLEMENTATION_STATUS: Record<string, [number, string]> = {
   NO_ACTIVE_DEV: [1, 'No active development'],
   PROPOSED: [2, 'Proposed'],
   IN_DEVELOPMENT: [3, 'In development'],
@@ -450,7 +454,7 @@ export const IMPLEMENTATION_STATUS = {
   NO_LONGER_PURSUING: [1000, 'No longer pursuing'],
 };
 
-export const STANDARD_MATURITY_CHOICES = {
+export const STANDARD_MATURITY_CHOICES: Record<string, [number, string]> = {
   // No text for UNSET_STD==0. One of the values below will be set on first edit.
   UNKNOWN_STD: [1, 'Unknown standards status - check spec link for status'],
   PROPOSAL_STD: [
@@ -470,7 +474,7 @@ export const STANDARD_MATURITY_CHOICES = {
 };
 
 // Status for security and privacy reviews.
-export const REVIEW_STATUS_CHOICES = {
+export const REVIEW_STATUS_CHOICES: Record<string, [number, string]> = {
   REVIEW_PENDING: [1, 'Pending'],
   REVIEW_ISSUES_OPEN: [2, 'Issues open'],
   REVIEW_ISSUES_ADDRESSED: [3, 'Issues addressed'],
@@ -494,7 +498,7 @@ export const REVIEW_STATUS_CHOICES = {
 // GECKO_DEFER = 14
 // GECKO_HARMFUL = 15 # Deprecated; use OPPOSED
 
-export const VENDOR_VIEWS_COMMON = {
+export const VENDOR_VIEWS_COMMON: Record<string, [number, string]> = {
   SHIPPED: [1, 'Shipped/Shipping'],
   IN_DEV: [2, 'In development'],
   PUBLIC_SUPPORT: [3, 'Positive'],
@@ -504,7 +508,7 @@ export const VENDOR_VIEWS_COMMON = {
   SIGNALS_NA: [9, 'N/A'],
 };
 
-export const VENDOR_VIEWS_GECKO = {
+export const VENDOR_VIEWS_GECKO: Record<string, [number, string]> = {
   NO_PUBLIC_SIGNALS: [5, 'No signal'],
   SIGNALS_NA: [9, 'N/A'],
   GECKO_UNDER_CONSIDERATION: [10, 'Under consideration'],
@@ -515,7 +519,7 @@ export const VENDOR_VIEWS_GECKO = {
   SHIPPED: [1, 'Shipped/Shipping'],
 };
 
-export const WEB_DEV_VIEWS = {
+export const WEB_DEV_VIEWS: Record<string, [number, string]> = {
   DEV_STRONG_POSITIVE: [1, 'Strongly positive'],
   DEV_POSITIVE: [2, 'Positive'],
   DEV_MIXED_SIGNALS: [3, 'Mixed signals'],

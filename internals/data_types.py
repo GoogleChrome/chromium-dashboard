@@ -60,6 +60,7 @@ class StageDict(TypedDict):
   ot_is_deprecation_trial: bool
   ot_owner_email: str | None
   ot_require_approvals: bool
+  ot_setup_status: NotRequired[int]
   ot_webfeature_use_counter: str | None
   ot_request_note: NotRequired[str]
 

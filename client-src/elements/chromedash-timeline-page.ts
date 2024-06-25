@@ -3,7 +3,7 @@ import {SHARED_STYLES} from '../css/shared-css.js';
 import './chromedash-timeline.js';
 import {showToastMessage} from './utils.js';
 import {property} from 'lit/decorators.js';
-import {Property} from './datatypes.js';
+import {Property} from './chromedash-timeline.js';
 
 export class ChromedashTimelinePage extends LitElement {
   @property({type: String})

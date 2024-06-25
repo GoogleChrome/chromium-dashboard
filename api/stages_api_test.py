@@ -52,7 +52,8 @@ class StagesAPITest(testing_config.CustomTestCase):
         intent_thread_url='https://example.com/intent',
         milestones=MilestoneSet(desktop_first=100),
         experiment_goals='To be the very best.',
-        created=self.now)
+        created=self.now,
+        ot_setup_status=1)
     self.stage_1.put()
     # Shipping stage.
     self.stage_2 = Stage(id=11, feature_id=1, stage_type=160, created=self.now)
@@ -130,6 +131,7 @@ class StagesAPITest(testing_config.CustomTestCase):
         'ot_is_deprecation_trial': False,
         'ot_owner_email': None,
         'ot_require_approvals': False,
+        'ot_setup_status': 1,
         'ot_webfeature_use_counter': None,
         'experiment_extension_reason': None,
         'experiment_goals': 'To be the very best.',

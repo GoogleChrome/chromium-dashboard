@@ -1,27 +1,25 @@
 import {LitElement, css, html} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import {customElement, state, property} from 'lit/decorators.js';
 
 const DEFAULT_DURATION = 7000;
 
+@customElement('chromedash-toast')
 class ChromedashToast extends LitElement {
-  static get properties() {
-    return {
-      msg: {type: String},
-      open: {type: Boolean, reflect: true},
-      actionLabel: {attribute: false},
-      currentTimeout: {type: Number},
-      waitingForTransition: {type: Boolean},
-    };
-  }
+  @property({type: String})
+  msg = '';
 
-  constructor() {
-    super();
-    this.msg = '';
-    this.actionLabel = '';
-    this.open = false;
-    this.currentTimeout = null;
-    this.waitingForTransition = false;
-  }
+  @property({type: Boolean, reflect: true})
+  open = false;
+
+  @property({attribute: false})
+  actionLabel = '';
+
+  @state()
+  currentTimeout: number | null = null;
+
+  @property({type: Boolean})
+  waitingForTransition = false;
 
   static get styles() {
     return [
@@ -71,38 +69,38 @@ class ChromedashToast extends LitElement {
     ];
   }
 
-  /**
-   * Shows a message in the toast.
-   * @method showMessage
-   * @param {string} msg Message to show.Notification (event) type.
-   * @param {string} optAction Optional action link.
-   * @param {function} optTapHandler Optional handler to execute when the
-   *     toast action is tapped.
-   * @param {Number} optDuration Optional duration to show the toast for.
-   *     Use -1 to keep the toast open indefinitely.
-   */
-  showMessage(msg, optAction, optTapHandler, optDuration) {
+  showMessage(
+    msg: string,
+    optAction: string,
+    optTapHandler: () => void,
+    optDuration: number
+  ) {
     if (this.waitingForTransition) return;
 
     this.msg = msg;
     this.actionLabel = optAction;
 
     if (optTapHandler) {
-      this.shadowRoot.querySelector('#action').addEventListener(
-        'click',
-        e => {
-          e.preventDefault();
-          optTapHandler();
-        },
-        {once: true}
-      );
+      const action = this.shadowRoot!.querySelector('#action');
+      if (action) {
+        action.addEventListener(
+          'click',
+          e => {
+            e.preventDefault();
+            optTapHandler();
+          },
+          {once: true}
+        );
+      }
     }
 
     if (this.open) {
       // triggers the previous toast to slide out
       this.open = false;
       this.waitingForTransition = true;
-      clearTimeout(this.currentTimeout);
+      if (this.currentTimeout !== null) {
+        clearTimeout(this.currentTimeout);
+      }
       // Don't show the new toast until the transition is over
       // (wait for the previous toast to be completely gone)
       this.addEventListener(
@@ -135,5 +133,3 @@ class ChromedashToast extends LitElement {
     `;
   }
 }
-
-customElements.define('chromedash-toast', ChromedashToast);

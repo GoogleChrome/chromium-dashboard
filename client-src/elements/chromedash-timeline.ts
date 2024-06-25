@@ -2,7 +2,18 @@ import {LitElement, css, html, nothing} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {showToastMessage} from './utils.js';
 import {property, state} from 'lit/decorators.js';
-import {Property} from './datatypes.js';
+
+declare global {
+  interface Window {
+    google: any;
+  }
+}
+
+export interface Property {
+  [key: string]: any;
+  0: number;
+  1: string;
+}
 
 class ChromedashTimeline extends LitElement {
   @property({type: String})

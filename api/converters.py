@@ -239,6 +239,8 @@ def stage_to_json_dict(
 
   if stage.ot_activation_date:
     d['ot_activation_date'] = str(stage.ot_activation_date)
+  if stage.ot_setup_status:
+    d['ot_setup_status'] = stage.ot_setup_status
 
   return d
 

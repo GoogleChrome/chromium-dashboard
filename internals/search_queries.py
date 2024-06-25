@@ -39,6 +39,58 @@ class Interval(Generic[T]):
   high: T
 
 
+def validate_values(
+  field: ndb.Property, val_list: list[QueryValue | Interval[QueryValue]]
+):
+  """Checks that all of the values in val_list can be compared to the field's values."""
+  for val in val_list:
+    try:
+      # If the field can be set to val, then it can be compared to val.
+      if isinstance(val, Interval):
+        field._validate(val.low)
+        field._validate(val.high)
+      else:
+        field._validate(val)
+    except ndb.exceptions.BadValueError:
+      logging.info('Wrong type of value for %r: %r' % (field, val))
+      raise ValueError('Query value does not match field type')
+
+
+def build_filter(
+  field: ndb.Property, operator: str, val_list: list[QueryValue | Interval[QueryValue]]
+) -> ndb.Node:
+  """Returns an NDB filter node representing the operator applied to the field and val_list."""
+  validate_values(field, val_list)
+
+  if len(val_list) > 1:
+    if operator == '=':
+      return field.IN(val_list)
+    else:
+      raise ValueError('Quick-OR is not supported for operator: %r' % operator)
+  elif isinstance(val_list[0], Interval):
+    if operator == '=':
+      interval = val_list[0]
+      return ndb.AND(field >= interval.low, field <= interval.high)
+    else:
+      raise ValueError('Interval queries are not supported for operator: %r' % operator)
+  else:
+    val = val_list[0]
+    if operator == '=':
+      return field == val
+    elif operator == '<=':
+      return field <= val
+    elif operator == '<':
+      return field < val
+    elif operator == '>=':
+      return field >= val
+    elif operator == '>':
+      return field > val
+    elif operator == '!=':
+      return field != val
+    else:
+      raise ValueError('Unexpected query operator: %r' % operator)
+
+
 def single_field_query_async(
   field_name: str,
   operator: str,
@@ -52,7 +104,9 @@ def single_field_query_async(
 
   # Note: We don't exclude deleted features, that's done by process_query.
   field_name = field_name.lower()
-  if field_name in QUERIABLE_FIELDS:
+  if field_name in COMPLEX_FIELDS:
+    return COMPLEX_FIELDS[field_name](operator, val_list, limit)
+  elif field_name in QUERIABLE_FIELDS:
     # It is a query on a field in FeatureEntry.
     query = FeatureEntry.query()
     field = QUERIABLE_FIELDS[field_name]
@@ -86,47 +140,7 @@ def single_field_query_async(
 
   # TODO(jrobbins): Handle ":" operator as substrings for text fields.
 
-  for val in val_list:
-    try:
-      # If the field can be set to val, then it can be compared to val.
-      if isinstance(val, Interval):
-        field._validate(val.low)
-        field._validate(val.high)
-      else:
-        field._validate(val)
-    except ndb.exceptions.BadValueError:
-      logging.info('Wrong type of value for %r: %r' % (field, val))
-      raise ValueError('Query value does not match field type')
-
-  if len(val_list) > 1:
-    if (operator == '='):
-      query = query.filter(field.IN(val_list))
-    else:
-      raise ValueError('Quick-OR is not supported for operator: %r' % operator)
-  elif isinstance(val_list[0], Interval):
-    if operator == '=':
-      val = val_list[0]
-      query = query.filter(field >= val.low, field <= val.high)
-    else:
-      raise ValueError(
-        "Interval queries are not supported for operator: %r" % operator
-      )
-  else:
-    val = val_list[0]
-    if (operator == '='):
-      query = query.filter(field == val)
-    elif (operator == '<='):
-      query = query.filter(field <= val)
-    elif (operator == '<'):
-      query = query.filter(field < val)
-    elif (operator == '>='):
-      query = query.filter(field >= val)
-    elif (operator == '>'):
-      query = query.filter(field > val)
-    elif (operator == '!='):
-      query = query.filter(field != val)
-    else:
-      raise ValueError('Unexpected query operator: %r' % operator)
+  query = query.filter(build_filter(field, operator, val_list))
 
   if field_name in QUERIABLE_FIELDS:
     # It was a query directly on FeatureEntry, use keys to get feature IDs.
@@ -394,3 +408,45 @@ SORTABLE_FIELDS.update({
     'gate.requested_on': sorted_by_pending_request_date,
     'gate.reviewed_on': sorted_by_review_date,
     })
+
+
+def query_any_start_milestone(
+  operator: str,
+  val_list: list[QueryValue | Interval[QueryValue]],
+  limit: int | None = None,
+) -> Future:
+  """Finds features shipping at any stage to any platform in milestones matching the val_list."""
+  disjunction = []
+  for field_name in [
+    'browsers.chrome.android',
+    'browsers.chrome.desktop',
+    'browsers.chrome.devtrial.android.start',
+    'browsers.chrome.devtrial.desktop.start',
+    'browsers.chrome.devtrial.ios.start',
+    'browsers.chrome.devtrial.webview.start',
+    'browsers.chrome.ios',
+    'browsers.chrome.ot.android.start',
+    'browsers.chrome.ot.desktop.start',
+    'browsers.chrome.ot.ios.start',
+    'browsers.chrome.ot.webview.start',
+    'browsers.chrome.webview',
+  ]:
+    stage_types = [
+      st for st in STAGE_TYPES_BY_QUERY_FIELD[field_name].values() if st is not None
+    ]
+    disjunction.append(
+      ndb.AND(
+        Stage.stage_type.IN(stage_types),
+        build_filter(STAGE_QUERIABLE_FIELDS[field_name], operator, val_list),
+      )
+    )
+  return Stage.query(ndb.OR(*disjunction)).fetch_async(
+    projection=['feature_id'], limit=limit
+  )
+
+
+COMPLEX_FIELDS: dict[
+  str, Callable[[str, list[QueryValue | Interval[QueryValue]], int | None], Future]
+] = {
+  'any_start_milestone': query_any_start_milestone,
+}

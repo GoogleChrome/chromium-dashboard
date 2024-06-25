@@ -47,7 +47,6 @@ export default [
     ignores: [
       "**/node_modules/**",
       "static/dist/",
-      "**/*.min.js"
     ]
   }
 ];

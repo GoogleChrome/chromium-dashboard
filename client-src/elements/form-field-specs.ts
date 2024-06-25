@@ -1,4 +1,4 @@
-import {html} from 'lit';
+import {html, TemplateResult} from 'lit';
 import {
   ENTERPRISE_FEATURE_CATEGORIES,
   FEATURE_CATEGORIES,
@@ -20,39 +20,92 @@ import {
   STAGE_TYPES_SHIPPING,
   ENTERPRISE_IMPACT,
 } from './form-field-enums';
+import {error} from 'console';
+
+interface FieldAttrs {
+  title?: string;
+  type?: string;
+  multiple?: boolean;
+  placeholder?: string;
+  pattern?: string;
+  rows?: number;
+  cols?: number;
+  maxlength?: number;
+  chromedash_single_pattern?: string;
+  chromedash_split_pattern?: string;
+  disabled?: boolean;
+  min?: number;
+}
+
+interface MilestoneRange {
+  earlier?: string;
+  later?: string;
+  allEarlier?: string;
+  allLater?: string;
+  warning?: string;
+  error?: string;
+}
+
+type FeatureName = string;
+
+interface Field {
+  type?: string;
+  name?: FeatureName;
+  attrs?: FieldAttrs;
+  required?: boolean;
+  label?: string;
+  help_text?: TemplateResult | string;
+  enterprise_help_text?: TemplateResult;
+  extra_help?: TemplateResult;
+  enterprise_extra_help?: TemplateResult | string;
+  check?: Function;
+  initial?: number | boolean;
+  enterprise_initial?: number;
+  choices?:
+    | Record<string, [number, string, string]>
+    | Record<string, [number, string]>;
+  displayLabel?: string;
+  disabled?: boolean;
+}
+
+declare global {
+  interface Window {
+    csClient: any;
+  }
+}
 
 /* Patterns from https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch04s01.html
  * Removing single quote ('), backtick (`), and pipe (|) since they are risky unless properly escaped everywhere.
  * Also removing ! and % because they have special meaning for some older email routing systems. */
-const USER_REGEX = String.raw`[A-Za-z0-9_#$&*+\/=?\{\}~^.\-]+`;
-const DOMAIN_REGEX = String.raw`(([A-Za-z0-9\-]+\.)+[A-Za-z]{2,6})`;
+const USER_REGEX: string = String.raw`[A-Za-z0-9_#$&*+\/=?\{\}~^.\-]+`;
+const DOMAIN_REGEX: string = String.raw`(([A-Za-z0-9\-]+\.)+[A-Za-z]{2,6})`;
 
-const EMAIL_ADDRESS_REGEX = USER_REGEX + '@' + DOMAIN_REGEX;
-const GOOGLE_EMAIL_ADDRESS_REGEX = `${USER_REGEX}@google.com`;
-const EMAIL_ADDRESSES_REGEX =
+const EMAIL_ADDRESS_REGEX: string = USER_REGEX + '@' + DOMAIN_REGEX;
+const GOOGLE_EMAIL_ADDRESS_REGEX: string = `${USER_REGEX}@google.com`;
+const EMAIL_ADDRESSES_REGEX: string =
   EMAIL_ADDRESS_REGEX + '([ ]*,[ ]*' + EMAIL_ADDRESS_REGEX + ')*';
 
 // Simple http URLs
-const PORTNUM_REGEX = '(:[0-9]+)?';
-const URL_REGEX =
+const PORTNUM_REGEX: string = '(:[0-9]+)?';
+const URL_REGEX: string =
   '(https?)://' + DOMAIN_REGEX + PORTNUM_REGEX + String.raw`(/\S*)?`;
-const URL_PADDED_REGEX = String.raw`\s*` + URL_REGEX + String.raw`\s*`;
+const URL_PADDED_REGEX: string = String.raw`\s*` + URL_REGEX + String.raw`\s*`;
 
-const URL_FIELD_ATTRS = {
+const URL_FIELD_ATTRS: FieldAttrs = {
   title: 'Enter a full URL https://...',
   type: 'url',
   placeholder: 'https://...',
   pattern: URL_PADDED_REGEX,
 };
 
-const MULTI_STRING_FIELD_ATTRS = {
+const MULTI_STRING_FIELD_ATTRS: FieldAttrs = {
   title: 'Enter one or more comma-separated complete words.',
   type: 'text',
   multiple: true,
   placeholder: 'EnableFeature1, Feature1Policy',
 };
 
-const MULTI_EMAIL_FIELD_ATTRS = {
+const MULTI_EMAIL_FIELD_ATTRS: FieldAttrs = {
   title: 'Enter one or more comma-separated complete email addresses.',
   // Don't specify type="email" because browsers consider multiple emails
   // invalid, regardles of the multiple attribute.
@@ -62,109 +115,109 @@ const MULTI_EMAIL_FIELD_ATTRS = {
   pattern: EMAIL_ADDRESSES_REGEX,
 };
 
-const TEXT_FIELD_ATTRS = {
+const TEXT_FIELD_ATTRS: FieldAttrs = {
   type: 'text',
 };
 
-const MILESTONE_NUMBER_FIELD_ATTRS = {
+const MILESTONE_NUMBER_FIELD_ATTRS: FieldAttrs = {
   type: 'number',
   placeholder: 'Milestone number',
 };
 
-const OT_MILESTONE_DESKTOP_RANGE = {
+const OT_MILESTONE_DESKTOP_RANGE: MilestoneRange = {
   earlier: 'ot_milestone_desktop_start',
   later: 'ot_milestone_desktop_end',
 };
 
-const OT_MILESTONE_ANDROID_RANGE = {
+const OT_MILESTONE_ANDROID_RANGE: MilestoneRange = {
   earlier: 'ot_milestone_android_start',
   later: 'ot_milestone_android_end',
 };
 
-const OT_MILESTONE_WEBVIEW_RANGE = {
+const OT_MILESTONE_WEBVIEW_RANGE: MilestoneRange = {
   earlier: 'ot_milestone_webview_start',
   later: 'ot_milestone_webview_end',
 };
 
-const OT_ALL_SHIPPED_MILESTONE_DESKTOP_RANGE = {
+const OT_ALL_SHIPPED_MILESTONE_DESKTOP_RANGE: MilestoneRange = {
   earlier: 'ot_milestone_desktop_start',
   allLater: 'shipped_milestone',
   warning:
     'Origin trial starting milestone should be before all feature shipping milestones.',
 };
 
-const ALL_OT_SHIPPED_MILESTONE_DESKTOP_RANGE = {
+const ALL_OT_SHIPPED_MILESTONE_DESKTOP_RANGE: MilestoneRange = {
   allEarlier: 'ot_milestone_desktop_start',
   later: 'shipped_milestone',
   warning:
     'All origin trials starting milestones should be before feature shipping milestone.',
 };
 
-const OT_ALL_SHIPPED_MILESTONE_WEBVIEW_RANGE = {
+const OT_ALL_SHIPPED_MILESTONE_WEBVIEW_RANGE: MilestoneRange = {
   earlier: 'ot_milestone_webview_start',
   allLater: 'shipped_webview_milestone',
   warning:
     'Origin trial starting milestone should be before all feature shipping milestones.',
 };
 
-const ALL_OT_SHIPPED_MILESTONE_WEBVIEW_RANGE = {
+const ALL_OT_SHIPPED_MILESTONE_WEBVIEW_RANGE: MilestoneRange = {
   allEarlier: 'ot_milestone_webview_start',
   later: 'shipped_webview_milestone',
   warning:
     'All origin trials starting milestones should be before feature shipping milestone.',
 };
 
-const OT_ALL_SHIPPED_MILESTONE_ANDROID_RANGE = {
+const OT_ALL_SHIPPED_MILESTONE_ANDROID_RANGE: MilestoneRange = {
   earlier: 'ot_milestone_android_start',
   allLater: 'shipped_android_milestone',
   warning:
     'Origin trial starting milestone should be before all feature shipping milestones.',
 };
 
-const ALL_OT_SHIPPED_MILESTONE_ANDROID_RANGE = {
+const ALL_OT_SHIPPED_MILESTONE_ANDROID_RANGE: MilestoneRange = {
   allEarlier: 'ot_milestone_android_start',
   later: 'shipped_android_milestone',
   warning:
     'All origin trials starting milestones should be before feature shipping milestone.',
 };
 
-const DT_ALL_SHIPPED_MILESTONE_DESKTOP_RANGE = {
+const DT_ALL_SHIPPED_MILESTONE_DESKTOP_RANGE: MilestoneRange = {
   earlier: 'dt_milestone_desktop_start',
   allLater: 'shipped_milestone',
   warning: 'Shipped milestone should be later than dev trial.',
 };
 
-const ALL_DT_SHIPPED_MILESTONE_DESKTOP_RANGE = {
+const ALL_DT_SHIPPED_MILESTONE_DESKTOP_RANGE: MilestoneRange = {
   allEarlier: 'dt_milestone_desktop_start',
   later: 'shipped_milestone',
   warning: 'Shipped milestone should be later than dev trial.',
 };
 
-const DT_ALL_SHIPPED_MILESTONE_ANDROID_RANGE = {
+const DT_ALL_SHIPPED_MILESTONE_ANDROID_RANGE: MilestoneRange = {
   earlier: 'dt_milestone_android_start',
   allLater: 'shipped_android_milestone',
   warning: 'Shipped milestone should be later than dev trial start milestone.',
 };
 
-const ALL_DT_SHIPPED_MILESTONE_ANDROID_RANGE = {
+const ALL_DT_SHIPPED_MILESTONE_ANDROID_RANGE: MilestoneRange = {
   allEarlier: 'dt_milestone_android_start',
   later: 'shipped_android_milestone',
   warning: 'Shipped milestone should be later than dev trial start milestone.',
 };
 
-const DT_ALL_SHIPPED_MILESTONE_IOS_RANGE = {
+const DT_ALL_SHIPPED_MILESTONE_IOS_RANGE: MilestoneRange = {
   earlier: 'dt_milestone_ios_start',
   allLater: 'shipped_ios_milestone',
   warning: 'Shipped milestone should be later than dev trial start milestone.',
 };
 
-const ALL_DT_SHIPPED_MILESTONE_IOS_RANGE = {
+const ALL_DT_SHIPPED_MILESTONE_IOS_RANGE: MilestoneRange = {
   allEarlier: 'dt_milestone_ios_start',
   later: 'shipped_ios_milestone',
   warning: 'Shipped milestone should be later than dev trial start milestone.',
 };
 
-const MULTI_URL_FIELD_ATTRS = {
+const MULTI_URL_FIELD_ATTRS: FieldAttrs = {
   title: 'Enter one or more full URLs, one per line:\nhttps://...\nhttps://...',
   multiple: true,
   placeholder: 'https://...\nhttps://...',
@@ -182,7 +235,7 @@ const SHIPPED_WEBVIEW_HELP_TXT = html` First milestone to ship with this status.
 Applies to Enabled by default, Browser Intervention, Deprecated, and Removed.`;
 
 // Map of specifications for all form fields.
-export const ALL_FIELDS = {
+export const ALL_FIELDS: Record<string, Field> = {
   name: {
     type: 'input',
     attrs: TEXT_FIELD_ATTRS,
@@ -1552,7 +1605,7 @@ export const ALL_FIELDS = {
 
   all_platforms: {
     type: 'checkbox',
-    inital: false,
+    initial: false,
     label: 'Supported on all platforms?',
     help_text: html` Will this feature be supported on all six Blink platforms
     (Windows, Mac, Linux, ChromeOS, Android, and Android WebView)?`,
@@ -1967,7 +2020,7 @@ export const ALL_FIELDS = {
 
 // Return a simplified field type to help differentiate the
 // render behavior of each field in chromedash-feature-detail
-function categorizeFieldType(field) {
+function categorizeFieldType(field: Field) {
   if (field.attrs === MULTI_URL_FIELD_ATTRS) {
     return 'multi-url';
   } else if (field.attrs === URL_FIELD_ATTRS) {
@@ -1979,13 +2032,13 @@ function categorizeFieldType(field) {
 }
 
 // Return a field name with underscored replaced and first character capitalized
-function makeHumanReadable(fieldName) {
+function makeHumanReadable(fieldName: string) {
   fieldName = fieldName.replace('_', ' ');
   return fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
 }
 
 // Return an array of field info
-function makeDisplaySpec(fieldName) {
+function makeDisplaySpec(fieldName: string) {
   const fieldProps = ALL_FIELDS[fieldName];
   const displayName =
     fieldProps.label || fieldProps.displayLabel || makeHumanReadable(fieldName);
@@ -1993,12 +2046,16 @@ function makeDisplaySpec(fieldName) {
   return [fieldName, displayName, fieldType];
 }
 
-export function makeDisplaySpecs(fieldNames) {
+export function makeDisplaySpecs(fieldNames: string[]) {
   return fieldNames.map(fieldName => makeDisplaySpec(fieldName));
 }
 
 // Find the minimum milestone, used for shipped milestones.
-function findMinMilestone(fieldName, stageTypes, getFieldValue) {
+function findMinMilestone(
+  fieldName: string,
+  stageTypes: Set<number>,
+  getFieldValue: any
+) {
   let minMilestone = Infinity;
   // Iterate through all stages that are in stageTypes.
   const feature = getFieldValue.feature;
@@ -2015,7 +2072,11 @@ function findMinMilestone(fieldName, stageTypes, getFieldValue) {
 }
 
 // Find the maximum milestone, used for OT start milestones.
-function findMaxMilestone(fieldName, stageTypes, getFieldValue) {
+function findMaxMilestone(
+  fieldName: string,
+  stageTypes: Set<number>,
+  getFieldValue: any
+) {
   let maxMilestone = -Infinity;
   // Iterate through all stages that are in stageTypes.
   const feature = getFieldValue.feature;
@@ -2033,59 +2094,73 @@ function findMaxMilestone(fieldName, stageTypes, getFieldValue) {
 
 // Check that the earlier milestone is before all later milestones.
 // Used with OT start milestone and all shipped milestones.
-function checkEarlierBeforeAllLaterMilestones(fieldPair, getFieldValue) {
+function checkEarlierBeforeAllLaterMilestones(
+  fieldPair: MilestoneRange,
+  getFieldValue: any
+) {
   const {earlier, allLater, warning} = fieldPair;
   const stageTypes =
     // Only shipping, for now.
-    SHIPPED_MILESTONE_FIELDS.has(allLater) ? STAGE_TYPES_SHIPPING : null;
+    allLater && SHIPPED_MILESTONE_FIELDS.has(allLater)
+      ? STAGE_TYPES_SHIPPING
+      : null;
   const earlierValue = getNumericValue(earlier, getFieldValue);
-  const laterValue = findMinMilestone(allLater, stageTypes, getFieldValue);
-  if (
-    earlierValue != null &&
-    laterValue != null &&
-    Number(earlierValue) >= laterValue
-  ) {
-    return warning
-      ? {
-          warning,
-        }
-      : {
-          error:
-            error ||
-            `Earlier milestone #${earlierValue} should be before shipped milestone #${laterValue}.`,
-        };
+  if (stageTypes && allLater) {
+    const laterValue = findMinMilestone(allLater, stageTypes, getFieldValue);
+    if (
+      earlierValue != null &&
+      laterValue != null &&
+      Number(earlierValue) >= laterValue
+    ) {
+      return warning
+        ? {
+            warning,
+          }
+        : {
+            error: `Earlier milestone #${earlierValue} should be before shipped milestone #${laterValue}.`,
+          };
+    }
   }
 }
 
 // Check that all earlier milestones before a later milestone.
 // Used with all OT start milestones and a shipped milestone.
-function checkAllEarlierBeforeLaterMilestone(fieldPair, getFieldValue) {
-  const {allEarlier, later, warning} = fieldPair;
+function checkAllEarlierBeforeLaterMilestone(
+  fieldPair: MilestoneRange,
+  getFieldValue: any
+) {
+  const {allEarlier, later, warning, error} = fieldPair;
   const stageTypes =
+    allEarlier &&
     // Only origin trials or dev trials, for now.
     OT_MILESTONE_START_FIELDS.has(allEarlier)
       ? STAGE_TYPES_ORIGIN_TRIAL
-      : DT_MILESTONE_FIELDS.has(allEarlier)
+      : allEarlier && DT_MILESTONE_FIELDS.has(allEarlier)
         ? STAGE_TYPES_DEV_TRIAL
         : null;
   // console.info(`stageTypes: ${stageTypes}`);
-  const earlierValue = findMaxMilestone(allEarlier, stageTypes, getFieldValue);
-  const laterValue = getNumericValue(later, getFieldValue);
-  // console.info(`Earlier: ${earlierValue} ... later: ${laterValue}`);
-  if (
-    earlierValue != null &&
-    laterValue != null &&
-    earlierValue >= Number(laterValue)
-  ) {
-    return warning
-      ? {
-          warning,
-        }
-      : {
-          error:
-            error ||
-            `Earlier milestone #${earlierValue} should be before shipped milestone #${laterValue}.`,
-        };
+  if (stageTypes && allEarlier) {
+    const earlierValue = findMaxMilestone(
+      allEarlier,
+      stageTypes,
+      getFieldValue
+    );
+    const laterValue = getNumericValue(later, getFieldValue);
+    if (
+      earlierValue != null &&
+      laterValue != null &&
+      earlierValue >= Number(laterValue)
+    ) {
+      return warning
+        ? {
+            warning,
+          }
+        : {
+            error:
+              error ||
+              `Earlier milestone #${earlierValue} should be before shipped milestone #${laterValue}.`,
+          };
+    }
   }
 }
 

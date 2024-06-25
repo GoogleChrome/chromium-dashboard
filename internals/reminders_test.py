@@ -118,6 +118,28 @@ class FunctionTest(testing_config.CustomTestCase):
       for entity in kind.query():
         entity.key.delete()
 
+  def test_choose_email_recipients__normal(self):
+    """Normal reminders go to feature participants."""
+    actual = reminders.choose_email_recipients(
+        self.feature_template, False)
+    expected = ['feature_owner@example.com',
+                ]
+    self.assertEqual(set(actual), set(expected))
+
+  @mock.patch('settings.PROD', True)
+  def test_choose_email_recipients__escalated(self):
+    """Escalated reminders go to feature participants and lists."""
+    actual = reminders.choose_email_recipients(
+        self.feature_template, True)
+    expected = ['creator@example.com',
+                'feature_owner@example.com',
+                'feature_editor@example.com',
+                'mentor@example.com',
+                'webstatus@google.com',
+                'cbe-releasenotes@google.com',
+                ]
+    self.assertEqual(set(actual), set(expected))
+
   def test_build_email_tasks_feature_accuracy(self):
     with test_app.app_context():
       handler = reminders.FeatureAccuracyHandler()

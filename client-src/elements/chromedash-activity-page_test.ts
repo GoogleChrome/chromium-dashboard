@@ -3,8 +3,8 @@ import {html} from 'lit';
 import sinon from 'sinon';
 import '../js-src/cs-client';
 import {ChromedashActivityPage} from './chromedash-activity-page';
-
-declare const ChromeStatusClient: typeof window.csClient;
+import {ChromeStatusClient} from '../js-src/cs-client';
+import sinon from 'sinon';
 
 describe('chromedash-settings-page', () => {
   let getCommentsStub: sinon.SinonStub;
