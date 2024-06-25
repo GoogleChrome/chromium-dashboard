@@ -56,11 +56,10 @@ limitations under the License.
       alert('Please log in.');
     }
   </script>
-  <script nonce="{{nonce}}" src="/static/js/metric.min.js?v={{app_version}}"></script>
-  <script nonce="{{nonce}}" src="/static/js/cs-client.min.js?v={{app_version}}"></script>
-  <script nonce="{{nonce}}" src="/static/dist/openapi-client.js?v={{app_version}}"></script>
-  {# Loaded immediately because it is used by JS code on the page. #}
-  <script nonce="{{nonce}}">
+  <script type="module" nonce="{{nonce}}">
+    import {ChromeStatusClient} from "/static/dist/cs-client.js?v={{app_version}}";
+    import {ChromeStatusOpenApiClient} from "/static/dist/openapi-client.js?v={{app_version}}";
+
     window.csClient = new ChromeStatusClient(
       '{{xsrf_token}}', {{ xsrf_token_expires }});
     window.csOpenApiClient = new ChromeStatusOpenApiClient();
@@ -82,10 +81,10 @@ limitations under the License.
 
   {#
   Note that the following script tag must include type="module" so that the form field event listeners
-  attached by shared.min.js will not be attached until after Shoelace event listeners are attached.
+  attached by shared.js will not be attached until after Shoelace event listeners are attached.
   See https://github.com/GoogleChrome/chromium-dashboard/issues/2014
   #}
-  <script type="module" nonce="{{nonce}}" src="/static/js/shared.min.js?v={{app_version}}"></script>
+  <script type="module" nonce="{{nonce}}" src="/static/dist/shared.js?v={{app_version}}"></script>
 </body>
 
 </html>

@@ -15,11 +15,12 @@
 import testing_config  # Must be imported before the module under test.
 
 import requests
-from datetime import date, datetime
+from datetime import date
 from unittest import mock
 
 from api import converters
 from internals import maintenance_scripts
+from internals import core_enums
 from internals.core_models import FeatureEntry, Stage, MilestoneSet
 
 class AssociateOTsTest(testing_config.CustomTestCase):
@@ -241,7 +242,8 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
         ot_feedback_submission_url='https://example.com/feedback',
         intent_thread_url='https://example.com/experiment',
         ot_description='OT description', ot_has_third_party_support=True,
-        ot_is_deprecation_trial=False)
+        ot_is_deprecation_trial=False,
+        ot_setup_status=core_enums.OT_READY_FOR_CREATION)
     self.ot_stage_1.put()
     self.ot_stage_1_dict = converters.stage_to_json_dict(self.ot_stage_1)
 
@@ -254,7 +256,8 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
         ot_feedback_submission_url='https://example.com/feedback2',
         intent_thread_url='https://example.com/experiment2',
         ot_description='OT description2', ot_has_third_party_support=True,
-        ot_is_deprecation_trial=False)
+        ot_is_deprecation_trial=False,
+        ot_setup_status=core_enums.OT_READY_FOR_CREATION)
     self.ot_stage_2.put()
     self.ot_stage_2_dict = converters.stage_to_json_dict(self.ot_stage_2)
 
@@ -267,7 +270,8 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
         ot_feedback_submission_url='https://example.com/feedback3',
         intent_thread_url='https://example.com/experiment3',
         ot_description='OT description3', ot_has_third_party_support=True,
-        ot_is_deprecation_trial=True)
+        ot_is_deprecation_trial=True,
+        ot_setup_status=core_enums.OT_CREATION_FAILED)
     self.ot_stage_3
     self.handler = maintenance_scripts.CreateOriginTrials()
 
@@ -289,10 +293,6 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
       mock_today,
       mock_enqueue_task):
     """Origin trials are created and activated if it is after branch point."""
-    self.ot_stage_1.ot_action_requested = True
-    self.ot_stage_1.put()
-    self.ot_stage_2.ot_action_requested = True
-    self.ot_stage_2.put()
 
     mock_today.return_value = date(2020, 6, 1)  # 2020-06-01
     mock_get_chromium_milestone_info.side_effect = mock_mstone_return_value_generator
@@ -312,9 +312,9 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
     self.assertIsNone(self.ot_stage_1.ot_activation_date)
     # OT 2 should have delayed activation date set.
     self.assertEqual(date(2030, 1, 1), self.ot_stage_2.ot_activation_date)
-    # Action requests should be cleared.
-    self.assertFalse(self.ot_stage_1.ot_action_requested)
-    self.assertFalse(self.ot_stage_2.ot_action_requested)
+    # Setup status should be verified.
+    self.assertEqual(self.ot_stage_1.ot_setup_status, core_enums.OT_ACTIVATED)
+    self.assertEqual(self.ot_stage_2.ot_setup_status, core_enums.OT_CREATED)
     # New origin trial ID should be associated with the stages.ss
     self.assertIsNotNone(self.ot_stage_1.origin_trial_id)
     self.assertIsNotNone(self.ot_stage_2.origin_trial_id)
@@ -364,9 +364,11 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
     # Creation wasn't handled, so activation dates shouldn't be set.
     self.assertIsNone(self.ot_stage_1.ot_activation_date)
     self.assertIsNone(self.ot_stage_2.ot_activation_date)
-    # Action requests should be cleared.
-    self.assertFalse(self.ot_stage_1.ot_action_requested)
-    self.assertFalse(self.ot_stage_2.ot_action_requested)
+    # Setup status should be marked as "Failed".
+    self.assertEqual(self.ot_stage_1.ot_setup_status,
+                     core_enums.OT_CREATION_FAILED)
+    self.assertEqual(self.ot_stage_2.ot_setup_status,
+                     core_enums.OT_CREATION_FAILED)
     # No actions were successful, so no OT IDs should be added to stages.
     self.assertIsNone(self.ot_stage_1.origin_trial_id)
     self.assertIsNone(self.ot_stage_2.origin_trial_id)
@@ -411,13 +413,16 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
             {'stage': self.ot_stage_2_dict})
         ], any_order=True)
 
-    # Activation failed, but a delayed activation date should not be set.
-    self.assertIsNone(self.ot_stage_1.ot_activation_date)
+    # Activation failed, so an activation date should have been set.
+    self.assertEqual(self.ot_stage_1.ot_activation_date, date.today())
     # OT 2 should have delayed activation date set.
     self.assertEqual(date(2030, 1, 1), self.ot_stage_2.ot_activation_date)
-    # Action requests should be cleared.
-    self.assertFalse(self.ot_stage_1.ot_action_requested)
-    self.assertFalse(self.ot_stage_2.ot_action_requested)
+    # OT 1 setup status should be verified, but activation failed.
+    self.assertEqual(self.ot_stage_1.ot_setup_status,
+                     core_enums.OT_ACTIVATION_FAILED)
+    # OT 2 should have been created but not yet activated.
+    self.assertEqual(self.ot_stage_2.ot_setup_status,
+                     core_enums.OT_CREATED)
     # New origin trial ID should be associated with the stages.
     self.assertIsNotNone(self.ot_stage_1.origin_trial_id)
     self.assertIsNotNone(self.ot_stage_2.origin_trial_id)
@@ -437,6 +442,7 @@ class ActivateOriginTrialsTest(testing_config.CustomTestCase):
     self.ot_stage_1 = Stage(
         feature_id=1, stage_type=150, ot_display_name='Example Trial',
         origin_trial_id='111222333', ot_activation_date=date(2020, 1, 1),
+        ot_setup_status=core_enums.OT_CREATED,
         ot_owner_email='feature_owner@google.com',
         ot_chromium_trial_name='ExampleTrial',
         milestones=MilestoneSet(desktop_first=100, desktop_last=106),
@@ -451,6 +457,7 @@ class ActivateOriginTrialsTest(testing_config.CustomTestCase):
     self.ot_stage_2 = Stage(
         feature_id=2, stage_type=250, ot_display_name='Example Trial 2',
         origin_trial_id='444555666', ot_activation_date=date(2020, 2, 15),
+        ot_setup_status=core_enums.OT_CREATED,
         ot_owner_email='feature_owner2@google.com',
         ot_chromium_trial_name='ExampleTrial2',
         milestones=MilestoneSet(desktop_first=200, desktop_last=206),
@@ -465,6 +472,7 @@ class ActivateOriginTrialsTest(testing_config.CustomTestCase):
     self.ot_stage_3 = Stage(
         feature_id=3, stage_type=450, ot_display_name='Example Trial 3',
         origin_trial_id='777888999', ot_activation_date=date(2024, 1, 1),
+        ot_setup_status=core_enums.OT_CREATED,
         ot_owner_email='feature_owner2@google.com',
         ot_chromium_trial_name='ExampleTrial3',
         milestones=MilestoneSet(desktop_first=200, desktop_last=206),
