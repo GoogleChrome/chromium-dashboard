@@ -5,7 +5,7 @@ import {LAYOUT_CSS} from '../css/_layout-css.js';
 import {customElement, property, query} from 'lit/decorators.js';
 import '../js-src/openapi-client';
 import {DefaultApiInterface} from 'chromestatus-openapi';
-import { get } from 'http';
+import {get} from 'http';
 
 interface User {
   id: number;

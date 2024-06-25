@@ -3,8 +3,11 @@ import {showToastMessage} from './utils.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {VARS} from '../css/_vars-css.js';
 import {LAYOUT_CSS} from '../css/_layout-css.js';
+import {customElement, property} from 'lit/decorators.js';
 import './chromedash-admin-blink-component-listing';
+import {DefaultApiInterface} from 'chromestatus-openapi';
 
+@customElement('chromedash-admin-blink-page')
 export class ChromedashAdminBlinkPage extends LitElement {
   static get styles() {
     return [
@@ -62,29 +65,21 @@ export class ChromedashAdminBlinkPage extends LitElement {
       `,
     ];
   }
-  static get properties() {
-    return {
-      loading: {type: Boolean},
-      user: {type: Object},
-      _editMode: {type: Boolean},
-    };
-  }
 
-  /** @type {import('chromestatus-openapi').DefaultApiInterface} */
-  _client;
-
-  /** @type {Array<import('chromestatus-openapi').OwnersAndSubscribersOfComponent>} */
+  @property({type: Boolean})
+  loading = true;
+  @property({type: Object})
+  user = null;
+  @property({type: Boolean})
+  _editMode = false;
+  @property({
+    type: Array<import('chromestatus-openapi').OwnersAndSubscribersOfComponent>,
+  })
   components;
-
-  /** @type {Map<int, import('chromestatus-openapi').ComponentsUser}> */
+  @property({type: Map<number, import('chromestatus-openapi').ComponentsUser>})
   usersMap;
 
-  constructor() {
-    super();
-    this.loading = true;
-    this._editMode = false;
-    this._client = window.csOpenApiClient;
-  }
+  _client: DefaultApiInterface = window.csOpenApiClient;
 
   connectedCallback() {
     super.connectedCallback();
@@ -96,7 +91,7 @@ export class ChromedashAdminBlinkPage extends LitElement {
     this._client
       .listComponentUsers()
       .then(response => {
-        this.usersMap = new Map(response.users.map(user => [user.id, user]));
+        this.usersMap = new Map(response.users!.map(user => [user.id, user]));
         this.components = response.components;
         this.loading = false;
       })
@@ -191,8 +186,8 @@ export class ChromedashAdminBlinkPage extends LitElement {
     if (location.hash) {
       const hash = decodeURIComponent(location.hash);
       if (hash) {
-        const el = this.shadowRoot.querySelector(hash);
-        el.scrollIntoView(true, {behavior: 'smooth'});
+        const el = this.shadowRoot!.querySelector(hash);
+        el!.scrollIntoView({behavior: 'smooth'});
       }
     }
   }
@@ -226,5 +221,3 @@ export class ChromedashAdminBlinkPage extends LitElement {
     `;
   }
 }
-
-customElements.define('chromedash-admin-blink-page', ChromedashAdminBlinkPage);
