@@ -796,7 +796,18 @@ class ChromedashFeatureDetail extends LitElement {
       this.user &&
       (this.user.email.endsWith('@chromium.org') ||
         this.user.email.endsWith('@google.com'));
-    if (canSeeOTControls && feStage.ot_action_requested) {
+    if (!canSeeOTControls) {
+      return nothing;
+    }
+
+    const trialIsApproved = this.gates.every(g => {
+      return (
+        g.stage_id !== feStage.id ||
+        g.state === VOTE_OPTIONS.APPROVED[0] ||
+        g.state === VOTE_OPTIONS.NA[0]
+      );
+    });
+    if (feStage.ot_action_requested) {
       // Display the button as disabled with tooltip text if a request
       // has already been submitted.
       return html` <sl-tooltip
@@ -806,17 +817,25 @@ class ChromedashFeatureDetail extends LitElement {
           >Request Trial Creation</sl-button
         >
       </sl-tooltip>`;
-      // Display the creation request button if user has edit access.
-    } else if (canSeeOTControls) {
-      return html` <sl-button
-        size="small"
-        variant="primary"
-        @click="${() =>
-          openPrereqsDialog(this.feature.id, feStage, dialogTypes.CREATION)}"
-        >Request Trial Creation</sl-button
-      >`;
+    } else if (!trialIsApproved) {
+      // Display the button as disabled with tooltip text if the trial has not
+      // yet received approvals.
+      return html` <sl-tooltip
+        content="Approvals must be obtained before submission. For questions, contact origin-trials-support@google.com."
+      >
+        <sl-button size="small" variant="primary" disabled
+          >Request Trial Creation</sl-button
+        >
+      </sl-tooltip>`;
     }
-    return nothing;
+    // Display the creation request button if user has edit access.
+    return html` <sl-button
+      size="small"
+      variant="primary"
+      @click="${() =>
+        openPrereqsDialog(this.feature.id, feStage, dialogTypes.CREATION)}"
+      >Request Trial Creation</sl-button
+    >`;
   }
 
   offerAddXfnGates(feStage) {

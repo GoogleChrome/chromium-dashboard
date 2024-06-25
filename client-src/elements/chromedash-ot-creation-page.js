@@ -11,6 +11,7 @@ import './chromedash-form-field.js';
 import {ORIGIN_TRIAL_CREATION_FIELDS} from './form-definition.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
+import {VOTE_OPTIONS} from './form-field-enums.js';
 import {ALL_FIELDS} from './form-field-specs.js';
 
 export class ChromedashOTCreationPage extends LitElement {
@@ -97,10 +98,24 @@ export class ChromedashOTCreationPage extends LitElement {
     Promise.all([
       window.csClient.getFeature(this.featureId),
       window.csClient.getStage(this.featureId, this.stageId),
-    ]).then(([feature, stage]) => {
+      window.csClient.getGates(this.featureId),
+    ]).then(([feature, stage, gatesRes]) => {
       this.feature = feature;
       this.stage = stage;
 
+      // Check that necessary approvals have been obtained.
+      const relevantGates = gatesRes.gates.filter(
+        g => g.stage_id === this.stage.id
+      );
+      relevantGates.forEach(g => {
+        if (
+          g.state !== VOTE_OPTIONS.APPROVED[0] &&
+          g.state !== VOTE_OPTIONS.NA[0]
+        ) {
+          // Redirect if approvals have not been obtained.
+          window.location.href = `/feature/${this.featureId}`;
+        }
+      });
       if (this.feature.name) {
         document.title = `${this.feature.name} - ${this.appTitle}`;
       }

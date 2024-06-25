@@ -59,17 +59,12 @@ limitations under the License.
       alert('Please log in.');
     }
   </script>
-  <script nonce="fake nonce" src="/static/js/metric.min.js?v=Undeployed"></script>
-  <script nonce="fake nonce" src="/static/js/cs-client.min.js?v=Undeployed"></script>
-
-  
-  <script nonce="fake nonce">
+  <script type="module" nonce="fake nonce">
+    import {ChromeStatusClient} from "/static/dist/cs-client.js?v=Undeployed"
     window.csClient = new ChromeStatusClient(
         '', 0);
-  </script>
 
-  
-  <script type="module" nonce="fake nonce">
+    
     const drawer = document.querySelector('chromedash-drawer');
     const header = document.querySelector('chromedash-header');
     header.addEventListener('drawer-clicked', (e) => {
@@ -365,6 +360,6 @@ False
           async nonce="fake nonce"></script>
 
   
-  <script type="module" nonce="fake nonce" src="/static/js/shared.min.js?v=Undeployed"></script>
+  <script type="module" nonce="fake nonce" src="/static/dist/shared.js?v=Undeployed"></script>
 </body>
 </html>
