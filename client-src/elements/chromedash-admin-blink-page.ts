@@ -76,10 +76,8 @@ export class ChromedashAdminBlinkPage extends LitElement {
   user = null;
   @property({type: Boolean})
   _editMode = false;
-  @property({
-    type: Array<OwnersAndSubscribersOfComponent>,
-  })
-  components;
+  @state()
+  components: OwnersAndSubscribersOfComponent[] | undefined;
   @property({type: Map<number, ComponentsUser>})
   usersMap;
 
