@@ -68,12 +68,6 @@ interface Field {
   disabled?: boolean;
 }
 
-declare global {
-  interface Window {
-    csClient: any;
-  }
-}
-
 /* Patterns from https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch04s01.html
  * Removing single quote ('), backtick (`), and pipe (|) since they are risky unless properly escaped everywhere.
  * Also removing ! and % because they have special meaning for some older email routing systems. */
