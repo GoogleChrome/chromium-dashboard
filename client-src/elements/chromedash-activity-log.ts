@@ -12,13 +12,6 @@ interface Amendment {
   new_value: string;
 }
 
-declare global {
-  interface Window {
-    csClient: ChromeStatusClient;
-    csOpenApiClient: DefaultApiInterface;
-  }
-}
-
 export class ChromedashAmendment extends LitElement {
   @property({type: Object})
   amendment: Amendment = {

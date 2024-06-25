@@ -1,10 +1,13 @@
+import {DefaultApiInterface} from 'chromestatus-openapi';
+import {ChromeStatusClient} from './chrome-status-client';
 
 declare global {
-    interface Window {
-      csClient: ChromeStatusClient;
-      csOpenApiClient: DefaultApiInterface;
-    }
+  interface Window {
+    csClient: ChromeStatusClient;
+    csOpenApiClient: DefaultApiInterface;
   }
+}
+
 declare class ChromeStatusHttpError extends Error {
   resource: string;
   method: string;
