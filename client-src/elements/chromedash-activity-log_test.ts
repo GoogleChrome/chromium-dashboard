@@ -7,7 +7,6 @@ import {
 import {ChromeStatusClient} from '../js-src/cs-client';
 import sinon from 'sinon';
 
-declare const ChromeStatusClient: typeof window.csClient;
 const nonAdminUser = {
   can_create_feature: true,
   can_edit_all: true,

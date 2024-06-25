@@ -1,7 +1,5 @@
 import {assert, fixture} from '@open-wc/testing';
 import {html} from 'lit';
-import sinon from 'sinon';
-import '../js-src/cs-client';
 import {ChromedashActivityPage} from './chromedash-activity-page';
 import {ChromeStatusClient} from '../js-src/cs-client';
 import sinon from 'sinon';

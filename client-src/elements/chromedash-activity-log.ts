@@ -2,7 +2,7 @@ import {LitElement, css, html, nothing} from 'lit';
 import {property, state} from 'lit/decorators.js';
 import {autolink, renderAbsoluteDate, renderRelativeDate} from './utils.js';
 import '@polymer/iron-icon';
-
+import {ChromeStatusClient} from '../js-src/cs-client.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
 interface Amendment {
