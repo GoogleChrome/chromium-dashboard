@@ -6,6 +6,7 @@ import {customElement, property, state} from 'lit/decorators.js';
 class ChromedashCallout extends LitElement {
   @property({type: String})
   targetId = '';
+  /** TODO(jrobbins) Support sides other than "south". */
   @property({type: String})
   side: 'north' | 'south' | 'east' | 'west' = 'south';
   /** String to send to the server when dismissed. */
