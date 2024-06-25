@@ -4,8 +4,7 @@ import {assert, expect, fixture, oneEvent} from '@open-wc/testing';
 import sinon from 'sinon';
 import {DefaultApi} from 'chromestatus-openapi';
 
-/** @type {Map<number, import('chromestatus-openapi').ComponentsUser>} */
-const testUsersMap = new Map([
+const testUsersMap = new Map<number, import('chromestatus-openapi').ComponentsUser>([
   [0, {id: 0, email: 'a@b.c', name: '0'}],
   [1, {id: 1, email: 'a@b.c', name: '1'}],
   [2, {id: 2, email: 'a@b.c', name: '2'}],
