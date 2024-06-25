@@ -202,7 +202,7 @@ export class ChromedashAdminBlinkPage extends LitElement {
           (component, index) => html`
             <li class="layout horizontal" id="${component.name}">
               <chromedash-admin-blink-component-listing
-                .id=${component.componentId}
+                .componentId=${component.id}
                 .name=${component.name}
                 .subscriberIds=${component.subscriber_ids ?? []}
                 .ownerIds=${component.owner_ids ?? []}
