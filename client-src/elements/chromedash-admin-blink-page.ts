@@ -5,7 +5,7 @@ import {VARS} from '../css/_vars-css.js';
 import {LAYOUT_CSS} from '../css/_layout-css.js';
 import {customElement, property} from 'lit/decorators.js';
 import './chromedash-admin-blink-component-listing';
-import {DefaultApiInterface} from 'chromestatus-openapi';
+import {DefaultApiInterface, OwnersAndSubscribersOfComponent, ComponentsUser} from 'chromestatus-openapi';
 
 @customElement('chromedash-admin-blink-page')
 export class ChromedashAdminBlinkPage extends LitElement {
@@ -73,10 +73,10 @@ export class ChromedashAdminBlinkPage extends LitElement {
   @property({type: Boolean})
   _editMode = false;
   @property({
-    type: Array<import('chromestatus-openapi').OwnersAndSubscribersOfComponent>,
+    type: Array<OwnersAndSubscribersOfComponent>,
   })
   components;
-  @property({type: Map<number, import('chromestatus-openapi').ComponentsUser>})
+  @property({type: Map<number, ComponentsUser>})
   usersMap;
 
   _client: DefaultApiInterface = window.csOpenApiClient;
@@ -198,7 +198,7 @@ export class ChromedashAdminBlinkPage extends LitElement {
           (component, index) => html`
             <li class="layout horizontal" id="${component.name}">
               <chromedash-admin-blink-component-listing
-                .id=${component.id}
+                .id=${component.componentId}
                 .name=${component.name}
                 .subscriberIds=${component.subscriber_ids ?? []}
                 .ownerIds=${component.owner_ids ?? []}

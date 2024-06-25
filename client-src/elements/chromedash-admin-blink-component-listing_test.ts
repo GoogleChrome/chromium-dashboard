@@ -2,12 +2,9 @@ import {ChromedashAdminBlinkComponentListing} from './chromedash-admin-blink-com
 import {html} from 'lit';
 import {assert, expect, fixture, oneEvent} from '@open-wc/testing';
 import sinon from 'sinon';
-import {DefaultApi} from 'chromestatus-openapi';
+import {DefaultApi, ComponentsUser} from 'chromestatus-openapi';
 
-const testUsersMap = new Map<
-  number,
-  import('chromestatus-openapi').ComponentsUser
->([
+const testUsersMap = new Map<number, ComponentsUser>([
   [0, {id: 0, email: 'a@b.c', name: '0'}],
   [1, {id: 1, email: 'a@b.c', name: '1'}],
   [2, {id: 2, email: 'a@b.c', name: '2'}],

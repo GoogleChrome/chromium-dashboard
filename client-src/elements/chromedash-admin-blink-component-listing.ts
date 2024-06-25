@@ -4,14 +4,8 @@ import {VARS} from '../css/_vars-css.js';
 import {LAYOUT_CSS} from '../css/_layout-css.js';
 import {customElement, property, query} from 'lit/decorators.js';
 import '../js-src/openapi-client';
-import {DefaultApiInterface} from 'chromestatus-openapi';
+import {DefaultApiInterface, ComponentsUser} from 'chromestatus-openapi';
 import {get} from 'http';
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-}
 
 @customElement('chromedash-admin-blink-component-listing')
 export class ChromedashAdminBlinkComponentListing extends LitElement {
@@ -100,7 +94,7 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
   @property({type: Number})
   index = 0;
   @property({type: Object})
-  usersMap: Map<number, User> = new Map();
+  usersMap: Map<number, ComponentsUser> = new Map();
   @property({type: Number})
   componentId = 0;
   @property({type: String})
