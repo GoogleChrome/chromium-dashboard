@@ -22,10 +22,6 @@
  * @property {number} http_error_code
  */
 
-// prettier-ignore
-(function(exports) {
-'use strict';
-
 /**
  * Generic Chrome Status Http Error.
  */
@@ -43,7 +39,7 @@ class ChromeStatusHttpError extends Error {
  * FeatureNotFoundError represents an error for when a feature was not found
  * for the given ID.
  */
-class FeatureNotFoundError extends Error {
+export class FeatureNotFoundError extends Error {
   constructor(featureID) {
     super('Feature not found');
     this.name = 'FeatureNotFoundError';
@@ -51,7 +47,7 @@ class FeatureNotFoundError extends Error {
   }
 }
 
-class ChromeStatusClient {
+export class ChromeStatusClient {
   constructor(token, tokenExpiresSec) {
     this.token = token;
     this.tokenExpiresSec = tokenExpiresSec;
@@ -62,7 +58,10 @@ class ChromeStatusClient {
   async ensureTokenIsValid() {
     if (ChromeStatusClient.isTokenExpired(this.tokenExpiresSec)) {
       const refreshResponse = await this.doFetch(
-        '/currentuser/token', 'POST', null);
+        '/currentuser/token',
+        'POST',
+        null
+      );
       this.token = refreshResponse.token;
       this.tokenExpiresSec = refreshResponse.token_expires_sec;
     }
@@ -76,10 +75,10 @@ class ChromeStatusClient {
 
   /* Make a JSON API call to the server, including an XSRF header.
    * Then strip off the defensive prefix from the response. */
-  async doFetch(resource, httpMethod, body, includeToken=true) {
+  async doFetch(resource, httpMethod, body, includeToken = true) {
     const url = this.baseUrl + resource;
     const headers = {
-      'accept': 'application/json',
+      accept: 'application/json',
       'content-type': 'application/json',
     };
     if (includeToken) {
@@ -101,13 +100,15 @@ class ChromeStatusClient {
         `Got error response from server ${resource}: ${response.status}`,
         resource,
         httpMethod,
-        response.status);
+        response.status
+      );
     }
     const rawResponseText = await response.text();
-    const XSSIPrefix = ')]}\'\n';
+    const XSSIPrefix = ")]}'\n";
     if (!rawResponseText.startsWith(XSSIPrefix)) {
       throw new Error(
-          `Response does not start with XSSI prefix: ${XSSIPrefix}`);
+        `Response does not start with XSSI prefix: ${XSSIPrefix}`
+      );
     }
     return JSON.parse(rawResponseText.substr(XSSIPrefix.length));
   }
@@ -135,7 +136,6 @@ class ChromeStatusClient {
     });
   }
 
-
   // //////////////////////////////////////////////////////////////
   // Specific API calls
 
@@ -144,7 +144,7 @@ class ChromeStatusClient {
   signIn(credentialResponse) {
     const credential = credentialResponse.credential;
     // We don't use doPost because we don't already have a XSRF token.
-    return this.doFetch('/login', 'POST', {'credential': credential}, false);
+    return this.doFetch('/login', 'POST', {credential: credential}, false);
   }
 
   signOut() {
@@ -158,19 +158,17 @@ class ChromeStatusClient {
   }
 
   dismissCue(cue) {
-    return this.doPost('/currentuser/cues', {cue: cue})
-      .then((res) => res);
+    return this.doPost('/currentuser/cues', {cue: cue}).then(res => res);
     // TODO: catch((error) => { display message }
   }
 
   // Permissions API
-  getPermissions(returnPairedUser=false) {
+  getPermissions(returnPairedUser = false) {
     let url = '/currentuser/permissions';
     if (returnPairedUser) {
       url += '?returnPairedUser';
     }
-    return this.doGet(url)
-      .then((res) => res.user);
+    return this.doGet(url).then(res => res.user);
   }
 
   // Settings API
@@ -186,16 +184,15 @@ class ChromeStatusClient {
   // Star API
 
   getStars() {
-    return this.doGet('/currentuser/stars')
-      .then((res) => res.featureIds);
+    return this.doGet('/currentuser/stars').then(res => res.featureIds);
     // TODO: catch((error) => { display message }
   }
 
   setStar(featureId, starred) {
-    return this.doPost(
-      '/currentuser/stars',
-      {featureId: featureId, starred: starred})
-      .then((res) => res);
+    return this.doPost('/currentuser/stars', {
+      featureId: featureId,
+      starred: starred,
+    }).then(res => res);
     // TODO: catch((error) => { display message }
   }
 
@@ -219,9 +216,9 @@ class ChromeStatusClient {
   }
 
   setVote(featureId, gateId, state) {
-    return this.doPost(
-        `/features/${featureId}/votes/${gateId}`,
-        {state: Number(state)});
+    return this.doPost(`/features/${featureId}/votes/${gateId}`, {
+      state: Number(state),
+    });
   }
 
   getGates(featureId) {
@@ -233,10 +230,7 @@ class ChromeStatusClient {
   }
 
   updateGate(featureId, gateId, assignees) {
-    return this.doPost(
-        `/features/${featureId}/gates/${gateId}`,
-        {assignees,
-        });
+    return this.doPost(`/features/${featureId}/gates/${gateId}`, {assignees});
   }
 
   getComments(featureId, gateId) {
@@ -250,49 +244,51 @@ class ChromeStatusClient {
   postComment(featureId, gateId, comment, postToThreadType) {
     if (gateId) {
       return this.doPost(
-          `/features/${featureId}/approvals/${gateId}/comments`,
-          {comment, postToThreadType});
+        `/features/${featureId}/approvals/${gateId}/comments`,
+        {comment, postToThreadType}
+      );
     } else {
-      return this.doPost(
-          `/features/${featureId}/approvals/comments`,
-          {comment, postToThreadType});
+      return this.doPost(`/features/${featureId}/approvals/comments`, {
+        comment,
+        postToThreadType,
+      });
     }
   }
 
   deleteComment(featureId, commentId) {
-    return this.doPatch(
-      `/features/${featureId}/approvals/comments`,
-      {commentId, isUndelete: false},
-    );
+    return this.doPatch(`/features/${featureId}/approvals/comments`, {
+      commentId,
+      isUndelete: false,
+    });
   }
 
   undeleteComment(featureId, commentId) {
-    return this.doPatch(
-      `/features/${featureId}/approvals/comments`,
-      {commentId, isUndelete: true},
-    );
+    return this.doPatch(`/features/${featureId}/approvals/comments`, {
+      commentId,
+      isUndelete: true,
+    });
   }
 
   // Features API
   async getFeature(featureId) {
-    return this.doGet(`/features/${featureId}`)
-      .catch((error) => {
-        // If not the ChromeStatusHttpError, continue throwing.
-        if (!(error instanceof ChromeStatusHttpError)) {
-          throw error;
-        }
-        // Else, do further validations
-        if (error.status === 404) {
-          throw new FeatureNotFoundError(featureId);
-        }
-        // No other special cases means, we can re throw the error.
+    return this.doGet(`/features/${featureId}`).catch(error => {
+      // If not the ChromeStatusHttpError, continue throwing.
+      if (!(error instanceof ChromeStatusHttpError)) {
         throw error;
-      });
+      }
+      // Else, do further validations
+      if (error.status === 404) {
+        throw new FeatureNotFoundError(featureId);
+      }
+      // No other special cases means, we can re throw the error.
+      throw error;
+    });
   }
 
   async getFeaturesInMilestone(milestone) {
     return this.doGet(`/features?milestone=${milestone}`).then(
-      (resp) => resp['features_by_type']);
+      resp => resp['features_by_type']
+    );
   }
 
   async getFeaturesForEnterpriseReleaseNotes(milestone) {
@@ -327,8 +323,10 @@ class ChromeStatusClient {
    * @param {number} featureId
    * @returns {Promise<{data: FeatureLink[], has_stale_links: boolean}>}
    */
-  async getFeatureLinks(featureId, updateStaleLinks=true) {
-    return this.doGet(`/feature_links?feature_id=${featureId}&update_stale_links=${updateStaleLinks}`);
+  async getFeatureLinks(featureId, updateStaleLinks = true) {
+    return this.doGet(
+      `/feature_links?feature_id=${featureId}&update_stale_links=${updateStaleLinks}`
+    );
   }
 
   async getFeatureLinksSummary() {
@@ -343,7 +341,9 @@ class ChromeStatusClient {
     if (isError !== undefined && isError !== null) {
       optionalParams += `&is_error=${isError}`;
     }
-    return this.doGet(`/feature_links_samples?domain=${domain}${optionalParams}`);
+    return this.doGet(
+      `/feature_links_samples?domain=${domain}${optionalParams}`
+    );
   }
 
   // Stages API
@@ -364,8 +364,7 @@ class ChromeStatusClient {
   }
 
   async addXfnGates(featureId, stageId) {
-    return this.doPost(
-        `/features/${featureId}/stages/${stageId}/addXfnGates`);
+    return this.doPost(`/features/${featureId}/stages/${stageId}/addXfnGates`);
   }
 
   // Origin trials API
@@ -404,8 +403,4 @@ class ChromeStatusClient {
   async getSpecifiedChannels(start, end) {
     return this.doGet(`/channels?start=${start}&end=${end}`);
   }
-};
-
-exports.ChromeStatusClient = ChromeStatusClient;
-exports.FeatureNotFoundError = FeatureNotFoundError;
-})(window);
+}

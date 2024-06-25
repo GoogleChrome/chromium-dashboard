@@ -44,11 +44,11 @@
 {% endblock %}
 
 {% block js %}
-  <script nonce="{{nonce}}" src="/static/js/features-page.min.js?v={{app_version}}"></script>
-  <script nonce="{{nonce}}">
+  <script type="module" nonce="{{nonce}}">
+    import {loadFeatureLegendViews} from "/static/dist/features-page.js?v={{app_version}}";
     (function() {
       'use strict';
-      // Get values from server. used in /static/js/features-page.js
+      // Get values from server. used in /static/dist/features-page.js
       const VIEWS = {
         vendors: {{VENDOR_VIEWS|safe}},
         webdevs: {{WEB_DEV_VIEWS|safe}},

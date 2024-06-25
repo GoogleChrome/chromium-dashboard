@@ -3,7 +3,7 @@ import {assert, fixture, nextFrame} from '@open-wc/testing';
 import {ChromedashEnterpriseReleaseNotesPage} from './chromedash-enterprise-release-notes-page';
 import {parseRawQuery, clearURLParams} from './utils.js';
 import './chromedash-toast';
-import '../js-src/cs-client';
+import {ChromeStatusClient} from '../js-src/cs-client';
 import sinon from 'sinon';
 
 function normalizedTextContent(element) {

@@ -23,6 +23,7 @@ from framework import basehandlers
 from framework import origin_trials_client
 from internals import notifier_helpers
 from framework import permissions
+from internals.core_enums import OT_READY_FOR_CREATION
 from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Gate, Vote
 
@@ -152,6 +153,11 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
     if redirect_resp:
       return redirect_resp
 
+    gates: list[Gate] = Gate.query(Gate.stage_id == ot_stage_id)
+    for gate in gates:
+      if gate.state not in (Vote.APPROVED, Vote.NA):
+        self.abort(400, 'Unapproved gate found for trial stage.')
+
     body = self.get_json_param_dict()
     validation_errors = self._validate_creation_args(body)
     if validation_errors:
@@ -160,6 +166,9 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
           'errors': validation_errors
           }
     self.update_stage(ot_stage, body, [])
+    # Flag OT stage as ready to be created.
+    ot_stage.ot_setup_status = OT_READY_FOR_CREATION
+    ot_stage.put()
     return {'message': 'Origin trial creation request submitted.'}
 
   def _validate_extension_args(

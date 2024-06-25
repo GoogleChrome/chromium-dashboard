@@ -4,7 +4,7 @@ import {
   ChromedashActivity,
   ChromedashActivityLog,
 } from './chromedash-activity-log';
-import '../js-src/cs-client';
+import {ChromeStatusClient} from '../js-src/cs-client';
 import sinon from 'sinon';
 
 const nonAdminUser = {
@@ -39,8 +39,8 @@ describe('chromedash-activity', () => {
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashActivity);
-    assert.notExists(component.shadowRoot.querySelector('sl-relative-time'));
-    assert.notExists(component.shadowRoot.querySelector('sl-menu'));
+    assert.notExists(component.shadowRoot!.querySelector('sl-relative-time'));
+    assert.notExists(component.shadowRoot!.querySelector('sl-menu'));
   });
 
   it('renders an activity when signed out', async () => {
@@ -53,14 +53,14 @@ describe('chromedash-activity', () => {
       >
       </chromedash-activity>`
     );
-    const commentDiv = component.shadowRoot.querySelector('.comment');
-    assert.include(commentDiv.innerHTML, actOne.author);
-    assert.include(commentDiv.innerHTML, '2022-08-30 12:34:45');
-    assert.include(commentDiv.innerHTML, 'hey, nice feature');
+    const commentDiv = component.shadowRoot!.querySelector('.comment');
+    assert.include(commentDiv!.innerHTML, actOne.author);
+    assert.include(commentDiv!.innerHTML, '2022-08-30 12:34:45');
+    assert.include(commentDiv!.innerHTML, 'hey, nice feature');
     // TODO: Fails on firefox.  See issue #2186.
     // assert.exists(component.shadowRoot.querySelector('sl-relative-time'));
-    assert.notExists(component.shadowRoot.querySelector('sl-dropdown'));
-    assert.notExists(component.shadowRoot.querySelector('sl-menu'));
+    assert.notExists(component.shadowRoot!.querySelector('sl-dropdown'));
+    assert.notExists(component.shadowRoot!.querySelector('sl-menu'));
   });
 
   it('renders an activity when signed in', async () => {
@@ -72,9 +72,9 @@ describe('chromedash-activity', () => {
       >
       </chromedash-activity>`
     );
-    const commentDiv = component.shadowRoot.querySelector('.comment');
-    assert.include(commentDiv.innerHTML, 'hey, nice feature');
-    assert.exists(component.shadowRoot.querySelector('sl-menu'));
+    const commentDiv = component.shadowRoot!.querySelector('.comment');
+    assert.include(commentDiv!.innerHTML, 'hey, nice feature');
+    assert.exists(component.shadowRoot!.querySelector('sl-menu'));
   });
 
   // Note: It does not hide or prefix a deleted comment for users who don't
@@ -97,17 +97,17 @@ describe('chromedash-activity', () => {
       >
       </chromedash-activity>`
     );
-    const commentDiv = component.shadowRoot.querySelector('.comment');
-    assert.include(commentDiv.innerHTML, '[Deleted]');
-    assert.include(commentDiv.innerHTML, 'better left unsaid');
-    assert.exists(component.shadowRoot.querySelector('sl-dropdown'));
-    assert.exists(component.shadowRoot.querySelector('sl-menu'));
+    const commentDiv = component.shadowRoot!.querySelector('.comment');
+    assert.include(commentDiv!.innerHTML, '[Deleted]');
+    assert.include(commentDiv!.innerHTML, 'better left unsaid');
+    assert.exists(component.shadowRoot!.querySelector('sl-dropdown'));
+    assert.exists(component.shadowRoot!.querySelector('sl-menu'));
   });
 
   it('can delete an activity', async () => {
     window.csClient = new ChromeStatusClient('fake_token', 1);
-    sinon.stub(window.csClient, 'deleteComment');
-    window.csClient.deleteComment.returns(Promise.resolve({message: 'Done'}));
+    const deleteCommentStub = sinon.stub(window.csClient, 'deleteComment');
+    deleteCommentStub.returns(Promise.resolve({message: 'Done'}));
 
     const doomedComment = {
       comment_id: 4,
@@ -115,30 +115,31 @@ describe('chromedash-activity', () => {
       created: '2022-08-30 12:34:45.567',
       content: 'something off the cuff',
       amendments: [],
+      deleted_by: null,
     };
-    const component = await fixture(
+    const component = (await fixture(
       html`<chromedash-activity
         .user=${nonAdminUser}
         .featureId=${featureOne}
         .activity=${doomedComment}
       >
       </chromedash-activity>`
-    );
-    const before = component.shadowRoot.querySelector('.comment');
-    assert.notInclude(before.innerHTML, '[Deleted]');
-    assert.include(before.innerHTML, 'something off the cuff');
+    )) as ChromedashActivity;
+    const before = component.shadowRoot!.querySelector('.comment');
+    assert.notInclude(before!.innerHTML, '[Deleted]');
+    assert.include(before!.innerHTML, 'something off the cuff');
 
     await component.handleDelete(false);
     assert.equal(doomedComment.deleted_by, nonAdminUser.email);
-    const after = component.shadowRoot.querySelector('.comment');
-    assert.include(after.innerHTML, '[Deleted]');
-    assert.include(after.innerHTML, 'something off the cuff');
+    const after = component.shadowRoot!.querySelector('.comment');
+    assert.include(after!.innerHTML, '[Deleted]');
+    assert.include(after!.innerHTML, 'something off the cuff');
   });
 
   it('can undelete an activity', async () => {
     window.csClient = new ChromeStatusClient('fake_token', 1);
-    sinon.stub(window.csClient, 'undeleteComment');
-    window.csClient.undeleteComment.returns(Promise.resolve({message: 'Done'}));
+    const undeleteStub = sinon.stub(window.csClient, 'undeleteComment');
+    undeleteStub.returns(Promise.resolve({message: 'Done'}));
 
     const blessedComment = {
       comment_id: 4,
@@ -148,23 +149,23 @@ describe('chromedash-activity', () => {
       deleted_by: 'non-admin@google.com',
       amendments: [],
     };
-    const component = await fixture(
+    const component = (await fixture(
       html`<chromedash-activity
         .user=${nonAdminUser}
         .featureId=${featureOne}
         .activity=${blessedComment}
       >
       </chromedash-activity>`
-    );
-    const before = component.shadowRoot.querySelector('.comment');
-    assert.include(before.innerHTML, '[Deleted]');
-    assert.include(before.innerHTML, 'lucky guess');
+    )) as ChromedashActivity;
+    const before = component.shadowRoot!.querySelector('.comment');
+    assert.include(before!.innerHTML, '[Deleted]');
+    assert.include(before!.innerHTML, 'lucky guess');
 
     await component.handleDelete(true);
     assert.equal(blessedComment.deleted_by, null);
-    const after = component.shadowRoot.querySelector('.comment');
-    assert.notInclude(after.innerHTML, '[Deleted]');
-    assert.include(after.innerHTML, 'lucky guess');
+    const after = component.shadowRoot!.querySelector('.comment');
+    assert.notInclude(after!.innerHTML, '[Deleted]');
+    assert.include(after!.innerHTML, 'lucky guess');
   });
 
   it('formats comment date relative to the current date', async () => {
@@ -180,12 +181,13 @@ describe('chromedash-activity', () => {
       </chromedash-activity>`
     );
 
-    const relativeDate = component.shadowRoot.querySelector('sl-relative-time');
+    const relativeDate =
+      component.shadowRoot!.querySelector('sl-relative-time');
     assert.exists(relativeDate);
     const dateStr = relativeDate.getAttribute('date');
     assert.equal(dateStr, '2022-08-30T12:34:45.567Z');
-    const dateObj = new Date(dateStr);
-    assert.isFalse(isNaN(dateObj));
+    const dateObj = new Date(dateStr!);
+    assert.isFalse(isNaN(dateObj.getTime()));
   });
 });
 
@@ -196,7 +198,9 @@ describe('chromedash-activity-log', () => {
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashActivityLog);
-    assert.notExists(component.shadowRoot.querySelector('chromedash-activity'));
+    assert.notExists(
+      component.shadowRoot!.querySelector('chromedash-activity')
+    );
   });
 
   it('renders with some data', async () => {
@@ -211,7 +215,7 @@ describe('chromedash-activity-log', () => {
     assert.exists(component);
     assert.instanceOf(component, ChromedashActivityLog);
     assert.lengthOf(
-      component.shadowRoot.querySelectorAll('chromedash-activity'),
+      component.shadowRoot!.querySelectorAll('chromedash-activity'),
       2
     );
   });
