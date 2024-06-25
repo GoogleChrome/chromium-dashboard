@@ -100,9 +100,9 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
   @property({type: String})
   name = '';
   @property({type: Array})
-  subscriberIds = [];
+  subscriberIds: number[] = [];
   @property({type: Array})
-  ownerIds = [];
+  ownerIds: number[] = [];
 
   _client: DefaultApiInterface = window.csOpenApiClient;
 
