@@ -1,12 +1,14 @@
 import {LitElement, css, html, nothing} from 'lit';
-import {ref, createRef} from 'lit/directives/ref.js';
+import {ref, createRef, Ref} from 'lit/directives/ref.js';
 import './chromedash-activity-log';
 import {showToastMessage} from './utils.js';
-
+import {property, state, customElement} from 'lit/decorators.js';
+import {User} from './chromedash-activity-log.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
+@customElement('chromedash-activity-page')
 export class ChromedashActivityPage extends LitElement {
-  commentAreaRef = createRef();
+  commentAreaRef: Ref<HTMLTextAreaElement> = createRef();
 
   static get styles() {
     return [
@@ -39,26 +41,24 @@ export class ChromedashActivityPage extends LitElement {
     ];
   }
 
-  static get properties() {
-    return {
-      user: {type: Object},
-      featureId: {type: Number},
-      comments: {type: Array},
-      loading: {type: Boolean},
-      needsPost: {type: Boolean},
-      contextLink: {type: String},
-    };
-  }
-
-  constructor() {
-    super();
-    this.user = {};
-    this.featureId = 0;
-    this.comments = [];
-    this.loading = true; // Avoid errors before first usage.
-    this.needsPost = false;
-    this.contextLink = '';
-  }
+  @property({type: Object})
+  user: User = {
+    can_create_feature: false,
+    can_edit_all: false,
+    can_comment: false,
+    is_admin: false,
+    email: '',
+  };
+  @property({type: Number})
+  featureId = 0;
+  @property({type: Array})
+  comments = [];
+  @state()
+  loading = true;
+  @property({type: Boolean})
+  needsPost = false;
+  @property({type: String})
+  contextLink = '';
 
   connectedCallback() {
     super.connectedCallback();
@@ -82,7 +82,7 @@ export class ChromedashActivityPage extends LitElement {
 
   reloadComments() {
     const commentArea = this.commentAreaRef.value;
-    commentArea.value = '';
+    commentArea!.value = '';
     this.needsPost = false;
     Promise.all([window.csClient.getComments(this.featureId, null)])
       .then(([commentRes]) => {
@@ -105,7 +105,7 @@ export class ChromedashActivityPage extends LitElement {
 
   handlePost() {
     const commentArea = this.commentAreaRef.value;
-    const commentText = commentArea.value.trim();
+    const commentText = commentArea!.value.trim();
     if (commentText != '') {
       window.csClient
         .postComment(this.featureId, null, commentText, 0)
@@ -188,5 +188,3 @@ export class ChromedashActivityPage extends LitElement {
     `;
   }
 }
-
-customElements.define('chromedash-activity-page', ChromedashActivityPage);

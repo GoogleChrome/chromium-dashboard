@@ -21,7 +21,6 @@ node_modules
 # Generated files
 static/css/
 static/dist/
-static/js/
 
 # OS files
 *.DS_Store

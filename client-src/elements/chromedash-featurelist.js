@@ -1,6 +1,7 @@
 import {LitElement, html} from 'lit';
-import './chromedash-feature';
 import {FEATURELIST_CSS} from '../css/elements/chromedash-featurelist-css.js';
+import {Metric} from '../js-src/metric.js';
+import './chromedash-feature';
 
 const MAX_FEATURES_SHOWN = 500;
 
