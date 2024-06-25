@@ -2,7 +2,7 @@ import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
 import {ChromedashDrawer} from './chromedash-drawer';
 import './chromedash-toast';
-import '../js-src/cs-client';
+import {ChromeStatusClient} from '../js-src/cs-client';
 import sinon from 'sinon';
 
 describe('chromedash-drawer', () => {

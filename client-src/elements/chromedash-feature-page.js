@@ -1,5 +1,6 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import {FeatureNotFoundError} from '../js-src/cs-client.js';
 import './chromedash-feature-detail';
 import {DETAILS_STYLES} from './chromedash-feature-detail';
 import './chromedash-feature-highlights.js';
