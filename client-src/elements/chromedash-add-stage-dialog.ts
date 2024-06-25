@@ -1,6 +1,7 @@
-import {LitElement, css, html} from 'lit';
+import {LitElement, TemplateResult, css, html} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {CREATEABLE_STAGES, FORMS_BY_STAGE_TYPE} from './form-definition.js';
+import {customElement, property, query} from 'lit/decorators.js';
 
 let addStageDialogEl;
 let currentFeatureId;
@@ -26,23 +27,21 @@ export async function openAddStageDialog(
   addStageDialogEl.show();
 }
 
+@customElement('chromedash-add-stage-dialog')
 class ChromedashAddStageDialog extends LitElement {
-  static get properties() {
-    return {
-      featureId: {type: Number},
-      featureType: {type: Number},
-      canSubmit: {type: Boolean},
-      onSubmitCustomHandler: {attribute: false},
-    };
-  }
+  @property({type: Number})
+  featureId = 0;
+  @property({type: Number})
+  featureType = 0;
+  @property({type: Boolean})
+  canSubmit = false;
+  @property({attribute: false})
+  onSubmitCustomHandler: ((stage: {stage_type: number}) => void) | null = null;
 
-  constructor() {
-    super();
-    this.featureId = 0;
-    this.featureType = 0;
-    this.onSubmitCustomHandler = null;
-    this.canSubmit = false;
-  }
+  @query('#stage_create_select')
+  stageCreateSelect;
+  @query('sl-dialog')
+  dialog;
 
   static get styles() {
     return [
@@ -63,11 +62,11 @@ class ChromedashAddStageDialog extends LitElement {
   }
 
   show() {
-    this.shadowRoot.querySelector('sl-dialog').show();
+    this.dialog.show();
   }
 
   renderSelectMenuItems() {
-    const menuItems = [];
+    const menuItems: TemplateResult[] = [];
     for (const stageType of CREATEABLE_STAGES[this.featureType]) {
       // Get the name of the stage from the form definition based on the stage type.
       const stageInfo = FORMS_BY_STAGE_TYPE[stageType];
@@ -79,8 +78,7 @@ class ChromedashAddStageDialog extends LitElement {
   }
 
   getStageSelectValue() {
-    const selectEl = this.shadowRoot.querySelector('#stage_create_select');
-    return selectEl.value;
+    return this.stageCreateSelect.value;
   }
 
   handleStageCreate() {
@@ -89,7 +87,7 @@ class ChromedashAddStageDialog extends LitElement {
         stage_type: Number(this.getStageSelectValue()),
       });
       this.onSubmitCustomHandler = null;
-      this.shadowRoot.querySelector('sl-dialog').hide();
+      this.dialog.hide();
       return;
     }
     window.csClient
@@ -100,7 +98,7 @@ class ChromedashAddStageDialog extends LitElement {
         },
       })
       .then(() => {
-        this.shadowRoot.querySelector('sl-dialog').hide();
+        this.dialog.hide();
         location.reload();
       });
   }
@@ -144,5 +142,3 @@ class ChromedashAddStageDialog extends LitElement {
     `;
   }
 }
-
-customElements.define('chromedash-add-stage-dialog', ChromedashAddStageDialog);
