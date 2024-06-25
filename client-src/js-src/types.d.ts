@@ -1,3 +1,10 @@
+
+declare global {
+    interface Window {
+      csClient: ChromeStatusClient;
+      csOpenApiClient: DefaultApiInterface;
+    }
+  }
 declare class ChromeStatusHttpError extends Error {
   resource: string;
   method: string;

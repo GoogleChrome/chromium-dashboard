@@ -4,6 +4,7 @@ import {autolink, renderAbsoluteDate, renderRelativeDate} from './utils.js';
 import '@polymer/iron-icon';
 import {ChromeStatusClient} from '../js-src/cs-client.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import {DefaultApiInterface} from 'chromestatus-openapi';
 
 interface Amendment {
   field_name: string;
@@ -14,6 +15,7 @@ interface Amendment {
 declare global {
   interface Window {
     csClient: ChromeStatusClient;
+    csOpenApiClient: DefaultApiInterface;
   }
 }
 

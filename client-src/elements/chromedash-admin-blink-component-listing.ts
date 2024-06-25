@@ -4,14 +4,7 @@ import {VARS} from '../css/_vars-css.js';
 import {LAYOUT_CSS} from '../css/_layout-css.js';
 import {customElement, property, query} from 'lit/decorators.js';
 import '../js-src/openapi-client';
-import {ChromeStatusOpenApiClient} from '../js-src/openapi-client';
 import {DefaultApiInterface} from 'chromestatus-openapi';
-
-declare global {
-  interface Window {
-    csOpenApiClient: ChromeStatusOpenApiClient;
-  }
-}
 
 interface User {
   id: number;
