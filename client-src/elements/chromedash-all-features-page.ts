@@ -2,7 +2,20 @@ import {LitElement, css, html, nothing} from 'lit';
 import {showToastMessage} from './utils.js';
 import './chromedash-feature-table';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import {customElement, property, queryAll, state} from 'lit/decorators.js';
+import {User} from './chromedash-activity-log.js';
 
+interface RawQuery {
+  q?: string;
+  columns?: string;
+  showEnterprise?: boolean;
+  sort?: string;
+  start?: string;
+  num?: string;
+  [key: string]: any;
+}
+
+@customElement('chromedash-all-features-page')
 export class ChromedashAllFeaturesPage extends LitElement {
   static get styles() {
     return [
@@ -15,37 +28,34 @@ export class ChromedashAllFeaturesPage extends LitElement {
     ];
   }
 
-  static get properties() {
-    return {
-      rawQuery: {type: Object},
-      title: {type: String},
-      showQuery: {type: Boolean},
-      query: {type: String},
-      columns: {type: String},
-      showEnterprise: {type: Boolean},
-      sortSpec: {type: String},
-      user: {type: Object},
-      start: {type: Number},
-      num: {type: Number},
-      starredFeatures: {type: Object},
-      selectedGateId: {type: Number},
-    };
-  }
+  @property({type: String})
+  title = 'Features';
+  @property({type: Boolean})
+  showQuery = true;
+  @property({type: Object})
+  user: User = null!;
+  @property({type: Number})
+  selectedGateId = 0;
 
-  constructor() {
-    super();
-    this.title = 'Features';
-    this.showQuery = true;
-    this.query = '';
-    this.columns = 'normal';
-    this.sortSpec = '';
-    this.showEnterprise = false;
-    this.user = {};
-    this.start = 0;
-    this.num = 100;
-    this.starredFeatures = new Set();
-    this.selectedGateId = 0;
-  }
+  @state()
+  rawQuery: RawQuery | undefined = {};
+  @state()
+  query = '';
+  @state()
+  columns = 'normal';
+  @state()
+  showEnterprise = false;
+  @state()
+  sortSpec = '';
+  @state()
+  start = 0;
+  @state()
+  num = 100;
+  @state()
+  starredFeatures: Set<number> = new Set();
+
+  @queryAll('chromedash-feature-table')
+  chromedashFeatureTables;
 
   connectedCallback() {
     super.connectedCallback();
@@ -59,28 +69,28 @@ export class ChromedashAllFeaturesPage extends LitElement {
     }
 
     if (this.rawQuery.hasOwnProperty('q')) {
-      this.query = this.rawQuery['q'];
+      this.query = this.rawQuery['q'] ?? this.query;
     }
     if (this.rawQuery.hasOwnProperty('columns')) {
-      this.columns = this.rawQuery['columns'];
+      this.columns = this.rawQuery['columns'] ?? this.columns;
     }
     if (this.rawQuery.hasOwnProperty('showEnterprise')) {
       this.showEnterprise = true;
     }
     if (this.rawQuery.hasOwnProperty('sort')) {
-      this.sortSpec = this.rawQuery['sort'];
+      this.sortSpec = this.rawQuery['sort'] ?? this.sortSpec;
     }
     if (
       this.rawQuery.hasOwnProperty('start') &&
-      !Number.isNaN(parseInt(this.rawQuery['start']))
+      !Number.isNaN(parseInt(this.rawQuery['start'] as string))
     ) {
-      this.start = parseInt(this.rawQuery['start']);
+      this.start = parseInt(this.rawQuery['start'] as string);
     }
     if (
       this.rawQuery.hasOwnProperty('num') &&
-      !Number.isNaN(parseInt(this.rawQuery['num']))
+      !Number.isNaN(parseInt(this.rawQuery['num'] as string))
     ) {
-      this.num = parseInt(this.rawQuery['num']);
+      this.num = parseInt(this.rawQuery['num'] as string);
     }
   }
 
@@ -98,7 +108,7 @@ export class ChromedashAllFeaturesPage extends LitElement {
   }
 
   refetch() {
-    const tables = this.shadowRoot.querySelectorAll('chromedash-feature-table');
+    const tables = this.chromedashFeatureTables;
     for (const table of tables) {
       table.refetch();
     }
@@ -159,8 +169,3 @@ export class ChromedashAllFeaturesPage extends LitElement {
     `;
   }
 }
-
-customElements.define(
-  'chromedash-all-features-page',
-  ChromedashAllFeaturesPage
-);
