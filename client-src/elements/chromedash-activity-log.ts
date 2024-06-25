@@ -1,20 +1,29 @@
 import {LitElement, css, html, nothing} from 'lit';
+import {property, state} from 'lit/decorators.js';
 import {autolink, renderAbsoluteDate, renderRelativeDate} from './utils.js';
 import '@polymer/iron-icon';
-
+import {ChromeStatusClient} from '../js-src/cs-client.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
-export class ChromedashAmendment extends LitElement {
-  static get properties() {
-    return {
-      amendment: {type: Object},
-    };
-  }
+interface Amendment {
+  field_name: string;
+  old_value: string;
+  new_value: string;
+}
 
-  constructor() {
-    super();
-    this.amendment = {};
+declare global {
+  interface Window {
+    csClient: ChromeStatusClient;
   }
+}
+
+export class ChromedashAmendment extends LitElement {
+  @property({type: Object})
+  amendment: Amendment = {
+    field_name: '',
+    old_value: '',
+    new_value: '',
+  };
 
   static get styles() {
     return [
@@ -67,23 +76,34 @@ export class ChromedashAmendment extends LitElement {
 }
 customElements.define('chromedash-amendment', ChromedashAmendment);
 
-export class ChromedashActivity extends LitElement {
-  static get properties() {
-    return {
-      user: {attribute: false},
-      featureId: {type: Number},
-      activity: {type: Object},
-      narrow: {type: Boolean},
-    };
-  }
+export interface User {
+  can_create_feature: boolean;
+  can_edit_all: boolean;
+  can_comment: boolean;
+  is_admin: boolean;
+  email: string;
+}
+interface Activity {
+  comment_id: number;
+  author: string;
+  created: string;
+  content: string;
+  deleted_by?: string | null;
+  amendments: Amendment[];
+}
 
-  constructor() {
-    super();
-    this.user = null;
-    this.featureId = 0;
-    this.activity = null;
-    this.narrow = false;
-  }
+export class ChromedashActivity extends LitElement {
+  @property({type: Object})
+  user: User = null!;
+
+  @property({type: Number})
+  featureId = 0;
+
+  @property({type: Object})
+  activity: Activity = null!;
+
+  @property({type: Boolean})
+  narrow = false;
 
   static get styles() {
     return [
@@ -236,15 +256,23 @@ export class ChromedashActivity extends LitElement {
 customElements.define('chromedash-activity', ChromedashActivity);
 
 export class ChromedashActivityLog extends LitElement {
-  static get properties() {
-    return {
-      user: {type: Object},
-      featureId: {type: Number},
-      comments: {type: Array},
-      narrow: {type: Boolean},
-      reverse: {type: Boolean},
-    };
-  }
+  @property({type: Object})
+  user: User = null!;
+
+  @property({type: Number})
+  featureId = 0;
+
+  @property({type: Array})
+  comments = [];
+
+  @property({type: Boolean})
+  narrow = false;
+
+  @state()
+  reverse = false;
+
+  @state()
+  loading = false;
 
   static get styles() {
     return [
@@ -255,15 +283,6 @@ export class ChromedashActivityLog extends LitElement {
         }
       `,
     ];
-  }
-
-  constructor() {
-    super();
-    this.user = null;
-    this.featureId = 0;
-    this.comments = [];
-    this.narrow = false;
-    this.reverse = false;
   }
 
   render() {
