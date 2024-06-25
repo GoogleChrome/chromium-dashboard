@@ -5,7 +5,11 @@ import {VARS} from '../css/_vars-css.js';
 import {LAYOUT_CSS} from '../css/_layout-css.js';
 import {customElement, property} from 'lit/decorators.js';
 import './chromedash-admin-blink-component-listing';
-import {DefaultApiInterface, OwnersAndSubscribersOfComponent, ComponentsUser} from 'chromestatus-openapi';
+import {
+  DefaultApiInterface,
+  OwnersAndSubscribersOfComponent,
+  ComponentsUser,
+} from 'chromestatus-openapi';
 
 @customElement('chromedash-admin-blink-page')
 export class ChromedashAdminBlinkPage extends LitElement {
