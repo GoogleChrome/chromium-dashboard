@@ -1,5 +1,6 @@
 runtime: python311
 service: notifier
+instance_class: F4_1G
 
 handlers:
 - url: /tasks/detect-intent
