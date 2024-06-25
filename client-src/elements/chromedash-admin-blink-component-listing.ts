@@ -5,6 +5,7 @@ import {LAYOUT_CSS} from '../css/_layout-css.js';
 import {customElement, property, query} from 'lit/decorators.js';
 import '../js-src/openapi-client';
 import {DefaultApiInterface} from 'chromestatus-openapi';
+import { get } from 'http';
 
 interface User {
   id: number;
@@ -115,8 +116,10 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
   _ownerCandidates;
   @query('.is_primary_checkbox')
   _isPrimaryCheckbox;
-  @query('owner_list_${this.index}')
-  _ownerList;
+
+  private getOwnerListElement(): HTMLSelectElement | null {
+    return this.shadowRoot!?.querySelector(`#owner_list_${this.index}`);
+  }
 
   _getOptionsElement() {
     return this._ownerCandidates;
@@ -131,7 +134,7 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
   }
 
   _isUserInOwnerList(userId: number) {
-    const ownersList = this._ownerList;
+    const ownersList = this.getOwnerListElement()!;
     return Array.from(ownersList.options).find(
       option => parseInt((option as HTMLOptionElement).value) === userId
     );
