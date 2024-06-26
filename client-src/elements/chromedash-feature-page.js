@@ -14,10 +14,6 @@ export class ChromedashFeaturePage extends LitElement {
       ...SHARED_STYLES,
       ...DETAILS_STYLES,
       css`
-        .deprecated-ui {
-          color: var(--gray-2);
-        }
-
         #feature {
           background: var(--card-background);
           border-radius: var(--default-border-radius);
@@ -363,26 +359,6 @@ export class ChromedashFeaturePage extends LitElement {
               <iron-icon icon="chromestatus:link"></iron-icon>
             </a>
           </span>
-          ${renderHTMLIf(
-            canEdit && !this.feature.is_enterprise_feature,
-            html`
-              <span
-                class="tooltip"
-                title="Deprecated. Please use 'Edit fields' buttons instead."
-              >
-                <a
-                  href="/guide/edit/${this.featureId}"
-                  class="editfeature"
-                  data-tooltip
-                >
-                  <iron-icon
-                    class="deprecated-ui"
-                    icon="chromestatus:create"
-                  ></iron-icon>
-                </a>
-              </span>
-            `
-          )}
         </div>
         <h2 id="breadcrumbs">
           <a href="${this.contextLink}">

@@ -121,7 +121,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
   }
 
   handleCancelClick() {
-    window.location.href = `/guide/edit/${this.featureId}`;
+    window.location.href = `/feature/${this.featureId}`;
   }
 
   renderSkeletons() {
@@ -147,7 +147,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
     return html`
       <div id="subheader">
         <h2 id="breadcrumbs">
-          <a href="/guide/edit/${this.featureId}">
+          <a href="/feature/${this.featureId}">
             <iron-icon icon="chromestatus:arrow-back"></iron-icon>
             Verify feature data for ${this.feature.name}
           </a>
