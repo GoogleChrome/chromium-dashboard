@@ -2,7 +2,7 @@
 // for use with text entries in WebStatus. Use this directly via './utils.js'
 // See: https://chromium.googlesource.com/infra/infra/+/refs/heads/main/appengine/monorail/static_src/autolink.js
 
-import { FeatureLink } from '../js-src/types.js';
+import {FeatureLink} from '../js-src/types.js';
 import {enhanceAutolink} from './chromedash-link.js';
 
 interface TextRun {
