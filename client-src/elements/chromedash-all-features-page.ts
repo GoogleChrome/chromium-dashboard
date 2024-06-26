@@ -4,16 +4,7 @@ import './chromedash-feature-table';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {customElement, property, queryAll, state} from 'lit/decorators.js';
 import {User} from './chromedash-activity-log.js';
-
-interface RawQuery {
-  q?: string;
-  columns?: string;
-  showEnterprise?: boolean;
-  sort?: string;
-  start?: string;
-  num?: string;
-  [key: string]: any;
-}
+import {RawQuery} from './utils.js';
 
 @customElement('chromedash-all-features-page')
 export class ChromedashAllFeaturesPage extends LitElement {
@@ -33,12 +24,18 @@ export class ChromedashAllFeaturesPage extends LitElement {
   @property({type: Boolean})
   showQuery = true;
   @property({type: Object})
-  user: User = null!;
+  user: User = {
+    can_create_feature: false,
+    can_edit_all: false,
+    is_admin: false,
+    email: '',
+    can_comment: false,
+  };
   @property({type: Number})
   selectedGateId = 0;
-
-  @state()
+  @property({type: Object})
   rawQuery: RawQuery | undefined = {};
+
   @state()
   query = '';
   @state()
@@ -68,29 +65,29 @@ export class ChromedashAllFeaturesPage extends LitElement {
       return;
     }
 
-    if (this.rawQuery.hasOwnProperty('q')) {
-      this.query = this.rawQuery['q'] ?? this.query;
+    if (this.rawQuery.q != null) {
+      this.query = this.rawQuery['q'];
     }
-    if (this.rawQuery.hasOwnProperty('columns')) {
-      this.columns = this.rawQuery['columns'] ?? this.columns;
+    if (this.rawQuery.columns != null) {
+      this.columns = this.rawQuery['columns'];
     }
-    if (this.rawQuery.hasOwnProperty('showEnterprise')) {
+    if (this.rawQuery.enterprise != null) {
       this.showEnterprise = true;
     }
-    if (this.rawQuery.hasOwnProperty('sort')) {
-      this.sortSpec = this.rawQuery['sort'] ?? this.sortSpec;
+    if (this.rawQuery.sort != null) {
+      this.sortSpec = this.rawQuery['sort'];
     }
     if (
-      this.rawQuery.hasOwnProperty('start') &&
-      !Number.isNaN(parseInt(this.rawQuery['start'] as string))
+      this.rawQuery.start != null &&
+      !Number.isNaN(parseInt(this.rawQuery['start']))
     ) {
-      this.start = parseInt(this.rawQuery['start'] as string);
+      this.start = parseInt(this.rawQuery['start']);
     }
     if (
-      this.rawQuery.hasOwnProperty('num') &&
-      !Number.isNaN(parseInt(this.rawQuery['num'] as string))
+      this.rawQuery.num != null &&
+      !Number.isNaN(parseInt(this.rawQuery['num']))
     ) {
-      this.num = parseInt(this.rawQuery['num'] as string);
+      this.num = parseInt(this.rawQuery['num']);
     }
   }
 

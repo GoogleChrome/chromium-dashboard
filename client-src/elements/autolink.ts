@@ -2,6 +2,7 @@
 // for use with text entries in WebStatus. Use this directly via './utils.js'
 // See: https://chromium.googlesource.com/infra/infra/+/refs/heads/main/appengine/monorail/static_src/autolink.js
 
+import { FeatureLink } from '../js-src/types.js';
 import {enhanceAutolink} from './chromedash-link.js';
 
 interface TextRun {
@@ -175,7 +176,7 @@ function createIssueRefRun(projectName, localId, content, commentId) {
   };
 }
 
-export function markupAutolinks(plainString, featureLinks = []) {
+export function markupAutolinks(plainString, featureLinks: FeatureLink[] = []) {
   plainString = plainString || '';
   const chunks = [plainString.trim()];
   const textRuns: TextRun[] = [];
