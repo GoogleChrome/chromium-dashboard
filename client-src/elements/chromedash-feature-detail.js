@@ -247,14 +247,13 @@ class ChromedashFeatureDetail extends LitElement {
         break;
       }
     }
-    // Don't try to display dialog if we can't find the associated stage.
-    if (!extensionStage) {
+    // Don't try to display dialog if we can't find the associated stage or no action is requested.
+    if (!extensionStage || !extensionStage.ot_action_requested) {
       return;
     }
     openFinalizeExtensionDialog(
       this.feature.id,
       extensionStage,
-      extensionStage.id,
       extensionStage.desktop_last,
       dialogTypes.FINALIZE_EXTENSION
     );
