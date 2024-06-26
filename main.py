@@ -330,6 +330,8 @@ internals_routes: list[Route] = [
         maintenance_scripts.BackfillFeatureLinks),
   Route('/scripts/backfill_enterprise_impact',
         maintenance_scripts.BackfillFeatureEnterpriseImpact),
+  Route('/scripts/delete_empty_extension_stages',
+        maintenance_scripts.DeleteEmptyExtensionStages)
 ]
 
 dev_routes: list[Route] = []
