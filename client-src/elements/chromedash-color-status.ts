@@ -1,22 +1,16 @@
 import {LitElement, css, html} from 'lit';
-
 import {SHARED_STYLES} from '../css/shared-css.js';
+import {customElement, property} from 'lit/decorators.js';
 
 const CYAN = 120;
 const DEFAULT_MAX = 7;
 
+@customElement('chromedash-color-status')
 class ChromedashColorStatus extends LitElement {
-  static get properties() {
-    return {
-      max: {type: Number},
-      value: {type: Number},
-    };
-  }
-
-  constructor() {
-    super();
-    this.max = DEFAULT_MAX;
-  }
+  @property({type: Number})
+  max = DEFAULT_MAX;
+  @property({type: Number})
+  value;
 
   static get styles() {
     return [
@@ -60,5 +54,3 @@ class ChromedashColorStatus extends LitElement {
     return html` <span id="status" style="background-color: ${color}"></span> `;
   }
 }
-
-customElements.define('chromedash-color-status', ChromedashColorStatus);
