@@ -1,6 +1,6 @@
 // @ts-check
 import { test, expect } from '@playwright/test';
-import { captureConsoleMessages, delay, login, logout, createNewFeature, deleteFeature } from './test_utils';
+import { captureConsoleMessages, delay, login, logout, createNewFeature } from './test_utils';
 
 
 /**
