@@ -4,7 +4,7 @@ import {FeatureNotFoundError} from '../js-src/cs-client.js';
 import './chromedash-feature-detail';
 import {DETAILS_STYLES} from './chromedash-feature-detail';
 import './chromedash-feature-highlights.js';
-import {renderHTMLIf, showToastMessage} from './utils.js';
+import {showToastMessage} from './utils.js';
 
 const INACTIVE_STATES = ['No longer pursuing', 'Deprecated', 'Removed'];
 
@@ -295,8 +295,6 @@ export class ChromedashFeaturePage extends LitElement {
   }
 
   renderSubHeader() {
-    const canEdit = this.userCanEdit();
-
     return html`
       <div id="subheader" style="display:block">
         <div class="tooltips" style="float:right">

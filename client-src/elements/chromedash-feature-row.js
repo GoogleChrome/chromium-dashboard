@@ -116,9 +116,7 @@ class ChromedashFeatureRow extends LitElement {
 
   renderIcons(feature) {
     if (this.signedIn) {
-      return html`
-        ${this.renderStarIcon(feature)}
-      `;
+      return html` ${this.renderStarIcon(feature)} `;
     } else {
       return nothing;
     }

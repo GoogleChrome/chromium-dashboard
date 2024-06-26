@@ -13,23 +13,6 @@ describe('chromedash-feature-page', () => {
     email: 'example@google.com',
     approvable_gate_types: [],
   };
-  const editor = {
-    can_create_feature: false,
-    can_edit_all: false,
-    editable_features: [123456],
-    is_admin: false,
-    email: 'editor@example.com',
-    approvable_gate_types: [],
-  };
-  const visitor = {
-    can_create_feature: false,
-    can_edit_all: false,
-    editable_features: [],
-    is_admin: false,
-    email: 'example@example.com',
-    approvable_gate_types: [],
-  };
-  const anon = null;
   const gatesPromise = Promise.resolve([]);
   const commentsPromise = Promise.resolve([]);
   const processPromise = Promise.resolve({
