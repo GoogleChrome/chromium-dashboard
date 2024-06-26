@@ -4,7 +4,7 @@ import {FeatureNotFoundError} from '../js-src/cs-client.js';
 import './chromedash-feature-detail';
 import {DETAILS_STYLES} from './chromedash-feature-detail';
 import './chromedash-feature-highlights.js';
-import {renderHTMLIf, showToastMessage} from './utils.js';
+import {showToastMessage} from './utils.js';
 
 const INACTIVE_STATES = ['No longer pursuing', 'Deprecated', 'Removed'];
 
@@ -14,10 +14,6 @@ export class ChromedashFeaturePage extends LitElement {
       ...SHARED_STYLES,
       ...DETAILS_STYLES,
       css`
-        .deprecated-ui {
-          color: var(--gray-2);
-        }
-
         #feature {
           background: var(--card-background);
           border-radius: var(--default-border-radius);
@@ -299,8 +295,6 @@ export class ChromedashFeaturePage extends LitElement {
   }
 
   renderSubHeader() {
-    const canEdit = this.userCanEdit();
-
     return html`
       <div id="subheader" style="display:block">
         <div class="tooltips" style="float:right">
@@ -363,26 +357,6 @@ export class ChromedashFeaturePage extends LitElement {
               <iron-icon icon="chromestatus:link"></iron-icon>
             </a>
           </span>
-          ${renderHTMLIf(
-            canEdit && !this.feature.is_enterprise_feature,
-            html`
-              <span
-                class="tooltip"
-                title="Deprecated. Please use 'Edit fields' buttons instead."
-              >
-                <a
-                  href="/guide/edit/${this.featureId}"
-                  class="editfeature"
-                  data-tooltip
-                >
-                  <iron-icon
-                    class="deprecated-ui"
-                    icon="chromestatus:create"
-                  ></iron-icon>
-                </a>
-              </span>
-            `
-          )}
         </div>
         <h2 id="breadcrumbs">
           <a href="${this.contextLink}">
