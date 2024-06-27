@@ -3,8 +3,15 @@ import {showToastMessage} from './utils.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {VARS} from '../css/_vars-css.js';
 import {LAYOUT_CSS} from '../css/_layout-css.js';
+import {customElement, property, state} from 'lit/decorators.js';
 import './chromedash-admin-blink-component-listing';
+import {
+  DefaultApiInterface,
+  OwnersAndSubscribersOfComponent,
+  ComponentsUser,
+} from 'chromestatus-openapi';
 
+@customElement('chromedash-admin-blink-page')
 export class ChromedashAdminBlinkPage extends LitElement {
   static get styles() {
     return [
@@ -62,29 +69,19 @@ export class ChromedashAdminBlinkPage extends LitElement {
       `,
     ];
   }
-  static get properties() {
-    return {
-      loading: {type: Boolean},
-      user: {type: Object},
-      _editMode: {type: Boolean},
-    };
-  }
 
-  /** @type {import('chromestatus-openapi').DefaultApiInterface} */
-  _client;
+  @property({type: Boolean})
+  loading = true;
+  @property({type: Object})
+  user = null;
+  @property({type: Boolean})
+  _editMode = false;
+  @state()
+  components: OwnersAndSubscribersOfComponent[] | undefined;
+  @state()
+  usersMap!: Map<number, ComponentsUser>;
 
-  /** @type {Array<import('chromestatus-openapi').OwnersAndSubscribersOfComponent>} */
-  components;
-
-  /** @type {Map<int, import('chromestatus-openapi').ComponentsUser}> */
-  usersMap;
-
-  constructor() {
-    super();
-    this.loading = true;
-    this._editMode = false;
-    this._client = window.csOpenApiClient;
-  }
+  _client: DefaultApiInterface = window.csOpenApiClient;
 
   connectedCallback() {
     super.connectedCallback();
@@ -96,7 +93,7 @@ export class ChromedashAdminBlinkPage extends LitElement {
     this._client
       .listComponentUsers()
       .then(response => {
-        this.usersMap = new Map(response.users.map(user => [user.id, user]));
+        this.usersMap = new Map(response.users!.map(user => [user.id, user]));
         this.components = response.components;
         this.loading = false;
       })
@@ -112,50 +109,53 @@ export class ChromedashAdminBlinkPage extends LitElement {
   }
 
   _addComponentUserListener(e) {
-    const component = Object.assign({}, this.components[e.detail.index]);
+    const component = Object.assign({}, this.components![e.detail.index]);
     if (e.detail.isError) {
       showToastMessage(
-        `"Unable to add ${this.usersMap.get(e.detail.userId).name} to ${component.name}".`
+        `"Unable to add ${this.usersMap.get(e.detail.userId)!.name} to ${component.name}".`
       );
       return;
     }
 
     // If the user is already a subscriber, we do not want to append it.
     // We can get here if we are adding the user the owner list.
-    if (!component.subscriber_ids.includes(e.detail.userId)) {
-      component.subscriber_ids = [...component.subscriber_ids, e.detail.userId];
+    if (!component.subscriber_ids?.includes(e.detail.userId)) {
+      component.subscriber_ids = [
+        ...(component.subscriber_ids ?? []),
+        e.detail.userId,
+      ];
     }
     if (e.detail.toggleAsOwner) {
-      component.owner_ids = [...component.owner_ids, e.detail.userId];
+      component.owner_ids = [...(component.owner_ids ?? []), e.detail.userId];
     }
     showToastMessage(
-      `"${this.usersMap.get(e.detail.userId).name} added to ${component.name}".`
+      `"${this.usersMap.get(e.detail.userId)!.name} added to ${component.name}".`
     );
-    this.components[e.detail.index] = component;
+    this.components![e.detail.index] = component;
     this.requestUpdate();
   }
 
   _removeComponentUserListener(e) {
-    const component = Object.assign({}, this.components[e.detail.index]);
+    const component = Object.assign({}, this.components![e.detail.index]);
     if (e.detail.isError) {
       showToastMessage(
-        `"Unable to remove ${this.usersMap.get(e.detail.userId).name} from ${component.name}".`
+        `"Unable to remove ${this.usersMap.get(e.detail.userId)!.name} from ${component.name}".`
       );
       return;
     }
 
-    component.subscriber_ids = component.subscriber_ids.filter(
+    component.subscriber_ids = component.subscriber_ids!.filter(
       currentUserId => e.detail.userId !== currentUserId
     );
     if (e.detail.toggleAsOwner) {
-      component.owner_ids = component.owner_ids.filter(
+      component.owner_ids = component.owner_ids!.filter(
         currentUserId => e.detail.userId !== currentUserId
       );
     }
     showToastMessage(
-      `"${this.usersMap.get(e.detail.userId).name} removed from ${component.name}".`
+      `"${this.usersMap.get(e.detail.userId)!.name} removed from ${component.name}".`
     );
-    this.components[e.detail.index] = component;
+    this.components![e.detail.index] = component;
     this.requestUpdate();
   }
 
@@ -168,7 +168,7 @@ export class ChromedashAdminBlinkPage extends LitElement {
             ${this.loading
               ? html`<div>loading components</div>`
               : html`<div id="component-count">
-                  listing ${this.components.length} components
+                  listing ${this.components!.length} components
                 </div>`}
           </div>
         </div>
@@ -191,19 +191,19 @@ export class ChromedashAdminBlinkPage extends LitElement {
     if (location.hash) {
       const hash = decodeURIComponent(location.hash);
       if (hash) {
-        const el = this.shadowRoot.querySelector(hash);
-        el.scrollIntoView(true, {behavior: 'smooth'});
+        const el = this.shadowRoot!.querySelector(hash);
+        el!.scrollIntoView({behavior: 'smooth'});
       }
     }
   }
   renderComponents() {
     return html`
       <ul id="components_list">
-        ${this.components.map(
+        ${this.components!.map(
           (component, index) => html`
             <li class="layout horizontal" id="${component.name}">
               <chromedash-admin-blink-component-listing
-                .id=${component.id}
+                .componentId=${component.id}
                 .name=${component.name}
                 .subscriberIds=${component.subscriber_ids ?? []}
                 .ownerIds=${component.owner_ids ?? []}
@@ -226,5 +226,3 @@ export class ChromedashAdminBlinkPage extends LitElement {
     `;
   }
 }
-
-customElements.define('chromedash-admin-blink-page', ChromedashAdminBlinkPage);
