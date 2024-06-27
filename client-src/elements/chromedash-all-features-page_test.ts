@@ -5,28 +5,28 @@ import './chromedash-toast';
 import {ChromeStatusClient} from '../js-src/cs-client';
 import sinon from 'sinon';
 
+window.csClient = new ChromeStatusClient('fake_token', 1);
+let getStarsStub = sinon.stub(window.csClient, 'getStars');
+let searchFeaturesStub = sinon.stub(window.csClient, 'searchFeatures');
 describe('chromedash-all-features-page', () => {
   /* window.csClient and <chromedash-toast> are initialized at spa.html
    * which are not available here, so we initialize them before each test.
    * We also stub out the API calls here so that they return test data. */
   beforeEach(async () => {
     await fixture(html`<chromedash-toast></chromedash-toast>`);
-    window.csClient = new ChromeStatusClient('fake_token', 1);
-    sinon.stub(window.csClient, 'getStars');
-    sinon.stub(window.csClient, 'searchFeatures');
-    window.csClient.getStars.returns(Promise.resolve([123456]));
+    getStarsStub.returns(Promise.resolve([123456]));
   });
 
   afterEach(() => {
-    window.csClient.getStars.restore();
-    window.csClient.searchFeatures.restore();
+    getStarsStub.restore();
+    searchFeaturesStub.restore();
   });
 
   it('render with no data', async () => {
     const invalidFeaturePromise = Promise.reject(
       new Error('Got error response from server')
     );
-    window.csClient.searchFeatures.returns(invalidFeaturePromise);
+    searchFeaturesStub.returns(invalidFeaturePromise);
     const component = await fixture(
       html`<chromedash-all-features-page></chromedash-all-features-page>`
     );
@@ -35,9 +35,9 @@ describe('chromedash-all-features-page', () => {
 
     // error response would trigger the toast to show message
     const toastEl = document.querySelector('chromedash-toast');
-    const toastMsgSpan = toastEl.shadowRoot.querySelector('span#msg');
+    const toastMsgSpan = toastEl!.shadowRoot!.querySelector('span#msg');
     assert.include(
-      toastMsgSpan.innerHTML,
+      toastMsgSpan!.innerHTML,
       'Some errors occurred. Please refresh the page or try again later.'
     );
   });
@@ -82,7 +82,7 @@ describe('chromedash-all-features-page', () => {
       email: 'example@gmail.com',
       editable_features: [],
     };
-    window.csClient.searchFeatures.returns(validFeaturePromise);
+    searchFeaturesStub.returns(validFeaturePromise);
     const component = await fixture(
       html`<chromedash-all-features-page .user=${user}>
       </chromedash-all-features-page>`
@@ -91,14 +91,14 @@ describe('chromedash-all-features-page', () => {
     assert.instanceOf(component, ChromedashAllFeaturesPage);
 
     // feature table exists
-    const featureTableEl = component.shadowRoot.querySelector(
+    const featureTableEl = component.shadowRoot!.querySelector(
       'chromedash-feature-table'
     );
     assert.exists(featureTableEl);
 
     // title exists
-    const titleEl = component.shadowRoot.querySelector('div#content-title');
-    assert.include(titleEl.innerHTML, '<h2>');
-    assert.include(titleEl.innerHTML, 'Features</h2>');
+    const titleEl = component.shadowRoot!.querySelector('div#content-title');
+    assert.include(titleEl!.innerHTML, '<h2>');
+    assert.include(titleEl!.innerHTML, 'Features</h2>');
   });
 });

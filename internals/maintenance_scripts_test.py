@@ -22,6 +22,7 @@ from api import converters
 from internals import maintenance_scripts
 from internals import core_enums
 from internals.core_models import FeatureEntry, Stage, MilestoneSet
+from internals.review_models import Gate, Vote
 
 class AssociateOTsTest(testing_config.CustomTestCase):
 
@@ -549,3 +550,69 @@ class ActivateOriginTrialsTest(testing_config.CustomTestCase):
     # Activation wasn't handled, so activation dates should still be set.
     self.assertIsNotNone(self.ot_stage_1.ot_activation_date)
     self.assertIsNotNone(self.ot_stage_2.ot_activation_date)
+
+
+class DeleteEmptyExtensionStagesTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    # Fully filled out extension stage.
+    self.extension_stage_1 = Stage(
+        feature_id=1, stage_type=151, experiment_extension_reason='idk',
+        milestones=MilestoneSet(desktop_last=100),
+        intent_thread_url='https://example.com/extend')
+    self.extension_stage_1.put()
+
+    self.gate_1 = Gate(
+        feature_id=1, stage_id=self.extension_stage_1.key.integer_id(),
+        gate_type=core_enums.GATE_API_EXTEND_ORIGIN_TRIAL,
+        state=Vote.NA)
+    self.gate_1.put()
+
+    # Stage with intent thread set.
+    self.extension_stage_2 = Stage(
+        feature_id=1, stage_type=251,
+        intent_thread_url='https://example.com/extend')
+    self.extension_stage_2.put()
+
+    # Stage with end milestone set.
+    self.extension_stage_3 = Stage(
+        feature_id=1, stage_type=451, milestones=MilestoneSet(desktop_last=100))
+    self.extension_stage_3.put()
+
+    # Stage with extension reason set.
+    self.extension_stage_4 = Stage(
+        feature_id=1, stage_type=151, experiment_extension_reason='idk')
+    self.extension_stage_4.put()
+
+    # Stage with no info set.
+    self.extension_stage_5 = Stage(feature_id=1, stage_type=251)
+    self.extension_stage_5.put()
+
+    self.gate_5 = Gate(
+        feature_id=1, stage_id=self.extension_stage_5.key.integer_id(),
+        gate_type=core_enums.GATE_API_EXTEND_ORIGIN_TRIAL,
+        state=Vote.NA)
+    self.gate_5.put()
+    self.handler = maintenance_scripts.DeleteEmptyExtensionStages()
+
+  def tearDown(self):
+    for kind in [Gate, Stage]:
+      for entity in kind.query():
+        entity.key.delete()
+
+  def test_delete_empty_extensions(self):
+    """Only extension stages with no information should be deleted."""
+    result = self.handler.get_template_data()
+    self.assertEqual('1 empty extension stages deleted.', result)
+
+    # The empty extension stage should be deleted.
+    deleted_stage = Stage.get_by_id(self.extension_stage_5.key.integer_id())
+    deleted_gate = Gate.get_by_id(self.gate_5.key.integer_id())
+    self.assertIsNone(deleted_stage)
+    self.assertIsNone(deleted_gate)
+
+    # The 4 other extension stages should still exist.
+    stages = Stage.query().fetch()
+    gates = Gate.query().fetch()
+    self.assertEqual(len(stages), 4)
+    self.assertEqual(len(gates), 1)

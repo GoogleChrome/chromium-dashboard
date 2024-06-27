@@ -136,10 +136,10 @@ def create_origin_trial(ot_stage: Stage) -> str | None:
     }
   }
   if ot_stage.ot_chromium_trial_name:
-    json['origin_trial_feature_name'] = ot_stage.ot_chromium_trial_name
+    json['trial']['origin_trial_feature_name'] = ot_stage.ot_chromium_trial_name
   access_token = _get_ot_access_token()
   headers = {'Authorization': f'Bearer {access_token}'}
-  url = f'{settings.OT_API_URL}/v1/trials-integration'
+  url = f'{settings.OT_API_URL}/v1/trials:setup'
 
   try:
     response = requests.post(
@@ -171,8 +171,7 @@ def activate_origin_trial(origin_trial_id: str) -> None:
   json = {'id': origin_trial_id}
   access_token = _get_ot_access_token()
   headers = {'Authorization': f'Bearer {access_token}'}
-  url = (f'{settings.OT_API_URL}/v1/trials-integration/'
-         f'{origin_trial_id}:activate')
+  url = (f'{settings.OT_API_URL}/v1/trials/{origin_trial_id}:start')
   try:
     response = requests.post(
         url, headers=headers, params={'key': key}, json=json)

@@ -11,6 +11,7 @@ import {
   ROLLOUT_IMPACT_DISPLAYNAME,
   ENTERPRISE_IMPACT_DISPLAYNAME,
 } from './form-field-enums';
+import {FeatureLink} from '../js-src/types.js';
 
 let toastEl;
 
@@ -29,7 +30,7 @@ export const IS_MOBILE = (() => {
 /* Convert user-entered text into safe HTML with clickable links
  * where appropriate.  Returns an array with text and anchor tags.
  */
-export function autolink(s, featureLinks = []) {
+export function autolink(s, featureLinks: FeatureLink[] = []) {
   const withLinks = markupAutolinks(s, featureLinks);
   return withLinks;
 }
@@ -315,7 +316,7 @@ function _parseDateStr(dateStr) {
   dateStr = dateStr || '';
   dateStr = dateStr.replace(' ', 'T');
   const dateObj = new Date(`${dateStr}Z`);
-  if (isNaN(dateObj)) {
+  if (isNaN(Number(dateObj))) {
     return null;
   }
   return dateObj;
@@ -347,6 +348,16 @@ export function renderRelativeDate(dateStr) {
  */
 export function isoDateString(date) {
   return date.toISOString().slice(0, 10);
+}
+
+export interface RawQuery {
+  q?: string;
+  columns?: string;
+  showEnterprise?: string;
+  sort?: string;
+  start?: string;
+  num?: string;
+  [key: string]: string | undefined;
 }
 
 /**
@@ -383,7 +394,7 @@ export function getNewLocation(params, location) {
       if (!v) {
         continue;
       }
-      url.searchParams.append(k, v);
+      url.searchParams.append(k, v.toString());
     }
   }
   return url;
@@ -516,7 +527,7 @@ export function formatFeatureChanges(fieldValues, featureId) {
  */
 export function handleSaveChangesResponse(response) {
   const app = document.querySelector('chromedash-app');
-  app.setUnsavedChanges(response !== '');
+  (app as any).setUnsavedChanges(response !== '');
 }
 
 export function extensionMilestoneIsValid(value, currentMilestone) {
