@@ -3,30 +3,31 @@ import {assert, fixture} from '@open-wc/testing';
 import {ChromedashDrawer} from './chromedash-drawer';
 import './chromedash-toast';
 import {ChromeStatusClient} from '../js-src/cs-client';
-import sinon from 'sinon';
+import sinon, { SinonStub } from 'sinon';
 
 describe('chromedash-drawer', () => {
   /* window.csClient and <chromedash-toast> are initialized at _base.html
    * which are not available here, so we initialize them before each test.
    * We also stub out the API calls here so that they return test data. */
+  let getPermissionsStub: SinonStub;
   beforeEach(async () => {
     await fixture(html`<chromedash-toast></chromedash-toast>`);
     window.csClient = new ChromeStatusClient('fake_token', 1);
-    sinon.stub(window.csClient, 'getPermissions');
+    getPermissionsStub = sinon.stub(window.csClient, 'getPermissions');
   });
 
   afterEach(() => {
-    window.csClient.getPermissions.restore();
+    getPermissionsStub.restore();
   });
 
   it('user is not signed in', async () => {
-    window.csClient.getPermissions.returns(Promise.resolve(null));
+    getPermissionsStub.returns(Promise.resolve(null));
     const component = await fixture(
       html`<chromedash-drawer appTitle="Fake Title"></chromedash-drawer>`
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashDrawer);
-    const nav = component.shadowRoot.querySelector('nav');
+    const nav = component.shadowRoot!.querySelector('nav');
     assert.exists(nav);
 
     // nav bar has correct tabs
@@ -41,7 +42,7 @@ describe('chromedash-drawer', () => {
   });
 
   it('user is signed in', async () => {
-    window.csClient.getPermissions.returns(
+    getPermissionsStub.returns(
       Promise.resolve({
         can_create_feature: true,
         can_edit: true,
@@ -56,7 +57,7 @@ describe('chromedash-drawer', () => {
     assert.instanceOf(component, ChromedashDrawer);
 
     // nav bar exists
-    const nav = component.shadowRoot.querySelector('nav');
+    const nav = component.shadowRoot!.querySelector('nav');
     assert.exists(nav);
 
     const navInnerHTML = nav.innerHTML;
