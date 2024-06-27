@@ -3,7 +3,7 @@ import {assert, fixture} from '@open-wc/testing';
 import {ChromedashDrawer} from './chromedash-drawer';
 import './chromedash-toast';
 import {ChromeStatusClient} from '../js-src/cs-client';
-import sinon, { SinonStub } from 'sinon';
+import sinon, {SinonStub} from 'sinon';
 
 describe('chromedash-drawer', () => {
   /* window.csClient and <chromedash-toast> are initialized at _base.html
