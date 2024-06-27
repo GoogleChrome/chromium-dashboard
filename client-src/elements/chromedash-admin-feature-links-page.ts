@@ -5,23 +5,6 @@ import {VARS} from '../css/_vars-css.js';
 import {LAYOUT_CSS} from '../css/_layout-css.js';
 import {customElement, property, state} from 'lit/decorators.js';
 
-interface FeatureLink {
-  url: string;
-  http_error_code?: number;
-  feature_ids: number[];
-}
-
-interface FeatureLinksSummary {
-  total_count: number;
-  covered_count: number;
-  uncovered_count: number;
-  error_count: number;
-  http_error_count: number;
-  link_types: {key: string; count: number}[];
-  uncovered_link_domains: {key: string; count: number}[];
-  error_link_domains: {key: string; count: number}[];
-}
-
 @customElement('chromedash-admin-feature-links-page')
 export class ChromedashAdminFeatureLinksPage extends LitElement {
   static get styles() {
@@ -48,14 +31,14 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
     ];
   }
 
-  @property({type: String})
+  @state()
   sampleId = '';
-  @property({type: Boolean})
+  @state()
   samplesLoading = false;
   @state()
   loading = true;
   @state()
-  featureLinksSamples: FeatureLink[] = [];
+  featureLinksSamples: SampleFeatureLink[] = [];
   @state()
   featureLinksSummary!: FeatureLinksSummary;
 
