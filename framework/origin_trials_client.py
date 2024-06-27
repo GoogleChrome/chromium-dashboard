@@ -201,7 +201,7 @@ def extend_origin_trial(trial_id: str, end_milestone: int, intent_url: str):
 
   end_seconds = _get_trial_end_time(end_milestone)
   access_token = _get_ot_access_token()
-  url = (f'{settings.OT_API_URL}/v1/trials/{trial_id}:extend')
+  url = (f'{settings.OT_API_URL}/v1/trials/{trial_id}:add_extension')
   headers = {'Authorization': f'Bearer {access_token}'}
   json = {
     'trial_id': trial_id,
