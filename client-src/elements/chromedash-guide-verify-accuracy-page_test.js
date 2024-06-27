@@ -124,7 +124,7 @@ describe('chromedash-guide-verify-accuracy-page', () => {
     const subheaderDiv = component.shadowRoot.querySelector('div#subheader');
     assert.exists(subheaderDiv);
     // subheader title is correct and clickable
-    assert.include(subheaderDiv.innerHTML, 'href="/guide/edit/123456"');
+    assert.include(subheaderDiv.innerHTML, 'href="/feature/123456"');
     assert.include(subheaderDiv.innerHTML, 'Verify feature data for');
 
     // feature form, hidden token field, and submit/cancel buttons exist
