@@ -77,11 +77,13 @@ export class ChromedashAmendment extends LitElement {
 customElements.define('chromedash-amendment', ChromedashAmendment);
 
 export interface User {
+  //will move to chromedash-app.js after migration
   can_create_feature: boolean;
   can_edit_all: boolean;
   can_comment: boolean;
   is_admin: boolean;
   email: string;
+  approvable_gate_types?: any;
 }
 interface Activity {
   comment_id: number;
