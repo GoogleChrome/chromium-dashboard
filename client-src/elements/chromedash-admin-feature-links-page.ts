@@ -57,16 +57,7 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
   @state()
   featureLinksSamples: FeatureLink[] = [];
   @state()
-  featureLinksSummary: FeatureLinksSummary = {
-    total_count: 0,
-    covered_count: 0,
-    uncovered_count: 0,
-    error_count: 0,
-    http_error_count: 0,
-    link_types: [],
-    uncovered_link_domains: [],
-    error_link_domains: [],
-  };
+  featureLinksSummary!: FeatureLinksSummary;
 
   connectedCallback() {
     super.connectedCallback();
