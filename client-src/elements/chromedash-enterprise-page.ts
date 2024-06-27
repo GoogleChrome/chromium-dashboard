@@ -1,6 +1,8 @@
 import {html} from 'lit';
 import {ChromedashAllFeaturesPage} from './chromedash-all-features-page';
+import {customElement} from 'lit/decorators.js';
 
+@customElement('chromedash-enterprise-page')
 export class ChromedashEnterprisePage extends ChromedashAllFeaturesPage {
   renderBox(query) {
     return html`
@@ -32,5 +34,3 @@ export class ChromedashEnterprisePage extends ChromedashAllFeaturesPage {
     `;
   }
 }
-
-customElements.define('chromedash-enterprise-page', ChromedashEnterprisePage);
