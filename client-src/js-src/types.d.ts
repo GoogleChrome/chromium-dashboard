@@ -5,6 +5,7 @@ declare global {
   interface Window {
     csClient: ChromeStatusClient;
     csOpenApiClient: DefaultApiInterface;
+    scrollToElement: (hash: string) => void;
   }
 }
 

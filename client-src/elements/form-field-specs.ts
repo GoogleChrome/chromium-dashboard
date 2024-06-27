@@ -1271,7 +1271,7 @@ export const ALL_FIELDS: Record<string, Field> = {
   extension_desktop_last: {
     type: 'input',
     attrs: MILESTONE_NUMBER_FIELD_ATTRS,
-    required: false,
+    required: true,
     label: 'Trial extension end milestone',
     help_text: html` The last desktop milestone in which the trial will be
     available after extension.`,

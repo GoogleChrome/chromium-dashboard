@@ -636,3 +636,46 @@ class ActivateOriginTrials(FlaskHandler):
 
     return (f'{success_count} activation(s) successfully processed and '
             f'{fail_count} activation(s) failed to process.')
+
+
+class DeleteEmptyExtensionStages(FlaskHandler):
+  """Delete any extension stages that have no information filled out."""
+
+  def get_template_data(self):
+    self.require_cron_header()
+
+    # Fetch all extension stages.
+    extension_stages: list[Stage] = Stage.query(
+        Stage.stage_type.IN(
+            [STAGE_BLINK_EXTEND_ORIGIN_TRIAL,
+             STAGE_FAST_EXTEND_ORIGIN_TRIAL,
+             STAGE_DEP_EXTEND_DEPRECATION_TRIAL]
+        )
+    ).fetch()
+
+    keys_to_delete = []
+    counter = 0
+    for es in extension_stages:
+      # If an extension stage has no relevant information filled out yet,
+      # delete it.
+      has_milestone = (es.milestones and es.milestones.desktop_last)
+      if (not es.intent_thread_url and not es.experiment_extension_reason and
+          not has_milestone):
+        counter += 1
+        keys_to_delete.append(es.key)
+        # Query for the gate associated with the extension and delete that too.
+        gate = Gate.query(Gate.stage_id == es.key.integer_id()).get()
+        if gate:
+          keys_to_delete.append(gate.key)
+
+      # Delete entities in batches of 200.
+      if len(keys_to_delete) >= 200:
+        ndb.delete_multi(keys_to_delete)
+        keys_to_delete = []
+
+    # Finally, delete the last entities marked for deletion.
+    if len(keys_to_delete) > 0:
+      ndb.delete_multi(keys_to_delete)
+
+    return  (f'{counter} empty extension stages deleted.')
+

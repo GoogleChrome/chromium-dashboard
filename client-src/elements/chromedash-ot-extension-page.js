@@ -160,22 +160,6 @@ export class ChromedashOTExtensionPage extends LitElement {
     setupScrollToHash(this);
   }
 
-  getFieldValueForRequestBody(fieldName) {
-    return this.fieldValues.find(field => field.name === fieldName).value;
-  }
-
-  formatRequestBody() {
-    return {
-      end_milestone: this.getFieldValueForRequestBody(
-        'ot_extension__milestone_desktop_last'
-      ),
-      intent_thread_url: this.getFieldValueForRequestBody(
-        'ot_extension__intent_to_extend_experiment_url'
-      ),
-      origin_trial_id: this.stage.origin_trial_id,
-    };
-  }
-
   handleFormSubmit(e) {
     e.preventDefault();
     const featureSubmitBody = formatFeatureChanges(
@@ -299,7 +283,7 @@ export class ChromedashOTExtensionPage extends LitElement {
       this.fieldValues.push({
         name: featureJSONKey,
         touched: true,
-        value: this.currentMilestone || null,
+        value: null,
         stageId: this.stage.id,
       });
 

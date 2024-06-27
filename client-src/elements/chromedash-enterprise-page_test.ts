@@ -9,24 +9,26 @@ describe('chromedash-enterprise-page', () => {
   /* window.csClient and <chromedash-toast> are initialized at spa.html
    * which are not available here, so we initialize them before each test.
    * We also stub out the API calls here so that they return test data. */
+  let getStarsStub: sinon.SinonStub;
+  let searchFeaturesStub: sinon.SinonStub;
   beforeEach(async () => {
     await fixture(html`<chromedash-toast></chromedash-toast>`);
     window.csClient = new ChromeStatusClient('fake_token', 1);
-    sinon.stub(window.csClient, 'getStars');
-    sinon.stub(window.csClient, 'searchFeatures');
-    window.csClient.getStars.returns(Promise.resolve([123456]));
+    getStarsStub = sinon.stub(window.csClient, 'getStars');
+    searchFeaturesStub = sinon.stub(window.csClient, 'searchFeatures');
+    getStarsStub.returns(Promise.resolve([123456]));
   });
 
   afterEach(() => {
-    window.csClient.getStars.restore();
-    window.csClient.searchFeatures.restore();
+    getStarsStub.restore();
+    searchFeaturesStub.restore();
   });
 
   it('render with no data', async () => {
     const invalidFeaturePromise = Promise.reject(
       new Error('Got error response from server')
     );
-    window.csClient.searchFeatures.returns(invalidFeaturePromise);
+    searchFeaturesStub.returns(invalidFeaturePromise);
     const component = await fixture(
       html`<chromedash-enterprise-page></chromedash-enterprise-page>`
     );
@@ -35,9 +37,9 @@ describe('chromedash-enterprise-page', () => {
 
     // error response would trigger the toast to show message
     const toastEl = document.querySelector('chromedash-toast');
-    const toastMsgSpan = toastEl.shadowRoot.querySelector('span#msg');
+    const toastMsgSpan = toastEl!.shadowRoot!.querySelector('span#msg');
     assert.include(
-      toastMsgSpan.innerHTML,
+      toastMsgSpan!.innerHTML,
       'Some errors occurred. Please refresh the page or try again later.'
     );
   });
@@ -59,7 +61,7 @@ describe('chromedash-enterprise-page', () => {
       email: 'example@gmail.com',
       editable_features: [],
     };
-    window.csClient.searchFeatures.returns(validFeaturePromise);
+    searchFeaturesStub.returns(validFeaturePromise);
     const component = await fixture(
       html`<chromedash-enterprise-page .user=${user}>
       </chromedash-enterprise-page>`
@@ -68,15 +70,15 @@ describe('chromedash-enterprise-page', () => {
     assert.instanceOf(component, ChromedashEnterprisePage);
 
     // feature table exists
-    const featureTableEl = component.shadowRoot.querySelector(
+    const featureTableEl = component.shadowRoot!.querySelector(
       'chromedash-feature-table'
     );
     assert.exists(featureTableEl);
 
     // title exists
-    const titleEl = component.shadowRoot.querySelector('h2');
+    const titleEl = component.shadowRoot!.querySelector('h2');
     assert.include(
-      titleEl.innerHTML,
+      titleEl!.innerHTML,
       'Enterprise features and breaking changes'
     );
   });
