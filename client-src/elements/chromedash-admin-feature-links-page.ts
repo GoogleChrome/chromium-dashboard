@@ -3,7 +3,8 @@ import {showToastMessage} from './utils.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {VARS} from '../css/_vars-css.js';
 import {LAYOUT_CSS} from '../css/_layout-css.js';
-import {customElement, property, state} from 'lit/decorators.js';
+import {customElement, state} from 'lit/decorators.js';
+import {FeatureLinksSummary, SampleFeatureLink} from '../js-src/cs-client.js';
 
 @customElement('chromedash-admin-feature-links-page')
 export class ChromedashAdminFeatureLinksPage extends LitElement {

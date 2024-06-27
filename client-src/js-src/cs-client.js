@@ -23,6 +23,25 @@
  */
 
 /**
+ * @typedef {object} SampleFeatureLink
+ * @property {string} url
+ * @property {number} http_error_code
+ * @property {number[]} feature_ids
+ */
+
+/**
+ * @typedef {object} FeatureLinksSummary
+ * @property {number} total_count
+ * @property {number} covered_count
+ * @property {number} uncovered_count
+ * @property {number} error_count
+ * @property {number} http_error_count
+ * @property {Array<{key: string; count: number}>} link_types
+ * @property {Array<{key: string; count: number}>} uncovered_link_domains
+ * @property {Array<{key: string; count: number}>} error_link_domains
+ */
+
+/**
  * Generic Chrome Status Http Error.
  */
 class ChromeStatusHttpError extends Error {
