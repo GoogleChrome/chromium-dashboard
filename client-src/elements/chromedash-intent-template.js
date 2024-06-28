@@ -246,7 +246,7 @@ class ChromedashIntentTemplate extends LitElement {
         if (i + 1 === owners.length) {
           return html`<a href="mailto:${o}">${o}</a>`;
         }
-        return html`<a href="mailto:${o}">${o}</a>,`;
+        return html`<a href="mailto:${o}">${o}</a>, `;
       });
     }
     return html`
@@ -337,12 +337,13 @@ class ChromedashIntentTemplate extends LitElement {
     }
     return html`
       <br /><br />
-      <h4>Blink Components</h4>
+      <h4>Blink component</h4>
       ${blinkComponentsHTML}
     `;
   }
 
   renderMotivation() {
+    if (!STAGE_TYPES_PROTOTYPE.has(this.stage.stage_type)) return nothing;
     const motivation = this.feature.motivation;
     if (!motivation) return nothing;
 
@@ -354,6 +355,7 @@ class ChromedashIntentTemplate extends LitElement {
   }
 
   renderInitialPublicProposal() {
+    if (!STAGE_TYPES_PROTOTYPE.has(this.stage.stage_type)) return nothing;
     const initialPublicProposalUrl = this.feature.initial_public_proposal_url;
     if (!initialPublicProposalUrl) return nothing;
 
@@ -372,11 +374,11 @@ class ChromedashIntentTemplate extends LitElement {
       if (i + 1 === tags.length) {
         return html`<a href="/features#tags:${t}">${t}</a>`;
       }
-      return html`<a href="/features#tags:${t}">${t}</a>,`;
+      return html`<a href="/features#tags:${t}">${t}</a>, `;
     });
     return html`
       <br /><br />
-      <h4>Search Tags</h4>
+      <h4>Search tags</h4>
       ${tagsHTML}
     `;
   }
@@ -384,7 +386,7 @@ class ChromedashIntentTemplate extends LitElement {
   renderTagReview() {
     const parts = [
       html` <br /><br />
-        <h4>TAG Review</h4>
+        <h4>TAG review</h4>
         ${this.feature.tag_review || 'None'}`,
     ];
     const tagReviewStatus = this.feature.tag_review_status;
@@ -414,7 +416,7 @@ class ChromedashIntentTemplate extends LitElement {
         stageParts.push(
           html` <br /><br />
             <h4>Link to origin trial feedback summary</h4>
-            ${s.ot_chromium_trial_name}`
+            ${s.origin_trial_feedback_url}`
         );
       }
       if (s.ot_is_deprecation_trial && s.ot_webfeature_use_counter) {
@@ -448,7 +450,7 @@ class ChromedashIntentTemplate extends LitElement {
     }
     parts.push(
       html` <br /><br />
-        <h4>Interoperabiity and Compatibility</h4>
+        <h4>Interoperability and Compatibility</h4>
         ${interopRisksHTML}`
     );
 
@@ -459,9 +461,9 @@ class ChromedashIntentTemplate extends LitElement {
     );
     if (this.feature.browsers.ff.view.url) {
       parts.push(
-        html`(<a href="${this.feature.browsers.ff.view.url}"
+        html` (<a href="${this.feature.browsers.ff.view.url}"
             >${this.feature.browsers.ff.view.url}</a
-          >)`
+          >) `
       );
     }
     const geckoNotes = this.feature.browsers.ff.view.notes;
@@ -476,9 +478,9 @@ class ChromedashIntentTemplate extends LitElement {
     );
     if (this.feature.browsers.safari.view.url) {
       parts.push(
-        html`(<a href="${this.feature.browsers.safari.view.url}"
+        html` (<a href="${this.feature.browsers.safari.view.url}"
             >${this.feature.browsers.safari.view.url}</a
-          >)`
+          >) `
       );
     }
     const webKitNotes = this.feature.browsers.safari.view.notes;
@@ -493,9 +495,9 @@ class ChromedashIntentTemplate extends LitElement {
     );
     if (this.feature.browsers.webdev.view.url) {
       parts.push(
-        html`(<a href="${this.feature.browsers.webdev.view.url}"
+        html` (<a href="${this.feature.browsers.webdev.view.url}"
             >${this.feature.browsers.webdev.view.url}</a
-          >)`
+          >) `
       );
     }
     const webdevNotes = this.feature.browsers.webdev.view.notes;
@@ -503,7 +505,7 @@ class ChromedashIntentTemplate extends LitElement {
       parts.push(webdevNotes);
     }
 
-    parts.push(html` <br /><br /><i>Other signals</i>:`);
+    parts.push(html` <br /><br /><i>Other signals</i>: `);
     if (this.feature.browsers.other.view.notes) {
       parts.push(html`${this.feature.browsers.other.view.notes}`);
     }
@@ -595,7 +597,7 @@ class ChromedashIntentTemplate extends LitElement {
       return nothing;
     let descriptionHTML = html`None`;
     if (this.feature.all_platforms_descr) {
-      descriptionHTML = html`<p class="preformatted">
+      descriptionHTML = html`<p>
         ${this.feature.all_platforms_descr}
       </p>`;
     }
@@ -647,7 +649,7 @@ class ChromedashIntentTemplate extends LitElement {
     ];
     let nonFinchJustificationHTML = html`None`;
     if (this.feature.non_finch_justification) {
-      nonFinchJustificationHTML = html` <p class="preformatted">
+      nonFinchJustificationHTML = html` <p>
         ${this.feature.non_finch_justification}
       </p>`;
     }
@@ -883,7 +885,7 @@ class ChromedashIntentTemplate extends LitElement {
     </table>`;
   }
 
-  renderIOSMilestonesTable(shipStages, dtStages) {
+  renderIOSMilestonesTable(dtStages, shipStages) {
     const shipStagesHTML = shipStages.map(s => {
       if (!s.ios_first) {
         return nothing;
@@ -941,10 +943,11 @@ class ChromedashIntentTemplate extends LitElement {
   }
 
   renderAnticipatedSpecChanges() {
-    // Only show for shipping stages.
+    // Only show for shipping stages or if the anticipated spec changes
+    // field is filled.
     if (
-      !STAGE_TYPES_SHIPPING.has(this.stage.stage_type) ||
-      this.feature.anticipated_spec_changes
+      !STAGE_TYPES_SHIPPING.has(this.stage.stage_type) &&
+      !this.feature.anticipated_spec_changes
     )
       return nothing;
     return html` <br /><br />
