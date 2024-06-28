@@ -136,8 +136,7 @@ export class ChromedashTypeahead extends LitElement {
     // setting or accessing the text selection.
     await this.updateComplete;
 
-    this.chunkStart =
-      this.chunkStart + candidateValue.length;
+    this.chunkStart = this.chunkStart + candidateValue.length;
     this.chunkEnd = this.chunkStart;
     inputEl.selectionStart = this.chunkStart;
     inputEl.selectionEnd = this.chunkEnd;
@@ -186,8 +185,11 @@ export class ChromedashTypeahead extends LitElement {
       this.shouldShowCandidate(c, this.prefix)
     );
     const slDropdown = this.slDropdownRef.value;
-    if (this.candidates.length > 0 && !this.wasDismissed &&
-        !this.termWasCompleted) {
+    if (
+      this.candidates.length > 0 &&
+      !this.wasDismissed &&
+      !this.termWasCompleted
+    ) {
       slDropdown.show();
     } else {
       slDropdown.hide();
