@@ -208,7 +208,7 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
     mock_api_key_get.assert_called_once()
     mock_get_ot_access_token.assert_called_once()
     mock_requests_post.assert_called_once_with(
-      f'{settings.OT_API_URL}/v1/trials-integration',
+      f'{settings.OT_API_URL}/v1/trials:setup',
       headers={'Authorization': 'Bearer access_token'},
       params={'key': 'api_key_value'},
       json={
@@ -261,7 +261,7 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
     mock_api_key_get.assert_called_once()
     mock_get_ot_access_token.assert_called_once()
     mock_requests_post.assert_called_once_with(
-      f'{settings.OT_API_URL}/v1/trials-integration/-1234567890:activate',
+      f'{settings.OT_API_URL}/v1/trials/-1234567890:start',
       headers={'Authorization': 'Bearer access_token'},
       params={'key': 'api_key_value'},
       json={'id': '-1234567890'}

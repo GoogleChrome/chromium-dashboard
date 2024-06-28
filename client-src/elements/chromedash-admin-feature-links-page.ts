@@ -3,7 +3,10 @@ import {showToastMessage} from './utils.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {VARS} from '../css/_vars-css.js';
 import {LAYOUT_CSS} from '../css/_layout-css.js';
+import {customElement, state} from 'lit/decorators.js';
+import {FeatureLinksSummary, SampleFeatureLink} from '../js-src/cs-client.js';
 
+@customElement('chromedash-admin-feature-links-page')
 export class ChromedashAdminFeatureLinksPage extends LitElement {
   static get styles() {
     return [
@@ -28,21 +31,17 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
       `,
     ];
   }
-  static get properties() {
-    return {
-      loading: {type: Boolean},
-      sampleId: {type: String},
-      samplesLoading: {type: Boolean},
-      featureLinksSamples: {type: Array},
-      featureLinksSummary: {type: Object},
-    };
-  }
 
-  constructor() {
-    super();
-    this.featureLinksSummary = {};
-    this.featureLinksSamples = [];
-  }
+  @state()
+  sampleId = '';
+  @state()
+  samplesLoading = false;
+  @state()
+  loading = true;
+  @state()
+  featureLinksSamples: SampleFeatureLink[] = [];
+  @state()
+  featureLinksSummary!: FeatureLinksSummary;
 
   connectedCallback() {
     super.connectedCallback();
@@ -208,8 +207,3 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
     return html` ${this.loading ? html`` : this.renderComponents()} `;
   }
 }
-
-customElements.define(
-  'chromedash-admin-feature-links-page',
-  ChromedashAdminFeatureLinksPage
-);

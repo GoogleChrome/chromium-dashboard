@@ -47,6 +47,9 @@ export class ChromedashTypeahead extends LitElement {
     this.chunkEnd = 0;
     // If the user hits Escape, keep the menu closed until they use up or down.
     this.wasDismissed = false;
+    // If the user completes an entire term, don't offer the menu again
+    // until they type something.
+    this.termWasCompleted = false;
   }
 
   static get styles() {
@@ -122,14 +125,10 @@ export class ChromedashTypeahead extends LitElement {
     const candidateValue = e.detail.item.value;
     const inputEl = this.slInputRef.value.input;
     const wholeStr = inputEl.value;
-    const maybeAddSpace =
-      !candidateValue.endsWith('=') && wholeStr[this.chunkEnd] !== ' '
-        ? ' '
-        : '';
+    // Don't add a space after the completed value: let the user type it.
     const newWholeStr =
       wholeStr.substring(0, this.chunkStart) +
       candidateValue +
-      maybeAddSpace +
       wholeStr.substring(this.chunkEnd, wholeStr.length);
     this.slInputRef.value.value = newWholeStr;
     this.reflectValue();
@@ -137,11 +136,12 @@ export class ChromedashTypeahead extends LitElement {
     // setting or accessing the text selection.
     await this.updateComplete;
 
-    this.chunkStart =
-      this.chunkStart + candidateValue.length + maybeAddSpace.length;
+    this.chunkStart = this.chunkStart + candidateValue.length;
     this.chunkEnd = this.chunkStart;
     inputEl.selectionStart = this.chunkStart;
     inputEl.selectionEnd = this.chunkEnd;
+    // TODO(jrobbins): Don't set termWasCompleted if we offer a value.
+    this.termWasCompleted = true;
     this.calcCandidates();
     // The user may have clicked a menu item, causing the sl-input to lose
     // keyboard focus.  So, focus on the sl-input again.
@@ -172,6 +172,7 @@ export class ChromedashTypeahead extends LitElement {
       this.wasDismissed = false;
       return;
     }
+    this.termWasCompleted = false;
     this.calcCandidates();
   }
 
@@ -184,7 +185,11 @@ export class ChromedashTypeahead extends LitElement {
       this.shouldShowCandidate(c, this.prefix)
     );
     const slDropdown = this.slDropdownRef.value;
-    if (this.candidates.length > 0 && !this.wasDismissed) {
+    if (
+      this.candidates.length > 0 &&
+      !this.wasDismissed &&
+      !this.termWasCompleted
+    ) {
       slDropdown.show();
     } else {
       slDropdown.hide();

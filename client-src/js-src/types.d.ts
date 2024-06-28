@@ -5,6 +5,7 @@ declare global {
   interface Window {
     csClient: ChromeStatusClient;
     csOpenApiClient: DefaultApiInterface;
+    scrollToElement: (hash: string) => void;
   }
 }
 
@@ -23,11 +24,4 @@ declare class ChromeStatusHttpError extends Error {
 declare class FeatureNotFoundError extends Error {
   featureID: number;
   constructor(featureID: number);
-}
-
-interface FeatureLink {
-  url: string;
-  type: string;
-  information: any;
-  http_error_code: number;
 }
