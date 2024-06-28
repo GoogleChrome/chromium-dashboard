@@ -38,9 +38,6 @@ class ChromedashFeatureRow extends LitElement {
           display: table-row;
           background: var(--table-row-background);
         }
-        sl-icon-button.deprecated-ui::part(base) {
-          color: var(--gray-2);
-        }
         td {
           padding: var(--content-padding-half);
           border-bottom: var(--table-divider);
@@ -103,17 +100,6 @@ class ChromedashFeatureRow extends LitElement {
     });
   }
 
-  renderEditIcon(feature) {
-    return html`
-      <sl-icon-button
-        class="deprecated-ui"
-        href="/guide/edit/${feature.id}"
-        title="Deprecated. Please click the feature name and use 'Edit fields' buttons."
-        name="pencil-fill"
-      ></sl-icon-button>
-    `;
-  }
-
   renderStarIcon(feature) {
     return html`
       <sl-icon-button
@@ -130,10 +116,7 @@ class ChromedashFeatureRow extends LitElement {
 
   renderIcons(feature) {
     if (this.signedIn) {
-      return html`
-        ${this.canEdit ? this.renderEditIcon(feature) : nothing}
-        ${this.renderStarIcon(feature)}
-      `;
+      return html` ${this.renderStarIcon(feature)} `;
     } else {
       return nothing;
     }

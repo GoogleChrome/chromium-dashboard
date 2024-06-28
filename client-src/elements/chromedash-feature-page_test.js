@@ -13,23 +13,6 @@ describe('chromedash-feature-page', () => {
     email: 'example@google.com',
     approvable_gate_types: [],
   };
-  const editor = {
-    can_create_feature: false,
-    can_edit_all: false,
-    editable_features: [123456],
-    is_admin: false,
-    email: 'editor@example.com',
-    approvable_gate_types: [],
-  };
-  const visitor = {
-    can_create_feature: false,
-    can_edit_all: false,
-    editable_features: [],
-    is_admin: false,
-    email: 'example@example.com',
-    approvable_gate_types: [],
-  };
-  const anon = null;
   const gatesPromise = Promise.resolve([]);
   const commentsPromise = Promise.resolve([]);
   const processPromise = Promise.resolve({
@@ -236,10 +219,6 @@ describe('chromedash-feature-page', () => {
     assert.include(subheaderDiv.innerHTML, 'href="fake crbug link"');
     // star icon is rendered and the feature is starred
     assert.include(subheaderDiv.innerHTML, 'icon="chromestatus:star"');
-    // edit icon is rendered (the test user can edit)
-    assert.include(subheaderDiv.innerHTML, 'icon="chromestatus:create"');
-    // approval icon is not rendered (the test user cannot approve)
-    assert.notInclude(subheaderDiv.innerHTML, 'icon="chromestatus:approval"');
 
     const breadcrumbsH2 = component.shadowRoot.querySelector('h2#breadcrumbs');
     assert.exists(breadcrumbsH2);
@@ -334,59 +313,5 @@ describe('chromedash-feature-page', () => {
     assert.notInclude(consensusSection.innerHTML, '<chromedash-vendor-views');
     // But it does still include webdev views.
     assert.include(consensusSection.innerHTML, 'fake webdev view text');
-  });
-
-  it('does offer editing to a listed editor', async () => {
-    const featureId = 123456;
-    const contextLink = '/features';
-    window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
-
-    const component = await fixture(
-      html`<chromedash-feature-page
-        .user=${editor}
-        .featureId=${featureId}
-        .contextLink=${contextLink}
-      >
-      </chromedash-feature-page>`
-    );
-    const subheaderDiv = component.shadowRoot.querySelector('div#subheader');
-    // Edit icon is offered because user's editable_features has this one.
-    assert.include(subheaderDiv.innerHTML, 'icon="chromestatus:create"');
-  });
-
-  it('does not offer editing to anon users', async () => {
-    const featureId = 123456;
-    const contextLink = '/features';
-    window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
-
-    const component = await fixture(
-      html`<chromedash-feature-page
-        .user=${anon}
-        .featureId=${featureId}
-        .contextLink=${contextLink}
-      >
-      </chromedash-feature-page>`
-    );
-    const subheaderDiv = component.shadowRoot.querySelector('div#subheader');
-    // Edit icon is not offered because anon cannot edit.
-    assert.notInclude(subheaderDiv.innerHTML, 'icon="chromestatus:create"');
-  });
-
-  it('does not offer editing to signed in visitors', async () => {
-    const featureId = 123456;
-    const contextLink = '/features';
-    window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
-
-    const component = await fixture(
-      html`<chromedash-feature-page
-        .user=${visitor}
-        .featureId=${featureId}
-        .contextLink=${contextLink}
-      >
-      </chromedash-feature-page>`
-    );
-    const subheaderDiv = component.shadowRoot.querySelector('div#subheader');
-    // Edit icon is not offered because the visitor cannot edit.
-    assert.notInclude(subheaderDiv.innerHTML, 'icon="chromestatus:create"');
   });
 });
