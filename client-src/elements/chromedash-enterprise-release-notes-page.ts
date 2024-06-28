@@ -1,4 +1,4 @@
-import {html, LitElement, css} from 'lit';
+import {html, LitElement, css, TemplateResult} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {
   ENTERPRISE_FEATURE_CATEGORIES,
@@ -13,28 +13,29 @@ import {
   parseRawQuery,
   renderHTMLIf,
 } from './utils.js';
+import {customElement, state} from 'lit/decorators.js';
 
 const milestoneQueryParamKey = 'milestone';
 
-export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
-  static get properties() {
-    return {
-      currentFeatures: {type: Array},
-      upcomingFeatures: {type: Array},
-      features: {type: Array},
-      channels: {type: Object},
-      selectedMilestone: {type: Number},
+interface Channels {
+    stable: {
+      version: number;
     };
   }
 
-  constructor() {
-    super();
-    this.currentFeatures = [];
-    this.upcomingFeatures = [];
-    this.features = [];
-    this.channels = {};
-    this.selectedMilestone = undefined;
-  }
+@customElement('chromedash-enterprise-release-notes-page')
+export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
+//TODO(markxiong0122): add types for the following properties, import Feature from chromedash-feature after migration
+  @state()
+  currentFeatures: any[] = [];
+  @state()
+  upcomingFeatures: any[] = [];
+  @state()
+  features: any[] = [];
+  @state()
+  channels!: Channels;
+  @state()
+  selectedMilestone?: number | undefined = undefined;
 
   static get styles() {
     return [
@@ -205,7 +206,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       ([milestone, platforms]) => ({
         stage_type: STAGE_ENT_ROLLOUT,
         rollout_milestone: Number(milestone),
-        rollout_platforms: Array.from(platforms),
+        rollout_platforms: Array.from(platforms as Set<string>),
         rollout_impact: 1,
       })
     );
@@ -271,19 +272,19 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       .filter(
         ({stages}) =>
           !stages.some(s => s.rollout_milestone === this.selectedMilestone) &&
-          stages.some(s => s.rollout_milestone > this.selectedMilestone)
+          stages.some(s => s.rollout_milestone > this.selectedMilestone!)
       )
       .sort((a, b) => {
         const minA =
           Math.min(
             a.stages
-              .filter(s => (s.rollout_milestone || 0) > this.selectedMilestone)
+              .filter(s => (s.rollout_milestone || 0) > this.selectedMilestone!)
               .map(s => s.rollout_milestone)
           ) || 0;
         const minB =
           Math.min(
             b.stages
-              .filter(s => (s.rollout_milestone || 0) > this.selectedMilestone)
+              .filter(s => (s.rollout_milestone || 0) > this.selectedMilestone!)
               .map(s => s.rollout_milestone)
           ) || 0;
         return minA - minB;
@@ -298,7 +299,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         const queryParams = parseRawQuery(window.location.search);
         if (milestoneQueryParamKey in queryParams) {
           this.selectedMilestone = parseInt(
-            queryParams[milestoneQueryParamKey],
+            queryParams[milestoneQueryParamKey] as string,
             10
           );
         } else {
@@ -321,8 +322,9 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   }
 
   updateSelectedMilestone() {
+    const milestoneSelector = this.shadowRoot!.querySelector('#milestone-selector') as HTMLSelectElement;
     this.selectedMilestone = parseInt(
-      this.shadowRoot.querySelector('#milestone-selector').value
+      milestoneSelector.value
     );
     window.csClient
       .getFeaturesForEnterpriseReleaseNotes(this.selectedMilestone)
@@ -334,16 +336,16 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       });
   }
 
-  update() {
+  update(changedProperties: Map<string | number | symbol, unknown>) {
     if (this.selectedMilestone !== undefined) {
       updateURLParams(milestoneQueryParamKey, this.selectedMilestone);
     }
-    super.update();
+    super.update(changedProperties);
   }
 
   renderMilestoneSelector() {
-    const options = [];
-    for (let i = 0; i < this.selectedMilestone + 20; ++i) {
+    const options: TemplateResult[] = [];
+    for (let i = 0; i < this.selectedMilestone! + 20; ++i) {
       options.push(
         html`<sl-option value="${i}">Chrome ${i} release summary</sl-option>`
       );
@@ -353,7 +355,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       placement="top"
       hoist
       size="small"
-      value=${this.selectedMilestone}
+      value=${this.selectedMilestone!}
       @sl-change=${this.updateSelectedMilestone}
     >
       ${options.map(option => option)}
@@ -511,7 +513,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       'Upcoming Chrome browser updates',
       this.upcomingFeatures,
       (m, milestones) =>
-        milestones.find(x => parseInt(x) > parseInt(this.selectedMilestone)) ===
+        milestones.find(x => parseInt(x) > this.selectedMilestone!) ===
         m
     )}`;
   }
@@ -524,8 +526,3 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     `;
   }
 }
-
-customElements.define(
-  'chromedash-enterprise-release-notes-page',
-  ChromedashEnterpriseReleaseNotesPage
-);
