@@ -17,21 +17,42 @@ import {customElement, state} from 'lit/decorators.js';
 
 const milestoneQueryParamKey = 'milestone';
 
+export interface Feature {
+  id: number;
+  name: string;
+  summary: string;
+  editors: string[];
+  enterprise_feature_categories: string[];
+  new_crbug_url: string;
+  stages: {
+    id: number;
+    stage_type: number;
+    rollout_milestone?: number;
+    rollout_details?: string;
+    rollout_impact: number;
+    rollout_platforms?: string[];
+  }[];
+  browsers: {chrome: {owners: string[]}};
+  updated: {when: string};
+  screenshot_links: string[];
+  first_enterprise_notification_milestone?: string;
+}
+
 interface Channels {
-    stable: {
-      version: number;
-    };
-  }
+  stable: {
+    version: number;
+  };
+}
 
 @customElement('chromedash-enterprise-release-notes-page')
 export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
-//TODO(markxiong0122): add types for the following properties, import Feature from chromedash-feature after migration
+  //TODO(markxiong0122): add types for the following properties, import Feature from chromedash-feature after migration
   @state()
-  currentFeatures: any[] = [];
+  currentFeatures: Feature[] = [];
   @state()
-  upcomingFeatures: any[] = [];
+  upcomingFeatures: Feature[] = [];
   @state()
-  features: any[] = [];
+  features: Feature[] = [];
   @state()
   channels!: Channels;
   @state()
@@ -253,13 +274,13 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       .sort((a, b) => {
         // Highest impact of the stages from feature A.
         const impactA = Math.max(
-          a.stages
+          ...a.stages
             .filter(s => s.rollout_milestone === this.selectedMilestone)
             .map(s => s.rollout_impact)
         );
         // Highest impact of the stages from feature B.
         const impactB = Math.max(
-          b.stages
+          ...b.stages
             .filter(s => s.rollout_milestone === this.selectedMilestone)
             .map(s => s.rollout_impact)
         );
@@ -272,20 +293,24 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       .filter(
         ({stages}) =>
           !stages.some(s => s.rollout_milestone === this.selectedMilestone) &&
-          stages.some(s => s.rollout_milestone > this.selectedMilestone!)
+          stages.some(s => s.rollout_milestone! > this.selectedMilestone!)
       )
       .sort((a, b) => {
         const minA =
           Math.min(
-            a.stages
-              .filter(s => (s.rollout_milestone || 0) > this.selectedMilestone!)
-              .map(s => s.rollout_milestone)
+            ...a.stages
+              .filter(
+                s => (s.rollout_milestone! || 0) > this.selectedMilestone!
+              )
+              .map(s => s.rollout_milestone!)
           ) || 0;
         const minB =
           Math.min(
-            b.stages
-              .filter(s => (s.rollout_milestone || 0) > this.selectedMilestone!)
-              .map(s => s.rollout_milestone)
+            ...b.stages
+              .filter(
+                s => (s.rollout_milestone! || 0) > this.selectedMilestone!
+              )
+              .map(s => s.rollout_milestone!)
           ) || 0;
         return minA - minB;
       });
@@ -322,10 +347,10 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   }
 
   updateSelectedMilestone() {
-    const milestoneSelector = this.shadowRoot!.querySelector('#milestone-selector') as HTMLSelectElement;
-    this.selectedMilestone = parseInt(
-      milestoneSelector.value
-    );
+    const milestoneSelector = this.shadowRoot!.querySelector(
+      '#milestone-selector'
+    ) as HTMLSelectElement;
+    this.selectedMilestone = parseInt(milestoneSelector.value);
     window.csClient
       .getFeaturesForEnterpriseReleaseNotes(this.selectedMilestone)
       .then(({features}) => this.updateFeatures(features))
@@ -513,8 +538,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       'Upcoming Chrome browser updates',
       this.upcomingFeatures,
       (m, milestones) =>
-        milestones.find(x => parseInt(x) > this.selectedMilestone!) ===
-        m
+        milestones.find(x => parseInt(x) > this.selectedMilestone!) === m
     )}`;
   }
 
