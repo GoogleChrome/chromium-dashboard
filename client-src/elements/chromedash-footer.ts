@@ -1,6 +1,8 @@
 import {LitElement, html, css} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import {customElement} from 'lit/decorators.js';
 
+@customElement('chromedash-footer')
 export class ChromedashFooter extends LitElement {
   static get styles() {
     return [
@@ -79,5 +81,3 @@ export class ChromedashFooter extends LitElement {
     `;
   }
 }
-
-customElements.define('chromedash-footer', ChromedashFooter);
