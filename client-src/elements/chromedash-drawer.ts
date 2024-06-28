@@ -144,17 +144,17 @@ export class ChromedashDrawer extends LitElement {
   }
 
   initializeGoogleSignIn() {
-    window.google.accounts.id.initialize({
+    google.accounts.id.initialize({
       client_id: this.googleSignInClientId,
       callback: this.handleCredentialResponse,
     });
-    window.google.accounts.id.prompt();
+    google.accounts.id.prompt();
 
     // Google Identity Services Library cannot find elements in a shadow DOM,
     // so we create signInButton element at the document level and insert it
     // in this DOM, which will be rendered in the <slot> below
     const signInButton = document.createElement('div');
-    window.google.accounts.id.renderButton(signInButton, {type: 'standard'});
+    google.accounts.id.renderButton(signInButton, {type: 'standard'});
     this.insertAdjacentElement('afterbegin', signInButton);
   }
 
