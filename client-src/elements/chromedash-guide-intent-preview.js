@@ -1,7 +1,8 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import {findProcessStage, showToastMessage} from './utils';
+import {showToastMessage} from './utils';
 import './chromedash-intent-template';
+import {STAGE_TYPES_SHIPPING} from './form-field-enums.js';
 
 class ChromedashGuideIntentPreview extends LitElement {
   static get properties() {
@@ -12,7 +13,6 @@ class ChromedashGuideIntentPreview extends LitElement {
       feature: {type: Object},
       stage: {type: Object},
       gate: {type: Object},
-      processStage: {type: Object},
       loading: {type: Boolean},
       displayFeatureUnlistedWarning: {type: Boolean},
     };
@@ -24,9 +24,8 @@ class ChromedashGuideIntentPreview extends LitElement {
     this.featureId = 0;
     this.gateId = 0;
     this.feature = undefined;
-    this.stage = {};
-    this.gate = {};
-    this.processStage = {};
+    this.stage = undefined;
+    this.gate = undefined;
     this.loading = true;
     this.displayFeatureUnlistedWarning = false;
   }
@@ -77,16 +76,18 @@ class ChromedashGuideIntentPreview extends LitElement {
     Promise.all([
       window.csClient.getFeature(this.featureId),
       window.csClient.getGates(this.featureId),
-      window.csClient.getFeatureProcess(this.featureId),
     ])
-      .then(([feature, gates, process]) => {
+      .then(([feature, gates]) => {
         this.feature = feature;
         // TODO(DanielRyanSmith): only fetch a single gate based on given ID.
-        this.gate = gates.gates.find(gate => gate.id === this.gateId);
-        this.stage = this.feature.stages.find(
-          stage => this.gate.stage_id === stage.id
-        );
-        this.processStage = findProcessStage(this.stage, process);
+        if (this.gateId) {
+          this.gate = gates.gates.find(gate => gate.id === this.gateId);
+        }
+        if (this.gate) {
+          this.stage = this.feature.stages.find(
+            stage => this.gate.stage_id === stage.id
+          );
+        }
 
         if (this.feature.name) {
           document.title = `${this.feature.name} - ${this.appTitle}`;
@@ -103,17 +104,31 @@ class ChromedashGuideIntentPreview extends LitElement {
       });
   }
 
+  renderThreeLGTMSection() {
+    // Show for shipping stages only.
+    if (!STAGE_TYPES_SHIPPING.has(this.stage?.stage_type)) return nothing;
+    return html` <section>
+      <h3>Obtain LGTMs from 3 API Owners</h3>
+      <span class="help">
+        You will need three LGTMs from API owners. According to the
+        <a href="http://www.chromium.org/blink#launch-process"
+          >Blink Launch process</a
+        >
+        after that, you're free to ship your feature.
+      </span>
+    </section>`;
+  }
+
+  renderFeatureUnlistedAlert() {
+    if (!this.displayFeatureUnlistedWarning) return nothing;
+    return html`<div class="alertbox">
+      Important: This feature is currently unlisted. Please only share feature
+      details with people who are collaborating with you on the feature.
+    </div>`;
+  }
+
   render() {
-    if (!this.feature) {
-      return nothing;
-    }
-    let alertBox = nothing;
-    if (this.displayFeatureUnlistedWarning) {
-      alertBox = html` <div class="alertbox">
-        Important: This feature is currently unlisted. Please only share feature
-        details with people who are collaborating with you on the feature.
-      </div>`;
-    }
+    if (!this.feature) return nothing;
 
     return html`
       <div id="content">
@@ -122,7 +137,7 @@ class ChromedashGuideIntentPreview extends LitElement {
             <h2>Next steps for the Blink launch process</h2>
           </div>
         </div>
-        ${alertBox}
+        ${this.renderFeatureUnlistedAlert()}
         <section>
           <h3>Reach out to a spec mentor</h3>
           <p style="margin-left: 1em">
@@ -144,20 +159,10 @@ class ChromedashGuideIntentPreview extends LitElement {
             .feature=${this.feature}
             .stage=${this.stage}
             .gate=${this.gate}
-            .processStage=${this.processStage}
           >
           </chromedash-intent-template>
         </section>
-        <section>
-          <h3>Obtain LGTMs from 3 API Owners</h3>
-          <span class="help">
-            You will need three LGTMs from API owners. According to the
-            <a href="http://www.chromium.org/blink#launch-process"
-              >Blink Launch process</a
-            >
-            after that, you're free to ship your feature.
-          </span>
-        </section>
+        ${this.renderThreeLGTMSection()}
       </div>
     `;
   }

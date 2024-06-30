@@ -450,6 +450,12 @@ class ChromedashApp extends LitElement {
         this.pageComponent.appTitle = this.appTitle;
       }
     );
+    page('/guide/intentpreview/:featureId(\\d+)', ctx => {
+      if (!this.setupNewPage(ctx, 'chromedash-guide-intent-preview')) return;
+      this.pageComponent.featureId = parseInt(ctx.params.featureId);
+      this.pageComponent.appTitle = this.appTitle;
+      this.hideSidebar();
+    });
     page('/guide/intentpreview/:featureId(\\d+)/:gateId(\\d+)', ctx => {
       if (!this.setupNewPage(ctx, 'chromedash-guide-intent-preview')) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);

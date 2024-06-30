@@ -21,7 +21,6 @@ class ChromedashIntentTemplate extends LitElement {
       feature: {type: Object},
       stage: {type: Object},
       gate: {type: Object},
-      processStage: {type: Object},
       displayFeatureUnlistedWarning: {type: Boolean},
     };
   }
@@ -30,9 +29,8 @@ class ChromedashIntentTemplate extends LitElement {
     super();
     this.appTitle = '';
     this.feature = {};
-    this.stage = {};
-    this.gate = {};
-    this.processStage = {};
+    this.stage = undefined;
+    this.gate = undefined;
   }
 
   static get styles() {
@@ -178,7 +176,10 @@ class ChromedashIntentTemplate extends LitElement {
     const emailBodyEl = this.shadowRoot.querySelector('.email');
     if (copyEmailBodyEl && emailBodyEl) {
       copyEmailBodyEl.addEventListener('click', () => {
-        navigator.clipboard.writeText(emailBodyEl.innerText);
+        navigator.clipboard.writeText(
+          // Remove extraneous newlines.
+          emailBodyEl.innerText.replace(/(\r\n|\r|\n)(\r\n|\r|\n)/g, '\n')
+        );
         showToastMessage('Email body copied');
       });
     }
@@ -199,6 +200,10 @@ class ChromedashIntentTemplate extends LitElement {
   }
 
   computeSubjectPrefix() {
+    // DevTrials don't have a gate associated with their stage.
+    if (!this.gate) {
+      return 'Ready for Developer Testing';
+    }
     if (this.gate.gate_type === GATE_TYPES.API_PROTOTYPE) {
       if (
         this.feature.feature_type_int ===
@@ -249,10 +254,8 @@ class ChromedashIntentTemplate extends LitElement {
         return html`<a href="mailto:${o}">${o}</a>, `;
       });
     }
-    return html`
-      <h4>Contact emails</h4>
-      ${ownersHTML}
-    `;
+    return html`<h4>Contact emails</h4>
+      ${ownersHTML}`;
   }
 
   renderExplainerLinks() {
@@ -270,11 +273,9 @@ class ChromedashIntentTemplate extends LitElement {
         return html`<br /><a href="${link}">${link}</a>`;
       });
     }
-    return html`
-      <br /><br />
+    return html`<br /><br />
       <h4>Explainer</h4>
-      ${explainerLinksHTML}
-    `;
+      ${explainerLinksHTML}`;
   }
 
   renderSpecification() {
@@ -283,11 +284,9 @@ class ChromedashIntentTemplate extends LitElement {
     if (spec) {
       specHTML = html`<a href="${spec}">${spec}</a>`;
     }
-    return html`
-      <br /><br />
+    return html`<br /><br />
       <h4>Specification</h4>
-      ${specHTML}
-    `;
+      ${specHTML}`;
   }
 
   renderDesignDocs() {
@@ -301,24 +300,20 @@ class ChromedashIntentTemplate extends LitElement {
       }
       return html`<br /><a href="${link}">${link}</a>`;
     });
-    return html`
-      <br /><br />
+    return html` <br /><br />
       <h4>Design docs</h4>
-      ${docsHTML}
-    `;
+      ${docsHTML}`;
   }
 
   renderSummary() {
     const summary = this.feature.summary;
     let summaryHTML = html`None`;
     if (summary) {
-      summaryHTML = html`<p class="preformatted">${this.feature.summary}</p>`;
+      summaryHTML = html`<p>${this.feature.summary}</p>`;
     }
-    return html`
-      <br /><br />
+    return html` <br /><br />
       <h4>Summary</h4>
-      ${summaryHTML}
-    `;
+      ${summaryHTML}`;
   }
 
   renderBlinkComponents() {
@@ -343,19 +338,19 @@ class ChromedashIntentTemplate extends LitElement {
   }
 
   renderMotivation() {
-    if (!STAGE_TYPES_PROTOTYPE.has(this.stage.stage_type)) return nothing;
+    if (!STAGE_TYPES_PROTOTYPE.has(this.stage?.stage_type)) return nothing;
     const motivation = this.feature.motivation;
     if (!motivation) return nothing;
 
     return html`
       <br /><br />
       <h4>Motivation</h4>
-      <p class="preformatted">${motivation}</p>
+      <p>${motivation}</p>
     `;
   }
 
   renderInitialPublicProposal() {
-    if (!STAGE_TYPES_PROTOTYPE.has(this.stage.stage_type)) return nothing;
+    if (!STAGE_TYPES_PROTOTYPE.has(this.stage?.stage_type)) return nothing;
     const initialPublicProposalUrl = this.feature.initial_public_proposal_url;
     if (!initialPublicProposalUrl) return nothing;
 
@@ -446,7 +441,7 @@ class ChromedashIntentTemplate extends LitElement {
     const interopRisks = this.feature.interop_compat_risks;
     let interopRisksHTML = html`None`;
     if (interopRisks) {
-      interopRisksHTML = html`<p class="preformatted">${interopRisks}</p>`;
+      interopRisksHTML = html`<p>${interopRisks}</p>`;
     }
     parts.push(
       html` <br /><br />
@@ -460,11 +455,11 @@ class ChromedashIntentTemplate extends LitElement {
         html`None`}`
     );
     if (this.feature.browsers.ff.view.url) {
-      parts.push(
-        html` (<a href="${this.feature.browsers.ff.view.url}"
-            >${this.feature.browsers.ff.view.url}</a
-          >) `
-      );
+      parts.push(html`
+        (<a href="${this.feature.browsers.ff.view.url}"
+          >${this.feature.browsers.ff.view.url}</a
+        >)
+      `);
     }
     const geckoNotes = this.feature.browsers.ff.view.notes;
     if (geckoNotes) {
@@ -477,11 +472,11 @@ class ChromedashIntentTemplate extends LitElement {
           .text || html`None`}`
     );
     if (this.feature.browsers.safari.view.url) {
-      parts.push(
-        html` (<a href="${this.feature.browsers.safari.view.url}"
-            >${this.feature.browsers.safari.view.url}</a
-          >) `
-      );
+      parts.push(html`
+        (<a href="${this.feature.browsers.safari.view.url}"
+          >${this.feature.browsers.safari.view.url}</a
+        >)
+      `);
     }
     const webKitNotes = this.feature.browsers.safari.view.notes;
     if (webKitNotes) {
@@ -494,11 +489,11 @@ class ChromedashIntentTemplate extends LitElement {
         ${this.feature.browsers.webdev.view.text || html`None`}`
     );
     if (this.feature.browsers.webdev.view.url) {
-      parts.push(
-        html` (<a href="${this.feature.browsers.webdev.view.url}"
-            >${this.feature.browsers.webdev.view.url}</a
-          >) `
-      );
+      parts.push(html`
+        (<a href="${this.feature.browsers.webdev.view.url}"
+          >${this.feature.browsers.webdev.view.url}</a
+        >)
+      `);
     }
     const webdevNotes = this.feature.browsers.webdev.view.notes;
     if (webdevNotes) {
@@ -510,69 +505,70 @@ class ChromedashIntentTemplate extends LitElement {
       parts.push(html`${this.feature.browsers.other.view.notes}`);
     }
     if (this.feature.ergonomics_risks) {
-      parts.push(html`
-        <br /><br />
-        <h4>Ergonomics</h4>
-        <p class="preformatted">${this.feature.ergonomics_risks}</p>
-      `);
+      parts.push(
+        html` <br /><br />
+          <h4>Ergonomics</h4>
+          <p>${this.feature.ergonomics_risks}</p>`
+      );
     }
     if (this.feature.activation_risks) {
-      parts.push(html`
-        <br /><br />
-        <h4>Activation</h4>
-        <p class="preformatted">${this.feature.activation_risks}</p>
-      `);
+      parts.push(
+        html` <br /><br />
+          <h4>Activation</h4>
+          <p>${this.feature.activation_risks}</p>`
+      );
     }
     if (this.feature.security_risks) {
-      parts.push(html`
-        <br /><br />
-        <h4>Security</h4>
-        <p class="preformatted">${this.feature.security_risks}</p>
-      `);
+      parts.push(
+        html` <br /><br />
+          <h4>Security</h4>
+          <p>${this.feature.security_risks}</p>`
+      );
     }
-    parts.push(html`
-      <br /><br />
-      <h4>WebView application risks</h4>
-      <p style="font-style: italic">
-        Does this intent deprecate or change behavior of existing APIs, such
-        that it has potentially high risk for Android WebView-based
-        applications?
-      </p>
-      <p class="preformatted">${this.feature.webview_risks || html`None`}</p>
-    `);
+    parts.push(
+      html` <br /><br />
+        <h4>WebView application risks</h4>
+        <p style="font-style: italic">
+          Does this intent deprecate or change behavior of existing APIs, such
+          that it has potentially high risk for Android WebView-based
+          applications?
+        </p>
+        <p>${this.feature.webview_risks || html`None`}</p>`
+    );
 
-    return html`
-      <br /><br />
+    return html` <br /><br />
       <h4>Risks</h4>
-      <div style="margin-left: 4em;">${parts}</div>
-    `;
+      <div style="margin-left: 4em;">${parts}</div>`;
   }
 
   renderExperimentGoals() {
     // Only show this section for experiment intents.
-    if (!STAGE_TYPES_INTENT_EXPERIMENT.has(this.stage.stage_type))
+    if (
+      this.stage &&
+      !STAGE_TYPES_INTENT_EXPERIMENT.has(this.stage?.stage_type)
+    )
       return nothing;
     const parts = [
       html` <br /><br />
         <h4>Goals for experimentation</h4>
-        <p class="preformatted">${this.feature.experiment_goals || ''}</p>`,
+        <p>${this.feature.experiment_goals || ''}</p>`,
     ];
     if (this.feature.experiment_timeline) {
       parts.push(
         html` <br /><br />
           <h4>Experiment timeline</h4>
-          <p class="preformatted">${this.feature.experiment_timeline}</p>`
+          <p>${this.feature.experiment_timeline}</p>`
       );
     }
     if (
-      OT_EXTENSION_STAGE_TYPES.has(this.stage.stage_type) &&
+      OT_EXTENSION_STAGE_TYPES.has(this.stage?.stage_type) &&
       this.stage.experiment_extension_reason
     ) {
-      parts.push(html`
-        <br /><br />
-        <h4>Reason this experiment is being extended</h4>
-        <p class="preformatted">${stage.experiment_extension_reason}</p>
-      `);
+      parts.push(
+        html` <br /><br />
+          <h4>Reason this experiment is being extended</h4>
+          <p>${stage.experiment_extension_reason}</p>`
+      );
     }
     parts.push(
       html` <br /><br />
@@ -585,21 +581,20 @@ class ChromedashIntentTemplate extends LitElement {
   renderDebuggability() {
     return html` <br /><br />
       <h4>Debuggability</h4>
-      <p class="preformatted">${this.feature.debuggability || 'None'}</p>`;
+      <p>${this.feature.debuggability || 'None'}</p>`;
   }
 
   renderAllPlatforms() {
     // This section is only shown for experimental and shipping intents.
     if (
-      !STAGE_TYPES_INTENT_EXPERIMENT.has(this.stage.stage_type) &&
-      !STAGE_TYPES_SHIPPING.has(this.stage.stage_type)
+      this.stage &&
+      !STAGE_TYPES_INTENT_EXPERIMENT.has(this.stage?.stage_type) &&
+      !STAGE_TYPES_SHIPPING.has(this.stage?.stage_type)
     )
       return nothing;
     let descriptionHTML = html`None`;
     if (this.feature.all_platforms_descr) {
-      descriptionHTML = html`<p>
-        ${this.feature.all_platforms_descr}
-      </p>`;
+      descriptionHTML = html`<p>${this.feature.all_platforms_descr}</p>`;
     }
     return html` <br /><br />
       <h4>
@@ -613,7 +608,7 @@ class ChromedashIntentTemplate extends LitElement {
     let descriptionHTML = nothing;
     if (this.feature.wpt_descr) {
       descriptionHTML = html`<br />
-        <p class="preformatted">${this.feature.wpt_descr}</p>`;
+        <p>${this.feature.wpt_descr}</p>`;
     }
     return html` <br /><br />
       <h4>
@@ -728,8 +723,8 @@ class ChromedashIntentTemplate extends LitElement {
   renderSampleLinks() {
     // Only show for shipping stages.
     if (
-      !STAGE_TYPES_SHIPPING.has(this.stage.stage_type) &&
-      !this.stage.stage_type !== STAGE_BLINK_EVAL_READINESS
+      !STAGE_TYPES_SHIPPING.has(this.stage?.stage_type) &&
+      !this.stage?.stage_type !== STAGE_BLINK_EVAL_READINESS
     ) {
       return nothing;
     }
@@ -946,7 +941,7 @@ class ChromedashIntentTemplate extends LitElement {
     // Only show for shipping stages or if the anticipated spec changes
     // field is filled.
     if (
-      !STAGE_TYPES_SHIPPING.has(this.stage.stage_type) &&
+      !STAGE_TYPES_SHIPPING.has(this.stage?.stage_type) &&
       !this.feature.anticipated_spec_changes
     )
       return nothing;
@@ -964,7 +959,12 @@ class ChromedashIntentTemplate extends LitElement {
   }
 
   renderChromestatusLink() {
-    const urlSuffix = `feature/${this.feature.id}?gate=${this.gate.id}`;
+    let urlSuffix;
+    if (this.gate) {
+      urlSuffix = `feature/${this.feature.id}?gate=${this.gate.id}`;
+    } else {
+      urlSuffix = `feature/${this.feature.id}`;
+    }
     const url = `${window.location.protocol}//${window.location.host}/${urlSuffix}`;
     return html` <br /><br />
       <h4>Link to entry on ${this.appTitle}</h4>
@@ -982,10 +982,10 @@ class ChromedashIntentTemplate extends LitElement {
       }
     });
     dtStages.forEach(s => {
-      if (s.intent_thread_url) {
+      if (s.announcement_url) {
         parts.push(
-          html` Ready for Trial:
-            <a href="${s.intent_thread_url}">${s.intent_thread_url}</a> <br />`
+          html`Ready for Trial:
+            <a href="${s.announcement_url}">${s.announcement_url}</a> <br />`
         );
       }
     });
@@ -1029,10 +1029,11 @@ class ChromedashIntentTemplate extends LitElement {
     const url = `${window.location.protocol}//${window.location.host}/`;
     return html` <br /><br />
       <div>
-        <small>
-          This intent message was generated by
-          <a href="${url}">${this.appTitle}</a>.
-        </small>
+        <small
+          >This intent message was generated by<a href="${url}"
+            >${this.appTitle}</a
+          >.</small
+        >
       </div>`;
   }
 
@@ -1049,7 +1050,7 @@ class ChromedashIntentTemplate extends LitElement {
     const shipStages = this.feature.stages.filter(s =>
       STAGE_TYPES_SHIPPING.has(s.stage_type)
     );
-    return html` ${[
+    return html`${[
       this.renderOwners(),
       this.renderExplainerLinks(),
       this.renderSpecification(),
