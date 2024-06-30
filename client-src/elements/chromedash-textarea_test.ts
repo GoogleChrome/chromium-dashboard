@@ -9,7 +9,7 @@ describe('chromedash-textarea', () => {
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashTextarea);
-    const textareaElement = component.shadowRoot.querySelector('textarea');
+    const textareaElement = component.shadowRoot!.querySelector('textarea');
     assert.exists(textareaElement);
   });
 
@@ -18,7 +18,7 @@ describe('chromedash-textarea', () => {
   //   https://github.com/shoelace-style/shoelace/blob/next/src/components/textarea/textarea.test.ts
   describe('when using constraint validation', () => {
     it('should be valid by default', async () => {
-      const el = await fixture(html`
+      const el = await fixture<ChromedashTextarea>(html`
         <chromedash-textarea></chromedash-textarea>
       `);
       assert.exists(el);
@@ -27,7 +27,7 @@ describe('chromedash-textarea', () => {
     });
 
     it('should be invalid when required and empty', async () => {
-      const el = await fixture(html`
+      const el = await fixture<ChromedashTextarea>(html`
         <chromedash-textarea required></chromedash-textarea>
       `);
       assert.exists(el);
@@ -36,7 +36,7 @@ describe('chromedash-textarea', () => {
     });
 
     it('should be invalid when required and after removing disabled ', async () => {
-      const el = await fixture(html`
+      const el = await fixture<ChromedashTextarea>(html`
         <chromedash-textarea disabled required></chromedash-textarea>
       `);
       assert.exists(el);
@@ -46,7 +46,7 @@ describe('chromedash-textarea', () => {
     });
 
     it('should be invalid when required and disabled is removed', async () => {
-      const el = await fixture(html`
+      const el = await fixture<ChromedashTextarea>(html`
         <chromedash-textarea disabled required></chromedash-textarea>
       `);
       assert.exists(el);
@@ -58,7 +58,7 @@ describe('chromedash-textarea', () => {
 
   describe('when using custom validation', () => {
     it('should be valid with multiple valid inputs', async () => {
-      const component = await fixture(
+      const component = await fixture<ChromedashTextarea>(
         html`<chromedash-textarea
           multiple
           chromedash_split_pattern="\\s+"
@@ -73,14 +73,14 @@ describe('chromedash-textarea', () => {
 
     it('should be valid with multiple valid inputs and extra whitespace', async () => {
       // Test with extra whitespace
-      const component = await fixture(
+      const component = await fixture<ChromedashTextarea>(
         html`<chromedash-textarea
           multiple
           chromedash_split_pattern="\\s+"
           chromedash_single_pattern="[a-z]+"
-          value=" 
-  abc  
- def 
+          value="
+  abc
+ def
  "
         ></chromedash-textarea>`
       );
@@ -90,7 +90,7 @@ describe('chromedash-textarea', () => {
     });
 
     it('should be invalid with any invalid inputs', async () => {
-      const component = await fixture(
+      const component = await fixture<ChromedashTextarea>(
         html`<chromedash-textarea
           multiple
           chromedash_split_pattern="\\s+"
@@ -105,14 +105,14 @@ describe('chromedash-textarea', () => {
 
     it('should be invalid with any invalid inputs and extra whitespace', async () => {
       // Test with extra whitespace
-      const component = await fixture(
+      const component = await fixture<ChromedashTextarea>(
         html`<chromedash-textarea
           multiple
           chromedash_split_pattern="\\s+"
           chromedash_single_pattern="[a-z]+"
-          value=" 
-  abc  
- def 456 
+          value="
+  abc
+ def 456
  "
         ></chromedash-textarea>`
       );
