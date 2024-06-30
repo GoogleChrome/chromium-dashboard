@@ -52,9 +52,6 @@ class ChromedashGuideIntentPreview extends LitElement {
           content: counter(h3) '.';
           margin-right: 5px;
         }
-        .subject {
-          font-size: 16px;
-        }
       `,
     ];
   }
