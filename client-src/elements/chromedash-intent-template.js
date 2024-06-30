@@ -41,18 +41,18 @@ class ChromedashIntentTemplate extends LitElement {
           cursor: pointer;
           color: var(--link-color);
         }
-        .email-content-div {
-          background: white;
+        .email-content-border {
           border: 1px solid #ddd;
           box-shadow: rgba(0, 0, 0, 0.067) 1px 1px 4px;
-          padding: 12px;
-          margin: 8px 0 16px 0;
+          margin: 8px 0 24px 0;
         }
-
+        .email-content-div {
+          background: white;
+          padding: 12px;
+        }
         p {
           color: #444;
         }
-
         h3 {
           margin-bottom: 10px;
           &:before {
@@ -60,16 +60,6 @@ class ChromedashIntentTemplate extends LitElement {
             content: counter(h3) '.';
             margin-right: 5px;
           }
-        }
-        #content {
-          flex-direction: column;
-          counter-reset: h3;
-          height: auto;
-        }
-        #content section {
-          max-width: 800px;
-          flex: 1 0 auto;
-          margin-bottom: 15px;
         }
         #content section > div {
           background: white;
@@ -81,19 +71,6 @@ class ChromedashIntentTemplate extends LitElement {
         #content section > p {
           color: #444;
         }
-        #content h3 {
-          margin-bottom: 10px;
-        }
-        #content h3:before {
-          counter-increment: h3;
-          content: counter(h3) '.';
-          margin-right: 5px;
-        }
-
-        .subject {
-          font-size: 16px;
-          margin-bottom: 10px;
-        }
 
         .email .help {
           font-style: italic;
@@ -102,12 +79,14 @@ class ChromedashIntentTemplate extends LitElement {
         .email h4 {
           font-weight: 600;
         }
-
         .alertbox {
           margin: 2em;
           padding: 1em;
           background: var(--warning-background);
           color: var(--warning-color);
+        }
+        .subject {
+          font-size: 16px;
         }
         table {
           tr[hidden] {
@@ -176,10 +155,11 @@ class ChromedashIntentTemplate extends LitElement {
     const emailBodyEl = this.shadowRoot.querySelector('.email');
     if (copyEmailBodyEl && emailBodyEl) {
       copyEmailBodyEl.addEventListener('click', () => {
-        navigator.clipboard.writeText(
-          // Remove extraneous newlines.
-          emailBodyEl.innerText.replace(/(\r\n|\r|\n)(\r\n|\r|\n)/g, '\n')
-        );
+        window.getSelection().removeAllRanges();
+        const range = document.createRange();
+        range.selectNode(emailBodyEl);
+        window.getSelection().addRange(range);
+        document.execCommand('copy');
         showToastMessage('Email body copied');
       });
     }
@@ -339,8 +319,7 @@ class ChromedashIntentTemplate extends LitElement {
 
   renderMotivation() {
     if (!STAGE_TYPES_PROTOTYPE.has(this.stage?.stage_type)) return nothing;
-    const motivation = this.feature.motivation;
-    if (!motivation) return nothing;
+    const motivation = this.feature.motivation || 'None';
 
     return html`
       <br /><br />
@@ -351,8 +330,7 @@ class ChromedashIntentTemplate extends LitElement {
 
   renderInitialPublicProposal() {
     if (!STAGE_TYPES_PROTOTYPE.has(this.stage?.stage_type)) return nothing;
-    const initialPublicProposalUrl = this.feature.initial_public_proposal_url;
-    if (!initialPublicProposalUrl) return nothing;
+    const initialPublicProposalUrl = this.feature.initial_public_proposal_url || 'None';
 
     return html`
       <br /><br />
@@ -592,7 +570,7 @@ class ChromedashIntentTemplate extends LitElement {
       !STAGE_TYPES_SHIPPING.has(this.stage?.stage_type)
     )
       return nothing;
-    let descriptionHTML = html`None`;
+    let descriptionHTML = nothing;
     if (this.feature.all_platforms_descr) {
       descriptionHTML = html`<p>${this.feature.all_platforms_descr}</p>`;
     }
@@ -601,7 +579,8 @@ class ChromedashIntentTemplate extends LitElement {
         Will this feature be supported on all six Blink platforms (Windows, Mac,
         Linux, ChromeOS, Android, and Android WebView)?
       </h4>
-      ${this.feature.all_platforms ? 'Yes' : 'No'} ${descriptionHTML}`;
+      ${this.feature.all_platforms ? 'Yes' : 'No'}<br />
+      ${descriptionHTML}`;
   }
 
   renderWPT() {
@@ -721,18 +700,17 @@ class ChromedashIntentTemplate extends LitElement {
   }
 
   renderSampleLinks() {
+    const samples = this.feature.resources?.samples || [];
     // Only show for shipping stages.
     if (
-      !STAGE_TYPES_SHIPPING.has(this.stage?.stage_type) &&
-      !this.stage?.stage_type !== STAGE_BLINK_EVAL_READINESS
+      (!STAGE_TYPES_SHIPPING.has(this.stage?.stage_type) &&
+      !this.stage?.stage_type !== STAGE_BLINK_EVAL_READINESS) || samples.length === 0
     ) {
       return nothing;
     }
     return html` <br /><br />
       <h4>Sample links</h4>
-      ${this.feature.resource.samples.map(
-        url => html`<br /><a href="${url}">${url}</a>`
-      )}`;
+      ${samples.map(url => html`<br /><a href="${url}">${url}</a>`)}`;
   }
 
   renderDesktopMilestonesTable(dtStages, otStages, shipStages) {
@@ -945,6 +923,7 @@ class ChromedashIntentTemplate extends LitElement {
       !this.feature.anticipated_spec_changes
     )
       return nothing;
+    const anticipatedSpecChanges = this.feature.anticipated_spec_changes || 'None';
     return html` <br /><br />
       <h4>Anticipated spec changes</h4>
       <p style="font-style: italic">
@@ -955,7 +934,7 @@ class ChromedashIntentTemplate extends LitElement {
         structure of the API in a non-backward-compatible way).
       </p>
 
-      ${this.feature.anticipated_spec_changes}`;
+      ${anticipatedSpecChanges}`;
   }
 
   renderChromestatusLink() {
@@ -1030,7 +1009,7 @@ class ChromedashIntentTemplate extends LitElement {
     return html` <br /><br />
       <div>
         <small
-          >This intent message was generated by<a href="${url}"
+          >This intent message was generated by <a href="${url}"
             >${this.appTitle}</a
           >.</small
         >
@@ -1090,16 +1069,16 @@ class ChromedashIntentTemplate extends LitElement {
   render() {
     return html`
       <p>Email to</p>
-      <div class="subject email-content-div">blink-dev@chromium.org</div>
-
-      <p>Subject</p>
-      <div class="subject email-content-div">
-        ${this.computeSubjectPrefix()}: ${this.feature.name}
+      <div class="email-content-border">
+        <div class="subject email-content-div">blink-dev@chromium.org</div>
       </div>
 
-      <!-- Insted of vertical margins, <br> elements are used to create line breaks -->
-      <!-- that can be copied and pasted into a text editor. -->
-
+      <p>Subject</p>
+      <div class="email-content-border">
+        <div class="subject email-content-div">
+          ${this.computeSubjectPrefix()}: ${this.feature.name}
+        </div>
+      </div>
       <p>
         Body
         <span
@@ -1114,7 +1093,9 @@ class ChromedashIntentTemplate extends LitElement {
         </span>
       </p>
 
-      <div class="email email-content-div">${this.renderEmailBody()}</div>
+      <div class="email-content-border">
+        <div class="email email-content-div">${this.renderEmailBody()}</div>
+      </div>
     `;
   }
 }

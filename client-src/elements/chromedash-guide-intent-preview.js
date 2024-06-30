@@ -39,7 +39,12 @@ class ChromedashGuideIntentPreview extends LitElement {
           counter-reset: h3;
           height: auto;
         }
-        #content h3 {
+        #content section {
+          max-width: 800px;
+          flex: 1 0 auto;
+          margin-bottom: 15px;
+        }
+        h3 {
           margin-bottom: 10px;
         }
         #content h3:before {
@@ -49,19 +54,6 @@ class ChromedashGuideIntentPreview extends LitElement {
         }
         .subject {
           font-size: 16px;
-          margin-bottom: 10px;
-        }
-        .alertbox {
-          margin: 2em;
-          padding: 1em;
-          background: var(--warning-background);
-          color: var(--warning-color);
-        }
-        .inline {
-          display: inline;
-        }
-        .right {
-          float: right;
         }
       `,
     ];
@@ -147,13 +139,7 @@ class ChromedashGuideIntentPreview extends LitElement {
           </p>
         </section>
         <section>
-          <h3 class="inline">Send this text for your "Intent to ..." email</h3>
-          <input
-            type="submit"
-            value="Send to blink-dev directly"
-            class="button inline right"
-            id="send-email-button"
-          />
+          <h3>Send this text for your "Intent to ..." email</h3>
           <chromedash-intent-template
             appTitle="${this.appTitle}"
             .feature=${this.feature}
