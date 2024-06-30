@@ -1,33 +1,21 @@
 // @ts-check
 
 import {LitElement, html} from 'lit';
+import {customElement, property} from 'lit/decorators.js';
+import {FeatureLink} from '../js-src/cs-client';
 
 /**
  * Use like `<chromedash-vendor-views href="https://evidence/for/the/view"
  * .featureLinks=${this.featureLinks}>Text description of the view</chromedash-vendor-views>`
  */
+@customElement('chromedash-vendor-views')
 export class ChromedashVendorViews extends LitElement {
-  static get properties() {
-    return {
-      href: {type: String},
-      featureLinks: {attribute: false},
-    };
-  }
+  @property({type: String})
+  href;
+  @property({attribute: false})
+  featureLinks: FeatureLink[] = [];
 
-  constructor() {
-    super();
-    /** URL of the evidence for this view.
-     * @type {string|undefined} */
-    this.href = undefined;
-    /** @type {import("../js-src/cs-client").FeatureLink[]} */
-    this.featureLinks = [];
-  }
-
-  /**
-   * @param {string} url
-   * @returns {boolean}
-   */
-  urlIsStandardsPosition(url) {
+  urlIsStandardsPosition(url: string) {
     return /github.com\/(mozilla|WebKit)\/standards-positions\/issues/.test(
       url
     );
@@ -46,5 +34,3 @@ export class ChromedashVendorViews extends LitElement {
     }
   }
 }
-
-customElements.define('chromedash-vendor-views', ChromedashVendorViews);
