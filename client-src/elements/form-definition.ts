@@ -488,10 +488,10 @@ const PSA_PREPARE_TO_SHIP_FIELDS: MetadataFields = {
 };
 
 const DEPRECATION_PLAN_FIELDS: MetadataFields = {
-  name: 'Write up motivation',
+  name: 'Write up deprecation plan',
   sections: [
     {
-      name: 'Write up motivation',
+      name: 'Write up deprecation plan',
       fields: ['motivation', 'spec_link'],
     },
   ],
@@ -589,10 +589,10 @@ export const ORIGIN_TRIAL_EXTENSION_FIELDS: MetadataFields = {
 
 // Note: Even though this is similar to another form, it is likely to change.
 const DEPRECATION_ORIGIN_TRIAL_FIELDS: MetadataFields = {
-  name: 'Origin trial',
+  name: 'Prepare for Deprecation Trial',
   sections: [
     {
-      name: 'Origin trial',
+      name: 'Prepare for Deprecation Trial',
       fields: [
         'display_name',
         'experiment_goals',
