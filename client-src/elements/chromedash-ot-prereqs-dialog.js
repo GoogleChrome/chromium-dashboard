@@ -220,8 +220,6 @@ class ChromedashOTPrereqsDialog extends LitElement {
       </div>
       <br />
       <ul id="prereqs-list">
-        <li>Your Intent to Experiment has been drafted.</li>
-        <li>The required LGTMs have been received.</li>
         <li>
           The trial's UseCounter has landed on
           <a
