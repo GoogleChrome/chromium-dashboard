@@ -1,17 +1,18 @@
 // This file contains helper functions for our elements.
 
+import {html, nothing} from 'lit';
+import {Feature, FeatureLink} from '../js-src/cs-client.js';
 import {markupAutolinks} from './autolink.js';
-import {nothing, html} from 'lit';
+import {FORMS_BY_STAGE_TYPE} from './form-definition.js';
 import {
-  STAGE_FIELD_NAME_MAPPING,
-  PLATFORMS_DISPLAYNAME,
-  STAGE_SPECIFIC_FIELDS,
-  OT_MILESTONE_END_FIELDS,
   ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME,
-  ROLLOUT_IMPACT_DISPLAYNAME,
   ENTERPRISE_IMPACT_DISPLAYNAME,
+  OT_MILESTONE_END_FIELDS,
+  PLATFORMS_DISPLAYNAME,
+  ROLLOUT_IMPACT_DISPLAYNAME,
+  STAGE_FIELD_NAME_MAPPING,
+  STAGE_SPECIFIC_FIELDS,
 } from './form-field-enums';
-import {FeatureLink} from '../js-src/cs-client.js';
 
 let toastEl;
 
@@ -172,12 +173,16 @@ export function hasFieldValue(fieldName, feStage, feature) {
  * Note: This is independent of any value that might be in a corresponding
  * form field.
  *
- * @param {string} fieldName - The name of the field to retrieve.
- * @param {string} feStage - The stage of the feature.
- * @param {Object} feature - The feature object to retrieve the field value from.
- * @return {*} The value of the specified field for the given feature.
+ * @param fieldName - The name of the field to retrieve.
+ * @param feStage - The stage of the feature.
+ * @param feature - The feature object to retrieve the field value from.
+ * @return The value of the specified field for the given feature.
  */
-export function getFieldValueFromFeature(fieldName, feStage, feature) {
+export function getFieldValueFromFeature(
+  fieldName: string,
+  feStage: string,
+  feature: Feature
+) {
   if (STAGE_SPECIFIC_FIELDS.has(fieldName)) {
     const value = getStageValue(feStage, fieldName);
     if (fieldName === 'rollout_impact' && value) {
@@ -244,6 +249,14 @@ export function getFieldValueFromFeature(fieldName, feStage, feature) {
   }
   if (fieldName === 'enterprise_impact' && value) {
     return ENTERPRISE_IMPACT_DISPLAYNAME[value];
+  }
+  if (fieldName === 'active_stage_id' && value) {
+    for (const stage of feature.stages) {
+      if (stage.id === value) {
+        return stage.display_name ?? FORMS_BY_STAGE_TYPE[stage.stage_type].name;
+      }
+    }
+    return undefined;
   }
   return value;
 }

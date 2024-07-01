@@ -1,8 +1,8 @@
 import {html, TemplateResult} from 'lit';
-import {Feature} from '../js-src/cs-client';
+import {Feature, StageDict} from '../js-src/cs-client';
 import * as enums from './form-field-enums';
 
-interface FormattedFeature {
+export interface FormattedFeature {
   category: number;
   enterprise_feature_categories: string[];
   feature_type: number;
@@ -36,6 +36,7 @@ interface FormattedFeature {
   web_dev_views_link?: string;
   web_dev_views_notes?: string;
   other_views_notes?: string;
+  stages: StageDict[];
   [key: string]: any; // Allow additional properties
 }
 
@@ -198,6 +199,7 @@ export const FLAT_METADATA_FIELDS: MetadataFields = {
         'devrel',
         'category',
         'feature_type',
+        'active_stage_id',
         'search_tags',
       ],
     },
