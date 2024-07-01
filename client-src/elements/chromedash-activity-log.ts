@@ -72,7 +72,7 @@ export class ChromedashAmendment extends LitElement {
 customElements.define('chromedash-amendment', ChromedashAmendment);
 
 export interface User {
-  // TODO(markxiong0122): Move this interface to chromedash-app.js after migration.
+  // TODO(markxiong0122): Move this interface near cs-client.js:getPermissions() after migration.
   can_create_feature: boolean;
   can_edit_all: boolean;
   can_comment: boolean;
