@@ -246,6 +246,7 @@ export class ChromedashGuideStagePage extends LitElement {
           index=${index}
           value=${value}
           .fieldValues=${this.fieldValues}
+          .feature=${formattedFeature}
           stageId=${feStage.id}
           ?forEnterprise=${formattedFeature.is_enterprise_feature}
           @form-field-update="${this.handleFormFieldUpdate}"
@@ -276,6 +277,7 @@ export class ChromedashGuideStagePage extends LitElement {
               index=${index}
               value=${this.isActiveStage}
               .fieldValues=${this.fieldValues}
+              .feature=${formattedFeature}
               ?disabled=${this.isActiveStage}
               ?forEnterprise=${formattedFeature.is_enterprise_feature}
               @form-field-update="${this.handleFormFieldUpdate}"

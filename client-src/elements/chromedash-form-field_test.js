@@ -1,6 +1,12 @@
-import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
+import '@shoelace-style/shoelace/dist/components/option/option.js';
+import {html} from 'lit';
 import {ChromedashFormField} from './chromedash-form-field';
+import {
+  STAGE_BLINK_INCUBATE,
+  STAGE_BLINK_ORIGIN_TRIAL,
+  STAGE_BLINK_SHIPPING,
+} from './form-field-enums';
 
 describe('chromedash-form-field', () => {
   it('renders a checkbox type of field', async () => {
@@ -106,5 +112,39 @@ describe('chromedash-form-field', () => {
     assert.include(renderElement.innerHTML, 'sl-select');
     assert.include(renderElement.innerHTML, 'multiple');
     assert.include(renderElement.innerHTML, 'cleareable');
+  });
+
+  describe('complex fields', async () => {
+    it('active_stage_id depends on the available stages', async () => {
+      /** @type {import('./form-definition').FormattedFeature} */
+      const formattedFeature = {
+        stages: [
+          {id: 1, stage_type: STAGE_BLINK_INCUBATE},
+          {
+            id: 2,
+            stage_type: STAGE_BLINK_ORIGIN_TRIAL,
+            display_name: 'Display name',
+          },
+          {id: 3, stage_type: STAGE_BLINK_SHIPPING},
+          {id: 4, stage_type: 9999, display_name: 'Not a stage type'},
+        ],
+      };
+      const component = await fixture(html`
+        <chromedash-form-field
+          name="active_stage_id"
+          .feature=${formattedFeature}
+        ></chromedash-form-field>
+      `);
+      assert.instanceOf(component, ChromedashFormField);
+      const optionValues = Array.from(
+        component.renderRoot.querySelectorAll('sl-option')
+      ).map(option => ({text: option.textContent.trim(), value: option.value}));
+      assert.deepEqual(optionValues, [
+        {text: 'Identify the need', value: '1'},
+        {text: 'Display name', value: '2'},
+        {text: 'Prepare to ship', value: '3'},
+        {text: 'Not a stage type', value: '4'},
+      ]);
+    });
   });
 });

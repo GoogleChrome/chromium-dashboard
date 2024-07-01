@@ -41,9 +41,20 @@ interface Standards {
   maturity: {val: number; text: string};
 }
 
+/**
+ * Partially copied from `StageDict` in `internals/data_types.py`.
+ * @todo Move both definitions into `openapi/api.yaml`.
+ */
+interface Stage {
+  id: number;
+  feature_id: number;
+  stage_type: number;
+  display_name?: string;
+}
+
 type FeatureName = string;
 
-interface Feature {
+export interface Feature {
   name?: FeatureName;
   category_int: number;
   enterprise_feature_categories: string[];
@@ -62,9 +73,10 @@ interface Feature {
     webdev: WebDevBrowser;
     other: OtherBrowser;
   };
+  stages: Stage[];
 }
 
-interface FormattedFeature {
+export interface FormattedFeature {
   category: number;
   enterprise_feature_categories: string[];
   feature_type: number;
@@ -98,6 +110,7 @@ interface FormattedFeature {
   web_dev_views_link: string;
   web_dev_views_notes: string;
   other_views_notes: string;
+  stages: Stage[];
   [key: string]: any; // Allow additional properties
 }
 
@@ -259,6 +272,7 @@ export const FLAT_METADATA_FIELDS: MetadataFields = {
         'devrel',
         'category',
         'feature_type',
+        'active_stage_id',
         'search_tags',
       ],
     },

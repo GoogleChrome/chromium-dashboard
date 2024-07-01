@@ -77,3 +77,29 @@ test('add an origin trial stage', async ({ page }) => {
         mask: [page.locator('section[id="history"]')]
     });
 });
+
+test('set the active stage', async ({page}) => {
+  await createNewFeature(page);
+
+  // Edit the metadata.
+  const metadataSection = page.locator('sl-details[summary="Metadata"]');
+  await metadataSection.click();
+
+  await metadataSection.getByRole('link', {name: 'Edit fields'}).click();
+
+  // Select the origin trial stage.
+  const activeStageSelect = page.locator('sl-select[name="active_stage_id"]');
+  await activeStageSelect.click();
+  await activeStageSelect
+    .locator('sl-option', {hasText: 'Origin Trial'})
+    .click();
+  // Save.
+  await page.getByRole('button', {name: 'Submit'}).click();
+
+  // Check the origin trial is active.
+  await expect(
+    page
+      .locator('sl-details')
+      .getByRole('button', {name: 'Origin Trial - Active', expanded: true})
+  ).toBeVisible();
+});

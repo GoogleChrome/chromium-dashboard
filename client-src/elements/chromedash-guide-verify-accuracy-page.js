@@ -212,6 +212,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
           index=${index}
           value=${value}
           .fieldValues=${this.fieldValues}
+          .feature=${formattedFeature}
           ?forEnterprise=${formattedFeature.is_enterprise_feature}
           @form-field-update="${this.handleFormFieldUpdate}"
         >
