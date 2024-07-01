@@ -174,7 +174,7 @@ export class ChromedashDrawer extends LitElement {
       fetch('/dev/mock_login', {method: 'POST'})
         .then(response => {
           if (!response.ok) {
-            throw new Error('Sign in failed! Response: ${response.status}');
+            throw new Error(`Sign in failed! Response: ${response.status}`);
           }
         })
         .then(() => {
