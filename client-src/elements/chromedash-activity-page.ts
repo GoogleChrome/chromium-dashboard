@@ -42,13 +42,7 @@ export class ChromedashActivityPage extends LitElement {
   }
 
   @property({type: Object})
-  user: User = {
-    can_create_feature: false,
-    can_edit_all: false,
-    can_comment: false,
-    is_admin: false,
-    email: '',
-  };
+  user!: User;
   @property({type: Number})
   featureId = 0;
   @property({type: Array})

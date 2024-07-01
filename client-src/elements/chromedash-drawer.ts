@@ -179,7 +179,7 @@ export class ChromedashDrawer extends LitElement {
         })
         .then(() => {
           setTimeout(() => {
-            const url = window.location.href.split('?')[0] as string & Location;
+            const url = window.location.href.split('?')[0];
             window.location.href = url;
           }, 1000);
         })
