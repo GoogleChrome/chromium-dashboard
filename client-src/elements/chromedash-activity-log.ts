@@ -78,7 +78,8 @@ export interface User {
   can_comment: boolean;
   is_admin: boolean;
   email: string;
-  approvable_gate_types?: any;
+  approvable_gate_types: int[];
+  editable_features: int[];
 }
 interface Activity {
   comment_id: number;
