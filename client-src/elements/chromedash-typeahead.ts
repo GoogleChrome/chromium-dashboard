@@ -1,5 +1,4 @@
-import {SlInput} from '@shoelace-style/shoelace';
-import SlDropdown from '@shoelace-style/shoelace/dist/components/dropdown/dropdown.js';
+import {SlInput, SlDropdown} from '@shoelace-style/shoelace';
 import {css, html, LitElement, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {live} from 'lit/directives/live.js';
