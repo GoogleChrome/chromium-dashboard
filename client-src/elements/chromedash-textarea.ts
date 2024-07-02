@@ -23,8 +23,7 @@ export class ChromedashTextarea extends SlTextarea {
 
   /**
    * Checks whether the value conforms to custom validation constraints.
-   * @param {string} value
-   * @return {boolean} Return true if value is valid.
+   * @return true if value is valid.
    */
   customCheckValidity(value: string): boolean {
     if (this.multiple) {
