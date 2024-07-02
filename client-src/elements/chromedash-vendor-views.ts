@@ -16,7 +16,6 @@ export class ChromedashVendorViews extends LitElement {
   @property({attribute: false})
   featureLinks: FeatureLink[] = [];
 
-   */
   urlIsStandardsPosition(url: string): boolean {
     return /github.com\/(mozilla|WebKit)\/standards-positions\/issues/.test(
       url
