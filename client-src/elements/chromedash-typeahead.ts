@@ -1,10 +1,10 @@
-import {LitElement, css, html, nothing} from 'lit';
-import {ref, createRef, Ref} from 'lit/directives/ref.js';
-import {live} from 'lit/directives/live.js';
-import {SHARED_STYLES} from '../css/shared-css.js';
+import {SlInput} from '@shoelace-style/shoelace';
 import SlDropdown from '@shoelace-style/shoelace/dist/components/dropdown/dropdown.js';
+import {css, html, LitElement, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
-import { SlInput } from '@shoelace-style/shoelace';
+import {live} from 'lit/directives/live.js';
+import {createRef, ref, Ref} from 'lit/directives/ref.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 
 /* This file consists of 3 classes that together implement a "typeahead"
    text field with autocomplete:

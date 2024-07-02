@@ -1,12 +1,13 @@
-import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
+import '@shoelace-style/shoelace/dist/components/input/input.js';
+import SlInput from '@shoelace-style/shoelace/dist/components/input/input.js';
+import '@shoelace-style/shoelace/dist/components/menu/menu.js';
+import {html} from 'lit';
 import {
   ChromedashTypeahead,
   ChromedashTypeaheadDropdown,
   ChromedashTypeaheadItem,
 } from './chromedash-typeahead';
-import '@shoelace-style/shoelace/dist/components/input/input.js';
-import '@shoelace-style/shoelace/dist/components/menu/menu.js';
 
 describe('chromedash-typeahead', () => {
   it('reflects the value of the sl-input as its own value', async () => {
@@ -15,9 +16,9 @@ describe('chromedash-typeahead', () => {
     `);
     assert.exists(component);
     assert.instanceOf(component, ChromedashTypeahead);
-    const slInput = component.shadowRoot.querySelector('sl-input');
+    const slInput = component.renderRoot.querySelector('sl-input');
 
-    slInput.value = 'test value';
+    slInput!.value = 'test value';
     component.reflectValue();
     assert.equal('test value', component.value);
   });
@@ -34,9 +35,10 @@ describe('chromedash-typeahead', () => {
     `);
     assert.exists(component);
     assert.instanceOf(component, ChromedashTypeahead);
-    const dropdown = component.shadowRoot.querySelector(
+    const dropdown = component.renderRoot.querySelector(
       'chromedash-typeahead-dropdown'
     );
+    assert.instanceOf(dropdown, ChromedashTypeaheadDropdown);
 
     assert.equal(false, dropdown.open);
 
@@ -59,7 +61,8 @@ describe('chromedash-typeahead', () => {
     `);
     assert.exists(component);
     assert.instanceOf(component, ChromedashTypeahead);
-    const slInput = component.shadowRoot.querySelector('sl-input');
+    const slInput = component.renderRoot.querySelector('sl-input');
+    assert.instanceOf(slInput, SlInput);
 
     slInput.value = '';
     await slInput.updateComplete;
@@ -169,7 +172,7 @@ describe('chromedash-typeahead-item', () => {
     assert.instanceOf(component, ChromedashTypeaheadItem);
     assert.equal(component.getAttribute('role'), 'menuitem');
 
-    const div = component.shadowRoot.querySelector('div');
+    const div = component.renderRoot.querySelector('div');
     assert.exists(div);
 
     const divInnerHTML = div.innerHTML;
@@ -186,9 +189,9 @@ describe('chromedash-typeahead-item', () => {
         tabindex="0"
       ></chromedash-typeahead-item>
     `);
-    const div = component.shadowRoot.querySelector('div');
+    const div = component.shadowRoot!.querySelector('div');
 
-    assert.include([...div.classList], 'active');
+    assert.include(Array.from(div!.classList), 'active');
   });
 
   it('renders with the prefix in bold', async () => {
@@ -199,13 +202,13 @@ describe('chromedash-typeahead-item', () => {
         prefix="aVal"
       ></chromedash-typeahead-item>
     `);
-    const valueEl = component.shadowRoot.querySelector('#value');
-    assert.include(valueEl.innerHTML, 'aVal');
-    assert.include(valueEl.innerHTML, 'ue');
-    const bold = component.shadowRoot.querySelector('b');
-    assert.include(bold.innerHTML, 'aVal');
-    const docEl = component.shadowRoot.querySelector('#doc');
-    assert.include(docEl.innerHTML, 'Docs about it');
+    const valueEl = component.shadowRoot!.querySelector('#value');
+    assert.include(valueEl!.innerHTML, 'aVal');
+    assert.include(valueEl!.innerHTML, 'ue');
+    const bold = component.shadowRoot!.querySelector('b');
+    assert.include(bold!.innerHTML, 'aVal');
+    const docEl = component.shadowRoot!.querySelector('#doc');
+    assert.include(docEl!.innerHTML, 'Docs about it');
   });
 
   it('matches any word in value or doc', async () => {
@@ -216,16 +219,16 @@ describe('chromedash-typeahead-item', () => {
         prefix="sEar"
       ></chromedash-typeahead-item>
     `);
-    const valueEl = component.shadowRoot.querySelector('#value');
-    assert.include(valueEl.innerHTML, 'a-');
-    assert.include(valueEl.innerHTML, 'sear');
-    assert.include(valueEl.innerHTML, 'ch-keyword-search');
-    const vBold = valueEl.querySelector('b');
-    assert.include(vBold.innerHTML, 'sear');
-    const docEl = component.shadowRoot.querySelector('#doc');
-    assert.include(docEl.innerHTML, 'Sear');
-    assert.include(docEl.innerHTML, 'ch within keyword');
-    const dBold = docEl.querySelector('b');
-    assert.include(dBold.innerHTML, 'Sear');
+    const valueEl = component.shadowRoot!.querySelector('#value');
+    assert.include(valueEl!.innerHTML, 'a-');
+    assert.include(valueEl!.innerHTML, 'sear');
+    assert.include(valueEl!.innerHTML, 'ch-keyword-search');
+    const vBold = valueEl!.querySelector('b');
+    assert.include(vBold!.innerHTML, 'sear');
+    const docEl = component.shadowRoot!.querySelector('#doc');
+    assert.include(docEl!.innerHTML, 'Sear');
+    assert.include(docEl!.innerHTML, 'ch within keyword');
+    const dBold = docEl!.querySelector('b');
+    assert.include(dBold!.innerHTML, 'Sear');
   });
 });
