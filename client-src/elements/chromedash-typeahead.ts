@@ -4,6 +4,7 @@ import {live} from 'lit/directives/live.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import SlDropdown from '@shoelace-style/shoelace/dist/components/dropdown/dropdown.js';
 import {customElement, property, state} from 'lit/decorators.js';
+import { SlInput } from '@shoelace-style/shoelace';
 
 /* This file consists of 3 classes that together implement a "typeahead"
    text field with autocomplete:
@@ -28,7 +29,7 @@ interface Candidate {
 @customElement('chromedash-typeahead')
 export class ChromedashTypeahead extends LitElement {
   slDropdownRef: Ref<SlDropdown> = createRef();
-  slInputRef: Ref<HTMLInputElement> = createRef();
+  slInputRef: Ref<SlInput> = createRef();
 
   @state()
   value = '';
@@ -79,7 +80,7 @@ export class ChromedashTypeahead extends LitElement {
     if (event) {
       event.stopPropagation();
     }
-    const slInput = this.slInputRef.value as HTMLInputElement;
+    const slInput = this.slInputRef.value!;
     this.value = slInput.value;
   }
 
@@ -92,7 +93,7 @@ export class ChromedashTypeahead extends LitElement {
   }
 
   findPrefix() {
-    const inputEl = this.slInputRef.value;
+    const inputEl = this.slInputRef.value?.input;
     if (!inputEl) return;
     const wholeStr = inputEl.value;
     const caret = inputEl.selectionStart;
@@ -122,7 +123,7 @@ export class ChromedashTypeahead extends LitElement {
 
   async handleCandidateSelected(e) {
     const candidateValue = e.detail.item.value;
-    const inputEl = this.slInputRef.value;
+    const inputEl = this.slInputRef.value?.renderRoot.querySelector('input');
     const wholeStr = inputEl!.value;
     // Don't add a space after the completed value: let the user type it.
     const newWholeStr =
