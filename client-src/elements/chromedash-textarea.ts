@@ -21,7 +21,12 @@ export class ChromedashTextarea extends SlTextarea {
   @property({type: Number})
   maxlength = 1400;
 
-  customCheckValidity(value: string) {
+  /**
+   * Checks whether the value conforms to custom validation constraints.
+   * @param {string} value
+   * @return {boolean} Return true if value is valid.
+   */
+  customCheckValidity(value: string): boolean {
     if (this.multiple) {
       if (this.chromedash_split_pattern && this.chromedash_single_pattern) {
         const items = value.split(new RegExp(this.chromedash_split_pattern));

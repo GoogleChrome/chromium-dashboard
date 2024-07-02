@@ -9,7 +9,7 @@ describe('chromedash-textarea', () => {
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashTextarea);
-    const textareaElement = component.shadowRoot!.querySelector('textarea');
+    const textareaElement = component.renderRoot.querySelector('textarea');
     assert.exists(textareaElement);
   });
 
