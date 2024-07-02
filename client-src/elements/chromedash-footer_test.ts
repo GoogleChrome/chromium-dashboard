@@ -9,7 +9,7 @@ describe('chromedash-footer', () => {
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashFooter);
-    const footer = component.shadowRoot!.querySelector('footer');
+    const footer = component.renderRoot.querySelector('footer');
     assert.exists(footer);
 
     const links = [

@@ -1,6 +1,6 @@
-import {LitElement, html, css} from 'lit';
-import {SHARED_STYLES} from '../css/shared-css.js';
+import {LitElement, css, html} from 'lit';
 import {customElement} from 'lit/decorators.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 
 @customElement('chromedash-footer')
 export class ChromedashFooter extends LitElement {
