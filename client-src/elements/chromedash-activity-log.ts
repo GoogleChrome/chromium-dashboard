@@ -72,11 +72,14 @@ export class ChromedashAmendment extends LitElement {
 customElements.define('chromedash-amendment', ChromedashAmendment);
 
 export interface User {
+  // TODO(markxiong0122): Move this interface near cs-client.js:getPermissions() after migration.
   can_create_feature: boolean;
   can_edit_all: boolean;
   can_comment: boolean;
   is_admin: boolean;
   email: string;
+  approvable_gate_types: number[];
+  editable_features: number[];
 }
 interface Activity {
   comment_id: number;

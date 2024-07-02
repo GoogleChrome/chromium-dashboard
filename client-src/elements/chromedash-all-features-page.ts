@@ -24,13 +24,7 @@ export class ChromedashAllFeaturesPage extends LitElement {
   @property({type: Boolean})
   showQuery = true;
   @property({type: Object})
-  user: User = {
-    can_create_feature: false,
-    can_edit_all: false,
-    is_admin: false,
-    email: '',
-    can_comment: false,
-  };
+  user!: User;
   @property({type: Number})
   selectedGateId = 0;
   @property({type: Object})
