@@ -1,6 +1,6 @@
 import {html, TemplateResult} from 'lit';
-import * as enums from './form-field-enums';
 import {Feature} from '../js-src/cs-client';
+import * as enums from './form-field-enums';
 
 interface FormattedFeature {
   category: number;
@@ -8,34 +8,34 @@ interface FormattedFeature {
   feature_type: number;
   intent_stage: number;
   accurate_as_of: boolean;
-  spec_link: string | null;
+  spec_link?: string;
   standard_maturity: number;
-  tag_review_status: number | null;
-  security_review_status: number | null;
-  privacy_review_status: number | null;
+  tag_review_status?: number;
+  security_review_status?: number;
+  privacy_review_status?: number;
   sample_links: string[];
   doc_links: string[];
   search_tags: string[];
-  blink_components: string | null;
-  bug_url: string | null;
-  devrel: string[] | null;
-  owner: string[] | null;
-  prefixed: boolean | null;
-  impl_status_chrome: string | null;
-  shipped_milestone: number | null;
-  shipped_android_milestone: number | null;
-  shipped_webview_milestone: number | null;
-  shipped_ios_milestone: number | null;
-  ff_views: number | null;
-  ff_views_link: string | null;
-  ff_views_notes: string | null;
-  safari_views: number | null;
-  safari_views_link: string | null;
-  safari_views_notes: string | null;
-  web_dev_views: number | null;
-  web_dev_views_link: string | null;
-  web_dev_views_notes: string | null;
-  other_views_notes: string | null;
+  blink_components?: string;
+  bug_url?: string;
+  devrel?: string[];
+  owner?: string[];
+  prefixed?: boolean;
+  impl_status_chrome?: string;
+  shipped_milestone?: number;
+  shipped_android_milestone?: number;
+  shipped_webview_milestone?: number;
+  shipped_ios_milestone?: number;
+  ff_views?: number;
+  ff_views_link?: string;
+  ff_views_notes?: string;
+  safari_views?: number;
+  safari_views_link?: string;
+  safari_views_notes?: string;
+  web_dev_views?: number;
+  web_dev_views_link?: string;
+  web_dev_views_notes?: string;
+  other_views_notes?: string | null;
   [key: string]: any; // Allow additional properties
 }
 
@@ -103,9 +103,8 @@ export function formatFeatureForEdit(feature: Feature): FormattedFeature {
     search_tags: feature.tags,
 
     // from feature.browsers.chrome
-    blink_components: feature.browsers.chrome.blink_components
-      ? feature.browsers.chrome.blink_components[0]
-      : null,
+    blink_components: feature.browsers.chrome.blink_components?.[0],
+
     bug_url: feature.browsers.chrome.bug,
     devrel: feature.browsers.chrome.devrel,
     owner: feature.browsers.chrome.owners,
@@ -117,40 +116,22 @@ export function formatFeatureForEdit(feature: Feature): FormattedFeature {
     shipped_ios_milestone: feature.browsers.chrome.ios,
 
     // from feature.browsers.ff
-    ff_views: feature.browsers.ff.view ? feature.browsers.ff.view.val : null,
-    ff_views_link: feature.browsers.ff.view
-      ? feature.browsers.ff.view.url
-      : null,
-    ff_views_notes: feature.browsers.ff.view
-      ? feature.browsers.ff.view.notes
-      : null,
+    ff_views: feature.browsers.ff.view?.val,
+    ff_views_link: feature.browsers.ff.view?.url,
+    ff_views_notes: feature.browsers.ff.view?.notes,
 
     // from feature.browsers.safari
-    safari_views: feature.browsers.safari.view
-      ? feature.browsers.safari.view.val
-      : null,
-    safari_views_link: feature.browsers.safari.view
-      ? feature.browsers.safari.view.url
-      : null,
-    safari_views_notes: feature.browsers.safari.view
-      ? feature.browsers.safari.view.notes
-      : null,
+    safari_views: feature.browsers.safari.view?.val,
+    safari_views_link: feature.browsers.safari.view?.url,
+    safari_views_notes: feature.browsers.safari.view?.notes,
 
     // from feature.browsers.webdev
-    web_dev_views: feature.browsers.webdev.view
-      ? feature.browsers.webdev.view.val
-      : null,
-    web_dev_views_link: feature.browsers.webdev.view
-      ? feature.browsers.webdev.view.url
-      : null,
-    web_dev_views_notes: feature.browsers.webdev.view
-      ? feature.browsers.webdev.view.notes
-      : null,
+    web_dev_views: feature.browsers.webdev.view?.val,
+    web_dev_views_link: feature.browsers.webdev.view?.url,
+    web_dev_views_notes: feature.browsers.webdev.view?.notes,
 
     // from feature.browsers.other
-    other_views_notes: feature.browsers.other.view
-      ? feature.browsers.other.view.notes
-      : null,
+    other_views_notes: feature.browsers.other.view?.notes,
   };
 
   COMMA_SEPARATED_FIELDS.map(field => {
