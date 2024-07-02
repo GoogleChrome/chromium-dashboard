@@ -125,8 +125,12 @@ describe('chromedash-form-field', () => {
             stage_type: STAGE_BLINK_ORIGIN_TRIAL,
             display_name: 'Display name',
           },
-          {id: 3, stage_type: STAGE_BLINK_SHIPPING},
-          {id: 4, stage_type: 9999, display_name: 'Not a stage type'},
+          {
+            id: 3,
+            stage_type: STAGE_BLINK_ORIGIN_TRIAL,
+          },
+          {id: 4, stage_type: STAGE_BLINK_SHIPPING},
+          {id: 5, stage_type: 9999, display_name: 'Not a stage type'},
         ],
       };
       const component = await fixture(html`
@@ -141,9 +145,9 @@ describe('chromedash-form-field', () => {
       ).map(option => ({text: option.textContent.trim(), value: option.value}));
       assert.deepEqual(optionValues, [
         {text: 'Identify the need', value: '1'},
-        {text: 'Display name', value: '2'},
-        {text: 'Prepare to ship', value: '3'},
-        {text: 'Not a stage type', value: '4'},
+        {text: 'Origin trial: Display name', value: '2'},
+        {text: 'Origin trial 2', value: '3'},
+        {text: 'Prepare to ship', value: '4'},
       ]);
     });
   });

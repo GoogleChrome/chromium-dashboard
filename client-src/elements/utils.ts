@@ -1,9 +1,9 @@
 // This file contains helper functions for our elements.
 
 import {html, nothing} from 'lit';
-import {Feature, FeatureLink} from '../js-src/cs-client.js';
+import {Feature, FeatureLink, StageDict} from '../js-src/cs-client.js';
 import {markupAutolinks} from './autolink.js';
-import {FORMS_BY_STAGE_TYPE} from './form-definition.js';
+import {FORMS_BY_STAGE_TYPE, FormattedFeature} from './form-definition.js';
 import {
   ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME,
   ENTERPRISE_IMPACT_DISPLAYNAME,
@@ -100,6 +100,37 @@ export function findFirstFeatureStage(intentStage, currentStage, fe) {
     }
   }
   return null;
+}
+
+/**
+ * Returns `stage`'s name, using either its `display_name` or a counter to disambiguate from other
+ * stage's of the same type within `feature`.
+ */
+export function unambiguousStageName(
+  stage: StageDict,
+  feature: Feature | FormattedFeature
+): string | undefined {
+  const processStageName = FORMS_BY_STAGE_TYPE[stage.stage_type]?.name;
+  if (!processStageName) {
+    console.error(
+      `Unexpected stage type ${stage.stage_type} in stage ${stage.id}.`
+    );
+    return undefined;
+  }
+  if (stage.display_name) {
+    return `${processStageName}: ${stage.display_name}`;
+  }
+
+  // Count the stages of the same type that appear before this one. This is O(n^2) when it's used to
+  // number every stage, but the total number of stages is generally <20.
+  const index = feature.stages
+    .filter(s => s.stage_type === stage.stage_type)
+    .findIndex(s => s.id === stage.id);
+  if (index > 0) {
+    return `${processStageName} ${index + 1}`;
+  }
+  // Ignore if the stage wasn't found.
+  return processStageName;
 }
 
 /* Get the value of a stage field using a form-specific name */
@@ -253,7 +284,7 @@ export function getFieldValueFromFeature(
   if (fieldName === 'active_stage_id' && value) {
     for (const stage of feature.stages) {
       if (stage.id === value) {
-        return stage.display_name ?? FORMS_BY_STAGE_TYPE[stage.stage_type].name;
+        return unambiguousStageName(stage, feature);
       }
     }
     return undefined;

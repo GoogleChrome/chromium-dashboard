@@ -21,6 +21,7 @@ import {
   VENDOR_VIEWS_GECKO,
   WEB_DEV_VIEWS,
 } from './form-field-enums';
+import {unambiguousStageName} from './utils';
 
 interface FieldAttrs {
   title?: string;
@@ -496,21 +497,14 @@ export const ALL_FIELDS: Record<string, Field> = {
   active_stage_id: {
     type: 'select',
     computedChoices(formattedFeature) {
-      return Object.fromEntries(
-        formattedFeature.stages?.flatMap(stage => {
-          const displayName =
-            stage.display_name ?? FORMS_BY_STAGE_TYPE[stage.stage_type]?.name;
-          if (!displayName) {
-            console.warn(
-              `Stage ${stage.id} in feature ${formattedFeature.id} has unrecognized stage type ` +
-                `${stage.stage_type}. To set this stage as the active one, you'll need to ` +
-                `edit the stage itself.`
-            );
-            return [];
-          }
-          return [[stage.id, [stage.id, displayName]]];
-        }) ?? []
-      );
+      const result: Record<string, [number, string]> = {};
+      for (const stage of formattedFeature.stages) {
+        const name = unambiguousStageName(stage, formattedFeature);
+        if (name) {
+          result[stage.id] = [stage.id, name];
+        }
+      }
+      return result;
     },
     label: 'Active stage',
     help_text: html`The active stage sets which stage opens by default in this
