@@ -1,10 +1,10 @@
-import {LitElement, css, html, nothing} from 'lit';
-import {ref, createRef, Ref} from 'lit/directives/ref.js';
+import {css, html, LitElement, nothing} from 'lit';
+import {customElement, property, state} from 'lit/decorators.js';
+import {createRef, ref, Ref} from 'lit/directives/ref.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
+import {User} from '../js-src/cs-client';
 import './chromedash-activity-log';
 import {showToastMessage} from './utils.js';
-import {property, state, customElement} from 'lit/decorators.js';
-import {User} from './chromedash-activity-log.js';
-import {SHARED_STYLES} from '../css/shared-css.js';
 
 @customElement('chromedash-activity-page')
 export class ChromedashActivityPage extends LitElement {
