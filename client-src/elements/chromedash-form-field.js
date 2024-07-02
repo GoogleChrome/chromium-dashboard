@@ -1,8 +1,8 @@
 import {LitElement, html, nothing} from 'lit';
-import {ALL_FIELDS} from './form-field-specs';
 import {ref} from 'lit/directives/ref.js';
 import './chromedash-textarea';
-import {showToastMessage, getFieldValueFromFeature} from './utils.js';
+import {ALL_FIELDS, resolveFieldForFeature} from './form-field-specs';
+import {getFieldValueFromFeature, showToastMessage} from './utils.js';
 
 export class ChromedashFormField extends LitElement {
   static get properties() {
@@ -12,6 +12,7 @@ export class ChromedashFormField extends LitElement {
       stageId: {type: Number},
       value: {type: String},
       fieldValues: {type: Array}, // All other field value objects in current form.
+      feature: {attribute: false}, // The rest of the feature being edited.
       disabled: {type: Boolean},
       checkboxLabel: {type: String}, // Optional override of default label.
       shouldFadeIn: {type: Boolean},
@@ -31,6 +32,8 @@ export class ChromedashFormField extends LitElement {
     this.value = '';
     this.initialValue = '';
     this.fieldValues = [];
+    /** @type {import('./form-definition').FormattedFeature} */
+    this.feature = {};
     this.checkboxLabel = '';
     this.disabled = false;
     this.shouldFadeIn = false;
@@ -56,7 +59,10 @@ export class ChromedashFormField extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this.fieldProps = ALL_FIELDS[this.name] || {};
+    this.fieldProps = resolveFieldForFeature(
+      ALL_FIELDS[this.name] || {},
+      this.feature
+    );
 
     // Register this form field component with the page component.
     const app = document.querySelector('chromedash-app');
