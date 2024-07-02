@@ -203,12 +203,15 @@ describe('chromedash-typeahead-item', () => {
       ></chromedash-typeahead-item>
     `);
     const valueEl = component.shadowRoot!.querySelector('#value');
-    assert.include(valueEl!.innerHTML, 'aVal');
-    assert.include(valueEl!.innerHTML, 'ue');
+    assert.exists(valueEl);
+    assert.include(valueEl.innerHTML, 'aVal');
+    assert.include(valueEl.innerHTML, 'ue');
     const bold = component.shadowRoot!.querySelector('b');
-    assert.include(bold!.innerHTML, 'aVal');
+    assert.exists(bold);
+    assert.include(bold.innerHTML, 'aVal');
     const docEl = component.shadowRoot!.querySelector('#doc');
-    assert.include(docEl!.innerHTML, 'Docs about it');
+    assert.exists(docEl);
+    assert.include(docEl.innerHTML, 'Docs about it');
   });
 
   it('matches any word in value or doc', async () => {
@@ -220,15 +223,19 @@ describe('chromedash-typeahead-item', () => {
       ></chromedash-typeahead-item>
     `);
     const valueEl = component.shadowRoot!.querySelector('#value');
-    assert.include(valueEl!.innerHTML, 'a-');
-    assert.include(valueEl!.innerHTML, 'sear');
-    assert.include(valueEl!.innerHTML, 'ch-keyword-search');
-    const vBold = valueEl!.querySelector('b');
-    assert.include(vBold!.innerHTML, 'sear');
+    assert.exists(valueEl);
+    assert.include(valueEl.innerHTML, 'a-');
+    assert.include(valueEl.innerHTML, 'sear');
+    assert.include(valueEl.innerHTML, 'ch-keyword-search');
+    const vBold = valueEl.querySelector('b');
+    assert.exists(vBold);
+    assert.include(vBold.innerHTML, 'sear');
     const docEl = component.shadowRoot!.querySelector('#doc');
-    assert.include(docEl!.innerHTML, 'Sear');
-    assert.include(docEl!.innerHTML, 'ch within keyword');
-    const dBold = docEl!.querySelector('b');
-    assert.include(dBold!.innerHTML, 'Sear');
+    assert.exists(docEl);
+    assert.include(docEl.innerHTML, 'Sear');
+    assert.include(docEl.innerHTML, 'ch within keyword');
+    const dBold = docEl.querySelector('b');
+    assert.exists(dBold);
+    assert.include(dBold.innerHTML, 'Sear');
   });
 });

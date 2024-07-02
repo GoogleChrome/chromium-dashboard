@@ -95,7 +95,7 @@ export class ChromedashTypeahead extends LitElement {
     const inputEl = this.slInputRef.value?.input;
     if (!inputEl) return;
     const wholeStr = inputEl.value;
-    const caret = inputEl.selectionStart;
+    const caret = inputEl.selectionStart || 0;
     if (caret != inputEl.selectionEnd) {
       // User has a range selected.
       this.prefix = null;
@@ -123,7 +123,8 @@ export class ChromedashTypeahead extends LitElement {
   async handleCandidateSelected(e) {
     const candidateValue = e.detail.item.value;
     const inputEl = this.slInputRef.value?.renderRoot.querySelector('input');
-    const wholeStr = inputEl!.value;
+    if (!inputEl) return;
+    const wholeStr = inputEl.value;
     // Don't add a space after the completed value: let the user type it.
     const newWholeStr =
       wholeStr.substring(0, this.chunkStart) +
@@ -137,14 +138,14 @@ export class ChromedashTypeahead extends LitElement {
 
     this.chunkStart = this.chunkStart + candidateValue.length;
     this.chunkEnd = this.chunkStart;
-    inputEl!.selectionStart = this.chunkStart;
-    inputEl!.selectionEnd = this.chunkEnd;
+    inputEl.selectionStart = this.chunkStart;
+    inputEl.selectionEnd = this.chunkEnd;
     // TODO(jrobbins): Don't set termWasCompleted if we offer a value.
     this.termWasCompleted = true;
     this.calcCandidates();
     // The user may have clicked a menu item, causing the sl-input to lose
     // keyboard focus.  So, focus on the sl-input again.
-    inputEl!.focus();
+    inputEl.focus();
   }
 
   // Check if the user is pressing Enter to send a query.  This is detected
@@ -152,9 +153,10 @@ export class ChromedashTypeahead extends LitElement {
   handleInputFieldKeyDown(event) {
     if (event.key === 'Enter') {
       const slDropdown = this.slDropdownRef.value;
+      if (!slDropdown) return;
       if (
-        !slDropdown!.open ||
-        !(slDropdown! as ChromedashTypeaheadDropdown).getCurrentItem()
+        !slDropdown.open ||
+        !(slDropdown as ChromedashTypeaheadDropdown).getCurrentItem()
       ) {
         this._fireEvent('sl-change', this);
         event.stopPropagation();
@@ -187,14 +189,15 @@ export class ChromedashTypeahead extends LitElement {
       this.shouldShowCandidate(c, this.prefix)
     );
     const slDropdown = this.slDropdownRef.value;
+    if (!slDropdown) return;
     if (
       this.candidates.length > 0 &&
       !this.wasDismissed &&
       !this.termWasCompleted
     ) {
-      slDropdown!.show();
+      slDropdown.show();
     } else {
-      slDropdown!.hide();
+      slDropdown.hide();
     }
   }
 
