@@ -3,7 +3,7 @@ import {showToastMessage} from './utils.js';
 import './chromedash-feature-table';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {customElement, property, queryAll, state} from 'lit/decorators.js';
-import {User} from './chromedash-activity-log.js';
+import {User} from '../js-src/cs-client.js';
 import {RawQuery} from './utils.js';
 
 @customElement('chromedash-all-features-page')

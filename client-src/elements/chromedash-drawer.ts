@@ -1,9 +1,9 @@
-import {LitElement, TemplateResult, css, html, nothing} from 'lit';
-import {SHARED_STYLES} from '../css/shared-css.js';
-import {IS_MOBILE, showToastMessage} from './utils';
-import {customElement, property, state} from 'lit/decorators.js';
-import {User} from './chromedash-activity-log.js';
 import {SlDrawer} from '@shoelace-style/shoelace';
+import {LitElement, TemplateResult, css, html, nothing} from 'lit';
+import {customElement, property, state} from 'lit/decorators.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
+import {User} from '../js-src/cs-client.js';
+import {IS_MOBILE, showToastMessage} from './utils';
 
 export const DRAWER_WIDTH_PX = 200;
 

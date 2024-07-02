@@ -272,6 +272,17 @@
  */
 
 /**
+ * @typedef {object} User
+ * @property {boolean} can_create_feature
+ * @property {boolean} can_edit_all
+ * @property {boolean} can_comment
+ * @property {boolean} is_admin
+ * @property {string} email
+ * @property {number[]} approvable_gate_types
+ * @property {number[]} editable_features
+ */
+
+/**
  * Generic Chrome Status Http Error.
  */
 class ChromeStatusHttpError extends Error {
