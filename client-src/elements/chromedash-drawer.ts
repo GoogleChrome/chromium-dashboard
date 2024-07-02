@@ -1,9 +1,13 @@
-import {LitElement, css, html, nothing} from 'lit';
+import {LitElement, TemplateResult, css, html, nothing} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {IS_MOBILE, showToastMessage} from './utils';
+import {customElement, property, state} from 'lit/decorators.js';
+import {User} from './chromedash-activity-log.js';
+import {SlDrawer} from '@shoelace-style/shoelace';
 
 export const DRAWER_WIDTH_PX = 200;
 
+@customElement('chromedash-drawer')
 export class ChromedashDrawer extends LitElement {
   static get styles() {
     return [
@@ -91,25 +95,18 @@ export class ChromedashDrawer extends LitElement {
     ];
   }
 
-  static get properties() {
-    return {
-      currentPage: {type: String},
-      devMode: {type: String},
-      googleSignInClientId: {type: String},
-      user: {type: Object},
-      loading: {type: Boolean},
-      defaultOpen: {type: Boolean},
-    };
-  }
-
-  constructor() {
-    super();
-    this.currentPage = '';
-    this.devMode = 'False';
-    (this.googleSignInClientId = ''), (this.user = {});
-    this.loading = false;
-    this.defaultOpen = false;
-  }
+  @property({type: String})
+  currentPage = '';
+  @property({type: String})
+  devMode = 'False';
+  @property({type: String})
+  googleSignInClientId = '';
+  @property({type: Boolean})
+  defaultOpen = false;
+  @state()
+  user!: User;
+  @state()
+  loading = false;
 
   connectedCallback() {
     super.connectedCallback();
@@ -177,13 +174,13 @@ export class ChromedashDrawer extends LitElement {
       fetch('/dev/mock_login', {method: 'POST'})
         .then(response => {
           if (!response.ok) {
-            throw new Error('Sign in failed! Response:', response);
+            throw new Error(`Sign in failed! Response: ${response.status}`);
           }
         })
         .then(() => {
           setTimeout(() => {
             const url = window.location.href.split('?')[0];
-            window.location = url;
+            window.location.href = url;
           }, 1000);
         })
         .catch(error => {
@@ -206,12 +203,12 @@ export class ChromedashDrawer extends LitElement {
       .then(() => {
         setTimeout(() => {
           const url = window.location.href.split('?')[0];
-          window.location = url;
+          window.location.href = url;
         }, 1000);
       })
       .catch(() => {
         console.error('Sign in failed, so signing out to allow retry');
-        signOut();
+        this.signOut();
       });
   }
 
@@ -238,7 +235,9 @@ export class ChromedashDrawer extends LitElement {
   }
 
   toggleDrawerActions() {
-    const drawer = this.shadowRoot.querySelector('.drawer-placement-start');
+    const drawer = this.shadowRoot!.querySelector(
+      '.drawer-placement-start'
+    ) as SlDrawer;
     if (drawer.open) {
       drawer.hide();
     } else {
@@ -254,7 +253,7 @@ export class ChromedashDrawer extends LitElement {
   }
 
   renderDrawer() {
-    let accountMenu = nothing;
+    let accountMenu: typeof nothing | TemplateResult = nothing;
     if (IS_MOBILE && !this.loading) {
       accountMenu = this.renderAccountMenu();
     }
@@ -357,5 +356,3 @@ export class ChromedashDrawer extends LitElement {
     return html` <nav>${this.renderDrawer()}</nav> `;
   }
 }
-
-customElements.define('chromedash-drawer', ChromedashDrawer);
