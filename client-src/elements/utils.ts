@@ -104,7 +104,7 @@ export function findFirstFeatureStage(intentStage, currentStage, fe) {
 
 /**
  * Returns `stage`'s name, using either its `display_name` or a counter to disambiguate from other
- * stage's of the same type within `feature`.
+ * stages of the same type within `feature`.
  */
 export function unambiguousStageName(
   stage: StageDict,

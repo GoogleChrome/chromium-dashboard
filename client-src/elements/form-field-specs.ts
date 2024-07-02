@@ -1,5 +1,5 @@
 import {html, TemplateResult} from 'lit';
-import {FormattedFeature, FORMS_BY_STAGE_TYPE} from './form-definition';
+import {FormattedFeature} from './form-definition.js';
 import {
   DT_MILESTONE_FIELDS,
   ENTERPRISE_FEATURE_CATEGORIES,
