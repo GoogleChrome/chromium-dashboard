@@ -156,6 +156,11 @@ export const QUERIABLE_FIELDS = [
     doc: 'WebView Origin Trial end',
   },
   {
+    name: 'rollout_milestone',
+    kind: MILESTONE_KIND,
+    doc: 'Stable rollout milestone',
+  },
+  {
     name: 'any_start_milestone',
     kind: MILESTONE_KIND,
     doc:
