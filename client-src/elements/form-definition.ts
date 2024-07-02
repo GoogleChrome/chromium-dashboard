@@ -35,7 +35,7 @@ interface FormattedFeature {
   web_dev_views?: number;
   web_dev_views_link?: string;
   web_dev_views_notes?: string;
-  other_views_notes?: string | null;
+  other_views_notes?: string;
   [key: string]: any; // Allow additional properties
 }
 
