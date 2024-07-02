@@ -10,12 +10,16 @@ import {FeatureLink} from '../js-src/cs-client';
  */
 @customElement('chromedash-vendor-views')
 export class ChromedashVendorViews extends LitElement {
+  /** URL of the evidence for this view.*/
   @property({type: String})
   href;
   @property({attribute: false})
   featureLinks: FeatureLink[] = [];
 
-  urlIsStandardsPosition(url: string) {
+  /**
+   * @param {string} url
+   */
+  urlIsStandardsPosition(url: string): boolean {
     return /github.com\/(mozilla|WebKit)\/standards-positions\/issues/.test(
       url
     );
