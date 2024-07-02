@@ -1,6 +1,6 @@
 import {LitElement, css, html} from 'lit';
-import {SHARED_STYLES} from '../css/shared-css.js';
 import {customElement, property} from 'lit/decorators.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 
 @customElement('chromedash-x-meter')
 class ChromedashXMeter extends LitElement {
