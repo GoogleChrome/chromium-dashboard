@@ -6,30 +6,39 @@ import './chromedash-color-status';
 
 import {FEATURE_CSS} from '../css/elements/chromedash-feature-css.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import {customElement, property, state} from 'lit/decorators.js';
+import {Feature} from '../js-src/cs-client.js';
 
 const MAX_STANDARDS_VAL = 5;
 const MAX_VENDOR_VIEW = 7;
 const MAX_WEBDEV_VIEW = 6;
 
+@customElement('chromedash-feature')
 class ChromedashFeature extends LitElement {
   static styles = FEATURE_CSS;
-
-  static get properties() {
-    return {
-      feature: {type: Object},
-      canEdit: {type: Boolean},
-      signedin: {type: Boolean},
-      open: {type: Boolean, reflect: true}, // Attribute used in the parent for styling
-      starred: {type: Boolean},
-      // Values used in the template
-      _isDeprecated: {attribute: false},
-      _hasDocLinks: {attribute: false},
-      _hasSampleLinks: {attribute: false},
-      _commentHtml: {attribute: false},
-      _crBugNumber: {attribute: false},
-      _newBugUrl: {attribute: false},
-    };
-  }
+  @property({type: Object})
+  feature!: Feature;
+  @property({type: Boolean})
+  canEdit;
+  @property({type: Boolean})
+  signedin;
+  @property({type: Boolean, reflect: true})
+  open;
+  @property({type: Boolean})
+  starred;
+  // Values used in the template
+  @state()
+  _isDeprecated;
+  @state()
+  _hasDocLinks;
+  @state()
+  _hasSampleLinks;
+  @state()
+  _commentHtml;
+  @state()
+  _crBugNumber;
+  @state()
+  _newBugUrl;
 
   firstUpdated() {
     this._initializeValues();
@@ -75,7 +84,7 @@ class ChromedashFeature extends LitElement {
     const url = 'https://bugs.chromium.org/p/chromium/issues/entry';
     const params = [
       `components=${
-        this.feature.browsers.chrome.blink_components[0] || 'Blink'
+        this.feature.browsers.chrome.blink_components?.[0] || 'Blink'
       }`,
     ];
     if (this._crBugNumber && this._getIsPreLaunch()) {
@@ -99,14 +108,14 @@ class ChromedashFeature extends LitElement {
       'On hold',
     ];
     return PRE_LAUNCH_STATUSES.includes(
-      this.feature.browsers.chrome.status.text
+      this.feature.browsers.chrome.status.text ?? ''
     );
   }
 
   _getIsDeprecated() {
     const DEPRECATED_STATUSES = ['Deprecated', 'No longer pursuing'];
     return DEPRECATED_STATUSES.includes(
-      this.feature.browsers.chrome.status.text
+      this.feature.browsers.chrome.status.text ?? ''
     );
   }
 
@@ -144,8 +153,8 @@ class ChromedashFeature extends LitElement {
       target.tagName == 'A' ||
       target.tagName == 'CHROMEDASH-MULTI-LINKS' ||
       e.composedPath()[0].nodeName === 'A' ||
-      textSelection.type === 'RANGE' ||
-      textSelection.toString()
+      textSelection?.type === 'RANGE' ||
+      textSelection?.toString()
     ) {
       return;
     }
@@ -466,15 +475,15 @@ class ChromedashFeature extends LitElement {
                 <h3>Consensus &amp; standardization</h3>
                 <div class="views">
                   <span
-                    title="${this.feature.browsers.ff.view.text}"
+                    title="${ifDefined(this.feature.browsers.ff.view?.text)}"
                     class="view tooltip"
                   >
                     <chromedash-color-status
                       class="bottom"
-                      .value="${this.feature.browsers.ff.view.val}"
+                      .value="${this.feature.browsers.ff.view?.val}"
                       .max="${MAX_VENDOR_VIEW}"
                     ></chromedash-color-status>
-                    ${this.feature.browsers.ff.view.url
+                    ${this.feature.browsers.ff.view?.url
                       ? html`
                           <a
                             href="${this.feature.browsers.ff.view.url}"
@@ -486,15 +495,17 @@ class ChromedashFeature extends LitElement {
                       : html`<span class="vendor-view ff-view"></span>`}
                   </span>
                   <span
-                    title="${this.feature.browsers.safari.view.text}"
+                    title="${ifDefined(
+                      this.feature.browsers.safari.view?.text
+                    )}"
                     class="view tooltip"
                   >
                     <chromedash-color-status
                       class="bottom"
-                      .value="${this.feature.browsers.safari.view.val}"
+                      .value="${this.feature.browsers.safari.view?.val}"
                       .max="${MAX_VENDOR_VIEW}"
                     ></chromedash-color-status>
-                    ${this.feature.browsers.safari.view.url
+                    ${this.feature.browsers.safari.view?.url
                       ? html`
                           <a
                             href="${this.feature.browsers.safari.view.url}"
@@ -507,18 +518,18 @@ class ChromedashFeature extends LitElement {
                   </span>
                   <span
                     title="Web developers: ${this.feature.browsers.webdev.view
-                      .text}"
+                      ?.text}"
                     class="view webdev-view tooltip"
                   >
                     <chromedash-color-status
                       class="bottom"
-                      .value="${this.feature.browsers.webdev.view.val}"
+                      .value="${this.feature.browsers.webdev.view?.val}"
                       .max="${MAX_WEBDEV_VIEW}"
                     ></chromedash-color-status>
                     <iron-icon icon="chromestatus:accessibility"></iron-icon>
                   </span>
                   <span
-                    title="${this.feature.standards.maturity.text}"
+                    title="${ifDefined(this.feature.standards.maturity.text)}"
                     class="standardization view"
                   >
                     <chromedash-color-status
@@ -611,23 +622,13 @@ class ChromedashFeature extends LitElement {
   }
 }
 
-customElements.define('chromedash-feature', ChromedashFeature);
-
+@customElement('chromedash-multi-links')
 class ChromedashMultiLinks extends LitElement {
   static styles = SHARED_STYLES;
-
-  static get properties() {
-    return {
-      title: {type: String}, // From parent
-      links: {type: Array}, // From parent
-    };
-  }
-
-  constructor() {
-    super();
-    this.title = 'Link';
-    this.links = [];
-  }
+  @property({type: String})
+  title = 'Link';
+  @property({type: Array})
+  links: string[] = [];
 
   render() {
     return html`
@@ -644,5 +645,3 @@ class ChromedashMultiLinks extends LitElement {
     `;
   }
 }
-
-customElements.define('chromedash-multi-links', ChromedashMultiLinks);
