@@ -311,7 +311,7 @@ export class ChromedashFormField extends LitElement {
         </sl-select>
       `;
     } else if (type === 'multiselect') {
-      const valueArray = (fieldValue as string).split(',');
+      const valueArray = fieldValue.split(',');
 
       fieldHTML = html`
         <sl-select
