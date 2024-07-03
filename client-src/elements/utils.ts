@@ -548,11 +548,3 @@ export function extensionMilestoneIsValid(value, currentMilestone) {
   // End milestone should not be in the past.
   return parseInt(currentMilestone) <= intValue;
 }
-
-export function getChromedashApp() {
-  const app = document.querySelector('chromedash-app') as ChromedashApp | null;
-  if (!app) {
-    throw new Error('ChromedashApp element not found');
-  }
-  return app;
-}
