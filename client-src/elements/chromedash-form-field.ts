@@ -176,7 +176,7 @@ export class ChromedashFormField extends LitElement {
     }
     // There should only be one now.
     const formFieldElement = formFieldElements[0];
-    const checkResult = {error: ''};
+    let checkResult;
     // For 'input' elements.
     if (formFieldElement?.setCustomValidity && formFieldElement.input) {
       formFieldElement.setCustomValidity(
