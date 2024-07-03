@@ -142,7 +142,10 @@ describe('chromedash-form-field', () => {
       assert.instanceOf(component, ChromedashFormField);
       const optionValues = Array.from(
         component.renderRoot.querySelectorAll('sl-option')
-      ).map(option => ({text: option.textContent!.trim(), value: option.value}));
+      ).map(option => ({
+        text: option.textContent!.trim(),
+        value: option.value,
+      }));
       assert.deepEqual(optionValues, [
         {text: 'Identify the need', value: '1'},
         {text: 'Origin trial: Display name', value: '2'},

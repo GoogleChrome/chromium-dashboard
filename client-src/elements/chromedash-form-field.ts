@@ -8,7 +8,7 @@ import './chromedash-textarea';
 import {ALL_FIELDS, resolveFieldForFeature} from './form-field-specs';
 import {getFieldValueFromFeature, showToastMessage} from './utils.js';
 import {Feature} from '../js-src/cs-client';
-import { FormattedFeature } from './form-definition';
+import {FormattedFeature} from './form-definition';
 
 interface FieldValues {
   feature: Feature;
