@@ -19,15 +19,15 @@ class ChromedashFeaturelist extends LitElement {
   @property({type: Array})
   editableFeatures!: Feature[];
   @property({type: Object})
-  metadataEl = document.querySelector('chromedash-metadata'); // The metadata component element. Directly edited in template/features.html
+  metadataEl; // The metadata component element. Directly edited in template/features.html
   @property({attribute: false})
-  _onFeatureToggledBound = this._onFeatureToggled.bind(this);
+  _onFeatureToggledBound;
   @property({attribute: false})
-  _onStarToggledBound = this._onStarToggled.bind(this);
+  _onStarToggledBound;
   @state()
   features!: Feature[]; // Directly edited and accessed in template/features.html
   @state()
-  searchEl!: HTMLInputElement; // The search input element. Directly edited in template/features.html
+  searchEl; // The search input element. Directly edited in template/features.html
   @state()
   filtered!: Feature[];
   @state()
@@ -39,17 +39,18 @@ class ChromedashFeaturelist extends LitElement {
   @state()
   _hasScrolledByUser = false; // Used to set the app header state.
   @state()
-  _featuresUnveilMetric = new Metric('features_unveil').start();
+  _featuresUnveilMetric = new Metric('features_unveil');
   @state()
-  _featuresFetchMetric = new Metric('features_loaded').start();
+  _featuresFetchMetric = new Metric('features_loaded');
 
-  constructor() {
-    super();
-    this._loadData();
-  }
   connectedCallback() {
     super.connectedCallback();
-    this.searchEl = document.querySelector('.search input')!;
+    this.searchEl = document.querySelector('.search input');
+    this.metadataEl = document.querySelector('chromedash-metadata');
+    this._featuresFetchMetric.start();
+    this._featuresUnveilMetric.start();
+    this._onFeatureToggledBound = this._onFeatureToggled.bind(this);
+    this._onStarToggledBound = this._onStarToggled.bind(this);
     this._loadData();
   }
 
