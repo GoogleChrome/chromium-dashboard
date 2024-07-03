@@ -10,7 +10,7 @@ const VOCABULARY = QUERIABLE_FIELDS.map(qf => {
   return {name: qf.name + '=', doc: qf.doc};
 });
 
-@customElement('chromedash-typeahead')
+@customElement('chromedash-feature-filter')
 class ChromedashFeatureFilter extends LitElement {
   typeaheadRef = createRef<ChromedashTypeahead>();
 
