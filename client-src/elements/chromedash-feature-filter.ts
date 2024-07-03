@@ -12,7 +12,7 @@ const VOCABULARY = QUERIABLE_FIELDS.map(qf => {
 
 @customElement('chromedash-typeahead')
 class ChromedashFeatureFilter extends LitElement {
-  typeaheadRef: Ref<ChromedashTypeahead> = createRef();
+  typeaheadRef = createRef<ChromedashTypeahead>();
 
   @property({type: String})
   query = '';
