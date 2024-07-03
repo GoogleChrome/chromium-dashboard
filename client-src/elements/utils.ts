@@ -12,6 +12,7 @@ import {
   ENTERPRISE_IMPACT_DISPLAYNAME,
 } from './form-field-enums';
 import {FeatureLink} from '../js-src/cs-client.js';
+import {ChromedashApp} from './chromedash-app.js';
 
 let toastEl;
 
@@ -547,3 +548,27 @@ export function extensionMilestoneIsValid(value, currentMilestone) {
   // End milestone should not be in the past.
   return parseInt(currentMilestone) <= intValue;
 }
+
+/**
+ * 
+ * @returns {Promise<ChromedashApp>}
+ */
+export async function getChromedashApp(): Promise<ChromedashApp> {
+    let app = document.querySelector('chromedash-app') as ChromedashApp | null;
+    if (!app) {
+      await new Promise<void>(resolve => {
+        const observer = new MutationObserver(() => {
+          app = document.querySelector('chromedash-app') as ChromedashApp | null;
+          if (app) {
+            observer.disconnect();
+            resolve();
+          }
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+      });
+    }
+    if (!app) {
+      throw new Error('ChromedashApp element not found');
+    }
+    return app;
+  }
