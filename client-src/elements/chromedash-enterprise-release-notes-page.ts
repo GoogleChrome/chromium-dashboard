@@ -1,5 +1,7 @@
-import {html, LitElement, css, TemplateResult} from 'lit';
+import {css, html, LitElement, TemplateResult} from 'lit';
+import {customElement, state} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import {Feature} from '../js-src/cs-client.js';
 import {
   ENTERPRISE_FEATURE_CATEGORIES,
   PLATFORM_CATEGORIES,
@@ -8,35 +10,13 @@ import {
   STAGE_TYPES_SHIPPING,
 } from './form-field-enums.js';
 import {
-  showToastMessage,
-  updateURLParams,
   parseRawQuery,
   renderHTMLIf,
+  showToastMessage,
+  updateURLParams,
 } from './utils.js';
-import {customElement, state} from 'lit/decorators.js';
 
 const milestoneQueryParamKey = 'milestone';
-
-export interface Feature {
-  id: number;
-  name: string;
-  summary: string;
-  editors: string[];
-  enterprise_feature_categories: string[];
-  new_crbug_url: string;
-  stages: {
-    id: number;
-    stage_type: number;
-    rollout_milestone?: number;
-    rollout_details?: string;
-    rollout_impact: number;
-    rollout_platforms?: string[];
-  }[];
-  browsers: {chrome: {owners: string[]}};
-  updated: {when: string};
-  screenshot_links: string[];
-  first_enterprise_notification_milestone?: string;
-}
 
 interface Channels {
   stable: {
@@ -46,7 +26,6 @@ interface Channels {
 
 @customElement('chromedash-enterprise-release-notes-page')
 export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
-  //TODO(markxiong0122): add types for the following properties, import Feature from chromedash-feature after migration
   @state()
   currentFeatures: Feature[] = [];
   @state()
@@ -166,8 +145,11 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       stage.ios_last,
       stage.webview_last,
     ];
-    const milestoneAndPlatformsMap = milestones.reduce(
-      (acc, milestone) => ({...acc, [milestone]: new Set()}),
+    const milestoneAndPlatformsMap: Record<
+      number,
+      Set<number>
+    > = milestones.reduce(
+      (acc, milestone) => ({...acc, [milestone]: new Set<number>()}),
       {}
     );
 
@@ -227,7 +209,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       ([milestone, platforms]) => ({
         stage_type: STAGE_ENT_ROLLOUT,
         rollout_milestone: Number(milestone),
-        rollout_platforms: Array.from(platforms as Set<string>),
+        rollout_platforms: Array.from(platforms),
         rollout_impact: 1,
       })
     );
@@ -276,13 +258,13 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         const impactA = Math.max(
           ...a.stages
             .filter(s => s.rollout_milestone === this.selectedMilestone)
-            .map(s => s.rollout_impact)
+            .map(s => s.rollout_impact ?? 0)
         );
         // Highest impact of the stages from feature B.
         const impactB = Math.max(
           ...b.stages
             .filter(s => s.rollout_milestone === this.selectedMilestone)
-            .map(s => s.rollout_impact)
+            .map(s => s.rollout_impact ?? 0)
         );
         return impactB - impactA;
       });
