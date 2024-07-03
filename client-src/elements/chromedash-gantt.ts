@@ -14,7 +14,7 @@ class ChromedashGantt extends LitElement {
   feature!: Feature;
   @property({type: Number})
   stableMilestone;
-  
+
   connectedCallback() {
     this.stableMilestone = window.csClient
       .getChannels()
