@@ -153,8 +153,8 @@ class ChromedashFeature extends LitElement {
       target.tagName == 'A' ||
       target.tagName == 'CHROMEDASH-MULTI-LINKS' ||
       e.composedPath()[0].nodeName === 'A' ||
-      (textSelection &&
-        (textSelection.type === 'RANGE' || textSelection.toString()))
+      textSelection?.type === 'RANGE' ||
+      textSelection?.toString())
     ) {
       return;
     }
