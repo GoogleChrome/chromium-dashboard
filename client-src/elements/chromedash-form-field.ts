@@ -5,9 +5,10 @@ import {ref} from 'lit/directives/ref.js';
 
 import {ChromedashApp} from './chromedash-app';
 import './chromedash-textarea';
-import {ALL_FIELDS} from './form-field-specs';
+import {ALL_FIELDS, resolveFieldForFeature} from './form-field-specs';
 import {getFieldValueFromFeature, showToastMessage} from './utils.js';
 import {Feature} from '../js-src/cs-client';
+import { FormattedFeature } from './form-definition';
 
 interface FieldValues {
   feature: Feature;
@@ -21,6 +22,8 @@ export class ChromedashFormField extends LitElement {
   index = -1;
   @property({type: Object}) // All other field value objects in current form.
   fieldValues!: FieldValues;
+  @property({type: Object, attribute: false})
+  feature!: FormattedFeature;
   @property({type: String}) // Optional override of default label.
   checkboxLabel = '';
   @property({type: Boolean})
@@ -61,7 +64,11 @@ export class ChromedashFormField extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this.fieldProps = ALL_FIELDS[this.name] || {};
+    this.fieldProps = resolveFieldForFeature(
+      ALL_FIELDS[this.name] || {},
+      this.feature
+    );
+
     // Register this form field component with the page component.
     const app: ChromedashApp | null = document.querySelector('chromedash-app');
     if (app?.pageComponent) {
