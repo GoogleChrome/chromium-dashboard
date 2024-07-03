@@ -16,7 +16,7 @@ class ChromedashGantt extends LitElement {
   stableMilestone;
 
   connectedCallback() {
-    this.stableMilestone = window.csClient
+    window.csClient
       .getChannels()
       .then(channels => (this.stableMilestone = channels['stable'].version));
   }
