@@ -1,26 +1,27 @@
 import {html, TemplateResult} from 'lit';
+import {FormattedFeature} from './form-definition.js';
 import {
+  DT_MILESTONE_FIELDS,
   ENTERPRISE_FEATURE_CATEGORIES,
+  ENTERPRISE_IMPACT,
   FEATURE_CATEGORIES,
   FEATURE_TYPES,
   FEATURE_TYPES_WITHOUT_ENTERPRISE,
   IMPLEMENTATION_STATUS,
-  PLATFORM_CATEGORIES,
-  ROLLOUT_IMPACT,
-  STANDARD_MATURITY_CHOICES,
-  REVIEW_STATUS_CHOICES,
-  VENDOR_VIEWS_COMMON,
-  VENDOR_VIEWS_GECKO,
-  WEB_DEV_VIEWS,
-  DT_MILESTONE_FIELDS,
   OT_MILESTONE_START_FIELDS,
+  PLATFORM_CATEGORIES,
+  REVIEW_STATUS_CHOICES,
+  ROLLOUT_IMPACT,
   SHIPPED_MILESTONE_FIELDS,
   STAGE_TYPES_DEV_TRIAL,
   STAGE_TYPES_ORIGIN_TRIAL,
   STAGE_TYPES_SHIPPING,
-  ENTERPRISE_IMPACT,
+  STANDARD_MATURITY_CHOICES,
+  VENDOR_VIEWS_COMMON,
+  VENDOR_VIEWS_GECKO,
+  WEB_DEV_VIEWS,
 } from './form-field-enums';
-import {error} from 'console';
+import {unambiguousStageName} from './utils';
 
 interface FieldAttrs {
   title?: string;
@@ -46,11 +47,9 @@ interface MilestoneRange {
   error?: string;
 }
 
-type FeatureName = string;
-
-interface Field {
+interface ResolvedField {
   type?: string;
-  name?: FeatureName;
+  name?: keyof FormattedFeature;
   attrs?: FieldAttrs;
   required?: boolean;
   label?: string;
@@ -66,6 +65,25 @@ interface Field {
     | Record<string, [number, string]>;
   displayLabel?: string;
   disabled?: boolean;
+}
+
+interface Field extends ResolvedField {
+  computedChoices?: (
+    feature: FormattedFeature
+  ) => Record<string, [number, string]>;
+}
+
+/** Computes values for any field property that depends on other parts of the feature's state.
+ */
+export function resolveFieldForFeature(
+  field: Field,
+  feature: FormattedFeature
+): ResolvedField {
+  const result: ResolvedField = {...field};
+  if (field.computedChoices) {
+    result.choices = field.computedChoices(feature);
+  }
+  return result;
 }
 
 /* Patterns from https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch04s01.html
@@ -474,6 +492,24 @@ export const ALL_FIELDS: Record<string, Field> = {
         field needs to be modified, a new feature would need to be created.
       </p>`,
     check: (_value, getFieldValue) => checkFeatureNameAndType(getFieldValue),
+  },
+
+  active_stage_id: {
+    type: 'select',
+    computedChoices(formattedFeature) {
+      const result: Record<string, [number, string]> = {};
+      for (const stage of formattedFeature.stages) {
+        const name = unambiguousStageName(stage, formattedFeature);
+        if (name) {
+          result[stage.id] = [stage.id, name];
+        }
+      }
+      return result;
+    },
+    label: 'Active stage',
+    help_text: html`The active stage sets which stage opens by default in this
+    feature's page. This is equivalent to editing the named stage and checking
+    the "Set to this stage" checkbox.`,
   },
 
   set_stage: {
