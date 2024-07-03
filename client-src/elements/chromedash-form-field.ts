@@ -58,10 +58,6 @@ export class ChromedashFormField extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     this.fieldProps = ALL_FIELDS[this.name] || {};
-    if (this.fieldProps.type === 'checkbox') {
-    console.log("Hello from chromedash-form-field w checkbox");
-    console.log(this.fieldProps);
-    }
     // Register this form field component with the page component.
     const app: ChromedashApp | null = document.querySelector('chromedash-app');
     if (app?.pageComponent) {
