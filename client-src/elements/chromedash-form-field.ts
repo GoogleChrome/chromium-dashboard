@@ -2,18 +2,11 @@ import {SlDetails, SlIconButton, SlInput} from '@shoelace-style/shoelace';
 import {LitElement, TemplateResult, html, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {ref} from 'lit/directives/ref.js';
-import {Feature} from '../js-src/cs-client';
+
 import {ChromedashApp} from './chromedash-app';
 import './chromedash-textarea';
-import {ALL_FIELDS, Field} from './form-field-specs';
+import {ALL_FIELDS} from './form-field-specs';
 import {getFieldValueFromFeature, showToastMessage} from './utils.js';
-
-interface FormFieldValues {
-  name: string;
-  value: any;
-  stageId?: number;
-  feature?: Feature;
-}
 
 @customElement('chromedash-form-field')
 export class ChromedashFormField extends LitElement {
@@ -21,8 +14,8 @@ export class ChromedashFormField extends LitElement {
   name = '';
   @property({type: Number}) // Represents which field this is on the form.
   index = -1;
-  @property({type: Object}) // All other field value objects in current form.
-  fieldValues!: FormFieldValues;
+  @property({type: Array}) // All other field value objects in current form.
+  fieldValues: any;
   @property({type: String}) // Optional override of default label.
   checkboxLabel = '';
   @property({type: Boolean})
@@ -47,7 +40,8 @@ export class ChromedashFormField extends LitElement {
   @state()
   checkMessage: TemplateResult | string = '';
   @state()
-  fieldProps!: Field;
+  fieldProps;
+
 
   getValue() {
     // value can be a js or python boolean value converted to a string
@@ -64,7 +58,10 @@ export class ChromedashFormField extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     this.fieldProps = ALL_FIELDS[this.name] || {};
-
+    if (this.fieldProps.type === 'checkbox') {
+    console.log("Hello from chromedash-form-field w checkbox");
+    console.log(this.fieldProps);
+    }
     // Register this form field component with the page component.
     const app: ChromedashApp | null = document.querySelector('chromedash-app');
     if (app?.pageComponent) {
