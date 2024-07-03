@@ -48,7 +48,7 @@ interface MilestoneRange {
 
 type FeatureName = string;
 
-interface Field {
+export interface Field {
   type?: string;
   name?: FeatureName;
   attrs?: FieldAttrs;
