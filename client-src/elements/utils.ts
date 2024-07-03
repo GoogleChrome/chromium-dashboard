@@ -11,7 +11,7 @@ import {
   ROLLOUT_IMPACT_DISPLAYNAME,
   ENTERPRISE_IMPACT_DISPLAYNAME,
 } from './form-field-enums';
-import {FeatureLink} from '../js-src/types.js';
+import {FeatureLink} from '../js-src/cs-client.js';
 
 let toastEl;
 

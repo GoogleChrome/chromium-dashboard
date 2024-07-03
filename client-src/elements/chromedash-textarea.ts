@@ -1,33 +1,31 @@
 import SlTextarea from '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
+import {customElement, property} from 'lit/decorators.js';
 
+@customElement('chromedash-textarea')
 export class ChromedashTextarea extends SlTextarea {
-  static get properties() {
-    return {
-      ...super.properties,
-      multiple: {type: Boolean},
-      pattern: {type: String},
-      chromedash_single_pattern: {type: String},
-      chromedash_split_pattern: {type: String},
-    };
-  }
-
-  constructor() {
-    super();
-    this.cols = 50;
-    this.rows = 10;
-
-    // This is the longest string that a cloud ndb StringProperty seems to accept.
-    // Fields that accept a URL list can be longer, provided that each individual
-    // URL is no more than this length.
-    this.maxlength = 1400;
-  }
+  @property({type: Boolean})
+  multiple;
+  @property({type: String})
+  pattern;
+  @property({type: String})
+  chromedash_single_pattern;
+  @property({type: String})
+  chromedash_split_pattern;
+  @property({type: Number})
+  cols = 50;
+  @property({type: Number})
+  rows = 10;
+  // This is the longest string that a cloud ndb StringProperty seems to accept.
+  // Fields that accept a URL list can be longer, provided that each individual
+  // URL is no more than this length.
+  @property({type: Number})
+  maxlength = 1400;
 
   /**
    * Checks whether the value conforms to custom validation constraints.
-   * @param {string} value
-   * @return {boolean} Return true if value is valid.
+   * @return true if value is valid.
    */
-  customCheckValidity(value) {
+  customCheckValidity(value: string): boolean {
     if (this.multiple) {
       if (this.chromedash_split_pattern && this.chromedash_single_pattern) {
         const items = value.split(new RegExp(this.chromedash_split_pattern));
@@ -78,5 +76,3 @@ export class ChromedashTextarea extends SlTextarea {
     this.validate();
   }
 }
-
-customElements.define('chromedash-textarea', ChromedashTextarea);
