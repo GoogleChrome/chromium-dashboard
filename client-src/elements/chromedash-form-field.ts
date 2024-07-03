@@ -6,7 +6,12 @@ import {ref} from 'lit/directives/ref.js';
 import {ChromedashApp} from './chromedash-app';
 import './chromedash-textarea';
 import {ALL_FIELDS} from './form-field-specs';
-import {getChromedashApp, getFieldValueFromFeature, showToastMessage} from './utils.js';
+import {getFieldValueFromFeature, showToastMessage} from './utils.js';
+import {Feature} from '../js-src/cs-client';
+
+interface FieldValues {
+  feature: Feature;
+}
 
 @customElement('chromedash-form-field')
 export class ChromedashFormField extends LitElement {
@@ -14,8 +19,8 @@ export class ChromedashFormField extends LitElement {
   name = '';
   @property({type: Number}) // Represents which field this is on the form.
   index = -1;
-  @property({type: Array}) // All other field value objects in current form.
-  fieldValues: any;
+  @property({type: Object}) // All other field value objects in current form.
+  fieldValues!: FieldValues;
   @property({type: String}) // Optional override of default label.
   checkboxLabel = '';
   @property({type: Boolean})
@@ -28,9 +33,9 @@ export class ChromedashFormField extends LitElement {
   stageId;
   @property({type: Number})
   stageType;
-
-  @state()
+  @property({type: String})
   value = '';
+
   @state()
   initialValue = '';
   @state()
@@ -41,7 +46,6 @@ export class ChromedashFormField extends LitElement {
   checkMessage: TemplateResult | string = '';
   @state()
   fieldProps;
-
 
   getValue() {
     // value can be a js or python boolean value converted to a string
@@ -59,16 +63,10 @@ export class ChromedashFormField extends LitElement {
     super.connectedCallback();
     this.fieldProps = ALL_FIELDS[this.name] || {};
     // Register this form field component with the page component.
-    (async () => {
-        try {
-          const app = await getChromedashApp();
-          if (app?.pageComponent) {
-            app.pageComponent.allFormFieldComponentsList.push(this);
-          }
-        } catch (error) {
-          console.error(error);
-        }
-      })();
+    const app: ChromedashApp | null = document.querySelector('chromedash-app');
+    if (app?.pageComponent) {
+      app.pageComponent.allFormFieldComponentsList.push(this);
+    }
 
     if (this.name === 'blink_components') {
       // get the choice values from API when the field is blink component select field
@@ -150,34 +148,30 @@ export class ChromedashFormField extends LitElement {
     };
     this.dispatchEvent(new CustomEvent('form-field-update', eventOptions));
 
-    (async () => {
-        try {
-          const app = await getChromedashApp();
-          if (app?.pageComponent) {
-            app.pageComponent.allFormFieldComponentsList.push(this);
-          }
-          else {
-            // Do the semantic check for unit testing.  Only works for isolated field.
-            this.doSemanticCheck();
-          }
-        } catch (error) {
-          console.error(error);
-        }
-      })();
+    // Run semantic checks on entire page.  Must be after above dispatch.
+    const app: ChromedashApp | null = document.querySelector('chromedash-app');
+    if (app?.pageComponent) {
+      app.pageComponent.allFormFieldComponentsList.forEach(formFieldComponent =>
+        formFieldComponent.doSemanticCheck()
+      );
+    } else {
+      // Do the semantic check for unit testing.  Only works for isolated field.
+      this.doSemanticCheck();
     }
+  }
 
   setupSemanticCheck() {
     // Find the form-field component in order to set custom validity.
     let fieldSelector = `#id_${this.name}`;
     let formFieldElements =
-      this.renderRoot.querySelectorAll(fieldSelector);
+      this.renderRoot.querySelectorAll<SlInput>(fieldSelector);
     if (formFieldElements.length > 1) {
       if (this.stageId) {
         // The id is not unique for fields in multiple stages, e.g. origin trials.
         // So let's try qualifying the selector with this.stageId in a container.
         fieldSelector = `[stageId="${this.stageId} #id_${this.name}"]`;
         formFieldElements =
-          this.renderRoot.querySelectorAll(fieldSelector);
+          this.renderRoot.querySelectorAll<SlInput>(fieldSelector);
       } else {
         throw new Error(
           `Name of field, "${this.name}", is not unique and no stage Id was provided.`
@@ -185,7 +179,7 @@ export class ChromedashFormField extends LitElement {
       }
     }
     // There should only be one now.
-    const formFieldElement: any = formFieldElements[0];
+    const formFieldElement = formFieldElements[0];
     let checkResult;
     // For 'input' elements.
     if (formFieldElement?.setCustomValidity && formFieldElement.input) {
