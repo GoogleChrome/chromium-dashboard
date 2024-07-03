@@ -6,10 +6,6 @@ import './chromedash-toast';
 import {ChromeStatusClient} from '../js-src/cs-client';
 import sinon from 'sinon';
 
-interface QueryParams {
-  milestone?: number;
-}
-
 function normalizedTextContent(element) {
   return element.textContent
     .replace(/^\s+/, '')
@@ -260,17 +256,17 @@ describe('chromedash-enterprise-release-notes-page', () => {
       <chromedash-enterprise-release-notes-page></chromedash-enterprise-release-notes-page>`);
     assert.exists(component);
     assert.instanceOf(component, ChromedashEnterpriseReleaseNotesPage);
-    assert.equal((parseRawQuery(window.location.search) as QueryParams).milestone, 100);
+    assert.equal((parseRawQuery(window.location.search)).milestone, '100');
 
     // Select a future milestone
     component.selectedMilestone = 110;
     await nextFrame();
-    assert.equal((parseRawQuery(window.location.search) as QueryParams).milestone, 110);
+    assert.equal((parseRawQuery(window.location.search)).milestone, '110');
 
     // Select a previous milestone
     component.selectedMilestone = 90;
     await nextFrame();
-    assert.equal((parseRawQuery(window.location.search) as QueryParams).milestone, 90);
+    assert.equal((parseRawQuery(window.location.search)).milestone, '90');
   });
 
   it('renders with no data', async () => {
@@ -284,8 +280,8 @@ describe('chromedash-enterprise-release-notes-page', () => {
 
     // invalid feature requests would trigger the toast to show message
     const toastEl = document.querySelector('chromedash-toast');
-    const toastMsgSpan = toastEl!.shadowRoot!.querySelector('span#msg');
-    assert.include(toastMsgSpan!.innerHTML,
+    const toastMsgSpan = toastEl?.shadowRoot?.querySelector('span#msg');
+    assert.include(toastMsgSpan?.innerHTML,
       'Some errors occurred. Please refresh the page or try again later.');
   });
 
@@ -295,7 +291,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
     assert.exists(component);
     assert.instanceOf(component, ChromedashEnterpriseReleaseNotesPage);
 
-    const releaseNotesSummary = component.shadowRoot!.querySelector('#release-notes-summary');
+    const releaseNotesSummary = component.renderRoot.querySelector('#release-notes-summary');
     const children = Array.from(releaseNotesSummary!.querySelectorAll('tr > *'));
 
     // Validate first headers
@@ -503,7 +499,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
     await nextFrame();
 
     // Tests summary
-    const releaseNotesSummary = component.shadowRoot!.querySelector('#release-notes-summary');
+    const releaseNotesSummary = component.renderRoot.querySelector('#release-notes-summary');
     const children = Array.from(releaseNotesSummary!.querySelectorAll('tr > *'));
 
     // Validate first headers
@@ -525,7 +521,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
     assert.equal(children[9].textContent, 'Nothing');
 
     // Tests release notes
-    const releaseNotes = Array.from(component.shadowRoot!.querySelectorAll('.note-section'));
+    const releaseNotes = Array.from(component.renderRoot.querySelectorAll('.note-section'));
     assert.equal(2, releaseNotes.length);
 
     // Test Chrome browser updates

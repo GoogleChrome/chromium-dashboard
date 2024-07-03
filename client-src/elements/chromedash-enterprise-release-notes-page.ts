@@ -306,7 +306,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         const queryParams = parseRawQuery(window.location.search);
         if (milestoneQueryParamKey in queryParams) {
           this.selectedMilestone = parseInt(
-            queryParams[milestoneQueryParamKey] as string,
+            queryParams[milestoneQueryParamKey],
             10
           );
         } else {
