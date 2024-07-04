@@ -35,10 +35,22 @@ const GATE_STATE_TO_ABBREV = {
   9: 'N/A?', // INTERNAL_REVIEW
 };
 
-export interface Gate {
+interface GateDict {
   id: number;
-  state: number;
+  feature_id: number;
+  stage_id: number;
+  gate_type: number;
   team_name: string;
+  gate_name: string;
+  escalation_email?: string;
+  state: number;
+  requested_on?: string;
+  responded_on?: string;
+  assignee_emails: string[];
+  next_action?: string;
+  additional_review: boolean;
+  slo_initial_response: string;
+  slo_initial_response_took: string;
   slo_initial_response_remaining: number;
 }
 
@@ -49,7 +61,7 @@ class ChromedashGateChip extends LitElement {
   @property({type: Object})
   stage!: StageDict;
   @property({type: Object})
-  gate!: Gate;
+  gate!: GateDict;
   @property({type: Number})
   selectedGateId = 0;
 
