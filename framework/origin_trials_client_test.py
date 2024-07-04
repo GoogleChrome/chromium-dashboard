@@ -34,6 +34,10 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
         ot_feedback_submission_url='https://example.com/feedback',
         intent_thread_url='https://example.com/experiment',
         ot_description='OT description', ot_has_third_party_support=True,
+        ot_requires_approvals=True, ot_approval_buganizer_component=123456,
+        ot_approval_criteria_url='https://example.com/criteria',
+        ot_approval_group_email='somegroup@google.com',
+        ot_approval_buganizer_custom_field_id=111111,
         ot_is_deprecation_trial=True)
     self.ot_stage.put()
     self.mock_list_trials_json = {
@@ -226,6 +230,14 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
           'chromestatus_url': f'{settings.SITE_URL}feature/1',
           'allow_third_party_origins': True,
           'type': 'DEPRECATION',
+        },
+        'internal_registration_config': {
+          'allow_public_suffix_subdomains': True,
+          'approval_type': 'CUSTOM',
+          'approval_buganizer_component_id': 123456,
+          'approval_criteria_url': 'https://example.com/criteria',
+          'approval_group_email': 'somegroup@google.com',
+          'approval_buganizer_custom_field_id': 111111,
         }
       }
     )

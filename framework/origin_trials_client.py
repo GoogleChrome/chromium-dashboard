@@ -18,7 +18,7 @@ from google.auth.transport.requests import Request
 from dataclasses import asdict
 from datetime import datetime, timezone
 import logging
-from typing import Any
+from typing import Any, NotRequired, TypedDict
 import requests
 
 from framework import secrets
@@ -26,6 +26,35 @@ from framework import utils
 from internals.core_models import Stage
 from internals.data_types import OriginTrialInfo
 import settings
+
+
+class RequestTrial(TypedDict):
+  display_name: str
+  start_milestone: str
+  end_milestone: str
+  end_time: dict
+  description: str
+  documentation_url: str
+  feedback_url: str
+  intent_to_experiment_url: str
+  chromestatus_url: str
+  allow_third_party_origins: bool
+  type: str
+  origin_trial_feature_name: NotRequired[str]
+
+
+class InternalRegistrationConfig(TypedDict):
+  allow_public_suffix_subdomains: NotRequired[bool]
+  approval_type: NotRequired[str]
+  approval_buganizer_component_id: NotRequired[int]
+  approval_buganizer_custom_field_id: NotRequired[int]
+  approval_criteria_url: NotRequired[str]
+  approval_group_email: NotRequired[str]
+
+
+class CreateOriginTrialRequest(TypedDict):
+  trial: RequestTrial
+  internal_registration_config: InternalRegistrationConfig
 
 
 def get_trials_list() -> list[dict[str, Any]]:
@@ -117,7 +146,7 @@ def create_origin_trial(ot_stage: Stage) -> str | None:
   if key is None:
     return None
 
-  json = {
+  json: CreateOriginTrialRequest = {
     'trial': {
       'display_name': ot_stage.ot_display_name,
       'start_milestone': str(ot_stage.milestones.desktop_first),
@@ -133,10 +162,21 @@ def create_origin_trial(ot_stage: Stage) -> str | None:
       'allow_third_party_origins': ot_stage.ot_has_third_party_support,
       'type': ('DEPRECATION'
                 if ot_stage.ot_is_deprecation_trial else 'ORIGIN_TRIAL'),
-    }
+    },
+    'internal_registration_config': {},
   }
   if ot_stage.ot_chromium_trial_name:
     json['trial']['origin_trial_feature_name'] = ot_stage.ot_chromium_trial_name
+  if ot_stage.ot_require_approvals:
+    json['internal_registration_config'] = {
+      'approval_type': 'CUSTOM',
+      'approval_buganizer_component_id': ot_stage.ot_approval_buganizer_component,
+      'approval_criteria_url': ot_stage.ot_approval_criteria_url,
+      'approval_group_email': ot_stage.ot_approval_group_email,
+      'approval_buganizer_custom_field_id': ot_stage.ot_approval_buganizer_custom_field_id,
+    }
+  if ot_stage.ot_is_deprecation_trial:
+    json['internal_registration_config']['allow_public_suffix_subdomains'] = True
   access_token = _get_ot_access_token()
   headers = {'Authorization': f'Bearer {access_token}'}
   url = f'{settings.OT_API_URL}/v1/trials:setup'
