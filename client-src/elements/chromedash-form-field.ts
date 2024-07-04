@@ -44,7 +44,7 @@ export class ChromedashFormField extends LitElement {
   @state()
   loading = false;
   @state()
-  componentChoices; // just for the blink compon ent select field
+  componentChoices; // just for the blink component select field
   @state()
   checkMessage: TemplateResult | string = '';
   @state()
