@@ -7,11 +7,14 @@ import {ChromedashApp} from './chromedash-app';
 import './chromedash-textarea';
 import {ALL_FIELDS, resolveFieldForFeature} from './form-field-specs';
 import {getFieldValueFromFeature, showToastMessage} from './utils.js';
-import {Feature} from '../js-src/cs-client';
+import {Feature, StageDict} from '../js-src/cs-client';
 import {FormattedFeature} from './form-definition';
 
-interface FieldValues {
-  feature: Feature;
+interface FormFieldValue {
+  name: string;
+  value: any;
+  stageId?: number;
+  feature?: Feature;
 }
 
 @customElement('chromedash-form-field')
@@ -20,8 +23,8 @@ export class ChromedashFormField extends LitElement {
   name = '';
   @property({type: Number}) // Represents which field this is on the form.
   index = -1;
-  @property({type: Object}) // All other field value objects in current form.
-  fieldValues!: FieldValues;
+  @property({type: Array}) // All other field value objects in current form.
+  fieldValues: FormFieldValue[] = [];
   @property({type: Object, attribute: false})
   feature!: FormattedFeature;
   @property({type: String}) // Optional override of default label.
@@ -213,7 +216,7 @@ export class ChromedashFormField extends LitElement {
     };
     // Attach the feature to the getFieldValue function, which is needed to
     // iterate through stages not in the form.
-    getFieldValue.feature = this.fieldValues?.feature;
+    const feature = this.fieldValues?.find(fv => fv.feature)?.feature;
 
     const checkFunctionWrapper = async checkFunction => {
       const fieldValue = this.getValue();
@@ -284,7 +287,7 @@ export class ChromedashFormField extends LitElement {
     const choices: [number, string][] | [number, string, string][] =
       this.fieldProps.choices || this.componentChoices;
 
-    let fieldHTML: TemplateResult | string = '';
+    let fieldHTML = html``;
     if (type === 'checkbox') {
       const label = this.checkboxLabel || this.fieldProps.label;
       fieldHTML = html`
@@ -474,12 +477,12 @@ export class ChromedashFormField extends LitElement {
  * if the field is stage-specific, and returns the corresponding value.
  * Returns null if not defined or not found.
  * Handles special cases like shipping milestones and mapped stage fields.
- * @param {string} fieldName
- * @param {number|Object|undefined} stageOrId
- * @param {Array<{name:string, value:*}>} formFieldValues
- * @return {*}
  */
-function getFieldValueWithStage(fieldName, stageOrId, formFieldValues) {
+function getFieldValueWithStage(
+  fieldName: string,
+  stageOrId: number | StageDict | undefined,
+  formFieldValues: FormFieldValue[]
+): any {
   // Iterate through formFieldValues looking for element with name==fieldName
   // and stage == stageId, if there is a non-null stageId
   let stageId;
@@ -496,7 +499,7 @@ function getFieldValueWithStage(fieldName, stageOrId, formFieldValues) {
   }
 
   // The remainder looks for the field in the feature.
-  const feature = formFieldValues.feature;
+  const feature = formFieldValues.find(fv => fv.feature)?.feature;
   if (feature == null) {
     return null;
   }
@@ -508,7 +511,9 @@ function getFieldValueWithStage(fieldName, stageOrId, formFieldValues) {
       : stageId != null
         ? feature.stages.find(s => s.id == stageId)
         : feature.stages[0];
-
+  if (!feStage) {
+    return null;
+  }
   // Lookup fieldName by following the stage specific path starting from feature.
   const value = getFieldValueFromFeature(fieldName, feStage, feature);
   return value;
