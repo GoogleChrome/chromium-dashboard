@@ -34,7 +34,7 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
         ot_feedback_submission_url='https://example.com/feedback',
         intent_thread_url='https://example.com/experiment',
         ot_description='OT description', ot_has_third_party_support=True,
-        ot_requires_approvals=True, ot_approval_buganizer_component=123456,
+        ot_require_approvals=True, ot_approval_buganizer_component=123456,
         ot_approval_criteria_url='https://example.com/criteria',
         ot_approval_group_email='somegroup@google.com',
         ot_approval_buganizer_custom_field_id=111111,
