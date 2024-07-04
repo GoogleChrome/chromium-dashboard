@@ -20,10 +20,6 @@ class ChromedashFeaturelist extends LitElement {
   editableFeatures!: Feature[];
   @property({type: Object})
   metadataEl; // The metadata component element. Directly edited in template/features.html
-  @property({attribute: false})
-  _onFeatureToggledBound;
-  @property({attribute: false})
-  _onStarToggledBound;
   @state()
   features!: Feature[]; // Directly edited and accessed in template/features.html
   @state()
@@ -49,8 +45,6 @@ class ChromedashFeaturelist extends LitElement {
     this.metadataEl = document.querySelector('chromedash-metadata');
     this._featuresFetchMetric.start();
     this._featuresUnveilMetric.start();
-    this._onFeatureToggledBound = this._onFeatureToggled.bind(this);
-    this._onStarToggledBound = this._onStarToggled.bind(this);
     this._loadData();
   }
 
@@ -402,8 +396,8 @@ class ChromedashFeaturelist extends LitElement {
               tabindex="0"
               ?open="${item.open}"
               ?starred="${item.starred}"
-              @feature-toggled="${this._onFeatureToggledBound}"
-              @star-toggled="${this._onStarToggledBound}"
+              @feature-toggled="${this._onFeatureToggled}"
+              @star-toggled="${this._onStarToggled}"
               .feature="${item.feature}"
               ?canEdit="${item.canEditFeature}"
               ?signedIn="${this.signedInUser != ''}"
