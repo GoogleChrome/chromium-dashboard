@@ -13,7 +13,7 @@ class ChromedashGantt extends LitElement {
   @property({type: Object})
   feature!: Feature;
   @property({type: Number})
-  stableMilestone;
+  stableMilestone: number | null = null;
 
   connectedCallback() {
     window.csClient
