@@ -1,6 +1,8 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {updateURLParams} from './utils';
+import {customElement, property} from 'lit/decorators.js';
+import {Feature, StageDict} from '../js-src/cs-client.js';
 
 const GATE_STATE_TO_NAME = {
   0: 'Preparing', // PREPARING
@@ -33,23 +35,23 @@ const GATE_STATE_TO_ABBREV = {
   9: 'N/A?', // INTERNAL_REVIEW
 };
 
-class ChromedashGateChip extends LitElement {
-  static get properties() {
-    return {
-      feature: {type: Object},
-      stage: {type: Object},
-      gate: {type: Object},
-      selectedGateId: {type: Number},
-    };
-  }
+export interface Gate {
+  id: number;
+  state: number;
+  team_name: string;
+  slo_initial_response_remaining: number;
+}
 
-  constructor() {
-    super();
-    this.feature = {};
-    this.stage = {};
-    this.gate = {};
-    this.selectedGateId = 0;
-  }
+@customElement('chromedash-gate-chip')
+class ChromedashGateChip extends LitElement {
+  @property({type: Object})
+  feature!: Feature;
+  @property({type: Object})
+  stage!: StageDict;
+  @property({type: Object})
+  gate!: Gate;
+  @property({type: Number})
+  selectedGateId = 0;
 
   static get styles() {
     return [
@@ -178,7 +180,7 @@ class ChromedashGateChip extends LitElement {
   }
 
   render() {
-    if (this.gate === undefined || this.gate == {}) {
+    if (this.gate === undefined || this.gate == null) {
       return nothing;
     }
     const teamName = this.gate.team_name;
@@ -228,5 +230,3 @@ class ChromedashGateChip extends LitElement {
     `;
   }
 }
-
-customElements.define('chromedash-gate-chip', ChromedashGateChip);
