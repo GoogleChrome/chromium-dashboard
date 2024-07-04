@@ -17,30 +17,29 @@ class ChromedashFeaturelist extends LitElement {
   @property({type: String})
   signedInUser = '';
   @property({type: Array})
-  editableFeatures!: Feature[];
-  @property({type: Object})
-  metadataEl; // The metadata component element. Directly edited in template/features.html
+  editableFeatures!: number[];
   @state()
-  features!: Feature[]; // Directly edited and accessed in template/features.html
-  @state()
-  searchEl; // The search input element. Directly edited in template/features.html
+  features!: Feature[];
+  /** The search input element. */
   @state()
   filtered!: Feature[];
   @state()
   openFeatures = new Set<number>();
   @state()
   starredFeatures = new Set<number>();
+  searchEl: HTMLInputElement;
+  metadataEl: HTMLElement;
   _hasInitialized = false; // Used to check initialization code.
   _hasScrolledByUser = false; // Used to set the app header state.
   _featuresUnveilMetric = new Metric('features_unveil');
   _featuresFetchMetric = new Metric('features_loaded');
 
-  connectedCallback() {
-    super.connectedCallback();
-    this.searchEl = document.querySelector('.search input');
-    this.metadataEl = document.querySelector('chromedash-metadata');
+  constructor() {
+    super();
     this._featuresFetchMetric.start();
     this._featuresUnveilMetric.start();
+    this.searchEl = document.querySelector('.search input')!;
+    this.metadataEl = document.querySelector('chromedash-metadata')!;
     this._loadData();
   }
 
@@ -360,7 +359,7 @@ class ChromedashFeaturelist extends LitElement {
     let filteredWithState = this.filtered.map(feature => {
       const editable =
         this.isSiteEditor ||
-        (this.editableFeatures && this.editableFeatures.includes(feature));
+        (this.editableFeatures && this.editableFeatures.includes(feature.id));
       return {
         feature: feature,
         open: this.openFeatures.has(feature.id),
