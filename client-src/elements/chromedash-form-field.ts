@@ -14,6 +14,9 @@ interface FormFieldValue {
   name: string;
   value: any;
   stageId?: number;
+}
+interface getFieldValue {
+  (fieldName: string, stageOrId: any): any;
   feature?: Feature;
 }
 
@@ -23,8 +26,8 @@ export class ChromedashFormField extends LitElement {
   name = '';
   @property({type: Number}) // Represents which field this is on the form.
   index = -1;
-  @property({type: Array}) // All other field value objects in current form.
-  fieldValues: FormFieldValue[] = [];
+  @property({type: Object}) // All other field value objects in current form.
+  fieldValues!: FormFieldValue[] & {feature: Feature};
   @property({type: Object, attribute: false})
   feature!: FormattedFeature;
   @property({type: String}) // Optional override of default label.
@@ -204,7 +207,8 @@ export class ChromedashFormField extends LitElement {
     // Define function to get any other field value relative to this field.
     // stageOrId is either a stage object or an id, or the special value
     // 'current stage' which means use the same stage as for this field.
-    const getFieldValue = (fieldName, stageOrId) => {
+
+    const getFieldValue: getFieldValue = (fieldName, stageOrId) => {
       if (stageOrId === 'current stage') {
         stageOrId = this.stageId;
       }
@@ -216,7 +220,7 @@ export class ChromedashFormField extends LitElement {
     };
     // Attach the feature to the getFieldValue function, which is needed to
     // iterate through stages not in the form.
-    const feature = this.fieldValues?.find(fv => fv.feature)?.feature;
+    getFieldValue.feature = this.fieldValues?.feature;
 
     const checkFunctionWrapper = async checkFunction => {
       const fieldValue = this.getValue();
@@ -481,7 +485,7 @@ export class ChromedashFormField extends LitElement {
 function getFieldValueWithStage(
   fieldName: string,
   stageOrId: number | StageDict | undefined,
-  formFieldValues: FormFieldValue[]
+  formFieldValues: FormFieldValue[] & {feature?: Feature}
 ): any {
   // Iterate through formFieldValues looking for element with name==fieldName
   // and stage == stageId, if there is a non-null stageId
@@ -499,7 +503,7 @@ function getFieldValueWithStage(
   }
 
   // The remainder looks for the field in the feature.
-  const feature = formFieldValues.find(fv => fv.feature)?.feature;
+  const feature = formFieldValues?.feature;
   if (feature == null) {
     return null;
   }
