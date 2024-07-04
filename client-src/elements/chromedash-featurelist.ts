@@ -34,13 +34,9 @@ class ChromedashFeaturelist extends LitElement {
   openFeatures = new Set<number>();
   @state()
   starredFeatures = new Set<number>();
-  @state()
   _hasInitialized = false; // Used to check initialization code.
-  @state()
   _hasScrolledByUser = false; // Used to set the app header state.
-  @state()
   _featuresUnveilMetric = new Metric('features_unveil');
-  @state()
   _featuresFetchMetric = new Metric('features_loaded');
 
   connectedCallback() {
