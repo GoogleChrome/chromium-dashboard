@@ -1,32 +1,81 @@
 import {LitElement, TemplateResult, css, html, nothing} from 'lit';
-import {ref, createRef} from 'lit/directives/ref.js';
+import {createRef, ref} from 'lit/directives/ref.js';
 import './chromedash-activity-log';
-import {
-  openPreflightDialog,
-  somePendingPrereqs,
-  somePendingGates,
-} from './chromedash-preflight-dialog';
-import {maybeOpenPrevoteDialog} from './chromedash-prevote-dialog';
 import {openNaRationaleDialog} from './chromedash-na-rationale-dialog';
 import {
+  openPreflightDialog,
+  somePendingGates,
+  somePendingPrereqs,
+} from './chromedash-preflight-dialog';
+import {maybeOpenPrevoteDialog} from './chromedash-prevote-dialog';
+import {GATE_QUESTIONNAIRES} from './form-definition.js';
+import {
+  GATE_NA_REQUESTED,
+  GATE_PREPARING,
+  GATE_REVIEW_REQUESTED,
+  VOTE_OPTIONS,
+} from './form-field-enums';
+import {
   autolink,
-  showToastMessage,
   findProcessStage,
   renderAbsoluteDate,
   renderRelativeDate,
+  showToastMessage,
 } from './utils.js';
-import {GATE_QUESTIONNAIRES} from './form-definition.js';
-import {
-  GATE_PREPARING,
-  GATE_REVIEW_REQUESTED,
-  GATE_NA_REQUESTED,
-  VOTE_OPTIONS,
-} from './form-field-enums';
 
+import {customElement, property, state} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import { customElement, property, state } from 'lit/decorators.js';
-import { Feature, StageDict, User } from '../js-src/cs-client';
-import { GateDict } from './chromedash-gate-chip';
+import {Feature, StageDict, User} from '../js-src/cs-client';
+import {GateDict} from './chromedash-gate-chip';
+
+interface Vote {
+  feature_id: number;
+  gate_id: number;
+  gate_type?: number;
+  state: number;
+  set_on: Date;
+  set_by: string;
+}
+
+interface ProgressItem {
+  name: string;
+  field?: string;
+}
+
+interface Action {
+  name: string;
+  url: string;
+  prerequisites: string[];
+}
+
+interface ApprovalFieldDef {
+  name: string;
+  description: string;
+  field_id: number;
+  rule: string;
+  approvers: string | string[];
+  team_name: string;
+  escalation_email?: string;
+  slo_initial_response?: number;
+}
+
+interface ProcessStage {
+  name: string;
+  description: string;
+  progress_items: ProgressItem[];
+  actions: Action[];
+  approvals: ApprovalFieldDef[]; // Assuming ApprovalFieldDef is defined somewhere
+  incoming_stage: number;
+  outgoing_stage: number;
+  stage_type?: number;
+}
+
+interface Process {
+  name: string;
+  description: string;
+  applicability: string;
+  stages: ProcessStage[];
+}
 
 @customElement('chromedash-gate-column')
 export class ChromedashGateColumn extends LitElement {
@@ -151,22 +200,22 @@ export class ChromedashGateColumn extends LitElement {
 
   @property({type: Object})
   user!: User;
-  @property({type: Object})
+  @state()
   feature!: Feature;
-  @property({type: Array})
-  featureGates!: GateDict[]; //gate or gateDict?
-  @property({type: Object})
+  @state()
+  featureGates!: GateDict[];
+  @state()
   stage!: StageDict;
-  @property({type: Object})
-  gate!: GateDict; //gate or gateDict?
   @state()
-  progress: any;
+  gate!: GateDict;
   @state()
-  process: any;
+  progress!: ProgressItem;
   @state()
-  votes: any[] = [];
+  process!: Process;
   @state()
-  comments;
+  votes: Vote[] = [];
+  @state()
+  comments: string[] = [];
   @state()
   needsSave = false;
   @state()
@@ -460,7 +509,7 @@ export class ChromedashGateColumn extends LitElement {
         // Use setTimeout() to prevent safari from blocking the new tab.
         setTimeout(() => {
           const draftWindow = window.open(url, '_blank');
-          draftWindow?.focus();
+          draftWindow!.focus();
         });
       }
     };
@@ -627,7 +676,7 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   renderWarnings() {
-    if (this.gate.team_name == 'Privacy') {
+    if (this.gate && this.gate.team_name == 'Privacy') {
       return html`
         <div class="process-notice">
           Googlers: Please follow the instructions at
@@ -834,8 +883,7 @@ export class ChromedashGateColumn extends LitElement {
           <th>Review status</th>
         </tr>
         ${responses.map(v => this.renderVoteRow(v, canVote))}
-        ${othersPending.map(ae => this.renderPendingVote(ae))}
-        ${addVoteRow}
+        ${othersPending.map(ae => this.renderPendingVote(ae))} ${addVoteRow}
       </table>
       ${assignControls}
     `;
