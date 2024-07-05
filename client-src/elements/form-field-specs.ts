@@ -1500,7 +1500,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: true,
     label: 'Approvals Buganizer custom field ID',
     help_text: html`The Buganizer custom field ID from the above Buganizer
-      component.`,
+    component.`,
   },
 
   ot_approval_group_email: {
