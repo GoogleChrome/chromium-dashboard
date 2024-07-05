@@ -418,11 +418,6 @@ class ChromedashApp extends LitElement {
       }
       this.pageComponent.isEnterpriseFeature = true;
     });
-    page('/guide/edit/:featureId(\\d+)', ctx => {
-      if (!this.setupNewPage(ctx, 'chromedash-guide-edit-page')) return;
-      this.pageComponent.featureId = parseInt(ctx.params.featureId);
-      this.pageComponent.appTitle = this.appTitle;
-    });
     page('/guide/editall/:featureId(\\d+)', ctx => {
       if (!this.setupNewPage(ctx, 'chromedash-guide-editall-page')) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);

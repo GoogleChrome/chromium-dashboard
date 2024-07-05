@@ -1,8 +1,9 @@
-import {LitElement, css, html, nothing} from 'lit';
-import {ref, createRef} from 'lit/directives/ref.js';
+import {SlInput, SlDropdown} from '@shoelace-style/shoelace';
+import {css, html, LitElement, nothing} from 'lit';
+import {customElement, property, state} from 'lit/decorators.js';
 import {live} from 'lit/directives/live.js';
+import {createRef, ref, Ref} from 'lit/directives/ref.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import SlDropdown from '@shoelace-style/shoelace/dist/components/dropdown/dropdown.js';
 
 /* This file consists of 3 classes that together implement a "typeahead"
    text field with autocomplete:
@@ -19,38 +20,35 @@ import SlDropdown from '@shoelace-style/shoelace/dist/components/dropdown/dropdo
    3. Private class ChromedashTypeaheadItem renders a single item in the
    typeahead menu.  We do not use SlMenuItem because it steals keyboard focus.
 */
+interface Candidate {
+  name: string;
+  doc: string;
+}
 
+@customElement('chromedash-typeahead')
 export class ChromedashTypeahead extends LitElement {
-  slDropdownRef = createRef();
-  slInputRef = createRef();
+  slDropdownRef: Ref<SlDropdown> = createRef();
+  slInputRef: Ref<SlInput> = createRef();
 
-  static get properties() {
-    return {
-      value: {type: String},
-      placeholder: {type: String},
-      candidates: {type: Array},
-      vocabulary: {type: Array, attribute: false},
-      prefix: {type: String, attribute: false},
-      chunkStart: {type: Number, attribute: false},
-      chunkEnd: {type: Number, attribute: false},
-    };
-  }
+  @state()
+  value = '';
+  @state()
+  candidates: Candidate[] = [];
+  @state()
+  prefix: string | null = null;
+  @state()
+  chunkStart = 0;
+  @state()
+  chunkEnd = 0;
+  @state()
+  wasDismissed = false;
+  @state()
+  termWasCompleted = false;
 
-  constructor() {
-    super();
-    this.value = '';
-    this.placeholder = '';
-    this.candidates = [];
-    this.vocabulary = [];
-    this.prefix = null;
-    this.chunkStart = 0;
-    this.chunkEnd = 0;
-    // If the user hits Escape, keep the menu closed until they use up or down.
-    this.wasDismissed = false;
-    // If the user completes an entire term, don't offer the menu again
-    // until they type something.
-    this.termWasCompleted = false;
-  }
+  @property({type: String})
+  placeholder = '';
+  @property({type: Array, attribute: false})
+  vocabulary!: Candidate[];
 
   static get styles() {
     return [
@@ -77,35 +75,36 @@ export class ChromedashTypeahead extends LitElement {
     this.dispatchEvent(event);
   }
 
-  reflectValue(event) {
+  reflectValue(event?) {
     if (event) {
       event.stopPropagation();
     }
-    const slInput = this.slInputRef.value;
+    const slInput = this.slInputRef.value!;
     this.value = slInput.value;
   }
 
   hide() {
-    this.slDropdownRef.value.hide();
+    this.slDropdownRef.value!.hide();
   }
 
   show() {
-    this.slDropdownRef.value.show();
+    this.slDropdownRef.value!.show();
   }
 
   findPrefix() {
-    const inputEl = this.slInputRef.value.input;
+    const inputEl = this.slInputRef.value?.input;
+    if (!inputEl) return;
     const wholeStr = inputEl.value;
-    const caret = inputEl.selectionStart;
+    const caret = inputEl.selectionStart || 0;
     if (caret != inputEl.selectionEnd) {
       // User has a range selected.
       this.prefix = null;
       return;
     }
-    this.chunkStart = wholeStr.lastIndexOf(' ', caret - 1) + 1;
-    this.chunkEnd = wholeStr.indexOf(' ', caret);
+    this.chunkStart = wholeStr.lastIndexOf(' ', caret! - 1) + 1;
+    this.chunkEnd = wholeStr.indexOf(' ', caret!);
     if (this.chunkEnd === -1) this.chunkEnd = wholeStr.length;
-    this.prefix = wholeStr.substring(this.chunkStart, caret);
+    this.prefix = wholeStr.substring(this.chunkStart, caret!);
   }
 
   shouldShowCandidate(candidate, prefix) {
@@ -123,14 +122,15 @@ export class ChromedashTypeahead extends LitElement {
 
   async handleCandidateSelected(e) {
     const candidateValue = e.detail.item.value;
-    const inputEl = this.slInputRef.value.input;
+    const inputEl = this.slInputRef.value?.renderRoot.querySelector('input');
+    if (!inputEl) return;
     const wholeStr = inputEl.value;
     // Don't add a space after the completed value: let the user type it.
     const newWholeStr =
       wholeStr.substring(0, this.chunkStart) +
       candidateValue +
       wholeStr.substring(this.chunkEnd, wholeStr.length);
-    this.slInputRef.value.value = newWholeStr;
+    this.slInputRef.value!.value = newWholeStr;
     this.reflectValue();
     // Wait for the sl-input to propagate its new value to its <input> before
     // setting or accessing the text selection.
@@ -153,7 +153,11 @@ export class ChromedashTypeahead extends LitElement {
   handleInputFieldKeyDown(event) {
     if (event.key === 'Enter') {
       const slDropdown = this.slDropdownRef.value;
-      if (!slDropdown.open || !slDropdown.getCurrentItem()) {
+      if (!slDropdown) return;
+      if (
+        !slDropdown.open ||
+        !(slDropdown as ChromedashTypeaheadDropdown).getCurrentItem()
+      ) {
         this._fireEvent('sl-change', this);
         event.stopPropagation();
       }
@@ -176,7 +180,7 @@ export class ChromedashTypeahead extends LitElement {
     this.calcCandidates();
   }
 
-  calcCandidates(event) {
+  calcCandidates(event?) {
     if (event) {
       event.stopPropagation();
     }
@@ -185,6 +189,7 @@ export class ChromedashTypeahead extends LitElement {
       this.shouldShowCandidate(c, this.prefix)
     );
     const slDropdown = this.slDropdownRef.value;
+    if (!slDropdown) return;
     if (
       this.candidates.length > 0 &&
       !this.wasDismissed &&
@@ -250,26 +255,22 @@ export class ChromedashTypeahead extends LitElement {
     `;
   }
 }
-customElements.define('chromedash-typeahead', ChromedashTypeahead);
 
+@customElement('chromedash-typeahead-dropdown')
 export class ChromedashTypeaheadDropdown extends SlDropdown {
-  constructor() {
-    super();
-  }
-
   getCurrentItem() {
     return this.getMenu()?.getCurrentItem();
   }
 
   setCurrentItem(newCurrentItem) {
     const menu = this.getMenu();
-    menu.setCurrentItem(newCurrentItem);
+    menu!.setCurrentItem(newCurrentItem);
     newCurrentItem.scrollIntoView({block: 'nearest', behavior: 'smooth'});
   }
 
   resetSelection() {
     const currentItem = this.getCurrentItem();
-    currentItem?.setAttribute('tabindex', -1);
+    currentItem?.setAttribute('tabindex', '-1');
   }
 
   async handleTriggerKeyDown(event) {
@@ -323,29 +324,19 @@ export class ChromedashTypeaheadDropdown extends SlDropdown {
     }
   }
 }
-customElements.define(
-  'chromedash-typeahead-dropdown',
-  ChromedashTypeaheadDropdown
-);
 
+@customElement('chromedash-typeahead-item')
 export class ChromedashTypeaheadItem extends LitElement {
-  static get properties() {
-    return {
-      value: {type: String},
-      doc: {type: String},
-      prefix: {type: String},
-      role: {type: String, reflect: true},
-      tabindex: {type: Number},
-    };
-  }
-
-  constructor() {
-    super();
-    this.value = '';
-    this.doc = '';
-    this.prefix = '';
-    this.role = 'menuitem'; // SlMenu looks for on this attribute.
-  }
+  @property({type: String})
+  value = '';
+  @property({type: String})
+  doc = '';
+  @property({type: String})
+  prefix = '';
+  @property({type: Number})
+  tabindex = 0;
+  @property({type: String, reflect: true})
+  role = 'menuitem';
 
   static get styles() {
     return [
@@ -387,7 +378,7 @@ export class ChromedashTypeaheadItem extends LitElement {
   }
 
   handleMouseOver(event) {
-    this.parentElement?.setCurrentItem(this);
+    (this.parentElement as ChromedashTypeaheadDropdown)?.setCurrentItem(this);
     event.stopPropagation();
   }
 
@@ -414,4 +405,3 @@ export class ChromedashTypeaheadItem extends LitElement {
     `;
   }
 }
-customElements.define('chromedash-typeahead-item', ChromedashTypeaheadItem);

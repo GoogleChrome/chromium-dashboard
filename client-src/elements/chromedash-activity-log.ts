@@ -1,10 +1,9 @@
+import '@polymer/iron-icon';
 import {LitElement, css, html, nothing} from 'lit';
 import {property, state} from 'lit/decorators.js';
-import {autolink, renderAbsoluteDate, renderRelativeDate} from './utils.js';
-import '@polymer/iron-icon';
-import {ChromeStatusClient} from '../js-src/cs-client.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import {DefaultApiInterface} from 'chromestatus-openapi';
+import {User} from '../js-src/cs-client.js';
+import {autolink, renderAbsoluteDate, renderRelativeDate} from './utils.js';
 
 interface Amendment {
   field_name: string;
@@ -71,13 +70,6 @@ export class ChromedashAmendment extends LitElement {
 }
 customElements.define('chromedash-amendment', ChromedashAmendment);
 
-export interface User {
-  can_create_feature: boolean;
-  can_edit_all: boolean;
-  can_comment: boolean;
-  is_admin: boolean;
-  email: string;
-}
 interface Activity {
   comment_id: number;
   author: string;

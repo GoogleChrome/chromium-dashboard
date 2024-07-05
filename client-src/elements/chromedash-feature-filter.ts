@@ -1,26 +1,21 @@
 import {LitElement, css, html} from 'lit';
-import {ref, createRef} from 'lit/directives/ref.js';
+import {customElement, property} from 'lit/decorators.js';
+import {createRef, Ref, ref} from 'lit/directives/ref.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {openSearchHelpDialog} from './chromedash-search-help-dialog.js';
 import {QUERIABLE_FIELDS} from './queriable-fields.js';
+import {ChromedashTypeahead} from './chromedash-typeahead.js';
 
 const VOCABULARY = QUERIABLE_FIELDS.map(qf => {
   return {name: qf.name + '=', doc: qf.doc};
 });
 
+@customElement('chromedash-feature-filter')
 class ChromedashFeatureFilter extends LitElement {
-  typeaheadRef = createRef();
+  typeaheadRef = createRef<ChromedashTypeahead>();
 
-  static get properties() {
-    return {
-      query: {type: String},
-    };
-  }
-
-  constructor() {
-    super();
-    this.query = '';
-  }
+  @property({type: String})
+  query = '';
 
   _fireEvent(eventName, detail) {
     const event = new CustomEvent(eventName, {
@@ -33,6 +28,7 @@ class ChromedashFeatureFilter extends LitElement {
 
   handleSearchClick() {
     const typeahead = this.typeaheadRef.value;
+    if (!typeahead) return;
     typeahead.hide();
     const newQuery = typeahead.value.trim();
     this._fireEvent('search', {query: newQuery});
@@ -53,6 +49,7 @@ class ChromedashFeatureFilter extends LitElement {
   showHelp(event) {
     event.stopPropagation();
     const typeahead = this.typeaheadRef.value;
+    if (!typeahead) return;
     typeahead.hide();
     openSearchHelpDialog();
   }
@@ -84,5 +81,3 @@ class ChromedashFeatureFilter extends LitElement {
     `;
   }
 }
-
-customElements.define('chromedash-feature-filter', ChromedashFeatureFilter);

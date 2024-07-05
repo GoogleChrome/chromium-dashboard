@@ -1,21 +1,15 @@
 import {LitElement, css, html} from 'lit';
+import {customElement, property} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
+@customElement('chromedash-x-meter')
 class ChromedashXMeter extends LitElement {
-  static get properties() {
-    return {
-      value: {type: Number},
-      max: {type: Number}, // Normalized, maximum width for the bar
-      href: {type: String},
-    };
-  }
-
-  constructor() {
-    super();
-    this.value = 0;
-    this.max = 100;
-    this.href = '#';
-  }
+  @property({type: Number})
+  value = 0;
+  @property({type: Number})
+  max = 100;
+  @property({type: String})
+  href = '#';
 
   static get styles() {
     return [
@@ -66,5 +60,3 @@ class ChromedashXMeter extends LitElement {
     `;
   }
 }
-
-customElements.define('chromedash-x-meter', ChromedashXMeter);

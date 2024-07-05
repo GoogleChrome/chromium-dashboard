@@ -3,7 +3,7 @@ import {showToastMessage} from './utils.js';
 import './chromedash-feature-table';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {customElement, property, queryAll, state} from 'lit/decorators.js';
-import {User} from './chromedash-activity-log.js';
+import {User} from '../js-src/cs-client.js';
 import {RawQuery} from './utils.js';
 
 @customElement('chromedash-all-features-page')
@@ -24,13 +24,7 @@ export class ChromedashAllFeaturesPage extends LitElement {
   @property({type: Boolean})
   showQuery = true;
   @property({type: Object})
-  user: User = {
-    can_create_feature: false,
-    can_edit_all: false,
-    is_admin: false,
-    email: '',
-    can_comment: false,
-  };
+  user!: User;
   @property({type: Number})
   selectedGateId = 0;
   @property({type: Object})
