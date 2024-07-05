@@ -1499,9 +1499,9 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: {type: 'number'},
     required: true,
     label: 'Approvals Buganizer custom field ID',
-    help_text: html`The Buganizer custom field ID for trial registration approval.
-    This custom field in Buganizer provides approval/rejection rationales for registration
-    requests under ot_approval_buganizer_component.`,
+    help_text: html`The Buganizer custom field ID for trial registration
+    approval. This custom field in Buganizer provides approval/rejection
+    rationales for registration requests under ot_approval_buganizer_component.`,
   },
 
   ot_approval_group_email: {
