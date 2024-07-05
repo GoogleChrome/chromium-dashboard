@@ -35,7 +35,7 @@ const GATE_STATE_TO_ABBREV = {
   9: 'N/A?', // INTERNAL_REVIEW
 };
 
-interface GateDict {
+export interface GateDict {
   id: number;
   feature_id: number;
   stage_id: number;
@@ -52,6 +52,7 @@ interface GateDict {
   slo_initial_response: string;
   slo_initial_response_took: string;
   slo_initial_response_remaining: number;
+  possible_assignee_emails: string[];
 }
 
 @customElement('chromedash-gate-chip')
