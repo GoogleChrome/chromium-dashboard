@@ -321,6 +321,7 @@ class Stage(ndb.Model):
   ot_action_requested = ndb.BooleanProperty(default=False)
   ot_activation_date = ndb.DateProperty()
   ot_approval_buganizer_component = ndb.IntegerProperty()
+  ot_approval_buganizer_custom_field_id = ndb.IntegerProperty()
   ot_approval_criteria_url = ndb.StringProperty()
   ot_approval_group_email = ndb.StringProperty()
   ot_chromium_trial_name = ndb.StringProperty()

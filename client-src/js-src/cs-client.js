@@ -59,6 +59,7 @@
  * @property {boolean} ot_action_requested
  * @property {string} [ot_activation_date]
  * @property {number} [ot_approval_buganizer_component]
+ * @property {number} [ot_approval_buganizer_custom_field_id]
  * @property {string} [ot_approval_criteria_url]
  * @property {string} [ot_approval_group_email]
  * @property {string} [ot_chromium_trial_name]
