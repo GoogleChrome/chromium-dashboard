@@ -29,6 +29,37 @@ LAUNCH_PARAM = 'launch'
 VIEW_FEATURE_URL = '/feature'
 
 
+def compute_subject_prefix(feature, intent_stage):
+  """Return part of the subject line for an intent email."""
+
+  if intent_stage == core_enums.INTENT_IMPLEMENT:
+    if feature.feature_type == core_enums.FEATURE_TYPE_DEPRECATION_ID:
+      return 'Intent to Deprecate and Remove'
+    else:
+      return 'Intent to Prototype'
+  elif intent_stage == core_enums.INTENT_EXPERIMENT:
+    return 'Ready for Developer Testing'
+  elif intent_stage == core_enums.INTENT_ORIGIN_TRIAL:
+    if feature.feature_type == core_enums.FEATURE_TYPE_DEPRECATION_ID:
+      return 'Request for Deprecation Trial'
+    else:
+      return 'Intent to Experiment'
+  elif intent_stage == core_enums.INTENT_EXTEND_ORIGIN_TRIAL:
+    if feature.feature_type == core_enums.FEATURE_TYPE_DEPRECATION_ID:
+      return 'Intent to Extend Deprecation Trial'
+    else:
+      return 'Intent to Extend Experiment'
+  elif intent_stage == core_enums.INTENT_SHIP:
+    if feature.feature_type == core_enums.FEATURE_TYPE_CODE_CHANGE_ID:
+      return 'Web-Facing Change PSA'
+    else:
+      return 'Intent to Ship'
+  elif intent_stage == core_enums.INTENT_REMOVED:
+    return 'Intent to Extend Deprecation Trial'
+
+  return f'Intent stage "{core_enums.INTENT_STAGES[intent_stage]}"'
+
+
 class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
   """Show a preview of an intent email, as appropriate to the feature stage."""
 
@@ -72,7 +103,7 @@ class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
 
     stage_info = stage_helpers.get_stage_info_for_templates(f)
     page_data = {
-        'subject_prefix': self.compute_subject_prefix(f, intent_stage),
+        'subject_prefix': compute_subject_prefix(f, intent_stage),
         'feature': feature_entry_to_json_verbose(f),
         'stage_info': stage_info,
         'should_render_mstone_table': stage_info['should_render_mstone_table'],
@@ -89,33 +120,3 @@ class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
       page_data[INTENT_PARAM] = True
 
     return page_data
-
-  def compute_subject_prefix(self, feature, intent_stage):
-    """Return part of the subject line for an intent email."""
-
-    if intent_stage == core_enums.INTENT_IMPLEMENT:
-      if feature.feature_type == core_enums.FEATURE_TYPE_DEPRECATION_ID:
-        return 'Intent to Deprecate and Remove'
-      else:
-        return 'Intent to Prototype'
-    elif intent_stage == core_enums.INTENT_EXPERIMENT:
-      return 'Ready for Developer Testing'
-    elif intent_stage == core_enums.INTENT_ORIGIN_TRIAL:
-      if feature.feature_type == core_enums.FEATURE_TYPE_DEPRECATION_ID:
-        return 'Request for Deprecation Trial'
-      else:
-        return 'Intent to Experiment'
-    elif intent_stage == core_enums.INTENT_EXTEND_ORIGIN_TRIAL:
-      if feature.feature_type == core_enums.FEATURE_TYPE_DEPRECATION_ID:
-        return 'Intent to Extend Deprecation Trial'
-      else:
-        return 'Intent to Extend Experiment'
-    elif intent_stage == core_enums.INTENT_SHIP:
-      if feature.feature_type == core_enums.FEATURE_TYPE_CODE_CHANGE_ID:
-        return 'Web-Facing Change PSA'
-      else:
-        return 'Intent to Ship'
-    elif intent_stage == core_enums.INTENT_REMOVED:
-      return 'Intent to Extend Deprecation Trial'
-
-    return 'Intent stage "%s"' % core_enums.INTENT_STAGES[intent_stage]

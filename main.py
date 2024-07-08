@@ -304,6 +304,7 @@ internals_routes: list[Route] = [
   Route('/tasks/email-ot-extended', notifier.OTExtendedHandler),
   Route('/tasks/email-ot-extension-approved',
         notifier.OTExtensionApprovedHandler),
+  Route('/tasks/email-intent-to-blink-dev', notifier.IntentToBlinkDevHandler),
 
   # OT process reminder emails
   Route('/tasks/email-ot-first-branch', notifier.OTFirstBranchReminderHandler),

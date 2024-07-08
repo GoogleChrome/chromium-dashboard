@@ -45,6 +45,7 @@ from internals.user_models import (
 
 
 OT_SUPPORT_EMAIL = 'origin-trials-support@google.com'
+BLINK_DEV_EMAIL = 'blink-dev@chromium.org'
 
 
 def _determine_milestone_string(ship_stages: list[Stage]) -> str:
@@ -859,6 +860,37 @@ class OTExtensionApprovedHandler(basehandlers.FlaskHandler):
       'cc': [OT_SUPPORT_EMAIL],
       'subject': ('Origin trial approved and ready to be initiated: '
                   f'{feature["name"]}'),
+      'reply_to': None,
+      'html': body,
+    }
+
+
+class IntentToBlinkDevHandler(basehandlers.FlaskHandler):
+  """Submit an intent email directly to blink-dev."""
+  IS_INTERNAL_HANDLER = True
+  EMAIL_TEMPLATE_PATH = 'templates/blink/intent_to_implement.html'
+
+  def process_post_data(self, **kwargs):
+    self.require_task_header()
+    send_emails([self.build_email()])
+    return {'message': 'OK'}
+
+  def build_email(self):
+    json_data = self.get_json_param_dict()
+    template_data = {
+      'feature': json_data['feature'],
+      'stage_info': json_data['stage_info'],
+      'should_render_mston_table': json_data['should_render_mston_table'],
+      'should_render_intents': json_data['should_render_intents'],
+      'intent_stage': json_data['intent_stage'],
+      'default_url': json_data['default_url'],
+    }
+    body = render_template(self.EMAIL_TEMPLATE_PATH, **template_data)
+
+    return {
+      'to': BLINK_DEV_EMAIL,
+      'cc': json_data['intent_cc_emails'],
+      'subject': json_data['subject'],
       'reply_to': None,
       'html': body,
     }

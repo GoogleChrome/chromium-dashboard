@@ -1,8 +1,9 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {showToastMessage} from './utils';
-import './chromedash-intent-template';
+import {openPostIntentDialog} from './chromedash-post-intent-dialog.js'
 import {STAGE_TYPES_SHIPPING} from './form-field-enums.js';
+import './chromedash-intent-template';
 
 class ChromedashGuideIntentPreview extends LitElement {
   static get properties() {
@@ -136,7 +137,14 @@ class ChromedashGuideIntentPreview extends LitElement {
           </p>
         </section>
         <section>
-          <h3>Send this text for your "Intent to ..." email</h3>
+          <h3 class="inline">Send this text for your "Intent to ..." email</h3>
+          <input
+            id="submit-button"
+            class="button inline"
+            type="submit"
+            value="Post directly to blink-dev"
+            @click="${() => openPostIntentDialog()}"
+          />
           <chromedash-intent-template
             appTitle="${this.appTitle}"
             .feature=${this.feature}
