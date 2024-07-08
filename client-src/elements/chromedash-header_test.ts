@@ -4,7 +4,6 @@ import {ChromedashHeader} from './chromedash-header';
 import './chromedash-toast';
 import {ChromeStatusClient} from '../js-src/cs-client';
 import sinon from 'sinon';
-import Sinon, {SinonStub, stub} from 'sinon';
 
 describe('chromedash-header', () => {
   /* window.csClient and <chromedash-toast> are initialized at _base.html
