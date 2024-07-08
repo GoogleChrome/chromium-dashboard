@@ -1,8 +1,8 @@
 import {LitElement, html, css, nothing} from 'lit';
 import {showToastMessage, IS_MOBILE} from './utils';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import { customElement, property, state } from 'lit/decorators.js';
-import { User } from '../js-src/cs-client';
+import {customElement, property, state} from 'lit/decorators.js';
+import {User} from '../js-src/cs-client';
 
 @customElement('chromedash-header')
 export class ChromedashHeader extends LitElement {
@@ -236,20 +236,20 @@ export class ChromedashHeader extends LitElement {
 
     signInTestingButton.addEventListener('click', () => {
       // POST to '/dev/mock_login' to login as example@chromium.
-    fetch('/dev/mock_login', {method: 'POST'})
+      fetch('/dev/mock_login', {method: 'POST'})
         .then(response => {
-            if (!response.ok) {
-                throw new Error(`Sign in failed! Response: ${response}`);
-            }
+          if (!response.ok) {
+            throw new Error(`Sign in failed! Response: ${response}`);
+          }
         })
         .then(() => {
-            setTimeout(() => {
-                const url = window.location.href.split('?')[0];
-                window.location = url as string & Location;
-            }, 1000);
+          setTimeout(() => {
+            const url = window.location.href.split('?')[0];
+            window.location = url as string & Location;
+          }, 1000);
         })
         .catch(error => {
-            console.error('Sign in failed.', error);
+          console.error('Sign in failed.', error);
         });
     });
 
