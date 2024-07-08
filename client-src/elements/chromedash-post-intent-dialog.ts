@@ -1,4 +1,5 @@
 import {LitElement, css, html} from 'lit';
+import {customElement, property} from 'lit/decorators.js';
 import {ref} from 'lit/directives/ref.js';
 import {FORM_STYLES} from '../css/forms-css.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
@@ -6,26 +7,36 @@ import {ALL_FIELDS} from './form-field-specs.js';
 import {showToastMessage} from './utils.js';
 
 let dialogEl;
-let currentFeature;
-let currentStage;
-let currentGate;
 
-export async function openPostIntentDialog(feature, stage, gate) {
+export async function openPostIntentDialog(
+  featureId: number,
+  stageId: number,
+  ownerEmails: Array<string>,
+  gateId = 0
+) {
   if (!dialogEl) {
     dialogEl = document.createElement('chromedash-post-intent-dialog');
     document.body.appendChild(dialogEl);
-    currentFeature = feature;
-    currentStage = stage;
-    currentGate = gate;
+    dialogEl.featureId = featureId;
+    dialogEl.stageId = stageId;
+    dialogEl.gateId = gateId;
+    dialogEl.ownerEmails = ownerEmails;
     await dialogEl.updateComplete;
   }
-  currentFeature = feature;
-  currentStage = stage;
-  currentGate = gate;
   dialogEl.show();
 }
 
+@customElement('chromedash-post-intent-dialog')
 class ChromedashPostIntentDialog extends LitElement {
+  @property({type: Number})
+  featureId = 0;
+  @property({type: Number})
+  stageId = 0;
+  @property({type: Number})
+  gateId = 0;
+  @property({type: Array<string>})
+  ownerEmails = [];
+
   static get properties() {
     return {};
   }
@@ -75,7 +86,8 @@ class ChromedashPostIntentDialog extends LitElement {
 
   renderIntentCCEmailOption() {
     const fieldInfo = ALL_FIELDS.intent_cc_emails;
-    const defaultCCEmails = currentFeature.owner_emails.join(',');
+    const defaultCCEmails = this.ownerEmails.join(',');
+
     return html`${fieldInfo.help_text}
       <sl-input
         ${ref(this.updateAttributes)}
@@ -89,22 +101,39 @@ class ChromedashPostIntentDialog extends LitElement {
   }
 
   submitIntent() {
+    console;
     // Make sure that the CC emails input is valid.
     const ccEmailsInput = this.shadowRoot!.querySelector('sl-input');
     if (!ccEmailsInput || ccEmailsInput.hasAttribute('data-user-invalid')) {
       return;
     }
-
+    const submitButton = this.shadowRoot!.querySelector(
+      '#submit-intent-button'
+    );
+    if (submitButton) {
+      submitButton.setAttribute('disabled', '');
+    }
     window.csClient
-      .postIntentToBlinkDev(currentFeature.id, {
-        stage_id: currentStage?.id,
-        gate_id: currentGate?.id,
+      .postIntentToBlinkDev(this.featureId, {
+        stage_id: this.stageId,
+        gate_id: this.gateId,
         intent_cc_emails: ccEmailsInput?.value?.split(','),
+      })
+      .then(() => {
+        showToastMessage(
+          'Intent submitted! Check for your thread on blink-dev shortly.'
+        );
+        setTimeout(() => {
+          window.location.href = `/feature/${this.featureId}`;
+        }, 3000);
       })
       .catch(() => {
         showToastMessage(
           'Some errors occurred. Please refresh the page or try again later.'
         );
+        if (submitButton) {
+          submitButton.removeAttribute('disabled');
+        }
       });
   }
 
@@ -124,6 +153,7 @@ class ChromedashPostIntentDialog extends LitElement {
       <br /><br />
       <sl-button
         class="float-right"
+        id="submit-intent-button"
         variant="primary"
         size="small"
         @click=${() => this.submitIntent()}
@@ -136,8 +166,3 @@ class ChromedashPostIntentDialog extends LitElement {
     return this.renderDialog();
   }
 }
-
-customElements.define(
-  'chromedash-post-intent-dialog',
-  ChromedashPostIntentDialog
-);

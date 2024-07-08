@@ -153,7 +153,12 @@ class ChromedashGuideIntentPreview extends LitElement {
             type="submit"
             value="Post directly to blink-dev"
             @click="${() =>
-              openPostIntentDialog(this.feature, this.stage, this.gate)}"
+              openPostIntentDialog(
+                this.feature.id,
+                this.stage.id,
+                this.feature.owner_emails,
+                this.gate?.id
+              )}"
           />
           <chromedash-intent-template
             appTitle="${this.appTitle}"

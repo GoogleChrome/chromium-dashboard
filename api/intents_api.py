@@ -72,7 +72,7 @@ class IntentsAPI(basehandlers.APIHandler):
     if gate:
       default_url += f'?gate={gate.key.integer_id()}'
 
-    subject = f'{compute_subject_prefix(feature, intent_stage)}/{feature.name}'
+    subject = f'{compute_subject_prefix(feature, intent_stage)}: {feature.name}'
     # Make sure emails are not empty and are unique.
     cc_emails = body.get('intent_cc_emails', [])
     cc_emails = list(set([email for email in cc_emails if email]))
