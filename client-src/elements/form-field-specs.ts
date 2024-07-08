@@ -2046,6 +2046,15 @@ export const ALL_FIELDS: Record<string, Field> = {
     help_text: html` This is a breaking change: customers or developers must
     take action to continue using some existing functionaity.`,
   },
+
+  intent_cc_emails: {
+    type: 'input',
+    attrs: MULTI_EMAIL_FIELD_ATTRS,
+    required: false,
+    label: 'Intent email CC list',
+    help_text: html`Add emails to the CC list of the intent email. Comma
+    separated list of full email addresses.`,
+  },
 };
 
 // Return a simplified field type to help differentiate the

@@ -1,8 +1,11 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {showToastMessage} from './utils';
-import {openPostIntentDialog} from './chromedash-post-intent-dialog.js'
-import {STAGE_TYPES_SHIPPING} from './form-field-enums.js';
+import {openPostIntentDialog} from './chromedash-post-intent-dialog.js';
+import {
+  STAGE_TYPES_DEV_TRIAL,
+  STAGE_TYPES_SHIPPING,
+} from './form-field-enums.js';
 import './chromedash-intent-template';
 
 class ChromedashGuideIntentPreview extends LitElement {
@@ -77,6 +80,11 @@ class ChromedashGuideIntentPreview extends LitElement {
           this.stage = this.feature.stages.find(
             stage => this.gate.stage_id === stage.id
           );
+        } else {
+          // This is a "Ready for Developer Testing" intent if no gate is supplied.
+          this.stage = this.feature.stages.find(stage =>
+            STAGE_TYPES_DEV_TRIAL.has(stage.stage_type)
+          );
         }
 
         if (this.feature.name) {
@@ -139,11 +147,13 @@ class ChromedashGuideIntentPreview extends LitElement {
         <section>
           <h3 class="inline">Send this text for your "Intent to ..." email</h3>
           <input
+            ref()
             id="submit-button"
             class="button inline"
             type="submit"
             value="Post directly to blink-dev"
-            @click="${() => openPostIntentDialog()}"
+            @click="${() =>
+              openPostIntentDialog(this.feature, this.stage, this.gate)}"
           />
           <chromedash-intent-template
             appTitle="${this.appTitle}"

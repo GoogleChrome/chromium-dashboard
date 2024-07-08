@@ -14,25 +14,19 @@
 
 from typing import TypedDict
 
-from api import converters
 from framework import basehandlers
 from framework import cloud_tasks_helpers
 from framework import permissions
 from internals import processes
-from internals import stage_helpers
 from internals.core_enums import INTENT_STAGES_BY_STAGE_TYPE
 from internals.core_models import FeatureEntry, Stage
-from internals.data_types import VerboseFeatureDict
 from internals.review_models import Gate
 from pages.intentpreview import compute_subject_prefix
 
 
 class IntentOptions(TypedDict):
   subject: str
-  feature: VerboseFeatureDict
-  stage_info: stage_helpers.StageTemplateInfo
-  should_render_mstone_table: bool
-  should_render_intents: bool
+  feature_id: int
   sections_to_show: list[str]
   intent_stage: int|None
   default_url: str
@@ -68,7 +62,6 @@ class IntentsAPI(basehandlers.APIHandler):
       return redirect_resp
 
     intent_stage = INTENT_STAGES_BY_STAGE_TYPE[stage.stage_type]
-    stage_info = stage_helpers.get_stage_info_for_templates(feature)
     default_url = (f'{self.request.scheme}://{self.request.host}'
                    f'/feature/{feature_id}')
 
@@ -81,10 +74,7 @@ class IntentsAPI(basehandlers.APIHandler):
 
     params: IntentOptions = {
         'subject': compute_subject_prefix(feature, intent_stage),
-        'feature': converters.feature_entry_to_json_verbose(feature),
-        'stage_info': stage_helpers.get_stage_info_for_templates(feature),
-        'should_render_mstone_table': stage_info['should_render_mstone_table'],
-        'should_render_intents': stage_info['should_render_intents'],
+        'feature_id': feature_id,
         'sections_to_show': processes.INTENT_EMAIL_SECTIONS.get(
             intent_stage, []),
         'intent_stage': intent_stage,

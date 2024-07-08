@@ -647,7 +647,7 @@ export class ChromeStatusClient {
 
   // Intents API
   async postIntentToBlinkDev(featureId, body) {
-    return this.doPost(`features/${featureId}/postintent`, body);
+    return this.doPost(`/features/${featureId}/postintent`, body);
   }
 
   // Progress API

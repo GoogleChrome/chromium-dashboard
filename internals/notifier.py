@@ -23,6 +23,7 @@ import re
 from typing import Any, Optional
 import urllib
 
+from api import converters
 from framework import permissions
 from google.cloud import ndb  # type: ignore
 
@@ -868,20 +869,25 @@ class OTExtensionApprovedHandler(basehandlers.FlaskHandler):
 class IntentToBlinkDevHandler(basehandlers.FlaskHandler):
   """Submit an intent email directly to blink-dev."""
   IS_INTERNAL_HANDLER = True
-  EMAIL_TEMPLATE_PATH = 'templates/blink/intent_to_implement.html'
+  EMAIL_TEMPLATE_PATH = 'blink/intent_to_implement.html'
 
   def process_post_data(self, **kwargs):
     self.require_task_header()
-    send_emails([self.build_email()])
+    feature_id = self.get_param('feature_id', required=True)
+    feature = FeatureEntry.get_by_id(feature_id)
+    if not feature:
+      self.abort(400, 'Feature not found.')
+    send_emails([self.build_email(feature)])
     return {'message': 'OK'}
 
-  def build_email(self):
+  def build_email(self, feature: FeatureEntry):
     json_data = self.get_json_param_dict()
+    stage_info = stage_helpers.get_stage_info_for_templates(feature)
     template_data = {
-      'feature': json_data['feature'],
-      'stage_info': json_data['stage_info'],
-      'should_render_mston_table': json_data['should_render_mston_table'],
-      'should_render_intents': json_data['should_render_intents'],
+      'feature': converters.feature_entry_to_json_verbose(feature),
+      'stage_info': stage_helpers.get_stage_info_for_templates(feature),
+      'should_render_mstone_table': stage_info['should_render_mstone_table'],
+      'should_render_intents': stage_info['should_render_intents'],
       'intent_stage': json_data['intent_stage'],
       'default_url': json_data['default_url'],
     }
