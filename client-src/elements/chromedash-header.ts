@@ -146,7 +146,7 @@ export class ChromedashHeader extends LitElement {
   @property({type: String})
   currentPage = '';
   @property({type: Object})
-  user!: User;
+  user = {} as User;
   @state()
   loading = false;
 
