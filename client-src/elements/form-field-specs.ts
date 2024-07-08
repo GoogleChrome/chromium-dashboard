@@ -698,7 +698,7 @@ export const ALL_FIELDS: Record<string, Field> = {
       >
       for detailed advice, or expand the extra help here for a summary.`,
     extra_help: html`<p>
-        Host your explainer somewhere like Github that makes it easy to file
+        Host your explainer somewhere like Github (and *not* Google Docs) that makes it easy to file
         issues. Your organization may recommend a
         <a
           target="_blank"
