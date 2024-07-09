@@ -2357,7 +2357,7 @@ function checkNotGoogleDocs(
   value: string,
   warning = 'Avoid using Google Docs'
 ) {
-  if (/docs.google.com\/document/.test(value)) {
+  if (/docs\.google\.com\/document/.test(value)) {
     return {warning};
   }
   return undefined;
