@@ -733,6 +733,11 @@ export const ALL_FIELDS: Record<string, Field> = {
           >specification mentor</a
         >.
       </p>`,
+    check: value =>
+      checkNotGoogleDocs(
+        value,
+        'Explainers should not be hosted on Google Docs.'
+      ),
   },
 
   spec_link: {
@@ -743,6 +748,11 @@ export const ALL_FIELDS: Record<string, Field> = {
     help_text: html` Link to the spec, if and when available. When implementing
     a spec update, please link to a heading in a published spec rather than a
     pull request when possible.`,
+    check: value =>
+      checkNotGoogleDocs(
+        value,
+        'Specifications should not be hosted on Google Docs.'
+      ),
   },
 
   comments: {
@@ -2330,5 +2340,15 @@ async function checkExtensionMilestoneIsValid(value) {
   }
   // TODO(DanielRyanSmith): Check that the extension milestone comes after
   // OT end milestone and all previous extension end milestones.
+  return undefined;
+}
+
+function checkNotGoogleDocs(
+  value: string,
+  warning = 'Avoid using Google Docs'
+) {
+  if (/docs.google.com\/document/.test(value)) {
+    return {warning};
+  }
   return undefined;
 }
