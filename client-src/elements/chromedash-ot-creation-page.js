@@ -143,6 +143,13 @@ export class ChromedashOTCreationPage extends LitElement {
         isApprovalsField: true,
       },
       {
+        name: 'ot_approval_buganizer_custom_field_id',
+        touched: true,
+        value: '',
+        stageId: this.stage.id,
+        isApprovalsField: true,
+      },
+      {
         name: 'ot_approval_group_email',
         touched: true,
         value: '',

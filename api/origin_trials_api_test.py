@@ -573,6 +573,10 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
         'form_field_name': 'ot_approval_buganizer_component',
         'value': '123456',
       },
+      'ot_approval_buganizer_custom_field_id': {
+        'form_field_name': 'ot_approval_buganizer_custom_field_id',
+        'value': '111111',
+      },
       'ot_approval_group_email': {
         'form_field_name': 'ot_approval_group_email',
         'value': 'users@google.com',
@@ -616,7 +620,8 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
       # Handle string of emails as a list.
       if field == 'ot_emails':
         value = field_info['value'].split(',')
-      elif field == 'ot_approval_buganizer_component':
+      elif (field == 'ot_approval_buganizer_component' or
+            field == 'ot_approval_buganizer_custom_field_id'):
         value = int(value)
       # Check milestone fields
       elif field == 'desktop_first' or field == 'desktop_last':

@@ -323,6 +323,7 @@ export const STAGE_SPECIFIC_FIELDS = new Set<string>([
   'ot_extension__milestone_desktop_last',
   'ot_require_approvals',
   'ot_approval_buganizer_component',
+  'ot_approval_buganizer_custom_field_id',
   'ot_approval_group_email',
   'ot_approval_criteria_url',
   'finch_url',
