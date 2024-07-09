@@ -19,8 +19,11 @@ RUN npm config set script-shell bash --global
 
 USER pwuser
 WORKDIR /work
-# Cache the infrequent but time consuming changes early
-COPY --chown=pwuser:pwuser package.json /work/
-RUN npm install -D
-# Copy the rest of the root directory. Subdirectories are mounted in docker-compose.yml.
+
+# Install a consistent version of Playwright. The duplicate ARG line is needed to copy the value
+# into this build stage.
+ARG PLAYWRIGHT_VERSION
+RUN npm install @playwright/test@${PLAYWRIGHT_VERSION}
+
+# Copy the root directory. Subdirectories are mounted in docker-compose.yml.
 COPY --chown=pwuser:pwuser wait-for-app.sh playwright.config.cjs /work/
