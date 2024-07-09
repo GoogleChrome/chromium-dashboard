@@ -690,11 +690,23 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MULTI_URL_FIELD_ATTRS,
     required: false,
     label: 'Explainer link(s)',
-    help_text: html` Link to explainer(s) (one URL per line). You should have at
-    least an explainer in hand and have shared it on a public forum before
-    sending an Intent to Prototype in order to enable discussion with other
-    browser vendors, standards bodies, or other interested parties.`,
-    extra_help: html` <p>
+    help_text: html`Link to explainer(s) (one URL per line). See the
+      <a
+        target="_blank"
+        href="https://www.chromium.org/blink/launching-features/#start-incubating"
+        >launch process</a
+      >
+      for detailed advice, or expand the extra help here for a summary.`,
+    extra_help: html`<p>
+        Host your explainer somewhere like Github (and <i>not</i> Google Docs)
+        that makes it easy to file issues. Your organization may recommend a
+        <a
+          target="_blank"
+          href="https://www.chromium.org/blink/launching-features/#start-incubating"
+          >particular place</a
+        >.
+      </p>
+      <p>
         See the TAG guide to writing
         <a target="_blank" href="https://tag.w3.org/explainers/">Explainers</a>
         for several examples of good explainers and tips for effective
