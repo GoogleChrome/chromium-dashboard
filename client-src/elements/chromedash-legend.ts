@@ -1,14 +1,14 @@
 import {LitElement, css, html, nothing} from 'lit';
-import './chromedash-color-status';
+import {customElement, property} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import './chromedash-color-status';
 
+@customElement('chromedash-legend')
 class ChromedashLegend extends LitElement {
-  static get properties() {
-    return {
-      opened: {type: Boolean, reflect: true},
-      views: {attribute: false}, // Assigned in features-page.js, value from Flask
-    };
-  }
+  @property({type: Boolean, reflect: true})
+  opened;
+  @property({attribute: false})
+  views;
 
   static get styles() {
     return [
@@ -67,11 +67,11 @@ class ChromedashLegend extends LitElement {
   }
 
   open() {
-    this.shadowRoot.querySelector('sl-dialog').show();
+    this?.renderRoot.querySelector('sl-dialog')?.show();
   }
 
   close() {
-    this.shadowRoot.querySelector('sl-dialog').hide();
+    this?.renderRoot.querySelector('sl-dialog')?.hide();
   }
 
   render() {
@@ -196,5 +196,3 @@ class ChromedashLegend extends LitElement {
     `;
   }
 }
-
-customElements.define('chromedash-legend', ChromedashLegend);
