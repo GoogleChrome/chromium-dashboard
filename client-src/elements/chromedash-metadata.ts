@@ -1,7 +1,7 @@
-import { LitElement, css, html } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { SHARED_STYLES } from '../css/shared-css.js';
+import {LitElement, css, html} from 'lit';
+import {customElement, property, state} from 'lit/decorators.js';
+import {ifDefined} from 'lit/directives/if-defined.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 
 @customElement('chromedash-metadata')
 class ChromedashMetadata extends LitElement {
@@ -79,7 +79,9 @@ class ChromedashMetadata extends LitElement {
   }
 
   selectInVersionList(index) {
-    (this.renderRoot.querySelector('#versionlist') as HTMLSelectElement).selectedIndex = index; // log null
+    (
+      this.renderRoot.querySelector('#versionlist') as HTMLSelectElement
+    ).selectedIndex = index; // log null
   }
 
   _processResponse(response) {
