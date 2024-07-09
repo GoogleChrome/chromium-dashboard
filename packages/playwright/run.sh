@@ -1,12 +1,12 @@
 #!/bin/bash
 
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
 export USERID=$(id -u)
 export GROUPID=$(id -g)
-export PLAYWRIGHT_VERSION=$(bash -c './get-npm-package-version.sh ./package.json "@playwright/test"')
+export PLAYWRIGHT_VERSION=$(bash -c "${SCRIPT_DIR}/get-npm-package-version.sh ./package.json '@playwright/test'")
 
 set -e
-
-SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 export COMPOSE_FILES_FLAG="-f ${SCRIPT_DIR}/docker-compose.yml
     -f  ${SCRIPT_DIR}/../../.devcontainer/db-docker-compose.yml"
