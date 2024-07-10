@@ -59,7 +59,7 @@ const compareFeatures = (a, b) =>
   a.name.localeCompare(b.name, 'fr', {ignorePunctuation: true}); // comparator for sorting milestone features
 
 @customElement('chromedash-roadmap')
-class ChromedashRoadmap extends LitElement {
+export class ChromedashRoadmap extends LitElement {
   static get styles() {
     return [
       ...SHARED_STYLES,

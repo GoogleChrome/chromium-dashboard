@@ -2,10 +2,14 @@ import {LitElement, css, html} from 'lit';
 import {ref, createRef} from 'lit/directives/ref.js';
 import './chromedash-roadmap';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import {User} from '../js-src/cs-client';
+import {customElement, property, state} from 'lit/decorators.js';
+import {ChromedashRoadmap} from './chromedash-roadmap';
 
+@customElement('chromedash-roadmap-page')
 export class ChromedashRoadmapPage extends LitElement {
-  sectionRef = createRef();
-  roadmapRef = createRef();
+  sectionRef = createRef<HTMLElement>();
+  roadmapRef = createRef<ChromedashRoadmap>();
 
   static get styles() {
     return [
@@ -35,15 +39,16 @@ export class ChromedashRoadmapPage extends LitElement {
       viewOffset: {type: Number},
     };
   }
+  @property({type: Object, attribute: false})
+  user!: User;
+  @state()
+  cardWidth = 0;
+  @state()
+  numColumns = 0;
+  @state()
+  viewOffset = 0;
 
-  constructor() {
-    super();
-    this.user = {};
-    this.cardWidth = 0;
-    this.numColumns = 0;
-    this.viewOffset = 0;
-    this.boundHandleResize = this.handleResize.bind(this);
-  }
+  boundHandleResize = this.handleResize.bind(this);
 
   connectedCallback() {
     super.connectedCallback();
@@ -60,24 +65,26 @@ export class ChromedashRoadmapPage extends LitElement {
   }
 
   handleResize() {
-    const containerWidth = this.sectionRef.value.offsetWidth;
+    const containerWidth = this.sectionRef.value?.offsetWidth;
     const margin = 16;
 
     let numColumns = 3;
-    if (containerWidth < 768) {
+    if (containerWidth && containerWidth < 768) {
       numColumns = 1;
-    } else if (containerWidth < 1152) {
+    } else if (containerWidth && containerWidth < 1152) {
       numColumns = 2;
     }
     this.numColumns = numColumns;
-    this.cardWidth = containerWidth / numColumns - margin;
+    if (containerWidth) {
+      this.cardWidth = containerWidth / numColumns - margin;
+    }
 
     this.updateRoadmapMargin(false);
   }
 
   handleMove(e) {
     const roadmap = this.roadmapRef.value;
-    if (!roadmap.lastFutureFetchedOn) return;
+    if (!roadmap || !roadmap.lastFutureFetchedOn) return;
 
     if (e.target.id == 'next-button') {
       this.viewOffset -= 1; // move to newer version
@@ -99,6 +106,7 @@ export class ChromedashRoadmapPage extends LitElement {
 
   updateRoadmapMargin(animated) {
     const roadmap = this.roadmapRef.value;
+    if (!roadmap) return;
     if (animated) {
       roadmap.classList.add('animate');
     } else {
@@ -147,5 +155,3 @@ export class ChromedashRoadmapPage extends LitElement {
     `;
   }
 }
-
-customElements.define('chromedash-roadmap-page', ChromedashRoadmapPage);

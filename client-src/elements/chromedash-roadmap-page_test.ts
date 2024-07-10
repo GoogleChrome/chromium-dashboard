@@ -100,11 +100,11 @@ describe('chromedash-roadmap-page', () => {
     assert.instanceOf(component, ChromedashRoadmapPage);
 
     // subheader exists
-    const subheaderDiv = component.shadowRoot.querySelector('div#subheader');
+    const subheaderDiv = component.renderRoot.querySelector('div#subheader');
     assert.exists(subheaderDiv);
 
     // releases-section exists and contains the previous and next buttons
-    const releasesSec = component.shadowRoot.querySelector(
+    const releasesSec = component.renderRoot.querySelector(
       'section#releases-section'
     );
     assert.exists(releasesSec);
@@ -112,7 +112,7 @@ describe('chromedash-roadmap-page', () => {
     assert.include(releasesSec.innerHTML, 'button id="next-button"');
 
     // chromedash-roadmap component exists
-    const roadmap = component.shadowRoot.querySelector('chromedash-roadmap');
+    const roadmap = component.renderRoot.querySelector('chromedash-roadmap');
     assert.exists(roadmap);
   });
 });
