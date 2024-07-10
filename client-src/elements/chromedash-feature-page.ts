@@ -1,13 +1,24 @@
-import {LitElement, css, html, nothing} from 'lit';
+import {LitElement, TemplateResult, css, html, nothing} from 'lit';
+import {customElement, property, state} from 'lit/decorators.js';
+import {ifDefined} from 'lit/directives/if-defined.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import {FeatureNotFoundError} from '../js-src/cs-client.js';
+import {
+  Feature,
+  FeatureLink,
+  FeatureNotFoundError,
+  User,
+} from '../js-src/cs-client.js';
 import './chromedash-feature-detail';
 import {DETAILS_STYLES} from './chromedash-feature-detail';
 import './chromedash-feature-highlights.js';
+import {GateDict} from './chromedash-gate-chip.js';
+import {Process, ProgressItem} from './chromedash-gate-column.js';
 import {showToastMessage} from './utils.js';
 
 const INACTIVE_STATES = ['No longer pursuing', 'Deprecated', 'Removed'];
+declare var ga: Function;
 
+@customElement('chromedash-feature-page')
 export class ChromedashFeaturePage extends LitElement {
   static get styles() {
     return [
@@ -70,41 +81,34 @@ export class ChromedashFeaturePage extends LitElement {
     ];
   }
 
-  static get properties() {
-    return {
-      user: {attribute: false},
-      paired_user: {attribute: false},
-      featureId: {type: Number},
-      feature: {type: Object},
-      featureLinks: {type: Array},
-      gates: {type: Array},
-      comments: {type: Array},
-      process: {type: Object},
-      progress: {type: Object},
-      contextLink: {type: String},
-      appTitle: {type: String},
-      starred: {type: Boolean},
-      loading: {attribute: false},
-      selectedGateId: {type: Number},
-    };
-  }
-
-  constructor() {
-    super();
-    this.user = null;
-    this.featureId = 0;
-    this.feature = {};
-    this.featureLinks = [];
-    this.gates = [];
-    this.comments = {};
-    this.process = {};
-    this.progress = {};
-    this.contextLink = '';
-    this.appTitle = '';
-    this.starred = false;
-    this.loading = true;
-    this.selectedGateId = 0;
-  }
+  @property({type: Object, attribute: false})
+  user!: User;
+  @property({type: Object, attribute: false})
+  paired_user!: User;
+  @property({type: Number, attribute: false})
+  featureId = 0;
+  @property({type: Object, attribute: false})
+  feature!: Feature;
+  @property({type: Array, attribute: false})
+  featureLinks: FeatureLink[] = [];
+  @property({type: Array, attribute: false})
+  gates: GateDict[] = [];
+  @property({type: Array, attribute: false})
+  comments: string[] = [];
+  @property({type: Object, attribute: false})
+  process!: Process;
+  @property({type: Object, attribute: false})
+  progress!: ProgressItem;
+  @property({type: String, attribute: false})
+  contextLink = '';
+  @property({type: String})
+  appTitle = '';
+  @property({type: Number})
+  selectedGateId = 0;
+  @state()
+  starred = false;
+  @state()
+  loading = true;
 
   connectedCallback() {
     super.connectedCallback();
@@ -275,7 +279,8 @@ export class ChromedashFeaturePage extends LitElement {
   }
 
   featureIsInactive() {
-    const status = this.feature && this.feature.browsers.chrome.status.text;
+    const status =
+      (this.feature && this.feature.browsers.chrome.status.text) || '';
     return INACTIVE_STATES.includes(status);
   }
 
@@ -295,6 +300,7 @@ export class ChromedashFeaturePage extends LitElement {
   }
 
   renderSubHeader() {
+    const canShare = typeof navigator.share === 'function';
     return html`
       <div id="subheader" style="display:block">
         <div class="tooltips" style="float:right">
@@ -322,7 +328,7 @@ export class ChromedashFeaturePage extends LitElement {
             : nothing}
           <span class="tooltip" title="File a bug against this feature">
             <a
-              href=${this.feature.new_crbug_url}
+              href=${ifDefined(this.feature.new_crbug_url)}
               class="newbug"
               data-tooltip
               target="_blank"
@@ -332,7 +338,7 @@ export class ChromedashFeaturePage extends LitElement {
             </a>
           </span>
           <span
-            class="tooltip ${navigator.share ? '' : 'no-web-share'}"
+            class="tooltip ${canShare ? '' : 'no-web-share'}"
             title="Share this feature"
           >
             <a
@@ -374,7 +380,7 @@ export class ChromedashFeaturePage extends LitElement {
   }
 
   renderWarnings() {
-    const warnings = [];
+    const warnings: TemplateResult[] = [];
     if (this.feature.deleted) {
       warnings.push(html`
         <div id="deleted" class="warning">
@@ -460,5 +466,3 @@ export class ChromedashFeaturePage extends LitElement {
     `;
   }
 }
-
-customElements.define('chromedash-feature-page', ChromedashFeaturePage);
