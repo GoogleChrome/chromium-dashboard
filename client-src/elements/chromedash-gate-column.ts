@@ -1,35 +1,88 @@
-import {LitElement, css, html, nothing} from 'lit';
-import {ref, createRef} from 'lit/directives/ref.js';
+import {LitElement, TemplateResult, css, html, nothing} from 'lit';
+import {createRef, ref} from 'lit/directives/ref.js';
 import './chromedash-activity-log';
-import {
-  openPreflightDialog,
-  somePendingPrereqs,
-  somePendingGates,
-} from './chromedash-preflight-dialog';
-import {maybeOpenPrevoteDialog} from './chromedash-prevote-dialog';
 import {openNaRationaleDialog} from './chromedash-na-rationale-dialog';
 import {
+  openPreflightDialog,
+  somePendingGates,
+  somePendingPrereqs,
+} from './chromedash-preflight-dialog';
+import {maybeOpenPrevoteDialog} from './chromedash-prevote-dialog';
+import {GATE_QUESTIONNAIRES} from './form-definition.js';
+import {
+  GATE_NA_REQUESTED,
+  GATE_PREPARING,
+  GATE_REVIEW_REQUESTED,
+  VOTE_OPTIONS,
+} from './form-field-enums';
+import {
   autolink,
-  showToastMessage,
   findProcessStage,
   renderAbsoluteDate,
   renderRelativeDate,
+  showToastMessage,
 } from './utils.js';
-import {GATE_QUESTIONNAIRES} from './form-definition.js';
-import {
-  GATE_PREPARING,
-  GATE_REVIEW_REQUESTED,
-  GATE_NA_REQUESTED,
-  VOTE_OPTIONS,
-} from './form-field-enums';
 
+import {customElement, property, state} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import {Feature, StageDict, User} from '../js-src/cs-client';
+import {GateDict} from './chromedash-gate-chip';
 
+interface Vote {
+  feature_id: number;
+  gate_id: number;
+  gate_type?: number;
+  state: number;
+  set_on: Date;
+  set_by: string;
+}
+
+interface ProgressItem {
+  name: string;
+  field?: string;
+}
+
+interface Action {
+  name: string;
+  url: string;
+  prerequisites: string[];
+}
+
+interface ApprovalFieldDef {
+  name: string;
+  description: string;
+  field_id: number;
+  rule: string;
+  approvers: string | string[];
+  team_name: string;
+  escalation_email?: string;
+  slo_initial_response?: number;
+}
+
+interface ProcessStage {
+  name: string;
+  description: string;
+  progress_items: ProgressItem[];
+  actions: Action[];
+  approvals: ApprovalFieldDef[]; // Assuming ApprovalFieldDef is defined somewhere
+  incoming_stage: number;
+  outgoing_stage: number;
+  stage_type?: number;
+}
+
+interface Process {
+  name: string;
+  description: string;
+  applicability: string;
+  stages: ProcessStage[];
+}
+
+@customElement('chromedash-gate-column')
 export class ChromedashGateColumn extends LitElement {
-  voteSelectRef = createRef();
-  commentAreaRef = createRef();
-  postToThreadRef = createRef();
-  assigneeSelectRef = createRef();
+  voteSelectRef = createRef<HTMLSelectElement>();
+  commentAreaRef = createRef<HTMLTextAreaElement>();
+  postToThreadRef = createRef<HTMLInputElement>();
+  assigneeSelectRef = createRef<HTMLSelectElement>();
 
   static get styles() {
     return [
@@ -145,44 +198,36 @@ export class ChromedashGateColumn extends LitElement {
     ];
   }
 
-  static get properties() {
-    return {
-      user: {type: Object},
-      feature: {type: Object},
-      featureGates: {type: Array},
-      stage: {type: Object},
-      gate: {type: Object},
-      progress: {type: Object},
-      process: {type: Object},
-      votes: {type: Array},
-      comments: {type: Array},
-      loading: {type: Boolean},
-      needsSave: {type: Boolean},
-      showSaved: {type: Boolean},
-      submittingComment: {type: Boolean},
-      submittingVote: {type: Boolean},
-      needsPost: {type: Boolean},
-    };
-  }
-
-  constructor() {
-    super();
-    this.user = {};
-    this.feature = {};
-    this.featureGates = [];
-    this.stage = {};
-    this.gate = {};
-    this.progress = {};
-    this.process = {};
-    this.votes = [];
-    this.comments = [];
-    this.loading = true; // Avoid errors before first usage.
-    this.needsSave = false;
-    this.showSaved = false;
-    this.submittingComment = false;
-    this.submittingVote = false;
-    this.needsPost = false;
-  }
+  @property({type: Object})
+  user!: User;
+  @state()
+  feature!: Feature;
+  @state()
+  featureGates!: GateDict[];
+  @state()
+  stage!: StageDict;
+  @state()
+  gate!: GateDict;
+  @state()
+  progress!: ProgressItem;
+  @state()
+  process!: Process;
+  @state()
+  votes: Vote[] = [];
+  @state()
+  comments: string[] = [];
+  @state()
+  needsSave = false;
+  @state()
+  showSaved = false;
+  @state()
+  submittingComment = false;
+  @state()
+  submittingVote = false;
+  @state()
+  needsPost = false;
+  @state()
+  loading = true;
 
   setContext(feature, stageId, gate) {
     this.loading = true;
@@ -283,7 +328,7 @@ export class ChromedashGateColumn extends LitElement {
 
   handlePost() {
     const commentArea = this.commentAreaRef.value;
-    const commentText = commentArea.value.trim();
+    const commentText = commentArea?.value.trim();
     const postToThreadType = this.postToThreadRef.value?.checked
       ? this.gate.gate_type
       : 0;
@@ -321,7 +366,7 @@ export class ChromedashGateColumn extends LitElement {
   saveVote() {
     this.submittingComment = true;
     window.csClient
-      .setVote(this.feature.id, this.gate.id, this.voteSelectRef.value.value)
+      .setVote(this.feature.id, this.gate.id, this.voteSelectRef.value?.value)
       .then(() => {
         this.needsSave = false;
         this.showSaved = true;
@@ -340,7 +385,7 @@ export class ChromedashGateColumn extends LitElement {
     Promise.all([window.csClient.getGates(this.feature.id)])
       .then(([gatesRes]) => {
         this.featureGates = gatesRes.gates;
-        const vote = this.voteSelectRef.value.value;
+        const vote = this.voteSelectRef.value?.value;
         maybeOpenPrevoteDialog(
           this.featureGates,
           this.stage,
@@ -464,7 +509,7 @@ export class ChromedashGateColumn extends LitElement {
         // Use setTimeout() to prevent safari from blocking the new tab.
         setTimeout(() => {
           const draftWindow = window.open(url, '_blank');
-          draftWindow.focus();
+          draftWindow!.focus();
         });
       }
     };
@@ -593,7 +638,7 @@ export class ChromedashGateColumn extends LitElement {
     const limit = this.gate?.slo_initial_response;
     const took = this.gate?.slo_initial_response_took;
     const remaining = this.gate?.slo_initial_response_remaining;
-    let msg = nothing;
+    let msg: typeof nothing | TemplateResult = nothing;
     let iconName = '';
     let className = '';
 
@@ -631,7 +676,7 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   renderWarnings() {
-    if (this.gate.team_name == 'Privacy') {
+    if (this.gate && this.gate.team_name == 'Privacy') {
       return html`
         <div class="process-notice">
           Googlers: Please follow the instructions at
@@ -716,8 +761,8 @@ export class ChromedashGateColumn extends LitElement {
 
   renderVoteRow(vote, canVote) {
     const shortVoter = vote.set_by.split('@')[0] + '@';
-    let saveButton = nothing;
-    let voteCell = this.renderVoteReadOnly(vote);
+    let saveButton: typeof nothing | TemplateResult = nothing;
+    let voteCell: TemplateResult | string = this.renderVoteReadOnly(vote);
 
     if (canVote && vote.set_by == this.user?.email) {
       voteCell = this.renderVoteMenu(vote.state);
@@ -766,9 +811,9 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   saveAssignedReviewer() {
-    const assignee = this.assigneeSelectRef.value.value;
+    const assignee = this.assigneeSelectRef.value?.value;
     const assigneeList = assignee === '' ? [] : [assignee];
-    csClient
+    window.csClient
       .updateGate(this.feature.id, this.gate.id, assigneeList)
       .then(() => this._fireEvent('refetch-needed', {}));
   }
@@ -838,8 +883,7 @@ export class ChromedashGateColumn extends LitElement {
           <th>Review status</th>
         </tr>
         ${responses.map(v => this.renderVoteRow(v, canVote))}
-        ${othersPending.map(ae => this.renderPendingVote(ae, canVote))}
-        ${addVoteRow}
+        ${othersPending.map(ae => this.renderPendingVote(ae))} ${addVoteRow}
       </table>
       ${assignControls}
     `;
@@ -1000,5 +1044,3 @@ export class ChromedashGateColumn extends LitElement {
     `;
   }
 }
-
-customElements.define('chromedash-gate-column', ChromedashGateColumn);
