@@ -100,10 +100,6 @@ export class ChromedashFormField extends LitElement {
 
   firstUpdated() {
     this.initialValue = JSON.parse(JSON.stringify(this.value));
-
-    // We only want to do the following one time.
-    this.setupSemanticCheck();
-
     // We need to wait until the entire page is rendered, so later dependents
     // are available to do the semantic check, hence firstUpdated is too soon.
     // Do first semantic check after the document is ready.
@@ -171,36 +167,6 @@ export class ChromedashFormField extends LitElement {
       // Do the semantic check for unit testing.  Only works for isolated field.
       this.doSemanticCheck();
     }
-  }
-
-  setupSemanticCheck() {
-    // Find the form-field component in order to set custom validity.
-    let fieldSelector = `#id_${this.name}`;
-    let formFieldElements =
-      this.renderRoot.querySelectorAll<SlInput>(fieldSelector);
-    if (formFieldElements.length > 1) {
-      if (this.stageId) {
-        // The id is not unique for fields in multiple stages, e.g. origin trials.
-        // So let's try qualifying the selector with this.stageId in a container.
-        fieldSelector = `[stageId="${this.stageId} #id_${this.name}"]`;
-        formFieldElements =
-          this.renderRoot.querySelectorAll<SlInput>(fieldSelector);
-      } else {
-        throw new Error(
-          `Name of field, "${this.name}", is not unique and no stage Id was provided.`
-        );
-      }
-    }
-    // There should only be one now.
-    const formFieldElement = formFieldElements[0];
-    let checkResult;
-    // For 'input' elements.
-    if (formFieldElement?.setCustomValidity && formFieldElement.input) {
-      formFieldElement.setCustomValidity(
-        checkResult && checkResult.error ? checkResult.error : ''
-      );
-    }
-    // TODO: handle other form field types.
   }
 
   async doSemanticCheck() {
