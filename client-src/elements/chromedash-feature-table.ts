@@ -9,8 +9,6 @@ import {clamp, showToastMessage} from './utils.js';
 @customElement('chromedash-feature-table')
 class ChromedashFeatureTable extends LitElement {
   @state()
-  query = '';
-  @state()
   loading = true;
   @state()
   reloading = false;
@@ -18,17 +16,19 @@ class ChromedashFeatureTable extends LitElement {
   features!: Feature[];
   @state()
   totalCount = 0;
-  @state()
+  @property({type: Number, attribute: false})
   start = 0;
-  @property({type: Boolean})
+  @property({type: String, attribute: false})
+  query = '';
+  @property({type: Boolean, attribute: false})
   showEnterprise = false;
-  @property({type: String})
+  @property({type: String, attribute: false})
   sortSpec = '';
   @property({type: Boolean})
   showQuery = false;
-  @property({type: Object})
+  @property({type: Object, attribute: false})
   starredFeatures = new Set<number>();
-  @property({type: Number})
+  @property({type: Number, attribute: false})
   num = 100;
   @property({type: Boolean})
   alwaysOfferPagination = false;
@@ -41,9 +41,9 @@ class ChromedashFeatureTable extends LitElement {
   @property({type: Number})
   selectedGateId = 0;
   @property({type: String})
-  columns;
+  columns!: 'normal' | 'approvals';
   @property({type: Boolean})
-  signedIn;
+  signedIn!: boolean;
 
   connectedCallback() {
     super.connectedCallback();

@@ -26,8 +26,6 @@ class ChromedashFeatureRow extends LitElement {
   @property({type: Object})
   starredFeatures = new Set<number>();
   @property({type: Object})
-  approvals; // TODO(markxiong0122): define approvals type
-  @property({type: Object})
   gates;
   @property({type: Number})
   selectedGateId = 0;
