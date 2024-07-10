@@ -274,11 +274,13 @@
 
 /**
  * @typedef {object} User
+ * @property {number} id
  * @property {boolean} can_create_feature
  * @property {boolean} can_edit_all
  * @property {boolean} can_comment
  * @property {boolean} is_admin
  * @property {string} email
+ * @property {boolean} is_site_editor
  * @property {number[]} approvable_gate_types
  * @property {number[]} editable_features
  */
