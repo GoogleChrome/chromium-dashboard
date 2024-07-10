@@ -2,6 +2,15 @@ import {LitElement, html, css} from 'lit';
 import {showToastMessage} from './utils.js';
 import '@polymer/iron-icon';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import {customElement, property, state} from 'lit/decorators.js';
+import {Feature} from '../js-src/cs-client.js';
+
+interface MilestoneInfo {
+  version: number;
+  features: {
+    [key: string]: Feature[];
+  };
+}
 
 const TEMPLATE_CONTENT = {
   stable_minus_one: {
@@ -49,6 +58,7 @@ const SHOW_DATES = true;
 const compareFeatures = (a, b) =>
   a.name.localeCompare(b.name, 'fr', {ignorePunctuation: true}); // comparator for sorting milestone features
 
+@customElement('chromedash-roadmap')
 class ChromedashRoadmap extends LitElement {
   static get styles() {
     return [
@@ -63,37 +73,34 @@ class ChromedashRoadmap extends LitElement {
       `,
     ];
   }
-
-  static get properties() {
-    return {
-      channels: {attribute: false},
-      signedIn: {type: Boolean},
-      starredFeatures: {type: Object}, // will contain a set of starred features
-      numColumns: {type: Number},
-      cardWidth: {type: Number}, // width of each milestone card
-      lastFutureFetchedOn: {type: Number}, // milestone number rendering of which caused fetching of next milestones
-      lastPastFetchedOn: {type: Number}, // milestone number rendering of which caused fetching of previous milestones
-      lastMilestoneVisible: {type: Number}, // milestone number visible on screen to the user
-      futureMilestoneArray: {type: Array}, // array to store the milestone numbers fetched after dev channel
-      pastMilestoneArray: {type: Array}, // array to store the milestone numbers fetched before stable channel
-      milestoneInfo: {type: Object}, // object to store milestone details (features version etc.) fetched after dev channel
-      highlightFeature: {type: Number}, // feature to highlight
-      cardOffset: {type: Number}, // left margin value
-    };
-  }
-
-  constructor() {
-    super();
-    this.channels = {};
-    this.shownChannelNames = [];
-    this.numColumns = 0;
-    this.cardWidth = 0;
-    this.starredFeatures = new Set();
-    this.futureMilestoneArray = [];
-    this.pastMilestoneArray = [];
-    this.milestoneInfo = {};
-    this.cardOffset = 0;
-  }
+  @property({type: Boolean})
+  signedIn;
+  @property({type: Number, attribute: false})
+  numColumns = 0;
+  @property({type: Number, attribute: false})
+  cardWidth = 0;
+  @state()
+  channels;
+  @state()
+  starredFeatures = new Set<Number>();
+  @state()
+  lastFutureFetchedOn!: number;
+  @state()
+  lastPastFetchedOn!: number;
+  @state()
+  lastMilestoneVisible!: number;
+  @state()
+  futureMilestoneArray: number[] = [];
+  @state()
+  pastMilestoneArray: number[] = [];
+  @state()
+  milestoneInfo!: MilestoneInfo;
+  @state()
+  highlightFeature!: number;
+  @state()
+  cardOffset = 0;
+  @state()
+  shownChannelNames: string[] = [];
 
   connectedCallback() {
     super.connectedCallback();
@@ -305,5 +312,3 @@ class ChromedashRoadmap extends LitElement {
     `;
   }
 }
-
-customElements.define('chromedash-roadmap', ChromedashRoadmap);
