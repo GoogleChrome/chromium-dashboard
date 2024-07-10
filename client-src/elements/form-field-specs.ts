@@ -66,7 +66,7 @@ export type CheckFunction = (
   initialValue: string
 ) => CheckResult | Promise<CheckResult>;
 
-interface ResolvedField {
+export interface ResolvedField {
   type?: string;
   name?: keyof FormattedFeature;
   attrs?: FieldAttrs;

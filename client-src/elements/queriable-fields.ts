@@ -20,7 +20,15 @@ export const DATE_KIND = 'YYYY-MM-DD';
 export const EMAIL_KIND = 'user@example.com';
 export const ENUM_KIND = 'enum';
 
-export const QUERIABLE_FIELDS = [
+export interface QueryField {
+  name: string;
+  kind: string;
+  doc: string;
+  choices?:
+    | Record<string, [number, string]>
+    | Record<string, [number, string, string]>;
+}
+export const QUERIABLE_FIELDS: QueryField[] = [
   {
     name: 'created.when',
     kind: DATE_KIND,

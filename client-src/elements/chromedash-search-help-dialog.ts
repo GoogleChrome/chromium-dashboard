@@ -1,6 +1,8 @@
 import {LitElement, css, html} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import {QUERIABLE_FIELDS} from './queriable-fields.js';
+import {QUERIABLE_FIELDS, QueryField} from './queriable-fields.js';
+import {customElement} from 'lit/decorators.js';
+import {ResolvedField} from './form-field-specs.js';
 
 let searchHelpDialogEl;
 
@@ -15,6 +17,7 @@ export async function openSearchHelpDialog() {
   searchHelpDialogEl.show();
 }
 
+@customElement('chromedash-search-help-dialog')
 export class ChromedashSearchHelpDialog extends LitElement {
   static get styles() {
     return [
@@ -41,11 +44,11 @@ export class ChromedashSearchHelpDialog extends LitElement {
   }
 
   show() {
-    this.shadowRoot.querySelector('sl-dialog').show();
+    this.renderRoot.querySelector('sl-dialog')?.show();
   }
 
   hide() {
-    this.shadowRoot.querySelector('sl-dialog').hide();
+    this.renderRoot.querySelector('sl-dialog')?.hide();
   }
 
   renderExampleRow(terms, explanation) {
@@ -179,7 +182,7 @@ export class ChromedashSearchHelpDialog extends LitElement {
     `;
   }
 
-  renderFieldRow(queryField) {
+  renderFieldRow(queryField: QueryField) {
     if (queryField.choices) {
       const choiceItems = Object.values(queryField.choices).map(
         c => html` <div>${queryField.name}="${c[1]}"</div> `
@@ -236,8 +239,3 @@ export class ChromedashSearchHelpDialog extends LitElement {
     `;
   }
 }
-
-customElements.define(
-  'chromedash-search-help-dialog',
-  ChromedashSearchHelpDialog
-);
