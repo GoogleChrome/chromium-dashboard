@@ -533,29 +533,6 @@ class ChromedashFeatureDetail extends LitElement {
     return gatesForStage.map(g => this.renderGateChip(feStage, g));
   }
 
-  // Create an extension stage for an origin trial stage on button click.
-  createExtensionStage(feStage: StageDict, extensionAlreadyExists) {
-    if (feStage.stage_type in OT_EXTENSION_STAGE_MAPPING) {
-      return;
-    }
-    const confirmText =
-      'Trial extension fields are already available for this trial. ' +
-      'Do you want to add more fields for another, separate trial extension?';
-    if (!extensionAlreadyExists || window.confirm(confirmText)) {
-      const body = {
-        stage_type: OT_EXTENSION_STAGE_MAPPING[feStage.stage_type],
-        ot_stage_id: feStage.id,
-      };
-
-      window.csClient.createStage(this.feature.id, body).then(() => {
-        // Redirect to origin trial stage after creation.
-        location.assign(
-          `/guide/stage/${this.feature.id}/${feStage.intent_stage}/${feStage.id}`
-        );
-      });
-    }
-  }
-
   hasStageActions(stage, feStage) {
     // See if there is an API owners gate where actions are displayed.
     const hasOwnersGate = this.gates.some(
