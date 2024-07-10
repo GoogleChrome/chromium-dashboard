@@ -1,7 +1,8 @@
 import {LitElement, css, html} from 'lit';
+import {property} from 'lit/decorators.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 import './chromedash-stack-rank';
 import {showToastMessage} from './utils';
-import {SHARED_STYLES} from '../css/shared-css.js';
 
 export class ChromedashStackRankPage extends LitElement {
   static get styles() {
@@ -34,22 +35,14 @@ export class ChromedashStackRankPage extends LitElement {
     ];
   }
 
-  static get properties() {
-    return {
-      type: {type: String}, // "css" or "feature"
-      view: {type: String}, // "popularity" or "animated"
-      viewList: {attribute: false},
-      tempList: {attribute: false},
-    };
-  }
-
-  constructor() {
-    super();
-    this.type = '';
-    this.view = '';
-    this.viewList = [];
-    this.tempList = [];
-  }
+  @property({type: String, attribute: false})
+  type!: 'css' | 'feature';
+  @property({type: String, attribute: false})
+  view!: 'popularity' | 'animated';
+  @property({type: Array, attribute: false})
+  viewList: any[] = [];
+  @property({type: Array, attribute: false})
+  tempList: any[] = [];
 
   connectedCallback() {
     super.connectedCallback();
@@ -62,7 +55,7 @@ export class ChromedashStackRankPage extends LitElement {
     // [DEV] Change to true to use the staging server endpoint for development
     const devMode = false;
     if (devMode) endpoint = 'https://cr-status-staging.appspot.com' + endpoint;
-    const options = {credentials: 'omit'};
+    const options: RequestInit = {credentials: 'omit'};
 
     fetch(endpoint, options)
       .then(res => res.json())
