@@ -1,8 +1,8 @@
+import {SlCheckbox} from '@shoelace-style/shoelace';
 import {LitElement, css, html, nothing} from 'lit';
-import {SHARED_STYLES} from '../css/shared-css.js';
 import {customElement, state} from 'lit/decorators.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
 import {User} from '../js-src/cs-client.js';
-import {SlCheckbox, SlInput} from '@shoelace-style/shoelace';
 
 @customElement('chromedash-userlist')
 class ChromedashUserlist extends LitElement {
