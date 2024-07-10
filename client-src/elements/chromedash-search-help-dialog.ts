@@ -1,8 +1,7 @@
 import {LitElement, css, html} from 'lit';
+import {customElement} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {QUERIABLE_FIELDS, QueryField} from './queriable-fields.js';
-import {customElement} from 'lit/decorators.js';
-import {ResolvedField} from './form-field-specs.js';
 
 let searchHelpDialogEl;
 
