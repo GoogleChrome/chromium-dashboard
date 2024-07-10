@@ -352,6 +352,7 @@ STAGE_QUERIABLE_FIELDS: dict[str, Property] = {
     'browsers.chrome.ot.webview.end': Stage.milestones.webview_last,
     'browsers.chrome.ot.webview.start': Stage.milestones.webview_first,
     'browsers.chrome.webview': Stage.milestones.webview_first,
+    'rollout_milestone': Stage.rollout_milestone,
     'experiment_extension_reason': Stage.experiment_extension_reason,
     'experiment_goals': Stage.experiment_goals,
     'experiment_risks': Stage.experiment_risks,
@@ -386,6 +387,7 @@ STAGE_TYPES_BY_QUERY_FIELD: dict[str, dict[int, Optional[int]]] = {
     'browsers.chrome.ot.webview.end': core_enums.STAGE_TYPES_ORIGIN_TRIAL,
     'browsers.chrome.ot.webview.start': core_enums.STAGE_TYPES_ORIGIN_TRIAL,
     'browsers.chrome.webview': core_enums.STAGE_TYPES_SHIPPING,
+    'rollout_milestone': core_enums.STAGE_TYPES_ROLLOUT,
     'experiment_extension_reason': core_enums.STAGE_TYPES_EXTEND_ORIGIN_TRIAL,
     'experiment_goals': core_enums.STAGE_TYPES_ORIGIN_TRIAL,
     'experiment_risks': core_enums.STAGE_TYPES_ORIGIN_TRIAL,
@@ -430,6 +432,7 @@ def query_any_start_milestone(
     'browsers.chrome.ot.ios.start',
     'browsers.chrome.ot.webview.start',
     'browsers.chrome.webview',
+    'rollout_milestone',
   ]:
     stage_types = [
       st for st in STAGE_TYPES_BY_QUERY_FIELD[field_name].values() if st is not None

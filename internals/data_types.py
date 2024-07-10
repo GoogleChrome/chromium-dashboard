@@ -47,6 +47,7 @@ class StageDict(TypedDict):
   ot_action_requested: bool
   ot_activation_date: NotRequired[str | None]
   ot_approval_buganizer_component: int | None
+  ot_approval_buganizer_custom_field_id: int | None
   ot_approval_criteria_url: str | None
   ot_approval_group_email: str | None
   ot_chromium_trial_name: str | None

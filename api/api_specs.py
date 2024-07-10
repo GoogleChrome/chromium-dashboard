@@ -106,6 +106,7 @@ STAGE_FIELD_DATA_TYPES: FIELD_INFO_DATA_TYPE = [
   ('origin_trial_feedback_url', 'link'),
   ('origin_trial_id', 'str'),
   ('ot_approval_buganizer_component', 'int'),
+  ('ot_approval_buganizer_custom_field_id', 'int'),
   ('ot_approval_criteria_url', 'str'),
   ('ot_approval_group_email', 'str'),
   ('ot_chromium_trial_name', 'str'),

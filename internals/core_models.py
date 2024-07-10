@@ -321,6 +321,7 @@ class Stage(ndb.Model):
   ot_action_requested = ndb.BooleanProperty(default=False)
   ot_activation_date = ndb.DateProperty()
   ot_approval_buganizer_component = ndb.IntegerProperty()
+  ot_approval_buganizer_custom_field_id = ndb.IntegerProperty()
   ot_approval_criteria_url = ndb.StringProperty()
   ot_approval_group_email = ndb.StringProperty()
   ot_chromium_trial_name = ndb.StringProperty()
@@ -333,7 +334,7 @@ class Stage(ndb.Model):
   ot_is_critical_trial = ndb.BooleanProperty(default=False)
   ot_is_deprecation_trial = ndb.BooleanProperty(default=False)
   ot_owner_email = ndb.StringProperty()
-  ot_request_note = ndb.TextProperty()
+  ot_request_note = ndb.TextProperty()  # Deprecated.
   ot_require_approvals = ndb.BooleanProperty(default=False)
   ot_setup_status = ndb.IntegerProperty()
   ot_webfeature_use_counter = ndb.StringProperty()
