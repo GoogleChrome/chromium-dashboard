@@ -506,8 +506,17 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
         self.handler._validate_extension_args(
             self.feature_1_id, self.ot_stage_1, self.extension_stage_1)
 
-  def test_validate_extension_args__not_approved(self):
+  def test_validate_extension_args__na(self):
+    """N/A state should be counted as approved."""
     self.extension_gate_1.state = Vote.NA
+    self.extension_gate_1.put()
+    with test_app.test_request_context(self.request_path):
+      self.handler._validate_extension_args(
+          self.feature_1_id, self.ot_stage_1, self.extension_stage_1)
+
+  def test_validate_extension_args__not_approved(self):
+    """Non-approved extensions should not be processed."""
+    self.extension_gate_1.state = Vote.DENIED
     self.extension_gate_1.put()
     with test_app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
@@ -564,6 +573,10 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
         'form_field_name': 'ot_approval_buganizer_component',
         'value': '123456',
       },
+      'ot_approval_buganizer_custom_field_id': {
+        'form_field_name': 'ot_approval_buganizer_custom_field_id',
+        'value': '111111',
+      },
       'ot_approval_group_email': {
         'form_field_name': 'ot_approval_group_email',
         'value': 'users@google.com',
@@ -607,7 +620,8 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
       # Handle string of emails as a list.
       if field == 'ot_emails':
         value = field_info['value'].split(',')
-      elif field == 'ot_approval_buganizer_component':
+      elif (field == 'ot_approval_buganizer_component' or
+            field == 'ot_approval_buganizer_custom_field_id'):
         value = int(value)
       # Check milestone fields
       elif field == 'desktop_first' or field == 'desktop_last':

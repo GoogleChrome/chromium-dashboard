@@ -300,6 +300,11 @@ indexes:
   - name: stage_type
   - name: milestones.webview_last
   - name: feature_id
+- kind: Stage
+  properties:
+  - name: stage_type
+  - name: rollout_milestone
+  - name: feature_id
 - kind: Gate
   properties:
   - name: state

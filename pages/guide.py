@@ -283,6 +283,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('origin_trial_feedback_url', 'link'),
       ('ot_action_requested', 'bool'),
       ('ot_approval_buganizer_component', 'int'),
+      ('ot_approval_buganizer_custom_field_id', 'int'),
       ('ot_approval_criteria_url', 'link'),
       ('ot_approval_group_email', 'str'),
       ('ot_chromium_trial_name', 'str'),

@@ -690,11 +690,23 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MULTI_URL_FIELD_ATTRS,
     required: false,
     label: 'Explainer link(s)',
-    help_text: html` Link to explainer(s) (one URL per line). You should have at
-    least an explainer in hand and have shared it on a public forum before
-    sending an Intent to Prototype in order to enable discussion with other
-    browser vendors, standards bodies, or other interested parties.`,
-    extra_help: html` <p>
+    help_text: html`Link to explainer(s) (one URL per line). See the
+      <a
+        target="_blank"
+        href="https://www.chromium.org/blink/launching-features/#start-incubating"
+        >launch process</a
+      >
+      for detailed advice, or expand the extra help here for a summary.`,
+    extra_help: html`<p>
+        Host your explainer somewhere like Github (and <i>not</i> Google Docs)
+        that makes it easy to file issues. Your organization may recommend a
+        <a
+          target="_blank"
+          href="https://www.chromium.org/blink/launching-features/#start-incubating"
+          >particular place</a
+        >.
+      </p>
+      <p>
         See the TAG guide to writing
         <a target="_blank" href="https://tag.w3.org/explainers/">Explainers</a>
         for several examples of good explainers and tips for effective
@@ -1491,7 +1503,17 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: {type: 'number'},
     required: true,
     label: 'Approvals Buganizer component ID',
-    help_text: html` Buganizer component ID used for approvals requests.`,
+    help_text: html`Buganizer component ID used for approvals requests.`,
+  },
+
+  ot_approval_buganizer_custom_field_id: {
+    type: 'input',
+    attrs: {type: 'number'},
+    required: true,
+    label: 'Approvals Buganizer custom field ID',
+    help_text: html`The Buganizer custom field ID for trial registration
+    approval. This custom field in Buganizer provides approval/rejection
+    rationales for registration requests under ot_approval_buganizer_component.`,
   },
 
   ot_approval_group_email: {
