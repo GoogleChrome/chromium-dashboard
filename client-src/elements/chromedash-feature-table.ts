@@ -5,6 +5,7 @@ import {Feature} from '../js-src/cs-client.js';
 import './chromedash-feature-filter';
 import './chromedash-feature-row';
 import {clamp, showToastMessage} from './utils.js';
+import {GateDict} from './chromedash-gate-chip.js';
 
 @customElement('chromedash-feature-table')
 class ChromedashFeatureTable extends LitElement {
@@ -37,7 +38,7 @@ class ChromedashFeatureTable extends LitElement {
   @property({type: Boolean})
   canEdit = false;
   @property({type: Object})
-  gates: any; // TODO(markxiong0122): Add Gate type when PR#4060 is merged.
+  gates!: GateDict;
   @property({type: Number})
   selectedGateId = 0;
   @property({type: String})
@@ -85,7 +86,7 @@ class ChromedashFeatureTable extends LitElement {
     window.csClient
       .getPendingGates()
       .then(res => {
-        const gatesByFID = {};
+        const gatesByFID = {} as GateDict;
         for (const g of res.gates) {
           if (!gatesByFID.hasOwnProperty(g.feature_id)) {
             gatesByFID[g.feature_id] = [];

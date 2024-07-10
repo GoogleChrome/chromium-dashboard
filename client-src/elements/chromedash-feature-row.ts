@@ -15,7 +15,7 @@ interface ActiveStagesAndGates {
 
 @customElement('chromedash-feature-row')
 class ChromedashFeatureRow extends LitElement {
-  @property({type: Object})
+  @property({type: Object, attribute: false})
   feature!: Feature;
   @property({type: String})
   columns;
@@ -23,9 +23,9 @@ class ChromedashFeatureRow extends LitElement {
   canEdit = false;
   @property({type: Boolean})
   signedIn;
-  @property({type: Object})
+  @property({type: Object, attribute: false})
   starredFeatures = new Set<number>();
-  @property({type: Object})
+  @property({type: Object, attribute: false})
   gates;
   @property({type: Number})
   selectedGateId = 0;
