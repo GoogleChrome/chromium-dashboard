@@ -452,7 +452,7 @@ function getFieldValueWithStage(
   fieldName: string,
   stageOrId: number | StageDict | undefined,
   formFieldValues: FormFieldValue[] & {feature?: Feature}
-): any {
+) {
   // Iterate through formFieldValues looking for element with name==fieldName
   // and stage == stageId, if there is a non-null stageId
   let stageId;
