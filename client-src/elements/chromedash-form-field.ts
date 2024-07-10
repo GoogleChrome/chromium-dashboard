@@ -27,7 +27,7 @@ export class ChromedashFormField extends LitElement {
   @property({type: Number}) // Represents which field this is on the form.
   index = -1;
   @property({type: Object}) // All other field value objects in current form.
-  fieldValues!: FormFieldValue[] & {feature: Feature};
+  fieldValues!: FormFieldValue[] & {feature: Feature}; //TODO(markxiong0122): change Type to FieldInfo in utils.ts
   @property({type: Object, attribute: false})
   feature!: FormattedFeature;
   @property({type: String}) // Optional override of default label.
