@@ -1,17 +1,15 @@
-import {LitElement, css, html, nothing} from 'lit';
-import {getFieldValueFromFeature, hasFieldValue, isDefinedValue} from './utils';
+import {LitElement, TemplateResult, css, html, nothing} from 'lit';
 import {openAddStageDialog} from './chromedash-add-stage-dialog';
 import {
-  openPrereqsDialog,
-  openFinalizeExtensionDialog,
   dialogTypes,
+  openFinalizeExtensionDialog,
+  openPrereqsDialog,
 } from './chromedash-ot-prereqs-dialog';
 import {
   openPreflightDialog,
-  somePendingPrereqs,
   somePendingGates,
+  somePendingPrereqs,
 } from './chromedash-preflight-dialog';
-import {makeDisplaySpecs} from './form-field-specs';
 import {
   FLAT_ENTERPRISE_METADATA_FIELDS,
   FLAT_METADATA_FIELDS,
@@ -24,24 +22,30 @@ import {
   STAGE_TYPES_ORIGIN_TRIAL,
   VOTE_OPTIONS,
 } from './form-field-enums';
+import {makeDisplaySpecs} from './form-field-specs';
+import {getFieldValueFromFeature, hasFieldValue, isDefinedValue} from './utils';
 
+import '@polymer/iron-icon';
+import {property, state} from 'lit/decorators.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
+import {Feature, FeatureLink, StageDict, User} from '../js-src/cs-client';
+import './chromedash-activity-log';
+import './chromedash-callout';
+import './chromedash-gate-chip';
+import {GateDict} from './chromedash-gate-chip';
+import {Process, ProgressItem} from './chromedash-gate-column';
 import {
   DEPRECATED_FIELDS,
   GATE_TEAM_ORDER,
   GATE_TYPES,
   STAGE_PSA_SHIPPING,
 } from './form-field-enums';
-import '@polymer/iron-icon';
-import './chromedash-activity-log';
-import './chromedash-callout';
-import './chromedash-gate-chip';
 import {
   autolink,
   findProcessStage,
   flattenSections,
   parseRawQuery,
 } from './utils.js';
-import {SHARED_STYLES} from '../css/shared-css.js';
 
 export const DETAILS_STYLES = [
   css`
@@ -71,37 +75,33 @@ export const DETAILS_STYLES = [
 const LONG_TEXT = 60;
 
 class ChromedashFeatureDetail extends LitElement {
-  static get properties() {
-    return {
-      appTitle: {type: String},
-      featureLinks: {type: Array},
-      user: {type: Object},
-      canEdit: {type: Boolean},
-      feature: {type: Object},
-      gates: {type: Array},
-      process: {type: Object},
-      progress: {type: Object},
-      anyCollapsed: {type: Boolean},
-      selectedGateId: {type: Number},
-      openStage: {type: Number},
-    };
-  }
+  @property({type: String})
+  appTitle = '';
+  @property({type: Array, attribute: false})
+  featureLinks!: FeatureLink[];
+  @property({type: Object, attribute: false})
+  user!: User;
+  @property({type: Boolean})
+  canEdit = false;
+  @property({type: Object, attribute: false})
+  feature!: Feature;
+  @property({type: Array, attribute: false})
+  gates!: GateDict[];
+  @property({type: Object, attribute: false})
+  process!: Process;
+  @property({type: Object, attribute: false})
+  progress!: ProgressItem;
+  @property({type: Number})
+  selectedGateId = 0;
 
-  constructor() {
-    super();
-    this.appTitle = '';
-    this.user = {};
-    this.canEdit = false;
-    this.feature = {};
-    this.gates = [];
-    this.process = {};
-    this.progress = {};
-    this.anyCollapsed = true;
-    this.previousStageTypeRendered = 0;
-    this.sameTypeRendered = 0;
-    this.selectedGateId = 0;
-    this.openStage = 0;
-  }
+  @state()
+  anyCollapsed = true;
+  @state()
+  openStage = 0;
+  @state()
+  previousStageTypeRendered = 0;
+  @state()
+  sameTypeRendered = 0;
 
   static get styles() {
     const ICON_WIDTH = 18;
@@ -289,7 +289,7 @@ class ChromedashFeatureDetail extends LitElement {
 
     // Make sure to use the extension stage if an extension gate is being referenced.
     if (gate.gate_type === GATE_TYPES.API_EXTEND_ORIGIN_TRIAL) {
-      stage = stage.extensions.find(e => e.id === gate.stage_id);
+      stage = stage.extensions.find(e => e.id === gate.stage_id)!;
     }
 
     this._fireEvent('show-gate-column', {
@@ -300,18 +300,9 @@ class ChromedashFeatureDetail extends LitElement {
     this.initializeExtensionDialog(rawQuery);
   }
 
-  _fireEvent(eventName, detail) {
-    const event = new CustomEvent(eventName, {
-      bubbles: true,
-      composed: true,
-      detail,
-    });
-    this.dispatchEvent(event);
-  }
-
   isAnyCollapsed() {
-    const sections = this.shadowRoot.querySelectorAll('.stage');
-    const open = this.shadowRoot.querySelectorAll('.stage[open]');
+    const sections = this.renderRoot.querySelectorAll('.stage');
+    const open = this.renderRoot.querySelectorAll('.stage[open]');
     return open.length < sections.length;
   }
 
@@ -321,8 +312,8 @@ class ChromedashFeatureDetail extends LitElement {
 
   toggleAll() {
     const shouldOpen = this.anyCollapsed;
-    this.shadowRoot.querySelectorAll('.stage').forEach(el => {
-      el.open = shouldOpen;
+    this.renderRoot.querySelectorAll('.stage').forEach(el => {
+      (el as HTMLDetailsElement).open = shouldOpen;
     });
   }
 
@@ -425,7 +416,7 @@ class ChromedashFeatureDetail extends LitElement {
   // Renders all fields for trial extension stages as a subsection of the
   // origin trial stage that the extension is associated with.
   renderExtensionFields(extensionStages) {
-    const extensionFields = [];
+    const extensionFields: TemplateResult[] = [];
     const fieldNames = flattenSections(FLAT_TRIAL_EXTENSION_FIELDS);
     const fields = makeDisplaySpecs(fieldNames);
     extensionStages.forEach((extensionStage, i) => {
@@ -543,8 +534,8 @@ class ChromedashFeatureDetail extends LitElement {
   }
 
   // Create an extension stage for an origin trial stage on button click.
-  createExtensionStage(feStage, extensionAlreadyExists) {
-    if ((!feStage.stage_type) in OT_EXTENSION_STAGE_MAPPING) {
+  createExtensionStage(feStage: StageDict, extensionAlreadyExists) {
+    if (feStage.stage_type in OT_EXTENSION_STAGE_MAPPING) {
       return;
     }
     const confirmText =
@@ -607,7 +598,7 @@ class ChromedashFeatureDetail extends LitElement {
       } else {
         // Act like user clicked left button to go to the draft email window.
         const draftWindow = window.open(url, '_blank');
-        draftWindow.focus();
+        draftWindow?.focus();
       }
     };
     return html`
@@ -742,9 +733,12 @@ class ChromedashFeatureDetail extends LitElement {
 
     // Add button to finalize an extension if the extension has been approved.
     const extensionReadyForFinalize = feStage.extensions.find(e => {
-      const extensionGate = this.gates.find(g => g.stage_id === e.id);
+      const extensionGate: GateDict | undefined = this.gates.find(
+        g => g.stage_id === e.id
+      );
       return (
         e.ot_action_requested &&
+        extensionGate &&
         (extensionGate.state === VOTE_OPTIONS.APPROVED[0] ||
           extensionGate.state === VOTE_OPTIONS.NA[0])
       );
@@ -864,7 +858,7 @@ class ChromedashFeatureDetail extends LitElement {
   }
 
   renderStageMenu(feStage) {
-    const items = [];
+    const items: TemplateResult[] = [];
     if (this.offerAddXfnGates(feStage)) {
       items.push(html`
         <sl-menu-item @click=${() => this.handleAddXfnGates(feStage)}>
