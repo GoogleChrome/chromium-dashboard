@@ -1,3 +1,5 @@
+import {html, type HTMLTemplateResult} from 'lit';
+
 // The following objects define the list of options for select fields.
 // Since the order of appearance of object properties is preserved,
 // we can use this same order as the order of the select options.
@@ -94,34 +96,61 @@ export const ROLLOUT_IMPACT_DISPLAYNAME: Record<number, string> = {
 // the descriptions are used only for the descriptions of feature_type_radio_group
 export const FEATURE_TYPES_WITHOUT_ENTERPRISE: Record<
   string,
-  [number, string, string]
+  [number, string, string | HTMLTemplateResult]
 > = {
   FEATURE_TYPE_INCUBATE_ID: [
     0,
-    'New feature incubation',
-    'When building new features, we follow a process that emphasizes engagement ' +
-      'with the WICG and other stakeholders early.',
+    'New feature',
+    html`Choose this if you're still working on the design of a feature and
+      might need to send an Intent to Prototype or request a TAG review. This
+      feature type follows the
+      <a
+        href="https://www.chromium.org/blink/launching-features/#new-feature-process"
+        target="_blank"
+        >New Feature Incubation</a
+      >
+      process.`,
   ],
   FEATURE_TYPE_EXISTING_ID: [
     1,
-    'Existing feature implementation',
-    'If there is already an agreed specification, work may quickly start on ' +
-      'implementation and origin trials.',
+    'Chromium finally implemented a feature',
+    html`Choose this if a standards body already has consensus for a feature, or
+      it's already shipped in another implementation. This feature type omits
+      some options that the "New feature" type includes. It follows the
+      <a
+        href="https://www.chromium.org/blink/launching-features/#process-existing-standard"
+        target="_blank"
+        >Implementations of already-defined consensus-based standards</a
+      >
+      process.`,
   ],
   FEATURE_TYPE_CODE_CHANGE_ID: [
     2,
-    'Web developer-facing change to existing code',
-    'Not common.  Track a code change that does not change any API and has ' +
-      'very low interoperability risk, but might be noticed by web developers.' +
-      'This type of feature entry can be referenced from a PSA immediately.',
+    'No developer-visible change',
+    html`Choose this if you're hoping that nobody notices the change you're
+      going to make, but there's a chance that a bug will make it visible. This
+      feature type follows the
+      <a
+        href="https://www.chromium.org/blink/launching-features/#behavior-changes"
+        target="_blank"
+        >Web-developer-facing change to existing behavior</a
+      >
+      process.`,
   ],
   FEATURE_TYPE_DEPRECATION_ID: [
     3,
-    'Feature deprecation',
-    'Deprecate and remove an old feature.',
+    'Feature removal',
+    html`Choose this if you are deprecating and then removing an existing
+      feature. This feature type follows the
+      <a
+        href="https://www.chromium.org/blink/launching-features/#feature-deprecations"
+        target="_blank"
+        >Feature deprecations</a
+      >
+      process.`,
   ],
 };
-export const FEATURE_TYPES: Record<string, [number, string, string]> = {
+export const FEATURE_TYPES: Record<string, [number, string, string | HTMLTemplateResult]> = {
   ...FEATURE_TYPES_WITHOUT_ENTERPRISE,
   FEATURE_TYPE_ENTERPRISE_ID: [
     4,
