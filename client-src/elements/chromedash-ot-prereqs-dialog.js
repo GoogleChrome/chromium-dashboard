@@ -1,6 +1,5 @@
 import {LitElement, css, html} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import {INTENT_STAGES} from './form-field-enums.js';
 import {showToastMessage} from './utils.js';
 
 let dialogEl;
