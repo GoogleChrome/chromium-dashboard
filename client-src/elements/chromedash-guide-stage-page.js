@@ -31,7 +31,6 @@ export class ChromedashGuideStagePage extends LitElement {
   static get properties() {
     return {
       stageId: {type: Number},
-      intentStage: {type: Number},
       stageName: {type: String},
       featureId: {type: Number},
       feature: {type: Object},
@@ -48,7 +47,6 @@ export class ChromedashGuideStagePage extends LitElement {
   constructor() {
     super();
     this.stageId = 0;
-    this.intentStage = 0;
     this.stageName = '';
     this.featureId = 0;
     this.feature = {};
