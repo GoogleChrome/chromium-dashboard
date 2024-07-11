@@ -37,14 +37,6 @@ class ChromedashPostIntentDialog extends LitElement {
   @property({type: Array<string>})
   ownerEmails = [];
 
-  static get properties() {
-    return {};
-  }
-
-  constructor() {
-    super();
-  }
-
   static get styles() {
     return [
       ...SHARED_STYLES,
@@ -101,7 +93,6 @@ class ChromedashPostIntentDialog extends LitElement {
   }
 
   submitIntent() {
-    console;
     // Make sure that the CC emails input is valid.
     const ccEmailsInput = this.shadowRoot!.querySelector('sl-input');
     if (!ccEmailsInput || ccEmailsInput.hasAttribute('data-user-invalid')) {
@@ -114,8 +105,7 @@ class ChromedashPostIntentDialog extends LitElement {
       submitButton.setAttribute('disabled', '');
     }
     window.csClient
-      .postIntentToBlinkDev(this.featureId, {
-        stage_id: this.stageId,
+      .postIntentToBlinkDev(this.featureId, this.stageId, {
         gate_id: this.gateId,
         intent_cc_emails: ccEmailsInput?.value?.split(','),
       })

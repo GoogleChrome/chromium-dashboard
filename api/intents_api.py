@@ -14,10 +14,14 @@
 
 from typing import TypedDict
 
+from flask import render_template
+
+from api import converters
 from framework import basehandlers
 from framework import cloud_tasks_helpers
 from framework import permissions
 from internals import processes
+from internals import stage_helpers
 from internals.core_enums import INTENT_STAGES_BY_STAGE_TYPE
 from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Gate
@@ -36,6 +40,45 @@ class IntentOptions(TypedDict):
 
 class IntentsAPI(basehandlers.APIHandler):
 
+  def do_get(self, **kwargs):
+    """Get the body of a draft intent."""
+    feature_id = int(kwargs['feature_id'])
+    # Check that feature ID is valid.
+    if not feature_id:
+      self.abort(404, msg='No feature specified.')
+    feature: FeatureEntry|None = FeatureEntry.get_by_id(feature_id)
+    if feature is None:
+      self.abort(404, msg=f'Feature {feature_id} not found')
+
+    # Check that stage ID is valid.
+    stage_id = int(kwargs['stage_id'])
+    if not stage_id:
+      self.abort(404, msg='No stage specified')
+    stage: Stage|None = Stage.get_by_id(stage_id)
+    if stage is None:
+      self.abort(404, msg=f'Stage {stage_id} not found')
+
+    # Check that the user has feature edit permissions.
+    redirect_resp = permissions.validate_feature_edit_permission(
+        self, feature_id)
+    if redirect_resp:
+      return redirect_resp
+
+    stage_info = stage_helpers.get_stage_info_for_templates(feature)
+    intent_stage = INTENT_STAGES_BY_STAGE_TYPE[stage.stage_type]
+    default_url = (f'{self.request.scheme}://{self.request.host}'
+                   f'/feature/{feature_id}')
+    template_data = {
+      'feature': converters.feature_entry_to_json_verbose(feature),
+      'stage_info': stage_helpers.get_stage_info_for_templates(feature),
+      'should_render_mstone_table': stage_info['should_render_mstone_table'],
+      'should_render_intents': stage_info['should_render_intents'],
+      'intent_stage': intent_stage,
+      'default_url': default_url,
+    }
+
+    return render_template('blink/intent_to_implement.html', **template_data)
+
   def do_post(self, **kwargs):
     """Submit an intent email directly to blink-dev."""
     feature_id = int(kwargs['feature_id'])
@@ -48,7 +91,7 @@ class IntentsAPI(basehandlers.APIHandler):
 
     body = self.get_json_param_dict()
     # Check that stage ID is valid.
-    stage_id = body.get('stage_id')
+    stage_id = int(kwargs['stage_id'])
     if not stage_id:
       self.abort(404, msg='No stage specified')
     stage: Stage|None = Stage.get_by_id(stage_id)

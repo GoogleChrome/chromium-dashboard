@@ -3,6 +3,9 @@ import {SHARED_STYLES} from '../css/shared-css.js';
 import {showToastMessage} from './utils';
 import {openPostIntentDialog} from './chromedash-post-intent-dialog.js';
 import {
+  GATE_TYPES,
+  FEATURE_TYPES,
+  INTENT_STAGES,
   STAGE_TYPES_DEV_TRIAL,
   STAGE_TYPES_SHIPPING,
 } from './form-field-enums.js';
@@ -18,6 +21,8 @@ class ChromedashGuideIntentPreview extends LitElement {
       stage: {type: Object},
       gate: {type: Object},
       loading: {type: Boolean},
+      subject: {type:String},
+      intentBody: {type: String},
       displayFeatureUnlistedWarning: {type: Boolean},
     };
   }
@@ -31,6 +36,8 @@ class ChromedashGuideIntentPreview extends LitElement {
     this.stage = undefined;
     this.gate = undefined;
     this.loading = true;
+    this.subject = '';
+    this.intentBody = '';
     this.displayFeatureUnlistedWarning = false;
   }
 
@@ -72,6 +79,7 @@ class ChromedashGuideIntentPreview extends LitElement {
     ])
       .then(([feature, gates]) => {
         this.feature = feature;
+        document.title = `${this.feature.name} - ${this.appTitle}`;
         // TODO(DanielRyanSmith): only fetch a single gate based on given ID.
         if (this.gateId) {
           this.gate = gates.gates.find(gate => gate.id === this.gateId);
@@ -87,12 +95,15 @@ class ChromedashGuideIntentPreview extends LitElement {
           );
         }
 
-        if (this.feature.name) {
-          document.title = `${this.feature.name} - ${this.appTitle}`;
-        }
         if (this.feature.unlisted) {
           this.displayFeatureUnlistedWarning = true;
         }
+        this.subject = `${this.computeSubjectPrefix()}: ${this.feature.name}`;
+        // Finally, get the contents of the intent based on the feature/stage.
+        return window.csClient.getIntentBody(this.featureId, this.stage.id);
+      })
+      .then(intentBody => {
+        this.intentBody = intentBody;
         this.loading = false;
       })
       .catch(() => {
@@ -125,9 +136,79 @@ class ChromedashGuideIntentPreview extends LitElement {
     </div>`;
   }
 
+  computeSubjectPrefix() {
+    // DevTrials don't have a gate associated with their stage.
+    if (!this.gate) {
+      return 'Ready for Developer Testing';
+    }
+    if (
+      this.gate.gate_type === GATE_TYPES.API_PROTOTYPE ||
+      this.gate.gate_type === GATE_TYPES.API_PLAN
+    ) {
+      if (
+        this.feature.feature_type_int ===
+        FEATURE_TYPES.FEATURE_TYPE_DEPRECATION_ID[0]
+      ) {
+        return 'Intent to Deprecate and Remove';
+      }
+      return 'Intent to Prototype';
+    }
+    if (this.gate.gate_type === GATE_TYPES.API_ORIGIN_TRIAL) {
+      if (
+        this.feature.feature_type_int ===
+        FEATURE_TYPES.FEATURE_TYPE_DEPRECATION_ID[0]
+      ) {
+        return 'Request for Deprecation Trial';
+      }
+      return 'Intent to Experiment';
+    }
+    if (this.gate.gate_type === GATE_TYPES.API_EXTEND_ORIGIN_TRIAL) {
+      if (
+        this.feature.feature_type_int ===
+        FEATURE_TYPES.FEATURE_TYPE_DEPRECATION_ID[0]
+      ) {
+        return 'Intent to Extend Deprecation Trial';
+      }
+      return 'Intent to Extend Experiment';
+    }
+    if (this.gate.gate_type === GATE_TYPES.API_SHIP) {
+      if (
+        this.feature.feature_type_int ===
+        FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]
+      ) {
+        return 'Web-Facing Change PSA';
+      }
+      return 'Intent to Ship';
+    }
+    return `Intent stage "${INTENT_STAGES[this.feature.intent_stage]}"`;
+  }
+
+  renderSkeletonSection() {
+    return html`
+      <section>
+        <h3><sl-skeleton effect="sheen"></sl-skeleton></h3>
+        <p>
+          <sl-skeleton effect="sheen"></sl-skeleton>
+          <sl-skeleton effect="sheen"></sl-skeleton>
+        </p>
+      </section>
+    `;
+  }
+
+  renderSkeletons() {
+    return html`
+      <div id="feature" style="margin-top: 65px;">
+        ${this.renderSkeletonSection()} ${this.renderSkeletonSection()}
+        ${this.renderSkeletonSection()} ${this.renderSkeletonSection()}
+      </div>
+    `;
+  }
+
   render() {
     if (!this.feature) return nothing;
-
+    if (this.loading) {
+      return this.renderSkeletons();
+    }
     return html`
       <div id="content">
         <div id="subheader">
@@ -164,7 +245,8 @@ class ChromedashGuideIntentPreview extends LitElement {
             appTitle="${this.appTitle}"
             .feature=${this.feature}
             .stage=${this.stage}
-            .gate=${this.gate}
+            subject="${this.subject}"
+            intentBody="${this.intentBody}"
           >
           </chromedash-intent-template>
         </section>
