@@ -177,7 +177,7 @@ class ChromedashOTPrereqsDialog extends LitElement {
         size="small"
         @click=${() =>
           location.assign(
-            `/guide/stage/${this.featureId}/${INTENT_STAGES.INTENT_EXTEND_ORIGIN_TRIAL[0]}/${this.stage.id}`
+            `/guide/stage/${this.featureId}/${this.stage.id}?updateExtension`
           )}
         >Change milestone</sl-button
       >

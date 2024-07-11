@@ -3,6 +3,7 @@ import {ref} from 'lit/directives/ref.js';
 import {
   formatFeatureChanges,
   getStageValue,
+  parseRawQuery,
   showToastMessage,
   setupScrollToHash,
   shouldShowDisplayNameField,
@@ -79,13 +80,27 @@ export class ChromedashGuideStagePage extends LitElement {
 
   fetchData() {
     this.loading = true;
+
+    // Check if this is a milestone adjustment to an extension stage.
+    // If it is, we need the corresponding gate ID to redirect after submission.
+    const rawQuery = parseRawQuery(window.location.search);
+    let gatePromise = Promise.resolve();
+    if ('updateExtension' in rawQuery) {
+      gatePromise = window.csClient.getGates(this.featureId);
+    }
+
     Promise.all([
       window.csClient.getFeature(this.featureId),
       window.csClient.getStage(this.featureId, this.stageId),
+      gatePromise,
     ])
-      .then(([feature, stage]) => {
+      .then(([feature, stage, gates]) => {
         this.feature = feature;
         this.stage = stage;
+
+        if (gates) {
+          this.gateId = gates.gates.find(g => g.stage_id === this.stageId).id;
+        }
 
         if (this.feature.name) {
           document.title = `${this.feature.name} - ${this.appTitle}`;
@@ -139,7 +154,13 @@ export class ChromedashGuideStagePage extends LitElement {
         return csClient.updateFeature(submitBody);
       })
       .then(() => {
-        window.location.href = `/feature/${this.featureId}`;
+        // If we have a set gate ID, we need to redirect the user to finish
+        // initiating their extension.
+        if (this.gateId) {
+          window.location.href = `/feature/${this.featureId}?gate=${this.gateId}&initiateExtension`;
+        } else {
+          window.location.href = `/feature/${this.featureId}`;
+        }
       })
       .catch(() => {
         showToastMessage(
