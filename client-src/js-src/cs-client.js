@@ -647,7 +647,7 @@ export class ChromeStatusClient {
 
   // Intents API
   async getIntentBody(featureId, stageId) {
-    return this.doGet(`/features/${featureId}/${stageId}/intent`)
+    return this.doGet(`/features/${featureId}/${stageId}/intent`);
   }
   async postIntentToBlinkDev(featureId, stageId, body) {
     return this.doPost(`/features/${featureId}/${stageId}/intent`, body);

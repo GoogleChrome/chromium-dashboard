@@ -3,7 +3,6 @@ import {assert, fixture} from '@open-wc/testing';
 import {ChromedashIntentTemplate} from './chromedash-intent-template';
 
 describe('chromedash-intent-template', () => {
-
   it('renders with fake data', async () => {
     const component = await fixture(
       html`<chromedash-intent-template

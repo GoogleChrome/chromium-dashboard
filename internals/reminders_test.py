@@ -174,7 +174,7 @@ class FunctionTest(testing_config.CustomTestCase):
     self.assertEqual('feature_owner@example.com', task['to'])
     self.assertEqual('[Action requested] Update feature one', task['subject'])
     self.assertEqual(None, task['reply_to'])
-    TESTDATA.make_golden(task['html'], 'test_build_email_tasks_feature_accuracy_enterprise.html')
+    # TESTDATA.make_golden(task['html'], 'test_build_email_tasks_feature_accuracy_enterprise.html')
     self.assertMultiLineEqual(
         TESTDATA['test_build_email_tasks_feature_accuracy_enterprise.html'],
         task['html'])

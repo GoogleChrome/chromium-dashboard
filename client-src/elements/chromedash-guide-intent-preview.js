@@ -21,7 +21,7 @@ class ChromedashGuideIntentPreview extends LitElement {
       stage: {type: Object},
       gate: {type: Object},
       loading: {type: Boolean},
-      subject: {type:String},
+      subject: {type: String},
       intentBody: {type: String},
       displayFeatureUnlistedWarning: {type: Boolean},
     };
