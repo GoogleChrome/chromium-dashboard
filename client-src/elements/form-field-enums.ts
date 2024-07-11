@@ -150,7 +150,10 @@ export const FEATURE_TYPES_WITHOUT_ENTERPRISE: Record<
       process.`,
   ],
 };
-export const FEATURE_TYPES: Record<string, [number, string, string | HTMLTemplateResult]> = {
+export const FEATURE_TYPES: Record<
+  string,
+  [number, string, string | HTMLTemplateResult]
+> = {
   ...FEATURE_TYPES_WITHOUT_ENTERPRISE,
   FEATURE_TYPE_ENTERPRISE_ID: [
     4,
