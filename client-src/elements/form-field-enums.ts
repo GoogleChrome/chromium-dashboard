@@ -100,10 +100,12 @@ export const FEATURE_TYPES_WITHOUT_ENTERPRISE: Record<
 > = {
   FEATURE_TYPE_INCUBATE_ID: [
     0,
-    'New feature',
+    'New or changed feature',
     html`Choose this if you're still working on the design of a feature and
-      might need to send an Intent to Prototype or request a TAG review. This
-      feature type follows the
+      might need to send an Intent to Prototype or request a TAG review. Note
+      that backward-incompatible changes sometimes need to be implemented as a
+      pair of adding the new behavior and a separate entry to remove the old
+      behavior. This feature type follows the
       <a
         href="https://www.chromium.org/blink/launching-features/#new-feature-process"
         target="_blank"
