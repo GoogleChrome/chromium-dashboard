@@ -9,8 +9,11 @@ import {
 import {ALL_FIELDS} from './form-field-specs';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
-import {setupScrollToHash, formatFeatureChanges} from './utils';
+import {setupScrollToHash, formatFeatureChanges, FieldInfo} from './utils';
+import {customElement, property, state} from 'lit/decorators.js';
+import {Feature} from '../js-src/cs-client';
 
+@customElement('chromedash-guide-new-page')
 export class ChromedashGuideNewPage extends LitElement {
   static get styles() {
     return [
@@ -48,19 +51,16 @@ export class ChromedashGuideNewPage extends LitElement {
     ];
   }
 
-  static get properties() {
-    return {
-      userEmail: {type: String},
-      isEnterpriseFeature: {type: Boolean},
-      fieldValues: {type: Array},
-    };
-  }
-
-  constructor() {
-    super();
-    this.userEmail = '';
-    this.fieldValues = [];
-  }
+  @property({attribute: false})
+  userEmail = '';
+  @property({type: Boolean})
+  isEnterpriseFeature = false;
+  @property({type: Number})
+  featureId!: number;
+  @property({type: Object})
+  feature!: Feature;
+  @state()
+  fieldValues: FieldInfo[] & {feature?: Feature} = [];
 
   /* Add the form's event listener after Shoelace event listeners are attached
    * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
@@ -68,8 +68,10 @@ export class ChromedashGuideNewPage extends LitElement {
     if (!el) return;
 
     await el.updateComplete;
-    const hiddenTokenField = this.shadowRoot.querySelector('input[name=token]');
-    hiddenTokenField.form.addEventListener('submit', event => {
+    const hiddenTokenField = this.renderRoot.querySelector(
+      'input[name=token]'
+    ) as HTMLInputElement;
+    hiddenTokenField.form?.addEventListener('submit', event => {
       this.handleFormSubmit(event, hiddenTokenField);
     });
 
@@ -160,7 +162,7 @@ export class ChromedashGuideNewPage extends LitElement {
       ? '/guide/enterprise/new'
       : '/guide/new';
 
-    const renderFormField = (field, className) => {
+    const renderFormField = (field, className?) => {
       const featureJSONKey = ALL_FIELDS[field].name || field;
       const value = newFeatureInitialValues[field];
       const index = this.fieldValues.length;
@@ -207,5 +209,3 @@ export class ChromedashGuideNewPage extends LitElement {
     return html` ${this.renderSubHeader()} ${this.renderForm()} `;
   }
 }
-
-customElements.define('chromedash-guide-new-page', ChromedashGuideNewPage);
