@@ -23,6 +23,7 @@ import re
 from typing import Any, Optional
 import urllib
 
+from api import converters
 from framework import permissions
 from google.cloud import ndb  # type: ignore
 
@@ -45,6 +46,7 @@ from internals.user_models import (
 
 
 OT_SUPPORT_EMAIL = 'origin-trials-support@google.com'
+BLINK_DEV_EMAIL = 'blink-dev@chromium.org'
 
 
 def _determine_milestone_string(ship_stages: list[Stage]) -> str:
@@ -865,6 +867,42 @@ class OTExtensionApprovedHandler(basehandlers.FlaskHandler):
       'cc': [OT_SUPPORT_EMAIL],
       'subject': ('Origin trial approved and ready to be initiated: '
                   f'{feature["name"]}'),
+      'reply_to': None,
+      'html': body,
+    }
+
+
+class IntentToBlinkDevHandler(basehandlers.FlaskHandler):
+  """Submit an intent email directly to blink-dev."""
+  IS_INTERNAL_HANDLER = True
+  EMAIL_TEMPLATE_PATH = 'blink/intent_to_implement.html'
+
+  def process_post_data(self, **kwargs):
+    self.require_task_header()
+    feature_id = self.get_param('feature_id', required=True)
+    feature = FeatureEntry.get_by_id(feature_id)
+    if not feature:
+      self.abort(400, 'Feature not found.')
+    send_emails([self.build_email(feature)])
+    return {'message': 'OK'}
+
+  def build_email(self, feature: FeatureEntry):
+    json_data = self.get_json_param_dict()
+    stage_info = stage_helpers.get_stage_info_for_templates(feature)
+    template_data = {
+      'feature': converters.feature_entry_to_json_verbose(feature),
+      'stage_info': stage_helpers.get_stage_info_for_templates(feature),
+      'should_render_mstone_table': stage_info['should_render_mstone_table'],
+      'should_render_intents': stage_info['should_render_intents'],
+      'intent_stage': json_data['intent_stage'],
+      'default_url': json_data['default_url'],
+    }
+    body = render_template(self.EMAIL_TEMPLATE_PATH, **template_data)
+
+    return {
+      'to': BLINK_DEV_EMAIL,
+      'cc': json_data['intent_cc_emails'],
+      'subject': json_data['subject'],
       'reply_to': None,
       'html': body,
     }
