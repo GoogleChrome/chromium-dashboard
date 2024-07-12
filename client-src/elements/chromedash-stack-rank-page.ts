@@ -35,13 +35,13 @@ export class ChromedashStackRankPage extends LitElement {
     ];
   }
 
-  @property({type: String, attribute: false})
+  @property({attribute: false})
   type!: 'css' | 'feature';
-  @property({type: String, attribute: false})
+  @property({attribute: false})
   view!: 'popularity' | 'animated';
-  @property({type: Array, attribute: false})
+  @property({attribute: false})
   viewList: any[] = [];
-  @property({type: Array, attribute: false})
+  @property({attribute: false})
   tempList: any[] = [];
 
   connectedCallback() {
