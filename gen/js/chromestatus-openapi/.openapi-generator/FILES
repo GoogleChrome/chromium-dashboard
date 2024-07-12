@@ -30,6 +30,7 @@ src/models/LinkPreviewWebkitBug.ts
 src/models/MessageResponse.ts
 src/models/OutstandingReview.ts
 src/models/OwnersAndSubscribersOfComponent.ts
+src/models/PostIntentRequest.ts
 src/models/ReviewLatency.ts
 src/models/SpecMentor.ts
 src/models/index.ts

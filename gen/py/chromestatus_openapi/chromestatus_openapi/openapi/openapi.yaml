@@ -212,6 +212,12 @@ paths:
         schema:
           type: integer
         style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostIntentRequest'
+        description: Gate ID and additional users to CC email to.
       responses:
         "200":
           content:
@@ -290,6 +296,22 @@ components:
         type: string
       style: form
   schemas:
+    PostIntentRequest:
+      example:
+        intent_cc_emails:
+        - intent_cc_emails
+        - intent_cc_emails
+        gate_id: 0
+      properties:
+        gate_id:
+          title: gate_id
+          type: integer
+        intent_cc_emails:
+          items:
+            type: string
+          title: intent_cc_emails
+          type: array
+      title: PostIntentRequest
     MessageResponse:
       example:
         message: message

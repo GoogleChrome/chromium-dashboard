@@ -190,6 +190,12 @@ paths:
           required: true
           schema:
             type: integer
+      requestBody:
+        description: Gate ID and additional users to CC email to.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostIntentRequest'
       responses:
         '200':
           description: Intent draft body.
@@ -244,6 +250,14 @@ components:
       in: header
       name: X-Xsrf-Token
   schemas:
+    PostIntentRequest:
+      properties:
+        gate_id:
+          type: integer
+        intent_cc_emails:
+          type: array
+          items:
+            type: string
     MessageResponse:
       properties:
         message:

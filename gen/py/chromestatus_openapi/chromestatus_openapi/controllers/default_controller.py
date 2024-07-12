@@ -8,6 +8,7 @@ from chromestatus_openapi.models.components_users_response import ComponentsUser
 from chromestatus_openapi.models.external_reviews_response import ExternalReviewsResponse  # noqa: E501
 from chromestatus_openapi.models.feature_latency import FeatureLatency  # noqa: E501
 from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
+from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
 from chromestatus_openapi import util
@@ -113,7 +114,7 @@ def list_spec_mentors(after=None):  # noqa: E501
     return 'do some magic!'
 
 
-def post_intent_to_blink_dev(feature_id, stage_id):  # noqa: E501
+def post_intent_to_blink_dev(feature_id, stage_id, post_intent_request=None):  # noqa: E501
     """Submit an intent to be posted on blink-dev
 
      # noqa: E501
@@ -122,9 +123,13 @@ def post_intent_to_blink_dev(feature_id, stage_id):  # noqa: E501
     :type feature_id: int
     :param stage_id: Stage ID
     :type stage_id: int
+    :param post_intent_request: Gate ID and additional users to CC email to.
+    :type post_intent_request: dict | bytes
 
     :rtype: Union[MessageResponse, Tuple[MessageResponse, int], Tuple[MessageResponse, int, Dict[str, str]]
     """
+    if connexion.request.is_json:
+        post_intent_request = PostIntentRequest.from_dict(connexion.request.get_json())  # noqa: E501
     return 'do some magic!'
 
 

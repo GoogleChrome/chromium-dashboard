@@ -17,7 +17,7 @@ from typing import TypedDict
 from flask import Response, render_template
 
 from api import converters
-from chromestatus_openapi.models import MessageResponse
+from chromestatus_openapi.models import PostIntentRequest, MessageResponse
 from framework import basehandlers
 from framework import cloud_tasks_helpers
 from framework import permissions
@@ -90,7 +90,6 @@ class IntentsAPI(basehandlers.APIHandler):
     if feature is None:
       self.abort(404, msg=f'Feature {feature_id} not found')
 
-    body = self.get_json_param_dict()
     # Check that stage ID is valid.
     stage_id = int(kwargs['stage_id'])
     if not stage_id:
@@ -105,20 +104,21 @@ class IntentsAPI(basehandlers.APIHandler):
     if redirect_resp:
       return redirect_resp
 
+    body = PostIntentRequest(*self.request.get_json())
     intent_stage = INTENT_STAGES_BY_STAGE_TYPE[stage.stage_type]
     default_url = (f'{self.request.scheme}://{self.request.host}'
                    f'/feature/{feature_id}')
 
     # Add gate to Chromestatus URL query string if it is found.
     gate: Gate|None = None
-    if body.get('gate_id'):
+    if body.gate_id:
       gate = Gate.get_by_id(body['gate_id'])
     if gate:
       default_url += f'?gate={gate.key.integer_id()}'
 
     subject = f'{compute_subject_prefix(feature, intent_stage)}: {feature.name}'
+    cc_emails = body.intent_cc_emails or []
     # Make sure emails are not empty and are unique.
-    cc_emails = body.get('intent_cc_emails', [])
     cc_emails = list(set([email for email in cc_emails if email]))
     params: IntentOptions = {
       'subject': subject,

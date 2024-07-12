@@ -7,6 +7,7 @@ from chromestatus_openapi.models.components_users_response import ComponentsUser
 from chromestatus_openapi.models.external_reviews_response import ExternalReviewsResponse  # noqa: E501
 from chromestatus_openapi.models.feature_latency import FeatureLatency  # noqa: E501
 from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
+from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
 from chromestatus_openapi.test import BaseTestCase
@@ -135,13 +136,17 @@ class TestDefaultController(BaseTestCase):
 
         Submit an intent to be posted on blink-dev
         """
+        post_intent_request = {"intent_cc_emails":["intent_cc_emails","intent_cc_emails"],"gate_id":0}
         headers = { 
             'Accept': 'application/json',
+            'Content-Type': 'application/json',
         }
         response = self.client.open(
             '/api/v0/features/{feature_id}/{stage_id}/intent'.format(feature_id=56, stage_id=56),
             method='POST',
-            headers=headers)
+            headers=headers,
+            data=json.dumps(post_intent_request),
+            content_type='application/json')
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 

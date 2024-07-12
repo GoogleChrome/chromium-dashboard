@@ -20,6 +20,7 @@ import type {
   ExternalReviewsResponse,
   FeatureLatency,
   MessageResponse,
+  PostIntentRequest,
   ReviewLatency,
   SpecMentor,
 } from '../models/index';
@@ -34,6 +35,8 @@ import {
     FeatureLatencyToJSON,
     MessageResponseFromJSON,
     MessageResponseToJSON,
+    PostIntentRequestFromJSON,
+    PostIntentRequestToJSON,
     ReviewLatencyFromJSON,
     ReviewLatencyToJSON,
     SpecMentorFromJSON,
@@ -67,6 +70,7 @@ export interface ListSpecMentorsRequest {
 export interface PostIntentToBlinkDevRequest {
     featureId: number;
     stageId: number;
+    postIntentRequest?: PostIntentRequest;
 }
 
 export interface RemoveUserFromComponentRequest {
@@ -194,6 +198,7 @@ export interface DefaultApiInterface {
      * @summary Submit an intent to be posted on blink-dev
      * @param {number} featureId Feature ID
      * @param {number} stageId Stage ID
+     * @param {PostIntentRequest} [postIntentRequest] Gate ID and additional users to CC email to.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApiInterface
@@ -508,11 +513,14 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        headerParameters['Content-Type'] = 'application/json';
+
         const response = await this.request({
             path: `/features/{feature_id}/{stage_id}/intent`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))).replace(`{${"stage_id"}}`, encodeURIComponent(String(requestParameters['stageId']))),
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
+            body: PostIntentRequestToJSON(requestParameters['postIntentRequest']),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => MessageResponseFromJSON(jsonValue));

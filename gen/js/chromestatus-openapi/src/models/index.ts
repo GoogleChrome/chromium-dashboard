@@ -24,5 +24,6 @@ export * from './LinkPreviewWebkitBug';
 export * from './MessageResponse';
 export * from './OutstandingReview';
 export * from './OwnersAndSubscribersOfComponent';
+export * from './PostIntentRequest';
 export * from './ReviewLatency';
 export * from './SpecMentor';
