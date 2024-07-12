@@ -32,9 +32,9 @@ describe('chromedash-header', () => {
 
     // invalid feature requests would trigger the toast to show message
     const toastEl = document.querySelector('chromedash-toast');
-    const toastMsgSpan = toastEl.shadowRoot.querySelector('span#msg');
+    const toastMsgSpan = toastEl?.shadowRoot?.querySelector('span#msg');
     assert.include(
-      toastMsgSpan.innerHTML,
+      toastMsgSpan?.innerHTML,
       'Some errors occurred. Please refresh the page or try again later.'
     );
   });
@@ -46,16 +46,16 @@ describe('chromedash-header', () => {
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashHeader);
-    const header = component.shadowRoot.querySelector('header');
+    const header = component.renderRoot.querySelector('header');
     assert.exists(header);
 
     // aside and title exist
-    const aside = component.shadowRoot.querySelector('aside');
+    const aside = component.renderRoot.querySelector('aside');
     assert.exists(aside);
     assert.include(aside.innerHTML, 'Fake Title');
 
     // nav bar exists
-    const nav = component.shadowRoot.querySelector('nav');
+    const nav = component.renderRoot.querySelector('nav');
     assert.exists(nav);
 
     const navInnerHTML = nav.innerHTML;
@@ -77,16 +77,16 @@ describe('chromedash-header', () => {
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashHeader);
-    const header = component.shadowRoot.querySelector('header');
+    const header = component.renderRoot.querySelector('header');
     assert.exists(header);
 
     // aside and title exist
-    const aside = component.shadowRoot.querySelector('aside');
+    const aside = component.renderRoot.querySelector('aside');
     assert.exists(aside);
     assert.include(aside.innerHTML, 'Fake Title');
 
     // nav bar exists
-    const nav = component.shadowRoot.querySelector('nav');
+    const nav = component.renderRoot.querySelector('nav');
     assert.exists(nav);
 
     const navInnerHTML = nav.innerHTML;
