@@ -496,7 +496,7 @@ export interface FieldInfo {
      * The stage that the field is associated with.
      * This field is undefined if the change is a feature change.
      */
-    stageId: number;
+    stageId: number | null;
     /** The value written in the form field. */
     value: any;
     /**

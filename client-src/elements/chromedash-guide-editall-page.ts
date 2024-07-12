@@ -31,6 +31,7 @@ import {ALL_FIELDS} from './form-field-specs';
 import {openAddStageDialog} from './chromedash-add-stage-dialog';
 import { customElement, property, state } from 'lit/decorators.js';
 import { Feature } from '../js-src/cs-client.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 
 interface FormToRender {
     id: number;
@@ -68,7 +69,7 @@ export class ChromedashGuideEditallPage extends LitElement {
   @state()
   sameTypeRendered = 0;
   @state()
-  fieldValues!: FieldInfo[] & {feature: Feature};
+  fieldValues: FieldInfo[] & {feature?: Feature} = [];
 
   connectedCallback() {
     super.connectedCallback();
@@ -104,7 +105,7 @@ export class ChromedashGuideEditallPage extends LitElement {
     await el.updateComplete;
 
     const hiddenTokenField = this.renderRoot.querySelector('input[name=token]') as HTMLInputElement;
-    hiddenTokenField.form!.addEventListener('submit', event => {
+    hiddenTokenField.form?.addEventListener('submit', event => {
       this.handleFormSubmit(event, hiddenTokenField);
     });
 
@@ -260,7 +261,7 @@ export class ChromedashGuideEditallPage extends LitElement {
         return nothing;
       }
       let value = formattedFeature[field];
-      let stageId;
+      let stageId = null;
       if (STAGE_SPECIFIC_FIELDS.has(featureJSONKey)) {
         value = getStageValue(feStage, featureJSONKey);
         stageId = feStage.id;
@@ -282,7 +283,7 @@ export class ChromedashGuideEditallPage extends LitElement {
         <chromedash-form-field
           name=${field}
           index=${index}
-          stageId=${stageId}
+          stageId=${ifDefined(ifDefined(stageId))}
           value=${value}
           .fieldValues=${this.fieldValues}
           .feature=${formattedFeature}
