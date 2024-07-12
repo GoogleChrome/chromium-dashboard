@@ -104,7 +104,7 @@ class IntentsAPI(basehandlers.APIHandler):
     if redirect_resp:
       return redirect_resp
 
-    body = PostIntentRequest(*self.request.get_json())
+    body = PostIntentRequest(**self.request.get_json())
     intent_stage = INTENT_STAGES_BY_STAGE_TYPE[stage.stage_type]
     default_url = (f'{self.request.scheme}://{self.request.host}'
                    f'/feature/{feature_id}')
