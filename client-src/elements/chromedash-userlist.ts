@@ -7,7 +7,7 @@ import {User} from '../js-src/cs-client.js';
 @customElement('chromedash-userlist')
 class ChromedashUserlist extends LitElement {
   @state()
-  users!: User[];
+  users: User[] = [];
 
   static get styles() {
     return [
