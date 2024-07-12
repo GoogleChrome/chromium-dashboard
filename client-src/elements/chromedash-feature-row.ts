@@ -7,6 +7,7 @@ import {
   GATE_TEAM_ORDER,
   STAGE_SHORT_NAMES,
 } from './form-field-enums';
+import {GateDict} from './chromedash-gate-chip.js';
 
 interface ActiveStagesAndGates {
   stage: StageDict;
@@ -25,8 +26,8 @@ class ChromedashFeatureRow extends LitElement {
   signedIn;
   @property({type: Object, attribute: false})
   starredFeatures = new Set<number>();
-  @property({type: Object, attribute: false})
-  gates;
+  @property({type: Array, attribute: false})
+  gates: GateDict[] = [];
   @property({type: Number})
   selectedGateId = 0;
 
@@ -139,7 +140,7 @@ class ChromedashFeatureRow extends LitElement {
   }
 
   getActiveStages(feature) {
-    const featureGates = this.gates[feature.id] || [];
+    const featureGates: GateDict[] = [this.gates[feature.id]] || [];
     const activeGates = featureGates.filter(g => this.isActiveGate(g));
     const activeStageIds = new Set(activeGates.map(g => g.stage_id));
     const activeStagesAndTheirGates: ActiveStagesAndGates[] = [];
