@@ -81,25 +81,25 @@ export class ChromedashFeaturePage extends LitElement {
     ];
   }
 
-  @property({type: Object, attribute: false})
+  @property({attribute: false})
   user!: User;
-  @property({type: Object, attribute: false})
+  @property({attribute: false})
   paired_user!: User;
-  @property({type: Number, attribute: false})
+  @property({attribute: false})
   featureId = 0;
-  @property({type: Object, attribute: false})
+  @property({attribute: false})
   feature!: Feature;
-  @property({type: Array, attribute: false})
+  @property({attribute: false})
   featureLinks: FeatureLink[] = [];
-  @property({type: Array, attribute: false})
+  @property({attribute: false})
   gates: GateDict[] = [];
-  @property({type: Array, attribute: false})
+  @property({attribute: false})
   comments: string[] = [];
-  @property({type: Object, attribute: false})
+  @property({attribute: false})
   process!: Process;
-  @property({type: Object, attribute: false})
+  @property({attribute: false})
   progress!: ProgressItem;
-  @property({type: String, attribute: false})
+  @property({attribute: false})
   contextLink = '';
   @property({type: String})
   appTitle = '';
