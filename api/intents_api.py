@@ -112,9 +112,9 @@ class IntentsAPI(basehandlers.APIHandler):
     # Add gate to Chromestatus URL query string if it is found.
     gate: Gate|None = None
     if body.gate_id:
-      gate = Gate.get_by_id(body['gate_id'])
+      gate = Gate.get_by_id(body.gate_id)
     if gate:
-      default_url += f'?gate={gate.key.integer_id()}'
+      default_url += f'?gate={body.gate_id}'
 
     subject = f'{compute_subject_prefix(feature, intent_stage)}: {feature.name}'
     cc_emails = body.intent_cc_emails or []
