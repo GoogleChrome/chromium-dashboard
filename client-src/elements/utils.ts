@@ -487,16 +487,24 @@ export function clearURLParams(key) {
   window.history.pushState({path: newURL.toString()}, '', newURL);
 }
 
-/**
- * @typedef {Object} FieldInfo
- * @property {string} name The name of the field.
- * @property {boolean} touched Whether the field was mutated by the user.
- * @property {number} stageId The stage that the field is associated with.
- *   This field is undefined if the change is a feature change.
- * @property {*} value The value written in the form field.
- * @property {*} implicitValue Value that should be changed for some checkbox fields.
- *   e.g. "set_stage" is a checkbox, but should change the field to a stage ID if true.
- */
+export interface FieldInfo {
+    /** The name of the field. */
+    name: string;
+    /** Whether the field was mutated by the user. */
+    touched: boolean;
+    /**
+     * The stage that the field is associated with.
+     * This field is undefined if the change is a feature change.
+     */
+    stageId: number;
+    /** The value written in the form field. */
+    value: any;
+    /**
+     * Value that should be changed for some checkbox fields.
+     * e.g. "set_stage" is a checkbox, but should change the field to a stage ID if true.
+     */
+    implicitValue?: any;
+  }
 
 /**
  * @typedef {Object} UpdateSubmitBody
