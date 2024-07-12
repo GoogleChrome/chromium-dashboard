@@ -71,8 +71,7 @@ class ChromedashUserlist extends LitElement {
   }
 
   _onAdminToggle() {
-    const formEl: HTMLFormElement | null =
-      this.renderRoot.querySelector('form');
+    const formEl = this.renderRoot.querySelector('form');
     const adminCheckbox = formEl?.querySelector(
       'input[name="is_admin"]'
     ) as SlCheckbox;
@@ -81,7 +80,7 @@ class ChromedashUserlist extends LitElement {
     ) as SlCheckbox;
     // Admins will always be site editors, so if the admin box is checked,
     // the site editor box is also checked and disabled.
-    if (adminCheckbox?.checked) {
+    if (adminCheckbox.checked) {
       siteEditorCheckbox.checked = true;
       siteEditorCheckbox.disabled = true;
     } else {
@@ -92,19 +91,18 @@ class ChromedashUserlist extends LitElement {
   // TODO(jrobbins): Change this to be a JSON API call via csClient.
   async ajaxSubmit(e) {
     e.preventDefault();
-    const formEl: HTMLFormElement | null =
-      this.renderRoot.querySelector('form');
+    const formEl = this.renderRoot.querySelector('form')!;
 
-    if (formEl && formEl.checkValidity()) {
-      const emailInput: HTMLInputElement | null = formEl.querySelector(
+    if (formEl.checkValidity()) {
+      const emailInput = formEl.querySelector(
         'input[name="email"]'
-      );
-      const adminCheckbox: SlCheckbox | null = formEl.querySelector(
+      ) as HTMLInputElement;
+      const adminCheckbox = formEl.querySelector(
         'input[name="is_admin"]'
-      );
-      const siteEditorCheckbox: SlCheckbox | null = formEl.querySelector(
+      ) as SlCheckbox;
+      const siteEditorCheckbox = formEl.querySelector(
         'input[name="is_site_editor"]'
-      );
+      ) as SlCheckbox;
       const email = emailInput?.value;
       const isAdmin = adminCheckbox?.checked;
       const isSiteEditor = siteEditorCheckbox?.checked;
