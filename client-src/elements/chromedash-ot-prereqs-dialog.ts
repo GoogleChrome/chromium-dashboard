@@ -73,7 +73,7 @@ export async function openFinalizeExtensionDialog(
 class ChromedashOTPrereqsDialog extends LitElement {
   @property({type: Number})
   featureId = 0;
-  @property({type: Object, attribute: false})
+  @property({attribute: false})
   stage!: StageDict;
   @property({type: Number})
   milestone = 0;

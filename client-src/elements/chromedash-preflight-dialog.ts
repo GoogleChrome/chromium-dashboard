@@ -70,21 +70,21 @@ export function findPendingGates(featureGates: GateDict[], feStage: StageDict) {
 @customElement('chromedash-preflight-dialog')
 export class ChromedashPreflightDialog extends LitElement {
   @state()
-  feature!: Feature;
+  private _feature!: Feature;
   @state()
-  featureGates!: GateDict[];
+  private _featureGates!: GateDict[];
   @state()
-  progress!: ProgressItem;
+  private _progress!: ProgressItem;
   @state()
-  process!: Process;
+  private _process!: Process;
   @state()
-  action!: Action;
+  private _action!: Action;
   @state()
-  stage!: StageDict;
+  private _stage!: StageDict;
   @state()
-  feStage!: StageDict;
+  private _feStage!: StageDict;
   @state()
-  url!: string;
+  private _url!: string;
 
   static get styles() {
     return [
@@ -138,14 +138,14 @@ export class ChromedashPreflightDialog extends LitElement {
     featureGates: GateDict[],
     url: string
   ) {
-    this.feature = feature;
-    this.progress = progress;
-    this.process = process;
-    this.action = action;
-    this.stage = stage;
-    this.feStage = feStage;
-    this.featureGates = featureGates;
-    this.url = url;
+    this._feature = feature;
+    this._progress = progress;
+    this._process = process;
+    this._action = action;
+    this._stage = stage;
+    this._feStage = feStage;
+    this._featureGates = featureGates;
+    this._url = url;
     this.renderRoot.querySelector('sl-dialog')?.show();
   }
 
@@ -168,7 +168,7 @@ export class ChromedashPreflightDialog extends LitElement {
       return html`
         <a
           class="edit-progress-item"
-          href="/guide/stage/${this.feature
+          href="/guide/stage/${this._feature
             .id}/${stage.outgoing_stage}/${feStage.id}#id_${pi.field}"
           @click=${this.hide}
         >
@@ -180,7 +180,7 @@ export class ChromedashPreflightDialog extends LitElement {
   }
 
   makePrereqItem(itemName) {
-    for (const s of this.process.stages || []) {
+    for (const s of this._process.stages || []) {
       for (const pi of s.progress_items) {
         if (itemName == pi.name) {
           return {...pi, stage: s};
@@ -191,19 +191,19 @@ export class ChromedashPreflightDialog extends LitElement {
   }
 
   renderDialogContent() {
-    if (this.feature == null) {
+    if (this._feature == null) {
       return nothing;
     }
     const prereqItems: ProgressItem[] = [];
-    for (const itemName of this.action.prerequisites || []) {
-      if (!this.progress.hasOwnProperty(itemName)) {
+    for (const itemName of this._action.prerequisites || []) {
+      if (!this._progress.hasOwnProperty(itemName)) {
         prereqItems.push(this.makePrereqItem(itemName));
       }
     }
-    const pendingGates = findPendingGates(this.featureGates, this.feStage);
+    const pendingGates = findPendingGates(this._featureGates, this._feStage);
 
     return html`
-      Before you ${this.action.name}, it is strongly recommended that you do the
+      Before you ${this._action.name}, it is strongly recommended that you do the
       following:
       <ol class="missing-prereqs-list">
         ${prereqItems.map(
@@ -214,8 +214,8 @@ export class ChromedashPreflightDialog extends LitElement {
                 item.stage,
                 findFirstFeatureStage(
                   item.stage.outgoing_stage,
-                  this.stage,
-                  this.feature
+                  this._stage,
+                  this._feature
                 ),
                 item
               )}
@@ -226,7 +226,7 @@ export class ChromedashPreflightDialog extends LitElement {
             <li class="pending">
               Get approval or NA from the
               <a
-                href="/feature/${this.feature.id}?gate=${g.id}"
+                href="/feature/${this._feature.id}?gate=${g.id}"
                 @click=${this.hide}
                 >${g.team_name}</a
               >
@@ -237,7 +237,7 @@ export class ChromedashPreflightDialog extends LitElement {
       </ol>
 
       <sl-button
-        href="${this.url}"
+        href="${this._url}"
         target="_blank"
         size="small"
         @click=${this.handleProceed}
