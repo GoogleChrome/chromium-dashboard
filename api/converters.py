@@ -201,6 +201,8 @@ def stage_to_json_dict(
     'origin_trial_feedback_url': stage.origin_trial_feedback_url,
     'ot_action_requested': stage.ot_action_requested,
     'ot_approval_buganizer_component': stage.ot_approval_buganizer_component,
+    'ot_approval_buganizer_custom_field_id': (
+        stage.ot_approval_buganizer_custom_field_id),
     'ot_approval_criteria_url': stage.ot_approval_criteria_url,
     'ot_approval_group_email': stage.ot_approval_group_email,
     'ot_chromium_trial_name': stage.ot_chromium_trial_name,

@@ -184,6 +184,8 @@ def add_features(server: str, after: datetime, detailsAfter: datetime):
         s.ot_action_requested = stage['ot_action_requested']
         s.ot_approval_buganizer_component = stage[
             'ot_approval_buganizer_component']
+        s.ot_approval_buganizer_custom_field_id = stage[
+            'ot_approval_buganizer_custom_field_id']
         s.ot_approval_criteria_url = stage['ot_approval_criteria_url']
         s.ot_approval_group_email = stage['ot_approval_group_email']
         s.ot_chromium_trial_name = stage['ot_chromium_trial_name']

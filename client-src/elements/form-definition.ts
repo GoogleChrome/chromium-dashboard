@@ -1,8 +1,8 @@
 import {html, TemplateResult} from 'lit';
-import {Feature} from '../js-src/cs-client';
+import {Feature, StageDict} from '../js-src/cs-client';
 import * as enums from './form-field-enums';
 
-interface FormattedFeature {
+export interface FormattedFeature {
   category: number;
   enterprise_feature_categories: string[];
   feature_type: number;
@@ -36,6 +36,7 @@ interface FormattedFeature {
   web_dev_views_link?: string;
   web_dev_views_notes?: string;
   other_views_notes?: string;
+  stages: StageDict[];
   [key: string]: any; // Allow additional properties
 }
 
@@ -198,6 +199,7 @@ export const FLAT_METADATA_FIELDS: MetadataFields = {
         'devrel',
         'category',
         'feature_type',
+        'active_stage_id',
         'search_tags',
       ],
     },
@@ -486,10 +488,10 @@ const PSA_PREPARE_TO_SHIP_FIELDS: MetadataFields = {
 };
 
 const DEPRECATION_PLAN_FIELDS: MetadataFields = {
-  name: 'Write up motivation',
+  name: 'Write up deprecation plan',
   sections: [
     {
-      name: 'Write up motivation',
+      name: 'Write up deprecation plan',
       fields: ['motivation', 'spec_link'],
     },
   ],
@@ -567,7 +569,6 @@ export const ORIGIN_TRIAL_CREATION_FIELDS: MetadataFields = {
         'ot_has_third_party_support',
         'ot_is_critical_trial',
         'ot_require_approvals',
-        'ot_request_note',
       ],
     },
   ],
@@ -587,10 +588,10 @@ export const ORIGIN_TRIAL_EXTENSION_FIELDS: MetadataFields = {
 
 // Note: Even though this is similar to another form, it is likely to change.
 const DEPRECATION_ORIGIN_TRIAL_FIELDS: MetadataFields = {
-  name: 'Origin trial',
+  name: 'Prepare for Deprecation Trial',
   sections: [
     {
-      name: 'Origin trial',
+      name: 'Prepare for Deprecation Trial',
       fields: [
         'display_name',
         'experiment_goals',

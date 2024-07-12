@@ -1,11 +1,10 @@
 import {LitElement, css, html} from 'lit';
+import {customElement, property} from 'lit/decorators.js';
 
+@customElement('chromedash-form-table')
 export class ChromedashFormTable extends LitElement {
-  static get properties() {
-    return {
-      class: {type: String},
-    };
-  }
+  @property({type: String})
+  class;
 
   static get styles() {
     return [
@@ -22,5 +21,3 @@ export class ChromedashFormTable extends LitElement {
     return html` <slot>fallback content</slot> `;
   }
 }
-
-customElements.define('chromedash-form-table', ChromedashFormTable);

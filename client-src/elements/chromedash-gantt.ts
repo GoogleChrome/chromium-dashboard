@@ -1,28 +1,25 @@
-import {LitElement, css, html, nothing} from 'lit';
+import {LitElement, TemplateResult, css, html, nothing} from 'lit';
+import {customElement, property} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import {Feature, StageDict} from '../js-src/cs-client.js';
 import {
   STAGE_TYPES_DEV_TRIAL,
   STAGE_TYPES_ORIGIN_TRIAL,
   STAGE_TYPES_SHIPPING,
 } from './form-field-enums.js';
 
+@customElement('chromedash-gantt')
 class ChromedashGantt extends LitElement {
-  static get properties() {
-    return {
-      feature: {type: Object},
-      stableMilestone: {type: Number},
-    };
-  }
+  @property({type: Object})
+  feature!: Feature;
+  @property({type: Number})
+  stableMilestone: number | null = null;
 
-  constructor() {
-    super();
-    this.feature = {};
-    this.stableMilestone = null;
+  connectedCallback() {
     window.csClient
       .getChannels()
       .then(channels => (this.stableMilestone = channels['stable'].version));
   }
-
   static get styles() {
     return [
       ...SHARED_STYLES,
@@ -110,7 +107,7 @@ class ChromedashGantt extends LitElement {
   }
 
   renderChartRow(gridRow, first, last, sortedMilestones, cssClass, label) {
-    const cellsOnRow = [];
+    const cellsOnRow: TemplateResult[] = [];
     for (let col = 0; col < sortedMilestones.length; col++) {
       const m = sortedMilestones[col];
       if (m < first || m > last) {
@@ -143,9 +140,9 @@ class ChromedashGantt extends LitElement {
   // Get lists of all dev trial, origin trial, and shipping stages
   // associated with the feature.
   getByStageType() {
-    const dtStages = [];
-    const otStages = [];
-    const shipStages = [];
+    const dtStages: StageDict[] = [];
+    const otStages: StageDict[] = [];
+    const shipStages: StageDict[] = [];
 
     for (const stage of this.feature.stages) {
       if (STAGE_TYPES_DEV_TRIAL.has(stage.stage_type)) {
@@ -180,7 +177,7 @@ class ChromedashGantt extends LitElement {
 
     let gridRow = 1;
 
-    let dtChartRow = nothing;
+    let dtChartRow: typeof nothing | TemplateResult[] = nothing;
     if (devTrialMilestone) {
       let devTrialMilestoneLast = maxMilestone;
       // If there is a shipping milestone, Dev trial stops just before it.
@@ -199,7 +196,7 @@ class ChromedashGantt extends LitElement {
       gridRow++;
     }
 
-    let otChartRow = nothing;
+    let otChartRow: typeof nothing | TemplateResult[] = nothing;
     if (originTrialMilestoneFirst) {
       otChartRow = this.renderChartRow(
         gridRow,
@@ -215,7 +212,7 @@ class ChromedashGantt extends LitElement {
       gridRow++;
     }
 
-    let shipChartRow = nothing;
+    let shipChartRow: typeof nothing | TemplateResult[] = nothing;
     if (shippingMilestone) {
       shipChartRow = this.renderChartRow(
         gridRow,
@@ -273,9 +270,9 @@ class ChromedashGantt extends LitElement {
     if (allMilestones.length == 0) {
       return html`<p>No milestones specified</p>`;
     }
-
-    const minMilestone = Math.min(...allMilestones);
-    const maxMilestone = Math.max(...allMilestones);
+    const allValidMilestones = allMilestones.filter(x => x !== undefined);
+    const minMilestone = Math.min(...allValidMilestones);
+    const maxMilestone = Math.max(...allValidMilestones);
     // We always show one extra after the last milestone so that the
     // "Shipped" block has room for that text.
     const milestoneRange = maxMilestone - minMilestone + 1 + 1;
@@ -294,8 +291,8 @@ class ChromedashGantt extends LitElement {
       // Second choice:
       // Use columns for each milestone value and the one after it
       // even if that means that milestone numbers are not consecutive.
-      const augmentedMilestoneSet = new Set(allMilestones);
-      for (const m of allMilestones) {
+      const augmentedMilestoneSet = new Set(allValidMilestones);
+      for (const m of allValidMilestones) {
         augmentedMilestoneSet.add(m + 1);
       }
       sortedMilestones = Array.from(augmentedMilestoneSet).sort(
@@ -306,7 +303,7 @@ class ChromedashGantt extends LitElement {
         // Third choice:
         // Use columns for exactly those milestones that are actually used
         // even if that means that milestone numbers are not consecutive.
-        const milestoneSet = new Set(allMilestones);
+        const milestoneSet = new Set(allValidMilestones);
         sortedMilestones = Array.from(milestoneSet).sort((a, b) => a - b);
         sortedMilestones.push(maxMilestone + 1); // After Shipped.
       }
@@ -351,5 +348,3 @@ class ChromedashGantt extends LitElement {
     `;
   }
 }
-
-customElements.define('chromedash-gantt', ChromedashGantt);

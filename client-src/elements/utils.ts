@@ -1,17 +1,18 @@
 // This file contains helper functions for our elements.
 
+import {html, nothing} from 'lit';
+import {Feature, FeatureLink, StageDict} from '../js-src/cs-client.js';
 import {markupAutolinks} from './autolink.js';
-import {nothing, html} from 'lit';
+import {FORMS_BY_STAGE_TYPE, FormattedFeature} from './form-definition.js';
 import {
-  STAGE_FIELD_NAME_MAPPING,
-  PLATFORMS_DISPLAYNAME,
-  STAGE_SPECIFIC_FIELDS,
-  OT_MILESTONE_END_FIELDS,
   ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME,
-  ROLLOUT_IMPACT_DISPLAYNAME,
   ENTERPRISE_IMPACT_DISPLAYNAME,
+  OT_MILESTONE_END_FIELDS,
+  PLATFORMS_DISPLAYNAME,
+  ROLLOUT_IMPACT_DISPLAYNAME,
+  STAGE_FIELD_NAME_MAPPING,
+  STAGE_SPECIFIC_FIELDS,
 } from './form-field-enums';
-import {FeatureLink} from '../js-src/cs-client.js';
 
 let toastEl;
 
@@ -101,6 +102,37 @@ export function findFirstFeatureStage(intentStage, currentStage, fe) {
   return null;
 }
 
+/**
+ * Returns `stage`'s name, using either its `display_name` or a counter to disambiguate from other
+ * stages of the same type within `feature`.
+ */
+export function unambiguousStageName(
+  stage: StageDict,
+  feature: Feature | FormattedFeature
+): string | undefined {
+  const processStageName = FORMS_BY_STAGE_TYPE[stage.stage_type]?.name;
+  if (!processStageName) {
+    console.error(
+      `Unexpected stage type ${stage.stage_type} in stage ${stage.id}.`
+    );
+    return undefined;
+  }
+  if (stage.display_name) {
+    return `${processStageName}: ${stage.display_name}`;
+  }
+
+  // Count the stages of the same type that appear before this one. This is O(n^2) when it's used to
+  // number every stage, but the total number of stages is generally <20.
+  const index = feature.stages
+    .filter(s => s.stage_type === stage.stage_type)
+    .findIndex(s => s.id === stage.id);
+  if (index > 0) {
+    return `${processStageName} ${index + 1}`;
+  }
+  // Ignore if the stage wasn't found.
+  return processStageName;
+}
+
 /* Get the value of a stage field using a form-specific name */
 export function getStageValue(stage, fieldName) {
   if (!stage) return undefined;
@@ -172,12 +204,16 @@ export function hasFieldValue(fieldName, feStage, feature) {
  * Note: This is independent of any value that might be in a corresponding
  * form field.
  *
- * @param {string} fieldName - The name of the field to retrieve.
- * @param {string} feStage - The stage of the feature.
- * @param {Object} feature - The feature object to retrieve the field value from.
- * @return {*} The value of the specified field for the given feature.
+ * @param fieldName - The name of the field to retrieve.
+ * @param feStage - The stage of the feature.
+ * @param feature - The feature object to retrieve the field value from.
+ * @return The value of the specified field for the given feature.
  */
-export function getFieldValueFromFeature(fieldName, feStage, feature) {
+export function getFieldValueFromFeature(
+  fieldName: string,
+  feStage: string,
+  feature: Feature
+) {
   if (STAGE_SPECIFIC_FIELDS.has(fieldName)) {
     const value = getStageValue(feStage, fieldName);
     if (fieldName === 'rollout_impact' && value) {
@@ -244,6 +280,14 @@ export function getFieldValueFromFeature(fieldName, feStage, feature) {
   }
   if (fieldName === 'enterprise_impact' && value) {
     return ENTERPRISE_IMPACT_DISPLAYNAME[value];
+  }
+  if (fieldName === 'active_stage_id' && value) {
+    for (const stage of feature.stages) {
+      if (stage.id === value) {
+        return unambiguousStageName(stage, feature);
+      }
+    }
+    return undefined;
   }
   return value;
 }
