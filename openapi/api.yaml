@@ -146,6 +146,61 @@ paths:
                   $ref: '#/components/schemas/SpecMentor'
         '400':
           description: The ?after query parameter isn't a valid date in ISO YYYY-MM-DD format.
+  /features/{feature_id}/{stage_id}/intent:
+    get:
+      summary: Get the HTML body of an intent draft
+      operationId: getIntentBody
+      parameters:
+        - name: feature_id
+          in: path
+          description: Feature ID
+          required: true
+          schema:
+            type: integer
+        - name: stage_id
+          in: path
+          description: Stage ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Intent draft body.
+          content:
+            text/plain:
+              schema:
+                type: string
+        '400':
+          description: No feature or stage ID specified.
+        '404':
+          description: Feature or stage not found based on given ID.
+    post:
+      summary: Submit an intent to be posted on blink-dev
+      operationId: postIntentToBlinkDev
+      parameters:
+        - name: feature_id
+          in: path
+          description: Feature ID
+          required: true
+          schema:
+            type: integer
+        - name: stage_id
+          in: path
+          description: Stage ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Intent draft body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: No feature or stage ID specified.
+        '404':
+          description: Feature or stage not found based on given ID.
   /feature-latency:
     get:
       summary: List how long each feature took to launch
@@ -189,6 +244,10 @@ components:
       in: header
       name: X-Xsrf-Token
   schemas:
+    MessageResponse:
+      properties:
+        message:
+          type: string
     ComponentsUsersResponse:
       properties:
         users:

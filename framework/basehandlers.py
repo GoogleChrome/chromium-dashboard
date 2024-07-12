@@ -18,7 +18,7 @@ import json
 import logging
 import os
 import re
-from typing import Any, Optional
+from typing import Any, NoReturn, Optional
 
 import flask
 import flask.views
@@ -66,7 +66,7 @@ class BaseHandler(flask.views.MethodView):
   def request(self):
     return flask.request
 
-  def abort(self, status, msg=None, **kwargs):
+  def abort(self, status, msg=None, **kwargs) -> NoReturn:
     """Support webapp2-style, e.g., self.abort(400)."""
     if msg:
       if status == 500:

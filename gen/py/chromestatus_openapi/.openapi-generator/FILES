@@ -33,6 +33,7 @@ chromestatus_openapi/models/link_preview_open_graph.py
 chromestatus_openapi/models/link_preview_open_graph_all_of_information.py
 chromestatus_openapi/models/link_preview_specs.py
 chromestatus_openapi/models/link_preview_webkit_bug.py
+chromestatus_openapi/models/message_response.py
 chromestatus_openapi/models/outstanding_review.py
 chromestatus_openapi/models/owners_and_subscribers_of_component.py
 chromestatus_openapi/models/review_latency.py

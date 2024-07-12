@@ -21,6 +21,7 @@ export * from './LinkPreviewOpenGraph';
 export * from './LinkPreviewOpenGraphAllOfInformation';
 export * from './LinkPreviewSpecs';
 export * from './LinkPreviewWebkitBug';
+export * from './MessageResponse';
 export * from './OutstandingReview';
 export * from './OwnersAndSubscribersOfComponent';
 export * from './ReviewLatency';

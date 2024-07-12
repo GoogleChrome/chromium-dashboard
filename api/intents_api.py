@@ -14,9 +14,10 @@
 
 from typing import TypedDict
 
-from flask import render_template
+from flask import Response, render_template
 
 from api import converters
+from chromestatus_openapi.models import MessageResponse
 from framework import basehandlers
 from framework import cloud_tasks_helpers
 from framework import permissions
@@ -40,12 +41,12 @@ class IntentOptions(TypedDict):
 
 class IntentsAPI(basehandlers.APIHandler):
 
-  def do_get(self, **kwargs):
+  def do_get(self, **kwargs) -> Response|dict|str:
     """Get the body of a draft intent."""
     feature_id = int(kwargs['feature_id'])
     # Check that feature ID is valid.
     if not feature_id:
-      self.abort(404, msg='No feature specified.')
+      self.abort(400, msg='No feature specified.')
     feature: FeatureEntry|None = FeatureEntry.get_by_id(feature_id)
     if feature is None:
       self.abort(404, msg=f'Feature {feature_id} not found')
@@ -53,7 +54,7 @@ class IntentsAPI(basehandlers.APIHandler):
     # Check that stage ID is valid.
     stage_id = int(kwargs['stage_id'])
     if not stage_id:
-      self.abort(404, msg='No stage specified')
+      self.abort(400, msg='No stage specified')
     stage: Stage|None = Stage.get_by_id(stage_id)
     if stage is None:
       self.abort(404, msg=f'Stage {stage_id} not found')
@@ -79,12 +80,12 @@ class IntentsAPI(basehandlers.APIHandler):
 
     return render_template('blink/intent_to_implement.html', **template_data)
 
-  def do_post(self, **kwargs):
+  def do_post(self, **kwargs) -> Response|dict|MessageResponse:
     """Submit an intent email directly to blink-dev."""
     feature_id = int(kwargs['feature_id'])
     # Check that feature ID is valid.
     if not feature_id:
-      self.abort(404, msg='No feature specified.')
+      self.abort(400, msg='No feature specified.')
     feature: FeatureEntry|None = FeatureEntry.get_by_id(feature_id)
     if feature is None:
       self.abort(404, msg=f'Feature {feature_id} not found')
@@ -93,7 +94,7 @@ class IntentsAPI(basehandlers.APIHandler):
     # Check that stage ID is valid.
     stage_id = int(kwargs['stage_id'])
     if not stage_id:
-      self.abort(404, msg='No stage specified')
+      self.abort(400, msg='No stage specified')
     stage: Stage|None = Stage.get_by_id(stage_id)
     if stage is None:
       self.abort(404, msg=f'Stage {stage_id} not found')
