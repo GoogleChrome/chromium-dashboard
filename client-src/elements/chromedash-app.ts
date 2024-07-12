@@ -442,6 +442,19 @@ export class ChromedashApp extends LitElement {
         this.pageComponent.appTitle = this.appTitle;
       }
     );
+    page('/guide/intentpreview/:featureId(\\d+)', ctx => {
+      if (!this.setupNewPage(ctx, 'chromedash-guide-intent-preview')) return;
+      this.pageComponent.featureId = parseInt(ctx.params.featureId);
+      this.pageComponent.appTitle = this.appTitle;
+      this.hideSidebar();
+    });
+    page('/guide/intentpreview/:featureId(\\d+)/:gateId(\\d+)', ctx => {
+      if (!this.setupNewPage(ctx, 'chromedash-guide-intent-preview')) return;
+      this.pageComponent.featureId = parseInt(ctx.params.featureId);
+      this.pageComponent.gateId = parseInt(ctx.params.gateId);
+      this.pageComponent.appTitle = this.appTitle;
+      this.hideSidebar();
+    });
     page('/ot_creation_request/:featureId(\\d+)/:stageId(\\d+)', ctx => {
       if (!this.setupNewPage(ctx, 'chromedash-ot-creation-page')) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);

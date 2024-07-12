@@ -30,6 +30,7 @@ from api import (
   feature_latency_api,
   feature_links_api,
   features_api,
+  intents_api,
   login_api,
   logout_api,
   metricsdata,
@@ -134,6 +135,10 @@ api_routes: list[Route] = [
     Route(
         f'{API_BASE}/features/<int:feature_id>/stages/<int:stage_id>/addXfnGates',
         reviews_api.XfnGatesAPI),
+    Route(f'{API_BASE}/features/<int:feature_id>/postintent',
+          intents_api.IntentsAPI),
+    Route(f'{API_BASE}/features/<int:feature_id>/<int:stage_id>/intent',
+          intents_api.IntentsAPI),
 
     Route(f'{API_BASE}/blinkcomponents',
         blink_components_api.BlinkComponentsAPI),
@@ -202,6 +207,10 @@ spa_page_routes = [
       defaults={'require_edit_feature': True}),
   Route('/guide/stage/<int:feature_id>/metadata',
       defaults={'require_edit_feature': True}),
+  Route('/guide/intentpreview/<int:feature_id>',
+        defaults={'require_edit_feature': True}),
+  Route('/guide/intentpreview/<int:feature_id>/<int:gate_id>',
+        defaults={'require_edit_feature': True}),
   Route('/ot_creation_request/<int:feature_id>/<int:stage_id>',
         defaults={'require_signin': True}),
   Route('/ot_extension_request/<int:feature_id>/<int:stage_id>',
@@ -300,6 +309,7 @@ internals_routes: list[Route] = [
   Route('/tasks/email-ot-extended', notifier.OTExtendedHandler),
   Route('/tasks/email-ot-extension-approved',
         notifier.OTExtensionApprovedHandler),
+  Route('/tasks/email-intent-to-blink-dev', notifier.IntentToBlinkDevHandler),
 
   # OT process reminder emails
   Route('/tasks/email-ot-first-branch', notifier.OTFirstBranchReminderHandler),
