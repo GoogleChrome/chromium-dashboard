@@ -1,8 +1,11 @@
 // @ts-check
 
-import {css, html, LitElement} from 'lit';
+import {SlBadge} from '@shoelace-style/shoelace';
+import {css, html, LitElement, TemplateResult} from 'lit';
+import {customElement, property, state} from 'lit/decorators.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
 import {SHARED_STYLES} from '../css/shared-css';
+import {FeatureLink} from '../js-src/cs-client';
 import {ExternalReviewer} from './external-reviewers';
 
 // LINK_TYPES should be consistent with the server link_helpers.py
@@ -36,7 +39,7 @@ export const _dateTimeFormat = new Intl.DateTimeFormat('en-US', {
   minute: 'numeric', // No seconds
 });
 
-function enhanceChromeStatusLink(featureLink, text) {
+function enhanceChromeStatusLink(featureLink, text?) {
   function _formatTimestamp(timestamp) {
     return _dateTimeFormat.format(new Date(timestamp * 1000));
   }
@@ -117,7 +120,7 @@ function enhanceChromeStatusLink(featureLink, text) {
   </a>`;
 }
 
-function enhanceGithubIssueLink(featureLink, text) {
+function enhanceGithubIssueLink(featureLink, text?) {
   function _formatISOTime(dateString) {
     return _dateTimeFormat.format(new Date(dateString));
   }
@@ -142,9 +145,8 @@ function enhanceGithubIssueLink(featureLink, text) {
 
   // If this issue is an external review of the feature, find the summary description.
   const externalReviewer = ExternalReviewer.get(repo);
-  let stateDescription = undefined;
-  /** @type {import('@shoelace-style/shoelace').SlBadge["variant"] | undefined} */
-  let stateVariant = undefined;
+  let stateDescription: string | TemplateResult = html``;
+  let stateVariant: SlBadge['variant'] | undefined = undefined;
   if (externalReviewer) {
     for (const label of information.labels) {
       const labelInfo = externalReviewer.label(label);
@@ -268,7 +270,7 @@ function enhanceGithubIssueLink(featureLink, text) {
   </a>`;
 }
 
-function enhanceGithubMarkdownLink(featureLink, text) {
+function enhanceGithubMarkdownLink(featureLink, text?) {
   const information = featureLink.information;
   const path = information.path;
   const title = information._parsed_title;
@@ -446,6 +448,7 @@ function enhanceGoogleDocsLink(featureLink) {
   return _enhanceLinkWithTitleAndDescription(featureLink, iconUrl);
 }
 
+@customElement('chromedash-link')
 export class ChromedashLink extends LitElement {
   static styles = [
     ...SHARED_STYLES,
@@ -505,42 +508,27 @@ export class ChromedashLink extends LitElement {
     `,
   ];
 
-  static get properties() {
-    return {
-      href: {type: String},
-      /** Says to show this element's content as <slot/>: [feature link] even if a feature link is
-       * available. If this is false, the content is only shown when no feature link is available.
-       */
-      showContentAsLabel: {type: Boolean},
-      class: {type: String},
-      featureLinks: {type: Array},
-      _featureLink: {state: true},
-      ignoreHttpErrorCodes: {type: Array},
-      /** Normally, if there's a feature link, this element displays as a <sl-tag>, and if there
-       * isn't, it displays as a normal <a> link. If [alwaysInTag] is set, it always uses the
-       * <sl-tag>.
-       */
-      alwaysInTag: {type: Boolean},
-    };
-  }
-
-  constructor() {
-    super();
-    /** @type {string | undefined} */
-    this.href = undefined;
-    /** @type {boolean} */
-    this.showContentAsLabel = false;
-    /** @type {string} */
-    this.class = '';
-    /** @type {import("../js-src/cs-client").FeatureLink[]} */
-    this.featureLinks = [];
-    /** @type {import ("../js-src/cs-client").FeatureLink | undefined} */
-    this._featureLink = undefined;
-    /** @type {number[]} */
-    this.ignoreHttpErrorCodes = [];
-    /** @type {boolean} */
-    this.alwaysInTag = false;
-  }
+  @property({type: String})
+  href;
+  /** Says to show this element's content as <slot/>: [feature link] even if a feature link is
+   * available. If this is false, the content is only shown when no feature link is available.
+   */
+  @property({type: Boolean})
+  showContentAsLabel = false;
+  @property({type: String})
+  class = '';
+  @property({type: Array})
+  featureLinks: FeatureLink[] = [];
+  @property({type: Array})
+  ignoreHttpErrorCodes: number[] = [];
+  /** Normally, if there's a feature link, this element displays as a <sl-tag>, and if there
+   * isn't, it displays as a normal <a> link. If [alwaysInTag] is set, it always uses the
+   * <sl-tag>.
+   */
+  @property({type: Boolean})
+  alwaysInTag = false;
+  @state()
+  _featureLink;
 
   willUpdate(changedProperties) {
     if (
@@ -632,15 +620,13 @@ export class ChromedashLink extends LitElement {
   }
 }
 
-export function enhanceUrl(url, featureLinks = [], fallback, text) {
+export function enhanceUrl(url, featureLinks: FeatureLink[] = [], text?) {
   return html`<chromedash-link href=${url} .featureLinks=${featureLinks}
     >${text ?? url}</chromedash-link
   >`;
 }
 
 // prettier-ignore
-export function enhanceAutolink(part, featureLinks) {
+export function enhanceAutolink(part, featureLinks: FeatureLink[]) {
   return html`<chromedash-link href=${part.href} .featureLinks=${featureLinks} .ignoreHttpErrorCodes=${[404]}>${part.content}</chromedash-link>`;
 }
-
-customElements.define('chromedash-link', ChromedashLink);
