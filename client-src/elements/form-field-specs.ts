@@ -752,6 +752,11 @@ export const ALL_FIELDS: Record<string, Field> = {
           >specification mentor</a
         >.
       </p>`,
+    check: value =>
+      checkNotGoogleDocs(
+        value,
+        'Explainers should not be hosted on Google Docs.'
+      ),
   },
 
   spec_link: {
@@ -762,6 +767,21 @@ export const ALL_FIELDS: Record<string, Field> = {
     help_text: html` Link to the spec, if and when available. When implementing
     a spec update, please link to a heading in a published spec rather than a
     pull request when possible.`,
+    extra_help: html`<p>
+      Specifications should be written in the format and hosted in the URL space
+      expected by your target standards body. For example, the W3C expects
+      <a href="https://respec.org/" target="_blank">Respec</a> or
+      <a href="https://speced.github.io/bikeshed/" target="_blank">Bikeshed</a>
+      hosted on w3.org or in Github Pages. The IETF expects an
+      <a href="https://authors.ietf.org/" target="_blank">Internet-Draft</a>
+      hosted in the
+      <a href="https://datatracker.ietf.org/" target="_blank">Datatracker</a>.
+    </p>`,
+    check: value =>
+      checkNotGoogleDocs(
+        value,
+        'Specifications should not be hosted on Google Docs.'
+      ),
   },
 
   comments: {
@@ -2349,5 +2369,15 @@ async function checkExtensionMilestoneIsValid(value: string) {
   }
   // TODO(DanielRyanSmith): Check that the extension milestone comes after
   // OT end milestone and all previous extension end milestones.
+  return undefined;
+}
+
+function checkNotGoogleDocs(
+  value: string,
+  warning = 'Avoid using Google Docs'
+) {
+  if (/docs\.google\.com\/document/.test(value)) {
+    return {warning};
+  }
   return undefined;
 }
