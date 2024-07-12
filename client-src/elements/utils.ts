@@ -488,23 +488,23 @@ export function clearURLParams(key) {
 }
 
 export interface FieldInfo {
-    /** The name of the field. */
-    name: string;
-    /** Whether the field was mutated by the user. */
-    touched: boolean;
-    /**
-     * The stage that the field is associated with.
-     * This field is undefined if the change is a feature change.
-     */
-    stageId: number | null;
-    /** The value written in the form field. */
-    value: any;
-    /**
-     * Value that should be changed for some checkbox fields.
-     * e.g. "set_stage" is a checkbox, but should change the field to a stage ID if true.
-     */
-    implicitValue?: any;
-  }
+  /** The name of the field. */
+  name: string;
+  /** Whether the field was mutated by the user. */
+  touched: boolean;
+  /**
+   * The stage that the field is associated with.
+   * This field is undefined if the change is a feature change.
+   */
+  stageId: number | null;
+  /** The value written in the form field. */
+  value: any;
+  /**
+   * Value that should be changed for some checkbox fields.
+   * e.g. "set_stage" is a checkbox, but should change the field to a stage ID if true.
+   */
+  implicitValue?: any;
+}
 
 /**
  * @typedef {Object} UpdateSubmitBody

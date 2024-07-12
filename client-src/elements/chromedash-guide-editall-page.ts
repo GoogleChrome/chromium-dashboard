@@ -29,13 +29,13 @@ import {
 } from './form-field-enums.js';
 import {ALL_FIELDS} from './form-field-specs';
 import {openAddStageDialog} from './chromedash-add-stage-dialog';
-import { customElement, property, state } from 'lit/decorators.js';
-import { Feature } from '../js-src/cs-client.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
+import {customElement, property, state} from 'lit/decorators.js';
+import {Feature} from '../js-src/cs-client.js';
+import {ifDefined} from 'lit/directives/if-defined.js';
 
 interface FormToRender {
-    id: number;
-    item: typeof nothing | TemplateResult;
+  id: number;
+  item: typeof nothing | TemplateResult;
 }
 
 @customElement('chromedash-guide-editall-page')
@@ -104,7 +104,9 @@ export class ChromedashGuideEditallPage extends LitElement {
     if (!el) return;
     await el.updateComplete;
 
-    const hiddenTokenField = this.renderRoot.querySelector('input[name=token]') as HTMLInputElement;
+    const hiddenTokenField = this.renderRoot.querySelector(
+      'input[name=token]'
+    ) as HTMLInputElement;
     hiddenTokenField.form?.addEventListener('submit', event => {
       this.handleFormSubmit(event, hiddenTokenField);
     });
@@ -448,16 +450,19 @@ export class ChromedashGuideEditallPage extends LitElement {
     const formattedFeature = formatFeatureForEdit(this.feature);
     this.fieldValues.feature = this.feature;
 
-    const formsToRender = this.getForms(formattedFeature, this.feature.stages) as FormToRender[];
+    const formsToRender = this.getForms(
+      formattedFeature,
+      this.feature.stages
+    ) as FormToRender[];
     return html`
       <form name="feature_form">
         <input type="hidden" name="token" />
         <chromedash-form-table ${ref(this.registerHandlers)}>
-        ${repeat(
+          ${repeat(
             formsToRender,
             form => form.id,
             (_, i) => formsToRender[i].item
-        )}
+          )}
         </chromedash-form-table>
         ${this.renderAddStageButton()}
 
