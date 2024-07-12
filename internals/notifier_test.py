@@ -1302,6 +1302,46 @@ class OTActivationFailedHandlerTest(testing_config.CustomTestCase):
         TESTDATA['test_make_activation_failed_email.html'])
 
 
+class IntentToBlinkDevHandlerTest(testing_config.CustomTestCase):
+  def setUp(self):
+    self.feature_1 = FeatureEntry(
+        feature_type=1, name='feature one', summary='sum', category=1,
+        owner_emails=['owner@example.com'])
+    self.feature_1.put()
+    self.feature_1_id = self.feature_1.key.integer_id()
+    self.ot_stage_1 = Stage(
+        feature_id=self.feature_1_id, stage_type=150,
+        origin_trial_id='-1234567890')
+    self.ot_stage_1.put()
+    self.ot_gate_1 = Gate(feature_id=self.feature_1_id,
+                stage_id=self.ot_stage_1.key.integer_id(),
+                gate_type=2, state=Vote.APPROVED)
+    self.ot_gate_1.put()
+    self.contacts = ['example_user@example.com', 'another_user@exmaple.com']
+
+  def test_make_intent_post_email(self):
+    json_data = {
+      'subject': 'Intent to Experiment: feature one',
+      'feature_id': self.feature_1_id,
+      'sections_to_show': ['i2p_thread', 'experiment', 'extension_reason'],
+      'intent_stage': 3,
+      'default_url': (f'https://chromestatus.com/feature/{self.feature_1_id}'
+                      f'?gate=${self.ot_gate_1.key.integer_id()}'),
+      'intent_cc_emails': ['cc1@example.com', 'owner@example.com'],
+    }
+    with test_app.app_context():
+      handler = notifier.IntentToBlinkDevHandler()
+      email_task = handler.build_email(self.feature_1, json_data)
+      # TESTDATA.make_golden(email_task['html'], 'test_make_intent_email.html')
+      self.assertEqual(email_task['to'], 'blink-dev@chromium.org')
+      self.assertEqual(email_task['cc'],
+                       ['cc1@example.com', 'owner@example.com'])
+      self.assertEqual(email_task['subject'],
+                       'Intent to Experiment: feature one')
+      self.assertEqual(email_task['html'],
+        TESTDATA['test_make_intent_email.html'])
+
+
 class OTEndingNextReleaseReminderHandlerTest(testing_config.CustomTestCase):
   def setUp(self):
     self.contacts = ['example_user@example.com', 'another_user@exmaple.com']
