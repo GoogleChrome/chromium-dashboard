@@ -24,9 +24,10 @@ import {
 import {ALL_FIELDS} from './form-field-specs';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
-import {property, state} from 'lit/decorators.js';
+import {customElement, property, state} from 'lit/decorators.js';
 import {Feature, StageDict} from '../js-src/cs-client.js';
 
+@customElement('chromedash-guide-stage-page')
 export class ChromedashGuideStagePage extends LitElement {
   static get styles() {
     return [...SHARED_STYLES, ...FORM_STYLES, css``];
@@ -414,5 +415,3 @@ export class ChromedashGuideStagePage extends LitElement {
     `;
   }
 }
-
-customElements.define('chromedash-guide-stage-page', ChromedashGuideStagePage);
