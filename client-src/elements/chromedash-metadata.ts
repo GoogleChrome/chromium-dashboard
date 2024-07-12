@@ -2,11 +2,17 @@ import {LitElement, css, html} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import {Channels} from '../js-src/cs-client.js';
+
+interface InplStatus {
+  key: number;
+  val: string;
+}
 
 @customElement('chromedash-metadata')
 class ChromedashMetadata extends LitElement {
   @property({type: Array})
-  implStatuses;
+  implStatuses: InplStatus[] = [];
   @property({type: Object, attribute: false})
   status = {
     NO_ACTIVE_DEV: 1,
@@ -21,13 +27,16 @@ class ChromedashMetadata extends LitElement {
     ON_HOLD: 10,
     NO_LONGER_PURSUING: 1000,
   };
-
+  @property({type: String, attribute: false})
+  selected!: string;
   @state()
-  selected;
-  _className;
-  _fetchError;
-  _channels;
-  _versions;
+  _className: 'canaryisdev' | 'betaisdev' | undefined;
+  @state()
+  _fetchError!: boolean;
+  @state()
+  _channels: Channels = {};
+  @state()
+  _versions!: (string | number)[];
 
   static get styles() {
     return [
@@ -89,7 +98,7 @@ class ChromedashMetadata extends LitElement {
     const windowsVersions = response[0];
     for (let i = 0, el; (el = windowsVersions.versions[i]); ++i) {
       // Include previous version if current is foobar'd.
-      this._channels[el.channel] =
+      this._channels[el.channel].version =
         parseInt(el.version) || parseInt(el.prev_version);
     }
 
@@ -102,10 +111,10 @@ class ChromedashMetadata extends LitElement {
       this.implStatuses[this.status.PROPOSED - 1].val,
       this.implStatuses[this.status.IN_DEVELOPMENT - 1].val,
       this.implStatuses[this.status.DEPRECATED - 1].val,
-      this._channels.canary,
-      this._channels.dev,
-      this._channels.beta,
-      this._channels.stable,
+      this._channels.canary.version,
+      this._channels.dev.version,
+      this._channels.beta.version,
+      this._channels.stable.version,
     ];
 
     // Consolidate channels if they're the same.
@@ -117,7 +126,7 @@ class ChromedashMetadata extends LitElement {
       this._className = 'betaisdev';
     }
 
-    for (let i = this._channels.canary - 1; i >= 1; i--) {
+    for (let i = this._channels.canary.version - 1; i >= 1; i--) {
       if (!this._versions.includes(i)) {
         this._versions.push(i);
       }
