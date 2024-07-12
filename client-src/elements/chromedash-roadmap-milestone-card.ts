@@ -10,30 +10,34 @@ const ORIGIN_TRIAL = ['Origin trial'];
 const BROWSER_INTERVENTION = ['Browser Intervention'];
 const NO_FEATURE_STRING = 'NO FEATURES ARE PLANNED FOR THIS MILESTONE YET';
 
+export interface TemplateContent {
+  channelLabel: string;
+  h1Class: string;
+  channelTag?: string;
+  dateText: string;
+  featureHeader: string;
+}
+
 @customElement('chromedash-roadmap-milestone-card')
 class ChromedashRoadmapMilestoneCard extends LitElement {
   infoPopupRef = createRef<SlPopup>();
 
   static styles = ROADMAP_MILESTONE_CARD_CSS;
 
-  @property({type: Object, attribute: false})
-  starredFeatures = new Set<Number>();
-  @property({type: Number, attribute: false})
-  highlightFeature;
-  @property({type: Object, attribute: false})
-  templateContent;
-  @property({type: Object, attribute: false})
-  channel;
+  @property({attribute: false})
+  starredFeatures = new Set<number>();
+  @property({attribute: false})
+  highlightFeature!: number;
+  @property({attribute: false})
+  templateContent!: TemplateContent;
+  @property({attribute: false})
+  channel; //TODO(markxiong0122): Type this as Channel when PR#4085 is merged
   @property({type: Boolean})
-  showDates!: boolean;
+  showDates = false;
   @property({type: Boolean})
-  signedIn!: boolean;
+  signedIn = false;
 
-  /**
-   *  Returns the number of days between a and b.
-   *  @return {!{days: number, future: boolean}}
-   */
-  _dateDiffInDays(a: Date, b: Date) {
+  _dateDiffInDays(a: Date, b: Date): {days: number; future: boolean} {
     // Discard time and time-zone information.
     const utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
     const utc2 = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate());
@@ -108,7 +112,7 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
 
   _computeDaysUntil(dateStr) {
     const date = new Date(dateStr);
-    if (isNaN(Number(date))) {
+    if (isNaN(date.getTime())) {
       return nothing;
     }
     const today = new Date();
@@ -133,9 +137,7 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
     if (
       e.relatedTarget != this.renderRoot.querySelector('#detailed-info-link')
     ) {
-      if (this.infoPopupRef.value) {
-        this.infoPopupRef.value.active = false;
-      }
+      this.infoPopupRef.value!.active = false;
     }
   }
 

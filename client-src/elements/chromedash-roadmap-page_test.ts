@@ -1,8 +1,8 @@
-import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
-import {ChromedashRoadmapPage} from './chromedash-roadmap-page';
-import {ChromeStatusClient} from '../js-src/cs-client';
+import {html} from 'lit';
 import sinon from 'sinon';
+import {ChromeStatusClient} from '../js-src/cs-client';
+import {ChromedashRoadmapPage} from './chromedash-roadmap-page';
 
 describe('chromedash-roadmap-page', () => {
   const starsPromise = Promise.resolve([123456]);

@@ -1,9 +1,9 @@
 import {LitElement, css, html} from 'lit';
-import {ref, createRef} from 'lit/directives/ref.js';
-import './chromedash-roadmap';
+import {customElement, property, state} from 'lit/decorators.js';
+import {createRef, ref} from 'lit/directives/ref.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {User} from '../js-src/cs-client';
-import {customElement, property, state} from 'lit/decorators.js';
+import './chromedash-roadmap';
 import {ChromedashRoadmap} from './chromedash-roadmap';
 
 @customElement('chromedash-roadmap-page')
@@ -31,14 +31,6 @@ export class ChromedashRoadmapPage extends LitElement {
     ];
   }
 
-  static get properties() {
-    return {
-      user: {type: Object},
-      cardWidth: {type: Number},
-      numColumns: {type: Number},
-      viewOffset: {type: Number},
-    };
-  }
   @property({type: Object, attribute: false})
   user!: User;
   @state()
@@ -65,7 +57,7 @@ export class ChromedashRoadmapPage extends LitElement {
   }
 
   handleResize() {
-    const containerWidth = this.sectionRef.value?.offsetWidth;
+    const containerWidth = this.sectionRef.value!.offsetWidth;
     const margin = 16;
 
     let numColumns = 3;
@@ -84,7 +76,7 @@ export class ChromedashRoadmapPage extends LitElement {
 
   handleMove(e) {
     const roadmap = this.roadmapRef.value;
-    if (!roadmap || !roadmap.lastFutureFetchedOn) return;
+    if (!roadmap?.lastFutureFetchedOn) return;
 
     if (e.target.id == 'next-button') {
       this.viewOffset -= 1; // move to newer version
