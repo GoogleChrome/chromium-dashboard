@@ -203,8 +203,8 @@ export class ChromedashPreflightDialog extends LitElement {
     const pendingGates = findPendingGates(this._featureGates, this._feStage);
 
     return html`
-      Before you ${this._action.name}, it is strongly recommended that you do the
-      following:
+      Before you ${this._action.name}, it is strongly recommended that you do
+      the following:
       <ol class="missing-prereqs-list">
         ${prereqItems.map(
           item =>
