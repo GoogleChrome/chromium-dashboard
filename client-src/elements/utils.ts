@@ -211,7 +211,7 @@ export function hasFieldValue(fieldName, feStage, feature) {
  */
 export function getFieldValueFromFeature(
   fieldName: string,
-  feStage: string,
+  feStage: StageDict,
   feature: Feature
 ) {
   if (STAGE_SPECIFIC_FIELDS.has(fieldName)) {
