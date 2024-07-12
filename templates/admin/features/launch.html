@@ -44,8 +44,36 @@
 
 {% if intent %}
 <section>
-<h3>Copy and send this text for your "Intent to ..." email</h3>
-{% include "blink/intent_to_implement.html" %}
+  <h3>Copy and send this text for your "Intent to ..." email</h3>
+  <p>Email to</p>
+  <div class="subject">
+    blink-dev@chromium.org
+  </div>
+
+  <p>Subject</p>
+  <div class="subject">
+    {{subject_prefix}}:
+    {{feature.name}}
+  </div>
+
+  {#
+    Insted of vertical margins, <br> elements are used to create line breaks
+    that can be copied and pasted into a text editor.
+  #}
+
+  <p>Body
+    <span class="tooltip copy-text" style="float:right"
+          title="Copy text to clipboard">
+        <a href="#" data-tooltip>
+          <iron-icon icon="chromestatus:content_copy"
+                    id="copy-email-body"></iron-icon>
+        </a>
+    </span>
+  </p>
+
+  <div class="email">
+    {% include "blink/intent_to_implement.html" %}
+  </div> <!-- end email body div -->
 </section>
 {% endif %}
 
