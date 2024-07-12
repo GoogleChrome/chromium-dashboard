@@ -1,19 +1,19 @@
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
-import {ChromedashIntentTemplate} from './chromedash-intent-template';
+import {ChromedashIntentContent} from './chromedash-intent-content';
 
-describe('chromedash-intent-template', () => {
+describe('chromedash-intent-content', () => {
   it('renders with fake data', async () => {
     const component = await fixture(
-      html`<chromedash-intent-template
+      html`<chromedash-intent-content
         appTitle="Chrome Status Test"
         subject="A fake subject"
         intentBody="<div>A basic intent body</div>"
       >
-      </chromedash-intent-template>`
+      </chromedash-intent-content>`
     );
     assert.exists(component);
-    assert.instanceOf(component, ChromedashIntentTemplate);
+    assert.instanceOf(component, ChromedashIntentContent);
 
     const subject = component.shadowRoot.querySelector(
       '#email-subject-content'

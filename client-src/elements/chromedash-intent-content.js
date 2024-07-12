@@ -3,7 +3,7 @@ import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {showToastMessage} from './utils.js';
 
-export class ChromedashIntentTemplate extends LitElement {
+export class ChromedashIntentContent extends LitElement {
   static get properties() {
     return {
       appTitle: {type: String},
@@ -209,4 +209,4 @@ export class ChromedashIntentTemplate extends LitElement {
   }
 }
 
-customElements.define('chromedash-intent-template', ChromedashIntentTemplate);
+customElements.define('chromedash-intent-content', ChromedashIntentContent);

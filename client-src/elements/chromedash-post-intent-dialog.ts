@@ -56,6 +56,9 @@ class ChromedashPostIntentDialog extends LitElement {
         .float-right {
           float: right;
         }
+        sl-input::part(base) {
+          margin-top: 8px;
+        }
         sl-input[data-user-invalid]::part(base) {
           border-color: red;
         }
@@ -80,7 +83,7 @@ class ChromedashPostIntentDialog extends LitElement {
     const fieldInfo = ALL_FIELDS.intent_cc_emails;
     const defaultCCEmails = this.ownerEmails.join(',');
 
-    return html`${fieldInfo.help_text}
+    return html`${fieldInfo.help_text}<br>
       <sl-input
         ${ref(this.updateAttributes)}
         id="id_${fieldInfo.name}"

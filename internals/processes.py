@@ -72,7 +72,7 @@ def process_to_dict(process):
 # The param "intent" adds clauses the template to include details
 # needed for an intent email.  The param "launch" causes those
 # details to be omitted and a link to create a launch bug shown instead.
-INTENT_EMAIL_URL = ('/guide/intentpreview/{feature_id}/{gate_id}')
+INTENT_EMAIL_URL = ('/feature/{feature_id}/gate/{gate_id}/intent')
 LAUNCH_BUG_TEMPLATE_URL = '/admin/features/launch/{feature_id}?launch=1'
 # TODO(jrobbins): Creation of the launch bug has been a TODO for 5 years.
 

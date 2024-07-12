@@ -550,9 +550,8 @@ class ChromedashFeatureDetail extends LitElement {
     const label = action.name;
     const url = action.url
       .replace('{feature_id}', this.feature.id)
-      .replace('{intent_stage}', stage.outgoing_stage)
-      // No gate_id for this URL.
-      .replace('/{gate_id}', '');
+      // No gate_id for this URL. Use 0 by default.
+      .replace('{gate_id}', '0');
 
     const gatesForStage = this.gates.filter(g => g.stage_id == feStage.id);
     const checkCompletion = () => {

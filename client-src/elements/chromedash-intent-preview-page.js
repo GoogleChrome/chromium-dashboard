@@ -9,9 +9,9 @@ import {
   STAGE_TYPES_DEV_TRIAL,
   STAGE_TYPES_SHIPPING,
 } from './form-field-enums.js';
-import './chromedash-intent-template';
+import './chromedash-intent-content.js';
 
-class ChromedashGuideIntentPreview extends LitElement {
+class ChromedashIntentPreviewPage extends LitElement {
   static get properties() {
     return {
       appTitle: {type: String},
@@ -63,6 +63,12 @@ class ChromedashGuideIntentPreview extends LitElement {
           content: counter(h3) '.';
           margin-right: 5px;
         }
+        #post-intent-button {
+          float: right;
+        }
+        .inline {
+          display: inline;
+        }
       `,
     ];
   }
@@ -88,11 +94,13 @@ class ChromedashGuideIntentPreview extends LitElement {
           this.stage = this.feature.stages.find(
             stage => this.gate.stage_id === stage.id
           );
-        } else {
-          // This is a "Ready for Developer Testing" intent if no gate is supplied.
+        } else if (!this.gateId) {
+          // This is a "Ready for Developer Testing" intent if no gate is supplied (0).
           this.stage = this.feature.stages.find(stage =>
             STAGE_TYPES_DEV_TRIAL.has(stage.stage_type)
           );
+        } else {
+          throw new Error('Invalid gate ID')
         }
 
         if (this.feature.unlisted) {
@@ -229,7 +237,7 @@ class ChromedashGuideIntentPreview extends LitElement {
           <h3 class="inline">Send this text for your "Intent to ..." email</h3>
           <input
             ref()
-            id="submit-button"
+            id="post-intent-button"
             class="button inline"
             type="submit"
             value="Post directly to blink-dev"
@@ -241,14 +249,14 @@ class ChromedashGuideIntentPreview extends LitElement {
                 this.gate?.id
               )}"
           />
-          <chromedash-intent-template
+          <chromedash-intent-content
             appTitle="${this.appTitle}"
             .feature=${this.feature}
             .stage=${this.stage}
             subject="${this.subject}"
             intentBody="${this.intentBody}"
           >
-          </chromedash-intent-template>
+          </chromedash-intent-content>
         </section>
         ${this.renderThreeLGTMSection()}
       </div>
@@ -257,6 +265,6 @@ class ChromedashGuideIntentPreview extends LitElement {
 }
 
 customElements.define(
-  'chromedash-guide-intent-preview',
-  ChromedashGuideIntentPreview
+  'chromedash-intent-preview-page',
+  ChromedashIntentPreviewPage
 );
