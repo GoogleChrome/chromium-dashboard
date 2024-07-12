@@ -1,4 +1,5 @@
 import {html, TemplateResult} from 'lit';
+import {Feature, StageDict} from '../js-src/cs-client.js';
 import {FormattedFeature} from './form-definition.js';
 import {
   DT_MILESTONE_FIELDS,
@@ -47,6 +48,24 @@ interface MilestoneRange {
   error?: string;
 }
 
+export type FieldValueGetter = {
+  (
+    fieldName: string,
+    stageOrId?: 'current stage' | number | StageDict
+  ): Feature[keyof Feature] | StageDict[keyof StageDict];
+  feature?: Feature;
+};
+
+type CheckResult =
+  | undefined
+  | {message?: string; warning?: string; error?: string};
+
+export type CheckFunction = (
+  fieldValue: string,
+  getFieldValue: FieldValueGetter,
+  initialValue: string
+) => CheckResult | Promise<CheckResult>;
+
 interface ResolvedField {
   type?: string;
   name?: keyof FormattedFeature;
@@ -57,7 +76,7 @@ interface ResolvedField {
   enterprise_help_text?: TemplateResult;
   extra_help?: TemplateResult;
   enterprise_extra_help?: TemplateResult | string;
-  check?: Function;
+  check?: CheckFunction | CheckFunction[];
   initial?: number | boolean;
   enterprise_initial?: number;
   choices?:
@@ -733,6 +752,11 @@ export const ALL_FIELDS: Record<string, Field> = {
           >specification mentor</a
         >.
       </p>`,
+    check: value =>
+      checkNotGoogleDocs(
+        value,
+        'Explainers should not be hosted on Google Docs.'
+      ),
   },
 
   spec_link: {
@@ -743,6 +767,21 @@ export const ALL_FIELDS: Record<string, Field> = {
     help_text: html` Link to the spec, if and when available. When implementing
     a spec update, please link to a heading in a published spec rather than a
     pull request when possible.`,
+    extra_help: html`<p>
+      Specifications should be written in the format and hosted in the URL space
+      expected by your target standards body. For example, the W3C expects
+      <a href="https://respec.org/" target="_blank">Respec</a> or
+      <a href="https://speced.github.io/bikeshed/" target="_blank">Bikeshed</a>
+      hosted on w3.org or in Github Pages. The IETF expects an
+      <a href="https://authors.ietf.org/" target="_blank">Internet-Draft</a>
+      hosted in the
+      <a href="https://datatracker.ietf.org/" target="_blank">Datatracker</a>.
+    </p>`,
+    check: value =>
+      checkNotGoogleDocs(
+        value,
+        'Specifications should not be hosted on Google Docs.'
+      ),
   },
 
   comments: {
@@ -2254,8 +2293,8 @@ function checkMilestoneRanges(ranges, getFieldValue) {
   }
 }
 
-function checkFeatureNameAndType(getFieldValue) {
-  const name = (getFieldValue('name') || '').toLowerCase();
+function checkFeatureNameAndType(getFieldValue: FieldValueGetter) {
+  const name = String(getFieldValue('name') || '').toLowerCase();
   const featureType = Number(getFieldValue('feature_type') || '0');
   const isdeprecationName = name.includes('deprecat') || name.includes('remov');
   const isdeprecationType =
@@ -2275,7 +2314,7 @@ function checkFeatureNameAndType(getFieldValue) {
   }
 }
 
-async function checkFirstEnterpriseNotice(value, initialValue) {
+async function checkFirstEnterpriseNotice(value: string, initialValue: string) {
   if (!value) {
     return undefined;
   }
@@ -2307,8 +2346,8 @@ async function checkFirstEnterpriseNotice(value, initialValue) {
   return undefined;
 }
 
-async function checkExtensionMilestoneIsValid(value) {
-  if (isNaN(value)) {
+async function checkExtensionMilestoneIsValid(value: string) {
+  if (typeof value == 'number' && isNaN(value)) {
     return {error: 'Invalid milestone format.'};
   }
   for (let i = 0; i < value.length; i++) {
@@ -2330,5 +2369,15 @@ async function checkExtensionMilestoneIsValid(value) {
   }
   // TODO(DanielRyanSmith): Check that the extension milestone comes after
   // OT end milestone and all previous extension end milestones.
+  return undefined;
+}
+
+function checkNotGoogleDocs(
+  value: string,
+  warning = 'Avoid using Google Docs'
+) {
+  if (/docs\.google\.com\/document/.test(value)) {
+    return {warning};
+  }
   return undefined;
 }

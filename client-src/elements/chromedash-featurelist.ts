@@ -1,5 +1,7 @@
 import {LitElement, html} from 'lit';
+import {property, state} from 'lit/decorators.js';
 import {FEATURELIST_CSS} from '../css/elements/chromedash-featurelist-css.js';
+import {Feature, User} from '../js-src/cs-client.js';
 import {Metric} from '../js-src/metric.js';
 import './chromedash-feature';
 
@@ -8,48 +10,36 @@ const MAX_FEATURES_SHOWN = 500;
 class ChromedashFeaturelist extends LitElement {
   static styles = FEATURELIST_CSS;
 
-  static get properties() {
-    return {
-      user: {type: Object},
-      isSiteEditor: {type: Boolean},
-      signedInUser: {type: String},
-      editableFeatures: {type: Object},
-      features: {attribute: false}, // Directly edited and accessed in template/features.html
-      metadataEl: {attribute: false}, // The metadata component element. Directly edited in template/features.html
-      searchEl: {attribute: false}, // The search input element. Directly edited in template/features.html
-      filtered: {attribute: false},
-      openFeatures: {attribute: false},
-      starredFeatures: {attribute: false},
-    };
-  }
+  @property({type: Object})
+  user!: User;
+  @property({type: Boolean})
+  isSiteEditor = false;
+  @property({type: String})
+  signedInUser = '';
+  @property({type: Array})
+  editableFeatures!: number[];
+  @state()
+  features!: Feature[];
+  /** The search input element. */
+  @state()
+  filtered!: Feature[];
+  @state()
+  openFeatures = new Set<number>();
+  @state()
+  starredFeatures = new Set<number>();
+  searchEl: HTMLInputElement;
+  metadataEl: HTMLElement;
+  _hasInitialized = false; // Used to check initialization code.
+  _hasScrolledByUser = false; // Used to set the app header state.
+  _featuresUnveilMetric = new Metric('features_unveil');
+  _featuresFetchMetric = new Metric('features_loaded');
 
   constructor() {
     super();
-    this.user = {};
-    this.features = [];
-    this.editableFeatures = [];
-    this.filtered = [];
-    this.metadataEl = document.querySelector('chromedash-metadata');
-    this.searchEl = document.querySelector('.search input');
-    this.isSiteEditor = false;
-    this.signedInUser = '';
-    this._hasInitialized = false; // Used to check initialization code.
-    this._hasScrolledByUser = false; // Used to set the app header state.
-    /* When scrollTo(), we also expand the feature. This is the id of the feature. */
-    this.openFeatures = new Set();
-    this.starredFeatures = new Set();
-
-    this._featuresUnveilMetric = new Metric('features_unveil');
-    this._featuresFetchMetric = new Metric('features_loaded');
-    this._featuresUnveilMetric.start();
     this._featuresFetchMetric.start();
-
-    /* The running context `this` inside `renderItem` is `lit-virtualizer`
-     * rather than `chromedash-featurelist`, so all function calls inside need
-     * to be bound to `this`. */
-    this._onFeatureToggledBound = this._onFeatureToggled.bind(this);
-    this._onStarToggledBound = this._onStarToggled.bind(this);
-
+    this._featuresUnveilMetric.start();
+    this.searchEl = document.querySelector('.search input')!;
+    this.metadataEl = document.querySelector('chromedash-metadata')!;
     this._loadData();
   }
 
@@ -75,13 +65,13 @@ class ChromedashFeaturelist extends LitElement {
       this.filter(this.searchEl.value);
       this._initialize();
     } catch (error) {
-      document.getElementById('content').classList.add('error');
+      document.getElementById('content')!.classList.add('error');
       console.error(error);
       throw new Error('Failed to fetch features');
     }
   }
 
-  _fireEvent(eventName, detail) {
+  _fireEvent(eventName, detail?) {
     const event = new CustomEvent(eventName, {detail});
     this.dispatchEvent(event);
   }
@@ -127,20 +117,15 @@ class ChromedashFeaturelist extends LitElement {
     switch (args[1].trim()) {
       case '<':
         return this._lt.bind(this, args[0], value);
-        break;
       case '<=':
         return this._lte.bind(this, args[0], value);
-        break;
       case '>':
         return this._gt.bind(this, args[0], value);
-        break;
       case '>=':
         return this._gte.bind(this, args[0], value);
-        break;
       case '=': // Support both '=' and '=='.
       case '==':
         return this._eq.bind(this, args[0], value);
-        break;
       default:
         return this._false;
     }
@@ -214,7 +199,7 @@ class ChromedashFeaturelist extends LitElement {
   }
 
   // Directly called from template/features.html
-  filter(val, shouldPushState) {
+  filter(val, shouldPushState = false) {
     this.searchEl.value = val;
     const pushOrReplaceState =
       history &&
@@ -247,7 +232,7 @@ class ChromedashFeaturelist extends LitElement {
       if (blinkComponent) {
         const componentName = blinkComponent[1].trim();
         this.filtered = this.features.filter(feature =>
-          feature.browsers.chrome.blink_components.includes(componentName)
+          feature.browsers.chrome.blink_components?.includes(componentName)
         );
         this._fireEvent('filtered', {count: this.filtered.length});
         return;
@@ -255,7 +240,7 @@ class ChromedashFeaturelist extends LitElement {
 
       const regExp = /"([^"]*)"/g;
       const start = 0;
-      const parts = [];
+      const parts: string[] = [];
       let match;
       while ((match = regExp.exec(val)) !== null) {
         if (start - (regExp.lastIndex - match[0].length) > 0) {
@@ -275,17 +260,17 @@ class ChromedashFeaturelist extends LitElement {
       // Array of matches, each an array of the form:
       // [ full match, quoted-string-or-word, contents-of-quoted-string,
       //   word, separator ].
-      const reMatches = [];
+      const reMatches: RegExp[] = [];
       while ((match = wordRegExp.exec(val)) !== null) {
         reMatches.push(match);
       }
 
       // Query parts of the form: "name : value".
-      const propertyQueries = [];
+      const propertyQueries: [string, string][] = [];
       // Query parts of the form: "name = value", "name < value", etc.
-      const operatorQueries = [];
+      const operatorQueries: [string, string, string][] = [];
       // Other words in the query (not matching forms above).
-      const keywordQueries = [];
+      const keywordQueries: string[] = [];
 
       // Accumulate keyword and property queries.
       for (let i = 0; i < reMatches.length; i++) {
@@ -346,12 +331,12 @@ class ChromedashFeaturelist extends LitElement {
 
     this._setOpenFeatures(targetId, true);
 
-    const targetEl = this.shadowRoot.querySelector('#id-' + targetId);
+    const targetEl = this.renderRoot.querySelector('#id-' + targetId);
     if (targetEl) {
       targetEl.scrollIntoView();
-      const heightOfHeader = document
-        .querySelector('.main-toolbar')
-        .getBoundingClientRect().height;
+      const mainToolbar = document.querySelector('.main-toolbar');
+      if (!mainToolbar) return;
+      const heightOfHeader = mainToolbar.getBoundingClientRect().height;
       window.scrollBy(0, heightOfHeader * -1);
     }
   }
@@ -406,8 +391,8 @@ class ChromedashFeaturelist extends LitElement {
               tabindex="0"
               ?open="${item.open}"
               ?starred="${item.starred}"
-              @feature-toggled="${this._onFeatureToggledBound}"
-              @star-toggled="${this._onStarToggledBound}"
+              @feature-toggled="${this._onFeatureToggled}"
+              @star-toggled="${this._onStarToggled}"
               .feature="${item.feature}"
               ?canEdit="${item.canEditFeature}"
               ?signedIn="${this.signedInUser != ''}"
