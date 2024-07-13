@@ -119,7 +119,7 @@ class IntentsAPI(basehandlers.APIHandler):
     subject = f'{compute_subject_prefix(feature, intent_stage)}: {feature.name}'
     cc_emails = body.intent_cc_emails or []
     # Make sure emails are not empty and are unique.
-    cc_emails = list(set([email for email in cc_emails if email]))
+    cc_emails = sorted(list(set([email for email in cc_emails if email])))
     params: IntentOptions = {
       'subject': subject,
       'feature_id': feature_id,

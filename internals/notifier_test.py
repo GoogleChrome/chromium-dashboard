@@ -1305,7 +1305,7 @@ class OTActivationFailedHandlerTest(testing_config.CustomTestCase):
 class IntentToBlinkDevHandlerTest(testing_config.CustomTestCase):
   def setUp(self):
     self.feature_1 = FeatureEntry(
-        feature_type=1, name='feature one', summary='sum', category=1,
+        id=1, feature_type=1, name='feature one', summary='sum', category=1,
         owner_emails=['owner@example.com'])
     self.feature_1.put()
     self.feature_1_id = self.feature_1.key.integer_id()
@@ -1313,11 +1313,16 @@ class IntentToBlinkDevHandlerTest(testing_config.CustomTestCase):
         feature_id=self.feature_1_id, stage_type=150,
         origin_trial_id='-1234567890')
     self.ot_stage_1.put()
-    self.ot_gate_1 = Gate(feature_id=self.feature_1_id,
+    self.ot_gate_1 = Gate(id=100, feature_id=self.feature_1_id,
                 stage_id=self.ot_stage_1.key.integer_id(),
                 gate_type=2, state=Vote.APPROVED)
     self.ot_gate_1.put()
     self.contacts = ['example_user@example.com', 'another_user@exmaple.com']
+
+  def tearDown(self):
+    for kind in [FeatureEntry, Stage, Gate]:
+      for entity in kind.query():
+        entity.key.delete()
 
   def test_make_intent_post_email(self):
     json_data = {
