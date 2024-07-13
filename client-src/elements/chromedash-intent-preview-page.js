@@ -100,7 +100,7 @@ class ChromedashIntentPreviewPage extends LitElement {
             STAGE_TYPES_DEV_TRIAL.has(stage.stage_type)
           );
         } else {
-          throw new Error('Invalid gate ID')
+          throw new Error('Invalid gate ID');
         }
 
         if (this.feature.unlisted) {

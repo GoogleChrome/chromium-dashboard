@@ -83,7 +83,7 @@ class ChromedashPostIntentDialog extends LitElement {
     const fieldInfo = ALL_FIELDS.intent_cc_emails;
     const defaultCCEmails = this.ownerEmails.join(',');
 
-    return html`${fieldInfo.help_text}<br>
+    return html`${fieldInfo.help_text}<br />
       <sl-input
         ${ref(this.updateAttributes)}
         id="id_${fieldInfo.name}"

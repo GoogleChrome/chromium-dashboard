@@ -2110,8 +2110,8 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MULTI_EMAIL_FIELD_ATTRS,
     required: false,
     label: 'Intent email CC list',
-    help_text: html`Add emails to the CC list of the intent email.<br>
-    Comma separated list of full email addresses.`,
+    help_text: html`Add emails to the CC list of the intent email.<br />
+      Comma separated list of full email addresses.`,
   },
 };
 
