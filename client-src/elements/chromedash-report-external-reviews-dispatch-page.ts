@@ -1,7 +1,9 @@
 // @ts-check
 import {LitElement, html} from 'lit';
+import {customElement} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
+@customElement('chromedash-report-external-reviews-dispatch-page')
 export class ChromedashReportExternalReviewsDispatchPage extends LitElement {
   static get styles() {
     return SHARED_STYLES;
@@ -24,8 +26,3 @@ export class ChromedashReportExternalReviewsDispatchPage extends LitElement {
     `;
   }
 }
-
-customElements.define(
-  'chromedash-report-external-reviews-dispatch-page',
-  ChromedashReportExternalReviewsDispatchPage
-);
