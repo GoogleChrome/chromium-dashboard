@@ -103,12 +103,8 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
   private _client: DefaultApiInterface = window.csOpenApiClient;
 
   @property({attribute: false})
-  private _reviewsTask: Task<('tag' | 'gecko' | 'webkit')[], TaskReviewResult>;
-
-  constructor() {
-    super();
-    // @ts-ignore
-    this._reviewsTask = new Task(this, {
+  private _reviewsTask: Task<('tag' | 'gecko' | 'webkit')[], TaskReviewResult> =
+    new Task(this, {
       task: async ([reviewer], {signal}) => {
         if (reviewer === undefined) {
           throw new Error('Element must have "reviewer" attribute.', {
@@ -133,7 +129,6 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
       },
       args: () => [this.reviewer],
     });
-  }
 
   groupReviews(
     reviews: OutstandingReview[]
