@@ -1,10 +1,10 @@
-import { LitElement, css, html, nothing } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
-import { SHARED_STYLES } from '../css/shared-css.js';
-import { User } from '../js-src/cs-client';
+import {LitElement, css, html, nothing} from 'lit';
+import {customElement, property, state} from 'lit/decorators.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
+import {User} from '../js-src/cs-client';
 import './chromedash-feature-table';
-import { ChromedashFeatureTable } from './chromedash-feature-table';
-import { showToastMessage } from './utils.js';
+import {ChromedashFeatureTable} from './chromedash-feature-table';
+import {showToastMessage} from './utils.js';
 
 @customElement('chromedash-myfeatures-page')
 export class ChromedashMyFeaturesPage extends LitElement {
@@ -24,7 +24,7 @@ export class ChromedashMyFeaturesPage extends LitElement {
   @property({type: Number})
   selectedGateId = 0;
   @state()
-  starredFeatures= new Set<number>();
+  starredFeatures = new Set<number>();
 
   connectedCallback() {
     super.connectedCallback();
@@ -45,7 +45,9 @@ export class ChromedashMyFeaturesPage extends LitElement {
   }
 
   refetch() {
-    const tables: ChromedashFeatureTable[] = Array.from(this.renderRoot.querySelectorAll('chromedash-feature-table'));
+    const tables: ChromedashFeatureTable[] = Array.from(
+      this.renderRoot.querySelectorAll('chromedash-feature-table')
+    );
     for (const table of tables) {
       table.refetch();
     }
