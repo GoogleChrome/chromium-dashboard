@@ -4,7 +4,7 @@ import './chromedash-feature-filter';
 import './chromedash-feature-row';
 import {SHARED_STYLES} from '../css/shared-css.js';
 
-class ChromedashFeatureTable extends LitElement {
+export class ChromedashFeatureTable extends LitElement {
   static get properties() {
     return {
       query: {type: String},
