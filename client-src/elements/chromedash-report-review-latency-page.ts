@@ -4,8 +4,8 @@ import {LitElement, css, html} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {GATE_TYPES} from './form-field-enums.js';
 import './chromedash-report-spec-mentor.js';
-import { customElement, property } from 'lit/decorators.js';
-import { DefaultApiInterface, ReviewLatency } from 'chromestatus-openapi';
+import {customElement, property} from 'lit/decorators.js';
+import {DefaultApiInterface, ReviewLatency} from 'chromestatus-openapi';
 
 @customElement('chromedash-report-review-latency-page')
 export class ChromedashReportReviewLatencyPage extends LitElement {
@@ -64,7 +64,7 @@ export class ChromedashReportReviewLatencyPage extends LitElement {
       });
     },
     args: () => [],
-  });;
+  });
 
   renderCount() {
     let count = 0;
