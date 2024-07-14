@@ -400,6 +400,7 @@ export interface RawQuery {
   showEnterprise?: string;
   sort?: string;
   start?: string;
+  after?: string;
   num?: string;
   [key: string]: string | undefined;
 }
