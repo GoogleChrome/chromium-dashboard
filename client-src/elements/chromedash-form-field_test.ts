@@ -24,7 +24,7 @@ describe('chromedash-form-field', () => {
     const fieldRow = component.renderRoot.querySelector('tr');
     assert.exists(fieldRow);
 
-    const renderElement = component.renderRoot;
+    const renderElement = component.renderRoot as HTMLElement;
     assert.include(renderElement.innerHTML, 'Unlisted');
     assert.include(renderElement.innerHTML, 'sl-checkbox');
     assert.include(renderElement.innerHTML, 'checked');
@@ -41,7 +41,7 @@ describe('chromedash-form-field', () => {
     const fieldRow = component.renderRoot.querySelector('tr');
     assert.exists(fieldRow);
 
-    const renderElement = component.renderRoot;
+    const renderElement = component.renderRoot as HTMLElement;
     assert.include(renderElement.innerHTML, 'category');
     assert.include(renderElement.innerHTML, 'sl-select');
     assert.include(renderElement.innerHTML, 'sl-option');
@@ -57,7 +57,7 @@ describe('chromedash-form-field', () => {
     const fieldRow = component.renderRoot.querySelector('tr');
     assert.exists(fieldRow);
 
-    const renderElement = component.renderRoot;
+    const renderElement = component.renderRoot as HTMLElement;
     assert.include(renderElement.innerHTML, 'Feature name');
     assert.include(renderElement.innerHTML, 'sl-input');
     assert.include(renderElement.innerHTML, 'required');
@@ -75,7 +75,7 @@ describe('chromedash-form-field', () => {
     const fieldRow = component.renderRoot.querySelector('tr');
     assert.exists(fieldRow);
 
-    const renderElement = component.renderRoot;
+    const renderElement = component.renderRoot as HTMLElement;
     assert.include(renderElement.innerHTML, 'Summary');
     assert.include(renderElement.innerHTML, 'chromedash-textarea');
     assert.include(renderElement.innerHTML, 'required');
@@ -91,7 +91,7 @@ describe('chromedash-form-field', () => {
     const fieldRow = component.renderRoot.querySelector('tr');
     assert.exists(fieldRow);
 
-    const renderElement = component.renderRoot;
+    const renderElement = component.renderRoot as HTMLElement;
     assert.include(renderElement.innerHTML, 'Feature type');
     assert.include(renderElement.innerHTML, 'type="radio"');
     assert.include(renderElement.innerHTML, 'required');
@@ -107,7 +107,7 @@ describe('chromedash-form-field', () => {
     const fieldRow = component.renderRoot.querySelector('tr');
     assert.exists(fieldRow);
 
-    const renderElement = component.renderRoot;
+    const renderElement = component.renderRoot as HTMLElement;
     assert.include(renderElement.innerHTML, 'Rollout platforms');
     assert.include(renderElement.innerHTML, 'sl-select');
     assert.include(renderElement.innerHTML, 'multiple');
@@ -142,7 +142,10 @@ describe('chromedash-form-field', () => {
       assert.instanceOf(component, ChromedashFormField);
       const optionValues = Array.from(
         component.renderRoot.querySelectorAll('sl-option')
-      ).map(option => ({text: option.textContent.trim(), value: option.value}));
+      ).map(option => ({
+        text: option.textContent!.trim(),
+        value: option.value,
+      }));
       assert.deepEqual(optionValues, [
         {text: 'Identify the need', value: '1'},
         {text: 'Origin trial: Display name', value: '2'},

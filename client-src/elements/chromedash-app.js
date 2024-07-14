@@ -12,7 +12,7 @@ import {
   updateURLParams,
 } from './utils';
 
-class ChromedashApp extends LitElement {
+export class ChromedashApp extends LitElement {
   gateColumnRef = createRef();
 
   static get styles() {

@@ -1,7 +1,10 @@
 import {LitElement, html, css, nothing} from 'lit';
 import {showToastMessage, IS_MOBILE} from './utils';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import {customElement, property, state} from 'lit/decorators.js';
+import {User} from '../js-src/cs-client';
 
+@customElement('chromedash-header')
 export class ChromedashHeader extends LitElement {
   static get styles() {
     return [
@@ -134,25 +137,18 @@ export class ChromedashHeader extends LitElement {
     ];
   }
 
-  static get properties() {
-    return {
-      appTitle: {type: String},
-      googleSignInClientId: {type: String},
-      devMode: {type: String},
-      currentPage: {type: String},
-      user: {type: Object},
-      loading: {type: Boolean},
-    };
-  }
-
-  constructor() {
-    super();
-    this.appTitle = '';
-    (this.googleSignInClientId = ''), (this.devMode = '');
-    this.currentPage = '';
-    this.user = {};
-    this.loading = false;
-  }
+  @property({type: String})
+  appTitle = '';
+  @property({type: String})
+  googleSignInClientId = '';
+  @property({type: String})
+  devMode = '';
+  @property({type: String})
+  currentPage = '';
+  @property({type: Object})
+  user = {} as User;
+  @state()
+  loading = false;
 
   connectedCallback() {
     super.connectedCallback();
@@ -243,13 +239,13 @@ export class ChromedashHeader extends LitElement {
       fetch('/dev/mock_login', {method: 'POST'})
         .then(response => {
           if (!response.ok) {
-            throw new Error('Sign in failed! Response:', response);
+            throw new Error(`Sign in failed! Response: ${response}`);
           }
         })
         .then(() => {
           setTimeout(() => {
             const url = window.location.href.split('?')[0];
-            window.location = url;
+            window.location.href = url;
           }, 1000);
         })
         .catch(error => {
@@ -274,12 +270,12 @@ export class ChromedashHeader extends LitElement {
       .then(() => {
         setTimeout(() => {
           const url = window.location.href.split('?')[0];
-          window.location = url;
+          window.location = url as string & Location;
         }, 1000);
       })
       .catch(() => {
         console.error('Sign in failed, so signing out to allow retry');
-        signOut();
+        this.signOut();
       });
   }
 
@@ -351,7 +347,7 @@ export class ChromedashHeader extends LitElement {
   }
 
   render() {
-    let accountMenu = nothing;
+    let accountMenu = html``;
     if (!IS_MOBILE && !this.loading) {
       accountMenu = html` <div class="flex-container">
         ${this.renderAccountMenu()}
@@ -383,5 +379,3 @@ export class ChromedashHeader extends LitElement {
     `;
   }
 }
-
-customElements.define('chromedash-header', ChromedashHeader);

@@ -1,49 +1,60 @@
-import {LitElement, html, nothing} from 'lit';
+import {SlDetails, SlIconButton, SlInput} from '@shoelace-style/shoelace';
+import {LitElement, TemplateResult, html, nothing} from 'lit';
+import {customElement, property, state} from 'lit/decorators.js';
 import {ref} from 'lit/directives/ref.js';
+
+import {ChromedashApp} from './chromedash-app';
 import './chromedash-textarea';
 import {ALL_FIELDS, resolveFieldForFeature} from './form-field-specs';
 import {getFieldValueFromFeature, showToastMessage} from './utils.js';
+import {Feature, StageDict} from '../js-src/cs-client';
+import {FormattedFeature} from './form-definition';
 
+interface FormFieldValue {
+  name: string;
+  value: any;
+  stageId?: number;
+}
+interface getFieldValue {
+  (fieldName: string, stageOrId: any): any;
+  feature?: Feature;
+}
+
+@customElement('chromedash-form-field')
 export class ChromedashFormField extends LitElement {
-  static get properties() {
-    return {
-      name: {type: String},
-      index: {type: Number}, // Represents which field this is on the form.
-      stageId: {type: Number},
-      value: {type: String},
-      fieldValues: {type: Array}, // All other field value objects in current form.
-      feature: {attribute: false}, // The rest of the feature being edited.
-      disabled: {type: Boolean},
-      checkboxLabel: {type: String}, // Optional override of default label.
-      shouldFadeIn: {type: Boolean},
-      loading: {type: Boolean},
-      fieldProps: {type: Object},
-      forEnterprise: {type: Boolean},
-      stageType: {type: Number},
-      componentChoices: {type: Object}, // just for the blink component select field
-      checkMessage: {type: String},
-    };
-  }
+  @property({type: String})
+  name = '';
+  @property({type: Number}) // Represents which field this is on the form.
+  index = -1;
+  @property({type: Object}) // All other field value objects in current form.
+  fieldValues!: FormFieldValue[] & {feature: Feature}; //TODO(markxiong0122): change Type to FieldInfo in utils.ts
+  @property({type: Object, attribute: false})
+  feature!: FormattedFeature;
+  @property({type: String}) // Optional override of default label.
+  checkboxLabel = '';
+  @property({type: Boolean})
+  disabled = false;
+  @property({type: Boolean})
+  shouldFadeIn = false;
+  @property({type: Boolean})
+  forEnterprise = false;
+  @property({type: Number})
+  stageId;
+  @property({type: Number})
+  stageType;
+  @property({type: String})
+  value = '';
 
-  constructor() {
-    super();
-    this.name = '';
-    this.index = -1;
-    this.value = '';
-    this.initialValue = '';
-    this.fieldValues = [];
-    /** @type {import('./form-definition').FormattedFeature} */
-    this.feature = {};
-    this.checkboxLabel = '';
-    this.disabled = false;
-    this.shouldFadeIn = false;
-    this.loading = false;
-    this.forEnterprise = false;
-    this.stageId = undefined;
-    this.stageType = undefined;
-    this.componentChoices = {};
-    this.checkMessage = '';
-  }
+  @state()
+  initialValue = '';
+  @state()
+  loading = false;
+  @state()
+  componentChoices; // just for the blink component select field
+  @state()
+  checkMessage: TemplateResult | string = '';
+  @state()
+  fieldProps;
 
   getValue() {
     // value can be a js or python boolean value converted to a string
@@ -65,7 +76,7 @@ export class ChromedashFormField extends LitElement {
     );
 
     // Register this form field component with the page component.
-    const app = document.querySelector('chromedash-app');
+    const app: ChromedashApp | null = document.querySelector('chromedash-app');
     if (app?.pageComponent) {
       app.pageComponent.allFormFieldComponentsList.push(this);
     }
@@ -89,10 +100,6 @@ export class ChromedashFormField extends LitElement {
 
   firstUpdated() {
     this.initialValue = JSON.parse(JSON.stringify(this.value));
-
-    // We only want to do the following one time.
-    this.setupSemanticCheck();
-
     // We need to wait until the entire page is rendered, so later dependents
     // are available to do the semantic check, hence firstUpdated is too soon.
     // Do first semantic check after the document is ready.
@@ -117,9 +124,10 @@ export class ChromedashFormField extends LitElement {
   }
 
   toggleExtraHelp() {
-    const details = this.renderRoot.querySelector('sl-details');
+    const details: SlDetails = this.renderRoot.querySelector('sl-details')!;
     details.open = !details.open;
-    const button = this.renderRoot.querySelector('sl-icon-button');
+    const button: SlIconButton =
+      this.renderRoot.querySelector('sl-icon-button')!;
     button.name = details.open ? 'dash-square' : 'plus-square';
   }
 
@@ -150,7 +158,7 @@ export class ChromedashFormField extends LitElement {
     this.dispatchEvent(new CustomEvent('form-field-update', eventOptions));
 
     // Run semantic checks on entire page.  Must be after above dispatch.
-    const app = document.querySelector('chromedash-app');
+    const app: ChromedashApp | null = document.querySelector('chromedash-app');
     if (app?.pageComponent) {
       app.pageComponent.allFormFieldComponentsList.forEach(formFieldComponent =>
         formFieldComponent.doSemanticCheck()
@@ -161,39 +169,12 @@ export class ChromedashFormField extends LitElement {
     }
   }
 
-  setupSemanticCheck() {
-    // Find the form-field component in order to set custom validity.
-    const fieldSelector = `#id_${this.name}`;
-    const formFieldElements = this.renderRoot.querySelectorAll(fieldSelector);
-    if (formFieldElements.length > 1) {
-      if (this.stageId) {
-        // The id is not unique for fields in multiple stages, e.g. origin trials.
-        // So let's try qualifying the selector with this.stageId in a container.
-        fieldSelector = `[stageId="${this.stageId} #id_${this.name}"]`;
-        formFieldElements = this.renderRoot.querySelectorAll(fieldSelector);
-      } else {
-        throw new Error(
-          `Name of field, "${this.name}", is not unique and no stage Id was provided.`
-        );
-      }
-    }
-    // There should only be one now.
-    const formFieldElement = formFieldElements[0];
-
-    // For 'input' elements.
-    if (formFieldElement?.setCustomValidity && formFieldElement.input) {
-      formFieldElement.setCustomValidity(
-        checkResult && checkResult.error ? checkResult.error : ''
-      );
-    }
-    // TODO: handle other form field types.
-  }
-
   async doSemanticCheck() {
     // Define function to get any other field value relative to this field.
     // stageOrId is either a stage object or an id, or the special value
     // 'current stage' which means use the same stage as for this field.
-    const getFieldValue = (fieldName, stageOrId) => {
+
+    const getFieldValue: getFieldValue = (fieldName, stageOrId) => {
       if (stageOrId === 'current stage') {
         stageOrId = this.stageId;
       }
@@ -273,9 +254,10 @@ export class ChromedashFormField extends LitElement {
     // form field name can be specified in form-field-spec to match DB field name
     const fieldName = this.fieldProps.name || this.name;
     // choices can be specified in form-field-spec or fetched from API
-    const choices = this.fieldProps.choices || this.componentChoices;
+    const choices: [number, string][] | [number, string, string][] =
+      this.fieldProps.choices || this.componentChoices;
 
-    let fieldHTML = '';
+    let fieldHTML = html``;
     if (type === 'checkbox') {
       const label = this.checkboxLabel || this.fieldProps.label;
       fieldHTML = html`
@@ -465,12 +447,12 @@ export class ChromedashFormField extends LitElement {
  * if the field is stage-specific, and returns the corresponding value.
  * Returns null if not defined or not found.
  * Handles special cases like shipping milestones and mapped stage fields.
- * @param {string} fieldName
- * @param {number|Object|undefined} stageOrId
- * @param {Array<{name:string, value:*}>} formFieldValues
- * @return {*}
  */
-function getFieldValueWithStage(fieldName, stageOrId, formFieldValues) {
+function getFieldValueWithStage(
+  fieldName: string,
+  stageOrId: number | StageDict | undefined,
+  formFieldValues: FormFieldValue[] & {feature?: Feature}
+) {
   // Iterate through formFieldValues looking for element with name==fieldName
   // and stage == stageId, if there is a non-null stageId
   let stageId;
@@ -487,7 +469,7 @@ function getFieldValueWithStage(fieldName, stageOrId, formFieldValues) {
   }
 
   // The remainder looks for the field in the feature.
-  const feature = formFieldValues.feature;
+  const feature = formFieldValues?.feature;
   if (feature == null) {
     return null;
   }
@@ -499,10 +481,10 @@ function getFieldValueWithStage(fieldName, stageOrId, formFieldValues) {
       : stageId != null
         ? feature.stages.find(s => s.id == stageId)
         : feature.stages[0];
-
+  if (!feStage) {
+    return null;
+  }
   // Lookup fieldName by following the stage specific path starting from feature.
   const value = getFieldValueFromFeature(fieldName, feStage, feature);
   return value;
 }
-
-customElements.define('chromedash-form-field', ChromedashFormField);

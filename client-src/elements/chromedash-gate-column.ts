@@ -37,7 +37,7 @@ interface Vote {
   set_by: string;
 }
 
-interface ProgressItem {
+export interface ProgressItem {
   name: string;
   field?: string;
 }
@@ -70,7 +70,7 @@ interface ProcessStage {
   stage_type?: number;
 }
 
-interface Process {
+export interface Process {
   name: string;
   description: string;
   applicability: string;
