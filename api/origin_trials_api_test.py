@@ -506,8 +506,17 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
         self.handler._validate_extension_args(
             self.feature_1_id, self.ot_stage_1, self.extension_stage_1)
 
-  def test_validate_extension_args__not_approved(self):
+  def test_validate_extension_args__na(self):
+    """N/A state should be counted as approved."""
     self.extension_gate_1.state = Vote.NA
+    self.extension_gate_1.put()
+    with test_app.test_request_context(self.request_path):
+      self.handler._validate_extension_args(
+          self.feature_1_id, self.ot_stage_1, self.extension_stage_1)
+
+  def test_validate_extension_args__not_approved(self):
+    """Non-approved extensions should not be processed."""
+    self.extension_gate_1.state = Vote.DENIED
     self.extension_gate_1.put()
     with test_app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.BadRequest):

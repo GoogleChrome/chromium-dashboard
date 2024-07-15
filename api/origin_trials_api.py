@@ -193,7 +193,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
                        f'{intent_url}'))
 
     gate = Gate.query(Gate.stage_id == extension_stage.key.integer_id()).get()
-    if not gate or gate.state != Vote.APPROVED:
+    if not gate or (gate.state != Vote.APPROVED and gate.state != Vote.NA):
       self.abort(400, 'Extension has not received the required approvals.')
 
   def do_patch(self, **kwargs):

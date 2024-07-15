@@ -1,6 +1,5 @@
 import {LitElement, css, html} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import {INTENT_STAGES} from './form-field-enums.js';
 import {showToastMessage} from './utils.js';
 
 let dialogEl;
@@ -177,7 +176,7 @@ class ChromedashOTPrereqsDialog extends LitElement {
         size="small"
         @click=${() =>
           location.assign(
-            `/guide/stage/${this.featureId}/${INTENT_STAGES.INTENT_EXTEND_ORIGIN_TRIAL[0]}/${this.stage.id}`
+            `/guide/stage/${this.featureId}/${this.stage.id}?updateExtension`
           )}
         >Change milestone</sl-button
       >
@@ -220,8 +219,6 @@ class ChromedashOTPrereqsDialog extends LitElement {
       </div>
       <br />
       <ul id="prereqs-list">
-        <li>Your Intent to Experiment has been drafted.</li>
-        <li>The required LGTMs have been received.</li>
         <li>
           The trial's UseCounter has landed on
           <a
