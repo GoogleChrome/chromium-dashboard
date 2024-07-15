@@ -163,7 +163,7 @@ def create_origin_trial(ot_stage: Stage) -> str | None:
       'type': ('DEPRECATION'
                 if ot_stage.ot_is_deprecation_trial else 'ORIGIN_TRIAL'),
     },
-    'internal_registration_config': {},
+    'internal_registration_config': {'approval_type': 'NONE'},
   }
   if ot_stage.ot_chromium_trial_name:
     json['trial']['origin_trial_feature_name'] = ot_stage.ot_chromium_trial_name
