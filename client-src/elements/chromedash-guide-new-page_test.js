@@ -46,10 +46,7 @@ describe('chromedash-guide-new-page', () => {
       'chromedash-form-field[name="feature_type_radio_group"]'
     );
     assert.include(featureTypeFormField.outerHTML, 'New or changed feature');
-    assert.include(
-      featureTypeFormField.outerHTML,
-      'Chromium catches up'
-    );
+    assert.include(featureTypeFormField.outerHTML, 'Chromium catches up');
     assert.include(
       featureTypeFormField.outerHTML,
       'No developer-visible change'
