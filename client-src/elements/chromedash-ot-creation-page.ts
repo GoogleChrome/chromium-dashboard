@@ -102,7 +102,10 @@ export class ChromedashOTCreationPage extends LitElement {
       this.stage = stage;
 
       // Redirect is stage creation form has already been submitted.
-      if (this.stage.ot_setup_status && this.stage.ot_setup_status !== OT_SETUP_STATUS_OPTIONS.OT_NOT_CREATED) {
+      if (
+        this.stage.ot_setup_status &&
+        this.stage.ot_setup_status !== OT_SETUP_STATUS_OPTIONS.OT_NOT_CREATED
+      ) {
         window.location.href = `/feature/${this.featureId}`;
       }
       // Check that necessary approvals have been obtained.
