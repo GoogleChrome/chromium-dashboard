@@ -48,7 +48,7 @@ describe('chromedash-guide-new-page', () => {
     assert.include(featureTypeFormField.outerHTML, 'New or changed feature');
     assert.include(
       featureTypeFormField.outerHTML,
-      'Chromium finally implemented a feature'
+      'Chromium catches up'
     );
     assert.include(
       featureTypeFormField.outerHTML,

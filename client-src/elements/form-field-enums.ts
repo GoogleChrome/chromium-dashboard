@@ -115,7 +115,7 @@ export const FEATURE_TYPES_WITHOUT_ENTERPRISE: Record<
   ],
   FEATURE_TYPE_EXISTING_ID: [
     1,
-    'Chromium finally implemented a feature',
+    'Chromium catches up',
     html`Choose this if a standards body already has consensus for a feature, or
       it's already shipped in another implementation. This feature type omits
       some options that the "New feature" type includes. It follows the
