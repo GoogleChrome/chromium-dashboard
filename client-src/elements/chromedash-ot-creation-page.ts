@@ -5,9 +5,8 @@ import {FORM_STYLES} from '../css/forms-css.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {Feature, StageDict} from '../js-src/cs-client.js';
 import './chromedash-form-field.js';
-import './chromedash-form-table.js';
 import {ORIGIN_TRIAL_CREATION_FIELDS} from './form-definition.js';
-import {VOTE_OPTIONS} from './form-field-enums.js';
+import {OT_SETUP_STATUS_OPTIONS, VOTE_OPTIONS} from './form-field-enums.js';
 import {ALL_FIELDS} from './form-field-specs.js';
 import {
   FieldInfo,
@@ -102,6 +101,10 @@ export class ChromedashOTCreationPage extends LitElement {
       this.feature = feature;
       this.stage = stage;
 
+      // Redirect is stage creation form has already been submitted.
+      if (this.stage.ot_setup_status && this.stage.ot_setup_status !== OT_SETUP_STATUS_OPTIONS.OT_NOT_CREATED) {
+        window.location.href = `/feature/${this.featureId}`;
+      }
       // Check that necessary approvals have been obtained.
       const relevantGates = gatesRes.gates.filter(
         g => g.stage_id === this.stage.id

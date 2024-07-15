@@ -17,7 +17,7 @@ import {
   FORMS_BY_STAGE_TYPE,
 } from './form-definition';
 import {
-  OT_EXTENSION_STAGE_MAPPING,
+  OT_SETUP_STATUS_OPTIONS,
   STAGE_SHORT_NAMES,
   STAGE_TYPES_ORIGIN_TRIAL,
   VOTE_OPTIONS,
@@ -782,7 +782,10 @@ class ChromedashFeatureDetail extends LitElement {
         g.state === VOTE_OPTIONS.NA[0]
       );
     });
-    if (feStage.ot_action_requested) {
+    if (
+      feStage.ot_setup_status &&
+      feStage.ot_setup_status !== OT_SETUP_STATUS_OPTIONS.OT_NOT_CREATED
+    ) {
       // Display the button as disabled with tooltip text if a request
       // has already been submitted.
       return html` <sl-tooltip
