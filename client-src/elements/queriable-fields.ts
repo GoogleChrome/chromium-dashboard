@@ -1,16 +1,17 @@
 // Constants that are used by the search help dialog.
 // And will be used by autocomplete in the future.
 
+import {type HTMLTemplateResult} from 'lit';
 import {
   FEATURE_CATEGORIES,
   FEATURE_TYPES,
   IMPLEMENTATION_STATUS,
   INTENT_STAGES,
   REVIEW_STATUS_CHOICES,
+  ROLLOUT_IMPACT,
   VENDOR_VIEWS_COMMON,
   VENDOR_VIEWS_GECKO,
   WEB_DEV_VIEWS,
-  ROLLOUT_IMPACT,
 } from './form-field-enums';
 
 export const TEXT_KIND = 'text';
@@ -20,7 +21,15 @@ export const DATE_KIND = 'YYYY-MM-DD';
 export const EMAIL_KIND = 'user@example.com';
 export const ENUM_KIND = 'enum';
 
-export const QUERIABLE_FIELDS = [
+export interface QueryField {
+  name: string;
+  kind: string;
+  doc: string;
+  choices?:
+    | Record<string, [number, string]>
+    | Record<string, [number, string, string | HTMLTemplateResult]>;
+}
+export const QUERIABLE_FIELDS: QueryField[] = [
   {
     name: 'created.when',
     kind: DATE_KIND,
