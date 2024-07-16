@@ -1,16 +1,17 @@
 // Constants that are used by the search help dialog.
 // And will be used by autocomplete in the future.
 
+import {type HTMLTemplateResult} from 'lit';
 import {
   FEATURE_CATEGORIES,
   FEATURE_TYPES,
   IMPLEMENTATION_STATUS,
   INTENT_STAGES,
   REVIEW_STATUS_CHOICES,
+  ROLLOUT_IMPACT,
   VENDOR_VIEWS_COMMON,
   VENDOR_VIEWS_GECKO,
   WEB_DEV_VIEWS,
-  ROLLOUT_IMPACT,
 } from './form-field-enums';
 
 export const TEXT_KIND = 'text';
@@ -26,7 +27,7 @@ export interface QueryField {
   doc: string;
   choices?:
     | Record<string, [number, string]>
-    | Record<string, [number, string, string]>;
+    | Record<string, [number, string, string | HTMLTemplateResult]>;
 }
 export const QUERIABLE_FIELDS: QueryField[] = [
   {
