@@ -1,150 +1,147 @@
-import {LitElement, css, html, nothing} from 'lit';
 import '@polymer/iron-icon';
-import './chromedash-x-meter';
+import {LitElement, css, html, nothing} from 'lit';
+import {customElement, property, state} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import './chromedash-x-meter';
 
+@customElement('chromedash-stack-rank')
 class ChromedashStackRank extends LitElement {
-  static get properties() {
-    return {
-      type: {type: String},
-      view: {type: String},
-      viewList: {attribute: false},
-      maxPercentage: {attribute: false},
-      sortType: {type: String},
-      sortReverse: {type: Boolean},
-      tempList: {attribute: false},
-      shouldHideObsolete: {state: true, attribute: false},
-    };
-  }
-
-  constructor() {
-    super();
-    this.type = '';
-    this.viewList = [];
-    this.tempList = [];
-    this.maxPercentage = 100;
-    this.sortType = 'percentage';
-    this.sortReverse = false;
-    this.shouldHideObsolete = true;
-    this.obsoleteCount = 0;
-  }
+  @property({type: String, attribute: false})
+  type = '';
+  @property({type: String, attribute: false})
+  view = '';
+  @property({type: Array, attribute: false})
+  viewList: any[] = []; //TODO(markxiong0122) Type this
+  @property({type: Array, attribute: false})
+  tempList: any[] = [];
+  @state()
+  maxPercentage = 100;
+  @state()
+  sortType = 'percentage';
+  @state()
+  sortReverse = false;
+  @state()
+  shouldHideObsolete = true;
+  @state()
+  obsoleteCount = 0;
 
   static get styles() {
     return [
       ...SHARED_STYLES,
       css`
-      :host {
-        display: block;
-        flex: 1;
-        padding: 1px;
-      }
+        :host {
+          display: block;
+          flex: 1;
+          padding: 1px;
+        }
 
-      .title-text {
-        flex: 1;
-        font-weight: 500;
-      }
+        .title-text {
+          flex: 1;
+          font-weight: 500;
+        }
 
-      li {
-        padding: 5px 0;
-        display: flex;
-        align-items: center;
-      }
+        li {
+          padding: 5px 0;
+          display: flex;
+          align-items: center;
+        }
 
-      #subheader {
-        font-size: 15px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
+        #subheader {
+          font-size: 15px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
 
-      #dropdown-selection:hover {
-        background: var(--md-gray-100-alpha);
-      }
+        #dropdown-selection:hover {
+          background: var(--md-gray-100-alpha);
+        }
 
-      sl-button::part(base) {
-        color: #000;
-      }
+        sl-button::part(base) {
+          color: #000;
+        }
 
-      li > :first-child {
-        flex: 1;
-        word-break: break-all;
-      }
+        li > :first-child {
+          flex: 1;
+          word-break: break-all;
+        }
 
-      li > :nth-child(2) {
-        flex: 2;
-      }
+        li > :nth-child(2) {
+          flex: 2;
+        }
 
-      .stack-rank-header {
-        margin-bottom: 5px;
-        text-align: center;
-      }
+        .stack-rank-header {
+          margin-bottom: 5px;
+          text-align: center;
+        }
 
-      .stack-rank-item {
-        border-top: var(--table-divider)
-      }
+        .stack-rank-item {
+          border-top: var(--table-divider);
+        }
 
-      .stack-rank-item-hidden {
-        display: none;
-      }
-
-      .stack-rank-item-name {
-        display: grid;
-        grid-template-columns: var(--icon-size) 1fr;
-        grid-column-gap: 15px;
-        position: relative;
-        left: -20px;
-      }
-      .stack-rank-item-name .hash-link {
-        place-self: center;
-        visibility: hidden;
-      }
-      .stack-rank-item-name:hover .hash-link {
-        visibility: visible;
-      }
-
-      .stack-rank-item-result {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        margin-right: 15px;
-      }
-
-      chromedash-x-meter {
-        flex: 1;
-      }
-
-      a.icon-wrapper {
-        display: flex;
-        gap: 3px;
-        align-items: center;
-      }
-      a.icon-wrapper:hover {
-        text-decoration: none;
-      }
-
-      .spacer {
-        visibility: hidden;
-      }
-
-      sl-skeleton {
-        margin: 0;
-        padding: 5px 20px;
-      }
-
-      /* On small displays, only show timeline icons (no text). */
-      @media only screen and (max-width: 600px) {
-        .icon-text {
+        .stack-rank-item-hidden {
           display: none;
         }
 
         .stack-rank-item-name {
-          grid-column-gap: 5px;
+          display: grid;
+          grid-template-columns: var(--icon-size) 1fr;
+          grid-column-gap: 15px;
+          position: relative;
+          left: -20px;
+        }
+        .stack-rank-item-name .hash-link {
+          place-self: center;
+          visibility: hidden;
+        }
+        .stack-rank-item-name:hover .hash-link {
+          visibility: visible;
         }
 
         .stack-rank-item-result {
-          margin-right: 5px;
+          display: flex;
+          align-items: center;
+          gap: 15px;
+          margin-right: 15px;
         }
-    `,
+
+        chromedash-x-meter {
+          flex: 1;
+        }
+
+        a.icon-wrapper {
+          display: flex;
+          gap: 3px;
+          align-items: center;
+        }
+        a.icon-wrapper:hover {
+          text-decoration: none;
+        }
+
+        .spacer {
+          visibility: hidden;
+        }
+
+        sl-skeleton {
+          margin: 0;
+          padding: 5px 20px;
+        }
+
+        /* On small displays, only show timeline icons (no text). */
+        @media only screen and (max-width: 600px) {
+          .icon-text {
+            display: none;
+          }
+
+          .stack-rank-item-name {
+            grid-column-gap: 5px;
+          }
+
+          .stack-rank-item-result {
+            margin-right: 5px;
+          }
+        }
+      `,
     ];
   }
 
@@ -161,7 +158,7 @@ class ChromedashStackRank extends LitElement {
     this.obsoleteCount = this.viewList.filter(item => item.obsolete).length;
   }
 
-  scrollToPosition(e) {
+  scrollToPosition(e?) {
     let hash;
     if (e) {
       hash = e.currentTarget.getAttribute('href');
@@ -170,8 +167,8 @@ class ChromedashStackRank extends LitElement {
     }
 
     if (hash) {
-      const el = this.shadowRoot.querySelector('.stack-rank-list ' + hash);
-      el.scrollIntoView(true, {behavior: 'smooth'});
+      const el = this.renderRoot.querySelector('.stack-rank-list ' + hash);
+      el?.scrollIntoView({behavior: 'smooth'});
     }
   }
 
@@ -346,8 +343,6 @@ class ChromedashStackRank extends LitElement {
     return html` ${this.renderSubHeader()} ${this.renderStackRankList()} `;
   }
 }
-
-customElements.define('chromedash-stack-rank', ChromedashStackRank);
 
 const sortBy_ = (propName, reverse, arr) => {
   const compareAsNumbers = propName === 'percentage';

@@ -1,8 +1,10 @@
 import {LitElement, css, html, nothing} from 'lit';
-import {showToastMessage, handleSaveChangesResponse} from './utils';
-import {SHARED_STYLES} from '../css/shared-css.js';
+import {customElement, state} from 'lit/decorators.js';
 import {FORM_STYLES} from '../css/forms-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
+import {handleSaveChangesResponse, showToastMessage} from './utils';
 
+@customElement('chromedash-settings-page')
 export class ChromedashSettingsPage extends LitElement {
   static get styles() {
     return [
@@ -43,18 +45,10 @@ export class ChromedashSettingsPage extends LitElement {
     ];
   }
 
-  static get properties() {
-    return {
-      notify_as_starrer: {type: Boolean},
-      submitting: {type: Boolean},
-    };
-  }
-
-  constructor() {
-    super();
-    this.notify_as_starrer = false;
-    this.submitting = false;
-  }
+  @state()
+  notify_as_starrer = false;
+  @state()
+  submitting = false;
 
   connectedCallback() {
     super.connectedCallback();
@@ -134,5 +128,3 @@ export class ChromedashSettingsPage extends LitElement {
     `;
   }
 }
-
-customElements.define('chromedash-settings-page', ChromedashSettingsPage);
