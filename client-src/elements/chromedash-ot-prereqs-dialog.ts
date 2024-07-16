@@ -1,6 +1,5 @@
 import {LitElement, css, html} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import {INTENT_STAGES} from './form-field-enums.js';
 import {showToastMessage} from './utils.js';
 import {customElement, property} from 'lit/decorators.js';
 import {StageDict} from '../js-src/cs-client.js';
@@ -172,7 +171,7 @@ class ChromedashOTPrereqsDialog extends LitElement {
         size="small"
         @click=${() =>
           location.assign(
-            `/guide/stage/${this.featureId}/${INTENT_STAGES.INTENT_EXTEND_ORIGIN_TRIAL[0]}/${this.stage.id}`
+            `/guide/stage/${this.featureId}/${this.stage.id}?updateExtension`
           )}
         >Change milestone</sl-button
       >
