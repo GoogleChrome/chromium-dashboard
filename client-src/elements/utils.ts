@@ -490,7 +490,7 @@ export function clearURLParams(key) {
 
 export interface FieldInfo {
   /** The name of the field. */
-  name: string;
+  name: string | keyof FormattedFeature;
   /** Whether the field was mutated by the user. */
   touched: boolean;
   /**
@@ -505,6 +505,9 @@ export interface FieldInfo {
    * e.g. "set_stage" is a checkbox, but should change the field to a stage ID if true.
    */
   implicitValue?: any;
+  alwaysHidden?: boolean;
+  isApprovalsField?: boolean;
+  checkMessage?: string;
 }
 
 /**

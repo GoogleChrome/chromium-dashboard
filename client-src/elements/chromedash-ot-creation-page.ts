@@ -1,19 +1,23 @@
 import {LitElement, css, html, nothing} from 'lit';
+import {customElement, property, state} from 'lit/decorators.js';
 import {ref} from 'lit/directives/ref.js';
-import {
-  formatFeatureChanges,
-  getStageValue,
-  showToastMessage,
-  setupScrollToHash,
-} from './utils.js';
-import './chromedash-form-table.js';
-import './chromedash-form-field.js';
-import {ORIGIN_TRIAL_CREATION_FIELDS} from './form-definition.js';
-import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
+import {Feature, StageDict} from '../js-src/cs-client.js';
+import './chromedash-form-field.js';
+import './chromedash-form-table.js';
+import {ORIGIN_TRIAL_CREATION_FIELDS} from './form-definition.js';
 import {VOTE_OPTIONS} from './form-field-enums.js';
 import {ALL_FIELDS} from './form-field-specs.js';
+import {
+  FieldInfo,
+  formatFeatureChanges,
+  getStageValue,
+  setupScrollToHash,
+  showToastMessage,
+} from './utils.js';
 
+@customElement('chromedash-ot-creation-page')
 export class ChromedashOTCreationPage extends LitElement {
   static get styles() {
     return [
@@ -43,31 +47,26 @@ export class ChromedashOTCreationPage extends LitElement {
     ];
   }
 
-  static get properties() {
-    return {
-      stageId: {type: Number},
-      featureId: {type: Number},
-      userEmail: {type: String},
-      feature: {type: Object},
-      loading: {type: Boolean},
-      submitting: {type: Boolean},
-      appTitle: {type: String},
-      fieldValues: {type: Array},
-      showApprovalsFields: {type: Boolean},
-    };
-  }
-
-  constructor() {
-    super();
-    this.stageId = 0;
-    this.featureId = 0;
-    this.feature = {};
-    this.loading = true;
-    this.submitting = false;
-    this.appTitle = '';
-    this.fieldValues = [];
-    this.showApprovalsFields = false;
-  }
+  @property({type: Number})
+  stageId = 0;
+  @property({type: Number})
+  featureId = 0;
+  @property({attribute: false})
+  feature!: Feature;
+  @property({type: String})
+  appTitle = '';
+  @property({type: String})
+  userEmail = '';
+  @state()
+  loading = true;
+  @state()
+  submitting = false;
+  @state()
+  fieldValues: FieldInfo[] & {feature?: Feature} = [];
+  @state()
+  showApprovalsFields = false;
+  @state()
+  stage!: StageDict;
 
   connectedCallback() {
     super.connectedCallback();
@@ -217,10 +216,10 @@ export class ChromedashOTCreationPage extends LitElement {
     /* Add the form's event listener after Shoelace event listeners are attached
      * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
     await el.updateComplete;
-    const submitButton = this.shadowRoot.querySelector(
+    const submitButton: HTMLInputElement | null = this.renderRoot.querySelector(
       'input[id=submit-button]'
     );
-    submitButton.form.addEventListener('submit', event => {
+    submitButton?.form?.addEventListener('submit', event => {
       this.handleFormSubmit(event);
     });
 
@@ -414,7 +413,7 @@ export class ChromedashOTCreationPage extends LitElement {
             </div>`
           : nothing}
         <chromedash-form-table ${ref(this.registerHandlers)}>
-          <section class="stage_form">${this.renderFields(section)}</section>
+          <section class="stage_form">${this.renderFields()}</section>
         </chromedash-form-table>
         <div class="final_buttons">
           <input
@@ -442,5 +441,3 @@ export class ChromedashOTCreationPage extends LitElement {
     `;
   }
 }
-
-customElements.define('chromedash-ot-creation-page', ChromedashOTCreationPage);
