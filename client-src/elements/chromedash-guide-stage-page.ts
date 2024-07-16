@@ -60,6 +60,8 @@ export class ChromedashGuideStagePage extends LitElement {
   loading = true;
   @state()
   fieldValues: FieldInfo[] & {feature?: Feature} = [];
+  @state()
+  gateId!: number;
 
   connectedCallback() {
     super.connectedCallback();
