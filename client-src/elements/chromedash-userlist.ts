@@ -102,7 +102,7 @@ class ChromedashUserlist extends LitElement {
       ) as HTMLInputElement;
       const siteEditorCheckbox = formEl.querySelector(
         'input[name="is_site_editor"]'
-      ) as SlCheckbox;
+      ) as HTMLInputElement;
       const email = emailInput?.value;
       const isAdmin = adminCheckbox?.checked;
       const isSiteEditor = siteEditorCheckbox?.checked;
