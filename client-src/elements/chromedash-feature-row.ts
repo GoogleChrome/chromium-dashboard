@@ -11,23 +11,23 @@ import {GateDict} from './chromedash-gate-chip.js';
 
 interface ActiveStagesAndGates {
   stage: StageDict;
-  gates: any[]; // TODO(markxiong0122): Add Gate type when PR#4060 is merged.
+  gates: GateDict[]; // TODO(markxiong0122): Add Gate type when PR#4060 is merged.
 }
 
 @customElement('chromedash-feature-row')
 class ChromedashFeatureRow extends LitElement {
-  @property({type: Object, attribute: false})
+  @property({attribute: false})
   feature!: Feature;
   @property({type: String})
-  columns;
+  columns: undefined | 'approvals' = undefined;
   @property({type: Boolean})
   canEdit = false;
   @property({type: Boolean})
-  signedIn;
-  @property({type: Object, attribute: false})
+  signedIn = false;
+  @property({attribute: false})
   starredFeatures = new Set<number>();
-  @property({type: Array, attribute: false})
-  gates: GateDict[] = [];
+  @property({attribute: false})
+  gates: Record<number, GateDict[]> = {};
   @property({type: Number})
   selectedGateId = 0;
 
@@ -140,7 +140,7 @@ class ChromedashFeatureRow extends LitElement {
   }
 
   getActiveStages(feature) {
-    const featureGates: GateDict[] = [this.gates[feature.id]] || [];
+    const featureGates: GateDict[] = this.gates[feature.id] || [];
     const activeGates = featureGates.filter(g => this.isActiveGate(g));
     const activeStageIds = new Set(activeGates.map(g => g.stage_id));
     const activeStagesAndTheirGates: ActiveStagesAndGates[] = [];

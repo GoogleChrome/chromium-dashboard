@@ -38,7 +38,7 @@ class ChromedashFeatureTable extends LitElement {
   @property({type: Boolean})
   canEdit = false;
   @property({type: Object})
-  gates!: GateDict;
+  gates: Record<number, GateDict[]> = {};
   @property({type: Number})
   selectedGateId = 0;
   @property({type: String})
@@ -86,7 +86,7 @@ class ChromedashFeatureTable extends LitElement {
     window.csClient
       .getPendingGates()
       .then(res => {
-        const gatesByFID = {} as GateDict;
+        const gatesByFID: Record<number, GateDict[]> = {};
         for (const g of res.gates) {
           if (!gatesByFID.hasOwnProperty(g.feature_id)) {
             gatesByFID[g.feature_id] = [];
