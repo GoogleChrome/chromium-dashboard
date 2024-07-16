@@ -51,7 +51,7 @@ export class ChromedashOTCreationPage extends LitElement {
   stageId = 0;
   @property({type: Number})
   featureId = 0;
-  @property({type: Object, attribute: false})
+  @property({attribute: false})
   feature!: Feature;
   @property({type: String})
   appTitle = '';
