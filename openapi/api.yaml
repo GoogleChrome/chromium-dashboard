@@ -33,6 +33,32 @@ paths:
                 $ref: '#/components/schemas/AccountResponse'
         '400':
           description: Bad request or user already exists
+  /accounts/{account_id}:
+    delete:
+      summary: Delete an account
+      operationId: deleteAccount
+      parameters:
+        - in: path
+          name: account_id
+          schema:
+            type: integer
+          required: true
+          description: ID of the account to delete
+      responses:
+        '200':
+          description: Account deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Done
+        '400':
+          description: Bad request
+        '404':
+          description: Account not found
   /componentsusers:
     get:
       summary: List all components and possible users
