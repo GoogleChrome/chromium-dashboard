@@ -4,6 +4,7 @@ import {
   formatFeatureChanges,
   showToastMessage,
   setupScrollToHash,
+  FieldInfo,
 } from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
@@ -15,30 +16,25 @@ import {
 import {ALL_FIELDS} from './form-field-specs';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
+import {customElement, property, state} from 'lit/decorators.js';
+import {Feature} from '../js-src/cs-client.js';
 
+@customElement('chromedash-guide-metadata-page')
 export class ChromedashGuideMetadataPage extends LitElement {
   static get styles() {
     return [...SHARED_STYLES, ...FORM_STYLES, css``];
   }
 
-  static get properties() {
-    return {
-      featureId: {type: Number},
-      feature: {type: Object},
-      loading: {type: Boolean},
-      appTitle: {type: String},
-      fieldValues: {type: Array},
-    };
-  }
-
-  constructor() {
-    super();
-    this.featureId = 0;
-    this.feature = {};
-    this.loading = true;
-    this.appTitle = '';
-    this.fieldValues = [];
-  }
+  @property({type: Number})
+  featureId = 0;
+  @property({type: String})
+  appTitle = '';
+  @state()
+  feature!: Feature;
+  @state()
+  loading = true;
+  @state()
+  fieldValues: FieldInfo[] & {feature?: Feature} = [];
 
   connectedCallback() {
     super.connectedCallback();
@@ -73,8 +69,10 @@ export class ChromedashGuideMetadataPage extends LitElement {
     /* Add the form's event listener after Shoelace event listeners are attached
      * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
     await el.updateComplete;
-    const hiddenTokenField = this.shadowRoot.querySelector('input[name=token]');
-    hiddenTokenField.form.addEventListener('submit', event => {
+    const hiddenTokenField = this.renderRoot.querySelector(
+      'input[name=token]'
+    ) as HTMLInputElement;
+    hiddenTokenField.form?.addEventListener('submit', event => {
       this.handleFormSubmit(event, hiddenTokenField);
     });
 
@@ -90,7 +88,7 @@ export class ChromedashGuideMetadataPage extends LitElement {
       .ensureTokenIsValid()
       .then(() => {
         hiddenTokenField.value = window.csClient.token;
-        return csClient.updateFeature(submitBody);
+        return window.csClient.updateFeature(submitBody);
       })
       .then(() => {
         window.location.href = `/feature/${this.featureId}`;
@@ -124,7 +122,7 @@ export class ChromedashGuideMetadataPage extends LitElement {
     const sections = this.feature.is_enterprise_feature
       ? FLAT_ENTERPRISE_METADATA_FIELDS.sections
       : FLAT_METADATA_FIELDS.sections;
-    const fields = sections.reduce(
+    const fields = sections.reduce<string[]>(
       (combined, section) => [...combined, ...section.fields],
       []
     );
@@ -237,8 +235,3 @@ export class ChromedashGuideMetadataPage extends LitElement {
     `;
   }
 }
-
-customElements.define(
-  'chromedash-guide-metadata-page',
-  ChromedashGuideMetadataPage
-);

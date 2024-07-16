@@ -211,7 +211,7 @@ export function hasFieldValue(fieldName, feStage, feature) {
  */
 export function getFieldValueFromFeature(
   fieldName: string,
-  feStage: string,
+  feStage: StageDict,
   feature: Feature
 ) {
   if (STAGE_SPECIFIC_FIELDS.has(fieldName)) {
@@ -400,6 +400,7 @@ export interface RawQuery {
   showEnterprise?: string;
   sort?: string;
   start?: string;
+  after?: string;
   num?: string;
   [key: string]: string | undefined;
 }
@@ -488,21 +489,34 @@ export function clearURLParams(key) {
 }
 
 export interface FieldInfo {
+  /** The name of the field. */
   name: string | keyof FormattedFeature;
+  /** Whether the field was mutated by the user. */
   touched: boolean;
-  stageId: number;
+  /**
+   * The stage that the field is associated with.
+   * This field is undefined if the change is a feature change.
+   */
+  stageId?: number | null;
+  /** The value written in the form field. */
   value: any;
+  /**
+   * Value that should be changed for some checkbox fields.
+   * e.g. "set_stage" is a checkbox, but should change the field to a stage ID if true.
+   */
   implicitValue?: any;
   alwaysHidden?: boolean;
   isApprovalsField?: boolean;
   checkMessage?: string;
 }
 
-export interface UpdateSubmitBody {
-  feature_changes: Record<string, any>;
-  stages: StageDict[];
-  has_changes: boolean;
-}
+/**
+ * @typedef {Object} UpdateSubmitBody
+ * @property {Object.<string, *>} feature_changes An object with feature changes.
+ *   key=field name, value=new field value.
+ * @property {Array.<Object>} stages The list of changes to specific stages.
+ * @property {boolean} has_changes Whether any valid changes are present for submission.
+ */
 
 /**
  * Prepare feature/stage changes to be submitted.
