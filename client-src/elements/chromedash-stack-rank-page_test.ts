@@ -8,17 +8,18 @@ describe('chromedash-stack-rank-page', () => {
   /* <chromedash-toast> are initialized at spa.html
    * which are not available here, so we initialize them before each test.
    * We also stub out the API calls here so that they return test data. */
+  let fetchStub;
   beforeEach(async () => {
     await fixture(html`<chromedash-toast></chromedash-toast>`);
-    sinon.stub(window, 'fetch');
+    fetchStub = sinon.stub(window, 'fetch');
   });
 
   afterEach(() => {
-    window.fetch.restore();
+    fetchStub.restore();
   });
 
   it('invalid stack-rank fetch response', async () => {
-    window.fetch.returns(Promise.reject(new Error('No results')));
+    fetchStub.returns(Promise.reject(new Error('No results')));
     const component = await fixture(
       html`<chromedash-stack-rank-page></chromedash-stack-rank-page>`
     );
@@ -27,9 +28,9 @@ describe('chromedash-stack-rank-page', () => {
 
     // error response would trigger the toast to show message
     const toastEl = document.querySelector('chromedash-toast');
-    const toastMsgSpan = toastEl.shadowRoot.querySelector('span#msg');
+    const toastMsgSpan = toastEl?.shadowRoot?.querySelector('span#msg');
     assert.include(
-      toastMsgSpan.innerHTML,
+      toastMsgSpan?.innerHTML,
       'Some errors occurred. Please refresh the page or try again later.'
     );
   });
@@ -37,7 +38,7 @@ describe('chromedash-stack-rank-page', () => {
   it('valid stack-rank fetch response', async () => {
     const type = 'feature';
     const view = 'popularity';
-    window.fetch.returns(Promise.resolve({}));
+    fetchStub.returns(Promise.resolve({}));
     const component = await fixture(
       html`<chromedash-stack-rank-page .type="${type}" .view="${view}">
       </chromedash-stack-rank-page>`
@@ -46,7 +47,7 @@ describe('chromedash-stack-rank-page', () => {
     assert.instanceOf(component, ChromedashStackRankPage);
 
     // header exists and with the correct link and title
-    const subheaderDiv = component.shadowRoot.querySelector('div#subheader');
+    const subheaderDiv = component.renderRoot.querySelector('div#subheader');
     assert.exists(subheaderDiv);
     assert.include(
       subheaderDiv.innerHTML,
@@ -54,15 +55,15 @@ describe('chromedash-stack-rank-page', () => {
     );
 
     // datalist and its input exist
-    const datalistInputEl = component.shadowRoot.querySelector(
+    const datalistInputEl = component.renderRoot.querySelector(
       'input#datalist-input'
     );
-    const datalistEl = component.shadowRoot.querySelector('datalist#features');
+    const datalistEl = component.renderRoot.querySelector('datalist#features');
     assert.exists(datalistInputEl);
     assert.exists(datalistEl);
 
     // chromedash-stack-rank exists
-    const stackrankEl = component.shadowRoot.querySelector(
+    const stackrankEl = component.renderRoot.querySelector(
       'chromedash-stack-rank'
     );
     assert.exists(stackrankEl);
