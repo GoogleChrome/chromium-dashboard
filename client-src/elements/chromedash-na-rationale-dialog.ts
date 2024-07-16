@@ -1,10 +1,13 @@
 import {LitElement, css, html} from 'lit';
 import {ref, createRef} from 'lit/directives/ref.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import {customElement, property} from 'lit/decorators.js';
+import {GateDict} from './chromedash-gate-chip.js';
+import {SlDialog, SlTextarea} from '@shoelace-style/shoelace';
 
 let naRationalDialogEl;
 
-export async function openNaRationaleDialog(gate) {
+export async function openNaRationaleDialog(gate: GateDict) {
   if (!naRationalDialogEl) {
     naRationalDialogEl = document.createElement(
       'chromedash-na-rationale-dialog'
@@ -17,38 +20,31 @@ export async function openNaRationaleDialog(gate) {
   });
 }
 
+@customElement('chromedash-na-rationale-dialog')
 export class ChromedashNaRationaleDialog extends LitElement {
-  rationaleDialogRef = createRef();
-  rationaleRef = createRef();
-
-  static get properties() {
-    return {
-      gate: {attribute: false},
-      resolve: {attribute: false},
-    };
-  }
+  rationaleDialogRef = createRef<SlDialog>();
+  rationaleRef = createRef<SlTextarea>();
 
   static get styles() {
     return [...SHARED_STYLES, css``];
   }
 
-  constructor() {
-    super();
-    this.gate = {};
-    this.resolve = function () {
-      console.log('Missing resolve action');
-    };
-  }
+  @property({type: Object, attribute: false})
+  gate!: GateDict;
+  @property({attribute: false})
+  resolve: (value?: string) => void = () => {
+    console.log('Missing resolve action');
+  };
 
   openOn(gate, resolve) {
     this.gate = gate;
     this.resolve = resolve;
-    this.rationaleDialogRef.value.show();
+    this.rationaleDialogRef.value?.show();
   }
 
   handlePost() {
-    this.resolve(this.rationaleRef.value.value);
-    this.rationaleDialogRef.value.hide();
+    this.resolve(this.rationaleRef.value?.value);
+    this.rationaleDialogRef.value?.hide();
   }
 
   renderDialogContent() {
@@ -79,8 +75,3 @@ export class ChromedashNaRationaleDialog extends LitElement {
     `;
   }
 }
-
-customElements.define(
-  'chromedash-na-rationale-dialog',
-  ChromedashNaRationaleDialog
-);
