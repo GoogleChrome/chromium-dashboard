@@ -79,9 +79,7 @@ interface ResolvedField {
   check?: CheckFunction | CheckFunction[];
   initial?: number | boolean;
   enterprise_initial?: number;
-  choices?:
-    | Record<string, [number, string, string]>
-    | Record<string, [number, string]>;
+  choices?: Record<string, [number, string, (string | TemplateResult)?]>;
   displayLabel?: string;
   disabled?: boolean;
 }
@@ -504,7 +502,8 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'radios',
     choices: FEATURE_TYPES_WITHOUT_ENTERPRISE,
     label: 'Feature type',
-    help_text: html` Select the feature type.
+    help_text: html`If all goes well, how will developers experience the change
+      you're planning to make to Chromium?
       <br />
       <p style="color: red">
         <strong>Note:</strong> The feature type field cannot be changed. If this

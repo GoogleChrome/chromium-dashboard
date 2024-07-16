@@ -2,46 +2,38 @@
 import {Task} from '@lit/task';
 import '@shoelace-style/shoelace';
 import {LitElement, css, html} from 'lit';
+import {customElement, property, state} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import './chromedash-report-spec-mentor.js';
-import {isoDateString} from './utils.js';
+import {isoDateString, RawQuery} from './utils.js';
+import {DefaultApiInterface, SpecMentor} from 'chromestatus-openapi';
+import {SlChangeEvent, SlInput} from '@shoelace-style/shoelace';
 
+@customElement('chromedash-report-spec-mentors-page')
 export class ChromedashReportSpecMentorsPage extends LitElement {
   static get styles() {
     return [...SHARED_STYLES, css``];
   }
 
-  static get properties() {
-    return {
-      rawQuery: {type: Object},
-      _updatedAfter: {state: true},
-    };
-  }
+  @property({type: Object})
+  rawQuery: RawQuery = {};
+  @property({attribute: false})
+  private _client: DefaultApiInterface = window.csOpenApiClient;
+  @property({attribute: false})
+  private _mentorsTask: Task<Date[], SpecMentor[]> = new Task(this, {
+    task: async ([updatedAfter], {signal}) => {
+      const mentors = await this._client.listSpecMentors(
+        {after: updatedAfter},
+        {signal}
+      );
+      mentors.sort((a, b) => a.email.localeCompare(b.email));
+      return mentors;
+    },
+    args: () => [this._updatedAfter],
+  });
 
-  /** @type {Record<string, string>} */
-  rawQuery = {};
-
-  /** @type {import('chromestatus-openapi').DefaultApiInterface} */
-  _client;
-
-  constructor() {
-    super();
-    // Default to a year ago.
-    this._updatedAfter = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
-    // @ts-ignore
-    this._client = window.csOpenApiClient;
-    this._mentorsTask = new Task(this, {
-      task: async ([updatedAfter], {signal}) => {
-        const mentors = await this._client.listSpecMentors(
-          {after: updatedAfter},
-          {signal}
-        );
-        mentors.sort((a, b) => a.email.localeCompare(b.email));
-        return mentors;
-      },
-      args: () => [this._updatedAfter],
-    });
-  }
+  @state() // Default to a year ago.
+  private _updatedAfter = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
 
   connectedCallback() {
     super.connectedCallback();
@@ -53,7 +45,7 @@ export class ChromedashReportSpecMentorsPage extends LitElement {
       return;
     }
 
-    if (this.rawQuery.hasOwnProperty('after')) {
+    if (this.rawQuery['after']) {
       const parsed = Date.parse(this.rawQuery['after']);
       if (!isNaN(parsed)) {
         this._updatedAfter = new Date(parsed);
@@ -61,11 +53,7 @@ export class ChromedashReportSpecMentorsPage extends LitElement {
     }
   }
 
-  /**
-   * @param {import('@shoelace-style/shoelace').SlChangeEvent & {target: import('@shoelace-style/shoelace').SlInput}} e
-   * @return {void}
-   */
-  afterChanged(e) {
+  afterChanged(e: SlChangeEvent & {target: SlInput}): void {
     e.stopPropagation();
     const newDate = e.target.valueAsDate;
     if (newDate) {
@@ -114,8 +102,3 @@ export class ChromedashReportSpecMentorsPage extends LitElement {
     `;
   }
 }
-
-customElements.define(
-  'chromedash-report-spec-mentors-page',
-  ChromedashReportSpecMentorsPage
-);
