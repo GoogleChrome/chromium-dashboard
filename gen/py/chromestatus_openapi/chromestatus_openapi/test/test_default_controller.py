@@ -2,18 +2,6 @@ import unittest
 
 from flask import json
 
-from chromestatus_openapi.models.account_response import AccountResponse  # noqa: E501
-from chromestatus_openapi.models.component_users_request import ComponentUsersRequest  # noqa: E501
-from chromestatus_openapi.models.components_users_response import ComponentsUsersResponse  # noqa: E501
-from chromestatus_openapi.models.create_account_request import CreateAccountRequest  # noqa: E501
-from chromestatus_openapi.models.delete_account200_response import DeleteAccount200Response  # noqa: E501
-from chromestatus_openapi.models.external_reviews_response import ExternalReviewsResponse  # noqa: E501
-from chromestatus_openapi.models.feature_latency import FeatureLatency  # noqa: E501
-from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
-from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
-from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
-from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
-from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
 from chromestatus_openapi.test import BaseTestCase
 
 
