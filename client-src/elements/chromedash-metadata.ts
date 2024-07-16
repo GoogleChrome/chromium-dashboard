@@ -1,39 +1,42 @@
 import {LitElement, css, html} from 'lit';
+import {customElement, property, state} from 'lit/decorators.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import {Channels} from '../js-src/cs-client.js';
 
+interface ImplStatus {
+  key: number;
+  val: string;
+}
+
+@customElement('chromedash-metadata')
 class ChromedashMetadata extends LitElement {
-  static get properties() {
-    return {
-      implStatuses: {type: Array}, // Read in chromedash-featurelist.
-      status: {attribute: false}, // Read in chromedash-featurelist.
-      selected: {attribute: false}, // Directly edited in /templates/features.html
-      _className: {attribute: false},
-      _fetchError: {attribute: false},
-      _channels: {attribute: false},
-      _versions: {attribute: false},
-    };
-  }
-
-  constructor() {
-    super();
-    this.implStatuses = [];
-    this.status = {
-      NO_ACTIVE_DEV: 1,
-      PROPOSED: 2,
-      IN_DEVELOPMENT: 3,
-      BEHIND_A_FLAG: 4,
-      ENABLED_BY_DEFAULT: 5,
-      DEPRECATED: 6,
-      REMOVED: 7,
-      ORIGINTRIAL: 8,
-      INTERVENTION: 9,
-      ON_HOLD: 10,
-      NO_LONGER_PURSUING: 1000,
-    };
-    this._channels = {};
-    this._versions = [];
-  }
+  @property({type: Array})
+  implStatuses: ImplStatus[] = [];
+  @property({type: Object, attribute: false})
+  status = {
+    NO_ACTIVE_DEV: 1,
+    PROPOSED: 2,
+    IN_DEVELOPMENT: 3,
+    BEHIND_A_FLAG: 4,
+    ENABLED_BY_DEFAULT: 5,
+    DEPRECATED: 6,
+    REMOVED: 7,
+    ORIGINTRIAL: 8,
+    INTERVENTION: 9,
+    ON_HOLD: 10,
+    NO_LONGER_PURSUING: 1000,
+  };
+  @property({type: String, attribute: false})
+  selected!: string;
+  @state()
+  _className: 'canaryisdev' | 'betaisdev' | undefined;
+  @state()
+  _fetchError!: boolean;
+  @state()
+  _channels: Channels = {};
+  @state()
+  _versions!: (string | number)[];
 
   static get styles() {
     return [
@@ -85,7 +88,9 @@ class ChromedashMetadata extends LitElement {
   }
 
   selectInVersionList(index) {
-    this.shadowRoot.getElementById('versionlist').selectedIndex = index; // log null
+    (
+      this.renderRoot.querySelector('#versionlist') as HTMLSelectElement
+    ).selectedIndex = index; // log null
   }
 
   _processResponse(response) {
@@ -93,7 +98,7 @@ class ChromedashMetadata extends LitElement {
     const windowsVersions = response[0];
     for (let i = 0, el; (el = windowsVersions.versions[i]); ++i) {
       // Include previous version if current is foobar'd.
-      this._channels[el.channel] =
+      this._channels[el.channel].version =
         parseInt(el.version) || parseInt(el.prev_version);
     }
 
@@ -106,10 +111,10 @@ class ChromedashMetadata extends LitElement {
       this.implStatuses[this.status.PROPOSED - 1].val,
       this.implStatuses[this.status.IN_DEVELOPMENT - 1].val,
       this.implStatuses[this.status.DEPRECATED - 1].val,
-      this._channels.canary,
-      this._channels.dev,
-      this._channels.beta,
-      this._channels.stable,
+      this._channels.canary.version,
+      this._channels.dev.version,
+      this._channels.beta.version,
+      this._channels.stable.version,
     ];
 
     // Consolidate channels if they're the same.
@@ -121,7 +126,7 @@ class ChromedashMetadata extends LitElement {
       this._className = 'betaisdev';
     }
 
-    for (let i = this._channels.canary - 1; i >= 1; i--) {
+    for (let i = this._channels.canary.version - 1; i >= 1; i--) {
       if (!this._versions.includes(i)) {
         this._versions.push(i);
       }
@@ -200,5 +205,3 @@ class ChromedashMetadata extends LitElement {
     `;
   }
 }
-
-customElements.define('chromedash-metadata', ChromedashMetadata);
