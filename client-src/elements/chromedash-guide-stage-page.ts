@@ -1,12 +1,12 @@
 import {LitElement, TemplateResult, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
 import {
+  FieldInfo,
   formatFeatureChanges,
   getStageValue,
   showToastMessage,
   setupScrollToHash,
   shouldShowDisplayNameField,
-  FieldInfo,
 } from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
