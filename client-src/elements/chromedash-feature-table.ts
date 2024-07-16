@@ -8,7 +8,7 @@ import {clamp, showToastMessage} from './utils.js';
 import {GateDict} from './chromedash-gate-chip.js';
 
 @customElement('chromedash-feature-table')
-class ChromedashFeatureTable extends LitElement {
+export class ChromedashFeatureTable extends LitElement {
   @state()
   loading = true;
   @state()
