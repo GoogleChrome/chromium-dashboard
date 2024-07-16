@@ -3,8 +3,11 @@ from typing import Dict
 from typing import Tuple
 from typing import Union
 
+from chromestatus_openapi.models.account_response import AccountResponse  # noqa: E501
 from chromestatus_openapi.models.component_users_request import ComponentUsersRequest  # noqa: E501
 from chromestatus_openapi.models.components_users_response import ComponentsUsersResponse  # noqa: E501
+from chromestatus_openapi.models.create_account_request import CreateAccountRequest  # noqa: E501
+from chromestatus_openapi.models.delete_account200_response import DeleteAccount200Response  # noqa: E501
 from chromestatus_openapi.models.external_reviews_response import ExternalReviewsResponse  # noqa: E501
 from chromestatus_openapi.models.feature_latency import FeatureLatency  # noqa: E501
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
@@ -24,13 +27,41 @@ def add_user_to_component(component_id, user_id, component_users_request=None): 
     :type component_id: int
     :param user_id: User ID
     :type user_id: int
-    :param component_users_request: 
+    :param component_users_request:
     :type component_users_request: dict | bytes
 
     :rtype: Union[None, Tuple[None, int], Tuple[None, int, Dict[str, str]]
     """
     if connexion.request.is_json:
         component_users_request = ComponentUsersRequest.from_dict(connexion.request.get_json())  # noqa: E501
+    return 'do some magic!'
+
+
+def create_account(create_account_request=None):  # noqa: E501
+    """Create a new account
+
+     # noqa: E501
+
+    :param create_account_request:
+    :type create_account_request: dict | bytes
+
+    :rtype: Union[AccountResponse, Tuple[AccountResponse, int], Tuple[AccountResponse, int, Dict[str, str]]
+    """
+    if connexion.request.is_json:
+        create_account_request = CreateAccountRequest.from_dict(connexion.request.get_json())  # noqa: E501
+    return 'do some magic!'
+
+
+def delete_account(account_id):  # noqa: E501
+    """Delete an account
+
+     # noqa: E501
+
+    :param account_id: ID of the account to delete
+    :type account_id: int
+
+    :rtype: Union[DeleteAccount200Response, Tuple[DeleteAccount200Response, int], Tuple[DeleteAccount200Response, int, Dict[str, str]]
+    """
     return 'do some magic!'
 
 
@@ -67,7 +98,7 @@ def list_external_reviews(review_group):  # noqa: E501
 
      # noqa: E501
 
-    :param review_group: Which review group to focus on:  * &#x60;tag&#x60; - The W3C TAG  * &#x60;gecko&#x60; - The rendering engine that powers Mozilla Firefox  * &#x60;webkit&#x60; - The rendering engine that powers Apple Safari 
+    :param review_group: Which review group to focus on:  * &#x60;tag&#x60; - The W3C TAG  * &#x60;gecko&#x60; - The rendering engine that powers Mozilla Firefox  * &#x60;webkit&#x60; - The rendering engine that powers Apple Safari
     :type review_group: str
 
     :rtype: Union[ExternalReviewsResponse, Tuple[ExternalReviewsResponse, int], Tuple[ExternalReviewsResponse, int, Dict[str, str]]
@@ -108,7 +139,7 @@ def list_spec_mentors(after=None):  # noqa: E501
 
      # noqa: E501
 
-    :param after: 
+    :param after:
     :type after: str
 
     :rtype: Union[List[SpecMentor], Tuple[List[SpecMentor], int], Tuple[List[SpecMentor], int, Dict[str, str]]
@@ -147,7 +178,7 @@ def remove_user_from_component(component_id, user_id, component_users_request=No
     :type component_id: int
     :param user_id: User ID
     :type user_id: int
-    :param component_users_request: 
+    :param component_users_request:
     :type component_users_request: dict | bytes
 
     :rtype: Union[None, Tuple[None, int], Tuple[None, int, Dict[str, str]]
