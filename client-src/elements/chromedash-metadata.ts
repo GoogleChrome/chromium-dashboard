@@ -4,7 +4,7 @@ import {ifDefined} from 'lit/directives/if-defined.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {Channels} from '../js-src/cs-client.js';
 
-interface InplStatus {
+interface ImplStatus {
   key: number;
   val: string;
 }
@@ -12,7 +12,7 @@ interface InplStatus {
 @customElement('chromedash-metadata')
 class ChromedashMetadata extends LitElement {
   @property({type: Array})
-  implStatuses: InplStatus[] = [];
+  implStatuses: ImplStatus[] = [];
   @property({type: Object, attribute: false})
   status = {
     NO_ACTIVE_DEV: 1,
