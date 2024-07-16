@@ -61,9 +61,9 @@ export class ChromedashRoadmapPage extends LitElement {
     const margin = 16;
 
     let numColumns = 3;
-    if (containerWidth && containerWidth < 768) {
+    if (containerWidth < 768) {
       numColumns = 1;
-    } else if (containerWidth && containerWidth < 1152) {
+    } else if (containerWidth < 1152) {
       numColumns = 2;
     }
     this.numColumns = numColumns;

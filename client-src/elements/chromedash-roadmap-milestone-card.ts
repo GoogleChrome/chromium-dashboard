@@ -37,6 +37,9 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
   @property({type: Boolean})
   signedIn = false;
 
+  /**
+   *  Returns the number of days between a and b.
+   */
   _dateDiffInDays(a: Date, b: Date): {days: number; future: boolean} {
     // Discard time and time-zone information.
     const utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
