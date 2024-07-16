@@ -285,7 +285,7 @@ export class ChromedashGuideEditallPage extends LitElement {
         <chromedash-form-field
           name=${field}
           index=${index}
-          stageId=${ifDefined(ifDefined(stageId))}
+          stageId=${ifDefined(stageId)}
           value=${value}
           .fieldValues=${this.fieldValues}
           .feature=${formattedFeature}
