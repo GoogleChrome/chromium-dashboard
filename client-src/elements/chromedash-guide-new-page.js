@@ -188,10 +188,10 @@ export class ChromedashGuideNewPage extends LitElement {
           <input type="hidden" name="token" />
           <chromedash-form-table ${ref(this.registerHandlers)}>
             ${this.renderWarnings()}
-            ${formFields.map(field => renderFormField(field))}
             ${!this.isEnterpriseFeature
               ? renderFormField('feature_type_radio_group', 'choices')
               : nothing}
+            ${formFields.map(field => renderFormField(field))}
           </chromedash-form-table>
           <input
             type="submit"

@@ -400,6 +400,7 @@ export interface RawQuery {
   showEnterprise?: string;
   sort?: string;
   start?: string;
+  after?: string;
   num?: string;
   [key: string]: string | undefined;
 }
@@ -489,14 +490,14 @@ export function clearURLParams(key) {
 
 export interface FieldInfo {
   /** The name of the field. */
-  name: string;
+  name: string | keyof FormattedFeature;
   /** Whether the field was mutated by the user. */
   touched: boolean;
   /**
    * The stage that the field is associated with.
    * This field is undefined if the change is a feature change.
    */
-  stageId: number | null;
+  stageId?: number | null;
   /** The value written in the form field. */
   value: any;
   /**
@@ -504,6 +505,9 @@ export interface FieldInfo {
    * e.g. "set_stage" is a checkbox, but should change the field to a stage ID if true.
    */
   implicitValue?: any;
+  alwaysHidden?: boolean;
+  isApprovalsField?: boolean;
+  checkMessage?: string;
 }
 
 /**

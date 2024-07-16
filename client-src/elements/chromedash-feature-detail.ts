@@ -77,19 +77,19 @@ const LONG_TEXT = 60;
 class ChromedashFeatureDetail extends LitElement {
   @property({type: String})
   appTitle = '';
-  @property({type: Array, attribute: false})
+  @property({attribute: false})
   featureLinks!: FeatureLink[];
-  @property({type: Object, attribute: false})
+  @property({attribute: false})
   user!: User;
   @property({type: Boolean})
   canEdit = false;
-  @property({type: Object, attribute: false})
+  @property({attribute: false})
   feature!: Feature;
   @property({type: Array, attribute: false})
   gates!: GateDict[];
-  @property({type: Object, attribute: false})
+  @property({attribute: false})
   process!: Process;
-  @property({type: Object, attribute: false})
+  @property({attribute: false})
   progress!: ProgressItem;
   @property({type: Number})
   selectedGateId = 0;

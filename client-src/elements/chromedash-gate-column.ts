@@ -40,9 +40,10 @@ interface Vote {
 export interface ProgressItem {
   name: string;
   field?: string;
+  stage: ProcessStage;
 }
 
-interface Action {
+export interface Action {
   name: string;
   url: string;
   prerequisites: string[];
@@ -59,7 +60,7 @@ interface ApprovalFieldDef {
   slo_initial_response?: number;
 }
 
-interface ProcessStage {
+export interface ProcessStage {
   name: string;
   description: string;
   progress_items: ProgressItem[];
