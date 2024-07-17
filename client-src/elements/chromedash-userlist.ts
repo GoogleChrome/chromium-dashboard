@@ -1,4 +1,3 @@
-import {SlCheckbox} from '@shoelace-style/shoelace';
 import {LitElement, css, html, nothing} from 'lit';
 import {customElement, state} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
@@ -17,7 +16,6 @@ class ChromedashUserlist extends LitElement {
           padding: var(--content-padding);
           background: var(--card-background);
           border: var(--card-border);
-          box-shadow: var(--card-box-shadow);
           margin-bottom: var(--content-padding);
           max-width: 20em;
         }
