@@ -3,9 +3,6 @@ import {SHARED_STYLES} from '../css/shared-css.js';
 import {showToastMessage} from './utils';
 import {openPostIntentDialog} from './chromedash-post-intent-dialog.js';
 import {
-  GATE_TYPES,
-  FEATURE_TYPES,
-  INTENT_STAGES,
   STAGE_TYPES_DEV_TRIAL,
   STAGE_TYPES_SHIPPING,
 } from './form-field-enums.js';
