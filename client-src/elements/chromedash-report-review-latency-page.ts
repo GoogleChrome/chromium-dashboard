@@ -4,7 +4,10 @@ import {LitElement, css, html} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {GATE_TYPES} from './form-field-enums.js';
 import './chromedash-report-spec-mentor.js';
+import {customElement, property} from 'lit/decorators.js';
+import {DefaultApiInterface, ReviewLatency} from 'chromestatus-openapi';
 
+@customElement('chromedash-report-review-latency-page')
 export class ChromedashReportReviewLatencyPage extends LitElement {
   static get styles() {
     return [
@@ -49,22 +52,19 @@ export class ChromedashReportReviewLatencyPage extends LitElement {
     };
   }
 
-  /** @type {import('chromestatus-openapi').DefaultApiInterface} */
-  _client;
-
-  constructor() {
-    super();
-    // @ts-ignore
-    this._client = window.csOpenApiClient;
-    this._reviewLatencyTask = new Task(this, {
-      task: async ([], {signal}) => {
-        this.reviewLatencyList = await this._client.listReviewsWithLatency({
-          signal,
-        });
-      },
-      args: () => [],
-    });
-  }
+  @property({attribute: false})
+  private _client: DefaultApiInterface = window.csOpenApiClient;
+  @property({attribute: false})
+  reviewLatencyList: ReviewLatency[] = [];
+  @property({attribute: false})
+  private _reviewLatencyTask: Task<never[], void> = new Task(this, {
+    task: async ([], {signal}) => {
+      this.reviewLatencyList = await this._client.listReviewsWithLatency({
+        signal,
+      });
+    },
+    args: () => [],
+  });
 
   renderCount() {
     let count = 0;
@@ -192,8 +192,3 @@ export class ChromedashReportReviewLatencyPage extends LitElement {
     });
   }
 }
-
-customElements.define(
-  'chromedash-report-review-latency-page',
-  ChromedashReportReviewLatencyPage
-);

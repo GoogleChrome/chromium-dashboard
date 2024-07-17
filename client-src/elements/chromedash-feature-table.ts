@@ -1,52 +1,50 @@
 import {LitElement, css, html, nothing} from 'lit';
-import {showToastMessage, clamp} from './utils.js';
+import {customElement, property, state} from 'lit/decorators.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
+import {Feature} from '../js-src/cs-client.js';
 import './chromedash-feature-filter';
 import './chromedash-feature-row';
-import {SHARED_STYLES} from '../css/shared-css.js';
+import {clamp, showToastMessage} from './utils.js';
+import {GateDict} from './chromedash-gate-chip.js';
 
-class ChromedashFeatureTable extends LitElement {
-  static get properties() {
-    return {
-      query: {type: String},
-      showEnterprise: {type: Boolean},
-      sortSpec: {type: String},
-      showQuery: {type: Boolean},
-      features: {type: Array},
-      totalCount: {type: Number},
-      loading: {type: Boolean},
-      reloading: {type: Boolean},
-      start: {type: Number},
-      num: {type: Number},
-      alwaysOfferPagination: {type: Boolean},
-      columns: {type: String},
-      signedIn: {type: Boolean},
-      canEdit: {type: Boolean},
-      starredFeatures: {type: Object},
-      noResultsMessage: {type: String},
-      gates: {type: Object},
-      selectedGateId: {type: Number},
-    };
-  }
-
-  constructor() {
-    super();
-    this.query = '';
-    this.showEnterprise = false;
-    this.sortSpec = '';
-    this.showQuery = false;
-    this.loading = true;
-    this.reloading = false;
-    this.starredFeatures = new Set();
-    this.features = [];
-    this.totalCount = 0;
-    this.start = 0;
-    this.num = 100;
-    this.alwaysOfferPagination = false;
-    this.noResultsMessage = 'No results';
-    this.canEdit = false;
-    this.gates = {};
-    this.selectedGateId = 0;
-  }
+@customElement('chromedash-feature-table')
+export class ChromedashFeatureTable extends LitElement {
+  @state()
+  loading = true;
+  @state()
+  reloading = false;
+  @state()
+  features!: Feature[];
+  @state()
+  totalCount = 0;
+  @property({type: Number, attribute: false})
+  start = 0;
+  @property({type: String, attribute: false})
+  query = '';
+  @property({type: Boolean, attribute: false})
+  showEnterprise = false;
+  @property({type: String, attribute: false})
+  sortSpec = '';
+  @property({type: Boolean})
+  showQuery = false;
+  @property({type: Object, attribute: false})
+  starredFeatures = new Set<number>();
+  @property({type: Number, attribute: false})
+  num = 100;
+  @property({type: Boolean})
+  alwaysOfferPagination = false;
+  @property({type: String})
+  noResultsMessage = 'No results';
+  @property({type: Boolean})
+  canEdit = false;
+  @property({type: Object})
+  gates: Record<number, GateDict[]> = {};
+  @property({type: Number})
+  selectedGateId = 0;
+  @property({type: String})
+  columns!: 'normal' | 'approvals';
+  @property({type: Boolean})
+  signedIn!: boolean;
 
   connectedCallback() {
     super.connectedCallback();
@@ -88,7 +86,7 @@ class ChromedashFeatureTable extends LitElement {
     window.csClient
       .getPendingGates()
       .then(res => {
-        const gatesByFID = {};
+        const gatesByFID: Record<number, GateDict[]> = {};
         for (const g of res.gates) {
           if (!gatesByFID.hasOwnProperty(g.feature_id)) {
             gatesByFID[g.feature_id] = [];
@@ -293,5 +291,3 @@ class ChromedashFeatureTable extends LitElement {
     `;
   }
 }
-
-customElements.define('chromedash-feature-table', ChromedashFeatureTable);
