@@ -106,12 +106,12 @@ class ChromedashIntentPreviewPage extends LitElement {
         if (this.feature.unlisted) {
           this.displayFeatureUnlistedWarning = true;
         }
-        this.subject = `${this.computeSubjectPrefix()}: ${this.feature.name}`;
         // Finally, get the contents of the intent based on the feature/stage.
         return window.csClient.getIntentBody(this.featureId, this.stage.id);
       })
-      .then(intentBody => {
-        this.intentBody = intentBody;
+      .then(intentResp => {
+        this.subject = intentResp.subject;
+        this.intentBody = intentResp.email_body;
         this.loading = false;
       })
       .catch(() => {
@@ -142,53 +142,6 @@ class ChromedashIntentPreviewPage extends LitElement {
       Important: This feature is currently unlisted. Please only share feature
       details with people who are collaborating with you on the feature.
     </div>`;
-  }
-
-  computeSubjectPrefix() {
-    // DevTrials don't have a gate associated with their stage.
-    if (!this.gate) {
-      return 'Ready for Developer Testing';
-    }
-    if (
-      this.gate.gate_type === GATE_TYPES.API_PROTOTYPE ||
-      this.gate.gate_type === GATE_TYPES.API_PLAN
-    ) {
-      if (
-        this.feature.feature_type_int ===
-        FEATURE_TYPES.FEATURE_TYPE_DEPRECATION_ID[0]
-      ) {
-        return 'Intent to Deprecate and Remove';
-      }
-      return 'Intent to Prototype';
-    }
-    if (this.gate.gate_type === GATE_TYPES.API_ORIGIN_TRIAL) {
-      if (
-        this.feature.feature_type_int ===
-        FEATURE_TYPES.FEATURE_TYPE_DEPRECATION_ID[0]
-      ) {
-        return 'Request for Deprecation Trial';
-      }
-      return 'Intent to Experiment';
-    }
-    if (this.gate.gate_type === GATE_TYPES.API_EXTEND_ORIGIN_TRIAL) {
-      if (
-        this.feature.feature_type_int ===
-        FEATURE_TYPES.FEATURE_TYPE_DEPRECATION_ID[0]
-      ) {
-        return 'Intent to Extend Deprecation Trial';
-      }
-      return 'Intent to Extend Experiment';
-    }
-    if (this.gate.gate_type === GATE_TYPES.API_SHIP) {
-      if (
-        this.feature.feature_type_int ===
-        FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]
-      ) {
-        return 'Web-Facing Change PSA';
-      }
-      return 'Intent to Ship';
-    }
-    return `Intent stage "${INTENT_STAGES[this.feature.intent_stage]}"`;
   }
 
   renderSkeletonSection() {
