@@ -74,10 +74,10 @@ class ChromedashUserlist extends LitElement {
     const formEl = this.renderRoot.querySelector('form');
     const adminCheckbox = formEl?.querySelector(
       'input[name="is_admin"]'
-    ) as SlCheckbox;
+    ) as HTMLInputElement;
     const siteEditorCheckbox = formEl?.querySelector(
       'input[name="is_site_editor"]'
-    ) as SlCheckbox;
+    ) as HTMLInputElement;
     // Admins will always be site editors, so if the admin box is checked,
     // the site editor box is also checked and disabled.
     if (adminCheckbox.checked) {
