@@ -46,21 +46,6 @@ describe('chromedash-guide-verify-accuracy-page', () => {
         intent_stage: 2,
       },
     ],
-    browsers: {
-      chrome: {
-        blink_components: ['Blink'],
-        owners: ['fake chrome owner one', 'fake chrome owner two'],
-        status: {
-          milestone_str: 'No active development',
-          text: 'No active development',
-          val: 1,
-        },
-      },
-      ff: {view: {text: 'No signal', val: 5}},
-      safari: {view: {text: 'No signal', val: 5}},
-      webdev: {view: {text: 'No signal', val: 4}},
-      other: {view: {}},
-    },
     resources: {
       samples: ['fake sample link one', 'fake sample link two'],
       docs: ['fake doc link one', 'fake doc link two'],
@@ -103,9 +88,9 @@ describe('chromedash-guide-verify-accuracy-page', () => {
 
     // invalid feature requests would trigger the toast to show message
     const toastEl = document.querySelector('chromedash-toast');
-    const toastMsgSpan = toastEl.shadowRoot.querySelector('span#msg');
+    const toastMsgSpan = toastEl?.shadowRoot?.querySelector('span#msg');
     assert.include(
-      toastMsgSpan.innerHTML,
+      toastMsgSpan?.innerHTML,
       'Some errors occurred. Please refresh the page or try again later.'
     );
   });
@@ -121,14 +106,14 @@ describe('chromedash-guide-verify-accuracy-page', () => {
     assert.exists(component);
     assert.instanceOf(component, ChromedashGuideVerifyAccuracyPage);
 
-    const subheaderDiv = component.shadowRoot.querySelector('div#subheader');
+    const subheaderDiv = component.renderRoot.querySelector('div#subheader');
     assert.exists(subheaderDiv);
     // subheader title is correct and clickable
     assert.include(subheaderDiv.innerHTML, 'href="/feature/123456"');
     assert.include(subheaderDiv.innerHTML, 'Verify feature data for');
 
     // feature form, hidden token field, and submit/cancel buttons exist
-    const featureForm = component.shadowRoot.querySelector(
+    const featureForm = component.renderRoot.querySelector(
       'form[name="feature_form"]'
     );
     assert.exists(featureForm);

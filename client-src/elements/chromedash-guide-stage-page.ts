@@ -1,8 +1,10 @@
-import {LitElement, css, html, nothing} from 'lit';
+import {LitElement, TemplateResult, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
 import {
+  FieldInfo,
   formatFeatureChanges,
   getStageValue,
+  parseRawQuery,
   showToastMessage,
   setupScrollToHash,
   shouldShowDisplayNameField,
@@ -13,6 +15,7 @@ import {
   FLAT_TRIAL_EXTENSION_FIELDS,
   formatFeatureForEdit,
   FORMS_BY_STAGE_TYPE,
+  MetadataFields,
 } from './form-definition';
 import {
   IMPLEMENTATION_STATUS,
@@ -22,44 +25,43 @@ import {
 import {ALL_FIELDS} from './form-field-specs';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
+import {customElement, property, state} from 'lit/decorators.js';
+import {Feature, StageDict} from '../js-src/cs-client.js';
 
+@customElement('chromedash-guide-stage-page')
 export class ChromedashGuideStagePage extends LitElement {
   static get styles() {
     return [...SHARED_STYLES, ...FORM_STYLES, css``];
   }
 
-  static get properties() {
-    return {
-      stageId: {type: Number},
-      intentStage: {type: Number},
-      stageName: {type: String},
-      featureId: {type: Number},
-      feature: {type: Object},
-      isActiveStage: {type: Boolean},
-      featureFormFields: {type: Array},
-      implStatusFormFields: {type: Array},
-      implStatusOffered: {type: String},
-      loading: {type: Boolean},
-      appTitle: {type: String},
-      fieldValues: {type: Array},
-    };
-  }
-
-  constructor() {
-    super();
-    this.stageId = 0;
-    this.intentStage = 0;
-    this.stageName = '';
-    this.featureId = 0;
-    this.feature = {};
-    this.isActiveStage = false;
-    this.featureFormFields = [];
-    this.implStatusFormFields = [];
-    this.implStatusOffered = '';
-    this.loading = true;
-    this.appTitle = '';
-    this.fieldValues = [];
-  }
+  @property({attribute: false})
+  stageId = 0;
+  @property({attribute: false})
+  featureId = 0;
+  @property({attribute: false})
+  intentStage = 0;
+  @property({type: Array})
+  implStatusFormFields: MetadataFields[] = [];
+  @property({type: String})
+  implStatusOffered = '';
+  @property({type: String})
+  appTitle = '';
+  @state()
+  stageName = '';
+  @state()
+  feature = {} as Feature;
+  @state()
+  stage!: StageDict;
+  @state()
+  isActiveStage = false;
+  @state()
+  featureFormFields!: MetadataFields;
+  @state()
+  loading = true;
+  @state()
+  fieldValues: FieldInfo[] & {feature?: Feature} = [];
+  @state()
+  gateId!: number;
 
   connectedCallback() {
     super.connectedCallback();
@@ -81,13 +83,27 @@ export class ChromedashGuideStagePage extends LitElement {
 
   fetchData() {
     this.loading = true;
+
+    // Check if this is a milestone adjustment to an extension stage.
+    // If it is, we need the corresponding gate ID to redirect after submission.
+    const rawQuery = parseRawQuery(window.location.search);
+    let gatePromise = Promise.resolve();
+    if ('updateExtension' in rawQuery) {
+      gatePromise = window.csClient.getGates(this.featureId);
+    }
+
     Promise.all([
       window.csClient.getFeature(this.featureId),
       window.csClient.getStage(this.featureId, this.stageId),
+      gatePromise,
     ])
-      .then(([feature, stage]) => {
+      .then(([feature, stage, gates]) => {
         this.feature = feature;
         this.stage = stage;
+
+        if (gates) {
+          this.gateId = gates.gates.find(g => g.stage_id === this.stageId).id;
+        }
 
         if (this.feature.name) {
           document.title = `${this.feature.name} - ${this.appTitle}`;
@@ -120,8 +136,10 @@ export class ChromedashGuideStagePage extends LitElement {
     /* Add the form's event listener after Shoelace event listeners are attached
      * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
     await el.updateComplete;
-    const hiddenTokenField = this.shadowRoot.querySelector('input[name=token]');
-    hiddenTokenField.form.addEventListener('submit', event => {
+    const hiddenTokenField = this.renderRoot.querySelector(
+      'input[name=token]'
+    ) as HTMLInputElement;
+    hiddenTokenField.form?.addEventListener('submit', event => {
       this.handleFormSubmit(event, hiddenTokenField);
     });
 
@@ -138,10 +156,16 @@ export class ChromedashGuideStagePage extends LitElement {
       .ensureTokenIsValid()
       .then(() => {
         hiddenTokenField.value = window.csClient.token;
-        return csClient.updateFeature(submitBody);
+        return window.csClient.updateFeature(submitBody);
       })
       .then(() => {
-        window.location.href = `/feature/${this.featureId}`;
+        // If we have a set gate ID, we need to redirect the user to finish
+        // initiating their extension.
+        if (this.gateId) {
+          window.location.href = `/feature/${this.featureId}?gate=${this.gateId}&initiateExtension`;
+        } else {
+          window.location.href = `/feature/${this.featureId}`;
+        }
       })
       .catch(() => {
         showToastMessage(
@@ -153,11 +177,11 @@ export class ChromedashGuideStagePage extends LitElement {
   miscSetup() {
     // Allow editing if there was already a value specified in this
     // deprecated field.
-    const timelineField = this.shadowRoot.querySelector(
+    const timelineField = this.renderRoot.querySelector(
       '#id_experiment_timeline'
-    );
+    ) as HTMLInputElement;
     if (timelineField && timelineField.value) {
-      timelineField.disabled = '';
+      timelineField.disabled = false;
     }
   }
 
@@ -167,7 +191,7 @@ export class ChromedashGuideStagePage extends LitElement {
 
   // get a comma-spearated list of field names
   getFormFields() {
-    const fields = this.featureFormFields.sections.reduce(
+    const fields = this.featureFormFields.sections.reduce<string[]>(
       (combined, section) => [...combined, ...section.fields],
       []
     );
@@ -210,7 +234,7 @@ export class ChromedashGuideStagePage extends LitElement {
     `;
   }
 
-  renderFields(formattedFeature, section, feStage) {
+  renderFields(formattedFeature, section, feStage?) {
     if (!feStage) {
       feStage = this.stage;
     }
@@ -257,7 +281,7 @@ export class ChromedashGuideStagePage extends LitElement {
   }
 
   renderSections(formattedFeature, stageSections) {
-    const formSections = [];
+    const formSections: (typeof nothing | TemplateResult)[] = [];
     if (!formattedFeature.is_enterprise_feature) {
       // Add the field to this component's stage before creating the field component.
       const index = this.fieldValues.length;
@@ -414,5 +438,3 @@ export class ChromedashGuideStagePage extends LitElement {
     `;
   }
 }
-
-customElements.define('chromedash-guide-stage-page', ChromedashGuideStagePage);

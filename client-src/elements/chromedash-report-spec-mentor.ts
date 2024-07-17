@@ -1,24 +1,18 @@
 // @ts-check
+import {SpecMentor} from 'chromestatus-openapi';
 import {LitElement, css, html} from 'lit';
+import {customElement, property} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import './chromedash-feature-row.js';
 
+@customElement('chromedash-report-spec-mentor')
 export class ChromedashReportSpecMentor extends LitElement {
   static get styles() {
     return [...SHARED_STYLES, css``];
   }
 
-  static get properties() {
-    return {
-      mentor: {type: Object},
-    };
-  }
-
-  constructor() {
-    super();
-    /** @type {import('chromestatus-openapi').SpecMentor} */
-    this.mentor = this.mentor;
-  }
+  @property({attribute: false})
+  mentor!: SpecMentor;
 
   render() {
     return html`
@@ -36,8 +30,3 @@ export class ChromedashReportSpecMentor extends LitElement {
     `;
   }
 }
-
-customElements.define(
-  'chromedash-report-spec-mentor',
-  ChromedashReportSpecMentor
-);

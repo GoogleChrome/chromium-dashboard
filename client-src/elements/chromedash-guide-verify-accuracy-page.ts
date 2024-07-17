@@ -1,10 +1,11 @@
-import {LitElement, css, html} from 'lit';
+import {LitElement, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
 import {
   getStageValue,
   flattenSections,
   formatFeatureChanges,
   showToastMessage,
+  FieldInfo,
 } from './utils.js';
 import './chromedash-form-field';
 import './chromedash-form-table';
@@ -19,32 +20,27 @@ import {STAGE_SHORT_NAMES, STAGE_SPECIFIC_FIELDS} from './form-field-enums.js';
 import {ALL_FIELDS} from './form-field-specs';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
+import {property, state} from 'lit/decorators.js';
+import {Feature} from '../js-src/cs-client.js';
 
 export class ChromedashGuideVerifyAccuracyPage extends LitElement {
   static get styles() {
     return [...SHARED_STYLES, ...FORM_STYLES, css``];
   }
-
-  static get properties() {
-    return {
-      featureId: {type: Number},
-      feature: {type: Object},
-      fieldValues: {type: Array},
-      loading: {type: Boolean},
-      appTitle: {type: String},
-    };
-  }
-
-  constructor() {
-    super();
-    this.featureId = 0;
-    this.feature = {};
-    this.fieldValues = [];
-    this.loading = true;
-    this.appTitle = '';
-    this.previousStageTypeRendered = 0;
-    this.sameTypeRendered = 0;
-  }
+  @property({attribute: false})
+  featureId = 0;
+  @property({type: String})
+  appTitle = '';
+  @state()
+  feature = {} as Feature;
+  @state()
+  fieldValues: FieldInfo[] & {feature?: Feature} = [];
+  @state()
+  loading = true;
+  @state()
+  previousStageTypeRendered = 0;
+  @state()
+  sameTypeRendered = 0;
 
   connectedCallback() {
     super.connectedCallback();
@@ -80,8 +76,10 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
     if (!el) return;
 
     await el.updateComplete;
-    const hiddenTokenField = this.shadowRoot.querySelector('input[name=token]');
-    hiddenTokenField.form.addEventListener('submit', event => {
+    const hiddenTokenField = this.renderRoot.querySelector(
+      'input[name=token]'
+    ) as HTMLInputElement;
+    hiddenTokenField.form?.addEventListener('submit', event => {
       this.handleFormSubmit(event, hiddenTokenField);
     });
   }
@@ -95,7 +93,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
       .ensureTokenIsValid()
       .then(() => {
         hiddenTokenField.value = window.csClient.token;
-        return csClient.updateFeature(submitBody);
+        return window.csClient.updateFeature(submitBody);
       })
       .then(() => {
         window.location.href = `/feature/${this.featureId}`;
@@ -305,7 +303,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
   }
 
   getAllStageIds() {
-    const stageIds = [];
+    const stageIds: number[] = [];
     this.feature.stages.forEach(feStage => {
       stageIds.push(feStage.id);
       // Check if any trial extension exist, and collect their IDs as well.

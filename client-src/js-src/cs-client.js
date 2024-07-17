@@ -284,6 +284,19 @@
  */
 
 /**
+ * @typedef {Object} ReleaseInfo
+ * @property {number} version
+ * @property {string} [earliest_beta] (optional).
+ * @property {string} [mstone] (optional).
+ * @property {string | null} [stable_date] (optional).
+ * @property {string | null} [latest_beta] - The latest beta release date (optional).
+ */
+
+/**
+ * @typedef {Object.<string, ReleaseInfo>} Channels
+ */
+
+/**
  * Generic Chrome Status Http Error.
  */
 class ChromeStatusHttpError extends Error {

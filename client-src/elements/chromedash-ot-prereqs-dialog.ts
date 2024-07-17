@@ -1,7 +1,8 @@
 import {LitElement, css, html} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import {INTENT_STAGES} from './form-field-enums.js';
 import {showToastMessage} from './utils.js';
+import {customElement, property} from 'lit/decorators.js';
+import {StageDict} from '../js-src/cs-client.js';
 
 let dialogEl;
 let currentFeatureId;
@@ -67,23 +68,16 @@ export async function openFinalizeExtensionDialog(
   dialogEl.show();
 }
 
+@customElement('chromedash-ot-prereqs-dialog')
 class ChromedashOTPrereqsDialog extends LitElement {
-  static get properties() {
-    return {
-      featureId: {type: Number},
-      stage: {type: Object},
-      milestone: {type: Number},
-      dialogType: {type: Number},
-    };
-  }
-
-  constructor() {
-    super();
-    this.featureId = 0;
-    this.stage = {};
-    this.milestone = 0;
-    this.dialogType = 0;
-  }
+  @property({type: Number})
+  featureId = 0;
+  @property({attribute: false})
+  stage!: StageDict;
+  @property({type: Number})
+  milestone = 0;
+  @property({type: Number})
+  dialogType = 0;
 
   static get styles() {
     return [
@@ -108,7 +102,7 @@ class ChromedashOTPrereqsDialog extends LitElement {
   }
 
   show() {
-    this.shadowRoot.querySelector('sl-dialog').show();
+    this.renderRoot.querySelector('sl-dialog')?.show();
   }
 
   renderEndMilestoneExplanationDialog() {
@@ -177,7 +171,7 @@ class ChromedashOTPrereqsDialog extends LitElement {
         size="small"
         @click=${() =>
           location.assign(
-            `/guide/stage/${this.featureId}/${INTENT_STAGES.INTENT_EXTEND_ORIGIN_TRIAL[0]}/${this.stage.id}`
+            `/guide/stage/${this.featureId}/${this.stage.id}?updateExtension`
           )}
         >Change milestone</sl-button
       >
@@ -298,8 +292,3 @@ class ChromedashOTPrereqsDialog extends LitElement {
     return this.renderCreationPrereqs();
   }
 }
-
-customElements.define(
-  'chromedash-ot-prereqs-dialog',
-  ChromedashOTPrereqsDialog
-);

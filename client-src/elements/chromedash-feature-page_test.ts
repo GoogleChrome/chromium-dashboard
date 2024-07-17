@@ -3,7 +3,9 @@ import {html} from 'lit';
 import sinon from 'sinon';
 import {ChromeStatusClient, FeatureNotFoundError} from '../js-src/cs-client';
 import {ChromedashFeaturePage} from './chromedash-feature-page';
+import {ChromedashLink} from './chromedash-link';
 import './chromedash-toast';
+import {ChromedashVendorViews} from './chromedash-vendor-views';
 
 describe('chromedash-feature-page', () => {
   const user = {
@@ -104,16 +106,12 @@ describe('chromedash-feature-page', () => {
     ],
   });
 
-  /**
-   * @param {HTMLElement} parentEl
-   * @param {object} options
-   * @param {string} options.href
-   * @param {string} options.text
-   * @returns {Promise<void>}
-   */
-  async function assertClickableVendorLink(parentEl, {href, text}) {
+  async function assertClickableVendorLink(
+    parentEl: HTMLElement,
+    {href, text}: {href: string; text: string}
+  ): Promise<void> {
     // Select chromedash-vendor-views element
-    const vendorViewsEl = parentEl.querySelector(
+    const vendorViewsEl: ChromedashVendorViews | null = parentEl.querySelector(
       `chromedash-vendor-views[href="${href}"]`
     );
     assert.exists(vendorViewsEl);
@@ -122,7 +120,8 @@ describe('chromedash-feature-page', () => {
 
     // Select the chromedash-link
     await vendorViewsEl.updateComplete;
-    const link = vendorViewsEl.shadowRoot.querySelector('chromedash-link');
+    const link: ChromedashLink | null =
+      vendorViewsEl.renderRoot.querySelector('chromedash-link');
     assert.exists(link);
 
     // Check if the link's 'href' attribute matches the expected URL
@@ -173,9 +172,9 @@ describe('chromedash-feature-page', () => {
 
     // invalid feature requests would trigger the toast to show message
     const toastEl = document.querySelector('chromedash-toast');
-    const toastMsgSpan = toastEl.shadowRoot.querySelector('span#msg');
+    const toastMsgSpan = toastEl?.shadowRoot?.querySelector('span#msg');
     assert.include(
-      toastMsgSpan.innerHTML,
+      toastMsgSpan?.innerHTML,
       'Some errors occurred. Please refresh the page or try again later.'
     );
   });
@@ -195,7 +194,7 @@ describe('chromedash-feature-page', () => {
     // If a request for a feature returns stating that it is not found, it
     // should show a simple message about that.
     const expectedMsg = 'Feature not found.';
-    assert.include(component.shadowRoot.innerHTML, expectedMsg);
+    assert.include(component.shadowRoot?.innerHTML, expectedMsg);
   });
 
   it('renders with fake data', async () => {
@@ -213,14 +212,14 @@ describe('chromedash-feature-page', () => {
     );
     assert.exists(component);
 
-    const subheaderDiv = component.shadowRoot.querySelector('div#subheader');
+    const subheaderDiv = component.shadowRoot?.querySelector('div#subheader');
     assert.exists(subheaderDiv);
     // crbug link is clickable
     assert.include(subheaderDiv.innerHTML, 'href="fake crbug link"');
     // star icon is rendered and the feature is starred
     assert.include(subheaderDiv.innerHTML, 'icon="chromestatus:star"');
 
-    const breadcrumbsH2 = component.shadowRoot.querySelector('h2#breadcrumbs');
+    const breadcrumbsH2 = component.shadowRoot?.querySelector('h2#breadcrumbs');
     assert.exists(breadcrumbsH2);
     // feature name is rendered
     assert.include(breadcrumbsH2.innerHTML, 'feature one');
@@ -229,24 +228,24 @@ describe('chromedash-feature-page', () => {
     // feature link is clickable
     assert.include(breadcrumbsH2.innerHTML, 'href="/feature/123456');
 
-    const highlightsElement = component.shadowRoot.querySelector(
+    const highlightsElement = component.shadowRoot?.querySelector(
       'chromedash-feature-highlights'
     );
     assert.exists(highlightsElement);
     const summarySection =
-      highlightsElement.shadowRoot.querySelector('section#summary');
+      highlightsElement.shadowRoot?.querySelector('section#summary');
     assert.exists(summarySection);
     // feature summary is rendered
     assert.include(summarySection.innerHTML, 'detailed sum');
 
     const sampleSection =
-      highlightsElement.shadowRoot.querySelector('section#demo');
+      highlightsElement.shadowRoot?.querySelector('section#demo');
     assert.exists(sampleSection);
     // sample links are clickable
     assert.include(sampleSection.innerHTML, 'href="fake sample link one"');
     assert.include(sampleSection.innerHTML, 'href="fake sample link two"');
 
-    const docSection = highlightsElement.shadowRoot.querySelector(
+    const docSection = highlightsElement.shadowRoot?.querySelector(
       'section#documentation'
     );
     assert.exists(docSection);
@@ -254,15 +253,16 @@ describe('chromedash-feature-page', () => {
     assert.include(docSection.innerHTML, 'href="fake doc link one"');
     assert.include(docSection.innerHTML, 'href="fake doc link two"');
 
-    const specSection = highlightsElement.shadowRoot.querySelector(
+    const specSection = highlightsElement.shadowRoot?.querySelector(
       'section#specification'
     );
     assert.exists(specSection);
     // spec link is clickable
     assert.include(specSection.innerHTML, 'href="fake spec link"');
 
-    const consensusSection =
-      highlightsElement.shadowRoot.querySelector('section#consensus');
+    const consensusSection = highlightsElement.shadowRoot?.querySelector(
+      'section#consensus'
+    ) as HTMLElement;
     assert.exists(consensusSection);
     // FF and Safari views are present and clickable.
     await assertClickableVendorLink(consensusSection, {
@@ -276,7 +276,7 @@ describe('chromedash-feature-page', () => {
     assert.include(consensusSection.innerHTML, 'fake webdev view text');
 
     const tagSection =
-      highlightsElement.shadowRoot.querySelector('section#tags');
+      highlightsElement.shadowRoot?.querySelector('section#tags');
     assert.exists(tagSection);
     // feature tag link is clickable
     assert.include(tagSection.innerHTML, 'href="/features#tags:tag_one"');
@@ -285,7 +285,7 @@ describe('chromedash-feature-page', () => {
   it('omits absent vendor views', async () => {
     const featureId = 123456;
     const contextLink = '/features';
-    const features = structuredClone(await validFeaturePromise);
+    const features: any = structuredClone(await validFeaturePromise);
     delete features.browsers.ff.view.val;
     delete features.browsers.safari.view.val;
     window.csClient.getFeature
@@ -302,12 +302,12 @@ describe('chromedash-feature-page', () => {
     );
     assert.exists(component);
 
-    const highlightsElement = component.shadowRoot.querySelector(
+    const highlightsElement = component.shadowRoot?.querySelector(
       'chromedash-feature-highlights'
     );
     assert.exists(highlightsElement);
     const consensusSection =
-      highlightsElement.shadowRoot.querySelector('section#consensus');
+      highlightsElement.shadowRoot?.querySelector('section#consensus');
     assert.exists(consensusSection);
     // Views are omitted based on an empty 'val' field.
     assert.notInclude(consensusSection.innerHTML, '<chromedash-vendor-views');

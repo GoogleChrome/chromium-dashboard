@@ -1,19 +1,22 @@
-import {LitElement, css, html, nothing} from 'lit';
+import {LitElement, css, html} from 'lit';
+import {property, state} from 'lit/decorators.js';
 import {ref} from 'lit/directives/ref.js';
-import {
-  extensionMilestoneIsValid,
-  formatFeatureChanges,
-  showToastMessage,
-  setupScrollToHash,
-} from './utils.js';
-import './chromedash-form-table.js';
+import {FORM_STYLES} from '../css/forms-css.js';
+import {SHARED_STYLES} from '../css/shared-css.js';
+import {Feature, StageDict} from '../js-src/cs-client.js';
 import './chromedash-form-field.js';
-import {openInfoDialog, dialogTypes} from './chromedash-ot-prereqs-dialog';
+import './chromedash-form-table.js';
+import {dialogTypes, openInfoDialog} from './chromedash-ot-prereqs-dialog';
 import {ORIGIN_TRIAL_EXTENSION_FIELDS} from './form-definition.js';
 import {OT_EXTENSION_STAGE_MAPPING} from './form-field-enums.js';
 import {ALL_FIELDS} from './form-field-specs';
-import {SHARED_STYLES} from '../css/shared-css.js';
-import {FORM_STYLES} from '../css/forms-css.js';
+import {
+  FieldInfo,
+  extensionMilestoneIsValid,
+  formatFeatureChanges,
+  setupScrollToHash,
+  showToastMessage,
+} from './utils.js';
 
 export class ChromedashOTExtensionPage extends LitElement {
   static get styles() {
@@ -37,17 +40,26 @@ export class ChromedashOTExtensionPage extends LitElement {
     };
   }
 
-  constructor() {
-    super();
-    this.stageId = 0;
-    this.featureId = 0;
-    this.feature = {};
-    this.loading = true;
-    this.appTitle = '';
-    this.fieldValues = [];
-    this.currentMilestone = 123;
-    this.endMilestoneDateValues = {};
-  }
+  @property({type: Number})
+  stageId = 0;
+  @property({type: Number})
+  featureId = 0;
+  @property({type: String})
+  userEmail!: string;
+  @property({type: String})
+  appTitle = '';
+  @state()
+  feature!: Feature;
+  @state()
+  loading = true;
+  @state()
+  fieldValues: FieldInfo[] & {feature?: Feature} = [];
+  @state()
+  currentMilestone = 123;
+  @state()
+  endMilestoneDateValues: Record<string, string> = {};
+  @state()
+  stage!: StageDict;
 
   connectedCallback() {
     super.connectedCallback();
@@ -79,18 +91,25 @@ export class ChromedashOTExtensionPage extends LitElement {
 
   // Display the date the origin trial will end to the user after a milestone is chosen.
   updateMilestoneDate(milestone) {
-    const milestoneDiv = this.shadowRoot.querySelector('#milestone-date');
-    const milestoneTextEl = this.shadowRoot.querySelector(
-      '#milestone-date-text'
-    );
+    const milestoneDiv: HTMLElement | null =
+      this.renderRoot.querySelector('#milestone-date');
+    const milestoneTextEl: HTMLTextAreaElement | null =
+      this.renderRoot.querySelector('#milestone-date-text');
     const date = new Date(this.endMilestoneDateValues[milestone]);
+    if (!milestoneDiv || !milestoneTextEl) {
+      return;
+    }
     milestoneDiv.style.display = 'block';
     milestoneTextEl.innerHTML = `For milestone ${milestone}, this trial will end on ${date.toLocaleDateString()}.`;
   }
 
   // Obtain the date the origin trial will end based on the given milestone.
   async getChromeScheduleDate(milestone) {
-    const milestoneDiv = this.shadowRoot.querySelector('#milestone-date');
+    const milestoneDiv: HTMLElement | null =
+      this.renderRoot.querySelector('#milestone-date');
+    if (!milestoneDiv) {
+      return;
+    }
     milestoneDiv.style.display = 'none';
     // Don't try to obtain a date if the milestone is not valid.
     if (!extensionMilestoneIsValid(milestone, this.currentMilestone)) {
@@ -150,10 +169,10 @@ export class ChromedashOTExtensionPage extends LitElement {
     /* Add the form's event listener after Shoelace event listeners are attached
      * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
     await el.updateComplete;
-    const submitButton = this.shadowRoot.querySelector(
+    const submitButton: HTMLInputElement | null = this.renderRoot.querySelector(
       'input[id=submit-button]'
     );
-    submitButton.form.addEventListener('submit', event => {
+    submitButton?.form?.addEventListener('submit', event => {
       this.handleFormSubmit(event);
     });
 
@@ -288,7 +307,7 @@ export class ChromedashOTExtensionPage extends LitElement {
       });
 
       // Add the extra elements to display milestone date information.
-      let milestoneInfoText = nothing;
+      let milestoneInfoText = html``;
       if (featureJSONKey === 'ot_extension__milestone_desktop_last') {
         milestoneInfoText = html` <div
           id="milestone-date"
