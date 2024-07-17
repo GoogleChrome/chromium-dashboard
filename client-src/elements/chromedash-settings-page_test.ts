@@ -31,9 +31,9 @@ describe('chromedash-settings-page', () => {
 
     // error response would trigger the toast to show message
     const toastEl = document.querySelector('chromedash-toast');
-    const toastMsgSpan = toastEl.shadowRoot.querySelector('span#msg');
+    const toastMsgSpan = toastEl?.shadowRoot?.querySelector('span#msg');
     assert.include(
-      toastMsgSpan.innerHTML,
+      toastMsgSpan?.innerHTML,
       'Some errors occurred. Please refresh the page or try again later.'
     );
   });
@@ -49,17 +49,17 @@ describe('chromedash-settings-page', () => {
     assert.instanceOf(component, ChromedashSettingsPage);
 
     // header exists
-    const subheaderDiv = component.shadowRoot.querySelector('div#subheader');
+    const subheaderDiv = component.renderRoot.querySelector('div#subheader');
     assert.exists(subheaderDiv);
     assert.include(subheaderDiv.innerHTML, 'User preferences');
 
     // form exists and has a submit button
-    const formEl = component.shadowRoot.querySelector('form');
+    const formEl = component.renderRoot.querySelector('form');
     assert.exists(formEl);
     assert.include(formEl.innerHTML, 'input type="submit"');
 
     // checkbox exists and is checked
-    const checkboxEl = component.shadowRoot.querySelector('sl-checkbox');
+    const checkboxEl = component.renderRoot.querySelector('sl-checkbox');
     assert.exists(checkboxEl);
     assert.include(checkboxEl.outerHTML, 'checked');
   });
@@ -75,17 +75,17 @@ describe('chromedash-settings-page', () => {
     assert.instanceOf(component, ChromedashSettingsPage);
 
     // header exists
-    const subheaderDiv = component.shadowRoot.querySelector('div#subheader');
+    const subheaderDiv = component.renderRoot.querySelector('div#subheader');
     assert.exists(subheaderDiv);
     assert.include(subheaderDiv.innerHTML, 'User preferences');
 
     // form exists and has a submit button
-    const formEl = component.shadowRoot.querySelector('form');
+    const formEl = component.renderRoot.querySelector('form');
     assert.exists(formEl);
     assert.include(formEl.innerHTML, 'input type="submit"');
 
     // checkbox exists and is not checked
-    const checkboxEl = component.shadowRoot.querySelector('sl-checkbox');
+    const checkboxEl = component.renderRoot.querySelector('sl-checkbox');
     assert.exists(checkboxEl);
     assert.notInclude(checkboxEl.outerHTML, 'checked');
   });
