@@ -93,18 +93,18 @@ class IntentsAPITest(testing_config.CustomTestCase):
         self.handler.do_get(feature_id=self.feature_1_id,
                             stage_id=self.ot_stage_1.key.integer_id())
 
-  def test_post__bad_feature_id(self):
+  def test_get__bad_feature_id(self):
     """404 returned when feature is not found."""
-    testing_config.sign_in('some_other_user@example.com', 1234567890)
+    testing_config.sign_in('owner@example.com', 1234567890)
     request_path = f'features/-1/{self.ot_stage_1.key.integer_id()}/intent'
     with test_app.test_request_context(request_path, method='GET'):
       with self.assertRaises(werkzeug.exceptions.NotFound):
         self.handler.do_post(feature_id=-1,
                             stage_id=self.ot_stage_1.key.integer_id())
 
-  def test_post__bad_stage_id(self):
+  def test_get__bad_stage_id(self):
     """404 returned when stage is not found."""
-    testing_config.sign_in('some_other_user@example.com', 1234567890)
+    testing_config.sign_in('owner@example.com', 1234567890)
     request_path = f'features/{self.feature_1_id}/-1/intent'
     with test_app.test_request_context(request_path, method='GET'):
       with self.assertRaises(werkzeug.exceptions.NotFound):
@@ -220,7 +220,7 @@ class IntentsAPITest(testing_config.CustomTestCase):
 
   def test_post__bad_feature_id(self):
     """404 returned when feature is not found."""
-    testing_config.sign_in('some_other_user@example.com', 1234567890)
+    testing_config.sign_in('owner@example.com', 1234567890)
     request_path = f'features/-1/{self.ot_stage_1.key.integer_id()}/intent'
     with test_app.test_request_context(request_path, method='POST', json={}):
       with self.assertRaises(werkzeug.exceptions.NotFound):
@@ -229,7 +229,7 @@ class IntentsAPITest(testing_config.CustomTestCase):
 
   def test_post__bad_stage_id(self):
     """404 returned when stage is not found."""
-    testing_config.sign_in('some_other_user@example.com', 1234567890)
+    testing_config.sign_in('owner@example.com', 1234567890)
     request_path = f'features/{self.feature_1_id}/-1/intent'
     with test_app.test_request_context(request_path, method='POST', json={}):
       with self.assertRaises(werkzeug.exceptions.NotFound):
