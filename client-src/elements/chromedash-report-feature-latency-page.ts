@@ -1,9 +1,13 @@
 // @ts-check
 import {Task} from '@lit/task';
 import '@shoelace-style/shoelace';
+import {DefaultApiInterface, FeatureLatency} from 'chromestatus-openapi';
 import {LitElement, css, html} from 'lit';
+import {customElement, property, state} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import {RawQuery} from './utils.js';
 
+@customElement('chromedash-report-feature-latency-page')
 export class ChromedashReportFeatureLatencyPage extends LitElement {
   static get styles() {
     return [
@@ -40,30 +44,27 @@ export class ChromedashReportFeatureLatencyPage extends LitElement {
     };
   }
 
-  /** @type {Record<string, string>} */
-  rawQuery = {};
-
-  /** @type {import('chromestatus-openapi').DefaultApiInterface} */
-  _client;
-
-  constructor() {
-    super();
-    // Default to entire year 2023.
-    this.startAtDate = new Date('January 1, 2023');
-    this.endAtDate = new Date('January 1, 2024');
-    // @ts-ignore
-    this._client = window.csOpenApiClient;
-    this._latencyTask = new Task(this, {
-      task: async ([startAt, endAt], {signal}) => {
-        this.latencyList = await this._client.listFeatureLatency(
-          {startAt, endAt},
-          {signal}
-        );
-        return this.latencyList;
-      },
-      args: () => [this.startAtDate, this.endAtDate],
-    });
-  }
+  @property({type: Object})
+  rawQuery: RawQuery = {};
+  @property({attribute: false})
+  private _client: DefaultApiInterface = window.csOpenApiClient;
+  @property({attribute: false})
+  latencyList: FeatureLatency[] = [];
+  @property({attribute: false})
+  private _latencyTask = new Task(this, {
+    task: async ([startAt, endAt], {signal}) => {
+      this.latencyList = await this._client.listFeatureLatency(
+        {startAt, endAt},
+        {signal}
+      );
+      return this.latencyList;
+    },
+    args: () => [this.startAtDate, this.endAtDate],
+  });
+  @state() // Default to entire year 2023.
+  startAtDate = new Date('January 1, 2023');
+  @state()
+  endAtDate = new Date('January 1, 2024');
 
   connectedCallback() {
     super.connectedCallback();
@@ -75,13 +76,13 @@ export class ChromedashReportFeatureLatencyPage extends LitElement {
       return;
     }
 
-    if (this.rawQuery.hasOwnProperty('startAt')) {
+    if (this.rawQuery['startAt']) {
       const parsed = Date.parse(this.rawQuery['startAt']);
       if (!isNaN(parsed)) {
         this.startAtDate = new Date(parsed);
       }
     }
-    if (this.rawQuery.hasOwnProperty('endAt')) {
+    if (this.rawQuery['endAt']) {
       const parsed = Date.parse(this.rawQuery['endAt']);
       if (!isNaN(parsed)) {
         this.endAtDate = new Date(parsed);
@@ -156,8 +157,3 @@ export class ChromedashReportFeatureLatencyPage extends LitElement {
     });
   }
 }
-
-customElements.define(
-  'chromedash-report-feature-latency-page',
-  ChromedashReportFeatureLatencyPage
-);

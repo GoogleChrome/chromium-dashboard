@@ -49,11 +49,11 @@ describe('chromedash-myfeatures-page', () => {
     assert.exists(component);
     assert.instanceOf(component, ChromedashMyFeaturesPage);
 
-    const subheaderDiv = component.shadowRoot.querySelector('div#subheader');
+    const subheaderDiv = component.renderRoot.querySelector('div#subheader');
     assert.exists(subheaderDiv);
     assert.include(subheaderDiv.innerHTML, 'My features');
 
-    const slDetails = component.shadowRoot.querySelectorAll('sl-details');
+    const slDetails = component.renderRoot.querySelectorAll('sl-details');
     slDetails.forEach(item => {
       const itemHTML = item.outerHTML;
       if (itemHTML.includes('summary="Features I can edit"'))
@@ -97,11 +97,11 @@ describe('chromedash-myfeatures-page', () => {
     assert.exists(component);
     assert.instanceOf(component, ChromedashMyFeaturesPage);
 
-    const subheaderDiv = component.shadowRoot.querySelector('div#subheader');
+    const subheaderDiv = component.renderRoot.querySelector('div#subheader');
     assert.exists(subheaderDiv);
     assert.include(subheaderDiv.innerHTML, 'My features');
 
-    const slDetails = component.shadowRoot.querySelectorAll('sl-details');
+    const slDetails = component.renderRoot.querySelectorAll('sl-details');
     slDetails.forEach(item => {
       const itemHTML = item.outerHTML;
       if (itemHTML.includes('summary="Features I can edit'))

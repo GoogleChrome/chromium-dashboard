@@ -116,9 +116,9 @@ describe('chromedash-guide-stage-page', () => {
 
     // invalid feature requests would trigger the toast to show message
     const toastEl = document.querySelector('chromedash-toast');
-    const toastMsgSpan = toastEl.shadowRoot.querySelector('span#msg');
+    const toastMsgSpan = toastEl?.shadowRoot?.querySelector('span#msg');
     assert.include(
-      toastMsgSpan.innerHTML,
+      toastMsgSpan?.innerHTML,
       'Some errors occurred. Please refresh the page or try again later.'
     );
   });
@@ -143,14 +143,14 @@ describe('chromedash-guide-stage-page', () => {
     assert.exists(component);
     assert.instanceOf(component, ChromedashGuideStagePage);
 
-    const subheaderDiv = component.shadowRoot.querySelector('div#subheader');
+    const subheaderDiv = component.renderRoot.querySelector('div#subheader');
     assert.exists(subheaderDiv);
     // subheader title is correct and clickable
     assert.include(subheaderDiv.innerHTML, 'href="/feature/123456"');
     assert.include(subheaderDiv.innerHTML, 'Edit feature:');
 
     // feature form, hidden token field, and submit/cancel buttons exist
-    const form = component.shadowRoot.querySelector(
+    const form = component.renderRoot.querySelector(
       'form[name="feature_form"]'
     );
     assert.exists(form);
