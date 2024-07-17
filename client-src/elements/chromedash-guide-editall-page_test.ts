@@ -1,9 +1,9 @@
-import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
+import {html} from 'lit';
+import sinon from 'sinon';
+import {ChromeStatusClient} from '../js-src/cs-client';
 import {ChromedashGuideEditallPage} from './chromedash-guide-editall-page';
 import './chromedash-toast';
-import {ChromeStatusClient} from '../js-src/cs-client';
-import sinon from 'sinon';
 
 describe('chromedash-guide-editall-page', () => {
   const validFeaturePromise = Promise.resolve({
@@ -102,9 +102,9 @@ describe('chromedash-guide-editall-page', () => {
 
     // invalid feature requests would trigger the toast to show message
     const toastEl = document.querySelector('chromedash-toast');
-    const toastMsgSpan = toastEl.shadowRoot.querySelector('span#msg');
+    const toastMsgSpan = toastEl?.shadowRoot?.querySelector('span#msg');
     assert.include(
-      toastMsgSpan.innerHTML,
+      toastMsgSpan?.innerHTML,
       'Some errors occurred. Please refresh the page or try again later.'
     );
   });
@@ -120,21 +120,21 @@ describe('chromedash-guide-editall-page', () => {
     assert.exists(component);
     assert.instanceOf(component, ChromedashGuideEditallPage);
 
-    const subheaderDiv = component.shadowRoot.querySelector('div#subheader');
+    const subheaderDiv = component.renderRoot.querySelector('div#subheader');
     assert.exists(subheaderDiv);
     // subheader title is correct and clickable
     assert.include(subheaderDiv.innerHTML, 'href="/feature/123456"');
     assert.include(subheaderDiv.innerHTML, 'Edit feature:');
 
     // feature form, hidden token field, and submit/cancel buttons exist
-    const featureForm = component.shadowRoot.querySelector(
+    const featureForm = component.renderRoot.querySelector(
       'form[name="feature_form"]'
     );
     assert.exists(featureForm);
     assert.include(featureForm.innerHTML, '<input type="hidden" name="token">');
     assert.include(featureForm.innerHTML, '<section class="final_buttons">');
 
-    const formTable = component.shadowRoot.querySelector(
+    const formTable = component.renderRoot.querySelector(
       'chromedash-form-table'
     );
     assert.exists(formTable);
@@ -157,7 +157,7 @@ describe('chromedash-guide-editall-page', () => {
 
     // There are two shipping stage types, but 'tag_review_status' is not a stage-specific field,
     // so only one field should display and it should not display for the second stage.
-    const measurementFields = component.shadowRoot.querySelectorAll(
+    const measurementFields = component.renderRoot.querySelectorAll(
       'sl-select[name="tag_review_status"]'
     );
     assert.exists(measurementFields);

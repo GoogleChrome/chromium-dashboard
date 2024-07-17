@@ -1,4 +1,4 @@
-import {LitElement, css, html, nothing} from 'lit';
+import {LitElement, TemplateResult, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
 import {repeat} from 'lit/directives/repeat.js';
 import {
@@ -9,6 +9,7 @@ import {
   setupScrollToHash,
   shouldShowDisplayNameField,
   renderHTMLIf,
+  FieldInfo,
 } from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
@@ -28,7 +29,16 @@ import {
 } from './form-field-enums.js';
 import {ALL_FIELDS} from './form-field-specs';
 import {openAddStageDialog} from './chromedash-add-stage-dialog';
+import {customElement, property, state} from 'lit/decorators.js';
+import {Feature} from '../js-src/cs-client.js';
+import {ifDefined} from 'lit/directives/if-defined.js';
 
+interface FormToRender {
+  id: number;
+  item: typeof nothing | TemplateResult;
+}
+
+@customElement('chromedash-guide-editall-page')
 export class ChromedashGuideEditallPage extends LitElement {
   static get styles() {
     return [
@@ -44,29 +54,22 @@ export class ChromedashGuideEditallPage extends LitElement {
       `,
     ];
   }
-
-  static get properties() {
-    return {
-      featureId: {type: Number},
-      feature: {type: Object},
-      loading: {type: Boolean},
-      appTitle: {type: String},
-      nextStageToCreateId: {type: Number},
-      fieldValues: {type: Array},
-    };
-  }
-
-  constructor() {
-    super();
-    this.featureId = 0;
-    this.feature = {};
-    this.loading = true;
-    this.appTitle = '';
-    this.previousStageTypeRendered = 0;
-    this.sameTypeRendered = 0;
-    this.nextStageToCreateId = 0;
-    this.fieldValues = [];
-  }
+  @property({attribute: false})
+  featureId = 0;
+  @property({type: String})
+  appTitle = '';
+  @property({type: Number})
+  nextStageToCreateId = 0;
+  @state()
+  feature!: Feature;
+  @state()
+  loading = true;
+  @state()
+  previousStageTypeRendered = 0;
+  @state()
+  sameTypeRendered = 0;
+  @state()
+  fieldValues: FieldInfo[] & {feature?: Feature} = [];
 
   connectedCallback() {
     super.connectedCallback();
@@ -101,8 +104,10 @@ export class ChromedashGuideEditallPage extends LitElement {
     if (!el) return;
     await el.updateComplete;
 
-    const hiddenTokenField = this.shadowRoot.querySelector('input[name=token]');
-    hiddenTokenField.form.addEventListener('submit', event => {
+    const hiddenTokenField = this.renderRoot.querySelector(
+      'input[name=token]'
+    ) as HTMLInputElement;
+    hiddenTokenField.form?.addEventListener('submit', event => {
       this.handleFormSubmit(event, hiddenTokenField);
     });
 
@@ -118,7 +123,7 @@ export class ChromedashGuideEditallPage extends LitElement {
       .ensureTokenIsValid()
       .then(() => {
         hiddenTokenField.value = window.csClient.token;
-        return csClient.updateFeature(submitBody);
+        return window.csClient.updateFeature(submitBody);
       })
       .then(() => {
         window.location.href = this.getNextPage();
@@ -280,7 +285,7 @@ export class ChromedashGuideEditallPage extends LitElement {
         <chromedash-form-field
           name=${field}
           index=${index}
-          stageId=${stageId}
+          stageId=${ifDefined(stageId)}
           value=${value}
           .fieldValues=${this.fieldValues}
           .feature=${formattedFeature}
@@ -333,7 +338,7 @@ export class ChromedashGuideEditallPage extends LitElement {
         ? FLAT_ENTERPRISE_METADATA_FIELDS
         : FLAT_METADATA_FIELDS
     );
-    const formsToRender = [
+    const formsToRender: (typeof nothing | FormToRender)[] = [
       this.renderStageSection(
         formattedFeature,
         FLAT_METADATA_FIELDS.name,
@@ -445,7 +450,10 @@ export class ChromedashGuideEditallPage extends LitElement {
     const formattedFeature = formatFeatureForEdit(this.feature);
     this.fieldValues.feature = this.feature;
 
-    const formsToRender = this.getForms(formattedFeature, this.feature.stages);
+    const formsToRender = this.getForms(
+      formattedFeature,
+      this.feature.stages
+    ) as FormToRender[];
     return html`
       <form name="feature_form">
         <input type="hidden" name="token" />
@@ -479,8 +487,3 @@ export class ChromedashGuideEditallPage extends LitElement {
     `;
   }
 }
-
-customElements.define(
-  'chromedash-guide-editall-page',
-  ChromedashGuideEditallPage
-);

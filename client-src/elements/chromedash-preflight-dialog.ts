@@ -3,18 +3,28 @@ import './chromedash-callout';
 import {GATE_TEAM_ORDER, GATE_FINISHED_REVIEW_STATES} from './form-field-enums';
 import {findFirstFeatureStage} from './utils';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import {customElement, state} from 'lit/decorators.js';
+import {Feature, StageDict} from '../js-src/cs-client';
+import {GateDict} from './chromedash-gate-chip';
+import {
+  Action,
+  Process,
+  ProcessStage,
+  ProgressItem,
+} from './chromedash-gate-column';
+import {Stage} from './chromedash-report-external-reviews-page';
 
 let preflightDialogEl;
 
 export async function openPreflightDialog(
-  feature,
-  progress,
-  process,
-  action,
-  stage,
-  feStage,
-  featureGates,
-  url
+  feature: Feature,
+  progress: ProgressItem,
+  process: Process,
+  action: Action,
+  stage: StageDict,
+  feStage: StageDict,
+  featureGates: GateDict[],
+  url: string
 ) {
   if (!preflightDialogEl) {
     preflightDialogEl = document.createElement('chromedash-preflight-dialog');
@@ -33,17 +43,17 @@ export async function openPreflightDialog(
   );
 }
 
-export function somePendingPrereqs(action, progress) {
+export function somePendingPrereqs(action: Action, progress: ProgressItem) {
   return action.prerequisites.some(
     itemName => !progress.hasOwnProperty(itemName)
   );
 }
 
-export function somePendingGates(featureGates, feStage) {
+export function somePendingGates(featureGates: GateDict[], feStage: StageDict) {
   return findPendingGates(featureGates, feStage).length > 0;
 }
 
-export function findPendingGates(featureGates, feStage) {
+export function findPendingGates(featureGates: GateDict[], feStage: StageDict) {
   const gatesForStage = featureGates.filter(g => g.stage_id == feStage.id);
   const otherGates = gatesForStage.filter(g => g.team_name != 'API Owners');
   const pendingGates = otherGates.filter(
@@ -57,31 +67,24 @@ export function findPendingGates(featureGates, feStage) {
   return pendingGates;
 }
 
+@customElement('chromedash-preflight-dialog')
 export class ChromedashPreflightDialog extends LitElement {
-  static get properties() {
-    return {
-      feature: {type: Object},
-      featureGates: {type: Array},
-      progress: {type: Object},
-      process: {type: Object},
-      action: {type: Object},
-      stage: {type: Object},
-      feStage: {type: Object},
-      progress: {type: Object},
-    };
-  }
-
-  constructor() {
-    super();
-    this.feature = null;
-    this.featureGates = null;
-    this.progress = null;
-    this.process = null;
-    this.action = null;
-    this.stage = null;
-    this.feStage = null;
-    this.progress = null;
-  }
+  @state()
+  private _feature!: Feature;
+  @state()
+  private _featureGates!: GateDict[];
+  @state()
+  private _progress!: ProgressItem;
+  @state()
+  private _process!: Process;
+  @state()
+  private _action!: Action;
+  @state()
+  private _stage!: StageDict;
+  @state()
+  private _feStage!: StageDict;
+  @state()
+  private _url!: string;
 
   static get styles() {
     return [
@@ -126,28 +129,28 @@ export class ChromedashPreflightDialog extends LitElement {
   }
 
   openWithContext(
-    feature,
-    progress,
-    process,
-    action,
-    stage,
-    feStage,
-    featureGates,
-    url
+    feature: Feature,
+    progress: ProgressItem,
+    process: Process,
+    action: Action,
+    stage: StageDict,
+    feStage: StageDict,
+    featureGates: GateDict[],
+    url: string
   ) {
-    this.feature = feature;
-    this.progress = progress;
-    this.process = process;
-    this.action = action;
-    this.stage = stage;
-    this.feStage = feStage;
-    this.featureGates = featureGates;
-    this.url = url;
-    this.shadowRoot.querySelector('sl-dialog').show();
+    this._feature = feature;
+    this._progress = progress;
+    this._process = process;
+    this._action = action;
+    this._stage = stage;
+    this._feStage = feStage;
+    this._featureGates = featureGates;
+    this._url = url;
+    this.renderRoot.querySelector('sl-dialog')?.show();
   }
 
   hide() {
-    this.shadowRoot.querySelector('sl-dialog').hide();
+    this.renderRoot.querySelector('sl-dialog')?.hide();
   }
 
   handleCancel() {
@@ -160,12 +163,12 @@ export class ChromedashPreflightDialog extends LitElement {
     this.hide();
   }
 
-  renderEditLink(stage, feStage, pi) {
+  renderEditLink(stage: ProcessStage, feStage: StageDict, pi: ProgressItem) {
     if (pi.field && stage && feStage) {
       return html`
         <a
           class="edit-progress-item"
-          href="/guide/stage/${this.feature
+          href="/guide/stage/${this._feature
             .id}/${stage.outgoing_stage}/${feStage.id}#id_${pi.field}"
           @click=${this.hide}
         >
@@ -177,7 +180,7 @@ export class ChromedashPreflightDialog extends LitElement {
   }
 
   makePrereqItem(itemName) {
-    for (const s of this.process.stages || []) {
+    for (const s of this._process.stages || []) {
       for (const pi of s.progress_items) {
         if (itemName == pi.name) {
           return {...pi, stage: s};
@@ -188,20 +191,20 @@ export class ChromedashPreflightDialog extends LitElement {
   }
 
   renderDialogContent() {
-    if (this.feature == null) {
+    if (this._feature == null) {
       return nothing;
     }
-    const prereqItems = [];
-    for (const itemName of this.action.prerequisites || []) {
-      if (!this.progress.hasOwnProperty(itemName)) {
+    const prereqItems: ProgressItem[] = [];
+    for (const itemName of this._action.prerequisites || []) {
+      if (!this._progress.hasOwnProperty(itemName)) {
         prereqItems.push(this.makePrereqItem(itemName));
       }
     }
-    const pendingGates = findPendingGates(this.featureGates, this.feStage);
+    const pendingGates = findPendingGates(this._featureGates, this._feStage);
 
     return html`
-      Before you ${this.action.name}, it is strongly recommended that you do the
-      following:
+      Before you ${this._action.name}, it is strongly recommended that you do
+      the following:
       <ol class="missing-prereqs-list">
         ${prereqItems.map(
           item =>
@@ -211,8 +214,8 @@ export class ChromedashPreflightDialog extends LitElement {
                 item.stage,
                 findFirstFeatureStage(
                   item.stage.outgoing_stage,
-                  this.stage,
-                  this.feature
+                  this._stage,
+                  this._feature
                 ),
                 item
               )}
@@ -223,7 +226,7 @@ export class ChromedashPreflightDialog extends LitElement {
             <li class="pending">
               Get approval or NA from the
               <a
-                href="/feature/${this.feature.id}?gate=${g.id}"
+                href="/feature/${this._feature.id}?gate=${g.id}"
                 @click=${this.hide}
                 >${g.team_name}</a
               >
@@ -234,7 +237,7 @@ export class ChromedashPreflightDialog extends LitElement {
       </ol>
 
       <sl-button
-        href="${this.url}"
+        href="${this._url}"
         target="_blank"
         size="small"
         @click=${this.handleProceed}
@@ -258,5 +261,3 @@ export class ChromedashPreflightDialog extends LitElement {
     `;
   }
 }
-
-customElements.define('chromedash-preflight-dialog', ChromedashPreflightDialog);

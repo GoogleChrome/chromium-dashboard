@@ -47,7 +47,7 @@ interface Section {
   implStatusValue?: number | null;
 }
 
-interface MetadataFields {
+export interface MetadataFields {
   name: string;
   sections: Section[];
 }

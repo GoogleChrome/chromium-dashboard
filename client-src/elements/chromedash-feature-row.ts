@@ -1,34 +1,35 @@
 import {LitElement, css, html, nothing} from 'lit';
+import {customElement, property} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import {Feature, StageDict} from '../js-src/cs-client.js';
 import {
+  GATE_ACTIVE_REVIEW_STATES,
   GATE_TEAM_ORDER,
   STAGE_SHORT_NAMES,
-  GATE_ACTIVE_REVIEW_STATES,
 } from './form-field-enums';
+import {GateDict} from './chromedash-gate-chip.js';
 
+interface ActiveStagesAndGates {
+  stage: StageDict;
+  gates: GateDict[]; // TODO(markxiong0122): Add Gate type when PR#4060 is merged.
+}
+
+@customElement('chromedash-feature-row')
 class ChromedashFeatureRow extends LitElement {
-  static get properties() {
-    return {
-      feature: {type: Object},
-      columns: {type: String},
-      signedIn: {type: Boolean},
-      canEdit: {type: Boolean},
-      starredFeatures: {type: Object},
-      approvals: {type: Object},
-      gates: {type: Object},
-      selectedGateId: {type: Number},
-    };
-  }
-
-  constructor() {
-    super();
-    this.starredFeatures = new Set();
-    this.feature = null;
-    this.canEdit = false;
-    this.approvals = {};
-    this.gates = {};
-    this.selectedGateId = 0;
-  }
+  @property({attribute: false})
+  feature!: Feature;
+  @property({type: String})
+  columns: undefined | 'approvals' = undefined;
+  @property({type: Boolean})
+  canEdit = false;
+  @property({type: Boolean})
+  signedIn = false;
+  @property({attribute: false})
+  starredFeatures = new Set<number>();
+  @property({attribute: false})
+  gates: Record<number, GateDict[]> = {};
+  @property({type: Number})
+  selectedGateId = 0;
 
   static get styles() {
     return [
@@ -139,10 +140,10 @@ class ChromedashFeatureRow extends LitElement {
   }
 
   getActiveStages(feature) {
-    const featureGates = this.gates[feature.id] || [];
+    const featureGates: GateDict[] = this.gates[feature.id] || [];
     const activeGates = featureGates.filter(g => this.isActiveGate(g));
     const activeStageIds = new Set(activeGates.map(g => g.stage_id));
-    const activeStagesAndTheirGates = [];
+    const activeStagesAndTheirGates: ActiveStagesAndGates[] = [];
     for (const stage of feature.stages) {
       if (activeStageIds.has(stage.id)) {
         activeStagesAndTheirGates.push({
@@ -227,5 +228,3 @@ class ChromedashFeatureRow extends LitElement {
     `;
   }
 }
-
-customElements.define('chromedash-feature-row', ChromedashFeatureRow);

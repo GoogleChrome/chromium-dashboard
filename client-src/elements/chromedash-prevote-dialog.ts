@@ -2,6 +2,8 @@ import {LitElement, css, html} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {findPendingGates} from './chromedash-preflight-dialog';
 import {VOTE_OPTIONS} from './form-field-enums';
+import {customElement, property} from 'lit/decorators.js';
+import {GateDict} from './chromedash-gate-chip.js';
 
 let prevoteDialogEl;
 
@@ -35,21 +37,14 @@ async function openPrevoteDialog(pendingGates, resolve) {
   prevoteDialogEl.show();
 }
 
+@customElement('chromedash-prevote-dialog')
 class ChromedashPrevoteDialog extends LitElement {
-  static get properties() {
-    return {
-      pendingGates: {type: Array},
-      resolve: {attribute: false},
-    };
-  }
-
-  constructor() {
-    super();
-    this.pendingGates = [];
-    this.resolve = function () {
-      console.log('Missing resolve action');
-    };
-  }
+  @property({type: Array})
+  pendingGates!: GateDict[];
+  @property({attribute: false})
+  resolve: (value?: string) => void = () => {
+    console.log('Missing resolve action');
+  };
 
   static get styles() {
     return [
@@ -72,11 +67,11 @@ class ChromedashPrevoteDialog extends LitElement {
   }
 
   show() {
-    this.shadowRoot.querySelector('sl-dialog').show();
+    this.renderRoot.querySelector('sl-dialog')?.show();
   }
 
   hide() {
-    this.shadowRoot.querySelector('sl-dialog').hide();
+    this.renderRoot.querySelector('sl-dialog')?.hide();
   }
 
   handleCancel() {
@@ -120,5 +115,3 @@ class ChromedashPrevoteDialog extends LitElement {
     </sl-dialog>`;
   }
 }
-
-customElements.define('chromedash-prevote-dialog', ChromedashPrevoteDialog);
