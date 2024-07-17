@@ -183,9 +183,9 @@ paths:
       responses:
         "200":
           content:
-            text/plain:
+            'application/json:':
               schema:
-                type: string
+                $ref: '#/components/schemas/GetIntentResponse'
           description: Intent draft body.
         "400":
           description: No feature or stage ID specified.
@@ -296,6 +296,18 @@ components:
         type: string
       style: form
   schemas:
+    GetIntentResponse:
+      example:
+        email_body: email_body
+        subject: subject
+      properties:
+        subject:
+          title: subject
+          type: string
+        email_body:
+          title: email_body
+          type: string
+      title: GetIntentResponse
     PostIntentRequest:
       example:
         intent_cc_emails:

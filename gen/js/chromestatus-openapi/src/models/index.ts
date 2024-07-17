@@ -7,6 +7,7 @@ export * from './ExternalReviewsResponse';
 export * from './FeatureLatency';
 export * from './FeatureLink';
 export * from './GateLatency';
+export * from './GetIntentResponse';
 export * from './LinkPreview';
 export * from './LinkPreviewBase';
 export * from './LinkPreviewGithubIssue';

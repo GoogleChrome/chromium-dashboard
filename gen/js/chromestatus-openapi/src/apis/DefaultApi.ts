@@ -19,6 +19,7 @@ import type {
   ComponentsUsersResponse,
   ExternalReviewsResponse,
   FeatureLatency,
+  GetIntentResponse,
   MessageResponse,
   PostIntentRequest,
   ReviewLatency,
@@ -33,6 +34,8 @@ import {
     ExternalReviewsResponseToJSON,
     FeatureLatencyFromJSON,
     FeatureLatencyToJSON,
+    GetIntentResponseFromJSON,
+    GetIntentResponseToJSON,
     MessageResponseFromJSON,
     MessageResponseToJSON,
     PostIntentRequestFromJSON,
@@ -112,12 +115,12 @@ export interface DefaultApiInterface {
      * @throws {RequiredError}
      * @memberof DefaultApiInterface
      */
-    getIntentBodyRaw(requestParameters: GetIntentBodyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<string>>;
+    getIntentBodyRaw(requestParameters: GetIntentBodyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetIntentResponse>>;
 
     /**
      * Get the HTML body of an intent draft
      */
-    getIntentBody(requestParameters: GetIntentBodyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<string>;
+    getIntentBody(requestParameters: GetIntentBodyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetIntentResponse>;
 
     /**
      * 
@@ -283,7 +286,7 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     /**
      * Get the HTML body of an intent draft
      */
-    async getIntentBodyRaw(requestParameters: GetIntentBodyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<string>> {
+    async getIntentBodyRaw(requestParameters: GetIntentBodyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetIntentResponse>> {
         if (requestParameters['featureId'] == null) {
             throw new runtime.RequiredError(
                 'featureId',
@@ -309,17 +312,13 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
             query: queryParameters,
         }, initOverrides);
 
-        if (this.isJsonMime(response.headers.get('content-type'))) {
-            return new runtime.JSONApiResponse<string>(response);
-        } else {
-            return new runtime.TextApiResponse(response) as any;
-        }
+        return new runtime.JSONApiResponse(response, (jsonValue) => GetIntentResponseFromJSON(jsonValue));
     }
 
     /**
      * Get the HTML body of an intent draft
      */
-    async getIntentBody(requestParameters: GetIntentBodyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<string> {
+    async getIntentBody(requestParameters: GetIntentBodyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetIntentResponse> {
         const response = await this.getIntentBodyRaw(requestParameters, initOverrides);
         return await response.value();
     }

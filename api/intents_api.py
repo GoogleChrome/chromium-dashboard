@@ -24,12 +24,12 @@ from framework import permissions
 from internals import processes
 from internals import stage_helpers
 from internals.core_enums import INTENT_STAGES_BY_STAGE_TYPE
-from internals.core_models import FeatureEntry, Stage
+from internals.core_models import FeatureEntry
 from internals.review_models import Gate
 from pages.intentpreview import compute_subject_prefix
 
 
-class IntentOptions(TypedDict):
+class IntentGenerationOptions(TypedDict):
   subject: str
   feature_id: int
   sections_to_show: list[str]
@@ -46,18 +46,13 @@ class IntentsAPI(basehandlers.APIHandler):
     feature_id = int(kwargs['feature_id'])
     # Check that feature ID is valid.
     if not feature_id:
-      self.abort(400, msg='No feature specified.')
-    feature: FeatureEntry|None = FeatureEntry.get_by_id(feature_id)
-    if feature is None:
-      self.abort(404, msg=f'Feature {feature_id} not found')
+      self.abort(400, msg='No feature specified')
+    feature: FeatureEntry = self.get_specified_feature(feature_id)
 
     # Check that stage ID is valid.
-    stage_id = int(kwargs['stage_id'])
-    if not stage_id:
-      self.abort(400, msg='No stage specified')
-    stage: Stage|None = Stage.get_by_id(stage_id)
-    if stage is None:
-      self.abort(404, msg=f'Stage {stage_id} not found')
+    stage = self.get_specified_stage()
+    if stage.feature_id != feature_id:
+      self.abort(400, msg='Stage does not belong to given feature')
 
     # Check that the user has feature edit permissions.
     redirect_resp = permissions.validate_feature_edit_permission(
@@ -78,25 +73,28 @@ class IntentsAPI(basehandlers.APIHandler):
       'default_url': default_url,
     }
 
-    return render_template('blink/intent_to_implement.html', **template_data)
+    return {
+      'subject': (f'{compute_subject_prefix(feature, intent_stage)}: '
+                  f'{feature.name}'),
+      'email_body': render_template(
+          'blink/intent_to_implement.html', **template_data)
+    }
 
   def do_post(self, **kwargs) -> Response|dict|MessageResponse:
     """Submit an intent email directly to blink-dev."""
-    feature_id = int(kwargs['feature_id'])
+    feature_id = int(kwargs.get('feature_id', 0))
     # Check that feature ID is valid.
     if not feature_id:
       self.abort(400, msg='No feature specified.')
-    feature: FeatureEntry|None = FeatureEntry.get_by_id(feature_id)
-    if feature is None:
-      self.abort(404, msg=f'Feature {feature_id} not found')
+    feature: FeatureEntry = self.get_specified_feature(feature_id)
 
     # Check that stage ID is valid.
-    stage_id = int(kwargs['stage_id'])
+    stage_id = int(kwargs.get('stage_id', 0))
     if not stage_id:
-      self.abort(400, msg='No stage specified')
-    stage: Stage|None = Stage.get_by_id(stage_id)
-    if stage is None:
-      self.abort(404, msg=f'Stage {stage_id} not found')
+      self.abort(400, msg='No stage specified.')
+    stage = self.get_specified_stage()
+    if stage.feature_id != feature_id:
+      self.abort(400, msg='Stage does not belong to given feature')
 
     # Check that the user has feature edit permissions.
     redirect_resp = permissions.validate_feature_edit_permission(
@@ -104,23 +102,23 @@ class IntentsAPI(basehandlers.APIHandler):
     if redirect_resp:
       return redirect_resp
 
-    body = PostIntentRequest(**self.request.get_json())
+    parsed_args = PostIntentRequest(**self.request.get_json())
     intent_stage = INTENT_STAGES_BY_STAGE_TYPE[stage.stage_type]
     default_url = (f'{self.request.scheme}://{self.request.host}'
                    f'/feature/{feature_id}')
 
     # Add gate to Chromestatus URL query string if it is found.
     gate: Gate|None = None
-    if body.gate_id:
-      gate = Gate.get_by_id(body.gate_id)
+    if parsed_args.gate_id:
+      gate = Gate.get_by_id(parsed_args.gate_id)
     if gate:
-      default_url += f'?gate={body.gate_id}'
+      default_url += f'?gate={parsed_args.gate_id}'
 
     subject = f'{compute_subject_prefix(feature, intent_stage)}: {feature.name}'
-    cc_emails = body.intent_cc_emails or []
+    cc_emails = parsed_args.intent_cc_emails or []
     # Make sure emails are not empty and are unique.
     cc_emails = sorted(list(set([email for email in cc_emails if email])))
-    params: IntentOptions = {
+    params: IntentGenerationOptions = {
       'subject': subject,
       'feature_id': feature_id,
       'sections_to_show': processes.INTENT_EMAIL_SECTIONS.get(

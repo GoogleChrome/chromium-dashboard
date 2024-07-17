@@ -167,9 +167,9 @@ paths:
         '200':
           description: Intent draft body.
           content:
-            text/plain:
+            application/json::
               schema:
-                type: string
+                $ref: '#/components/schemas/GetIntentResponse'
         '400':
           description: No feature or stage ID specified.
         '404':
@@ -250,6 +250,12 @@ components:
       in: header
       name: X-Xsrf-Token
   schemas:
+    GetIntentResponse:
+      properties:
+        subject:
+          type: string
+        email_body:
+          type: string
     PostIntentRequest:
       properties:
         gate_id:

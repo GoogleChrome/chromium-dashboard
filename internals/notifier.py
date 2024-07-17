@@ -884,7 +884,12 @@ class IntentToBlinkDevHandler(basehandlers.FlaskHandler):
     if not feature:
       self.abort(400, 'Feature not found.')
     json_data = self.get_json_param_dict()
-    send_emails([self.build_email(feature, json_data)])
+    email_data = self.build_email(feature, json_data)
+    logging.info('Submitting email task:\n'
+                 f'To: {email_data["to"]}\n'
+                 f'CC: {email_data["cc"]}\n'
+                 f'Subject: {email_data["subject"]}\n')
+    send_emails([email_data])
     return {'message': 'OK'}
 
   def build_email(self, feature: FeatureEntry, json_data: dict):
@@ -1182,8 +1187,8 @@ def send_emails(email_tasks):
       try:
         cloud_tasks_helpers.enqueue_task(
             '/tasks/outbound-email', task)
-      except Exception as e:
-        logging.exception(f'could not enqueue. {e}')
+      except e:
+        logging.exception('could not enqueue.')
     else:
       logging.info('Not enqueued because of settings.SEND_EMAIL')
 

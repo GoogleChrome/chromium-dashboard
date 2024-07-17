@@ -7,6 +7,7 @@ from chromestatus_openapi.models.component_users_request import ComponentUsersRe
 from chromestatus_openapi.models.components_users_response import ComponentsUsersResponse  # noqa: E501
 from chromestatus_openapi.models.external_reviews_response import ExternalReviewsResponse  # noqa: E501
 from chromestatus_openapi.models.feature_latency import FeatureLatency  # noqa: E501
+from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
 from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
@@ -43,7 +44,7 @@ def get_intent_body(feature_id, stage_id):  # noqa: E501
     :param stage_id: Stage ID
     :type stage_id: int
 
-    :rtype: Union[str, Tuple[str, int], Tuple[str, int, Dict[str, str]]
+    :rtype: Union[GetIntentResponse, Tuple[GetIntentResponse, int], Tuple[GetIntentResponse, int, Dict[str, str]]
     """
     return 'do some magic!'
 

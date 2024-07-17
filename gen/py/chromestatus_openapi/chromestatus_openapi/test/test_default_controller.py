@@ -6,6 +6,7 @@ from chromestatus_openapi.models.component_users_request import ComponentUsersRe
 from chromestatus_openapi.models.components_users_response import ComponentsUsersResponse  # noqa: E501
 from chromestatus_openapi.models.external_reviews_response import ExternalReviewsResponse  # noqa: E501
 from chromestatus_openapi.models.feature_latency import FeatureLatency  # noqa: E501
+from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
 from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
@@ -41,7 +42,7 @@ class TestDefaultController(BaseTestCase):
         Get the HTML body of an intent draft
         """
         headers = { 
-            'Accept': 'text/plain',
+            'Accept': 'application/json:',
         }
         response = self.client.open(
             '/api/v0/features/{feature_id}/{stage_id}/intent'.format(feature_id=56, stage_id=56),
