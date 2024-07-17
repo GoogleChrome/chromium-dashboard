@@ -191,7 +191,7 @@ def notify_subscribers_of_new_comments(fe: 'FeatureEntry', gate: Gate,
   cloud_tasks_helpers.enqueue_task('/tasks/email-comments', params)
 
 
-def send_ot_notification(stage: Stage):
+def send_ot_creation_notification(stage: Stage):
   """Notify about new trial creation request."""
   stage_dict = converters.stage_to_json_dict(stage)
   # Add the OT request note, which is usually not publicly visible.

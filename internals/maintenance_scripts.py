@@ -29,6 +29,7 @@ from internals.data_types import StageDict
 from internals.review_models import Gate, Vote, Activity
 from internals.core_enums import *
 from internals.feature_links import batch_index_feature_entries
+import settings
 
 class EvaluateGateStatus(FlaskHandler):
 
@@ -571,6 +572,8 @@ class CreateOriginTrials(FlaskHandler):
   def get_template_data(self, **kwargs):
     """Create any origin trials that are flagged for creation."""
     self.require_cron_header()
+    if not settings.AUTOMATED_OT_CREATION:
+      return 'Automated OT creation process is not active.'
 
     # OT stages that are flagged to process a trial creation.
     ot_stages: list[Stage] = Stage.query(
@@ -597,6 +600,8 @@ class ActivateOriginTrials(FlaskHandler):
     them.
     """
     self.require_cron_header()
+    if not settings.AUTOMATED_OT_CREATION:
+      return 'Automated OT creation process is not active.'
 
     success_count, fail_count = 0, 0
     today = self._get_today()
