@@ -23,8 +23,10 @@ from api import intents_api
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate, Vote
 from internals.user_models import AppUser
+import settings
 
-test_app = flask.Flask(__name__)
+test_app = flask.Flask(__name__,
+  template_folder=settings.get_flask_template_path())
 
 
 class IntentsAPITest(testing_config.CustomTestCase):
@@ -66,6 +68,48 @@ class IntentsAPITest(testing_config.CustomTestCase):
     for kind in [AppUser, FeatureEntry, Gate, Stage]:
       for entity in kind.query():
         entity.key.delete()
+
+  def test_get__valid(self):
+    """A valid request returns intent draft info."""
+    testing_config.sign_in('owner@example.com', 1234567890)
+    request_path = (f'features/{self.feature_1_id}/'
+                    f'{self.extension_stage_1.key.integer_id()}/intent')
+    with test_app.test_request_context(request_path, method='GET'):
+      response = self.handler.do_get(
+          feature_id=self.feature_1_id,
+          stage_id=self.extension_stage_1.key.integer_id())
+    self.assertEqual('Intent to Extend Experiment: feature one',
+                     response['subject'])
+    # The contents of email body are already tested in intentpreview_test.
+    self.assertTrue('email_body' in response)
+
+  def test_get__no_edit_access(self):
+    """403 returned when user does not have edit access to feature."""
+    testing_config.sign_in('some_other_user@example.com', 1234567890)
+    request_path = (f'features/{self.feature_1_id}/'
+                    f'{self.ot_stage_1.key.integer_id()}/intent')
+    with test_app.test_request_context(request_path, method='GET'):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.do_get(feature_id=self.feature_1_id,
+                            stage_id=self.ot_stage_1.key.integer_id())
+
+  def test_post__bad_feature_id(self):
+    """404 returned when feature is not found."""
+    testing_config.sign_in('some_other_user@example.com', 1234567890)
+    request_path = f'features/-1/{self.ot_stage_1.key.integer_id()}/intent'
+    with test_app.test_request_context(request_path, method='GET'):
+      with self.assertRaises(werkzeug.exceptions.NotFound):
+        self.handler.do_post(feature_id=-1,
+                            stage_id=self.ot_stage_1.key.integer_id())
+
+  def test_post__bad_stage_id(self):
+    """404 returned when stage is not found."""
+    testing_config.sign_in('some_other_user@example.com', 1234567890)
+    request_path = f'features/{self.feature_1_id}/-1/intent'
+    with test_app.test_request_context(request_path, method='GET'):
+      with self.assertRaises(werkzeug.exceptions.NotFound):
+        self.handler.do_post(feature_id=self.feature_1_id,
+                            stage_id=-1)
 
   @mock.patch("framework.cloud_tasks_helpers.enqueue_task")
   def test_post__valid(self, mock_enqueue_cloud_task):

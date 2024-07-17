@@ -130,7 +130,7 @@ class BaseHandler(flask.views.MethodView):
     feature_id = (feature_id or
                   self.get_int_param('featureId', required=True))
     # Load feature directly from NDB so as to never get a stale cached copy.
-    feature: FeatureEntry = FeatureEntry.get_by_id(feature_id)
+    feature: FeatureEntry|None = FeatureEntry.get_by_id(feature_id)
     if not feature:
       self.abort(404, msg='Feature not found')
     user = self.get_current_user()

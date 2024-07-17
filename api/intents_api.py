@@ -51,7 +51,10 @@ class IntentsAPI(basehandlers.APIHandler):
     feature: FeatureEntry = self.get_specified_feature(feature_id)
 
     # Check that stage ID is valid.
-    stage = self.get_specified_stage()
+    stage_id = int(kwargs.get('stage_id', 0))
+    if not stage_id:
+      self.abort(400, msg='No stage specified.')
+    stage = self.get_specified_stage(stage_id)
     if stage.feature_id != feature_id:
       self.abort(400, msg='Stage does not belong to given feature')
 
@@ -93,7 +96,7 @@ class IntentsAPI(basehandlers.APIHandler):
     stage_id = int(kwargs.get('stage_id', 0))
     if not stage_id:
       self.abort(400, msg='No stage specified.')
-    stage = self.get_specified_stage()
+    stage = self.get_specified_stage(stage_id)
     if stage.feature_id != feature_id:
       self.abort(400, msg='Stage does not belong to given feature')
 
