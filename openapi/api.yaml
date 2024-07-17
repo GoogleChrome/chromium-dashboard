@@ -147,22 +147,22 @@ paths:
         '400':
           description: The ?after query parameter isn't a valid date in ISO YYYY-MM-DD format.
   /features/{feature_id}/{stage_id}/intent:
+    parameters:
+      - name: feature_id
+        in: path
+        description: Feature ID
+        required: true
+        schema:
+          type: integer
+      - name: stage_id
+        in: path
+        description: Stage ID
+        required: true
+        schema:
+          type: integer
     get:
       summary: Get the HTML body of an intent draft
       operationId: getIntentBody
-      parameters:
-        - name: feature_id
-          in: path
-          description: Feature ID
-          required: true
-          schema:
-            type: integer
-        - name: stage_id
-          in: path
-          description: Stage ID
-          required: true
-          schema:
-            type: integer
       responses:
         '200':
           description: Intent draft body.
@@ -177,19 +177,6 @@ paths:
     post:
       summary: Submit an intent to be posted on blink-dev
       operationId: postIntentToBlinkDev
-      parameters:
-        - name: feature_id
-          in: path
-          description: Feature ID
-          required: true
-          schema:
-            type: integer
-        - name: stage_id
-          in: path
-          description: Stage ID
-          required: true
-          schema:
-            type: integer
       requestBody:
         description: Gate ID and additional users to CC email to.
         content:

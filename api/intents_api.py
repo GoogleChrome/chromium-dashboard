@@ -29,6 +29,7 @@ from internals.review_models import Gate
 from pages.intentpreview import compute_subject_prefix
 
 
+# Format for Google Cloud Task body passed to cloud_tasks_helpers.enqueue_task
 class IntentGenerationOptions(TypedDict):
   subject: str
   feature_id: int
