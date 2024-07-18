@@ -289,9 +289,6 @@ class ChromedashGantt extends LitElement {
 
     const [dtStages, otStages, shipStages] = this.getByStageType();
 
-    // TODO(DanielRyanSmith): This implementation is a fix that does not
-    // account for multiple stages on the same feature. Add functionality to
-    // accommodate multiples of the same stage type.
     let allMilestones: Array<number | undefined> = [];
     for (const stage of [...dtStages, ...otStages, ...shipStages]) {
       if (stage.extensions) {
