@@ -1,4 +1,4 @@
-import {LitElement, css, html} from 'lit';
+import {LitElement, css, html, nothing} from 'lit';
 import {property, state} from 'lit/decorators.js';
 import {ref} from 'lit/directives/ref.js';
 import {FORM_STYLES} from '../css/forms-css.js';
@@ -369,7 +369,7 @@ export class ChromedashOTExtensionPage extends LitElement {
 
   render() {
     return html`
-      ${this.renderSubheader()}
+      ${this.loading ? nothing : this.renderSubheader()}
       ${this.loading ? this.renderSkeletons() : this.renderForm()}
     `;
   }

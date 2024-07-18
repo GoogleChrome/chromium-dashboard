@@ -442,7 +442,7 @@ export class ChromedashOTCreationPage extends LitElement {
 
   render() {
     return html`
-      ${this.renderSubheader()}
+      ${this.loading ? nothing : this.renderSubheader()}
       ${this.loading ? this.renderSkeletons() : this.renderForm()}
     `;
   }
