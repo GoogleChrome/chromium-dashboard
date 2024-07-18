@@ -147,75 +147,100 @@ class ChromedashGantt extends LitElement {
       }
     }
 
-    // TODO(DanielRyanSmith): Fix this to support multiple stages.
-    return [dtStages[0], otStages[0], shipStages[0]];
+    return [dtStages, otStages, shipStages];
   }
 
   renderPlatform(
     platform,
-    devTrialMilestone,
-    originTrialMilestoneFirst,
-    originTrialMilestoneLast,
-    shippingMilestone,
+    platformParam,
+    dtStages,
+    otStages,
+    shipStages,
     sortedMilestones
   ) {
+    const dtStartMilestones = dtStages.map(s => s[`${platformParam}_first`]);
+    const otStartMilestones = otStages.map(s => s[`${platformParam}_first`]);
+    const otEndMilestones = otStages.map(s => {
+      let maxEnd = s[`${platformParam}_last`];
+      for (const e of s.extensions) {
+        // Extensions only have "desktop_last" milestone values.
+        if (!isNaN(e.desktop_last) && isNaN(maxEnd)) {
+          maxEnd = e.desktop_last;
+        } else if (!isNaN(e.desktop_last) && !isNaN(maxEnd)) {
+          maxEnd = Math.max(maxEnd, e.desktop_last);
+        }
+      }
+      return maxEnd;
+    });
+    const shipStartMilestones = shipStages.map(s => s[`${platformParam}_first`]);
+
     if (
-      !devTrialMilestone &&
-      !originTrialMilestoneFirst &&
-      !shippingMilestone
+      dtStartMilestones.length === 0 &&
+      otStartMilestones.length === 0 &&
+      shipStartMilestones.length === 0
     ) {
       return nothing;
     }
     const maxMilestone = Math.max(...sortedMilestones);
 
-    let gridRow = 1;
+    let currentRow = 1;
 
-    let dtChartRow: typeof nothing | TemplateResult[] = nothing;
-    if (devTrialMilestone) {
+    const validShipMilestones = shipStartMilestones.filter(x => x);
+    const dtChartRows: Array<typeof nothing | TemplateResult[]> = [];
+    for (const dtMilestone of dtStartMilestones) {
+      if (!dtMilestone) {
+        continue;
+      }
       let devTrialMilestoneLast = maxMilestone;
       // If there is a shipping milestone, Dev trial stops just before it.
-      if (shippingMilestone) {
-        const shippingIndex = sortedMilestones.indexOf(shippingMilestone);
+      if (validShipMilestones.length > 0) {
+        console.log('validShipMilestones', validShipMilestones);
+        const shippingIndex = sortedMilestones.indexOf(Math.min(...validShipMilestones));
         devTrialMilestoneLast = sortedMilestones[shippingIndex - 1];
       }
-      dtChartRow = this.renderChartRow(
-        gridRow,
-        devTrialMilestone,
+      dtChartRows.push(this.renderChartRow(
+        currentRow,
+        dtMilestone,
         devTrialMilestoneLast,
         sortedMilestones,
         'dev_trial',
-        'Dev Trial: ' + devTrialMilestone
-      );
-      gridRow++;
+        'Dev Trial: ' + dtMilestone
+      ));
+      currentRow++;
     }
 
-    let otChartRow: typeof nothing | TemplateResult[] = nothing;
-    if (originTrialMilestoneFirst) {
-      otChartRow = this.renderChartRow(
-        gridRow,
-        originTrialMilestoneFirst,
-        originTrialMilestoneLast,
+    const otChartRows: Array<typeof nothing | TemplateResult[]> = [];
+    for (let i = 0; i < otStartMilestones.length; i++) {
+      const otStartMilestone = otStartMilestones[i];
+      const otEndMilestone = otEndMilestones[i];
+      if (!otStartMilestone || !otEndMilestone) {
+        continue;
+      }
+      otChartRows.push(this.renderChartRow(
+        currentRow,
+        otStartMilestone,
+        otEndMilestone,
         sortedMilestones,
         'origin_trial',
-        'Origin Trial: ' +
-          originTrialMilestoneFirst +
-          ' to ' +
-          originTrialMilestoneLast
-      );
-      gridRow++;
+        `Origin Trial: ${otStartMilestone} to ${otEndMilestone}`
+      ));
+      currentRow++;
     }
 
-    let shipChartRow: typeof nothing | TemplateResult[] = nothing;
-    if (shippingMilestone) {
-      shipChartRow = this.renderChartRow(
-        gridRow,
-        shippingMilestone,
+    const shipChartRows: Array<typeof nothing | TemplateResult[]> = [];
+    for (const shipMilestone of shipStartMilestones) {
+      if (!shipMilestone) {
+        continue;
+      }
+      shipChartRows.push(this.renderChartRow(
+        currentRow,
+        shipMilestone,
         maxMilestone,
         sortedMilestones,
         'shipping',
-        'Shipping: ' + shippingMilestone
-      );
-      gridRow++;
+        `Shipping: ${shipMilestone}`
+      ));
+      currentRow++;
     }
 
     return html`
@@ -223,10 +248,25 @@ class ChromedashGantt extends LitElement {
         <div class="platform">${platform}</div>
 
         <ul class="chart">
-          ${dtChartRow} ${otChartRow} ${shipChartRow}
+          ${dtChartRows} ${otChartRows} ${shipChartRows}
         </ul>
       </li>
     `;
+  }
+
+  concatAllMilestones(allMilestones: Array<number|undefined>, stage) {
+    if (!stage) {
+      return allMilestones;
+    }
+    return allMilestones.concat([
+      stage.desktop_first,
+      stage.desktop_last,
+      stage.android_first,
+      stage.android_last,
+      stage.ios_first,
+      stage.ios_last,
+      stage.webview_first,
+      stage.webview_last]);
   }
 
   render() {
@@ -236,29 +276,21 @@ class ChromedashGantt extends LitElement {
       return nothing;
     }
 
-    const [dtStage, otStage, shipStage] = this.getByStageType();
+    const [dtStages, otStages, shipStages] = this.getByStageType();
 
     // TODO(DanielRyanSmith): This implementation is a fix that does not
     // account for multiple stages on the same feature. Add functionality to
     // accommodate multiples of the same stage type.
-    const allMilestones = [
-      dtStage?.desktop_first,
-      dtStage?.android_first,
-      dtStage?.ios_first,
-      dtStage?.webview_first,
-      otStage?.desktop_first,
-      otStage?.android_first,
-      otStage?.ios_first,
-      otStage?.webview_first,
-      otStage?.desktop_last,
-      otStage?.android_last,
-      otStage?.ios_last,
-      otStage?.webview_last,
-      shipStage?.desktop_first,
-      shipStage?.android_first,
-      shipStage?.ios_first,
-      shipStage?.webview_first,
-    ].filter(x => x);
+    let allMilestones: Array<number|undefined> = [];
+    for (const stage of [...dtStages, ...otStages, ...shipStages]) {
+      if (stage.extensions) {
+        for (const extension of stage.extensions) {
+          allMilestones = this.concatAllMilestones(allMilestones, extension);
+        }
+      }
+      allMilestones = this.concatAllMilestones(allMilestones, stage);
+    }
+    allMilestones = allMilestones.filter(x => x);
 
     if (allMilestones.length == 0) {
       return html`<p>No milestones specified</p>`;
@@ -270,8 +302,8 @@ class ChromedashGantt extends LitElement {
     // "Shipped" block has room for that text.
     const milestoneRange = maxMilestone - minMilestone + 1 + 1;
     // sortedMilestones would be the list of column heading labels,
-    // execpt that they are not shown.
-    let sortedMilestones;
+    // except that they are not shown.
+    let sortedMilestones: Array<number>|undefined;
 
     if (milestoneRange <= 12) {
       // First choice:
@@ -284,7 +316,7 @@ class ChromedashGantt extends LitElement {
       // Second choice:
       // Use columns for each milestone value and the one after it
       // even if that means that milestone numbers are not consecutive.
-      const augmentedMilestoneSet = new Set(allValidMilestones);
+      const augmentedMilestoneSet = new Set<number>(allValidMilestones);
       for (const m of allValidMilestones) {
         augmentedMilestoneSet.add(m + 1);
       }
@@ -307,34 +339,34 @@ class ChromedashGantt extends LitElement {
       <ul>
         ${this.renderPlatform(
           'Desktop',
-          dtStage?.desktop_first,
-          otStage?.desktop_first,
-          otStage?.desktop_last,
-          shipStage?.desktop_first,
+          'desktop',
+          dtStages,
+          otStages,
+          shipStages,
           sortedMilestones
         )}
         ${this.renderPlatform(
           'Android',
-          dtStage?.android_first,
-          otStage?.android_first,
-          otStage?.android_last,
-          shipStage?.android_first,
+          'android',
+          dtStages,
+          otStages,
+          shipStages,
           sortedMilestones
         )}
         ${this.renderPlatform(
           'iOS',
-          dtStage?.ios_first,
-          otStage?.ios_first,
-          otStage?.ios_last,
-          shipStage?.ios_first,
+          'ios',
+          dtStages,
+          otStages,
+          shipStages,
           sortedMilestones
         )}
         ${this.renderPlatform(
           'Webview',
-          dtStage?.webview_first,
-          otStage?.webview_first,
-          otStage?.webview_last,
-          shipStage?.webview_first,
+          'webview',
+          dtStages,
+          otStages,
+          shipStages,
           sortedMilestones
         )}
       </ul>
