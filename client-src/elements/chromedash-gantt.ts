@@ -172,7 +172,9 @@ class ChromedashGantt extends LitElement {
       }
       return maxEnd;
     });
-    const shipStartMilestones = shipStages.map(s => s[`${platformParam}_first`]);
+    const shipStartMilestones = shipStages.map(
+      s => s[`${platformParam}_first`]
+    );
 
     if (
       dtStartMilestones.length === 0 &&
@@ -195,17 +197,21 @@ class ChromedashGantt extends LitElement {
       // If there is a shipping milestone, Dev trial stops just before it.
       if (validShipMilestones.length > 0) {
         console.log('validShipMilestones', validShipMilestones);
-        const shippingIndex = sortedMilestones.indexOf(Math.min(...validShipMilestones));
+        const shippingIndex = sortedMilestones.indexOf(
+          Math.min(...validShipMilestones)
+        );
         devTrialMilestoneLast = sortedMilestones[shippingIndex - 1];
       }
-      dtChartRows.push(this.renderChartRow(
-        currentRow,
-        dtMilestone,
-        devTrialMilestoneLast,
-        sortedMilestones,
-        'dev_trial',
-        'Dev Trial: ' + dtMilestone
-      ));
+      dtChartRows.push(
+        this.renderChartRow(
+          currentRow,
+          dtMilestone,
+          devTrialMilestoneLast,
+          sortedMilestones,
+          'dev_trial',
+          'Dev Trial: ' + dtMilestone
+        )
+      );
       currentRow++;
     }
 
@@ -216,14 +222,16 @@ class ChromedashGantt extends LitElement {
       if (!otStartMilestone || !otEndMilestone) {
         continue;
       }
-      otChartRows.push(this.renderChartRow(
-        currentRow,
-        otStartMilestone,
-        otEndMilestone,
-        sortedMilestones,
-        'origin_trial',
-        `Origin Trial: ${otStartMilestone} to ${otEndMilestone}`
-      ));
+      otChartRows.push(
+        this.renderChartRow(
+          currentRow,
+          otStartMilestone,
+          otEndMilestone,
+          sortedMilestones,
+          'origin_trial',
+          `Origin Trial: ${otStartMilestone} to ${otEndMilestone}`
+        )
+      );
       currentRow++;
     }
 
@@ -232,14 +240,16 @@ class ChromedashGantt extends LitElement {
       if (!shipMilestone) {
         continue;
       }
-      shipChartRows.push(this.renderChartRow(
-        currentRow,
-        shipMilestone,
-        maxMilestone,
-        sortedMilestones,
-        'shipping',
-        `Shipping: ${shipMilestone}`
-      ));
+      shipChartRows.push(
+        this.renderChartRow(
+          currentRow,
+          shipMilestone,
+          maxMilestone,
+          sortedMilestones,
+          'shipping',
+          `Shipping: ${shipMilestone}`
+        )
+      );
       currentRow++;
     }
 
@@ -254,7 +264,7 @@ class ChromedashGantt extends LitElement {
     `;
   }
 
-  concatAllMilestones(allMilestones: Array<number|undefined>, stage) {
+  concatAllMilestones(allMilestones: Array<number | undefined>, stage) {
     if (!stage) {
       return allMilestones;
     }
@@ -266,7 +276,8 @@ class ChromedashGantt extends LitElement {
       stage.ios_first,
       stage.ios_last,
       stage.webview_first,
-      stage.webview_last]);
+      stage.webview_last,
+    ]);
   }
 
   render() {
@@ -281,7 +292,7 @@ class ChromedashGantt extends LitElement {
     // TODO(DanielRyanSmith): This implementation is a fix that does not
     // account for multiple stages on the same feature. Add functionality to
     // accommodate multiples of the same stage type.
-    let allMilestones: Array<number|undefined> = [];
+    let allMilestones: Array<number | undefined> = [];
     for (const stage of [...dtStages, ...otStages, ...shipStages]) {
       if (stage.extensions) {
         for (const extension of stage.extensions) {
@@ -303,7 +314,7 @@ class ChromedashGantt extends LitElement {
     const milestoneRange = maxMilestone - minMilestone + 1 + 1;
     // sortedMilestones would be the list of column heading labels,
     // except that they are not shown.
-    let sortedMilestones: Array<number>|undefined;
+    let sortedMilestones: Array<number> | undefined;
 
     if (milestoneRange <= 12) {
       // First choice:
