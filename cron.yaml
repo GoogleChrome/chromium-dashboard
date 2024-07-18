@@ -37,7 +37,7 @@ cron:
   schedule: every day 6:00
 - description: Send origin trial process reminder emails.
   url: /cron/send-ot-process-reminders
-  schedule: every monday 4:00
+  schedule: every monday 10:00
 - description: Check if any origin trials require creation
   url: /cron/create_origin_trials
   schedule: every 5 minutes
