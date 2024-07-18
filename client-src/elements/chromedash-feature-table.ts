@@ -14,7 +14,7 @@ export class ChromedashFeatureTable extends LitElement {
   @state()
   reloading = false;
   @state()
-  features!: Feature[];
+  features: Feature[] = [];
   @state()
   totalCount = 0;
   @property({type: Number, attribute: false})
