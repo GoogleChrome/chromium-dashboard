@@ -1,4 +1,4 @@
-import {LitElement, css, html} from 'lit';
+import {LitElement, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
 import {
   formatFeatureChanges,
@@ -230,7 +230,7 @@ export class ChromedashGuideMetadataPage extends LitElement {
 
   render() {
     return html`
-      ${this.renderSubheader()}
+      ${this.loading ? nothing : this.renderSubheader()}
       ${this.loading ? this.renderSkeletons() : this.renderForm()}
     `;
   }
