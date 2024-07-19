@@ -22,7 +22,7 @@ class ChromedashFeaturelist extends LitElement {
   features!: Feature[];
   /** The search input element. */
   @state()
-  filtered!: Feature[];
+  filtered: Feature[] = [];
   @state()
   openFeatures = new Set<number>();
   @state()
