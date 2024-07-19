@@ -333,8 +333,12 @@ export class ChromedashTypeaheadItem extends LitElement {
   doc = '';
   @property({type: String})
   prefix = '';
+  // tabindex is initially -1 for menu items so that the tab key does not
+  // navigate among menu items.  Instead, sl-menu handles arrow keys and
+  // mouseover.  Shoelace uses tabindex==0 only for the current menu item.
+  // https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/tabindex
   @property({type: Number})
-  tabindex = 0;
+  tabindex = -1;
   @property({type: String, reflect: true})
   role = 'menuitem';
 
