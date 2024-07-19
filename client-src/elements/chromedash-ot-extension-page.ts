@@ -244,15 +244,18 @@ export class ChromedashOTExtensionPage extends LitElement {
   }
 
   renderSubheader() {
-    return html`
-      <div id="subheader">
-        <h2 id="breadcrumbs">
+    const link = this.loading ? nothing : html`
           <a href=${this.getNextPage()}>
-            <iron-icon icon="chromestatus:arrow-back"></iron-icon>
-            Request origin trial extension: ${this.feature.name}
-          </a>
-        </h2>
-      </div>
+              <iron-icon icon="chromestatus:arrow-back"></iron-icon>
+              Request origin trial extension: ${this.feature.name}
+           </a>
+         `;
+     return html`
+        <div id="subheader">
+          <h2 id="breadcrumbs">
+            ${link}
+          </h2>
+        </div>
     `;
   }
 
