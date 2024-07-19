@@ -35,7 +35,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   @state()
   channels!: Channels;
   @state()
-  selectedMilestone?: number | undefined = undefined;
+  selectedMilestone?: number;
 
   static get styles() {
     return [
