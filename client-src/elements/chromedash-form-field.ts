@@ -50,7 +50,7 @@ export class ChromedashFormField extends LitElement {
   @state()
   loading = false;
   @state()
-  componentChoices; // just for the blink component select field
+  componentChoices: Record<string, [string, string]> = {}; // just for the blink component select field
   @state()
   checkMessage: TemplateResult | string = '';
   @state()
@@ -140,9 +140,11 @@ export class ChromedashFormField extends LitElement {
   handleFieldUpdated(e) {
     // Determine the value based on the input type.
     const type = this.fieldProps.type;
-    let fieldValue;
+    let fieldValue: string;
     if (type === 'checkbox') {
       fieldValue = e.target.checked;
+    } else if (type === 'multiselect') {
+      fieldValue = e.target.value.join(',');
     } else {
       fieldValue = e.target.value;
     }
@@ -291,8 +293,7 @@ export class ChromedashFormField extends LitElement {
         </sl-select>
       `;
     } else if (type === 'multiselect') {
-      const valueArray = fieldValue.split(',');
-
+      const valueArray: string[] = fieldValue.split(',');
       fieldHTML = html`
         <sl-select
           name="${fieldName}"

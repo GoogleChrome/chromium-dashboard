@@ -25,6 +25,7 @@ from api import stages_api
 from internals.user_models import AppUser
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate
+import settings
 
 test_app = flask.Flask(__name__)
 
@@ -178,7 +179,7 @@ class StagesAPITest(testing_config.CustomTestCase):
     with test_app.test_request_context(f'{self.request_path}1/stages/3001'):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_get(feature_id=1, stage_id=3001)
-    mock_abort.assert_called_once_with(404, description=f'Stage 3001 not found')
+    mock_abort.assert_called_once_with(404, description='Stage 3001 not found')
 
   @mock.patch('flask.abort')
   def test_get__no_id(self, mock_abort):
@@ -531,11 +532,11 @@ class StagesAPITest(testing_config.CustomTestCase):
     # Existing fields not specified should not be changed.
     self.assertEqual(stage.experiment_goals, 'To be the very best.')
 
-  @mock.patch('internals.notifier_helpers.send_ot_notification')
-  def test_patch__ot_creation(self, mock_send_ot_notification):
+  @mock.patch('internals.notifier_helpers.send_ot_creation_notification')
+  def test_patch__ot_creation(self, mock_send_ot_creation_notification):
     """A valid PATCH request should update an existing stage."""
     testing_config.sign_in('feature_owner@example.com', 123)
-    mock_send_ot_notification.return_value = None
+    mock_send_ot_creation_notification.return_value = None
     json = {
         'ot_action_requested': {
           'form_field_name': 'ot_action_requested',
@@ -558,16 +559,16 @@ class StagesAPITest(testing_config.CustomTestCase):
     # Existing fields not specified should not be changed.
     self.assertEqual(stage.experiment_goals, 'To be the very best.')
     # OT creation request notification should be sent.
-    mock_send_ot_notification.assert_called_once()
+    mock_send_ot_creation_notification.assert_called_once()
 
-  @mock.patch('internals.notifier_helpers.send_ot_notification')
-  def test_patch__ot_extension(self, mock_send_ot_notification):
+  @mock.patch('internals.notifier_helpers.send_ot_creation_notification')
+  def test_patch__ot_extension(self, mock_send_ot_creation_notification):
     """A valid PATCH request should update an existing stage."""
     testing_config.sign_in('feature_owner@example.com', 123)
     # extension stage type.
     self.stage_1.stage_type = 151
     self.stage_1.put()
-    mock_send_ot_notification.return_value = None
+    mock_send_ot_creation_notification.return_value = None
     json = {
         'ot_action_requested': {
           'form_field_name': 'ot_action_requested',
@@ -590,7 +591,7 @@ class StagesAPITest(testing_config.CustomTestCase):
     # Existing fields not specified should not be changed.
     self.assertEqual(stage.experiment_goals, 'To be the very best.')
     # OT extension request should NOT send a notification.
-    mock_send_ot_notification.assert_not_called()
+    mock_send_ot_creation_notification.assert_not_called()
 
   def test_patch__ot_request_googler(self):
     """A valid OT creation request from a googler should update stage."""

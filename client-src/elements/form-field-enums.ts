@@ -475,6 +475,16 @@ export const OT_MILESTONE_END_FIELDS: Record<string, string> = {
   ot_milestone_webview_end: 'webview_last',
 };
 
+// ot_setup_status values for denoting OT creation progress.
+export const OT_SETUP_STATUS_OPTIONS = {
+  OT_NOT_CREATED: 1,
+  OT_READY_FOR_CREATION: 2,
+  OT_CREATION_FAILED: 3,
+  OT_ACTIVATION_FAILED: 4,
+  OT_CREATED: 5,
+  OT_ACTIVATED: 6,
+};
+
 export const IMPLEMENTATION_STATUS: Record<string, [number, string]> = {
   NO_ACTIVE_DEV: [1, 'No active development'],
   PROPOSED: [2, 'Proposed'],

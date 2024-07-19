@@ -24,7 +24,7 @@ describe('chromedash-guide-new-page', () => {
     assert.exists(component);
     assert.instanceOf(component, ChromedashGuideNewPage);
 
-    const subheaderDiv = component.shadowRoot.querySelector('div#subheader');
+    const subheaderDiv = component.renderRoot.querySelector('div#subheader');
     assert.exists(subheaderDiv);
     // Process and UI feedback link is clickable
     assert.include(
@@ -33,18 +33,18 @@ describe('chromedash-guide-new-page', () => {
     );
 
     // overview form exists and is with action path
-    const overviewForm = component.shadowRoot.querySelector(
+    const overviewForm = component.renderRoot.querySelector(
       'form[name="overview_form"]'
-    );
+    )!;
     assert.include(overviewForm.outerHTML, 'action="/guide/new"');
 
     // owner field filled with the user email
     assert.include(overviewForm.innerHTML, userEmail);
 
     // feature type chromedash-form-field exists and is with four options
-    const featureTypeFormField = component.shadowRoot.querySelector(
+    const featureTypeFormField = component.renderRoot.querySelector(
       'chromedash-form-field[name="feature_type_radio_group"]'
-    );
+    )!;
     assert.include(featureTypeFormField.outerHTML, 'New or changed feature');
     assert.include(featureTypeFormField.outerHTML, 'Chromium catches up');
     assert.include(
@@ -54,7 +54,7 @@ describe('chromedash-guide-new-page', () => {
     assert.include(featureTypeFormField.outerHTML, 'Feature removal');
 
     // submit button exists
-    const submitButton = component.shadowRoot.querySelector(
+    const submitButton = component.renderRoot.querySelector(
       'input[type="submit"]'
     );
     assert.exists(submitButton);
