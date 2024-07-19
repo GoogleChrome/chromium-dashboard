@@ -1,5 +1,7 @@
+import {SlPopup} from '@shoelace-style/shoelace';
 import {LitElement, html, nothing} from 'lit';
-import {ref, createRef} from 'lit/directives/ref.js';
+import {customElement, property} from 'lit/decorators.js';
+import {createRef, ref} from 'lit/directives/ref.js';
 import {ROADMAP_MILESTONE_CARD_CSS} from '../css/elements/chromedash-roadmap-milestone-card-css.js';
 
 const REMOVED_STATUS = ['Removed'];
@@ -8,33 +10,37 @@ const ORIGIN_TRIAL = ['Origin trial'];
 const BROWSER_INTERVENTION = ['Browser Intervention'];
 const NO_FEATURE_STRING = 'NO FEATURES ARE PLANNED FOR THIS MILESTONE YET';
 
+export interface TemplateContent {
+  channelLabel: string;
+  h1Class: string;
+  channelTag?: string;
+  dateText: string;
+  featureHeader: string;
+}
+
+@customElement('chromedash-roadmap-milestone-card')
 class ChromedashRoadmapMilestoneCard extends LitElement {
-  infoPopupRef = createRef();
+  infoPopupRef = createRef<SlPopup>();
 
   static styles = ROADMAP_MILESTONE_CARD_CSS;
-  static get properties() {
-    return {
-      starredFeatures: {type: Object},
-      highlightFeature: {type: Number},
-      templateContent: {type: Object},
-      channel: {type: Object},
-      showDates: {type: Boolean},
-      signedIn: {type: Boolean},
-    };
-  }
 
-  constructor() {
-    super();
-    this.starredFeatures = new Set();
-  }
+  @property({attribute: false})
+  starredFeatures = new Set<number>();
+  @property({attribute: false})
+  highlightFeature!: number;
+  @property({attribute: false})
+  templateContent!: TemplateContent;
+  @property({attribute: false})
+  channel; //TODO(markxiong0122): Type this as Channel when PR#4085 is merged
+  @property({type: Boolean})
+  showDates = false;
+  @property({type: Boolean})
+  signedIn = false;
 
   /**
    *  Returns the number of days between a and b.
-   *  @param {!Date} a
-   *  @param {!Date} b
-   *  @return {!{days: number, future: boolean}}
    */
-  _dateDiffInDays(a, b) {
+  _dateDiffInDays(a: Date, b: Date): {days: number; future: boolean} {
     // Discard time and time-zone information.
     const utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
     const utc2 = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate());
@@ -45,7 +51,7 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
   }
 
   _computeDate(dateStr, addYear = false) {
-    const opts = {month: 'short', day: 'numeric'};
+    const opts: Intl.DateTimeFormatOptions = {month: 'short', day: 'numeric'};
     if (addYear) {
       opts.year = 'numeric';
     }
@@ -109,7 +115,7 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
 
   _computeDaysUntil(dateStr) {
     const date = new Date(dateStr);
-    if (isNaN(date)) {
+    if (isNaN(date.getTime())) {
       return nothing;
     }
     const today = new Date();
@@ -134,7 +140,7 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
     if (
       e.relatedTarget != this.renderRoot.querySelector('#detailed-info-link')
     ) {
-      this.infoPopupRef.value.active = null;
+      this.infoPopupRef.value!.active = false;
     }
   }
 
@@ -144,7 +150,7 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
         name="info-circle"
         id="info-button"
         @click=${() =>
-          (this.infoPopupRef.value.active = !this.infoPopupRef.value.active)}
+          (this.infoPopupRef.value!.active = !this.infoPopupRef.value!.active)}
         @focusout=${this.hidePopup}
       ></sl-icon-button>
 
@@ -388,8 +394,3 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
     `;
   }
 }
-
-customElements.define(
-  'chromedash-roadmap-milestone-card',
-  ChromedashRoadmapMilestoneCard
-);

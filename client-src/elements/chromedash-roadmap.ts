@@ -1,9 +1,43 @@
-import {LitElement, html, css} from 'lit';
-import {showToastMessage} from './utils.js';
 import '@polymer/iron-icon';
+import {LitElement, css, html} from 'lit';
+import {customElement, property, state} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import {Feature} from '../js-src/cs-client.js';
+import {TemplateContent} from './chromedash-roadmap-milestone-card.js';
+import {showToastMessage} from './utils.js';
 
-const TEMPLATE_CONTENT = {
+//TODO(markxiong0122): move this to cs-client.js after converting it to TypeScript
+interface MilestoneDetails {
+  branch_point: string;
+  earliest_beta: string;
+  earliest_beta_chromeos: string;
+  earliest_beta_ios: string;
+  feature_freeze: string;
+  final_beta: string;
+  final_beta_cut: string;
+  late_stable_date: string;
+  latest_beta: string;
+  ldaps: Record<string, string>;
+  ltc_date: string;
+  ltr_date: string;
+  ltr_last_refresh_date: string;
+  mstone: number;
+  owners: Record<string, string>;
+  stable_cut: string;
+  stable_cut_ios: string;
+  stable_date: string;
+  stable_refresh_first: string;
+  stable_refresh_second: string;
+  stable_refresh_third: string;
+  version: number;
+  features: Feature[];
+}
+
+interface MilestoneInfo {
+  [milestone: number]: MilestoneDetails;
+}
+
+const TEMPLATE_CONTENT: Record<string, TemplateContent> = {
   stable_minus_one: {
     channelLabel: 'Released',
     h1Class: '',
@@ -49,7 +83,8 @@ const SHOW_DATES = true;
 const compareFeatures = (a, b) =>
   a.name.localeCompare(b.name, 'fr', {ignorePunctuation: true}); // comparator for sorting milestone features
 
-class ChromedashRoadmap extends LitElement {
+@customElement('chromedash-roadmap')
+export class ChromedashRoadmap extends LitElement {
   static get styles() {
     return [
       ...SHARED_STYLES,
@@ -63,37 +98,58 @@ class ChromedashRoadmap extends LitElement {
       `,
     ];
   }
-
-  static get properties() {
-    return {
-      channels: {attribute: false},
-      signedIn: {type: Boolean},
-      starredFeatures: {type: Object}, // will contain a set of starred features
-      numColumns: {type: Number},
-      cardWidth: {type: Number}, // width of each milestone card
-      lastFutureFetchedOn: {type: Number}, // milestone number rendering of which caused fetching of next milestones
-      lastPastFetchedOn: {type: Number}, // milestone number rendering of which caused fetching of previous milestones
-      lastMilestoneVisible: {type: Number}, // milestone number visible on screen to the user
-      futureMilestoneArray: {type: Array}, // array to store the milestone numbers fetched after dev channel
-      pastMilestoneArray: {type: Array}, // array to store the milestone numbers fetched before stable channel
-      milestoneInfo: {type: Object}, // object to store milestone details (features version etc.) fetched after dev channel
-      highlightFeature: {type: Number}, // feature to highlight
-      cardOffset: {type: Number}, // left margin value
-    };
-  }
-
-  constructor() {
-    super();
-    this.channels = {};
-    this.shownChannelNames = [];
-    this.numColumns = 0;
-    this.cardWidth = 0;
-    this.starredFeatures = new Set();
-    this.futureMilestoneArray = [];
-    this.pastMilestoneArray = [];
-    this.milestoneInfo = {};
-    this.cardOffset = 0;
-  }
+  @property({type: Boolean})
+  signedIn;
+  @property({type: Number, attribute: false})
+  numColumns = 0;
+  @property({type: Number, attribute: false})
+  cardWidth = 0;
+  @state()
+  channels; //TODO(markxiong0122): Type this as Channel when PR#4085 is merged
+  @state()
+  starredFeatures = new Set<number>();
+  /**
+   * The timestamp of the last fetched future milestone.
+   */
+  @state()
+  lastFutureFetchedOn!: number;
+  /**
+   * The timestamp of the last fetched past milestone.
+   */
+  @state()
+  lastPastFetchedOn!: number;
+  /**
+   * The milestone number currently visible on the screen to the user.
+   */
+  @state()
+  lastMilestoneVisible!: number;
+  /**
+   * Array to store the milestone numbers fetched after the dev channel.
+   */
+  @state()
+  futureMilestoneArray: number[] = [];
+  /**
+   * Array to store the milestone numbers fetched before the stable channel.
+   */
+  @state()
+  pastMilestoneArray: number[] = [];
+  /**
+   * Object to store milestone details (features, version, etc.) fetched after the dev channel.
+   */
+  @state()
+  milestoneInfo!: MilestoneInfo;
+  /**
+   * The feature to highlight.
+   */
+  @state()
+  highlightFeature: number | undefined = undefined;
+  /**
+   * The left margin value.
+   */
+  @state()
+  cardOffset = 0;
+  @state()
+  shownChannelNames: string[] = [];
 
   connectedCallback() {
     super.connectedCallback();
@@ -305,5 +361,3 @@ class ChromedashRoadmap extends LitElement {
     `;
   }
 }
-
-customElements.define('chromedash-roadmap', ChromedashRoadmap);
