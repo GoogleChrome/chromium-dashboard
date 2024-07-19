@@ -372,7 +372,7 @@ export class ChromedashOTExtensionPage extends LitElement {
 
   render() {
     return html`
-      ${this.loading ? nothing : this.renderSubheader()}
+      ${this.renderSubheader()}
       ${this.loading ? this.renderSkeletons() : this.renderForm()}
     `;
   }
