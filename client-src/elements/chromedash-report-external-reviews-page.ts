@@ -4,7 +4,7 @@ import '@shoelace-style/shoelace';
 import {
   DefaultApiInterface,
   OutstandingReview,
-  OutstandingReviewCurrentStageEnum as Stage,
+  OutstandingReviewCurrentStageEnum as StageEnum,
 } from 'chromestatus-openapi';
 import {LitElement, css, html, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
@@ -62,7 +62,7 @@ function compareOutstandingReview(
 }
 
 interface TaskReviewResult {
-  reviews: Record<Stage, OutstandingReview[]>;
+  reviews: Record<StageEnum, OutstandingReview[]>;
   links: FeatureLink[];
   noOutstandingReviews: boolean;
 }
@@ -132,8 +132,8 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
 
   groupReviews(
     reviews: OutstandingReview[]
-  ): Record<Stage, OutstandingReview[]> {
-    const result: Record<Stage, OutstandingReview[]> = {
+  ): Record<StageEnum, OutstandingReview[]> {
+    const result: Record<StageEnum, OutstandingReview[]> = {
       incubating: [],
       prototyping: [],
       'dev-trial': [],
@@ -162,7 +162,7 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
   }
 
   renderOutstandingReviews(
-    reviews: Record<Stage, OutstandingReview[]>,
+    reviews: Record<StageEnum, OutstandingReview[]>,
     links: FeatureLink[]
   ) {
     return [
