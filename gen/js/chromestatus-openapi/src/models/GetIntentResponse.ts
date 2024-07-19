@@ -24,19 +24,21 @@ export interface GetIntentResponse {
      * @type {string}
      * @memberof GetIntentResponse
      */
-    subject?: string;
+    subject: string;
     /**
      * 
      * @type {string}
      * @memberof GetIntentResponse
      */
-    email_body?: string;
+    email_body: string;
 }
 
 /**
  * Check if a given object implements the GetIntentResponse interface.
  */
 export function instanceOfGetIntentResponse(value: object): value is GetIntentResponse {
+    if (!('subject' in value) || value['subject'] === undefined) return false;
+    if (!('email_body' in value) || value['email_body'] === undefined) return false;
     return true;
 }
 
@@ -50,8 +52,8 @@ export function GetIntentResponseFromJSONTyped(json: any, ignoreDiscriminator: b
     }
     return {
         
-        'subject': json['subject'] == null ? undefined : json['subject'],
-        'email_body': json['email_body'] == null ? undefined : json['email_body'],
+        'subject': json['subject'],
+        'email_body': json['email_body'],
     };
 }
 

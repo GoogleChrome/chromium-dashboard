@@ -307,6 +307,9 @@ components:
         email_body:
           title: email_body
           type: string
+      required:
+      - email_body
+      - subject
       title: GetIntentResponse
     PostIntentRequest:
       example:
@@ -323,6 +326,9 @@ components:
             type: string
           title: intent_cc_emails
           type: array
+      required:
+      - gate_id
+      - intent_cc_emails
       title: PostIntentRequest
     MessageResponse:
       example:
@@ -331,6 +337,8 @@ components:
         message:
           title: message
           type: string
+      required:
+      - message
       title: MessageResponse
     ComponentsUsersResponse:
       example:

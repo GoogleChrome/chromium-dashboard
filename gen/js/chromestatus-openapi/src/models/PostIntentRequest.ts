@@ -24,19 +24,21 @@ export interface PostIntentRequest {
      * @type {number}
      * @memberof PostIntentRequest
      */
-    gate_id?: number;
+    gate_id: number;
     /**
      * 
      * @type {Array<string>}
      * @memberof PostIntentRequest
      */
-    intent_cc_emails?: Array<string>;
+    intent_cc_emails: Array<string>;
 }
 
 /**
  * Check if a given object implements the PostIntentRequest interface.
  */
 export function instanceOfPostIntentRequest(value: object): value is PostIntentRequest {
+    if (!('gate_id' in value) || value['gate_id'] === undefined) return false;
+    if (!('intent_cc_emails' in value) || value['intent_cc_emails'] === undefined) return false;
     return true;
 }
 
@@ -50,8 +52,8 @@ export function PostIntentRequestFromJSONTyped(json: any, ignoreDiscriminator: b
     }
     return {
         
-        'gate_id': json['gate_id'] == null ? undefined : json['gate_id'],
-        'intent_cc_emails': json['intent_cc_emails'] == null ? undefined : json['intent_cc_emails'],
+        'gate_id': json['gate_id'],
+        'intent_cc_emails': json['intent_cc_emails'],
     };
 }
 

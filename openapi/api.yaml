@@ -243,6 +243,9 @@ components:
           type: string
         email_body:
           type: string
+      required:
+      - subject
+      - email_body
     PostIntentRequest:
       properties:
         gate_id:
@@ -251,10 +254,15 @@ components:
           type: array
           items:
             type: string
+      required:
+      - gate_id
+      - intent_cc_emails
     MessageResponse:
       properties:
         message:
           type: string
+      required:
+      - message
     ComponentsUsersResponse:
       properties:
         users:

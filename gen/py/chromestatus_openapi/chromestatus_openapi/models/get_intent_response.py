@@ -62,6 +62,8 @@ class GetIntentResponse(Model):
         :param subject: The subject of this GetIntentResponse.
         :type subject: str
         """
+        if subject is None:
+            raise ValueError("Invalid value for `subject`, must not be `None`")  # noqa: E501
 
         self._subject = subject
 
@@ -83,5 +85,7 @@ class GetIntentResponse(Model):
         :param email_body: The email_body of this GetIntentResponse.
         :type email_body: str
         """
+        if email_body is None:
+            raise ValueError("Invalid value for `email_body`, must not be `None`")  # noqa: E501
 
         self._email_body = email_body

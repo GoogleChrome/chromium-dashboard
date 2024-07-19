@@ -24,13 +24,14 @@ export interface MessageResponse {
      * @type {string}
      * @memberof MessageResponse
      */
-    message?: string;
+    message: string;
 }
 
 /**
  * Check if a given object implements the MessageResponse interface.
  */
 export function instanceOfMessageResponse(value: object): value is MessageResponse {
+    if (!('message' in value) || value['message'] === undefined) return false;
     return true;
 }
 
@@ -44,7 +45,7 @@ export function MessageResponseFromJSONTyped(json: any, ignoreDiscriminator: boo
     }
     return {
         
-        'message': json['message'] == null ? undefined : json['message'],
+        'message': json['message'],
     };
 }
 

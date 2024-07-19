@@ -128,7 +128,7 @@ class IntentsAPITest(testing_config.CustomTestCase):
           stage_id=self.extension_stage_1.key.integer_id())
     self.assertEqual(response,
                      {'message': 'Email task submitted successfully.'})
-    expected_task_params: intents_api.IntentOptions = {
+    expected_task_params: intents_api.IntentGenerationOptions = {
       'subject': 'Intent to Extend Experiment: feature one',
       'feature_id': self.feature_1_id,
       'sections_to_show': ['i2p_thread', 'experiment', 'extension_reason'],
@@ -158,7 +158,7 @@ class IntentsAPITest(testing_config.CustomTestCase):
           stage_id=self.ot_stage_1.key.integer_id())
     self.assertEqual(response,
                      {'message': 'Email task submitted successfully.'})
-    expected_task_params: intents_api.IntentOptions = {
+    expected_task_params: intents_api.IntentGenerationOptions = {
       'subject': 'Intent to Experiment: feature one',
       'feature_id': self.feature_1_id,
       'sections_to_show': ['i2p_thread', 'experiment', 'extension_reason'],
@@ -187,7 +187,7 @@ class IntentsAPITest(testing_config.CustomTestCase):
           stage_id=self.devtrial_stage.key.integer_id())
     self.assertEqual(response,
                      {'message': 'Email task submitted successfully.'})
-    expected_task_params: intents_api.IntentOptions = {
+    expected_task_params: intents_api.IntentGenerationOptions = {
       'subject': 'Ready for Developer Testing: feature one',
       'feature_id': self.feature_1_id,
       'sections_to_show': ['i2p_thread', 'experiment'],

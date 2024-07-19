@@ -62,6 +62,8 @@ class PostIntentRequest(Model):
         :param gate_id: The gate_id of this PostIntentRequest.
         :type gate_id: int
         """
+        if gate_id is None:
+            raise ValueError("Invalid value for `gate_id`, must not be `None`")  # noqa: E501
 
         self._gate_id = gate_id
 
@@ -83,5 +85,7 @@ class PostIntentRequest(Model):
         :param intent_cc_emails: The intent_cc_emails of this PostIntentRequest.
         :type intent_cc_emails: List[str]
         """
+        if intent_cc_emails is None:
+            raise ValueError("Invalid value for `intent_cc_emails`, must not be `None`")  # noqa: E501
 
         self._intent_cc_emails = intent_cc_emails
