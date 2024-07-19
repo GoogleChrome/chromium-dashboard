@@ -1,9 +1,12 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {styleMap} from 'lit-html/directives/style-map.js';
+import {customElement, property, state} from 'lit/decorators.js';
 import {createRef, ref} from 'lit/directives/ref.js';
 import page from 'page';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import {DRAWER_WIDTH_PX} from './chromedash-drawer.js';
+import {User} from '../js-src/cs-client.js';
+import {ChromedashDrawer, DRAWER_WIDTH_PX} from './chromedash-drawer.js';
+import {ChromedashGateColumn} from './chromedash-gate-column.js';
 import {
   IS_MOBILE,
   isoDateString,
@@ -12,8 +15,9 @@ import {
   updateURLParams,
 } from './utils';
 
+@customElement('chromedash-app')
 export class ChromedashApp extends LitElement {
-  gateColumnRef = createRef();
+  gateColumnRef = createRef<ChromedashGateColumn>();
 
   static get styles() {
     return [
@@ -100,42 +104,36 @@ export class ChromedashApp extends LitElement {
     ];
   }
 
-  static get properties() {
-    return {
-      user: {type: Object},
-      paired_user: {type: Object},
-      loading: {type: Boolean},
-      appTitle: {type: String},
-      googleSignInClientId: {type: String},
-      devMode: {type: String},
-      currentPage: {type: String},
-      bannerMessage: {type: String},
-      bannerTime: {type: Number},
-      pageComponent: {attribute: false},
-      contextLink: {type: String}, // used for the back button in the feature page
-      sidebarHidden: {type: Boolean},
-      selectedGateId: {type: Number},
-      drawerOpen: {type: Boolean},
-    };
-  }
-
-  constructor() {
-    super();
-    this.user = {};
-    this.paired_user = undefined;
-    this.loading = true;
-    this.appTitle = '';
-    (this.googleSignInClientId = ''), (this.devMode = '');
-    this.currentPage = '';
-    this.bannerMessage = '';
-    this.bannerTime = null;
-    this.pageComponent = null;
-    this.contextLink = '/features';
-    this.sidebarHidden = true;
-    this.selectedGateId = 0;
-    this.beforeUnloadHandler = null;
-    this.drawerOpen = !IS_MOBILE;
-  }
+  @property({attribute: false})
+  user!: User;
+  @property({attribute: false})
+  paired_user: User | undefined = undefined;
+  @property({type: String})
+  appTitle = '';
+  @property({type: String})
+  googleSignInClientId = '';
+  @property({type: String})
+  devMode = '';
+  @property({type: String})
+  bannerMessage = '';
+  @property({type: Number})
+  bannerTime: number | null = null;
+  @state()
+  loading = true;
+  @state()
+  currentPage = '';
+  @state()
+  pageComponent: any = null;
+  @state()
+  contextLink = '/features';
+  @state()
+  sidebarHidden = true;
+  @state()
+  selectedGateId = 0;
+  @state()
+  beforeUnloadHandler: ((event: any) => void) | null = null;
+  @state()
+  drawerOpen = !IS_MOBILE;
 
   firstUpdated() {
     const toastEl = document.createElement('chromedash-toast');
@@ -576,7 +574,7 @@ export class ChromedashApp extends LitElement {
   }
 
   showGateColumn(feature, stageId, gate) {
-    this.gateColumnRef.value.setContext(feature, stageId, gate);
+    this.gateColumnRef.value?.setContext(feature, stageId, gate);
     this.selectedGateId = gate.id;
     this.pageComponent.selectedGateId = gate.id;
     this.showSidebar();
@@ -587,7 +585,8 @@ export class ChromedashApp extends LitElement {
   }
 
   handleShowDrawer() {
-    const drawer = this.shadowRoot.querySelector('chromedash-drawer');
+    const drawer: ChromedashDrawer =
+      this.renderRoot.querySelector('chromedash-drawer')!;
     this.drawerOpen = drawer.toggleDrawerActions();
   }
 
@@ -703,5 +702,3 @@ export class ChromedashApp extends LitElement {
         `;
   }
 }
-
-customElements.define('chromedash-app', ChromedashApp);
