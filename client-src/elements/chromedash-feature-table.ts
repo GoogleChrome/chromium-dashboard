@@ -14,14 +14,14 @@ export class ChromedashFeatureTable extends LitElement {
   @state()
   reloading = false;
   @state()
-  features!: Feature[];
+  features: Feature[] = [];
   @state()
   totalCount = 0;
   @property({type: Number, attribute: false})
   start = 0;
-  @property({type: String, attribute: false})
+  @property({type: String})
   query = '';
-  @property({type: Boolean, attribute: false})
+  @property({type: Boolean})
   showEnterprise = false;
   @property({type: String, attribute: false})
   sortSpec = '';

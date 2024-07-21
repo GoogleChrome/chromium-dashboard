@@ -1590,7 +1590,6 @@ export const ALL_FIELDS: Record<string, Field> = {
   },
 
   ot_creation__milestone_desktop_first: {
-    name: 'ot_milestone_desktop_start',
     type: 'input',
     attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: true,
@@ -1605,7 +1604,6 @@ export const ALL_FIELDS: Record<string, Field> = {
   },
 
   ot_creation__milestone_desktop_last: {
-    name: 'ot_milestone_desktop_end',
     type: 'input',
     attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: true,

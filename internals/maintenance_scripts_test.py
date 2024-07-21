@@ -23,6 +23,7 @@ from internals import maintenance_scripts
 from internals import core_enums
 from internals.core_models import FeatureEntry, Stage, MilestoneSet
 from internals.review_models import Gate, Vote
+import settings
 
 class AssociateOTsTest(testing_config.CustomTestCase):
 
@@ -278,10 +279,14 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
     self.ot_stage_3
     self.handler = maintenance_scripts.CreateOriginTrials()
 
+    # Needs to be set in order to test any functionality here.
+    settings.AUTOMATED_OT_CREATION = True
+
   def tearDown(self):
     for kind in [FeatureEntry, Stage]:
       for entity in kind.query():
         entity.key.delete()
+    settings.AUTOMATED_OT_CREATION = False
 
   @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
   @mock.patch('internals.maintenance_scripts.CreateOriginTrials._get_today')
@@ -432,6 +437,12 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
     # OT 3 had no action request, so it should not have changed.
     self.assertIsNone(self.ot_stage_3.origin_trial_id)
 
+  def test_create_trials__automation_not_active(self):
+    """Cron job doesn't run when automated creation is not turned on."""
+    settings.AUTOMATED_OT_CREATION = False
+
+    result = self.handler.get_template_data()
+    self.assertEqual('Automated OT creation process is not active.', result)
 
 class ActivateOriginTrialsTest(testing_config.CustomTestCase):
 
@@ -487,10 +498,14 @@ class ActivateOriginTrialsTest(testing_config.CustomTestCase):
     self.ot_stage_3
     self.handler = maintenance_scripts.ActivateOriginTrials()
 
+    # Needs to be set in order to test any functionality here.
+    settings.AUTOMATED_OT_CREATION = True
+
   def tearDown(self):
     for kind in [FeatureEntry, Stage]:
       for entity in kind.query():
         entity.key.delete()
+    settings.AUTOMATED_OT_CREATION = False
 
   @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
   @mock.patch('internals.maintenance_scripts.ActivateOriginTrials._get_today')
@@ -550,6 +565,13 @@ class ActivateOriginTrialsTest(testing_config.CustomTestCase):
     # Activation wasn't handled, so activation dates should still be set.
     self.assertIsNotNone(self.ot_stage_1.ot_activation_date)
     self.assertIsNotNone(self.ot_stage_2.ot_activation_date)
+
+  def test_activate_trials__automation_not_active(self):
+    """Cron job doesn't run when automated creation is not turned on."""
+    settings.AUTOMATED_OT_CREATION = False
+
+    result = self.handler.get_template_data()
+    self.assertEqual('Automated OT creation process is not active.', result)
 
 
 class DeleteEmptyExtensionStagesTest(testing_config.CustomTestCase):

@@ -650,6 +650,7 @@ class OTActivatedHandler(basehandlers.FlaskHandler):
   EMAIL_TEMPLATE_PATH = 'origintrials/ot-activated-email.html'
 
   def process_post_data(self, **kwargs):
+    self.require_task_header()
     stage = self.get_param('stage', required=True)
     contacts = stage['ot_emails'] or []
     contacts.append('ot_owner_email')
@@ -680,6 +681,7 @@ class OTCreationProcessedHandler(basehandlers.FlaskHandler):
   EMAIL_TEMPLATE_PATH = 'origintrials/ot-creation-processed-email.html'
 
   def process_post_data(self, **kwargs):
+    self.require_task_header()
     stage = self.get_param('stage', required=True)
     contacts = stage['ot_emails'] or []
     contacts.append('ot_owner_email')
@@ -710,6 +712,7 @@ class OTCreationRequestFailedHandler(basehandlers.FlaskHandler):
   EMAIL_TEMPLATE_PATH = 'origintrials/ot-creation-request-failed-email.html'
 
   def process_post_data(self, **kwargs):
+    self.require_task_header()
     stage = self.get_param('stage', required=True)
     send_emails([self.build_email(stage)])
     return {'message': 'OK'}
@@ -737,6 +740,7 @@ class OTActivationFailedHandler(basehandlers.FlaskHandler):
   EMAIL_TEMPLATE_PATH = 'origintrials/ot-activation-failed-email.html'
 
   def process_post_data(self, **kwargs):
+    self.require_task_header()
     stage = self.get_param('stage', required=True)
     send_emails([self.build_email(stage)])
     return {'message': 'OK'}
@@ -763,6 +767,7 @@ class OTCreationRequestHandler(basehandlers.FlaskHandler):
   IS_INTERNAL_HANDLER = True
 
   def process_post_data(self, **kwargs):
+    self.require_task_header()
     stage = self.get_param('stage')
     logging.info('Starting to notify about origin trial creation request.')
     send_emails([self.make_creation_request_email(stage)])
@@ -830,6 +835,7 @@ class OTExtensionApprovedHandler(basehandlers.FlaskHandler):
   EMAIL_TEMPLATE_PATH = 'origintrials/ot-extension-approved-email.html'
 
   def process_post_data(self, **kwargs):
+    self.require_task_header()
     feature = self.get_param('feature')
     if feature is None:
       self.abort(400, 'No feature provided.')
@@ -876,6 +882,7 @@ class OTEndingNextReleaseReminderHandler(basehandlers.FlaskHandler):
   EMAIL_TEMPLATE_PATH = 'origintrials/ot-ending-next-release-email.html'
 
   def process_post_data(self, **kwargs):
+    self.require_task_header()
     contacts = self.get_param('contacts')
     body_data = {
       'name': self.get_param('name'),
@@ -904,6 +911,7 @@ class OTEndingThisReleaseReminderHandler(basehandlers.FlaskHandler):
   EMAIL_TEMPLATE_PATH = 'origintrials/ot-ending-this-release-email.html'
 
   def process_post_data(self, **kwargs):
+    self.require_task_header()
     name = self.get_param('name')
     release_milestone = self.get_param('release_milestone')
     next_release = self.get_param('next_release')
@@ -934,6 +942,7 @@ class OTBetaAvailabilityReminderHandler(basehandlers.FlaskHandler):
   EMAIL_TEMPLATE_PATH = 'origintrials/ot-beta-availability-email.html'
 
   def process_post_data(self, **kwargs):
+    self.require_task_header()
     contacts = self.get_param('contacts')
     body_data = {
       'name': self.get_param('name'),
@@ -960,6 +969,7 @@ class OTFirstBranchReminderHandler(basehandlers.FlaskHandler):
   EMAIL_TEMPLATE_PATH = 'origintrials/ot-first-branch-email.html'
 
   def process_post_data(self, **kwargs):
+    self.require_task_header()
     contacts = self.get_param('contacts')
     body_data = {
       'name': self.get_param('name'),
@@ -987,6 +997,7 @@ class OTLastBranchReminderHandler(basehandlers.FlaskHandler):
   EMAIL_TEMPLATE_PATH = 'origintrials/ot-last-branch-email.html'
 
   def process_post_data(self, **kwargs):
+    self.require_task_header()
     contacts = self.get_param('contacts')
     body_data = {
       'name': self.get_param('name'),
@@ -1015,6 +1026,7 @@ class OTAutomatedProcessEmailHandler(basehandlers.FlaskHandler):
   EMAIL_TEMPLATE_PATH = 'origintrials/ot-automated-process-email.html'
 
   def process_post_data(self, **kwargs):
+    self.require_task_header()
     now_date = datetime.now().strftime('%d %B, %Y')
     body_data = {
       'email_date': now_date,
@@ -1044,6 +1056,7 @@ class OTExtendedHandler(basehandlers.FlaskHandler):
   EMAIL_TEMPLATE_PATH = 'origintrials/ot-extended-email.html'
 
   def process_post_data(self, **kwargs):
+    self.require_task_header()
     extension_stage = self.get_param('stage')
     ot_stage = self.get_param('ot_stage')
     logging.info('Starting to notify about successful origin trial extension.')

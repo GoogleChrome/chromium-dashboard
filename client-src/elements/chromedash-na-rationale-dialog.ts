@@ -1,4 +1,4 @@
-import {LitElement, css, html} from 'lit';
+import {LitElement, css, html, nothing} from 'lit';
 import {ref, createRef} from 'lit/directives/ref.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {customElement, property} from 'lit/decorators.js';
@@ -30,7 +30,7 @@ export class ChromedashNaRationaleDialog extends LitElement {
   }
 
   @property({type: Object, attribute: false})
-  gate!: GateDict;
+  gate?: GateDict = undefined;
   @property({attribute: false})
   resolve: (value?: string) => void = () => {
     console.log('Missing resolve action');
@@ -48,6 +48,9 @@ export class ChromedashNaRationaleDialog extends LitElement {
   }
 
   renderDialogContent() {
+    if (this.gate === undefined) {
+      return nothing;
+    }
     return html`
       <p style="padding: var(--content-padding)">
         Please briefly explain why your feature does not require a review. Your

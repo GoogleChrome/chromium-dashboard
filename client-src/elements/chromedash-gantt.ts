@@ -12,14 +12,7 @@ import {
 class ChromedashGantt extends LitElement {
   @property({type: Object})
   feature!: Feature;
-  @property({type: Number})
-  stableMilestone: number | null = null;
 
-  connectedCallback() {
-    window.csClient
-      .getChannels()
-      .then(channels => (this.stableMilestone = channels['stable'].version));
-  }
   static get styles() {
     return [
       ...SHARED_STYLES,
