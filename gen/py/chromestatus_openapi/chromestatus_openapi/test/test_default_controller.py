@@ -33,6 +33,21 @@ class TestDefaultController(BaseTestCase):
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
+    def test_get_blink_components(self):
+        """Test case for get_blink_components
+
+        Get list of Blink components
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/blinkcomponents',
+            method='GET',
+            headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
     def test_list_component_users(self):
         """Test case for list_component_users
 

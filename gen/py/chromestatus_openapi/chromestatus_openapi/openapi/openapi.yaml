@@ -13,6 +13,18 @@ info:
 servers:
 - url: /api/v0
 paths:
+  /blinkcomponents:
+    get:
+      operationId: get_blink_components
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlinkComponentsResponse'
+          description: List of Blink components
+      summary: Get list of Blink components
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /components/{componentId}/users/{userId}:
     delete:
       operationId: remove_user_from_component
@@ -225,6 +237,12 @@ components:
         type: string
       style: form
   schemas:
+    BlinkComponentsResponse:
+      additionalProperties:
+        items:
+          type: string
+        type: array
+      type: object
     ComponentsUsersResponse:
       example:
         components:

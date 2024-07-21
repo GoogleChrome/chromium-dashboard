@@ -88,6 +88,20 @@ export interface DefaultApiInterface {
 
     /**
      * 
+     * @summary Get list of Blink components
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getBlinkComponentsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: Array<string>; }>>;
+
+    /**
+     * Get list of Blink components
+     */
+    getBlinkComponents(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: Array<string>; }>;
+
+    /**
+     * 
      * @summary List all components and possible users
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -228,6 +242,32 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async addUserToComponent(requestParameters: AddUserToComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.addUserToComponentRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Get list of Blink components
+     */
+    async getBlinkComponentsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: Array<string>; }>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/blinkcomponents`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse<any>(response);
+    }
+
+    /**
+     * Get list of Blink components
+     */
+    async getBlinkComponents(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: Array<string>; }> {
+        const response = await this.getBlinkComponentsRaw(initOverrides);
+        return await response.value();
     }
 
     /**

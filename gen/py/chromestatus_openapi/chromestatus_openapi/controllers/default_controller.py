@@ -31,6 +31,17 @@ def add_user_to_component(component_id, user_id, component_users_request=None): 
     return 'do some magic!'
 
 
+def get_blink_components():  # noqa: E501
+    """Get list of Blink components
+
+     # noqa: E501
+
+
+    :rtype: Union[Dict[str, List[str]], Tuple[Dict[str, List[str]], int], Tuple[Dict[str, List[str]], int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
 def list_component_users():  # noqa: E501
     """List all components and possible users
 

@@ -15,6 +15,17 @@ info:
 servers:
   - url: /api/v0
 paths:
+  /blinkcomponents:
+      get:
+        summary: Get list of Blink components
+        operationId: getBlinkComponents
+        responses:
+          '200':
+            description: List of Blink components
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/BlinkComponentsResponse'
   /componentsusers:
     get:
       summary: List all components and possible users
@@ -189,6 +200,12 @@ components:
       in: header
       name: X-Xsrf-Token
   schemas:
+    BlinkComponentsResponse:
+      type: object
+      additionalProperties:
+        type: array
+        items:
+          type: string
     ComponentsUsersResponse:
       properties:
         users:

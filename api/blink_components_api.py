@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+from chromestatus_openapi.models import BlinkComponentsResponse
 from framework import basehandlers
 from internals import user_models
 
@@ -24,4 +24,6 @@ class BlinkComponentsAPI(basehandlers.APIHandler):
 
   def do_get(self, **kwargs):
     """Returns a dict with blink components as both keys and values."""
-    return {x: [x, x] for x in user_models.BlinkComponent.fetch_all_components()}
+    components = {x: [x, x] for x in user_models.BlinkComponent.fetch_all_components()}
+    response_json = BlinkComponentsResponse(**components).to_dict()
+    return response_json
