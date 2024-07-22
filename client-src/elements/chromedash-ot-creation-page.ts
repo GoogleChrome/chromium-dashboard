@@ -363,14 +363,17 @@ export class ChromedashOTCreationPage extends LitElement {
   }
 
   renderSubheader() {
-    return html`
-      <div id="subheader">
-        <h2 id="breadcrumbs">
+    const link = this.loading
+      ? nothing
+      : html`
           <a href=${this.getNextPage()}>
             <iron-icon icon="chromestatus:arrow-back"></iron-icon>
             Request origin trial creation: ${this.feature.name}
           </a>
-        </h2>
+        `;
+    return html`
+      <div id="subheader">
+        <h2 id="breadcrumbs">${link}</h2>
       </div>
     `;
   }
