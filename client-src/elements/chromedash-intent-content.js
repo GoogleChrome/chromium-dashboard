@@ -136,41 +136,25 @@ export class ChromedashIntentContent extends LitElement {
     ];
   }
 
-  setCopyEmailListener() {
-    const copyEmailBodyEl = this.shadowRoot.querySelector('#copy-email-body');
-    const emailBodyEl = this.shadowRoot.querySelector('.email');
-    if (copyEmailBodyEl && emailBodyEl) {
-      copyEmailBodyEl.addEventListener('click', () => {
-        window.getSelection().removeAllRanges();
-        const range = document.createRange();
-        range.selectNode(emailBodyEl);
-        window.getSelection().addRange(range);
-        document.execCommand('copy');
-        showToastMessage('Email body copied');
-      });
-    }
-  }
-
-  firstUpdated() {
-    // We need to wait until the entire page is rendered, so later dependents
-    // are available, hence firstUpdated is too soon.
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () =>
-        setTimeout(() => {
-          this.setCopyEmailListener();
-        })
-      );
-    } else {
-      this.setCopyEmailListener();
-    }
-  }
-
   renderEmailBody() {
     if (this.intentBody) {
       // Needed for rendering HTML format returned from the API.
       return unsafeHTML(this.intentBody);
     }
     return nothing;
+  }
+
+  copyIntentBodyHandler() {
+    const copyEmailBodyEl = this.shadowRoot.querySelector('#copy-email-body');
+    const emailBodyEl = this.shadowRoot.querySelector('.email');
+    if (copyEmailBodyEl && emailBodyEl) {
+      window.getSelection().removeAllRanges();
+      const range = document.createRange();
+      range.selectNode(emailBodyEl);
+      window.getSelection().addRange(range);
+      document.execCommand('copy');
+      showToastMessage('Email body copied');
+    }
   }
 
   render() {
@@ -196,6 +180,7 @@ export class ChromedashIntentContent extends LitElement {
           <iron-icon
             icon="chromestatus:content_copy"
             id="copy-email-body"
+            @click="${() => this.copyIntentBodyHandler()}"
           ></iron-icon>
         </span>
       </p>
