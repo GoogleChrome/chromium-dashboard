@@ -202,8 +202,13 @@ def send_ot_creation_notification(stage: Stage):
 
 
 def send_trial_extension_approved_notification(
-    fe: 'FeatureEntry', stage: Stage, gate_id: int):
+    fe: 'FeatureEntry', stage: Stage, gate_id: int) -> None:
   """Notify that a trial extension is ready to be finalized."""
+  # If we don't have an OT owner email, don't send the email out.
+  # This should always be set, and is collected during the extension request.
+  if not stage.ot_owner_email:
+    return
+
   params = {
     'feature': converters.feature_entry_to_json_verbose(fe),
     'requester_email': stage.ot_owner_email,
