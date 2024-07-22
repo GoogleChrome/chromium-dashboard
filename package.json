@@ -80,7 +80,7 @@
     "@rollup/plugin-typescript": "^11.1.6",
     "@shoelace-style/shoelace": "^2.15.1",
     "@types/jest": "^29.5.12",
-    "@types/node": "^20.14.10",
+    "@types/node": "^20.14.11",
     "@web/test-runner": "^0.18.1",
     "@web/test-runner-playwright": "^0.11.0",
     "acorn": ">=8.12.1",
