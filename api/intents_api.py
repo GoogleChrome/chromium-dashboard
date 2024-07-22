@@ -17,7 +17,8 @@ from typing import TypedDict
 from flask import Response, render_template
 
 from api import converters
-from chromestatus_openapi.models import PostIntentRequest, MessageResponse
+from chromestatus_openapi.models import (
+  GetIntentResponse, PostIntentRequest, MessageResponse)
 from framework import basehandlers
 from framework import cloud_tasks_helpers
 from framework import permissions
@@ -37,7 +38,6 @@ class IntentGenerationOptions(TypedDict):
   intent_stage: int|None
   default_url: str
   intent_cc_emails: list[str]
-
 
 
 class IntentsAPI(basehandlers.APIHandler):
@@ -76,13 +76,11 @@ class IntentsAPI(basehandlers.APIHandler):
       'intent_stage': intent_stage,
       'default_url': default_url,
     }
-
-    return {
-      'subject': (f'{compute_subject_prefix(feature, intent_stage)}: '
-                  f'{feature.name}'),
-      'email_body': render_template(
-          'blink/intent_to_implement.html', **template_data)
-    }
+    return GetIntentResponse(
+      subject=(f'{compute_subject_prefix(feature, intent_stage)}: '
+               f'{feature.name}'),
+      email_body=render_template(
+          'blink/intent_to_implement.html', **template_data)).to_dict()
 
   def do_post(self, **kwargs) -> Response|dict|MessageResponse:
     """Submit an intent email directly to blink-dev."""
