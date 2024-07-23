@@ -13,6 +13,37 @@ info:
 servers:
 - url: /api/v0
 paths:
+  /channels:
+    get:
+      operationId: get_chrome_channels
+      parameters:
+      - description: Start milestone
+        explode: true
+        in: query
+        name: start
+        required: false
+        schema:
+          type: integer
+        style: form
+      - description: End milestone
+        explode: true
+        in: query
+        name: end
+        required: false
+        schema:
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getChromeChannels_200_response'
+          description: List of Chrome channels
+      security:
+      - XsrfToken: []
+      summary: Get Chrome channels details
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /components/{componentId}/users/{userId}:
     delete:
       operationId: remove_user_from_component
@@ -225,6 +256,32 @@ components:
         type: string
       style: form
   schemas:
+    ChannelInfo:
+      properties:
+        version:
+          title: version
+          type: number
+        mstone:
+          title: mstone
+          type: number
+        stable_date:
+          nullable: true
+          title: stable_date
+          type: string
+        earliest_beta:
+          nullable: true
+          title: earliest_beta
+          type: string
+        latest_beta:
+          nullable: true
+          title: latest_beta
+          type: string
+      title: ChannelInfo
+      type: object
+    ChannelsResponse:
+      additionalProperties:
+        $ref: '#/components/schemas/ChannelInfo'
+      type: object
     ComponentsUsersResponse:
       example:
         components:
@@ -625,6 +682,11 @@ components:
     LinkPreviewSpecs:
       allOf:
       - $ref: '#/components/schemas/LinkPreviewOpenGraph'
+    getChromeChannels_200_response:
+      oneOf:
+      - $ref: '#/components/schemas/ChannelsResponse'
+      - $ref: '#/components/schemas/ChannelInfo'
+      title: getChromeChannels_200_response
     LinkPreviewGithubIssue_allOf_information:
       properties:
         url:

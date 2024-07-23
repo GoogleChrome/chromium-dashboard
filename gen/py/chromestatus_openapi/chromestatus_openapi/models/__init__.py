@@ -1,5 +1,6 @@
 # flake8: noqa
 # import models into model package
+from chromestatus_openapi.models.channel_info import ChannelInfo
 from chromestatus_openapi.models.component_users_request import ComponentUsersRequest
 from chromestatus_openapi.models.components_user import ComponentsUser
 from chromestatus_openapi.models.components_users_response import ComponentsUsersResponse
@@ -7,6 +8,7 @@ from chromestatus_openapi.models.external_reviews_response import ExternalReview
 from chromestatus_openapi.models.feature_latency import FeatureLatency
 from chromestatus_openapi.models.feature_link import FeatureLink
 from chromestatus_openapi.models.gate_latency import GateLatency
+from chromestatus_openapi.models.get_chrome_channels200_response import GetChromeChannels200Response
 from chromestatus_openapi.models.link_preview import LinkPreview
 from chromestatus_openapi.models.link_preview_base import LinkPreviewBase
 from chromestatus_openapi.models.link_preview_github_issue import LinkPreviewGithubIssue

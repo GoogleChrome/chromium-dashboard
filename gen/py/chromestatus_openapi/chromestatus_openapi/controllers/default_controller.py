@@ -7,6 +7,7 @@ from chromestatus_openapi.models.component_users_request import ComponentUsersRe
 from chromestatus_openapi.models.components_users_response import ComponentsUsersResponse  # noqa: E501
 from chromestatus_openapi.models.external_reviews_response import ExternalReviewsResponse  # noqa: E501
 from chromestatus_openapi.models.feature_latency import FeatureLatency  # noqa: E501
+from chromestatus_openapi.models.get_chrome_channels200_response import GetChromeChannels200Response  # noqa: E501
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
 from chromestatus_openapi import util
@@ -28,6 +29,21 @@ def add_user_to_component(component_id, user_id, component_users_request=None): 
     """
     if connexion.request.is_json:
         component_users_request = ComponentUsersRequest.from_dict(connexion.request.get_json())  # noqa: E501
+    return 'do some magic!'
+
+
+def get_chrome_channels(start=None, end=None):  # noqa: E501
+    """Get Chrome channels details
+
+     # noqa: E501
+
+    :param start: Start milestone
+    :type start: int
+    :param end: End milestone
+    :type end: int
+
+    :rtype: Union[GetChromeChannels200Response, Tuple[GetChromeChannels200Response, int], Tuple[GetChromeChannels200Response, int, Dict[str, str]]
+    """
     return 'do some magic!'
 
 

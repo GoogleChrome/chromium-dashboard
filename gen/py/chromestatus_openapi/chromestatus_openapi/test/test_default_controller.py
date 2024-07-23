@@ -6,6 +6,7 @@ from chromestatus_openapi.models.component_users_request import ComponentUsersRe
 from chromestatus_openapi.models.components_users_response import ComponentsUsersResponse  # noqa: E501
 from chromestatus_openapi.models.external_reviews_response import ExternalReviewsResponse  # noqa: E501
 from chromestatus_openapi.models.feature_latency import FeatureLatency  # noqa: E501
+from chromestatus_openapi.models.get_chrome_channels200_response import GetChromeChannels200Response  # noqa: E501
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
 from chromestatus_openapi.test import BaseTestCase
@@ -30,6 +31,25 @@ class TestDefaultController(BaseTestCase):
             headers=headers,
             data=json.dumps(component_users_request),
             content_type='application/json')
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_get_chrome_channels(self):
+        """Test case for get_chrome_channels
+
+        Get Chrome channels details
+        """
+        query_string = [('start', 56),
+                        ('end', 56)]
+        headers = { 
+            'Accept': 'application/json',
+            'XsrfToken': 'special-key',
+        }
+        response = self.client.open(
+            '/api/v0/channels',
+            method='GET',
+            headers=headers,
+            query_string=query_string)
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 

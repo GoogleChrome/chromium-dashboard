@@ -19,6 +19,7 @@ import type {
   ComponentsUsersResponse,
   ExternalReviewsResponse,
   FeatureLatency,
+  GetChromeChannels200Response,
   ReviewLatency,
   SpecMentor,
 } from '../models/index';
@@ -31,6 +32,8 @@ import {
     ExternalReviewsResponseToJSON,
     FeatureLatencyFromJSON,
     FeatureLatencyToJSON,
+    GetChromeChannels200ResponseFromJSON,
+    GetChromeChannels200ResponseToJSON,
     ReviewLatencyFromJSON,
     ReviewLatencyToJSON,
     SpecMentorFromJSON,
@@ -41,6 +44,11 @@ export interface AddUserToComponentRequest {
     componentId: number;
     userId: number;
     componentUsersRequest?: ComponentUsersRequest;
+}
+
+export interface GetChromeChannelsRequest {
+    start?: number;
+    end?: number;
 }
 
 export interface ListExternalReviewsRequest {
@@ -85,6 +93,22 @@ export interface DefaultApiInterface {
      * Add a user to a component
      */
     addUserToComponent(requestParameters: AddUserToComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * 
+     * @summary Get Chrome channels details
+     * @param {number} [start] Start milestone
+     * @param {number} [end] End milestone
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getChromeChannelsRaw(requestParameters: GetChromeChannelsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetChromeChannels200Response>>;
+
+    /**
+     * Get Chrome channels details
+     */
+    getChromeChannels(requestParameters: GetChromeChannelsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetChromeChannels200Response>;
 
     /**
      * 
@@ -228,6 +252,44 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async addUserToComponent(requestParameters: AddUserToComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.addUserToComponentRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Get Chrome channels details
+     */
+    async getChromeChannelsRaw(requestParameters: GetChromeChannelsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetChromeChannels200Response>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['start'] != null) {
+            queryParameters['start'] = requestParameters['start'];
+        }
+
+        if (requestParameters['end'] != null) {
+            queryParameters['end'] = requestParameters['end'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["X-Xsrf-Token"] = await this.configuration.apiKey("X-Xsrf-Token"); // XsrfToken authentication
+        }
+
+        const response = await this.request({
+            path: `/channels`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GetChromeChannels200ResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Chrome channels details
+     */
+    async getChromeChannels(requestParameters: GetChromeChannelsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetChromeChannels200Response> {
+        const response = await this.getChromeChannelsRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**

@@ -15,6 +15,32 @@ info:
 servers:
   - url: /api/v0
 paths:
+  /channels:
+    get:
+      summary: Get Chrome channels details
+      operationId: getChromeChannels
+      security:
+        - XsrfToken: []
+      parameters:
+        - in: query
+          name: start
+          schema:
+            type: integer
+          description: Start milestone
+        - in: query
+          name: end
+          schema:
+            type: integer
+          description: End milestone
+      responses:
+        '200':
+          description: List of Chrome channels
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ChannelsResponse'
+                  - $ref: '#/components/schemas/ChannelInfo'
   /componentsusers:
     get:
       summary: List all components and possible users
@@ -189,6 +215,26 @@ components:
       in: header
       name: X-Xsrf-Token
   schemas:
+    ChannelInfo:
+      type: object
+      properties:
+        version:
+          type: number
+        mstone:
+          type: number
+        stable_date:
+          type: string
+          nullable: true
+        earliest_beta:
+          type: string
+          nullable: true
+        latest_beta:
+          type: string
+          nullable: true
+    ChannelsResponse:
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/ChannelInfo'
     ComponentsUsersResponse:
       properties:
         users:
