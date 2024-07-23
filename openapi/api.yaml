@@ -38,9 +38,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/ChannelsResponse'
-                  - $ref: '#/components/schemas/ChannelInfo'
+                  $ref: '#/components/schemas/ChannelsResponse'
   /componentsusers:
     get:
       summary: List all components and possible users
@@ -231,6 +229,8 @@ components:
         latest_beta:
           type: string
           nullable: true
+      required:
+        - version
     ChannelsResponse:
       type: object
       additionalProperties:

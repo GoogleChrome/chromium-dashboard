@@ -77,6 +77,8 @@ class ChannelInfo(Model):
         :param version: The version of this ChannelInfo.
         :type version: float
         """
+        if version is None:
+            raise ValueError("Invalid value for `version`, must not be `None`")  # noqa: E501
 
         self._version = version
 

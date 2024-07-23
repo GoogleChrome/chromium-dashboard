@@ -38,7 +38,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/getChromeChannels_200_response'
+                $ref: '#/components/schemas/ChannelsResponse'
           description: List of Chrome channels
       security:
       - XsrfToken: []
@@ -276,6 +276,8 @@ components:
           nullable: true
           title: latest_beta
           type: string
+      required:
+      - version
       title: ChannelInfo
       type: object
     ChannelsResponse:
@@ -682,11 +684,6 @@ components:
     LinkPreviewSpecs:
       allOf:
       - $ref: '#/components/schemas/LinkPreviewOpenGraph'
-    getChromeChannels_200_response:
-      oneOf:
-      - $ref: '#/components/schemas/ChannelsResponse'
-      - $ref: '#/components/schemas/ChannelInfo'
-      title: getChromeChannels_200_response
     LinkPreviewGithubIssue_allOf_information:
       properties:
         url:

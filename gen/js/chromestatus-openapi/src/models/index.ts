@@ -8,7 +8,6 @@ export * from './ExternalReviewsResponse';
 export * from './FeatureLatency';
 export * from './FeatureLink';
 export * from './GateLatency';
-export * from './GetChromeChannels200Response';
 export * from './LinkPreview';
 export * from './LinkPreviewBase';
 export * from './LinkPreviewGithubIssue';

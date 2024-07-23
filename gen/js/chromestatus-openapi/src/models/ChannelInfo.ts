@@ -24,7 +24,7 @@ export interface ChannelInfo {
      * @type {number}
      * @memberof ChannelInfo
      */
-    version?: number;
+    version: number;
     /**
      * 
      * @type {number}
@@ -55,6 +55,7 @@ export interface ChannelInfo {
  * Check if a given object implements the ChannelInfo interface.
  */
 export function instanceOfChannelInfo(value: object): value is ChannelInfo {
+    if (!('version' in value) || value['version'] === undefined) return false;
     return true;
 }
 
@@ -68,7 +69,7 @@ export function ChannelInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean
     }
     return {
         
-        'version': json['version'] == null ? undefined : json['version'],
+        'version': json['version'],
         'mstone': json['mstone'] == null ? undefined : json['mstone'],
         'stable_date': json['stable_date'] == null ? undefined : json['stable_date'],
         'earliest_beta': json['earliest_beta'] == null ? undefined : json['earliest_beta'],
