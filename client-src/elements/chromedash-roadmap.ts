@@ -1,5 +1,5 @@
 import '@polymer/iron-icon';
-import {LitElement, css, html} from 'lit';
+import {LitElement, css, html, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {Feature} from '../js-src/cs-client.js';
@@ -309,6 +309,9 @@ export class ChromedashRoadmap extends LitElement {
   }
 
   render() {
+    if (this.channels === undefined || this.milestoneInfo === undefined) {
+      return nothing;
+    }
     return html`
       ${this.pastMilestoneArray.map(
         milestone => html`
