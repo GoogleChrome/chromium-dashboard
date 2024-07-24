@@ -54,7 +54,8 @@ class InternalRegistrationConfig(TypedDict):
 
 class CreateOriginTrialRequest(TypedDict):
   trial: RequestTrial
-  internal_registration_config: InternalRegistrationConfig
+  registration_config: InternalRegistrationConfig
+  trial_contacts: list[str]
 
 
 def get_trials_list() -> list[dict[str, Any]]:
@@ -163,12 +164,21 @@ def create_origin_trial(ot_stage: Stage) -> str | None:
       'type': ('DEPRECATION'
                 if ot_stage.ot_is_deprecation_trial else 'ORIGIN_TRIAL'),
     },
-    'internal_registration_config': {'approval_type': 'NONE'},
+    'registration_config': {'approval_type': 'NONE'},
+    'trial_contacts': []
   }
+
+  # Get a list of all OT @google.com contacts (ot_owner_email must be a google
+  # contact).
+  unique_contacts = [ot_stage.ot_owner_email]
+  unique_contacts.extend(ot_stage.ot_emails)
+  unique_contacts = [email for email in set(unique_contacts)
+                     if email.endswith('@google.com')]
+  json['trial_contacts'] = unique_contacts
   if ot_stage.ot_chromium_trial_name:
     json['trial']['origin_trial_feature_name'] = ot_stage.ot_chromium_trial_name
   if ot_stage.ot_require_approvals:
-    json['internal_registration_config'] = {
+    json['registration_config'] = {
       'approval_type': 'CUSTOM',
       'approval_buganizer_component_id': ot_stage.ot_approval_buganizer_component,
       'approval_criteria_url': ot_stage.ot_approval_criteria_url,
@@ -176,7 +186,7 @@ def create_origin_trial(ot_stage: Stage) -> str | None:
       'approval_buganizer_custom_field_id': ot_stage.ot_approval_buganizer_custom_field_id,
     }
   if ot_stage.ot_is_deprecation_trial:
-    json['internal_registration_config']['allow_public_suffix_subdomains'] = True
+    json['registration_config']['allow_public_suffix_subdomains'] = True
   access_token = _get_ot_access_token()
   headers = {'Authorization': f'Bearer {access_token}'}
   url = f'{settings.OT_API_URL}/v1/trials:setup'
