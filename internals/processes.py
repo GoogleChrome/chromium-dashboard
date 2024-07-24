@@ -609,7 +609,7 @@ ALL_PROCESSES = {
     }
 
 
-INTENT_EMAIL_SECTIONS = {
+INTENT_EMAIL_SECTIONS: dict[int, list[str]] = {
     core_enums.INTENT_NONE: [],
     core_enums.INTENT_INCUBATE: [],
     core_enums.INTENT_IMPLEMENT: ['motivation'],

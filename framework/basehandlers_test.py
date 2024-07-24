@@ -27,7 +27,7 @@ from main import Route
 from framework import basehandlers
 from framework import users
 from framework import xsrf
-from internals.core_models import FeatureEntry
+from internals.core_models import FeatureEntry, Stage
 from internals.user_models import AppUser
 import settings
 
@@ -104,15 +104,21 @@ class BaseHandlerTests(testing_config.CustomTestCase):
   def setUp(self):
     self.handler = basehandlers.BaseHandler()
     self.fe_1 = FeatureEntry(
+        id=1,
         name='feature one', summary='sum',
         creator_email="feature_creator@example.com",
         owner_emails=['feature_owner@example.com'],
         editor_emails=['feature_editor@example.com'],
         spec_mentor_emails=['mentor@example.com'], category=1)
     self.fe_1.put()
+    self.stage_1 = Stage(feature_id=1, stage_type=110)
+    self.stage_1.put()
+
 
   def tearDown(self):
-    self.fe_1.key.delete()
+    for kind in [FeatureEntry, Stage]:
+      for entity in kind.query():
+        entity.key.delete()
 
   @mock.patch('flask.request', 'fake request')
   def test_request(self):
@@ -310,6 +316,42 @@ class BaseHandlerTests(testing_config.CustomTestCase):
         self.handler.get_specified_feature()
       mock_abort.assert_called_once_with(
           403, msg="Cannot view that feature")
+
+  def test_get_specified_stage__valid(self):
+    """Return a given stage if a valid stage ID is passed as a JSON dict
+    property."""
+    stage_id = self.stage_1.key.integer_id()
+    with test_app.test_request_context('/test', json={'stage_id': stage_id}):
+      stage = self.handler.get_specified_stage()
+    self.assertEqual(stage.key.integer_id(), stage_id)
+
+  def test_get_specified_stage__passed_as_arg(self):
+    """Return a given stage if a valid stage ID is passed as an argument."""
+    with test_app.test_request_context('/test', json={}):
+      stage = self.handler.get_specified_stage(self.stage_1.key.integer_id())
+    self.assertEqual(stage.key.integer_id(), self.stage_1.key.integer_id())
+
+  @mock.patch('framework.basehandlers.BaseHandler.abort')
+  def test_get_specified_stage__missing(self, mock_abort):
+    """Reject requests that need a stage ID but don't provide one."""
+    mock_abort.side_effect = werkzeug.exceptions.BadRequest
+
+    with test_app.test_request_context('/test', json={}):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.get_specified_stage()
+      mock_abort.assert_called_once_with(
+          400, msg="Missing parameter 'stage_id'")
+
+  @mock.patch('framework.basehandlers.BaseHandler.abort')
+  def test_get_specified_stage__bad(self, mock_abort):
+    """Reject requests that need a stage ID but provide junk."""
+    mock_abort.side_effect = werkzeug.exceptions.BadRequest
+
+    with test_app.test_request_context('/test', json={'stage_id': 'junk'}):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.get_specified_stage()
+      mock_abort.assert_called_once_with(
+          400, msg="Parameter 'stage_id' was not an int")
 
   def test_get_bool_arg__explicitly_true(self):
     """A bool query string arg that is "true" or "1" is true."""

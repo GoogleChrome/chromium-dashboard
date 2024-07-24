@@ -18,7 +18,7 @@ import json
 import logging
 import os
 import re
-from typing import Any, Optional
+from typing import Any, NoReturn, Optional
 
 import flask
 import flask.views
@@ -66,7 +66,7 @@ class BaseHandler(flask.views.MethodView):
   def request(self):
     return flask.request
 
-  def abort(self, status, msg=None, **kwargs):
+  def abort(self, status, msg=None, **kwargs) -> NoReturn:
     """Support webapp2-style, e.g., self.abort(400)."""
     if msg:
       if status == 500:
@@ -125,18 +125,26 @@ class BaseHandler(flask.views.MethodView):
     return val
 
   def get_specified_feature(
-      self, feature_id: Optional[int]=None):
+      self, feature_id: Optional[int]=None) -> FeatureEntry:
     """Get the feature specified in the featureId parameter."""
     feature_id = (feature_id or
                   self.get_int_param('featureId', required=True))
     # Load feature directly from NDB so as to never get a stale cached copy.
-    feature = FeatureEntry.get_by_id(feature_id)
+    feature: FeatureEntry|None = FeatureEntry.get_by_id(feature_id)
     if not feature:
       self.abort(404, msg='Feature not found')
     user = self.get_current_user()
     if not permissions.can_view_feature(user, feature):
       self.abort(403, msg='Cannot view that feature')
     return feature
+
+  def get_specified_stage(self, stage_id: int|None=None) -> Stage:
+    """Get the stage specified in the stage_id parameter."""
+    stage_id = stage_id or self.get_int_param('stage_id', required=True)
+    stage = Stage.get_by_id(stage_id)
+    if not stage:
+      self.abort(404, msg='Stage not found')
+    return stage
 
   def get_bool_arg(self, name, default=False):
     """Get the specified boolean from the query string."""
