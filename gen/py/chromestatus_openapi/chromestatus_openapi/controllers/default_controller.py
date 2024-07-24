@@ -34,7 +34,7 @@ def add_user_to_component(component_id, user_id, component_users_request=None): 
     return 'do some magic!'
 
 
-def get_intent_body(feature_id, stage_id):  # noqa: E501
+def get_intent_body(feature_id, stage_id, gate_id):  # noqa: E501
     """Get the HTML body of an intent draft
 
      # noqa: E501
@@ -43,6 +43,8 @@ def get_intent_body(feature_id, stage_id):  # noqa: E501
     :type feature_id: int
     :param stage_id: Stage ID
     :type stage_id: int
+    :param gate_id: Gate ID
+    :type gate_id: int
 
     :rtype: Union[GetIntentResponse, Tuple[GetIntentResponse, int], Tuple[GetIntentResponse, int, Dict[str, str]]
     """
@@ -115,7 +117,7 @@ def list_spec_mentors(after=None):  # noqa: E501
     return 'do some magic!'
 
 
-def post_intent_to_blink_dev(feature_id, stage_id, post_intent_request=None):  # noqa: E501
+def post_intent_to_blink_dev(feature_id, stage_id, gate_id, post_intent_request=None):  # noqa: E501
     """Submit an intent to be posted on blink-dev
 
      # noqa: E501
@@ -124,6 +126,8 @@ def post_intent_to_blink_dev(feature_id, stage_id, post_intent_request=None):  #
     :type feature_id: int
     :param stage_id: Stage ID
     :type stage_id: int
+    :param gate_id: Gate ID
+    :type gate_id: int
     :param post_intent_request: Gate ID and additional users to CC email to.
     :type post_intent_request: dict | bytes
 

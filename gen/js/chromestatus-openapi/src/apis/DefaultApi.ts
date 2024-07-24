@@ -55,6 +55,7 @@ export interface AddUserToComponentRequest {
 export interface GetIntentBodyRequest {
     featureId: number;
     stageId: number;
+    gateId: number;
 }
 
 export interface ListExternalReviewsRequest {
@@ -73,6 +74,7 @@ export interface ListSpecMentorsRequest {
 export interface PostIntentToBlinkDevRequest {
     featureId: number;
     stageId: number;
+    gateId: number;
     postIntentRequest?: PostIntentRequest;
 }
 
@@ -111,6 +113,7 @@ export interface DefaultApiInterface {
      * @summary Get the HTML body of an intent draft
      * @param {number} featureId Feature ID
      * @param {number} stageId Stage ID
+     * @param {number} gateId Gate ID
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApiInterface
@@ -201,6 +204,7 @@ export interface DefaultApiInterface {
      * @summary Submit an intent to be posted on blink-dev
      * @param {number} featureId Feature ID
      * @param {number} stageId Stage ID
+     * @param {number} gateId Gate ID
      * @param {PostIntentRequest} [postIntentRequest] Gate ID and additional users to CC email to.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -301,12 +305,19 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
             );
         }
 
+        if (requestParameters['gateId'] == null) {
+            throw new runtime.RequiredError(
+                'gateId',
+                'Required parameter "gateId" was null or undefined when calling getIntentBody().'
+            );
+        }
+
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/features/{feature_id}/{stage_id}/intent`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))).replace(`{${"stage_id"}}`, encodeURIComponent(String(requestParameters['stageId']))),
+            path: `/features/{feature_id}/{stage_id}/{gate_id}/intent`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))).replace(`{${"stage_id"}}`, encodeURIComponent(String(requestParameters['stageId']))).replace(`{${"gate_id"}}`, encodeURIComponent(String(requestParameters['gateId']))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -508,6 +519,13 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
             );
         }
 
+        if (requestParameters['gateId'] == null) {
+            throw new runtime.RequiredError(
+                'gateId',
+                'Required parameter "gateId" was null or undefined when calling postIntentToBlinkDev().'
+            );
+        }
+
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -515,7 +533,7 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
         headerParameters['Content-Type'] = 'application/json';
 
         const response = await this.request({
-            path: `/features/{feature_id}/{stage_id}/intent`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))).replace(`{${"stage_id"}}`, encodeURIComponent(String(requestParameters['stageId']))),
+            path: `/features/{feature_id}/{stage_id}/{gate_id}/intent`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))).replace(`{${"stage_id"}}`, encodeURIComponent(String(requestParameters['stageId']))).replace(`{${"gate_id"}}`, encodeURIComponent(String(requestParameters['gateId']))),
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,

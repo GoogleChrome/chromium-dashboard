@@ -902,6 +902,7 @@ class IntentToBlinkDevHandler(basehandlers.FlaskHandler):
       'should_render_intents': stage_info['should_render_intents'],
       'intent_stage': json_data['intent_stage'],
       'default_url': json_data['default_url'],
+      'APP_TITLE': settings.APP_TITLE,
     }
     body = render_template(self.EMAIL_TEMPLATE_PATH, **template_data)
 

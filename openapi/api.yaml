@@ -146,7 +146,7 @@ paths:
                   $ref: '#/components/schemas/SpecMentor'
         '400':
           description: The ?after query parameter isn't a valid date in ISO YYYY-MM-DD format.
-  /features/{feature_id}/{stage_id}/intent:
+  /features/{feature_id}/{stage_id}/{gate_id}/intent:
     parameters:
       - name: feature_id
         in: path
@@ -157,6 +157,12 @@ paths:
       - name: stage_id
         in: path
         description: Stage ID
+        required: true
+        schema:
+          type: integer
+      - name: gate_id
+        in: path
+        description: Gate ID
         required: true
         schema:
           type: integer

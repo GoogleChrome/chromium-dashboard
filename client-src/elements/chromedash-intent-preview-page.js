@@ -88,9 +88,21 @@ class ChromedashIntentPreviewPage extends LitElement {
           this.gate = gates.gates.find(gate => gate.id === this.gateId);
         }
         if (this.gate) {
-          this.stage = this.feature.stages.find(
-            stage => this.gate.stage_id === stage.id
-          );
+          // Find the stage that matches the given gate.
+          for (const stage of this.feature.stages) {
+            if (this.stage) {
+              break;
+            }
+            if (stage.id === this.gate.stage_id) {
+              this.stage = stage;
+            }
+            // Check if gate matches an extension stage.
+            if (!this.stage) {
+              this.stage = stage.extensions.find(
+                e => e.id === this.gate.stage_id
+              );
+            }
+          }
         } else if (!this.gateId) {
           // This is a "Ready for Developer Testing" intent if no gate is supplied (0).
           this.stage = this.feature.stages.find(stage =>
@@ -104,7 +116,11 @@ class ChromedashIntentPreviewPage extends LitElement {
           this.displayFeatureUnlistedWarning = true;
         }
         // Finally, get the contents of the intent based on the feature/stage.
-        return window.csClient.getIntentBody(this.featureId, this.stage.id);
+        return window.csClient.getIntentBody(
+          this.featureId,
+          this.stage.id,
+          this.gateId
+        );
       })
       .then(intentResp => {
         this.subject = intentResp.subject;
@@ -163,7 +179,6 @@ class ChromedashIntentPreviewPage extends LitElement {
   }
 
   render() {
-    if (!this.feature) return nothing;
     if (this.loading) {
       return this.renderSkeletons();
     }

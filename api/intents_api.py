@@ -28,6 +28,7 @@ from internals.core_enums import INTENT_STAGES_BY_STAGE_TYPE
 from internals.core_models import FeatureEntry
 from internals.review_models import Gate
 from pages.intentpreview import compute_subject_prefix
+import settings
 
 
 # Format for Google Cloud Task body passed to cloud_tasks_helpers.enqueue_task
@@ -58,6 +59,14 @@ class IntentsAPI(basehandlers.APIHandler):
     if stage.feature_id != feature_id:
       self.abort(400, msg='Stage does not belong to given feature')
 
+    gate_id = int(kwargs.get('gate_id', 0))
+    if gate_id:
+      gate: Gate|None = Gate.get_by_id(gate_id)
+      if not gate:
+        self.abort(400, msg='Invalid Gate ID')
+      elif gate.stage_id != stage_id:
+        self.abort(400, msg='Given gate does not belong to stage')
+
     # Check that the user has feature edit permissions.
     redirect_resp = permissions.validate_feature_edit_permission(
         self, feature_id)
@@ -68,13 +77,19 @@ class IntentsAPI(basehandlers.APIHandler):
     intent_stage = INTENT_STAGES_BY_STAGE_TYPE[stage.stage_type]
     default_url = (f'{self.request.scheme}://{self.request.host}'
                    f'/feature/{feature_id}')
+    if gate_id:
+      default_url += f'?gate={gate_id}'
+
     template_data = {
       'feature': converters.feature_entry_to_json_verbose(feature),
       'stage_info': stage_helpers.get_stage_info_for_templates(feature),
       'should_render_mstone_table': stage_info['should_render_mstone_table'],
       'should_render_intents': stage_info['should_render_intents'],
+      'sections_to_show': processes.INTENT_EMAIL_SECTIONS.get(
+          intent_stage, []),
       'intent_stage': intent_stage,
       'default_url': default_url,
+      'APP_TITLE': settings.APP_TITLE,
     }
     return GetIntentResponse(
       subject=(f'{compute_subject_prefix(feature, intent_stage)}: '

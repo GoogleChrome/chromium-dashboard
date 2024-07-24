@@ -45,7 +45,7 @@ class TestDefaultController(BaseTestCase):
             'Accept': 'application/json:',
         }
         response = self.client.open(
-            '/api/v0/features/{feature_id}/{stage_id}/intent'.format(feature_id=56, stage_id=56),
+            '/api/v0/features/{feature_id}/{stage_id}/{gate_id}/intent'.format(feature_id=56, stage_id=56, gate_id=56),
             method='GET',
             headers=headers)
         self.assert200(response,
@@ -143,7 +143,7 @@ class TestDefaultController(BaseTestCase):
             'Content-Type': 'application/json',
         }
         response = self.client.open(
-            '/api/v0/features/{feature_id}/{stage_id}/intent'.format(feature_id=56, stage_id=56),
+            '/api/v0/features/{feature_id}/{stage_id}/{gate_id}/intent'.format(feature_id=56, stage_id=56, gate_id=56),
             method='POST',
             headers=headers,
             data=json.dumps(post_intent_request),
