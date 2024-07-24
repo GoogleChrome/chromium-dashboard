@@ -369,7 +369,6 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'non_oss_deps': None,
       'ongoing_constraints': None,
       'owner_emails': ['feature_owner@example.com'],
-      'owner_emails': ['feature_owner@example.com'],
       'safari_views': 1,
       'search_tags': [],
       'security_risks': None,

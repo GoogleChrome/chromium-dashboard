@@ -168,6 +168,9 @@ def _prep_stage_info(
       (stage_info['all_stages'][ot_stage_indexes[ot_id]]['extensions']
           .append(extension))
   stage_info['all_stages'].sort(key=lambda s: (s['stage_type'], s['created']))
+  # Sort all extensions in order of creation as well.
+  for stage in stage_info['all_stages']:
+    stage['extensions'].sort(key=lambda s: (s['created']))
   return stage_info
 
 
