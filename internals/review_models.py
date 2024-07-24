@@ -36,7 +36,7 @@ class OwnersFile(ndb.Model):
     return self.put()
 
   @classmethod
-  def get_raw_owner_file(cls, url):
+  def get_raw_owner_file(cls, url) -> OwnersFile | None:
     """Retrieve raw the owner file's content, if it is created with an hour."""
     q = cls.query()
     q = q.filter(cls.url == url)
@@ -45,13 +45,12 @@ class OwnersFile(ndb.Model):
       logging.info('API_OWNERS content does not exist for URL %s.' % (url))
       return None
 
-    owners_file = owners_file_list[0]
-    # Check if it is created within an hour.
-    an_hour_before = datetime.datetime.now() - datetime.timedelta(hours=1)
-    if owners_file.created_on < an_hour_before:
-      return None
+    return owners_file_list[0]
 
-    return owners_file.raw_content
+  def is_fresh(self) -> bool:
+    """Check if it was created within the past hour."""
+    an_hour_before = datetime.datetime.now() - datetime.timedelta(hours=1)
+    return self.created_on > an_hour_before
 
 
 class GateDef(ndb.Model):
