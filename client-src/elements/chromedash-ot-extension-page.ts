@@ -1,4 +1,4 @@
-import {LitElement, css, html} from 'lit';
+import {LitElement, css, html, nothing} from 'lit';
 import {property, state} from 'lit/decorators.js';
 import {ref} from 'lit/directives/ref.js';
 import {FORM_STYLES} from '../css/forms-css.js';
@@ -244,14 +244,17 @@ export class ChromedashOTExtensionPage extends LitElement {
   }
 
   renderSubheader() {
-    return html`
-      <div id="subheader">
-        <h2 id="breadcrumbs">
+    const link = this.loading
+      ? nothing
+      : html`
           <a href=${this.getNextPage()}>
             <iron-icon icon="chromestatus:arrow-back"></iron-icon>
             Request origin trial extension: ${this.feature.name}
           </a>
-        </h2>
+        `;
+    return html`
+      <div id="subheader">
+        <h2 id="breadcrumbs">${link}</h2>
       </div>
     `;
   }
