@@ -99,7 +99,14 @@ export class ChromedashGantt extends LitElement {
     );
   }
 
-  renderChartRow(gridRow, first, last, sortedMilestones, cssClass, label) {
+  renderChartRow(
+    gridRow: number,
+    first: number,
+    last: number,
+    sortedMilestones: number[],
+    cssClass: string,
+    label: string
+  ) {
     const cellsOnRow: TemplateResult[] = [];
     for (let col = 0; col < sortedMilestones.length; col++) {
       const m = sortedMilestones[col];
@@ -151,22 +158,26 @@ export class ChromedashGantt extends LitElement {
   }
 
   renderPlatform(
-    platform,
-    platformParam,
-    dtStages,
-    otStages,
-    shipStages,
-    sortedMilestones
+    platform: string,
+    platformParam: string,
+    dtStages: StageDict[],
+    otStages: StageDict[],
+    shipStages: StageDict[],
+    sortedMilestones: number[]
   ) {
-    const dtStartMilestones = dtStages.map(s => s[`${platformParam}_first`]);
-    const otStartMilestones = otStages.map(s => s[`${platformParam}_first`]);
-    const otEndMilestones = otStages.map(s => {
+    const dtStartMilestones: (number | undefined)[] = dtStages.map(
+      s => s[`${platformParam}_first`]
+    );
+    const otStartMilestones: (number | undefined)[] = otStages.map(
+      s => s[`${platformParam}_first`]
+    );
+    const otEndMilestones: (number | undefined)[] = otStages.map(s => {
       let maxEnd = s[`${platformParam}_last`];
       for (const e of s.extensions) {
         // Extensions only have "desktop_last" milestone values.
-        if (!isNaN(e.desktop_last) && isNaN(maxEnd)) {
+        if (e.desktop_last && !maxEnd) {
           maxEnd = e.desktop_last;
-        } else if (!isNaN(e.desktop_last) && !isNaN(maxEnd)) {
+        } else if (e.desktop_last && maxEnd) {
           maxEnd = Math.max(maxEnd, e.desktop_last);
         }
       }
@@ -188,7 +199,7 @@ export class ChromedashGantt extends LitElement {
     let currentRow = 1;
 
     const validShipMilestones = shipStartMilestones.filter(x => x);
-    const dtChartRows: Array<typeof nothing | TemplateResult[]> = [];
+    const dtChartRows: (typeof nothing | TemplateResult[])[] = [];
     for (const dtMilestone of dtStartMilestones) {
       if (!dtMilestone) {
         continue;
@@ -214,7 +225,7 @@ export class ChromedashGantt extends LitElement {
       currentRow++;
     }
 
-    const otChartRows: Array<typeof nothing | TemplateResult[]> = [];
+    const otChartRows: (typeof nothing | TemplateResult[])[] = [];
     for (let i = 0; i < otStartMilestones.length; i++) {
       const otStartMilestone = otStartMilestones[i];
       const otEndMilestone = otEndMilestones[i];
@@ -234,7 +245,7 @@ export class ChromedashGantt extends LitElement {
       currentRow++;
     }
 
-    const shipChartRows: Array<typeof nothing | TemplateResult[]> = [];
+    const shipChartRows: (typeof nothing | TemplateResult[])[] = [];
     for (const shipMilestone of shipStartMilestones) {
       if (!shipMilestone) {
         continue;
@@ -263,7 +274,7 @@ export class ChromedashGantt extends LitElement {
     `;
   }
 
-  concatAllMilestones(allMilestones: Array<number | undefined>, stage) {
+  concatAllMilestones(allMilestones: (number | undefined)[], stage: StageDict) {
     if (!stage) {
       return allMilestones;
     }
@@ -310,7 +321,7 @@ export class ChromedashGantt extends LitElement {
     const milestoneRange = maxMilestone - minMilestone + 1 + 1;
     // sortedMilestones would be the list of column heading labels,
     // except that they are not shown.
-    let sortedMilestones: Array<number> | undefined;
+    let sortedMilestones: number[] | undefined;
 
     if (milestoneRange <= 12) {
       // First choice:
