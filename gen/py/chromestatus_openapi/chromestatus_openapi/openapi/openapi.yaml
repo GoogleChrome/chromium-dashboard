@@ -160,7 +160,7 @@ paths:
             format.
       summary: List how long each feature took to launch
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
-  /features/{feature_id}/{stage_id}/intent:
+  /features/{feature_id}/{stage_id}/{gate_id}/intent:
     get:
       operationId: get_intent_body
       parameters:
@@ -176,6 +176,14 @@ paths:
         explode: false
         in: path
         name: stage_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - description: Gate ID
+        explode: false
+        in: path
+        name: gate_id
         required: true
         schema:
           type: integer
@@ -208,6 +216,14 @@ paths:
         explode: false
         in: path
         name: stage_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - description: Gate ID
+        explode: false
+        in: path
+        name: gate_id
         required: true
         schema:
           type: integer

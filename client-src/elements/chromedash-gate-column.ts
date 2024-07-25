@@ -485,8 +485,7 @@ export class ChromedashGateColumn extends LitElement {
     const label = action.name;
     const url = action.url
       .replace('{feature_id}', this.feature.id)
-      .replace('{intent_stage}', processStage.outgoing_stage)
-      .replace('{gate_id}', this.gate.id);
+      .replace('{gate_id}', this.gate.id || 0);
 
     const checkCompletion = () => {
       if (
