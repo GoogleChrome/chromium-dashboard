@@ -9,7 +9,7 @@ import {
 } from './form-field-enums.js';
 
 @customElement('chromedash-gantt')
-class ChromedashGantt extends LitElement {
+export class ChromedashGantt extends LitElement {
   @property({type: Object})
   feature!: Feature;
 
@@ -196,7 +196,6 @@ class ChromedashGantt extends LitElement {
       let devTrialMilestoneLast = maxMilestone;
       // If there is a shipping milestone, Dev trial stops just before it.
       if (validShipMilestones.length > 0) {
-        console.log('validShipMilestones', validShipMilestones);
         const shippingIndex = sortedMilestones.indexOf(
           Math.min(...validShipMilestones)
         );
@@ -257,7 +256,7 @@ class ChromedashGantt extends LitElement {
       <li class="platform-row">
         <div class="platform">${platform}</div>
 
-        <ul class="chart">
+        <ul class="chart" id="${platformParam}-chart">
           ${dtChartRows} ${otChartRows} ${shipChartRows}
         </ul>
       </li>
@@ -283,7 +282,7 @@ class ChromedashGantt extends LitElement {
   render() {
     // Don't show the visualization if there is no active development.
     // But, any milestones are available as text in the details section.
-    if (this._isInactive()) {
+    if (!this.feature || this._isInactive()) {
       return nothing;
     }
 
