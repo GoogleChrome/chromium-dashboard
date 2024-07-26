@@ -9,7 +9,7 @@ import {
 } from './form-field-enums.js';
 
 @customElement('chromedash-gantt')
-class ChromedashGantt extends LitElement {
+export class ChromedashGantt extends LitElement {
   @property({type: Object})
   feature!: Feature;
 
@@ -99,7 +99,14 @@ class ChromedashGantt extends LitElement {
     );
   }
 
-  renderChartRow(gridRow, first, last, sortedMilestones, cssClass, label) {
+  renderChartRow(
+    gridRow: number,
+    first: number,
+    last: number,
+    sortedMilestones: number[],
+    cssClass: string,
+    label: string
+  ) {
     const cellsOnRow: TemplateResult[] = [];
     for (let col = 0; col < sortedMilestones.length; col++) {
       const m = sortedMilestones[col];
@@ -147,118 +154,161 @@ class ChromedashGantt extends LitElement {
       }
     }
 
-    // TODO(DanielRyanSmith): Fix this to support multiple stages.
-    return [dtStages[0], otStages[0], shipStages[0]];
+    return [dtStages, otStages, shipStages];
   }
 
   renderPlatform(
-    platform,
-    devTrialMilestone,
-    originTrialMilestoneFirst,
-    originTrialMilestoneLast,
-    shippingMilestone,
-    sortedMilestones
+    platform: string,
+    platformParam: string,
+    dtStages: StageDict[],
+    otStages: StageDict[],
+    shipStages: StageDict[],
+    sortedMilestones: number[]
   ) {
+    const dtStartMilestones: (number | undefined)[] = dtStages.map(
+      s => s[`${platformParam}_first`]
+    );
+    const otStartMilestones: (number | undefined)[] = otStages.map(
+      s => s[`${platformParam}_first`]
+    );
+    const otEndMilestones: (number | undefined)[] = otStages.map(s => {
+      let maxEnd = s[`${platformParam}_last`];
+      for (const e of s.extensions) {
+        // Extensions only have "desktop_last" milestone values.
+        if (e.desktop_last && !maxEnd) {
+          maxEnd = e.desktop_last;
+        } else if (e.desktop_last && maxEnd) {
+          maxEnd = Math.max(maxEnd, e.desktop_last);
+        }
+      }
+      return maxEnd;
+    });
+    const shipStartMilestones = shipStages.map(
+      s => s[`${platformParam}_first`]
+    );
+
     if (
-      !devTrialMilestone &&
-      !originTrialMilestoneFirst &&
-      !shippingMilestone
+      dtStartMilestones.length === 0 &&
+      otStartMilestones.length === 0 &&
+      shipStartMilestones.length === 0
     ) {
       return nothing;
     }
     const maxMilestone = Math.max(...sortedMilestones);
 
-    let gridRow = 1;
+    let currentRow = 1;
 
-    let dtChartRow: typeof nothing | TemplateResult[] = nothing;
-    if (devTrialMilestone) {
+    const validShipMilestones = shipStartMilestones.filter(x => x);
+    const dtChartRows: (typeof nothing | TemplateResult[])[] = [];
+    for (const dtMilestone of dtStartMilestones) {
+      if (!dtMilestone) {
+        continue;
+      }
       let devTrialMilestoneLast = maxMilestone;
       // If there is a shipping milestone, Dev trial stops just before it.
-      if (shippingMilestone) {
-        const shippingIndex = sortedMilestones.indexOf(shippingMilestone);
+      if (validShipMilestones.length > 0) {
+        const shippingIndex = sortedMilestones.indexOf(
+          Math.min(...validShipMilestones)
+        );
         devTrialMilestoneLast = sortedMilestones[shippingIndex - 1];
       }
-      dtChartRow = this.renderChartRow(
-        gridRow,
-        devTrialMilestone,
-        devTrialMilestoneLast,
-        sortedMilestones,
-        'dev_trial',
-        'Dev Trial: ' + devTrialMilestone
+      dtChartRows.push(
+        this.renderChartRow(
+          currentRow,
+          dtMilestone,
+          devTrialMilestoneLast,
+          sortedMilestones,
+          'dev_trial',
+          'Dev Trial: ' + dtMilestone
+        )
       );
-      gridRow++;
+      currentRow++;
     }
 
-    let otChartRow: typeof nothing | TemplateResult[] = nothing;
-    if (originTrialMilestoneFirst) {
-      otChartRow = this.renderChartRow(
-        gridRow,
-        originTrialMilestoneFirst,
-        originTrialMilestoneLast,
-        sortedMilestones,
-        'origin_trial',
-        'Origin Trial: ' +
-          originTrialMilestoneFirst +
-          ' to ' +
-          originTrialMilestoneLast
+    const otChartRows: (typeof nothing | TemplateResult[])[] = [];
+    for (let i = 0; i < otStartMilestones.length; i++) {
+      const otStartMilestone = otStartMilestones[i];
+      const otEndMilestone = otEndMilestones[i];
+      if (!otStartMilestone || !otEndMilestone) {
+        continue;
+      }
+      otChartRows.push(
+        this.renderChartRow(
+          currentRow,
+          otStartMilestone,
+          otEndMilestone,
+          sortedMilestones,
+          'origin_trial',
+          `Origin Trial: ${otStartMilestone} to ${otEndMilestone}`
+        )
       );
-      gridRow++;
+      currentRow++;
     }
 
-    let shipChartRow: typeof nothing | TemplateResult[] = nothing;
-    if (shippingMilestone) {
-      shipChartRow = this.renderChartRow(
-        gridRow,
-        shippingMilestone,
-        maxMilestone,
-        sortedMilestones,
-        'shipping',
-        'Shipping: ' + shippingMilestone
+    const shipChartRows: (typeof nothing | TemplateResult[])[] = [];
+    for (const shipMilestone of shipStartMilestones) {
+      if (!shipMilestone) {
+        continue;
+      }
+      shipChartRows.push(
+        this.renderChartRow(
+          currentRow,
+          shipMilestone,
+          maxMilestone,
+          sortedMilestones,
+          'shipping',
+          `Shipping: ${shipMilestone}`
+        )
       );
-      gridRow++;
+      currentRow++;
     }
 
     return html`
       <li class="platform-row">
         <div class="platform">${platform}</div>
 
-        <ul class="chart">
-          ${dtChartRow} ${otChartRow} ${shipChartRow}
+        <ul class="chart" id="${platformParam}-chart">
+          ${dtChartRows} ${otChartRows} ${shipChartRows}
         </ul>
       </li>
     `;
   }
 
+  concatAllMilestones(allMilestones: (number | undefined)[], stage: StageDict) {
+    if (!stage) {
+      return allMilestones;
+    }
+    return allMilestones.concat([
+      stage.desktop_first,
+      stage.desktop_last,
+      stage.android_first,
+      stage.android_last,
+      stage.ios_first,
+      stage.ios_last,
+      stage.webview_first,
+      stage.webview_last,
+    ]);
+  }
+
   render() {
     // Don't show the visualization if there is no active development.
     // But, any milestones are available as text in the details section.
-    if (this._isInactive()) {
+    if (!this.feature || this._isInactive()) {
       return nothing;
     }
 
-    const [dtStage, otStage, shipStage] = this.getByStageType();
+    const [dtStages, otStages, shipStages] = this.getByStageType();
 
-    // TODO(DanielRyanSmith): This implementation is a fix that does not
-    // account for multiple stages on the same feature. Add functionality to
-    // accommodate multiples of the same stage type.
-    const allMilestones = [
-      dtStage?.desktop_first,
-      dtStage?.android_first,
-      dtStage?.ios_first,
-      dtStage?.webview_first,
-      otStage?.desktop_first,
-      otStage?.android_first,
-      otStage?.ios_first,
-      otStage?.webview_first,
-      otStage?.desktop_last,
-      otStage?.android_last,
-      otStage?.ios_last,
-      otStage?.webview_last,
-      shipStage?.desktop_first,
-      shipStage?.android_first,
-      shipStage?.ios_first,
-      shipStage?.webview_first,
-    ].filter(x => x);
+    let allMilestones: Array<number | undefined> = [];
+    for (const stage of [...dtStages, ...otStages, ...shipStages]) {
+      if (stage.extensions) {
+        for (const extension of stage.extensions) {
+          allMilestones = this.concatAllMilestones(allMilestones, extension);
+        }
+      }
+      allMilestones = this.concatAllMilestones(allMilestones, stage);
+    }
+    allMilestones = allMilestones.filter(x => x);
 
     if (allMilestones.length == 0) {
       return html`<p>No milestones specified</p>`;
@@ -270,8 +320,8 @@ class ChromedashGantt extends LitElement {
     // "Shipped" block has room for that text.
     const milestoneRange = maxMilestone - minMilestone + 1 + 1;
     // sortedMilestones would be the list of column heading labels,
-    // execpt that they are not shown.
-    let sortedMilestones;
+    // except that they are not shown.
+    let sortedMilestones: number[] | undefined;
 
     if (milestoneRange <= 12) {
       // First choice:
@@ -284,7 +334,7 @@ class ChromedashGantt extends LitElement {
       // Second choice:
       // Use columns for each milestone value and the one after it
       // even if that means that milestone numbers are not consecutive.
-      const augmentedMilestoneSet = new Set(allValidMilestones);
+      const augmentedMilestoneSet = new Set<number>(allValidMilestones);
       for (const m of allValidMilestones) {
         augmentedMilestoneSet.add(m + 1);
       }
@@ -307,34 +357,34 @@ class ChromedashGantt extends LitElement {
       <ul>
         ${this.renderPlatform(
           'Desktop',
-          dtStage?.desktop_first,
-          otStage?.desktop_first,
-          otStage?.desktop_last,
-          shipStage?.desktop_first,
+          'desktop',
+          dtStages,
+          otStages,
+          shipStages,
           sortedMilestones
         )}
         ${this.renderPlatform(
           'Android',
-          dtStage?.android_first,
-          otStage?.android_first,
-          otStage?.android_last,
-          shipStage?.android_first,
+          'android',
+          dtStages,
+          otStages,
+          shipStages,
           sortedMilestones
         )}
         ${this.renderPlatform(
           'iOS',
-          dtStage?.ios_first,
-          otStage?.ios_first,
-          otStage?.ios_last,
-          shipStage?.ios_first,
+          'ios',
+          dtStages,
+          otStages,
+          shipStages,
           sortedMilestones
         )}
         ${this.renderPlatform(
           'Webview',
-          dtStage?.webview_first,
-          otStage?.webview_first,
-          otStage?.webview_last,
-          shipStage?.webview_first,
+          'webview',
+          dtStages,
+          otStages,
+          shipStages,
           sortedMilestones
         )}
       </ul>
