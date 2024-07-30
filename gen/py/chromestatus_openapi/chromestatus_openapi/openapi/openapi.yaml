@@ -160,6 +160,160 @@ paths:
             format.
       summary: List how long each feature took to launch
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /features/<int:feature_id>/approvals/<int:gate_id>/comments:
+    get:
+      operationId: get_gate_comments
+      parameters:
+      - explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - explode: false
+        in: path
+        name: gate_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Activity'
+                type: array
+          description: List of comments for the gate.
+      summary: Get all comments for a given gate
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+    post:
+      operationId: add_gate_comment
+      parameters:
+      - explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - explode: false
+        in: path
+        name: gate_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentsRequest'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Comment added successfully
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: User is not allowed to comment on this gate
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Gate not found
+      summary: Add a comment to a specific gate
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /features/<int:feature_id>/approvals/comments:
+    get:
+      operationId: get_feature_comments
+      parameters:
+      - explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCommentsResponse'
+          description: List of comments for the feature.
+      summary: Get all comments for a given feature
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+    patch:
+      operationId: update_feature_comment
+      parameters:
+      - explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchCommentRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Comment updated successfully
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: User is not allowed to update this comment
+      summary: Update a comment on a feature
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+    post:
+      operationId: add_feature_comment
+      parameters:
+      - explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentsRequest'
+        description: Add a review commend and possible set a approval value
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Comment added successfully
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: User is not allowed to comment on this feature
+      summary: Add a comment to a feature
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /features/{feature_id}/{stage_id}/{gate_id}/intent:
     get:
       operationId: get_intent_body
@@ -312,6 +466,153 @@ components:
         type: string
       style: form
   schemas:
+    Amendment:
+      example:
+        old_value: old_value
+        new_value: new_value
+        field_name: field_name
+      properties:
+        field_name:
+          title: field_name
+          type: string
+        old_value:
+          title: old_value
+          type: string
+        new_value:
+          title: new_value
+          type: string
+      required:
+      - field_name
+      - new_value
+      - old_value
+      title: Amendment
+      type: object
+    Activity:
+      example:
+        feature_id: 6
+        gate_id: 1
+        created: 2000-01-23T04:56:07.000+00:00
+        author: author
+        deleted_by: deleted_by
+        amendments:
+        - old_value: old_value
+          new_value: new_value
+          field_name: field_name
+        - old_value: old_value
+          new_value: new_value
+          field_name: field_name
+        comment_id: 0
+        content: content
+      properties:
+        comment_id:
+          title: comment_id
+          type: integer
+        feature_id:
+          title: feature_id
+          type: integer
+        gate_id:
+          nullable: true
+          title: gate_id
+          type: integer
+        created:
+          format: date-time
+          title: created
+          type: string
+        author:
+          title: author
+          type: string
+        content:
+          title: content
+          type: string
+        deleted_by:
+          nullable: true
+          title: deleted_by
+          type: string
+        amendments:
+          items:
+            $ref: '#/components/schemas/Amendment'
+          title: amendments
+          type: array
+      required:
+      - author
+      - comment_id
+      - content
+      - created
+      - feature_id
+      title: Activity
+      type: object
+    CommentsRequest:
+      example:
+        postToThreadType: postToThreadType
+        comment: comment
+      properties:
+        comment:
+          title: comment
+          type: string
+        postToThreadType:
+          nullable: true
+          title: postToThreadType
+          type: string
+      title: CommentsRequest
+      type: object
+    GetCommentsResponse:
+      example:
+        comments:
+        - feature_id: 6
+          gate_id: 1
+          created: 2000-01-23T04:56:07.000+00:00
+          author: author
+          deleted_by: deleted_by
+          amendments:
+          - old_value: old_value
+            new_value: new_value
+            field_name: field_name
+          - old_value: old_value
+            new_value: new_value
+            field_name: field_name
+          comment_id: 0
+          content: content
+        - feature_id: 6
+          gate_id: 1
+          created: 2000-01-23T04:56:07.000+00:00
+          author: author
+          deleted_by: deleted_by
+          amendments:
+          - old_value: old_value
+            new_value: new_value
+            field_name: field_name
+          - old_value: old_value
+            new_value: new_value
+            field_name: field_name
+          comment_id: 0
+          content: content
+      properties:
+        comments:
+          items:
+            $ref: '#/components/schemas/Activity'
+          title: comments
+          type: array
+      title: GetCommentsResponse
+      type: object
+    PatchCommentRequest:
+      example:
+        commentId: 0
+        isUndelete: true
+      properties:
+        commentId:
+          description: The ID of the comment to be updated
+          title: commentId
+          type: integer
+        isUndelete:
+          description: Indicates whether to undelete (true) or delete (false) the
+            comment
+          title: isUndelete
+          type: boolean
+      required:
+      - commentId
+      - isUndelete
+      title: PatchCommentRequest
+      type: object
     GetIntentResponse:
       example:
         email_body: email_body
@@ -756,6 +1057,26 @@ components:
     LinkPreviewSpecs:
       allOf:
       - $ref: '#/components/schemas/LinkPreviewOpenGraph'
+    SuccessMessage:
+      example:
+        message: Done
+      properties:
+        message:
+          example: Done
+          title: message
+          type: string
+      title: SuccessMessage
+      type: object
+    ErrorMessage:
+      example:
+        error: Error
+      properties:
+        error:
+          example: Error
+          title: error
+          type: string
+      title: ErrorMessage
+      type: object
     LinkPreviewGithubIssue_allOf_information:
       properties:
         url:

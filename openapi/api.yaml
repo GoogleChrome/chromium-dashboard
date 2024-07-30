@@ -15,6 +15,118 @@ info:
 servers:
   - url: /api/v0
 paths:
+  /features/<int:feature_id>/approvals/comments:
+    parameters:
+          - name: feature_id
+            in: path
+            required: true
+            schema:
+              type: integer
+    get:
+      summary: Get all comments for a given feature
+      operationId: getFeatureComments
+      responses:
+        '200':
+          description: List of comments for the feature.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCommentsResponse'
+    post:
+      summary: Add a comment to a feature
+      operationId: addFeatureComment
+      requestBody:
+        description: Add a review commend and possible set a approval value
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentsRequest'
+      responses:
+        '200':
+          description: Comment added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '403':
+          description: User is not allowed to comment on this feature
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+    patch:
+      summary: Update a comment on a feature
+      operationId: updateFeatureComment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchCommentRequest'
+      responses:
+        '200':
+          description: Comment updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '403':
+          description: User is not allowed to update this comment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+  /features/<int:feature_id>/approvals/<int:gate_id>/comments:
+    parameters:
+          - name: feature_id
+            in: path
+            required: true
+            schema:
+              type: integer
+          - name: gate_id
+            in: path
+            required: true
+            schema:
+              type: integer
+    get:
+      summary: Get all comments for a given gate
+      operationId: getGateComments
+      responses:
+        '200':
+          description: List of comments for the gate.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Activity'
+    post:
+      summary: Add a comment to a specific gate
+      operationId: addGateComment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentsRequest'
+      responses:
+        '200':
+          description: Comment added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '403':
+          description: User is not allowed to comment on this gate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Gate not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
   /componentsusers:
     get:
       summary: List all components and possible users
@@ -243,6 +355,76 @@ components:
       in: header
       name: X-Xsrf-Token
   schemas:
+    Amendment:
+      type: object
+      properties:
+        field_name:
+          type: string
+        old_value:
+          type: string
+        new_value:
+          type: string
+      required:
+        - field_name
+        - old_value
+        - new_value
+    Activity:
+      type: object
+      properties:
+        comment_id:
+          type: integer
+        feature_id:
+          type: integer
+        gate_id:
+          type: integer
+          nullable: true
+        created:
+          type: string
+          format: date-time
+        author:
+          type: string
+        content:
+          type: string
+        deleted_by:
+          type: string
+          nullable: true
+        amendments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Amendment'
+      required:
+        - comment_id
+        - feature_id
+        - created
+        - author
+        - content
+    CommentsRequest:
+      type: object
+      properties:
+        comment:
+          type: string
+        postToThreadType:
+          type: string
+          nullable: true
+    GetCommentsResponse:
+      type: object
+      properties:
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Activity'
+    PatchCommentRequest:
+      type: object
+      properties:
+        commentId:
+          type: integer
+          description: The ID of the comment to be updated
+        isUndelete:
+          type: boolean
+          description: Indicates whether to undelete (true) or delete (false) the comment
+      required:
+        - commentId
+        - isUndelete
     GetIntentResponse:
       properties:
         subject:
@@ -555,3 +737,15 @@ components:
     LinkPreviewSpecs:
       allOf:
         - $ref: '#/components/schemas/LinkPreviewOpenGraph'
+    SuccessMessage:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Done"
+    ErrorMessage:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Error"

@@ -1,12 +1,17 @@
 /* tslint:disable */
 /* eslint-disable */
+export * from './Activity';
+export * from './Amendment';
+export * from './CommentsRequest';
 export * from './ComponentUsersRequest';
 export * from './ComponentsUser';
 export * from './ComponentsUsersResponse';
+export * from './ErrorMessage';
 export * from './ExternalReviewsResponse';
 export * from './FeatureLatency';
 export * from './FeatureLink';
 export * from './GateLatency';
+export * from './GetCommentsResponse';
 export * from './GetIntentResponse';
 export * from './LinkPreview';
 export * from './LinkPreviewBase';
@@ -25,6 +30,8 @@ export * from './LinkPreviewWebkitBug';
 export * from './MessageResponse';
 export * from './OutstandingReview';
 export * from './OwnersAndSubscribersOfComponent';
+export * from './PatchCommentRequest';
 export * from './PostIntentRequest';
 export * from './ReviewLatency';
 export * from './SpecMentor';
+export * from './SuccessMessage';
