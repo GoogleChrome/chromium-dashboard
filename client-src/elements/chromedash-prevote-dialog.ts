@@ -97,6 +97,10 @@ class ChromedashPrevoteDialog extends LitElement {
   }
 
   render() {
+    if (this.pendingGates === undefined) {
+      return html`Loading gates...`;
+    }
+
     return html` <sl-dialog label="Prerequsites for API Owner approval">
       <div id="prereqs-header">
         The following prerequisite gates are missing approvals:
