@@ -27,7 +27,7 @@ def add_user_to_component(component_id, user_id, component_users_request=None): 
     :type component_id: int
     :param user_id: User ID
     :type user_id: int
-    :param component_users_request:
+    :param component_users_request: 
     :type component_users_request: dict | bytes
 
     :rtype: Union[None, Tuple[None, int], Tuple[None, int, Dict[str, str]]
@@ -42,7 +42,7 @@ def create_account(create_account_request=None):  # noqa: E501
 
      # noqa: E501
 
-    :param create_account_request:
+    :param create_account_request: 
     :type create_account_request: dict | bytes
 
     :rtype: Union[AccountResponse, Tuple[AccountResponse, int], Tuple[AccountResponse, int, Dict[str, str]]
@@ -98,7 +98,7 @@ def list_external_reviews(review_group):  # noqa: E501
 
      # noqa: E501
 
-    :param review_group: Which review group to focus on:  * &#x60;tag&#x60; - The W3C TAG  * &#x60;gecko&#x60; - The rendering engine that powers Mozilla Firefox  * &#x60;webkit&#x60; - The rendering engine that powers Apple Safari
+    :param review_group: Which review group to focus on:  * &#x60;tag&#x60; - The W3C TAG  * &#x60;gecko&#x60; - The rendering engine that powers Mozilla Firefox  * &#x60;webkit&#x60; - The rendering engine that powers Apple Safari 
     :type review_group: str
 
     :rtype: Union[ExternalReviewsResponse, Tuple[ExternalReviewsResponse, int], Tuple[ExternalReviewsResponse, int, Dict[str, str]]
@@ -139,7 +139,7 @@ def list_spec_mentors(after=None):  # noqa: E501
 
      # noqa: E501
 
-    :param after:
+    :param after: 
     :type after: str
 
     :rtype: Union[List[SpecMentor], Tuple[List[SpecMentor], int], Tuple[List[SpecMentor], int, Dict[str, str]]
@@ -178,7 +178,7 @@ def remove_user_from_component(component_id, user_id, component_users_request=No
     :type component_id: int
     :param user_id: User ID
     :type user_id: int
-    :param component_users_request:
+    :param component_users_request: 
     :type component_users_request: dict | bytes
 
     :rtype: Union[None, Tuple[None, int], Tuple[None, int, Dict[str, str]]

@@ -14,7 +14,7 @@ class TestDefaultController(BaseTestCase):
         Add a user to a component
         """
         component_users_request = {"owner":True}
-        headers = {
+        headers = { 
             'Content-Type': 'application/json',
             'XsrfToken': 'special-key',
         }
@@ -33,7 +33,7 @@ class TestDefaultController(BaseTestCase):
         Create a new account
         """
         create_account_request = {"isSiteEditor":True,"isAdmin":True,"email":"email"}
-        headers = {
+        headers = { 
             'Accept': 'application/json',
             'Content-Type': 'application/json',
         }
@@ -51,7 +51,7 @@ class TestDefaultController(BaseTestCase):
 
         Delete an account
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -66,7 +66,7 @@ class TestDefaultController(BaseTestCase):
 
         Get the HTML body of an intent draft
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json:',
         }
         response = self.client.open(
@@ -81,7 +81,7 @@ class TestDefaultController(BaseTestCase):
 
         List all components and possible users
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
             'XsrfToken': 'special-key',
         }
@@ -97,7 +97,7 @@ class TestDefaultController(BaseTestCase):
 
         List features whose external reviews are incomplete
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -114,7 +114,7 @@ class TestDefaultController(BaseTestCase):
         """
         query_string = [('startAt', '2013-10-20'),
                         ('endAt', '2013-10-20')]
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -130,7 +130,7 @@ class TestDefaultController(BaseTestCase):
 
         List recently reviewed features and their review latency
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -146,7 +146,7 @@ class TestDefaultController(BaseTestCase):
         List spec mentors and their activity
         """
         query_string = [('after', '2013-10-20')]
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -163,7 +163,7 @@ class TestDefaultController(BaseTestCase):
         Submit an intent to be posted on blink-dev
         """
         post_intent_request = {"intent_cc_emails":["intent_cc_emails","intent_cc_emails"],"gate_id":0}
-        headers = {
+        headers = { 
             'Accept': 'application/json',
             'Content-Type': 'application/json',
         }
@@ -182,7 +182,7 @@ class TestDefaultController(BaseTestCase):
         Remove a user from a component
         """
         component_users_request = {"owner":True}
-        headers = {
+        headers = { 
             'Content-Type': 'application/json',
             'XsrfToken': 'special-key',
         }
