@@ -195,18 +195,26 @@ APPROVAL_FIELDS_BY_ID = {
 
 def fetch_owners(url) -> list[str]:
   """Load a list of email addresses from an OWNERS file."""
-  raw_content = OwnersFile.get_raw_owner_file(url)
-  if raw_content:
-    return decode_raw_owner_content(raw_content)
+  owners_file = OwnersFile.get_raw_owner_file(url)
+  if owners_file and owners_file.is_fresh():
+    logging.info('Using fresh owners_file')
+    return decode_raw_owner_content(owners_file.raw_content)
 
   response = requests.get(url)
-  if response.status_code != 200:
+  if response.status_code == 200:
+    content = response.content
+  else:
     logging.error('Could not fetch %r', url)
     logging.error('Got response %s', repr(response)[:settings.MAX_LOG_LINE])
-    raise ValueError('Could not get OWNERS file')
+    if owners_file:
+      logging.info('Marking stale owners_file as fresh')
+      content = owners_file.raw_content
+    else:
+      logging.info('No stored owners_file available.  Using [].')
+      return []
 
-  OwnersFile(url=url, raw_content=response.content).add_owner_file()
-  return decode_raw_owner_content(response.content)
+  OwnersFile(url=url, raw_content=content).add_owner_file()
+  return decode_raw_owner_content(content)
 
 
 def decode_raw_owner_content(raw_content) -> list[str]:

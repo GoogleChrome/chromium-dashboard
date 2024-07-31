@@ -113,8 +113,9 @@ class OwnersFileTest(testing_config.CustomTestCase):
     self.owner_file_2.key.delete()
 
   def test_get_raw_owner_file(self):
-    raw_content = OwnersFile.get_raw_owner_file('abc')
-    self.assertEqual('foo', raw_content)
+    owners_file = OwnersFile.get_raw_owner_file('abc')
+    self.assertEqual('foo', owners_file.raw_content)
+    self.assertTrue(owners_file.is_fresh())
 
-    expired_content = OwnersFile.get_raw_owner_file('def')
-    self.assertEqual(None, expired_content)
+    expired_owners_file = OwnersFile.get_raw_owner_file('def')
+    self.assertFalse(expired_owners_file.is_fresh())

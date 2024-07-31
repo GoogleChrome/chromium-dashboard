@@ -160,6 +160,93 @@ paths:
             format.
       summary: List how long each feature took to launch
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /features/{feature_id}/{stage_id}/{gate_id}/intent:
+    get:
+      operationId: get_intent_body
+      parameters:
+      - description: Feature ID
+        explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - description: Stage ID
+        explode: false
+        in: path
+        name: stage_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - description: Gate ID
+        explode: false
+        in: path
+        name: gate_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            'application/json:':
+              schema:
+                $ref: '#/components/schemas/GetIntentResponse'
+          description: Intent draft body.
+        "400":
+          description: No feature or stage ID specified.
+        "404":
+          description: Feature or stage not found based on given ID.
+      summary: Get the HTML body of an intent draft
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+    post:
+      operationId: post_intent_to_blink_dev
+      parameters:
+      - description: Feature ID
+        explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - description: Stage ID
+        explode: false
+        in: path
+        name: stage_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - description: Gate ID
+        explode: false
+        in: path
+        name: gate_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostIntentRequest'
+        description: Gate ID and additional users to CC email to.
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+          description: Intent draft body.
+        "400":
+          description: No feature or stage ID specified.
+        "404":
+          description: Feature or stage not found based on given ID.
+      summary: Submit an intent to be posted on blink-dev
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /review-latency:
     get:
       operationId: list_reviews_with_latency
@@ -225,6 +312,50 @@ components:
         type: string
       style: form
   schemas:
+    GetIntentResponse:
+      example:
+        email_body: email_body
+        subject: subject
+      properties:
+        subject:
+          title: subject
+          type: string
+        email_body:
+          title: email_body
+          type: string
+      required:
+      - email_body
+      - subject
+      title: GetIntentResponse
+    PostIntentRequest:
+      example:
+        intent_cc_emails:
+        - intent_cc_emails
+        - intent_cc_emails
+        gate_id: 0
+      properties:
+        gate_id:
+          title: gate_id
+          type: integer
+        intent_cc_emails:
+          items:
+            type: string
+          title: intent_cc_emails
+          type: array
+      required:
+      - gate_id
+      - intent_cc_emails
+      title: PostIntentRequest
+    MessageResponse:
+      example:
+        message: message
+      properties:
+        message:
+          title: message
+          type: string
+      required:
+      - message
+      title: MessageResponse
     ComponentsUsersResponse:
       example:
         components:

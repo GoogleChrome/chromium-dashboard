@@ -33,6 +33,9 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
         ot_documentation_url='https://example.com/docs',
         ot_feedback_submission_url='https://example.com/feedback',
         intent_thread_url='https://example.com/experiment',
+        ot_owner_email='someuser@google.com',
+        ot_emails=['anotheruser@chromium.org', 'contact@microsoft.com',
+                   'editor@google.com', 'someuser@google.com'],
         ot_description='OT description', ot_has_third_party_support=True,
         ot_require_approvals=True, ot_approval_buganizer_component=123456,
         ot_approval_criteria_url='https://example.com/criteria',
@@ -211,12 +214,13 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
 
     mock_api_key_get.assert_called_once()
     mock_get_ot_access_token.assert_called_once()
-    mock_requests_post.assert_called_once_with(
-      f'{settings.OT_API_URL}/v1/trials:setup',
-      headers={'Authorization': 'Bearer access_token'},
-      params={'key': 'api_key_value'},
-      json={
-        'trial': {
+    mock_requests_post.assert_called_once()
+    # unordered list is in the request, so compare args individually.
+    json_args = mock_requests_post.call_args_list[0][1]['json']
+    # Only unique @google.com emails should be sent as contacts.
+    self.assertCountEqual(['someuser@google.com', 'editor@google.com'],
+                          json_args['trial_contacts'])
+    self.assertEqual({
           'display_name': 'Example Trial',
           'start_milestone': '100',
           'end_milestone': '106',
@@ -230,17 +234,16 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
           'chromestatus_url': f'{settings.SITE_URL}feature/1',
           'allow_third_party_origins': True,
           'type': 'DEPRECATION',
-        },
-        'internal_registration_config': {
+        }, json_args['trial'])
+    self.assertEqual({
           'allow_public_suffix_subdomains': True,
           'approval_type': 'CUSTOM',
           'approval_buganizer_component_id': 123456,
           'approval_criteria_url': 'https://example.com/criteria',
           'approval_group_email': 'somegroup@google.com',
           'approval_buganizer_custom_field_id': 111111,
-        }
-      }
-    )
+        }, json_args['registration_config'])
+
 
   @mock.patch('framework.secrets.get_ot_api_key')
   @mock.patch('requests.post')

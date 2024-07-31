@@ -19,6 +19,9 @@ import type {
   ComponentsUsersResponse,
   ExternalReviewsResponse,
   FeatureLatency,
+  GetIntentResponse,
+  MessageResponse,
+  PostIntentRequest,
   ReviewLatency,
   SpecMentor,
 } from '../models/index';
@@ -31,6 +34,12 @@ import {
     ExternalReviewsResponseToJSON,
     FeatureLatencyFromJSON,
     FeatureLatencyToJSON,
+    GetIntentResponseFromJSON,
+    GetIntentResponseToJSON,
+    MessageResponseFromJSON,
+    MessageResponseToJSON,
+    PostIntentRequestFromJSON,
+    PostIntentRequestToJSON,
     ReviewLatencyFromJSON,
     ReviewLatencyToJSON,
     SpecMentorFromJSON,
@@ -41,6 +50,12 @@ export interface AddUserToComponentRequest {
     componentId: number;
     userId: number;
     componentUsersRequest?: ComponentUsersRequest;
+}
+
+export interface GetIntentBodyRequest {
+    featureId: number;
+    stageId: number;
+    gateId: number;
 }
 
 export interface ListExternalReviewsRequest {
@@ -54,6 +69,13 @@ export interface ListFeatureLatencyRequest {
 
 export interface ListSpecMentorsRequest {
     after?: Date;
+}
+
+export interface PostIntentToBlinkDevRequest {
+    featureId: number;
+    stageId: number;
+    gateId: number;
+    postIntentRequest?: PostIntentRequest;
 }
 
 export interface RemoveUserFromComponentRequest {
@@ -85,6 +107,23 @@ export interface DefaultApiInterface {
      * Add a user to a component
      */
     addUserToComponent(requestParameters: AddUserToComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * 
+     * @summary Get the HTML body of an intent draft
+     * @param {number} featureId Feature ID
+     * @param {number} stageId Stage ID
+     * @param {number} gateId Gate ID
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getIntentBodyRaw(requestParameters: GetIntentBodyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetIntentResponse>>;
+
+    /**
+     * Get the HTML body of an intent draft
+     */
+    getIntentBody(requestParameters: GetIntentBodyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetIntentResponse>;
 
     /**
      * 
@@ -162,6 +201,24 @@ export interface DefaultApiInterface {
 
     /**
      * 
+     * @summary Submit an intent to be posted on blink-dev
+     * @param {number} featureId Feature ID
+     * @param {number} stageId Stage ID
+     * @param {number} gateId Gate ID
+     * @param {PostIntentRequest} [postIntentRequest] Gate ID and additional users to CC email to.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    postIntentToBlinkDevRaw(requestParameters: PostIntentToBlinkDevRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MessageResponse>>;
+
+    /**
+     * Submit an intent to be posted on blink-dev
+     */
+    postIntentToBlinkDev(requestParameters: PostIntentToBlinkDevRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MessageResponse>;
+
+    /**
+     * 
      * @summary Remove a user from a component
      * @param {number} componentId Component ID
      * @param {number} userId User ID
@@ -228,6 +285,53 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async addUserToComponent(requestParameters: AddUserToComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.addUserToComponentRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Get the HTML body of an intent draft
+     */
+    async getIntentBodyRaw(requestParameters: GetIntentBodyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetIntentResponse>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling getIntentBody().'
+            );
+        }
+
+        if (requestParameters['stageId'] == null) {
+            throw new runtime.RequiredError(
+                'stageId',
+                'Required parameter "stageId" was null or undefined when calling getIntentBody().'
+            );
+        }
+
+        if (requestParameters['gateId'] == null) {
+            throw new runtime.RequiredError(
+                'gateId',
+                'Required parameter "gateId" was null or undefined when calling getIntentBody().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/features/{feature_id}/{stage_id}/{gate_id}/intent`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))).replace(`{${"stage_id"}}`, encodeURIComponent(String(requestParameters['stageId']))).replace(`{${"gate_id"}}`, encodeURIComponent(String(requestParameters['gateId']))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GetIntentResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get the HTML body of an intent draft
+     */
+    async getIntentBody(requestParameters: GetIntentBodyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetIntentResponse> {
+        const response = await this.getIntentBodyRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**
@@ -394,6 +498,56 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async listSpecMentors(requestParameters: ListSpecMentorsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<SpecMentor>> {
         const response = await this.listSpecMentorsRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Submit an intent to be posted on blink-dev
+     */
+    async postIntentToBlinkDevRaw(requestParameters: PostIntentToBlinkDevRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MessageResponse>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling postIntentToBlinkDev().'
+            );
+        }
+
+        if (requestParameters['stageId'] == null) {
+            throw new runtime.RequiredError(
+                'stageId',
+                'Required parameter "stageId" was null or undefined when calling postIntentToBlinkDev().'
+            );
+        }
+
+        if (requestParameters['gateId'] == null) {
+            throw new runtime.RequiredError(
+                'gateId',
+                'Required parameter "gateId" was null or undefined when calling postIntentToBlinkDev().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/features/{feature_id}/{stage_id}/{gate_id}/intent`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))).replace(`{${"stage_id"}}`, encodeURIComponent(String(requestParameters['stageId']))).replace(`{${"gate_id"}}`, encodeURIComponent(String(requestParameters['gateId']))),
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: PostIntentRequestToJSON(requestParameters['postIntentRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => MessageResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Submit an intent to be posted on blink-dev
+     */
+    async postIntentToBlinkDev(requestParameters: PostIntentToBlinkDevRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MessageResponse> {
+        const response = await this.postIntentToBlinkDevRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

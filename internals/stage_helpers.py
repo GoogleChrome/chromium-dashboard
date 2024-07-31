@@ -57,7 +57,7 @@ def create_feature_stage(feature_id: int, feature_type: int, stage_type: int) ->
     gate.put()
 
   return stage
-  
+
 def get_gate_for_stage(feature_type, s_type) -> int | None:
   # Update type-specific fields.
   if s_type == STAGE_TYPES_DEV_TRIAL[feature_type]: # pragma: no cover
@@ -115,7 +115,8 @@ def get_feature_stage_ids_list(feature_id: int) -> list[dict[str, int]]:
 def get_ot_stage_extensions(ot_stage_id: int):
   """Return a list of extension stages associated with a stage in JSON format"""
   q = Stage.query(Stage.ot_stage_id == ot_stage_id)
-  return [converters.stage_to_json_dict(stage) for stage in q]
+  extension_stages =  [converters.stage_to_json_dict(stage) for stage in q]
+  return sorted(extension_stages, key=lambda s: (s['created']))
 
 
 def get_stage_info_for_templates(
@@ -159,10 +160,10 @@ def get_stage_info_for_templates(
       stage_info['should_render_intents'] = True
 
     # Add stages to their respective lists.
-    if s.stage_type == proto_stage_type: 
+    if s.stage_type == proto_stage_type:
       stage_info['proto_stages'].append(s)
 
-    # Make sure a MilestoneSet entity is referenced to avoid errors. 
+    # Make sure a MilestoneSet entity is referenced to avoid errors.
     if s.milestones is None:
       s.milestones = MilestoneSet()
 
@@ -174,13 +175,13 @@ def get_stage_info_for_templates(
       stage_info['dt_stages'].append(s)
       if m.desktop_first or m.android_first or m.ios_first:
         stage_info['should_render_mstone_table'] = True
-    
+
     if s.stage_type == ot_stage_type:
       stage_info['ot_stages'].append(s)
       if (m.desktop_first or m.android_first or m.webview_first or
           m.desktop_last or m.android_last or m.webview_last):
         stage_info['should_render_mstone_table'] = True
-    
+
     if s.stage_type == extension_stage_type:
      stage_info['extension_stages'].append(s)
       # Extension stages are not rendered
@@ -190,7 +191,7 @@ def get_stage_info_for_templates(
       stage_info['ship_stages'].append(s)
       if m.desktop_first or m.android_first or m.webview_first or m.ios_first:
         stage_info['should_render_mstone_table'] = True
-  
+
   # Returns a dictionary of stages needed for rendering info, as well as
   # a boolean value representing whether or not the estimated milestones
   # table will need to be rendered.

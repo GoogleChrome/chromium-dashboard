@@ -1,4 +1,4 @@
-import {LitElement, css, html} from 'lit';
+import {LitElement, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
 import {
   formatFeatureChanges,
@@ -153,14 +153,17 @@ export class ChromedashGuideMetadataPage extends LitElement {
   }
 
   renderSubheader() {
-    return html`
-      <div id="subheader">
-        <h2 id="breadcrumbs">
+    const link = this.loading
+      ? nothing
+      : html`
           <a href=${this.getNextPage()}>
             <iron-icon icon="chromestatus:arrow-back"></iron-icon>
             Edit feature: ${this.feature.name}
           </a>
-        </h2>
+        `;
+    return html`
+      <div id="subheader">
+        <h2 id="breadcrumbs">${link}</h2>
       </div>
     `;
   }

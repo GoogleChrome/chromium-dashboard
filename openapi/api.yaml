@@ -146,6 +146,60 @@ paths:
                   $ref: '#/components/schemas/SpecMentor'
         '400':
           description: The ?after query parameter isn't a valid date in ISO YYYY-MM-DD format.
+  /features/{feature_id}/{stage_id}/{gate_id}/intent:
+    parameters:
+      - name: feature_id
+        in: path
+        description: Feature ID
+        required: true
+        schema:
+          type: integer
+      - name: stage_id
+        in: path
+        description: Stage ID
+        required: true
+        schema:
+          type: integer
+      - name: gate_id
+        in: path
+        description: Gate ID
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: Get the HTML body of an intent draft
+      operationId: getIntentBody
+      responses:
+        '200':
+          description: Intent draft body.
+          content:
+            application/json::
+              schema:
+                $ref: '#/components/schemas/GetIntentResponse'
+        '400':
+          description: No feature or stage ID specified.
+        '404':
+          description: Feature or stage not found based on given ID.
+    post:
+      summary: Submit an intent to be posted on blink-dev
+      operationId: postIntentToBlinkDev
+      requestBody:
+        description: Gate ID and additional users to CC email to.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostIntentRequest'
+      responses:
+        '200':
+          description: Intent draft body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: No feature or stage ID specified.
+        '404':
+          description: Feature or stage not found based on given ID.
   /feature-latency:
     get:
       summary: List how long each feature took to launch
@@ -189,6 +243,32 @@ components:
       in: header
       name: X-Xsrf-Token
   schemas:
+    GetIntentResponse:
+      properties:
+        subject:
+          type: string
+        email_body:
+          type: string
+      required:
+      - subject
+      - email_body
+    PostIntentRequest:
+      properties:
+        gate_id:
+          type: integer
+        intent_cc_emails:
+          type: array
+          items:
+            type: string
+      required:
+      - gate_id
+      - intent_cc_emails
+    MessageResponse:
+      properties:
+        message:
+          type: string
+      required:
+      - message
     ComponentsUsersResponse:
       properties:
         users:

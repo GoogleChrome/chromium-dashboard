@@ -123,7 +123,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
     ]
 
   def tearDown(self):
-    for kind in [AppUser, FeatureEntry, Stage]:
+    for kind in [AppUser, FeatureEntry, Gate, Stage]:
       for entity in kind.query():
         entity.key.delete()
 

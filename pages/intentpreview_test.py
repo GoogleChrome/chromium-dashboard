@@ -167,52 +167,52 @@ class IntentEmailPreviewHandlerTest(testing_config.CustomTestCase):
     """We offer users the correct subject line for each intent stage."""
     self.assertEqual(
         'Intent stage "None"',
-        self.handler.compute_subject_prefix(
+        intentpreview.compute_subject_prefix(
             self.feature_1, core_enums.INTENT_NONE))
 
     self.assertEqual(
         'Intent stage "Start incubating"',
-        self.handler.compute_subject_prefix(
+        intentpreview.compute_subject_prefix(
             self.feature_1, core_enums.INTENT_INCUBATE))
 
     self.assertEqual(
         'Intent to Prototype',
-        self.handler.compute_subject_prefix(
+        intentpreview.compute_subject_prefix(
             self.feature_1, core_enums.INTENT_IMPLEMENT))
 
     self.assertEqual(
         'Ready for Developer Testing',
-        self.handler.compute_subject_prefix(
+        intentpreview.compute_subject_prefix(
             self.feature_1, core_enums.INTENT_EXPERIMENT))
 
     self.assertEqual(
         'Intent stage "Evaluate readiness to ship"',
-        self.handler.compute_subject_prefix(
+        intentpreview.compute_subject_prefix(
             self.feature_1, core_enums.INTENT_IMPLEMENT_SHIP))
 
     self.assertEqual(
         'Intent to Experiment',
-        self.handler.compute_subject_prefix(
+        intentpreview.compute_subject_prefix(
             self.feature_1, core_enums.INTENT_ORIGIN_TRIAL))
 
     self.assertEqual(
         'Intent to Ship',
-        self.handler.compute_subject_prefix(
+        intentpreview.compute_subject_prefix(
             self.feature_1, core_enums.INTENT_SHIP))
 
     self.assertEqual(
         'Intent to Extend Deprecation Trial',
-        self.handler.compute_subject_prefix(
+        intentpreview.compute_subject_prefix(
             self.feature_1, core_enums.INTENT_REMOVED))
 
     self.assertEqual(
         'Intent stage "Shipped"',
-        self.handler.compute_subject_prefix(
+        intentpreview.compute_subject_prefix(
             self.feature_1, core_enums.INTENT_SHIPPED))
 
     self.assertEqual(
         'Intent stage "Parked"',
-        self.handler.compute_subject_prefix(
+        intentpreview.compute_subject_prefix(
             self.feature_1, core_enums.INTENT_PARKED))
 
   def test_compute_subject_prefix__deprecate_feature(self):
@@ -220,17 +220,17 @@ class IntentEmailPreviewHandlerTest(testing_config.CustomTestCase):
     self.feature_1.feature_type = core_enums.FEATURE_TYPE_DEPRECATION_ID
     self.assertEqual(
         'Intent stage "None"',
-        self.handler.compute_subject_prefix(
+        intentpreview.compute_subject_prefix(
             self.feature_1, core_enums.INTENT_NONE))
 
     self.assertEqual(
         'Intent to Deprecate and Remove',
-        self.handler.compute_subject_prefix(
+        intentpreview.compute_subject_prefix(
             self.feature_1, core_enums.INTENT_IMPLEMENT))
 
     self.assertEqual(
         'Request for Deprecation Trial',
-        self.handler.compute_subject_prefix(
+        intentpreview.compute_subject_prefix(
             self.feature_1, core_enums.INTENT_ORIGIN_TRIAL))
 
   def test_compute_subject_prefix__PSA_feature(self):
@@ -238,7 +238,7 @@ class IntentEmailPreviewHandlerTest(testing_config.CustomTestCase):
     self.feature_1.feature_type = core_enums.FEATURE_TYPE_CODE_CHANGE_ID
     self.assertEqual(
         'Web-Facing Change PSA',
-        self.handler.compute_subject_prefix(
+        intentpreview.compute_subject_prefix(
             self.feature_1, core_enums.INTENT_SHIP))
 
 class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
