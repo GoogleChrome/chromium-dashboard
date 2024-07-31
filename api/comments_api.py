@@ -16,11 +16,9 @@
 from chromestatus_openapi.models import (
     Activity as ActivityModel,
     Amendment as AmendmentModel,
-    CommentRequest,
     PatchCommentRequest,
     GetCommentsResponse,
     SuccessMessage,
-    ErrorMessage,
 )
 from typing import Any
 
@@ -92,6 +90,7 @@ class CommentsAPI(basehandlers.APIHandler):
     post_to_thread_type = self.get_param(
         'postToThreadType', required=False)
 
+    #comment_request = CommentRequest(**self.request.json)
     comment_content = self.get_param('comment', required=False)
     if comment_content:
       can_comment = (permissions.can_comment(user) or
@@ -126,15 +125,20 @@ class CommentsAPI(basehandlers.APIHandler):
     return SuccessMessage(message='Done').to_dict()
 
   def do_patch(self, **kwargs) -> dict[str, str]:
-    patch_request = PatchCommentRequest(**self.request.json)
-    comment: Activity = Activity.get_by_id(patch_request.commentId)
+    json_data = self.request.json
+    patch_request_data = {
+        'comment_id': json_data['commentId'],
+        'is_undelete': json_data['isUndelete']
+    }
+    patch_request = PatchCommentRequest(**patch_request_data)
+    comment: Activity = Activity.get_by_id(patch_request.comment_id)
 
     user = self.get_current_user(required=True)
     if not permissions.can_admin_site(user) and (
         comment and user.email() != comment.author):
       self.abort(403, msg='User does not have comment edit permissions')
 
-    if patch_request.isUndelete:
+    if patch_request.is_undelete:
       comment.deleted_by = None
     else:
       comment.deleted_by = user.email()
