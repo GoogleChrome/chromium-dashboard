@@ -17,6 +17,7 @@ from chromestatus_openapi.models import (
     Activity as ActivityModel,
     Amendment as AmendmentModel,
     PatchCommentRequest,
+    CommentsRequest,
     GetCommentsResponse,
     SuccessMessage,
 )
@@ -87,11 +88,16 @@ class CommentsAPI(basehandlers.APIHandler):
     gate_id = kwargs.get('gate_id', None)
     feature = self.get_specified_feature(feature_id=feature_id)
     user = self.get_current_user(required=True)
-    post_to_thread_type = self.get_param(
-        'postToThreadType', required=False)
 
-    #comment_request = CommentRequest(**self.request.json)
-    comment_content = self.get_param('comment', required=False)
+    json_data = self.request.json
+    comment_request_data = {
+        'comment': json_data['comment'],
+        'post_to_thread_type': json_data.get('postToThreadType', None),
+    }
+    comment_request = CommentsRequest(**comment_request_data)
+    comment_content = comment_request.comment
+    post_to_thread_type = comment_request.post_to_thread_type
+
     if comment_content:
       can_comment = (permissions.can_comment(user) or
                      permissions.can_edit_feature(user, feature_id))
