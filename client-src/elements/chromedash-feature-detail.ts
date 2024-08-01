@@ -85,7 +85,7 @@ class ChromedashFeatureDetail extends LitElement {
   canEdit = false;
   @property({attribute: false})
   feature!: Feature;
-  @property({type: Array, attribute: false})
+  @property({attribute: false})
   gates!: GateDict[];
   @property({attribute: false})
   process!: Process;
@@ -93,7 +93,6 @@ class ChromedashFeatureDetail extends LitElement {
   progress!: ProgressItem;
   @property({type: Number})
   selectedGateId = 0;
-
   @state()
   anyCollapsed = true;
   @state()
@@ -268,7 +267,7 @@ class ChromedashFeatureDetail extends LitElement {
     if (!rawQuery.hasOwnProperty('gate')) {
       return;
     }
-    const gateVal = rawQuery['gate'];
+    const gateVal = Number(rawQuery['gate']);
     const foundGates = this.gates.filter(g => g.id == gateVal);
     if (!foundGates.length) {
       return;

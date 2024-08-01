@@ -408,9 +408,9 @@ export interface RawQuery {
 /**
  * Parses URL query strings into a dict.
  * @param {string} rawQuery a raw URL query string, e.g. q=abc&num=1;
- * @return {Object} A key-value pair dictionary for the query string.
+ * @return {Record<string, string>} A key-value pair dictionary for the query string.
  */
-export function parseRawQuery(rawQuery) {
+export function parseRawQuery(rawQuery): Record<string, string> {
   const params = new URLSearchParams(rawQuery);
   const result = {};
   for (const param of params.keys()) {

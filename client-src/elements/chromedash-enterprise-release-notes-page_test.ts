@@ -256,17 +256,17 @@ describe('chromedash-enterprise-release-notes-page', () => {
       <chromedash-enterprise-release-notes-page></chromedash-enterprise-release-notes-page>`);
     assert.exists(component);
     assert.instanceOf(component, ChromedashEnterpriseReleaseNotesPage);
-    assert.equal(parseRawQuery(window.location.search).milestone, 100);
+    assert.equal((parseRawQuery(window.location.search)).milestone, '100');
 
     // Select a future milestone
     component.selectedMilestone = 110;
     await nextFrame();
-    assert.equal(parseRawQuery(window.location.search).milestone, 110);
+    assert.equal((parseRawQuery(window.location.search)).milestone, '110');
 
     // Select a previous milestone
     component.selectedMilestone = 90;
     await nextFrame();
-    assert.equal(parseRawQuery(window.location.search).milestone, 90);
+    assert.equal((parseRawQuery(window.location.search)).milestone, '90');
   });
 
   it('renders with no data', async () => {
@@ -280,8 +280,8 @@ describe('chromedash-enterprise-release-notes-page', () => {
 
     // invalid feature requests would trigger the toast to show message
     const toastEl = document.querySelector('chromedash-toast');
-    const toastMsgSpan = toastEl.shadowRoot.querySelector('span#msg');
-    assert.include(toastMsgSpan.innerHTML,
+    const toastMsgSpan = toastEl?.shadowRoot?.querySelector('span#msg');
+    assert.include(toastMsgSpan?.innerHTML,
       'Some errors occurred. Please refresh the page or try again later.');
   });
 
@@ -291,8 +291,8 @@ describe('chromedash-enterprise-release-notes-page', () => {
     assert.exists(component);
     assert.instanceOf(component, ChromedashEnterpriseReleaseNotesPage);
 
-    const releaseNotesSummary = component.shadowRoot.querySelector('#release-notes-summary');
-    const children = [...releaseNotesSummary.querySelectorAll('tr > *')];
+    const releaseNotesSummary = component.renderRoot.querySelector('#release-notes-summary');
+    const children = Array.from(releaseNotesSummary!.querySelectorAll('tr > *'));
 
     // Validate first headers
     assert.equal(children[0].textContent, 'Chrome browser updates');
@@ -343,19 +343,19 @@ describe('chromedash-enterprise-release-notes-page', () => {
     assert.exists(component);
     assert.instanceOf(component, ChromedashEnterpriseReleaseNotesPage);
 
-    const releaseNotes = [...component.shadowRoot.querySelectorAll('.note-section')];
+    const releaseNotes = Array.from(component.shadowRoot!.querySelectorAll('.note-section'));
     assert.equal(2, releaseNotes.length);
 
     // Test Chrome browser updates
     {
-      assert.equal('Chrome browser updates', releaseNotes[0].querySelector('h2').textContent);
-      const features = [...releaseNotes[0].querySelectorAll('.feature')];
+      assert.equal('Chrome browser updates', releaseNotes[0].querySelector('h2')!.textContent);
+      const features = Array.from(releaseNotes[0].querySelectorAll('.feature'));
 
       // Test feature 1
       {
         assert.equal(
           'feature with two consecutive rollout stages',
-          features[0].querySelector('strong').textContent);
+          features[0].querySelector('strong')!.textContent);
         assert.equal(
           '< To remove - Feature details - ' +
           'Owners: owner1 - Editors: editor1 - First Notice: n_milestone_feat_4 - ' +
@@ -363,15 +363,15 @@ describe('chromedash-enterprise-release-notes-page', () => {
           normalizedTextContent(features[0].querySelector('.toremove')));
         assert.equal(
           'feature 4 summary',
-          features[0].querySelector('.summary').textContent);
-        const stages = [...features[0].querySelectorAll('li')];
+          features[0].querySelector('.summary')!.textContent);
+        const stages = Array.from(features[0].querySelectorAll('li'));
         assert.equal(2, stages.length);
         assert.include(stages[0].textContent, 'Chrome 100');
         assert.include(stages[0].textContent, 'fake rollout details 100');
         assert.include(stages[1].textContent, 'Chrome 101');
         assert.include(stages[1].textContent, 'fake rollout details 101');
 
-        const screenshots = [...features[0].querySelectorAll('.screenshots img')];
+        const screenshots: HTMLImageElement[] = Array.from(features[0].querySelectorAll('.screenshots img'));
         assert.lengthOf(screenshots, 2);
         assert.equal(screenshots[0].src, 'https://example.com/screenshot1');
         assert.equal(screenshots[0].alt, 'Feature screenshot 1');
@@ -383,7 +383,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
       {
         assert.equal(
           'feature with one rollout stages',
-          features[1].querySelector('strong').textContent);
+          features[1].querySelector('strong')!.textContent);
         assert.equal(
           '< To remove - Feature details - ' +
           'Owners: owner - Editors: editor1, editor2 - First Notice: n_milestone_feat_3 - ' +
@@ -391,13 +391,13 @@ describe('chromedash-enterprise-release-notes-page', () => {
           normalizedTextContent(features[1].querySelector('.toremove')));
         assert.equal(
           'feature 3 summary',
-          features[1].querySelector('.summary').textContent);
-        const stages = [...features[1].querySelectorAll('li')];
+          features[1].querySelector('.summary')!.textContent);
+        const stages = Array.from(features[1].querySelectorAll('li'));
         assert.equal(1, stages.length);
         assert.include(stages[0].textContent, 'Chrome 100');
         assert.include(stages[0].textContent, 'fake rollout details 100');
 
-        const screenshots = [...features[1].querySelectorAll('.screenshots img')];
+        const screenshots: HTMLImageElement[] = Array.from(features[1].querySelectorAll('.screenshots img'));
         assert.lengthOf(screenshots, 1);
         assert.equal(screenshots[0].src, 'https://example.com/screenshot1');
         assert.equal(screenshots[0].alt, 'Feature screenshot 1');
@@ -407,7 +407,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
       {
         assert.equal(
           'normal feature with shipping stage',
-          features[2].querySelector('strong').textContent);
+          features[2].querySelector('strong')!.textContent);
         assert.equal(
           '< To remove - Feature details - ' +
           'Owners: owner - Editors: editor1, editor2 - First Notice: n_milestone_feat_7 - ' +
@@ -415,15 +415,15 @@ describe('chromedash-enterprise-release-notes-page', () => {
           normalizedTextContent(features[2].querySelector('.toremove')));
         assert.equal(
           'normal feature summary',
-          features[2].querySelector('.summary').textContent);
-        const stages = [...features[2].querySelectorAll('li')];
+          features[2].querySelector('.summary')!.textContent);
+        const stages = Array.from(features[2].querySelectorAll('li'));
         assert.equal(4, stages.length);
         assert.include(stages[0].textContent, 'Chrome 100 on Windows, Mac, Linux, Android');
         assert.include(stages[1].textContent, 'Chrome 101 on Windows, Mac, Linux, Android');
         assert.include(stages[2].textContent, 'Chrome 102 on iOS, Android');
         assert.include(stages[3].textContent, 'Chrome 103 on iOS');
 
-        const screenshots = [...features[1].querySelectorAll('.screenshots img')];
+        const screenshots: HTMLImageElement[] = Array.from(features[1].querySelectorAll('.screenshots img'));
         assert.lengthOf(screenshots, 1);
         assert.equal(screenshots[0].src, 'https://example.com/screenshot1');
         assert.equal(screenshots[0].alt, 'Feature screenshot 1');
@@ -434,14 +434,14 @@ describe('chromedash-enterprise-release-notes-page', () => {
     {
       assert.equal(
         'Upcoming Chrome browser updates',
-        releaseNotes[1].querySelector('h2').textContent);
-      const features = [...releaseNotes[1].querySelectorAll('.feature')];
+        releaseNotes[1].querySelector('h2')!.textContent);
+      const features = Array.from(releaseNotes[1].querySelectorAll('.feature'));
 
       // Test feature 1
       {
         assert.equal(
           'feature with upcoming rollout stages',
-          features[0].querySelector('strong').textContent);
+          features[0].querySelector('strong')!.textContent);
         assert.equal(
           '< To remove - Feature details - ' +
           'Owners: owner - Editors: editor1, editor2 - First Notice: n_milestone_feat_6 - ' +
@@ -449,13 +449,13 @@ describe('chromedash-enterprise-release-notes-page', () => {
           normalizedTextContent(features[0].querySelector('.toremove')));
         assert.equal(
           'feature 6 summary',
-          features[0].querySelector('.summary').textContent);
-        const stages = [...features[0].querySelectorAll('li')];
+          features[0].querySelector('.summary')!.textContent);
+        const stages = Array.from(features[0].querySelectorAll('li'));
         assert.equal(1, stages.length);
         assert.include(stages[0].textContent, 'Chrome 999');
         assert.include(stages[0].textContent, 'fake rollout details 999');
 
-        const screenshots = [...features[0].querySelectorAll('.screenshots img')];
+        const screenshots = Array.from(features[0].querySelectorAll('.screenshots img'));
         assert.isEmpty(screenshots);
       }
 
@@ -463,7 +463,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
       {
         assert.equal(
           'feature with past and future rollout stages',
-          features[1].querySelector('strong').textContent);
+          features[1].querySelector('strong')!.textContent);
         assert.equal(
           '< To remove - Feature details - ' +
           'Owners: owner - Editors: editor1, editor2 - First Notice: n_milestone_feat_5 - ' +
@@ -471,15 +471,15 @@ describe('chromedash-enterprise-release-notes-page', () => {
           normalizedTextContent(features[1].querySelector('.toremove')));
         assert.equal(
           'feature 5 summary',
-          features[1].querySelector('.summary').textContent);
-        const stages = [...features[1].querySelectorAll('li')];
+          features[1].querySelector('.summary')!.textContent);
+        const stages = Array.from(features[1].querySelectorAll('li'));
         assert.equal(2, stages.length);
         assert.include(stages[0].textContent, 'Chrome 1');
         assert.include(stages[0].textContent, 'fake rollout details 1');
         assert.include(stages[1].textContent, 'Chrome 1000');
         assert.include(stages[1].textContent, 'fake rollout details 1000');
 
-        const screenshots = [...features[1].querySelectorAll('.screenshots img')];
+        const screenshots: HTMLImageElement[] = Array.from(features[1].querySelectorAll('.screenshots img'));
         assert.lengthOf(screenshots, 1);
         assert.equal(screenshots[0].src, 'https://example.com/screenshot1');
         assert.equal(screenshots[0].alt, 'Feature screenshot 1');
@@ -499,8 +499,8 @@ describe('chromedash-enterprise-release-notes-page', () => {
     await nextFrame();
 
     // Tests summary
-    const releaseNotesSummary = component.shadowRoot.querySelector('#release-notes-summary');
-    const children = [...releaseNotesSummary.querySelectorAll('tr > *')];
+    const releaseNotesSummary = component.renderRoot.querySelector('#release-notes-summary');
+    const children = Array.from(releaseNotesSummary!.querySelectorAll('tr > *'));
 
     // Validate first headers
     assert.equal(children[0].textContent, 'Chrome browser updates');
@@ -521,13 +521,13 @@ describe('chromedash-enterprise-release-notes-page', () => {
     assert.equal(children[9].textContent, 'Nothing');
 
     // Tests release notes
-    const releaseNotes = [...component.shadowRoot.querySelectorAll('.note-section')];
+    const releaseNotes = Array.from(component.renderRoot.querySelectorAll('.note-section'));
     assert.equal(2, releaseNotes.length);
 
     // Test Chrome browser updates
     {
-      assert.equal('Chrome browser updates', releaseNotes[0].querySelector('h2').textContent);
-      const features = [...releaseNotes[0].querySelectorAll('.feature')];
+      assert.equal('Chrome browser updates', releaseNotes[0].querySelector('h2')!.textContent);
+      const features = Array.from(releaseNotes[0].querySelectorAll('.feature'));
       assert.equal(0, features.length);
     }
 
@@ -535,8 +535,8 @@ describe('chromedash-enterprise-release-notes-page', () => {
     {
       assert.equal(
         'Upcoming Chrome browser updates',
-        releaseNotes[1].querySelector('h2').textContent);
-      const features = [...releaseNotes[1].querySelectorAll('.feature')];
+        releaseNotes[1].querySelector('h2')!.textContent);
+      const features = Array.from(releaseNotes[1].querySelectorAll('.feature'));
       assert.equal(0, features.length);
     }
   });
