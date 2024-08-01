@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from chromestatus_openapi.models import ComponentUsersRequest
+
 from framework import basehandlers
 from framework import permissions
 from internals import user_models
@@ -48,15 +50,17 @@ class ComponentUsersAPI(basehandlers.APIHandler):
   @permissions.require_admin_site
   def do_put(self, **kwargs) -> tuple[dict, int]:
     params = self.request.get_json(force=True)
+    component_users_request = ComponentUsersRequest(**params)
     self.__update_subscribers_list(True, user_id=kwargs.get('user_id', None),
                                    blink_component_id=kwargs.get('component_id', None),
-                                   primary=params.get('owner'))
+                                   primary=component_users_request.owner)
     return {}, 200
 
   @permissions.require_admin_site
   def do_delete(self, **kwargs) -> tuple[dict, int]:
     params = self.request.get_json(force=True)
+    component_users_request = ComponentUsersRequest(**params)
     self.__update_subscribers_list(False, user_id=kwargs.get('user_id', None),
                                    blink_component_id=kwargs.get('component_id', None),
-                                   primary=params.get('owner'))
+                                   primary=component_users_request.owner)
     return {}, 200
