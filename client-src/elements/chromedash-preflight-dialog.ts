@@ -12,7 +12,6 @@ import {
   ProcessStage,
   ProgressItem,
 } from './chromedash-gate-column';
-import {Stage} from './chromedash-report-external-reviews-page';
 
 let preflightDialogEl;
 
