@@ -1,23 +1,23 @@
 // @ts-check
 import {Task} from '@lit/task';
 import '@shoelace-style/shoelace';
+import {
+  DefaultApiInterface,
+  OutstandingReview,
+  OutstandingReviewCurrentStageEnum as StageEnum,
+} from 'chromestatus-openapi';
 import {LitElement, css, html, nothing} from 'lit';
+import {customElement, property} from 'lit/decorators.js';
 import {choose} from 'lit/directives/choose.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
-
-/**
- * @typedef {import('chromestatus-openapi').ExternalReviewsResponse} ExternalReviewsResponse
- * @typedef {import('chromestatus-openapi').OutstandingReview} OutstandingReview
- * @typedef {import('chromestatus-openapi').OutstandingReviewCurrentStageEnum} Stage
- */
+import {FeatureLink} from '../js-src/cs-client.js';
 
 /** Array.sort() comparison helper function ordering numbers ascending and putting undefined last.
- *
- * @param {number | undefined} a
- * @param {number | undefined} b
- * @returns {number}
  */
-function ascendingNumberUndefinedLast(a, b) {
+function ascendingNumberUndefinedLast(
+  a: number | undefined,
+  b: number | undefined
+): number {
   if (a === b) return 0;
   if (a === undefined) return 1;
   if (b === undefined) return -1;
@@ -27,12 +27,11 @@ function ascendingNumberUndefinedLast(a, b) {
 /** Array.sort() comparison function to order outstanding reviews by descending urgency.
  *
  * Reviews' features must be within the same stage.
- *
- * @param {OutstandingReview} a
- * @param {OutstandingReview} b
- * @returns {number}
  */
-function compareOutstandingReview(a, b) {
+function compareOutstandingReview(
+  a: OutstandingReview,
+  b: OutstandingReview
+): number {
   console.assert(
     a.current_stage === b.current_stage,
     `Tried to compare features at stages ${a.current_stage} and ` +
@@ -62,6 +61,13 @@ function compareOutstandingReview(a, b) {
   return 0;
 }
 
+interface TaskReviewResult {
+  reviews: Record<StageEnum, OutstandingReview[]>;
+  links: FeatureLink[];
+  noOutstandingReviews: boolean;
+}
+
+@customElement('chromedash-report-external-reviews-page')
 export class ChromedashReportExternalReviewsPage extends LitElement {
   static get styles() {
     return [
@@ -90,23 +96,15 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
     ];
   }
 
-  static get properties() {
-    return {
-      reviewer: {type: String},
-    };
-  }
+  @property({type: String})
+  reviewer: 'tag' | 'gecko' | 'webkit' | undefined = undefined;
 
-  /** @type {'tag' | 'gecko' | 'webkit' | undefined} */
-  reviewer = undefined;
+  @property({type: Object})
+  private _client: DefaultApiInterface = window.csOpenApiClient;
 
-  /** @type {import('chromestatus-openapi').DefaultApiInterface} */
-  _client;
-
-  constructor() {
-    super();
-    // @ts-ignore
-    this._client = window.csOpenApiClient;
-    this._reviewsTask = new Task(this, {
+  @property({attribute: false})
+  private _reviewsTask: Task<('tag' | 'gecko' | 'webkit')[], TaskReviewResult> =
+    new Task(this, {
       task: async ([reviewer], {signal}) => {
         if (reviewer === undefined) {
           throw new Error('Element must have "reviewer" attribute.', {
@@ -131,15 +129,11 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
       },
       args: () => [this.reviewer],
     });
-  }
 
-  /**
-   * @param {OutstandingReview[]} reviews
-   * @returns {Record<Stage, OutstandingReview[]>}
-   */
-  groupReviews(reviews) {
-    /** @type {Record<Stage, OutstandingReview[]>} */
-    const result = {
+  groupReviews(
+    reviews: OutstandingReview[]
+  ): Record<StageEnum, OutstandingReview[]> {
+    const result: Record<StageEnum, OutstandingReview[]> = {
       incubating: [],
       prototyping: [],
       'dev-trial': [],
@@ -167,11 +161,10 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
     </tr>`;
   }
 
-  /**
-   * @param {Record<import("chromestatus-openapi").OutstandingReviewCurrentStageEnum, import("chromestatus-openapi").OutstandingReview[]>} reviews
-   * @param {import('../js-src/cs-client.js').FeatureLink[]} links
-   */
-  renderOutstandingReviews(reviews, links) {
+  renderOutstandingReviews(
+    reviews: Record<StageEnum, OutstandingReview[]>,
+    links: FeatureLink[]
+  ) {
     return [
       ['Preparing to ship', 'shipping'],
       ['In Origin Trial', 'origin-trial'],
@@ -278,8 +271,3 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
     `;
   }
 }
-
-customElements.define(
-  'chromedash-report-external-reviews-page',
-  ChromedashReportExternalReviewsPage
-);
