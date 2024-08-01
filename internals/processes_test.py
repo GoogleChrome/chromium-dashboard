@@ -24,7 +24,7 @@ from internals import processes
 from internals import stage_helpers
 
 
-BakeApproval = approval_defs.ApprovalFieldDef(
+BakeGateInfo = approval_defs.GateInfo(
     'Approval for baking',
     'The head chef must approve of you using the oven',
     9, approval_defs.ONE_LGTM, ['chef@example.com'], 'Chef')
@@ -34,7 +34,7 @@ BAKE_APPROVAL_DEF_DICT = collections.OrderedDict([
     ('team_name', 'Chef'),
     ('escalation_email', None),
     ('description', 'The head chef must approve of you using the oven'),
-    ('field_id', 9),
+    ('gate_type', 9),
     ('rule', approval_defs.ONE_LGTM),
     ('approvers', ['chef@example.com']),
     ('slo_initial_response', 5),
@@ -67,7 +67,7 @@ class HelperFunctionsTest(testing_config.CustomTestCase):
              'Heat at 375 for 40 minutes',
              [PI_LOAF, PI_DIRTY_PAN],
              [],
-             [BakeApproval],
+             [BakeGateInfo],
              1, 2, STAGE_BAKE_BAKE),
          ])
     expected = {

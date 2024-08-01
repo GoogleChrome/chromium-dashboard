@@ -55,10 +55,10 @@ TESTING_APPROVERS = [
 DEFAULT_SLO_LIMIT = 5  # Five weekdays in the Pacific timezone.
 
 @dataclass(eq=True, frozen=True)
-class ApprovalFieldDef:
+class GateInfo:
   name: str
   description: str
-  field_id: int
+  gate_type: int
   rule: str
   approvers: str | list[str]
   team_name: str
@@ -69,37 +69,37 @@ class ApprovalFieldDef:
 # Note: This can be requested manually through the UI, but it is not
 # triggered by a blink-dev thread because i2p intents are only FYIs to
 # bilnk-dev and don't actually need approval by the API Owners.
-PrototypeApproval = ApprovalFieldDef(
+PrototypeApproval = GateInfo(
     'Intent to Prototype',
     'Not normally used.  If a review is requested, API Owners can approve.',
     core_enums.GATE_API_PROTOTYPE, ONE_LGTM,
     approvers=API_OWNERS_URL, team_name='API Owners')
 
-ExperimentApproval = ApprovalFieldDef(
+ExperimentApproval = GateInfo(
     'Intent to Experiment',
     'One API Owner must approve your intent',
     core_enums.GATE_API_ORIGIN_TRIAL, ONE_LGTM,
     approvers=API_OWNERS_URL, team_name='API Owners')
 
-ExtendExperimentApproval = ApprovalFieldDef(
+ExtendExperimentApproval = GateInfo(
     'Intent to Extend Experiment',
     'One API Owner must approve your intent',
     core_enums.GATE_API_EXTEND_ORIGIN_TRIAL, ONE_LGTM,
     approvers=API_OWNERS_URL, team_name='API Owners')
 
-ShipApproval = ApprovalFieldDef(
+ShipApproval = GateInfo(
     'Intent to Ship',
     'Three API Owners must approve your intent',
     core_enums.GATE_API_SHIP, THREE_LGTM,
     approvers=API_OWNERS_URL, team_name='API Owners')
 
-PlanApproval = ApprovalFieldDef(
+PlanApproval = GateInfo(
     'Intent to Deprecate and Remove',
     'Three API Owners must approve your intent',
     core_enums.GATE_API_PLAN, THREE_LGTM,
     approvers=API_OWNERS_URL, team_name='API Owners')
 
-PrivacyOriginTrialApproval = ApprovalFieldDef(
+PrivacyOriginTrialApproval = GateInfo(
     'Privacy OT Review',
     'Privacy OT Review',
     core_enums.GATE_PRIVACY_ORIGIN_TRIAL, ONE_LGTM,
@@ -107,7 +107,7 @@ PrivacyOriginTrialApproval = ApprovalFieldDef(
     escalation_email='chrome-privacy-owp-rotation@google.com',
     slo_initial_response=6)
 
-PrivacyShipApproval = ApprovalFieldDef(
+PrivacyShipApproval = GateInfo(
     'Privacy Ship Review',
     'Privacy Ship Review',
     core_enums.GATE_PRIVACY_SHIP, ONE_LGTM,
@@ -117,14 +117,14 @@ PrivacyShipApproval = ApprovalFieldDef(
 
 # Note: There is no PrivacyPlanApproval
 
-SecurityOriginTrialApproval = ApprovalFieldDef(
+SecurityOriginTrialApproval = GateInfo(
     'Security OT Review',
     'Security OT Review',
     core_enums.GATE_SECURITY_ORIGIN_TRIAL, ONE_LGTM,
     approvers=SECURITY_APPROVERS, team_name='Security',
     slo_initial_response=6)
 
-SecurityShipApproval = ApprovalFieldDef(
+SecurityShipApproval = GateInfo(
     'Security Ship Review',
     'Security Ship Review',
     core_enums.GATE_SECURITY_SHIP, ONE_LGTM,
@@ -133,53 +133,53 @@ SecurityShipApproval = ApprovalFieldDef(
 
 # Note: There is no SecurityPlanApproval
 
-EnterpriseShipApproval = ApprovalFieldDef(
+EnterpriseShipApproval = GateInfo(
     'Enterprise Ship Review',
     'Enterprise Ship Review',
     core_enums.GATE_ENTERPRISE_SHIP, ONE_LGTM,
     approvers=ENTERPRISE_APPROVERS, team_name='Enterprise')
 
-EnterprisePlanApproval = ApprovalFieldDef(
+EnterprisePlanApproval = GateInfo(
     'Enterprise Deprecation Plan Review',
     'Enterprise Deprecation Plan Review',
     core_enums.GATE_ENTERPRISE_PLAN, ONE_LGTM,
     approvers=ENTERPRISE_APPROVERS, team_name='Enterprise')
 
-DebuggabilityOriginTrialApproval = ApprovalFieldDef(
+DebuggabilityOriginTrialApproval = GateInfo(
     'Debuggability OT Review',
     'Debuggability OT Review',
     core_enums.GATE_DEBUGGABILITY_ORIGIN_TRIAL, ONE_LGTM,
     approvers=DEBUGGABILITY_APPROVERS, team_name='Debuggability',
     escalation_email='devtools-dev@chromium.org')
 
-DebuggabilityShipApproval = ApprovalFieldDef(
+DebuggabilityShipApproval = GateInfo(
     'Debuggability Ship Review',
     'Debuggability Ship Review',
     core_enums.GATE_DEBUGGABILITY_SHIP, ONE_LGTM,
     approvers=DEBUGGABILITY_APPROVERS, team_name='Debuggability',
     escalation_email='devtools-dev@chromium.org')
 
-DebuggabilityPlanApproval = ApprovalFieldDef(
+DebuggabilityPlanApproval = GateInfo(
     'Debuggability Deprecation Plan Review',
     'Debuggability Deprecation Plan Review',
     core_enums.GATE_DEBUGGABILITY_PLAN, ONE_LGTM,
     approvers=DEBUGGABILITY_APPROVERS, team_name='Debuggability',
     escalation_email='devtools-dev@chromium.org')
 
-TestingShipApproval = ApprovalFieldDef(
+TestingShipApproval = GateInfo(
     'Testing Ship Review',
     'Testing Ship Review',
     core_enums.GATE_TESTING_SHIP, ONE_LGTM,
     approvers=TESTING_APPROVERS, team_name='Testing')
 
-TestingPlanApproval = ApprovalFieldDef(
+TestingPlanApproval = GateInfo(
     'Testing Deprecation Plan Review',
     'Testing Deprecation Plan Review',
     core_enums.GATE_TESTING_PLAN, ONE_LGTM,
     approvers=TESTING_APPROVERS, team_name='Testing')
 
 APPROVAL_FIELDS_BY_ID = {
-    afd.field_id: afd
+    afd.gate_type: afd
     for afd in [
         PrototypeApproval, ExperimentApproval, ExtendExperimentApproval,
         ShipApproval, PlanApproval,
@@ -271,20 +271,20 @@ def auto_assign_reviewer(gate):
     gate.put()
 
 
-def get_approvers(field_id) -> list[str]:
+def get_approvers(gate_type) -> list[str]:
   """Return a list of email addresses of users allowed to approve."""
-  if field_id not in APPROVAL_FIELDS_BY_ID:
+  if gate_type not in APPROVAL_FIELDS_BY_ID:
     return []
 
-  cache_key = '%s|%s' % (APPROVERS_CACHE_KEY, field_id)
+  cache_key = '%s|%s' % (APPROVERS_CACHE_KEY, gate_type)
   cached_approvers = rediscache.get(cache_key)
   if cached_approvers:
     return cached_approvers
 
-  afd = APPROVAL_FIELDS_BY_ID[field_id]
+  afd = APPROVAL_FIELDS_BY_ID[gate_type]
 
   if afd.approvers == IN_NDB:
-    gate_def = GateDef.get_gate_def(field_id)
+    gate_def = GateDef.get_gate_def(gate_type)
     owners = gate_def.approvers
   elif isinstance(afd.approvers, str):
     # afd.approvers can be either a hard-coded list of approver emails
@@ -305,17 +305,17 @@ def fields_approvable_by(user):
 
   email = user.email()
   approvable_ids = {
-      field_id for field_id in APPROVAL_FIELDS_BY_ID
-      if email in get_approvers(field_id)}
+      gate_type for gate_type in APPROVAL_FIELDS_BY_ID
+      if email in get_approvers(gate_type)}
   return approvable_ids
 
 
-def is_valid_field_id(field_id):
-  """Return true if field_id is a known field."""
-  return field_id in APPROVAL_FIELDS_BY_ID
+def is_valid_gate_type(gate_type):
+  """Return true if gate_type is a known field."""
+  return gate_type in APPROVAL_FIELDS_BY_ID
 
 
-def is_approved(approval_values, field_id):
+def is_approved(approval_values, gate_type):
   """Return true if we have all needed APPROVED values and no DENIED."""
   count = 0
   for av in approval_values:
@@ -323,7 +323,7 @@ def is_approved(approval_values, field_id):
       count += 1
     elif av.state == Vote.DENIED:
       return False
-  afd = APPROVAL_FIELDS_BY_ID[field_id]
+  afd = APPROVAL_FIELDS_BY_ID[gate_type]
 
   if afd.rule == ONE_LGTM:
     return count >= 1
@@ -334,9 +334,9 @@ def is_approved(approval_values, field_id):
     return False
 
 
-def is_resolved(approval_values, field_id):
+def is_resolved(approval_values, gate_type):
   """Return true if the review is done (approved or not approved)."""
-  if is_approved(approval_values, field_id):
+  if is_approved(approval_values, gate_type):
     return True
 
   # Any DENIED value means that the review is no longer pending.
