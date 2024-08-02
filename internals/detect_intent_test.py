@@ -59,7 +59,7 @@ class FunctionTest(testing_config.CustomTestCase):
       for entity in kind.query():
         entity.key.delete()
 
-  def test_detect_field(self):
+  def test_detect_gate_info(self):
     """We can detect intent thread type by subject line."""
     test_data = {
       approval_defs.PrototypeApproval: [
@@ -140,7 +140,7 @@ class FunctionTest(testing_config.CustomTestCase):
     for expected, subjects in test_data.items():
       for subject in subjects:
         with self.subTest(subject=subject):
-          actual = detect_intent.detect_field(subject)
+          actual = detect_intent.detect_gate_info(subject)
           self.assertEqual(expected, actual)
 
   def test_detect_feature_id__generated(self):
@@ -382,7 +382,7 @@ class FunctionTest(testing_config.CustomTestCase):
     self.assertTrue(detect_intent.is_lgtm_allowed(
         'owner@example.com', self.feature_1, approval_defs.ShipApproval))
     mock_get_approvers.assert_called_once_with(
-        approval_defs.ShipApproval.field_id)
+        approval_defs.ShipApproval.gate_type)
 
   @mock.patch('framework.permissions.can_admin_site')
   @mock.patch('internals.approval_defs.get_approvers')
@@ -601,7 +601,7 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
 
     self.assertEqual(actual, {
         'message': (f'Gate {self.gate_with_experiment_type.key.integer_id()} '
-                    'has gate type 2 and does not match approval field '
+                    'has gate type 2 and does not match gate info '
                     'gate type 3')})
 
   def test_process_post_data__new_thread_already_empty_str(self):
@@ -642,7 +642,7 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     self.assertEqual(1, len(created_votes))
     vote = created_votes[0]
     self.assertEqual(self.feature_id, vote.feature_id)
-    self.assertEqual(approval_defs.ShipApproval.field_id, vote.gate_type)
+    self.assertEqual(approval_defs.ShipApproval.gate_type, vote.gate_type)
     self.assertEqual(Vote.APPROVED, vote.state)
     self.assertEqual('user@example.com', vote.set_by)
     self.assertEqual(self.stages_dict[160][0].intent_thread_url, self.thread_url)
@@ -652,7 +652,7 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     """If we can't find the gate, exit early."""
     appr_field = approval_defs.TestingShipApproval
     ship_gate: Gate = Gate.query(Gate.feature_id == self.feature_id,
-               Gate.gate_type == appr_field.field_id).get()
+               Gate.gate_type == appr_field.gate_type).get()
     ship_gate.key.delete()
     self.handler.record_slo(self.feature_1, appr_field, 'from_addr', False)
     mock_info.assert_called_once_with('Did not find a gate')
@@ -662,10 +662,10 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     """If we tell which gate, exit early."""
     appr_field = approval_defs.TestingShipApproval
     gate_3 = Gate(feature_id=self.feature_id, stage_id=2,
-        gate_type=appr_field.field_id, state=Vote.NA)
+        gate_type=appr_field.gate_type, state=Vote.NA)
     gate_3.put()
     gate_4 = Gate(feature_id=self.feature_id, stage_id=2,
-        gate_type=appr_field.field_id, state=Vote.NA)
+        gate_type=appr_field.gate_type, state=Vote.NA)
     gate_4.put()
 
     self.handler.record_slo(self.feature_1, appr_field, 'from_addr', False)
@@ -677,7 +677,7 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     mock_now.return_value = datetime.datetime.now()
     appr_field = approval_defs.TestingShipApproval
     gate = Gate.query(Gate.feature_id == self.feature_id,
-                      Gate.gate_type == appr_field.field_id).get()
+                      Gate.gate_type == appr_field.gate_type).get()
     gate.requested_on = mock_now.return_value
     gate.put()
     from_addr = approval_defs.TESTING_APPROVERS[0]
@@ -691,7 +691,7 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     """If a approver themselves requests review, it's not a response."""
     appr_field = approval_defs.TestingShipApproval
     gate = Gate(feature_id=self.feature_id, stage_id=2,
-        gate_type=appr_field.field_id, state=Vote.NA)
+        gate_type=appr_field.gate_type, state=Vote.NA)
     gate.requested_on = datetime.datetime.now()
     gate.put()
     from_addr = approval_defs.TESTING_APPROVERS[0]
@@ -705,7 +705,7 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     """If a non-approver posted, don'tcount that as an initial response."""
     appr_field = approval_defs.TestingShipApproval
     gate = Gate(feature_id=self.feature_id, stage_id=2,
-        gate_type=appr_field.field_id, state=Vote.NA)
+        gate_type=appr_field.gate_type, state=Vote.NA)
     gate.requested_on = datetime.datetime.now()
     gate.put()
     from_addr = 'non-approver@example.com'

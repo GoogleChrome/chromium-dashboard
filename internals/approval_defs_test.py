@@ -133,15 +133,15 @@ class AutoAssignmentTest(testing_config.CustomTestCase):
 
 
 MOCK_APPROVALS_BY_ID = {
-    1: approval_defs.ApprovalFieldDef(
+    1: approval_defs.GateInfo(
         'Intent to test',
         'You need permission to test',
         1, approval_defs.ONE_LGTM, ['approver@example.com'], 'API Owners'),
-    2: approval_defs.ApprovalFieldDef(
+    2: approval_defs.GateInfo(
         'Intent to optimize',
         'You need permission to optimize',
         2, approval_defs.THREE_LGTM, 'https://example.com', 'API Owners'),
-    3: approval_defs.ApprovalFieldDef(
+    3: approval_defs.GateInfo(
         'Intent to memorize',
         'You need permission to memorize',
         3, approval_defs.THREE_LGTM, approval_defs.IN_NDB, 'API Owners'),
@@ -211,15 +211,15 @@ class GetApproversTest(testing_config.CustomTestCase):
     self.assertEqual(['a', 'b'], existing_gate_defs[0].approvers)
 
 
-class IsValidFieldIdTest(testing_config.CustomTestCase):
+class IsValidGateTypeTest(testing_config.CustomTestCase):
 
   @mock.patch('internals.approval_defs.APPROVAL_FIELDS_BY_ID',
               MOCK_APPROVALS_BY_ID)
   def test(self):
-    """We know if a field_id is defined or not."""
-    self.assertTrue(approval_defs.is_valid_field_id(1))
-    self.assertTrue(approval_defs.is_valid_field_id(2))
-    self.assertFalse(approval_defs.is_valid_field_id(99))
+    """We know if a gate_type is defined or not."""
+    self.assertTrue(approval_defs.is_valid_gate_type(1))
+    self.assertTrue(approval_defs.is_valid_gate_type(2))
+    self.assertFalse(approval_defs.is_valid_gate_type(99))
 
 
 class IsApprovedTest(testing_config.CustomTestCase):
