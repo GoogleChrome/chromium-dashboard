@@ -37,10 +37,10 @@ def amendment_to_json_dict(amendment: Amendment) -> AmendmentModel:
       field_name = amendment.field_name,
       old_value = amendment.old_value.strip('[]'),
       new_value = amendment.new_value.strip('[]'),
-  ).to_dict()
+  )
 
 
-def activity_to_json_dict(comment: Activity) -> dict[str, Any]:
+def activity_to_json_dict(comment: Activity) -> ActivityModel:
   amendments_json = [
       amendment_to_json_dict(amnd) for amnd in comment.amendments
       if amnd.old_value != 'None' or amnd.new_value != '[]']
@@ -48,12 +48,12 @@ def activity_to_json_dict(comment: Activity) -> dict[str, Any]:
       comment_id = comment.key.id(),
       feature_id = comment.feature_id,
       gate_id = comment.gate_id,
-      created = str(comment.created),  # YYYY-MM-DD HH:MM:SS.SSS
+      created = comment.created,  # YYYY-MM-DD HH:MM:SS.SSS
       author = comment.author,
       content = comment.content,
       deleted_by = comment.deleted_by,
       amendments = amendments_json,
-  ).to_dict()
+  )
 
 
 class CommentsAPI(basehandlers.APIHandler):
