@@ -50,7 +50,7 @@ class ComponentUsersAPI(basehandlers.APIHandler):
   @permissions.require_admin_site
   def do_put(self, **kwargs) -> tuple[dict, int]:
     params = self.request.get_json(force=True)
-    component_users_request = ComponentUsersRequest(**params)
+    component_users_request = ComponentUsersRequest.from_dict(params)
     self.__update_subscribers_list(True, user_id=kwargs.get('user_id', None),
                                    blink_component_id=kwargs.get('component_id', None),
                                    primary=component_users_request.owner)
@@ -59,7 +59,7 @@ class ComponentUsersAPI(basehandlers.APIHandler):
   @permissions.require_admin_site
   def do_delete(self, **kwargs) -> tuple[dict, int]:
     params = self.request.get_json(force=True)
-    component_users_request = ComponentUsersRequest(**params)
+    component_users_request = ComponentUsersRequest.from_dict(params)
     self.__update_subscribers_list(False, user_id=kwargs.get('user_id', None),
                                    blink_component_id=kwargs.get('component_id', None),
                                    primary=component_users_request.owner)
