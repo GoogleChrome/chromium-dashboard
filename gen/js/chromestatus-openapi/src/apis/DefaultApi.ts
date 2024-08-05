@@ -17,23 +17,30 @@ import * as runtime from '../runtime';
 import type {
   ComponentUsersRequest,
   ComponentsUsersResponse,
+  DismissCueRequest,
   ExternalReviewsResponse,
   FeatureLatency,
+  GetDismissedCues400Response,
   GetIntentResponse,
   MessageResponse,
   PostIntentRequest,
   ReviewLatency,
   SpecMentor,
+  SuccessMessage,
 } from '../models/index';
 import {
     ComponentUsersRequestFromJSON,
     ComponentUsersRequestToJSON,
     ComponentsUsersResponseFromJSON,
     ComponentsUsersResponseToJSON,
+    DismissCueRequestFromJSON,
+    DismissCueRequestToJSON,
     ExternalReviewsResponseFromJSON,
     ExternalReviewsResponseToJSON,
     FeatureLatencyFromJSON,
     FeatureLatencyToJSON,
+    GetDismissedCues400ResponseFromJSON,
+    GetDismissedCues400ResponseToJSON,
     GetIntentResponseFromJSON,
     GetIntentResponseToJSON,
     MessageResponseFromJSON,
@@ -44,12 +51,18 @@ import {
     ReviewLatencyToJSON,
     SpecMentorFromJSON,
     SpecMentorToJSON,
+    SuccessMessageFromJSON,
+    SuccessMessageToJSON,
 } from '../models/index';
 
 export interface AddUserToComponentRequest {
     componentId: number;
     userId: number;
     componentUsersRequest?: ComponentUsersRequest;
+}
+
+export interface DismissCueOperationRequest {
+    dismissCueRequest: DismissCueRequest;
 }
 
 export interface GetIntentBodyRequest {
@@ -107,6 +120,35 @@ export interface DefaultApiInterface {
      * Add a user to a component
      */
     addUserToComponent(requestParameters: AddUserToComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * 
+     * @summary Dismiss a cue card for the signed-in user
+     * @param {DismissCueRequest} dismissCueRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    dismissCueRaw(requestParameters: DismissCueOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+
+    /**
+     * Dismiss a cue card for the signed-in user
+     */
+    dismissCue(requestParameters: DismissCueOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
+
+    /**
+     * 
+     * @summary Get dismissed cues for the current user
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getDismissedCuesRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<string>>>;
+
+    /**
+     * Get dismissed cues for the current user
+     */
+    getDismissedCues(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<string>>;
 
     /**
      * 
@@ -285,6 +327,68 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async addUserToComponent(requestParameters: AddUserToComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.addUserToComponentRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Dismiss a cue card for the signed-in user
+     */
+    async dismissCueRaw(requestParameters: DismissCueOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+        if (requestParameters['dismissCueRequest'] == null) {
+            throw new runtime.RequiredError(
+                'dismissCueRequest',
+                'Required parameter "dismissCueRequest" was null or undefined when calling dismissCue().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/currentuser/cues`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DismissCueRequestToJSON(requestParameters['dismissCueRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Dismiss a cue card for the signed-in user
+     */
+    async dismissCue(requestParameters: DismissCueOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+        const response = await this.dismissCueRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get dismissed cues for the current user
+     */
+    async getDismissedCuesRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<string>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/currentuser/cues`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse<any>(response);
+    }
+
+    /**
+     * Get dismissed cues for the current user
+     */
+    async getDismissedCues(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<string>> {
+        const response = await this.getDismissedCuesRaw(initOverrides);
+        return await response.value();
     }
 
     /**

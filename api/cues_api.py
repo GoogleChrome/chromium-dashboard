@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from chromestatus_openapi.models import (DismissCueRequest)
+
 import logging
 
 from framework import basehandlers
@@ -33,12 +35,14 @@ class CuesAPI(basehandlers.APIHandler):
 
   def do_post(self, **kwargs):
     """Dismisses a cue card for the signed in user."""
-    cue = self.get_param('cue', allowed=ALLOWED_CUES)
-    unused_user = self.get_current_user(required=True)
-
-    user_models.UserPref.dismiss_cue(cue)
+    try:
+        request = DismissCueRequest.from_dict(self.request.json)
+        user_models.UserPref.dismiss_cue(request.cue)
+        return {'message': 'Done'}
+    except ValueError as e:
+        self.abort(400, str(e))
     # Callers don't use the JSON response for this API call.
-    return {'message': 'Done'}
+
 
   def do_get(self, **kwargs):
     """Return a list of the dismissed cue cards"""

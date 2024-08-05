@@ -5,13 +5,16 @@ from typing import Union
 
 from chromestatus_openapi.models.component_users_request import ComponentUsersRequest  # noqa: E501
 from chromestatus_openapi.models.components_users_response import ComponentsUsersResponse  # noqa: E501
+from chromestatus_openapi.models.dismiss_cue_request import DismissCueRequest  # noqa: E501
 from chromestatus_openapi.models.external_reviews_response import ExternalReviewsResponse  # noqa: E501
 from chromestatus_openapi.models.feature_latency import FeatureLatency  # noqa: E501
+from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismissedCues400Response  # noqa: E501
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
 from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
+from chromestatus_openapi.models.success_message import SuccessMessage  # noqa: E501
 from chromestatus_openapi import util
 
 
@@ -31,6 +34,32 @@ def add_user_to_component(component_id, user_id, component_users_request=None): 
     """
     if connexion.request.is_json:
         component_users_request = ComponentUsersRequest.from_dict(connexion.request.get_json())  # noqa: E501
+    return 'do some magic!'
+
+
+def dismiss_cue(dismiss_cue_request):  # noqa: E501
+    """Dismiss a cue card for the signed-in user
+
+     # noqa: E501
+
+    :param dismiss_cue_request: 
+    :type dismiss_cue_request: dict | bytes
+
+    :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
+    """
+    if connexion.request.is_json:
+        dismiss_cue_request = DismissCueRequest.from_dict(connexion.request.get_json())  # noqa: E501
+    return 'do some magic!'
+
+
+def get_dismissed_cues():  # noqa: E501
+    """Get dismissed cues for the current user
+
+     # noqa: E501
+
+
+    :rtype: Union[List[str], Tuple[List[str], int], Tuple[List[str], int, Dict[str, str]]
+    """
     return 'do some magic!'
 
 
