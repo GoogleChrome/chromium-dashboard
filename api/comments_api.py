@@ -89,12 +89,7 @@ class CommentsAPI(basehandlers.APIHandler):
     feature = self.get_specified_feature(feature_id=feature_id)
     user = self.get_current_user(required=True)
 
-    json_data = self.request.json
-    comment_request_data = {
-        'comment': json_data['comment'],
-        'post_to_thread_type': json_data.get('postToThreadType', None),
-    }
-    comment_request = CommentsRequest(**comment_request_data)
+    comment_request = CommentsRequest.from_dict(self.request.json)
     comment_content = comment_request.comment
     post_to_thread_type = comment_request.post_to_thread_type
 
@@ -131,12 +126,7 @@ class CommentsAPI(basehandlers.APIHandler):
     return SuccessMessage(message='Done').to_dict()
 
   def do_patch(self, **kwargs) -> dict[str, str]:
-    json_data = self.request.json
-    patch_request_data = {
-        'comment_id': json_data['commentId'],
-        'is_undelete': json_data['isUndelete']
-    }
-    patch_request = PatchCommentRequest(**patch_request_data)
+    patch_request = PatchCommentRequest.from_dict(self.request.json)
     comment: Activity = Activity.get_by_id(patch_request.comment_id)
 
     user = self.get_current_user(required=True)
