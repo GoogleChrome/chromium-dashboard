@@ -52,7 +52,7 @@ export interface Action {
 interface ApprovalFieldDef {
   name: string;
   description: string;
-  field_id: number;
+  gate_type: number;
   rule: string;
   approvers: string | string[];
   team_name: string;
