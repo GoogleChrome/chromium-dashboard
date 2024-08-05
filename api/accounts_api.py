@@ -13,12 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
+from chromestatus_openapi.models import AccountResponse
 
-from google.cloud import ndb  # type: ignore
-
-from framework import basehandlers
-from framework import permissions
+from framework import basehandlers, permissions
 from internals import user_models
 
 
@@ -43,7 +40,7 @@ class AccountsAPI(basehandlers.APIHandler):
     is_admin = self.get_bool_param('isAdmin')
     is_site_editor = self.get_bool_param('isSiteEditor')
     user = self.create_account(email, is_admin, is_site_editor)
-    response_json = user_to_json_dict(user)
+    response_json = AccountResponse(is_admin=user.is_admin, is_site_editor=user.is_site_editor, email=user.email, id=user.key.integer_id()).to_dict()
     return response_json
 
   def create_account(self, email, is_admin, is_site_editor):

@@ -11,10 +11,13 @@ chromestatus_openapi/controllers/default_controller.py
 chromestatus_openapi/controllers/security_controller.py
 chromestatus_openapi/encoder.py
 chromestatus_openapi/models/__init__.py
+chromestatus_openapi/models/account_response.py
 chromestatus_openapi/models/base_model.py
 chromestatus_openapi/models/component_users_request.py
 chromestatus_openapi/models/components_user.py
 chromestatus_openapi/models/components_users_response.py
+chromestatus_openapi/models/create_account_request.py
+chromestatus_openapi/models/delete_account200_response.py
 chromestatus_openapi/models/external_reviews_response.py
 chromestatus_openapi/models/feature_latency.py
 chromestatus_openapi/models/feature_link.py

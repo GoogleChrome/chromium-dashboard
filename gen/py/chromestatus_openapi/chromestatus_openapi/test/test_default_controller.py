@@ -2,15 +2,6 @@ import unittest
 
 from flask import json
 
-from chromestatus_openapi.models.component_users_request import ComponentUsersRequest  # noqa: E501
-from chromestatus_openapi.models.components_users_response import ComponentsUsersResponse  # noqa: E501
-from chromestatus_openapi.models.external_reviews_response import ExternalReviewsResponse  # noqa: E501
-from chromestatus_openapi.models.feature_latency import FeatureLatency  # noqa: E501
-from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
-from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
-from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
-from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
-from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
 from chromestatus_openapi.test import BaseTestCase
 
 
@@ -33,6 +24,40 @@ class TestDefaultController(BaseTestCase):
             headers=headers,
             data=json.dumps(component_users_request),
             content_type='application/json')
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_create_account(self):
+        """Test case for create_account
+
+        Create a new account
+        """
+        create_account_request = {"isSiteEditor":True,"isAdmin":True,"email":"email"}
+        headers = { 
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/accounts',
+            method='POST',
+            headers=headers,
+            data=json.dumps(create_account_request),
+            content_type='application/json')
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_delete_account(self):
+        """Test case for delete_account
+
+        Delete an account
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/accounts/{account_id}'.format(account_id=56),
+            method='DELETE',
+            headers=headers)
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
