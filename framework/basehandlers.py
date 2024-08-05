@@ -497,8 +497,8 @@ class FlaskHandler(BaseHandler):
 
     user = self.get_current_user()
     if user:
-      field_id = approval_defs.ShipApproval.field_id
-      approvers = approval_defs.get_approvers(field_id)
+      gate_type = approval_defs.ShipApproval.gate_type
+      approvers = approval_defs.get_approvers(gate_type)
       user_pref = user_models.UserPref.get_signed_in_user_pref()
       common_data['user'] = {
         'can_create_feature': permissions.can_create_feature(user),
