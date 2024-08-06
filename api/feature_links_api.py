@@ -13,13 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from chromestatus_openapi.models import (FeatureLinksResponse, FeatureLinksSummaryResponse)
+from chromestatus_openapi.models import (
+  FeatureLinksResponse,
+  FeatureLinksSample,
+  FeatureLinksSummaryResponse,
+)
 
-from framework import basehandlers
+from framework import basehandlers, permissions
 from internals.core_enums import *
 from internals.core_models import FeatureEntry
-from internals.feature_links import get_feature_links_summary, get_by_feature_id, get_feature_links_samples
-from framework import permissions
+from internals.feature_links import (
+  get_by_feature_id,
+  get_feature_links_samples,
+  get_feature_links_summary,
+)
+
 
 class FeatureLinksAPI(basehandlers.APIHandler):
   """FeatureLinksAPI will return the links and its information to the client."""
@@ -61,4 +69,4 @@ class FeatureLinksSamplesAPI(basehandlers.APIHandler):
     type = self.request.args.get('type', None)
     is_error = self.get_bool_arg('is_error', None)
     if domain:
-      return get_feature_links_samples(domain, type, is_error)
+      return FeatureLinksSample.from_dict(get_feature_links_samples(domain, type, is_error))
