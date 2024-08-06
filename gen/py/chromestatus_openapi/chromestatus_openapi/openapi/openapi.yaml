@@ -926,17 +926,23 @@ components:
       title: FeatureLinksSummaryResponse
       type: object
     FeatureLinksSample:
+      allOf:
+      - $ref: '#/components/schemas/LinkPreviewBase'
+      - properties:
+          feature_ids:
+            items:
+              type: integer
+            type: array
+        type: object
       example:
-        allOf:
-          information: "{}"
-          type: type
-          http_error_code: 0
-          url: http://example.com/aeiou
-      properties:
-        allOf:
-          $ref: '#/components/schemas/LinkPreviewBase'
+        feature_ids:
+        - 6
+        - 6
+        information: "{}"
+        type: type
+        http_error_code: 0
+        url: http://example.com/aeiou
       title: FeatureLinksSample
-      type: object
     CounterEntry:
       example:
         count: 2

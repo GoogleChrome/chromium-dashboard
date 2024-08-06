@@ -13,13 +13,6 @@
  */
 
 import { mapValues } from '../runtime';
-import type { LinkPreviewBase } from './LinkPreviewBase';
-import {
-    LinkPreviewBaseFromJSON,
-    LinkPreviewBaseFromJSONTyped,
-    LinkPreviewBaseToJSON,
-} from './LinkPreviewBase';
-
 /**
  * 
  * @export
@@ -28,16 +21,44 @@ import {
 export interface FeatureLinksSample {
     /**
      * 
-     * @type {LinkPreviewBase}
+     * @type {string}
      * @memberof FeatureLinksSample
      */
-    allOf?: LinkPreviewBase;
+    url: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof FeatureLinksSample
+     */
+    type: string;
+    /**
+     * 
+     * @type {object}
+     * @memberof FeatureLinksSample
+     */
+    information: object;
+    /**
+     * 
+     * @type {number}
+     * @memberof FeatureLinksSample
+     */
+    http_error_code: number;
+    /**
+     * 
+     * @type {Array<number>}
+     * @memberof FeatureLinksSample
+     */
+    feature_ids?: Array<number>;
 }
 
 /**
  * Check if a given object implements the FeatureLinksSample interface.
  */
 export function instanceOfFeatureLinksSample(value: object): value is FeatureLinksSample {
+    if (!('url' in value) || value['url'] === undefined) return false;
+    if (!('type' in value) || value['type'] === undefined) return false;
+    if (!('information' in value) || value['information'] === undefined) return false;
+    if (!('http_error_code' in value) || value['http_error_code'] === undefined) return false;
     return true;
 }
 
@@ -51,7 +72,11 @@ export function FeatureLinksSampleFromJSONTyped(json: any, ignoreDiscriminator: 
     }
     return {
         
-        'allOf': json['allOf'] == null ? undefined : LinkPreviewBaseFromJSON(json['allOf']),
+        'url': json['url'],
+        'type': json['type'],
+        'information': json['information'],
+        'http_error_code': json['http_error_code'],
+        'feature_ids': json['feature_ids'] == null ? undefined : json['feature_ids'],
     };
 }
 
@@ -61,7 +86,11 @@ export function FeatureLinksSampleToJSON(value?: FeatureLinksSample | null): any
     }
     return {
         
-        'allOf': LinkPreviewBaseToJSON(value['allOf']),
+        'url': value['url'],
+        'type': value['type'],
+        'information': value['information'],
+        'http_error_code': value['http_error_code'],
+        'feature_ids': value['feature_ids'],
     };
 }
 

@@ -663,14 +663,14 @@ components:
           items:
             $ref: '#/components/schemas/CounterEntry'
     FeatureLinksSample:
-      type: object
-      properties:
         allOf:
-          $ref: '#/components/schemas/LinkPreviewBase'
-          feature_ids:
-            type: array
-            items:
-              type: integer
+          - $ref: '#/components/schemas/LinkPreviewBase'
+          - type: object
+            properties:
+              feature_ids:
+                type: array
+                items:
+                  type: integer
     CounterEntry:
       type: object
       properties:

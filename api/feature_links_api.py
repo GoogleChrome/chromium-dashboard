@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from chromestatus_openapi.models import (FeatureLinksResponse, FeatureLinksSummaryResponse)
+
 from framework import basehandlers
 from internals.core_enums import *
 from internals.core_models import FeatureEntry
@@ -35,10 +37,10 @@ class FeatureLinksAPI(basehandlers.APIHandler):
     if feature_id:
       data, has_stale_links = self.get_feature_links(
           feature_id, update_stale_links)
-      return {
+      return FeatureLinksResponse.from_dict({
           "data": data,
           "has_stale_links": has_stale_links
-      }
+      })
     else:
       self.abort(400, msg='Missing feature_id')
 
@@ -48,7 +50,7 @@ class FeatureLinksSummaryAPI(basehandlers.APIHandler):
 
   @permissions.require_admin_site
   def do_get(self, **kwargs):
-    return get_feature_links_summary()
+    return FeatureLinksSummaryResponse.from_dict(get_feature_links_summary())
 
 class FeatureLinksSamplesAPI(basehandlers.APIHandler):
   """FeatureLinksSamplesAPI will return sample links to the client."""
