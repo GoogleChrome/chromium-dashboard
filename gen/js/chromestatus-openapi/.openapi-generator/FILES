@@ -6,12 +6,15 @@ package.json
 src/apis/DefaultApi.ts
 src/apis/index.ts
 src/index.ts
+src/models/AccountResponse.ts
 src/models/Activity.ts
 src/models/Amendment.ts
 src/models/CommentsRequest.ts
 src/models/ComponentUsersRequest.ts
 src/models/ComponentsUser.ts
 src/models/ComponentsUsersResponse.ts
+src/models/CreateAccountRequest.ts
+src/models/DeleteAccount200Response.ts
 src/models/ErrorMessage.ts
 src/models/ExternalReviewsResponse.ts
 src/models/FeatureLatency.ts

@@ -1,11 +1,14 @@
 /* tslint:disable */
 /* eslint-disable */
+export * from './AccountResponse';
 export * from './Activity';
 export * from './Amendment';
 export * from './CommentsRequest';
 export * from './ComponentUsersRequest';
 export * from './ComponentsUser';
 export * from './ComponentsUsersResponse';
+export * from './CreateAccountRequest';
+export * from './DeleteAccount200Response';
 export * from './ErrorMessage';
 export * from './ExternalReviewsResponse';
 export * from './FeatureLatency';

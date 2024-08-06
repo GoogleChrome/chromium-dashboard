@@ -3,10 +3,13 @@ from typing import Dict
 from typing import Tuple
 from typing import Union
 
+from chromestatus_openapi.models.account_response import AccountResponse  # noqa: E501
 from chromestatus_openapi.models.activity import Activity  # noqa: E501
 from chromestatus_openapi.models.comments_request import CommentsRequest  # noqa: E501
 from chromestatus_openapi.models.component_users_request import ComponentUsersRequest  # noqa: E501
 from chromestatus_openapi.models.components_users_response import ComponentsUsersResponse  # noqa: E501
+from chromestatus_openapi.models.create_account_request import CreateAccountRequest  # noqa: E501
+from chromestatus_openapi.models.delete_account200_response import DeleteAccount200Response  # noqa: E501
 from chromestatus_openapi.models.error_message import ErrorMessage  # noqa: E501
 from chromestatus_openapi.models.external_reviews_response import ExternalReviewsResponse  # noqa: E501
 from chromestatus_openapi.models.feature_latency import FeatureLatency  # noqa: E501
@@ -73,6 +76,34 @@ def add_user_to_component(component_id, user_id, component_users_request=None): 
     """
     if connexion.request.is_json:
         component_users_request = ComponentUsersRequest.from_dict(connexion.request.get_json())  # noqa: E501
+    return 'do some magic!'
+
+
+def create_account(create_account_request=None):  # noqa: E501
+    """Create a new account
+
+     # noqa: E501
+
+    :param create_account_request: 
+    :type create_account_request: dict | bytes
+
+    :rtype: Union[AccountResponse, Tuple[AccountResponse, int], Tuple[AccountResponse, int, Dict[str, str]]
+    """
+    if connexion.request.is_json:
+        create_account_request = CreateAccountRequest.from_dict(connexion.request.get_json())  # noqa: E501
+    return 'do some magic!'
+
+
+def delete_account(account_id):  # noqa: E501
+    """Delete an account
+
+     # noqa: E501
+
+    :param account_id: ID of the account to delete
+    :type account_id: int
+
+    :rtype: Union[DeleteAccount200Response, Tuple[DeleteAccount200Response, int], Tuple[DeleteAccount200Response, int, Dict[str, str]]
+    """
     return 'do some magic!'
 
 
