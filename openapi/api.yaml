@@ -291,7 +291,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FeatureLinksResponse'
+                $ref: '#/components/schemas/FeatureLinksSample'
 components:
   parameters:
     startAtParam:
@@ -678,3 +678,9 @@ components:
           type: string
         count:
           type: integer
+    ErrorMessage:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Error"
