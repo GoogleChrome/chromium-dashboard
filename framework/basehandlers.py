@@ -45,6 +45,7 @@ from internals import user_models
 from flask import session
 from flask import render_template
 from flask_cors import CORS
+from gen.py.chromestatus_openapi.chromestatus_openapi.models.base_model import Model
 
 # Our API responses are prefixed with this ro prevent attacks that
 # exploit <script src="...">.  See go/xssi.
@@ -192,6 +193,8 @@ class APIHandler(BaseHandler):
     """Handle an incoming HTTP GET request."""
     headers = self.get_headers()
     handler_data = self.do_get(*args, **kwargs)
+    if isinstance(handler_data, Model):
+        handler_data = handler_data.to_dict()
     return self.defensive_jsonify(handler_data), headers
 
   def post(self, *args, **kwargs):
