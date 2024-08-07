@@ -13,6 +13,50 @@ info:
 servers:
 - url: /api/v0
 paths:
+  /accounts:
+    post:
+      operationId: create_account
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAccountRequest'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+          description: Account created successfully
+        "400":
+          description: Bad request or user already exists
+      summary: Create a new account
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /accounts/{account_id}:
+    delete:
+      operationId: delete_account
+      parameters:
+      - description: ID of the account to delete
+        explode: false
+        in: path
+        name: account_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deleteAccount_200_response'
+          description: Account deleted successfully
+        "400":
+          description: Bad request
+        "404":
+          description: Account not found
+      summary: Delete an account
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /components/{componentId}/users/{userId}:
     delete:
       operationId: remove_user_from_component
@@ -349,6 +393,46 @@ components:
         type: string
       style: form
   schemas:
+    CreateAccountRequest:
+      example:
+        isSiteEditor: true
+        isAdmin: true
+        email: email
+      properties:
+        email:
+          title: email
+          type: string
+        isAdmin:
+          title: isAdmin
+          type: boolean
+        isSiteEditor:
+          title: isSiteEditor
+          type: boolean
+      required:
+      - email
+      title: CreateAccountRequest
+      type: object
+    AccountResponse:
+      example:
+        is_admin: true
+        is_site_editor: true
+        id: 0
+        email: email
+      properties:
+        is_admin:
+          title: is_admin
+          type: boolean
+        is_site_editor:
+          title: is_site_editor
+          type: boolean
+        email:
+          title: email
+          type: string
+        id:
+          title: id
+          type: integer
+      title: AccountResponse
+      type: object
     GetIntentResponse:
       example:
         email_body: email_body
@@ -793,6 +877,16 @@ components:
     LinkPreviewSpecs:
       allOf:
       - $ref: '#/components/schemas/LinkPreviewOpenGraph'
+    deleteAccount_200_response:
+      example:
+        message: Done
+      properties:
+        message:
+          example: Done
+          title: message
+          type: string
+      title: deleteAccount_200_response
+      type: object
     DismissCueRequest:
       example:
         cue: progress-checkmarks

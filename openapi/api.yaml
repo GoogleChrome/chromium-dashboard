@@ -15,6 +15,50 @@ info:
 servers:
   - url: /api/v0
 paths:
+  /accounts:
+    post:
+      summary: Create a new account
+      operationId: createAccount
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAccountRequest'
+      responses:
+        '200':
+          description: Account created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+        '400':
+          description: Bad request or user already exists
+  /accounts/{account_id}:
+    delete:
+      summary: Delete an account
+      operationId: deleteAccount
+      parameters:
+        - in: path
+          name: account_id
+          schema:
+            type: integer
+          required: true
+          description: ID of the account to delete
+      responses:
+        '200':
+          description: Account deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Done
+        '400':
+          description: Bad request
+        '404':
+          description: Account not found
   /componentsusers:
     get:
       summary: List all components and possible users
@@ -281,6 +325,28 @@ components:
       in: header
       name: X-Xsrf-Token
   schemas:
+    CreateAccountRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        isAdmin:
+          type: boolean
+        isSiteEditor:
+          type: boolean
+      required:
+        - email
+    AccountResponse:
+      type: object
+      properties:
+        is_admin:
+          type: boolean
+        is_site_editor:
+          type: boolean
+        email:
+          type: string
+        id:
+          type: integer
     GetIntentResponse:
       properties:
         subject:

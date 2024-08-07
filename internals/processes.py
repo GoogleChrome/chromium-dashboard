@@ -40,7 +40,7 @@ class ProcessStage:
   description: str
   progress_items: list[ProgressItem]
   actions: list[Action]
-  approvals: list[approval_defs.ApprovalFieldDef]
+  approvals: list[approval_defs.GateInfo]
   incoming_stage: int
   outgoing_stage: int
   stage_type: int | None
