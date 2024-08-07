@@ -189,8 +189,10 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
       self, mock_requests_post, mock_api_key_get):
     """If no API key is available, do not send creation request."""
     mock_api_key_get.return_value = None
-    origin_trials_client.create_origin_trial(self.ot_stage)
+    ot_id, error_text = origin_trials_client.create_origin_trial(self.ot_stage)
 
+    self.assertIsNone(ot_id)
+    self.assertEqual('No API key found for origin trials API', error_text)
     mock_api_key_get.assert_called_once()
     # POST request should not be executed with no API key.
     mock_requests_post.assert_not_called()
@@ -204,13 +206,15 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
       mock_get_ot_access_token, mock_api_key_get):
     """If an API key is available, POST should create trial and return true."""
     mock_requests_post.return_value = mock.MagicMock(
-        status_code=200, json=lambda : {'id': -1234567890})
+        status_code=200, json=lambda : (
+            {'trial': {'id': -1234567890}, 'should_retry': False}))
     mock_get_trial_end_time.return_value = 111222333
     mock_get_ot_access_token.return_value = 'access_token'
     mock_api_key_get.return_value = 'api_key_value'
 
-    id = origin_trials_client.create_origin_trial(self.ot_stage)
-    self.assertEqual(id, '-1234567890')
+    ot_id, error_text = origin_trials_client.create_origin_trial(self.ot_stage)
+    self.assertEqual(ot_id, '-1234567890')
+    self.assertIsNone(error_text)
 
     mock_api_key_get.assert_called_once()
     mock_get_ot_access_token.assert_called_once()
@@ -244,6 +248,128 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
           'approval_buganizer_custom_field_id': 111111,
         }, json_args['registration_config'])
 
+  @mock.patch('framework.secrets.get_ot_api_key')
+  @mock.patch('framework.origin_trials_client._get_ot_access_token')
+  @mock.patch('framework.origin_trials_client._get_trial_end_time')
+  @mock.patch('requests.post')
+  def test_create_origin_trial__retry_to_succeed(
+      self, mock_requests_post, mock_get_trial_end_time,
+      mock_get_ot_access_token, mock_api_key_get):
+    """If the OT creation request fails, it can retry and succeed."""
+    # First request will be flagged for retry, then the 2nd will succeed.
+    mock_requests_post.side_effect = [
+      mock.MagicMock(status_code=200,
+                     json=lambda : {
+                        'trial': {'id': -1234567890},
+                        'should_retry': True,
+                        'retry_error_status': {
+                          'code': 400,
+                          'message': 'some error occurred',
+                        }}),
+      mock.MagicMock(status_code=200,
+                     json=lambda : {
+                        'trial': {'id': -1234567890},
+                        'should_retry': False})]
+    mock_get_trial_end_time.return_value = 111222333
+    mock_get_ot_access_token.return_value = 'access_token'
+    mock_api_key_get.return_value = 'api_key_value'
+
+    ot_id, error_text = origin_trials_client.create_origin_trial(self.ot_stage)
+    self.assertEqual(ot_id, '-1234567890')
+    self.assertIsNone(error_text)
+
+    mock_api_key_get.assert_called_once()
+    mock_get_ot_access_token.assert_called_once()
+    self.assertEqual(2, mock_requests_post.call_count)
+    # unordered list is in the request, so compare args individually.
+    json_args = mock_requests_post.call_args_list[0][1]['json']
+    # Only unique @google.com emails should be sent as contacts.
+    self.assertCountEqual(['someuser@google.com', 'editor@google.com'],
+                          json_args['trial_contacts'])
+    self.assertEqual({
+        'id': -1234567890,
+        'display_name': 'Example Trial',
+        'start_milestone': '100',
+        'end_milestone': '106',
+        'end_time': {
+          'seconds': 111222333
+        },
+        'description': 'OT description',
+        'documentation_url': 'https://example.com/docs',
+        'feedback_url': 'https://example.com/feedback',
+        'intent_to_experiment_url': 'https://example.com/experiment',
+        'chromestatus_url': f'{settings.SITE_URL}feature/1',
+        'allow_third_party_origins': True,
+        'type': 'DEPRECATION',
+      }, json_args['trial'])
+    self.assertEqual({
+        'allow_public_suffix_subdomains': True,
+        'approval_type': 'CUSTOM',
+        'approval_buganizer_component_id': 123456,
+        'approval_criteria_url': 'https://example.com/criteria',
+        'approval_group_email': 'somegroup@google.com',
+        'approval_buganizer_custom_field_id': 111111,
+      }, json_args['registration_config'])
+
+  @mock.patch('framework.secrets.get_ot_api_key')
+  @mock.patch('framework.origin_trials_client._get_ot_access_token')
+  @mock.patch('framework.origin_trials_client._get_trial_end_time')
+  @mock.patch('requests.post')
+  def test_create_origin_trial__fail_after_retry(
+      self, mock_requests_post, mock_get_trial_end_time,
+      mock_get_ot_access_token, mock_api_key_get):
+    """An OT creation request will be retried until it fails a number of times.
+    """
+    # First request will be flagged for retry, then the 2nd will succeed.
+    mock_requests_post.return_value = mock.MagicMock(status_code=200,
+                     json=lambda : {
+                        'trial': {'id': -1234567890},
+                        'should_retry': True,
+                        'retry_error_status': {
+                          'code': 400,
+                          'message': 'some error occurred',
+                        }})
+    mock_get_trial_end_time.return_value = 111222333
+    mock_get_ot_access_token.return_value = 'access_token'
+    mock_api_key_get.return_value = 'api_key_value'
+
+    ot_id, error_text = origin_trials_client.create_origin_trial(self.ot_stage)
+    self.assertEqual(ot_id, '-1234567890')
+    self.assertEqual('400, some error occurred', error_text)
+
+    mock_api_key_get.assert_called_once()
+    mock_get_ot_access_token.assert_called_once()
+    # OT creation request should have been attempted 3 times
+    self.assertEqual(3, mock_requests_post.call_count)
+    # unordered list is in the request, so compare args individually.
+    json_args = mock_requests_post.call_args_list[0][1]['json']
+    # Only unique @google.com emails should be sent as contacts.
+    self.assertCountEqual(['someuser@google.com', 'editor@google.com'],
+                          json_args['trial_contacts'])
+    self.assertEqual({
+        'id': -1234567890,
+        'display_name': 'Example Trial',
+        'start_milestone': '100',
+        'end_milestone': '106',
+        'end_time': {
+          'seconds': 111222333
+        },
+        'description': 'OT description',
+        'documentation_url': 'https://example.com/docs',
+        'feedback_url': 'https://example.com/feedback',
+        'intent_to_experiment_url': 'https://example.com/experiment',
+        'chromestatus_url': f'{settings.SITE_URL}feature/1',
+        'allow_third_party_origins': True,
+        'type': 'DEPRECATION',
+      }, json_args['trial'])
+    self.assertEqual({
+        'allow_public_suffix_subdomains': True,
+        'approval_type': 'CUSTOM',
+        'approval_buganizer_component_id': 123456,
+        'approval_criteria_url': 'https://example.com/criteria',
+        'approval_group_email': 'somegroup@google.com',
+        'approval_buganizer_custom_field_id': 111111,
+      }, json_args['registration_config'])
 
   @mock.patch('framework.secrets.get_ot_api_key')
   @mock.patch('requests.post')
