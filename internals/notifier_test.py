@@ -1238,7 +1238,7 @@ class OTCreationRequestFailedHandlerTest(testing_config.CustomTestCase):
         id=1, name='feature one', summary='sum', category=1, feature_type=0)
     self.feature_1.put()
     self.ot_stage = Stage(
-        feature_id=1, stage_type=150, ot_display_name='Example Trial',
+        id=237, feature_id=1, stage_type=150, ot_display_name='Example Trial',
         ot_owner_email='feature_owner@google.com',
         ot_chromium_trial_name='ExampleTrial',
         milestones=MilestoneSet(desktop_first=100, desktop_last=106),
@@ -1247,7 +1247,7 @@ class OTCreationRequestFailedHandlerTest(testing_config.CustomTestCase):
         intent_thread_url='https://example.com/experiment',
         ot_description='OT description', ot_has_third_party_support=True,
         ot_activation_date=date(2030, 1, 1),
-        ot_is_deprecation_trial=True)
+        ot_is_deprecation_trial=True, origin_trial_id='-1239058')
     self.ot_stage.put()
 
   def tearDown(self):
@@ -1258,7 +1258,8 @@ class OTCreationRequestFailedHandlerTest(testing_config.CustomTestCase):
     with test_app.app_context():
       handler = notifier.OTCreationRequestFailedHandler()
       stage_dict = converters.stage_to_json_dict(self.ot_stage)
-      email_task = handler.build_email(stage_dict)
+      error_text = 'Something went pretty wrong'
+      email_task = handler.build_email(stage_dict, error_text)
       # TESTDATA.make_golden(email_task['html'], 'test_make_creation_request_failed_email.html')
       self.assertEqual(
         email_task['subject'],
