@@ -424,7 +424,6 @@ components:
           nullable: true
         created:
           type: string
-          format: date-time
         author:
           type: string
         content:

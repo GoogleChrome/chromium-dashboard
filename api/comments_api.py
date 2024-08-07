@@ -48,7 +48,7 @@ def activity_to_json_dict(comment: Activity) -> ActivityModel:
       comment_id = comment.key.id(),
       feature_id = comment.feature_id,
       gate_id = comment.gate_id,
-      created = comment.created,  # YYYY-MM-DD HH:MM:SS.SSS
+      created = str(comment.created),  # YYYY-MM-DD HH:MM:SS.SSS
       author = comment.author,
       content = comment.content,
       deleted_by = comment.deleted_by,

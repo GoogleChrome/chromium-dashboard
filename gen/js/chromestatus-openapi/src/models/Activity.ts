@@ -46,10 +46,10 @@ export interface Activity {
     gate_id?: number;
     /**
      * 
-     * @type {Date}
+     * @type {string}
      * @memberof Activity
      */
-    created: Date;
+    created: string;
     /**
      * 
      * @type {string}
@@ -101,7 +101,7 @@ export function ActivityFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'comment_id': json['comment_id'],
         'feature_id': json['feature_id'],
         'gate_id': json['gate_id'] == null ? undefined : json['gate_id'],
-        'created': (new Date(json['created'])),
+        'created': json['created'],
         'author': json['author'],
         'content': json['content'],
         'deleted_by': json['deleted_by'] == null ? undefined : json['deleted_by'],
@@ -118,7 +118,7 @@ export function ActivityToJSON(value?: Activity | null): any {
         'comment_id': value['comment_id'],
         'feature_id': value['feature_id'],
         'gate_id': value['gate_id'],
-        'created': ((value['created']).toISOString()),
+        'created': value['created'],
         'author': value['author'],
         'content': value['content'],
         'deleted_by': value['deleted_by'],

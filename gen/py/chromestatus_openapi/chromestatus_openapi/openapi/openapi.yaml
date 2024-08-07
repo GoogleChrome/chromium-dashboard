@@ -535,7 +535,7 @@ components:
       example:
         feature_id: 6
         gate_id: 1
-        created: 2000-01-23T04:56:07.000+00:00
+        created: created
         author: author
         deleted_by: deleted_by
         amendments:
@@ -559,7 +559,6 @@ components:
           title: gate_id
           type: integer
         created:
-          format: date-time
           title: created
           type: string
         author:
@@ -604,7 +603,7 @@ components:
         comments:
         - feature_id: 6
           gate_id: 1
-          created: 2000-01-23T04:56:07.000+00:00
+          created: created
           author: author
           deleted_by: deleted_by
           amendments:
@@ -618,7 +617,7 @@ components:
           content: content
         - feature_id: 6
           gate_id: 1
-          created: 2000-01-23T04:56:07.000+00:00
+          created: created
           author: author
           deleted_by: deleted_by
           amendments:

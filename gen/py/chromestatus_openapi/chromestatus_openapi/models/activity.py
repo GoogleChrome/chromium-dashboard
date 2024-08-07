@@ -24,7 +24,7 @@ class Activity(Model):
         :param gate_id: The gate_id of this Activity.  # noqa: E501
         :type gate_id: int
         :param created: The created of this Activity.  # noqa: E501
-        :type created: datetime
+        :type created: str
         :param author: The author of this Activity.  # noqa: E501
         :type author: str
         :param content: The content of this Activity.  # noqa: E501
@@ -38,7 +38,7 @@ class Activity(Model):
             'comment_id': int,
             'feature_id': int,
             'gate_id': int,
-            'created': datetime,
+            'created': str,
             'author': str,
             'content': str,
             'deleted_by': str,
@@ -144,22 +144,22 @@ class Activity(Model):
         self._gate_id = gate_id
 
     @property
-    def created(self) -> datetime:
+    def created(self) -> str:
         """Gets the created of this Activity.
 
 
         :return: The created of this Activity.
-        :rtype: datetime
+        :rtype: str
         """
         return self._created
 
     @created.setter
-    def created(self, created: datetime):
+    def created(self, created: str):
         """Sets the created of this Activity.
 
 
         :param created: The created of this Activity.
-        :type created: datetime
+        :type created: str
         """
         if created is None:
             raise ValueError("Invalid value for `created`, must not be `None`")  # noqa: E501
