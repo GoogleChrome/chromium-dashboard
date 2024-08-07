@@ -29,6 +29,7 @@ import settings
 
 
 class RequestTrial(TypedDict):
+  id: NotRequired[int]
   display_name: str
   start_milestone: str
   end_milestone: str
@@ -132,20 +133,23 @@ def _get_ot_access_token() -> str:
   return credentials.token
 
 
-def create_origin_trial(ot_stage: Stage) -> str | None:
-  """Create an origin trial.
+def create_origin_trial(ot_stage: Stage) -> tuple[str|None, str|None]:
+  """Send an origin trial creation request to the origin trials API.
 
   Raises:
     requests.exceptions.RequestException: If the request fails to connect or
       the HTTP status code is not successful.
+  Returns:
+    Newly created origin trial ID if trial was created, any error text if there
+    was an issue during the creation process.
   """
   if settings.DEV_MODE:
     logging.info('Creation request will not be sent to origin trials API in '
                  'local environment.')
-    return None
+    return None, None
   key = secrets.get_ot_api_key()
   if key is None:
-    return None
+    return None, 'No API key found for origin trials API'
 
   json: CreateOriginTrialRequest = {
     'trial': {
@@ -174,7 +178,7 @@ def create_origin_trial(ot_stage: Stage) -> str | None:
   unique_contacts.extend(ot_stage.ot_emails)
   unique_contacts = [email for email in set(unique_contacts)
                      if email.endswith('@google.com')]
-  json['trial_contacts'] = unique_contacts
+  json['trial_contacts'] = sorted(unique_contacts)
   if ot_stage.ot_chromium_trial_name:
     json['trial']['origin_trial_feature_name'] = ot_stage.ot_chromium_trial_name
   if ot_stage.ot_require_approvals:
@@ -191,17 +195,51 @@ def create_origin_trial(ot_stage: Stage) -> str | None:
   headers = {'Authorization': f'Bearer {access_token}'}
   url = f'{settings.OT_API_URL}/v1/trials:setup'
 
-  try:
-    response = requests.post(
-        url, headers=headers, params={'key': key}, json=json)
-    logging.info(response.text)
-    response.raise_for_status()
-  except requests.exceptions.RequestException as e:
-    logging.exception(
-        f'Failed to get response from origin trials API. {response.text}')
-    raise e
+  request_tries = 0
+  origin_trial_id = None
+  request_success = False
+  retry_error_status = None
+  response = requests.Response()
+  # Retry the request a number of times if any issues arise.
+  while request_tries < 3 and not request_success:
+    request_tries += 1
+    try:
+      response = requests.post(
+          url, headers=headers, params={'key': key}, json=json)
+      logging.info(response.text)
+      response.raise_for_status()
+    except requests.exceptions.RequestException:
+      logging.exception(
+          f'Failed to get response from origin trials API. {response.text}')
+      continue
+    response_json = response.json()
+    if (response.status_code == 200 and
+        response_json['trial'].get('id') is not None):
+      origin_trial_id = response_json['trial']['id']
+    # The trial was created, but some post-creation steps were not completed.
+    # The request should be retried (the request is idempotent).
+    if not response_json.get('should_retry'):
+      request_success = True
+    else:
+      retry_error_status = response_json.get('retry_error_status')
+      # Add the origin trial ID to the request body to denote that the
+      # trial should not be recreated during a retry.
+      if origin_trial_id:
+        json['trial']['id'] = origin_trial_id
 
-  return str(response.json()['id'])
+  # Assemble error information to help diagnose any problems that occurred.
+  error_text = None
+  if not request_success:
+    if retry_error_status:
+      error_text = (f'{retry_error_status["code"]}, '
+                    f'{retry_error_status["message"]}')
+    else:
+      error_text = f'{response.status_code}, {response.text}'
+
+  if origin_trial_id:
+    return str(origin_trial_id), error_text
+  return None, error_text
+
 
 def activate_origin_trial(origin_trial_id: str) -> None:
   """Activate an existing origin trial.
