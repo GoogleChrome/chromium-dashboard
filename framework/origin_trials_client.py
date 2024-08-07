@@ -178,7 +178,7 @@ def create_origin_trial(ot_stage: Stage) -> tuple[str|None, str|None]:
   unique_contacts.extend(ot_stage.ot_emails)
   unique_contacts = [email for email in set(unique_contacts)
                      if email.endswith('@google.com')]
-  json['trial_contacts'] = sorted(unique_contacts)
+  json['trial_contacts'] = unique_contacts
   if ot_stage.ot_chromium_trial_name:
     json['trial']['origin_trial_feature_name'] = ot_stage.ot_chromium_trial_name
   if ot_stage.ot_require_approvals:
@@ -216,16 +216,16 @@ def create_origin_trial(ot_stage: Stage) -> tuple[str|None, str|None]:
     if (response.status_code == 200 and
         response_json['trial'].get('id') is not None):
       origin_trial_id = response_json['trial']['id']
-    # The trial was created, but some post-creation steps were not completed.
-    # The request should be retried (the request is idempotent).
-    if not response_json.get('should_retry'):
-      request_success = True
-    else:
+    if response_json.get('should_retry'):
+      # The trial was created, but some post-creation steps were not completed.
+      # The request should be retried (the request is idempotent).
       retry_error_status = response_json.get('retry_error_status')
       # Add the origin trial ID to the request body to denote that the
       # trial should not be recreated during a retry.
       if origin_trial_id:
         json['trial']['id'] = origin_trial_id
+    else:
+      request_success = True
 
   # Assemble error information to help diagnose any problems that occurred.
   error_text = None
