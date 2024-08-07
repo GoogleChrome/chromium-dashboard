@@ -135,6 +135,43 @@ paths:
       - XsrfToken: []
       summary: List all components and possible users
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /currentuser/cues:
+    get:
+      operationId: get_dismissed_cues
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  type: string
+                type: array
+          description: List of dismissed cue cards
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getDismissedCues_400_response'
+          description: Invalid cue provided
+      summary: Get dismissed cues for the current user
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+    post:
+      operationId: dismiss_cue
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DismissCueRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Cue dismissed successfully
+      summary: Dismiss a cue card for the signed-in user
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /external_reviews/{review_group}:
     get:
       operationId: list_external_reviews
@@ -849,6 +886,44 @@ components:
           title: message
           type: string
       title: deleteAccount_200_response
+      type: object
+    DismissCueRequest:
+      example:
+        cue: progress-checkmarks
+      properties:
+        cue:
+          enum:
+          - progress-checkmarks
+          title: cue
+          type: string
+      required:
+      - cue
+      title: DismissCueRequest
+      type: object
+    SuccessMessage:
+      example:
+        message: Done
+      properties:
+        message:
+          example: Done
+          title: message
+          type: string
+      title: SuccessMessage
+      type: object
+    ErrorMessage:
+      properties:
+        error:
+          example: Error
+          type: string
+      type: object
+    getDismissedCues_400_response:
+      example:
+        error: error
+      properties:
+        error:
+          title: error
+          type: string
+      title: getDismissedCues_400_response
       type: object
     LinkPreviewGithubIssue_allOf_information:
       properties:
