@@ -11,6 +11,7 @@ import {ALL_FIELDS} from './form-field-specs.js';
 import {
   FieldInfo,
   formatFeatureChanges,
+  getDisabledHelpText,
   getStageValue,
   setupScrollToHash,
   showToastMessage,
@@ -389,6 +390,7 @@ export class ChromedashOTCreationPage extends LitElement {
       // Fade in transition for the approvals fields if they're being displayed.
       const shouldFadeIn = fieldInfo.isApprovalsField;
 
+      const disabledHelpText = getDisabledHelpText(fieldInfo.name, this.stage);
       return html`
         <chromedash-form-field
           name=${fieldInfo.name}
@@ -396,7 +398,9 @@ export class ChromedashOTCreationPage extends LitElement {
           value=${fieldInfo.value}
           .checkMessage=${fieldInfo.checkMessage}
           .fieldValues=${this.fieldValues}
-          .shouldFadeIn=${shouldFadeIn}
+          ?shouldFadeIn=${shouldFadeIn}
+          helpText="${disabledHelpText}"
+          ?disabled=${disabledHelpText}
           @form-field-update="${this.handleFormFieldUpdate}"
         >
         </chromedash-form-field>

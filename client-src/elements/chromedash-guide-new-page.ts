@@ -9,7 +9,12 @@ import {
 import {ALL_FIELDS} from './form-field-specs';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
-import {setupScrollToHash, formatFeatureChanges, FieldInfo} from './utils';
+import {
+  setupScrollToHash,
+  formatFeatureChanges,
+  getDisabledHelpText,
+  FieldInfo,
+} from './utils';
 import {customElement, property, state} from 'lit/decorators.js';
 import {Feature} from '../js-src/cs-client';
 
@@ -171,12 +176,15 @@ export class ChromedashGuideNewPage extends LitElement {
         touched: false,
         value, // stageId
       });
+      const disabledHelpText = getDisabledHelpText(field);
       return html`
         <chromedash-form-field
           name=${field}
           index=${index}
           value=${value}
           .fieldValues=${this.fieldValues}
+          helpText="${disabledHelpText}"
+          ?disabled=${disabledHelpText}
           ?forEnterprise=${this.isEnterpriseFeature}
           @form-field-update="${this.handleFormFieldUpdate}"
           class="${className || ''}"></chromedash-form-field>

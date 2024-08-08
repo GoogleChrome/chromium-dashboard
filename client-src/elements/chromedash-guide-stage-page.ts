@@ -1,6 +1,7 @@
 import {LitElement, TemplateResult, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
 import {
+  getDisabledHelpText,
   FieldInfo,
   formatFeatureChanges,
   getStageValue,
@@ -264,6 +265,7 @@ export class ChromedashGuideStagePage extends LitElement {
         stageId,
       });
 
+      const disabledHelpText = getDisabledHelpText(field, feStage);
       return html`
         <chromedash-form-field
           name=${field}
@@ -271,6 +273,8 @@ export class ChromedashGuideStagePage extends LitElement {
           value=${value}
           .fieldValues=${this.fieldValues}
           .feature=${formattedFeature}
+          helpText="${disabledHelpText}"
+          ?disabled=${disabledHelpText}
           stageId=${feStage.id}
           ?forEnterprise=${formattedFeature.is_enterprise_feature}
           @form-field-update="${this.handleFormFieldUpdate}"
