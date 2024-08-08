@@ -456,8 +456,8 @@ export function getDisabledHelpText(field, feStage?) {
   ) {
     if (
       feStage?.ot_setup_status ===
-        OT_SETUP_STATUS_OPTIONS.OT_READY_FOR_CREATION &&
-      feStage?.ot_setup_status === OT_SETUP_STATUS_OPTIONS.OT_CREATION_FAILED &&
+        OT_SETUP_STATUS_OPTIONS.OT_READY_FOR_CREATION ||
+      feStage?.ot_setup_status === OT_SETUP_STATUS_OPTIONS.OT_CREATION_FAILED ||
       feStage?.ot_setup_status === OT_SETUP_STATUS_OPTIONS.OT_ACTIVATION_FAILED
     ) {
       return 'Origin trial milestone cannot be edited while a creation request is in progress';
