@@ -23,6 +23,7 @@ from chromestatus_openapi.models.post_intent_request import PostIntentRequest  #
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
 from chromestatus_openapi.models.success_message import SuccessMessage  # noqa: E501
+from chromestatus_openapi.models.success_message import SuccessMessage  # noqa: E501
 from chromestatus_openapi import util
 
 
@@ -31,7 +32,7 @@ def add_feature_comment(feature_id, comments_request=None):  # noqa: E501
 
      # noqa: E501
 
-    :param feature_id: 
+    :param feature_id:
     :type feature_id: int
     :param comments_request: Add a review commend and possible set a approval value
     :type comments_request: dict | bytes
@@ -48,11 +49,11 @@ def add_gate_comment(feature_id, gate_id, comments_request=None):  # noqa: E501
 
      # noqa: E501
 
-    :param feature_id: 
+    :param feature_id:
     :type feature_id: int
-    :param gate_id: 
+    :param gate_id:
     :type gate_id: int
-    :param comments_request: 
+    :param comments_request:
     :type comments_request: dict | bytes
 
     :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
@@ -71,7 +72,7 @@ def add_user_to_component(component_id, user_id, component_users_request=None): 
     :type component_id: int
     :param user_id: User ID
     :type user_id: int
-    :param component_users_request: 
+    :param component_users_request:
     :type component_users_request: dict | bytes
 
     :rtype: Union[None, Tuple[None, int], Tuple[None, int, Dict[str, str]]
@@ -86,7 +87,7 @@ def create_account(create_account_request=None):  # noqa: E501
 
      # noqa: E501
 
-    :param create_account_request: 
+    :param create_account_request:
     :type create_account_request: dict | bytes
 
     :rtype: Union[AccountResponse, Tuple[AccountResponse, int], Tuple[AccountResponse, int, Dict[str, str]]
@@ -114,7 +115,7 @@ def dismiss_cue(dismiss_cue_request):  # noqa: E501
 
      # noqa: E501
 
-    :param dismiss_cue_request: 
+    :param dismiss_cue_request:
     :type dismiss_cue_request: dict | bytes
 
     :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
@@ -140,7 +141,7 @@ def get_feature_comments(feature_id):  # noqa: E501
 
      # noqa: E501
 
-    :param feature_id: 
+    :param feature_id:
     :type feature_id: int
 
     :rtype: Union[GetCommentsResponse, Tuple[GetCommentsResponse, int], Tuple[GetCommentsResponse, int, Dict[str, str]]
@@ -153,9 +154,9 @@ def get_gate_comments(feature_id, gate_id):  # noqa: E501
 
      # noqa: E501
 
-    :param feature_id: 
+    :param feature_id:
     :type feature_id: int
-    :param gate_id: 
+    :param gate_id:
     :type gate_id: int
 
     :rtype: Union[List[Activity], Tuple[List[Activity], int], Tuple[List[Activity], int, Dict[str, str]]
@@ -196,7 +197,7 @@ def list_external_reviews(review_group):  # noqa: E501
 
      # noqa: E501
 
-    :param review_group: Which review group to focus on:  * &#x60;tag&#x60; - The W3C TAG  * &#x60;gecko&#x60; - The rendering engine that powers Mozilla Firefox  * &#x60;webkit&#x60; - The rendering engine that powers Apple Safari 
+    :param review_group: Which review group to focus on:  * &#x60;tag&#x60; - The W3C TAG  * &#x60;gecko&#x60; - The rendering engine that powers Mozilla Firefox  * &#x60;webkit&#x60; - The rendering engine that powers Apple Safari
     :type review_group: str
 
     :rtype: Union[ExternalReviewsResponse, Tuple[ExternalReviewsResponse, int], Tuple[ExternalReviewsResponse, int, Dict[str, str]]
@@ -237,7 +238,7 @@ def list_spec_mentors(after=None):  # noqa: E501
 
      # noqa: E501
 
-    :param after: 
+    :param after:
     :type after: str
 
     :rtype: Union[List[SpecMentor], Tuple[List[SpecMentor], int], Tuple[List[SpecMentor], int, Dict[str, str]]
@@ -276,7 +277,7 @@ def remove_user_from_component(component_id, user_id, component_users_request=No
     :type component_id: int
     :param user_id: User ID
     :type user_id: int
-    :param component_users_request: 
+    :param component_users_request:
     :type component_users_request: dict | bytes
 
     :rtype: Union[None, Tuple[None, int], Tuple[None, int, Dict[str, str]]
@@ -291,9 +292,9 @@ def update_feature_comment(feature_id, patch_comment_request):  # noqa: E501
 
      # noqa: E501
 
-    :param feature_id: 
+    :param feature_id:
     :type feature_id: int
-    :param patch_comment_request: 
+    :param patch_comment_request:
     :type patch_comment_request: dict | bytes
 
     :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
