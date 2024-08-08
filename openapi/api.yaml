@@ -237,6 +237,44 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ComponentUsersRequest'
+  /currentuser/cues:
+    get:
+      summary: Get dismissed cues for the current user
+      operationId: getDismissedCues
+      responses:
+        '200':
+          description: List of dismissed cue cards
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '400':
+          description: Invalid cue provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    post:
+      summary: Dismiss a cue card for the signed-in user
+      operationId: dismissCue
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DismissCueRequest'
+      responses:
+        '200':
+          description: Cue dismissed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
   /review-latency:
     get:
       summary: List recently reviewed features and their review latency
@@ -802,6 +840,15 @@ components:
     LinkPreviewSpecs:
       allOf:
         - $ref: '#/components/schemas/LinkPreviewOpenGraph'
+    DismissCueRequest:
+      type: object
+      properties:
+        cue:
+          type: string
+          enum:
+            - progress-checkmarks
+      required:
+        - cue
     SuccessMessage:
       type: object
       properties:
