@@ -3,6 +3,7 @@ import {ref} from 'lit/directives/ref.js';
 import {repeat} from 'lit/directives/repeat.js';
 import {
   formatFeatureChanges,
+  getDisabledHelpText,
   getStageValue,
   showToastMessage,
   flattenSections,
@@ -281,6 +282,7 @@ export class ChromedashGuideEditallPage extends LitElement {
         stageId,
       });
 
+      const disabledHelpText = getDisabledHelpText(field, feStage);
       return html`
         <chromedash-form-field
           name=${field}
@@ -289,6 +291,8 @@ export class ChromedashGuideEditallPage extends LitElement {
           value=${value}
           .fieldValues=${this.fieldValues}
           .feature=${formattedFeature}
+          helpText="${disabledHelpText}"
+          ?disabled=${disabledHelpText}
           ?forEnterprise=${formattedFeature.is_enterprise_feature}
           @form-field-update="${this.handleFormFieldUpdate}"
         >

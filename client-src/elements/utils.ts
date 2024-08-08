@@ -8,6 +8,7 @@ import {
   ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME,
   ENTERPRISE_IMPACT_DISPLAYNAME,
   OT_MILESTONE_END_FIELDS,
+  OT_SETUP_STATUS_OPTIONS,
   PLATFORMS_DISPLAYNAME,
   ROLLOUT_IMPACT_DISPLAYNAME,
   STAGE_FIELD_NAME_MAPPING,
@@ -443,6 +444,26 @@ export function getNewLocation(params, location) {
     }
   }
   return url;
+}
+
+// Get any help text for a specific field based on the condition of if it should be disabled.
+export function getDisabledHelpText(field, feStage?) {
+  // OT milestone fields should not be editable when the automated
+  // OT creation process is in progress or in a failed state.
+  if (
+    field === 'ot_milestone_desktop_start' ||
+    field === 'ot_milestone_desktop_end'
+  ) {
+    if (
+      feStage?.ot_setup_status ===
+        OT_SETUP_STATUS_OPTIONS.OT_READY_FOR_CREATION ||
+      feStage?.ot_setup_status === OT_SETUP_STATUS_OPTIONS.OT_CREATION_FAILED ||
+      feStage?.ot_setup_status === OT_SETUP_STATUS_OPTIONS.OT_ACTIVATION_FAILED
+    ) {
+      return 'Origin trial milestone cannot be edited while a creation request is in progress';
+    }
+  }
+  return '';
 }
 
 /**

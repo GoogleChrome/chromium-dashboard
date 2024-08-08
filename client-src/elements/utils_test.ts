@@ -1,6 +1,12 @@
 import {html} from 'lit';
-import {autolink, clamp, formatFeatureChanges} from './utils';
+import {
+  autolink,
+  clamp,
+  formatFeatureChanges,
+  getDisabledHelpText,
+} from './utils';
 import {assert} from '@open-wc/testing';
+import {OT_SETUP_STATUS_OPTIONS} from './form-field-enums';
 
 const compareAutolinkResult = (result, expected) => {
   assert.equal(result.length, expected.length);
@@ -283,6 +289,27 @@ go/this-is-a-test
         has_changes: true,
       };
       assert.deepEqual(formatFeatureChanges(testFieldValues, featureId), expected);
+    });
+  });
+
+  describe('getDisabledHelpText', () => {
+    it('returns disabled help text for OT milestones while automated creation in progress', () => {
+      const otStartResult = getDisabledHelpText('ot_milestone_desktop_start',
+        {ot_setup_status: OT_SETUP_STATUS_OPTIONS.OT_READY_FOR_CREATION})
+      assert.notEqual(otStartResult, '');
+      const otEndResult = getDisabledHelpText('ot_milestone_desktop_end',
+        {ot_setup_status: OT_SETUP_STATUS_OPTIONS.OT_READY_FOR_CREATION})
+      assert.notEqual(otEndResult, '');
+    });
+      it('returns no disabled help text for OT milestone fields when automated creation not in progress', () => {
+        const otStartResult = getDisabledHelpText('ot_milestone_desktop_start', {})
+        assert.equal(otStartResult, '');
+        const otEndResult = getDisabledHelpText('ot_milestone_desktop_start', {})
+        assert.equal(otEndResult, '');
+      });
+    it('returns an empty string for fields with no conditional disabling', () => {
+      const result = getDisabledHelpText('name', {});
+      assert.equal(result, '');
     });
   });
 });
