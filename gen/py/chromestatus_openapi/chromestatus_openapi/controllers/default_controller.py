@@ -9,13 +9,16 @@ from chromestatus_openapi.models.components_users_response import ComponentsUser
 from chromestatus_openapi.models.create_account_request import CreateAccountRequest  # noqa: E501
 from chromestatus_openapi.models.delete_account200_response import DeleteAccount200Response  # noqa: E501
 from chromestatus_openapi.models.dismiss_cue_request import DismissCueRequest  # noqa: E501
+from chromestatus_openapi.models.error_message import ErrorMessage  # noqa: E501
 from chromestatus_openapi.models.external_reviews_response import ExternalReviewsResponse  # noqa: E501
 from chromestatus_openapi.models.feature_latency import FeatureLatency  # noqa: E501
 from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismissedCues400Response  # noqa: E501
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
 from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
+from chromestatus_openapi.models.reject_unneeded_get_request import RejectUnneededGetRequest  # noqa: E501
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
+from chromestatus_openapi.models.sign_in_request import SignInRequest  # noqa: E501
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
 from chromestatus_openapi.models.success_message import SuccessMessage  # noqa: E501
 from chromestatus_openapi import util
@@ -37,6 +40,21 @@ def add_user_to_component(component_id, user_id, component_users_request=None): 
     """
     if connexion.request.is_json:
         component_users_request = ComponentUsersRequest.from_dict(connexion.request.get_json())  # noqa: E501
+    return 'do some magic!'
+
+
+def authenticate_user(sign_in_request):  # noqa: E501
+    """Authenticate user with Google Sign-In
+
+     # noqa: E501
+
+    :param sign_in_request: 
+    :type sign_in_request: dict | bytes
+
+    :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
+    """
+    if connexion.request.is_json:
+        sign_in_request = SignInRequest.from_dict(connexion.request.get_json())  # noqa: E501
     return 'do some magic!'
 
 
@@ -177,6 +195,17 @@ def list_spec_mentors(after=None):  # noqa: E501
     return 'do some magic!'
 
 
+def logout_user():  # noqa: E501
+    """Log out the current user
+
+     # noqa: E501
+
+
+    :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
 def post_intent_to_blink_dev(feature_id, stage_id, gate_id, post_intent_request=None):  # noqa: E501
     """Submit an intent to be posted on blink-dev
 
@@ -195,6 +224,28 @@ def post_intent_to_blink_dev(feature_id, stage_id, gate_id, post_intent_request=
     """
     if connexion.request.is_json:
         post_intent_request = PostIntentRequest.from_dict(connexion.request.get_json())  # noqa: E501
+    return 'do some magic!'
+
+
+def reject_get_requests_login():  # noqa: E501
+    """reject unneeded GET request without triggering Error Reporting
+
+     # noqa: E501
+
+
+    :rtype: Union[None, Tuple[None, int], Tuple[None, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
+def reject_get_requests_logout():  # noqa: E501
+    """reject unneeded GET request without triggering Error Reporting
+
+     # noqa: E501
+
+
+    :rtype: Union[None, Tuple[None, int], Tuple[None, int, Dict[str, str]]
+    """
     return 'do some magic!'
 
 

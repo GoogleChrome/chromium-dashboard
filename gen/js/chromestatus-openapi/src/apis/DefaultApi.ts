@@ -21,13 +21,16 @@ import type {
   CreateAccountRequest,
   DeleteAccount200Response,
   DismissCueRequest,
+  ErrorMessage,
   ExternalReviewsResponse,
   FeatureLatency,
   GetDismissedCues400Response,
   GetIntentResponse,
   MessageResponse,
   PostIntentRequest,
+  RejectUnneededGetRequest,
   ReviewLatency,
+  SignInRequest,
   SpecMentor,
   SuccessMessage,
 } from '../models/index';
@@ -44,6 +47,8 @@ import {
     DeleteAccount200ResponseToJSON,
     DismissCueRequestFromJSON,
     DismissCueRequestToJSON,
+    ErrorMessageFromJSON,
+    ErrorMessageToJSON,
     ExternalReviewsResponseFromJSON,
     ExternalReviewsResponseToJSON,
     FeatureLatencyFromJSON,
@@ -56,8 +61,12 @@ import {
     MessageResponseToJSON,
     PostIntentRequestFromJSON,
     PostIntentRequestToJSON,
+    RejectUnneededGetRequestFromJSON,
+    RejectUnneededGetRequestToJSON,
     ReviewLatencyFromJSON,
     ReviewLatencyToJSON,
+    SignInRequestFromJSON,
+    SignInRequestToJSON,
     SpecMentorFromJSON,
     SpecMentorToJSON,
     SuccessMessageFromJSON,
@@ -68,6 +77,10 @@ export interface AddUserToComponentRequest {
     componentId: number;
     userId: number;
     componentUsersRequest?: ComponentUsersRequest;
+}
+
+export interface AuthenticateUserRequest {
+    signInRequest: SignInRequest;
 }
 
 export interface CreateAccountOperationRequest {
@@ -137,6 +150,21 @@ export interface DefaultApiInterface {
      * Add a user to a component
      */
     addUserToComponent(requestParameters: AddUserToComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * 
+     * @summary Authenticate user with Google Sign-In
+     * @param {SignInRequest} signInRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    authenticateUserRaw(requestParameters: AuthenticateUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+
+    /**
+     * Authenticate user with Google Sign-In
+     */
+    authenticateUser(requestParameters: AuthenticateUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
 
     /**
      * 
@@ -290,6 +318,20 @@ export interface DefaultApiInterface {
 
     /**
      * 
+     * @summary Log out the current user
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    logoutUserRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+
+    /**
+     * Log out the current user
+     */
+    logoutUser(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
+
+    /**
+     * 
      * @summary Submit an intent to be posted on blink-dev
      * @param {number} featureId Feature ID
      * @param {number} stageId Stage ID
@@ -305,6 +347,34 @@ export interface DefaultApiInterface {
      * Submit an intent to be posted on blink-dev
      */
     postIntentToBlinkDev(requestParameters: PostIntentToBlinkDevRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MessageResponse>;
+
+    /**
+     * 
+     * @summary reject unneeded GET request without triggering Error Reporting
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    rejectGetRequestsLoginRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * reject unneeded GET request without triggering Error Reporting
+     */
+    rejectGetRequestsLogin(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * 
+     * @summary reject unneeded GET request without triggering Error Reporting
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    rejectGetRequestsLogoutRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * reject unneeded GET request without triggering Error Reporting
+     */
+    rejectGetRequestsLogout(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
      * 
@@ -374,6 +444,42 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async addUserToComponent(requestParameters: AddUserToComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.addUserToComponentRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Authenticate user with Google Sign-In
+     */
+    async authenticateUserRaw(requestParameters: AuthenticateUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+        if (requestParameters['signInRequest'] == null) {
+            throw new runtime.RequiredError(
+                'signInRequest',
+                'Required parameter "signInRequest" was null or undefined when calling authenticateUser().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/login`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SignInRequestToJSON(requestParameters['signInRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Authenticate user with Google Sign-In
+     */
+    async authenticateUser(requestParameters: AuthenticateUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+        const response = await this.authenticateUserRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**
@@ -715,6 +821,32 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     }
 
     /**
+     * Log out the current user
+     */
+    async logoutUserRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/logout`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Log out the current user
+     */
+    async logoutUser(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+        const response = await this.logoutUserRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Submit an intent to be posted on blink-dev
      */
     async postIntentToBlinkDevRaw(requestParameters: PostIntentToBlinkDevRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MessageResponse>> {
@@ -762,6 +894,56 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     async postIntentToBlinkDev(requestParameters: PostIntentToBlinkDevRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MessageResponse> {
         const response = await this.postIntentToBlinkDevRaw(requestParameters, initOverrides);
         return await response.value();
+    }
+
+    /**
+     * reject unneeded GET request without triggering Error Reporting
+     */
+    async rejectGetRequestsLoginRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/login`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * reject unneeded GET request without triggering Error Reporting
+     */
+    async rejectGetRequestsLogin(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.rejectGetRequestsLoginRaw(initOverrides);
+    }
+
+    /**
+     * reject unneeded GET request without triggering Error Reporting
+     */
+    async rejectGetRequestsLogoutRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/logout`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * reject unneeded GET request without triggering Error Reporting
+     */
+    async rejectGetRequestsLogout(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.rejectGetRequestsLogoutRaw(initOverrides);
     }
 
     /**
