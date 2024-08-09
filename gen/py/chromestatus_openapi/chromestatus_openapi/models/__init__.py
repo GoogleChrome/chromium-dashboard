@@ -32,6 +32,8 @@ from chromestatus_openapi.models.message_response import MessageResponse
 from chromestatus_openapi.models.outstanding_review import OutstandingReview
 from chromestatus_openapi.models.owners_and_subscribers_of_component import OwnersAndSubscribersOfComponent
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest
+from chromestatus_openapi.models.reject_unneeded_get_request import RejectUnneededGetRequest
 from chromestatus_openapi.models.review_latency import ReviewLatency
+from chromestatus_openapi.models.sign_in_request import SignInRequest
 from chromestatus_openapi.models.spec_mentor import SpecMentor
 from chromestatus_openapi.models.success_message import SuccessMessage

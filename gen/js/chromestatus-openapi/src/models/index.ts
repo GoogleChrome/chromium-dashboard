@@ -32,6 +32,8 @@ export * from './MessageResponse';
 export * from './OutstandingReview';
 export * from './OwnersAndSubscribersOfComponent';
 export * from './PostIntentRequest';
+export * from './RejectUnneededGetRequest';
 export * from './ReviewLatency';
+export * from './SignInRequest';
 export * from './SpecMentor';
 export * from './SuccessMessage';
