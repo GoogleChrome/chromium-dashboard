@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from chromestatus_openapi.models import (GetOriginTrialsResponse, ErrorMessage)
+
 import flask
 import json5
 import logging
@@ -54,7 +56,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
       A list of data on all public origin trials.
     """
     try:
-      trials_list = origin_trials_client.get_trials_list()
+      trials_list = GetOriginTrialsResponse.from_dict(origin_trials_client.get_trials_list())
     except requests.exceptions.RequestException:
       self.abort(500, 'Error obtaining origin trial data from API')
     except KeyError:
