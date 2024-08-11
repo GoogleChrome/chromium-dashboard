@@ -632,6 +632,7 @@ components:
     CreateOriginTrialRequest:
       allOf:
       - $ref: '#/components/schemas/StageField'
+      - $ref: '#/components/schemas/MilestoneSetField'
       example:
         finch_url:
           form_field_name: form_field_name
@@ -643,6 +644,15 @@ components:
           form_field_name: form_field_name
           value: FieldInfo_value
         ot_feedback_submission_url:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        desktop_last:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        android_first:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        android_last:
           form_field_name: form_field_name
           value: FieldInfo_value
         announcement_url:
@@ -675,7 +685,13 @@ components:
         ot_request_note:
           form_field_name: form_field_name
           value: FieldInfo_value
+        ios_last:
+          form_field_name: form_field_name
+          value: FieldInfo_value
         browser:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        webview_first:
           form_field_name: form_field_name
           value: FieldInfo_value
         ot_documentation_url:
@@ -717,13 +733,22 @@ components:
         origin_trial_feedback_url:
           form_field_name: form_field_name
           value: FieldInfo_value
+        desktop_first:
+          form_field_name: form_field_name
+          value: FieldInfo_value
         experiment_risks:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        ios_first:
           form_field_name: form_field_name
           value: FieldInfo_value
         ot_action_requested:
           form_field_name: form_field_name
           value: FieldInfo_value
         origin_trial_id:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        webview_last:
           form_field_name: form_field_name
           value: FieldInfo_value
         enterprise_policies:
@@ -808,6 +833,26 @@ components:
         rollout_details:
           $ref: '#/components/schemas/FieldInfo'
       title: StageField
+      type: object
+    MilestoneSetField:
+      properties:
+        desktop_first:
+          $ref: '#/components/schemas/FieldInfo'
+        desktop_last:
+          $ref: '#/components/schemas/FieldInfo'
+        android_first:
+          $ref: '#/components/schemas/FieldInfo'
+        android_last:
+          $ref: '#/components/schemas/FieldInfo'
+        ios_first:
+          $ref: '#/components/schemas/FieldInfo'
+        ios_last:
+          $ref: '#/components/schemas/FieldInfo'
+        webview_first:
+          $ref: '#/components/schemas/FieldInfo'
+        webview_last:
+          $ref: '#/components/schemas/FieldInfo'
+      title: MilestoneSetField
       type: object
     FieldInfo:
       example:

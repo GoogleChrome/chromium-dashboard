@@ -230,6 +230,54 @@ export interface CreateOriginTrialRequest {
      * @memberof CreateOriginTrialRequest
      */
     rollout_details?: FieldInfo;
+    /**
+     * 
+     * @type {FieldInfo}
+     * @memberof CreateOriginTrialRequest
+     */
+    desktop_first?: FieldInfo;
+    /**
+     * 
+     * @type {FieldInfo}
+     * @memberof CreateOriginTrialRequest
+     */
+    desktop_last?: FieldInfo;
+    /**
+     * 
+     * @type {FieldInfo}
+     * @memberof CreateOriginTrialRequest
+     */
+    android_first?: FieldInfo;
+    /**
+     * 
+     * @type {FieldInfo}
+     * @memberof CreateOriginTrialRequest
+     */
+    android_last?: FieldInfo;
+    /**
+     * 
+     * @type {FieldInfo}
+     * @memberof CreateOriginTrialRequest
+     */
+    ios_first?: FieldInfo;
+    /**
+     * 
+     * @type {FieldInfo}
+     * @memberof CreateOriginTrialRequest
+     */
+    ios_last?: FieldInfo;
+    /**
+     * 
+     * @type {FieldInfo}
+     * @memberof CreateOriginTrialRequest
+     */
+    webview_first?: FieldInfo;
+    /**
+     * 
+     * @type {FieldInfo}
+     * @memberof CreateOriginTrialRequest
+     */
+    webview_last?: FieldInfo;
 }
 
 /**
@@ -283,6 +331,14 @@ export function CreateOriginTrialRequestFromJSONTyped(json: any, ignoreDiscrimin
         'rollout_milestone': json['rollout_milestone'] == null ? undefined : FieldInfoFromJSON(json['rollout_milestone']),
         'rollout_platforms': json['rollout_platforms'] == null ? undefined : FieldInfoFromJSON(json['rollout_platforms']),
         'rollout_details': json['rollout_details'] == null ? undefined : FieldInfoFromJSON(json['rollout_details']),
+        'desktop_first': json['desktop_first'] == null ? undefined : FieldInfoFromJSON(json['desktop_first']),
+        'desktop_last': json['desktop_last'] == null ? undefined : FieldInfoFromJSON(json['desktop_last']),
+        'android_first': json['android_first'] == null ? undefined : FieldInfoFromJSON(json['android_first']),
+        'android_last': json['android_last'] == null ? undefined : FieldInfoFromJSON(json['android_last']),
+        'ios_first': json['ios_first'] == null ? undefined : FieldInfoFromJSON(json['ios_first']),
+        'ios_last': json['ios_last'] == null ? undefined : FieldInfoFromJSON(json['ios_last']),
+        'webview_first': json['webview_first'] == null ? undefined : FieldInfoFromJSON(json['webview_first']),
+        'webview_last': json['webview_last'] == null ? undefined : FieldInfoFromJSON(json['webview_last']),
     };
 }
 
@@ -326,6 +382,14 @@ export function CreateOriginTrialRequestToJSON(value?: CreateOriginTrialRequest 
         'rollout_milestone': FieldInfoToJSON(value['rollout_milestone']),
         'rollout_platforms': FieldInfoToJSON(value['rollout_platforms']),
         'rollout_details': FieldInfoToJSON(value['rollout_details']),
+        'desktop_first': FieldInfoToJSON(value['desktop_first']),
+        'desktop_last': FieldInfoToJSON(value['desktop_last']),
+        'android_first': FieldInfoToJSON(value['android_first']),
+        'android_last': FieldInfoToJSON(value['android_last']),
+        'ios_first': FieldInfoToJSON(value['ios_first']),
+        'ios_last': FieldInfoToJSON(value['ios_last']),
+        'webview_first': FieldInfoToJSON(value['webview_first']),
+        'webview_last': FieldInfoToJSON(value['webview_last']),
     };
 }
 

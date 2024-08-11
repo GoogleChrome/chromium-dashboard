@@ -33,6 +33,7 @@ export * from './LinkPreviewOpenGraphAllOfInformation';
 export * from './LinkPreviewSpecs';
 export * from './LinkPreviewWebkitBug';
 export * from './MessageResponse';
+export * from './MilestoneSetField';
 export * from './OriginTrialsInfo';
 export * from './OutstandingReview';
 export * from './OwnersAndSubscribersOfComponent';

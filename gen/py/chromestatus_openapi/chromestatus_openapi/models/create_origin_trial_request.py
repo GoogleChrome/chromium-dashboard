@@ -14,7 +14,7 @@ class CreateOriginTrialRequest(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, announcement_url=None, browser=None, ot_description=None, display_name=None, enterprise_policies=None, finch_url=None, experiment_goals=None, experiment_risks=None, experiment_extension_reason=None, intent_thread_url=None, origin_trial_feedback_url=None, origin_trial_id=None, ot_approval_buganizer_component=None, ot_approval_buganizer_custom_field_id=None, ot_approval_criteria_url=None, ot_approval_group_email=None, ot_chromium_trial_name=None, ot_display_name=None, ot_action_requested=None, ot_documentation_url=None, ot_emails=None, ot_feedback_submission_url=None, ot_has_third_party_support=None, ot_is_critical_trial=None, ot_is_deprecation_trial=None, ot_owner_email=None, ot_request_note=None, ot_require_approvals=None, ot_stage_id=None, ot_webfeature_use_counter=None, rollout_impact=None, rollout_milestone=None, rollout_platforms=None, rollout_details=None):  # noqa: E501
+    def __init__(self, announcement_url=None, browser=None, ot_description=None, display_name=None, enterprise_policies=None, finch_url=None, experiment_goals=None, experiment_risks=None, experiment_extension_reason=None, intent_thread_url=None, origin_trial_feedback_url=None, origin_trial_id=None, ot_approval_buganizer_component=None, ot_approval_buganizer_custom_field_id=None, ot_approval_criteria_url=None, ot_approval_group_email=None, ot_chromium_trial_name=None, ot_display_name=None, ot_action_requested=None, ot_documentation_url=None, ot_emails=None, ot_feedback_submission_url=None, ot_has_third_party_support=None, ot_is_critical_trial=None, ot_is_deprecation_trial=None, ot_owner_email=None, ot_request_note=None, ot_require_approvals=None, ot_stage_id=None, ot_webfeature_use_counter=None, rollout_impact=None, rollout_milestone=None, rollout_platforms=None, rollout_details=None, desktop_first=None, desktop_last=None, android_first=None, android_last=None, ios_first=None, ios_last=None, webview_first=None, webview_last=None):  # noqa: E501
         """CreateOriginTrialRequest - a model defined in OpenAPI
 
         :param announcement_url: The announcement_url of this CreateOriginTrialRequest.  # noqa: E501
@@ -85,6 +85,22 @@ class CreateOriginTrialRequest(Model):
         :type rollout_platforms: FieldInfo
         :param rollout_details: The rollout_details of this CreateOriginTrialRequest.  # noqa: E501
         :type rollout_details: FieldInfo
+        :param desktop_first: The desktop_first of this CreateOriginTrialRequest.  # noqa: E501
+        :type desktop_first: FieldInfo
+        :param desktop_last: The desktop_last of this CreateOriginTrialRequest.  # noqa: E501
+        :type desktop_last: FieldInfo
+        :param android_first: The android_first of this CreateOriginTrialRequest.  # noqa: E501
+        :type android_first: FieldInfo
+        :param android_last: The android_last of this CreateOriginTrialRequest.  # noqa: E501
+        :type android_last: FieldInfo
+        :param ios_first: The ios_first of this CreateOriginTrialRequest.  # noqa: E501
+        :type ios_first: FieldInfo
+        :param ios_last: The ios_last of this CreateOriginTrialRequest.  # noqa: E501
+        :type ios_last: FieldInfo
+        :param webview_first: The webview_first of this CreateOriginTrialRequest.  # noqa: E501
+        :type webview_first: FieldInfo
+        :param webview_last: The webview_last of this CreateOriginTrialRequest.  # noqa: E501
+        :type webview_last: FieldInfo
         """
         self.openapi_types = {
             'announcement_url': FieldInfo,
@@ -120,7 +136,15 @@ class CreateOriginTrialRequest(Model):
             'rollout_impact': FieldInfo,
             'rollout_milestone': FieldInfo,
             'rollout_platforms': FieldInfo,
-            'rollout_details': FieldInfo
+            'rollout_details': FieldInfo,
+            'desktop_first': FieldInfo,
+            'desktop_last': FieldInfo,
+            'android_first': FieldInfo,
+            'android_last': FieldInfo,
+            'ios_first': FieldInfo,
+            'ios_last': FieldInfo,
+            'webview_first': FieldInfo,
+            'webview_last': FieldInfo
         }
 
         self.attribute_map = {
@@ -157,7 +181,15 @@ class CreateOriginTrialRequest(Model):
             'rollout_impact': 'rollout_impact',
             'rollout_milestone': 'rollout_milestone',
             'rollout_platforms': 'rollout_platforms',
-            'rollout_details': 'rollout_details'
+            'rollout_details': 'rollout_details',
+            'desktop_first': 'desktop_first',
+            'desktop_last': 'desktop_last',
+            'android_first': 'android_first',
+            'android_last': 'android_last',
+            'ios_first': 'ios_first',
+            'ios_last': 'ios_last',
+            'webview_first': 'webview_first',
+            'webview_last': 'webview_last'
         }
 
         self._announcement_url = announcement_url
@@ -194,6 +226,14 @@ class CreateOriginTrialRequest(Model):
         self._rollout_milestone = rollout_milestone
         self._rollout_platforms = rollout_platforms
         self._rollout_details = rollout_details
+        self._desktop_first = desktop_first
+        self._desktop_last = desktop_last
+        self._android_first = android_first
+        self._android_last = android_last
+        self._ios_first = ios_first
+        self._ios_last = ios_last
+        self._webview_first = webview_first
+        self._webview_last = webview_last
 
     @classmethod
     def from_dict(cls, dikt) -> 'CreateOriginTrialRequest':
@@ -919,3 +959,171 @@ class CreateOriginTrialRequest(Model):
         """
 
         self._rollout_details = rollout_details
+
+    @property
+    def desktop_first(self) -> FieldInfo:
+        """Gets the desktop_first of this CreateOriginTrialRequest.
+
+
+        :return: The desktop_first of this CreateOriginTrialRequest.
+        :rtype: FieldInfo
+        """
+        return self._desktop_first
+
+    @desktop_first.setter
+    def desktop_first(self, desktop_first: FieldInfo):
+        """Sets the desktop_first of this CreateOriginTrialRequest.
+
+
+        :param desktop_first: The desktop_first of this CreateOriginTrialRequest.
+        :type desktop_first: FieldInfo
+        """
+
+        self._desktop_first = desktop_first
+
+    @property
+    def desktop_last(self) -> FieldInfo:
+        """Gets the desktop_last of this CreateOriginTrialRequest.
+
+
+        :return: The desktop_last of this CreateOriginTrialRequest.
+        :rtype: FieldInfo
+        """
+        return self._desktop_last
+
+    @desktop_last.setter
+    def desktop_last(self, desktop_last: FieldInfo):
+        """Sets the desktop_last of this CreateOriginTrialRequest.
+
+
+        :param desktop_last: The desktop_last of this CreateOriginTrialRequest.
+        :type desktop_last: FieldInfo
+        """
+
+        self._desktop_last = desktop_last
+
+    @property
+    def android_first(self) -> FieldInfo:
+        """Gets the android_first of this CreateOriginTrialRequest.
+
+
+        :return: The android_first of this CreateOriginTrialRequest.
+        :rtype: FieldInfo
+        """
+        return self._android_first
+
+    @android_first.setter
+    def android_first(self, android_first: FieldInfo):
+        """Sets the android_first of this CreateOriginTrialRequest.
+
+
+        :param android_first: The android_first of this CreateOriginTrialRequest.
+        :type android_first: FieldInfo
+        """
+
+        self._android_first = android_first
+
+    @property
+    def android_last(self) -> FieldInfo:
+        """Gets the android_last of this CreateOriginTrialRequest.
+
+
+        :return: The android_last of this CreateOriginTrialRequest.
+        :rtype: FieldInfo
+        """
+        return self._android_last
+
+    @android_last.setter
+    def android_last(self, android_last: FieldInfo):
+        """Sets the android_last of this CreateOriginTrialRequest.
+
+
+        :param android_last: The android_last of this CreateOriginTrialRequest.
+        :type android_last: FieldInfo
+        """
+
+        self._android_last = android_last
+
+    @property
+    def ios_first(self) -> FieldInfo:
+        """Gets the ios_first of this CreateOriginTrialRequest.
+
+
+        :return: The ios_first of this CreateOriginTrialRequest.
+        :rtype: FieldInfo
+        """
+        return self._ios_first
+
+    @ios_first.setter
+    def ios_first(self, ios_first: FieldInfo):
+        """Sets the ios_first of this CreateOriginTrialRequest.
+
+
+        :param ios_first: The ios_first of this CreateOriginTrialRequest.
+        :type ios_first: FieldInfo
+        """
+
+        self._ios_first = ios_first
+
+    @property
+    def ios_last(self) -> FieldInfo:
+        """Gets the ios_last of this CreateOriginTrialRequest.
+
+
+        :return: The ios_last of this CreateOriginTrialRequest.
+        :rtype: FieldInfo
+        """
+        return self._ios_last
+
+    @ios_last.setter
+    def ios_last(self, ios_last: FieldInfo):
+        """Sets the ios_last of this CreateOriginTrialRequest.
+
+
+        :param ios_last: The ios_last of this CreateOriginTrialRequest.
+        :type ios_last: FieldInfo
+        """
+
+        self._ios_last = ios_last
+
+    @property
+    def webview_first(self) -> FieldInfo:
+        """Gets the webview_first of this CreateOriginTrialRequest.
+
+
+        :return: The webview_first of this CreateOriginTrialRequest.
+        :rtype: FieldInfo
+        """
+        return self._webview_first
+
+    @webview_first.setter
+    def webview_first(self, webview_first: FieldInfo):
+        """Sets the webview_first of this CreateOriginTrialRequest.
+
+
+        :param webview_first: The webview_first of this CreateOriginTrialRequest.
+        :type webview_first: FieldInfo
+        """
+
+        self._webview_first = webview_first
+
+    @property
+    def webview_last(self) -> FieldInfo:
+        """Gets the webview_last of this CreateOriginTrialRequest.
+
+
+        :return: The webview_last of this CreateOriginTrialRequest.
+        :rtype: FieldInfo
+        """
+        return self._webview_last
+
+    @webview_last.setter
+    def webview_last(self, webview_last: FieldInfo):
+        """Sets the webview_last of this CreateOriginTrialRequest.
+
+
+        :param webview_last: The webview_last of this CreateOriginTrialRequest.
+        :type webview_last: FieldInfo
+        """
+
+        self._webview_last = webview_last

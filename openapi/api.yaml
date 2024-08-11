@@ -458,6 +458,7 @@ components:
       type: object
       allOf:
         -  $ref: '#/components/schemas/StageField'
+        -  $ref: '#/components/schemas/MilestoneSetField'
     StageField:
       type: object
       properties:
@@ -528,6 +529,25 @@ components:
         rollout_platforms:
           $ref: '#/components/schemas/FieldInfo'
         rollout_details:
+          $ref: '#/components/schemas/FieldInfo'
+    MilestoneSetField:
+      type: object
+      properties:
+        desktop_first:
+          $ref: '#/components/schemas/FieldInfo'
+        desktop_last:
+          $ref: '#/components/schemas/FieldInfo'
+        android_first:
+          $ref: '#/components/schemas/FieldInfo'
+        android_last:
+          $ref: '#/components/schemas/FieldInfo'
+        ios_first:
+          $ref: '#/components/schemas/FieldInfo'
+        ios_last:
+          $ref: '#/components/schemas/FieldInfo'
+        webview_first:
+          $ref: '#/components/schemas/FieldInfo'
+        webview_last:
           $ref: '#/components/schemas/FieldInfo'
     FieldInfo:
       type: object

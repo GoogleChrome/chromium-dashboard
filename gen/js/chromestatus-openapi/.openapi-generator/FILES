@@ -39,6 +39,7 @@ src/models/LinkPreviewOpenGraphAllOfInformation.ts
 src/models/LinkPreviewSpecs.ts
 src/models/LinkPreviewWebkitBug.ts
 src/models/MessageResponse.ts
+src/models/MilestoneSetField.ts
 src/models/OriginTrialsInfo.ts
 src/models/OutstandingReview.ts
 src/models/OwnersAndSubscribersOfComponent.ts
