@@ -6,6 +6,7 @@ from chromestatus_openapi.models.account_response import AccountResponse  # noqa
 from chromestatus_openapi.models.component_users_request import ComponentUsersRequest  # noqa: E501
 from chromestatus_openapi.models.components_users_response import ComponentsUsersResponse  # noqa: E501
 from chromestatus_openapi.models.create_account_request import CreateAccountRequest  # noqa: E501
+from chromestatus_openapi.models.create_origin_trial_request import CreateOriginTrialRequest  # noqa: E501
 from chromestatus_openapi.models.delete_account200_response import DeleteAccount200Response  # noqa: E501
 from chromestatus_openapi.models.dismiss_cue_request import DismissCueRequest  # noqa: E501
 from chromestatus_openapi.models.error_message import ErrorMessage  # noqa: E501
@@ -59,6 +60,25 @@ class TestDefaultController(BaseTestCase):
             method='POST',
             headers=headers,
             data=json.dumps(create_account_request),
+            content_type='application/json')
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_create_origin_trial(self):
+        """Test case for create_origin_trial
+
+        Create a new origin trial
+        """
+        create_origin_trial_request = {"trial_contacts":["trial_contacts","trial_contacts"],"registration_config":{"approval_type":"approval_type","approval_buganizer_component_id":6,"approval_buganizer_custom_field_id":1,"allow_public_suffix_subdomains":True,"approval_group_email":"approval_group_email","approval_criteria_url":"approval_criteria_url"},"trial":{"feedback_url":"feedback_url","start_milestone":"start_milestone","intent_to_experiment_url":"intent_to_experiment_url","chromestatus_url":"chromestatus_url","allow_third_party_origins":True,"origin_trial_feature_name":"origin_trial_feature_name","end_time":{"seconds":0},"description":"description","display_name":"display_name","documentation_url":"documentation_url","type":"type","end_milestone":"end_milestone"}}
+        headers = { 
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/origintrials/{feature_id}/{stage_id}/create'.format(feature_id=56, stage_id=56),
+            method='POST',
+            headers=headers,
+            data=json.dumps(create_origin_trial_request),
             content_type='application/json')
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))

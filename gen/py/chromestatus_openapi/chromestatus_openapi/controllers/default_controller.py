@@ -7,6 +7,7 @@ from chromestatus_openapi.models.account_response import AccountResponse  # noqa
 from chromestatus_openapi.models.component_users_request import ComponentUsersRequest  # noqa: E501
 from chromestatus_openapi.models.components_users_response import ComponentsUsersResponse  # noqa: E501
 from chromestatus_openapi.models.create_account_request import CreateAccountRequest  # noqa: E501
+from chromestatus_openapi.models.create_origin_trial_request import CreateOriginTrialRequest  # noqa: E501
 from chromestatus_openapi.models.delete_account200_response import DeleteAccount200Response  # noqa: E501
 from chromestatus_openapi.models.dismiss_cue_request import DismissCueRequest  # noqa: E501
 from chromestatus_openapi.models.error_message import ErrorMessage  # noqa: E501
@@ -54,6 +55,25 @@ def create_account(create_account_request=None):  # noqa: E501
     """
     if connexion.request.is_json:
         create_account_request = CreateAccountRequest.from_dict(connexion.request.get_json())  # noqa: E501
+    return 'do some magic!'
+
+
+def create_origin_trial(feature_id, stage_id, create_origin_trial_request=None):  # noqa: E501
+    """Create a new origin trial
+
+     # noqa: E501
+
+    :param feature_id: 
+    :type feature_id: int
+    :param stage_id: 
+    :type stage_id: int
+    :param create_origin_trial_request: 
+    :type create_origin_trial_request: dict | bytes
+
+    :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
+    """
+    if connexion.request.is_json:
+        create_origin_trial_request = CreateOriginTrialRequest.from_dict(connexion.request.get_json())  # noqa: E501
     return 'do some magic!'
 
 

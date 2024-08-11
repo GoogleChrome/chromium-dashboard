@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from chromestatus_openapi.models import (GetOriginTrialsResponse, ErrorMessage)
+from chromestatus_openapi.models import (GetOriginTrialsResponse, CreateOriginTrialRequest, ErrorMessage)
 
 import flask
 import json5
@@ -160,7 +160,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
       if gate.state not in (Vote.APPROVED, Vote.NA):
         self.abort(400, 'Unapproved gate found for trial stage.')
 
-    body = self.get_json_param_dict()
+    body = CreateOriginTrialRequest.from_dict(self.get_json_param_dict())
     validation_errors = self._validate_creation_args(body)
     if validation_errors:
       return {

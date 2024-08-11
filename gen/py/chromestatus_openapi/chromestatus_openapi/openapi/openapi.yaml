@@ -347,6 +347,58 @@ paths:
             from origin trials API
       summary: Get origin trials
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /origintrials/{feature_id}/{stage_id}/create:
+    post:
+      operationId: create_origin_trial
+      parameters:
+      - explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - explode: false
+        in: path
+        name: stage_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOriginTrialRequest'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Origin trial created successfully
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: "Invalid request. Possible reasons include an unapproved gate,\
+            \ a missing feature/stage, or validation errors."
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: The specified feature or stage was not found.
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: "Server error, such as issues with obtaining necessary Chromium\
+            \ files or origin trial data."
+      summary: Create a new origin trial
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /review-latency:
     get:
       operationId: list_reviews_with_latency
@@ -577,6 +629,135 @@ components:
           title: origin_trials
           type: array
       title: GetOriginTrialsResponse
+    CreateOriginTrialRequest:
+      example:
+        trial_contacts:
+        - trial_contacts
+        - trial_contacts
+        registration_config:
+          approval_type: approval_type
+          approval_buganizer_component_id: 6
+          approval_buganizer_custom_field_id: 1
+          allow_public_suffix_subdomains: true
+          approval_group_email: approval_group_email
+          approval_criteria_url: approval_criteria_url
+        trial:
+          feedback_url: feedback_url
+          start_milestone: start_milestone
+          intent_to_experiment_url: intent_to_experiment_url
+          chromestatus_url: chromestatus_url
+          allow_third_party_origins: true
+          origin_trial_feature_name: origin_trial_feature_name
+          end_time:
+            seconds: 0
+          description: description
+          display_name: display_name
+          documentation_url: documentation_url
+          type: type
+          end_milestone: end_milestone
+      properties:
+        trial:
+          $ref: '#/components/schemas/RequestTrial'
+        registration_config:
+          $ref: '#/components/schemas/InternalRegistrationConfig'
+        trial_contacts:
+          items:
+            type: string
+          title: trial_contacts
+          type: array
+      title: CreateOriginTrialRequest
+    RequestTrial:
+      example:
+        feedback_url: feedback_url
+        start_milestone: start_milestone
+        intent_to_experiment_url: intent_to_experiment_url
+        chromestatus_url: chromestatus_url
+        allow_third_party_origins: true
+        origin_trial_feature_name: origin_trial_feature_name
+        end_time:
+          seconds: 0
+        description: description
+        display_name: display_name
+        documentation_url: documentation_url
+        type: type
+        end_milestone: end_milestone
+      properties:
+        display_name:
+          title: display_name
+          type: string
+        start_milestone:
+          title: start_milestone
+          type: string
+        end_milestone:
+          title: end_milestone
+          type: string
+        end_time:
+          $ref: '#/components/schemas/RequestTrial_end_time'
+        description:
+          title: description
+          type: string
+        documentation_url:
+          title: documentation_url
+          type: string
+        feedback_url:
+          title: feedback_url
+          type: string
+        intent_to_experiment_url:
+          title: intent_to_experiment_url
+          type: string
+        chromestatus_url:
+          title: chromestatus_url
+          type: string
+        allow_third_party_origins:
+          title: allow_third_party_origins
+          type: boolean
+        type:
+          title: type
+          type: string
+        origin_trial_feature_name:
+          title: origin_trial_feature_name
+          type: string
+      required:
+      - allow_third_party_origins
+      - chromestatus_url
+      - description
+      - display_name
+      - documentation_url
+      - end_milestone
+      - end_time
+      - feedback_url
+      - intent_to_experiment_url
+      - start_milestone
+      - type
+      title: RequestTrial
+    InternalRegistrationConfig:
+      example:
+        approval_type: approval_type
+        approval_buganizer_component_id: 6
+        approval_buganizer_custom_field_id: 1
+        allow_public_suffix_subdomains: true
+        approval_group_email: approval_group_email
+        approval_criteria_url: approval_criteria_url
+      properties:
+        allow_public_suffix_subdomains:
+          title: allow_public_suffix_subdomains
+          type: boolean
+        approval_type:
+          title: approval_type
+          type: string
+        approval_buganizer_component_id:
+          title: approval_buganizer_component_id
+          type: integer
+        approval_buganizer_custom_field_id:
+          title: approval_buganizer_custom_field_id
+          type: integer
+        approval_criteria_url:
+          title: approval_criteria_url
+          type: string
+        approval_group_email:
+          title: approval_group_email
+          type: string
+      title: InternalRegistrationConfig
     GetIntentResponse:
       example:
         email_body: email_body
@@ -1072,6 +1253,15 @@ components:
           title: error
           type: string
       title: getDismissedCues_400_response
+      type: object
+    RequestTrial_end_time:
+      example:
+        seconds: 0
+      properties:
+        seconds:
+          title: seconds
+          type: integer
+      title: RequestTrial_end_time
       type: object
     LinkPreviewGithubIssue_allOf_information:
       properties:

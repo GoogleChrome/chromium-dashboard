@@ -76,6 +76,51 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorMessage'
+  /origintrials/{feature_id}/{stage_id}/create:
+    post:
+      summary: Create a new origin trial
+      operationId: createOriginTrial
+      parameters:
+        - in: path
+          name: feature_id
+          schema:
+            type: integer
+          required: true
+        - in: path
+          name: stage_id
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOriginTrialRequest'
+      responses:
+        '200':
+          description: Origin trial created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '400':
+          description: Invalid request. Possible reasons include an unapproved gate, a missing feature/stage, or validation errors.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: The specified feature or stage was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '500':
+          description: Server error, such as issues with obtaining necessary Chromium files or origin trial data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
   /componentsusers:
     get:
       summary: List all components and possible users
@@ -409,6 +454,71 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/OriginTrialsInfo'
+    CreateOriginTrialRequest:
+      properties:
+        trial:
+          $ref: '#/components/schemas/RequestTrial'
+        registration_config:
+          $ref: '#/components/schemas/InternalRegistrationConfig'
+        trial_contacts:
+          type: array
+          items:
+            type: string
+    RequestTrial:
+      properties:
+          display_name:
+            type: string
+          start_milestone:
+            type: string
+          end_milestone:
+            type: string
+          end_time:
+            type: object
+            properties:
+              seconds:
+                type: integer
+          description:
+            type: string
+          documentation_url:
+            type: string
+          feedback_url:
+            type: string
+          intent_to_experiment_url:
+            type: string
+          chromestatus_url:
+            type: string
+          allow_third_party_origins:
+            type: boolean
+          type:
+            type: string
+          origin_trial_feature_name:
+            type: string
+      required:
+        - display_name
+        - start_milestone
+        - end_milestone
+        - end_time
+        - description
+        - documentation_url
+        - feedback_url
+        - intent_to_experiment_url
+        - chromestatus_url
+        - allow_third_party_origins
+        - type
+    InternalRegistrationConfig:
+      properties:
+        allow_public_suffix_subdomains:
+          type: boolean
+        approval_type:
+          type: string
+        approval_buganizer_component_id:
+          type: integer
+        approval_buganizer_custom_field_id:
+          type: integer
+        approval_criteria_url:
+          type: string
+        approval_group_email:
+          type: string
     GetIntentResponse:
       properties:
         subject:
