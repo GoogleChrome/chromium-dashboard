@@ -630,134 +630,194 @@ components:
           type: array
       title: GetOriginTrialsResponse
     CreateOriginTrialRequest:
+      $ref: '#/components/schemas/StageField'
+    StageField:
       example:
-        trial_contacts:
-        - trial_contacts
-        - trial_contacts
-        registration_config:
-          approval_type: approval_type
-          approval_buganizer_component_id: 6
-          approval_buganizer_custom_field_id: 1
-          allow_public_suffix_subdomains: true
-          approval_group_email: approval_group_email
-          approval_criteria_url: approval_criteria_url
-        trial:
-          feedback_url: feedback_url
-          start_milestone: start_milestone
-          intent_to_experiment_url: intent_to_experiment_url
-          chromestatus_url: chromestatus_url
-          allow_third_party_origins: true
-          origin_trial_feature_name: origin_trial_feature_name
-          end_time:
-            seconds: 0
-          description: description
-          display_name: display_name
-          documentation_url: documentation_url
-          type: type
-          end_milestone: end_milestone
-      properties:
-        trial:
-          $ref: '#/components/schemas/RequestTrial'
-        registration_config:
-          $ref: '#/components/schemas/InternalRegistrationConfig'
-        trial_contacts:
-          items:
-            type: string
-          title: trial_contacts
-          type: array
-      title: CreateOriginTrialRequest
-    RequestTrial:
-      example:
-        feedback_url: feedback_url
-        start_milestone: start_milestone
-        intent_to_experiment_url: intent_to_experiment_url
-        chromestatus_url: chromestatus_url
-        allow_third_party_origins: true
-        origin_trial_feature_name: origin_trial_feature_name
-        end_time:
-          seconds: 0
-        description: description
-        display_name: display_name
-        documentation_url: documentation_url
-        type: type
-        end_milestone: end_milestone
-      properties:
+        finch_url:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        ot_display_name:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        rollout_platforms:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        ot_feedback_submission_url:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        announcement_url:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        ot_description:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        rollout_details:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        ot_approval_buganizer_component:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        ot_approval_criteria_url:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        ot_approval_group_email:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        experiment_extension_reason:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        rollout_milestone:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        ot_owner_email:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        ot_request_note:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        browser:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        ot_documentation_url:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        ot_emails:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        ot_require_approvals:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        ot_has_third_party_support:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        experiment_goals:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        ot_stage_id:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        ot_approval_buganizer_custom_field_id:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        intent_thread_url:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        ot_is_critical_trial:
+          form_field_name: form_field_name
+          value: FieldInfo_value
         display_name:
-          title: display_name
-          type: string
-        start_milestone:
-          title: start_milestone
-          type: string
-        end_milestone:
-          title: end_milestone
-          type: string
-        end_time:
-          $ref: '#/components/schemas/RequestTrial_end_time'
-        description:
-          title: description
-          type: string
-        documentation_url:
-          title: documentation_url
-          type: string
-        feedback_url:
-          title: feedback_url
-          type: string
-        intent_to_experiment_url:
-          title: intent_to_experiment_url
-          type: string
-        chromestatus_url:
-          title: chromestatus_url
-          type: string
-        allow_third_party_origins:
-          title: allow_third_party_origins
-          type: boolean
-        type:
-          title: type
-          type: string
-        origin_trial_feature_name:
-          title: origin_trial_feature_name
-          type: string
-      required:
-      - allow_third_party_origins
-      - chromestatus_url
-      - description
-      - display_name
-      - documentation_url
-      - end_milestone
-      - end_time
-      - feedback_url
-      - intent_to_experiment_url
-      - start_milestone
-      - type
-      title: RequestTrial
-    InternalRegistrationConfig:
-      example:
-        approval_type: approval_type
-        approval_buganizer_component_id: 6
-        approval_buganizer_custom_field_id: 1
-        allow_public_suffix_subdomains: true
-        approval_group_email: approval_group_email
-        approval_criteria_url: approval_criteria_url
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        ot_is_deprecation_trial:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        rollout_impact:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        origin_trial_feedback_url:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        experiment_risks:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        ot_action_requested:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        origin_trial_id:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        enterprise_policies:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        ot_chromium_trial_name:
+          form_field_name: form_field_name
+          value: FieldInfo_value
+        ot_webfeature_use_counter:
+          form_field_name: form_field_name
+          value: FieldInfo_value
       properties:
-        allow_public_suffix_subdomains:
-          title: allow_public_suffix_subdomains
-          type: boolean
-        approval_type:
-          title: approval_type
+        announcement_url:
+          $ref: '#/components/schemas/FieldInfo'
+        browser:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_description:
+          $ref: '#/components/schemas/FieldInfo'
+        display_name:
+          $ref: '#/components/schemas/FieldInfo'
+        enterprise_policies:
+          $ref: '#/components/schemas/FieldInfo'
+        finch_url:
+          $ref: '#/components/schemas/FieldInfo'
+        experiment_goals:
+          $ref: '#/components/schemas/FieldInfo'
+        experiment_risks:
+          $ref: '#/components/schemas/FieldInfo'
+        experiment_extension_reason:
+          $ref: '#/components/schemas/FieldInfo'
+        intent_thread_url:
+          $ref: '#/components/schemas/FieldInfo'
+        origin_trial_feedback_url:
+          $ref: '#/components/schemas/FieldInfo'
+        origin_trial_id:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_approval_buganizer_component:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_approval_buganizer_custom_field_id:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_approval_criteria_url:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_approval_group_email:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_chromium_trial_name:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_display_name:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_action_requested:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_documentation_url:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_emails:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_feedback_submission_url:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_has_third_party_support:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_is_critical_trial:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_is_deprecation_trial:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_owner_email:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_request_note:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_require_approvals:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_stage_id:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_webfeature_use_counter:
+          $ref: '#/components/schemas/FieldInfo'
+        rollout_impact:
+          $ref: '#/components/schemas/FieldInfo'
+        rollout_milestone:
+          $ref: '#/components/schemas/FieldInfo'
+        rollout_platforms:
+          $ref: '#/components/schemas/FieldInfo'
+        rollout_details:
+          $ref: '#/components/schemas/FieldInfo'
+      title: StageField
+      type: object
+    FieldInfo:
+      example:
+        form_field_name: form_field_name
+        value: FieldInfo_value
+      properties:
+        form_field_name:
+          title: form_field_name
           type: string
-        approval_buganizer_component_id:
-          title: approval_buganizer_component_id
-          type: integer
-        approval_buganizer_custom_field_id:
-          title: approval_buganizer_custom_field_id
-          type: integer
-        approval_criteria_url:
-          title: approval_criteria_url
-          type: string
-        approval_group_email:
-          title: approval_group_email
-          type: string
-      title: InternalRegistrationConfig
+        value:
+          $ref: '#/components/schemas/FieldInfo_value'
+      title: FieldInfo
+      type: object
     GetIntentResponse:
       example:
         email_body: email_body
@@ -1254,15 +1314,15 @@ components:
           type: string
       title: getDismissedCues_400_response
       type: object
-    RequestTrial_end_time:
-      example:
-        seconds: 0
-      properties:
-        seconds:
-          title: seconds
-          type: integer
-      title: RequestTrial_end_time
-      type: object
+    FieldInfo_value:
+      oneOf:
+      - type: string
+      - type: integer
+      - type: boolean
+      - items:
+          type: string
+        type: array
+      title: FieldInfo_value
     LinkPreviewGithubIssue_allOf_information:
       properties:
         url:

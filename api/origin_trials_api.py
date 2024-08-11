@@ -162,8 +162,6 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
 
     #TODO(markxiong0122): remove to_dict() when PR#4213 is merged
     body = CreateOriginTrialRequest.from_dict(self.get_json_param_dict()).to_dict()
-    print(self.get_json_param_dict())
-    print(body)
     validation_errors = self._validate_creation_args(body)
     if validation_errors:
       return {

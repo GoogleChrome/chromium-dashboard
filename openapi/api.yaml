@@ -455,70 +455,91 @@ components:
             items:
               $ref: '#/components/schemas/OriginTrialsInfo'
     CreateOriginTrialRequest:
+      $ref: '#/components/schemas/StageField'
+    StageField:
+      type: object
       properties:
-        trial:
-          $ref: '#/components/schemas/RequestTrial'
-        registration_config:
-          $ref: '#/components/schemas/InternalRegistrationConfig'
-        trial_contacts:
-          type: array
-          items:
-            type: string
-    RequestTrial:
+        announcement_url:
+          $ref: '#/components/schemas/FieldInfo'
+        browser:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_description:
+          $ref: '#/components/schemas/FieldInfo'
+        display_name:
+          $ref: '#/components/schemas/FieldInfo'
+        enterprise_policies:
+          $ref: '#/components/schemas/FieldInfo'
+        finch_url:
+          $ref: '#/components/schemas/FieldInfo'
+        experiment_goals:
+          $ref: '#/components/schemas/FieldInfo'
+        experiment_risks:
+          $ref: '#/components/schemas/FieldInfo'
+        experiment_extension_reason:
+          $ref: '#/components/schemas/FieldInfo'
+        intent_thread_url:
+          $ref: '#/components/schemas/FieldInfo'
+        origin_trial_feedback_url:
+          $ref: '#/components/schemas/FieldInfo'
+        origin_trial_id:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_approval_buganizer_component:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_approval_buganizer_custom_field_id:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_approval_criteria_url:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_approval_group_email:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_chromium_trial_name:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_display_name:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_action_requested:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_documentation_url:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_emails:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_feedback_submission_url:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_has_third_party_support:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_is_critical_trial:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_is_deprecation_trial:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_owner_email:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_request_note:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_require_approvals:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_stage_id:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_webfeature_use_counter:
+          $ref: '#/components/schemas/FieldInfo'
+        rollout_impact:
+          $ref: '#/components/schemas/FieldInfo'
+        rollout_milestone:
+          $ref: '#/components/schemas/FieldInfo'
+        rollout_platforms:
+          $ref: '#/components/schemas/FieldInfo'
+        rollout_details:
+          $ref: '#/components/schemas/FieldInfo'
+    FieldInfo:
+      type: object
       properties:
-          display_name:
-            type: string
-          start_milestone:
-            type: string
-          end_milestone:
-            type: string
-          end_time:
-            type: object
-            properties:
-              seconds:
-                type: integer
-          description:
-            type: string
-          documentation_url:
-            type: string
-          feedback_url:
-            type: string
-          intent_to_experiment_url:
-            type: string
-          chromestatus_url:
-            type: string
-          allow_third_party_origins:
-            type: boolean
-          type:
-            type: string
-          origin_trial_feature_name:
-            type: string
-      required:
-        - display_name
-        - start_milestone
-        - end_milestone
-        - end_time
-        - description
-        - documentation_url
-        - feedback_url
-        - intent_to_experiment_url
-        - chromestatus_url
-        - allow_third_party_origins
-        - type
-    InternalRegistrationConfig:
-      properties:
-        allow_public_suffix_subdomains:
-          type: boolean
-        approval_type:
+        form_field_name:
           type: string
-        approval_buganizer_component_id:
-          type: integer
-        approval_buganizer_custom_field_id:
-          type: integer
-        approval_criteria_url:
-          type: string
-        approval_group_email:
-          type: string
+        value:
+          oneOf:
+            - type: string
+            - type: integer
+            - type: boolean
+            - type: array
+              items:
+                type: string
     GetIntentResponse:
       properties:
         subject:

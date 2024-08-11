@@ -19,7 +19,6 @@ import type {
   ComponentUsersRequest,
   ComponentsUsersResponse,
   CreateAccountRequest,
-  CreateOriginTrialRequest,
   DeleteAccount200Response,
   DismissCueRequest,
   ErrorMessage,
@@ -32,6 +31,7 @@ import type {
   PostIntentRequest,
   ReviewLatency,
   SpecMentor,
+  StageField,
   SuccessMessage,
 } from '../models/index';
 import {
@@ -43,8 +43,6 @@ import {
     ComponentsUsersResponseToJSON,
     CreateAccountRequestFromJSON,
     CreateAccountRequestToJSON,
-    CreateOriginTrialRequestFromJSON,
-    CreateOriginTrialRequestToJSON,
     DeleteAccount200ResponseFromJSON,
     DeleteAccount200ResponseToJSON,
     DismissCueRequestFromJSON,
@@ -69,6 +67,8 @@ import {
     ReviewLatencyToJSON,
     SpecMentorFromJSON,
     SpecMentorToJSON,
+    StageFieldFromJSON,
+    StageFieldToJSON,
     SuccessMessageFromJSON,
     SuccessMessageToJSON,
 } from '../models/index';
@@ -83,10 +83,10 @@ export interface CreateAccountOperationRequest {
     createAccountRequest?: CreateAccountRequest;
 }
 
-export interface CreateOriginTrialOperationRequest {
+export interface CreateOriginTrialRequest {
     featureId: number;
     stageId: number;
-    createOriginTrialRequest?: CreateOriginTrialRequest;
+    body?: StageField;
 }
 
 export interface DeleteAccountRequest {
@@ -173,17 +173,17 @@ export interface DefaultApiInterface {
      * @summary Create a new origin trial
      * @param {number} featureId 
      * @param {number} stageId 
-     * @param {CreateOriginTrialRequest} [createOriginTrialRequest] 
+     * @param {StageField} [body] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApiInterface
      */
-    createOriginTrialRaw(requestParameters: CreateOriginTrialOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+    createOriginTrialRaw(requestParameters: CreateOriginTrialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
 
     /**
      * Create a new origin trial
      */
-    createOriginTrial(requestParameters: CreateOriginTrialOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
+    createOriginTrial(requestParameters: CreateOriginTrialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
 
     /**
      * 
@@ -454,7 +454,7 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     /**
      * Create a new origin trial
      */
-    async createOriginTrialRaw(requestParameters: CreateOriginTrialOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+    async createOriginTrialRaw(requestParameters: CreateOriginTrialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
         if (requestParameters['featureId'] == null) {
             throw new runtime.RequiredError(
                 'featureId',
@@ -480,7 +480,7 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: CreateOriginTrialRequestToJSON(requestParameters['createOriginTrialRequest']),
+            body: requestParameters['body'] as any,
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
@@ -489,7 +489,7 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     /**
      * Create a new origin trial
      */
-    async createOriginTrial(requestParameters: CreateOriginTrialOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+    async createOriginTrial(requestParameters: CreateOriginTrialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
         const response = await this.createOriginTrialRaw(requestParameters, initOverrides);
         return await response.value();
     }

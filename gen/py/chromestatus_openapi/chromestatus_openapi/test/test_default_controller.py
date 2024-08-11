@@ -6,7 +6,6 @@ from chromestatus_openapi.models.account_response import AccountResponse  # noqa
 from chromestatus_openapi.models.component_users_request import ComponentUsersRequest  # noqa: E501
 from chromestatus_openapi.models.components_users_response import ComponentsUsersResponse  # noqa: E501
 from chromestatus_openapi.models.create_account_request import CreateAccountRequest  # noqa: E501
-from chromestatus_openapi.models.create_origin_trial_request import CreateOriginTrialRequest  # noqa: E501
 from chromestatus_openapi.models.delete_account200_response import DeleteAccount200Response  # noqa: E501
 from chromestatus_openapi.models.dismiss_cue_request import DismissCueRequest  # noqa: E501
 from chromestatus_openapi.models.error_message import ErrorMessage  # noqa: E501
@@ -19,6 +18,7 @@ from chromestatus_openapi.models.message_response import MessageResponse  # noqa
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
+from chromestatus_openapi.models.stage_field import StageField  # noqa: E501
 from chromestatus_openapi.models.success_message import SuccessMessage  # noqa: E501
 from chromestatus_openapi.test import BaseTestCase
 
@@ -69,7 +69,7 @@ class TestDefaultController(BaseTestCase):
 
         Create a new origin trial
         """
-        create_origin_trial_request = {"trial_contacts":["trial_contacts","trial_contacts"],"registration_config":{"approval_type":"approval_type","approval_buganizer_component_id":6,"approval_buganizer_custom_field_id":1,"allow_public_suffix_subdomains":True,"approval_group_email":"approval_group_email","approval_criteria_url":"approval_criteria_url"},"trial":{"feedback_url":"feedback_url","start_milestone":"start_milestone","intent_to_experiment_url":"intent_to_experiment_url","chromestatus_url":"chromestatus_url","allow_third_party_origins":True,"origin_trial_feature_name":"origin_trial_feature_name","end_time":{"seconds":0},"description":"description","display_name":"display_name","documentation_url":"documentation_url","type":"type","end_milestone":"end_milestone"}}
+        body = {"finch_url":{"form_field_name":"form_field_name","value":"FieldInfo_value"},"ot_display_name":{"form_field_name":"form_field_name","value":"FieldInfo_value"},"rollout_platforms":{"form_field_name":"form_field_name","value":"FieldInfo_value"},"ot_feedback_submission_url":{"form_field_name":"form_field_name","value":"FieldInfo_value"},"announcement_url":{"form_field_name":"form_field_name","value":"FieldInfo_value"},"ot_description":{"form_field_name":"form_field_name","value":"FieldInfo_value"},"rollout_details":{"form_field_name":"form_field_name","value":"FieldInfo_value"},"ot_approval_buganizer_component":{"form_field_name":"form_field_name","value":"FieldInfo_value"},"ot_approval_criteria_url":{"form_field_name":"form_field_name","value":"FieldInfo_value"},"ot_approval_group_email":{"form_field_name":"form_field_name","value":"FieldInfo_value"},"experiment_extension_reason":{"form_field_name":"form_field_name","value":"FieldInfo_value"},"rollout_milestone":{"form_field_name":"form_field_name","value":"FieldInfo_value"},"ot_owner_email":{"form_field_name":"form_field_name","value":"FieldInfo_value"},"ot_request_note":{"form_field_name":"form_field_name","value":"FieldInfo_value"},"browser":{"form_field_name":"form_field_name","value":"FieldInfo_value"},"ot_documentation_url":{"form_field_name":"form_field_name","value":"FieldInfo_value"},"ot_emails":{"form_field_name":"form_field_name","value":"FieldInfo_value"},"ot_require_approvals":{"form_field_name":"form_field_name","value":"FieldInfo_value"},"ot_has_third_party_support":{"form_field_name":"form_field_name","value":"FieldInfo_value"},"experiment_goals":{"form_field_name":"form_field_name","value":"FieldInfo_value"},"ot_stage_id":{"form_field_name":"form_field_name","value":"FieldInfo_value"},"ot_approval_buganizer_custom_field_id":{"form_field_name":"form_field_name","value":"FieldInfo_value"},"intent_thread_url":{"form_field_name":"form_field_name","value":"FieldInfo_value"},"ot_is_critical_trial":{"form_field_name":"form_field_name","value":"FieldInfo_value"},"display_name":{"form_field_name":"form_field_name","value":"FieldInfo_value"},"ot_is_deprecation_trial":{"form_field_name":"form_field_name","value":"FieldInfo_value"},"rollout_impact":{"form_field_name":"form_field_name","value":"FieldInfo_value"},"origin_trial_feedback_url":{"form_field_name":"form_field_name","value":"FieldInfo_value"},"experiment_risks":{"form_field_name":"form_field_name","value":"FieldInfo_value"},"ot_action_requested":{"form_field_name":"form_field_name","value":"FieldInfo_value"},"origin_trial_id":{"form_field_name":"form_field_name","value":"FieldInfo_value"},"enterprise_policies":{"form_field_name":"form_field_name","value":"FieldInfo_value"},"ot_chromium_trial_name":{"form_field_name":"form_field_name","value":"FieldInfo_value"},"ot_webfeature_use_counter":{"form_field_name":"form_field_name","value":"FieldInfo_value"}}
         headers = { 
             'Accept': 'application/json',
             'Content-Type': 'application/json',
@@ -78,7 +78,7 @@ class TestDefaultController(BaseTestCase):
             '/api/v0/origintrials/{feature_id}/{stage_id}/create'.format(feature_id=56, stage_id=56),
             method='POST',
             headers=headers,
-            data=json.dumps(create_origin_trial_request),
+            data=json.dumps(body),
             content_type='application/json')
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
