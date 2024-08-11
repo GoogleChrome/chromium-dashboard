@@ -328,7 +328,7 @@ paths:
           description: Feature or stage not found based on given ID.
       summary: Submit an intent to be posted on blink-dev
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
-  /origintrails:
+  /origintrials:
     get:
       operationId: get_origin_trials
       responses:

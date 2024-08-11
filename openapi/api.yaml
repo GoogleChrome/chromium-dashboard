@@ -59,7 +59,7 @@ paths:
           description: Bad request
         '404':
           description: Account not found
-  /origintrails:
+  /origintrials:
     get:
       summary: Get origin trials
       operationId: getOriginTrials

@@ -136,7 +136,7 @@ class TestDefaultController(BaseTestCase):
             'Accept': 'application/json',
         }
         response = self.client.open(
-            '/api/v0/origintrails',
+            '/api/v0/origintrials',
             method='GET',
             headers=headers)
         self.assert200(response,

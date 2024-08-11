@@ -576,7 +576,7 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/origintrails`,
+            path: `/origintrials`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
