@@ -5,6 +5,7 @@ export * from './ComponentUsersRequest';
 export * from './ComponentsUser';
 export * from './ComponentsUsersResponse';
 export * from './CreateAccountRequest';
+export * from './CreateOriginTrialRequest';
 export * from './DeleteAccount200Response';
 export * from './DismissCueRequest';
 export * from './ErrorMessage';

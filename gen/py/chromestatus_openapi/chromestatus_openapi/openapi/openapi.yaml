@@ -630,8 +630,8 @@ components:
           type: array
       title: GetOriginTrialsResponse
     CreateOriginTrialRequest:
-      $ref: '#/components/schemas/StageField'
-    StageField:
+      allOf:
+      - $ref: '#/components/schemas/StageField'
       example:
         finch_url:
           form_field_name: form_field_name
@@ -735,6 +735,9 @@ components:
         ot_webfeature_use_counter:
           form_field_name: form_field_name
           value: FieldInfo_value
+      title: CreateOriginTrialRequest
+      type: object
+    StageField:
       properties:
         announcement_url:
           $ref: '#/components/schemas/FieldInfo'

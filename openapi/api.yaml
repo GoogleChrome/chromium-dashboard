@@ -455,7 +455,9 @@ components:
             items:
               $ref: '#/components/schemas/OriginTrialsInfo'
     CreateOriginTrialRequest:
-      $ref: '#/components/schemas/StageField'
+      type: object
+      allOf:
+        -  $ref: '#/components/schemas/StageField'
     StageField:
       type: object
       properties:

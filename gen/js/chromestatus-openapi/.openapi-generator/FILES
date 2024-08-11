@@ -11,6 +11,7 @@ src/models/ComponentUsersRequest.ts
 src/models/ComponentsUser.ts
 src/models/ComponentsUsersResponse.ts
 src/models/CreateAccountRequest.ts
+src/models/CreateOriginTrialRequest.ts
 src/models/DeleteAccount200Response.ts
 src/models/DismissCueRequest.ts
 src/models/ErrorMessage.ts
