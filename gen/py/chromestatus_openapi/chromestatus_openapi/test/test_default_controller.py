@@ -117,6 +117,21 @@ class TestDefaultController(BaseTestCase):
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
+    def test_extend_origin_trial(self):
+        """Test case for extend_origin_trial
+
+        Extend an existing origin trial
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/origintrials/{feature_id}/{extension_stage_id}/extend'.format(feature_id=56, extension_stage_id=56),
+            method='PATCH',
+            headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
     def test_get_dismissed_cues(self):
         """Test case for get_dismissed_cues
 

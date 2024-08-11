@@ -12,23 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from chromestatus_openapi.models import (GetOriginTrialsResponse, CreateOriginTrialRequest, ErrorMessage)
+import logging
+from base64 import b64decode
 
 import flask
 import json5
-import logging
 import requests
 import validators
-from base64 import b64decode
+from chromestatus_openapi.models import (
+  CreateOriginTrialRequest,
+  GetOriginTrialsResponse,
+  SuccessMessage,
+)
 
-from framework import basehandlers
-from framework import origin_trials_client
+from framework import basehandlers, origin_trials_client, permissions
 from internals import notifier_helpers
-from framework import permissions
 from internals.core_enums import OT_READY_FOR_CREATION
 from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Gate, Vote
-
 
 WEBFEATURE_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom?format=TEXT'
 ENABLED_FEATURES_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/runtime_enabled_features.json5?format=TEXT'
@@ -172,7 +173,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
     # Flag OT stage as ready to be created.
     ot_stage.ot_setup_status = OT_READY_FOR_CREATION
     ot_stage.put()
-    return {'message': 'Origin trial creation request submitted.'}
+    return SuccessMessage(message='Origin trial request submitted successfully.').to_dict()
 
   def _validate_extension_args(
         self, feature_id: int, ot_stage: Stage, extension_stage: Stage) -> None:
@@ -246,4 +247,4 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
     extension_stage.put()
 
     notifier_helpers.send_trial_extended_notification(ot_stage, extension_stage)
-    return {'message': 'Origin trial extended successfully.'}
+    return SuccessMessage(message='Origin trial extended successfully.').to_dict()

@@ -347,6 +347,53 @@ paths:
             from origin trials API
       summary: Get origin trials
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /origintrials/{feature_id}/{extension_stage_id}/extend:
+    patch:
+      operationId: extend_origin_trial
+      parameters:
+      - explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - explode: false
+        in: path
+        name: extension_stage_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Origin trial extended successfully
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: "Invalid request. Possible reasons include missing or incorrect\
+            \ feature/stage, or validation errors."
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: The specified feature or stage was not found.
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: "Server error, such as issues with the origin trials API or\
+            \ Chromium schedule."
+      summary: Extend an existing origin trial
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /origintrials/{feature_id}/{stage_id}/create:
     post:
       operationId: create_origin_trial

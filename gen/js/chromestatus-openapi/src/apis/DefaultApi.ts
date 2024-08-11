@@ -97,6 +97,11 @@ export interface DismissCueOperationRequest {
     dismissCueRequest: DismissCueRequest;
 }
 
+export interface ExtendOriginTrialRequest {
+    featureId: number;
+    extensionStageId: number;
+}
+
 export interface GetIntentBodyRequest {
     featureId: number;
     stageId: number;
@@ -214,6 +219,22 @@ export interface DefaultApiInterface {
      * Dismiss a cue card for the signed-in user
      */
     dismissCue(requestParameters: DismissCueOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
+
+    /**
+     * 
+     * @summary Extend an existing origin trial
+     * @param {number} featureId 
+     * @param {number} extensionStageId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    extendOriginTrialRaw(requestParameters: ExtendOriginTrialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+
+    /**
+     * Extend an existing origin trial
+     */
+    extendOriginTrial(requestParameters: ExtendOriginTrialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
 
     /**
      * 
@@ -560,6 +581,46 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async dismissCue(requestParameters: DismissCueOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
         const response = await this.dismissCueRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Extend an existing origin trial
+     */
+    async extendOriginTrialRaw(requestParameters: ExtendOriginTrialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling extendOriginTrial().'
+            );
+        }
+
+        if (requestParameters['extensionStageId'] == null) {
+            throw new runtime.RequiredError(
+                'extensionStageId',
+                'Required parameter "extensionStageId" was null or undefined when calling extendOriginTrial().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/origintrials/{feature_id}/{extension_stage_id}/extend`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))).replace(`{${"extension_stage_id"}}`, encodeURIComponent(String(requestParameters['extensionStageId']))),
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Extend an existing origin trial
+     */
+    async extendOriginTrial(requestParameters: ExtendOriginTrialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+        const response = await this.extendOriginTrialRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

@@ -121,6 +121,46 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorMessage'
+  /origintrials/{feature_id}/{extension_stage_id}/extend:
+    patch:
+      summary: Extend an existing origin trial
+      operationId: extendOriginTrial
+      parameters:
+        - in: path
+          name: feature_id
+          schema:
+            type: integer
+          required: true
+        - in: path
+          name: extension_stage_id
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: Origin trial extended successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '400':
+          description: Invalid request. Possible reasons include missing or incorrect feature/stage, or validation errors.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: The specified feature or stage was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '500':
+          description: Server error, such as issues with the origin trials API or Chromium schedule.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
   /componentsusers:
     get:
       summary: List all components and possible users

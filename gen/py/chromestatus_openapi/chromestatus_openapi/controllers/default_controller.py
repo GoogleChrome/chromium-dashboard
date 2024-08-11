@@ -105,6 +105,21 @@ def dismiss_cue(dismiss_cue_request):  # noqa: E501
     return 'do some magic!'
 
 
+def extend_origin_trial(feature_id, extension_stage_id):  # noqa: E501
+    """Extend an existing origin trial
+
+     # noqa: E501
+
+    :param feature_id: 
+    :type feature_id: int
+    :param extension_stage_id: 
+    :type extension_stage_id: int
+
+    :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
 def get_dismissed_cues():  # noqa: E501
     """Get dismissed cues for the current user
 
