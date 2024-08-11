@@ -9,10 +9,12 @@ from chromestatus_openapi.models.components_users_response import ComponentsUser
 from chromestatus_openapi.models.create_account_request import CreateAccountRequest  # noqa: E501
 from chromestatus_openapi.models.delete_account200_response import DeleteAccount200Response  # noqa: E501
 from chromestatus_openapi.models.dismiss_cue_request import DismissCueRequest  # noqa: E501
+from chromestatus_openapi.models.error_message import ErrorMessage  # noqa: E501
 from chromestatus_openapi.models.external_reviews_response import ExternalReviewsResponse  # noqa: E501
 from chromestatus_openapi.models.feature_latency import FeatureLatency  # noqa: E501
 from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismissedCues400Response  # noqa: E501
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
+from chromestatus_openapi.models.get_origin_trials_response import GetOriginTrialsResponse  # noqa: E501
 from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
@@ -107,6 +109,17 @@ def get_intent_body(feature_id, stage_id, gate_id):  # noqa: E501
     :type gate_id: int
 
     :rtype: Union[GetIntentResponse, Tuple[GetIntentResponse, int], Tuple[GetIntentResponse, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
+def get_origin_trials():  # noqa: E501
+    """Get origin trials
+
+     # noqa: E501
+
+
+    :rtype: Union[GetOriginTrialsResponse, Tuple[GetOriginTrialsResponse, int], Tuple[GetOriginTrialsResponse, int, Dict[str, str]]
     """
     return 'do some magic!'
 

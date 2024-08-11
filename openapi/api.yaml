@@ -59,6 +59,23 @@ paths:
           description: Bad request
         '404':
           description: Account not found
+  /origintrails:
+    get:
+      summary: Get origin trials
+      operationId: getOriginTrials
+      responses:
+        '200':
+          description: List of all origin trials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetOriginTrialsResponse'
+        '500':
+          description: Error obtaining origin trial data from API or Malformed response from origin trials API
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
   /componentsusers:
     get:
       summary: List all components and possible users
@@ -347,6 +364,51 @@ components:
           type: string
         id:
           type: integer
+    OriginTrialsInfo:
+      type: object
+      properties:
+        id:
+          type: string
+        display_name:
+          type: string
+        description:
+          type: string
+        origin_trial_feature_name:
+          type: string
+        enabled:
+          type: boolean
+        status:
+          type: string
+        chromestatus_url:
+          type: string
+        start_milestone:
+          type: string
+        end_milestone:
+          type: string
+        original_end_milestone:
+          type: string
+        end_time:
+          type: string
+        documentation_url:
+          type: string
+        feedback_url:
+          type: string
+        intent_to_experiment_url:
+          type: string
+        trial_extensions:
+          type: array
+          items:
+            type: object
+        type:
+          type: string
+        allow_third_party_origins:
+          type: boolean
+    GetOriginTrialsResponse:
+      properties:
+        origin_trials:
+            type: array
+            items:
+              $ref: '#/components/schemas/OriginTrialsInfo'
     GetIntentResponse:
       properties:
         subject:

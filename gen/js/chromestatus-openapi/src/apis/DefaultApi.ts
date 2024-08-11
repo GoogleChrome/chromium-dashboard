@@ -21,10 +21,12 @@ import type {
   CreateAccountRequest,
   DeleteAccount200Response,
   DismissCueRequest,
+  ErrorMessage,
   ExternalReviewsResponse,
   FeatureLatency,
   GetDismissedCues400Response,
   GetIntentResponse,
+  GetOriginTrialsResponse,
   MessageResponse,
   PostIntentRequest,
   ReviewLatency,
@@ -44,6 +46,8 @@ import {
     DeleteAccount200ResponseToJSON,
     DismissCueRequestFromJSON,
     DismissCueRequestToJSON,
+    ErrorMessageFromJSON,
+    ErrorMessageToJSON,
     ExternalReviewsResponseFromJSON,
     ExternalReviewsResponseToJSON,
     FeatureLatencyFromJSON,
@@ -52,6 +56,8 @@ import {
     GetDismissedCues400ResponseToJSON,
     GetIntentResponseFromJSON,
     GetIntentResponseToJSON,
+    GetOriginTrialsResponseFromJSON,
+    GetOriginTrialsResponseToJSON,
     MessageResponseFromJSON,
     MessageResponseToJSON,
     PostIntentRequestFromJSON,
@@ -213,6 +219,20 @@ export interface DefaultApiInterface {
      * Get the HTML body of an intent draft
      */
     getIntentBody(requestParameters: GetIntentBodyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetIntentResponse>;
+
+    /**
+     * 
+     * @summary Get origin trials
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getOriginTrialsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetOriginTrialsResponse>>;
+
+    /**
+     * Get origin trials
+     */
+    getOriginTrials(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetOriginTrialsResponse>;
 
     /**
      * 
@@ -544,6 +564,32 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async getIntentBody(requestParameters: GetIntentBodyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetIntentResponse> {
         const response = await this.getIntentBodyRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get origin trials
+     */
+    async getOriginTrialsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetOriginTrialsResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/origintrails`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GetOriginTrialsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get origin trials
+     */
+    async getOriginTrials(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetOriginTrialsResponse> {
+        const response = await this.getOriginTrialsRaw(initOverrides);
         return await response.value();
     }
 

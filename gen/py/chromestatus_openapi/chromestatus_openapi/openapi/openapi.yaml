@@ -328,6 +328,25 @@ paths:
           description: Feature or stage not found based on given ID.
       summary: Submit an intent to be posted on blink-dev
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /origintrails:
+    get:
+      operationId: get_origin_trials
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetOriginTrialsResponse'
+          description: List of all origin trials
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Error obtaining origin trial data from API or Malformed response
+            from origin trials API
+      summary: Get origin trials
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /review-latency:
     get:
       operationId: list_reviews_with_latency
@@ -433,6 +452,131 @@ components:
           type: integer
       title: AccountResponse
       type: object
+    OriginTrialsInfo:
+      example:
+        original_end_milestone: original_end_milestone
+        start_milestone: start_milestone
+        intent_to_experiment_url: intent_to_experiment_url
+        allow_third_party_origins: true
+        end_time: end_time
+        description: description
+        display_name: display_name
+        documentation_url: documentation_url
+        type: type
+        end_milestone: end_milestone
+        enabled: true
+        feedback_url: feedback_url
+        chromestatus_url: chromestatus_url
+        origin_trial_feature_name: origin_trial_feature_name
+        id: id
+        trial_extensions:
+        - "{}"
+        - "{}"
+        status: status
+      properties:
+        id:
+          title: id
+          type: string
+        display_name:
+          title: display_name
+          type: string
+        description:
+          title: description
+          type: string
+        origin_trial_feature_name:
+          title: origin_trial_feature_name
+          type: string
+        enabled:
+          title: enabled
+          type: boolean
+        status:
+          title: status
+          type: string
+        chromestatus_url:
+          title: chromestatus_url
+          type: string
+        start_milestone:
+          title: start_milestone
+          type: string
+        end_milestone:
+          title: end_milestone
+          type: string
+        original_end_milestone:
+          title: original_end_milestone
+          type: string
+        end_time:
+          title: end_time
+          type: string
+        documentation_url:
+          title: documentation_url
+          type: string
+        feedback_url:
+          title: feedback_url
+          type: string
+        intent_to_experiment_url:
+          title: intent_to_experiment_url
+          type: string
+        trial_extensions:
+          items:
+            type: object
+          title: trial_extensions
+          type: array
+        type:
+          title: type
+          type: string
+        allow_third_party_origins:
+          title: allow_third_party_origins
+          type: boolean
+      title: OriginTrialsInfo
+      type: object
+    GetOriginTrialsResponse:
+      example:
+        origin_trials:
+        - original_end_milestone: original_end_milestone
+          start_milestone: start_milestone
+          intent_to_experiment_url: intent_to_experiment_url
+          allow_third_party_origins: true
+          end_time: end_time
+          description: description
+          display_name: display_name
+          documentation_url: documentation_url
+          type: type
+          end_milestone: end_milestone
+          enabled: true
+          feedback_url: feedback_url
+          chromestatus_url: chromestatus_url
+          origin_trial_feature_name: origin_trial_feature_name
+          id: id
+          trial_extensions:
+          - "{}"
+          - "{}"
+          status: status
+        - original_end_milestone: original_end_milestone
+          start_milestone: start_milestone
+          intent_to_experiment_url: intent_to_experiment_url
+          allow_third_party_origins: true
+          end_time: end_time
+          description: description
+          display_name: display_name
+          documentation_url: documentation_url
+          type: type
+          end_milestone: end_milestone
+          enabled: true
+          feedback_url: feedback_url
+          chromestatus_url: chromestatus_url
+          origin_trial_feature_name: origin_trial_feature_name
+          id: id
+          trial_extensions:
+          - "{}"
+          - "{}"
+          status: status
+      properties:
+        origin_trials:
+          items:
+            $ref: '#/components/schemas/OriginTrialsInfo'
+          title: origin_trials
+          type: array
+      title: GetOriginTrialsResponse
     GetIntentResponse:
       example:
         email_body: email_body
@@ -877,16 +1021,6 @@ components:
     LinkPreviewSpecs:
       allOf:
       - $ref: '#/components/schemas/LinkPreviewOpenGraph'
-    deleteAccount_200_response:
-      example:
-        message: Done
-      properties:
-        message:
-          example: Done
-          title: message
-          type: string
-      title: deleteAccount_200_response
-      type: object
     DismissCueRequest:
       example:
         cue: progress-checkmarks
@@ -911,10 +1045,24 @@ components:
       title: SuccessMessage
       type: object
     ErrorMessage:
+      example:
+        error: Error
       properties:
         error:
           example: Error
+          title: error
           type: string
+      title: ErrorMessage
+      type: object
+    deleteAccount_200_response:
+      example:
+        message: Done
+      properties:
+        message:
+          example: Done
+          title: message
+          type: string
+      title: deleteAccount_200_response
       type: object
     getDismissedCues_400_response:
       example:

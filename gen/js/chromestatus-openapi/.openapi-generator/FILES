@@ -20,6 +20,7 @@ src/models/FeatureLink.ts
 src/models/GateLatency.ts
 src/models/GetDismissedCues400Response.ts
 src/models/GetIntentResponse.ts
+src/models/GetOriginTrialsResponse.ts
 src/models/LinkPreview.ts
 src/models/LinkPreviewBase.ts
 src/models/LinkPreviewGithubIssue.ts
@@ -35,6 +36,7 @@ src/models/LinkPreviewOpenGraphAllOfInformation.ts
 src/models/LinkPreviewSpecs.ts
 src/models/LinkPreviewWebkitBug.ts
 src/models/MessageResponse.ts
+src/models/OriginTrialsInfo.ts
 src/models/OutstandingReview.ts
 src/models/OwnersAndSubscribersOfComponent.ts
 src/models/PostIntentRequest.ts
