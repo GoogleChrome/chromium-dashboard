@@ -26,6 +26,7 @@ import type {
   GetDismissedCues400Response,
   GetIntentResponse,
   MessageResponse,
+  PermissionsResponse,
   PostIntentRequest,
   ReviewLatency,
   SpecMentor,
@@ -54,6 +55,8 @@ import {
     GetIntentResponseToJSON,
     MessageResponseFromJSON,
     MessageResponseToJSON,
+    PermissionsResponseFromJSON,
+    PermissionsResponseToJSON,
     PostIntentRequestFromJSON,
     PostIntentRequestToJSON,
     ReviewLatencyFromJSON,
@@ -86,6 +89,10 @@ export interface GetIntentBodyRequest {
     featureId: number;
     stageId: number;
     gateId: number;
+}
+
+export interface GetUserPermissionsRequest {
+    returnPairedUser?: boolean;
 }
 
 export interface ListExternalReviewsRequest {
@@ -213,6 +220,21 @@ export interface DefaultApiInterface {
      * Get the HTML body of an intent draft
      */
     getIntentBody(requestParameters: GetIntentBodyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetIntentResponse>;
+
+    /**
+     * 
+     * @summary Get the permissions and email of the user
+     * @param {boolean} [returnPairedUser] If true, return the permissions of the paired user.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getUserPermissionsRaw(requestParameters: GetUserPermissionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PermissionsResponse>>;
+
+    /**
+     * Get the permissions and email of the user
+     */
+    getUserPermissions(requestParameters: GetUserPermissionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PermissionsResponse>;
 
     /**
      * 
@@ -544,6 +566,36 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async getIntentBody(requestParameters: GetIntentBodyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetIntentResponse> {
         const response = await this.getIntentBodyRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get the permissions and email of the user
+     */
+    async getUserPermissionsRaw(requestParameters: GetUserPermissionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PermissionsResponse>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['returnPairedUser'] != null) {
+            queryParameters['returnPairedUser'] = requestParameters['returnPairedUser'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/currentuser/permissions`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PermissionsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get the permissions and email of the user
+     */
+    async getUserPermissions(requestParameters: GetUserPermissionsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PermissionsResponse> {
+        const response = await this.getUserPermissionsRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

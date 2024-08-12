@@ -43,10 +43,12 @@ chromestatus_openapi/models/link_preview_webkit_bug.py
 chromestatus_openapi/models/message_response.py
 chromestatus_openapi/models/outstanding_review.py
 chromestatus_openapi/models/owners_and_subscribers_of_component.py
+chromestatus_openapi/models/permissions_response.py
 chromestatus_openapi/models/post_intent_request.py
 chromestatus_openapi/models/review_latency.py
 chromestatus_openapi/models/spec_mentor.py
 chromestatus_openapi/models/success_message.py
+chromestatus_openapi/models/user_permissions.py
 chromestatus_openapi/openapi/openapi.yaml
 chromestatus_openapi/test/__init__.py
 chromestatus_openapi/test/test_default_controller.py
