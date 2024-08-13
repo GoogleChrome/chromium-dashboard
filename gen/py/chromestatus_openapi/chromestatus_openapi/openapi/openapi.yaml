@@ -172,6 +172,27 @@ paths:
           description: Cue dismissed successfully
       summary: Dismiss a cue card for the signed-in user
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /currentuser/permissions:
+    get:
+      operationId: get_user_permissions
+      parameters:
+      - description: "If true, return the permissions of the paired user."
+        explode: true
+        in: query
+        name: returnPairedUser
+        required: false
+        schema:
+          type: boolean
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionsResponse'
+          description: The permissions and email of the user.
+      summary: Get the permissions and email of the user
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /external_reviews/{review_group}:
     get:
       operationId: list_external_reviews
@@ -877,15 +898,77 @@ components:
     LinkPreviewSpecs:
       allOf:
       - $ref: '#/components/schemas/LinkPreviewOpenGraph'
-    deleteAccount_200_response:
+    PermissionsResponse:
       example:
-        message: Done
+        user:
+          is_admin: true
+          can_comment: true
+          editable_features:
+          - 6
+          - 6
+          can_create_feature: true
+          can_edit_all: true
+          email: email
+          approvable_gate_types:
+          - 0
+          - 0
       properties:
-        message:
-          example: Done
-          title: message
+        user:
+          $ref: '#/components/schemas/UserPermissions'
+      required:
+      - user
+      title: PermissionsResponse
+      type: object
+    UserPermissions:
+      example:
+        is_admin: true
+        can_comment: true
+        editable_features:
+        - 6
+        - 6
+        can_create_feature: true
+        can_edit_all: true
+        email: email
+        approvable_gate_types:
+        - 0
+        - 0
+      properties:
+        can_create_feature:
+          title: can_create_feature
+          type: boolean
+        approvable_gate_types:
+          description: each element should be unique as OAS does not support set
+          items:
+            type: integer
+          title: approvable_gate_types
+          type: array
+        can_comment:
+          title: can_comment
+          type: boolean
+        can_edit_all:
+          title: can_edit_all
+          type: boolean
+        is_admin:
+          title: is_admin
+          type: boolean
+        email:
+          format: email
+          title: email
           type: string
-      title: deleteAccount_200_response
+        editable_features:
+          items:
+            type: integer
+          title: editable_features
+          type: array
+      required:
+      - approvable_gate_types
+      - can_comment
+      - can_create_feature
+      - can_edit_all
+      - editable_features
+      - email
+      - is_admin
+      title: UserPermissions
       type: object
     DismissCueRequest:
       example:
@@ -915,6 +998,16 @@ components:
         error:
           example: Error
           type: string
+      type: object
+    deleteAccount_200_response:
+      example:
+        message: Done
+      properties:
+        message:
+          example: Done
+          title: message
+          type: string
+      title: deleteAccount_200_response
       type: object
     getDismissedCues_400_response:
       example:
