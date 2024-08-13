@@ -16,35 +16,35 @@ import { mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ProcessStageProgressItemsInner
+ * @interface ProgressItem
  */
-export interface ProcessStageProgressItemsInner {
+export interface ProgressItem {
     /**
      * 
      * @type {string}
-     * @memberof ProcessStageProgressItemsInner
+     * @memberof ProgressItem
      */
     name?: string;
     /**
      * 
      * @type {string}
-     * @memberof ProcessStageProgressItemsInner
+     * @memberof ProgressItem
      */
     field?: string;
 }
 
 /**
- * Check if a given object implements the ProcessStageProgressItemsInner interface.
+ * Check if a given object implements the ProgressItem interface.
  */
-export function instanceOfProcessStageProgressItemsInner(value: object): value is ProcessStageProgressItemsInner {
+export function instanceOfProgressItem(value: object): value is ProgressItem {
     return true;
 }
 
-export function ProcessStageProgressItemsInnerFromJSON(json: any): ProcessStageProgressItemsInner {
-    return ProcessStageProgressItemsInnerFromJSONTyped(json, false);
+export function ProgressItemFromJSON(json: any): ProgressItem {
+    return ProgressItemFromJSONTyped(json, false);
 }
 
-export function ProcessStageProgressItemsInnerFromJSONTyped(json: any, ignoreDiscriminator: boolean): ProcessStageProgressItemsInner {
+export function ProgressItemFromJSONTyped(json: any, ignoreDiscriminator: boolean): ProgressItem {
     if (json == null) {
         return json;
     }
@@ -55,7 +55,7 @@ export function ProcessStageProgressItemsInnerFromJSONTyped(json: any, ignoreDis
     };
 }
 
-export function ProcessStageProgressItemsInnerToJSON(value?: ProcessStageProgressItemsInner | null): any {
+export function ProgressItemToJSON(value?: ProgressItem | null): any {
     if (value == null) {
         return value;
     }

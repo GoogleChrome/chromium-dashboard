@@ -36,7 +36,7 @@ export * from './OwnersAndSubscribersOfComponent';
 export * from './PostIntentRequest';
 export * from './Process';
 export * from './ProcessStage';
-export * from './ProcessStageProgressItemsInner';
+export * from './ProgressItem';
 export * from './ReviewLatency';
 export * from './SpecMentor';
 export * from './SuccessMessage';

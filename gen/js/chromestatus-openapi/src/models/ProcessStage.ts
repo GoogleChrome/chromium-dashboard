@@ -19,12 +19,12 @@ import {
     ActionFromJSONTyped,
     ActionToJSON,
 } from './Action';
-import type { ProcessStageProgressItemsInner } from './ProcessStageProgressItemsInner';
+import type { ProgressItem } from './ProgressItem';
 import {
-    ProcessStageProgressItemsInnerFromJSON,
-    ProcessStageProgressItemsInnerFromJSONTyped,
-    ProcessStageProgressItemsInnerToJSON,
-} from './ProcessStageProgressItemsInner';
+    ProgressItemFromJSON,
+    ProgressItemFromJSONTyped,
+    ProgressItemToJSON,
+} from './ProgressItem';
 import type { GateInfo } from './GateInfo';
 import {
     GateInfoFromJSON,
@@ -52,10 +52,10 @@ export interface ProcessStage {
     description?: string;
     /**
      * 
-     * @type {Array<ProcessStageProgressItemsInner>}
+     * @type {Array<ProgressItem>}
      * @memberof ProcessStage
      */
-    progress_items?: Array<ProcessStageProgressItemsInner>;
+    progress_items?: Array<ProgressItem>;
     /**
      * 
      * @type {Array<Action>}
@@ -107,7 +107,7 @@ export function ProcessStageFromJSONTyped(json: any, ignoreDiscriminator: boolea
         
         'name': json['name'] == null ? undefined : json['name'],
         'description': json['description'] == null ? undefined : json['description'],
-        'progress_items': json['progress_items'] == null ? undefined : ((json['progress_items'] as Array<any>).map(ProcessStageProgressItemsInnerFromJSON)),
+        'progress_items': json['progress_items'] == null ? undefined : ((json['progress_items'] as Array<any>).map(ProgressItemFromJSON)),
         'actions': json['actions'] == null ? undefined : ((json['actions'] as Array<any>).map(ActionFromJSON)),
         'approvals': json['approvals'] == null ? undefined : ((json['approvals'] as Array<any>).map(GateInfoFromJSON)),
         'incoming_stage': json['incoming_stage'] == null ? undefined : json['incoming_stage'],
@@ -124,7 +124,7 @@ export function ProcessStageToJSON(value?: ProcessStage | null): any {
         
         'name': value['name'],
         'description': value['description'],
-        'progress_items': value['progress_items'] == null ? undefined : ((value['progress_items'] as Array<any>).map(ProcessStageProgressItemsInnerToJSON)),
+        'progress_items': value['progress_items'] == null ? undefined : ((value['progress_items'] as Array<any>).map(ProgressItemToJSON)),
         'actions': value['actions'] == null ? undefined : ((value['actions'] as Array<any>).map(ActionToJSON)),
         'approvals': value['approvals'] == null ? undefined : ((value['approvals'] as Array<any>).map(GateInfoToJSON)),
         'incoming_stage': value['incoming_stage'],

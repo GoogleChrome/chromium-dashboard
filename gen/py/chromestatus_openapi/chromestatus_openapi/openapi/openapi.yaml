@@ -576,7 +576,7 @@ components:
           type: string
         progress_items:
           items:
-            $ref: '#/components/schemas/ProcessStage_progress_items_inner'
+            $ref: '#/components/schemas/ProgressItem'
           title: progress_items
           type: array
         actions:
@@ -600,6 +600,19 @@ components:
           title: stage_type
           type: integer
       title: ProcessStage
+      type: object
+    ProgressItem:
+      example:
+        field: field
+        name: name
+      properties:
+        name:
+          title: name
+          type: string
+        field:
+          title: field
+          type: string
+      title: ProgressItem
       type: object
     Action:
       example:
@@ -1199,20 +1212,6 @@ components:
           title: error
           type: string
       title: getDismissedCues_400_response
-      type: object
-    ProcessStage_progress_items_inner:
-      example:
-        field: field
-        name: name
-      properties:
-        name:
-          title: name
-          type: string
-        field:
-          nullable: true
-          title: field
-          type: string
-      title: ProcessStage_progress_items_inner
       type: object
     LinkPreviewGithubIssue_allOf_information:
       properties:

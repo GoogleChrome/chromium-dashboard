@@ -368,13 +368,7 @@ components:
         progress_items:
           type: array
           items:
-            type: object
-            properties:
-              name:
-                type: string
-              field:
-                type: string
-                nullable: true
+            $ref: '#/components/schemas/ProgressItem'
         actions:
           type: array
           items:
@@ -390,6 +384,13 @@ components:
         stage_type:
           type: integer
           nullable: true
+    ProgressItem:
+      type: object
+      properties:
+        name:
+          type: string
+        field:
+          type: string
     Action:
       type: object
       properties:
