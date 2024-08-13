@@ -172,6 +172,27 @@ paths:
           description: Cue dismissed successfully
       summary: Dismiss a cue card for the signed-in user
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /currentuser/permissions:
+    get:
+      operationId: get_user_permissions
+      parameters:
+      - description: "If true, return the permissions of the paired user."
+        explode: true
+        in: query
+        name: returnPairedUser
+        required: false
+        schema:
+          type: boolean
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionsResponse'
+          description: The permissions and email of the user.
+      summary: Get the permissions and email of the user
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /external_reviews/{review_group}:
     get:
       operationId: list_external_reviews
@@ -683,130 +704,382 @@ components:
       example:
         finch_url:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         ot_display_name:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         rollout_platforms:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         ot_feedback_submission_url:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         desktop_last:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         android_first:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         android_last:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         announcement_url:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         ot_description:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         rollout_details:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         ot_approval_buganizer_component:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         ot_approval_criteria_url:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         ot_approval_group_email:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         experiment_extension_reason:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         rollout_milestone:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         ot_owner_email:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         ot_request_note:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         ios_last:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         browser:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         webview_first:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         ot_documentation_url:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         ot_emails:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         ot_require_approvals:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         ot_has_third_party_support:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         experiment_goals:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         ot_stage_id:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         ot_approval_buganizer_custom_field_id:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         intent_thread_url:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         ot_is_critical_trial:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         display_name:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         ot_is_deprecation_trial:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         rollout_impact:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         origin_trial_feedback_url:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         desktop_first:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         experiment_risks:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         ios_first:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         ot_action_requested:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         origin_trial_id:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         webview_last:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         enterprise_policies:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         ot_chromium_trial_name:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
         ot_webfeature_use_counter:
           form_field_name: form_field_name
-          value: FieldInfo_value
+          value:
+            string_value: string_value
+            boolean_value: true
+            array_value:
+            - array_value
+            - array_value
+            integer_value: 0
       title: CreateOriginTrialRequest
       type: object
     StageField:
@@ -904,14 +1177,50 @@ components:
     FieldInfo:
       example:
         form_field_name: form_field_name
-        value: FieldInfo_value
+        value:
+          string_value: string_value
+          boolean_value: true
+          array_value:
+          - array_value
+          - array_value
+          integer_value: 0
       properties:
         form_field_name:
           title: form_field_name
           type: string
         value:
-          $ref: '#/components/schemas/FieldInfo_value'
+          $ref: '#/components/schemas/FieldInfoValue'
       title: FieldInfo
+      type: object
+    FieldInfoValue:
+      description: One of the value fields should be used based on the type of data.
+      example:
+        string_value: string_value
+        boolean_value: true
+        array_value:
+        - array_value
+        - array_value
+        integer_value: 0
+      properties:
+        string_value:
+          nullable: true
+          title: string_value
+          type: string
+        integer_value:
+          nullable: true
+          title: integer_value
+          type: integer
+        boolean_value:
+          nullable: true
+          title: boolean_value
+          type: boolean
+        array_value:
+          items:
+            type: string
+          nullable: true
+          title: array_value
+          type: array
+      title: FieldInfoValue
       type: object
     GetIntentResponse:
       example:
@@ -1357,6 +1666,78 @@ components:
     LinkPreviewSpecs:
       allOf:
       - $ref: '#/components/schemas/LinkPreviewOpenGraph'
+    PermissionsResponse:
+      example:
+        user:
+          is_admin: true
+          can_comment: true
+          editable_features:
+          - 6
+          - 6
+          can_create_feature: true
+          can_edit_all: true
+          email: email
+          approvable_gate_types:
+          - 0
+          - 0
+      properties:
+        user:
+          $ref: '#/components/schemas/UserPermissions'
+      required:
+      - user
+      title: PermissionsResponse
+      type: object
+    UserPermissions:
+      example:
+        is_admin: true
+        can_comment: true
+        editable_features:
+        - 6
+        - 6
+        can_create_feature: true
+        can_edit_all: true
+        email: email
+        approvable_gate_types:
+        - 0
+        - 0
+      properties:
+        can_create_feature:
+          title: can_create_feature
+          type: boolean
+        approvable_gate_types:
+          description: each element should be unique as OAS does not support set
+          items:
+            type: integer
+          title: approvable_gate_types
+          type: array
+        can_comment:
+          title: can_comment
+          type: boolean
+        can_edit_all:
+          title: can_edit_all
+          type: boolean
+        is_admin:
+          title: is_admin
+          type: boolean
+        email:
+          format: email
+          title: email
+          type: string
+        editable_features:
+          items:
+            type: integer
+          title: editable_features
+          type: array
+      required:
+      - approvable_gate_types
+      - can_comment
+      - can_create_feature
+      - can_edit_all
+      - editable_features
+      - email
+      - is_admin
+      title: UserPermissions
+      type: object
     DismissCueRequest:
       example:
         cue: progress-checkmarks
@@ -1409,15 +1790,6 @@ components:
           type: string
       title: getDismissedCues_400_response
       type: object
-    FieldInfo_value:
-      oneOf:
-      - type: string
-      - type: integer
-      - type: boolean
-      - items:
-          type: string
-        type: array
-      title: FieldInfo_value
     LinkPreviewGithubIssue_allOf_information:
       properties:
         url:

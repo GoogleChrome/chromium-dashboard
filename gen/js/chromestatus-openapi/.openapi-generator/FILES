@@ -43,11 +43,13 @@ src/models/MilestoneSetField.ts
 src/models/OriginTrialsInfo.ts
 src/models/OutstandingReview.ts
 src/models/OwnersAndSubscribersOfComponent.ts
+src/models/PermissionsResponse.ts
 src/models/PostIntentRequest.ts
 src/models/ReviewLatency.ts
 src/models/SpecMentor.ts
 src/models/StageField.ts
 src/models/SuccessMessage.ts
+src/models/UserPermissions.ts
 src/models/index.ts
 src/runtime.ts
 tsconfig.esm.json

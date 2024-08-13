@@ -12,12 +12,45 @@
  * Do not edit the class manually.
  */
 
+import { mapValues } from '../runtime';
 /**
- * @type FieldInfoValue
- * 
+ * One of the value fields should be used based on the type of data.
  * @export
+ * @interface FieldInfoValue
  */
-export type FieldInfoValue = Array<string> | boolean | number | string;
+export interface FieldInfoValue {
+    /**
+     * 
+     * @type {string}
+     * @memberof FieldInfoValue
+     */
+    string_value?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof FieldInfoValue
+     */
+    integer_value?: number;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof FieldInfoValue
+     */
+    boolean_value?: boolean;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof FieldInfoValue
+     */
+    array_value?: Array<string>;
+}
+
+/**
+ * Check if a given object implements the FieldInfoValue interface.
+ */
+export function instanceOfFieldInfoValue(value: object): value is FieldInfoValue {
+    return true;
+}
 
 export function FieldInfoValueFromJSON(json: any): FieldInfoValue {
     return FieldInfoValueFromJSONTyped(json, false);
@@ -27,38 +60,25 @@ export function FieldInfoValueFromJSONTyped(json: any, ignoreDiscriminator: bool
     if (json == null) {
         return json;
     }
-    if (instanceOfArray<string>(json)) {
-        return Array<string>FromJSONTyped(json, true);
-    }
-    if (instanceOfboolean(json)) {
-        return booleanFromJSONTyped(json, true);
-    }
-    if (instanceOfnumber(json)) {
-        return numberFromJSONTyped(json, true);
-    }
-    if (instanceOfstring(json)) {
-        return stringFromJSONTyped(json, true);
-    }
+    return {
+        
+        'string_value': json['string_value'] == null ? undefined : json['string_value'],
+        'integer_value': json['integer_value'] == null ? undefined : json['integer_value'],
+        'boolean_value': json['boolean_value'] == null ? undefined : json['boolean_value'],
+        'array_value': json['array_value'] == null ? undefined : json['array_value'],
+    };
 }
 
 export function FieldInfoValueToJSON(value?: FieldInfoValue | null): any {
     if (value == null) {
         return value;
     }
-
-    if (instanceOfArray<string>(value)) {
-        return Array<string>ToJSON(value as Array<string>);
-    }
-    if (instanceOfboolean(value)) {
-        return booleanToJSON(value as boolean);
-    }
-    if (instanceOfnumber(value)) {
-        return numberToJSON(value as number);
-    }
-    if (instanceOfstring(value)) {
-        return stringToJSON(value as string);
-    }
-
-    return {};
+    return {
+        
+        'string_value': value['string_value'],
+        'integer_value': value['integer_value'],
+        'boolean_value': value['boolean_value'],
+        'array_value': value['array_value'],
+    };
 }
 

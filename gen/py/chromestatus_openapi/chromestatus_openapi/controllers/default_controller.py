@@ -17,6 +17,7 @@ from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismis
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
 from chromestatus_openapi.models.get_origin_trials_response import GetOriginTrialsResponse  # noqa: E501
 from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
+from chromestatus_openapi.models.permissions_response import PermissionsResponse  # noqa: E501
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
@@ -155,6 +156,19 @@ def get_origin_trials():  # noqa: E501
 
 
     :rtype: Union[GetOriginTrialsResponse, Tuple[GetOriginTrialsResponse, int], Tuple[GetOriginTrialsResponse, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
+def get_user_permissions(return_paired_user=None):  # noqa: E501
+    """Get the permissions and email of the user
+
+     # noqa: E501
+
+    :param return_paired_user: If true, return the permissions of the paired user.
+    :type return_paired_user: bool
+
+    :rtype: Union[PermissionsResponse, Tuple[PermissionsResponse, int], Tuple[PermissionsResponse, int, Dict[str, str]]
     """
     return 'do some magic!'
 
