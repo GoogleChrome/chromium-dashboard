@@ -37,7 +37,7 @@ from framework import utils
 from framework import xsrf
 from internals import approval_defs
 from internals import notifier_helpers
-from internals.core_enums import ALL_ORIGIN_TRIAL_STAGE_TYPES
+from internals.core_enums import ALL_ORIGIN_TRIAL_STAGE_TYPES, OT_ACTIVATION_FAILED, OT_CREATION_FAILED, OT_READY_FOR_CREATION
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.data_types import CHANGED_FIELDS_LIST_TYPE
 from internals import user_models
@@ -351,7 +351,18 @@ class EntitiesAPIHandler(APIHandler):
     """Update stage fields with changes provided."""
     stage_was_updated = False
     ot_action_requested = False
-    # Check if valid ID is provided and fetch stage if it exists.
+
+    mutating_ot_milestones = any(
+        v['form_field_name'] == 'ot_milestone_desktop_start' or
+        v['form_field_name'] == 'ot_milestone_desktop_end'
+        for v in change_info.values())
+    ot_creation_in_progress =  (
+        stage.ot_setup_status == OT_READY_FOR_CREATION or
+        stage.ot_setup_status == OT_CREATION_FAILED or
+        stage.ot_setup_status == OT_ACTIVATION_FAILED)
+    if mutating_ot_milestones and ot_creation_in_progress:
+      self.abort(400,
+                 'Cannot edit OT milestones while creation is in progress.')
 
     # Update stage fields.
     for field, field_type in api_specs.STAGE_FIELD_DATA_TYPES:
