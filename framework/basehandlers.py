@@ -37,10 +37,14 @@ from framework import utils
 from framework import xsrf
 from internals import approval_defs
 from internals import notifier_helpers
-from internals.core_enums import ALL_ORIGIN_TRIAL_STAGE_TYPES, OT_ACTIVATION_FAILED, OT_CREATION_FAILED, OT_READY_FOR_CREATION
+from internals import user_models
+from internals.core_enums import (
+  ALL_ORIGIN_TRIAL_STAGE_TYPES,
+  OT_ACTIVATION_FAILED,
+  OT_CREATION_FAILED,
+  OT_READY_FOR_CREATION)
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.data_types import CHANGED_FIELDS_LIST_TYPE
-from internals import user_models
 
 from flask import session
 from flask import render_template
