@@ -1,8 +1,8 @@
 /* tslint:disable */
 /* eslint-disable */
 export * from './AccountResponse';
-export * from './ArrayValue';
-export * from './BooleanValue';
+export * from './ArrayFieldInfoValue';
+export * from './BooleanFieldInfoValue';
 export * from './ComponentUsersRequest';
 export * from './ComponentsUser';
 export * from './ComponentsUsersResponse';
@@ -15,12 +15,11 @@ export * from './ExternalReviewsResponse';
 export * from './FeatureLatency';
 export * from './FeatureLink';
 export * from './FieldInfo';
-export * from './FieldInfoValue';
 export * from './GateLatency';
 export * from './GetDismissedCues400Response';
 export * from './GetIntentResponse';
 export * from './GetOriginTrialsResponse';
-export * from './IntegerValue';
+export * from './IntegerFieldInfoValue';
 export * from './LinkPreview';
 export * from './LinkPreviewBase';
 export * from './LinkPreviewGithubIssue';
@@ -45,6 +44,6 @@ export * from './PostIntentRequest';
 export * from './ReviewLatency';
 export * from './SpecMentor';
 export * from './StageField';
-export * from './StringValue';
+export * from './StringFieldInfoValue';
 export * from './SuccessMessage';
 export * from './UserPermissions';

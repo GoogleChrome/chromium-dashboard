@@ -1,8 +1,8 @@
 # flake8: noqa
 # import models into model package
 from chromestatus_openapi.models.account_response import AccountResponse
-from chromestatus_openapi.models.array_value import ArrayValue
-from chromestatus_openapi.models.boolean_value import BooleanValue
+from chromestatus_openapi.models.array_field_info_value import ArrayFieldInfoValue
+from chromestatus_openapi.models.boolean_field_info_value import BooleanFieldInfoValue
 from chromestatus_openapi.models.component_users_request import ComponentUsersRequest
 from chromestatus_openapi.models.components_user import ComponentsUser
 from chromestatus_openapi.models.components_users_response import ComponentsUsersResponse
@@ -15,12 +15,11 @@ from chromestatus_openapi.models.external_reviews_response import ExternalReview
 from chromestatus_openapi.models.feature_latency import FeatureLatency
 from chromestatus_openapi.models.feature_link import FeatureLink
 from chromestatus_openapi.models.field_info import FieldInfo
-from chromestatus_openapi.models.field_info_value import FieldInfoValue
 from chromestatus_openapi.models.gate_latency import GateLatency
 from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismissedCues400Response
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse
 from chromestatus_openapi.models.get_origin_trials_response import GetOriginTrialsResponse
-from chromestatus_openapi.models.integer_value import IntegerValue
+from chromestatus_openapi.models.integer_field_info_value import IntegerFieldInfoValue
 from chromestatus_openapi.models.link_preview import LinkPreview
 from chromestatus_openapi.models.link_preview_base import LinkPreviewBase
 from chromestatus_openapi.models.link_preview_github_issue import LinkPreviewGithubIssue
@@ -45,6 +44,6 @@ from chromestatus_openapi.models.post_intent_request import PostIntentRequest
 from chromestatus_openapi.models.review_latency import ReviewLatency
 from chromestatus_openapi.models.spec_mentor import SpecMentor
 from chromestatus_openapi.models.stage_field import StageField
-from chromestatus_openapi.models.string_value import StringValue
+from chromestatus_openapi.models.string_field_info_value import StringFieldInfoValue
 from chromestatus_openapi.models.success_message import SuccessMessage
 from chromestatus_openapi.models.user_permissions import UserPermissions

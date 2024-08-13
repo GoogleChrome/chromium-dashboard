@@ -16,52 +16,60 @@ import { mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface IntegerValue
+ * @interface BooleanFieldInfoValue
  */
-export interface IntegerValue {
+export interface BooleanFieldInfoValue {
     /**
      * 
      * @type {string}
-     * @memberof IntegerValue
+     * @memberof BooleanFieldInfoValue
      */
-    valueType?: string;
+    form_field_name?: string;
     /**
      * 
-     * @type {number}
-     * @memberof IntegerValue
+     * @type {string}
+     * @memberof BooleanFieldInfoValue
      */
-    value?: number;
+    value_type?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof BooleanFieldInfoValue
+     */
+    value?: boolean;
 }
 
 /**
- * Check if a given object implements the IntegerValue interface.
+ * Check if a given object implements the BooleanFieldInfoValue interface.
  */
-export function instanceOfIntegerValue(value: object): value is IntegerValue {
+export function instanceOfBooleanFieldInfoValue(value: object): value is BooleanFieldInfoValue {
     return true;
 }
 
-export function IntegerValueFromJSON(json: any): IntegerValue {
-    return IntegerValueFromJSONTyped(json, false);
+export function BooleanFieldInfoValueFromJSON(json: any): BooleanFieldInfoValue {
+    return BooleanFieldInfoValueFromJSONTyped(json, false);
 }
 
-export function IntegerValueFromJSONTyped(json: any, ignoreDiscriminator: boolean): IntegerValue {
+export function BooleanFieldInfoValueFromJSONTyped(json: any, ignoreDiscriminator: boolean): BooleanFieldInfoValue {
     if (json == null) {
         return json;
     }
     return {
         
-        'valueType': json['valueType'] == null ? undefined : json['valueType'],
+        'form_field_name': json['form_field_name'] == null ? undefined : json['form_field_name'],
+        'value_type': json['value_type'] == null ? undefined : json['value_type'],
         'value': json['value'] == null ? undefined : json['value'],
     };
 }
 
-export function IntegerValueToJSON(value?: IntegerValue | null): any {
+export function BooleanFieldInfoValueToJSON(value?: BooleanFieldInfoValue | null): any {
     if (value == null) {
         return value;
     }
     return {
         
-        'valueType': value['valueType'],
+        'form_field_name': value['form_field_name'],
+        'value_type': value['value_type'],
         'value': value['value'],
     };
 }

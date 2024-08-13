@@ -16,52 +16,60 @@ import { mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ArrayValue
+ * @interface IntegerFieldInfoValue
  */
-export interface ArrayValue {
+export interface IntegerFieldInfoValue {
     /**
      * 
      * @type {string}
-     * @memberof ArrayValue
+     * @memberof IntegerFieldInfoValue
      */
-    valueType?: string;
+    form_field_name?: string;
     /**
      * 
-     * @type {Array<string>}
-     * @memberof ArrayValue
+     * @type {string}
+     * @memberof IntegerFieldInfoValue
      */
-    value?: Array<string>;
+    value_type?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof IntegerFieldInfoValue
+     */
+    value?: number;
 }
 
 /**
- * Check if a given object implements the ArrayValue interface.
+ * Check if a given object implements the IntegerFieldInfoValue interface.
  */
-export function instanceOfArrayValue(value: object): value is ArrayValue {
+export function instanceOfIntegerFieldInfoValue(value: object): value is IntegerFieldInfoValue {
     return true;
 }
 
-export function ArrayValueFromJSON(json: any): ArrayValue {
-    return ArrayValueFromJSONTyped(json, false);
+export function IntegerFieldInfoValueFromJSON(json: any): IntegerFieldInfoValue {
+    return IntegerFieldInfoValueFromJSONTyped(json, false);
 }
 
-export function ArrayValueFromJSONTyped(json: any, ignoreDiscriminator: boolean): ArrayValue {
+export function IntegerFieldInfoValueFromJSONTyped(json: any, ignoreDiscriminator: boolean): IntegerFieldInfoValue {
     if (json == null) {
         return json;
     }
     return {
         
-        'valueType': json['valueType'] == null ? undefined : json['valueType'],
+        'form_field_name': json['form_field_name'] == null ? undefined : json['form_field_name'],
+        'value_type': json['value_type'] == null ? undefined : json['value_type'],
         'value': json['value'] == null ? undefined : json['value'],
     };
 }
 
-export function ArrayValueToJSON(value?: ArrayValue | null): any {
+export function IntegerFieldInfoValueToJSON(value?: IntegerFieldInfoValue | null): any {
     if (value == null) {
         return value;
     }
     return {
         
-        'valueType': value['valueType'],
+        'form_field_name': value['form_field_name'],
+        'value_type': value['value_type'],
         'value': value['value'],
     };
 }

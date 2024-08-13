@@ -7,8 +7,8 @@ src/apis/DefaultApi.ts
 src/apis/index.ts
 src/index.ts
 src/models/AccountResponse.ts
-src/models/ArrayValue.ts
-src/models/BooleanValue.ts
+src/models/ArrayFieldInfoValue.ts
+src/models/BooleanFieldInfoValue.ts
 src/models/ComponentUsersRequest.ts
 src/models/ComponentsUser.ts
 src/models/ComponentsUsersResponse.ts
@@ -21,12 +21,11 @@ src/models/ExternalReviewsResponse.ts
 src/models/FeatureLatency.ts
 src/models/FeatureLink.ts
 src/models/FieldInfo.ts
-src/models/FieldInfoValue.ts
 src/models/GateLatency.ts
 src/models/GetDismissedCues400Response.ts
 src/models/GetIntentResponse.ts
 src/models/GetOriginTrialsResponse.ts
-src/models/IntegerValue.ts
+src/models/IntegerFieldInfoValue.ts
 src/models/LinkPreview.ts
 src/models/LinkPreviewBase.ts
 src/models/LinkPreviewGithubIssue.ts
@@ -51,7 +50,7 @@ src/models/PostIntentRequest.ts
 src/models/ReviewLatency.ts
 src/models/SpecMentor.ts
 src/models/StageField.ts
-src/models/StringValue.ts
+src/models/StringFieldInfoValue.ts
 src/models/SuccessMessage.ts
 src/models/UserPermissions.ts
 src/models/index.ts
