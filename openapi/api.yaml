@@ -228,6 +228,16 @@ paths:
                   $ref: '#/components/schemas/SpecMentor'
         '400':
           description: The ?after query parameter isn't a valid date in ISO YYYY-MM-DD format.
+  /features/{feature_id}/process:
+    parameters:
+      - name: feature_id
+        in: path
+        description: Feature ID
+        required: true
+        schema:
+          type: integer
+    get:
+
   /features/{feature_id}/{stage_id}/{gate_id}/intent:
     parameters:
       - name: feature_id
@@ -325,6 +335,15 @@ components:
       in: header
       name: X-Xsrf-Token
   schemas:
+    Process:
+    ProcessStage:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        
     CreateAccountRequest:
       type: object
       properties:
