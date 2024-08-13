@@ -125,6 +125,38 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ComponentUsersRequest'
+  /review-latency:
+    get:
+      summary: List recently reviewed features and their review latency
+      operationId: listReviewsWithLatency
+      responses:
+        '200':
+          description: >-
+            List of recent reviews and their latency.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReviewLatency'
+  /currentuser/permissions:
+    get:
+      summary: Get the permissions and email of the user
+      operationId: getUserPermissions
+      parameters:
+        - in: query
+          name: returnPairedUser
+          schema:
+            type: boolean
+          required: false
+          description: If true, return the permissions of the paired user.
+      responses:
+        '200':
+          description: The permissions and email of the user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionsResponse'
   /currentuser/cues:
     get:
       summary: Get dismissed cues for the current user
@@ -163,20 +195,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SuccessMessage'
-  /review-latency:
-    get:
-      summary: List recently reviewed features and their review latency
-      operationId: listReviewsWithLatency
-      responses:
-        '200':
-          description: >-
-            List of recent reviews and their latency.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ReviewLatency'
   /external_reviews/{review_group}:
     get:
       summary: List features whose external reviews are incomplete
@@ -659,6 +677,44 @@ components:
     LinkPreviewSpecs:
       allOf:
         - $ref: '#/components/schemas/LinkPreviewOpenGraph'
+    PermissionsResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/UserPermissions'
+      required:
+        - user
+    UserPermissions:
+      type: object
+      properties:
+        can_create_feature:
+          type: boolean
+        approvable_gate_types:
+          type: array
+          items:
+            type: integer
+          description: each element should be unique as OAS does not support set
+        can_comment:
+          type: boolean
+        can_edit_all:
+          type: boolean
+        is_admin:
+          type: boolean
+        email:
+          type: string
+          format: email
+        editable_features:
+          type: array
+          items:
+            type: integer
+      required:
+        - can_create_feature
+        - approvable_gate_types
+        - can_comment
+        - can_edit_all
+        - is_admin
+        - email
+        - editable_features
     DismissCueRequest:
       type: object
       properties:

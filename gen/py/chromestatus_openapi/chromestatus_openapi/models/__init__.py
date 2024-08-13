@@ -31,7 +31,9 @@ from chromestatus_openapi.models.link_preview_webkit_bug import LinkPreviewWebki
 from chromestatus_openapi.models.message_response import MessageResponse
 from chromestatus_openapi.models.outstanding_review import OutstandingReview
 from chromestatus_openapi.models.owners_and_subscribers_of_component import OwnersAndSubscribersOfComponent
+from chromestatus_openapi.models.permissions_response import PermissionsResponse
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest
 from chromestatus_openapi.models.review_latency import ReviewLatency
 from chromestatus_openapi.models.spec_mentor import SpecMentor
 from chromestatus_openapi.models.success_message import SuccessMessage
+from chromestatus_openapi.models.user_permissions import UserPermissions
