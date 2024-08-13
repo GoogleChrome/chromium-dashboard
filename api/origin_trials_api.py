@@ -173,7 +173,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
     # Flag OT stage as ready to be created.
     ot_stage.ot_setup_status = OT_READY_FOR_CREATION
     ot_stage.put()
-    return SuccessMessage(message='Origin trial request submitted successfully.').to_dict()
+    return SuccessMessage(message='Origin trial creation request submitted.').to_dict()
 
   def _validate_extension_args(
         self, feature_id: int, ot_stage: Stage, extension_stage: Stage) -> None:
