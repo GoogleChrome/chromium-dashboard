@@ -13,7 +13,6 @@ export * from './ExternalReviewsResponse';
 export * from './FeatureLatency';
 export * from './FeatureLink';
 export * from './FieldInfo';
-export * from './FieldInfoValue';
 export * from './GateLatency';
 export * from './GetDismissedCues400Response';
 export * from './GetIntentResponse';

@@ -13,15 +13,8 @@
  */
 
 import { mapValues } from '../runtime';
-import type { FieldInfoValue } from './FieldInfoValue';
-import {
-    FieldInfoValueFromJSON,
-    FieldInfoValueFromJSONTyped,
-    FieldInfoValueToJSON,
-} from './FieldInfoValue';
-
 /**
- * 
+ * One of the value fields should be used based on the type of data.
  * @export
  * @interface FieldInfo
  */
@@ -34,10 +27,28 @@ export interface FieldInfo {
     form_field_name?: string;
     /**
      * 
-     * @type {FieldInfoValue}
+     * @type {string}
      * @memberof FieldInfo
      */
-    value?: FieldInfoValue;
+    string_value?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof FieldInfo
+     */
+    integer_value?: number;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof FieldInfo
+     */
+    boolean_value?: boolean;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof FieldInfo
+     */
+    array_value?: Array<string>;
 }
 
 /**
@@ -58,7 +69,10 @@ export function FieldInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean):
     return {
         
         'form_field_name': json['form_field_name'] == null ? undefined : json['form_field_name'],
-        'value': json['value'] == null ? undefined : FieldInfoValueFromJSON(json['value']),
+        'string_value': json['string_value'] == null ? undefined : json['string_value'],
+        'integer_value': json['integer_value'] == null ? undefined : json['integer_value'],
+        'boolean_value': json['boolean_value'] == null ? undefined : json['boolean_value'],
+        'array_value': json['array_value'] == null ? undefined : json['array_value'],
     };
 }
 
@@ -69,7 +83,10 @@ export function FieldInfoToJSON(value?: FieldInfo | null): any {
     return {
         
         'form_field_name': value['form_field_name'],
-        'value': FieldInfoValueToJSON(value['value']),
+        'string_value': value['string_value'],
+        'integer_value': value['integer_value'],
+        'boolean_value': value['boolean_value'],
+        'array_value': value['array_value'],
     };
 }
 

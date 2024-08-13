@@ -13,7 +13,6 @@ from chromestatus_openapi.models.external_reviews_response import ExternalReview
 from chromestatus_openapi.models.feature_latency import FeatureLatency
 from chromestatus_openapi.models.feature_link import FeatureLink
 from chromestatus_openapi.models.field_info import FieldInfo
-from chromestatus_openapi.models.field_info_value import FieldInfoValue
 from chromestatus_openapi.models.gate_latency import GateLatency
 from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismissedCues400Response
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse

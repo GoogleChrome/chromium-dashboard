@@ -594,14 +594,21 @@ components:
       properties:
         form_field_name:
           type: string
-        value:
-          oneOf:
-            - type: string
-            - type: integer
-            - type: boolean
-            - type: array
-              items:
-                type: string
+        string_value:
+          type: string
+          nullable: true
+        integer_value:
+          type: integer
+          nullable: true
+        boolean_value:
+          type: boolean
+          nullable: true
+        array_value:
+          type: array
+          items:
+            type: string
+          nullable: true
+      description: One of the value fields should be used based on the type of data.
     GetIntentResponse:
       properties:
         subject:
