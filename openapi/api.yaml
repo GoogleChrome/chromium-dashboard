@@ -614,24 +614,53 @@ components:
           type: string
         value:
           $ref: '#/components/schemas/FieldInfoValue'
-    FieldInfoValue:
+    StringFieldInfoValue:
       type: object
       properties:
-        string_value:
-          type: string
-          nullable: true
-        integer_value:
-          type: integer
-          nullable: true
-        boolean_value:
-          type: boolean
-          nullable: true
-        array_value:
-          type: array
-          items:
+          form_field_name:
             type: string
-          nullable: true
-      description: One of the value fields should be used based on the type of data.
+          value_type:
+            type: string
+          value:
+            type: string
+    BooleanFieldInfoValue:
+      type: object
+      properties:
+          form_field_name:
+            type: string
+          value_type:
+            type: string
+          value:
+            type: boolean
+    IntegerFieldInfoValue:
+      type: object
+      properties:
+          form_field_name:
+            type: string
+          value_type:
+            type: string
+          value:
+            type: integer
+    ArrayFieldInfoValue:
+      type: object
+      properties:
+          form_field_name:
+            type: string
+          value_type:
+            type: string
+          value:
+            type: array
+            items:
+              type: string
+    FieldInfoValue:
+      type: object
+      discriminator:
+        propertyName: value_type
+        mapping:
+          "integer": "#/components/schemas/IntegerFieldInfoValue"
+          "string": "#/components/schemas/StringFieldInfoValue"
+          "boolean": "#/components/schemas/BooleanFieldInfoValue"
+          "array": "#/components/schemas/ArrayFieldInfoValue"
     GetIntentResponse:
       properties:
         subject:

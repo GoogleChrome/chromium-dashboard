@@ -705,381 +705,213 @@ components:
         finch_url:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         ot_display_name:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         rollout_platforms:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         ot_feedback_submission_url:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         desktop_last:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         android_first:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         android_last:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         announcement_url:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         ot_description:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         rollout_details:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         ot_approval_buganizer_component:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         ot_approval_criteria_url:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         ot_approval_group_email:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         experiment_extension_reason:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         rollout_milestone:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         ot_owner_email:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         ot_request_note:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         ios_last:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         browser:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         webview_first:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         ot_documentation_url:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         ot_emails:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         ot_require_approvals:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         ot_has_third_party_support:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         experiment_goals:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         ot_stage_id:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         ot_approval_buganizer_custom_field_id:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         intent_thread_url:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         ot_is_critical_trial:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         display_name:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         ot_is_deprecation_trial:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         rollout_impact:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         origin_trial_feedback_url:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         desktop_first:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         experiment_risks:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         ios_first:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         ot_action_requested:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         origin_trial_id:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         webview_last:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         enterprise_policies:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         ot_chromium_trial_name:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
         ot_webfeature_use_counter:
           form_field_name: form_field_name
           value:
-            string_value: string_value
-            boolean_value: true
-            array_value:
-            - array_value
-            - array_value
-            integer_value: 0
+            valueType: valueType
+            value: value
       title: CreateOriginTrialRequest
       type: object
     StageField:
@@ -1178,49 +1010,60 @@ components:
       example:
         form_field_name: form_field_name
         value:
-          string_value: string_value
-          boolean_value: true
-          array_value:
-          - array_value
-          - array_value
-          integer_value: 0
+          valueType: valueType
+          value: value
       properties:
         form_field_name:
           title: form_field_name
           type: string
         value:
-          $ref: '#/components/schemas/FieldInfoValue'
+          $ref: '#/components/schemas/FieldInfo_value'
       title: FieldInfo
       type: object
-    FieldInfoValue:
-      description: One of the value fields should be used based on the type of data.
+    StringValue:
       example:
-        string_value: string_value
-        boolean_value: true
-        array_value:
-        - array_value
-        - array_value
-        integer_value: 0
+        valueType: valueType
+        value: value
       properties:
-        string_value:
-          nullable: true
-          title: string_value
+        valueType:
+          title: valueType
           type: string
-        integer_value:
-          nullable: true
-          title: integer_value
+        value:
+          title: value
+          type: string
+      title: StringValue
+      type: object
+    IntegerValue:
+      properties:
+        valueType:
+          title: valueType
+          type: string
+        value:
+          title: value
           type: integer
-        boolean_value:
-          nullable: true
-          title: boolean_value
+      title: IntegerValue
+      type: object
+    BooleanValue:
+      properties:
+        valueType:
+          title: valueType
+          type: string
+        value:
+          title: value
           type: boolean
-        array_value:
+      title: BooleanValue
+      type: object
+    ArrayValue:
+      properties:
+        valueType:
+          title: valueType
+          type: string
+        value:
           items:
             type: string
-          nullable: true
-          title: array_value
+          title: value
           type: array
-      title: FieldInfoValue
+      title: ArrayValue
       type: object
     GetIntentResponse:
       example:
@@ -1790,6 +1633,20 @@ components:
           type: string
       title: getDismissedCues_400_response
       type: object
+    FieldInfo_value:
+      discriminator:
+        mapping:
+          string: '#/components/schemas/StringValue'
+          integer: '#/components/schemas/IntegerValue'
+          boolean: '#/components/schemas/BooleanValue'
+          array: '#/components/schemas/ArrayValue'
+        propertyName: valueType
+      oneOf:
+      - $ref: '#/components/schemas/StringValue'
+      - $ref: '#/components/schemas/IntegerValue'
+      - $ref: '#/components/schemas/BooleanValue'
+      - $ref: '#/components/schemas/ArrayValue'
+      title: FieldInfo_value
     LinkPreviewGithubIssue_allOf_information:
       properties:
         url:

@@ -12,45 +12,41 @@
  * Do not edit the class manually.
  */
 
-import { mapValues } from '../runtime';
-/**
- * One of the value fields should be used based on the type of data.
- * @export
- * @interface FieldInfoValue
- */
-export interface FieldInfoValue {
-    /**
-     * 
-     * @type {string}
-     * @memberof FieldInfoValue
-     */
-    string_value?: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof FieldInfoValue
-     */
-    integer_value?: number;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof FieldInfoValue
-     */
-    boolean_value?: boolean;
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof FieldInfoValue
-     */
-    array_value?: Array<string>;
-}
+import type { ArrayValue } from './ArrayValue';
+import {
+    instanceOfArrayValue,
+    ArrayValueFromJSON,
+    ArrayValueFromJSONTyped,
+    ArrayValueToJSON,
+} from './ArrayValue';
+import type { BooleanValue } from './BooleanValue';
+import {
+    instanceOfBooleanValue,
+    BooleanValueFromJSON,
+    BooleanValueFromJSONTyped,
+    BooleanValueToJSON,
+} from './BooleanValue';
+import type { IntegerValue } from './IntegerValue';
+import {
+    instanceOfIntegerValue,
+    IntegerValueFromJSON,
+    IntegerValueFromJSONTyped,
+    IntegerValueToJSON,
+} from './IntegerValue';
+import type { StringValue } from './StringValue';
+import {
+    instanceOfStringValue,
+    StringValueFromJSON,
+    StringValueFromJSONTyped,
+    StringValueToJSON,
+} from './StringValue';
 
 /**
- * Check if a given object implements the FieldInfoValue interface.
+ * @type FieldInfoValue
+ * 
+ * @export
  */
-export function instanceOfFieldInfoValue(value: object): value is FieldInfoValue {
-    return true;
-}
+export type FieldInfoValue = { valueType: 'array' } & ArrayValue | { valueType: 'boolean' } & BooleanValue | { valueType: 'integer' } & IntegerValue | { valueType: 'string' } & StringValue;
 
 export function FieldInfoValueFromJSON(json: any): FieldInfoValue {
     return FieldInfoValueFromJSONTyped(json, false);
@@ -60,25 +56,36 @@ export function FieldInfoValueFromJSONTyped(json: any, ignoreDiscriminator: bool
     if (json == null) {
         return json;
     }
-    return {
-        
-        'string_value': json['string_value'] == null ? undefined : json['string_value'],
-        'integer_value': json['integer_value'] == null ? undefined : json['integer_value'],
-        'boolean_value': json['boolean_value'] == null ? undefined : json['boolean_value'],
-        'array_value': json['array_value'] == null ? undefined : json['array_value'],
-    };
+    switch (json['valueType']) {
+        case 'array':
+            return Object.assign({}, ArrayValueFromJSONTyped(json, true), { valueType: 'array' });
+        case 'boolean':
+            return Object.assign({}, BooleanValueFromJSONTyped(json, true), { valueType: 'boolean' });
+        case 'integer':
+            return Object.assign({}, IntegerValueFromJSONTyped(json, true), { valueType: 'integer' });
+        case 'string':
+            return Object.assign({}, StringValueFromJSONTyped(json, true), { valueType: 'string' });
+        default:
+            throw new Error(`No variant of FieldInfoValue exists with 'valueType=${json['valueType']}'`);
+    }
 }
 
 export function FieldInfoValueToJSON(value?: FieldInfoValue | null): any {
     if (value == null) {
         return value;
     }
-    return {
-        
-        'string_value': value['string_value'],
-        'integer_value': value['integer_value'],
-        'boolean_value': value['boolean_value'],
-        'array_value': value['array_value'],
-    };
+    switch (value['valueType']) {
+        case 'array':
+            return ArrayValueToJSON(value);
+        case 'boolean':
+            return BooleanValueToJSON(value);
+        case 'integer':
+            return IntegerValueToJSON(value);
+        case 'string':
+            return StringValueToJSON(value);
+        default:
+            throw new Error(`No variant of FieldInfoValue exists with 'valueType=${value['valueType']}'`);
+    }
+
 }
 
