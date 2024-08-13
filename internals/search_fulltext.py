@@ -167,7 +167,7 @@ def _canonicalize_string(s: str) -> str:
   words = WORD_RE.findall(lower_s)
   words = [w for w in words if w not in STOP_WORDS]
   canonicalized = ' '.join(words)
-  return canonicalized
+  return ' ' + canonicalized + ' '
 
 
 def post_process_phrase(phrase: str, feature_ids: list[int]) -> list[int]:
