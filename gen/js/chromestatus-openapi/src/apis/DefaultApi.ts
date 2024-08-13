@@ -15,25 +15,40 @@
 
 import * as runtime from '../runtime';
 import type {
+  AccountResponse,
   ComponentUsersRequest,
   ComponentsUsersResponse,
+  CreateAccountRequest,
+  DeleteAccount200Response,
+  DismissCueRequest,
   ErrorMessage,
   ExternalReviewsResponse,
   FeatureLatency,
   FeatureLinksResponse,
   FeatureLinksSample,
   FeatureLinksSummaryResponse,
+  GetDismissedCues400Response,
   GetIntentResponse,
   MessageResponse,
+  PermissionsResponse,
   PostIntentRequest,
   ReviewLatency,
   SpecMentor,
+  SuccessMessage,
 } from '../models/index';
 import {
+    AccountResponseFromJSON,
+    AccountResponseToJSON,
     ComponentUsersRequestFromJSON,
     ComponentUsersRequestToJSON,
     ComponentsUsersResponseFromJSON,
     ComponentsUsersResponseToJSON,
+    CreateAccountRequestFromJSON,
+    CreateAccountRequestToJSON,
+    DeleteAccount200ResponseFromJSON,
+    DeleteAccount200ResponseToJSON,
+    DismissCueRequestFromJSON,
+    DismissCueRequestToJSON,
     ErrorMessageFromJSON,
     ErrorMessageToJSON,
     ExternalReviewsResponseFromJSON,
@@ -46,22 +61,40 @@ import {
     FeatureLinksSampleToJSON,
     FeatureLinksSummaryResponseFromJSON,
     FeatureLinksSummaryResponseToJSON,
+    GetDismissedCues400ResponseFromJSON,
+    GetDismissedCues400ResponseToJSON,
     GetIntentResponseFromJSON,
     GetIntentResponseToJSON,
     MessageResponseFromJSON,
     MessageResponseToJSON,
+    PermissionsResponseFromJSON,
+    PermissionsResponseToJSON,
     PostIntentRequestFromJSON,
     PostIntentRequestToJSON,
     ReviewLatencyFromJSON,
     ReviewLatencyToJSON,
     SpecMentorFromJSON,
     SpecMentorToJSON,
+    SuccessMessageFromJSON,
+    SuccessMessageToJSON,
 } from '../models/index';
 
 export interface AddUserToComponentRequest {
     componentId: number;
     userId: number;
     componentUsersRequest?: ComponentUsersRequest;
+}
+
+export interface CreateAccountOperationRequest {
+    createAccountRequest?: CreateAccountRequest;
+}
+
+export interface DeleteAccountRequest {
+    accountId: number;
+}
+
+export interface DismissCueOperationRequest {
+    dismissCueRequest: DismissCueRequest;
 }
 
 export interface GetFeatureLinksRequest {
@@ -79,6 +112,10 @@ export interface GetIntentBodyRequest {
     featureId: number;
     stageId: number;
     gateId: number;
+}
+
+export interface GetUserPermissionsRequest {
+    returnPairedUser?: boolean;
 }
 
 export interface ListExternalReviewsRequest {
@@ -130,6 +167,65 @@ export interface DefaultApiInterface {
      * Add a user to a component
      */
     addUserToComponent(requestParameters: AddUserToComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * 
+     * @summary Create a new account
+     * @param {CreateAccountRequest} [createAccountRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    createAccountRaw(requestParameters: CreateAccountOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AccountResponse>>;
+
+    /**
+     * Create a new account
+     */
+    createAccount(requestParameters: CreateAccountOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AccountResponse>;
+
+    /**
+     * 
+     * @summary Delete an account
+     * @param {number} accountId ID of the account to delete
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    deleteAccountRaw(requestParameters: DeleteAccountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DeleteAccount200Response>>;
+
+    /**
+     * Delete an account
+     */
+    deleteAccount(requestParameters: DeleteAccountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DeleteAccount200Response>;
+
+    /**
+     * 
+     * @summary Dismiss a cue card for the signed-in user
+     * @param {DismissCueRequest} dismissCueRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    dismissCueRaw(requestParameters: DismissCueOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+
+    /**
+     * Dismiss a cue card for the signed-in user
+     */
+    dismissCue(requestParameters: DismissCueOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
+
+    /**
+     * 
+     * @summary Get dismissed cues for the current user
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getDismissedCuesRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<string>>>;
+
+    /**
+     * Get dismissed cues for the current user
+     */
+    getDismissedCues(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<string>>;
 
     /**
      * 
@@ -194,6 +290,21 @@ export interface DefaultApiInterface {
      * Get the HTML body of an intent draft
      */
     getIntentBody(requestParameters: GetIntentBodyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetIntentResponse>;
+
+    /**
+     * 
+     * @summary Get the permissions and email of the user
+     * @param {boolean} [returnPairedUser] If true, return the permissions of the paired user.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getUserPermissionsRaw(requestParameters: GetUserPermissionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PermissionsResponse>>;
+
+    /**
+     * Get the permissions and email of the user
+     */
+    getUserPermissions(requestParameters: GetUserPermissionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PermissionsResponse>;
 
     /**
      * 
@@ -358,6 +469,130 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     }
 
     /**
+     * Create a new account
+     */
+    async createAccountRaw(requestParameters: CreateAccountOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AccountResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/accounts`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: CreateAccountRequestToJSON(requestParameters['createAccountRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AccountResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Create a new account
+     */
+    async createAccount(requestParameters: CreateAccountOperationRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AccountResponse> {
+        const response = await this.createAccountRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Delete an account
+     */
+    async deleteAccountRaw(requestParameters: DeleteAccountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DeleteAccount200Response>> {
+        if (requestParameters['accountId'] == null) {
+            throw new runtime.RequiredError(
+                'accountId',
+                'Required parameter "accountId" was null or undefined when calling deleteAccount().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/accounts/{account_id}`.replace(`{${"account_id"}}`, encodeURIComponent(String(requestParameters['accountId']))),
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DeleteAccount200ResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Delete an account
+     */
+    async deleteAccount(requestParameters: DeleteAccountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DeleteAccount200Response> {
+        const response = await this.deleteAccountRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Dismiss a cue card for the signed-in user
+     */
+    async dismissCueRaw(requestParameters: DismissCueOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+        if (requestParameters['dismissCueRequest'] == null) {
+            throw new runtime.RequiredError(
+                'dismissCueRequest',
+                'Required parameter "dismissCueRequest" was null or undefined when calling dismissCue().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/currentuser/cues`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DismissCueRequestToJSON(requestParameters['dismissCueRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Dismiss a cue card for the signed-in user
+     */
+    async dismissCue(requestParameters: DismissCueOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+        const response = await this.dismissCueRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get dismissed cues for the current user
+     */
+    async getDismissedCuesRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<string>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/currentuser/cues`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse<any>(response);
+    }
+
+    /**
+     * Get dismissed cues for the current user
+     */
+    async getDismissedCues(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<string>> {
+        const response = await this.getDismissedCuesRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Get feature links by feature_id
      */
     async getFeatureLinksRaw(requestParameters: GetFeatureLinksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FeatureLinksResponse>> {
@@ -499,6 +734,36 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async getIntentBody(requestParameters: GetIntentBodyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetIntentResponse> {
         const response = await this.getIntentBodyRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get the permissions and email of the user
+     */
+    async getUserPermissionsRaw(requestParameters: GetUserPermissionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PermissionsResponse>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['returnPairedUser'] != null) {
+            queryParameters['returnPairedUser'] = requestParameters['returnPairedUser'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/currentuser/permissions`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PermissionsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get the permissions and email of the user
+     */
+    async getUserPermissions(requestParameters: GetUserPermissionsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PermissionsResponse> {
+        const response = await this.getUserPermissionsRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

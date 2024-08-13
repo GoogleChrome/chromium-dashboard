@@ -15,6 +15,50 @@ info:
 servers:
   - url: /api/v0
 paths:
+  /accounts:
+    post:
+      summary: Create a new account
+      operationId: createAccount
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAccountRequest'
+      responses:
+        '200':
+          description: Account created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+        '400':
+          description: Bad request or user already exists
+  /accounts/{account_id}:
+    delete:
+      summary: Delete an account
+      operationId: deleteAccount
+      parameters:
+        - in: path
+          name: account_id
+          schema:
+            type: integer
+          required: true
+          description: ID of the account to delete
+      responses:
+        '200':
+          description: Account deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Done
+        '400':
+          description: Bad request
+        '404':
+          description: Account not found
   /componentsusers:
     get:
       summary: List all components and possible users
@@ -95,6 +139,62 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ReviewLatency'
+  /currentuser/permissions:
+    get:
+      summary: Get the permissions and email of the user
+      operationId: getUserPermissions
+      parameters:
+        - in: query
+          name: returnPairedUser
+          schema:
+            type: boolean
+          required: false
+          description: If true, return the permissions of the paired user.
+      responses:
+        '200':
+          description: The permissions and email of the user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionsResponse'
+  /currentuser/cues:
+    get:
+      summary: Get dismissed cues for the current user
+      operationId: getDismissedCues
+      responses:
+        '200':
+          description: List of dismissed cue cards
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '400':
+          description: Invalid cue provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    post:
+      summary: Dismiss a cue card for the signed-in user
+      operationId: dismissCue
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DismissCueRequest'
+      responses:
+        '200':
+          description: Cue dismissed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
   /external_reviews/{review_group}:
     get:
       summary: List features whose external reviews are incomplete
@@ -316,6 +416,28 @@ components:
       in: header
       name: X-Xsrf-Token
   schemas:
+    CreateAccountRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        isAdmin:
+          type: boolean
+        isSiteEditor:
+          type: boolean
+      required:
+        - email
+    AccountResponse:
+      type: object
+      properties:
+        is_admin:
+          type: boolean
+        is_site_editor:
+          type: boolean
+        email:
+          type: string
+        id:
+          type: integer
     GetIntentResponse:
       properties:
         subject:
@@ -678,6 +800,59 @@ components:
           type: string
         count:
           type: integer
+    PermissionsResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/UserPermissions'
+      required:
+        - user
+    UserPermissions:
+      type: object
+      properties:
+        can_create_feature:
+          type: boolean
+        approvable_gate_types:
+          type: array
+          items:
+            type: integer
+          description: each element should be unique as OAS does not support set
+        can_comment:
+          type: boolean
+        can_edit_all:
+          type: boolean
+        is_admin:
+          type: boolean
+        email:
+          type: string
+          format: email
+        editable_features:
+          type: array
+          items:
+            type: integer
+      required:
+        - can_create_feature
+        - approvable_gate_types
+        - can_comment
+        - can_edit_all
+        - is_admin
+        - email
+        - editable_features
+    DismissCueRequest:
+      type: object
+      properties:
+        cue:
+          type: string
+          enum:
+            - progress-checkmarks
+      required:
+        - cue
+    SuccessMessage:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Done"
     ErrorMessage:
       type: object
       properties:

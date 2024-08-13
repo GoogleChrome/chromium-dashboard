@@ -13,6 +13,50 @@ info:
 servers:
 - url: /api/v0
 paths:
+  /accounts:
+    post:
+      operationId: create_account
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAccountRequest'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+          description: Account created successfully
+        "400":
+          description: Bad request or user already exists
+      summary: Create a new account
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /accounts/{account_id}:
+    delete:
+      operationId: delete_account
+      parameters:
+      - description: ID of the account to delete
+        explode: false
+        in: path
+        name: account_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deleteAccount_200_response'
+          description: Account deleted successfully
+        "400":
+          description: Bad request
+        "404":
+          description: Account not found
+      summary: Delete an account
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /components/{componentId}/users/{userId}:
     delete:
       operationId: remove_user_from_component
@@ -90,6 +134,64 @@ paths:
       security:
       - XsrfToken: []
       summary: List all components and possible users
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /currentuser/cues:
+    get:
+      operationId: get_dismissed_cues
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  type: string
+                type: array
+          description: List of dismissed cue cards
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getDismissedCues_400_response'
+          description: Invalid cue provided
+      summary: Get dismissed cues for the current user
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+    post:
+      operationId: dismiss_cue
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DismissCueRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Cue dismissed successfully
+      summary: Dismiss a cue card for the signed-in user
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /currentuser/permissions:
+    get:
+      operationId: get_user_permissions
+      parameters:
+      - description: "If true, return the permissions of the paired user."
+        explode: true
+        in: query
+        name: returnPairedUser
+        required: false
+        schema:
+          type: boolean
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionsResponse'
+          description: The permissions and email of the user.
+      summary: Get the permissions and email of the user
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /external_reviews/{review_group}:
     get:
@@ -398,6 +500,46 @@ components:
         type: string
       style: form
   schemas:
+    CreateAccountRequest:
+      example:
+        isSiteEditor: true
+        isAdmin: true
+        email: email
+      properties:
+        email:
+          title: email
+          type: string
+        isAdmin:
+          title: isAdmin
+          type: boolean
+        isSiteEditor:
+          title: isSiteEditor
+          type: boolean
+      required:
+      - email
+      title: CreateAccountRequest
+      type: object
+    AccountResponse:
+      example:
+        is_admin: true
+        is_site_editor: true
+        id: 0
+        email: email
+      properties:
+        is_admin:
+          title: is_admin
+          type: boolean
+        is_site_editor:
+          title: is_site_editor
+          type: boolean
+        email:
+          title: email
+          type: string
+        id:
+          title: id
+          type: integer
+      title: AccountResponse
+      type: object
     GetIntentResponse:
       example:
         email_body: email_body
@@ -956,6 +1098,101 @@ components:
           type: integer
       title: CounterEntry
       type: object
+    PermissionsResponse:
+      example:
+        user:
+          is_admin: true
+          can_comment: true
+          editable_features:
+          - 6
+          - 6
+          can_create_feature: true
+          can_edit_all: true
+          email: email
+          approvable_gate_types:
+          - 0
+          - 0
+      properties:
+        user:
+          $ref: '#/components/schemas/UserPermissions'
+      required:
+      - user
+      title: PermissionsResponse
+      type: object
+    UserPermissions:
+      example:
+        is_admin: true
+        can_comment: true
+        editable_features:
+        - 6
+        - 6
+        can_create_feature: true
+        can_edit_all: true
+        email: email
+        approvable_gate_types:
+        - 0
+        - 0
+      properties:
+        can_create_feature:
+          title: can_create_feature
+          type: boolean
+        approvable_gate_types:
+          description: each element should be unique as OAS does not support set
+          items:
+            type: integer
+          title: approvable_gate_types
+          type: array
+        can_comment:
+          title: can_comment
+          type: boolean
+        can_edit_all:
+          title: can_edit_all
+          type: boolean
+        is_admin:
+          title: is_admin
+          type: boolean
+        email:
+          format: email
+          title: email
+          type: string
+        editable_features:
+          items:
+            type: integer
+          title: editable_features
+          type: array
+      required:
+      - approvable_gate_types
+      - can_comment
+      - can_create_feature
+      - can_edit_all
+      - editable_features
+      - email
+      - is_admin
+      title: UserPermissions
+      type: object
+    DismissCueRequest:
+      example:
+        cue: progress-checkmarks
+      properties:
+        cue:
+          enum:
+          - progress-checkmarks
+          title: cue
+          type: string
+      required:
+      - cue
+      title: DismissCueRequest
+      type: object
+    SuccessMessage:
+      example:
+        message: Done
+      properties:
+        message:
+          example: Done
+          title: message
+          type: string
+      title: SuccessMessage
+      type: object
     ErrorMessage:
       example:
         error: Error
@@ -965,6 +1202,25 @@ components:
           title: error
           type: string
       title: ErrorMessage
+      type: object
+    deleteAccount_200_response:
+      example:
+        message: Done
+      properties:
+        message:
+          example: Done
+          title: message
+          type: string
+      title: deleteAccount_200_response
+      type: object
+    getDismissedCues_400_response:
+      example:
+        error: error
+      properties:
+        error:
+          title: error
+          type: string
+      title: getDismissedCues_400_response
       type: object
     LinkPreviewGithubIssue_allOf_information:
       properties:

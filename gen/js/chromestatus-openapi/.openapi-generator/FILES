@@ -6,10 +6,14 @@ package.json
 src/apis/DefaultApi.ts
 src/apis/index.ts
 src/index.ts
+src/models/AccountResponse.ts
 src/models/ComponentUsersRequest.ts
 src/models/ComponentsUser.ts
 src/models/ComponentsUsersResponse.ts
 src/models/CounterEntry.ts
+src/models/CreateAccountRequest.ts
+src/models/DeleteAccount200Response.ts
+src/models/DismissCueRequest.ts
 src/models/ErrorMessage.ts
 src/models/ExternalReviewsResponse.ts
 src/models/FeatureLatency.ts
@@ -18,6 +22,7 @@ src/models/FeatureLinksResponse.ts
 src/models/FeatureLinksSample.ts
 src/models/FeatureLinksSummaryResponse.ts
 src/models/GateLatency.ts
+src/models/GetDismissedCues400Response.ts
 src/models/GetIntentResponse.ts
 src/models/LinkPreview.ts
 src/models/LinkPreviewBase.ts
@@ -36,9 +41,12 @@ src/models/LinkPreviewWebkitBug.ts
 src/models/MessageResponse.ts
 src/models/OutstandingReview.ts
 src/models/OwnersAndSubscribersOfComponent.ts
+src/models/PermissionsResponse.ts
 src/models/PostIntentRequest.ts
 src/models/ReviewLatency.ts
 src/models/SpecMentor.ts
+src/models/SuccessMessage.ts
+src/models/UserPermissions.ts
 src/models/index.ts
 src/runtime.ts
 tsconfig.esm.json
