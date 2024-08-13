@@ -594,6 +594,11 @@ components:
       properties:
         form_field_name:
           type: string
+        value:
+          $ref: '#/components/schemas/FieldInfoValue'
+    FieldInfoValue:
+      type: object
+      properties:
         string_value:
           type: string
           nullable: true

@@ -19,6 +19,7 @@ src/models/ExternalReviewsResponse.ts
 src/models/FeatureLatency.ts
 src/models/FeatureLink.ts
 src/models/FieldInfo.ts
+src/models/FieldInfoValue.ts
 src/models/GateLatency.ts
 src/models/GetDismissedCues400Response.ts
 src/models/GetIntentResponse.ts

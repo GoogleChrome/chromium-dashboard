@@ -25,6 +25,7 @@ chromestatus_openapi/models/external_reviews_response.py
 chromestatus_openapi/models/feature_latency.py
 chromestatus_openapi/models/feature_link.py
 chromestatus_openapi/models/field_info.py
+chromestatus_openapi/models/field_info_value.py
 chromestatus_openapi/models/gate_latency.py
 chromestatus_openapi/models/get_dismissed_cues400_response.py
 chromestatus_openapi/models/get_intent_response.py
