@@ -27,6 +27,7 @@ import type {
   GetIntentResponse,
   MessageResponse,
   PostIntentRequest,
+  Process,
   ReviewLatency,
   SpecMentor,
   SuccessMessage,
@@ -56,6 +57,8 @@ import {
     MessageResponseToJSON,
     PostIntentRequestFromJSON,
     PostIntentRequestToJSON,
+    ProcessFromJSON,
+    ProcessToJSON,
     ReviewLatencyFromJSON,
     ReviewLatencyToJSON,
     SpecMentorFromJSON,
@@ -86,6 +89,10 @@ export interface GetIntentBodyRequest {
     featureId: number;
     stageId: number;
     gateId: number;
+}
+
+export interface GetProcessRequest {
+    featureId: number;
 }
 
 export interface ListExternalReviewsRequest {
@@ -213,6 +220,21 @@ export interface DefaultApiInterface {
      * Get the HTML body of an intent draft
      */
     getIntentBody(requestParameters: GetIntentBodyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetIntentResponse>;
+
+    /**
+     * 
+     * @summary Get the process for a feature
+     * @param {number} featureId Feature ID
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getProcessRaw(requestParameters: GetProcessRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Process>>;
+
+    /**
+     * Get the process for a feature
+     */
+    getProcess(requestParameters: GetProcessRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Process>;
 
     /**
      * 
@@ -544,6 +566,39 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async getIntentBody(requestParameters: GetIntentBodyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetIntentResponse> {
         const response = await this.getIntentBodyRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get the process for a feature
+     */
+    async getProcessRaw(requestParameters: GetProcessRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Process>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling getProcess().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/features/{feature_id}/process`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ProcessFromJSON(jsonValue));
+    }
+
+    /**
+     * Get the process for a feature
+     */
+    async getProcess(requestParameters: GetProcessRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Process> {
+        const response = await this.getProcessRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

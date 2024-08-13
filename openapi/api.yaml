@@ -237,7 +237,17 @@ paths:
         schema:
           type: integer
     get:
-
+      summary: Get the process for a feature
+      operationId: getProcess
+      responses:
+        '200':
+          description: The process for the feature
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Process'
+        '404':
+          description: Feature not found based on given ID.
   /features/{feature_id}/{stage_id}/{gate_id}/intent:
     parameters:
       - name: feature_id
@@ -336,6 +346,18 @@ components:
       name: X-Xsrf-Token
   schemas:
     Process:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        applicability:
+          type: string
+        stages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProcessStage'
     ProcessStage:
       type: object
       properties:
@@ -343,7 +365,67 @@ components:
           type: string
         description:
           type: string
-        
+        progress_items:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              field:
+                type: string
+                nullable: true
+        actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Action'
+        approvals:
+          type: array
+          items:
+            $ref: '#/components/schemas/GateInfo'
+        incoming_stage:
+          type: integer
+        outgoing_stage:
+          type: integer
+        stage_type:
+          type: integer
+          nullable: true
+    Action:
+      type: object
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+        prerequisites:
+          type: array
+          items:
+            type: string
+    GateInfo:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        gate_type:
+          type: integer
+        rule:
+          type: string
+        approvers:
+          type: array
+          items:
+            type: string
+          description: A list of approvers. A single string can also be accepted and will be treated as a list containing that string.
+        team_name:
+          type: string
+        escalation_email:
+          type: string
+          nullable: true
+        slo_initial_response:
+          type: integer
+          default: 5
+          description: DEFAULT_SLO_LIMIT is 5 in approval_defs.py
     CreateAccountRequest:
       type: object
       properties:

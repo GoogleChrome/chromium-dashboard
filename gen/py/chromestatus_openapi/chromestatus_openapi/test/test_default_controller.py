@@ -14,6 +14,7 @@ from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismis
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
 from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
+from chromestatus_openapi.models.process import Process  # noqa: E501
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
 from chromestatus_openapi.models.success_message import SuccessMessage  # noqa: E501
@@ -120,6 +121,21 @@ class TestDefaultController(BaseTestCase):
         }
         response = self.client.open(
             '/api/v0/features/{feature_id}/{stage_id}/{gate_id}/intent'.format(feature_id=56, stage_id=56, gate_id=56),
+            method='GET',
+            headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_get_process(self):
+        """Test case for get_process
+
+        Get the process for a feature
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/features/{feature_id}/process'.format(feature_id=56),
             method='GET',
             headers=headers)
         self.assert200(response,
