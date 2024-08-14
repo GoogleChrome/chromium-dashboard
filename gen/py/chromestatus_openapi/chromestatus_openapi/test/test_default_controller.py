@@ -141,6 +141,21 @@ class TestDefaultController(BaseTestCase):
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
+    def test_get_progress(self):
+        """Test case for get_progress
+
+        Get the progress for a feature
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/features/{feature_id}/progress'.format(feature_id=56),
+            method='GET',
+            headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
     def test_list_component_users(self):
         """Test case for list_component_users
 

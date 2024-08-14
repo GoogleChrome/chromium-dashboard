@@ -95,6 +95,10 @@ export interface GetProcessRequest {
     featureId: number;
 }
 
+export interface GetProgressRequest {
+    featureId: number;
+}
+
 export interface ListExternalReviewsRequest {
     reviewGroup: ListExternalReviewsReviewGroupEnum;
 }
@@ -235,6 +239,21 @@ export interface DefaultApiInterface {
      * Get the process for a feature
      */
     getProcess(requestParameters: GetProcessRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Process>;
+
+    /**
+     * 
+     * @summary Get the progress for a feature
+     * @param {number} featureId Feature ID
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getProgressRaw(requestParameters: GetProgressRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: any; }>>;
+
+    /**
+     * Get the progress for a feature
+     */
+    getProgress(requestParameters: GetProgressRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: any; }>;
 
     /**
      * 
@@ -599,6 +618,39 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async getProcess(requestParameters: GetProcessRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Process> {
         const response = await this.getProcessRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get the progress for a feature
+     */
+    async getProgressRaw(requestParameters: GetProgressRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: any; }>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling getProgress().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/features/{feature_id}/progress`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse<any>(response);
+    }
+
+    /**
+     * Get the progress for a feature
+     */
+    async getProgress(requestParameters: GetProgressRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: any; }> {
+        const response = await this.getProgressRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

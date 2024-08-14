@@ -125,6 +125,19 @@ def get_process(feature_id):  # noqa: E501
     return 'do some magic!'
 
 
+def get_progress(feature_id):  # noqa: E501
+    """Get the progress for a feature
+
+     # noqa: E501
+
+    :param feature_id: Feature ID
+    :type feature_id: int
+
+    :rtype: Union[Dict[str, object], Tuple[Dict[str, object], int], Tuple[Dict[str, object], int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
 def list_component_users():  # noqa: E501
     """List all components and possible users
 

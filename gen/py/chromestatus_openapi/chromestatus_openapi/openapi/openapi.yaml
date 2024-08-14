@@ -264,6 +264,31 @@ paths:
           description: Feature not found based on given ID.
       summary: Get the process for a feature
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /features/{feature_id}/progress:
+    get:
+      operationId: get_progress
+      parameters:
+      - description: Feature ID
+        explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+          description: "The progress for the feature. Since there's no fixed data\
+            \ structure for progress, it's defined as a free-form object."
+        "404":
+          description: Feature not found based on given ID.
+      summary: Get the progress for a feature
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /features/{feature_id}/{stage_id}/{gate_id}/intent:
     get:
       operationId: get_intent_body
