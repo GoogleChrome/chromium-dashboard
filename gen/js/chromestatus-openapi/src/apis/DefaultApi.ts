@@ -21,8 +21,12 @@ import type {
   CreateAccountRequest,
   DeleteAccount200Response,
   DismissCueRequest,
+  ErrorMessage,
   ExternalReviewsResponse,
   FeatureLatency,
+  FeatureLinksResponse,
+  FeatureLinksSample,
+  FeatureLinksSummaryResponse,
   GetDismissedCues400Response,
   GetIntentResponse,
   MessageResponse,
@@ -45,10 +49,18 @@ import {
     DeleteAccount200ResponseToJSON,
     DismissCueRequestFromJSON,
     DismissCueRequestToJSON,
+    ErrorMessageFromJSON,
+    ErrorMessageToJSON,
     ExternalReviewsResponseFromJSON,
     ExternalReviewsResponseToJSON,
     FeatureLatencyFromJSON,
     FeatureLatencyToJSON,
+    FeatureLinksResponseFromJSON,
+    FeatureLinksResponseToJSON,
+    FeatureLinksSampleFromJSON,
+    FeatureLinksSampleToJSON,
+    FeatureLinksSummaryResponseFromJSON,
+    FeatureLinksSummaryResponseToJSON,
     GetDismissedCues400ResponseFromJSON,
     GetDismissedCues400ResponseToJSON,
     GetIntentResponseFromJSON,
@@ -83,6 +95,17 @@ export interface DeleteAccountRequest {
 
 export interface DismissCueOperationRequest {
     dismissCueRequest: DismissCueRequest;
+}
+
+export interface GetFeatureLinksRequest {
+    featureId?: number;
+    updateStaleLinks?: boolean;
+}
+
+export interface GetFeatureLinksSamplesRequest {
+    domain?: string;
+    type?: string;
+    isError?: boolean;
 }
 
 export interface GetIntentBodyRequest {
@@ -203,6 +226,53 @@ export interface DefaultApiInterface {
      * Get dismissed cues for the current user
      */
     getDismissedCues(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<string>>;
+
+    /**
+     * 
+     * @summary Get feature links by feature_id
+     * @param {number} [featureId] 
+     * @param {boolean} [updateStaleLinks] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getFeatureLinksRaw(requestParameters: GetFeatureLinksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FeatureLinksResponse>>;
+
+    /**
+     * Get feature links by feature_id
+     */
+    getFeatureLinks(requestParameters: GetFeatureLinksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FeatureLinksResponse>;
+
+    /**
+     * 
+     * @summary Get feature links samples
+     * @param {string} [domain] 
+     * @param {string} [type] 
+     * @param {boolean} [isError] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getFeatureLinksSamplesRaw(requestParameters: GetFeatureLinksSamplesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FeatureLinksSample>>;
+
+    /**
+     * Get feature links samples
+     */
+    getFeatureLinksSamples(requestParameters: GetFeatureLinksSamplesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FeatureLinksSample>;
+
+    /**
+     * 
+     * @summary Get feature links summary
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getFeatureLinksSummaryRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FeatureLinksSummaryResponse>>;
+
+    /**
+     * Get feature links summary
+     */
+    getFeatureLinksSummary(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FeatureLinksSummaryResponse>;
 
     /**
      * 
@@ -519,6 +589,104 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async getDismissedCues(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<string>> {
         const response = await this.getDismissedCuesRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get feature links by feature_id
+     */
+    async getFeatureLinksRaw(requestParameters: GetFeatureLinksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FeatureLinksResponse>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['featureId'] != null) {
+            queryParameters['feature_id'] = requestParameters['featureId'];
+        }
+
+        if (requestParameters['updateStaleLinks'] != null) {
+            queryParameters['update_stale_links'] = requestParameters['updateStaleLinks'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/feature_links`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FeatureLinksResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get feature links by feature_id
+     */
+    async getFeatureLinks(requestParameters: GetFeatureLinksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FeatureLinksResponse> {
+        const response = await this.getFeatureLinksRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get feature links samples
+     */
+    async getFeatureLinksSamplesRaw(requestParameters: GetFeatureLinksSamplesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FeatureLinksSample>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['domain'] != null) {
+            queryParameters['domain'] = requestParameters['domain'];
+        }
+
+        if (requestParameters['type'] != null) {
+            queryParameters['type'] = requestParameters['type'];
+        }
+
+        if (requestParameters['isError'] != null) {
+            queryParameters['is_error'] = requestParameters['isError'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/feature_links_samples`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FeatureLinksSampleFromJSON(jsonValue));
+    }
+
+    /**
+     * Get feature links samples
+     */
+    async getFeatureLinksSamples(requestParameters: GetFeatureLinksSamplesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FeatureLinksSample> {
+        const response = await this.getFeatureLinksSamplesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get feature links summary
+     */
+    async getFeatureLinksSummaryRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FeatureLinksSummaryResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/feature_links_summary`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FeatureLinksSummaryResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get feature links summary
+     */
+    async getFeatureLinksSummary(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FeatureLinksSummaryResponse> {
+        const response = await this.getFeatureLinksSummaryRaw(initOverrides);
         return await response.value();
     }
 
