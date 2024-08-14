@@ -433,9 +433,7 @@ components:
             slo_initial_response: 6
             description: description
             rule: rule
-            approvers:
-            - approvers
-            - approvers
+            approvers: approvers
             escalation_email: escalation_email
             team_name: team_name
           - gate_type: 0
@@ -443,9 +441,7 @@ components:
             slo_initial_response: 6
             description: description
             rule: rule
-            approvers:
-            - approvers
-            - approvers
+            approvers: approvers
             escalation_email: escalation_email
             team_name: team_name
           name: name
@@ -475,9 +471,7 @@ components:
             slo_initial_response: 6
             description: description
             rule: rule
-            approvers:
-            - approvers
-            - approvers
+            approvers: approvers
             escalation_email: escalation_email
             team_name: team_name
           - gate_type: 0
@@ -485,9 +479,7 @@ components:
             slo_initial_response: 6
             description: description
             rule: rule
-            approvers:
-            - approvers
-            - approvers
+            approvers: approvers
             escalation_email: escalation_email
             team_name: team_name
           name: name
@@ -538,9 +530,7 @@ components:
           slo_initial_response: 6
           description: description
           rule: rule
-          approvers:
-          - approvers
-          - approvers
+          approvers: approvers
           escalation_email: escalation_email
           team_name: team_name
         - gate_type: 0
@@ -548,9 +538,7 @@ components:
           slo_initial_response: 6
           description: description
           rule: rule
-          approvers:
-          - approvers
-          - approvers
+          approvers: approvers
           escalation_email: escalation_email
           team_name: team_name
         name: name
@@ -642,9 +630,7 @@ components:
         slo_initial_response: 6
         description: description
         rule: rule
-        approvers:
-        - approvers
-        - approvers
+        approvers: approvers
         escalation_email: escalation_email
         team_name: team_name
       properties:
@@ -663,10 +649,8 @@ components:
         approvers:
           description: A list of approvers. A single string can also be accepted and
             will be treated as a list containing that string.
-          items:
-            type: string
           title: approvers
-          type: array
+          type: string
         team_name:
           title: team_name
           type: string

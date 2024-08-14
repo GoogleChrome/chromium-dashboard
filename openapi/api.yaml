@@ -414,9 +414,7 @@ components:
         rule:
           type: string
         approvers:
-          type: array
-          items:
-            type: string
+          type: string
           description: A list of approvers. A single string can also be accepted and will be treated as a list containing that string.
         team_name:
           type: string

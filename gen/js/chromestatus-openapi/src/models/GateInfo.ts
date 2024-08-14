@@ -45,10 +45,10 @@ export interface GateInfo {
     rule?: string;
     /**
      * A list of approvers. A single string can also be accepted and will be treated as a list containing that string.
-     * @type {Array<string>}
+     * @type {string}
      * @memberof GateInfo
      */
-    approvers?: Array<string>;
+    approvers?: string;
     /**
      * 
      * @type {string}

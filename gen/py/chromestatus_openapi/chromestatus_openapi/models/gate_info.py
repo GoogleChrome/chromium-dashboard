@@ -24,7 +24,7 @@ class GateInfo(Model):
         :param rule: The rule of this GateInfo.  # noqa: E501
         :type rule: str
         :param approvers: The approvers of this GateInfo.  # noqa: E501
-        :type approvers: List[str]
+        :type approvers: str
         :param team_name: The team_name of this GateInfo.  # noqa: E501
         :type team_name: str
         :param escalation_email: The escalation_email of this GateInfo.  # noqa: E501
@@ -37,7 +37,7 @@ class GateInfo(Model):
             'description': str,
             'gate_type': int,
             'rule': str,
-            'approvers': List[str],
+            'approvers': str,
             'team_name': str,
             'escalation_email': str,
             'slo_initial_response': int
@@ -159,24 +159,24 @@ class GateInfo(Model):
         self._rule = rule
 
     @property
-    def approvers(self) -> List[str]:
+    def approvers(self) -> str:
         """Gets the approvers of this GateInfo.
 
         A list of approvers. A single string can also be accepted and will be treated as a list containing that string.  # noqa: E501
 
         :return: The approvers of this GateInfo.
-        :rtype: List[str]
+        :rtype: str
         """
         return self._approvers
 
     @approvers.setter
-    def approvers(self, approvers: List[str]):
+    def approvers(self, approvers: str):
         """Sets the approvers of this GateInfo.
 
         A list of approvers. A single string can also be accepted and will be treated as a list containing that string.  # noqa: E501
 
         :param approvers: The approvers of this GateInfo.
-        :type approvers: List[str]
+        :type approvers: str
         """
 
         self._approvers = approvers

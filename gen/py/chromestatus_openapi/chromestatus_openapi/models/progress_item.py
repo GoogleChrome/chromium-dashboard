@@ -12,26 +12,26 @@ class ProgressItem(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, name=None, _field=None):  # noqa: E501
+    def __init__(self, name=None, field=None):  # noqa: E501
         """ProgressItem - a model defined in OpenAPI
 
         :param name: The name of this ProgressItem.  # noqa: E501
         :type name: str
-        :param _field: The _field of this ProgressItem.  # noqa: E501
-        :type _field: str
+        :param field: The field of this ProgressItem.  # noqa: E501
+        :type field: str
         """
         self.openapi_types = {
             'name': str,
-            '_field': str
+            'field': str
         }
 
         self.attribute_map = {
             'name': 'name',
-            '_field': 'field'
+            'field': 'field'
         }
 
         self._name = name
-        self.__field = _field
+        self._field = field
 
     @classmethod
     def from_dict(cls, dikt) -> 'ProgressItem':
@@ -66,22 +66,22 @@ class ProgressItem(Model):
         self._name = name
 
     @property
-    def _field(self) -> str:
-        """Gets the _field of this ProgressItem.
+    def field(self) -> str:
+        """Gets the field of this ProgressItem.
 
 
-        :return: The _field of this ProgressItem.
+        :return: The field of this ProgressItem.
         :rtype: str
         """
-        return self.__field
+        return self._field
 
-    @_field.setter
-    def _field(self, _field: str):
-        """Sets the _field of this ProgressItem.
+    @field.setter
+    def field(self, field: str):
+        """Sets the field of this ProgressItem.
 
 
-        :param _field: The _field of this ProgressItem.
-        :type _field: str
+        :param field: The field of this ProgressItem.
+        :type field: str
         """
 
-        self.__field = _field
+        self._field = field
