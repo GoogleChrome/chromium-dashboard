@@ -161,7 +161,7 @@ def index_feature(fe: FeatureEntry) -> None:
   updated_fw_list[0].put()
 
 
-def _canonicalize_string(s: str) -> str:
+def canonicalize_string(s: str) -> str:
   """Return a string of lowercase words separated by single spaces."""
   lower_s = s.lower().replace("'", "")
   words = WORD_RE.findall(lower_s)
@@ -173,11 +173,11 @@ def _canonicalize_string(s: str) -> str:
 def post_process_phrase(phrase: str, feature_ids: list[int]) -> list[int]:
   """Fetch the given features and check if the really have the phrase."""
   features = get_future_results(get_entries_by_id_async(feature_ids))
-  canon_phrase = _canonicalize_string(phrase)
+  canon_phrase = canonicalize_string(phrase)
   result = []
   for fe in features:
     feature_strings = get_strings(fe)
-    has_phrase = any(canon_phrase in _canonicalize_string(fs)
+    has_phrase = any(canon_phrase in canonicalize_string(fs)
                      for fs in feature_strings)
     if has_phrase:
       result.append(fe.key.integer_id())
