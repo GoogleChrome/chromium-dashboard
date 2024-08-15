@@ -148,7 +148,7 @@ class SearchFulltextFunctionsTest(testing_config.CustomTestCase):
     fe = core_models.FeatureEntry(
         creator_email='creator@example.com',
         name='Once upon a time',
-        summary='rode all around the land',
+        summary='rode and strode all around',
         motivation='lived happily ever after.',
         category=core_enums.NETWORKING,
         cc_emails=['one@example.com', 'two@example.com'],
@@ -174,8 +174,8 @@ class SearchFulltextFunctionsTest(testing_config.CustomTestCase):
 
     # Phrase can be found in any field or value of multi-valued field
     assert_found('lived happily')
-    assert_found('rode all around the land')
-    assert_found('rode all-around the land')
+    assert_found('strode all around')
+    assert_found('strode all-around')
     assert_found('creator example com')
     assert_found('creator@example.com')
     assert_found('two@example.com')
@@ -188,6 +188,10 @@ class SearchFulltextFunctionsTest(testing_config.CustomTestCase):
     # A single phrase cannot span fields or values of multi-valued fields
     assert_not_found('time rode')
     assert_not_found('one example com two example com')
+
+    # It does not match part of a word, even if that is a different word
+    assert_not_found('round')
+    assert_not_found('rode all around')
 
   # TODO(jrobbins): Unit test for search_fulltext.
 
