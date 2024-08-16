@@ -24,8 +24,7 @@ from framework.basehandlers import FlaskHandler
 from internals.core_models import FeatureEntry
 from internals.feature_helpers import (
     get_future_results,
-    get_entries_by_id_async,
-    )
+    get_entries_by_id_async)
 
 
 # We consider all words that have three or more letters.
@@ -165,13 +164,12 @@ def canonicalize_string(s: str) -> str:
   """Return a string of lowercase words separated by single spaces."""
   lower_s = s.lower().replace("'", "")
   words = WORD_RE.findall(lower_s)
-  words = [w for w in words if w not in STOP_WORDS]
-  canonicalized = ' '.join(words)
-  return ' ' + canonicalized + ' '
+  canonicalized = ' '.join(w for w in words if w not in STOP_WORDS)
+  return ' ' + canonicalized + ' '  # Avoids matching partial words.
 
 
 def post_process_phrase(phrase: str, feature_ids: list[int]) -> list[int]:
-  """Fetch the given features and check if the really have the phrase."""
+  """Fetch the given features and check if they really have the phrase."""
   features = get_future_results(get_entries_by_id_async(feature_ids))
   canon_phrase = canonicalize_string(phrase)
   result = []
