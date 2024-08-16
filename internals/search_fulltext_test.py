@@ -118,6 +118,81 @@ class SearchFulltextFunctionsTest(testing_config.CustomTestCase):
 
   # TODO(jrobbins): Unit test for index_feature.
 
+  def test_canonicalize_string(self):
+    """It converts strings to a canonical form for less finickymatches."""
+    self.assertEqual(
+        search_fulltext.canonicalize_string(''),
+        '  ')
+    self.assertEqual(
+        search_fulltext.canonicalize_string('abc xyz'),
+        ' abc xyz ')
+    self.assertEqual(
+        search_fulltext.canonicalize_string(' Abc    xYz'),
+        ' abc xyz ')
+    self.assertEqual(
+        search_fulltext.canonicalize_string("That's the way I like it."),
+        ' thats way like ')
+
+    self.assertEqual(
+        search_fulltext.canonicalize_string('Four score and 7 years ago'),
+        ' four score years ago ')
+
+  def test_post_process_phrase__no_candidates(self):
+    """If there were no word-bag results then they can be no phrase results."""
+    word_bag_feature_ids = []
+    actual = search_fulltext.post_process_phrase('hello', word_bag_feature_ids)
+    self.assertEqual([], actual)
+
+  def test_post_process_phrase__phrase_detection(self):
+    """It returns feature_ids for only features with the words in the phrase."""
+    fe = core_models.FeatureEntry(
+        creator_email='creator@example.com',
+        name='Once upon a time',
+        summary='rode and strode all around',
+        motivation='lived happily ever after.',
+        category=core_enums.NETWORKING,
+        cc_emails=['one@example.com', 'two@example.com'],
+    )
+    fe.put()
+    fe_id = fe.key.integer_id()
+    word_bag_feature_ids = [fe_id]
+
+    def assert_found(s):
+      actual = search_fulltext.post_process_phrase(
+          s, word_bag_feature_ids)
+      self.assertEqual([fe_id], actual)
+
+    def assert_not_found(s):
+      actual = search_fulltext.post_process_phrase(
+          s, word_bag_feature_ids)
+      self.assertEqual([], actual)
+
+    # Not a phrase match
+    assert_not_found('random junk')
+    assert_not_found('upon once')
+    assert_not_found('once time')
+
+    # Phrase can be found in any field or value of multi-valued field
+    assert_found('lived happily')
+    assert_found('strode all around')
+    assert_found('strode all-around')
+    assert_found('creator example com')
+    assert_found('creator@example.com')
+    assert_found('two@example.com')
+
+    # Stop-words are ignored
+    assert_found('once upon time')
+    assert_found('once upon a time')
+    assert_found('once upon the time')
+
+    # A single phrase cannot span fields or values of multi-valued fields
+    assert_not_found('time rode')
+    assert_not_found('one example com two example com')
+
+    # It does not match part of a word, even if that is a different word
+    assert_not_found('round')
+    assert_not_found('rode all around')
+
   # TODO(jrobbins): Unit test for search_fulltext.
 
   # TODO(jrobbins): Unit test for ReindexAllFeatures.
