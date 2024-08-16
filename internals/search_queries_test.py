@@ -344,7 +344,7 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
     future = search_queries.total_order_query_async('gate.reviewed_on')
     actual = search._resolve_promise_to_id_list(future)
     self.assertEqual(
-        [self.feature_1_id],
+        [self.feature_1_id, self.feature_2_id],
         actual)
 
   def test_stage_fields_have_join_conditions(self):
