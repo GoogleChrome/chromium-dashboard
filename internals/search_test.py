@@ -386,6 +386,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     mock_approvable_by.return_value = set({1, 2, 3})
     time_1 = datetime.datetime.now() - datetime.timedelta(days=4)
     time_2 = datetime.datetime.now()
+    time_3 = datetime.datetime.now() - datetime.timedelta(days=100)
     fe_1_id = self.featureentry_1.key.integer_id()
     fe_2_id = self.featureentry_2.key.integer_id()
     gate_1 = Gate(
@@ -404,10 +405,15 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         feature_id=fe_2_id, gate_id=gate_2.key.integer_id(),
         state=Vote.APPROVED, set_on=time_1, set_by='reviewer@example.com')
     vote_2_1.put()
+    vote_2_2 = Vote(
+        feature_id=fe_2_id, gate_id=gate_2.key.integer_id(),
+        state=Vote.APPROVED, set_on=time_3, set_by='old@example.com')
+    vote_2_2.put()
 
     future = search.process_recent_reviews_query()
     feature_ids = search._resolve_promise_to_id_list(future)
 
+    # Note: vote_2_2 does not contribute to the list because it is too old.
     self.assertEqual([fe_1_id, fe_2_id], feature_ids)
 
   def test_sort_by_total_order__empty(self):
