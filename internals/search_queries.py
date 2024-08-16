@@ -25,7 +25,7 @@ from google.cloud.ndb.tasklets import Future  # for type checking only
 from framework import users
 from internals import core_enums
 from internals.core_models import FeatureEntry, Stage
-from internals.review_models import Gate
+from internals.review_models import (Gate, Vote)
 
 T = TypeVar('T')
 QueryValue: TypeAlias = bool | int | str | datetime.datetime
@@ -244,9 +244,9 @@ def sorted_by_pending_request_date(descending: bool) -> Future:
 def sorted_by_review_date(descending: bool) -> Future:
   """Return feature_ids of reviewed approvals sorted by last review."""
   return _sorted_by_joined_model(
-      Gate,
-      Gate.state.IN(Gate.FINAL_STATES),
-      descending, Gate.requested_on)
+      Vote,
+      Vote.state.IN(Gate.FINAL_STATES),
+      descending, Vote.set_on)
 
 
 QUERIABLE_FIELDS: dict[str, Property] = {
@@ -403,10 +403,6 @@ STAGE_TYPES_BY_QUERY_FIELD: dict[str, dict[int, Optional[int]]] = {
 
 SORTABLE_FIELDS: dict[str, Union[Property, Callable]] = QUERIABLE_FIELDS.copy()
 SORTABLE_FIELDS.update({
-    # TODO(jrobbins): remove the 'approvals.*' items after 2023-01-01.
-    'approvals.requested_on': sorted_by_pending_request_date,
-    'approvals.reviewed_on': sorted_by_review_date,
-
     'gate.requested_on': sorted_by_pending_request_date,
     'gate.reviewed_on': sorted_by_review_date,
     })
