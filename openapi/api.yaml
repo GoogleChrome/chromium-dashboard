@@ -202,7 +202,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorMessage'
-
   /accounts:
     post:
       summary: Create a new account
