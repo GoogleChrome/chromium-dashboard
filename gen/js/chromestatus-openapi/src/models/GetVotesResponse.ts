@@ -23,29 +23,29 @@ import {
 /**
  * 
  * @export
- * @interface VotesResponse
+ * @interface GetVotesResponse
  */
-export interface VotesResponse {
+export interface GetVotesResponse {
     /**
      * 
      * @type {Array<Vote>}
-     * @memberof VotesResponse
+     * @memberof GetVotesResponse
      */
     votes?: Array<Vote>;
 }
 
 /**
- * Check if a given object implements the VotesResponse interface.
+ * Check if a given object implements the GetVotesResponse interface.
  */
-export function instanceOfVotesResponse(value: object): value is VotesResponse {
+export function instanceOfGetVotesResponse(value: object): value is GetVotesResponse {
     return true;
 }
 
-export function VotesResponseFromJSON(json: any): VotesResponse {
-    return VotesResponseFromJSONTyped(json, false);
+export function GetVotesResponseFromJSON(json: any): GetVotesResponse {
+    return GetVotesResponseFromJSONTyped(json, false);
 }
 
-export function VotesResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): VotesResponse {
+export function GetVotesResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): GetVotesResponse {
     if (json == null) {
         return json;
     }
@@ -55,7 +55,7 @@ export function VotesResponseFromJSONTyped(json: any, ignoreDiscriminator: boole
     };
 }
 
-export function VotesResponseToJSON(value?: VotesResponse | null): any {
+export function GetVotesResponseToJSON(value?: GetVotesResponse | null): any {
     if (value == null) {
         return value;
     }

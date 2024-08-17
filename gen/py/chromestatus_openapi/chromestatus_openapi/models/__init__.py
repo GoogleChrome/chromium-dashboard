@@ -12,10 +12,13 @@ from chromestatus_openapi.models.error_message import ErrorMessage
 from chromestatus_openapi.models.external_reviews_response import ExternalReviewsResponse
 from chromestatus_openapi.models.feature_latency import FeatureLatency
 from chromestatus_openapi.models.feature_link import FeatureLink
+from chromestatus_openapi.models.gate import Gate
 from chromestatus_openapi.models.gate_info import GateInfo
 from chromestatus_openapi.models.gate_latency import GateLatency
 from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismissedCues400Response
+from chromestatus_openapi.models.get_gate_response import GetGateResponse
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse
+from chromestatus_openapi.models.get_votes_response import GetVotesResponse
 from chromestatus_openapi.models.link_preview import LinkPreview
 from chromestatus_openapi.models.link_preview_base import LinkPreviewBase
 from chromestatus_openapi.models.link_preview_github_issue import LinkPreviewGithubIssue
@@ -42,4 +45,3 @@ from chromestatus_openapi.models.review_latency import ReviewLatency
 from chromestatus_openapi.models.spec_mentor import SpecMentor
 from chromestatus_openapi.models.success_message import SuccessMessage
 from chromestatus_openapi.models.vote import Vote
-from chromestatus_openapi.models.votes_response import VotesResponse

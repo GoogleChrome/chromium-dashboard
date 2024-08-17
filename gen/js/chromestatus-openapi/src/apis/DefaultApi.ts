@@ -25,7 +25,9 @@ import type {
   ExternalReviewsResponse,
   FeatureLatency,
   GetDismissedCues400Response,
+  GetGateResponse,
   GetIntentResponse,
+  GetVotesResponse,
   MessageResponse,
   PostIntentRequest,
   PostVoteRequest,
@@ -33,7 +35,6 @@ import type {
   ReviewLatency,
   SpecMentor,
   SuccessMessage,
-  VotesResponse,
 } from '../models/index';
 import {
     AccountResponseFromJSON,
@@ -56,8 +57,12 @@ import {
     FeatureLatencyToJSON,
     GetDismissedCues400ResponseFromJSON,
     GetDismissedCues400ResponseToJSON,
+    GetGateResponseFromJSON,
+    GetGateResponseToJSON,
     GetIntentResponseFromJSON,
     GetIntentResponseToJSON,
+    GetVotesResponseFromJSON,
+    GetVotesResponseToJSON,
     MessageResponseFromJSON,
     MessageResponseToJSON,
     PostIntentRequestFromJSON,
@@ -72,8 +77,6 @@ import {
     SpecMentorToJSON,
     SuccessMessageFromJSON,
     SuccessMessageToJSON,
-    VotesResponseFromJSON,
-    VotesResponseToJSON,
 } from '../models/index';
 
 export interface AddUserToComponentRequest {
@@ -92,6 +95,10 @@ export interface DeleteAccountRequest {
 
 export interface DismissCueOperationRequest {
     dismissCueRequest: DismissCueRequest;
+}
+
+export interface GetGatesForFeatureRequest {
+    featureId: number;
 }
 
 export interface GetIntentBodyRequest {
@@ -234,6 +241,21 @@ export interface DefaultApiInterface {
 
     /**
      * 
+     * @summary Get all gates for a feature
+     * @param {number} featureId The ID of the feature to retrieve votes for.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getGatesForFeatureRaw(requestParameters: GetGatesForFeatureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetGateResponse>>;
+
+    /**
+     * Get all gates for a feature
+     */
+    getGatesForFeature(requestParameters: GetGatesForFeatureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetGateResponse>;
+
+    /**
+     * 
      * @summary Get the HTML body of an intent draft
      * @param {number} featureId Feature ID
      * @param {number} stageId Stage ID
@@ -287,12 +309,12 @@ export interface DefaultApiInterface {
      * @throws {RequiredError}
      * @memberof DefaultApiInterface
      */
-    getVotesForFeatureRaw(requestParameters: GetVotesForFeatureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<VotesResponse>>;
+    getVotesForFeatureRaw(requestParameters: GetVotesForFeatureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetVotesResponse>>;
 
     /**
      * Get votes for a feature
      */
-    getVotesForFeature(requestParameters: GetVotesForFeatureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<VotesResponse>;
+    getVotesForFeature(requestParameters: GetVotesForFeatureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetVotesResponse>;
 
     /**
      * 
@@ -303,12 +325,12 @@ export interface DefaultApiInterface {
      * @throws {RequiredError}
      * @memberof DefaultApiInterface
      */
-    getVotesForFeatureAndGateRaw(requestParameters: GetVotesForFeatureAndGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<VotesResponse>>;
+    getVotesForFeatureAndGateRaw(requestParameters: GetVotesForFeatureAndGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetVotesResponse>>;
 
     /**
      * Get votes for a feature and gate
      */
-    getVotesForFeatureAndGate(requestParameters: GetVotesForFeatureAndGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<VotesResponse>;
+    getVotesForFeatureAndGate(requestParameters: GetVotesForFeatureAndGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetVotesResponse>;
 
     /**
      * 
@@ -614,6 +636,39 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     }
 
     /**
+     * Get all gates for a feature
+     */
+    async getGatesForFeatureRaw(requestParameters: GetGatesForFeatureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetGateResponse>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling getGatesForFeature().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/features/{feature_id}/gates`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GetGateResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get all gates for a feature
+     */
+    async getGatesForFeature(requestParameters: GetGatesForFeatureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetGateResponse> {
+        const response = await this.getGatesForFeatureRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Get the HTML body of an intent draft
      */
     async getIntentBodyRaw(requestParameters: GetIntentBodyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetIntentResponse>> {
@@ -729,7 +784,7 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     /**
      * Get votes for a feature
      */
-    async getVotesForFeatureRaw(requestParameters: GetVotesForFeatureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<VotesResponse>> {
+    async getVotesForFeatureRaw(requestParameters: GetVotesForFeatureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetVotesResponse>> {
         if (requestParameters['featureId'] == null) {
             throw new runtime.RequiredError(
                 'featureId',
@@ -748,13 +803,13 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => VotesResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => GetVotesResponseFromJSON(jsonValue));
     }
 
     /**
      * Get votes for a feature
      */
-    async getVotesForFeature(requestParameters: GetVotesForFeatureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<VotesResponse> {
+    async getVotesForFeature(requestParameters: GetVotesForFeatureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetVotesResponse> {
         const response = await this.getVotesForFeatureRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -762,7 +817,7 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     /**
      * Get votes for a feature and gate
      */
-    async getVotesForFeatureAndGateRaw(requestParameters: GetVotesForFeatureAndGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<VotesResponse>> {
+    async getVotesForFeatureAndGateRaw(requestParameters: GetVotesForFeatureAndGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetVotesResponse>> {
         if (requestParameters['featureId'] == null) {
             throw new runtime.RequiredError(
                 'featureId',
@@ -788,13 +843,13 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => VotesResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => GetVotesResponseFromJSON(jsonValue));
     }
 
     /**
      * Get votes for a feature and gate
      */
-    async getVotesForFeatureAndGate(requestParameters: GetVotesForFeatureAndGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<VotesResponse> {
+    async getVotesForFeatureAndGate(requestParameters: GetVotesForFeatureAndGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetVotesResponse> {
         const response = await this.getVotesForFeatureAndGateRaw(requestParameters, initOverrides);
         return await response.value();
     }

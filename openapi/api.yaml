@@ -32,7 +32,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VotesResponse'
+                $ref: '#/components/schemas/GetVotesResponse'
         '404':
           description: Feature not found
           content:
@@ -62,7 +62,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VotesResponse'
+                $ref: '#/components/schemas/GetVotesResponse'
         '404':
           description: Feature or gate not found.
           content:
@@ -92,11 +92,29 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorMessage'
         '403':
-          description: User does not have permission. 
+          description: User does not have permission.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorMessage'
+  /features/{feature_id}/gates:
+    parameters:
+          - in: path
+            name: feature_id
+            required: true
+            schema:
+              type: integer
+            description: The ID of the feature to retrieve votes for.
+    get:
+      summary: Get all gates for a feature
+      operationId: getGatesForFeature
+      responses:
+        '200':
+          description: A list of gates for the specified feature. List can be empty.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetGateResponse'
   /accounts:
     post:
       summary: Create a new account
@@ -470,7 +488,7 @@ components:
         - set_by
         - set_on
         - state
-    VotesResponse:
+    GetVotesResponse:
       type: object
       properties:
         votes:
@@ -485,6 +503,62 @@ components:
           description: The vote value to set. 0 for abstain, 1 for approve, 2 for abstain.
       required:
         - state
+    Gate:
+      type: object
+      properties:
+        id:
+          type: integer
+        feature_id:
+          type: integer
+        stage_id:
+          type: integer
+        gate_type:
+          type: integer
+        team_name:
+          type: string
+        gate_name:
+          type: string
+        escalation_email:
+          type: string
+          nullable: true
+        state:
+          type: integer
+        requested_on:
+          type: string
+          format: date
+        responded_on:
+          type: string
+          format: date
+        assignee_emails:
+          type: array
+          items:
+            type: string
+            format: email
+        next_action:
+          type: string
+          format: data
+        additional_review:
+          type: boolean
+        slo_initial_response:
+          type: integer
+          default: 5
+          description: DEFAULT_SLO_LIMIT is 5 in approval_defs.py
+        slo_initial_response_took:
+          type: integer
+        slo_initial_response_remaining:
+          type: integer
+        possible_assignee_emails:
+          type: array
+          items:
+            type: string
+            format: email
+    GetGateResponse:
+      type: object
+      properties:
+        gates:
+          type: array
+          items:
+            $ref: '#/components/schemas/Gate'
     Process:
       type: object
       properties:

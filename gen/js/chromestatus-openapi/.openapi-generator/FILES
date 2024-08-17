@@ -18,10 +18,13 @@ src/models/ErrorMessage.ts
 src/models/ExternalReviewsResponse.ts
 src/models/FeatureLatency.ts
 src/models/FeatureLink.ts
+src/models/Gate.ts
 src/models/GateInfo.ts
 src/models/GateLatency.ts
 src/models/GetDismissedCues400Response.ts
+src/models/GetGateResponse.ts
 src/models/GetIntentResponse.ts
+src/models/GetVotesResponse.ts
 src/models/LinkPreview.ts
 src/models/LinkPreviewBase.ts
 src/models/LinkPreviewGithubIssue.ts
@@ -48,7 +51,6 @@ src/models/ReviewLatency.ts
 src/models/SpecMentor.ts
 src/models/SuccessMessage.ts
 src/models/Vote.ts
-src/models/VotesResponse.ts
 src/models/index.ts
 src/runtime.ts
 tsconfig.esm.json
