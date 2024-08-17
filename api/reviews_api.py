@@ -15,18 +15,19 @@
 
 import logging
 from typing import Any, Tuple
+
+from chromestatus_openapi.models import (VotesResponse, SuccessMessage)
 from google.cloud import ndb
 from google.cloud.ndb.tasklets import Future  # for type checking only
 
 from api import converters
-from framework import basehandlers
-from framework import permissions
+from framework import basehandlers, permissions
 from framework.users import User
 from internals import approval_defs, notifier_helpers
 from internals.core_enums import *
 from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Gate, Vote
-from chromestatus_openapi.models import (VoteResponse, PostVoteRequest, SucessMessage)
+
 
 def get_user_feature_and_gate(handler, kwargs) -> Tuple[
     User, FeatureEntry, Gate, int, int]:
@@ -56,7 +57,7 @@ class VotesAPI(basehandlers.APIHandler):
     # Note: We assume that anyone may view approvals.
     votes = Vote.get_votes(feature_id=feature_id, gate_id=gate_id)
     dicts = [converters.vote_value_to_json_dict(v) for v in votes]
-    return {'votes': dicts}
+    return VotesResponse.from_dict({'votes': dicts}).to_dict()
 
   def do_post(self, **kwargs) -> dict[str, str]:
     """Set a user's vote value for the specified feature and gate."""
@@ -91,7 +92,7 @@ class VotesAPI(basehandlers.APIHandler):
           fe, gate, user.email(), new_state, old_state)
 
     # Callers don't use the JSON response for this API call.
-    return {'message': 'Done'}
+    return SuccessMessage(message='Done').to_dict()
 
   def require_permissions(self, user, feature, gate, new_state):
     """Abort the request if the user lacks permission to set this vote."""
