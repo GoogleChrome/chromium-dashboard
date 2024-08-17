@@ -22,6 +22,9 @@ from google.cloud import ndb  # type: ignore
 
 from framework.basehandlers import FlaskHandler
 from internals.core_models import FeatureEntry
+from internals.feature_helpers import (
+    get_future_results,
+    get_entries_by_id_async)
 
 
 # We consider all words that have three or more letters.
@@ -157,6 +160,28 @@ def index_feature(fe: FeatureEntry) -> None:
   updated_fw_list[0].put()
 
 
+def canonicalize_string(s: str) -> str:
+  """Return a string of lowercase words separated by single spaces."""
+  lower_s = s.lower().replace("'", "")
+  words = WORD_RE.findall(lower_s)
+  canonicalized = ' '.join(w for w in words if w not in STOP_WORDS)
+  return ' ' + canonicalized + ' '  # Avoids matching partial words.
+
+
+def post_process_phrase(phrase: str, feature_ids: list[int]) -> list[int]:
+  """Fetch the given features and check if they really have the phrase."""
+  features = get_future_results(get_entries_by_id_async(feature_ids))
+  canon_phrase = canonicalize_string(phrase)
+  result = []
+  for fe in features:
+    feature_strings = get_strings(fe)
+    has_phrase = any(canon_phrase in canonicalize_string(fs)
+                     for fs in feature_strings)
+    if has_phrase:
+      result.append(fe.key.integer_id())
+  return result
+
+
 def search_fulltext(textterm: str) -> Optional[list[int]]:
   """Return IDs of features that have some word(s) from phrase."""
   search_words = parse_words([textterm])
@@ -170,15 +195,11 @@ def search_fulltext(textterm: str) -> Optional[list[int]]:
     query = query.filter(FeatureWords.words == sw)
   feature_projections = query.fetch(projection=['feature_id'])
   feature_ids = [proj.feature_id for proj in feature_projections]
-  return feature_ids
+  if len(search_words) > 1:
+    return post_process_phrase(textterm, feature_ids)
+  else:
+    return feature_ids
 
-
-# TODO(jrobbins): Implement phrase search as post-procesing.  I.e.,
-# searching for phrase "build useful stuff" would first be handled as
-# a search for any combination of those words.  Then, after all search
-# conditions have been applied, a post-processing step would load all
-# potentially matching features and keep only the ones that contain
-# the entire phrase in one string.
 
 # TODO(jrobbins): Likewise, searching for a word or phrase in a
 # specific field of a feature entry can be done with post-processing.

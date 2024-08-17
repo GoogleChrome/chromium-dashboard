@@ -172,6 +172,27 @@ paths:
           description: Cue dismissed successfully
       summary: Dismiss a cue card for the signed-in user
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /currentuser/permissions:
+    get:
+      operationId: get_user_permissions
+      parameters:
+      - description: "If true, return the permissions of the paired user."
+        explode: true
+        in: query
+        name: returnPairedUser
+        required: false
+        schema:
+          type: boolean
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionsResponse'
+          description: The permissions and email of the user.
+      summary: Get the permissions and email of the user
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /external_reviews/{review_group}:
     get:
       operationId: list_external_reviews
@@ -503,6 +524,92 @@ paths:
                 $ref: '#/components/schemas/ErrorMessage'
           description: User does not have permission.
       summary: Set a user's vote value for the specific feature and gate.
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /feature_links:
+    get:
+      operationId: get_feature_links
+      parameters:
+      - explode: true
+        in: query
+        name: feature_id
+        required: false
+        schema:
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: update_stale_links
+        required: false
+        schema:
+          default: true
+          type: boolean
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureLinksResponse'
+          description: return the links and its information to the client
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: missing feature_id
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: feature not found
+      summary: Get feature links by feature_id
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /feature_links_samples:
+    get:
+      operationId: get_feature_links_samples
+      parameters:
+      - explode: true
+        in: query
+        name: domain
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: type
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: is_error
+        required: false
+        schema:
+          type: boolean
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureLinksSample'
+          description: return the sample links to the client
+      summary: Get feature links samples
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /feature_links_summary:
+    get:
+      operationId: get_feature_links_summary
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureLinksSummaryResponse'
+          description: return the links and its information to the client
+      summary: Get feature links summary
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /features/{feature_id}/{stage_id}/{gate_id}/intent:
     get:
@@ -1541,6 +1648,11 @@ components:
       title: FeatureLink
       type: object
     LinkPreviewBase:
+      example:
+        information: "{}"
+        type: type
+        http_error_code: 0
+        url: http://example.com/aeiou
       properties:
         url:
           format: url
@@ -1629,6 +1741,187 @@ components:
     LinkPreviewSpecs:
       allOf:
       - $ref: '#/components/schemas/LinkPreviewOpenGraph'
+    FeatureLinksResponse:
+      example:
+        data:
+        - information: "{}"
+          type: type
+          http_error_code: 0
+          url: http://example.com/aeiou
+        - information: "{}"
+          type: type
+          http_error_code: 0
+          url: http://example.com/aeiou
+        has_stale_links: true
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/LinkPreviewBase'
+          title: data
+          type: array
+        has_stale_links:
+          title: has_stale_links
+          type: boolean
+      title: FeatureLinksResponse
+      type: object
+    FeatureLinksSummaryResponse:
+      example:
+        uncovered_count: 1
+        http_error_count: 5
+        link_types:
+        - count: 2
+          key: key
+        - count: 2
+          key: key
+        total_count: 0
+        uncovered_link_domains:
+        - count: 2
+          key: key
+        - count: 2
+          key: key
+        error_count: 5
+        error_link_domains:
+        - count: 2
+          key: key
+        - count: 2
+          key: key
+        covered_count: 6
+      properties:
+        total_count:
+          title: total_count
+          type: integer
+        covered_count:
+          title: covered_count
+          type: integer
+        uncovered_count:
+          title: uncovered_count
+          type: integer
+        error_count:
+          title: error_count
+          type: integer
+        http_error_count:
+          title: http_error_count
+          type: integer
+        link_types:
+          items:
+            $ref: '#/components/schemas/CounterEntry'
+          title: link_types
+          type: array
+        uncovered_link_domains:
+          items:
+            $ref: '#/components/schemas/CounterEntry'
+          title: uncovered_link_domains
+          type: array
+        error_link_domains:
+          items:
+            $ref: '#/components/schemas/CounterEntry'
+          title: error_link_domains
+          type: array
+      title: FeatureLinksSummaryResponse
+      type: object
+    FeatureLinksSample:
+      allOf:
+      - $ref: '#/components/schemas/LinkPreviewBase'
+      - properties:
+          feature_ids:
+            items:
+              type: integer
+            type: array
+        type: object
+      example:
+        feature_ids:
+        - 6
+        - 6
+        information: "{}"
+        type: type
+        http_error_code: 0
+        url: http://example.com/aeiou
+      title: FeatureLinksSample
+    CounterEntry:
+      example:
+        count: 2
+        key: key
+      properties:
+        key:
+          title: key
+          type: string
+        count:
+          title: count
+          type: integer
+      title: CounterEntry
+      type: object
+    PermissionsResponse:
+      example:
+        user:
+          is_admin: true
+          can_comment: true
+          editable_features:
+          - 6
+          - 6
+          can_create_feature: true
+          can_edit_all: true
+          email: email
+          approvable_gate_types:
+          - 0
+          - 0
+      properties:
+        user:
+          $ref: '#/components/schemas/UserPermissions'
+      required:
+      - user
+      title: PermissionsResponse
+      type: object
+    UserPermissions:
+      example:
+        is_admin: true
+        can_comment: true
+        editable_features:
+        - 6
+        - 6
+        can_create_feature: true
+        can_edit_all: true
+        email: email
+        approvable_gate_types:
+        - 0
+        - 0
+      properties:
+        can_create_feature:
+          title: can_create_feature
+          type: boolean
+        approvable_gate_types:
+          description: each element should be unique as OAS does not support set
+          items:
+            type: integer
+          title: approvable_gate_types
+          type: array
+        can_comment:
+          title: can_comment
+          type: boolean
+        can_edit_all:
+          title: can_edit_all
+          type: boolean
+        is_admin:
+          title: is_admin
+          type: boolean
+        email:
+          format: email
+          title: email
+          type: string
+        editable_features:
+          items:
+            type: integer
+          title: editable_features
+          type: array
+      required:
+      - approvable_gate_types
+      - can_comment
+      - can_create_feature
+      - can_edit_all
+      - editable_features
+      - email
+      - is_admin
+      title: UserPermissions
+      type: object
     DismissCueRequest:
       example:
         cue: progress-checkmarks

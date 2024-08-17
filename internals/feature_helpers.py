@@ -45,7 +45,7 @@ def filter_unlisted(feature_list: list[dict]) -> list[dict]:
   return listed_features
 
 
-def _get_entries_by_id_async(ids) -> Future | None:
+def get_entries_by_id_async(ids) -> Future | None:
   if ids:
     q = FeatureEntry.query(FeatureEntry.key.IN(
         [ndb.Key('FeatureEntry', id) for id in ids]))
@@ -54,7 +54,7 @@ def _get_entries_by_id_async(ids) -> Future | None:
   return None
 
 
-def _get_future_results(async_features: Future | None) -> list[FeatureEntry]:
+def get_future_results(async_features: Future | None) -> list[FeatureEntry]:
   if async_features is None:
     return []
   return async_features.result()
@@ -83,7 +83,7 @@ def get_features_in_release_notes(milestone: int):
   feature_ids = list(set({
       *[s.feature_id for s in stages]}))
   features = [dict(converters.feature_entry_to_json_verbose(f))
-            for f in _get_future_results(_get_entries_by_id_async(feature_ids))]
+            for f in get_future_results(get_entries_by_id_async(feature_ids))]
   features = [f for f in filter_unlisted(features)
     if not f['deleted'] and
       (f['enterprise_impact'] > ENTERPRISE_IMPACT_NONE or
@@ -194,31 +194,31 @@ def get_in_milestone(milestone: int,
     # Query for FeatureEntry entities that match the stage feature IDs.
     # Querying with an empty list will raise an error, so check if each
     # list is not empty first.
-    desktop_shipping_future = _get_entries_by_id_async(desktop_shipping_ids)
-    android_only_shipping_future = _get_entries_by_id_async(
+    desktop_shipping_future = get_entries_by_id_async(desktop_shipping_ids)
+    android_only_shipping_future = get_entries_by_id_async(
         android_only_shipping_ids)
-    desktop_origin_trial_future = _get_entries_by_id_async(
+    desktop_origin_trial_future = get_entries_by_id_async(
         desktop_origin_trials_ids)
-    android_origin_trial_future = _get_entries_by_id_async(
+    android_origin_trial_future = get_entries_by_id_async(
         android_origin_trials_ids)
-    webview_origin_trial_future = _get_entries_by_id_async(
+    webview_origin_trial_future = get_entries_by_id_async(
         webview_origin_trials_ids)
-    desktop_dev_trial_future = _get_entries_by_id_async(
+    desktop_dev_trial_future = get_entries_by_id_async(
         desktop_dev_trials_ids)
-    android_dev_trial_future = _get_entries_by_id_async(
+    android_dev_trial_future = get_entries_by_id_async(
         android_dev_trials_ids)
 
-    desktop_shipping_features = _get_future_results(desktop_shipping_future)
-    android_only_shipping_features = _get_future_results(
+    desktop_shipping_features = get_future_results(desktop_shipping_future)
+    android_only_shipping_features = get_future_results(
         android_only_shipping_future)
-    desktop_origin_trial_features = _get_future_results(
+    desktop_origin_trial_features = get_future_results(
         desktop_origin_trial_future)
-    android_origin_trial_features = _get_future_results(
+    android_origin_trial_features = get_future_results(
         android_origin_trial_future)
-    webview_origin_trial_features = _get_future_results(
+    webview_origin_trial_features = get_future_results(
         webview_origin_trial_future)
-    desktop_dev_trial_features = _get_future_results(desktop_dev_trial_future)
-    android_dev_trial_features = _get_future_results(android_dev_trial_future)
+    desktop_dev_trial_features = get_future_results(desktop_dev_trial_future)
+    android_dev_trial_features = get_future_results(android_dev_trial_future)
 
     # Push feature to list corresponding to the implementation status of
     # feature in queried milestone

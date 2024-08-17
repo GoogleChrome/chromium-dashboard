@@ -11,6 +11,7 @@ src/models/Action.ts
 src/models/ComponentUsersRequest.ts
 src/models/ComponentsUser.ts
 src/models/ComponentsUsersResponse.ts
+src/models/CounterEntry.ts
 src/models/CreateAccountRequest.ts
 src/models/DeleteAccount200Response.ts
 src/models/DismissCueRequest.ts
@@ -20,6 +21,9 @@ src/models/FeatureLatency.ts
 src/models/FeatureLink.ts
 src/models/Gate.ts
 src/models/GateInfo.ts
+src/models/FeatureLinksResponse.ts
+src/models/FeatureLinksSample.ts
+src/models/FeatureLinksSummaryResponse.ts
 src/models/GateLatency.ts
 src/models/GetDismissedCues400Response.ts
 src/models/GetGateResponse.ts
@@ -43,6 +47,7 @@ src/models/MessageResponse.ts
 src/models/OutstandingReview.ts
 src/models/OwnersAndSubscribersOfComponent.ts
 src/models/PostGateRequest.ts
+src/models/PermissionsResponse.ts
 src/models/PostIntentRequest.ts
 src/models/PostVoteRequest.ts
 src/models/Process.ts
@@ -52,6 +57,7 @@ src/models/ReviewLatency.ts
 src/models/SpecMentor.ts
 src/models/SuccessMessage.ts
 src/models/Vote.ts
+src/models/UserPermissions.ts
 src/models/index.ts
 src/runtime.ts
 tsconfig.esm.json
