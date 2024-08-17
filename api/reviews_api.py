@@ -26,7 +26,7 @@ from internals import approval_defs, notifier_helpers
 from internals.core_enums import *
 from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Gate, Vote
-
+from chromestatus_openapi.models import (VoteResponse, PostVoteRequest, SucessMessage)
 
 def get_user_feature_and_gate(handler, kwargs) -> Tuple[
     User, FeatureEntry, Gate, int, int]:

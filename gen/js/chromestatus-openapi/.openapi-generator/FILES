@@ -40,12 +40,15 @@ src/models/MessageResponse.ts
 src/models/OutstandingReview.ts
 src/models/OwnersAndSubscribersOfComponent.ts
 src/models/PostIntentRequest.ts
+src/models/PostVoteRequest.ts
 src/models/Process.ts
 src/models/ProcessStage.ts
 src/models/ProgressItem.ts
 src/models/ReviewLatency.ts
 src/models/SpecMentor.ts
 src/models/SuccessMessage.ts
+src/models/Vote.ts
+src/models/VotesResponse.ts
 src/models/index.ts
 src/runtime.ts
 tsconfig.esm.json

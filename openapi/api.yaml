@@ -15,6 +15,88 @@ info:
 servers:
   - url: /api/v0
 paths:
+  /features/{feature_id}/votes:
+    parameters:
+      - name: feature_id
+        in: path
+        description: Feature ID
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: Get votes for a feature
+      operationId: getVotesForFeature
+      responses:
+        '200':
+          description: A list of votes for the specified feature.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VotesResponse'
+        '404':
+          description: Feature not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+  /features/{feature_id}/votes/{gate_id}:
+    parameters:
+        - in: path
+          name: feature_id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the feature to retrieve votes for.
+        - in: path
+          name: gate_id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the gate associated with the votes.
+    get:
+      summary: Get votes for a feature and gate
+      operationId: getVotesForFeatureAndGate
+      responses:
+        '200':
+          description: A list of votes for the specified feature and gate.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VotesResponse'
+        '404':
+          description: Feature or gate not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+    post:
+      summary: Set a user's vote value for the specific feature and gate.
+      operationId: setVoteForFeatureAndGate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostVoteRequest'
+      responses:
+        '200':
+          description: Vote set successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '400':
+          description: Feature or gate not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '403':
+          description: User does not have permission. 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
   /accounts:
     post:
       summary: Create a new account
@@ -366,6 +448,43 @@ components:
       in: header
       name: X-Xsrf-Token
   schemas:
+    Vote:
+      type: object
+      properties:
+        feature_id:
+          type: integer
+        gate_id:
+          type: integer
+        gate_type:
+          type: integer
+        set_by:
+          type: string
+          format: email
+        set_on:
+          type: string
+        state:
+          type: integer
+      required:
+        - feature_id
+        - gate_id
+        - set_by
+        - set_on
+        - state
+    VotesResponse:
+      type: object
+      properties:
+        votes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Vote'
+    PostVoteRequest:
+      type: object
+      properties:
+        state:
+          type: integer
+          description: The vote value to set. 0 for abstain, 1 for approve, 2 for abstain.
+      required:
+        - state
     Process:
       type: object
       properties:

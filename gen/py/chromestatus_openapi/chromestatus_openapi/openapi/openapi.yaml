@@ -289,6 +289,114 @@ paths:
           description: Feature not found based on given ID.
       summary: Get the progress for a feature
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /features/{feature_id}/votes:
+    get:
+      operationId: get_votes_for_feature
+      parameters:
+      - description: Feature ID
+        explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VotesResponse'
+          description: A list of votes for the specified feature.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Feature not found
+      summary: Get votes for a feature
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /features/{feature_id}/votes/{gate_id}:
+    get:
+      operationId: get_votes_for_feature_and_gate
+      parameters:
+      - description: The ID of the feature to retrieve votes for.
+        explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - description: The ID of the gate associated with the votes.
+        explode: false
+        in: path
+        name: gate_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VotesResponse'
+          description: A list of votes for the specified feature and gate.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Feature or gate not found.
+      summary: Get votes for a feature and gate
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+    post:
+      operationId: set_vote_for_feature_and_gate
+      parameters:
+      - description: The ID of the feature to retrieve votes for.
+        explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - description: The ID of the gate associated with the votes.
+        explode: false
+        in: path
+        name: gate_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostVoteRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Vote set successfully
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Feature or gate not found.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: User does not have permission.
+      summary: Set a user's vote value for the specific feature and gate.
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /features/{feature_id}/{stage_id}/{gate_id}/intent:
     get:
       operationId: get_intent_body
@@ -441,6 +549,78 @@ components:
         type: string
       style: form
   schemas:
+    Vote:
+      example:
+        feature_id: 0
+        gate_id: 6
+        gate_type: 1
+        set_by: set_by
+        state: 5
+        set_on: set_on
+      properties:
+        feature_id:
+          title: feature_id
+          type: integer
+        gate_id:
+          title: gate_id
+          type: integer
+        gate_type:
+          title: gate_type
+          type: integer
+        set_by:
+          format: email
+          title: set_by
+          type: string
+        set_on:
+          title: set_on
+          type: string
+        state:
+          title: state
+          type: integer
+      required:
+      - feature_id
+      - gate_id
+      - set_by
+      - set_on
+      - state
+      title: Vote
+      type: object
+    VotesResponse:
+      example:
+        votes:
+        - feature_id: 0
+          gate_id: 6
+          gate_type: 1
+          set_by: set_by
+          state: 5
+          set_on: set_on
+        - feature_id: 0
+          gate_id: 6
+          gate_type: 1
+          set_by: set_by
+          state: 5
+          set_on: set_on
+      properties:
+        votes:
+          items:
+            $ref: '#/components/schemas/Vote'
+          title: votes
+          type: array
+      title: VotesResponse
+      type: object
+    PostVoteRequest:
+      example:
+        state: 0
+      properties:
+        state:
+          description: "The vote value to set. 0 for abstain, 1 for approve, 2 for\
+            \ abstain."
+          title: state
+          type: integer
+      required:
+      - state
+      title: PostVoteRequest
+      type: object
     Process:
       example:
         name: name
@@ -1198,10 +1378,14 @@ components:
       title: SuccessMessage
       type: object
     ErrorMessage:
+      example:
+        error: Error
       properties:
         error:
           example: Error
+          title: error
           type: string
+      title: ErrorMessage
       type: object
     deleteAccount_200_response:
       example:

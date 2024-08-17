@@ -8,16 +8,19 @@ from chromestatus_openapi.models.components_users_response import ComponentsUser
 from chromestatus_openapi.models.create_account_request import CreateAccountRequest  # noqa: E501
 from chromestatus_openapi.models.delete_account200_response import DeleteAccount200Response  # noqa: E501
 from chromestatus_openapi.models.dismiss_cue_request import DismissCueRequest  # noqa: E501
+from chromestatus_openapi.models.error_message import ErrorMessage  # noqa: E501
 from chromestatus_openapi.models.external_reviews_response import ExternalReviewsResponse  # noqa: E501
 from chromestatus_openapi.models.feature_latency import FeatureLatency  # noqa: E501
 from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismissedCues400Response  # noqa: E501
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
 from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
+from chromestatus_openapi.models.post_vote_request import PostVoteRequest  # noqa: E501
 from chromestatus_openapi.models.process import Process  # noqa: E501
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
 from chromestatus_openapi.models.success_message import SuccessMessage  # noqa: E501
+from chromestatus_openapi.models.votes_response import VotesResponse  # noqa: E501
 from chromestatus_openapi.test import BaseTestCase
 
 
@@ -156,6 +159,36 @@ class TestDefaultController(BaseTestCase):
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
+    def test_get_votes_for_feature(self):
+        """Test case for get_votes_for_feature
+
+        Get votes for a feature
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/features/{feature_id}/votes'.format(feature_id=56),
+            method='GET',
+            headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_get_votes_for_feature_and_gate(self):
+        """Test case for get_votes_for_feature_and_gate
+
+        Get votes for a feature and gate
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/features/{feature_id}/votes/{gate_id}'.format(feature_id=56, gate_id=56),
+            method='GET',
+            headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
     def test_list_component_users(self):
         """Test case for list_component_users
 
@@ -271,6 +304,25 @@ class TestDefaultController(BaseTestCase):
             method='DELETE',
             headers=headers,
             data=json.dumps(component_users_request),
+            content_type='application/json')
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_set_vote_for_feature_and_gate(self):
+        """Test case for set_vote_for_feature_and_gate
+
+        Set a user's vote value for the specific feature and gate.
+        """
+        post_vote_request = {"state":0}
+        headers = { 
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/features/{feature_id}/votes/{gate_id}'.format(feature_id=56, gate_id=56),
+            method='POST',
+            headers=headers,
+            data=json.dumps(post_vote_request),
             content_type='application/json')
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))

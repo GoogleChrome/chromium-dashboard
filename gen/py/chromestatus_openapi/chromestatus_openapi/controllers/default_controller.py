@@ -9,16 +9,19 @@ from chromestatus_openapi.models.components_users_response import ComponentsUser
 from chromestatus_openapi.models.create_account_request import CreateAccountRequest  # noqa: E501
 from chromestatus_openapi.models.delete_account200_response import DeleteAccount200Response  # noqa: E501
 from chromestatus_openapi.models.dismiss_cue_request import DismissCueRequest  # noqa: E501
+from chromestatus_openapi.models.error_message import ErrorMessage  # noqa: E501
 from chromestatus_openapi.models.external_reviews_response import ExternalReviewsResponse  # noqa: E501
 from chromestatus_openapi.models.feature_latency import FeatureLatency  # noqa: E501
 from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismissedCues400Response  # noqa: E501
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
 from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
+from chromestatus_openapi.models.post_vote_request import PostVoteRequest  # noqa: E501
 from chromestatus_openapi.models.process import Process  # noqa: E501
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
 from chromestatus_openapi.models.success_message import SuccessMessage  # noqa: E501
+from chromestatus_openapi.models.votes_response import VotesResponse  # noqa: E501
 from chromestatus_openapi import util
 
 
@@ -138,6 +141,34 @@ def get_progress(feature_id):  # noqa: E501
     return 'do some magic!'
 
 
+def get_votes_for_feature(feature_id):  # noqa: E501
+    """Get votes for a feature
+
+     # noqa: E501
+
+    :param feature_id: Feature ID
+    :type feature_id: int
+
+    :rtype: Union[VotesResponse, Tuple[VotesResponse, int], Tuple[VotesResponse, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
+def get_votes_for_feature_and_gate(feature_id, gate_id):  # noqa: E501
+    """Get votes for a feature and gate
+
+     # noqa: E501
+
+    :param feature_id: The ID of the feature to retrieve votes for.
+    :type feature_id: int
+    :param gate_id: The ID of the gate associated with the votes.
+    :type gate_id: int
+
+    :rtype: Union[VotesResponse, Tuple[VotesResponse, int], Tuple[VotesResponse, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
 def list_component_users():  # noqa: E501
     """List all components and possible users
 
@@ -241,4 +272,23 @@ def remove_user_from_component(component_id, user_id, component_users_request=No
     """
     if connexion.request.is_json:
         component_users_request = ComponentUsersRequest.from_dict(connexion.request.get_json())  # noqa: E501
+    return 'do some magic!'
+
+
+def set_vote_for_feature_and_gate(feature_id, gate_id, post_vote_request):  # noqa: E501
+    """Set a user&#39;s vote value for the specific feature and gate.
+
+     # noqa: E501
+
+    :param feature_id: The ID of the feature to retrieve votes for.
+    :type feature_id: int
+    :param gate_id: The ID of the gate associated with the votes.
+    :type gate_id: int
+    :param post_vote_request: 
+    :type post_vote_request: dict | bytes
+
+    :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
+    """
+    if connexion.request.is_json:
+        post_vote_request = PostVoteRequest.from_dict(connexion.request.get_json())  # noqa: E501
     return 'do some magic!'

@@ -34,9 +34,12 @@ from chromestatus_openapi.models.message_response import MessageResponse
 from chromestatus_openapi.models.outstanding_review import OutstandingReview
 from chromestatus_openapi.models.owners_and_subscribers_of_component import OwnersAndSubscribersOfComponent
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest
+from chromestatus_openapi.models.post_vote_request import PostVoteRequest
 from chromestatus_openapi.models.process import Process
 from chromestatus_openapi.models.process_stage import ProcessStage
 from chromestatus_openapi.models.progress_item import ProgressItem
 from chromestatus_openapi.models.review_latency import ReviewLatency
 from chromestatus_openapi.models.spec_mentor import SpecMentor
 from chromestatus_openapi.models.success_message import SuccessMessage
+from chromestatus_openapi.models.vote import Vote
+from chromestatus_openapi.models.votes_response import VotesResponse
