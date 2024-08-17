@@ -42,6 +42,7 @@ src/models/LinkPreviewWebkitBug.ts
 src/models/MessageResponse.ts
 src/models/OutstandingReview.ts
 src/models/OwnersAndSubscribersOfComponent.ts
+src/models/PostGateRequest.ts
 src/models/PostIntentRequest.ts
 src/models/PostVoteRequest.ts
 src/models/Process.ts

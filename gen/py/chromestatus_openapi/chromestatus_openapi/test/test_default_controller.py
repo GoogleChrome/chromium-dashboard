@@ -16,6 +16,7 @@ from chromestatus_openapi.models.get_gate_response import GetGateResponse  # noq
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
 from chromestatus_openapi.models.get_votes_response import GetVotesResponse  # noqa: E501
 from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
+from chromestatus_openapi.models.post_gate_request import PostGateRequest  # noqa: E501
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
 from chromestatus_openapi.models.post_vote_request import PostVoteRequest  # noqa: E501
 from chromestatus_openapi.models.process import Process  # noqa: E501
@@ -44,6 +45,21 @@ class TestDefaultController(BaseTestCase):
             headers=headers,
             data=json.dumps(component_users_request),
             content_type='application/json')
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_add_xfn_gates_to_stage(self):
+        """Test case for add_xfn_gates_to_stage
+
+        Add a full set of cross-functional gates to a stage.
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/features/{feature_id}/stages/{stage_id}/addXfnGates'.format(feature_id=56, stage_id=56),
+            method='POST',
+            headers=headers)
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
@@ -140,6 +156,21 @@ class TestDefaultController(BaseTestCase):
         }
         response = self.client.open(
             '/api/v0/features/{feature_id}/{stage_id}/{gate_id}/intent'.format(feature_id=56, stage_id=56, gate_id=56),
+            method='GET',
+            headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_get_pending_gates(self):
+        """Test case for get_pending_gates
+
+        Get all pending gates
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/gates/pending',
             method='GET',
             headers=headers)
         self.assert200(response,
@@ -320,6 +351,25 @@ class TestDefaultController(BaseTestCase):
             method='DELETE',
             headers=headers,
             data=json.dumps(component_users_request),
+            content_type='application/json')
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_set_assignees_for_gate(self):
+        """Test case for set_assignees_for_gate
+
+        Set the assignees for a gate.
+        """
+        post_gate_request = {"assignees":["assignees","assignees"]}
+        headers = { 
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/features/{feature_id}/gates/{gate_id}'.format(feature_id=56, gate_id=56),
+            method='POST',
+            headers=headers,
+            data=json.dumps(post_gate_request),
             content_type='application/json')
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))

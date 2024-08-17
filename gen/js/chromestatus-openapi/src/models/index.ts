@@ -36,6 +36,7 @@ export * from './LinkPreviewWebkitBug';
 export * from './MessageResponse';
 export * from './OutstandingReview';
 export * from './OwnersAndSubscribersOfComponent';
+export * from './PostGateRequest';
 export * from './PostIntentRequest';
 export * from './PostVoteRequest';
 export * from './Process';

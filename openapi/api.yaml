@@ -115,6 +115,94 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetGateResponse'
+  /features/{feature_id}/gates/{gate_id}:
+    parameters:
+      - in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        description: The ID of the feature to retrieve votes for.
+      - in: path
+        name: gate_id
+        required: true
+        schema:
+          type: integer
+        description: The ID of the gate to retrieve votes for.
+    post:
+      summary: Set the assignees for a gate.
+      operationId: setAssigneesForGate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostGateRequest'
+      responses:
+        '200':
+          description: Assignees set successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '400':
+          description: Assignee is not a reviewer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '403':
+          description: User does not have permission.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+  /gates/pending:
+    get:
+      summary: Get all pending gates
+      operationId: getPendingGates
+      responses:
+        '200':
+          description: A list of all pending gates.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetGateResponse'
+  /features/{feature_id}/stages/{stage_id}/addXfnGates:
+    parameters:
+      - in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+      - in: path
+        name: stage_id
+        required: true
+        schema:
+          type: integer
+    post:
+      summary: Add a full set of cross-functional gates to a stage.
+      operationId: addXfnGatesToStage
+      responses:
+        '200':
+          description: Vote set successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '403':
+          description: User does not have permission.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Feature or Stage not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+
   /accounts:
     post:
       summary: Create a new account
@@ -559,6 +647,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Gate'
+    PostGateRequest:
+      type: object
+      properties:
+        assignees:
+          type: array
+          items:
+            type: string
+            format: email
     Process:
       type: object
       properties:

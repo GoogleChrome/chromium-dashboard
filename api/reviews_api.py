@@ -16,7 +16,7 @@
 import logging
 from typing import Any, Tuple
 
-from chromestatus_openapi.models import (GetVotesResponse, GetGateResponse, SuccessMessage)
+from chromestatus_openapi.models import (GetVotesResponse, GetGateResponse, PostGateRequest, SuccessMessage)
 from google.cloud import ndb
 from google.cloud.ndb.tasklets import Future  # for type checking only
 
@@ -140,7 +140,8 @@ class GatesAPI(basehandlers.APIHandler):
     """Set the assignees for a gate."""
     user, fe, gate, feature_id, gate_id = get_user_feature_and_gate(
         self, kwargs)
-    assignees = self.get_param('assignees')
+    request = PostGateRequest.from_dict(self.request.json)
+    assignees = request.assignees
 
     self.require_permissions(user, fe, gate)
     self.validate_assignees(assignees, fe, gate)
@@ -151,7 +152,7 @@ class GatesAPI(basehandlers.APIHandler):
         fe, gate, user.email(), old_assignees, assignees)
 
     # Callers don't use the JSON response for this API call.
-    return {'message': 'Done'}
+    return SuccessMessage(message='Done').to_dict()
 
   def require_permissions(self, user, feature, gate):
     """Abort the request if the user lacks permission to set assignees."""
@@ -203,7 +204,7 @@ class PendingGatesAPI(basehandlers.APIHandler):
       projections = future_projections.get_result()
       stage_ids = set(proj.stage_id for proj in projections)
     if not stage_ids:
-      return {'gates': []}
+      return GetGateResponse.from_dict({'gates': []}).to_dict()
 
     # 2. Fetch all the gates on those stages.
     gates: list[Gate] = Gate.query(Gate.stage_id.IN(stage_ids)).fetch()
@@ -213,7 +214,7 @@ class PendingGatesAPI(basehandlers.APIHandler):
     for g in dicts:
       g['possible_assignee_emails'] = prefetched_approvers.get(g['gate_type'], [])
 
-    return {'gates': dicts}
+    return GetGateResponse.from_dict({'gates': dicts}).to_dict()
 
 
 class XfnGatesAPI(basehandlers.APIHandler):
@@ -240,7 +241,7 @@ class XfnGatesAPI(basehandlers.APIHandler):
       self.abort(403, msg='User lacks permission to create gates')
 
     count = self.create_xfn_gates(feature_id, stage_id)
-    return {'message': f'Created {count} gates'}
+    return SuccessMessage(message=f'Created {count} gates').to_dict()
 
   def get_needed_gate_types(self) -> list[int]:
     """Return a list of gate types normally used to ship a new feature."""

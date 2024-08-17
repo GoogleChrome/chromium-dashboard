@@ -29,6 +29,7 @@ import type {
   GetIntentResponse,
   GetVotesResponse,
   MessageResponse,
+  PostGateRequest,
   PostIntentRequest,
   PostVoteRequest,
   Process,
@@ -65,6 +66,8 @@ import {
     GetVotesResponseToJSON,
     MessageResponseFromJSON,
     MessageResponseToJSON,
+    PostGateRequestFromJSON,
+    PostGateRequestToJSON,
     PostIntentRequestFromJSON,
     PostIntentRequestToJSON,
     PostVoteRequestFromJSON,
@@ -83,6 +86,11 @@ export interface AddUserToComponentRequest {
     componentId: number;
     userId: number;
     componentUsersRequest?: ComponentUsersRequest;
+}
+
+export interface AddXfnGatesToStageRequest {
+    featureId: number;
+    stageId: number;
 }
 
 export interface CreateAccountOperationRequest {
@@ -150,6 +158,12 @@ export interface RemoveUserFromComponentRequest {
     componentUsersRequest?: ComponentUsersRequest;
 }
 
+export interface SetAssigneesForGateRequest {
+    featureId: number;
+    gateId: number;
+    postGateRequest: PostGateRequest;
+}
+
 export interface SetVoteForFeatureAndGateRequest {
     featureId: number;
     gateId: number;
@@ -179,6 +193,22 @@ export interface DefaultApiInterface {
      * Add a user to a component
      */
     addUserToComponent(requestParameters: AddUserToComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * 
+     * @summary Add a full set of cross-functional gates to a stage.
+     * @param {number} featureId 
+     * @param {number} stageId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    addXfnGatesToStageRaw(requestParameters: AddXfnGatesToStageRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+
+    /**
+     * Add a full set of cross-functional gates to a stage.
+     */
+    addXfnGatesToStage(requestParameters: AddXfnGatesToStageRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
 
     /**
      * 
@@ -270,6 +300,20 @@ export interface DefaultApiInterface {
      * Get the HTML body of an intent draft
      */
     getIntentBody(requestParameters: GetIntentBodyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetIntentResponse>;
+
+    /**
+     * 
+     * @summary Get all pending gates
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getPendingGatesRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetGateResponse>>;
+
+    /**
+     * Get all pending gates
+     */
+    getPendingGates(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetGateResponse>;
 
     /**
      * 
@@ -443,6 +487,23 @@ export interface DefaultApiInterface {
 
     /**
      * 
+     * @summary Set the assignees for a gate.
+     * @param {number} featureId The ID of the feature to retrieve votes for.
+     * @param {number} gateId The ID of the gate to retrieve votes for.
+     * @param {PostGateRequest} postGateRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    setAssigneesForGateRaw(requestParameters: SetAssigneesForGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+
+    /**
+     * Set the assignees for a gate.
+     */
+    setAssigneesForGate(requestParameters: SetAssigneesForGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
+
+    /**
+     * 
      * @summary Set a user\'s vote value for the specific feature and gate.
      * @param {number} featureId The ID of the feature to retrieve votes for.
      * @param {number} gateId The ID of the gate associated with the votes.
@@ -509,6 +570,46 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async addUserToComponent(requestParameters: AddUserToComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.addUserToComponentRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Add a full set of cross-functional gates to a stage.
+     */
+    async addXfnGatesToStageRaw(requestParameters: AddXfnGatesToStageRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling addXfnGatesToStage().'
+            );
+        }
+
+        if (requestParameters['stageId'] == null) {
+            throw new runtime.RequiredError(
+                'stageId',
+                'Required parameter "stageId" was null or undefined when calling addXfnGatesToStage().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/features/{feature_id}/stages/{stage_id}/addXfnGates`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))).replace(`{${"stage_id"}}`, encodeURIComponent(String(requestParameters['stageId']))),
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Add a full set of cross-functional gates to a stage.
+     */
+    async addXfnGatesToStage(requestParameters: AddXfnGatesToStageRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+        const response = await this.addXfnGatesToStageRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**
@@ -712,6 +813,32 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async getIntentBody(requestParameters: GetIntentBodyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetIntentResponse> {
         const response = await this.getIntentBodyRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get all pending gates
+     */
+    async getPendingGatesRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetGateResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/gates/pending`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GetGateResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get all pending gates
+     */
+    async getPendingGates(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetGateResponse> {
+        const response = await this.getPendingGatesRaw(initOverrides);
         return await response.value();
     }
 
@@ -1115,6 +1242,56 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async removeUserFromComponent(requestParameters: RemoveUserFromComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.removeUserFromComponentRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Set the assignees for a gate.
+     */
+    async setAssigneesForGateRaw(requestParameters: SetAssigneesForGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling setAssigneesForGate().'
+            );
+        }
+
+        if (requestParameters['gateId'] == null) {
+            throw new runtime.RequiredError(
+                'gateId',
+                'Required parameter "gateId" was null or undefined when calling setAssigneesForGate().'
+            );
+        }
+
+        if (requestParameters['postGateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'postGateRequest',
+                'Required parameter "postGateRequest" was null or undefined when calling setAssigneesForGate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/features/{feature_id}/gates/{gate_id}`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))).replace(`{${"gate_id"}}`, encodeURIComponent(String(requestParameters['gateId']))),
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: PostGateRequestToJSON(requestParameters['postGateRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Set the assignees for a gate.
+     */
+    async setAssigneesForGate(requestParameters: SetAssigneesForGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+        const response = await this.setAssigneesForGateRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**

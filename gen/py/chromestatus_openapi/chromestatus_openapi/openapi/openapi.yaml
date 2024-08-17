@@ -262,6 +262,53 @@ paths:
           description: A list of gates for the specified feature. List can be empty.
       summary: Get all gates for a feature
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /features/{feature_id}/gates/{gate_id}:
+    post:
+      operationId: set_assignees_for_gate
+      parameters:
+      - description: The ID of the feature to retrieve votes for.
+        explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - description: The ID of the gate to retrieve votes for.
+        explode: false
+        in: path
+        name: gate_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostGateRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Assignees set successfully
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Assignee is not a reviewer
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: User does not have permission.
+      summary: Set the assignees for a gate.
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /features/{feature_id}/process:
     get:
       operationId: get_process
@@ -309,6 +356,45 @@ paths:
         "404":
           description: Feature not found based on given ID.
       summary: Get the progress for a feature
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /features/{feature_id}/stages/{stage_id}/addXfnGates:
+    post:
+      operationId: add_xfn_gates_to_stage
+      parameters:
+      - explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - explode: false
+        in: path
+        name: stage_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Vote set successfully
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: User does not have permission.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Feature or Stage not found.
+      summary: Add a full set of cross-functional gates to a stage.
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /features/{feature_id}/votes:
     get:
@@ -504,6 +590,18 @@ paths:
         "404":
           description: Feature or stage not found based on given ID.
       summary: Submit an intent to be posted on blink-dev
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /gates/pending:
+    get:
+      operationId: get_pending_gates
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetGateResponse'
+          description: A list of all pending gates.
+      summary: Get all pending gates
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /review-latency:
     get:
@@ -783,6 +881,20 @@ components:
           title: gates
           type: array
       title: GetGateResponse
+      type: object
+    PostGateRequest:
+      example:
+        assignees:
+        - assignees
+        - assignees
+      properties:
+        assignees:
+          items:
+            format: email
+            type: string
+          title: assignees
+          type: array
+      title: PostGateRequest
       type: object
     Process:
       example:
