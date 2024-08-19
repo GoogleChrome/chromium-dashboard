@@ -24,6 +24,7 @@ src/models/FeatureLinksSummaryResponse.ts
 src/models/GateLatency.ts
 src/models/GetDismissedCues400Response.ts
 src/models/GetIntentResponse.ts
+src/models/GetSettingsResponse.ts
 src/models/LinkPreview.ts
 src/models/LinkPreviewBase.ts
 src/models/LinkPreviewGithubIssue.ts
@@ -43,6 +44,7 @@ src/models/OutstandingReview.ts
 src/models/OwnersAndSubscribersOfComponent.ts
 src/models/PermissionsResponse.ts
 src/models/PostIntentRequest.ts
+src/models/PostSettingsRequest.ts
 src/models/ReviewLatency.ts
 src/models/SpecMentor.ts
 src/models/SuccessMessage.ts

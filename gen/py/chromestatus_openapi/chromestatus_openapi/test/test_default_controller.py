@@ -16,9 +16,11 @@ from chromestatus_openapi.models.feature_links_sample import FeatureLinksSample 
 from chromestatus_openapi.models.feature_links_summary_response import FeatureLinksSummaryResponse  # noqa: E501
 from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismissedCues400Response  # noqa: E501
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
+from chromestatus_openapi.models.get_settings_response import GetSettingsResponse  # noqa: E501
 from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
 from chromestatus_openapi.models.permissions_response import PermissionsResponse  # noqa: E501
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
+from chromestatus_openapi.models.post_settings_request import PostSettingsRequest  # noqa: E501
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
 from chromestatus_openapi.models.success_message import SuccessMessage  # noqa: E501
@@ -199,6 +201,21 @@ class TestDefaultController(BaseTestCase):
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
+    def test_get_user_settings(self):
+        """Test case for get_user_settings
+
+        Get user settings
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/currentuser/settings',
+            method='GET',
+            headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
     def test_list_component_users(self):
         """Test case for list_component_users
 
@@ -314,6 +331,25 @@ class TestDefaultController(BaseTestCase):
             method='DELETE',
             headers=headers,
             data=json.dumps(component_users_request),
+            content_type='application/json')
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_set_user_settings(self):
+        """Test case for set_user_settings
+
+        Set the user settings (currently only the notify_as_starrer)
+        """
+        post_settings_request = {"notify":True}
+        headers = { 
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/currentuser/settings',
+            method='POST',
+            headers=headers,
+            data=json.dumps(post_settings_request),
             content_type='application/json')
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))

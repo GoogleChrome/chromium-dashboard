@@ -29,9 +29,11 @@ import type {
   FeatureLinksSummaryResponse,
   GetDismissedCues400Response,
   GetIntentResponse,
+  GetSettingsResponse,
   MessageResponse,
   PermissionsResponse,
   PostIntentRequest,
+  PostSettingsRequest,
   ReviewLatency,
   SpecMentor,
   SuccessMessage,
@@ -65,12 +67,16 @@ import {
     GetDismissedCues400ResponseToJSON,
     GetIntentResponseFromJSON,
     GetIntentResponseToJSON,
+    GetSettingsResponseFromJSON,
+    GetSettingsResponseToJSON,
     MessageResponseFromJSON,
     MessageResponseToJSON,
     PermissionsResponseFromJSON,
     PermissionsResponseToJSON,
     PostIntentRequestFromJSON,
     PostIntentRequestToJSON,
+    PostSettingsRequestFromJSON,
+    PostSettingsRequestToJSON,
     ReviewLatencyFromJSON,
     ReviewLatencyToJSON,
     SpecMentorFromJSON,
@@ -142,6 +148,10 @@ export interface RemoveUserFromComponentRequest {
     componentId: number;
     userId: number;
     componentUsersRequest?: ComponentUsersRequest;
+}
+
+export interface SetUserSettingsRequest {
+    postSettingsRequest: PostSettingsRequest;
 }
 
 /**
@@ -308,6 +318,20 @@ export interface DefaultApiInterface {
 
     /**
      * 
+     * @summary Get user settings
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getUserSettingsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetSettingsResponse>>;
+
+    /**
+     * Get user settings
+     */
+    getUserSettings(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetSettingsResponse>;
+
+    /**
+     * 
      * @summary List all components and possible users
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -414,6 +438,21 @@ export interface DefaultApiInterface {
      * Remove a user from a component
      */
     removeUserFromComponent(requestParameters: RemoveUserFromComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * 
+     * @summary Set the user settings (currently only the notify_as_starrer)
+     * @param {PostSettingsRequest} postSettingsRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    setUserSettingsRaw(requestParameters: SetUserSettingsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+
+    /**
+     * Set the user settings (currently only the notify_as_starrer)
+     */
+    setUserSettings(requestParameters: SetUserSettingsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
 
 }
 
@@ -768,6 +807,32 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     }
 
     /**
+     * Get user settings
+     */
+    async getUserSettingsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetSettingsResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/currentuser/settings`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GetSettingsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get user settings
+     */
+    async getUserSettings(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetSettingsResponse> {
+        const response = await this.getUserSettingsRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
      * List all components and possible users
      */
     async listComponentUsersRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ComponentsUsersResponse>> {
@@ -1028,6 +1093,42 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async removeUserFromComponent(requestParameters: RemoveUserFromComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.removeUserFromComponentRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Set the user settings (currently only the notify_as_starrer)
+     */
+    async setUserSettingsRaw(requestParameters: SetUserSettingsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+        if (requestParameters['postSettingsRequest'] == null) {
+            throw new runtime.RequiredError(
+                'postSettingsRequest',
+                'Required parameter "postSettingsRequest" was null or undefined when calling setUserSettings().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/currentuser/settings`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: PostSettingsRequestToJSON(requestParameters['postSettingsRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Set the user settings (currently only the notify_as_starrer)
+     */
+    async setUserSettings(requestParameters: SetUserSettingsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+        const response = await this.setUserSettingsRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
 }

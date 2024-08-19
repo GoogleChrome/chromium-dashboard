@@ -193,6 +193,39 @@ paths:
           description: The permissions and email of the user.
       summary: Get the permissions and email of the user
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /currentuser/settings:
+    get:
+      operationId: get_user_settings
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetSettingsResponse'
+          description: Successfuly retrieved user settings
+        "404":
+          description: User preference not found
+      summary: Get user settings
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+    post:
+      operationId: set_user_settings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostSettingsRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Settings updated successfully
+        "403":
+          description: User not signed-in
+      summary: Set the user settings (currently only the notify_as_starrer)
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /external_reviews/{review_group}:
     get:
       operationId: list_external_reviews
@@ -1182,6 +1215,28 @@ components:
       required:
       - cue
       title: DismissCueRequest
+      type: object
+    GetSettingsResponse:
+      example:
+        notify_as_starrer: true
+      properties:
+        notify_as_starrer:
+          title: notify_as_starrer
+          type: boolean
+      required:
+      - notify_as_starrer
+      title: GetSettingsResponse
+      type: object
+    PostSettingsRequest:
+      example:
+        notify: true
+      properties:
+        notify:
+          title: notify
+          type: boolean
+      required:
+      - notify
+      title: PostSettingsRequest
       type: object
     SuccessMessage:
       example:
