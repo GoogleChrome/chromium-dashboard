@@ -41,7 +41,7 @@ class SettingsAPI(basehandlers.APIHandler):
         )
 
     request = PostSettingsRequest.from_dict(raw_data)
-    user_pref.notify_as_starrer = request.new_notify
+    user_pref.notify_as_starrer = request.notify
     user_pref.put()
     # Callers don't use the JSON response for this API call.
     return SuccessMessage(message='Done').to_dict()
