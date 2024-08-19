@@ -89,7 +89,7 @@ def process_recent_reviews_query() -> list[int] | Future:
   """Return features that were reviewed recently."""
   query = Vote.query(Vote.state.IN(Gate.FINAL_STATES))
   query = query.filter(
-      Vote.set_on > datetime.datetime.now() - datetime.timedelta(days=90))
+      Vote.set_on > (datetime.datetime.now() - datetime.timedelta(days=90)))
   future_feature_ids = query.fetch_async(projection=['feature_id'])
   return future_feature_ids
 
