@@ -216,6 +216,7 @@ class VerboseFeatureDict(TypedDict):
   first_enterprise_notification_milestone: int | None
   breaking_change: bool
   enterprise_impact: int
+  shipping_year: int | None
 
   # Implementation in Chrome
   flag_name: str | None
