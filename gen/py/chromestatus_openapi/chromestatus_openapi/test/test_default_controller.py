@@ -22,6 +22,7 @@ from chromestatus_openapi.models.post_intent_request import PostIntentRequest  #
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
 from chromestatus_openapi.models.success_message import SuccessMessage  # noqa: E501
+from chromestatus_openapi.models.token_refresh_response import TokenRefreshResponse  # noqa: E501
 from chromestatus_openapi.test import BaseTestCase
 
 
@@ -296,6 +297,21 @@ class TestDefaultController(BaseTestCase):
             headers=headers,
             data=json.dumps(post_intent_request),
             content_type='application/json')
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_refresh_token(self):
+        """Test case for refresh_token
+
+        Refresh the XSRF token
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/currentuser/token',
+            method='POST',
+            headers=headers)
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 

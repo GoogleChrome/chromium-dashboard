@@ -35,6 +35,7 @@ import type {
   ReviewLatency,
   SpecMentor,
   SuccessMessage,
+  TokenRefreshResponse,
 } from '../models/index';
 import {
     AccountResponseFromJSON,
@@ -77,6 +78,8 @@ import {
     SpecMentorToJSON,
     SuccessMessageFromJSON,
     SuccessMessageToJSON,
+    TokenRefreshResponseFromJSON,
+    TokenRefreshResponseToJSON,
 } from '../models/index';
 
 export interface AddUserToComponentRequest {
@@ -397,6 +400,20 @@ export interface DefaultApiInterface {
      * Submit an intent to be posted on blink-dev
      */
     postIntentToBlinkDev(requestParameters: PostIntentToBlinkDevRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MessageResponse>;
+
+    /**
+     * 
+     * @summary Refresh the XSRF token
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    refreshTokenRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenRefreshResponse>>;
+
+    /**
+     * Refresh the XSRF token
+     */
+    refreshToken(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TokenRefreshResponse>;
 
     /**
      * 
@@ -981,6 +998,32 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async postIntentToBlinkDev(requestParameters: PostIntentToBlinkDevRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MessageResponse> {
         const response = await this.postIntentToBlinkDevRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Refresh the XSRF token
+     */
+    async refreshTokenRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenRefreshResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/currentuser/token`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TokenRefreshResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Refresh the XSRF token
+     */
+    async refreshToken(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TokenRefreshResponse> {
+        const response = await this.refreshTokenRaw(initOverrides);
         return await response.value();
     }
 

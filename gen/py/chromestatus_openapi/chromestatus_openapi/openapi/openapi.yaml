@@ -193,6 +193,18 @@ paths:
           description: The permissions and email of the user.
       summary: Get the permissions and email of the user
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /currentuser/token:
+    post:
+      operationId: refresh_token
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefreshResponse'
+          description: Successfully refreshed the token.
+      summary: Refresh the XSRF token
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /external_reviews/{review_group}:
     get:
       operationId: list_external_reviews
@@ -1182,6 +1194,19 @@ components:
       required:
       - cue
       title: DismissCueRequest
+      type: object
+    TokenRefreshResponse:
+      example:
+        token_expires_sec: 0
+        token: token
+      properties:
+        token:
+          title: token
+          type: string
+        token_expires_sec:
+          title: token_expires_sec
+          type: integer
+      title: TokenRefreshResponse
       type: object
     SuccessMessage:
       example:

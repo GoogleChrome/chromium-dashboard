@@ -40,4 +40,5 @@ from chromestatus_openapi.models.post_intent_request import PostIntentRequest
 from chromestatus_openapi.models.review_latency import ReviewLatency
 from chromestatus_openapi.models.spec_mentor import SpecMentor
 from chromestatus_openapi.models.success_message import SuccessMessage
+from chromestatus_openapi.models.token_refresh_response import TokenRefreshResponse
 from chromestatus_openapi.models.user_permissions import UserPermissions
