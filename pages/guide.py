@@ -60,6 +60,7 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
     # TODO(jrobbins): Validate input, even though it is done on client.
 
     feature_type = int(self.form.get('feature_type', 0))
+    shipping_year = int(self.form.get('shipping_year', 0))
 
     has_enterprise_impact = int(self.form.get('enterprise_impact', '1')) > ENTERPRISE_IMPACT_NONE
     enterprise_notification_milestone = self.form.get('first_enterprise_notification_milestone')
@@ -90,6 +91,8 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
         first_enterprise_notification_milestone=enterprise_notification_milestone,
         blink_components=blink_components,
         tag_review_status=processes.initial_tag_review_status(feature_type))
+    if shipping_year:
+      feature_entry.shipping_year = shipping_year
     key: ndb.Key = feature_entry.put()
     search_fulltext.index_feature(feature_entry)
 
@@ -258,6 +261,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('feature_notes', 'str'),
       ('breaking_change', 'bool'),
       ('enterprise_impact', 'int'),
+      ('shipping_year', 'int'),
       ('ongoing_constraints', 'str')]
 
   # Old field name, new field name
