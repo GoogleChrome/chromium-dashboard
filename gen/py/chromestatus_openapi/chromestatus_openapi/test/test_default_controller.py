@@ -16,6 +16,7 @@ from chromestatus_openapi.models.feature_links_sample import FeatureLinksSample 
 from chromestatus_openapi.models.feature_links_summary_response import FeatureLinksSummaryResponse  # noqa: E501
 from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismissedCues400Response  # noqa: E501
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
+from chromestatus_openapi.models.get_stars_response import GetStarsResponse  # noqa: E501
 from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
 from chromestatus_openapi.models.permissions_response import PermissionsResponse  # noqa: E501
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
@@ -177,6 +178,21 @@ class TestDefaultController(BaseTestCase):
         }
         response = self.client.open(
             '/api/v0/features/{feature_id}/{stage_id}/{gate_id}/intent'.format(feature_id=56, stage_id=56, gate_id=56),
+            method='GET',
+            headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_get_stars(self):
+        """Test case for get_stars
+
+        Get a list of all starred feature IDs for the signed-in user
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/currentuser/stars',
             method='GET',
             headers=headers)
         self.assert200(response,

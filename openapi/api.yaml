@@ -157,6 +157,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PermissionsResponse'
+  /currentuser/stars:
+    get:
+      summary: Get a list of all starred feature IDs for the signed-in user
+      operationId: getStars
+      responses:
+        '200':
+          description: List of starred feature IDs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetStarsResponse'
   /currentuser/cues:
     get:
       summary: Get dismissed cues for the current user
@@ -838,6 +851,13 @@ components:
         - is_admin
         - email
         - editable_features
+    GetStarsResponse:
+      type: object
+      properties:
+        featureIds:
+          type: array
+          items:
+            type: integer
     DismissCueRequest:
       type: object
       properties:

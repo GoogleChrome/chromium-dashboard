@@ -45,7 +45,7 @@
     "deploy-rc": "npm run build && ./scripts/deploy_site.sh rc",
     "openapi": "npm run openapi-backend && npm run openapi-frontend",
     "openapi-frontend": "rm -rf gen/js/chromestatus-openapi && openapi-generator-cli generate -i openapi/api.yaml -g typescript-fetch  -o gen/js/chromestatus-openapi --config openapi/js-config.yaml && npm install",
-    "openapi-backend": ". cs-env/bin/activate; rm -rf gen/py/chromestatus_openapi && openapi-generator-cli generate -i openapi/api.yaml -g python-flask  -o gen/py/chromestatus_openapi --additional-properties=packageName=chromestatus_openapi && pip install -r requirements.txt",
+    "openapi-backend": ". cs-env/bin/activate; rm -rf gen/py/chromestatus_openapi && openapi-generator-cli generate -i openapi/api.yaml -g python-flask  -o gen/py/chromestatus_openapi --additional-properties=packageName=chromestatus_openapi,modelPropertyNaming=original && pip install -r requirements.txt",
     "openapi-validate": "openapi-generator-cli validate -i openapi/api.yaml",
     "pwtests": "npm run pwtests-shutdown; ./packages/playwright/run.sh bash -c \"./wait-for-app.sh && npx playwright test\"",
     "pwtests-update": "npm run pwtests-shutdown; ./packages/playwright/run.sh bash -c \"./wait-for-app.sh && npx playwright test --update-snapshots $npm_config_filename \"",

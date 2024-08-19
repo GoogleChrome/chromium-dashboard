@@ -18,6 +18,7 @@ export * from './FeatureLinksSummaryResponse';
 export * from './GateLatency';
 export * from './GetDismissedCues400Response';
 export * from './GetIntentResponse';
+export * from './GetStarsResponse';
 export * from './LinkPreview';
 export * from './LinkPreviewBase';
 export * from './LinkPreviewGithubIssue';

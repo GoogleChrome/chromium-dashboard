@@ -29,6 +29,7 @@ import type {
   FeatureLinksSummaryResponse,
   GetDismissedCues400Response,
   GetIntentResponse,
+  GetStarsResponse,
   MessageResponse,
   PermissionsResponse,
   PostIntentRequest,
@@ -65,6 +66,8 @@ import {
     GetDismissedCues400ResponseToJSON,
     GetIntentResponseFromJSON,
     GetIntentResponseToJSON,
+    GetStarsResponseFromJSON,
+    GetStarsResponseToJSON,
     MessageResponseFromJSON,
     MessageResponseToJSON,
     PermissionsResponseFromJSON,
@@ -290,6 +293,20 @@ export interface DefaultApiInterface {
      * Get the HTML body of an intent draft
      */
     getIntentBody(requestParameters: GetIntentBodyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetIntentResponse>;
+
+    /**
+     * 
+     * @summary Get a list of all starred feature IDs for the signed-in user
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getStarsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<GetStarsResponse>>>;
+
+    /**
+     * Get a list of all starred feature IDs for the signed-in user
+     */
+    getStars(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<GetStarsResponse>>;
 
     /**
      * 
@@ -734,6 +751,32 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async getIntentBody(requestParameters: GetIntentBodyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetIntentResponse> {
         const response = await this.getIntentBodyRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get a list of all starred feature IDs for the signed-in user
+     */
+    async getStarsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<GetStarsResponse>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/currentuser/stars`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(GetStarsResponseFromJSON));
+    }
+
+    /**
+     * Get a list of all starred feature IDs for the signed-in user
+     */
+    async getStars(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<GetStarsResponse>> {
+        const response = await this.getStarsRaw(initOverrides);
         return await response.value();
     }
 

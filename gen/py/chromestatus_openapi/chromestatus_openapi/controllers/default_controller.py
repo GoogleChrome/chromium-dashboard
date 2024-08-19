@@ -17,6 +17,7 @@ from chromestatus_openapi.models.feature_links_sample import FeatureLinksSample 
 from chromestatus_openapi.models.feature_links_summary_response import FeatureLinksSummaryResponse  # noqa: E501
 from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismissedCues400Response  # noqa: E501
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
+from chromestatus_openapi.models.get_stars_response import GetStarsResponse  # noqa: E501
 from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
 from chromestatus_openapi.models.permissions_response import PermissionsResponse  # noqa: E501
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
@@ -155,6 +156,17 @@ def get_intent_body(feature_id, stage_id, gate_id):  # noqa: E501
     :type gate_id: int
 
     :rtype: Union[GetIntentResponse, Tuple[GetIntentResponse, int], Tuple[GetIntentResponse, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
+def get_stars():  # noqa: E501
+    """Get a list of all starred feature IDs for the signed-in user
+
+     # noqa: E501
+
+
+    :rtype: Union[List[GetStarsResponse], Tuple[List[GetStarsResponse], int], Tuple[List[GetStarsResponse], int, Dict[str, str]]
     """
     return 'do some magic!'
 

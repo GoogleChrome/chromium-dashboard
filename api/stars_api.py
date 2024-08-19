@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from chromestatus_openapi.models import (GetStarsResponse, SuccessMessage)
 
 from framework import basehandlers
 from internals import notifier
@@ -31,10 +32,10 @@ class StarsAPI(basehandlers.APIHandler):
     else:
       feature_ids = []  # Anon users cannot star features.
 
-    data = {
+    data = GetStarsResponse.from_dict({
         'featureIds': feature_ids,
-        }
-    return data
+        })
+    return data.to_dict()
 
   def do_post(self, **kwargs):
     """Set or clear a star on the specified feature."""
@@ -45,4 +46,4 @@ class StarsAPI(basehandlers.APIHandler):
     notifier.FeatureStar.set_star(
         user.email(), feature.key.integer_id(), starred)
     # Callers don't use the JSON response for this API call.
-    return {'message': 'Done'}
+    return SuccessMessage(message='Done')

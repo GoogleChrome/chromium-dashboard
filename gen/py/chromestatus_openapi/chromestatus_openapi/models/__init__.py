@@ -18,6 +18,7 @@ from chromestatus_openapi.models.feature_links_summary_response import FeatureLi
 from chromestatus_openapi.models.gate_latency import GateLatency
 from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismissedCues400Response
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse
+from chromestatus_openapi.models.get_stars_response import GetStarsResponse
 from chromestatus_openapi.models.link_preview import LinkPreview
 from chromestatus_openapi.models.link_preview_base import LinkPreviewBase
 from chromestatus_openapi.models.link_preview_github_issue import LinkPreviewGithubIssue

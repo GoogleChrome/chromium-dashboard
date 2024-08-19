@@ -193,6 +193,20 @@ paths:
           description: The permissions and email of the user.
       summary: Get the permissions and email of the user
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /currentuser/stars:
+    get:
+      operationId: get_stars
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/GetStarsResponse'
+                type: array
+          description: List of starred feature IDs
+      summary: Get a list of all starred feature IDs for the signed-in user
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /external_reviews/{review_group}:
     get:
       operationId: list_external_reviews
@@ -1169,6 +1183,19 @@ components:
       - email
       - is_admin
       title: UserPermissions
+      type: object
+    GetStarsResponse:
+      example:
+        featureIds:
+        - 0
+        - 0
+      properties:
+        featureIds:
+          items:
+            type: integer
+          title: featureIds
+          type: array
+      title: GetStarsResponse
       type: object
     DismissCueRequest:
       example:
