@@ -44,7 +44,9 @@ src/models/OutstandingReview.ts
 src/models/OwnersAndSubscribersOfComponent.ts
 src/models/PermissionsResponse.ts
 src/models/PostIntentRequest.ts
+src/models/PostStarsRequest.ts
 src/models/ReviewLatency.ts
+src/models/SetStarRequest.ts
 src/models/SpecMentor.ts
 src/models/SuccessMessage.ts
 src/models/UserPermissions.ts

@@ -34,6 +34,7 @@ import type {
   PermissionsResponse,
   PostIntentRequest,
   ReviewLatency,
+  SetStarRequest,
   SpecMentor,
   SuccessMessage,
 } from '../models/index';
@@ -76,6 +77,8 @@ import {
     PostIntentRequestToJSON,
     ReviewLatencyFromJSON,
     ReviewLatencyToJSON,
+    SetStarRequestFromJSON,
+    SetStarRequestToJSON,
     SpecMentorFromJSON,
     SpecMentorToJSON,
     SuccessMessageFromJSON,
@@ -145,6 +148,10 @@ export interface RemoveUserFromComponentRequest {
     componentId: number;
     userId: number;
     componentUsersRequest?: ComponentUsersRequest;
+}
+
+export interface SetStarOperationRequest {
+    setStarRequest: SetStarRequest;
 }
 
 /**
@@ -431,6 +438,21 @@ export interface DefaultApiInterface {
      * Remove a user from a component
      */
     removeUserFromComponent(requestParameters: RemoveUserFromComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * 
+     * @summary Set or clear a star on the specified feature
+     * @param {SetStarRequest} setStarRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    setStarRaw(requestParameters: SetStarOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+
+    /**
+     * Set or clear a star on the specified feature
+     */
+    setStar(requestParameters: SetStarOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
 
 }
 
@@ -1071,6 +1093,42 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async removeUserFromComponent(requestParameters: RemoveUserFromComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.removeUserFromComponentRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Set or clear a star on the specified feature
+     */
+    async setStarRaw(requestParameters: SetStarOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+        if (requestParameters['setStarRequest'] == null) {
+            throw new runtime.RequiredError(
+                'setStarRequest',
+                'Required parameter "setStarRequest" was null or undefined when calling setStar().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/currentuser/stars`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SetStarRequestToJSON(requestParameters['setStarRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Set or clear a star on the specified feature
+     */
+    async setStar(requestParameters: SetStarOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+        const response = await this.setStarRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
 }

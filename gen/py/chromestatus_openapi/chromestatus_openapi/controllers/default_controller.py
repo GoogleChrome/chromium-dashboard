@@ -22,6 +22,7 @@ from chromestatus_openapi.models.message_response import MessageResponse  # noqa
 from chromestatus_openapi.models.permissions_response import PermissionsResponse  # noqa: E501
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
+from chromestatus_openapi.models.set_star_request import SetStarRequest  # noqa: E501
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
 from chromestatus_openapi.models.success_message import SuccessMessage  # noqa: E501
 from chromestatus_openapi import util
@@ -287,4 +288,19 @@ def remove_user_from_component(component_id, user_id, component_users_request=No
     """
     if connexion.request.is_json:
         component_users_request = ComponentUsersRequest.from_dict(connexion.request.get_json())  # noqa: E501
+    return 'do some magic!'
+
+
+def set_star(set_star_request):  # noqa: E501
+    """Set or clear a star on the specified feature
+
+     # noqa: E501
+
+    :param set_star_request: 
+    :type set_star_request: dict | bytes
+
+    :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
+    """
+    if connexion.request.is_json:
+        set_star_request = SetStarRequest.from_dict(connexion.request.get_json())  # noqa: E501
     return 'do some magic!'

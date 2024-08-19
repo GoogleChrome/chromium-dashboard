@@ -167,9 +167,30 @@ paths:
           content:
             application/json:
               schema:
-                type: array
+                type: object
                 items:
                   $ref: '#/components/schemas/GetStarsResponse'
+    post:
+      summary: Set or clear a star on the specified feature
+      operationId: setStar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                featureId:
+                  type: integer
+                starred:
+                  type: boolean
+      responses:
+        '200':
+          description: Star set or cleared successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
   /currentuser/cues:
     get:
       summary: Get dismissed cues for the current user
@@ -858,6 +879,16 @@ components:
           type: array
           items:
             type: integer
+    PostStarsRequest:
+      type: object
+      properties:
+        featureId:
+          type: integer
+        starred:
+          type: boolean
+          default: true
+      required:
+        - featureId
     DismissCueRequest:
       type: object
       properties:

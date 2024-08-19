@@ -207,6 +207,23 @@ paths:
           description: List of starred feature IDs
       summary: Get a list of all starred feature IDs for the signed-in user
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+    post:
+      operationId: set_star
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/setStar_request'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Star set or cleared successfully
+      summary: Set or clear a star on the specified feature
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /external_reviews/{review_group}:
     get:
       operationId: list_external_reviews
@@ -1197,6 +1214,16 @@ components:
           type: array
       title: GetStarsResponse
       type: object
+    PostStarsRequest:
+      properties:
+        featureId:
+          type: integer
+        starred:
+          default: true
+          type: boolean
+      required:
+      - featureId
+      type: object
     DismissCueRequest:
       example:
         cue: progress-checkmarks
@@ -1239,6 +1266,16 @@ components:
           title: message
           type: string
       title: deleteAccount_200_response
+      type: object
+    setStar_request:
+      properties:
+        featureId:
+          title: featureId
+          type: integer
+        starred:
+          title: starred
+          type: boolean
+      title: setStar_request
       type: object
     getDismissedCues_400_response:
       example:
