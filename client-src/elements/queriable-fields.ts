@@ -63,6 +63,12 @@ export const QUERIABLE_FIELDS: QueryField[] = [
   //  'initial_public_proposal_url': Feature.initial_public_proposal_url,
   //  'browsers.chrome.blink_components': Feature.blink_components,
   {
+    name: 'shipping_year',
+    kind: NUM_KIND,
+    doc: 'Estimated shipping year',
+  },
+
+  {
     name: 'browsers.chrome.devrel',
     kind: EMAIL_KIND,
     doc: 'Developer relations contact',

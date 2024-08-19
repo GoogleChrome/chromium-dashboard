@@ -64,6 +64,8 @@ def get_strings(fe : FeatureEntry) -> list[str]:
 
   strings.append(fe.bug_url)
   strings.append(fe.launch_bug_url)
+  if fe.shipping_year:
+    strings.append(str(fe.shipping_year))
 
   # TODO: impl_status_Chrome
   strings.append(fe.flag_name)
