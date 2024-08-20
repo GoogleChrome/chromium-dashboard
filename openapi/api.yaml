@@ -1370,7 +1370,8 @@ components:
         extensions:
           type: array
           items:
-            $ref: '#/components/schemas/StageDict'
+            type: object
+            description: typed as object to avoid it referencing itself
         origin_trial_feedback_url:
           type: string
           nullable: true

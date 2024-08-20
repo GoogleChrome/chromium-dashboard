@@ -426,6 +426,69 @@ paths:
           description: return the links and its information to the client
       summary: Get feature links summary
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /features:
+    get:
+      operationId: get_all_features
+      parameters:
+      - description: Search query string.
+        explode: true
+        in: query
+        name: q
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Sorting specification.
+        explode: true
+        in: query
+        name: sort
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Number of results to return.
+        explode: true
+        in: query
+        name: num
+        required: false
+        schema:
+          default: 100
+          type: integer
+        style: form
+      - description: Index of the first result to return.
+        explode: true
+        in: query
+        name: start
+        required: false
+        schema:
+          default: 0
+          type: integer
+        style: form
+      - description: Filter features by milestone.
+        explode: true
+        in: query
+        name: milestone
+        required: false
+        schema:
+          type: integer
+        style: form
+      - description: Filter features by release notes milestone.
+        explode: true
+        in: query
+        name: releaseNotesMilestone
+        required: false
+        schema:
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureSearchResponse'
+          description: A list of features with count
+      summary: retrive a list of feature
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /features/<int:feature_id>/approvals/<int:gate_id>/comments:
     get:
       operationId: get_gate_comments
@@ -579,6 +642,29 @@ paths:
                 $ref: '#/components/schemas/ErrorMessage'
           description: User is not allowed to comment on this feature
       summary: Add a comment to a feature
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /features/{feature_id}:
+    get:
+      operationId: get_feature_by_id
+      parameters:
+      - description: ID of the feature to retrieve
+        explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerboseFeatureDict'
+          description: Feature retrieved successfully
+        "404":
+          description: Feature not found
+      summary: Get a feature by ID
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /features/{feature_id}/gates:
     get:
@@ -1183,6 +1269,1813 @@ components:
         type: string
       style: form
   schemas:
+    FeatureSearchResponse:
+      example:
+        features:
+        - all_platforms: true
+          prefixed: true
+          security_risks: security_risks
+          bug_url: bug_url
+          launch_bug_url: launch_bug_url
+          explainer_links:
+          - explainer_links
+          - explainer_links
+          interop_compat_risks: interop_compat_risks
+          spec_link: spec_link
+          tag_review_status_int: 2
+          privacy_review_status: privacy_review_status
+          search_tags:
+          - search_tags
+          - search_tags
+          non_oss_deps: non_oss_deps
+          wpt_descr: wpt_descr
+          tag_review: tag_review
+          ff_views: 6
+          screenshot_links:
+          - screenshot_links
+          - screenshot_links
+          anticipated_spec_changes: anticipated_spec_changes
+          cc_emails:
+          - cc_emails
+          - cc_emails
+          creator_email: creator_email
+          first_enterprise_notification_milestone: 9
+          adoption_plan: adoption_plan
+          id: 6
+          feature_type_int: 5
+          enterprise_feature_categories:
+          - enterprise_feature_categories
+          - enterprise_feature_categories
+          ongoing_constraints: ongoing_constraints
+          updater_email: updater_email
+          new_crbug_url: https://openapi-generator.tech
+          created:
+            by: by
+            when: when
+          breaking_change: true
+          devtrial_instructions: devtrial_instructions
+          browsers:
+            ff:
+              view:
+                val: 6
+                notes: notes
+                text: text
+                url: url
+            other:
+              view:
+                val: 6
+                notes: notes
+                text: text
+                url: url
+            chrome:
+              webview: 1
+              prefixed: true
+              flag: flag
+              blink_components:
+              - blink_components
+              - blink_components
+              android: 6
+              owners:
+              - owners
+              - owners
+              ios: 2
+              devrel:
+              - devrel
+              - devrel
+              origintrial: true
+              desktop: 3
+              bug: bug
+              intervention: true
+              status:
+                val: 6
+                milestone_str: milestone_str
+                text: text
+            safari:
+              view:
+                val: 6
+                notes: notes
+                text: text
+                url: url
+            webdev:
+              view:
+                val: 6
+                notes: notes
+                text: text
+                url: url
+          tags:
+          - tags
+          - tags
+          cc_recipients:
+          - cc_recipients
+          - cc_recipients
+          privacy_review_status_int: 7
+          standards:
+            maturity:
+              val: 6
+              short_text: short_text
+              text: text
+            spec: spec
+          adoption_expectation: adoption_expectation
+          unlisted: true
+          name: name
+          intent_stage: intent_stage
+          wpt: true
+          updated:
+            by: by
+            when: when
+          finch_name: finch_name
+          owner_emails:
+          - owner_emails
+          - owner_emails
+          category_int: 1
+          feature_notes: feature_notes
+          debuggability: debuggability
+          is_enterprise_feature: true
+          blink_components:
+          - blink_components
+          - blink_components
+          motivation: motivation
+          safari_views: 8
+          initial_public_proposal_url: initial_public_proposal_url
+          devrel_emails:
+          - devrel_emails
+          - devrel_emails
+          spec_mentors:
+          - spec_mentors
+          - spec_mentors
+          intent_stage_int: 2
+          flag_name: flag_name
+          measurement: measurement
+          web_dev_views: 9
+          security_review_status_int: 4
+          doc_links:
+          - https://openapi-generator.tech
+          - https://openapi-generator.tech
+          availability_expectation: availability_expectation
+          webview_risks: webview_risks
+          sample_links:
+          - https://openapi-generator.tech
+          - https://openapi-generator.tech
+          active_stage_id: 7
+          editors:
+          - editors
+          - editors
+          ergonomics_risks: ergonomics_risks
+          summary: summary
+          all_platforms_descr: true
+          tag_review_status: tag_review_status
+          creator: creator
+          comments: comments
+          requires_embedder_support: true
+          is_released: true
+          updated_display: updated_display
+          enterprise_impact: 3
+          api_spec: api_spec
+          resources:
+            docs:
+            - docs
+            - docs
+            samples:
+            - samples
+            - samples
+          experiment_timeline: experiment_timeline
+          accurate_as_of: accurate_as_of
+          feature_type: feature_type
+          spec_mentor_emails:
+          - spec_mentor_emails
+          - spec_mentor_emails
+          deleted: true
+          activation_risks: activation_risks
+          stages:
+          - feature_id: 1
+            finch_url: finch_url
+            ot_display_name: ot_display_name
+            rollout_platforms:
+            - rollout_platforms
+            - rollout_platforms
+            ot_feedback_submission_url: https://openapi-generator.tech
+            tl_emails:
+            - tl_emails
+            - tl_emails
+            announcement_url: https://openapi-generator.tech
+            ot_description: ot_description
+            rollout_details: rollout_details
+            ot_approval_buganizer_component: 7
+            ot_approval_criteria_url: ot_approval_criteria_url
+            ot_approval_group_email: ot_approval_group_email
+            experiment_extension_reason: experiment_extension_reason
+            rollout_milestone: 9
+            ot_activation_date: 2000-01-23T04:56:07.000+00:00
+            ot_owner_email: ot_owner_email
+            ot_request_note: ot_request_note
+            ot_setup_status: 4
+            ot_documentation_url: https://openapi-generator.tech
+            ot_emails:
+            - ot_emails
+            - ot_emails
+            id: 1
+            ot_require_approvals: true
+            ot_has_third_party_support: true
+            pm_emails:
+            - pm_emails
+            - pm_emails
+            experiment_goals: experiment_goals
+            stage_type: 1
+            created: 2000-01-23T04:56:07.000+00:00
+            ot_stage_id: 5
+            ot_approval_buganizer_custom_field_id: 1
+            intent_thread_url: intent_thread_url
+            ot_is_critical_trial: true
+            display_name: display_name
+            ot_is_deprecation_trial: true
+            rollout_impact: 9
+            origin_trial_feedback_url: origin_trial_feedback_url
+            extensions:
+            - "{}"
+            - "{}"
+            experiment_risks: experiment_risks
+            te_emails:
+            - te_emails
+            - te_emails
+            ot_action_requested: true
+            intent_stage: 6
+            origin_trial_id: origin_trial_id
+            ux_emails:
+            - ux_emails
+            - ux_emails
+            enterprise_policies:
+            - enterprise_policies
+            - enterprise_policies
+            ot_chromium_trial_name: ot_chromium_trial_name
+            ot_webfeature_use_counter: ot_webfeature_use_counter
+          - feature_id: 1
+            finch_url: finch_url
+            ot_display_name: ot_display_name
+            rollout_platforms:
+            - rollout_platforms
+            - rollout_platforms
+            ot_feedback_submission_url: https://openapi-generator.tech
+            tl_emails:
+            - tl_emails
+            - tl_emails
+            announcement_url: https://openapi-generator.tech
+            ot_description: ot_description
+            rollout_details: rollout_details
+            ot_approval_buganizer_component: 7
+            ot_approval_criteria_url: ot_approval_criteria_url
+            ot_approval_group_email: ot_approval_group_email
+            experiment_extension_reason: experiment_extension_reason
+            rollout_milestone: 9
+            ot_activation_date: 2000-01-23T04:56:07.000+00:00
+            ot_owner_email: ot_owner_email
+            ot_request_note: ot_request_note
+            ot_setup_status: 4
+            ot_documentation_url: https://openapi-generator.tech
+            ot_emails:
+            - ot_emails
+            - ot_emails
+            id: 1
+            ot_require_approvals: true
+            ot_has_third_party_support: true
+            pm_emails:
+            - pm_emails
+            - pm_emails
+            experiment_goals: experiment_goals
+            stage_type: 1
+            created: 2000-01-23T04:56:07.000+00:00
+            ot_stage_id: 5
+            ot_approval_buganizer_custom_field_id: 1
+            intent_thread_url: intent_thread_url
+            ot_is_critical_trial: true
+            display_name: display_name
+            ot_is_deprecation_trial: true
+            rollout_impact: 9
+            origin_trial_feedback_url: origin_trial_feedback_url
+            extensions:
+            - "{}"
+            - "{}"
+            experiment_risks: experiment_risks
+            te_emails:
+            - te_emails
+            - te_emails
+            ot_action_requested: true
+            intent_stage: 6
+            origin_trial_id: origin_trial_id
+            ux_emails:
+            - ux_emails
+            - ux_emails
+            enterprise_policies:
+            - enterprise_policies
+            - enterprise_policies
+            ot_chromium_trial_name: ot_chromium_trial_name
+            ot_webfeature_use_counter: ot_webfeature_use_counter
+          editor_emails:
+          - editor_emails
+          - editor_emails
+          security_review_status: security_review_status
+          category: category
+          non_finch_justification: non_finch_justification
+          star_count: 5
+        - all_platforms: true
+          prefixed: true
+          security_risks: security_risks
+          bug_url: bug_url
+          launch_bug_url: launch_bug_url
+          explainer_links:
+          - explainer_links
+          - explainer_links
+          interop_compat_risks: interop_compat_risks
+          spec_link: spec_link
+          tag_review_status_int: 2
+          privacy_review_status: privacy_review_status
+          search_tags:
+          - search_tags
+          - search_tags
+          non_oss_deps: non_oss_deps
+          wpt_descr: wpt_descr
+          tag_review: tag_review
+          ff_views: 6
+          screenshot_links:
+          - screenshot_links
+          - screenshot_links
+          anticipated_spec_changes: anticipated_spec_changes
+          cc_emails:
+          - cc_emails
+          - cc_emails
+          creator_email: creator_email
+          first_enterprise_notification_milestone: 9
+          adoption_plan: adoption_plan
+          id: 6
+          feature_type_int: 5
+          enterprise_feature_categories:
+          - enterprise_feature_categories
+          - enterprise_feature_categories
+          ongoing_constraints: ongoing_constraints
+          updater_email: updater_email
+          new_crbug_url: https://openapi-generator.tech
+          created:
+            by: by
+            when: when
+          breaking_change: true
+          devtrial_instructions: devtrial_instructions
+          browsers:
+            ff:
+              view:
+                val: 6
+                notes: notes
+                text: text
+                url: url
+            other:
+              view:
+                val: 6
+                notes: notes
+                text: text
+                url: url
+            chrome:
+              webview: 1
+              prefixed: true
+              flag: flag
+              blink_components:
+              - blink_components
+              - blink_components
+              android: 6
+              owners:
+              - owners
+              - owners
+              ios: 2
+              devrel:
+              - devrel
+              - devrel
+              origintrial: true
+              desktop: 3
+              bug: bug
+              intervention: true
+              status:
+                val: 6
+                milestone_str: milestone_str
+                text: text
+            safari:
+              view:
+                val: 6
+                notes: notes
+                text: text
+                url: url
+            webdev:
+              view:
+                val: 6
+                notes: notes
+                text: text
+                url: url
+          tags:
+          - tags
+          - tags
+          cc_recipients:
+          - cc_recipients
+          - cc_recipients
+          privacy_review_status_int: 7
+          standards:
+            maturity:
+              val: 6
+              short_text: short_text
+              text: text
+            spec: spec
+          adoption_expectation: adoption_expectation
+          unlisted: true
+          name: name
+          intent_stage: intent_stage
+          wpt: true
+          updated:
+            by: by
+            when: when
+          finch_name: finch_name
+          owner_emails:
+          - owner_emails
+          - owner_emails
+          category_int: 1
+          feature_notes: feature_notes
+          debuggability: debuggability
+          is_enterprise_feature: true
+          blink_components:
+          - blink_components
+          - blink_components
+          motivation: motivation
+          safari_views: 8
+          initial_public_proposal_url: initial_public_proposal_url
+          devrel_emails:
+          - devrel_emails
+          - devrel_emails
+          spec_mentors:
+          - spec_mentors
+          - spec_mentors
+          intent_stage_int: 2
+          flag_name: flag_name
+          measurement: measurement
+          web_dev_views: 9
+          security_review_status_int: 4
+          doc_links:
+          - https://openapi-generator.tech
+          - https://openapi-generator.tech
+          availability_expectation: availability_expectation
+          webview_risks: webview_risks
+          sample_links:
+          - https://openapi-generator.tech
+          - https://openapi-generator.tech
+          active_stage_id: 7
+          editors:
+          - editors
+          - editors
+          ergonomics_risks: ergonomics_risks
+          summary: summary
+          all_platforms_descr: true
+          tag_review_status: tag_review_status
+          creator: creator
+          comments: comments
+          requires_embedder_support: true
+          is_released: true
+          updated_display: updated_display
+          enterprise_impact: 3
+          api_spec: api_spec
+          resources:
+            docs:
+            - docs
+            - docs
+            samples:
+            - samples
+            - samples
+          experiment_timeline: experiment_timeline
+          accurate_as_of: accurate_as_of
+          feature_type: feature_type
+          spec_mentor_emails:
+          - spec_mentor_emails
+          - spec_mentor_emails
+          deleted: true
+          activation_risks: activation_risks
+          stages:
+          - feature_id: 1
+            finch_url: finch_url
+            ot_display_name: ot_display_name
+            rollout_platforms:
+            - rollout_platforms
+            - rollout_platforms
+            ot_feedback_submission_url: https://openapi-generator.tech
+            tl_emails:
+            - tl_emails
+            - tl_emails
+            announcement_url: https://openapi-generator.tech
+            ot_description: ot_description
+            rollout_details: rollout_details
+            ot_approval_buganizer_component: 7
+            ot_approval_criteria_url: ot_approval_criteria_url
+            ot_approval_group_email: ot_approval_group_email
+            experiment_extension_reason: experiment_extension_reason
+            rollout_milestone: 9
+            ot_activation_date: 2000-01-23T04:56:07.000+00:00
+            ot_owner_email: ot_owner_email
+            ot_request_note: ot_request_note
+            ot_setup_status: 4
+            ot_documentation_url: https://openapi-generator.tech
+            ot_emails:
+            - ot_emails
+            - ot_emails
+            id: 1
+            ot_require_approvals: true
+            ot_has_third_party_support: true
+            pm_emails:
+            - pm_emails
+            - pm_emails
+            experiment_goals: experiment_goals
+            stage_type: 1
+            created: 2000-01-23T04:56:07.000+00:00
+            ot_stage_id: 5
+            ot_approval_buganizer_custom_field_id: 1
+            intent_thread_url: intent_thread_url
+            ot_is_critical_trial: true
+            display_name: display_name
+            ot_is_deprecation_trial: true
+            rollout_impact: 9
+            origin_trial_feedback_url: origin_trial_feedback_url
+            extensions:
+            - "{}"
+            - "{}"
+            experiment_risks: experiment_risks
+            te_emails:
+            - te_emails
+            - te_emails
+            ot_action_requested: true
+            intent_stage: 6
+            origin_trial_id: origin_trial_id
+            ux_emails:
+            - ux_emails
+            - ux_emails
+            enterprise_policies:
+            - enterprise_policies
+            - enterprise_policies
+            ot_chromium_trial_name: ot_chromium_trial_name
+            ot_webfeature_use_counter: ot_webfeature_use_counter
+          - feature_id: 1
+            finch_url: finch_url
+            ot_display_name: ot_display_name
+            rollout_platforms:
+            - rollout_platforms
+            - rollout_platforms
+            ot_feedback_submission_url: https://openapi-generator.tech
+            tl_emails:
+            - tl_emails
+            - tl_emails
+            announcement_url: https://openapi-generator.tech
+            ot_description: ot_description
+            rollout_details: rollout_details
+            ot_approval_buganizer_component: 7
+            ot_approval_criteria_url: ot_approval_criteria_url
+            ot_approval_group_email: ot_approval_group_email
+            experiment_extension_reason: experiment_extension_reason
+            rollout_milestone: 9
+            ot_activation_date: 2000-01-23T04:56:07.000+00:00
+            ot_owner_email: ot_owner_email
+            ot_request_note: ot_request_note
+            ot_setup_status: 4
+            ot_documentation_url: https://openapi-generator.tech
+            ot_emails:
+            - ot_emails
+            - ot_emails
+            id: 1
+            ot_require_approvals: true
+            ot_has_third_party_support: true
+            pm_emails:
+            - pm_emails
+            - pm_emails
+            experiment_goals: experiment_goals
+            stage_type: 1
+            created: 2000-01-23T04:56:07.000+00:00
+            ot_stage_id: 5
+            ot_approval_buganizer_custom_field_id: 1
+            intent_thread_url: intent_thread_url
+            ot_is_critical_trial: true
+            display_name: display_name
+            ot_is_deprecation_trial: true
+            rollout_impact: 9
+            origin_trial_feedback_url: origin_trial_feedback_url
+            extensions:
+            - "{}"
+            - "{}"
+            experiment_risks: experiment_risks
+            te_emails:
+            - te_emails
+            - te_emails
+            ot_action_requested: true
+            intent_stage: 6
+            origin_trial_id: origin_trial_id
+            ux_emails:
+            - ux_emails
+            - ux_emails
+            enterprise_policies:
+            - enterprise_policies
+            - enterprise_policies
+            ot_chromium_trial_name: ot_chromium_trial_name
+            ot_webfeature_use_counter: ot_webfeature_use_counter
+          editor_emails:
+          - editor_emails
+          - editor_emails
+          security_review_status: security_review_status
+          category: category
+          non_finch_justification: non_finch_justification
+          star_count: 5
+        total_count: 0
+      properties:
+        total_count:
+          title: total_count
+          type: integer
+        features:
+          items:
+            $ref: '#/components/schemas/VerboseFeatureDict'
+          title: features
+          type: array
+      title: FeatureSearchResponse
+      type: object
+    VerboseFeatureDict:
+      example:
+        all_platforms: true
+        prefixed: true
+        security_risks: security_risks
+        bug_url: bug_url
+        launch_bug_url: launch_bug_url
+        explainer_links:
+        - explainer_links
+        - explainer_links
+        interop_compat_risks: interop_compat_risks
+        spec_link: spec_link
+        tag_review_status_int: 2
+        privacy_review_status: privacy_review_status
+        search_tags:
+        - search_tags
+        - search_tags
+        non_oss_deps: non_oss_deps
+        wpt_descr: wpt_descr
+        tag_review: tag_review
+        ff_views: 6
+        screenshot_links:
+        - screenshot_links
+        - screenshot_links
+        anticipated_spec_changes: anticipated_spec_changes
+        cc_emails:
+        - cc_emails
+        - cc_emails
+        creator_email: creator_email
+        first_enterprise_notification_milestone: 9
+        adoption_plan: adoption_plan
+        id: 6
+        feature_type_int: 5
+        enterprise_feature_categories:
+        - enterprise_feature_categories
+        - enterprise_feature_categories
+        ongoing_constraints: ongoing_constraints
+        updater_email: updater_email
+        new_crbug_url: https://openapi-generator.tech
+        created:
+          by: by
+          when: when
+        breaking_change: true
+        devtrial_instructions: devtrial_instructions
+        browsers:
+          ff:
+            view:
+              val: 6
+              notes: notes
+              text: text
+              url: url
+          other:
+            view:
+              val: 6
+              notes: notes
+              text: text
+              url: url
+          chrome:
+            webview: 1
+            prefixed: true
+            flag: flag
+            blink_components:
+            - blink_components
+            - blink_components
+            android: 6
+            owners:
+            - owners
+            - owners
+            ios: 2
+            devrel:
+            - devrel
+            - devrel
+            origintrial: true
+            desktop: 3
+            bug: bug
+            intervention: true
+            status:
+              val: 6
+              milestone_str: milestone_str
+              text: text
+          safari:
+            view:
+              val: 6
+              notes: notes
+              text: text
+              url: url
+          webdev:
+            view:
+              val: 6
+              notes: notes
+              text: text
+              url: url
+        tags:
+        - tags
+        - tags
+        cc_recipients:
+        - cc_recipients
+        - cc_recipients
+        privacy_review_status_int: 7
+        standards:
+          maturity:
+            val: 6
+            short_text: short_text
+            text: text
+          spec: spec
+        adoption_expectation: adoption_expectation
+        unlisted: true
+        name: name
+        intent_stage: intent_stage
+        wpt: true
+        updated:
+          by: by
+          when: when
+        finch_name: finch_name
+        owner_emails:
+        - owner_emails
+        - owner_emails
+        category_int: 1
+        feature_notes: feature_notes
+        debuggability: debuggability
+        is_enterprise_feature: true
+        blink_components:
+        - blink_components
+        - blink_components
+        motivation: motivation
+        safari_views: 8
+        initial_public_proposal_url: initial_public_proposal_url
+        devrel_emails:
+        - devrel_emails
+        - devrel_emails
+        spec_mentors:
+        - spec_mentors
+        - spec_mentors
+        intent_stage_int: 2
+        flag_name: flag_name
+        measurement: measurement
+        web_dev_views: 9
+        security_review_status_int: 4
+        doc_links:
+        - https://openapi-generator.tech
+        - https://openapi-generator.tech
+        availability_expectation: availability_expectation
+        webview_risks: webview_risks
+        sample_links:
+        - https://openapi-generator.tech
+        - https://openapi-generator.tech
+        active_stage_id: 7
+        editors:
+        - editors
+        - editors
+        ergonomics_risks: ergonomics_risks
+        summary: summary
+        all_platforms_descr: true
+        tag_review_status: tag_review_status
+        creator: creator
+        comments: comments
+        requires_embedder_support: true
+        is_released: true
+        updated_display: updated_display
+        enterprise_impact: 3
+        api_spec: api_spec
+        resources:
+          docs:
+          - docs
+          - docs
+          samples:
+          - samples
+          - samples
+        experiment_timeline: experiment_timeline
+        accurate_as_of: accurate_as_of
+        feature_type: feature_type
+        spec_mentor_emails:
+        - spec_mentor_emails
+        - spec_mentor_emails
+        deleted: true
+        activation_risks: activation_risks
+        stages:
+        - feature_id: 1
+          finch_url: finch_url
+          ot_display_name: ot_display_name
+          rollout_platforms:
+          - rollout_platforms
+          - rollout_platforms
+          ot_feedback_submission_url: https://openapi-generator.tech
+          tl_emails:
+          - tl_emails
+          - tl_emails
+          announcement_url: https://openapi-generator.tech
+          ot_description: ot_description
+          rollout_details: rollout_details
+          ot_approval_buganizer_component: 7
+          ot_approval_criteria_url: ot_approval_criteria_url
+          ot_approval_group_email: ot_approval_group_email
+          experiment_extension_reason: experiment_extension_reason
+          rollout_milestone: 9
+          ot_activation_date: 2000-01-23T04:56:07.000+00:00
+          ot_owner_email: ot_owner_email
+          ot_request_note: ot_request_note
+          ot_setup_status: 4
+          ot_documentation_url: https://openapi-generator.tech
+          ot_emails:
+          - ot_emails
+          - ot_emails
+          id: 1
+          ot_require_approvals: true
+          ot_has_third_party_support: true
+          pm_emails:
+          - pm_emails
+          - pm_emails
+          experiment_goals: experiment_goals
+          stage_type: 1
+          created: 2000-01-23T04:56:07.000+00:00
+          ot_stage_id: 5
+          ot_approval_buganizer_custom_field_id: 1
+          intent_thread_url: intent_thread_url
+          ot_is_critical_trial: true
+          display_name: display_name
+          ot_is_deprecation_trial: true
+          rollout_impact: 9
+          origin_trial_feedback_url: origin_trial_feedback_url
+          extensions:
+          - "{}"
+          - "{}"
+          experiment_risks: experiment_risks
+          te_emails:
+          - te_emails
+          - te_emails
+          ot_action_requested: true
+          intent_stage: 6
+          origin_trial_id: origin_trial_id
+          ux_emails:
+          - ux_emails
+          - ux_emails
+          enterprise_policies:
+          - enterprise_policies
+          - enterprise_policies
+          ot_chromium_trial_name: ot_chromium_trial_name
+          ot_webfeature_use_counter: ot_webfeature_use_counter
+        - feature_id: 1
+          finch_url: finch_url
+          ot_display_name: ot_display_name
+          rollout_platforms:
+          - rollout_platforms
+          - rollout_platforms
+          ot_feedback_submission_url: https://openapi-generator.tech
+          tl_emails:
+          - tl_emails
+          - tl_emails
+          announcement_url: https://openapi-generator.tech
+          ot_description: ot_description
+          rollout_details: rollout_details
+          ot_approval_buganizer_component: 7
+          ot_approval_criteria_url: ot_approval_criteria_url
+          ot_approval_group_email: ot_approval_group_email
+          experiment_extension_reason: experiment_extension_reason
+          rollout_milestone: 9
+          ot_activation_date: 2000-01-23T04:56:07.000+00:00
+          ot_owner_email: ot_owner_email
+          ot_request_note: ot_request_note
+          ot_setup_status: 4
+          ot_documentation_url: https://openapi-generator.tech
+          ot_emails:
+          - ot_emails
+          - ot_emails
+          id: 1
+          ot_require_approvals: true
+          ot_has_third_party_support: true
+          pm_emails:
+          - pm_emails
+          - pm_emails
+          experiment_goals: experiment_goals
+          stage_type: 1
+          created: 2000-01-23T04:56:07.000+00:00
+          ot_stage_id: 5
+          ot_approval_buganizer_custom_field_id: 1
+          intent_thread_url: intent_thread_url
+          ot_is_critical_trial: true
+          display_name: display_name
+          ot_is_deprecation_trial: true
+          rollout_impact: 9
+          origin_trial_feedback_url: origin_trial_feedback_url
+          extensions:
+          - "{}"
+          - "{}"
+          experiment_risks: experiment_risks
+          te_emails:
+          - te_emails
+          - te_emails
+          ot_action_requested: true
+          intent_stage: 6
+          origin_trial_id: origin_trial_id
+          ux_emails:
+          - ux_emails
+          - ux_emails
+          enterprise_policies:
+          - enterprise_policies
+          - enterprise_policies
+          ot_chromium_trial_name: ot_chromium_trial_name
+          ot_webfeature_use_counter: ot_webfeature_use_counter
+        editor_emails:
+        - editor_emails
+        - editor_emails
+        security_review_status: security_review_status
+        category: category
+        non_finch_justification: non_finch_justification
+        star_count: 5
+      properties:
+        id:
+          description: metadata
+          title: id
+          type: integer
+        created:
+          $ref: '#/components/schemas/FeatureDictInnerUserEditInfo'
+        updated:
+          $ref: '#/components/schemas/FeatureDictInnerUserEditInfo'
+        accurate_as_of:
+          nullable: true
+          title: accurate_as_of
+          type: string
+        creator_email:
+          nullable: true
+          title: creator_email
+          type: string
+        updater_email:
+          nullable: true
+          title: updater_email
+          type: string
+        owner_emails:
+          items:
+            type: string
+          title: owner_emails
+          type: array
+        editor_emails:
+          items:
+            type: string
+          title: editor_emails
+          type: array
+        cc_emails:
+          items:
+            type: string
+          title: cc_emails
+          type: array
+        spec_mentor_emails:
+          items:
+            type: string
+          title: spec_mentor_emails
+          type: array
+        unlisted:
+          title: unlisted
+          type: boolean
+        deleted:
+          title: deleted
+          type: boolean
+        editors:
+          description: renamed metadata fields
+          items:
+            type: string
+          title: editors
+          type: array
+        cc_recipients:
+          items:
+            type: string
+          title: cc_recipients
+          type: array
+        spec_mentors:
+          items:
+            type: string
+          title: spec_mentors
+          type: array
+        creator:
+          nullable: true
+          title: creator
+          type: string
+        name:
+          description: descriptive info
+          title: name
+          type: string
+        summary:
+          title: summary
+          type: string
+        category:
+          title: category
+          type: string
+        category_int:
+          title: category_int
+          type: integer
+        blink_components:
+          items:
+            type: string
+          title: blink_components
+          type: array
+        star_count:
+          title: star_count
+          type: integer
+        search_tags:
+          items:
+            type: string
+          title: search_tags
+          type: array
+        feature_notes:
+          nullable: true
+          title: feature_notes
+          type: string
+        enterprise_feature_categories:
+          items:
+            type: string
+          title: enterprise_feature_categories
+          type: array
+        feature_type:
+          description: metadata - process info
+          title: feature_type
+          type: string
+        feature_type_int:
+          title: feature_type_int
+          type: integer
+        intent_stage:
+          title: intent_stage
+          type: string
+        intent_stage_int:
+          title: intent_stage_int
+          type: integer
+        active_stage_id:
+          nullable: true
+          title: active_stage_id
+          type: integer
+        bug_url:
+          nullable: true
+          title: bug_url
+          type: string
+        launch_bug_url:
+          nullable: true
+          title: launch_bug_url
+          type: string
+        screenshot_links:
+          items:
+            type: string
+          title: screenshot_links
+          type: array
+        first_enterprise_notification_milestone:
+          nullable: true
+          title: first_enterprise_notification_milestone
+          type: integer
+        breaking_change:
+          title: breaking_change
+          type: boolean
+        enterprise_impact:
+          title: enterprise_impact
+          type: integer
+        flag_name:
+          description: Implementation in Chrome
+          nullable: true
+          title: flag_name
+          type: string
+        finch_name:
+          nullable: true
+          title: finch_name
+          type: string
+        non_finch_justification:
+          nullable: true
+          title: non_finch_justification
+          type: string
+        ongoing_constraints:
+          nullable: true
+          title: ongoing_constraints
+          type: string
+        motivation:
+          description: Topic - Adoption
+          nullable: true
+          title: motivation
+          type: string
+        devtrial_instructions:
+          nullable: true
+          title: devtrial_instructions
+          type: string
+        activation_risks:
+          nullable: true
+          title: activation_risks
+          type: string
+        measurement:
+          nullable: true
+          title: measurement
+          type: string
+        availability_expectation:
+          nullable: true
+          title: availability_expectation
+          type: string
+        adoption_expectation:
+          nullable: true
+          title: adoption_expectation
+          type: string
+        adoption_plan:
+          nullable: true
+          title: adoption_plan
+          type: string
+        initial_public_proposal_url:
+          description: Gate
+          nullable: true
+          title: initial_public_proposal_url
+          type: string
+        explainer_links:
+          items:
+            type: string
+          title: explainer_links
+          type: array
+        requires_embedder_support:
+          title: requires_embedder_support
+          type: boolean
+        spec_link:
+          nullable: true
+          title: spec_link
+          type: string
+        api_spec:
+          nullable: true
+          title: api_spec
+          type: string
+        prefixed:
+          nullable: true
+          title: prefixed
+          type: boolean
+        interop_compat_risks:
+          nullable: true
+          title: interop_compat_risks
+          type: string
+        all_platforms:
+          nullable: true
+          title: all_platforms
+          type: boolean
+        all_platforms_descr:
+          nullable: true
+          title: all_platforms_descr
+          type: boolean
+        tag_review:
+          nullable: true
+          title: tag_review
+          type: string
+        non_oss_deps:
+          nullable: true
+          title: non_oss_deps
+          type: string
+        anticipated_spec_changes:
+          nullable: true
+          title: anticipated_spec_changes
+          type: string
+        security_risks:
+          nullable: true
+          title: security_risks
+          type: string
+        tags:
+          items:
+            type: string
+          title: tags
+          type: array
+        tag_review_status:
+          title: tag_review_status
+          type: string
+        tag_review_status_int:
+          nullable: true
+          title: tag_review_status_int
+          type: integer
+        security_review_status:
+          title: security_review_status
+          type: string
+        security_review_status_int:
+          nullable: true
+          title: security_review_status_int
+          type: integer
+        privacy_review_status:
+          title: privacy_review_status
+          type: string
+        privacy_review_status_int:
+          nullable: true
+          title: privacy_review_status_int
+          type: integer
+        ergonomics_risks:
+          nullable: true
+          title: ergonomics_risks
+          type: string
+        wpt:
+          nullable: true
+          title: wpt
+          type: boolean
+        wpt_descr:
+          nullable: true
+          title: wpt_descr
+          type: string
+        webview_risks:
+          nullable: true
+          title: webview_risks
+          type: string
+        devrel_emails:
+          items:
+            type: string
+          title: devrel_emails
+          type: array
+        debuggability:
+          nullable: true
+          title: debuggability
+          type: string
+        doc_links:
+          items:
+            format: uri
+            type: string
+          title: doc_links
+          type: array
+        sample_links:
+          items:
+            format: uri
+            type: string
+          title: sample_links
+          type: array
+        stages:
+          items:
+            $ref: '#/components/schemas/StageDict'
+          title: stages
+          type: array
+        experiment_timeline:
+          nullable: true
+          title: experiment_timeline
+          type: string
+        resources:
+          $ref: '#/components/schemas/FeatureDictInnerResourceInfo'
+        comments:
+          nullable: true
+          title: comments
+          type: string
+        ff_views:
+          title: ff_views
+          type: integer
+        safari_views:
+          title: safari_views
+          type: integer
+        web_dev_views:
+          title: web_dev_views
+          type: integer
+        browsers:
+          $ref: '#/components/schemas/FeatureBrowsersInfo'
+        standards:
+          $ref: '#/components/schemas/FeatureDictInnerStandardsInfo'
+        is_released:
+          title: is_released
+          type: boolean
+        is_enterprise_feature:
+          title: is_enterprise_feature
+          type: boolean
+        updated_display:
+          nullable: true
+          title: updated_display
+          type: string
+        new_crbug_url:
+          format: uri
+          nullable: true
+          title: new_crbug_url
+          type: string
+      title: VerboseFeatureDict
+    FeatureDictInnerUserEditInfo:
+      example:
+        by: by
+        when: when
+      properties:
+        by:
+          title: by
+          type: string
+        when:
+          title: when
+          type: string
+      title: FeatureDictInnerUserEditInfo
+    StageDict:
+      example:
+        feature_id: 1
+        finch_url: finch_url
+        ot_display_name: ot_display_name
+        rollout_platforms:
+        - rollout_platforms
+        - rollout_platforms
+        ot_feedback_submission_url: https://openapi-generator.tech
+        tl_emails:
+        - tl_emails
+        - tl_emails
+        announcement_url: https://openapi-generator.tech
+        ot_description: ot_description
+        rollout_details: rollout_details
+        ot_approval_buganizer_component: 7
+        ot_approval_criteria_url: ot_approval_criteria_url
+        ot_approval_group_email: ot_approval_group_email
+        experiment_extension_reason: experiment_extension_reason
+        rollout_milestone: 9
+        ot_activation_date: 2000-01-23T04:56:07.000+00:00
+        ot_owner_email: ot_owner_email
+        ot_request_note: ot_request_note
+        ot_setup_status: 4
+        ot_documentation_url: https://openapi-generator.tech
+        ot_emails:
+        - ot_emails
+        - ot_emails
+        id: 1
+        ot_require_approvals: true
+        ot_has_third_party_support: true
+        pm_emails:
+        - pm_emails
+        - pm_emails
+        experiment_goals: experiment_goals
+        stage_type: 1
+        created: 2000-01-23T04:56:07.000+00:00
+        ot_stage_id: 5
+        ot_approval_buganizer_custom_field_id: 1
+        intent_thread_url: intent_thread_url
+        ot_is_critical_trial: true
+        display_name: display_name
+        ot_is_deprecation_trial: true
+        rollout_impact: 9
+        origin_trial_feedback_url: origin_trial_feedback_url
+        extensions:
+        - "{}"
+        - "{}"
+        experiment_risks: experiment_risks
+        te_emails:
+        - te_emails
+        - te_emails
+        ot_action_requested: true
+        intent_stage: 6
+        origin_trial_id: origin_trial_id
+        ux_emails:
+        - ux_emails
+        - ux_emails
+        enterprise_policies:
+        - enterprise_policies
+        - enterprise_policies
+        ot_chromium_trial_name: ot_chromium_trial_name
+        ot_webfeature_use_counter: ot_webfeature_use_counter
+      properties:
+        id:
+          title: id
+          type: integer
+        created:
+          format: date-time
+          title: created
+          type: string
+        feature_id:
+          title: feature_id
+          type: integer
+        stage_type:
+          title: stage_type
+          type: integer
+        display_name:
+          title: display_name
+          type: string
+        intent_stage:
+          title: intent_stage
+          type: integer
+        intent_thread_url:
+          nullable: true
+          title: intent_thread_url
+          type: string
+        announcement_url:
+          format: uri
+          nullable: true
+          title: announcement_url
+          type: string
+        origin_trial_id:
+          nullable: true
+          title: origin_trial_id
+          type: string
+        experiment_goals:
+          nullable: true
+          title: experiment_goals
+          type: string
+        experiment_risks:
+          nullable: true
+          title: experiment_risks
+          type: string
+        extensions:
+          items:
+            description: typed as object to avoid it referencing itself
+            type: object
+          title: extensions
+          type: array
+        origin_trial_feedback_url:
+          nullable: true
+          title: origin_trial_feedback_url
+          type: string
+        ot_action_requested:
+          title: ot_action_requested
+          type: boolean
+        ot_activation_date:
+          format: date-time
+          nullable: true
+          title: ot_activation_date
+          type: string
+        ot_approval_buganizer_component:
+          nullable: true
+          title: ot_approval_buganizer_component
+          type: integer
+        ot_approval_buganizer_custom_field_id:
+          nullable: true
+          title: ot_approval_buganizer_custom_field_id
+          type: integer
+        ot_approval_criteria_url:
+          nullable: true
+          title: ot_approval_criteria_url
+          type: string
+        ot_approval_group_email:
+          nullable: true
+          title: ot_approval_group_email
+          type: string
+        ot_chromium_trial_name:
+          nullable: true
+          title: ot_chromium_trial_name
+          type: string
+        ot_description:
+          nullable: true
+          title: ot_description
+          type: string
+        ot_display_name:
+          nullable: true
+          title: ot_display_name
+          type: string
+        ot_documentation_url:
+          format: uri
+          nullable: true
+          title: ot_documentation_url
+          type: string
+        ot_emails:
+          items:
+            format: email
+            type: string
+          title: ot_emails
+          type: array
+        ot_feedback_submission_url:
+          format: uri
+          nullable: true
+          title: ot_feedback_submission_url
+          type: string
+        ot_has_third_party_support:
+          title: ot_has_third_party_support
+          type: boolean
+        ot_is_critical_trial:
+          title: ot_is_critical_trial
+          type: boolean
+        ot_is_deprecation_trial:
+          title: ot_is_deprecation_trial
+          type: boolean
+        ot_owner_email:
+          format: email
+          nullable: true
+          title: ot_owner_email
+          type: string
+        ot_require_approvals:
+          title: ot_require_approvals
+          type: boolean
+        ot_setup_status:
+          nullable: true
+          title: ot_setup_status
+          type: integer
+        ot_webfeature_use_counter:
+          nullable: true
+          title: ot_webfeature_use_counter
+          type: string
+        ot_request_note:
+          nullable: true
+          title: ot_request_note
+          type: string
+        ot_stage_id:
+          nullable: true
+          title: ot_stage_id
+          type: integer
+        experiment_extension_reason:
+          nullable: true
+          title: experiment_extension_reason
+          type: string
+        finch_url:
+          nullable: true
+          title: finch_url
+          type: string
+        rollout_details:
+          nullable: true
+          title: rollout_details
+          type: string
+        rollout_impact:
+          nullable: true
+          title: rollout_impact
+          type: integer
+        rollout_milestone:
+          nullable: true
+          title: rollout_milestone
+          type: integer
+        rollout_platforms:
+          items:
+            type: string
+          title: rollout_platforms
+          type: array
+        enterprise_policies:
+          items:
+            type: string
+          title: enterprise_policies
+          type: array
+        pm_emails:
+          items:
+            format: email
+            type: string
+          title: pm_emails
+          type: array
+        tl_emails:
+          items:
+            format: email
+            type: string
+          title: tl_emails
+          type: array
+        ux_emails:
+          items:
+            format: email
+            type: string
+          title: ux_emails
+          type: array
+        te_emails:
+          items:
+            format: email
+            type: string
+          title: te_emails
+          type: array
+      required:
+      - created
+      - display_name
+      - feature_id
+      - id
+      - intent_stage
+      - ot_action_requested
+      - ot_emails
+      - ot_has_third_party_support
+      - ot_is_critical_trial
+      - ot_is_deprecation_trial
+      - ot_require_approvals
+      - stage_type
+      title: StageDict
+      type: object
+    FeatureDictInnerResourceInfo:
+      example:
+        docs:
+        - docs
+        - docs
+        samples:
+        - samples
+        - samples
+      properties:
+        samples:
+          items:
+            type: string
+          title: samples
+          type: array
+        docs:
+          items:
+            type: string
+          title: docs
+          type: array
+      title: FeatureDictInnerResourceInfo
+    FeatureBrowsersInfo:
+      example:
+        ff:
+          view:
+            val: 6
+            notes: notes
+            text: text
+            url: url
+        other:
+          view:
+            val: 6
+            notes: notes
+            text: text
+            url: url
+        chrome:
+          webview: 1
+          prefixed: true
+          flag: flag
+          blink_components:
+          - blink_components
+          - blink_components
+          android: 6
+          owners:
+          - owners
+          - owners
+          ios: 2
+          devrel:
+          - devrel
+          - devrel
+          origintrial: true
+          desktop: 3
+          bug: bug
+          intervention: true
+          status:
+            val: 6
+            milestone_str: milestone_str
+            text: text
+        safari:
+          view:
+            val: 6
+            notes: notes
+            text: text
+            url: url
+        webdev:
+          view:
+            val: 6
+            notes: notes
+            text: text
+            url: url
+      properties:
+        chrome:
+          $ref: '#/components/schemas/FeatureDictInnerChromeBrowserInfo'
+        ff:
+          $ref: '#/components/schemas/FeatureDictInnerSingleBrowserInfo'
+        safari:
+          $ref: '#/components/schemas/FeatureDictInnerSingleBrowserInfo'
+        webdev:
+          $ref: '#/components/schemas/FeatureDictInnerSingleBrowserInfo'
+        other:
+          $ref: '#/components/schemas/FeatureDictInnerSingleBrowserInfo'
+      title: FeatureBrowsersInfo
+    FeatureDictInnerChromeBrowserInfo:
+      example:
+        webview: 1
+        prefixed: true
+        flag: flag
+        blink_components:
+        - blink_components
+        - blink_components
+        android: 6
+        owners:
+        - owners
+        - owners
+        ios: 2
+        devrel:
+        - devrel
+        - devrel
+        origintrial: true
+        desktop: 3
+        bug: bug
+        intervention: true
+        status:
+          val: 6
+          milestone_str: milestone_str
+          text: text
+      properties:
+        bug:
+          nullable: true
+          title: bug
+          type: string
+        blink_components:
+          items:
+            type: string
+          nullable: true
+          title: blink_components
+          type: array
+        devrel:
+          items:
+            type: string
+          nullable: true
+          title: devrel
+          type: array
+        owners:
+          items:
+            type: string
+          nullable: true
+          title: owners
+          type: array
+        origintrial:
+          nullable: true
+          title: origintrial
+          type: boolean
+        intervention:
+          nullable: true
+          title: intervention
+          type: boolean
+        prefixed:
+          nullable: true
+          title: prefixed
+          type: boolean
+        flag:
+          nullable: true
+          title: flag
+          type: string
+        status:
+          $ref: '#/components/schemas/FeatureDictInnerBrowserStatus'
+        desktop:
+          nullable: true
+          title: desktop
+          type: integer
+        android:
+          nullable: true
+          title: android
+          type: integer
+        webview:
+          nullable: true
+          title: webview
+          type: integer
+        ios:
+          nullable: true
+          title: ios
+          type: integer
+      title: FeatureDictInnerChromeBrowserInfo
+    FeatureDictInnerBrowserStatus:
+      example:
+        val: 6
+        milestone_str: milestone_str
+        text: text
+      properties:
+        text:
+          nullable: true
+          title: text
+          type: string
+        val:
+          nullable: true
+          title: val
+          type: integer
+        milestone_str:
+          nullable: true
+          title: milestone_str
+          type: string
+      title: FeatureDictInnerBrowserStatus
+    FeatureDictInnerSingleBrowserInfo:
+      example:
+        view:
+          val: 6
+          notes: notes
+          text: text
+          url: url
+      properties:
+        view:
+          $ref: '#/components/schemas/FeatureDictInnerViewInfo'
+      title: FeatureDictInnerSingleBrowserInfo
+    FeatureDictInnerViewInfo:
+      example:
+        val: 6
+        notes: notes
+        text: text
+        url: url
+      properties:
+        text:
+          nullable: true
+          title: text
+          type: string
+        val:
+          nullable: true
+          title: val
+          type: integer
+        url:
+          nullable: true
+          title: url
+          type: string
+        notes:
+          nullable: true
+          title: notes
+          type: string
+      title: FeatureDictInnerViewInfo
+    FeatureDictInnerStandardsInfo:
+      example:
+        maturity:
+          val: 6
+          short_text: short_text
+          text: text
+        spec: spec
+      properties:
+        spec:
+          nullable: true
+          title: spec
+          type: string
+        maturity:
+          $ref: '#/components/schemas/FeatureDictInnerMaturityInfo'
+      title: FeatureDictInnerStandardsInfo
+    FeatureDictInnerMaturityInfo:
+      example:
+        val: 6
+        short_text: short_text
+        text: text
+      properties:
+        text:
+          nullable: true
+          title: text
+          type: string
+        short_text:
+          nullable: true
+          title: short_text
+          type: string
+        val:
+          title: val
+          type: integer
+      title: FeatureDictInnerMaturityInfo
     Vote:
       example:
         feature_id: 0
