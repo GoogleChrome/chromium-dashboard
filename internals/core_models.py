@@ -104,6 +104,7 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   first_enterprise_notification_milestone = ndb.IntegerProperty()
   enterprise_impact = ndb.IntegerProperty(default=ENTERPRISE_IMPACT_NONE)
   breaking_change = ndb.BooleanProperty(default=False)
+  shipping_year = ndb.IntegerProperty()
 
   # Implementation in Chrome
   impl_status_chrome = ndb.IntegerProperty(required=True, default=NO_ACTIVE_DEV)
