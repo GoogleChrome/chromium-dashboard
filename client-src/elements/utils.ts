@@ -451,13 +451,7 @@ export function getNewLocation(params, location) {
  * @param {string} val is the unencoded value of the query param.
  */
 export function updateURLParams(key, val) {
-  // Update the query param object.
-  const rawQuery = parseRawQuery(window.location.search);
-  rawQuery[key] = encodeURIComponent(val);
-
-  // Assemble the new URL.
-  const newURL = getNewLocation(rawQuery, window.location);
-  newURL.hash = '';
+  const newURL = formatURLParams(key, val);
   if (newURL.toString() === window.location.toString()) {
     return;
   }
@@ -465,6 +459,22 @@ export function updateURLParams(key, val) {
   // an issue in page.js:
   // https://github.com/visionmedia/page.js/issues/293#issuecomment-456906679
   window.history.pushState({path: newURL.toString()}, '', newURL);
+}
+
+/**
+ * Format the existing URL with new query params.
+ * @param {string} key is the key of the query param.
+ * @param {string} val is the unencoded value of the query param.
+ */
+export function formatURLParams(key, val) {
+  // Update the query param object.
+  const rawQuery = parseRawQuery(window.location.search);
+  rawQuery[key] = encodeURIComponent(val);
+
+  // Assemble the new URL.
+  const newURL = getNewLocation(rawQuery, window.location);
+  newURL.hash = '';
+  return newURL;
 }
 
 /**
