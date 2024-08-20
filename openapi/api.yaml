@@ -15,6 +15,71 @@ info:
 servers:
   - url: /api/v0
 paths:
+  /features:
+    get:
+      summary: retrive a list of feature
+      operationId: getAllFeatures
+      parameters:
+        - name: q
+          in: query
+          description: Search query string.
+          schema:
+            type: string
+            default:
+        - name: sort
+          in: query
+          description: Sorting specification.
+          schema:
+            type: string
+        - name: num
+          in: query
+          description: Number of results to return.
+          schema:
+            type: integer
+            default: 100
+        - name: start
+          in: query
+          description: Index of the first result to return.
+          schema:
+            type: integer
+            default: 0
+        - name: milestone
+          in: query
+          description: Filter features by milestone.
+          schema:
+            type: integer
+        - name: releaseNotesMilestone
+          in: query
+          description: Filter features by release notes milestone.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: A list of features with count
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureSearchResponse'
+  /features/{feature_id}:
+    get:
+      summary: Get a feature by ID
+      operationId: getFeatureById
+      parameters:
+        - name: feature_id
+          in: path
+          description: ID of the feature to retrieve
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Feature retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerboseFeatureDict'
+        '404':
+          description: Feature not found
   /features/{feature_id}/votes:
     parameters:
       - name: feature_id
@@ -990,6 +1055,401 @@ components:
       in: header
       name: X-Xsrf-Token
   schemas:
+    FeatureSearchResponse:
+      type: object
+      properties:
+        total_count:
+          type: integer
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/VerboseFeatureDict'
+    VerboseFeatureDict:
+      properties:
+        id:
+          type: integer
+          description: metadata
+        created:
+          $ref: '#/components/schemas/FeatureDictInnerUserEditInfo'
+        updated:
+          $ref: '#/components/schemas/FeatureDictInnerUserEditInfo'
+        accurate_as_of:
+          type: string
+          nullable: true
+        creator_email:
+          type: string
+          nullable: true
+        updater_email:
+          type: string
+          nullable: true
+        owner_emails:
+          type: array
+          items:
+            type: string
+        editor_emails:
+          type: array
+          items:
+            type: string
+        cc_emails:
+          type: array
+          items:
+            type: string
+        spec_mentor_emails:
+          type: array
+          items:
+            type: string
+        unlisted:
+          type: boolean
+        deleted:
+          type: boolean
+        editors:
+          type: array
+          items:
+            type: string
+          description: renamed metadata fields
+        cc_recipients:
+          type: array
+          items:
+            type: string
+        spec_mentors:
+          type: array
+          items:
+            type: string
+        creator:
+          type: string
+          nullable: true
+        name:
+          type: string
+          description: descriptive info
+        summary:
+          type: string
+        category:
+          type: string
+        category_int:
+          type: integer
+        blink_components:
+          type: array
+          items:
+            type: string
+        star_count:
+          type: integer
+        search_tags:
+          type: array
+          items:
+            type: string
+        feature_notes:
+          type: string
+          nullable: true
+        enterprise_feature_categories:
+          type: array
+          items:
+            type: string
+        feature_type:
+          type: string
+          description: metadata - process info
+        feature_type_int:
+          type: integer
+        intent_stage:
+          type: string
+        intent_stage_int:
+          type: integer
+        active_stage_id:
+          type: integer
+          nullable: true
+        bug_url:
+          type: string
+          nullable: true
+        launch_bug_url:
+          type: string
+          nullable: true
+        screenshot_links:
+          type: array
+          items:
+            type: string
+        first_enterprise_notification_milestone:
+          type: integer
+          nullable: true
+        breaking_change:
+          type: boolean
+        enterprise_impact:
+          type: integer
+        flag_name:
+          type: string
+          nullable: true
+          description: Implementation in Chrome
+        finch_name:
+          type: string
+          nullable: true
+        non_finch_justification:
+          type: string
+          nullable: true
+        ongoing_constraints:
+          type: string
+          nullable: true
+        motivation:
+          type: string
+          nullable: true
+          description: Topic - Adoption
+        devtrial_instructions:
+          type: string
+          nullable: true
+        activation_risks:
+          type: string
+          nullable: true
+        measurement:
+          type: string
+          nullable: true
+        availability_expectation:
+          type: string
+          nullable: true
+        adoption_expectation:
+          type: string
+          nullable: true
+        adoption_plan:
+          type: string
+          nullable: true
+        initial_public_proposal_url:
+          type: string
+          nullable: true
+          description: Gate
+        explainer_links:
+          type: array
+          items:
+            type: string
+        requires_embedder_support:
+          type: boolean
+        spec_link:
+          type: string
+          nullable: true
+        api_spec:
+          type: string
+          nullable: true
+        prefixed:
+          type: boolean
+          nullable: true
+        interop_compat_risks:
+          type: string
+          nullable: true
+        all_platforms:
+          type: boolean
+          nullable: true
+        all_platforms_descr:
+          type: boolean
+          nullable: true
+        tag_review:
+          type: string
+          nullable: true
+        non_oss_deps:
+          type: string
+          nullable: true
+        anticipated_spec_changes:
+          type: string
+          nullable: true
+        security_risks:
+          type: string
+          nullable: true
+        tags:
+          type: array
+          items:
+            type: string
+        tag_review_status:
+          type: string
+        tag_review_status_int:
+          type: integer
+          nullable: true
+        security_review_status:
+          type: string
+        security_review_status_int:
+          type: integer
+          nullable: true
+        privacy_review_status:
+          type: string
+        privacy_review_status_int:
+          type: integer
+          nullable: true
+        ergonomics_risks:
+          type: string
+          nullable: true
+        wpt:
+          type: boolean
+          nullable: true
+        wpt_descr:
+          type: string
+          nullable: true
+        webview_risks:
+          type: string
+          nullable: true
+        devrel_emails:
+          type: array
+          items:
+            type: string
+        debuggability:
+          type: string
+          nullable: true
+        doc_links:
+          type: array
+          items:
+            type: string
+            format: uri
+        sample_links:
+          type: array
+          items:
+            type: string
+            format: uri
+        stages:
+          type: array
+          items:
+            $ref: '#/components/schemas/StageDict'
+        experiment_timeline:
+          type: string
+          nullable: true
+        resources:
+          $ref: '#/components/schemas/FeatureDictInnerResourceInfo'
+        comments:
+          type: string
+          nullable: true
+        ff_views:
+          type: integer
+        safari_views:
+          type: integer
+        web_dev_views:
+          type: integer
+        browsers:
+          $ref: '#/components/schemas/FeatureBrowsersInfo'
+        standards:
+          $ref: '#/components/schemas/FeatureDictInnerStandardsInfo'
+        is_released:
+          type: boolean
+        is_enterprise_feature:
+          type: boolean
+        updated_display:
+          type: string
+          nullable: true
+        new_crbug_url:
+          type: string
+          format: uri
+          nullable: true
+    FeatureDictInnerUserEditInfo:
+      properties:
+        by:
+          type: string
+        when:
+          type: string
+    FeatureDictInnerResourceInfo:
+      properties:
+        samples:
+          type: array
+          items:
+            type: string
+        docs:
+          type: array
+          items:
+            type: string
+    FeatureBrowsersInfo:
+      properties:
+        chrome:
+          $ref: '#/components/schemas/FeatureDictInnerChromeBrowserInfo'
+        ff:
+          $ref: '#/components/schemas/FeatureDictInnerSingleBrowserInfo'
+        safari:
+          $ref: '#/components/schemas/FeatureDictInnerSingleBrowserInfo'
+        webdev:
+          $ref: '#/components/schemas/FeatureDictInnerSingleBrowserInfo'
+        other:
+          $ref: '#/components/schemas/FeatureDictInnerSingleBrowserInfo'
+    FeatureDictInnerChromeBrowserInfo:
+      properties:
+        bug:
+          type: string
+          nullable: true
+        blink_components:
+          type: array
+          items:
+            type: string
+          nullable: true
+        devrel:
+          type: array
+          items:
+            type: string
+          nullable: true
+        owners:
+          type: array
+          items:
+            type: string
+          nullable: true
+        origintrial:
+          type: boolean
+          nullable: true
+        intervention:
+          type: boolean
+          nullable: true
+        prefixed:
+          type: boolean
+          nullable: true
+        flag:
+          type: string
+          nullable: true
+        status:
+          $ref: '#/components/schemas/FeatureDictInnerBrowserStatus'
+        desktop:
+          type: integer
+          nullable: true
+        android:
+          type: integer
+          nullable: true
+        webview:
+          type: integer
+          nullable: true
+        ios:
+          type: integer
+          nullable: true
+    FeatureDictInnerBrowserStatus:
+      properties:
+        text:
+          type: string
+          nullable: true
+        val:
+          type: integer
+          nullable: true
+        milestone_str:
+          type: string
+          nullable: true
+    FeatureDictInnerSingleBrowserInfo:
+      properties:
+        view:
+          $ref: '#/components/schemas/FeatureDictInnerViewInfo'
+          nullable: true
+    FeatureDictInnerViewInfo:
+      properties:
+        text:
+          type: string
+          nullable: true
+        val:
+          type: integer
+          nullable: true
+        url:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+    FeatureDictInnerStandardsInfo:
+      properties:
+        spec:
+          type: string
+          nullable: true
+        maturity:
+          $ref: '#/components/schemas/FeatureDictInnerMaturityInfo'
+    FeatureDictInnerMaturityInfo:
+      properties:
+        text:
+          type: string
+          nullable: true
+        short_text:
+          type: string
+          nullable: true
+        val:
+          type: integer
     Vote:
       type: object
       properties:
