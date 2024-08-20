@@ -14,6 +14,7 @@ from chromestatus_openapi.models.feature_latency import FeatureLatency  # noqa: 
 from chromestatus_openapi.models.feature_links_response import FeatureLinksResponse  # noqa: E501
 from chromestatus_openapi.models.feature_links_sample import FeatureLinksSample  # noqa: E501
 from chromestatus_openapi.models.feature_links_summary_response import FeatureLinksSummaryResponse  # noqa: E501
+from chromestatus_openapi.models.feature_search_response import FeatureSearchResponse  # noqa: E501
 from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismissedCues400Response  # noqa: E501
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
 from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
@@ -22,6 +23,7 @@ from chromestatus_openapi.models.post_intent_request import PostIntentRequest  #
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
 from chromestatus_openapi.models.success_message import SuccessMessage  # noqa: E501
+from chromestatus_openapi.models.verbose_feature_dict import VerboseFeatureDict  # noqa: E501
 from chromestatus_openapi.test import BaseTestCase
 
 
@@ -100,6 +102,28 @@ class TestDefaultController(BaseTestCase):
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
+    def test_get_all_features(self):
+        """Test case for get_all_features
+
+        retrive a list of feature
+        """
+        query_string = [('q', 'q_example'),
+                        ('sort', 'sort_example'),
+                        ('num', 100),
+                        ('start', 0),
+                        ('milestone', 56),
+                        ('releaseNotesMilestone', 56)]
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/features',
+            method='GET',
+            headers=headers,
+            query_string=query_string)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
     def test_get_dismissed_cues(self):
         """Test case for get_dismissed_cues
 
@@ -110,6 +134,21 @@ class TestDefaultController(BaseTestCase):
         }
         response = self.client.open(
             '/api/v0/currentuser/cues',
+            method='GET',
+            headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_get_feature_by_id(self):
+        """Test case for get_feature_by_id
+
+        Get a feature by ID
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/features/{feature_id}'.format(feature_id=56),
             method='GET',
             headers=headers)
         self.assert200(response,

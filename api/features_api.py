@@ -18,6 +18,8 @@ import re
 from typing import Any
 from google.cloud import ndb
 
+from chromestatus_openapi.models import (VerboseFeatureDict as OneFeatureResponse, FeatureSearchResponse)
+
 from api import api_specs
 from api import converters
 from framework import basehandlers
@@ -113,7 +115,8 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     # way to handle this in a strictly-typed manner and implement it.
     feature_id = kwargs.get('feature_id', None)
     if feature_id:
-      return self.get_one_feature(feature_id)
+      feature = OneFeatureResponse.from_dict(self.get_one_feature(feature_id))
+      return feature.to_dict()
     return self.do_search()
 
   @permissions.require_create_feature

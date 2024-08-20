@@ -61,6 +61,25 @@ paths:
               schema:
                 $ref: '#/components/schemas/FeatureSearchResponse'
   /features/{feature_id}:
+    get:
+      summary: Get a feature by ID
+      operationId: getFeatureById
+      parameters:
+        - name: feature_id
+          in: path
+          description: ID of the feature to retrieve
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Feature retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerboseFeatureDict'
+        '404':
+          description: Feature not found
   /accounts:
     post:
       summary: Create a new account
@@ -463,6 +482,14 @@ components:
       name: X-Xsrf-Token
   schemas:
     FeatureSearchResponse:
+      type: object
+      properties:
+        total_count:
+          type: integer
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/VerboseFeatureDict'
     VerboseFeatureDict:
       properties:
         id:
@@ -769,7 +796,8 @@ components:
         extensions:
           type: array
           items:
-            $ref: '#/components/schemas/StageDict'
+            type: object
+            description: typed as object to avoid it referencing itself
         origin_trial_feedback_url:
           type: string
           nullable: true
