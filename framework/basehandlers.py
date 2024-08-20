@@ -13,39 +13,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime
 import json
 import logging
 import os
 import re
+from datetime import datetime
 from typing import Any, NoReturn, Optional
 
 import flask
 import flask.views
-import werkzeug.exceptions
-
 import google.appengine.api
+import werkzeug.exceptions
+from flask import render_template, session
+from flask_cors import CORS
 from google.cloud import ndb  # type: ignore
 
 import settings
 from api import api_specs
-from framework import csp
-from framework import permissions
-from framework import secrets
-from framework import users
-from framework import utils
-from framework import xsrf
-from internals import approval_defs
-from internals import notifier_helpers
+from framework import csp, permissions, secrets, users, utils, xsrf
+from internals import approval_defs, notifier_helpers, user_models
 from internals.core_enums import ALL_ORIGIN_TRIAL_STAGE_TYPES
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.data_types import CHANGED_FIELDS_LIST_TYPE
-from internals import user_models
-
-from flask import session
-from flask import render_template
-from flask_cors import CORS
-from gen.py.chromestatus_openapi.chromestatus_openapi.models.base_model import Model
 
 # Our API responses are prefixed with this ro prevent attacks that
 # exploit <script src="...">.  See go/xssi.
@@ -193,8 +182,9 @@ class APIHandler(BaseHandler):
     """Handle an incoming HTTP GET request."""
     headers = self.get_headers()
     handler_data = self.do_get(*args, **kwargs)
-    if isinstance(handler_data, Model):
-        handler_data = handler_data.to_dict()
+    to_dict_op = getattr(handler_data, "to_dict", None)
+    if callable(to_dict_op):
+      handler_data = handler_data.to_dict()
     return self.defensive_jsonify(handler_data), headers
 
   def post(self, *args, **kwargs):
