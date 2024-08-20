@@ -92,6 +92,7 @@ chromestatus_openapi/models/set_star_request.py
 chromestatus_openapi/models/sign_in_request.py
 chromestatus_openapi/models/spec_mentor.py
 chromestatus_openapi/models/stage_dict.py
+chromestatus_openapi/models/stage_dict_extension.py
 chromestatus_openapi/models/stage_field.py
 chromestatus_openapi/models/string_field_info_value.py
 chromestatus_openapi/models/success_message.py

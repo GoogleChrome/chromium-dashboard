@@ -80,6 +80,7 @@ export * from './SetStarRequest';
 export * from './SignInRequest';
 export * from './SpecMentor';
 export * from './StageDict';
+export * from './StageDictExtension';
 export * from './StageField';
 export * from './StringFieldInfoValue';
 export * from './SuccessMessage';

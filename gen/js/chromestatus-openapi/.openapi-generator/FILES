@@ -86,6 +86,7 @@ src/models/SetStarRequest.ts
 src/models/SignInRequest.ts
 src/models/SpecMentor.ts
 src/models/StageDict.ts
+src/models/StageDictExtension.ts
 src/models/StageField.ts
 src/models/StringFieldInfoValue.ts
 src/models/SuccessMessage.ts

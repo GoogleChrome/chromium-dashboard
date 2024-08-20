@@ -80,6 +80,7 @@ from chromestatus_openapi.models.set_star_request import SetStarRequest
 from chromestatus_openapi.models.sign_in_request import SignInRequest
 from chromestatus_openapi.models.spec_mentor import SpecMentor
 from chromestatus_openapi.models.stage_dict import StageDict
+from chromestatus_openapi.models.stage_dict_extension import StageDictExtension
 from chromestatus_openapi.models.stage_field import StageField
 from chromestatus_openapi.models.string_field_info_value import StringFieldInfoValue
 from chromestatus_openapi.models.success_message import SuccessMessage
