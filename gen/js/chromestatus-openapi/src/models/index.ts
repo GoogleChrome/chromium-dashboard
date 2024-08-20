@@ -50,6 +50,7 @@ export * from './PostIntentRequest';
 export * from './ReviewLatency';
 export * from './SpecMentor';
 export * from './StageDict';
+export * from './StageDictExtension';
 export * from './SuccessMessage';
 export * from './UserPermissions';
 export * from './VerboseFeatureDict';

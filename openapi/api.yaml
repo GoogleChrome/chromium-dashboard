@@ -796,7 +796,167 @@ components:
         extensions:
           type: array
           items:
-            type: object
+            $ref: '#/components/schemas/StageDictExtension'
+            description: typed as object to avoid it referencing itself
+        origin_trial_feedback_url:
+          type: string
+          nullable: true
+        ot_action_requested:
+          type: boolean
+        ot_activation_date:
+          type: string
+          format: date-time
+          nullable: true
+        ot_approval_buganizer_component:
+          type: integer
+          nullable: true
+        ot_approval_buganizer_custom_field_id:
+          type: integer
+          nullable: true
+        ot_approval_criteria_url:
+          type: string
+          nullable: true
+        ot_approval_group_email:
+          type: string
+          nullable: true
+        ot_chromium_trial_name:
+          type: string
+          nullable: true
+        ot_description:
+          type: string
+          nullable: true
+        ot_display_name:
+          type: string
+          nullable: true
+        ot_documentation_url:
+          type: string
+          format: uri
+          nullable: true
+        ot_emails:
+          type: array
+          items:
+            type: string
+            format: email
+        ot_feedback_submission_url:
+          type: string
+          format: uri
+          nullable: true
+        ot_has_third_party_support:
+          type: boolean
+        ot_is_critical_trial:
+          type: boolean
+        ot_is_deprecation_trial:
+          type: boolean
+        ot_owner_email:
+          type: string
+          format: email
+          nullable: true
+        ot_require_approvals:
+          type: boolean
+        ot_setup_status:
+          type: integer
+          nullable: true
+        ot_webfeature_use_counter:
+          type: string
+          nullable: true
+        ot_request_note:
+          type: string
+          nullable: true
+        ot_stage_id:
+          type: integer
+          nullable: true
+        experiment_extension_reason:
+          type: string
+          nullable: true
+        finch_url:
+          type: string
+          nullable: true
+        rollout_details:
+          type: string
+          nullable: true
+        rollout_impact:
+          type: integer
+          nullable: true
+        rollout_milestone:
+          type: integer
+          nullable: true
+        rollout_platforms:
+          type: array
+          items:
+            type: string
+        enterprise_policies:
+          type: array
+          items:
+            type: string
+        pm_emails:
+          type: array
+          items:
+            type: string
+            format: email
+        tl_emails:
+          type: array
+          items:
+            type: string
+            format: email
+        ux_emails:
+          type: array
+          items:
+            type: string
+            format: email
+        te_emails:
+          type: array
+          items:
+            type: string
+            format: email
+      required:
+        - id
+        - created
+        - feature_id
+        - stage_type
+        - display_name
+        - intent_stage
+        - ot_action_requested
+        - ot_emails
+        - ot_has_third_party_support
+        - ot_is_critical_trial
+        - ot_is_deprecation_trial
+        - ot_require_approvals
+    StageDictExtension:
+      type: object
+      properties:
+        id:
+          type: integer
+        created:
+          type: string
+          format: date-time
+        feature_id:
+          type: integer
+        stage_type:
+          type: integer
+        display_name:
+          type: string
+        intent_stage:
+          type: integer
+        intent_thread_url:
+          type: string
+          nullable: true
+        announcement_url:
+          type: string
+          format: uri
+          nullable: true
+        origin_trial_id:
+          type: string
+          nullable: true
+        experiment_goals:
+          type: string
+          nullable: true
+        experiment_risks:
+          type: string
+          nullable: true
+        extensions:
+          type: array
+          items:
+            $ref: '#/components/schemas/StageDict'
             description: typed as object to avoid it referencing itself
         origin_trial_feedback_url:
           type: string

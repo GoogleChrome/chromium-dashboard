@@ -13,295 +13,295 @@
  */
 
 import { mapValues } from '../runtime';
-import type { StageDictExtension } from './StageDictExtension';
+import type { StageDict } from './StageDict';
 import {
-    StageDictExtensionFromJSON,
-    StageDictExtensionFromJSONTyped,
-    StageDictExtensionToJSON,
-} from './StageDictExtension';
+    StageDictFromJSON,
+    StageDictFromJSONTyped,
+    StageDictToJSON,
+} from './StageDict';
 
 /**
  * 
  * @export
- * @interface StageDict
+ * @interface StageDictExtension
  */
-export interface StageDict {
+export interface StageDictExtension {
     /**
      * 
      * @type {number}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     id: number;
     /**
      * 
      * @type {Date}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     created: Date;
     /**
      * 
      * @type {number}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     feature_id: number;
     /**
      * 
      * @type {number}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     stage_type: number;
     /**
      * 
      * @type {string}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     display_name: string;
     /**
      * 
      * @type {number}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     intent_stage: number;
     /**
      * 
      * @type {string}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     intent_thread_url?: string;
     /**
      * 
      * @type {string}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     announcement_url?: string;
     /**
      * 
      * @type {string}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     origin_trial_id?: string;
     /**
      * 
      * @type {string}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     experiment_goals?: string;
     /**
      * 
      * @type {string}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     experiment_risks?: string;
     /**
      * 
-     * @type {Array<StageDictExtension>}
-     * @memberof StageDict
+     * @type {Array<StageDict>}
+     * @memberof StageDictExtension
      */
-    extensions?: Array<StageDictExtension>;
+    extensions?: Array<StageDict>;
     /**
      * 
      * @type {string}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     origin_trial_feedback_url?: string;
     /**
      * 
      * @type {boolean}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     ot_action_requested: boolean;
     /**
      * 
      * @type {Date}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     ot_activation_date?: Date;
     /**
      * 
      * @type {number}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     ot_approval_buganizer_component?: number;
     /**
      * 
      * @type {number}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     ot_approval_buganizer_custom_field_id?: number;
     /**
      * 
      * @type {string}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     ot_approval_criteria_url?: string;
     /**
      * 
      * @type {string}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     ot_approval_group_email?: string;
     /**
      * 
      * @type {string}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     ot_chromium_trial_name?: string;
     /**
      * 
      * @type {string}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     ot_description?: string;
     /**
      * 
      * @type {string}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     ot_display_name?: string;
     /**
      * 
      * @type {string}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     ot_documentation_url?: string;
     /**
      * 
      * @type {Array<string>}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     ot_emails: Array<string>;
     /**
      * 
      * @type {string}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     ot_feedback_submission_url?: string;
     /**
      * 
      * @type {boolean}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     ot_has_third_party_support: boolean;
     /**
      * 
      * @type {boolean}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     ot_is_critical_trial: boolean;
     /**
      * 
      * @type {boolean}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     ot_is_deprecation_trial: boolean;
     /**
      * 
      * @type {string}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     ot_owner_email?: string;
     /**
      * 
      * @type {boolean}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     ot_require_approvals: boolean;
     /**
      * 
      * @type {number}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     ot_setup_status?: number;
     /**
      * 
      * @type {string}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     ot_webfeature_use_counter?: string;
     /**
      * 
      * @type {string}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     ot_request_note?: string;
     /**
      * 
      * @type {number}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     ot_stage_id?: number;
     /**
      * 
      * @type {string}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     experiment_extension_reason?: string;
     /**
      * 
      * @type {string}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     finch_url?: string;
     /**
      * 
      * @type {string}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     rollout_details?: string;
     /**
      * 
      * @type {number}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     rollout_impact?: number;
     /**
      * 
      * @type {number}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     rollout_milestone?: number;
     /**
      * 
      * @type {Array<string>}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     rollout_platforms?: Array<string>;
     /**
      * 
      * @type {Array<string>}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     enterprise_policies?: Array<string>;
     /**
      * 
      * @type {Array<string>}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     pm_emails?: Array<string>;
     /**
      * 
      * @type {Array<string>}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     tl_emails?: Array<string>;
     /**
      * 
      * @type {Array<string>}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     ux_emails?: Array<string>;
     /**
      * 
      * @type {Array<string>}
-     * @memberof StageDict
+     * @memberof StageDictExtension
      */
     te_emails?: Array<string>;
 }
 
 /**
- * Check if a given object implements the StageDict interface.
+ * Check if a given object implements the StageDictExtension interface.
  */
-export function instanceOfStageDict(value: object): value is StageDict {
+export function instanceOfStageDictExtension(value: object): value is StageDictExtension {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('created' in value) || value['created'] === undefined) return false;
     if (!('feature_id' in value) || value['feature_id'] === undefined) return false;
@@ -317,11 +317,11 @@ export function instanceOfStageDict(value: object): value is StageDict {
     return true;
 }
 
-export function StageDictFromJSON(json: any): StageDict {
-    return StageDictFromJSONTyped(json, false);
+export function StageDictExtensionFromJSON(json: any): StageDictExtension {
+    return StageDictExtensionFromJSONTyped(json, false);
 }
 
-export function StageDictFromJSONTyped(json: any, ignoreDiscriminator: boolean): StageDict {
+export function StageDictExtensionFromJSONTyped(json: any, ignoreDiscriminator: boolean): StageDictExtension {
     if (json == null) {
         return json;
     }
@@ -338,7 +338,7 @@ export function StageDictFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'origin_trial_id': json['origin_trial_id'] == null ? undefined : json['origin_trial_id'],
         'experiment_goals': json['experiment_goals'] == null ? undefined : json['experiment_goals'],
         'experiment_risks': json['experiment_risks'] == null ? undefined : json['experiment_risks'],
-        'extensions': json['extensions'] == null ? undefined : ((json['extensions'] as Array<any>).map(StageDictExtensionFromJSON)),
+        'extensions': json['extensions'] == null ? undefined : ((json['extensions'] as Array<any>).map(StageDictFromJSON)),
         'origin_trial_feedback_url': json['origin_trial_feedback_url'] == null ? undefined : json['origin_trial_feedback_url'],
         'ot_action_requested': json['ot_action_requested'],
         'ot_activation_date': json['ot_activation_date'] == null ? undefined : (new Date(json['ot_activation_date'])),
@@ -375,7 +375,7 @@ export function StageDictFromJSONTyped(json: any, ignoreDiscriminator: boolean):
     };
 }
 
-export function StageDictToJSON(value?: StageDict | null): any {
+export function StageDictExtensionToJSON(value?: StageDictExtension | null): any {
     if (value == null) {
         return value;
     }
@@ -392,7 +392,7 @@ export function StageDictToJSON(value?: StageDict | null): any {
         'origin_trial_id': value['origin_trial_id'],
         'experiment_goals': value['experiment_goals'],
         'experiment_risks': value['experiment_risks'],
-        'extensions': value['extensions'] == null ? undefined : ((value['extensions'] as Array<any>).map(StageDictExtensionToJSON)),
+        'extensions': value['extensions'] == null ? undefined : ((value['extensions'] as Array<any>).map(StageDictToJSON)),
         'origin_trial_feedback_url': value['origin_trial_feedback_url'],
         'ot_action_requested': value['ot_action_requested'],
         'ot_activation_date': value['ot_activation_date'] == null ? undefined : ((value['ot_activation_date'] as any).toISOString()),
