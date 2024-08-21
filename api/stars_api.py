@@ -32,10 +32,10 @@ class StarsAPI(basehandlers.APIHandler):
     else:
       feature_ids = []  # Anon users cannot star features.
 
-    data = {
+    data = GetStarsResponse.from_dict({
         'featureIds': feature_ids,
-        }
-    return data
+        })
+    return data.to_dict()
 
   def do_post(self, **kwargs):
     """Set or clear a star on the specified feature."""
