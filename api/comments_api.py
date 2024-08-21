@@ -13,23 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from chromestatus_openapi.models import (
-    Activity as ActivityModel,
-    Amendment as AmendmentModel,
-    PatchCommentRequest,
-    CommentsRequest,
-    GetCommentsResponse,
-    SuccessMessage,
-)
 from typing import Any
 
-from framework import basehandlers
-from framework import permissions
+from chromestatus_openapi.models import (
+  Activity as ActivityModel,
+)
+from chromestatus_openapi.models import (
+  Amendment as AmendmentModel,
+)
+from chromestatus_openapi.models import (
+  CommentsRequest,
+  GetCommentsResponse,
+  PatchCommentRequest,
+  SuccessMessage,
+)
+
+from framework import basehandlers, permissions
+from internals import approval_defs, notifier, notifier_helpers, slo
 from internals.review_models import Activity, Amendment, Gate
-from internals import approval_defs
-from internals import notifier
-from internals import notifier_helpers
-from internals import slo
 
 
 def amendment_to_json_dict(amendment: Amendment) -> AmendmentModel:

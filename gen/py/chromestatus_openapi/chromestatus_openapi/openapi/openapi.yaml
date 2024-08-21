@@ -262,6 +262,92 @@ paths:
             format.
       summary: List how long each feature took to launch
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /feature_links:
+    get:
+      operationId: get_feature_links
+      parameters:
+      - explode: true
+        in: query
+        name: feature_id
+        required: false
+        schema:
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: update_stale_links
+        required: false
+        schema:
+          default: true
+          type: boolean
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureLinksResponse'
+          description: return the links and its information to the client
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: missing feature_id
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: feature not found
+      summary: Get feature links by feature_id
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /feature_links_samples:
+    get:
+      operationId: get_feature_links_samples
+      parameters:
+      - explode: true
+        in: query
+        name: domain
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: type
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: is_error
+        required: false
+        schema:
+          type: boolean
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureLinksSample'
+          description: return the sample links to the client
+      summary: Get feature links samples
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /feature_links_summary:
+    get:
+      operationId: get_feature_links_summary
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureLinksSummaryResponse'
+          description: return the links and its information to the client
+      summary: Get feature links summary
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /features/<int:feature_id>/approvals/<int:gate_id>/comments:
     get:
       operationId: get_gate_comments
@@ -415,92 +501,6 @@ paths:
                 $ref: '#/components/schemas/ErrorMessage'
           description: User is not allowed to comment on this feature
       summary: Add a comment to a feature
-      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
-  /feature_links:
-    get:
-      operationId: get_feature_links
-      parameters:
-      - explode: true
-        in: query
-        name: feature_id
-        required: false
-        schema:
-          type: integer
-        style: form
-      - explode: true
-        in: query
-        name: update_stale_links
-        required: false
-        schema:
-          default: true
-          type: boolean
-        style: form
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FeatureLinksResponse'
-          description: return the links and its information to the client
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorMessage'
-          description: missing feature_id
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorMessage'
-          description: feature not found
-      summary: Get feature links by feature_id
-      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
-  /feature_links_samples:
-    get:
-      operationId: get_feature_links_samples
-      parameters:
-      - explode: true
-        in: query
-        name: domain
-        required: false
-        schema:
-          type: string
-        style: form
-      - explode: true
-        in: query
-        name: type
-        required: false
-        schema:
-          type: string
-        style: form
-      - explode: true
-        in: query
-        name: is_error
-        required: false
-        schema:
-          type: boolean
-        style: form
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FeatureLinksSample'
-          description: return the sample links to the client
-      summary: Get feature links samples
-      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
-  /feature_links_summary:
-    get:
-      operationId: get_feature_links_summary
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FeatureLinksSummaryResponse'
-          description: return the links and its information to the client
-      summary: Get feature links summary
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /features/{feature_id}/{stage_id}/{gate_id}/intent:
     get:
