@@ -360,8 +360,9 @@ class EntitiesAPIHandler(APIHandler):
     ot_action_requested = False
 
     mutating_ot_milestones = any(
+        isinstance(v, dict) and (
         v['form_field_name'] == 'ot_milestone_desktop_start' or
-        v['form_field_name'] == 'ot_milestone_desktop_end'
+        v['form_field_name'] == 'ot_milestone_desktop_end')
         for v in change_info.values())
     ot_creation_in_progress =  (
         stage.ot_setup_status == OT_READY_FOR_CREATION or
