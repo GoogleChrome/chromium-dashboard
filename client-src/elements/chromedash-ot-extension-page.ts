@@ -329,9 +329,8 @@ export class ChromedashOTExtensionPage extends LitElement {
         <chromedash-form-field
           name=${featureJSONKey}
           index=${index}
+          disabledReason="${disabledHelpText}"
           .fieldValues=${this.fieldValues}
-          helpText="${disabledHelpText}"
-          ?disabled=${disabledHelpText}
           @form-field-update="${this.handleFormFieldUpdate}"
         >
         </chromedash-form-field>

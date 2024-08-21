@@ -289,10 +289,9 @@ export class ChromedashGuideEditallPage extends LitElement {
           index=${index}
           stageId=${ifDefined(stageId)}
           value=${value}
+          disabledReason="${disabledHelpText}"
           .fieldValues=${this.fieldValues}
           .feature=${formattedFeature}
-          helpText="${disabledHelpText}"
-          ?disabled=${disabledHelpText}
           ?forEnterprise=${formattedFeature.is_enterprise_feature}
           @form-field-update="${this.handleFormFieldUpdate}"
         >

@@ -39,7 +39,7 @@ export class ChromedashFormField extends LitElement {
   @property({type: Boolean})
   forEnterprise = false;
   @property({type: String})
-  helpText = '';
+  disabledReason = '';
   @property({type: Number})
   stageId;
   @property({type: Number})
@@ -326,8 +326,8 @@ export class ChromedashFormField extends LitElement {
           size="small"
           autocomplete="off"
           .value=${fieldValue}
-          help-text="${this.helpText}"
-          ?disabled=${this.disabled || fieldDisabled}
+          help-text="${this.disabledReason}"
+          ?disabled=${this.disabled || this.disabledReason || fieldDisabled}
           ?required=${this.fieldProps.required}
           @sl-change="${this.handleFieldUpdated}"
         >
@@ -356,7 +356,6 @@ export class ChromedashFormField extends LitElement {
               value="${value}"
               type="radio"
               required
-              ?disabled=${this.disabled || fieldDisabled}
               @change=${this.handleFieldUpdated}
             />
             <label for="id_${this.name}_${value}">${label}</label>
@@ -375,7 +374,6 @@ export class ChromedashFormField extends LitElement {
             class="datalist-input"
             type="search"
             list="${this.name}_list"
-            ?disabled=${this.disabled || fieldDisabled}
             ?required=${this.fieldProps.required}
             @change=${this.handleFieldUpdated}
           />

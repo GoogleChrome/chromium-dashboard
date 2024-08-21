@@ -396,11 +396,10 @@ export class ChromedashOTCreationPage extends LitElement {
           name=${fieldInfo.name}
           index=${i}
           value=${fieldInfo.value}
+          disabledReason="${disabledHelpText}"
           .checkMessage=${fieldInfo.checkMessage}
           .fieldValues=${this.fieldValues}
           ?shouldFadeIn=${shouldFadeIn}
-          helpText="${disabledHelpText}"
-          ?disabled=${disabledHelpText}
           @form-field-update="${this.handleFormFieldUpdate}"
         >
         </chromedash-form-field>

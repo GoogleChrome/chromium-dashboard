@@ -211,10 +211,9 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
           name=${field}
           index=${index}
           value=${value}
+          disabledReason="${disabledHelpText}"
           .fieldValues=${this.fieldValues}
           .feature=${formattedFeature}
-          helpText="${disabledHelpText}"
-          ?disabled=${disabledHelpText}
           ?forEnterprise=${formattedFeature.is_enterprise_feature}
           @form-field-update="${this.handleFormFieldUpdate}"
         >

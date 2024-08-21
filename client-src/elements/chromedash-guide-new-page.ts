@@ -182,9 +182,8 @@ export class ChromedashGuideNewPage extends LitElement {
           name=${field}
           index=${index}
           value=${value}
+          disabledReason="${disabledHelpText}"
           .fieldValues=${this.fieldValues}
-          helpText="${disabledHelpText}"
-          ?disabled=${disabledHelpText}
           ?forEnterprise=${this.isEnterpriseFeature}
           @form-field-update="${this.handleFormFieldUpdate}"
           class="${className || ''}"></chromedash-form-field>
