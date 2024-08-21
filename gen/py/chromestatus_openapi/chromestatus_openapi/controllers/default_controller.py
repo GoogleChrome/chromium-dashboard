@@ -14,11 +14,15 @@ from chromestatus_openapi.models.dismiss_cue_request import DismissCueRequest  #
 from chromestatus_openapi.models.error_message import ErrorMessage  # noqa: E501
 from chromestatus_openapi.models.external_reviews_response import ExternalReviewsResponse  # noqa: E501
 from chromestatus_openapi.models.feature_latency import FeatureLatency  # noqa: E501
+from chromestatus_openapi.models.feature_links_response import FeatureLinksResponse  # noqa: E501
+from chromestatus_openapi.models.feature_links_sample import FeatureLinksSample  # noqa: E501
+from chromestatus_openapi.models.feature_links_summary_response import FeatureLinksSummaryResponse  # noqa: E501
 from chromestatus_openapi.models.get_comments_response import GetCommentsResponse  # noqa: E501
 from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismissedCues400Response  # noqa: E501
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
 from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
 from chromestatus_openapi.models.patch_comment_request import PatchCommentRequest  # noqa: E501
+from chromestatus_openapi.models.permissions_response import PermissionsResponse  # noqa: E501
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
@@ -31,7 +35,7 @@ def add_feature_comment(feature_id, comments_request=None):  # noqa: E501
 
      # noqa: E501
 
-    :param feature_id: 
+    :param feature_id:
     :type feature_id: int
     :param comments_request: Add a review commend and possible set a approval value
     :type comments_request: dict | bytes
@@ -48,11 +52,11 @@ def add_gate_comment(feature_id, gate_id, comments_request=None):  # noqa: E501
 
      # noqa: E501
 
-    :param feature_id: 
+    :param feature_id:
     :type feature_id: int
-    :param gate_id: 
+    :param gate_id:
     :type gate_id: int
-    :param comments_request: 
+    :param comments_request:
     :type comments_request: dict | bytes
 
     :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
@@ -71,7 +75,7 @@ def add_user_to_component(component_id, user_id, component_users_request=None): 
     :type component_id: int
     :param user_id: User ID
     :type user_id: int
-    :param component_users_request: 
+    :param component_users_request:
     :type component_users_request: dict | bytes
 
     :rtype: Union[None, Tuple[None, int], Tuple[None, int, Dict[str, str]]
@@ -86,7 +90,7 @@ def create_account(create_account_request=None):  # noqa: E501
 
      # noqa: E501
 
-    :param create_account_request: 
+    :param create_account_request:
     :type create_account_request: dict | bytes
 
     :rtype: Union[AccountResponse, Tuple[AccountResponse, int], Tuple[AccountResponse, int, Dict[str, str]]
@@ -114,7 +118,7 @@ def dismiss_cue(dismiss_cue_request):  # noqa: E501
 
      # noqa: E501
 
-    :param dismiss_cue_request: 
+    :param dismiss_cue_request:
     :type dismiss_cue_request: dict | bytes
 
     :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
@@ -140,10 +144,53 @@ def get_feature_comments(feature_id):  # noqa: E501
 
      # noqa: E501
 
-    :param feature_id: 
+    :param feature_id:
     :type feature_id: int
 
     :rtype: Union[GetCommentsResponse, Tuple[GetCommentsResponse, int], Tuple[GetCommentsResponse, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
+def get_feature_links(feature_id=None, update_stale_links=None):  # noqa: E501
+    """Get feature links by feature_id
+
+     # noqa: E501
+
+    :param feature_id:
+    :type feature_id: int
+    :param update_stale_links:
+    :type update_stale_links: bool
+
+    :rtype: Union[FeatureLinksResponse, Tuple[FeatureLinksResponse, int], Tuple[FeatureLinksResponse, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
+def get_feature_links_samples(domain=None, type=None, is_error=None):  # noqa: E501
+    """Get feature links samples
+
+     # noqa: E501
+
+    :param domain:
+    :type domain: str
+    :param type:
+    :type type: str
+    :param is_error:
+    :type is_error: bool
+
+    :rtype: Union[FeatureLinksSample, Tuple[FeatureLinksSample, int], Tuple[FeatureLinksSample, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
+def get_feature_links_summary():  # noqa: E501
+    """Get feature links summary
+
+     # noqa: E501
+
+
+    :rtype: Union[FeatureLinksSummaryResponse, Tuple[FeatureLinksSummaryResponse, int], Tuple[FeatureLinksSummaryResponse, int, Dict[str, str]]
     """
     return 'do some magic!'
 
@@ -153,9 +200,9 @@ def get_gate_comments(feature_id, gate_id):  # noqa: E501
 
      # noqa: E501
 
-    :param feature_id: 
+    :param feature_id:
     :type feature_id: int
-    :param gate_id: 
+    :param gate_id:
     :type gate_id: int
 
     :rtype: Union[List[Activity], Tuple[List[Activity], int], Tuple[List[Activity], int, Dict[str, str]]
@@ -180,6 +227,19 @@ def get_intent_body(feature_id, stage_id, gate_id):  # noqa: E501
     return 'do some magic!'
 
 
+def get_user_permissions(return_paired_user=None):  # noqa: E501
+    """Get the permissions and email of the user
+
+     # noqa: E501
+
+    :param return_paired_user: If true, return the permissions of the paired user.
+    :type return_paired_user: bool
+
+    :rtype: Union[PermissionsResponse, Tuple[PermissionsResponse, int], Tuple[PermissionsResponse, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
 def list_component_users():  # noqa: E501
     """List all components and possible users
 
@@ -196,7 +256,7 @@ def list_external_reviews(review_group):  # noqa: E501
 
      # noqa: E501
 
-    :param review_group: Which review group to focus on:  * &#x60;tag&#x60; - The W3C TAG  * &#x60;gecko&#x60; - The rendering engine that powers Mozilla Firefox  * &#x60;webkit&#x60; - The rendering engine that powers Apple Safari 
+    :param review_group: Which review group to focus on:  * &#x60;tag&#x60; - The W3C TAG  * &#x60;gecko&#x60; - The rendering engine that powers Mozilla Firefox  * &#x60;webkit&#x60; - The rendering engine that powers Apple Safari
     :type review_group: str
 
     :rtype: Union[ExternalReviewsResponse, Tuple[ExternalReviewsResponse, int], Tuple[ExternalReviewsResponse, int, Dict[str, str]]
@@ -237,7 +297,7 @@ def list_spec_mentors(after=None):  # noqa: E501
 
      # noqa: E501
 
-    :param after: 
+    :param after:
     :type after: str
 
     :rtype: Union[List[SpecMentor], Tuple[List[SpecMentor], int], Tuple[List[SpecMentor], int, Dict[str, str]]
@@ -276,7 +336,7 @@ def remove_user_from_component(component_id, user_id, component_users_request=No
     :type component_id: int
     :param user_id: User ID
     :type user_id: int
-    :param component_users_request: 
+    :param component_users_request:
     :type component_users_request: dict | bytes
 
     :rtype: Union[None, Tuple[None, int], Tuple[None, int, Dict[str, str]]
@@ -291,9 +351,9 @@ def update_feature_comment(feature_id, patch_comment_request):  # noqa: E501
 
      # noqa: E501
 
-    :param feature_id: 
+    :param feature_id:
     :type feature_id: int
-    :param patch_comment_request: 
+    :param patch_comment_request:
     :type patch_comment_request: dict | bytes
 
     :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]

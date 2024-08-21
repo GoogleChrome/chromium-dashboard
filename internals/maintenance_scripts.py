@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import collections
 from datetime import date, datetime
 import logging
 from typing import Any
@@ -33,16 +34,19 @@ import settings
 
 class EvaluateGateStatus(FlaskHandler):
 
-  def get_template_data(self, **kwargs):
+  def get_template_data(self, **kwargs) -> str:
     """Evaluate all existing Gate entities and set correct state."""
     self.require_cron_header()
 
-    gates: ndb.Query = Gate.query()
     count = 0
     batch = []
     BATCH_SIZE = 100
-    for gate in gates:
-      if approval_defs.update_gate_approval_state(gate):
+    votes_by_gate = collections.defaultdict(list)
+    for vote in Vote.query():
+      votes_by_gate[vote.gate_id].append(vote)
+    for gate in Gate.query():
+      if approval_defs.update_gate_approval_state(
+          gate, votes_by_gate[gate.key.integer_id()]):
         batch.append(gate)
         count += 1
         if len(batch) > BATCH_SIZE:
@@ -62,7 +66,7 @@ class WriteMissingGates(FlaskHandler):
       for fe_type, stages_and_gates in STAGES_AND_GATES_BY_FEATURE_TYPE.items()
   }
 
-  def make_needed_gates(self, fe, stage, existing_gates):
+  def make_needed_gates(self, fe, stage, existing_gates) -> list[Gate]:
     """Instantiate and return any needed gates for the given stage."""
     if not fe:
       logging.info(f'Stage {stage.key.integer_id()} has no feature entry')
@@ -88,7 +92,7 @@ class WriteMissingGates(FlaskHandler):
         new_gates.append(gate)
     return new_gates
 
-  def get_template_data(self, **kwargs):
+  def get_template_data(self, **kwargs) -> str:
     """Create a chunk of needed gates for all features."""
     self.require_cron_header()
 
@@ -99,7 +103,7 @@ class WriteMissingGates(FlaskHandler):
     for gate in Gate.query():
       existing_gates_by_stage_id[gate.stage_id].append(gate)
 
-    gates_to_write: list(Gate) = []
+    gates_to_write: list[Gate] = []
     for stage in Stage.query():
       new_gates = self.make_needed_gates(
           fe_by_id.get(stage.feature_id), stage,
@@ -122,7 +126,7 @@ class MigrateGeckoViews(FlaskHandler):
       GECKO_HARMFUL: OPPOSED,
       }
 
-  def update_ff_views(self, fe):
+  def update_ff_views(self, fe) -> bool:
     """Update ff_views and return True if update was needed."""
     if fe.ff_views in self.MAPPING:
       fe.ff_views = self.MAPPING[fe.ff_views]
@@ -130,7 +134,7 @@ class MigrateGeckoViews(FlaskHandler):
 
     return False
 
-  def get_template_data(self, **kwargs):
+  def get_template_data(self, **kwargs) -> str:
     """Change gecko views from old options to a more common list."""
     self.require_cron_header()
 
@@ -153,7 +157,7 @@ class MigrateGeckoViews(FlaskHandler):
 
 class BackfillRespondedOn(FlaskHandler):
 
-  def update_responded_on(self, gate):
+  def update_responded_on(self, gate) -> bool:
     """Update gate.responded_on and return True if an update was needed."""
     gate_id = gate.key.integer_id()
     earliest_response = datetime.max
@@ -181,7 +185,7 @@ class BackfillRespondedOn(FlaskHandler):
     else:
       return False
 
-  def get_template_data(self, **kwargs):
+  def get_template_data(self, **kwargs) -> str:
     """Backfill responded_on dates for existing gates."""
     self.require_cron_header()
     gates: ndb.Query = Gate.query(Gate.requested_on != None)
@@ -203,7 +207,7 @@ class BackfillRespondedOn(FlaskHandler):
     return f'{count} Gates entities updated.'
 
 class BackfillStageCreated(FlaskHandler):
-  def get_template_data(self, **kwargs):
+  def get_template_data(self, **kwargs) -> str:
     """Backfill created dates for existing stages."""
     self.require_cron_header()
     count = 0
@@ -226,7 +230,7 @@ class BackfillStageCreated(FlaskHandler):
     return f'{count} Stages entities updated of {stages.count()} available stages.'
 
 class BackfillFeatureLinks(FlaskHandler):
-  def get_template_data(self, **kwargs):
+  def get_template_data(self, **kwargs) -> str:
     """Backfill feature links for existing feature entries."""
     self.require_cron_header()
     all_feature_entries = FeatureEntry.query().fetch()
@@ -277,7 +281,7 @@ class AssociateOTs(FlaskHandler):
     return False
 
   def write_fields_for_trial_stage(
-      self, trial_stage: Stage, trial_data: dict[str, Any]):
+      self, trial_stage: Stage, trial_data: dict[str, Any]) -> bool:
     """Check if any OT stage fields are unfilled and populate them with
     the matching trial data.
     """
@@ -400,7 +404,7 @@ class AssociateOTs(FlaskHandler):
       ndb.put_multi(extension_stages_to_update)
     return len(extension_stages_to_update)
 
-  def get_template_data(self, **kwargs):
+  def get_template_data(self, **kwargs) -> str:
     """Link existing origin trials with their ChromeStatus entry"""
     self.require_cron_header()
 
@@ -410,7 +414,7 @@ class AssociateOTs(FlaskHandler):
     # Keep track of stages we're writing to so we avoid trying to write
     # to the same Stage entity twice in the same batch.
     unique_entities_to_write: set[int] = set()
-    trials_with_no_feature: list[str] = []
+    trials_with_no_feature: list[dict[str, Any]] = []
     for trial_data in trials_list:
       stage: Stage | None = Stage.query(
           Stage.origin_trial_id == trial_data['id']).get()
@@ -467,7 +471,8 @@ class AssociateOTs(FlaskHandler):
             f'{extensions_cleared} extension requests cleared.')
 
 class BackfillFeatureEnterpriseImpact(FlaskHandler):
-  def get_template_data(self, **kwargs):
+
+  def get_template_data(self, **kwargs) -> str:
     """Backfill enterprise_impact firld for all features."""
     self.require_cron_header()
     count = 0
@@ -551,7 +556,8 @@ class CreateOriginTrials(FlaskHandler):
       # The activation still needs to occur,
       # so the activation date is set for current date.
       stage.ot_activation_date = date.today()
-  def _get_today(self):
+
+  def _get_today(self) -> date:
     return date.today()
 
   def prepare_for_activation(self, stage: Stage, stage_dict: StageDict) -> None:
@@ -569,7 +575,7 @@ class CreateOriginTrials(FlaskHandler):
       cloud_tasks_helpers.enqueue_task(
           '/tasks/email-ot-creation-processed', {'stage': stage_dict})
 
-  def get_template_data(self, **kwargs):
+  def get_template_data(self, **kwargs) -> str:
     """Create any origin trials that are flagged for creation."""
     self.require_cron_header()
     if not settings.AUTOMATED_OT_CREATION:
@@ -592,10 +598,10 @@ class CreateOriginTrials(FlaskHandler):
 
 class ActivateOriginTrials(FlaskHandler):
 
-  def _get_today(self):
+  def _get_today(self) -> date:
     return date.today()
 
-  def get_template_data(self, **kwargs):
+  def get_template_data(self, **kwargs) -> str:
     """Check for origin trials that are scheduled for activation and activate
     them.
     """
@@ -646,7 +652,7 @@ class ActivateOriginTrials(FlaskHandler):
 class DeleteEmptyExtensionStages(FlaskHandler):
   """Delete any extension stages that have no information filled out."""
 
-  def get_template_data(self):
+  def get_template_data(self, **kwargs) -> str:
     self.require_cron_header()
 
     # Fetch all extension stages.
@@ -683,4 +689,3 @@ class DeleteEmptyExtensionStages(FlaskHandler):
       ndb.delete_multi(keys_to_delete)
 
     return  (f'{counter} empty extension stages deleted.')
-
