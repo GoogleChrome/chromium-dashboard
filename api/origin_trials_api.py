@@ -95,8 +95,6 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
       validation_errors['ot_chromium_trial_name'] = (
           'Chromium trial name is already used by another origin trial')
 
-    print(chromium_files['enabled_features_text'])
-    print(type(chromium_files['enabled_features_text']))
     enabled_features_json = json5.loads(chromium_files['enabled_features_text'])
     if (not any(feature.get('origin_trial_feature_name') == chromium_trial_name
                 for feature in enabled_features_json['data'])):
