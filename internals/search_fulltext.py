@@ -185,7 +185,8 @@ def canonicalize_string(s: str) -> str:
 def post_process_phrase(
     phrase: str, feature_ids: list[int],
     field_name: str|None = None) -> list[int]:
-  """Fetch the given features and check if they really have the phrase."""
+  """Fetch the given features and check if they really have the phrase.
+  if field_name is specified, check only within that field."""
   features = get_future_results(get_entries_by_id_async(feature_ids))
   canon_phrase = canonicalize_string(phrase)
   result = []
@@ -200,7 +201,8 @@ def post_process_phrase(
 
 def search_fulltext(
     textterm: str, field_name: str|None = None) -> Optional[list[int]]:
-  """Return IDs of features that have some word(s) from phrase."""
+  """Return IDs of features that contain word(s) from textterm.
+  if field_name is specified, check only within that field."""
   search_words = parse_words([textterm])
   if not search_words:
     logging.warning('Cannot process fulltext term: %r', textterm)
