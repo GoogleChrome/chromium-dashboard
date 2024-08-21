@@ -21,6 +21,7 @@ from internals import core_enums
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate, Vote
 from internals import search
+from internals import search_fulltext
 from internals import search_queries
 
 
@@ -35,6 +36,7 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
     self.feature_1.cc_emails = ['cc@example.com']
     self.feature_1.put()
     self.feature_1_id = self.feature_1.key.integer_id()
+    search_fulltext.index_feature(self.feature_1)
 
     self.stage_1_ship = Stage(
       feature_id=self.feature_1_id,
@@ -45,13 +47,14 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
 
     self.feature_2 = FeatureEntry(
       name='feature b',
-      summary='sum',
+      summary='summary of editor stuff',
       owner_emails=['owner@example.com'],
       category=1,
       impl_status_chrome=3,
       accurate_as_of=datetime.datetime(2023, 6, 1),
     )
     self.feature_2.put()
+    search_fulltext.index_feature(self.feature_1)
     self.feature_2_id = self.feature_2.key.integer_id()
     self.stage_2_ot = Stage(
       feature_id=self.feature_2_id,
@@ -120,7 +123,8 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
     self.vote_2_2.put()
 
   def tearDown(self):
-    for kind in [FeatureEntry, Stage, Gate, Vote]:
+    for kind in [
+        FeatureEntry, search_fulltext.FeatureWords, Stage, Gate, Vote]:
       for entry in kind.query():
         entry.key.delete()
 
@@ -237,6 +241,20 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
     actual_promise = search_queries.single_field_query_async(
         'owner', '=', ['nope'])
     actual = actual_promise.get_result()
+    self.assertCountEqual([], actual)
+
+  def test_single_field_query_async__fulltext_in_field(self):
+    """We can search for words within a field."""
+    actual = search_queries.single_field_query_async(
+        'editor_emails', ':', ['editor'])
+    self.assertCountEqual([self.feature_1_id], actual)
+
+    actual = search_queries.single_field_query_async(
+        'editor_emails', ':', ['wrongword'])
+    self.assertCountEqual([], actual)
+
+    actual = search_queries.single_field_query_async(
+        'owner_emails', ':', ['editor'])
     self.assertCountEqual([], actual)
 
   @mock.patch('logging.warning')

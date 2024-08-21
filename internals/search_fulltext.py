@@ -46,75 +46,89 @@ class FeatureWords(ndb.Model):
   words = ndb.StringProperty(repeated=True)
 
 
-def get_strings(fe : FeatureEntry) -> list[str]:
+def _get_strings_dict(fe: FeatureEntry) -> dict[str, list[str|None]]:
+  return {
+      'creator_email': [fe.creator_email],
+      'updater_email': [fe.updater_email],
+      'owner_emails': fe.owner_emails,
+      'editor_emails': fe.editor_emails,
+      'cc_emails': fe.cc_emails,
+
+      'name': [fe.name],
+      'summary': [fe.summary],
+      # TODO: category
+      'blink_components': fe.blink_components,
+      'tags': fe.search_tags,
+      'feature_notes': [fe.feature_notes],
+
+      'bug_url': [fe.bug_url],
+      'launch_bug_url': [fe.launch_bug_url],
+
+      # TODO: impl_status_Chrome
+      'flag_name': [fe.flag_name],
+      'finch_name': [fe.finch_name],
+      'non_finch_justification': [fe.non_finch_justification],
+      'ongoing_constraints': [fe.ongoing_constraints],
+
+      'motivation': [fe.motivation],
+      'devtrial_instructions': [fe.devtrial_instructions],
+      'activation_risks': [fe.activation_risks],
+      'measurement': [fe.measurement],
+
+      'initial_public_proposal_url': [fe.initial_public_proposal_url],
+      'explainer_links': fe.explainer_links,
+      # TODO: standard_maturity
+      'spec_link': [fe.spec_link],
+      'spec_mentor_emails': fe.spec_mentor_emails,
+      'interop_compat_risks': [fe.interop_compat_risks],
+      'all_platforms_descr': [fe.all_platforms_descr],
+      'tag_review': [fe.tag_review],
+      # TODO: tag_review_status
+      'non_oss_deps': [fe.non_oss_deps],
+      'anticipated_spec_changes': [fe.anticipated_spec_changes],
+
+      # TODO: ff_views
+      # TODO: safari_views
+      # TODO: web_dev_views
+      'ff_views_link': [fe.ff_views_link],
+      'safari_views_link': [fe.safari_views_link],
+      'web_dev_views_link': [fe.web_dev_views_link],
+      'ff_views_notes': [fe.ff_views_notes],
+      'safari_views_notes': [fe.safari_views_notes],
+      'web_dev_views_notes': [fe.web_dev_views_notes],
+      'other_views_notes': [fe.other_views_notes],
+
+      'security_risks': [fe.security_risks],
+      # TODO: security_review_status
+      # TODO: privacy_review_status
+
+      'ergonomics_risks': [fe.ergonomics_risks],
+      'wpt_descr': [fe.wpt_descr],
+      'webview_risks': [fe.webview_risks],
+
+      'devrel_emails': fe.devrel_emails,
+      'debuggability': [fe.debuggability],
+      'doc_links': fe.doc_links,
+      'sample_links': fe.sample_links,
+      }
+
+
+def get_strings(fe: FeatureEntry, field_name: str|None = None) -> list[str]:
   """Return a list of separate string values in the given feature entry."""
-  strings : list[Optional[str]] = []
-  strings.append(fe.creator_email)
-  strings.append(fe.updater_email)
-  strings.extend(fe.owner_emails)
-  strings.extend(fe.editor_emails)
-  strings.extend(fe.cc_emails)
+  strings_dict = _get_strings_dict(fe)
 
-  strings.append(fe.name)
-  strings.append(fe.summary)
-  # TODO: category
-  strings.extend(fe.blink_components)
-  strings.extend(fe.search_tags)
-  strings.append(fe.feature_notes)
-
-  strings.append(fe.bug_url)
-  strings.append(fe.launch_bug_url)
-
-  # TODO: impl_status_Chrome
-  strings.append(fe.flag_name)
-  strings.append(fe.finch_name)
-  strings.append(fe.non_finch_justification)
-  strings.append(fe.ongoing_constraints)
-
-  strings.append(fe.motivation)
-  strings.append(fe.devtrial_instructions)
-  strings.append(fe.activation_risks)
-  strings.append(fe.measurement)
-
-  strings.append(fe.initial_public_proposal_url)
-  strings.extend(fe.explainer_links)
-  # TODO: standard_maturity
-  strings.append(fe.spec_link)
-  strings.extend(fe.spec_mentor_emails)
-  strings.append(fe.interop_compat_risks)
-  strings.append(fe.all_platforms_descr)
-  strings.append(fe.tag_review)
-  # TODO: tag_review_status
-  strings.append(fe.non_oss_deps)
-  strings.append(fe.anticipated_spec_changes)
-
-  # TODO: ff_views
-  # TODO: safari_views
-  # TODO: web_dev_views
-  strings.append(fe.ff_views_link)
-  strings.append(fe.safari_views_link)
-  strings.append(fe.web_dev_views_link)
-  strings.append(fe.ff_views_notes)
-  strings.append(fe.safari_views_notes)
-  strings.append(fe.web_dev_views_notes)
-  strings.append(fe.other_views_notes)
-
-  strings.append(fe.security_risks)
-  # TODO: security_review_status
-  # TODO: privacy_review_status
-
-  strings.append(fe.ergonomics_risks)
-  strings.append(fe.wpt_descr)
-  strings.append(fe.webview_risks)
-
-  strings.extend(fe.devrel_emails)
-  strings.append(fe.debuggability)
-  strings.extend(fe.doc_links)
-  strings.extend(fe.sample_links)
+  if field_name and field_name in strings_dict:
+    strings = strings_dict[field_name]
+  else:
+    strings = [s for s_list in strings_dict.values() for s in s_list]
 
   # Skip missing fields.
   non_empty_strings = [s for s in strings if s]
   return non_empty_strings
+
+
+FULLTEXT_FIELDS = frozenset(
+    _get_strings_dict(FeatureEntry()).keys())
 
 
 def parse_words(strings : list[str]) -> set[str]:
@@ -168,13 +182,16 @@ def canonicalize_string(s: str) -> str:
   return ' ' + canonicalized + ' '  # Avoids matching partial words.
 
 
-def post_process_phrase(phrase: str, feature_ids: list[int]) -> list[int]:
-  """Fetch the given features and check if they really have the phrase."""
+def post_process_phrase(
+    phrase: str, feature_ids: list[int],
+    field_name: str|None = None) -> list[int]:
+  """Fetch the given features and check if they really have the phrase.
+  if field_name is specified, check only within that field."""
   features = get_future_results(get_entries_by_id_async(feature_ids))
   canon_phrase = canonicalize_string(phrase)
   result = []
   for fe in features:
-    feature_strings = get_strings(fe)
+    feature_strings = get_strings(fe, field_name=field_name)
     has_phrase = any(canon_phrase in canonicalize_string(fs)
                      for fs in feature_strings)
     if has_phrase:
@@ -182,8 +199,10 @@ def post_process_phrase(phrase: str, feature_ids: list[int]) -> list[int]:
   return result
 
 
-def search_fulltext(textterm: str) -> Optional[list[int]]:
-  """Return IDs of features that have some word(s) from phrase."""
+def search_fulltext(
+    textterm: str, field_name: str|None = None) -> Optional[list[int]]:
+  """Return IDs of features that contain word(s) from textterm.
+  if field_name is specified, check only within that field."""
   search_words = parse_words([textterm])
   if not search_words:
     logging.warning('Cannot process fulltext term: %r', textterm)
@@ -195,14 +214,10 @@ def search_fulltext(textterm: str) -> Optional[list[int]]:
     query = query.filter(FeatureWords.words == sw)
   feature_projections = query.fetch(projection=['feature_id'])
   feature_ids = [proj.feature_id for proj in feature_projections]
-  if len(search_words) > 1:
-    return post_process_phrase(textterm, feature_ids)
+  if len(search_words) > 1 or field_name:
+    return post_process_phrase(textterm, feature_ids, field_name=field_name)
   else:
     return feature_ids
-
-
-# TODO(jrobbins): Likewise, searching for a word or phrase in a
-# specific field of a feature entry can be done with post-processing.
 
 
 class ReindexAllFeatures(FlaskHandler):
