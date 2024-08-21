@@ -390,13 +390,12 @@ export class ChromedashOTCreationPage extends LitElement {
       // Fade in transition for the approvals fields if they're being displayed.
       const shouldFadeIn = fieldInfo.isApprovalsField;
 
-      const disabledHelpText = getDisabledHelpText(fieldInfo.name, this.stage);
       return html`
         <chromedash-form-field
           name=${fieldInfo.name}
           index=${i}
           value=${fieldInfo.value}
-          disabledReason="${disabledHelpText}"
+          disabledReason="${getDisabledHelpText(fieldInfo.name, this.stage)}"
           .checkMessage=${fieldInfo.checkMessage}
           .fieldValues=${this.fieldValues}
           ?shouldFadeIn=${shouldFadeIn}

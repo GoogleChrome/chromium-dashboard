@@ -324,12 +324,11 @@ export class ChromedashOTExtensionPage extends LitElement {
         </div>`;
       }
 
-      const disabledHelpText = getDisabledHelpText(field, this.stage);
       return html`
         <chromedash-form-field
           name=${featureJSONKey}
           index=${index}
-          disabledReason="${disabledHelpText}"
+          disabledReason="${getDisabledHelpText(field, this.stage)}"
           .fieldValues=${this.fieldValues}
           @form-field-update="${this.handleFormFieldUpdate}"
         >

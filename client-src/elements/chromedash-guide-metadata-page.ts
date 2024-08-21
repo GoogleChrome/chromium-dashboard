@@ -176,13 +176,13 @@ export class ChromedashGuideMetadataPage extends LitElement {
       // Add the field to this component's stage before creating the field component.
       const index = this.fieldValues.length;
       this.fieldValues.push({name: featureJSONKey, touched: false, value});
-      const disabledHelpText = getDisabledHelpText(field);
+
       return html`
         <chromedash-form-field
           name=${field}
           index=${index}
           value=${value}
-          disabledReason="${disabledHelpText}"
+          disabledReason="${getDisabledHelpText(field)}"
           .fieldValues=${this.fieldValues}
           .feature=${formattedFeature}
           ?forEnterprise=${formattedFeature.is_enterprise_feature}

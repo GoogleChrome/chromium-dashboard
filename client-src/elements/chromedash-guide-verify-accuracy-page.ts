@@ -205,13 +205,12 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
         stageId: feStage.id,
       });
 
-      const disabledHelpText = getDisabledHelpText(field, feStage);
       return html`
         <chromedash-form-field
           name=${field}
           index=${index}
           value=${value}
-          disabledReason="${disabledHelpText}"
+          disabledReason="${getDisabledHelpText(field, feStage)}"
           .fieldValues=${this.fieldValues}
           .feature=${formattedFeature}
           ?forEnterprise=${formattedFeature.is_enterprise_feature}
