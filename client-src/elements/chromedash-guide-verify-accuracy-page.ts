@@ -330,11 +330,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
       : 'Accuracy last verified at time of creation.';
 
     return html`
-      <form
-        name="feature_form"
-        method="post"
-        action="/guide/verify_accuracy/${this.featureId}"
-      >
+      <form name="feature_form" method="post">
         <input type="hidden" name="stages" value="${stageIds}" />
         <input type="hidden" name="token" />
         <input
