@@ -43,6 +43,18 @@ export class ChromedashOTCreationPage extends LitElement {
           transform: translate(-50%, -50%);
           height: 300px;
         }
+        .warning-div {
+          background-color: #fbfba7;
+          border: 2px solid #ffe735;
+          border-radius: 10px;
+          padding: 4px;
+          margin-bottom: 32px;
+        }
+        .warning-text {
+          text-align: center;
+          color: #555555;
+          font-weight: 200;
+        }
       `,
     ];
   }
@@ -439,7 +451,16 @@ export class ChromedashOTCreationPage extends LitElement {
             </div>`
           : nothing}
         <chromedash-form-table ${ref(this.registerHandlers)}>
-          <section class="stage_form">${this.renderFields()}</section>
+          <section class="stage_form">
+            <div class="warning-div">
+              <h3 class="warning-text">
+                Please make sure this data is correct before submission! If you
+                are not sure about any information on this form, contact
+                <strong>origin-trials-support@google.com</strong>
+              </h3>
+            </div>
+            ${this.renderFields()}
+          </section>
         </chromedash-form-table>
         <div class="final_buttons">
           <input
