@@ -454,7 +454,7 @@ class APIHandlerTests(testing_config.CustomTestCase):
 
   @mock.patch('framework.basehandlers.APIHandler.do_get')
   def test_get__openapi_model(self, mock_do_get):
-    """get() should return a JSON response if the do_get() return value is a
+    """get() should return a JSON response if the do_get() return value is an
     OpenAPI model."""
     mock_do_get.return_value = FeatureLinksResponse(data='data',
                                                     has_stale_links=True)
