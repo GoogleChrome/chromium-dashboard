@@ -197,7 +197,9 @@ class APIHandler(BaseHandler):
     """Handle an incoming HTTP GET request."""
     headers = self.get_headers()
     handler_data = self.do_get(*args, **kwargs)
-    if isinstance(handler_data, Model):
+    # OpenAPI models have a to_dict attribute that should be used for
+    # converting to JSON.
+    if hasattr(handler_data, 'to_dict'):
         handler_data = handler_data.to_dict()
     return self.defensive_jsonify(handler_data), headers
 
