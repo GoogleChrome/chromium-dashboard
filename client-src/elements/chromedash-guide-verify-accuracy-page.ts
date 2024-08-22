@@ -1,6 +1,7 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
 import {
+  getDisabledHelpText,
   getStageValue,
   flattenSections,
   formatFeatureChanges,
@@ -209,6 +210,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
           name=${field}
           index=${index}
           value=${value}
+          disabledReason="${getDisabledHelpText(field, feStage)}"
           .fieldValues=${this.fieldValues}
           .feature=${formattedFeature}
           ?forEnterprise=${formattedFeature.is_enterprise_feature}

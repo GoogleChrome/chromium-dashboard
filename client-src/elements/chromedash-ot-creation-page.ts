@@ -11,6 +11,7 @@ import {ALL_FIELDS} from './form-field-specs.js';
 import {
   FieldInfo,
   formatFeatureChanges,
+  getDisabledHelpText,
   getStageValue,
   setupScrollToHash,
   showToastMessage,
@@ -394,9 +395,10 @@ export class ChromedashOTCreationPage extends LitElement {
           name=${fieldInfo.name}
           index=${i}
           value=${fieldInfo.value}
+          disabledReason="${getDisabledHelpText(fieldInfo.name, this.stage)}"
           .checkMessage=${fieldInfo.checkMessage}
           .fieldValues=${this.fieldValues}
-          .shouldFadeIn=${shouldFadeIn}
+          ?shouldFadeIn=${shouldFadeIn}
           @form-field-update="${this.handleFormFieldUpdate}"
         >
         </chromedash-form-field>
