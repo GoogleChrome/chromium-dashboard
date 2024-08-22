@@ -63,6 +63,7 @@ def _get_strings_dict(fe: FeatureEntry) -> dict[str, list[str|None]]:
 
       'bug_url': [fe.bug_url],
       'launch_bug_url': [fe.launch_bug_url],
+      'shipping_year': [str(fe.shipping_year or '')],
 
       # TODO: impl_status_Chrome
       'flag_name': [fe.flag_name],
@@ -116,7 +117,6 @@ def _get_strings_dict(fe: FeatureEntry) -> dict[str, list[str|None]]:
 def get_strings(fe: FeatureEntry, field_name: str|None = None) -> list[str]:
   """Return a list of separate string values in the given feature entry."""
   strings_dict = _get_strings_dict(fe)
-
   if field_name and field_name in strings_dict:
     strings = strings_dict[field_name]
   else:

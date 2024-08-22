@@ -211,6 +211,7 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
     self.check_wrong_type('owner', [True])
     self.check_wrong_type('owner', [123])
     self.check_wrong_type('deleted', ['not a boolean'])
+    self.check_wrong_type('shipping_year', ['not an integer'])
     self.check_wrong_type('star_count', ['not an integer'])
     self.check_wrong_type('created.when', ['not a date'])
     self.check_wrong_type('owner', ['ok@example.com', True])
