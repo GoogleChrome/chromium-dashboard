@@ -49,8 +49,7 @@ class ComponentUsersAPI(basehandlers.APIHandler):
 
   @permissions.require_admin_site
   def do_put(self, **kwargs) -> tuple[dict, int]:
-    params = self.request.get_json(force=True)
-    component_users_request = ComponentUsersRequest.from_dict(params)
+    component_users_request = ComponentUsersRequest.from_dict(self.request.get_json(force=True))
     self.__update_subscribers_list(True, user_id=kwargs.get('user_id', None),
                                    blink_component_id=kwargs.get('component_id', None),
                                    primary=component_users_request.owner)
