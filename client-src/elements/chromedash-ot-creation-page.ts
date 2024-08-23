@@ -313,7 +313,9 @@ export class ChromedashOTCreationPage extends LitElement {
       });
     }
     if (this.isDeprecationTrial) {
-      this.fieldValues.find(fv => fv.name === 'ot_webfeature_use_counter')!.touched = false;
+      this.fieldValues.find(
+        fv => fv.name === 'ot_webfeature_use_counter'
+      )!.touched = false;
     }
 
     const featureSubmitBody = formatFeatureChanges(
@@ -392,14 +394,16 @@ export class ChromedashOTCreationPage extends LitElement {
       if (
         fieldInfo.alwaysHidden ||
         (fieldInfo.isApprovalsField && !this.showApprovalsFields) ||
-        (fieldInfo.name === 'ot_webfeature_use_counter' && this.isDeprecationTrial)
+        (fieldInfo.name === 'ot_webfeature_use_counter' &&
+          this.isDeprecationTrial)
       ) {
         return nothing;
       }
       // Fade in transition for the approvals fields or use counter field
       // if they're being displayed.
-      const shouldFadeIn = (
-          fieldInfo.isApprovalsField || fieldInfo.name === 'ot_webfeature_use_counter');
+      const shouldFadeIn =
+        fieldInfo.isApprovalsField ||
+        fieldInfo.name === 'ot_webfeature_use_counter';
 
       return html`
         <chromedash-form-field
