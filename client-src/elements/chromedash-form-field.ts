@@ -38,6 +38,8 @@ export class ChromedashFormField extends LitElement {
   shouldFadeIn = false;
   @property({type: Boolean})
   forEnterprise = false;
+  @property({type: String})
+  disabledReason = '';
   @property({type: Number})
   stageId;
   @property({type: Number})
@@ -324,6 +326,8 @@ export class ChromedashFormField extends LitElement {
           size="small"
           autocomplete="off"
           .value=${fieldValue}
+          help-text="${this.disabledReason}"
+          ?disabled=${this.disabled || this.disabledReason || fieldDisabled}
           ?required=${this.fieldProps.required}
           @sl-change="${this.handleFieldUpdated}"
         >

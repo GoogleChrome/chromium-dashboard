@@ -26,6 +26,7 @@ from framework import users
 from internals import core_enums
 from internals.core_models import FeatureEntry, Stage
 from internals.review_models import (Gate, Vote)
+from internals.search_fulltext import (search_fulltext, FULLTEXT_FIELDS)
 
 T = TypeVar('T')
 QueryValue: TypeAlias = bool | int | str | datetime.datetime
@@ -106,6 +107,8 @@ def single_field_query_async(
   field_name = field_name.lower()
   if field_name in COMPLEX_FIELDS:
     return COMPLEX_FIELDS[field_name](operator, val_list, limit)
+  elif operator == ':' and field_name in FULLTEXT_FIELDS:
+    return search_fulltext(str(val_list[0]), field_name=field_name)
   elif field_name in QUERIABLE_FIELDS:
     # It is a query on a field in FeatureEntry.
     query = FeatureEntry.query()
@@ -135,10 +138,7 @@ def single_field_query_async(
 
   if not field._indexed:
     logging.warning('Field is not indexed in NDB %r', field_name)
-    # TODO(jrobbins): Implement a text_eq operator w/ post-processing
     return []
-
-  # TODO(jrobbins): Handle ":" operator as substrings for text fields.
 
   query = query.filter(build_filter(field, operator, val_list))
 
@@ -274,6 +274,7 @@ QUERIABLE_FIELDS: dict[str, Property] = {
     'launch_bug_url': FeatureEntry.launch_bug_url,
     'breaking_change': FeatureEntry.breaking_change,
     'enterprise_impact': FeatureEntry.enterprise_impact,
+    'shipping_year': FeatureEntry.shipping_year,
 
     'browsers.chrome.status': FeatureEntry.impl_status_chrome,
     'browsers.chrome.flag_name': FeatureEntry.flag_name,

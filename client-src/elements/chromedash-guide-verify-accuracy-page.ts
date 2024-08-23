@@ -1,6 +1,7 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
 import {
+  getDisabledHelpText,
   getStageValue,
   flattenSections,
   formatFeatureChanges,
@@ -209,6 +210,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
           name=${field}
           index=${index}
           value=${value}
+          disabledReason="${getDisabledHelpText(field, feStage)}"
           .fieldValues=${this.fieldValues}
           .feature=${formattedFeature}
           ?forEnterprise=${formattedFeature.is_enterprise_feature}
@@ -328,11 +330,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
       : 'Accuracy last verified at time of creation.';
 
     return html`
-      <form
-        name="feature_form"
-        method="post"
-        action="/guide/verify_accuracy/${this.featureId}"
-      >
+      <form name="feature_form" method="post">
         <input type="hidden" name="stages" value="${stageIds}" />
         <input type="hidden" name="token" />
         <input
