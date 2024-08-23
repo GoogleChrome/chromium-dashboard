@@ -12,6 +12,7 @@ src/models/BooleanFieldInfoValue.ts
 src/models/ComponentUsersRequest.ts
 src/models/ComponentsUser.ts
 src/models/ComponentsUsersResponse.ts
+src/models/CounterEntry.ts
 src/models/CreateAccountRequest.ts
 src/models/CreateOriginTrialRequest.ts
 src/models/DeleteAccount200Response.ts
@@ -21,6 +22,9 @@ src/models/ExternalReviewsResponse.ts
 src/models/FeatureLatency.ts
 src/models/FeatureLink.ts
 src/models/FieldInfo.ts
+src/models/FeatureLinksResponse.ts
+src/models/FeatureLinksSample.ts
+src/models/FeatureLinksSummaryResponse.ts
 src/models/GateLatency.ts
 src/models/GetDismissedCues400Response.ts
 src/models/GetIntentResponse.ts

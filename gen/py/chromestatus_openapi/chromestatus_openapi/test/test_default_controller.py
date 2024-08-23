@@ -12,6 +12,9 @@ from chromestatus_openapi.models.dismiss_cue_request import DismissCueRequest  #
 from chromestatus_openapi.models.error_message import ErrorMessage  # noqa: E501
 from chromestatus_openapi.models.external_reviews_response import ExternalReviewsResponse  # noqa: E501
 from chromestatus_openapi.models.feature_latency import FeatureLatency  # noqa: E501
+from chromestatus_openapi.models.feature_links_response import FeatureLinksResponse  # noqa: E501
+from chromestatus_openapi.models.feature_links_sample import FeatureLinksSample  # noqa: E501
+from chromestatus_openapi.models.feature_links_summary_response import FeatureLinksSummaryResponse  # noqa: E501
 from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismissedCues400Response  # noqa: E501
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
 from chromestatus_openapi.models.get_origin_trials_response import GetOriginTrialsResponse  # noqa: E501
@@ -143,6 +146,58 @@ class TestDefaultController(BaseTestCase):
         }
         response = self.client.open(
             '/api/v0/currentuser/cues',
+            method='GET',
+            headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_get_feature_links(self):
+        """Test case for get_feature_links
+
+        Get feature links by feature_id
+        """
+        query_string = [('feature_id', 56),
+                        ('update_stale_links', True)]
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/feature_links',
+            method='GET',
+            headers=headers,
+            query_string=query_string)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_get_feature_links_samples(self):
+        """Test case for get_feature_links_samples
+
+        Get feature links samples
+        """
+        query_string = [('domain', 'domain_example'),
+                        ('type', 'type_example'),
+                        ('is_error', True)]
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/feature_links_samples',
+            method='GET',
+            headers=headers,
+            query_string=query_string)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_get_feature_links_summary(self):
+        """Test case for get_feature_links_summary
+
+        Get feature links summary
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/feature_links_summary',
             method='GET',
             headers=headers)
         self.assert200(response,

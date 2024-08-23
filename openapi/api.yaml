@@ -421,6 +421,79 @@ paths:
                   $ref: '#/components/schemas/FeatureLatency'
         '400':
           description: One of the query parameters isn't a valid date in ISO YYYY-MM-DD format.
+  /feature_links:
+    get:
+      summary: Get feature links by feature_id
+      operationId: getFeatureLinks
+      parameters:
+        - name: feature_id
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: update_stale_links
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: return the links and its information to the client
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureLinksResponse'
+        '400':
+          description: missing feature_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: feature not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+  /feature_links_summary:
+    get:
+      summary: Get feature links summary
+      operationId: getFeatureLinksSummary
+      responses:
+        '200':
+          description: return the links and its information to the client
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureLinksSummaryResponse'
+  /feature_links_samples:
+    get:
+      summary: Get feature links samples
+      operationId: getFeatureLinksSamples
+      parameters:
+        - name: domain
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: is_error
+          in: query
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: return the sample links to the client
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureLinksSample'
 components:
   parameters:
     startAtParam:
@@ -973,6 +1046,56 @@ components:
     LinkPreviewSpecs:
       allOf:
         - $ref: '#/components/schemas/LinkPreviewOpenGraph'
+    FeatureLinksResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/LinkPreviewBase'
+        has_stale_links:
+          type: boolean
+    FeatureLinksSummaryResponse:
+      type: object
+      properties:
+        total_count:
+          type: integer
+        covered_count:
+          type: integer
+        uncovered_count:
+          type: integer
+        error_count:
+          type: integer
+        http_error_count:
+          type: integer
+        link_types:
+          type: array
+          items:
+            $ref: '#/components/schemas/CounterEntry'
+        uncovered_link_domains:
+          type: array
+          items:
+            $ref: '#/components/schemas/CounterEntry'
+        error_link_domains:
+          type: array
+          items:
+            $ref: '#/components/schemas/CounterEntry'
+    FeatureLinksSample:
+        allOf:
+          - $ref: '#/components/schemas/LinkPreviewBase'
+          - type: object
+            properties:
+              feature_ids:
+                type: array
+                items:
+                  type: integer
+    CounterEntry:
+      type: object
+      properties:
+        key:
+          type: string
+        count:
+          type: integer
     PermissionsResponse:
       type: object
       properties:

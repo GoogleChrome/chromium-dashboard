@@ -33,7 +33,7 @@ from internals import (
   search_queries,
 )
 from internals.core_models import FeatureEntry
-from internals.review_models import Gate
+from internals.review_models import (Gate, Vote)
 
 MAX_TERMS = 6
 DEFAULT_RESULTS_PER_PAGE = 100
@@ -87,9 +87,10 @@ def process_starred_me_query() -> list[int]:
 
 def process_recent_reviews_query() -> list[int] | Future:
   """Return features that were reviewed recently."""
-  query = Gate.query(
-      Gate.state.IN(Gate.FINAL_STATES))
-  future_feature_ids = query.fetch_async(projection=['feature_id'], limit=40)
+  query = Vote.query(Vote.state.IN(Gate.FINAL_STATES))
+  query = query.filter(
+      Vote.set_on > (datetime.datetime.now() - datetime.timedelta(days=90)))
+  future_feature_ids = query.fetch_async(projection=['feature_id'])
   return future_feature_ids
 
 

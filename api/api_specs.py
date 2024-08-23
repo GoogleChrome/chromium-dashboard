@@ -31,6 +31,7 @@ FEATURE_FIELD_DATA_TYPES: FIELD_INFO_DATA_TYPE = [
   ('availability_expectation', 'str'),
   ('blink_components', 'split_str'),
   ('enterprise_impact', 'int'),
+  ('shipping_year', 'int'),
   ('breaking_change', 'bool'),
   ('bug_url', 'link'),
   ('category', 'int'),

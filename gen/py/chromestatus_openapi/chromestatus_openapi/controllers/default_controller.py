@@ -13,6 +13,9 @@ from chromestatus_openapi.models.dismiss_cue_request import DismissCueRequest  #
 from chromestatus_openapi.models.error_message import ErrorMessage  # noqa: E501
 from chromestatus_openapi.models.external_reviews_response import ExternalReviewsResponse  # noqa: E501
 from chromestatus_openapi.models.feature_latency import FeatureLatency  # noqa: E501
+from chromestatus_openapi.models.feature_links_response import FeatureLinksResponse  # noqa: E501
+from chromestatus_openapi.models.feature_links_sample import FeatureLinksSample  # noqa: E501
+from chromestatus_openapi.models.feature_links_summary_response import FeatureLinksSummaryResponse  # noqa: E501
 from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismissedCues400Response  # noqa: E501
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
 from chromestatus_openapi.models.get_origin_trials_response import GetOriginTrialsResponse  # noqa: E501
@@ -128,6 +131,49 @@ def get_dismissed_cues():  # noqa: E501
 
 
     :rtype: Union[List[str], Tuple[List[str], int], Tuple[List[str], int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
+def get_feature_links(feature_id=None, update_stale_links=None):  # noqa: E501
+    """Get feature links by feature_id
+
+     # noqa: E501
+
+    :param feature_id: 
+    :type feature_id: int
+    :param update_stale_links: 
+    :type update_stale_links: bool
+
+    :rtype: Union[FeatureLinksResponse, Tuple[FeatureLinksResponse, int], Tuple[FeatureLinksResponse, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
+def get_feature_links_samples(domain=None, type=None, is_error=None):  # noqa: E501
+    """Get feature links samples
+
+     # noqa: E501
+
+    :param domain: 
+    :type domain: str
+    :param type: 
+    :type type: str
+    :param is_error: 
+    :type is_error: bool
+
+    :rtype: Union[FeatureLinksSample, Tuple[FeatureLinksSample, int], Tuple[FeatureLinksSample, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
+def get_feature_links_summary():  # noqa: E501
+    """Get feature links summary
+
+     # noqa: E501
+
+
+    :rtype: Union[FeatureLinksSummaryResponse, Tuple[FeatureLinksSummaryResponse, int], Tuple[FeatureLinksSummaryResponse, int, Dict[str, str]]
     """
     return 'do some magic!'
 

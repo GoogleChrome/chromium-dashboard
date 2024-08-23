@@ -18,6 +18,7 @@ chromestatus_openapi/models/boolean_field_info_value.py
 chromestatus_openapi/models/component_users_request.py
 chromestatus_openapi/models/components_user.py
 chromestatus_openapi/models/components_users_response.py
+chromestatus_openapi/models/counter_entry.py
 chromestatus_openapi/models/create_account_request.py
 chromestatus_openapi/models/create_origin_trial_request.py
 chromestatus_openapi/models/delete_account200_response.py
@@ -27,6 +28,9 @@ chromestatus_openapi/models/external_reviews_response.py
 chromestatus_openapi/models/feature_latency.py
 chromestatus_openapi/models/feature_link.py
 chromestatus_openapi/models/field_info.py
+chromestatus_openapi/models/feature_links_response.py
+chromestatus_openapi/models/feature_links_sample.py
+chromestatus_openapi/models/feature_links_summary_response.py
 chromestatus_openapi/models/gate_latency.py
 chromestatus_openapi/models/get_dismissed_cues400_response.py
 chromestatus_openapi/models/get_intent_response.py
