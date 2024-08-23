@@ -8,6 +8,9 @@ src/apis/index.ts
 src/index.ts
 src/models/AccountResponse.ts
 src/models/Action.ts
+src/models/Activity.ts
+src/models/Amendment.ts
+src/models/CommentsRequest.ts
 src/models/ComponentUsersRequest.ts
 src/models/ComponentsUser.ts
 src/models/ComponentsUsersResponse.ts
@@ -24,7 +27,10 @@ src/models/GateInfo.ts
 src/models/FeatureLinksResponse.ts
 src/models/FeatureLinksSample.ts
 src/models/FeatureLinksSummaryResponse.ts
+src/models/Gate.ts
+src/models/GateInfo.ts
 src/models/GateLatency.ts
+src/models/GetCommentsResponse.ts
 src/models/GetDismissedCues400Response.ts
 src/models/GetGateResponse.ts
 src/models/GetIntentResponse.ts
@@ -46,8 +52,9 @@ src/models/LinkPreviewWebkitBug.ts
 src/models/MessageResponse.ts
 src/models/OutstandingReview.ts
 src/models/OwnersAndSubscribersOfComponent.ts
-src/models/PostGateRequest.ts
+src/models/PatchCommentRequest.ts
 src/models/PermissionsResponse.ts
+src/models/PostGateRequest.ts
 src/models/PostIntentRequest.ts
 src/models/PostVoteRequest.ts
 src/models/Process.ts
@@ -56,8 +63,9 @@ src/models/ProgressItem.ts
 src/models/ReviewLatency.ts
 src/models/SpecMentor.ts
 src/models/SuccessMessage.ts
-src/models/Vote.ts
+src/models/TokenRefreshResponse.ts
 src/models/UserPermissions.ts
+src/models/Vote.ts
 src/models/index.ts
 src/runtime.ts
 tsconfig.esm.json

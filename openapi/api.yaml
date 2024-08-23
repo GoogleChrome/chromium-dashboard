@@ -202,6 +202,118 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorMessage'
+  /features/<int:feature_id>/approvals/comments:
+    parameters:
+          - name: feature_id
+            in: path
+            required: true
+            schema:
+              type: integer
+    get:
+      summary: Get all comments for a given feature
+      operationId: getFeatureComments
+      responses:
+        '200':
+          description: List of comments for the feature.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCommentsResponse'
+    post:
+      summary: Add a comment to a feature
+      operationId: addFeatureComment
+      requestBody:
+        description: Add a review commend and possible set a approval value
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentsRequest'
+      responses:
+        '200':
+          description: Comment added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '403':
+          description: User is not allowed to comment on this feature
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+    patch:
+      summary: Update a comment on a feature
+      operationId: updateFeatureComment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchCommentRequest'
+      responses:
+        '200':
+          description: Comment updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '403':
+          description: User is not allowed to update this comment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+  /features/<int:feature_id>/approvals/<int:gate_id>/comments:
+    parameters:
+          - name: feature_id
+            in: path
+            required: true
+            schema:
+              type: integer
+          - name: gate_id
+            in: path
+            required: true
+            schema:
+              type: integer
+    get:
+      summary: Get all comments for a given gate
+      operationId: getGateComments
+      responses:
+        '200':
+          description: List of comments for the gate.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Activity'
+    post:
+      summary: Add a comment to a specific gate
+      operationId: addGateComment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentsRequest'
+      responses:
+        '200':
+          description: Comment added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '403':
+          description: User is not allowed to comment on this gate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Gate not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
   /accounts:
     post:
       summary: Create a new account
@@ -382,6 +494,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SuccessMessage'
+  /currentuser/token:
+    post:
+      summary: Refresh the XSRF token
+      operationId: refreshToken
+      responses:
+        '200':
+          description: Successfully refreshed the token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefreshResponse'
   /external_reviews/{review_group}:
     get:
       summary: List features whose external reviews are incomplete
@@ -825,6 +948,75 @@ components:
           type: integer
           default: 5
           description: DEFAULT_SLO_LIMIT is 5 in approval_defs.py
+    Amendment:
+      type: object
+      properties:
+        field_name:
+          type: string
+        old_value:
+          type: string
+        new_value:
+          type: string
+      required:
+        - field_name
+        - old_value
+        - new_value
+    Activity:
+      type: object
+      properties:
+        comment_id:
+          type: integer
+        feature_id:
+          type: integer
+        gate_id:
+          type: integer
+          nullable: true
+        created:
+          type: string
+        author:
+          type: string
+        content:
+          type: string
+        deleted_by:
+          type: string
+          nullable: true
+        amendments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Amendment'
+      required:
+        - comment_id
+        - feature_id
+        - created
+        - author
+        - content
+    CommentsRequest:
+      type: object
+      properties:
+        comment:
+          type: string
+        postToThreadType:
+          type: string
+          nullable: true
+    GetCommentsResponse:
+      type: object
+      properties:
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Activity'
+    PatchCommentRequest:
+      type: object
+      properties:
+        commentId:
+          type: integer
+          description: The ID of the comment to be updated
+        isUndelete:
+          type: boolean
+          description: Indicates whether to undelete (true) or delete (false) the comment
+      required:
+        - commentId
+        - isUndelete
     CreateAccountRequest:
       type: object
       properties:
@@ -1256,6 +1448,13 @@ components:
             - progress-checkmarks
       required:
         - cue
+    TokenRefreshResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        token_expires_sec:
+          type: integer
     SuccessMessage:
       type: object
       properties:

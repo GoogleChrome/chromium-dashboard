@@ -4,6 +4,8 @@ from typing import Tuple
 from typing import Union
 
 from chromestatus_openapi.models.account_response import AccountResponse  # noqa: E501
+from chromestatus_openapi.models.activity import Activity  # noqa: E501
+from chromestatus_openapi.models.comments_request import CommentsRequest  # noqa: E501
 from chromestatus_openapi.models.component_users_request import ComponentUsersRequest  # noqa: E501
 from chromestatus_openapi.models.components_users_response import ComponentsUsersResponse  # noqa: E501
 from chromestatus_openapi.models.create_account_request import CreateAccountRequest  # noqa: E501
@@ -15,11 +17,13 @@ from chromestatus_openapi.models.feature_latency import FeatureLatency  # noqa: 
 from chromestatus_openapi.models.feature_links_response import FeatureLinksResponse  # noqa: E501
 from chromestatus_openapi.models.feature_links_sample import FeatureLinksSample  # noqa: E501
 from chromestatus_openapi.models.feature_links_summary_response import FeatureLinksSummaryResponse  # noqa: E501
+from chromestatus_openapi.models.get_comments_response import GetCommentsResponse  # noqa: E501
 from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismissedCues400Response  # noqa: E501
 from chromestatus_openapi.models.get_gate_response import GetGateResponse  # noqa: E501
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
 from chromestatus_openapi.models.get_votes_response import GetVotesResponse  # noqa: E501
 from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
+from chromestatus_openapi.models.patch_comment_request import PatchCommentRequest  # noqa: E501
 from chromestatus_openapi.models.permissions_response import PermissionsResponse  # noqa: E501
 from chromestatus_openapi.models.post_gate_request import PostGateRequest  # noqa: E501
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
@@ -28,7 +32,44 @@ from chromestatus_openapi.models.process import Process  # noqa: E501
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
 from chromestatus_openapi.models.success_message import SuccessMessage  # noqa: E501
+from chromestatus_openapi.models.token_refresh_response import TokenRefreshResponse  # noqa: E501
 from chromestatus_openapi import util
+
+
+def add_feature_comment(feature_id, comments_request=None):  # noqa: E501
+    """Add a comment to a feature
+
+     # noqa: E501
+
+    :param feature_id: 
+    :type feature_id: int
+    :param comments_request: Add a review commend and possible set a approval value
+    :type comments_request: dict | bytes
+
+    :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
+    """
+    if connexion.request.is_json:
+        comments_request = CommentsRequest.from_dict(connexion.request.get_json())  # noqa: E501
+    return 'do some magic!'
+
+
+def add_gate_comment(feature_id, gate_id, comments_request=None):  # noqa: E501
+    """Add a comment to a specific gate
+
+     # noqa: E501
+
+    :param feature_id: 
+    :type feature_id: int
+    :param gate_id: 
+    :type gate_id: int
+    :param comments_request: 
+    :type comments_request: dict | bytes
+
+    :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
+    """
+    if connexion.request.is_json:
+        comments_request = CommentsRequest.from_dict(connexion.request.get_json())  # noqa: E501
+    return 'do some magic!'
 
 
 def add_user_to_component(component_id, user_id, component_users_request=None):  # noqa: E501
@@ -119,6 +160,19 @@ def get_dismissed_cues():  # noqa: E501
     return 'do some magic!'
 
 
+def get_feature_comments(feature_id):  # noqa: E501
+    """Get all comments for a given feature
+
+     # noqa: E501
+
+    :param feature_id: 
+    :type feature_id: int
+
+    :rtype: Union[GetCommentsResponse, Tuple[GetCommentsResponse, int], Tuple[GetCommentsResponse, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
 def get_feature_links(feature_id=None, update_stale_links=None):  # noqa: E501
     """Get feature links by feature_id
 
@@ -158,6 +212,21 @@ def get_feature_links_summary():  # noqa: E501
 
 
     :rtype: Union[FeatureLinksSummaryResponse, Tuple[FeatureLinksSummaryResponse, int], Tuple[FeatureLinksSummaryResponse, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
+def get_gate_comments(feature_id, gate_id):  # noqa: E501
+    """Get all comments for a given gate
+
+     # noqa: E501
+
+    :param feature_id: 
+    :type feature_id: int
+    :param gate_id: 
+    :type gate_id: int
+
+    :rtype: Union[List[Activity], Tuple[List[Activity], int], Tuple[List[Activity], int, Dict[str, str]]
     """
     return 'do some magic!'
 
@@ -357,6 +426,17 @@ def post_intent_to_blink_dev(feature_id, stage_id, gate_id, post_intent_request=
     return 'do some magic!'
 
 
+def refresh_token():  # noqa: E501
+    """Refresh the XSRF token
+
+     # noqa: E501
+
+
+    :rtype: Union[TokenRefreshResponse, Tuple[TokenRefreshResponse, int], Tuple[TokenRefreshResponse, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
 def remove_user_from_component(component_id, user_id, component_users_request=None):  # noqa: E501
     """Remove a user from a component
 
@@ -411,4 +491,21 @@ def set_vote_for_feature_and_gate(feature_id, gate_id, post_vote_request):  # no
     """
     if connexion.request.is_json:
         post_vote_request = PostVoteRequest.from_dict(connexion.request.get_json())  # noqa: E501
+    return 'do some magic!'
+
+
+def update_feature_comment(feature_id, patch_comment_request):  # noqa: E501
+    """Update a comment on a feature
+
+     # noqa: E501
+
+    :param feature_id: 
+    :type feature_id: int
+    :param patch_comment_request: 
+    :type patch_comment_request: dict | bytes
+
+    :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
+    """
+    if connexion.request.is_json:
+        patch_comment_request = PatchCommentRequest.from_dict(connexion.request.get_json())  # noqa: E501
     return 'do some magic!'
