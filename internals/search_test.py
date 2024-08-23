@@ -386,23 +386,35 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     mock_approvable_by.return_value = set({1, 2, 3})
     time_1 = datetime.datetime.now() - datetime.timedelta(days=4)
     time_2 = datetime.datetime.now()
-    Gate(
-        feature_id=self.featureentry_1.key.integer_id(), stage_id=1,
-        gate_type=1, state=Vote.NA,
-        requested_on=time_2).put()
-    Gate(
-        feature_id=self.featureentry_2.key.integer_id(), stage_id=1,
-        gate_type=1, state=Vote.APPROVED,
-        requested_on=time_1).put()
+    time_3 = datetime.datetime.now() - datetime.timedelta(days=100)
+    fe_1_id = self.featureentry_1.key.integer_id()
+    fe_2_id = self.featureentry_2.key.integer_id()
+    gate_1 = Gate(
+        feature_id=fe_1_id, stage_id=1, gate_type=1, state=Vote.NA,
+        requested_on=time_2)
+    gate_1.put()
+    vote_1_1 = Vote(
+        feature_id=fe_1_id, gate_id=gate_1.key.integer_id(),
+        state=Vote.NA, set_on=time_2, set_by='reviewer@example.com')
+    vote_1_1.put()
+    gate_2 = Gate(
+        feature_id=fe_2_id, stage_id=1, gate_type=1, state=Vote.APPROVED,
+        requested_on=time_1)
+    gate_2.put()
+    vote_2_1 = Vote(
+        feature_id=fe_2_id, gate_id=gate_2.key.integer_id(),
+        state=Vote.APPROVED, set_on=time_1, set_by='reviewer@example.com')
+    vote_2_1.put()
+    vote_2_2 = Vote(
+        feature_id=fe_2_id, gate_id=gate_2.key.integer_id(),
+        state=Vote.APPROVED, set_on=time_3, set_by='old@example.com')
+    vote_2_2.put()
 
     future = search.process_recent_reviews_query()
     feature_ids = search._resolve_promise_to_id_list(future)
 
-    self.assertEqual(2, len(feature_ids))
-    self.assertEqual(
-        feature_ids[0], self.featureentry_1.key.integer_id())  # Most recent
-    self.assertEqual(
-        feature_ids[1], self.featureentry_2.key.integer_id())
+    # Note: vote_2_2 does not contribute to the list because it is too old.
+    self.assertEqual([fe_1_id, fe_2_id], feature_ids)
 
   def test_sort_by_total_order__empty(self):
     """Sorting an empty list works."""

@@ -22,9 +22,10 @@ from google.cloud import ndb  # type: ignore
 import werkzeug.exceptions
 
 from api import stages_api
-from internals.user_models import AppUser
+from internals.core_enums import OT_READY_FOR_CREATION
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate
+from internals.user_models import AppUser
 
 test_app = flask.Flask(__name__)
 
@@ -564,6 +565,55 @@ class StagesAPITest(testing_config.CustomTestCase):
       actual = self.handler.do_patch(stage_id=10)
 
     self.assertEqual(actual, 'fake response')
+
+  @mock.patch('flask.abort')
+  def test_patch__ot_milestones_during_creation(self, mock_abort):
+    """Raises 400 if OT start milestone is updated during OT creation process.
+    """
+    testing_config.sign_in('feature_owner@example.com', 123)
+    json = {
+      'id': 10,
+      'desktop_first': {
+        'form_field_name': 'ot_milestone_desktop_start',
+        'value': 200,
+      },
+    }
+
+    # OT is flagged for automated creation process.
+    self.stage_1.ot_setup_status = OT_READY_FOR_CREATION
+    self.stage_1.put()
+    mock_abort.side_effect = werkzeug.exceptions.BadRequest
+    with test_app.test_request_context(
+        f'{self.request_path}1/stages/10', json=json):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.do_patch(feature_id=1, stage_id=10)
+    mock_abort.assert_called_once_with(
+        400,
+        description='Cannot edit OT milestones while creation is in progress.')
+
+  @mock.patch('flask.abort')
+  def test_patch__ot_end_milestone_during_creation(self, mock_abort):
+    """Raises 400 if OT end milestone is updated during OT creation process."""
+    testing_config.sign_in('feature_owner@example.com', 123)
+    json = {
+      'id': 10,
+      'desktop_last': {
+        'form_field_name': 'ot_milestone_desktop_end',
+        'value': 206,
+      },
+    }
+
+    # OT is flagged for automated creation process.
+    self.stage_1.ot_setup_status = OT_READY_FOR_CREATION
+    self.stage_1.put()
+    mock_abort.side_effect = werkzeug.exceptions.BadRequest
+    with test_app.test_request_context(
+        f'{self.request_path}1/stages/10', json=json):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.do_patch(feature_id=1, stage_id=10)
+    mock_abort.assert_called_once_with(
+        400,
+        description='Cannot edit OT milestones while creation is in progress.')
 
   def test_patch__valid(self):
     """A valid PATCH request should update an existing stage."""

@@ -4,6 +4,8 @@ from typing import Tuple
 from typing import Union
 
 from chromestatus_openapi.models.account_response import AccountResponse  # noqa: E501
+from chromestatus_openapi.models.activity import Activity  # noqa: E501
+from chromestatus_openapi.models.comments_request import CommentsRequest  # noqa: E501
 from chromestatus_openapi.models.component_users_request import ComponentUsersRequest  # noqa: E501
 from chromestatus_openapi.models.components_users_response import ComponentsUsersResponse  # noqa: E501
 from chromestatus_openapi.models.create_account_request import CreateAccountRequest  # noqa: E501
@@ -12,16 +14,59 @@ from chromestatus_openapi.models.dismiss_cue_request import DismissCueRequest  #
 from chromestatus_openapi.models.error_message import ErrorMessage  # noqa: E501
 from chromestatus_openapi.models.external_reviews_response import ExternalReviewsResponse  # noqa: E501
 from chromestatus_openapi.models.feature_latency import FeatureLatency  # noqa: E501
+from chromestatus_openapi.models.feature_links_response import FeatureLinksResponse  # noqa: E501
+from chromestatus_openapi.models.feature_links_sample import FeatureLinksSample  # noqa: E501
+from chromestatus_openapi.models.feature_links_summary_response import FeatureLinksSummaryResponse  # noqa: E501
+from chromestatus_openapi.models.get_comments_response import GetCommentsResponse  # noqa: E501
 from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismissedCues400Response  # noqa: E501
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
 from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
+from chromestatus_openapi.models.patch_comment_request import PatchCommentRequest  # noqa: E501
+from chromestatus_openapi.models.permissions_response import PermissionsResponse  # noqa: E501
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
 from chromestatus_openapi.models.reject_unneeded_get_request import RejectUnneededGetRequest  # noqa: E501
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
 from chromestatus_openapi.models.sign_in_request import SignInRequest  # noqa: E501
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
 from chromestatus_openapi.models.success_message import SuccessMessage  # noqa: E501
+from chromestatus_openapi.models.token_refresh_response import TokenRefreshResponse  # noqa: E501
 from chromestatus_openapi import util
+
+
+def add_feature_comment(feature_id, comments_request=None):  # noqa: E501
+    """Add a comment to a feature
+
+     # noqa: E501
+
+    :param feature_id:
+    :type feature_id: int
+    :param comments_request: Add a review commend and possible set a approval value
+    :type comments_request: dict | bytes
+
+    :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
+    """
+    if connexion.request.is_json:
+        comments_request = CommentsRequest.from_dict(connexion.request.get_json())  # noqa: E501
+    return 'do some magic!'
+
+
+def add_gate_comment(feature_id, gate_id, comments_request=None):  # noqa: E501
+    """Add a comment to a specific gate
+
+     # noqa: E501
+
+    :param feature_id:
+    :type feature_id: int
+    :param gate_id:
+    :type gate_id: int
+    :param comments_request:
+    :type comments_request: dict | bytes
+
+    :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
+    """
+    if connexion.request.is_json:
+        comments_request = CommentsRequest.from_dict(connexion.request.get_json())  # noqa: E501
+    return 'do some magic!'
 
 
 def add_user_to_component(component_id, user_id, component_users_request=None):  # noqa: E501
@@ -33,7 +78,7 @@ def add_user_to_component(component_id, user_id, component_users_request=None): 
     :type component_id: int
     :param user_id: User ID
     :type user_id: int
-    :param component_users_request: 
+    :param component_users_request:
     :type component_users_request: dict | bytes
 
     :rtype: Union[None, Tuple[None, int], Tuple[None, int, Dict[str, str]]
@@ -48,7 +93,7 @@ def authenticate_user(sign_in_request):  # noqa: E501
 
      # noqa: E501
 
-    :param sign_in_request: 
+    :param sign_in_request:
     :type sign_in_request: dict | bytes
 
     :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
@@ -63,7 +108,7 @@ def create_account(create_account_request=None):  # noqa: E501
 
      # noqa: E501
 
-    :param create_account_request: 
+    :param create_account_request:
     :type create_account_request: dict | bytes
 
     :rtype: Union[AccountResponse, Tuple[AccountResponse, int], Tuple[AccountResponse, int, Dict[str, str]]
@@ -91,7 +136,7 @@ def dismiss_cue(dismiss_cue_request):  # noqa: E501
 
      # noqa: E501
 
-    :param dismiss_cue_request: 
+    :param dismiss_cue_request:
     :type dismiss_cue_request: dict | bytes
 
     :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
@@ -108,6 +153,77 @@ def get_dismissed_cues():  # noqa: E501
 
 
     :rtype: Union[List[str], Tuple[List[str], int], Tuple[List[str], int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
+def get_feature_comments(feature_id):  # noqa: E501
+    """Get all comments for a given feature
+
+     # noqa: E501
+
+    :param feature_id:
+    :type feature_id: int
+
+    :rtype: Union[GetCommentsResponse, Tuple[GetCommentsResponse, int], Tuple[GetCommentsResponse, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
+def get_feature_links(feature_id=None, update_stale_links=None):  # noqa: E501
+    """Get feature links by feature_id
+
+     # noqa: E501
+
+    :param feature_id:
+    :type feature_id: int
+    :param update_stale_links:
+    :type update_stale_links: bool
+
+    :rtype: Union[FeatureLinksResponse, Tuple[FeatureLinksResponse, int], Tuple[FeatureLinksResponse, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
+def get_feature_links_samples(domain=None, type=None, is_error=None):  # noqa: E501
+    """Get feature links samples
+
+     # noqa: E501
+
+    :param domain:
+    :type domain: str
+    :param type:
+    :type type: str
+    :param is_error:
+    :type is_error: bool
+
+    :rtype: Union[FeatureLinksSample, Tuple[FeatureLinksSample, int], Tuple[FeatureLinksSample, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
+def get_feature_links_summary():  # noqa: E501
+    """Get feature links summary
+
+     # noqa: E501
+
+
+    :rtype: Union[FeatureLinksSummaryResponse, Tuple[FeatureLinksSummaryResponse, int], Tuple[FeatureLinksSummaryResponse, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
+def get_gate_comments(feature_id, gate_id):  # noqa: E501
+    """Get all comments for a given gate
+
+     # noqa: E501
+
+    :param feature_id:
+    :type feature_id: int
+    :param gate_id:
+    :type gate_id: int
+
+    :rtype: Union[List[Activity], Tuple[List[Activity], int], Tuple[List[Activity], int, Dict[str, str]]
     """
     return 'do some magic!'
 
@@ -129,6 +245,19 @@ def get_intent_body(feature_id, stage_id, gate_id):  # noqa: E501
     return 'do some magic!'
 
 
+def get_user_permissions(return_paired_user=None):  # noqa: E501
+    """Get the permissions and email of the user
+
+     # noqa: E501
+
+    :param return_paired_user: If true, return the permissions of the paired user.
+    :type return_paired_user: bool
+
+    :rtype: Union[PermissionsResponse, Tuple[PermissionsResponse, int], Tuple[PermissionsResponse, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
 def list_component_users():  # noqa: E501
     """List all components and possible users
 
@@ -145,7 +274,7 @@ def list_external_reviews(review_group):  # noqa: E501
 
      # noqa: E501
 
-    :param review_group: Which review group to focus on:  * &#x60;tag&#x60; - The W3C TAG  * &#x60;gecko&#x60; - The rendering engine that powers Mozilla Firefox  * &#x60;webkit&#x60; - The rendering engine that powers Apple Safari 
+    :param review_group: Which review group to focus on:  * &#x60;tag&#x60; - The W3C TAG  * &#x60;gecko&#x60; - The rendering engine that powers Mozilla Firefox  * &#x60;webkit&#x60; - The rendering engine that powers Apple Safari
     :type review_group: str
 
     :rtype: Union[ExternalReviewsResponse, Tuple[ExternalReviewsResponse, int], Tuple[ExternalReviewsResponse, int, Dict[str, str]]
@@ -186,7 +315,7 @@ def list_spec_mentors(after=None):  # noqa: E501
 
      # noqa: E501
 
-    :param after: 
+    :param after:
     :type after: str
 
     :rtype: Union[List[SpecMentor], Tuple[List[SpecMentor], int], Tuple[List[SpecMentor], int, Dict[str, str]]
@@ -227,6 +356,17 @@ def post_intent_to_blink_dev(feature_id, stage_id, gate_id, post_intent_request=
     return 'do some magic!'
 
 
+def refresh_token():  # noqa: E501
+    """Refresh the XSRF token
+
+     # noqa: E501
+
+
+    :rtype: Union[List[ReviewLatency], Tuple[List[ReviewLatency], int], Tuple[List[ReviewLatency], int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
 def reject_get_requests_login():  # noqa: E501
     """reject unneeded GET request without triggering Error Reporting
 
@@ -246,7 +386,7 @@ def reject_get_requests_logout():  # noqa: E501
 
     :rtype: Union[None, Tuple[None, int], Tuple[None, int, Dict[str, str]]
     """
-    return 'do some magic!'
+    return 'do some magic!' 
 
 
 def remove_user_from_component(component_id, user_id, component_users_request=None):  # noqa: E501
@@ -258,11 +398,28 @@ def remove_user_from_component(component_id, user_id, component_users_request=No
     :type component_id: int
     :param user_id: User ID
     :type user_id: int
-    :param component_users_request: 
+    :param component_users_request:
     :type component_users_request: dict | bytes
 
     :rtype: Union[None, Tuple[None, int], Tuple[None, int, Dict[str, str]]
     """
     if connexion.request.is_json:
         component_users_request = ComponentUsersRequest.from_dict(connexion.request.get_json())  # noqa: E501
+    return 'do some magic!'
+
+
+def update_feature_comment(feature_id, patch_comment_request):  # noqa: E501
+    """Update a comment on a feature
+
+     # noqa: E501
+
+    :param feature_id:
+    :type feature_id: int
+    :param patch_comment_request:
+    :type patch_comment_request: dict | bytes
+
+    :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
+    """
+    if connexion.request.is_json:
+        patch_comment_request = PatchCommentRequest.from_dict(connexion.request.get_json())  # noqa: E501
     return 'do some magic!'
