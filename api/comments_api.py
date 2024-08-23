@@ -33,7 +33,7 @@ from internals import approval_defs, notifier, notifier_helpers, slo
 from internals.review_models import Activity, Amendment, Gate
 
 
-def amendment_to_json_dict(amendment: Amendment) -> AmendmentModel:
+def amendment_to_OAM(amendment: Amendment) -> AmendmentModel:
   return AmendmentModel(
       field_name = amendment.field_name,
       old_value = amendment.old_value.strip('[]'),
@@ -41,9 +41,9 @@ def amendment_to_json_dict(amendment: Amendment) -> AmendmentModel:
   )
 
 
-def activity_to_json_dict(comment: Activity) -> ActivityModel:
+def activity_to_OAM(comment: Activity) -> ActivityModel:
   amendments_json = [
-      amendment_to_json_dict(amnd) for amnd in comment.amendments
+      amendment_to_OAM(amnd) for amnd in comment.amendments
       if amnd.old_value != 'None' or amnd.new_value != '[]']
   return ActivityModel(
       comment_id = comment.key.id(),
@@ -80,7 +80,7 @@ class CommentsAPI(basehandlers.APIHandler):
     comments = list(filter(
       lambda c: self._should_show_comment(c, user_email, is_admin), comments))
 
-    dicts = [activity_to_json_dict(c) for c in comments]
+    dicts = [activity_to_OAM(c) for c in comments]
     return GetCommentsResponse(comments=dicts).to_dict()
 
   def do_post(self, **kwargs) -> dict[str, str]:
