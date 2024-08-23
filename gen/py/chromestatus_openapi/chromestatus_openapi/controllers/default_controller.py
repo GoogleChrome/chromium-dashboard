@@ -27,6 +27,7 @@ from chromestatus_openapi.models.post_intent_request import PostIntentRequest  #
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
 from chromestatus_openapi.models.success_message import SuccessMessage  # noqa: E501
+from chromestatus_openapi.models.token_refresh_response import TokenRefreshResponse  # noqa: E501
 from chromestatus_openapi import util
 
 
@@ -324,6 +325,17 @@ def post_intent_to_blink_dev(feature_id, stage_id, gate_id, post_intent_request=
     """
     if connexion.request.is_json:
         post_intent_request = PostIntentRequest.from_dict(connexion.request.get_json())  # noqa: E501
+    return 'do some magic!'
+
+
+def refresh_token():  # noqa: E501
+    """Refresh the XSRF token
+
+     # noqa: E501
+
+
+    :rtype: Union[TokenRefreshResponse, Tuple[TokenRefreshResponse, int], Tuple[TokenRefreshResponse, int, Dict[str, str]]
+    """
     return 'do some magic!'
 
 

@@ -307,6 +307,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SuccessMessage'
+  /currentuser/token:
+    post:
+      summary: Refresh the XSRF token
+      operationId: refreshToken
+      responses:
+        '200':
+          description: Successfully refreshed the token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefreshResponse'
   /external_reviews/{review_group}:
     get:
       summary: List features whose external reviews are incomplete
@@ -1028,6 +1039,13 @@ components:
             - progress-checkmarks
       required:
         - cue
+    TokenRefreshResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        token_expires_sec:
+          type: integer
     SuccessMessage:
       type: object
       properties:

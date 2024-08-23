@@ -57,6 +57,7 @@ chromestatus_openapi/models/post_intent_request.py
 chromestatus_openapi/models/review_latency.py
 chromestatus_openapi/models/spec_mentor.py
 chromestatus_openapi/models/success_message.py
+chromestatus_openapi/models/token_refresh_response.py
 chromestatus_openapi/models/user_permissions.py
 chromestatus_openapi/openapi/openapi.yaml
 chromestatus_openapi/test/__init__.py
