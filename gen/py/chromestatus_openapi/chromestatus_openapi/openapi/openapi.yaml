@@ -1568,17 +1568,11 @@ components:
       title: DismissCueRequest
       type: object
     TokenRefreshResponse:
-      example:
-        token_expires_sec: 0
-        token: token
       properties:
         token:
-          title: token
           type: string
         token_expires_sec:
-          title: token_expires_sec
           type: integer
-      title: TokenRefreshResponse
       type: object
     SuccessMessage:
       example:

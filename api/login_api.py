@@ -30,11 +30,14 @@ class LoginAPI(basehandlers.APIHandler):
     self.abort(405, valid_methods=['POST'])
 
   def do_post(self, **kwargs):
-    request = SignInRequest.from_dict(self.request.json)
-    token = request.credential
-    if not token:
-        raise werkzeug.exceptions.BadRequest(description="Missing required field 'credential'")
-    message = "Unable to Authenticate. Please sign in again."
+    try:
+        request = SignInRequest.from_dict(self.request.json)
+        token = request.credential
+        if not token:
+            raise werkzeug.exceptions.BadRequest(description="Missing required field 'credential'")
+        message = "Unable to Authenticate. Please sign in again."
+    except ValueError:
+        message = "Invalid Request"
 
     try:
       idinfo = google.oauth2.id_token.verify_oauth2_token(
