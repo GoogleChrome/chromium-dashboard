@@ -3,6 +3,8 @@ import unittest
 from flask import json
 
 from chromestatus_openapi.models.account_response import AccountResponse  # noqa: E501
+from chromestatus_openapi.models.activity import Activity  # noqa: E501
+from chromestatus_openapi.models.comments_request import CommentsRequest  # noqa: E501
 from chromestatus_openapi.models.component_users_request import ComponentUsersRequest  # noqa: E501
 from chromestatus_openapi.models.components_users_response import ComponentsUsersResponse  # noqa: E501
 from chromestatus_openapi.models.create_account_request import CreateAccountRequest  # noqa: E501
@@ -14,9 +16,11 @@ from chromestatus_openapi.models.feature_latency import FeatureLatency  # noqa: 
 from chromestatus_openapi.models.feature_links_response import FeatureLinksResponse  # noqa: E501
 from chromestatus_openapi.models.feature_links_sample import FeatureLinksSample  # noqa: E501
 from chromestatus_openapi.models.feature_links_summary_response import FeatureLinksSummaryResponse  # noqa: E501
+from chromestatus_openapi.models.get_comments_response import GetCommentsResponse  # noqa: E501
 from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismissedCues400Response  # noqa: E501
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
 from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
+from chromestatus_openapi.models.patch_comment_request import PatchCommentRequest  # noqa: E501
 from chromestatus_openapi.models.permissions_response import PermissionsResponse  # noqa: E501
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
@@ -27,6 +31,44 @@ from chromestatus_openapi.test import BaseTestCase
 
 class TestDefaultController(BaseTestCase):
     """DefaultController integration test stubs"""
+
+    def test_add_feature_comment(self):
+        """Test case for add_feature_comment
+
+        Add a comment to a feature
+        """
+        comments_request = {"postToThreadType":"postToThreadType","comment":"comment"}
+        headers = { 
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/features/<int:feature_id>/approvals/comments'.format(feature_id=56),
+            method='POST',
+            headers=headers,
+            data=json.dumps(comments_request),
+            content_type='application/json')
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_add_gate_comment(self):
+        """Test case for add_gate_comment
+
+        Add a comment to a specific gate
+        """
+        comments_request = {"postToThreadType":"postToThreadType","comment":"comment"}
+        headers = { 
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/features/<int:feature_id>/approvals/<int:gate_id>/comments'.format(feature_id=56, gate_id=56),
+            method='POST',
+            headers=headers,
+            data=json.dumps(comments_request),
+            content_type='application/json')
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
 
     def test_add_user_to_component(self):
         """Test case for add_user_to_component
@@ -115,6 +157,21 @@ class TestDefaultController(BaseTestCase):
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
+    def test_get_feature_comments(self):
+        """Test case for get_feature_comments
+
+        Get all comments for a given feature
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/features/<int:feature_id>/approvals/comments'.format(feature_id=56),
+            method='GET',
+            headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
     def test_get_feature_links(self):
         """Test case for get_feature_links
 
@@ -162,6 +219,21 @@ class TestDefaultController(BaseTestCase):
         }
         response = self.client.open(
             '/api/v0/feature_links_summary',
+            method='GET',
+            headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_get_gate_comments(self):
+        """Test case for get_gate_comments
+
+        Get all comments for a given gate
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/features/<int:feature_id>/approvals/<int:gate_id>/comments'.format(feature_id=56, gate_id=56),
             method='GET',
             headers=headers)
         self.assert200(response,
@@ -314,6 +386,25 @@ class TestDefaultController(BaseTestCase):
             method='DELETE',
             headers=headers,
             data=json.dumps(component_users_request),
+            content_type='application/json')
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_update_feature_comment(self):
+        """Test case for update_feature_comment
+
+        Update a comment on a feature
+        """
+        patch_comment_request = {"commentId":0,"isUndelete":True}
+        headers = { 
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/features/<int:feature_id>/approvals/comments'.format(feature_id=56),
+            method='PATCH',
+            headers=headers,
+            data=json.dumps(patch_comment_request),
             content_type='application/json')
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))

@@ -7,6 +7,9 @@ src/apis/DefaultApi.ts
 src/apis/index.ts
 src/index.ts
 src/models/AccountResponse.ts
+src/models/Activity.ts
+src/models/Amendment.ts
+src/models/CommentsRequest.ts
 src/models/ComponentUsersRequest.ts
 src/models/ComponentsUser.ts
 src/models/ComponentsUsersResponse.ts
@@ -22,6 +25,7 @@ src/models/FeatureLinksResponse.ts
 src/models/FeatureLinksSample.ts
 src/models/FeatureLinksSummaryResponse.ts
 src/models/GateLatency.ts
+src/models/GetCommentsResponse.ts
 src/models/GetDismissedCues400Response.ts
 src/models/GetIntentResponse.ts
 src/models/LinkPreview.ts
@@ -41,6 +45,7 @@ src/models/LinkPreviewWebkitBug.ts
 src/models/MessageResponse.ts
 src/models/OutstandingReview.ts
 src/models/OwnersAndSubscribersOfComponent.ts
+src/models/PatchCommentRequest.ts
 src/models/PermissionsResponse.ts
 src/models/PostIntentRequest.ts
 src/models/ReviewLatency.ts

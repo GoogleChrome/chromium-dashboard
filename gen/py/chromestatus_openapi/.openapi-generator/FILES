@@ -12,7 +12,10 @@ chromestatus_openapi/controllers/security_controller.py
 chromestatus_openapi/encoder.py
 chromestatus_openapi/models/__init__.py
 chromestatus_openapi/models/account_response.py
+chromestatus_openapi/models/activity.py
+chromestatus_openapi/models/amendment.py
 chromestatus_openapi/models/base_model.py
+chromestatus_openapi/models/comments_request.py
 chromestatus_openapi/models/component_users_request.py
 chromestatus_openapi/models/components_user.py
 chromestatus_openapi/models/components_users_response.py
@@ -28,6 +31,7 @@ chromestatus_openapi/models/feature_links_response.py
 chromestatus_openapi/models/feature_links_sample.py
 chromestatus_openapi/models/feature_links_summary_response.py
 chromestatus_openapi/models/gate_latency.py
+chromestatus_openapi/models/get_comments_response.py
 chromestatus_openapi/models/get_dismissed_cues400_response.py
 chromestatus_openapi/models/get_intent_response.py
 chromestatus_openapi/models/link_preview.py
@@ -47,6 +51,7 @@ chromestatus_openapi/models/link_preview_webkit_bug.py
 chromestatus_openapi/models/message_response.py
 chromestatus_openapi/models/outstanding_review.py
 chromestatus_openapi/models/owners_and_subscribers_of_component.py
+chromestatus_openapi/models/patch_comment_request.py
 chromestatus_openapi/models/permissions_response.py
 chromestatus_openapi/models/post_intent_request.py
 chromestatus_openapi/models/review_latency.py

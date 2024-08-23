@@ -12,14 +12,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import datetime
-import testing_config  # Must be imported before the module under test.
+from unittest import mock
 
 import flask
-from unittest import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
+from chromestatus_openapi.models import (
+  Amendment as AmendmentModel,
+  Activity as ActivityModel,
+)
 
+import testing_config  # Must be imported before the module under test.
 from api import comments_api
 from internals.core_models import FeatureEntry
 from internals.review_models import Activity, Amendment, Gate, Vote
@@ -34,16 +37,16 @@ class CommentsConvertersTest(testing_config.CustomTestCase):
   def test_amendment_to_json_dict(self):
     amnd = Amendment(
         field_name='summary', old_value='foo', new_value='bar')
-    expected = dict(field_name='summary', old_value='foo', new_value='bar')
-    actual = comments_api.amendment_to_json_dict(amnd)
+    expected = AmendmentModel(field_name='summary', old_value='foo', new_value='bar')
+    actual = comments_api.amendment_to_OAM(amnd)
     self.assertEqual(expected, actual)
 
   def test_amendment_to_json_dict__arrays(self):
     """Arrays are shown without the brackets."""
     amnd = Amendment(
         field_name='summary', old_value='[1, 2]', new_value='[1, 2, 3]')
-    expected = dict(field_name='summary', old_value='1, 2', new_value='1, 2, 3')
-    actual = comments_api.amendment_to_json_dict(amnd)
+    expected = AmendmentModel(field_name='summary', old_value='1, 2', new_value='1, 2, 3')
+    actual = comments_api.amendment_to_OAM(amnd)
     self.assertEqual(expected, actual)
 
   def test_activity_to_json_dict(self):
@@ -56,8 +59,8 @@ class CommentsConvertersTest(testing_config.CustomTestCase):
         id=1, feature_id=123, gate_id=456, created=created,
         author='author@example.com', content='hello',
         amendments=[amnd_1, amnd_2])
-    actual = comments_api.activity_to_json_dict(act)
-    expected = {
+    actual = comments_api.activity_to_OAM(act)
+    expected_dict = {
       'comment_id': 1,
       'feature_id': 123,
       'gate_id': 456,
@@ -71,6 +74,7 @@ class CommentsConvertersTest(testing_config.CustomTestCase):
           'new_value': 'bar',
       }],
     }
+    expected = ActivityModel.from_dict(expected_dict)
     self.assertEqual(expected, actual)
 
 
