@@ -1247,8 +1247,10 @@ components:
           type: string
         information:
           type: object
+          nullable: true
         http_error_code:
           type: integer
+          nullable: true
     LinkPreview:
       allOf:
         - $ref: '#/components/schemas/LinkPreviewBase'
