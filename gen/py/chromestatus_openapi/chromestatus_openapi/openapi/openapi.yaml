@@ -1982,8 +1982,6 @@ components:
           title: http_error_code
           type: integer
       required:
-      - http_error_code
-      - information
       - type
       - url
       title: LinkPreviewBase

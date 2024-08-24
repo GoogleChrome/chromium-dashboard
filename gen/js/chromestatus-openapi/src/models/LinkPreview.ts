@@ -44,13 +44,13 @@ export interface LinkPreview {
      * @type {object}
      * @memberof LinkPreview
      */
-    information: object | null;
+    information?: object;
     /**
      * 
      * @type {number}
      * @memberof LinkPreview
      */
-    http_error_code: number | null;
+    http_error_code?: number;
 }
 
 /**
@@ -59,8 +59,6 @@ export interface LinkPreview {
 export function instanceOfLinkPreview(value: object): value is LinkPreview {
     if (!('url' in value) || value['url'] === undefined) return false;
     if (!('type' in value) || value['type'] === undefined) return false;
-    if (!('information' in value) || value['information'] === undefined) return false;
-    if (!('http_error_code' in value) || value['http_error_code'] === undefined) return false;
     return true;
 }
 
@@ -102,8 +100,8 @@ export function LinkPreviewFromJSONTyped(json: any, ignoreDiscriminator: boolean
         
         'url': json['url'],
         'type': json['type'],
-        'information': json['information'],
-        'http_error_code': json['http_error_code'],
+        'information': json['information'] == null ? undefined : json['information'],
+        'http_error_code': json['http_error_code'] == null ? undefined : json['http_error_code'],
     };
 }
 

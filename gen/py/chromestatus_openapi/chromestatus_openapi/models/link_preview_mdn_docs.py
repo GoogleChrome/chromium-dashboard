@@ -143,7 +143,5 @@ class LinkPreviewMdnDocs(Model):
         :param http_error_code: The http_error_code of this LinkPreviewMdnDocs.
         :type http_error_code: int
         """
-        if http_error_code is None:
-            raise ValueError("Invalid value for `http_error_code`, must not be `None`")  # noqa: E501
 
         self._http_error_code = http_error_code

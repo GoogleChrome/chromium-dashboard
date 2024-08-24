@@ -1237,8 +1237,6 @@ components:
       required:
         - url
         - type
-        - information
-        - http_error_code
       properties:
         url:
           type: string

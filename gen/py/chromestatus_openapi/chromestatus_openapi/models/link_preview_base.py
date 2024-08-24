@@ -118,8 +118,6 @@ class LinkPreviewBase(Model):
         :param information: The information of this LinkPreviewBase.
         :type information: object
         """
-        if information is None:
-            raise ValueError("Invalid value for `information`, must not be `None`")  # noqa: E501
 
         self._information = information
 
@@ -141,7 +139,5 @@ class LinkPreviewBase(Model):
         :param http_error_code: The http_error_code of this LinkPreviewBase.
         :type http_error_code: int
         """
-        if http_error_code is None:
-            raise ValueError("Invalid value for `http_error_code`, must not be `None`")  # noqa: E501
 
         self._http_error_code = http_error_code

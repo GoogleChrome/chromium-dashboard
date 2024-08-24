@@ -49,7 +49,7 @@ export interface LinkPreviewGithubPullRequest {
      * @type {number}
      * @memberof LinkPreviewGithubPullRequest
      */
-    http_error_code: number | null;
+    http_error_code?: number;
 }
 
 /**
@@ -59,7 +59,6 @@ export function instanceOfLinkPreviewGithubPullRequest(value: object): value is 
     if (!('url' in value) || value['url'] === undefined) return false;
     if (!('type' in value) || value['type'] === undefined) return false;
     if (!('information' in value) || value['information'] === undefined) return false;
-    if (!('http_error_code' in value) || value['http_error_code'] === undefined) return false;
     return true;
 }
 
@@ -76,7 +75,7 @@ export function LinkPreviewGithubPullRequestFromJSONTyped(json: any, ignoreDiscr
         'url': json['url'],
         'type': json['type'],
         'information': LinkPreviewGithubIssueAllOfInformationFromJSON(json['information']),
-        'http_error_code': json['http_error_code'],
+        'http_error_code': json['http_error_code'] == null ? undefined : json['http_error_code'],
     };
 }
 
