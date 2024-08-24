@@ -32,9 +32,9 @@ class Gate(Model):
         :param state: The state of this Gate.  # noqa: E501
         :type state: int
         :param requested_on: The requested_on of this Gate.  # noqa: E501
-        :type requested_on: date
+        :type requested_on: datetime
         :param responded_on: The responded_on of this Gate.  # noqa: E501
-        :type responded_on: date
+        :type responded_on: datetime
         :param assignee_emails: The assignee_emails of this Gate.  # noqa: E501
         :type assignee_emails: List[str]
         :param next_action: The next_action of this Gate.  # noqa: E501
@@ -59,8 +59,8 @@ class Gate(Model):
             'gate_name': str,
             'escalation_email': str,
             'state': int,
-            'requested_on': date,
-            'responded_on': date,
+            'requested_on': datetime,
+            'responded_on': datetime,
             'assignee_emails': List[str],
             'next_action': str,
             'additional_review': bool,
@@ -288,43 +288,43 @@ class Gate(Model):
         self._state = state
 
     @property
-    def requested_on(self) -> date:
+    def requested_on(self) -> datetime:
         """Gets the requested_on of this Gate.
 
 
         :return: The requested_on of this Gate.
-        :rtype: date
+        :rtype: datetime
         """
         return self._requested_on
 
     @requested_on.setter
-    def requested_on(self, requested_on: date):
+    def requested_on(self, requested_on: datetime):
         """Sets the requested_on of this Gate.
 
 
         :param requested_on: The requested_on of this Gate.
-        :type requested_on: date
+        :type requested_on: datetime
         """
 
         self._requested_on = requested_on
 
     @property
-    def responded_on(self) -> date:
+    def responded_on(self) -> datetime:
         """Gets the responded_on of this Gate.
 
 
         :return: The responded_on of this Gate.
-        :rtype: date
+        :rtype: datetime
         """
         return self._responded_on
 
     @responded_on.setter
-    def responded_on(self, responded_on: date):
+    def responded_on(self, responded_on: datetime):
         """Sets the responded_on of this Gate.
 
 
         :param responded_on: The responded_on of this Gate.
-        :type responded_on: date
+        :type responded_on: datetime
         """
 
         self._responded_on = responded_on
