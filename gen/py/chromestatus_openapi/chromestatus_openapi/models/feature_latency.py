@@ -20,19 +20,19 @@ class FeatureLatency(Model):
         :param feature: The feature of this FeatureLatency.  # noqa: E501
         :type feature: FeatureLink
         :param entry_created_date: The entry_created_date of this FeatureLatency.  # noqa: E501
-        :type entry_created_date: datetime
+        :type entry_created_date: date
         :param shipped_milestone: The shipped_milestone of this FeatureLatency.  # noqa: E501
         :type shipped_milestone: int
         :param shipped_date: The shipped_date of this FeatureLatency.  # noqa: E501
-        :type shipped_date: datetime
+        :type shipped_date: date
         :param owner_emails: The owner_emails of this FeatureLatency.  # noqa: E501
         :type owner_emails: List[str]
         """
         self.openapi_types = {
             'feature': FeatureLink,
-            'entry_created_date': datetime,
+            'entry_created_date': date,
             'shipped_milestone': int,
-            'shipped_date': datetime,
+            'shipped_date': date,
             'owner_emails': List[str]
         }
 
@@ -85,22 +85,22 @@ class FeatureLatency(Model):
         self._feature = feature
 
     @property
-    def entry_created_date(self) -> datetime:
+    def entry_created_date(self) -> date:
         """Gets the entry_created_date of this FeatureLatency.
 
 
         :return: The entry_created_date of this FeatureLatency.
-        :rtype: datetime
+        :rtype: date
         """
         return self._entry_created_date
 
     @entry_created_date.setter
-    def entry_created_date(self, entry_created_date: datetime):
+    def entry_created_date(self, entry_created_date: date):
         """Sets the entry_created_date of this FeatureLatency.
 
 
         :param entry_created_date: The entry_created_date of this FeatureLatency.
-        :type entry_created_date: datetime
+        :type entry_created_date: date
         """
         if entry_created_date is None:
             raise ValueError("Invalid value for `entry_created_date`, must not be `None`")  # noqa: E501
@@ -131,22 +131,22 @@ class FeatureLatency(Model):
         self._shipped_milestone = shipped_milestone
 
     @property
-    def shipped_date(self) -> datetime:
+    def shipped_date(self) -> date:
         """Gets the shipped_date of this FeatureLatency.
 
 
         :return: The shipped_date of this FeatureLatency.
-        :rtype: datetime
+        :rtype: date
         """
         return self._shipped_date
 
     @shipped_date.setter
-    def shipped_date(self, shipped_date: datetime):
+    def shipped_date(self, shipped_date: date):
         """Sets the shipped_date of this FeatureLatency.
 
 
         :param shipped_date: The shipped_date of this FeatureLatency.
-        :type shipped_date: datetime
+        :type shipped_date: date
         """
         if shipped_date is None:
             raise ValueError("Invalid value for `shipped_date`, must not be `None`")  # noqa: E501

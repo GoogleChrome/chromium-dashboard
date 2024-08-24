@@ -1154,12 +1154,12 @@ components:
           $ref: '#/components/schemas/FeatureLink'
         entry_created_date:
           type: string
-          format: date-time
+          format: date
         shipped_milestone:
           type: integer
         shipped_date:
           type: string
-          format: date-time
+          format: date
         owner_emails:
           type: array
           items:

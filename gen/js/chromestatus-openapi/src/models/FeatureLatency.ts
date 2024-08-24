@@ -95,9 +95,9 @@ export function FeatureLatencyToJSON(value?: FeatureLatency | null): any {
     return {
         
         'feature': FeatureLinkToJSON(value['feature']),
-        'entry_created_date': ((value['entry_created_date']).toISOString()),
+        'entry_created_date': ((value['entry_created_date']).toISOString().substring(0,10)),
         'shipped_milestone': value['shipped_milestone'],
-        'shipped_date': ((value['shipped_date']).toISOString()),
+        'shipped_date': ((value['shipped_date']).toISOString().substring(0,10)),
         'owner_emails': value['owner_emails'],
     };
 }
