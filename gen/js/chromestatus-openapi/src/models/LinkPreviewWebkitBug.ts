@@ -49,7 +49,7 @@ export interface LinkPreviewWebkitBug {
      * @type {number}
      * @memberof LinkPreviewWebkitBug
      */
-    http_error_code: number;
+    http_error_code: number | null;
 }
 
 /**

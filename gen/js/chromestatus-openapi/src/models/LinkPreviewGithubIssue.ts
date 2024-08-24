@@ -49,7 +49,7 @@ export interface LinkPreviewGithubIssue {
      * @type {number}
      * @memberof LinkPreviewGithubIssue
      */
-    http_error_code: number;
+    http_error_code: number | null;
 }
 
 /**

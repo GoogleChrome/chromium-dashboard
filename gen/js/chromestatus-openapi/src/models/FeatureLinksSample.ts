@@ -36,13 +36,13 @@ export interface FeatureLinksSample {
      * @type {object}
      * @memberof FeatureLinksSample
      */
-    information: object;
+    information: object | null;
     /**
      * 
      * @type {number}
      * @memberof FeatureLinksSample
      */
-    http_error_code: number;
+    http_error_code: number | null;
     /**
      * 
      * @type {Array<number>}

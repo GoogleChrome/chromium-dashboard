@@ -36,13 +36,13 @@ export interface LinkPreviewBase {
      * @type {object}
      * @memberof LinkPreviewBase
      */
-    information: object;
+    information: object | null;
     /**
      * 
      * @type {number}
      * @memberof LinkPreviewBase
      */
-    http_error_code: number;
+    http_error_code: number | null;
 }
 
 /**

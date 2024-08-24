@@ -44,13 +44,13 @@ export interface LinkPreview {
      * @type {object}
      * @memberof LinkPreview
      */
-    information: object;
+    information: object | null;
     /**
      * 
      * @type {number}
      * @memberof LinkPreview
      */
-    http_error_code: number;
+    http_error_code: number | null;
 }
 
 /**

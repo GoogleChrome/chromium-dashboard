@@ -1974,9 +1974,11 @@ components:
           title: type
           type: string
         information:
+          nullable: true
           title: information
           type: object
         http_error_code:
+          nullable: true
           title: http_error_code
           type: integer
       required:

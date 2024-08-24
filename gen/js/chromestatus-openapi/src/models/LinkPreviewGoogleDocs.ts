@@ -49,7 +49,7 @@ export interface LinkPreviewGoogleDocs {
      * @type {number}
      * @memberof LinkPreviewGoogleDocs
      */
-    http_error_code: number;
+    http_error_code: number | null;
 }
 
 /**

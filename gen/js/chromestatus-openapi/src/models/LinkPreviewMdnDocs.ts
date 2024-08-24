@@ -49,7 +49,7 @@ export interface LinkPreviewMdnDocs {
      * @type {number}
      * @memberof LinkPreviewMdnDocs
      */
-    http_error_code: number;
+    http_error_code: number | null;
 }
 
 /**

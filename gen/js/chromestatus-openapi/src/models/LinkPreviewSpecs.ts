@@ -49,7 +49,7 @@ export interface LinkPreviewSpecs {
      * @type {number}
      * @memberof LinkPreviewSpecs
      */
-    http_error_code: number;
+    http_error_code: number | null;
 }
 
 /**

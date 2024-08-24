@@ -49,7 +49,7 @@ export interface LinkPreviewMozillaBug {
      * @type {number}
      * @memberof LinkPreviewMozillaBug
      */
-    http_error_code: number;
+    http_error_code: number | null;
 }
 
 /**

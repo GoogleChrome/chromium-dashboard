@@ -49,7 +49,7 @@ export interface LinkPreviewOpenGraph {
      * @type {number}
      * @memberof LinkPreviewOpenGraph
      */
-    http_error_code: number;
+    http_error_code: number | null;
 }
 
 /**
