@@ -826,10 +826,10 @@ components:
           type: integer
         requested_on:
           type: string
-          format: date
+          format: date-time
         responded_on:
           type: string
-          format: date
+          format: date-time
         assignee_emails:
           type: array
           items:
@@ -1154,12 +1154,12 @@ components:
           $ref: '#/components/schemas/FeatureLink'
         entry_created_date:
           type: string
-          format: date
+          format: date-time
         shipped_milestone:
           type: integer
         shipped_date:
           type: string
-          format: date
+          format: date-time
         owner_emails:
           type: array
           items:
@@ -1296,13 +1296,13 @@ components:
                   type: string
                 created_at:
                   type: string
-                  format: date
+                  format: date-time
                 updated_at:
                   type: string
-                  format: date
+                  format: date-time
                 closed_at:
                   type: string
-                  format: date
+                  format: date-time
                 labels:
                   type: array
                   items:

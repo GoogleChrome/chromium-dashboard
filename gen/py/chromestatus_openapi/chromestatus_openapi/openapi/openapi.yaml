@@ -1019,7 +1019,7 @@ components:
         stage_id: 1
         slo_initial_response: 2
         gate_name: gate_name
-        requested_on: 2000-01-23
+        requested_on: 2000-01-23T04:56:07.000+00:00
         team_name: team_name
         slo_initial_response_took: 7
         additional_review: true
@@ -1035,7 +1035,7 @@ components:
         possible_assignee_emails:
         - possible_assignee_emails
         - possible_assignee_emails
-        responded_on: 2000-01-23
+        responded_on: 2000-01-23T04:56:07.000+00:00
       properties:
         id:
           title: id
@@ -1063,11 +1063,11 @@ components:
           title: state
           type: integer
         requested_on:
-          format: date
+          format: date-time
           title: requested_on
           type: string
         responded_on:
-          format: date
+          format: date-time
           title: responded_on
           type: string
         assignee_emails:
@@ -1109,7 +1109,7 @@ components:
           stage_id: 1
           slo_initial_response: 2
           gate_name: gate_name
-          requested_on: 2000-01-23
+          requested_on: 2000-01-23T04:56:07.000+00:00
           team_name: team_name
           slo_initial_response_took: 7
           additional_review: true
@@ -1125,12 +1125,12 @@ components:
           possible_assignee_emails:
           - possible_assignee_emails
           - possible_assignee_emails
-          responded_on: 2000-01-23
+          responded_on: 2000-01-23T04:56:07.000+00:00
         - feature_id: 6
           stage_id: 1
           slo_initial_response: 2
           gate_name: gate_name
-          requested_on: 2000-01-23
+          requested_on: 2000-01-23T04:56:07.000+00:00
           team_name: team_name
           slo_initial_response_took: 7
           additional_review: true
@@ -1146,7 +1146,7 @@ components:
           possible_assignee_emails:
           - possible_assignee_emails
           - possible_assignee_emails
-          responded_on: 2000-01-23
+          responded_on: 2000-01-23T04:56:07.000+00:00
       properties:
         gates:
           items:
@@ -1820,21 +1820,21 @@ components:
         feature:
           name: WebGPU
           id: 5703707724349440
-        shipped_date: 2000-01-23
-        entry_created_date: 2000-01-23
+        shipped_date: 2000-01-23T04:56:07.000+00:00
+        entry_created_date: 2000-01-23T04:56:07.000+00:00
         shipped_milestone: 0
       properties:
         feature:
           $ref: '#/components/schemas/FeatureLink'
         entry_created_date:
-          format: date
+          format: date-time
           title: entry_created_date
           type: string
         shipped_milestone:
           title: shipped_milestone
           type: integer
         shipped_date:
-          format: date
+          format: date-time
           title: shipped_date
           type: string
         owner_emails:
@@ -2331,15 +2331,15 @@ components:
           title: assignee_login
           type: string
         created_at:
-          format: date
+          format: date-time
           title: created_at
           type: string
         updated_at:
-          format: date
+          format: date-time
           title: updated_at
           type: string
         closed_at:
-          format: date
+          format: date-time
           title: closed_at
           type: string
         labels:

@@ -30,11 +30,11 @@ class LinkPreviewGithubIssueAllOfInformation(Model):
         :param assignee_login: The assignee_login of this LinkPreviewGithubIssueAllOfInformation.  # noqa: E501
         :type assignee_login: str
         :param created_at: The created_at of this LinkPreviewGithubIssueAllOfInformation.  # noqa: E501
-        :type created_at: date
+        :type created_at: datetime
         :param updated_at: The updated_at of this LinkPreviewGithubIssueAllOfInformation.  # noqa: E501
-        :type updated_at: date
+        :type updated_at: datetime
         :param closed_at: The closed_at of this LinkPreviewGithubIssueAllOfInformation.  # noqa: E501
-        :type closed_at: date
+        :type closed_at: datetime
         :param labels: The labels of this LinkPreviewGithubIssueAllOfInformation.  # noqa: E501
         :type labels: List[str]
         """
@@ -46,9 +46,9 @@ class LinkPreviewGithubIssueAllOfInformation(Model):
             'state': str,
             'state_reason': str,
             'assignee_login': str,
-            'created_at': date,
-            'updated_at': date,
-            'closed_at': date,
+            'created_at': datetime,
+            'updated_at': datetime,
+            'closed_at': datetime,
             'labels': List[str]
         }
 
@@ -249,64 +249,64 @@ class LinkPreviewGithubIssueAllOfInformation(Model):
         self._assignee_login = assignee_login
 
     @property
-    def created_at(self) -> date:
+    def created_at(self) -> datetime:
         """Gets the created_at of this LinkPreviewGithubIssueAllOfInformation.
 
 
         :return: The created_at of this LinkPreviewGithubIssueAllOfInformation.
-        :rtype: date
+        :rtype: datetime
         """
         return self._created_at
 
     @created_at.setter
-    def created_at(self, created_at: date):
+    def created_at(self, created_at: datetime):
         """Sets the created_at of this LinkPreviewGithubIssueAllOfInformation.
 
 
         :param created_at: The created_at of this LinkPreviewGithubIssueAllOfInformation.
-        :type created_at: date
+        :type created_at: datetime
         """
 
         self._created_at = created_at
 
     @property
-    def updated_at(self) -> date:
+    def updated_at(self) -> datetime:
         """Gets the updated_at of this LinkPreviewGithubIssueAllOfInformation.
 
 
         :return: The updated_at of this LinkPreviewGithubIssueAllOfInformation.
-        :rtype: date
+        :rtype: datetime
         """
         return self._updated_at
 
     @updated_at.setter
-    def updated_at(self, updated_at: date):
+    def updated_at(self, updated_at: datetime):
         """Sets the updated_at of this LinkPreviewGithubIssueAllOfInformation.
 
 
         :param updated_at: The updated_at of this LinkPreviewGithubIssueAllOfInformation.
-        :type updated_at: date
+        :type updated_at: datetime
         """
 
         self._updated_at = updated_at
 
     @property
-    def closed_at(self) -> date:
+    def closed_at(self) -> datetime:
         """Gets the closed_at of this LinkPreviewGithubIssueAllOfInformation.
 
 
         :return: The closed_at of this LinkPreviewGithubIssueAllOfInformation.
-        :rtype: date
+        :rtype: datetime
         """
         return self._closed_at
 
     @closed_at.setter
-    def closed_at(self, closed_at: date):
+    def closed_at(self, closed_at: datetime):
         """Sets the closed_at of this LinkPreviewGithubIssueAllOfInformation.
 
 
         :param closed_at: The closed_at of this LinkPreviewGithubIssueAllOfInformation.
-        :type closed_at: date
+        :type closed_at: datetime
         """
 
         self._closed_at = closed_at

@@ -188,7 +188,7 @@ class APIHandler(BaseHandler):
 
   def defensive_jsonify(self, handler_data):
     """Return a Flask Response object with a JSON string prefixed with junk."""
-    body = json.dumps(handler_data)
+    body = json.dumps(handler_data, default=str)
     return flask.current_app.response_class(
         XSSI_PREFIX + body,
         mimetype=flask.current_app.json.mimetype)
@@ -200,7 +200,7 @@ class APIHandler(BaseHandler):
     # OpenAPI models have a to_dict attribute that should be used for
     # converting to JSON.
     if hasattr(handler_data, 'to_dict'):
-        handler_data = handler_data.to_dict()
+      handler_data = handler_data.to_dict()
     return self.defensive_jsonify(handler_data), headers
 
   def post(self, *args, **kwargs):
