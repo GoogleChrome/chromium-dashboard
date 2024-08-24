@@ -1237,6 +1237,7 @@ components:
       required:
         - url
         - type
+        - information
       properties:
         url:
           type: string
@@ -1357,7 +1358,7 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/LinkPreviewBase'
+            $ref: '#/components/schemas/LinkPreview'
         has_stale_links:
           type: boolean
     FeatureLinksSummaryResponse:

@@ -123,6 +123,8 @@ class FeatureLinksSample(Model):
         :param information: The information of this FeatureLinksSample.
         :type information: object
         """
+        if information is None:
+            raise ValueError("Invalid value for `information`, must not be `None`")  # noqa: E501
 
         self._information = information
 

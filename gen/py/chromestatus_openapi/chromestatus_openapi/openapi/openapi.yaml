@@ -1960,11 +1960,6 @@ components:
       title: FeatureLink
       type: object
     LinkPreviewBase:
-      example:
-        information: "{}"
-        type: type
-        http_error_code: 0
-        url: http://example.com/aeiou
       properties:
         url:
           format: url
@@ -1982,6 +1977,7 @@ components:
           title: http_error_code
           type: integer
       required:
+      - information
       - type
       - url
       title: LinkPreviewBase
@@ -2058,17 +2054,17 @@ components:
         data:
         - information: "{}"
           type: type
-          http_error_code: 0
+          http_error_code: 1
           url: http://example.com/aeiou
         - information: "{}"
           type: type
-          http_error_code: 0
+          http_error_code: 1
           url: http://example.com/aeiou
         has_stale_links: true
       properties:
         data:
           items:
-            $ref: '#/components/schemas/LinkPreviewBase'
+            $ref: '#/components/schemas/LinkPreview'
           title: data
           type: array
         has_stale_links:

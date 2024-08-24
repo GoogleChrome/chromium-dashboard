@@ -118,6 +118,8 @@ class LinkPreview(Model):
         :param information: The information of this LinkPreview.
         :type information: object
         """
+        if information is None:
+            raise ValueError("Invalid value for `information`, must not be `None`")  # noqa: E501
 
         self._information = information
 

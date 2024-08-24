@@ -36,7 +36,7 @@ export interface FeatureLinksSample {
      * @type {object}
      * @memberof FeatureLinksSample
      */
-    information?: object;
+    information: object | null;
     /**
      * 
      * @type {number}
@@ -57,6 +57,7 @@ export interface FeatureLinksSample {
 export function instanceOfFeatureLinksSample(value: object): value is FeatureLinksSample {
     if (!('url' in value) || value['url'] === undefined) return false;
     if (!('type' in value) || value['type'] === undefined) return false;
+    if (!('information' in value) || value['information'] === undefined) return false;
     return true;
 }
 
@@ -72,7 +73,7 @@ export function FeatureLinksSampleFromJSONTyped(json: any, ignoreDiscriminator: 
         
         'url': json['url'],
         'type': json['type'],
-        'information': json['information'] == null ? undefined : json['information'],
+        'information': json['information'],
         'http_error_code': json['http_error_code'] == null ? undefined : json['http_error_code'],
         'feature_ids': json['feature_ids'] == null ? undefined : json['feature_ids'],
     };
