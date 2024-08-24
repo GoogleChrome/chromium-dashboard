@@ -1977,7 +1977,6 @@ components:
           title: http_error_code
           type: integer
       required:
-      - information
       - type
       - url
       title: LinkPreviewBase
@@ -2008,8 +2007,6 @@ components:
       - properties:
           information:
             $ref: '#/components/schemas/LinkPreviewGithubIssue_allOf_information'
-        required:
-        - information
         type: object
       title: LinkPreviewGithubIssue
     LinkPreviewGithubPullRequest:
@@ -2021,8 +2018,6 @@ components:
       - properties:
           information:
             $ref: '#/components/schemas/LinkPreviewGithubMarkdown_allOf_information'
-        required:
-        - information
         type: object
     LinkPreviewOpenGraph:
       allOf:
@@ -2030,8 +2025,6 @@ components:
       - properties:
           information:
             $ref: '#/components/schemas/LinkPreviewOpenGraph_allOf_information'
-        required:
-        - information
         type: object
       title: LinkPreviewOpenGraph
     LinkPreviewMdnDocs:

@@ -43,7 +43,7 @@ export interface LinkPreviewGithubIssue {
      * @type {LinkPreviewGithubIssueAllOfInformation}
      * @memberof LinkPreviewGithubIssue
      */
-    information: LinkPreviewGithubIssueAllOfInformation;
+    information?: LinkPreviewGithubIssueAllOfInformation;
     /**
      * 
      * @type {number}
@@ -58,7 +58,6 @@ export interface LinkPreviewGithubIssue {
 export function instanceOfLinkPreviewGithubIssue(value: object): value is LinkPreviewGithubIssue {
     if (!('url' in value) || value['url'] === undefined) return false;
     if (!('type' in value) || value['type'] === undefined) return false;
-    if (!('information' in value) || value['information'] === undefined) return false;
     return true;
 }
 
@@ -74,7 +73,7 @@ export function LinkPreviewGithubIssueFromJSONTyped(json: any, ignoreDiscriminat
         
         'url': json['url'],
         'type': json['type'],
-        'information': LinkPreviewGithubIssueAllOfInformationFromJSON(json['information']),
+        'information': json['information'] == null ? undefined : LinkPreviewGithubIssueAllOfInformationFromJSON(json['information']),
         'http_error_code': json['http_error_code'] == null ? undefined : json['http_error_code'],
     };
 }

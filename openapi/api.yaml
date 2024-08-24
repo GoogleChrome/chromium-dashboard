@@ -1237,7 +1237,6 @@ components:
       required:
         - url
         - type
-        - information
       properties:
         url:
           type: string
@@ -1268,7 +1267,6 @@ components:
       allOf:
         - $ref: '#/components/schemas/LinkPreviewBase'
         - type: object
-          required: [information]
           properties:
             information:
               type: object
@@ -1315,7 +1313,6 @@ components:
       allOf:
         - $ref: '#/components/schemas/LinkPreviewBase'
         - type: object
-          required: [information]
           properties:
             information:
               type: object
@@ -1328,7 +1325,6 @@ components:
       allOf:
         - $ref: '#/components/schemas/LinkPreviewBase'
         - type: object
-          required: [information]
           properties:
             information:
               type: object

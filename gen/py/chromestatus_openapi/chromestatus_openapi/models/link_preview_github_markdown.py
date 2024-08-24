@@ -120,8 +120,6 @@ class LinkPreviewGithubMarkdown(Model):
         :param information: The information of this LinkPreviewGithubMarkdown.
         :type information: LinkPreviewGithubMarkdownAllOfInformation
         """
-        if information is None:
-            raise ValueError("Invalid value for `information`, must not be `None`")  # noqa: E501
 
         self._information = information
 

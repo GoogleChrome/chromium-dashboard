@@ -43,7 +43,7 @@ export interface LinkPreviewWebkitBug {
      * @type {LinkPreviewOpenGraphAllOfInformation}
      * @memberof LinkPreviewWebkitBug
      */
-    information: LinkPreviewOpenGraphAllOfInformation;
+    information?: LinkPreviewOpenGraphAllOfInformation;
     /**
      * 
      * @type {number}
@@ -58,7 +58,6 @@ export interface LinkPreviewWebkitBug {
 export function instanceOfLinkPreviewWebkitBug(value: object): value is LinkPreviewWebkitBug {
     if (!('url' in value) || value['url'] === undefined) return false;
     if (!('type' in value) || value['type'] === undefined) return false;
-    if (!('information' in value) || value['information'] === undefined) return false;
     return true;
 }
 
@@ -74,7 +73,7 @@ export function LinkPreviewWebkitBugFromJSONTyped(json: any, ignoreDiscriminator
         
         'url': json['url'],
         'type': json['type'],
-        'information': LinkPreviewOpenGraphAllOfInformationFromJSON(json['information']),
+        'information': json['information'] == null ? undefined : LinkPreviewOpenGraphAllOfInformationFromJSON(json['information']),
         'http_error_code': json['http_error_code'] == null ? undefined : json['http_error_code'],
     };
 }
