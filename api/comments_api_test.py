@@ -260,7 +260,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
     """Handler adds a comment only, does not require approval permission."""
     mock_get_approvers.return_value = []
     testing_config.sign_in('user2@chromium.org', 123567890)
-    params = {'comment': 'Congratulations'}
+    params = {'comment': 'Congratulations', 'postToThreadType': 0}
     with test_app.test_request_context(self.request_path, json=params):
       actual = self.handler.do_post(feature_id=self.feature_id,
           gate_id=self.gate_1_id)
@@ -281,7 +281,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
     """Outsiders cannot comment."""
     mock_get_approvers.return_value = []
     testing_config.sign_in('outsider@example.com', 123567890)
-    params = {'comment': 'Could be spam'}
+    params = {'comment': 'Could be spam', 'postToThreadType': 0}
     with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.do_post(
