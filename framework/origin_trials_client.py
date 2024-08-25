@@ -197,7 +197,13 @@ def _send_create_trial_request(
   return response_json['trial']['id'], None
 
 
-def _send_set_up_trial_request(trial_id: int, owners: list[str], contacts: list[str], api_key: str, access_token: str) -> str|None:
+def _send_set_up_trial_request(
+    trial_id: int,
+    owners: list[str],
+    contacts: list[str],
+    api_key: str,
+    access_token: str
+  ) -> str|None:
   """Send an origin trial setup request to the origin trials API.
   Returns:
     Any error text if there was an issue during the setup process.
@@ -238,6 +244,9 @@ def create_origin_trial(ot_stage: Stage) -> tuple[str|None, str|None]:
   key = secrets.get_ot_api_key()
   if key is None:
     return None, 'No API key found for origin trials API'
+  ot_support_emails = secrets.get_ot_support_emails()
+  if ot_support_emails is None:
+    return None, 'OT support emails not found'
 
   # Get a list of all OT @google.com contacts (ot_owner_email must be a google
   # contact).
@@ -257,8 +266,11 @@ def create_origin_trial(ot_stage: Stage) -> tuple[str|None, str|None]:
     return None, error_text
 
   error_text = _send_set_up_trial_request(
-      # TODO(DanielRyanSmith): Add owners contacts in subsequent PR.
-      origin_trial_id, [], unique_contacts, key, access_token)
+      origin_trial_id,
+      ot_support_emails.split(','),
+      unique_contacts,
+      key,
+      access_token)
 
   return str(origin_trial_id), error_text
 
