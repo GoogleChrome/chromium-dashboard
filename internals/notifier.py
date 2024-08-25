@@ -866,7 +866,7 @@ class OTExtensionApprovedHandler(basehandlers.FlaskHandler):
     return {
       'to': requester_email,
       'cc': [OT_SUPPORT_EMAIL],
-      'subject': ('Origin trial approved and ready to be initiated: '
+      'subject': ('Origin trial extension approved and ready to be initiated: '
                   f'{feature["name"]}'),
       'reply_to': None,
       'html': body,
