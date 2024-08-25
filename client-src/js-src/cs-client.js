@@ -18,8 +18,8 @@
  * @typedef {object} FeatureLink
  * @property {string} url
  * @property {string} type
- * @property {object} information - fields depend on type; see link_helpers.py
- * @property {number} http_error_code
+ * @property {object} [information] - fields depend on type; see link_helpers.py
+ * @property {number | null} [http_error_code]
  */
 
 /**

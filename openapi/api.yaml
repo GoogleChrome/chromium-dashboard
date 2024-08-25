@@ -1237,8 +1237,6 @@ components:
       required:
         - url
         - type
-        - information
-        - http_error_code
       properties:
         url:
           type: string
@@ -1247,8 +1245,10 @@ components:
           type: string
         information:
           type: object
+          nullable: true
         http_error_code:
           type: integer
+          nullable: true
     LinkPreview:
       allOf:
         - $ref: '#/components/schemas/LinkPreviewBase'
@@ -1267,7 +1267,6 @@ components:
       allOf:
         - $ref: '#/components/schemas/LinkPreviewBase'
         - type: object
-          required: [information]
           properties:
             information:
               type: object
@@ -1314,7 +1313,6 @@ components:
       allOf:
         - $ref: '#/components/schemas/LinkPreviewBase'
         - type: object
-          required: [information]
           properties:
             information:
               type: object
@@ -1327,7 +1325,6 @@ components:
       allOf:
         - $ref: '#/components/schemas/LinkPreviewBase'
         - type: object
-          required: [information]
           properties:
             information:
               type: object
@@ -1357,7 +1354,7 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/LinkPreviewBase'
+            $ref: '#/components/schemas/LinkPreview'
         has_stale_links:
           type: boolean
     FeatureLinksSummaryResponse:

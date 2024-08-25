@@ -120,8 +120,6 @@ class LinkPreviewWebkitBug(Model):
         :param information: The information of this LinkPreviewWebkitBug.
         :type information: LinkPreviewOpenGraphAllOfInformation
         """
-        if information is None:
-            raise ValueError("Invalid value for `information`, must not be `None`")  # noqa: E501
 
         self._information = information
 
@@ -143,7 +141,5 @@ class LinkPreviewWebkitBug(Model):
         :param http_error_code: The http_error_code of this LinkPreviewWebkitBug.
         :type http_error_code: int
         """
-        if http_error_code is None:
-            raise ValueError("Invalid value for `http_error_code`, must not be `None`")  # noqa: E501
 
         self._http_error_code = http_error_code

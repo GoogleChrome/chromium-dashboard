@@ -1960,11 +1960,6 @@ components:
       title: FeatureLink
       type: object
     LinkPreviewBase:
-      example:
-        information: "{}"
-        type: type
-        http_error_code: 0
-        url: http://example.com/aeiou
       properties:
         url:
           format: url
@@ -1974,14 +1969,14 @@ components:
           title: type
           type: string
         information:
+          nullable: true
           title: information
           type: object
         http_error_code:
+          nullable: true
           title: http_error_code
           type: integer
       required:
-      - http_error_code
-      - information
       - type
       - url
       title: LinkPreviewBase
@@ -2012,8 +2007,6 @@ components:
       - properties:
           information:
             $ref: '#/components/schemas/LinkPreviewGithubIssue_allOf_information'
-        required:
-        - information
         type: object
       title: LinkPreviewGithubIssue
     LinkPreviewGithubPullRequest:
@@ -2025,8 +2018,6 @@ components:
       - properties:
           information:
             $ref: '#/components/schemas/LinkPreviewGithubMarkdown_allOf_information'
-        required:
-        - information
         type: object
     LinkPreviewOpenGraph:
       allOf:
@@ -2034,8 +2025,6 @@ components:
       - properties:
           information:
             $ref: '#/components/schemas/LinkPreviewOpenGraph_allOf_information'
-        required:
-        - information
         type: object
       title: LinkPreviewOpenGraph
     LinkPreviewMdnDocs:
@@ -2058,17 +2047,17 @@ components:
         data:
         - information: "{}"
           type: type
-          http_error_code: 0
+          http_error_code: 1
           url: http://example.com/aeiou
         - information: "{}"
           type: type
-          http_error_code: 0
+          http_error_code: 1
           url: http://example.com/aeiou
         has_stale_links: true
       properties:
         data:
           items:
-            $ref: '#/components/schemas/LinkPreviewBase'
+            $ref: '#/components/schemas/LinkPreview'
           title: data
           type: array
         has_stale_links:
