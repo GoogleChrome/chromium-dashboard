@@ -15,6 +15,8 @@
 
 import logging
 
+from chromestatus_openapi.models import TokenRefreshResponse
+
 from framework import basehandlers
 from framework import xsrf
 from framework import users
@@ -41,9 +43,9 @@ class TokenRefreshAPI(basehandlers.APIHandler):
     """Refresh the session and return a new XSRF token for the current user."""
     user = self.get_current_user()
     users.refresh_user_session()
-    result = {
+    result = TokenRefreshResponse.from_dict({
         'token': xsrf.generate_token(user.email()),
         'token_expires_sec': xsrf.token_expires_sec(),
-        }
+        })
     self._update_last_visit_field(user.email())
-    return result
+    return result.to_dict()
