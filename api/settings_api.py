@@ -40,8 +40,8 @@ class SettingsAPI(basehandlers.APIHandler):
             f"Expected boolean for 'notify', got {type(new_notify).__name__}"
         )
 
-    request = PostSettingsRequest.from_dict(raw_data)
-    user_pref.notify_as_starrer = request.notify
+    settings_request = PostSettingsRequest.from_dict(raw_data)
+    user_pref.notify_as_starrer = settings_request.notify
     user_pref.put()
     # Callers don't use the JSON response for this API call.
     return SuccessMessage(message='Done').to_dict()

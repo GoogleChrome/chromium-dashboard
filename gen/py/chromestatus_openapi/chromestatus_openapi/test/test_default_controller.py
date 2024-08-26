@@ -46,7 +46,7 @@ class TestDefaultController(BaseTestCase):
         Add a comment to a feature
         """
         comments_request = {"postToThreadType":"postToThreadType","comment":"comment"}
-        headers = {
+        headers = { 
             'Accept': 'application/json',
             'Content-Type': 'application/json',
         }
@@ -65,7 +65,7 @@ class TestDefaultController(BaseTestCase):
         Add a comment to a specific gate
         """
         comments_request = {"postToThreadType":"postToThreadType","comment":"comment"}
-        headers = {
+        headers = { 
             'Accept': 'application/json',
             'Content-Type': 'application/json',
         }
@@ -84,7 +84,7 @@ class TestDefaultController(BaseTestCase):
         Add a user to a component
         """
         component_users_request = {"owner":True}
-        headers = {
+        headers = { 
             'Content-Type': 'application/json',
             'XsrfToken': 'special-key',
         }
@@ -102,7 +102,7 @@ class TestDefaultController(BaseTestCase):
 
         Add a full set of cross-functional gates to a stage.
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -118,7 +118,7 @@ class TestDefaultController(BaseTestCase):
         Create a new account
         """
         create_account_request = {"isSiteEditor":True,"isAdmin":True,"email":"email"}
-        headers = {
+        headers = { 
             'Accept': 'application/json',
             'Content-Type': 'application/json',
         }
@@ -136,7 +136,7 @@ class TestDefaultController(BaseTestCase):
 
         Delete an account
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -152,7 +152,7 @@ class TestDefaultController(BaseTestCase):
         Dismiss a cue card for the signed-in user
         """
         dismiss_cue_request = {"cue":"progress-checkmarks"}
-        headers = {
+        headers = { 
             'Accept': 'application/json',
             'Content-Type': 'application/json',
         }
@@ -170,7 +170,7 @@ class TestDefaultController(BaseTestCase):
 
         Get dismissed cues for the current user
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -185,7 +185,7 @@ class TestDefaultController(BaseTestCase):
 
         Get all comments for a given feature
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -202,7 +202,7 @@ class TestDefaultController(BaseTestCase):
         """
         query_string = [('feature_id', 56),
                         ('update_stale_links', True)]
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -221,7 +221,7 @@ class TestDefaultController(BaseTestCase):
         query_string = [('domain', 'domain_example'),
                         ('type', 'type_example'),
                         ('is_error', True)]
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -237,7 +237,7 @@ class TestDefaultController(BaseTestCase):
 
         Get feature links summary
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -252,7 +252,7 @@ class TestDefaultController(BaseTestCase):
 
         Get all comments for a given gate
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -267,7 +267,7 @@ class TestDefaultController(BaseTestCase):
 
         Get all gates for a feature
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -282,7 +282,7 @@ class TestDefaultController(BaseTestCase):
 
         Get the HTML body of an intent draft
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json:',
         }
         response = self.client.open(
@@ -297,7 +297,7 @@ class TestDefaultController(BaseTestCase):
 
         Get all pending gates
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -312,7 +312,7 @@ class TestDefaultController(BaseTestCase):
 
         Get the process for a feature
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -327,7 +327,7 @@ class TestDefaultController(BaseTestCase):
 
         Get the progress for a feature
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -343,7 +343,7 @@ class TestDefaultController(BaseTestCase):
         Get the permissions and email of the user
         """
         query_string = [('returnPairedUser', True)]
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -359,7 +359,7 @@ class TestDefaultController(BaseTestCase):
 
         Get user settings
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -374,7 +374,7 @@ class TestDefaultController(BaseTestCase):
 
         Get votes for a feature
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -389,7 +389,7 @@ class TestDefaultController(BaseTestCase):
 
         Get votes for a feature and gate
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -404,7 +404,7 @@ class TestDefaultController(BaseTestCase):
 
         List all components and possible users
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
             'XsrfToken': 'special-key',
         }
@@ -420,7 +420,7 @@ class TestDefaultController(BaseTestCase):
 
         List features whose external reviews are incomplete
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -437,7 +437,7 @@ class TestDefaultController(BaseTestCase):
         """
         query_string = [('startAt', '2013-10-20'),
                         ('endAt', '2013-10-20')]
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -453,7 +453,7 @@ class TestDefaultController(BaseTestCase):
 
         List recently reviewed features and their review latency
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -469,7 +469,7 @@ class TestDefaultController(BaseTestCase):
         List spec mentors and their activity
         """
         query_string = [('after', '2013-10-20')]
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -486,7 +486,7 @@ class TestDefaultController(BaseTestCase):
         Submit an intent to be posted on blink-dev
         """
         post_intent_request = {"intent_cc_emails":["intent_cc_emails","intent_cc_emails"],"gate_id":0}
-        headers = {
+        headers = { 
             'Accept': 'application/json',
             'Content-Type': 'application/json',
         }
@@ -504,7 +504,7 @@ class TestDefaultController(BaseTestCase):
 
         Refresh the XSRF token
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -520,7 +520,7 @@ class TestDefaultController(BaseTestCase):
         Remove a user from a component
         """
         component_users_request = {"owner":True}
-        headers = {
+        headers = { 
             'Content-Type': 'application/json',
             'XsrfToken': 'special-key',
         }
@@ -539,11 +539,11 @@ class TestDefaultController(BaseTestCase):
         Set the assignees for a gate.
         """
         post_gate_request = {"assignees":["assignees","assignees"]}
-        headers = {
+        headers = { 
             'Accept': 'application/json',
             'Content-Type': 'application/json',
         }
-        response = self.client.open( 
+        response = self.client.open(
             '/api/v0/features/{feature_id}/gates/{gate_id}'.format(feature_id=56, gate_id=56),
             method='POST',
             headers=headers,
@@ -558,7 +558,7 @@ class TestDefaultController(BaseTestCase):
         Set the user settings (currently only the notify_as_starrer)
         """
         post_settings_request = {"notify":True}
-        headers = {
+        headers = { 
             'Accept': 'application/json',
             'Content-Type': 'application/json',
         }
@@ -577,7 +577,7 @@ class TestDefaultController(BaseTestCase):
         Set a user's vote value for the specific feature and gate.
         """
         post_vote_request = {"state":0}
-        headers = {
+        headers = { 
             'Accept': 'application/json',
             'Content-Type': 'application/json',
         }
@@ -596,7 +596,7 @@ class TestDefaultController(BaseTestCase):
         Update a comment on a feature
         """
         patch_comment_request = {"commentId":0,"isUndelete":True}
-        headers = {
+        headers = { 
             'Accept': 'application/json',
             'Content-Type': 'application/json',
         }
