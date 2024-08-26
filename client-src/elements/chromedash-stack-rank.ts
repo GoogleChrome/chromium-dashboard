@@ -4,6 +4,13 @@ import {customElement, property, state} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import './chromedash-x-meter';
 
+interface StackRankItem {
+  property_name: string;
+  percentage: number;
+  bucket_id: number;
+  obsolete?: boolean;
+}
+
 @customElement('chromedash-stack-rank')
 class ChromedashStackRank extends LitElement {
   @property({type: String, attribute: false})
@@ -11,9 +18,9 @@ class ChromedashStackRank extends LitElement {
   @property({type: String, attribute: false})
   view = '';
   @property({type: Array, attribute: false})
-  viewList: any[] = []; //TODO(markxiong0122) Type this
+  viewList: StackRankItem[] = [];
   @property({type: Array, attribute: false})
-  tempList: any[] = [];
+  tempList: StackRankItem[] = [];
   @state()
   maxPercentage = 100;
   @state()

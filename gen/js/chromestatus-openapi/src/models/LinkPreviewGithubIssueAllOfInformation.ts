@@ -152,9 +152,9 @@ export function LinkPreviewGithubIssueAllOfInformationToJSON(value?: LinkPreview
         'state': value['state'],
         'state_reason': value['state_reason'],
         'assignee_login': value['assignee_login'],
-        'created_at': value['created_at'] == null ? undefined : ((value['created_at']).toISOString().substring(0,10)),
-        'updated_at': value['updated_at'] == null ? undefined : ((value['updated_at']).toISOString().substring(0,10)),
-        'closed_at': value['closed_at'] == null ? undefined : ((value['closed_at']).toISOString().substring(0,10)),
+        'created_at': value['created_at'] == null ? undefined : ((value['created_at']).toISOString()),
+        'updated_at': value['updated_at'] == null ? undefined : ((value['updated_at']).toISOString()),
+        'closed_at': value['closed_at'] == null ? undefined : ((value['closed_at']).toISOString()),
         'labels': value['labels'],
     };
 }

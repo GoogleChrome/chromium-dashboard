@@ -15,6 +15,305 @@ info:
 servers:
   - url: /api/v0
 paths:
+  /features/{feature_id}/votes:
+    parameters:
+      - name: feature_id
+        in: path
+        description: Feature ID
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: Get votes for a feature
+      operationId: getVotesForFeature
+      responses:
+        '200':
+          description: A list of votes for the specified feature.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetVotesResponse'
+        '404':
+          description: Feature not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+  /features/{feature_id}/votes/{gate_id}:
+    parameters:
+        - in: path
+          name: feature_id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the feature to retrieve votes for.
+        - in: path
+          name: gate_id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the gate associated with the votes.
+    get:
+      summary: Get votes for a feature and gate
+      operationId: getVotesForFeatureAndGate
+      responses:
+        '200':
+          description: A list of votes for the specified feature and gate.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetVotesResponse'
+        '404':
+          description: Feature or gate not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+    post:
+      summary: Set a user's vote value for the specific feature and gate.
+      operationId: setVoteForFeatureAndGate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostVoteRequest'
+      responses:
+        '200':
+          description: Vote set successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '400':
+          description: Feature or gate not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '403':
+          description: User does not have permission.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+  /features/{feature_id}/gates:
+    parameters:
+          - in: path
+            name: feature_id
+            required: true
+            schema:
+              type: integer
+            description: The ID of the feature to retrieve votes for.
+    get:
+      summary: Get all gates for a feature
+      operationId: getGatesForFeature
+      responses:
+        '200':
+          description: A list of gates for the specified feature. List can be empty.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetGateResponse'
+  /features/{feature_id}/gates/{gate_id}:
+    parameters:
+      - in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        description: The ID of the feature to retrieve votes for.
+      - in: path
+        name: gate_id
+        required: true
+        schema:
+          type: integer
+        description: The ID of the gate to retrieve votes for.
+    post:
+      summary: Set the assignees for a gate.
+      operationId: setAssigneesForGate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostGateRequest'
+      responses:
+        '200':
+          description: Assignees set successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '400':
+          description: Assignee is not a reviewer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '403':
+          description: User does not have permission.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+  /gates/pending:
+    get:
+      summary: Get all pending gates
+      operationId: getPendingGates
+      responses:
+        '200':
+          description: A list of all pending gates.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetGateResponse'
+  /features/{feature_id}/stages/{stage_id}/addXfnGates:
+    parameters:
+      - in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+      - in: path
+        name: stage_id
+        required: true
+        schema:
+          type: integer
+    post:
+      summary: Add a full set of cross-functional gates to a stage.
+      operationId: addXfnGatesToStage
+      responses:
+        '200':
+          description: Vote set successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '403':
+          description: User does not have permission.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Feature or Stage not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+  /features/<int:feature_id>/approvals/comments:
+    parameters:
+          - name: feature_id
+            in: path
+            required: true
+            schema:
+              type: integer
+    get:
+      summary: Get all comments for a given feature
+      operationId: getFeatureComments
+      responses:
+        '200':
+          description: List of comments for the feature.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCommentsResponse'
+    post:
+      summary: Add a comment to a feature
+      operationId: addFeatureComment
+      requestBody:
+        description: Add a review commend and possible set a approval value
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentsRequest'
+      responses:
+        '200':
+          description: Comment added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '403':
+          description: User is not allowed to comment on this feature
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+    patch:
+      summary: Update a comment on a feature
+      operationId: updateFeatureComment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchCommentRequest'
+      responses:
+        '200':
+          description: Comment updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '403':
+          description: User is not allowed to update this comment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+  /features/<int:feature_id>/approvals/<int:gate_id>/comments:
+    parameters:
+          - name: feature_id
+            in: path
+            required: true
+            schema:
+              type: integer
+          - name: gate_id
+            in: path
+            required: true
+            schema:
+              type: integer
+    get:
+      summary: Get all comments for a given gate
+      operationId: getGateComments
+      responses:
+        '200':
+          description: List of comments for the gate.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Activity'
+    post:
+      summary: Add a comment to a specific gate
+      operationId: addGateComment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentsRequest'
+      responses:
+        '200':
+          description: Comment added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '403':
+          description: User is not allowed to comment on this gate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Gate not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
   /accounts:
     post:
       summary: Create a new account
@@ -195,6 +494,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SuccessMessage'
+  /currentuser/token:
+    post:
+      summary: Refresh the XSRF token
+      operationId: refreshToken
+      responses:
+        '200':
+          description: Successfully refreshed the token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefreshResponse'
   /external_reviews/{review_group}:
     get:
       summary: List features whose external reviews are incomplete
@@ -246,6 +556,47 @@ paths:
                   $ref: '#/components/schemas/SpecMentor'
         '400':
           description: The ?after query parameter isn't a valid date in ISO YYYY-MM-DD format.
+  /features/{feature_id}/process:
+    parameters:
+      - name: feature_id
+        in: path
+        description: Feature ID
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: Get the process for a feature
+      operationId: getProcess
+      responses:
+        '200':
+          description: The process for the feature
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Process'
+        '404':
+          description: Feature not found based on given ID.
+  /features/{feature_id}/progress:
+    parameters:
+      - name: feature_id
+        in: path
+        description: Feature ID
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: Get the progress for a feature
+      operationId: getProgress
+      responses:
+        '200':
+          description: The progress for the feature. Since there's no fixed data structure for progress, it's defined as a free-form object.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '404':
+          description: Feature not found based on given ID.
   /features/{feature_id}/{stage_id}/{gate_id}/intent:
     parameters:
       - name: feature_id
@@ -416,6 +767,256 @@ components:
       in: header
       name: X-Xsrf-Token
   schemas:
+    Vote:
+      type: object
+      properties:
+        feature_id:
+          type: integer
+        gate_id:
+          type: integer
+        gate_type:
+          type: integer
+        set_by:
+          type: string
+          format: email
+        set_on:
+          type: string
+        state:
+          type: integer
+      required:
+        - feature_id
+        - gate_id
+        - set_by
+        - set_on
+        - state
+    GetVotesResponse:
+      type: object
+      properties:
+        votes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Vote'
+    PostVoteRequest:
+      type: object
+      properties:
+        state:
+          type: integer
+          description: The vote value to set. 0 for abstain, 1 for approve, 2 for abstain.
+      required:
+        - state
+    Gate:
+      type: object
+      properties:
+        id:
+          type: integer
+        feature_id:
+          type: integer
+        stage_id:
+          type: integer
+        gate_type:
+          type: integer
+        team_name:
+          type: string
+        gate_name:
+          type: string
+        escalation_email:
+          type: string
+          nullable: true
+        state:
+          type: integer
+        requested_on:
+          type: string
+          format: date-time
+        responded_on:
+          type: string
+          format: date-time
+        assignee_emails:
+          type: array
+          items:
+            type: string
+            format: email
+        next_action:
+          type: string
+          format: data
+        additional_review:
+          type: boolean
+        slo_initial_response:
+          type: integer
+          default: 5
+          description: DEFAULT_SLO_LIMIT is 5 in approval_defs.py
+        slo_initial_response_took:
+          type: integer
+        slo_initial_response_remaining:
+          type: integer
+        possible_assignee_emails:
+          type: array
+          items:
+            type: string
+            format: email
+    GetGateResponse:
+      type: object
+      properties:
+        gates:
+          type: array
+          items:
+            $ref: '#/components/schemas/Gate'
+    PostGateRequest:
+      type: object
+      properties:
+        assignees:
+          type: array
+          items:
+            type: string
+            format: email
+    Process:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        applicability:
+          type: string
+        stages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProcessStage'
+    ProcessStage:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        progress_items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProgressItem'
+        actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Action'
+        approvals:
+          type: array
+          items:
+            $ref: '#/components/schemas/GateInfo'
+        incoming_stage:
+          type: integer
+        outgoing_stage:
+          type: integer
+        stage_type:
+          type: integer
+          nullable: true
+    ProgressItem:
+      type: object
+      properties:
+        name:
+          type: string
+        field:
+          type: string
+    Action:
+      type: object
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+        prerequisites:
+          type: array
+          items:
+            type: string
+    GateInfo:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        gate_type:
+          type: integer
+        rule:
+          type: string
+        approvers:
+          type: string
+          description: A list of approvers. A single string can also be accepted and will be treated as a list containing that string.
+        team_name:
+          type: string
+        escalation_email:
+          type: string
+          nullable: true
+        slo_initial_response:
+          type: integer
+          default: 5
+          description: DEFAULT_SLO_LIMIT is 5 in approval_defs.py
+    Amendment:
+      type: object
+      properties:
+        field_name:
+          type: string
+        old_value:
+          type: string
+        new_value:
+          type: string
+      required:
+        - field_name
+        - old_value
+        - new_value
+    Activity:
+      type: object
+      properties:
+        comment_id:
+          type: integer
+        feature_id:
+          type: integer
+        gate_id:
+          type: integer
+          nullable: true
+        created:
+          type: string
+        author:
+          type: string
+        content:
+          type: string
+        deleted_by:
+          type: string
+          nullable: true
+        amendments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Amendment'
+      required:
+        - comment_id
+        - feature_id
+        - created
+        - author
+        - content
+    CommentsRequest:
+      type: object
+      properties:
+        comment:
+          type: string
+        postToThreadType:
+          type: string
+          nullable: true
+    GetCommentsResponse:
+      type: object
+      properties:
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Activity'
+    PatchCommentRequest:
+      type: object
+      properties:
+        commentId:
+          type: integer
+          description: The ID of the comment to be updated
+        isUndelete:
+          type: boolean
+          description: Indicates whether to undelete (true) or delete (false) the comment
+      required:
+        - commentId
+        - isUndelete
     CreateAccountRequest:
       type: object
       properties:
@@ -636,8 +1237,6 @@ components:
       required:
         - url
         - type
-        - information
-        - http_error_code
       properties:
         url:
           type: string
@@ -646,8 +1245,10 @@ components:
           type: string
         information:
           type: object
+          nullable: true
         http_error_code:
           type: integer
+          nullable: true
     LinkPreview:
       allOf:
         - $ref: '#/components/schemas/LinkPreviewBase'
@@ -666,7 +1267,6 @@ components:
       allOf:
         - $ref: '#/components/schemas/LinkPreviewBase'
         - type: object
-          required: [information]
           properties:
             information:
               type: object
@@ -695,13 +1295,13 @@ components:
                   type: string
                 created_at:
                   type: string
-                  format: date
+                  format: date-time
                 updated_at:
                   type: string
-                  format: date
+                  format: date-time
                 closed_at:
                   type: string
-                  format: date
+                  format: date-time
                 labels:
                   type: array
                   items:
@@ -713,7 +1313,6 @@ components:
       allOf:
         - $ref: '#/components/schemas/LinkPreviewBase'
         - type: object
-          required: [information]
           properties:
             information:
               type: object
@@ -726,7 +1325,6 @@ components:
       allOf:
         - $ref: '#/components/schemas/LinkPreviewBase'
         - type: object
-          required: [information]
           properties:
             information:
               type: object
@@ -756,7 +1354,7 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/LinkPreviewBase'
+            $ref: '#/components/schemas/LinkPreview'
         has_stale_links:
           type: boolean
     FeatureLinksSummaryResponse:
@@ -847,6 +1445,13 @@ components:
             - progress-checkmarks
       required:
         - cue
+    TokenRefreshResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        token_expires_sec:
+          type: integer
     SuccessMessage:
       type: object
       properties:

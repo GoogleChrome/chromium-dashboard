@@ -70,10 +70,10 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
     """Check that all provided OT creation arguments are valid."""
     chromium_files = {}  # Chromium source file contents.
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-      future_to_url = {executor.submit(get_chromium_file, f['url']): f['name']
+      future_to_name = {executor.submit(get_chromium_file, f['url']): f['name']
                       for f in CHROMIUM_SRC_FILES}
-      for future in concurrent.futures.as_completed(future_to_url):
-        name = future_to_url[future]
+      for future in concurrent.futures.as_completed(future_to_name):
+        name = future_to_name[future]
         try:
           chromium_files[name] = future.result()
         except Exception as exc:
