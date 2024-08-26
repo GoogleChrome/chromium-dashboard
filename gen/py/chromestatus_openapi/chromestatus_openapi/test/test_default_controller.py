@@ -43,7 +43,7 @@ class TestDefaultController(BaseTestCase):
 
         Add a comment to a feature
         """
-        comments_request = {"postToThreadType":"postToThreadType","comment":"comment"}
+        comments_request = {"postToThreadType":0,"comment":"comment"}
         headers = { 
             'Accept': 'application/json',
             'Content-Type': 'application/json',
@@ -62,7 +62,7 @@ class TestDefaultController(BaseTestCase):
 
         Add a comment to a specific gate
         """
-        comments_request = {"postToThreadType":"postToThreadType","comment":"comment"}
+        comments_request = {"postToThreadType":0,"comment":"comment"}
         headers = { 
             'Accept': 'application/json',
             'Content-Type': 'application/json',
