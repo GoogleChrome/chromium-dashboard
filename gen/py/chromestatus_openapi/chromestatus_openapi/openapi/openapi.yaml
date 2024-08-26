@@ -1494,7 +1494,7 @@ components:
       type: object
     CommentsRequest:
       example:
-        postToThreadType: postToThreadType
+        postToThreadType: 0
         comment: comment
       properties:
         comment:
@@ -1503,7 +1503,7 @@ components:
         postToThreadType:
           nullable: true
           title: postToThreadType
-          type: string
+          type: integer
       title: CommentsRequest
       type: object
     GetCommentsResponse:

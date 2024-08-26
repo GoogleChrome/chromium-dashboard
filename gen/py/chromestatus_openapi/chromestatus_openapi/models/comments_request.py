@@ -18,11 +18,11 @@ class CommentsRequest(Model):
         :param comment: The comment of this CommentsRequest.  # noqa: E501
         :type comment: str
         :param post_to_thread_type: The post_to_thread_type of this CommentsRequest.  # noqa: E501
-        :type post_to_thread_type: str
+        :type post_to_thread_type: int
         """
         self.openapi_types = {
             'comment': str,
-            'post_to_thread_type': str
+            'post_to_thread_type': int
         }
 
         self.attribute_map = {
@@ -66,22 +66,22 @@ class CommentsRequest(Model):
         self._comment = comment
 
     @property
-    def post_to_thread_type(self) -> str:
+    def post_to_thread_type(self) -> int:
         """Gets the post_to_thread_type of this CommentsRequest.
 
 
         :return: The post_to_thread_type of this CommentsRequest.
-        :rtype: str
+        :rtype: int
         """
         return self._post_to_thread_type
 
     @post_to_thread_type.setter
-    def post_to_thread_type(self, post_to_thread_type: str):
+    def post_to_thread_type(self, post_to_thread_type: int):
         """Sets the post_to_thread_type of this CommentsRequest.
 
 
         :param post_to_thread_type: The post_to_thread_type of this CommentsRequest.
-        :type post_to_thread_type: str
+        :type post_to_thread_type: int
         """
 
         self._post_to_thread_type = post_to_thread_type

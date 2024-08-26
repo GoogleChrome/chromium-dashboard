@@ -996,7 +996,7 @@ components:
         comment:
           type: string
         postToThreadType:
-          type: string
+          type: integer
           nullable: true
     GetCommentsResponse:
       type: object
