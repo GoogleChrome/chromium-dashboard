@@ -3,6 +3,7 @@ import {LitElement, html, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {createRef, ref} from 'lit/directives/ref.js';
 import {ROADMAP_MILESTONE_CARD_CSS} from '../css/elements/chromedash-roadmap-milestone-card-css.js';
+import {Channels, ReleaseInfo} from '../js-src/cs-client.js';
 
 const REMOVED_STATUS = ['Removed'];
 const DEPRECATED_STATUS = ['Deprecated', 'No longer pursuing'];
@@ -31,7 +32,7 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
   @property({attribute: false})
   templateContent!: TemplateContent;
   @property({attribute: false})
-  channel; //TODO(markxiong0122): Type this as Channel when PR#4085 is merged
+  channel!: ReleaseInfo;
   @property({type: Boolean})
   showDates = false;
   @property({type: Boolean})

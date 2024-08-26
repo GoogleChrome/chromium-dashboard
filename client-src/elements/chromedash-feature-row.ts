@@ -11,7 +11,7 @@ import {GateDict} from './chromedash-gate-chip.js';
 
 interface ActiveStagesAndGates {
   stage: StageDict;
-  gates: GateDict[]; // TODO(markxiong0122): Add Gate type when PR#4060 is merged.
+  gates: GateDict[];
 }
 
 @customElement('chromedash-feature-row')

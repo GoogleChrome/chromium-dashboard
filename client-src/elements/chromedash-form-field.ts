@@ -6,15 +6,14 @@ import {ref} from 'lit/directives/ref.js';
 import {ChromedashApp} from './chromedash-app';
 import './chromedash-textarea';
 import {ALL_FIELDS, resolveFieldForFeature} from './form-field-specs';
-import {getFieldValueFromFeature, showToastMessage} from './utils.js';
+import {
+  FieldInfo,
+  getFieldValueFromFeature,
+  showToastMessage,
+} from './utils.js';
 import {Feature, StageDict} from '../js-src/cs-client';
 import {FormattedFeature} from './form-definition';
 
-interface FormFieldValue {
-  name: string;
-  value: any;
-  stageId?: number;
-}
 interface getFieldValue {
   (fieldName: string, stageOrId: any): any;
   feature?: Feature;
@@ -27,7 +26,7 @@ export class ChromedashFormField extends LitElement {
   @property({type: Number}) // Represents which field this is on the form.
   index = -1;
   @property({type: Object}) // All other field value objects in current form.
-  fieldValues!: FormFieldValue[] & {feature: Feature}; //TODO(markxiong0122): change Type to FieldInfo in utils.ts
+  fieldValues!: FieldInfo[] & {feature: Feature};
   @property({type: Object, attribute: false})
   feature!: FormattedFeature;
   @property({type: String}) // Optional override of default label.
@@ -456,7 +455,7 @@ export class ChromedashFormField extends LitElement {
 function getFieldValueWithStage(
   fieldName: string,
   stageOrId: number | StageDict | undefined,
-  formFieldValues: FormFieldValue[] & {feature?: Feature}
+  formFieldValues: FieldInfo[] & {feature?: Feature}
 ) {
   // Iterate through formFieldValues looking for element with name==fieldName
   // and stage == stageId, if there is a non-null stageId
