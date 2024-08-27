@@ -36,4 +36,4 @@ pyparsing==2.4.7
 
 # OpenAPI files
 ./gen/py/chromestatus_openapi
-types-python-dateutil=2.9.0
+types-python-dateutil==2.9.0.20240821
