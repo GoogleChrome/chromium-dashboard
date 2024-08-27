@@ -124,11 +124,11 @@ def detect_gate_id(body) -> int | None:
 THREAD_LINK_RE = re.compile(
     r'To view this discussion on the web visit\s+'
     r'(> )?(https://groups\.google\.com/a/chromium.org/d/msgid/blink-dev/'
-    r'\S+)[\n> .]', re.MULTILINE)
+    r'\S+)[\r\n> .]', re.MULTILINE)
 STAGING_THREAD_LINK_RE = re.compile(
     r'To view this discussion on the web visit\s+'
     r'(> )?(https://groups\.google\.com/d/msgid/jrobbins-test/'
-    r'\S+)[\n> .]', re.MULTILINE)
+    r'\S+)[\r\n> .]', re.MULTILINE)
 
 
 def detect_thread_url(body):
@@ -344,6 +344,10 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
 
   def set_intent_thread_url(
       self, stage: Stage, thread_url: str | None, subject: str | None) -> None:
+    if stage.intent_thread_url and stage.intent_subject_line:
+      logging.info('Not setting intent_thread_url or intent_subject_line')
+      return
+
     stage.intent_thread_url = thread_url
     stage.intent_subject_line = subject
     stage.put()
