@@ -58,7 +58,7 @@ class SearchFulltextFunctionsTest(testing_config.CustomTestCase):
         flag_name='flag_name',
         sample_links=[])
 
-  def test_get_strings(self):
+  def test_get_strings__no_field(self):
     """We can extract a list of strings from a FeatureEntry."""
     actual = search_fulltext.get_strings(self.fe)
     self.assertEqual(
@@ -70,6 +70,21 @@ class SearchFulltextFunctionsTest(testing_config.CustomTestCase):
          'Blink',  # A default value
          'flag_name'],
         actual)
+
+  def test_get_strings__specific_field(self):
+    """We can extract a list of strings from a certain field."""
+    actual = search_fulltext.get_strings(self.fe, 'creator_email')
+    self.assertEqual(
+        ['creator@example.com'],
+        actual)
+
+    actual = search_fulltext.get_strings(self.fe, 'owner_emails')
+    self.assertEqual(
+        ['owner1@example.com', 'owner2@example.com'],
+        actual)
+
+    actual = search_fulltext.get_strings(self.fe, 'security_risks')
+    self.assertEqual([], actual)  # Empty strings are skipped
 
   def test_parse_words__empty(self):
     """We can cope with empty strings and lists."""
@@ -117,6 +132,89 @@ class SearchFulltextFunctionsTest(testing_config.CustomTestCase):
         actual[0].words)
 
   # TODO(jrobbins): Unit test for index_feature.
+
+  def test_canonicalize_string(self):
+    """It converts strings to a canonical form for less finickymatches."""
+    self.assertEqual(
+        search_fulltext.canonicalize_string(''),
+        '  ')
+    self.assertEqual(
+        search_fulltext.canonicalize_string('abc xyz'),
+        ' abc xyz ')
+    self.assertEqual(
+        search_fulltext.canonicalize_string(' Abc    xYz'),
+        ' abc xyz ')
+    self.assertEqual(
+        search_fulltext.canonicalize_string("That's the way I like it."),
+        ' thats way like ')
+
+    self.assertEqual(
+        search_fulltext.canonicalize_string('Four score and 7 years ago'),
+        ' four score years ago ')
+
+  def test_post_process_phrase__no_candidates(self):
+    """If there were no word-bag results then they can be no phrase results."""
+    word_bag_feature_ids = []
+    actual = search_fulltext.post_process_phrase('hello', word_bag_feature_ids)
+    self.assertEqual([], actual)
+
+  def test_post_process_phrase__phrase_detection(self):
+    """It returns feature_ids for only features with the words in the phrase."""
+    fe = core_models.FeatureEntry(
+        creator_email='creator@example.com',
+        name='Once upon a time',
+        summary='rode and strode all around',
+        motivation='lived happily ever after.',
+        category=core_enums.NETWORKING,
+        cc_emails=['one@example.com', 'two@example.com'],
+    )
+    fe.put()
+    fe_id = fe.key.integer_id()
+    word_bag_feature_ids = [fe_id]
+
+    def assert_found(s, field_name=None):
+      actual = search_fulltext.post_process_phrase(
+          s, word_bag_feature_ids, field_name=field_name)
+      self.assertEqual([fe_id], actual)
+
+    def assert_not_found(s, field_name=None):
+      actual = search_fulltext.post_process_phrase(
+          s, word_bag_feature_ids, field_name=field_name)
+      self.assertEqual([], actual)
+
+    # Not a phrase match
+    assert_not_found('random junk')
+    assert_not_found('upon once')
+    assert_not_found('once time')
+
+    # Phrase can be found in any field or value of multi-valued field
+    assert_found('lived happily')
+    assert_found('strode all around')
+    assert_found('strode all-around')
+    assert_found('creator example com')
+    assert_found('creator@example.com')
+    assert_found('two@example.com')
+
+    # Stop-words are ignored
+    assert_found('once upon time')
+    assert_found('once upon a time')
+    assert_found('once upon the time')
+
+    # A single phrase cannot span fields or values of multi-valued fields
+    assert_not_found('time rode')
+    assert_not_found('one example com two example com')
+
+    # It does not match part of a word, even if that is a different word
+    assert_not_found('round')
+    assert_not_found('rode all around')
+
+    # If a field is specified, it only matches words in that field.
+    assert_found('lived', field_name='motivation')
+    assert_found('lived happily', field_name='motivation')
+    assert_not_found('lived', field_name='summary')
+    assert_not_found('lived happily', field_name='summary')
+    assert_found('two', field_name='cc_emails')
+    assert_not_found('two', field_name='creator_email')
 
   # TODO(jrobbins): Unit test for search_fulltext.
 

@@ -1,9 +1,12 @@
 <h3>An automated origin trial request has failed to process</h3>
-<p>
-  This request will need to be manually processed, and its failure should be
-  investigated and mitigated to prevent automated disruption in the future.
+<p style="color: red">
+  Error text: {{error_text}}
 </p>
 <p>
+  Stage ID: {{stage.id}}
+  <br>
+  Origin trial ID (if available): {{stage.origin_trial_id}}
+  <br>
   Requested by: {{stage.ot_owner_email}}
   <br>
   Additional contacts for your team?: {{stage.ot_emails}}

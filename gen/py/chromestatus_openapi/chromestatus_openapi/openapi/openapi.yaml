@@ -172,6 +172,39 @@ paths:
           description: Cue dismissed successfully
       summary: Dismiss a cue card for the signed-in user
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /currentuser/permissions:
+    get:
+      operationId: get_user_permissions
+      parameters:
+      - description: "If true, return the permissions of the paired user."
+        explode: true
+        in: query
+        name: returnPairedUser
+        required: false
+        schema:
+          type: boolean
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionsResponse'
+          description: The permissions and email of the user.
+      summary: Get the permissions and email of the user
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /currentuser/token:
+    post:
+      operationId: refresh_token
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefreshResponse'
+          description: Successfully refreshed the token.
+      summary: Refresh the XSRF token
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /external_reviews/{review_group}:
     get:
       operationId: list_external_reviews
@@ -241,6 +274,314 @@ paths:
             format.
       summary: List how long each feature took to launch
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /feature_links:
+    get:
+      operationId: get_feature_links
+      parameters:
+      - explode: true
+        in: query
+        name: feature_id
+        required: false
+        schema:
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: update_stale_links
+        required: false
+        schema:
+          default: true
+          type: boolean
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureLinksResponse'
+          description: return the links and its information to the client
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: missing feature_id
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: feature not found
+      summary: Get feature links by feature_id
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /feature_links_samples:
+    get:
+      operationId: get_feature_links_samples
+      parameters:
+      - explode: true
+        in: query
+        name: domain
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: type
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: is_error
+        required: false
+        schema:
+          type: boolean
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureLinksSample'
+          description: return the sample links to the client
+      summary: Get feature links samples
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /feature_links_summary:
+    get:
+      operationId: get_feature_links_summary
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureLinksSummaryResponse'
+          description: return the links and its information to the client
+      summary: Get feature links summary
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /features/<int:feature_id>/approvals/<int:gate_id>/comments:
+    get:
+      operationId: get_gate_comments
+      parameters:
+      - explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - explode: false
+        in: path
+        name: gate_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Activity'
+                type: array
+          description: List of comments for the gate.
+      summary: Get all comments for a given gate
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+    post:
+      operationId: add_gate_comment
+      parameters:
+      - explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - explode: false
+        in: path
+        name: gate_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentsRequest'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Comment added successfully
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: User is not allowed to comment on this gate
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Gate not found
+      summary: Add a comment to a specific gate
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /features/<int:feature_id>/approvals/comments:
+    get:
+      operationId: get_feature_comments
+      parameters:
+      - explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCommentsResponse'
+          description: List of comments for the feature.
+      summary: Get all comments for a given feature
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+    patch:
+      operationId: update_feature_comment
+      parameters:
+      - explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchCommentRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Comment updated successfully
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: User is not allowed to update this comment
+      summary: Update a comment on a feature
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+    post:
+      operationId: add_feature_comment
+      parameters:
+      - explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentsRequest'
+        description: Add a review commend and possible set a approval value
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Comment added successfully
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: User is not allowed to comment on this feature
+      summary: Add a comment to a feature
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /features/{feature_id}/gates:
+    get:
+      operationId: get_gates_for_feature
+      parameters:
+      - description: The ID of the feature to retrieve votes for.
+        explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetGateResponse'
+          description: A list of gates for the specified feature. List can be empty.
+      summary: Get all gates for a feature
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /features/{feature_id}/gates/{gate_id}:
+    post:
+      operationId: set_assignees_for_gate
+      parameters:
+      - description: The ID of the feature to retrieve votes for.
+        explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - description: The ID of the gate to retrieve votes for.
+        explode: false
+        in: path
+        name: gate_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostGateRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Assignees set successfully
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Assignee is not a reviewer
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: User does not have permission.
+      summary: Set the assignees for a gate.
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /features/{feature_id}/process:
     get:
       operationId: get_process
@@ -288,6 +629,153 @@ paths:
         "404":
           description: Feature not found based on given ID.
       summary: Get the progress for a feature
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /features/{feature_id}/stages/{stage_id}/addXfnGates:
+    post:
+      operationId: add_xfn_gates_to_stage
+      parameters:
+      - explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - explode: false
+        in: path
+        name: stage_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Vote set successfully
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: User does not have permission.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Feature or Stage not found.
+      summary: Add a full set of cross-functional gates to a stage.
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /features/{feature_id}/votes:
+    get:
+      operationId: get_votes_for_feature
+      parameters:
+      - description: Feature ID
+        explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetVotesResponse'
+          description: A list of votes for the specified feature.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Feature not found
+      summary: Get votes for a feature
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /features/{feature_id}/votes/{gate_id}:
+    get:
+      operationId: get_votes_for_feature_and_gate
+      parameters:
+      - description: The ID of the feature to retrieve votes for.
+        explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - description: The ID of the gate associated with the votes.
+        explode: false
+        in: path
+        name: gate_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetVotesResponse'
+          description: A list of votes for the specified feature and gate.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Feature or gate not found.
+      summary: Get votes for a feature and gate
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+    post:
+      operationId: set_vote_for_feature_and_gate
+      parameters:
+      - description: The ID of the feature to retrieve votes for.
+        explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - description: The ID of the gate associated with the votes.
+        explode: false
+        in: path
+        name: gate_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostVoteRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Vote set successfully
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Feature or gate not found.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: User does not have permission.
+      summary: Set a user's vote value for the specific feature and gate.
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /features/{feature_id}/{stage_id}/{gate_id}/intent:
     get:
@@ -376,6 +864,18 @@ paths:
           description: Feature or stage not found based on given ID.
       summary: Submit an intent to be posted on blink-dev
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /gates/pending:
+    get:
+      operationId: get_pending_gates
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetGateResponse'
+          description: A list of all pending gates.
+      summary: Get all pending gates
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /review-latency:
     get:
       operationId: list_reviews_with_latency
@@ -441,6 +941,234 @@ components:
         type: string
       style: form
   schemas:
+    Vote:
+      example:
+        feature_id: 0
+        gate_id: 6
+        gate_type: 1
+        set_by: set_by
+        state: 5
+        set_on: set_on
+      properties:
+        feature_id:
+          title: feature_id
+          type: integer
+        gate_id:
+          title: gate_id
+          type: integer
+        gate_type:
+          title: gate_type
+          type: integer
+        set_by:
+          format: email
+          title: set_by
+          type: string
+        set_on:
+          title: set_on
+          type: string
+        state:
+          title: state
+          type: integer
+      required:
+      - feature_id
+      - gate_id
+      - set_by
+      - set_on
+      - state
+      title: Vote
+      type: object
+    GetVotesResponse:
+      example:
+        votes:
+        - feature_id: 0
+          gate_id: 6
+          gate_type: 1
+          set_by: set_by
+          state: 5
+          set_on: set_on
+        - feature_id: 0
+          gate_id: 6
+          gate_type: 1
+          set_by: set_by
+          state: 5
+          set_on: set_on
+      properties:
+        votes:
+          items:
+            $ref: '#/components/schemas/Vote'
+          title: votes
+          type: array
+      title: GetVotesResponse
+      type: object
+    PostVoteRequest:
+      example:
+        state: 0
+      properties:
+        state:
+          description: "The vote value to set. 0 for abstain, 1 for approve, 2 for\
+            \ abstain."
+          title: state
+          type: integer
+      required:
+      - state
+      title: PostVoteRequest
+      type: object
+    Gate:
+      example:
+        feature_id: 6
+        stage_id: 1
+        slo_initial_response: 2
+        gate_name: gate_name
+        requested_on: 2000-01-23T04:56:07.000+00:00
+        team_name: team_name
+        slo_initial_response_took: 7
+        additional_review: true
+        gate_type: 5
+        next_action: next_action
+        escalation_email: escalation_email
+        assignee_emails:
+        - assignee_emails
+        - assignee_emails
+        slo_initial_response_remaining: 9
+        id: 0
+        state: 5
+        possible_assignee_emails:
+        - possible_assignee_emails
+        - possible_assignee_emails
+        responded_on: 2000-01-23T04:56:07.000+00:00
+      properties:
+        id:
+          title: id
+          type: integer
+        feature_id:
+          title: feature_id
+          type: integer
+        stage_id:
+          title: stage_id
+          type: integer
+        gate_type:
+          title: gate_type
+          type: integer
+        team_name:
+          title: team_name
+          type: string
+        gate_name:
+          title: gate_name
+          type: string
+        escalation_email:
+          nullable: true
+          title: escalation_email
+          type: string
+        state:
+          title: state
+          type: integer
+        requested_on:
+          format: date-time
+          title: requested_on
+          type: string
+        responded_on:
+          format: date-time
+          title: responded_on
+          type: string
+        assignee_emails:
+          items:
+            format: email
+            type: string
+          title: assignee_emails
+          type: array
+        next_action:
+          format: data
+          title: next_action
+          type: string
+        additional_review:
+          title: additional_review
+          type: boolean
+        slo_initial_response:
+          default: 5
+          description: DEFAULT_SLO_LIMIT is 5 in approval_defs.py
+          title: slo_initial_response
+          type: integer
+        slo_initial_response_took:
+          title: slo_initial_response_took
+          type: integer
+        slo_initial_response_remaining:
+          title: slo_initial_response_remaining
+          type: integer
+        possible_assignee_emails:
+          items:
+            format: email
+            type: string
+          title: possible_assignee_emails
+          type: array
+      title: Gate
+      type: object
+    GetGateResponse:
+      example:
+        gates:
+        - feature_id: 6
+          stage_id: 1
+          slo_initial_response: 2
+          gate_name: gate_name
+          requested_on: 2000-01-23T04:56:07.000+00:00
+          team_name: team_name
+          slo_initial_response_took: 7
+          additional_review: true
+          gate_type: 5
+          next_action: next_action
+          escalation_email: escalation_email
+          assignee_emails:
+          - assignee_emails
+          - assignee_emails
+          slo_initial_response_remaining: 9
+          id: 0
+          state: 5
+          possible_assignee_emails:
+          - possible_assignee_emails
+          - possible_assignee_emails
+          responded_on: 2000-01-23T04:56:07.000+00:00
+        - feature_id: 6
+          stage_id: 1
+          slo_initial_response: 2
+          gate_name: gate_name
+          requested_on: 2000-01-23T04:56:07.000+00:00
+          team_name: team_name
+          slo_initial_response_took: 7
+          additional_review: true
+          gate_type: 5
+          next_action: next_action
+          escalation_email: escalation_email
+          assignee_emails:
+          - assignee_emails
+          - assignee_emails
+          slo_initial_response_remaining: 9
+          id: 0
+          state: 5
+          possible_assignee_emails:
+          - possible_assignee_emails
+          - possible_assignee_emails
+          responded_on: 2000-01-23T04:56:07.000+00:00
+      properties:
+        gates:
+          items:
+            $ref: '#/components/schemas/Gate'
+          title: gates
+          type: array
+      title: GetGateResponse
+      type: object
+    PostGateRequest:
+      example:
+        assignees:
+        - assignees
+        - assignees
+      properties:
+        assignees:
+          items:
+            format: email
+            type: string
+          title: assignees
+          type: array
+      title: PostGateRequest
+      type: object
     Process:
       example:
         name: name
@@ -689,6 +1417,152 @@ components:
           title: slo_initial_response
           type: integer
       title: GateInfo
+      type: object
+    Amendment:
+      example:
+        old_value: old_value
+        new_value: new_value
+        field_name: field_name
+      properties:
+        field_name:
+          title: field_name
+          type: string
+        old_value:
+          title: old_value
+          type: string
+        new_value:
+          title: new_value
+          type: string
+      required:
+      - field_name
+      - new_value
+      - old_value
+      title: Amendment
+      type: object
+    Activity:
+      example:
+        feature_id: 6
+        gate_id: 1
+        created: created
+        author: author
+        deleted_by: deleted_by
+        amendments:
+        - old_value: old_value
+          new_value: new_value
+          field_name: field_name
+        - old_value: old_value
+          new_value: new_value
+          field_name: field_name
+        comment_id: 0
+        content: content
+      properties:
+        comment_id:
+          title: comment_id
+          type: integer
+        feature_id:
+          title: feature_id
+          type: integer
+        gate_id:
+          nullable: true
+          title: gate_id
+          type: integer
+        created:
+          title: created
+          type: string
+        author:
+          title: author
+          type: string
+        content:
+          title: content
+          type: string
+        deleted_by:
+          nullable: true
+          title: deleted_by
+          type: string
+        amendments:
+          items:
+            $ref: '#/components/schemas/Amendment'
+          title: amendments
+          type: array
+      required:
+      - author
+      - comment_id
+      - content
+      - created
+      - feature_id
+      title: Activity
+      type: object
+    CommentsRequest:
+      example:
+        postToThreadType: 0
+        comment: comment
+      properties:
+        comment:
+          title: comment
+          type: string
+        postToThreadType:
+          nullable: true
+          title: postToThreadType
+          type: integer
+      title: CommentsRequest
+      type: object
+    GetCommentsResponse:
+      example:
+        comments:
+        - feature_id: 6
+          gate_id: 1
+          created: created
+          author: author
+          deleted_by: deleted_by
+          amendments:
+          - old_value: old_value
+            new_value: new_value
+            field_name: field_name
+          - old_value: old_value
+            new_value: new_value
+            field_name: field_name
+          comment_id: 0
+          content: content
+        - feature_id: 6
+          gate_id: 1
+          created: created
+          author: author
+          deleted_by: deleted_by
+          amendments:
+          - old_value: old_value
+            new_value: new_value
+            field_name: field_name
+          - old_value: old_value
+            new_value: new_value
+            field_name: field_name
+          comment_id: 0
+          content: content
+      properties:
+        comments:
+          items:
+            $ref: '#/components/schemas/Activity'
+          title: comments
+          type: array
+      title: GetCommentsResponse
+      type: object
+    PatchCommentRequest:
+      example:
+        commentId: 0
+        isUndelete: true
+      properties:
+        commentId:
+          description: The ID of the comment to be updated
+          title: commentId
+          type: integer
+        isUndelete:
+          description: Indicates whether to undelete (true) or delete (false) the
+            comment
+          title: isUndelete
+          type: boolean
+      required:
+      - commentId
+      - isUndelete
+      title: PatchCommentRequest
       type: object
     CreateAccountRequest:
       example:
@@ -1095,14 +1969,14 @@ components:
           title: type
           type: string
         information:
+          nullable: true
           title: information
           type: object
         http_error_code:
+          nullable: true
           title: http_error_code
           type: integer
       required:
-      - http_error_code
-      - information
       - type
       - url
       title: LinkPreviewBase
@@ -1133,8 +2007,6 @@ components:
       - properties:
           information:
             $ref: '#/components/schemas/LinkPreviewGithubIssue_allOf_information'
-        required:
-        - information
         type: object
       title: LinkPreviewGithubIssue
     LinkPreviewGithubPullRequest:
@@ -1146,8 +2018,6 @@ components:
       - properties:
           information:
             $ref: '#/components/schemas/LinkPreviewGithubMarkdown_allOf_information'
-        required:
-        - information
         type: object
     LinkPreviewOpenGraph:
       allOf:
@@ -1155,8 +2025,6 @@ components:
       - properties:
           information:
             $ref: '#/components/schemas/LinkPreviewOpenGraph_allOf_information'
-        required:
-        - information
         type: object
       title: LinkPreviewOpenGraph
     LinkPreviewMdnDocs:
@@ -1174,6 +2042,187 @@ components:
     LinkPreviewSpecs:
       allOf:
       - $ref: '#/components/schemas/LinkPreviewOpenGraph'
+    FeatureLinksResponse:
+      example:
+        data:
+        - information: "{}"
+          type: type
+          http_error_code: 1
+          url: http://example.com/aeiou
+        - information: "{}"
+          type: type
+          http_error_code: 1
+          url: http://example.com/aeiou
+        has_stale_links: true
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/LinkPreview'
+          title: data
+          type: array
+        has_stale_links:
+          title: has_stale_links
+          type: boolean
+      title: FeatureLinksResponse
+      type: object
+    FeatureLinksSummaryResponse:
+      example:
+        uncovered_count: 1
+        http_error_count: 5
+        link_types:
+        - count: 2
+          key: key
+        - count: 2
+          key: key
+        total_count: 0
+        uncovered_link_domains:
+        - count: 2
+          key: key
+        - count: 2
+          key: key
+        error_count: 5
+        error_link_domains:
+        - count: 2
+          key: key
+        - count: 2
+          key: key
+        covered_count: 6
+      properties:
+        total_count:
+          title: total_count
+          type: integer
+        covered_count:
+          title: covered_count
+          type: integer
+        uncovered_count:
+          title: uncovered_count
+          type: integer
+        error_count:
+          title: error_count
+          type: integer
+        http_error_count:
+          title: http_error_count
+          type: integer
+        link_types:
+          items:
+            $ref: '#/components/schemas/CounterEntry'
+          title: link_types
+          type: array
+        uncovered_link_domains:
+          items:
+            $ref: '#/components/schemas/CounterEntry'
+          title: uncovered_link_domains
+          type: array
+        error_link_domains:
+          items:
+            $ref: '#/components/schemas/CounterEntry'
+          title: error_link_domains
+          type: array
+      title: FeatureLinksSummaryResponse
+      type: object
+    FeatureLinksSample:
+      allOf:
+      - $ref: '#/components/schemas/LinkPreviewBase'
+      - properties:
+          feature_ids:
+            items:
+              type: integer
+            type: array
+        type: object
+      example:
+        feature_ids:
+        - 6
+        - 6
+        information: "{}"
+        type: type
+        http_error_code: 0
+        url: http://example.com/aeiou
+      title: FeatureLinksSample
+    CounterEntry:
+      example:
+        count: 2
+        key: key
+      properties:
+        key:
+          title: key
+          type: string
+        count:
+          title: count
+          type: integer
+      title: CounterEntry
+      type: object
+    PermissionsResponse:
+      example:
+        user:
+          is_admin: true
+          can_comment: true
+          editable_features:
+          - 6
+          - 6
+          can_create_feature: true
+          can_edit_all: true
+          email: email
+          approvable_gate_types:
+          - 0
+          - 0
+      properties:
+        user:
+          $ref: '#/components/schemas/UserPermissions'
+      required:
+      - user
+      title: PermissionsResponse
+      type: object
+    UserPermissions:
+      example:
+        is_admin: true
+        can_comment: true
+        editable_features:
+        - 6
+        - 6
+        can_create_feature: true
+        can_edit_all: true
+        email: email
+        approvable_gate_types:
+        - 0
+        - 0
+      properties:
+        can_create_feature:
+          title: can_create_feature
+          type: boolean
+        approvable_gate_types:
+          description: each element should be unique as OAS does not support set
+          items:
+            type: integer
+          title: approvable_gate_types
+          type: array
+        can_comment:
+          title: can_comment
+          type: boolean
+        can_edit_all:
+          title: can_edit_all
+          type: boolean
+        is_admin:
+          title: is_admin
+          type: boolean
+        email:
+          format: email
+          title: email
+          type: string
+        editable_features:
+          items:
+            type: integer
+          title: editable_features
+          type: array
+      required:
+      - approvable_gate_types
+      - can_comment
+      - can_create_feature
+      - can_edit_all
+      - editable_features
+      - email
+      - is_admin
+      title: UserPermissions
+      type: object
     DismissCueRequest:
       example:
         cue: progress-checkmarks
@@ -1187,6 +2236,19 @@ components:
       - cue
       title: DismissCueRequest
       type: object
+    TokenRefreshResponse:
+      example:
+        token_expires_sec: 0
+        token: token
+      properties:
+        token:
+          title: token
+          type: string
+        token_expires_sec:
+          title: token_expires_sec
+          type: integer
+      title: TokenRefreshResponse
+      type: object
     SuccessMessage:
       example:
         message: Done
@@ -1198,10 +2260,24 @@ components:
       title: SuccessMessage
       type: object
     ErrorMessage:
+      example:
+        error: Error
       properties:
         error:
           example: Error
+          title: error
           type: string
+      title: ErrorMessage
+      type: object
+    deleteAccount_200_response:
+      example:
+        message: Done
+      properties:
+        message:
+          example: Done
+          title: message
+          type: string
+      title: deleteAccount_200_response
       type: object
     deleteAccount_200_response:
       example:
@@ -1254,15 +2330,15 @@ components:
           title: assignee_login
           type: string
         created_at:
-          format: date
+          format: date-time
           title: created_at
           type: string
         updated_at:
-          format: date
+          format: date-time
           title: updated_at
           type: string
         closed_at:
-          format: date
+          format: date-time
           title: closed_at
           type: string
         labels:
