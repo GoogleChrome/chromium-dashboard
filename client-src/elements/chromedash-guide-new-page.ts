@@ -157,7 +157,10 @@ export class ChromedashGuideNewPage extends LitElement {
   }
 
   renderForm() {
-    const newFeatureInitialValues = {owner: this.userEmail};
+    const newFeatureInitialValues = {
+      owner: this.userEmail,
+      shipping_year: new Date().getFullYear(),
+    };
     this.fieldValues.feature = this.feature;
 
     const formFields = this.isEnterpriseFeature
