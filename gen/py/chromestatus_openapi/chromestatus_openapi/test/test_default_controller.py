@@ -18,11 +18,16 @@ from chromestatus_openapi.models.feature_links_sample import FeatureLinksSample 
 from chromestatus_openapi.models.feature_links_summary_response import FeatureLinksSummaryResponse  # noqa: E501
 from chromestatus_openapi.models.get_comments_response import GetCommentsResponse  # noqa: E501
 from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismissedCues400Response  # noqa: E501
+from chromestatus_openapi.models.get_gate_response import GetGateResponse  # noqa: E501
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
+from chromestatus_openapi.models.get_votes_response import GetVotesResponse  # noqa: E501
 from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
 from chromestatus_openapi.models.patch_comment_request import PatchCommentRequest  # noqa: E501
 from chromestatus_openapi.models.permissions_response import PermissionsResponse  # noqa: E501
+from chromestatus_openapi.models.post_gate_request import PostGateRequest  # noqa: E501
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
+from chromestatus_openapi.models.post_vote_request import PostVoteRequest  # noqa: E501
+from chromestatus_openapi.models.process import Process  # noqa: E501
 from chromestatus_openapi.models.reject_unneeded_get_request import RejectUnneededGetRequest  # noqa: E501
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
 from chromestatus_openapi.models.sign_in_request import SignInRequest  # noqa: E501
@@ -39,7 +44,7 @@ class TestDefaultController(BaseTestCase):
 
         Add a comment to a feature
         """
-        comments_request = {"postToThreadType":"postToThreadType","comment":"comment"}
+        comments_request = {"postToThreadType":0,"comment":"comment"}
         headers = { 
             'Accept': 'application/json',
             'Content-Type': 'application/json',
@@ -58,7 +63,7 @@ class TestDefaultController(BaseTestCase):
 
         Add a comment to a specific gate
         """
-        comments_request = {"postToThreadType":"postToThreadType","comment":"comment"}
+        comments_request = {"postToThreadType":0,"comment":"comment"}
         headers = { 
             'Accept': 'application/json',
             'Content-Type': 'application/json',
@@ -88,6 +93,21 @@ class TestDefaultController(BaseTestCase):
             headers=headers,
             data=json.dumps(component_users_request),
             content_type='application/json')
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_add_xfn_gates_to_stage(self):
+        """Test case for add_xfn_gates_to_stage
+
+        Add a full set of cross-functional gates to a stage.
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/features/{feature_id}/stages/{stage_id}/addXfnGates'.format(feature_id=56, stage_id=56),
+            method='POST',
+            headers=headers)
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
@@ -260,6 +280,21 @@ class TestDefaultController(BaseTestCase):
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
+    def test_get_gates_for_feature(self):
+        """Test case for get_gates_for_feature
+
+        Get all gates for a feature
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/features/{feature_id}/gates'.format(feature_id=56),
+            method='GET',
+            headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
     def test_get_intent_body(self):
         """Test case for get_intent_body
 
@@ -270,6 +305,51 @@ class TestDefaultController(BaseTestCase):
         }
         response = self.client.open(
             '/api/v0/features/{feature_id}/{stage_id}/{gate_id}/intent'.format(feature_id=56, stage_id=56, gate_id=56),
+            method='GET',
+            headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_get_pending_gates(self):
+        """Test case for get_pending_gates
+
+        Get all pending gates
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/gates/pending',
+            method='GET',
+            headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_get_process(self):
+        """Test case for get_process
+
+        Get the process for a feature
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/features/{feature_id}/process'.format(feature_id=56),
+            method='GET',
+            headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_get_progress(self):
+        """Test case for get_progress
+
+        Get the progress for a feature
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/features/{feature_id}/progress'.format(feature_id=56),
             method='GET',
             headers=headers)
         self.assert200(response,
@@ -289,6 +369,36 @@ class TestDefaultController(BaseTestCase):
             method='GET',
             headers=headers,
             query_string=query_string)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_get_votes_for_feature(self):
+        """Test case for get_votes_for_feature
+
+        Get votes for a feature
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/features/{feature_id}/votes'.format(feature_id=56),
+            method='GET',
+            headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_get_votes_for_feature_and_gate(self):
+        """Test case for get_votes_for_feature_and_gate
+
+        Get votes for a feature and gate
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/features/{feature_id}/votes/{gate_id}'.format(feature_id=56, gate_id=56),
+            method='GET',
+            headers=headers)
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
@@ -467,6 +577,44 @@ class TestDefaultController(BaseTestCase):
             method='DELETE',
             headers=headers,
             data=json.dumps(component_users_request),
+            content_type='application/json')
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_set_assignees_for_gate(self):
+        """Test case for set_assignees_for_gate
+
+        Set the assignees for a gate.
+        """
+        post_gate_request = {"assignees":["assignees","assignees"]}
+        headers = { 
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/features/{feature_id}/gates/{gate_id}'.format(feature_id=56, gate_id=56),
+            method='POST',
+            headers=headers,
+            data=json.dumps(post_gate_request),
+            content_type='application/json')
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_set_vote_for_feature_and_gate(self):
+        """Test case for set_vote_for_feature_and_gate
+
+        Set a user's vote value for the specific feature and gate.
+        """
+        post_vote_request = {"state":0}
+        headers = { 
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/features/{feature_id}/votes/{gate_id}'.format(feature_id=56, gate_id=56),
+            method='POST',
+            headers=headers,
+            data=json.dumps(post_vote_request),
             content_type='application/json')
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))

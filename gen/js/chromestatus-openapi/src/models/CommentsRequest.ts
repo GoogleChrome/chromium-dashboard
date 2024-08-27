@@ -27,10 +27,10 @@ export interface CommentsRequest {
     comment?: string;
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof CommentsRequest
      */
-    postToThreadType?: string;
+    postToThreadType?: number;
 }
 
 /**

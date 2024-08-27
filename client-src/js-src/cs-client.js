@@ -18,8 +18,8 @@
  * @typedef {object} FeatureLink
  * @property {string} url
  * @property {string} type
- * @property {object} information - fields depend on type; see link_helpers.py
- * @property {number} http_error_code
+ * @property {object} [information] - fields depend on type; see link_helpers.py
+ * @property {number | null} [http_error_code]
  */
 
 /**
@@ -292,6 +292,8 @@
  * @property {string} [mstone] (optional).
  * @property {string | null} [stable_date] (optional).
  * @property {string | null} [latest_beta] - The latest beta release date (optional).
+ * @property {string | null} [final_beta]
+ * @property {Feature} features
  */
 
 /**

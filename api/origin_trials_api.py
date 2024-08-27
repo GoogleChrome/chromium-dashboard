@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
+import concurrent.futures
+import urllib.request
 from base64 import b64decode
 
 import flask
@@ -29,18 +30,17 @@ from internals.review_models import Gate, Vote
 WEBFEATURE_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom?format=TEXT'
 ENABLED_FEATURES_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/runtime_enabled_features.json5?format=TEXT'
 GRACE_PERIOD_FILE = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/common/origin_trials/manual_completion_origin_trial_features.cc?format=TEXT'
+CHROMIUM_SRC_FILES = [
+  {'name': 'webfeature_file', 'url': WEBFEATURE_FILE_URL},
+  {'name': 'enabled_features_text', 'url': ENABLED_FEATURES_FILE_URL},
+  {'name': 'grace_period_file', 'url': GRACE_PERIOD_FILE}
+]
 
 
-# TODO(jrobbins): Fetch these in parallel, but in a way that is easy to test.
 def get_chromium_file(url: str) -> str:
   """Get chromium file contents from a given URL"""
-  try:
-    resp = requests.get(url)
-  except requests.RequestException as e:
-    logging.exception(
-        f'Failed to get response to obtain Chromium file: {url}')
-    raise e
-  return b64decode(resp.text).decode('utf-8')
+  with urllib.request.urlopen(url, timeout=60) as conn:
+    return  b64decode(conn.read()).decode('utf-8')
 
 
 class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
@@ -63,12 +63,18 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
   def _validate_creation_args(
       self, body: dict) -> dict[str, str]:
     """Check that all provided OT creation arguments are valid."""
-    try:
-      enabled_features_text = get_chromium_file(ENABLED_FEATURES_FILE_URL)
-      webfeature_file = get_chromium_file(WEBFEATURE_FILE_URL)
-      grace_period_file = get_chromium_file(GRACE_PERIOD_FILE)
-    except requests.exceptions.RequestException:
-      self.abort(500, 'Error obtaining Chromium file for validation')
+    chromium_files = {}  # Chromium source file contents.
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+      future_to_name = {executor.submit(get_chromium_file, f['url']): f['name']
+                      for f in CHROMIUM_SRC_FILES}
+      for future in concurrent.futures.as_completed(future_to_name):
+        name = future_to_name[future]
+        try:
+          chromium_files[name] = future.result()
+        except Exception as exc:
+          self.abort(
+              500, f'Error obtaining Chromium file for validation: {str(exc)}')
+
     validation_errors: dict[str, str] = {}
     chromium_trial_name = body.get(
         'ot_chromium_trial_name', {}).get('value')
@@ -86,7 +92,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
       validation_errors['ot_chromium_trial_name'] = (
           'Chromium trial name is already used by another origin trial')
 
-    enabled_features_json = json5.loads(enabled_features_text)
+    enabled_features_json = json5.loads(chromium_files['enabled_features_text'])
     if (not any(feature.get('origin_trial_feature_name') == chromium_trial_name
                 for feature in enabled_features_json['data'])):
       validation_errors['ot_chromium_trial_name'] = (
@@ -97,7 +103,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
       if not use_counter:
         validation_errors['ot_webfeature_use_counter'] = (
             'No UseCounter specified for non-deprecation trial.')
-      elif f'{use_counter} =' not in webfeature_file:
+      elif f'{use_counter} =' not in chromium_files['webfeature_file']:
           validation_errors['ot_webfeature_use_counter'] = (
               'UseCounter not landed in web_feature.mojom')
 
@@ -112,7 +118,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
 
     if body.get('ot_is_critical_trial', {}).get('value', False):
       if (f'blink::mojom::OriginTrialFeature::k{chromium_trial_name}'
-          not in grace_period_file):
+          not in chromium_files['grace_period_file']):
         validation_errors['ot_is_critical_trial'] = (
             'Use counter has not landed in grace period array '
             'for critical trial')

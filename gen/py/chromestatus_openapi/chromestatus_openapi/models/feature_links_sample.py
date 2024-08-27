@@ -123,8 +123,6 @@ class FeatureLinksSample(Model):
         :param information: The information of this FeatureLinksSample.
         :type information: object
         """
-        if information is None:
-            raise ValueError("Invalid value for `information`, must not be `None`")  # noqa: E501
 
         self._information = information
 
@@ -146,8 +144,6 @@ class FeatureLinksSample(Model):
         :param http_error_code: The http_error_code of this FeatureLinksSample.
         :type http_error_code: int
         """
-        if http_error_code is None:
-            raise ValueError("Invalid value for `http_error_code`, must not be `None`")  # noqa: E501
 
         self._http_error_code = http_error_code
 
