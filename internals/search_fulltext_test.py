@@ -89,11 +89,14 @@ class SearchFulltextFunctionsTest(testing_config.CustomTestCase):
   def test_parse_words__empty(self):
     """We can cope with empty strings and lists."""
     self.assertEqual(
-        set(), search_fulltext.parse_words([]))
+        (set(), 0),
+        search_fulltext.parse_words([]))
     self.assertEqual(
-        set(), search_fulltext.parse_words(['']))
+        (set(), 0),
+        search_fulltext.parse_words(['']))
     self.assertEqual(
-        set(), search_fulltext.parse_words(['', '']))
+        (set(), 0),
+        search_fulltext.parse_words(['', '']))
 
   def test_parse_words__normal(self):
     """We parse strings into sets of words, without stopwords."""
@@ -101,8 +104,9 @@ class SearchFulltextFunctionsTest(testing_config.CustomTestCase):
         'one, two, buckle my shoe',
         'three, four, close the door.'])
     self.assertEqual(
-        set(['one', 'two', 'buckle', 'shoe',
-             'three', 'four', 'close', 'door']),
+        (set(['one', 'two', 'buckle', 'shoe',
+              'three', 'four', 'close', 'door']),
+         9),
         actual)
 
   def test_batch_index_features__empty(self):

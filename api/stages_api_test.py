@@ -572,6 +572,7 @@ class StagesAPITest(testing_config.CustomTestCase):
     """
     testing_config.sign_in('feature_owner@example.com', 123)
     json = {
+      'id': 10,
       'desktop_first': {
         'form_field_name': 'ot_milestone_desktop_start',
         'value': 200,
@@ -595,6 +596,7 @@ class StagesAPITest(testing_config.CustomTestCase):
     """Raises 400 if OT end milestone is updated during OT creation process."""
     testing_config.sign_in('feature_owner@example.com', 123)
     json = {
+      'id': 10,
       'desktop_last': {
         'form_field_name': 'ot_milestone_desktop_end',
         'value': 206,

@@ -2027,7 +2027,6 @@ export const ALL_FIELDS: Record<string, Field> = {
   shipping_year: {
     type: 'input',
     attrs: {type: 'number', min: 2000, max: 2050},
-    initial: new Date().getFullYear(),
     required: true,
     label: 'Estimated shipping year',
     help_text: html` Estimate of the calendar year in which this will first ship
