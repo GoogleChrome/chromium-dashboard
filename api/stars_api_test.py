@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import testing_config  # Must be imported before the module under test.
-
 import flask
 import werkzeug.exceptions  # Flask HTTP stuff.
 
+import testing_config  # Must be imported before the module under test.
 from api import stars_api
-from internals.core_models import FeatureEntry
 from internals import notifier
+from internals.core_models import FeatureEntry
 
 test_app = flask.Flask(__name__)
 
@@ -43,14 +42,14 @@ class StarsAPITest(testing_config.CustomTestCase):
     testing_config.sign_out()
     with test_app.test_request_context(self.request_path):
       actual_response = self.handler.do_get()
-    self.assertEqual({"feature_ids": []}, actual_response['feature_ids'])
+    self.assertEqual([], actual_response['feature_ids'])
 
   def test_get__no_stars(self):
     """User has not starred any features."""
     testing_config.sign_in('user7@example.com', 123567890)
     with test_app.test_request_context(self.request_path):
       actual_response = self.handler.do_get()
-    self.assertEqual({"feature_ids": []}, actual_response['feature_ids'])
+    self.assertEqual([], actual_response['feature_ids'])
 
   def test_get__some_stars(self):
     """User has starred some features."""
@@ -61,7 +60,7 @@ class StarsAPITest(testing_config.CustomTestCase):
     with test_app.test_request_context(self.request_path):
       actual_response = self.handler.do_get()
     self.assertEqual(
-        {"feature_ids": [feature_id]},
+        [feature_id],
         actual_response["feature_ids"])
 
   def test_post__invalid_feature_id(self):
