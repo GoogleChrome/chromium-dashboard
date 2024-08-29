@@ -2,6 +2,39 @@ import unittest
 
 from flask import json
 
+from chromestatus_openapi.models.account_response import AccountResponse  # noqa: E501
+from chromestatus_openapi.models.activity import Activity  # noqa: E501
+from chromestatus_openapi.models.comments_request import CommentsRequest  # noqa: E501
+from chromestatus_openapi.models.component_users_request import ComponentUsersRequest  # noqa: E501
+from chromestatus_openapi.models.components_users_response import ComponentsUsersResponse  # noqa: E501
+from chromestatus_openapi.models.create_account_request import CreateAccountRequest  # noqa: E501
+from chromestatus_openapi.models.create_origin_trial_request import CreateOriginTrialRequest  # noqa: E501
+from chromestatus_openapi.models.delete_account200_response import DeleteAccount200Response  # noqa: E501
+from chromestatus_openapi.models.dismiss_cue_request import DismissCueRequest  # noqa: E501
+from chromestatus_openapi.models.error_message import ErrorMessage  # noqa: E501
+from chromestatus_openapi.models.external_reviews_response import ExternalReviewsResponse  # noqa: E501
+from chromestatus_openapi.models.feature_latency import FeatureLatency  # noqa: E501
+from chromestatus_openapi.models.feature_links_response import FeatureLinksResponse  # noqa: E501
+from chromestatus_openapi.models.feature_links_sample import FeatureLinksSample  # noqa: E501
+from chromestatus_openapi.models.feature_links_summary_response import FeatureLinksSummaryResponse  # noqa: E501
+from chromestatus_openapi.models.get_comments_response import GetCommentsResponse  # noqa: E501
+from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismissedCues400Response  # noqa: E501
+from chromestatus_openapi.models.get_gate_response import GetGateResponse  # noqa: E501
+from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
+from chromestatus_openapi.models.get_origin_trials_response import GetOriginTrialsResponse  # noqa: E501
+from chromestatus_openapi.models.get_votes_response import GetVotesResponse  # noqa: E501
+from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
+from chromestatus_openapi.models.patch_comment_request import PatchCommentRequest  # noqa: E501
+from chromestatus_openapi.models.permissions_response import PermissionsResponse  # noqa: E501
+from chromestatus_openapi.models.post_gate_request import PostGateRequest  # noqa: E501
+from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
+from chromestatus_openapi.models.post_vote_request import PostVoteRequest  # noqa: E501
+from chromestatus_openapi.models.process import Process  # noqa: E501
+from chromestatus_openapi.models.reject_unneeded_get_request import RejectUnneededGetRequest  # noqa: E501
+from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
+from chromestatus_openapi.models.sign_in_request import SignInRequest  # noqa: E501
+from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
+from chromestatus_openapi.models.success_message import SuccessMessage  # noqa: E501
 from chromestatus_openapi.test import BaseTestCase
 
 
@@ -14,12 +47,12 @@ class TestDefaultController(BaseTestCase):
         Add a comment to a feature
         """
         comments_request = {"postToThreadType":0,"comment":"comment"}
-        headers = {
+        headers = { 
             'Accept': 'application/json',
             'Content-Type': 'application/json',
         }
         response = self.client.open(
-            '/api/v0/features/<int:feature_id>/approvals/comments'.format(),
+            '/api/v0/features/<int:feature_id>/approvals/comments'.format(feature_id=56),
             method='POST',
             headers=headers,
             data=json.dumps(comments_request),
@@ -33,12 +66,12 @@ class TestDefaultController(BaseTestCase):
         Add a comment to a specific gate
         """
         comments_request = {"postToThreadType":0,"comment":"comment"}
-        headers = {
+        headers = { 
             'Accept': 'application/json',
             'Content-Type': 'application/json',
         }
         response = self.client.open(
-            '/api/v0/features/<int:feature_id>/approvals/<int:gate_id>/comments'.format(),
+            '/api/v0/features/<int:feature_id>/approvals/<int:gate_id>/comments'.format(feature_id=56, gate_id=56),
             method='POST',
             headers=headers,
             data=json.dumps(comments_request),
@@ -52,7 +85,7 @@ class TestDefaultController(BaseTestCase):
         Add a user to a component
         """
         component_users_request = {"owner":True}
-        headers = {
+        headers = { 
             'Content-Type': 'application/json',
             'XsrfToken': 'special-key',
         }
@@ -70,7 +103,7 @@ class TestDefaultController(BaseTestCase):
 
         Add a full set of cross-functional gates to a stage.
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -86,7 +119,7 @@ class TestDefaultController(BaseTestCase):
         Authenticate user with Google Sign-In
         """
         sign_in_request = {"credential":"credential"}
-        headers = {
+        headers = { 
             'Accept': 'application/json',
             'Content-Type': 'application/json',
         }
@@ -105,7 +138,7 @@ class TestDefaultController(BaseTestCase):
         Create a new account
         """
         create_account_request = {"isSiteEditor":True,"isAdmin":True,"email":"email"}
-        headers = {
+        headers = { 
             'Accept': 'application/json',
             'Content-Type': 'application/json',
         }
@@ -124,7 +157,7 @@ class TestDefaultController(BaseTestCase):
         Create a new origin trial
         """
         create_origin_trial_request = {"finch_url":{"form_field_name":"form_field_name","value":"{}"},"ot_display_name":{"form_field_name":"form_field_name","value":"{}"},"rollout_platforms":{"form_field_name":"form_field_name","value":"{}"},"ot_feedback_submission_url":{"form_field_name":"form_field_name","value":"{}"},"desktop_last":{"form_field_name":"form_field_name","value":"{}"},"android_first":{"form_field_name":"form_field_name","value":"{}"},"android_last":{"form_field_name":"form_field_name","value":"{}"},"announcement_url":{"form_field_name":"form_field_name","value":"{}"},"ot_description":{"form_field_name":"form_field_name","value":"{}"},"rollout_details":{"form_field_name":"form_field_name","value":"{}"},"ot_approval_buganizer_component":{"form_field_name":"form_field_name","value":"{}"},"ot_approval_criteria_url":{"form_field_name":"form_field_name","value":"{}"},"ot_approval_group_email":{"form_field_name":"form_field_name","value":"{}"},"experiment_extension_reason":{"form_field_name":"form_field_name","value":"{}"},"rollout_milestone":{"form_field_name":"form_field_name","value":"{}"},"ot_owner_email":{"form_field_name":"form_field_name","value":"{}"},"ot_request_note":{"form_field_name":"form_field_name","value":"{}"},"ios_last":{"form_field_name":"form_field_name","value":"{}"},"browser":{"form_field_name":"form_field_name","value":"{}"},"webview_first":{"form_field_name":"form_field_name","value":"{}"},"ot_documentation_url":{"form_field_name":"form_field_name","value":"{}"},"ot_emails":{"form_field_name":"form_field_name","value":"{}"},"ot_require_approvals":{"form_field_name":"form_field_name","value":"{}"},"ot_has_third_party_support":{"form_field_name":"form_field_name","value":"{}"},"experiment_goals":{"form_field_name":"form_field_name","value":"{}"},"ot_stage_id":{"form_field_name":"form_field_name","value":"{}"},"ot_approval_buganizer_custom_field_id":{"form_field_name":"form_field_name","value":"{}"},"intent_thread_url":{"form_field_name":"form_field_name","value":"{}"},"ot_is_critical_trial":{"form_field_name":"form_field_name","value":"{}"},"display_name":{"form_field_name":"form_field_name","value":"{}"},"ot_is_deprecation_trial":{"form_field_name":"form_field_name","value":"{}"},"rollout_impact":{"form_field_name":"form_field_name","value":"{}"},"origin_trial_feedback_url":{"form_field_name":"form_field_name","value":"{}"},"desktop_first":{"form_field_name":"form_field_name","value":"{}"},"experiment_risks":{"form_field_name":"form_field_name","value":"{}"},"ios_first":{"form_field_name":"form_field_name","value":"{}"},"ot_action_requested":{"form_field_name":"form_field_name","value":"{}"},"origin_trial_id":{"form_field_name":"form_field_name","value":"{}"},"webview_last":{"form_field_name":"form_field_name","value":"{}"},"enterprise_policies":{"form_field_name":"form_field_name","value":"{}"},"ot_chromium_trial_name":{"form_field_name":"form_field_name","value":"{}"},"ot_webfeature_use_counter":{"form_field_name":"form_field_name","value":"{}"}}
-        headers = {
+        headers = { 
             'Accept': 'application/json',
             'Content-Type': 'application/json',
         }
@@ -142,7 +175,7 @@ class TestDefaultController(BaseTestCase):
 
         Delete an account
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -158,7 +191,7 @@ class TestDefaultController(BaseTestCase):
         Dismiss a cue card for the signed-in user
         """
         dismiss_cue_request = {"cue":"progress-checkmarks"}
-        headers = {
+        headers = { 
             'Accept': 'application/json',
             'Content-Type': 'application/json',
         }
@@ -176,7 +209,7 @@ class TestDefaultController(BaseTestCase):
 
         Extend an existing origin trial
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -191,7 +224,7 @@ class TestDefaultController(BaseTestCase):
 
         Get dismissed cues for the current user
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -206,11 +239,11 @@ class TestDefaultController(BaseTestCase):
 
         Get all comments for a given feature
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
-            '/api/v0/features/<int:feature_id>/approvals/comments'.format(),
+            '/api/v0/features/<int:feature_id>/approvals/comments'.format(feature_id=56),
             method='GET',
             headers=headers)
         self.assert200(response,
@@ -223,7 +256,7 @@ class TestDefaultController(BaseTestCase):
         """
         query_string = [('feature_id', 56),
                         ('update_stale_links', True)]
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -242,7 +275,7 @@ class TestDefaultController(BaseTestCase):
         query_string = [('domain', 'domain_example'),
                         ('type', 'type_example'),
                         ('is_error', True)]
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -258,7 +291,7 @@ class TestDefaultController(BaseTestCase):
 
         Get feature links summary
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -273,11 +306,11 @@ class TestDefaultController(BaseTestCase):
 
         Get all comments for a given gate
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
-            '/api/v0/features/<int:feature_id>/approvals/<int:gate_id>/comments'.format(),
+            '/api/v0/features/<int:feature_id>/approvals/<int:gate_id>/comments'.format(feature_id=56, gate_id=56),
             method='GET',
             headers=headers)
         self.assert200(response,
@@ -288,7 +321,7 @@ class TestDefaultController(BaseTestCase):
 
         Get all gates for a feature
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -303,7 +336,7 @@ class TestDefaultController(BaseTestCase):
 
         Get the HTML body of an intent draft
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json:',
         }
         response = self.client.open(
@@ -318,7 +351,7 @@ class TestDefaultController(BaseTestCase):
 
         Get origin trials
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -333,7 +366,7 @@ class TestDefaultController(BaseTestCase):
 
         Get all pending gates
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -348,7 +381,7 @@ class TestDefaultController(BaseTestCase):
 
         Get the process for a feature
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -363,7 +396,7 @@ class TestDefaultController(BaseTestCase):
 
         Get the progress for a feature
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -379,7 +412,7 @@ class TestDefaultController(BaseTestCase):
         Get the permissions and email of the user
         """
         query_string = [('returnPairedUser', True)]
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -395,7 +428,7 @@ class TestDefaultController(BaseTestCase):
 
         Get votes for a feature
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -410,7 +443,7 @@ class TestDefaultController(BaseTestCase):
 
         Get votes for a feature and gate
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -425,7 +458,7 @@ class TestDefaultController(BaseTestCase):
 
         List all components and possible users
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
             'XsrfToken': 'special-key',
         }
@@ -441,7 +474,7 @@ class TestDefaultController(BaseTestCase):
 
         List features whose external reviews are incomplete
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -458,7 +491,7 @@ class TestDefaultController(BaseTestCase):
         """
         query_string = [('startAt', '2013-10-20'),
                         ('endAt', '2013-10-20')]
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -474,7 +507,7 @@ class TestDefaultController(BaseTestCase):
 
         List recently reviewed features and their review latency
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -490,7 +523,7 @@ class TestDefaultController(BaseTestCase):
         List spec mentors and their activity
         """
         query_string = [('after', '2013-10-20')]
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -506,7 +539,7 @@ class TestDefaultController(BaseTestCase):
 
         Log out the current user
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -522,7 +555,7 @@ class TestDefaultController(BaseTestCase):
         Submit an intent to be posted on blink-dev
         """
         post_intent_request = {"intent_cc_emails":["intent_cc_emails","intent_cc_emails"],"gate_id":0}
-        headers = {
+        headers = { 
             'Accept': 'application/json',
             'Content-Type': 'application/json',
         }
@@ -540,7 +573,7 @@ class TestDefaultController(BaseTestCase):
 
         Refresh the XSRF token
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -555,7 +588,7 @@ class TestDefaultController(BaseTestCase):
 
         reject unneeded GET request without triggering Error Reporting
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -570,7 +603,7 @@ class TestDefaultController(BaseTestCase):
 
         reject unneeded GET request without triggering Error Reporting
         """
-        headers = {
+        headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
@@ -586,7 +619,7 @@ class TestDefaultController(BaseTestCase):
         Remove a user from a component
         """
         component_users_request = {"owner":True}
-        headers = {
+        headers = { 
             'Content-Type': 'application/json',
             'XsrfToken': 'special-key',
         }
@@ -605,7 +638,7 @@ class TestDefaultController(BaseTestCase):
         Set the assignees for a gate.
         """
         post_gate_request = {"assignees":["assignees","assignees"]}
-        headers = {
+        headers = { 
             'Accept': 'application/json',
             'Content-Type': 'application/json',
         }
@@ -624,7 +657,7 @@ class TestDefaultController(BaseTestCase):
         Set a user's vote value for the specific feature and gate.
         """
         post_vote_request = {"state":0}
-        headers = {
+        headers = { 
             'Accept': 'application/json',
             'Content-Type': 'application/json',
         }
@@ -643,12 +676,12 @@ class TestDefaultController(BaseTestCase):
         Update a comment on a feature
         """
         patch_comment_request = {"commentId":0,"isUndelete":True}
-        headers = {
+        headers = { 
             'Accept': 'application/json',
             'Content-Type': 'application/json',
         }
         response = self.client.open(
-            '/api/v0/features/<int:feature_id>/approvals/comments'.format(),
+            '/api/v0/features/<int:feature_id>/approvals/comments'.format(feature_id=56),
             method='PATCH',
             headers=headers,
             data=json.dumps(patch_comment_request),

@@ -16,52 +16,60 @@ import { mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface BooleanValue
+ * @interface StringFieldInfoValue
  */
-export interface BooleanValue {
+export interface StringFieldInfoValue {
     /**
      * 
      * @type {string}
-     * @memberof BooleanValue
+     * @memberof StringFieldInfoValue
      */
-    valueType?: string;
+    form_field_name?: string;
     /**
      * 
-     * @type {boolean}
-     * @memberof BooleanValue
+     * @type {string}
+     * @memberof StringFieldInfoValue
      */
-    value?: boolean;
+    value_type?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof StringFieldInfoValue
+     */
+    value?: string;
 }
 
 /**
- * Check if a given object implements the BooleanValue interface.
+ * Check if a given object implements the StringFieldInfoValue interface.
  */
-export function instanceOfBooleanValue(value: object): value is BooleanValue {
+export function instanceOfStringFieldInfoValue(value: object): value is StringFieldInfoValue {
     return true;
 }
 
-export function BooleanValueFromJSON(json: any): BooleanValue {
-    return BooleanValueFromJSONTyped(json, false);
+export function StringFieldInfoValueFromJSON(json: any): StringFieldInfoValue {
+    return StringFieldInfoValueFromJSONTyped(json, false);
 }
 
-export function BooleanValueFromJSONTyped(json: any, ignoreDiscriminator: boolean): BooleanValue {
+export function StringFieldInfoValueFromJSONTyped(json: any, ignoreDiscriminator: boolean): StringFieldInfoValue {
     if (json == null) {
         return json;
     }
     return {
         
-        'valueType': json['valueType'] == null ? undefined : json['valueType'],
+        'form_field_name': json['form_field_name'] == null ? undefined : json['form_field_name'],
+        'value_type': json['value_type'] == null ? undefined : json['value_type'],
         'value': json['value'] == null ? undefined : json['value'],
     };
 }
 
-export function BooleanValueToJSON(value?: BooleanValue | null): any {
+export function StringFieldInfoValueToJSON(value?: StringFieldInfoValue | null): any {
     if (value == null) {
         return value;
     }
     return {
         
-        'valueType': value['valueType'],
+        'form_field_name': value['form_field_name'],
+        'value_type': value['value_type'],
         'value': value['value'],
     };
 }

@@ -16,52 +16,60 @@ import { mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface StringValue
+ * @interface ArrayFieldInfoValue
  */
-export interface StringValue {
+export interface ArrayFieldInfoValue {
     /**
      * 
      * @type {string}
-     * @memberof StringValue
+     * @memberof ArrayFieldInfoValue
      */
-    valueType?: string;
+    form_field_name?: string;
     /**
      * 
      * @type {string}
-     * @memberof StringValue
+     * @memberof ArrayFieldInfoValue
      */
-    value?: string;
+    value_type?: string;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof ArrayFieldInfoValue
+     */
+    value?: Array<string>;
 }
 
 /**
- * Check if a given object implements the StringValue interface.
+ * Check if a given object implements the ArrayFieldInfoValue interface.
  */
-export function instanceOfStringValue(value: object): value is StringValue {
+export function instanceOfArrayFieldInfoValue(value: object): value is ArrayFieldInfoValue {
     return true;
 }
 
-export function StringValueFromJSON(json: any): StringValue {
-    return StringValueFromJSONTyped(json, false);
+export function ArrayFieldInfoValueFromJSON(json: any): ArrayFieldInfoValue {
+    return ArrayFieldInfoValueFromJSONTyped(json, false);
 }
 
-export function StringValueFromJSONTyped(json: any, ignoreDiscriminator: boolean): StringValue {
+export function ArrayFieldInfoValueFromJSONTyped(json: any, ignoreDiscriminator: boolean): ArrayFieldInfoValue {
     if (json == null) {
         return json;
     }
     return {
         
-        'valueType': json['valueType'] == null ? undefined : json['valueType'],
+        'form_field_name': json['form_field_name'] == null ? undefined : json['form_field_name'],
+        'value_type': json['value_type'] == null ? undefined : json['value_type'],
         'value': json['value'] == null ? undefined : json['value'],
     };
 }
 
-export function StringValueToJSON(value?: StringValue | null): any {
+export function ArrayFieldInfoValueToJSON(value?: ArrayFieldInfoValue | null): any {
     if (value == null) {
         return value;
     }
     return {
         
-        'valueType': value['valueType'],
+        'form_field_name': value['form_field_name'],
+        'value_type': value['value_type'],
         'value': value['value'],
     };
 }

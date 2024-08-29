@@ -71,7 +71,7 @@ src/models/ReviewLatency.ts
 src/models/SignInRequest.ts
 src/models/SpecMentor.ts
 src/models/StageField.ts
-src/models/StringFieldInfoValue.ts 
+src/models/StringFieldInfoValue.ts
 src/models/SuccessMessage.ts
 src/models/TokenRefreshResponse.ts
 src/models/UserPermissions.ts
