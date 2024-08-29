@@ -38,6 +38,7 @@ chromestatus_openapi/models/get_comments_response.py
 chromestatus_openapi/models/get_dismissed_cues400_response.py
 chromestatus_openapi/models/get_gate_response.py
 chromestatus_openapi/models/get_intent_response.py
+chromestatus_openapi/models/get_settings_response.py
 chromestatus_openapi/models/get_votes_response.py
 chromestatus_openapi/models/link_preview.py
 chromestatus_openapi/models/link_preview_base.py
@@ -60,6 +61,7 @@ chromestatus_openapi/models/patch_comment_request.py
 chromestatus_openapi/models/permissions_response.py
 chromestatus_openapi/models/post_gate_request.py
 chromestatus_openapi/models/post_intent_request.py
+chromestatus_openapi/models/post_settings_request.py
 chromestatus_openapi/models/post_vote_request.py
 chromestatus_openapi/models/process.py
 chromestatus_openapi/models/process_stage.py

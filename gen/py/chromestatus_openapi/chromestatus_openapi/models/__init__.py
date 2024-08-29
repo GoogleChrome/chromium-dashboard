@@ -26,6 +26,7 @@ from chromestatus_openapi.models.get_comments_response import GetCommentsRespons
 from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismissedCues400Response
 from chromestatus_openapi.models.get_gate_response import GetGateResponse
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse
+from chromestatus_openapi.models.get_settings_response import GetSettingsResponse
 from chromestatus_openapi.models.get_votes_response import GetVotesResponse
 from chromestatus_openapi.models.link_preview import LinkPreview
 from chromestatus_openapi.models.link_preview_base import LinkPreviewBase
@@ -48,6 +49,7 @@ from chromestatus_openapi.models.patch_comment_request import PatchCommentReques
 from chromestatus_openapi.models.permissions_response import PermissionsResponse
 from chromestatus_openapi.models.post_gate_request import PostGateRequest
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest
+from chromestatus_openapi.models.post_settings_request import PostSettingsRequest
 from chromestatus_openapi.models.post_vote_request import PostVoteRequest
 from chromestatus_openapi.models.process import Process
 from chromestatus_openapi.models.process_stage import ProcessStage
