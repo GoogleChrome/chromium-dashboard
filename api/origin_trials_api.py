@@ -21,6 +21,8 @@ import json5
 import requests
 import validators
 
+from chromestatus_openapi.models import (CreateOriginTrialRequest, GetOriginTrialsResponse, SuccessMessage)
+
 from framework import basehandlers, origin_trials_client, permissions
 from internals import notifier_helpers
 from internals.core_enums import OT_READY_FOR_CREATION
@@ -52,7 +54,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
       A list of data on all public origin trials.
     """
     try:
-      trials_list = origin_trials_client.get_trials_list()
+      trials_list = GetOriginTrialsResponse.from_dict(origin_trials_client.get_trials_list())
     except requests.exceptions.RequestException:
       self.abort(500, 'Error obtaining origin trial data from API')
     except KeyError:
@@ -162,7 +164,8 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
       if gate.state not in (Vote.APPROVED, Vote.NA):
         self.abort(400, 'Unapproved gate found for trial stage.')
 
-    body = self.get_json_param_dict()
+    #TODO(markxiong0122): remove to_dict() when PR#4213 is merged
+    body = CreateOriginTrialRequest.from_dict(self.get_json_param_dict()).to_dict()
     validation_errors = self._validate_creation_args(body)
     if validation_errors:
       return {
@@ -173,7 +176,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
     # Flag OT stage as ready to be created.
     ot_stage.ot_setup_status = OT_READY_FOR_CREATION
     ot_stage.put()
-    return {'message': 'Origin trial creation request submitted.'}
+    return SuccessMessage(message='Origin trial creation request submitted.').to_dict()
 
   def _validate_extension_args(
         self, feature_id: int, ot_stage: Stage, extension_stage: Stage) -> None:
@@ -247,4 +250,4 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
     extension_stage.put()
 
     notifier_helpers.send_trial_extended_notification(ot_stage, extension_stage)
-    return {'message': 'Origin trial extended successfully.'}
+    return SuccessMessage(message='Origin trial extended successfully.').to_dict()

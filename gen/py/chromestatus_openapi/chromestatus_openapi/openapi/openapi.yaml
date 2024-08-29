@@ -969,6 +969,124 @@ paths:
           description: User logged out successfully
       summary: Log out the current user
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /origintrials:
+    get:
+      operationId: get_origin_trials
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetOriginTrialsResponse'
+          description: List of all origin trials
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Error obtaining origin trial data from API or Malformed response
+            from origin trials API
+      summary: Get origin trials
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /origintrials/{feature_id}/{extension_stage_id}/extend:
+    patch:
+      operationId: extend_origin_trial
+      parameters:
+      - explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - explode: false
+        in: path
+        name: extension_stage_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Origin trial extended successfully
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: "Invalid request. Possible reasons include missing or incorrect\
+            \ feature/stage, or validation errors."
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: The specified feature or stage was not found.
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: "Server error, such as issues with the origin trials API or\
+            \ Chromium schedule."
+      summary: Extend an existing origin trial
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /origintrials/{feature_id}/{stage_id}/create:
+    post:
+      operationId: create_origin_trial
+      parameters:
+      - explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - explode: false
+        in: path
+        name: stage_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOriginTrialRequest'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Origin trial created successfully
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: "Invalid request. Possible reasons include an unapproved gate,\
+            \ a missing feature/stage, or validation errors."
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: The specified feature or stage was not found.
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: "Server error, such as issues with obtaining necessary Chromium\
+            \ files or origin trial data."
+      summary: Create a new origin trial
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /review-latency:
     get:
       operationId: list_reviews_with_latency
@@ -1696,6 +1814,424 @@ components:
           title: id
           type: integer
       title: AccountResponse
+      type: object
+    OriginTrialsInfo:
+      example:
+        original_end_milestone: original_end_milestone
+        start_milestone: start_milestone
+        intent_to_experiment_url: intent_to_experiment_url
+        allow_third_party_origins: true
+        end_time: end_time
+        description: description
+        display_name: display_name
+        documentation_url: documentation_url
+        type: type
+        end_milestone: end_milestone
+        enabled: true
+        feedback_url: feedback_url
+        chromestatus_url: chromestatus_url
+        origin_trial_feature_name: origin_trial_feature_name
+        id: id
+        trial_extensions:
+        - "{}"
+        - "{}"
+        status: status
+      properties:
+        id:
+          title: id
+          type: string
+        display_name:
+          title: display_name
+          type: string
+        description:
+          title: description
+          type: string
+        origin_trial_feature_name:
+          title: origin_trial_feature_name
+          type: string
+        enabled:
+          title: enabled
+          type: boolean
+        status:
+          title: status
+          type: string
+        chromestatus_url:
+          title: chromestatus_url
+          type: string
+        start_milestone:
+          title: start_milestone
+          type: string
+        end_milestone:
+          title: end_milestone
+          type: string
+        original_end_milestone:
+          title: original_end_milestone
+          type: string
+        end_time:
+          title: end_time
+          type: string
+        documentation_url:
+          title: documentation_url
+          type: string
+        feedback_url:
+          title: feedback_url
+          type: string
+        intent_to_experiment_url:
+          title: intent_to_experiment_url
+          type: string
+        trial_extensions:
+          items:
+            type: object
+          title: trial_extensions
+          type: array
+        type:
+          title: type
+          type: string
+        allow_third_party_origins:
+          title: allow_third_party_origins
+          type: boolean
+      title: OriginTrialsInfo
+      type: object
+    GetOriginTrialsResponse:
+      example:
+        origin_trials:
+        - original_end_milestone: original_end_milestone
+          start_milestone: start_milestone
+          intent_to_experiment_url: intent_to_experiment_url
+          allow_third_party_origins: true
+          end_time: end_time
+          description: description
+          display_name: display_name
+          documentation_url: documentation_url
+          type: type
+          end_milestone: end_milestone
+          enabled: true
+          feedback_url: feedback_url
+          chromestatus_url: chromestatus_url
+          origin_trial_feature_name: origin_trial_feature_name
+          id: id
+          trial_extensions:
+          - "{}"
+          - "{}"
+          status: status
+        - original_end_milestone: original_end_milestone
+          start_milestone: start_milestone
+          intent_to_experiment_url: intent_to_experiment_url
+          allow_third_party_origins: true
+          end_time: end_time
+          description: description
+          display_name: display_name
+          documentation_url: documentation_url
+          type: type
+          end_milestone: end_milestone
+          enabled: true
+          feedback_url: feedback_url
+          chromestatus_url: chromestatus_url
+          origin_trial_feature_name: origin_trial_feature_name
+          id: id
+          trial_extensions:
+          - "{}"
+          - "{}"
+          status: status
+      properties:
+        origin_trials:
+          items:
+            $ref: '#/components/schemas/OriginTrialsInfo'
+          title: origin_trials
+          type: array
+      title: GetOriginTrialsResponse
+    CreateOriginTrialRequest:
+      allOf:
+      - $ref: '#/components/schemas/StageField'
+      - $ref: '#/components/schemas/MilestoneSetField'
+      example:
+        finch_url:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_display_name:
+          form_field_name: form_field_name
+          value: "{}"
+        rollout_platforms:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_feedback_submission_url:
+          form_field_name: form_field_name
+          value: "{}"
+        desktop_last:
+          form_field_name: form_field_name
+          value: "{}"
+        android_first:
+          form_field_name: form_field_name
+          value: "{}"
+        android_last:
+          form_field_name: form_field_name
+          value: "{}"
+        announcement_url:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_description:
+          form_field_name: form_field_name
+          value: "{}"
+        rollout_details:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_approval_buganizer_component:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_approval_criteria_url:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_approval_group_email:
+          form_field_name: form_field_name
+          value: "{}"
+        experiment_extension_reason:
+          form_field_name: form_field_name
+          value: "{}"
+        rollout_milestone:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_owner_email:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_request_note:
+          form_field_name: form_field_name
+          value: "{}"
+        ios_last:
+          form_field_name: form_field_name
+          value: "{}"
+        browser:
+          form_field_name: form_field_name
+          value: "{}"
+        webview_first:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_documentation_url:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_emails:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_require_approvals:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_has_third_party_support:
+          form_field_name: form_field_name
+          value: "{}"
+        experiment_goals:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_stage_id:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_approval_buganizer_custom_field_id:
+          form_field_name: form_field_name
+          value: "{}"
+        intent_thread_url:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_is_critical_trial:
+          form_field_name: form_field_name
+          value: "{}"
+        display_name:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_is_deprecation_trial:
+          form_field_name: form_field_name
+          value: "{}"
+        rollout_impact:
+          form_field_name: form_field_name
+          value: "{}"
+        origin_trial_feedback_url:
+          form_field_name: form_field_name
+          value: "{}"
+        desktop_first:
+          form_field_name: form_field_name
+          value: "{}"
+        experiment_risks:
+          form_field_name: form_field_name
+          value: "{}"
+        ios_first:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_action_requested:
+          form_field_name: form_field_name
+          value: "{}"
+        origin_trial_id:
+          form_field_name: form_field_name
+          value: "{}"
+        webview_last:
+          form_field_name: form_field_name
+          value: "{}"
+        enterprise_policies:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_chromium_trial_name:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_webfeature_use_counter:
+          form_field_name: form_field_name
+          value: "{}"
+      title: CreateOriginTrialRequest
+      type: object
+    StageField:
+      properties:
+        announcement_url:
+          $ref: '#/components/schemas/FieldInfo'
+        browser:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_description:
+          $ref: '#/components/schemas/FieldInfo'
+        display_name:
+          $ref: '#/components/schemas/FieldInfo'
+        enterprise_policies:
+          $ref: '#/components/schemas/FieldInfo'
+        finch_url:
+          $ref: '#/components/schemas/FieldInfo'
+        experiment_goals:
+          $ref: '#/components/schemas/FieldInfo'
+        experiment_risks:
+          $ref: '#/components/schemas/FieldInfo'
+        experiment_extension_reason:
+          $ref: '#/components/schemas/FieldInfo'
+        intent_thread_url:
+          $ref: '#/components/schemas/FieldInfo'
+        origin_trial_feedback_url:
+          $ref: '#/components/schemas/FieldInfo'
+        origin_trial_id:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_approval_buganizer_component:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_approval_buganizer_custom_field_id:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_approval_criteria_url:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_approval_group_email:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_chromium_trial_name:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_display_name:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_action_requested:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_documentation_url:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_emails:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_feedback_submission_url:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_has_third_party_support:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_is_critical_trial:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_is_deprecation_trial:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_owner_email:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_request_note:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_require_approvals:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_stage_id:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_webfeature_use_counter:
+          $ref: '#/components/schemas/FieldInfo'
+        rollout_impact:
+          $ref: '#/components/schemas/FieldInfo'
+        rollout_milestone:
+          $ref: '#/components/schemas/FieldInfo'
+        rollout_platforms:
+          $ref: '#/components/schemas/FieldInfo'
+        rollout_details:
+          $ref: '#/components/schemas/FieldInfo'
+      title: StageField
+      type: object
+    MilestoneSetField:
+      properties:
+        desktop_first:
+          $ref: '#/components/schemas/FieldInfo'
+        desktop_last:
+          $ref: '#/components/schemas/FieldInfo'
+        android_first:
+          $ref: '#/components/schemas/FieldInfo'
+        android_last:
+          $ref: '#/components/schemas/FieldInfo'
+        ios_first:
+          $ref: '#/components/schemas/FieldInfo'
+        ios_last:
+          $ref: '#/components/schemas/FieldInfo'
+        webview_first:
+          $ref: '#/components/schemas/FieldInfo'
+        webview_last:
+          $ref: '#/components/schemas/FieldInfo'
+      title: MilestoneSetField
+      type: object
+    FieldInfo:
+      example:
+        form_field_name: form_field_name
+        value: "{}"
+      properties:
+        form_field_name:
+          title: form_field_name
+          type: string
+        value:
+          discriminator:
+            mapping:
+              integer: '#/components/schemas/IntegerFieldInfoValue'
+              string: '#/components/schemas/StringFieldInfoValue'
+              boolean: '#/components/schemas/BooleanFieldInfoValue'
+              array: '#/components/schemas/ArrayFieldInfoValue'
+            propertyName: value_type
+          title: FieldInfoValue
+          type: object
+      title: FieldInfo
+      type: object
+    StringFieldInfoValue:
+      properties:
+        form_field_name:
+          type: string
+        value_type:
+          type: string
+        value:
+          type: string
+      type: object
+    BooleanFieldInfoValue:
+      properties:
+        form_field_name:
+          type: string
+        value_type:
+          type: string
+        value:
+          type: boolean
+      type: object
+    IntegerFieldInfoValue:
+      properties:
+        form_field_name:
+          type: string
+        value_type:
+          type: string
+        value:
+          type: integer
+      type: object
+    ArrayFieldInfoValue:
+      properties:
+        form_field_name:
+          type: string
+        value_type:
+          type: string
+        value:
+          items:
+            type: string
+          type: array
+      type: object
+    FieldInfoValue:
+      discriminator:
+        mapping:
+          integer: '#/components/schemas/IntegerFieldInfoValue'
+          string: '#/components/schemas/StringFieldInfoValue'
+          boolean: '#/components/schemas/BooleanFieldInfoValue'
+          array: '#/components/schemas/ArrayFieldInfoValue'
+        propertyName: value_type
+      title: FieldInfoValue
       type: object
     GetIntentResponse:
       example:

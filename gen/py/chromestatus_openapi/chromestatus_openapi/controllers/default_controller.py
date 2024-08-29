@@ -9,6 +9,7 @@ from chromestatus_openapi.models.comments_request import CommentsRequest  # noqa
 from chromestatus_openapi.models.component_users_request import ComponentUsersRequest  # noqa: E501
 from chromestatus_openapi.models.components_users_response import ComponentsUsersResponse  # noqa: E501
 from chromestatus_openapi.models.create_account_request import CreateAccountRequest  # noqa: E501
+from chromestatus_openapi.models.create_origin_trial_request import CreateOriginTrialRequest  # noqa: E501
 from chromestatus_openapi.models.delete_account200_response import DeleteAccount200Response  # noqa: E501
 from chromestatus_openapi.models.dismiss_cue_request import DismissCueRequest  # noqa: E501
 from chromestatus_openapi.models.error_message import ErrorMessage  # noqa: E501
@@ -21,6 +22,7 @@ from chromestatus_openapi.models.get_comments_response import GetCommentsRespons
 from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismissedCues400Response  # noqa: E501
 from chromestatus_openapi.models.get_gate_response import GetGateResponse  # noqa: E501
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
+from chromestatus_openapi.models.get_origin_trials_response import GetOriginTrialsResponse  # noqa: E501
 from chromestatus_openapi.models.get_settings_response import GetSettingsResponse  # noqa: E501
 from chromestatus_openapi.models.get_votes_response import GetVotesResponse  # noqa: E501
 from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
@@ -139,6 +141,25 @@ def create_account(create_account_request=None):  # noqa: E501
     return 'do some magic!'
 
 
+def create_origin_trial(feature_id, stage_id, create_origin_trial_request=None):  # noqa: E501
+    """Create a new origin trial
+
+     # noqa: E501
+
+    :param feature_id: 
+    :type feature_id: int
+    :param stage_id: 
+    :type stage_id: int
+    :param create_origin_trial_request: 
+    :type create_origin_trial_request: dict | bytes
+
+    :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
+    """
+    if connexion.request.is_json:
+        create_origin_trial_request = CreateOriginTrialRequest.from_dict(connexion.request.get_json())  # noqa: E501
+    return 'do some magic!'
+
+
 def delete_account(account_id):  # noqa: E501
     """Delete an account
 
@@ -164,6 +185,21 @@ def dismiss_cue(dismiss_cue_request):  # noqa: E501
     """
     if connexion.request.is_json:
         dismiss_cue_request = DismissCueRequest.from_dict(connexion.request.get_json())  # noqa: E501
+    return 'do some magic!'
+
+
+def extend_origin_trial(feature_id, extension_stage_id):  # noqa: E501
+    """Extend an existing origin trial
+
+     # noqa: E501
+
+    :param feature_id: 
+    :type feature_id: int
+    :param extension_stage_id: 
+    :type extension_stage_id: int
+
+    :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
+    """
     return 'do some magic!'
 
 
@@ -275,6 +311,17 @@ def get_intent_body(feature_id, stage_id, gate_id):  # noqa: E501
     :type gate_id: int
 
     :rtype: Union[GetIntentResponse, Tuple[GetIntentResponse, int], Tuple[GetIntentResponse, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
+def get_origin_trials():  # noqa: E501
+    """Get origin trials
+
+     # noqa: E501
+
+
+    :rtype: Union[GetOriginTrialsResponse, Tuple[GetOriginTrialsResponse, int], Tuple[GetOriginTrialsResponse, int, Dict[str, str]]
     """
     return 'do some magic!'
 

@@ -21,6 +21,7 @@ import type {
   ComponentUsersRequest,
   ComponentsUsersResponse,
   CreateAccountRequest,
+  CreateOriginTrialRequest,
   DeleteAccount200Response,
   DismissCueRequest,
   ErrorMessage,
@@ -33,6 +34,7 @@ import type {
   GetDismissedCues400Response,
   GetGateResponse,
   GetIntentResponse,
+  GetOriginTrialsResponse,
   GetSettingsResponse,
   GetVotesResponse,
   MessageResponse,
@@ -62,6 +64,8 @@ import {
     ComponentsUsersResponseToJSON,
     CreateAccountRequestFromJSON,
     CreateAccountRequestToJSON,
+    CreateOriginTrialRequestFromJSON,
+    CreateOriginTrialRequestToJSON,
     DeleteAccount200ResponseFromJSON,
     DeleteAccount200ResponseToJSON,
     DismissCueRequestFromJSON,
@@ -86,6 +90,8 @@ import {
     GetGateResponseToJSON,
     GetIntentResponseFromJSON,
     GetIntentResponseToJSON,
+    GetOriginTrialsResponseFromJSON,
+    GetOriginTrialsResponseToJSON,
     GetSettingsResponseFromJSON,
     GetSettingsResponseToJSON,
     GetVotesResponseFromJSON,
@@ -148,12 +154,23 @@ export interface CreateAccountOperationRequest {
     createAccountRequest?: CreateAccountRequest;
 }
 
+export interface CreateOriginTrialOperationRequest {
+    featureId: number;
+    stageId: number;
+    createOriginTrialRequest?: CreateOriginTrialRequest;
+}
+
 export interface DeleteAccountRequest {
     accountId: number;
 }
 
 export interface DismissCueOperationRequest {
     dismissCueRequest: DismissCueRequest;
+}
+
+export interface ExtendOriginTrialRequest {
+    featureId: number;
+    extensionStageId: number;
 }
 
 export interface GetFeatureCommentsRequest {
@@ -359,6 +376,23 @@ export interface DefaultApiInterface {
 
     /**
      * 
+     * @summary Create a new origin trial
+     * @param {number} featureId 
+     * @param {number} stageId 
+     * @param {CreateOriginTrialRequest} [createOriginTrialRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    createOriginTrialRaw(requestParameters: CreateOriginTrialOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+
+    /**
+     * Create a new origin trial
+     */
+    createOriginTrial(requestParameters: CreateOriginTrialOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
+
+    /**
+     * 
      * @summary Delete an account
      * @param {number} accountId ID of the account to delete
      * @param {*} [options] Override http request option.
@@ -386,6 +420,22 @@ export interface DefaultApiInterface {
      * Dismiss a cue card for the signed-in user
      */
     dismissCue(requestParameters: DismissCueOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
+
+    /**
+     * 
+     * @summary Extend an existing origin trial
+     * @param {number} featureId 
+     * @param {number} extensionStageId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    extendOriginTrialRaw(requestParameters: ExtendOriginTrialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+
+    /**
+     * Extend an existing origin trial
+     */
+    extendOriginTrial(requestParameters: ExtendOriginTrialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
 
     /**
      * 
@@ -510,6 +560,20 @@ export interface DefaultApiInterface {
      * Get the HTML body of an intent draft
      */
     getIntentBody(requestParameters: GetIntentBodyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetIntentResponse>;
+
+    /**
+     * 
+     * @summary Get origin trials
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getOriginTrialsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetOriginTrialsResponse>>;
+
+    /**
+     * Get origin trials
+     */
+    getOriginTrials(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetOriginTrialsResponse>;
 
     /**
      * 
@@ -1083,6 +1147,49 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     }
 
     /**
+     * Create a new origin trial
+     */
+    async createOriginTrialRaw(requestParameters: CreateOriginTrialOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling createOriginTrial().'
+            );
+        }
+
+        if (requestParameters['stageId'] == null) {
+            throw new runtime.RequiredError(
+                'stageId',
+                'Required parameter "stageId" was null or undefined when calling createOriginTrial().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/origintrials/{feature_id}/{stage_id}/create`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))).replace(`{${"stage_id"}}`, encodeURIComponent(String(requestParameters['stageId']))),
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: CreateOriginTrialRequestToJSON(requestParameters['createOriginTrialRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Create a new origin trial
+     */
+    async createOriginTrial(requestParameters: CreateOriginTrialOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+        const response = await this.createOriginTrialRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Delete an account
      */
     async deleteAccountRaw(requestParameters: DeleteAccountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DeleteAccount200Response>> {
@@ -1148,6 +1255,46 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async dismissCue(requestParameters: DismissCueOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
         const response = await this.dismissCueRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Extend an existing origin trial
+     */
+    async extendOriginTrialRaw(requestParameters: ExtendOriginTrialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling extendOriginTrial().'
+            );
+        }
+
+        if (requestParameters['extensionStageId'] == null) {
+            throw new runtime.RequiredError(
+                'extensionStageId',
+                'Required parameter "extensionStageId" was null or undefined when calling extendOriginTrial().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/origintrials/{feature_id}/{extension_stage_id}/extend`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))).replace(`{${"extension_stage_id"}}`, encodeURIComponent(String(requestParameters['extensionStageId']))),
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Extend an existing origin trial
+     */
+    async extendOriginTrial(requestParameters: ExtendOriginTrialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+        const response = await this.extendOriginTrialRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -1425,6 +1572,32 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async getIntentBody(requestParameters: GetIntentBodyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetIntentResponse> {
         const response = await this.getIntentBodyRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get origin trials
+     */
+    async getOriginTrialsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetOriginTrialsResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/origintrials`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GetOriginTrialsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get origin trials
+     */
+    async getOriginTrials(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetOriginTrialsResponse> {
+        const response = await this.getOriginTrialsRaw(initOverrides);
         return await response.value();
     }
 

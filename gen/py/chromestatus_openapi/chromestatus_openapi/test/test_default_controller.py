@@ -8,6 +8,7 @@ from chromestatus_openapi.models.comments_request import CommentsRequest  # noqa
 from chromestatus_openapi.models.component_users_request import ComponentUsersRequest  # noqa: E501
 from chromestatus_openapi.models.components_users_response import ComponentsUsersResponse  # noqa: E501
 from chromestatus_openapi.models.create_account_request import CreateAccountRequest  # noqa: E501
+from chromestatus_openapi.models.create_origin_trial_request import CreateOriginTrialRequest  # noqa: E501
 from chromestatus_openapi.models.delete_account200_response import DeleteAccount200Response  # noqa: E501
 from chromestatus_openapi.models.dismiss_cue_request import DismissCueRequest  # noqa: E501
 from chromestatus_openapi.models.error_message import ErrorMessage  # noqa: E501
@@ -20,6 +21,7 @@ from chromestatus_openapi.models.get_comments_response import GetCommentsRespons
 from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismissedCues400Response  # noqa: E501
 from chromestatus_openapi.models.get_gate_response import GetGateResponse  # noqa: E501
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
+from chromestatus_openapi.models.get_origin_trials_response import GetOriginTrialsResponse  # noqa: E501
 from chromestatus_openapi.models.get_settings_response import GetSettingsResponse  # noqa: E501
 from chromestatus_openapi.models.get_votes_response import GetVotesResponse  # noqa: E501
 from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
@@ -151,6 +153,25 @@ class TestDefaultController(BaseTestCase):
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
+    def test_create_origin_trial(self):
+        """Test case for create_origin_trial
+
+        Create a new origin trial
+        """
+        create_origin_trial_request = {"finch_url":{"form_field_name":"form_field_name","value":"{}"},"ot_display_name":{"form_field_name":"form_field_name","value":"{}"},"rollout_platforms":{"form_field_name":"form_field_name","value":"{}"},"ot_feedback_submission_url":{"form_field_name":"form_field_name","value":"{}"},"desktop_last":{"form_field_name":"form_field_name","value":"{}"},"android_first":{"form_field_name":"form_field_name","value":"{}"},"android_last":{"form_field_name":"form_field_name","value":"{}"},"announcement_url":{"form_field_name":"form_field_name","value":"{}"},"ot_description":{"form_field_name":"form_field_name","value":"{}"},"rollout_details":{"form_field_name":"form_field_name","value":"{}"},"ot_approval_buganizer_component":{"form_field_name":"form_field_name","value":"{}"},"ot_approval_criteria_url":{"form_field_name":"form_field_name","value":"{}"},"ot_approval_group_email":{"form_field_name":"form_field_name","value":"{}"},"experiment_extension_reason":{"form_field_name":"form_field_name","value":"{}"},"rollout_milestone":{"form_field_name":"form_field_name","value":"{}"},"ot_owner_email":{"form_field_name":"form_field_name","value":"{}"},"ot_request_note":{"form_field_name":"form_field_name","value":"{}"},"ios_last":{"form_field_name":"form_field_name","value":"{}"},"browser":{"form_field_name":"form_field_name","value":"{}"},"webview_first":{"form_field_name":"form_field_name","value":"{}"},"ot_documentation_url":{"form_field_name":"form_field_name","value":"{}"},"ot_emails":{"form_field_name":"form_field_name","value":"{}"},"ot_require_approvals":{"form_field_name":"form_field_name","value":"{}"},"ot_has_third_party_support":{"form_field_name":"form_field_name","value":"{}"},"experiment_goals":{"form_field_name":"form_field_name","value":"{}"},"ot_stage_id":{"form_field_name":"form_field_name","value":"{}"},"ot_approval_buganizer_custom_field_id":{"form_field_name":"form_field_name","value":"{}"},"intent_thread_url":{"form_field_name":"form_field_name","value":"{}"},"ot_is_critical_trial":{"form_field_name":"form_field_name","value":"{}"},"display_name":{"form_field_name":"form_field_name","value":"{}"},"ot_is_deprecation_trial":{"form_field_name":"form_field_name","value":"{}"},"rollout_impact":{"form_field_name":"form_field_name","value":"{}"},"origin_trial_feedback_url":{"form_field_name":"form_field_name","value":"{}"},"desktop_first":{"form_field_name":"form_field_name","value":"{}"},"experiment_risks":{"form_field_name":"form_field_name","value":"{}"},"ios_first":{"form_field_name":"form_field_name","value":"{}"},"ot_action_requested":{"form_field_name":"form_field_name","value":"{}"},"origin_trial_id":{"form_field_name":"form_field_name","value":"{}"},"webview_last":{"form_field_name":"form_field_name","value":"{}"},"enterprise_policies":{"form_field_name":"form_field_name","value":"{}"},"ot_chromium_trial_name":{"form_field_name":"form_field_name","value":"{}"},"ot_webfeature_use_counter":{"form_field_name":"form_field_name","value":"{}"}}
+        headers = { 
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/origintrials/{feature_id}/{stage_id}/create'.format(feature_id=56, stage_id=56),
+            method='POST',
+            headers=headers,
+            data=json.dumps(create_origin_trial_request),
+            content_type='application/json')
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
     def test_delete_account(self):
         """Test case for delete_account
 
@@ -182,6 +203,21 @@ class TestDefaultController(BaseTestCase):
             headers=headers,
             data=json.dumps(dismiss_cue_request),
             content_type='application/json')
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_extend_origin_trial(self):
+        """Test case for extend_origin_trial
+
+        Extend an existing origin trial
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/origintrials/{feature_id}/{extension_stage_id}/extend'.format(feature_id=56, extension_stage_id=56),
+            method='PATCH',
+            headers=headers)
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
@@ -307,6 +343,21 @@ class TestDefaultController(BaseTestCase):
         }
         response = self.client.open(
             '/api/v0/features/{feature_id}/{stage_id}/{gate_id}/intent'.format(feature_id=56, stage_id=56, gate_id=56),
+            method='GET',
+            headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_get_origin_trials(self):
+        """Test case for get_origin_trials
+
+        Get origin trials
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/origintrials',
             method='GET',
             headers=headers)
         self.assert200(response,
