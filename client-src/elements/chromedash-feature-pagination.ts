@@ -60,6 +60,17 @@ export class ChromedashFeaturePagination extends LitElement {
         .pagination sl-icon-button::part(base) {
           padding: 0;
         }
+        #items-per-page {
+          align-self: center;
+          color: var(--unimportant-text-color);
+          font-size: var(--sl-input-font-size-small);
+        }
+        sl-select {
+          align-self: center;
+          display: inline-block;
+          margin: 0 var(--content-padding-quarter) 0 var(--content-padding);
+          width: 7em;
+        }
       `,
     ];
   }
@@ -104,6 +115,35 @@ export class ChromedashFeaturePagination extends LitElement {
     `;
   }
 
+  setItemsPerPage(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    const newSize = parseInt(target.value);
+    const newURL = formatURLParams('num', newSize).toString();
+    window.location.href = newURL;
+  }
+
+  renderItemsPerPage(): TemplateResult {
+    const options = [25, 50, 100];
+    if (!options.includes(this.pageSize)) {
+      options.push(this.pageSize);
+      options.sort((a, b) => a - b);
+    }
+    return html`
+      <sl-select
+        value="${this.pageSize}"
+        size="small"
+        @sl-change=${this.setItemsPerPage}
+      >
+        ${options.map(
+          opt => html`
+            <sl-option id="opt_${opt}" value=${opt}>${opt}</sl-option>
+          `
+        )}
+      </sl-select>
+      <span id="items-per-page"> items per page </span>
+    `;
+  }
+
   render(): TemplateResult {
     if (this.totalCount === undefined || this.totalCount === 0) {
       return html``;
@@ -134,6 +174,8 @@ export class ChromedashFeaturePagination extends LitElement {
           ?disabled=${nextUrl === undefined}
           >Next</sl-button
         >
+
+        ${this.renderItemsPerPage()}
 
         <div class="spacer"></div>
       </div>
