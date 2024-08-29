@@ -381,6 +381,7 @@ def feature_entry_to_json_verbose(
     'first_enterprise_notification_milestone': fe.first_enterprise_notification_milestone,
     'enterprise_impact': fe.enterprise_impact,
     'breaking_change': fe.breaking_change,
+    'shipping_year': fe.shipping_year,
     'flag_name': fe.flag_name,
     'finch_name': fe.finch_name,
     'non_finch_justification': fe.non_finch_justification,

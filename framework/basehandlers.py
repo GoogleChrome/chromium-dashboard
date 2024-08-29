@@ -37,10 +37,14 @@ from framework import utils
 from framework import xsrf
 from internals import approval_defs
 from internals import notifier_helpers
-from internals.core_enums import ALL_ORIGIN_TRIAL_STAGE_TYPES
+from internals import user_models
+from internals.core_enums import (
+  ALL_ORIGIN_TRIAL_STAGE_TYPES,
+  OT_ACTIVATION_FAILED,
+  OT_CREATION_FAILED,
+  OT_READY_FOR_CREATION)
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.data_types import CHANGED_FIELDS_LIST_TYPE
-from internals import user_models
 
 from flask import session
 from flask import render_template
@@ -184,7 +188,7 @@ class APIHandler(BaseHandler):
 
   def defensive_jsonify(self, handler_data):
     """Return a Flask Response object with a JSON string prefixed with junk."""
-    body = json.dumps(handler_data)
+    body = json.dumps(handler_data, default=str)
     return flask.current_app.response_class(
         XSSI_PREFIX + body,
         mimetype=flask.current_app.json.mimetype)
@@ -193,8 +197,10 @@ class APIHandler(BaseHandler):
     """Handle an incoming HTTP GET request."""
     headers = self.get_headers()
     handler_data = self.do_get(*args, **kwargs)
-    if isinstance(handler_data, Model):
-        handler_data = handler_data.to_dict()
+    # OpenAPI models have a to_dict attribute that should be used for
+    # converting to JSON.
+    if hasattr(handler_data, 'to_dict'):
+      handler_data = handler_data.to_dict()
     return self.defensive_jsonify(handler_data), headers
 
   def post(self, *args, **kwargs):
@@ -354,11 +360,23 @@ class EntitiesAPIHandler(APIHandler):
     """Update stage fields with changes provided."""
     stage_was_updated = False
     ot_action_requested = False
-    # Check if valid ID is provided and fetch stage if it exists.
+
+    mutating_ot_milestones = any(
+        isinstance(v, dict) and (
+        v['form_field_name'] == 'ot_milestone_desktop_start' or
+        v['form_field_name'] == 'ot_milestone_desktop_end')
+        for v in change_info.values())
+    ot_creation_in_progress =  (
+        stage.ot_setup_status == OT_READY_FOR_CREATION or
+        stage.ot_setup_status == OT_CREATION_FAILED or
+        stage.ot_setup_status == OT_ACTIVATION_FAILED)
+    if mutating_ot_milestones and ot_creation_in_progress:
+      self.abort(400,
+                 'Cannot edit OT milestones while creation is in progress.')
 
     # Update stage fields.
     for field, field_type in api_specs.STAGE_FIELD_DATA_TYPES:
-      if field not in change_info:
+      if field not in change_info or change_info[field] is None:
         continue
       form_field_name = change_info[field]['form_field_name']
       if form_field_name == 'ot_action_requested':
@@ -373,7 +391,7 @@ class EntitiesAPIHandler(APIHandler):
     # Update milestone fields.
     milestones = stage.milestones
     for field, field_type in api_specs.MILESTONESET_FIELD_DATA_TYPES:
-      if field not in change_info:
+      if field not in change_info or change_info[field] is None:
         continue
       if milestones is None:
         milestones = MilestoneSet()

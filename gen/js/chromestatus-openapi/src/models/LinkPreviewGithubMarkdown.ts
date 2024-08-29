@@ -43,13 +43,13 @@ export interface LinkPreviewGithubMarkdown {
      * @type {LinkPreviewGithubMarkdownAllOfInformation}
      * @memberof LinkPreviewGithubMarkdown
      */
-    information: LinkPreviewGithubMarkdownAllOfInformation;
+    information?: LinkPreviewGithubMarkdownAllOfInformation;
     /**
      * 
      * @type {number}
      * @memberof LinkPreviewGithubMarkdown
      */
-    http_error_code: number;
+    http_error_code?: number;
 }
 
 /**
@@ -58,8 +58,6 @@ export interface LinkPreviewGithubMarkdown {
 export function instanceOfLinkPreviewGithubMarkdown(value: object): value is LinkPreviewGithubMarkdown {
     if (!('url' in value) || value['url'] === undefined) return false;
     if (!('type' in value) || value['type'] === undefined) return false;
-    if (!('information' in value) || value['information'] === undefined) return false;
-    if (!('http_error_code' in value) || value['http_error_code'] === undefined) return false;
     return true;
 }
 
@@ -75,8 +73,8 @@ export function LinkPreviewGithubMarkdownFromJSONTyped(json: any, ignoreDiscrimi
         
         'url': json['url'],
         'type': json['type'],
-        'information': LinkPreviewGithubMarkdownAllOfInformationFromJSON(json['information']),
-        'http_error_code': json['http_error_code'],
+        'information': json['information'] == null ? undefined : LinkPreviewGithubMarkdownAllOfInformationFromJSON(json['information']),
+        'http_error_code': json['http_error_code'] == null ? undefined : json['http_error_code'],
     };
 }
 

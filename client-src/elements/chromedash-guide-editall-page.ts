@@ -3,6 +3,7 @@ import {ref} from 'lit/directives/ref.js';
 import {repeat} from 'lit/directives/repeat.js';
 import {
   formatFeatureChanges,
+  getDisabledHelpText,
   getStageValue,
   showToastMessage,
   flattenSections,
@@ -287,6 +288,7 @@ export class ChromedashGuideEditallPage extends LitElement {
           index=${index}
           stageId=${ifDefined(stageId)}
           value=${value}
+          disabledReason="${getDisabledHelpText(field, feStage)}"
           .fieldValues=${this.fieldValues}
           .feature=${formattedFeature}
           ?forEnterprise=${formattedFeature.is_enterprise_feature}

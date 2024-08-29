@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import testing_config  # Must be imported before the module under test.
+from unittest import mock
 
 import flask
 import werkzeug.exceptions  # Flask HTTP stuff.
-from unittest import mock
 
+import testing_config  # Must be imported before the module under test.
 from api import origin_trials_api
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate, Vote
@@ -127,6 +127,16 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
       for entity in kind.query():
         entity.key.delete()
 
+  def mock_chromium_file_return_value_generator(self, *args, **kwargs):
+    """Returns mock milestone info based on input."""
+    if args == ('https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom?format=TEXT',):
+      return self.mock_usecounters_file
+    if args == ('https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/runtime_enabled_features.json5?format=TEXT',):
+      return self.mock_features_file
+    if args == ('https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/common/origin_trials/manual_completion_origin_trial_features.cc?format=TEXT',):
+      return self.mock_grace_period_file
+    return ''
+
   def test_check_post_permissions__anon(self):
     """Anon users cannot request origin trials."""
     testing_config.sign_out()
@@ -195,10 +205,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
   @mock.patch('api.origin_trials_api.get_chromium_file')
   def test_validate_creation_args__valid(self, mock_get_chromium_file):
     """No error messages should be returned if all args are valid."""
-    mock_get_chromium_file.side_effect = [
-      self.mock_features_file,
-      self.mock_usecounters_file,
-      self.mock_grace_period_file]
+    mock_get_chromium_file.side_effect = self.mock_chromium_file_return_value_generator
 
     body = {
       'ot_chromium_trial_name': {
@@ -232,10 +239,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
   def test_validate_creation_args__invalid_webfeature_use_counter(
       self, mock_get_chromium_file):
     """Error message returned if UseCounter not found in file."""
-    mock_get_chromium_file.side_effect = [
-      self.mock_features_file,
-      self.mock_usecounters_file,
-      self.mock_grace_period_file]
+    mock_get_chromium_file.side_effect = self.mock_chromium_file_return_value_generator
     body = {
       'ot_chromium_trial_name': {
         'form_field_name': 'ot_chromium_trial_name',
@@ -268,10 +272,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
   def test_validate_creation_args__missing_webfeature_use_counter(
       self, mock_get_chromium_file):
     """Error message returned if UseCounter is missing."""
-    mock_get_chromium_file.side_effect = [
-      self.mock_features_file,
-      self.mock_usecounters_file,
-      self.mock_grace_period_file]
+    mock_get_chromium_file.side_effect = self.mock_chromium_file_return_value_generator
     body = {
       'ot_chromium_trial_name': {
         'form_field_name': 'ot_chromium_trial_name',
@@ -301,10 +302,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
       self, mock_get_chromium_file):
     """No error message returned for missing UseCounter if deprecation trial."""
     """Deprecation trial does not need a webfeature use counter value."""
-    mock_get_chromium_file.side_effect = [
-      self.mock_features_file,
-      self.mock_usecounters_file,
-      self.mock_grace_period_file]
+    mock_get_chromium_file.side_effect = self.mock_chromium_file_return_value_generator
     body = {
       'ot_chromium_trial_name': {
         'form_field_name': 'ot_chromium_trial_name',
@@ -332,10 +330,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
   def test_validate_creation_args__invalid_chromium_trial_name(
       self, mock_get_chromium_file):
     """Error message returned if Chromium trial name not found in file."""
-    mock_get_chromium_file.side_effect = [
-      self.mock_features_file,
-      self.mock_usecounters_file,
-      self.mock_grace_period_file]
+    mock_get_chromium_file.side_effect = self.mock_chromium_file_return_value_generator
     body = {
       'ot_chromium_trial_name': {
         'form_field_name': 'ot_chromium_trial_name',
@@ -368,10 +363,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
   def test_validate_creation_args__missing_chromium_trial_name(
       self, mock_get_chromium_file):
     """Error message returned if Chromium trial is missing from request."""
-    mock_get_chromium_file.side_effect = [
-      self.mock_features_file,
-      self.mock_usecounters_file,
-      self.mock_grace_period_file]
+    mock_get_chromium_file.side_effect = self.mock_chromium_file_return_value_generator
     body = {
       'ot_webfeature_use_counter': {
         'form_field_name': 'ot_webfeature_use_counter',
@@ -398,10 +390,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
   def test_validate_creation_args__invalid_third_party_trial(
       self, mock_get_chromium_file):
     """Error message returned if third party support not found in file."""
-    mock_get_chromium_file.side_effect = [
-      self.mock_features_file,
-      self.mock_usecounters_file,
-      self.mock_grace_period_file]
+    mock_get_chromium_file.side_effect = self.mock_chromium_file_return_value_generator
     body = {
       'ot_chromium_trial_name': {
         'form_field_name': 'ot_chromium_trial_name',
@@ -436,10 +425,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
   def test_validate_creation_args__invalid_critical_trial(
       self, mock_get_chromium_file):
     """Error message returned if critical trial name not found in file."""
-    mock_get_chromium_file.side_effect = [
-      self.mock_features_file,
-      self.mock_usecounters_file,
-      self.mock_grace_period_file]
+    mock_get_chromium_file.side_effect = self.mock_chromium_file_return_value_generator
     body = {
       'ot_chromium_trial_name': {
         'form_field_name': 'ot_chromium_trial_name',

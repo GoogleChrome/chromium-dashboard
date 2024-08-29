@@ -13,12 +13,12 @@
  */
 
 import { mapValues } from '../runtime';
-import type { LinkPreviewBase } from './LinkPreviewBase';
+import type { LinkPreview } from './LinkPreview';
 import {
-    LinkPreviewBaseFromJSON,
-    LinkPreviewBaseFromJSONTyped,
-    LinkPreviewBaseToJSON,
-} from './LinkPreviewBase';
+    LinkPreviewFromJSON,
+    LinkPreviewFromJSONTyped,
+    LinkPreviewToJSON,
+} from './LinkPreview';
 
 /**
  * 
@@ -28,10 +28,10 @@ import {
 export interface FeatureLinksResponse {
     /**
      * 
-     * @type {Array<LinkPreviewBase>}
+     * @type {Array<LinkPreview>}
      * @memberof FeatureLinksResponse
      */
-    data?: Array<LinkPreviewBase>;
+    data?: Array<LinkPreview>;
     /**
      * 
      * @type {boolean}
@@ -57,7 +57,7 @@ export function FeatureLinksResponseFromJSONTyped(json: any, ignoreDiscriminator
     }
     return {
         
-        'data': json['data'] == null ? undefined : ((json['data'] as Array<any>).map(LinkPreviewBaseFromJSON)),
+        'data': json['data'] == null ? undefined : ((json['data'] as Array<any>).map(LinkPreviewFromJSON)),
         'has_stale_links': json['has_stale_links'] == null ? undefined : json['has_stale_links'],
     };
 }
@@ -68,7 +68,7 @@ export function FeatureLinksResponseToJSON(value?: FeatureLinksResponse | null):
     }
     return {
         
-        'data': value['data'] == null ? undefined : ((value['data'] as Array<any>).map(LinkPreviewBaseToJSON)),
+        'data': value['data'] == null ? undefined : ((value['data'] as Array<any>).map(LinkPreviewToJSON)),
         'has_stale_links': value['has_stale_links'],
     };
 }

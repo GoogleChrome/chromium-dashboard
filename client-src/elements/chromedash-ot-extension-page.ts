@@ -14,6 +14,7 @@ import {
   FieldInfo,
   extensionMilestoneIsValid,
   formatFeatureChanges,
+  getDisabledHelpText,
   setupScrollToHash,
   showToastMessage,
 } from './utils.js';
@@ -327,6 +328,7 @@ export class ChromedashOTExtensionPage extends LitElement {
         <chromedash-form-field
           name=${featureJSONKey}
           index=${index}
+          disabledReason="${getDisabledHelpText(field, this.stage)}"
           .fieldValues=${this.fieldValues}
           @form-field-update="${this.handleFormFieldUpdate}"
         >

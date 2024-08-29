@@ -193,6 +193,39 @@ paths:
           description: The permissions and email of the user.
       summary: Get the permissions and email of the user
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /currentuser/settings:
+    get:
+      operationId: get_user_settings
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetSettingsResponse'
+          description: Successfuly retrieved user settings
+        "404":
+          description: User preference not found
+      summary: Get user settings
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+    post:
+      operationId: set_user_settings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostSettingsRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Settings updated successfully
+        "403":
+          description: User not signed-in
+      summary: Set the user settings (currently only the notify_as_starrer)
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /currentuser/stars:
     get:
       operationId: get_stars
@@ -223,6 +256,20 @@ paths:
                 $ref: '#/components/schemas/SuccessMessage'
           description: Star set or cleared successfully
       summary: Set or clear a star on the specified feature
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /currentuser/token:
+    post:
+      operationId: refresh_token
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ReviewLatency'
+                type: array
+          description: Successfully refreshed the token.
+      summary: Refresh the XSRF token
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /external_reviews/{review_group}:
     get:
@@ -379,6 +426,423 @@ paths:
           description: return the links and its information to the client
       summary: Get feature links summary
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /features/<int:feature_id>/approvals/<int:gate_id>/comments:
+    get:
+      operationId: get_gate_comments
+      parameters:
+      - explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - explode: false
+        in: path
+        name: gate_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Activity'
+                type: array
+          description: List of comments for the gate.
+      summary: Get all comments for a given gate
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+    post:
+      operationId: add_gate_comment
+      parameters:
+      - explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - explode: false
+        in: path
+        name: gate_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentsRequest'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Comment added successfully
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: User is not allowed to comment on this gate
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Gate not found
+      summary: Add a comment to a specific gate
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /features/<int:feature_id>/approvals/comments:
+    get:
+      operationId: get_feature_comments
+      parameters:
+      - explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCommentsResponse'
+          description: List of comments for the feature.
+      summary: Get all comments for a given feature
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+    patch:
+      operationId: update_feature_comment
+      parameters:
+      - explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchCommentRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Comment updated successfully
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: User is not allowed to update this comment
+      summary: Update a comment on a feature
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+    post:
+      operationId: add_feature_comment
+      parameters:
+      - explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentsRequest'
+        description: Add a review commend and possible set a approval value
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Comment added successfully
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: User is not allowed to comment on this feature
+      summary: Add a comment to a feature
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /features/{feature_id}/gates:
+    get:
+      operationId: get_gates_for_feature
+      parameters:
+      - description: The ID of the feature to retrieve votes for.
+        explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetGateResponse'
+          description: A list of gates for the specified feature. List can be empty.
+      summary: Get all gates for a feature
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /features/{feature_id}/gates/{gate_id}:
+    post:
+      operationId: set_assignees_for_gate
+      parameters:
+      - description: The ID of the feature to retrieve votes for.
+        explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - description: The ID of the gate to retrieve votes for.
+        explode: false
+        in: path
+        name: gate_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostGateRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Assignees set successfully
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Assignee is not a reviewer
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: User does not have permission.
+      summary: Set the assignees for a gate.
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /features/{feature_id}/process:
+    get:
+      operationId: get_process
+      parameters:
+      - description: Feature ID
+        explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Process'
+          description: The process for the feature
+        "404":
+          description: Feature not found based on given ID.
+      summary: Get the process for a feature
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /features/{feature_id}/progress:
+    get:
+      operationId: get_progress
+      parameters:
+      - description: Feature ID
+        explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+          description: "The progress for the feature. Since there's no fixed data\
+            \ structure for progress, it's defined as a free-form object."
+        "404":
+          description: Feature not found based on given ID.
+      summary: Get the progress for a feature
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /features/{feature_id}/stages/{stage_id}/addXfnGates:
+    post:
+      operationId: add_xfn_gates_to_stage
+      parameters:
+      - explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - explode: false
+        in: path
+        name: stage_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Vote set successfully
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: User does not have permission.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Feature or Stage not found.
+      summary: Add a full set of cross-functional gates to a stage.
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /features/{feature_id}/votes:
+    get:
+      operationId: get_votes_for_feature
+      parameters:
+      - description: Feature ID
+        explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetVotesResponse'
+          description: A list of votes for the specified feature.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Feature not found
+      summary: Get votes for a feature
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /features/{feature_id}/votes/{gate_id}:
+    get:
+      operationId: get_votes_for_feature_and_gate
+      parameters:
+      - description: The ID of the feature to retrieve votes for.
+        explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - description: The ID of the gate associated with the votes.
+        explode: false
+        in: path
+        name: gate_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetVotesResponse'
+          description: A list of votes for the specified feature and gate.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Feature or gate not found.
+      summary: Get votes for a feature and gate
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+    post:
+      operationId: set_vote_for_feature_and_gate
+      parameters:
+      - description: The ID of the feature to retrieve votes for.
+        explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - description: The ID of the gate associated with the votes.
+        explode: false
+        in: path
+        name: gate_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostVoteRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Vote set successfully
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Feature or gate not found.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: User does not have permission.
+      summary: Set a user's vote value for the specific feature and gate.
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /features/{feature_id}/{stage_id}/{gate_id}/intent:
     get:
       operationId: get_intent_body
@@ -466,6 +930,194 @@ paths:
           description: Feature or stage not found based on given ID.
       summary: Submit an intent to be posted on blink-dev
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /gates/pending:
+    get:
+      operationId: get_pending_gates
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetGateResponse'
+          description: A list of all pending gates.
+      summary: Get all pending gates
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /login:
+    get:
+      operationId: reject_get_requests_login
+      responses:
+        "405":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RejectUnneededGetRequest'
+          description: Method Not Allowed
+      summary: reject unneeded GET request without triggering Error Reporting
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+    post:
+      operationId: authenticate_user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignInRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: User authenticated successfully
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Invalid Token
+      summary: Authenticate user with Google Sign-In
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /logout:
+    get:
+      operationId: reject_get_requests_logout
+      responses:
+        "405":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RejectUnneededGetRequest'
+          description: Method Not Allowed
+      summary: reject unneeded GET request without triggering Error Reporting
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+    post:
+      operationId: logout_user
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: User logged out successfully
+      summary: Log out the current user
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /origintrials:
+    get:
+      operationId: get_origin_trials
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetOriginTrialsResponse'
+          description: List of all origin trials
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Error obtaining origin trial data from API or Malformed response
+            from origin trials API
+      summary: Get origin trials
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /origintrials/{feature_id}/{extension_stage_id}/extend:
+    patch:
+      operationId: extend_origin_trial
+      parameters:
+      - explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - explode: false
+        in: path
+        name: extension_stage_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Origin trial extended successfully
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: "Invalid request. Possible reasons include missing or incorrect\
+            \ feature/stage, or validation errors."
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: The specified feature or stage was not found.
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: "Server error, such as issues with the origin trials API or\
+            \ Chromium schedule."
+      summary: Extend an existing origin trial
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /origintrials/{feature_id}/{stage_id}/create:
+    post:
+      operationId: create_origin_trial
+      parameters:
+      - explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - explode: false
+        in: path
+        name: stage_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOriginTrialRequest'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Origin trial created successfully
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: "Invalid request. Possible reasons include an unapproved gate,\
+            \ a missing feature/stage, or validation errors."
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: The specified feature or stage was not found.
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: "Server error, such as issues with obtaining necessary Chromium\
+            \ files or origin trial data."
+      summary: Create a new origin trial
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /review-latency:
     get:
       operationId: list_reviews_with_latency
@@ -531,6 +1183,629 @@ components:
         type: string
       style: form
   schemas:
+    Vote:
+      example:
+        feature_id: 0
+        gate_id: 6
+        gate_type: 1
+        set_by: set_by
+        state: 5
+        set_on: set_on
+      properties:
+        feature_id:
+          title: feature_id
+          type: integer
+        gate_id:
+          title: gate_id
+          type: integer
+        gate_type:
+          title: gate_type
+          type: integer
+        set_by:
+          format: email
+          title: set_by
+          type: string
+        set_on:
+          title: set_on
+          type: string
+        state:
+          title: state
+          type: integer
+      required:
+      - feature_id
+      - gate_id
+      - set_by
+      - set_on
+      - state
+      title: Vote
+      type: object
+    GetVotesResponse:
+      example:
+        votes:
+        - feature_id: 0
+          gate_id: 6
+          gate_type: 1
+          set_by: set_by
+          state: 5
+          set_on: set_on
+        - feature_id: 0
+          gate_id: 6
+          gate_type: 1
+          set_by: set_by
+          state: 5
+          set_on: set_on
+      properties:
+        votes:
+          items:
+            $ref: '#/components/schemas/Vote'
+          title: votes
+          type: array
+      title: GetVotesResponse
+      type: object
+    PostVoteRequest:
+      example:
+        state: 0
+      properties:
+        state:
+          description: "The vote value to set. 0 for abstain, 1 for approve, 2 for\
+            \ abstain."
+          title: state
+          type: integer
+      required:
+      - state
+      title: PostVoteRequest
+      type: object
+    Gate:
+      example:
+        feature_id: 6
+        stage_id: 1
+        slo_initial_response: 2
+        gate_name: gate_name
+        requested_on: 2000-01-23T04:56:07.000+00:00
+        team_name: team_name
+        slo_initial_response_took: 7
+        additional_review: true
+        gate_type: 5
+        next_action: next_action
+        escalation_email: escalation_email
+        assignee_emails:
+        - assignee_emails
+        - assignee_emails
+        slo_initial_response_remaining: 9
+        id: 0
+        state: 5
+        possible_assignee_emails:
+        - possible_assignee_emails
+        - possible_assignee_emails
+        responded_on: 2000-01-23T04:56:07.000+00:00
+      properties:
+        id:
+          title: id
+          type: integer
+        feature_id:
+          title: feature_id
+          type: integer
+        stage_id:
+          title: stage_id
+          type: integer
+        gate_type:
+          title: gate_type
+          type: integer
+        team_name:
+          title: team_name
+          type: string
+        gate_name:
+          title: gate_name
+          type: string
+        escalation_email:
+          nullable: true
+          title: escalation_email
+          type: string
+        state:
+          title: state
+          type: integer
+        requested_on:
+          format: date-time
+          title: requested_on
+          type: string
+        responded_on:
+          format: date-time
+          title: responded_on
+          type: string
+        assignee_emails:
+          items:
+            format: email
+            type: string
+          title: assignee_emails
+          type: array
+        next_action:
+          format: data
+          title: next_action
+          type: string
+        additional_review:
+          title: additional_review
+          type: boolean
+        slo_initial_response:
+          default: 5
+          description: DEFAULT_SLO_LIMIT is 5 in approval_defs.py
+          title: slo_initial_response
+          type: integer
+        slo_initial_response_took:
+          title: slo_initial_response_took
+          type: integer
+        slo_initial_response_remaining:
+          title: slo_initial_response_remaining
+          type: integer
+        possible_assignee_emails:
+          items:
+            format: email
+            type: string
+          title: possible_assignee_emails
+          type: array
+      title: Gate
+      type: object
+    GetGateResponse:
+      example:
+        gates:
+        - feature_id: 6
+          stage_id: 1
+          slo_initial_response: 2
+          gate_name: gate_name
+          requested_on: 2000-01-23T04:56:07.000+00:00
+          team_name: team_name
+          slo_initial_response_took: 7
+          additional_review: true
+          gate_type: 5
+          next_action: next_action
+          escalation_email: escalation_email
+          assignee_emails:
+          - assignee_emails
+          - assignee_emails
+          slo_initial_response_remaining: 9
+          id: 0
+          state: 5
+          possible_assignee_emails:
+          - possible_assignee_emails
+          - possible_assignee_emails
+          responded_on: 2000-01-23T04:56:07.000+00:00
+        - feature_id: 6
+          stage_id: 1
+          slo_initial_response: 2
+          gate_name: gate_name
+          requested_on: 2000-01-23T04:56:07.000+00:00
+          team_name: team_name
+          slo_initial_response_took: 7
+          additional_review: true
+          gate_type: 5
+          next_action: next_action
+          escalation_email: escalation_email
+          assignee_emails:
+          - assignee_emails
+          - assignee_emails
+          slo_initial_response_remaining: 9
+          id: 0
+          state: 5
+          possible_assignee_emails:
+          - possible_assignee_emails
+          - possible_assignee_emails
+          responded_on: 2000-01-23T04:56:07.000+00:00
+      properties:
+        gates:
+          items:
+            $ref: '#/components/schemas/Gate'
+          title: gates
+          type: array
+      title: GetGateResponse
+      type: object
+    PostGateRequest:
+      example:
+        assignees:
+        - assignees
+        - assignees
+      properties:
+        assignees:
+          items:
+            format: email
+            type: string
+          title: assignees
+          type: array
+      title: PostGateRequest
+      type: object
+    Process:
+      example:
+        name: name
+        stages:
+        - progress_items:
+          - field: field
+            name: name
+          - field: field
+            name: name
+          incoming_stage: 1
+          stage_type: 5
+          approvals:
+          - gate_type: 0
+            name: name
+            slo_initial_response: 6
+            description: description
+            rule: rule
+            approvers: approvers
+            escalation_email: escalation_email
+            team_name: team_name
+          - gate_type: 0
+            name: name
+            slo_initial_response: 6
+            description: description
+            rule: rule
+            approvers: approvers
+            escalation_email: escalation_email
+            team_name: team_name
+          name: name
+          outgoing_stage: 5
+          description: description
+          actions:
+          - prerequisites:
+            - prerequisites
+            - prerequisites
+            name: name
+            url: url
+          - prerequisites:
+            - prerequisites
+            - prerequisites
+            name: name
+            url: url
+        - progress_items:
+          - field: field
+            name: name
+          - field: field
+            name: name
+          incoming_stage: 1
+          stage_type: 5
+          approvals:
+          - gate_type: 0
+            name: name
+            slo_initial_response: 6
+            description: description
+            rule: rule
+            approvers: approvers
+            escalation_email: escalation_email
+            team_name: team_name
+          - gate_type: 0
+            name: name
+            slo_initial_response: 6
+            description: description
+            rule: rule
+            approvers: approvers
+            escalation_email: escalation_email
+            team_name: team_name
+          name: name
+          outgoing_stage: 5
+          description: description
+          actions:
+          - prerequisites:
+            - prerequisites
+            - prerequisites
+            name: name
+            url: url
+          - prerequisites:
+            - prerequisites
+            - prerequisites
+            name: name
+            url: url
+        description: description
+        applicability: applicability
+      properties:
+        name:
+          title: name
+          type: string
+        description:
+          title: description
+          type: string
+        applicability:
+          title: applicability
+          type: string
+        stages:
+          items:
+            $ref: '#/components/schemas/ProcessStage'
+          title: stages
+          type: array
+      title: Process
+      type: object
+    ProcessStage:
+      example:
+        progress_items:
+        - field: field
+          name: name
+        - field: field
+          name: name
+        incoming_stage: 1
+        stage_type: 5
+        approvals:
+        - gate_type: 0
+          name: name
+          slo_initial_response: 6
+          description: description
+          rule: rule
+          approvers: approvers
+          escalation_email: escalation_email
+          team_name: team_name
+        - gate_type: 0
+          name: name
+          slo_initial_response: 6
+          description: description
+          rule: rule
+          approvers: approvers
+          escalation_email: escalation_email
+          team_name: team_name
+        name: name
+        outgoing_stage: 5
+        description: description
+        actions:
+        - prerequisites:
+          - prerequisites
+          - prerequisites
+          name: name
+          url: url
+        - prerequisites:
+          - prerequisites
+          - prerequisites
+          name: name
+          url: url
+      properties:
+        name:
+          title: name
+          type: string
+        description:
+          title: description
+          type: string
+        progress_items:
+          items:
+            $ref: '#/components/schemas/ProgressItem'
+          title: progress_items
+          type: array
+        actions:
+          items:
+            $ref: '#/components/schemas/Action'
+          title: actions
+          type: array
+        approvals:
+          items:
+            $ref: '#/components/schemas/GateInfo'
+          title: approvals
+          type: array
+        incoming_stage:
+          title: incoming_stage
+          type: integer
+        outgoing_stage:
+          title: outgoing_stage
+          type: integer
+        stage_type:
+          nullable: true
+          title: stage_type
+          type: integer
+      title: ProcessStage
+      type: object
+    ProgressItem:
+      example:
+        field: field
+        name: name
+      properties:
+        name:
+          title: name
+          type: string
+        field:
+          title: field
+          type: string
+      title: ProgressItem
+      type: object
+    Action:
+      example:
+        prerequisites:
+        - prerequisites
+        - prerequisites
+        name: name
+        url: url
+      properties:
+        name:
+          title: name
+          type: string
+        url:
+          title: url
+          type: string
+        prerequisites:
+          items:
+            type: string
+          title: prerequisites
+          type: array
+      title: Action
+      type: object
+    GateInfo:
+      example:
+        gate_type: 0
+        name: name
+        slo_initial_response: 6
+        description: description
+        rule: rule
+        approvers: approvers
+        escalation_email: escalation_email
+        team_name: team_name
+      properties:
+        name:
+          title: name
+          type: string
+        description:
+          title: description
+          type: string
+        gate_type:
+          title: gate_type
+          type: integer
+        rule:
+          title: rule
+          type: string
+        approvers:
+          description: A list of approvers. A single string can also be accepted and
+            will be treated as a list containing that string.
+          title: approvers
+          type: string
+        team_name:
+          title: team_name
+          type: string
+        escalation_email:
+          nullable: true
+          title: escalation_email
+          type: string
+        slo_initial_response:
+          default: 5
+          description: DEFAULT_SLO_LIMIT is 5 in approval_defs.py
+          title: slo_initial_response
+          type: integer
+      title: GateInfo
+      type: object
+    Amendment:
+      example:
+        old_value: old_value
+        new_value: new_value
+        field_name: field_name
+      properties:
+        field_name:
+          title: field_name
+          type: string
+        old_value:
+          title: old_value
+          type: string
+        new_value:
+          title: new_value
+          type: string
+      required:
+      - field_name
+      - new_value
+      - old_value
+      title: Amendment
+      type: object
+    Activity:
+      example:
+        feature_id: 6
+        gate_id: 1
+        created: created
+        author: author
+        deleted_by: deleted_by
+        amendments:
+        - old_value: old_value
+          new_value: new_value
+          field_name: field_name
+        - old_value: old_value
+          new_value: new_value
+          field_name: field_name
+        comment_id: 0
+        content: content
+      properties:
+        comment_id:
+          title: comment_id
+          type: integer
+        feature_id:
+          title: feature_id
+          type: integer
+        gate_id:
+          nullable: true
+          title: gate_id
+          type: integer
+        created:
+          title: created
+          type: string
+        author:
+          title: author
+          type: string
+        content:
+          title: content
+          type: string
+        deleted_by:
+          nullable: true
+          title: deleted_by
+          type: string
+        amendments:
+          items:
+            $ref: '#/components/schemas/Amendment'
+          title: amendments
+          type: array
+      required:
+      - author
+      - comment_id
+      - content
+      - created
+      - feature_id
+      title: Activity
+      type: object
+    CommentsRequest:
+      example:
+        postToThreadType: 0
+        comment: comment
+      properties:
+        comment:
+          title: comment
+          type: string
+        postToThreadType:
+          nullable: true
+          title: postToThreadType
+          type: integer
+      title: CommentsRequest
+      type: object
+    GetCommentsResponse:
+      example:
+        comments:
+        - feature_id: 6
+          gate_id: 1
+          created: created
+          author: author
+          deleted_by: deleted_by
+          amendments:
+          - old_value: old_value
+            new_value: new_value
+            field_name: field_name
+          - old_value: old_value
+            new_value: new_value
+            field_name: field_name
+          comment_id: 0
+          content: content
+        - feature_id: 6
+          gate_id: 1
+          created: created
+          author: author
+          deleted_by: deleted_by
+          amendments:
+          - old_value: old_value
+            new_value: new_value
+            field_name: field_name
+          - old_value: old_value
+            new_value: new_value
+            field_name: field_name
+          comment_id: 0
+          content: content
+      properties:
+        comments:
+          items:
+            $ref: '#/components/schemas/Activity'
+          title: comments
+          type: array
+      title: GetCommentsResponse
+      type: object
+    PatchCommentRequest:
+      example:
+        commentId: 0
+        isUndelete: true
+      properties:
+        commentId:
+          description: The ID of the comment to be updated
+          title: commentId
+          type: integer
+        isUndelete:
+          description: Indicates whether to undelete (true) or delete (false) the
+            comment
+          title: isUndelete
+          type: boolean
+      required:
+      - commentId
+      - isUndelete
+      title: PatchCommentRequest
+      type: object
     CreateAccountRequest:
       example:
         isSiteEditor: true
@@ -570,6 +1845,424 @@ components:
           title: id
           type: integer
       title: AccountResponse
+      type: object
+    OriginTrialsInfo:
+      example:
+        original_end_milestone: original_end_milestone
+        start_milestone: start_milestone
+        intent_to_experiment_url: intent_to_experiment_url
+        allow_third_party_origins: true
+        end_time: end_time
+        description: description
+        display_name: display_name
+        documentation_url: documentation_url
+        type: type
+        end_milestone: end_milestone
+        enabled: true
+        feedback_url: feedback_url
+        chromestatus_url: chromestatus_url
+        origin_trial_feature_name: origin_trial_feature_name
+        id: id
+        trial_extensions:
+        - "{}"
+        - "{}"
+        status: status
+      properties:
+        id:
+          title: id
+          type: string
+        display_name:
+          title: display_name
+          type: string
+        description:
+          title: description
+          type: string
+        origin_trial_feature_name:
+          title: origin_trial_feature_name
+          type: string
+        enabled:
+          title: enabled
+          type: boolean
+        status:
+          title: status
+          type: string
+        chromestatus_url:
+          title: chromestatus_url
+          type: string
+        start_milestone:
+          title: start_milestone
+          type: string
+        end_milestone:
+          title: end_milestone
+          type: string
+        original_end_milestone:
+          title: original_end_milestone
+          type: string
+        end_time:
+          title: end_time
+          type: string
+        documentation_url:
+          title: documentation_url
+          type: string
+        feedback_url:
+          title: feedback_url
+          type: string
+        intent_to_experiment_url:
+          title: intent_to_experiment_url
+          type: string
+        trial_extensions:
+          items:
+            type: object
+          title: trial_extensions
+          type: array
+        type:
+          title: type
+          type: string
+        allow_third_party_origins:
+          title: allow_third_party_origins
+          type: boolean
+      title: OriginTrialsInfo
+      type: object
+    GetOriginTrialsResponse:
+      example:
+        origin_trials:
+        - original_end_milestone: original_end_milestone
+          start_milestone: start_milestone
+          intent_to_experiment_url: intent_to_experiment_url
+          allow_third_party_origins: true
+          end_time: end_time
+          description: description
+          display_name: display_name
+          documentation_url: documentation_url
+          type: type
+          end_milestone: end_milestone
+          enabled: true
+          feedback_url: feedback_url
+          chromestatus_url: chromestatus_url
+          origin_trial_feature_name: origin_trial_feature_name
+          id: id
+          trial_extensions:
+          - "{}"
+          - "{}"
+          status: status
+        - original_end_milestone: original_end_milestone
+          start_milestone: start_milestone
+          intent_to_experiment_url: intent_to_experiment_url
+          allow_third_party_origins: true
+          end_time: end_time
+          description: description
+          display_name: display_name
+          documentation_url: documentation_url
+          type: type
+          end_milestone: end_milestone
+          enabled: true
+          feedback_url: feedback_url
+          chromestatus_url: chromestatus_url
+          origin_trial_feature_name: origin_trial_feature_name
+          id: id
+          trial_extensions:
+          - "{}"
+          - "{}"
+          status: status
+      properties:
+        origin_trials:
+          items:
+            $ref: '#/components/schemas/OriginTrialsInfo'
+          title: origin_trials
+          type: array
+      title: GetOriginTrialsResponse
+    CreateOriginTrialRequest:
+      allOf:
+      - $ref: '#/components/schemas/StageField'
+      - $ref: '#/components/schemas/MilestoneSetField'
+      example:
+        finch_url:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_display_name:
+          form_field_name: form_field_name
+          value: "{}"
+        rollout_platforms:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_feedback_submission_url:
+          form_field_name: form_field_name
+          value: "{}"
+        desktop_last:
+          form_field_name: form_field_name
+          value: "{}"
+        android_first:
+          form_field_name: form_field_name
+          value: "{}"
+        android_last:
+          form_field_name: form_field_name
+          value: "{}"
+        announcement_url:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_description:
+          form_field_name: form_field_name
+          value: "{}"
+        rollout_details:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_approval_buganizer_component:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_approval_criteria_url:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_approval_group_email:
+          form_field_name: form_field_name
+          value: "{}"
+        experiment_extension_reason:
+          form_field_name: form_field_name
+          value: "{}"
+        rollout_milestone:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_owner_email:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_request_note:
+          form_field_name: form_field_name
+          value: "{}"
+        ios_last:
+          form_field_name: form_field_name
+          value: "{}"
+        browser:
+          form_field_name: form_field_name
+          value: "{}"
+        webview_first:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_documentation_url:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_emails:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_require_approvals:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_has_third_party_support:
+          form_field_name: form_field_name
+          value: "{}"
+        experiment_goals:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_stage_id:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_approval_buganizer_custom_field_id:
+          form_field_name: form_field_name
+          value: "{}"
+        intent_thread_url:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_is_critical_trial:
+          form_field_name: form_field_name
+          value: "{}"
+        display_name:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_is_deprecation_trial:
+          form_field_name: form_field_name
+          value: "{}"
+        rollout_impact:
+          form_field_name: form_field_name
+          value: "{}"
+        origin_trial_feedback_url:
+          form_field_name: form_field_name
+          value: "{}"
+        desktop_first:
+          form_field_name: form_field_name
+          value: "{}"
+        experiment_risks:
+          form_field_name: form_field_name
+          value: "{}"
+        ios_first:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_action_requested:
+          form_field_name: form_field_name
+          value: "{}"
+        origin_trial_id:
+          form_field_name: form_field_name
+          value: "{}"
+        webview_last:
+          form_field_name: form_field_name
+          value: "{}"
+        enterprise_policies:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_chromium_trial_name:
+          form_field_name: form_field_name
+          value: "{}"
+        ot_webfeature_use_counter:
+          form_field_name: form_field_name
+          value: "{}"
+      title: CreateOriginTrialRequest
+      type: object
+    StageField:
+      properties:
+        announcement_url:
+          $ref: '#/components/schemas/FieldInfo'
+        browser:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_description:
+          $ref: '#/components/schemas/FieldInfo'
+        display_name:
+          $ref: '#/components/schemas/FieldInfo'
+        enterprise_policies:
+          $ref: '#/components/schemas/FieldInfo'
+        finch_url:
+          $ref: '#/components/schemas/FieldInfo'
+        experiment_goals:
+          $ref: '#/components/schemas/FieldInfo'
+        experiment_risks:
+          $ref: '#/components/schemas/FieldInfo'
+        experiment_extension_reason:
+          $ref: '#/components/schemas/FieldInfo'
+        intent_thread_url:
+          $ref: '#/components/schemas/FieldInfo'
+        origin_trial_feedback_url:
+          $ref: '#/components/schemas/FieldInfo'
+        origin_trial_id:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_approval_buganizer_component:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_approval_buganizer_custom_field_id:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_approval_criteria_url:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_approval_group_email:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_chromium_trial_name:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_display_name:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_action_requested:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_documentation_url:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_emails:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_feedback_submission_url:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_has_third_party_support:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_is_critical_trial:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_is_deprecation_trial:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_owner_email:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_request_note:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_require_approvals:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_stage_id:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_webfeature_use_counter:
+          $ref: '#/components/schemas/FieldInfo'
+        rollout_impact:
+          $ref: '#/components/schemas/FieldInfo'
+        rollout_milestone:
+          $ref: '#/components/schemas/FieldInfo'
+        rollout_platforms:
+          $ref: '#/components/schemas/FieldInfo'
+        rollout_details:
+          $ref: '#/components/schemas/FieldInfo'
+      title: StageField
+      type: object
+    MilestoneSetField:
+      properties:
+        desktop_first:
+          $ref: '#/components/schemas/FieldInfo'
+        desktop_last:
+          $ref: '#/components/schemas/FieldInfo'
+        android_first:
+          $ref: '#/components/schemas/FieldInfo'
+        android_last:
+          $ref: '#/components/schemas/FieldInfo'
+        ios_first:
+          $ref: '#/components/schemas/FieldInfo'
+        ios_last:
+          $ref: '#/components/schemas/FieldInfo'
+        webview_first:
+          $ref: '#/components/schemas/FieldInfo'
+        webview_last:
+          $ref: '#/components/schemas/FieldInfo'
+      title: MilestoneSetField
+      type: object
+    FieldInfo:
+      example:
+        form_field_name: form_field_name
+        value: "{}"
+      properties:
+        form_field_name:
+          title: form_field_name
+          type: string
+        value:
+          discriminator:
+            mapping:
+              integer: '#/components/schemas/IntegerFieldInfoValue'
+              string: '#/components/schemas/StringFieldInfoValue'
+              boolean: '#/components/schemas/BooleanFieldInfoValue'
+              array: '#/components/schemas/ArrayFieldInfoValue'
+            propertyName: value_type
+          title: FieldInfoValue
+          type: object
+      title: FieldInfo
+      type: object
+    StringFieldInfoValue:
+      properties:
+        form_field_name:
+          type: string
+        value_type:
+          type: string
+        value:
+          type: string
+      type: object
+    BooleanFieldInfoValue:
+      properties:
+        form_field_name:
+          type: string
+        value_type:
+          type: string
+        value:
+          type: boolean
+      type: object
+    IntegerFieldInfoValue:
+      properties:
+        form_field_name:
+          type: string
+        value_type:
+          type: string
+        value:
+          type: integer
+      type: object
+    ArrayFieldInfoValue:
+      properties:
+        form_field_name:
+          type: string
+        value_type:
+          type: string
+        value:
+          items:
+            type: string
+          type: array
+      type: object
+    FieldInfoValue:
+      discriminator:
+        mapping:
+          integer: '#/components/schemas/IntegerFieldInfoValue'
+          string: '#/components/schemas/StringFieldInfoValue'
+          boolean: '#/components/schemas/BooleanFieldInfoValue'
+          array: '#/components/schemas/ArrayFieldInfoValue'
+        propertyName: value_type
+      title: FieldInfoValue
       type: object
     GetIntentResponse:
       example:
@@ -739,6 +2432,18 @@ components:
       - feature
       - gate_reviews
       title: ReviewLatency
+      type: object
+    SignInRequest:
+      example:
+        credential: credential
+      properties:
+        credential:
+          description: The credential generated by Sign-In With Google.
+          title: credential
+          type: string
+      required:
+      - credential
+      title: SignInRequest
       type: object
     GateLatency:
       example:
@@ -927,11 +2632,6 @@ components:
       title: FeatureLink
       type: object
     LinkPreviewBase:
-      example:
-        information: "{}"
-        type: type
-        http_error_code: 0
-        url: http://example.com/aeiou
       properties:
         url:
           format: url
@@ -941,14 +2641,14 @@ components:
           title: type
           type: string
         information:
+          nullable: true
           title: information
           type: object
         http_error_code:
+          nullable: true
           title: http_error_code
           type: integer
       required:
-      - http_error_code
-      - information
       - type
       - url
       title: LinkPreviewBase
@@ -979,8 +2679,6 @@ components:
       - properties:
           information:
             $ref: '#/components/schemas/LinkPreviewGithubIssue_allOf_information'
-        required:
-        - information
         type: object
       title: LinkPreviewGithubIssue
     LinkPreviewGithubPullRequest:
@@ -992,8 +2690,6 @@ components:
       - properties:
           information:
             $ref: '#/components/schemas/LinkPreviewGithubMarkdown_allOf_information'
-        required:
-        - information
         type: object
     LinkPreviewOpenGraph:
       allOf:
@@ -1001,8 +2697,6 @@ components:
       - properties:
           information:
             $ref: '#/components/schemas/LinkPreviewOpenGraph_allOf_information'
-        required:
-        - information
         type: object
       title: LinkPreviewOpenGraph
     LinkPreviewMdnDocs:
@@ -1025,17 +2719,17 @@ components:
         data:
         - information: "{}"
           type: type
-          http_error_code: 0
+          http_error_code: 1
           url: http://example.com/aeiou
         - information: "{}"
           type: type
-          http_error_code: 0
+          http_error_code: 1
           url: http://example.com/aeiou
         has_stale_links: true
       properties:
         data:
           items:
-            $ref: '#/components/schemas/LinkPreviewBase'
+            $ref: '#/components/schemas/LinkPreview'
           title: data
           type: array
         has_stale_links:
@@ -1237,6 +2931,35 @@ components:
       - cue
       title: DismissCueRequest
       type: object
+    GetSettingsResponse:
+      example:
+        notify_as_starrer: true
+      properties:
+        notify_as_starrer:
+          title: notify_as_starrer
+          type: boolean
+      required:
+      - notify_as_starrer
+      title: GetSettingsResponse
+      type: object
+    PostSettingsRequest:
+      example:
+        notify: true
+      properties:
+        notify:
+          title: notify
+          type: boolean
+      required:
+      - notify
+      title: PostSettingsRequest
+      type: object
+    TokenRefreshResponse:
+      properties:
+        token:
+          type: string
+        token_expires_sec:
+          type: integer
+      type: object
     SuccessMessage:
       example:
         message: Done
@@ -1256,6 +2979,16 @@ components:
           title: error
           type: string
       title: ErrorMessage
+      type: object
+    RejectUnneededGetRequest:
+      example:
+        message: Method Not Allowed
+      properties:
+        message:
+          example: Method Not Allowed
+          title: message
+          type: string
+      title: RejectUnneededGetRequest
       type: object
     deleteAccount_200_response:
       example:
@@ -1318,15 +3051,15 @@ components:
           title: assignee_login
           type: string
         created_at:
-          format: date
+          format: date-time
           title: created_at
           type: string
         updated_at:
-          format: date
+          format: date-time
           title: updated_at
           type: string
         closed_at:
-          format: date
+          format: date-time
           title: closed_at
           type: string
         labels:
