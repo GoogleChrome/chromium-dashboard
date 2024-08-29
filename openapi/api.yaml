@@ -612,6 +612,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PermissionsResponse'
+  /currentuser/settings:
+    get:
+      summary: Get user settings
+      operationId: getUserSettings
+      responses:
+        '200':
+          description: Successfuly retrieved user settings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetSettingsResponse'
+        '404':
+          description: User preference not found
+    post:
+      summary: Set the user settings (currently only the notify_as_starrer)
+      operationId: setUserSettings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostSettingsRequest'
+      responses:
+        '200':
+          description: Settings updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '403':
+          description: User not signed-in
   /currentuser/cues:
     get:
       summary: Get dismissed cues for the current user
@@ -1805,6 +1836,20 @@ components:
             - progress-checkmarks
       required:
         - cue
+    GetSettingsResponse:
+      type: object
+      properties:
+        notify_as_starrer:
+          type: boolean
+      required:
+        - notify_as_starrer
+    PostSettingsRequest:
+      type: object
+      properties:
+        notify:
+          type: boolean
+      required:
+        - notify
     TokenRefreshResponse:
       type: object
       properties:

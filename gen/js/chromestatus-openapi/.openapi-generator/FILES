@@ -37,6 +37,7 @@ src/models/GetDismissedCues400Response.ts
 src/models/GetGateResponse.ts
 src/models/GetIntentResponse.ts
 src/models/GetOriginTrialsResponse.ts
+src/models/GetSettingsResponse.ts
 src/models/GetVotesResponse.ts
 src/models/IntegerFieldInfoValue.ts
 src/models/LinkPreview.ts
@@ -62,6 +63,7 @@ src/models/PatchCommentRequest.ts
 src/models/PermissionsResponse.ts
 src/models/PostGateRequest.ts
 src/models/PostIntentRequest.ts
+src/models/PostSettingsRequest.ts
 src/models/PostVoteRequest.ts
 src/models/Process.ts
 src/models/ProcessStage.ts

@@ -35,12 +35,14 @@ import type {
   GetGateResponse,
   GetIntentResponse,
   GetOriginTrialsResponse,
+  GetSettingsResponse,
   GetVotesResponse,
   MessageResponse,
   PatchCommentRequest,
   PermissionsResponse,
   PostGateRequest,
   PostIntentRequest,
+  PostSettingsRequest,
   PostVoteRequest,
   Process,
   RejectUnneededGetRequest,
@@ -90,6 +92,8 @@ import {
     GetIntentResponseToJSON,
     GetOriginTrialsResponseFromJSON,
     GetOriginTrialsResponseToJSON,
+    GetSettingsResponseFromJSON,
+    GetSettingsResponseToJSON,
     GetVotesResponseFromJSON,
     GetVotesResponseToJSON,
     MessageResponseFromJSON,
@@ -102,6 +106,8 @@ import {
     PostGateRequestToJSON,
     PostIntentRequestFromJSON,
     PostIntentRequestToJSON,
+    PostSettingsRequestFromJSON,
+    PostSettingsRequestToJSON,
     PostVoteRequestFromJSON,
     PostVoteRequestToJSON,
     ProcessFromJSON,
@@ -248,6 +254,10 @@ export interface SetAssigneesForGateRequest {
     featureId: number;
     gateId: number;
     postGateRequest: PostGateRequest;
+}
+
+export interface SetUserSettingsRequest {
+    postSettingsRequest: PostSettingsRequest;
 }
 
 export interface SetVoteForFeatureAndGateRequest {
@@ -626,6 +636,20 @@ export interface DefaultApiInterface {
 
     /**
      * 
+     * @summary Get user settings
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getUserSettingsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetSettingsResponse>>;
+
+    /**
+     * Get user settings
+     */
+    getUserSettings(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetSettingsResponse>;
+
+    /**
+     * 
      * @summary Get votes for a feature
      * @param {number} featureId Feature ID
      * @param {*} [options] Override http request option.
@@ -836,6 +860,21 @@ export interface DefaultApiInterface {
      * Set the assignees for a gate.
      */
     setAssigneesForGate(requestParameters: SetAssigneesForGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
+
+    /**
+     * 
+     * @summary Set the user settings (currently only the notify_as_starrer)
+     * @param {PostSettingsRequest} postSettingsRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    setUserSettingsRaw(requestParameters: SetUserSettingsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+
+    /**
+     * Set the user settings (currently only the notify_as_starrer)
+     */
+    setUserSettings(requestParameters: SetUserSettingsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
 
     /**
      * 
@@ -1685,6 +1724,32 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     }
 
     /**
+     * Get user settings
+     */
+    async getUserSettingsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetSettingsResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/currentuser/settings`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GetSettingsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get user settings
+     */
+    async getUserSettings(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetSettingsResponse> {
+        const response = await this.getUserSettingsRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Get votes for a feature
      */
     async getVotesForFeatureRaw(requestParameters: GetVotesForFeatureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetVotesResponse>> {
@@ -2169,6 +2234,42 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async setAssigneesForGate(requestParameters: SetAssigneesForGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
         const response = await this.setAssigneesForGateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Set the user settings (currently only the notify_as_starrer)
+     */
+    async setUserSettingsRaw(requestParameters: SetUserSettingsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+        if (requestParameters['postSettingsRequest'] == null) {
+            throw new runtime.RequiredError(
+                'postSettingsRequest',
+                'Required parameter "postSettingsRequest" was null or undefined when calling setUserSettings().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/currentuser/settings`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: PostSettingsRequestToJSON(requestParameters['postSettingsRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Set the user settings (currently only the notify_as_starrer)
+     */
+    async setUserSettings(requestParameters: SetUserSettingsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+        const response = await this.setUserSettingsRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
