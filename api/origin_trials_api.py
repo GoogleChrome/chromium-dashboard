@@ -21,6 +21,8 @@ import json5
 import requests
 import validators
 
+from chromestatus_openapi.models import (CreateOriginTrialRequest, GetOriginTrialsResponse, SuccessMessage)
+
 from framework import basehandlers, origin_trials_client, permissions
 from internals import notifier_helpers
 from internals.core_enums import OT_READY_FOR_CREATION
