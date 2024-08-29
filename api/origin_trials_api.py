@@ -13,22 +13,19 @@
 # limitations under the License.
 
 import concurrent.futures
-import flask
-import json5
-import logging
-import requests
 import urllib.request
-import validators
 from base64 import b64decode
 
-from framework import basehandlers
-from framework import origin_trials_client
+import flask
+import json5
+import requests
+import validators
+
+from framework import basehandlers, origin_trials_client, permissions
 from internals import notifier_helpers
-from framework import permissions
 from internals.core_enums import OT_READY_FOR_CREATION
 from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Gate, Vote
-
 
 WEBFEATURE_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom?format=TEXT'
 ENABLED_FEATURES_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/runtime_enabled_features.json5?format=TEXT'
