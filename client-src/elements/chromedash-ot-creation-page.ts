@@ -66,6 +66,8 @@ export class ChromedashOTCreationPage extends LitElement {
   @state()
   showApprovalsFields = false;
   @state()
+  isDeprecationTrial = false;
+  @state()
   stage!: StageDict;
 
   connectedCallback() {
@@ -88,6 +90,9 @@ export class ChromedashOTCreationPage extends LitElement {
     // Toggle the display of the registration approval fields when the box is checked.
     if (this.fieldValues[index].name === 'ot_require_approvals') {
       this.showApprovalsFields = !this.showApprovalsFields;
+      this.requestUpdate();
+    } else if (this.fieldValues[index].name === 'ot_is_deprecation_trial') {
+      this.isDeprecationTrial = value;
       this.requestUpdate();
     }
   }
@@ -307,6 +312,11 @@ export class ChromedashOTCreationPage extends LitElement {
         }
       });
     }
+    if (this.isDeprecationTrial) {
+      this.fieldValues.find(
+        fv => fv.name === 'ot_webfeature_use_counter'
+      )!.touched = false;
+    }
 
     const featureSubmitBody = formatFeatureChanges(
       this.fieldValues,
@@ -383,12 +393,17 @@ export class ChromedashOTCreationPage extends LitElement {
     const fields = this.fieldValues.map((fieldInfo, i) => {
       if (
         fieldInfo.alwaysHidden ||
-        (fieldInfo.isApprovalsField && !this.showApprovalsFields)
+        (fieldInfo.isApprovalsField && !this.showApprovalsFields) ||
+        (fieldInfo.name === 'ot_webfeature_use_counter' &&
+          this.isDeprecationTrial)
       ) {
         return nothing;
       }
-      // Fade in transition for the approvals fields if they're being displayed.
-      const shouldFadeIn = fieldInfo.isApprovalsField;
+      // Fade in transition for the approvals fields or use counter field
+      // if they're being displayed.
+      const shouldFadeIn =
+        fieldInfo.isApprovalsField ||
+        fieldInfo.name === 'ot_webfeature_use_counter';
 
       return html`
         <chromedash-form-field
