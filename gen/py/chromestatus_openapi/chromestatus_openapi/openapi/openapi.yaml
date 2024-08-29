@@ -2279,16 +2279,6 @@ components:
           type: string
       title: deleteAccount_200_response
       type: object
-    deleteAccount_200_response:
-      example:
-        message: Done
-      properties:
-        message:
-          example: Done
-          title: message
-          type: string
-      title: deleteAccount_200_response
-      type: object
     getDismissedCues_400_response:
       example:
         error: error

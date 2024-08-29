@@ -597,47 +597,6 @@ paths:
                 additionalProperties: true
         '404':
           description: Feature not found based on given ID.
-  /features/{feature_id}/process:
-    parameters:
-      - name: feature_id
-        in: path
-        description: Feature ID
-        required: true
-        schema:
-          type: integer
-    get:
-      summary: Get the process for a feature
-      operationId: getProcess
-      responses:
-        '200':
-          description: The process for the feature
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Process'
-        '404':
-          description: Feature not found based on given ID.
-  /features/{feature_id}/progress:
-    parameters:
-      - name: feature_id
-        in: path
-        description: Feature ID
-        required: true
-        schema:
-          type: integer
-    get:
-      summary: Get the progress for a feature
-      operationId: getProgress
-      responses:
-        '200':
-          description: The progress for the feature. Since there's no fixed data structure for progress, it's defined as a free-form object.
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties: true
-        '404':
-          description: Feature not found based on given ID.
   /features/{feature_id}/{stage_id}/{gate_id}/intent:
     parameters:
       - name: feature_id
