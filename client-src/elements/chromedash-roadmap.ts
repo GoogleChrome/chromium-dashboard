@@ -313,7 +313,7 @@ export class ChromedashRoadmap extends LitElement {
         milestone => html`
           <chromedash-roadmap-milestone-card
             style="width:${this.cardWidth}px;"
-            .channel=${this.milestoneInfo[milestone]}
+            .channel=${this.milestoneInfo?.[milestone]}
             .templateContent=${TEMPLATE_CONTENT['stable_minus_one']}
             ?showdates=${SHOW_DATES}
             .starredFeatures=${this.starredFeatures}
@@ -329,7 +329,7 @@ export class ChromedashRoadmap extends LitElement {
         type => html`
           <chromedash-roadmap-milestone-card
             style="width:${this.cardWidth}px;"
-            .channel=${this.channels[type]}
+            .channel=${this.channels?.[type]}
             .templateContent=${TEMPLATE_CONTENT[type]}
             ?showdates=${SHOW_DATES}
             .starredFeatures=${this.starredFeatures}
@@ -345,7 +345,7 @@ export class ChromedashRoadmap extends LitElement {
         milestone => html`
           <chromedash-roadmap-milestone-card
             style="width:${this.cardWidth}px;"
-            .channel=${this.milestoneInfo[milestone]}
+            .channel=${this.milestoneInfo?.[milestone]}
             .templateContent=${TEMPLATE_CONTENT['dev_plus_one']}
             ?showdates=${SHOW_DATES}
             .starredFeatures=${this.starredFeatures}

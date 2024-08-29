@@ -28,10 +28,11 @@ from chromestatus_openapi.models.post_gate_request import PostGateRequest  # noq
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
 from chromestatus_openapi.models.post_vote_request import PostVoteRequest  # noqa: E501
 from chromestatus_openapi.models.process import Process  # noqa: E501
+from chromestatus_openapi.models.reject_unneeded_get_request import RejectUnneededGetRequest  # noqa: E501
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
+from chromestatus_openapi.models.sign_in_request import SignInRequest  # noqa: E501
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
 from chromestatus_openapi.models.success_message import SuccessMessage  # noqa: E501
-from chromestatus_openapi.models.token_refresh_response import TokenRefreshResponse  # noqa: E501
 from chromestatus_openapi.test import BaseTestCase
 
 
@@ -107,6 +108,25 @@ class TestDefaultController(BaseTestCase):
             '/api/v0/features/{feature_id}/stages/{stage_id}/addXfnGates'.format(feature_id=56, stage_id=56),
             method='POST',
             headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_authenticate_user(self):
+        """Test case for authenticate_user
+
+        Authenticate user with Google Sign-In
+        """
+        sign_in_request = {"credential":"credential"}
+        headers = { 
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/login',
+            method='POST',
+            headers=headers,
+            data=json.dumps(sign_in_request),
+            content_type='application/json')
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
@@ -463,6 +483,21 @@ class TestDefaultController(BaseTestCase):
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
+    def test_logout_user(self):
+        """Test case for logout_user
+
+        Log out the current user
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/logout',
+            method='POST',
+            headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
     def test_post_intent_to_blink_dev(self):
         """Test case for post_intent_to_blink_dev
 
@@ -493,6 +528,36 @@ class TestDefaultController(BaseTestCase):
         response = self.client.open(
             '/api/v0/currentuser/token',
             method='POST',
+            headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_reject_get_requests_login(self):
+        """Test case for reject_get_requests_login
+
+        reject unneeded GET request without triggering Error Reporting
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/login',
+            method='GET',
+            headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_reject_get_requests_logout(self):
+        """Test case for reject_get_requests_logout
+
+        reject unneeded GET request without triggering Error Reporting
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/logout',
+            method='GET',
             headers=headers)
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))

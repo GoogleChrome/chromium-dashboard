@@ -52,7 +52,9 @@ from chromestatus_openapi.models.post_vote_request import PostVoteRequest
 from chromestatus_openapi.models.process import Process
 from chromestatus_openapi.models.process_stage import ProcessStage
 from chromestatus_openapi.models.progress_item import ProgressItem
+from chromestatus_openapi.models.reject_unneeded_get_request import RejectUnneededGetRequest
 from chromestatus_openapi.models.review_latency import ReviewLatency
+from chromestatus_openapi.models.sign_in_request import SignInRequest
 from chromestatus_openapi.models.spec_mentor import SpecMentor
 from chromestatus_openapi.models.success_message import SuccessMessage
 from chromestatus_openapi.models.token_refresh_response import TokenRefreshResponse

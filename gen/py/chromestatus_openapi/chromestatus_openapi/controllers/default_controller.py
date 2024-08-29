@@ -29,10 +29,11 @@ from chromestatus_openapi.models.post_gate_request import PostGateRequest  # noq
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
 from chromestatus_openapi.models.post_vote_request import PostVoteRequest  # noqa: E501
 from chromestatus_openapi.models.process import Process  # noqa: E501
+from chromestatus_openapi.models.reject_unneeded_get_request import RejectUnneededGetRequest  # noqa: E501
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
+from chromestatus_openapi.models.sign_in_request import SignInRequest  # noqa: E501
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
 from chromestatus_openapi.models.success_message import SuccessMessage  # noqa: E501
-from chromestatus_openapi.models.token_refresh_response import TokenRefreshResponse  # noqa: E501
 from chromestatus_openapi import util
 
 
@@ -103,6 +104,21 @@ def add_xfn_gates_to_stage(feature_id, stage_id):  # noqa: E501
 
     :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
     """
+    return 'do some magic!'
+
+
+def authenticate_user(sign_in_request):  # noqa: E501
+    """Authenticate user with Google Sign-In
+
+     # noqa: E501
+
+    :param sign_in_request: 
+    :type sign_in_request: dict | bytes
+
+    :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
+    """
+    if connexion.request.is_json:
+        sign_in_request = SignInRequest.from_dict(connexion.request.get_json())  # noqa: E501
     return 'do some magic!'
 
 
@@ -405,6 +421,17 @@ def list_spec_mentors(after=None):  # noqa: E501
     return 'do some magic!'
 
 
+def logout_user():  # noqa: E501
+    """Log out the current user
+
+     # noqa: E501
+
+
+    :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
 def post_intent_to_blink_dev(feature_id, stage_id, gate_id, post_intent_request=None):  # noqa: E501
     """Submit an intent to be posted on blink-dev
 
@@ -432,7 +459,29 @@ def refresh_token():  # noqa: E501
      # noqa: E501
 
 
-    :rtype: Union[TokenRefreshResponse, Tuple[TokenRefreshResponse, int], Tuple[TokenRefreshResponse, int, Dict[str, str]]
+    :rtype: Union[List[ReviewLatency], Tuple[List[ReviewLatency], int], Tuple[List[ReviewLatency], int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
+def reject_get_requests_login():  # noqa: E501
+    """reject unneeded GET request without triggering Error Reporting
+
+     # noqa: E501
+
+
+    :rtype: Union[None, Tuple[None, int], Tuple[None, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
+def reject_get_requests_logout():  # noqa: E501
+    """reject unneeded GET request without triggering Error Reporting
+
+     # noqa: E501
+
+
+    :rtype: Union[None, Tuple[None, int], Tuple[None, int, Dict[str, str]]
     """
     return 'do some magic!'
 

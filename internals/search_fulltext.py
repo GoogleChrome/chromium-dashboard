@@ -131,16 +131,19 @@ FULLTEXT_FIELDS = frozenset(
     _get_strings_dict(FeatureEntry()).keys())
 
 
-def parse_words(strings : list[str]) -> set[str]:
-  """Return a set of all searchable words in the given feature entry."""
-  words = set()
+def parse_words(strings : list[str]) -> tuple[set[str], int]:
+  """Return set of all searchable words in the given strings and the count."""
+  word_set = set()
+  count = 0
   for s in strings:
     # eliminate apostrophes
     s = s.lower().replace("'", "")
-    words.update(WORD_RE.findall(s))
+    words = WORD_RE.findall(s)
+    count += len(words)
+    word_set.update(words)
 
-  words.difference_update(STOP_WORDS)
-  return words
+  word_set.difference_update(STOP_WORDS)
+  return word_set, count
 
 
 def batch_index_features(
@@ -157,7 +160,8 @@ def batch_index_features(
     feature_words = (existing_fw_dict.get(feature_id) or
                      FeatureWords(feature_id=feature_id))
 
-    words = sorted(parse_words(get_strings(fe)))
+    word_set, unused_num_words = parse_words(get_strings(fe))
+    words = sorted(word_set)
     logging.info('feature %r has words %r', feature_id, words)
     feature_words.words = words
     updated_fw_list.append(feature_words)
@@ -203,18 +207,18 @@ def search_fulltext(
     textterm: str, field_name: str|None = None) -> Optional[list[int]]:
   """Return IDs of features that contain word(s) from textterm.
   if field_name is specified, check only within that field."""
-  search_words = parse_words([textterm])
-  if not search_words:
+  word_set, num_words = parse_words([textterm])
+  if not word_set:
     logging.warning('Cannot process fulltext term: %r', textterm)
     return None  # user is searching for stop words.
 
-  logging.info('looking for words: %r', search_words)
+  logging.info('looking for words: %r', word_set)
   query = FeatureWords.query()
-  for sw in search_words:
-    query = query.filter(FeatureWords.words == sw)
+  for search_word in word_set:
+    query = query.filter(FeatureWords.words == search_word)
   feature_projections = query.fetch(projection=['feature_id'])
   feature_ids = [proj.feature_id for proj in feature_projections]
-  if len(search_words) > 1 or field_name:
+  if num_words > 1 or field_name:
     return post_process_phrase(textterm, feature_ids, field_name=field_name)
   else:
     return feature_ids

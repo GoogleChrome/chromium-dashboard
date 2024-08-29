@@ -58,7 +58,9 @@ src/models/PostVoteRequest.ts
 src/models/Process.ts
 src/models/ProcessStage.ts
 src/models/ProgressItem.ts
+src/models/RejectUnneededGetRequest.ts
 src/models/ReviewLatency.ts
+src/models/SignInRequest.ts
 src/models/SpecMentor.ts
 src/models/SuccessMessage.ts
 src/models/TokenRefreshResponse.ts
