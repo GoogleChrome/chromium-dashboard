@@ -37,6 +37,7 @@ interface FieldAttrs {
   chromedash_split_pattern?: string;
   disabled?: boolean;
   min?: number;
+  max?: number;
 }
 
 interface MilestoneRange {
@@ -2021,6 +2022,15 @@ export const ALL_FIELDS: Record<string, Field> = {
     label: 'Feature feedback link',
     help_text: html` Link for developers to file feedback on the feature (e.g.
     GitHub issues, or WICG page).`,
+  },
+
+  shipping_year: {
+    type: 'input',
+    attrs: {type: 'number', min: 2000, max: 2050},
+    required: true,
+    label: 'Estimated shipping year',
+    help_text: html` Estimate of the calendar year in which this will first ship
+    on any platform. E.g., 2024.`,
   },
 
   enterprise_policies: {

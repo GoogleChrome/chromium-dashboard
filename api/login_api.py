@@ -13,14 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
-
 import google.oauth2.id_token
+import werkzeug.exceptions
+from chromestatus_openapi.models import SignInRequest
 from google.auth.transport import requests
 
-from framework import basehandlers
-from framework import users
 import settings
+from framework import basehandlers, users
 
 
 class LoginAPI(basehandlers.APIHandler):
@@ -31,8 +30,14 @@ class LoginAPI(basehandlers.APIHandler):
     self.abort(405, valid_methods=['POST'])
 
   def do_post(self, **kwargs):
-    token = self.get_param('credential')
-    message = "Unable to Authenticate. Please sign in again."
+    try:
+        request = SignInRequest.from_dict(self.request.json)
+        token = request.credential
+        if not token:
+            raise werkzeug.exceptions.BadRequest(description="Missing required field 'credential'")
+        message = "Unable to Authenticate. Please sign in again."
+    except ValueError:
+        message = "Invalid Request"
 
     try:
       idinfo = google.oauth2.id_token.verify_oauth2_token(

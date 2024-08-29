@@ -2,11 +2,10 @@ import '@polymer/iron-icon';
 import {LitElement, css, html} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import {Feature} from '../js-src/cs-client.js';
+import {Channels, Feature} from '../js-src/cs-client.js';
 import {TemplateContent} from './chromedash-roadmap-milestone-card.js';
 import {showToastMessage} from './utils.js';
 
-//TODO(markxiong0122): move this to cs-client.js after converting it to TypeScript
 interface MilestoneDetails {
   branch_point: string;
   earliest_beta: string;
@@ -105,7 +104,7 @@ export class ChromedashRoadmap extends LitElement {
   @property({type: Number, attribute: false})
   cardWidth = 0;
   @state()
-  channels; //TODO(markxiong0122): Type this as Channel when PR#4085 is merged
+  channels: Channels = {};
   @state()
   starredFeatures = new Set<number>();
   /**

@@ -2,6 +2,7 @@ import {LitElement, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
 import {
   formatFeatureChanges,
+  getDisabledHelpText,
   showToastMessage,
   setupScrollToHash,
   FieldInfo,
@@ -175,11 +176,13 @@ export class ChromedashGuideMetadataPage extends LitElement {
       // Add the field to this component's stage before creating the field component.
       const index = this.fieldValues.length;
       this.fieldValues.push({name: featureJSONKey, touched: false, value});
+
       return html`
         <chromedash-form-field
           name=${field}
           index=${index}
           value=${value}
+          disabledReason="${getDisabledHelpText(field)}"
           .fieldValues=${this.fieldValues}
           .feature=${formattedFeature}
           ?forEnterprise=${formattedFeature.is_enterprise_feature}

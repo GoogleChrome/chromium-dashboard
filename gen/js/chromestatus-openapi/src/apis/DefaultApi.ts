@@ -16,6 +16,8 @@
 import * as runtime from '../runtime';
 import type {
   AccountResponse,
+  Activity,
+  CommentsRequest,
   ComponentUsersRequest,
   ComponentsUsersResponse,
   CreateAccountRequest,
@@ -25,19 +27,35 @@ import type {
   ErrorMessage,
   ExternalReviewsResponse,
   FeatureLatency,
+  FeatureLinksResponse,
+  FeatureLinksSample,
+  FeatureLinksSummaryResponse,
+  GetCommentsResponse,
   GetDismissedCues400Response,
+  GetGateResponse,
   GetIntentResponse,
   GetOriginTrialsResponse,
+  GetVotesResponse,
   MessageResponse,
+  PatchCommentRequest,
   PermissionsResponse,
+  PostGateRequest,
   PostIntentRequest,
+  PostVoteRequest,
+  Process,
+  RejectUnneededGetRequest,
   ReviewLatency,
+  SignInRequest,
   SpecMentor,
   SuccessMessage,
 } from '../models/index';
 import {
     AccountResponseFromJSON,
     AccountResponseToJSON,
+    ActivityFromJSON,
+    ActivityToJSON,
+    CommentsRequestFromJSON,
+    CommentsRequestToJSON,
     ComponentUsersRequestFromJSON,
     ComponentUsersRequestToJSON,
     ComponentsUsersResponseFromJSON,
@@ -56,30 +74,74 @@ import {
     ExternalReviewsResponseToJSON,
     FeatureLatencyFromJSON,
     FeatureLatencyToJSON,
+    FeatureLinksResponseFromJSON,
+    FeatureLinksResponseToJSON,
+    FeatureLinksSampleFromJSON,
+    FeatureLinksSampleToJSON,
+    FeatureLinksSummaryResponseFromJSON,
+    FeatureLinksSummaryResponseToJSON,
+    GetCommentsResponseFromJSON,
+    GetCommentsResponseToJSON,
     GetDismissedCues400ResponseFromJSON,
     GetDismissedCues400ResponseToJSON,
+    GetGateResponseFromJSON,
+    GetGateResponseToJSON,
     GetIntentResponseFromJSON,
     GetIntentResponseToJSON,
     GetOriginTrialsResponseFromJSON,
     GetOriginTrialsResponseToJSON,
+    GetVotesResponseFromJSON,
+    GetVotesResponseToJSON,
     MessageResponseFromJSON,
     MessageResponseToJSON,
+    PatchCommentRequestFromJSON,
+    PatchCommentRequestToJSON,
     PermissionsResponseFromJSON,
     PermissionsResponseToJSON,
+    PostGateRequestFromJSON,
+    PostGateRequestToJSON,
     PostIntentRequestFromJSON,
     PostIntentRequestToJSON,
+    PostVoteRequestFromJSON,
+    PostVoteRequestToJSON,
+    ProcessFromJSON,
+    ProcessToJSON,
+    RejectUnneededGetRequestFromJSON,
+    RejectUnneededGetRequestToJSON,
     ReviewLatencyFromJSON,
     ReviewLatencyToJSON,
+    SignInRequestFromJSON,
+    SignInRequestToJSON,
     SpecMentorFromJSON,
     SpecMentorToJSON,
     SuccessMessageFromJSON,
     SuccessMessageToJSON,
 } from '../models/index';
 
+export interface AddFeatureCommentRequest {
+    featureId: number;
+    commentsRequest?: CommentsRequest;
+}
+
+export interface AddGateCommentRequest {
+    featureId: number;
+    gateId: number;
+    commentsRequest?: CommentsRequest;
+}
+
 export interface AddUserToComponentRequest {
     componentId: number;
     userId: number;
     componentUsersRequest?: ComponentUsersRequest;
+}
+
+export interface AddXfnGatesToStageRequest {
+    featureId: number;
+    stageId: number;
+}
+
+export interface AuthenticateUserRequest {
+    signInRequest: SignInRequest;
 }
 
 export interface CreateAccountOperationRequest {
@@ -105,14 +167,55 @@ export interface ExtendOriginTrialRequest {
     extensionStageId: number;
 }
 
+export interface GetFeatureCommentsRequest {
+    featureId: number;
+}
+
+export interface GetFeatureLinksRequest {
+    featureId?: number;
+    updateStaleLinks?: boolean;
+}
+
+export interface GetFeatureLinksSamplesRequest {
+    domain?: string;
+    type?: string;
+    isError?: boolean;
+}
+
+export interface GetGateCommentsRequest {
+    featureId: number;
+    gateId: number;
+}
+
+export interface GetGatesForFeatureRequest {
+    featureId: number;
+}
+
 export interface GetIntentBodyRequest {
     featureId: number;
     stageId: number;
     gateId: number;
 }
 
+export interface GetProcessRequest {
+    featureId: number;
+}
+
+export interface GetProgressRequest {
+    featureId: number;
+}
+
 export interface GetUserPermissionsRequest {
     returnPairedUser?: boolean;
+}
+
+export interface GetVotesForFeatureRequest {
+    featureId: number;
+}
+
+export interface GetVotesForFeatureAndGateRequest {
+    featureId: number;
+    gateId: number;
 }
 
 export interface ListExternalReviewsRequest {
@@ -141,6 +244,23 @@ export interface RemoveUserFromComponentRequest {
     componentUsersRequest?: ComponentUsersRequest;
 }
 
+export interface SetAssigneesForGateRequest {
+    featureId: number;
+    gateId: number;
+    postGateRequest: PostGateRequest;
+}
+
+export interface SetVoteForFeatureAndGateRequest {
+    featureId: number;
+    gateId: number;
+    postVoteRequest: PostVoteRequest;
+}
+
+export interface UpdateFeatureCommentRequest {
+    featureId: number;
+    patchCommentRequest: PatchCommentRequest;
+}
+
 /**
  * DefaultApi - interface
  * 
@@ -148,6 +268,39 @@ export interface RemoveUserFromComponentRequest {
  * @interface DefaultApiInterface
  */
 export interface DefaultApiInterface {
+    /**
+     * 
+     * @summary Add a comment to a feature
+     * @param {number} featureId 
+     * @param {CommentsRequest} [commentsRequest] Add a review commend and possible set a approval value
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    addFeatureCommentRaw(requestParameters: AddFeatureCommentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+
+    /**
+     * Add a comment to a feature
+     */
+    addFeatureComment(requestParameters: AddFeatureCommentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
+
+    /**
+     * 
+     * @summary Add a comment to a specific gate
+     * @param {number} featureId 
+     * @param {number} gateId 
+     * @param {CommentsRequest} [commentsRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    addGateCommentRaw(requestParameters: AddGateCommentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+
+    /**
+     * Add a comment to a specific gate
+     */
+    addGateComment(requestParameters: AddGateCommentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
+
     /**
      * 
      * @summary Add a user to a component
@@ -164,6 +317,37 @@ export interface DefaultApiInterface {
      * Add a user to a component
      */
     addUserToComponent(requestParameters: AddUserToComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * 
+     * @summary Add a full set of cross-functional gates to a stage.
+     * @param {number} featureId 
+     * @param {number} stageId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    addXfnGatesToStageRaw(requestParameters: AddXfnGatesToStageRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+
+    /**
+     * Add a full set of cross-functional gates to a stage.
+     */
+    addXfnGatesToStage(requestParameters: AddXfnGatesToStageRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
+
+    /**
+     * 
+     * @summary Authenticate user with Google Sign-In
+     * @param {SignInRequest} signInRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    authenticateUserRaw(requestParameters: AuthenticateUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+
+    /**
+     * Authenticate user with Google Sign-In
+     */
+    authenticateUser(requestParameters: AuthenticateUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
 
     /**
      * 
@@ -259,6 +443,99 @@ export interface DefaultApiInterface {
 
     /**
      * 
+     * @summary Get all comments for a given feature
+     * @param {number} featureId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getFeatureCommentsRaw(requestParameters: GetFeatureCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetCommentsResponse>>;
+
+    /**
+     * Get all comments for a given feature
+     */
+    getFeatureComments(requestParameters: GetFeatureCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetCommentsResponse>;
+
+    /**
+     * 
+     * @summary Get feature links by feature_id
+     * @param {number} [featureId] 
+     * @param {boolean} [updateStaleLinks] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getFeatureLinksRaw(requestParameters: GetFeatureLinksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FeatureLinksResponse>>;
+
+    /**
+     * Get feature links by feature_id
+     */
+    getFeatureLinks(requestParameters: GetFeatureLinksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FeatureLinksResponse>;
+
+    /**
+     * 
+     * @summary Get feature links samples
+     * @param {string} [domain] 
+     * @param {string} [type] 
+     * @param {boolean} [isError] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getFeatureLinksSamplesRaw(requestParameters: GetFeatureLinksSamplesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FeatureLinksSample>>;
+
+    /**
+     * Get feature links samples
+     */
+    getFeatureLinksSamples(requestParameters: GetFeatureLinksSamplesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FeatureLinksSample>;
+
+    /**
+     * 
+     * @summary Get feature links summary
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getFeatureLinksSummaryRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FeatureLinksSummaryResponse>>;
+
+    /**
+     * Get feature links summary
+     */
+    getFeatureLinksSummary(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FeatureLinksSummaryResponse>;
+
+    /**
+     * 
+     * @summary Get all comments for a given gate
+     * @param {number} featureId 
+     * @param {number} gateId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getGateCommentsRaw(requestParameters: GetGateCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<Activity>>>;
+
+    /**
+     * Get all comments for a given gate
+     */
+    getGateComments(requestParameters: GetGateCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<Activity>>;
+
+    /**
+     * 
+     * @summary Get all gates for a feature
+     * @param {number} featureId The ID of the feature to retrieve votes for.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getGatesForFeatureRaw(requestParameters: GetGatesForFeatureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetGateResponse>>;
+
+    /**
+     * Get all gates for a feature
+     */
+    getGatesForFeature(requestParameters: GetGatesForFeatureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetGateResponse>;
+
+    /**
+     * 
      * @summary Get the HTML body of an intent draft
      * @param {number} featureId Feature ID
      * @param {number} stageId Stage ID
@@ -290,6 +567,50 @@ export interface DefaultApiInterface {
 
     /**
      * 
+     * @summary Get all pending gates
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getPendingGatesRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetGateResponse>>;
+
+    /**
+     * Get all pending gates
+     */
+    getPendingGates(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetGateResponse>;
+
+    /**
+     * 
+     * @summary Get the process for a feature
+     * @param {number} featureId Feature ID
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getProcessRaw(requestParameters: GetProcessRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Process>>;
+
+    /**
+     * Get the process for a feature
+     */
+    getProcess(requestParameters: GetProcessRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Process>;
+
+    /**
+     * 
+     * @summary Get the progress for a feature
+     * @param {number} featureId Feature ID
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getProgressRaw(requestParameters: GetProgressRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: any; }>>;
+
+    /**
+     * Get the progress for a feature
+     */
+    getProgress(requestParameters: GetProgressRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: any; }>;
+
+    /**
+     * 
      * @summary Get the permissions and email of the user
      * @param {boolean} [returnPairedUser] If true, return the permissions of the paired user.
      * @param {*} [options] Override http request option.
@@ -302,6 +623,37 @@ export interface DefaultApiInterface {
      * Get the permissions and email of the user
      */
     getUserPermissions(requestParameters: GetUserPermissionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PermissionsResponse>;
+
+    /**
+     * 
+     * @summary Get votes for a feature
+     * @param {number} featureId Feature ID
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getVotesForFeatureRaw(requestParameters: GetVotesForFeatureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetVotesResponse>>;
+
+    /**
+     * Get votes for a feature
+     */
+    getVotesForFeature(requestParameters: GetVotesForFeatureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetVotesResponse>;
+
+    /**
+     * 
+     * @summary Get votes for a feature and gate
+     * @param {number} featureId The ID of the feature to retrieve votes for.
+     * @param {number} gateId The ID of the gate associated with the votes.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getVotesForFeatureAndGateRaw(requestParameters: GetVotesForFeatureAndGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetVotesResponse>>;
+
+    /**
+     * Get votes for a feature and gate
+     */
+    getVotesForFeatureAndGate(requestParameters: GetVotesForFeatureAndGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetVotesResponse>;
 
     /**
      * 
@@ -379,6 +731,20 @@ export interface DefaultApiInterface {
 
     /**
      * 
+     * @summary Log out the current user
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    logoutUserRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+
+    /**
+     * Log out the current user
+     */
+    logoutUser(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
+
+    /**
+     * 
      * @summary Submit an intent to be posted on blink-dev
      * @param {number} featureId Feature ID
      * @param {number} stageId Stage ID
@@ -397,6 +763,48 @@ export interface DefaultApiInterface {
 
     /**
      * 
+     * @summary Refresh the XSRF token
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    refreshTokenRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ReviewLatency>>>;
+
+    /**
+     * Refresh the XSRF token
+     */
+    refreshToken(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ReviewLatency>>;
+
+    /**
+     * 
+     * @summary reject unneeded GET request without triggering Error Reporting
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    rejectGetRequestsLoginRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * reject unneeded GET request without triggering Error Reporting
+     */
+    rejectGetRequestsLogin(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * 
+     * @summary reject unneeded GET request without triggering Error Reporting
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    rejectGetRequestsLogoutRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * reject unneeded GET request without triggering Error Reporting
+     */
+    rejectGetRequestsLogout(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * 
      * @summary Remove a user from a component
      * @param {number} componentId Component ID
      * @param {number} userId User ID
@@ -412,12 +820,141 @@ export interface DefaultApiInterface {
      */
     removeUserFromComponent(requestParameters: RemoveUserFromComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
+    /**
+     * 
+     * @summary Set the assignees for a gate.
+     * @param {number} featureId The ID of the feature to retrieve votes for.
+     * @param {number} gateId The ID of the gate to retrieve votes for.
+     * @param {PostGateRequest} postGateRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    setAssigneesForGateRaw(requestParameters: SetAssigneesForGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+
+    /**
+     * Set the assignees for a gate.
+     */
+    setAssigneesForGate(requestParameters: SetAssigneesForGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
+
+    /**
+     * 
+     * @summary Set a user\'s vote value for the specific feature and gate.
+     * @param {number} featureId The ID of the feature to retrieve votes for.
+     * @param {number} gateId The ID of the gate associated with the votes.
+     * @param {PostVoteRequest} postVoteRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    setVoteForFeatureAndGateRaw(requestParameters: SetVoteForFeatureAndGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+
+    /**
+     * Set a user\'s vote value for the specific feature and gate.
+     */
+    setVoteForFeatureAndGate(requestParameters: SetVoteForFeatureAndGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
+
+    /**
+     * 
+     * @summary Update a comment on a feature
+     * @param {number} featureId 
+     * @param {PatchCommentRequest} patchCommentRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    updateFeatureCommentRaw(requestParameters: UpdateFeatureCommentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+
+    /**
+     * Update a comment on a feature
+     */
+    updateFeatureComment(requestParameters: UpdateFeatureCommentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
+
 }
 
 /**
  * 
  */
 export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
+
+    /**
+     * Add a comment to a feature
+     */
+    async addFeatureCommentRaw(requestParameters: AddFeatureCommentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling addFeatureComment().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/features/<int:feature_id>/approvals/comments`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))),
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: CommentsRequestToJSON(requestParameters['commentsRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Add a comment to a feature
+     */
+    async addFeatureComment(requestParameters: AddFeatureCommentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+        const response = await this.addFeatureCommentRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Add a comment to a specific gate
+     */
+    async addGateCommentRaw(requestParameters: AddGateCommentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling addGateComment().'
+            );
+        }
+
+        if (requestParameters['gateId'] == null) {
+            throw new runtime.RequiredError(
+                'gateId',
+                'Required parameter "gateId" was null or undefined when calling addGateComment().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/features/<int:feature_id>/approvals/<int:gate_id>/comments`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))).replace(`{${"gate_id"}}`, encodeURIComponent(String(requestParameters['gateId']))),
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: CommentsRequestToJSON(requestParameters['commentsRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Add a comment to a specific gate
+     */
+    async addGateComment(requestParameters: AddGateCommentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+        const response = await this.addGateCommentRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Add a user to a component
@@ -463,6 +1000,82 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async addUserToComponent(requestParameters: AddUserToComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.addUserToComponentRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Add a full set of cross-functional gates to a stage.
+     */
+    async addXfnGatesToStageRaw(requestParameters: AddXfnGatesToStageRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling addXfnGatesToStage().'
+            );
+        }
+
+        if (requestParameters['stageId'] == null) {
+            throw new runtime.RequiredError(
+                'stageId',
+                'Required parameter "stageId" was null or undefined when calling addXfnGatesToStage().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/features/{feature_id}/stages/{stage_id}/addXfnGates`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))).replace(`{${"stage_id"}}`, encodeURIComponent(String(requestParameters['stageId']))),
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Add a full set of cross-functional gates to a stage.
+     */
+    async addXfnGatesToStage(requestParameters: AddXfnGatesToStageRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+        const response = await this.addXfnGatesToStageRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Authenticate user with Google Sign-In
+     */
+    async authenticateUserRaw(requestParameters: AuthenticateUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+        if (requestParameters['signInRequest'] == null) {
+            throw new runtime.RequiredError(
+                'signInRequest',
+                'Required parameter "signInRequest" was null or undefined when calling authenticateUser().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/login`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SignInRequestToJSON(requestParameters['signInRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Authenticate user with Google Sign-In
+     */
+    async authenticateUser(requestParameters: AuthenticateUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+        const response = await this.authenticateUserRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**
@@ -673,6 +1286,210 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     }
 
     /**
+     * Get all comments for a given feature
+     */
+    async getFeatureCommentsRaw(requestParameters: GetFeatureCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetCommentsResponse>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling getFeatureComments().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/features/<int:feature_id>/approvals/comments`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GetCommentsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get all comments for a given feature
+     */
+    async getFeatureComments(requestParameters: GetFeatureCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetCommentsResponse> {
+        const response = await this.getFeatureCommentsRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get feature links by feature_id
+     */
+    async getFeatureLinksRaw(requestParameters: GetFeatureLinksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FeatureLinksResponse>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['featureId'] != null) {
+            queryParameters['feature_id'] = requestParameters['featureId'];
+        }
+
+        if (requestParameters['updateStaleLinks'] != null) {
+            queryParameters['update_stale_links'] = requestParameters['updateStaleLinks'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/feature_links`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FeatureLinksResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get feature links by feature_id
+     */
+    async getFeatureLinks(requestParameters: GetFeatureLinksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FeatureLinksResponse> {
+        const response = await this.getFeatureLinksRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get feature links samples
+     */
+    async getFeatureLinksSamplesRaw(requestParameters: GetFeatureLinksSamplesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FeatureLinksSample>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['domain'] != null) {
+            queryParameters['domain'] = requestParameters['domain'];
+        }
+
+        if (requestParameters['type'] != null) {
+            queryParameters['type'] = requestParameters['type'];
+        }
+
+        if (requestParameters['isError'] != null) {
+            queryParameters['is_error'] = requestParameters['isError'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/feature_links_samples`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FeatureLinksSampleFromJSON(jsonValue));
+    }
+
+    /**
+     * Get feature links samples
+     */
+    async getFeatureLinksSamples(requestParameters: GetFeatureLinksSamplesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FeatureLinksSample> {
+        const response = await this.getFeatureLinksSamplesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get feature links summary
+     */
+    async getFeatureLinksSummaryRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FeatureLinksSummaryResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/feature_links_summary`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FeatureLinksSummaryResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get feature links summary
+     */
+    async getFeatureLinksSummary(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FeatureLinksSummaryResponse> {
+        const response = await this.getFeatureLinksSummaryRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get all comments for a given gate
+     */
+    async getGateCommentsRaw(requestParameters: GetGateCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<Activity>>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling getGateComments().'
+            );
+        }
+
+        if (requestParameters['gateId'] == null) {
+            throw new runtime.RequiredError(
+                'gateId',
+                'Required parameter "gateId" was null or undefined when calling getGateComments().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/features/<int:feature_id>/approvals/<int:gate_id>/comments`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))).replace(`{${"gate_id"}}`, encodeURIComponent(String(requestParameters['gateId']))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ActivityFromJSON));
+    }
+
+    /**
+     * Get all comments for a given gate
+     */
+    async getGateComments(requestParameters: GetGateCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<Activity>> {
+        const response = await this.getGateCommentsRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get all gates for a feature
+     */
+    async getGatesForFeatureRaw(requestParameters: GetGatesForFeatureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetGateResponse>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling getGatesForFeature().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/features/{feature_id}/gates`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GetGateResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get all gates for a feature
+     */
+    async getGatesForFeature(requestParameters: GetGatesForFeatureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetGateResponse> {
+        const response = await this.getGatesForFeatureRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Get the HTML body of an intent draft
      */
     async getIntentBodyRaw(requestParameters: GetIntentBodyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetIntentResponse>> {
@@ -746,6 +1563,98 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     }
 
     /**
+     * Get all pending gates
+     */
+    async getPendingGatesRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetGateResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/gates/pending`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GetGateResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get all pending gates
+     */
+    async getPendingGates(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetGateResponse> {
+        const response = await this.getPendingGatesRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get the process for a feature
+     */
+    async getProcessRaw(requestParameters: GetProcessRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Process>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling getProcess().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/features/{feature_id}/process`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ProcessFromJSON(jsonValue));
+    }
+
+    /**
+     * Get the process for a feature
+     */
+    async getProcess(requestParameters: GetProcessRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Process> {
+        const response = await this.getProcessRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get the progress for a feature
+     */
+    async getProgressRaw(requestParameters: GetProgressRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: any; }>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling getProgress().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/features/{feature_id}/progress`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse<any>(response);
+    }
+
+    /**
+     * Get the progress for a feature
+     */
+    async getProgress(requestParameters: GetProgressRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: any; }> {
+        const response = await this.getProgressRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Get the permissions and email of the user
      */
     async getUserPermissionsRaw(requestParameters: GetUserPermissionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PermissionsResponse>> {
@@ -772,6 +1681,79 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async getUserPermissions(requestParameters: GetUserPermissionsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PermissionsResponse> {
         const response = await this.getUserPermissionsRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get votes for a feature
+     */
+    async getVotesForFeatureRaw(requestParameters: GetVotesForFeatureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetVotesResponse>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling getVotesForFeature().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/features/{feature_id}/votes`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GetVotesResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get votes for a feature
+     */
+    async getVotesForFeature(requestParameters: GetVotesForFeatureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetVotesResponse> {
+        const response = await this.getVotesForFeatureRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get votes for a feature and gate
+     */
+    async getVotesForFeatureAndGateRaw(requestParameters: GetVotesForFeatureAndGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetVotesResponse>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling getVotesForFeatureAndGate().'
+            );
+        }
+
+        if (requestParameters['gateId'] == null) {
+            throw new runtime.RequiredError(
+                'gateId',
+                'Required parameter "gateId" was null or undefined when calling getVotesForFeatureAndGate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/features/{feature_id}/votes/{gate_id}`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))).replace(`{${"gate_id"}}`, encodeURIComponent(String(requestParameters['gateId']))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GetVotesResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get votes for a feature and gate
+     */
+    async getVotesForFeatureAndGate(requestParameters: GetVotesForFeatureAndGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetVotesResponse> {
+        const response = await this.getVotesForFeatureAndGateRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -943,6 +1925,32 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     }
 
     /**
+     * Log out the current user
+     */
+    async logoutUserRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/logout`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Log out the current user
+     */
+    async logoutUser(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+        const response = await this.logoutUserRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Submit an intent to be posted on blink-dev
      */
     async postIntentToBlinkDevRaw(requestParameters: PostIntentToBlinkDevRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MessageResponse>> {
@@ -993,6 +2001,82 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     }
 
     /**
+     * Refresh the XSRF token
+     */
+    async refreshTokenRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ReviewLatency>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/currentuser/token`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ReviewLatencyFromJSON));
+    }
+
+    /**
+     * Refresh the XSRF token
+     */
+    async refreshToken(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ReviewLatency>> {
+        const response = await this.refreshTokenRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * reject unneeded GET request without triggering Error Reporting
+     */
+    async rejectGetRequestsLoginRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/login`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * reject unneeded GET request without triggering Error Reporting
+     */
+    async rejectGetRequestsLogin(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.rejectGetRequestsLoginRaw(initOverrides);
+    }
+
+    /**
+     * reject unneeded GET request without triggering Error Reporting
+     */
+    async rejectGetRequestsLogoutRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/logout`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * reject unneeded GET request without triggering Error Reporting
+     */
+    async rejectGetRequestsLogout(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.rejectGetRequestsLogoutRaw(initOverrides);
+    }
+
+    /**
      * Remove a user from a component
      */
     async removeUserFromComponentRaw(requestParameters: RemoveUserFromComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
@@ -1036,6 +2120,149 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async removeUserFromComponent(requestParameters: RemoveUserFromComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.removeUserFromComponentRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Set the assignees for a gate.
+     */
+    async setAssigneesForGateRaw(requestParameters: SetAssigneesForGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling setAssigneesForGate().'
+            );
+        }
+
+        if (requestParameters['gateId'] == null) {
+            throw new runtime.RequiredError(
+                'gateId',
+                'Required parameter "gateId" was null or undefined when calling setAssigneesForGate().'
+            );
+        }
+
+        if (requestParameters['postGateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'postGateRequest',
+                'Required parameter "postGateRequest" was null or undefined when calling setAssigneesForGate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/features/{feature_id}/gates/{gate_id}`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))).replace(`{${"gate_id"}}`, encodeURIComponent(String(requestParameters['gateId']))),
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: PostGateRequestToJSON(requestParameters['postGateRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Set the assignees for a gate.
+     */
+    async setAssigneesForGate(requestParameters: SetAssigneesForGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+        const response = await this.setAssigneesForGateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Set a user\'s vote value for the specific feature and gate.
+     */
+    async setVoteForFeatureAndGateRaw(requestParameters: SetVoteForFeatureAndGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling setVoteForFeatureAndGate().'
+            );
+        }
+
+        if (requestParameters['gateId'] == null) {
+            throw new runtime.RequiredError(
+                'gateId',
+                'Required parameter "gateId" was null or undefined when calling setVoteForFeatureAndGate().'
+            );
+        }
+
+        if (requestParameters['postVoteRequest'] == null) {
+            throw new runtime.RequiredError(
+                'postVoteRequest',
+                'Required parameter "postVoteRequest" was null or undefined when calling setVoteForFeatureAndGate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/features/{feature_id}/votes/{gate_id}`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))).replace(`{${"gate_id"}}`, encodeURIComponent(String(requestParameters['gateId']))),
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: PostVoteRequestToJSON(requestParameters['postVoteRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Set a user\'s vote value for the specific feature and gate.
+     */
+    async setVoteForFeatureAndGate(requestParameters: SetVoteForFeatureAndGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+        const response = await this.setVoteForFeatureAndGateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Update a comment on a feature
+     */
+    async updateFeatureCommentRaw(requestParameters: UpdateFeatureCommentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling updateFeatureComment().'
+            );
+        }
+
+        if (requestParameters['patchCommentRequest'] == null) {
+            throw new runtime.RequiredError(
+                'patchCommentRequest',
+                'Required parameter "patchCommentRequest" was null or undefined when calling updateFeatureComment().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/features/<int:feature_id>/approvals/comments`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))),
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: PatchCommentRequestToJSON(requestParameters['patchCommentRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Update a comment on a feature
+     */
+    async updateFeatureComment(requestParameters: UpdateFeatureCommentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+        const response = await this.updateFeatureCommentRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
 }
