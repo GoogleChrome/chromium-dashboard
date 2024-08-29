@@ -1,4 +1,4 @@
-import {LitElement, css, html, nothing} from 'lit';
+import {LitElement, TemplateResult, css, html, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {ref} from 'lit/directives/ref.js';
 import {FORM_STYLES} from '../css/forms-css.js';
@@ -6,7 +6,11 @@ import {SHARED_STYLES} from '../css/shared-css.js';
 import {Feature, StageDict} from '../js-src/cs-client.js';
 import './chromedash-form-field.js';
 import {ORIGIN_TRIAL_CREATION_FIELDS} from './form-definition.js';
-import {OT_SETUP_STATUS_OPTIONS, VOTE_OPTIONS} from './form-field-enums.js';
+import {
+  OT_SETUP_STATUS_OPTIONS,
+  VOTE_OPTIONS,
+  USE_COUNTER_TYPE_WEBFEATURE,
+} from './form-field-enums.js';
 import {ALL_FIELDS} from './form-field-specs.js';
 import {
   FieldInfo,
@@ -24,6 +28,16 @@ export class ChromedashOTCreationPage extends LitElement {
       ...SHARED_STYLES,
       ...FORM_STYLES,
       css`
+        .choices label {
+          font-weight: bold;
+        }
+        .choices div {
+          margin-top: 1em;
+        }
+        .choices p {
+          margin: 0.5em 1.5em 1em;
+        }
+
         #overlay {
           position: fixed;
           width: 100%;
@@ -80,6 +94,8 @@ export class ChromedashOTCreationPage extends LitElement {
   @state()
   isDeprecationTrial = false;
   @state()
+  webfeatureUseCounterType: Number = USE_COUNTER_TYPE_WEBFEATURE;
+  @state()
   stage!: StageDict;
 
   connectedCallback() {
@@ -107,6 +123,10 @@ export class ChromedashOTCreationPage extends LitElement {
       this.isDeprecationTrial = value;
       this.requestUpdate();
     }
+  }
+
+  handleUseCounterTypeUpdate(event) {
+    this.webfeatureUseCounterType = parseInt(event.detail.value);
   }
 
   fetchData() {
@@ -324,10 +344,11 @@ export class ChromedashOTCreationPage extends LitElement {
         }
       });
     }
+    const useCounterField = this.fieldValues.find(
+      fv => fv.name === 'ot_webfeature_use_counter'
+    );
     if (this.isDeprecationTrial) {
-      this.fieldValues.find(
-        fv => fv.name === 'ot_webfeature_use_counter'
-      )!.touched = false;
+      useCounterField!.touched = false;
     }
 
     const featureSubmitBody = formatFeatureChanges(
@@ -335,7 +356,15 @@ export class ChromedashOTCreationPage extends LitElement {
       this.featureId
     );
     // We only need the single stage changes.
-    const stageSubmitBody = featureSubmitBody.stages[0];
+    const stageSubmitBody = featureSubmitBody.stages[0] as Object;
+
+    // Add on the appropriate use counter prefix.
+    const useCounterPrefix =
+      this.webfeatureUseCounterType === USE_COUNTER_TYPE_WEBFEATURE
+        ? 'WebFeature::'
+        : 'WebDXFeature::';
+    stageSubmitBody['ot_webfeature_use_counter'].value =
+      `${useCounterPrefix}${stageSubmitBody['ot_webfeature_use_counter'].value}`;
 
     this.submitting = true;
     window.csClient
@@ -417,7 +446,24 @@ export class ChromedashOTCreationPage extends LitElement {
         fieldInfo.isApprovalsField ||
         fieldInfo.name === 'ot_webfeature_use_counter';
 
+      let additionalInfo: TemplateResult | symbol = nothing;
+      if (fieldInfo.name == 'ot_webfeature_use_counter') {
+        additionalInfo = html`
+          <chromedash-form-field
+            name="ot_webfeature_use_counter__type"
+            index=${i}
+            .value=${this.webfeatureUseCounterType}
+            .fieldValues=${this.fieldValues}
+            ?shouldFadeIn=${shouldFadeIn}
+            @form-field-update="${this.handleUseCounterTypeUpdate}"
+            class="choices"
+          >
+          </chromedash-form-field>
+        `;
+      }
+
       return html`
+        ${additionalInfo}
         <chromedash-form-field
           name=${fieldInfo.name}
           index=${i}
