@@ -60,6 +60,7 @@ import './elements/chromedash-feature';
 import './elements/chromedash-feature-detail';
 import './elements/chromedash-feature-filter';
 import './elements/chromedash-feature-page';
+import './elements/chromedash-feature-pagination';
 import './elements/chromedash-feature-table';
 import './elements/chromedash-feature-row';
 import './elements/chromedash-featurelist';
