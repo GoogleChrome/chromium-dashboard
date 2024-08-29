@@ -23,7 +23,7 @@ from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismis
 from chromestatus_openapi.models.get_gate_response import GetGateResponse  # noqa: E501
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
 from chromestatus_openapi.models.get_origin_trials_response import GetOriginTrialsResponse  # noqa: E501
-from chromestatus_openapi.models.get_settings_response import GetSettingsResponse  # noqa: E501 
+from chromestatus_openapi.models.get_settings_response import GetSettingsResponse  # noqa: E501
 from chromestatus_openapi.models.get_stars_response import GetStarsResponse  # noqa: E501
 from chromestatus_openapi.models.get_votes_response import GetVotesResponse  # noqa: E501
 from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
@@ -48,7 +48,7 @@ def add_feature_comment(feature_id, comments_request=None):  # noqa: E501
 
      # noqa: E501
 
-    :param feature_id:
+    :param feature_id: 
     :type feature_id: int
     :param comments_request: Add a review commend and possible set a approval value
     :type comments_request: dict | bytes
@@ -65,11 +65,11 @@ def add_gate_comment(feature_id, gate_id, comments_request=None):  # noqa: E501
 
      # noqa: E501
 
-    :param feature_id:
+    :param feature_id: 
     :type feature_id: int
-    :param gate_id:
+    :param gate_id: 
     :type gate_id: int
-    :param comments_request:
+    :param comments_request: 
     :type comments_request: dict | bytes
 
     :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
@@ -88,7 +88,7 @@ def add_user_to_component(component_id, user_id, component_users_request=None): 
     :type component_id: int
     :param user_id: User ID
     :type user_id: int
-    :param component_users_request:
+    :param component_users_request: 
     :type component_users_request: dict | bytes
 
     :rtype: Union[None, Tuple[None, int], Tuple[None, int, Dict[str, str]]
@@ -103,9 +103,9 @@ def add_xfn_gates_to_stage(feature_id, stage_id):  # noqa: E501
 
      # noqa: E501
 
-    :param feature_id:
+    :param feature_id: 
     :type feature_id: int
-    :param stage_id:
+    :param stage_id: 
     :type stage_id: int
 
     :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
@@ -118,7 +118,7 @@ def authenticate_user(sign_in_request):  # noqa: E501
 
      # noqa: E501
 
-    :param sign_in_request:
+    :param sign_in_request: 
     :type sign_in_request: dict | bytes
 
     :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
@@ -133,7 +133,7 @@ def create_account(create_account_request=None):  # noqa: E501
 
      # noqa: E501
 
-    :param create_account_request:
+    :param create_account_request: 
     :type create_account_request: dict | bytes
 
     :rtype: Union[AccountResponse, Tuple[AccountResponse, int], Tuple[AccountResponse, int, Dict[str, str]]
@@ -148,11 +148,11 @@ def create_origin_trial(feature_id, stage_id, create_origin_trial_request=None):
 
      # noqa: E501
 
-    :param feature_id:
+    :param feature_id: 
     :type feature_id: int
-    :param stage_id:
+    :param stage_id: 
     :type stage_id: int
-    :param create_origin_trial_request:
+    :param create_origin_trial_request: 
     :type create_origin_trial_request: dict | bytes
 
     :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
@@ -180,7 +180,7 @@ def dismiss_cue(dismiss_cue_request):  # noqa: E501
 
      # noqa: E501
 
-    :param dismiss_cue_request:
+    :param dismiss_cue_request: 
     :type dismiss_cue_request: dict | bytes
 
     :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
@@ -195,9 +195,9 @@ def extend_origin_trial(feature_id, extension_stage_id):  # noqa: E501
 
      # noqa: E501
 
-    :param feature_id:
+    :param feature_id: 
     :type feature_id: int
-    :param extension_stage_id:
+    :param extension_stage_id: 
     :type extension_stage_id: int
 
     :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
@@ -221,7 +221,7 @@ def get_feature_comments(feature_id):  # noqa: E501
 
      # noqa: E501
 
-    :param feature_id:
+    :param feature_id: 
     :type feature_id: int
 
     :rtype: Union[GetCommentsResponse, Tuple[GetCommentsResponse, int], Tuple[GetCommentsResponse, int, Dict[str, str]]
@@ -234,9 +234,9 @@ def get_feature_links(feature_id=None, update_stale_links=None):  # noqa: E501
 
      # noqa: E501
 
-    :param feature_id:
+    :param feature_id: 
     :type feature_id: int
-    :param update_stale_links:
+    :param update_stale_links: 
     :type update_stale_links: bool
 
     :rtype: Union[FeatureLinksResponse, Tuple[FeatureLinksResponse, int], Tuple[FeatureLinksResponse, int, Dict[str, str]]
@@ -249,11 +249,11 @@ def get_feature_links_samples(domain=None, type=None, is_error=None):  # noqa: E
 
      # noqa: E501
 
-    :param domain:
+    :param domain: 
     :type domain: str
-    :param type:
+    :param type: 
     :type type: str
-    :param is_error:
+    :param is_error: 
     :type is_error: bool
 
     :rtype: Union[FeatureLinksSample, Tuple[FeatureLinksSample, int], Tuple[FeatureLinksSample, int, Dict[str, str]]
@@ -277,9 +277,9 @@ def get_gate_comments(feature_id, gate_id):  # noqa: E501
 
      # noqa: E501
 
-    :param feature_id:
+    :param feature_id: 
     :type feature_id: int
-    :param gate_id:
+    :param gate_id: 
     :type gate_id: int
 
     :rtype: Union[List[Activity], Tuple[List[Activity], int], Tuple[List[Activity], int, Dict[str, str]]
@@ -444,7 +444,7 @@ def list_external_reviews(review_group):  # noqa: E501
 
      # noqa: E501
 
-    :param review_group: Which review group to focus on:  * &#x60;tag&#x60; - The W3C TAG  * &#x60;gecko&#x60; - The rendering engine that powers Mozilla Firefox  * &#x60;webkit&#x60; - The rendering engine that powers Apple Safari
+    :param review_group: Which review group to focus on:  * &#x60;tag&#x60; - The W3C TAG  * &#x60;gecko&#x60; - The rendering engine that powers Mozilla Firefox  * &#x60;webkit&#x60; - The rendering engine that powers Apple Safari 
     :type review_group: str
 
     :rtype: Union[ExternalReviewsResponse, Tuple[ExternalReviewsResponse, int], Tuple[ExternalReviewsResponse, int, Dict[str, str]]
@@ -485,7 +485,7 @@ def list_spec_mentors(after=None):  # noqa: E501
 
      # noqa: E501
 
-    :param after:
+    :param after: 
     :type after: str
 
     :rtype: Union[List[SpecMentor], Tuple[List[SpecMentor], int], Tuple[List[SpecMentor], int, Dict[str, str]]
@@ -568,7 +568,7 @@ def remove_user_from_component(component_id, user_id, component_users_request=No
     :type component_id: int
     :param user_id: User ID
     :type user_id: int
-    :param component_users_request:
+    :param component_users_request: 
     :type component_users_request: dict | bytes
 
     :rtype: Union[None, Tuple[None, int], Tuple[None, int, Dict[str, str]]
@@ -587,7 +587,7 @@ def set_assignees_for_gate(feature_id, gate_id, post_gate_request):  # noqa: E50
     :type feature_id: int
     :param gate_id: The ID of the gate to retrieve votes for.
     :type gate_id: int
-    :param post_gate_request:
+    :param post_gate_request: 
     :type post_gate_request: dict | bytes
 
     :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
@@ -602,7 +602,7 @@ def set_star(set_star_request):  # noqa: E501
 
      # noqa: E501
 
-    :param set_star_request:
+    :param set_star_request: 
     :type set_star_request: dict | bytes
 
     :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
@@ -617,7 +617,7 @@ def set_user_settings(post_settings_request):  # noqa: E501
 
      # noqa: E501
 
-    :param post_settings_request:
+    :param post_settings_request: 
     :type post_settings_request: dict | bytes
 
     :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
@@ -636,7 +636,7 @@ def set_vote_for_feature_and_gate(feature_id, gate_id, post_vote_request):  # no
     :type feature_id: int
     :param gate_id: The ID of the gate associated with the votes.
     :type gate_id: int
-    :param post_vote_request:
+    :param post_vote_request: 
     :type post_vote_request: dict | bytes
 
     :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
@@ -651,9 +651,9 @@ def update_feature_comment(feature_id, patch_comment_request):  # noqa: E501
 
      # noqa: E501
 
-    :param feature_id:
+    :param feature_id: 
     :type feature_id: int
-    :param patch_comment_request:
+    :param patch_comment_request: 
     :type patch_comment_request: dict | bytes
 
     :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]

@@ -60,7 +60,7 @@ from chromestatus_openapi.models.post_gate_request import PostGateRequest
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest
 from chromestatus_openapi.models.post_settings_request import PostSettingsRequest
 from chromestatus_openapi.models.post_stars_request import PostStarsRequest
-from chromestatus_openapi.models.post_vote_request import PostVoteRequest 
+from chromestatus_openapi.models.post_vote_request import PostVoteRequest
 from chromestatus_openapi.models.process import Process
 from chromestatus_openapi.models.process_stage import ProcessStage
 from chromestatus_openapi.models.progress_item import ProgressItem
