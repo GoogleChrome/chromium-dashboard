@@ -24,7 +24,7 @@ export interface PostStarsRequest {
      * @type {number}
      * @memberof PostStarsRequest
      */
-    featureId: number;
+    feature_id?: number;
     /**
      * 
      * @type {boolean}
@@ -37,7 +37,6 @@ export interface PostStarsRequest {
  * Check if a given object implements the PostStarsRequest interface.
  */
 export function instanceOfPostStarsRequest(value: object): value is PostStarsRequest {
-    if (!('featureId' in value) || value['featureId'] === undefined) return false;
     return true;
 }
 
@@ -51,7 +50,7 @@ export function PostStarsRequestFromJSONTyped(json: any, ignoreDiscriminator: bo
     }
     return {
         
-        'featureId': json['featureId'],
+        'feature_id': json['feature_id'] == null ? undefined : json['feature_id'],
         'starred': json['starred'] == null ? undefined : json['starred'],
     };
 }
@@ -62,7 +61,7 @@ export function PostStarsRequestToJSON(value?: PostStarsRequest | null): any {
     }
     return {
         
-        'featureId': value['featureId'],
+        'feature_id': value['feature_id'],
         'starred': value['starred'],
     };
 }

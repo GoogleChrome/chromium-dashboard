@@ -26,7 +26,7 @@ class PostStarsRequest(Model):
         }
 
         self.attribute_map = {
-            'feature_id': 'featureId',
+            'feature_id': 'feature_id',
             'starred': 'starred'
         }
 
@@ -62,8 +62,6 @@ class PostStarsRequest(Model):
         :param feature_id: The feature_id of this PostStarsRequest.
         :type feature_id: int
         """
-        if feature_id is None:
-            raise ValueError("Invalid value for `feature_id`, must not be `None`")  # noqa: E501
 
         self._feature_id = feature_id
 

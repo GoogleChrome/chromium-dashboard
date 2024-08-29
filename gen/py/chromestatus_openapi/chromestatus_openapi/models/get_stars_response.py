@@ -23,7 +23,7 @@ class GetStarsResponse(Model):
         }
 
         self.attribute_map = {
-            'feature_ids': 'featureIds'
+            'feature_ids': 'feature_ids'
         }
 
         self._feature_ids = feature_ids

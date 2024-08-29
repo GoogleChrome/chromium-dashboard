@@ -1203,20 +1203,20 @@ components:
       type: object
     GetStarsResponse:
       example:
-        featureIds:
+        feature_ids:
         - 0
         - 0
       properties:
-        featureIds:
+        feature_ids:
           items:
             type: integer
-          title: featureIds
+          title: feature_ids
           type: array
       title: GetStarsResponse
       type: object
     PostStarsRequest:
       properties:
-        featureId:
+        feature_id:
           type: integer
         starred:
           default: true

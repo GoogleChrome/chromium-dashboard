@@ -460,7 +460,8 @@ export class ChromeStatusClient {
   // Star API
 
   getStars() {
-    return this.doGet('/currentuser/stars').then(res => res.featureIds);
+    // TODO(markxiong0122): delete this backward compatibility code after 30 days
+    return this.doGet('/currentuser/stars').then(res => res.featureIds || res.feature_ids);
     // TODO: catch((error) => { display message }
   }
 

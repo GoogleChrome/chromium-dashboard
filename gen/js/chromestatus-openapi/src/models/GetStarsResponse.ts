@@ -24,7 +24,7 @@ export interface GetStarsResponse {
      * @type {Array<number>}
      * @memberof GetStarsResponse
      */
-    featureIds?: Array<number>;
+    feature_ids?: Array<number>;
 }
 
 /**
@@ -44,7 +44,7 @@ export function GetStarsResponseFromJSONTyped(json: any, ignoreDiscriminator: bo
     }
     return {
         
-        'featureIds': json['featureIds'] == null ? undefined : json['featureIds'],
+        'feature_ids': json['feature_ids'] == null ? undefined : json['feature_ids'],
     };
 }
 
@@ -54,7 +54,7 @@ export function GetStarsResponseToJSON(value?: GetStarsResponse | null): any {
     }
     return {
         
-        'featureIds': value['featureIds'],
+        'feature_ids': value['feature_ids'],
     };
 }
 

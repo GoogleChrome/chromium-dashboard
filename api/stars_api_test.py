@@ -43,14 +43,14 @@ class StarsAPITest(testing_config.CustomTestCase):
     testing_config.sign_out()
     with test_app.test_request_context(self.request_path):
       actual_response = self.handler.do_get()
-    self.assertEqual({"featureIds": []}, actual_response)
+    self.assertEqual({"feature_ids": []}, actual_response['feature_ids'])
 
   def test_get__no_stars(self):
     """User has not starred any features."""
     testing_config.sign_in('user7@example.com', 123567890)
     with test_app.test_request_context(self.request_path):
       actual_response = self.handler.do_get()
-    self.assertEqual({"featureIds": []}, actual_response)
+    self.assertEqual({"feature_ids": []}, actual_response['feature_ids'])
 
   def test_get__some_stars(self):
     """User has starred some features."""
@@ -61,8 +61,8 @@ class StarsAPITest(testing_config.CustomTestCase):
     with test_app.test_request_context(self.request_path):
       actual_response = self.handler.do_get()
     self.assertEqual(
-        {"featureIds": [feature_id]},
-        actual_response)
+        {"feature_ids": [feature_id]},
+        actual_response["feature_ids"])
 
   def test_post__invalid_feature_id(self):
     """We reject star requests that don't have an int featureId."""

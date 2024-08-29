@@ -875,14 +875,14 @@ components:
     GetStarsResponse:
       type: object
       properties:
-        featureIds:
+        feature_ids:
           type: array
           items:
             type: integer
     PostStarsRequest:
       type: object
       properties:
-        featureId:
+        feature_id:
           type: integer
         starred:
           type: boolean

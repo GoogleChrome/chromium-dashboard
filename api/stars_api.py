@@ -32,10 +32,13 @@ class StarsAPI(basehandlers.APIHandler):
     else:
       feature_ids = []  # Anon users cannot star features.
 
-    data = GetStarsResponse.from_dict({
-        'featureIds': feature_ids,
-        })
-    return data.to_dict()
+    result = GetStarsResponse.from_dict({
+        'feature_ids': feature_ids,
+        }).to_dict()
+    #TODO(markxiong0122): delete this backward compatibility code after 30 days
+    result['featureIds'] = result['feature_ids']
+
+    return result
 
   def do_post(self, **kwargs):
     """Set or clear a star on the specified feature."""
