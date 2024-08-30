@@ -44,6 +44,7 @@ chromestatus_openapi/models/get_gate_response.py
 chromestatus_openapi/models/get_intent_response.py
 chromestatus_openapi/models/get_origin_trials_response.py
 chromestatus_openapi/models/get_settings_response.py
+chromestatus_openapi/models/get_stars_response.py
 chromestatus_openapi/models/get_votes_response.py
 chromestatus_openapi/models/integer_field_info_value.py
 chromestatus_openapi/models/link_preview.py
@@ -70,12 +71,14 @@ chromestatus_openapi/models/permissions_response.py
 chromestatus_openapi/models/post_gate_request.py
 chromestatus_openapi/models/post_intent_request.py
 chromestatus_openapi/models/post_settings_request.py
+chromestatus_openapi/models/post_stars_request.py
 chromestatus_openapi/models/post_vote_request.py
 chromestatus_openapi/models/process.py
 chromestatus_openapi/models/process_stage.py
 chromestatus_openapi/models/progress_item.py
 chromestatus_openapi/models/reject_unneeded_get_request.py
 chromestatus_openapi/models/review_latency.py
+chromestatus_openapi/models/set_star_request.py
 chromestatus_openapi/models/sign_in_request.py
 chromestatus_openapi/models/spec_mentor.py
 chromestatus_openapi/models/stage_field.py

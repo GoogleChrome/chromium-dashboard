@@ -23,6 +23,7 @@ from chromestatus_openapi.models.get_gate_response import GetGateResponse  # noq
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
 from chromestatus_openapi.models.get_origin_trials_response import GetOriginTrialsResponse  # noqa: E501
 from chromestatus_openapi.models.get_settings_response import GetSettingsResponse  # noqa: E501
+from chromestatus_openapi.models.get_stars_response import GetStarsResponse  # noqa: E501
 from chromestatus_openapi.models.get_votes_response import GetVotesResponse  # noqa: E501
 from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
 from chromestatus_openapi.models.patch_comment_request import PatchCommentRequest  # noqa: E501
@@ -34,6 +35,7 @@ from chromestatus_openapi.models.post_vote_request import PostVoteRequest  # noq
 from chromestatus_openapi.models.process import Process  # noqa: E501
 from chromestatus_openapi.models.reject_unneeded_get_request import RejectUnneededGetRequest  # noqa: E501
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
+from chromestatus_openapi.models.set_star_request import SetStarRequest  # noqa: E501
 from chromestatus_openapi.models.sign_in_request import SignInRequest  # noqa: E501
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
 from chromestatus_openapi.models.success_message import SuccessMessage  # noqa: E501
@@ -408,6 +410,21 @@ class TestDefaultController(BaseTestCase):
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
+    def test_get_stars(self):
+        """Test case for get_stars
+
+        Get a list of all starred feature IDs for the signed-in user
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/currentuser/stars',
+            method='GET',
+            headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
     def test_get_user_permissions(self):
         """Test case for get_user_permissions
 
@@ -664,6 +681,25 @@ class TestDefaultController(BaseTestCase):
             method='POST',
             headers=headers,
             data=json.dumps(post_gate_request),
+            content_type='application/json')
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_set_star(self):
+        """Test case for set_star
+
+        Set or clear a star on the specified feature
+        """
+        set_star_request = chromestatus_openapi.SetStarRequest()
+        headers = { 
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/currentuser/stars',
+            method='POST',
+            headers=headers,
+            data=json.dumps(set_star_request),
             content_type='application/json')
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))

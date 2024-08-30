@@ -38,6 +38,7 @@ src/models/GetGateResponse.ts
 src/models/GetIntentResponse.ts
 src/models/GetOriginTrialsResponse.ts
 src/models/GetSettingsResponse.ts
+src/models/GetStarsResponse.ts
 src/models/GetVotesResponse.ts
 src/models/IntegerFieldInfoValue.ts
 src/models/LinkPreview.ts
@@ -64,12 +65,14 @@ src/models/PermissionsResponse.ts
 src/models/PostGateRequest.ts
 src/models/PostIntentRequest.ts
 src/models/PostSettingsRequest.ts
+src/models/PostStarsRequest.ts
 src/models/PostVoteRequest.ts
 src/models/Process.ts
 src/models/ProcessStage.ts
 src/models/ProgressItem.ts
 src/models/RejectUnneededGetRequest.ts
 src/models/ReviewLatency.ts
+src/models/SetStarRequest.ts
 src/models/SignInRequest.ts
 src/models/SpecMentor.ts
 src/models/StageField.ts

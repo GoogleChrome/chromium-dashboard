@@ -36,6 +36,7 @@ import type {
   GetIntentResponse,
   GetOriginTrialsResponse,
   GetSettingsResponse,
+  GetStarsResponse,
   GetVotesResponse,
   MessageResponse,
   PatchCommentRequest,
@@ -47,6 +48,7 @@ import type {
   Process,
   RejectUnneededGetRequest,
   ReviewLatency,
+  SetStarRequest,
   SignInRequest,
   SpecMentor,
   SuccessMessage,
@@ -94,6 +96,8 @@ import {
     GetOriginTrialsResponseToJSON,
     GetSettingsResponseFromJSON,
     GetSettingsResponseToJSON,
+    GetStarsResponseFromJSON,
+    GetStarsResponseToJSON,
     GetVotesResponseFromJSON,
     GetVotesResponseToJSON,
     MessageResponseFromJSON,
@@ -116,6 +120,8 @@ import {
     RejectUnneededGetRequestToJSON,
     ReviewLatencyFromJSON,
     ReviewLatencyToJSON,
+    SetStarRequestFromJSON,
+    SetStarRequestToJSON,
     SignInRequestFromJSON,
     SignInRequestToJSON,
     SpecMentorFromJSON,
@@ -254,6 +260,10 @@ export interface SetAssigneesForGateRequest {
     featureId: number;
     gateId: number;
     postGateRequest: PostGateRequest;
+}
+
+export interface SetStarOperationRequest {
+    setStarRequest: SetStarRequest;
 }
 
 export interface SetUserSettingsRequest {
@@ -621,6 +631,20 @@ export interface DefaultApiInterface {
 
     /**
      * 
+     * @summary Get a list of all starred feature IDs for the signed-in user
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getStarsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<GetStarsResponse>>>;
+
+    /**
+     * Get a list of all starred feature IDs for the signed-in user
+     */
+    getStars(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<GetStarsResponse>>;
+
+    /**
+     * 
      * @summary Get the permissions and email of the user
      * @param {boolean} [returnPairedUser] If true, return the permissions of the paired user.
      * @param {*} [options] Override http request option.
@@ -860,6 +884,21 @@ export interface DefaultApiInterface {
      * Set the assignees for a gate.
      */
     setAssigneesForGate(requestParameters: SetAssigneesForGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
+
+    /**
+     * 
+     * @summary Set or clear a star on the specified feature
+     * @param {SetStarRequest} setStarRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    setStarRaw(requestParameters: SetStarOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+
+    /**
+     * Set or clear a star on the specified feature
+     */
+    setStar(requestParameters: SetStarOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
 
     /**
      * 
@@ -1694,6 +1733,32 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     }
 
     /**
+     * Get a list of all starred feature IDs for the signed-in user
+     */
+    async getStarsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<GetStarsResponse>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/currentuser/stars`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(GetStarsResponseFromJSON));
+    }
+
+    /**
+     * Get a list of all starred feature IDs for the signed-in user
+     */
+    async getStars(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<GetStarsResponse>> {
+        const response = await this.getStarsRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Get the permissions and email of the user
      */
     async getUserPermissionsRaw(requestParameters: GetUserPermissionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PermissionsResponse>> {
@@ -2234,6 +2299,42 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async setAssigneesForGate(requestParameters: SetAssigneesForGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
         const response = await this.setAssigneesForGateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Set or clear a star on the specified feature
+     */
+    async setStarRaw(requestParameters: SetStarOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+        if (requestParameters['setStarRequest'] == null) {
+            throw new runtime.RequiredError(
+                'setStarRequest',
+                'Required parameter "setStarRequest" was null or undefined when calling setStar().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/currentuser/stars`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SetStarRequestToJSON(requestParameters['setStarRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Set or clear a star on the specified feature
+     */
+    async setStar(requestParameters: SetStarOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+        const response = await this.setStarRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

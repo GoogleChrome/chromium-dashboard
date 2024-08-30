@@ -24,6 +24,7 @@ from chromestatus_openapi.models.get_gate_response import GetGateResponse  # noq
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
 from chromestatus_openapi.models.get_origin_trials_response import GetOriginTrialsResponse  # noqa: E501
 from chromestatus_openapi.models.get_settings_response import GetSettingsResponse  # noqa: E501
+from chromestatus_openapi.models.get_stars_response import GetStarsResponse  # noqa: E501
 from chromestatus_openapi.models.get_votes_response import GetVotesResponse  # noqa: E501
 from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
 from chromestatus_openapi.models.patch_comment_request import PatchCommentRequest  # noqa: E501
@@ -35,6 +36,7 @@ from chromestatus_openapi.models.post_vote_request import PostVoteRequest  # noq
 from chromestatus_openapi.models.process import Process  # noqa: E501
 from chromestatus_openapi.models.reject_unneeded_get_request import RejectUnneededGetRequest  # noqa: E501
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
+from chromestatus_openapi.models.set_star_request import SetStarRequest  # noqa: E501
 from chromestatus_openapi.models.sign_in_request import SignInRequest  # noqa: E501
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
 from chromestatus_openapi.models.success_message import SuccessMessage  # noqa: E501
@@ -363,6 +365,17 @@ def get_progress(feature_id):  # noqa: E501
     return 'do some magic!'
 
 
+def get_stars():  # noqa: E501
+    """Get a list of all starred feature IDs for the signed-in user
+
+     # noqa: E501
+
+
+    :rtype: Union[List[GetStarsResponse], Tuple[List[GetStarsResponse], int], Tuple[List[GetStarsResponse], int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
 def get_user_permissions(return_paired_user=None):  # noqa: E501
     """Get the permissions and email of the user
 
@@ -581,6 +594,21 @@ def set_assignees_for_gate(feature_id, gate_id, post_gate_request):  # noqa: E50
     """
     if connexion.request.is_json:
         post_gate_request = PostGateRequest.from_dict(connexion.request.get_json())  # noqa: E501
+    return 'do some magic!'
+
+
+def set_star(set_star_request):  # noqa: E501
+    """Set or clear a star on the specified feature
+
+     # noqa: E501
+
+    :param set_star_request: 
+    :type set_star_request: dict | bytes
+
+    :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
+    """
+    if connexion.request.is_json:
+        set_star_request = SetStarRequest.from_dict(connexion.request.get_json())  # noqa: E501
     return 'do some magic!'
 
 
