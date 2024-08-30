@@ -602,15 +602,13 @@ export class ChromedashGateColumn extends LitElement {
         <summary>Reviewer SLO status:</summary>
         Loading...
       </details>
-     `;
+    `;
   }
 
   renderSLODetails() {
     return html`
-      Reviewers are encouraged to provide an initial
-      review status update
-      or a comment within this number of days.
-      The full review may take longer.
+      Reviewers are encouraged to provide an initial review status update or a
+      comment within this number of days. The full review may take longer.
     `;
   }
 
@@ -640,7 +638,7 @@ export class ChromedashGateColumn extends LitElement {
       }
     } else if (typeof limit === 'number') {
       return html`
-          Reviewer SLO: ${this.dayPhrase(limit)} for initial response
+        Reviewer SLO: ${this.dayPhrase(limit)} for initial response
       `;
     }
 
@@ -679,8 +677,7 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   renderWarnings() {
-    if (this.gate &&
-      ['Privacy', 'WP Security'].includes(this.gate.team_name)) {
+    if (this.gate && ['Privacy', 'WP Security'].includes(this.gate.team_name)) {
       return html`
         <div class="process-notice">
           Googlers: Please follow the instructions at

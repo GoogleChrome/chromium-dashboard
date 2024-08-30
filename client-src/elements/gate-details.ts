@@ -1,7 +1,6 @@
 import {html, TemplateResult} from 'lit';
 import * as enums from './form-field-enums';
 
-
 const BLINK_GENERIC_QUESTIONNAIRE: TemplateResult = html` <p>
     To request a review, use the "Draft intent..." button above to generate an
     intent messsage, and then post that message to blink-dev@chromium.org.
@@ -250,29 +249,27 @@ export const GATE_QUESTIONNAIRES: Record<number, TemplateResult> = {
   [enums.GATE_TYPES.TESTING_PLAN]: TESTING_SHIP_QUESTIONNAIRE,
 };
 
-
 const LAUNCHING_FEATURES_URL =
   'https://www.chromium.org/blink/launching-features/';
 
 const BLINK_GENERIC_RATIONALE = html`
-  The API Owners review provides a final check on all aspects of your
-  feature and how you have followed the
+  The API Owners review provides a final check on all aspects of your feature
+  and how you have followed the
   <a href=${LAUNCHING_FEATURES_URL} target="_blank">Blink launch process</a>.
 `;
 
 const PRIVACY_GENERIC_RATIONALE = html`
-  The Web Platform privacy review puts you in touch with the privacy
-  team so that they can consult further with you when needed.
+  The Web Platform privacy review puts you in touch with the privacy team so
+  that they can consult further with you when needed.
 `;
 
 const SECURITY_GENERIC_RATIONALE = html`
-  The Web Platform Security review helps ensure that new or changed
-  web APIs uphold the security principles of the web - the same origin
-  policy, no cross-site leaks, compliance with CSP, CORS, permission
-  norms, etc. It aims to show that the API can be implemented
-  safely. It doesn’t necessarily try to prove that it has been
-  implemented safely within Chromium - for Chrome team features,
-  that’s done by the Chrome launch review process.
+  The Web Platform Security review helps ensure that new or changed web APIs
+  uphold the security principles of the web - the same origin policy, no
+  cross-site leaks, compliance with CSP, CORS, permission norms, etc. It aims to
+  show that the API can be implemented safely. It doesn’t necessarily try to
+  prove that it has been implemented safely within Chromium - for Chrome team
+  features, that’s done by the Chrome launch review process.
 `;
 
 const ENTERPRISE_GENERIC_RATIONALE = html`
@@ -281,15 +278,17 @@ const ENTERPRISE_GENERIC_RATIONALE = html`
 
   <ul>
     <li>Breaking changes need to have sufficient notice</li>
-    <li>Breaking changes need to have a soft deadline and transition period
-      where feasible</li>
+    <li>
+      Breaking changes need to have a soft deadline and transition period where
+      feasible
+    </li>
     <li>Admins need to have central controls where appropriate</li>
   </ul>
 `;
 
 const DEBUGGABILITY_GENERIC_RATIONALE = html`
-  The debuggability review helps identify opportunities to make your
-  feature more successful by integrating with Chrome Dev Tools.
+  The debuggability review helps identify opportunities to make your feature
+  more successful by integrating with Chrome Dev Tools.
 `;
 
 const TESTING_GENERIC_RATIONALE = html`
