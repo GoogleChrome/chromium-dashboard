@@ -200,7 +200,7 @@ class Amendment(ndb.Model):
   new_value = ndb.TextProperty()
 
 
-class Activity(ndb.Model):  # copy from Comment
+class Activity(ndb.Model):
   """An activity log entry (comment + amendments) on a gate or feature."""
   feature_id = ndb.IntegerProperty(required=True)
   gate_id = ndb.IntegerProperty()  # The gate commented on, or general comment.

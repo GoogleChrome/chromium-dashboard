@@ -173,6 +173,13 @@ def notify_assignees(
   }
 
   cloud_tasks_helpers.enqueue_task('/tasks/email-assigned', params)
+  amendment = Amendment(
+      field_name='review_assignee',
+      old_value=', '.join(old_assignees), new_value=', '.join(new_assignees))
+  gate_id = gate.key.integer_id()
+  activity = Activity(feature_id=fe.key.integer_id(), gate_id=gate_id,
+                      author=triggering_user_email, amendments=[amendment])
+  activity.put()
 
 
 def notify_subscribers_of_new_comments(fe: 'FeatureEntry', gate: Gate,
