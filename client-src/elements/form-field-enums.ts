@@ -462,7 +462,7 @@ export const GATE_FINISHED_REVIEW_STATES: number[] = [
 
 export const GATE_TEAM_ORDER = [
   'Privacy',
-  'Security',
+  'WP Security',
   'Enterprise',
   'Debuggability',
   'Testing',
