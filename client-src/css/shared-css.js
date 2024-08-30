@@ -147,6 +147,37 @@ export const SHARED_STYLES = [
     margin-right: 0.2em;
   }
 
+  details {
+    padding: var(--content-padding-quarter);
+  }
+
+  details summary {
+    list-style: revert; /* Show small triangle */
+    white-space: nowrap;
+    box-sizing: border-box;
+    contain: content;
+    overflow: hidden;
+    cursor: pointer;
+    transition: margin 250ms ease-out;
+  }
+
+  details summary:hover {
+    color: var(--link-hover-color);
+  }
+
+  details[open] #preview {
+    display: none;
+  }
+
+  details[open] summary {
+    margin-bottom: var(--content-padding-quarter);
+  }
+
+  details > div {
+    padding: var(--content-padding-quarter);
+    padding-left: var(--content-padding);
+  }
+
   .no-web-share {
     display: none;
   }

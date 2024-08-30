@@ -8,7 +8,7 @@ import {
   somePendingPrereqs,
 } from './chromedash-preflight-dialog';
 import {maybeOpenPrevoteDialog} from './chromedash-prevote-dialog';
-import {GATE_QUESTIONNAIRES} from './form-definition.js';
+import {GATE_QUESTIONNAIRES, GATE_RATIONALE} from './gate-details.js';
 import {
   GATE_NA_REQUESTED,
   GATE_PREPARING,
@@ -179,21 +179,6 @@ export class ChromedashGateColumn extends LitElement {
         }
         #controls * + * {
           padding-left: var(--content-padding);
-        }
-
-        details {
-          padding: 10px;
-        }
-        details summary {
-          cursor: pointer;
-          transition: margin 250ms ease-out;
-          color: var(--link-color);
-        }
-        details summary::hover {
-          color: var(--link-hover-color);
-        }
-        details[open] summary {
-          margin-bottom: 10px;
         }
       `,
     ];
@@ -612,21 +597,20 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   renderSLOStatusSkeleton() {
-    return html` <p>Reviewer SLO status:</p>`;
+    return html`
+      <details>
+        <summary>Reviewer SLO status:</summary>
+        Loading...
+      </details>
+     `;
   }
 
-  renderInfoIcon() {
+  renderSLODetails() {
     return html`
-      <sl-tooltip
-        hoist
-        style="--max-width: 14em;"
-        content="Reviewers are encouraged to provide an initial
-          review status update
-          or a comment within this number of days.
-          The full review may take longer."
-      >
-        <sl-icon name="info-circle" id="info-button"></sl-icon>
-      </sl-tooltip>
+      Reviewers are encouraged to provide an initial
+      review status update
+      or a comment within this number of days.
+      The full review may take longer.
     `;
   }
 
@@ -634,7 +618,7 @@ export class ChromedashGateColumn extends LitElement {
     return String(count) + (count == 1 ? ' day' : ' days');
   }
 
-  renderSLOStatus() {
+  renderSLOSummary() {
     const limit = this.gate?.slo_initial_response;
     const took = this.gate?.slo_initial_response_took;
     const remaining = this.gate?.slo_initial_response_remaining;
@@ -656,10 +640,7 @@ export class ChromedashGateColumn extends LitElement {
       }
     } else if (typeof limit === 'number') {
       return html`
-        <p>
           Reviewer SLO: ${this.dayPhrase(limit)} for initial response
-          ${this.renderInfoIcon()}
-        </p>
       `;
     }
 
@@ -669,14 +650,37 @@ export class ChromedashGateColumn extends LitElement {
       const icon = iconName
         ? html`<sl-icon library="material" name="${iconName}"></sl-icon>`
         : nothing;
-      return html` <p id="slo-area">
+      return html`
         Reviewer SLO status: <span class="${className}">${icon} ${msg}</span>
-      </p>`;
+      `;
     }
   }
 
+  renderSLOStatus() {
+    const summary = this.renderSLOSummary();
+    if (summary === nothing) return nothing;
+    return html`
+      <details>
+        <summary>${summary}</summary>
+        ${this.renderSLODetails()}
+      </details>
+    `;
+  }
+
+  renderGateRationale() {
+    const rationale = GATE_RATIONALE[this.gate?.gate_type];
+    if (!rationale) return nothing;
+    return html`
+      <details>
+        <summary>Why this gate?</summary>
+        ${rationale}
+      </details>
+    `;
+  }
+
   renderWarnings() {
-    if (this.gate && this.gate.team_name == 'Privacy') {
+    if (this.gate &&
+      ['Privacy', 'WP Security'].includes(this.gate.team_name)) {
       return html`
         <div class="process-notice">
           Googlers: Please follow the instructions at
@@ -1029,6 +1033,7 @@ export class ChromedashGateColumn extends LitElement {
         ${this.loading
           ? this.renderSLOStatusSkeleton()
           : this.renderSLOStatus()}
+        ${this.renderGateRationale()}
       </div>
 
       ${this.renderWarnings()}
