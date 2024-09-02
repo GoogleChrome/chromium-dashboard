@@ -43,7 +43,7 @@ class ChromedashFeatureFilter extends LitElement {
         ['INPUT', 'TEXTAREA', 'SL-POPUP', 'SL-DIALOG'].includes(
           (el as HTMLElement).tagName
         )
-           );
+      );
     if (e.key === '/' && !inInputContext) {
       e.preventDefault();
       e.stopPropagation();
