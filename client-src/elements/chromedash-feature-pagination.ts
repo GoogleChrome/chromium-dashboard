@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import {LitElement, type TemplateResult, CSSResultGroup, css, html} from 'lit';
+import {
+  LitElement,
+  type TemplateResult,
+  CSSResultGroup,
+  css,
+  html,
+  nothing,
+} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {formatURLParams} from './utils.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
@@ -98,9 +105,44 @@ export class ChromedashFeaturePagination extends LitElement {
     const currentPage = Math.floor(this.start / this.pageSize);
     const numPages = Math.ceil(this.totalCount / this.pageSize);
 
+    let missingFront = false;
+    let missingBack = false;
+    let hasLastPage = numPages > 1;
+
+    let displayPages: Array<number> = [];
+    const displaySet = new Set<number>();
+    for (const digit of range(numPages)) {
+      if (digit === 0 || digit === numPages - 1) {
+        continue;
+      }
+      if (numPages <= 10) {
+        displaySet.add(digit);
+        continue;
+      }
+      if (digit < currentPage - 4) {
+        missingFront = true;
+        continue;
+      }
+      if (digit > currentPage + 4) {
+        missingBack = true;
+        continue;
+      }
+      displaySet.add(digit);
+    }
+    displayPages = Array.from(displaySet);
+
     return html`
+      <sl-button
+        variant="text"
+        id="jump_1"
+        class="page-button ${0 === currentPage ? 'active' : ''}"
+        href=${this.formatUrlForOffset(0)}
+      >
+        ${1}
+      </sl-button>
+      ${missingFront ? html`<div>...</div>` : nothing}
       ${map(
-        range(numPages),
+        displayPages,
         i => html`
           <sl-button
             variant="text"
@@ -112,6 +154,17 @@ export class ChromedashFeaturePagination extends LitElement {
           </sl-button>
         `
       )}
+      ${missingBack ? html`<div>...</div>` : nothing}
+      ${hasLastPage
+        ? html`<sl-button
+            variant="text"
+            id="jump_${numPages}"
+            class="page-button ${numPages - 1 === currentPage ? 'active' : ''}"
+            href=${this.formatUrlForOffset((numPages - 1) * this.pageSize)}
+          >
+            ${numPages}
+          </sl-button>`
+        : nothing}
     `;
   }
 
