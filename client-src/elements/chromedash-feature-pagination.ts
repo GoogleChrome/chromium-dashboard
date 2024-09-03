@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {LitElement, type TemplateResult, CSSResultGroup, css, html} from 'lit';
+import {LitElement, type TemplateResult, CSSResultGroup, css, html, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {formatURLParams} from './utils.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
@@ -98,7 +98,17 @@ export class ChromedashFeaturePagination extends LitElement {
     const currentPage = Math.floor(this.start / this.pageSize);
     const numPages = Math.ceil(this.totalCount / this.pageSize);
 
+    let displayPages: Array<number> = [];
+    for (const digit of range(numPages)) {
+      if (digit >= currentPage - 3 && digit <= currentPage + 3) {
+        displayPages.push(digit);
+      }
+    }
+    const coverFront = (currentPage - 3 <= 0);
+    const coverBack = (currentPage + 3 >= numPages - 1);
+
     return html`
+      ${!coverFront ? html`<div>...</div>` : nothing}
       ${map(
         range(numPages),
         i => html`
@@ -112,6 +122,7 @@ export class ChromedashFeaturePagination extends LitElement {
           </sl-button>
         `
       )}
+      ${!coverBack ? html`<div>...</div>` : nothing}
     `;
   }
 

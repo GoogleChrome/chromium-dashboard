@@ -25,8 +25,8 @@ describe('chromedash-feature-pagination', () => {
     el = await fixture<ChromedashFeaturePagination>(
       '<chromedash-feature-pagination></chromedash-feature-pagination>'
     );
-    el.totalCount = 12;
-    el.start = 0;
+    el.totalCount = 20;
+    el.start = 10;
     el.pageSize = 2;
 
     await el.updateComplete;
@@ -42,13 +42,25 @@ describe('chromedash-feature-pagination', () => {
     assert.exists(previous);
 
     const jump_1 = el.shadowRoot!.querySelector('#jump_1');
-    assert.exists(jump_1);
+    assert.notExists(jump_1);
     const jump_2 = el.shadowRoot!.querySelector('#jump_2');
-    assert.exists(jump_2);
+    assert.notExists(jump_2);
     const jump_3 = el.shadowRoot!.querySelector('#jump_3');
     assert.exists(jump_3);
     const jump_4 = el.shadowRoot!.querySelector('#jump_4');
     assert.exists(jump_4);
+    const jump_5 = el.shadowRoot!.querySelector('#jump_5');
+    assert.exists(jump_5);
+    const jump_6 = el.shadowRoot!.querySelector('#jump_6');
+    assert.exists(jump_6);
+    const jump_7 = el.shadowRoot!.querySelector('#jump_7');
+    assert.exists(jump_7);
+    const jump_8 = el.shadowRoot!.querySelector('#jump_8');
+    assert.exists(jump_8);
+    const jump_9 = el.shadowRoot!.querySelector('#jump_9');
+    assert.exists(jump_9);
+    const jump_10 = el.shadowRoot!.querySelector('#jump_10');
+    assert.notExists(jump_10);
 
     const next = el.shadowRoot!.querySelector('#next');
     assert.exists(next);
