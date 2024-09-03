@@ -119,11 +119,11 @@ export class ChromedashFeaturePagination extends LitElement {
         displaySet.add(digit);
         continue;
       }
-      if (digit < currentPage - 5) {
+      if (digit < currentPage - 4) {
         missingFront = true;
         continue;
       }
-      if (digit > currentPage + 5) {
+      if (digit > currentPage + 4) {
         missingBack = true;
         continue;
       }
