@@ -127,6 +127,7 @@ export class ChromedashFeatureTable extends LitElement {
       css`
         table {
           width: 100%;
+          margin-top: var(--content-padding);
         }
         .skel td {
           background: white;
