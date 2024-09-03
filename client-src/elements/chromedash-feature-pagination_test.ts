@@ -53,4 +53,15 @@ describe('chromedash-feature-pagination', () => {
     const next = el.shadowRoot!.querySelector('#next');
     assert.exists(next);
   });
+
+  it('renders standard options for items-per-page', async () => {
+    const opt_25 = el.shadowRoot!.querySelector('#opt_25');
+    assert.exists(opt_25);
+    const opt_50 = el.shadowRoot!.querySelector('#opt_50');
+    assert.exists(opt_50);
+    const opt_77 = el.shadowRoot!.querySelector('#opt_77');
+    assert.notExists(opt_77);
+    const opt_100 = el.shadowRoot!.querySelector('#opt_100');
+    assert.exists(opt_100);
+  });
 });
