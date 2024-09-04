@@ -1539,7 +1539,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     label: 'Use counter type',
     choices: WEBFEATURE_USE_COUNTER_TYPES,
     help_text: html`Which type of use counter the feature is using. This can be
-    easily determined by which file the use counter is defined in.`,
+    determined by which file the use counter is defined in.`,
   },
 
   ot_require_approvals: {
