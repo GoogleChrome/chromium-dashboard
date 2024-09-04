@@ -124,11 +124,11 @@ def detect_gate_id(body) -> int | None:
 THREAD_LINK_RE = re.compile(
     r'To view this discussion on the web visit\s+'
     r'(> )?(https://groups\.google\.com/a/chromium.org/d/msgid/blink-dev/'
-    r'\S+)[\r\n> .]', re.MULTILINE)
+    r'[-_0-9a-zA-Z%.]+[-_0-9a-zA-Z])', re.MULTILINE)
 STAGING_THREAD_LINK_RE = re.compile(
     r'To view this discussion on the web visit\s+'
     r'(> )?(https://groups\.google\.com/d/msgid/jrobbins-test/'
-    r'\S+)[\r\n> .]', re.MULTILINE)
+    r'[-_0-9a-zA-Z%.]+[-_0-9a-zA-Z])', re.MULTILINE)
 
 
 def detect_thread_url(body):
