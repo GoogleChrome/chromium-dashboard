@@ -358,6 +358,108 @@ paths:
           description: Bad request
         '404':
           description: Account not found
+  /origintrials:
+    get:
+      summary: Get origin trials
+      operationId: getOriginTrials
+      responses:
+        '200':
+          description: List of all origin trials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetOriginTrialsResponse'
+        '500':
+          description: Error obtaining origin trial data from API or Malformed response from origin trials API
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+  /origintrials/{feature_id}/{stage_id}/create:
+    post:
+      summary: Create a new origin trial
+      operationId: createOriginTrial
+      parameters:
+        - in: path
+          name: feature_id
+          schema:
+            type: integer
+          required: true
+        - in: path
+          name: stage_id
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOriginTrialRequest'
+      responses:
+        '200':
+          description: Origin trial created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '400':
+          description: Invalid request. Possible reasons include an unapproved gate, a missing feature/stage, or validation errors.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: The specified feature or stage was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '500':
+          description: Server error, such as issues with obtaining necessary Chromium files or origin trial data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+  /origintrials/{feature_id}/{extension_stage_id}/extend:
+    patch:
+      summary: Extend an existing origin trial
+      operationId: extendOriginTrial
+      parameters:
+        - in: path
+          name: feature_id
+          schema:
+            type: integer
+          required: true
+        - in: path
+          name: extension_stage_id
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: Origin trial extended successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '400':
+          description: Invalid request. Possible reasons include missing or incorrect feature/stage, or validation errors.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: The specified feature or stage was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '500':
+          description: Server error, such as issues with the origin trials API or Chromium schedule.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
   /componentsusers:
     get:
       summary: List all components and possible users
@@ -438,6 +540,60 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ReviewLatency'
+  /login:
+    get:
+      summary: reject unneeded GET request without triggering Error Reporting
+      operationId: rejectGetRequestsLogin
+      responses:
+        '405':
+          description: Method Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RejectUnneededGetRequest'
+    post:
+      summary: Authenticate user with Google Sign-In
+      operationId: authenticateUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignInRequest'
+      responses:
+        '200':
+          description: User authenticated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '401':
+          description: Invalid Token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+  /logout:
+    get:
+      summary: reject unneeded GET request without triggering Error Reporting
+      operationId: rejectGetRequestsLogout
+      responses:
+        '405':
+          description: Method Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RejectUnneededGetRequest'
+    post:
+      summary: Log out the current user
+      operationId: logoutUser
+      responses:
+        '200':
+          description: User logged out successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
   /currentuser/permissions:
     get:
       summary: Get the permissions and email of the user
@@ -456,6 +612,71 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PermissionsResponse'
+  /currentuser/settings:
+    get:
+      summary: Get user settings
+      operationId: getUserSettings
+      responses:
+        '200':
+          description: Successfuly retrieved user settings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetSettingsResponse'
+        '404':
+          description: User preference not found
+    post:
+      summary: Set the user settings (currently only the notify_as_starrer)
+      operationId: setUserSettings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostSettingsRequest'
+      responses:
+        '200':
+          description: Settings updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '403':
+          description: User not signed-in
+  /currentuser/stars:
+    get:
+      summary: Get a list of all starred feature IDs for the signed-in user
+      operationId: getStars
+      responses:
+        '200':
+          description: List of starred feature IDs
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/GetStarsResponse'
+    post:
+      summary: Set or clear a star on the specified feature
+      operationId: setStar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                featureId:
+                  type: integer
+                starred:
+                  type: boolean
+      responses:
+        '200':
+          description: Star set or cleared successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
   /currentuser/cues:
     get:
       summary: Get dismissed cues for the current user
@@ -504,7 +725,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TokenRefreshResponse'
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReviewLatency'
   /external_reviews/{review_group}:
     get:
       summary: List features whose external reviews are incomplete
@@ -996,7 +1219,7 @@ components:
         comment:
           type: string
         postToThreadType:
-          type: string
+          type: integer
           nullable: true
     GetCommentsResponse:
       type: object
@@ -1039,6 +1262,200 @@ components:
           type: string
         id:
           type: integer
+    OriginTrialsInfo:
+      type: object
+      properties:
+        id:
+          type: string
+        display_name:
+          type: string
+        description:
+          type: string
+        origin_trial_feature_name:
+          type: string
+        enabled:
+          type: boolean
+        status:
+          type: string
+        chromestatus_url:
+          type: string
+        start_milestone:
+          type: string
+        end_milestone:
+          type: string
+        original_end_milestone:
+          type: string
+        end_time:
+          type: string
+        documentation_url:
+          type: string
+        feedback_url:
+          type: string
+        intent_to_experiment_url:
+          type: string
+        trial_extensions:
+          type: array
+          items:
+            type: object
+        type:
+          type: string
+        allow_third_party_origins:
+          type: boolean
+    GetOriginTrialsResponse:
+      properties:
+        origin_trials:
+            type: array
+            items:
+              $ref: '#/components/schemas/OriginTrialsInfo'
+    CreateOriginTrialRequest:
+      type: object
+      allOf:
+        -  $ref: '#/components/schemas/StageField'
+        -  $ref: '#/components/schemas/MilestoneSetField'
+    StageField:
+      type: object
+      properties:
+        announcement_url:
+          $ref: '#/components/schemas/FieldInfo'
+        browser:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_description:
+          $ref: '#/components/schemas/FieldInfo'
+        display_name:
+          $ref: '#/components/schemas/FieldInfo'
+        enterprise_policies:
+          $ref: '#/components/schemas/FieldInfo'
+        finch_url:
+          $ref: '#/components/schemas/FieldInfo'
+        experiment_goals:
+          $ref: '#/components/schemas/FieldInfo'
+        experiment_risks:
+          $ref: '#/components/schemas/FieldInfo'
+        experiment_extension_reason:
+          $ref: '#/components/schemas/FieldInfo'
+        intent_thread_url:
+          $ref: '#/components/schemas/FieldInfo'
+        origin_trial_feedback_url:
+          $ref: '#/components/schemas/FieldInfo'
+        origin_trial_id:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_approval_buganizer_component:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_approval_buganizer_custom_field_id:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_approval_criteria_url:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_approval_group_email:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_chromium_trial_name:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_display_name:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_action_requested:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_documentation_url:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_emails:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_feedback_submission_url:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_has_third_party_support:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_is_critical_trial:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_is_deprecation_trial:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_owner_email:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_request_note:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_require_approvals:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_stage_id:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_webfeature_use_counter:
+          $ref: '#/components/schemas/FieldInfo'
+        rollout_impact:
+          $ref: '#/components/schemas/FieldInfo'
+        rollout_milestone:
+          $ref: '#/components/schemas/FieldInfo'
+        rollout_platforms:
+          $ref: '#/components/schemas/FieldInfo'
+        rollout_details:
+          $ref: '#/components/schemas/FieldInfo'
+    MilestoneSetField:
+      type: object
+      properties:
+        desktop_first:
+          $ref: '#/components/schemas/FieldInfo'
+        desktop_last:
+          $ref: '#/components/schemas/FieldInfo'
+        android_first:
+          $ref: '#/components/schemas/FieldInfo'
+        android_last:
+          $ref: '#/components/schemas/FieldInfo'
+        ios_first:
+          $ref: '#/components/schemas/FieldInfo'
+        ios_last:
+          $ref: '#/components/schemas/FieldInfo'
+        webview_first:
+          $ref: '#/components/schemas/FieldInfo'
+        webview_last:
+          $ref: '#/components/schemas/FieldInfo'
+    FieldInfo:
+      type: object
+      properties:
+        form_field_name:
+          type: string
+        value:
+          $ref: '#/components/schemas/FieldInfoValue'
+    StringFieldInfoValue:
+      type: object
+      properties:
+          form_field_name:
+            type: string
+          value_type:
+            type: string
+          value:
+            type: string
+    BooleanFieldInfoValue:
+      type: object
+      properties:
+          form_field_name:
+            type: string
+          value_type:
+            type: string
+          value:
+            type: boolean
+    IntegerFieldInfoValue:
+      type: object
+      properties:
+          form_field_name:
+            type: string
+          value_type:
+            type: string
+          value:
+            type: integer
+    ArrayFieldInfoValue:
+      type: object
+      properties:
+          form_field_name:
+            type: string
+          value_type:
+            type: string
+          value:
+            type: array
+            items:
+              type: string
+    FieldInfoValue:
+      type: object
+      discriminator:
+        propertyName: value_type
+        mapping:
+          "integer": "#/components/schemas/IntegerFieldInfoValue"
+          "string": "#/components/schemas/StringFieldInfoValue"
+          "boolean": "#/components/schemas/BooleanFieldInfoValue"
+          "array": "#/components/schemas/ArrayFieldInfoValue"
     GetIntentResponse:
       properties:
         subject:
@@ -1124,6 +1541,14 @@ components:
       required:
         - feature
         - gate_reviews
+    SignInRequest:
+      type: object
+      properties:
+        credential:
+          type: string
+          description: The credential generated by Sign-In With Google.
+      required:
+        - credential
     GateLatency:
       type: object
       required:
@@ -1436,6 +1861,23 @@ components:
         - is_admin
         - email
         - editable_features
+    GetStarsResponse:
+      type: object
+      properties:
+        feature_ids:
+          type: array
+          items:
+            type: integer
+    PostStarsRequest:
+      type: object
+      properties:
+        feature_id:
+          type: integer
+        starred:
+          type: boolean
+          default: true
+      required:
+        - featureId
     DismissCueRequest:
       type: object
       properties:
@@ -1445,6 +1887,20 @@ components:
             - progress-checkmarks
       required:
         - cue
+    GetSettingsResponse:
+      type: object
+      properties:
+        notify_as_starrer:
+          type: boolean
+      required:
+        - notify_as_starrer
+    PostSettingsRequest:
+      type: object
+      properties:
+        notify:
+          type: boolean
+      required:
+        - notify
     TokenRefreshResponse:
       type: object
       properties:
@@ -1464,3 +1920,9 @@ components:
         error:
           type: string
           example: "Error"
+    RejectUnneededGetRequest:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Method Not Allowed"

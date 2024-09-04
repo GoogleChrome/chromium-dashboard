@@ -21,6 +21,7 @@ import type {
   ComponentUsersRequest,
   ComponentsUsersResponse,
   CreateAccountRequest,
+  CreateOriginTrialRequest,
   DeleteAccount200Response,
   DismissCueRequest,
   ErrorMessage,
@@ -33,18 +34,24 @@ import type {
   GetDismissedCues400Response,
   GetGateResponse,
   GetIntentResponse,
+  GetOriginTrialsResponse,
+  GetSettingsResponse,
+  GetStarsResponse,
   GetVotesResponse,
   MessageResponse,
   PatchCommentRequest,
   PermissionsResponse,
   PostGateRequest,
   PostIntentRequest,
+  PostSettingsRequest,
   PostVoteRequest,
   Process,
+  RejectUnneededGetRequest,
   ReviewLatency,
+  SetStarRequest,
+  SignInRequest,
   SpecMentor,
   SuccessMessage,
-  TokenRefreshResponse,
 } from '../models/index';
 import {
     AccountResponseFromJSON,
@@ -59,6 +66,8 @@ import {
     ComponentsUsersResponseToJSON,
     CreateAccountRequestFromJSON,
     CreateAccountRequestToJSON,
+    CreateOriginTrialRequestFromJSON,
+    CreateOriginTrialRequestToJSON,
     DeleteAccount200ResponseFromJSON,
     DeleteAccount200ResponseToJSON,
     DismissCueRequestFromJSON,
@@ -83,6 +92,12 @@ import {
     GetGateResponseToJSON,
     GetIntentResponseFromJSON,
     GetIntentResponseToJSON,
+    GetOriginTrialsResponseFromJSON,
+    GetOriginTrialsResponseToJSON,
+    GetSettingsResponseFromJSON,
+    GetSettingsResponseToJSON,
+    GetStarsResponseFromJSON,
+    GetStarsResponseToJSON,
     GetVotesResponseFromJSON,
     GetVotesResponseToJSON,
     MessageResponseFromJSON,
@@ -95,18 +110,24 @@ import {
     PostGateRequestToJSON,
     PostIntentRequestFromJSON,
     PostIntentRequestToJSON,
+    PostSettingsRequestFromJSON,
+    PostSettingsRequestToJSON,
     PostVoteRequestFromJSON,
     PostVoteRequestToJSON,
     ProcessFromJSON,
     ProcessToJSON,
+    RejectUnneededGetRequestFromJSON,
+    RejectUnneededGetRequestToJSON,
     ReviewLatencyFromJSON,
     ReviewLatencyToJSON,
+    SetStarRequestFromJSON,
+    SetStarRequestToJSON,
+    SignInRequestFromJSON,
+    SignInRequestToJSON,
     SpecMentorFromJSON,
     SpecMentorToJSON,
     SuccessMessageFromJSON,
     SuccessMessageToJSON,
-    TokenRefreshResponseFromJSON,
-    TokenRefreshResponseToJSON,
 } from '../models/index';
 
 export interface AddFeatureCommentRequest {
@@ -131,8 +152,18 @@ export interface AddXfnGatesToStageRequest {
     stageId: number;
 }
 
+export interface AuthenticateUserRequest {
+    signInRequest: SignInRequest;
+}
+
 export interface CreateAccountOperationRequest {
     createAccountRequest?: CreateAccountRequest;
+}
+
+export interface CreateOriginTrialOperationRequest {
+    featureId: number;
+    stageId: number;
+    createOriginTrialRequest?: CreateOriginTrialRequest;
 }
 
 export interface DeleteAccountRequest {
@@ -141,6 +172,11 @@ export interface DeleteAccountRequest {
 
 export interface DismissCueOperationRequest {
     dismissCueRequest: DismissCueRequest;
+}
+
+export interface ExtendOriginTrialRequest {
+    featureId: number;
+    extensionStageId: number;
 }
 
 export interface GetFeatureCommentsRequest {
@@ -224,6 +260,14 @@ export interface SetAssigneesForGateRequest {
     featureId: number;
     gateId: number;
     postGateRequest: PostGateRequest;
+}
+
+export interface SetStarOperationRequest {
+    setStarRequest: SetStarRequest;
+}
+
+export interface SetUserSettingsRequest {
+    postSettingsRequest: PostSettingsRequest;
 }
 
 export interface SetVoteForFeatureAndGateRequest {
@@ -312,6 +356,21 @@ export interface DefaultApiInterface {
 
     /**
      * 
+     * @summary Authenticate user with Google Sign-In
+     * @param {SignInRequest} signInRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    authenticateUserRaw(requestParameters: AuthenticateUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+
+    /**
+     * Authenticate user with Google Sign-In
+     */
+    authenticateUser(requestParameters: AuthenticateUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
+
+    /**
+     * 
      * @summary Create a new account
      * @param {CreateAccountRequest} [createAccountRequest] 
      * @param {*} [options] Override http request option.
@@ -324,6 +383,23 @@ export interface DefaultApiInterface {
      * Create a new account
      */
     createAccount(requestParameters: CreateAccountOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AccountResponse>;
+
+    /**
+     * 
+     * @summary Create a new origin trial
+     * @param {number} featureId 
+     * @param {number} stageId 
+     * @param {CreateOriginTrialRequest} [createOriginTrialRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    createOriginTrialRaw(requestParameters: CreateOriginTrialOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+
+    /**
+     * Create a new origin trial
+     */
+    createOriginTrial(requestParameters: CreateOriginTrialOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
 
     /**
      * 
@@ -354,6 +430,22 @@ export interface DefaultApiInterface {
      * Dismiss a cue card for the signed-in user
      */
     dismissCue(requestParameters: DismissCueOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
+
+    /**
+     * 
+     * @summary Extend an existing origin trial
+     * @param {number} featureId 
+     * @param {number} extensionStageId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    extendOriginTrialRaw(requestParameters: ExtendOriginTrialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+
+    /**
+     * Extend an existing origin trial
+     */
+    extendOriginTrial(requestParameters: ExtendOriginTrialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
 
     /**
      * 
@@ -481,6 +573,20 @@ export interface DefaultApiInterface {
 
     /**
      * 
+     * @summary Get origin trials
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getOriginTrialsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetOriginTrialsResponse>>;
+
+    /**
+     * Get origin trials
+     */
+    getOriginTrials(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetOriginTrialsResponse>;
+
+    /**
+     * 
      * @summary Get all pending gates
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -525,6 +631,20 @@ export interface DefaultApiInterface {
 
     /**
      * 
+     * @summary Get a list of all starred feature IDs for the signed-in user
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getStarsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<GetStarsResponse>>>;
+
+    /**
+     * Get a list of all starred feature IDs for the signed-in user
+     */
+    getStars(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<GetStarsResponse>>;
+
+    /**
+     * 
      * @summary Get the permissions and email of the user
      * @param {boolean} [returnPairedUser] If true, return the permissions of the paired user.
      * @param {*} [options] Override http request option.
@@ -537,6 +657,20 @@ export interface DefaultApiInterface {
      * Get the permissions and email of the user
      */
     getUserPermissions(requestParameters: GetUserPermissionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PermissionsResponse>;
+
+    /**
+     * 
+     * @summary Get user settings
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getUserSettingsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetSettingsResponse>>;
+
+    /**
+     * Get user settings
+     */
+    getUserSettings(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetSettingsResponse>;
 
     /**
      * 
@@ -645,6 +779,20 @@ export interface DefaultApiInterface {
 
     /**
      * 
+     * @summary Log out the current user
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    logoutUserRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+
+    /**
+     * Log out the current user
+     */
+    logoutUser(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
+
+    /**
+     * 
      * @summary Submit an intent to be posted on blink-dev
      * @param {number} featureId Feature ID
      * @param {number} stageId Stage ID
@@ -668,12 +816,40 @@ export interface DefaultApiInterface {
      * @throws {RequiredError}
      * @memberof DefaultApiInterface
      */
-    refreshTokenRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenRefreshResponse>>;
+    refreshTokenRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ReviewLatency>>>;
 
     /**
      * Refresh the XSRF token
      */
-    refreshToken(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TokenRefreshResponse>;
+    refreshToken(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ReviewLatency>>;
+
+    /**
+     * 
+     * @summary reject unneeded GET request without triggering Error Reporting
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    rejectGetRequestsLoginRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * reject unneeded GET request without triggering Error Reporting
+     */
+    rejectGetRequestsLogin(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * 
+     * @summary reject unneeded GET request without triggering Error Reporting
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    rejectGetRequestsLogoutRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * reject unneeded GET request without triggering Error Reporting
+     */
+    rejectGetRequestsLogout(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
      * 
@@ -708,6 +884,36 @@ export interface DefaultApiInterface {
      * Set the assignees for a gate.
      */
     setAssigneesForGate(requestParameters: SetAssigneesForGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
+
+    /**
+     * 
+     * @summary Set or clear a star on the specified feature
+     * @param {SetStarRequest} setStarRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    setStarRaw(requestParameters: SetStarOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+
+    /**
+     * Set or clear a star on the specified feature
+     */
+    setStar(requestParameters: SetStarOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
+
+    /**
+     * 
+     * @summary Set the user settings (currently only the notify_as_starrer)
+     * @param {PostSettingsRequest} postSettingsRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    setUserSettingsRaw(requestParameters: SetUserSettingsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+
+    /**
+     * Set the user settings (currently only the notify_as_starrer)
+     */
+    setUserSettings(requestParameters: SetUserSettingsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
 
     /**
      * 
@@ -915,6 +1121,42 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     }
 
     /**
+     * Authenticate user with Google Sign-In
+     */
+    async authenticateUserRaw(requestParameters: AuthenticateUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+        if (requestParameters['signInRequest'] == null) {
+            throw new runtime.RequiredError(
+                'signInRequest',
+                'Required parameter "signInRequest" was null or undefined when calling authenticateUser().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/login`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SignInRequestToJSON(requestParameters['signInRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Authenticate user with Google Sign-In
+     */
+    async authenticateUser(requestParameters: AuthenticateUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+        const response = await this.authenticateUserRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Create a new account
      */
     async createAccountRaw(requestParameters: CreateAccountOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AccountResponse>> {
@@ -940,6 +1182,49 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async createAccount(requestParameters: CreateAccountOperationRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AccountResponse> {
         const response = await this.createAccountRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Create a new origin trial
+     */
+    async createOriginTrialRaw(requestParameters: CreateOriginTrialOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling createOriginTrial().'
+            );
+        }
+
+        if (requestParameters['stageId'] == null) {
+            throw new runtime.RequiredError(
+                'stageId',
+                'Required parameter "stageId" was null or undefined when calling createOriginTrial().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/origintrials/{feature_id}/{stage_id}/create`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))).replace(`{${"stage_id"}}`, encodeURIComponent(String(requestParameters['stageId']))),
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: CreateOriginTrialRequestToJSON(requestParameters['createOriginTrialRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Create a new origin trial
+     */
+    async createOriginTrial(requestParameters: CreateOriginTrialOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+        const response = await this.createOriginTrialRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -1009,6 +1294,46 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async dismissCue(requestParameters: DismissCueOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
         const response = await this.dismissCueRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Extend an existing origin trial
+     */
+    async extendOriginTrialRaw(requestParameters: ExtendOriginTrialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling extendOriginTrial().'
+            );
+        }
+
+        if (requestParameters['extensionStageId'] == null) {
+            throw new runtime.RequiredError(
+                'extensionStageId',
+                'Required parameter "extensionStageId" was null or undefined when calling extendOriginTrial().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/origintrials/{feature_id}/{extension_stage_id}/extend`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))).replace(`{${"extension_stage_id"}}`, encodeURIComponent(String(requestParameters['extensionStageId']))),
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Extend an existing origin trial
+     */
+    async extendOriginTrial(requestParameters: ExtendOriginTrialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+        const response = await this.extendOriginTrialRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -1290,6 +1615,32 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     }
 
     /**
+     * Get origin trials
+     */
+    async getOriginTrialsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetOriginTrialsResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/origintrials`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GetOriginTrialsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get origin trials
+     */
+    async getOriginTrials(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetOriginTrialsResponse> {
+        const response = await this.getOriginTrialsRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Get all pending gates
      */
     async getPendingGatesRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetGateResponse>> {
@@ -1382,6 +1733,32 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     }
 
     /**
+     * Get a list of all starred feature IDs for the signed-in user
+     */
+    async getStarsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<GetStarsResponse>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/currentuser/stars`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(GetStarsResponseFromJSON));
+    }
+
+    /**
+     * Get a list of all starred feature IDs for the signed-in user
+     */
+    async getStars(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<GetStarsResponse>> {
+        const response = await this.getStarsRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Get the permissions and email of the user
      */
     async getUserPermissionsRaw(requestParameters: GetUserPermissionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PermissionsResponse>> {
@@ -1408,6 +1785,32 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async getUserPermissions(requestParameters: GetUserPermissionsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PermissionsResponse> {
         const response = await this.getUserPermissionsRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get user settings
+     */
+    async getUserSettingsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetSettingsResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/currentuser/settings`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GetSettingsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get user settings
+     */
+    async getUserSettings(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetSettingsResponse> {
+        const response = await this.getUserSettingsRaw(initOverrides);
         return await response.value();
     }
 
@@ -1652,6 +2055,32 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     }
 
     /**
+     * Log out the current user
+     */
+    async logoutUserRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/logout`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Log out the current user
+     */
+    async logoutUser(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+        const response = await this.logoutUserRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Submit an intent to be posted on blink-dev
      */
     async postIntentToBlinkDevRaw(requestParameters: PostIntentToBlinkDevRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MessageResponse>> {
@@ -1704,7 +2133,7 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     /**
      * Refresh the XSRF token
      */
-    async refreshTokenRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TokenRefreshResponse>> {
+    async refreshTokenRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ReviewLatency>>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1716,15 +2145,65 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => TokenRefreshResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ReviewLatencyFromJSON));
     }
 
     /**
      * Refresh the XSRF token
      */
-    async refreshToken(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TokenRefreshResponse> {
+    async refreshToken(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ReviewLatency>> {
         const response = await this.refreshTokenRaw(initOverrides);
         return await response.value();
+    }
+
+    /**
+     * reject unneeded GET request without triggering Error Reporting
+     */
+    async rejectGetRequestsLoginRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/login`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * reject unneeded GET request without triggering Error Reporting
+     */
+    async rejectGetRequestsLogin(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.rejectGetRequestsLoginRaw(initOverrides);
+    }
+
+    /**
+     * reject unneeded GET request without triggering Error Reporting
+     */
+    async rejectGetRequestsLogoutRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/logout`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * reject unneeded GET request without triggering Error Reporting
+     */
+    async rejectGetRequestsLogout(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.rejectGetRequestsLogoutRaw(initOverrides);
     }
 
     /**
@@ -1820,6 +2299,78 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async setAssigneesForGate(requestParameters: SetAssigneesForGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
         const response = await this.setAssigneesForGateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Set or clear a star on the specified feature
+     */
+    async setStarRaw(requestParameters: SetStarOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+        if (requestParameters['setStarRequest'] == null) {
+            throw new runtime.RequiredError(
+                'setStarRequest',
+                'Required parameter "setStarRequest" was null or undefined when calling setStar().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/currentuser/stars`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SetStarRequestToJSON(requestParameters['setStarRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Set or clear a star on the specified feature
+     */
+    async setStar(requestParameters: SetStarOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+        const response = await this.setStarRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Set the user settings (currently only the notify_as_starrer)
+     */
+    async setUserSettingsRaw(requestParameters: SetUserSettingsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+        if (requestParameters['postSettingsRequest'] == null) {
+            throw new runtime.RequiredError(
+                'postSettingsRequest',
+                'Required parameter "postSettingsRequest" was null or undefined when calling setUserSettings().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/currentuser/settings`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: PostSettingsRequestToJSON(requestParameters['postSettingsRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Set the user settings (currently only the notify_as_starrer)
+     */
+    async setUserSettings(requestParameters: SetUserSettingsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+        const response = await this.setUserSettingsRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

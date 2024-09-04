@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import testing_config  # Must be imported before the module under test.
+from unittest import mock
 
 import flask
 import werkzeug.exceptions  # Flask HTTP stuff.
-from unittest import mock
 
+import testing_config  # Must be imported before the module under test.
 from api import origin_trials_api
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate, Vote

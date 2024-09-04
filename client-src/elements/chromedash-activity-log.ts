@@ -25,23 +25,6 @@ export class ChromedashAmendment extends LitElement {
       css`
         details {
           color: var(--unimportant-text-color);
-          padding: var(--content-padding-quarter);
-        }
-
-        summary {
-          list-style: revert; /* Show small triangle */
-          white-space: nowrap;
-          box-sizing: border-box;
-          contain: content;
-          overflow: hidden;
-        }
-
-        details[open] #preview {
-          display: none;
-        }
-        details > div {
-          padding: var(--content-padding-quarter);
-          padding-left: var(--content-padding);
         }
       `,
     ];

@@ -26,7 +26,7 @@ from framework.users import User
 from internals import approval_defs, notifier_helpers
 from internals.core_enums import *
 from internals.core_models import FeatureEntry, Stage
-from internals.review_models import Gate, Vote
+from internals.review_models import Gate, Vote, Amendment, Activity
 
 
 def get_user_feature_and_gate(handler, kwargs) -> Tuple[
@@ -84,7 +84,21 @@ class VotesAPI(basehandlers.APIHandler):
           fe, stage, gate_id)
 
     if new_state in (Vote.REVIEW_REQUESTED, Vote.NA_REQUESTED):
+      old_assignees = gate.assignee_emails[:]
       approval_defs.auto_assign_reviewer(gate)
+      new_assignees = gate.assignee_emails[:]
+      if old_assignees != new_assignees:
+        amendment = Amendment(
+            field_name='review_assignee',
+            old_value=', '.join(old_assignees),
+            new_value=', '.join(new_assignees))
+        activity = Activity(
+            feature_id=fe.key.integer_id(), gate_id=gate_id,
+            author=user.email(), amendments=[amendment])
+        activity.put()
+        # Note: We don't notify assignee about autoassignment, because they
+        # will get a notification of review state change anyway.
+
       notifier_helpers.notify_approvers_of_reviews(
           fe, gate, new_state, user.email())
     else:

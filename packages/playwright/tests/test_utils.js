@@ -342,3 +342,9 @@ export async function createNewFeature(page) {
   await page.waitForURL('**/feature/*');
   await delay(500);
 }
+
+export async function gotoNewFeatureList(page) {
+  await page.goto('/newfeatures');
+  await page.locator('chromedash-feature-pagination');
+  await delay(500);
+}

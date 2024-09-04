@@ -121,14 +121,14 @@ SecurityOriginTrialApproval = GateInfo(
     'Security OT Review',
     'Security OT Review',
     core_enums.GATE_SECURITY_ORIGIN_TRIAL, ONE_LGTM,
-    approvers=SECURITY_APPROVERS, team_name='Security',
+    approvers=SECURITY_APPROVERS, team_name='WP Security',
     slo_initial_response=6)
 
 SecurityShipApproval = GateInfo(
     'Security Ship Review',
     'Security Ship Review',
     core_enums.GATE_SECURITY_SHIP, ONE_LGTM,
-    approvers=SECURITY_APPROVERS, team_name='Security',
+    approvers=SECURITY_APPROVERS, team_name='WP Security',
     slo_initial_response=6)
 
 # Note: There is no SecurityPlanApproval

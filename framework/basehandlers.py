@@ -376,7 +376,7 @@ class EntitiesAPIHandler(APIHandler):
 
     # Update stage fields.
     for field, field_type in api_specs.STAGE_FIELD_DATA_TYPES:
-      if field not in change_info:
+      if field not in change_info or change_info[field] is None:
         continue
       form_field_name = change_info[field]['form_field_name']
       if form_field_name == 'ot_action_requested':
@@ -391,7 +391,7 @@ class EntitiesAPIHandler(APIHandler):
     # Update milestone fields.
     milestones = stage.milestones
     for field, field_type in api_specs.MILESTONESET_FIELD_DATA_TYPES:
-      if field not in change_info:
+      if field not in change_info or change_info[field] is None:
         continue
       if milestones is None:
         milestones = MilestoneSet()
