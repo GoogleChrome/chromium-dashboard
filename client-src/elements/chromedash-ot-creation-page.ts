@@ -361,7 +361,7 @@ export class ChromedashOTCreationPage extends LitElement {
     // Add on the appropriate use counter prefix.
     const useCounterPrefix =
       this.webfeatureUseCounterType === USE_COUNTER_TYPE_WEBFEATURE
-        ? 'WebFeature::'
+        ? ''
         : 'WebDXFeature::';
     stageSubmitBody['ot_webfeature_use_counter'].value =
       `${useCounterPrefix}${stageSubmitBody['ot_webfeature_use_counter'].value}`;
