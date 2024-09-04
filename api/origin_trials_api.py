@@ -106,21 +106,29 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
     if not body.get('ot_is_deprecation_trial', {}).get('value', False):
       webfeature_use_counter = body.get(
           'ot_webfeature_use_counter', {}).get('value')
-      webdxfeature_use_counter = body.get(
-          'ot_webdxfeature_use_counter', {}).get('value')
-      if not webfeature_use_counter and not webdxfeature_use_counter:
+      # Client will add a prefix to a WebDXFeature use counter.
+      is_webdx_use_counter = (
+          webfeature_use_counter and
+          webfeature_use_counter.startswith('WebDXFeature::'))
+
+      # Check for valid WebFeature use counter specifications.
+      if not webfeature_use_counter:
         validation_errors['ot_webfeature_use_counter'] = (
             'No UseCounter specified for non-deprecation trial.')
-        validation_errors['ot_webdxfeature_use_counter'] = (
-            'No UseCounter specified for non-deprecation trial.')
-      elif (webfeature_use_counter and f'{webfeature_use_counter} =' not in
-            chromium_files['webfeature_file']):
+      elif (not is_webdx_use_counter and
+            f'{webfeature_use_counter} =' not in chromium_files['webfeature_file']):
         validation_errors['ot_webfeature_use_counter'] = (
               'UseCounter not landed in web_feature.mojom')
-      elif (webdxfeature_use_counter and f'{webdxfeature_use_counter} =' not in
-            chromium_files['webdxfeature_file']):
-        validation_errors['ot_webdxfeature_use_counter'] = (
-          'UseCounter not landed in webdx_feature.mojom')
+      # Check for valid WebDXFeature use counter specifications.
+      elif is_webdx_use_counter:
+        formatted_use_counter = webfeature_use_counter[14:]
+        if not formatted_use_counter:
+          validation_errors['ot_webfeature_use_counter'] = (
+              'No WebDXFeature use counter provided.')
+        elif (f'{formatted_use_counter} ='
+              not in chromium_files['webdxfeature_file']):
+          validation_errors['ot_webfeature_use_counter'] = (
+              'UseCounter not landed in webdx_feature.mojom')
 
     if body.get('ot_has_third_party_support', {}).get('value', False):
       for feature in enabled_features_json['data']:
