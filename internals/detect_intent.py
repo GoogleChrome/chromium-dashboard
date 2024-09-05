@@ -15,6 +15,8 @@
 
 import re
 import logging
+import random
+import time
 from typing import Optional
 
 import settings
@@ -366,6 +368,9 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     if (detect_lgtm(body) and
         is_lgtm_allowed(from_addr, feature, gate_info)):
       logging.info('found LGTM')
+      # Avoid a race condition when blink-dev is in both To: and Cc: lines.
+      time.sleep(random.uniform(0, 5))
+      gate = Gate.get_by_id(gate.key.integer_id())  # Reload after sleep
       old_gate_state = gate.state
       new_gate_state = approval_defs.set_vote(
           feature_id, gate_info.gate_type, Vote.APPROVED, from_addr,
