@@ -292,10 +292,9 @@ const DEBUGGABILITY_GENERIC_RATIONALE = html`
 `;
 
 const TESTING_GENERIC_RATIONALE = html`
-  The test review helps identify gaps in test coverage and ensures
-  that all crucial functionalities are thoroughly tested. This can
-  lead to a more polished final product and reduce the odds of missed
-  defects and issues.
+  The test review helps identify gaps in test coverage and ensures that all
+  crucial functionalities are thoroughly tested. This can lead to a more
+  polished final product and reduce the odds of missed defects and issues.
 `;
 
 export const GATE_RATIONALE: Record<number, TemplateResult> = {
