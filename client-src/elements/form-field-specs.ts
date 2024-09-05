@@ -21,6 +21,7 @@ import {
   VENDOR_VIEWS_COMMON,
   VENDOR_VIEWS_GECKO,
   WEB_DEV_VIEWS,
+  WEBFEATURE_USE_COUNTER_TYPES,
 } from './form-field-enums';
 import {unambiguousStageName} from './utils';
 
@@ -1519,11 +1520,26 @@ export const ALL_FIELDS: Record<string, Field> = {
     label: 'WebFeature UseCounter name',
     help_text: html` For measuring usage, this must be a single named value from
       the WebFeature enum, e.g. kWorkerStart. The use counter must be landed in
+      either
       <a
         target="_blank"
         href="https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom"
         >web_feature.mojom</a
+      >
+      or
+      <a
+        target="_blank"
+        href="https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/mojom/use_counter/metrics/webdx_feature.mojom"
+        >webdx_feature.mojom</a
       >. Not required for deprecation trials.`,
+  },
+
+  ot_webfeature_use_counter__type: {
+    type: 'radios',
+    label: 'Use counter type',
+    choices: WEBFEATURE_USE_COUNTER_TYPES,
+    help_text: html`Which type of use counter the feature is using. This can be
+    determined by which file the use counter is defined in.`,
   },
 
   ot_require_approvals: {
