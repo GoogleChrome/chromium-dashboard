@@ -358,14 +358,14 @@ export class ChromedashOTCreationPage extends LitElement {
     // We only need the single stage changes.
     const stageSubmitBody = featureSubmitBody.stages[0];
 
-    // Add on the appropriate use counter prefix.
-    const useCounterPrefix =
-      this.webfeatureUseCounterType === USE_COUNTER_TYPE_WEBFEATURE
-        ? ''
-        : 'WebDXFeature::';
     if ('ot_webfeature_use_counter' in stageSubmitBody) {
-      stageSubmitBody['ot_webfeature_use_counter'].value =
-        `${useCounterPrefix}${stageSubmitBody['ot_webfeature_use_counter'].value}`;
+      // Add on the appropriate use counter prefix.
+      const useCounterPrefix =
+        this.webfeatureUseCounterType === USE_COUNTER_TYPE_WEBFEATURE
+          ? ''
+          : 'WebDXFeature::';
+      stageSubmitBody.ot_webfeature_use_counter.value =
+        `${useCounterPrefix}${stageSubmitBody.ot_webfeature_use_counter.value}`;
     }
 
     this.submitting = true;
