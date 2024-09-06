@@ -541,21 +541,22 @@ export interface FieldInfo {
   checkMessage?: string;
 }
 
-/**
- * @typedef {Object} UpdateSubmitBody
- * @property {Object.<string, *>} feature_changes An object with feature changes.
- *   key=field name, value=new field value.
- * @property {Array.<Object>} stages The list of changes to specific stages.
- * @property {boolean} has_changes Whether any valid changes are present for submission.
- */
+interface UpdateSubmitBody {
+  feature_changes: FeatureUpdateInfo;
+  stages: StageUpdateInfo[];
+  has_changes: boolean;
+}
 
-/**
- * Prepare feature/stage changes to be submitted.
- * @param {Array.<FieldInfo>} fieldValues List of fields in the form.
- * @param {number} featureId The ID of the feature being updated.
- * @return {UpdateSubmitBody} Formatted body of new PATCH request.
- */
-export function formatFeatureChanges(fieldValues, featureId) {
+interface StageUpdateInfo {
+  [stageField: string]: any;
+}
+
+interface FeatureUpdateInfo {
+  [featureField: string]: any;
+}
+
+// Prepare feature/stage changes to be submitted.
+export function formatFeatureChanges(fieldValues, featureId): UpdateSubmitBody {
   let hasChanges = false;
   const featureChanges = {id: featureId};
   // Multiple stages can be mutated, so this object is a stage of stages.
