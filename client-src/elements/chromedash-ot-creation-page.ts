@@ -364,8 +364,7 @@ export class ChromedashOTCreationPage extends LitElement {
         this.webfeatureUseCounterType === USE_COUNTER_TYPE_WEBFEATURE
           ? ''
           : 'WebDXFeature::';
-      stageSubmitBody.ot_webfeature_use_counter.value =
-        `${useCounterPrefix}${stageSubmitBody.ot_webfeature_use_counter.value}`;
+      stageSubmitBody.ot_webfeature_use_counter.value = `${useCounterPrefix}${stageSubmitBody.ot_webfeature_use_counter.value}`;
     }
 
     this.submitting = true;
