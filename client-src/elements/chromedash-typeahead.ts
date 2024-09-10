@@ -20,7 +20,8 @@ import {SHARED_STYLES} from '../css/shared-css.js';
    3. Private class ChromedashTypeaheadItem renders a single item in the
    typeahead menu.  We do not use SlMenuItem because it steals keyboard focus.
 */
-interface Candidate {
+export interface Candidate {
+  group: string;
   name: string;
   doc: string;
 }
@@ -130,6 +131,38 @@ export class ChromedashTypeahead extends LitElement {
     );
   }
 
+  containsOp(s: string | null): boolean {
+    if (s === null) {
+      return false;
+    }
+    const COMPARE_OPS = ['=', ':', '<', '>'];
+    return COMPARE_OPS.some(op => s.includes(op));
+  }
+
+  groupCandidates(candidates: Candidate[]): Candidate[] {
+    const groupsSeen = new Set();
+    const groupsSeenTwice = new Set();
+    for (const c of candidates) {
+      if (groupsSeen.has(c.group)) {
+        groupsSeenTwice.add(c.group);
+      } else {
+        groupsSeen.add(c.group);
+      }
+    }
+
+    const groupsSeenTwiceProcessed = new Set();
+    const result: Candidate[] = [];
+    for (const c of candidates) {
+      if (!groupsSeenTwice.has(c.group)) {
+        result.push(c);
+      } else if (!groupsSeenTwiceProcessed.has(c.group)) {
+        result.push({group: c.group, name: c.group + '=', doc: c.doc});
+        groupsSeenTwiceProcessed.add(c.group);
+      }
+    }
+    return result;
+  }
+
   async handleCandidateSelected(e) {
     const candidateValue = e.detail.item.value;
     const inputEl = this.slInputRef.value?.renderRoot.querySelector('input');
@@ -150,8 +183,14 @@ export class ChromedashTypeahead extends LitElement {
     this.chunkEnd = this.chunkStart;
     inputEl.selectionStart = this.chunkStart;
     inputEl.selectionEnd = this.chunkEnd;
-    // TODO(jrobbins): Don't set termWasCompleted if we offer a value.
-    this.termWasCompleted = true;
+
+    // A term was completed iff there is no other term that the user could
+    // further complete by typing or selecting.
+    const possibleExtensions = this.vocabulary.filter(c =>
+      c.name.startsWith(candidateValue)
+    );
+    this.termWasCompleted = possibleExtensions.length <= 1;
+
     this.calcCandidates();
     // The user may have clicked a menu item, causing the sl-input to lose
     // keyboard focus.  So, focus on the sl-input again.
@@ -198,6 +237,9 @@ export class ChromedashTypeahead extends LitElement {
     this.candidates = this.vocabulary.filter(c =>
       this.shouldShowCandidate(c, this.prefix)
     );
+    if (!this.containsOp(this.prefix)) {
+      this.candidates = this.groupCandidates(this.candidates);
+    }
     const slDropdown = this.slDropdownRef.value;
     if (!slDropdown) return;
     if (
