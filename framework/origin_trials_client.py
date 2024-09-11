@@ -181,7 +181,7 @@ def _send_create_trial_request(
     json['registration_config']['allow_public_suffix_subdomains'] = True
 
   headers = {'Authorization': f'Bearer {access_token}'}
-  url = f'{settings.OT_API_URL}/v1/trials:create'
+  url = f'{settings.OT_API_URL}/v1/trials:initialize'
 
   # Retry the request a number of times if any issues arise.
   try:
@@ -197,7 +197,13 @@ def _send_create_trial_request(
   return response_json['trial']['id'], None
 
 
-def _send_set_up_trial_request(trial_id: int, owners: list[str], contacts: list[str], api_key: str, access_token: str) -> str|None:
+def _send_set_up_trial_request(
+    trial_id: int,
+    owners: list[str],
+    contacts: list[str],
+    api_key: str,
+    access_token: str
+  ) -> str|None:
   """Send an origin trial setup request to the origin trials API.
   Returns:
     Any error text if there was an issue during the setup process.
@@ -208,7 +214,7 @@ def _send_set_up_trial_request(trial_id: int, owners: list[str], contacts: list[
     'trial_contacts': contacts,
   }
   headers = {'Authorization': f'Bearer {access_token}'}
-  url = f'{settings.OT_API_URL}/v1/trials:setup'
+  url = f'{settings.OT_API_URL}/v1/trials/{trial_id}:setup'
   try:
     response = requests.post(
         url, headers=headers, params={'key': api_key}, json=json)
