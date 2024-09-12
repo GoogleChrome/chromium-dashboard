@@ -29,6 +29,7 @@ import settings
 
 
 class RequestTrial(TypedDict):
+  id: NotRequired[int]
   display_name: str
   start_milestone: str
   end_milestone: str
@@ -55,6 +56,12 @@ class InternalRegistrationConfig(TypedDict):
 class CreateOriginTrialRequest(TypedDict):
   trial: RequestTrial
   registration_config: InternalRegistrationConfig
+  trial_contacts: list[str]
+
+
+class SetUpTrialRequest(TypedDict):
+  trial_id: int
+  announcement_groups_owners: list[str]
   trial_contacts: list[str]
 
 
@@ -132,21 +139,14 @@ def _get_ot_access_token() -> str:
   return credentials.token
 
 
-def create_origin_trial(ot_stage: Stage) -> str | None:
-  """Create an origin trial.
-
-  Raises:
-    requests.exceptions.RequestException: If the request fails to connect or
-      the HTTP status code is not successful.
+def _send_create_trial_request(
+    ot_stage: Stage, api_key: str, access_token: str
+  ) -> tuple[int|None, str|None]:
+  """Send an origin trial creation request to the origin trials API.
+  Returns:
+    Newly created origin trial ID if trial was created, any error text if there
+    was an issue during the creation process.
   """
-  if settings.DEV_MODE:
-    logging.info('Creation request will not be sent to origin trials API in '
-                 'local environment.')
-    return None
-  key = secrets.get_ot_api_key()
-  if key is None:
-    return None
-
   json: CreateOriginTrialRequest = {
     'trial': {
       'display_name': ot_stage.ot_display_name,
@@ -167,16 +167,6 @@ def create_origin_trial(ot_stage: Stage) -> str | None:
     'registration_config': {'approval_type': 'NONE'},
     'trial_contacts': []
   }
-
-  # Get a list of all OT @google.com contacts (ot_owner_email must be a google
-  # contact).
-  unique_contacts = [ot_stage.ot_owner_email]
-  unique_contacts.extend(ot_stage.ot_emails)
-  unique_contacts = [email for email in set(unique_contacts)
-                     if email.endswith('@google.com')]
-  json['trial_contacts'] = unique_contacts
-  if ot_stage.ot_chromium_trial_name:
-    json['trial']['origin_trial_feature_name'] = ot_stage.ot_chromium_trial_name
   if ot_stage.ot_require_approvals:
     json['registration_config'] = {
       'approval_type': 'CUSTOM',
@@ -185,23 +175,99 @@ def create_origin_trial(ot_stage: Stage) -> str | None:
       'approval_group_email': ot_stage.ot_approval_group_email,
       'approval_buganizer_custom_field_id': ot_stage.ot_approval_buganizer_custom_field_id,
     }
+  if ot_stage.ot_chromium_trial_name:
+    json['trial']['origin_trial_feature_name'] = ot_stage.ot_chromium_trial_name
   if ot_stage.ot_is_deprecation_trial:
     json['registration_config']['allow_public_suffix_subdomains'] = True
-  access_token = _get_ot_access_token()
-  headers = {'Authorization': f'Bearer {access_token}'}
-  url = f'{settings.OT_API_URL}/v1/trials:setup'
 
+  headers = {'Authorization': f'Bearer {access_token}'}
+  url = f'{settings.OT_API_URL}/v1/trials:initialize'
+
+  # Retry the request a number of times if any issues arise.
   try:
     response = requests.post(
-        url, headers=headers, params={'key': key}, json=json)
-    logging.info(response.text)
+        url, headers=headers, params={'key': api_key}, json=json)
+    logging.info(f'CreateTrial response text: {response.text}')
     response.raise_for_status()
-  except requests.exceptions.RequestException as e:
+  except requests.exceptions.RequestException:
     logging.exception(
         f'Failed to get response from origin trials API. {response.text}')
-    raise e
+    return None, response.text
+  response_json = response.json()
+  return response_json['trial']['id'], None
 
-  return str(response.json()['id'])
+
+def _send_set_up_trial_request(
+    trial_id: int,
+    owners: list[str],
+    contacts: list[str],
+    api_key: str,
+    access_token: str
+  ) -> str|None:
+  """Send an origin trial setup request to the origin trials API.
+  Returns:
+    Any error text if there was an issue during the setup process.
+  """
+  json: SetUpTrialRequest = {
+    'trial_id': trial_id,
+    'announcement_groups_owners': owners,
+    'trial_contacts': contacts,
+  }
+  headers = {'Authorization': f'Bearer {access_token}'}
+  url = f'{settings.OT_API_URL}/v1/trials/{trial_id}:setup'
+  try:
+    response = requests.post(
+        url, headers=headers, params={'key': api_key}, json=json)
+    logging.info(f'SetUpTrial response text: {response.text}')
+    response.raise_for_status()
+  except requests.exceptions.RequestException:
+    logging.exception(
+        f'Failed to get response from origin trials API. {response.text}')
+    return response.text
+  return None
+
+
+def create_origin_trial(ot_stage: Stage) -> tuple[str|None, str|None]:
+  """Send an origin trial creation request to the origin trials API.
+
+  Raises:
+    requests.exceptions.RequestException: If the request fails to connect or
+      the HTTP status code is not successful.
+  Returns:
+    Newly created origin trial ID if trial was created, any error text if there
+    was an issue during the creation process.
+  """
+  if settings.DEV_MODE:
+    logging.info('Creation request will not be sent to origin trials API in '
+                 'local environment.')
+    return None, None
+  key = secrets.get_ot_api_key()
+  if key is None:
+    return None, 'No API key found for origin trials API'
+
+  # Get a list of all OT @google.com contacts (ot_owner_email must be a google
+  # contact).
+  unique_contacts = [ot_stage.ot_owner_email]
+  unique_contacts.extend(ot_stage.ot_emails)
+  unique_contacts = [email for email in set(unique_contacts)
+                     if email.endswith('@google.com')]
+  # A trial must have a google.com domain contact.
+  if len(unique_contacts) == 0:
+    return None, 'No trial contacts found in google.com domain'
+
+  access_token = _get_ot_access_token()
+  origin_trial_id, error_text = _send_create_trial_request(
+      ot_stage, key, access_token)
+
+  if origin_trial_id is None:
+    return None, error_text
+
+  error_text = _send_set_up_trial_request(
+      # TODO(DanielRyanSmith): Add owners contacts in subsequent PR.
+      origin_trial_id, [], unique_contacts, key, access_token)
+
+  return str(origin_trial_id), error_text
+
 
 def activate_origin_trial(origin_trial_id: str) -> None:
   """Activate an existing origin trial.
