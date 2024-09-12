@@ -125,19 +125,19 @@ describe('chromedash-typeahead', () => {
     assert.isFalse(component.shouldShowCandidate(candidate2, 'th.dot'));
   });
 
-  it('detects a term has a comparison operator', async () => {
+  it('detects when user is still entering keyword', async () => {
     const component = new ChromedashTypeahead();
-    assert.isFalse(component.containsOp(null));
-    assert.isFalse(component.containsOp(''));
-    assert.isFalse(component.containsOp('some-words'));
-    assert.isTrue(component.containsOp('field='));
-    assert.isTrue(component.containsOp('field>'));
-    assert.isTrue(component.containsOp('field>='));
-    assert.isTrue(component.containsOp('field<='));
-    assert.isTrue(component.containsOp('field!='));
-    assert.isTrue(component.containsOp('field:'));
-    assert.isTrue(component.containsOp('field>3'));
-    assert.isTrue(component.containsOp('field="enum value"'));
+    assert.isTrue(component.shouldGroup(null));
+    assert.isTrue(component.shouldGroup(''));
+    assert.isTrue(component.shouldGroup('some-words'));
+    assert.isFalse(component.shouldGroup('field='));
+    assert.isFalse(component.shouldGroup('field>'));
+    assert.isFalse(component.shouldGroup('field>='));
+    assert.isFalse(component.shouldGroup('field<='));
+    assert.isFalse(component.shouldGroup('field!='));
+    assert.isFalse(component.shouldGroup('field:'));
+    assert.isFalse(component.shouldGroup('field>3'));
+    assert.isFalse(component.shouldGroup('field="enum value"'));
   });
 
   it('copes with empty candidate lists while grouping', async () => {

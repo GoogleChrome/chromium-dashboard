@@ -131,12 +131,14 @@ export class ChromedashTypeahead extends LitElement {
     );
   }
 
-  containsOp(s: string | null): boolean {
+  // Return true if the user is still entering the keyword and is not
+  // ready to enter an enum value yet.
+  shouldGroup(s: string | null): boolean {
     if (s === null) {
-      return false;
+      return true;
     }
     const COMPARE_OPS = ['=', ':', '<', '>'];
-    return COMPARE_OPS.some(op => s.includes(op));
+    return !COMPARE_OPS.some(op => s.includes(op));
   }
 
   groupCandidates(candidates: Candidate[]): Candidate[] {
@@ -237,7 +239,7 @@ export class ChromedashTypeahead extends LitElement {
     this.candidates = this.vocabulary.filter(c =>
       this.shouldShowCandidate(c, this.prefix)
     );
-    if (!this.containsOp(this.prefix)) {
+    if (this.shouldGroup(this.prefix)) {
       this.candidates = this.groupCandidates(this.candidates);
     }
     const slDropdown = this.slDropdownRef.value;
