@@ -4,11 +4,27 @@ import {createRef, Ref, ref} from 'lit/directives/ref.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {openSearchHelpDialog} from './chromedash-search-help-dialog.js';
 import {QUERIABLE_FIELDS} from './queriable-fields.js';
-import {ChromedashTypeahead} from './chromedash-typeahead.js';
+import {ChromedashTypeahead, Candidate} from './chromedash-typeahead.js';
 
-const VOCABULARY = QUERIABLE_FIELDS.map(qf => {
-  return {name: qf.name + '=', doc: qf.doc};
-});
+function convertQueriableFieldToVocabularyItems(qf): Candidate[] {
+  if (qf.choices === undefined) {
+    return [{group: qf.name, name: qf.name + '=', doc: qf.doc}];
+  }
+  const result: Candidate[] = [];
+  for (const ch in qf.choices) {
+    const label: string = qf.choices[ch][1];
+    result.push({
+      group: qf.name,
+      name: qf.name + '="' + label + '"',
+      doc: qf.doc,
+    });
+  }
+  return result;
+}
+
+const VOCABULARY: Candidate[] = QUERIABLE_FIELDS.map(
+  convertQueriableFieldToVocabularyItems
+).flat();
 
 @customElement('chromedash-feature-filter')
 class ChromedashFeatureFilter extends LitElement {

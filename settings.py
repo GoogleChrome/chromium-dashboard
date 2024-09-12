@@ -86,6 +86,8 @@ MAX_LOG_LINE = 200 * 1000
 OT_URL = 'https://origintrials-staging.corp.google.com/origintrials/'
 OT_API_URL = 'https://staging-chromeorigintrials-pa.sandbox.googleapis.com'
 OT_API_KEY: str|None = None  # Value is set later when request is needed.
+# Dummy data for local OT support emails.
+DEV_MODE_OT_SUPPORT_EMAILS = 'user1@gmail.com,user2@gmail.com'
 
 if UNIT_TEST_MODE:
   APP_TITLE = 'Local testing'
