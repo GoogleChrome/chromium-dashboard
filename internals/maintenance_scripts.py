@@ -19,7 +19,7 @@ from typing import Any
 from google.cloud import ndb  # type: ignore
 import requests
 
-from api import converters
+from api import converters, channels_api
 from framework.basehandlers import FlaskHandler
 from framework import cloud_tasks_helpers
 from framework import origin_trials_client
@@ -689,3 +689,103 @@ class DeleteEmptyExtensionStages(FlaskHandler):
       ndb.delete_multi(keys_to_delete)
 
     return  (f'{counter} empty extension stages deleted.')
+
+
+
+LAST_MILESTONE_TO_YEAR: dict[int, int] = {
+    # last shipped milestone of the year: calendar year
+    3: 2009,
+    8: 2010,
+    16: 2011,
+    24: 2012,
+    31: 2013,
+    39: 2014,
+    47: 2015,
+    55: 2016,
+    63: 2017,
+    71: 2018,
+    79: 2019,
+    87: 2020,
+    96: 2021,
+    108: 2022,
+    120: 2023,
+    132: 2024,
+    # Later milestones are determined by chromiumdash.appspot.com.
+    }
+
+class BackfillShippingYear(FlaskHandler):
+
+  def look_up_year(self, milestone: int) -> int:
+    """Return the calendar year in which a feature shipped."""
+    for (last_milestone_of_year, year) in LAST_MILESTONE_TO_YEAR.items():
+      if milestone <= last_milestone_of_year:
+        return year
+
+    release_info = channels_api.fetch_chrome_release_info(milestone)
+    if release_info and 'final_beta' in release_info:
+      shipping_date_str = release_info['final_beta']
+      shipping_date = datetime.strptime(
+          shipping_date_str, utils.CHROMIUM_SCHEDULE_DATE_FORMAT).date()
+      shipping_year = shipping_date.year
+      logging.info('shipping_date is %r', shipping_date)
+    return shipping_year
+
+  def record_feature_earliest_milestone(
+      self, earliest_milestone_by_fid: dict, stage: Stage):
+    """Find the earliest milestone in a stage and maybe put it into the dict."""
+    stage_milestones = [
+        stage.milestones.desktop_first, stage.milestones.android_first,
+        stage.milestones.ios_first, stage.milestones.webview_first]
+    earliest = min(m for m in stage_milestones if m)
+    fid = stage.feature_id
+    earliest_milestone_by_fid[fid] = min(
+        earliest, earliest_milestone_by_fid.get(fid, earliest))
+
+  def get_all_shipping_stages_with_milestones(self) -> list[Stage]:
+    shipping_stage_types = [st for st in STAGE_TYPES_SHIPPING.values() if st]
+    shipping_stages_query: ndb.Query = Stage.query(
+        Stage.stage_type.IN(shipping_stage_types))
+    shipping_stages_query = shipping_stages_query.filter(ndb.OR(
+        Stage.milestones.desktop_first > 0,
+        Stage.milestones.android_first > 0,
+        Stage.milestones.ios_first > 0,
+        Stage.milestones.webview_first > 0))
+    return shipping_stages_query.fetch()
+
+  def calc_all_shipping_years(self) -> dict[int, int]:
+    """Load all shipping stages and record their earliest milestone."""
+    shipping_stages = self.get_all_shipping_stages_with_milestones()
+    earliest_milestone_by_fid: dict[int, int] = {}
+    for stage in shipping_stages:
+      self.record_feature_earliest_milestone(earliest_milestone_by_fid, stage)
+
+    all_features_shipping_year = {
+        fid: self.look_up_year(earliest_milestone_by_fid[fid])
+        for fid in earliest_milestone_by_fid
+    }
+    return all_features_shipping_year
+
+  def get_template_data(self, **kwargs) -> str:
+    """Fill in shipping_year for any Feature Entry that has a milestone."""
+    self.require_cron_header()
+
+    all_features_shipping_year = self.calc_all_shipping_years()
+    count = 0
+    batch = []
+    BATCH_SIZE = 100
+    all_feature_entries = FeatureEntry.query().fetch()
+    for fe in all_feature_entries:
+      fid = fe.key.integer_id()
+      if fid not in all_features_shipping_year:
+        continue
+      year_based_on_milestones = all_features_shipping_year[fid]
+      if fe.shipping_year != year_based_on_milestones:
+        fe.shipping_year = year_based_on_milestones
+        batch.append(fe)
+        count += 1
+        if len(batch) > BATCH_SIZE:
+          ndb.put_multi(batch)
+          batch = []
+
+    ndb.put_multi(batch)
+    return f'{count} Features entities updated.'
