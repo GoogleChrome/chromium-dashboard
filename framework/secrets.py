@@ -152,3 +152,20 @@ def get_ot_api_key() -> str|None:
       settings.OT_API_KEY = response.payload.data.decode("UTF-8")
       return settings.OT_API_KEY
   return None
+
+
+def get_ot_support_emails() -> str|None:
+  """Obtain a comma-separated list of the OT support members."""
+  if settings.DEV_MODE or settings.UNIT_TEST_MODE:
+    # In dev or unit test mode, return a dummy value.
+    return settings.DEV_MODE_OT_SUPPORT_EMAILS
+
+  # If in staging or prod, pull the value from the project secrets.
+  from google.cloud.secretmanager import SecretManagerServiceClient
+  client = SecretManagerServiceClient()
+  name = (f'{client.secret_path(settings.APP_ID, "OT_SUPPORT_EMAILS")}'
+          '/versions/latest')
+  response = client.access_secret_version(request={'name': name})
+  if response:
+    return response.payload.data.decode("UTF-8")
+  return None
