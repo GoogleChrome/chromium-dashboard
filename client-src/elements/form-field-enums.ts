@@ -92,6 +92,34 @@ export const ROLLOUT_IMPACT_DISPLAYNAME: Record<number, string> = {
   3: 'High', // IMPACT_HIGH
 };
 
+export const USE_COUNTER_TYPE_WEBFEATURE = 0;
+export const USE_COUNTER_TYPE_WEBDXFEATURE = 1;
+export const WEBFEATURE_USE_COUNTER_TYPES: Record<
+  string,
+  [number, string, string | HTMLTemplateResult]
+> = {
+  WEBFEATURE: [
+    USE_COUNTER_TYPE_WEBFEATURE,
+    'WebFeature',
+    html`The feature's use counter has been added to
+      <a
+        target="_blank"
+        href="https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom"
+        >web_feature.mojom</a
+      >.`,
+  ],
+  WEBDXFEATURE: [
+    USE_COUNTER_TYPE_WEBDXFEATURE,
+    'WebDXFeature',
+    html`The feature's use counter has been added to
+      <a
+        target="_blank"
+        href="https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/mojom/use_counter/metrics/webdx_feature.mojom"
+        >webdx_feature.mojom</a
+      >.`,
+  ],
+};
+
 // FEATURE_TYPES object is organized as [intValue, stringLabel, description],
 // the descriptions are used only for the descriptions of feature_type_radio_group
 export const FEATURE_TYPES_WITHOUT_ENTERPRISE: Record<
@@ -462,7 +490,7 @@ export const GATE_FINISHED_REVIEW_STATES: number[] = [
 
 export const GATE_TEAM_ORDER = [
   'Privacy',
-  'Security',
+  'WP Security',
   'Enterprise',
   'Debuggability',
   'Testing',

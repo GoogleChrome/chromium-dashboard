@@ -1,4 +1,4 @@
-import {LitElement, css, html, nothing} from 'lit';
+import {LitElement, TemplateResult, css, html, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {ref} from 'lit/directives/ref.js';
 import {FORM_STYLES} from '../css/forms-css.js';
@@ -6,11 +6,16 @@ import {SHARED_STYLES} from '../css/shared-css.js';
 import {Feature, StageDict} from '../js-src/cs-client.js';
 import './chromedash-form-field.js';
 import {ORIGIN_TRIAL_CREATION_FIELDS} from './form-definition.js';
-import {OT_SETUP_STATUS_OPTIONS, VOTE_OPTIONS} from './form-field-enums.js';
+import {
+  OT_SETUP_STATUS_OPTIONS,
+  VOTE_OPTIONS,
+  USE_COUNTER_TYPE_WEBFEATURE,
+} from './form-field-enums.js';
 import {ALL_FIELDS} from './form-field-specs.js';
 import {
   FieldInfo,
   formatFeatureChanges,
+  getDisabledHelpText,
   getStageValue,
   setupScrollToHash,
   showToastMessage,
@@ -23,6 +28,16 @@ export class ChromedashOTCreationPage extends LitElement {
       ...SHARED_STYLES,
       ...FORM_STYLES,
       css`
+        .choices label {
+          font-weight: bold;
+        }
+        .choices div {
+          margin-top: 1em;
+        }
+        .choices p {
+          margin: 0.5em 1.5em 1em;
+        }
+
         #overlay {
           position: fixed;
           width: 100%;
@@ -41,6 +56,18 @@ export class ChromedashOTCreationPage extends LitElement {
           left: 50%;
           transform: translate(-50%, -50%);
           height: 300px;
+        }
+
+        .warning {
+          border: 2px solid #555555;
+          border-radius: 10px;
+          padding: 4px;
+          margin-bottom: 32px;
+        }
+        .warning h3 {
+          text-align: center;
+          color: #555555;
+          font-weight: 300;
         }
       `,
     ];
@@ -65,6 +92,10 @@ export class ChromedashOTCreationPage extends LitElement {
   @state()
   showApprovalsFields = false;
   @state()
+  isDeprecationTrial = false;
+  @state()
+  webfeatureUseCounterType: Number = USE_COUNTER_TYPE_WEBFEATURE;
+  @state()
   stage!: StageDict;
 
   connectedCallback() {
@@ -88,7 +119,14 @@ export class ChromedashOTCreationPage extends LitElement {
     if (this.fieldValues[index].name === 'ot_require_approvals') {
       this.showApprovalsFields = !this.showApprovalsFields;
       this.requestUpdate();
+    } else if (this.fieldValues[index].name === 'ot_is_deprecation_trial') {
+      this.isDeprecationTrial = value;
+      this.requestUpdate();
     }
+  }
+
+  handleUseCounterTypeUpdate(event) {
+    this.webfeatureUseCounterType = parseInt(event.detail.value);
   }
 
   fetchData() {
@@ -306,6 +344,12 @@ export class ChromedashOTCreationPage extends LitElement {
         }
       });
     }
+    const useCounterField = this.fieldValues.find(
+      fv => fv.name === 'ot_webfeature_use_counter'
+    );
+    if (this.isDeprecationTrial) {
+      useCounterField!.touched = false;
+    }
 
     const featureSubmitBody = formatFeatureChanges(
       this.fieldValues,
@@ -313,6 +357,15 @@ export class ChromedashOTCreationPage extends LitElement {
     );
     // We only need the single stage changes.
     const stageSubmitBody = featureSubmitBody.stages[0];
+
+    if ('ot_webfeature_use_counter' in stageSubmitBody) {
+      // Add on the appropriate use counter prefix.
+      const useCounterPrefix =
+        this.webfeatureUseCounterType === USE_COUNTER_TYPE_WEBFEATURE
+          ? ''
+          : 'WebDXFeature::';
+      stageSubmitBody.ot_webfeature_use_counter.value = `${useCounterPrefix}${stageSubmitBody.ot_webfeature_use_counter.value}`;
+    }
 
     this.submitting = true;
     window.csClient
@@ -382,21 +435,44 @@ export class ChromedashOTCreationPage extends LitElement {
     const fields = this.fieldValues.map((fieldInfo, i) => {
       if (
         fieldInfo.alwaysHidden ||
-        (fieldInfo.isApprovalsField && !this.showApprovalsFields)
+        (fieldInfo.isApprovalsField && !this.showApprovalsFields) ||
+        (fieldInfo.name === 'ot_webfeature_use_counter' &&
+          this.isDeprecationTrial)
       ) {
         return nothing;
       }
-      // Fade in transition for the approvals fields if they're being displayed.
-      const shouldFadeIn = fieldInfo.isApprovalsField;
+      // Fade in transition for the approvals fields or use counter field
+      // if they're being displayed.
+      const shouldFadeIn =
+        fieldInfo.isApprovalsField ||
+        fieldInfo.name === 'ot_webfeature_use_counter';
+
+      let additionalInfo: TemplateResult | symbol = nothing;
+      if (fieldInfo.name == 'ot_webfeature_use_counter') {
+        additionalInfo = html`
+          <chromedash-form-field
+            name="ot_webfeature_use_counter__type"
+            index=${i}
+            .value=${this.webfeatureUseCounterType}
+            .fieldValues=${this.fieldValues}
+            ?shouldFadeIn=${shouldFadeIn}
+            @form-field-update="${this.handleUseCounterTypeUpdate}"
+            class="choices"
+          >
+          </chromedash-form-field>
+        `;
+      }
 
       return html`
+        ${additionalInfo}
         <chromedash-form-field
           name=${fieldInfo.name}
           index=${i}
           value=${fieldInfo.value}
+          disabledReason="${getDisabledHelpText(fieldInfo.name, this.stage)}"
           .checkMessage=${fieldInfo.checkMessage}
           .fieldValues=${this.fieldValues}
-          .shouldFadeIn=${shouldFadeIn}
+          ?shouldFadeIn=${shouldFadeIn}
           @form-field-update="${this.handleFormFieldUpdate}"
         >
         </chromedash-form-field>
@@ -422,7 +498,16 @@ export class ChromedashOTCreationPage extends LitElement {
             </div>`
           : nothing}
         <chromedash-form-table ${ref(this.registerHandlers)}>
-          <section class="stage_form">${this.renderFields()}</section>
+          <section class="stage_form">
+            <div class="warning warning-div">
+              <h3>
+                Please make sure this data is correct before submission! If you
+                are not sure about any information on this form, contact
+                <strong>origin-trials-support@google.com</strong>
+              </h3>
+            </div>
+            ${this.renderFields()}
+          </section>
         </chromedash-form-table>
         <div class="final_buttons">
           <input

@@ -243,7 +243,7 @@ class ChromedashOTPrereqsDialog extends LitElement {
           >
             runtime_enabled_features.json5
           </a>
-          contains the key "origin_trials_allows_third_party: true".
+          contains the key "origin_trial_allows_third_party: true".
         </li>
         <li>
           For a critical trial, the feature name has been added to the

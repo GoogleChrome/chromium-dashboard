@@ -339,10 +339,6 @@ export class ChromedashApp extends LitElement {
       this.pageComponent.showEnterprise = true;
       this.pageComponent.showQuery = false;
       this.pageComponent.rawQuery = parseRawQuery(ctx.querystring);
-      this.pageComponent.addEventListener(
-        'pagination',
-        this.handlePagination.bind(this)
-      );
     });
     page('/myfeatures/starred', ctx => {
       if (!this.setupNewPage(ctx, 'chromedash-all-features-page', true)) return;
@@ -352,10 +348,6 @@ export class ChromedashApp extends LitElement {
       this.pageComponent.showEnterprise = true;
       this.pageComponent.showQuery = false;
       this.pageComponent.rawQuery = parseRawQuery(ctx.querystring);
-      this.pageComponent.addEventListener(
-        'pagination',
-        this.handlePagination.bind(this)
-      );
     });
     page('/myfeatures/editable', ctx => {
       if (!this.setupNewPage(ctx, 'chromedash-all-features-page', true)) return;
@@ -365,19 +357,11 @@ export class ChromedashApp extends LitElement {
       this.pageComponent.showEnterprise = true;
       this.pageComponent.showQuery = false;
       this.pageComponent.rawQuery = parseRawQuery(ctx.querystring);
-      this.pageComponent.addEventListener(
-        'pagination',
-        this.handlePagination.bind(this)
-      );
     });
     page('/newfeatures', ctx => {
       if (!this.setupNewPage(ctx, 'chromedash-all-features-page', true)) return;
       this.pageComponent.user = this.user;
       this.pageComponent.rawQuery = parseRawQuery(ctx.querystring);
-      this.pageComponent.addEventListener(
-        'pagination',
-        this.handlePagination.bind(this)
-      );
       this.pageComponent.addEventListener(
         'search',
         this.handleSearchQuery.bind(this)
@@ -560,10 +544,6 @@ export class ChromedashApp extends LitElement {
       this.pageComponent.user = this.user;
     });
     page.start();
-  }
-
-  handlePagination(e) {
-    updateURLParams('start', e.detail.index);
   }
 
   handleSearchQuery(e) {

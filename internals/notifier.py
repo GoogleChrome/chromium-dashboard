@@ -36,7 +36,6 @@ from framework import users
 import settings
 from internals import approval_defs
 from internals import core_enums
-from internals.data_types import StageDict
 from internals import stage_helpers
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.data_types import StageDict
@@ -716,12 +715,14 @@ class OTCreationRequestFailedHandler(basehandlers.FlaskHandler):
   def process_post_data(self, **kwargs):
     self.require_task_header()
     stage = self.get_param('stage', required=True)
-    send_emails([self.build_email(stage)])
+    error_text = self.get_param('error_text')
+    send_emails([self.build_email(stage, error_text)])
     return {'message': 'OK'}
 
-  def build_email(self, stage: StageDict) -> dict:
+  def build_email(self, stage: StageDict, error_text: str|None) -> dict:
     body_data = {
       'stage': stage,
+      'error_text': error_text,
       'chromestatus_url': ('https://chromestatus.com/feature/'
                            f'{stage["feature_id"]}')
     }
@@ -865,7 +866,7 @@ class OTExtensionApprovedHandler(basehandlers.FlaskHandler):
     return {
       'to': requester_email,
       'cc': [OT_SUPPORT_EMAIL],
-      'subject': ('Origin trial approved and ready to be initiated: '
+      'subject': ('Origin trial extension approved and ready to be initiated: '
                   f'{feature["name"]}'),
       'reply_to': None,
       'html': body,

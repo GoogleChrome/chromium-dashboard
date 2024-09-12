@@ -26,6 +26,31 @@ class ChromedashFeatureFilter extends LitElement {
     this.dispatchEvent(event);
   }
 
+  connectedCallback(): void {
+    super.connectedCallback();
+    document.addEventListener('keyup', this.handleDocumentKeyUp);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    document.removeEventListener('keyup', this.handleDocumentKeyUp);
+  }
+
+  handleDocumentKeyUp = (e: KeyboardEvent) => {
+    const inInputContext = e
+      .composedPath()
+      .some(el =>
+        ['INPUT', 'TEXTAREA', 'SL-POPUP', 'SL-DIALOG'].includes(
+          (el as HTMLElement).tagName
+        )
+      );
+    if (e.key === '/' && !inInputContext) {
+      e.preventDefault();
+      e.stopPropagation();
+      (this.typeaheadRef?.value as ChromedashTypeahead).focus();
+    }
+  };
+
   handleSearchClick() {
     const typeahead = this.typeaheadRef.value;
     if (!typeahead) return;

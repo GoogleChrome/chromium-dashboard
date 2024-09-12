@@ -8,6 +8,7 @@ import {
   ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME,
   ENTERPRISE_IMPACT_DISPLAYNAME,
   OT_MILESTONE_END_FIELDS,
+  OT_SETUP_STATUS_OPTIONS,
   PLATFORMS_DISPLAYNAME,
   ROLLOUT_IMPACT_DISPLAYNAME,
   STAGE_FIELD_NAME_MAPPING,
@@ -445,19 +446,33 @@ export function getNewLocation(params, location) {
   return url;
 }
 
+// Get any help text for a specific field based on the condition of if it should be disabled.
+export function getDisabledHelpText(field, feStage?) {
+  // OT milestone fields should not be editable when the automated
+  // OT creation process is in progress or in a failed state.
+  if (
+    field === 'ot_milestone_desktop_start' ||
+    field === 'ot_milestone_desktop_end'
+  ) {
+    if (
+      feStage?.ot_setup_status ===
+        OT_SETUP_STATUS_OPTIONS.OT_READY_FOR_CREATION ||
+      feStage?.ot_setup_status === OT_SETUP_STATUS_OPTIONS.OT_CREATION_FAILED ||
+      feStage?.ot_setup_status === OT_SETUP_STATUS_OPTIONS.OT_ACTIVATION_FAILED
+    ) {
+      return 'Origin trial milestone cannot be edited while a creation request is in progress';
+    }
+  }
+  return '';
+}
+
 /**
  * Update window.location with new query params.
  * @param {string} key is the key of the query param.
  * @param {string} val is the unencoded value of the query param.
  */
 export function updateURLParams(key, val) {
-  // Update the query param object.
-  const rawQuery = parseRawQuery(window.location.search);
-  rawQuery[key] = encodeURIComponent(val);
-
-  // Assemble the new URL.
-  const newURL = getNewLocation(rawQuery, window.location);
-  newURL.hash = '';
+  const newURL = formatURLParams(key, val);
   if (newURL.toString() === window.location.toString()) {
     return;
   }
@@ -465,6 +480,22 @@ export function updateURLParams(key, val) {
   // an issue in page.js:
   // https://github.com/visionmedia/page.js/issues/293#issuecomment-456906679
   window.history.pushState({path: newURL.toString()}, '', newURL);
+}
+
+/**
+ * Format the existing URL with new query params.
+ * @param {string} key is the key of the query param.
+ * @param {string} val is the unencoded value of the query param.
+ */
+export function formatURLParams(key, val) {
+  // Update the query param object.
+  const rawQuery = parseRawQuery(window.location.search);
+  rawQuery[key] = encodeURIComponent(val);
+
+  // Assemble the new URL.
+  const newURL = getNewLocation(rawQuery, window.location);
+  newURL.hash = '';
+  return newURL;
 }
 
 /**
@@ -510,21 +541,22 @@ export interface FieldInfo {
   checkMessage?: string;
 }
 
-/**
- * @typedef {Object} UpdateSubmitBody
- * @property {Object.<string, *>} feature_changes An object with feature changes.
- *   key=field name, value=new field value.
- * @property {Array.<Object>} stages The list of changes to specific stages.
- * @property {boolean} has_changes Whether any valid changes are present for submission.
- */
+interface UpdateSubmitBody {
+  feature_changes: FeatureUpdateInfo;
+  stages: StageUpdateInfo[];
+  has_changes: boolean;
+}
 
-/**
- * Prepare feature/stage changes to be submitted.
- * @param {Array.<FieldInfo>} fieldValues List of fields in the form.
- * @param {number} featureId The ID of the feature being updated.
- * @return {UpdateSubmitBody} Formatted body of new PATCH request.
- */
-export function formatFeatureChanges(fieldValues, featureId) {
+interface StageUpdateInfo {
+  [stageField: string]: any;
+}
+
+interface FeatureUpdateInfo {
+  [featureField: string]: any;
+}
+
+// Prepare feature/stage changes to be submitted.
+export function formatFeatureChanges(fieldValues, featureId): UpdateSubmitBody {
   let hasChanges = false;
   const featureChanges = {id: featureId};
   // Multiple stages can be mutated, so this object is a stage of stages.

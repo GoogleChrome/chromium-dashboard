@@ -3,6 +3,7 @@ import {LitElement, html, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {createRef, ref} from 'lit/directives/ref.js';
 import {ROADMAP_MILESTONE_CARD_CSS} from '../css/elements/chromedash-roadmap-milestone-card-css.js';
+import {Channels, ReleaseInfo} from '../js-src/cs-client.js';
 
 const REMOVED_STATUS = ['Removed'];
 const DEPRECATED_STATUS = ['Deprecated', 'No longer pursuing'];
@@ -31,7 +32,7 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
   @property({attribute: false})
   templateContent!: TemplateContent;
   @property({attribute: false})
-  channel; //TODO(markxiong0122): Type this as Channel when PR#4085 is merged
+  channel?: ReleaseInfo;
   @property({type: Boolean})
   showDates = false;
   @property({type: Boolean})
@@ -69,8 +70,8 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
   }
 
   _isAnyFeatureReleased() {
-    for (const shippingType of this._objKeys(this.channel.features)) {
-      if (this.channel.features[shippingType].length != 0) {
+    for (const shippingType of this._objKeys(this.channel?.features)) {
+      if (this.channel?.features[shippingType].length != 0) {
         return true;
       }
     }
@@ -177,10 +178,13 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
 
   renderCardHeader() {
     // Starting with M110, display Early Stable Release dates.
+    if (!this.channel) {
+      return nothing;
+    }
     const stableStart =
       this.channel.version >= 110
-        ? this.channel.final_beta
-        : this.channel.stable_date;
+        ? this.channel?.final_beta
+        : this.channel?.stable_date;
     const logo = html`
       <span class="chrome-logo">
         ${this.templateContent.channelTag
@@ -200,18 +204,18 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
           class="chrome_version layout horizontal center ${this.templateContent
             .h1Class}"
         >
-          ${logo} Chrome ${this.channel.version}
+          ${logo} Chrome ${this.channel?.version}
         </h1>
       </div>
-      ${this.showDates && this.channel.earliest_beta
+      ${this.showDates && this.channel?.earliest_beta
         ? html`
             <div class="milestone_info layout horizontal center-center">
               <h3>
                 <span class="channel_label">Beta</span> ${this.templateContent
                   .dateText}
                 <span class="milestone_info-beta">
-                  ${this._computeDate(this.channel.earliest_beta)} -
-                  ${this._computeDate(this.channel.latest_beta)}
+                  ${this._computeDate(this.channel?.earliest_beta)} -
+                  ${this._computeDate(this.channel?.latest_beta)}
                 </span>
               </h3>
             </div>
@@ -318,12 +322,12 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
         ${this._isAnyFeatureReleased()
           ? html`
         <div class="features_header">${this.templateContent.featureHeader}:</div>
-          ${this._objKeys(this.channel.features).map(shippingType =>
-            this.channel.features[shippingType] != 0
+          ${this._objKeys(this.channel?.features).map(shippingType =>
+            this.channel?.features[shippingType] != 0
               ? html`
                   <h3 class="feature_shipping_type">${shippingType}</h3>
                   <ul>
-                    ${this.channel.features[shippingType].map(
+                    ${this.channel?.features[shippingType].map(
                       f => html`
                         ${this._cardFeatureItemTemplate(f, shippingType)}
                       `

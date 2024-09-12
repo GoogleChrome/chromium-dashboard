@@ -15,17 +15,18 @@
 
 import logging
 from typing import Any, Tuple
+
+from chromestatus_openapi.models import (GetVotesResponse, GetGateResponse, PostGateRequest, SuccessMessage)
 from google.cloud import ndb
 from google.cloud.ndb.tasklets import Future  # for type checking only
 
 from api import converters
-from framework import basehandlers
-from framework import permissions
+from framework import basehandlers, permissions
 from framework.users import User
 from internals import approval_defs, notifier_helpers
 from internals.core_enums import *
 from internals.core_models import FeatureEntry, Stage
-from internals.review_models import Gate, Vote
+from internals.review_models import Gate, Vote, Amendment, Activity
 
 
 def get_user_feature_and_gate(handler, kwargs) -> Tuple[
@@ -56,7 +57,7 @@ class VotesAPI(basehandlers.APIHandler):
     # Note: We assume that anyone may view approvals.
     votes = Vote.get_votes(feature_id=feature_id, gate_id=gate_id)
     dicts = [converters.vote_value_to_json_dict(v) for v in votes]
-    return {'votes': dicts}
+    return GetVotesResponse.from_dict({'votes': dicts}).to_dict()
 
   def do_post(self, **kwargs) -> dict[str, str]:
     """Set a user's vote value for the specified feature and gate."""
@@ -83,7 +84,21 @@ class VotesAPI(basehandlers.APIHandler):
           fe, stage, gate_id)
 
     if new_state in (Vote.REVIEW_REQUESTED, Vote.NA_REQUESTED):
+      old_assignees = gate.assignee_emails[:]
       approval_defs.auto_assign_reviewer(gate)
+      new_assignees = gate.assignee_emails[:]
+      if old_assignees != new_assignees:
+        amendment = Amendment(
+            field_name='review_assignee',
+            old_value=', '.join(old_assignees),
+            new_value=', '.join(new_assignees))
+        activity = Activity(
+            feature_id=fe.key.integer_id(), gate_id=gate_id,
+            author=user.email(), amendments=[amendment])
+        activity.put()
+        # Note: We don't notify assignee about autoassignment, because they
+        # will get a notification of review state change anyway.
+
       notifier_helpers.notify_approvers_of_reviews(
           fe, gate, new_state, user.email())
     else:
@@ -91,7 +106,7 @@ class VotesAPI(basehandlers.APIHandler):
           fe, gate, user.email(), new_state, old_state)
 
     # Callers don't use the JSON response for this API call.
-    return {'message': 'Done'}
+    return SuccessMessage(message='Done').to_dict()
 
   def require_permissions(self, user, feature, gate, new_state):
     """Abort the request if the user lacks permission to set this vote."""
@@ -131,15 +146,16 @@ class GatesAPI(basehandlers.APIHandler):
       approvers = approval_defs.get_approvers(g['gate_type'])
       g['possible_assignee_emails'] = approvers
 
-    return {
+    return GetGateResponse.from_dict({
         'gates': dicts,
-        }
+        }).to_dict()
 
   def do_post(self, **kwargs) -> dict[str, str]:
     """Set the assignees for a gate."""
     user, fe, gate, feature_id, gate_id = get_user_feature_and_gate(
         self, kwargs)
-    assignees = self.get_param('assignees')
+    request = PostGateRequest.from_dict(self.request.json)
+    assignees = request.assignees
 
     self.require_permissions(user, fe, gate)
     self.validate_assignees(assignees, fe, gate)
@@ -150,7 +166,7 @@ class GatesAPI(basehandlers.APIHandler):
         fe, gate, user.email(), old_assignees, assignees)
 
     # Callers don't use the JSON response for this API call.
-    return {'message': 'Done'}
+    return SuccessMessage(message='Done').to_dict()
 
   def require_permissions(self, user, feature, gate):
     """Abort the request if the user lacks permission to set assignees."""
@@ -202,7 +218,7 @@ class PendingGatesAPI(basehandlers.APIHandler):
       projections = future_projections.get_result()
       stage_ids = set(proj.stage_id for proj in projections)
     if not stage_ids:
-      return {'gates': []}
+      return GetGateResponse.from_dict({'gates': []}).to_dict()
 
     # 2. Fetch all the gates on those stages.
     gates: list[Gate] = Gate.query(Gate.stage_id.IN(stage_ids)).fetch()
@@ -212,7 +228,7 @@ class PendingGatesAPI(basehandlers.APIHandler):
     for g in dicts:
       g['possible_assignee_emails'] = prefetched_approvers.get(g['gate_type'], [])
 
-    return {'gates': dicts}
+    return GetGateResponse.from_dict({'gates': dicts}).to_dict()
 
 
 class XfnGatesAPI(basehandlers.APIHandler):
@@ -239,7 +255,7 @@ class XfnGatesAPI(basehandlers.APIHandler):
       self.abort(403, msg='User lacks permission to create gates')
 
     count = self.create_xfn_gates(feature_id, stage_id)
-    return {'message': f'Created {count} gates'}
+    return SuccessMessage(message=f'Created {count} gates').to_dict()
 
   def get_needed_gate_types(self) -> list[int]:
     """Return a list of gate types normally used to ship a new feature."""

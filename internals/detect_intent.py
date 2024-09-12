@@ -15,6 +15,8 @@
 
 import re
 import logging
+import random
+import time
 from typing import Optional
 
 import settings
@@ -124,11 +126,11 @@ def detect_gate_id(body) -> int | None:
 THREAD_LINK_RE = re.compile(
     r'To view this discussion on the web visit\s+'
     r'(> )?(https://groups\.google\.com/a/chromium.org/d/msgid/blink-dev/'
-    r'\S+)[\n> .]', re.MULTILINE)
+    r'[-_0-9a-zA-Z%.]+[-_0-9a-zA-Z])', re.MULTILINE)
 STAGING_THREAD_LINK_RE = re.compile(
     r'To view this discussion on the web visit\s+'
     r'(> )?(https://groups\.google\.com/d/msgid/jrobbins-test/'
-    r'\S+)[\n> .]', re.MULTILINE)
+    r'[-_0-9a-zA-Z%.]+[-_0-9a-zA-Z])', re.MULTILINE)
 
 
 def detect_thread_url(body):
@@ -344,6 +346,10 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
 
   def set_intent_thread_url(
       self, stage: Stage, thread_url: str | None, subject: str | None) -> None:
+    if stage.intent_thread_url and stage.intent_subject_line:
+      logging.info('Not setting intent_thread_url or intent_subject_line')
+      return
+
     stage.intent_thread_url = thread_url
     stage.intent_subject_line = subject
     stage.put()
@@ -362,6 +368,9 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     if (detect_lgtm(body) and
         is_lgtm_allowed(from_addr, feature, gate_info)):
       logging.info('found LGTM')
+      # Avoid a race condition when blink-dev is in both To: and Cc: lines.
+      time.sleep(random.uniform(0, 5))
+      gate = Gate.get_by_id(gate.key.integer_id())  # Reload after sleep
       old_gate_state = gate.state
       new_gate_state = approval_defs.set_vote(
           feature_id, gate_info.gate_type, Vote.APPROVED, from_addr,

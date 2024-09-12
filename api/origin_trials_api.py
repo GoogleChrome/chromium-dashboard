@@ -12,37 +12,39 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import flask
-import json5
-import logging
-import requests
-import validators
+import concurrent.futures
+import urllib.request
 from base64 import b64decode
 
-from framework import basehandlers
-from framework import origin_trials_client
+import flask
+import json5
+import requests
+import validators
+
+from chromestatus_openapi.models import (CreateOriginTrialRequest, GetOriginTrialsResponse, SuccessMessage)
+
+from framework import basehandlers, origin_trials_client, permissions
 from internals import notifier_helpers
-from framework import permissions
 from internals.core_enums import OT_READY_FOR_CREATION
 from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Gate, Vote
 
-
 WEBFEATURE_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom?format=TEXT'
+WEBDXFEATURE_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/public/mojom/use_counter/metrics/webdx_feature.mojom?format=TEXT'
 ENABLED_FEATURES_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/runtime_enabled_features.json5?format=TEXT'
 GRACE_PERIOD_FILE = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/common/origin_trials/manual_completion_origin_trial_features.cc?format=TEXT'
+CHROMIUM_SRC_FILES = [
+  {'name': 'webfeature_file', 'url': WEBFEATURE_FILE_URL},
+  {'name': 'webdxfeature_file', 'url': WEBDXFEATURE_FILE_URL},
+  {'name': 'enabled_features_text', 'url': ENABLED_FEATURES_FILE_URL},
+  {'name': 'grace_period_file', 'url': GRACE_PERIOD_FILE}
+]
 
 
-# TODO(jrobbins): Fetch these in parallel, but in a way that is easy to test.
 def get_chromium_file(url: str) -> str:
   """Get chromium file contents from a given URL"""
-  try:
-    resp = requests.get(url)
-  except requests.RequestException as e:
-    logging.exception(
-        f'Failed to get response to obtain Chromium file: {url}')
-    raise e
-  return b64decode(resp.text).decode('utf-8')
+  with urllib.request.urlopen(url, timeout=60) as conn:
+    return  b64decode(conn.read()).decode('utf-8')
 
 
 class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
@@ -54,7 +56,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
       A list of data on all public origin trials.
     """
     try:
-      trials_list = origin_trials_client.get_trials_list()
+      trials_list = GetOriginTrialsResponse.from_dict(origin_trials_client.get_trials_list())
     except requests.exceptions.RequestException:
       self.abort(500, 'Error obtaining origin trial data from API')
     except KeyError:
@@ -65,12 +67,18 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
   def _validate_creation_args(
       self, body: dict) -> dict[str, str]:
     """Check that all provided OT creation arguments are valid."""
-    try:
-      enabled_features_text = get_chromium_file(ENABLED_FEATURES_FILE_URL)
-      webfeature_file = get_chromium_file(WEBFEATURE_FILE_URL)
-      grace_period_file = get_chromium_file(GRACE_PERIOD_FILE)
-    except requests.exceptions.RequestException:
-      self.abort(500, 'Error obtaining Chromium file for validation')
+    chromium_files = {}  # Chromium source file contents.
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+      future_to_name = {executor.submit(get_chromium_file, f['url']): f['name']
+                      for f in CHROMIUM_SRC_FILES}
+      for future in concurrent.futures.as_completed(future_to_name):
+        name = future_to_name[future]
+        try:
+          chromium_files[name] = future.result()
+        except Exception as exc:
+          self.abort(
+              500, f'Error obtaining Chromium file for validation: {str(exc)}')
+
     validation_errors: dict[str, str] = {}
     chromium_trial_name = body.get(
         'ot_chromium_trial_name', {}).get('value')
@@ -88,20 +96,38 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
       validation_errors['ot_chromium_trial_name'] = (
           'Chromium trial name is already used by another origin trial')
 
-    enabled_features_json = json5.loads(enabled_features_text)
+    enabled_features_json = json5.loads(chromium_files['enabled_features_text'])
     if (not any(feature.get('origin_trial_feature_name') == chromium_trial_name
                 for feature in enabled_features_json['data'])):
       validation_errors['ot_chromium_trial_name'] = (
           'Origin trial feature name not found in file')
 
     if not body.get('ot_is_deprecation_trial', {}).get('value', False):
-      use_counter = body.get('ot_webfeature_use_counter', {}).get('value')
-      if not use_counter:
+      webfeature_use_counter = body.get(
+          'ot_webfeature_use_counter', {}).get('value')
+      # Client will add a prefix to a WebDXFeature use counter.
+      is_webdx_use_counter = (
+          webfeature_use_counter and
+          webfeature_use_counter.startswith('WebDXFeature::'))
+
+      # Check for valid WebFeature use counter specifications.
+      if not webfeature_use_counter:
         validation_errors['ot_webfeature_use_counter'] = (
             'No UseCounter specified for non-deprecation trial.')
-      elif f'{use_counter} =' not in webfeature_file:
-          validation_errors['ot_webfeature_use_counter'] = (
+      elif (not is_webdx_use_counter and
+            f'{webfeature_use_counter} =' not in chromium_files['webfeature_file']):
+        validation_errors['ot_webfeature_use_counter'] = (
               'UseCounter not landed in web_feature.mojom')
+      # Check for valid WebDXFeature use counter specifications.
+      elif is_webdx_use_counter:
+        formatted_use_counter = webfeature_use_counter[14:]
+        if not formatted_use_counter:
+          validation_errors['ot_webfeature_use_counter'] = (
+              'No WebDXFeature use counter provided.')
+        elif (f'{formatted_use_counter} ='
+              not in chromium_files['webdxfeature_file']):
+          validation_errors['ot_webfeature_use_counter'] = (
+              'UseCounter not landed in webdx_feature.mojom')
 
     if body.get('ot_has_third_party_support', {}).get('value', False):
       for feature in enabled_features_json['data']:
@@ -114,7 +140,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
 
     if body.get('ot_is_critical_trial', {}).get('value', False):
       if (f'blink::mojom::OriginTrialFeature::k{chromium_trial_name}'
-          not in grace_period_file):
+          not in chromium_files['grace_period_file']):
         validation_errors['ot_is_critical_trial'] = (
             'Use counter has not landed in grace period array '
             'for critical trial')
@@ -158,7 +184,8 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
       if gate.state not in (Vote.APPROVED, Vote.NA):
         self.abort(400, 'Unapproved gate found for trial stage.')
 
-    body = self.get_json_param_dict()
+    #TODO(markxiong0122): remove to_dict() when PR#4213 is merged
+    body = CreateOriginTrialRequest.from_dict(self.get_json_param_dict()).to_dict()
     validation_errors = self._validate_creation_args(body)
     if validation_errors:
       return {
@@ -169,7 +196,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
     # Flag OT stage as ready to be created.
     ot_stage.ot_setup_status = OT_READY_FOR_CREATION
     ot_stage.put()
-    return {'message': 'Origin trial creation request submitted.'}
+    return SuccessMessage(message='Origin trial creation request submitted.').to_dict()
 
   def _validate_extension_args(
         self, feature_id: int, ot_stage: Stage, extension_stage: Stage) -> None:
@@ -243,4 +270,4 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
     extension_stage.put()
 
     notifier_helpers.send_trial_extended_notification(ot_stage, extension_stage)
-    return {'message': 'Origin trial extended successfully.'}
+    return SuccessMessage(message='Origin trial extended successfully.').to_dict()

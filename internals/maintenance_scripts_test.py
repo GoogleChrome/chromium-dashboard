@@ -15,7 +15,7 @@
 import testing_config  # Must be imported before the module under test.
 
 import requests
-from datetime import date
+from datetime import date, datetime
 from unittest import mock
 
 from api import converters
@@ -24,6 +24,81 @@ from internals import core_enums
 from internals.core_models import FeatureEntry, Stage, MilestoneSet
 from internals.review_models import Gate, Vote
 import settings
+
+class EvaluateGateStatusTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.delete_gates_and_votes()
+    self.handler = maintenance_scripts.EvaluateGateStatus()
+
+  def tearDown(self):
+    self.delete_gates_and_votes()
+
+  def delete_gates_and_votes(self):
+    for kind in [Gate, Vote]:
+      for entity in kind.query():
+        entity.key.delete()
+
+  def test_get_template_data__no_gates(self):
+    """If there no votes or gates, nothing happens."""
+    actual = self.handler.get_template_data()
+    self.assertEqual(actual, '0 Gate entities updated.')
+
+  def test_get_template_data__no_updates_needed(self):
+    """If the gates already have the right state, no updates are needed."""
+    gate_1 = Gate(feature_id=1, state=Gate.PREPARING, gate_type=1, stage_id=11)
+    gate_1.put()
+    actual = self.handler.get_template_data()
+    self.assertEqual(actual, '0 Gate entities updated.')
+
+    gate_2 = Gate(
+        feature_id=1, state=Vote.REVIEW_REQUESTED, gate_type=2, stage_id=11)
+    gate_2.put()
+    vote_2_1 = Vote(
+        feature_id=1, gate_id=gate_2.key.integer_id(),
+        state=Vote.REVIEW_REQUESTED, set_by='one@example.com',
+        set_on=datetime.now())
+    vote_2_1.put()
+    actual = self.handler.get_template_data()
+    self.assertEqual(actual, '0 Gate entities updated.')
+
+    gate_2.state = Vote.APPROVED
+    gate_2.put()
+    vote_2_2 = Vote(
+        feature_id=1, gate_id=gate_2.key.integer_id(),
+        state=Vote.APPROVED, set_by='two@example.com',
+        set_on=datetime.now())
+    vote_2_2.put()
+    actual = self.handler.get_template_data()
+    self.assertEqual(actual, '0 Gate entities updated.')
+
+  def test_get_template_data__still_preparing(self):
+    """If a gate has no votes, it should be PREPARING."""
+    gate_1 = Gate(feature_id=1, state=Vote.NA, gate_type=1, stage_id=11)
+    gate_1.put()
+
+    actual = self.handler.get_template_data()
+
+    self.assertEqual(actual, '1 Gate entities updated.')
+    revised_gate_1 = Gate.get_by_id(gate_1.key.integer_id())
+    self.assertEqual(revised_gate_1.state, Gate.PREPARING)
+
+  def test_get_template_data__was_approved(self):
+    """If a gate got the needed approval votes, it shuold be approved."""
+    gate_1 = Gate(feature_id=1, state=Gate.PREPARING, gate_type=1, stage_id=11)
+    gate_1.put()
+    vote_1_1 = Vote(
+        feature_id=1, gate_id=gate_1.key.integer_id(),
+        state=Vote.APPROVED, set_by='three@example.com',
+        set_on=datetime.now())
+    vote_1_1.put()
+
+    actual = self.handler.get_template_data()
+
+    self.assertEqual(actual, '1 Gate entities updated.')
+    revised_gate_1 = Gate.get_by_id(gate_1.key.integer_id())
+    self.assertEqual(revised_gate_1.state, Vote.APPROVED)
+
 
 class AssociateOTsTest(testing_config.CustomTestCase):
 
