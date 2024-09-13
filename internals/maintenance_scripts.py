@@ -742,7 +742,7 @@ class BackfillShippingYear(FlaskHandler):
 
   def find_earliest_milestone(self, stages: list[Stage]) -> int|None:
     """Find the earliest milestone in a list of stages."""
-    m_list: list[int | None] = []
+    m_list: list[int] = []
     for stage in stages:
       m_list.append(stage.milestones.desktop_first)
       m_list.append(stage.milestones.android_first)
