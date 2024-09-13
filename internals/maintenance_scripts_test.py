@@ -718,3 +718,79 @@ class DeleteEmptyExtensionStagesTest(testing_config.CustomTestCase):
     gates = Gate.query().fetch()
     self.assertEqual(len(stages), 4)
     self.assertEqual(len(gates), 1)
+
+
+class BackfillShippingYearTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.stage_1_1 = Stage(
+        feature_id=11111,
+        milestones=MilestoneSet())
+    self.stage_2_1 = Stage(
+        feature_id=22222,
+        milestones=MilestoneSet(desktop_first=123))
+    self.stage_2_2 = Stage(
+        feature_id=22222,
+        milestones=MilestoneSet(desktop_first=121, android_first=120))
+    self.stage_3_1 = Stage(
+        feature_id=33333,
+        milestones=MilestoneSet(desktop_first=126))
+    self.stage_4_1 = Stage(
+        feature_id=44444,
+        milestones=MilestoneSet(desktop_first=200))
+    self.handler = maintenance_scripts.BackfillShippingYear()
+
+  def test_look_up_year__historic(self):
+    """We can look up the year in which a milestone shippped."""
+    self.assertEqual(2009, self.handler.look_up_year(0))
+    self.assertEqual(2009, self.handler.look_up_year(1))
+    self.assertEqual(2009, self.handler.look_up_year(3))
+    self.assertEqual(2010, self.handler.look_up_year(4))
+    self.assertEqual(2024, self.handler.look_up_year(131))
+    self.assertEqual(2024, self.handler.look_up_year(132))
+
+  def test_look_up_year__chromiumdash(self):
+    """We can retrieve the year in which a milestone will ship."""
+    self.assertEqual(2025, self.handler.look_up_year(140))
+
+  def test_find_earliest_milestone__no_stages(self):
+    """An empty list of stages has no earliest milestone."""
+    actual = self.handler.find_earliest_milestone([])
+    self.assertEqual(None, actual)
+
+  def test_find_earliest_milestone__no_milestones(self):
+    """A stage with no milestones has no earliest milestone."""
+    actual = self.handler.find_earliest_milestone([self.stage_1_1])
+    self.assertEqual(None, actual)
+
+  def test_find_earliest_milestone__single_stage(self):
+    """We find the earliest milestone in a stage."""
+    actual = self.handler.find_earliest_milestone([self.stage_2_1])
+    self.assertEqual(123, actual)
+
+  def test_find_earliest_milestone__multi_stage(self):
+    """We find the earliest milestone in a list of stages."""
+    actual = self.handler.find_earliest_milestone(
+        [self.stage_2_1, self.stage_2_2])
+    self.assertEqual(120, actual)
+
+  @mock.patch.object(
+      maintenance_scripts.BackfillShippingYear,
+      'get_all_shipping_stages_with_milestones')
+  def test_calc_all_shipping_years__empty(self, mock_gasswm: mock.MagicMock):
+    """An empty list of stages has no shipping years."""
+    mock_gasswm.return_value = []
+    actual = self.handler.calc_all_shipping_years()
+    self.assertEqual({}, actual)
+
+  @mock.patch.object(
+      maintenance_scripts.BackfillShippingYear,
+      'get_all_shipping_stages_with_milestones')
+  def test_calc_all_shipping_years__some(self, mock_gasswm: mock.MagicMock):
+    """We can calculate a dict of earliest milestones for a set of stages."""
+    mock_gasswm.return_value = [
+        self.stage_1_1, self.stage_2_1, self.stage_2_2, self.stage_3_1,
+        self.stage_4_1]
+    actual = self.handler.calc_all_shipping_years()
+    expected = {22222: 2023, 33333: 2024, 44444: 2030}
+    self.assertEqual(expected, actual)

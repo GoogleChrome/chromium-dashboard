@@ -334,7 +334,9 @@ internals_routes: list[Route] = [
   Route('/scripts/backfill_enterprise_impact',
         maintenance_scripts.BackfillFeatureEnterpriseImpact),
   Route('/scripts/delete_empty_extension_stages',
-        maintenance_scripts.DeleteEmptyExtensionStages)
+        maintenance_scripts.DeleteEmptyExtensionStages),
+  Route('/scripts/backfill_shipping_year',
+        maintenance_scripts.BackfillShippingYear),
 ]
 
 dev_routes: list[Route] = []
