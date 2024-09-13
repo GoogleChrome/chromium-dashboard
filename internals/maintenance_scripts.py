@@ -29,6 +29,7 @@ from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate, Vote, Activity
 from internals.core_enums import *
 from internals.feature_links import batch_index_feature_entries
+from internals import stage_helpers
 import settings
 
 class EvaluateGateStatus(FlaskHandler):
@@ -701,7 +702,6 @@ class DeleteEmptyExtensionStages(FlaskHandler):
     return  (f'{counter} empty extension stages deleted.')
 
 
-
 LAST_MILESTONE_TO_YEAR: dict[int, int] = {
     # last shipped milestone of the year: calendar year
     3: 2009,
@@ -723,6 +723,7 @@ LAST_MILESTONE_TO_YEAR: dict[int, int] = {
     # Later milestones are determined by chromiumdash.appspot.com.
     }
 
+
 class BackfillShippingYear(FlaskHandler):
 
   def look_up_year(self, milestone: int) -> int:
@@ -737,42 +738,44 @@ class BackfillShippingYear(FlaskHandler):
       shipping_date = datetime.strptime(
           shipping_date_str, utils.CHROMIUM_SCHEDULE_DATE_FORMAT).date()
       shipping_year = shipping_date.year
-      logging.info('shipping_date is %r', shipping_date)
     return shipping_year
 
-  def record_feature_earliest_milestone(
-      self, earliest_milestone_by_fid: dict, stage: Stage):
-    """Find the earliest milestone in a stage and maybe put it into the dict."""
-    stage_milestones = [
-        stage.milestones.desktop_first, stage.milestones.android_first,
-        stage.milestones.ios_first, stage.milestones.webview_first]
-    earliest = min(m for m in stage_milestones if m)
-    fid = stage.feature_id
-    earliest_milestone_by_fid[fid] = min(
-        earliest, earliest_milestone_by_fid.get(fid, earliest))
+  def find_earliest_milestone(self, stages: list[Stage]) -> int|None:
+    """Find the earliest milestone in a list of stages."""
+    m_list: list[int | None] = []
+    for stage in stages:
+      m_list.append(stage.milestones.desktop_first)
+      m_list.append(stage.milestones.android_first)
+      m_list.append(stage.milestones.ios_first)
+      m_list.append(stage.milestones.webview_first)
+    m_list = [m for m in m_list if m]
+    if m_list:
+      return min(m_list)
+    return None
 
   def get_all_shipping_stages_with_milestones(self) -> list[Stage]:
     shipping_stage_types = [st for st in STAGE_TYPES_SHIPPING.values() if st]
-    shipping_stages_query: ndb.Query = Stage.query(
-        Stage.stage_type.IN(shipping_stage_types))
-    shipping_stages_query = shipping_stages_query.filter(ndb.OR(
-        Stage.milestones.desktop_first > 0,
-        Stage.milestones.android_first > 0,
-        Stage.milestones.ios_first > 0,
-        Stage.milestones.webview_first > 0))
-    return shipping_stages_query.fetch()
+    shipping_stages: ndb.Query = Stage.query(
+        Stage.stage_type.IN(shipping_stage_types)).fetch()
+    shipping_stages_with_milestones = [
+        stage for stage in shipping_stages
+        if (stage.milestones.desktop_first or
+            stage.milestones.android_first or
+            stage.milestones.ios_first or
+            stage.milestones.webview_first)]
+    return shipping_stages_with_milestones
 
   def calc_all_shipping_years(self) -> dict[int, int]:
     """Load all shipping stages and record their earliest milestone."""
     shipping_stages = self.get_all_shipping_stages_with_milestones()
-    earliest_milestone_by_fid: dict[int, int] = {}
-    for stage in shipping_stages:
-      self.record_feature_earliest_milestone(earliest_milestone_by_fid, stage)
+    stages_by_fid = stage_helpers.organize_all_stages_by_feature(shipping_stages)
+    all_features_shipping_year = {}
+    for fid, feature_stages in stages_by_fid.items():
+      earliest = self.find_earliest_milestone(feature_stages)
+      if earliest:
+        year = self.look_up_year(earliest)
+        all_features_shipping_year[fid] = year
 
-    all_features_shipping_year = {
-        fid: self.look_up_year(earliest_milestone_by_fid[fid])
-        for fid in earliest_milestone_by_fid
-    }
     return all_features_shipping_year
 
   def get_template_data(self, **kwargs) -> str:
@@ -796,6 +799,7 @@ class BackfillShippingYear(FlaskHandler):
         if len(batch) > BATCH_SIZE:
           ndb.put_multi(batch)
           batch = []
+          logging.info('Updated %r so far', count)
 
     ndb.put_multi(batch)
     return f'{count} Features entities updated.'
