@@ -759,10 +759,11 @@ class BackfillShippingYear(FlaskHandler):
         Stage.stage_type.IN(shipping_stage_types)).fetch()
     shipping_stages_with_milestones = [
         stage for stage in shipping_stages
-        if (stage.milestones.desktop_first or
-            stage.milestones.android_first or
-            stage.milestones.ios_first or
-            stage.milestones.webview_first)]
+        if (stage.milestones and
+            (stage.milestones.desktop_first or
+             stage.milestones.android_first or
+             stage.milestones.ios_first or
+             stage.milestones.webview_first))]
     return shipping_stages_with_milestones
 
   def calc_all_shipping_years(self) -> dict[int, int]:
