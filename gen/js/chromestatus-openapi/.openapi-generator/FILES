@@ -37,15 +37,10 @@ src/models/FeatureLink.ts
 src/models/FeatureLinksResponse.ts
 src/models/FeatureLinksSample.ts
 src/models/FeatureLinksSummaryResponse.ts
-<<<<<<< HEAD
 src/models/FeatureSearchResponse.ts
 src/models/FieldInfo.ts
 src/models/Gate.ts
 src/models/GateInfo.ts
-||||||| 76d0ce7e
-=======
-src/models/FeatureSearchResponse.ts
->>>>>>> 9fcb27fe87d90d342617429deb845522889ce21d
 src/models/GateLatency.ts
 src/models/GetCommentsResponse.ts
 src/models/GetDismissedCues400Response.ts
@@ -90,26 +85,15 @@ src/models/ReviewLatency.ts
 src/models/SetStarRequest.ts
 src/models/SignInRequest.ts
 src/models/SpecMentor.ts
-<<<<<<< HEAD
 src/models/StageDict.ts
 src/models/StageDictExtension.ts
 src/models/StageField.ts
 src/models/StringFieldInfoValue.ts
-||||||| 76d0ce7e
-=======
-src/models/StageDict.ts
-src/models/StageDictExtension.ts
->>>>>>> 9fcb27fe87d90d342617429deb845522889ce21d
 src/models/SuccessMessage.ts
 src/models/TokenRefreshResponse.ts
 src/models/UserPermissions.ts
-<<<<<<< HEAD
 src/models/VerboseFeatureDict.ts
 src/models/Vote.ts
-||||||| 76d0ce7e
-=======
-src/models/VerboseFeatureDict.ts
->>>>>>> 9fcb27fe87d90d342617429deb845522889ce21d
 src/models/index.ts
 src/runtime.ts
 tsconfig.esm.json
