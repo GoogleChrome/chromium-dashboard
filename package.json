@@ -44,8 +44,16 @@
     "deploy": "npm run clean-setup && npm run build && ./scripts/deploy_site.sh `git describe --always --abbrev=7 --match 'NOT A TAG' --dirty='-tainted'`",
     "deploy-rc": "npm run clean-setup && npm run build && ./scripts/deploy_site.sh rc",
     "openapi": "npm run openapi-backend && npm run openapi-frontend",
+<<<<<<< HEAD
     "openapi-frontend": "rm -rf gen/js/chromestatus-openapi && openapi-generator-cli generate  --reserved-words-mappings field=field -i openapi/api.yaml -g typescript-fetch  -o gen/js/chromestatus-openapi --config openapi/js-config.yaml && npm install",
     "openapi-backend": ". cs-env/bin/activate; rm -rf gen/py/chromestatus_openapi && openapi-generator-cli generate  --reserved-words-mappings field=field -i openapi/api.yaml -g python-flask  -o gen/py/chromestatus_openapi --additional-properties=packageName=chromestatus_openapi && pip install -r requirements.txt",
+||||||| 76d0ce7e
+    "openapi-frontend": "rm -rf gen/js/chromestatus-openapi && openapi-generator-cli generate -i openapi/api.yaml -g typescript-fetch  -o gen/js/chromestatus-openapi --config openapi/js-config.yaml && npm install",
+    "openapi-backend": ". cs-env/bin/activate; rm -rf gen/py/chromestatus_openapi && openapi-generator-cli generate -i openapi/api.yaml -g python-flask  -o gen/py/chromestatus_openapi --additional-properties=packageName=chromestatus_openapi && pip install -r requirements.txt",
+=======
+    "openapi-frontend": "rm -rf gen/js/chromestatus-openapi && openapi-generator-cli generate -i openapi/api.yaml -g typescript-fetch  -o gen/js/chromestatus-openapi --config openapi/js-config.yaml && npm install",
+    "openapi-backend": ". cs-env/bin/activate; rm -rf gen/py/chromestatus_openapi && openapi-generator-cli generate -i openapi/api.yaml -g python  -o gen/py/chromestatus_openapi --additional-properties=packageName=chromestatus_openapi && pip install -r requirements.txt",
+>>>>>>> 9fcb27fe87d90d342617429deb845522889ce21d
     "openapi-validate": "openapi-generator-cli validate -i openapi/api.yaml",
     "pwtests": "npm run pwtests-shutdown; ./packages/playwright/run.sh bash -c \"./wait-for-app.sh && npx playwright test\"",
     "pwtests-update": "npm run pwtests-shutdown; ./packages/playwright/run.sh bash -c \"./wait-for-app.sh && npx playwright test --update-snapshots $npm_config_filename \"",

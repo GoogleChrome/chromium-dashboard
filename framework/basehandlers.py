@@ -30,6 +30,7 @@ from google.cloud import ndb  # type: ignore
 
 import settings
 from api import api_specs
+<<<<<<< HEAD
 from framework import csp
 from framework import permissions
 from framework import secrets
@@ -44,13 +45,38 @@ from internals.core_enums import (
   OT_ACTIVATION_FAILED,
   OT_CREATION_FAILED,
   OT_READY_FOR_CREATION)
+||||||| 76d0ce7e
+from framework import csp
+from framework import permissions
+from framework import secrets
+from framework import users
+from framework import utils
+from framework import xsrf
+from internals import approval_defs
+from internals import notifier_helpers
+from internals.core_enums import ALL_ORIGIN_TRIAL_STAGE_TYPES
+=======
+from framework import csp, permissions, secrets, users, utils, xsrf
+from internals import approval_defs, notifier_helpers, user_models
+from internals.core_enums import ALL_ORIGIN_TRIAL_STAGE_TYPES
+>>>>>>> 9fcb27fe87d90d342617429deb845522889ce21d
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.data_types import CHANGED_FIELDS_LIST_TYPE
+<<<<<<< HEAD
 
 from flask import session
 from flask import render_template
 from flask_cors import CORS
 from gen.py.chromestatus_openapi.chromestatus_openapi.models.base_model import Model
+||||||| 76d0ce7e
+from internals import user_models
+
+from flask import session
+from flask import render_template
+from flask_cors import CORS
+from gen.py.chromestatus_openapi.chromestatus_openapi.models.base_model import Model
+=======
+>>>>>>> 9fcb27fe87d90d342617429deb845522889ce21d
 
 # Our API responses are prefixed with this ro prevent attacks that
 # exploit <script src="...">.  See go/xssi.
@@ -198,10 +224,19 @@ class APIHandler(BaseHandler):
     """Handle an incoming HTTP GET request."""
     headers = self.get_headers()
     handler_data = self.do_get(*args, **kwargs)
+<<<<<<< HEAD
     # OpenAPI models have a to_dict attribute that should be used for
     # converting to JSON.
     if hasattr(handler_data, 'to_dict'):
       handler_data = handler_data.to_dict()
+||||||| 76d0ce7e
+    if isinstance(handler_data, Model):
+        handler_data = handler_data.to_dict()
+=======
+    to_dict_op = getattr(handler_data, "to_dict", None)
+    if callable(to_dict_op):
+      handler_data = handler_data.to_dict()
+>>>>>>> 9fcb27fe87d90d342617429deb845522889ce21d
     return self.defensive_jsonify(handler_data), headers
 
   def post(self, *args, **kwargs):
