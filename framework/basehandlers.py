@@ -18,7 +18,7 @@ import json
 import logging
 import os
 import re
-from typing import Any, Optional
+from typing import Any, NoReturn, Optional
 
 import flask
 import flask.views
@@ -37,14 +37,19 @@ from framework import utils
 from framework import xsrf
 from internals import approval_defs
 from internals import notifier_helpers
-from internals.core_enums import ALL_ORIGIN_TRIAL_STAGE_TYPES
+from internals import user_models
+from internals.core_enums import (
+  ALL_ORIGIN_TRIAL_STAGE_TYPES,
+  OT_ACTIVATION_FAILED,
+  OT_CREATION_FAILED,
+  OT_READY_FOR_CREATION)
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.data_types import CHANGED_FIELDS_LIST_TYPE
-from internals import user_models
 
 from flask import session
 from flask import render_template
 from flask_cors import CORS
+from gen.py.chromestatus_openapi.chromestatus_openapi.models.base_model import Model
 
 # Our API responses are prefixed with this ro prevent attacks that
 # exploit <script src="...">.  See go/xssi.
@@ -66,7 +71,7 @@ class BaseHandler(flask.views.MethodView):
   def request(self):
     return flask.request
 
-  def abort(self, status, msg=None, **kwargs):
+  def abort(self, status, msg=None, **kwargs) -> NoReturn:
     """Support webapp2-style, e.g., self.abort(400)."""
     if msg:
       if status == 500:
@@ -125,18 +130,26 @@ class BaseHandler(flask.views.MethodView):
     return val
 
   def get_specified_feature(
-      self, feature_id: Optional[int]=None):
+      self, feature_id: Optional[int]=None) -> FeatureEntry:
     """Get the feature specified in the featureId parameter."""
     feature_id = (feature_id or
                   self.get_int_param('featureId', required=True))
     # Load feature directly from NDB so as to never get a stale cached copy.
-    feature = FeatureEntry.get_by_id(feature_id)
+    feature: FeatureEntry|None = FeatureEntry.get_by_id(feature_id)
     if not feature:
       self.abort(404, msg='Feature not found')
     user = self.get_current_user()
     if not permissions.can_view_feature(user, feature):
       self.abort(403, msg='Cannot view that feature')
     return feature
+
+  def get_specified_stage(self, stage_id: int|None=None) -> Stage:
+    """Get the stage specified in the stage_id parameter."""
+    stage_id = stage_id or self.get_int_param('stage_id', required=True)
+    stage = Stage.get_by_id(stage_id)
+    if not stage:
+      self.abort(404, msg='Stage not found')
+    return stage
 
   def get_bool_arg(self, name, default=False):
     """Get the specified boolean from the query string."""
@@ -175,7 +188,7 @@ class APIHandler(BaseHandler):
 
   def defensive_jsonify(self, handler_data):
     """Return a Flask Response object with a JSON string prefixed with junk."""
-    body = json.dumps(handler_data)
+    body = json.dumps(handler_data, default=str)
     return flask.current_app.response_class(
         XSSI_PREFIX + body,
         mimetype=flask.current_app.json.mimetype)
@@ -184,6 +197,10 @@ class APIHandler(BaseHandler):
     """Handle an incoming HTTP GET request."""
     headers = self.get_headers()
     handler_data = self.do_get(*args, **kwargs)
+    # OpenAPI models have a to_dict attribute that should be used for
+    # converting to JSON.
+    if hasattr(handler_data, 'to_dict'):
+      handler_data = handler_data.to_dict()
     return self.defensive_jsonify(handler_data), headers
 
   def post(self, *args, **kwargs):
@@ -343,11 +360,23 @@ class EntitiesAPIHandler(APIHandler):
     """Update stage fields with changes provided."""
     stage_was_updated = False
     ot_action_requested = False
-    # Check if valid ID is provided and fetch stage if it exists.
+
+    mutating_ot_milestones = any(
+        isinstance(v, dict) and (
+        v['form_field_name'] == 'ot_milestone_desktop_start' or
+        v['form_field_name'] == 'ot_milestone_desktop_end')
+        for v in change_info.values())
+    ot_creation_in_progress =  (
+        stage.ot_setup_status == OT_READY_FOR_CREATION or
+        stage.ot_setup_status == OT_CREATION_FAILED or
+        stage.ot_setup_status == OT_ACTIVATION_FAILED)
+    if mutating_ot_milestones and ot_creation_in_progress:
+      self.abort(400,
+                 'Cannot edit OT milestones while creation is in progress.')
 
     # Update stage fields.
     for field, field_type in api_specs.STAGE_FIELD_DATA_TYPES:
-      if field not in change_info:
+      if field not in change_info or change_info[field] is None:
         continue
       form_field_name = change_info[field]['form_field_name']
       if form_field_name == 'ot_action_requested':
@@ -362,7 +391,7 @@ class EntitiesAPIHandler(APIHandler):
     # Update milestone fields.
     milestones = stage.milestones
     for field, field_type in api_specs.MILESTONESET_FIELD_DATA_TYPES:
-      if field not in change_info:
+      if field not in change_info or change_info[field] is None:
         continue
       if milestones is None:
         milestones = MilestoneSet()
@@ -378,9 +407,11 @@ class EntitiesAPIHandler(APIHandler):
       stage.put()
 
     # Notify of OT creation request if one was sent.
+    # This notification is for non-automated OT creation only.
     if (ot_action_requested and
-        stage.stage_type in ALL_ORIGIN_TRIAL_STAGE_TYPES):
-      notifier_helpers.send_ot_notification(stage)
+        stage.stage_type in ALL_ORIGIN_TRIAL_STAGE_TYPES and
+        not settings.AUTOMATED_OT_CREATION):
+      notifier_helpers.send_ot_creation_notification(stage)
 
     return stage_was_updated
 
@@ -487,8 +518,8 @@ class FlaskHandler(BaseHandler):
 
     user = self.get_current_user()
     if user:
-      field_id = approval_defs.ShipApproval.field_id
-      approvers = approval_defs.get_approvers(field_id)
+      gate_type = approval_defs.ShipApproval.gate_type
+      approvers = approval_defs.get_approvers(gate_type)
       user_pref = user_models.UserPref.get_signed_in_user_pref()
       common_data['user'] = {
         'can_create_feature': permissions.can_create_feature(user),

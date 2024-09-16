@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from gen.py.chromestatus_openapi.chromestatus_openapi.models.feature_links_response import FeatureLinksResponse
 import testing_config  # Must be imported before the module under test.
 
 import json
@@ -27,7 +28,7 @@ from main import Route
 from framework import basehandlers
 from framework import users
 from framework import xsrf
-from internals.core_models import FeatureEntry
+from internals.core_models import FeatureEntry, Stage
 from internals.user_models import AppUser
 import settings
 
@@ -104,15 +105,21 @@ class BaseHandlerTests(testing_config.CustomTestCase):
   def setUp(self):
     self.handler = basehandlers.BaseHandler()
     self.fe_1 = FeatureEntry(
+        id=1,
         name='feature one', summary='sum',
         creator_email="feature_creator@example.com",
         owner_emails=['feature_owner@example.com'],
         editor_emails=['feature_editor@example.com'],
         spec_mentor_emails=['mentor@example.com'], category=1)
     self.fe_1.put()
+    self.stage_1 = Stage(feature_id=1, stage_type=110)
+    self.stage_1.put()
+
 
   def tearDown(self):
-    self.fe_1.key.delete()
+    for kind in [FeatureEntry, Stage]:
+      for entity in kind.query():
+        entity.key.delete()
 
   @mock.patch('flask.request', 'fake request')
   def test_request(self):
@@ -311,6 +318,42 @@ class BaseHandlerTests(testing_config.CustomTestCase):
       mock_abort.assert_called_once_with(
           403, msg="Cannot view that feature")
 
+  def test_get_specified_stage__valid(self):
+    """Return a given stage if a valid stage ID is passed as a JSON dict
+    property."""
+    stage_id = self.stage_1.key.integer_id()
+    with test_app.test_request_context('/test', json={'stage_id': stage_id}):
+      stage = self.handler.get_specified_stage()
+    self.assertEqual(stage.key.integer_id(), stage_id)
+
+  def test_get_specified_stage__passed_as_arg(self):
+    """Return a given stage if a valid stage ID is passed as an argument."""
+    with test_app.test_request_context('/test', json={}):
+      stage = self.handler.get_specified_stage(self.stage_1.key.integer_id())
+    self.assertEqual(stage.key.integer_id(), self.stage_1.key.integer_id())
+
+  @mock.patch('framework.basehandlers.BaseHandler.abort')
+  def test_get_specified_stage__missing(self, mock_abort):
+    """Reject requests that need a stage ID but don't provide one."""
+    mock_abort.side_effect = werkzeug.exceptions.BadRequest
+
+    with test_app.test_request_context('/test', json={}):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.get_specified_stage()
+      mock_abort.assert_called_once_with(
+          400, msg="Missing parameter 'stage_id'")
+
+  @mock.patch('framework.basehandlers.BaseHandler.abort')
+  def test_get_specified_stage__bad(self, mock_abort):
+    """Reject requests that need a stage ID but provide junk."""
+    mock_abort.side_effect = werkzeug.exceptions.BadRequest
+
+    with test_app.test_request_context('/test', json={'stage_id': 'junk'}):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.get_specified_stage()
+      mock_abort.assert_called_once_with(
+          400, msg="Parameter 'stage_id' was not an int")
+
   def test_get_bool_arg__explicitly_true(self):
     """A bool query string arg that is "true" or "1" is true."""
     with test_app.test_request_context('/test?maybe=true'):
@@ -398,6 +441,29 @@ class APIHandlerTests(testing_config.CustomTestCase):
     """If a subclass has do_get(), get() should return a JSON response."""
     self.handler = TestableAPIHandler()
     self.check_http_method_handler(self.handler.get, 'done get')
+
+  @mock.patch('framework.basehandlers.APIHandler.do_get')
+  def test_get__dict(self, mock_do_get):
+    """get() should return a JSON response if the do_get() return value is a
+    dict."""
+    mock_do_get.return_value = {'key': 'value'}
+    with test_app.test_request_context('/path'):
+      response, _ = self.handler.get()
+    self.assertEqual(basehandlers.XSSI_PREFIX + '{"key": "value"}',
+                     response.get_data().decode('utf-8'))
+
+  @mock.patch('framework.basehandlers.APIHandler.do_get')
+  def test_get__openapi_model(self, mock_do_get):
+    """get() should return a JSON response if the do_get() return value is an
+    OpenAPI model."""
+    mock_do_get.return_value = FeatureLinksResponse(data='data',
+                                                    has_stale_links=True)
+    with test_app.test_request_context('/path'):
+      response, _ = self.handler.get()
+    self.assertEqual(basehandlers.XSSI_PREFIX +
+                     '{"data": "data", "has_stale_links": true}',
+                     response.get_data().decode('utf-8'))
+
 
   def test_post(self):
     """If a subclass has do_post(), post() should return a JSON response."""

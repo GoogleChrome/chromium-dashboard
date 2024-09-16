@@ -12,36 +12,41 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import collections
 from datetime import date, datetime
 import logging
 from typing import Any
 from google.cloud import ndb  # type: ignore
 import requests
 
-from api import converters
+from api import converters, channels_api
 from framework.basehandlers import FlaskHandler
 from framework import cloud_tasks_helpers
 from framework import origin_trials_client
 from framework import utils
 from internals import approval_defs
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
-from internals.data_types import StageDict
 from internals.review_models import Gate, Vote, Activity
 from internals.core_enums import *
 from internals.feature_links import batch_index_feature_entries
+from internals import stage_helpers
+import settings
 
 class EvaluateGateStatus(FlaskHandler):
 
-  def get_template_data(self, **kwargs):
+  def get_template_data(self, **kwargs) -> str:
     """Evaluate all existing Gate entities and set correct state."""
     self.require_cron_header()
 
-    gates: ndb.Query = Gate.query()
     count = 0
     batch = []
     BATCH_SIZE = 100
-    for gate in gates:
-      if approval_defs.update_gate_approval_state(gate):
+    votes_by_gate = collections.defaultdict(list)
+    for vote in Vote.query():
+      votes_by_gate[vote.gate_id].append(vote)
+    for gate in Gate.query():
+      if approval_defs.update_gate_approval_state(
+          gate, votes_by_gate[gate.key.integer_id()]):
         batch.append(gate)
         count += 1
         if len(batch) > BATCH_SIZE:
@@ -61,7 +66,7 @@ class WriteMissingGates(FlaskHandler):
       for fe_type, stages_and_gates in STAGES_AND_GATES_BY_FEATURE_TYPE.items()
   }
 
-  def make_needed_gates(self, fe, stage, existing_gates):
+  def make_needed_gates(self, fe, stage, existing_gates) -> list[Gate]:
     """Instantiate and return any needed gates for the given stage."""
     if not fe:
       logging.info(f'Stage {stage.key.integer_id()} has no feature entry')
@@ -87,7 +92,7 @@ class WriteMissingGates(FlaskHandler):
         new_gates.append(gate)
     return new_gates
 
-  def get_template_data(self, **kwargs):
+  def get_template_data(self, **kwargs) -> str:
     """Create a chunk of needed gates for all features."""
     self.require_cron_header()
 
@@ -98,7 +103,7 @@ class WriteMissingGates(FlaskHandler):
     for gate in Gate.query():
       existing_gates_by_stage_id[gate.stage_id].append(gate)
 
-    gates_to_write: list(Gate) = []
+    gates_to_write: list[Gate] = []
     for stage in Stage.query():
       new_gates = self.make_needed_gates(
           fe_by_id.get(stage.feature_id), stage,
@@ -121,7 +126,7 @@ class MigrateGeckoViews(FlaskHandler):
       GECKO_HARMFUL: OPPOSED,
       }
 
-  def update_ff_views(self, fe):
+  def update_ff_views(self, fe) -> bool:
     """Update ff_views and return True if update was needed."""
     if fe.ff_views in self.MAPPING:
       fe.ff_views = self.MAPPING[fe.ff_views]
@@ -129,7 +134,7 @@ class MigrateGeckoViews(FlaskHandler):
 
     return False
 
-  def get_template_data(self, **kwargs):
+  def get_template_data(self, **kwargs) -> str:
     """Change gecko views from old options to a more common list."""
     self.require_cron_header()
 
@@ -152,7 +157,7 @@ class MigrateGeckoViews(FlaskHandler):
 
 class BackfillRespondedOn(FlaskHandler):
 
-  def update_responded_on(self, gate):
+  def update_responded_on(self, gate) -> bool:
     """Update gate.responded_on and return True if an update was needed."""
     gate_id = gate.key.integer_id()
     earliest_response = datetime.max
@@ -180,7 +185,7 @@ class BackfillRespondedOn(FlaskHandler):
     else:
       return False
 
-  def get_template_data(self, **kwargs):
+  def get_template_data(self, **kwargs) -> str:
     """Backfill responded_on dates for existing gates."""
     self.require_cron_header()
     gates: ndb.Query = Gate.query(Gate.requested_on != None)
@@ -202,7 +207,7 @@ class BackfillRespondedOn(FlaskHandler):
     return f'{count} Gates entities updated.'
 
 class BackfillStageCreated(FlaskHandler):
-  def get_template_data(self, **kwargs):
+  def get_template_data(self, **kwargs) -> str:
     """Backfill created dates for existing stages."""
     self.require_cron_header()
     count = 0
@@ -225,7 +230,7 @@ class BackfillStageCreated(FlaskHandler):
     return f'{count} Stages entities updated of {stages.count()} available stages.'
 
 class BackfillFeatureLinks(FlaskHandler):
-  def get_template_data(self, **kwargs):
+  def get_template_data(self, **kwargs) -> str:
     """Backfill feature links for existing feature entries."""
     self.require_cron_header()
     all_feature_entries = FeatureEntry.query().fetch()
@@ -276,7 +281,7 @@ class AssociateOTs(FlaskHandler):
     return False
 
   def write_fields_for_trial_stage(
-      self, trial_stage: Stage, trial_data: dict[str, Any]):
+      self, trial_stage: Stage, trial_data: dict[str, Any]) -> bool:
     """Check if any OT stage fields are unfilled and populate them with
     the matching trial data.
     """
@@ -319,6 +324,13 @@ class AssociateOTs(FlaskHandler):
     # Clear the trial creation request if it's active.
     if trial_stage.ot_action_requested:
       trial_stage.ot_action_requested = False
+      stage_changed = True
+
+    # Set the setup status to complete if the trial is created or activated.
+    trial_activated = (trial_data['status'] == 'ACTIVE' or
+                       trial_data['status'] == 'COMPLETE')
+    if trial_stage.ot_setup_status != OT_ACTIVATED and trial_activated:
+      trial_stage.ot_setup_status = OT_ACTIVATED
       stage_changed = True
 
     return stage_changed
@@ -392,7 +404,7 @@ class AssociateOTs(FlaskHandler):
       ndb.put_multi(extension_stages_to_update)
     return len(extension_stages_to_update)
 
-  def get_template_data(self, **kwargs):
+  def get_template_data(self, **kwargs) -> str:
     """Link existing origin trials with their ChromeStatus entry"""
     self.require_cron_header()
 
@@ -402,7 +414,7 @@ class AssociateOTs(FlaskHandler):
     # Keep track of stages we're writing to so we avoid trying to write
     # to the same Stage entity twice in the same batch.
     unique_entities_to_write: set[int] = set()
-    trials_with_no_feature: list[str] = []
+    trials_with_no_feature: list[dict[str, Any]] = []
     for trial_data in trials_list:
       stage: Stage | None = Stage.query(
           Stage.origin_trial_id == trial_data['id']).get()
@@ -459,7 +471,8 @@ class AssociateOTs(FlaskHandler):
             f'{extensions_cleared} extension requests cleared.')
 
 class BackfillFeatureEnterpriseImpact(FlaskHandler):
-  def get_template_data(self, **kwargs):
+
+  def get_template_data(self, **kwargs) -> str:
     """Backfill enterprise_impact firld for all features."""
     self.require_cron_header()
     count = 0
@@ -510,41 +523,56 @@ class BackfillFeatureEnterpriseImpact(FlaskHandler):
 
 class CreateOriginTrials(FlaskHandler):
 
-  def handle_creation(self, stage: Stage, stage_dict: StageDict) -> str | None:
+  def _send_creation_result_notification(
+      self, task_path: str, stage: Stage, params: dict|None = None) -> None:
+    if not params:
+      params = {}
+    print('sending email task to', task_path, 'with params', params)
+    stage_dict = converters.stage_to_json_dict(stage)
+    params['stage'] = stage_dict
+    cloud_tasks_helpers.enqueue_task(task_path, params)
+
+  def handle_creation(self, stage: Stage) -> bool:
     """Send a flagged creation request for processing to the Origin Trials
     API.
     """
-    request_success = False
-    attempted_requests = 0
-    new_id = None
-    while not request_success and attempted_requests < 3:
-      attempted_requests += 1
-      try:
-        new_id = origin_trials_client.create_origin_trial(stage)
-        request_success = True
-      except requests.RequestException:
-        attempted_requests += 1
-    if not request_success:
+    origin_trial_id, error_text = origin_trials_client.create_origin_trial(
+        stage)
+    if origin_trial_id:
+      stage.origin_trial_id = origin_trial_id
+    if error_text:
       logging.warning('Origin trial could not be created for stage '
-                      f'{stage.key.integer_id()}')
-      cloud_tasks_helpers.enqueue_task(
-          '/tasks/email-ot-creation-request-failed', {'stage': stage_dict})
-    return new_id
+                     f'{stage.key.integer_id()}')
+      stage.ot_setup_status = OT_CREATION_FAILED
+      self._send_creation_result_notification(
+          '/tasks/email-ot-creation-request-failed',
+          stage,
+          {'error_text': error_text})
+      return False
+    else:
+      stage.ot_setup_status = OT_CREATED
+      logging.info(f'Origin trial created for stage {stage.key.integer_id()}')
+    return True
 
-  def handle_activation(self, stage: Stage, stage_dict: StageDict) -> None:
+  def handle_activation(self, stage: Stage) -> None:
     """Send trial activation request."""
     try:
       origin_trials_client.activate_origin_trial(stage.origin_trial_id)
-      cloud_tasks_helpers.enqueue_task(
-          '/tasks/email-ot-activated', {'stage': stage_dict})
+      stage.ot_setup_status = OT_ACTIVATED
+      self._send_creation_result_notification(
+          '/tasks/email-ot-activated', stage)
     except requests.RequestException:
-      cloud_tasks_helpers.enqueue_task(
-          '/tasks/email-ot-activation-failed', {'stage': stage_dict})
+      # The activation still needs to occur,
+      # so the activation date is set for current date.
+      stage.ot_activation_date = date.today()
+      stage.ot_setup_status = OT_ACTIVATION_FAILED
+      self._send_creation_result_notification(
+          '/tasks/email-ot-activation-failed', stage)
 
-  def _get_today(self):
+  def _get_today(self) -> date:
     return date.today()
 
-  def prepare_for_activation(self, stage: Stage, stage_dict: StageDict) -> None:
+  def prepare_for_activation(self, stage: Stage) -> None:
     """Set up activation date or activate trial now."""
     mstone_info = utils.get_chromium_milestone_info(
         stage.milestones.desktop_first)
@@ -552,27 +580,28 @@ class CreateOriginTrials(FlaskHandler):
         mstone_info['mstones'][0]['branch_point'],
         utils.CHROMIUM_SCHEDULE_DATE_FORMAT).date()
     if date <= self._get_today():
-      self.handle_activation(stage, stage_dict)
+      print('sending for activation. Today:', self._get_today(), 'branch_date: ', date)
+      self.handle_activation(stage)
     else:
       stage.ot_activation_date = date
-      cloud_tasks_helpers.enqueue_task(
-          '/tasks/email-ot-creation-processed', {'stage': stage_dict})
+      stage.ot_setup_status = OT_CREATED
+      self._send_creation_result_notification(
+          '/tasks/email-ot-creation-processed', stage)
 
-  def get_template_data(self, **kwargs):
+  def get_template_data(self, **kwargs) -> str:
     """Create any origin trials that are flagged for creation."""
     self.require_cron_header()
+    if not settings.AUTOMATED_OT_CREATION:
+      return 'Automated OT creation process is not active.'
 
     # OT stages that are flagged to process a trial creation.
     ot_stages: list[Stage] = Stage.query(
-        Stage.stage_type.IN(ALL_ORIGIN_TRIAL_STAGE_TYPES),
-        Stage.ot_action_requested == True).fetch()
+        Stage.ot_setup_status == OT_READY_FOR_CREATION).fetch()
     for stage in ot_stages:
       stage.ot_action_requested = False
-      stage_dict = converters.stage_to_json_dict(stage)
-      origin_trial_id = self.handle_creation(stage, stage_dict)
-      if origin_trial_id:
-        stage.origin_trial_id = origin_trial_id
-        self.prepare_for_activation(stage, stage_dict)
+      creation_success = self.handle_creation(stage)
+      if creation_success:
+        self.prepare_for_activation(stage)
       stage.put()
 
     return f'{len(ot_stages)} trial creation request(s) processed.'
@@ -580,20 +609,23 @@ class CreateOriginTrials(FlaskHandler):
 
 class ActivateOriginTrials(FlaskHandler):
 
-  def _get_today(self):
+  def _get_today(self) -> date:
     return date.today()
 
-  def get_template_data(self, **kwargs):
+  def get_template_data(self, **kwargs) -> str:
     """Check for origin trials that are scheduled for activation and activate
     them.
     """
     self.require_cron_header()
+    if not settings.AUTOMATED_OT_CREATION:
+      return 'Automated OT creation process is not active.'
 
     success_count, fail_count = 0, 0
     today = self._get_today()
     # Get all OT stages.
     ot_stages: list[Stage] = Stage.query(
-        Stage.stage_type.IN(ALL_ORIGIN_TRIAL_STAGE_TYPES)).fetch()
+        Stage.stage_type.IN(ALL_ORIGIN_TRIAL_STAGE_TYPES),
+        Stage.ot_setup_status == OT_CREATED).fetch()
     for stage in ot_stages:
       # Only process stages with a delayed activation date set.
       if stage.ot_activation_date is None:
@@ -612,14 +644,163 @@ class ActivateOriginTrials(FlaskHandler):
           cloud_tasks_helpers.enqueue_task(
               '/tasks/email-ot-activation-failed',
               {'stage': converters.stage_to_json_dict(stage)})
+          stage.ot_setup_status = OT_ACTIVATION_FAILED
+          stage.put()
           fail_count += 1
         else:
           cloud_tasks_helpers.enqueue_task(
               '/tasks/email-ot-activated',
               {'stage': converters.stage_to_json_dict(stage)})
           stage.ot_activation_date = None
+          stage.ot_setup_status = OT_ACTIVATED
           stage.put()
           success_count += 1
 
     return (f'{success_count} activation(s) successfully processed and '
             f'{fail_count} activation(s) failed to process.')
+
+
+class DeleteEmptyExtensionStages(FlaskHandler):
+  """Delete any extension stages that have no information filled out."""
+
+  def get_template_data(self, **kwargs) -> str:
+    self.require_cron_header()
+
+    # Fetch all extension stages.
+    extension_stages: list[Stage] = Stage.query(
+        Stage.stage_type.IN(
+            [STAGE_BLINK_EXTEND_ORIGIN_TRIAL,
+             STAGE_FAST_EXTEND_ORIGIN_TRIAL,
+             STAGE_DEP_EXTEND_DEPRECATION_TRIAL]
+        )
+    ).fetch()
+
+    keys_to_delete = []
+    counter = 0
+    for es in extension_stages:
+      # If an extension stage has no relevant information filled out yet,
+      # delete it.
+      has_milestone = (es.milestones and es.milestones.desktop_last)
+      if (not es.intent_thread_url and not es.experiment_extension_reason and
+          not has_milestone):
+        counter += 1
+        keys_to_delete.append(es.key)
+        # Query for the gate associated with the extension and delete that too.
+        gate = Gate.query(Gate.stage_id == es.key.integer_id()).get()
+        if gate:
+          keys_to_delete.append(gate.key)
+
+      # Delete entities in batches of 200.
+      if len(keys_to_delete) >= 200:
+        ndb.delete_multi(keys_to_delete)
+        keys_to_delete = []
+
+    # Finally, delete the last entities marked for deletion.
+    if len(keys_to_delete) > 0:
+      ndb.delete_multi(keys_to_delete)
+
+    return  (f'{counter} empty extension stages deleted.')
+
+
+LAST_MILESTONE_TO_YEAR: dict[int, int] = {
+    # last shipped milestone of the year: calendar year
+    3: 2009,
+    8: 2010,
+    16: 2011,
+    24: 2012,
+    31: 2013,
+    39: 2014,
+    47: 2015,
+    55: 2016,
+    63: 2017,
+    71: 2018,
+    79: 2019,
+    87: 2020,
+    96: 2021,
+    108: 2022,
+    120: 2023,
+    132: 2024,
+    # Later milestones are determined by chromiumdash.appspot.com.
+    }
+
+
+class BackfillShippingYear(FlaskHandler):
+
+  def look_up_year(self, milestone: int) -> int:
+    """Return the calendar year in which a feature shipped."""
+    for (last_milestone_of_year, year) in LAST_MILESTONE_TO_YEAR.items():
+      if milestone <= last_milestone_of_year:
+        return year
+
+    release_info = channels_api.fetch_chrome_release_info(milestone)
+    if release_info and 'final_beta' in release_info:
+      shipping_date_str = release_info['final_beta']
+      shipping_date = datetime.strptime(
+          shipping_date_str, utils.CHROMIUM_SCHEDULE_DATE_FORMAT).date()
+      shipping_year = shipping_date.year
+    return shipping_year
+
+  def find_earliest_milestone(self, stages: list[Stage]) -> int|None:
+    """Find the earliest milestone in a list of stages."""
+    m_list: list[int] = []
+    for stage in stages:
+      m_list.append(stage.milestones.desktop_first)
+      m_list.append(stage.milestones.android_first)
+      m_list.append(stage.milestones.ios_first)
+      m_list.append(stage.milestones.webview_first)
+    m_list = [m for m in m_list if m]
+    if m_list:
+      return min(m_list)
+    return None
+
+  def get_all_shipping_stages_with_milestones(self) -> list[Stage]:
+    shipping_stage_types = [st for st in STAGE_TYPES_SHIPPING.values() if st]
+    shipping_stages: ndb.Query = Stage.query(
+        Stage.stage_type.IN(shipping_stage_types)).fetch()
+    shipping_stages_with_milestones = [
+        stage for stage in shipping_stages
+        if (stage.milestones and
+            (stage.milestones.desktop_first or
+             stage.milestones.android_first or
+             stage.milestones.ios_first or
+             stage.milestones.webview_first))]
+    return shipping_stages_with_milestones
+
+  def calc_all_shipping_years(self) -> dict[int, int]:
+    """Load all shipping stages and record their earliest milestone."""
+    shipping_stages = self.get_all_shipping_stages_with_milestones()
+    stages_by_fid = stage_helpers.organize_all_stages_by_feature(shipping_stages)
+    all_features_shipping_year = {}
+    for fid, feature_stages in stages_by_fid.items():
+      earliest = self.find_earliest_milestone(feature_stages)
+      if earliest:
+        year = self.look_up_year(earliest)
+        all_features_shipping_year[fid] = year
+
+    return all_features_shipping_year
+
+  def get_template_data(self, **kwargs) -> str:
+    """Fill in shipping_year for any Feature Entry that has a milestone."""
+    self.require_cron_header()
+
+    all_features_shipping_year = self.calc_all_shipping_years()
+    count = 0
+    batch = []
+    BATCH_SIZE = 100
+    all_feature_entries = FeatureEntry.query().fetch()
+    for fe in all_feature_entries:
+      fid = fe.key.integer_id()
+      if fid not in all_features_shipping_year:
+        continue
+      year_based_on_milestones = all_features_shipping_year[fid]
+      if fe.shipping_year != year_based_on_milestones:
+        fe.shipping_year = year_based_on_milestones
+        batch.append(fe)
+        count += 1
+        if len(batch) > BATCH_SIZE:
+          ndb.put_multi(batch)
+          batch = []
+          logging.info('Updated %r so far', count)
+
+    ndb.put_multi(batch)
+    return f'{count} Features entities updated.'

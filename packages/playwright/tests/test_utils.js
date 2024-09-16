@@ -343,31 +343,8 @@ export async function createNewFeature(page) {
   await delay(500);
 }
 
-
-/**
- * Starting from the feature page, edit the feature
- * @param {import('@playwright/test').Page} page
- */
-export async function editFeature(page) {
-  // Edit the feature.
-  const editButton = page.locator('a.editfeature');
-  await delay(500);
-  await editButton.click();
-  await delay(500);
-
-  await page.waitForURL('**/guide/edit/*');
-  await delay(500);
-}
-
-
-/**
- * Starting from the feature page, delete the feature
- * @param {import('@playwright/test').Page} page
- */
-export async function deleteFeature(page) {
-  await editFeature(page);
-
-  const deleteButton = page.locator('#delete-feature');
-  await deleteButton.click();
+export async function gotoNewFeatureList(page) {
+  await page.goto('/newfeatures');
+  await page.locator('chromedash-feature-pagination');
   await delay(500);
 }

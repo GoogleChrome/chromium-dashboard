@@ -118,6 +118,28 @@ class FunctionTest(testing_config.CustomTestCase):
       for entity in kind.query():
         entity.key.delete()
 
+  def test_choose_email_recipients__normal(self):
+    """Normal reminders go to feature participants."""
+    actual = reminders.choose_email_recipients(
+        self.feature_template, False)
+    expected = ['feature_owner@example.com',
+                ]
+    self.assertEqual(set(actual), set(expected))
+
+  @mock.patch('settings.PROD', True)
+  def test_choose_email_recipients__escalated(self):
+    """Escalated reminders go to feature participants and lists."""
+    actual = reminders.choose_email_recipients(
+        self.feature_template, True)
+    expected = ['creator@example.com',
+                'feature_owner@example.com',
+                'feature_editor@example.com',
+                'mentor@example.com',
+                'webstatus@google.com',
+                'cbe-releasenotes@google.com',
+                ]
+    self.assertEqual(set(actual), set(expected))
+
   def test_build_email_tasks_feature_accuracy(self):
     with test_app.app_context():
       handler = reminders.FeatureAccuracyHandler()
@@ -152,7 +174,7 @@ class FunctionTest(testing_config.CustomTestCase):
     self.assertEqual('feature_owner@example.com', task['to'])
     self.assertEqual('[Action requested] Update feature one', task['subject'])
     self.assertEqual(None, task['reply_to'])
-    TESTDATA.make_golden(task['html'], 'test_build_email_tasks_feature_accuracy_enterprise.html')
+    # TESTDATA.make_golden(task['html'], 'test_build_email_tasks_feature_accuracy_enterprise.html')
     self.assertMultiLineEqual(
         TESTDATA['test_build_email_tasks_feature_accuracy_enterprise.html'],
         task['html'])
@@ -378,10 +400,9 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     with test_app.app_context():
       actual = self.handler.get_template_data()
 
-    expected_message = (f'4 email(s) sent or logged.\n'
+    expected_message = (f'3 email(s) sent or logged.\n'
                         'Recipients:\n'
                         'angelaweber@google.com\n'
-                        'bheenan@google.com\n'
                         'davidayad@google.com\n'
                         'mhoste@google.com')
     expected = {'message': expected_message}
@@ -416,10 +437,9 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     with test_app.app_context():
       actual = self.handler.get_template_data()
 
-    expected_message = (f'4 email(s) sent or logged.\n'
+    expected_message = (f'3 email(s) sent or logged.\n'
                         'Recipients:\n'
                         'angelaweber@google.com\n'
-                        'bheenan@google.com\n'
                         'davidayad@google.com\n'
                         'mhoste@google.com')
     expected = {'message': expected_message}
@@ -429,7 +449,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
   def test_get_template_data__one_overdue_assigned(self, mock_remaining_days):
     self.gate_1.state = Vote.REVIEW_REQUESTED
     self.gate_1.assignee_emails = [
-        'bheenan@google.com', 'a_assignee@example.com']
+        'mhoste@google.com', 'a_assignee@example.com']
     self.gate_1.requested_on = self.request_date
     self.gate_1.put()
     mock_remaining_days.return_value = -approval_defs.DEFAULT_SLO_LIMIT
@@ -437,11 +457,10 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     with test_app.app_context():
       actual = self.handler.get_template_data()
 
-    expected_message = (f'5 email(s) sent or logged.\n'
+    expected_message = (f'4 email(s) sent or logged.\n'
                         'Recipients:\n'
                         'a_assignee@example.com\n'
                         'angelaweber@google.com\n'
-                        'bheenan@google.com\n'
                         'davidayad@google.com\n'
                         'mhoste@google.com')
     expected = {'message': expected_message}

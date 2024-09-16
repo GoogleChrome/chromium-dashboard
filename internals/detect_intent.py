@@ -15,6 +15,8 @@
 
 import re
 import logging
+import random
+import time
 from typing import Optional
 
 import settings
@@ -29,11 +31,11 @@ from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Vote, Gate
 
 
-FIELDS_REQUIRING_LGTMS = [
-    approval_defs.PlanApproval,
-    approval_defs.ShipApproval,
-    approval_defs.ExperimentApproval,
-    approval_defs.ExtendExperimentApproval,
+GATE_TYPES_REQUIRING_LGTMS = [
+    approval_defs.PlanApproval.gate_type,
+    approval_defs.ShipApproval.gate_type,
+    approval_defs.ExperimentApproval.gate_type,
+    approval_defs.ExtendExperimentApproval.gate_type,
     ]
 
 
@@ -55,7 +57,7 @@ EXPERIMENT_RE = re.compile('%s %s' % (INTEND_PATTERN, EXPERIMENT_PATTERN))
 EXTEND_RE = re.compile('%s %s' % (INTEND_PATTERN, EXTEND_PATTERN))
 
 
-def detect_field(subject):
+def detect_gate_info(subject: str) -> approval_defs.GateInfo | None:
   """Look for key words in the subject line that indicate intent type.
 
   These should detect recent actual intent threads as seen in the blink-dev
@@ -124,11 +126,11 @@ def detect_gate_id(body) -> int | None:
 THREAD_LINK_RE = re.compile(
     r'To view this discussion on the web visit\s+'
     r'(> )?(https://groups\.google\.com/a/chromium.org/d/msgid/blink-dev/'
-    r'\S+)[\n> .]', re.MULTILINE)
+    r'[-_0-9a-zA-Z%.]+[-_0-9a-zA-Z])', re.MULTILINE)
 STAGING_THREAD_LINK_RE = re.compile(
     r'To view this discussion on the web visit\s+'
     r'(> )?(https://groups\.google\.com/d/msgid/jrobbins-test/'
-    r'\S+)[\n> .]', re.MULTILINE)
+    r'[-_0-9a-zA-Z%.]+[-_0-9a-zA-Z])', re.MULTILINE)
 
 
 def detect_thread_url(body):
@@ -158,10 +160,10 @@ def detect_lgtm(body):
   return match
 
 
-def is_lgtm_allowed(from_addr, feature, approval_field):
+def is_lgtm_allowed(from_addr, feature, gate_info):
   """Return true if the user is allowed to approve this feature."""
   user = users.User(email=from_addr)
-  approvers = approval_defs.get_approvers(approval_field.field_id)
+  approvers = approval_defs.get_approvers(gate_info.gate_type)
   gate = None  # TODO(jrobbins): Detect assignee who is not an approver.
   allowed = permissions.can_review_gate(user, feature, gate, approvers)
   return allowed
@@ -199,8 +201,8 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
                  'Body:        %r\n',
                  from_addr, subject, in_reply_to, body[:settings.MAX_LOG_LINE])
 
-    approval_field = detect_field(subject)
-    if not approval_field:
+    gate_info = detect_gate_info(subject)
+    if not gate_info:
       logging.info('This does not appear to be an intent')
       return {'message': 'Not an intent'}
 
@@ -217,21 +219,21 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
       return {'message': 'Feature not found'}
 
     gate, stage = self.get_gate_and_stage(
-        feature, approval_field, gate_id, thread_url)
+        feature, gate_info, gate_id, thread_url)
     if stage is None:
-      message = (f'Stage not found for intent type {approval_field.field_id} '
+      message = (f'Stage not found for intent type {gate_info.gate_type} '
                  f'of feature {feature_id}')
       logging.info(message)
       return {'message': message}
     if gate is None:
-      message = (f'Gate not found for intent type {approval_field.field_id} '
+      message = (f'Gate not found for intent type {gate_info.gate_type} '
                  f'of feature {feature_id}')
       logging.info(message)
       return {'message': message}
-    if gate.gate_type != approval_field.field_id:
+    if gate.gate_type != gate_info.gate_type:
       message = (f'Gate {gate.key.integer_id()} has gate type {gate.gate_type} '
-                 'and does not match approval field gate type '
-                 f'{approval_field.field_id}')
+                 'and does not match gate info gate type '
+                 f'{gate_info.gate_type}')
       logging.info(message)
       return {'message': message}
 
@@ -239,8 +241,8 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     gate_id = gate.key.integer_id()  # In case it was found by gate_type.
     is_new_thread = detect_new_thread(gate_id)
     self.create_approvals(
-        feature, stage, gate, approval_field, from_addr, body, is_new_thread)
-    self.record_slo(feature, approval_field, from_addr, is_new_thread)
+        feature, stage, gate, gate_info, from_addr, body, is_new_thread)
+    self.record_slo(feature, gate_info, from_addr, is_new_thread)
     return {'message': 'Done'}
 
   def load_detected_feature(self, feature_id: Optional[int],
@@ -272,7 +274,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
   def get_gate_and_stage(
       self,
       feature: FeatureEntry,
-      approval_field: approval_defs.ApprovalFieldDef,
+      gate_info: approval_defs.GateInfo,
       gate_id: int | None,
       thread_url: str) -> tuple[Gate | None, Stage | None]:
     # If a gate ID is detected, query for the gate.
@@ -287,15 +289,15 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     # Otherwise, try to find the matching gate based on other feature info.
     else:
       logging.info('Attempting to find stage/gate without detected gate ID')
-      stage = self.find_matching_stage(feature, approval_field, thread_url)
+      stage = self.find_matching_stage(feature, gate_info, thread_url)
       if stage is None:
         return None, None
       gate = Gate.query(Gate.stage_id == stage.key.integer_id(),
-                        Gate.gate_type == approval_field.field_id).get()
+                        Gate.gate_type == gate_info.gate_type).get()
     return gate, stage
 
   def find_matching_stage(self, feature: FeatureEntry,
-      approval_field: approval_defs.ApprovalFieldDef,
+      gate_info: approval_defs.GateInfo,
       thread_url: str | None) -> Stage | None:
     """Find the stage in which the thread is associated with."""
     if not thread_url:
@@ -303,10 +305,10 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
       return None
 
     stage_type = core_enums.STAGE_TYPES_BY_GATE_TYPE_MAPPING[
-        approval_field.field_id][feature.feature_type]
+        gate_info.gate_type][feature.feature_type]
     if stage_type is None:
       logging.info('stage_type not found for %r %r',
-                   approval_field.field_id, feature.feature_type)
+                   gate_info.gate_type, feature.feature_type)
       return None
 
     # Get all stages of the detected stage type that belong to the feature.
@@ -344,6 +346,10 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
 
   def set_intent_thread_url(
       self, stage: Stage, thread_url: str | None, subject: str | None) -> None:
+    if stage.intent_thread_url and stage.intent_subject_line:
+      logging.info('Not setting intent_thread_url or intent_subject_line')
+      return
+
     stage.intent_thread_url = thread_url
     stage.intent_subject_line = subject
     stage.put()
@@ -351,7 +357,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
                  f'and intent_subject_line to {subject}')
 
   def create_approvals(self, feature: FeatureEntry, stage: Stage, gate: Gate,
-      approval_field: approval_defs.ApprovalFieldDef,
+      gate_info: approval_defs.GateInfo,
       from_addr: str, body: str, is_new_thread: bool) -> None:
     """Store either a REVIEW_REQUESTED or an APPROVED approval value."""
     feature_id = feature.key.integer_id()
@@ -360,11 +366,14 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     # set an approval value, and update the gate state if
     # the approval rule (1 or 3 LTGMs) is satisfied.
     if (detect_lgtm(body) and
-        is_lgtm_allowed(from_addr, feature, approval_field)):
+        is_lgtm_allowed(from_addr, feature, gate_info)):
       logging.info('found LGTM')
+      # Avoid a race condition when blink-dev is in both To: and Cc: lines.
+      time.sleep(random.uniform(0, 5))
+      gate = Gate.get_by_id(gate.key.integer_id())  # Reload after sleep
       old_gate_state = gate.state
       new_gate_state = approval_defs.set_vote(
-          feature_id, approval_field.field_id, Vote.APPROVED, from_addr,
+          feature_id, gate_info.gate_type, Vote.APPROVED, from_addr,
           gate.key.integer_id())
       recently_approved = (old_gate_state not in (Vote.APPROVED, Vote.NA) and
                            new_gate_state in (Vote.APPROVED, Vote.NA))
@@ -378,19 +387,19 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     # stored.
     elif is_new_thread:
       logging.info('found new thread')
-      if approval_field in FIELDS_REQUIRING_LGTMS:
+      if gate_info.gate_type in GATE_TYPES_REQUIRING_LGTMS:
         logging.info('requesting a review')
-        approval_defs.set_vote(feature_id, approval_field.field_id,
+        approval_defs.set_vote(feature_id, gate_info.gate_type,
             Vote.REVIEW_REQUESTED, from_addr, gate.key.integer_id())
 
-  def record_slo(self, feature, approval_field, from_addr, is_new_thread) -> None:
+  def record_slo(self, feature, gate_info, from_addr, is_new_thread) -> None:
     """Update SLO timestamps."""
     if is_new_thread:
       return  # The initial request can never count as a response.
     feature_id = feature.key.integer_id()
     matching_gates = Gate.query(
         Gate.feature_id == feature_id,
-        Gate.gate_type == approval_field.field_id).fetch(None)
+        Gate.gate_type == gate_info.gate_type).fetch(None)
     if len(matching_gates) == 0:
       logging.info('Did not find a gate')
       return

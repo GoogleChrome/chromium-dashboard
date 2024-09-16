@@ -21,23 +21,28 @@ from unittest import mock
 from framework import rediscache
 from internals import approval_defs
 from internals import core_enums
-from internals.review_models import Gate, GateDef, Vote
+from internals.review_models import Gate, GateDef, Vote, OwnersFile
 
 
 class FetchOwnersTest(testing_config.CustomTestCase):
 
+  FILE_CONTENTS = (
+      '# Blink API owners are responsible for ...\n'
+      '#\n'
+      '# See https://www.chromium.org/blink#new-features for details.\n'
+      'owner1@example.com\n'
+      'owner2@example.com\n'
+      'owner3@example.com\n'
+      '\n')
+
+  def setUp(self):
+    for owners_file in OwnersFile.query():
+      owners_file.key.delete()
+
   @mock.patch('requests.get')
   def test__normal(self, mock_get):
     """We can fetch and parse an OWNERS file.  And reuse cached value."""
-    file_contents = (
-        '# Blink API owners are responsible for ...\n'
-        '#\n'
-        '# See https://www.chromium.org/blink#new-features for details.\n'
-        'owner1@example.com\n'
-        'owner2@example.com\n'
-        'owner3@example.com\n'
-        '\n')
-    encoded = base64.b64encode(file_contents.encode())
+    encoded = base64.b64encode(self.FILE_CONTENTS.encode())
     mock_get.return_value = testing_config.Blank(
         status_code=200,
         content=encoded)
@@ -45,7 +50,7 @@ class FetchOwnersTest(testing_config.CustomTestCase):
     actual = approval_defs.fetch_owners('https://example.com')
     again = approval_defs.fetch_owners('https://example.com')
 
-    # Only called once because second call will be a redis hit.
+    # Only called once because second call will be an ndb hit.
     mock_get.assert_called_once_with('https://example.com')
     self.assertEqual(
         actual,
@@ -54,15 +59,31 @@ class FetchOwnersTest(testing_config.CustomTestCase):
 
   @mock.patch('logging.error')
   @mock.patch('requests.get')
-  def test__error(self, mock_get, mock_err):
-    """If we can't read the OWNER file, raise an exception."""
+  def test__error__use_ndb(self, mock_get, mock_err):
+    """If NDB is old and we can't read the OWNERS file, use old value anyway."""
+    encoded = base64.b64encode(self.FILE_CONTENTS.encode())
+    OwnersFile(
+        url='https://example.com',
+        raw_content=encoded,
+        created_on=datetime.datetime(2022, 1, 1)).put()
     mock_get.return_value = testing_config.Blank(
         status_code=404)
 
-    with self.assertRaises(ValueError):
-      approval_defs.fetch_owners('https://example.com')
+    actual = approval_defs.fetch_owners('https://example.com')
+    self.assertEqual(
+        actual,
+        ['owner1@example.com', 'owner2@example.com', 'owner3@example.com'])
 
-    mock_get.assert_called_once_with('https://example.com')
+  @mock.patch('logging.error')
+  @mock.patch('requests.get')
+  def test__error__use_empty_list(self, mock_get, mock_err):
+    """If NDB is missing and we can't read the OWNERS file, use []."""
+    # Don't create any test existing OwnersFile in NDB.
+    mock_get.return_value = testing_config.Blank(
+        status_code=404)
+
+    actual = approval_defs.fetch_owners('https://example.com')
+    self.assertEqual(actual, [])
 
 
 class AutoAssignmentTest(testing_config.CustomTestCase):
@@ -112,15 +133,15 @@ class AutoAssignmentTest(testing_config.CustomTestCase):
 
 
 MOCK_APPROVALS_BY_ID = {
-    1: approval_defs.ApprovalFieldDef(
+    1: approval_defs.GateInfo(
         'Intent to test',
         'You need permission to test',
         1, approval_defs.ONE_LGTM, ['approver@example.com'], 'API Owners'),
-    2: approval_defs.ApprovalFieldDef(
+    2: approval_defs.GateInfo(
         'Intent to optimize',
         'You need permission to optimize',
         2, approval_defs.THREE_LGTM, 'https://example.com', 'API Owners'),
-    3: approval_defs.ApprovalFieldDef(
+    3: approval_defs.GateInfo(
         'Intent to memorize',
         'You need permission to memorize',
         3, approval_defs.THREE_LGTM, approval_defs.IN_NDB, 'API Owners'),
@@ -190,15 +211,15 @@ class GetApproversTest(testing_config.CustomTestCase):
     self.assertEqual(['a', 'b'], existing_gate_defs[0].approvers)
 
 
-class IsValidFieldIdTest(testing_config.CustomTestCase):
+class IsValidGateTypeTest(testing_config.CustomTestCase):
 
   @mock.patch('internals.approval_defs.APPROVAL_FIELDS_BY_ID',
               MOCK_APPROVALS_BY_ID)
   def test(self):
-    """We know if a field_id is defined or not."""
-    self.assertTrue(approval_defs.is_valid_field_id(1))
-    self.assertTrue(approval_defs.is_valid_field_id(2))
-    self.assertFalse(approval_defs.is_valid_field_id(99))
+    """We know if a gate_type is defined or not."""
+    self.assertTrue(approval_defs.is_valid_gate_type(1))
+    self.assertTrue(approval_defs.is_valid_gate_type(2))
+    self.assertFalse(approval_defs.is_valid_gate_type(99))
 
 
 class IsApprovedTest(testing_config.CustomTestCase):

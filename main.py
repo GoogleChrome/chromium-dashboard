@@ -30,6 +30,7 @@ from api import (
   feature_latency_api,
   feature_links_api,
   features_api,
+  intents_api,
   login_api,
   logout_api,
   metricsdata,
@@ -134,6 +135,10 @@ api_routes: list[Route] = [
     Route(
         f'{API_BASE}/features/<int:feature_id>/stages/<int:stage_id>/addXfnGates',
         reviews_api.XfnGatesAPI),
+    Route(f'{API_BASE}/features/<int:feature_id>/<int:stage_id>/intent',
+          intents_api.IntentsAPI),
+    Route(f'{API_BASE}/features/<int:feature_id>/<int:stage_id>/<int:gate_id>/intent',
+          intents_api.IntentsAPI),
 
     Route(f'{API_BASE}/blinkcomponents',
         blink_components_api.BlinkComponentsAPI),
@@ -188,22 +193,20 @@ spa_page_routes = [
       defaults={'require_create_feature': True}),
   Route('/guide/enterprise/new', guide.EnterpriseFeatureCreateHandler,
       defaults={'require_signin': True, 'require_create_feature': True, 'is_enterprise_page': True}),
-  Route('/guide/edit/<int:feature_id>', guide.FeatureEditHandler,
-      defaults={'require_edit_feature': True}),
   Route('/guide/stage/<int:feature_id>/<int:intent_stage>/<int:stage_id>',
-        guide.FeatureEditHandler,
       defaults={'require_edit_feature': True}),
   Route('/guide/stage/<int:feature_id>/<int:stage_id>',
-        guide.FeatureEditHandler,
       defaults={'require_edit_feature': True}),
-  Route('/guide/edit/<int:feature_id>/<int:stage_id>', guide.FeatureEditHandler,
+  Route('/guide/edit/<int:feature_id>/<int:stage_id>',
       defaults={'require_edit_feature': True}),
-  Route('/guide/editall/<int:feature_id>', guide.FeatureEditHandler,
+  Route('/guide/editall/<int:feature_id>',
       defaults={'require_edit_feature': True}),
-  Route('/guide/verify_accuracy/<int:feature_id>', guide.FeatureEditHandler,
+  Route('/guide/verify_accuracy/<int:feature_id>',
       defaults={'require_edit_feature': True}),
   Route('/guide/stage/<int:feature_id>/metadata',
       defaults={'require_edit_feature': True}),
+  Route('/feature/<int:feature_id>/gate/<int:gate_id>/intent',
+        defaults={'require_edit_feature': True}),
   Route('/ot_creation_request/<int:feature_id>/<int:stage_id>',
         defaults={'require_signin': True}),
   Route('/ot_extension_request/<int:feature_id>/<int:stage_id>',
@@ -278,10 +281,9 @@ internals_routes: list[Route] = [
   Route('/cron/associate_origin_trials', maintenance_scripts.AssociateOTs),
   Route('/cron/send-ot-process-reminders',
         reminders.SendOTReminderEmailsHandler),
-  # TODO(DanielRyanSmith): Add this route when OT creation is fully implemented.
-  # Route('/cron/create_origin_trials', maintenance_scripts.CreateOriginTrials),
-  # Route('/cron/activate_origin_trials',
-  #       maintenance_scripts.ActivateOriginTrials),
+  Route('/cron/create_origin_trials', maintenance_scripts.CreateOriginTrials),
+  Route('/cron/activate_origin_trials',
+        maintenance_scripts.ActivateOriginTrials),
 
   Route('/admin/find_stop_words', search_fulltext.FindStopWords),
 
@@ -302,6 +304,7 @@ internals_routes: list[Route] = [
   Route('/tasks/email-ot-extended', notifier.OTExtendedHandler),
   Route('/tasks/email-ot-extension-approved',
         notifier.OTExtensionApprovedHandler),
+  Route('/tasks/email-intent-to-blink-dev', notifier.IntentToBlinkDevHandler),
 
   # OT process reminder emails
   Route('/tasks/email-ot-first-branch', notifier.OTFirstBranchReminderHandler),
@@ -330,6 +333,10 @@ internals_routes: list[Route] = [
         maintenance_scripts.BackfillFeatureLinks),
   Route('/scripts/backfill_enterprise_impact',
         maintenance_scripts.BackfillFeatureEnterpriseImpact),
+  Route('/scripts/delete_empty_extension_stages',
+        maintenance_scripts.DeleteEmptyExtensionStages),
+  Route('/scripts/backfill_shipping_year',
+        maintenance_scripts.BackfillShippingYear),
 ]
 
 dev_routes: list[Route] = []

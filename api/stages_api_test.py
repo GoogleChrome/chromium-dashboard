@@ -22,9 +22,10 @@ from google.cloud import ndb  # type: ignore
 import werkzeug.exceptions
 
 from api import stages_api
-from internals.user_models import AppUser
+from internals.core_enums import OT_READY_FOR_CREATION
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate
+from internals.user_models import AppUser
 
 test_app = flask.Flask(__name__)
 
@@ -52,7 +53,8 @@ class StagesAPITest(testing_config.CustomTestCase):
         intent_thread_url='https://example.com/intent',
         milestones=MilestoneSet(desktop_first=100),
         experiment_goals='To be the very best.',
-        created=self.now)
+        created=self.now,
+        ot_setup_status=1)
     self.stage_1.put()
     # Shipping stage.
     self.stage_2 = Stage(id=11, feature_id=1, stage_type=160, created=self.now)
@@ -74,6 +76,7 @@ class StagesAPITest(testing_config.CustomTestCase):
         ot_action_requested=True,
         ot_require_approvals=True,
         ot_approval_buganizer_component=123456789,
+        ot_approval_buganizer_custom_field_id=111111,
         ot_approval_criteria_url='https://example.com/criteria',
         ot_approval_group_email='fakegroup@google.com',
         ot_chromium_trial_name='ExampleChromiumTrialName',
@@ -95,13 +98,22 @@ class StagesAPITest(testing_config.CustomTestCase):
         created=self.now)
     self.stage_4.put()
 
-    self.stage_5 = Stage(id=50, feature_id=1, stage_type=150, browser='Chrome',
+    # Two extension stages for the same origin trial stage.
+    self.stage_5 = Stage(id=50, feature_id=1, stage_type=151, browser='Chrome',
         ot_stage_id=40,
-        ux_emails=['ux_person@example.com'],
-        intent_thread_url='https://example.com/intent',
-        milestones=MilestoneSet(desktop_first=100),
-        experiment_goals='To be the very best.',
+        ot_emails=['ot_person2@google.com'],
+        intent_thread_url='https://example.com/intent2',
+        milestones=MilestoneSet(desktop_last=106),
+        experiment_extension_reason='To be the very best again.',
         created=self.now)
+    self.stage_5.put()
+    self.stage_5 = Stage(id=51, feature_id=1, stage_type=151, browser='Chrome',
+        ot_stage_id=40,
+        ot_emails=['ot_person@google.com'],
+        intent_thread_url='https://example.com/intent',
+        milestones=MilestoneSet(desktop_last=103),
+        experiment_extension_reason='To be the very best.',
+        created=datetime(2020, 1, 1))
     self.stage_5.put()
 
     self.expected_stage_1 = {
@@ -117,6 +129,7 @@ class StagesAPITest(testing_config.CustomTestCase):
         'origin_trial_feedback_url': None,
         'ot_action_requested': False,
         'ot_approval_buganizer_component': None,
+        'ot_approval_buganizer_custom_field_id': None,
         'ot_approval_criteria_url': None,
         'ot_approval_group_email': None,
         'ot_chromium_trial_name': None,
@@ -130,6 +143,7 @@ class StagesAPITest(testing_config.CustomTestCase):
         'ot_is_deprecation_trial': False,
         'ot_owner_email': None,
         'ot_require_approvals': False,
+        'ot_setup_status': 1,
         'ot_webfeature_use_counter': None,
         'experiment_extension_reason': None,
         'experiment_goals': 'To be the very best.',
@@ -174,7 +188,7 @@ class StagesAPITest(testing_config.CustomTestCase):
     with test_app.test_request_context(f'{self.request_path}1/stages/3001'):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_get(feature_id=1, stage_id=3001)
-    mock_abort.assert_called_once_with(404, description=f'Stage 3001 not found')
+    mock_abort.assert_called_once_with(404, description='Stage 3001 not found')
 
   @mock.patch('flask.abort')
   def test_get__no_id(self, mock_abort):
@@ -194,36 +208,39 @@ class StagesAPITest(testing_config.CustomTestCase):
 
   def test_get__valid_with_extension(self):
     """Returns stage data with extension if requesting a valid stage ID."""
-    extension = {
+    # TODO(DanielRyanSmith): this dict format should be tested in
+    # api/converters_test.py instead.
+    extension_1 = {
         'id': 50,
         'created': str(self.now),
         'feature_id': 1,
-        'stage_type': 150,
-        'intent_stage': 3,
+        'stage_type': 151,
+        'intent_stage': 11,
         'pm_emails': [],
         'tl_emails': [],
-        'ux_emails': ['ux_person@example.com'],
+        'ux_emails': [],
         'te_emails': [],
-        'intent_thread_url': 'https://example.com/intent',
-        'desktop_first': 100,
+        'intent_thread_url': 'https://example.com/intent2',
+        'desktop_first': None,
         'display_name': None,
-        'desktop_last': None,
+        'desktop_last': 106,
         'android_first': None,
         'android_last': None,
         'webview_first': None,
         'webview_last': None,
-        'experiment_goals': 'To be the very best.',
+        'experiment_goals': None,
         'experiment_risks': None,
         'origin_trial_feedback_url': None,
         'ot_action_requested': False,
         'ot_approval_buganizer_component': None,
+        'ot_approval_buganizer_custom_field_id': None,
         'ot_approval_criteria_url': None,
         'ot_approval_group_email': None,
         'ot_chromium_trial_name': None,
         'ot_description': None,
         'ot_display_name': None,
         'ot_documentation_url': None,
-        'ot_emails': [],
+        'ot_emails': ['ot_person2@google.com'],
         'ot_feedback_submission_url': None,
         'ot_has_third_party_support': False,
         'ot_is_critical_trial': False,
@@ -233,7 +250,7 @@ class StagesAPITest(testing_config.CustomTestCase):
         'ot_webfeature_use_counter': None,
         'announcement_url': None,
         'enterprise_policies': [],
-        'experiment_extension_reason': None,
+        'experiment_extension_reason': 'To be the very best again.',
         'extensions': [],
         'finch_url': None,
         'ios_first': None,
@@ -244,7 +261,59 @@ class StagesAPITest(testing_config.CustomTestCase):
         'rollout_impact': 2,
         'rollout_milestone': None,
         'rollout_platforms': [],
-}
+        }
+    extension_2 = {
+        'id': 51,
+        'created': '2020-01-01 00:00:00',
+        'feature_id': 1,
+        'stage_type': 151,
+        'intent_stage': 11,
+        'pm_emails': [],
+        'tl_emails': [],
+        'ux_emails': [],
+        'te_emails': [],
+        'intent_thread_url': 'https://example.com/intent',
+        'desktop_first': None,
+        'display_name': None,
+        'desktop_last': 103,
+        'android_first': None,
+        'android_last': None,
+        'webview_first': None,
+        'webview_last': None,
+        'experiment_goals': None,
+        'experiment_risks': None,
+        'origin_trial_feedback_url': None,
+        'ot_action_requested': False,
+        'ot_approval_buganizer_component': None,
+        'ot_approval_buganizer_custom_field_id': None,
+        'ot_approval_criteria_url': None,
+        'ot_approval_group_email': None,
+        'ot_chromium_trial_name': None,
+        'ot_description': None,
+        'ot_display_name': None,
+        'ot_documentation_url': None,
+        'ot_emails': ['ot_person@google.com'],
+        'ot_feedback_submission_url': None,
+        'ot_has_third_party_support': False,
+        'ot_is_critical_trial': False,
+        'ot_is_deprecation_trial': False,
+        'ot_owner_email': None,
+        'ot_require_approvals': False,
+        'ot_webfeature_use_counter': None,
+        'announcement_url': None,
+        'enterprise_policies': [],
+        'experiment_extension_reason': 'To be the very best.',
+        'extensions': [],
+        'finch_url': None,
+        'ios_first': None,
+        'ios_last': None,
+        'origin_trial_id': None,
+        'ot_stage_id': 40,
+        'rollout_details': None,
+        'rollout_impact': 2,
+        'rollout_milestone': None,
+        'rollout_platforms': [],
+    }
 
     expect = {
         'id': 40,
@@ -267,13 +336,15 @@ class StagesAPITest(testing_config.CustomTestCase):
         'experiment_extension_reason': None,
         'experiment_goals': 'To be the very best.',
         'experiment_risks': None,
-        'extensions': [extension],
+        # Extensions should be in the order in which they were created.
+        'extensions': [extension_2, extension_1],
         'announcement_url': None,
         'enterprise_policies': [],
         'origin_trial_id': '-5269211564023480319',
         'origin_trial_feedback_url': None,
         'ot_action_requested': True,
         'ot_approval_buganizer_component': 123456789,
+        'ot_approval_buganizer_custom_field_id': 111111,
         'ot_approval_criteria_url': 'https://example.com/criteria',
         'ot_approval_group_email': 'fakegroup@google.com',
         'ot_chromium_trial_name': 'ExampleChromiumTrialName',
@@ -296,7 +367,7 @@ class StagesAPITest(testing_config.CustomTestCase):
         'ios_first': None,
         'ios_last': None,
         'finch_url': None,
-}
+    }
 
     with test_app.test_request_context(f'{self.request_path}1/stages/10'):
       actual = self.handler.do_get(feature_id=1, stage_id=40)
@@ -495,6 +566,55 @@ class StagesAPITest(testing_config.CustomTestCase):
 
     self.assertEqual(actual, 'fake response')
 
+  @mock.patch('flask.abort')
+  def test_patch__ot_milestones_during_creation(self, mock_abort):
+    """Raises 400 if OT start milestone is updated during OT creation process.
+    """
+    testing_config.sign_in('feature_owner@example.com', 123)
+    json = {
+      'id': 10,
+      'desktop_first': {
+        'form_field_name': 'ot_milestone_desktop_start',
+        'value': 200,
+      },
+    }
+
+    # OT is flagged for automated creation process.
+    self.stage_1.ot_setup_status = OT_READY_FOR_CREATION
+    self.stage_1.put()
+    mock_abort.side_effect = werkzeug.exceptions.BadRequest
+    with test_app.test_request_context(
+        f'{self.request_path}1/stages/10', json=json):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.do_patch(feature_id=1, stage_id=10)
+    mock_abort.assert_called_once_with(
+        400,
+        description='Cannot edit OT milestones while creation is in progress.')
+
+  @mock.patch('flask.abort')
+  def test_patch__ot_end_milestone_during_creation(self, mock_abort):
+    """Raises 400 if OT end milestone is updated during OT creation process."""
+    testing_config.sign_in('feature_owner@example.com', 123)
+    json = {
+      'id': 10,
+      'desktop_last': {
+        'form_field_name': 'ot_milestone_desktop_end',
+        'value': 206,
+      },
+    }
+
+    # OT is flagged for automated creation process.
+    self.stage_1.ot_setup_status = OT_READY_FOR_CREATION
+    self.stage_1.put()
+    mock_abort.side_effect = werkzeug.exceptions.BadRequest
+    with test_app.test_request_context(
+        f'{self.request_path}1/stages/10', json=json):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.do_patch(feature_id=1, stage_id=10)
+    mock_abort.assert_called_once_with(
+        400,
+        description='Cannot edit OT milestones while creation is in progress.')
+
   def test_patch__valid(self):
     """A valid PATCH request should update an existing stage."""
     testing_config.sign_in('feature_owner@example.com', 123)
@@ -525,11 +645,11 @@ class StagesAPITest(testing_config.CustomTestCase):
     # Existing fields not specified should not be changed.
     self.assertEqual(stage.experiment_goals, 'To be the very best.')
 
-  @mock.patch('internals.notifier_helpers.send_ot_notification')
-  def test_patch__ot_creation(self, mock_send_ot_notification):
+  @mock.patch('internals.notifier_helpers.send_ot_creation_notification')
+  def test_patch__ot_creation(self, mock_send_ot_creation_notification):
     """A valid PATCH request should update an existing stage."""
     testing_config.sign_in('feature_owner@example.com', 123)
-    mock_send_ot_notification.return_value = None
+    mock_send_ot_creation_notification.return_value = None
     json = {
         'ot_action_requested': {
           'form_field_name': 'ot_action_requested',
@@ -552,16 +672,16 @@ class StagesAPITest(testing_config.CustomTestCase):
     # Existing fields not specified should not be changed.
     self.assertEqual(stage.experiment_goals, 'To be the very best.')
     # OT creation request notification should be sent.
-    mock_send_ot_notification.assert_called_once()
+    mock_send_ot_creation_notification.assert_called_once()
 
-  @mock.patch('internals.notifier_helpers.send_ot_notification')
-  def test_patch__ot_extension(self, mock_send_ot_notification):
+  @mock.patch('internals.notifier_helpers.send_ot_creation_notification')
+  def test_patch__ot_extension(self, mock_send_ot_creation_notification):
     """A valid PATCH request should update an existing stage."""
     testing_config.sign_in('feature_owner@example.com', 123)
     # extension stage type.
     self.stage_1.stage_type = 151
     self.stage_1.put()
-    mock_send_ot_notification.return_value = None
+    mock_send_ot_creation_notification.return_value = None
     json = {
         'ot_action_requested': {
           'form_field_name': 'ot_action_requested',
@@ -584,7 +704,7 @@ class StagesAPITest(testing_config.CustomTestCase):
     # Existing fields not specified should not be changed.
     self.assertEqual(stage.experiment_goals, 'To be the very best.')
     # OT extension request should NOT send a notification.
-    mock_send_ot_notification.assert_not_called()
+    mock_send_ot_creation_notification.assert_not_called()
 
   def test_patch__ot_request_googler(self):
     """A valid OT creation request from a googler should update stage."""

@@ -2,8 +2,20 @@
 // for use with text entries in WebStatus. Use this directly via './utils.js'
 // See: https://chromium.googlesource.com/infra/infra/+/refs/heads/main/appengine/monorail/static_src/autolink.js
 
+import {FeatureLink} from '../js-src/cs-client';
 import {enhanceAutolink} from './chromedash-link.js';
-import {Component, TextRun} from './datatypes';
+
+interface TextRun {
+  content: string;
+  tag?: string;
+  href?: string;
+}
+
+interface Component {
+  refRegs: RegExp[];
+  replacer: (match: any) => never[] | TextRun[];
+}
+
 const CRBUG_DEFAULT_PROJECT = 'chromium';
 const CRBUG_URL = 'https://bugs.chromium.org';
 const ISSUE_TRACKER_RE =
@@ -123,10 +135,10 @@ function replaceLinkRef(match: RegExpExecArray) {
     content = content.slice(match[1].length);
   }
   LINK_TRAILING_CHARS.forEach(([begin, end]) => {
-    if (end && content.endsWith(end)) {
-      if (!begin || !content.slice(0, -end!.length).includes(begin)) {
+    if (content.endsWith(end)) {
+      if (!begin || !content.slice(0, -end.length).includes(begin)) {
         trailing = end + trailing;
-        content = content.slice(0, -end!.length);
+        content = content.slice(0, -end.length);
       }
     }
   });
@@ -164,7 +176,7 @@ function createIssueRefRun(projectName, localId, content, commentId) {
   };
 }
 
-export function markupAutolinks(plainString, featureLinks = []) {
+export function markupAutolinks(plainString, featureLinks: FeatureLink[] = []) {
   plainString = plainString || '';
   const chunks = [plainString.trim()];
   const textRuns: TextRun[] = [];

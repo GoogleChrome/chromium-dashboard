@@ -58,17 +58,12 @@ limitations under the License.
       alert('Please log in.');
     }
   </script>
-  <script nonce="fake nonce" src="/static/js/metric.min.js?v=Undeployed"></script>
-  <script nonce="fake nonce" src="/static/js/cs-client.min.js?v=Undeployed"></script>
-
-  
-  <script nonce="fake nonce">
+  <script type="module" nonce="fake nonce">
+    import {ChromeStatusClient} from "/static/dist/cs-client.js?v=Undeployed"
     window.csClient = new ChromeStatusClient(
         '', 0);
-  </script>
 
-  
-  <script type="module" nonce="fake nonce">
+    
     const drawer = document.querySelector('chromedash-drawer');
     const header = document.querySelector('chromedash-header');
     header.addEventListener('drawer-clicked', (e) => {
@@ -163,11 +158,11 @@ limitations under the License.
 
 
   
-  <script nonce="fake nonce" src="/static/js/features-page.min.js?v=Undeployed"></script>
-  <script nonce="fake nonce">
+  <script type="module" nonce="fake nonce">
+    import {loadFeatureLegendViews} from "/static/dist/features-page.js?v=Undeployed";
     (function() {
       'use strict';
-      // Get values from server. used in /static/js/features-page.js
+      // Get values from server. used in /static/dist/features-page.js
       const VIEWS = {
         vendors: [{"key": 1, "val": "Shipped/Shipping"}, {"key": 2, "val": "In development"}, {"key": 3, "val": "Positive"}, {"key": 5, "val": "No signal"}, {"key": 7, "val": "Negative"}, {"key": 8, "val": "Neutral"}, {"key": 9, "val": "N/A"}, {"key": 10, "val": "Under consideration"}, {"key": 11, "val": "Important"}, {"key": 12, "val": "Worth prototyping"}, {"key": 13, "val": "Non-harmful"}, {"key": 14, "val": "Defer"}, {"key": 15, "val": "Harmful"}],
         webdevs: [{"key": 1, "val": "Strongly positive"}, {"key": 2, "val": "Positive"}, {"key": 3, "val": "Mixed signals"}, {"key": 4, "val": "No signals"}, {"key": 5, "val": "Negative"}, {"key": 6, "val": "Strongly negative"}],
@@ -202,6 +197,6 @@ limitations under the License.
           async nonce="fake nonce"></script>
 
   
-  <script type="module" nonce="fake nonce" src="/static/js/shared.min.js?v=Undeployed"></script>
+  <script type="module" nonce="fake nonce" src="/static/dist/shared.js?v=Undeployed"></script>
 </body>
 </html>

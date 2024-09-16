@@ -40,7 +40,7 @@ class ProcessStage:
   description: str
   progress_items: list[ProgressItem]
   actions: list[Action]
-  approvals: list[approval_defs.ApprovalFieldDef]
+  approvals: list[approval_defs.GateInfo]
   incoming_stage: int
   outgoing_stage: int
   stage_type: int | None
@@ -72,9 +72,7 @@ def process_to_dict(process):
 # The param "intent" adds clauses the template to include details
 # needed for an intent email.  The param "launch" causes those
 # details to be omitted and a link to create a launch bug shown instead.
-INTENT_EMAIL_URL = ('/admin/features/launch/{feature_id}'
-                    '/{intent_stage}/{gate_id}'
-                    '?intent=1')
+INTENT_EMAIL_URL = ('/feature/{feature_id}/gate/{gate_id}/intent')
 LAUNCH_BUG_TEMPLATE_URL = '/admin/features/launch/{feature_id}?launch=1'
 # TODO(jrobbins): Creation of the launch bug has been a TODO for 5 years.
 
@@ -609,7 +607,7 @@ ALL_PROCESSES = {
     }
 
 
-INTENT_EMAIL_SECTIONS = {
+INTENT_EMAIL_SECTIONS: dict[int, list[str]] = {
     core_enums.INTENT_NONE: [],
     core_enums.INTENT_INCUBATE: [],
     core_enums.INTENT_IMPLEMENT: ['motivation'],

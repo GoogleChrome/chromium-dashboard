@@ -1152,6 +1152,10 @@ class OTExtensionApprovedHandlerTest(testing_config.CustomTestCase):
                                        self.extension_stage.ot_owner_email,
                                        self.extension_gate.key.integer_id())
       # TESTDATA.make_golden(email_task['html'], 'test_make_extension_approved_email.html')
+      self.assertEqual(
+          email_task['subject'],
+          ('Origin trial extension approved and ready to be initiated: '
+           'A feature'))
       self.assertEqual(email_task['html'],
         TESTDATA['test_make_extension_approved_email.html'])
 
@@ -1238,7 +1242,7 @@ class OTCreationRequestFailedHandlerTest(testing_config.CustomTestCase):
         id=1, name='feature one', summary='sum', category=1, feature_type=0)
     self.feature_1.put()
     self.ot_stage = Stage(
-        feature_id=1, stage_type=150, ot_display_name='Example Trial',
+        id=237, feature_id=1, stage_type=150, ot_display_name='Example Trial',
         ot_owner_email='feature_owner@google.com',
         ot_chromium_trial_name='ExampleTrial',
         milestones=MilestoneSet(desktop_first=100, desktop_last=106),
@@ -1247,7 +1251,7 @@ class OTCreationRequestFailedHandlerTest(testing_config.CustomTestCase):
         intent_thread_url='https://example.com/experiment',
         ot_description='OT description', ot_has_third_party_support=True,
         ot_activation_date=date(2030, 1, 1),
-        ot_is_deprecation_trial=True)
+        ot_is_deprecation_trial=True, origin_trial_id='-1239058')
     self.ot_stage.put()
 
   def tearDown(self):
@@ -1258,7 +1262,8 @@ class OTCreationRequestFailedHandlerTest(testing_config.CustomTestCase):
     with test_app.app_context():
       handler = notifier.OTCreationRequestFailedHandler()
       stage_dict = converters.stage_to_json_dict(self.ot_stage)
-      email_task = handler.build_email(stage_dict)
+      error_text = 'Something went pretty wrong'
+      email_task = handler.build_email(stage_dict, error_text)
       # TESTDATA.make_golden(email_task['html'], 'test_make_creation_request_failed_email.html')
       self.assertEqual(
         email_task['subject'],
@@ -1300,6 +1305,51 @@ class OTActivationFailedHandlerTest(testing_config.CustomTestCase):
         'Automated trial activation request failed for Example Trial')
       self.assertEqual(email_task['html'],
         TESTDATA['test_make_activation_failed_email.html'])
+
+
+class IntentToBlinkDevHandlerTest(testing_config.CustomTestCase):
+  def setUp(self):
+    self.feature_1 = FeatureEntry(
+        id=1, feature_type=1, name='feature one', summary='sum', category=1,
+        owner_emails=['owner@example.com'])
+    self.feature_1.put()
+    self.feature_1_id = self.feature_1.key.integer_id()
+    self.ot_stage_1 = Stage(
+        feature_id=self.feature_1_id, stage_type=150,
+        origin_trial_id='-1234567890')
+    self.ot_stage_1.put()
+    self.ot_gate_1 = Gate(id=100, feature_id=self.feature_1_id,
+                stage_id=self.ot_stage_1.key.integer_id(),
+                gate_type=2, state=Vote.APPROVED)
+    self.ot_gate_1.put()
+    self.contacts = ['example_user@example.com', 'another_user@exmaple.com']
+
+  def tearDown(self):
+    for kind in [FeatureEntry, Stage, Gate]:
+      for entity in kind.query():
+        entity.key.delete()
+
+  def test_make_intent_post_email(self):
+    json_data = {
+      'subject': 'Intent to Experiment: feature one',
+      'feature_id': self.feature_1_id,
+      'sections_to_show': ['i2p_thread', 'experiment', 'extension_reason'],
+      'intent_stage': 3,
+      'default_url': (f'https://chromestatus.com/feature/{self.feature_1_id}'
+                      f'?gate=${self.ot_gate_1.key.integer_id()}'),
+      'intent_cc_emails': ['cc1@example.com', 'owner@example.com'],
+    }
+    with test_app.app_context():
+      handler = notifier.IntentToBlinkDevHandler()
+      email_task = handler.build_email(self.feature_1, json_data)
+      # TESTDATA.make_golden(email_task['html'], 'test_make_intent_email.html')
+      self.assertEqual(email_task['to'], 'blink-dev@chromium.org')
+      self.assertEqual(email_task['cc'],
+                       ['cc1@example.com', 'owner@example.com'])
+      self.assertEqual(email_task['subject'],
+                       'Intent to Experiment: feature one')
+      self.assertEqual(email_task['html'],
+        TESTDATA['test_make_intent_email.html'])
 
 
 class OTEndingNextReleaseReminderHandlerTest(testing_config.CustomTestCase):

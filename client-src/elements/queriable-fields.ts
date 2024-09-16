@@ -1,16 +1,17 @@
 // Constants that are used by the search help dialog.
 // And will be used by autocomplete in the future.
 
+import {type HTMLTemplateResult} from 'lit';
 import {
   FEATURE_CATEGORIES,
   FEATURE_TYPES,
   IMPLEMENTATION_STATUS,
   INTENT_STAGES,
   REVIEW_STATUS_CHOICES,
+  ROLLOUT_IMPACT,
   VENDOR_VIEWS_COMMON,
   VENDOR_VIEWS_GECKO,
   WEB_DEV_VIEWS,
-  ROLLOUT_IMPACT,
 } from './form-field-enums';
 
 export const TEXT_KIND = 'text';
@@ -20,7 +21,15 @@ export const DATE_KIND = 'YYYY-MM-DD';
 export const EMAIL_KIND = 'user@example.com';
 export const ENUM_KIND = 'enum';
 
-export const QUERIABLE_FIELDS = [
+export interface QueryField {
+  name: string;
+  kind: string;
+  doc: string;
+  choices?:
+    | Record<string, [number, string]>
+    | Record<string, [number, string, string | HTMLTemplateResult]>;
+}
+export const QUERIABLE_FIELDS: QueryField[] = [
   {
     name: 'created.when',
     kind: DATE_KIND,
@@ -53,6 +62,12 @@ export const QUERIABLE_FIELDS = [
   //  'launch_bug_url': Feature.launch_bug_url,
   //  'initial_public_proposal_url': Feature.initial_public_proposal_url,
   //  'browsers.chrome.blink_components': Feature.blink_components,
+  {
+    name: 'shipping_year',
+    kind: NUM_KIND,
+    doc: 'Estimated shipping year',
+  },
+
   {
     name: 'browsers.chrome.devrel',
     kind: EMAIL_KIND,
@@ -154,6 +169,18 @@ export const QUERIABLE_FIELDS = [
     name: 'browsers.chrome.ot.webview.end',
     kind: MILESTONE_KIND,
     doc: 'WebView Origin Trial end',
+  },
+  {
+    name: 'rollout_milestone',
+    kind: MILESTONE_KIND,
+    doc: 'Stable rollout milestone',
+  },
+  {
+    name: 'any_start_milestone',
+    kind: MILESTONE_KIND,
+    doc:
+      'A milestone in which the feature is scheduled to ship or start an ' +
+      'origin trial or dev trial, on any platform',
   },
   // 'browsers.chrome.ot.feedback_url': Feature.origin_trial_feedback_url,
   // 'finch_url': Feature.finch_url,

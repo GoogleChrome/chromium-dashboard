@@ -74,7 +74,7 @@ your change of the test files.
 
 To run the Playwright visual tests (aka end-to-end tests), the command to use is:
 ```bash
-npm run pwtests --workspace=playwright
+npm run pwtests
 ```
 
 If there are errors, they will be displayed in the console.
@@ -82,7 +82,7 @@ If you need to update any of the screenshot images, you will see differences in
 the `packages/playwright/test-results` directory, and if they look correct,
 then you can update _all_ images for all tests with:
 ```bash
-npm run pwtests-update --workspace=playwright
+npm run pwtests-update
 ```
 
 The updated images are also added to the __screenshots__ directory.  Images that

@@ -110,6 +110,4 @@ test('create new feature', async ({ page }) => {
     mask: [page.locator('section[id="history"]')]
   });
   await delay(500);
-
-  // await deleteFeature(page);
 });

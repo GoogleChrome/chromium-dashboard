@@ -168,6 +168,9 @@ def _prep_stage_info(
       (stage_info['all_stages'][ot_stage_indexes[ot_id]]['extensions']
           .append(extension))
   stage_info['all_stages'].sort(key=lambda s: (s['stage_type'], s['created']))
+  # Sort all extensions in order of creation as well.
+  for stage in stage_info['all_stages']:
+    stage['extensions'].sort(key=lambda s: (s['created']))
   return stage_info
 
 
@@ -201,6 +204,8 @@ def stage_to_json_dict(
     'origin_trial_feedback_url': stage.origin_trial_feedback_url,
     'ot_action_requested': stage.ot_action_requested,
     'ot_approval_buganizer_component': stage.ot_approval_buganizer_component,
+    'ot_approval_buganizer_custom_field_id': (
+        stage.ot_approval_buganizer_custom_field_id),
     'ot_approval_criteria_url': stage.ot_approval_criteria_url,
     'ot_approval_group_email': stage.ot_approval_group_email,
     'ot_chromium_trial_name': stage.ot_chromium_trial_name,
@@ -239,6 +244,8 @@ def stage_to_json_dict(
 
   if stage.ot_activation_date:
     d['ot_activation_date'] = str(stage.ot_activation_date)
+  if stage.ot_setup_status:
+    d['ot_setup_status'] = stage.ot_setup_status
 
   return d
 
@@ -374,6 +381,7 @@ def feature_entry_to_json_verbose(
     'first_enterprise_notification_milestone': fe.first_enterprise_notification_milestone,
     'enterprise_impact': fe.enterprise_impact,
     'breaking_change': fe.breaking_change,
+    'shipping_year': fe.shipping_year,
     'flag_name': fe.flag_name,
     'finch_name': fe.finch_name,
     'non_finch_justification': fe.non_finch_justification,

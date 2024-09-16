@@ -23,6 +23,7 @@ import re
 from typing import Any, Optional
 import urllib
 
+from api import converters
 from framework import permissions
 from google.cloud import ndb  # type: ignore
 
@@ -35,7 +36,6 @@ from framework import users
 import settings
 from internals import approval_defs
 from internals import core_enums
-from internals.data_types import StageDict
 from internals import stage_helpers
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.data_types import StageDict
@@ -45,6 +45,7 @@ from internals.user_models import (
 
 
 OT_SUPPORT_EMAIL = 'origin-trials-support@google.com'
+BLINK_DEV_EMAIL = 'blink-dev@chromium.org'
 
 
 def _determine_milestone_string(ship_stages: list[Stage]) -> str:
@@ -650,6 +651,7 @@ class OTActivatedHandler(basehandlers.FlaskHandler):
   EMAIL_TEMPLATE_PATH = 'origintrials/ot-activated-email.html'
 
   def process_post_data(self, **kwargs):
+    self.require_task_header()
     stage = self.get_param('stage', required=True)
     contacts = stage['ot_emails'] or []
     contacts.append('ot_owner_email')
@@ -680,6 +682,7 @@ class OTCreationProcessedHandler(basehandlers.FlaskHandler):
   EMAIL_TEMPLATE_PATH = 'origintrials/ot-creation-processed-email.html'
 
   def process_post_data(self, **kwargs):
+    self.require_task_header()
     stage = self.get_param('stage', required=True)
     contacts = stage['ot_emails'] or []
     contacts.append('ot_owner_email')
@@ -710,13 +713,16 @@ class OTCreationRequestFailedHandler(basehandlers.FlaskHandler):
   EMAIL_TEMPLATE_PATH = 'origintrials/ot-creation-request-failed-email.html'
 
   def process_post_data(self, **kwargs):
+    self.require_task_header()
     stage = self.get_param('stage', required=True)
-    send_emails([self.build_email(stage)])
+    error_text = self.get_param('error_text')
+    send_emails([self.build_email(stage, error_text)])
     return {'message': 'OK'}
 
-  def build_email(self, stage: StageDict) -> dict:
+  def build_email(self, stage: StageDict, error_text: str|None) -> dict:
     body_data = {
       'stage': stage,
+      'error_text': error_text,
       'chromestatus_url': ('https://chromestatus.com/feature/'
                            f'{stage["feature_id"]}')
     }
@@ -737,6 +743,7 @@ class OTActivationFailedHandler(basehandlers.FlaskHandler):
   EMAIL_TEMPLATE_PATH = 'origintrials/ot-activation-failed-email.html'
 
   def process_post_data(self, **kwargs):
+    self.require_task_header()
     stage = self.get_param('stage', required=True)
     send_emails([self.build_email(stage)])
     return {'message': 'OK'}
@@ -763,6 +770,7 @@ class OTCreationRequestHandler(basehandlers.FlaskHandler):
   IS_INTERNAL_HANDLER = True
 
   def process_post_data(self, **kwargs):
+    self.require_task_header()
     stage = self.get_param('stage')
     logging.info('Starting to notify about origin trial creation request.')
     send_emails([self.make_creation_request_email(stage)])
@@ -830,6 +838,7 @@ class OTExtensionApprovedHandler(basehandlers.FlaskHandler):
   EMAIL_TEMPLATE_PATH = 'origintrials/ot-extension-approved-email.html'
 
   def process_post_data(self, **kwargs):
+    self.require_task_header()
     feature = self.get_param('feature')
     if feature is None:
       self.abort(400, 'No feature provided.')
@@ -857,8 +866,51 @@ class OTExtensionApprovedHandler(basehandlers.FlaskHandler):
     return {
       'to': requester_email,
       'cc': [OT_SUPPORT_EMAIL],
-      'subject': ('Origin trial approved and ready to be initiated: '
+      'subject': ('Origin trial extension approved and ready to be initiated: '
                   f'{feature["name"]}'),
+      'reply_to': None,
+      'html': body,
+    }
+
+
+class IntentToBlinkDevHandler(basehandlers.FlaskHandler):
+  """Submit an intent email directly to blink-dev."""
+  IS_INTERNAL_HANDLER = True
+  EMAIL_TEMPLATE_PATH = 'blink/intent_to_implement.html'
+
+  def process_post_data(self, **kwargs):
+    self.require_task_header()
+    feature_id = self.get_param('feature_id', required=True)
+    feature = FeatureEntry.get_by_id(feature_id)
+    if not feature:
+      self.abort(400, 'Feature not found.')
+    json_data = self.get_json_param_dict()
+    email_data = self.build_email(feature, json_data)
+    logging.info('Submitting email task:\n'
+                 f'To: {email_data["to"]}\n'
+                 f'CC: {email_data["cc"]}\n'
+                 f'Subject: {email_data["subject"]}\n')
+    send_emails([email_data])
+    return {'message': 'OK'}
+
+  def build_email(self, feature: FeatureEntry, json_data: dict):
+    stage_info = stage_helpers.get_stage_info_for_templates(feature)
+    template_data = {
+      'feature': converters.feature_entry_to_json_verbose(feature),
+      'stage_info': stage_helpers.get_stage_info_for_templates(feature),
+      'sections_to_show': json_data['sections_to_show'],
+      'should_render_mstone_table': stage_info['should_render_mstone_table'],
+      'should_render_intents': stage_info['should_render_intents'],
+      'intent_stage': json_data['intent_stage'],
+      'default_url': json_data['default_url'],
+      'APP_TITLE': settings.APP_TITLE,
+    }
+    body = render_template(self.EMAIL_TEMPLATE_PATH, **template_data)
+
+    return {
+      'to': BLINK_DEV_EMAIL,
+      'cc': json_data['intent_cc_emails'],
+      'subject': json_data['subject'],
       'reply_to': None,
       'html': body,
     }
@@ -876,6 +928,7 @@ class OTEndingNextReleaseReminderHandler(basehandlers.FlaskHandler):
   EMAIL_TEMPLATE_PATH = 'origintrials/ot-ending-next-release-email.html'
 
   def process_post_data(self, **kwargs):
+    self.require_task_header()
     contacts = self.get_param('contacts')
     body_data = {
       'name': self.get_param('name'),
@@ -904,6 +957,7 @@ class OTEndingThisReleaseReminderHandler(basehandlers.FlaskHandler):
   EMAIL_TEMPLATE_PATH = 'origintrials/ot-ending-this-release-email.html'
 
   def process_post_data(self, **kwargs):
+    self.require_task_header()
     name = self.get_param('name')
     release_milestone = self.get_param('release_milestone')
     next_release = self.get_param('next_release')
@@ -934,6 +988,7 @@ class OTBetaAvailabilityReminderHandler(basehandlers.FlaskHandler):
   EMAIL_TEMPLATE_PATH = 'origintrials/ot-beta-availability-email.html'
 
   def process_post_data(self, **kwargs):
+    self.require_task_header()
     contacts = self.get_param('contacts')
     body_data = {
       'name': self.get_param('name'),
@@ -960,6 +1015,7 @@ class OTFirstBranchReminderHandler(basehandlers.FlaskHandler):
   EMAIL_TEMPLATE_PATH = 'origintrials/ot-first-branch-email.html'
 
   def process_post_data(self, **kwargs):
+    self.require_task_header()
     contacts = self.get_param('contacts')
     body_data = {
       'name': self.get_param('name'),
@@ -987,6 +1043,7 @@ class OTLastBranchReminderHandler(basehandlers.FlaskHandler):
   EMAIL_TEMPLATE_PATH = 'origintrials/ot-last-branch-email.html'
 
   def process_post_data(self, **kwargs):
+    self.require_task_header()
     contacts = self.get_param('contacts')
     body_data = {
       'name': self.get_param('name'),
@@ -1015,6 +1072,7 @@ class OTAutomatedProcessEmailHandler(basehandlers.FlaskHandler):
   EMAIL_TEMPLATE_PATH = 'origintrials/ot-automated-process-email.html'
 
   def process_post_data(self, **kwargs):
+    self.require_task_header()
     now_date = datetime.now().strftime('%d %B, %Y')
     body_data = {
       'email_date': now_date,
@@ -1044,6 +1102,7 @@ class OTExtendedHandler(basehandlers.FlaskHandler):
   EMAIL_TEMPLATE_PATH = 'origintrials/ot-extended-email.html'
 
   def process_post_data(self, **kwargs):
+    self.require_task_header()
     extension_stage = self.get_param('stage')
     ot_stage = self.get_param('ot_stage')
     logging.info('Starting to notify about successful origin trial extension.')

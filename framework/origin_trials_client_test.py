@@ -33,7 +33,14 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
         ot_documentation_url='https://example.com/docs',
         ot_feedback_submission_url='https://example.com/feedback',
         intent_thread_url='https://example.com/experiment',
+        ot_owner_email='someuser@google.com',
+        ot_emails=['anotheruser@chromium.org', 'contact@microsoft.com',
+                   'editor@google.com', 'someuser@google.com'],
         ot_description='OT description', ot_has_third_party_support=True,
+        ot_require_approvals=True, ot_approval_buganizer_component=123456,
+        ot_approval_criteria_url='https://example.com/criteria',
+        ot_approval_group_email='somegroup@google.com',
+        ot_approval_buganizer_custom_field_id=111111,
         ot_is_deprecation_trial=True)
     self.ot_stage.put()
     self.mock_list_trials_json = {
@@ -182,8 +189,10 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
       self, mock_requests_post, mock_api_key_get):
     """If no API key is available, do not send creation request."""
     mock_api_key_get.return_value = None
-    origin_trials_client.create_origin_trial(self.ot_stage)
+    ot_id, error_text = origin_trials_client.create_origin_trial(self.ot_stage)
 
+    self.assertIsNone(ot_id)
+    self.assertEqual('No API key found for origin trials API', error_text)
     mock_api_key_get.assert_called_once()
     # POST request should not be executed with no API key.
     mock_requests_post.assert_not_called()
@@ -197,22 +206,22 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
       mock_get_ot_access_token, mock_api_key_get):
     """If an API key is available, POST should create trial and return true."""
     mock_requests_post.return_value = mock.MagicMock(
-        status_code=200, json=lambda : {'id': '-1234567890'})
+        status_code=200, json=lambda : (
+            {'trial': {'id': -1234567890}, 'should_retry': False}))
     mock_get_trial_end_time.return_value = 111222333
     mock_get_ot_access_token.return_value = 'access_token'
     mock_api_key_get.return_value = 'api_key_value'
 
-    id = origin_trials_client.create_origin_trial(self.ot_stage)
-    self.assertEqual(id, '-1234567890')
+    ot_id, error_text = origin_trials_client.create_origin_trial(self.ot_stage)
+    self.assertEqual(ot_id, '-1234567890')
+    self.assertIsNone(error_text)
 
     mock_api_key_get.assert_called_once()
     mock_get_ot_access_token.assert_called_once()
-    mock_requests_post.assert_called_once_with(
-      f'{settings.OT_API_URL}/v1/trials-integration',
-      headers={'Authorization': 'Bearer access_token'},
-      params={'key': 'api_key_value'},
-      json={
-        'trial': {
+    # Two separate POST requests made.
+    self.assertEqual(2, mock_requests_post.call_count)
+    create_trial_json = mock_requests_post.call_args_list[0][1]['json']
+    self.assertEqual({
           'display_name': 'Example Trial',
           'start_milestone': '100',
           'end_milestone': '106',
@@ -226,9 +235,21 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
           'chromestatus_url': f'{settings.SITE_URL}feature/1',
           'allow_third_party_origins': True,
           'type': 'DEPRECATION',
-        }
-      }
-    )
+        }, create_trial_json['trial'])
+    self.assertEqual({
+          'allow_public_suffix_subdomains': True,
+          'approval_type': 'CUSTOM',
+          'approval_buganizer_component_id': 123456,
+          'approval_criteria_url': 'https://example.com/criteria',
+          'approval_group_email': 'somegroup@google.com',
+          'approval_buganizer_custom_field_id': 111111,
+        }, create_trial_json['registration_config'])
+
+    set_up_trial_json = mock_requests_post.call_args_list[1][1]['json']
+    # Only unique @google.com emails should be sent as contacts.
+    self.assertCountEqual(['someuser@google.com', 'editor@google.com'],
+                          set_up_trial_json['trial_contacts'])
+    self.assertEqual(-1234567890, set_up_trial_json['trial_id'])
 
   @mock.patch('framework.secrets.get_ot_api_key')
   @mock.patch('requests.post')
@@ -261,7 +282,7 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
     mock_api_key_get.assert_called_once()
     mock_get_ot_access_token.assert_called_once()
     mock_requests_post.assert_called_once_with(
-      f'{settings.OT_API_URL}/v1/trials-integration/-1234567890:activate',
+      f'{settings.OT_API_URL}/v1/trials/-1234567890:start',
       headers={'Authorization': 'Bearer access_token'},
       params={'key': 'api_key_value'},
       json={'id': '-1234567890'}

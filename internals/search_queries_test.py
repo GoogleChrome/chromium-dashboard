@@ -21,6 +21,7 @@ from internals import core_enums
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate, Vote
 from internals import search
+from internals import search_fulltext
 from internals import search_queries
 
 
@@ -35,23 +36,32 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
     self.feature_1.cc_emails = ['cc@example.com']
     self.feature_1.put()
     self.feature_1_id = self.feature_1.key.integer_id()
+    search_fulltext.index_feature(self.feature_1)
 
     self.stage_1_ship = Stage(
-        feature_id=self.feature_1_id,
-        stage_type=core_enums.STAGE_BLINK_SHIPPING,
-        milestones=MilestoneSet(desktop_first=99))
+      feature_id=self.feature_1_id,
+      stage_type=core_enums.STAGE_BLINK_SHIPPING,
+      milestones=MilestoneSet(desktop_first=99, android_first=100),
+    )
     self.stage_1_ship.put()
 
     self.feature_2 = FeatureEntry(
       name='feature b',
-      summary='sum',
+      summary='summary of editor stuff',
       owner_emails=['owner@example.com'],
       category=1,
       impl_status_chrome=3,
       accurate_as_of=datetime.datetime(2023, 6, 1),
     )
     self.feature_2.put()
+    search_fulltext.index_feature(self.feature_1)
     self.feature_2_id = self.feature_2.key.integer_id()
+    self.stage_2_ot = Stage(
+      feature_id=self.feature_2_id,
+      stage_type=core_enums.STAGE_BLINK_ORIGIN_TRIAL,
+      milestones=MilestoneSet(desktop_first=89, desktop_last=95, webview_first=100),
+    )
+    self.stage_2_ot.put()
 
     self.feature_3 = FeatureEntry(
       name='feature c',
@@ -113,14 +123,10 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
     self.vote_2_2.put()
 
   def tearDown(self):
-    self.feature_1.key.delete()
-    self.feature_2.key.delete()
-    self.feature_3.key.delete()
-    self.stage_1_ship.key.delete()
-    for gate in Gate.query():
-      gate.key.delete()
-    for vote in Vote.query():
-      vote.key.delete()
+    for kind in [
+        FeatureEntry, search_fulltext.FeatureWords, Stage, Gate, Vote]:
+      for entry in kind.query():
+        entry.key.delete()
 
   def test_single_field_query_async__normal(self):
     """We get a promise to run the DB query, which produces results."""
@@ -166,6 +172,32 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
     actual = actual_promise.get_result()
     self.assertCountEqual([self.feature_3_id], [key.integer_id() for key in actual])
 
+  def test_single_field_query_async__any_start_milestone(self):
+    actual = search_queries.single_field_query_async(
+      'any_start_milestone', '=', [100]
+    ).get_result()
+    self.assertEqual(
+      set([self.feature_1_id, self.feature_2_id]),
+      set(proj.feature_id for proj in actual),
+      'Finds across multiple milestones.',
+    )
+
+    actual = search_queries.single_field_query_async(
+      'any_start_milestone', '=', [95]
+    ).get_result()
+    self.assertEqual(
+      set(), set(proj.feature_id for proj in actual), 'Does not find "last" milestones.'
+    )
+
+    actual = search_queries.single_field_query_async(
+      'any_start_milestone', '=', [search_queries.Interval(97, 99)]
+    ).get_result()
+    self.assertCountEqual(
+      set([self.feature_1_id]),
+      set(proj.feature_id for proj in actual),
+      'Intervals are constrained to a single milestone.',
+    )
+
   def check_wrong_type(self, field_name, bad_values):
     with self.assertRaises(ValueError) as cm:
       search_queries.single_field_query_async(
@@ -179,6 +211,7 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
     self.check_wrong_type('owner', [True])
     self.check_wrong_type('owner', [123])
     self.check_wrong_type('deleted', ['not a boolean'])
+    self.check_wrong_type('shipping_year', ['not an integer'])
     self.check_wrong_type('star_count', ['not an integer'])
     self.check_wrong_type('created.when', ['not a date'])
     self.check_wrong_type('owner', ['ok@example.com', True])
@@ -209,6 +242,20 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
     actual_promise = search_queries.single_field_query_async(
         'owner', '=', ['nope'])
     actual = actual_promise.get_result()
+    self.assertCountEqual([], actual)
+
+  def test_single_field_query_async__fulltext_in_field(self):
+    """We can search for words within a field."""
+    actual = search_queries.single_field_query_async(
+        'editor_emails', ':', ['editor'])
+    self.assertCountEqual([self.feature_1_id], actual)
+
+    actual = search_queries.single_field_query_async(
+        'editor_emails', ':', ['wrongword'])
+    self.assertCountEqual([], actual)
+
+    actual = search_queries.single_field_query_async(
+        'owner_emails', ':', ['editor'])
     self.assertCountEqual([], actual)
 
   @mock.patch('logging.warning')
@@ -316,7 +363,7 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
     future = search_queries.total_order_query_async('gate.reviewed_on')
     actual = search._resolve_promise_to_id_list(future)
     self.assertEqual(
-        [self.feature_1_id],
+        [self.feature_1_id, self.feature_2_id],
         actual)
 
   def test_stage_fields_have_join_conditions(self):
