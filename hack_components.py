@@ -100,6 +100,7 @@ HACK_BLINK_COMPONENTS = [
   "Blink>HTML>Script",
   "Blink>HTML>Table",
   "Blink>Handwriting",
+  "Blink>HID",
   "Blink>History",
   "Blink>HitTesting",
   "Blink>Identity",
