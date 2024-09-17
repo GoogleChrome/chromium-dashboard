@@ -109,7 +109,7 @@
     "regenerator-runtime": "^0.14.1",
     "rollup": "^4.21.2",
     "rollup-plugin-babel-minify": "^10.0.0",
-    "sinon": "^18.0.0",
+    "sinon": "^19.0.2",
     "tar": ">=7.4.3",
     "trim-newlines": ">=5.0.0",
     "ts-lit-plugin": "^2.0.2",
