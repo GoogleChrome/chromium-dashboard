@@ -351,7 +351,7 @@ def get_feature_names_by_ids(feature_ids: list[int],
                      if f is not None and f.get('id')}
 
   for feature_id in feature_ids:
-    if result_dict.get(feature_id) is None:
+    if feature_id not in result_dict:
       futures_by_id[feature_id] = FeatureEntry.get_by_id_async(feature_id)
 
   for future in futures_by_id.values():
@@ -362,7 +362,6 @@ def get_feature_names_by_ids(feature_ids: list[int],
         'id': feature_id,
         'name': fe.name,
       }
-
       result_dict[feature_id] = feature_name_dict
 
   if update_cache:
