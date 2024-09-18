@@ -87,7 +87,7 @@ export class ChromedashAllFeaturesPage extends LitElement {
     ) {
       this.num = parseInt(this.rawQuery['num']);
     }
-    if (this.rawQuery.name_only != null && this.isNewfeaturesPage) {
+    if (this.isNewfeaturesPage) {
       this.nameOnly = true;
     }
   }
