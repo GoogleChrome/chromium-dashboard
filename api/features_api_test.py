@@ -180,7 +180,9 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     # as it only returns feature names.
     self.assertEqual(2, len(actual['features']))
     self.assertEqual(2, actual['total_count'])
+    self.assertEqual(2, len(actual['features'][0]))
     self.assertEqual('feature two', actual['features'][0]['name'])
+    self.assertEqual(2, len(actual['features'][1]))
     self.assertEqual('feature one', actual['features'][1]['name'])
 
   def test_get__all_listed__pagination(self):
