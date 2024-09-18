@@ -46,6 +46,8 @@ export class ChromedashFeatureTable extends LitElement {
   columns!: 'normal' | 'approvals';
   @property({type: Boolean})
   signedIn!: boolean;
+  @property({type: Boolean})
+  nameOnly = false;
 
   connectedCallback() {
     super.connectedCallback();
@@ -61,7 +63,8 @@ export class ChromedashFeatureTable extends LitElement {
         this.showEnterprise,
         this.sortSpec,
         this.start,
-        this.num
+        this.num,
+        this.nameOnly
       )
       .then(resp => {
         this.features = resp.features;

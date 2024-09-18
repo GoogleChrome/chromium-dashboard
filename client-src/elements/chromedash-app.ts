@@ -362,6 +362,7 @@ export class ChromedashApp extends LitElement {
       if (!this.setupNewPage(ctx, 'chromedash-all-features-page', true)) return;
       this.pageComponent.user = this.user;
       this.pageComponent.rawQuery = parseRawQuery(ctx.querystring);
+      this.pageComponent.isNewfeaturesPage = true;
       this.pageComponent.addEventListener(
         'search',
         this.handleSearchQuery.bind(this)

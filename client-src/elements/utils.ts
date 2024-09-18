@@ -403,6 +403,7 @@ export interface RawQuery {
   start?: string;
   after?: string;
   num?: string;
+  name_only?: string;
   [key: string]: string | undefined;
 }
 
