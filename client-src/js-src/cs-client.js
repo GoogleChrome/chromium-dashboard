@@ -576,7 +576,14 @@ export class ChromeStatusClient {
     return this.doGet(`/features?releaseNotesMilestone=${milestone}`);
   }
 
-  async searchFeatures(userQuery, showEnterprise, sortSpec, start, num) {
+  async searchFeatures(
+    userQuery,
+    showEnterprise,
+    sortSpec,
+    start,
+    num,
+    nameOnly
+  ) {
     const query = new URLSearchParams();
     query.set('q', userQuery);
     if (showEnterprise) {
@@ -590,6 +597,9 @@ export class ChromeStatusClient {
     }
     if (num) {
       query.set('num', num);
+    }
+    if (nameOnly) {
+      query.set('name_only', nameOnly);
     }
     return this.doGet(`/features?${query.toString()}`);
   }

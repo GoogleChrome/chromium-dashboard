@@ -44,6 +44,10 @@ export class ChromedashAllFeaturesPage extends LitElement {
   num = 100;
   @state()
   starredFeatures: Set<number> = new Set();
+  @state()
+  isNewfeaturesPage = false;
+  @state()
+  nameOnly = false;
 
   @queryAll('chromedash-feature-table')
   chromedashFeatureTables;
@@ -82,6 +86,9 @@ export class ChromedashAllFeaturesPage extends LitElement {
       !Number.isNaN(parseInt(this.rawQuery['num']))
     ) {
       this.num = parseInt(this.rawQuery['num']);
+    }
+    if (this.isNewfeaturesPage) {
+      this.nameOnly = true;
     }
   }
 
@@ -131,6 +138,7 @@ export class ChromedashAllFeaturesPage extends LitElement {
         .sortSpec=${this.sortSpec}
         .start=${this.start}
         .num=${this.num}
+        .nameOnly=${this.nameOnly}
         ?showQuery=${this.showQuery}
         ?signedIn=${Boolean(this.user)}
         ?canEdit=${this.user && this.user.can_edit_all}
