@@ -320,6 +320,7 @@ def process_query(
   start=0,
   num=DEFAULT_RESULTS_PER_PAGE,
   context: Optional[QueryContext] = None,
+  name_only=False,
 ) -> tuple[list[dict[str, Any]], int]:
   if context is None:
     context = QueryContext.current()
@@ -393,8 +394,10 @@ def process_query(
   paginated_id_list = sorted_id_list[start : start + num]
 
   # 6. Fetch the actual issues that have those IDs in the sorted results.
-  # TODO(jrobbins): This still returns Feature dicts.
-  features_on_page = feature_helpers.get_by_ids(paginated_id_list)
+  if name_only:
+    features_on_page = feature_helpers.get_feature_names_by_ids(paginated_id_list)
+  else:
+    features_on_page = feature_helpers.get_by_ids(paginated_id_list)
 
   logging.info('features_on_page is %r',
                [f['name'] for f in features_on_page])

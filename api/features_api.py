@@ -91,13 +91,14 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     sort_spec = self.request.args.get('sort')
     num = self.get_int_arg('num', search.DEFAULT_RESULTS_PER_PAGE)
     start = self.get_int_arg('start', 0)
+    name_only = self.get_bool_arg('name_only', False)
 
     show_enterprise = (
         'feature_type' in user_query or self.get_bool_arg('showEnterprise'))
     try:
       features_on_page, total_count = search.process_query(
           user_query, sort_spec=sort_spec, show_unlisted=show_unlisted_features,
-          show_enterprise=show_enterprise, start=start, num=num)
+          show_enterprise=show_enterprise, start=start, num=num, name_only=name_only)
     except ValueError as err:
       self.abort(400, msg=str(err))
 
