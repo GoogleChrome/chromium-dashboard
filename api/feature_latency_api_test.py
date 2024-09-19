@@ -24,6 +24,7 @@ from google.cloud import ndb  # type: ignore
 from api import feature_latency_api
 from internals.core_enums import *
 from internals.core_models import FeatureEntry, Stage, MilestoneSet
+from internals import user_models
 
 
 test_app = flask.Flask(__name__)
@@ -45,6 +46,10 @@ def make_feature(name, created_tuple, status, shipped):
 class FeatureLatencyAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
+    self.app_admin = user_models.AppUser(email='admin@example.com')
+    self.app_admin.is_admin = True
+    self.app_admin.put()
+
     self.handler = feature_latency_api.FeatureLatencyAPI()
     self.request_path = '/api/v0/feature-latency'
 
@@ -64,6 +69,8 @@ class FeatureLatencyAPITest(testing_config.CustomTestCase):
         'launched after end', (2023, 9, 29), ENABLED_BY_DEFAULT, 125)
 
   def tearDown(self):
+    testing_config.sign_out()
+    self.app_admin.key.delete()
     kinds: list[ndb.Model] = [FeatureEntry, Stage]
     for kind in kinds:
       for entity in kind.query():
@@ -85,8 +92,23 @@ class FeatureLatencyAPITest(testing_config.CustomTestCase):
          datetime(2023, 12, 24)),
         actual)
 
+  def test_do_get__anon(self):
+    """Only users who can create features can view reports."""
+    testing_config.sign_out()
+    with test_app.test_request_context(self.request_path):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.do_get()
+
+  def test_do_get__rando(self):
+    """Only users who can create features can view reports."""
+    testing_config.sign_in('someone@example.com', 1232345)
+    with test_app.test_request_context(self.request_path):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.do_get()
+
   def test_do_get__normal(self):
     """It finds some feature launches to include and excludes others."""
+    testing_config.sign_in('admin@example.com', 123567890)
     path = self.request_path + '?startAt=2023-01-01&endAt=2024-01-01'
     with test_app.test_request_context(path):
       actual = self.handler.do_get()
@@ -103,6 +125,7 @@ class FeatureLatencyAPITest(testing_config.CustomTestCase):
 
   def test_do_get__zero_results(self):
     """There were no test launches in this range."""
+    testing_config.sign_in('admin@example.com', 123567890)
     path = self.request_path + '?startAt=2020-01-01&endAt=2020-03-01'
     with test_app.test_request_context(path):
       actual = self.handler.do_get()
