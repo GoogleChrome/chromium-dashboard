@@ -48,27 +48,27 @@ class FeatureWords(ndb.Model):
 
 def _get_strings_dict(fe: FeatureEntry) -> dict[str, list[str|None]]:
   return {
-      'creator_email': [fe.creator_email],
-      'updater_email': [fe.updater_email],
-      'owner_emails': fe.owner_emails,
-      'editor_emails': fe.editor_emails,
-      'cc_emails': fe.cc_emails,
+      'creator': [fe.creator_email],
+      'updater': [fe.updater_email],
+      'owner': fe.owner_emails,
+      'editor': fe.editor_emails,
+      'cc': fe.cc_emails,
 
       'name': [fe.name],
       'summary': [fe.summary],
       # TODO: category
-      'blink_components': fe.blink_components,
-      'tags': fe.search_tags,
+      'browsers.chrome.blink_component': fe.blink_components,
+      'tag': fe.search_tags,
       'feature_notes': [fe.feature_notes],
 
-      'bug_url': [fe.bug_url],
+      'browsers.chrome.bug': [fe.bug_url],
       'launch_bug_url': [fe.launch_bug_url],
       'shipping_year': [str(fe.shipping_year or '')],
 
       # TODO: impl_status_Chrome
-      'flag_name': [fe.flag_name],
-      'finch_name': [fe.finch_name],
-      'non_finch_justification': [fe.non_finch_justification],
+      'browsers.chrome.flag_name': [fe.flag_name],
+      'browsers.chrome.finch_name': [fe.finch_name],
+      'browsers.chrome.non_finch_justification': [fe.non_finch_justification],
       'ongoing_constraints': [fe.ongoing_constraints],
 
       'motivation': [fe.motivation],
@@ -77,26 +77,26 @@ def _get_strings_dict(fe: FeatureEntry) -> dict[str, list[str|None]]:
       'measurement': [fe.measurement],
 
       'initial_public_proposal_url': [fe.initial_public_proposal_url],
-      'explainer_links': fe.explainer_links,
+      'explainer': fe.explainer_links,
       # TODO: standard_maturity
-      'spec_link': [fe.spec_link],
-      'spec_mentor_emails': fe.spec_mentor_emails,
+      'standards.spec': [fe.spec_link],
+      'spec_mentors': fe.spec_mentor_emails,
       'interop_compat_risks': [fe.interop_compat_risks],
       'all_platforms_descr': [fe.all_platforms_descr],
-      'tag_review': [fe.tag_review],
+      'tag_review.url': [fe.tag_review],
       # TODO: tag_review_status
       'non_oss_deps': [fe.non_oss_deps],
-      'anticipated_spec_changes': [fe.anticipated_spec_changes],
+      'standards.anticipated_spec_changes': [fe.anticipated_spec_changes],
 
       # TODO: ff_views
       # TODO: safari_views
       # TODO: web_dev_views
-      'ff_views_link': [fe.ff_views_link],
-      'safari_views_link': [fe.safari_views_link],
-      'web_dev_views_link': [fe.web_dev_views_link],
-      'ff_views_notes': [fe.ff_views_notes],
-      'safari_views_notes': [fe.safari_views_notes],
-      'web_dev_views_notes': [fe.web_dev_views_notes],
+      'browsers.ff.view.url': [fe.ff_views_link],
+      'browsers.safari.view.url': [fe.safari_views_link],
+      'browsers.webdev.view.url': [fe.web_dev_views_link],
+      'browsers.ff.view.notes': [fe.ff_views_notes],
+      'browsers.safari.view.notes': [fe.safari_views_notes],
+      'browsers.webdev.view.notes': [fe.web_dev_views_notes],
       'other_views_notes': [fe.other_views_notes],
 
       'security_risks': [fe.security_risks],
@@ -109,8 +109,8 @@ def _get_strings_dict(fe: FeatureEntry) -> dict[str, list[str|None]]:
 
       'devrel_emails': fe.devrel_emails,
       'debuggability': [fe.debuggability],
-      'doc_links': fe.doc_links,
-      'sample_links': fe.sample_links,
+      'resources.doc': fe.doc_links,
+      'resources.sample': fe.sample_links,
       }
 
 

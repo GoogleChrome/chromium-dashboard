@@ -73,12 +73,12 @@ class SearchFulltextFunctionsTest(testing_config.CustomTestCase):
 
   def test_get_strings__specific_field(self):
     """We can extract a list of strings from a certain field."""
-    actual = search_fulltext.get_strings(self.fe, 'creator_email')
+    actual = search_fulltext.get_strings(self.fe, 'creator')
     self.assertEqual(
         ['creator@example.com'],
         actual)
 
-    actual = search_fulltext.get_strings(self.fe, 'owner_emails')
+    actual = search_fulltext.get_strings(self.fe, 'owner')
     self.assertEqual(
         ['owner1@example.com', 'owner2@example.com'],
         actual)
@@ -217,8 +217,8 @@ class SearchFulltextFunctionsTest(testing_config.CustomTestCase):
     assert_found('lived happily', field_name='motivation')
     assert_not_found('lived', field_name='summary')
     assert_not_found('lived happily', field_name='summary')
-    assert_found('two', field_name='cc_emails')
-    assert_not_found('two', field_name='creator_email')
+    assert_found('two', field_name='cc')
+    assert_not_found('two', field_name='creator')
 
   # TODO(jrobbins): Unit test for search_fulltext.
 
