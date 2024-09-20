@@ -129,21 +129,21 @@ export class ChromedashFeatureTable extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-       .status-and-count {
-           padding: var(--content-padding-half) 0;
-           min-height: 50px;
-         }
-         .status-and-count span {
-           color: var(--unimportant-text-color);
-           margin-right: var(--content-padding);
-         }
-         .status-and-count sl-icon-button {
-           font-size: 1.6rem;
-         }
-         .status-and-count sl-icon-button::part(base) {
-           padding: 0;
-      }
-      table {
+        .status-and-count {
+          padding: var(--content-padding-half) 0;
+          min-height: 50px;
+        }
+        .status-and-count span {
+          color: var(--unimportant-text-color);
+          margin-right: var(--content-padding);
+        }
+        .status-and-count sl-icon-button {
+          font-size: 1.6rem;
+        }
+        .status-and-count sl-icon-button::part(base) {
+          padding: 0;
+        }
+        table {
           width: 100%;
         }
         .skel td {
@@ -211,16 +211,24 @@ export class ChromedashFeatureTable extends LitElement {
     const lastShown = this.start + this.features.length;
 
     const prevUrl = formatUrlForRelativeOffset(
-      this.start, -this.num, this.num, this.totalCount);
+      this.start,
+      -this.num,
+      this.num,
+      this.totalCount
+    );
     const nextUrl = formatUrlForRelativeOffset(
-      this.start, this.num, this.num, this.totalCount);
+      this.start,
+      this.num,
+      this.num,
+      this.totalCount
+    );
 
     if (this.alwaysOfferPagination) {
       if (this.loading) {
         // reserve vertical space to use when loaded.
         return html` <div class="status-and-count">
-        <sl-skeleton effect="sheen" style="float: right; width: 12em">
-        </sl-skeleton>
+          <sl-skeleton effect="sheen" style="float: right; width: 12em">
+          </sl-skeleton>
         </div>`;
       }
     } else {
@@ -228,7 +236,7 @@ export class ChromedashFeatureTable extends LitElement {
       // results fit in each box (the most common case).
       if (this.loading || (firstShown == 1 && lastShown == this.totalCount)) {
         return nothing;
-       }
+      }
     }
 
     if (this.features.length === 0) {
@@ -236,26 +244,26 @@ export class ChromedashFeatureTable extends LitElement {
     }
 
     return html`
-       <div class="status-and-count hbox">
-         <span>${this.reloading ? 'Reloading...' : nothing}</span>
-         <div class="spacer"></div>
-         <span>${firstShown} - ${lastShown} of ${this.totalCount}</span>
-         <sl-icon-button
-           library="material"
-           name="navigate_before"
-           title="Previous page"
-           href=${ifDefined(prevUrl)}
-           ?disabled=${prevUrl === undefined}
-         ></sl-icon-button>
-         <sl-icon-button
-           library="material"
-           name="navigate_next"
-           title="Next page"
-           href=${ifDefined(nextUrl)}
-           ?disabled=${nextUrl === undefined}
-         ></sl-icon-button>
-       </div>
-     `;
+      <div class="status-and-count hbox">
+        <span>${this.reloading ? 'Reloading...' : nothing}</span>
+        <div class="spacer"></div>
+        <span>${firstShown} - ${lastShown} of ${this.totalCount}</span>
+        <sl-icon-button
+          library="material"
+          name="navigate_before"
+          title="Previous page"
+          href=${ifDefined(prevUrl)}
+          ?disabled=${prevUrl === undefined}
+        ></sl-icon-button>
+        <sl-icon-button
+          library="material"
+          name="navigate_next"
+          title="Next page"
+          href=${ifDefined(nextUrl)}
+          ?disabled=${nextUrl === undefined}
+        ></sl-icon-button>
+      </div>
+    `;
   }
 
   renderPagination(features) {
@@ -308,8 +316,7 @@ export class ChromedashFeatureTable extends LitElement {
 
   render() {
     return html`
-      ${this.renderSearch()}
-      ${this.renderLoadingStatusAndCount()}
+      ${this.renderSearch()} ${this.renderLoadingStatusAndCount()}
       <table>
         ${this.renderMessages() ||
         this.features.map(feature => this.renderFeature(feature))}

@@ -23,7 +23,11 @@ import {
   nothing,
 } from 'lit';
 import {customElement, property} from 'lit/decorators.js';
-import {formatURLParams, formatUrlForRelativeOffset, formatUrlForOffset} from './utils.js';
+import {
+  formatURLParams,
+  formatUrlForRelativeOffset,
+  formatUrlForOffset,
+} from './utils.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
 import {range} from 'lit/directives/range.js';
 import {map} from 'lit/directives/map.js';
@@ -187,9 +191,17 @@ export class ChromedashFeaturePagination extends LitElement {
     }
 
     const prevUrl = formatUrlForRelativeOffset(
-      this.start, -this.pageSize, this.pageSize, this.totalCount);
+      this.start,
+      -this.pageSize,
+      this.pageSize,
+      this.totalCount
+    );
     const nextUrl = formatUrlForRelativeOffset(
-      this.start, this.pageSize, this.pageSize, this.totalCount);
+      this.start,
+      this.pageSize,
+      this.pageSize,
+      this.totalCount
+    );
 
     return html`
       <div id="main" class="pagination hbox halign-items-space-between">

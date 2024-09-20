@@ -499,14 +499,13 @@ export function formatURLParams(key, val) {
 }
 
 export function formatUrlForRelativeOffset(
-  start: number, delta: number, pageSize: number, totalCount: number
-  ): string | undefined {
+  start: number,
+  delta: number,
+  pageSize: number,
+  totalCount: number
+): string | undefined {
   const offset = start + delta;
-  if (
-    totalCount === undefined ||
-      offset <= -pageSize ||
-      offset >= totalCount
-  ) {
+  if (totalCount === undefined || offset <= -pageSize || offset >= totalCount) {
     return undefined;
   }
   return formatUrlForOffset(Math.max(0, offset));
@@ -515,8 +514,6 @@ export function formatUrlForRelativeOffset(
 export function formatUrlForOffset(offset: number): string {
   return formatURLParams('start', offset).toString();
 }
-
-
 
 /**
  * Update window.location with new query params.
