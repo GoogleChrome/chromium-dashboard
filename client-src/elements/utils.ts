@@ -498,6 +498,23 @@ export function formatURLParams(key, val) {
   return newURL;
 }
 
+export function formatUrlForRelativeOffset(
+  start: number,
+  delta: number,
+  pageSize: number,
+  totalCount: number
+): string | undefined {
+  const offset = start + delta;
+  if (totalCount === undefined || offset <= -pageSize || offset >= totalCount) {
+    return undefined;
+  }
+  return formatUrlForOffset(Math.max(0, offset));
+}
+
+export function formatUrlForOffset(offset: number): string {
+  return formatURLParams('start', offset).toString();
+}
+
 /**
  * Update window.location with new query params.
  * @param {string} key is the key of the query param to delete.
