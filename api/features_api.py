@@ -96,7 +96,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     show_enterprise = (
         'feature_type' in user_query or self.get_bool_arg('showEnterprise'))
     try:
-      features_on_page, total_count = search.process_query(
+      features_on_page, total_count = search.process_query_using_cache(
           user_query, sort_spec=sort_spec, show_unlisted=show_unlisted_features,
           show_enterprise=show_enterprise, start=start, num=num, name_only=name_only)
     except ValueError as err:
@@ -306,7 +306,8 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     notifier_helpers.notify_subscribers_and_save_amendments(
         feature, changed_fields, notify=True)
     # Remove all feature-related cache.
-    rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
+    rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)
+    rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
     # Update full-text index.
     if feature:
       search_fulltext.index_feature(feature)
@@ -330,7 +331,8 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
       self.abort(403)
     feature.deleted = True
     feature.put()
-    rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
+    rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)
+    rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
 
     # Write for new FeatureEntry entity.
     feature_entry: FeatureEntry | None = (

@@ -103,7 +103,8 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
         feature_entry, [], is_update=False)
 
     # Remove all feature-related cache.
-    rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
+    rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)
+    rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
 
     redirect_url = '/feature/' + str(key.integer_id())
     return self.redirect(redirect_url)
@@ -177,7 +178,7 @@ class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
     self.write_gates_and_stages_for_feature(key.integer_id(), feature_type)
 
     # Remove all feature-related cache.
-    rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
+    rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)
 
     redirect_url = '/guide/editall/' + str(key.integer_id()) + '#rollout1'
     return self.redirect(redirect_url)

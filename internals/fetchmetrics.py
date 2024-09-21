@@ -219,7 +219,7 @@ class YesterdayHandler(basehandlers.FlaskHandler):
     # does a query on those datapoints and caches the result. If we don't invalidate when
     # we add datapoints, the cached query result will be lacking the new datapoints.
     # This is run once every 6 hours.
-    rediscache.delete_keys_with_prefix('metrics|*')
+    rediscache.delete_keys_with_prefix('metrics')
     return 'Success'
 
 

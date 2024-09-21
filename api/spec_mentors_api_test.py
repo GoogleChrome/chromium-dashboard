@@ -62,8 +62,8 @@ class SpecMentorsAPITest(testing_config.CustomTestCase):
     self.app_admin.key.delete()
     testing_config.sign_out()
 
-    rediscache.delete_keys_with_prefix('features|*')
-    rediscache.delete_keys_with_prefix('FeatureEntries|*')
+    rediscache.delete_keys_with_prefix('features')
+    rediscache.delete_keys_with_prefix('FeatureEntries')
 
   def createFeature(self, params) -> FeatureEntry:
     with test_app.test_request_context(

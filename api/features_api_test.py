@@ -154,9 +154,9 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         entity.key.delete()
 
     testing_config.sign_out()
-    rediscache.delete_keys_with_prefix('features|*')
-    rediscache.delete_keys_with_prefix('FeatureEntries|*')
-    rediscache.delete_keys_with_prefix('FeatureNames|*')
+    rediscache.delete_keys_with_prefix('features')
+    rediscache.delete_keys_with_prefix('FeatureEntries')
+    rediscache.delete_keys_with_prefix('FeatureNames')
 
   def test_get__all_listed(self):
     """Get all features that are listed."""
