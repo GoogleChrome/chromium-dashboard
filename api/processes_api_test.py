@@ -50,6 +50,7 @@ class ProcessesAPITest(testing_config.CustomTestCase):
 
   def test_get__default_feature_type(self):
     """We can get process for features with the default feature type (New feature incubation)."""
+    self.maxDiff = None
     with test_app.test_request_context(self.request_path):
       actual = self.handler.do_get(feature_id=self.feature_id)
     expected = processes.process_to_dict(processes.BLINK_LAUNCH_PROCESS)

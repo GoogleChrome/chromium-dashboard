@@ -1142,6 +1142,7 @@ components:
           type: string
         field:
           type: string
+          nullable: true
     Action:
       type: object
       properties:
@@ -1653,8 +1654,10 @@ components:
               - `shipped` - The feature is enabled by default in Chromium.
         estimated_start_milestone:
           type: integer
+          nullable: true
         estimated_end_milestone:
           type: integer
+          nullable: true
     FeatureLink:
       type: object
       required:

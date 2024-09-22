@@ -83,6 +83,16 @@ class OutstandingReview(BaseModel):
         # override the default output from pydantic by calling `to_dict()` of feature
         if self.feature:
             _dict['feature'] = self.feature.to_dict()
+        # set to None if estimated_start_milestone (nullable) is None
+        # and model_fields_set contains the field
+        if self.estimated_start_milestone is None and "estimated_start_milestone" in self.model_fields_set:
+            _dict['estimated_start_milestone'] = None
+
+        # set to None if estimated_end_milestone (nullable) is None
+        # and model_fields_set contains the field
+        if self.estimated_end_milestone is None and "estimated_end_milestone" in self.model_fields_set:
+            _dict['estimated_end_milestone'] = None
+
         return _dict
 
     @classmethod

@@ -69,6 +69,11 @@ class ProgressItem(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
+        # set to None if field (nullable) is None
+        # and model_fields_set contains the field
+        if self.field is None and "field" in self.model_fields_set:
+            _dict['field'] = None
+
         return _dict
 
     @classmethod
