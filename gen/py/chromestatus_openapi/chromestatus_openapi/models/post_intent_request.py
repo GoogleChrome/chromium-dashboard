@@ -18,7 +18,7 @@ import re  # noqa: F401
 import json
 
 from pydantic import BaseModel, ConfigDict, StrictInt, StrictStr
-from typing import Any, ClassVar, Dict, List
+from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
 
@@ -26,7 +26,7 @@ class PostIntentRequest(BaseModel):
     """
     PostIntentRequest
     """ # noqa: E501
-    gate_id: StrictInt
+    gate_id: Optional[StrictInt]
     intent_cc_emails: List[StrictStr]
     __properties: ClassVar[List[str]] = ["gate_id", "intent_cc_emails"]
 
@@ -69,6 +69,11 @@ class PostIntentRequest(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
+        # set to None if gate_id (nullable) is None
+        # and model_fields_set contains the field
+        if self.gate_id is None and "gate_id" in self.model_fields_set:
+            _dict['gate_id'] = None
+
         return _dict
 
     @classmethod

@@ -18,7 +18,7 @@ import re  # noqa: F401
 import json
 
 from pydantic import BaseModel, ConfigDict
-from typing import Any, ClassVar, Dict, List
+from typing import Any, ClassVar, Dict, List, Optional
 from chromestatus_openapi.models.user_permissions import UserPermissions
 from typing import Optional, Set
 from typing_extensions import Self
@@ -27,7 +27,7 @@ class PermissionsResponse(BaseModel):
     """
     PermissionsResponse
     """ # noqa: E501
-    user: UserPermissions
+    user: Optional[UserPermissions] = None
     __properties: ClassVar[List[str]] = ["user"]
 
     model_config = ConfigDict(

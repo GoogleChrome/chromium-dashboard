@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**user** | [**UserPermissions**](UserPermissions.md) |  | 
+**user** | [**UserPermissions**](UserPermissions.md) |  | [optional] 
 
 ## Example
 

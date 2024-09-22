@@ -57,7 +57,7 @@ class VotesAPI(basehandlers.APIHandler):
     # Note: We assume that anyone may view approvals.
     votes = Vote.get_votes(feature_id=feature_id, gate_id=gate_id)
     dicts = [converters.vote_value_to_json_dict(v) for v in votes]
-    return GetVotesResponse.from_dict({votes: dicts}).to_dict()
+    return GetVotesResponse.from_dict({'votes': dicts}).to_dict()
 
   def do_post(self, **kwargs) -> dict[str, str]:
     """Set a user's vote value for the specified feature and gate."""

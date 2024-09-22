@@ -90,6 +90,31 @@ class Gate(BaseModel):
         if self.escalation_email is None and "escalation_email" in self.model_fields_set:
             _dict['escalation_email'] = None
 
+        # set to None if requested_on (nullable) is None
+        # and model_fields_set contains the field
+        if self.requested_on is None and "requested_on" in self.model_fields_set:
+            _dict['requested_on'] = None
+
+        # set to None if responded_on (nullable) is None
+        # and model_fields_set contains the field
+        if self.responded_on is None and "responded_on" in self.model_fields_set:
+            _dict['responded_on'] = None
+
+        # set to None if next_action (nullable) is None
+        # and model_fields_set contains the field
+        if self.next_action is None and "next_action" in self.model_fields_set:
+            _dict['next_action'] = None
+
+        # set to None if slo_initial_response_took (nullable) is None
+        # and model_fields_set contains the field
+        if self.slo_initial_response_took is None and "slo_initial_response_took" in self.model_fields_set:
+            _dict['slo_initial_response_took'] = None
+
+        # set to None if slo_initial_response_remaining (nullable) is None
+        # and model_fields_set contains the field
+        if self.slo_initial_response_remaining is None and "slo_initial_response_remaining" in self.model_fields_set:
+            _dict['slo_initial_response_remaining'] = None
+
         return _dict
 
     @classmethod

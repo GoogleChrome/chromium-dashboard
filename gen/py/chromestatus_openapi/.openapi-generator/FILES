@@ -35,6 +35,7 @@ chromestatus_openapi/models/feature_links_response.py
 chromestatus_openapi/models/feature_links_sample.py
 chromestatus_openapi/models/feature_links_summary_response.py
 chromestatus_openapi/models/field_info.py
+chromestatus_openapi/models/field_info_value.py
 chromestatus_openapi/models/gate.py
 chromestatus_openapi/models/gate_info.py
 chromestatus_openapi/models/gate_latency.py
@@ -113,6 +114,7 @@ docs/FeatureLinksResponse.md
 docs/FeatureLinksSample.md
 docs/FeatureLinksSummaryResponse.md
 docs/FieldInfo.md
+docs/FieldInfoValue.md
 docs/Gate.md
 docs/GateInfo.md
 docs/GateLatency.md
@@ -196,6 +198,7 @@ test/test_feature_links_response.py
 test/test_feature_links_sample.py
 test/test_feature_links_summary_response.py
 test/test_field_info.py
+test/test_field_info_value.py
 test/test_gate.py
 test/test_gate_info.py
 test/test_gate_latency.py

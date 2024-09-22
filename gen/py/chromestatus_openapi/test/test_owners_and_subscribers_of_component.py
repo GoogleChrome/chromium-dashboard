@@ -35,7 +35,7 @@ class TestOwnersAndSubscribersOfComponent(unittest.TestCase):
         model = OwnersAndSubscribersOfComponent()
         if include_optional:
             return OwnersAndSubscribersOfComponent(
-                id = '',
+                id = 56,
                 name = '',
                 subscriber_ids = [
                     56
@@ -46,7 +46,7 @@ class TestOwnersAndSubscribersOfComponent(unittest.TestCase):
             )
         else:
             return OwnersAndSubscribersOfComponent(
-                id = '',
+                id = 56,
                 name = '',
         )
         """

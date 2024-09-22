@@ -38,9 +38,9 @@ class TestFeatureLatency(unittest.TestCase):
                 feature = chromestatus_openapi.models.feature_link.FeatureLink(
                     id = 5703707724349440, 
                     name = 'WebGPU', ),
-                entry_created_date = datetime.datetime.strptime('1975-12-30', '%Y-%m-%d').date(),
+                entry_created_date = '',
                 shipped_milestone = 56,
-                shipped_date = datetime.datetime.strptime('1975-12-30', '%Y-%m-%d').date(),
+                shipped_date = '',
                 owner_emails = [
                     ''
                     ]
@@ -50,9 +50,9 @@ class TestFeatureLatency(unittest.TestCase):
                 feature = chromestatus_openapi.models.feature_link.FeatureLink(
                     id = 5703707724349440, 
                     name = 'WebGPU', ),
-                entry_created_date = datetime.datetime.strptime('1975-12-30', '%Y-%m-%d').date(),
+                entry_created_date = '',
                 shipped_milestone = 56,
-                shipped_date = datetime.datetime.strptime('1975-12-30', '%Y-%m-%d').date(),
+                shipped_date = '',
                 owner_emails = [
                     ''
                     ],

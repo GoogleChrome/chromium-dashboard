@@ -37,28 +37,28 @@ class TestMilestoneSetField(unittest.TestCase):
             return MilestoneSetField(
                 desktop_first = chromestatus_openapi.models.field_info.FieldInfo(
                     form_field_name = '', 
-                    value = chromestatus_openapi.models.field_info_value.FieldInfoValue(), ),
+                    value = null, ),
                 desktop_last = chromestatus_openapi.models.field_info.FieldInfo(
                     form_field_name = '', 
-                    value = chromestatus_openapi.models.field_info_value.FieldInfoValue(), ),
+                    value = null, ),
                 android_first = chromestatus_openapi.models.field_info.FieldInfo(
                     form_field_name = '', 
-                    value = chromestatus_openapi.models.field_info_value.FieldInfoValue(), ),
+                    value = null, ),
                 android_last = chromestatus_openapi.models.field_info.FieldInfo(
                     form_field_name = '', 
-                    value = chromestatus_openapi.models.field_info_value.FieldInfoValue(), ),
+                    value = null, ),
                 ios_first = chromestatus_openapi.models.field_info.FieldInfo(
                     form_field_name = '', 
-                    value = chromestatus_openapi.models.field_info_value.FieldInfoValue(), ),
+                    value = null, ),
                 ios_last = chromestatus_openapi.models.field_info.FieldInfo(
                     form_field_name = '', 
-                    value = chromestatus_openapi.models.field_info_value.FieldInfoValue(), ),
+                    value = null, ),
                 webview_first = chromestatus_openapi.models.field_info.FieldInfo(
                     form_field_name = '', 
-                    value = chromestatus_openapi.models.field_info_value.FieldInfoValue(), ),
+                    value = null, ),
                 webview_last = chromestatus_openapi.models.field_info.FieldInfo(
                     form_field_name = '', 
-                    value = chromestatus_openapi.models.field_info_value.FieldInfoValue(), )
+                    value = null, )
             )
         else:
             return MilestoneSetField(

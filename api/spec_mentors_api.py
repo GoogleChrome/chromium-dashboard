@@ -58,6 +58,6 @@ class SpecMentorsAPI(basehandlers.APIHandler):
                            []).append(FeatureLink(id=feature.key.integer_id(), name=feature.name))
 
     return [
-        SpecMentor(email, features).to_dict()
+        SpecMentor.model_construct(email=email, mentored_features=features).to_dict()
         for email, features in sorted(mentors.items())
     ]

@@ -43,7 +43,7 @@ class TestComponentsUsersResponse(unittest.TestCase):
                     ],
                 components = [
                     chromestatus_openapi.models.owners_and_subscribers_of_component.OwnersAndSubscribersOfComponent(
-                        id = '', 
+                        id = 56, 
                         name = '', 
                         subscriber_ids = [
                             56

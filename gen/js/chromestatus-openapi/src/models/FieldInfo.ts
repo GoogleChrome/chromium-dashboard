@@ -13,6 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
+import type { FieldInfoValue } from './FieldInfoValue';
+import {
+    FieldInfoValueFromJSON,
+    FieldInfoValueFromJSONTyped,
+    FieldInfoValueToJSON,
+} from './FieldInfoValue';
+
 /**
  * 
  * @export
@@ -27,10 +34,10 @@ export interface FieldInfo {
     form_field_name?: string;
     /**
      * 
-     * @type {object}
+     * @type {FieldInfoValue}
      * @memberof FieldInfo
      */
-    value?: object;
+    value?: FieldInfoValue;
 }
 
 /**
@@ -51,7 +58,7 @@ export function FieldInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean):
     return {
         
         'form_field_name': json['form_field_name'] == null ? undefined : json['form_field_name'],
-        'value': json['value'] == null ? undefined : json['value'],
+        'value': json['value'] == null ? undefined : FieldInfoValueFromJSON(json['value']),
     };
 }
 
@@ -62,7 +69,7 @@ export function FieldInfoToJSON(value?: FieldInfo | null): any {
     return {
         
         'form_field_name': value['form_field_name'],
-        'value': value['value'],
+        'value': FieldInfoValueToJSON(value['value']),
     };
 }
 

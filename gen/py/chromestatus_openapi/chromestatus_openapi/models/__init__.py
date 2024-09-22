@@ -37,6 +37,7 @@ from chromestatus_openapi.models.feature_links_response import FeatureLinksRespo
 from chromestatus_openapi.models.feature_links_sample import FeatureLinksSample
 from chromestatus_openapi.models.feature_links_summary_response import FeatureLinksSummaryResponse
 from chromestatus_openapi.models.field_info import FieldInfo
+from chromestatus_openapi.models.field_info_value import FieldInfoValue
 from chromestatus_openapi.models.gate import Gate
 from chromestatus_openapi.models.gate_info import GateInfo
 from chromestatus_openapi.models.gate_latency import GateLatency

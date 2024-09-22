@@ -15,19 +15,18 @@
 import collections
 import logging
 from datetime import datetime, timedelta
-from typing import Iterable, Any
-from google.cloud import ndb  # type: ignore
+from typing import Any, Iterable
 
 from chromestatus_openapi.models.feature_link import FeatureLink
 from chromestatus_openapi.models.gate_latency import GateLatency
 from chromestatus_openapi.models.review_latency import ReviewLatency
+from google.cloud import ndb  # type: ignore
 
 from framework import basehandlers
 from internals import slo
 from internals.core_enums import *
 from internals.core_models import FeatureEntry
 from internals.review_models import Gate
-
 
 DEFAULT_RECENT_DAYS = 90
 # This means that the feature team has not yet requested this review.
@@ -132,9 +131,10 @@ class ReviewLatencyAPI(basehandlers.APIHandler):
     result: list[dict[str, Any]] = []
     for fe in sorted_features:
       latencies = latencies_by_fid[fe.key.integer_id()]
-      review_latency = ReviewLatency(
-          FeatureLink(fe.key.integer_id(), fe.name),
-          [GateLatency(gate_type, days)
+      review_latency = ReviewLatency.model_construct(feature=
+          FeatureLink.model_construct(id=fe.key.integer_id(), name=fe.name),
+          gate_reviews=
+          [GateLatency.model_construct(gate_type=gate_type, latency_days=days)
            for (gate_type, days) in latencies]
         )
       result.append(review_latency.to_dict())

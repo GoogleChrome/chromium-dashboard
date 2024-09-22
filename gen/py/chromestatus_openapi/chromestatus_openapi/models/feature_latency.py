@@ -17,7 +17,6 @@ import pprint
 import re  # noqa: F401
 import json
 
-from datetime import date
 from pydantic import BaseModel, ConfigDict, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List
 from chromestatus_openapi.models.feature_link import FeatureLink
@@ -29,9 +28,9 @@ class FeatureLatency(BaseModel):
     FeatureLatency
     """ # noqa: E501
     feature: FeatureLink
-    entry_created_date: date
+    entry_created_date: StrictStr
     shipped_milestone: StrictInt
-    shipped_date: date
+    shipped_date: StrictStr
     owner_emails: List[StrictStr]
     __properties: ClassVar[List[str]] = ["feature", "entry_created_date", "shipped_milestone", "shipped_date", "owner_emails"]
 

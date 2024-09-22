@@ -6,9 +6,9 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **feature** | [**FeatureLink**](FeatureLink.md) |  | 
-**entry_created_date** | **date** |  | 
+**entry_created_date** | **str** |  | 
 **shipped_milestone** | **int** |  | 
-**shipped_date** | **date** |  | 
+**shipped_date** | **str** |  | 
 **owner_emails** | **List[str]** |  | 
 
 ## Example

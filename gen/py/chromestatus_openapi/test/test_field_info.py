@@ -36,7 +36,7 @@ class TestFieldInfo(unittest.TestCase):
         if include_optional:
             return FieldInfo(
                 form_field_name = '',
-                value = chromestatus_openapi.models.field_info_value.FieldInfoValue()
+                value = None
             )
         else:
             return FieldInfo(

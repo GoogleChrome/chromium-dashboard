@@ -19,6 +19,7 @@ import json
 
 from pydantic import BaseModel, ConfigDict, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
+from chromestatus_openapi.models.field_info_value import FieldInfoValue
 from typing import Optional, Set
 from typing_extensions import Self
 
@@ -27,7 +28,7 @@ class FieldInfo(BaseModel):
     FieldInfo
     """ # noqa: E501
     form_field_name: Optional[StrictStr] = None
-    value: Optional[Dict[str, Any]] = None
+    value: Optional[FieldInfoValue] = None
     __properties: ClassVar[List[str]] = ["form_field_name", "value"]
 
     model_config = ConfigDict(
@@ -69,6 +70,9 @@ class FieldInfo(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
+        # override the default output from pydantic by calling `to_dict()` of value
+        if self.value:
+            _dict['value'] = self.value.to_dict()
         return _dict
 
     @classmethod
@@ -82,7 +86,7 @@ class FieldInfo(BaseModel):
 
         _obj = cls.model_validate({
             "form_field_name": obj.get("form_field_name"),
-            "value": obj.get("value")
+            "value": FieldInfoValue.from_dict(obj["value"]) if obj.get("value") is not None else None
         })
         return _obj
 

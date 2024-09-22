@@ -34,10 +34,10 @@ export interface FeatureLatency {
     feature: FeatureLink;
     /**
      * 
-     * @type {Date}
+     * @type {string}
      * @memberof FeatureLatency
      */
-    entry_created_date: Date;
+    entry_created_date: string;
     /**
      * 
      * @type {number}
@@ -46,10 +46,10 @@ export interface FeatureLatency {
     shipped_milestone: number;
     /**
      * 
-     * @type {Date}
+     * @type {string}
      * @memberof FeatureLatency
      */
-    shipped_date: Date;
+    shipped_date: string;
     /**
      * 
      * @type {Array<string>}
@@ -81,9 +81,9 @@ export function FeatureLatencyFromJSONTyped(json: any, ignoreDiscriminator: bool
     return {
         
         'feature': FeatureLinkFromJSON(json['feature']),
-        'entry_created_date': (new Date(json['entry_created_date'])),
+        'entry_created_date': json['entry_created_date'],
         'shipped_milestone': json['shipped_milestone'],
-        'shipped_date': (new Date(json['shipped_date'])),
+        'shipped_date': json['shipped_date'],
         'owner_emails': json['owner_emails'],
     };
 }
@@ -95,9 +95,9 @@ export function FeatureLatencyToJSON(value?: FeatureLatency | null): any {
     return {
         
         'feature': FeatureLinkToJSON(value['feature']),
-        'entry_created_date': ((value['entry_created_date']).toISOString().substring(0,10)),
+        'entry_created_date': value['entry_created_date'],
         'shipped_milestone': value['shipped_milestone'],
-        'shipped_date': ((value['shipped_date']).toISOString().substring(0,10)),
+        'shipped_date': value['shipped_date'],
         'owner_emails': value['owner_emails'],
     };
 }

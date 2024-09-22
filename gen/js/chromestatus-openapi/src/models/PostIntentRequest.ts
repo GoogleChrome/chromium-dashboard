@@ -24,7 +24,7 @@ export interface PostIntentRequest {
      * @type {number}
      * @memberof PostIntentRequest
      */
-    gate_id: number;
+    gate_id: number | null;
     /**
      * 
      * @type {Array<string>}

@@ -6,7 +6,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **form_field_name** | **str** |  | [optional] 
-**value** | **object** |  | [optional] 
+**value** | [**FieldInfoValue**](FieldInfoValue.md) |  | [optional] 
 
 ## Example
 

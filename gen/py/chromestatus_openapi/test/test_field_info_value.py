@@ -14,10 +14,10 @@
 
 import unittest
 
-from chromestatus_openapi.models.permissions_response import PermissionsResponse
+from chromestatus_openapi.models.field_info_value import FieldInfoValue
 
-class TestPermissionsResponse(unittest.TestCase):
-    """PermissionsResponse unit test stubs"""
+class TestFieldInfoValue(unittest.TestCase):
+    """FieldInfoValue unit test stubs"""
 
     def setUp(self):
         pass
@@ -25,36 +25,24 @@ class TestPermissionsResponse(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def make_instance(self, include_optional) -> PermissionsResponse:
-        """Test PermissionsResponse
+    def make_instance(self, include_optional) -> FieldInfoValue:
+        """Test FieldInfoValue
             include_option is a boolean, when False only required
             params are included, when True both required and
             optional params are included """
-        # uncomment below to create an instance of `PermissionsResponse`
+        # uncomment below to create an instance of `FieldInfoValue`
         """
-        model = PermissionsResponse()
+        model = FieldInfoValue()
         if include_optional:
-            return PermissionsResponse(
-                user = chromestatus_openapi.models.user_permissions.UserPermissions(
-                    can_create_feature = True, 
-                    approvable_gate_types = [
-                        56
-                        ], 
-                    can_comment = True, 
-                    can_edit_all = True, 
-                    is_admin = True, 
-                    email = '', 
-                    editable_features = [
-                        56
-                        ], )
+            return FieldInfoValue(
             )
         else:
-            return PermissionsResponse(
+            return FieldInfoValue(
         )
         """
 
-    def testPermissionsResponse(self):
-        """Test PermissionsResponse"""
+    def testFieldInfoValue(self):
+        """Test FieldInfoValue"""
         # inst_req_only = self.make_instance(include_optional=False)
         # inst_req_and_optional = self.make_instance(include_optional=True)
 

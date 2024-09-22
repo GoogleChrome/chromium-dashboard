@@ -26,7 +26,7 @@ class OwnersAndSubscribersOfComponent(BaseModel):
     """
     OwnersAndSubscribersOfComponent
     """ # noqa: E501
-    id: StrictStr
+    id: StrictInt
     name: StrictStr
     subscriber_ids: Optional[List[StrictInt]] = None
     owner_ids: Optional[List[StrictInt]] = None

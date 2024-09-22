@@ -29,6 +29,7 @@ src/models/FeatureLinksResponse.ts
 src/models/FeatureLinksSample.ts
 src/models/FeatureLinksSummaryResponse.ts
 src/models/FieldInfo.ts
+src/models/FieldInfoValue.ts
 src/models/Gate.ts
 src/models/GateInfo.ts
 src/models/GateLatency.ts

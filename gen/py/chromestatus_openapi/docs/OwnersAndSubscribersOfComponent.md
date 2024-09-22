@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **str** |  | 
+**id** | **int** |  | 
 **name** | **str** |  | 
 **subscriber_ids** | **List[int]** |  | [optional] 
 **owner_ids** | **List[int]** |  | [optional] 

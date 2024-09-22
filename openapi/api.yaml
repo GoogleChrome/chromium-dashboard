@@ -1050,9 +1050,11 @@ components:
         requested_on:
           type: string
           format: date-time
+          nullable: true
         responded_on:
           type: string
           format: date-time
+          nullable: true
         assignee_emails:
           type: array
           items:
@@ -1061,6 +1063,7 @@ components:
         next_action:
           type: string
           format: data
+          nullable: true
         additional_review:
           type: boolean
         slo_initial_response:
@@ -1069,8 +1072,10 @@ components:
           description: DEFAULT_SLO_LIMIT is 5 in approval_defs.py
         slo_initial_response_took:
           type: integer
+          nullable: true
         slo_initial_response_remaining:
           type: integer
+          nullable: true
         possible_assignee_emails:
           type: array
           items:
@@ -1408,7 +1413,13 @@ components:
         form_field_name:
           type: string
         value:
-          $ref: '#/components/schemas/FieldInfoValue'
+          anyOf:
+            - type: string
+            - type: integer
+            - type: boolean
+            - type: array
+              items:
+                type: string
     StringFieldInfoValue:
       type: object
       properties:
@@ -1469,6 +1480,7 @@ components:
       properties:
         gate_id:
           type: integer
+          nullable: true
         intent_cc_emails:
           type: array
           items:
@@ -1509,7 +1521,7 @@ components:
       type: object
       properties:
         id:
-          type: string
+          type: integer
         name:
           type: string
         subscriber_ids:
@@ -1579,12 +1591,10 @@ components:
           $ref: '#/components/schemas/FeatureLink'
         entry_created_date:
           type: string
-          format: date
         shipped_milestone:
           type: integer
         shipped_date:
           type: string
-          format: date
         owner_emails:
           type: array
           items:
@@ -1828,8 +1838,7 @@ components:
       properties:
         user:
           $ref: '#/components/schemas/UserPermissions'
-      required:
-        - user
+          nullable: true
     UserPermissions:
       type: object
       properties:

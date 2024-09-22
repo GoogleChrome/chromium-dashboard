@@ -156,6 +156,7 @@ Class | Method | HTTP request | Description
  - [FeatureLinksSample](docs/FeatureLinksSample.md)
  - [FeatureLinksSummaryResponse](docs/FeatureLinksSummaryResponse.md)
  - [FieldInfo](docs/FieldInfo.md)
+ - [FieldInfoValue](docs/FieldInfoValue.md)
  - [Gate](docs/Gate.md)
  - [GateInfo](docs/GateInfo.md)
  - [GateLatency](docs/GateLatency.md)
