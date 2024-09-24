@@ -120,7 +120,7 @@
     "@polymer/iron-collapse": "^3.0.1",
     "@polymer/iron-icon": "^3.0.1",
     "@polymer/iron-iconset-svg": "^3.0.1",
-    "@types/google.accounts": "^0.0.14",
+    "@types/google.accounts": "^0.0.15",
     "@types/google.visualization": "^0.0.74",
     "lit": "^3",
     "node-fetch": ">=3.3.2",
