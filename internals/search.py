@@ -22,6 +22,7 @@ from typing import Any, Optional, Self, Union
 from google.cloud.ndb import Key
 from google.cloud.ndb.tasklets import Future  # for type checking only
 
+from framework import rediscache
 from framework import users
 from internals import (
   approval_defs,
@@ -37,7 +38,7 @@ from internals.review_models import (Gate, Vote)
 
 MAX_TERMS = 6
 DEFAULT_RESULTS_PER_PAGE = 100
-
+SEARCH_CACHE_TTL = 60 * 60  # One hour
 
 def process_exclude_deleted_unlisted_query() -> Future:
   """Return a future for all features, minus deleted and unlisted."""
@@ -311,6 +312,79 @@ def _sort_by_total_order(
   return sorted_id_list
 
 
+def make_cache_key(
+  user_query: str, sort_spec: str | None, show_unlisted: bool,
+  show_deleted: bool, show_enterprise: bool, start: int, num: int,
+  name_only: bool) -> str:
+  """Return a redis key string to store cached search results."""
+  return '|'.join([
+      FeatureEntry.SEARCH_CACHE_KEY,
+      user_query,
+      'sort_spec=' + str(sort_spec),
+      'show_unlisted=' + str(show_unlisted),
+      'show_deleted=' + str(show_deleted),
+      'show_enterprise=' + str(show_enterprise),
+      'start=' + str(start),
+      'num=' + str(num),
+      'name_only=' + str(name_only),
+  ])
+
+
+def is_cacheable(user_query: str, name_only: bool):
+  """Return True if this user query can be stored and viewed by other users."""
+  if not name_only:
+    logging.info('Search query not cached: could be large')
+    return False
+
+  if ':me' in user_query:
+    logging.info('Search query not cached: personalized')
+    return False
+
+  if ('is:recently-reviewed' in user_query or
+      'now' in user_query or
+      'current_stable' in user_query):
+    logging.info('Search query not cached: time-based')
+    return False
+
+  logging.info('Search query can be cached')
+  return True
+
+
+def process_query_using_cache(
+  user_query: str,
+  sort_spec: str | None = None,
+  show_unlisted=False,
+  show_deleted=False,
+  show_enterprise=False,
+  start=0,
+  num=DEFAULT_RESULTS_PER_PAGE,
+  context: Optional[QueryContext] = None,
+  name_only=False,
+) -> tuple[list[dict[str, Any]], int]:
+  """"""
+  cache_key = make_cache_key(
+      user_query, sort_spec, show_unlisted, show_deleted, show_enterprise,
+      start, num, name_only)
+  if is_cacheable(user_query, name_only):
+    logging.info('Checking cache at %r', cache_key)
+    cached_result = rediscache.get(cache_key)
+    if cached_result is not None:
+      logging.info('Found cached search result for %r', cache_key)
+      return cached_result
+
+  logging.info('Computing search result')
+  computed_result = process_query(
+      user_query, sort_spec=sort_spec, show_unlisted=show_unlisted,
+      show_deleted=show_deleted, show_enterprise=show_enterprise,
+      start=start, num=num, context=context, name_only=name_only)
+
+  if is_cacheable(user_query, name_only):
+    logging.info('Storing search result in cache: %r', cache_key)
+    rediscache.set(cache_key, computed_result, SEARCH_CACHE_TTL)
+
+  return computed_result
+
+
 def process_query(
   user_query: str,
   sort_spec: str | None = None,
@@ -341,6 +415,7 @@ def process_query(
     if not show_deleted:
       permission_terms.append(('', 'deleted', '=', 'false', None))
     # TODO(jrobbins): include unlisted features that the user is allowed to view.
+    # However, that would greatly complicate the search cache.
     if not show_unlisted:
       permission_terms.append(('', 'unlisted', '=', 'false', None))
     if not show_enterprise:
