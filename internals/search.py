@@ -38,7 +38,7 @@ from internals.review_models import (Gate, Vote)
 
 MAX_TERMS = 6
 DEFAULT_RESULTS_PER_PAGE = 100
-
+SEARCH_CACHE_TTL = 60 * 60  # One hour
 
 def process_exclude_deleted_unlisted_query() -> Future:
   """Return a future for all features, minus deleted and unlisted."""
@@ -319,9 +319,14 @@ def make_cache_key(
   """Return a redis key string to store cached search results."""
   return '|'.join([
       FeatureEntry.SEARCH_CACHE_KEY,
-      user_query, str(sort_spec), str(show_unlisted),
-      str(show_deleted), str(show_enterprise), str(start), str(num),
-      str(name_only),
+      user_query,
+      'sort_spec=' + str(sort_spec),
+      'show_unlisted=' + str(show_unlisted),
+      'show_deleted=' + str(show_deleted),
+      'show_enterprise=' + str(show_enterprise),
+      'start=' + str(start),
+      'num=' + str(num),
+      'name_only=' + str(name_only),
   ])
 
 
@@ -344,6 +349,7 @@ def is_cacheable(user_query: str, name_only: bool):
   logging.info('Search query can be cached')
   return True
 
+
 def process_query_using_cache(
   user_query: str,
   sort_spec: str | None = None,
@@ -362,8 +368,8 @@ def process_query_using_cache(
   if is_cacheable(user_query, name_only):
     logging.info('Checking cache at %r', cache_key)
     cached_result = rediscache.get(cache_key)
-    if cached_result:
-      logging.info('Found cached search result')
+    if cached_result is not None:
+      logging.info('Found cached search result for %r', cache_key)
       return cached_result
 
   logging.info('Computing search result')
@@ -374,7 +380,7 @@ def process_query_using_cache(
 
   if is_cacheable(user_query, name_only):
     logging.info('Storing search result in cache: %r', cache_key)
-    rediscache.set(cache_key, computed_result)
+    rediscache.set(cache_key, computed_result, SEARCH_CACHE_TTL)
 
   return computed_result
 

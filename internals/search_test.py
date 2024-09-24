@@ -453,10 +453,14 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
   def test_make_cache_key(self):
     """We can make a search cache key."""
     self.assertEqual(
-        'FeatureSearch||None|True|False|False|0|100|True',
+        ('FeatureSearch||sort_spec=None|show_unlisted=True|'
+         'show_deleted=False|show_enterprise=False|'
+         'start=0|num=100|name_only=True'),
         search.make_cache_key('', None, True, False, False, 0, 100, True))
     self.assertEqual(
-        'FeatureSearch|canvas|created.when|False|True|True|1|20|False',
+        ('FeatureSearch|canvas|sort_spec=created.when|show_unlisted=False|'
+         'show_deleted=True|show_enterprise=True|'
+         'start=1|num=20|name_only=False'),
         search.make_cache_key(
             'canvas', 'created.when', False, True, True, 1, 20, False))
 
