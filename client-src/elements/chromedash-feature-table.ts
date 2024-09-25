@@ -122,6 +122,7 @@ export class ChromedashFeatureTable extends LitElement {
   handleSearch(event) {
     this.loading = true;
     this.query = event.detail.query;
+    this.start = 0;
     this.fetchFeatures();
   }
 

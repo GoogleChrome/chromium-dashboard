@@ -8,6 +8,7 @@ import {User} from '../js-src/cs-client.js';
 import {ChromedashDrawer, DRAWER_WIDTH_PX} from './chromedash-drawer.js';
 import {ChromedashGateColumn} from './chromedash-gate-column.js';
 import {
+  clearURLParams,
   IS_MOBILE,
   isoDateString,
   parseRawQuery,
@@ -550,6 +551,7 @@ export class ChromedashApp extends LitElement {
 
   handleSearchQuery(e) {
     updateURLParams('q', e.detail.query);
+    clearURLParams('start');
   }
 
   showSidebar() {
