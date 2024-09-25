@@ -2,7 +2,7 @@ import {LitElement, css, html, nothing} from 'lit';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {showToastMessage} from './utils.js';
-import { property } from 'lit/decorators.js';
+import {property} from 'lit/decorators.js';
 
 export class ChromedashIntentContent extends LitElement {
   @property({type: String})
