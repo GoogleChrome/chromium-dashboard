@@ -31,14 +31,13 @@ export interface PermissionsResponse {
      * @type {UserPermissions}
      * @memberof PermissionsResponse
      */
-    user: UserPermissions;
+    user?: UserPermissions;
 }
 
 /**
  * Check if a given object implements the PermissionsResponse interface.
  */
 export function instanceOfPermissionsResponse(value: object): value is PermissionsResponse {
-    if (!('user' in value) || value['user'] === undefined) return false;
     return true;
 }
 
@@ -52,7 +51,7 @@ export function PermissionsResponseFromJSONTyped(json: any, ignoreDiscriminator:
     }
     return {
         
-        'user': UserPermissionsFromJSON(json['user']),
+        'user': json['user'] == null ? undefined : UserPermissionsFromJSON(json['user']),
     };
 }
 

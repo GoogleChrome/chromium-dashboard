@@ -36,7 +36,7 @@ class PermissionsAPITest(testing_config.CustomTestCase):
     testing_config.sign_out()
     with test_app.test_request_context(self.request_path):
       actual = self.handler.do_get()
-    self.assertEqual({'user': None}, actual)
+    self.assertEqual({}, actual)
 
   def test_get__non_googler(self):
     """Non-googlers have no permissions by default"""

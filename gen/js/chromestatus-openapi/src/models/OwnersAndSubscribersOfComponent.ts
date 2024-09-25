@@ -21,10 +21,10 @@ import { mapValues } from '../runtime';
 export interface OwnersAndSubscribersOfComponent {
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof OwnersAndSubscribersOfComponent
      */
-    id: string;
+    id: number;
     /**
      * 
      * @type {string}

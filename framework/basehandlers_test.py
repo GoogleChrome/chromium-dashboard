@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from gen.py.chromestatus_openapi.chromestatus_openapi.models.feature_links_response import FeatureLinksResponse
+from gen.py.chromestatus_openapi.chromestatus_openapi.models.link_preview import LinkPreview
 import testing_config  # Must be imported before the module under test.
 
 import json
@@ -456,14 +457,19 @@ class APIHandlerTests(testing_config.CustomTestCase):
   def test_get__openapi_model(self, mock_do_get):
     """get() should return a JSON response if the do_get() return value is an
     OpenAPI model."""
-    mock_do_get.return_value = FeatureLinksResponse(data='data',
-                                                    has_stale_links=True)
+
+    mock_link_preview = LinkPreview.from_dict({'url': 'data', 'type': 'data'}).to_dict()
+
+    mock_do_get.return_value = FeatureLinksResponse(data=[mock_link_preview], has_stale_links=True)
+
     with test_app.test_request_context('/path'):
       response, _ = self.handler.get()
-    self.assertEqual(basehandlers.XSSI_PREFIX +
-                     '{"data": "data", "has_stale_links": true}',
+    expected = basehandlers.XSSI_PREFIX + json.dumps({
+        "data": [mock_link_preview],
+        "has_stale_links": True
+    })
+    self.assertEqual(expected,
                      response.get_data().decode('utf-8'))
-
 
   def test_post(self):
     """If a subclass has do_post(), post() should return a JSON response."""

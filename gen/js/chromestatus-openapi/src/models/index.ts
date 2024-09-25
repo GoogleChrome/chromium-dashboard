@@ -23,6 +23,7 @@ export * from './FeatureLinksResponse';
 export * from './FeatureLinksSample';
 export * from './FeatureLinksSummaryResponse';
 export * from './FieldInfo';
+export * from './FieldInfoValue';
 export * from './Gate';
 export * from './GateInfo';
 export * from './GateLatency';

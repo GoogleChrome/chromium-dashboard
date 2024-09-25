@@ -36,7 +36,7 @@ describe('chromedash-admin-blink-page', () => {
     const response: ComponentsUsersResponse = {
       users: [{id: 0, name: 'user0', email: 'user0@example.com'}],
       components: [
-        {id: '0', name: 'component0', subscriber_ids: [0], owner_ids: [0]},
+        {id: 0, name: 'component0', subscriber_ids: [0], owner_ids: [0]},
       ],
     };
     csOpenApiClientStub = sinon.createStubInstance(DefaultApi);
