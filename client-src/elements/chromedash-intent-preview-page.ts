@@ -7,10 +7,11 @@ import {
   STAGE_TYPES_SHIPPING,
 } from './form-field-enums.js';
 import './chromedash-intent-content.js';
-import {property, state} from 'lit/decorators.js';
+import {customElement, property, state} from 'lit/decorators.js';
 import {Feature, StageDict} from '../js-src/cs-client.js';
 import {GateDict} from './chromedash-gate-chip.js';
 
+@customElement('chromedash-intent-preview-page')
 class ChromedashIntentPreviewPage extends LitElement {
   @property({type: String})
   appTitle = '';
@@ -229,8 +230,3 @@ class ChromedashIntentPreviewPage extends LitElement {
     `;
   }
 }
-
-customElements.define(
-  'chromedash-intent-preview-page',
-  ChromedashIntentPreviewPage
-);
