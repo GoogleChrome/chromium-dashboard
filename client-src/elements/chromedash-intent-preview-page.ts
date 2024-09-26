@@ -1,42 +1,38 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import {showToastMessage} from './utils';
+import {showToastMessage} from './utils.js';
 import {openPostIntentDialog} from './chromedash-post-intent-dialog.js';
 import {
   STAGE_TYPES_DEV_TRIAL,
   STAGE_TYPES_SHIPPING,
 } from './form-field-enums.js';
 import './chromedash-intent-content.js';
+import {customElement, property, state} from 'lit/decorators.js';
+import {Feature, StageDict} from '../js-src/cs-client.js';
+import {GateDict} from './chromedash-gate-chip.js';
 
+@customElement('chromedash-intent-preview-page')
 class ChromedashIntentPreviewPage extends LitElement {
-  static get properties() {
-    return {
-      appTitle: {type: String},
-      featureId: {type: Number},
-      gateId: {type: Number},
-      feature: {type: Object},
-      stage: {type: Object},
-      gate: {type: Object},
-      loading: {type: Boolean},
-      subject: {type: String},
-      intentBody: {type: String},
-      displayFeatureUnlistedWarning: {type: Boolean},
-    };
-  }
-
-  constructor() {
-    super();
-    this.appTitle = '';
-    this.featureId = 0;
-    this.gateId = 0;
-    this.feature = undefined;
-    this.stage = undefined;
-    this.gate = undefined;
-    this.loading = true;
-    this.subject = '';
-    this.intentBody = '';
-    this.displayFeatureUnlistedWarning = false;
-  }
+  @property({type: String})
+  appTitle = '';
+  @property({type: Number})
+  featureId = 0;
+  @property({type: Number})
+  gateId = 0;
+  @state()
+  feature!: Feature;
+  @state()
+  stage!: StageDict;
+  @state()
+  gate!: GateDict;
+  @state()
+  loading = false;
+  @state()
+  subject = '';
+  @state()
+  intentBody = '';
+  @state()
+  displayFeatureUnlistedWarning = false;
 
   static get styles() {
     return [
@@ -98,16 +94,22 @@ class ChromedashIntentPreviewPage extends LitElement {
             }
             // Check if gate matches an extension stage.
             if (!this.stage) {
-              this.stage = stage.extensions.find(
+              const extensionStage = stage.extensions.find(
                 e => e.id === this.gate.stage_id
               );
+              if (extensionStage) {
+                this.stage = extensionStage;
+              }
             }
           }
         } else if (!this.gateId) {
           // This is a "Ready for Developer Testing" intent if no gate is supplied (0).
-          this.stage = this.feature.stages.find(stage =>
+          const devTrialStage = this.feature.stages.find(stage =>
             STAGE_TYPES_DEV_TRIAL.has(stage.stage_type)
           );
+          if (devTrialStage) {
+            this.stage = devTrialStage;
+          }
         } else {
           throw new Error('Invalid gate ID');
         }
@@ -228,8 +230,3 @@ class ChromedashIntentPreviewPage extends LitElement {
     `;
   }
 }
-
-customElements.define(
-  'chromedash-intent-preview-page',
-  ChromedashIntentPreviewPage
-);

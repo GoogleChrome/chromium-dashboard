@@ -2,22 +2,16 @@ import {LitElement, css, html, nothing} from 'lit';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {showToastMessage} from './utils.js';
+import {customElement, property} from 'lit/decorators.js';
 
+@customElement('chromedash-intent-content')
 export class ChromedashIntentContent extends LitElement {
-  static get properties() {
-    return {
-      appTitle: {type: String},
-      subject: {type: String},
-      intentBody: {type: String},
-    };
-  }
-
-  constructor() {
-    super();
-    this.appTitle = '';
-    this.subject = '';
-    this.intentBody = '';
-  }
+  @property({type: String})
+  appTitle = '';
+  @property({type: String})
+  subject = '';
+  @property({type: String})
+  intentBody = '';
 
   static get styles() {
     return [
@@ -145,13 +139,13 @@ export class ChromedashIntentContent extends LitElement {
   }
 
   copyIntentBodyHandler() {
-    const copyEmailBodyEl = this.shadowRoot.querySelector('#copy-email-body');
-    const emailBodyEl = this.shadowRoot.querySelector('.email');
+    const copyEmailBodyEl = this.renderRoot.querySelector('#copy-email-body');
+    const emailBodyEl = this.renderRoot.querySelector('.email');
     if (copyEmailBodyEl && emailBodyEl) {
-      window.getSelection().removeAllRanges();
+      window.getSelection()?.removeAllRanges();
       const range = document.createRange();
       range.selectNode(emailBodyEl);
-      window.getSelection().addRange(range);
+      window.getSelection()?.addRange(range);
       document.execCommand('copy');
       showToastMessage('Email body copied');
     }
@@ -193,5 +187,3 @@ export class ChromedashIntentContent extends LitElement {
     `;
   }
 }
-
-customElements.define('chromedash-intent-content', ChromedashIntentContent);
