@@ -15,10 +15,12 @@ describe('chromedash-intent-content', () => {
     assert.exists(component);
     assert.instanceOf(component, ChromedashIntentContent);
 
-    const subject = component.shadowRoot.querySelector(
+    const subject = component.renderRoot.querySelector(
       '#email-subject-content'
-    );
-    const body = component.shadowRoot.querySelector('#email-body-content');
+    ) as HTMLElement;
+    const body = component.renderRoot.querySelector(
+      '#email-body-content'
+    ) as HTMLElement;
 
     assert.equal(body.innerText, 'A basic intent body');
     assert.equal(subject.innerText, 'A fake subject');
