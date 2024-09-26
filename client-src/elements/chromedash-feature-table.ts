@@ -37,6 +37,8 @@ export class ChromedashFeatureTable extends LitElement {
   alwaysOfferPagination = false;
   @property({type: String})
   noResultsMessage = 'No results';
+  @property({type: String})
+  noPaginatedResultsMessage = 'No results on this pagination page';
   @property({type: Boolean})
   canEdit = false;
   @property({type: Object})
@@ -155,6 +157,9 @@ export class ChromedashFeatureTable extends LitElement {
         sl-skeleton {
           height: 24px;
         }
+        .message {
+          padding: var(--content-padding);
+        }
       `,
     ];
   }
@@ -184,10 +189,17 @@ export class ChromedashFeatureTable extends LitElement {
         </tr>
       `;
     }
-    if (this.features.length == 0) {
+    if (this.totalCount == 0) {
       return html`
         <tr>
-          <td>${this.noResultsMessage}</td>
+          <td class="message">${this.noResultsMessage}</td>
+        </tr>
+      `;
+    }
+    if (this.features.length == 0 && this.start > 0) {
+      return html`
+        <tr>
+          <td class="message">${this.noPaginatedResultsMessage}</td>
         </tr>
       `;
     }
