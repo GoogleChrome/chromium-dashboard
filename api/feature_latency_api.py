@@ -21,6 +21,7 @@ from chromestatus_openapi.models.feature_latency import FeatureLatency
 
 from api import channels_api
 from framework import basehandlers
+from framework import permissions
 from internals import stage_helpers
 from internals.core_enums import *
 from internals.core_models import FeatureEntry, Stage
@@ -53,6 +54,7 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
 
     return start_date, end_date
 
+  @permissions.require_create_feature
   def do_get(self, **kwargs):
     """Calculate feature latency for features in a date range.
 

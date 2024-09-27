@@ -498,6 +498,23 @@ export function formatURLParams(key, val) {
   return newURL;
 }
 
+export function formatUrlForRelativeOffset(
+  start: number,
+  delta: number,
+  pageSize: number,
+  totalCount: number
+): string | undefined {
+  const offset = start + delta;
+  if (totalCount === undefined || offset <= -pageSize || offset >= totalCount) {
+    return undefined;
+  }
+  return formatUrlForOffset(Math.max(0, offset));
+}
+
+export function formatUrlForOffset(offset: number): string {
+  return formatURLParams('start', offset).toString();
+}
+
 /**
  * Update window.location with new query params.
  * @param {string} key is the key of the query param to delete.
@@ -541,21 +558,22 @@ export interface FieldInfo {
   checkMessage?: string;
 }
 
-/**
- * @typedef {Object} UpdateSubmitBody
- * @property {Object.<string, *>} feature_changes An object with feature changes.
- *   key=field name, value=new field value.
- * @property {Array.<Object>} stages The list of changes to specific stages.
- * @property {boolean} has_changes Whether any valid changes are present for submission.
- */
+interface UpdateSubmitBody {
+  feature_changes: FeatureUpdateInfo;
+  stages: StageUpdateInfo[];
+  has_changes: boolean;
+}
 
-/**
- * Prepare feature/stage changes to be submitted.
- * @param {Array.<FieldInfo>} fieldValues List of fields in the form.
- * @param {number} featureId The ID of the feature being updated.
- * @return {UpdateSubmitBody} Formatted body of new PATCH request.
- */
-export function formatFeatureChanges(fieldValues, featureId) {
+interface StageUpdateInfo {
+  [stageField: string]: any;
+}
+
+interface FeatureUpdateInfo {
+  [featureField: string]: any;
+}
+
+// Prepare feature/stage changes to be submitted.
+export function formatFeatureChanges(fieldValues, featureId): UpdateSubmitBody {
   let hasChanges = false;
   const featureChanges = {id: featureId};
   // Multiple stages can be mutated, so this object is a stage of stages.

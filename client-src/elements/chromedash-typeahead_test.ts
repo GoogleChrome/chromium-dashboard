@@ -124,6 +124,43 @@ describe('chromedash-typeahead', () => {
     assert.isFalse(component.shouldShowCandidate(candidate2, 'th'));
     assert.isFalse(component.shouldShowCandidate(candidate2, 'th.dot'));
   });
+
+  it('detects when user is still entering keyword', async () => {
+    const component = new ChromedashTypeahead();
+    assert.isTrue(component.shouldGroup(null));
+    assert.isTrue(component.shouldGroup(''));
+    assert.isTrue(component.shouldGroup('some-words'));
+    assert.isFalse(component.shouldGroup('field='));
+    assert.isFalse(component.shouldGroup('field>'));
+    assert.isFalse(component.shouldGroup('field>='));
+    assert.isFalse(component.shouldGroup('field<='));
+    assert.isFalse(component.shouldGroup('field!='));
+    assert.isFalse(component.shouldGroup('field:'));
+    assert.isFalse(component.shouldGroup('field>3'));
+    assert.isFalse(component.shouldGroup('field="enum value"'));
+  });
+
+  it('copes with empty candidate lists while grouping', async () => {
+    const component = new ChromedashTypeahead();
+    assert.deepEqual([], component.groupCandidates([]));
+  });
+
+  it('groups candidates that have the same group value', async () => {
+    const component = new ChromedashTypeahead();
+    const candidates = [
+      {group: 'a', name: 'a=1', doc: 'doc'},
+      {group: 'b', name: 'b=1', doc: 'doc'},
+      {group: 'c', name: 'c=1', doc: 'doc'},
+      {group: 'b', name: 'b=2', doc: 'doc'},
+      {group: 'b', name: 'b=3', doc: 'doc'},
+    ];
+    const actual = component.groupCandidates(candidates);
+    assert.deepEqual(actual, [
+      {group: 'a', name: 'a=1', doc: 'doc'},
+      {group: 'b', name: 'b=', doc: 'doc'},
+      {group: 'c', name: 'c=1', doc: 'doc'},
+    ]);
+  });
 });
 
 describe('chromedash-typeahead-dropdown', () => {

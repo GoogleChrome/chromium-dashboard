@@ -30,10 +30,12 @@ from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Gate, Vote
 
 WEBFEATURE_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom?format=TEXT'
+WEBDXFEATURE_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/public/mojom/use_counter/metrics/webdx_feature.mojom?format=TEXT'
 ENABLED_FEATURES_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/runtime_enabled_features.json5?format=TEXT'
 GRACE_PERIOD_FILE = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/common/origin_trials/manual_completion_origin_trial_features.cc?format=TEXT'
 CHROMIUM_SRC_FILES = [
   {'name': 'webfeature_file', 'url': WEBFEATURE_FILE_URL},
+  {'name': 'webdxfeature_file', 'url': WEBDXFEATURE_FILE_URL},
   {'name': 'enabled_features_text', 'url': ENABLED_FEATURES_FILE_URL},
   {'name': 'grace_period_file', 'url': GRACE_PERIOD_FILE}
 ]
@@ -101,13 +103,31 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
           'Origin trial feature name not found in file')
 
     if not body.get('ot_is_deprecation_trial', {}).get('value', False):
-      use_counter = body.get('ot_webfeature_use_counter', {}).get('value')
-      if not use_counter:
+      webfeature_use_counter = body.get(
+          'ot_webfeature_use_counter', {}).get('value')
+      # Client will add a prefix to a WebDXFeature use counter.
+      is_webdx_use_counter = (
+          webfeature_use_counter and
+          webfeature_use_counter.startswith('WebDXFeature::'))
+
+      # Check for valid WebFeature use counter specifications.
+      if not webfeature_use_counter:
         validation_errors['ot_webfeature_use_counter'] = (
             'No UseCounter specified for non-deprecation trial.')
-      elif f'{use_counter} =' not in chromium_files['webfeature_file']:
-          validation_errors['ot_webfeature_use_counter'] = (
+      elif (not is_webdx_use_counter and
+            f'{webfeature_use_counter} =' not in chromium_files['webfeature_file']):
+        validation_errors['ot_webfeature_use_counter'] = (
               'UseCounter not landed in web_feature.mojom')
+      # Check for valid WebDXFeature use counter specifications.
+      elif is_webdx_use_counter:
+        formatted_use_counter = webfeature_use_counter[14:]
+        if not formatted_use_counter:
+          validation_errors['ot_webfeature_use_counter'] = (
+              'No WebDXFeature use counter provided.')
+        elif (f'{formatted_use_counter} ='
+              not in chromium_files['webdxfeature_file']):
+          validation_errors['ot_webfeature_use_counter'] = (
+              'UseCounter not landed in webdx_feature.mojom')
 
     if body.get('ot_has_third_party_support', {}).get('value', False):
       for feature in enabled_features_json['data']:

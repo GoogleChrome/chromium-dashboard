@@ -79,7 +79,7 @@ class RedisCacheFunctionTests(testing_config.CustomTestCase):
     rediscache.set('random_key1', '404')
     self.assertEqual('1', rediscache.get(KEY_1))
 
-    rediscache.delete_keys_with_prefix('cache_key|*')
+    rediscache.delete_keys_with_prefix('cache_key')
 
     self.assertEqual(None, rediscache.get(KEY_1))
     self.assertEqual(None, rediscache.get(KEY_2))

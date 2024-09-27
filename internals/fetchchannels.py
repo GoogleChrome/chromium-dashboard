@@ -19,6 +19,8 @@ import requests
 
 from framework import rediscache
 # Note: this file cannot import core_models because it would be circular.
+import settings
+
 
 OMAHA_URL_TEMPLATE = (
     'https://versionhistory.googleapis.com'
@@ -65,3 +67,41 @@ def get_omaha_data():
     rediscache.set('omaha_data', omaha_data, time=86400) # cache for 24hrs.
 
   return json.loads(omaha_data)
+
+
+SCHEDULE_CACHE_TIME = 60 * 60  # 1 hour
+
+
+def fetch_chrome_release_info(version):
+  key = 'chromerelease|%s' % version
+
+  data = rediscache.get(key)
+  if data is None:
+    url = ('https://chromiumdash.appspot.com/fetch_milestone_schedule?'
+           'mstone=%s' % version)
+    result = requests.get(url, timeout=60)
+    if result.status_code == 200:
+      try:
+        logging.info(
+            'result.content is:\n%s', result.content[:settings.MAX_LOG_LINE])
+        result_json = json.loads(result.content)
+        if 'mstones' in result_json:
+          data = result_json['mstones'][0]
+          del data['owners']
+          del data['feature_freeze']
+          del data['ldaps']
+          rediscache.set(key, data, time=SCHEDULE_CACHE_TIME)
+      except ValueError:
+        pass  # Handled by next statement
+
+    if not data:
+      data = {
+          'stable_date': None,
+          'earliest_beta': None,
+          'latest_beta': None,
+          'mstone': version,
+          'version': version,
+      }
+      # Note: we don't put placeholder data into redis.
+
+  return data

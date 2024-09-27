@@ -65,7 +65,17 @@ class OriginTrialsAPITest(testing_config.CustomTestCase):
     self.google_user = AppUser(email='feature_owner@google.com')
     self.google_user.put()
 
-    self.mock_usecounters_file = """
+    self.mock_web_usecounters_file = """
+enum WebFeature {
+  kSomeFeature = 1,
+  kValidFeature = 2,
+  kNoThirdParty = 3
+  kSample = 4,
+  kNoCriticalTrial = 5,
+};
+"""
+
+    self.mock_webdx_usecounters_file = """
 enum WebFeature {
   kSomeFeature = 1,
   kValidFeature = 2,
@@ -130,7 +140,9 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
   def mock_chromium_file_return_value_generator(self, *args, **kwargs):
     """Returns mock milestone info based on input."""
     if args == ('https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom?format=TEXT',):
-      return self.mock_usecounters_file
+      return self.mock_web_usecounters_file
+    if args == ('https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/public/mojom/use_counter/metrics/webdx_feature.mojom?format=TEXT',):
+      return self.mock_webdx_usecounters_file
     if args == ('https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/runtime_enabled_features.json5?format=TEXT',):
       return self.mock_features_file
     if args == ('https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/common/origin_trials/manual_completion_origin_trial_features.cc?format=TEXT',):
@@ -203,8 +215,9 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
         self.handler.do_post(**kwargs)
 
   @mock.patch('api.origin_trials_api.get_chromium_file')
-  def test_validate_creation_args__valid(self, mock_get_chromium_file):
-    """No error messages should be returned if all args are valid."""
+  def test_validate_creation_args__valid_webfeature(self, mock_get_chromium_file):
+    """No error messages should be returned if all args are valid using a
+    WebFeature use counter."""
     mock_get_chromium_file.side_effect = self.mock_chromium_file_return_value_generator
 
     body = {
@@ -215,6 +228,40 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
       'ot_webfeature_use_counter': {
         'form_field_name': 'ot_webfeature_use_counter',
         'value': 'kValidFeature',
+      },
+      'ot_is_critical_trial': {
+        'form_field_name': 'ot_is_critical_trial',
+        'value': True,
+      },
+      'ot_is_deprecation_trial': {
+        'form_field_name': 'ot_is_deprecation_trial',
+        'value': False,
+      },
+      'ot_has_third_party_support': {
+        'form_field_name': 'ot_has_third_party_support',
+        'value': True,
+      },
+    }
+    # No exception should be raised.
+    with test_app.test_request_context(self.request_path):
+       result = self.handler._validate_creation_args(body)
+    expected = {}
+    self.assertEqual(expected, result)
+
+  @mock.patch('api.origin_trials_api.get_chromium_file')
+  def test_validate_creation_args__valid_webdxfeature(self, mock_get_chromium_file):
+    """No error messages should be returned if all args are valid using a
+    WebDXFeature use counter."""
+    mock_get_chromium_file.side_effect = self.mock_chromium_file_return_value_generator
+
+    body = {
+      'ot_chromium_trial_name': {
+        'form_field_name': 'ot_chromium_trial_name',
+        'value': 'ValidFeature',
+      },
+      'ot_webfeature_use_counter': {
+        'form_field_name': 'ot_webfeature_use_counter',
+        'value': 'WebDXFeature::kValidFeature',
       },
       'ot_is_critical_trial': {
         'form_field_name': 'ot_is_critical_trial',
@@ -269,9 +316,76 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
     self.assertEqual(expected, result)
 
   @mock.patch('api.origin_trials_api.get_chromium_file')
+  def test_validate_creation_args__invalid_webdxfeature_use_counter(
+      self, mock_get_chromium_file):
+    """Error message returned if WebDXFeature UseCounter not found in file."""
+    mock_get_chromium_file.side_effect = self.mock_chromium_file_return_value_generator
+    body = {
+      'ot_chromium_trial_name': {
+        'form_field_name': 'ot_chromium_trial_name',
+        'value': 'ValidFeature',
+      },
+      'ot_webfeature_use_counter': {
+        'form_field_name': 'ot_webfeature_use_counter',
+        'value': 'WebDXFeature::kBadUseCounter'
+      },
+      'ot_is_critical_trial': {
+        'form_field_name': 'ot_is_critical_trial',
+        'value': False,
+      },
+      'ot_is_deprecation_trial': {
+        'form_field_name': 'ot_is_deprecation_trial',
+        'value': False,
+      },
+      'ot_has_third_party_support': {
+        'form_field_name': 'ot_has_third_party_support',
+        'value': False,
+      },
+    }
+    with test_app.test_request_context(self.request_path):
+      result = self.handler._validate_creation_args(body)
+    expected = {
+      'ot_webfeature_use_counter': 'UseCounter not landed in webdx_feature.mojom'}
+    self.assertEqual(expected, result)
+
+  @mock.patch('api.origin_trials_api.get_chromium_file')
+  def test_validate_creation_args__missing_webdxfeature_use_counter(
+      self, mock_get_chromium_file):
+    """Error message returned if WebDXFeature UseCounter not found in file."""
+    mock_get_chromium_file.side_effect = self.mock_chromium_file_return_value_generator
+    body = {
+      'ot_chromium_trial_name': {
+        'form_field_name': 'ot_chromium_trial_name',
+        'value': 'ValidFeature',
+      },
+      'ot_webfeature_use_counter': {
+        'form_field_name': 'ot_webfeature_use_counter',
+        'value': 'WebDXFeature::'
+      },
+      'ot_is_critical_trial': {
+        'form_field_name': 'ot_is_critical_trial',
+        'value': False,
+      },
+      'ot_is_deprecation_trial': {
+        'form_field_name': 'ot_is_deprecation_trial',
+        'value': False,
+      },
+      'ot_has_third_party_support': {
+        'form_field_name': 'ot_has_third_party_support',
+        'value': False,
+      },
+    }
+    with test_app.test_request_context(self.request_path):
+      result = self.handler._validate_creation_args(body)
+    expected = {
+      'ot_webfeature_use_counter': 'No WebDXFeature use counter provided.'}
+    self.assertEqual(expected, result)
+
+  @mock.patch('api.origin_trials_api.get_chromium_file')
   def test_validate_creation_args__missing_webfeature_use_counter(
       self, mock_get_chromium_file):
-    """Error message returned if UseCounter is missing."""
+    """Error message returned if both UseCounter types are missing for a
+    non-deprecation trial."""
     mock_get_chromium_file.side_effect = self.mock_chromium_file_return_value_generator
     body = {
       'ot_chromium_trial_name': {
@@ -293,8 +407,11 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
     }
     with test_app.test_request_context(self.request_path):
       result = self.handler._validate_creation_args(body)
-    expected = {'ot_webfeature_use_counter': (
-        'No UseCounter specified for non-deprecation trial.')}
+    # A validation error should exist for both use counter fields.
+    expected = {
+      'ot_webfeature_use_counter': (
+          'No UseCounter specified for non-deprecation trial.')
+    }
     self.assertEqual(expected, result)
 
   @mock.patch('api.origin_trials_api.get_chromium_file')

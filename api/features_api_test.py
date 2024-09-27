@@ -154,8 +154,9 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         entity.key.delete()
 
     testing_config.sign_out()
-    rediscache.delete_keys_with_prefix('features|*')
-    rediscache.delete_keys_with_prefix('FeatureEntries|*')
+    rediscache.delete_keys_with_prefix('features')
+    rediscache.delete_keys_with_prefix('FeatureEntries')
+    rediscache.delete_keys_with_prefix('FeatureNames')
 
   def test_get__all_listed(self):
     """Get all features that are listed."""
@@ -167,6 +168,21 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     self.assertEqual(2, len(actual['features']))
     self.assertEqual(2, actual['total_count'])
     self.assertEqual('feature two', actual['features'][0]['name'])
+    self.assertEqual('feature one', actual['features'][1]['name'])
+
+  def test_get__all_listed_feature_names(self):
+    """Get all feature names that are listed."""
+    url = self.request_path + '?name_only=true'
+    with test_app.test_request_context(url):
+      actual = self.handler.do_get()
+
+    # Comparing only the total number of features and names,
+    # as it only returns feature names.
+    self.assertEqual(2, len(actual['features']))
+    self.assertEqual(2, actual['total_count'])
+    self.assertEqual(2, len(actual['features'][0]))
+    self.assertEqual('feature two', actual['features'][0]['name'])
+    self.assertEqual(2, len(actual['features'][1]))
     self.assertEqual('feature one', actual['features'][1]['name'])
 
   def test_get__all_listed__pagination(self):
@@ -205,6 +221,45 @@ class FeaturesAPITest(testing_config.CustomTestCase):
 
     # User wants only the result count, zero actual results.
     url = self.request_path + '?num=0'
+    with test_app.test_request_context(url):
+      actual = self.handler.do_get()
+    self.assertEqual(0, len(actual['features']))
+    self.assertEqual(2, actual['total_count'])
+
+    # User wants only 1 result, starting at index 0
+    url = self.request_path + '?num=1&name_only=true'
+    with test_app.test_request_context(url):
+      actual = self.handler.do_get()
+    self.assertEqual(1, len(actual['features']))
+    self.assertEqual(2, actual['total_count'])
+    self.assertEqual('feature two', actual['features'][0]['name'])
+
+    # User wants only 1 result, starting at index 1
+    url = self.request_path + '?num=1&start=1&name_only=true'
+    with test_app.test_request_context(url):
+      actual = self.handler.do_get()
+    self.assertEqual(1, len(actual['features']))
+    self.assertEqual(2, actual['total_count'])
+    self.assertEqual('feature one', actual['features'][0]['name'])
+
+    # User wants only 1 result, starting at index 2, but there are no more.
+    url = self.request_path + '?num=1&start=2&name_only=true'
+    with test_app.test_request_context(url):
+      actual = self.handler.do_get()
+    self.assertEqual(0, len(actual['features']))
+    self.assertEqual(2, actual['total_count'])
+
+    # User wants only more results that we have
+    url = self.request_path + '?num=999&name_only=true'
+    with test_app.test_request_context(url):
+      actual = self.handler.do_get()
+    self.assertEqual(2, len(actual['features']))
+    self.assertEqual(2, actual['total_count'])
+    self.assertEqual('feature two', actual['features'][0]['name'])
+    self.assertEqual('feature one', actual['features'][1]['name'])
+
+    # User wants only the result count, zero actual results.
+    url = self.request_path + '?num=0&name_only=true'
     with test_app.test_request_context(url):
       actual = self.handler.do_get()
     self.assertEqual(0, len(actual['features']))
@@ -737,11 +792,11 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     """PATCH request successful with first_enterprise_notification_milestone deleted."""
     stable_date = _datetime_to_str(datetime.now().replace(year=datetime.now().year + 1, day=1))
     mock_call.return_value = { 100: { 'version': 100, 'stable_date': stable_date } }
-    
+
     self.feature_1.enterprise_impact = core_enums.ENTERPRISE_IMPACT_MEDIUM
     self.feature_1.first_enterprise_notification_milestone = 100
     self.feature_1.put()
-  
+
     # Signed-in user with permissions.
     testing_config.sign_in('admin@example.com', 123567890)
 
@@ -769,11 +824,11 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     """PATCH request successful with first_enterprise_notification_milestone not deleted."""
     stable_date = _datetime_to_str(datetime.now().replace(year=datetime.now().year - 1, day=1))
     mock_call.return_value = { 100: { 'version': 100, 'stable_date': stable_date } }
-    
+
     self.feature_1.enterprise_impact = core_enums.ENTERPRISE_IMPACT_MEDIUM
     self.feature_1.first_enterprise_notification_milestone = 100
     self.feature_1.put()
-  
+
     # Signed-in user with permissions.
     testing_config.sign_in('admin@example.com', 123567890)
 
@@ -835,7 +890,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     """PATCH request successful with no changes to first_enterprise_notification_milestone."""
     now = datetime.now()
     mock_call.return_value =  {
-        100: { 
+        100: {
           'version': 100,
           'stable_date': _datetime_to_str(now.replace(year=now.year - 1, day=1))
         },

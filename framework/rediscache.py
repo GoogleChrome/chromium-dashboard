@@ -121,8 +121,9 @@ def delete(key):
   redis_client.delete(cache_key)
 
 
-def delete_keys_with_prefix(pattern):
-  """Delete all keys matching a prefix pattern."""
+def delete_keys_with_prefix(prefix: str):
+  """Delete all keys matching a prefix."""
+  pattern = prefix + '|*'
   if redis_client is None:
     return
 

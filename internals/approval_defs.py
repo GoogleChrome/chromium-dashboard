@@ -368,6 +368,7 @@ def set_vote(feature_id: int,  gate_type: int | None, new_state: int,
   if not Vote.is_valid_state(new_state):
     raise ValueError('Invalid approval state')
 
+  new_vote = None
   now = datetime.datetime.now()
   existing_list: list[Vote] = Vote.get_votes(feature_id=feature_id,
       gate_id=gate_id, set_by=set_by_email)
@@ -381,8 +382,17 @@ def set_vote(feature_id: int,  gate_type: int | None, new_state: int,
         gate_type=gate_type, state=new_state, set_on=now, set_by=set_by_email)
     new_vote.put()
 
+
   if gate:
     votes = Vote.get_votes(gate_id=gate.key.integer_id())
+    # Check for double votes that could arise from a race condition.
+    double_votes = [v for v in votes
+                    if v.set_by == set_by_email and v.set_on < now]
+    if new_vote and double_votes:
+      # This handler lost the race condition, back out and bail.
+      new_vote.key.delete()
+      return None
+
     state_was_updated = update_gate_approval_state(gate, votes)
     slo_was_updated = slo.record_vote(gate, votes)
     if state_was_updated or slo_was_updated:

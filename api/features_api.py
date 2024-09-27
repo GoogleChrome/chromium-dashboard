@@ -35,6 +35,7 @@ from internals.data_types import VerboseFeatureDict
 from internals import feature_helpers
 from internals import search
 from internals import search_fulltext
+from internals import stage_helpers
 from internals.user_models import AppUser
 import settings
 
@@ -91,13 +92,14 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     sort_spec = self.request.args.get('sort')
     num = self.get_int_arg('num', search.DEFAULT_RESULTS_PER_PAGE)
     start = self.get_int_arg('start', 0)
+    name_only = self.get_bool_arg('name_only', False)
 
     show_enterprise = (
         'feature_type' in user_query or self.get_bool_arg('showEnterprise'))
     try:
-      features_on_page, total_count = search.process_query(
+      features_on_page, total_count = search.process_query_using_cache(
           user_query, sort_spec=sort_spec, show_unlisted=show_unlisted_features,
-          show_enterprise=show_enterprise, start=start, num=num)
+          show_enterprise=show_enterprise, start=start, num=num, name_only=name_only)
     except ValueError as err:
       self.abort(400, msg=str(err))
 
@@ -179,9 +181,9 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
       self,
       stage_changes_list: list[dict[str, Any]],
       changed_fields: CHANGED_FIELDS_LIST_TYPE
-    ) -> bool:
+    ) -> list[Stage]:
     """Update stage fields with changes provided in the PATCH request."""
-    stages: list[Stage] = []
+    stages_to_store: list[Stage] = []
     for change_info in stage_changes_list:
       stage_was_updated = False
       # Check if valid ID is provided and fetch stage if it exists.
@@ -222,29 +224,32 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
       stage.milestones = milestones
 
       if stage_was_updated:
-        stages.append(stage)
+        stages_to_store.append(stage)
 
     # Save all of the updates made.
-    if stages:
-      ndb.put_multi(stages)
+    if stages_to_store:
+      ndb.put_multi(stages_to_store)
 
-    # Return a boolean representing if any changes were made to any stages.
-    return len(stages) > 0
+    # Return the list of modified stages.
+    return stages_to_store
 
   def _patch_update_special_fields(
       self,
       feature: FeatureEntry,
       feature_changes: dict[str, Any],
-      has_updated: bool
+      has_updated: bool,
+      updated_stages: list[Stage],
+      changed_fields: CHANGED_FIELDS_LIST_TYPE,
     ) -> None:
     """Handle any special FeatureEntry fields."""
     now = datetime.now()
-    # Handle accuracy notifications if this is an accuracy verification request.
+    # Set accurate_as_of if this is an accuracy verification request.
     if 'accurate_as_of' in feature_changes:
       feature.accurate_as_of = now
       feature.outstanding_notifications = 0
       has_updated = True
 
+    # Set enterprise first notification milestones.
     if is_update_first_notification_milestone(feature, feature_changes):
       feature.first_enterprise_notification_milestone = int(feature_changes['first_enterprise_notification_milestone'])
       has_updated = True
@@ -254,6 +259,32 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     if should_remove_first_notice_milestone(feature, feature_changes):
       feature.first_enterprise_notification_milestone = None
 
+    # If a shipping stage was edited, set shipping_year based on milestones.
+    updated_shipping_stages = [
+        us for us in updated_stages
+        if us.stage_type in STAGE_TYPES_SHIPPING.values()]
+    if updated_shipping_stages:
+      existing_shipping_stages = (
+          stage_helpers.get_all_shipping_stages_with_milestones(
+              feature_id=feature.key.integer_id()))
+      shipping_stage_dict = {
+          es.key.integer_id(): es
+          for es in existing_shipping_stages
+      }
+      shipping_stage_dict.update({
+          uss.key.integer_id(): uss
+          for uss in updated_shipping_stages
+      })
+      earliest = stage_helpers.find_earliest_milestone(
+          list(shipping_stage_dict.values()))
+      if earliest:
+          year = stage_helpers.look_up_year(earliest)
+          if year != feature.shipping_year:
+            changed_fields.append(('shipping_year', feature.shipping_year, year))
+            feature.shipping_year = year
+            has_updated = True
+
+    # If changes were made, set the feature.updated timestamp.
     if has_updated:
       user_email = self.get_current_user().email()
       feature.updater_email = user_email
@@ -263,10 +294,11 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
       self,
       feature: FeatureEntry,
       feature_changes: dict[str, Any],
-      has_updated: bool,
+      updated_stages: list[Stage],
       changed_fields: CHANGED_FIELDS_LIST_TYPE
     ) -> None:
     """Update feature fields with changes provided in the PATCH request."""
+    has_updated = len(updated_stages) > 0
     for field, field_type in api_specs.FEATURE_FIELD_DATA_TYPES:
       if field not in feature_changes:
         continue
@@ -276,7 +308,8 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
       changed_fields.append((field, old_value, new_value))
       has_updated = True
 
-    self._patch_update_special_fields(feature, feature_changes, has_updated)
+    self._patch_update_special_fields(
+        feature, feature_changes, has_updated, updated_stages, changed_fields)
     feature.put()
 
   def do_patch(self, **kwargs):
@@ -298,14 +331,15 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
       return redirect_resp
 
     changed_fields: CHANGED_FIELDS_LIST_TYPE = []
-    has_updated = self._patch_update_stages(body['stages'], changed_fields)
+    updated_stages = self._patch_update_stages(body['stages'], changed_fields)
     self._patch_update_feature(
-      feature, body['feature_changes'], has_updated, changed_fields)
+      feature, body['feature_changes'], updated_stages, changed_fields)
 
     notifier_helpers.notify_subscribers_and_save_amendments(
         feature, changed_fields, notify=True)
     # Remove all feature-related cache.
-    rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
+    rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)
+    rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
     # Update full-text index.
     if feature:
       search_fulltext.index_feature(feature)
@@ -329,7 +363,8 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
       self.abort(403)
     feature.deleted = True
     feature.put()
-    rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
+    rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)
+    rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
 
     # Write for new FeatureEntry entity.
     feature_entry: FeatureEntry | None = (

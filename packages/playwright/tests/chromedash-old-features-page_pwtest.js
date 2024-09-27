@@ -15,7 +15,7 @@ test('new features page link is clickable while features are loading', async ({
       body: `)]}'\n${JSON.stringify(await featuresMayResolve)}`,
     });
   });
-  await page.goto('/features');
+  await page.goto('/oldfeatures');
   const newFeaturesLocator = page.getByRole('link', {
     name: 'Try out our new features page',
   });
@@ -37,7 +37,7 @@ test('new features page link is clickable while features are loading', async ({
       throw e;
     }
   }
-  await expect(page).toHaveURL('/newfeatures');
+  await expect(page).toHaveURL('/features');
 
   // Don't leave the network request hanging forever.
   resolveFeatures({});
