@@ -28,7 +28,7 @@ class ChannelsAPITest(testing_config.CustomTestCase):
     self.handler = channels_api.ChannelsAPI()
     self.request_path = '/api/v0/channels'
 
-  @mock.patch('api.channels_api.fetch_chrome_release_info')
+  @mock.patch('internals.fetchchannels.fetch_chrome_release_info')
   @mock.patch('internals.fetchchannels.get_omaha_data')
   def test_construct_chrome_channels_details(
       self, mock_get_omaha_data, mock_fetch_chrome_release_info):
@@ -93,7 +93,7 @@ class ChannelsAPITest(testing_config.CustomTestCase):
     self.maxDiff = None
     self.assertEqual(expected, actual)
 
-  @mock.patch('api.channels_api.fetch_chrome_release_info')
+  @mock.patch('internals.fetchchannels.fetch_chrome_release_info')
   @mock.patch('internals.fetchchannels.get_omaha_data')
   def test_construct_chrome_channels_details__beta_promotion(
       self, mock_get_omaha_data, mock_fetch_chrome_release_info):
@@ -142,7 +142,7 @@ class ChannelsAPITest(testing_config.CustomTestCase):
     self.maxDiff = None
     self.assertEqual(expected, actual)
 
-  @mock.patch('api.channels_api.fetch_chrome_release_info')
+  @mock.patch('internals.fetchchannels.fetch_chrome_release_info')
   @mock.patch('internals.fetchchannels.get_omaha_data')
   def test_construct_chrome_channels_details__dev_promotion(
       self, mock_get_omaha_data, mock_fetch_chrome_release_info):
@@ -192,62 +192,7 @@ class ChannelsAPITest(testing_config.CustomTestCase):
     self.maxDiff = None
     self.assertEqual(expected, actual)
 
-  @mock.patch('requests.get')
-  def test_fetch_chrome_release_info__found(self, mock_requests_get):
-    """We can get channel data from the chromiumdash app."""
-    mock_requests_get.return_value = testing_config.Blank(
-        status_code=200,
-        content=json.dumps({
-            'mstones': [{
-                'owners': 'ignored',
-                'feature_freeze': 'ignored',
-                'ldaps': 'ignored',
-                'everything else': 'kept',
-             }],
-        }))
-
-    actual = channels_api.fetch_chrome_release_info(90)
-
-    self.assertEqual(
-        {'everything else': 'kept'},
-        actual)
-
-  @mock.patch('requests.get')
-  def test_fetch_chrome_release_info__not_found(self, mock_requests_get):
-    """If chromiumdash app does not have the data, use a placeholder."""
-    mock_requests_get.return_value = testing_config.Blank(
-        status_code=404, content='')
-
-    actual = channels_api.fetch_chrome_release_info(91)
-
-    self.assertEqual(
-        {'stable_date': None,
-         'earliest_beta': None,
-         'latest_beta': None,
-         'mstone': 91,
-         'version': 91,
-         },
-        actual)
-
-  @mock.patch('requests.get')
-  def test_fetch_chrome_release_info__error(self, mock_requests_get):
-    """We can get channel data from the chromiumdash app."""
-    mock_requests_get.return_value = testing_config.Blank(
-        status_code=200,
-        content='{')
-
-    actual = channels_api.fetch_chrome_release_info(90)
-
-    self.assertEqual(
-        {'stable_date': None,
-         'earliest_beta': None,
-         'latest_beta': None,
-         'mstone': 90,
-         'version': 90,
-         },
-        actual)
-
-  @mock.patch('api.channels_api.fetch_chrome_release_info')
+  @mock.patch('internals.fetchchannels.fetch_chrome_release_info')
   def test_construct_specified_milestones_details(
       self, mock_fetch_chrome_release_info):
     mstone_data = {
