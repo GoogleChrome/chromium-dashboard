@@ -14,9 +14,12 @@
 # limitations under the License.
 
 from collections import defaultdict
+from datetime import datetime
+from google.cloud import ndb  # type: ignore
 from typing import TypedDict
 
 from api import converters
+from framework import utils
 from internals.core_enums import (
     INTENT_NONE,
     INTENT_STAGES_BY_STAGE_TYPE,
@@ -30,6 +33,7 @@ from internals.core_enums import (
     GATE_API_ORIGIN_TRIAL,
     GATE_API_PROTOTYPE)
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals import fetchchannels
 from internals.review_models import Gate
 
 
@@ -196,3 +200,74 @@ def get_stage_info_for_templates(
   # a boolean value representing whether or not the estimated milestones
   # table will need to be rendered.
   return stage_info
+
+
+LAST_MILESTONE_TO_YEAR: dict[int, int] = {
+    # last shipped milestone of the year: calendar year
+    3: 2009,
+    8: 2010,
+    16: 2011,
+    24: 2012,
+    31: 2013,
+    39: 2014,
+    47: 2015,
+    55: 2016,
+    63: 2017,
+    71: 2018,
+    79: 2019,
+    87: 2020,
+    96: 2021,
+    108: 2022,
+    120: 2023,
+    132: 2024,
+    # Later milestones are determined by chromiumdash.appspot.com.
+    }
+
+
+def look_up_year(milestone: int) -> int:
+  """Return the calendar year in which a feature shipped."""
+  for (last_milestone_of_year, year) in LAST_MILESTONE_TO_YEAR.items():
+    if milestone <= last_milestone_of_year:
+      return year
+
+  release_info = fetchchannels.fetch_chrome_release_info(milestone)
+  if release_info and 'final_beta' in release_info:
+    shipping_date_str = release_info['final_beta']
+    shipping_date = datetime.strptime(
+        shipping_date_str, utils.CHROMIUM_SCHEDULE_DATE_FORMAT).date()
+    shipping_year = shipping_date.year
+  return shipping_year
+
+
+def find_earliest_milestone(stages: list[Stage]) -> int|None:
+  """Find the earliest milestone in a list of stages."""
+  m_list: list[int] = []
+  for stage in stages:
+    m_list.append(stage.milestones.desktop_first)
+    m_list.append(stage.milestones.android_first)
+    m_list.append(stage.milestones.ios_first)
+    m_list.append(stage.milestones.webview_first)
+  m_list = [m for m in m_list if m]
+  if m_list:
+    return min(m_list)
+  return None
+
+
+def get_all_shipping_stages_with_milestones(
+    feature_id: int | None = None) -> list[Stage]:
+  """Return shipping stages for the specified feature or all features."""
+  shipping_stage_types = [st for st in STAGE_TYPES_SHIPPING.values() if st]
+  shipping_query: ndb.Query = Stage.query(
+      Stage.stage_type.IN(shipping_stage_types))
+  if feature_id:
+    shipping_query = shipping_query.filter(
+        Stage.feature_id == feature_id)
+  shipping_stages: list[Stage] = shipping_query.fetch()
+  shipping_stages_with_milestones = [
+      stage for stage in shipping_stages
+      if (stage.milestones and
+          (stage.milestones.desktop_first or
+           stage.milestones.android_first or
+           stage.milestones.ios_first or
+           stage.milestones.webview_first))]
+  return shipping_stages_with_milestones

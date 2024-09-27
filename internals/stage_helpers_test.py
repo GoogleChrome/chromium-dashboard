@@ -16,7 +16,7 @@ import testing_config  # Must be imported before the module under test.
 
 from internals import core_enums
 from internals import stage_helpers
-from internals.core_models import FeatureEntry, Stage
+from internals.core_models import FeatureEntry, Stage, MilestoneSet
 
 
 class StageHelpersTest(testing_config.CustomTestCase):
@@ -39,7 +39,7 @@ class StageHelpersTest(testing_config.CustomTestCase):
     self.feature_entry_1.key.delete()
     for stage in Stage.query().fetch():
       stage.key.delete()
-  
+
   def test_get_feature_stages(self):
     """A dictionary with stages relevant to the feature should be present."""
     stage_dict = stage_helpers.get_feature_stages(self.feature_id)
@@ -52,7 +52,7 @@ class StageHelpersTest(testing_config.CustomTestCase):
       self.assertTrue(stage_type in expected_stage_types)
       self.assertEqual(stages_list[0].stage_type, stage_type)
       expected_stage_types.remove(stage_type)
-  
+
   def test_create_feature_stage(self):
     """A dictionary with stages relevant to the feature should be present."""
     stage_dict = stage_helpers.get_feature_stages(self.feature_id)
@@ -81,3 +81,54 @@ class StageHelpersTest(testing_config.CustomTestCase):
       self.assertEqual(stages_list[0].stage_type, stage_type)
       expected_stage_types.remove(stage_type)
 
+
+class StageHelpers_Milestones_Test(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.stage_1_1 = Stage(
+        feature_id=11111,
+        milestones=MilestoneSet())
+    self.stage_2_1 = Stage(
+        feature_id=22222,
+        milestones=MilestoneSet(desktop_first=123))
+    self.stage_2_2 = Stage(
+        feature_id=22222,
+        milestones=MilestoneSet(desktop_first=121, android_first=120))
+
+  def tearDown(self):
+    for stage in Stage.query().fetch():
+      stage.key.delete()
+
+  def test_look_up_year__historic(self):
+    """We can look up the year in which a milestone shippped."""
+    self.assertEqual(2009, stage_helpers.look_up_year(0))
+    self.assertEqual(2009, stage_helpers.look_up_year(1))
+    self.assertEqual(2009, stage_helpers.look_up_year(3))
+    self.assertEqual(2010, stage_helpers.look_up_year(4))
+    self.assertEqual(2024, stage_helpers.look_up_year(131))
+    self.assertEqual(2024, stage_helpers.look_up_year(132))
+
+  def test_look_up_year__chromiumdash(self):
+    """We can retrieve the year in which a milestone will ship."""
+    self.assertEqual(2025, stage_helpers.look_up_year(140))
+
+  def test_find_earliest_milestone__no_stages(self):
+    """An empty list of stages has no earliest milestone."""
+    actual = stage_helpers.find_earliest_milestone([])
+    self.assertEqual(None, actual)
+
+  def test_find_earliest_milestone__no_milestones(self):
+    """A stage with no milestones has no earliest milestone."""
+    actual = stage_helpers.find_earliest_milestone([self.stage_1_1])
+    self.assertEqual(None, actual)
+
+  def test_find_earliest_milestone__single_stage(self):
+    """We find the earliest milestone in a stage."""
+    actual = stage_helpers.find_earliest_milestone([self.stage_2_1])
+    self.assertEqual(123, actual)
+
+  def test_find_earliest_milestone__multi_stage(self):
+    """We find the earliest milestone in a list of stages."""
+    actual = stage_helpers.find_earliest_milestone(
+        [self.stage_2_1, self.stage_2_2])
+    self.assertEqual(120, actual)
