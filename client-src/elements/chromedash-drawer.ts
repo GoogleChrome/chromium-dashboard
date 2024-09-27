@@ -263,7 +263,7 @@ export class ChromedashDrawer extends LitElement {
 
     const year = new Date().getFullYear();
     const shippingThisYear = this.renderNavItem(
-      '/newfeatures?q=shipping_year=' + year,
+      '/features?q=shipping_year=' + year,
       'Shipping ' + year
     );
 
