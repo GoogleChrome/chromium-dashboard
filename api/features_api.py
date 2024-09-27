@@ -259,8 +259,11 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     if should_remove_first_notice_milestone(feature, feature_changes):
       feature.first_enterprise_notification_milestone = None
 
-    # Set shipping_year based on milestones.
-    if updated_stages:
+    # If a shipping stage was edited, set shipping_year based on milestones.
+    updated_shipping_stages = [
+        us for us in updated_stages
+        if us.stage_type in STAGE_TYPES_SHIPPING.values()]
+    if updated_shipping_stages:
       existing_shipping_stages = (
           stage_helpers.get_all_shipping_stages_with_milestones(
               feature_id=feature.key.integer_id()))
@@ -269,9 +272,8 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
           for es in existing_shipping_stages
       }
       shipping_stage_dict.update({
-          us.key.integer_id(): us
-          for us in updated_stages
-          if us.stage_type in STAGE_TYPES_SHIPPING.values()
+          uss.key.integer_id(): uss
+          for uss in updated_shipping_stages
       })
       earliest = stage_helpers.find_earliest_milestone(
           list(shipping_stage_dict.values()))
