@@ -231,7 +231,7 @@ export class ChromedashDrawer extends LitElement {
   }
 
   isCurrentPage(href) {
-    return this.currentPage.startsWith(href);
+    return this.currentPage === href;
   }
 
   toggleDrawerActions() {
