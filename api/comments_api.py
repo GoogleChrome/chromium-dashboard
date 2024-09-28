@@ -91,8 +91,14 @@ class CommentsAPI(basehandlers.APIHandler):
     user = self.get_current_user(required=True)
 
     comment_request = CommentsRequest.from_dict(self.request.json)
+    if not comment_request:
+        self.abort(400, msg='Invalid request')
     comment_content = comment_request.comment
+    if not comment_content:
+        self.abort(400, msg='Comment content is required')
     post_to_thread_type = comment_request.post_to_thread_type
+    if not post_to_thread_type:
+        self.abort(400, msg='post_to_thread_type is required')
 
     if comment_content:
       can_comment = (permissions.can_comment(user) or
@@ -128,6 +134,8 @@ class CommentsAPI(basehandlers.APIHandler):
 
   def do_patch(self, **kwargs) -> dict[str, str]:
     patch_request = PatchCommentRequest.from_dict(self.request.json)
+    if not patch_request:
+        self.abort(400, msg='Invalid request')
     comment: Activity = Activity.get_by_id(patch_request.comment_id)
 
     user = self.get_current_user(required=True)

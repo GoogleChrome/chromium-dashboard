@@ -57,7 +57,11 @@ class VotesAPI(basehandlers.APIHandler):
     # Note: We assume that anyone may view approvals.
     votes = Vote.get_votes(feature_id=feature_id, gate_id=gate_id)
     dicts = [converters.vote_value_to_json_dict(v) for v in votes]
-    return GetVotesResponse.from_dict({'votes': dicts}).to_dict()
+    response = GetVotesResponse.from_dict({'votes': dicts})
+    if not response:
+      logging.error(f"unable to convert response from get_votes to GetVotesResponse dicts={dicts}")
+      return self.abort(500)
+    return response.to_dict()
 
   def do_post(self, **kwargs) -> dict[str, str]:
     """Set a user's vote value for the specified feature and gate."""
@@ -146,16 +150,24 @@ class GatesAPI(basehandlers.APIHandler):
       approvers = approval_defs.get_approvers(g['gate_type'])
       g['possible_assignee_emails'] = approvers
 
-    return GetGateResponse.from_dict({
+    response = GetGateResponse.from_dict({
         'gates': dicts,
-        }).to_dict()
+        })
+    if not response:
+      logging.error(f"unable to convert response from get_votes to GetGateResponse dicts={dicts}")
+      return self.abort(500)
+    return response.to_dict()
 
   def do_post(self, **kwargs) -> dict[str, str]:
     """Set the assignees for a gate."""
     user, fe, gate, feature_id, gate_id = get_user_feature_and_gate(
         self, kwargs)
     request = PostGateRequest.from_dict(self.request.json)
+    if not request:
+      self.abort(400, msg='Invalid request')
     assignees = request.assignees
+    if not assignees:
+      self.abort(400, msg='No assignees provided')
 
     self.require_permissions(user, fe, gate)
     self.validate_assignees(assignees, fe, gate)
