@@ -234,6 +234,22 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
     `;
   }
 
+  // TODO: if outdated, add an inline icon.
+  _isFeatureOutdated(accurateAsOf) {
+    // TODO: only if it is shipping within 2 milestones.
+    if (!accurateAsOf) {
+      return true;
+    }
+    const accuateDate = Date.parse(accurateAsOf);
+    // 4 weeks period.
+    const gracePeriod = 4 * 7 * 24 * 60 * 60 * 1000;
+    if (accuateDate + gracePeriod < Date.now()) {
+      return true;
+    }
+
+    return false;
+  }
+
   _cardFeatureItemTemplate(f, shippingType) {
     return html`
       <li
