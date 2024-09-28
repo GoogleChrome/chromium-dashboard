@@ -97,8 +97,6 @@ class CommentsAPI(basehandlers.APIHandler):
     if not comment_content:
         self.abort(400, msg='Comment content is required')
     post_to_thread_type = comment_request.post_to_thread_type
-    if not post_to_thread_type:
-        self.abort(400, msg='post_to_thread_type is required')
 
     if comment_content:
       can_comment = (permissions.can_comment(user) or
