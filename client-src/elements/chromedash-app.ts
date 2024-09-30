@@ -8,6 +8,7 @@ import {User} from '../js-src/cs-client.js';
 import {ChromedashDrawer, DRAWER_WIDTH_PX} from './chromedash-drawer.js';
 import {ChromedashGateColumn} from './chromedash-gate-column.js';
 import {
+  clearURLParams,
   IS_MOBILE,
   isoDateString,
   parseRawQuery,
@@ -358,10 +359,12 @@ export class ChromedashApp extends LitElement {
       this.pageComponent.showQuery = false;
       this.pageComponent.rawQuery = parseRawQuery(ctx.querystring);
     });
-    page('/newfeatures', ctx => {
+    page('/newfeatures', () => page.redirect('/features'));
+    page('/features', ctx => {
       if (!this.setupNewPage(ctx, 'chromedash-all-features-page', true)) return;
       this.pageComponent.user = this.user;
       this.pageComponent.rawQuery = parseRawQuery(ctx.querystring);
+      this.pageComponent.isNewfeaturesPage = true;
       this.pageComponent.addEventListener(
         'search',
         this.handleSearchQuery.bind(this)
@@ -548,6 +551,7 @@ export class ChromedashApp extends LitElement {
 
   handleSearchQuery(e) {
     updateURLParams('q', e.detail.query);
+    clearURLParams('start');
   }
 
   showSidebar() {
@@ -622,11 +626,11 @@ export class ChromedashApp extends LitElement {
   }
 
   renderRolloutBanner(currentPage) {
-    if (currentPage.startsWith('/newfeatures')) {
+    if (currentPage.startsWith('/features')) {
       return html`
-        <div id="rollout">
-          <a href="/features">Back to the old features page</a>
-        </div>
+        <p style="padding: 2em 6em">
+          <a href="/oldfeatures">Use the old features page</a>
+        </p>
       `;
     }
 
@@ -678,10 +682,10 @@ export class ChromedashApp extends LitElement {
                   .timestamp=${this.bannerTime}
                 >
                 </chromedash-banner>
-                ${this.renderRolloutBanner(this.currentPage)}
                 <div id="content-flex-wrapper">
                   ${this.renderContentAndSidebar()}
                 </div>
+                ${this.renderRolloutBanner(this.currentPage)}
               </div>
             </div>
             <chromedash-footer></chromedash-footer>

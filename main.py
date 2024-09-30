@@ -186,6 +186,7 @@ spa_page_routes = [
   Route('/myfeatures/review', defaults={'require_signin': True}),
   Route('/myfeatures/starred', defaults={'require_signin': True}),
   Route('/myfeatures/editable', defaults={'require_signin': True}),
+  Route('/features'),
   Route('/newfeatures'),
   Route('/feature/<int:feature_id>'),
   Route('/feature/<int:feature_id>/activity'),
@@ -255,7 +256,7 @@ mpa_page_routes: list[Route] = [
     Route(r'/features.json', featurelist.FeaturesJsonHandler),
     Route(r'/features_v2.json', featurelist.FeaturesJsonHandler),
 
-    Route('/features', featurelist.FeatureListHandler),
+    Route('/oldfeatures', featurelist.FeatureListHandler),
     Route('/features/<int:feature_id>', featurelist.FeatureListHandler),
     Route('/features.xml', basehandlers.ConstHandler,
         defaults={'template_path': 'farewell-rss.xml'}),

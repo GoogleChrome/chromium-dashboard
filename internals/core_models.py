@@ -193,7 +193,14 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   # Legacy fields that we display on old entries, but don't allow editing.
   experiment_timeline = ndb.TextProperty()  # Display-only
 
+  # The prefix of rediscache keys for storing all information
+  # about a feature.
   DEFAULT_CACHE_KEY = 'FeatureEntries'
+  # The prefix of rediscache keys for storing the feature name
+  # of a feature.
+  FEATURE_NAME_CACHE_KEY = 'FeatureNames'
+  # The prefix used when cacheing entire search results.
+  SEARCH_CACHE_KEY = 'FeatureSearch'
 
   def __init__(self, *args, **kwargs):
     # Initialise Feature.blink_components with a default value.  If
@@ -210,16 +217,18 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   def feature_cache_key(cls, cache_key, feature_id):
     return '%s|%s' % (cache_key, feature_id)
 
-  @classmethod
-  def feature_cache_prefix(cls):
-    return '%s|*' % (cls.DEFAULT_CACHE_KEY)
-
   def put(self, **kwargs) -> Any:
     key = super(FeatureEntry, self).put(**kwargs)
     # Invalidate rediscache for the individual feature view.
     cache_key = FeatureEntry.feature_cache_key(
         FeatureEntry.DEFAULT_CACHE_KEY, self.key.integer_id())
     rediscache.delete(cache_key)
+
+    # Invalidate rediscache for the individual feature name.
+    cache_key = FeatureEntry.feature_cache_key(
+        FeatureEntry.FEATURE_NAME_CACHE_KEY, self.key.integer_id())
+    rediscache.delete(cache_key)
+    rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
 
     return key
 

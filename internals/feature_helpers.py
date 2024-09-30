@@ -332,6 +332,51 @@ def get_all(limit: Optional[int]=None,
 
   return feature_list
 
+def get_feature_names_by_ids(feature_ids: list[int],
+               update_cache: bool=True) -> list[dict[str, Any]]:
+  """Return a list of JSON dicts for the specified feature names.
+  """
+  result_dict = {}
+  futures_by_id = {}
+
+  if update_cache:
+    lookup_keys = [
+        FeatureEntry.feature_cache_key(
+            FeatureEntry.FEATURE_NAME_CACHE_KEY, feature_id)
+        for feature_id in feature_ids]
+    cached_features = rediscache.get_multi(lookup_keys)
+    if cached_features:
+      result_dict = {f['id']: f
+                     for f in cached_features.values()
+                     if f is not None and f.get('id')}
+
+  for feature_id in feature_ids:
+    if feature_id not in result_dict:
+      futures_by_id[feature_id] = FeatureEntry.get_by_id_async(feature_id)
+
+  for future in futures_by_id.values():
+    fe: Optional[FeatureEntry] = future.get_result()
+    if fe and not fe.deleted:
+      feature_id = fe.key.integer_id()
+      feature_name_dict = {
+        'id': feature_id,
+        'name': fe.name,
+      }
+      result_dict[feature_id] = feature_name_dict
+
+  if update_cache:
+    to_cache = {}
+    for feature_id in futures_by_id:
+      if feature_id in result_dict:
+        store_key = FeatureEntry.feature_cache_key(
+            FeatureEntry.FEATURE_NAME_CACHE_KEY, feature_id)
+        to_cache[store_key] = result_dict[feature_id]
+    rediscache.set_multi(to_cache)
+
+  result_list = [
+      result_dict[feature_id] for feature_id in feature_ids
+      if feature_id in result_dict]
+  return result_list
 
 def get_by_ids(feature_ids: list[int],
                update_cache: bool=True) -> list[dict[str, Any]]:

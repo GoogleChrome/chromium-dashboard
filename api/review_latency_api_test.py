@@ -14,8 +14,9 @@
 
 import testing_config  # isort: split
 
+import flask
+import werkzeug.exceptions  # Flask HTTP stuff.
 from datetime import datetime
-
 from unittest import mock
 from google.cloud import ndb  # type: ignore
 
@@ -23,6 +24,10 @@ from api import review_latency_api
 from internals.core_enums import *
 from internals.core_models import FeatureEntry
 from internals.review_models import Gate
+from internals import user_models
+
+
+test_app = flask.Flask(__name__)
 
 
 def make_feature_and_gates(name):
@@ -41,6 +46,10 @@ def make_feature_and_gates(name):
 class ReviewLatencyAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
+    self.app_admin = user_models.AppUser(email='admin@example.com')
+    self.app_admin.is_admin = True
+    self.app_admin.put()
+
     self.handler = review_latency_api.ReviewLatencyAPI()
     self.request_path = '/api/v0/review-latency'
 
@@ -53,6 +62,8 @@ class ReviewLatencyAPITest(testing_config.CustomTestCase):
     self.last_week = datetime(2024, 3, 15)
 
   def tearDown(self):
+    testing_config.sign_out()
+    self.app_admin.key.delete()
     kinds: list[ndb.Model] = [FeatureEntry, Gate]
     for kind in kinds:
       for entity in kind.query():
@@ -60,18 +71,36 @@ class ReviewLatencyAPITest(testing_config.CustomTestCase):
 
   def test_do_get__nothing_requested(self):
     """When no reviews have been started, the result is empty."""
-    actual = self.handler.do_get(today=self.today)
+    testing_config.sign_in('admin@example.com', 123567890)
+    with test_app.test_request_context(self.request_path):
+      actual = self.handler.do_get(today=self.today)
     self.assertEqual([], actual)
+
+  def test_do_get__anon(self):
+    """Only users who can create features can view reports."""
+    testing_config.sign_out()
+    with test_app.test_request_context(self.request_path):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.do_get(today=self.today)
+
+  def test_do_get__rando(self):
+    """Only users who can create features can view reports."""
+    testing_config.sign_in('someone@example.com', 1232345)
+    with test_app.test_request_context(self.request_path):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.do_get(today=self.today)
 
   def test_do_get__normal(self):
     """It produces a report of review latency."""
+    testing_config.sign_in('admin@example.com', 123567890)
     self.g_1_1.requested_on = self.last_week
     self.g_1_1.responded_on = self.today
     self.g_1_1.put()
     self.g_1_2.requested_on = self.last_week
     self.g_1_2.put()
 
-    actual = self.handler.do_get(today=self.today)
+    with test_app.test_request_context(self.request_path):
+      actual = self.handler.do_get(today=self.today)
 
     expected = [
         { 'feature': {'name': 'Feature one', 'id': self.fe_1_id},
@@ -88,6 +117,7 @@ class ReviewLatencyAPITest(testing_config.CustomTestCase):
 
   def test_do_get__sorting(self):
     """Multiple results are sorted by earlest review request."""
+    testing_config.sign_in('admin@example.com', 123567890)
     self.g_1_1.requested_on = self.yesterday
     self.g_1_1.responded_on = self.today
     self.g_1_1.put()
@@ -99,7 +129,8 @@ class ReviewLatencyAPITest(testing_config.CustomTestCase):
     self.g_2_1.responded_on = self.yesterday
     self.g_2_1.put()
 
-    actual = self.handler.do_get(today=self.today)
+    with test_app.test_request_context(self.request_path):
+      actual = self.handler.do_get(today=self.today)
 
     expected = [
         { 'feature': {'name': 'Feature two', 'id': self.fe_2_id},

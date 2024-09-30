@@ -298,7 +298,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'is_released': True,
       'category': 'Web Components',
       'category_int': 1,
-      'feature_type': 'New feature incubation',
+      'feature_type': 'New or changed feature',
       'feature_type_int': 0,
       'is_enterprise_feature': False,
       'intent_stage': 'Start prototyping',

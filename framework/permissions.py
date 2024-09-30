@@ -142,10 +142,16 @@ def can_review_gate(
 
 
 def _maybe_redirect_to_login(handler_obj) -> flask.Response | dict:
-  # TODO(jrobbins): For API calls, we should return 401 rather than a redirect.
+  # Don't redirect if the handler is not an UI page (it is an API handler).
+  if not hasattr(handler_obj, 'get_common_data'):
+      return {}
+
+  # Don't redirect if this is a UI page and we already redirected.
   common_data = handler_obj.get_common_data()
-  if 'current_path' in common_data and 'loginStatus=False' in common_data['current_path']:
+  if ('current_path' in common_data and
+      'loginStatus=False' in common_data['current_path']):
     return {}
+
   return handler_obj.redirect(settings.LOGIN_PAGE_URL)
 
 
@@ -158,7 +164,9 @@ def _reject_or_proceed(
 
   # Give the user a chance to sign in
   if not user and req.method == 'GET':
-    return _maybe_redirect_to_login(handler_obj)
+    redirect = _maybe_redirect_to_login(handler_obj)
+    if redirect:
+      return redirect
 
   if not perm_function(user):
     handler_obj.abort(403)
@@ -201,9 +209,11 @@ def validate_feature_create_permission(handler_obj):
 
   # Give the user a chance to sign in
   if not user and req.method == 'GET':
-    return _maybe_redirect_to_login(handler_obj)
+    redirect = _maybe_redirect_to_login(handler_obj)
+    if redirect:
+      return redirect
 
-  # Redirect to 403 if user does not have create permission for feature.
+  # Respond with 403 if user does not have create permission for feature.
   if not can_create_feature(user):
     handler_obj.abort(403)
 
@@ -216,14 +226,16 @@ def validate_feature_edit_permission(
 
   # Give the user a chance to sign in
   if not user and req.method == 'GET':
-    return _maybe_redirect_to_login(handler_obj)
+    redirect = _maybe_redirect_to_login(handler_obj)
+    if redirect:
+      return redirect
 
-  # Redirect to 404 if feature is not found.
+  # Respond with 404 if feature is not found.
   # Load feature directly from NDB so as to never get a stale cached copy.
   if FeatureEntry.get_by_id(int(feature_id)) is None:
     handler_obj.abort(404, msg='Feature not found')
 
-  # Redirect to 403 if user does not have edit permission for feature.
+  # Respond with 403 if user does not have edit permission for feature.
   if not can_edit_feature(user, feature_id):
     handler_obj.abort(403, msg='User cannot edit feature %r' % feature_id)
 

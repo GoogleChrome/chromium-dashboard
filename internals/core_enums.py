@@ -128,10 +128,10 @@ FEATURE_TYPE_DEPRECATION_ID = 3
 FEATURE_TYPE_ENTERPRISE_ID = 4
 
 FEATURE_TYPES = {
-    FEATURE_TYPE_INCUBATE_ID: 'New feature incubation',
-    FEATURE_TYPE_EXISTING_ID: 'Existing feature implementation',
-    FEATURE_TYPE_CODE_CHANGE_ID: 'Web developer facing change to existing code',
-    FEATURE_TYPE_DEPRECATION_ID: 'Feature deprecation',
+    FEATURE_TYPE_INCUBATE_ID: 'New or changed feature',
+    FEATURE_TYPE_EXISTING_ID: 'Chromium catches up',
+    FEATURE_TYPE_CODE_CHANGE_ID: 'No developer-visible change',
+    FEATURE_TYPE_DEPRECATION_ID: 'Feature removal',
     FEATURE_TYPE_ENTERPRISE_ID: 'New Feature or removal affecting enterprises',
 }
 

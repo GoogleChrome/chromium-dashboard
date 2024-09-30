@@ -1,11 +1,12 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
+import {ifDefined} from 'lit/directives/if-defined.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {Feature} from '../js-src/cs-client.js';
 import './chromedash-feature-filter';
 import './chromedash-feature-pagination';
 import './chromedash-feature-row';
-import {clamp, showToastMessage} from './utils.js';
+import {clamp, showToastMessage, formatUrlForRelativeOffset} from './utils.js';
 import {GateDict} from './chromedash-gate-chip.js';
 
 @customElement('chromedash-feature-table')
@@ -36,6 +37,8 @@ export class ChromedashFeatureTable extends LitElement {
   alwaysOfferPagination = false;
   @property({type: String})
   noResultsMessage = 'No results';
+  @property({type: String})
+  noPaginatedResultsMessage = 'No results on this pagination page';
   @property({type: Boolean})
   canEdit = false;
   @property({type: Object})
@@ -46,6 +49,8 @@ export class ChromedashFeatureTable extends LitElement {
   columns!: 'normal' | 'approvals';
   @property({type: Boolean})
   signedIn!: boolean;
+  @property({type: Boolean})
+  nameOnly = false;
 
   connectedCallback() {
     super.connectedCallback();
@@ -61,7 +66,8 @@ export class ChromedashFeatureTable extends LitElement {
         this.showEnterprise,
         this.sortSpec,
         this.start,
-        this.num
+        this.num,
+        this.nameOnly
       )
       .then(resp => {
         this.features = resp.features;
@@ -118,6 +124,7 @@ export class ChromedashFeatureTable extends LitElement {
   handleSearch(event) {
     this.loading = true;
     this.query = event.detail.query;
+    this.start = 0;
     this.fetchFeatures();
   }
 
@@ -125,9 +132,22 @@ export class ChromedashFeatureTable extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
+        .status-and-count {
+          padding: var(--content-padding-half) 0;
+          min-height: 50px;
+        }
+        .status-and-count span {
+          color: var(--unimportant-text-color);
+          margin-right: var(--content-padding);
+        }
+        .status-and-count sl-icon-button {
+          font-size: 1.6rem;
+        }
+        .status-and-count sl-icon-button::part(base) {
+          padding: 0;
+        }
         table {
           width: 100%;
-          margin-top: var(--content-padding);
         }
         .skel td {
           background: white;
@@ -136,6 +156,9 @@ export class ChromedashFeatureTable extends LitElement {
         }
         sl-skeleton {
           height: 24px;
+        }
+        .message {
+          padding: var(--content-padding);
         }
       `,
     ];
@@ -166,10 +189,17 @@ export class ChromedashFeatureTable extends LitElement {
         </tr>
       `;
     }
-    if (this.features.length == 0) {
+    if (this.totalCount == 0) {
       return html`
         <tr>
-          <td>${this.noResultsMessage}</td>
+          <td class="message">${this.noResultsMessage}</td>
+        </tr>
+      `;
+    }
+    if (this.features.length == 0 && this.start > 0) {
+      return html`
+        <tr>
+          <td class="message">${this.noPaginatedResultsMessage}</td>
         </tr>
       `;
     }
@@ -186,6 +216,67 @@ export class ChromedashFeatureTable extends LitElement {
       `;
     }
     return nothing;
+  }
+
+  renderLoadingStatusAndCount() {
+    // Indexes of first and last items shown in one-based counting.
+    const firstShown = this.start + 1;
+    const lastShown = this.start + this.features.length;
+
+    const prevUrl = formatUrlForRelativeOffset(
+      this.start,
+      -this.num,
+      this.num,
+      this.totalCount
+    );
+    const nextUrl = formatUrlForRelativeOffset(
+      this.start,
+      this.num,
+      this.num,
+      this.totalCount
+    );
+
+    if (this.alwaysOfferPagination) {
+      if (this.loading) {
+        // reserve vertical space to use when loaded.
+        return html` <div class="status-and-count">
+          <sl-skeleton effect="sheen" style="float: right; width: 12em">
+          </sl-skeleton>
+        </div>`;
+      }
+    } else {
+      // On MyFeatures page, don't always show conut.  Omit it if
+      // results fit in each box (the most common case).
+      if (this.loading || (firstShown == 1 && lastShown == this.totalCount)) {
+        return nothing;
+      }
+    }
+
+    if (this.features.length === 0) {
+      return nothing;
+    }
+
+    return html`
+      <div class="status-and-count hbox">
+        <span>${this.reloading ? 'Reloading...' : nothing}</span>
+        <div class="spacer"></div>
+        <span>${firstShown} - ${lastShown} of ${this.totalCount}</span>
+        <sl-icon-button
+          library="material"
+          name="navigate_before"
+          title="Previous page"
+          href=${ifDefined(prevUrl)}
+          ?disabled=${prevUrl === undefined}
+        ></sl-icon-button>
+        <sl-icon-button
+          library="material"
+          name="navigate_next"
+          title="Next page"
+          href=${ifDefined(nextUrl)}
+          ?disabled=${nextUrl === undefined}
+        ></sl-icon-button>
+      </div>
+    `;
   }
 
   renderPagination(features) {
@@ -238,7 +329,7 @@ export class ChromedashFeatureTable extends LitElement {
 
   render() {
     return html`
-      ${this.renderSearch()}
+      ${this.renderSearch()} ${this.renderLoadingStatusAndCount()}
       <table>
         ${this.renderMessages() ||
         this.features.map(feature => this.renderFeature(feature))}

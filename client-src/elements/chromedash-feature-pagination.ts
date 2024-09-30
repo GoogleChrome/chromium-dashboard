@@ -23,7 +23,11 @@ import {
   nothing,
 } from 'lit';
 import {customElement, property} from 'lit/decorators.js';
-import {formatURLParams} from './utils.js';
+import {
+  formatURLParams,
+  formatUrlForRelativeOffset,
+  formatUrlForOffset,
+} from './utils.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
 import {range} from 'lit/directives/range.js';
 import {map} from 'lit/directives/map.js';
@@ -82,22 +86,6 @@ export class ChromedashFeaturePagination extends LitElement {
     ];
   }
 
-  formatUrlForRelativeOffset(delta: number): string | undefined {
-    const offset = this.start + delta;
-    if (
-      this.totalCount === undefined ||
-      offset <= -this.pageSize ||
-      offset >= this.totalCount
-    ) {
-      return undefined;
-    }
-    return this.formatUrlForOffset(Math.max(0, offset));
-  }
-
-  formatUrlForOffset(offset: number): string {
-    return formatURLParams('start', offset).toString();
-  }
-
   renderPageButtons(): TemplateResult {
     if (this.totalCount === undefined || this.totalCount === 0) {
       return html``;
@@ -136,7 +124,7 @@ export class ChromedashFeaturePagination extends LitElement {
         variant="text"
         id="jump_1"
         class="page-button ${0 === currentPage ? 'active' : ''}"
-        href=${this.formatUrlForOffset(0)}
+        href=${formatUrlForOffset(0)}
       >
         ${1}
       </sl-button>
@@ -148,7 +136,7 @@ export class ChromedashFeaturePagination extends LitElement {
             variant="text"
             id="jump_${i + 1}"
             class="page-button ${i === currentPage ? 'active' : ''}"
-            href=${this.formatUrlForOffset(i * this.pageSize)}
+            href=${formatUrlForOffset(i * this.pageSize)}
           >
             ${i + 1}
           </sl-button>
@@ -160,7 +148,7 @@ export class ChromedashFeaturePagination extends LitElement {
             variant="text"
             id="jump_${numPages}"
             class="page-button ${numPages - 1 === currentPage ? 'active' : ''}"
-            href=${this.formatUrlForOffset((numPages - 1) * this.pageSize)}
+            href=${formatUrlForOffset((numPages - 1) * this.pageSize)}
           >
             ${numPages}
           </sl-button>`
@@ -202,8 +190,18 @@ export class ChromedashFeaturePagination extends LitElement {
       return html``;
     }
 
-    const prevUrl = this.formatUrlForRelativeOffset(-this.pageSize);
-    const nextUrl = this.formatUrlForRelativeOffset(this.pageSize);
+    const prevUrl = formatUrlForRelativeOffset(
+      this.start,
+      -this.pageSize,
+      this.pageSize,
+      this.totalCount
+    );
+    const nextUrl = formatUrlForRelativeOffset(
+      this.start,
+      this.pageSize,
+      this.pageSize,
+      this.totalCount
+    );
 
     return html`
       <div id="main" class="pagination hbox halign-items-space-between">

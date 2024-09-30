@@ -450,6 +450,34 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     actual = search._sort_by_total_order(feature_ids, total_order_ids)
     self.assertEqual([10, 9, 4, 1], actual)
 
+  def test_make_cache_key(self):
+    """We can make a search cache key."""
+    self.assertEqual(
+        ('FeatureSearch||sort_spec=None|show_unlisted=True|'
+         'show_deleted=False|show_enterprise=False|'
+         'start=0|num=100|name_only=True'),
+        search.make_cache_key('', None, True, False, False, 0, 100, True))
+    self.assertEqual(
+        ('FeatureSearch|canvas|sort_spec=created.when|show_unlisted=False|'
+         'show_deleted=True|show_enterprise=True|'
+         'start=1|num=20|name_only=False'),
+        search.make_cache_key(
+            'canvas', 'created.when', False, True, True, 1, 20, False))
+
+  def test_is_cacheable(self):
+    """We can make a search cache key."""
+    self.assertTrue(search.is_cacheable('', True))
+    self.assertTrue(search.is_cacheable('canvas', True))
+    self.assertTrue(search.is_cacheable('feature_type=4', True))
+
+    self.assertFalse(search.is_cacheable('starred-by:me', True))
+    self.assertFalse(search.is_cacheable('owner:me', True))
+    self.assertFalse(search.is_cacheable('pending-approval-by:me', True))
+    self.assertFalse(search.is_cacheable('is:recently-reviewed', True))
+    self.assertFalse(search.is_cacheable('created.when<now', True))
+    self.assertFalse(search.is_cacheable('shipping>current_stable', True))
+    self.assertFalse(search.is_cacheable('canvas', False))
+
   @mock.patch('internals.search.process_pending_approval_me_query')
   @mock.patch('internals.search.process_starred_me_query')
   @mock.patch('internals.search_queries.handle_me_query_async')

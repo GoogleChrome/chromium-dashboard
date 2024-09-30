@@ -197,13 +197,14 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
     # POST request should not be executed with no API key.
     mock_requests_post.assert_not_called()
 
+  @mock.patch('framework.secrets.get_ot_data_access_admin_group')
   @mock.patch('framework.secrets.get_ot_api_key')
   @mock.patch('framework.origin_trials_client._get_ot_access_token')
   @mock.patch('framework.origin_trials_client._get_trial_end_time')
   @mock.patch('requests.post')
   def test_create_origin_trial__with_api_key(
       self, mock_requests_post, mock_get_trial_end_time,
-      mock_get_ot_access_token, mock_api_key_get):
+      mock_get_ot_access_token, mock_api_key_get, mock_get_admin_group):
     """If an API key is available, POST should create trial and return true."""
     mock_requests_post.return_value = mock.MagicMock(
         status_code=200, json=lambda : (
@@ -211,6 +212,7 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
     mock_get_trial_end_time.return_value = 111222333
     mock_get_ot_access_token.return_value = 'access_token'
     mock_api_key_get.return_value = 'api_key_value'
+    mock_get_admin_group.return_value = 'test-group-123'
 
     ot_id, error_text = origin_trials_client.create_origin_trial(self.ot_stage)
     self.assertEqual(ot_id, '-1234567890')
@@ -249,6 +251,8 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
     # Only unique @google.com emails should be sent as contacts.
     self.assertCountEqual(['someuser@google.com', 'editor@google.com'],
                           set_up_trial_json['trial_contacts'])
+    self.assertEqual('test-group-123',
+                     set_up_trial_json['data_access_admin_group_name'])
     self.assertEqual(-1234567890, set_up_trial_json['trial_id'])
 
   @mock.patch('framework.secrets.get_ot_api_key')

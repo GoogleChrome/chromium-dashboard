@@ -31,7 +31,7 @@ export class ChromedashTypeahead extends LitElement {
   slDropdownRef: Ref<SlDropdown> = createRef();
   slInputRef: Ref<SlInput> = createRef();
 
-  @state()
+  @property()
   value = '';
   @state()
   candidates: Candidate[] = [];

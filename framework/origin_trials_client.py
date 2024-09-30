@@ -61,6 +61,7 @@ class CreateOriginTrialRequest(TypedDict):
 
 class SetUpTrialRequest(TypedDict):
   trial_id: int
+  data_access_admin_group_name: str
   announcement_groups_owners: list[str]
   trial_contacts: list[str]
 
@@ -208,8 +209,14 @@ def _send_set_up_trial_request(
   Returns:
     Any error text if there was an issue during the setup process.
   """
+  data_access_admin_group = secrets.get_ot_data_access_admin_group()
+  # Return some error text about the data access group if not found.
+  if data_access_admin_group is None:
+    return 'No data access admin group found'
+
   json: SetUpTrialRequest = {
     'trial_id': trial_id,
+    'data_access_admin_group_name': data_access_admin_group,
     'announcement_groups_owners': owners,
     'trial_contacts': contacts,
   }

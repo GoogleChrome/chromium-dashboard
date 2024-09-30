@@ -231,7 +231,7 @@ export class ChromedashDrawer extends LitElement {
   }
 
   isCurrentPage(href) {
-    return this.currentPage.startsWith(href);
+    return this.currentPage === href;
   }
 
   toggleDrawerActions() {
@@ -261,6 +261,12 @@ export class ChromedashDrawer extends LitElement {
     const myFeaturesMenu = this.renderMyFeaturesMenu();
     const adminMenu = this.renderAdminMenu();
 
+    const year = new Date().getFullYear();
+    const shippingThisYear = this.renderNavItem(
+      '/features?q=shipping_year=' + year,
+      'Shipping ' + year
+    );
+
     return html`
       <sl-drawer
         label="Menu"
@@ -272,7 +278,8 @@ export class ChromedashDrawer extends LitElement {
         ?open=${!IS_MOBILE && this.defaultOpen}
       >
         ${accountMenu} ${this.renderNavItem('/roadmap', 'Roadmap')}
-        ${this.renderNavItem('/features', 'All features')} ${myFeaturesMenu}
+        ${this.renderNavItem('/features', 'All features')} ${shippingThisYear}
+        ${myFeaturesMenu}
         <hr />
         <div class="section-header">Stats</div>
         ${this.renderNavItem('/metrics/css/popularity', 'CSS')}
@@ -346,7 +353,6 @@ export class ChromedashDrawer extends LitElement {
       ${this.renderNavItem('/admin/feature_links', 'Feature links')}
       ${this.renderNavItem('/reports/feature-latency', 'Feature latency')}
       ${this.renderNavItem('/reports/review-latency', 'Review latency')}
-      ${this.renderNavItem('/admin/slo_report', 'SLO report JSON')}
       ${this.renderNavItem('/admin/blink', 'Subscriptions')}
       ${this.renderNavItem('/admin/find_stop_words', 'Find stop words JSON')}
     `;

@@ -247,15 +247,15 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
   def test_single_field_query_async__fulltext_in_field(self):
     """We can search for words within a field."""
     actual = search_queries.single_field_query_async(
-        'editor_emails', ':', ['editor'])
+        'editor', ':', ['editor'])
     self.assertCountEqual([self.feature_1_id], actual)
 
     actual = search_queries.single_field_query_async(
-        'editor_emails', ':', ['wrongword'])
+        'editor', ':', ['wrongword'])
     self.assertCountEqual([], actual)
 
     actual = search_queries.single_field_query_async(
-        'owner_emails', ':', ['editor'])
+        'owner', ':', ['editor'])
     self.assertCountEqual([], actual)
 
   @mock.patch('logging.warning')
