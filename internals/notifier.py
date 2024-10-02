@@ -654,7 +654,7 @@ class OTActivatedHandler(basehandlers.FlaskHandler):
     self.require_task_header()
     stage = self.get_param('stage', required=True)
     contacts = stage['ot_emails'] or []
-    contacts.append('ot_owner_email')
+    contacts.append(stage['ot_owner_email'])
     send_emails([self.build_email(stage, contacts)])
     return {'message': 'OK'}
 
@@ -685,7 +685,7 @@ class OTCreationProcessedHandler(basehandlers.FlaskHandler):
     self.require_task_header()
     stage = self.get_param('stage', required=True)
     contacts = stage['ot_emails'] or []
-    contacts.append('ot_owner_email')
+    contacts.append(stage['ot_owner_email'])
     send_emails([self.build_email(stage, contacts)])
     return {'message': 'OK'}
 

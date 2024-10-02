@@ -56,7 +56,6 @@ class InternalRegistrationConfig(TypedDict):
 class CreateOriginTrialRequest(TypedDict):
   trial: RequestTrial
   registration_config: InternalRegistrationConfig
-  trial_contacts: list[str]
 
 
 class SetUpTrialRequest(TypedDict):
@@ -166,7 +165,6 @@ def _send_create_trial_request(
                 if ot_stage.ot_is_deprecation_trial else 'ORIGIN_TRIAL'),
     },
     'registration_config': {'approval_type': 'NONE'},
-    'trial_contacts': []
   }
   if ot_stage.ot_require_approvals:
     json['registration_config'] = {
@@ -224,7 +222,11 @@ def _send_set_up_trial_request(
   url = f'{settings.OT_API_URL}/v1/trials/{trial_id}:setup'
   try:
     response = requests.post(
-        url, headers=headers, params={'key': api_key}, json=json)
+        url,
+        headers=headers,
+        params={'key': api_key},
+        json=json,
+        timeout=(10, 60))
     logging.info(f'SetUpTrial response text: {response.text}')
     response.raise_for_status()
   except requests.exceptions.RequestException:
@@ -266,8 +268,10 @@ def create_origin_trial(ot_stage: Stage) -> tuple[str|None, str|None]:
     return None, 'No trial contacts found in google.com domain'
 
   access_token = _get_ot_access_token()
-  origin_trial_id, error_text = _send_create_trial_request(
-      ot_stage, key, access_token)
+  origin_trial_id = ot_stage.origin_trial_id
+  if not ot_stage.origin_trial_id:
+    origin_trial_id, error_text = _send_create_trial_request(
+        ot_stage, key, access_token)
 
   if origin_trial_id is None:
     return None, error_text
@@ -297,7 +301,7 @@ def activate_origin_trial(origin_trial_id: str) -> None:
   if key is None:
     return None
 
-  json = {'id': origin_trial_id}
+  json = {'trial_id': origin_trial_id}
   access_token = _get_ot_access_token()
   headers = {'Authorization': f'Bearer {access_token}'}
   url = (f'{settings.OT_API_URL}/v1/trials/{origin_trial_id}:start')
