@@ -1191,7 +1191,7 @@ class OTActivatedHandlerTest(testing_config.CustomTestCase):
       handler = notifier.OTActivatedHandler()
       stage_dict = converters.stage_to_json_dict(self.ot_stage)
       email_task = handler.build_email(stage_dict, self.contacts)
-      TESTDATA.make_golden(email_task['html'], 'test_make_activated_email.html')
+      # TESTDATA.make_golden(email_task['html'], 'test_make_activated_email.html')
       self.assertEqual(email_task['subject'],
                        'Example Trial origin trial is now available')
       self.assertEqual(email_task['html'],
