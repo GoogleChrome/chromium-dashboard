@@ -418,8 +418,8 @@ describe('chromedash-enterprise-release-notes-page', () => {
           features[2].querySelector('.summary')!.textContent);
         const stages = Array.from(features[2].querySelectorAll('li'));
         assert.equal(4, stages.length);
-        assert.include(stages[0].textContent, 'Chrome 100 on Windows, Mac, Linux, Android');
-        assert.include(stages[1].textContent, 'Chrome 101 on Windows, Mac, Linux, Android');
+        assert.include(stages[0].textContent, 'Chrome 100 on Windows, MacOS, Linux, Android');
+        assert.include(stages[1].textContent, 'Chrome 101 on Windows, MacOS, Linux, Android');
         assert.include(stages[2].textContent, 'Chrome 102 on iOS, Android');
         assert.include(stages[3].textContent, 'Chrome 103 on iOS');
 
