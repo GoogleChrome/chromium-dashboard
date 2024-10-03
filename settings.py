@@ -39,7 +39,7 @@ DEFAULT_COMPONENT = 'Blink'
 DEFAULT_ENTERPRISE_COMPONENT = 'Enterprise'
 
 # Enable to activate the automated OT creation process
-AUTOMATED_OT_CREATION = False
+AUTOMATED_OT_CREATION = True
 
 
 ################################################################################

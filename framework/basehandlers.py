@@ -409,8 +409,7 @@ class EntitiesAPIHandler(APIHandler):
     # Notify of OT creation request if one was sent.
     # This notification is for non-automated OT creation only.
     if (ot_action_requested and
-        stage.stage_type in ALL_ORIGIN_TRIAL_STAGE_TYPES and
-        not settings.AUTOMATED_OT_CREATION):
+        stage.stage_type in ALL_ORIGIN_TRIAL_STAGE_TYPES):
       notifier_helpers.send_ot_creation_notification(stage)
 
     return stage_was_updated
