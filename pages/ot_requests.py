@@ -15,7 +15,12 @@
 from google.cloud import ndb
 
 from api.converters import stage_to_json_dict
-from internals.core_enums import OT_EXTENSION_STAGE_TYPES, OT_READY_FOR_CREATION
+from internals.core_enums import (
+    OT_EXTENSION_STAGE_TYPES,
+    OT_READY_FOR_CREATION,
+    OT_CREATED,
+    OT_CREATION_FAILED,
+    OT_ACTIVATION_FAILED)
 from internals.core_models import Stage
 
 from framework import basehandlers
@@ -32,13 +37,15 @@ class OriginTrialsRequests(basehandlers.FlaskHandler):
     stages_with_requests = Stage.query(
         ndb.OR(Stage.ot_action_requested == True,
                Stage.ot_setup_status == OT_READY_FOR_CREATION)).fetch()
+    stages_with_failures = Stage.query(
+        ndb.OR(Stage.ot_setup_status == OT_ACTIVATION_FAILED,
+               Stage.ot_setup_status == OT_CREATION_FAILED)).fetch()
+    stages_awaiting_activation = Stage.query(
+        Stage.ot_setup_status == OT_CREATED).fetch()
     creation_stages = []
     extension_stages = []
     for stage in stages_with_requests:
       stage_dict = stage_to_json_dict(stage)
-      # Add the request note that is not typically visible to non-admins.
-      if stage.ot_request_note:
-        stage_dict['ot_request_note'] = stage.ot_request_note
       # Group up creation and extension requests.
       if stage_dict['stage_type'] in OT_EXTENSION_STAGE_TYPES:
         # Information will be needed from the original OT stage.
@@ -52,7 +59,12 @@ class OriginTrialsRequests(basehandlers.FlaskHandler):
       else:
         creation_stages.append(stage_dict)
 
+    failed_stages = [stage_to_json_dict(s) for s in stages_with_failures]
+    activation_pending_stages = [
+        stage_to_json_dict(s) for s in stages_awaiting_activation]
     return {
         'creation_stages': creation_stages,
         'extension_stages': extension_stages,
+        'activation_pending_stages': activation_pending_stages,
+        'failed_stages': failed_stages,
       }

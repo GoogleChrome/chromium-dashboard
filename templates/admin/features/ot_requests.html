@@ -10,7 +10,7 @@
 
 <div id="subheader">
   <div>
-    <h2>Origin Trial Requests</h2>
+    <h2>Origin Trial Requests with errors</h2>
   </div>
 </div>
 
@@ -24,7 +24,7 @@
   </div>
 </div>
 
-{% for stage in creation_stages %}
+{% for stage in failed_stages %}
 <section>
   <h3>
     Creation request for: {{stage.ot_display_name}}
@@ -58,17 +58,17 @@
     </table>
   </div>
 </section>
-<section class="additional-comments">
-  <h4>Additional comments:</h4>
-  {{stage.ot_request_note}}
-</section>
 {% endfor %}
+<hr>
+
+<h2>Extensions awaiting initiation</h2>
 {% for stage_info in extension_stages %}
 <section>
-  <h3>
-    Extension request for: {{stage_info.ot_stage.ot_display_name}}
-  </h3>
+  <p>Name: {{stage_info.ot_stage.ot_display_name}}</p>
+  <br>
   <p>Origin trial ID: {{stage_info.ot_stage.origin_trial_id}}</p>
+  <br>
+  <p>Chromestatus feature ID: {{stage_info.ot_stage.feature_id}}</p>
   <br>
   <p>Intent to Extend Experiment: {{stage_info.extension_stage.intent_thread_url}}</p>
   <br>
@@ -78,6 +78,33 @@
   <br>
 </section>
 {% endfor %}
+<hr>
+
+<h2>Origin Trials pending activation</h2>
+{% for stage in activation_pending_stages %}
+<section>
+  <p>Name: {{stage.ot_display_name}}</p>
+  <br>
+  <p>Origin trial ID: {{stage.origin_trial_id}}</p>
+  <br>
+  <p>Chromestatus feature ID: {{stage.feature_id}}</p>
+  <br>
+  <p>Activation date: {{stage.ot_activation_date}}</p>
+</section>
+{% endfor %}
+<hr>
+
+<h2>Origin Trials with creation in progress</h2>
+{% for stage in creation_stages %}
+<section>
+  <p>Name: {{stage.ot_display_name}}</p>
+  <br>
+  <p>Origin trial ID: {{stage.origin_trial_id}}</p>
+  <br>
+  <p>Chromestatus feature ID: {{stage.feature_id}}</p>
+</section>
+{% endfor %}
+
 {% endblock %}
 
 {% block js %}
