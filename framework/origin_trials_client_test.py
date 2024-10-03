@@ -289,5 +289,5 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
       f'{settings.OT_API_URL}/v1/trials/-1234567890:start',
       headers={'Authorization': 'Bearer access_token'},
       params={'key': 'api_key_value'},
-      json={'id': '-1234567890'}
+      json={'trial_id': '-1234567890'}
     )
