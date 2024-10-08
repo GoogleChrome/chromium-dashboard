@@ -540,6 +540,7 @@ def feature_entry_to_json_basic(fe: FeatureEntry,
     },
     'created': {'by': fe.creator_email, 'when': _date_to_str(fe.created)},
     'updated': {'by': fe.updater_email, 'when': _date_to_str(fe.updated)},
+    'accurate_as_of': _date_to_str(fe.accurate_as_of),
     'standards': {
       'spec': fe.spec_link,
       'maturity': {
