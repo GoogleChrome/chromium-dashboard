@@ -400,11 +400,12 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     with test_app.app_context():
       actual = self.handler.get_template_data()
 
-    expected_message = (f'3 email(s) sent or logged.\n'
+    expected_message = (f'4 email(s) sent or logged.\n'
                         'Recipients:\n'
                         'angelaweber@google.com\n'
                         'davidayad@google.com\n'
-                        'mhoste@google.com')
+                        'mhoste@google.com\n'
+                        'omole@google.com')
     expected = {'message': expected_message}
     self.assertEqual(actual, expected)
 
@@ -437,11 +438,12 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     with test_app.app_context():
       actual = self.handler.get_template_data()
 
-    expected_message = (f'3 email(s) sent or logged.\n'
+    expected_message = (f'4 email(s) sent or logged.\n'
                         'Recipients:\n'
                         'angelaweber@google.com\n'
                         'davidayad@google.com\n'
-                        'mhoste@google.com')
+                        'mhoste@google.com\n'
+                        'omole@google.com')
     expected = {'message': expected_message}
     self.assertEqual(actual, expected)
 
@@ -457,12 +459,13 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     with test_app.app_context():
       actual = self.handler.get_template_data()
 
-    expected_message = (f'4 email(s) sent or logged.\n'
+    expected_message = (f'5 email(s) sent or logged.\n'
                         'Recipients:\n'
                         'a_assignee@example.com\n'
                         'angelaweber@google.com\n'
                         'davidayad@google.com\n'
-                        'mhoste@google.com')
+                        'mhoste@google.com\n'
+                        'omole@google.com')
     expected = {'message': expected_message}
     self.assertEqual(actual, expected)
 
