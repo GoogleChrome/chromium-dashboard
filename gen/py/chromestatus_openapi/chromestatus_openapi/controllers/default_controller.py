@@ -18,6 +18,7 @@ from chromestatus_openapi.models.feature_latency import FeatureLatency  # noqa: 
 from chromestatus_openapi.models.feature_links_response import FeatureLinksResponse  # noqa: E501
 from chromestatus_openapi.models.feature_links_sample import FeatureLinksSample  # noqa: E501
 from chromestatus_openapi.models.feature_links_summary_response import FeatureLinksSummaryResponse  # noqa: E501
+from chromestatus_openapi.models.feature_search_response import FeatureSearchResponse  # noqa: E501
 from chromestatus_openapi.models.get_comments_response import GetCommentsResponse  # noqa: E501
 from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismissedCues400Response  # noqa: E501
 from chromestatus_openapi.models.get_gate_response import GetGateResponse  # noqa: E501
@@ -40,6 +41,7 @@ from chromestatus_openapi.models.set_star_request import SetStarRequest  # noqa:
 from chromestatus_openapi.models.sign_in_request import SignInRequest  # noqa: E501
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
 from chromestatus_openapi.models.success_message import SuccessMessage  # noqa: E501
+from chromestatus_openapi.models.verbose_feature_dict import VerboseFeatureDict  # noqa: E501
 from chromestatus_openapi import util
 
 
@@ -205,6 +207,29 @@ def extend_origin_trial(feature_id, extension_stage_id):  # noqa: E501
     return 'do some magic!'
 
 
+def get_all_features(q=None, sort=None, num=None, start=None, milestone=None, release_notes_milestone=None):  # noqa: E501
+    """retrive a list of feature
+
+     # noqa: E501
+
+    :param q: Search query string.
+    :type q: str
+    :param sort: Sorting specification.
+    :type sort: str
+    :param num: Number of results to return.
+    :type num: int
+    :param start: Index of the first result to return.
+    :type start: int
+    :param milestone: Filter features by milestone.
+    :type milestone: int
+    :param release_notes_milestone: Filter features by release notes milestone.
+    :type release_notes_milestone: int
+
+    :rtype: Union[FeatureSearchResponse, Tuple[FeatureSearchResponse, int], Tuple[FeatureSearchResponse, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
 def get_dismissed_cues():  # noqa: E501
     """Get dismissed cues for the current user
 
@@ -212,6 +237,19 @@ def get_dismissed_cues():  # noqa: E501
 
 
     :rtype: Union[List[str], Tuple[List[str], int], Tuple[List[str], int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
+def get_feature_by_id(feature_id):  # noqa: E501
+    """Get a feature by ID
+
+     # noqa: E501
+
+    :param feature_id: ID of the feature to retrieve
+    :type feature_id: int
+
+    :rtype: Union[VerboseFeatureDict, Tuple[VerboseFeatureDict, int], Tuple[VerboseFeatureDict, int, Dict[str, str]]
     """
     return 'do some magic!'
 
