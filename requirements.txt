@@ -2,21 +2,22 @@
 # Also see requirements.dev.txt
 
 # Py3 Libraries
-appengine-python-standard>=1.0.0
+appengine-python-standard>=1.1.6
 html5lib==1.1
 funcsigs==1.0.2
 json5==0.9.24
-google-api-python-client==2.47.0
+google-api-python-client==2.149.0
 
 # TODO(jrobbins): Add this back or replace it when python 3.10 is supported.
 # google-python-cloud-debugger==2.18
 # See https://github.com/GoogleCloudPlatform/cloud-debug-python/issues/33
 
-google-cloud-tasks==2.7.0
-google-cloud-ndb==1.11.1
-google-cloud-logging==3.6.0
-google-cloud-secret-manager==2.16.2
-google-auth==1.31.0
+google-cloud-tasks==2.16.5
+google-cloud-ndb==2.2.2
+google-cloud-logging==3.11.3
+google-cloud-secret-manager==2.20.2
+google-cloud-storage==2.18.2
+google-auth==2.35.0
 requests==2.32.0
 redis==4.4.4
 fakeredis==1.10.1
