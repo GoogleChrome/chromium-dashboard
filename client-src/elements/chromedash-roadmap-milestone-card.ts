@@ -37,6 +37,8 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
   showDates = false;
   @property({type: Boolean})
   signedIn = false;
+  @property({attribute: false})
+  stableMilestone!: number;
 
   /**
    *  Returns the number of days between a and b.
@@ -234,6 +236,34 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
     `;
   }
 
+  // A feature is outdated if it is scheduled to ship in the next 2 milestones,
+  // and its accurate_as_of date is at least 4 weeks ago.
+  _isFeatureOutdated(accurateAsOf) {
+    if (this.stableMilestone === 0) {
+      return false;
+    }
+    // If this feature is not shipping within two upcoming milestones, return false.
+    if (
+      !(
+        this.stableMilestone + 1 === this.channel?.version ||
+        this.stableMilestone + 2 === this.channel?.version
+      )
+    ) {
+      return false;
+    }
+    if (!accurateAsOf) {
+      return true;
+    }
+    const accuateDate = Date.parse(accurateAsOf);
+    // 4-week period.
+    const gracePeriod = 4 * 7 * 24 * 60 * 60 * 1000;
+    if (accuateDate + gracePeriod < Date.now()) {
+      return true;
+    }
+
+    return false;
+  }
+
   _cardFeatureItemTemplate(f, shippingType) {
     return html`
       <li
@@ -249,6 +279,17 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
           ${f.name}
         </a>
         <span class="icon_row">
+          ${this._isFeatureOutdated(f.accurate_as_of)
+            ? html`
+                <span class="tooltip" title="Feature Outdated">
+                  <iron-icon
+                    icon="chromestatus:error"
+                    class="deprecated"
+                    data-tooltip
+                  ></iron-icon>
+                </span>
+              `
+            : nothing}
           ${ORIGIN_TRIAL.includes(shippingType)
             ? html`
                 <span class="tooltip" title="Origin Trial">

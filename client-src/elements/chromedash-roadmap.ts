@@ -335,6 +335,7 @@ export class ChromedashRoadmap extends LitElement {
             .starredFeatures=${this.starredFeatures}
             .highlightFeature=${this.highlightFeature}
             ?signedin=${this.signedIn}
+            .stableMilestone=${this.channels?.['stable']?.version}
             @star-toggle-event=${this.handleStarToggle}
             @highlight-feature-event=${this.handleHighlightEvent}
           >
