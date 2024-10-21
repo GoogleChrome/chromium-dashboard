@@ -243,6 +243,8 @@ def find_earliest_milestone(stages: list[Stage]) -> int|None:
   """Find the earliest milestone in a list of stages."""
   m_list: list[int] = []
   for stage in stages:
+    if stage.milestones is None:
+      continue
     m_list.append(stage.milestones.desktop_first)
     m_list.append(stage.milestones.android_first)
     m_list.append(stage.milestones.ios_first)
