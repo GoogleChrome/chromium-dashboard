@@ -94,6 +94,7 @@ class StageHelpers_Milestones_Test(testing_config.CustomTestCase):
     self.stage_2_2 = Stage(
         feature_id=22222,
         milestones=MilestoneSet(desktop_first=121, android_first=120))
+    self.stage_2_3 = Stage(feature_id=22222)
 
   def tearDown(self):
     for stage in Stage.query().fetch():
@@ -130,5 +131,5 @@ class StageHelpers_Milestones_Test(testing_config.CustomTestCase):
   def test_find_earliest_milestone__multi_stage(self):
     """We find the earliest milestone in a list of stages."""
     actual = stage_helpers.find_earliest_milestone(
-        [self.stage_2_1, self.stage_2_2])
+        [self.stage_2_1, self.stage_2_2, self.stage_2_3])
     self.assertEqual(120, actual)
