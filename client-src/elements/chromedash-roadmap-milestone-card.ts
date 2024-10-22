@@ -281,12 +281,11 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
         <span class="icon_row">
           ${this._isFeatureOutdated(f.accurate_as_of)
             ? html`
-                <span class="tooltip" title="Feature Outdated">
-                  <iron-icon
-                    icon="chromestatus:error"
-                    class="deprecated"
-                    data-tooltip
-                  ></iron-icon>
+                <span
+                  class="tooltip"
+                  title="Feature outdated - last updated more than four weeks ago"
+                >
+                  <iron-icon icon="chromestatus:error" data-tooltip></iron-icon>
                 </span>
               `
             : nothing}
