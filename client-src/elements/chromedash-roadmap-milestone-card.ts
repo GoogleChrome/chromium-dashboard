@@ -245,7 +245,10 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
    *  @param accurateAsOf The accurate_as_of date as an ISO string.
    *  @param liveChromeVersion The Chrome milestone when a feature is live.
    */
-  _isFeatureOutdated(accurateAsOf: string | undefined, liveChromeVersion: number | undefined): boolean {
+  _isFeatureOutdated(
+    accurateAsOf: string | undefined,
+    liveChromeVersion: number | undefined
+  ): boolean {
     if (this.stableMilestone === 0 || !liveChromeVersion) {
       return false;
     }
