@@ -89,7 +89,7 @@ export class ChromedashGuideEditallPage extends LitElement {
       })
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.',
+          'Some errors occurred. Please refresh the page or try again later.'
         );
       });
   }
@@ -106,7 +106,7 @@ export class ChromedashGuideEditallPage extends LitElement {
     await el.updateComplete;
 
     const hiddenTokenField = this.renderRoot.querySelector(
-      'input[name=token]',
+      'input[name=token]'
     ) as HTMLInputElement;
     hiddenTokenField.form?.addEventListener('submit', event => {
       this.handleFormSubmit(event, hiddenTokenField);
@@ -131,7 +131,7 @@ export class ChromedashGuideEditallPage extends LitElement {
       })
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.',
+          'Some errors occurred. Please refresh the page or try again later.'
         );
       });
   }
@@ -307,7 +307,7 @@ export class ChromedashGuideEditallPage extends LitElement {
       item: html`
         ${renderHTMLIf(
           !isEnterpriseFeatureRollout,
-          html`<h3 id="${id}">${sectionName}</h3>`,
+          html`<h3 id="${id}">${sectionName}</h3>`
         )}
         <section class="flat_form" stage="${feStage.stage_type}">
           ${renderHTMLIf(
@@ -318,7 +318,7 @@ export class ChromedashGuideEditallPage extends LitElement {
               @click="${() => this.deleteStage(feStage)}"
             >
               Delete
-            </sl-button>`,
+            </sl-button>`
           )}
           ${formFieldEls}
         </section>
@@ -338,14 +338,14 @@ export class ChromedashGuideEditallPage extends LitElement {
     let fieldsOnly = flattenSections(
       formattedFeature.is_enterprise_feature
         ? FLAT_ENTERPRISE_METADATA_FIELDS
-        : FLAT_METADATA_FIELDS,
+        : FLAT_METADATA_FIELDS
     );
     const formsToRender: (typeof nothing | FormToRender)[] = [
       this.renderStageSection(
         formattedFeature,
         FLAT_METADATA_FIELDS.name,
         {id: -1},
-        fieldsOnly,
+        fieldsOnly
       ),
     ];
 
@@ -373,8 +373,8 @@ export class ChromedashGuideEditallPage extends LitElement {
           formattedFeature,
           stageForm.name,
           feStage,
-          fieldsOnly,
-        ),
+          fieldsOnly
+        )
       );
 
       // If extension stages are associated with this stage,
@@ -391,8 +391,8 @@ export class ChromedashGuideEditallPage extends LitElement {
             formattedFeature,
             sectionName,
             extensionStage,
-            fieldsOnly,
-          ),
+            fieldsOnly
+          )
         );
       });
     }
@@ -406,14 +406,14 @@ export class ChromedashGuideEditallPage extends LitElement {
       openAddStageDialog(
         this.feature.id,
         this.feature.feature_type_int,
-        this.createNewStage.bind(this),
+        this.createNewStage.bind(this)
       );
     };
     return renderHTMLIf(
       this.feature.is_enterprise_feature,
       html` <sl-button size="small" @click="${clickHandler}">
         Add Step
-      </sl-button>`,
+      </sl-button>`
     );
   }
 
@@ -427,7 +427,7 @@ export class ChromedashGuideEditallPage extends LitElement {
       })
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.',
+          'Some errors occurred. Please refresh the page or try again later.'
         );
       });
   }
@@ -443,7 +443,7 @@ export class ChromedashGuideEditallPage extends LitElement {
       })
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.',
+          'Some errors occurred. Please refresh the page or try again later.'
         );
       });
   }
@@ -454,7 +454,7 @@ export class ChromedashGuideEditallPage extends LitElement {
 
     const formsToRender = this.getForms(
       formattedFeature,
-      this.feature.stages,
+      this.feature.stages
     ) as FormToRender[];
     return html`
       <form name="feature_form">
@@ -463,7 +463,7 @@ export class ChromedashGuideEditallPage extends LitElement {
           ${repeat(
             formsToRender,
             form => form.id,
-            (_, i) => formsToRender[i].item,
+            (_, i) => formsToRender[i].item
           )}
         </chromedash-form-table>
         ${this.renderAddStageButton()}

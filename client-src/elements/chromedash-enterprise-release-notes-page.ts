@@ -150,59 +150,59 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       Set<number>
     > = milestones.reduce(
       (acc, milestone) => ({...acc, [milestone]: new Set<number>()}),
-      {},
+      {}
     );
 
     if (stage.desktop_first) {
       milestoneAndPlatformsMap[stage.desktop_first].add(
-        PLATFORM_CATEGORIES['PLATFORM_WINDOWS'][0],
+        PLATFORM_CATEGORIES['PLATFORM_WINDOWS'][0]
       );
       milestoneAndPlatformsMap[stage.desktop_first].add(
-        PLATFORM_CATEGORIES['PLATFORM_MAC'][0],
+        PLATFORM_CATEGORIES['PLATFORM_MAC'][0]
       );
       milestoneAndPlatformsMap[stage.desktop_first].add(
-        PLATFORM_CATEGORIES['PLATFORM_LINUX'][0],
+        PLATFORM_CATEGORIES['PLATFORM_LINUX'][0]
       );
     }
     if (stage.android_first) {
       milestoneAndPlatformsMap[stage.android_first].add(
-        PLATFORM_CATEGORIES['PLATFORM_ANDROID'][0],
+        PLATFORM_CATEGORIES['PLATFORM_ANDROID'][0]
       );
     }
     if (stage.ios_first) {
       milestoneAndPlatformsMap[stage.ios_first].add(
-        PLATFORM_CATEGORIES['PLATFORM_IOS'][0],
+        PLATFORM_CATEGORIES['PLATFORM_IOS'][0]
       );
     }
     if (stage.webview_first) {
       milestoneAndPlatformsMap[stage.webview_first].add(
-        PLATFORM_CATEGORIES['PLATFORM_ANDROID'][0],
+        PLATFORM_CATEGORIES['PLATFORM_ANDROID'][0]
       );
     }
     if (stage.desktop_last) {
       milestoneAndPlatformsMap[stage.desktop_last].add(
-        PLATFORM_CATEGORIES['PLATFORM_WINDOWS'][0],
+        PLATFORM_CATEGORIES['PLATFORM_WINDOWS'][0]
       );
       milestoneAndPlatformsMap[stage.desktop_last].add(
-        PLATFORM_CATEGORIES['PLATFORM_MAC'][0],
+        PLATFORM_CATEGORIES['PLATFORM_MAC'][0]
       );
       milestoneAndPlatformsMap[stage.desktop_last].add(
-        PLATFORM_CATEGORIES['PLATFORM_LINUX'][0],
+        PLATFORM_CATEGORIES['PLATFORM_LINUX'][0]
       );
     }
     if (stage.android_last) {
       milestoneAndPlatformsMap[stage.android_last].add(
-        PLATFORM_CATEGORIES['PLATFORM_ANDROID'][0],
+        PLATFORM_CATEGORIES['PLATFORM_ANDROID'][0]
       );
     }
     if (stage.ios_last) {
       milestoneAndPlatformsMap[stage.ios_last].add(
-        PLATFORM_CATEGORIES['PLATFORM_IOS'][0],
+        PLATFORM_CATEGORIES['PLATFORM_IOS'][0]
       );
     }
     if (stage.webview_last) {
       milestoneAndPlatformsMap[stage.webview_last].add(
-        PLATFORM_CATEGORIES['PLATFORM_ANDROID'][0],
+        PLATFORM_CATEGORIES['PLATFORM_ANDROID'][0]
       );
     }
     return Object.entries(milestoneAndPlatformsMap).map(
@@ -211,7 +211,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         rollout_milestone: Number(milestone),
         rollout_platforms: Array.from(platforms),
         rollout_impact: 1,
-      }),
+      })
     );
   }
 
@@ -223,7 +223,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       .filter(
         ({stages}) =>
           !stages.some(s => s.stage_type === STAGE_ENT_ROLLOUT) &&
-          stages.some(s => STAGE_TYPES_SHIPPING.has(s.stage_type)),
+          stages.some(s => STAGE_TYPES_SHIPPING.has(s.stage_type))
       )
       .map(f => ({
         ...f,
@@ -237,13 +237,13 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     // Ensure that the stages are only rollout stages.
     this.features = [...features, ...featuresRequiringRolloutStages]
       .filter(({stages}) =>
-        stages.some(s => s.stage_type === STAGE_ENT_ROLLOUT),
+        stages.some(s => s.stage_type === STAGE_ENT_ROLLOUT)
       )
       .map(f => ({
         ...f,
         stages: f.stages
           .filter(
-            s => s.stage_type === STAGE_ENT_ROLLOUT && !!s.rollout_milestone,
+            s => s.stage_type === STAGE_ENT_ROLLOUT && !!s.rollout_milestone
           )
           .sort((a, b) => a.rollout_milestone - b.rollout_milestone),
       }));
@@ -251,20 +251,20 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     // Features with a rollout stage in the selected milestone sorted with the highest impact.
     this.currentFeatures = this.features
       .filter(({stages}) =>
-        stages.some(s => s.rollout_milestone === this.selectedMilestone),
+        stages.some(s => s.rollout_milestone === this.selectedMilestone)
       )
       .sort((a, b) => {
         // Highest impact of the stages from feature A.
         const impactA = Math.max(
           ...a.stages
             .filter(s => s.rollout_milestone === this.selectedMilestone)
-            .map(s => s.rollout_impact ?? 0),
+            .map(s => s.rollout_impact ?? 0)
         );
         // Highest impact of the stages from feature B.
         const impactB = Math.max(
           ...b.stages
             .filter(s => s.rollout_milestone === this.selectedMilestone)
-            .map(s => s.rollout_impact ?? 0),
+            .map(s => s.rollout_impact ?? 0)
         );
         return impactB - impactA;
       });
@@ -275,24 +275,24 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       .filter(
         ({stages}) =>
           !stages.some(s => s.rollout_milestone === this.selectedMilestone) &&
-          stages.some(s => s.rollout_milestone! > this.selectedMilestone!),
+          stages.some(s => s.rollout_milestone! > this.selectedMilestone!)
       )
       .sort((a, b) => {
         const minA =
           Math.min(
             ...a.stages
               .filter(
-                s => (s.rollout_milestone! || 0) > this.selectedMilestone!,
+                s => (s.rollout_milestone! || 0) > this.selectedMilestone!
               )
-              .map(s => s.rollout_milestone!),
+              .map(s => s.rollout_milestone!)
           ) || 0;
         const minB =
           Math.min(
             ...b.stages
               .filter(
-                s => (s.rollout_milestone! || 0) > this.selectedMilestone!,
+                s => (s.rollout_milestone! || 0) > this.selectedMilestone!
               )
-              .map(s => s.rollout_milestone!),
+              .map(s => s.rollout_milestone!)
           ) || 0;
         return minA - minB;
       });
@@ -307,7 +307,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         if (milestoneQueryParamKey in queryParams) {
           this.selectedMilestone = parseInt(
             queryParams[milestoneQueryParamKey],
-            10,
+            10
           );
         } else {
           this.selectedMilestone = this.channels.stable.version;
@@ -316,13 +316,13 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       })
       .then(() =>
         window.csClient.getFeaturesForEnterpriseReleaseNotes(
-          this.selectedMilestone,
-        ),
+          this.selectedMilestone
+        )
       )
       .then(({features}) => this.updateFeatures(features))
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.',
+          'Some errors occurred. Please refresh the page or try again later.'
         );
       })
       .finally(() => super.connectedCallback());
@@ -330,7 +330,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
 
   updateSelectedMilestone() {
     const milestoneSelector = this.shadowRoot!.querySelector(
-      '#milestone-selector',
+      '#milestone-selector'
     ) as HTMLSelectElement;
     this.selectedMilestone = parseInt(milestoneSelector.value);
     window.csClient
@@ -338,7 +338,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       .then(({features}) => this.updateFeatures(features))
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.',
+          'Some errors occurred. Please refresh the page or try again later.'
         );
       });
   }
@@ -354,7 +354,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     const options: TemplateResult[] = [];
     for (let i = 0; i < this.selectedMilestone! + 20; ++i) {
       options.push(
-        html`<sl-option value="${i}">Chrome ${i} release summary</sl-option>`,
+        html`<sl-option value="${i}">Chrome ${i} release summary</sl-option>`
       );
     }
     return html` <sl-select
@@ -400,23 +400,23 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
                 <td>
                   ${this.getFeatureMarkerForCategory(
                     f,
-                    ENTERPRISE_FEATURE_CATEGORIES['SECURITYANDPRIVACY'][0],
+                    ENTERPRISE_FEATURE_CATEGORIES['SECURITYANDPRIVACY'][0]
                   )}
                 </td>
                 <td>
                   ${this.getFeatureMarkerForCategory(
                     f,
-                    ENTERPRISE_FEATURE_CATEGORIES['USERPRODUCTIVITYANDAPPS'][0],
+                    ENTERPRISE_FEATURE_CATEGORIES['USERPRODUCTIVITYANDAPPS'][0]
                   )}
                 </td>
                 <td>
                   ${this.getFeatureMarkerForCategory(
                     f,
-                    ENTERPRISE_FEATURE_CATEGORIES['MANAGEMENT'][0],
+                    ENTERPRISE_FEATURE_CATEGORIES['MANAGEMENT'][0]
                   )}
                 </td>
               </tr>
-            `,
+            `
           )}
     `;
   }
@@ -425,11 +425,11 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     return html` <table id="release-notes-summary">
       ${this.renderReleaseNotesSummarySection(
         'Chrome browser updates',
-        this.currentFeatures,
+        this.currentFeatures
       )}
       ${this.renderReleaseNotesSummarySection(
         'Upcoming Chrome browser updates',
-        this.upcomingFeatures,
+        this.upcomingFeatures
       )}
     </table>`;
   }
@@ -457,7 +457,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   renderReleaseNotesDetailsSection(
     title,
     features,
-    shouldDisplayStageTitleInBold,
+    shouldDisplayStageTitleInBold
   ) {
     // Each feature has a "To remove" line that contains the feature's owners and last update date.
     // That line is to be removed by whomever copy/pastes the content into the final release notes.
@@ -483,7 +483,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
                     <span
                       class="${shouldDisplayStageTitleInBold(
                         s.rollout_milestone,
-                        f.stages.map(s => s.rollout_milestone).sort(),
+                        f.stages.map(s => s.rollout_milestone).sort()
                       )
                         ? 'bold'
                         : ''}"
@@ -494,18 +494,18 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
                       s.rollout_details,
                       html`<br /><span class="preformatted"
                           >${s.rollout_details}</span
-                        >`,
+                        >`
                     )}
-                  </li>`,
+                  </li>`
               )}
             </ul>
             <div class="screenshots">
               ${f.screenshot_links.map(
                 (url, i) =>
-                  html`<img src="${url}" alt="Feature screenshot ${i + 1}" />`,
+                  html`<img src="${url}" alt="Feature screenshot ${i + 1}" />`
               )}
             </div>
-          </section>`,
+          </section>`
       )}
     </div>`;
   }
@@ -514,13 +514,13 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     return html` ${this.renderReleaseNotesDetailsSection(
       'Chrome browser updates',
       this.currentFeatures,
-      m => m === this.selectedMilestone,
+      m => m === this.selectedMilestone
     )}
     ${this.renderReleaseNotesDetailsSection(
       'Upcoming Chrome browser updates',
       this.upcomingFeatures,
       (m, milestones) =>
-        milestones.find(x => parseInt(x) > this.selectedMilestone!) === m,
+        milestones.find(x => parseInt(x) > this.selectedMilestone!) === m
     )}`;
   }
 

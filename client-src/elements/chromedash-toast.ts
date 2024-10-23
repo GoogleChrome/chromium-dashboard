@@ -73,7 +73,7 @@ class ChromedashToast extends LitElement {
     msg: string,
     optAction: string,
     optTapHandler: () => void,
-    optDuration: number,
+    optDuration: number
   ) {
     if (this.waitingForTransition) return;
 
@@ -89,7 +89,7 @@ class ChromedashToast extends LitElement {
             e.preventDefault();
             optTapHandler();
           },
-          {once: true},
+          {once: true}
         );
       }
     }
@@ -109,7 +109,7 @@ class ChromedashToast extends LitElement {
           this.show(optDuration);
           this.waitingForTransition = false;
         },
-        {once: true},
+        {once: true}
       );
     } else {
       this.show(optDuration);

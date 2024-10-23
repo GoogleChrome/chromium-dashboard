@@ -55,7 +55,7 @@ export class ChromedashReportFeatureLatencyPage extends LitElement {
     task: async ([startAt, endAt], {signal}) => {
       this.latencyList = await this._client.listFeatureLatency(
         {startAt, endAt},
-        {signal},
+        {signal}
       );
       return this.latencyList;
     },

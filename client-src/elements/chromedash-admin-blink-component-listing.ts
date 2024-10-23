@@ -130,7 +130,7 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
   _isUserInOwnerList(userId: number) {
     const ownersList = this.getOwnerListElement()!;
     return Array.from(ownersList.options).find(
-      option => parseInt((option as HTMLOptionElement).value) === userId,
+      option => parseInt((option as HTMLOptionElement).value) === userId
     );
   }
 
@@ -172,7 +172,7 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
             },
             bubbles: true,
             composed: true,
-          }),
+          })
         );
       });
   }
@@ -216,7 +216,7 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
             },
             bubbles: true,
             composed: true,
-          }),
+          })
         );
       });
   }
@@ -237,7 +237,7 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
           data-name="${user.name}"
         >
           ${user.name}: ${user.email}
-        </option>`,
+        </option>`
       );
     }
     return html`
@@ -264,7 +264,7 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
                   </option>`
                 : html`<option class="owner_name" value="${subscriberId}">
                     ${this._printUserDetails(subscriberId)}
-                  </option>`,
+                  </option>`
             )};
           </select>
         </div>

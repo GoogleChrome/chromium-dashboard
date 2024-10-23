@@ -10,7 +10,7 @@ let naRationalDialogEl;
 export async function openNaRationaleDialog(gate: GateDict) {
   if (!naRationalDialogEl) {
     naRationalDialogEl = document.createElement(
-      'chromedash-na-rationale-dialog',
+      'chromedash-na-rationale-dialog'
     );
     document.body.appendChild(naRationalDialogEl);
     await naRationalDialogEl.updateComplete;

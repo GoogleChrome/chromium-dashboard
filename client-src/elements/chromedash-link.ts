@@ -413,21 +413,21 @@ function enhanceSpecsLink(featureLink) {
 function enhanceMDNDocsLink(featureLink) {
   return _enhanceLinkWithTitleAndDescription(
     featureLink,
-    'https://developer.mozilla.org/favicon-48x48.png',
+    'https://developer.mozilla.org/favicon-48x48.png'
   );
 }
 
 function enhanceMozillaBugLink(featureLink) {
   return _enhanceLinkWithTitleAndDescription(
     featureLink,
-    'https://bugzilla.mozilla.org/favicon.ico',
+    'https://bugzilla.mozilla.org/favicon.ico'
   );
 }
 
 function enhanceWebKitBugLink(featureLink) {
   return _enhanceLinkWithTitleAndDescription(
     featureLink,
-    'https://bugs.webkit.org/images/favicon.ico',
+    'https://bugs.webkit.org/images/favicon.ico'
   );
 }
 

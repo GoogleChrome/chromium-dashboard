@@ -151,7 +151,7 @@ export class ChromedashApp extends LitElement {
       })
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.',
+          'Some errors occurred. Please refresh the page or try again later.'
         );
       })
       .finally(() => {
@@ -177,7 +177,7 @@ export class ChromedashApp extends LitElement {
       })
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.',
+          'Some errors occurred. Please refresh the page or try again later.'
         );
       });
   }
@@ -247,7 +247,7 @@ export class ChromedashApp extends LitElement {
     ctx,
     componentName,
     shouldSetContext = false,
-    shouldHideSidebar = true,
+    shouldHideSidebar = true
   ) {
     // If current page is ctx.path and a ctx.hash exists,
     // don't create a new element but instead
@@ -277,7 +277,7 @@ export class ChromedashApp extends LitElement {
 
     // Loading new page.
     this.pageComponent = document.createElement(
-      signinRequired ? 'chromedash-login-required-page' : componentName,
+      signinRequired ? 'chromedash-login-required-page' : componentName
     );
     this.setUnsavedChanges(false);
     this.removeBeforeUnloadHandler();
@@ -367,7 +367,7 @@ export class ChromedashApp extends LitElement {
       this.pageComponent.isNewfeaturesPage = true;
       this.pageComponent.addEventListener(
         'search',
-        this.handleSearchQuery.bind(this),
+        this.handleSearchQuery.bind(this)
       );
     });
     page('/feature/:featureId(\\d+)', ctx => {
@@ -427,7 +427,7 @@ export class ChromedashApp extends LitElement {
         this.pageComponent.featureId = parseInt(ctx.params.featureId);
         this.pageComponent.stageId = parseInt(ctx.params.stageId);
         this.pageComponent.appTitle = this.appTitle;
-      },
+      }
     );
     page('/feature/:featureId(\\d+)/gate/:gateId(\\d+/intent)', ctx => {
       if (!this.setupNewPage(ctx, 'chromedash-intent-preview-page')) return;
@@ -472,19 +472,19 @@ export class ChromedashApp extends LitElement {
     page('/metrics', () => page.redirect('/metrics/css/popularity'));
     page('/metrics/css', () => page.redirect('/metrics/css/popularity'));
     page('/metrics/css/timeline/popularity', () =>
-      page.redirect('/metrics/css/popularity'),
+      page.redirect('/metrics/css/popularity')
     );
     page('/metrics/css/timeline/animated', () =>
-      page.redirect('/metrics/css/animated'),
+      page.redirect('/metrics/css/animated')
     );
     page('/metrics/feature/timeline/popularity', () =>
-      page.redirect('/metrics/feature/popularity'),
+      page.redirect('/metrics/feature/popularity')
     );
     page('/reports/external_reviews', ctx => {
       if (
         !this.setupNewPage(
           ctx,
-          'chromedash-report-external-reviews-dispatch-page',
+          'chromedash-report-external-reviews-dispatch-page'
         )
       )
         return;
@@ -503,7 +503,7 @@ export class ChromedashApp extends LitElement {
         return;
       this.pageComponent.rawQuery = parseRawQuery(ctx.querystring);
       this.pageComponent.addEventListener('afterchanged', e =>
-        updateURLParams('after', isoDateString(e.detail.after)),
+        updateURLParams('after', isoDateString(e.detail.after))
       );
     });
     page('/reports/feature-latency', ctx => {
@@ -511,7 +511,7 @@ export class ChromedashApp extends LitElement {
         return;
       this.pageComponent.rawQuery = parseRawQuery(ctx.querystring);
       this.pageComponent.addEventListener('afterchanged', e =>
-        updateURLParams('after', isoDateString(e.detail.after)),
+        updateURLParams('after', isoDateString(e.detail.after))
       );
     });
     page('/reports/review-latency', ctx => {
@@ -524,7 +524,7 @@ export class ChromedashApp extends LitElement {
     });
     page('/admin/blink', ctx => {
       this.pageComponent = document.createElement(
-        'chromedash-admin-blink-page',
+        'chromedash-admin-blink-page'
       );
       this.pageComponent.user = this.user;
       this.currentPage = ctx.path;
@@ -540,7 +540,7 @@ export class ChromedashApp extends LitElement {
         !this.setupNewPage(
           ctx,
           'chromedash-enterprise-release-notes-page',
-          true,
+          true
         )
       )
         return;

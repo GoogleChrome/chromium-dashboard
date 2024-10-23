@@ -338,7 +338,7 @@ export class ChromeStatusClient {
       const refreshResponse = await this.doFetch(
         '/currentuser/token',
         'POST',
-        null,
+        null
       );
       this.token = refreshResponse.token;
       this.tokenExpiresSec = refreshResponse.token_expires_sec;
@@ -378,14 +378,14 @@ export class ChromeStatusClient {
         `Got error response from server ${resource}: ${response.status}`,
         resource,
         httpMethod,
-        response.status,
+        response.status
       );
     }
     const rawResponseText = await response.text();
     const XSSIPrefix = ")]}'\n";
     if (!rawResponseText.startsWith(XSSIPrefix)) {
       throw new Error(
-        `Response does not start with XSSI prefix: ${XSSIPrefix}`,
+        `Response does not start with XSSI prefix: ${XSSIPrefix}`
       );
     }
     return JSON.parse(rawResponseText.substr(XSSIPrefix.length));
@@ -464,7 +464,7 @@ export class ChromeStatusClient {
   getStars() {
     // TODO(markxiong0122): delete this backward compatibility code after 30 days
     return this.doGet('/currentuser/stars').then(
-      res => res.featureIds || res.feature_ids,
+      res => res.featureIds || res.feature_ids
     );
     // TODO: catch((error) => { display message }
   }
@@ -526,7 +526,7 @@ export class ChromeStatusClient {
     if (gateId) {
       return this.doPost(
         `/features/${featureId}/approvals/${gateId}/comments`,
-        {comment, postToThreadType},
+        {comment, postToThreadType}
       );
     } else {
       return this.doPost(`/features/${featureId}/approvals/comments`, {
@@ -568,7 +568,7 @@ export class ChromeStatusClient {
 
   async getFeaturesInMilestone(milestone) {
     return this.doGet(`/features?milestone=${milestone}`).then(
-      resp => resp['features_by_type'],
+      resp => resp['features_by_type']
     );
   }
 
@@ -582,7 +582,7 @@ export class ChromeStatusClient {
     sortSpec,
     start,
     num,
-    nameOnly,
+    nameOnly
   ) {
     const query = new URLSearchParams();
     query.set('q', userQuery);
@@ -616,7 +616,7 @@ export class ChromeStatusClient {
    */
   async getFeatureLinks(featureId, updateStaleLinks = true) {
     return this.doGet(
-      `/feature_links?feature_id=${featureId}&update_stale_links=${updateStaleLinks}`,
+      `/feature_links?feature_id=${featureId}&update_stale_links=${updateStaleLinks}`
     );
   }
 
@@ -633,7 +633,7 @@ export class ChromeStatusClient {
       optionalParams += `&is_error=${isError}`;
     }
     return this.doGet(
-      `/feature_links_samples?domain=${domain}${optionalParams}`,
+      `/feature_links_samples?domain=${domain}${optionalParams}`
     );
   }
 

@@ -11,13 +11,13 @@ it('shows a plain link for non-cached links', async () => {
       href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
       .featureLinks=${[]}
       >Content</chromedash-link
-    >`,
+    >`
   );
   expect(el).shadowDom.to.equal(
     `<a href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
         rel="noopener noreferrer"
         target="_blank"><slot>...</slot></a>`,
-    {ignoreChildren: ['slot']},
+    {ignoreChildren: ['slot']}
   );
 });
 
@@ -28,13 +28,13 @@ it('wraps the text in sl-tag when requested', async () => {
       href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
       .featureLinks=${[]}
       >Content</chromedash-link
-    >`,
+    >`
   );
   expect(el).shadowDom.to.equal(
     `<a href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
         rel="noopener noreferrer"
         target="_blank"><sl-tag><slot>...</slot></sl-tag></a>`,
-    {ignoreChildren: ['slot']},
+    {ignoreChildren: ['slot']}
   );
 });
 
@@ -58,14 +58,14 @@ it('shows content as label when requested', async () => {
       href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
       .featureLinks=${featureLinks}
       >Content</chromedash-link
-    >`,
+    >`
   );
   expect(elWithLabel).shadowDom.to.equal(
     `<slot>...</slot>:
      <a href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
         rel="noopener noreferrer"
         target="_blank">...</a>`,
-    {ignoreChildren: ['slot', 'a']},
+    {ignoreChildren: ['slot', 'a']}
   );
 
   const elWithoutLabel = await fixture(
@@ -73,13 +73,13 @@ it('shows content as label when requested', async () => {
       href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
       .featureLinks=${featureLinks}
       >Content</chromedash-link
-    >`,
+    >`
   );
   expect(elWithoutLabel).shadowDom.to.equal(
     `<a href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
         rel="noopener noreferrer"
         target="_blank">...</a>`,
-    {ignoreChildren: ['slot', 'a']},
+    {ignoreChildren: ['slot', 'a']}
   );
 });
 
@@ -103,14 +103,14 @@ it('shows content as label when requested', async () => {
       href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
       .featureLinks=${featureLinks}
       >Content</chromedash-link
-    >`,
+    >`
   );
   expect(elWithLabel).shadowDom.to.equal(
     `<slot>...</slot>:
      <a href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
         rel="noopener noreferrer"
         target="_blank">...</a>`,
-    {ignoreChildren: ['slot', 'a']},
+    {ignoreChildren: ['slot', 'a']}
   );
 
   const elWithoutLabel = await fixture(
@@ -118,13 +118,13 @@ it('shows content as label when requested', async () => {
       href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
       .featureLinks=${featureLinks}
       >Content</chromedash-link
-    >`,
+    >`
   );
   expect(elWithoutLabel).shadowDom.to.equal(
     `<a href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
         rel="noopener noreferrer"
         target="_blank">...</a>`,
-    {ignoreChildren: ['slot', 'a']},
+    {ignoreChildren: ['slot', 'a']}
   );
 });
 
@@ -157,7 +157,7 @@ describe('Github issue links', () => {
         href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
         .featureLinks=${featureLinks}
         >Content</chromedash-link
-      >`,
+      >`
     );
     expect(el).shadowDom.to.equal(
       `<a href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
@@ -216,7 +216,7 @@ describe('Github issue links', () => {
       </a>`,
       {
         ignoreAttributes: ['style', 'title'],
-      },
+      }
     );
   });
 
@@ -245,7 +245,7 @@ describe('Github issue links', () => {
         href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
         .featureLinks=${featureLinks}
         >Content</chromedash-link
-      >`,
+      >`
     );
     expect(el).shadowDom.to.equal(
       `<a href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
@@ -267,7 +267,7 @@ describe('Github issue links', () => {
       {
         ignoreChildren: ['div'],
         ignoreAttributes: ['style', 'title'],
-      },
+      }
     );
   });
 
@@ -302,7 +302,7 @@ describe('Github issue links', () => {
           href="https://github.com/w3ctag/design-reviews/issues/400"
           .featureLinks=${featureLinks}
           >Content</chromedash-link
-        >`,
+        >`
       );
       expect(el).shadowDom.to.equal(
         `<a href="https://github.com/w3ctag/design-reviews/issues/400"
@@ -324,7 +324,7 @@ describe('Github issue links', () => {
         {
           ignoreChildren: ['div'],
           ignoreAttributes: ['style', 'title'],
-        },
+        }
       );
     });
 
@@ -356,7 +356,7 @@ describe('Github issue links', () => {
           href="https://github.com/WebKit/standards-positions/issues/268"
           .featureLinks=${featureLinks}
           >Content</chromedash-link
-        >`,
+        >`
       );
       expect(el).shadowDom.to.equal(
         `<a href="https://github.com/WebKit/standards-positions/issues/268"
@@ -378,7 +378,7 @@ describe('Github issue links', () => {
         {
           ignoreChildren: ['div'],
           ignoreAttributes: ['style', 'title'],
-        },
+        }
       );
     });
 
@@ -408,7 +408,7 @@ describe('Github issue links', () => {
           href="https://github.com/mozilla/standards-positions/issues/975"
           .featureLinks=${featureLinks}
           >Content</chromedash-link
-        >`,
+        >`
       );
       expect(el).shadowDom.to.equal(
         `<a href="https://github.com/mozilla/standards-positions/issues/975"
@@ -430,7 +430,7 @@ describe('Github issue links', () => {
         {
           ignoreChildren: ['div'],
           ignoreAttributes: ['style', 'title'],
-        },
+        }
       );
     });
 
@@ -443,7 +443,7 @@ describe('Github issue links', () => {
           href="https://github.com/mozilla/standards-positions/issues/975"
           .featureLinks=${featureLinks}
           >Content</chromedash-link
-        >`,
+        >`
       );
       expect(el).shadowDom.to.equal(
         `<a href="https://github.com/mozilla/standards-positions/issues/975"
@@ -465,7 +465,7 @@ describe('Github issue links', () => {
         {
           ignoreChildren: ['div'],
           ignoreAttributes: ['style', 'title'],
-        },
+        }
       );
     });
 
@@ -481,7 +481,7 @@ describe('Github issue links', () => {
           href="https://github.com/mozilla/standards-positions/issues/975"
           .featureLinks=${featureLinks}
           >Content</chromedash-link
-        >`,
+        >`
       );
       expect(el).shadowDom.to.equal(
         `<a href="https://github.com/mozilla/standards-positions/issues/975"
@@ -506,7 +506,7 @@ describe('Github issue links', () => {
         {
           ignoreChildren: ['div'],
           ignoreAttributes: ['style', 'title'],
-        },
+        }
       );
     });
 
@@ -522,7 +522,7 @@ describe('Github issue links', () => {
           href="https://github.com/mozilla/standards-positions/issues/975"
           .featureLinks=${featureLinks}
           >Content</chromedash-link
-        >`,
+        >`
       );
       expect(el).shadowDom.to.equal(
         `<a href="https://github.com/mozilla/standards-positions/issues/975"
@@ -547,7 +547,7 @@ describe('Github issue links', () => {
         {
           ignoreChildren: ['div'],
           ignoreAttributes: ['style', 'title'],
-        },
+        }
       );
     });
   });

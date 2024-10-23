@@ -94,7 +94,7 @@ describe('chromedash-roadmap-page', () => {
       email: 'example@google.com',
     };
     const component = await fixture(
-      html`<chromedash-roadmap-page .user=${user}> </chromedash-roadmap-page>`,
+      html`<chromedash-roadmap-page .user=${user}> </chromedash-roadmap-page>`
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashRoadmapPage);
@@ -105,7 +105,7 @@ describe('chromedash-roadmap-page', () => {
 
     // releases-section exists and contains the previous and next buttons
     const releasesSec = component.renderRoot.querySelector(
-      'section#releases-section',
+      'section#releases-section'
     );
     assert.exists(releasesSec);
     assert.include(releasesSec.innerHTML, 'button id="previous-button"');

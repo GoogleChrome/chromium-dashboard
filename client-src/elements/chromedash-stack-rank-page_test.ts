@@ -21,7 +21,7 @@ describe('chromedash-stack-rank-page', () => {
   it('invalid stack-rank fetch response', async () => {
     fetchStub.returns(Promise.reject(new Error('No results')));
     const component = await fixture(
-      html`<chromedash-stack-rank-page></chromedash-stack-rank-page>`,
+      html`<chromedash-stack-rank-page></chromedash-stack-rank-page>`
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashStackRankPage);
@@ -31,7 +31,7 @@ describe('chromedash-stack-rank-page', () => {
     const toastMsgSpan = toastEl?.shadowRoot?.querySelector('span#msg');
     assert.include(
       toastMsgSpan?.innerHTML,
-      'Some errors occurred. Please refresh the page or try again later.',
+      'Some errors occurred. Please refresh the page or try again later.'
     );
   });
 
@@ -41,7 +41,7 @@ describe('chromedash-stack-rank-page', () => {
     fetchStub.returns(Promise.resolve({}));
     const component = await fixture(
       html`<chromedash-stack-rank-page .type="${type}" .view="${view}">
-      </chromedash-stack-rank-page>`,
+      </chromedash-stack-rank-page>`
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashStackRankPage);
@@ -51,12 +51,12 @@ describe('chromedash-stack-rank-page', () => {
     assert.exists(subheaderDiv);
     assert.include(
       subheaderDiv.innerHTML,
-      'HTML &amp; JavaScript usage metrics &gt; all features &gt; stack rank',
+      'HTML &amp; JavaScript usage metrics &gt; all features &gt; stack rank'
     );
 
     // datalist and its input exist
     const datalistInputEl = component.renderRoot.querySelector(
-      'input#datalist-input',
+      'input#datalist-input'
     );
     const datalistEl = component.renderRoot.querySelector('datalist#features');
     assert.exists(datalistInputEl);
@@ -64,7 +64,7 @@ describe('chromedash-stack-rank-page', () => {
 
     // chromedash-stack-rank exists
     const stackrankEl = component.renderRoot.querySelector(
-      'chromedash-stack-rank',
+      'chromedash-stack-rank'
     );
     assert.exists(stackrankEl);
   });

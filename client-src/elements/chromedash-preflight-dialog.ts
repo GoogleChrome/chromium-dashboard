@@ -23,7 +23,7 @@ export async function openPreflightDialog(
   stage: StageDict,
   feStage: StageDict,
   featureGates: GateDict[],
-  url: string,
+  url: string
 ) {
   if (!preflightDialogEl) {
     preflightDialogEl = document.createElement('chromedash-preflight-dialog');
@@ -38,13 +38,13 @@ export async function openPreflightDialog(
     stage,
     feStage,
     featureGates,
-    url,
+    url
   );
 }
 
 export function somePendingPrereqs(action: Action, progress: ProgressItem) {
   return action.prerequisites.some(
-    itemName => !progress.hasOwnProperty(itemName),
+    itemName => !progress.hasOwnProperty(itemName)
   );
 }
 
@@ -56,12 +56,12 @@ export function findPendingGates(featureGates: GateDict[], feStage: StageDict) {
   const gatesForStage = featureGates.filter(g => g.stage_id == feStage.id);
   const otherGates = gatesForStage.filter(g => g.team_name != 'API Owners');
   const pendingGates = otherGates.filter(
-    g => !GATE_FINISHED_REVIEW_STATES.includes(g.state),
+    g => !GATE_FINISHED_REVIEW_STATES.includes(g.state)
   );
   pendingGates.sort(
     (g1, g2) =>
       GATE_TEAM_ORDER.indexOf(g1.team_name) -
-      GATE_TEAM_ORDER.indexOf(g2.team_name),
+      GATE_TEAM_ORDER.indexOf(g2.team_name)
   );
   return pendingGates;
 }
@@ -135,7 +135,7 @@ export class ChromedashPreflightDialog extends LitElement {
     stage: StageDict,
     feStage: StageDict,
     featureGates: GateDict[],
-    url: string,
+    url: string
   ) {
     this._feature = feature;
     this._progress = progress;
@@ -214,11 +214,11 @@ export class ChromedashPreflightDialog extends LitElement {
                 findFirstFeatureStage(
                   item.stage.outgoing_stage,
                   this._stage,
-                  this._feature,
+                  this._feature
                 ),
-                item,
+                item
               )}
-            </li>`,
+            </li>`
         )}
         ${pendingGates.map(
           g => html`
@@ -231,7 +231,7 @@ export class ChromedashPreflightDialog extends LitElement {
               >
               team
             </li>
-          `,
+          `
         )}
       </ol>
 

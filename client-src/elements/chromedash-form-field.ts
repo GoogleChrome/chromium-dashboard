@@ -73,7 +73,7 @@ export class ChromedashFormField extends LitElement {
     super.connectedCallback();
     this.fieldProps = resolveFieldForFeature(
       ALL_FIELDS[this.name] || {},
-      this.feature,
+      this.feature
     );
 
     // Register this form field component with the page component.
@@ -93,7 +93,7 @@ export class ChromedashFormField extends LitElement {
         })
         .catch(() => {
           showToastMessage(
-            'Some errors occurred. Please refresh the page or try again later.',
+            'Some errors occurred. Please refresh the page or try again later.'
           );
         });
     }
@@ -108,7 +108,7 @@ export class ChromedashFormField extends LitElement {
       document.addEventListener('DOMContentLoaded', () =>
         setTimeout(() => {
           this.doSemanticCheck();
-        }),
+        })
       );
     } else {
       this.doSemanticCheck();
@@ -164,7 +164,7 @@ export class ChromedashFormField extends LitElement {
     const app: ChromedashApp | null = document.querySelector('chromedash-app');
     if (app?.pageComponent) {
       app.pageComponent.allFormFieldComponentsList.forEach(formFieldComponent =>
-        formFieldComponent.doSemanticCheck(),
+        formFieldComponent.doSemanticCheck()
       );
     } else {
       // Do the semantic check for unit testing.  Only works for isolated field.
@@ -184,7 +184,7 @@ export class ChromedashFormField extends LitElement {
       return getFieldValueWithStage(
         fieldName,
         stageOrId,
-        this.fieldValues || [],
+        this.fieldValues || []
       );
     };
     // Attach the feature to the getFieldValue function, which is needed to
@@ -201,7 +201,7 @@ export class ChromedashFormField extends LitElement {
       const checkResult = await checkFunction(
         fieldValue,
         getFieldValue,
-        initialValue,
+        initialValue
       );
       if (checkResult == null) {
         // Don't clear this.checkMessage here.
@@ -289,7 +289,7 @@ export class ChromedashFormField extends LitElement {
           ${Object.values(choices).map(
             ([value, label]) => html`
               <sl-option value="${value}"> ${label} </sl-option>
-            `,
+            `
           )}
         </sl-select>
       `;
@@ -311,7 +311,7 @@ export class ChromedashFormField extends LitElement {
           ${Object.values(choices).map(
             ([value, label]) => html`
               <sl-option value="${value}"> ${label} </sl-option>
-            `,
+            `
           )}
         </sl-select>
       `;
@@ -360,7 +360,7 @@ export class ChromedashFormField extends LitElement {
             />
             <label for="id_${this.name}_${value}">${label}</label>
             <p>${description}</p>
-          `,
+          `
         )}
       `;
     } else if (type === 'datalist') {
@@ -380,7 +380,7 @@ export class ChromedashFormField extends LitElement {
         </div>
         <datalist id="${this.name}_list">
           ${Object.values(choices).map(
-            ([value]) => html` <option value="${value}"></option> `,
+            ([value]) => html` <option value="${value}"></option> `
           )}
         </datalist>
       `;
@@ -456,7 +456,7 @@ export class ChromedashFormField extends LitElement {
 function getFieldValueWithStage(
   fieldName: string,
   stageOrId: number | StageDict | undefined,
-  formFieldValues: FieldInfo[] & {feature?: Feature},
+  formFieldValues: FieldInfo[] & {feature?: Feature}
 ) {
   // Iterate through formFieldValues looking for element with name==fieldName
   // and stage == stageId, if there is a non-null stageId

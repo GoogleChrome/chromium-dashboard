@@ -104,12 +104,12 @@ describe('chromedash-guide-stage-page', () => {
 
   it('renders with no data', async () => {
     const invalidFeaturePromise = Promise.reject(
-      new Error('Got error response from server'),
+      new Error('Got error response from server')
     );
     window.csClient.getFeature.withArgs(0).returns(invalidFeaturePromise);
 
     const component = await fixture(
-      html`<chromedash-guide-stage-page></chromedash-guide-stage-page>`,
+      html`<chromedash-guide-stage-page></chromedash-guide-stage-page>`
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashGuideStagePage);
@@ -119,7 +119,7 @@ describe('chromedash-guide-stage-page', () => {
     const toastMsgSpan = toastEl?.shadowRoot?.querySelector('span#msg');
     assert.include(
       toastMsgSpan?.innerHTML,
-      'Some errors occurred. Please refresh the page or try again later.',
+      'Some errors occurred. Please refresh the page or try again later.'
     );
   });
 
@@ -138,7 +138,7 @@ describe('chromedash-guide-stage-page', () => {
         .featureId=${featureId}
         .intentStage=${intentStage}
       >
-      </chromedash-guide-stage-page>`,
+      </chromedash-guide-stage-page>`
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashGuideStagePage);
@@ -151,7 +151,7 @@ describe('chromedash-guide-stage-page', () => {
 
     // feature form, hidden token field, and submit/cancel buttons exist
     const form = component.renderRoot.querySelector(
-      'form[name="feature_form"]',
+      'form[name="feature_form"]'
     );
     assert.exists(form);
     assert.include(form.innerHTML, '<input type="hidden" name="token">');
@@ -162,7 +162,7 @@ describe('chromedash-guide-stage-page', () => {
     assert.include(form.innerHTML, '4');
     assert.notInclude(
       form.innerHTML,
-      'This feature already has implementation status',
+      'This feature already has implementation status'
     );
   });
 });

@@ -17,7 +17,7 @@ declare class ChromeStatusHttpError extends Error {
     message: string,
     resource: string,
     method: string,
-    status: number,
+    status: number
   );
 }
 

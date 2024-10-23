@@ -28,7 +28,7 @@ describe('chromedash-timeline-page', () => {
   it('invalid timeline fetch response', async () => {
     fetchStub.returns(Promise.reject(new Error('No results')));
     const component = await fixture(
-      html`<chromedash-timeline-page></chromedash-timeline-page>`,
+      html`<chromedash-timeline-page></chromedash-timeline-page>`
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashTimelinePage);
@@ -38,7 +38,7 @@ describe('chromedash-timeline-page', () => {
     const toastMsgSpan = toastEl!.shadowRoot!.querySelector('span#msg');
     assert.include(
       toastMsgSpan!.innerHTML,
-      'Some errors occurred. Please refresh the page or try again later.',
+      'Some errors occurred. Please refresh the page or try again later.'
     );
   });
 
@@ -48,7 +48,7 @@ describe('chromedash-timeline-page', () => {
     fetchStub.returns(Promise.resolve({}));
     const component = await fixture(
       html`<chromedash-timeline-page .type="${type}" .view="${view}">
-      </chromedash-timeline-page>`,
+      </chromedash-timeline-page>`
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashTimelinePage);
@@ -59,12 +59,12 @@ describe('chromedash-timeline-page', () => {
     assert.include(subheaderDiv.innerHTML, `href="/metrics/${type}/${view}"`);
     assert.include(
       subheaderDiv.innerHTML,
-      'HTML &amp; JavaScript usage metrics &gt; all features &gt; timeline',
+      'HTML &amp; JavaScript usage metrics &gt; all features &gt; timeline'
     );
 
     // chromedash-timeline exists
     const timelineEl = component.shadowRoot!.querySelector(
-      'chromedash-timeline',
+      'chromedash-timeline'
     );
     assert.exists(timelineEl);
   });

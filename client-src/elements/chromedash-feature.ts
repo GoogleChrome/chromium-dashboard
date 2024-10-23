@@ -108,14 +108,14 @@ class ChromedashFeature extends LitElement {
       'On hold',
     ];
     return PRE_LAUNCH_STATUSES.includes(
-      this.feature.browsers.chrome.status.text ?? '',
+      this.feature.browsers.chrome.status.text ?? ''
     );
   }
 
   _getIsDeprecated() {
     const DEPRECATED_STATUSES = ['Deprecated', 'No longer pursuing'];
     return DEPRECATED_STATUSES.includes(
-      this.feature.browsers.chrome.status.text ?? '',
+      this.feature.browsers.chrome.status.text ?? ''
     );
   }
 
@@ -463,7 +463,7 @@ class ChromedashFeature extends LitElement {
                                     ${owner}
                                   </button>
                                 </span>
-                              `,
+                              `
                             )}
                           </span>
                         </span>
@@ -496,7 +496,7 @@ class ChromedashFeature extends LitElement {
                   </span>
                   <span
                     title="${ifDefined(
-                      this.feature.browsers.safari.view?.text,
+                      this.feature.browsers.safari.view?.text
                     )}"
                     class="view tooltip"
                   >
@@ -612,7 +612,7 @@ class ChromedashFeature extends LitElement {
                   tag => html`
                     <a href="#tags:${tag}" target="_blank">${tag}</a
                     ><span class="conditional-comma">,&nbsp; </span>
-                  `,
+                  `
                 )}
               </div>
             </section>
@@ -640,7 +640,7 @@ class ChromedashMultiLinks extends LitElement {
             class="${index < this.links.length - 1 ? 'comma' : ''}"
             >${this.title} ${index + 1}</a
           >
-        `,
+        `
       )}
     `;
   }

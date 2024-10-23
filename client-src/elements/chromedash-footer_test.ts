@@ -5,7 +5,7 @@ import {ChromedashFooter} from './chromedash-footer';
 describe('chromedash-footer', () => {
   it('renders with no data', async () => {
     const component = await fixture(
-      html`<chromedash-footer></chromedash-footer>`,
+      html`<chromedash-footer></chromedash-footer>`
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashFooter);

@@ -176,7 +176,7 @@ class ChromedashFeatureRow extends LitElement {
     sortedGates.sort(
       (g1, g2) =>
         GATE_TEAM_ORDER.indexOf(g1.team_name) -
-        GATE_TEAM_ORDER.indexOf(g2.team_name),
+        GATE_TEAM_ORDER.indexOf(g2.team_name)
     );
     return html`
       <div>
@@ -189,7 +189,7 @@ class ChromedashFeatureRow extends LitElement {
               .gate=${gate}
               selectedGateId=${this.selectedGateId}
             ></chromedash-gate-chip>
-          `,
+          `
         )}
       </div>
     `;
@@ -205,7 +205,7 @@ class ChromedashFeatureRow extends LitElement {
             ? html`
                 <div>
                   ${activeStages.map(stageAndGates =>
-                    this.renderActiveStageAndGates(stageAndGates),
+                    this.renderActiveStageAndGates(stageAndGates)
                   )}
                 </div>
               `

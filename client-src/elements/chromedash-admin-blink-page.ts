@@ -99,7 +99,7 @@ export class ChromedashAdminBlinkPage extends LitElement {
       })
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.',
+          'Some errors occurred. Please refresh the page or try again later.'
         );
       });
   }
@@ -112,7 +112,7 @@ export class ChromedashAdminBlinkPage extends LitElement {
     const component = Object.assign({}, this.components![e.detail.index]);
     if (e.detail.isError) {
       showToastMessage(
-        `"Unable to add ${this.usersMap.get(e.detail.userId)!.name} to ${component.name}".`,
+        `"Unable to add ${this.usersMap.get(e.detail.userId)!.name} to ${component.name}".`
       );
       return;
     }
@@ -129,7 +129,7 @@ export class ChromedashAdminBlinkPage extends LitElement {
       component.owner_ids = [...(component.owner_ids ?? []), e.detail.userId];
     }
     showToastMessage(
-      `"${this.usersMap.get(e.detail.userId)!.name} added to ${component.name}".`,
+      `"${this.usersMap.get(e.detail.userId)!.name} added to ${component.name}".`
     );
     this.components![e.detail.index] = component;
     this.requestUpdate();
@@ -139,21 +139,21 @@ export class ChromedashAdminBlinkPage extends LitElement {
     const component = Object.assign({}, this.components![e.detail.index]);
     if (e.detail.isError) {
       showToastMessage(
-        `"Unable to remove ${this.usersMap.get(e.detail.userId)!.name} from ${component.name}".`,
+        `"Unable to remove ${this.usersMap.get(e.detail.userId)!.name} from ${component.name}".`
       );
       return;
     }
 
     component.subscriber_ids = component.subscriber_ids!.filter(
-      currentUserId => e.detail.userId !== currentUserId,
+      currentUserId => e.detail.userId !== currentUserId
     );
     if (e.detail.toggleAsOwner) {
       component.owner_ids = component.owner_ids!.filter(
-        currentUserId => e.detail.userId !== currentUserId,
+        currentUserId => e.detail.userId !== currentUserId
       );
     }
     showToastMessage(
-      `"${this.usersMap.get(e.detail.userId)!.name} removed from ${component.name}".`,
+      `"${this.usersMap.get(e.detail.userId)!.name} removed from ${component.name}".`
     );
     this.components![e.detail.index] = component;
     this.requestUpdate();
@@ -214,7 +214,7 @@ export class ChromedashAdminBlinkPage extends LitElement {
                 @adminAddComponentUser=${this._addComponentUserListener}
               ></chromedash-admin-blink-component-listing>
             </li>
-          `,
+          `
         )}
       </ul>
     `;

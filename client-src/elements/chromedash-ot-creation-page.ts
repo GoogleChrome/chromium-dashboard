@@ -148,7 +148,7 @@ export class ChromedashOTCreationPage extends LitElement {
       }
       // Check that necessary approvals have been obtained.
       const relevantGates = gatesRes.gates.filter(
-        g => g.stage_id === this.stage.id,
+        g => g.stage_id === this.stage.id
       );
       relevantGates.forEach(g => {
         if (
@@ -173,7 +173,7 @@ export class ChromedashOTCreationPage extends LitElement {
     // opts in to using them.
     const insertIndex =
       this.fieldValues.findIndex(
-        fieldInfo => fieldInfo.name === 'ot_require_approvals',
+        fieldInfo => fieldInfo.name === 'ot_require_approvals'
       ) + 1;
     this.fieldValues.splice(
       insertIndex,
@@ -205,7 +205,7 @@ export class ChromedashOTCreationPage extends LitElement {
         value: '',
         stageId: this.stage.id,
         isApprovalsField: true,
-      },
+      }
     );
   }
 
@@ -261,7 +261,7 @@ export class ChromedashOTCreationPage extends LitElement {
      * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
     await el.updateComplete;
     const submitButton: HTMLInputElement | null = this.renderRoot.querySelector(
-      'input[id=submit-button]',
+      'input[id=submit-button]'
     );
     submitButton?.form?.addEventListener('submit', event => {
       this.handleFormSubmit(event);
@@ -345,7 +345,7 @@ export class ChromedashOTCreationPage extends LitElement {
       });
     }
     const useCounterField = this.fieldValues.find(
-      fv => fv.name === 'ot_webfeature_use_counter',
+      fv => fv.name === 'ot_webfeature_use_counter'
     );
     if (this.isDeprecationTrial) {
       useCounterField!.touched = false;
@@ -353,7 +353,7 @@ export class ChromedashOTCreationPage extends LitElement {
 
     const featureSubmitBody = formatFeatureChanges(
       this.fieldValues,
-      this.featureId,
+      this.featureId
     );
     // We only need the single stage changes.
     const stageSubmitBody = featureSubmitBody.stages[0];
@@ -374,7 +374,7 @@ export class ChromedashOTCreationPage extends LitElement {
         if (resp.errors) {
           this.handleChromiumChecks(resp.errors);
           showToastMessage(
-            'Some issues were found with the given inputs. Check input errors and try again.',
+            'Some issues were found with the given inputs. Check input errors and try again.'
           );
           this.submitting = false;
           this.requestUpdate();

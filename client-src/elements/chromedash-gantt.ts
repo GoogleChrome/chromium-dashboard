@@ -105,7 +105,7 @@ export class ChromedashGantt extends LitElement {
     last: number,
     sortedMilestones: number[],
     cssClass: string,
-    label: string,
+    label: string
   ) {
     const cellsOnRow: TemplateResult[] = [];
     for (let col = 0; col < sortedMilestones.length; col++) {
@@ -163,13 +163,13 @@ export class ChromedashGantt extends LitElement {
     dtStages: StageDict[],
     otStages: StageDict[],
     shipStages: StageDict[],
-    sortedMilestones: number[],
+    sortedMilestones: number[]
   ) {
     const dtStartMilestones: (number | undefined)[] = dtStages.map(
-      s => s[`${platformParam}_first`],
+      s => s[`${platformParam}_first`]
     );
     const otStartMilestones: (number | undefined)[] = otStages.map(
-      s => s[`${platformParam}_first`],
+      s => s[`${platformParam}_first`]
     );
     const otEndMilestones: (number | undefined)[] = otStages.map(s => {
       let maxEnd = s[`${platformParam}_last`];
@@ -184,7 +184,7 @@ export class ChromedashGantt extends LitElement {
       return maxEnd;
     });
     const shipStartMilestones = shipStages.map(
-      s => s[`${platformParam}_first`],
+      s => s[`${platformParam}_first`]
     );
 
     if (
@@ -208,7 +208,7 @@ export class ChromedashGantt extends LitElement {
       // If there is a shipping milestone, Dev trial stops just before it.
       if (validShipMilestones.length > 0) {
         const shippingIndex = sortedMilestones.indexOf(
-          Math.min(...validShipMilestones),
+          Math.min(...validShipMilestones)
         );
         devTrialMilestoneLast = sortedMilestones[shippingIndex - 1];
       }
@@ -219,8 +219,8 @@ export class ChromedashGantt extends LitElement {
           devTrialMilestoneLast,
           sortedMilestones,
           'dev_trial',
-          'Dev Trial: ' + dtMilestone,
-        ),
+          'Dev Trial: ' + dtMilestone
+        )
       );
       currentRow++;
     }
@@ -239,8 +239,8 @@ export class ChromedashGantt extends LitElement {
           otEndMilestone,
           sortedMilestones,
           'origin_trial',
-          `Origin Trial: ${otStartMilestone} to ${otEndMilestone}`,
-        ),
+          `Origin Trial: ${otStartMilestone} to ${otEndMilestone}`
+        )
       );
       currentRow++;
     }
@@ -257,8 +257,8 @@ export class ChromedashGantt extends LitElement {
           maxMilestone,
           sortedMilestones,
           'shipping',
-          `Shipping: ${shipMilestone}`,
-        ),
+          `Shipping: ${shipMilestone}`
+        )
       );
       currentRow++;
     }
@@ -339,7 +339,7 @@ export class ChromedashGantt extends LitElement {
         augmentedMilestoneSet.add(m + 1);
       }
       sortedMilestones = Array.from(augmentedMilestoneSet).sort(
-        (a, b) => a - b,
+        (a, b) => a - b
       );
 
       if (sortedMilestones.length > 12) {
@@ -361,7 +361,7 @@ export class ChromedashGantt extends LitElement {
           dtStages,
           otStages,
           shipStages,
-          sortedMilestones,
+          sortedMilestones
         )}
         ${this.renderPlatform(
           'Android',
@@ -369,7 +369,7 @@ export class ChromedashGantt extends LitElement {
           dtStages,
           otStages,
           shipStages,
-          sortedMilestones,
+          sortedMilestones
         )}
         ${this.renderPlatform(
           'iOS',
@@ -377,7 +377,7 @@ export class ChromedashGantt extends LitElement {
           dtStages,
           otStages,
           shipStages,
-          sortedMilestones,
+          sortedMilestones
         )}
         ${this.renderPlatform(
           'Webview',
@@ -385,7 +385,7 @@ export class ChromedashGantt extends LitElement {
           dtStages,
           otStages,
           shipStages,
-          sortedMilestones,
+          sortedMilestones
         )}
       </ul>
     `;

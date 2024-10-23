@@ -54,7 +54,7 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
       this.featureLinksSummary = await window.csClient.getFeatureLinksSummary();
     } catch {
       showToastMessage(
-        'Some errors occurred. Please refresh the page or try again later.',
+        'Some errors occurred. Please refresh the page or try again later.'
       );
     } finally {
       this.loading = false;
@@ -73,11 +73,11 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
       this.featureLinksSamples = await window.csClient.getFeatureLinksSamples(
         domain,
         type,
-        isError,
+        isError
       );
     } catch {
       showToastMessage(
-        'Some errors occurred. Please refresh the page or try again later.',
+        'Some errors occurred. Please refresh the page or try again later.'
       );
     } finally {
       this.samplesLoading = false;
@@ -112,7 +112,7 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
                 ></sl-icon>
               </a>
             </div>
-          `,
+          `
         )}
       </div>
     `;
@@ -145,7 +145,7 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
               <div class="line">
                 ${linkType.key.toUpperCase()} <b>${linkType.count}</b>
               </div>
-            `,
+            `
           )}
         </sl-details>
         <sl-details summary="Uncovered Link Domains" open>
@@ -171,7 +171,7 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
               this.calcSampleId(domain.key, 'web', undefined)
                 ? this.renderSamples()
                 : nothing}
-            `,
+            `
           )}
         </sl-details>
         <sl-details summary="Error Link Domains" open>
@@ -196,7 +196,7 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
               ${this.sampleId === this.calcSampleId(domain.key, undefined, true)
                 ? this.renderSamples()
                 : nothing}
-            `,
+            `
           )}
         </sl-details>
       </div>

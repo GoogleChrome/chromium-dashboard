@@ -192,12 +192,12 @@ export class ChromedashActivity extends LitElement {
           ${this.activity.amendments.map(
             a => html`
               <chromedash-amendment .amendment=${a}></chromedash-amendment>
-            `,
+            `
           )}
         </div>
         <!-- prettier-ignore -->
         <div class="comment_body">${preface}${autolink(
-          this.activity.content,
+          this.activity.content
         )}</div>
       </div>
     `;
@@ -209,12 +209,12 @@ export class ChromedashActivity extends LitElement {
     if (isUndelete) {
       resp = await window.csClient.undeleteComment(
         this.featureId,
-        this.activity.comment_id,
+        this.activity.comment_id
       );
     } else {
       resp = await window.csClient.deleteComment(
         this.featureId,
-        this.activity.comment_id,
+        this.activity.comment_id
       );
     }
     if (resp && resp.message === 'Done') {
@@ -276,7 +276,7 @@ export class ChromedashActivityLog extends LitElement {
           .activity=${activity}
         >
         </chromedash-activity>
-      `,
+      `
     );
   }
 }

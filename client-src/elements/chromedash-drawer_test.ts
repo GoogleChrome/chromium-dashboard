@@ -23,7 +23,7 @@ describe('chromedash-drawer', () => {
   it('user is not signed in', async () => {
     getPermissionsStub.returns(Promise.resolve(null));
     const component = await fixture(
-      html`<chromedash-drawer appTitle="Fake Title"></chromedash-drawer>`,
+      html`<chromedash-drawer appTitle="Fake Title"></chromedash-drawer>`
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashDrawer);
@@ -48,10 +48,10 @@ describe('chromedash-drawer', () => {
         can_edit: true,
         is_admin: false,
         email: 'example@google.com',
-      }),
+      })
     );
     const component = await fixture(
-      html`<chromedash-drawer appTitle="Fake Title"></chromedash-drawer>`,
+      html`<chromedash-drawer appTitle="Fake Title"></chromedash-drawer>`
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashDrawer);

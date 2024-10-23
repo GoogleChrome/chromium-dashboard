@@ -12,7 +12,7 @@ export async function openPostIntentDialog(
   featureId: number,
   stageId: number,
   ownerEmails: Array<string>,
-  gateId = 0,
+  gateId = 0
 ) {
   if (!dialogEl) {
     dialogEl = document.createElement('chromedash-post-intent-dialog');
@@ -102,7 +102,7 @@ class ChromedashPostIntentDialog extends LitElement {
       return;
     }
     const submitButton = this.shadowRoot!.querySelector(
-      '#submit-intent-button',
+      '#submit-intent-button'
     );
     if (submitButton) {
       submitButton.setAttribute('disabled', '');
@@ -114,7 +114,7 @@ class ChromedashPostIntentDialog extends LitElement {
       })
       .then(() => {
         showToastMessage(
-          'Intent submitted! Check for your thread on blink-dev shortly.',
+          'Intent submitted! Check for your thread on blink-dev shortly.'
         );
         setTimeout(() => {
           window.location.href = `/feature/${this.featureId}`;
@@ -122,7 +122,7 @@ class ChromedashPostIntentDialog extends LitElement {
       })
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.',
+          'Some errors occurred. Please refresh the page or try again later.'
         );
         if (submitButton) {
           submitButton.removeAttribute('disabled');

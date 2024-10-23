@@ -12,12 +12,12 @@ describe('chromedash-admin-blink-page', () => {
   it('render with no data', async () => {
     csOpenApiClientStub = sinon.createStubInstance(DefaultApi);
     csOpenApiClientStub.listComponentUsers.rejects(
-      new Error('Got error response from server'),
+      new Error('Got error response from server')
     );
     window.csOpenApiClient = csOpenApiClientStub;
 
     const component = await fixture(
-      html`<chromedash-admin-blink-page></chromedash-admin-blink-page>`,
+      html`<chromedash-admin-blink-page></chromedash-admin-blink-page>`
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashAdminBlinkPage);
@@ -27,7 +27,7 @@ describe('chromedash-admin-blink-page', () => {
     const toastMsgSpan = toastEl!.shadowRoot!.querySelector('span#msg');
     assert.include(
       toastMsgSpan!.innerHTML,
-      'Some errors occurred. Please refresh the page or try again later.',
+      'Some errors occurred. Please refresh the page or try again later.'
     );
   });
 
@@ -44,7 +44,7 @@ describe('chromedash-admin-blink-page', () => {
     window.csOpenApiClient = csOpenApiClientStub;
 
     const component = await fixture(
-      html`<chromedash-admin-blink-page></chromedash-admin-blink-page>`,
+      html`<chromedash-admin-blink-page></chromedash-admin-blink-page>`
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashAdminBlinkPage);

@@ -90,12 +90,12 @@ describe('chromedash-guide-editall-page', () => {
 
   it('renders with no data', async () => {
     const invalidFeaturePromise = Promise.reject(
-      new Error('Got error response from server'),
+      new Error('Got error response from server')
     );
     window.csClient.getFeature.withArgs(0).returns(invalidFeaturePromise);
 
     const component = await fixture(
-      html`<chromedash-guide-editall-page></chromedash-guide-editall-page>`,
+      html`<chromedash-guide-editall-page></chromedash-guide-editall-page>`
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashGuideEditallPage);
@@ -105,7 +105,7 @@ describe('chromedash-guide-editall-page', () => {
     const toastMsgSpan = toastEl?.shadowRoot?.querySelector('span#msg');
     assert.include(
       toastMsgSpan?.innerHTML,
-      'Some errors occurred. Please refresh the page or try again later.',
+      'Some errors occurred. Please refresh the page or try again later.'
     );
   });
 
@@ -115,7 +115,7 @@ describe('chromedash-guide-editall-page', () => {
 
     const component = await fixture(
       html`<chromedash-guide-editall-page .featureId=${featureId}>
-      </chromedash-guide-editall-page>`,
+      </chromedash-guide-editall-page>`
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashGuideEditallPage);
@@ -128,14 +128,14 @@ describe('chromedash-guide-editall-page', () => {
 
     // feature form, hidden token field, and submit/cancel buttons exist
     const featureForm = component.renderRoot.querySelector(
-      'form[name="feature_form"]',
+      'form[name="feature_form"]'
     );
     assert.exists(featureForm);
     assert.include(featureForm.innerHTML, '<input type="hidden" name="token">');
     assert.include(featureForm.innerHTML, '<section class="final_buttons">');
 
     const formTable = component.renderRoot.querySelector(
-      'chromedash-form-table',
+      'chromedash-form-table'
     );
     assert.exists(formTable);
 
@@ -150,7 +150,7 @@ describe('chromedash-guide-editall-page', () => {
 
     const component = await fixture(
       html`<chromedash-guide-editall-page .featureId=${featureId}>
-      </chromedash-guide-editall-page>`,
+      </chromedash-guide-editall-page>`
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashGuideEditallPage);
@@ -158,7 +158,7 @@ describe('chromedash-guide-editall-page', () => {
     // There are two shipping stage types, but 'tag_review_status' is not a stage-specific field,
     // so only one field should display and it should not display for the second stage.
     const measurementFields = component.renderRoot.querySelectorAll(
-      'sl-select[name="tag_review_status"]',
+      'sl-select[name="tag_review_status"]'
     );
     assert.exists(measurementFields);
     assert.isTrue(measurementFields.length === 1);

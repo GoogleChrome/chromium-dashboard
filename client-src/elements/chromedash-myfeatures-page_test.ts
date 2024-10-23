@@ -44,7 +44,7 @@ describe('chromedash-myfeatures-page', () => {
     };
     const component = await fixture(
       html`<chromedash-myfeatures-page .user=${user}>
-      </chromedash-myfeatures-page>`,
+      </chromedash-myfeatures-page>`
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashMyFeaturesPage);
@@ -92,7 +92,7 @@ describe('chromedash-myfeatures-page', () => {
     };
     const component = await fixture(
       html`<chromedash-myfeatures-page .user=${user}>
-      </chromedash-myfeatures-page>`,
+      </chromedash-myfeatures-page>`
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashMyFeaturesPage);

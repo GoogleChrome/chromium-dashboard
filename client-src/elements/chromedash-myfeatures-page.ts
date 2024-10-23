@@ -39,14 +39,14 @@ export class ChromedashMyFeaturesPage extends LitElement {
       })
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.',
+          'Some errors occurred. Please refresh the page or try again later.'
         );
       });
   }
 
   refetch() {
     const tables: ChromedashFeatureTable[] = Array.from(
-      this.renderRoot.querySelectorAll('chromedash-feature-table'),
+      this.renderRoot.querySelectorAll('chromedash-feature-table')
     );
     for (const table of tables) {
       table.refetch();
@@ -107,14 +107,14 @@ export class ChromedashMyFeaturesPage extends LitElement {
       'Features pending my approval',
       'pending-approval-by:me',
       'approvals',
-      'gate.requested_on',
+      'gate.requested_on'
     );
     const recentBox = this.renderBox(
       'Recently reviewed features',
       'is:recently-reviewed',
       'normal',
       '-gate.reviewed_on',
-      false,
+      false
     );
     return [adminNotice, pendingBox, recentBox];
   }

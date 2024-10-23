@@ -47,7 +47,7 @@ export async function openFinalizeExtensionDialog(
   featureId,
   stage,
   milestone,
-  dialogType,
+  dialogType
 ) {
   if (
     !dialogEl ||
@@ -129,7 +129,7 @@ class ChromedashOTPrereqsDialog extends LitElement {
       })
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.',
+          'Some errors occurred. Please refresh the page or try again later.'
         );
       });
   }
@@ -171,7 +171,7 @@ class ChromedashOTPrereqsDialog extends LitElement {
         size="small"
         @click=${() =>
           location.assign(
-            `/guide/stage/${this.featureId}/${this.stage.id}?updateExtension`,
+            `/guide/stage/${this.featureId}/${this.stage.id}?updateExtension`
           )}
         >Change milestone</sl-button
       >
@@ -198,7 +198,7 @@ class ChromedashOTPrereqsDialog extends LitElement {
         variant="primary"
         @click=${() =>
           location.assign(
-            `/ot_extension_request/${this.featureId}/${this.stage.id}`,
+            `/ot_extension_request/${this.featureId}/${this.stage.id}`
           )}
         size="small"
         >Proceed</sl-button
@@ -271,7 +271,7 @@ class ChromedashOTPrereqsDialog extends LitElement {
         variant="primary"
         @click=${() =>
           location.assign(
-            `/ot_creation_request/${this.featureId}/${this.stage.id}`,
+            `/ot_creation_request/${this.featureId}/${this.stage.id}`
           )}
         size="small"
         >Proceed</sl-button

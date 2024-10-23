@@ -24,7 +24,7 @@ export class ChromedashReportSpecMentorsPage extends LitElement {
     task: async ([updatedAfter], {signal}) => {
       const mentors = await this._client.listSpecMentors(
         {after: updatedAfter},
-        {signal},
+        {signal}
       );
       mentors.sort((a, b) => a.email.localeCompare(b.email));
       return mentors;
@@ -63,7 +63,7 @@ export class ChromedashReportSpecMentorsPage extends LitElement {
           detail: {after: this._updatedAfter},
           bubbles: true,
           composed: true,
-        }),
+        })
       );
     }
   }
@@ -90,7 +90,7 @@ export class ChromedashReportSpecMentorsPage extends LitElement {
             mentor =>
               html`<chromedash-report-spec-mentor
                 .mentor=${mentor}
-              ></chromedash-report-spec-mentor>`,
+              ></chromedash-report-spec-mentor>`
           ),
         error: e => {
           console.error(e);

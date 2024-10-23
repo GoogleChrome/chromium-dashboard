@@ -9,7 +9,7 @@ let currentFeatureId;
 export async function openAddStageDialog(
   featureId,
   featureType,
-  onSubmitCustomHandler?,
+  onSubmitCustomHandler?
 ) {
   if (
     !addStageDialogEl ||

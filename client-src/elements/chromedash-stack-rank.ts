@@ -303,7 +303,7 @@ class ChromedashStackRank extends LitElement {
               </a>
             </div>
           </li>
-        `,
+        `
       )}
     `;
   }
@@ -315,7 +315,7 @@ class ChromedashStackRank extends LitElement {
           <sl-skeleton effect="sheen"></sl-skeleton>
           <sl-skeleton effect="sheen"></sl-skeleton>
         </li>
-      `,
+      `
     )}`;
   }
 

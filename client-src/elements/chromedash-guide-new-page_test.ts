@@ -19,7 +19,7 @@ describe('chromedash-guide-new-page', () => {
     const userEmail = 'user@gmail.com';
     const component = await fixture(
       html`<chromedash-guide-new-page .userEmail=${userEmail}>
-      </chromedash-guide-new-page>`,
+      </chromedash-guide-new-page>`
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashGuideNewPage);
@@ -29,12 +29,12 @@ describe('chromedash-guide-new-page', () => {
     // Process and UI feedback link is clickable
     assert.include(
       subheaderDiv.innerHTML,
-      'href="https://github.com/GoogleChrome/chromium-dashboard/issues/new?labels=Feedback&amp;template=process-and-guide-ux-feedback.md"',
+      'href="https://github.com/GoogleChrome/chromium-dashboard/issues/new?labels=Feedback&amp;template=process-and-guide-ux-feedback.md"'
     );
 
     // overview form exists and is with action path
     const overviewForm = component.renderRoot.querySelector(
-      'form[name="overview_form"]',
+      'form[name="overview_form"]'
     )!;
     assert.include(overviewForm.outerHTML, 'action="/guide/new"');
 
@@ -43,19 +43,19 @@ describe('chromedash-guide-new-page', () => {
 
     // feature type chromedash-form-field exists and is with four options
     const featureTypeFormField = component.renderRoot.querySelector(
-      'chromedash-form-field[name="feature_type_radio_group"]',
+      'chromedash-form-field[name="feature_type_radio_group"]'
     )!;
     assert.include(featureTypeFormField.outerHTML, 'New or changed feature');
     assert.include(featureTypeFormField.outerHTML, 'Chromium catches up');
     assert.include(
       featureTypeFormField.outerHTML,
-      'No developer-visible change',
+      'No developer-visible change'
     );
     assert.include(featureTypeFormField.outerHTML, 'Feature removal');
 
     // submit button exists
     const submitButton = component.renderRoot.querySelector(
-      'input[type="submit"]',
+      'input[type="submit"]'
     );
     assert.exists(submitButton);
   });

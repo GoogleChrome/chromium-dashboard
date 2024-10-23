@@ -8,7 +8,7 @@ let searchHelpDialogEl;
 export async function openSearchHelpDialog() {
   if (!searchHelpDialogEl) {
     searchHelpDialogEl = document.createElement(
-      'chromedash-search-help-dialog',
+      'chromedash-search-help-dialog'
     );
     document.body.appendChild(searchHelpDialogEl);
     await searchHelpDialogEl.updateComplete;
@@ -66,25 +66,25 @@ export class ChromedashSearchHelpDialog extends LitElement {
         <table class="data-table">
           ${this.renderExampleRow(
             ['memory', 'memory pool', 'memory -pool'],
-            'Features that include or exclude words in any field.',
+            'Features that include or exclude words in any field.'
           )}
           ${this.renderExampleRow(
             [
               'browsers.chrome.desktop=123',
               'browsers.chrome.desktop=current_stable+1',
             ],
-            'Features shipping in the specified milestone.',
+            'Features shipping in the specified milestone.'
           )}
           ${this.renderExampleRow(
             [
               'browsers.chrome.desktop=120..122',
               'browsers.chrome.desktop=current_stable-1..current_stable+1',
             ],
-            'Features shipping in a milestone range.',
+            'Features shipping in a milestone range.'
           )}
           ${this.renderExampleRow(
             ['owner:user@example.com'],
-            'Features with the specified owner.',
+            'Features with the specified owner.'
           )}
           ${this.renderExampleRow(
             [
@@ -92,7 +92,7 @@ export class ChromedashSearchHelpDialog extends LitElement {
               'created.when<now-8w',
               'updated.when=2023-01-01..2023-12-31',
             ],
-            'Features created or modified before or after a date.',
+            'Features created or modified before or after a date.'
           )}
           ${this.renderExampleRow(
             [
@@ -100,15 +100,15 @@ export class ChromedashSearchHelpDialog extends LitElement {
               'feature_type!="Feature deprecation"',
               '-feature_type="Feature deprecation"',
             ],
-            'Features of a specific type or excluding a type.',
+            'Features of a specific type or excluding a type.'
           )}
           ${this.renderExampleRow(
             ['category=CSS,DOM'],
-            'Features that have a value in a comma-separated list.',
+            'Features that have a value in a comma-separated list.'
           )}
           ${this.renderExampleRow(
             ['category=CSS OR category=DOM'],
-            'Combine two query clauses with a logical-OR.',
+            'Combine two query clauses with a logical-OR.'
           )}
         </table>
       </section>
@@ -184,7 +184,7 @@ export class ChromedashSearchHelpDialog extends LitElement {
   renderFieldRow(queryField: QueryField) {
     if (queryField.choices) {
       const choiceItems = Object.values(queryField.choices).map(
-        c => html` <div>${queryField.name}="${c[1]}"</div> `,
+        c => html` <div>${queryField.name}="${c[1]}"</div> `
       );
       return html`
         <tr>

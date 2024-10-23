@@ -79,7 +79,7 @@ export function formatFeatureForEdit(feature: Feature): FormattedFeature {
     ...feature,
     category: feature.category_int,
     enterprise_feature_categories: Array.from(
-      new Set(feature.enterprise_feature_categories || []),
+      new Set(feature.enterprise_feature_categories || [])
     ).map(x => parseInt(x).toString()),
     feature_type: feature.feature_type_int,
     intent_stage: feature.intent_stage_int,

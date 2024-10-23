@@ -36,7 +36,7 @@ describe('chromedash-typeahead', () => {
     assert.exists(component);
     assert.instanceOf(component, ChromedashTypeahead);
     const dropdown = component.renderRoot.querySelector(
-      'chromedash-typeahead-dropdown',
+      'chromedash-typeahead-dropdown'
     );
     assert.instanceOf(dropdown, ChromedashTypeaheadDropdown);
 

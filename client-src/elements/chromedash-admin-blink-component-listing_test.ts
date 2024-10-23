@@ -24,7 +24,7 @@ describe('chromedash-admin-blink-component-listing', () => {
         .index=${0}
         .usersMap=${testUsersMap}
         ?editing=${false}
-      ></chromedash-admin-blink-component-listing>`,
+      ></chromedash-admin-blink-component-listing>`
     );
     assert.exists(element);
     assert.instanceOf(element, ChromedashAdminBlinkComponentListing);
@@ -41,7 +41,7 @@ describe('chromedash-admin-blink-component-listing', () => {
           .index=${0}
           .usersMap=${testUsersMap}
           ?editing=${true}
-        ></chromedash-admin-blink-component-listing>`,
+        ></chromedash-admin-blink-component-listing>`
       );
     });
     it('calls addUser when Add button is clicked', async () => {
@@ -65,7 +65,7 @@ describe('chromedash-admin-blink-component-listing', () => {
 
       expect(removeUserFn).to.have.callCount(0);
       const removeBtn = element.shadowRoot.querySelector(
-        '.remove_owner_button',
+        '.remove_owner_button'
       );
       removeBtn.click();
       expect(removeUserFn).to.have.callCount(1);
@@ -97,7 +97,7 @@ describe('chromedash-admin-blink-component-listing', () => {
           ?editing=${true}
           @adminRemoveComponentUser=${eventListeners.remove}
           @adminAddComponentUser=${eventListeners.add}
-        ></chromedash-admin-blink-component-listing>`,
+        ></chromedash-admin-blink-component-listing>`
       );
     });
     afterEach(async () => {
@@ -162,7 +162,7 @@ describe('chromedash-admin-blink-component-listing', () => {
           ?editing=${true}
           @adminRemoveComponentUser=${eventListeners.remove}
           @adminAddComponentUser=${eventListeners.add}
-        ></chromedash-admin-blink-component-listing>`,
+        ></chromedash-admin-blink-component-listing>`
       );
     });
     afterEach(async () => {
@@ -203,7 +203,7 @@ describe('chromedash-admin-blink-component-listing', () => {
         expect(alertStub).to.have.callCount(0);
         sandbox.assert.callCount(eventListeners.add, 0);
         sandbox.assert.callCount(eventListeners.remove, 1);
-      },
+      }
     );
   });
 });

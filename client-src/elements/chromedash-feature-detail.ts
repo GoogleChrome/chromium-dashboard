@@ -243,7 +243,7 @@ class ChromedashFeatureDetail extends LitElement {
     let extensionStage;
     for (const stage of this.feature.stages) {
       const foundStage = stage.extensions.find(
-        s => s.id === extensionGate.stage_id,
+        s => s.id === extensionGate.stage_id
       );
       if (foundStage) {
         extensionStage = foundStage;
@@ -258,7 +258,7 @@ class ChromedashFeatureDetail extends LitElement {
       this.feature.id,
       extensionStage,
       extensionStage.desktop_last,
-      dialogTypes.FINALIZE_EXTENSION,
+      dialogTypes.FINALIZE_EXTENSION
     );
   }
 
@@ -408,7 +408,7 @@ class ChromedashFeatureDetail extends LitElement {
 
   stageHasAnyFilledFields(fields, feStage) {
     return fields.some(fieldDef =>
-      hasFieldValue(fieldDef[0], feStage, this.feature),
+      hasFieldValue(fieldDef[0], feStage, this.feature)
     );
   }
 
@@ -425,7 +425,7 @@ class ChromedashFeatureDetail extends LitElement {
             <h3>Trial extension ${i !== 0 ? i + 1 : nothing}</h3>
             <br />
             ${fields.map(fieldDef =>
-              this.renderField(fieldDef, extensionStage),
+              this.renderField(fieldDef, extensionStage)
             )}
           </div>
         `);
@@ -455,7 +455,7 @@ class ChromedashFeatureDetail extends LitElement {
     content,
     isActive = false,
     defaultOpen = false,
-    isStage = true,
+    isStage = true
   ) {
     if (isActive) {
       summary += ' - Active';
@@ -482,7 +482,7 @@ class ChromedashFeatureDetail extends LitElement {
     const fieldNames = flattenSections(
       this.feature.is_enterprise_feature
         ? FLAT_ENTERPRISE_METADATA_FIELDS
-        : FLAT_METADATA_FIELDS,
+        : FLAT_METADATA_FIELDS
     );
     if (fieldNames === undefined || fieldNames.length === 0) {
       return nothing;
@@ -506,7 +506,7 @@ class ChromedashFeatureDetail extends LitElement {
       content,
       /* isActive=*/ false,
       /* defaultOpen=*/ this.feature.is_enterprise_feature,
-      /* isStage=*/ false,
+      /* isStage=*/ false
     );
   }
 
@@ -527,7 +527,7 @@ class ChromedashFeatureDetail extends LitElement {
     gatesForStage.sort(
       (g1, g2) =>
         GATE_TEAM_ORDER.indexOf(g1.team_name) -
-        GATE_TEAM_ORDER.indexOf(g2.team_name),
+        GATE_TEAM_ORDER.indexOf(g2.team_name)
     );
     return gatesForStage.map(g => this.renderGateChip(feStage, g));
   }
@@ -535,7 +535,7 @@ class ChromedashFeatureDetail extends LitElement {
   hasStageActions(stage, feStage) {
     // See if there is an API owners gate where actions are displayed.
     const hasOwnersGate = this.gates.some(
-      g => g.team_name === 'API Owners' && g.stage_id === feStage.id,
+      g => g.team_name === 'API Owners' && g.stage_id === feStage.id
     );
     // If there are actions to be displayed for this stage, and
     // these actions are not displayed at the gate-level, return true.
@@ -567,7 +567,7 @@ class ChromedashFeatureDetail extends LitElement {
           stage,
           feStage,
           gatesForStage,
-          url,
+          url
         );
         return;
       } else {
@@ -671,7 +671,7 @@ class ChromedashFeatureDetail extends LitElement {
           this.feature.id,
           extensionStage,
           extensionStage.desktop_last,
-          dialogTypes.FINALIZE_EXTENSION,
+          dialogTypes.FINALIZE_EXTENSION
         )}
       >Finalize Extension</sl-button
     >`;
@@ -695,7 +695,7 @@ class ChromedashFeatureDetail extends LitElement {
       (!this.user.email.endsWith('@chromium.org') &&
         !this.user.email.endsWith('@google.com'));
     const isNotOriginTrialStage = !STAGE_TYPES_ORIGIN_TRIAL.has(
-      feStage.stage_type,
+      feStage.stage_type
     );
     const originTrialNotCreatedYet = !feStage.origin_trial_id;
     if (
@@ -709,7 +709,7 @@ class ChromedashFeatureDetail extends LitElement {
     // Add button to finalize an extension if the extension has been approved.
     const extensionReadyForFinalize = feStage.extensions.find(e => {
       const extensionGate: GateDict | undefined = this.gates.find(
-        g => g.stage_id === e.id,
+        g => g.stage_id === e.id
       );
       return (
         e.ot_action_requested &&

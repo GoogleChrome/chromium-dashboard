@@ -69,7 +69,7 @@ export class ChromedashActivityPage extends LitElement {
       })
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.',
+          'Some errors occurred. Please refresh the page or try again later.'
         );
       });
   }
@@ -84,7 +84,7 @@ export class ChromedashActivityPage extends LitElement {
       })
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.',
+          'Some errors occurred. Please refresh the page or try again later.'
         );
       });
   }
@@ -108,7 +108,7 @@ export class ChromedashActivityPage extends LitElement {
         })
         .catch(() => {
           showToastMessage(
-            'Some errors occurred. Please refresh the page or try again later.',
+            'Some errors occurred. Please refresh the page or try again later.'
           );
         });
     }

@@ -35,7 +35,7 @@ const actTwo = {
 describe('chromedash-activity', () => {
   it('renders with no data', async () => {
     const component = await fixture(
-      html`<chromedash-activity></chromedash-activity>`,
+      html`<chromedash-activity></chromedash-activity>`
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashActivity);
@@ -51,7 +51,7 @@ describe('chromedash-activity', () => {
         .featureId=${featureOne}
         .activity=${actOne}
       >
-      </chromedash-activity>`,
+      </chromedash-activity>`
     );
     const commentDiv = component.shadowRoot!.querySelector('.comment');
     assert.include(commentDiv!.innerHTML, actOne.author);
@@ -70,7 +70,7 @@ describe('chromedash-activity', () => {
         .featureId=${featureOne}
         .activity=${actOne}
       >
-      </chromedash-activity>`,
+      </chromedash-activity>`
     );
     const commentDiv = component.shadowRoot!.querySelector('.comment');
     assert.include(commentDiv!.innerHTML, 'hey, nice feature');
@@ -95,7 +95,7 @@ describe('chromedash-activity', () => {
         .featureId=${featureOne}
         .activity=${deletedComment}
       >
-      </chromedash-activity>`,
+      </chromedash-activity>`
     );
     const commentDiv = component.shadowRoot!.querySelector('.comment');
     assert.include(commentDiv!.innerHTML, '[Deleted]');
@@ -123,7 +123,7 @@ describe('chromedash-activity', () => {
         .featureId=${featureOne}
         .activity=${doomedComment}
       >
-      </chromedash-activity>`,
+      </chromedash-activity>`
     )) as ChromedashActivity;
     const before = component.shadowRoot!.querySelector('.comment');
     assert.notInclude(before!.innerHTML, '[Deleted]');
@@ -155,7 +155,7 @@ describe('chromedash-activity', () => {
         .featureId=${featureOne}
         .activity=${blessedComment}
       >
-      </chromedash-activity>`,
+      </chromedash-activity>`
     )) as ChromedashActivity;
     const before = component.shadowRoot!.querySelector('.comment');
     assert.include(before!.innerHTML, '[Deleted]');
@@ -178,7 +178,7 @@ describe('chromedash-activity', () => {
         .featureId=${featureOne}
         .activity=${actOne}
       >
-      </chromedash-activity>`,
+      </chromedash-activity>`
     );
 
     const relativeDate =
@@ -194,12 +194,12 @@ describe('chromedash-activity', () => {
 describe('chromedash-activity-log', () => {
   it('renders with no data', async () => {
     const component = await fixture(
-      html`<chromedash-activity-log></chromedash-activity-log>`,
+      html`<chromedash-activity-log></chromedash-activity-log>`
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashActivityLog);
     assert.notExists(
-      component.shadowRoot!.querySelector('chromedash-activity'),
+      component.shadowRoot!.querySelector('chromedash-activity')
     );
   });
 
@@ -210,13 +210,13 @@ describe('chromedash-activity-log', () => {
         .featureId=${featureOne}
         .comments=${[actOne, actTwo]}
       >
-      </chromedash-activity-log>`,
+      </chromedash-activity-log>`
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashActivityLog);
     assert.lengthOf(
       component.shadowRoot!.querySelectorAll('chromedash-activity'),
-      2,
+      2
     );
   });
 });

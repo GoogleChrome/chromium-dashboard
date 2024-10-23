@@ -29,7 +29,7 @@ export class ExternalReviewer {
               description: 'Under Consideration',
               variant: 'neutral',
             },
-          },
+          }
         );
 
       case 'WebKit/standards-positions':
@@ -39,7 +39,7 @@ export class ExternalReviewer {
             'position: oppose': {description: 'Oppose', variant: 'danger'},
             'position: neutral': {description: 'Neutral', variant: 'neutral'},
             'position: support': {description: 'Support', variant: 'success'},
-          },
+          }
         );
       case 'w3ctag/design-reviews':
         return new ExternalReviewer(
@@ -91,7 +91,7 @@ export class ExternalReviewer {
               description: 'Withdrawn',
               variant: 'warning',
             },
-          },
+          }
         );
     }
     return undefined;

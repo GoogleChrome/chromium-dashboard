@@ -95,7 +95,7 @@ class ChromedashIntentPreviewPage extends LitElement {
             // Check if gate matches an extension stage.
             if (!this.stage) {
               const extensionStage = stage.extensions.find(
-                e => e.id === this.gate.stage_id,
+                e => e.id === this.gate.stage_id
               );
               if (extensionStage) {
                 this.stage = extensionStage;
@@ -105,7 +105,7 @@ class ChromedashIntentPreviewPage extends LitElement {
         } else if (!this.gateId) {
           // This is a "Ready for Developer Testing" intent if no gate is supplied (0).
           const devTrialStage = this.feature.stages.find(stage =>
-            STAGE_TYPES_DEV_TRIAL.has(stage.stage_type),
+            STAGE_TYPES_DEV_TRIAL.has(stage.stage_type)
           );
           if (devTrialStage) {
             this.stage = devTrialStage;
@@ -121,7 +121,7 @@ class ChromedashIntentPreviewPage extends LitElement {
         return window.csClient.getIntentBody(
           this.featureId,
           this.stage.id,
-          this.gateId,
+          this.gateId
         );
       })
       .then(intentResp => {
@@ -131,7 +131,7 @@ class ChromedashIntentPreviewPage extends LitElement {
       })
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.',
+          'Some errors occurred. Please refresh the page or try again later.'
         );
       });
   }
@@ -213,7 +213,7 @@ class ChromedashIntentPreviewPage extends LitElement {
                 this.feature.id,
                 this.stage.id,
                 this.feature.owner_emails,
-                this.gate?.id,
+                this.gate?.id
               )}"
           />
           <chromedash-intent-content

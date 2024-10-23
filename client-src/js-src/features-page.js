@@ -61,7 +61,7 @@ searchEl.addEventListener(
   debounce(e => {
     featureListEl.filter(e.target.value);
     chromeMetadataEl.selected = null;
-  }),
+  })
 );
 
 featureListEl.addEventListener('filtered', e => {

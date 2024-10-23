@@ -103,7 +103,7 @@ describe('chromedash-gantt', () => {
 
   it('renders with no data', async () => {
     const component = await fixture(
-      html`<chromedash-gantt></chromedash-gantt>`,
+      html`<chromedash-gantt></chromedash-gantt>`
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashGantt);
@@ -111,7 +111,7 @@ describe('chromedash-gantt', () => {
 
   it('renders with valid feature data', async () => {
     const component: ChromedashGantt = await fixture(
-      html` <chromedash-gantt .feature=${validFeature}></chromedash-gantt>`,
+      html` <chromedash-gantt .feature=${validFeature}></chromedash-gantt>`
     );
     assert.exists(component);
     await component.updateComplete;

@@ -120,7 +120,7 @@ export class ChromedashOTExtensionPage extends LitElement {
       // Origin trials  will end on the late stable date of (milestone + 2).
       const milestonePlusTwo = parseInt(milestone) + 2;
       const resp = await fetch(
-        `https://chromiumdash.appspot.com/fetch_milestone_schedule?mstone=${milestonePlusTwo}`,
+        `https://chromiumdash.appspot.com/fetch_milestone_schedule?mstone=${milestonePlusTwo}`
       );
       const respJson = await resp.json();
       // Keep a reference of milestone dates to avoid extra requests.
@@ -147,7 +147,7 @@ export class ChromedashOTExtensionPage extends LitElement {
       })
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.',
+          'Some errors occurred. Please refresh the page or try again later.'
         );
       });
 
@@ -171,7 +171,7 @@ export class ChromedashOTExtensionPage extends LitElement {
      * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
     await el.updateComplete;
     const submitButton: HTMLInputElement | null = this.renderRoot.querySelector(
-      'input[id=submit-button]',
+      'input[id=submit-button]'
     );
     submitButton?.form?.addEventListener('submit', event => {
       this.handleFormSubmit(event);
@@ -184,7 +184,7 @@ export class ChromedashOTExtensionPage extends LitElement {
     e.preventDefault();
     const featureSubmitBody = formatFeatureChanges(
       this.fieldValues,
-      this.featureId,
+      this.featureId
     );
     // We only need the single stage changes.
     const stageSubmitBody = featureSubmitBody.stages[0];
@@ -211,7 +211,7 @@ export class ChromedashOTExtensionPage extends LitElement {
       })
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.',
+          'Some errors occurred. Please refresh the page or try again later.'
         );
       });
   }
@@ -382,5 +382,5 @@ export class ChromedashOTExtensionPage extends LitElement {
 
 customElements.define(
   'chromedash-ot-extension-page',
-  ChromedashOTExtensionPage,
+  ChromedashOTExtensionPage
 );

@@ -30,7 +30,7 @@ export class ChromeStatusOpenApiClient extends Api {
           {pre: ChromeStatusMiddlewares.xsrfMiddleware},
           {post: ChromeStatusMiddlewares.xssiMiddleware},
         ],
-      }),
+      })
     );
   }
 }
@@ -64,7 +64,7 @@ export class ChromeStatusMiddlewares {
       const XSSIPrefix = ")]}'\n";
       if (!rawResponseText.startsWith(XSSIPrefix)) {
         throw new Error(
-          `Response does not start with XSSI prefix: ${XSSIPrefix}`,
+          `Response does not start with XSSI prefix: ${XSSIPrefix}`
         );
       }
       return new Response(rawResponseText.substring(XSSIPrefix.length), {

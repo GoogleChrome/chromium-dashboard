@@ -59,7 +59,7 @@ export class ChromedashSettingsPage extends LitElement {
       })
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.',
+          'Some errors occurred. Please refresh the page or try again later.'
         );
       });
   }
@@ -76,7 +76,7 @@ export class ChromedashSettingsPage extends LitElement {
       .catch(() => {
         showToastMessage('Unable to save the settings. Please try again.');
         handleSaveChangesResponse(
-          'Unable to save the settings. Please try again.',
+          'Unable to save the settings. Please try again.'
         );
       })
       .finally(() => {
