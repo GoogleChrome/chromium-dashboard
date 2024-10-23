@@ -131,7 +131,7 @@ describe('chromedash-roadmap-milestone-card', () => {
     el.currentDate = testDate;
     el.stableMilestone = 10;
 
-    assert.isFalse(el._isFeatureOutdated(null, 20));
+    assert.isFalse(el._isFeatureOutdated(undefined, 20));
     // False when a feature is not shipped within two milestones.
     assert.isFalse(el._isFeatureOutdated('2023-10-23 07:07:05.264715', 20));
     // False when a feature is accurate within four weeks.
@@ -157,7 +157,7 @@ describe('chromedash-roadmap-milestone-card', () => {
       );
     el.currentDate = testDate;
 
-    const oudated = el.shadowRoot!.querySelector('#oudated-icon');
+    const oudated = el.shadowRoot!.querySelector('#outdated-icon');
     assert.exists(oudated);
   });
 
@@ -175,7 +175,7 @@ describe('chromedash-roadmap-milestone-card', () => {
       );
     el.currentDate = testDate;
 
-    const oudated = el.shadowRoot!.querySelector('#oudated-icon');
+    const oudated = el.shadowRoot!.querySelector('#outdated-icon');
     assert.isNull(oudated);
   });
 
@@ -192,7 +192,7 @@ describe('chromedash-roadmap-milestone-card', () => {
       );
     el.currentDate = testDate;
 
-    const oudated = el.shadowRoot!.querySelector('#oudated-icon');
+    const oudated = el.shadowRoot!.querySelector('#outdated-icon');
     assert.isNull(oudated);
   });
 
@@ -210,7 +210,7 @@ describe('chromedash-roadmap-milestone-card', () => {
       );
     el.currentDate = testDate;
 
-    const oudated = el.shadowRoot!.querySelector('#oudated-icon');
+    const oudated = el.shadowRoot!.querySelector('#outdated-icon');
     assert.isNull(oudated);
   });
 });

@@ -242,11 +242,10 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
    * A feature is outdated if it is scheduled to ship in the next 2 milestones,
    * and its accurate_as_of date is at least 4 weeks ago.
    *
-   *  @param {string} accurateAsOf The accurate_as_of date in string.
-   *  @param {number} liveChromeVersion The Chrome milestone when a feature is live.
-   *  @return {boolean}
+   *  @param accurateAsOf The accurate_as_of date as an ISO string.
+   *  @param liveChromeVersion The Chrome milestone when a feature is live.
    */
-  _isFeatureOutdated(accurateAsOf, liveChromeVersion) {
+  _isFeatureOutdated(accurateAsOf: string | undefined, liveChromeVersion: number | undefined): boolean {
     if (this.stableMilestone === 0 || !liveChromeVersion) {
       return false;
     }
@@ -291,7 +290,7 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
             ? html`
                 <span
                   class="tooltip"
-                  id="oudated-icon"
+                  id="outdated-icon"
                   title="Feature outdated - last checked for overall accuracy more than four weeks ago"
                 >
                   <iron-icon icon="chromestatus:error" data-tooltip></iron-icon>
