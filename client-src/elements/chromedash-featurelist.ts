@@ -81,7 +81,7 @@ class ChromedashFeaturelist extends LitElement {
       // Case-insensitive match on literal string; escape characters that
       // have special meaning in regular expressions.
       searchStr.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&'),
-      'i'
+      'i',
     );
   }
 
@@ -176,7 +176,7 @@ class ChromedashFeaturelist extends LitElement {
     return this._filterProperty.bind(
       this,
       args[0],
-      this._getSearchStrRegExp(args[1])
+      this._getSearchStrRegExp(args[1]),
     );
   }
 
@@ -212,7 +212,7 @@ class ChromedashFeaturelist extends LitElement {
         pushOrReplaceState(
           {query: ''},
           document.title,
-          location.pathname + location.search
+          location.pathname + location.search,
         );
       } else {
         location.hash = '';
@@ -224,7 +224,7 @@ class ChromedashFeaturelist extends LitElement {
         pushOrReplaceState(
           {query: val},
           document.title,
-          '/features#' + encodeURIComponent(val)
+          '/features#' + encodeURIComponent(val),
         );
       }
 
@@ -232,7 +232,7 @@ class ChromedashFeaturelist extends LitElement {
       if (blinkComponent) {
         const componentName = blinkComponent[1].trim();
         this.filtered = this.features.filter(feature =>
-          feature.browsers.chrome.blink_components?.includes(componentName)
+          feature.browsers.chrome.blink_components?.includes(componentName),
         );
         this._fireEvent('filtered', {count: this.filtered.length});
         return;
@@ -380,7 +380,7 @@ class ChromedashFeaturelist extends LitElement {
               ?hidden="${this._computeSectionHidden(
                 item.feature,
                 this.features,
-                this.filtered
+                this.filtered,
               )}"
               class="section-marker"
             >
@@ -398,7 +398,7 @@ class ChromedashFeaturelist extends LitElement {
               ?signedIn="${this.signedInUser != ''}"
             ></chromedash-feature>
           </div>
-        `
+        `,
       )}
       ${numOverLimit > 0
         ? html`<p>

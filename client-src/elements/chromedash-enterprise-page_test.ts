@@ -26,11 +26,11 @@ describe('chromedash-enterprise-page', () => {
 
   it('render with no data', async () => {
     const invalidFeaturePromise = Promise.reject(
-      new Error('Got error response from server')
+      new Error('Got error response from server'),
     );
     searchFeaturesStub.returns(invalidFeaturePromise);
     const component = await fixture(
-      html`<chromedash-enterprise-page></chromedash-enterprise-page>`
+      html`<chromedash-enterprise-page></chromedash-enterprise-page>`,
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashEnterprisePage);
@@ -40,7 +40,7 @@ describe('chromedash-enterprise-page', () => {
     const toastMsgSpan = toastEl!.shadowRoot!.querySelector('span#msg');
     assert.include(
       toastMsgSpan!.innerHTML,
-      'Some errors occurred. Please refresh the page or try again later.'
+      'Some errors occurred. Please refresh the page or try again later.',
     );
   });
 
@@ -64,14 +64,14 @@ describe('chromedash-enterprise-page', () => {
     searchFeaturesStub.returns(validFeaturePromise);
     const component = await fixture(
       html`<chromedash-enterprise-page .user=${user}>
-      </chromedash-enterprise-page>`
+      </chromedash-enterprise-page>`,
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashEnterprisePage);
 
     // feature table exists
     const featureTableEl = component.shadowRoot!.querySelector(
-      'chromedash-feature-table'
+      'chromedash-feature-table',
     );
     assert.exists(featureTableEl);
 
@@ -79,7 +79,7 @@ describe('chromedash-enterprise-page', () => {
     const titleEl = component.shadowRoot!.querySelector('h2');
     assert.include(
       titleEl!.innerHTML,
-      'Enterprise features and breaking changes'
+      'Enterprise features and breaking changes',
     );
   });
 });

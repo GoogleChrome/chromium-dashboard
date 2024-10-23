@@ -74,7 +74,7 @@ export class ChromedashGuideNewPage extends LitElement {
 
     await el.updateComplete;
     const hiddenTokenField = this.renderRoot.querySelector(
-      'input[name=token]'
+      'input[name=token]',
     ) as HTMLInputElement;
     hiddenTokenField.form?.addEventListener('submit', event => {
       this.handleFormSubmit(event, hiddenTokenField);

@@ -23,7 +23,7 @@ function convertQueriableFieldToVocabularyItems(qf): Candidate[] {
 }
 
 const VOCABULARY: Candidate[] = QUERIABLE_FIELDS.map(
-  convertQueriableFieldToVocabularyItems
+  convertQueriableFieldToVocabularyItems,
 ).flat();
 
 @customElement('chromedash-feature-filter')
@@ -57,8 +57,8 @@ class ChromedashFeatureFilter extends LitElement {
       .composedPath()
       .some(el =>
         ['INPUT', 'TEXTAREA', 'SL-POPUP', 'SL-DIALOG'].includes(
-          (el as HTMLElement).tagName
-        )
+          (el as HTMLElement).tagName,
+        ),
       );
     if (e.key === '/' && !inInputContext) {
       e.preventDefault();

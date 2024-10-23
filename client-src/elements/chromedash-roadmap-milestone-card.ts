@@ -330,11 +330,11 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
                     ${this.channel?.features[shippingType].map(
                       f => html`
                         ${this._cardFeatureItemTemplate(f, shippingType)}
-                      `
+                      `,
                     )}
                   </ul>
                 `
-              : nothing
+              : nothing,
           )}
           </div>`
           : html`

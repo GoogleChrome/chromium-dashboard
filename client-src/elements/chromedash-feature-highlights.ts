@@ -71,7 +71,7 @@ export class ChromedashFeatureHighlights extends LitElement {
               <!-- prettier-ignore -->
               <p class="preformatted">${autolink(
                 this.feature.summary,
-                this.featureLinks
+                this.featureLinks,
               )}</p>
             </section>
           `
@@ -87,7 +87,7 @@ export class ChromedashFeatureHighlights extends LitElement {
               <!-- prettier-ignore -->
               <p class="preformatted">${autolink(
                 this.feature.summary,
-                this.featureLinks
+                this.featureLinks,
               )}</p>
             </section>
           `
@@ -99,7 +99,7 @@ export class ChromedashFeatureHighlights extends LitElement {
               <!-- prettier-ignore -->
               <p class="preformatted">${autolink(
                 this.feature.motivation,
-                this.featureLinks
+                this.featureLinks,
               )}</p>
             </section>
           `
@@ -112,7 +112,7 @@ export class ChromedashFeatureHighlights extends LitElement {
                 ${this.feature.resources.samples.map(
                   sampleLink => html`
                     <li>${enhanceUrl(sampleLink, this.featureLinks)}</li>
-                  `
+                  `,
                 )}
               </ul>
             </section>
@@ -126,7 +126,7 @@ export class ChromedashFeatureHighlights extends LitElement {
                 ${this.feature.resources.docs.map(
                   docLink => html`
                     <li>${enhanceUrl(docLink, this.featureLinks)}</li>
-                  `
+                  `,
                 )}
               </ul>
             </section>
@@ -147,7 +147,7 @@ export class ChromedashFeatureHighlights extends LitElement {
               <section id="specification">
                 <h3>Explainer(s)</h3>
                 ${this.feature.explainer_links?.map(
-                  link => html`<p>${enhanceUrl(link, this.featureLinks)}</p>`
+                  link => html`<p>${enhanceUrl(link, this.featureLinks)}</p>`,
                 )}
               </section>
             `
@@ -169,7 +169,7 @@ export class ChromedashFeatureHighlights extends LitElement {
                 ${this.feature.browsers.chrome.owners.map(
                   owner => html`
                     <li><a href="mailto:${owner}">${owner}</a></li>
-                  `
+                  `,
                 )}
               </ul>
             </section>
@@ -194,7 +194,7 @@ export class ChromedashFeatureHighlights extends LitElement {
                       rel="noopener"
                       >${c}</a
                     >
-                  `
+                  `,
                 )}
               </p>
             `
@@ -268,7 +268,7 @@ export class ChromedashFeatureHighlights extends LitElement {
                 ${this.feature.browsers.chrome.owners.map(
                   owner => html`
                     <li><a href="mailto:${owner}">${owner}</a></li>
-                  `
+                  `,
                 )}
               </ul>
             </section>
@@ -291,7 +291,7 @@ export class ChromedashFeatureHighlights extends LitElement {
               <!-- prettier-ignore -->
               <p class="preformatted">${autolink(
                 this.feature.comments,
-                this.featureLinks
+                this.featureLinks,
               )}</p>
             </section>
           `
@@ -304,7 +304,7 @@ export class ChromedashFeatureHighlights extends LitElement {
                 tag => html`
                   <a href="/features#tags:${tag}">${tag}</a
                   ><span class="conditional-comma">, </span>
-                `
+                `,
               )}
             </section>
           `

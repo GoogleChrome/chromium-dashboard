@@ -69,7 +69,7 @@ export class ChromedashStackRankPage extends LitElement {
         }
         const viewList = props.filter(item => {
           return !['ERROR', 'PageVisits', 'PageDestruction'].includes(
-            item.property_name
+            item.property_name,
           );
         });
         this.tempList = viewList.slice(0, 30);
@@ -80,7 +80,7 @@ export class ChromedashStackRankPage extends LitElement {
       })
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.'
+          'Some errors occurred. Please refresh the page or try again later.',
         );
       });
   }
@@ -88,7 +88,7 @@ export class ChromedashStackRankPage extends LitElement {
   handleSearchBarChange(e) {
     const inputValue = e.currentTarget.value;
     const property = this.viewList.find(
-      item => item.property_name === inputValue
+      item => item.property_name === inputValue,
     );
     window.location.href = `/metrics/${this.type}/timeline/${this.view}/${property.bucket_id}`;
   }
@@ -119,7 +119,7 @@ export class ChromedashStackRankPage extends LitElement {
               value="${item.property_name}"
               dataset-debug-bucket-id="${item.bucket_id}"
             ></option>
-          `
+          `,
         )}
       </datalist>
     `;

@@ -23,7 +23,7 @@ describe('chromedash-feature-pagination', () => {
 
   beforeEach(async () => {
     el = await fixture<ChromedashFeaturePagination>(
-      '<chromedash-feature-pagination></chromedash-feature-pagination>'
+      '<chromedash-feature-pagination></chromedash-feature-pagination>',
     );
     el.totalCount = 40;
     el.start = 20;

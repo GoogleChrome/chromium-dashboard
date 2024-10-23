@@ -23,7 +23,7 @@ export class ChromedashReportSpecMentor extends LitElement {
               <chromedash-feature-row
                 .feature="${feature}"
               ></chromedash-feature-row>
-            `
+            `,
           )}
         </table>
       </sl-details>

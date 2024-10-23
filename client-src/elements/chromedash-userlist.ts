@@ -71,10 +71,10 @@ class ChromedashUserlist extends LitElement {
   _onAdminToggle() {
     const formEl = this.renderRoot.querySelector('form');
     const adminCheckbox = formEl?.querySelector(
-      'input[name="is_admin"]'
+      'input[name="is_admin"]',
     ) as HTMLInputElement;
     const siteEditorCheckbox = formEl?.querySelector(
-      'input[name="is_site_editor"]'
+      'input[name="is_site_editor"]',
     ) as HTMLInputElement;
     // Admins will always be site editors, so if the admin box is checked,
     // the site editor box is also checked and disabled.
@@ -93,13 +93,13 @@ class ChromedashUserlist extends LitElement {
 
     if (formEl.checkValidity()) {
       const emailInput = formEl.querySelector(
-        'input[name="email"]'
+        'input[name="email"]',
       ) as HTMLInputElement;
       const adminCheckbox = formEl.querySelector(
-        'input[name="is_admin"]'
+        'input[name="is_admin"]',
       ) as HTMLInputElement;
       const siteEditorCheckbox = formEl.querySelector(
-        'input[name="is_site_editor"]'
+        'input[name="is_site_editor"]',
       ) as HTMLInputElement;
       const email = emailInput?.value;
       const isAdmin = adminCheckbox?.checked;
@@ -112,7 +112,7 @@ class ChromedashUserlist extends LitElement {
           formEl.reset();
           (
             formEl.querySelector(
-              'input[name="is_site_editor"]'
+              'input[name="is_site_editor"]',
             ) as HTMLInputElement
           ).disabled = false;
         }
@@ -182,7 +182,7 @@ class ChromedashUserlist extends LitElement {
                 : nothing}
               <span>${user.email}</span>
             </li>
-          `
+          `,
         )}
       </ul>
     `;

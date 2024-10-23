@@ -6,7 +6,7 @@ import {slotAssignedElements} from './utils';
 describe('chromedash-form-table', () => {
   it('renders with no data', async () => {
     const component = await fixture(
-      html`<chromedash-form-table></chromedash-form-table>`
+      html`<chromedash-form-table></chromedash-form-table>`,
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashFormTable);
@@ -19,7 +19,7 @@ describe('chromedash-form-table', () => {
       html` <chromedash-form-table>
         <span>Row 1</span>
         <span>Row 2</span>
-      </chromedash-form-table>`
+      </chromedash-form-table>`,
     );
     assert.exists(component);
     await component.updateComplete;

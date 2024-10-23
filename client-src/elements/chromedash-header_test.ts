@@ -21,11 +21,11 @@ describe('chromedash-header', () => {
 
   it('invalid server response', async () => {
     const invalidResponse = Promise.reject(
-      new Error('Got error response from server')
+      new Error('Got error response from server'),
     );
     window.csClient.getPermissions.returns(invalidResponse);
     const component = await fixture(
-      html`<chromedash-header appTitle="Fake Title"></chromedash-header>`
+      html`<chromedash-header appTitle="Fake Title"></chromedash-header>`,
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashHeader);
@@ -35,14 +35,14 @@ describe('chromedash-header', () => {
     const toastMsgSpan = toastEl?.shadowRoot?.querySelector('span#msg');
     assert.include(
       toastMsgSpan?.innerHTML,
-      'Some errors occurred. Please refresh the page or try again later.'
+      'Some errors occurred. Please refresh the page or try again later.',
     );
   });
 
   it('user is not signed in', async () => {
     window.csClient.getPermissions.returns(Promise.resolve(null));
     const component = await fixture(
-      html`<chromedash-header appTitle="Fake Title"></chromedash-header>`
+      html`<chromedash-header appTitle="Fake Title"></chromedash-header>`,
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashHeader);
@@ -70,10 +70,10 @@ describe('chromedash-header', () => {
         can_edit: true,
         is_admin: false,
         email: 'example@google.com',
-      })
+      }),
     );
     const component = await fixture(
-      html`<chromedash-header appTitle="Fake Title"></chromedash-header>`
+      html`<chromedash-header appTitle="Fake Title"></chromedash-header>`,
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashHeader);

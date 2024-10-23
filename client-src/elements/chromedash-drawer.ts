@@ -135,7 +135,7 @@ export class ChromedashDrawer extends LitElement {
       })
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.'
+          'Some errors occurred. Please refresh the page or try again later.',
         );
       })
       .finally(() => {
@@ -166,7 +166,7 @@ export class ChromedashDrawer extends LitElement {
     signInTestingButton.setAttribute('data-testid', 'dev-mode-sign-in-button');
     signInTestingButton.setAttribute(
       'style',
-      'position:fixed; right:0; z-index:1000; background: lightblue; border: 1px solid blue;'
+      'position:fixed; right:0; z-index:1000; background: lightblue; border: 1px solid blue;',
     );
 
     signInTestingButton.addEventListener('click', () => {
@@ -192,7 +192,7 @@ export class ChromedashDrawer extends LitElement {
     if (signInButtonContainer) {
       signInButtonContainer.insertAdjacentElement(
         'afterbegin',
-        signInTestingButton
+        signInTestingButton,
       ); // for SPA
     }
   }
@@ -236,7 +236,7 @@ export class ChromedashDrawer extends LitElement {
 
   toggleDrawerActions() {
     const drawer = this.shadowRoot!.querySelector(
-      '.drawer-placement-start'
+      '.drawer-placement-start',
     ) as SlDrawer;
     if (drawer.open) {
       drawer.hide();
@@ -264,7 +264,7 @@ export class ChromedashDrawer extends LitElement {
     const year = new Date().getFullYear();
     const shippingThisYear = this.renderNavItem(
       '/features?q=shipping_year=' + year,
-      'Shipping ' + year
+      'Shipping ' + year,
     );
 
     return html`

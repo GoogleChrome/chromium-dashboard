@@ -194,7 +194,7 @@ export class ChromedashHeader extends LitElement {
       })
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.'
+          'Some errors occurred. Please refresh the page or try again later.',
         );
       })
       .finally(() => {
@@ -231,7 +231,7 @@ export class ChromedashHeader extends LitElement {
     signInTestingButton.setAttribute('data-testid', 'dev-mode-sign-in-button');
     signInTestingButton.setAttribute(
       'style',
-      'margin-right: 300px; z-index:1000; background: lightblue; border: 1px solid blue;'
+      'margin-right: 300px; z-index:1000; background: lightblue; border: 1px solid blue;',
     );
 
     signInTestingButton.addEventListener('click', () => {
@@ -257,7 +257,7 @@ export class ChromedashHeader extends LitElement {
     if (signInButtonContainer) {
       signInButtonContainer.insertAdjacentElement(
         'afterbegin',
-        signInTestingButton
+        signInTestingButton,
       ); // for SPA
     } else {
       this.insertAdjacentElement('afterbegin', signInTestingButton); // for MPA

@@ -160,7 +160,7 @@ export class ChromedashRoadmap extends LitElement {
       })
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.'
+          'Some errors occurred. Please refresh the page or try again later.',
         );
       });
   }
@@ -170,7 +170,7 @@ export class ChromedashRoadmap extends LitElement {
       ? GAPPED_CHANNEL_TYPES
       : DEFAULT_CHANNEL_TYPES;
     const promises = this.shownChannelNames.map(channelType =>
-      window.csClient.getFeaturesInMilestone(channels[channelType].version)
+      window.csClient.getFeaturesInMilestone(channels[channelType].version),
     );
     Promise.all(promises).then(allRes => {
       allRes.map((res, idx) => {
@@ -195,16 +195,16 @@ export class ChromedashRoadmap extends LitElement {
       : nextVersion + fetchInAdvance + 1;
     const fetchEnd = nextVersion + fetchInAdvance + 1;
     const versions = [...Array(fetchEnd - fetchStart + 1).keys()].map(
-      x => x + fetchStart
+      x => x + fetchStart,
     );
 
     // Promises to get the info and features of specified milestone versions
     const milestonePromise = window.csClient.getSpecifiedChannels(
       fetchStart,
-      fetchEnd
+      fetchEnd,
     );
     const featurePromises = versions.map(ver =>
-      window.csClient.getFeaturesInMilestone(ver)
+      window.csClient.getFeaturesInMilestone(ver),
     );
 
     this.futureMilestoneArray = [...this.futureMilestoneArray, ...versions];
@@ -228,14 +228,14 @@ export class ChromedashRoadmap extends LitElement {
             this.milestoneInfo = Object.assign(
               {},
               this.milestoneInfo,
-              newMilestonesInfo
+              newMilestonesInfo,
             );
           });
         });
       })
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.'
+          'Some errors occurred. Please refresh the page or try again later.',
         );
       });
   }
@@ -248,7 +248,7 @@ export class ChromedashRoadmap extends LitElement {
     // Promises to get the info and features of specified milestone versions
     const milestonePromise = window.csClient.getSpecifiedChannels(
       versionToFetch,
-      versionToFetch
+      versionToFetch,
     );
     const featurePromise =
       window.csClient.getFeaturesInMilestone(versionToFetch);
@@ -275,12 +275,12 @@ export class ChromedashRoadmap extends LitElement {
         this.milestoneInfo = Object.assign(
           {},
           this.milestoneInfo,
-          newMilestonesInfo
+          newMilestonesInfo,
         );
       })
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.'
+          'Some errors occurred. Please refresh the page or try again later.',
         );
       });
   }
@@ -323,7 +323,7 @@ export class ChromedashRoadmap extends LitElement {
             @highlight-feature-event=${this.handleHighlightEvent}
           >
           </chromedash-roadmap-milestone-card>
-        `
+        `,
       )}
       ${this.shownChannelNames.map(
         type => html`
@@ -339,7 +339,7 @@ export class ChromedashRoadmap extends LitElement {
             @highlight-feature-event=${this.handleHighlightEvent}
           >
           </chromedash-roadmap-milestone-card>
-        `
+        `,
       )}
       ${this.futureMilestoneArray.map(
         milestone => html`
@@ -355,7 +355,7 @@ export class ChromedashRoadmap extends LitElement {
             @highlight-feature-event=${this.handleHighlightEvent}
           >
           </chromedash-roadmap-milestone-card>
-        `
+        `,
       )}
     `;
   }

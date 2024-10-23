@@ -16,7 +16,7 @@ import {FeatureLink} from '../js-src/cs-client.js';
  */
 function ascendingNumberUndefinedLast(
   a: number | undefined,
-  b: number | undefined
+  b: number | undefined,
 ): number {
   if (a === b) return 0;
   if (a === undefined) return 1;
@@ -30,24 +30,24 @@ function ascendingNumberUndefinedLast(
  */
 function compareOutstandingReview(
   a: OutstandingReview,
-  b: OutstandingReview
+  b: OutstandingReview,
 ): number {
   console.assert(
     a.current_stage === b.current_stage,
     `Tried to compare features at stages ${a.current_stage} and ` +
-      `${b.current_stage} using a function that ignores features' stages.`
+      `${b.current_stage} using a function that ignores features' stages.`,
   );
   if (a.estimated_end_milestone !== b.estimated_end_milestone) {
     // Lower milestones are happening sooner and so more urgent.
     return ascendingNumberUndefinedLast(
       a.estimated_end_milestone,
-      b.estimated_end_milestone
+      b.estimated_end_milestone,
     );
   }
   if (a.estimated_start_milestone !== b.estimated_start_milestone) {
     return ascendingNumberUndefinedLast(
       a.estimated_start_milestone,
-      b.estimated_start_milestone
+      b.estimated_start_milestone,
     );
   }
   // Break ties by putting review links in ascending order, which for github issues puts them in
@@ -114,12 +114,12 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
         if (!['tag', 'gecko', 'webkit'].includes(reviewer)) {
           throw new Error(
             `Reviewer (${reviewer}) must be 'tag', 'gecko', or 'webkit'.`,
-            {cause: this}
+            {cause: this},
           );
         }
         const response = await this._client.listExternalReviews(
           {reviewGroup: reviewer},
-          {signal}
+          {signal},
         );
         return {
           reviews: this.groupReviews(response.reviews),
@@ -131,7 +131,7 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
     });
 
   groupReviews(
-    reviews: OutstandingReview[]
+    reviews: OutstandingReview[],
   ): Record<StageEnum, OutstandingReview[]> {
     const result: Record<StageEnum, OutstandingReview[]> = {
       incubating: [],
@@ -163,7 +163,7 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
 
   renderOutstandingReviews(
     reviews: Record<StageEnum, OutstandingReview[]>,
-    links: FeatureLink[]
+    links: FeatureLink[],
   ) {
     return [
       ['Preparing to ship', 'shipping'],
@@ -197,7 +197,7 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
                       ${review.estimated_start_milestone
                         ? 'M' + review.estimated_start_milestone
                         : nothing}${['shipping', 'shipped'].includes(
-                        review.current_stage
+                        review.current_stage,
                       )
                         ? nothing
                         : html`${review.estimated_start_milestone ||
@@ -208,11 +208,11 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
                             : nothing}`}
                     </td>
                   </tr>
-                `
+                `,
               )}
             </table>
           </section>`
-        : nothing
+        : nothing,
     );
   }
 
@@ -252,7 +252,7 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
                       <sl-skeleton effect="sheen"></sl-skeleton>
                     </td>
                   </tr>
-                `
+                `,
               )}
             </table>
           </section>

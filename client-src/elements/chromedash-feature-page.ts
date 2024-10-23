@@ -150,14 +150,14 @@ export class ChromedashFeaturePage extends LitElement {
             document.title = `${this.feature.name} - ${this.appTitle}`;
           }
           this.loading = false;
-        }
+        },
       )
       .catch(error => {
         if (error instanceof FeatureNotFoundError) {
           this.loading = false;
         } else {
           showToastMessage(
-            'Some errors occurred. Please refresh the page or try again later.'
+            'Some errors occurred. Please refresh the page or try again later.',
           );
         }
       });
@@ -174,7 +174,7 @@ export class ChromedashFeaturePage extends LitElement {
   async refetchFeatureLinks() {
     const featureLinks = await window.csClient.getFeatureLinks(
       this.featureId,
-      false
+      false,
     );
     this.featureLinks = featureLinks?.data || [];
   }
@@ -197,7 +197,7 @@ export class ChromedashFeaturePage extends LitElement {
           this.loading = false;
         } else {
           showToastMessage(
-            'Some errors occurred. Please refresh the page or try again later.'
+            'Some errors occurred. Please refresh the page or try again later.',
           );
         }
       });

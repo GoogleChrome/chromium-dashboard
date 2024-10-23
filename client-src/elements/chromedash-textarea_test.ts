@@ -5,7 +5,7 @@ import {ChromedashTextarea} from './chromedash-textarea';
 describe('chromedash-textarea', () => {
   it('renders with no data', async () => {
     const component = await fixture(
-      html`<chromedash-textarea></chromedash-textarea>`
+      html`<chromedash-textarea></chromedash-textarea>`,
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashTextarea);
@@ -64,7 +64,7 @@ describe('chromedash-textarea', () => {
           chromedash_split_pattern="\\s+"
           chromedash_single_pattern="[a-z]+"
           value="abc def"
-        ></chromedash-textarea>`
+        ></chromedash-textarea>`,
       );
       assert.exists(component);
       await component.updateComplete;
@@ -82,7 +82,7 @@ describe('chromedash-textarea', () => {
   abc
  def
  "
-        ></chromedash-textarea>`
+        ></chromedash-textarea>`,
       );
       assert.exists(component);
       await component.updateComplete;
@@ -96,7 +96,7 @@ describe('chromedash-textarea', () => {
           chromedash_split_pattern="\\s+"
           chromedash_single_pattern="[a-z]+"
           value="abc123 def"
-        ></chromedash-textarea>`
+        ></chromedash-textarea>`,
       );
       assert.exists(component);
       await component.updateComplete;
@@ -114,7 +114,7 @@ describe('chromedash-textarea', () => {
   abc
  def 456
  "
-        ></chromedash-textarea>`
+        ></chromedash-textarea>`,
       );
       assert.exists(component);
       await component.updateComplete;

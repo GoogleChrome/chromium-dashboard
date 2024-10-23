@@ -18,7 +18,7 @@ export class ChromedashVendorViews extends LitElement {
 
   urlIsStandardsPosition(url: string): boolean {
     return /github.com\/(mozilla|WebKit)\/standards-positions\/issues/.test(
-      url
+      url,
     );
   }
 

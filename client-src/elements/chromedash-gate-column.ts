@@ -242,7 +242,7 @@ export class ChromedashGateColumn extends LitElement {
       })
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.'
+          'Some errors occurred. Please refresh the page or try again later.',
         );
         this.handleCancel();
       });
@@ -263,7 +263,7 @@ export class ChromedashGateColumn extends LitElement {
       })
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.'
+          'Some errors occurred. Please refresh the page or try again later.',
         );
         this.handleCancel();
       });
@@ -289,7 +289,7 @@ export class ChromedashGateColumn extends LitElement {
       })
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.'
+          'Some errors occurred. Please refresh the page or try again later.',
         );
         this.handleCancel();
       });
@@ -329,7 +329,7 @@ export class ChromedashGateColumn extends LitElement {
           this.feature.id,
           this.gate.id,
           commentText,
-          Number(postToThreadType)
+          Number(postToThreadType),
         )
         .then(() => {
           this.reloadComments();
@@ -337,7 +337,7 @@ export class ChromedashGateColumn extends LitElement {
         })
         .catch(() => {
           showToastMessage(
-            'Some errors occurred. Please refresh the page or try again later.'
+            'Some errors occurred. Please refresh the page or try again later.',
           );
           this.submittingVote = false;
         });
@@ -361,7 +361,7 @@ export class ChromedashGateColumn extends LitElement {
       })
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.'
+          'Some errors occurred. Please refresh the page or try again later.',
         );
         this.submittingComment = false;
       });
@@ -376,14 +376,14 @@ export class ChromedashGateColumn extends LitElement {
           this.featureGates,
           this.stage,
           this.gate,
-          vote
+          vote,
         ).then(() => {
           this.saveVote();
         });
       })
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.'
+          'Some errors occurred. Please refresh the page or try again later.',
         );
       });
   }
@@ -427,7 +427,7 @@ export class ChromedashGateColumn extends LitElement {
     await window.csClient.setVote(
       this.feature.id,
       this.gate.id,
-      GATE_REVIEW_REQUESTED
+      GATE_REVIEW_REQUESTED,
     );
     this._fireEvent('refetch-needed', {});
   }
@@ -442,7 +442,7 @@ export class ChromedashGateColumn extends LitElement {
     await window.csClient.setVote(
       this.feature.id,
       this.gate.id,
-      GATE_NA_REQUESTED
+      GATE_NA_REQUESTED,
     );
     // Post the comment after the review request so that it will go
     // to the assigned reviewer rather than all reviewers.
@@ -486,7 +486,7 @@ export class ChromedashGateColumn extends LitElement {
           processStage,
           this.stage,
           this.featureGates,
-          url
+          url,
         );
         return;
       } else {
@@ -507,7 +507,7 @@ export class ChromedashGateColumn extends LitElement {
         })
         .catch(() => {
           showToastMessage(
-            'Some errors occurred. Please refresh the page or try again later.'
+            'Some errors occurred. Please refresh the page or try again later.',
           );
         });
     };
@@ -533,7 +533,7 @@ export class ChromedashGateColumn extends LitElement {
       this.gate.team_name == 'API Owners'
     ) {
       return processStage.actions.map(act =>
-        this.renderAction(processStage, act)
+        this.renderAction(processStage, act),
       );
     }
 
@@ -742,7 +742,7 @@ export class ChromedashGateColumn extends LitElement {
       >
         ${Object.values(VOTE_OPTIONS).map(
           valName =>
-            html` <sl-option value="${valName[0]}">${valName[1]}</sl-option>`
+            html` <sl-option value="${valName[0]}">${valName[1]}</sl-option>`,
         )}
       </sl-select>
     `;
@@ -839,7 +839,7 @@ export class ChromedashGateColumn extends LitElement {
         >
           <sl-option value="">None</sl-option>
           ${this.gate.possible_assignee_emails.map(
-            email => html` <sl-option value="${email}">${email}</sl-option>`
+            email => html` <sl-option value="${email}">${email}</sl-option>`,
           )}
         </sl-select>
         <sl-button
@@ -863,7 +863,7 @@ export class ChromedashGateColumn extends LitElement {
     const responses = this.votes.filter(v => !this.isReviewRequest(v));
     const responseEmails = responses.map(v => v.set_by);
     const othersPending = this.gate.assignee_emails.filter(
-      ae => !responseEmails.includes(ae) && ae != this.user?.email
+      ae => !responseEmails.includes(ae) && ae != this.user?.email,
     );
     const myResponseExists = responses.some(v => v.set_by == this.user?.email);
     const addVoteRow =
@@ -929,10 +929,10 @@ export class ChromedashGateColumn extends LitElement {
     return (
       threadArchiveUrl &&
       (threadArchiveUrl.startsWith(
-        'https://groups.google.com/a/chromium.org/d/msgid/blink-dev/'
+        'https://groups.google.com/a/chromium.org/d/msgid/blink-dev/',
       ) ||
         threadArchiveUrl.startsWith(
-          'https://groups.google.com/d/msgid/jrobbins-test'
+          'https://groups.google.com/d/msgid/jrobbins-test',
         ))
     );
   }

@@ -144,7 +144,7 @@ class ChromedashTimeline extends LitElement {
       date.setFullYear(
         parseInt(dateStr[0]),
         parseInt(dateStr[1]) - 1,
-        parseInt(dateStr[2])
+        parseInt(dateStr[2]),
       );
 
       const row: any[] = [
@@ -179,7 +179,7 @@ class ChromedashTimeline extends LitElement {
           label: 'Monthly Average',
         },
       ],
-      [{column: 2, type: 'string'}]
+      [{column: 2, type: 'string'}],
     );
 
     const formatter = new window.google.visualization.NumberFormat({
@@ -193,7 +193,9 @@ class ChromedashTimeline extends LitElement {
       const startYear = new Date().getFullYear() - 2; // Show only 2 years of data by default.
       view = new window.google.visualization.DataView(groupedTable);
       view.setRows(
-        view.getFilteredRows([{column: 0, minValue: new Date(startYear, 0, 1)}])
+        view.getFilteredRows([
+          {column: 0, minValue: new Date(startYear, 0, 1)},
+        ]),
       );
     }
 
@@ -248,7 +250,7 @@ class ChromedashTimeline extends LitElement {
     if (!chartEl!.innerHTML.includes('sl-progress-bar')) {
       chartEl!.insertAdjacentHTML(
         'afterbegin',
-        '<sl-progress-bar indeterminate></sl-progress-bar>'
+        '<sl-progress-bar indeterminate></sl-progress-bar>',
       );
     }
 
@@ -259,7 +261,7 @@ class ChromedashTimeline extends LitElement {
         this.drawVisualization(
           response,
           this.selectedBucketId,
-          this.showAllHistoricalData
+          this.showAllHistoricalData,
         );
       });
 
@@ -277,12 +279,12 @@ class ChromedashTimeline extends LitElement {
 
   _renderHTTPArchiveData() {
     const feature = this.props.find(
-      el => el[0] === parseInt(this.selectedBucketId)
+      el => el[0] === parseInt(this.selectedBucketId),
     );
     if (feature) {
       let featureName = feature[1];
       const inputEl = this.shadowRoot!.querySelector(
-        '#datalist-input'
+        '#datalist-input',
       ) as HTMLInputElement;
       inputEl!.value = featureName;
 
@@ -292,12 +294,12 @@ class ChromedashTimeline extends LitElement {
       const REPORT_ID = '1M8kXOqPkwYNKjJhtag_nvDNJCpvmw_ri';
       const dsEmbedUrl = `https://datastudio.google.com/embed/reporting/${REPORT_ID}/page/tc5b?params=%7B"df3":"include%25EE%2580%25800%25EE%2580%2580IN%25EE%2580%2580${featureName}"%7D`;
       const hadEl = this.shadowRoot!.querySelector(
-        '#http-archive-data'
+        '#http-archive-data',
       ) as HTMLIFrameElement;
       hadEl!.src = dsEmbedUrl;
 
       const bigqueryEl = this.shadowRoot!.querySelector(
-        '#bigquery'
+        '#bigquery',
       ) as HTMLElement;
       bigqueryEl!.textContent = `#standardSQL
 SELECT yyyymmdd, client, pct_urls, sample_urls
@@ -336,7 +338,7 @@ ORDER BY yyyymmdd DESC, client`;
               value="${prop[1]}"
               dataset-debug-bucket-id="${prop[0]}"
             ></option>
-          `
+          `,
         )}
       </datalist>
       <label>

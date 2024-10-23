@@ -61,7 +61,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
       })
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.'
+          'Some errors occurred. Please refresh the page or try again later.',
         );
       });
   }
@@ -78,7 +78,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
 
     await el.updateComplete;
     const hiddenTokenField = this.renderRoot.querySelector(
-      'input[name=token]'
+      'input[name=token]',
     ) as HTMLInputElement;
     hiddenTokenField.form?.addEventListener('submit', event => {
       this.handleFormSubmit(event, hiddenTokenField);
@@ -101,7 +101,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
       })
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.'
+          'Some errors occurred. Please refresh the page or try again later.',
         );
       });
   }
@@ -244,7 +244,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
         formattedFeature,
         VERIFY_ACCURACY_METADATA_FIELDS.name,
         {},
-        fieldsOnly
+        fieldsOnly,
       ),
     ];
 
@@ -263,8 +263,8 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
           formattedFeature,
           stageForm.name,
           feStage,
-          fieldsOnly
-        )
+          fieldsOnly,
+        ),
       );
       allFormFields = [...allFormFields, ...fieldsOnly];
 
@@ -282,8 +282,8 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
             formattedFeature,
             sectionName,
             extensionStage,
-            fieldsOnly
-          )
+            fieldsOnly,
+          ),
         );
         allFormFields = [...allFormFields, ...fieldsOnly];
       });
@@ -296,8 +296,8 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
         formattedFeature,
         `${VERIFY_ACCURACY_CONFIRMATION_FIELD.name}`,
         {},
-        fieldsOnly
-      )
+        fieldsOnly,
+      ),
     );
     allFormFields = [...allFormFields, ...fieldsOnly];
 
@@ -322,7 +322,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
     const stageIds = this.getAllStageIds();
     const [allFormFields, formsToRender] = this.getForms(
       formattedFeature,
-      this.feature.stages
+      this.feature.stages,
     );
 
     const title = this.feature.accurate_as_of
@@ -367,5 +367,5 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
 
 customElements.define(
   'chromedash-guide-verify-accuracy-page',
-  ChromedashGuideVerifyAccuracyPage
+  ChromedashGuideVerifyAccuracyPage,
 );

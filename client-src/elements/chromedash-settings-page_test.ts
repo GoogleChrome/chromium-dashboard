@@ -21,10 +21,10 @@ describe('chromedash-settings-page', () => {
 
   it('user has not signed in and get user pref not found response', async () => {
     window.csClient.getSettings.returns(
-      Promise.reject(new Error('User preference not found'))
+      Promise.reject(new Error('User preference not found')),
     );
     const component = await fixture(
-      html`<chromedash-settings-page></chromedash-settings-page>`
+      html`<chromedash-settings-page></chromedash-settings-page>`,
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashSettingsPage);
@@ -34,16 +34,16 @@ describe('chromedash-settings-page', () => {
     const toastMsgSpan = toastEl?.shadowRoot?.querySelector('span#msg');
     assert.include(
       toastMsgSpan?.innerHTML,
-      'Some errors occurred. Please refresh the page or try again later.'
+      'Some errors occurred. Please refresh the page or try again later.',
     );
   });
 
   it('user has notify_as_starrer value as true', async () => {
     window.csClient.getSettings.returns(
-      Promise.resolve({notify_as_starrer: true})
+      Promise.resolve({notify_as_starrer: true}),
     );
     const component = await fixture(
-      html`<chromedash-settings-page></chromedash-settings-page>`
+      html`<chromedash-settings-page></chromedash-settings-page>`,
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashSettingsPage);
@@ -66,10 +66,10 @@ describe('chromedash-settings-page', () => {
 
   it('user has notify_as_starrer value as false', async () => {
     window.csClient.getSettings.returns(
-      Promise.resolve({notify_as_starrer: false})
+      Promise.resolve({notify_as_starrer: false}),
     );
     const component = await fixture(
-      html`<chromedash-settings-page></chromedash-settings-page>`
+      html`<chromedash-settings-page></chromedash-settings-page>`,
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashSettingsPage);

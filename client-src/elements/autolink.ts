@@ -72,14 +72,14 @@ function replaceIssueRef(
   stringMatch: string,
   projectName: string,
   localId: string,
-  commentId: string
+  commentId: string,
 ) {
   return createIssueRefRun(projectName, localId, stringMatch, commentId);
 }
 
 function replaceTrackerIssueRef(
   match: RegExpExecArray,
-  currentProjectName = CRBUG_DEFAULT_PROJECT
+  currentProjectName = CRBUG_DEFAULT_PROJECT,
 ) {
   const issueRefRE = PROJECT_LOCALID_RE;
   const commentId = '';
@@ -99,8 +99,8 @@ function replaceTrackerIssueRef(
         refMatch[0],
         currentProjectName,
         refMatch[PROJECT_LOCALID_RE_ID_GROUP],
-        commentId
-      )
+        commentId,
+      ),
     );
     pos = refMatch.index + refMatch[0].length;
   }

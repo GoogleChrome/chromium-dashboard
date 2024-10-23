@@ -76,12 +76,12 @@ describe('chromedash-guide-verify-accuracy-page', () => {
 
   it('renders with no data', async () => {
     const invalidFeaturePromise = Promise.reject(
-      new Error('Got error response from server')
+      new Error('Got error response from server'),
     );
     window.csClient.getFeature.withArgs(0).returns(invalidFeaturePromise);
 
     const component = await fixture(
-      html`<chromedash-guide-verify-accuracy-page></chromedash-guide-verify-accuracy-page>`
+      html`<chromedash-guide-verify-accuracy-page></chromedash-guide-verify-accuracy-page>`,
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashGuideVerifyAccuracyPage);
@@ -91,7 +91,7 @@ describe('chromedash-guide-verify-accuracy-page', () => {
     const toastMsgSpan = toastEl?.shadowRoot?.querySelector('span#msg');
     assert.include(
       toastMsgSpan?.innerHTML,
-      'Some errors occurred. Please refresh the page or try again later.'
+      'Some errors occurred. Please refresh the page or try again later.',
     );
   });
 
@@ -101,7 +101,7 @@ describe('chromedash-guide-verify-accuracy-page', () => {
 
     const component = await fixture(
       html`<chromedash-guide-verify-accuracy-page .featureId=${featureId}>
-      </chromedash-guide-verify-accuracy-page>`
+      </chromedash-guide-verify-accuracy-page>`,
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashGuideVerifyAccuracyPage);
@@ -114,7 +114,7 @@ describe('chromedash-guide-verify-accuracy-page', () => {
 
     // feature form, hidden token field, and submit/cancel buttons exist
     const featureForm = component.renderRoot.querySelector(
-      'form[name="feature_form"]'
+      'form[name="feature_form"]',
     );
     assert.exists(featureForm);
     assert.include(featureForm.innerHTML, '<input type="hidden" name="token">');

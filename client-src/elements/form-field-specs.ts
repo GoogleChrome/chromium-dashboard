@@ -53,7 +53,7 @@ interface MilestoneRange {
 export type FieldValueGetter = {
   (
     fieldName: string,
-    stageOrId?: 'current stage' | number | StageDict
+    stageOrId?: 'current stage' | number | StageDict,
   ): Feature[keyof Feature] | StageDict[keyof StageDict];
   feature?: Feature;
 };
@@ -65,7 +65,7 @@ type CheckResult =
 export type CheckFunction = (
   fieldValue: string,
   getFieldValue: FieldValueGetter,
-  initialValue: string
+  initialValue: string,
 ) => CheckResult | Promise<CheckResult>;
 
 interface ResolvedField {
@@ -88,7 +88,7 @@ interface ResolvedField {
 
 interface Field extends ResolvedField {
   computedChoices?: (
-    feature: FormattedFeature
+    feature: FormattedFeature,
   ) => Record<string, [number, string]>;
 }
 
@@ -96,7 +96,7 @@ interface Field extends ResolvedField {
  */
 export function resolveFieldForFeature(
   field: Field,
-  feature: FormattedFeature
+  feature: FormattedFeature,
 ): ResolvedField {
   const result: ResolvedField = {...field};
   if (field.computedChoices) {
@@ -612,8 +612,8 @@ export const ALL_FIELDS: Record<string, Field> = {
           fetch(url, {method: 'HEAD'})
             .then(response => response.blob())
             .then(blob => blob.type)
-            .catch(() => 'error')
-        )
+            .catch(() => 'error'),
+        ),
       );
       // All urls must link to an image.
       if (urlTypes.some(type => !type.startsWith('image'))) {
@@ -756,7 +756,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     check: value =>
       checkNotGoogleDocs(
         value,
-        'Explainers should not be hosted on Google Docs.'
+        'Explainers should not be hosted on Google Docs.',
       ),
   },
 
@@ -781,7 +781,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     check: value =>
       checkNotGoogleDocs(
         value,
-        'Specifications should not be hosted on Google Docs.'
+        'Specifications should not be hosted on Google Docs.',
       ),
   },
 
@@ -1274,7 +1274,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     check: (_value, getFieldValue) =>
       checkMilestoneRanges(
         [OT_MILESTONE_DESKTOP_RANGE, OT_ALL_SHIPPED_MILESTONE_DESKTOP_RANGE],
-        getFieldValue
+        getFieldValue,
       ),
   },
 
@@ -1299,7 +1299,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     check: (_value, getFieldValue) =>
       checkMilestoneRanges(
         [OT_MILESTONE_ANDROID_RANGE, OT_ALL_SHIPPED_MILESTONE_ANDROID_RANGE],
-        getFieldValue
+        getFieldValue,
       ),
   },
 
@@ -1324,7 +1324,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     check: (_value, getFieldValue) =>
       checkMilestoneRanges(
         [OT_MILESTONE_WEBVIEW_RANGE, OT_ALL_SHIPPED_MILESTONE_WEBVIEW_RANGE],
-        getFieldValue
+        getFieldValue,
       ),
   },
 
@@ -1616,7 +1616,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     check: (_value, getFieldValue) =>
       checkMilestoneRanges(
         [OT_MILESTONE_DESKTOP_RANGE, OT_ALL_SHIPPED_MILESTONE_DESKTOP_RANGE],
-        getFieldValue
+        getFieldValue,
       ),
   },
 
@@ -1795,7 +1795,7 @@ export const ALL_FIELDS: Record<string, Field> = {
           ALL_OT_SHIPPED_MILESTONE_DESKTOP_RANGE,
           ALL_DT_SHIPPED_MILESTONE_DESKTOP_RANGE,
         ],
-        getFieldValue
+        getFieldValue,
       ),
   },
 
@@ -1811,7 +1811,7 @@ export const ALL_FIELDS: Record<string, Field> = {
           ALL_OT_SHIPPED_MILESTONE_ANDROID_RANGE,
           ALL_DT_SHIPPED_MILESTONE_ANDROID_RANGE,
         ],
-        getFieldValue
+        getFieldValue,
       ),
   },
 
@@ -1834,7 +1834,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     check: (_value, getFieldValue) =>
       checkMilestoneRanges(
         [ALL_OT_SHIPPED_MILESTONE_WEBVIEW_RANGE],
-        getFieldValue
+        getFieldValue,
       ),
   },
 
@@ -1888,7 +1888,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     check: (_value, getFieldValue) =>
       checkMilestoneRanges(
         [DT_ALL_SHIPPED_MILESTONE_DESKTOP_RANGE],
-        getFieldValue
+        getFieldValue,
       ),
   },
 
@@ -1904,7 +1904,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     check: (_value, getFieldValue) =>
       checkMilestoneRanges(
         [DT_ALL_SHIPPED_MILESTONE_ANDROID_RANGE],
-        getFieldValue
+        getFieldValue,
       ),
   },
 
@@ -2177,7 +2177,7 @@ export function makeDisplaySpecs(fieldNames: string[]) {
 function findMinMilestone(
   fieldName: string,
   stageTypes: Set<number>,
-  getFieldValue: any
+  getFieldValue: any,
 ) {
   let minMilestone = Infinity;
   // Iterate through all stages that are in stageTypes.
@@ -2198,7 +2198,7 @@ function findMinMilestone(
 function findMaxMilestone(
   fieldName: string,
   stageTypes: Set<number>,
-  getFieldValue: any
+  getFieldValue: any,
 ) {
   let maxMilestone = -Infinity;
   // Iterate through all stages that are in stageTypes.
@@ -2219,7 +2219,7 @@ function findMaxMilestone(
 // Used with OT start milestone and all shipped milestones.
 function checkEarlierBeforeAllLaterMilestones(
   fieldPair: MilestoneRange,
-  getFieldValue: any
+  getFieldValue: any,
 ) {
   const {earlier, allLater, warning} = fieldPair;
   const stageTypes =
@@ -2250,7 +2250,7 @@ function checkEarlierBeforeAllLaterMilestones(
 // Used with all OT start milestones and a shipped milestone.
 function checkAllEarlierBeforeLaterMilestone(
   fieldPair: MilestoneRange,
-  getFieldValue: any
+  getFieldValue: any,
 ) {
   const {allEarlier, later, warning, error} = fieldPair;
   const stageTypes =
@@ -2266,7 +2266,7 @@ function checkAllEarlierBeforeLaterMilestone(
     const earlierValue = findMaxMilestone(
       allEarlier,
       stageTypes,
-      getFieldValue
+      getFieldValue,
     );
     const laterValue = getNumericValue(later, getFieldValue);
     if (
@@ -2393,7 +2393,7 @@ async function checkExtensionMilestoneIsValid(value: string) {
     return {error: 'Milestone is too distant.'};
   }
   const resp = await fetch(
-    'https://chromiumdash.appspot.com/fetch_milestone_schedule'
+    'https://chromiumdash.appspot.com/fetch_milestone_schedule',
   );
   const json = await resp.json();
   if (parseInt(json.mstones[0].mstone) > intValue) {
@@ -2406,7 +2406,7 @@ async function checkExtensionMilestoneIsValid(value: string) {
 
 function checkNotGoogleDocs(
   value: string,
-  warning = 'Avoid using Google Docs'
+  warning = 'Avoid using Google Docs',
 ) {
   if (/docs\.google\.com\/document/.test(value)) {
     return {warning};

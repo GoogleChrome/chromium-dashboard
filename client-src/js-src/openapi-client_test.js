@@ -23,17 +23,17 @@ describe('openapi-client', () => {
       it('should have same-origin in the config', async () => {
         assert.equal(
           window.csOpenApiClient.configuration.credentials,
-          'same-origin'
+          'same-origin',
         );
       });
       it('should have the middlewares loaded', async () => {
         assert.equal(
           window.csOpenApiClient.middleware[0].pre,
-          ChromeStatusMiddlewares.xsrfMiddleware
+          ChromeStatusMiddlewares.xsrfMiddleware,
         );
         assert.equal(
           window.csOpenApiClient.middleware[1].post,
-          ChromeStatusMiddlewares.xssiMiddleware
+          ChromeStatusMiddlewares.xssiMiddleware,
         );
       });
     });
@@ -57,7 +57,7 @@ describe('openapi-client', () => {
         const params = await ChromeStatusMiddlewares.xsrfMiddleware(req);
         assert.equal(
           params.init.headers['content-type'][0],
-          'application/json'
+          'application/json',
         );
         assert.equal(params.init.headers['X-Xsrf-Token'], 'fake_token');
         tokenValidStub.restore();
@@ -97,7 +97,7 @@ describe('openapi-client', () => {
           await ChromeStatusMiddlewares.xssiMiddleware(context);
         assert.equal(
           newResponse.headers.get('content-type'),
-          'application/json'
+          'application/json',
         );
         const jsonBody = await newResponse.json();
         expect(jsonBody).to.eql({status: true});

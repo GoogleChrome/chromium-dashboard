@@ -196,7 +196,7 @@ class ChromedashMetadata extends LitElement {
                       : index == 6
                         ? 'stable'
                         : ''}
-              </option>`
+              </option>`,
         )}
       </select>
       <div ?hidden="${!this._fetchError}" class="error">

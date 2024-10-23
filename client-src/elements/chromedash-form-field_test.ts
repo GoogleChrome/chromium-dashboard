@@ -17,7 +17,7 @@ describe('chromedash-form-field', () => {
         checked="True"
         checkboxLabel="A specific label"
       >
-      </chromedash-form-field>`
+      </chromedash-form-field>`,
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashFormField);
@@ -34,7 +34,7 @@ describe('chromedash-form-field', () => {
   it('renders a select type of field', async () => {
     const component = await fixture(
       html` <chromedash-form-field name="category" value="0">
-      </chromedash-form-field>`
+      </chromedash-form-field>`,
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashFormField);
@@ -50,7 +50,7 @@ describe('chromedash-form-field', () => {
   it('renders a input type of field (with extraHelp)', async () => {
     const component = await fixture(
       html` <chromedash-form-field name="name" value="">
-      </chromedash-form-field>`
+      </chromedash-form-field>`,
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashFormField);
@@ -68,7 +68,7 @@ describe('chromedash-form-field', () => {
   it('renders a textarea type of field', async () => {
     const component = await fixture(
       html` <chromedash-form-field name="summary" value="">
-      </chromedash-form-field>`
+      </chromedash-form-field>`,
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashFormField);
@@ -84,7 +84,7 @@ describe('chromedash-form-field', () => {
   it('renders a radios type of field', async () => {
     const component = await fixture(
       html` <chromedash-form-field name="feature_type_radio_group" value="0">
-      </chromedash-form-field>`
+      </chromedash-form-field>`,
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashFormField);
@@ -100,7 +100,7 @@ describe('chromedash-form-field', () => {
   it('renders a multiselect type of field', async () => {
     const component = await fixture(
       html` <chromedash-form-field name="rollout_platforms">
-      </chromedash-form-field>`
+      </chromedash-form-field>`,
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashFormField);
@@ -141,7 +141,7 @@ describe('chromedash-form-field', () => {
       `);
       assert.instanceOf(component, ChromedashFormField);
       const optionValues = Array.from(
-        component.renderRoot.querySelectorAll('sl-option')
+        component.renderRoot.querySelectorAll('sl-option'),
       ).map(option => ({
         text: option.textContent!.trim(),
         value: option.value,

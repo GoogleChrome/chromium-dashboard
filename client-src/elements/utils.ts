@@ -109,12 +109,12 @@ export function findFirstFeatureStage(intentStage, currentStage, fe) {
  */
 export function unambiguousStageName(
   stage: StageDict,
-  feature: Feature | FormattedFeature
+  feature: Feature | FormattedFeature,
 ): string | undefined {
   const processStageName = FORMS_BY_STAGE_TYPE[stage.stage_type]?.name;
   if (!processStageName) {
     console.error(
-      `Unexpected stage type ${stage.stage_type} in stage ${stage.id}.`
+      `Unexpected stage type ${stage.stage_type} in stage ${stage.id}.`,
     );
     return undefined;
   }
@@ -213,7 +213,7 @@ export function hasFieldValue(fieldName, feStage, feature) {
 export function getFieldValueFromFeature(
   fieldName: string,
   feStage: StageDict,
-  feature: Feature
+  feature: Feature,
 ) {
   if (STAGE_SPECIFIC_FIELDS.has(fieldName)) {
     const value = getStageValue(feStage, fieldName);
@@ -276,7 +276,7 @@ export function getFieldValueFromFeature(
 
   if (fieldName === 'enterprise_feature_categories' && value) {
     return value.map(
-      categoryId => ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME[categoryId]
+      categoryId => ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME[categoryId],
     );
   }
   if (fieldName === 'enterprise_impact' && value) {
@@ -297,7 +297,7 @@ export function getFieldValueFromFeature(
 export function flattenSections(stage) {
   return stage.sections.reduce(
     (combined, section) => [...combined, ...section.fields],
-    []
+    [],
   );
 }
 
@@ -502,7 +502,7 @@ export function formatUrlForRelativeOffset(
   start: number,
   delta: number,
   pageSize: number,
-  totalCount: number
+  totalCount: number,
 ): string | undefined {
   const offset = start + delta;
   if (totalCount === undefined || offset <= -pageSize || offset >= totalCount) {

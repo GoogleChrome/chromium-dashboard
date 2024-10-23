@@ -54,7 +54,7 @@ export class ChromedashGuideMetadataPage extends LitElement {
       })
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.'
+          'Some errors occurred. Please refresh the page or try again later.',
         );
       });
   }
@@ -71,7 +71,7 @@ export class ChromedashGuideMetadataPage extends LitElement {
      * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
     await el.updateComplete;
     const hiddenTokenField = this.renderRoot.querySelector(
-      'input[name=token]'
+      'input[name=token]',
     ) as HTMLInputElement;
     hiddenTokenField.form?.addEventListener('submit', event => {
       this.handleFormSubmit(event, hiddenTokenField);
@@ -96,7 +96,7 @@ export class ChromedashGuideMetadataPage extends LitElement {
       })
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.'
+          'Some errors occurred. Please refresh the page or try again later.',
         );
       });
   }
@@ -125,7 +125,7 @@ export class ChromedashGuideMetadataPage extends LitElement {
       : FLAT_METADATA_FIELDS.sections;
     const fields = sections.reduce<string[]>(
       (combined, section) => [...combined, ...section.fields],
-      []
+      [],
     );
     return fields.join();
   }

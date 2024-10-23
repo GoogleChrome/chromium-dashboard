@@ -121,7 +121,7 @@ class ChromedashLegend extends LitElement {
                     </chromedash-color-status>
                     <span>${vendor.val}</span>
                   </li>
-                `
+                `,
               )}
             </ul>
           </div>
@@ -138,7 +138,7 @@ class ChromedashLegend extends LitElement {
                     </chromedash-color-status>
                     <span>${webdev.val}</span>
                   </li>
-                `
+                `,
               )}
             </ul>
           </div>
@@ -155,7 +155,7 @@ class ChromedashLegend extends LitElement {
                     </chromedash-color-status>
                     <span>${standard.val}</span>
                   </li>
-                `
+                `,
               )}
             </ul>
           </div>

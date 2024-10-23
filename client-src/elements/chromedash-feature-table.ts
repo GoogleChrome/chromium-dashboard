@@ -67,7 +67,7 @@ export class ChromedashFeatureTable extends LitElement {
         this.sortSpec,
         this.start,
         this.num,
-        this.nameOnly
+        this.nameOnly,
       )
       .then(resp => {
         this.features = resp.features;
@@ -77,7 +77,7 @@ export class ChromedashFeatureTable extends LitElement {
       })
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.'
+          'Some errors occurred. Please refresh the page or try again later.',
         );
       });
     if (this.columns == 'approvals') {
@@ -104,7 +104,7 @@ export class ChromedashFeatureTable extends LitElement {
       })
       .catch(() => {
         showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.'
+          'Some errors occurred. Please refresh the page or try again later.',
         );
       });
   }
@@ -227,13 +227,13 @@ export class ChromedashFeatureTable extends LitElement {
       this.start,
       -this.num,
       this.num,
-      this.totalCount
+      this.totalCount,
     );
     const nextUrl = formatUrlForRelativeOffset(
       this.start,
       this.num,
       this.num,
-      this.totalCount
+      this.totalCount,
     );
 
     if (this.alwaysOfferPagination) {

@@ -189,7 +189,7 @@ export class ChromedashTypeahead extends LitElement {
     // A term was completed iff there is no other term that the user could
     // further complete by typing or selecting.
     const possibleExtensions = this.vocabulary.filter(c =>
-      c.name.startsWith(candidateValue)
+      c.name.startsWith(candidateValue),
     );
     this.termWasCompleted = possibleExtensions.length <= 1;
 
@@ -237,7 +237,7 @@ export class ChromedashTypeahead extends LitElement {
     }
     this.findPrefix();
     this.candidates = this.vocabulary.filter(c =>
-      this.shouldShowCandidate(c, this.prefix)
+      this.shouldShowCandidate(c, this.prefix),
     );
     if (this.shouldGroup(this.prefix)) {
       this.candidates = this.groupCandidates(this.candidates);
@@ -291,7 +291,7 @@ export class ChromedashTypeahead extends LitElement {
               doc=${c.doc}
               prefix=${this.prefix ?? nothing}
             ></chromedash-typeahead-item>
-          `
+          `,
         )}
       </sl-menu>
     `;
