@@ -45,6 +45,8 @@ ENTERPRISE_APPROVERS = [
     'angelaweber@google.com',
     'davidayad@google.com',
     'omole@google.com',
+    'nsamarakkody@google.com',
+    'pastarmovj@google.com',
 ]
 DEBUGGABILITY_APPROVERS = IN_NDB
 TESTING_APPROVERS = [
