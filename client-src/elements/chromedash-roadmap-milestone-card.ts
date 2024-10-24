@@ -1,6 +1,6 @@
 import {SlPopup} from '@shoelace-style/shoelace';
 import {LitElement, html, nothing} from 'lit';
-import {customElement, property} from 'lit/decorators.js';
+import {customElement, property, state} from 'lit/decorators.js';
 import {createRef, ref} from 'lit/directives/ref.js';
 import {ROADMAP_MILESTONE_CARD_CSS} from '../css/elements/chromedash-roadmap-milestone-card-css.js';
 import {Channels, ReleaseInfo} from '../js-src/cs-client.js';
@@ -20,7 +20,7 @@ export interface TemplateContent {
 }
 
 @customElement('chromedash-roadmap-milestone-card')
-class ChromedashRoadmapMilestoneCard extends LitElement {
+export class ChromedashRoadmapMilestoneCard extends LitElement {
   infoPopupRef = createRef<SlPopup>();
 
   static styles = ROADMAP_MILESTONE_CARD_CSS;
@@ -37,6 +37,10 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
   showDates = false;
   @property({type: Boolean})
   signedIn = false;
+  @property({attribute: false})
+  stableMilestone!: number;
+  @state()
+  currentDate: number = Date.now();
 
   /**
    *  Returns the number of days between a and b.
@@ -234,6 +238,42 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
     `;
   }
 
+  /**
+   * A feature is outdated if it is scheduled to ship in the next 2 milestones,
+   * and its accurate_as_of date is at least 4 weeks ago.
+   *
+   *  @param accurateAsOf The accurate_as_of date as an ISO string.
+   *  @param liveChromeVersion The Chrome milestone when a feature is live.
+   */
+  _isFeatureOutdated(
+    accurateAsOf: string | undefined,
+    liveChromeVersion: number | undefined
+  ): boolean {
+    if (this.stableMilestone === 0 || !liveChromeVersion) {
+      return false;
+    }
+    // If this feature is not shipping within two upcoming milestones, return false.
+    if (
+      !(
+        this.stableMilestone + 1 === liveChromeVersion ||
+        this.stableMilestone + 2 === liveChromeVersion
+      )
+    ) {
+      return false;
+    }
+    if (!accurateAsOf) {
+      return true;
+    }
+    const accurateDate = Date.parse(accurateAsOf);
+    // 4-week period.
+    const gracePeriod = 4 * 7 * 24 * 60 * 60 * 1000;
+    if (accurateDate + gracePeriod < this.currentDate) {
+      return true;
+    }
+
+    return false;
+  }
+
   _cardFeatureItemTemplate(f, shippingType) {
     return html`
       <li
@@ -249,6 +289,17 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
           ${f.name}
         </a>
         <span class="icon_row">
+          ${this._isFeatureOutdated(f.accurate_as_of, this.channel?.version)
+            ? html`
+                <span
+                  class="tooltip"
+                  id="outdated-icon"
+                  title="Feature outdated - last checked for overall accuracy more than four weeks ago"
+                >
+                  <iron-icon icon="chromestatus:error" data-tooltip></iron-icon>
+                </span>
+              `
+            : nothing}
           ${ORIGIN_TRIAL.includes(shippingType)
             ? html`
                 <span class="tooltip" title="Origin Trial">
