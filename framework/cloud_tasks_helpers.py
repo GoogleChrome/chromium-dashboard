@@ -52,7 +52,7 @@ class LocalCloudTasksClient(object):
   def create_task(self, parent=None, task=None, **kwargs):
     """Immediately hit the target URL."""
     uri = task.get('app_engine_http_request').get('relative_uri')
-    target_url = 'http://localhost:8080' + uri
+    target_url = 'http://localhost:7777' + uri
     body = task.get('app_engine_http_request').get('body')
     logging.info('Making request to %r', target_url)
     handler_response = requests.request('POST',

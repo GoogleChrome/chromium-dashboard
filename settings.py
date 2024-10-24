@@ -95,11 +95,11 @@ DEV_MODE_OT_SUPPORT_EMAILS = 'user1@gmail.com,user2@gmail.com'
 
 if UNIT_TEST_MODE:
   APP_TITLE = 'Local testing'
-  SITE_URL = 'http://127.0.0.1:8888/'
+  SITE_URL = 'http://127.0.0.1:7777/'
 elif DEV_MODE:
   PROD = False
   APP_TITLE = 'Chrome Status Dev'
-  SITE_URL = 'http://127.0.0.1:8888/'
+  SITE_URL = 'http://127.0.0.1:7777/'
 elif APP_ID == 'cr-status':
   PROD = True
   DEBUG = False

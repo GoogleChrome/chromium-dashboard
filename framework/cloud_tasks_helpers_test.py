@@ -47,7 +47,7 @@ class LocalCloudTasksClientTest(unittest.TestCase):
     self.assertIsNone(actual)
     mock_fetch.assert_called_once_with(
       'POST',
-        'http://localhost:8080/handler',
+        'http://localhost:7777/handler',
         data=b'{"a": 1}',
         allow_redirects=False,
         headers={'X-AppEngine-QueueName': 'default'})
