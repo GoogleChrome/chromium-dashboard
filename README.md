@@ -40,7 +40,7 @@ To start the main server and the notifier backend, run:
 ```bash
 npm start
 ```
-Then visit `http://localhost:8888/`.
+Then visit `http://localhost:7777/`.
 
 To start front end code watching (sass, js lint check, babel, minify files), run
 
@@ -128,7 +128,7 @@ Chromestatus currently gets the list of Blink components from the file `hack_com
 
 #### Seed the blink component owners
 
-Visit http://localhost:8888/admin/blink/populate_blink to see the list of Blink component owners.
+Visit http://localhost:7777/admin/blink/populate_blink to see the list of Blink component owners.
 
 #### Debugging / settings
 

@@ -11,7 +11,7 @@ export GAE_ENV='localdev'
 export DATASTORE_EMULATOR_HOST=${DATASTORE_EMULATOR_HOST:-'localhost:15606'}
 
 
-gunicorn --bind :8888 --workers 4 main:app
+gunicorn --bind :7777 --workers 4 main:app
 
 
 # TODO(jrobbins): Consider switching back to dev_appserver when
