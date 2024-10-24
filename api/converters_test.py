@@ -121,6 +121,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
         'by': 'updater@example.com',
         'when': expected_date
       },
+      'accurate_as_of': expected_date,
       'standards': {
         'spec': 'https://example.com/spec',
         'maturity': {
@@ -206,6 +207,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
         'by': 'updater@example.com',
         'when': expected_date
       },
+      'accurate_as_of': expected_date,
       'standards': {
         'spec': 'https://example.com/spec',
         'maturity': {
