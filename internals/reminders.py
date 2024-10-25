@@ -220,6 +220,8 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
 class FeatureAccuracyHandler(AbstractReminderHandler):
   """Periodically remind owners to verify the accuracy of their entries."""
 
+  # This grace period needs to be consistent with
+  # ACCURACY_GRACE_PERIOD in client-src/elements/utils.ts.
   ACCURACY_GRACE_PERIOD = timedelta(weeks=4)
   SUBJECT_FORMAT = '[Action requested] Update %s'
   EMAIL_TEMPLATE_PATH = 'accuracy_notice_email.html'
