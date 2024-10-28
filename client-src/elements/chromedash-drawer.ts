@@ -261,11 +261,21 @@ export class ChromedashDrawer extends LitElement {
     const myFeaturesMenu = this.renderMyFeaturesMenu();
     const adminMenu = this.renderAdminMenu();
 
-    const year = new Date().getFullYear();
+    const now = new Date();
+    const year = now.getFullYear();
     const shippingThisYear = this.renderNavItem(
       '/features?q=shipping_year=' + year,
       'Shipping ' + year
     );
+    const nextYear = year + 1;
+    let shippingNextYear = this.renderNavItem(
+      '/features?q=shipping_year=' + nextYear,
+      'Shipping ' + nextYear
+    );
+    // Only show next year starting on September 1.
+    if (now.getMonth() < 8) {
+      shippingNextYear = html``;
+    }
 
     return html`
       <sl-drawer
@@ -279,7 +289,7 @@ export class ChromedashDrawer extends LitElement {
       >
         ${accountMenu} ${this.renderNavItem('/roadmap', 'Roadmap')}
         ${this.renderNavItem('/features', 'All features')} ${shippingThisYear}
-        ${myFeaturesMenu}
+        ${shippingNextYear} ${myFeaturesMenu}
         <hr />
         <div class="section-header">Stats</div>
         ${this.renderNavItem('/metrics/css/popularity', 'CSS')}
