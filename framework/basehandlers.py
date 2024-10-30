@@ -798,6 +798,10 @@ def FlaskApplication(import_name, routes, pattern_base='', debug=False):
   # Flask apps also have a debug setting that can be used to auto-reload
   # template source code. TODO: investigate using the setting.
 
+
+  # Reject any huge POSTs
+  app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB
+
   # Set the CORS HEADERS.
   CORS(app, resources={r'/data/*': {'origins': '*'}})
 
