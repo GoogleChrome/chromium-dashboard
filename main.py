@@ -269,6 +269,9 @@ mpa_page_routes: list[Route] = [
     Route('/omaha_data', metrics.OmahaDataHandler),
     Route('/feature/<int:feature_id>/attachment/<int:attachment_id>',
           attachments_api.AttachmentServing),
+    Route('/feature/<int:feature_id>/attachment/<int:attachment_id>/thumbnail',
+          attachments_api.AttachmentServing,
+          defaults={'thumbnail': True}),
 ]
 
 internals_routes: list[Route] = [

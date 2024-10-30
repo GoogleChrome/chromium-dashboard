@@ -67,8 +67,18 @@ class AttachmentServing(basehandlers.FlaskHandler):
 
     logging.info('host is: %r ', self.request.host)
 
-    content = 'this is an image'
-    headers = self.get_headers()
-    headers['Content-Type'] = 'text/plain'
+    attachment = attachments.get_attachment(feature_id, attachment_id)
+    if not attachment:
+      self.abort(404, msg='Attachment not found')
+
+    if kwargs.get('thumbnail') and attachment.thumbnail:
+      content = attachment.thumbnail
+      headers = self.get_headers()
+      headers['Content-Type'] = 'image/png'
+    else:
+      content = attachment.content
+      headers = self.get_headers()
+      headers['Content-Type'] = attachment.mime_type
+
 
     return content, headers
