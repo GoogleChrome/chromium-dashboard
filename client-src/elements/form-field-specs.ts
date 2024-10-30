@@ -1926,7 +1926,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: TEXT_FIELD_ATTRS,
     required: false,
     label: 'Flag name',
-    help_text: html` Name of the flag on chrome://flags that allows a web
+    help_text: html` Name of the flag on about://flags that allows a web
       developer to enable this feature in their own browser to try it out. E.g.,
       "storage-buckets". These are defined in
       <a
