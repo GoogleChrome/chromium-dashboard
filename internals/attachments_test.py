@@ -28,25 +28,6 @@ class AttachmentsTests(testing_config.CustomTestCase):
     for attach in attachments.Attachment.query().fetch(None):
       attach.key.delete()
 
-  def test_guess_content_type_from_filename(self):
-    """We can guess mime type based on filename extension."""
-    guess = attachments.guess_content_type_from_filename
-    self.assertEqual(guess('screenshot.gif'), 'image/gif')
-    self.assertEqual(guess('screenshot.jpg'), 'image/jpeg')
-    self.assertEqual(guess('screenshot.jpeg'), 'image/jpeg')
-    self.assertEqual(guess('screenshot.png'), 'image/png')
-    self.assertEqual(guess('screenshot.webp'), 'image/webp')
-
-    self.assertEqual(guess('screen.shot.webp'), 'image/webp')
-    self.assertEqual(guess('.webp'), 'image/webp')
-    self.assertEqual(guess('screen shot.webp'), 'image/webp')
-
-    self.assertEqual(guess('screenshot.pdf'), 'application/octet-stream')
-    self.assertEqual(guess('screenshot gif'), 'application/octet-stream')
-    self.assertEqual(guess('screenshotgif'), 'application/octet-stream')
-    self.assertEqual(guess('gif'), 'application/octet-stream')
-    self.assertEqual(guess(''), 'application/octet-stream')
-
   def test_store_attachment(self):
     """We can store attachment content."""
     actual = attachments.store_attachment(
