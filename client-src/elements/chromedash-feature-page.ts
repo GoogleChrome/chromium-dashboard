@@ -116,7 +116,8 @@ export class ChromedashFeaturePage extends LitElement {
   @state()
   currentDate: number = Date.now();
   @state()
-  closestShippingMilestone: string = '';
+  // The closest milestone shipping date as an ISO string.
+  closestShippingDate: string = '';
 
   connectedCallback() {
     super.connectedCallback();
@@ -127,7 +128,11 @@ export class ChromedashFeaturePage extends LitElement {
     return this.feature && Object.keys(this.feature).length !== 0;
   }
 
-  isFeatureUpcoming(channels, stages: Array<StageDict>) {
+  /**
+   * Determine if this feature is upcoming - scheduled to ship
+   * within two milestones, and find the closest shipping date
+   * for that milestone.*/
+  calcUpcoming(channels, stages: Array<StageDict>) {
     const latestStableVersion = channels['stable']?.version;
     if (!latestStableVersion || !stages) {
       return;
@@ -156,7 +161,7 @@ export class ChromedashFeaturePage extends LitElement {
     if (this.isUpcoming) {
       Object.keys(channels).forEach(key => {
         if (channels[key].version === foundMilestone) {
-          this.closestShippingMilestone = channels[key].final_beta;
+          this.closestShippingDate = channels[key].final_beta;
         }
       });
     }
@@ -209,7 +214,7 @@ export class ChromedashFeaturePage extends LitElement {
           if (this.feature.name) {
             document.title = `${this.feature.name} - ${this.appTitle}`;
           }
-          this.isFeatureUpcoming(channels, feature.stages);
+          this.calcUpcoming(channels, feature.stages);
           this.loading = false;
         }
       )
@@ -489,13 +494,13 @@ export class ChromedashFeaturePage extends LitElement {
               <iron-icon icon="chromestatus:error" data-tooltip></iron-icon>
             </span>
             <span>
-              Your feature hasn't been verified as accurate since&nbsp;
+              Your feature hasn't been verified as accurate since${' '}
               <sl-relative-time
                 date=${this.feature.accurate_as_of}
               ></sl-relative-time
-              >, but it is scheduled to ship&nbsp;
+              >, but it is scheduled to ship${' '}
               <sl-relative-time
-                date=${this.closestShippingMilestone}
+                date=${this.closestShippingDate}
               ></sl-relative-time
               >. Please
               <a href="/guide/verify_accuracy/${this.featureId}"
@@ -511,13 +516,13 @@ export class ChromedashFeaturePage extends LitElement {
               <iron-icon icon="chromestatus:error" data-tooltip></iron-icon>
             </span>
             <span>
-              This feature hasn't been verified as accurate since&nbsp;
+              This feature hasn't been verified as accurate since${' '}
               <sl-relative-time
                 date=${this.feature.accurate_as_of}
               ></sl-relative-time
-              >, but it is scheduled to ship&nbsp;
+              >, but it is scheduled to ship${' '}
               <sl-relative-time
-                date=${this.closestShippingMilestone}
+                date=${this.closestShippingDate}
               ></sl-relative-time
               >.
             </span>

@@ -323,7 +323,7 @@ describe('chromedash-feature-page', () => {
     assert.include(consensusSection.innerHTML, 'fake webdev view text');
   });
 
-  it('isFeatureUpcoming() tests', async () => {
+  it('calcUpcoming() tests', async () => {
     const featureId = 123456;
     const contextLink = '/features';
     const feature: any = structuredClone(await validFeaturePromise);
@@ -338,31 +338,31 @@ describe('chromedash-feature-page', () => {
       );
     assert.exists(component);
 
-    component.isFeatureUpcoming({}, feature.stages);
+    component.calcUpcoming({}, feature.stages);
     assert.isFalse(component.isUpcoming);
-    assert.equal(component.closestShippingMilestone, '');
+    assert.equal(component.closestShippingDate, '');
 
-    component.isFeatureUpcoming(channels, []);
+    component.calcUpcoming(channels, []);
     assert.isFalse(component.isUpcoming);
-    assert.equal(component.closestShippingMilestone, '');
+    assert.equal(component.closestShippingDate, '');
 
     // No shipping milestones.
     let stages: any = structuredClone(feature.stages);
     stages[2].stage_type = 130;
-    component.isFeatureUpcoming(channels, stages);
+    component.calcUpcoming(channels, stages);
     assert.isFalse(component.isUpcoming);
-    assert.equal(component.closestShippingMilestone, '');
+    assert.equal(component.closestShippingDate, '');
 
     // No upcoming shipping milestones.
     stages = structuredClone(feature.stages);
     stages[2].desktop_first = 20;
-    component.isFeatureUpcoming(channels, stages);
+    component.calcUpcoming(channels, stages);
     assert.isFalse(component.isUpcoming);
-    assert.equal(component.closestShippingMilestone, '');
+    assert.equal(component.closestShippingDate, '');
 
-    component.isFeatureUpcoming(channels, feature.stages);
+    component.calcUpcoming(channels, feature.stages);
     assert.isTrue(component.isUpcoming);
-    assert.equal(component.closestShippingMilestone, '2020-03-13T00:00:00');
+    assert.equal(component.closestShippingDate, '2020-03-13T00:00:00');
   });
 
   it('isFeatureOutdated() tests', async () => {
@@ -385,9 +385,9 @@ describe('chromedash-feature-page', () => {
     component.currentDate = new Date('2024-10-23').getTime();
     assert.exists(component);
 
-    component.isFeatureUpcoming(channels, feature.stages);
+    component.calcUpcoming(channels, feature.stages);
     assert.isTrue(component.isUpcoming);
-    assert.equal(component.closestShippingMilestone, '2020-03-13T00:00:00');
+    assert.equal(component.closestShippingDate, '2020-03-13T00:00:00');
     assert.isTrue(component.isFeatureOutdated());
 
     // accurate_as_of is not outdated and within the 4-week grace period.
@@ -415,7 +415,7 @@ describe('chromedash-feature-page', () => {
     component.currentDate = new Date('2024-10-23').getTime();
     assert.exists(component);
 
-    component.isFeatureUpcoming(channels, feature.stages);
+    component.calcUpcoming(channels, feature.stages);
     const oudated = component.shadowRoot!.querySelector('#outdated-icon');
     assert.exists(oudated);
   });
