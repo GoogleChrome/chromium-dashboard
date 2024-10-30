@@ -15,6 +15,35 @@ info:
 servers:
   - url: /api/v0
 paths:
+  /features/{feature_id}/attachments:
+    parameters:
+      - name: feature_id
+        in: path
+        description: Feature ID
+        required: true
+        schema:
+          type: integer
+    post:
+      summary: Store a file that will be attached to a feature
+      operationId: addAttachment
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                attachment:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: The URI of the stored attachment.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddAttachmentResponse'
+
   /features/{feature_id}/votes:
     parameters:
       - name: feature_id
@@ -1012,6 +1041,11 @@ components:
         - set_by
         - set_on
         - state
+    AddAttachmentResponse:
+      type: object
+      properties:
+        attachment_uri:
+          type: string
     GetVotesResponse:
       type: object
       properties:
@@ -1250,7 +1284,7 @@ components:
         isSiteEditor:
           type: boolean
       required:
-        - email
+       - email
     AccountResponse:
       type: object
       properties:

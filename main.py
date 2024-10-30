@@ -20,6 +20,7 @@ from typing import Any, Type
 import settings
 from api import (
   accounts_api,
+  attachments_api,
   blink_components_api,
   channels_api,
   comments_api,
@@ -124,6 +125,8 @@ api_routes: list[Route] = [
         comments_api.CommentsAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/approvals/<int:gate_id>/comments',
         comments_api.CommentsAPI),
+    Route(f'{API_BASE}/features/<int:feature_id>/attachments',
+        attachments_api.AttachmentsAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/process',
         processes_api.ProcessesAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/progress',
@@ -264,6 +267,8 @@ mpa_page_routes: list[Route] = [
         defaults={'template_path': 'farewell-samples.html'}),
 
     Route('/omaha_data', metrics.OmahaDataHandler),
+    Route('/feature/<int:feature_id>/attachment/<int:attachment_id>',
+          attachments_api.AttachmentServing),
 ]
 
 internals_routes: list[Route] = [

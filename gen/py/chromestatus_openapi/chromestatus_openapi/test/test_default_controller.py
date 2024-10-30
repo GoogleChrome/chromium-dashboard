@@ -4,6 +4,7 @@ from flask import json
 
 from chromestatus_openapi.models.account_response import AccountResponse  # noqa: E501
 from chromestatus_openapi.models.activity import Activity  # noqa: E501
+from chromestatus_openapi.models.add_attachment_response import AddAttachmentResponse  # noqa: E501
 from chromestatus_openapi.models.comments_request import CommentsRequest  # noqa: E501
 from chromestatus_openapi.models.component_users_request import ComponentUsersRequest  # noqa: E501
 from chromestatus_openapi.models.components_users_response import ComponentsUsersResponse  # noqa: E501
@@ -44,6 +45,26 @@ from chromestatus_openapi.test import BaseTestCase
 
 class TestDefaultController(BaseTestCase):
     """DefaultController integration test stubs"""
+
+    @unittest.skip("multipart/form-data not supported by Connexion")
+    def test_add_attachment(self):
+        """Test case for add_attachment
+
+        Store a file that will be attached to a feature
+        """
+        headers = { 
+            'Accept': 'application/json',
+            'Content-Type': 'multipart/form-data',
+        }
+        data = dict(attachment='/path/to/file')
+        response = self.client.open(
+            '/api/v0/features/{feature_id}/attachments'.format(feature_id=56),
+            method='POST',
+            headers=headers,
+            data=data,
+            content_type='multipart/form-data')
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
 
     def test_add_feature_comment(self):
         """Test case for add_feature_comment

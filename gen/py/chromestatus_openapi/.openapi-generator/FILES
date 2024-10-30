@@ -14,6 +14,7 @@ chromestatus_openapi/models/__init__.py
 chromestatus_openapi/models/account_response.py
 chromestatus_openapi/models/action.py
 chromestatus_openapi/models/activity.py
+chromestatus_openapi/models/add_attachment_response.py
 chromestatus_openapi/models/amendment.py
 chromestatus_openapi/models/array_field_info_value.py
 chromestatus_openapi/models/base_model.py

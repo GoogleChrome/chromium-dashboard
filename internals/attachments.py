@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import io
 import logging
-from google.appengine.api import images
+from PIL import Image
 from google.cloud import ndb  # type: ignore
 from typing import Tuple
 
@@ -43,22 +44,7 @@ class AttachmentTooLarge(Exception):
   pass
 
 
-_EXTENSION_TO_CTYPE_TABLE = {
-    # These are image types that we trust the browser to display.
-    'gif': 'image/gif',
-    'jpg': 'image/jpeg',
-    'jpeg': 'image/jpeg',
-    'png': 'image/png',
-    'webp': 'image/webp',
-    'txt': 'text/plain',
-}
-
-
-def guess_content_type_from_filename(filename: str) -> str:
-  """Guess a file's content type based on the filename extension."""
-  ext = filename.split('.')[-1] if ('.' in filename) else ''
-  ext = ext.lower()
-  return _EXTENSION_TO_CTYPE_TABLE.get(ext, 'application/octet-stream')
+SUPPORTED_MIME_TYPES = RESIZABLE_MIME_TYPES + ['text/plain']
 
 
 def store_attachment(feature_id: int, content: bytes, mime_type: str) -> str:
@@ -76,18 +62,17 @@ def store_attachment(feature_id: int, content: bytes, mime_type: str) -> str:
     # Create and save a thumbnail too.
     thumb_content = None
     try:
-      thumb_content = images.resize(content, THUMB_WIDTH, THUMB_HEIGHT)
-    except images.LargeImageError:
-      # Don't log the whole exception because we don't need to see
-      # this on the Cloud Error Reporting page.
-      logging.info('Got LargeImageError on image with %d bytes', len(content))
+      im = Image.open(io.BytesIO(content))
+      im.thumbnail((THUMB_WIDTH, THUMB_HEIGHT))
+      thumb_buffer = io.BytesIO()
+      im.save(thumb_buffer, 'PNG')
+      thumb_content = thumb_buffer.getvalue()
     except Exception as e:
       # Do not raise exception for incorrectly formed images.
-      # See https://bugs.chromium.org/p/monorail/issues/detail?id=597 for more
-      # detail.
       logging.exception(e)
     if thumb_content:
       attachment.thumbnail = thumb_content
+      logging.info('Thumbnail is %r bytes', len(thumb_content))
 
   attachment.put()
   return attachment
@@ -101,10 +86,10 @@ def check_attachment_size(content: bytes):
 
 def check_attachment_type(mime_type: str):
   """Reject attachments that are of an unsupported type."""
-  if mime_type not in _EXTENSION_TO_CTYPE_TABLE.values():
+  if mime_type not in SUPPORTED_MIME_TYPES:
     raise UnsupportedMimeType(
         'Please upload an image with one of the following mime types:\n%s' %
-            ', '.join(_EXTENSION_TO_CTYPE_TABLE.values()))
+            ', '.join(SUPPORTED_MIME_TYPES))
 
 
 def get_attachment(feature_id: int, attachment_id: int) -> Attachment|None:

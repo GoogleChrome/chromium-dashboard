@@ -17,6 +17,7 @@ import * as runtime from '../runtime';
 import type {
   AccountResponse,
   Activity,
+  AddAttachmentResponse,
   CommentsRequest,
   ComponentUsersRequest,
   ComponentsUsersResponse,
@@ -58,6 +59,8 @@ import {
     AccountResponseToJSON,
     ActivityFromJSON,
     ActivityToJSON,
+    AddAttachmentResponseFromJSON,
+    AddAttachmentResponseToJSON,
     CommentsRequestFromJSON,
     CommentsRequestToJSON,
     ComponentUsersRequestFromJSON,
@@ -129,6 +132,11 @@ import {
     SuccessMessageFromJSON,
     SuccessMessageToJSON,
 } from '../models/index';
+
+export interface AddAttachmentRequest {
+    featureId: number;
+    attachment?: Blob;
+}
 
 export interface AddFeatureCommentRequest {
     featureId: number;
@@ -288,6 +296,22 @@ export interface UpdateFeatureCommentRequest {
  * @interface DefaultApiInterface
  */
 export interface DefaultApiInterface {
+    /**
+     * 
+     * @summary Store a file that will be attached to a feature
+     * @param {number} featureId Feature ID
+     * @param {Blob} [attachment] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    addAttachmentRaw(requestParameters: AddAttachmentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AddAttachmentResponse>>;
+
+    /**
+     * Store a file that will be attached to a feature
+     */
+    addAttachment(requestParameters: AddAttachmentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AddAttachmentResponse>;
+
     /**
      * 
      * @summary Add a comment to a feature
@@ -954,6 +978,60 @@ export interface DefaultApiInterface {
  * 
  */
 export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
+
+    /**
+     * Store a file that will be attached to a feature
+     */
+    async addAttachmentRaw(requestParameters: AddAttachmentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AddAttachmentResponse>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling addAttachment().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const consumes: runtime.Consume[] = [
+            { contentType: 'multipart/form-data' },
+        ];
+        // @ts-ignore: canConsumeForm may be unused
+        const canConsumeForm = runtime.canConsumeForm(consumes);
+
+        let formParams: { append(param: string, value: any): any };
+        let useForm = false;
+        // use FormData to transmit files using content-type "multipart/form-data"
+        useForm = canConsumeForm;
+        if (useForm) {
+            formParams = new FormData();
+        } else {
+            formParams = new URLSearchParams();
+        }
+
+        if (requestParameters['attachment'] != null) {
+            formParams.append('attachment', requestParameters['attachment'] as any);
+        }
+
+        const response = await this.request({
+            path: `/features/{feature_id}/attachments`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))),
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: formParams,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AddAttachmentResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Store a file that will be attached to a feature
+     */
+    async addAttachment(requestParameters: AddAttachmentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AddAttachmentResponse> {
+        const response = await this.addAttachmentRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Add a comment to a feature

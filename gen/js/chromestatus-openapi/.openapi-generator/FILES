@@ -9,6 +9,7 @@ src/index.ts
 src/models/AccountResponse.ts
 src/models/Action.ts
 src/models/Activity.ts
+src/models/AddAttachmentResponse.ts
 src/models/Amendment.ts
 src/models/ArrayFieldInfoValue.ts
 src/models/BooleanFieldInfoValue.ts
