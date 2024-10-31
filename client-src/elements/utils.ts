@@ -663,7 +663,7 @@ export function extensionMilestoneIsValid(value, currentMilestone) {
  *
  *  @param accurateAsOf The accurate_as_of date as an ISO string.
  *  @param currentDate The current date in milliseconds.
- *  @param gracePeriod The grace period in milliseconds. Defatuls
+ *  @param gracePeriod The grace period in milliseconds. Defaults
  *                      to ACCURACY_GRACE_PERIOD.
  */
 export function isVerifiedWithinGracePeriod(

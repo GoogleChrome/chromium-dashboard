@@ -130,31 +130,29 @@ export class ChromedashFeaturePage extends LitElement {
     return this.feature && Object.keys(this.feature).length !== 0;
   }
 
-  fetchClosestShippingDate(milestone: number) {
+  async fetchClosestShippingDate(milestone: number): Promise<string> {
     if (milestone === 0) {
-      return;
+      return '';
     }
-    const milestonePromise = window.csClient.getSpecifiedChannels(
-      milestone,
-      milestone
-    );
-    Promise.all([milestonePromise])
-      .then(([newMilestonesInfo]) => {
-        this.closestShippingDate = newMilestonesInfo[milestone]?.final_beta;
-        this.hasShipped = true;
-      })
-      .catch(() => {
-        showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.'
-        );
-      });
+    try {
+      const newMilestonesInfo = await window.csClient.getSpecifiedChannels(
+        milestone,
+        milestone
+      );
+      return newMilestonesInfo[milestone]?.final_beta;
+    } catch {
+      showToastMessage(
+        'Some errors occurred. Please refresh the page or try again later.'
+      );
+      return '';
+    }
   }
 
   /**
    * Determine if this feature is upcoming - scheduled to ship
    * within two milestones, then find the closest shipping date
    * for that upcoming milestone or an already shipped milestone.*/
-  findClosestShippingDate(channels, stages: Array<StageDict>) {
+  async findClosestShippingDate(channels, stages: Array<StageDict>) {
     const latestStableVersion = channels['stable']?.version;
     if (!latestStableVersion || !stages) {
       return;
@@ -199,7 +197,9 @@ export class ChromedashFeaturePage extends LitElement {
         this.closestShippingDate = channels['stable']?.final_beta;
         this.hasShipped = true;
       } else {
-        this.fetchClosestShippingDate(latestMilestone);
+        this.closestShippingDate =
+          await this.fetchClosestShippingDate(latestMilestone);
+        this.hasShipped = true;
       }
     }
   }
@@ -207,14 +207,14 @@ export class ChromedashFeaturePage extends LitElement {
   /**
    * Determine if it should show warnings to a feature author, if
    * a shipped feature is outdated, and it has edit access.*/
-  isWarningShippedFeatureOutdatedForAuthor() {
+  isShippedFeatureOutdatedForAuthor() {
     return this.userCanEdit() && this.isShippedFeatureOutdated();
   }
 
   /**
    * Determine if it should show warnings to all readers, if
    * a shipped feature is outdated, and last update was > 2 months.*/
-  isWarningShippedFeatureOutdatedForAll() {
+  isShippedFeatureOutdatedForAll() {
     if (!this.isShippedFeatureOutdated()) {
       return false;
     }
@@ -613,7 +613,7 @@ export class ChromedashFeaturePage extends LitElement {
     }
 
     if (this.isShippedFeatureOutdated()) {
-      if (this.isWarningShippedFeatureOutdatedForAuthor()) {
+      if (this.isShippedFeatureOutdatedForAuthor()) {
         warnings.push(html`
           <div class="warning layout horizontal center">
             <span
@@ -639,7 +639,7 @@ export class ChromedashFeaturePage extends LitElement {
             </span>
           </div>
         `);
-      } else if (this.isWarningShippedFeatureOutdatedForAll()) {
+      } else if (this.isShippedFeatureOutdatedForAll()) {
         warnings.push(html`
           <div class="warning layout horizontal center">
             <span
