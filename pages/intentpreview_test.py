@@ -14,6 +14,7 @@
 
 import testing_config  # Must be imported before the module under test.
 
+from flask import render_template
 from unittest import mock
 
 import os
@@ -248,8 +249,8 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
   def setUp(self):
     super(IntentEmailPreviewTemplateTest, self).setUp()
     self.feature_1 = FeatureEntry(
-        id=1, name='feature one', summary='sum',
-        owner_emails=['user1@google.com'],
+        id=234, name='feature one', summary='sum',
+        owner_emails=['user1@google.com'], feature_type=0,
         category=1, intent_stage=core_enums.INTENT_IMPLEMENT)
     # Hardcode the key for the template test
     self.feature_1.key = ndb.Key('FeatureEntry', 234)
@@ -257,10 +258,21 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
     self.feature_1.wpt_descr = 'We love WPT!'
     self.feature_1.put()
 
-    self.stage_1 = Stage(feature_id=1, stage_type=150, ot_display_name="Test 123")
+    self.stage_1 = Stage(id=100, feature_id=234, stage_type=150,
+                         ot_display_name="Test 123")
     self.stage_1.put()
+    self.gate_1 = Gate(id=101, feature_id=234, stage_id=100,
+                       gate_type=3, state=Vote.NA)
+    self.gate_1.put()
+
+    self.stage_2 = Stage(id=200, feature_id=234, stage_type=110)
+    self.stage_2.put()
+    self.gate_2 = Gate(id=201, feature_id=234, stage_id=100,
+                       gate_type=1, state=Vote.NA)
+    self.gate_2.put()
     self.request_path = '/admin/features/launch/%d/%d?intent' % (
         core_enums.INTENT_SHIP, self.feature_1.key.integer_id())
+    self.intent_preview_path = 'blink/intent_to_implement.html'
     self.handler = self.HANDLER_CLASS()
     self.feature_id = self.feature_1.key.integer_id()
 
@@ -279,13 +291,13 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
     self.maxDiff = None
 
   def tearDown(self):
-    for kind in [FeatureEntry, Stage]:
+    for kind in [FeatureEntry, Gate, Stage]:
       for entity in kind.query():
         entity.key.delete()
     testing_config.sign_out()
 
-  def test_html_rendering_prototype(self):
-    """We can render the prototype template with valid html."""
+  def test_html_rendering(self):
+    """We can render the template with valid html."""
     with test_app.test_request_context(self.request_path):
       actual_data = self.handler.get_template_data(
           feature_id=self.feature_id, intent_stage=core_enums.INTENT_IMPLEMENT)
@@ -299,25 +311,42 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
       testing_config.sign_out()
     parser = html5lib.HTMLParser(strict=True)
     document = parser.parse(template_text)
-    # TESTDATA.make_golden(template_text, 'test_html_prototype_rendering.html')
+    # TESTDATA.make_golden(template_text, 'test_html_rendering.html')
     self.assertMultiLineEqual(
-      TESTDATA['test_html_prototype_rendering.html'], template_text)
+      TESTDATA['test_html_rendering.html'], template_text)
 
-  def test_html_rendering_ot(self):
-    """We can render the origin trial template with valid html."""
+  def test_template_rendering_prototype(self):
+    """We can render the prototype template with valid html."""
     with test_app.test_request_context(self.request_path):
       actual_data = self.handler.get_template_data(
-          feature_id=self.feature_id, intent_stage=core_enums.INTENT_ORIGIN_TRIAL)
+          feature_id=self.feature_id,
+          intent_stage=core_enums.INTENT_IMPLEMENT,
+          gate_id=self.gate_2.key.integer_id())
       actual_data.update(self.handler.get_common_data())
       actual_data['nonce'] = 'fake nonce'
       actual_data['xsrf_token'] = ''
       actual_data['xsrf_token_expires'] = 0
 
-      template_text = self.handler.render(
-          actual_data, self.full_template_path)
+      body = render_template(self.intent_preview_path, **actual_data)
       testing_config.sign_out()
-    parser = html5lib.HTMLParser(strict=True)
-    document = parser.parse(template_text)
-    # TESTDATA.make_golden(template_text, 'test_html_ot_rendering.html')
+    # TESTDATA.make_golden(body, 'test_html_prototype_rendering.html')
     self.assertMultiLineEqual(
-      TESTDATA['test_html_ot_rendering.html'], template_text)
+      TESTDATA['test_html_prototype_rendering.html'], body)
+
+  def test_template_rendering_origin_trial(self):
+    """We can render the origin trial intent template."""
+    with test_app.test_request_context(self.request_path):
+      actual_data = self.handler.get_template_data(
+          feature_id=self.feature_id,
+          intent_stage=core_enums.INTENT_ORIGIN_TRIAL,
+          gate_id=self.gate_1.key.integer_id())
+      actual_data.update(self.handler.get_common_data())
+      actual_data['nonce'] = 'fake nonce'
+      actual_data['xsrf_token'] = ''
+      actual_data['xsrf_token_expires'] = 0
+
+      body = render_template(self.intent_preview_path, **actual_data)
+      testing_config.sign_out()
+    # TESTDATA.make_golden(body, 'test_html_ot_rendering.html')
+    self.assertMultiLineEqual(
+      TESTDATA['test_html_ot_rendering.html'], body)
