@@ -145,7 +145,7 @@ class FunctionTest(testing_config.CustomTestCase):
       handler = reminders.FeatureAccuracyHandler()
       actual = reminders.build_email_tasks(
           [(self.feature_template, 100)],
-          '[Action requested] Update %s',
+          'Action requested - Verify %s',
           handler.EMAIL_TEMPLATE_PATH,
           self.current_milestone_info,
           handler.should_escalate_notification)
@@ -153,7 +153,7 @@ class FunctionTest(testing_config.CustomTestCase):
     self.assertEqual(1, len(actual))
     task = actual[0]
     self.assertEqual('feature_owner@example.com', task['to'])
-    self.assertEqual('[Action requested] Update feature one', task['subject'])
+    self.assertEqual('Action requested - Verify feature one', task['subject'])
     self.assertEqual(None, task['reply_to'])
     # TESTDATA.make_golden(task['html'], 'test_build_email_tasks_feature_accuracy.html')
     self.assertMultiLineEqual(
@@ -164,7 +164,7 @@ class FunctionTest(testing_config.CustomTestCase):
       handler = reminders.FeatureAccuracyHandler()
       actual = reminders.build_email_tasks(
           [(self.feature_template, 110)],
-          '[Action requested] Update %s',
+          'Action requested - Verify %s',
           handler.EMAIL_TEMPLATE_PATH,
           self.current_milestone_info,
           handler.should_escalate_notification)
@@ -172,7 +172,7 @@ class FunctionTest(testing_config.CustomTestCase):
     self.assertEqual(1, len(actual))
     task = actual[0]
     self.assertEqual('feature_owner@example.com', task['to'])
-    self.assertEqual('[Action requested] Update feature one', task['subject'])
+    self.assertEqual('Action requested - Verify feature one', task['subject'])
     self.assertEqual(None, task['reply_to'])
     # TESTDATA.make_golden(task['html'], 'test_build_email_tasks_feature_accuracy_enterprise.html')
     self.assertMultiLineEqual(
@@ -187,7 +187,7 @@ class FunctionTest(testing_config.CustomTestCase):
       handler = reminders.FeatureAccuracyHandler()
       actual = reminders.build_email_tasks(
           [(self.feature_template, 100)],
-          '[Action requested] Update %s',
+          'Action requested - Verify %s',
           handler.EMAIL_TEMPLATE_PATH,
           self.current_milestone_info,
           handler.should_escalate_notification)
@@ -195,7 +195,7 @@ class FunctionTest(testing_config.CustomTestCase):
     self.assertEqual(5, len(actual))
     task = actual[0]
     self.assertEqual(
-        'ESCALATED: [Action requested] Update feature one', task['subject'])
+        'Escalation request - Verify feature one', task['subject'])
     self.assertEqual(None, task['reply_to'])
     # TESTDATA.make_golden(task['html'], 'test_build_email_tasks_escalated_feature_accuracy.html')
     self.assertMultiLineEqual(
@@ -205,13 +205,13 @@ class FunctionTest(testing_config.CustomTestCase):
     with test_app.app_context():
       handler = reminders.PrepublicationHandler()
       actual = reminders.build_email_tasks(
-          [(self.feature_template, 100)], '[Action requested] Update %s',
+          [(self.feature_template, 100)], 'Action requested - Verify %s',
           handler.EMAIL_TEMPLATE_PATH,
           self.current_milestone_info, handler.should_escalate_notification)
     self.assertEqual(1, len(actual))
     task = actual[0]
     self.assertEqual('feature_owner@example.com', task['to'])
-    self.assertEqual('[Action requested] Update feature one', task['subject'])
+    self.assertEqual('Action requested - Verify feature one', task['subject'])
     self.assertEqual(None, task['reply_to'])
     # TESTDATA.make_golden(task['html'], 'test_build_email_tasks_prepublication.html')
     self.assertMultiLineEqual(

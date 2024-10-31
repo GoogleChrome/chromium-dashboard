@@ -40,6 +40,7 @@ CHROME_RELEASE_SCHEDULE_URL = (
 WEBSTATUS_EMAIL = 'webstatus@google.com'
 CBE_ESCLATION_EMAIL = 'cbe-releasenotes@google.com'
 STAGING_EMAIL = 'jrobbins-test@googlegroups.com'
+EMAIL_SUBJECT_PREFIX = 'Action requested'
 
 
 def get_current_milestone_info(anchor_channel: str):
@@ -101,7 +102,10 @@ def build_email_tasks(
     html = render_template(body_template_path, **body_data)
     subject = subject_format % fe.name
     if is_escalated:
-      subject = f'ESCALATED: {subject}'
+      if EMAIL_SUBJECT_PREFIX in subject:
+        subject = subject.replace(EMAIL_SUBJECT_PREFIX, "Escalation request")
+      else:
+        subject = f'ESCALATED: {subject}'
     recipients = choose_email_recipients(fe, is_escalated)
     for recipient in recipients:
       email_tasks.append({
@@ -223,7 +227,7 @@ class FeatureAccuracyHandler(AbstractReminderHandler):
   # This grace period needs to be consistent with
   # ACCURACY_GRACE_PERIOD in client-src/elements/utils.ts.
   ACCURACY_GRACE_PERIOD = timedelta(weeks=4)
-  SUBJECT_FORMAT = '[Action requested] Update %s'
+  SUBJECT_FORMAT = EMAIL_SUBJECT_PREFIX + ' - Verify %s'
   EMAIL_TEMPLATE_PATH = 'accuracy_notice_email.html'
   FUTURE_MILESTONES_TO_CONSIDER = 2
   MILESTONE_FIELDS = [
@@ -270,7 +274,7 @@ class FeatureAccuracyHandler(AbstractReminderHandler):
 class PrepublicationHandler(AbstractReminderHandler):
   """Give feature owners a final preview just before publication."""
 
-  SUBJECT_FORMAT = '[Action requested] Review %s'
+  SUBJECT_FORMAT = EMAIL_SUBJECT_PREFIX + ' - Review %s'
   EMAIL_TEMPLATE_PATH = 'prepublication-notice-email.html'
   MILESTONE_FIELDS = [
       'shipped_android_milestone',
@@ -396,7 +400,10 @@ class SLOOverdueHandler(basehandlers.FlaskHandler):
       html = render_template(self.BODY_TEMPLATE_PATH, **body_data)
       subject = self.SUBJECT_FORMAT % fe.name
       if is_escalated:
-        subject = f'ESCALATED: {subject}'
+        if EMAIL_SUBJECT_PREFIX in subject:
+          subject = subject.replace(EMAIL_SUBJECT_PREFIX, "Escalation request")
+        else:
+          subject = f'ESCALATED: {subject}'
       recipients = self.choose_reviewers(gate, is_escalated)
       for recipient in recipients:
         email_tasks.append({
