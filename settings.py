@@ -82,6 +82,12 @@ REVIEW_COMMENT_MAILING_LIST = 'jrobbins-test@googlegroups.com'
 # Truncate some log lines to stay under limits of Google Cloud Logging.
 MAX_LOG_LINE = 200 * 1000
 
+# Largest individual attachment / screenshot that the user can POST.
+MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024
+
+# Largest overall POST to any handler.
+MAX_REQUEST_CONTENT_LENGTH = 16 * 1024 * 1024
+
 # Origin trials API URL
 OT_URL = 'https://origintrials-staging.corp.google.com/origintrials/'
 OT_API_URL = 'https://staging-chromeorigintrials-pa.sandbox.googleapis.com'
