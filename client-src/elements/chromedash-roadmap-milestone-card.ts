@@ -4,6 +4,7 @@ import {customElement, property, state} from 'lit/decorators.js';
 import {createRef, ref} from 'lit/directives/ref.js';
 import {ROADMAP_MILESTONE_CARD_CSS} from '../css/elements/chromedash-roadmap-milestone-card-css.js';
 import {Channels, ReleaseInfo} from '../js-src/cs-client.js';
+import {isVerifiedWithinGracePeriod} from './utils.js';
 
 const REMOVED_STATUS = ['Removed'];
 const DEPRECATED_STATUS = ['Deprecated', 'No longer pursuing'];
@@ -261,17 +262,12 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
     ) {
       return false;
     }
-    if (!accurateAsOf) {
-      return true;
-    }
-    const accurateDate = Date.parse(accurateAsOf);
-    // 4-week period.
-    const gracePeriod = 4 * 7 * 24 * 60 * 60 * 1000;
-    if (accurateDate + gracePeriod < this.currentDate) {
-      return true;
-    }
 
-    return false;
+    const isVerified = isVerifiedWithinGracePeriod(
+      accurateAsOf,
+      this.currentDate
+    );
+    return !isVerified;
   }
 
   _cardFeatureItemTemplate(f, shippingType) {

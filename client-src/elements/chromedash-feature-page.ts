@@ -114,6 +114,8 @@ export class ChromedashFeaturePage extends LitElement {
   @state()
   isUpcoming = false;
   @state()
+  hasShipped = false;
+  @state()
   currentDate: number = Date.now();
   @state()
   // The closest milestone shipping date as an ISO string.
@@ -128,11 +130,31 @@ export class ChromedashFeaturePage extends LitElement {
     return this.feature && Object.keys(this.feature).length !== 0;
   }
 
+  fetchClosestShippingDate(milestone: number) {
+    if (milestone === 0) {
+      return;
+    }
+    const milestonePromise = window.csClient.getSpecifiedChannels(
+      milestone,
+      milestone
+    );
+    Promise.all([milestonePromise])
+      .then(([newMilestonesInfo]) => {
+        this.closestShippingDate = newMilestonesInfo[milestone]?.final_beta;
+        this.hasShipped = true;
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
+      });
+  }
+
   /**
    * Determine if this feature is upcoming - scheduled to ship
-   * within two milestones, and find the closest shipping date
-   * for that milestone.*/
-  calcUpcoming(channels, stages: Array<StageDict>) {
+   * within two milestones, then find the closest shipping date
+   * for that upcoming milestone or an already shipped milestone.*/
+  findClosestShippingDate(channels, stages: Array<StageDict>) {
     const latestStableVersion = channels['stable']?.version;
     if (!latestStableVersion || !stages) {
       return;
@@ -164,13 +186,72 @@ export class ChromedashFeaturePage extends LitElement {
           this.closestShippingDate = channels[key].final_beta;
         }
       });
+    } else {
+      // If not upcoming, find the closest milestone that has shipped.
+      let latestMilestone = 0;
+      for (const ms of shippingMilestones) {
+        if (ms && ms <= latestStableVersion) {
+          latestMilestone = Math.max(latestMilestone, ms);
+        }
+      }
+
+      if (latestMilestone === latestStableVersion) {
+        this.closestShippingDate = channels['stable']?.final_beta;
+        this.hasShipped = true;
+      } else {
+        this.fetchClosestShippingDate(latestMilestone);
+      }
     }
+  }
+
+  /**
+   * Determine if it should show warnings to a feature author, if
+   * a shipped feature is outdated, and it has edit access.*/
+  isWarningShippedFeatureOutdatedForAuthor() {
+    return this.userCanEdit() && this.isShippedFeatureOutdated();
+  }
+
+  /**
+   * Determine if it should show warnings to all readers, if
+   * a shipped feature is outdated, and last update was > 2 months.*/
+  isWarningShippedFeatureOutdatedForAll() {
+    if (!this.isShippedFeatureOutdated()) {
+      return false;
+    }
+
+    // Represent two months grace period.
+    const nineWeekPeriod = 9 * 7 * 24 * 60 * 60 * 1000;
+    const isVerified = isVerifiedWithinGracePeriod(
+      this.feature.accurate_as_of,
+      this.currentDate,
+      nineWeekPeriod
+    );
+    return !isVerified;
+  }
+
+  /**
+   * A feature is outdated if it has shipped, and its
+   * accurate_as_of is before its latest shipping date before today.*/
+  isShippedFeatureOutdated(): boolean {
+    // Check if a feature has shipped.
+    if (!this.hasShipped) {
+      return false;
+    }
+
+    if (!this.feature.accurate_as_of) {
+      return true;
+    }
+
+    return (
+      Date.parse(this.feature.accurate_as_of) <
+      Date.parse(this.closestShippingDate)
+    );
   }
 
   /**
    * A feature is outdated if it is scheduled to ship in the next 2 milestones,
    * and its accurate_as_of date is at least 4 weeks ago.*/
-  isFeatureOutdated(): boolean {
+  isUpcomingFeatureOutdated(): boolean {
     if (!this.isUpcoming) {
       return false;
     }
@@ -214,7 +295,7 @@ export class ChromedashFeaturePage extends LitElement {
           if (this.feature.name) {
             document.title = `${this.feature.name} - ${this.appTitle}`;
           }
-          this.calcUpcoming(channels, feature.stages);
+          this.findClosestShippingDate(channels, feature.stages);
           this.loading = false;
         }
       )
@@ -486,7 +567,7 @@ export class ChromedashFeaturePage extends LitElement {
         </div>
       `);
     }
-    if (this.isFeatureOutdated()) {
+    if (this.isUpcomingFeatureOutdated()) {
       if (this.userCanEdit()) {
         warnings.push(html`
           <div class="warning layout horizontal center">
@@ -521,6 +602,59 @@ export class ChromedashFeaturePage extends LitElement {
                 date=${this.feature.accurate_as_of}
               ></sl-relative-time
               >, but it is scheduled to ship${' '}
+              <sl-relative-time
+                date=${this.closestShippingDate}
+              ></sl-relative-time
+              >.
+            </span>
+          </div>
+        `);
+      }
+    }
+
+    if (this.isShippedFeatureOutdated()) {
+      if (this.isWarningShippedFeatureOutdatedForAuthor()) {
+        warnings.push(html`
+          <div class="warning layout horizontal center">
+            <span
+              class="tooltip"
+              id="shipped-outdated-icon"
+              title="Feature outdated "
+            >
+              <iron-icon icon="chromestatus:error" data-tooltip></iron-icon>
+            </span>
+            <span>
+              Your feature hasn't been verified as accurate since&nbsp;
+              <sl-relative-time
+                date=${this.feature.accurate_as_of}
+              ></sl-relative-time
+              >, but it claims to have shipped&nbsp;
+              <sl-relative-time
+                date=${this.closestShippingDate}
+              ></sl-relative-time
+              >. Please
+              <a href="/guide/verify_accuracy/${this.featureId}"
+                >verify that your feature is accurate</a
+              >.
+            </span>
+          </div>
+        `);
+      } else if (this.isWarningShippedFeatureOutdatedForAll()) {
+        warnings.push(html`
+          <div class="warning layout horizontal center">
+            <span
+              class="tooltip"
+              id="shipped-outdated-icon"
+              title="Feature outdated "
+            >
+              <iron-icon icon="chromestatus:error" data-tooltip></iron-icon>
+            </span>
+            <span>
+              This feature hasn't been verified as accurate since&nbsp;
+              <sl-relative-time
+                date=${this.feature.accurate_as_of}
+              ></sl-relative-time
+              >, but it claims to have shipped&nbsp;
               <sl-relative-time
                 date=${this.closestShippingDate}
               ></sl-relative-time

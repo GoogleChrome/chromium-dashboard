@@ -663,17 +663,20 @@ export function extensionMilestoneIsValid(value, currentMilestone) {
  *
  *  @param accurateAsOf The accurate_as_of date as an ISO string.
  *  @param currentDate The current date in milliseconds.
+ *  @param gracePeriod The grace period in milliseconds. Defatuls
+ *                      to ACCURACY_GRACE_PERIOD.
  */
 export function isVerifiedWithinGracePeriod(
   accurateAsOf: string | undefined,
-  currentDate: number
+  currentDate: number,
+  gracePeriod: number = ACCURACY_GRACE_PERIOD
 ) {
   if (!accurateAsOf) {
     return false;
   }
 
   const accurateDate = Date.parse(accurateAsOf);
-  if (accurateDate + ACCURACY_GRACE_PERIOD < currentDate) {
+  if (accurateDate + gracePeriod < currentDate) {
     return false;
   }
 
