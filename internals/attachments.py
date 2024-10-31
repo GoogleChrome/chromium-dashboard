@@ -18,13 +18,15 @@ from PIL import Image
 from google.cloud import ndb  # type: ignore
 from typing import Tuple
 
+import settings
+
 
 RESIZABLE_MIME_TYPES = [
     'image/png', 'image/jpg', 'image/jpeg', 'image/gif', 'image/webp',
     ]
 THUMB_WIDTH = 250
 THUMB_HEIGHT = 200
-MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024  # 10 MB
+
 
 
 class Attachment(ndb.Model):
@@ -80,7 +82,7 @@ def store_attachment(feature_id: int, content: bytes, mime_type: str) -> str:
 
 def check_attachment_size(content: bytes):
   """Reject attachments that are too large."""
-  if len(content) > MAX_ATTACHMENT_SIZE:
+  if len(content) > settings.MAX_ATTACHMENT_SIZE:
     raise AttachmentTooLarge('Attachment size %r is too large' % len(content))
 
 

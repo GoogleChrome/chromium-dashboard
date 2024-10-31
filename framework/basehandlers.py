@@ -800,7 +800,7 @@ def FlaskApplication(import_name, routes, pattern_base='', debug=False):
 
 
   # Reject any huge POSTs
-  app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB
+  app.config['MAX_CONTENT_LENGTH'] = settings.MAX_REQUEST_CONTENT_LENGTH
 
   # Set the CORS HEADERS.
   CORS(app, resources={r'/data/*': {'origins': '*'}})
