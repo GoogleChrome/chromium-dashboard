@@ -618,7 +618,7 @@ export class ChromedashFeaturePage extends LitElement {
           <div class="warning layout horizontal center">
             <span
               class="tooltip"
-              id="shipped-outdated-icon"
+              id="shipped-outdated-author"
               title="Feature outdated "
             >
               <iron-icon icon="chromestatus:error" data-tooltip></iron-icon>
@@ -644,7 +644,7 @@ export class ChromedashFeaturePage extends LitElement {
           <div class="warning layout horizontal center">
             <span
               class="tooltip"
-              id="shipped-outdated-icon"
+              id="shipped-outdated-all"
               title="Feature outdated "
             >
               <iron-icon icon="chromestatus:error" data-tooltip></iron-icon>
