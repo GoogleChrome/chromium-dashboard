@@ -284,7 +284,7 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
         entity.key.delete()
     testing_config.sign_out()
 
-  def test_html_rendering(self):
+  def test_html_rendering_prototype(self):
     """We can render the prototype template with valid html."""
     with test_app.test_request_context(self.request_path):
       actual_data = self.handler.get_template_data(
@@ -303,7 +303,7 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
     self.assertMultiLineEqual(
       TESTDATA['test_html_prototype_rendering.html'], template_text)
 
-  def test_html_rendering(self):
+  def test_html_rendering_ot(self):
     """We can render the origin trial template with valid html."""
     with test_app.test_request_context(self.request_path):
       actual_data = self.handler.get_template_data(
