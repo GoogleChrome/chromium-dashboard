@@ -238,8 +238,10 @@ export class ChromedashFeaturePage extends LitElement {
       return false;
     }
 
+    // If accurate_as_of is missing from a shipped feature, it is likely
+    // an old feature. Treat it as not oudated.
     if (!this.feature.accurate_as_of) {
-      return true;
+      return false;
     }
 
     return (
