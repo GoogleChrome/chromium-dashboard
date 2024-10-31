@@ -349,6 +349,7 @@ const FLAT_ORIGIN_TRIAL_FIELDS: MetadataFields = {
         'ongoing_constraints',
         // TODO(jrobbins): display r4dt_url instead when deprecating.
         'i2e_lgtms',
+        'ot_documentation_url',
         'intent_to_experiment_url',
         'origin_trial_feedback_url',
       ],

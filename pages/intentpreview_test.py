@@ -248,7 +248,8 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
   def setUp(self):
     super(IntentEmailPreviewTemplateTest, self).setUp()
     self.feature_1 = FeatureEntry(
-        name='feature one', summary='sum', owner_emails=['user1@google.com'],
+        id=1, name='feature one', summary='sum',
+        owner_emails=['user1@google.com'],
         category=1, intent_stage=core_enums.INTENT_IMPLEMENT)
     # Hardcode the key for the template test
     self.feature_1.key = ndb.Key('FeatureEntry', 234)
@@ -256,6 +257,8 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
     self.feature_1.wpt_descr = 'We love WPT!'
     self.feature_1.put()
 
+    self.stage_1 = Stage(feature_id=1, stage_type=150, ot_display_name="Test 123")
+    self.stage_1.put()
     self.request_path = '/admin/features/launch/%d/%d?intent' % (
         core_enums.INTENT_SHIP, self.feature_1.key.integer_id())
     self.handler = self.HANDLER_CLASS()
@@ -276,11 +279,13 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
     self.maxDiff = None
 
   def tearDown(self):
-    self.feature_1.key.delete()
+    for kind in [FeatureEntry, Stage]:
+      for entity in kind.query():
+        entity.key.delete()
     testing_config.sign_out()
 
   def test_html_rendering(self):
-    """We can render the template with valid html."""
+    """We can render the prototype template with valid html."""
     with test_app.test_request_context(self.request_path):
       actual_data = self.handler.get_template_data(
           feature_id=self.feature_id, intent_stage=core_enums.INTENT_IMPLEMENT)
@@ -294,6 +299,25 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
       testing_config.sign_out()
     parser = html5lib.HTMLParser(strict=True)
     document = parser.parse(template_text)
-    # TESTDATA.make_golden(template_text, 'test_html_rendering.html')
+    # TESTDATA.make_golden(template_text, 'test_html_prototype_rendering.html')
     self.assertMultiLineEqual(
-      TESTDATA['test_html_rendering.html'], template_text)
+      TESTDATA['test_html_prototype_rendering.html'], template_text)
+
+  def test_html_rendering(self):
+    """We can render the origin trial template with valid html."""
+    with test_app.test_request_context(self.request_path):
+      actual_data = self.handler.get_template_data(
+          feature_id=self.feature_id, intent_stage=core_enums.INTENT_ORIGIN_TRIAL)
+      actual_data.update(self.handler.get_common_data())
+      actual_data['nonce'] = 'fake nonce'
+      actual_data['xsrf_token'] = ''
+      actual_data['xsrf_token_expires'] = 0
+
+      template_text = self.handler.render(
+          actual_data, self.full_template_path)
+      testing_config.sign_out()
+    parser = html5lib.HTMLParser(strict=True)
+    document = parser.parse(template_text)
+    # TESTDATA.make_golden(template_text, 'test_html_ot_rendering.html')
+    self.assertMultiLineEqual(
+      TESTDATA['test_html_ot_rendering.html'], template_text)
