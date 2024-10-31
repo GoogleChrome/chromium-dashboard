@@ -494,11 +494,11 @@ export class ChromedashFeaturePage extends LitElement {
               <iron-icon icon="chromestatus:error" data-tooltip></iron-icon>
             </span>
             <span>
-              Your feature hasn't been verified as accurate since${' '}
+              Your feature hasn't been verified as accurate since&nbsp;
               <sl-relative-time
                 date=${this.feature.accurate_as_of}
               ></sl-relative-time
-              >, but it is scheduled to ship${' '}
+              >, but it is scheduled to ship&nbsp;
               <sl-relative-time
                 date=${this.closestShippingDate}
               ></sl-relative-time
@@ -516,11 +516,11 @@ export class ChromedashFeaturePage extends LitElement {
               <iron-icon icon="chromestatus:error" data-tooltip></iron-icon>
             </span>
             <span>
-              This feature hasn't been verified as accurate since${' '}
+              This feature hasn't been verified as accurate since&nbsp;
               <sl-relative-time
                 date=${this.feature.accurate_as_of}
               ></sl-relative-time
-              >, but it is scheduled to ship${' '}
+              >, but it is scheduled to ship&nbsp;
               <sl-relative-time
                 date=${this.closestShippingDate}
               ></sl-relative-time
