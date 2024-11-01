@@ -17,7 +17,7 @@ import {Process, ProgressItem} from './chromedash-gate-column.js';
 import {showToastMessage, isVerifiedWithinGracePeriod} from './utils.js';
 import {
   STAGE_TYPES_SHIPPING,
-  STAGE_BLINK_ORIGIN_TRIAL,
+  STAGE_TYPES_ORIGIN_TRIAL,
 } from './form-field-enums';
 
 const INACTIVE_STATES = ['No longer pursuing', 'Deprecated', 'Removed'];
@@ -162,9 +162,11 @@ export class ChromedashFeaturePage extends LitElement {
     }
 
     const shippingMilestones = new Set<number | undefined>();
-    const neededStageTypes = new Set<number>(STAGE_TYPES_SHIPPING);
-    neededStageTypes.add(STAGE_BLINK_ORIGIN_TRIAL);
-    // Get milestones from all shipping stages, STAGE_TYPES_SHIPPING.
+    const neededStageTypes = new Set<number>([
+      ...STAGE_TYPES_SHIPPING,
+      ...STAGE_TYPES_ORIGIN_TRIAL,
+    ]);
+    // Get milestones from all shipping stages.
     for (const stage of stages) {
       if (neededStageTypes.has(stage.stage_type)) {
         shippingMilestones.add(stage.desktop_first);
