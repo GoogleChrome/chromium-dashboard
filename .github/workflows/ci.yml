@@ -8,11 +8,7 @@ on:
   pull_request:
 jobs:
   python_tests:
-    # Need to use 20.04 because ubuntu-latest uses ubuntu-22.04.
-    # 22.04 comes with python 3.10 and that does not work with gcloud.
-    # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
-    # Refer to CLOUDSDK_PYTHON above for more details.
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
