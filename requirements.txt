@@ -19,7 +19,7 @@ google-cloud-secret-manager==2.16.2
 google-auth==1.31.0
 requests==2.32.0
 redis==4.4.4
-fakeredis==1.10.1
+fakeredis==2.26.1
 Flask==2.3.2
 flask-cors==5.0.0
 funcsigs==1.0.2
