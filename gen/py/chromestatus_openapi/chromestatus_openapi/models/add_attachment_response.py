@@ -12,21 +12,21 @@ class AddAttachmentResponse(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, attachment_uri=None):  # noqa: E501
+    def __init__(self, attachment_url=None):  # noqa: E501
         """AddAttachmentResponse - a model defined in OpenAPI
 
-        :param attachment_uri: The attachment_uri of this AddAttachmentResponse.  # noqa: E501
-        :type attachment_uri: str
+        :param attachment_url: The attachment_url of this AddAttachmentResponse.  # noqa: E501
+        :type attachment_url: str
         """
         self.openapi_types = {
-            'attachment_uri': str
+            'attachment_url': str
         }
 
         self.attribute_map = {
-            'attachment_uri': 'attachment_uri'
+            'attachment_url': 'attachment_url'
         }
 
-        self._attachment_uri = attachment_uri
+        self._attachment_url = attachment_url
 
     @classmethod
     def from_dict(cls, dikt) -> 'AddAttachmentResponse':
@@ -40,22 +40,22 @@ class AddAttachmentResponse(Model):
         return util.deserialize_model(dikt, cls)
 
     @property
-    def attachment_uri(self) -> str:
-        """Gets the attachment_uri of this AddAttachmentResponse.
+    def attachment_url(self) -> str:
+        """Gets the attachment_url of this AddAttachmentResponse.
 
 
-        :return: The attachment_uri of this AddAttachmentResponse.
+        :return: The attachment_url of this AddAttachmentResponse.
         :rtype: str
         """
-        return self._attachment_uri
+        return self._attachment_url
 
-    @attachment_uri.setter
-    def attachment_uri(self, attachment_uri: str):
-        """Sets the attachment_uri of this AddAttachmentResponse.
+    @attachment_url.setter
+    def attachment_url(self, attachment_url: str):
+        """Sets the attachment_url of this AddAttachmentResponse.
 
 
-        :param attachment_uri: The attachment_uri of this AddAttachmentResponse.
-        :type attachment_uri: str
+        :param attachment_url: The attachment_url of this AddAttachmentResponse.
+        :type attachment_url: str
         """
 
-        self._attachment_uri = attachment_uri
+        self._attachment_url = attachment_url

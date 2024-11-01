@@ -24,8 +24,8 @@ import settings
 RESIZABLE_MIME_TYPES = [
     'image/png', 'image/jpg', 'image/jpeg', 'image/gif', 'image/webp',
     ]
-THUMB_WIDTH = 250
-THUMB_HEIGHT = 200
+THUMB_WIDTH = 450
+THUMB_HEIGHT = 300
 
 
 
@@ -106,14 +106,14 @@ def get_attachment(feature_id: int, attachment_id: int) -> Attachment|None:
 
 
 def get_attachment_url(attachment: Attachment) -> str:
-  """Return the URL path that will serve tis attachment."""
-  if settings.DEV_MODE:
+  """Return the URL path that will serve this attachment."""
+  if settings.DEV_MODE or settings.UNIT_TEST_MODE:
     origin = settings.SITE_URL
   else:
     digits = attachment.key.integer_id() % 1000
-    origin = 'img%d-dot-%s.appspot.com' % (digits, settings.APP_ID)
+    origin = 'https://img%d-dot-%s.appspot.com/' % (digits, settings.APP_ID)
 
-  uri = '/feature/%r/attachment/%r' % (
+  uri = 'feature/%r/attachment/%r' % (
       attachment.feature_id, attachment.key.integer_id())
   url = origin + uri
   return url

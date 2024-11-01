@@ -53,23 +53,28 @@ class AttachmentsAPI(basehandlers.EntitiesAPIHandler):
 class AttachmentServing(basehandlers.FlaskHandler):
   """Serve an attachment."""
 
-  def maybe_redirect(self):
+  def maybe_redirect(self, attachment):
     """If needed, redirect to a safe domain."""
+    logging.info('url is: %r ', self.request.url)
+    attach_url = attachments.get_attachment_url(attachment)
+    thumb_url = attach_url + '/thumbnail'
+    logging.info('attach_url is: %r ', attach_url)
+    if self.request.url not in (attach_url, thumb_url):
+      return self.redirect(attach_url)
+
     return None
 
   def get_template_data(self, **kwargs):
     """Serve the attachment data, or redirect to a cookieless domain."""
     feature_id = kwargs.get('feature_id')
     attachment_id = kwargs.get('attachment_id')
-    redirect_response = self.maybe_redirect()
-    if redirect_response:
-      return redirect_response
-
-    logging.info('host is: %r ', self.request.host)
-
     attachment = attachments.get_attachment(feature_id, attachment_id)
     if not attachment:
       self.abort(404, msg='Attachment not found')
+
+    redirect_response = self.maybe_redirect(attachment)
+    if redirect_response:
+      return redirect_response
 
     if kwargs.get('thumbnail') and attachment.thumbnail:
       content = attachment.thumbnail

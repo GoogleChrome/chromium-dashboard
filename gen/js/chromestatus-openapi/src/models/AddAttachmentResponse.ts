@@ -24,7 +24,7 @@ export interface AddAttachmentResponse {
      * @type {string}
      * @memberof AddAttachmentResponse
      */
-    attachment_uri?: string;
+    attachment_url?: string;
 }
 
 /**
@@ -44,7 +44,7 @@ export function AddAttachmentResponseFromJSONTyped(json: any, ignoreDiscriminato
     }
     return {
         
-        'attachment_uri': json['attachment_uri'] == null ? undefined : json['attachment_uri'],
+        'attachment_url': json['attachment_url'] == null ? undefined : json['attachment_url'],
     };
 }
 
@@ -54,7 +54,7 @@ export function AddAttachmentResponseToJSON(value?: AddAttachmentResponse | null
     }
     return {
         
-        'attachment_uri': value['attachment_uri'],
+        'attachment_url': value['attachment_url'],
     };
 }
 

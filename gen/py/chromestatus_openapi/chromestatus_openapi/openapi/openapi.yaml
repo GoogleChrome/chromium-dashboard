@@ -604,7 +604,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AddAttachmentResponse'
-          description: The URI of the stored attachment.
+          description: The URL of the stored attachment.
       summary: Store a file that will be attached to a feature
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /features/{feature_id}/gates:
@@ -1248,10 +1248,10 @@ components:
       type: object
     AddAttachmentResponse:
       example:
-        attachment_uri: attachment_uri
+        attachment_url: attachment_url
       properties:
-        attachment_uri:
-          title: attachment_uri
+        attachment_url:
+          title: attachment_url
           type: string
       title: AddAttachmentResponse
       type: object
