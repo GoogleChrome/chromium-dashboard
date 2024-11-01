@@ -15,7 +15,10 @@ import './chromedash-feature-highlights.js';
 import {GateDict} from './chromedash-gate-chip.js';
 import {Process, ProgressItem} from './chromedash-gate-column.js';
 import {showToastMessage, isVerifiedWithinGracePeriod} from './utils.js';
-import {STAGE_TYPES_SHIPPING} from './form-field-enums';
+import {
+  STAGE_TYPES_SHIPPING,
+  STAGE_BLINK_ORIGIN_TRIAL,
+} from './form-field-enums';
 
 const INACTIVE_STATES = ['No longer pursuing', 'Deprecated', 'Removed'];
 declare var ga: Function;
@@ -159,9 +162,11 @@ export class ChromedashFeaturePage extends LitElement {
     }
 
     const shippingMilestones = new Set<number | undefined>();
+    const neededStageTypes = new Set<number>(STAGE_TYPES_SHIPPING);
+    neededStageTypes.add(STAGE_BLINK_ORIGIN_TRIAL);
     // Get milestones from all shipping stages, STAGE_TYPES_SHIPPING.
     for (const stage of stages) {
-      if (STAGE_TYPES_SHIPPING.has(stage.stage_type)) {
+      if (neededStageTypes.has(stage.stage_type)) {
         shippingMilestones.add(stage.desktop_first);
         shippingMilestones.add(stage.android_first);
         shippingMilestones.add(stage.ios_first);
