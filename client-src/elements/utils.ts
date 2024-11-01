@@ -21,6 +21,10 @@ let toastEl;
 // We assume that a small enough window width implies a mobile device.
 const NARROW_WINDOW_MAX_WIDTH = 700;
 
+// Represent a 4-week period in milliseconds. This grace period needs
+// to be consistent with ACCURACY_GRACE_PERIOD in internals/reminders.py.
+const ACCURACY_GRACE_PERIOD = 4 * 7 * 24 * 60 * 60 * 1000;
+
 export const IS_MOBILE = (() => {
   const width =
     window.innerWidth ||
@@ -651,4 +655,30 @@ export function extensionMilestoneIsValid(value, currentMilestone) {
   }
   // End milestone should not be in the past.
   return parseInt(currentMilestone) <= intValue;
+}
+
+/**
+ * Check if feature.accurate_as_of is verified, within the four-week
+ * grace period to currentDate.
+ *
+ *  @param accurateAsOf The accurate_as_of date as an ISO string.
+ *  @param currentDate The current date in milliseconds.
+ *  @param gracePeriod The grace period in milliseconds. Defaults
+ *                      to ACCURACY_GRACE_PERIOD.
+ */
+export function isVerifiedWithinGracePeriod(
+  accurateAsOf: string | undefined,
+  currentDate: number,
+  gracePeriod: number = ACCURACY_GRACE_PERIOD
+) {
+  if (!accurateAsOf) {
+    return false;
+  }
+
+  const accurateDate = Date.parse(accurateAsOf);
+  if (accurateDate + gracePeriod < currentDate) {
+    return false;
+  }
+
+  return true;
 }

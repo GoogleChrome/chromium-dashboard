@@ -39,7 +39,7 @@ describe('chromedash-feature-page', () => {
     'Spec link': 'fake spec link',
     'Web developer signals': 'True',
   });
-  const channelsPromise = Promise.resolve({
+  const channels = {
     canary_asan: {
       version: 81,
       earliest_beta: '2020-02-13T00:00:00',
@@ -59,13 +59,21 @@ describe('chromedash-feature-page', () => {
       version: 80,
       earliest_beta: '2020-02-13T00:00:00',
       mstone: 'fake milestone number',
+      final_beta: '2020-03-13T00:00:00',
     },
     stable: {
       version: 79,
       earliest_beta: '2020-02-13T00:00:00',
       mstone: 'fake milestone number',
+      final_beta: '2020-03-13T00:00:00',
     },
-  });
+    20: {
+      version: 20,
+      final_beta: '2018-02-13T00:00:00',
+      mstone: 'fake milestone number',
+    },
+  };
+  const channelsPromise = Promise.resolve(channels);
   const validFeaturePromise = Promise.resolve({
     id: 123456,
     name: 'feature one',
@@ -102,6 +110,12 @@ describe('chromedash-feature-page', () => {
         id: 2,
         stage_type: 120,
         intent_stage: 2,
+      },
+      {
+        id: 3,
+        stage_type: 160,
+        intent_stage: 3,
+        desktop_first: 80,
       },
     ],
   });
@@ -140,11 +154,13 @@ describe('chromedash-feature-page', () => {
     sinon.stub(window.csClient, 'getFeatureProcess');
     sinon.stub(window.csClient, 'getStars');
     sinon.stub(window.csClient, 'getFeatureProgress');
+    sinon.stub(window.csClient, 'getSpecifiedChannels');
     window.csClient.getGates.returns(gatesPromise);
     window.csClient.getComments.returns(commentsPromise);
     window.csClient.getFeatureProcess.returns(processPromise);
     window.csClient.getStars.returns(starsPromise);
     window.csClient.getFeatureProgress.returns(progressPromise);
+    window.csClient.getSpecifiedChannels.returns(channelsPromise);
 
     // For the child component - chromedash-gantt
     sinon.stub(window.csClient, 'getChannels');
@@ -156,6 +172,7 @@ describe('chromedash-feature-page', () => {
     window.csClient.getFeatureProcess.restore();
     window.csClient.getStars.restore();
     window.csClient.getChannels.restore();
+    window.csClient.getSpecifiedChannels.restore();
   });
 
   it('renders with no data', async () => {
@@ -313,5 +330,241 @@ describe('chromedash-feature-page', () => {
     assert.notInclude(consensusSection.innerHTML, '<chromedash-vendor-views');
     // But it does still include webdev views.
     assert.include(consensusSection.innerHTML, 'fake webdev view text');
+  });
+
+  it('findClosestShippingDate() tests for isUpcoming state', async () => {
+    const featureId = 123456;
+    const contextLink = '/features';
+    const feature: any = structuredClone(await validFeaturePromise);
+    const component: ChromedashFeaturePage =
+      await fixture<ChromedashFeaturePage>(
+        html`<chromedash-feature-page
+          .user=${user}
+          .featureId=${featureId}
+          .contextLink=${contextLink}
+        >
+        </chromedash-feature-page>`
+      );
+    assert.exists(component);
+
+    component.findClosestShippingDate({}, feature.stages);
+    assert.isFalse(component.isUpcoming);
+    assert.equal(component.closestShippingDate, '');
+
+    component.findClosestShippingDate(channels, []);
+    assert.isFalse(component.isUpcoming);
+    assert.equal(component.closestShippingDate, '');
+
+    // No shipping milestones.
+    let stages: any = structuredClone(feature.stages);
+    stages[2].stage_type = 130;
+    component.findClosestShippingDate(channels, stages);
+    assert.isFalse(component.isUpcoming);
+    assert.equal(component.closestShippingDate, '');
+
+    // No upcoming shipping milestones.
+    stages = structuredClone(feature.stages);
+    stages[2].desktop_first = 20;
+    component.findClosestShippingDate(channels, stages);
+    assert.isFalse(component.isUpcoming);
+    assert.isFalse(component.hasShipped);
+    assert.equal(component.closestShippingDate, '');
+
+    component.findClosestShippingDate(channels, feature.stages);
+    assert.isTrue(component.isUpcoming);
+    assert.isFalse(component.hasShipped);
+    assert.equal(component.closestShippingDate, '2020-03-13T00:00:00');
+  });
+
+  it('findClosestShippingDate() tests for hasShipped state', async () => {
+    const featureId = 123456;
+    const contextLink = '/features';
+    const feature: any = structuredClone(await validFeaturePromise);
+    const component: ChromedashFeaturePage =
+      await fixture<ChromedashFeaturePage>(
+        html`<chromedash-feature-page
+          .user=${user}
+          .featureId=${featureId}
+          .contextLink=${contextLink}
+        >
+        </chromedash-feature-page>`
+      );
+    assert.exists(component);
+
+    component.findClosestShippingDate({}, feature.stages);
+    assert.isFalse(component.hasShipped);
+    assert.equal(component.closestShippingDate, '');
+
+    component.findClosestShippingDate(channels, []);
+    assert.isFalse(component.hasShipped);
+    assert.equal(component.closestShippingDate, '');
+
+    // No shipping milestones.
+    let stages: any = structuredClone(feature.stages);
+    stages[2].stage_type = 130;
+    component.findClosestShippingDate(channels, stages);
+    assert.isFalse(component.hasShipped);
+    assert.equal(component.closestShippingDate, '');
+
+    // No shipped milestones in the past.
+    const testChannels: any = structuredClone(channels);
+    testChannels['stable'].version = 10;
+    component.findClosestShippingDate(testChannels, stages);
+    assert.isFalse(component.hasShipped);
+    assert.equal(component.closestShippingDate, '');
+
+    // Shipped on the stable milestone.
+    stages = structuredClone(feature.stages);
+    stages[2].desktop_first = 79;
+    component.findClosestShippingDate(channels, stages);
+    assert.isFalse(component.isUpcoming);
+    assert.isTrue(component.hasShipped);
+    assert.equal(component.closestShippingDate, '2020-03-13T00:00:00');
+  });
+
+  it('findClosestShippingDate() tests when fetch specific channels', async () => {
+    const featureId = 123456;
+    const contextLink = '/features';
+    const feature: any = structuredClone(await validFeaturePromise);
+    feature.stages[2].desktop_first = 20;
+    window.csClient.getFeature
+      .withArgs(featureId)
+      .returns(Promise.resolve(feature));
+
+    const component: ChromedashFeaturePage =
+      await fixture<ChromedashFeaturePage>(
+        html`<chromedash-feature-page
+          .user=${user}
+          .featureId=${featureId}
+          .contextLink=${contextLink}
+        >
+        </chromedash-feature-page>`
+      );
+
+    assert.exists(component);
+    assert.isFalse(component.isUpcoming);
+    assert.isTrue(component.hasShipped);
+    assert.equal(component.closestShippingDate, '2018-02-13T00:00:00');
+  });
+
+  it('isUpcomingFeatureOutdated() tests', async () => {
+    const featureId = 123456;
+    const contextLink = '/features';
+    const feature: any = structuredClone(await validFeaturePromise);
+    feature.accurate_as_of = '2024-08-28 21:51:34.22386';
+    window.csClient.getFeature
+      .withArgs(featureId)
+      .returns(Promise.resolve(feature));
+    const component: ChromedashFeaturePage =
+      await fixture<ChromedashFeaturePage>(
+        html`<chromedash-feature-page
+          .user=${user}
+          .featureId=${featureId}
+          .contextLink=${contextLink}
+        >
+        </chromedash-feature-page>`
+      );
+    component.currentDate = new Date('2024-10-23').getTime();
+    assert.exists(component);
+
+    component.findClosestShippingDate(channels, feature.stages);
+    assert.isTrue(component.isUpcoming);
+    assert.equal(component.closestShippingDate, '2020-03-13T00:00:00');
+    assert.isTrue(component.isUpcomingFeatureOutdated());
+
+    // accurate_as_of is not outdated and within the 4-week grace period.
+    component.currentDate = new Date('2024-09-18').getTime();
+    assert.isFalse(component.isUpcomingFeatureOutdated());
+  });
+
+  it('render the oudated warning when outdated', async () => {
+    const featureId = 123456;
+    const contextLink = '/features';
+    const feature: any = structuredClone(await validFeaturePromise);
+    feature.accurate_as_of = '2024-08-28 21:51:34.22386';
+    window.csClient.getFeature
+      .withArgs(featureId)
+      .returns(Promise.resolve(feature));
+    const component: ChromedashFeaturePage =
+      await fixture<ChromedashFeaturePage>(
+        html`<chromedash-feature-page
+          .user=${user}
+          .featureId=${featureId}
+          .contextLink=${contextLink}
+        >
+        </chromedash-feature-page>`
+      );
+    component.currentDate = new Date('2024-10-23').getTime();
+    assert.exists(component);
+
+    component.findClosestShippingDate(channels, feature.stages);
+    const oudated = component.shadowRoot!.querySelector('#outdated-icon');
+    assert.exists(oudated);
+  });
+
+  it('render shipped feature outdated warnings for authors', async () => {
+    const featureId = 123456;
+    const contextLink = '/features';
+    const feature: any = structuredClone(await validFeaturePromise);
+    feature.accurate_as_of = '2017-10-28 21:51:34.22386';
+    feature.stages[2].desktop_first = 20;
+    window.csClient.getFeature
+      .withArgs(featureId)
+      .returns(Promise.resolve(feature));
+
+    const component: ChromedashFeaturePage =
+      await fixture<ChromedashFeaturePage>(
+        html`<chromedash-feature-page
+          .user=${user}
+          .featureId=${featureId}
+          .contextLink=${contextLink}
+        >
+        </chromedash-feature-page>`
+      );
+
+    component.currentDate = new Date('2017-10-29').getTime();
+    await component.updateComplete;
+    assert.exists(component);
+
+    assert.isTrue(component.isShippedFeatureOutdated());
+    assert.isTrue(component.isShippedFeatureOutdatedForAuthor());
+    assert.isFalse(component.isShippedFeatureOutdatedForAll());
+    const oudated = component.shadowRoot!.querySelector(
+      '#shipped-outdated-author'
+    );
+    assert.exists(oudated);
+  });
+
+  it('render shipped feature outdated warnings for all', async () => {
+    const featureId = 123456;
+    const contextLink = '/features';
+    const feature: any = structuredClone(await validFeaturePromise);
+    feature.accurate_as_of = '2017-10-28 21:51:34.22386';
+    feature.stages[2].desktop_first = 20;
+    window.csClient.getFeature
+      .withArgs(featureId)
+      .returns(Promise.resolve(feature));
+
+    const component: ChromedashFeaturePage =
+      await fixture<ChromedashFeaturePage>(
+        html`<chromedash-feature-page
+          .featureId=${featureId}
+          .contextLink=${contextLink}
+        >
+        </chromedash-feature-page>`
+      );
+
+    component.currentDate = new Date('2020-10-29').getTime();
+    await component.updateComplete;
+    assert.exists(component);
+
+    assert.isTrue(component.isShippedFeatureOutdated());
+    // undefined because this.user is undefined.
+    assert.isUndefined(component.isShippedFeatureOutdatedForAuthor());
+    assert.isTrue(component.isShippedFeatureOutdatedForAll());
+    const oudated = component.shadowRoot!.querySelector(
+      '#shipped-outdated-all'
+    );
+    assert.exists(oudated);
   });
 });
