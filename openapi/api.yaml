@@ -38,7 +38,7 @@ paths:
                   format: binary
       responses:
         '200':
-          description: The URI of the stored attachment.
+          description: The URL of the stored attachment.
           content:
             application/json:
               schema:
@@ -1044,7 +1044,7 @@ components:
     AddAttachmentResponse:
       type: object
       properties:
-        attachment_uri:
+        attachment_url:
           type: string
     GetVotesResponse:
       type: object
@@ -1284,7 +1284,7 @@ components:
         isSiteEditor:
           type: boolean
       required:
-       - email
+        - email
     AccountResponse:
       type: object
       properties:

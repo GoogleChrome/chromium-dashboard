@@ -105,11 +105,18 @@ def get_attachment(feature_id: int, attachment_id: int) -> Attachment|None:
   return None
 
 
-def get_attachment_uri(attachment: Attachment) -> str:
-  """Return the URI path that will serve tis attachment."""
+def get_attachment_url(attachment: Attachment) -> str:
+  """Return the URL path that will serve tis attachment."""
+  if settings.DEV_MODE:
+    origin = settings.SITE_URL
+  else:
+    digits = attachment.key.integer_id() % 1000
+    origin = 'img%d-dot-%s.appspot.com' % (digits, settings.APP_ID)
+
   uri = '/feature/%r/attachment/%r' % (
       attachment.feature_id, attachment.key.integer_id())
-  return uri
+  url = origin + uri
+  return url
 
 
 def mark_attachment_deleted(attachment: Attachment) -> None:

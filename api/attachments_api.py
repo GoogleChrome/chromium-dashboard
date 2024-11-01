@@ -46,8 +46,8 @@ class AttachmentsAPI(basehandlers.EntitiesAPIHandler):
     content = file.read()
 
     attach = attachments.store_attachment(feature_id, content, file.mimetype)
-    uri = attachments.get_attachment_uri(attach)
-    return AddAttachmentResponse.from_dict({'attachment_uri': uri}).to_dict()
+    url = attachments.get_attachment_url(attach)
+    return AddAttachmentResponse.from_dict({'attachment_url': url}).to_dict()
 
 
 class AttachmentServing(basehandlers.FlaskHandler):
