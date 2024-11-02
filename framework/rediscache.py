@@ -32,12 +32,22 @@ redis_client: Optional[redis.Redis] = None
 
 if settings.UNIT_TEST_MODE:
   redis_client = fakeredis.FakeStrictRedis()
-elif settings.STAGING or settings.PROD:
+elif settings.STAGING or settings.PROD or settings.DEV_MODE:
   # Create a Redis client.
   redis_host = os.environ.get('REDISHOST', 'localhost')
   redis_port = int(os.environ.get('REDISPORT', 6379))
   redis_client = redis.Redis(host=redis_host, port=redis_port, health_check_interval=30,
                              socket_keepalive=True, retry_on_timeout=True, retry=Retry(ExponentialBackoff(cap=5, base=1), 5))
+
+# Try pinging client to ensure connection
+try:
+  redis_client.ping()
+except redis.ConnectionError:
+  # Only allow non-caching to happen during DEV_MODE
+  if not settings.DEV_MODE:
+    raise
+  redis_client = None
+  logging.info("Redis server not installed on machine, not using caching")
 
 gae_version = None
 if settings.UNIT_TEST_MODE:
