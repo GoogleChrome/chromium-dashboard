@@ -8,7 +8,7 @@ Currently, the devcontainer setup leverages docker compose to setup two
 containers:
 
 1. The main development container which contains:
-    - Node and Python
+    - Node, Python, and Redis
 2. [Datastore Emulator](https://cloud.google.com/datastore/docs/tools/datastore-emulator)
 3. [Datastore Emulator viewer](https://github.com/remko/dsadmin)
 
