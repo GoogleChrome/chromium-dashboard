@@ -16,6 +16,7 @@ services:
     environment:
       DATASTORE_PROJECT_ID: cr-status-staging
       DATASTORE_EMULATOR_HOST: localhost:15606
+      REDISHOST: redis
 
   redis:
     image: redis:latest
