@@ -148,17 +148,17 @@ describe('chromedash-typeahead', () => {
   it('groups candidates that have the same group value', async () => {
     const component = new ChromedashTypeahead();
     const candidates = [
-      {group: 'a', name: 'a=1', doc: 'doc'},
-      {group: 'b', name: 'b=1', doc: 'doc'},
-      {group: 'c', name: 'c=1', doc: 'doc'},
-      {group: 'b', name: 'b=2', doc: 'doc'},
-      {group: 'b', name: 'b=3', doc: 'doc'},
+      {group: 'a', name: 'a:1', doc: 'doc'},
+      {group: 'b', name: 'b:1', doc: 'doc'},
+      {group: 'c', name: 'c:1', doc: 'doc'},
+      {group: 'b', name: 'b:2', doc: 'doc'},
+      {group: 'b', name: 'b:3', doc: 'doc'},
     ];
     const actual = component.groupCandidates(candidates);
     assert.deepEqual(actual, [
-      {group: 'a', name: 'a=1', doc: 'doc'},
-      {group: 'b', name: 'b=', doc: 'doc'},
-      {group: 'c', name: 'c=1', doc: 'doc'},
+      {group: 'a', name: 'a:1', doc: 'doc'},
+      {group: 'b', name: 'b:', doc: 'doc'},
+      {group: 'c', name: 'c:1', doc: 'doc'},
     ]);
   });
 });
