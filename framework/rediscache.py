@@ -18,6 +18,8 @@
 import os
 import pickle
 import logging
+from typing import Optional
+
 import settings
 
 import redis
@@ -26,7 +28,7 @@ import fakeredis
 from redis.retry import Retry
 from redis.backoff import ExponentialBackoff
 
-redis_client = None
+redis_client: Optional[redis.Redis] = None
 
 if settings.UNIT_TEST_MODE:
   redis_client = fakeredis.FakeStrictRedis()

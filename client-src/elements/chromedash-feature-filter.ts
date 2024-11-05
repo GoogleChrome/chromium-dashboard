@@ -8,14 +8,14 @@ import {ChromedashTypeahead, Candidate} from './chromedash-typeahead.js';
 
 function convertQueriableFieldToVocabularyItems(qf): Candidate[] {
   if (qf.choices === undefined) {
-    return [{group: qf.name, name: qf.name + '=', doc: qf.doc}];
+    return [{group: qf.name, name: qf.name + ':', doc: qf.doc}];
   }
   const result: Candidate[] = [];
   for (const ch in qf.choices) {
     const label: string = qf.choices[ch][1];
     result.push({
       group: qf.name,
-      name: qf.name + '="' + label + '"',
+      name: qf.name + ':"' + label + '"',
       doc: qf.doc,
     });
   }

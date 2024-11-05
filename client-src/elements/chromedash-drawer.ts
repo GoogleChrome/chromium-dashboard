@@ -264,12 +264,12 @@ export class ChromedashDrawer extends LitElement {
     const now = new Date();
     const year = now.getFullYear();
     const shippingThisYear = this.renderNavItem(
-      '/features?q=shipping_year=' + year,
+      '/features?q=shipping_year:' + year,
       'Shipping ' + year
     );
     const nextYear = year + 1;
     let shippingNextYear = this.renderNavItem(
-      '/features?q=shipping_year=' + nextYear,
+      '/features?q=shipping_year:' + nextYear,
       'Shipping ' + nextYear
     );
     // Only show next year starting on September 1.

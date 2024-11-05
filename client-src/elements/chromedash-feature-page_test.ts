@@ -374,6 +374,16 @@ describe('chromedash-feature-page', () => {
     assert.isTrue(component.isUpcoming);
     assert.isFalse(component.hasShipped);
     assert.equal(component.closestShippingDate, '2020-03-13T00:00:00');
+
+    component.closestShippingDate = '';
+    component.isUpcoming = false;
+    stages = structuredClone(feature.stages);
+    // Test with STAGE_BLINK_ORIGIN_TRIAL type.
+    stages[2].stage_type = 150;
+    component.findClosestShippingDate(channels, stages);
+    assert.isTrue(component.isUpcoming);
+    assert.isFalse(component.hasShipped);
+    assert.equal(component.closestShippingDate, '2020-03-13T00:00:00');
   });
 
   it('findClosestShippingDate() tests for hasShipped state', async () => {

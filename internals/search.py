@@ -223,10 +223,14 @@ def process_query_term(
   is_negation: bool, field_name: str, op_str: str, vals_str: str, context: QueryContext
 ) -> Future:
   """Parse and run a user-supplied query, if we can handle it."""
+  val_list = parse_query_value_list(vals_str, context)
+  # Use exact match rather than word match on non-string fields.
+  if op_str == ':':
+    if (core_enums.is_enum_field(field_name.lower()) or
+        val_list and not isinstance(val_list[0], str)):
+      op_str = '='
   if is_negation:
     op_str = search_queries.negate_operator(op_str)
-
-  val_list = parse_query_value_list(vals_str, context)
   logging.info('trying %r %r %r', field_name, op_str, val_list)
 
   future = search_queries.single_field_query_async(
