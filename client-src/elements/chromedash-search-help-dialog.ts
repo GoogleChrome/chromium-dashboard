@@ -139,10 +139,10 @@ export class ChromedashSearchHelpDialog extends LitElement {
         <ul>
           <li>FIELD: One of the fields listed below.</li>
           <li>
-            OPERATOR: Usually a colon, but it can be an inequality for
-            numeric, date, or enum fields.  The colon operator does
-            case-insensitive matching of words within a text field, while
-            an equals-sign does exact matching of an entire string value.
+            OPERATOR: Usually a colon, but it can be an inequality for numeric,
+            date, or enum fields. The colon operator does case-insensitive
+            matching of words within a text field, while an equals-sign does
+            exact matching of an entire string value.
           </li>
           <li>
             VALUE(S): A single word, number, date, or enum value listed below.
