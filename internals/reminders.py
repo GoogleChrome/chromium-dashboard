@@ -32,6 +32,7 @@ from internals import stage_helpers
 from internals import slo
 from internals.core_enums import (
     STAGE_TYPES_BY_FIELD_MAPPING)
+from internals.user_models import UserPref
 import settings
 
 
@@ -54,11 +55,16 @@ def get_current_milestone_info(anchor_channel: str):
 
 
 def choose_email_recipients(
-    feature: FeatureEntry, is_escalated: bool) -> list[str]:
+    feature: FeatureEntry, is_escalated: bool, is_accuracy_email: bool) -> list[str]:
   """Choose which recipients will receive the email notification."""
-  # Only feature owners are notified for a non-escalated notification.
-  if not is_escalated:
-    return feature.owner_emails
+
+  # Only feature owners are notified for accuracy or non-escalated notification emails, if not bounced.
+  if is_accuracy_email or not is_escalated:
+    user_prefs = UserPref.get_prefs_for_emails(feature.owner_emails)
+    receivers = list(set([up.email for up in user_prefs
+                  if not up.bounced]))
+    if receivers:
+      return receivers
 
   # Escalated notification. Add extended recipients.
   ws_group_emails = [STAGING_EMAIL]
@@ -77,7 +83,8 @@ def build_email_tasks(
     subject_format: str,
     body_template_path: str,
     current_milestone_info: dict,
-    escalation_check: Callable
+    escalation_check: Callable,
+    is_accuracy_email: Callable
     ) -> list[dict[str, Any]]:
   email_tasks: list[dict[str, Any]] = []
   beta_date = datetime.fromisoformat(current_milestone_info['earliest_beta'])
@@ -106,7 +113,7 @@ def build_email_tasks(
         subject = subject.replace(EMAIL_SUBJECT_PREFIX, 'Escalation request')
       else:
         subject = f'ESCALATED: {subject}'
-    recipients = choose_email_recipients(fe, is_escalated)
+    recipients = choose_email_recipients(fe, is_escalated, is_accuracy_email())
     for recipient in recipients:
       email_tasks.append({
         'to': recipient,
@@ -134,7 +141,7 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
     email_tasks = build_email_tasks(
         features_to_notify, self.SUBJECT_FORMAT,
         self.EMAIL_TEMPLATE_PATH, current_milestone_info,
-        self.should_escalate_notification)
+        self.should_escalate_notification, self.is_accuracy_email)
     notifier.send_emails(email_tasks)
 
     recipients_str = ''
@@ -215,6 +222,10 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
     """Determine if the notification should be escalated to more users."""
     return False
 
+  # Subclasses should override if needed.
+  def is_accuracy_email(self) -> bool:
+    return False
+
   # Subclasses should override if processing is needed after notifications sent.
   def changes_after_sending_notifications(
       self, features_notified: list[tuple[FeatureEntry, int]]) -> None:
@@ -260,6 +271,9 @@ class FeatureAccuracyHandler(AbstractReminderHandler):
   def should_escalate_notification(self, feature: FeatureEntry) -> bool:
     """Escalate notification if 2 previous emails have had no response."""
     return feature.outstanding_notifications >= 2
+
+  def is_accuracy_email(self) -> bool:
+    return True
 
   def changes_after_sending_notifications(
       self, notified_features: list[tuple[FeatureEntry, int]]) -> None:
