@@ -158,7 +158,7 @@ export class ChromedashTypeahead extends LitElement {
       if (!groupsSeenTwice.has(c.group)) {
         result.push(c);
       } else if (!groupsSeenTwiceProcessed.has(c.group)) {
-        result.push({group: c.group, name: c.group + '=', doc: c.doc});
+        result.push({group: c.group, name: c.group + ':', doc: c.doc});
         groupsSeenTwiceProcessed.add(c.group);
       }
     }

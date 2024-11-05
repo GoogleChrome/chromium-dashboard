@@ -70,15 +70,15 @@ export class ChromedashSearchHelpDialog extends LitElement {
           )}
           ${this.renderExampleRow(
             [
-              'browsers.chrome.desktop=123',
-              'browsers.chrome.desktop=current_stable+1',
+              'browsers.chrome.desktop:123',
+              'browsers.chrome.desktop:current_stable+1',
             ],
             'Features shipping in the specified milestone.'
           )}
           ${this.renderExampleRow(
             [
-              'browsers.chrome.desktop=120..122',
-              'browsers.chrome.desktop=current_stable-1..current_stable+1',
+              'browsers.chrome.desktop:120..122',
+              'browsers.chrome.desktop:current_stable-1..current_stable+1',
             ],
             'Features shipping in a milestone range.'
           )}
@@ -90,24 +90,24 @@ export class ChromedashSearchHelpDialog extends LitElement {
             [
               'created.when>2024-01-01',
               'created.when<now-8w',
-              'updated.when=2023-01-01..2023-12-31',
+              'updated.when:2023-01-01..2023-12-31',
             ],
             'Features created or modified before or after a date.'
           )}
           ${this.renderExampleRow(
             [
-              'feature_type="Feature deprecation"',
+              'feature_type:"Feature deprecation"',
               'feature_type!="Feature deprecation"',
-              '-feature_type="Feature deprecation"',
+              '-feature_type:"Feature deprecation"',
             ],
             'Features of a specific type or excluding a type.'
           )}
           ${this.renderExampleRow(
-            ['category=CSS,DOM'],
+            ['category:CSS,DOM'],
             'Features that have a value in a comma-separated list.'
           )}
           ${this.renderExampleRow(
-            ['category=CSS OR category=DOM'],
+            ['category:CSS OR category:DOM'],
             'Combine two query clauses with a logical-OR.'
           )}
         </table>
@@ -139,8 +139,10 @@ export class ChromedashSearchHelpDialog extends LitElement {
         <ul>
           <li>FIELD: One of the fields listed below.</li>
           <li>
-            OPERATOR: Usually an equals sign, but it can be an inequality for
-            numeric, date, or enum fields.
+            OPERATOR: Usually a colon, but it can be an inequality for
+            numeric, date, or enum fields.  The colon operator does
+            case-insensitive matching of words within a text field, while
+            an equals-sign does exact matching of an entire string value.
           </li>
           <li>
             VALUE(S): A single word, number, date, or enum value listed below.
@@ -184,7 +186,7 @@ export class ChromedashSearchHelpDialog extends LitElement {
   renderFieldRow(queryField: QueryField) {
     if (queryField.choices) {
       const choiceItems = Object.values(queryField.choices).map(
-        c => html` <div>${queryField.name}="${c[1]}"</div> `
+        c => html` <div>${queryField.name}:"${c[1]}"</div> `
       );
       return html`
         <tr>
@@ -198,7 +200,7 @@ export class ChromedashSearchHelpDialog extends LitElement {
       return html`
         <tr>
           <td>
-            <code>${queryField.name}=<i>${queryField.kind}</i></code>
+            <code>${queryField.name}:<i>${queryField.kind}</i></code>
           </td>
           <td>${queryField.doc}</td>
         </tr>
