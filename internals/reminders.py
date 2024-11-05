@@ -103,7 +103,7 @@ def build_email_tasks(
     subject = subject_format % fe.name
     if is_escalated:
       if EMAIL_SUBJECT_PREFIX in subject:
-        subject = subject.replace(EMAIL_SUBJECT_PREFIX, "Escalation request")
+        subject = subject.replace(EMAIL_SUBJECT_PREFIX, 'Escalation request')
       else:
         subject = f'ESCALATED: {subject}'
     recipients = choose_email_recipients(fe, is_escalated)
@@ -401,7 +401,7 @@ class SLOOverdueHandler(basehandlers.FlaskHandler):
       subject = self.SUBJECT_FORMAT % fe.name
       if is_escalated:
         if EMAIL_SUBJECT_PREFIX in subject:
-          subject = subject.replace(EMAIL_SUBJECT_PREFIX, "Escalation request")
+          subject = subject.replace(EMAIL_SUBJECT_PREFIX, 'Escalation request')
         else:
           subject = f'ESCALATED: {subject}'
       recipients = self.choose_reviewers(gate, is_escalated)
