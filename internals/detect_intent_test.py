@@ -284,7 +284,7 @@ class FunctionTest(testing_config.CustomTestCase):
         'Groups "blink-dev" group.\n'
         'To unsubscribe from this group and stop receiving emails from it,'
         'send an email to blink-dev+unsubscribe@chromium.org.\n'
-        'To view this discussion on the web visit https://groups.google.com'
+        'To view this discussion visit https://groups.google.com'
         '/a/chromium.org/d/msgid/blink-dev/CAMO6jDPGfXfE5z6hJcWO112zX3We'
         '-oNTb%2BZjiJk%2B6RNb9%2Bv05w%40mail.gmail.com. ')
     self.assertEqual(
@@ -304,7 +304,7 @@ class FunctionTest(testing_config.CustomTestCase):
         '> Groups "blink-dev" group.\n'
         '> To unsubscribe from this group and stop receiving emails from it, send\n'
         '> an email to blink-dev+unsubscribe@chromium.org.\n'
-        '> To view this discussion on the web visit\n'
+        '> To view this discussion visit\n'
         '> https://groups.google.com/a/chromium.org/d/msgid/blink-dev/CAL5BFfULP5d3fNCAqeO2gLP56R3HCytmaNk%2B9kpYsC2dj4%3DqoQ%40mail.gmail.com\n'
         '> <https://groups.google.com/a/chromium.org/d/msgid/blink-dev/CAL5BFfULP5d3fNCAqeO2gLP56R3HCytmaNk%2B9kpYsC2dj4%3DqoQ%40mail.gmail.com?utm_medium=email&utm_source=foo\\n'
         'ter>.\n'
@@ -312,7 +312,7 @@ class FunctionTest(testing_config.CustomTestCase):
         '--\n'
         'You received this message because you are subscribed to the Google Groups "blink-dev" group.\n'
         'To unsubscribe from this group and stop receiving emails from it, send an email to blink-dev+unsubscribe@chromium.org.\n'
-        'To view this discussion on the web visit https://groups.google.com/a/chromium.org/d/msgid/blink-dev/7c94d7c3-212a-62de-dfa4-76bbd25990c9%40chromium.org.')
+        'To view this discussion visit https://groups.google.com/a/chromium.org/d/msgid/blink-dev/7c94d7c3-212a-62de-dfa4-76bbd25990c9%40chromium.org.')
     self.assertEqual(
         ('https://groups.google.com'
          '/a/chromium.org/d/msgid/blink-dev/CAL5BFfULP5d3fNCAqeO2gLP56R3HCytmaNk%2B9kpYsC2dj4%3DqoQ%40mail.gmail.com'),
@@ -329,7 +329,7 @@ class FunctionTest(testing_config.CustomTestCase):
         '> Groups "blink-dev" group.\r\n'
         '> To unsubscribe from this group and stop receiving emails from it, send\r\n'
         '> an email to blink-dev+unsubscribe@chromium.org.\r\n'
-        '> To view this discussion on the web visit\r\n'
+        '> To view this discussion visit\r\n'
         '> https://groups.google.com/a/chromium.org/d/msgid/blink-dev/CAL5BFfULP5d3fNCAqeO2gLP56R3HCytmaNk%2B9kpYsC2dj4%3DqoQ%40mail.gmail.com\r\n'
         '> <https://groups.google.com/a/chromium.org/d/msgid/blink-dev/CAL5BFfULP5d3fNCAqeO2gLP56R3HCytmaNk%2B9kpYsC2dj4%3DqoQ%40mail.gmail.com?utm_medium=email&utm_source=foo\\r\n'
         'ter>.\r\n'
@@ -337,7 +337,7 @@ class FunctionTest(testing_config.CustomTestCase):
         '--\r\n'
         'You received this message because you are subscribed to the Google Groups "blink-dev" group.\r\n'
         'To unsubscribe from this group and stop receiving emails from it, send an email to blink-dev+unsubscribe@chromium.org.\r\n'
-        'To view this discussion on the web visit https://groups.google.com/a/chromium.org/d/msgid/blink-dev/7c94d7c3-212a-62de-dfa4-76bbd25990c9%40chromium.org\r\n.')
+        'To view this discussion visit https://groups.google.com/a/chromium.org/d/msgid/blink-dev/7c94d7c3-212a-62de-dfa4-76bbd25990c9%40chromium.org\r\n.')
     self.assertEqual(
         ('https://groups.google.com'
          '/a/chromium.org/d/msgid/blink-dev/CAL5BFfULP5d3fNCAqeO2gLP56R3HCytmaNk%2B9kpYsC2dj4%3DqoQ%40mail.gmail.com'),
@@ -350,7 +350,7 @@ class FunctionTest(testing_config.CustomTestCase):
         'Groups "jrobbins-test" group.\n'
         'To unsubscribe from this group and stop receiving emails from it,'
         'send an email to jrobbins-test+unsubscribe@googlegroups.com.\n'
-        'To view this discussion on the web visit https://groups.google.com'
+        'To view this discussion visit https://groups.google.com'
         '/d/msgid/jrobbins-test/CAMO6jDPGfXfE5z6hJcWO112zX3We'
         '-oNTb%2BZjiJk%2B6RNb9%2Bv05w%40mail.gmail.com.\n')
     self.assertEqual(
@@ -502,7 +502,7 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
         '\n--\n'
         'instructions...\n'
         '---\n'
-        'To view this discussion on the web visit ' +
+        'To view this discussion visit ' +
         self.thread_url + '.')
     self.review_json_data = {
         'from_addr': 'user@example.com',
