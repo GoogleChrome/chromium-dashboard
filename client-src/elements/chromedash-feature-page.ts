@@ -161,26 +161,35 @@ export class ChromedashFeaturePage extends LitElement {
       return;
     }
 
-    const shippingMilestones = new Set<number | undefined>();
-    const neededStageTypes = new Set<number>([
-      ...STAGE_TYPES_SHIPPING,
-      ...STAGE_TYPES_ORIGIN_TRIAL,
-    ]);
-    // Get milestones from all shipping stages.
+    const shippingTypeMilestones = new Set<number | undefined>();
+    const otTypeMilestones = new Set<number | undefined>();
     for (const stage of stages) {
-      if (neededStageTypes.has(stage.stage_type)) {
-        shippingMilestones.add(stage.desktop_first);
-        shippingMilestones.add(stage.android_first);
-        shippingMilestones.add(stage.ios_first);
-        shippingMilestones.add(stage.webview_first);
+      if (STAGE_TYPES_SHIPPING.has(stage.stage_type)) {
+        shippingTypeMilestones.add(stage.desktop_first);
+        shippingTypeMilestones.add(stage.android_first);
+        shippingTypeMilestones.add(stage.ios_first);
+        shippingTypeMilestones.add(stage.webview_first);
       }
     }
+    for (const stage of stages) {
+      if (STAGE_TYPES_ORIGIN_TRIAL.has(stage.stage_type)) {
+        otTypeMilestones.add(stage.desktop_first);
+        otTypeMilestones.add(stage.android_first);
+        otTypeMilestones.add(stage.ios_first);
+        otTypeMilestones.add(stage.webview_first);
+      }
+    }
+
+    const upcomingMilestonesTarget = new Set<number | undefined>([
+      ...shippingTypeMilestones,
+      ...otTypeMilestones,
+    ]);
     // Check if this feature is shipped within two milestones.
     let foundMilestone = 0;
-    if (shippingMilestones.has(latestStableVersion + 1)) {
+    if (upcomingMilestonesTarget.has(latestStableVersion + 1)) {
       foundMilestone = latestStableVersion + 1;
       this.isUpcoming = true;
-    } else if (shippingMilestones.has(latestStableVersion + 2)) {
+    } else if (upcomingMilestonesTarget.has(latestStableVersion + 2)) {
       foundMilestone = latestStableVersion + 2;
       this.isUpcoming = true;
     }
@@ -192,9 +201,10 @@ export class ChromedashFeaturePage extends LitElement {
         }
       });
     } else {
+      const shippedMilestonesTarget = shippingTypeMilestones;
       // If not upcoming, find the closest milestone that has shipped.
       let latestMilestone = 0;
-      for (const ms of shippingMilestones) {
+      for (const ms of shippedMilestonesTarget) {
         if (ms && ms <= latestStableVersion) {
           latestMilestone = Math.max(latestMilestone, ms);
         }
