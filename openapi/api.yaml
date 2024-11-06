@@ -33,7 +33,7 @@ paths:
             schema:
               type: object
               properties:
-                attachment:
+                uploaded-file:
                   type: string
                   format: binary
       responses:

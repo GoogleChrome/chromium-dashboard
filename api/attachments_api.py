@@ -28,7 +28,6 @@ class AttachmentsAPI(basehandlers.EntitiesAPIHandler):
   def do_post(self, **kwargs) -> dict[str, str]:
     """Handle POST requests to create a single feature."""
     feature_id = kwargs.get('feature_id', None)
-    logging.info('Got an attachments POST on %r', feature_id)
 
     # Validate the user has edit permissions and redirect if needed.
     redirect_resp = permissions.validate_feature_edit_permission(
@@ -53,30 +52,35 @@ class AttachmentsAPI(basehandlers.EntitiesAPIHandler):
 class AttachmentServing(basehandlers.FlaskHandler):
   """Serve an attachment."""
 
-  def maybe_redirect(self, attachment):
+  def maybe_redirect(self, attachment: attachments.Attachment, is_thumb: bool):
     """If needed, redirect to a safe domain."""
     logging.info('url is: %r ', self.request.url)
     attach_url = attachments.get_attachment_url(attachment)
     thumb_url = attach_url + '/thumbnail'
     logging.info('attach_url is: %r ', attach_url)
-    if self.request.url not in (attach_url, thumb_url):
-      return self.redirect(attach_url)
 
-    return None
+    if self.request.url in (attach_url, thumb_url):
+      return None
+
+    if is_thumb:
+      return self.redirect(thumb_url)
+    else:
+      return self.redirect(attach_url)
 
   def get_template_data(self, **kwargs):
     """Serve the attachment data, or redirect to a cookieless domain."""
     feature_id = kwargs.get('feature_id')
+    is_thumb = 'thumbnail' in kwargs
     attachment_id = kwargs.get('attachment_id')
     attachment = attachments.get_attachment(feature_id, attachment_id)
     if not attachment:
       self.abort(404, msg='Attachment not found')
 
-    redirect_response = self.maybe_redirect(attachment)
+    redirect_response = self.maybe_redirect(attachment, is_thumb)
     if redirect_response:
       return redirect_response
 
-    if kwargs.get('thumbnail') and attachment.thumbnail:
+    if is_thumb and attachment.thumbnail:
       content = attachment.thumbnail
       headers = self.get_headers()
       headers['Content-Type'] = 'image/png'

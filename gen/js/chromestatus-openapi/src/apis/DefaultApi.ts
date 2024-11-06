@@ -135,7 +135,7 @@ import {
 
 export interface AddAttachmentRequest {
     featureId: number;
-    attachment?: Blob;
+    uploadedFile?: Blob;
 }
 
 export interface AddFeatureCommentRequest {
@@ -300,7 +300,7 @@ export interface DefaultApiInterface {
      * 
      * @summary Store a file that will be attached to a feature
      * @param {number} featureId Feature ID
-     * @param {Blob} [attachment] 
+     * @param {Blob} [uploadedFile] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApiInterface
@@ -1010,8 +1010,8 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
             formParams = new URLSearchParams();
         }
 
-        if (requestParameters['attachment'] != null) {
-            formParams.append('attachment', requestParameters['attachment'] as any);
+        if (requestParameters['uploadedFile'] != null) {
+            formParams.append('uploaded-file', requestParameters['uploadedFile'] as any);
         }
 
         const response = await this.request({

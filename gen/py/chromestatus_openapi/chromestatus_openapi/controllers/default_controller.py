@@ -44,15 +44,15 @@ from chromestatus_openapi.models.success_message import SuccessMessage  # noqa: 
 from chromestatus_openapi import util
 
 
-def add_attachment(feature_id, attachment=None):  # noqa: E501
+def add_attachment(feature_id, uploaded_file=None):  # noqa: E501
     """Store a file that will be attached to a feature
 
      # noqa: E501
 
     :param feature_id: Feature ID
     :type feature_id: int
-    :param attachment: 
-    :type attachment: str
+    :param uploaded_file: 
+    :type uploaded_file: str
 
     :rtype: Union[AddAttachmentResponse, Tuple[AddAttachmentResponse, int], Tuple[AddAttachmentResponse, int, Dict[str, str]]
     """

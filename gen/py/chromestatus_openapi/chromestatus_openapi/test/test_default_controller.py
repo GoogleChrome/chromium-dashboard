@@ -56,7 +56,7 @@ class TestDefaultController(BaseTestCase):
             'Accept': 'application/json',
             'Content-Type': 'multipart/form-data',
         }
-        data = dict(attachment='/path/to/file')
+        data = dict(uploaded_file='/path/to/file')
         response = self.client.open(
             '/api/v0/features/{feature_id}/attachments'.format(feature_id=56),
             method='POST',

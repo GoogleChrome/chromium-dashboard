@@ -354,8 +354,12 @@ export class ChromeStatusClient {
   /* Make a JSON API call to the server, including an XSRF header.
    * Then strip off the defensive prefix from the response. */
   async doFetch(
-      resource, httpMethod, body, includeToken = true,
-      postingJson = true) {
+    resource,
+    httpMethod,
+    body,
+    includeToken = true,
+    postingJson = true
+  ) {
     const url = this.baseUrl + resource;
     const headers = {
       accept: 'application/json',
@@ -507,9 +511,7 @@ export class ChromeStatusClient {
 
   // Attachments API
   addAttachment(featureId, fieldName, file) {
-    return this.doFilePost(
-        `/features/${featureId}/attachments`,
-        file);
+    return this.doFilePost(`/features/${featureId}/attachments`, file);
   }
 
   // Reviews API

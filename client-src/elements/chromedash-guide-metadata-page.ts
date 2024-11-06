@@ -204,15 +204,6 @@ export class ChromedashGuideMetadataPage extends LitElement {
     });
   }
 
-  uploadScreenshot(e: Event) {
-    console.log(e);
-    let inputEl: HTMLInputElement = e.target as HTMLInputElement;
-    if (inputEl.files?.[0]) {
-      const file: File = inputEl.files?.[0];
-      window.csClient.addAttachment(this.featureId, inputEl.name, file);
-    }
-  }
-
   renderForm() {
     const formattedFeature = formatFeatureForEdit(this.feature);
     this.fieldValues.feature = this.feature;
@@ -229,14 +220,6 @@ export class ChromedashGuideMetadataPage extends LitElement {
           ${this.renderSections(formattedFeature, sections)}
         </chromedash-form-table>
 
-          <div>
-          screenshots hack:
-          <input
-            type=file name=screenshots
-          @change=${(e) => this.uploadScreenshot(e)}
-          accept="image/png, image/jpeg, image/png, image/wepb, text/plain"
-          >
-          </div>
         <div class="final_buttons">
           <input class="button" type="submit" value="Submit" />
           <button
