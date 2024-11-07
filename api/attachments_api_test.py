@@ -20,12 +20,15 @@ from unittest import mock
 from google.cloud import ndb  # type: ignore
 import werkzeug.exceptions
 
+import settings
 from api import attachments_api
 from internals.core_enums import *
 from internals.core_models import FeatureEntry
-from internals.attachments import Attachment
+from internals import attachments
 
 test_app = flask.Flask(__name__)
+test_app.secret_key ='test'
+
 
 class AttachmentsAPITest(testing_config.CustomTestCase):
 
@@ -42,7 +45,7 @@ class AttachmentsAPITest(testing_config.CustomTestCase):
 
   def tearDown(self):
     testing_config.sign_out()
-    kinds: list[ndb.Model] = [FeatureEntry, Attachment]
+    kinds: list[ndb.Model] = [FeatureEntry, attachments.Attachment]
     for kind in kinds:
       for entity in kind.query():
         entity.key.delete()
@@ -91,4 +94,82 @@ class AttachmentsAPITest(testing_config.CustomTestCase):
         read=lambda: b'hello attachments!',
         mimetype='text/plain')}
     with test_app.test_request_context(self.request_path):
-      self.handler.do_post(feature_id=self.feature_id, mock_files=mock_files)
+      actual = self.handler.do_post(
+          feature_id=self.feature_id, mock_files=mock_files)
+
+    attachment_id = int(actual['attachment_url'].split('/')[-1])
+    attachment = attachments.Attachment.get_by_id(attachment_id)
+    expected_url = attachments.get_attachment_url(attachment)
+    self.assertEqual(actual['attachment_url'], expected_url)
+
+
+class AttachmentServingTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.feature = FeatureEntry(
+        name='feat', summary='sum', category=1,
+        owner_emails=['owner@chromium.org'],
+        impl_status_chrome=ENABLED_BY_DEFAULT)
+    self.feature.put()
+    self.feature_id = self.feature.key.integer_id()
+
+    self.content = b'Are you being served?'
+    self.attachment = attachments.Attachment(
+        feature_id=self.feature_id,
+        content=self.content,
+        mime_type='text/plain')
+    self.attachment.put()
+    self.attachment_id = self.attachment.key.integer_id()
+
+    self.request_path = (
+        f'/feature/{self.feature_id}/attachment/{self.attachment_id}')
+    self.handler = attachments_api.AttachmentServing()
+
+  def tearDown(self):
+    testing_config.sign_out()
+    kinds: list[ndb.Model] = [FeatureEntry, attachments.Attachment]
+    for kind in kinds:
+      for entity in kind.query():
+        entity.key.delete()
+
+  def test_maybe_redirect__expected_url(self):
+    """Requesting an attachment from the canonical URL returns None."""
+    # self.request_path is the same as the canonical URL.
+    base = settings.SITE_URL
+    with test_app.test_request_context(self.request_path, base_url=base):
+      actual = self.handler.maybe_redirect(self.attachment, False)
+      self.assertIsNone(actual)
+
+    with test_app.test_request_context(
+        self.request_path + '/thumbnail', base_url=base):
+      actual = self.handler.maybe_redirect(self.attachment, True)
+      self.assertIsNone(actual)
+
+  def test_maybe_redirect__alt_base(self):
+    """Requesting an attachment from a different URL gives a redirect."""
+    alt_base = 'https://chromestatus.com'
+    with test_app.test_request_context(self.request_path, base_url=alt_base):
+      actual = self.handler.maybe_redirect(self.attachment, False)
+      self.assertEqual(actual.status_code, 302)
+      self.assertEqual(
+          actual.location, attachments.get_attachment_url(self.attachment))
+
+  def test_get_template_data__not_found(self):
+    """Requesting with a wrong ID gives a 404."""
+    with test_app.test_request_context(self.request_path):
+      with self.assertRaises(werkzeug.exceptions.NotFound):
+        self.handler.get_template_data(
+            feature_id=self.feature_id, attachment_id=self.attachment_id + 1)
+      with self.assertRaises(werkzeug.exceptions.NotFound):
+        self.handler.get_template_data(
+            feature_id=self.feature_id + 1, attachment_id=self.attachment_id)
+
+  def test_get_template_data__found(self):
+    """We can fetch an attachment."""
+    base = settings.SITE_URL
+    with test_app.test_request_context(self.request_path, base_url=base):
+      content, headers = self.handler.get_template_data(
+          feature_id=self.feature_id, attachment_id=self.attachment_id)
+
+    self.assertEqual(content, self.content)
+    self.assertEqual(headers['Content-Type'], 'text/plain')
