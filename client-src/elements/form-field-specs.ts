@@ -1436,6 +1436,14 @@ export const ALL_FIELDS: Record<string, Field> = {
   ot_documentation_url: {
     type: 'input',
     attrs: URL_FIELD_ATTRS,
+    label: 'Documentation link',
+    help_text: html` Link to more information to help developers use the trial's
+    feature (e.g. blog post, Github explainer, etc.).`,
+  },
+
+  ot_creation__ot_documentation_url: {
+    type: 'input',
+    attrs: URL_FIELD_ATTRS,
     required: true,
     label: 'Documentation link',
     help_text: html` Link to more information to help developers use the trial's
