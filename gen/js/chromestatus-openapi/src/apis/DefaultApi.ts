@@ -30,6 +30,7 @@ import type {
   FeatureLinksResponse,
   FeatureLinksSample,
   FeatureLinksSummaryResponse,
+  FeatureSearchResponse,
   GetCommentsResponse,
   GetDismissedCues400Response,
   GetGateResponse,
@@ -52,6 +53,7 @@ import type {
   SignInRequest,
   SpecMentor,
   SuccessMessage,
+  VerboseFeatureDict,
 } from '../models/index';
 import {
     AccountResponseFromJSON,
@@ -84,6 +86,8 @@ import {
     FeatureLinksSampleToJSON,
     FeatureLinksSummaryResponseFromJSON,
     FeatureLinksSummaryResponseToJSON,
+    FeatureSearchResponseFromJSON,
+    FeatureSearchResponseToJSON,
     GetCommentsResponseFromJSON,
     GetCommentsResponseToJSON,
     GetDismissedCues400ResponseFromJSON,
@@ -128,6 +132,8 @@ import {
     SpecMentorToJSON,
     SuccessMessageFromJSON,
     SuccessMessageToJSON,
+    VerboseFeatureDictFromJSON,
+    VerboseFeatureDictToJSON,
 } from '../models/index';
 
 export interface AddFeatureCommentRequest {
@@ -177,6 +183,19 @@ export interface DismissCueOperationRequest {
 export interface ExtendOriginTrialRequest {
     featureId: number;
     extensionStageId: number;
+}
+
+export interface GetAllFeaturesRequest {
+    q?: string;
+    sort?: string;
+    num?: number;
+    start?: number;
+    milestone?: number;
+    releaseNotesMilestone?: number;
+}
+
+export interface GetFeatureByIdRequest {
+    featureId: number;
 }
 
 export interface GetFeatureCommentsRequest {
@@ -449,6 +468,26 @@ export interface DefaultApiInterface {
 
     /**
      * 
+     * @summary retrive a list of feature
+     * @param {string} [q] Search query string.
+     * @param {string} [sort] Sorting specification.
+     * @param {number} [num] Number of results to return.
+     * @param {number} [start] Index of the first result to return.
+     * @param {number} [milestone] Filter features by milestone.
+     * @param {number} [releaseNotesMilestone] Filter features by release notes milestone.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getAllFeaturesRaw(requestParameters: GetAllFeaturesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FeatureSearchResponse>>;
+
+    /**
+     * retrive a list of feature
+     */
+    getAllFeatures(requestParameters: GetAllFeaturesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FeatureSearchResponse>;
+
+    /**
+     * 
      * @summary Get dismissed cues for the current user
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -460,6 +499,21 @@ export interface DefaultApiInterface {
      * Get dismissed cues for the current user
      */
     getDismissedCues(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<string>>;
+
+    /**
+     * 
+     * @summary Get a feature by ID
+     * @param {number} featureId ID of the feature to retrieve
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getFeatureByIdRaw(requestParameters: GetFeatureByIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<VerboseFeatureDict>>;
+
+    /**
+     * Get a feature by ID
+     */
+    getFeatureById(requestParameters: GetFeatureByIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<VerboseFeatureDict>;
 
     /**
      * 
@@ -1338,6 +1392,56 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     }
 
     /**
+     * retrive a list of feature
+     */
+    async getAllFeaturesRaw(requestParameters: GetAllFeaturesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FeatureSearchResponse>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['q'] != null) {
+            queryParameters['q'] = requestParameters['q'];
+        }
+
+        if (requestParameters['sort'] != null) {
+            queryParameters['sort'] = requestParameters['sort'];
+        }
+
+        if (requestParameters['num'] != null) {
+            queryParameters['num'] = requestParameters['num'];
+        }
+
+        if (requestParameters['start'] != null) {
+            queryParameters['start'] = requestParameters['start'];
+        }
+
+        if (requestParameters['milestone'] != null) {
+            queryParameters['milestone'] = requestParameters['milestone'];
+        }
+
+        if (requestParameters['releaseNotesMilestone'] != null) {
+            queryParameters['releaseNotesMilestone'] = requestParameters['releaseNotesMilestone'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/features`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FeatureSearchResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * retrive a list of feature
+     */
+    async getAllFeatures(requestParameters: GetAllFeaturesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FeatureSearchResponse> {
+        const response = await this.getAllFeaturesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Get dismissed cues for the current user
      */
     async getDismissedCuesRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<string>>> {
@@ -1360,6 +1464,39 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async getDismissedCues(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<string>> {
         const response = await this.getDismissedCuesRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get a feature by ID
+     */
+    async getFeatureByIdRaw(requestParameters: GetFeatureByIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<VerboseFeatureDict>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling getFeatureById().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/features/{feature_id}`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => VerboseFeatureDictFromJSON(jsonValue));
+    }
+
+    /**
+     * Get a feature by ID
+     */
+    async getFeatureById(requestParameters: GetFeatureByIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<VerboseFeatureDict> {
+        const response = await this.getFeatureByIdRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
