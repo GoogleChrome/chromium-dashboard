@@ -32,6 +32,7 @@ class AttachmentsAPITest(testing_config.CustomTestCase):
   def setUp(self):
     self.feature = FeatureEntry(
         name='feat', summary='sum', category=1,
+        owner_emails=['owner@chromium.org'],
         impl_status_chrome=ENABLED_BY_DEFAULT)
     self.feature.put()
 
@@ -51,18 +52,43 @@ class AttachmentsAPITest(testing_config.CustomTestCase):
     testing_config.sign_out()
     with test_app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
-        self.handler.do_post()
+        self.handler.do_post(feature_id=self.feature_id)
 
   def test_do_post__unregistered(self):
     """Users who cannot create features cannot add attachments."""
     testing_config.sign_in('someone@example.com', 111)
     with test_app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
-        self.handler.do_post()
+        self.handler.do_post(feature_id=self.feature_id)
 
   def test_do_post__noneditor(self):
     """Users who cannot edit this particular feature cannot add attachments."""
     testing_config.sign_in('someone@example.com', 111)
     with test_app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
-        self.handler.do_post()
+        self.handler.do_post(feature_id=self.feature_id)
+
+  def test_do_post__no_files(self):
+    """Reject requests that have no attachments."""
+    testing_config.sign_in('owner@chromium.org', 111)
+    with test_app.test_request_context(self.request_path):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.do_post(feature_id=self.feature_id)
+
+  def test_do_post__empty_file(self):
+    """Reject requests where the user did not upload."""
+    testing_config.sign_in('owner@chromium.org', 111)
+    body = ''
+    with test_app.test_request_context(self.request_path, data=body):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.do_post(feature_id=self.feature_id)
+
+  def test_do_post__valid_file(self):
+    """With a valid user and valid request, we store the attachment."""
+    testing_config.sign_in('owner@chromium.org', 111)
+    mock_files = {'uploaded-file': testing_config.Blank(
+        filename='hello_attach.txt',
+        read=lambda: b'hello attachments!',
+        mimetype='text/plain')}
+    with test_app.test_request_context(self.request_path):
+      self.handler.do_post(feature_id=self.feature_id, mock_files=mock_files)

@@ -35,11 +35,12 @@ class AttachmentsAPI(basehandlers.EntitiesAPIHandler):
     if redirect_resp:
       self.abort(403, msg='User lacks permission to edit')
 
-    logging.info('files are %r', self.request.files)
-    if 'uploaded-file' not in self.request.files:
+    files = kwargs.get('mock_files', self.request.files)
+    logging.info('files are %r', files)
+    if 'uploaded-file' not in files:
       self.abort(400, msg='Unexpected file upload')
 
-    file = self.request.files['uploaded-file']
+    file = files['uploaded-file']
     if file.filename == '':
       self.abort(400, msg='No file was selected')
     content = file.read()
