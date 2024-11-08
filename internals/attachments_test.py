@@ -99,3 +99,34 @@ class AttachmentsTests(testing_config.CustomTestCase):
         self.feature_id + 1, stored.key.integer_id())
 
     self.assertEqual(actual, None)
+
+  def test_get_attachment_url__dev(self):
+    """During development, attachments are served locally."""
+    feature_id = self.feature_id
+    stored = attachments.store_attachment(
+        feature_id, b'test content', 'text/plain')
+    attach_id = stored.key.integer_id()
+
+    actual = attachments.get_attachment_url(stored)
+
+    self.assertEqual(
+        actual,
+        f'http://127.0.0.1:7777/feature/{feature_id}/attachment/{attach_id}')
+
+  @mock.patch('settings.DEV_MODE', False)
+  @mock.patch('settings.UNIT_TEST_MODE', False)
+  @mock.patch('settings.APP_ID', 'appid')
+  def test_get_attachment_url__GAE(self):
+    """On AppEngine, attachments are served from a safe domain."""
+    feature_id = self.feature_id
+    stored = attachments.store_attachment(
+        feature_id, b'test content', 'text/plain')
+    attach_id = stored.key.integer_id()
+
+    actual = attachments.get_attachment_url(stored)
+
+    digits = attach_id % 1000
+    self.assertEqual(
+        actual,
+        (f'https://img{digits}-dot-appid.appspot.com/'
+         f'feature/{feature_id}/attachment/{attach_id}'))

@@ -3,6 +3,7 @@
 from chromestatus_openapi.models.account_response import AccountResponse
 from chromestatus_openapi.models.action import Action
 from chromestatus_openapi.models.activity import Activity
+from chromestatus_openapi.models.add_attachment_response import AddAttachmentResponse
 from chromestatus_openapi.models.amendment import Amendment
 from chromestatus_openapi.models.array_field_info_value import ArrayFieldInfoValue
 from chromestatus_openapi.models.boolean_field_info_value import BooleanFieldInfoValue

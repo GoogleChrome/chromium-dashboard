@@ -353,12 +353,20 @@ export class ChromeStatusClient {
 
   /* Make a JSON API call to the server, including an XSRF header.
    * Then strip off the defensive prefix from the response. */
-  async doFetch(resource, httpMethod, body, includeToken = true) {
+  async doFetch(
+    resource,
+    httpMethod,
+    body,
+    includeToken = true,
+    postingJson = true
+  ) {
     const url = this.baseUrl + resource;
     const headers = {
       accept: 'application/json',
-      'content-type': 'application/json',
     };
+    if (postingJson) {
+      headers['content-type'] = 'application/json';
+    }
     if (includeToken) {
       headers['X-Xsrf-Token'] = this.token;
     }
@@ -368,7 +376,11 @@ export class ChromeStatusClient {
       headers: headers,
     };
     if (body !== null) {
-      options['body'] = JSON.stringify(body);
+      if (postingJson) {
+        options['body'] = JSON.stringify(body);
+      } else {
+        options['body'] = body;
+      }
     }
 
     const response = await fetch(url, options);
@@ -399,6 +411,14 @@ export class ChromeStatusClient {
   async doPost(resource, body) {
     return this.ensureTokenIsValid().then(() => {
       return this.doFetch(resource, 'POST', body);
+    });
+  }
+
+  async doFilePost(resource, file) {
+    const formData = new FormData();
+    formData.append('uploaded-file', file, file.name);
+    return this.ensureTokenIsValid().then(() => {
+      return this.doFetch(resource, 'POST', formData, true, false);
     });
   }
 
@@ -488,6 +508,13 @@ export class ChromeStatusClient {
     return this.doDelete('/accounts/' + accountId);
     // TODO: catch((error) => { display message }
   }
+
+  // Attachments API
+  addAttachment(featureId, fieldName, file) {
+    return this.doFilePost(`/features/${featureId}/attachments`, file);
+  }
+
+  // Reviews API
 
   getVotes(featureId, gateId) {
     if (gateId) {
