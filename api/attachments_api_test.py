@@ -14,6 +14,7 @@
 
 import testing_config  # Must be imported before the module under test.
 
+import io
 import flask
 from datetime import datetime
 from unittest import mock
@@ -42,6 +43,7 @@ class AttachmentsAPITest(testing_config.CustomTestCase):
     self.feature_id = self.feature.key.integer_id()
     self.request_path = f'/api/v0/features/{self.feature_id}/attachments'
     self.handler = attachments_api.AttachmentsAPI()
+    self.content = b'hello attachments!'
 
   def tearDown(self):
     testing_config.sign_out()
@@ -81,7 +83,7 @@ class AttachmentsAPITest(testing_config.CustomTestCase):
   def test_do_post__empty_file(self):
     """Reject requests where the user did not upload."""
     testing_config.sign_in('owner@chromium.org', 111)
-    body = ''
+    body = b''
     with test_app.test_request_context(self.request_path, data=body):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post(feature_id=self.feature_id)
@@ -89,13 +91,10 @@ class AttachmentsAPITest(testing_config.CustomTestCase):
   def test_do_post__valid_file(self):
     """With a valid user and valid request, we store the attachment."""
     testing_config.sign_in('owner@chromium.org', 111)
-    mock_files = {'uploaded-file': testing_config.Blank(
-        filename='hello_attach.txt',
-        read=lambda: b'hello attachments!',
-        mimetype='text/plain')}
-    with test_app.test_request_context(self.request_path):
-      actual = self.handler.do_post(
-          feature_id=self.feature_id, mock_files=mock_files)
+    mock_file = (io.BytesIO(self.content), 'hello_attach.txt')
+    with test_app.test_request_context(
+        self.request_path, data={'uploaded-file': mock_file}):
+      actual = self.handler.do_post(feature_id=self.feature_id)
 
     attachment_id = int(actual['attachment_url'].split('/')[-1])
     attachment = attachments.Attachment.get_by_id(attachment_id)
@@ -170,6 +169,48 @@ class AttachmentServingTest(testing_config.CustomTestCase):
     with test_app.test_request_context(self.request_path, base_url=base):
       content, headers = self.handler.get_template_data(
           feature_id=self.feature_id, attachment_id=self.attachment_id)
+
+    self.assertEqual(content, self.content)
+    self.assertEqual(headers['Content-Type'], 'text/plain')
+
+
+class RoundTripTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.feature = FeatureEntry(
+        name='feat', summary='sum', category=1,
+        owner_emails=['owner@chromium.org'],
+        impl_status_chrome=ENABLED_BY_DEFAULT)
+    self.feature.put()
+    self.feature_id = self.feature.key.integer_id()
+
+    self.content = b'hello attachments!'
+    self.api_request_path = f'/api/v0/features/{self.feature_id}/attachments'
+    self.api_handler = attachments_api.AttachmentsAPI()
+    self.serving_handler = attachments_api.AttachmentServing()
+
+  def tearDown(self):
+    testing_config.sign_out()
+    kinds: list[ndb.Model] = [FeatureEntry, attachments.Attachment]
+    for kind in kinds:
+      for entity in kind.query():
+        entity.key.delete()
+
+  def testRoundTrip(self):
+    """We can upload an attachment and then download it."""
+    testing_config.sign_in('owner@chromium.org', 111)
+    mock_file = (io.BytesIO(self.content), 'hello_attach.txt')
+    with test_app.test_request_context(
+        self.api_request_path, data={'uploaded-file': mock_file}):
+      actual = self.api_handler.do_post(feature_id=self.feature_id)
+
+    actual_url = actual['attachment_url']
+    base = settings.SITE_URL
+    feature_id = int(actual_url.split('/')[-3])
+    attachment_id = int(actual_url.split('/')[-1])
+    with test_app.test_request_context(actual_url, base_url=base):
+      content, headers = self.serving_handler.get_template_data(
+          feature_id=feature_id, attachment_id=attachment_id)
 
     self.assertEqual(content, self.content)
     self.assertEqual(headers['Content-Type'], 'text/plain')

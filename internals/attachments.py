@@ -111,6 +111,8 @@ def get_attachment_url(attachment: Attachment) -> str:
   if settings.DEV_MODE or settings.UNIT_TEST_MODE:
     origin = settings.SITE_URL
   else:
+    # Use 1000 different domains so that malicious content in one attachment
+    # is unlikely to be able to access any state associated with any other.
     digits = attachment.key.integer_id() % 1000
     origin = 'https://img%d-dot-%s.appspot.com/' % (digits, settings.APP_ID)
 

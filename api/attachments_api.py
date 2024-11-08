@@ -22,11 +22,11 @@ from internals import attachments
 
 
 class AttachmentsAPI(basehandlers.EntitiesAPIHandler):
-  """Features are the the main records that we track."""
+  """Store attachments such as screenshots."""
 
   @permissions.require_create_feature
   def do_post(self, **kwargs) -> dict[str, str]:
-    """Handle POST requests to create a single feature."""
+    """Handle POST requests to create a single attachment."""
     feature_id = kwargs.get('feature_id', None)
 
     # Validate the user has edit permissions and redirect if needed.
@@ -35,12 +35,11 @@ class AttachmentsAPI(basehandlers.EntitiesAPIHandler):
     if redirect_resp:
       self.abort(403, msg='User lacks permission to edit')
 
-    files = kwargs.get('mock_files', self.request.files)
-    logging.info('files are %r', files)
-    if 'uploaded-file' not in files:
+    logging.info('files are %r', self.request.files)
+    if 'uploaded-file' not in self.request.files:
       self.abort(400, msg='Unexpected file upload')
 
-    file = files['uploaded-file']
+    file = self.request.files['uploaded-file']
     if file.filename == '':
       self.abort(400, msg='No file was selected')
     content = file.read()
@@ -81,13 +80,12 @@ class AttachmentServing(basehandlers.FlaskHandler):
     if redirect_response:
       return redirect_response
 
+    headers = self.get_headers()
     if is_thumb and attachment.thumbnail:
       content = attachment.thumbnail
-      headers = self.get_headers()
       headers['Content-Type'] = 'image/png'
     else:
       content = attachment.content
-      headers = self.get_headers()
       headers['Content-Type'] = attachment.mime_type
 
 
