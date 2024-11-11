@@ -24,6 +24,7 @@ from google.appengine.api import mail
 
 import settings
 from framework import cloud_tasks_helpers
+from internals.user_models import UserPref
 
 
 # Parsing very large messages could cause out-of-memory errors.
@@ -144,12 +145,10 @@ def receive(bounce_message):
   subject = 'Mail to %r bounced' % email_addr
   logging.info(subject)
 
-  # TODO(jrobbins): Re-implement this without depending on models.
-  # Instead create a task and then have that processed in py3.
-  # pref_list = user_models.UserPref.get_prefs_for_emails([email_addr])
-  # user_pref = pref_list[0]
-  # user_pref.bounced = True
-  # user_pref.put()
+  pref_list = UserPref.get_prefs_for_emails([email_addr])
+  user_pref = pref_list[0]
+  user_pref.bounced = True
+  user_pref.put()
 
   # Escalate to someone who might do something about it, e.g.
   # find a new owner for a component.
