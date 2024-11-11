@@ -25,6 +25,7 @@ from google.appengine.api import mail
 import settings
 from framework import cloud_tasks_helpers
 from framework import sendemail
+from internals.user_models import UserPref
 
 
 test_app = flask.Flask(__name__)
@@ -160,10 +161,10 @@ class BouncedEmailHandlerTest(testing_config.CustomTestCase):
   @mock.patch('google.appengine.api.mail.EmailMessage')
   def test_receive__user_has_prefs(self, mock_emailmessage_constructor):
     """When we get a bounce, we update the UserPrefs for that user."""
-    #starrer_3_pref = models.UserPref(
-    #    email='starrer_3@example.com',
-    #    notify_as_starrer=False)
-    #starrer_3_pref.put()
+    starrer_3_pref = UserPref(
+        email='starrer_3@example.com',
+        notify_as_starrer=False)
+    starrer_3_pref.put()
 
     bounce_message = testing_config.Blank(
         original={'to': 'starrer_3@example.com',
@@ -173,12 +174,10 @@ class BouncedEmailHandlerTest(testing_config.CustomTestCase):
 
     sendemail.receive(bounce_message)
 
-    # TODO(jrobbins): Redo this testing after this aspect of the code is
-    # re-implemented.
-    # updated_pref = models.UserPref.get_by_id(starrer_3_pref.key.integer_id())
-    # self.assertEqual('starrer_3@example.com', updated_pref.email)
-    # self.assertTrue(updated_pref.bounced)
-    # self.assertFalse(updated_pref.notify_as_starrer)
+    updated_pref = UserPref.get_by_id(starrer_3_pref.key.integer_id())
+    self.assertEqual('starrer_3@example.com', updated_pref.email)
+    self.assertTrue(updated_pref.bounced)
+    self.assertFalse(updated_pref.notify_as_starrer)
 
     expected_subject = "Mail to 'starrer_3@example.com' bounced"
     mock_emailmessage_constructor.assert_called_once_with(
@@ -202,14 +201,11 @@ class BouncedEmailHandlerTest(testing_config.CustomTestCase):
 
     sendemail.receive(bounce_message)
 
-    # TODO(jrobbins): Redo this testing after this aspect of the code is
-    # re-implemented.
-    # prefs_list = models.UserPref.get_prefs_for_emails(
-    #     ['starrer_4@example.com'])
-    # updated_pref = prefs_list[0]
-    # self.assertEqual('starrer_4@example.com', updated_pref.email)
-    # self.assertTrue(updated_pref.bounced)
-    # self.assertTrue(updated_pref.notify_as_starrer)
+    prefs_list = UserPref.get_prefs_for_emails(['starrer_4@example.com'])
+    updated_pref = prefs_list[0]
+    self.assertEqual('starrer_4@example.com', updated_pref.email)
+    self.assertTrue(updated_pref.bounced)
+    self.assertTrue(updated_pref.notify_as_starrer)
 
     expected_subject = "Mail to 'starrer_4@example.com' bounced"
     mock_emailmessage_constructor.assert_called_once_with(
