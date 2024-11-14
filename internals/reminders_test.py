@@ -156,7 +156,6 @@ class FunctionTest(testing_config.CustomTestCase):
                 ]
     self.assertEqual(set(actual), set(expected))
 
-
   @mock.patch('settings.PROD', True)
   def test_choose_email_recipients__escalated(self):
     """Escalated reminders go to feature participants and lists."""
@@ -172,7 +171,7 @@ class FunctionTest(testing_config.CustomTestCase):
     self.assertEqual(set(actual), set(expected))
 
   def test_choose_email_recipients__normal_accuracy_email(self):
-    """Normal accuracy emails go to feature participants."""
+    """Normal accuracy emails go to feature owners."""
     actual = reminders.choose_email_recipients(
         self.feature_template, False, True)
     expected = ['feature_owner@example.com',
@@ -197,7 +196,7 @@ class FunctionTest(testing_config.CustomTestCase):
 
   @mock.patch('settings.PROD', True)
   def test_choose_email_recipients_escalated_accuracy_email(self):
-    """Escalated accuracy emails go to feature participants and lists."""
+    """Escalated accuracy emails go to feature owners."""
     actual = reminders.choose_email_recipients(
         self.feature_template, True, True)
     expected = ['feature_owner@example.com',
