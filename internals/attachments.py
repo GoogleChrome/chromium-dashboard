@@ -24,8 +24,8 @@ import settings
 RESIZABLE_MIME_TYPES = [
     'image/png', 'image/jpg', 'image/jpeg', 'image/gif', 'image/webp',
     ]
-THUMB_WIDTH = 250
-THUMB_HEIGHT = 200
+THUMB_WIDTH = 450
+THUMB_HEIGHT = 300
 
 
 
@@ -49,7 +49,8 @@ class AttachmentTooLarge(Exception):
 SUPPORTED_MIME_TYPES = RESIZABLE_MIME_TYPES + ['text/plain']
 
 
-def store_attachment(feature_id: int, content: bytes, mime_type: str) -> str:
+def store_attachment(
+    feature_id: int, content: bytes, mime_type: str) -> Attachment:
   """"Store some data for an attachment.  Return its URI."""
   check_attachment_size(content)
   check_attachment_type(mime_type)
@@ -105,11 +106,20 @@ def get_attachment(feature_id: int, attachment_id: int) -> Attachment|None:
   return None
 
 
-def get_attachment_uri(attachment: Attachment) -> str:
-  """Return the URI path that will serve tis attachment."""
-  uri = '/feature/%r/attachment/%r' % (
+def get_attachment_url(attachment: Attachment) -> str:
+  """Return the URL path that will serve this attachment."""
+  if settings.DEV_MODE or settings.UNIT_TEST_MODE:
+    origin = settings.SITE_URL
+  else:
+    # Use 1000 different domains so that malicious content in one attachment
+    # is unlikely to be able to access any state associated with any other.
+    digits = attachment.key.integer_id() % 1000
+    origin = 'https://img%d-dot-%s.appspot.com/' % (digits, settings.APP_ID)
+
+  uri = 'feature/%r/attachment/%r' % (
       attachment.feature_id, attachment.key.integer_id())
-  return uri
+  url = origin + uri
+  return url
 
 
 def mark_attachment_deleted(attachment: Attachment) -> None:

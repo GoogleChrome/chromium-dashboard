@@ -3,6 +3,7 @@
 export * from './AccountResponse';
 export * from './Action';
 export * from './Activity';
+export * from './AddAttachmentResponse';
 export * from './Amendment';
 export * from './ArrayFieldInfoValue';
 export * from './BooleanFieldInfoValue';

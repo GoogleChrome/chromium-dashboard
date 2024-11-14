@@ -5,6 +5,7 @@ from typing import Union
 
 from chromestatus_openapi.models.account_response import AccountResponse  # noqa: E501
 from chromestatus_openapi.models.activity import Activity  # noqa: E501
+from chromestatus_openapi.models.add_attachment_response import AddAttachmentResponse  # noqa: E501
 from chromestatus_openapi.models.comments_request import CommentsRequest  # noqa: E501
 from chromestatus_openapi.models.component_users_request import ComponentUsersRequest  # noqa: E501
 from chromestatus_openapi.models.components_users_response import ComponentsUsersResponse  # noqa: E501
@@ -41,6 +42,21 @@ from chromestatus_openapi.models.sign_in_request import SignInRequest  # noqa: E
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
 from chromestatus_openapi.models.success_message import SuccessMessage  # noqa: E501
 from chromestatus_openapi import util
+
+
+def add_attachment(feature_id, uploaded_file=None):  # noqa: E501
+    """Store a file that will be attached to a feature
+
+     # noqa: E501
+
+    :param feature_id: Feature ID
+    :type feature_id: int
+    :param uploaded_file: 
+    :type uploaded_file: str
+
+    :rtype: Union[AddAttachmentResponse, Tuple[AddAttachmentResponse, int], Tuple[AddAttachmentResponse, int, Dict[str, str]]
+    """
+    return 'do some magic!'
 
 
 def add_feature_comment(feature_id, comments_request=None):  # noqa: E501
