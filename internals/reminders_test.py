@@ -152,7 +152,6 @@ class FunctionTest(testing_config.CustomTestCase):
                 'feature_editor@example.com',
                 'feature_owner@example.com',
                 'mentor@example.com',
-                'jrobbins-test@googlegroups.com',
                 ]
     self.assertEqual(set(actual), set(expected))
 
@@ -190,7 +189,6 @@ class FunctionTest(testing_config.CustomTestCase):
                 'feature_editor@example.com',
                 'feature_owner@example.com',
                 'mentor@example.com',
-                'jrobbins-test@googlegroups.com',
                 ]
     self.assertEqual(set(actual), set(expected))
 
@@ -199,8 +197,11 @@ class FunctionTest(testing_config.CustomTestCase):
     """Escalated accuracy emails go to feature owners."""
     actual = reminders.choose_email_recipients(
         self.feature_template, True, True)
-    expected = ['feature_owner@example.com',
-                ]
+    expected = [
+      'feature_owner@example.com',
+      'cbe-releasenotes@google.com',
+      'webstatus@google.com',
+    ]
     self.assertEqual(set(actual), set(expected))
 
   def test_build_email_tasks_feature_accuracy(self):
@@ -261,7 +262,7 @@ class FunctionTest(testing_config.CustomTestCase):
         handler.is_accuracy_email,
       )
 
-    self.assertEqual(1, len(actual))
+    self.assertEqual(2, len(actual))
     task = actual[0]
     self.assertEqual(
         'Escalation request - Verify feature one', task['subject'])
@@ -365,8 +366,9 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
     with test_app.app_context():
       result = self.handler.get_template_data()
     # More email tasks should be created to notify extended contributors.
-    expected_message = ('2 email(s) sent or logged.\n'
+    expected_message = ('3 email(s) sent or logged.\n'
                         'Recipients:\n'
+                        'jrobbins-test@googlegroups.com\n'
                         'owner_1@example.com\n'
                         'owner_2@example.com')
     expected = {'message': expected_message}
