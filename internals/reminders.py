@@ -58,11 +58,10 @@ def choose_email_recipients(
     feature: FeatureEntry, is_escalated: bool, is_accuracy_email: bool) -> list[str]:
   """Choose which recipients will receive the email notification."""
   ws_group_emails = []
-  if is_escalated:
-    if settings.PROD:
-      ws_group_emails = [WEBSTATUS_EMAIL, CBE_ESCLATION_EMAIL]
-    else:
-      ws_group_emails = [STAGING_EMAIL]
+  if settings.PROD:
+    ws_group_emails = [WEBSTATUS_EMAIL, CBE_ESCLATION_EMAIL]
+  else:
+    ws_group_emails = [STAGING_EMAIL]
 
   # Only feature owners are notified for accuracy or non-escalated notification emails, if not bounced.
   if is_accuracy_email or not is_escalated:
