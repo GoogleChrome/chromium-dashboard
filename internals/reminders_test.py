@@ -136,8 +136,10 @@ class FunctionTest(testing_config.CustomTestCase):
     """Normal reminders go to feature owners."""
     actual = reminders.choose_email_recipients(
         self.feature_template, False, False)
-    expected = ['feature_owner@example.com',
-                ]
+    expected = [
+      'feature_owner@example.com',
+      'jrobbins-test@googlegroups.com',
+    ]
     self.assertEqual(set(actual), set(expected))
 
   def test_choose_email_recipients__owners_bounced(self):
@@ -148,12 +150,13 @@ class FunctionTest(testing_config.CustomTestCase):
 
     actual = reminders.choose_email_recipients(
         self.feature_template, False, False)
-    expected = ['creator@example.com',
-                'feature_editor@example.com',
-                'feature_owner@example.com',
-                'mentor@example.com',
-                'jrobbins-test@googlegroups.com',
-                ]
+    expected = [
+      'creator@example.com',
+      'feature_editor@example.com',
+      'feature_owner@example.com',
+      'mentor@example.com',
+      'jrobbins-test@googlegroups.com',
+    ]
     self.assertEqual(set(actual), set(expected))
 
   @mock.patch('settings.PROD', True)
@@ -174,8 +177,7 @@ class FunctionTest(testing_config.CustomTestCase):
     """Normal accuracy emails go to feature owners."""
     actual = reminders.choose_email_recipients(
         self.feature_template, False, True)
-    expected = ['feature_owner@example.com',
-                ]
+    expected = ['feature_owner@example.com', 'jrobbins-test@googlegroups.com']
     self.assertEqual(set(actual), set(expected))
 
   def test_choose_email_recipients__normal_accuracy_email_when_owners_bounced(self):
@@ -199,8 +201,11 @@ class FunctionTest(testing_config.CustomTestCase):
     """Escalated accuracy emails go to feature owners."""
     actual = reminders.choose_email_recipients(
         self.feature_template, True, True)
-    expected = ['feature_owner@example.com',
-                ]
+    expected = [
+      'feature_owner@example.com',
+      'cbe-releasenotes@google.com',
+      'webstatus@google.com',
+    ]
     self.assertEqual(set(actual), set(expected))
 
   def test_build_email_tasks_feature_accuracy(self):
@@ -215,7 +220,7 @@ class FunctionTest(testing_config.CustomTestCase):
         handler.is_accuracy_email,
       )
 
-    self.assertEqual(1, len(actual))
+    self.assertEqual(2, len(actual))
     task = actual[0]
     self.assertEqual('feature_owner@example.com', task['to'])
     self.assertEqual('Action requested - Verify feature one', task['subject'])
@@ -236,7 +241,7 @@ class FunctionTest(testing_config.CustomTestCase):
         handler.is_accuracy_email,
       )
 
-    self.assertEqual(1, len(actual))
+    self.assertEqual(2, len(actual))
     task = actual[0]
     self.assertEqual('feature_owner@example.com', task['to'])
     self.assertEqual('Action requested - Verify feature one', task['subject'])
@@ -261,7 +266,7 @@ class FunctionTest(testing_config.CustomTestCase):
         handler.is_accuracy_email,
       )
 
-    self.assertEqual(1, len(actual))
+    self.assertEqual(2, len(actual))
     task = actual[0]
     self.assertEqual(
         'Escalation request - Verify feature one', task['subject'])
@@ -281,7 +286,7 @@ class FunctionTest(testing_config.CustomTestCase):
         handler.should_escalate_notification,
         handler.is_accuracy_email,
       )
-    self.assertEqual(1, len(actual))
+    self.assertEqual(2, len(actual))
     task = actual[0]
     self.assertEqual('feature_owner@example.com', task['to'])
     self.assertEqual('Action requested - Verify feature one', task['subject'])
@@ -332,9 +337,10 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
     mock_get.return_value = mock_return
     with test_app.app_context():
       result = self.handler.get_template_data()
-    expected_message = ('1 email(s) sent or logged.\n'
+    expected_message = ('2 email(s) sent or logged.\n'
                         'Recipients:\n'
-                        'feature_owner@example.com')
+                        'feature_owner@example.com\n'
+                        'jrobbins-test@googlegroups.com')
     expected = {'message': expected_message}
     self.assertEqual(result, expected)
 
@@ -346,8 +352,9 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
     mock_get.return_value = mock_return
     with test_app.app_context():
       result = self.handler.get_template_data()
-    expected_message = ('2 email(s) sent or logged.\n'
+    expected_message = ('3 email(s) sent or logged.\n'
                         'Recipients:\n'
+                        'jrobbins-test@googlegroups.com\n'
                         'owner_1@example.com\n'
                         'owner_2@example.com')
     expected = {'message': expected_message}
@@ -365,8 +372,9 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
     with test_app.app_context():
       result = self.handler.get_template_data()
     # More email tasks should be created to notify extended contributors.
-    expected_message = ('2 email(s) sent or logged.\n'
+    expected_message = ('3 email(s) sent or logged.\n'
                         'Recipients:\n'
+                        'jrobbins-test@googlegroups.com\n'
                         'owner_1@example.com\n'
                         'owner_2@example.com')
     expected = {'message': expected_message}
@@ -388,8 +396,9 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
     mock_get.return_value = mock_return
     with test_app.app_context():
       result = self.handler.get_template_data()
-    expected_message = ('2 email(s) sent or logged.\n'
+    expected_message = ('3 email(s) sent or logged.\n'
                         'Recipients:\n'
+                        'jrobbins-test@googlegroups.com\n'
                         'owner_1@example.com\n'
                         'owner_2@example.com')
     expected = {'message': expected_message}

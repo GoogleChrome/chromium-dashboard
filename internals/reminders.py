@@ -57,25 +57,26 @@ def get_current_milestone_info(anchor_channel: str):
 def choose_email_recipients(
     feature: FeatureEntry, is_escalated: bool, is_accuracy_email: bool) -> list[str]:
   """Choose which recipients will receive the email notification."""
+  ws_group_emails = []
+  if settings.PROD:
+    ws_group_emails = [WEBSTATUS_EMAIL, CBE_ESCLATION_EMAIL]
+  else:
+    ws_group_emails = [STAGING_EMAIL]
 
   # Only feature owners are notified for accuracy or non-escalated notification emails, if not bounced.
   if is_accuracy_email or not is_escalated:
     user_prefs = UserPref.get_prefs_for_emails(feature.owner_emails)
-    receivers = list(set([up.email for up in user_prefs
-                  if not up.bounced]))
+    receivers = list(set([up.email for up in user_prefs if not up.bounced]))
     if receivers:
-      return receivers
+      return receivers + ws_group_emails
 
   # Escalated notification. Add extended recipients.
-  ws_group_emails = [STAGING_EMAIL]
-  if settings.PROD:
-    ws_group_emails = [WEBSTATUS_EMAIL, CBE_ESCLATION_EMAIL]
   all_notified_users = set(ws_group_emails)
   all_notified_users.add(feature.creator_email)
   all_notified_users.update(feature.owner_emails)
   all_notified_users.update(feature.editor_emails)
   all_notified_users.update(feature.spec_mentor_emails or [])
-  return list(all_notified_users)
+  return list(all_notified_users) + ws_group_emails
 
 
 def build_email_tasks(
