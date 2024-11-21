@@ -11,7 +11,8 @@ describe('chromedash-attachments', () => {
     assert.exists(component);
     assert.instanceOf(component, ChromedashAttachments);
     const textareaElement = component.renderRoot.querySelector(
-      'chromedash-textarea');
+      'chromedash-textarea'
+    );
     assert.exists(textareaElement);
     assert.instanceOf(textareaElement, ChromedashTextarea);
   });
@@ -19,9 +20,7 @@ describe('chromedash-attachments', () => {
   it('renders with a URL', async () => {
     const url = 'https://chromestatus.com/static/img/chrome_logo.svg';
     const component: ChromedashAttachments = await fixture(
-      html`<chromedash-attachments
-      value=${url}
-      ></chromedash-attachments>`
+      html`<chromedash-attachments value=${url}></chromedash-attachments>`
     );
     assert.exists(component);
     await component.updateComplete;
@@ -35,5 +34,4 @@ describe('chromedash-attachments', () => {
     assert.exists(imgElement);
     assert.equal(imgElement.getAttribute('src'), url);
   });
-
 });

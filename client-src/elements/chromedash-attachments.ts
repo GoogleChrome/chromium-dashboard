@@ -52,7 +52,7 @@ export class ChromedashAttachments extends LitElement {
       margin: 'var(--content-padding-half)',
       border: `2px solid var(--link-color)`,
       cursor: `zoom-in`,
-    }
+    };
     const imgStyles = {
       maxHeight: '150px',
       maxWidth: '200px',
@@ -75,21 +75,20 @@ export class ChromedashAttachments extends LitElement {
 
   render() {
     return html`
-    <chromedash-textarea ${ref(this.textareaRef)}
-      size="small"
-      name=${this.name}
-      .value=${this.value}
-      multiple
-      placeholder=${DEFAULT_PLACEHOLDER}
-      pattern=${this.pattern}
-      chromedash_single_pattern=${this.chromedash_single_pattern}
-      chromedash_split_pattern=${this.chromedash_split_pattern}
-      @sl-change=${this.handleFieldUpdated}
-      @keyup=${this.handleFieldUpdated}
+      <chromedash-textarea
+        ${ref(this.textareaRef)}
+        size="small"
+        name=${this.name}
+        .value=${this.value}
+        multiple
+        placeholder=${DEFAULT_PLACEHOLDER}
+        pattern=${this.pattern}
+        chromedash_single_pattern=${this.chromedash_single_pattern}
+        chromedash_split_pattern=${this.chromedash_split_pattern}
+        @sl-change=${this.handleFieldUpdated}
+        @keyup=${this.handleFieldUpdated}
       ></chromedash-textarea>
-      <div id=thumbnails>
-        ${this.renderThumbnails()}
-      </div>
+      <div id="thumbnails">${this.renderThumbnails()}</div>
     `;
   }
 
@@ -100,5 +99,4 @@ export class ChromedashAttachments extends LitElement {
   updated() {
     this.validate();
   }
-
 }
