@@ -4,6 +4,7 @@ import {customElement, property, state} from 'lit/decorators.js';
 import {ref} from 'lit/directives/ref.js';
 
 import {ChromedashApp} from './chromedash-app';
+import './chromedash-attachments';
 import './chromedash-textarea';
 import {ALL_FIELDS, resolveFieldForFeature} from './form-field-specs';
 import {
@@ -339,11 +340,24 @@ export class ChromedashFormField extends LitElement {
           name="${fieldName}"
           id="id_${this.name}"
           size="small"
-          .value=${fieldValue}
+          value=${fieldValue}
           ?required=${this.fieldProps.required}
           @sl-change="${this.handleFieldUpdated}"
         >
         </chromedash-textarea>
+      `;
+    } else if (type === 'attachments') {
+      fieldHTML = html`
+        <chromedash-attachments
+          ${ref(this.updateAttributes)}
+          name="${fieldName}"
+          id="id_${this.name}"
+          size="small"
+          value=${fieldValue}
+          ?required=${this.fieldProps.required}
+          @sl-change="${this.handleFieldUpdated}"
+        >
+        </chromedash-attachments>
       `;
     } else if (type === 'radios') {
       fieldHTML = html`

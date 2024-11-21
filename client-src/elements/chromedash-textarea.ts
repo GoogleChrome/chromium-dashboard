@@ -57,6 +57,9 @@ export class ChromedashTextarea extends SlTextarea {
   }
 
   validate() {
+    if (this.input === null) {
+      return;
+    }
     const invalidMsg = this.customCheckValidity(this.input.value)
       ? ''
       : 'invalid';
