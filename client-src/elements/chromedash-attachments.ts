@@ -59,9 +59,9 @@ export class ChromedashAttachments extends LitElement {
     };
 
     return html`
-    <a href=${url} target="_blank" style=${styleMap(linkStyles)}>
-      <img style=${styleMap(imgStyles)} src=${url}></img>
-    </a>
+      <a href=${url} target="_blank" style=${styleMap(linkStyles)}>
+        <img style=${styleMap(imgStyles)} src=${url}></img>
+      </a>
     `;
   }
 
@@ -79,7 +79,7 @@ export class ChromedashAttachments extends LitElement {
         ${ref(this.textareaRef)}
         size="small"
         name=${this.name}
-        .value=${this.value}
+        value=${this.value}
         multiple
         placeholder=${DEFAULT_PLACEHOLDER}
         pattern=${this.pattern}

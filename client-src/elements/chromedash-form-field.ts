@@ -340,7 +340,7 @@ export class ChromedashFormField extends LitElement {
           name="${fieldName}"
           id="id_${this.name}"
           size="small"
-          .value=${fieldValue}
+          value=${fieldValue}
           ?required=${this.fieldProps.required}
           @sl-change="${this.handleFieldUpdated}"
         >
@@ -353,7 +353,7 @@ export class ChromedashFormField extends LitElement {
           name="${fieldName}"
           id="id_${this.name}"
           size="small"
-          .value=${fieldValue}
+          value=${fieldValue}
           ?required=${this.fieldProps.required}
           @sl-change="${this.handleFieldUpdated}"
         >
