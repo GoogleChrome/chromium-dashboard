@@ -140,6 +140,7 @@ class FunctionTest(testing_config.CustomTestCase):
       'feature_owner@example.com',
       'jrobbins-test@googlegroups.com',
     ]
+    self.assertEqual(len(actual), len(expected))
     self.assertEqual(set(actual), set(expected))
 
   def test_choose_email_recipients__owners_bounced(self):
@@ -157,6 +158,7 @@ class FunctionTest(testing_config.CustomTestCase):
       'mentor@example.com',
       'jrobbins-test@googlegroups.com',
     ]
+    self.assertEqual(len(actual), len(expected))
     self.assertEqual(set(actual), set(expected))
 
   @mock.patch('settings.PROD', True)
@@ -171,6 +173,7 @@ class FunctionTest(testing_config.CustomTestCase):
                 'webstatus@google.com',
                 'cbe-releasenotes@google.com',
                 ]
+    self.assertEqual(len(actual), len(expected))
     self.assertEqual(set(actual), set(expected))
 
   def test_choose_email_recipients__normal_accuracy_email(self):
@@ -178,6 +181,7 @@ class FunctionTest(testing_config.CustomTestCase):
     actual = reminders.choose_email_recipients(
         self.feature_template, False, True)
     expected = ['feature_owner@example.com', 'jrobbins-test@googlegroups.com']
+    self.assertEqual(len(actual), len(expected))
     self.assertEqual(set(actual), set(expected))
 
   def test_choose_email_recipients__normal_accuracy_email_when_owners_bounced(self):
@@ -194,6 +198,7 @@ class FunctionTest(testing_config.CustomTestCase):
                 'mentor@example.com',
                 'jrobbins-test@googlegroups.com',
                 ]
+    self.assertEqual(len(actual), len(expected))
     self.assertEqual(set(actual), set(expected))
 
   @mock.patch('settings.PROD', True)
@@ -206,6 +211,7 @@ class FunctionTest(testing_config.CustomTestCase):
       'cbe-releasenotes@google.com',
       'webstatus@google.com',
     ]
+    self.assertEqual(len(actual), len(expected))
     self.assertEqual(set(actual), set(expected))
 
   def test_build_email_tasks_feature_accuracy(self):
