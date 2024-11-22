@@ -76,7 +76,7 @@ def choose_email_recipients(
   all_notified_users.update(feature.owner_emails)
   all_notified_users.update(feature.editor_emails)
   all_notified_users.update(feature.spec_mentor_emails or [])
-  return list(all_notified_users) + ws_group_emails
+  return list(all_notified_users)
 
 
 def build_email_tasks(
