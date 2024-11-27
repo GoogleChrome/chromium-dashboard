@@ -189,7 +189,7 @@ export class ChromedashFeatureHighlights extends LitElement {
                 ${this.feature.browsers.chrome.blink_components.map(
                   c => html`
                     <a
-                      href="https://bugs.chromium.org/p/chromium/issues/list?q=component:${c}"
+                      href="https://issues.chromium.org/issues?q=customfield1222907:%22${c}%22"
                       target="_blank"
                       rel="noopener"
                       >${c}</a

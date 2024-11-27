@@ -27,7 +27,7 @@
 
   <br><br><h4>Blink component</h4>
   {% for c in feature.browsers.chrome.blink_components %}
-    <a href="https://bugs.chromium.org/p/chromium/issues/list?q=component:{{c}}" target="_blank" rel="noopener">{{c}}</a>
+    <a href="https://issues.chromium.org/issues?q=customfield1222907:%22{{c}}%22" target="_blank" rel="noopener">{{c}}</a>
   {% endfor %}
 
   {% if 'motivation' in sections_to_show %}
