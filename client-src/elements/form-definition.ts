@@ -349,6 +349,7 @@ const FLAT_ORIGIN_TRIAL_FIELDS: MetadataFields = {
         'ongoing_constraints',
         // TODO(jrobbins): display r4dt_url instead when deprecating.
         'i2e_lgtms',
+        'ot_documentation_url',
         'intent_to_experiment_url',
         'origin_trial_feedback_url',
       ],
@@ -563,7 +564,7 @@ export const ORIGIN_TRIAL_CREATION_FIELDS: MetadataFields = {
         'ot_creation__milestone_desktop_first',
         'ot_creation__milestone_desktop_last',
         'ot_creation__intent_to_experiment_url',
-        'ot_documentation_url',
+        'ot_creation__ot_documentation_url',
         'ot_feedback_submission_url',
         'ot_chromium_trial_name',
         'ot_is_deprecation_trial',

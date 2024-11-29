@@ -124,11 +124,11 @@ def detect_gate_id(body) -> int | None:
 
 
 THREAD_LINK_RE = re.compile(
-    r'To view this discussion on the web visit\s+'
+    r'To view this discussion visit\s+'
     r'(> )?(https://groups\.google\.com/a/chromium.org/d/msgid/blink-dev/'
     r'[-_0-9a-zA-Z%.]+[-_0-9a-zA-Z])', re.MULTILINE)
 STAGING_THREAD_LINK_RE = re.compile(
-    r'To view this discussion on the web visit\s+'
+    r'To view this discussion visit\s+'
     r'(> )?(https://groups\.google\.com/d/msgid/jrobbins-test/'
     r'[-_0-9a-zA-Z%.]+[-_0-9a-zA-Z])', re.MULTILINE)
 
@@ -169,10 +169,9 @@ def is_lgtm_allowed(from_addr, feature, gate_info):
   return allowed
 
 
-def detect_new_thread(gate_id: int) -> bool:
-  """Return True if there are no previous approval values for this gate."""
-  existing_votes = Vote.get_votes(gate_id=gate_id)
-  return not existing_votes
+def detect_new_thread(gate: Gate) -> bool:
+  """Treat the thread as new if the associated Gate is still PREPARING."""
+  return gate.state == Gate.PREPARING
 
 
 def remove_markdown(body):
@@ -239,7 +238,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
 
     self.set_intent_thread_url(stage, thread_url, subject)
     gate_id = gate.key.integer_id()  # In case it was found by gate_type.
-    is_new_thread = detect_new_thread(gate_id)
+    is_new_thread = detect_new_thread(gate)
     self.create_approvals(
         feature, stage, gate, gate_info, from_addr, body, is_new_thread)
     self.record_slo(feature, gate_info, from_addr, is_new_thread)

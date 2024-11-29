@@ -118,7 +118,7 @@ const EMAIL_ADDRESSES_REGEX: string =
 
 // Simple http URLs
 const PORTNUM_REGEX: string = '(:[0-9]+)?';
-const URL_REGEX: string =
+export const URL_REGEX: string =
   '(https?)://' + DOMAIN_REGEX + PORTNUM_REGEX + String.raw`(/\S*)?`;
 const URL_PADDED_REGEX: string = String.raw`\s*` + URL_REGEX + String.raw`\s*`;
 
@@ -596,34 +596,12 @@ export const ALL_FIELDS: Record<string, Field> = {
       >.`,
   },
   screenshot_links: {
-    type: 'textarea',
+    type: 'attachments',
     attrs: MULTI_URL_FIELD_ATTRS,
     required: false,
     label: 'Screenshots link(s)',
     help_text: html` Optional: Link to screenshots showcasing this feature (one
     URL per line). These will be shared publicly.`,
-    check: async value => {
-      const urls = value.split('\n').filter(x => !!x);
-      if (!urls.length) {
-        return undefined;
-      }
-      const urlTypes = await Promise.all(
-        urls.map(url =>
-          fetch(url, {method: 'HEAD'})
-            .then(response => response.blob())
-            .then(blob => blob.type)
-            .catch(() => 'error')
-        )
-      );
-      // All urls must link to an image.
-      if (urlTypes.some(type => !type.startsWith('image'))) {
-        return {
-          error:
-            'One or more urls are not actual images. Use a valid link to an actual image.',
-        };
-      }
-      return undefined;
-    },
   },
 
   first_enterprise_notification_milestone: {
@@ -1434,6 +1412,14 @@ export const ALL_FIELDS: Record<string, Field> = {
   },
 
   ot_documentation_url: {
+    type: 'input',
+    attrs: URL_FIELD_ATTRS,
+    label: 'Documentation link',
+    help_text: html` Link to more information to help developers use the trial's
+    feature (e.g. blog post, Github explainer, etc.).`,
+  },
+
+  ot_creation__ot_documentation_url: {
     type: 'input',
     attrs: URL_FIELD_ATTRS,
     required: true,

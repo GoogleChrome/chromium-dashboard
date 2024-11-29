@@ -87,6 +87,7 @@ import './elements/chromedash-preflight-dialog';
 import './elements/chromedash-settings-page';
 import './elements/chromedash-stack-rank';
 import './elements/chromedash-stack-rank-page';
+import './elements/chromedash-attachments';
 import './elements/chromedash-textarea';
 import './elements/chromedash-timeline';
 import './elements/chromedash-timeline-page';

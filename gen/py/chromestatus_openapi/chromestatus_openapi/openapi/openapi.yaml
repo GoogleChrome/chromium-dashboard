@@ -580,6 +580,33 @@ paths:
           description: User is not allowed to comment on this feature
       summary: Add a comment to a feature
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /features/{feature_id}/attachments:
+    post:
+      operationId: add_attachment
+      parameters:
+      - description: Feature ID
+        explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/addAttachment_request'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddAttachmentResponse'
+          description: The URL of the stored attachment.
+      summary: Store a file that will be attached to a feature
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /features/{feature_id}/gates:
     get:
       operationId: get_gates_for_feature
@@ -1218,6 +1245,15 @@ components:
       - set_on
       - state
       title: Vote
+      type: object
+    AddAttachmentResponse:
+      example:
+        attachment_url: attachment_url
+      properties:
+        attachment_url:
+          title: attachment_url
+          type: string
+      title: AddAttachmentResponse
       type: object
     GetVotesResponse:
       example:
@@ -2989,6 +3025,12 @@ components:
           title: message
           type: string
       title: RejectUnneededGetRequest
+      type: object
+    addAttachment_request:
+      properties:
+        uploaded-file:
+          format: binary
+          type: string
       type: object
     deleteAccount_200_response:
       example:

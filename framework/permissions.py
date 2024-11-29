@@ -105,7 +105,7 @@ def feature_edit_list(user: User) -> list[int]:
 
 def can_edit_feature(user: User, feature_id: int) -> bool:
   """Return True if the user is allowed to edit the given feature."""
-# If the user can edit any feature, they can edit this feature.
+  # If the user can edit any feature, they can edit this feature.
   if can_edit_any_feature(user):
     return True
 

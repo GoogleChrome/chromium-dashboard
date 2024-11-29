@@ -23,6 +23,7 @@ from internals import core_enums
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate, Vote
 from internals import reminders
+from internals.user_models import UserPref
 
 from google.cloud import ndb  # type: ignore
 
@@ -110,27 +111,61 @@ class FunctionTest(testing_config.CustomTestCase):
 
     self.feature_template.put()
 
+    self.owner_user_pref = UserPref(
+        email='feature_owner@example.com',
+        notify_as_starrer=False)
+    self.owner_user_pref.put()
+    owner_user_pref_1 = UserPref(
+        email='owner_1@example.com',
+        notify_as_starrer=False)
+    owner_user_pref_1.put()
+    owner_user_pref_2 = UserPref(
+        email='owner_2@example.com',
+        notify_as_starrer=False)
+    owner_user_pref_2.put()
+
     self.maxDiff = None
 
   def tearDown(self) -> None:
-    kinds: list[ndb.Model] = [FeatureEntry, Stage]
+    kinds: list[ndb.Model] = [FeatureEntry, Stage, UserPref]
     for kind in kinds:
       for entity in kind.query():
         entity.key.delete()
 
   def test_choose_email_recipients__normal(self):
-    """Normal reminders go to feature participants."""
+    """Normal reminders go to feature owners."""
     actual = reminders.choose_email_recipients(
-        self.feature_template, False)
-    expected = ['feature_owner@example.com',
-                ]
+        self.feature_template, False, False)
+    expected = [
+      'feature_owner@example.com',
+      'jrobbins-test@googlegroups.com',
+    ]
+    self.assertEqual(len(actual), len(expected))
+    self.assertEqual(set(actual), set(expected))
+
+  def test_choose_email_recipients__owners_bounced(self):
+    """Normal reminders go to feature participants when owners' emails
+    are bounced."""
+    self.owner_user_pref.bounced = True
+    self.owner_user_pref.put()
+
+    actual = reminders.choose_email_recipients(
+        self.feature_template, False, False)
+    expected = [
+      'creator@example.com',
+      'feature_editor@example.com',
+      'feature_owner@example.com',
+      'mentor@example.com',
+      'jrobbins-test@googlegroups.com',
+    ]
+    self.assertEqual(len(actual), len(expected))
     self.assertEqual(set(actual), set(expected))
 
   @mock.patch('settings.PROD', True)
   def test_choose_email_recipients__escalated(self):
     """Escalated reminders go to feature participants and lists."""
     actual = reminders.choose_email_recipients(
-        self.feature_template, True)
+        self.feature_template, True, False)
     expected = ['creator@example.com',
                 'feature_owner@example.com',
                 'feature_editor@example.com',
@@ -138,19 +173,60 @@ class FunctionTest(testing_config.CustomTestCase):
                 'webstatus@google.com',
                 'cbe-releasenotes@google.com',
                 ]
+    self.assertEqual(len(actual), len(expected))
+    self.assertEqual(set(actual), set(expected))
+
+  def test_choose_email_recipients__normal_accuracy_email(self):
+    """Normal accuracy emails go to feature owners."""
+    actual = reminders.choose_email_recipients(
+        self.feature_template, False, True)
+    expected = ['feature_owner@example.com', 'jrobbins-test@googlegroups.com']
+    self.assertEqual(len(actual), len(expected))
+    self.assertEqual(set(actual), set(expected))
+
+  def test_choose_email_recipients__normal_accuracy_email_when_owners_bounced(self):
+    """Normal accuracy emails go to feature participants when owners' emails
+    are bounced."""
+    self.owner_user_pref.bounced = True
+    self.owner_user_pref.put()
+
+    actual = reminders.choose_email_recipients(
+        self.feature_template, False, True)
+    expected = ['creator@example.com',
+                'feature_editor@example.com',
+                'feature_owner@example.com',
+                'mentor@example.com',
+                'jrobbins-test@googlegroups.com',
+                ]
+    self.assertEqual(len(actual), len(expected))
+    self.assertEqual(set(actual), set(expected))
+
+  @mock.patch('settings.PROD', True)
+  def test_choose_email_recipients_escalated_accuracy_email(self):
+    """Escalated accuracy emails go to feature owners."""
+    actual = reminders.choose_email_recipients(
+        self.feature_template, True, True)
+    expected = [
+      'feature_owner@example.com',
+      'cbe-releasenotes@google.com',
+      'webstatus@google.com',
+    ]
+    self.assertEqual(len(actual), len(expected))
     self.assertEqual(set(actual), set(expected))
 
   def test_build_email_tasks_feature_accuracy(self):
     with test_app.app_context():
       handler = reminders.FeatureAccuracyHandler()
       actual = reminders.build_email_tasks(
-          [(self.feature_template, 100)],
-          'Action requested - Verify %s',
-          handler.EMAIL_TEMPLATE_PATH,
-          self.current_milestone_info,
-          handler.should_escalate_notification)
+        [(self.feature_template, 100)],
+        'Action requested - Verify %s',
+        handler.EMAIL_TEMPLATE_PATH,
+        self.current_milestone_info,
+        handler.should_escalate_notification,
+        handler.is_accuracy_email,
+      )
 
-    self.assertEqual(1, len(actual))
+    self.assertEqual(2, len(actual))
     task = actual[0]
     self.assertEqual('feature_owner@example.com', task['to'])
     self.assertEqual('Action requested - Verify feature one', task['subject'])
@@ -163,13 +239,15 @@ class FunctionTest(testing_config.CustomTestCase):
     with test_app.app_context():
       handler = reminders.FeatureAccuracyHandler()
       actual = reminders.build_email_tasks(
-          [(self.feature_template, 110)],
-          'Action requested - Verify %s',
-          handler.EMAIL_TEMPLATE_PATH,
-          self.current_milestone_info,
-          handler.should_escalate_notification)
+        [(self.feature_template, 110)],
+        'Action requested - Verify %s',
+        handler.EMAIL_TEMPLATE_PATH,
+        self.current_milestone_info,
+        handler.should_escalate_notification,
+        handler.is_accuracy_email,
+      )
 
-    self.assertEqual(1, len(actual))
+    self.assertEqual(2, len(actual))
     task = actual[0]
     self.assertEqual('feature_owner@example.com', task['to'])
     self.assertEqual('Action requested - Verify feature one', task['subject'])
@@ -186,13 +264,15 @@ class FunctionTest(testing_config.CustomTestCase):
     with test_app.app_context():
       handler = reminders.FeatureAccuracyHandler()
       actual = reminders.build_email_tasks(
-          [(self.feature_template, 100)],
-          'Action requested - Verify %s',
-          handler.EMAIL_TEMPLATE_PATH,
-          self.current_milestone_info,
-          handler.should_escalate_notification)
+        [(self.feature_template, 100)],
+        'Action requested - Verify %s',
+        handler.EMAIL_TEMPLATE_PATH,
+        self.current_milestone_info,
+        handler.should_escalate_notification,
+        handler.is_accuracy_email,
+      )
 
-    self.assertEqual(5, len(actual))
+    self.assertEqual(2, len(actual))
     task = actual[0]
     self.assertEqual(
         'Escalation request - Verify feature one', task['subject'])
@@ -205,10 +285,14 @@ class FunctionTest(testing_config.CustomTestCase):
     with test_app.app_context():
       handler = reminders.PrepublicationHandler()
       actual = reminders.build_email_tasks(
-          [(self.feature_template, 100)], 'Action requested - Verify %s',
-          handler.EMAIL_TEMPLATE_PATH,
-          self.current_milestone_info, handler.should_escalate_notification)
-    self.assertEqual(1, len(actual))
+        [(self.feature_template, 100)],
+        'Action requested - Verify %s',
+        handler.EMAIL_TEMPLATE_PATH,
+        self.current_milestone_info,
+        handler.should_escalate_notification,
+        handler.is_accuracy_email,
+      )
+    self.assertEqual(2, len(actual))
     task = actual[0]
     self.assertEqual('feature_owner@example.com', task['to'])
     self.assertEqual('Action requested - Verify feature one', task['subject'])
@@ -222,6 +306,14 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
   def setUp(self):
     self.feature_1, self.feature_2, self.feature_3 = make_test_features()
     self.handler = reminders.FeatureAccuracyHandler()
+    self.owner_user_pref_1 = UserPref(
+        email='owner_1@example.com',
+        notify_as_starrer=False)
+    self.owner_user_pref_1.put()
+    self.owner_user_pref_2 = UserPref(
+        email='owner_2@example.com',
+        notify_as_starrer=False)
+    self.owner_user_pref_2.put()
 
   def tearDown(self):
     self.feature_1.key.delete()
@@ -229,6 +321,9 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
     self.feature_3.key.delete()
     for stage in Stage.query():
       stage.key.delete()
+    self.owner_user_pref_1.key.delete()
+    self.owner_user_pref_2.key.delete()
+
 
   @mock.patch('requests.get')
   def test_determine_features_to_notify__no_features(self, mock_get):
@@ -248,9 +343,10 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
     mock_get.return_value = mock_return
     with test_app.app_context():
       result = self.handler.get_template_data()
-    expected_message = ('1 email(s) sent or logged.\n'
+    expected_message = ('2 email(s) sent or logged.\n'
                         'Recipients:\n'
-                        'feature_owner@example.com')
+                        'feature_owner@example.com\n'
+                        'jrobbins-test@googlegroups.com')
     expected = {'message': expected_message}
     self.assertEqual(result, expected)
 
@@ -262,8 +358,9 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
     mock_get.return_value = mock_return
     with test_app.app_context():
       result = self.handler.get_template_data()
-    expected_message = ('2 email(s) sent or logged.\n'
+    expected_message = ('3 email(s) sent or logged.\n'
                         'Recipients:\n'
+                        'jrobbins-test@googlegroups.com\n'
                         'owner_1@example.com\n'
                         'owner_2@example.com')
     expected = {'message': expected_message}
@@ -281,11 +378,9 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
     with test_app.app_context():
       result = self.handler.get_template_data()
     # More email tasks should be created to notify extended contributors.
-    expected_message = ('5 email(s) sent or logged.\n'
+    expected_message = ('3 email(s) sent or logged.\n'
                         'Recipients:\n'
-                        'feature_editor@example.com\n'
                         'jrobbins-test@googlegroups.com\n'
-                        'mentor@example.com\n'
                         'owner_1@example.com\n'
                         'owner_2@example.com')
     expected = {'message': expected_message}
@@ -307,8 +402,9 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
     mock_get.return_value = mock_return
     with test_app.app_context():
       result = self.handler.get_template_data()
-    expected_message = ('2 email(s) sent or logged.\n'
+    expected_message = ('3 email(s) sent or logged.\n'
                         'Recipients:\n'
+                        'jrobbins-test@googlegroups.com\n'
                         'owner_1@example.com\n'
                         'owner_2@example.com')
     expected = {'message': expected_message}

@@ -55,7 +55,11 @@
   {% endif %}
 
   {% for stage in stage_info.ot_stages %}
-    {% if stage.ot_chromium_trial_name %}
+    {% if stage.ot_display_name %}
+      <br><br><h4>Origin Trial Name</h4>
+      {{stage.ot_display_name}}
+
+    {% endif %}{% if stage.ot_chromium_trial_name %}
       <br><br><h4>Chromium Trial Name</h4>
       {{stage.ot_chromium_trial_name}}
 
