@@ -351,6 +351,7 @@ export class ChromedashFormField extends LitElement {
         <chromedash-attachments
           ${ref(this.updateAttributes)}
           name="${fieldName}"
+          featureId=${this.feature.id}
           id="id_${this.name}"
           size="small"
           value=${fieldValue}
