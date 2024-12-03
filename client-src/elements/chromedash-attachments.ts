@@ -49,8 +49,9 @@ export class ChromedashAttachments extends LitElement {
     let inputEl: HTMLInputElement = e.target as HTMLInputElement;
     if (inputEl.files?.[0]) {
       const file: File = inputEl.files?.[0];
-      window.csClient.addAttachment(
-        this.featureId, inputEl.name, file).then((resp) => {
+      window.csClient
+        .addAttachment(this.featureId, inputEl.name, file)
+        .then(resp => {
           this.value += '\n' + resp.attachment_url;
           this.dispatchEvent(new CustomEvent('sl-change'));
         });
@@ -98,14 +99,14 @@ export class ChromedashAttachments extends LitElement {
     return html`
       <input
         ${ref(this.fileInputRef)}
-        type=file name=screenshots
-        @change=${(e) => this.handleFileSelected(e)}
+        type="file"
+        name="screenshots"
+        @change=${e => this.handleFileSelected(e)}
         accept="image/png, image/jpeg, image/png, image/wepb, text/plain"
-        style="display:none">
+        style="display:none"
+      />
       <div style=${styleMap(buttonContainerStyles)}>
-        <sl-button
-          @click=${ (e) => this.fileInputRef?.value?.click()}
-        >
+        <sl-button @click=${e => this.fileInputRef?.value?.click()}>
           <sl-icon slot="prefix" name="upload"></sl-icon>
           Upload image
         </sl-button>
@@ -129,10 +130,7 @@ export class ChromedashAttachments extends LitElement {
         @sl-change=${this.handleFieldUpdated}
         @keyup=${this.handleFieldUpdated}
       ></chromedash-textarea>
-      <div>
-        ${this.renderThumbnails()}
-        ${this.renderUploadButton()}
-      </div>
+      <div>${this.renderThumbnails()} ${this.renderUploadButton()}</div>
     `;
   }
 
