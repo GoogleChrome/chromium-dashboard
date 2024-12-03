@@ -86,8 +86,11 @@ describe('chromedash-form-field', () => {
       id: 12345,
     };
     const component = await fixture(
-      html` <chromedash-form-field name="screenshot_links" value=""
-      .feature=${formattedFeature}>
+      html` <chromedash-form-field
+        name="screenshot_links"
+        value=""
+        .feature=${formattedFeature}
+      >
       </chromedash-form-field>`
     );
     assert.exists(component);

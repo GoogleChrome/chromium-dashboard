@@ -107,8 +107,10 @@ export class ChromedashAttachments extends LitElement {
         style="display:none"
       />
       <div style=${styleMap(buttonContainerStyles)}>
-      <sl-button id="upload-button"
-      @click=${e => this.fileInputRef?.value?.click()}>
+        <sl-button
+          id="upload-button"
+          @click=${e => this.fileInputRef?.value?.click()}
+        >
           <sl-icon slot="prefix" name="upload"></sl-icon>
           Upload image
         </sl-button>
