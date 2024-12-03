@@ -602,9 +602,10 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'attachments',
     attrs: MULTI_URL_FIELD_ATTRS,
     required: false,
-    label: 'Screenshots link(s)',
-    help_text: html` Optional: Link to screenshots showcasing this feature (one
-    URL per line). These will be shared publicly.`,
+    label: 'Screenshot link(s)',
+    help_text: html` Optional: Links to screenshots showcasing this feature (one
+    URL per line). Use the upload button to upload an image to be served from
+    chromestatus.com. These will be shared publicly.`,
   },
 
   first_enterprise_notification_milestone: {

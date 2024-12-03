@@ -81,6 +81,27 @@ describe('chromedash-form-field', () => {
     assert.include(renderElement.innerHTML, 'required');
   });
 
+  it('renders an attachments type of field', async () => {
+    const formattedFeature = {
+      id: 12345,
+    };
+    const component = await fixture(
+      html` <chromedash-form-field name="screenshot_links" value=""
+      .feature=${formattedFeature}>
+      </chromedash-form-field>`
+    );
+    assert.exists(component);
+    assert.instanceOf(component, ChromedashFormField);
+    const fieldRow = component.renderRoot.querySelector('tr');
+    assert.exists(fieldRow);
+
+    const renderElement = component.renderRoot as HTMLElement;
+    assert.include(renderElement.innerHTML, 'Screenshot link(s)');
+    assert.include(renderElement.innerHTML, 'chromedash-attachments');
+    assert.include(renderElement.innerHTML, 'multiple');
+    assert.include(renderElement.innerHTML, 'Max size');
+  });
+
   it('renders a radios type of field', async () => {
     const component = await fixture(
       html` <chromedash-form-field name="feature_type_radio_group" value="0">

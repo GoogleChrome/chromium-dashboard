@@ -99,6 +99,7 @@ export class ChromedashAttachments extends LitElement {
     return html`
       <input
         ${ref(this.fileInputRef)}
+        id="file-field"
         type="file"
         name="screenshots"
         @change=${e => this.handleFileSelected(e)}
@@ -106,7 +107,8 @@ export class ChromedashAttachments extends LitElement {
         style="display:none"
       />
       <div style=${styleMap(buttonContainerStyles)}>
-        <sl-button @click=${e => this.fileInputRef?.value?.click()}>
+      <sl-button id="upload-button"
+      @click=${e => this.fileInputRef?.value?.click()}>
           <sl-icon slot="prefix" name="upload"></sl-icon>
           Upload image
         </sl-button>

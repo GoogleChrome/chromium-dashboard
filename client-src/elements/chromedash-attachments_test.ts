@@ -33,5 +33,11 @@ describe('chromedash-attachments', () => {
       component.renderRoot.querySelector('img');
     assert.exists(imgElement);
     assert.equal(imgElement.getAttribute('src'), url);
+    const fileFieldElement: HTMLElement | null =
+      component.renderRoot.querySelector('#file-field');
+    assert.exists(fileFieldElement);
+    const uploadButtonElement: HTMLElement | null =
+      component.renderRoot.querySelector('#upload-button');
+    assert.exists(uploadButtonElement);
   });
 });
