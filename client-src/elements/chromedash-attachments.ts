@@ -11,6 +11,7 @@ const DEFAULT_SPLIT_PATTERN = String.raw`\s+`;
 @customElement('chromedash-attachments')
 export class ChromedashAttachments extends LitElement {
   textareaRef: Ref<ChromedashTextarea> = createRef();
+  fileInputRef: Ref<HTMLInputElement> = createRef();
 
   @property({type: String})
   name;
@@ -22,6 +23,8 @@ export class ChromedashAttachments extends LitElement {
   chromedash_single_pattern = URL_REGEX;
   @property({type: String})
   chromedash_split_pattern = DEFAULT_SPLIT_PATTERN;
+  @property({type: Number})
+  featureId;
 
   // Note: Form element components cannot have their own styles.
 
@@ -39,6 +42,20 @@ export class ChromedashAttachments extends LitElement {
   handleFieldUpdated(e) {
     let fieldValue: string = e.target.value;
     this.value = fieldValue;
+    this.dispatchEvent(new CustomEvent('sl-change'));
+  }
+
+  handleFileSelected(e: Event) {
+    let inputEl: HTMLInputElement = e.target as HTMLInputElement;
+    if (inputEl.files?.[0]) {
+      const file: File = inputEl.files?.[0];
+      window.csClient
+        .addAttachment(this.featureId, inputEl.name, file)
+        .then(resp => {
+          this.value += '\n' + resp.attachment_url;
+          this.dispatchEvent(new CustomEvent('sl-change'));
+        });
+    }
   }
 
   renderOneThumbnail(url) {
@@ -73,6 +90,35 @@ export class ChromedashAttachments extends LitElement {
     return items.map(url => this.renderOneThumbnail(url));
   }
 
+  renderUploadButton() {
+    const buttonContainerStyles = {
+      display: 'inline-block',
+      margin: 'var(--content-padding-half)',
+    };
+
+    return html`
+      <input
+        ${ref(this.fileInputRef)}
+        id="file-field"
+        type="file"
+        name="screenshots"
+        @change=${e => this.handleFileSelected(e)}
+        accept="image/png, image/jpeg, image/png, image/wepb, text/plain"
+        style="display:none"
+      />
+      <div style=${styleMap(buttonContainerStyles)}>
+        <sl-button
+          id="upload-button"
+          @click=${e => this.fileInputRef?.value?.click()}
+        >
+          <sl-icon slot="prefix" name="upload"></sl-icon>
+          Upload image
+        </sl-button>
+        <div>Max size: 1MB</div>
+      </div>
+    `;
+  }
+
   render() {
     return html`
       <chromedash-textarea
@@ -88,7 +134,7 @@ export class ChromedashAttachments extends LitElement {
         @sl-change=${this.handleFieldUpdated}
         @keyup=${this.handleFieldUpdated}
       ></chromedash-textarea>
-      <div id="thumbnails">${this.renderThumbnails()}</div>
+      <div>${this.renderThumbnails()} ${this.renderUploadButton()}</div>
     `;
   }
 

@@ -109,9 +109,12 @@ export function resolveFieldForFeature(
  * Removing single quote ('), backtick (`), and pipe (|) since they are risky unless properly escaped everywhere.
  * Also removing ! and % because they have special meaning for some older email routing systems. */
 const USER_REGEX: string = String.raw`[A-Za-z0-9_#$&*+\/=?\{\}~^.\-]+`;
-const DOMAIN_REGEX: string = String.raw`(([A-Za-z0-9\-]+\.)+[A-Za-z]{2,6})`;
+const DOMAIN_NAME_REGEX: string = String.raw`(([A-Za-z0-9\-]+\.)+[A-Za-z]{2,6})`;
+const LOCALHOST_REGEX: string = String.raw`(localhost|127\.0\.0\.1)`;
+const DOMAIN_REGEX: string =
+  '(' + DOMAIN_NAME_REGEX + '|' + LOCALHOST_REGEX + ')';
 
-const EMAIL_ADDRESS_REGEX: string = USER_REGEX + '@' + DOMAIN_REGEX;
+const EMAIL_ADDRESS_REGEX: string = USER_REGEX + '@' + DOMAIN_NAME_REGEX;
 const GOOGLE_EMAIL_ADDRESS_REGEX: string = `${USER_REGEX}@google.com`;
 const EMAIL_ADDRESSES_REGEX: string =
   EMAIL_ADDRESS_REGEX + '([ ]*,[ ]*' + EMAIL_ADDRESS_REGEX + ')*';
@@ -599,9 +602,10 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'attachments',
     attrs: MULTI_URL_FIELD_ATTRS,
     required: false,
-    label: 'Screenshots link(s)',
-    help_text: html` Optional: Link to screenshots showcasing this feature (one
-    URL per line). These will be shared publicly.`,
+    label: 'Screenshot link(s)',
+    help_text: html` Optional: Links to screenshots showcasing this feature (one
+    URL per line). Use the upload button to upload an image to be served from
+    chromestatus.com. These will be shared publicly.`,
   },
 
   first_enterprise_notification_milestone: {

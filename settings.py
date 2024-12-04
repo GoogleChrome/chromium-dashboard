@@ -83,7 +83,7 @@ REVIEW_COMMENT_MAILING_LIST = 'jrobbins-test@googlegroups.com'
 MAX_LOG_LINE = 200 * 1000
 
 # Largest individual attachment / screenshot that the user can POST.
-MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024
+MAX_ATTACHMENT_SIZE = 1 * 1024 * 1024
 
 # Largest overall POST to any handler.
 MAX_REQUEST_CONTENT_LENGTH = 16 * 1024 * 1024
