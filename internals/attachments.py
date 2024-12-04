@@ -35,8 +35,13 @@ class Attachment(ndb.Model):
   created_on = ndb.DateTimeProperty(auto_now_add=True)
   content = ndb.BlobProperty(required=True)
   mime_type = ndb.StringProperty(required=True)
-  thumbnail = ndb.BlobProperty()
   is_deleted = ndb.BooleanProperty(default=False)
+
+class Thumbnail(ndb.Model):
+  """Attaches files, such as screenshots, to a feature entry."""
+  feature_id = ndb.IntegerProperty(required=True)
+  attachment_id = ndb.IntegerProperty(required=True)
+  thumb_content = ndb.BlobProperty()
 
 
 class UnsupportedMimeType(Exception):
@@ -60,6 +65,7 @@ def store_attachment(
       feature_id=feature_id,
       content=content,
       mime_type=mime_type)
+  attachment.put()
 
   if mime_type in RESIZABLE_MIME_TYPES:
     # Create and save a thumbnail too.
@@ -74,10 +80,13 @@ def store_attachment(
       # Do not raise exception for incorrectly formed images.
       logging.exception(e)
     if thumb_content:
-      attachment.thumbnail = thumb_content
+      thumbnail = Thumbnail(
+          feature_id=feature_id,
+          attachment_id=attachment.key.integer_id(),
+          thumb_content=thumb_content)
+      thumbnail.put()
       logging.info('Thumbnail is %r bytes', len(thumb_content))
 
-  attachment.put()
   return attachment
 
 
@@ -126,3 +135,10 @@ def mark_attachment_deleted(attachment: Attachment) -> None:
   """Mark an attachment as deleted so that it will no longer be served."""
   attachment.is_deleted = True
   attachment.put()
+
+
+def get_thumbnail(attachment_id: int) -> Thumbnail|None:
+  """Return a Thumbnail, if it exsits."""
+  thumbnail = Thumbnail.query(
+      Thumbnail.attachment_id == attachment_id).get()
+  return thumbnail

@@ -25,8 +25,9 @@ class AttachmentsTests(testing_config.CustomTestCase):
     self.feature_id = 12345678
 
   def tearDown(self):
-    for attach in attachments.Attachment.query().fetch(None):
-      attach.key.delete()
+    for kind in [attachments.Attachment, attachments.Thumbnail]:
+      for model in kind.query().fetch(None):
+        model.key.delete()
 
   def test_store_attachment(self):
     """We can store attachment content."""
