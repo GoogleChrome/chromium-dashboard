@@ -308,6 +308,7 @@ const FLAT_DEV_TRIAL_FIELDS: MetadataFields = {
         'activation_risks',
         'security_risks',
         'debuggability',
+        'measurement',
         'all_platforms',
         'all_platforms_descr',
         'wpt',
@@ -413,7 +414,6 @@ const FLAT_PREPARE_TO_SHIP_FIELDS: MetadataFields = {
         'adoption_expectation',
         'adoption_plan',
         // Implementation
-        'measurement',
         'non_oss_deps',
 
         // Stage-specific fields
@@ -527,6 +527,7 @@ const DEPRECATION_DEV_TRIAL_FIELDS: MetadataFields = {
         'security_risks',
         'webview_risks',
         'debuggability',
+        'measurement',
         'all_platforms',
         'all_platforms_descr',
         'wpt',
