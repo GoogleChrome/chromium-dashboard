@@ -81,12 +81,11 @@ class AttachmentServing(basehandlers.FlaskHandler):
       return redirect_response
 
     headers = self.get_headers()
-    if is_thumb and attachment.thumbnail:
-      content = attachment.thumbnail
-      headers['Content-Type'] = 'image/png'
-    else:
-      content = attachment.content
-      headers['Content-Type'] = attachment.mime_type
+    if is_thumb:
+      thumbnail = attachments.get_thumbnail(attachment_id)
+      if thumbnail:
+        headers['Content-Type'] = 'image/png'
+        return thumbnail.thumb_content, headers
 
-
-    return content, headers
+    headers['Content-Type'] = attachment.mime_type
+    return attachment.content, headers
