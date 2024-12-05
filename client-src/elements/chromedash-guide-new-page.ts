@@ -66,6 +66,8 @@ export class ChromedashGuideNewPage extends LitElement {
   feature!: Feature;
   @state()
   fieldValues: FieldInfo[] & {feature?: Feature} = [];
+  @property({type: Boolean})
+  submitting = false;
 
   /* Add the form's event listener after Shoelace event listeners are attached
    * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
@@ -90,6 +92,7 @@ export class ChromedashGuideNewPage extends LitElement {
     // get the XSRF token and update it if it's expired before submission
     window.csClient.ensureTokenIsValid().then(() => {
       hiddenTokenField.value = window.csClient.token;
+      this.submitting = true;
       event.target.submit();
     });
   }
@@ -194,6 +197,11 @@ export class ChromedashGuideNewPage extends LitElement {
           `;
     };
 
+    const submitLabel = this.submitting
+      ? 'Submitting...'
+      : this.isEnterpriseFeature
+        ? 'Continue'
+        : 'Submit';
     return html`
       <section id="stage_form">
         <form name="overview_form" method="post" action=${postAction}>
@@ -208,7 +216,8 @@ export class ChromedashGuideNewPage extends LitElement {
           <input
             type="submit"
             class="primary"
-            value=${this.isEnterpriseFeature ? 'Continue' : 'Submit'}
+            ?disabled=${this.submitting}
+            value=${submitLabel}
           />
         </form>
       </section>

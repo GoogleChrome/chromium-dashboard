@@ -107,6 +107,12 @@ export const SHARED_STYLES = [
     font-weight: bold;
   }
 
+  button.primary:disabled,
+  input[type="submit"]:disabled,
+  .button.primary:disabled {
+    background: var(--gray-4);
+  }
+
   .button.secondary {
     margin: var(--content-padding);
     border: var(--default-border);
