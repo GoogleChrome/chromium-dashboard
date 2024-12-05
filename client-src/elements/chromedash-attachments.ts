@@ -76,7 +76,7 @@ export class ChromedashAttachments extends LitElement {
     };
     var imgSrc = url;
     if (url.includes('/feature/' + this.featureId + '/attachment/')) {
-      imgSrc += '/thumbnail';  // If it an image we serve, try thumbnail.
+      imgSrc += '/thumbnail'; // If it an image we serve, try thumbnail.
     }
 
     return html`

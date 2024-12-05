@@ -45,7 +45,7 @@ describe('chromedash-attachments', () => {
     const url = 'http://127.0.0.1/feature/1234/attachment/5678';
     const component: ChromedashAttachments = await fixture(
       html`<chromedash-attachments
-        featureId=1234
+        featureId="1234"
         value=${url}
       ></chromedash-attachments>`
     );
