@@ -197,8 +197,11 @@ export class ChromedashGuideNewPage extends LitElement {
           `;
     };
 
-    const submitLabel = this.submitting ? 'Submitting...' :
-      (this.isEnterpriseFeature ? 'Continue' : 'Submit');
+    const submitLabel = this.submitting
+      ? 'Submitting...'
+      : this.isEnterpriseFeature
+        ? 'Continue'
+        : 'Submit';
     return html`
       <section id="stage_form">
         <form name="overview_form" method="post" action=${postAction}>
