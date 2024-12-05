@@ -74,10 +74,14 @@ export class ChromedashAttachments extends LitElement {
       maxHeight: '150px',
       maxWidth: '200px',
     };
+    var imgSrc = url;
+    if (url.includes('/feature/' + this.featureId + '/attachment/')) {
+      imgSrc += '/thumbnail'; // If it an image we serve, try thumbnail.
+    }
 
     return html`
       <a href=${url} target="_blank" style=${styleMap(linkStyles)}>
-        <img style=${styleMap(imgStyles)} src=${url}></img>
+        <img style=${styleMap(imgStyles)} src=${imgSrc}></img>
       </a>
     `;
   }
