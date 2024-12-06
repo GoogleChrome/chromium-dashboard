@@ -352,7 +352,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     """Delete the specified feature."""
     # TODO(jrobbins): implement undelete UI.  For now, use cloud console.
     feature_id = kwargs.get('feature_id', None)
-    feature = self.get_specified_feature(feature_id=feature_id)
+    feature: FeatureEntry = self.get_specified_feature(feature_id=feature_id)
     if feature is None:
       return {'message': 'ID does not match any feature.'}
 
@@ -365,12 +365,5 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     feature.put()
     rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)
     rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
-
-    # Write for new FeatureEntry entity.
-    feature_entry: FeatureEntry | None = (
-        FeatureEntry.get_by_id(feature_id))
-    if feature_entry:
-      feature_entry.deleted = True
-      feature_entry.put()
 
     return {'message': 'Done'}

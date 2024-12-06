@@ -572,3 +572,25 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     rediscache.delete(cache_key)
     self.assertEqual(cached_result, features)
 
+  def test_get_features_by_impl_status__normal(self):
+    """We can get JSON dicts for /features_v2.json."""
+    features = feature_helpers.get_features_by_impl_status()
+    self.assertEqual(4, len(features))
+    self.assertEqual({'feature a', 'feature b', 'feature c', 'feature d'},
+                     set(f['name'] for f in features))
+    self.assertEqual('feature a', features[2]['name'])
+    self.assertEqual('feature b', features[3]['name'])
+
+
+  def test_get_features_by_impl_status__deleted(self):
+    """Deleted features are not included in /features_v2.json."""
+    self.feature_3.deleted = True
+    self.feature_3.put()
+
+    features = feature_helpers.get_features_by_impl_status()
+
+    self.assertEqual(3, len(features))
+    self.assertEqual({'feature a', 'feature b', 'feature d'},
+                     set(f['name'] for f in features))
+    self.assertEqual('feature a', features[1]['name'])
+    self.assertEqual('feature b', features[2]['name'])
