@@ -297,8 +297,9 @@ export class ChromedashFormField extends LitElement {
     } else if (type === 'multiselect') {
       const valueArray: string[] = fieldValue.split(',');
       const availableOptions = Object.values(choices).filter(
-        ([value, label, obsolete]) => (
-          !obsolete || valueArray.includes('' + value)));
+        ([value, label, obsolete]) =>
+          !obsolete || valueArray.includes('' + value)
+      );
       fieldHTML = html`
         <sl-select
           name="${fieldName}"
@@ -314,7 +315,7 @@ export class ChromedashFormField extends LitElement {
         >
           ${availableOptions.map(
             ([value, label]) => html`
-            <sl-option value="${value}"> ${label} </sl-option>
+              <sl-option value="${value}"> ${label} </sl-option>
             `
           )}
         </sl-select>

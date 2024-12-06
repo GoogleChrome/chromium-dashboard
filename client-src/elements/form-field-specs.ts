@@ -81,7 +81,10 @@ interface ResolvedField {
   check?: CheckFunction | CheckFunction[];
   initial?: number | boolean;
   enterprise_initial?: number;
-  choices?: Record<string, [number, string, (boolean | string | TemplateResult)?]>;
+  choices?: Record<
+    string,
+    [number, string, (boolean | string | TemplateResult)?]
+  >;
   displayLabel?: string;
   disabled?: boolean;
 }
