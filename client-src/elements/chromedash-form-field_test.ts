@@ -138,6 +138,36 @@ describe('chromedash-form-field', () => {
     assert.include(renderElement.innerHTML, 'cleareable');
   });
 
+  it('skips unused obsolete multiselect choices', async () => {
+    const component = await fixture(
+      html` <chromedash-form-field name="rollout_platforms">
+      </chromedash-form-field>`
+    );
+    assert.exists(component);
+    assert.instanceOf(component, ChromedashFormField);
+
+    const slSelect = component.renderRoot.querySelector('sl-select');
+    const inner = slSelect?.innerHTML;
+    assert.include(inner, 'Android');
+    assert.notInclude(inner, 'LaCrOS'); // It is obsolete.
+    assert.include(inner, 'iOS');
+  });
+
+  it('includes used obsolete multiselect choices', async () => {
+    const component = await fixture(
+      html` <chromedash-form-field name="rollout_platforms" value="1,2,4">
+      </chromedash-form-field>`
+    );
+    assert.exists(component);
+    assert.instanceOf(component, ChromedashFormField);
+
+    const slSelect = component.renderRoot.querySelector('sl-select');
+    const inner = slSelect?.innerHTML;
+    assert.include(inner, 'Android');
+    assert.include(inner, 'LaCrOS'); // Obsoelete, but used.
+    assert.include(inner, 'iOS');
+  });
+
   describe('complex fields', async () => {
     it('active_stage_id depends on the available stages', async () => {
       /** @type {import('./form-definition').FormattedFeature} */
