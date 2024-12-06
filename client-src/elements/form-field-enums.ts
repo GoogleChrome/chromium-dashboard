@@ -44,11 +44,11 @@ export const ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME: Record<number, string> =
     3: 'Management', // MANAGEMENT
   };
 
-export const PLATFORM_CATEGORIES: Record<string, [number, string]> = {
+export const PLATFORM_CATEGORIES: Record<string, [number, string, boolean?]> = {
   PLATFORM_ANDROID: [1, 'Android'],
   PLATFORM_IOS: [2, 'iOS'],
   PLATFORM_CHROMEOS: [3, 'ChromeOS'],
-  PLATFORM_LACROS: [4, 'LaCrOS'],
+  PLATFORM_LACROS: [4, 'LaCrOS', true], // Obsolete. Cannot be added.
   PLATFORM_LINUX: [5, 'Linux'],
   PLATFORM_MAC: [6, 'MacOS'],
   PLATFORM_WINDOWS: [7, 'Windows'],
