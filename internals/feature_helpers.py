@@ -476,6 +476,7 @@ def get_features_by_impl_status(limit: int | None=None, update_cache: bool=False
     feature_list = []
     for section in query_results:
       if len(section) > 0:
+        section = [f for f in section if not f.deleted]
         section = [f for f in section if f.feature_type != FEATURE_TYPE_ENTERPRISE_ID]
         section = [converters.feature_entry_to_json_basic(
             f, all_stages[f.key.integer_id()]) for f in section]

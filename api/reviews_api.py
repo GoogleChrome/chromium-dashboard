@@ -133,13 +133,11 @@ class GatesAPI(basehandlers.APIHandler):
   def do_get(self, **kwargs) -> dict[str, Any]:
     """Return a list of all gates associated with the given feature."""
     feature_id = kwargs.get('feature_id', None)
-    gates: list[Gate] = Gate.query(Gate.feature_id == feature_id).fetch()
+    feature: FeatureEntry = self.get_specified_feature(feature_id=feature_id)
+    gates: list[Gate] = []
 
-    # No gates associated with this feature.
-    if len(gates) == 0:
-      return {
-          'gates': [],
-          }
+    if not feature.deleted or self.get_bool_arg('include_deleted'):
+      gates = Gate.query(Gate.feature_id == feature_id).fetch()
 
     dicts = [converters.gate_value_to_json_dict(g) for g in gates]
     for g in dicts:
