@@ -15,10 +15,12 @@
 from unittest import mock
 
 import flask
+import requests
 import werkzeug.exceptions  # Flask HTTP stuff.
 
 import testing_config  # Must be imported before the module under test.
 from api import origin_trials_api
+from chromestatus_openapi.models import GetOriginTrialsResponse
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate, Vote
 from internals.user_models import AppUser
@@ -136,6 +138,34 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
     for kind in [AppUser, FeatureEntry, Gate, Stage]:
       for entity in kind.query():
         entity.key.delete()
+
+  @mock.patch('framework.origin_trials_client.get_trials_list')
+  def test_get__valid(self, mock_get_trials_list):
+    """A list of public trials is returned."""
+    testing_config.sign_in('owner@example.com', 1234567890)
+    mock_get_trials_list.return_value = [
+        {'id': '123', 'display_name': 'Example Trial'}]
+    with test_app.test_request_context(
+        self.request_path, method='GET', json={}):
+      result = self.handler.do_get()
+    self.assertEqual(GetOriginTrialsResponse.from_dict({
+      'origin_trials': [
+        {'id': '123', 'display_name': 'Example Trial'}
+      ]
+    }), result)
+
+  @mock.patch('logging.exception')
+  @mock.patch('logging.error')
+  @mock.patch('framework.origin_trials_client.get_trials_list')
+  def test_get__invalid(
+      self, mock_get_trials_list, mock_log_error, mock_log_exception):
+    """A request error from the origin trials API raises the correct exception."""
+    testing_config.sign_in('owner@example.com', 1234567890)
+    mock_get_trials_list.side_effect = requests.exceptions.RequestException
+    with test_app.test_request_context(
+        self.request_path, method='GET', json={}):
+      with self.assertRaises(werkzeug.exceptions.InternalServerError):
+        self.handler.do_get()
 
   def mock_chromium_file_return_value_generator(self, *args, **kwargs):
     """Returns mock milestone info based on input."""

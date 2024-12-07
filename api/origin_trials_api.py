@@ -56,13 +56,15 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
       A list of data on all public origin trials.
     """
     try:
-      trials_list = GetOriginTrialsResponse.from_dict(origin_trials_client.get_trials_list())
+      trials_list = origin_trials_client.get_trials_list()
     except requests.exceptions.RequestException:
       self.abort(500, 'Error obtaining origin trial data from API')
     except KeyError:
       self.abort(500, 'Malformed response from origin trials API')
 
-    return trials_list
+    return GetOriginTrialsResponse.from_dict({
+      'origin_trials': trials_list
+    })
 
   def _validate_creation_args(
       self, body: dict) -> dict[str, str]:
