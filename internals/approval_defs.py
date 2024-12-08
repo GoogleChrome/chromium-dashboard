@@ -142,6 +142,8 @@ EnterpriseShipApproval = GateInfo(
     core_enums.GATE_ENTERPRISE_SHIP, ONE_LGTM,
     approvers=ENTERPRISE_APPROVERS, team_name='Enterprise')
 
+# This gate is not used, but it is still defined so that it displays correctly
+# on older feature entries
 EnterprisePlanApproval = GateInfo(
     'Enterprise Deprecation Plan Review',
     'Enterprise Deprecation Plan Review',
