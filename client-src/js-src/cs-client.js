@@ -76,6 +76,7 @@
  * @property {number} [ot_setup_status]
  * @property {string} [ot_request_note]
  * @property {number} [ot_stage_id]
+ * @property {number} [ot_use_counter_bucket_number]
  * @property {string} [experiment_extension_reason]
  * @property {string} [finch_url]
  * @property {string} [rollout_details]

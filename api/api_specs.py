@@ -123,6 +123,7 @@ STAGE_FIELD_DATA_TYPES: FIELD_INFO_DATA_TYPE = [
   ('ot_request_note', 'str'),
   ('ot_require_approvals', 'bool'),
   ('ot_stage_id', 'int'),
+  ('ot_use_counter_bucket_number', 'int'),
   ('ot_webfeature_use_counter', 'str'),
   ('rollout_impact', 'int'),
   ('rollout_milestone', 'int'),
