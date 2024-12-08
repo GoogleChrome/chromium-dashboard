@@ -18,6 +18,7 @@ from base64 import b64decode
 
 import flask
 import json5
+import re
 import requests
 import validators
 
@@ -47,6 +48,48 @@ def get_chromium_file(url: str) -> str:
     return  b64decode(conn.read()).decode('utf-8')
 
 
+def get_chromium_files_for_validation() -> dict:
+  """Get all chromium file contents stored in a dictionary"""
+  chromium_files = {}  # Chromium source file contents.
+  with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+    future_to_name = {executor.submit(get_chromium_file, f['url']): f['name']
+                    for f in CHROMIUM_SRC_FILES}
+    for future in concurrent.futures.as_completed(future_to_name):
+      name = future_to_name[future]
+      try:
+        chromium_files[name] = future.result()
+      except Exception as exc:
+        raise exc
+  return chromium_files
+
+
+def find_use_counter_value(
+    body: dict, chromium_files_dict: dict) -> int | None:
+  """Find where the use counter is defined and return its value."""
+  use_counter_name = body.get(
+      'ot_webfeature_use_counter', {}).get('value')
+  webfeature_use_counter = body.get(
+      'ot_webfeature_use_counter', {}).get('value')
+  is_webdx_use_counter = (
+      webfeature_use_counter and
+      webfeature_use_counter.startswith('WebDXFeature::'))
+
+  match: re.Match | None = None
+  if webfeature_use_counter and is_webdx_use_counter:
+    # Remove "WebDXFeature::" prefix.
+    expression = f'(?<={use_counter_name[14:]} = )[0-9]+'
+    match = re.search(expression,
+                      chromium_files_dict['webdxfeature_file'])
+  elif webfeature_use_counter:
+    expression = f'(?<={use_counter_name} = )[0-9]+'
+    match = re.search(expression,
+                      chromium_files_dict['webfeature_file'])
+
+  if match:
+    return int(match.group(0))
+  return None
+
+
 class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
 
   def do_get(self, **kwargs):
@@ -67,19 +110,8 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
     })
 
   def _validate_creation_args(
-      self, body: dict) -> dict[str, str]:
+      self, body: dict, chromium_files: dict) -> dict[str, str]:
     """Check that all provided OT creation arguments are valid."""
-    chromium_files = {}  # Chromium source file contents.
-    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-      future_to_name = {executor.submit(get_chromium_file, f['url']): f['name']
-                      for f in CHROMIUM_SRC_FILES}
-      for future in concurrent.futures.as_completed(future_to_name):
-        name = future_to_name[future]
-        try:
-          chromium_files[name] = future.result()
-        except Exception as exc:
-          self.abort(
-              500, f'Error obtaining Chromium file for validation: {str(exc)}')
 
     validation_errors: dict[str, str] = {}
     chromium_trial_name = body.get(
@@ -188,13 +220,20 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
 
     #TODO(markxiong0122): remove to_dict() when PR#4213 is merged
     body = CreateOriginTrialRequest.from_dict(self.get_json_param_dict()).to_dict()
-    validation_errors = self._validate_creation_args(body)
+    try:
+      chromium_files_dict = get_chromium_files_for_validation()
+    except Exception as exc:
+      self.abort(
+          500, f'Error obtaining Chromium file for validation: {str(exc)}')
+    validation_errors = self._validate_creation_args(body, chromium_files_dict)
     if validation_errors:
       return {
           'message': 'Errors found when validating arguments',
           'errors': validation_errors
           }
     self.update_stage(ot_stage, body, [])
+    ot_stage.ot_use_counter_bucket_number = find_use_counter_value(body, chromium_files_dict)
+
     # Flag OT stage as ready to be created.
     ot_stage.ot_setup_status = OT_READY_FOR_CREATION
     ot_stage.put()
