@@ -353,9 +353,6 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     # TODO(jrobbins): implement undelete UI.  For now, use cloud console.
     feature_id = kwargs.get('feature_id', None)
     feature: FeatureEntry = self.get_specified_feature(feature_id=feature_id)
-    if feature is None:
-      return {'message': 'ID does not match any feature.'}
-
     user = users.get_current_user()
     app_user = AppUser.get_app_user(user.email())
     if ((app_user is None or not app_user.is_admin)
