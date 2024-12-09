@@ -178,6 +178,13 @@ def _send_create_trial_request(
     json['trial']['origin_trial_feature_name'] = ot_stage.ot_chromium_trial_name
   if ot_stage.ot_is_deprecation_trial:
     json['registration_config']['allow_public_suffix_subdomains'] = True
+  if ot_stage.ot_use_counter_bucket_number:
+    config = {'bucket_number': ot_stage.ot_use_counter_bucket_number}
+    if (ot_stage.ot_chromium_trial_name
+        and ot_stage.ot_chromium_trial_name.startswith('WebDXFeature::')):
+      json['trial']['blink_webdx_use_counter_config'] = config
+    else:
+      json['trial']['blink_use_counter_config'] = config
 
   headers = {'Authorization': f'Bearer {access_token}'}
   url = f'{settings.OT_API_URL}/v1/trials:initialize'
