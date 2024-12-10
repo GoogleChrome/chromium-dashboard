@@ -323,7 +323,8 @@ export const ALL_FIELDS: Record<string, Field> = {
           href="https://support.google.com/chrome/a/answer/7679408"
           target="_blank"
           >enterprise release notes</a
-        >, which are publicly visible and primarily written for IT admins.
+        >, which are publicly visible and primarily written for IT admins. All
+        Enterprise policies must be included in this summary section.
       </p>
       <p>
         Explain what's changing from the point of view of an end-user,
