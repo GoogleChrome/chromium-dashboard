@@ -347,6 +347,7 @@ class Stage(ndb.Model):
   ot_request_note = ndb.TextProperty()  # Deprecated.
   ot_require_approvals = ndb.BooleanProperty(default=False)
   ot_setup_status = ndb.IntegerProperty()
+  ot_use_counter_bucket_number = ndb.IntegerProperty()
   ot_webfeature_use_counter = ndb.StringProperty()
 
   # Origin trial stage id that this stage extends, if trial extension stage.
