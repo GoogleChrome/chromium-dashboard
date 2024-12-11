@@ -531,7 +531,7 @@ export class ChromeStatusClient {
   }
 
   getGates(featureId) {
-    return this.doGet(`/features/${featureId}/gates`);
+    return this.doGet(`/features/${featureId}/gates?include_deleted=1`);
   }
 
   getPendingGates() {
