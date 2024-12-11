@@ -62,6 +62,7 @@ class StageDict(TypedDict):
   ot_owner_email: str | None
   ot_require_approvals: bool
   ot_setup_status: NotRequired[int]
+  ot_use_counter_bucket_number: int | None
   ot_webfeature_use_counter: str | None
   ot_request_note: NotRequired[str]
 
