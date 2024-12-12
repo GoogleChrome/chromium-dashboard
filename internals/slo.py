@@ -63,22 +63,61 @@ def remaining_days(requested_on: datetime.datetime, slo_limit: int) -> int:
   return slo_limit - weekdays_between(requested_on, now_utc())
 
 
-def record_vote(gate: Gate, votes: list[Vote]) -> bool:
+def record_vote(gate: Gate, votes: list[Vote], old_gate_state: int) -> bool:
   """Record a Gate SLO response time if needed.  Return True if changed."""
-  if gate.requested_on is None:
-    return False  # Review has not been requested yet.
-  elif gate.responded_on is not None:
-    return False  # We already recorded the time of the initial response.
-  elif not votes:
-    return False  # No votes yet
-  else:
-    recent_vote_time = max(v.set_on for v in votes)
-    if recent_vote_time > gate.requested_on:
-      logging.info('SLO: Got reviewer vote as initial response')
-      gate.responded_on = recent_vote_time
-      return True
+  if not votes:
+    return False
+  latest_vote = sorted(votes, key=lambda v: v.set_on)[-1]
+  latest_state = latest_vote.state
 
-  return False
+  if latest_state == Vote.NO_RESPONSE:
+    return False  # NO_RESPONSE never changes SLO state.
+
+  changed = False
+  if latest_state in Vote.REQUESTING_STATES:
+    if gate.requested_on is None:
+      logging.info('SLO: Someone requested a new review')
+      gate.requested_on = latest_vote.set_on
+      changed = True
+
+  if latest_state in Vote.RESPONSE_STATES:
+    if gate.responded_on is None:
+      logging.info('SLO: Got reviewer vote as initial response')
+      gate.responded_on = latest_vote.set_on
+      changed = True
+
+  sent_back_for_rework = (
+      old_gate_state != Vote.NEEDS_WORK and
+      gate.state == Vote.NEEDS_WORK and
+      gate.needs_work_started_on is None)
+  finished_rework = (
+      old_gate_state == Vote.NEEDS_WORK and
+      gate.state != Vote.NEEDS_WORK and
+      gate.needs_work_started_on is not None)
+  resolved = (
+      old_gate_state not in Vote.FINAL_STATES and
+      gate.state in Vote.FINAL_STATES and
+      gate.resolved_on is None)
+
+  if finished_rework:
+      logging.info('SLO: It is the reviewers turn again')
+      turn_length_sec = 1000 # @@@
+      gate.needs_work_elapsed = (gate.needs_work_elapsed or 0) + turn_length_sec
+      gate.needs_work_started_on = None
+      changed = True
+
+  if sent_back_for_rework:
+      logging.info('SLO: It is now the feature owners turn')
+      gate.needs_work_started_on = latest_vote.set_on
+      changed = True
+
+  if resolved:
+    if gate.resolved_on is None:
+      logging.info('SLO: This review is done')
+      gate.resolved_on = latest_vote.set_on
+      changed = True
+
+  return changed
 
 
 def record_comment(

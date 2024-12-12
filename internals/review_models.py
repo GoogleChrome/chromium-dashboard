@@ -107,6 +107,9 @@ class Vote(ndb.Model):
       NA_REQUESTED: 'na_requested',
   }
 
+  REQUESTING_STATES = [REVIEW_REQUESTED, NA_REQUESTED]
+  RESPONSE_STATES = [
+      NA, APPROVED, DENIED, REVIEW_STARTED, NEEDS_WORK, INTERNAL_REVIEW]
   FINAL_STATES = [NA, APPROVED, DENIED]
 
   feature_id = ndb.IntegerProperty(required=True)
@@ -168,6 +171,12 @@ class Gate(ndb.Model):
   requested_on = ndb.DateTimeProperty()
   # The first comment or vote on this gate from a reviewer after the request.
   responded_on = ndb.DateTimeProperty()
+  # The time at which the gate first enters a final state.
+  resolved_on = ndb.DateTimeProperty()
+  # The time at which the gate most recently entered the NEEDS_WORK state.
+  needs_work_started_on = ndb.DateTimeProperty()
+  # The cumulative duration of seconds spent in the NEEDS_WORK state.
+  needs_work_elapsed = ndb.IntegerProperty()
 
   assignee_emails = ndb.StringProperty(repeated=True)
   next_action = ndb.DateProperty()
