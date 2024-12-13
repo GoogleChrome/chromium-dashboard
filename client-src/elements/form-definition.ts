@@ -179,7 +179,6 @@ export const ENTERPRISE_NEW_FEATURE_FORM_FIELDS = [
   'enterprise_feature_categories',
   'first_enterprise_notification_milestone',
   'enterprise_impact',
-  'screenshot_links',
 ];
 
 // The fields that are available to every feature.
