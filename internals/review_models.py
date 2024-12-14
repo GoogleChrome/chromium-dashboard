@@ -175,14 +175,13 @@ class Gate(ndb.Model):
   resolved_on = ndb.DateTimeProperty()
   # The time at which the gate most recently entered the NEEDS_WORK state.
   needs_work_started_on = ndb.DateTimeProperty()
-  # The cumulative duration of seconds spent in the NEEDS_WORK state.
+  # The cumulative number of weekdays spent in the NEEDS_WORK state.
+  # It can add up if the the review is sent back multiple times.
   needs_work_elapsed = ndb.IntegerProperty()
 
   assignee_emails = ndb.StringProperty(repeated=True)
   next_action = ndb.DateProperty()
   additional_review = ndb.BooleanProperty(default=False)
-
-  # TODO(jrobbins): implement request_review()
 
   def is_resolved(self) -> bool:
     """Return if the Gate's outcome has been decided."""

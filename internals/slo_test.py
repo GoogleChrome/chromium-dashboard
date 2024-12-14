@@ -174,13 +174,23 @@ class SLORecordingTests(testing_config.CustomTestCase):
     self.assertIsNone(self.gate.resolved_on)
     self.assertIsNone(self.gate.needs_work_started_on)
 
-  def test_record_vote__just_starting(self):
+  def test_record_vote__feature_owner_starting(self):
     """When we get a review request, we set requested_on."""
     self.gate.state = Vote.REVIEW_REQUESTED
     self.assertTrue(slo.record_vote(
         self.gate, [self.vote_review_requested], Gate.PREPARING))
     self.assertEqual(self.vote_review_requested.set_on, self.gate.requested_on)
     self.assertIsNone(self.gate.responded_on)
+    self.assertIsNone(self.gate.resolved_on)
+    self.assertIsNone(self.gate.needs_work_started_on)
+
+  def test_record_vote__reviewer_starting(self):
+    """When a reviewer starts the review, we set both requested_on and responded_on."""
+    self.gate.state = Vote.REVIEW_STARTED
+    self.assertTrue(slo.record_vote(
+        self.gate, [self.vote_started], Gate.PREPARING))
+    self.assertEqual(self.vote_started.set_on, self.gate.requested_on)
+    self.assertEqual(self.vote_started.set_on, self.gate.responded_on)
     self.assertIsNone(self.gate.resolved_on)
     self.assertIsNone(self.gate.needs_work_started_on)
 
@@ -202,13 +212,13 @@ class SLORecordingTests(testing_config.CustomTestCase):
     self.gate.requested_on = self.vote_review_requested.set_on
     self.gate.state = Vote.REVIEW_REQUESTED
     self.gate.responded_on = self.vote_needs_work.set_on
-    self.gate.needs_work_started_on = self.vote_needs_work.set_on
+    self.gate.needs_work_started_on = self.vote_needs_work.set_on # Mon
     self.assertTrue(slo.record_vote(
-        self.gate, [self.vote_review_again],
+        self.gate, [self.vote_review_again], # Tue
         Vote.NEEDS_WORK))
     self.assertEqual(self.vote_review_requested.set_on, self.gate.requested_on)
     self.assertEqual(self.vote_needs_work.set_on, self.gate.responded_on)
-    self.assertEqual(self.gate.needs_work_elapsed, 1000) #@@@
+    self.assertEqual(self.gate.needs_work_elapsed, 1)
     self.assertIsNone(self.gate.resolved_on)
     self.assertIsNone(self.gate.needs_work_started_on)
 
@@ -223,6 +233,16 @@ class SLORecordingTests(testing_config.CustomTestCase):
     self.assertEqual(self.vote_approved.set_on, self.gate.responded_on)
     self.assertIsNone(self.gate.needs_work_elapsed)
     self.assertEqual(self.gate.resolved_on, self.vote_approved.set_on)
+    self.assertIsNone(self.gate.needs_work_started_on)
+
+  def test_record_vote__reviewer_immediate_resolution(self):
+    """When a review single-handledly resolves, we set all timestamps."""
+    self.gate.state = Vote.APPROVED
+    self.assertTrue(slo.record_vote(
+        self.gate, [self.vote_approved], Gate.PREPARING))
+    self.assertEqual(self.vote_approved.set_on, self.gate.requested_on)
+    self.assertEqual(self.vote_approved.set_on, self.gate.responded_on)
+    self.assertEqual(self.vote_approved.set_on, self.gate.resolved_on)
     self.assertIsNone(self.gate.needs_work_started_on)
 
   def test_record_vote__already_responded(self):

@@ -84,6 +84,9 @@ def record_vote(gate: Gate, votes: list[Vote], old_gate_state: int) -> bool:
     if gate.responded_on is None:
       logging.info('SLO: Got reviewer vote as initial response')
       gate.responded_on = latest_vote.set_on
+      if gate.requested_on is None:
+        logging.info('SLO: Reviewer is the person initiating the review')
+        gate.requested_on = latest_vote.set_on
       changed = True
 
   sent_back_for_rework = (
@@ -101,8 +104,12 @@ def record_vote(gate: Gate, votes: list[Vote], old_gate_state: int) -> bool:
 
   if finished_rework:
       logging.info('SLO: It is the reviewers turn again')
-      turn_length_sec = 1000 # @@@
-      gate.needs_work_elapsed = (gate.needs_work_elapsed or 0) + turn_length_sec
+      # We count any time spent in NEEDS_WORK state as being
+      # at least one weekday.
+      turn_length_weekdays = max(1, weekdays_between(
+          gate.needs_work_started_on, latest_vote.set_on))
+      gate.needs_work_elapsed = (
+          (gate.needs_work_elapsed or 0) + turn_length_weekdays)
       gate.needs_work_started_on = None
       changed = True
 
