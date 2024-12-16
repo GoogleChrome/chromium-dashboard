@@ -398,8 +398,9 @@ def set_vote(feature_id: int,  gate_type: int | None, new_state: int,
       new_vote.key.delete()
       return None
 
+    old_gate_state = gate.state
     state_was_updated = update_gate_approval_state(gate, votes)
-    slo_was_updated = slo.record_vote(gate, votes)
+    slo_was_updated = slo.record_vote(gate, votes, old_gate_state)
     if state_was_updated or slo_was_updated:
       gate.put()
       return gate.state
@@ -459,11 +460,5 @@ def update_gate_approval_state(gate: Gate, votes: list[Vote]) -> bool:
   if new_state == gate.state:
     return False
   gate.state = new_state
-  if votes:
-    gate.requested_on = min(v.set_on for v in votes)
-
-  # Starting a review resets responded_on.
-  if new_state in (Vote.REVIEW_REQUESTED, Vote.NA_REQUESTED):
-    gate.responded_on = None
 
   return True

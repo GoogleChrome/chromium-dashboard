@@ -136,53 +136,149 @@ class SLOFunctionTests(testing_config.CustomTestCase):
 class SLORecordingTests(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.gate = Gate(feature_id=1, stage_id=2, gate_type=34, state=4)
+    self.gate = Gate(
+        feature_id=1, stage_id=2, gate_type=34, state=Gate.PREPARING)
     self.vote_review_requested = Vote(
         feature_id=1, gate_id=2, gate_type=34, state=Vote.REVIEW_REQUESTED,
         set_on=datetime.datetime(2023, 6, 7, 1, 2, 3),  # Wed
         set_by='feature-owner@example.com')
+    self.vote_no_response = Vote(
+        feature_id=1, gate_id=2, gate_type=34, state=Vote.NO_RESPONSE,
+        set_on=datetime.datetime(2023, 6, 7, 1, 2, 3),  # Wed
+        set_by='reviewer@example.com')
+    self.vote_started = Vote(
+        feature_id=1, gate_id=2, gate_type=34, state=Vote.REVIEW_STARTED,
+        set_on=datetime.datetime(2023, 6, 7, 1, 2, 3),  # Wed
+        set_by='reviewer@example.com')
     self.vote_needs_work = Vote(
         feature_id=1, gate_id=2, gate_type=34, state=Vote.NEEDS_WORK,
         set_on=datetime.datetime(2023, 6, 12, 1, 2, 3),  # Mon
+        set_by='reviewer@example.com')
+    self.vote_review_again = Vote(
+        feature_id=1, gate_id=2, gate_type=34, state=Vote.REVIEW_REQUESTED,
+        set_on=datetime.datetime(2023, 6, 13, 1, 2, 3),  # Tue
+        set_by='feature-owner@example.com')
+    self.vote_approved = Vote(
+        feature_id=1, gate_id=2, gate_type=34, state=Vote.APPROVED,
+        set_on=datetime.datetime(2023, 6, 14, 1, 2, 3),  # Wed
         set_by='reviewer@example.com')
     self.a_date = datetime.datetime(2023, 6, 17, 1, 2, 3)
 
   def test_record_vote__not_started(self):
     """If this somehow gets called before the review starts, it's a no-op."""
-    # Note that self.gate.requested_on is None.
-    self.assertFalse(slo.record_vote(self.gate, []))
-    self.assertFalse(slo.record_vote(self.gate, [self.vote_review_requested]))
+    self.assertFalse(slo.record_vote(self.gate, [], Gate.PREPARING))
     self.assertFalse(slo.record_vote(
-        self.gate, [self.vote_review_requested, self.vote_needs_work]))
+        self.gate, [self.vote_no_response], Gate.PREPARING))
     self.assertIsNone(self.gate.requested_on)
     self.assertIsNone(self.gate.responded_on)
+    self.assertIsNone(self.gate.resolved_on)
+    self.assertIsNone(self.gate.needs_work_started_on)
 
-  def test_record_vote__just_started(self):
-    """If checked after the request but before the response, it's a no-op."""
-    self.gate.requested_on = self.vote_review_requested.set_on
-    self.assertFalse(slo.record_vote(self.gate, []))
-    self.assertFalse(slo.record_vote(self.gate, [self.vote_review_requested]))
+  def test_record_vote__feature_owner_starting(self):
+    """When we get a review request, we set requested_on."""
+    self.gate.state = Vote.REVIEW_REQUESTED
+    self.assertTrue(slo.record_vote(
+        self.gate, [self.vote_review_requested], Gate.PREPARING))
     self.assertEqual(self.vote_review_requested.set_on, self.gate.requested_on)
     self.assertIsNone(self.gate.responded_on)
+    self.assertIsNone(self.gate.resolved_on)
+    self.assertIsNone(self.gate.needs_work_started_on)
+
+  def test_record_vote__reviewer_starting(self):
+    """When a reviewer starts the review, we set both requested_on and responded_on."""
+    self.gate.state = Vote.REVIEW_STARTED
+    self.assertTrue(slo.record_vote(
+        self.gate, [self.vote_started], Gate.PREPARING))
+    self.assertEqual(self.vote_started.set_on, self.gate.requested_on)
+    self.assertEqual(self.vote_started.set_on, self.gate.responded_on)
+    self.assertIsNone(self.gate.resolved_on)
+    self.assertIsNone(self.gate.needs_work_started_on)
 
   def test_record_vote__got_response(self):
     """If called with the reviewer's response, that is recorded."""
     self.gate.requested_on = self.vote_review_requested.set_on
+    self.gate.state = Vote.NEEDS_WORK
     self.assertTrue(slo.record_vote(
-        self.gate, [self.vote_review_requested, self.vote_needs_work]))
+        self.gate, [self.vote_review_requested, self.vote_needs_work],
+        Vote.REVIEW_REQUESTED))
     self.assertEqual(self.vote_review_requested.set_on, self.gate.requested_on)
     self.assertEqual(self.vote_needs_work.set_on, self.gate.responded_on)
+    self.assertIsNone(self.gate.resolved_on)
+    self.assertEqual(
+        self.gate.needs_work_started_on, self.vote_needs_work.set_on)
 
-  def test_record_vote__already_finished(self):
-    """If this gets called after the review is done, it's a no-op."""
+  def test_record_vote__finished_rework(self):
+    """If the feature owner finished needed work, that is recorded."""
+    self.gate.requested_on = self.vote_review_requested.set_on
+    self.gate.state = Vote.REVIEW_REQUESTED
+    self.gate.responded_on = self.vote_needs_work.set_on
+    self.gate.needs_work_started_on = self.vote_needs_work.set_on # Mon
+    self.assertTrue(slo.record_vote(
+        self.gate, [self.vote_review_again], # Tue
+        Vote.NEEDS_WORK))
+    self.assertEqual(self.vote_review_requested.set_on, self.gate.requested_on)
+    self.assertEqual(self.vote_needs_work.set_on, self.gate.responded_on)
+    self.assertEqual(self.gate.needs_work_elapsed, 1)
+    self.assertIsNone(self.gate.resolved_on)
+    self.assertIsNone(self.gate.needs_work_started_on)
+
+  def test_record_vote__resolving(self):
+    """If review finishes, that counts as response and resolution."""
+    self.gate.requested_on = self.vote_review_requested.set_on
+    self.gate.state = Vote.APPROVED
+    self.assertTrue(slo.record_vote(
+        self.gate, [self.vote_review_requested, self.vote_approved],
+        Vote.REVIEW_REQUESTED))
+    self.assertEqual(self.vote_review_requested.set_on, self.gate.requested_on)
+    self.assertEqual(self.vote_approved.set_on, self.gate.responded_on)
+    self.assertIsNone(self.gate.needs_work_elapsed)
+    self.assertEqual(self.gate.resolved_on, self.vote_approved.set_on)
+    self.assertIsNone(self.gate.needs_work_started_on)
+
+  def test_record_vote__reviewer_immediate_resolution(self):
+    """When a review single-handledly resolves, we set all timestamps."""
+    self.gate.state = Vote.APPROVED
+    self.assertTrue(slo.record_vote(
+        self.gate, [self.vote_approved], Gate.PREPARING))
+    self.assertEqual(self.vote_approved.set_on, self.gate.requested_on)
+    self.assertEqual(self.vote_approved.set_on, self.gate.responded_on)
+    self.assertEqual(self.vote_approved.set_on, self.gate.resolved_on)
+    self.assertIsNone(self.gate.needs_work_started_on)
+
+  def test_record_vote__already_responded(self):
+    """Votes that don't change state, after the initial response, it's a no-op."""
     self.gate.requested_on = self.a_date
     self.gate.responded_on = self.a_date
-    self.assertFalse(slo.record_vote(self.gate, []))
-    self.assertFalse(slo.record_vote(self.gate, [self.vote_review_requested]))
+    self.gate.state = Vote.REVIEW_REQUESTED
+    self.assertFalse(slo.record_vote(self.gate, [], Vote.REVIEW_REQUESTED))
     self.assertFalse(slo.record_vote(
-        self.gate, [self.vote_review_requested, self.vote_needs_work]))
+        self.gate, [self.vote_review_requested], Vote.REVIEW_REQUESTED))
+    self.assertFalse(slo.record_vote(
+        self.gate, [self.vote_review_requested, self.vote_started],
+        Vote.REVIEW_REQUESTED))
     self.assertEqual(self.a_date, self.gate.requested_on)
     self.assertEqual(self.a_date, self.gate.responded_on)
+
+  def test_record_vote__already_resolved(self):
+    """If review was finished, more approvals don't change resolved_on."""
+    self.gate.requested_on = self.vote_review_requested.set_on
+    self.gate.responded_on = self.vote_approved.set_on
+    self.gate.resolved_on = self.vote_approved.set_on
+    self.gate.state = Vote.APPROVED
+    vote_approved_again = Vote(
+        feature_id=1, gate_id=2, gate_type=34, state=Vote.APPROVED,
+        set_on=datetime.datetime(2023, 6, 15, 1, 2, 3),  # Thu
+        set_by='other-reviewer@example.com')
+
+    self.assertFalse(slo.record_vote(
+        self.gate, [
+            self.vote_review_requested, self.vote_approved, vote_approved_again],
+        Vote.APPROVED))
+    self.assertEqual(self.vote_review_requested.set_on, self.gate.requested_on)
+    self.assertEqual(self.vote_approved.set_on, self.gate.responded_on)
+    self.assertIsNone(self.gate.needs_work_elapsed)
+    self.assertEqual(self.vote_approved.set_on, self.gate.resolved_on)
+    self.assertIsNone(self.gate.needs_work_started_on)
 
   @mock.patch('framework.permissions.can_review_gate')
   def test_record_comment__not_started(self, mock_crg):
