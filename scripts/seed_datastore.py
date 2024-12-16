@@ -199,6 +199,7 @@ def add_features(server: str, after: datetime, detailsAfter: datetime):
         s.ot_is_deprecation_trial = stage['ot_is_deprecation_trial']
         s.ot_owner_email = stage['ot_owner_email']
         s.ot_require_approvals = stage['ot_require_approvals']
+        s.ot_use_counter_bucket_number = stage['ot_use_counter_bucket_number']
         s.ot_webfeature_use_counter = stage['ot_webfeature_use_counter']
         s.experiment_extension_reason = stage['experiment_extension_reason']
         s.ot_stage_id = stage['ot_stage_id']
