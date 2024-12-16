@@ -33,6 +33,7 @@ FEATURE_FIELD_DATA_TYPES: FIELD_INFO_DATA_TYPE = [
   ('enterprise_impact', 'int'),
   ('shipping_year', 'int'),
   ('breaking_change', 'bool'),
+  ('confidential', 'bool'),
   ('bug_url', 'link'),
   ('category', 'int'),
   ('cc_emails', 'emails'),

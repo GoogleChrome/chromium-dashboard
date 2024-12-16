@@ -44,12 +44,40 @@ def is_google_or_chromium_account(user: User) -> bool:
     return user.email().endswith(('@chromium.org', '@google.com'))
   return False
 
-def can_view_feature(unused_user, unused_feature) -> bool:
+def can_view_feature_with_id(user, feature_id) -> bool:
   """Return True if the user is allowed to view the given feature."""
-  # Note, for now there are no private features, only unlisted ones.
-  return True
+  if not feature_id:
+    return False
+  
+  return can_view_feature(user, FeatureEntry.get_by_id(feature_id))
 
+def can_view_feature(user, feature) -> bool:
+  """Return True if the user is allowed to view the given feature."""
+  if not feature:
+    return False
 
+  return not feature.confidential or can_view_confidential_feature(user, feature)
+
+def can_view_confidential_feature(user, feature):
+  ''' Check if the user is an owner, editor, spec mentor, or creator
+  for this feature or has a google.com or chromium.org account.
+  If yes, they feature can be viewed, otherwise they cannot view
+  confidential features.'''
+  if not user:
+    return False
+
+  if is_google_or_chromium_account(user) or can_admin_site(user):
+    return True
+
+  email = user.email()
+  if (
+      email in feature.owner_emails or
+      email in feature.editor_emails or
+      email == feature.creator_email):
+    return True
+
+  return False
+  
 def can_create_feature(user: User) -> bool:
   """Return True if the user is allowed to create features."""
   if not user:
