@@ -280,8 +280,6 @@ class SLORecordingTests(testing_config.CustomTestCase):
     self.assertEqual(self.vote_approved.set_on, self.gate.resolved_on)
     self.assertIsNone(self.gate.needs_work_started_on)
 
-
-
   @mock.patch('framework.permissions.can_review_gate')
   def test_record_comment__not_started(self, mock_crg):
     """Comments posted before the review starts don't count."""
