@@ -76,7 +76,7 @@
     "@openapitools/openapi-generator-cli": "^2.15.3",
     "@playwright/test": "1.49.1",
     "@rollup/plugin-babel": "^6.0.4",
-    "@rollup/plugin-node-resolve": "^15.3.0",
+    "@rollup/plugin-node-resolve": "^16.0.0",
     "@rollup/plugin-typescript": "^12.1.1",
     "@shoelace-style/shoelace": "^2.19.1",
     "@types/jest": "^29.5.14",
