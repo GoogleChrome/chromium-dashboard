@@ -356,6 +356,7 @@ def feature_entry_to_json_verbose(
     'category_int': fe.category,
     'feature_notes': fe.feature_notes,
     'enterprise_feature_categories': fe.enterprise_feature_categories or [],
+    'enterprise_product_category': fe.enterprise_product_category or ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE,
     'stages': stage_info['all_stages'],
     'accurate_as_of': _date_to_str(fe.accurate_as_of),
     'creator_email': fe.creator_email,
@@ -491,6 +492,7 @@ def feature_entry_to_json_verbose(
       },
     },
     'enterprise_feature_categories': fe.enterprise_feature_categories or [],
+    'enterprise_product_category': fe.enterprise_product_category or ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE,
     'standards': {
       'spec': fe.spec_link,
       'maturity': {
@@ -532,6 +534,7 @@ def feature_entry_to_json_basic(fe: FeatureEntry,
     'summary': fe.summary,
     'unlisted': fe.unlisted,
     'enterprise_impact': fe.enterprise_impact,
+    'enterprise_product_category': fe.enterprise_product_category or ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE,
     'breaking_change': fe.breaking_change,
     'first_enterprise_notification_milestone': fe.first_enterprise_notification_milestone,
     'blink_components': fe.blink_components or [],

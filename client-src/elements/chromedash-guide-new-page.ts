@@ -32,17 +32,6 @@ export class ChromedashGuideNewPage extends LitElement {
           box-shadow: 0 0 0 var(--sl-focus-ring-width)
             var(--sl-input-focus-ring-color);
         }
-
-        .choices label {
-          font-weight: bold;
-        }
-        .choices div {
-          margin-top: 1em;
-        }
-        .choices p {
-          margin: 0.5em 1.5em 1em;
-        }
-
         .process-notice {
           margin: var(--content-padding-half) 0;
           padding: var(--content-padding-half);
@@ -211,7 +200,12 @@ export class ChromedashGuideNewPage extends LitElement {
             ${!this.isEnterpriseFeature
               ? renderFormField('feature_type_radio_group', 'choices')
               : nothing}
-            ${formFields.map(field => renderFormField(field))}
+            ${formFields.map(field =>
+              renderFormField(
+                field,
+                field === 'enterprise_product_category' ? 'choices' : null
+              )
+            )}
           </chromedash-form-table>
           <input
             type="submit"

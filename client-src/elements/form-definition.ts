@@ -5,6 +5,7 @@ import * as enums from './form-field-enums';
 export interface FormattedFeature {
   category: number;
   enterprise_feature_categories: string[];
+  enterprise_product_category: number;
   feature_type: number;
   intent_stage: number;
   accurate_as_of: boolean;
@@ -81,6 +82,7 @@ export function formatFeatureForEdit(feature: Feature): FormattedFeature {
     enterprise_feature_categories: Array.from(
       new Set(feature.enterprise_feature_categories || [])
     ).map(x => parseInt(x).toString()),
+    enterprise_product_category: feature.enterprise_product_category,
     feature_type: feature.feature_type_int,
     intent_stage: feature.intent_stage_int,
 
@@ -177,6 +179,7 @@ export const ENTERPRISE_NEW_FEATURE_FORM_FIELDS = [
   'owner',
   'editors',
   'enterprise_feature_categories',
+  'enterprise_product_category',
   'first_enterprise_notification_milestone',
   'enterprise_impact',
 ];
@@ -192,6 +195,7 @@ export const FLAT_METADATA_FIELDS: MetadataFields = {
         'name',
         'summary',
         'unlisted',
+        'enterprise_product_category',
         'enterprise_impact',
         'shipping_year',
         'owner',
@@ -232,6 +236,7 @@ export const FLAT_ENTERPRISE_METADATA_FIELDS: MetadataFields = {
         'owner',
         'editors',
         'enterprise_feature_categories',
+        'enterprise_product_category',
         'enterprise_impact',
         'first_enterprise_notification_milestone',
         'screenshot_links',

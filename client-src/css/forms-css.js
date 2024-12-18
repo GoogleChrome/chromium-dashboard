@@ -275,4 +275,14 @@ export const FORM_STYLES = [
       width: 30%;
       height: 1.5em;
     }
+
+    .choices label {
+      font-weight: bold;
+    }
+    .choices div {
+      margin-top: 1em;
+    }
+    .choices p {
+      margin: 0.5em 1.5em 1em;
+    }
   `];

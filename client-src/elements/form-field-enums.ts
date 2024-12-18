@@ -192,6 +192,33 @@ export const FEATURE_TYPES: Record<
   ],
 };
 
+export const ENTERPRISE_PRODUCT_CATEGORY: Record<
+  string,
+  [number, string, string | HTMLTemplateResult]
+> = {
+  ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE: [
+    0,
+    'Chrome Browser update',
+    'New features, performance improvements, security fixes and minor updates addressing security vulnerabilities and bugs. These features apply to both consumers and enterprises.',
+  ],
+  ENTERPRISE_PRODUCT_CATEGORY_CHROME_ENTERPRISE_CORE: [
+    1,
+    'Chrome Enterprise Core (CEC)',
+    'These features allow IT administrators to manage Chrome browser settings, policies, apps and extensions across an organization from a central location (Admin Console).',
+  ],
+  ENTERPRISE_PRODUCT_CATEGORY_CHROME_ENTERPRISE_PREMIUM: [
+    2,
+    'Chrome Enterprise Premium (CEP, paid SKU)',
+    'These features add advanced security and enhanced controls for organizations with more custom needs e.g. data masking functionality.',
+  ],
+};
+
+export const ENTERPRISE_PRODUCT_CATEGORY_DISPLAYNAME: Record<number, string> = {
+  0: 'Chrome Browser update', // ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE
+  1: 'Chrome Enterprise Core (CEC)', // ENTERPRISE_PRODUCT_CATEGORY_CHROME_ENTERPRISE_CORE
+  2: 'Chrome Enterprise Premium (CEP, paid SKU)', // ENTERPRISE_PRODUCT_CATEGORY_CHROME_ENTERPRISE_PREMIUM
+};
+
 // ***********************************************************************
 // Stage type values for each process. Even though some of the stages
 // in these processes are similar to each other, they have distinct enum
