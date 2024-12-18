@@ -88,7 +88,7 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   name = ndb.StringProperty(required=True)
   summary = ndb.TextProperty(required=True)
   category = ndb.IntegerProperty(required=True)
-  enterprise_product_category = ndb.IntegerProperty(required=True, default=ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE)
+  enterprise_product_category = ndb.IntegerProperty(required=False, default=ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE)
   enterprise_feature_categories = ndb.StringProperty(repeated=True)
   blink_components = ndb.StringProperty(repeated=True)
   star_count = ndb.IntegerProperty(default=0)
