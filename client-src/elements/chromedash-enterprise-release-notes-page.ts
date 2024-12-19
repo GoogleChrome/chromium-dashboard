@@ -4,6 +4,7 @@ import {SHARED_STYLES} from '../css/shared-css.js';
 import {Feature} from '../js-src/cs-client.js';
 import {
   ENTERPRISE_FEATURE_CATEGORIES,
+  ENTERPRISE_PRODUCT_CATEGORY,
   PLATFORM_CATEGORIES,
   PLATFORMS_DISPLAYNAME,
   STAGE_ENT_ROLLOUT,
@@ -27,9 +28,17 @@ interface Channels {
 @customElement('chromedash-enterprise-release-notes-page')
 export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   @state()
-  currentFeatures: Feature[] = [];
+  currentChromeBrowserUpdates: Feature[] = [];
   @state()
-  upcomingFeatures: Feature[] = [];
+  upcomingChromeBrowserUpdates: Feature[] = [];
+  @state()
+  currentChromeEnterpriseCore: Feature[] = [];
+  @state()
+  upcomingChromeEnterpriseCore: Feature[] = [];
+  @state()
+  currentChromeEnterprisePremium: Feature[] = [];
+  @state()
+  upcomingChromeEnterprisePremium: Feature[] = [];
   @state()
   features: Feature[] = [];
   @state()
@@ -249,7 +258,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       }));
 
     // Features with a rollout stage in the selected milestone sorted with the highest impact.
-    this.currentFeatures = this.features
+    const currentFeatures = this.features
       .filter(({stages}) =>
         stages.some(s => s.rollout_milestone === this.selectedMilestone)
       )
@@ -269,9 +278,25 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         return impactB - impactA;
       });
 
+    this.currentChromeBrowserUpdates = currentFeatures.filter(
+      f =>
+        f.enterprise_product_category ===
+        ENTERPRISE_PRODUCT_CATEGORY.CHROME_BROWSER_UPDATE[0]
+    );
+    this.currentChromeEnterpriseCore = currentFeatures.filter(
+      f =>
+        f.enterprise_product_category ===
+        ENTERPRISE_PRODUCT_CATEGORY.CHROME_ENTERPRISE_CORE[0]
+    );
+    this.currentChromeEnterprisePremium = currentFeatures.filter(
+      f =>
+        f.enterprise_product_category ===
+        ENTERPRISE_PRODUCT_CATEGORY.CHROME_ENTERPRISE_PREMIUM[0]
+    );
+
     // Features that are rolling out in a future milestone sorted with the closest milestone
     // first.
-    this.upcomingFeatures = this.features
+    const upcomingFeatures = this.features
       .filter(
         ({stages}) =>
           !stages.some(s => s.rollout_milestone === this.selectedMilestone) &&
@@ -296,6 +321,21 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
           ) || 0;
         return minA - minB;
       });
+    this.upcomingChromeBrowserUpdates = upcomingFeatures.filter(
+      f =>
+        f.enterprise_product_category ===
+        ENTERPRISE_PRODUCT_CATEGORY.CHROME_BROWSER_UPDATE[0]
+    );
+    this.upcomingChromeEnterpriseCore = upcomingFeatures.filter(
+      f =>
+        f.enterprise_product_category ===
+        ENTERPRISE_PRODUCT_CATEGORY.CHROME_ENTERPRISE_CORE[0]
+    );
+    this.upcomingChromeEnterprisePremium = upcomingFeatures.filter(
+      f =>
+        f.enterprise_product_category ===
+        ENTERPRISE_PRODUCT_CATEGORY.CHROME_ENTERPRISE_PREMIUM[0]
+    );
   }
 
   connectedCallback() {
@@ -424,12 +464,28 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   renderReleaseNotesSummary() {
     return html` <table id="release-notes-summary">
       ${this.renderReleaseNotesSummarySection(
-        'Chrome browser updates',
-        this.currentFeatures
+        'Chrome Browser updates',
+        this.currentChromeBrowserUpdates
       )}
       ${this.renderReleaseNotesSummarySection(
-        'Upcoming Chrome browser updates',
-        this.upcomingFeatures
+        'Chrome Enterprise Core (CEC)',
+        this.currentChromeEnterpriseCore
+      )}
+      ${this.renderReleaseNotesSummarySection(
+        'Chrome Enterprise Premium (CEP, paid SKU)',
+        this.currentChromeEnterprisePremium
+      )}
+      ${this.renderReleaseNotesSummarySection(
+        'Upcoming Chrome Browser updates',
+        this.upcomingChromeBrowserUpdates
+      )}
+      ${this.renderReleaseNotesSummarySection(
+        'Upcoming Chrome Enterprise Core (CEC)',
+        this.upcomingChromeEnterpriseCore
+      )}
+      ${this.renderReleaseNotesSummarySection(
+        'Upcoming Chrome Enterprise Premium (CEP, paid SKU)',
+        this.upcomingChromeEnterprisePremium
       )}
     </table>`;
   }
@@ -512,13 +568,35 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
 
   renderReleaseNotesDetails() {
     return html` ${this.renderReleaseNotesDetailsSection(
-      'Chrome browser updates',
-      this.currentFeatures,
+      'Chrome Browser updates',
+      this.currentChromeBrowserUpdates,
       m => m === this.selectedMilestone
     )}
     ${this.renderReleaseNotesDetailsSection(
-      'Upcoming Chrome browser updates',
-      this.upcomingFeatures,
+      'Chrome Enterprise Core (CEC)',
+      this.currentChromeEnterpriseCore,
+      m => m === this.selectedMilestone
+    )}
+    ${this.renderReleaseNotesDetailsSection(
+      'Chrome Enterprise Premium (CEP, paid SKU)',
+      this.currentChromeEnterprisePremium,
+      m => m === this.selectedMilestone
+    )}
+    ${this.renderReleaseNotesDetailsSection(
+      'Upcoming Chrome Browser updates',
+      this.upcomingChromeBrowserUpdates,
+      (m, milestones) =>
+        milestones.find(x => parseInt(x) > this.selectedMilestone!) === m
+    )}
+    ${this.renderReleaseNotesDetailsSection(
+      'Upcoming Chrome Enterprise Core (CEC)',
+      this.upcomingChromeEnterpriseCore,
+      (m, milestones) =>
+        milestones.find(x => parseInt(x) > this.selectedMilestone!) === m
+    )}
+    ${this.renderReleaseNotesDetailsSection(
+      'Upcoming Chrome Enterprise Premium (CEP, paid SKU)',
+      this.upcomingChromeEnterprisePremium,
       (m, milestones) =>
         milestones.find(x => parseInt(x) > this.selectedMilestone!) === m
     )}`;
