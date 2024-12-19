@@ -459,7 +459,7 @@ def process_query(
   result_id_set.intersection_update(permission_ids)
   logging.info('got %r result IDs with permissions', len(result_id_set))
 
-  result_id_list = list(result_id_set)
+  result_id_list = feature_helpers.filter_confidential_ids(list(result_id_set))
   total_count = len(result_id_list)
 
   # 4. Finish getting the total sort order. Then, sort the IDs according

@@ -59,6 +59,9 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     user = users.get_current_user()
     if feature.deleted and not permissions.can_edit_feature(user, feature_id):
       self.abort(404, msg='Feature %r not found' % feature_id)
+    if not permissions.can_view_feature(user, feature):
+      self.abort(404, msg='Feature %r not found' % feature_id)
+
     return converters.feature_entry_to_json_verbose(feature)
 
   def do_search(self):
