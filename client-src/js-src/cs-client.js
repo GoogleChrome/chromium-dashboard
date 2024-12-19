@@ -200,6 +200,7 @@
  * @property {string[]} search_tags
  * @property {string} [feature_notes]
  * @property {string[]} enterprise_feature_categories
+ * @property {number} enterprise_product_category
  * Metadata: Process information
  * @property {string} feature_type
  * @property {number} feature_type_int

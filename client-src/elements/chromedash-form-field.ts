@@ -372,7 +372,7 @@ export class ChromedashFormField extends LitElement {
               id="id_${this.name}_${value}"
               name="${fieldName}"
               value="${value}"
-              .checked="${value === fieldValue}"
+              .checked="${value === Number(fieldValue)}"
               type="radio"
               required
               @change=${this.handleFieldUpdated}

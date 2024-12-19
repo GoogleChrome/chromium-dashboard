@@ -42,6 +42,7 @@ FEATURE_FIELD_DATA_TYPES: FIELD_INFO_DATA_TYPE = [
   ('doc_links', 'links'),
   ('editor_emails', 'emails'),
   ('enterprise_feature_categories', 'split_str'),
+  ('enterprise_product_category', 'int'),
   ('ergonomics_risks', 'str'),
   ('explainer_links', 'links'),
   ('feature_notes', 'str'),

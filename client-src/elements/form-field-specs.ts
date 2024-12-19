@@ -5,6 +5,7 @@ import {
   DT_MILESTONE_FIELDS,
   ENTERPRISE_FEATURE_CATEGORIES,
   ENTERPRISE_IMPACT,
+  ENTERPRISE_PRODUCT_CATEGORY,
   FEATURE_CATEGORIES,
   FEATURE_TYPES,
   FEATURE_TYPES_WITHOUT_ENTERPRISE,
@@ -489,6 +490,15 @@ export const ALL_FIELDS: Record<string, Field> = {
     label: 'Category',
     help_text: html` Select the most specific category. If unsure, leave as
     "Miscellaneous".`,
+  },
+
+  enterprise_product_category: {
+    type: 'radios',
+    name: 'enterprise_product_category',
+    choices: ENTERPRISE_PRODUCT_CATEGORY,
+    label: 'Enterprise product category',
+    help_text: html` Select the appropriate category.`,
+    check: (_value, getFieldValue) => checkFeatureNameAndType(getFieldValue),
   },
 
   feature_type: {

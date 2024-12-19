@@ -28,16 +28,6 @@ export class ChromedashOTCreationPage extends LitElement {
       ...SHARED_STYLES,
       ...FORM_STYLES,
       css`
-        .choices label {
-          font-weight: bold;
-        }
-        .choices div {
-          margin-top: 1em;
-        }
-        .choices p {
-          margin: 0.5em 1.5em 1em;
-        }
-
         #overlay {
           position: fixed;
           width: 100%;
