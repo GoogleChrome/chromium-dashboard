@@ -70,6 +70,7 @@ def add_features(server: str, after: datetime, detailsAfter: datetime):
     fe.summary = f['summary']
     fe.category = MISC
     fe.breaking_change = f['breaking_change']
+    fe.confidential = f['confidential']
     fe.first_enterprise_notification_milestone = f[
         'first_enterprise_notification_milestone']
     fe.blink_components = f['blink_components']

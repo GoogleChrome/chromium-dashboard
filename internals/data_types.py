@@ -217,6 +217,7 @@ class VerboseFeatureDict(TypedDict):
   screenshot_links: list[str]
   first_enterprise_notification_milestone: int | None
   breaking_change: bool
+  confidential: bool
   enterprise_impact: int
   shipping_year: int | None
 

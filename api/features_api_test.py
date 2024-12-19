@@ -141,6 +141,19 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         stage_type=360, milestones=MilestoneSet(desktop_first=2))
     self.ship_stage_3.put()
 
+    self.feature_confidential = FeatureEntry(
+        name='feature confidential', summary='sum A', feature_type=2,
+        owner_emails=['confidential_owner@example.com'], category=1,
+        editor_emails=['confidential_editor@example.com'],
+        creator_email='confidential_creator@examplecom',
+        intent_stage=core_enums.INTENT_IMPLEMENT,
+        unlisted=True, confidential=True)
+    self.feature_confidential.put()
+    self.feature_confidential_id = self.feature_3.key.integer_id()
+    self.ship_stage_3 = Stage(feature_id=self.feature_3_id,
+        stage_type=360, milestones=MilestoneSet(desktop_first=1))
+    self.ship_stage_3.put()
+
     self.request_path = '/api/v0/features'
     self.handler = features_api.FeaturesAPI()
 
@@ -180,9 +193,9 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     # as it only returns feature names.
     self.assertEqual(2, len(actual['features']))
     self.assertEqual(2, actual['total_count'])
-    self.assertEqual(2, len(actual['features'][0]))
+    self.assertEqual(3, len(actual['features'][0]))
     self.assertEqual('feature two', actual['features'][0]['name'])
-    self.assertEqual(2, len(actual['features'][1]))
+    self.assertEqual(3, len(actual['features'][1]))
     self.assertEqual('feature one', actual['features'][1]['name'])
 
   def test_get__all_listed__pagination(self):
@@ -320,11 +333,12 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     testing_config.sign_in('admin@example.com', 123567890)
     with test_app.test_request_context(self.request_path):
       actual = self.handler.do_get()
-    self.assertEqual(3, len(actual['features']))
-    self.assertEqual(3, actual['total_count'])
-    self.assertEqual('feature three', actual['features'][0]['name'])
-    self.assertEqual('feature two', actual['features'][1]['name'])
-    self.assertEqual('feature one', actual['features'][2]['name'])
+    self.assertEqual(4, len(actual['features']))
+    self.assertEqual(4, actual['total_count'])
+    self.assertEqual('feature confidential', actual['features'][0]['name'])
+    self.assertEqual('feature three', actual['features'][1]['name'])
+    self.assertEqual('feature two', actual['features'][2]['name'])
+    self.assertEqual('feature one', actual['features'][3]['name'])
 
   def test_get__user_query_no_sort__signed_out(self):
     """Get all features with a specified owner, unlisted not shown."""
@@ -361,8 +375,8 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     url = self.request_path + '?sort=-summary'
     with test_app.test_request_context(url):
       actual = self.handler.do_get()
-    self.assertEqual(3, len(actual['features']))
-    self.assertEqual(3, actual['total_count'])
+    self.assertEqual(4, len(actual['features']))
+    self.assertEqual(4, actual['total_count'])
     self.assertEqual('sum Z', actual['features'][0]['summary'])
     self.assertEqual('sum K', actual['features'][1]['summary'])
     self.assertEqual('sum A', actual['features'][2]['summary'])
