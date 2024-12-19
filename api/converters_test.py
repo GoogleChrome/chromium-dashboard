@@ -114,6 +114,10 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
         'samples': ['https://example.com/samples'],
         'docs': ['https://example.com/docs'],
       },
+      'confidential': False,
+      'creator': 'creator@example.com',
+      'editors': ['feature_editor@example.com', 'owner_1@example.com'],
+      'owners': ['feature_owner@example.com'],
       'created': {
         'by': 'creator@example.com',
         'when': expected_date
@@ -201,6 +205,10 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
         'samples': ['https://example.com/samples'],
         'docs': ['https://example.com/docs'],
       },
+      'confidential': False,
+      'creator': 'creator@example.com',
+      'editors': ['feature_editor@example.com', 'owner_1@example.com'],
+      'owners': ['feature_owner@example.com'],
       'created': {
         'by': 'creator@example.com',
         'when': expected_date
@@ -398,6 +406,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'editors': ['feature_editor@example.com', 'owner_1@example.com'],
       'creator': 'creator@example.com',
       'comments': 'notes',
+      'confidential': False,
       'browsers': {
         'chrome': {
           'bug': 'https://example.com/bug',

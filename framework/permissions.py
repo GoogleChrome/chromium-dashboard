@@ -49,9 +49,9 @@ def can_view_feature_formatted(user: User, feature: dict) -> bool:
   if not feature:
     return False
 
-  return not feature['confidential'] or can_view_confidential_feature_formatted(user, feature)
+  return not feature['confidential'] or _can_view_confidential_feature_formatted(user, feature)
 
-def can_view_confidential_feature_formatted(user: User, feature: dict):
+def _can_view_confidential_feature_formatted(user: User, feature: dict):
   ''' Check if the user is an owner, editor, spec mentor, or creator
   for this feature or has a google.com or chromium.org account.
   If yes, they feature can be viewed, otherwise they cannot view
@@ -77,14 +77,14 @@ def can_view_feature(user: User, feature: FeatureEntry) -> bool:
   if not feature:
     return False
 
-  return not feature.confidential or can_view_confidential_feature(user, feature)
+  return not feature.confidential or _can_view_confidential_feature(user, feature)
 
-def can_view_confidential_feature(user: User, feature: FeatureEntry):
+def _can_view_confidential_feature(user: User, feature: FeatureEntry):
   ''' Check if the user is an owner, editor, spec mentor, or creator
   for this feature or has a google.com or chromium.org account.
   If yes, they feature can be viewed, otherwise they cannot view
   confidential features.'''
-  if not user:
+  if not user or not feature:
     return False
 
   if is_google_or_chromium_account(user) or can_admin_site(user):
