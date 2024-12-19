@@ -2139,8 +2139,9 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'checkbox',
     label: 'Confidential',
     initial: false,
-    help_text: html `This is a confidential feature that should only be visible to admins, 
-    chromium contributors and the feature's owners, contributors and creator.`,
+    help_text: html`This is a confidential feature that should only be visible
+    to admins, chromium contributors and the feature's owners, contributors and
+    creator.`,
   },
 
   intent_cc_emails: {
