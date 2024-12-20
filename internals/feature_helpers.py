@@ -345,7 +345,7 @@ def get_all(limit: Optional[int]=None,
 
     rediscache.set(KEY, feature_list)
 
-  return filter_confidential(feature_list)
+  return feature_list
 
 def get_feature_names_by_ids(feature_ids: list[int],
                update_cache: bool=True) -> list[dict[str, Any]]:
