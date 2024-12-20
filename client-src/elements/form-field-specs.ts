@@ -498,7 +498,6 @@ export const ALL_FIELDS: Record<string, Field> = {
     choices: ENTERPRISE_PRODUCT_CATEGORY,
     label: 'Enterprise product category',
     help_text: html` Select the appropriate category.`,
-    check: (_value, getFieldValue) => checkFeatureNameAndType(getFieldValue),
   },
 
   feature_type: {

@@ -170,6 +170,8 @@ class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
         screenshot_links=self.parse_links('screenshot_links'),
         first_enterprise_notification_milestone=enterprise_notification_milestone,
         blink_components=[settings.DEFAULT_ENTERPRISE_COMPONENT],
+        confidential=self.form.get('confidential') == 'on',
+        enterprise_product_category=int(self.form.get('enterprise_product_category', '0')),
         tag_review_status=core_enums.REVIEW_NA)
     key: ndb.Key = feature_entry.put()
     search_fulltext.index_feature(feature_entry)
