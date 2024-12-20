@@ -182,6 +182,7 @@ export const ENTERPRISE_NEW_FEATURE_FORM_FIELDS = [
   'enterprise_product_category',
   'first_enterprise_notification_milestone',
   'enterprise_impact',
+  'confidential',
 ];
 
 // The fields that are available to every feature.
@@ -237,6 +238,7 @@ export const FLAT_ENTERPRISE_METADATA_FIELDS: MetadataFields = {
         'enterprise_feature_categories',
         'enterprise_product_category',
         'enterprise_impact',
+        'confidential',
         'first_enterprise_notification_milestone',
         'screenshot_links',
       ],

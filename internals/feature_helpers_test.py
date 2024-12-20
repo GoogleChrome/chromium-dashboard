@@ -192,7 +192,8 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     cached_feature = {
       'name': 'fake cached_feature',
       'id': self.feature_1.key.integer_id(),
-      'unlisted': False
+      'unlisted': False,
+      'confidential': False
     }
     rediscache.set(cache_key, cached_feature)
 
@@ -255,9 +256,9 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         self.feature_2.key.integer_id()])
 
     self.assertEqual(2, len(actual))
-    self.assertEqual(2, len(actual[0]))
+    self.assertEqual(3, len(actual[0]))
     self.assertEqual('feature a', actual[0]['name'])
-    self.assertEqual(2, len(actual[1]))
+    self.assertEqual(3, len(actual[1]))
     self.assertEqual('feature b', actual[1]['name'])
 
     lookup_key_1 = '%s|%s' % (FeatureEntry.FEATURE_NAME_CACHE_KEY,
@@ -273,14 +274,15 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         FeatureEntry.FEATURE_NAME_CACHE_KEY, self.feature_1.key.integer_id())
     cached_feature = {
       'name': 'fake cached_feature',
-      'id': self.feature_1.key.integer_id()
+      'id': self.feature_1.key.integer_id(),
+      'confidential': False
     }
     rediscache.set(cache_key, cached_feature)
 
     actual = feature_helpers.get_feature_names_by_ids([self.feature_1.key.integer_id()])
 
     self.assertEqual(1, len(actual))
-    self.assertEqual(2, len(actual[0]))
+    self.assertEqual(3, len(actual[0]))
     self.assertEqual(cached_feature, actual[0])
 
   def test_get_feature_names_by_ids__batch_order(self):
@@ -293,7 +295,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     ])
 
     self.assertEqual(4, len(actual))
-    self.assertEqual(2, len(actual[0]))
+    self.assertEqual(3, len(actual[0]))
     self.assertEqual('feature d', actual[0]['name'])
     self.assertEqual('feature a', actual[1]['name'])
     self.assertEqual('feature c', actual[2]['name'])
@@ -321,7 +323,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     ])
 
     self.assertEqual(4, len(actual))
-    self.assertEqual(2, len(actual[0]))
+    self.assertEqual(3, len(actual[0]))
     self.assertEqual('feature d', actual[0]['name'])
     self.assertEqual('feature a', actual[1]['name'])
     self.assertEqual('feature c', actual[2]['name'])
@@ -459,7 +461,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     """If there is something in the cache, we use it."""
     cache_key = '%s|%s|%s' % (
         FeatureEntry.DEFAULT_CACHE_KEY, 'milestone', 1)
-    cached_test_feature = {'test': [{'name': 'test_feature', 'unlisted': False}]}
+    cached_test_feature = {'test': [{'name': 'test_feature', 'unlisted': False, 'confidential': False}]}
     rediscache.set(cache_key, cached_test_feature)
 
     actual = feature_helpers.get_in_milestone(milestone=1)
