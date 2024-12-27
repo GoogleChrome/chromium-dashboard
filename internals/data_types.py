@@ -205,6 +205,7 @@ class VerboseFeatureDict(TypedDict):
   feature_notes: str | None
   enterprise_feature_categories: list[str]
   enterprise_product_category: int
+  web_feature: str | None
 
   # Metadata: Process information
   feature_type: str

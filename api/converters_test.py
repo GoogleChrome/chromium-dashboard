@@ -64,7 +64,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
         devrel_emails=['devrel@example.com'], prefixed=False,
         intent_stage=1, tag_review_status=1, security_review_status=2,
         privacy_review_status=1, feature_notes='notes',
-        updated=self.date, accurate_as_of=self.date, created=self.date)
+        updated=self.date, accurate_as_of=self.date, created=self.date, web_feature='css')
     self.fe_1.put()
 
     # Write stages for the feature.
@@ -371,6 +371,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'experiment_timeline': None,
       'explainer_links': [],
       'feature_notes': 'notes',
+      'web_feature': 'css',
       'ff_views': 5,
       'flag_name': None,
       'finch_name': None,
