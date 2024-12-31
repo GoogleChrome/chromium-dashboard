@@ -299,7 +299,7 @@ class ChromedashTimeline extends LitElement {
       const bigqueryEl = this.shadowRoot!.querySelector(
         '#bigquery'
       ) as HTMLElement;
-      bigqueryEl!.textContent = `
+      bigqueryEl!.textContent = `#standardSQL
 SELECT date, client, pct_urls, sample_urls
 FROM \`httparchive.blink_features.usage\`
 WHERE feature = '${featureName}'
