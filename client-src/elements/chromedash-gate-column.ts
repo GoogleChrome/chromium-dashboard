@@ -648,33 +648,31 @@ export class ChromedashGateColumn extends LitElement {
           SLO initial response:
           ${this.renderSLOSummary(initialLimit, initialRemaining, initialTook)}
         </summary>
-        Reviewers are encouraged to provide an initial review status update
-        or a comment within this number of weekdays.
+        Reviewers are encouraged to provide an initial review status update or a
+        comment within this number of weekdays.
       </details>
-      `;
+    `;
     const resolveLine = html`
       <details>
         <summary>
           SLO resolution:
           ${this.renderSLOSummary(resolveLimit, resolveRemaining, resolveTook)}
         </summary>
-        Reviewers are encouraged to resolve the review within this number
-        of weekdays.  If a reviewer responds with "Needs work", this clock
-        pauses until a feature owner clicks "Re-request review".
+        Reviewers are encouraged to resolve the review within this number of
+        weekdays. If a reviewer responds with "Needs work", this clock pauses
+        until a feature owner clicks "Re-request review".
       </details>
     `;
-    let needsWorkLine: TemplateResult | typeof nothing  = nothing;
+    let needsWorkLine: TemplateResult | typeof nothing = nothing;
     if (typeof needsWorkStartedOn === 'string') {
       needsWorkLine = html`
         <details>
           <summary>
-            SLO resolution:
-            Needs work since ${needsWorkStartedOn}
+            SLO resolution: Needs work since ${needsWorkStartedOn}
           </summary>
-            A reviewer has asked the feature owner to do needed work.
-            Check the comments for a description of the needed work.
-            The SLO clock is paused until a feature owner clicks
-            "Re-request review".
+          A reviewer has asked the feature owner to do needed work. Check the
+          comments for a description of the needed work. The SLO clock is paused
+          until a feature owner clicks "Re-request review".
         </details>
       `;
     }
