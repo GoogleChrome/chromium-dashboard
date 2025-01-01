@@ -12,7 +12,7 @@ class Gate(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, id=None, feature_id=None, stage_id=None, gate_type=None, team_name=None, gate_name=None, escalation_email=None, state=None, requested_on=None, responded_on=None, assignee_emails=None, next_action=None, additional_review=None, slo_initial_response=5, slo_initial_response_took=None, slo_initial_response_remaining=None, possible_assignee_emails=None):  # noqa: E501
+    def __init__(self, id=None, feature_id=None, stage_id=None, gate_type=None, team_name=None, gate_name=None, escalation_email=None, state=None, requested_on=None, responded_on=None, assignee_emails=None, next_action=None, additional_review=None, slo_initial_response=5, slo_initial_response_took=None, slo_initial_response_remaining=None, slo_resolve=10, slo_resolve_took=None, slo_resolve_remaining=None, needs_work_started_on=None, possible_assignee_emails=None):  # noqa: E501
         """Gate - a model defined in OpenAPI
 
         :param id: The id of this Gate.  # noqa: E501
@@ -47,6 +47,14 @@ class Gate(Model):
         :type slo_initial_response_took: int
         :param slo_initial_response_remaining: The slo_initial_response_remaining of this Gate.  # noqa: E501
         :type slo_initial_response_remaining: int
+        :param slo_resolve: The slo_resolve of this Gate.  # noqa: E501
+        :type slo_resolve: int
+        :param slo_resolve_took: The slo_resolve_took of this Gate.  # noqa: E501
+        :type slo_resolve_took: int
+        :param slo_resolve_remaining: The slo_resolve_remaining of this Gate.  # noqa: E501
+        :type slo_resolve_remaining: int
+        :param needs_work_started_on: The needs_work_started_on of this Gate.  # noqa: E501
+        :type needs_work_started_on: datetime
         :param possible_assignee_emails: The possible_assignee_emails of this Gate.  # noqa: E501
         :type possible_assignee_emails: List[str]
         """
@@ -67,6 +75,10 @@ class Gate(Model):
             'slo_initial_response': int,
             'slo_initial_response_took': int,
             'slo_initial_response_remaining': int,
+            'slo_resolve': int,
+            'slo_resolve_took': int,
+            'slo_resolve_remaining': int,
+            'needs_work_started_on': datetime,
             'possible_assignee_emails': List[str]
         }
 
@@ -87,6 +99,10 @@ class Gate(Model):
             'slo_initial_response': 'slo_initial_response',
             'slo_initial_response_took': 'slo_initial_response_took',
             'slo_initial_response_remaining': 'slo_initial_response_remaining',
+            'slo_resolve': 'slo_resolve',
+            'slo_resolve_took': 'slo_resolve_took',
+            'slo_resolve_remaining': 'slo_resolve_remaining',
+            'needs_work_started_on': 'needs_work_started_on',
             'possible_assignee_emails': 'possible_assignee_emails'
         }
 
@@ -106,6 +122,10 @@ class Gate(Model):
         self._slo_initial_response = slo_initial_response
         self._slo_initial_response_took = slo_initial_response_took
         self._slo_initial_response_remaining = slo_initial_response_remaining
+        self._slo_resolve = slo_resolve
+        self._slo_resolve_took = slo_resolve_took
+        self._slo_resolve_remaining = slo_resolve_remaining
+        self._needs_work_started_on = needs_work_started_on
         self._possible_assignee_emails = possible_assignee_emails
 
     @classmethod
@@ -456,6 +476,92 @@ class Gate(Model):
         """
 
         self._slo_initial_response_remaining = slo_initial_response_remaining
+
+    @property
+    def slo_resolve(self) -> int:
+        """Gets the slo_resolve of this Gate.
+
+        DEFAULT_SLO_RESOLVE_LIMIT is 10 in approval_defs.py  # noqa: E501
+
+        :return: The slo_resolve of this Gate.
+        :rtype: int
+        """
+        return self._slo_resolve
+
+    @slo_resolve.setter
+    def slo_resolve(self, slo_resolve: int):
+        """Sets the slo_resolve of this Gate.
+
+        DEFAULT_SLO_RESOLVE_LIMIT is 10 in approval_defs.py  # noqa: E501
+
+        :param slo_resolve: The slo_resolve of this Gate.
+        :type slo_resolve: int
+        """
+
+        self._slo_resolve = slo_resolve
+
+    @property
+    def slo_resolve_took(self) -> int:
+        """Gets the slo_resolve_took of this Gate.
+
+
+        :return: The slo_resolve_took of this Gate.
+        :rtype: int
+        """
+        return self._slo_resolve_took
+
+    @slo_resolve_took.setter
+    def slo_resolve_took(self, slo_resolve_took: int):
+        """Sets the slo_resolve_took of this Gate.
+
+
+        :param slo_resolve_took: The slo_resolve_took of this Gate.
+        :type slo_resolve_took: int
+        """
+
+        self._slo_resolve_took = slo_resolve_took
+
+    @property
+    def slo_resolve_remaining(self) -> int:
+        """Gets the slo_resolve_remaining of this Gate.
+
+
+        :return: The slo_resolve_remaining of this Gate.
+        :rtype: int
+        """
+        return self._slo_resolve_remaining
+
+    @slo_resolve_remaining.setter
+    def slo_resolve_remaining(self, slo_resolve_remaining: int):
+        """Sets the slo_resolve_remaining of this Gate.
+
+
+        :param slo_resolve_remaining: The slo_resolve_remaining of this Gate.
+        :type slo_resolve_remaining: int
+        """
+
+        self._slo_resolve_remaining = slo_resolve_remaining
+
+    @property
+    def needs_work_started_on(self) -> datetime:
+        """Gets the needs_work_started_on of this Gate.
+
+
+        :return: The needs_work_started_on of this Gate.
+        :rtype: datetime
+        """
+        return self._needs_work_started_on
+
+    @needs_work_started_on.setter
+    def needs_work_started_on(self, needs_work_started_on: datetime):
+        """Sets the needs_work_started_on of this Gate.
+
+
+        :param needs_work_started_on: The needs_work_started_on of this Gate.
+        :type needs_work_started_on: datetime
+        """
+
+        self._needs_work_started_on = needs_work_started_on
 
     @property
     def possible_assignee_emails(self) -> List[str]:

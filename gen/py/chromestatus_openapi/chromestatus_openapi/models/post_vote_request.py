@@ -43,7 +43,7 @@ class PostVoteRequest(Model):
     def state(self) -> int:
         """Gets the state of this PostVoteRequest.
 
-        The vote value to set. 0 for abstain, 1 for approve, 2 for abstain.  # noqa: E501
+        The vote value to set. E.g., 2 to request a review, 5 to approve.  # noqa: E501
 
         :return: The state of this PostVoteRequest.
         :rtype: int
@@ -54,7 +54,7 @@ class PostVoteRequest(Model):
     def state(self, state: int):
         """Sets the state of this PostVoteRequest.
 
-        The vote value to set. 0 for abstain, 1 for approve, 2 for abstain.  # noqa: E501
+        The vote value to set. E.g., 2 to request a review, 5 to approve.  # noqa: E501
 
         :param state: The state of this PostVoteRequest.
         :type state: int
