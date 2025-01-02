@@ -23,6 +23,7 @@ For a one-click setup that leverages devcontainers, check out the devcontainer
     1. node and npm.
     1. Gulp: `npm install --global gulp-cli`
     1. Python virtual environment: `sudo apt install python3.11-venv`
+    1. Redis: [installation guide](https://redis.io/docs/latest/operate/oss_and_stack/install/install-redis/)
 1. We recommend using an older node version, e.g. node 18
     1. Use `node -v` to check the default node version
     2. `nvm use 18` to switch to node 18
