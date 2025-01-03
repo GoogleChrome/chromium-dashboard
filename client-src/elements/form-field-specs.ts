@@ -485,7 +485,7 @@ export const ALL_FIELDS: Record<string, Field> = {
 
   web_feature: {
     type: 'datalist',
-    required: true,
+    required: false,
     choices: undefined, // this gets replaced in chromedash-form-field via an web features api
     label: 'Feature Group',
     attrs: {placeholder: 'Please select a WebDX feature group'},

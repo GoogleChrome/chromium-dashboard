@@ -389,7 +389,7 @@ export class ChromedashFormField extends LitElement {
       `;
     } else if (type === 'datalist') {
       fieldHTML = html`
-        <div class="datalist-input-wrapper">
+        <div class="datalist-input-wrapper" data-testid="${this.name}_wrapper">
           <input
             ${ref(this.updateAttributes)}
             name="${fieldName}"
