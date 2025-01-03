@@ -14,6 +14,7 @@ import {
 } from './utils.js';
 import {Feature, StageDict} from '../js-src/cs-client';
 import {FormattedFeature} from './form-definition';
+import {WEB_FEATURES_CHOICES} from './web-feature-constants';
 
 interface getFieldValue {
   (fieldName: string, stageOrId: any): any;
@@ -52,7 +53,7 @@ export class ChromedashFormField extends LitElement {
   @state()
   loading = false;
   @state()
-  componentChoices: Record<string, [string, string]> = {}; // just for the blink component select field
+  fetchedChoices: Record<string, [string, string]> = {}; // just for the blink component & web features select field
   @state()
   checkMessage: TemplateResult | string = '';
   @state()
@@ -89,7 +90,7 @@ export class ChromedashFormField extends LitElement {
       window.csClient
         .getBlinkComponents()
         .then(componentChoices => {
-          this.componentChoices = componentChoices;
+          this.fetchedChoices = componentChoices;
           this.loading = false;
         })
         .catch(() => {
@@ -97,6 +98,9 @@ export class ChromedashFormField extends LitElement {
             'Some errors occurred. Please refresh the page or try again later.'
           );
         });
+    } else if (this.name === 'web_feature') {
+      // TODO(kyleju): Create a web features API once a data ingestion pipeline is created.
+      this.fetchedChoices = WEB_FEATURES_CHOICES;
     }
   }
 
@@ -257,9 +261,10 @@ export class ChromedashFormField extends LitElement {
 
     // form field name can be specified in form-field-spec to match DB field name
     const fieldName = this.fieldProps.name || this.name;
+
     // choices can be specified in form-field-spec or fetched from API
     const choices: [number, string][] | [number, string, string][] =
-      this.fieldProps.choices || this.componentChoices;
+      this.fieldProps.choices || this.fetchedChoices;
 
     let fieldHTML = html``;
     if (type === 'checkbox') {
@@ -384,7 +389,7 @@ export class ChromedashFormField extends LitElement {
       `;
     } else if (type === 'datalist') {
       fieldHTML = html`
-        <div class="datalist-input-wrapper">
+        <div class="datalist-input-wrapper" data-testid="${this.name}_wrapper">
           <input
             ${ref(this.updateAttributes)}
             name="${fieldName}"

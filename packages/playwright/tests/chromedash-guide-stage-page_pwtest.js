@@ -2,7 +2,7 @@
 import { test, expect } from '@playwright/test';
 import {
     captureConsoleMessages, delay, login, logout,
-    gotoNewFeaturePage, enterBlinkComponent, createNewFeature
+    createNewFeature
 } from './test_utils';
 
 

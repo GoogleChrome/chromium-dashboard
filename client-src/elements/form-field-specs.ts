@@ -483,6 +483,16 @@ export const ALL_FIELDS: Record<string, Field> = {
     "Blink".`,
   },
 
+  web_feature: {
+    type: 'datalist',
+    required: false,
+    choices: undefined, // this gets replaced in chromedash-form-field via an web features api
+    label: 'Feature Group',
+    attrs: {placeholder: 'Please select a WebDX feature group'},
+    help_text: html` Select the feature this belongs to. If your feature is not
+    listed, pick "Missing feature".`,
+  },
+
   category: {
     type: 'select',
     choices: FEATURE_CATEGORIES,
