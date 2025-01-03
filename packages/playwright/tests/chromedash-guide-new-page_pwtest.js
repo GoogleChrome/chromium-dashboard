@@ -101,10 +101,10 @@ test('enter blink component', async ({ page }) => {
   await expect(page).toHaveScreenshot('blink-components.png');
 });
 
-test('enter feature group component', async ({ page }) => {
+test('enter feature group', async ({ page }) => {
   await gotoNewFeaturePage(page);
 
-  // Scroll to feature group components field.
+  // Scroll to feature group field.
   const featureGroupField = page.locator('chromedash-form-field[name=web_feature]');
   await featureGroupField.scrollIntoViewIfNeeded();
   await expect(featureGroupField).toBeVisible();

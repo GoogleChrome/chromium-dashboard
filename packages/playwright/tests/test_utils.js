@@ -313,7 +313,7 @@ export async function enterBlinkComponent(page) {
  * Enters a feature group on the page.
  *
  * @param {Page} page - The page object representing the web page.
- * @return {Promise<void>} A promise that resolves once the blink component is entered.
+ * @return {Promise<void>} A promise that resolves once the feature group is entered.
  */
 export async function enterFeatureGroup(page) {
   const featureGroupInputWrapper = page.locator('data-testid=web_feature_wrapper');
