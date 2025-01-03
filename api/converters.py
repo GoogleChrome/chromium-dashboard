@@ -660,11 +660,11 @@ def gate_value_to_json_dict(gate: Gate) -> dict[str, Any]:
       slo_initial_response_remaining = slo.remaining_days(
           gate.requested_on, slo_initial_response)
     if gate.resolved_on:
-      slo_resolve_took = slo.weekdays_between(
-          gate.requested_on, gate.resolved_on) - (gate.needs_work_elapsed or 0)
+      slo_resolve_took = max(0, slo.weekdays_between(
+          gate.requested_on, gate.resolved_on) - (gate.needs_work_elapsed or 0))
     else:
       slo_resolve_remaining = slo.remaining_days(
-          gate.requested_on, slo_resolve) - (gate.needs_work_elapsed or 0)
+          gate.requested_on, slo_resolve) + (gate.needs_work_elapsed or 0)
 
   return {
       'id': gate.key.integer_id(),
@@ -686,5 +686,6 @@ def gate_value_to_json_dict(gate: Gate) -> dict[str, Any]:
       'slo_resolve': slo_resolve,
       'slo_resolve_took': slo_resolve_took,
       'slo_resolve_remaining': slo_resolve_remaining,
-      'needs_work_started_on': needs_work_started_on,  # YYYY-MM-DD or None
+      # YYYY-MM-DD HH:MM:SS or None
+      'needs_work_started_on': needs_work_started_on,
       }

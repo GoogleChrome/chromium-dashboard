@@ -652,7 +652,7 @@ export class ChromedashGateColumn extends LitElement {
         comment within this number of weekdays.
       </details>
     `;
-    const resolveLine = html`
+    let resolveLine: TemplateResult | typeof nothing = html`
       <details>
         <summary>
           SLO resolution:
@@ -665,10 +665,11 @@ export class ChromedashGateColumn extends LitElement {
     `;
     let needsWorkLine: TemplateResult | typeof nothing = nothing;
     if (typeof needsWorkStartedOn === 'string') {
+      resolveLine = nothing;
       needsWorkLine = html`
         <details>
           <summary>
-            SLO resolution: Needs work since ${needsWorkStartedOn}
+            SLO resolution: Needs work since ${needsWorkStartedOn.split(' ')[0]}
           </summary>
           A reviewer has asked the feature owner to do needed work. Check the
           comments for a description of the needed work. The SLO clock is paused
@@ -677,7 +678,7 @@ export class ChromedashGateColumn extends LitElement {
       `;
     }
 
-    return html`${initialLine} ${needsWorkLine || resolveLine}`;
+    return html`${initialLine} ${resolveLine} ${needsWorkLine}`;
   }
 
   renderGateRationale() {
