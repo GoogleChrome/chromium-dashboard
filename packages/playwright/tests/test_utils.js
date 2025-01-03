@@ -297,7 +297,7 @@ export async function gotoNewFeaturePage(page) {
  * @return {Promise<void>} A promise that resolves once the blink component is entered.
  */
 export async function enterBlinkComponent(page) {
-  const blinkComponentsInputWrapper = page.locator('div.datalist-input-wrapper');
+  const blinkComponentsInputWrapper = page.locator('div.datalist-input-wrapper').nth(0);
   await expect(blinkComponentsInputWrapper).toBeVisible();
 
   // Trying to show options, doesn't work yet.
