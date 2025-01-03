@@ -12,7 +12,7 @@ class GateInfo(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, name=None, description=None, gate_type=None, rule=None, approvers=None, team_name=None, escalation_email=None, slo_initial_response=5):  # noqa: E501
+    def __init__(self, name=None, description=None, gate_type=None, rule=None, approvers=None, team_name=None, escalation_email=None, slo_initial_response=5, slo_resolve=10):  # noqa: E501
         """GateInfo - a model defined in OpenAPI
 
         :param name: The name of this GateInfo.  # noqa: E501
@@ -31,6 +31,8 @@ class GateInfo(Model):
         :type escalation_email: str
         :param slo_initial_response: The slo_initial_response of this GateInfo.  # noqa: E501
         :type slo_initial_response: int
+        :param slo_resolve: The slo_resolve of this GateInfo.  # noqa: E501
+        :type slo_resolve: int
         """
         self.openapi_types = {
             'name': str,
@@ -40,7 +42,8 @@ class GateInfo(Model):
             'approvers': str,
             'team_name': str,
             'escalation_email': str,
-            'slo_initial_response': int
+            'slo_initial_response': int,
+            'slo_resolve': int
         }
 
         self.attribute_map = {
@@ -51,7 +54,8 @@ class GateInfo(Model):
             'approvers': 'approvers',
             'team_name': 'team_name',
             'escalation_email': 'escalation_email',
-            'slo_initial_response': 'slo_initial_response'
+            'slo_initial_response': 'slo_initial_response',
+            'slo_resolve': 'slo_resolve'
         }
 
         self._name = name
@@ -62,6 +66,7 @@ class GateInfo(Model):
         self._team_name = team_name
         self._escalation_email = escalation_email
         self._slo_initial_response = slo_initial_response
+        self._slo_resolve = slo_resolve
 
     @classmethod
     def from_dict(cls, dikt) -> 'GateInfo':
@@ -245,3 +250,26 @@ class GateInfo(Model):
         """
 
         self._slo_initial_response = slo_initial_response
+
+    @property
+    def slo_resolve(self) -> int:
+        """Gets the slo_resolve of this GateInfo.
+
+        DEFAULT_SLO_RESOLVE_LIMIT is 10 in approval_defs.py  # noqa: E501
+
+        :return: The slo_resolve of this GateInfo.
+        :rtype: int
+        """
+        return self._slo_resolve
+
+    @slo_resolve.setter
+    def slo_resolve(self, slo_resolve: int):
+        """Sets the slo_resolve of this GateInfo.
+
+        DEFAULT_SLO_RESOLVE_LIMIT is 10 in approval_defs.py  # noqa: E501
+
+        :param slo_resolve: The slo_resolve of this GateInfo.
+        :type slo_resolve: int
+        """
+
+        self._slo_resolve = slo_resolve

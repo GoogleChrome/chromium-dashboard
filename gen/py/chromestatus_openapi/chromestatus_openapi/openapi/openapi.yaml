@@ -1283,8 +1283,7 @@ components:
         state: 0
       properties:
         state:
-          description: "The vote value to set. 0 for abstain, 1 for approve, 2 for\
-            \ abstain."
+          description: "The vote value to set. E.g., 2 to request a review, 5 to approve."
           title: state
           type: integer
       required:
@@ -1296,13 +1295,16 @@ components:
         feature_id: 6
         stage_id: 1
         slo_initial_response: 2
+        needs_work_started_on: 2000-01-23T04:56:07.000+00:00
         gate_name: gate_name
         requested_on: 2000-01-23T04:56:07.000+00:00
         team_name: team_name
         slo_initial_response_took: 7
+        slo_resolve_remaining: 4
         additional_review: true
         gate_type: 5
         next_action: next_action
+        slo_resolve_took: 2
         escalation_email: escalation_email
         assignee_emails:
         - assignee_emails
@@ -1314,6 +1316,7 @@ components:
         - possible_assignee_emails
         - possible_assignee_emails
         responded_on: 2000-01-23T04:56:07.000+00:00
+        slo_resolve: 3
       properties:
         id:
           title: id
@@ -1372,6 +1375,21 @@ components:
         slo_initial_response_remaining:
           title: slo_initial_response_remaining
           type: integer
+        slo_resolve:
+          default: 10
+          description: DEFAULT_SLO_RESOLVE_LIMIT is 10 in approval_defs.py
+          title: slo_resolve
+          type: integer
+        slo_resolve_took:
+          title: slo_resolve_took
+          type: integer
+        slo_resolve_remaining:
+          title: slo_resolve_remaining
+          type: integer
+        needs_work_started_on:
+          format: date-time
+          title: needs_work_started_on
+          type: string
         possible_assignee_emails:
           items:
             format: email
@@ -1386,13 +1404,16 @@ components:
         - feature_id: 6
           stage_id: 1
           slo_initial_response: 2
+          needs_work_started_on: 2000-01-23T04:56:07.000+00:00
           gate_name: gate_name
           requested_on: 2000-01-23T04:56:07.000+00:00
           team_name: team_name
           slo_initial_response_took: 7
+          slo_resolve_remaining: 4
           additional_review: true
           gate_type: 5
           next_action: next_action
+          slo_resolve_took: 2
           escalation_email: escalation_email
           assignee_emails:
           - assignee_emails
@@ -1404,16 +1425,20 @@ components:
           - possible_assignee_emails
           - possible_assignee_emails
           responded_on: 2000-01-23T04:56:07.000+00:00
+          slo_resolve: 3
         - feature_id: 6
           stage_id: 1
           slo_initial_response: 2
+          needs_work_started_on: 2000-01-23T04:56:07.000+00:00
           gate_name: gate_name
           requested_on: 2000-01-23T04:56:07.000+00:00
           team_name: team_name
           slo_initial_response_took: 7
+          slo_resolve_remaining: 4
           additional_review: true
           gate_type: 5
           next_action: next_action
+          slo_resolve_took: 2
           escalation_email: escalation_email
           assignee_emails:
           - assignee_emails
@@ -1425,6 +1450,7 @@ components:
           - possible_assignee_emails
           - possible_assignee_emails
           responded_on: 2000-01-23T04:56:07.000+00:00
+          slo_resolve: 3
       properties:
         gates:
           items:
@@ -1456,8 +1482,8 @@ components:
             name: name
           - field: field
             name: name
-          incoming_stage: 1
-          stage_type: 5
+          incoming_stage: 5
+          stage_type: 2
           approvals:
           - gate_type: 0
             name: name
@@ -1467,6 +1493,7 @@ components:
             approvers: approvers
             escalation_email: escalation_email
             team_name: team_name
+            slo_resolve: 1
           - gate_type: 0
             name: name
             slo_initial_response: 6
@@ -1475,6 +1502,7 @@ components:
             approvers: approvers
             escalation_email: escalation_email
             team_name: team_name
+            slo_resolve: 1
           name: name
           outgoing_stage: 5
           description: description
@@ -1494,8 +1522,8 @@ components:
             name: name
           - field: field
             name: name
-          incoming_stage: 1
-          stage_type: 5
+          incoming_stage: 5
+          stage_type: 2
           approvals:
           - gate_type: 0
             name: name
@@ -1505,6 +1533,7 @@ components:
             approvers: approvers
             escalation_email: escalation_email
             team_name: team_name
+            slo_resolve: 1
           - gate_type: 0
             name: name
             slo_initial_response: 6
@@ -1513,6 +1542,7 @@ components:
             approvers: approvers
             escalation_email: escalation_email
             team_name: team_name
+            slo_resolve: 1
           name: name
           outgoing_stage: 5
           description: description
@@ -1553,8 +1583,8 @@ components:
           name: name
         - field: field
           name: name
-        incoming_stage: 1
-        stage_type: 5
+        incoming_stage: 5
+        stage_type: 2
         approvals:
         - gate_type: 0
           name: name
@@ -1564,6 +1594,7 @@ components:
           approvers: approvers
           escalation_email: escalation_email
           team_name: team_name
+          slo_resolve: 1
         - gate_type: 0
           name: name
           slo_initial_response: 6
@@ -1572,6 +1603,7 @@ components:
           approvers: approvers
           escalation_email: escalation_email
           team_name: team_name
+          slo_resolve: 1
         name: name
         outgoing_stage: 5
         description: description
@@ -1664,6 +1696,7 @@ components:
         approvers: approvers
         escalation_email: escalation_email
         team_name: team_name
+        slo_resolve: 1
       properties:
         name:
           title: name
@@ -1693,6 +1726,11 @@ components:
           default: 5
           description: DEFAULT_SLO_LIMIT is 5 in approval_defs.py
           title: slo_initial_response
+          type: integer
+        slo_resolve:
+          default: 10
+          description: DEFAULT_SLO_RESOLVE_LIMIT is 10 in approval_defs.py
+          title: slo_resolve
           type: integer
       title: GateInfo
       type: object

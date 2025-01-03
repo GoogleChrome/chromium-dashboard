@@ -605,64 +605,80 @@ export class ChromedashGateColumn extends LitElement {
     `;
   }
 
-  renderSLODetails() {
-    return html`
-      Reviewers are encouraged to provide an initial review status update or a
-      comment within this number of days. The full review may take longer.
-    `;
-  }
-
   dayPhrase(count) {
     return String(count) + (count == 1 ? ' day' : ' days');
   }
 
-  renderSLOSummary() {
-    const limit = this.gate?.slo_initial_response;
-    const took = this.gate?.slo_initial_response_took;
-    const remaining = this.gate?.slo_initial_response_remaining;
-    let msg: typeof nothing | TemplateResult = nothing;
-    let iconName = '';
-    let className = '';
-
+  renderSLOSummary(limit: number, remaining: number, took: number) {
     if (typeof took === 'number') {
-      msg = html`took ${this.dayPhrase(took)} for initial response`;
+      return html`took ${this.dayPhrase(took)}`;
     } else if (typeof remaining === 'number') {
-      iconName = 'clock_loader_60_20px';
+      let msg = html`due today`;
+      let className = '';
       if (remaining > 0) {
         msg = html`${this.dayPhrase(remaining)} remaining`;
       } else if (remaining < 0) {
         className = 'overdue';
         msg = html`${this.dayPhrase(-remaining)} overdue`;
-      } else {
-        msg = html`initial response is due today`;
       }
+      return html`
+        <span class="${className}">
+          <sl-icon library="material" name="clock_loader_60_20px"></sl-icon>
+          ${msg}
+        </span>
+      `;
     } else if (typeof limit === 'number') {
-      return html`
-        Reviewer SLO: ${this.dayPhrase(limit)} for initial response
-      `;
+      return html`${this.dayPhrase(limit)} allowed`;
     }
-
-    if (msg === nothing) {
-      return nothing;
-    } else {
-      const icon = iconName
-        ? html`<sl-icon library="material" name="${iconName}"></sl-icon>`
-        : nothing;
-      return html`
-        Reviewer SLO status: <span class="${className}">${icon} ${msg}</span>
-      `;
-    }
+    return nothing;
   }
 
   renderSLOStatus() {
-    const summary = this.renderSLOSummary();
-    if (summary === nothing) return nothing;
-    return html`
+    const initialLimit = this.gate?.slo_initial_response;
+    const initialRemaining = this.gate?.slo_initial_response_remaining;
+    const initialTook = this.gate?.slo_initial_response_took;
+    const resolveLimit = this.gate?.slo_resolve;
+    const resolveRemaining = this.gate?.slo_resolve_remaining;
+    const resolveTook = this.gate?.slo_resolve_took;
+    const needsWorkStartedOn = this.gate?.needs_work_started_on;
+
+    const initialLine = html`
       <details>
-        <summary>${summary}</summary>
-        ${this.renderSLODetails()}
+        <summary>
+          SLO initial response:
+          ${this.renderSLOSummary(initialLimit, initialRemaining, initialTook)}
+        </summary>
+        Reviewers are encouraged to provide an initial review status update or a
+        comment within this number of weekdays.
       </details>
     `;
+    let resolveLine: TemplateResult | typeof nothing = html`
+      <details>
+        <summary>
+          SLO resolution:
+          ${this.renderSLOSummary(resolveLimit, resolveRemaining, resolveTook)}
+        </summary>
+        Reviewers are encouraged to resolve the review within this number of
+        weekdays. If a reviewer responds with "Needs work", this clock pauses
+        until a feature owner clicks "Re-request review".
+      </details>
+    `;
+    let needsWorkLine: TemplateResult | typeof nothing = nothing;
+    if (typeof needsWorkStartedOn === 'string') {
+      resolveLine = nothing;
+      needsWorkLine = html`
+        <details>
+          <summary>
+            SLO resolution: Needs work since ${needsWorkStartedOn.split(' ')[0]}
+          </summary>
+          A reviewer has asked the feature owner to do needed work. Check the
+          comments for a description of the needed work. The SLO clock is paused
+          until a feature owner clicks "Re-request review".
+        </details>
+      `;
+    }
+
+    return html`${initialLine} ${resolveLine} ${needsWorkLine}`;
   }
 
   renderGateRationale() {

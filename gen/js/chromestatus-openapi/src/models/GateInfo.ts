@@ -67,6 +67,12 @@ export interface GateInfo {
      * @memberof GateInfo
      */
     slo_initial_response?: number;
+    /**
+     * DEFAULT_SLO_RESOLVE_LIMIT is 10 in approval_defs.py
+     * @type {number}
+     * @memberof GateInfo
+     */
+    slo_resolve?: number;
 }
 
 /**
@@ -94,6 +100,7 @@ export function GateInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'team_name': json['team_name'] == null ? undefined : json['team_name'],
         'escalation_email': json['escalation_email'] == null ? undefined : json['escalation_email'],
         'slo_initial_response': json['slo_initial_response'] == null ? undefined : json['slo_initial_response'],
+        'slo_resolve': json['slo_resolve'] == null ? undefined : json['slo_resolve'],
     };
 }
 
@@ -111,6 +118,7 @@ export function GateInfoToJSON(value?: GateInfo | null): any {
         'team_name': value['team_name'],
         'escalation_email': value['escalation_email'],
         'slo_initial_response': value['slo_initial_response'],
+        'slo_resolve': value['slo_resolve'],
     };
 }
 

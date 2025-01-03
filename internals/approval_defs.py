@@ -56,6 +56,7 @@ TESTING_APPROVERS = [
 ]
 
 DEFAULT_SLO_LIMIT = 5  # Five weekdays in the Pacific timezone.
+DEFAULT_SLO_RESOLVE_LIMIT = 10  # Ten weekdays in the Pacific timezone.
 
 @dataclass(eq=True, frozen=True)
 class GateInfo:
@@ -67,6 +68,7 @@ class GateInfo:
   team_name: str
   escalation_email: str | None = None
   slo_initial_response: int = DEFAULT_SLO_LIMIT
+  slo_resolve: int = DEFAULT_SLO_RESOLVE_LIMIT
 
 
 # Note: This can be requested manually through the UI, but it is not

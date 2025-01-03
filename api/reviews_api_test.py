@@ -341,11 +341,16 @@ class GatesAPITest(testing_config.CustomTestCase):
                 'slo_initial_response': 5,
                 'slo_initial_response_took': None,
                 'slo_initial_response_remaining': None,
+                'slo_resolve': 10,
+                'slo_resolve_took': None,
+                'slo_resolve_remaining': None,
+                'needs_work_started_on': None,
                 'possible_assignee_emails': ['reviewer1@example.com'],
             },
         ],
         }
 
+    self.maxDiff = None
     self.assertEqual(actual, expected)
 
   @mock.patch('internals.approval_defs.get_approvers')

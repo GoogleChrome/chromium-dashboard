@@ -20,7 +20,7 @@ import { mapValues } from '../runtime';
  */
 export interface PostVoteRequest {
     /**
-     * The vote value to set. 0 for abstain, 1 for approve, 2 for abstain.
+     * The vote value to set. E.g., 2 to request a review, 5 to approve.
      * @type {number}
      * @memberof PostVoteRequest
      */
