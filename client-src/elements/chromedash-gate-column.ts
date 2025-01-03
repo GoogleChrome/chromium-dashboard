@@ -550,6 +550,26 @@ export class ChromedashGateColumn extends LitElement {
     `;
   }
 
+  renderReviewStatusNeedsWork() {
+    const rereviewButton = !this.userCanRequestReview()
+      ? nothing
+      : html`
+          <div>
+            <sl-button
+              size="small"
+              variant="primary"
+              @click=${this.handleReviewRequested}
+              >Re-request review</sl-button
+            >
+          </div>
+        `;
+
+    return html`
+      <div>Reviewer has indicated a need for rework.</div>
+      ${rereviewButton}
+    `;
+  }
+
   renderReviewRequest() {
     for (const v of this.votes) {
       if (v.state === GATE_REVIEW_REQUESTED || v.state === GATE_NA_REQUESTED) {
@@ -587,6 +607,8 @@ export class ChromedashGateColumn extends LitElement {
   renderReviewStatus() {
     if (this.gate.state == GATE_PREPARING) {
       return this.renderReviewStatusPreparing();
+    } else if (this.gate.state == VOTE_OPTIONS.NEEDS_WORK[0]) {
+      return this.renderReviewStatusNeedsWork();
     } else if (this.gate.state == VOTE_OPTIONS.APPROVED[0]) {
       return this.renderReviewStatusApproved();
     } else if (this.gate.state == VOTE_OPTIONS.DENIED[0]) {
