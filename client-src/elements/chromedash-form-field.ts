@@ -466,6 +466,20 @@ export class ChromedashFormField extends LitElement {
             </tr>
           `
         : nothing}
+      ${this.name === 'web_feature' && this.value
+        ? html`
+            <tr>
+              <td colspan="2" class="webdx">
+                <a
+                  href="https://webstatus.dev/features/${this.value}"
+                  target="_blank"
+                >
+                  See feature ${this.value} in Web Platform Status
+                </a>
+              </td>
+            </tr>
+          `
+        : nothing}
     `;
   }
 }
