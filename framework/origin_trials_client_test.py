@@ -37,6 +37,7 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
         ot_emails=['anotheruser@chromium.org', 'contact@microsoft.com',
                    'editor@google.com', 'someuser@google.com'],
         ot_description='OT description', ot_has_third_party_support=True,
+        ot_use_counter_bucket_number=11,
         ot_require_approvals=True, ot_approval_buganizer_component=123456,
         ot_approval_criteria_url='https://example.com/criteria',
         ot_approval_group_email='somegroup@google.com',
@@ -208,7 +209,7 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
     """If an API key is available, POST should create trial and return true."""
     mock_requests_post.return_value = mock.MagicMock(
         status_code=200, json=lambda : (
-            {'trial': {'id': -1234567890}, 'should_retry': False}))
+            {'trial': {'id': -1234567890}}))
     mock_get_trial_end_time.return_value = 111222333
     mock_get_ot_access_token.return_value = 'access_token'
     mock_api_key_get.return_value = 'api_key_value'
@@ -237,6 +238,9 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
           'chromestatus_url': f'{settings.SITE_URL}feature/1',
           'allow_third_party_origins': True,
           'type': 'DEPRECATION',
+          'blink_use_counter_config': {
+            'bucket_number': 11,
+          }
         }, create_trial_json['trial'])
     self.assertEqual({
           'allow_public_suffix_subdomains': True,
@@ -254,6 +258,40 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
     self.assertEqual('test-group-123',
                      set_up_trial_json['data_access_admin_group_name'])
     self.assertEqual(-1234567890, set_up_trial_json['trial_id'])
+
+  @mock.patch('framework.secrets.get_ot_data_access_admin_group')
+  @mock.patch('framework.secrets.get_ot_api_key')
+  @mock.patch('framework.origin_trials_client._get_ot_access_token')
+  @mock.patch('framework.origin_trials_client._get_trial_end_time')
+  @mock.patch('requests.post')
+  def test_create_origin_trial__webdx_feature(
+      self, mock_requests_post, mock_get_trial_end_time,
+      mock_get_ot_access_token, mock_api_key_get, mock_get_admin_group):
+    """WebDXFeature use counters should have different config in request."""
+    self.ot_stage.ot_chromium_trial_name = 'WebDXFeature::Example'
+    self.ot_stage.put()
+    mock_requests_post.return_value = mock.MagicMock(
+        status_code=200, json=lambda : (
+            {'trial': {'id': -1234567890}}))
+    mock_get_trial_end_time.return_value = 111222333
+    mock_get_ot_access_token.return_value = 'access_token'
+    mock_api_key_get.return_value = 'api_key_value'
+    mock_get_admin_group.return_value = 'test-group-123'
+
+    ot_id, error_text = origin_trials_client.create_origin_trial(self.ot_stage)
+    self.assertEqual(ot_id, '-1234567890')
+    self.assertIsNone(error_text)
+
+    mock_api_key_get.assert_called_once()
+    mock_get_ot_access_token.assert_called_once()
+    # Two separate POST requests made.
+    self.assertEqual(2, mock_requests_post.call_count)
+    create_trial_json = mock_requests_post.call_args_list[0][1]['json']
+    # WebFeature config should be null.
+    self.assertEqual(None, create_trial_json['trial'].get('blink_use_counter_config'))
+    # WebDXFeature config should be populated.
+    self.assertEqual({'bucket_number': 11},
+                     create_trial_json['trial']['blink_webdx_use_counter_config'])
 
   @mock.patch('framework.secrets.get_ot_api_key')
   @mock.patch('requests.post')
