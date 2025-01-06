@@ -349,13 +349,19 @@ class SLOOverdueHandler(basehandlers.FlaskHandler):
   def get_template_data(self, **kwargs):
     """Sends notifications to reviewers of newly overdue reviews."""
     self.require_cron_header()
-    newly_overdue_gates, long_overdue_gates, relevant_features = (
+    (newly_overdue_initial_response, long_overdue_initial_response,
+     newly_overdue_resolve, long_overdue_resolve, relevant_features) = (
         self.get_overdue_gates_and_features())
-    newly_email_tasks = self.build_gate_email_tasks(
-        newly_overdue_gates, relevant_features, False)
-    long_email_tasks = self.build_gate_email_tasks(
-        long_overdue_gates, relevant_features, True)
-    email_tasks = newly_email_tasks + long_email_tasks
+    newly_initial_email_tasks = self.build_gate_email_tasks(
+        newly_overdue_initial_response, relevant_features, False, True)
+    long_initial_email_tasks = self.build_gate_email_tasks(
+        long_overdue_initial_response, relevant_features, True, True)
+    newly_resolve_email_tasks = self.build_gate_email_tasks(
+        newly_overdue_resolve, relevant_features, False, False)
+    long_resolve_email_tasks = self.build_gate_email_tasks(
+        long_overdue_resolve, relevant_features, True, False)
+    email_tasks = (newly_initial_email_tasks + long_initial_email_tasks +
+                   newly_resolve_email_tasks + long_resolve_email_tasks)
     notifier.send_emails(email_tasks)
 
     recipients_str = ''
@@ -371,33 +377,51 @@ class SLOOverdueHandler(basehandlers.FlaskHandler):
 
   def get_overdue_gates_and_features(self):
     """Return lists of newly and long overdue review gates, and their FEs."""
-    overdue_gates: list[Gate] = slo.get_overdue_gates(
-        approval_defs.APPROVAL_FIELDS_BY_ID, approval_defs.DEFAULT_SLO_LIMIT)
-    newly_overdue_gates: list[Gate] = []
-    long_overdue_gates: list[Gate] = []
+    active_gates: list[Gate] = slo.get_active_gates()
+    newly_overdue_initial_response: list[Gate] = []
+    long_overdue_initial_response: list[Gate] = []
+    newly_overdue_resolve: list[Gate] = []
+    long_overdue_resolve: list[Gate] = []
     relevant_feature_ids: set[int] = set()
-    for og in overdue_gates:
-      appr_def = approval_defs.APPROVAL_FIELDS_BY_ID.get(og.gate_type)
+    for g in active_gates:
+      appr_def = approval_defs.APPROVAL_FIELDS_BY_ID.get(g.gate_type)
       slo_limit = (appr_def.slo_initial_response
                    if appr_def else approval_defs.DEFAULT_SLO_LIMIT)
-      remaining = slo.remaining_days(og.requested_on, slo_limit)
-      if remaining == -1:
-        newly_overdue_gates.append(og)
-        relevant_feature_ids.add(og.feature_id)
-      elif remaining == -slo_limit:
-        long_overdue_gates.append(og)
-        relevant_feature_ids.add(og.feature_id)
+      slo_resolve_limit = (appr_def.slo_resolve
+                   if appr_def else approval_defs.DEFAULT_SLO_RESOLVE_LIMIT)
+      initial_remaining = slo.remaining_days(g.requested_on, slo_limit)
+      resolve_remaining = slo.remaining_days(g.requested_on, slo_resolve_limit)
+
+      # A review can only be overdue for its initial response if there is
+      # no recorded time for that initial response yet.
+      if g.responded_on is None:
+        if initial_remaining == -1:
+          newly_overdue_initial_response.append(g)
+          relevant_feature_ids.add(g.feature_id)
+        elif initial_remaining == -slo_limit:
+          long_overdue_initial_response.append(g)
+          relevant_feature_ids.add(g.feature_id)
+
+      # A review can be overdue for resolution regardless of initial response.
+      if resolve_remaining == -1:
+        newly_overdue_resolve.append(g)
+        relevant_feature_ids.add(g.feature_id)
+      elif resolve_remaining == -slo_resolve_limit:
+        long_overdue_resolve.append(g)
+        relevant_feature_ids.add(g.feature_id)
 
     relevant_features = {
         fe_id: FeatureEntry.get_by_id(fe_id)
         for fe_id in relevant_feature_ids}
-    return newly_overdue_gates, long_overdue_gates, relevant_features
+    return (newly_overdue_initial_response, long_overdue_initial_response,
+            newly_overdue_resolve, long_overdue_resolve, relevant_features)
 
   def build_gate_email_tasks(
       self,
       gates_to_notify: list[Gate],
       relevant_features: dict[int, FeatureEntry],
-      is_escalated: bool
+      is_escalated: bool,
+      is_initial_response: bool
   ) -> list[dict[str, Any]]:
     email_tasks: list[dict[str, Any]] = []
     for gate in gates_to_notify:
@@ -406,11 +430,17 @@ class SLOOverdueHandler(basehandlers.FlaskHandler):
       fe = relevant_features[gate.feature_id]
       feature_id = fe.key.integer_id()
       gate_url = settings.SITE_URL + f'feature/{feature_id}?gate={gate_id}'
+      if is_initial_response:
+        needed_action = 'an initial response'
+      else:
+        needed_action = 'a resolution'
+
       body_data = {
           'feature': fe,
           'appr_def': appr_def,
           'gate_url': gate_url,
           'is_escalated': is_escalated,
+          'needed_action': needed_action,
       }
       html = render_template(self.BODY_TEMPLATE_PATH, **body_data)
       subject = self.SUBJECT_FORMAT % fe.name
@@ -436,7 +466,7 @@ class SLOOverdueHandler(basehandlers.FlaskHandler):
 
     review_team = approval_defs.get_approvers(gate.gate_type)
     assignees = gate.assignee_emails or []
-    return list(set(assignees + review_team))
+    return sorted(set(assignees + review_team))
 
 
 class SendOTReminderEmailsHandler(basehandlers.FlaskHandler):

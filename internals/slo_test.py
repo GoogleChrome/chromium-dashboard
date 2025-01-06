@@ -338,47 +338,10 @@ class SLOReportingTests(testing_config.CustomTestCase):
     self.gate_2.key.delete()
     self.gate_3.key.delete()
 
-  def test_is_gate_overdue__not_started(self):
-    """A gate is not overdue if the review has not started yet."""
-    self.gate_1.requested_on = None
-    self.assertFalse(slo.is_gate_overdue(
-        self.gate_1, APPR_FIELDS, DEFAULT_SLO_LIMIT))
-
-  def test_is_gate_overdue__already_responded(self):
-    """A gate is not overdue if the reviewer already responded."""
-    self.gate_1.responded_on = datetime.datetime(2023, 6, 12, 12, 30, 0)  # Mon
-    self.assertFalse(slo.is_gate_overdue(
-        self.gate_1, APPR_FIELDS, DEFAULT_SLO_LIMIT))
-
-  @mock.patch('internals.slo.now_utc')
-  def test_is_gate_overdue__defined_gate_type(self, mock_now):
-    """We can tell if a gate is overdue based on the configured SLO limit."""
-    mock_now.return_value = datetime.datetime(2023, 6, 7, 12, 30, 0)  # Wed
-    self.assertFalse(slo.is_gate_overdue(
-        self.gate_1, APPR_FIELDS, DEFAULT_SLO_LIMIT))
-
-    mock_now.return_value = datetime.datetime(2023, 6, 16, 12, 30, 0)  # Thu
-    self.assertTrue(slo.is_gate_overdue(
-        self.gate_1, APPR_FIELDS, DEFAULT_SLO_LIMIT))
-
-  @mock.patch('internals.slo.now_utc')
-  def test_is_gate_overdue__undefined_gate_type(self, mock_now):
-    """We can tell if a gate is overdue based on a default SLO limit."""
-    mock_now.return_value = datetime.datetime(2023, 6, 7, 12, 30, 0)  # Wed
-    self.assertFalse(slo.is_gate_overdue(
-        self.gate_1, {}, DEFAULT_SLO_LIMIT))
-
-    mock_now.return_value = datetime.datetime(2023, 6, 15, 12, 30, 0)  # Thu
-    self.assertTrue(slo.is_gate_overdue(
-        self.gate_1, {}, DEFAULT_SLO_LIMIT))
-
-  @mock.patch('internals.slo.now_utc')
-  def test_get_overdue_gates(self, mock_now):
-    """We can tell if a gate is overdue based on a default SLO limit."""
-    mock_now.return_value = datetime.datetime(2023, 6, 16, 12, 30, 0)  # Fri
-
-    actual = slo.get_overdue_gates(APPR_FIELDS, DEFAULT_SLO_LIMIT)
+  def test_get_active_gates(self):
+    """We can get a list of active gates that might be overdue."""
+    actual = slo.get_active_gates()
     # gate_1 is overdue.
-    # gate_2 was approved so it is no longer pending.
-    # gate_3 was requested later so it is not overdue yet.
-    self.assertEqual([self.gate_1], actual)
+    # gate_2 was approved so it is no longer active.
+    # gate_3 was requested later, but it is still active.
+    self.assertEqual([self.gate_1, self.gate_3], actual)
