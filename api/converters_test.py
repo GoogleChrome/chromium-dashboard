@@ -64,7 +64,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
         devrel_emails=['devrel@example.com'], prefixed=False,
         intent_stage=1, tag_review_status=1, security_review_status=2,
         privacy_review_status=1, feature_notes='notes',
-        updated=self.date, accurate_as_of=self.date, created=self.date)
+        updated=self.date, accurate_as_of=self.date, created=self.date, web_feature='css')
     self.fe_1.put()
 
     # Write stages for the feature.
@@ -106,6 +106,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'blink_components': ['Blink'],
       'first_enterprise_notification_milestone': 100,
       'enterprise_impact': ENTERPRISE_IMPACT_NONE,
+      'enterprise_product_category': 0,
       'breaking_change': False,
       'is_released': True,
       'milestone': None,
@@ -113,6 +114,10 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
         'samples': ['https://example.com/samples'],
         'docs': ['https://example.com/docs'],
       },
+      'confidential': False,
+      'creator': 'creator@example.com',
+      'editors': ['feature_editor@example.com', 'owner_1@example.com'],
+      'owners': ['feature_owner@example.com'],
       'created': {
         'by': 'creator@example.com',
         'when': expected_date
@@ -192,6 +197,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'blink_components': ['Blink'],
       'first_enterprise_notification_milestone': 100,
       'enterprise_impact': ENTERPRISE_IMPACT_NONE,
+      'enterprise_product_category': 0,
       'breaking_change': False,
       'is_released': True,
       'milestone': True,
@@ -199,6 +205,10 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
         'samples': ['https://example.com/samples'],
         'docs': ['https://example.com/docs'],
       },
+      'confidential': False,
+      'creator': 'creator@example.com',
+      'editors': ['feature_editor@example.com', 'owner_1@example.com'],
+      'owners': ['feature_owner@example.com'],
       'created': {
         'by': 'creator@example.com',
         'when': expected_date
@@ -295,6 +305,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'unlisted': False,
       'api_spec': False,
       'enterprise_impact': ENTERPRISE_IMPACT_NONE,
+      'enterprise_product_category': 0,
       'shipping_year': 2024,
       'breaking_change': False,
       'is_released': True,
@@ -360,6 +371,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'experiment_timeline': None,
       'explainer_links': [],
       'feature_notes': 'notes',
+      'web_feature': 'css',
       'ff_views': 5,
       'flag_name': None,
       'finch_name': None,
@@ -395,6 +407,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'editors': ['feature_editor@example.com', 'owner_1@example.com'],
       'creator': 'creator@example.com',
       'comments': 'notes',
+      'confidential': False,
       'browsers': {
         'chrome': {
           'bug': 'https://example.com/bug',
@@ -529,6 +542,10 @@ class GateConvertersTest(testing_config.CustomTestCase):
       'slo_initial_response': appr_def.slo_initial_response,
       'slo_initial_response_took': None,
       'slo_initial_response_remaining': None,
+      'slo_resolve': approval_defs.DEFAULT_SLO_RESOLVE_LIMIT,
+      'slo_resolve_took': None,
+      'slo_resolve_remaining': None,
+      'needs_work_started_on': None,
       }
     self.assertEqual(expected, actual)
 
@@ -564,6 +581,10 @@ class GateConvertersTest(testing_config.CustomTestCase):
       'slo_initial_response': appr_def.slo_initial_response,
       'slo_initial_response_took': None,  # Review is still in-progress.
       'slo_initial_response_remaining': -1,  # One weekday overdue.
+      'slo_resolve': approval_defs.DEFAULT_SLO_RESOLVE_LIMIT,
+      'slo_resolve_took': None,
+      'slo_resolve_remaining': 3,
+      'needs_work_started_on': None,
       }
     self.assertEqual(expected, actual)
 

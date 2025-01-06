@@ -341,25 +341,59 @@ class GatesAPITest(testing_config.CustomTestCase):
                 'slo_initial_response': 5,
                 'slo_initial_response_took': None,
                 'slo_initial_response_remaining': None,
+                'slo_resolve': 10,
+                'slo_resolve_took': None,
+                'slo_resolve_remaining': None,
+                'needs_work_started_on': None,
                 'possible_assignee_emails': ['reviewer1@example.com'],
             },
         ],
         }
 
+    self.maxDiff = None
     self.assertEqual(actual, expected)
 
   @mock.patch('internals.approval_defs.get_approvers')
   def test_do_get__empty_gates(self, mock_get_approvers):
     """Handler cannnot find any gates."""
     mock_get_approvers.return_value = ['reviewer1@example.com']
+    gateless_feature = core_models.FeatureEntry(
+        name='gateless feature', summary='sum', category=1,
+        owner_emails=['owner1@example.com'])
+    gateless_feature.put()
+    gateless_feature_id = gateless_feature.key.integer_id()
 
     with test_app.test_request_context(self.request_path):
-      actual = self.handler.do_get(feature_id=999)
+      actual = self.handler.do_get(feature_id=gateless_feature_id)
 
     expected = {
         'gates': [],
     }
     self.assertEqual(actual, expected)
+
+  def test_do_get__deleted(self):
+    """If a feature is deleted, don't return any gates."""
+    self.feature_1.deleted = True
+    self.feature_1.put()
+
+    with test_app.test_request_context(self.request_path):
+      actual = self.handler.do_get(feature_id=self.feature_id)
+
+    expected = {
+        'gates': [],
+    }
+    self.assertEqual(actual, expected)
+
+  def test_do_get__include_deleted(self):
+    """If a feature is deleted, return gates if include_deleted=1."""
+    self.feature_1.deleted = True
+    self.feature_1.put()
+
+    with test_app.test_request_context(
+        self.request_path + '?include_deleted=1'):
+      actual = self.handler.do_get(feature_id=self.feature_id)
+
+    self.assertEqual(1, len(actual['gates']))
 
 
 class XfnGatesAPITest(testing_config.CustomTestCase):

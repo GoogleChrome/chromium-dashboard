@@ -21,6 +21,7 @@ from google.cloud import ndb  # type: ignore
 from api import converters
 from framework import rediscache
 from framework import users
+from framework import permissions
 from internals import stage_helpers
 from internals.core_enums import *
 from internals.core_models import FeatureEntry, Stage
@@ -43,6 +44,17 @@ def filter_unlisted(feature_list: list[dict]) -> list[dict]:
       listed_features.append(f)
 
   return listed_features
+
+
+def filter_confidential(feature_list: list[dict]) -> list[dict]:
+  """Filters a feature list to display only features the user should see."""
+  user = users.get_current_user()
+  visible_features = []
+  for f in feature_list:
+    if permissions.can_view_feature_formatted(user, f):
+      visible_features.append(f)
+
+  return visible_features
 
 
 def get_entries_by_id_async(ids) -> Future | None:
@@ -90,9 +102,10 @@ def get_features_in_release_notes(milestone: int):
        f['feature_type_int'] == FEATURE_TYPE_ENTERPRISE_ID) and
       (f['first_enterprise_notification_milestone'] == None or
        f['first_enterprise_notification_milestone'] <= milestone)]
+  features = [f for f in features]
 
   rediscache.set(cache_key, features)
-  return features
+  return filter_confidential(features)
 
 
 def get_in_milestone(milestone: int,
@@ -279,6 +292,8 @@ def get_in_milestone(milestone: int,
     if not show_unlisted:
       features_by_type[shipping_type] = filter_unlisted(
           features_by_type[shipping_type])
+    features_by_type[shipping_type] = filter_confidential(
+        features_by_type[shipping_type])
 
   return features_by_type
 
@@ -361,6 +376,7 @@ def get_feature_names_by_ids(feature_ids: list[int],
       feature_name_dict = {
         'id': feature_id,
         'name': fe.name,
+        'confidential': fe.confidential
       }
       result_dict[feature_id] = feature_name_dict
 
@@ -376,7 +392,7 @@ def get_feature_names_by_ids(feature_ids: list[int],
   result_list = [
       result_dict[feature_id] for feature_id in feature_ids
       if feature_id in result_dict]
-  return result_list
+  return filter_confidential(result_list)
 
 def get_by_ids(feature_ids: list[int],
                update_cache: bool=True) -> list[dict[str, Any]]:
@@ -436,7 +452,7 @@ def get_by_ids(feature_ids: list[int],
   result_list = [
       result_dict[feature_id] for feature_id in feature_ids
       if feature_id in result_dict]
-  return result_list
+  return filter_confidential(result_list)
 
 
 def get_features_by_impl_status(limit: int | None=None, update_cache: bool=False,
@@ -476,6 +492,7 @@ def get_features_by_impl_status(limit: int | None=None, update_cache: bool=False
     feature_list = []
     for section in query_results:
       if len(section) > 0:
+        section = [f for f in section if not f.deleted]
         section = [f for f in section if f.feature_type != FEATURE_TYPE_ENTERPRISE_ID]
         section = [converters.feature_entry_to_json_basic(
             f, all_stages[f.key.integer_id()]) for f in section]
@@ -486,4 +503,4 @@ def get_features_by_impl_status(limit: int | None=None, update_cache: bool=False
 
     rediscache.set(cache_key, feature_list)
 
-  return feature_list
+  return filter_confidential(feature_list)

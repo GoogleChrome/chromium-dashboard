@@ -2,7 +2,7 @@
 import { test, expect } from '@playwright/test';
 import {
   captureConsoleMessages, delay, login, logout,
-  gotoNewFeaturePage, enterBlinkComponent, createNewFeature
+  gotoNewFeaturePage, enterBlinkComponent, createNewFeature, enterFeatureGroup
 } from './test_utils';
 
 
@@ -99,6 +99,19 @@ test('enter blink component', async ({ page }) => {
   await enterBlinkComponent(page);
 
   await expect(page).toHaveScreenshot('blink-components.png');
+});
+
+test('enter feature group', async ({ page }) => {
+  await gotoNewFeaturePage(page);
+
+  // Scroll to feature group field.
+  const featureGroupField = page.locator('chromedash-form-field[name=web_feature]');
+  await featureGroupField.scrollIntoViewIfNeeded();
+  await expect(featureGroupField).toBeVisible();
+
+  await enterFeatureGroup(page);
+
+  await expect(page).toHaveScreenshot('feature-group.png');
 });
 
 

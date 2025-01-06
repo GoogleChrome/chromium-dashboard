@@ -1058,7 +1058,7 @@ components:
       properties:
         state:
           type: integer
-          description: The vote value to set. 0 for abstain, 1 for approve, 2 for abstain.
+          description: The vote value to set. E.g., 2 to request a review, 5 to approve.
       required:
         - state
     Gate:
@@ -1105,6 +1105,17 @@ components:
           type: integer
         slo_initial_response_remaining:
           type: integer
+        slo_resolve:
+          type: integer
+          default: 10
+          description: DEFAULT_SLO_RESOLVE_LIMIT is 10 in approval_defs.py
+        slo_resolve_took:
+          type: integer
+        slo_resolve_remaining:
+          type: integer
+        needs_work_started_on:
+          type: string
+          format: date-time
         possible_assignee_emails:
           type: array
           items:
@@ -1205,6 +1216,10 @@ components:
           type: integer
           default: 5
           description: DEFAULT_SLO_LIMIT is 5 in approval_defs.py
+        slo_resolve:
+          type: integer
+          default: 10
+          description: DEFAULT_SLO_RESOLVE_LIMIT is 10 in approval_defs.py
     Amendment:
       type: object
       properties:

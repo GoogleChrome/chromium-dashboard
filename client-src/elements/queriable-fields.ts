@@ -3,6 +3,7 @@
 
 import {type HTMLTemplateResult} from 'lit';
 import {
+  ENTERPRISE_PRODUCT_CATEGORY,
   FEATURE_CATEGORIES,
   FEATURE_TYPES,
   IMPLEMENTATION_STATUS,
@@ -192,6 +193,12 @@ export const QUERIABLE_FIELDS: QueryField[] = [
     kind: ENUM_KIND,
     doc: 'Feature category',
     choices: FEATURE_CATEGORIES,
+  },
+  {
+    name: 'enterprise_product_category',
+    kind: ENUM_KIND,
+    doc: 'Enterprise product category',
+    choices: ENTERPRISE_PRODUCT_CATEGORY,
   },
   {
     name: 'feature_type',

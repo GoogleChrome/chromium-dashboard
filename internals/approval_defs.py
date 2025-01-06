@@ -56,6 +56,7 @@ TESTING_APPROVERS = [
 ]
 
 DEFAULT_SLO_LIMIT = 5  # Five weekdays in the Pacific timezone.
+DEFAULT_SLO_RESOLVE_LIMIT = 10  # Ten weekdays in the Pacific timezone.
 
 @dataclass(eq=True, frozen=True)
 class GateInfo:
@@ -67,6 +68,7 @@ class GateInfo:
   team_name: str
   escalation_email: str | None = None
   slo_initial_response: int = DEFAULT_SLO_LIMIT
+  slo_resolve: int = DEFAULT_SLO_RESOLVE_LIMIT
 
 
 # Note: This can be requested manually through the UI, but it is not
@@ -142,6 +144,8 @@ EnterpriseShipApproval = GateInfo(
     core_enums.GATE_ENTERPRISE_SHIP, ONE_LGTM,
     approvers=ENTERPRISE_APPROVERS, team_name='Enterprise')
 
+# This gate is not used, but it is still defined so that it displays correctly
+# on older feature entries
 EnterprisePlanApproval = GateInfo(
     'Enterprise Deprecation Plan Review',
     'Enterprise Deprecation Plan Review',
@@ -396,8 +400,9 @@ def set_vote(feature_id: int,  gate_type: int | None, new_state: int,
       new_vote.key.delete()
       return None
 
+    old_gate_state = gate.state
     state_was_updated = update_gate_approval_state(gate, votes)
-    slo_was_updated = slo.record_vote(gate, votes)
+    slo_was_updated = slo.record_vote(gate, votes, old_gate_state)
     if state_was_updated or slo_was_updated:
       gate.put()
       return gate.state
@@ -457,11 +462,5 @@ def update_gate_approval_state(gate: Gate, votes: list[Vote]) -> bool:
   if new_state == gate.state:
     return False
   gate.state = new_state
-  if votes:
-    gate.requested_on = min(v.set_on for v in votes)
-
-  # Starting a review resets responded_on.
-  if new_state in (Vote.REVIEW_REQUESTED, Vote.NA_REQUESTED):
-    gate.responded_on = None
 
   return True

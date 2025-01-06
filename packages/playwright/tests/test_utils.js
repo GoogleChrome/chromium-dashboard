@@ -297,7 +297,7 @@ export async function gotoNewFeaturePage(page) {
  * @return {Promise<void>} A promise that resolves once the blink component is entered.
  */
 export async function enterBlinkComponent(page) {
-  const blinkComponentsInputWrapper = page.locator('div.datalist-input-wrapper');
+  const blinkComponentsInputWrapper = page.locator('data-testid=blink_components_wrapper');
   await expect(blinkComponentsInputWrapper).toBeVisible();
 
   // Trying to show options, doesn't work yet.
@@ -306,6 +306,25 @@ export async function enterBlinkComponent(page) {
 
   const blinkComponentsInput = blinkComponentsInputWrapper.locator('input');
   await blinkComponentsInput.fill('blink');
+  await delay(500);
+}
+
+/**
+ * Enters a feature group on the page.
+ *
+ * @param {Page} page - The page object representing the web page.
+ * @return {Promise<void>} A promise that resolves once the feature group is entered.
+ */
+export async function enterFeatureGroup(page) {
+  const featureGroupInputWrapper = page.locator('data-testid=web_feature_wrapper');
+  await expect(featureGroupInputWrapper).toBeVisible();
+
+  // Trying to show options, doesn't work yet.
+  await featureGroupInputWrapper.focus();
+  await delay(500);
+
+  const featureGroupInput = featureGroupInputWrapper.locator('input');
+  await featureGroupInput.fill('hwb');
   await delay(500);
 }
 
@@ -327,6 +346,8 @@ export async function createNewFeature(page) {
   await delay(500);
 
   await enterBlinkComponent(page);
+
+  await enterFeatureGroup(page);
 
   // Select feature type.
   const featureTypeRadioNew = page.locator('input[name="feature_type"][value="0"]');

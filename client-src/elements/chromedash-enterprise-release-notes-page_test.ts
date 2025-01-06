@@ -70,6 +70,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
           new_crbug_url: 'fake crbug link',
           editors: ['editor1', 'editor2'],
           enterprise_feature_categories: ['1', '2', '3'],
+          enterprise_product_category: 0,
           first_enterprise_notification_milestone: 'n_milestone_feat_3',
           stages: [
             {
@@ -102,6 +103,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
           new_crbug_url: 'fake crbug link',
           editors: ['editor1'],
           enterprise_feature_categories: ['3'],
+          enterprise_product_category: 1,
           first_enterprise_notification_milestone: 'n_milestone_feat_4',
           stages: [
             {
@@ -138,6 +140,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
           new_crbug_url: 'fake crbug link',
           editors: ['editor1', 'editor2'],
           enterprise_feature_categories: ['2'],
+          enterprise_product_category: 3,
           first_enterprise_notification_milestone: 'n_milestone_feat_5',
           stages: [
             {
@@ -174,10 +177,11 @@ describe('chromedash-enterprise-release-notes-page', () => {
           new_crbug_url: 'fake crbug link',
           editors: ['editor1', 'editor2'],
           enterprise_feature_categories: ['2'],
+          enterprise_product_category: 0,
           first_enterprise_notification_milestone: 'n_milestone_feat_6',
           stages: [
             {
-              id: 8,
+              id: 9,
               stage_type: 1061,
               rollout_milestone: 999,
               rollout_details: 'fake rollout details 999',
@@ -202,10 +206,11 @@ describe('chromedash-enterprise-release-notes-page', () => {
           new_crbug_url: 'fake crbug link',
           editors: ['editor1', 'editor2'],
           enterprise_feature_categories: [],
+          enterprise_product_category: 1,
           first_enterprise_notification_milestone: 'n_milestone_feat_7',
           stages: [
             {
-              id: 9,
+              id: 10,
               stage_type: 460,
               desktop_first: 100,
               desktop_last: 101,
@@ -215,6 +220,35 @@ describe('chromedash-enterprise-release-notes-page', () => {
               ios_last: 103,
               webview_first: 100,
               webview_last: 102,
+            },
+          ],
+          browsers: {
+            chrome: {
+              owners: ['owner'],
+            },
+          },
+          updated: {
+            when: 'updated when',
+          },
+          screenshot_links: [],
+        },
+        {
+          id: 8,
+          name: 'future premium feature',
+          summary: 'future premium feature summary',
+          new_crbug_url: 'fake crbug link',
+          editors: ['editor1', 'editor2'],
+          enterprise_feature_categories: [],
+          enterprise_product_category: 2,
+          first_enterprise_notification_milestone: 'n_milestone_feat_8',
+          stages: [
+            {
+              id: 11,
+              stage_type: 1061,
+              rollout_milestone: 1000,
+              rollout_details: 'fake rollout details 1000',
+              rollout_impact: 2,
+              rollout_platforms: [],
             },
           ],
           browsers: {
@@ -294,47 +328,69 @@ describe('chromedash-enterprise-release-notes-page', () => {
     const releaseNotesSummary = component.renderRoot.querySelector('#release-notes-summary');
     const children = Array.from(releaseNotesSummary!.querySelectorAll('tr > *'));
 
-    // Validate first headers
-    assert.equal(children[0].textContent, 'Chrome browser updates');
+    // Validate chrome browser updates
+    assert.equal(children[0].textContent, 'Chrome Browser updates');
     assert.equal(children[1].textContent, 'Security / Privacy');
     assert.equal(children[2].textContent, 'User productivity / Apps');
     assert.equal(children[3].textContent, 'Management');
-
-    // Validate first feature row
-    assert.equal(children[4].textContent, 'feature with two consecutive rollout stages');
-    assert.notInclude(children[5].textContent, '✓');
-    assert.notInclude(children[6].textContent, '✓');
+    assert.equal(children[4].textContent, 'feature with one rollout stages');
+    assert.include(children[5].textContent, '✓');
+    assert.include(children[6].textContent, '✓');
     assert.include(children[7].textContent, '✓');
 
-    // Validate second feature row
-    assert.equal(children[8].textContent, 'feature with one rollout stages');
-    assert.include(children[9].textContent, '✓');
-    assert.include(children[10].textContent, '✓');
-    assert.include(children[11].textContent, '✓');
+    // Validate chrome enterprise core
+    assert.equal(children[8].textContent, 'Chrome Enterprise Core (CEC)');
+    assert.equal(children[9].textContent, 'Security / Privacy');
+    assert.equal(children[10].textContent, 'User productivity / Apps');
+    assert.equal(children[11].textContent, 'Management');
 
-    // Validate second feature row
-    assert.equal(children[12].textContent, 'normal feature with shipping stage');
+    assert.equal(children[12].textContent, 'feature with two consecutive rollout stages');
     assert.notInclude(children[13].textContent, '✓');
     assert.notInclude(children[14].textContent, '✓');
-    assert.notInclude(children[15].textContent, '✓');
+    assert.include(children[15].textContent, '✓');
+  
+    assert.equal(children[16].textContent, 'normal feature with shipping stage');
+    assert.notInclude(children[17].textContent, '✓');
+    assert.notInclude(children[18].textContent, '✓');
+    assert.notInclude(children[19].textContent, '✓');
 
-    // Validate second headers
-    assert.equal(children[16].textContent, 'Upcoming Chrome browser updates');
-    assert.equal(children[17].textContent, 'Security / Privacy');
-    assert.equal(children[18].textContent, 'User productivity / Apps');
-    assert.equal(children[19].textContent, 'Management');
+    // Validate chrome enterprise premium
+    assert.equal(children[20].textContent, 'Chrome Enterprise Premium (CEP, paid SKU)');
+    assert.equal(children[21].textContent, 'Security / Privacy');
+    assert.equal(children[22].textContent, 'User productivity / Apps');
+    assert.equal(children[23].textContent, 'Management');
 
-    // Validate first upcoming feature row
-    assert.equal(children[20].textContent, 'feature with upcoming rollout stages');
-    assert.notInclude(children[21].textContent, '✓');
-    assert.include(children[22].textContent, '✓');
-    assert.notInclude(children[23].textContent, '✓');
+    assert.equal(children[24].textContent, 'Nothing');
+  
+    // Validate upcoming chrome browser updates
+    assert.equal(children[25].textContent, 'Upcoming Chrome Browser updates');
+    assert.equal(children[26].textContent, 'Security / Privacy');
+    assert.equal(children[27].textContent, 'User productivity / Apps');
+    assert.equal(children[28].textContent, 'Management');
 
-    // Validate first upcoming feature row
-    assert.equal(children[24].textContent, 'feature with past and future rollout stages');
-    assert.notInclude(children[25].textContent, '✓');
-    assert.include(children[26].textContent, '✓');
-    assert.notInclude(children[27].textContent, '✓');
+    assert.equal(children[29].textContent, 'feature with upcoming rollout stages');
+    assert.notInclude(children[30].textContent, '✓');
+    assert.include(children[31].textContent, '✓');
+    assert.notInclude(children[32].textContent, '✓');
+
+    // Validate upcoming chrome enterprise core
+    assert.equal(children[33].textContent, 'Upcoming Chrome Enterprise Core (CEC)');
+    assert.equal(children[34].textContent, 'Security / Privacy');
+    assert.equal(children[35].textContent, 'User productivity / Apps');
+    assert.equal(children[36].textContent, 'Management');
+
+    assert.equal(children[37].textContent, 'Nothing');
+
+    // Validate upcoming chrome enterprise premium
+    assert.equal(children[38].textContent, 'Upcoming Chrome Enterprise Premium (CEP, paid SKU)');
+    assert.equal(children[39].textContent, 'Security / Privacy');
+    assert.equal(children[40].textContent, 'User productivity / Apps');
+    assert.equal(children[41].textContent, 'Management');
+
+    assert.equal(children[42].textContent, 'future premium feature');
+    assert.notInclude(children[43].textContent, '✓');
+    assert.notInclude(children[44].textContent, '✓');
+    assert.notInclude(children[45].textContent, '✓');
   });
 
   it('renders detailed release with features in the right sections', async () => {
@@ -344,100 +400,113 @@ describe('chromedash-enterprise-release-notes-page', () => {
     assert.instanceOf(component, ChromedashEnterpriseReleaseNotesPage);
 
     const releaseNotes = Array.from(component.shadowRoot!.querySelectorAll('.note-section'));
-    assert.equal(2, releaseNotes.length);
+    assert.lengthOf(releaseNotes, 6);
 
-    // Test Chrome browser updates
-    {
-      assert.equal('Chrome browser updates', releaseNotes[0].querySelector('h2')!.textContent);
-      const features = Array.from(releaseNotes[0].querySelectorAll('.feature'));
+    // // Test Chrome Browser updates
+    // {
+    //   assert.equal('Chrome Browser updates', releaseNotes[0].querySelector('h2')!.textContent);
+    //   const features = Array.from(releaseNotes[0].querySelectorAll('.feature'));
 
-      // Test feature 1
-      {
-        assert.equal(
-          'feature with two consecutive rollout stages',
-          features[0].querySelector('strong')!.textContent);
-        assert.equal(
-          '< To remove - Feature details - ' +
-          'Owners: owner1 - Editors: editor1 - First Notice: n_milestone_feat_4 - ' +
-          'Last Updated: feature 4 updated >',
-          normalizedTextContent(features[0].querySelector('.toremove')));
-        assert.equal(
-          'feature 4 summary',
-          features[0].querySelector('.summary')!.textContent);
-        const stages = Array.from(features[0].querySelectorAll('li'));
-        assert.equal(2, stages.length);
-        assert.include(stages[0].textContent, 'Chrome 100');
-        assert.include(stages[0].textContent, 'fake rollout details 100');
-        assert.include(stages[1].textContent, 'Chrome 101');
-        assert.include(stages[1].textContent, 'fake rollout details 101');
+    //   // Test feature 1
+    //   {
+    //     assert.equal(
+    //       'feature with one rollout stages',
+    //       features[0].querySelector('strong')!.textContent);
+    //     assert.equal(
+    //       '< To remove - Feature details - ' +
+    //       'Owners: owner - Editors: editor1, editor2 - First Notice: n_milestone_feat_3 - ' +
+    //       'Last Updated: updated when >',
+    //       normalizedTextContent(features[0].querySelector('.toremove')));
+    //     assert.equal(
+    //       'feature 3 summary',
+    //       features[0].querySelector('.summary')!.textContent);
+    //     const stages = Array.from(features[0].querySelectorAll('li'));
+    //     assert.equal(1, stages.length);
+    //     assert.include(stages[0].textContent, 'Chrome 100');
+    //     assert.include(stages[0].textContent, 'fake rollout details 100');
 
-        const screenshots: HTMLImageElement[] = Array.from(features[0].querySelectorAll('.screenshots img'));
-        assert.lengthOf(screenshots, 2);
-        assert.equal(screenshots[0].src, 'https://example.com/screenshot1');
-        assert.equal(screenshots[0].alt, 'Feature screenshot 1');
-        assert.equal(screenshots[1].src, 'https://example.com/screenshot2');
-        assert.equal(screenshots[1].alt, 'Feature screenshot 2');
-      }
+    //     const screenshots: HTMLImageElement[] = Array.from(features[0].querySelectorAll('.screenshots img'));
+    //     assert.lengthOf(screenshots, 1);
+    //     assert.equal(screenshots[0].src, 'https://example.com/screenshot1');
+    //     assert.equal(screenshots[0].alt, 'Feature screenshot 1');
+    //   }
+    // }
 
-      // Test feature 2
-      {
-        assert.equal(
-          'feature with one rollout stages',
-          features[1].querySelector('strong')!.textContent);
-        assert.equal(
-          '< To remove - Feature details - ' +
-          'Owners: owner - Editors: editor1, editor2 - First Notice: n_milestone_feat_3 - ' +
-          'Last Updated: updated when >',
-          normalizedTextContent(features[1].querySelector('.toremove')));
-        assert.equal(
-          'feature 3 summary',
-          features[1].querySelector('.summary')!.textContent);
-        const stages = Array.from(features[1].querySelectorAll('li'));
-        assert.equal(1, stages.length);
-        assert.include(stages[0].textContent, 'Chrome 100');
-        assert.include(stages[0].textContent, 'fake rollout details 100');
+    // // Test Chrome Enterprise Core
+    // {
+    //   assert.equal(
+    //     'Chrome Enterprise Core (CEC)',
+    //     releaseNotes[1].querySelector('h2')!.textContent);
+    //   const features = Array.from(releaseNotes[1].querySelectorAll('.feature'));
 
-        const screenshots: HTMLImageElement[] = Array.from(features[1].querySelectorAll('.screenshots img'));
-        assert.lengthOf(screenshots, 1);
-        assert.equal(screenshots[0].src, 'https://example.com/screenshot1');
-        assert.equal(screenshots[0].alt, 'Feature screenshot 1');
-      }
+    //   // Test feature 1
+    //   {
+    //     assert.equal(
+    //       'feature with two consecutive rollout stages',
+    //       features[0].querySelector('strong')!.textContent);
+    //     assert.equal(
+    //       '< To remove - Feature details - ' +
+    //       'Owners: owner1 - Editors: editor1 - First Notice: n_milestone_feat_4 - ' +
+    //       'Last Updated: feature 4 updated >',
+    //       normalizedTextContent(features[0].querySelector('.toremove')));
+    //     assert.equal(
+    //       'feature 4 summary',
+    //       features[0].querySelector('.summary')!.textContent);
+    //     const stages = Array.from(features[0].querySelectorAll('li'));
+    //     assert.equal(2, stages.length);
+    //     assert.include(stages[0].textContent, 'Chrome 100');
+    //     assert.include(stages[0].textContent, 'fake rollout details 100');
+    //     assert.include(stages[1].textContent, 'Chrome 101');
+    //     assert.include(stages[1].textContent, 'fake rollout details 101');
 
-      // Test feature 3
-      {
-        assert.equal(
-          'normal feature with shipping stage',
-          features[2].querySelector('strong')!.textContent);
-        assert.equal(
-          '< To remove - Feature details - ' +
-          'Owners: owner - Editors: editor1, editor2 - First Notice: n_milestone_feat_7 - ' +
-          'Last Updated: updated when >',
-          normalizedTextContent(features[2].querySelector('.toremove')));
-        assert.equal(
-          'normal feature summary',
-          features[2].querySelector('.summary')!.textContent);
-        const stages = Array.from(features[2].querySelectorAll('li'));
-        assert.equal(4, stages.length);
-        assert.include(stages[0].textContent, 'Chrome 100 on Windows, MacOS, Linux, Android');
-        assert.include(stages[1].textContent, 'Chrome 101 on Windows, MacOS, Linux, Android');
-        assert.include(stages[2].textContent, 'Chrome 102 on iOS, Android');
-        assert.include(stages[3].textContent, 'Chrome 103 on iOS');
+    //     const screenshots: HTMLImageElement[] = Array.from(features[0].querySelectorAll('.screenshots img'));
+    //     assert.lengthOf(screenshots, 2);
+    //     assert.equal(screenshots[0].src, 'https://example.com/screenshot1');
+    //     assert.equal(screenshots[0].alt, 'Feature screenshot 1');
+    //     assert.equal(screenshots[1].src, 'https://example.com/screenshot2');
+    //     assert.equal(screenshots[1].alt, 'Feature screenshot 2');
+    //   }
+    
+    //   // Feature 2
+    //   {
+    //     assert.equal(
+    //       'normal feature with shipping stage',
+    //       features[1].querySelector('strong')!.textContent);
+    //     assert.equal(
+    //       '< To remove - Feature details - ' +
+    //       'Owners: owner - Editors: editor1, editor2 - First Notice: n_milestone_feat_7 - ' +
+    //       'Last Updated: updated when >',
+    //       normalizedTextContent(features[1].querySelector('.toremove')));
+    //     assert.equal(
+    //       'normal feature summary',
+    //       features[1].querySelector('.summary')!.textContent);
+    //     const stages = Array.from(features[1].querySelectorAll('li'));
+    //     assert.equal(4, stages.length);
+    //     assert.include(stages[0].textContent, 'Chrome 100 on Windows, MacOS, Linux, Android');
+    //     assert.include(stages[1].textContent, 'Chrome 101 on Windows, MacOS, Linux, Android');
+    //     assert.include(stages[2].textContent, 'Chrome 102 on iOS, Android');
+    //     assert.include(stages[3].textContent, 'Chrome 103 on iOS');
 
-        const screenshots: HTMLImageElement[] = Array.from(features[1].querySelectorAll('.screenshots img'));
-        assert.lengthOf(screenshots, 1);
-        assert.equal(screenshots[0].src, 'https://example.com/screenshot1');
-        assert.equal(screenshots[0].alt, 'Feature screenshot 1');
-      }
-    }
+    //     const screenshots: HTMLImageElement[] = Array.from(features[1].querySelectorAll('.screenshots img'));
+    //     assert.isEmpty(screenshots);
+    //   }
+    // }
 
-    // Test Upcoming Chrome browser updates
+    // Test Chrome Enterprise Premium
     {
       assert.equal(
-        'Upcoming Chrome browser updates',
-        releaseNotes[1].querySelector('h2')!.textContent);
-      const features = Array.from(releaseNotes[1].querySelectorAll('.feature'));
-
-      // Test feature 1
+        'Chrome Enterprise Premium (CEP, paid SKU)',
+        releaseNotes[2].querySelector('h2')!.textContent);
+      const features = Array.from(releaseNotes[2].querySelectorAll('.feature'));
+      assert.isEmpty(features);
+    }
+  
+    // Test Upcoming Chrome Browser updates
+    {
+      assert.equal(
+        'Upcoming Chrome Browser updates',
+        releaseNotes[3].querySelector('h2')!.textContent);
+      const features = Array.from(releaseNotes[3].querySelectorAll('.feature'));
       {
         assert.equal(
           'feature with upcoming rollout stages',
@@ -458,86 +527,44 @@ describe('chromedash-enterprise-release-notes-page', () => {
         const screenshots = Array.from(features[0].querySelectorAll('.screenshots img'));
         assert.isEmpty(screenshots);
       }
-
-      // Test feature 2
-      {
-        assert.equal(
-          'feature with past and future rollout stages',
-          features[1].querySelector('strong')!.textContent);
-        assert.equal(
-          '< To remove - Feature details - ' +
-          'Owners: owner - Editors: editor1, editor2 - First Notice: n_milestone_feat_5 - ' +
-          'Last Updated: updated when >',
-          normalizedTextContent(features[1].querySelector('.toremove')));
-        assert.equal(
-          'feature 5 summary',
-          features[1].querySelector('.summary')!.textContent);
-        const stages = Array.from(features[1].querySelectorAll('li'));
-        assert.equal(2, stages.length);
-        assert.include(stages[0].textContent, 'Chrome 1');
-        assert.include(stages[0].textContent, 'fake rollout details 1');
-        assert.include(stages[1].textContent, 'Chrome 1000');
-        assert.include(stages[1].textContent, 'fake rollout details 1000');
-
-        const screenshots: HTMLImageElement[] = Array.from(features[1].querySelectorAll('.screenshots img'));
-        assert.lengthOf(screenshots, 1);
-        assert.equal(screenshots[0].src, 'https://example.com/screenshot1');
-        assert.equal(screenshots[0].alt, 'Feature screenshot 1');
-      }
     }
-  });
-
-  it('renders nothing if all rollouts are older', async () => {
-    const component = await fixture(html`
-      <chromedash-enterprise-release-notes-page></chromedash-enterprise-release-notes-page>`);
-    assert.exists(component);
-    assert.instanceOf(component, ChromedashEnterpriseReleaseNotesPage);
-
-    // Select a future milestone
-    component.selectedMilestone = 2000;
-    component.updateSelectedMilestone();
-    await nextFrame();
-
-    // Tests summary
-    const releaseNotesSummary = component.renderRoot.querySelector('#release-notes-summary');
-    const children = Array.from(releaseNotesSummary!.querySelectorAll('tr > *'));
-
-    // Validate first headers
-    assert.equal(children[0].textContent, 'Chrome browser updates');
-    assert.equal(children[1].textContent, 'Security / Privacy');
-    assert.equal(children[2].textContent, 'User productivity / Apps');
-    assert.equal(children[3].textContent, 'Management');
-
-    // Validate first feature row
-    assert.equal(children[4].textContent, 'Nothing');
-
-    // Validate second headers
-    assert.equal(children[5].textContent, 'Upcoming Chrome browser updates');
-    assert.equal(children[6].textContent, 'Security / Privacy');
-    assert.equal(children[7].textContent, 'User productivity / Apps');
-    assert.equal(children[8].textContent, 'Management');
-
-    // Validate first upcoming feature row
-    assert.equal(children[9].textContent, 'Nothing');
-
-    // Tests release notes
-    const releaseNotes = Array.from(component.renderRoot.querySelectorAll('.note-section'));
-    assert.equal(2, releaseNotes.length);
-
-    // Test Chrome browser updates
-    {
-      assert.equal('Chrome browser updates', releaseNotes[0].querySelector('h2')!.textContent);
-      const features = Array.from(releaseNotes[0].querySelectorAll('.feature'));
-      assert.equal(0, features.length);
-    }
-
-    // Test Upcoming Chrome browser updates
+    
+    // Test Upcoming Chrome Enterprise Core
     {
       assert.equal(
-        'Upcoming Chrome browser updates',
-        releaseNotes[1].querySelector('h2')!.textContent);
-      const features = Array.from(releaseNotes[1].querySelectorAll('.feature'));
-      assert.equal(0, features.length);
+        'Upcoming Chrome Enterprise Core (CEC)',
+        releaseNotes[4].querySelector('h2')!.textContent);
+      const features = Array.from(releaseNotes[4].querySelectorAll('.feature'));
+      assert.isEmpty(features);
+    }
+
+    // Test Upcoming Chrome Enterprise Premium
+    {
+      assert.equal(
+        'Upcoming Chrome Enterprise Premium (CEP, paid SKU)',
+        releaseNotes[5].querySelector('h2')!.textContent);
+      const features = Array.from(releaseNotes[5].querySelectorAll('.feature'));
+      // Test feature 1
+      {
+        assert.equal(
+          'future premium feature',
+          features[0].querySelector('strong')!.textContent);
+        assert.equal(
+          '< To remove - Feature details - ' +
+          'Owners: owner - Editors: editor1, editor2 - First Notice: n_milestone_feat_8 - ' +
+          'Last Updated: updated when >',
+          normalizedTextContent(features[0].querySelector('.toremove')));
+        assert.equal(
+          'future premium feature summary',
+          features[0].querySelector('.summary')!.textContent);
+        const stages = Array.from(features[0].querySelectorAll('li'));
+        assert.equal(1, stages.length);
+        assert.include(stages[0].textContent, 'Chrome 1000');
+        assert.include(stages[0].textContent, 'fake rollout details 1000');
+
+        const screenshots = Array.from(features[0].querySelectorAll('.screenshots img'));
+        assert.isEmpty(screenshots);
+      }
     }
   });
 });

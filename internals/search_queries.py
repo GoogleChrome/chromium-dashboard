@@ -273,7 +273,9 @@ QUERIABLE_FIELDS: dict[str, Property] = {
     'browsers.chrome.bug': FeatureEntry.bug_url,
     'launch_bug_url': FeatureEntry.launch_bug_url,
     'breaking_change': FeatureEntry.breaking_change,
+    'confidential': FeatureEntry.confidential,
     'enterprise_impact': FeatureEntry.enterprise_impact,
+    'enterprise_product_category': FeatureEntry.enterprise_product_category,
     'shipping_year': FeatureEntry.shipping_year,
 
     'browsers.chrome.status': FeatureEntry.impl_status_chrome,

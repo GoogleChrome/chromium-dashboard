@@ -49,9 +49,13 @@ export interface GateDict {
   assignee_emails: string[];
   next_action?: string;
   additional_review: boolean;
-  slo_initial_response: string;
-  slo_initial_response_took: string;
+  slo_initial_response: number;
+  slo_initial_response_took: number;
   slo_initial_response_remaining: number;
+  slo_resolve: number;
+  slo_resolve_took: number;
+  slo_resolve_remaining: number;
+  needs_work_started_on: string;
   possible_assignee_emails: string[];
 }
 

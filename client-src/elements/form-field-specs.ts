@@ -5,6 +5,7 @@ import {
   DT_MILESTONE_FIELDS,
   ENTERPRISE_FEATURE_CATEGORIES,
   ENTERPRISE_IMPACT,
+  ENTERPRISE_PRODUCT_CATEGORY,
   FEATURE_CATEGORIES,
   FEATURE_TYPES,
   FEATURE_TYPES_WITHOUT_ENTERPRISE,
@@ -323,7 +324,8 @@ export const ALL_FIELDS: Record<string, Field> = {
           href="https://support.google.com/chrome/a/answer/7679408"
           target="_blank"
           >enterprise release notes</a
-        >, which are publicly visible and primarily written for IT admins.
+        >, which are publicly visible and primarily written for IT admins. All
+        Enterprise policies must be included in this summary section.
       </p>
       <p>
         Explain what's changing from the point of view of an end-user,
@@ -481,6 +483,16 @@ export const ALL_FIELDS: Record<string, Field> = {
     "Blink".`,
   },
 
+  web_feature: {
+    type: 'datalist',
+    required: false,
+    choices: undefined, // this gets replaced in chromedash-form-field via an web features api
+    label: 'Feature Group',
+    attrs: {placeholder: 'Please select a WebDX feature group'},
+    help_text: html` Select the feature this belongs to. If your feature is not
+    listed, pick "Missing feature".`,
+  },
+
   category: {
     type: 'select',
     choices: FEATURE_CATEGORIES,
@@ -488,6 +500,14 @@ export const ALL_FIELDS: Record<string, Field> = {
     label: 'Category',
     help_text: html` Select the most specific category. If unsure, leave as
     "Miscellaneous".`,
+  },
+
+  enterprise_product_category: {
+    type: 'radios',
+    name: 'enterprise_product_category',
+    choices: ENTERPRISE_PRODUCT_CATEGORY,
+    label: 'Enterprise product category',
+    help_text: html` Select the appropriate category.`,
   },
 
   feature_type: {
@@ -2122,6 +2142,15 @@ export const ALL_FIELDS: Record<string, Field> = {
     initial: false,
     help_text: html` This is a breaking change: customers or developers must
     take action to continue using some existing functionaity.`,
+  },
+
+  confidential: {
+    type: 'checkbox',
+    label: 'Confidential',
+    initial: false,
+    help_text: html`This is a confidential feature that should only be visible
+    to admins, chromium contributors and the feature's owners, contributors and
+    creator.`,
   },
 
   intent_cc_emails: {

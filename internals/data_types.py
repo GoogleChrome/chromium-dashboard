@@ -204,6 +204,8 @@ class VerboseFeatureDict(TypedDict):
   search_tags: list[str]
   feature_notes: str | None
   enterprise_feature_categories: list[str]
+  enterprise_product_category: int
+  web_feature: str | None
 
   # Metadata: Process information
   feature_type: str
@@ -216,6 +218,7 @@ class VerboseFeatureDict(TypedDict):
   screenshot_links: list[str]
   first_enterprise_notification_milestone: int | None
   breaking_change: bool
+  confidential: bool
   enterprise_impact: int
   shipping_year: int | None
 

@@ -355,7 +355,9 @@ def feature_entry_to_json_verbose(
     'category': FEATURE_CATEGORIES[fe.category],
     'category_int': fe.category,
     'feature_notes': fe.feature_notes,
+    'web_feature': fe.web_feature,
     'enterprise_feature_categories': fe.enterprise_feature_categories or [],
+    'enterprise_product_category': fe.enterprise_product_category or ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE,
     'stages': stage_info['all_stages'],
     'accurate_as_of': _date_to_str(fe.accurate_as_of),
     'creator_email': fe.creator_email,
@@ -382,6 +384,7 @@ def feature_entry_to_json_verbose(
     'first_enterprise_notification_milestone': fe.first_enterprise_notification_milestone,
     'enterprise_impact': fe.enterprise_impact,
     'breaking_change': fe.breaking_change,
+    'confidential': fe.confidential,
     'shipping_year': fe.shipping_year,
     'flag_name': fe.flag_name,
     'finch_name': fe.finch_name,
@@ -491,6 +494,7 @@ def feature_entry_to_json_verbose(
       },
     },
     'enterprise_feature_categories': fe.enterprise_feature_categories or [],
+    'enterprise_product_category': fe.enterprise_product_category or ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE,
     'standards': {
       'spec': fe.spec_link,
       'maturity': {
@@ -532,13 +536,18 @@ def feature_entry_to_json_basic(fe: FeatureEntry,
     'summary': fe.summary,
     'unlisted': fe.unlisted,
     'enterprise_impact': fe.enterprise_impact,
+    'enterprise_product_category': fe.enterprise_product_category or ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE,
     'breaking_change': fe.breaking_change,
+    'confidential': fe.confidential,
     'first_enterprise_notification_milestone': fe.first_enterprise_notification_milestone,
     'blink_components': fe.blink_components or [],
     'resources': {
       'samples': fe.sample_links or [],
       'docs': fe.doc_links or [],
     },
+    'creator': fe.creator_email,
+    'editors': fe.editor_emails or [],
+    'owners': fe.owner_emails or [],
     'created': {'by': fe.creator_email, 'when': _date_to_str(fe.created)},
     'updated': {'by': fe.updater_email, 'when': _date_to_str(fe.updated)},
     'accurate_as_of': _date_to_str(fe.accurate_as_of),
@@ -632,12 +641,18 @@ def gate_value_to_json_dict(gate: Gate) -> dict[str, Any]:
   next_action = str(gate.next_action) if gate.next_action else None
   requested_on = str(gate.requested_on) if gate.requested_on else None
   responded_on = str(gate.responded_on) if gate.responded_on else None
+  needs_work_started_on = (
+      str(gate.needs_work_started_on) if gate.needs_work_started_on else None)
   appr_def = approval_defs.APPROVAL_FIELDS_BY_ID.get(gate.gate_type)
   slo_initial_response = approval_defs.DEFAULT_SLO_LIMIT
+  slo_resolve = approval_defs.DEFAULT_SLO_RESOLVE_LIMIT
   if appr_def:
     slo_initial_response = appr_def.slo_initial_response
+    slo_resolve = appr_def.slo_resolve
   slo_initial_response_remaining = None
   slo_initial_response_took = None
+  slo_resolve_remaining = None
+  slo_resolve_took = None
   if requested_on:
     if responded_on:
       slo_initial_response_took = slo.weekdays_between(
@@ -645,6 +660,12 @@ def gate_value_to_json_dict(gate: Gate) -> dict[str, Any]:
     else:
       slo_initial_response_remaining = slo.remaining_days(
           gate.requested_on, slo_initial_response)
+    if gate.resolved_on:
+      slo_resolve_took = max(0, slo.weekdays_between(
+          gate.requested_on, gate.resolved_on) - (gate.needs_work_elapsed or 0))
+    else:
+      slo_resolve_remaining = slo.remaining_days(
+          gate.requested_on, slo_resolve) + (gate.needs_work_elapsed or 0)
 
   return {
       'id': gate.key.integer_id(),
@@ -663,4 +684,9 @@ def gate_value_to_json_dict(gate: Gate) -> dict[str, Any]:
       'slo_initial_response': slo_initial_response,
       'slo_initial_response_took': slo_initial_response_took,
       'slo_initial_response_remaining': slo_initial_response_remaining,
+      'slo_resolve': slo_resolve,
+      'slo_resolve_took': slo_resolve_took,
+      'slo_resolve_remaining': slo_resolve_remaining,
+      # YYYY-MM-DD HH:MM:SS or None
+      'needs_work_started_on': needs_work_started_on,
       }

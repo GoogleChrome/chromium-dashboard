@@ -88,11 +88,13 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   name = ndb.StringProperty(required=True)
   summary = ndb.TextProperty(required=True)
   category = ndb.IntegerProperty(required=True)
+  enterprise_product_category = ndb.IntegerProperty(required=False, default=ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE)
   enterprise_feature_categories = ndb.StringProperty(repeated=True)
   blink_components = ndb.StringProperty(repeated=True)
   star_count = ndb.IntegerProperty(default=0)
   search_tags = ndb.StringProperty(repeated=True)
   feature_notes = ndb.TextProperty()  # copy from comments
+  web_feature = ndb.StringProperty()
 
   # Metadata: Process information
   feature_type = ndb.IntegerProperty(required=True, default=FEATURE_TYPE_INCUBATE_ID)
@@ -104,6 +106,7 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   first_enterprise_notification_milestone = ndb.IntegerProperty()
   enterprise_impact = ndb.IntegerProperty(default=ENTERPRISE_IMPACT_NONE)
   breaking_change = ndb.BooleanProperty(default=False)
+  confidential = ndb.BooleanProperty(default=False)
   shipping_year = ndb.IntegerProperty()
 
   # Implementation in Chrome

@@ -7,6 +7,7 @@ import {FORMS_BY_STAGE_TYPE, FormattedFeature} from './form-definition.js';
 import {
   ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME,
   ENTERPRISE_IMPACT_DISPLAYNAME,
+  ENTERPRISE_PRODUCT_CATEGORY_DISPLAYNAME,
   OT_MILESTONE_END_FIELDS,
   OT_SETUP_STATUS_OPTIONS,
   PLATFORMS_DISPLAYNAME,
@@ -278,6 +279,9 @@ export function getFieldValueFromFeature(
     value = feature[fieldName];
   }
 
+  if (fieldName === 'enterprise_product_category' && value !== undefined) {
+    return ENTERPRISE_PRODUCT_CATEGORY_DISPLAYNAME[value];
+  }
   if (fieldName === 'enterprise_feature_categories' && value) {
     return value.map(
       categoryId => ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME[categoryId]

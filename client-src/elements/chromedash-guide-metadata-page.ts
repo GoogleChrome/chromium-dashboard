@@ -187,6 +187,7 @@ export class ChromedashGuideMetadataPage extends LitElement {
           .feature=${formattedFeature}
           ?forEnterprise=${formattedFeature.is_enterprise_feature}
           @form-field-update="${this.handleFormFieldUpdate}"
+          class="${field === 'enterprise_product_category' ? 'choices' : ''}"
         >
         </chromedash-form-field>
       `;

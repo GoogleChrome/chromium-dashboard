@@ -116,6 +116,30 @@ export interface Gate {
      */
     slo_initial_response_remaining?: number;
     /**
+     * DEFAULT_SLO_RESOLVE_LIMIT is 10 in approval_defs.py
+     * @type {number}
+     * @memberof Gate
+     */
+    slo_resolve?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof Gate
+     */
+    slo_resolve_took?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof Gate
+     */
+    slo_resolve_remaining?: number;
+    /**
+     * 
+     * @type {Date}
+     * @memberof Gate
+     */
+    needs_work_started_on?: Date;
+    /**
      * 
      * @type {Array<string>}
      * @memberof Gate
@@ -156,6 +180,10 @@ export function GateFromJSONTyped(json: any, ignoreDiscriminator: boolean): Gate
         'slo_initial_response': json['slo_initial_response'] == null ? undefined : json['slo_initial_response'],
         'slo_initial_response_took': json['slo_initial_response_took'] == null ? undefined : json['slo_initial_response_took'],
         'slo_initial_response_remaining': json['slo_initial_response_remaining'] == null ? undefined : json['slo_initial_response_remaining'],
+        'slo_resolve': json['slo_resolve'] == null ? undefined : json['slo_resolve'],
+        'slo_resolve_took': json['slo_resolve_took'] == null ? undefined : json['slo_resolve_took'],
+        'slo_resolve_remaining': json['slo_resolve_remaining'] == null ? undefined : json['slo_resolve_remaining'],
+        'needs_work_started_on': json['needs_work_started_on'] == null ? undefined : (new Date(json['needs_work_started_on'])),
         'possible_assignee_emails': json['possible_assignee_emails'] == null ? undefined : json['possible_assignee_emails'],
     };
 }
@@ -182,6 +210,10 @@ export function GateToJSON(value?: Gate | null): any {
         'slo_initial_response': value['slo_initial_response'],
         'slo_initial_response_took': value['slo_initial_response_took'],
         'slo_initial_response_remaining': value['slo_initial_response_remaining'],
+        'slo_resolve': value['slo_resolve'],
+        'slo_resolve_took': value['slo_resolve_took'],
+        'slo_resolve_remaining': value['slo_resolve_remaining'],
+        'needs_work_started_on': value['needs_work_started_on'] == null ? undefined : ((value['needs_work_started_on']).toISOString()),
         'possible_assignee_emails': value['possible_assignee_emails'],
     };
 }

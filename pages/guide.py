@@ -90,7 +90,8 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
         enterprise_impact=int(self.form.get('enterprise_impact', '1')),
         first_enterprise_notification_milestone=enterprise_notification_milestone,
         blink_components=blink_components,
-        tag_review_status=processes.initial_tag_review_status(feature_type))
+        tag_review_status=processes.initial_tag_review_status(feature_type),
+        web_feature=self.form.get('web_feature'))
     if shipping_year:
       feature_entry.shipping_year = shipping_year
     key: ndb.Key = feature_entry.put()
@@ -170,6 +171,8 @@ class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
         screenshot_links=self.parse_links('screenshot_links'),
         first_enterprise_notification_milestone=enterprise_notification_milestone,
         blink_components=[settings.DEFAULT_ENTERPRISE_COMPONENT],
+        confidential=self.form.get('confidential') == 'on',
+        enterprise_product_category=int(self.form.get('enterprise_product_category', '0')),
         tag_review_status=core_enums.REVIEW_NA)
     key: ndb.Key = feature_entry.put()
     search_fulltext.index_feature(feature_entry)

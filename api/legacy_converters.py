@@ -31,6 +31,8 @@ def feature_to_legacy_json(f: Feature) -> dict[str, Any]:
     d['id'] = None
   d['category'] = FEATURE_CATEGORIES[f.category]
   d['enterprise_feature_categories'] = f.enterprise_feature_categories
+  d['enterprise_product_category'] = f.enterprise_product_category
+  d['confidential'] = f.confidential
   d['category_int'] = f.category
   if f.feature_type is not None:
     d['feature_type'] = FEATURE_TYPES[f.feature_type]

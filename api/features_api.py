@@ -59,6 +59,9 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     user = users.get_current_user()
     if feature.deleted and not permissions.can_edit_feature(user, feature_id):
       self.abort(404, msg='Feature %r not found' % feature_id)
+    if not permissions.can_view_feature(user, feature):
+      self.abort(404, msg='Feature %r not found' % feature_id)
+
     return converters.feature_entry_to_json_verbose(feature)
 
   def do_search(self):
@@ -352,10 +355,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     """Delete the specified feature."""
     # TODO(jrobbins): implement undelete UI.  For now, use cloud console.
     feature_id = kwargs.get('feature_id', None)
-    feature = self.get_specified_feature(feature_id=feature_id)
-    if feature is None:
-      return {'message': 'ID does not match any feature.'}
-
+    feature: FeatureEntry = self.get_specified_feature(feature_id=feature_id)
     user = users.get_current_user()
     app_user = AppUser.get_app_user(user.email())
     if ((app_user is None or not app_user.is_admin)
@@ -365,12 +365,5 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     feature.put()
     rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)
     rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
-
-    # Write for new FeatureEntry entity.
-    feature_entry: FeatureEntry | None = (
-        FeatureEntry.get_by_id(feature_id))
-    if feature_entry:
-      feature_entry.deleted = True
-      feature_entry.put()
 
     return {'message': 'Done'}
