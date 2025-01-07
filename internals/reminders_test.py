@@ -456,8 +456,13 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
         state=Gate.PREPARING)
     self.gate_1.put()
     self.handler = reminders.SLOOverdueHandler()
-    # Just a non-empty date, the value is ignored by mock_remaining_days
-    self.request_date = datetime(2023, 6, 7, 12, 30, 0)
+    self.request_date = datetime(2023, 7, 7, 12, 30, 0)  # Fri, July 7, 2023
+    self.day_1 = datetime(2023, 7, 10, 12, 30, 0) # This Mon
+    self.day_6 = datetime(2023, 7, 17, 12, 30, 0) # Next Mon: Initial response due
+    self.day_10 = datetime(2023, 7, 21, 12, 30, 0) # Next Fri: Initial overdue
+    self.day_11 = datetime(2023, 7, 24, 12, 30, 0) # NN Mon: Resolution due
+    self.day_20 = datetime(2023, 8, 5, 12, 30, 0) # Later Fri: Resol overdue
+    self.day_22 = datetime(2023, 8, 9, 12, 30, 0) # Later Tue
 
   def tearDown(self) -> None:
     kinds: list[ndb.Model] = [FeatureEntry, Stage, Gate]
@@ -466,6 +471,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
         entity.key.delete()
 
   def test_get_template_data__no_reviews_pending(self):
+    """The only gate is still PREPARING, so it's review can't be late."""
     with test_app.app_context():
       actual = self.handler.get_template_data()
 
@@ -473,11 +479,13 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     expected = {'message': expected_message}
     self.assertEqual(actual, expected)
 
-  @mock.patch('internals.slo.remaining_days')
-  def test_get_template_data__no_reviews_due(self, mock_remaining_days):
+  @mock.patch('internals.slo.now_utc')
+  def test_get_template_data__no_reviews_due(self, mock_now_utc):
+    """A review has been requested, but it is not due yet."""
     self.gate_1.state = Vote.REVIEW_REQUESTED
+    self.gate_1.requested_on = self.request_date
     self.gate_1.put()
-    mock_remaining_days.return_value = 1
+    mock_now_utc.return_value = self.day_1
 
     with test_app.app_context():
       actual = self.handler.get_template_data()
@@ -486,12 +494,13 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     expected = {'message': expected_message}
     self.assertEqual(actual, expected)
 
-  @mock.patch('internals.slo.remaining_days')
-  def test_get_template_data__one_due_unassigned(self, mock_remaining_days):
+  @mock.patch('internals.slo.now_utc')
+  def test_get_template_data__one_due_unassigned(self, mock_now_utc):
+    """One gate is due and it has no assigned reviewer."""
     self.gate_1.state = Vote.REVIEW_REQUESTED
     self.gate_1.requested_on = self.request_date
     self.gate_1.put()
-    mock_remaining_days.return_value = -1
+    mock_now_utc.return_value = self.day_6
 
     with test_app.app_context():
       actual = self.handler.get_template_data()
@@ -508,14 +517,15 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     expected = {'message': expected_message}
     self.assertEqual(actual, expected)
 
-  @mock.patch('internals.slo.remaining_days')
-  def test_get_template_data__one_due_assigned(self, mock_remaining_days):
+  @mock.patch('internals.slo.now_utc')
+  def test_get_template_data__one_due_assigned(self, mock_now_utc):
+    """One gate is due and it has two assigned reviewers."""
     self.gate_1.state = Vote.REVIEW_REQUESTED
     self.gate_1.assignee_emails = [
         'b_assignee@example.com', 'a_assignee@example.com']
     self.gate_1.requested_on = self.request_date
     self.gate_1.put()
-    mock_remaining_days.return_value = -1
+    mock_now_utc.return_value = self.day_6
 
     with test_app.app_context():
       actual = self.handler.get_template_data()
@@ -527,12 +537,13 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     expected = {'message': expected_message}
     self.assertEqual(actual, expected)
 
-  @mock.patch('internals.slo.remaining_days')
-  def test_get_template_data__one_overdue_unassigned(self, mock_remaining_days):
+  @mock.patch('internals.slo.now_utc')
+  def test_get_template_data__initial_overdue_unassigned(self, mock_now_utc):
+    """Overdue for initial response. Notify all reviewers."""
     self.gate_1.state = Vote.REVIEW_REQUESTED
     self.gate_1.requested_on = self.request_date
     self.gate_1.put()
-    mock_remaining_days.return_value = -approval_defs.DEFAULT_SLO_LIMIT
+    mock_now_utc.return_value = self.day_10
 
     with test_app.app_context():
       actual = self.handler.get_template_data()
@@ -548,14 +559,15 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     expected = {'message': expected_message}
     self.assertEqual(actual, expected)
 
-  @mock.patch('internals.slo.remaining_days')
-  def test_get_template_data__one_overdue_assigned(self, mock_remaining_days):
+  @mock.patch('internals.slo.now_utc')
+  def test_get_template_data__initial_overdue_assigned(self, mock_now_utc):
+    """Overdue for initial response. Notify assigned and others."""
     self.gate_1.state = Vote.REVIEW_REQUESTED
     self.gate_1.assignee_emails = [
         'mhoste@google.com', 'a_assignee@example.com']
     self.gate_1.requested_on = self.request_date
     self.gate_1.put()
-    mock_remaining_days.return_value = -approval_defs.DEFAULT_SLO_LIMIT
+    mock_now_utc.return_value = self.day_10
 
     with test_app.app_context():
       actual = self.handler.get_template_data()
@@ -572,11 +584,58 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     expected = {'message': expected_message}
     self.assertEqual(actual, expected)
 
-  @mock.patch('internals.slo.remaining_days')
-  def test_get_template_data__old_reviews(self, mock_remaining_days):
+  @mock.patch('internals.slo.now_utc')
+  def test_get_template_data__due_resolve_unassigned(self, mock_now_utc):
+    """Due for resolution. Notify all reviewers."""
     self.gate_1.state = Vote.REVIEW_REQUESTED
+    self.gate_1.requested_on = self.request_date
     self.gate_1.put()
-    mock_remaining_days.return_value = 99
+    mock_now_utc.return_value = self.day_11
+
+    with test_app.app_context():
+      actual = self.handler.get_template_data()
+
+    expected_message = (f'6 email(s) sent or logged.\n'
+                        'Recipients:\n'
+                        'angelaweber@google.com\n'
+                        'davidayad@google.com\n'
+                        'mhoste@google.com\n'
+                        'nsamarakkody@google.com\n'
+                        'omole@google.com\n'
+                        'pastarmovj@google.com')
+    expected = {'message': expected_message}
+    self.assertEqual(actual, expected)
+
+
+  @mock.patch('internals.slo.now_utc')
+  def test_get_template_data__resolve_overdue_unassigned(self, mock_now_utc):
+    """Overdue for resolution. Notify all reviewers."""
+    self.gate_1.state = Vote.REVIEW_REQUESTED
+    self.gate_1.requested_on = self.request_date
+    self.gate_1.put()
+    mock_now_utc.return_value = self.day_20
+
+    with test_app.app_context():
+      actual = self.handler.get_template_data()
+
+    expected_message = (f'6 email(s) sent or logged.\n'
+                        'Recipients:\n'
+                        'angelaweber@google.com\n'
+                        'davidayad@google.com\n'
+                        'mhoste@google.com\n'
+                        'nsamarakkody@google.com\n'
+                        'omole@google.com\n'
+                        'pastarmovj@google.com')
+    expected = {'message': expected_message}
+    self.assertEqual(actual, expected)
+
+  @mock.patch('internals.slo.now_utc')
+  def test_get_template_data__old_reviews(self, mock_now_utc):
+    """More time has passed.  We don't keep reminding."""
+    self.gate_1.state = Vote.REVIEW_REQUESTED
+    self.gate_1.requested_on = self.request_date
+    self.gate_1.put()
+    mock_now_utc.return_value = self.day_22
 
     with test_app.app_context():
       actual = self.handler.get_template_data()
@@ -584,3 +643,79 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     expected_message = '0 email(s) sent or logged.'
     expected = {'message': expected_message}
     self.assertEqual(actual, expected)
+
+  def test_build_gate_email_tasks__initial_due(self):
+    """Check the email sent when an initial respose is due."""
+    self.gate_1.assignee_emails = [
+        'b_assignee@example.com', 'a_assignee@example.com']
+    with test_app.app_context():
+      actual = self.handler.build_gate_email_tasks(
+        [self.gate_1],
+        {self.feature_1.key.integer_id(): self.feature_1},
+        False, True)
+
+    self.assertEqual(2, len(actual))
+    task = actual[0]
+    self.assertEqual('b_assignee@example.com', task['to'])
+    self.assertEqual('Review due for: feature one', task['subject'])
+    self.assertEqual(None, task['reply_to'])
+    # TESTDATA.make_golden(task['html'], 'test_build_gate_email_tasks__initial_due.html')
+    self.assertMultiLineEqual(
+      TESTDATA['test_build_gate_email_tasks__initial_due.html'], task['html'])
+
+  def test_build_gate_email_tasks__initial_overdue(self):
+    """Check the email sent when an initial respose is overdue."""
+    self.gate_1.assignee_emails = [
+        'b_assignee@example.com', 'a_assignee@example.com']
+    with test_app.app_context():
+      actual = self.handler.build_gate_email_tasks(
+        [self.gate_1],
+        {self.feature_1.key.integer_id(): self.feature_1},
+        True, True)
+
+    self.assertEqual(8, len(actual))
+    task = actual[0]
+    self.assertEqual('a_assignee@example.com', task['to'])
+    self.assertEqual('ESCALATED: Review due for: feature one', task['subject'])
+    self.assertEqual(None, task['reply_to'])
+    # TESTDATA.make_golden(task['html'], 'test_build_gate_email_tasks__initial_overdue.html')
+    self.assertMultiLineEqual(
+      TESTDATA['test_build_gate_email_tasks__initial_overdue.html'], task['html'])
+
+  def test_build_gate_email_tasks__resolution_due(self):
+    """Check the email sent when a resolution is due."""
+    self.gate_1.assignee_emails = [
+        'b_assignee@example.com', 'a_assignee@example.com']
+    with test_app.app_context():
+      actual = self.handler.build_gate_email_tasks(
+        [self.gate_1],
+        {self.feature_1.key.integer_id(): self.feature_1},
+        False, False)
+
+    self.assertEqual(2, len(actual))
+    task = actual[0]
+    self.assertEqual('b_assignee@example.com', task['to'])
+    self.assertEqual('Review due for: feature one', task['subject'])
+    self.assertEqual(None, task['reply_to'])
+    # TESTDATA.make_golden(task['html'], 'test_build_gate_email_tasks__resolution_due.html')
+    self.assertMultiLineEqual(
+      TESTDATA['test_build_gate_email_tasks__resolution_due.html'], task['html'])
+
+  def test_build_gate_email_tasks__resolution_overdue(self):
+    """Check the email sent when a a resolution is overdue."""
+    self.gate_1.assignee_emails = [
+        'b_assignee@example.com', 'a_assignee@example.com']
+    with test_app.app_context():
+      actual = self.handler.build_gate_email_tasks(
+        [self.gate_1],
+        {self.feature_1.key.integer_id(): self.feature_1},
+        True, False)
+
+    self.assertEqual(8, len(actual))
+    task = actual[0]
+    self.assertEqual('a_assignee@example.com', task['to'])
+    self.assertEqual('ESCALATED: Review due for: feature one', task['subject'])
+    self.assertEqual(None, task['reply_to'])
+    # TESTDATA.make_golden(task['html'], 'test_build_gate_email_tasks__resolution_overdue.html')
+    self.assertMultiLineEqual(
+      TESTDATA['test_build_gate_email_tasks__resolution_overdue.html'], task['html'])
