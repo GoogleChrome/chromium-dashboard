@@ -81,7 +81,7 @@ export const FORM_STYLES = [
     .fade-in {
       animation:fadeIn 0.5s linear;
     }
-    
+
     @keyframes fadeIn {
       0% {
         opacity:0
@@ -234,7 +234,7 @@ export const FORM_STYLES = [
     chromedash-form-field td.extrahelp {
       padding-left: 2em;
     }
-    chromedash-form-field .extrahelp > span {
+    chromedash-form-field .extrahelp > span, chromedash-form-field .webdx > span {
       margin: 0;
     }
 
