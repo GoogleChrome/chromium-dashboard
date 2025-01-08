@@ -583,7 +583,7 @@ class GateConvertersTest(testing_config.CustomTestCase):
       'slo_initial_response_remaining': -1,  # One weekday overdue.
       'slo_resolve': approval_defs.DEFAULT_SLO_RESOLVE_LIMIT,
       'slo_resolve_took': None,
-      'slo_resolve_remaining': 3,
+      'slo_resolve_remaining': None,
       'needs_work_started_on': None,
       }
     self.assertEqual(expected, actual)
