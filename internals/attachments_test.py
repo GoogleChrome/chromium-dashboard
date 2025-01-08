@@ -131,3 +131,33 @@ class AttachmentsTests(testing_config.CustomTestCase):
         actual,
         (f'https://img{digits}-dot-appid.appspot.com/'
          f'feature/{feature_id}/attachment/{attach_id}'))
+
+  def test_delete_orphan_attachments__none(self):
+    """When a feature has no attachments, we do nothing without crashing."""
+    attachments.delete_orphan_attachments(self.feature_id, '')
+
+  def test_delete_orphan_attachments__maintained(self):
+    """A feature has an attachment and the links field keeps it: it stays."""
+    feature_id = self.feature_id
+    stored = attachments.store_attachment(
+        feature_id, b'test content', 'text/plain')
+    with_link = attachments.get_attachment_url(stored)
+
+    attachments.delete_orphan_attachments(feature_id, with_link)
+
+    all_attach = attachments.Attachment.query().fetch()
+    self.assertEqual(len(all_attach), 1)
+    self.assertFalse(all_attach[0].is_deleted)
+
+  def test_delete_orphan_attachments__deleted(self):
+    """A feature has an attachment and the links field drops it: deleted."""
+    feature_id = self.feature_id
+    stored = attachments.store_attachment(
+        feature_id, b'test content', 'text/plain')
+    without_link = ''
+
+    attachments.delete_orphan_attachments(feature_id, without_link)
+
+    all_attach = attachments.Attachment.query().fetch()
+    self.assertEqual(len(all_attach), 1)
+    self.assertTrue(all_attach[0].is_deleted)
