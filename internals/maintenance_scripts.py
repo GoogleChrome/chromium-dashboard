@@ -758,7 +758,7 @@ class BackfillGateDates(FlaskHandler):
     for vote in Vote.query():
       votes_by_gate[vote.gate_id].append(vote)
     for gate in Gate.query():
-      gate_votes = votes_by_gate.get(gate.key.integer_id())
+      gate_votes = votes_by_gate.get(gate.key.integer_id()) or []
       if self.calc_dates(gate, gate_votes):
         batch.append(gate)
         count += 1
