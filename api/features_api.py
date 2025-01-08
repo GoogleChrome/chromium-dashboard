@@ -24,6 +24,7 @@ from framework import basehandlers
 from framework import permissions
 from framework import rediscache
 from framework import users
+from internals import attachments
 from internals.enterprise_helpers import *
 from internals.core_enums import *
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
@@ -251,6 +252,10 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
       feature.accurate_as_of = now
       feature.outstanding_notifications = 0
       has_updated = True
+
+    if 'screenshot_links' in feature_changes:
+      attachments.delete_orphan_attachments(
+          feature.key.integer_id(), feature_changes['screenshot_links'])
 
     # Set enterprise first notification milestones.
     if is_update_first_notification_milestone(feature, feature_changes):

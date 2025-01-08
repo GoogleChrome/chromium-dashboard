@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import testing_config  # Must be imported before the module under test.
+import re
 import flask
 import settings
 from datetime import datetime
@@ -629,6 +630,16 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     expected = {'message': expected_message}
     self.assertEqual(actual, expected)
 
+  def assert_equal_ignoring_ids(self, expected, actual):
+    """Compare two strings, but ignore differences in NDB keys."""
+    feature_re = re.compile(r'/feature/\d+')
+    gate_re = re.compile(r'\?gate=\d+')
+    expected = feature_re.sub(expected, '/feature/ID')
+    expected = gate_re.sub(expected, '?gate=ID')
+    actual = feature_re.sub(actual, '/feature/ID')
+    actual = gate_re.sub(actual, '?gate=ID')
+    self.assertMultiLineEqual(expected, actual)
+
   @mock.patch('internals.slo.now_utc')
   def test_get_template_data__old_reviews(self, mock_now_utc):
     """More time has passed.  We don't keep reminding."""
@@ -660,7 +671,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     self.assertEqual('Review due for: feature one', task['subject'])
     self.assertEqual(None, task['reply_to'])
     # TESTDATA.make_golden(task['html'], 'test_build_gate_email_tasks__initial_due.html')
-    self.assertMultiLineEqual(
+    self.assert_equal_ignoring_ids(
       TESTDATA['test_build_gate_email_tasks__initial_due.html'], task['html'])
 
   def test_build_gate_email_tasks__initial_overdue(self):
@@ -679,7 +690,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     self.assertEqual('ESCALATED: Review due for: feature one', task['subject'])
     self.assertEqual(None, task['reply_to'])
     # TESTDATA.make_golden(task['html'], 'test_build_gate_email_tasks__initial_overdue.html')
-    self.assertMultiLineEqual(
+    self.assert_equal_ignoring_ids(
       TESTDATA['test_build_gate_email_tasks__initial_overdue.html'], task['html'])
 
   def test_build_gate_email_tasks__resolution_due(self):
@@ -698,7 +709,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     self.assertEqual('Review due for: feature one', task['subject'])
     self.assertEqual(None, task['reply_to'])
     # TESTDATA.make_golden(task['html'], 'test_build_gate_email_tasks__resolution_due.html')
-    self.assertMultiLineEqual(
+    self.assert_equal_ignoring_ids(
       TESTDATA['test_build_gate_email_tasks__resolution_due.html'], task['html'])
 
   def test_build_gate_email_tasks__resolution_overdue(self):
@@ -717,5 +728,5 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     self.assertEqual('ESCALATED: Review due for: feature one', task['subject'])
     self.assertEqual(None, task['reply_to'])
     # TESTDATA.make_golden(task['html'], 'test_build_gate_email_tasks__resolution_overdue.html')
-    self.assertMultiLineEqual(
+    self.assert_equal_ignoring_ids(
       TESTDATA['test_build_gate_email_tasks__resolution_overdue.html'], task['html'])
