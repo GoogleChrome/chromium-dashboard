@@ -326,6 +326,9 @@ export async function enterFeatureGroup(page) {
   const featureGroupInput = featureGroupInputWrapper.locator('input');
   await featureGroupInput.fill('hwb');
   await delay(500);
+
+  // TODO(kyleju): assert that the link to webstatus.dev is present.
+  // It is missing in the current test setup.
 }
 
 /**

@@ -65,6 +65,22 @@ describe('chromedash-form-field', () => {
     assert.include(renderElement.innerHTML, 'class="extrahelp"');
   });
 
+  it('renders feature group field with a link', async () => {
+    const component = await fixture(
+      html` <chromedash-form-field name="web_feature" value="hwb">
+      </chromedash-form-field>`
+    );
+    assert.exists(component);
+    assert.instanceOf(component, ChromedashFormField);
+    const fieldRow = component.renderRoot.querySelector('tr');
+    assert.exists(fieldRow);
+
+    const renderElement = component.renderRoot as HTMLElement;
+    assert.include(renderElement.innerHTML, 'Feature Group');
+    assert.include(renderElement.innerHTML, 'input');
+    assert.include(renderElement.innerHTML, 'class="webdx"');
+  });
+
   it('renders a textarea type of field', async () => {
     const component = await fixture(
       html` <chromedash-form-field name="summary" value="">
