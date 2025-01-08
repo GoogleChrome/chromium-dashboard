@@ -757,3 +757,104 @@ class BackfillShippingYearTest(testing_config.CustomTestCase):
     actual = self.handler.calc_all_shipping_years()
     expected = {22222: 2023, 33333: 2024, 44444: 2030}
     self.assertEqual(expected, actual)
+
+
+class BackfillGateDatesTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.gate = Gate(
+        feature_id=1, stage_id=2,
+        gate_type=core_enums.GATE_API_EXTEND_ORIGIN_TRIAL,
+        state=Gate.PREPARING)
+    self.handler = maintenance_scripts.BackfillGateDates()
+
+  def test_calc_resolved_on__not_resolved(self):
+    """If a gate is not resolved, don't set a resolved_on date."""
+    self.assertIsNone(
+        self.handler.calc_resolved_on(self.gate, []))
+
+    self.gate.state = Vote.REVIEW_REQUESTED
+    self.assertIsNone(
+        self.handler.calc_resolved_on(self.gate, []))
+
+    self.gate.state = Vote.NA_REQUESTED
+    self.assertIsNone(
+        self.handler.calc_resolved_on(self.gate, []))
+
+    self.gate.state = Vote.REVIEW_STARTED
+    self.assertIsNone(
+        self.handler.calc_resolved_on(self.gate, []))
+
+    self.gate.state = Vote.NEEDS_WORK
+    self.assertIsNone(
+        self.handler.calc_resolved_on(self.gate, []))
+
+  def test_calc_resolved_on__resolved(self):
+    """If a gate was resolved, resolved_on is the last approval."""
+    self.gate.state = Vote.APPROVED
+    gate_id = 1234
+    v1 = Vote(gate_id=gate_id, set_by='feature_owner@example.com',
+              state=Vote.REVIEW_REQUESTED,
+              set_on=datetime(2023, 1, 1, 12, 30, 0))
+    v2 = Vote(gate_id=gate_id, set_by='reviewer_a@example.com',
+              state=Vote.REVIEW_STARTED,
+              set_on=datetime(2023, 1, 2, 12, 30, 0))
+    v3 = Vote(gate_id=gate_id, set_by='reviewer_b@example.com',
+              state=Vote.APPROVED,
+              set_on=datetime(2023, 1, 3, 12, 30, 0))
+    v4 = Vote(gate_id=gate_id, set_by='reviewer_c@example.com',
+              state=Vote.APPROVED,
+              set_on=datetime(2023, 1, 4, 12, 30, 0))
+    v5 = Vote(gate_id=gate_id, set_by='reviewer_d@example.com',
+              state=Vote.REVIEW_STARTED,
+              set_on=datetime(2023, 1, 5, 12, 30, 0))
+
+    self.assertEqual(
+        self.handler.calc_resolved_on(self.gate, [v1, v2, v3, v4, v5]),
+        v4.set_on)
+
+  def test_calc_needs_work_started_on__not_needed(self):
+    """If a gate is not NEEDS_WORK, don't set a needs_work_started_on date."""
+    self.assertIsNone(
+        self.handler.calc_needs_work_started_on(self.gate, []))
+
+    self.gate.state = Vote.REVIEW_REQUESTED
+    self.assertIsNone(
+        self.handler.calc_needs_work_started_on(self.gate, []))
+
+    self.gate.state = Vote.NA_REQUESTED
+    self.assertIsNone(
+        self.handler.calc_needs_work_started_on(self.gate, []))
+
+    self.gate.state = Vote.REVIEW_STARTED
+    self.assertIsNone(
+        self.handler.calc_needs_work_started_on(self.gate, []))
+
+    self.gate.state = Vote.APPROVED
+    self.assertIsNone(
+        self.handler.calc_needs_work_started_on(self.gate, []))
+
+  def test_calc_needs_work_started_on__needed(self):
+    """If a gate is NEEDS_WORK, it started on the last NEEDS_WORK vote."""
+    self.gate.state = Vote.NEEDS_WORK
+    gate_id = 1234
+    v1 = Vote(gate_id=gate_id, set_by='feature_owner@example.com',
+              state=Vote.REVIEW_REQUESTED,
+              set_on=datetime(2023, 1, 1, 12, 30, 0))
+    v2 = Vote(gate_id=gate_id, set_by='reviewer_a@example.com',
+              state=Vote.NEEDS_WORK,
+              set_on=datetime(2023, 1, 2, 12, 30, 0))
+    v3 = Vote(gate_id=gate_id, set_by='reviewer_b@example.com',
+              state=Vote.APPROVED,
+              set_on=datetime(2023, 1, 3, 12, 30, 0))
+    v4 = Vote(gate_id=gate_id, set_by='reviewer_c@example.com',
+              state=Vote.NEEDS_WORK,
+              set_on=datetime(2023, 1, 4, 12, 30, 0))
+    v5 = Vote(gate_id=gate_id, set_by='reviewer_d@example.com',
+              state=Vote.REVIEW_STARTED,
+              set_on=datetime(2023, 1, 5, 12, 30, 0))
+
+    self.assertEqual(
+        self.handler.calc_needs_work_started_on(
+            self.gate, [v1, v2, v3, v4, v5]),
+        v4.set_on)
