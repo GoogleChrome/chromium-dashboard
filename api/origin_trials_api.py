@@ -51,7 +51,7 @@ def get_chromium_file(url: str) -> str:
 def get_chromium_files_for_validation() -> dict:
   """Get all chromium file contents stored in a dictionary"""
   chromium_files = {}  # Chromium source file contents.
-  with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+  with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
     future_to_name = {executor.submit(get_chromium_file, f['url']): f['name']
                     for f in CHROMIUM_SRC_FILES}
     for future in concurrent.futures.as_completed(future_to_name):
