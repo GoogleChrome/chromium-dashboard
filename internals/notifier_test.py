@@ -209,7 +209,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     with test_app.app_context():
       body_html = notifier.format_email_body(
           'update-feature-email.html', self.template_fe, self.changes)
-    TESTDATA.make_golden(body_html, 'test_format_email_body__update_with_changes_and_note.html')
+    # TESTDATA.make_golden(body_html, 'test_format_email_body__update_with_changes_and_note.html')
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__update_with_changes_and_note.html'])
 
@@ -1314,7 +1314,7 @@ class OTActivationFailedHandlerTest(testing_config.CustomTestCase):
       handler = notifier.OTActivationFailedHandler()
       stage_dict = converters.stage_to_json_dict(self.ot_stage)
       email_task = handler.build_email(stage_dict)
-      TESTDATA.make_golden(email_task['html'], 'test_make_activation_failed_email.html')
+      # TESTDATA.make_golden(email_task['html'], 'test_make_activation_failed_email.html')
       self.assertEqual(
         email_task['subject'],
         'Automated trial activation request failed for Example Trial')
