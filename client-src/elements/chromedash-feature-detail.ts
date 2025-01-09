@@ -36,6 +36,9 @@ import {GateDict} from './chromedash-gate-chip';
 import {Process, ProgressItem} from './chromedash-gate-column';
 import {
   DEPRECATED_FIELDS,
+  GATE_ACTIVE_REVIEW_STATES,
+  GATE_FINISHED_REVIEW_STATES,
+  GATE_PREPARING,
   GATE_TEAM_ORDER,
   GATE_TYPES,
   STAGE_PSA_SHIPPING,
@@ -74,7 +77,7 @@ export const DETAILS_STYLES = [
 
 const LONG_TEXT = 60;
 
-class ChromedashFeatureDetail extends LitElement {
+export class ChromedashFeatureDetail extends LitElement {
   @property({type: String})
   appTitle = '';
   @property({attribute: false})
@@ -522,6 +525,19 @@ class ChromedashFeatureDetail extends LitElement {
     `;
   }
 
+  hasActiveGates(feStage) {
+    const gatesForStage = this.gates.filter(g => g.stage_id == feStage.id);
+    return gatesForStage.some(g => GATE_ACTIVE_REVIEW_STATES.includes(g.state));
+  }
+
+  hasMixedGates(feStage) {
+    const gatesForStage = this.gates.filter(g => g.stage_id == feStage.id);
+    return (
+      gatesForStage.some(g => GATE_FINISHED_REVIEW_STATES.includes(g.state)) &&
+      gatesForStage.some(g => GATE_PREPARING == g.state)
+    );
+  }
+
   renderGateChips(feStage) {
     const gatesForStage = this.gates.filter(g => g.stage_id == feStage.id);
     gatesForStage.sort(
@@ -646,7 +662,10 @@ class ChromedashFeatureDetail extends LitElement {
       </section>
     `;
     const defaultOpen =
-      this.feature.is_enterprise_feature || feStage.id == this.openStage;
+      this.feature.is_enterprise_feature ||
+      feStage.id == this.openStage ||
+      this.hasActiveGates(feStage) ||
+      this.hasMixedGates(feStage);
     return this.renderSection(name, content, isActive, defaultOpen);
   }
 

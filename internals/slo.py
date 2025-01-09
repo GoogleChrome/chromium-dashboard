@@ -145,19 +145,7 @@ def record_comment(
   return False
 
 
-def is_gate_overdue(gate, appr_fields, default_slo_limit) -> bool:
-  """Return True if a gate's review is overdue."""
-  if gate.requested_on is None or gate.responded_on is not None:
-    return False
-  appr_def = appr_fields.get(gate.gate_type)
-  slo_limit = (appr_def.slo_initial_response
-               if appr_def else default_slo_limit)
-  return remaining_days(gate.requested_on, slo_limit) < 0
-
-
-def get_overdue_gates(appr_fields, default_slo_limit) -> list[Gate]:
-  """Return a list of gates with overdue reviews."""
-  active_gates = Gate.query(Gate.state.IN(Gate.PENDING_STATES))
-  overdue_gates = [g for g in active_gates
-                   if is_gate_overdue(g, appr_fields, default_slo_limit)]
-  return overdue_gates
+def get_active_gates() -> list[Gate]:
+  """Return a list of gates with active reviews."""
+  active_gates = Gate.query(Gate.state.IN(Gate.PENDING_STATES)).fetch()
+  return active_gates

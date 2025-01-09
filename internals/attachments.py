@@ -137,6 +137,16 @@ def mark_attachment_deleted(attachment: Attachment) -> None:
   attachment.put()
 
 
+def delete_orphan_attachments(feature_id: int, new_value: str) -> None:
+  """Soft delete attachments on a feature that are no longer referenced."""
+  attachments = Attachment.query(
+      Attachment.feature_id == feature_id).fetch()
+  for a in attachments:
+    uri = 'feature/%r/attachment/%r' % (feature_id, a.key.integer_id())
+    if uri not in new_value:
+      mark_attachment_deleted(a)
+
+
 def get_thumbnail(attachment_id: int) -> Thumbnail|None:
   """Return a Thumbnail, if it exsits."""
   thumbnail = Thumbnail.query(
