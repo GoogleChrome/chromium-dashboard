@@ -840,21 +840,22 @@ class OTExtensionApprovedHandler(basehandlers.FlaskHandler):
   def process_post_data(self, **kwargs):
     self.require_task_header()
     feature = self.get_param('feature')
-    if feature is None:
-      self.abort(400, 'No feature provided.')
     gate_id = self.get_param('gate_id')
-    if gate_id is None:
-      self.abort(400, 'Extension gate ID not provided.')
     requester_email = self.get_param('requester_email')
-    if not requester_email:
-      self.abort(400, 'Extension requester\'s email address not provided.')
+    ot_display_name = self.get_param('ot_display_name')
     logging.info('Starting to notify about successful origin trial extension.')
-    send_emails([self.build_email(feature, requester_email, gate_id)])
+    send_emails([self.build_email(
+        feature, requester_email, gate_id,ot_display_name)])
 
     return {'message': 'OK'}
 
   def build_email(
-      self, feature: FeatureEntry, requester_email: str, gate_id: int):
+      self,
+      feature: FeatureEntry,
+      requester_email: str,
+      gate_id: int,
+      ot_display_name: str
+    ):
     body_data = {
       'feature': feature,
       'id': feature['id'],
@@ -866,8 +867,8 @@ class OTExtensionApprovedHandler(basehandlers.FlaskHandler):
     return {
       'to': requester_email,
       'cc': [OT_SUPPORT_EMAIL],
-      'subject': ('Origin trial extension approved and ready to be initiated: '
-                  f'{feature["name"]}'),
+      'subject': ('Origin trial extension approved and ready to be '
+                  f'initiated: {ot_display_name}'),
       'reply_to': None,
       'html': body,
     }

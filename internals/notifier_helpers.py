@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 from typing import TYPE_CHECKING
 import settings
 from api import converters
@@ -216,8 +217,19 @@ def send_trial_extension_approved_notification(
   if not stage.ot_owner_email:
     return
 
+  if stage.ot_stage_id is None:
+    logging.error(f'Extension stage {stage.key.integer_id()}'
+                  ' is not associated with any origin trial stage')
+    return
+  ot_stage: Stage|None = Stage.get_by_id(stage.ot_stage_id)
+  if ot_stage is None:
+    logging.error('No origin trial stage found for given OT stage ID',
+                  stage.ot_stage_id)
+    return
+
   params = {
     'feature': converters.feature_entry_to_json_verbose(fe),
+    'ot_display_name': ot_stage.ot_display_name,
     'requester_email': stage.ot_owner_email,
     'gate_id': gate_id,
   }

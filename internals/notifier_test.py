@@ -1124,7 +1124,8 @@ class OTExtensionApprovedHandlerTest(testing_config.CustomTestCase):
   def setUp(self):
     self.feature = FeatureEntry(
         id=1, name='A feature', summary='summary', category=1)
-    self.ot_stage = Stage(id=2, feature_id=1, stage_type=150)
+    self.ot_stage = Stage(id=2, feature_id=1, stage_type=150,
+                          ot_display_name='OT Display Name')
     self.extension_stage = Stage(
       feature_id=1, ot_stage_id=2, stage_type=151,
       milestones=MilestoneSet(desktop_last=106),
@@ -1150,12 +1151,13 @@ class OTExtensionApprovedHandlerTest(testing_config.CustomTestCase):
       handler = notifier.OTExtensionApprovedHandler()
       email_task = handler.build_email(feature_dict,
                                        self.extension_stage.ot_owner_email,
-                                       self.extension_gate.key.integer_id())
+                                       self.extension_gate.key.integer_id(),
+                                       self.ot_stage.ot_display_name)
       # TESTDATA.make_golden(email_task['html'], 'test_make_extension_approved_email.html')
       self.assertEqual(
           email_task['subject'],
           ('Origin trial extension approved and ready to be initiated: '
-           'A feature'))
+           'OT Display Name'))
       self.assertEqual(email_task['html'],
         TESTDATA['test_make_extension_approved_email.html'])
 
