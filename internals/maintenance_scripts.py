@@ -786,7 +786,7 @@ class BackfillGateDates(FlaskHandler):
     if gate.state not in Vote.FINAL_STATES:
       return None
     if gate.resolved_on:
-      return False
+      return None
 
     return max(v.set_on for v in votes
                if v.state in Vote.FINAL_STATES)
@@ -797,7 +797,7 @@ class BackfillGateDates(FlaskHandler):
     if gate.state != Vote.NEEDS_WORK:
       return None
     if gate.needs_work_started_on:
-      return False
+      return None
 
     return max(v.set_on for v in votes
                if v.state == Vote.NEEDS_WORK)
