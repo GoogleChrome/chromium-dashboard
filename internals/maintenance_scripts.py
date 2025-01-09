@@ -743,3 +743,61 @@ class BackfillShippingYear(FlaskHandler):
 
     ndb.put_multi(batch)
     return f'{count} Features entities updated.'
+
+
+class BackfillGateDates(FlaskHandler):
+
+  def get_template_data(self, **kwargs) -> str:
+    """Backfill resolved_on and needs_work_started_on for all Gates."""
+    self.require_cron_header()
+
+    count = 0
+    batch: list[Gate] = []
+    BATCH_SIZE = 100
+    votes_by_gate = collections.defaultdict(list)
+    for vote in Vote.query():
+      votes_by_gate[vote.gate_id].append(vote)
+    for gate in Gate.query():
+      gate_votes = votes_by_gate.get(gate.key.integer_id()) or []
+      if self.calc_dates(gate, gate_votes):
+        batch.append(gate)
+        count += 1
+        if len(batch) > BATCH_SIZE:
+          ndb.put_multi(batch)
+          batch = []
+
+    ndb.put_multi(batch)
+    return f'{count} Gate entities updated.'
+
+  def calc_dates(self, gate: Gate, votes: list[Vote]) -> bool:
+    """Set resolved_on and needs_work_started_on if needed."""
+    if not votes:
+      return False
+    new_resolved_on = self.calc_resolved_on(gate, votes)
+    new_needs_work_started_on = self.calc_needs_work_started_on(gate, votes)
+    if new_resolved_on is not None:
+      gate.resolved_on = new_resolved_on
+    if new_needs_work_started_on is not None:
+      gate.needs_work_started_on = new_needs_work_started_on
+    return bool(new_resolved_on or new_needs_work_started_on)
+
+  def calc_resolved_on(self, gate: Gate, votes: list[Vote]) -> datetime | None:
+    """Return the date on which the gate was resolved, or None."""
+    if gate.state not in Vote.FINAL_STATES:
+      return None
+    if gate.resolved_on:
+      return None
+
+    return max(v.set_on for v in votes
+               if v.state in Vote.FINAL_STATES)
+
+  def calc_needs_work_started_on(
+      self, gate: Gate, votes: list[Vote]) -> datetime | None:
+    """Return the latest date on which the gate entered NEEDS_WORK."""
+    if gate.state != Vote.NEEDS_WORK:
+      return None
+    if gate.needs_work_started_on:
+      return None
+
+    return max(v.set_on for v in votes
+               if v.state == Vote.NEEDS_WORK)

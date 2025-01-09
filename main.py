@@ -346,6 +346,8 @@ internals_routes: list[Route] = [
         maintenance_scripts.DeleteEmptyExtensionStages),
   Route('/scripts/backfill_shipping_year',
         maintenance_scripts.BackfillShippingYear),
+  Route('/scripts/backfill_gate_dates',
+        maintenance_scripts.BackfillGateDates),
 ]
 
 dev_routes: list[Route] = []

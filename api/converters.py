@@ -663,7 +663,7 @@ def gate_value_to_json_dict(gate: Gate) -> dict[str, Any]:
     if gate.resolved_on:
       slo_resolve_took = max(0, slo.weekdays_between(
           gate.requested_on, gate.resolved_on) - (gate.needs_work_elapsed or 0))
-    else:
+    elif gate.state != Vote.NEEDS_WORK and gate.state not in Gate.FINAL_STATES:
       slo_resolve_remaining = slo.remaining_days(
           gate.requested_on, slo_resolve) + (gate.needs_work_elapsed or 0)
 

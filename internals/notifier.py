@@ -454,7 +454,10 @@ class FeatureChangeHandler(basehandlers.FlaskHandler):
     # actually changes to it.
     # Load feature directly from NDB so as to never get a stale cached copy.
     fe = FeatureEntry.get_by_id(feature['id'])
-    if fe and (is_update and len(changes) or not is_update):
+    user = users.User(email=triggering_user_email)
+    can_view_feature = permissions.can_view_feature(user, fe)
+
+    if fe and (is_update and len(changes) or not is_update) and can_view_feature:
       email_tasks = make_feature_changes_email(
           fe, is_update=is_update, changes=changes,
           triggering_user_email=triggering_user_email)
