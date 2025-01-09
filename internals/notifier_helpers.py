@@ -212,15 +212,11 @@ def send_ot_creation_notification(stage: Stage):
 def send_trial_extension_approved_notification(
     fe: 'FeatureEntry', stage: Stage, gate_id: int) -> None:
   """Notify that a trial extension is ready to be finalized."""
-  # If we don't have an OT owner email, don't send the email out.
-  # This should always be set, and is collected during the extension request.
-  if not stage.ot_owner_email:
+  # If we don't have an OT owner email or stage ID, don't send the email out.
+  # These should always be set, and are collected during the extension request.
+  if not stage.ot_owner_email or not stage.ot_stage_id:
     return
 
-  if stage.ot_stage_id is None:
-    logging.error(f'Extension stage {stage.key.integer_id()}'
-                  ' is not associated with any origin trial stage')
-    return
   ot_stage: Stage|None = Stage.get_by_id(stage.ot_stage_id)
   if ot_stage is None:
     logging.error('No origin trial stage found for given OT stage ID',
