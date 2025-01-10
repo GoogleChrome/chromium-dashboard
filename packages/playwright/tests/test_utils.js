@@ -315,7 +315,7 @@ export async function enterBlinkComponent(page) {
  * @param {Page} page - The page object representing the web page.
  * @return {Promise<void>} A promise that resolves once the web feature id is entered.
  */
-export async function enterwebFeatureId(page) {
+export async function enterWebFeatureId(page) {
   const webFeatureIdInputWrapper = page.locator('data-testid=web_feature_wrapper');
   await expect(webFeatureIdInputWrapper).toBeVisible();
 
@@ -350,7 +350,7 @@ export async function createNewFeature(page) {
 
   await enterBlinkComponent(page);
 
-  await enterwebFeatureId(page);
+  await enterWebFeatureId(page);
 
   // Select feature type.
   const featureTypeRadioNew = page.locator('input[name="feature_type"][value="0"]');

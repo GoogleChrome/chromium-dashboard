@@ -2,7 +2,7 @@
 import { test, expect } from '@playwright/test';
 import {
   captureConsoleMessages, delay, login, logout,
-  gotoNewFeaturePage, enterBlinkComponent, createNewFeature, enterFeatureGroup
+  gotoNewFeaturePage, enterBlinkComponent, createNewFeature, enterWebFeatureId
 } from './test_utils';
 
 
@@ -109,9 +109,9 @@ test('enter web feature id', async ({ page }) => {
   await webFeatureIdField.scrollIntoViewIfNeeded();
   await expect(webFeatureIdField).toBeVisible();
 
-  await enterwebFeatureId(page);
+  await enterWebFeatureId(page);
 
-  await expect(page).toHaveScreenshot('feature-group.png');
+  await expect(page).toHaveScreenshot('feature-id.png');
 });
 
 
