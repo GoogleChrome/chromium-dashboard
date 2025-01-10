@@ -99,16 +99,21 @@ def format_email_body(
     prop_name = escape(prop['prop_name'])  # Ensure to escape
     new_val = prop['new_val']
     old_val = prop['old_val']
+    note = prop.get('note')
 
     # Escaping values before passing to highlight_diff
     highlighted_old_val = highlight_diff(old_val, new_val, 'deletion')
     highlighted_new_val = highlight_diff(old_val, new_val, 'addition')
 
+    note_line = f'<b>Note:</b> {note}<br/>' if note else ''
+
     # Using f-strings for clear formatting
     formatted_changes += (
         f'<li><b>{prop_name}:</b><br/>'
-        f'<b>old:</b> {highlighted_old_val}<br/>'
-        f'<b>new:</b> {highlighted_new_val}<br/></li><br/>')
+        f'<b>Old:</b> {highlighted_old_val}<br/>'
+        f'<b>New:</b> {highlighted_new_val}<br/>'
+        f'{note_line}'
+        f'</li><br/>')
 
   if not formatted_changes:
     formatted_changes = '<li>None</li>'
