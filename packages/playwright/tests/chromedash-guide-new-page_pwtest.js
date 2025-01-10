@@ -101,15 +101,15 @@ test('enter blink component', async ({ page }) => {
   await expect(page).toHaveScreenshot('blink-components.png');
 });
 
-test('enter feature group', async ({ page }) => {
+test('enter web feature id', async ({ page }) => {
   await gotoNewFeaturePage(page);
 
-  // Scroll to feature group field.
-  const featureGroupField = page.locator('chromedash-form-field[name=web_feature]');
-  await featureGroupField.scrollIntoViewIfNeeded();
-  await expect(featureGroupField).toBeVisible();
+  // Scroll to web feature id field.
+  const webFeatureIdField = page.locator('chromedash-form-field[name=web_feature]');
+  await webFeatureIdField.scrollIntoViewIfNeeded();
+  await expect(webFeatureIdField).toBeVisible();
 
-  await enterFeatureGroup(page);
+  await enterwebFeatureId(page);
 
   await expect(page).toHaveScreenshot('feature-group.png');
 });
