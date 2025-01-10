@@ -676,6 +676,35 @@ class OTActivatedHandler(basehandlers.FlaskHandler):
       'html': body,
     }
 
+
+class OTCreationApprovedHandler(basehandlers.FlaskHandler):
+  """Notify about an origin trial having received reviews and approvals and is
+  ready to request creation."""
+
+  IS_INTERNAL_HANDLER = True
+  EMAIL_TEMPLATE_PATH = 'origintrials/ot-creation-approved-email.html'
+
+  def process_post_data(self, **kwargs):
+    self.require_task_header()
+    feature = self.get_param('feature', required=True)
+    contacts = feature['owner_emails'] or []
+    
+    send_emails([self.build_email(contacts)])
+    return {'message': 'OK'}
+
+  def build_email(self, feature: dict[str, Any], contacts: list[str]) -> dict:
+    body_data = {
+      'chromestatus_url': f'https://chromestatus.com/feature/{feature["id"]}'
+    }
+    body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
+    return {
+      'to': contacts,
+      'subject': 'You can now submit your origin trial creation request',
+      'reply_to': None,
+      'html': body,
+    }
+
+
 class OTCreationProcessedHandler(basehandlers.FlaskHandler):
   """Notify about an origin trial creation request being processed,
   but activation is at a later date.

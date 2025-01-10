@@ -119,3 +119,69 @@ class ActivityTest(testing_config.CustomTestCase):
         self.feature_1, self.gate_1, 'abc@example.com', 'fake comments')
 
     mock_task_helpers.assert_called_once()
+
+
+class NotifierHelpersTest(testing_config.CustomTestCase):
+  def setUp(self):
+    self.feature_1 = FeatureEntry(
+        name='feature a', summary='sum', category=1,
+        owner_emails=['feature_owner@example.com',
+                      'feature_owner2@example.com'])
+    self.feature_1.put()
+
+    feature_id = self.feature_1.key.integer_id()
+    self.ot_stage = Stage(
+        id=123,
+        feature_id=feature_id,
+        stage_type=150)
+    self.extension_stage = Stage(
+        id=456,
+        feature_id=feature_id,
+        stage_type=151)
+    self.ot_stage.put()
+    self.extension_stage.put()
+    
+    self.gate_1 = Gate(id=123, feature_id=feature_id, stage_id=123,
+        gate_type=2, state=Vote.APPROVED)
+    self.gate_1.put()
+
+    self.gate_2 = Gate(id=123, feature_id=feature_id, stage_id=123,
+        gate_type=2, state=Vote.NA)
+    self.gate_2.put()
+
+    self.gate_3 = Gate(id=123, feature_id=feature_id, stage_id=456,
+        gate_type=3, state=Vote.APPROVED)
+    self.gate_3.put()
+
+  def tearDown(self):
+    for kind in [FeatureEntry, Stage, Gate]:
+      for entity in kind.query():
+        entity.key.delete()
+  
+  @mock.patch(
+      'internals.notifier_helpers.send_trial_creation_approved_notification')
+  def test_notify_approvals__creation(self, mock_sender):
+    """OT creation approval notification is sent when all gates are approved."""
+    notifier_helpers.notify_approvals(
+        self.feature_1, self.ot_stage,self.gate_1)
+    mock_sender.assert_called_once()
+
+  @mock.patch(
+      'internals.notifier_helpers.send_trial_creation_approved_notification')
+  def test_notify_approvals__creation_gates_unapproved(self, mock_sender):
+    """OT creation approval notification is only sent if all gates are
+    approved."""
+    # A separate gate related to the OT stage is not approved.
+    self.gate_2.state = Vote.DENIED
+    self.gate_2.put()
+    notifier_helpers.notify_approvals(
+        self.feature_1, self.ot_stage, self.gate_1)
+    mock_sender.assert_not_called()
+
+  @mock.patch(
+      'internals.notifier_helpers.send_trial_extension_approved_notification')
+  def test_notify_approvals__extension(self, mock_sender):
+    """OT extension approved notification sent when gate is approved."""
+    notifier_helpers.notify_approvals(
+        self.feature_1, self.extension_stage, self.gate_3)
+    mock_sender.assert_called_once()

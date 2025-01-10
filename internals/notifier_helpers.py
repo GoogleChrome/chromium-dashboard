@@ -208,6 +208,21 @@ def send_ot_creation_notification(stage: Stage):
       '/tasks/email-ot-creation-request',params)
 
 
+def notify_approvals(feature: 'FeatureEntry', stage: Stage, gate: Gate) -> None:
+  """Send notifications when important approvals have been obtained"""
+  if gate.gate_type == core_enums.GATE_API_EXTEND_ORIGIN_TRIAL:
+    send_trial_extension_approved_notification(
+        feature, stage, gate.key.integer_id())
+  if gate.gate_type == core_enums.GATE_API_ORIGIN_TRIAL:
+    # OT creation notifications should only be sent when all gates are
+    # approved or N/A.
+    all_ot_gates: list[Gate] = Gate.query(
+        Gate.stage_id == stage.key.integer_id()).fetch()
+    if all(g.state in (Vote.APPROVED, Vote.NA) for g in all_ot_gates): 
+      send_trial_creation_approved_notification(
+          feature, stage)
+
+
 def send_trial_extension_approved_notification(
     fe: 'FeatureEntry', stage: Stage, gate_id: int) -> None:
   """Notify that a trial extension is ready to be finalized."""
@@ -222,6 +237,15 @@ def send_trial_extension_approved_notification(
     'gate_id': gate_id,
   }
   cloud_tasks_helpers.enqueue_task('/tasks/email-ot-extension-approved', params)
+
+
+def send_trial_creation_approved_notification(
+    fe: 'FeatureEntry', stage: Stage) -> None:
+  """Notify that a trial extension is ready to be finalized."""
+  params = {
+    'feature': converters.feature_entry_to_json_verbose(fe),
+  }
+  cloud_tasks_helpers.enqueue_task('/tasks/email-ot-creation-approved', params)
 
 
 def send_trial_extended_notification(ot_stage: Stage, extension_stage: Stage):

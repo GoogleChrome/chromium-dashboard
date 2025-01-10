@@ -1198,6 +1198,31 @@ class OTActivatedHandlerTest(testing_config.CustomTestCase):
                        TESTDATA['test_make_activated_email.html'])
 
 
+class OTCreationApprovedHandlerTest(testing_config.CustomTestCase):
+  def setUp(self):
+    self.contacts = ['owner1@example.com',
+                     'contact1@example.com',
+                     'contact2@example.com']
+    self.feature_1 = FeatureEntry(
+        id=1, name='feature one', summary='sum', category=1, feature_type=0)
+    self.feature_1.put()
+
+  def tearDown(self):
+    self.feature_1.key.delete()
+
+  def test_make_creation_processed_email(self):
+    with test_app.app_context():
+      handler = notifier.OTCreationApprovedHandler()
+      fe_dict = converters.feature_entry_to_json_verbose(self.feature_1)
+      email_task = handler.build_email(fe_dict, self.contacts)
+      # TESTDATA.make_golden(email_task['html'], 'test_make_creation_approved_email.html')
+      self.assertEqual(
+        email_task['subject'],
+        'You can now submit your origin trial creation request')
+      self.assertEqual(email_task['html'],
+        TESTDATA['test_make_creation_approved_email.html'])
+
+
 class OTCreationProcessedHandlerTest(testing_config.CustomTestCase):
   def setUp(self):
     self.contacts = ['owner1@example.com',

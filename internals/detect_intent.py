@@ -376,10 +376,8 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
           gate.key.integer_id())
       recently_approved = (old_gate_state not in (Vote.APPROVED, Vote.NA) and
                            new_gate_state in (Vote.APPROVED, Vote.NA))
-      if (gate.gate_type == core_enums.GATE_API_EXTEND_ORIGIN_TRIAL and
-          recently_approved):
-        notifier_helpers.send_trial_extension_approved_notification(
-            feature, stage, gate.key.integer_id())
+      if recently_approved:
+        notifier_helpers.notify_approvals(feature, stage, gate)
 
     # Case 2: Create a review request and set gate state for any
     # discussion that does not already have any approval values

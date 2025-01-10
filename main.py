@@ -310,6 +310,8 @@ internals_routes: list[Route] = [
   Route('/tasks/email-ot-activation-failed',
         notifier.OTActivationFailedHandler),
   Route('/tasks/email-ot-creation-request', notifier.OTCreationRequestHandler),
+  Route('/tasks/email-ot-creation-approved',
+        notifier.OTCreationApprovedHandler),
   Route('/tasks/email-ot-extended', notifier.OTExtendedHandler),
   Route('/tasks/email-ot-extension-approved',
         notifier.OTExtensionApprovedHandler),
