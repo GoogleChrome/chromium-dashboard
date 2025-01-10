@@ -636,7 +636,8 @@ export class ChromedashFeatureDetail extends LitElement {
     const addExtensionButton = this.renderExtensionButton(feStage);
     const editButton = this.renderEditButton(feStage, processStage);
     const trialButton = this.renderOriginTrialButton(feStage);
-    const registrantsDashboardButton = this.renderRegistrantsDashboardButton(feStage);
+    const registrantsDashboardButton =
+      this.renderRegistrantsDashboardButton(feStage);
     const extensionGateChips = feStage.extensions?.map(extension => {
       return html` <div class="gates">
         ${STAGE_SHORT_NAMES[extension.stage_type]}:
@@ -836,17 +837,22 @@ export class ChromedashFeatureDetail extends LitElement {
 
   renderRegistrantsDashboardButton(feStage) {
     // Don't render an origin trial button if this is not an OT stage.
-    if (!STAGE_TYPES_ORIGIN_TRIAL.has(feStage.stage_type) || !feStage.origin_trial_id) {
+    if (
+      !STAGE_TYPES_ORIGIN_TRIAL.has(feStage.stage_type) ||
+      !feStage.origin_trial_id
+    ) {
       return nothing;
     }
     // Only Googlers will have access to this view.
-    if (!this.user || (
-        !this.user.email.endsWith('@chromium.org') && !this.user.email.endsWith('@google.com'))) {
+    if (
+      !this.user ||
+      (!this.user.email.endsWith('@chromium.org') &&
+        !this.user.email.endsWith('@google.com'))
+    ) {
       return nothing;
     }
 
-    return html`
-    <sl-button
+    return html` <sl-button
       size="small"
       style="float:right"
       href="http://go/ot-registrants-dashboard?f=trial_id:in:${feStage.origin_trial_id}"
