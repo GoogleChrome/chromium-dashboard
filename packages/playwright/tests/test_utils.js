@@ -360,11 +360,11 @@ export async function createNewFeature(page) {
   // Submit the form.
   const submitButton = page.locator('input[type="submit"]');
   await submitButton.click();
-  await delay(1000);
+  await delay(1500);
 
   // Wait until we are on the Feature page.
   await page.waitForURL('**/feature/*');
-  await delay(500);
+  await delay(1500);
 }
 
 export async function gotoNewFeatureList(page) {

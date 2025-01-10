@@ -198,6 +198,21 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__update_with_changes.html'])
 
+  def test_format_email_body__update_with_changes_and_note(self):
+    """Some property changes can include a note."""
+    self.changes.append({
+        'prop_name': 'Enterprise review status URL',
+        'old_val': 'review_started',
+        'new_val': 'needs_work',
+        'note': 'You need to press a button',
+        })
+    with test_app.app_context():
+      body_html = notifier.format_email_body(
+          'update-feature-email.html', self.template_fe, self.changes)
+    # TESTDATA.make_golden(body_html, 'test_format_email_body__update_with_changes_and_note.html')
+    self.assertEqual(body_html,
+      TESTDATA['test_format_email_body__update_with_changes_and_note.html'])
+
   def test_accumulate_reasons(self):
     """We can accumulate lists of reasons why we sent a message to a user."""
     addr_reasons = collections.defaultdict(list)
@@ -1299,7 +1314,7 @@ class OTActivationFailedHandlerTest(testing_config.CustomTestCase):
       handler = notifier.OTActivationFailedHandler()
       stage_dict = converters.stage_to_json_dict(self.ot_stage)
       email_task = handler.build_email(stage_dict)
-      TESTDATA.make_golden(email_task['html'], 'test_make_activation_failed_email.html')
+      # TESTDATA.make_golden(email_task['html'], 'test_make_activation_failed_email.html')
       self.assertEqual(
         email_task['subject'],
         'Automated trial activation request failed for Example Trial')

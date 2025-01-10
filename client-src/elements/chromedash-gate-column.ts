@@ -621,7 +621,11 @@ export class ChromedashGateColumn extends LitElement {
   renderSLOStatusSkeleton() {
     return html`
       <details>
-        <summary>Reviewer SLO status:</summary>
+        <summary>SLO initial response:</summary>
+        Loading...
+      </details>
+      <details>
+        <summary>SLO resolution:</summary>
         Loading...
       </details>
     `;
