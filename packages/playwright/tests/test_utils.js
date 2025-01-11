@@ -310,21 +310,21 @@ export async function enterBlinkComponent(page) {
 }
 
 /**
- * Enters a feature group on the page.
+ * Enters a web feature id on the page.
  *
  * @param {Page} page - The page object representing the web page.
- * @return {Promise<void>} A promise that resolves once the feature group is entered.
+ * @return {Promise<void>} A promise that resolves once the web feature id is entered.
  */
-export async function enterFeatureGroup(page) {
-  const featureGroupInputWrapper = page.locator('data-testid=web_feature_wrapper');
-  await expect(featureGroupInputWrapper).toBeVisible();
+export async function enterWebFeatureId(page) {
+  const webFeatureIdInputWrapper = page.locator('data-testid=web_feature_wrapper');
+  await expect(webFeatureIdInputWrapper).toBeVisible();
 
   // Trying to show options, doesn't work yet.
-  await featureGroupInputWrapper.focus();
+  await webFeatureIdInputWrapper.focus();
   await delay(500);
 
-  const featureGroupInput = featureGroupInputWrapper.locator('input');
-  await featureGroupInput.fill('hwb');
+  const webFeatureIdInput = webFeatureIdInputWrapper.locator('input');
+  await webFeatureIdInput.fill('hwb');
   await delay(500);
 
   // TODO(kyleju): assert that the link to webstatus.dev is present.
@@ -350,7 +350,7 @@ export async function createNewFeature(page) {
 
   await enterBlinkComponent(page);
 
-  await enterFeatureGroup(page);
+  await enterWebFeatureId(page);
 
   // Select feature type.
   const featureTypeRadioNew = page.locator('input[name="feature_type"][value="0"]');
