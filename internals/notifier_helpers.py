@@ -144,6 +144,10 @@ def notify_subscribers_of_vote_changes(fe: 'FeatureEntry', gate: Gate,
       'old_val': old_state_name,
       'new_val': state_name,
   }
+  if new_state == Vote.NEEDS_WORK:
+    changed_props['note'] = (
+        'Feature owners must press the "Re-request review" button '
+        'after requested changes have been completed.')
 
   params = {
     'changes': [changed_props],

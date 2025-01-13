@@ -13,6 +13,7 @@
 # limitations under the License.
 from unittest import mock
 
+from api import converters
 from internals import notifier_helpers
 import testing_config  # Must be imported before the module under test.
 from internals.core_models import FeatureEntry, Stage, MilestoneSet
@@ -112,6 +113,28 @@ class ActivityTest(testing_config.CustomTestCase):
     self.assertEqual(amendments[0].new_value, 'denied')
 
     mock_task_helpers.assert_called_once()
+
+  @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
+  def test_vote_changes_activities__needs_work_note(self, mock_task_helpers):
+    """When we notify about NEEDS_WORK, it has a process note."""
+    notifier_helpers.notify_subscribers_of_vote_changes(
+        self.feature_1, self.gate_1, 'abc@example.com',
+        Vote.NEEDS_WORK, Vote.NA)
+
+    prop_change = {
+        'prop_name': 'API Owners review status http://127.0.0.1:7777/feature/2925?gate=123',
+        'old_val': 'na',
+        'new_val': 'needs_work',
+        'note': 'Feature owners must press the "Re-request review" button after requested changes have been completed.',
+        }
+    expected_params = {
+        'changes': [prop_change],
+        'is_update': True,
+        'triggering_user_email': 'abc@example.com',
+        'feature': converters.feature_entry_to_json_verbose(self.feature_1),
+        }
+    mock_task_helpers.assert_called_once_with(
+        '/tasks/email-subscribers', expected_params)
 
   @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
   def test_notify_subscribers_of_new_comments(self, mock_task_helpers):
