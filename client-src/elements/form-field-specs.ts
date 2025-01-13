@@ -1461,7 +1461,12 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: false,
     label: 'Origin trial contacts',
     help_text: html` List any other individuals or groups to include on the
-      contact list (e.g. for reminders on trial milestones).
+      contact list (e.g. for reminders on trial milestones). Mailing list emails
+      can be used here, but only email addresses of individuals will receive
+      access to view registrant data on
+      <a target="_blank" href="http://go/ot-registrants-dashboard"
+        >go/ot-registrants-dashboard</a
+      >.
       <p>
         <strong>
           Please prefer using "@google.com" domain email addresses for any
