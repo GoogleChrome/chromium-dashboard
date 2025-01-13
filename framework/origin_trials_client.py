@@ -28,6 +28,9 @@ from internals.data_types import OriginTrialInfo
 import settings
 
 
+class UseCounterConfig(TypedDict):
+  bucket_number: int
+
 class RequestTrial(TypedDict):
   id: NotRequired[int]
   display_name: str
@@ -42,6 +45,8 @@ class RequestTrial(TypedDict):
   allow_third_party_origins: bool
   type: str
   origin_trial_feature_name: NotRequired[str]
+  blink_use_counter_config: NotRequired[UseCounterConfig]
+  blink_webdx_use_counter_config: NotRequired[UseCounterConfig]
 
 
 class InternalRegistrationConfig(TypedDict):
@@ -178,6 +183,13 @@ def _send_create_trial_request(
     json['trial']['origin_trial_feature_name'] = ot_stage.ot_chromium_trial_name
   if ot_stage.ot_is_deprecation_trial:
     json['registration_config']['allow_public_suffix_subdomains'] = True
+  if ot_stage.ot_use_counter_bucket_number:
+    config: UseCounterConfig = {'bucket_number': ot_stage.ot_use_counter_bucket_number}
+    if (ot_stage.ot_chromium_trial_name
+        and ot_stage.ot_chromium_trial_name.startswith('WebDXFeature::')):
+      json['trial']['blink_webdx_use_counter_config'] = config
+    else:
+      json['trial']['blink_use_counter_config'] = config
 
   headers = {'Authorization': f'Bearer {access_token}'}
   url = f'{settings.OT_API_URL}/v1/trials:initialize'

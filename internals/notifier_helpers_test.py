@@ -24,7 +24,7 @@ class ActivityTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = FeatureEntry(
-        name='feature a', summary='sum', category=1,
+        id=111, name='feature a', summary='sum', category=1,
         owner_emails=['feature_owner@example.com'])
     self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()
@@ -122,7 +122,7 @@ class ActivityTest(testing_config.CustomTestCase):
         Vote.NEEDS_WORK, Vote.NA)
 
     prop_change = {
-        'prop_name': 'API Owners review status http://127.0.0.1:7777/feature/2925?gate=123',
+        'prop_name': 'API Owners review status http://127.0.0.1:7777/feature/111?gate=123',
         'old_val': 'na',
         'new_val': 'needs_work',
         'note': 'Feature owners must press the "Re-request review" button after requested changes have been completed.',
