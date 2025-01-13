@@ -836,9 +836,11 @@ export class ChromedashFeatureDetail extends LitElement {
   }
 
   renderRegistrantsDashboardButton(feStage) {
-    // Don't render an origin trial button if this is not an OT stage.
+    // Registrants dashboard button is available on created OT stages,
+    // only to Google/Chromium users with edit access to the feature.
     if (
       !STAGE_TYPES_ORIGIN_TRIAL.has(feStage.stage_type) ||
+      !this.canEdit ||
       !feStage.origin_trial_id
     ) {
       return nothing;
