@@ -845,7 +845,7 @@ class OTExtensionApprovedHandler(basehandlers.FlaskHandler):
     ot_display_name = self.get_param('ot_display_name')
     logging.info('Starting to notify about successful origin trial extension.')
     send_emails([self.build_email(
-        feature, requester_email, gate_id,ot_display_name)])
+        feature, requester_email, gate_id, ot_display_name)])
 
     return {'message': 'OK'}
 
