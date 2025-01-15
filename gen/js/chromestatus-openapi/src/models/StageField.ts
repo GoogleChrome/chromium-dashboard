@@ -145,6 +145,12 @@ export interface StageField {
      * @type {FieldInfo}
      * @memberof StageField
      */
+    ot_creation__bypass_file_checks?: FieldInfo;
+    /**
+     * 
+     * @type {FieldInfo}
+     * @memberof StageField
+     */
     ot_documentation_url?: FieldInfo;
     /**
      * 
@@ -268,6 +274,7 @@ export function StageFieldFromJSONTyped(json: any, ignoreDiscriminator: boolean)
         'ot_chromium_trial_name': json['ot_chromium_trial_name'] == null ? undefined : FieldInfoFromJSON(json['ot_chromium_trial_name']),
         'ot_display_name': json['ot_display_name'] == null ? undefined : FieldInfoFromJSON(json['ot_display_name']),
         'ot_action_requested': json['ot_action_requested'] == null ? undefined : FieldInfoFromJSON(json['ot_action_requested']),
+        'ot_creation__bypass_file_checks': json['ot_creation__bypass_file_checks'] == null ? undefined : FieldInfoFromJSON(json['ot_creation__bypass_file_checks']),
         'ot_documentation_url': json['ot_documentation_url'] == null ? undefined : FieldInfoFromJSON(json['ot_documentation_url']),
         'ot_emails': json['ot_emails'] == null ? undefined : FieldInfoFromJSON(json['ot_emails']),
         'ot_feedback_submission_url': json['ot_feedback_submission_url'] == null ? undefined : FieldInfoFromJSON(json['ot_feedback_submission_url']),
@@ -311,6 +318,7 @@ export function StageFieldToJSON(value?: StageField | null): any {
         'ot_chromium_trial_name': FieldInfoToJSON(value['ot_chromium_trial_name']),
         'ot_display_name': FieldInfoToJSON(value['ot_display_name']),
         'ot_action_requested': FieldInfoToJSON(value['ot_action_requested']),
+        'ot_creation__bypass_file_checks': FieldInfoToJSON(value['ot_creation__bypass_file_checks']),
         'ot_documentation_url': FieldInfoToJSON(value['ot_documentation_url']),
         'ot_emails': FieldInfoToJSON(value['ot_emails']),
         'ot_feedback_submission_url': FieldInfoToJSON(value['ot_feedback_submission_url']),

@@ -404,6 +404,7 @@ export const STAGE_SPECIFIC_FIELDS = new Set<string>([
   'ot_request_note',
   'ot_webfeature_use_counter',
   'ot_documentation_url',
+  'ot_creation__bypass_file_checks',
   'ot_creation__ot_documentation_url',
   'ot_is_deprecation_trial',
   'ot_has_third_party_support',

@@ -1651,6 +1651,15 @@ export const ALL_FIELDS: Record<string, Field> = {
       checkMilestoneRanges([OT_MILESTONE_DESKTOP_RANGE], getFieldValue),
   },
 
+  ot_creation__bypass_file_checks: {
+    type: 'checkbox',
+    initial: false,
+    label: 'Bypass Chromium file checks (staging testing)',
+    help_text: html`This option should only be visible in ChromeStatus staging
+    environments. Allow this form to be submitted without verifying Chromium
+    code has landed.`,
+  },
+
   anticipated_spec_changes: {
     type: 'textarea',
     attrs: {rows: 4},
