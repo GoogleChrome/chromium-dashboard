@@ -627,7 +627,9 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: false,
     label: 'Screenshot link(s)',
     help_text: html` Optional: Links to screenshots showcasing this feature (one
-    URL per line). Use the upload button to upload an image to be served from
+    URL per line). Be sure to link directly to the image with a URL ending in
+    .png, .gif, or .jpg, rather than linking to an HTML page that contains the
+    image.  Or, use the upload button to upload an image to be served from
     chromestatus.com. These will be shared publicly.`,
   },
 
