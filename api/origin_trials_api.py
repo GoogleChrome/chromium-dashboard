@@ -67,8 +67,9 @@ def get_chromium_files_for_validation() -> dict:
 def find_use_counter_value(
     body: dict, chromium_files_dict: dict) -> int | None:
   """Find where the use counter is defined and return its value."""
-  # Chromium file checks can be bypassed, but only in staging environments.
-  if not settings.PROD and body['ot_creation__bypass_file_checks']:
+  # Chromium file checks can be bypassed, but only in non-prod environments.
+  if (not settings.PROD and
+      body.get('ot_creation__bypass_file_checks', {}).get('value', False)):
     return 0
   use_counter_name = body.get(
       'ot_webfeature_use_counter', {}).get('value')
