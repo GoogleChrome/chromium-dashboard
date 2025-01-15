@@ -506,8 +506,9 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     with test_app.app_context():
       actual = self.handler.get_template_data()
 
-    expected_message = (f'6 email(s) sent or logged.\n'
+    expected_message = (f'7 email(s) sent or logged.\n'
                         'Recipients:\n'
+                        'aaudi@google.com\n'
                         'angelaweber@google.com\n'
                         'davidayad@google.com\n'
                         'mhoste@google.com\n'
@@ -549,8 +550,9 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     with test_app.app_context():
       actual = self.handler.get_template_data()
 
-    expected_message = (f'6 email(s) sent or logged.\n'
+    expected_message = (f'7 email(s) sent or logged.\n'
                         'Recipients:\n'
+                        'aaudi@google.com\n'
                         'angelaweber@google.com\n'
                         'davidayad@google.com\n'
                         'mhoste@google.com\n'
@@ -573,9 +575,10 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     with test_app.app_context():
       actual = self.handler.get_template_data()
 
-    expected_message = (f'7 email(s) sent or logged.\n'
+    expected_message = (f'8 email(s) sent or logged.\n'
                         'Recipients:\n'
                         'a_assignee@example.com\n'
+                        'aaudi@google.com\n'
                         'angelaweber@google.com\n'
                         'davidayad@google.com\n'
                         'mhoste@google.com\n'
@@ -596,8 +599,9 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     with test_app.app_context():
       actual = self.handler.get_template_data()
 
-    expected_message = (f'6 email(s) sent or logged.\n'
+    expected_message = (f'7 email(s) sent or logged.\n'
                         'Recipients:\n'
+                        'aaudi@google.com\n'
                         'angelaweber@google.com\n'
                         'davidayad@google.com\n'
                         'mhoste@google.com\n'
@@ -619,8 +623,9 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     with test_app.app_context():
       actual = self.handler.get_template_data()
 
-    expected_message = (f'6 email(s) sent or logged.\n'
+    expected_message = (f'7 email(s) sent or logged.\n'
                         'Recipients:\n'
+                        'aaudi@google.com\n'
                         'angelaweber@google.com\n'
                         'davidayad@google.com\n'
                         'mhoste@google.com\n'
@@ -684,7 +689,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
         {self.feature_1.key.integer_id(): self.feature_1},
         True, True)
 
-    self.assertEqual(8, len(actual))
+    self.assertEqual(9, len(actual))
     task = actual[0]
     self.assertEqual('a_assignee@example.com', task['to'])
     self.assertEqual('ESCALATED: Review due for: feature one', task['subject'])
@@ -722,7 +727,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
         {self.feature_1.key.integer_id(): self.feature_1},
         True, False)
 
-    self.assertEqual(8, len(actual))
+    self.assertEqual(9, len(actual))
     task = actual[0]
     self.assertEqual('a_assignee@example.com', task['to'])
     self.assertEqual('ESCALATED: Review due for: feature one', task['subject'])
