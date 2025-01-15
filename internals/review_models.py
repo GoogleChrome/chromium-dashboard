@@ -22,6 +22,7 @@ import logging
 from typing import Optional
 from google.cloud import ndb  # type: ignore
 
+
 class OwnersFile(ndb.Model):
   """Describes the properties to store raw API_OWNERS content."""
   url = ndb.StringProperty(required=True)
@@ -152,6 +153,25 @@ class Vote(ndb.Model):
   # Note: set_vote() moved to approval_defs.py
 
 
+class SurveyAnswers(ndb.Model):
+  """Surveys allow for self-certification of some gates."""
+
+  # Security team questions.
+  is_language_polyfill = ndb.BooleanProperty(default=False)
+  is_api_polyfill = ndb.BooleanProperty(default=False)
+  is_same_origin_css = ndb.BooleanProperty(default=False)
+
+  # Potentially used by several teams.
+  launch_or_contact = ndb.StringProperty()  # URL or email for more info.
+
+  def is_security_eligible(self):
+    """Return True if the feature owner can self-certify."""
+    return (
+        self.is_language_polyfill or
+        self.is_api_polyfill or
+        self.is_same_origin_css)
+
+
 class Gate(ndb.Model):
   """Gates regulate the completion of a stage."""
 
@@ -182,6 +202,8 @@ class Gate(ndb.Model):
   assignee_emails = ndb.StringProperty(repeated=True)
   next_action = ndb.DateProperty()
   additional_review = ndb.BooleanProperty(default=False)
+
+  survey = ndb.StructuredProperty(SurveyAnswers)
 
   def is_resolved(self) -> bool:
     """Return if the Gate's outcome has been decided."""
