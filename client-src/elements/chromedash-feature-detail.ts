@@ -35,7 +35,6 @@ import './chromedash-gate-chip';
 import {GateDict} from './chromedash-gate-chip';
 import {Process, ProgressItem} from './chromedash-gate-column';
 import {
-  DEPRECATED_FIELDS,
   GATE_ACTIVE_REVIEW_STATES,
   GATE_FINISHED_REVIEW_STATES,
   GATE_PREPARING,
@@ -387,11 +386,10 @@ export class ChromedashFeatureDetail extends LitElement {
   }
 
   renderField(fieldDef, feStage) {
-    const [fieldId, fieldDisplayName, fieldType] = fieldDef;
+    const [fieldId, fieldDisplayName, fieldType, deprecated] = fieldDef;
     const value = getFieldValueFromFeature(fieldId, feStage, this.feature);
     const isDefined = isDefinedValue(value);
-    const isDeprecatedField = DEPRECATED_FIELDS.has(fieldId);
-    if (!isDefined && isDeprecatedField) {
+    if (!isDefined && deprecated) {
       return nothing;
     }
 

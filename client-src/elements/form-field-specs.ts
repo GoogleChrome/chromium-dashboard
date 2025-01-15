@@ -88,6 +88,7 @@ interface ResolvedField {
   >;
   displayLabel?: string;
   disabled?: boolean;
+  deprecated?: boolean;
 }
 
 interface Field extends ResolvedField {
@@ -1269,6 +1270,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     label: 'Experiment Timeline',
     help_text: html` When does the experiment start and expire? Deprecated:
     Please use the numeric fields above instead.`,
+    deprecated: true,
   },
 
   ot_milestone_desktop_start: {
@@ -1684,6 +1686,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     label: 'Intent to Experiment LGTM by',
     help_text: html` Full email address of API owner who LGTM'd the Intent to
     Experiment email thread.`,
+    deprecated: true,
   },
 
   i2s_lgtms: {
@@ -1699,6 +1702,7 @@ export const ALL_FIELDS: Record<string, Field> = {
       Comma separated list of email addresses of API owners who LGTM'd the
       Intent to Ship email thread.
     `,
+    deprecated: true,
   },
 
   r4dt_lgtms: {
@@ -1714,6 +1718,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     label: 'Request for Deprecation Trial LGTM by',
     help_text: html` Full email addresses of API owners who LGTM'd the Request
     for Deprecation Trial email thread.`,
+    deprecated: true,
   },
 
   debuggability: {
@@ -2076,6 +2081,8 @@ export const ALL_FIELDS: Record<string, Field> = {
     label: 'Enterprise policies',
     help_text: html` List the policies that are being introduced, removed, or
     can be used to control the feature at this stage, if any.`,
+    disabled: true,
+    deprecated: true,
   },
 
   enterprise_feature_categories: {
@@ -2195,7 +2202,8 @@ function makeDisplaySpec(fieldName: string) {
   const displayName =
     fieldProps.label || fieldProps.displayLabel || makeHumanReadable(fieldName);
   const fieldType = categorizeFieldType(fieldProps);
-  return [fieldName, displayName, fieldType];
+  const deprecated = fieldProps.deprecated;
+  return [fieldName, displayName, fieldType, deprecated];
 }
 
 export function makeDisplaySpecs(fieldNames: string[]) {

@@ -463,14 +463,6 @@ export const STAGE_FIELD_NAME_MAPPING: Record<string, string> = {
   r4dt_url: 'intent_thread_url',
 };
 
-export const DEPRECATED_FIELDS = new Set<string>([
-  'experiment_timeline',
-  'i2e_lgtms',
-  'i2s_lgtms',
-  'r4dt_lgtms',
-  'standardization',
-]);
-
 export const GATE_TYPES: Record<string, number> = {
   API_PROTOTYPE: 1,
   API_ORIGIN_TRIAL: 2,
