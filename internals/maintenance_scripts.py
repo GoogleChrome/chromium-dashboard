@@ -801,3 +801,37 @@ class BackfillGateDates(FlaskHandler):
 
     return max(v.set_on for v in votes
                if v.state == Vote.NEEDS_WORK)
+
+
+class SendManualOTCreatedEmail(FlaskHandler):
+  """Manually send an email to origin trial contacts that an origin trial has
+  been created but not yet activated."""
+  def get_template_data(self):
+    self.require_cron_header()
+
+    stage_id = self.get_param('stage_id')
+    stage: Stage|None = Stage.get_by_id(stage_id)
+    if not stage:
+      self.abort(400, f'Stage {stage_id} not found')
+
+    cloud_tasks_helpers.enqueue_task(
+        '/tasks/email-ot-creation-processed',
+        {'stage': converters.stage_to_json_dict(stage)})
+    return 'Email task enqueued.'
+
+
+class SendManualOTActivatedEmail(FlaskHandler):
+  """Manually send an email to origin trial contacts that an origin trial has
+  been created and also activated."""
+  def get_template_data(self):
+    self.require_cron_header()
+
+    stage_id = self.get_param('stage_id')
+    stage: Stage|None = Stage.get_by_id(stage_id)
+    if not stage:
+      self.abort(400, f'Stage {stage_id} not found')
+
+    cloud_tasks_helpers.enqueue_task(
+        '/tasks/email-ot-activated',
+        {'stage': converters.stage_to_json_dict(stage)})
+    return 'Email task enqueued.'
