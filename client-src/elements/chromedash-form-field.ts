@@ -415,6 +415,9 @@ export class ChromedashFormField extends LitElement {
   }
 
   render() {
+    if (this.fieldProps.deprecated && !this.value) {
+      return nothing;
+    }
     const helpText =
       this.forEnterprise && this.fieldProps.enterprise_help_text !== undefined
         ? this.fieldProps.enterprise_help_text
