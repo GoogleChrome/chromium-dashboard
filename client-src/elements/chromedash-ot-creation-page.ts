@@ -199,8 +199,8 @@ export class ChromedashOTCreationPage extends LitElement {
     );
   }
 
-  addHiddenFields() {
-    // Add a field for updating that an OT creation request has been submitted.
+  addAdditionalFields() {
+    // Add a hidden field for updating that an OT creation request has been submitted.
     this.fieldValues.push({
       name: 'ot_action_requested',
       touched: true,
@@ -208,6 +208,20 @@ export class ChromedashOTCreationPage extends LitElement {
       stageId: this.stage.id,
       alwaysHidden: true,
     });
+
+    // For non-prod environments, add a checkbox to bypass the checks ensuring
+    // that all values exist in Chromium files.
+    // TODO(DanielRyanSmith): Identify non-prod environments using a flag rather
+    // than the app's title.
+    if (this.appTitle !== 'Chrome Platform Status') {
+      this.fieldValues.push({
+        name: 'ot_creation__bypass_file_checks',
+        touched: true,
+        value: false,
+        stageId: this.stage.id,
+        alwaysHidden: false,
+      });
+    }
   }
 
   // Create the array that tracks the value of fields.
@@ -236,7 +250,7 @@ export class ChromedashOTCreationPage extends LitElement {
       };
     });
     this.addOptionalApprovalsFields();
-    this.addHiddenFields();
+    this.addAdditionalFields();
   }
 
   disconnectedCallback() {

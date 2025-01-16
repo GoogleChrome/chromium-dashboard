@@ -1402,6 +1402,8 @@ components:
           $ref: '#/components/schemas/FieldInfo'
         ot_action_requested:
           $ref: '#/components/schemas/FieldInfo'
+        ot_creation__bypass_file_checks:
+          $ref: '#/components/schemas/FieldInfo'
         ot_documentation_url:
           $ref: '#/components/schemas/FieldInfo'
         ot_emails:

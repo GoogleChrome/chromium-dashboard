@@ -14,7 +14,7 @@ class StageField(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, announcement_url=None, browser=None, ot_description=None, display_name=None, enterprise_policies=None, finch_url=None, experiment_goals=None, experiment_risks=None, experiment_extension_reason=None, intent_thread_url=None, origin_trial_feedback_url=None, origin_trial_id=None, ot_approval_buganizer_component=None, ot_approval_buganizer_custom_field_id=None, ot_approval_criteria_url=None, ot_approval_group_email=None, ot_chromium_trial_name=None, ot_display_name=None, ot_action_requested=None, ot_documentation_url=None, ot_emails=None, ot_feedback_submission_url=None, ot_has_third_party_support=None, ot_is_critical_trial=None, ot_is_deprecation_trial=None, ot_owner_email=None, ot_request_note=None, ot_require_approvals=None, ot_stage_id=None, ot_webfeature_use_counter=None, rollout_impact=None, rollout_milestone=None, rollout_platforms=None, rollout_details=None):  # noqa: E501
+    def __init__(self, announcement_url=None, browser=None, ot_description=None, display_name=None, enterprise_policies=None, finch_url=None, experiment_goals=None, experiment_risks=None, experiment_extension_reason=None, intent_thread_url=None, origin_trial_feedback_url=None, origin_trial_id=None, ot_approval_buganizer_component=None, ot_approval_buganizer_custom_field_id=None, ot_approval_criteria_url=None, ot_approval_group_email=None, ot_chromium_trial_name=None, ot_display_name=None, ot_action_requested=None, ot_creation__bypass_file_checks=None, ot_documentation_url=None, ot_emails=None, ot_feedback_submission_url=None, ot_has_third_party_support=None, ot_is_critical_trial=None, ot_is_deprecation_trial=None, ot_owner_email=None, ot_request_note=None, ot_require_approvals=None, ot_stage_id=None, ot_webfeature_use_counter=None, rollout_impact=None, rollout_milestone=None, rollout_platforms=None, rollout_details=None):  # noqa: E501
         """StageField - a model defined in OpenAPI
 
         :param announcement_url: The announcement_url of this StageField.  # noqa: E501
@@ -55,6 +55,8 @@ class StageField(Model):
         :type ot_display_name: FieldInfo
         :param ot_action_requested: The ot_action_requested of this StageField.  # noqa: E501
         :type ot_action_requested: FieldInfo
+        :param ot_creation__bypass_file_checks: The ot_creation__bypass_file_checks of this StageField.  # noqa: E501
+        :type ot_creation__bypass_file_checks: FieldInfo
         :param ot_documentation_url: The ot_documentation_url of this StageField.  # noqa: E501
         :type ot_documentation_url: FieldInfo
         :param ot_emails: The ot_emails of this StageField.  # noqa: E501
@@ -106,6 +108,7 @@ class StageField(Model):
             'ot_chromium_trial_name': FieldInfo,
             'ot_display_name': FieldInfo,
             'ot_action_requested': FieldInfo,
+            'ot_creation__bypass_file_checks': FieldInfo,
             'ot_documentation_url': FieldInfo,
             'ot_emails': FieldInfo,
             'ot_feedback_submission_url': FieldInfo,
@@ -143,6 +146,7 @@ class StageField(Model):
             'ot_chromium_trial_name': 'ot_chromium_trial_name',
             'ot_display_name': 'ot_display_name',
             'ot_action_requested': 'ot_action_requested',
+            'ot_creation__bypass_file_checks': 'ot_creation__bypass_file_checks',
             'ot_documentation_url': 'ot_documentation_url',
             'ot_emails': 'ot_emails',
             'ot_feedback_submission_url': 'ot_feedback_submission_url',
@@ -179,6 +183,7 @@ class StageField(Model):
         self._ot_chromium_trial_name = ot_chromium_trial_name
         self._ot_display_name = ot_display_name
         self._ot_action_requested = ot_action_requested
+        self._ot_creation__bypass_file_checks = ot_creation__bypass_file_checks
         self._ot_documentation_url = ot_documentation_url
         self._ot_emails = ot_emails
         self._ot_feedback_submission_url = ot_feedback_submission_url
@@ -604,6 +609,27 @@ class StageField(Model):
         """
 
         self._ot_action_requested = ot_action_requested
+
+    @property
+    def ot_creation__bypass_file_checks(self) -> FieldInfo:
+        """Gets the ot_creation__bypass_file_checks of this StageField.
+
+
+        :return: The ot_creation__bypass_file_checks of this StageField.
+        :rtype: FieldInfo
+        """
+        return self._ot_creation__bypass_file_checks
+
+    @ot_creation__bypass_file_checks.setter
+    def ot_creation__bypass_file_checks(self, ot_creation__bypass_file_checks: FieldInfo):
+        """Sets the ot_creation__bypass_file_checks of this StageField.
+
+
+        :param ot_creation__bypass_file_checks: The ot_creation__bypass_file_checks of this StageField.
+        :type ot_creation__bypass_file_checks: FieldInfo
+        """
+
+        self._ot_creation__bypass_file_checks = ot_creation__bypass_file_checks
 
     @property
     def ot_documentation_url(self) -> FieldInfo:
