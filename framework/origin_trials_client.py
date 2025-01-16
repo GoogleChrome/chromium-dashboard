@@ -189,8 +189,8 @@ def _send_create_trial_request(
       'bucket_number': ot_stage.ot_use_counter_bucket_number,
       'histogram_id': BlinkHistogramID.web_feature.value
     }
-    if (ot_stage.ot_chromium_trial_name
-        and ot_stage.ot_chromium_trial_name.startswith('WebDXFeature::')):
+    if (ot_stage.ot_webfeature_use_counter
+        and ot_stage.ot_webfeature_use_counter.startswith('WebDXFeature::')):
       config['histogram_id'] = BlinkHistogramID.webdx_feature.value
     json['trial']['blink_use_counter_config'] = config
 

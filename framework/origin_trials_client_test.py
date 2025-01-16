@@ -269,7 +269,7 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
       self, mock_requests_post, mock_get_trial_end_time,
       mock_get_ot_access_token, mock_api_key_get, mock_get_admin_group):
     """WebDXFeature use counters should have different config in request."""
-    self.ot_stage.ot_chromium_trial_name = 'WebDXFeature::Example'
+    self.ot_stage.ot_webfeature_use_counter = 'WebDXFeature::Example'
     self.ot_stage.put()
     mock_requests_post.return_value = mock.MagicMock(
         status_code=200, json=lambda : (
