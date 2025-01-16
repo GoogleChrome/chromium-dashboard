@@ -404,6 +404,7 @@ export const STAGE_SPECIFIC_FIELDS = new Set<string>([
   'ot_request_note',
   'ot_webfeature_use_counter',
   'ot_documentation_url',
+  'ot_creation__bypass_file_checks',
   'ot_creation__ot_documentation_url',
   'ot_is_deprecation_trial',
   'ot_has_third_party_support',
@@ -462,14 +463,6 @@ export const STAGE_FIELD_NAME_MAPPING: Record<string, string> = {
   ot_extension__intent_to_extend_experiment_url: 'intent_thread_url',
   r4dt_url: 'intent_thread_url',
 };
-
-export const DEPRECATED_FIELDS = new Set<string>([
-  'experiment_timeline',
-  'i2e_lgtms',
-  'i2s_lgtms',
-  'r4dt_lgtms',
-  'standardization',
-]);
 
 export const GATE_TYPES: Record<string, number> = {
   API_PROTOTYPE: 1,

@@ -15,6 +15,7 @@
 
 import collections
 import re
+from enum import Enum
 from typing import Optional
 
 
@@ -502,6 +503,12 @@ OT_CREATION_FAILED = 3
 OT_ACTIVATION_FAILED = 4
 OT_CREATED = 5
 OT_ACTIVATED = 6
+
+# Histogram IDs used for identifying origin trial use counters.
+class BlinkHistogramID(str, Enum):
+  web_feature = 'WEB_FEATURE'
+  webdx_feature = 'WEBDX_FEATURE'
+  css_property_id = 'CSS_PROPERTY_ID'
 
 NO_ACTIVE_DEV = 1
 PROPOSED = 2

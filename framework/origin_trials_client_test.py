@@ -240,6 +240,7 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
           'type': 'DEPRECATION',
           'blink_use_counter_config': {
             'bucket_number': 11,
+            'histogram_id': 'WEB_FEATURE',
           }
         }, create_trial_json['trial'])
     self.assertEqual({
@@ -268,7 +269,7 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
       self, mock_requests_post, mock_get_trial_end_time,
       mock_get_ot_access_token, mock_api_key_get, mock_get_admin_group):
     """WebDXFeature use counters should have different config in request."""
-    self.ot_stage.ot_chromium_trial_name = 'WebDXFeature::Example'
+    self.ot_stage.ot_webfeature_use_counter = 'WebDXFeature::Example'
     self.ot_stage.put()
     mock_requests_post.return_value = mock.MagicMock(
         status_code=200, json=lambda : (
@@ -287,11 +288,9 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
     # Two separate POST requests made.
     self.assertEqual(2, mock_requests_post.call_count)
     create_trial_json = mock_requests_post.call_args_list[0][1]['json']
-    # WebFeature config should be null.
-    self.assertEqual(None, create_trial_json['trial'].get('blink_use_counter_config'))
     # WebDXFeature config should be populated.
-    self.assertEqual({'bucket_number': 11},
-                     create_trial_json['trial']['blink_webdx_use_counter_config'])
+    self.assertEqual({'bucket_number': 11, 'histogram_id': 'WEBDX_FEATURE'},
+                     create_trial_json['trial']['blink_use_counter_config'])
 
   @mock.patch('framework.secrets.get_ot_api_key')
   @mock.patch('requests.post')

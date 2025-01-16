@@ -23,6 +23,7 @@ import requests
 
 from framework import secrets
 from framework import utils
+from internals.core_enums import BlinkHistogramID
 from internals.core_models import Stage
 from internals.data_types import OriginTrialInfo
 import settings
@@ -30,6 +31,7 @@ import settings
 
 class UseCounterConfig(TypedDict):
   bucket_number: int
+  histogram_id: str
 
 class RequestTrial(TypedDict):
   id: NotRequired[int]
@@ -46,7 +48,6 @@ class RequestTrial(TypedDict):
   type: str
   origin_trial_feature_name: NotRequired[str]
   blink_use_counter_config: NotRequired[UseCounterConfig]
-  blink_webdx_use_counter_config: NotRequired[UseCounterConfig]
 
 
 class InternalRegistrationConfig(TypedDict):
@@ -184,12 +185,14 @@ def _send_create_trial_request(
   if ot_stage.ot_is_deprecation_trial:
     json['registration_config']['allow_public_suffix_subdomains'] = True
   if ot_stage.ot_use_counter_bucket_number:
-    config: UseCounterConfig = {'bucket_number': ot_stage.ot_use_counter_bucket_number}
-    if (ot_stage.ot_chromium_trial_name
-        and ot_stage.ot_chromium_trial_name.startswith('WebDXFeature::')):
-      json['trial']['blink_webdx_use_counter_config'] = config
-    else:
-      json['trial']['blink_use_counter_config'] = config
+    config: UseCounterConfig = {
+      'bucket_number': ot_stage.ot_use_counter_bucket_number,
+      'histogram_id': BlinkHistogramID.web_feature.value
+    }
+    if (ot_stage.ot_webfeature_use_counter
+        and ot_stage.ot_webfeature_use_counter.startswith('WebDXFeature::')):
+      config['histogram_id'] = BlinkHistogramID.webdx_feature.value
+    json['trial']['blink_use_counter_config'] = config
 
   headers = {'Authorization': f'Bearer {access_token}'}
   url = f'{settings.OT_API_URL}/v1/trials:initialize'

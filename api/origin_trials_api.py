@@ -29,6 +29,7 @@ from internals import notifier_helpers
 from internals.core_enums import OT_READY_FOR_CREATION
 from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Gate, Vote
+import settings
 
 WEBFEATURE_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom?format=TEXT'
 WEBDXFEATURE_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/public/mojom/use_counter/metrics/webdx_feature.mojom?format=TEXT'
@@ -66,6 +67,10 @@ def get_chromium_files_for_validation() -> dict:
 def find_use_counter_value(
     body: dict, chromium_files_dict: dict) -> int | None:
   """Find where the use counter is defined and return its value."""
+  # Chromium file checks can be bypassed, but only in non-prod environments.
+  if (not settings.PROD and body['ot_creation__bypass_file_checks'] and
+      body['ot_creation__bypass_file_checks']['value']):
+    return 0
   use_counter_name = body.get(
       'ot_webfeature_use_counter', {}).get('value')
   webfeature_use_counter = body.get(
@@ -225,12 +230,15 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
     except Exception as exc:
       self.abort(
           500, f'Error obtaining Chromium file for validation: {str(exc)}')
-    validation_errors = self._validate_creation_args(body, chromium_files_dict)
-    if validation_errors:
-      return {
-          'message': 'Errors found when validating arguments',
-          'errors': validation_errors
-          }
+    # Chromium file checks can be bypassed, but only in non-prod environments.
+    if (settings.PROD or not body['ot_creation__bypass_file_checks'] or
+        not body['ot_creation__bypass_file_checks']['value']):
+      validation_errors = self._validate_creation_args(body, chromium_files_dict)
+      if validation_errors:
+        return {
+            'message': 'Errors found when validating arguments',
+            'errors': validation_errors
+            }
     self.update_stage(ot_stage, body, [])
     ot_stage.ot_use_counter_bucket_number = find_use_counter_value(body, chromium_files_dict)
 
