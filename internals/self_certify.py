@@ -14,8 +14,27 @@
 
 from google.cloud import ndb  # type: ignore
 
+from chromestatus_openapi.models import SurveyAnswers as OASurveyAnswers
+
 from internals.core_enums import GATE_SECURITY_ORIGIN_TRIAL, GATE_SECURITY_SHIP
 from internals.review_models import Gate, SurveyAnswers
+
+
+def update_survey_answers(gate: Gate, new_answers: OASurveyAnswers):
+  """Modify the given SurveyAnswers with user-requested changes."""
+  if gate.survey_answers is None:
+    gate.survey_answers = SurveyAnswers()
+  answers = gate.survey_answers
+
+  if new_answers.is_language_polyfill is not None:
+    answers.is_language_polyfill = new_answers.is_language_polyfill
+  if new_answers.is_api_polyfill is not None:
+    answers.is_api_polyfill = new_answers.is_api_polyfill
+  if new_answers.is_same_origin_css is not None:
+    answers.is_same_origin_css = new_answers.is_same_origin_css
+
+  if new_answers.launch_or_contact is not None:
+    answers.launch_or_contact = new_answers.launch_or_contact
 
 
 def is_security_eligible(answers: SurveyAnswers) -> bool:

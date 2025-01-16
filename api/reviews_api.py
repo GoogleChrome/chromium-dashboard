@@ -23,7 +23,7 @@ from google.cloud.ndb.tasklets import Future  # for type checking only
 from api import converters
 from framework import basehandlers, permissions
 from framework.users import User
-from internals import approval_defs, notifier_helpers
+from internals import approval_defs, notifier_helpers, self_certify
 from internals.core_enums import *
 from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Gate, Vote, Amendment, Activity
@@ -157,23 +157,32 @@ class GatesAPI(basehandlers.APIHandler):
     user, fe, gate, feature_id, gate_id = get_user_feature_and_gate(
         self, kwargs)
     request = PatchGateRequest.from_dict(self.request.json)
-    message = 'No changes requested'
-    assignees = request.assignees
+    changes: list[str] = []
+    new_assignees = request.assignees
+    new_answers = request.survey_answers
 
-    logging.info('request is %r', request)
+    logging.info('@@@ request is %r', request)
 
     self.require_permissions(user, fe, gate)
 
-    if assignees is not None:
-      self.validate_assignees(assignees, fe, gate)
+    if new_assignees is not None:
+      self.validate_assignees(new_assignees, fe, gate)
       old_assignees = gate.assignee_emails
-      gate.assignee_emails = assignees
-      gate.put()
+      gate.assignee_emails = new_assignees
       notifier_helpers.notify_assignees(
-          fe, gate, user.email(), old_assignees, assignees)
-      message = 'Done'
+          fe, gate, user.email(), old_assignees, new_assignees)
+      changes.append('assignees')
+
+    if new_answers is not None:
+      self_certify.update_survey_answers(gate, new_answers)
+      # Note: these changes don't generate notifications or activities.
+      changes.append('answers')
+
+    if changes:
+      gate.put()
 
     # Callers don't use the JSON response for this API call.
+    message = 'Changed: %s' % (', '.join(changes) or None)
     return SuccessMessage(message=message).to_dict()
 
   def require_permissions(self, user, feature, gate):

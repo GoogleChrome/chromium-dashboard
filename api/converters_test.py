@@ -20,7 +20,7 @@ from datetime import datetime
 from api import converters
 from internals.core_enums import *
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
-from internals.review_models import Vote, Gate
+from internals.review_models import Vote, Gate, SurveyAnswers
 from internals import approval_defs
 
 
@@ -547,6 +547,7 @@ class GateConvertersTest(testing_config.CustomTestCase):
       'slo_resolve_remaining': None,
       'needs_work_started_on': None,
       'self_certify_eligible': False,
+      'survey_answers': None,
       }
     self.assertEqual(expected, actual)
 
@@ -559,6 +560,8 @@ class GateConvertersTest(testing_config.CustomTestCase):
         assignee_emails=['appr1@example.com', 'appr2@example.com'],
         next_action=datetime(2022, 12, 25),
         additional_review=True)
+    gate.survey_answers = SurveyAnswers(
+        is_language_polyfill=True, launch_or_contact='reviewer@example.com')
     gate.put()
     # The review was due on Wednesday 2022-12-21.
     mock_now.return_value = datetime(2022, 12, 23, 1, 2, 3)  # Thursday after.
@@ -586,7 +589,13 @@ class GateConvertersTest(testing_config.CustomTestCase):
       'slo_resolve_took': None,
       'slo_resolve_remaining': None,
       'needs_work_started_on': None,
-      'self_certify_eligible': False,
+      'self_certify_eligible': True,
+      'survey_answers': {
+          'is_language_polyfill': True,
+          'is_api_polyfill': False,
+          'is_same_origin_css': False,
+          'launch_or_contact': 'reviewer@example.com',
+        },
       }
     self.assertEqual(expected, actual)
 

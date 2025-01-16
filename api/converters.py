@@ -668,6 +668,7 @@ def gate_value_to_json_dict(gate: Gate) -> dict[str, Any]:
           gate.requested_on, slo_resolve) + (gate.needs_work_elapsed or 0)
 
   self_certify_eligible = self_certify.is_eligible(gate)
+  survey_answers = to_dict(gate.survey_answers) if gate.survey_answers else None
 
   return {
       'id': gate.key.integer_id(),
@@ -692,4 +693,5 @@ def gate_value_to_json_dict(gate: Gate) -> dict[str, Any]:
       # YYYY-MM-DD HH:MM:SS or None
       'needs_work_started_on': needs_work_started_on,
       'self_certify_eligible': self_certify_eligible,
+      'survey_answers': survey_answers,
       }
