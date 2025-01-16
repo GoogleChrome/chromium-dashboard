@@ -546,6 +546,7 @@ class GateConvertersTest(testing_config.CustomTestCase):
       'slo_resolve_took': None,
       'slo_resolve_remaining': None,
       'needs_work_started_on': None,
+      'self_certify_eligible': False,
       }
     self.assertEqual(expected, actual)
 
@@ -585,6 +586,7 @@ class GateConvertersTest(testing_config.CustomTestCase):
       'slo_resolve_took': None,
       'slo_resolve_remaining': None,
       'needs_work_started_on': None,
+      'self_certify_eligible': False,
       }
     self.assertEqual(expected, actual)
 

@@ -539,8 +539,11 @@ export class ChromeStatusClient {
     return this.doGet('/gates/pending');
   }
 
-  updateGate(featureId, gateId, assignees) {
-    return this.doPost(`/features/${featureId}/gates/${gateId}`, {assignees});
+  updateGate(featureId, gateId, assignees, survey_answers) {
+    return this.doPatch(`/features/${featureId}/gates/${gateId}`, {
+      assignees,
+      survey_answers,
+    });
   }
 
   getComments(featureId, gateId) {

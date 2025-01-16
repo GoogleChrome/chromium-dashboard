@@ -16,7 +16,7 @@
 import logging
 from typing import Any, Tuple
 
-from chromestatus_openapi.models import (GetVotesResponse, GetGateResponse, PostGateRequest, SuccessMessage)
+from chromestatus_openapi.models import (GetVotesResponse, GetGateResponse, PatchGateRequest, SuccessMessage)
 from google.cloud import ndb
 from google.cloud.ndb.tasklets import Future  # for type checking only
 
@@ -148,23 +148,33 @@ class GatesAPI(basehandlers.APIHandler):
         'gates': dicts,
         }).to_dict()
 
+  # TODO(jrobbins): phase out do_post here because it should have been patch.
   def do_post(self, **kwargs) -> dict[str, str]:
+    return self.do_patch(**kwargs)
+
+  def do_patch(self, **kwargs) -> dict[str, str]:
     """Set the assignees for a gate."""
     user, fe, gate, feature_id, gate_id = get_user_feature_and_gate(
         self, kwargs)
-    request = PostGateRequest.from_dict(self.request.json)
+    request = PatchGateRequest.from_dict(self.request.json)
+    message = 'No changes requested'
     assignees = request.assignees
 
+    logging.info('request is %r', request)
+
     self.require_permissions(user, fe, gate)
-    self.validate_assignees(assignees, fe, gate)
-    old_assignees = gate.assignee_emails
-    gate.assignee_emails = assignees
-    gate.put()
-    notifier_helpers.notify_assignees(
-        fe, gate, user.email(), old_assignees, assignees)
+
+    if assignees is not None:
+      self.validate_assignees(assignees, fe, gate)
+      old_assignees = gate.assignee_emails
+      gate.assignee_emails = assignees
+      gate.put()
+      notifier_helpers.notify_assignees(
+          fe, gate, user.email(), old_assignees, assignees)
+      message = 'Done'
 
     # Callers don't use the JSON response for this API call.
-    return SuccessMessage(message='Done').to_dict()
+    return SuccessMessage(message=message).to_dict()
 
   def require_permissions(self, user, feature, gate):
     """Abort the request if the user lacks permission to set assignees."""
