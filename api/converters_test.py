@@ -555,7 +555,7 @@ class GateConvertersTest(testing_config.CustomTestCase):
   def test_maxmimal(self, mock_now):
     """If a Gate has all fields set, we can convert it to JSON."""
     gate = Gate(
-        feature_id=1, stage_id=2, gate_type=34, state=4,
+        feature_id=1, stage_id=2, gate_type=GATE_SECURITY_ORIGIN_TRIAL, state=4,
         requested_on=datetime(2022, 12, 14, 1, 2, 3), # Wednesday
         assignee_emails=['appr1@example.com', 'appr2@example.com'],
         next_action=datetime(2022, 12, 25),
@@ -572,10 +572,10 @@ class GateConvertersTest(testing_config.CustomTestCase):
       'id': gate.key.integer_id(),
       'feature_id': 1,
       'stage_id': 2,
-      'gate_type': 34,
+      'gate_type': GATE_SECURITY_ORIGIN_TRIAL,
       'team_name': appr_def.team_name,
       'gate_name': appr_def.name,
-      'escalation_email': 'chrome-privacy-owp-rotation@google.com',
+      'escalation_email': None,
       'state': 4,
       'requested_on': '2022-12-14 01:02:03',
       'responded_on': None,
@@ -591,8 +591,8 @@ class GateConvertersTest(testing_config.CustomTestCase):
       'needs_work_started_on': None,
       'self_certify_eligible': True,
       'survey_answers': {
-          'is_language_polyfill': True,
           'is_api_polyfill': False,
+          'is_language_polyfill': True,
           'is_same_origin_css': False,
           'launch_or_contact': 'reviewer@example.com',
         },

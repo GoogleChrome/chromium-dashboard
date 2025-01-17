@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from google.cloud import ndb  # type: ignore
-
 from chromestatus_openapi.models import SurveyAnswers as OASurveyAnswers
 
 from internals.core_enums import GATE_SECURITY_ORIGIN_TRIAL, GATE_SECURITY_SHIP
