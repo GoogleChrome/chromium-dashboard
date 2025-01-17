@@ -71,21 +71,19 @@ def find_use_counter_value(
   if (not settings.PROD and body['ot_creation__bypass_file_checks'] and
       body['ot_creation__bypass_file_checks']['value']):
     return 0
-  use_counter_name = body.get(
-      'ot_webfeature_use_counter', {}).get('value')
-  webfeature_use_counter = body.get(
-      'ot_webfeature_use_counter', {}).get('value')
+  use_counter_name = (body['ot_webfeature_use_counter']['value']
+                      if body['ot_webfeature_use_counter'] else None)
   is_webdx_use_counter = (
-      webfeature_use_counter and
-      webfeature_use_counter.startswith('WebDXFeature::'))
+      use_counter_name and
+      use_counter_name.startswith('WebDXFeature::'))
 
   match: re.Match | None = None
-  if webfeature_use_counter and is_webdx_use_counter:
+  if use_counter_name and is_webdx_use_counter:
     # Remove "WebDXFeature::" prefix.
     expression = f'(?<={use_counter_name[14:]} = )[0-9]+'
     match = re.search(expression,
                       chromium_files_dict['webdxfeature_file'])
-  elif webfeature_use_counter:
+  elif use_counter_name:
     expression = f'(?<={use_counter_name} = )[0-9]+'
     match = re.search(expression,
                       chromium_files_dict['webfeature_file'])
@@ -119,8 +117,8 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
     """Check that all provided OT creation arguments are valid."""
 
     validation_errors: dict[str, str] = {}
-    chromium_trial_name = body.get(
-        'ot_chromium_trial_name', {}).get('value')
+    chromium_trial_name = (body['ot_chromium_trial_name']['value']
+                           if body['ot_chromium_trial_name'] else None)
     if chromium_trial_name is None:
       self.abort(400, 'Chromium trial name not specified.')
 
@@ -141,9 +139,11 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
       validation_errors['ot_chromium_trial_name'] = (
           'Origin trial feature name not found in file')
 
-    if not body.get('ot_is_deprecation_trial', {}).get('value', False):
-      webfeature_use_counter = body.get(
-          'ot_webfeature_use_counter', {}).get('value')
+    is_dep_trial = (body['ot_is_deprecation_trial']
+                    and body['ot_is_deprecation_trial']['value'])
+    if not is_dep_trial:
+      webfeature_use_counter = (body['ot_webfeature_use_counter']['value']
+                                if body['ot_webfeature_use_counter'] else None)
       # Client will add a prefix to a WebDXFeature use counter.
       is_webdx_use_counter = (
           webfeature_use_counter and
@@ -168,7 +168,9 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
           validation_errors['ot_webfeature_use_counter'] = (
               'UseCounter not landed in webdx_feature.mojom')
 
-    if body.get('ot_has_third_party_support', {}).get('value', False):
+    has_third_party_support = (body['ot_has_third_party_support']['value']
+                               if body['ot_has_third_party_support'] else None)
+    if has_third_party_support:
       for feature in enabled_features_json['data']:
         if (feature.get('origin_trial_feature_name') == chromium_trial_name and
             not feature.get('origin_trial_allows_third_party', False)):
@@ -177,7 +179,9 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
               'set in runtime_enabled_features.json5. Feature name: '
               f'{feature["name"]}')
 
-    if body.get('ot_is_critical_trial', {}).get('value', False):
+    is_critical_trial = (body['ot_is_critical_trial']['value']
+                         if body['ot_is_critical_trial'] else None)
+    if is_critical_trial:
       if (f'blink::mojom::OriginTrialFeature::k{chromium_trial_name}'
           not in chromium_files['grace_period_file']):
         validation_errors['ot_is_critical_trial'] = (
