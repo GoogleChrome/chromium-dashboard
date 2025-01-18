@@ -1,6 +1,7 @@
 import {LitElement, TemplateResult, css, html, nothing} from 'lit';
 import {createRef, ref} from 'lit/directives/ref.js';
 import './chromedash-activity-log';
+import './chromedash-survey-questions';
 import {openNaRationaleDialog} from './chromedash-na-rationale-dialog';
 import {
   openPreflightDialog,
@@ -8,7 +9,7 @@ import {
   somePendingPrereqs,
 } from './chromedash-preflight-dialog';
 import {maybeOpenPrevoteDialog} from './chromedash-prevote-dialog';
-import {GATE_QUESTIONNAIRES, GATE_RATIONALE} from './gate-details.js';
+import {GATE_RATIONALE} from './gate-details.js';
 import {
   GATE_NA_REQUESTED,
   GATE_PREPARING,
@@ -151,20 +152,6 @@ export class ChromedashGateColumn extends LitElement {
           white-space: nowrap;
         }
 
-        #questionnaire {
-          padding: var(--content-padding-half);
-          border-radius: var(--border-radius);
-          background: var(--table-alternate-background);
-        }
-        #questionnaire * + * {
-          padding-top: var(--content-padding);
-        }
-        #questionnaire ul {
-          padding-left: 1em;
-        }
-        #questionnaire li {
-          list-style: disc;
-        }
         .instructions {
           padding: var(--content-padding-half);
           margin-bottom: var(--content-padding-large);
@@ -932,30 +919,6 @@ export class ChromedashGateColumn extends LitElement {
     `;
   }
 
-  renderQuestionnaireSkeleton() {
-    return html`
-      <h2>Survey questions</h2>
-      <!-- prettier-ignore -->
-      <div id="questionnaire">Loading...</div>
-      <p class="instructions">&nbsp;</p>
-    `;
-  }
-
-  renderQuestionnaire() {
-    const questionnaireText = GATE_QUESTIONNAIRES[this.gate.gate_type];
-    if (!questionnaireText) return nothing;
-    const markup =
-      typeof questionnaireText == 'string'
-        ? autolink(questionnaireText)
-        : questionnaireText;
-    return html`
-      <h2>Survey questions</h2>
-      <!-- prettier-ignore -->
-      <div id="questionnaire">${markup}</div>
-      <p class="instructions">Please post responses in the comments below.</p>
-    `;
-  }
-
   renderCommentsSkeleton() {
     return html`
       <h2>Comments</h2>
@@ -1081,9 +1044,10 @@ export class ChromedashGateColumn extends LitElement {
         ${this.loading ? this.renderVotesSkeleton() : this.renderVotes()}
       </div>
 
-      ${this.loading
-        ? this.renderQuestionnaireSkeleton()
-        : this.renderQuestionnaire()}
+      <chromedash-survey-questions
+        .loading=${this.loading}
+        .gate=${this.gate}
+        ></chromedash-survey-questions>
       ${this.loading ? this.renderCommentsSkeleton() : this.renderComments()}
     `;
   }
