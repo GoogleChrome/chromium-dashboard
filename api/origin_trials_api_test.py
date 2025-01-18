@@ -297,6 +297,38 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
     self.assertEqual(expected, result)
 
   @mock.patch('framework.origin_trials_client.get_trials_list')
+  def test_validate_creation_args__valid_deprecation_trial(
+      self, mock_get_trials_list):
+    """No error messages should be returned if all args are valid for a
+    deprecation trial."""
+    mock_get_trials_list.return_value = self.mock_trials_list
+    body = {
+      'ot_chromium_trial_name': {
+        'form_field_name': 'ot_chromium_trial_name',
+        'value': 'ValidFeature',
+      },
+      'ot_webfeature_use_counter': None,
+      'ot_is_critical_trial': {
+        'form_field_name': 'ot_is_critical_trial',
+        'value': True,
+      },
+      'ot_is_deprecation_trial': {
+        'form_field_name': 'ot_is_deprecation_trial',
+        'value': True,
+      },
+      'ot_has_third_party_support': {
+        'form_field_name': 'ot_has_third_party_support',
+        'value': True,
+      },
+    }
+    # No exception should be raised.
+    with test_app.test_request_context(self.request_path):
+      result = self.handler._validate_creation_args(
+          body, self.mock_chromium_files_dict)
+    expected = {}
+    self.assertEqual(expected, result)
+
+  @mock.patch('framework.origin_trials_client.get_trials_list')
   def test_validate_creation_args__valid_webdxfeature(
       self, mock_get_trials_list):
     """No error messages should be returned if all args are valid using a
@@ -445,6 +477,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
         'form_field_name': 'ot_chromium_trial_name',
         'value': 'ValidFeature',
       },
+      'ot_webfeature_use_counter': None,
       'ot_is_critical_trial': {
         'form_field_name': 'ot_is_critical_trial',
         'value': False,
@@ -482,6 +515,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
         'form_field_name': 'ot_is_critical_trial',
         'value': False,
       },
+      'ot_webfeature_use_counter': None,
       'ot_is_deprecation_trial': {
         'form_field_name': 'ot_is_deprecation_trial',
         'value': True,
@@ -540,6 +574,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
         'form_field_name': 'ot_webfeature_use_counter',
         'value': 'kValidFeature',
       },
+      'ot_chromium_trial_name': None,
       'ot_is_critical_trial': {
         'form_field_name': 'ot_is_critical_trial',
         'value': False,
