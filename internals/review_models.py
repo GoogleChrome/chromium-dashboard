@@ -156,7 +156,7 @@ class Vote(ndb.Model):
 class SurveyAnswers(ndb.Model):
   """Surveys allow for self-certification of some gates."""
 
-  # Questions from the security team.
+  # Questions from the privacy team.
   is_language_polyfill = ndb.BooleanProperty(default=False)
   is_api_polyfill = ndb.BooleanProperty(default=False)
   is_same_origin_css = ndb.BooleanProperty(default=False)
