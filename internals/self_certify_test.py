@@ -54,43 +54,43 @@ class SelfCertifyFunctionTest(testing_config.CustomTestCase):
     self.assertFalse(gate.survey_answers.is_same_origin_css)
     self.assertIsNone(gate.survey_answers.launch_or_contact)
 
-  def test_is_security_eligible(self):
-    """Security is eligible if any of the booleans is True."""
-    self.assertFalse(self_certify.is_security_eligible(
+  def test_is_privacy_eligible(self):
+    """Privacy is eligible if any of the booleans is True."""
+    self.assertFalse(self_certify.is_privacy_eligible(
         SurveyAnswers()))
-    self.assertFalse(self_certify.is_security_eligible(
+    self.assertFalse(self_certify.is_privacy_eligible(
         SurveyAnswers(is_language_polyfill=False)))
-    self.assertFalse(self_certify.is_security_eligible(
+    self.assertFalse(self_certify.is_privacy_eligible(
         SurveyAnswers(is_api_polyfill=False)))
-    self.assertFalse(self_certify.is_security_eligible(
+    self.assertFalse(self_certify.is_privacy_eligible(
         SurveyAnswers(is_same_origin_css=False)))
-    self.assertFalse(self_certify.is_security_eligible(
+    self.assertFalse(self_certify.is_privacy_eligible(
         SurveyAnswers(
             is_language_polyfill=False,
             is_api_polyfill=False,
             is_same_origin_css=False)))
 
-    self.assertTrue(self_certify.is_security_eligible(
+    self.assertTrue(self_certify.is_privacy_eligible(
         SurveyAnswers(is_language_polyfill=True)))
-    self.assertTrue(self_certify.is_security_eligible(
+    self.assertTrue(self_certify.is_privacy_eligible(
         SurveyAnswers(is_api_polyfill=True)))
-    self.assertTrue(self_certify.is_security_eligible(
+    self.assertTrue(self_certify.is_privacy_eligible(
         SurveyAnswers(is_same_origin_css=True)))
-    self.assertTrue(self_certify.is_security_eligible(
+    self.assertTrue(self_certify.is_privacy_eligible(
         SurveyAnswers(
             is_language_polyfill=False, is_api_polyfill=False,
             is_same_origin_css=True)))
 
   def test_is_eligible(self):
-    """Security gates are the only eligible type."""
+    """Privacy gates are the only eligible type."""
     self.assertTrue(self_certify.is_eligible(
         Gate(
-            gate_type=GATE_SECURITY_ORIGIN_TRIAL,
+            gate_type=GATE_PRIVACY_ORIGIN_TRIAL,
             survey_answers=SurveyAnswers(is_language_polyfill=True))))
 
     self.assertFalse(self_certify.is_eligible(
         Gate(
-            gate_type=GATE_SECURITY_ORIGIN_TRIAL,
+            gate_type=GATE_PRIVACY_ORIGIN_TRIAL,
             survey_answers=SurveyAnswers())))
 
     self.assertFalse(self_certify.is_eligible(

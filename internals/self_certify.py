@@ -14,7 +14,7 @@
 
 from chromestatus_openapi.models import SurveyAnswers as OASurveyAnswers
 
-from internals.core_enums import GATE_SECURITY_ORIGIN_TRIAL, GATE_SECURITY_SHIP
+from internals.core_enums import GATE_PRIVACY_ORIGIN_TRIAL, GATE_PRIVACY_SHIP
 from internals.review_models import Gate, SurveyAnswers
 
 
@@ -35,8 +35,8 @@ def update_survey_answers(gate: Gate, new_answers: OASurveyAnswers):
     answers.launch_or_contact = new_answers.launch_or_contact
 
 
-def is_security_eligible(answers: SurveyAnswers) -> bool:
-  """Return True if the answers allow self-certify for the Security gate."""
+def is_privacy_eligible(answers: SurveyAnswers) -> bool:
+  """Return True if the answers allow self-certify for the Privacy gate."""
   return (
       answers.is_language_polyfill or
       answers.is_api_polyfill or
@@ -49,7 +49,7 @@ def is_eligible(gate: Gate) -> bool:
   if answers is None:
     return False
 
-  if gate.gate_type in [GATE_SECURITY_ORIGIN_TRIAL, GATE_SECURITY_SHIP]:
-    return is_security_eligible(answers)
+  if gate.gate_type in [GATE_PRIVACY_ORIGIN_TRIAL, GATE_PRIVACY_SHIP]:
+    return is_privacy_eligible(answers)
 
   return False
