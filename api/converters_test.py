@@ -597,7 +597,6 @@ class GateConvertersTest(testing_config.CustomTestCase):
           'launch_or_contact': 'reviewer@example.com',
         },
       }
-    self.maxDiff = None
     self.assertEqual(expected, actual)
 
   def test_slo_complete_review(self):
