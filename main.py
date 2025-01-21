@@ -293,6 +293,7 @@ internals_routes: list[Route] = [
   Route('/cron/create_origin_trials', maintenance_scripts.CreateOriginTrials),
   Route('/cron/activate_origin_trials',
         maintenance_scripts.ActivateOriginTrials),
+  Route('/cron/fetch_webdx_feature_ids', maintenance_scripts.FetchWebdxFeatureId),
 
   Route('/admin/find_stop_words', search_fulltext.FindStopWords),
 

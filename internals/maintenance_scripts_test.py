@@ -24,6 +24,7 @@ from internals import core_enums
 from internals.core_models import FeatureEntry, Stage, MilestoneSet
 from internals.review_models import Gate, Vote
 from internals import stage_helpers
+from webstatus_openapi import FeaturePage, ApiException
 import settings
 
 class EvaluateGateStatusTest(testing_config.CustomTestCase):
@@ -858,3 +859,71 @@ class BackfillGateDatesTest(testing_config.CustomTestCase):
         self.handler.calc_needs_work_started_on(
             self.gate, [v1, v2, v3, v4, v5]),
         v4.set_on)
+
+class FetchWebdxFeatureIdTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.handler = maintenance_scripts.FetchWebdxFeatureId()
+    # TODO(kyleju): set up and clean up datastore.
+
+  def tearDown(self):
+    return
+
+  @mock.patch('webstatus_openapi.DefaultApi.list_features')
+  def test_fetch_webdx_feature_ids__success(self, mock_list_features):
+    feature_page_dict = {
+      'data': [
+        {
+          'baseline': {'low_date': '2024-07-25', 'status': 'newly'},
+          'browser_implementations': {
+            'chrome': {'date': '2024-07-23', 'status': 'available', 'version': '127'},
+            'edge': {'date': '2024-07-25', 'status': 'available', 'version': '127'},
+            'firefox': {'date': '2008-06-17', 'status': 'available', 'version': '3'},
+            'safari': {'date': '2023-03-27', 'status': 'available', 'version': '16.4'},
+          },
+          'feature_id': 'font-size-adjust',
+          'name': 'font-size-adjust',
+          'spec': {
+            'links': [
+              {'link': 'https://drafts.csswg.org/css-fonts-5/#font-size-adjust-prop'}
+            ]
+          },
+          'usage': {'chromium': {'daily': 0.011191}},
+          'wpt': {
+            'experimental': {
+              'chrome': {'score': 0.974514563},
+              'edge': {'score': 0.998786408},
+              'firefox': {'score': 0.939320388},
+              'safari': {'score': 0.998786408},
+            },
+            'stable': {
+              'chrome': {'score': 0.939320388},
+              'edge': {'score': 0.939320388},
+              'firefox': {'score': 0.939320388},
+              'safari': {'score': 0.998786408},
+            },
+          },
+        }
+      ],
+      'metadata': {'next_page_token': 'eyJvZmZzZXQiOjUwfQ', 'total': 1},
+    }
+    feature_page_1 = FeaturePage.from_dict(feature_page_dict)
+    feature_page_2 = FeaturePage.from_dict(feature_page_dict)
+    feature_page_2.data[0].feature_id = 'bar'
+    feature_page_2.metadata.next_page_token = ''
+    mock_list_features.side_effect = [
+      feature_page_1,
+      feature_page_2
+    ]
+
+    result = self.handler.get_template_data()
+
+    self.assertEqual('2 feature ids are successfully stored.', result)
+
+  @mock.patch('webstatus_openapi.DefaultApi.list_features')
+  def test_fetch_webdx_feature_ids__exceptions(self, mock_list_features):
+    mock_list_features.side_effect = ApiException(status=503)
+
+    result = self.handler.get_template_data()
+
+    self.assertEqual('Running FetchWebdxFeatureId() job failed.', result)
