@@ -680,8 +680,8 @@ class OTActivatedHandler(basehandlers.FlaskHandler):
 
 
 class OTCreationApprovedHandler(basehandlers.FlaskHandler):
-  """Notify about an origin trial having received reviews and approvals and is
-  ready to request creation."""
+  """Notify about an origin trial having received reviews and approvals and being
+  ready for the user to request creation."""
 
   IS_INTERNAL_HANDLER = True
   EMAIL_TEMPLATE_PATH = 'origintrials/ot-creation-approved-email.html'
