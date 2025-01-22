@@ -13,48 +13,63 @@
  */
 
 import { mapValues } from '../runtime';
+import type { SurveyAnswers } from './SurveyAnswers';
+import {
+    SurveyAnswersFromJSON,
+    SurveyAnswersFromJSONTyped,
+    SurveyAnswersToJSON,
+} from './SurveyAnswers';
+
 /**
  * 
  * @export
- * @interface PostGateRequest
+ * @interface PatchGateRequest
  */
-export interface PostGateRequest {
+export interface PatchGateRequest {
     /**
      * 
      * @type {Array<string>}
-     * @memberof PostGateRequest
+     * @memberof PatchGateRequest
      */
     assignees?: Array<string>;
+    /**
+     * 
+     * @type {SurveyAnswers}
+     * @memberof PatchGateRequest
+     */
+    survey_answers?: SurveyAnswers;
 }
 
 /**
- * Check if a given object implements the PostGateRequest interface.
+ * Check if a given object implements the PatchGateRequest interface.
  */
-export function instanceOfPostGateRequest(value: object): value is PostGateRequest {
+export function instanceOfPatchGateRequest(value: object): value is PatchGateRequest {
     return true;
 }
 
-export function PostGateRequestFromJSON(json: any): PostGateRequest {
-    return PostGateRequestFromJSONTyped(json, false);
+export function PatchGateRequestFromJSON(json: any): PatchGateRequest {
+    return PatchGateRequestFromJSONTyped(json, false);
 }
 
-export function PostGateRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): PostGateRequest {
+export function PatchGateRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): PatchGateRequest {
     if (json == null) {
         return json;
     }
     return {
         
         'assignees': json['assignees'] == null ? undefined : json['assignees'],
+        'survey_answers': json['survey_answers'] == null ? undefined : SurveyAnswersFromJSON(json['survey_answers']),
     };
 }
 
-export function PostGateRequestToJSON(value?: PostGateRequest | null): any {
+export function PatchGateRequestToJSON(value?: PatchGateRequest | null): any {
     if (value == null) {
         return value;
     }
     return {
         
         'assignees': value['assignees'],
+        'survey_answers': SurveyAnswersToJSON(value['survey_answers']),
     };
 }
 

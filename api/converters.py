@@ -20,7 +20,7 @@ from typing import Any, Optional, TypedDict
 from google.cloud import ndb  # type: ignore
 
 import settings
-from internals import approval_defs, slo
+from internals import approval_defs, slo, self_certify
 from internals.core_enums import *
 from internals.core_models import (
   FeatureEntry,
@@ -667,6 +667,9 @@ def gate_value_to_json_dict(gate: Gate) -> dict[str, Any]:
       slo_resolve_remaining = slo.remaining_days(
           gate.requested_on, slo_resolve) + (gate.needs_work_elapsed or 0)
 
+  self_certify_eligible = self_certify.is_eligible(gate)
+  survey_answers = to_dict(gate.survey_answers) if gate.survey_answers else None
+
   return {
       'id': gate.key.integer_id(),
       'feature_id': gate.feature_id,
@@ -689,4 +692,6 @@ def gate_value_to_json_dict(gate: Gate) -> dict[str, Any]:
       'slo_resolve_remaining': slo_resolve_remaining,
       # YYYY-MM-DD HH:MM:SS or None
       'needs_work_started_on': needs_work_started_on,
+      'self_certify_eligible': self_certify_eligible,
+      'survey_answers': survey_answers,
       }

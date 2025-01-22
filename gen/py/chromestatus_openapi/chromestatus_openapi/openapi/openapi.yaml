@@ -629,7 +629,7 @@ paths:
       summary: Get all gates for a feature
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /features/{feature_id}/gates/{gate_id}:
-    post:
+    patch:
       operationId: set_assignees_for_gate
       parameters:
       - description: The ID of the feature to retrieve votes for.
@@ -652,7 +652,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PostGateRequest'
+              $ref: '#/components/schemas/PatchGateRequest'
         required: true
       responses:
         "200":
@@ -1305,6 +1305,11 @@ components:
         gate_type: 5
         next_action: next_action
         slo_resolve_took: 2
+        survey_answers:
+          launch_or_contact: launch_or_contact
+          is_language_polyfill: true
+          is_api_polyfill: true
+          is_same_origin_css: true
         escalation_email: escalation_email
         assignee_emails:
         - assignee_emails
@@ -1316,6 +1321,7 @@ components:
         - possible_assignee_emails
         - possible_assignee_emails
         responded_on: 2000-01-23T04:56:07.000+00:00
+        self_certify_eligible: true
         slo_resolve: 3
       properties:
         id:
@@ -1396,7 +1402,33 @@ components:
             type: string
           title: possible_assignee_emails
           type: array
+        self_certify_eligible:
+          title: self_certify_eligible
+          type: boolean
+        survey_answers:
+          $ref: '#/components/schemas/SurveyAnswers'
       title: Gate
+      type: object
+    SurveyAnswers:
+      example:
+        launch_or_contact: launch_or_contact
+        is_language_polyfill: true
+        is_api_polyfill: true
+        is_same_origin_css: true
+      properties:
+        is_language_polyfill:
+          title: is_language_polyfill
+          type: boolean
+        is_api_polyfill:
+          title: is_api_polyfill
+          type: boolean
+        is_same_origin_css:
+          title: is_same_origin_css
+          type: boolean
+        launch_or_contact:
+          title: launch_or_contact
+          type: string
+      title: SurveyAnswers
       type: object
     GetGateResponse:
       example:
@@ -1414,6 +1446,11 @@ components:
           gate_type: 5
           next_action: next_action
           slo_resolve_took: 2
+          survey_answers:
+            launch_or_contact: launch_or_contact
+            is_language_polyfill: true
+            is_api_polyfill: true
+            is_same_origin_css: true
           escalation_email: escalation_email
           assignee_emails:
           - assignee_emails
@@ -1425,6 +1462,7 @@ components:
           - possible_assignee_emails
           - possible_assignee_emails
           responded_on: 2000-01-23T04:56:07.000+00:00
+          self_certify_eligible: true
           slo_resolve: 3
         - feature_id: 6
           stage_id: 1
@@ -1439,6 +1477,11 @@ components:
           gate_type: 5
           next_action: next_action
           slo_resolve_took: 2
+          survey_answers:
+            launch_or_contact: launch_or_contact
+            is_language_polyfill: true
+            is_api_polyfill: true
+            is_same_origin_css: true
           escalation_email: escalation_email
           assignee_emails:
           - assignee_emails
@@ -1450,6 +1493,7 @@ components:
           - possible_assignee_emails
           - possible_assignee_emails
           responded_on: 2000-01-23T04:56:07.000+00:00
+          self_certify_eligible: true
           slo_resolve: 3
       properties:
         gates:
@@ -1459,11 +1503,16 @@ components:
           type: array
       title: GetGateResponse
       type: object
-    PostGateRequest:
+    PatchGateRequest:
       example:
         assignees:
         - assignees
         - assignees
+        survey_answers:
+          launch_or_contact: launch_or_contact
+          is_language_polyfill: true
+          is_api_polyfill: true
+          is_same_origin_css: true
       properties:
         assignees:
           items:
@@ -1471,7 +1520,9 @@ components:
             type: string
           title: assignees
           type: array
-      title: PostGateRequest
+        survey_answers:
+          $ref: '#/components/schemas/SurveyAnswers'
+      title: PatchGateRequest
       type: object
     Process:
       example:

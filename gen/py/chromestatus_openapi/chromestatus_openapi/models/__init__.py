@@ -56,8 +56,8 @@ from chromestatus_openapi.models.origin_trials_info import OriginTrialsInfo
 from chromestatus_openapi.models.outstanding_review import OutstandingReview
 from chromestatus_openapi.models.owners_and_subscribers_of_component import OwnersAndSubscribersOfComponent
 from chromestatus_openapi.models.patch_comment_request import PatchCommentRequest
+from chromestatus_openapi.models.patch_gate_request import PatchGateRequest
 from chromestatus_openapi.models.permissions_response import PermissionsResponse
-from chromestatus_openapi.models.post_gate_request import PostGateRequest
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest
 from chromestatus_openapi.models.post_settings_request import PostSettingsRequest
 from chromestatus_openapi.models.post_stars_request import PostStarsRequest
@@ -73,6 +73,7 @@ from chromestatus_openapi.models.spec_mentor import SpecMentor
 from chromestatus_openapi.models.stage_field import StageField
 from chromestatus_openapi.models.string_field_info_value import StringFieldInfoValue
 from chromestatus_openapi.models.success_message import SuccessMessage
+from chromestatus_openapi.models.survey_answers import SurveyAnswers
 from chromestatus_openapi.models.token_refresh_response import TokenRefreshResponse
 from chromestatus_openapi.models.user_permissions import UserPermissions
 from chromestatus_openapi.models.vote import Vote

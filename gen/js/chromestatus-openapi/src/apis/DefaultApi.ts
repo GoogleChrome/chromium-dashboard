@@ -41,8 +41,8 @@ import type {
   GetVotesResponse,
   MessageResponse,
   PatchCommentRequest,
+  PatchGateRequest,
   PermissionsResponse,
-  PostGateRequest,
   PostIntentRequest,
   PostSettingsRequest,
   PostVoteRequest,
@@ -107,10 +107,10 @@ import {
     MessageResponseToJSON,
     PatchCommentRequestFromJSON,
     PatchCommentRequestToJSON,
+    PatchGateRequestFromJSON,
+    PatchGateRequestToJSON,
     PermissionsResponseFromJSON,
     PermissionsResponseToJSON,
-    PostGateRequestFromJSON,
-    PostGateRequestToJSON,
     PostIntentRequestFromJSON,
     PostIntentRequestToJSON,
     PostSettingsRequestFromJSON,
@@ -267,7 +267,7 @@ export interface RemoveUserFromComponentRequest {
 export interface SetAssigneesForGateRequest {
     featureId: number;
     gateId: number;
-    postGateRequest: PostGateRequest;
+    patchGateRequest: PatchGateRequest;
 }
 
 export interface SetStarOperationRequest {
@@ -897,7 +897,7 @@ export interface DefaultApiInterface {
      * @summary Set the assignees for a gate.
      * @param {number} featureId The ID of the feature to retrieve votes for.
      * @param {number} gateId The ID of the gate to retrieve votes for.
-     * @param {PostGateRequest} postGateRequest 
+     * @param {PatchGateRequest} patchGateRequest 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApiInterface
@@ -2348,10 +2348,10 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
             );
         }
 
-        if (requestParameters['postGateRequest'] == null) {
+        if (requestParameters['patchGateRequest'] == null) {
             throw new runtime.RequiredError(
-                'postGateRequest',
-                'Required parameter "postGateRequest" was null or undefined when calling setAssigneesForGate().'
+                'patchGateRequest',
+                'Required parameter "patchGateRequest" was null or undefined when calling setAssigneesForGate().'
             );
         }
 
@@ -2363,10 +2363,10 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
 
         const response = await this.request({
             path: `/features/{feature_id}/gates/{gate_id}`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))).replace(`{${"gate_id"}}`, encodeURIComponent(String(requestParameters['gateId']))),
-            method: 'POST',
+            method: 'PATCH',
             headers: headerParameters,
             query: queryParameters,
-            body: PostGateRequestToJSON(requestParameters['postGateRequest']),
+            body: PatchGateRequestToJSON(requestParameters['patchGateRequest']),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));

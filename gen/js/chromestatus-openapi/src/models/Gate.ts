@@ -13,6 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
+import type { SurveyAnswers } from './SurveyAnswers';
+import {
+    SurveyAnswersFromJSON,
+    SurveyAnswersFromJSONTyped,
+    SurveyAnswersToJSON,
+} from './SurveyAnswers';
+
 /**
  * 
  * @export
@@ -145,6 +152,18 @@ export interface Gate {
      * @memberof Gate
      */
     possible_assignee_emails?: Array<string>;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof Gate
+     */
+    self_certify_eligible?: boolean;
+    /**
+     * 
+     * @type {SurveyAnswers}
+     * @memberof Gate
+     */
+    survey_answers?: SurveyAnswers;
 }
 
 /**
@@ -185,6 +204,8 @@ export function GateFromJSONTyped(json: any, ignoreDiscriminator: boolean): Gate
         'slo_resolve_remaining': json['slo_resolve_remaining'] == null ? undefined : json['slo_resolve_remaining'],
         'needs_work_started_on': json['needs_work_started_on'] == null ? undefined : (new Date(json['needs_work_started_on'])),
         'possible_assignee_emails': json['possible_assignee_emails'] == null ? undefined : json['possible_assignee_emails'],
+        'self_certify_eligible': json['self_certify_eligible'] == null ? undefined : json['self_certify_eligible'],
+        'survey_answers': json['survey_answers'] == null ? undefined : SurveyAnswersFromJSON(json['survey_answers']),
     };
 }
 
@@ -215,6 +236,8 @@ export function GateToJSON(value?: Gate | null): any {
         'slo_resolve_remaining': value['slo_resolve_remaining'],
         'needs_work_started_on': value['needs_work_started_on'] == null ? undefined : ((value['needs_work_started_on']).toISOString()),
         'possible_assignee_emails': value['possible_assignee_emails'],
+        'self_certify_eligible': value['self_certify_eligible'],
+        'survey_answers': SurveyAnswersToJSON(value['survey_answers']),
     };
 }
 
