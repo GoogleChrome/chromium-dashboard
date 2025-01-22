@@ -103,32 +103,34 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
   private _client: DefaultApiInterface = window.csOpenApiClient;
 
   @property({attribute: false})
-  private _reviewsTask: Task<('tag' | 'gecko' | 'webkit')[], TaskReviewResult> =
-    new Task(this, {
-      task: async ([reviewer], {signal}) => {
-        if (reviewer === undefined) {
-          throw new Error('Element must have "reviewer" attribute.', {
-            cause: this,
-          });
-        }
-        if (!['tag', 'gecko', 'webkit'].includes(reviewer)) {
-          throw new Error(
-            `Reviewer (${reviewer}) must be 'tag', 'gecko', or 'webkit'.`,
-            {cause: this}
-          );
-        }
-        const response = await this._client.listExternalReviews(
-          {reviewGroup: reviewer},
-          {signal}
+  private _reviewsTask: Task<
+    ('tag' | 'gecko' | 'webkit' | undefined)[],
+    TaskReviewResult
+  > = new Task(this, {
+    task: async ([reviewer], {signal}) => {
+      if (reviewer === undefined) {
+        throw new Error('Element must have "reviewer" attribute.', {
+          cause: this,
+        });
+      }
+      if (!['tag', 'gecko', 'webkit'].includes(reviewer)) {
+        throw new Error(
+          `Reviewer (${reviewer}) must be 'tag', 'gecko', or 'webkit'.`,
+          {cause: this}
         );
-        return {
-          reviews: this.groupReviews(response.reviews),
-          links: response.link_previews,
-          noOutstandingReviews: response.reviews.length === 0,
-        };
-      },
-      args: () => [this.reviewer],
-    });
+      }
+      const response = await this._client.listExternalReviews(
+        {reviewGroup: reviewer},
+        {signal}
+      );
+      return {
+        reviews: this.groupReviews(response.reviews),
+        links: response.link_previews,
+        noOutstandingReviews: response.reviews.length === 0,
+      };
+    },
+    args: () => [this.reviewer],
+  });
 
   groupReviews(
     reviews: OutstandingReview[]
