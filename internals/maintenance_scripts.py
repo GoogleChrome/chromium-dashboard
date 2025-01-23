@@ -825,7 +825,10 @@ class FetchWebdxFeatureId(FlaskHandler):
             is_first = False
         except ApiException as e:
           logging.error(
-            'Could not fetch from %s?page_token=%s: %s', webstatus_dev_url, page_token, e
+            'Could not fetch from %s?page_token=%s: %s',
+            settings.API_WEBSTATUS_DEV_URL,
+            page_token,
+            e,
           )
           return 'Running FetchWebdxFeatureId() job failed.'
 
