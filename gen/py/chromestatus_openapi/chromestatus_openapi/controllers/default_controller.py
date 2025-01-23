@@ -29,8 +29,8 @@ from chromestatus_openapi.models.get_stars_response import GetStarsResponse  # n
 from chromestatus_openapi.models.get_votes_response import GetVotesResponse  # noqa: E501
 from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
 from chromestatus_openapi.models.patch_comment_request import PatchCommentRequest  # noqa: E501
+from chromestatus_openapi.models.patch_gate_request import PatchGateRequest  # noqa: E501
 from chromestatus_openapi.models.permissions_response import PermissionsResponse  # noqa: E501
-from chromestatus_openapi.models.post_gate_request import PostGateRequest  # noqa: E501
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
 from chromestatus_openapi.models.post_settings_request import PostSettingsRequest  # noqa: E501
 from chromestatus_openapi.models.post_vote_request import PostVoteRequest  # noqa: E501
@@ -594,7 +594,7 @@ def remove_user_from_component(component_id, user_id, component_users_request=No
     return 'do some magic!'
 
 
-def set_assignees_for_gate(feature_id, gate_id, post_gate_request):  # noqa: E501
+def set_assignees_for_gate(feature_id, gate_id, patch_gate_request):  # noqa: E501
     """Set the assignees for a gate.
 
      # noqa: E501
@@ -603,13 +603,13 @@ def set_assignees_for_gate(feature_id, gate_id, post_gate_request):  # noqa: E50
     :type feature_id: int
     :param gate_id: The ID of the gate to retrieve votes for.
     :type gate_id: int
-    :param post_gate_request: 
-    :type post_gate_request: dict | bytes
+    :param patch_gate_request: 
+    :type patch_gate_request: dict | bytes
 
     :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
     """
     if connexion.request.is_json:
-        post_gate_request = PostGateRequest.from_dict(connexion.request.get_json())  # noqa: E501
+        patch_gate_request = PatchGateRequest.from_dict(connexion.request.get_json())  # noqa: E501
     return 'do some magic!'
 
 

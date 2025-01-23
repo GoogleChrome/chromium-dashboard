@@ -338,6 +338,7 @@ class GatesAPITest(testing_config.CustomTestCase):
                 "assignee_emails": [],
                 "next_action": None,
                 "additional_review": False,
+                'self_certify_eligible': False,
                 'slo_initial_response': 5,
                 'slo_initial_response_took': None,
                 'slo_initial_response_remaining': None,
@@ -346,6 +347,7 @@ class GatesAPITest(testing_config.CustomTestCase):
                 'slo_resolve_remaining': None,
                 'needs_work_started_on': None,
                 'possible_assignee_emails': ['reviewer1@example.com'],
+                'survey_answers': None,
             },
         ],
         }

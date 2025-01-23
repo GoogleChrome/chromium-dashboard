@@ -349,6 +349,10 @@ internals_routes: list[Route] = [
         maintenance_scripts.BackfillShippingYear),
   Route('/scripts/backfill_gate_dates',
         maintenance_scripts.BackfillGateDates),
+  Route('/scripts/send_ot_creation_email/<int:stage_id>',
+        maintenance_scripts.SendManualOTCreatedEmail),
+  Route('/scripts/send_ot_activation_email/<int:stage_id>',
+        maintenance_scripts.SendManualOTActivatedEmail),
 ]
 
 dev_routes: list[Route] = []

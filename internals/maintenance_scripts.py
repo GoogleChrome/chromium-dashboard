@@ -837,3 +837,39 @@ class FetchWebdxFeatureId(FlaskHandler):
     feature_ids_list = [feature_data.feature_id for feature_data in all_data_list]
     feature_ids_list.sort()
     return (f'{len(feature_ids_list)} feature ids are successfully stored.')
+
+
+class SendManualOTCreatedEmail(FlaskHandler):
+  """Manually send an email to origin trial contacts that an origin trial has
+  been created but not yet activated."""
+
+  def get_template_data(self, **kwargs):
+    self.require_cron_header()
+
+    stage_id = kwargs.get('stage_id')
+    stage: Stage|None = Stage.get_by_id(stage_id)
+    if not stage:
+      return f'Stage {stage_id} not found'
+
+    cloud_tasks_helpers.enqueue_task(
+        '/tasks/email-ot-creation-processed',
+        {'stage': converters.stage_to_json_dict(stage)})
+    return 'Email task enqueued.'
+
+
+class SendManualOTActivatedEmail(FlaskHandler):
+  """Manually send an email to origin trial contacts that an origin trial has
+  been created and also activated."""
+
+  def get_template_data(self, **kwargs):
+    self.require_cron_header()
+
+    stage_id = kwargs.get('stage_id')
+    stage: Stage|None = Stage.get_by_id(stage_id)
+    if not stage:
+      return f'Stage {stage_id} not found'
+
+    cloud_tasks_helpers.enqueue_task(
+        '/tasks/email-ot-activated',
+        {'stage': converters.stage_to_json_dict(stage)})
+    return 'Email task enqueued.'

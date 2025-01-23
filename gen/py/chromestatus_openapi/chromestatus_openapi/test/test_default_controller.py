@@ -28,8 +28,8 @@ from chromestatus_openapi.models.get_stars_response import GetStarsResponse  # n
 from chromestatus_openapi.models.get_votes_response import GetVotesResponse  # noqa: E501
 from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
 from chromestatus_openapi.models.patch_comment_request import PatchCommentRequest  # noqa: E501
+from chromestatus_openapi.models.patch_gate_request import PatchGateRequest  # noqa: E501
 from chromestatus_openapi.models.permissions_response import PermissionsResponse  # noqa: E501
-from chromestatus_openapi.models.post_gate_request import PostGateRequest  # noqa: E501
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
 from chromestatus_openapi.models.post_settings_request import PostSettingsRequest  # noqa: E501
 from chromestatus_openapi.models.post_vote_request import PostVoteRequest  # noqa: E501
@@ -692,16 +692,16 @@ class TestDefaultController(BaseTestCase):
 
         Set the assignees for a gate.
         """
-        post_gate_request = {"assignees":["assignees","assignees"]}
+        patch_gate_request = {"assignees":["assignees","assignees"],"survey_answers":{"launch_or_contact":"launch_or_contact","is_language_polyfill":True,"is_api_polyfill":True,"is_same_origin_css":True}}
         headers = { 
             'Accept': 'application/json',
             'Content-Type': 'application/json',
         }
         response = self.client.open(
             '/api/v0/features/{feature_id}/gates/{gate_id}'.format(feature_id=56, gate_id=56),
-            method='POST',
+            method='PATCH',
             headers=headers,
-            data=json.dumps(post_gate_request),
+            data=json.dumps(patch_gate_request),
             content_type='application/json')
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
