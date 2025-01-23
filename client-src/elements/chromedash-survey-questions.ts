@@ -1,6 +1,7 @@
 import {LitElement, TemplateResult, css, html, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import {SlChangeEvent, SlInput} from '@shoelace-style/shoelace';
 import {Feature, StageDict, User} from '../js-src/cs-client';
 import {GateDict} from './chromedash-gate-chip';
 import {GATE_TYPES} from './form-field-enums.js';
@@ -63,10 +64,17 @@ export class ChromedashGateColumn extends LitElement {
     `;
   }
 
+  handleFieldChange(name: string, value: string) {
+    console.log(`set ${name} to ${value}.`);
+  }
+
   renderBooleanField(name: string, desc: string): TemplateResult {
     return html`
     <li class="question">
-    <sl-checkbox name="${name}"></sl-checkbox>
+    <sl-checkbox
+    name="${name}"
+    @sl-change=${e => this.handleFieldChange(name, '' + e.target?.checked)}
+    ></sl-checkbox>
     ${desc}
     </li>
     `;
@@ -76,7 +84,9 @@ export class ChromedashGateColumn extends LitElement {
     return html`
     <li class="question">
     ${desc}
-    <sl-input name="${name}" size="small"></sl-input>
+    <sl-input name="${name}" size="small"
+    @sl-change=${e => this.handleFieldChange(name, e.target?.value)}
+    ></sl-input>
     </li>
     `;
   }
@@ -87,16 +97,31 @@ export class ChromedashGateColumn extends LitElement {
     <ol>
       ${this.renderBooleanField(
         "is_language_polyfill",
-        "a long description that takes up more than one full line.")}
+        "This is a new JS language construct that has already
+         been polyfillable.")}
       ${this.renderBooleanField(
-        "field",
-        "desc")}
+        "is_api_polyfill",
+        "This is a new API that ergonomically provides a function
+         that was already polyfillable under the same conditions.
+         By \"same conditions\" we mean, for example, that if a
+         polyfill was only possible when the user has granted a
+         certain permission, the API respects the same permission.")}
       ${this.renderBooleanField(
-        "field",
-        "desc")}
+        "is_same_origin_css",
+        "This is a CSS addition or change such that the style only
+         depends on same-origin information and does NOT on user data.
+           CSS changes are usually benign, however: if the style relies
+         on iframes or subresources, it could reveal cross-origin
+           information.  If the style depends on user data, such as
+          browsing history (like :visited), cookies, or user input
+        (like hidden=until-found), the style could be used by the
+        website to read this data.")}
       ${this.renderStringField(
-        "field",
-        "desc that kind of goes a long way")}
+        "launch_of_contact",
+        "If there is a Google-internal launch entry filed for this
+         exact same issue, enter its URL here. Or, if this has previously
+        been discussed with someone on the privacy team, enter their
+        email address. Or, enter \"None\".")}
         </ol>
     </div>
     `;
