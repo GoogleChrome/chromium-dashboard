@@ -812,11 +812,7 @@ class FetchWebdxFeatureId(FlaskHandler):
     """
     self.require_cron_header()
 
-    if settings.UNIT_TEST_MODE:
-      webstatus_dev_url = 'https://api.server.test'
-    else:
-      webstatus_dev_url = 'https://api.webstatus.dev'
-    client = DefaultApi(ApiClient(Configuration(host=webstatus_dev_url)))
+    client = DefaultApi(ApiClient(Configuration(settings.API_WEBSTATUS_DEV_URL)))
 
     all_data_list: list[Feature] = []
     page_token: str | None = None
