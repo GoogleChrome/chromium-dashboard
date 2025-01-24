@@ -30,6 +30,7 @@ from internals.review_models import Gate, Vote, Activity
 from internals.core_enums import *
 from internals.feature_links import batch_index_feature_entries
 from internals import stage_helpers
+from internals.webdx_feature_models import WebdxFeatures
 from webstatus_openapi import ApiClient, DefaultApi, Configuration, ApiException, Feature
 import settings
 
@@ -832,9 +833,8 @@ class FetchWebdxFeatureId(FlaskHandler):
           )
           return 'Running FetchWebdxFeatureId() job failed.'
 
-    # TODO(kyleju): save it to datastore.
     feature_ids_list = [feature_data.feature_id for feature_data in all_data_list]
-    feature_ids_list.sort()
+    WebdxFeatures.store_webdx_feature_id_list(feature_ids_list)
     return (f'{len(feature_ids_list)} feature ids are successfully stored.')
 
 
