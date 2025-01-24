@@ -45,6 +45,7 @@ from api import (
   stages_api,
   stars_api,
   token_refresh_api,
+  webdx_feature_api,
 )
 from framework import basehandlers, csp, sendemail
 from internals import (
@@ -177,6 +178,8 @@ api_routes: list[Route] = [
           origin_trials_api.OriginTrialsAPI),
     Route(f'{API_BASE}/origintrials/<int:feature_id>/<int:extension_stage_id>/extend',
           origin_trials_api.OriginTrialsAPI),
+
+    Route(f'{API_BASE}/webdxfeatures', webdx_feature_api.WebdxFeatureAPI),
 ]
 
 # The Routes below that have no handler specified use SPAHandler.

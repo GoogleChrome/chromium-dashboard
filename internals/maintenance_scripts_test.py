@@ -24,6 +24,7 @@ from internals import core_enums
 from internals.core_models import FeatureEntry, Stage, MilestoneSet
 from internals.review_models import Gate, Vote
 from internals import stage_helpers
+from internals.webdx_feature_models import WebdxFeatures
 from webstatus_openapi import FeaturePage, ApiException
 import settings
 
@@ -864,10 +865,12 @@ class FetchWebdxFeatureIdTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.handler = maintenance_scripts.FetchWebdxFeatureId()
-    # TODO(kyleju): set up and clean up datastore.
+    self.webdx_features = WebdxFeatures(feature_ids = ['test1'])
+    self.webdx_features.put()
 
   def tearDown(self):
-    return
+    for entity in WebdxFeatures.query():
+      entity.key.delete()
 
   @mock.patch('webstatus_openapi.DefaultApi.list_features')
   def test_fetch_webdx_feature_ids__success(self, mock_list_features):
@@ -881,7 +884,7 @@ class FetchWebdxFeatureIdTest(testing_config.CustomTestCase):
             'firefox': {'date': '2008-06-17', 'status': 'available', 'version': '3'},
             'safari': {'date': '2023-03-27', 'status': 'available', 'version': '16.4'},
           },
-          'feature_id': 'font-size-adjust',
+          'feature_id': 'foo',
           'name': 'font-size-adjust',
           'spec': {
             'links': [
@@ -919,6 +922,10 @@ class FetchWebdxFeatureIdTest(testing_config.CustomTestCase):
     result = self.handler.get_template_data()
 
     self.assertEqual('2 feature ids are successfully stored.', result)
+    expected = WebdxFeatures.get_by_id(self.webdx_features.key.integer_id())
+    self.assertEqual(len(expected.feature_ids), 2)
+    self.assertEqual(expected.feature_ids[0], 'foo')
+    self.assertEqual(expected.feature_ids[1], 'bar')
 
   @mock.patch('webstatus_openapi.DefaultApi.list_features')
   def test_fetch_webdx_feature_ids__exceptions(self, mock_list_features):
