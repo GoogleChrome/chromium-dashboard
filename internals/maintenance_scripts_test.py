@@ -933,6 +933,9 @@ class SendManualOTCreatedEmailTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.handler = maintenance_scripts.SendManualOTCreatedEmail()
+    self.feature_1 = FeatureEntry(
+        id=1, name='feature a', summary='sum', category=1)
+    self.feature_1.put()
     self.ot_stage = Stage(id=111,
         feature_id=1, stage_type=150, ot_owner_email='owner1@google.com',
         ot_emails=['editor1@example.com'], ot_display_name='Example trial',
@@ -943,8 +946,9 @@ class SendManualOTCreatedEmailTest(testing_config.CustomTestCase):
     self.non_ot_stage.put()
 
   def tearDown(self):
-    for entity in Stage.query():
-      entity.key.delete()
+    for kind in [Stage, FeatureEntry]:
+      for entity in kind.query():
+        entity.key.delete()
 
   @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
   def test_send__valid(self, mock_enqueue):
@@ -1002,6 +1006,9 @@ class SendManualOTActivatedEmailTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.handler = maintenance_scripts.SendManualOTActivatedEmail()
+    self.feature_1 = FeatureEntry(
+        id=1, name='feature a', summary='sum', category=1)
+    self.feature_1.put()
     self.ot_stage = Stage(id=111,
         feature_id=1, stage_type=150, ot_owner_email='owner1@google.com',
         ot_emails=['editor1@example.com'], ot_display_name='Example trial')
@@ -1011,8 +1018,9 @@ class SendManualOTActivatedEmailTest(testing_config.CustomTestCase):
     self.non_ot_stage.put()
 
   def tearDown(self):
-    for entity in Stage.query():
-      entity.key.delete()
+    for kind in [Stage, FeatureEntry]:
+      for entity in kind.query():
+        entity.key.delete()
 
   @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
   def test_send__valid(self, mock_enqueue):
