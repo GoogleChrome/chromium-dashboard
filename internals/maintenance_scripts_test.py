@@ -947,7 +947,7 @@ class SendManualOTCreatedEmailTest(testing_config.CustomTestCase):
       entity.key.delete()
 
   @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
-  def test_send__no_display_name(self, mock_enqueue):
+  def test_send__valid(self, mock_enqueue):
     """An email is sent if the stage meets all requirements."""
     result = self.handler.get_template_data(stage_id=self.ot_stage_id)
     self.assertEqual('Email task enqueued', result)
@@ -1015,7 +1015,7 @@ class SendManualOTActivatedEmailTest(testing_config.CustomTestCase):
       entity.key.delete()
 
   @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
-  def test_send__no_display_name(self, mock_enqueue):
+  def test_send__valid(self, mock_enqueue):
     """An email is sent if the stage meets all requirements."""
     result = self.handler.get_template_data(stage_id=self.ot_stage_id)
     self.assertEqual('Email task enqueued', result)
