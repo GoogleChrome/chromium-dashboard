@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 from collections import OrderedDict
 
 from framework import basehandlers
 from internals.webdx_feature_models import WebdxFeatures
 
 MISSING_FEATURE_ID = 'N/A'
-MISSING_FEATURE_TEXT = 'Missing feature'
+TBD_FEATURE_ID = 'TBD'
 
 
 class WebdxFeatureAPI(basehandlers.APIHandler):
@@ -29,15 +30,17 @@ class WebdxFeatureAPI(basehandlers.APIHandler):
     """Returns an ordered dict with Webdx feature id as both keys and values."""
     webdx_features = WebdxFeatures.get_webdx_feature_id_list()
     if not webdx_features:
-        self.abort(500, 'Error obtaining Webdx feature ID list.')
+        logging.error('Webdx feature id list is empty.')
+        return {}
 
     feature_ids_dict = OrderedDict()
     # The first key, value pair is the id when features are missing from the list.
-    feature_ids_dict.update({MISSING_FEATURE_ID: [MISSING_FEATURE_TEXT, MISSING_FEATURE_ID]})
+    feature_ids_dict[MISSING_FEATURE_ID] = [MISSING_FEATURE_ID, MISSING_FEATURE_ID]
+    feature_ids_dict[TBD_FEATURE_ID] = [TBD_FEATURE_ID, TBD_FEATURE_ID]
 
     feature_list = webdx_features.feature_ids
     feature_list.sort()
     for id in feature_list:
-      feature_ids_dict.update({id: [id, id]})
+      feature_ids_dict[id] = [id, id]
 
     return feature_ids_dict

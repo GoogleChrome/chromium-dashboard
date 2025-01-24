@@ -43,9 +43,19 @@ class WebdxFeatureAPITest(testing_config.CustomTestCase):
 
     expected = OrderedDict(
       [
-        ('N/A', ['Missing feature', 'N/A']),
+        ('N/A', ['N/A', 'N/A']),
+        ('TBD', ['TBD', 'TBD']),
         ('aaa', ['aaa', 'aaa']),
         ('zzz', ['zzz', 'zzz']),
       ]
     )
     self.assertEqual(actual, expected)
+
+  def test_do_get__empty_data(self):
+    testing_config.sign_out()
+    self.webdx_features.key.delete()
+
+    with test_app.test_request_context(self.request_path):
+      actual = self.handler.do_get()
+
+    self.assertEqual(actual, {})
