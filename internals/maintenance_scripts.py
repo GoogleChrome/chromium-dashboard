@@ -849,11 +849,19 @@ class SendManualOTCreatedEmail(FlaskHandler):
     stage: Stage|None = Stage.get_by_id(stage_id)
     if not stage:
       return f'Stage {stage_id} not found'
+    if stage.stage_type not in ALL_ORIGIN_TRIAL_STAGE_TYPES:
+      return f'Stage {stage_id} is not an origin trial stage'
+    if not stage.ot_owner_email and not stage.ot_emails:
+      return f'Stage {stage_id} has no OT contacts set'
+    if not stage.ot_display_name:
+      return f'Stage {stage_id} does not have ot_display_name set'
+    if stage.ot_activation_date is None:
+      return f'Stage {stage_id} does not have ot_activation_date set'
 
     cloud_tasks_helpers.enqueue_task(
         '/tasks/email-ot-creation-processed',
         {'stage': converters.stage_to_json_dict(stage)})
-    return 'Email task enqueued.'
+    return 'Email task enqueued'
 
 
 class SendManualOTActivatedEmail(FlaskHandler):
@@ -867,8 +875,14 @@ class SendManualOTActivatedEmail(FlaskHandler):
     stage: Stage|None = Stage.get_by_id(stage_id)
     if not stage:
       return f'Stage {stage_id} not found'
+    if stage.stage_type not in ALL_ORIGIN_TRIAL_STAGE_TYPES:
+      return f'Stage {stage_id} is not an origin trial stage'
+    if not stage.ot_owner_email and not stage.ot_emails:
+      return f'Stage {stage_id} has no OT contacts set'
+    if not stage.ot_display_name:
+      return f'Stage {stage_id} does not have ot_display_name set'
 
     cloud_tasks_helpers.enqueue_task(
         '/tasks/email-ot-activated',
         {'stage': converters.stage_to_json_dict(stage)})
-    return 'Email task enqueued.'
+    return 'Email task enqueued'

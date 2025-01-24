@@ -927,3 +927,130 @@ class FetchWebdxFeatureIdTest(testing_config.CustomTestCase):
     result = self.handler.get_template_data()
 
     self.assertEqual('Running FetchWebdxFeatureId() job failed.', result)
+
+
+class SendManualOTCreatedEmailTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.handler = maintenance_scripts.SendManualOTCreatedEmail()
+    self.ot_stage = Stage(id=111,
+        feature_id=1, stage_type=150, ot_owner_email='owner1@google.com',
+        ot_emails=['editor1@example.com'], ot_display_name='Example trial',
+        ot_activation_date=date(2020, 1, 1))
+    self.ot_stage.put()
+    self.ot_stage_id=self.ot_stage.key.integer_id()
+    self.non_ot_stage = Stage(id=222, feature_id=1, stage_type=120)
+    self.non_ot_stage.put()
+
+  def tearDown(self):
+    for entity in Stage.query():
+      entity.key.delete()
+
+  @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
+  def test_send__no_display_name(self, mock_enqueue):
+    """An email is sent if the stage meets all requirements."""
+    result = self.handler.get_template_data(stage_id=self.ot_stage_id)
+    self.assertEqual('Email task enqueued', result)
+    mock_enqueue.assert_called_once()
+
+  @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
+  def test_send__invalid_stage(self, mock_enqueue):
+    """No email is sent if the stage does not exist."""
+    result = self.handler.get_template_data(stage_id=12345)
+    self.assertEqual('Stage 12345 not found', result)
+    mock_enqueue.assert_not_called()
+
+  @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
+  def test_send__non_ot_stage(self, mock_enqueue):
+    """No email is sent if the stage is not an OT stage."""
+    result = self.handler.get_template_data(
+        stage_id=self.non_ot_stage.key.integer_id())
+    self.assertEqual('Stage 222 is not an origin trial stage', result)
+    mock_enqueue.assert_not_called()
+
+  @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
+  def test_send__no_contacts(self, mock_enqueue):
+    """No email is sent if the stage contains no OT contacts."""
+    self.ot_stage.ot_owner_email = None
+    self.ot_stage.ot_emails = []
+    self.ot_stage.put()
+    result = self.handler.get_template_data(stage_id=self.ot_stage_id)
+    self.assertEqual('Stage 111 has no OT contacts set', result)
+    mock_enqueue.assert_not_called()
+
+  @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
+  def test_send__no_display_name(self, mock_enqueue):
+    """No email is sent if the stage does not have a display name."""
+    self.ot_stage.ot_display_name = None
+    self.ot_stage.put()
+    result = self.handler.get_template_data(stage_id=self.ot_stage_id)
+    self.assertEqual('Stage 111 does not have ot_display_name set', result)
+    mock_enqueue.assert_not_called()
+
+  @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
+  def test_send__no_activation_date(self, mock_enqueue):
+    """No email is sent if the stage does not have a scheduled activation
+    date."""
+    self.ot_stage.ot_activation_date = None
+    self.ot_stage.put()
+    result = self.handler.get_template_data(stage_id=self.ot_stage_id)
+    self.assertEqual('Stage 111 does not have ot_activation_date set', result)
+    mock_enqueue.assert_not_called()
+
+
+class SendManualOTActivatedEmailTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.handler = maintenance_scripts.SendManualOTActivatedEmail()
+    self.ot_stage = Stage(id=111,
+        feature_id=1, stage_type=150, ot_owner_email='owner1@google.com',
+        ot_emails=['editor1@example.com'], ot_display_name='Example trial')
+    self.ot_stage.put()
+    self.ot_stage_id=self.ot_stage.key.integer_id()
+    self.non_ot_stage = Stage(id=222, feature_id=1, stage_type=120)
+    self.non_ot_stage.put()
+
+  def tearDown(self):
+    for entity in Stage.query():
+      entity.key.delete()
+
+  @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
+  def test_send__no_display_name(self, mock_enqueue):
+    """An email is sent if the stage meets all requirements."""
+    result = self.handler.get_template_data(stage_id=self.ot_stage_id)
+    self.assertEqual('Email task enqueued', result)
+    mock_enqueue.assert_called_once()
+
+  @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
+  def test_send__invalid_stage(self, mock_enqueue):
+    """No email is sent if the stage does not exist."""
+    result = self.handler.get_template_data(stage_id=12345)
+    self.assertEqual('Stage 12345 not found', result)
+    mock_enqueue.assert_not_called()
+
+  @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
+  def test_send__non_ot_stage(self, mock_enqueue):
+    """No email is sent if the stage is not an OT stage."""
+    result = self.handler.get_template_data(
+        stage_id=self.non_ot_stage.key.integer_id())
+    self.assertEqual('Stage 222 is not an origin trial stage', result)
+    mock_enqueue.assert_not_called()
+
+  @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
+  def test_send__no_contacts(self, mock_enqueue):
+    """No email is sent if the stage contains no OT contacts."""
+    self.ot_stage.ot_owner_email = None
+    self.ot_stage.ot_emails = []
+    self.ot_stage.put()
+    result = self.handler.get_template_data(stage_id=self.ot_stage_id)
+    self.assertEqual('Stage 111 has no OT contacts set', result)
+    mock_enqueue.assert_not_called()
+
+  @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
+  def test_send__no_display_name(self, mock_enqueue):
+    """No email is sent if the stage does not have a display name."""
+    self.ot_stage.ot_display_name = None
+    self.ot_stage.put()
+    result = self.handler.get_template_data(stage_id=self.ot_stage_id)
+    self.assertEqual('Stage 111 does not have ot_display_name set', result)
+    mock_enqueue.assert_not_called()
