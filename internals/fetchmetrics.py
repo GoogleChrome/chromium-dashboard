@@ -34,7 +34,7 @@ import settings
 UMA_QUERY_SERVER = 'https://uma-export.appspot.com/chromestatus/'
 
 HISTOGRAMS_URL = 'https://chromium.googlesource.com/chromium/src/+/main/' \
-    'tools/metrics/histograms/enums.xml?format=TEXT'
+    'tools/metrics/histograms/metadata/blink/enums.xml?format=TEXT'
 
 # After we have processed all metrics data for a given kind on a given day,
 # we create a capstone entry with this otherwise unused bucket_id.  Later
@@ -257,7 +257,7 @@ class HistogramsHandler(basehandlers.FlaskHandler):
 
     if (response.status_code != 200):
       logging.error('Unable to retrieve chromium histograms mapping file.')
-      return
+      self.abort(500)
 
     histograms_content = base64.b64decode(response.content).decode()
     dom = minidom.parseString(histograms_content)
@@ -267,13 +267,19 @@ class HistogramsHandler(basehandlers.FlaskHandler):
     #   <int value="0" label="OBSOLETE_PageDestruction"/>
     #   <int value="1" label="LegacyNotifications"/>
 
-    enum_tags = dom.getElementsByTagName('enum')
+    enum_els = dom.getElementsByTagName('enum')
 
     # Save bucket ids for each histogram type, FeatureObserver and
     # MappedCSSProperties.
     for histogram_id in list(self.MODEL_CLASS.keys()):
-      enum = [enum for enum in enum_tags
-              if enum.attributes['name'].value == histogram_id][0]
+      matching_els = [el for el in enum_els
+                      if el.attributes['name'].value == histogram_id]
+      if matching_els:
+        enum = matching_els[0]
+      else:
+        logging.error(f'Unable to find <enum name="{histogram_id}">.')
+        self.abort(500)
+
       for child in enum.getElementsByTagName('int'):
         self._SaveData({
           'bucket_id': child.attributes['value'].value,
