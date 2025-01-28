@@ -30,6 +30,8 @@ from internals.review_models import Gate, Vote, Activity
 from internals.core_enums import *
 from internals.feature_links import batch_index_feature_entries
 from internals import stage_helpers
+from internals.webdx_feature_models import WebdxFeatures
+from webstatus_openapi import ApiClient, DefaultApi, Configuration, ApiException, Feature
 import settings
 
 class EvaluateGateStatus(FlaskHandler):
@@ -801,3 +803,86 @@ class BackfillGateDates(FlaskHandler):
 
     return max(v.set_on for v in votes
                if v.state == Vote.NEEDS_WORK)
+
+
+class FetchWebdxFeatureId(FlaskHandler):
+
+  def get_template_data(self, **kwargs) -> str:
+    """Fetch the complete list of Webdx feature ID available from
+    webstatus.dev APIs and store them in datastore.
+    """
+    self.require_cron_header()
+
+    client = DefaultApi(ApiClient(Configuration(settings.API_WEBSTATUS_DEV_URL)))
+
+    all_data_list: list[Feature] = []
+    page_token: str | None = None
+    is_first: bool = True
+    while is_first or page_token:
+        try:
+            resp = client.list_features(page_token=page_token, page_size=100)
+            all_data_list.extend(resp.data)
+            page_token = resp.metadata.next_page_token
+            is_first = False
+        except ApiException as e:
+          logging.error(
+            'Could not fetch from %s?page_token=%s: %s',
+            settings.API_WEBSTATUS_DEV_URL,
+            page_token,
+            e,
+          )
+          return 'Running FetchWebdxFeatureId() job failed.'
+
+    feature_ids_list = [feature_data.feature_id for feature_data in all_data_list]
+    WebdxFeatures.store_webdx_feature_id_list(feature_ids_list)
+    return (f'{len(feature_ids_list)} feature ids are successfully stored.')
+
+
+class SendManualOTCreatedEmail(FlaskHandler):
+  """Manually send an email to origin trial contacts that an origin trial has
+  been created but not yet activated."""
+
+  def get_template_data(self, **kwargs):
+    self.require_cron_header()
+
+    stage_id = kwargs.get('stage_id')
+    stage: Stage|None = Stage.get_by_id(stage_id)
+    if not stage:
+      return f'Stage {stage_id} not found'
+    if stage.stage_type not in ALL_ORIGIN_TRIAL_STAGE_TYPES:
+      return f'Stage {stage_id} is not an origin trial stage'
+    if not stage.ot_owner_email and not stage.ot_emails:
+      return f'Stage {stage_id} has no OT contacts set'
+    if not stage.ot_display_name:
+      return f'Stage {stage_id} does not have ot_display_name set'
+    if stage.ot_activation_date is None:
+      return f'Stage {stage_id} does not have ot_activation_date set'
+
+    cloud_tasks_helpers.enqueue_task(
+        '/tasks/email-ot-creation-processed',
+        {'stage': converters.stage_to_json_dict(stage)})
+    return 'Email task enqueued'
+
+
+class SendManualOTActivatedEmail(FlaskHandler):
+  """Manually send an email to origin trial contacts that an origin trial has
+  been created and also activated."""
+
+  def get_template_data(self, **kwargs):
+    self.require_cron_header()
+
+    stage_id = kwargs.get('stage_id')
+    stage: Stage|None = Stage.get_by_id(stage_id)
+    if not stage:
+      return f'Stage {stage_id} not found'
+    if stage.stage_type not in ALL_ORIGIN_TRIAL_STAGE_TYPES:
+      return f'Stage {stage_id} is not an origin trial stage'
+    if not stage.ot_owner_email and not stage.ot_emails:
+      return f'Stage {stage_id} has no OT contacts set'
+    if not stage.ot_display_name:
+      return f'Stage {stage_id} does not have ot_display_name set'
+
+    cloud_tasks_helpers.enqueue_task(
+        '/tasks/email-ot-activated',
+        {'stage': converters.stage_to_json_dict(stage)})
+    return 'Email task enqueued'
