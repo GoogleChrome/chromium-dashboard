@@ -1046,6 +1046,7 @@ export class ChromedashGateColumn extends LitElement {
 
       <chromedash-survey-questions
         .loading=${this.loading}
+        .feature=${this.feature}
         .gate=${this.gate}
         ></chromedash-survey-questions>
       ${this.loading ? this.renderCommentsSkeleton() : this.renderComments()}
