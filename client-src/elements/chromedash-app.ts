@@ -583,7 +583,6 @@ export class ChromedashApp extends LitElement {
 
   /* The user edited something, so tell components to refetch data. */
   refetch() {
-    console.log('xxxxxxxxxxx');
     if (this.pageComponent?.refetch) {
       this.pageComponent.refetch();
     }
