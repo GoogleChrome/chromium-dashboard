@@ -165,6 +165,7 @@ class VotesAPITest(testing_config.CustomTestCase):
   @mock.patch('internals.approval_defs.get_approvers')
   def test_post__forbidden(self, mock_get_approvers):
     """Handler rejects requests from anon users and non-approvers."""
+    original_updated = self.feature_1.updated
     mock_get_approvers.return_value = ['reviewer1@example.com']
     params = {'state': Vote.NEEDS_WORK}
 
@@ -199,6 +200,9 @@ class VotesAPITest(testing_config.CustomTestCase):
         self.handler.do_post(
             feature_id=self.feature_id, gate_id=self.gate_1_id)
 
+    # None of these rejections changed the feature's updated time.
+    self.assertEqual(original_updated, self.feature_1.updated)
+
   @mock.patch('internals.approval_defs.get_approvers')
   def test_post__mismatched(self, mock_get_approvers):
     """Handler rejects requests with gate of a different feature."""
@@ -218,6 +222,7 @@ class VotesAPITest(testing_config.CustomTestCase):
   @mock.patch('internals.approval_defs.get_approvers')
   def test_post__add_new_vote(self, mock_get_approvers, mock_notifier):
     """Handler adds a vote when one did not exist before."""
+    original_updated = self.feature_1.updated
     mock_get_approvers.return_value = ['reviewer1@example.com']
     testing_config.sign_in('reviewer1@example.com', 123567890)
     params = {'state': Vote.NEEDS_WORK}
@@ -237,11 +242,13 @@ class VotesAPITest(testing_config.CustomTestCase):
     mock_notifier.assert_called_once_with(
         self.feature_1, self.gate_1, 'reviewer1@example.com',
         Vote.NEEDS_WORK, Vote.NO_RESPONSE)
+    self.assertTrue(original_updated < self.feature_1.updated)
 
   @mock.patch('internals.notifier_helpers.notify_subscribers_of_vote_changes')
   @mock.patch('internals.approval_defs.get_approvers')
   def test_post__update_vote(self, mock_get_approvers, mock_notifier):
     """Handler updates a vote when one already exists for that reviwer."""
+    original_updated = self.feature_1.updated
     mock_get_approvers.return_value = ['reviewer1@example.com']
     testing_config.sign_in('reviewer1@example.com', 123567890)
     self.vote_1_1.put()  # Existing vote from reviewer1@.
@@ -263,6 +270,7 @@ class VotesAPITest(testing_config.CustomTestCase):
     mock_notifier.assert_called_once_with(
         self.feature_1, self.gate_1, 'reviewer1@example.com',
         Vote.DENIED, Vote.APPROVED)
+    self.assertTrue(original_updated < self.feature_1.updated)
 
   @mock.patch('internals.notifier_helpers.notify_approvers_of_reviews')
   @mock.patch('internals.approval_defs.get_approvers')
