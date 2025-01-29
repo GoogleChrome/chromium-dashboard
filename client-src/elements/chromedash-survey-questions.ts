@@ -10,8 +10,7 @@ import {autolink} from './utils.js';
 
 @customElement('chromedash-survey-questions')
 export class ChromedashSurveyQuestions extends LitElement {
-
-    static get styles() {
+  static get styles() {
     return [
       ...SHARED_STYLES,
       css`
@@ -28,21 +27,21 @@ export class ChromedashSurveyQuestions extends LitElement {
         }
         #questionnaire ul li {
           list-style: disc;
-      }
-      #questionnaire ol li {
-      list-style: auto;
-      margin-left: var(--content-padding);
-      }
-      .question {
+        }
+        #questionnaire ol li {
+          list-style: auto;
+          margin-left: var(--content-padding);
+        }
+        .question {
           padding: var(--content-padding-half);
-      }
+        }
         .instructions {
           padding: var(--content-padding-half);
           margin-bottom: var(--content-padding-large);
         }
       `,
     ];
-    }
+  }
 
   @state()
   feature!: Feature;
@@ -52,7 +51,7 @@ export class ChromedashSurveyQuestions extends LitElement {
   loading = true;
 
   refetch() {
-    window.csClient.getGates(this.feature.id).then((resp) => {
+    window.csClient.getGates(this.feature.id).then(resp => {
       for (const g of resp.gates) {
         if (g.id === this.gate.id) {
           this.gate = g;
@@ -71,8 +70,9 @@ export class ChromedashSurveyQuestions extends LitElement {
   }
 
   handleFieldChange(name: string, value: string | boolean) {
-    window.csClient.updateGate(
-      this.feature.id, this.gate.id, null, {[name]: value}).then(() => {
+    window.csClient
+      .updateGate(this.feature.id, this.gate.id, null, {[name]: value})
+      .then(() => {
         this.refetch();
       });
   }
@@ -80,68 +80,78 @@ export class ChromedashSurveyQuestions extends LitElement {
   renderBooleanField(name: string, desc: string): TemplateResult {
     const value: boolean = this.gate.survey_answers[name];
     return html`
-    <li class="question">
-    <sl-checkbox
-    name=${name} ?checked=${value}
-    @sl-change=${e => this.handleFieldChange(name, e.target?.checked)}
-    ></sl-checkbox>
-    ${desc}
-    </li>
+      <li class="question">
+        <sl-checkbox
+          name=${name}
+          ?checked=${value}
+          @sl-change=${e => this.handleFieldChange(name, e.target?.checked)}
+        ></sl-checkbox>
+        ${desc}
+      </li>
     `;
   }
 
   renderStringField(name: string, desc: string): TemplateResult {
     const value: string = this.gate.survey_answers[name];
     return html`
-    <li class="question">
-    ${desc}
-    <sl-input name="${name}" size="small" value=${value}
-    @sl-change=${e => this.handleFieldChange(name, e.target?.value)}
-    ></sl-input>
-    </li>
+      <li class="question">
+        ${desc}
+        <sl-input
+          name="${name}"
+          size="small"
+          value=${value}
+          @sl-change=${e => this.handleFieldChange(name, e.target?.value)}
+        ></sl-input>
+      </li>
     `;
   }
 
   renderPrivacyForm(): TemplateResult {
     return html`
-    <div id="questionnaire">
-    <ol>
-      ${this.renderBooleanField(
-        "is_language_polyfill",
-        `This is a new JS language construct that has already
-         been polyfillable.`)}
-      ${this.renderBooleanField(
-        "is_api_polyfill",
-        `This is a new API that ergonomically provides a function
+      <div id="questionnaire">
+        <ol>
+          ${this.renderBooleanField(
+            'is_language_polyfill',
+            `This is a new JS language construct that has already
+         been polyfillable.`
+          )}
+          ${this.renderBooleanField(
+            'is_api_polyfill',
+            `This is a new API that ergonomically provides a function
          that was already polyfillable under the same conditions.
          By "same conditions" we mean, for example, that if a
          polyfill was only possible when the user has granted a
-         certain permission, the API respects the same permission.`)}
-      ${this.renderBooleanField(
-        "is_same_origin_css",
-        `This is a CSS addition or change such that the style only
+         certain permission, the API respects the same permission.`
+          )}
+          ${this.renderBooleanField(
+            'is_same_origin_css',
+            `This is a CSS addition or change such that the style only
          depends on same-origin information and does NOT on user data.
            CSS changes are usually benign, however: if the style relies
          on iframes or subresources, it could reveal cross-origin
            information.  If the style depends on user data, such as
           browsing history (like :visited), cookies, or user input
         (like hidden=until-found), the style could be used by the
-        website to read this data.`)}
-      ${this.renderStringField(
-        "launch_or_contact",
-        `If there is a Google-internal launch entry filed for this
+        website to read this data.`
+          )}
+          ${this.renderStringField(
+            'launch_or_contact',
+            `If there is a Google-internal launch entry filed for this
          exact same issue, enter its URL here. Or, if this has previously
         been discussed with someone on the privacy team, enter their
-        email address. Or, enter "None".`)}
+        email address. Or, enter "None".`
+          )}
         </ol>
-    </div>
+      </div>
     `;
   }
 
   renderQuestionnaire(): TemplateResult {
-    if (this.gate.gate_type === GATE_TYPES.PRIVACY_ORIGIN_TRIAL ||
-      this.gate.gate_type === GATE_TYPES.PRIVACY_SHIP) {
-        return this.renderPrivacyForm();
+    if (
+      this.gate.gate_type === GATE_TYPES.PRIVACY_ORIGIN_TRIAL ||
+      this.gate.gate_type === GATE_TYPES.PRIVACY_SHIP
+    ) {
+      return this.renderPrivacyForm();
     }
     const questionnaireText = GATE_QUESTIONNAIRES[this.gate.gate_type];
     if (!questionnaireText) return html`No questions`;
@@ -158,11 +168,10 @@ export class ChromedashSurveyQuestions extends LitElement {
 
   render(): TemplateResult {
     return html`
-    <h2>Survey questions</h2>
-    ${this.loading ?
-      this.renderQuestionnaireSkeleton() :
-      this.renderQuestionnaire()}
+      <h2>Survey questions</h2>
+      ${this.loading
+        ? this.renderQuestionnaireSkeleton()
+        : this.renderQuestionnaire()}
     `;
   }
-
 }

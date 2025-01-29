@@ -1048,7 +1048,7 @@ export class ChromedashGateColumn extends LitElement {
         .loading=${this.loading}
         .feature=${this.feature}
         .gate=${this.gate}
-        ></chromedash-survey-questions>
+      ></chromedash-survey-questions>
       ${this.loading ? this.renderCommentsSkeleton() : this.renderComments()}
     `;
   }
