@@ -63,7 +63,6 @@ export class ChromedashSurveyQuestions extends LitElement {
 
   renderQuestionnaireSkeleton(): TemplateResult {
     return html`
-      <!-- prettier-ignore -->
       <div id="questionnaire">Loading...</div>
       <p class="instructions">&nbsp;</p>
     `;
@@ -160,7 +159,6 @@ export class ChromedashSurveyQuestions extends LitElement {
         ? autolink(questionnaireText)
         : questionnaireText;
     return html`
-      <!-- prettier-ignore -->
       <div id="questionnaire">${markup}</div>
       <p class="instructions">Please post responses in the comments below.</p>
     `;
