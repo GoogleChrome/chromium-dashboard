@@ -369,11 +369,12 @@ export class ChromedashOTCreationPage extends LitElement {
       let useCounterPrefix = '';
       if (this.webfeatureUseCounterType === USE_COUNTER_TYPE_WEBDXFEATURE) {
         useCounterPrefix = 'WebDXFeature::';
-      } else if (this.webfeatureUseCounterType === USE_COUNTER_TYPE_CSS_PROPERTY_ID) {
-        useCounterPrefix = 'CSSSampleId::'
+      } else if (
+        this.webfeatureUseCounterType === USE_COUNTER_TYPE_CSS_PROPERTY_ID
+      ) {
+        useCounterPrefix = 'CSSSampleId::';
       }
-      stageSubmitBody.ot_webfeature_use_counter.value =
-        `${useCounterPrefix}${stageSubmitBody.ot_webfeature_use_counter.value}`;
+      stageSubmitBody.ot_webfeature_use_counter.value = `${useCounterPrefix}${stageSubmitBody.ot_webfeature_use_counter.value}`;
     }
 
     this.submitting = true;

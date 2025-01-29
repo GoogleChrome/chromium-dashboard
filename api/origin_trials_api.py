@@ -198,7 +198,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
       elif uc_type == BlinkHistogramID.css_property_id:
         formatted_use_counter = webfeature_use_counter[13:]
         if not formatted_use_counter:
-          validation_errors['oit_webfeature_use_counter'] = (
+          validation_errors['ot_webfeature_use_counter'] = (
               'No CSSSampleId use counter provided.')
         elif (f'{formatted_use_counter} = '
               not in chromium_files['css_property_id_file']):
