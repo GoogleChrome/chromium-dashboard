@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from datetime import datetime
 import logging
 from typing import Any, Tuple
 
@@ -74,6 +75,8 @@ class VotesAPI(basehandlers.APIHandler):
     old_gate_state = gate.state
     new_gate_state = approval_defs.set_vote(feature_id, None, new_state,
         user.email(), gate_id)
+    fe.updated = datetime.now()
+    fe.put()
 
     # Send any notifications necessary if the gate is newly approved.
     recently_approved = (old_gate_state not in (Vote.APPROVED, Vote.NA) and
