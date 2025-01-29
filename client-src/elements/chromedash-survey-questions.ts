@@ -9,7 +9,7 @@ import {GATE_QUESTIONNAIRES} from './gate-details.js';
 import {autolink} from './utils.js';
 
 @customElement('chromedash-survey-questions')
-export class ChromedashGateColumn extends LitElement {
+export class ChromedashSurveyQuestions extends LitElement {
 
     static get styles() {
     return [
@@ -82,7 +82,7 @@ export class ChromedashGateColumn extends LitElement {
     return html`
     <li class="question">
     <sl-checkbox
-    name="${name}" ?checked=${value}
+    name=${name} ?checked=${value}
     @sl-change=${e => this.handleFieldChange(name, e.target?.checked)}
     ></sl-checkbox>
     ${desc}
@@ -144,7 +144,7 @@ export class ChromedashGateColumn extends LitElement {
         return this.renderPrivacyForm();
     }
     const questionnaireText = GATE_QUESTIONNAIRES[this.gate.gate_type];
-    if (!questionnaireText) return html``;
+    if (!questionnaireText) return html`No questions`;
     const markup =
       typeof questionnaireText == 'string'
         ? autolink(questionnaireText)
