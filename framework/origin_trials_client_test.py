@@ -292,6 +292,38 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
     self.assertEqual({'bucket_number': 11, 'histogram_id': 'WEBDX_FEATURE'},
                      create_trial_json['trial']['blink_use_counter_config'])
 
+  @mock.patch('framework.secrets.get_ot_data_access_admin_group')
+  @mock.patch('framework.secrets.get_ot_api_key')
+  @mock.patch('framework.origin_trials_client._get_ot_access_token')
+  @mock.patch('framework.origin_trials_client._get_trial_end_time')
+  @mock.patch('requests.post')
+  def test_create_origin_trial__css_property_id(
+      self, mock_requests_post, mock_get_trial_end_time,
+      mock_get_ot_access_token, mock_api_key_get, mock_get_admin_group):
+    """CSSSampleId use counters should have different config in request."""
+    self.ot_stage.ot_webfeature_use_counter = 'CSSSampleId::Example'
+    self.ot_stage.put()
+    mock_requests_post.return_value = mock.MagicMock(
+        status_code=200, json=lambda : (
+            {'trial': {'id': -1234567890}}))
+    mock_get_trial_end_time.return_value = 111222333
+    mock_get_ot_access_token.return_value = 'access_token'
+    mock_api_key_get.return_value = 'api_key_value'
+    mock_get_admin_group.return_value = 'test-group-123'
+
+    ot_id, error_text = origin_trials_client.create_origin_trial(self.ot_stage)
+    self.assertEqual(ot_id, '-1234567890')
+    self.assertIsNone(error_text)
+
+    mock_api_key_get.assert_called_once()
+    mock_get_ot_access_token.assert_called_once()
+    # Two separate POST requests made.
+    self.assertEqual(2, mock_requests_post.call_count)
+    create_trial_json = mock_requests_post.call_args_list[0][1]['json']
+    # CSS_PROPERTY_ID histogram ID should be populated.
+    self.assertEqual({'bucket_number': 11, 'histogram_id': 'CSS_PROPERTY_ID'},
+                     create_trial_json['trial']['blink_use_counter_config'])
+
   @mock.patch('framework.secrets.get_ot_api_key')
   @mock.patch('requests.post')
   def test_activate_origin_trial__no_api_key(

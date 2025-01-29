@@ -26,21 +26,28 @@ from chromestatus_openapi.models import (CreateOriginTrialRequest, GetOriginTria
 
 from framework import basehandlers, origin_trials_client, permissions
 from internals import notifier_helpers
-from internals.core_enums import OT_READY_FOR_CREATION
+from internals.core_enums import BlinkHistogramID, OT_READY_FOR_CREATION
 from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Gate, Vote
 import settings
 
 WEBFEATURE_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom?format=TEXT'
 WEBDXFEATURE_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/public/mojom/use_counter/metrics/webdx_feature.mojom?format=TEXT'
+CSS_PROPERTY_ID_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/public/mojom/use_counter/metrics/css_property_id.mojom?format=TEXT'
 ENABLED_FEATURES_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/runtime_enabled_features.json5?format=TEXT'
 GRACE_PERIOD_FILE = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/common/origin_trials/manual_completion_origin_trial_features.cc?format=TEXT'
 CHROMIUM_SRC_FILES = [
-  {'name': 'webfeature_file', 'url': WEBFEATURE_FILE_URL},
-  {'name': 'webdxfeature_file', 'url': WEBDXFEATURE_FILE_URL},
   {'name': 'enabled_features_text', 'url': ENABLED_FEATURES_FILE_URL},
   {'name': 'grace_period_file', 'url': GRACE_PERIOD_FILE}
 ]
+CHROMIUM_USE_COUNTER_FILES_MAP = {
+  BlinkHistogramID.web_feature: {
+      'name': 'webfeature_file', 'url': WEBFEATURE_FILE_URL},
+  BlinkHistogramID.webdx_feature: {
+      'name': 'webdxfeature_file', 'url': WEBDXFEATURE_FILE_URL},
+  BlinkHistogramID.css_property_id: {
+      'name': 'css_property_id_file', 'url': CSS_PROPERTY_ID_FILE_URL},
+}
 
 
 def get_chromium_file(url: str) -> str:
@@ -49,12 +56,18 @@ def get_chromium_file(url: str) -> str:
     return  b64decode(conn.read()).decode('utf-8')
 
 
-def get_chromium_files_for_validation() -> dict:
+def get_chromium_files_for_validation(uc_type: BlinkHistogramID | None) -> dict:
   """Get all chromium file contents stored in a dictionary"""
   chromium_files = {}  # Chromium source file contents.
+  files_to_fetch = []
+  # Only obtain the relevant use counter file.
+  if uc_type:
+    files_to_fetch.append(CHROMIUM_USE_COUNTER_FILES_MAP[uc_type])
+  files_to_fetch.extend(CHROMIUM_SRC_FILES)
+
   with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
     future_to_name = {executor.submit(get_chromium_file, f['url']): f['name']
-                    for f in CHROMIUM_SRC_FILES}
+                      for f in files_to_fetch}
     for future in concurrent.futures.as_completed(future_to_name):
       name = future_to_name[future]
       try:
@@ -62,6 +75,17 @@ def get_chromium_files_for_validation() -> dict:
       except Exception as exc:
         raise exc
   return chromium_files
+
+
+def _get_use_counter_type(uc: str | None) -> BlinkHistogramID | None:
+  """Discern the use counter type based on the prefix."""
+  if not uc:
+    return None
+  if uc.startswith('WebDXFeature::'):
+    return BlinkHistogramID.webdx_feature
+  if uc.startswith('CSSSampleId::'):
+    return BlinkHistogramID.css_property_id
+  return BlinkHistogramID.web_feature
 
 
 def find_use_counter_value(
@@ -73,21 +97,26 @@ def find_use_counter_value(
     return 0
   use_counter_name = (body['ot_webfeature_use_counter']['value']
                       if body['ot_webfeature_use_counter'] else None)
-  is_webdx_use_counter = (
-      use_counter_name and
-      use_counter_name.startswith('WebDXFeature::'))
+  uc_type = _get_use_counter_type(use_counter_name)
+  if not uc_type:
+    return None
 
   match: re.Match | None = None
-  if use_counter_name and is_webdx_use_counter:
+  expression = ''
+  file = ''
+  # Defaults for WebFeature use counter.
+  if uc_type == BlinkHistogramID.web_feature:
+    expression = f'(?<={use_counter_name} = )[0-9]+'
+    file = chromium_files_dict['webfeature_file']
+  if uc_type == BlinkHistogramID.webdx_feature:
     # Remove "WebDXFeature::" prefix.
     expression = f'(?<={use_counter_name[14:]} = )[0-9]+'
-    match = re.search(expression,
-                      chromium_files_dict['webdxfeature_file'])
-  elif use_counter_name:
-    expression = f'(?<={use_counter_name} = )[0-9]+'
-    match = re.search(expression,
-                      chromium_files_dict['webfeature_file'])
-
+    file = chromium_files_dict['webdxfeature_file']
+  if uc_type == BlinkHistogramID.css_property_id:
+    # Remove "CSSSampleId::" prefix.
+    expression = f'(?<={use_counter_name[13:]} = )[0-9]+'
+    file = chromium_files_dict['css_property_id_file']
+  match = re.search(expression, file)
   if match:
     return int(match.group(0))
   return None
@@ -145,20 +174,18 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
       webfeature_use_counter = (body['ot_webfeature_use_counter']['value']
                                 if body['ot_webfeature_use_counter'] else None)
       # Client will add a prefix to a WebDXFeature use counter.
-      is_webdx_use_counter = (
-          webfeature_use_counter and
-          webfeature_use_counter.startswith('WebDXFeature::'))
+      uc_type = _get_use_counter_type(webfeature_use_counter)
 
       # Check for valid WebFeature use counter specifications.
       if not webfeature_use_counter:
         validation_errors['ot_webfeature_use_counter'] = (
             'No UseCounter specified for non-deprecation trial.')
-      elif (not is_webdx_use_counter and
+      elif (uc_type == BlinkHistogramID.web_feature and
             f'{webfeature_use_counter} =' not in chromium_files['webfeature_file']):
         validation_errors['ot_webfeature_use_counter'] = (
               'UseCounter not landed in web_feature.mojom')
       # Check for valid WebDXFeature use counter specifications.
-      elif is_webdx_use_counter:
+      elif uc_type == BlinkHistogramID.webdx_feature:
         formatted_use_counter = webfeature_use_counter[14:]
         if not formatted_use_counter:
           validation_errors['ot_webfeature_use_counter'] = (
@@ -167,6 +194,16 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
               not in chromium_files['webdxfeature_file']):
           validation_errors['ot_webfeature_use_counter'] = (
               'UseCounter not landed in webdx_feature.mojom')
+      # CSSSampleId validation.
+      elif uc_type == BlinkHistogramID.css_property_id:
+        formatted_use_counter = webfeature_use_counter[13:]
+        if not formatted_use_counter:
+          validation_errors['oit_webfeature_use_counter'] = (
+              'No CSSSampleId use counter provided.')
+        elif (f'{formatted_use_counter} = '
+              not in chromium_files['css_property_id_file']):
+          validation_errors['ot_webfeature_use_counter'] = (
+              'UseCounter not landed in css_property_id.mojom')
 
     has_third_party_support = (body['ot_has_third_party_support']['value']
                                if body['ot_has_third_party_support'] else None)
@@ -229,8 +266,11 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
 
     #TODO(markxiong0122): remove to_dict() when PR#4213 is merged
     body = CreateOriginTrialRequest.from_dict(self.get_json_param_dict()).to_dict()
+    use_counter = (body['ot_webfeature_use_counter']['value']
+                   if body['ot_webfeature_use_counter'] else None)
+    uc_type = _get_use_counter_type(use_counter)
     try:
-      chromium_files_dict = get_chromium_files_for_validation()
+      chromium_files_dict = get_chromium_files_for_validation(uc_type)
     except Exception as exc:
       self.abort(
           500, f'Error obtaining Chromium file for validation: {str(exc)}')
