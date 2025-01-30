@@ -102,8 +102,7 @@ describe('chromedash-survey-questions', () => {
     assert.isFalse(checkbox2.checked);
   });
 
-  it('displays the privacy surveys even when nothing has been entered',
-    async () => {
+  it('displays the privacy surveys even when nothing has been entered', async () => {
     const component = (await fixture(
       html`<chromedash-survey-questions
         .feature=${feature}
