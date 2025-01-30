@@ -163,8 +163,6 @@ class GatesAPI(basehandlers.APIHandler):
     new_assignees = request.assignees
     new_answers = request.survey_answers
 
-    logging.info('@@@ request is %r', request)
-
     self.require_permissions(user, fe, gate)
 
     if new_assignees is not None:
