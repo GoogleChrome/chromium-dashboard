@@ -1123,6 +1123,8 @@ components:
             format: email
         self_certify_eligible:
           type: boolean
+        self_certify_possible:
+          type: boolean
         survey_answers:
           $ref: '#/components/schemas/SurveyAnswers'
     SurveyAnswers:

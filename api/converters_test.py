@@ -547,6 +547,7 @@ class GateConvertersTest(testing_config.CustomTestCase):
       'slo_resolve_remaining': None,
       'needs_work_started_on': None,
       'self_certify_eligible': False,
+      'self_certify_possible': False,
       'survey_answers': None,
       }
     self.assertEqual(expected, actual)
@@ -590,6 +591,7 @@ class GateConvertersTest(testing_config.CustomTestCase):
       'slo_resolve_remaining': None,
       'needs_work_started_on': None,
       'self_certify_eligible': True,
+      'self_certify_possible': True,
       'survey_answers': {
           'is_api_polyfill': False,
           'is_language_polyfill': True,

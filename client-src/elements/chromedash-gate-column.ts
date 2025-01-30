@@ -3,6 +3,7 @@ import {createRef, ref} from 'lit/directives/ref.js';
 import './chromedash-activity-log';
 import './chromedash-survey-questions';
 import {openNaRationaleDialog} from './chromedash-na-rationale-dialog';
+import {maybeOpenCertifyDialog} from './chromedash-self-certify-dialog';
 import {
   openPreflightDialog,
   somePendingGates,
@@ -411,6 +412,22 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   async handleReviewRequested() {
+    maybeOpenCertifyDialog(this.gate).then(selfCertifying => {
+      if (selfCertifying) {
+        this.handleSelfCertify();
+      } else {
+        this.handleReviewRequestSubmitted();
+      }
+    });
+  }
+
+  handleNARequested() {
+    openNaRationaleDialog(this.gate).then(rationale => {
+      this.handleNARequestSubmitted(rationale);
+    });
+  }
+
+  async handleReviewRequestSubmitted() {
     await window.csClient.setVote(
       this.feature.id,
       this.gate.id,
@@ -419,10 +436,13 @@ export class ChromedashGateColumn extends LitElement {
     this._fireEvent('refetch-needed', {});
   }
 
-  handleNARequested() {
-    openNaRationaleDialog(this.gate).then(rationale => {
-      this.handleNARequestSubmitted(rationale);
-    });
+  async handleSelfCertify() {
+    await window.csClient.setVote(
+      this.feature.id,
+      this.gate.id,
+      VOTE_OPTIONS.APPROVED[0]
+    );
+    this._fireEvent('refetch-needed', {});
   }
 
   async handleNARequestSubmitted(rationale) {
