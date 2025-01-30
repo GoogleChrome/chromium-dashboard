@@ -111,6 +111,17 @@ enum WebDXFeature {
 };
 """
 
+    self.mock_css_property_id_usecounters_file = """
+enum CSSSampleId {
+  kSomeFeature = 1,
+  kValidFeature = 2,
+  kNoThirdParty = 3,
+  kSample = 4,
+  kNoCriticalTrial = 5,
+  kValidTrial = 6,
+};
+"""
+
     self.mock_features_file = """
 {
   "data": [
@@ -160,6 +171,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
     self.mock_chromium_files_dict = {
       'webfeature_file': self.mock_web_usecounters_file,
       'webdxfeature_file': self.mock_webdx_usecounters_file,
+      'css_property_id_file': self.mock_css_property_id_usecounters_file,
       'enabled_features_text': self.mock_features_file,
       'grace_period_file': self.mock_grace_period_file,
     }
@@ -343,6 +355,42 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
       'ot_webfeature_use_counter': {
         'form_field_name': 'ot_webfeature_use_counter',
         'value': 'WebDXFeature::kValidFeature',
+      },
+      'ot_is_critical_trial': {
+        'form_field_name': 'ot_is_critical_trial',
+        'value': True,
+      },
+      'ot_is_deprecation_trial': {
+        'form_field_name': 'ot_is_deprecation_trial',
+        'value': False,
+      },
+      'ot_has_third_party_support': {
+        'form_field_name': 'ot_has_third_party_support',
+        'value': True,
+      },
+    }
+    # No exception should be raised.
+    with test_app.test_request_context(self.request_path):
+      result = self.handler._validate_creation_args(
+          body, self.mock_chromium_files_dict)
+    expected = {}
+    self.assertEqual(expected, result)
+
+  @mock.patch('framework.origin_trials_client.get_trials_list')
+  def test_validate_creation_args__valid_css_property_id(
+      self, mock_get_trials_list):
+    """No error messages should be returned if all args are valid using a
+    CSSSampleId use counter."""
+    mock_get_trials_list.return_value = self.mock_trials_list
+
+    body = {
+      'ot_chromium_trial_name': {
+        'form_field_name': 'ot_chromium_trial_name',
+        'value': 'ValidFeature',
+      },
+      'ot_webfeature_use_counter': {
+        'form_field_name': 'ot_webfeature_use_counter',
+        'value': 'CSSSampleId::kValidFeature',
       },
       'ot_is_critical_trial': {
         'form_field_name': 'ot_is_critical_trial',

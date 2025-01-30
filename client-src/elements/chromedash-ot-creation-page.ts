@@ -10,6 +10,8 @@ import {
   OT_SETUP_STATUS_OPTIONS,
   VOTE_OPTIONS,
   USE_COUNTER_TYPE_WEBFEATURE,
+  USE_COUNTER_TYPE_WEBDXFEATURE,
+  USE_COUNTER_TYPE_CSS_PROPERTY_ID,
 } from './form-field-enums.js';
 import {ALL_FIELDS} from './form-field-specs.js';
 import {
@@ -364,10 +366,14 @@ export class ChromedashOTCreationPage extends LitElement {
 
     if ('ot_webfeature_use_counter' in stageSubmitBody) {
       // Add on the appropriate use counter prefix.
-      const useCounterPrefix =
-        this.webfeatureUseCounterType === USE_COUNTER_TYPE_WEBFEATURE
-          ? ''
-          : 'WebDXFeature::';
+      let useCounterPrefix = '';
+      if (this.webfeatureUseCounterType === USE_COUNTER_TYPE_WEBDXFEATURE) {
+        useCounterPrefix = 'WebDXFeature::';
+      } else if (
+        this.webfeatureUseCounterType === USE_COUNTER_TYPE_CSS_PROPERTY_ID
+      ) {
+        useCounterPrefix = 'CSSSampleId::';
+      }
       stageSubmitBody.ot_webfeature_use_counter.value = `${useCounterPrefix}${stageSubmitBody.ot_webfeature_use_counter.value}`;
     }
 

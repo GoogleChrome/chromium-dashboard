@@ -192,6 +192,9 @@ def _send_create_trial_request(
     if (ot_stage.ot_webfeature_use_counter
         and ot_stage.ot_webfeature_use_counter.startswith('WebDXFeature::')):
       config['histogram_id'] = BlinkHistogramID.webdx_feature.value
+    if (ot_stage.ot_webfeature_use_counter
+        and ot_stage.ot_webfeature_use_counter.startswith('CSSSampleId::')):
+      config['histogram_id'] = BlinkHistogramID.css_property_id.value
     json['trial']['blink_use_counter_config'] = config
 
   headers = {'Authorization': f'Bearer {access_token}'}
