@@ -30,6 +30,13 @@ describe('chromedash-survey-questions', () => {
     },
   };
 
+  const uneditedPrivacyGate = {
+    stage_id: 1,
+    gate_id: 13,
+    gate_type: GATE_TYPES.PRIVACY_SHIP,
+    survey_answers: null,
+  };
+
   const feature = {
     id: 123456789,
   };
@@ -88,6 +95,31 @@ describe('chromedash-survey-questions', () => {
     );
     assert.instanceOf(checkbox1, SlCheckbox);
     assert.isTrue(checkbox1.checked);
+    const checkbox2 = component.shadowRoot!.querySelector(
+      '[name=is_api_polyfill]'
+    );
+    assert.instanceOf(checkbox2, SlCheckbox);
+    assert.isFalse(checkbox2.checked);
+  });
+
+  it('displays the privacy surveys even when nothing has been entered',
+    async () => {
+    const component = (await fixture(
+      html`<chromedash-survey-questions
+        .feature=${feature}
+        .gate=${uneditedPrivacyGate}
+        .loading=${false}
+      ></chromedash-survey-questions>`
+    )) as ChromedashSurveyQuestions;
+    assert.exists(component);
+    assert.instanceOf(component, ChromedashSurveyQuestions);
+    assert.notInclude(component.shadowRoot!.innerHTML, 'Loading...');
+    assert.include(component.shadowRoot!.innerHTML, 'JS language construct');
+    const checkbox1 = component.shadowRoot!.querySelector(
+      '[name=is_language_polyfill]'
+    );
+    assert.instanceOf(checkbox1, SlCheckbox);
+    assert.isFalse(checkbox1.checked);
     const checkbox2 = component.shadowRoot!.querySelector(
       '[name=is_api_polyfill]'
     );
