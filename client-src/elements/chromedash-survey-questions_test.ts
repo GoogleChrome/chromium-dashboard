@@ -6,6 +6,32 @@ import {ChromeStatusClient} from '../js-src/cs-client';
 import {GATE_TYPES} from './form-field-enums';
 
 describe('chromedash-survey-questions', () => {
+  const featureOwner = {
+    can_create_feature: true,
+    can_edit_all: false,
+    is_admin: false,
+    email: 'example@google.com',
+    approvable_gate_types: [],
+    editable_features: [123456789],
+  };
+
+  const visitor = {
+    can_create_feature: true,
+    can_edit_all: false,
+    is_admin: false,
+    email: 'example@google.com',
+    approvable_gate_types: [],
+    editable_features: [],
+  };
+
+  const admin = {
+    can_create_feature: true,
+    can_edit_all: true,
+    is_admin: false,
+    email: 'example@google.com',
+    approvable_gate_types: [],
+  };
+
   const unknownGate = {
     stage_id: 1,
     gate_id: 11,
@@ -95,11 +121,13 @@ describe('chromedash-survey-questions', () => {
     );
     assert.instanceOf(checkbox1, SlCheckbox);
     assert.isTrue(checkbox1.checked);
+    assert.isTrue(checkbox1.disabled);
     const checkbox2 = component.shadowRoot!.querySelector(
       '[name=is_api_polyfill]'
     );
     assert.instanceOf(checkbox2, SlCheckbox);
     assert.isFalse(checkbox2.checked);
+    assert.isTrue(checkbox2.disabled);
   });
 
   it('displays the privacy surveys even when nothing has been entered', async () => {
@@ -119,10 +147,87 @@ describe('chromedash-survey-questions', () => {
     );
     assert.instanceOf(checkbox1, SlCheckbox);
     assert.isFalse(checkbox1.checked);
+    assert.isTrue(checkbox1.disabled);
     const checkbox2 = component.shadowRoot!.querySelector(
       '[name=is_api_polyfill]'
     );
     assert.instanceOf(checkbox2, SlCheckbox);
     assert.isFalse(checkbox2.checked);
+    assert.isTrue(checkbox2.disabled);
+  });
+
+  it('displays disabled widgets to non-editors', async () => {
+    const component = (await fixture(
+      html`<chromedash-survey-questions
+        .user=${visitor}
+        .feature=${feature}
+        .gate=${privacyGate}
+        .loading=${false}
+      ></chromedash-survey-questions>`
+    )) as ChromedashSurveyQuestions;
+    assert.exists(component);
+    assert.instanceOf(component, ChromedashSurveyQuestions);
+    const checkbox1 = component.shadowRoot!.querySelector(
+      '[name=is_language_polyfill]'
+    );
+    assert.instanceOf(checkbox1, SlCheckbox);
+    assert.isTrue(checkbox1.checked);
+    assert.isTrue(checkbox1.disabled);
+    const checkbox2 = component.shadowRoot!.querySelector(
+      '[name=is_api_polyfill]'
+    );
+    assert.instanceOf(checkbox2, SlCheckbox);
+    assert.isFalse(checkbox2.checked);
+    assert.isTrue(checkbox2.disabled);
+  });
+
+  it('displays enabled widgets to feature editors', async () => {
+    const component = (await fixture(
+      html`<chromedash-survey-questions
+        .user=${featureOwner}
+        .feature=${feature}
+        .gate=${privacyGate}
+        .loading=${false}
+      ></chromedash-survey-questions>`
+    )) as ChromedashSurveyQuestions;
+    assert.exists(component);
+    assert.instanceOf(component, ChromedashSurveyQuestions);
+    const checkbox1 = component.shadowRoot!.querySelector(
+      '[name=is_language_polyfill]'
+    );
+    assert.instanceOf(checkbox1, SlCheckbox);
+    assert.isTrue(checkbox1.checked);
+    assert.isFalse(checkbox1.disabled);
+    const checkbox2 = component.shadowRoot!.querySelector(
+      '[name=is_api_polyfill]'
+    );
+    assert.instanceOf(checkbox2, SlCheckbox);
+    assert.isFalse(checkbox2.checked);
+    assert.isFalse(checkbox2.disabled);
+  });
+
+  it('displays enabled widgets to site admins', async () => {
+    const component = (await fixture(
+      html`<chromedash-survey-questions
+        .user=${admin}
+        .feature=${feature}
+        .gate=${privacyGate}
+        .loading=${false}
+      ></chromedash-survey-questions>`
+    )) as ChromedashSurveyQuestions;
+    assert.exists(component);
+    assert.instanceOf(component, ChromedashSurveyQuestions);
+    const checkbox1 = component.shadowRoot!.querySelector(
+      '[name=is_language_polyfill]'
+    );
+    assert.instanceOf(checkbox1, SlCheckbox);
+    assert.isTrue(checkbox1.checked);
+    assert.isFalse(checkbox1.disabled);
+    const checkbox2 = component.shadowRoot!.querySelector(
+      '[name=is_api_polyfill]'
+    );
+    assert.instanceOf(checkbox2, SlCheckbox);
+    assert.isFalse(checkbox2.checked);
+    assert.isFalse(checkbox2.disabled);
   });
 });
