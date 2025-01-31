@@ -3,6 +3,7 @@ import {createRef, ref} from 'lit/directives/ref.js';
 import './chromedash-activity-log';
 import './chromedash-survey-questions';
 import {openNaRationaleDialog} from './chromedash-na-rationale-dialog';
+import {maybeOpenCertifyDialog} from './chromedash-self-certify-dialog';
 import {
   openPreflightDialog,
   somePendingGates,
@@ -272,7 +273,6 @@ export class ChromedashGateColumn extends LitElement {
         this.votes = votesRes.votes.filter(v => v.gate_id == this.gate.id);
         this.comments = commentRes.comments;
         this.needsSave = false;
-        this.loading = false;
       })
       .catch(() => {
         showToastMessage(
@@ -411,6 +411,36 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   async handleReviewRequested() {
+    maybeOpenCertifyDialog(this.gate, VOTE_OPTIONS.APPROVED[0]).then(
+      selfCertifying => {
+        if (selfCertifying) {
+          this.handleSelfCertify(VOTE_OPTIONS.APPROVED[0]);
+        } else {
+          this.handleFullReviewRequest();
+        }
+      }
+    );
+  }
+
+  async handleNARequested() {
+    maybeOpenCertifyDialog(this.gate, VOTE_OPTIONS.NA[0]).then(
+      selfCertifying => {
+        if (selfCertifying) {
+          this.handleSelfCertify(VOTE_OPTIONS.NA[0]);
+        } else {
+          this.handleFullNARequested();
+        }
+      }
+    );
+  }
+
+  handleFullNARequested() {
+    openNaRationaleDialog(this.gate).then(rationale => {
+      this.handleNARequestSubmitted(rationale);
+    });
+  }
+
+  async handleFullReviewRequest() {
     await window.csClient.setVote(
       this.feature.id,
       this.gate.id,
@@ -419,10 +449,9 @@ export class ChromedashGateColumn extends LitElement {
     this._fireEvent('refetch-needed', {});
   }
 
-  handleNARequested() {
-    openNaRationaleDialog(this.gate).then(rationale => {
-      this.handleNARequestSubmitted(rationale);
-    });
+  async handleSelfCertify(voteValue: number) {
+    await window.csClient.setVote(this.feature.id, this.gate.id, voteValue);
+    this._fireEvent('refetch-needed', {});
   }
 
   async handleNARequestSubmitted(rationale) {

@@ -24,7 +24,7 @@ from api import reviews_api
 from internals import approval_defs
 from internals.core_enums import *
 from internals import core_models
-from internals.review_models import Gate, Vote
+from internals.review_models import Gate, Vote, SurveyAnswers
 
 test_app = flask.Flask(__name__)
 
@@ -275,7 +275,7 @@ class VotesAPITest(testing_config.CustomTestCase):
   @mock.patch('internals.notifier_helpers.notify_approvers_of_reviews')
   @mock.patch('internals.approval_defs.get_approvers')
   def test_post__request_review(self, mock_get_approvers, mock_notifier):
-    """Handler allows a feature owner to rquest a review."""
+    """Handler allows a feature owner to request a review."""
     mock_get_approvers.return_value = ['reviewer1@example.com']
     testing_config.sign_in('owner1@example.com', 123567890)
 
@@ -296,6 +296,50 @@ class VotesAPITest(testing_config.CustomTestCase):
     mock_notifier.assert_called_once_with(
         self.feature_1, self.gate_1, Vote.REVIEW_REQUESTED,
         'owner1@example.com')
+
+  @mock.patch('internals.notifier_helpers.notify_subscribers_of_vote_changes')
+  @mock.patch('internals.approval_defs.get_approvers')
+  def test_post__self_cert__ineligible(self, mock_get_approvers, mock_notifier):
+    """Handler allows a feature owner to self-approve if eligible."""
+    mock_get_approvers.return_value = ['reviewer1@example.com']
+    testing_config.sign_in('owner1@example.com', 123567890)
+    self.gate_1.gate_type = GATE_PRIVACY_SHIP
+    # No survey answers filled in.
+    self.gate_1.put()
+
+    params = {'state': Vote.APPROVED}
+    with test_app.test_request_context(self.request_path, json=params):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.do_post(
+            feature_id=self.feature_id, gate_id=self.gate_1_id)
+
+  @mock.patch('internals.notifier_helpers.notify_subscribers_of_vote_changes')
+  @mock.patch('internals.approval_defs.get_approvers')
+  def test_post__self_cert__eligible(self, mock_get_approvers, mock_notifier):
+    """Handler allows a feature owner to self-approve if eligible."""
+    mock_get_approvers.return_value = ['reviewer1@example.com']
+    testing_config.sign_in('owner1@example.com', 123567890)
+    self.gate_1.gate_type = GATE_PRIVACY_SHIP
+    self.gate_1.survey_answers = SurveyAnswers(is_language_polyfill=True)
+    self.gate_1.put()
+
+    params = {'state': Vote.APPROVED}
+    with test_app.test_request_context(self.request_path, json=params):
+      actual = self.handler.do_post(
+          feature_id=self.feature_id, gate_id=self.gate_1_id)
+
+    self.assertEqual(actual, {'message': 'Done'})
+    updated_votes = Vote.get_votes(feature_id=self.feature_id)
+    self.assertEqual(1, len(updated_votes))
+    vote = updated_votes[0]
+    self.assertEqual(vote.feature_id, self.feature_id)
+    self.assertEqual(vote.gate_id, 1)
+    self.assertEqual(vote.set_by, 'owner1@example.com')
+    self.assertEqual(vote.state, Vote.APPROVED)
+
+    mock_notifier.assert_called_once_with(
+        self.feature_1, self.gate_1, 'owner1@example.com',
+        Vote.APPROVED, Vote.NO_RESPONSE)
 
 
 class GatesAPITest(testing_config.CustomTestCase):
@@ -347,6 +391,7 @@ class GatesAPITest(testing_config.CustomTestCase):
                 "next_action": None,
                 "additional_review": False,
                 'self_certify_eligible': False,
+                'self_certify_possible': False,
                 'slo_initial_response': 5,
                 'slo_initial_response_took': None,
                 'slo_initial_response_remaining': None,

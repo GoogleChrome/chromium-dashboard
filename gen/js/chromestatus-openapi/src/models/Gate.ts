@@ -160,6 +160,12 @@ export interface Gate {
     self_certify_eligible?: boolean;
     /**
      * 
+     * @type {boolean}
+     * @memberof Gate
+     */
+    self_certify_possible?: boolean;
+    /**
+     * 
      * @type {SurveyAnswers}
      * @memberof Gate
      */
@@ -205,6 +211,7 @@ export function GateFromJSONTyped(json: any, ignoreDiscriminator: boolean): Gate
         'needs_work_started_on': json['needs_work_started_on'] == null ? undefined : (new Date(json['needs_work_started_on'])),
         'possible_assignee_emails': json['possible_assignee_emails'] == null ? undefined : json['possible_assignee_emails'],
         'self_certify_eligible': json['self_certify_eligible'] == null ? undefined : json['self_certify_eligible'],
+        'self_certify_possible': json['self_certify_possible'] == null ? undefined : json['self_certify_possible'],
         'survey_answers': json['survey_answers'] == null ? undefined : SurveyAnswersFromJSON(json['survey_answers']),
     };
 }
@@ -237,6 +244,7 @@ export function GateToJSON(value?: Gate | null): any {
         'needs_work_started_on': value['needs_work_started_on'] == null ? undefined : ((value['needs_work_started_on']).toISOString()),
         'possible_assignee_emails': value['possible_assignee_emails'],
         'self_certify_eligible': value['self_certify_eligible'],
+        'self_certify_possible': value['self_certify_possible'],
         'survey_answers': SurveyAnswersToJSON(value['survey_answers']),
     };
 }
