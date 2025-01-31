@@ -71,7 +71,6 @@ export class ChromedashSurveyQuestions extends LitElement {
       .updateGate(this.feature.id, this.gate.id, null, {[name]: value})
       .then(() => {
         this._fireEvent('refetch-needed', {});
-        // this.refetch();
       });
   }
 
