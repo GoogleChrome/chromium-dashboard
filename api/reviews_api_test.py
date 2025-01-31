@@ -347,6 +347,7 @@ class GatesAPITest(testing_config.CustomTestCase):
                 "next_action": None,
                 "additional_review": False,
                 'self_certify_eligible': False,
+                'self_certify_possible': False,
                 'slo_initial_response': 5,
                 'slo_initial_response_took': None,
                 'slo_initial_response_remaining': None,

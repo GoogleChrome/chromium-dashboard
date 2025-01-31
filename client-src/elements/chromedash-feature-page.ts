@@ -346,7 +346,6 @@ export class ChromedashFeaturePage extends LitElement {
   }
 
   refetch() {
-    this.loading = true;
     Promise.all([
       window.csClient.getFeature(this.featureId),
       window.csClient.getGates(this.featureId),
@@ -356,7 +355,6 @@ export class ChromedashFeaturePage extends LitElement {
         this.feature = feature;
         this.gates = gatesRes.gates;
         this.comments = commentRes.comments;
-        this.loading = false;
       })
       .catch(error => {
         if (error instanceof FeatureNotFoundError) {

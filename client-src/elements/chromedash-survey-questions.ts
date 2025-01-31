@@ -50,15 +50,13 @@ export class ChromedashSurveyQuestions extends LitElement {
   @state()
   loading = true;
 
-  refetch() {
-    window.csClient.getGates(this.feature.id).then(resp => {
-      for (const g of resp.gates) {
-        if (g.id === this.gate.id) {
-          this.gate = g;
-          break;
-        }
-      }
+  _fireEvent(eventName, detail) {
+    const event = new CustomEvent(eventName, {
+      bubbles: true,
+      composed: true,
+      detail,
     });
+    this.dispatchEvent(event);
   }
 
   renderQuestionnaireSkeleton(): TemplateResult {
@@ -72,7 +70,8 @@ export class ChromedashSurveyQuestions extends LitElement {
     window.csClient
       .updateGate(this.feature.id, this.gate.id, null, {[name]: value})
       .then(() => {
-        this.refetch();
+        this._fireEvent('refetch-needed', {});
+        // this.refetch();
       });
   }
 

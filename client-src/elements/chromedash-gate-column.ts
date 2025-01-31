@@ -273,7 +273,6 @@ export class ChromedashGateColumn extends LitElement {
         this.votes = votesRes.votes.filter(v => v.gate_id == this.gate.id);
         this.comments = commentRes.comments;
         this.needsSave = false;
-        this.loading = false;
       })
       .catch(() => {
         showToastMessage(
@@ -412,22 +411,36 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   async handleReviewRequested() {
-    maybeOpenCertifyDialog(this.gate).then(selfCertifying => {
-      if (selfCertifying) {
-        this.handleSelfCertify();
-      } else {
-        this.handleReviewRequestSubmitted();
+    maybeOpenCertifyDialog(this.gate, VOTE_OPTIONS.APPROVED[0]).then(
+      selfCertifying => {
+        if (selfCertifying) {
+          this.handleSelfCertify(VOTE_OPTIONS.APPROVED[0]);
+        } else {
+          this.handleFullReviewRequest();
+        }
       }
-    });
+    );
   }
 
-  handleNARequested() {
+  async handleNARequested() {
+    maybeOpenCertifyDialog(this.gate, VOTE_OPTIONS.NA[0]).then(
+      selfCertifying => {
+        if (selfCertifying) {
+          this.handleSelfCertify(VOTE_OPTIONS.NA[0]);
+        } else {
+          this.handleFullNARequested();
+        }
+      }
+    );
+  }
+
+  handleFullNARequested() {
     openNaRationaleDialog(this.gate).then(rationale => {
       this.handleNARequestSubmitted(rationale);
     });
   }
 
-  async handleReviewRequestSubmitted() {
+  async handleFullReviewRequest() {
     await window.csClient.setVote(
       this.feature.id,
       this.gate.id,
@@ -436,12 +449,8 @@ export class ChromedashGateColumn extends LitElement {
     this._fireEvent('refetch-needed', {});
   }
 
-  async handleSelfCertify() {
-    await window.csClient.setVote(
-      this.feature.id,
-      this.gate.id,
-      VOTE_OPTIONS.APPROVED[0]
-    );
+  async handleSelfCertify(voteValue: number) {
+    await window.csClient.setVote(this.feature.id, this.gate.id, voteValue);
     this._fireEvent('refetch-needed', {});
   }
 
