@@ -77,7 +77,7 @@ export class ChromedashSurveyQuestions extends LitElement {
   }
 
   renderBooleanField(name: string, desc: string): TemplateResult {
-    const value: boolean = this.gate.survey_answers[name];
+    const value: boolean = this.gate.survey_answers?.[name];
     return html`
       <li class="question">
         <sl-checkbox
@@ -91,7 +91,7 @@ export class ChromedashSurveyQuestions extends LitElement {
   }
 
   renderStringField(name: string, desc: string): TemplateResult {
-    const value: string = this.gate.survey_answers[name];
+    const value: string = this.gate.survey_answers?.[name];
     return html`
       <li class="question">
         ${desc}
