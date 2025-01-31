@@ -690,8 +690,10 @@ class OTCreationApprovedHandler(basehandlers.FlaskHandler):
     self.require_task_header()
     feature = self.get_param('feature', required=True)
     contacts = feature['owner_emails'] or []
+    if len(contacts) == 0:
+      return {'message': 'No contacts available for this feature'}
     
-    send_emails([self.build_email(contacts)])
+    send_emails([self.build_email(feature, contacts)])
     return {'message': 'OK'}
 
   def build_email(self, feature: dict[str, Any], contacts: list[str]) -> dict:
