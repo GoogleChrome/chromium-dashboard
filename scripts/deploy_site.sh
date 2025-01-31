@@ -32,9 +32,10 @@ readonly BASEDIR=$(dirname $BASH_SOURCE)
 
 gulp
 
-gcloud beta app deploy \
+gcloud app deploy \
   --project $appName \
   --version $deployVersion \
+  --no-cache \
   --no-promote \
   $BASEDIR/../$deployNotifierYaml \
   $BASEDIR/../$deployAppYaml  \
