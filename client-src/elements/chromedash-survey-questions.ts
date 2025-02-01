@@ -43,6 +43,8 @@ export class ChromedashSurveyQuestions extends LitElement {
     ];
   }
 
+  @property({type: Object})
+  user!: User;
   @state()
   feature!: Feature;
   @state()
@@ -57,6 +59,15 @@ export class ChromedashSurveyQuestions extends LitElement {
       detail,
     });
     this.dispatchEvent(event);
+  }
+
+  /* A user that can edit the current feature can edit the survey. */
+  canEditSurvey() {
+    return (
+      this.user &&
+      (this.user.can_edit_all ||
+        this.user.editable_features.includes(this.feature.id))
+    );
   }
 
   renderQuestionnaireSkeleton(): TemplateResult {
@@ -81,6 +92,7 @@ export class ChromedashSurveyQuestions extends LitElement {
         <sl-checkbox
           name=${name}
           ?checked=${value}
+          ?disabled=${!this.canEditSurvey()}
           @sl-change=${e => this.handleFieldChange(name, e.target?.checked)}
         ></sl-checkbox>
         ${desc}
@@ -97,6 +109,7 @@ export class ChromedashSurveyQuestions extends LitElement {
           name="${name}"
           size="small"
           value=${value}
+          ?disabled=${!this.canEditSurvey()}
           @sl-change=${e => this.handleFieldChange(name, e.target?.value)}
         ></sl-input>
       </li>

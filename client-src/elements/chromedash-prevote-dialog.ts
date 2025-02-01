@@ -31,9 +31,9 @@ async function openPrevoteDialog(pendingGates, resolve) {
     prevoteDialogEl = document.createElement('chromedash-prevote-dialog');
     document.body.appendChild(prevoteDialogEl);
   }
-  await prevoteDialogEl.updateComplete;
   prevoteDialogEl.pendingGates = pendingGates;
   prevoteDialogEl.resolve = resolve;
+  await prevoteDialogEl.updateComplete;
   prevoteDialogEl.show();
 }
 

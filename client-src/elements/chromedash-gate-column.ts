@@ -1075,6 +1075,7 @@ export class ChromedashGateColumn extends LitElement {
 
       <chromedash-survey-questions
         .loading=${this.loading}
+        .user=${this.user}
         .feature=${this.feature}
         .gate=${this.gate}
       ></chromedash-survey-questions>
