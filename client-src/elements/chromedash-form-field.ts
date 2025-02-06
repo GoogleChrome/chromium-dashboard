@@ -14,7 +14,6 @@ import {
 } from './utils.js';
 import {Feature, StageDict} from '../js-src/cs-client';
 import {FormattedFeature} from './form-definition';
-import {WEB_FEATURES_CHOICES} from './web-feature-constants';
 
 interface getFieldValue {
   (fieldName: string, stageOrId: any): any;
@@ -85,23 +84,28 @@ export class ChromedashFormField extends LitElement {
     }
 
     if (this.name === 'blink_components') {
-      // get the choice values from API when the field is blink component select field
-      this.loading = true;
-      window.csClient
-        .getBlinkComponents()
-        .then(componentChoices => {
-          this.fetchedChoices = componentChoices;
-          this.loading = false;
-        })
-        .catch(() => {
-          showToastMessage(
-            'Some errors occurred. Please refresh the page or try again later.'
-          );
-        });
+      this.fetchChoices(
+        window.csClient.getBlinkComponents(),
+        'Error fetching Blink Components. Please refresh the page or try again later.'
+      );
     } else if (this.name === 'web_feature') {
-      // TODO(kyleju): Create a web features API once a data ingestion pipeline is created.
-      this.fetchedChoices = WEB_FEATURES_CHOICES;
+      this.fetchChoices(
+        window.csClient.getWebdxFeatures(),
+        'Error fetching Webdx Features. Please refresh the page or try again later.'
+      );
     }
+  }
+
+  fetchChoices(fetchPromise, errorMessage) {
+    this.loading = true;
+    fetchPromise
+      .then(choices => {
+        this.fetchedChoices = choices;
+        this.loading = false;
+      })
+      .catch(() => {
+        showToastMessage(errorMessage);
+      });
   }
 
   firstUpdated() {
