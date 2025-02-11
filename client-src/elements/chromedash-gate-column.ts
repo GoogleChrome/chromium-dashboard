@@ -411,10 +411,10 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   async handleReviewRequested() {
-    maybeOpenCertifyDialog(this.gate, VOTE_OPTIONS.APPROVED[0]).then(
+    maybeOpenCertifyDialog(this.gate, VOTE_OPTIONS.NA[0]).then(
       selfCertifying => {
         if (selfCertifying) {
-          this.handleSelfCertify(VOTE_OPTIONS.APPROVED[0]);
+          this.handleSelfCertify(VOTE_OPTIONS.NA[0]);
         } else {
           this.handleFullReviewRequest();
         }
@@ -451,6 +451,8 @@ export class ChromedashGateColumn extends LitElement {
 
   async handleSelfCertify(voteValue: number) {
     await window.csClient.setVote(this.feature.id, this.gate.id, voteValue);
+    const commentText = 'This "N/A" was self-certified.';
+    await this.postComment(commentText);
     this._fireEvent('refetch-needed', {});
   }
 
