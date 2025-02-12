@@ -7,7 +7,7 @@ import {VOTE_OPTIONS} from './form-field-enums';
 let certifyDialogEl;
 
 function shouldShowCertifyDialog(gate: GateDict): boolean {
-  return gate.self_certify_possible;
+  return gate.self_certify_possible && gate.self_certify_eligible;
 }
 
 export async function maybeOpenCertifyDialog(
@@ -74,11 +74,6 @@ class ChromedashSelfCertifyDialog extends LitElement {
     this.renderRoot.querySelector('sl-dialog')?.hide();
   }
 
-  handleCancel() {
-    // Note: promise is never resolved.
-    this.hide();
-  }
-
   handleSelfCertify() {
     this.resolve(true);
     this.hide();
@@ -87,23 +82,6 @@ class ChromedashSelfCertifyDialog extends LitElement {
   handleFullReview() {
     this.resolve(false);
     this.hide();
-  }
-
-  renderContentWhenNotEligible() {
-    return html`
-      <div id="prereqs-header">
-        This review gate allows for self-certification rather than a full
-        review. However, the answers to the survey questions do not qualify for
-        self-certification.
-      </div>
-      <br />
-      <sl-button size="small" @click=${this.handleFullReview}
-        >Request full review</sl-button
-      >
-      <sl-button size="small" @click=${this.handleCancel}
-        >Go back to survey answers</sl-button
-      >
-    `;
   }
 
   renderContentWhenEligible() {
@@ -131,9 +109,7 @@ class ChromedashSelfCertifyDialog extends LitElement {
     }
 
     return html` <sl-dialog label="Self-certification">
-      ${this.gate.self_certify_eligible
-        ? this.renderContentWhenEligible()
-        : this.renderContentWhenNotEligible()}
+      ${this.renderContentWhenEligible()}
     </sl-dialog>`;
   }
 }
