@@ -412,27 +412,23 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   async handleReviewRequested() {
-    maybeOpenCertifyDialog(this.gate, VOTE_NA_SELF).then(
-      selfCertifying => {
-        if (selfCertifying) {
-          this.handleSelfCertify(VOTE_NA_SELF);
-        } else {
-          this.handleFullReviewRequest();
-        }
+    maybeOpenCertifyDialog(this.gate, VOTE_NA_SELF).then(selfCertifying => {
+      if (selfCertifying) {
+        this.handleSelfCertify(VOTE_NA_SELF);
+      } else {
+        this.handleFullReviewRequest();
       }
-    );
+    });
   }
 
   async handleNARequested() {
-    maybeOpenCertifyDialog(this.gate, VOTE_NA_SELF).then(
-      selfCertifying => {
-        if (selfCertifying) {
-          this.handleSelfCertify(VOTE_NA_SELF);
-        } else {
-          this.handleFullNARequested();
-        }
+    maybeOpenCertifyDialog(this.gate, VOTE_NA_SELF).then(selfCertifying => {
+      if (selfCertifying) {
+        this.handleSelfCertify(VOTE_NA_SELF);
+      } else {
+        this.handleFullNARequested();
       }
-    );
+    });
   }
 
   handleFullNARequested() {
