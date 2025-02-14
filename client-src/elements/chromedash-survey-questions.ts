@@ -85,7 +85,7 @@ export class ChromedashSurveyQuestions extends LitElement {
       });
   }
 
-  renderBooleanField(name: string, desc: string): TemplateResult {
+  renderBooleanField(name: string, desc: TemplateResult): TemplateResult {
     const value: boolean = this.gate.survey_answers?.[name];
     return html`
       <li class="question">
@@ -100,7 +100,7 @@ export class ChromedashSurveyQuestions extends LitElement {
     `;
   }
 
-  renderStringField(name: string, desc: string): TemplateResult {
+  renderStringField(name: string, desc: TemplateResult): TemplateResult {
     const value: string = this.gate.survey_answers?.[name];
     return html`
       <li class="question">
@@ -122,34 +122,34 @@ export class ChromedashSurveyQuestions extends LitElement {
         <ol>
           ${this.renderBooleanField(
             'is_language_polyfill',
-            `This is a new JS language construct that has already
-         been polyfillable.`
+            html`This is a <b>new JS language construct</b> that has
+              <b>already been polyfillable</b>.`
           )}
           ${this.renderBooleanField(
             'is_api_polyfill',
-            `This is a new API that ergonomically provides a function
-         that was already polyfillable under the same conditions.
-         By "same conditions" we mean, for example, that if a
-         polyfill was only possible when the user has granted a
-         certain permission, the API respects the same permission.`
+            html`This is a <b>new API</b> that ergonomically provides a function
+              that was <b>already polyfillable under the same conditions</b>. By
+              "same conditions" we mean, for example, that if a polyfill was
+              only possible when the user has granted a certain permission, the
+              API respects the same permission.`
           )}
           ${this.renderBooleanField(
             'is_same_origin_css',
-            `This is a CSS addition or change such that the style only
-         depends on same-origin information and does NOT on user data.
-           CSS changes are usually benign, however: if the style relies
-         on iframes or subresources, it could reveal cross-origin
-           information.  If the style depends on user data, such as
-          browsing history (like :visited), cookies, or user input
-        (like hidden=until-found), the style could be used by the
-        website to read this data.`
+            html`This is a <b>CSS addition</b> or change such that the style
+              <b>only depends on same-origin information</b> and
+              <b>NOT on user data</b>. CSS changes are usually benign, however:
+              if the style relies on iframes or subresources, it could reveal
+              cross-origin information. If the style depends on user data, such
+              as browsing history (like :visited), cookies, or user input (like
+              hidden=until-found), the style could be used by the website to
+              read this data.`
           )}
           ${this.renderStringField(
             'launch_or_contact',
-            `If there is a Google-internal launch entry filed for this
-         exact same issue, enter its URL here. Or, if this has previously
-        been discussed with someone on the privacy team, enter their
-        email address. Or, enter "None".`
+            html`If there is a Google-internal launch entry filed for this exact
+            same issue, enter its URL here. Or, if this has previously been
+            discussed with someone on the privacy team, enter their email
+            address. Or, enter "None".`
           )}
         </ol>
       </div>
