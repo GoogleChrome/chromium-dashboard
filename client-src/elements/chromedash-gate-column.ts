@@ -16,6 +16,7 @@ import {
   GATE_PREPARING,
   GATE_REVIEW_REQUESTED,
   VOTE_OPTIONS,
+  VOTE_NA_SELF,
 } from './form-field-enums';
 import {
   autolink,
@@ -411,10 +412,10 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   async handleReviewRequested() {
-    maybeOpenCertifyDialog(this.gate, VOTE_OPTIONS.NA[0]).then(
+    maybeOpenCertifyDialog(this.gate, VOTE_NA_SELF).then(
       selfCertifying => {
         if (selfCertifying) {
-          this.handleSelfCertify(VOTE_OPTIONS.NA[0]);
+          this.handleSelfCertify(VOTE_NA_SELF);
         } else {
           this.handleFullReviewRequest();
         }
@@ -423,10 +424,10 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   async handleNARequested() {
-    maybeOpenCertifyDialog(this.gate, VOTE_OPTIONS.NA[0]).then(
+    maybeOpenCertifyDialog(this.gate, VOTE_NA_SELF).then(
       selfCertifying => {
         if (selfCertifying) {
-          this.handleSelfCertify(VOTE_OPTIONS.NA[0]);
+          this.handleSelfCertify(VOTE_NA_SELF);
         } else {
           this.handleFullNARequested();
         }
@@ -774,11 +775,15 @@ export class ChromedashGateColumn extends LitElement {
     if (state == GATE_REVIEW_REQUESTED) {
       return 'Review requested';
     }
+    if (state == VOTE_NA_SELF) {
+      return 'N/a (self-certified)';
+    }
     for (const item of Object.values(VOTE_OPTIONS)) {
       if (item[0] == state) {
         return item[1];
       }
     }
+
     // This should not normally be seen by users, but it will help us
     // cope with data migration.
     return `State ${state}`;

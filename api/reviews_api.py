@@ -71,7 +71,6 @@ class VotesAPI(basehandlers.APIHandler):
     old_state = old_votes[0].state if old_votes else Vote.NO_RESPONSE
     self.require_permissions(user, fe, gate, new_state)
 
-    # Note: We no longer write Approval entities.
     old_gate_state = gate.state
     new_gate_state = approval_defs.set_vote(feature_id, None, new_state,
         user.email(), gate_id)
@@ -113,7 +112,7 @@ class VotesAPI(basehandlers.APIHandler):
   def require_permissions(self, user, feature, gate, new_state):
     """Abort the request if the user lacks permission to set this vote."""
     is_requesting_review = new_state in (Vote.REVIEW_REQUESTED, Vote.NA_REQUESTED)
-    is_approving = new_state in (Vote.APPROVED, Vote.NA)
+    is_approving = new_state in (Vote.APPROVED, Vote.NA, Vote.NA_SELF)
     is_editor = permissions.can_edit_feature(user, feature.key.integer_id())
     approvers = approval_defs.get_approvers(gate.gate_type)
     is_approver = permissions.can_review_gate(user, feature, gate, approvers)
