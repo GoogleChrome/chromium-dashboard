@@ -107,7 +107,7 @@ class Vote(ndb.Model):
       NO_RESPONSE: 'no_response',
       INTERNAL_REVIEW: 'internal_review',
       NA_REQUESTED: 'na_requested',
-      NA_SELF: 'na',
+      NA_SELF: 'na (self-certified)',
   }
 
   REQUESTING_STATES = [REVIEW_REQUESTED, NA_REQUESTED]
