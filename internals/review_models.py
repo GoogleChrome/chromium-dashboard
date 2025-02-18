@@ -95,6 +95,7 @@ class Vote(ndb.Model):
   NO_RESPONSE = 7
   INTERNAL_REVIEW = 8
   NA_REQUESTED = 9
+  NA_SELF = 10
   VOTE_VALUES = {
       # Not used: PREPARING: 'preparing',
       NA: 'na',
@@ -106,6 +107,7 @@ class Vote(ndb.Model):
       NO_RESPONSE: 'no_response',
       INTERNAL_REVIEW: 'internal_review',
       NA_REQUESTED: 'na_requested',
+      NA_SELF: 'na (self-certified)',
   }
 
   REQUESTING_STATES = [REVIEW_REQUESTED, NA_REQUESTED]

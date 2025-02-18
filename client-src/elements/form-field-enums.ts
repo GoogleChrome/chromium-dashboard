@@ -508,6 +508,7 @@ export const VOTE_OPTIONS: Record<string, [number, string]> = {
   APPROVED: [5, 'Approved'],
   DENIED: [6, 'Denied'],
 };
+export const VOTE_NA_SELF = 10;
 export const GATE_ACTIVE_REVIEW_STATES: number[] = [
   GATE_REVIEW_REQUESTED,
   VOTE_OPTIONS.REVIEW_STARTED[0],

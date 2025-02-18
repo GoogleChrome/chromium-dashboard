@@ -324,6 +324,7 @@ NW = Vote.NEEDS_WORK
 RS = Vote.REVIEW_STARTED
 NA = Vote.NA
 IR = Vote.INTERNAL_REVIEW
+NA_SELF = Vote.NA_SELF
 GATE_VALUES= Vote.VOTE_VALUES.copy()
 GATE_VALUES.update({Gate.PREPARING: 'preparing'})
 
@@ -417,6 +418,26 @@ class CalcGateStateTest(testing_config.CustomTestCase):
                      self.do_calc(RS, RR, AP, NW))
     self.assertEqual(('approved', 'approved'),
                      self.do_calc(AP, AP, RS, AP))
+
+  def test_self_cert_stands(self):
+    """A feature owner self-certified and no one disagrees."""
+    self.assertEqual(('na', 'preparing'),
+                     self.do_calc(NA_SELF))
+    self.assertEqual(('na', 'review_requested'),
+                     self.do_calc(NA_SELF, NA))
+    self.assertEqual(('approved', 'review_requested'),
+                     self.do_calc(NA_SELF, AP))
+
+  def test_self_cert_reversed(self):
+    """A feature owner self-certified but a reviewer disagreed."""
+    self.assertEqual(('needs_work', 'needs_work'),
+                     self.do_calc(NA_SELF, NW))
+    self.assertEqual(('review_started', 'review_started'),
+                     self.do_calc(NA_SELF, RS))
+    self.assertEqual(('internal_review', 'internal_review'),
+                     self.do_calc(NA_SELF, IR))
+    self.assertEqual(('denied', 'denied'),
+                     self.do_calc(NA_SELF, DN))
 
 
 class UpdateTest(testing_config.CustomTestCase):

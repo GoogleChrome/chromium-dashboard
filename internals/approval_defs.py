@@ -423,6 +423,10 @@ def get_gate_by_type(feature_id: int, gate_type: int):
 
 def _calc_gate_state(votes: list[Vote], rule: str) -> int:
   """Returns the state that a gate should have based on its votes."""
+  # A self-certified NA counts iff it is the only vote.
+  if len(votes) == 1 and votes[0].state == Vote.NA_SELF and rule == ONE_LGTM:
+    return Vote.NA
+
   # If enough reviewed APPROVED or said it is NA, then that is used.
   num_lgtms = sum((1 if v.state in (Vote.APPROVED, Vote.NA) else 0)
                   for v in votes)
