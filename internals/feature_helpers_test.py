@@ -29,7 +29,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     self.feature_2 = FeatureEntry(
         name='feature b', summary='sum',
         owner_emails=['feature_owner@example.com'], category=1,
-        updated=datetime(2020, 4, 1), feature_type=1)
+        updated=datetime(2020, 4, 1), feature_type=1, impl_status_chrome=1)
     self.feature_2.put()
 
     self.feature_1 = FeatureEntry(

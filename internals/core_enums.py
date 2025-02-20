@@ -527,6 +527,10 @@ RELEASE_IMPL_STATES = {
     DEPRECATED, REMOVED, ORIGIN_TRIAL, INTERVENTION,
 }
 
+INACTIVE_IMPL_STATUSES = {
+    NO_ACTIVE_DEV, ON_HOLD, NO_LONGER_PURSUING
+}
+
 # Ordered dictionary, make sure the order of this dictionary matches that of
 # the sorted list above!
 IMPLEMENTATION_STATUS = collections.OrderedDict()
