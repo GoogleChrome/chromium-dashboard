@@ -554,18 +554,8 @@ export const ALL_FIELDS: Record<string, Field> = {
       return result;
     },
     label: 'Active stage',
-    help_text: html`The active stage sets which stage opens by default in this
-    feature's page. This is equivalent to editing the named stage and checking
-    the "Set to this stage" checkbox.`,
-  },
-
-  set_stage: {
-    name: 'active_stage_id',
-    type: 'checkbox',
-    label: 'Set to this stage',
-    help_text: html` Check this box to move this feature to this stage in the
-    process. Leave it unchecked if you are adding draft information or revising
-    a previous stage.`,
+    help_text: html`The active stage opens by default in this feature's page.
+    And, it roughly indicates progress in the process.`,
   },
 
   search_tags: {

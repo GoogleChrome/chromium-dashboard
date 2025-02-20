@@ -195,11 +195,6 @@ export class ChromedashFeatureDetail extends LitElement {
           padding: var(--content-padding-half);
         }
 
-        .active .card {
-          border: var(--spot-card-border);
-          box-shadow: var(--spot-card-box-shadow);
-        }
-
         #new-stage {
           margin-left: 8px;
           margin-bottom: 4px;
@@ -458,16 +453,13 @@ export class ChromedashFeatureDetail extends LitElement {
     defaultOpen = false,
     isStage = true
   ) {
-    if (isActive) {
-      summary += ' - Active';
-    }
     return html`
       <sl-details
         summary=${summary}
         @sl-after-show=${this.updateCollapsed}
         @sl-after-hide=${this.updateCollapsed}
         ?open=${isActive || defaultOpen}
-        class="${isActive ? 'active' : ''} ${isStage ? 'stage' : ''}"
+        class="${isStage ? 'stage' : ''}"
       >
         ${content}
       </sl-details>
