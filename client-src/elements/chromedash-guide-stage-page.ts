@@ -150,7 +150,11 @@ export class ChromedashGuideStagePage extends LitElement {
 
   handleFormSubmit(e, hiddenTokenField) {
     e.preventDefault();
-    const submitBody = formatFeatureChanges(this.fieldValues, this.featureId);
+    const submitBody = formatFeatureChanges(
+      this.fieldValues,
+      this.featureId,
+      this.stageId
+    );
 
     // get the XSRF token and update it if it's expired before submission
     window.csClient
@@ -284,35 +288,6 @@ export class ChromedashGuideStagePage extends LitElement {
 
   renderSections(formattedFeature, stageSections) {
     const formSections: (typeof nothing | TemplateResult)[] = [];
-    if (!formattedFeature.is_enterprise_feature) {
-      // Add the field to this component's stage before creating the field component.
-      const index = this.fieldValues.length;
-      this.fieldValues.push({
-        name: 'active_stage_id',
-        touched: false,
-        value: this.isActiveStage,
-        implicitValue: this.stage.id,
-      });
-
-      // Don't show "set_stage" field for extension stages.
-      if (!OT_EXTENSION_STAGE_TYPES.has(this.stage.stage_type)) {
-        formSections.push(
-          html` <section class="stage_form">
-            <chromedash-form-field
-              name="set_stage"
-              index=${index}
-              value=${this.isActiveStage}
-              .fieldValues=${this.fieldValues}
-              .feature=${formattedFeature}
-              ?disabled=${this.isActiveStage}
-              ?forEnterprise=${formattedFeature.is_enterprise_feature}
-              @form-field-update="${this.handleFormFieldUpdate}"
-            >
-            </chromedash-form-field>
-          </section>`
-        );
-      }
-    }
 
     stageSections.forEach(section => {
       if (section.isImplementationSection) {
