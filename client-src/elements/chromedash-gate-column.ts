@@ -1,19 +1,22 @@
 import {LitElement, TemplateResult, css, html, nothing} from 'lit';
 import {createRef, ref} from 'lit/directives/ref.js';
 import './chromedash-activity-log';
+import './chromedash-survey-questions';
 import {openNaRationaleDialog} from './chromedash-na-rationale-dialog';
+import {maybeOpenCertifyDialog} from './chromedash-self-certify-dialog';
 import {
   openPreflightDialog,
   somePendingGates,
   somePendingPrereqs,
 } from './chromedash-preflight-dialog';
 import {maybeOpenPrevoteDialog} from './chromedash-prevote-dialog';
-import {GATE_QUESTIONNAIRES, GATE_RATIONALE} from './gate-details.js';
+import {GATE_RATIONALE} from './gate-details.js';
 import {
   GATE_NA_REQUESTED,
   GATE_PREPARING,
   GATE_REVIEW_REQUESTED,
   VOTE_OPTIONS,
+  VOTE_NA_SELF,
 } from './form-field-enums';
 import {
   autolink,
@@ -151,20 +154,6 @@ export class ChromedashGateColumn extends LitElement {
           white-space: nowrap;
         }
 
-        #questionnaire {
-          padding: var(--content-padding-half);
-          border-radius: var(--border-radius);
-          background: var(--table-alternate-background);
-        }
-        #questionnaire * + * {
-          padding-top: var(--content-padding);
-        }
-        #questionnaire ul {
-          padding-left: 1em;
-        }
-        #questionnaire li {
-          list-style: disc;
-        }
         .instructions {
           padding: var(--content-padding-half);
           margin-bottom: var(--content-padding-large);
@@ -285,7 +274,6 @@ export class ChromedashGateColumn extends LitElement {
         this.votes = votesRes.votes.filter(v => v.gate_id == this.gate.id);
         this.comments = commentRes.comments;
         this.needsSave = false;
-        this.loading = false;
       })
       .catch(() => {
         showToastMessage(
@@ -424,6 +412,32 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   async handleReviewRequested() {
+    maybeOpenCertifyDialog(this.gate, VOTE_NA_SELF).then(selfCertifying => {
+      if (selfCertifying) {
+        this.handleSelfCertify(VOTE_NA_SELF);
+      } else {
+        this.handleFullReviewRequest();
+      }
+    });
+  }
+
+  async handleNARequested() {
+    maybeOpenCertifyDialog(this.gate, VOTE_NA_SELF).then(selfCertifying => {
+      if (selfCertifying) {
+        this.handleSelfCertify(VOTE_NA_SELF);
+      } else {
+        this.handleFullNARequested();
+      }
+    });
+  }
+
+  handleFullNARequested() {
+    openNaRationaleDialog(this.gate).then(rationale => {
+      this.handleNARequestSubmitted(rationale);
+    });
+  }
+
+  async handleFullReviewRequest() {
     await window.csClient.setVote(
       this.feature.id,
       this.gate.id,
@@ -432,10 +446,11 @@ export class ChromedashGateColumn extends LitElement {
     this._fireEvent('refetch-needed', {});
   }
 
-  handleNARequested() {
-    openNaRationaleDialog(this.gate).then(rationale => {
-      this.handleNARequestSubmitted(rationale);
-    });
+  async handleSelfCertify(voteValue: number) {
+    await window.csClient.setVote(this.feature.id, this.gate.id, voteValue);
+    const commentText = 'This "N/A" was self-certified.';
+    await this.postComment(commentText);
+    this._fireEvent('refetch-needed', {});
   }
 
   async handleNARequestSubmitted(rationale) {
@@ -756,11 +771,15 @@ export class ChromedashGateColumn extends LitElement {
     if (state == GATE_REVIEW_REQUESTED) {
       return 'Review requested';
     }
+    if (state == VOTE_NA_SELF) {
+      return 'N/a (self-certified)';
+    }
     for (const item of Object.values(VOTE_OPTIONS)) {
       if (item[0] == state) {
         return item[1];
       }
     }
+
     // This should not normally be seen by users, but it will help us
     // cope with data migration.
     return `State ${state}`;
@@ -932,30 +951,6 @@ export class ChromedashGateColumn extends LitElement {
     `;
   }
 
-  renderQuestionnaireSkeleton() {
-    return html`
-      <h2>Survey questions</h2>
-      <!-- prettier-ignore -->
-      <div id="questionnaire">Loading...</div>
-      <p class="instructions">&nbsp;</p>
-    `;
-  }
-
-  renderQuestionnaire() {
-    const questionnaireText = GATE_QUESTIONNAIRES[this.gate.gate_type];
-    if (!questionnaireText) return nothing;
-    const markup =
-      typeof questionnaireText == 'string'
-        ? autolink(questionnaireText)
-        : questionnaireText;
-    return html`
-      <h2>Survey questions</h2>
-      <!-- prettier-ignore -->
-      <div id="questionnaire">${markup}</div>
-      <p class="instructions">Please post responses in the comments below.</p>
-    `;
-  }
-
   renderCommentsSkeleton() {
     return html`
       <h2>Comments</h2>
@@ -1081,9 +1076,12 @@ export class ChromedashGateColumn extends LitElement {
         ${this.loading ? this.renderVotesSkeleton() : this.renderVotes()}
       </div>
 
-      ${this.loading
-        ? this.renderQuestionnaireSkeleton()
-        : this.renderQuestionnaire()}
+      <chromedash-survey-questions
+        .loading=${this.loading}
+        .user=${this.user}
+        .feature=${this.feature}
+        .gate=${this.gate}
+      ></chromedash-survey-questions>
       ${this.loading ? this.renderCommentsSkeleton() : this.renderComments()}
     `;
   }

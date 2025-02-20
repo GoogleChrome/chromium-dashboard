@@ -18,6 +18,9 @@ from internals.core_enums import GATE_PRIVACY_ORIGIN_TRIAL, GATE_PRIVACY_SHIP
 from internals.review_models import Gate, SurveyAnswers
 
 
+CERTIFIABLE_GATE_TYPES = [GATE_PRIVACY_ORIGIN_TRIAL, GATE_PRIVACY_SHIP]
+
+
 def update_survey_answers(gate: Gate, new_answers: OASurveyAnswers):
   """Modify the given SurveyAnswers with user-requested changes."""
   if gate.survey_answers is None:
@@ -44,7 +47,7 @@ def is_privacy_eligible(answers: SurveyAnswers) -> bool:
 
 
 def is_eligible(gate: Gate) -> bool:
-  """Return True if the feature owner can self-certify."""
+  """Return True if the feature owner can self-certify the gate now."""
   answers = gate.survey_answers
   if answers is None:
     return False
@@ -53,3 +56,8 @@ def is_eligible(gate: Gate) -> bool:
     return is_privacy_eligible(answers)
 
   return False
+
+
+def is_possible(gate: Gate) -> bool:
+  """Return True if the feature owner can ever self-certify this gate."""
+  return gate.gate_type in CERTIFIABLE_GATE_TYPES

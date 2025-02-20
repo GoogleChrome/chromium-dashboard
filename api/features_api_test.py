@@ -383,7 +383,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
 
   def test_get__in_milestone_listed(self):
     """Get all features in a specific milestone that are listed."""
-    # Atleast one feature is present in milestone
+    # At least one feature is present in milestone
     with test_app.test_request_context(self.request_path+'?milestone=1'):
       actual = self.handler.do_get()
     self.assertEqual(6, len(actual['features_by_type']))

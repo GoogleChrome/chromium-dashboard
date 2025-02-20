@@ -14,7 +14,7 @@ class Gate(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, id=None, feature_id=None, stage_id=None, gate_type=None, team_name=None, gate_name=None, escalation_email=None, state=None, requested_on=None, responded_on=None, assignee_emails=None, next_action=None, additional_review=None, slo_initial_response=5, slo_initial_response_took=None, slo_initial_response_remaining=None, slo_resolve=10, slo_resolve_took=None, slo_resolve_remaining=None, needs_work_started_on=None, possible_assignee_emails=None, self_certify_eligible=None, survey_answers=None):  # noqa: E501
+    def __init__(self, id=None, feature_id=None, stage_id=None, gate_type=None, team_name=None, gate_name=None, escalation_email=None, state=None, requested_on=None, responded_on=None, assignee_emails=None, next_action=None, additional_review=None, slo_initial_response=5, slo_initial_response_took=None, slo_initial_response_remaining=None, slo_resolve=10, slo_resolve_took=None, slo_resolve_remaining=None, needs_work_started_on=None, possible_assignee_emails=None, self_certify_eligible=None, self_certify_possible=None, survey_answers=None):  # noqa: E501
         """Gate - a model defined in OpenAPI
 
         :param id: The id of this Gate.  # noqa: E501
@@ -61,6 +61,8 @@ class Gate(Model):
         :type possible_assignee_emails: List[str]
         :param self_certify_eligible: The self_certify_eligible of this Gate.  # noqa: E501
         :type self_certify_eligible: bool
+        :param self_certify_possible: The self_certify_possible of this Gate.  # noqa: E501
+        :type self_certify_possible: bool
         :param survey_answers: The survey_answers of this Gate.  # noqa: E501
         :type survey_answers: SurveyAnswers
         """
@@ -87,6 +89,7 @@ class Gate(Model):
             'needs_work_started_on': datetime,
             'possible_assignee_emails': List[str],
             'self_certify_eligible': bool,
+            'self_certify_possible': bool,
             'survey_answers': SurveyAnswers
         }
 
@@ -113,6 +116,7 @@ class Gate(Model):
             'needs_work_started_on': 'needs_work_started_on',
             'possible_assignee_emails': 'possible_assignee_emails',
             'self_certify_eligible': 'self_certify_eligible',
+            'self_certify_possible': 'self_certify_possible',
             'survey_answers': 'survey_answers'
         }
 
@@ -138,6 +142,7 @@ class Gate(Model):
         self._needs_work_started_on = needs_work_started_on
         self._possible_assignee_emails = possible_assignee_emails
         self._self_certify_eligible = self_certify_eligible
+        self._self_certify_possible = self_certify_possible
         self._survey_answers = survey_answers
 
     @classmethod
@@ -616,6 +621,27 @@ class Gate(Model):
         """
 
         self._self_certify_eligible = self_certify_eligible
+
+    @property
+    def self_certify_possible(self) -> bool:
+        """Gets the self_certify_possible of this Gate.
+
+
+        :return: The self_certify_possible of this Gate.
+        :rtype: bool
+        """
+        return self._self_certify_possible
+
+    @self_certify_possible.setter
+    def self_certify_possible(self, self_certify_possible: bool):
+        """Sets the self_certify_possible of this Gate.
+
+
+        :param self_certify_possible: The self_certify_possible of this Gate.
+        :type self_certify_possible: bool
+        """
+
+        self._self_certify_possible = self_certify_possible
 
     @property
     def survey_answers(self) -> SurveyAnswers:

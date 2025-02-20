@@ -57,6 +57,14 @@ export interface GateDict {
   slo_resolve_remaining: number;
   needs_work_started_on: string;
   possible_assignee_emails: string[];
+  self_certify_possible: boolean;
+  self_certify_eligible: boolean;
+  survey_answers: {
+    is_language_polyfill: boolean;
+    is_api_polyfill: boolean;
+    is_same_origin_css: boolean;
+    launch_or_contact: string;
+  };
 }
 
 @customElement('chromedash-gate-chip')

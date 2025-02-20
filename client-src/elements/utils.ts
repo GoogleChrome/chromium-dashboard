@@ -581,11 +581,20 @@ interface FeatureUpdateInfo {
 }
 
 // Prepare feature/stage changes to be submitted.
-export function formatFeatureChanges(fieldValues, featureId): UpdateSubmitBody {
+export function formatFeatureChanges(
+  fieldValues,
+  featureId,
+  formStageId?: number
+): UpdateSubmitBody {
   let hasChanges = false;
   const featureChanges = {id: featureId};
   // Multiple stages can be mutated, so this object is a stage of stages.
   const stages = {};
+  // When editing an individual stage, always provide stage ID so that
+  // active_stage_id can be set by the server.
+  if (formStageId) {
+    stages[formStageId] = {id: formStageId};
+  }
   for (const {name, touched, value, stageId, implicitValue} of fieldValues) {
     // Only submit changes for touched fields or accuracy verification updates.
     if (!touched) {

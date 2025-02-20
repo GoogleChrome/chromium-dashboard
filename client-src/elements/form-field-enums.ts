@@ -94,6 +94,7 @@ export const ROLLOUT_IMPACT_DISPLAYNAME: Record<number, string> = {
 
 export const USE_COUNTER_TYPE_WEBFEATURE = 0;
 export const USE_COUNTER_TYPE_WEBDXFEATURE = 1;
+export const USE_COUNTER_TYPE_CSS_PROPERTY_ID = 2;
 export const WEBFEATURE_USE_COUNTER_TYPES: Record<
   string,
   [number, string, string | HTMLTemplateResult]
@@ -116,6 +117,16 @@ export const WEBFEATURE_USE_COUNTER_TYPES: Record<
         target="_blank"
         href="https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/mojom/use_counter/metrics/webdx_feature.mojom"
         >webdx_feature.mojom</a
+      >.`,
+  ],
+  CSS: [
+    USE_COUNTER_TYPE_CSS_PROPERTY_ID,
+    'CSSSampleID',
+    html`The feature's use counter has been added to
+      <a
+        target="_blank"
+        href="https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/mojom/use_counter/metrics/css_property_id.mojom"
+        >css_property_id.mojom</a
       >.`,
   ],
 };
@@ -497,6 +508,7 @@ export const VOTE_OPTIONS: Record<string, [number, string]> = {
   APPROVED: [5, 'Approved'],
   DENIED: [6, 'Denied'],
 };
+export const VOTE_NA_SELF = 10;
 export const GATE_ACTIVE_REVIEW_STATES: number[] = [
   GATE_REVIEW_REQUESTED,
   VOTE_OPTIONS.REVIEW_STARTED[0],

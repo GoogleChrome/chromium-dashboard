@@ -1293,6 +1293,7 @@ components:
     Gate:
       example:
         feature_id: 6
+        self_certify_possible: true
         stage_id: 1
         slo_initial_response: 2
         needs_work_started_on: 2000-01-23T04:56:07.000+00:00
@@ -1405,6 +1406,9 @@ components:
         self_certify_eligible:
           title: self_certify_eligible
           type: boolean
+        self_certify_possible:
+          title: self_certify_possible
+          type: boolean
         survey_answers:
           $ref: '#/components/schemas/SurveyAnswers'
       title: Gate
@@ -1434,6 +1438,7 @@ components:
       example:
         gates:
         - feature_id: 6
+          self_certify_possible: true
           stage_id: 1
           slo_initial_response: 2
           needs_work_started_on: 2000-01-23T04:56:07.000+00:00
@@ -1465,6 +1470,7 @@ components:
           self_certify_eligible: true
           slo_resolve: 3
         - feature_id: 6
+          self_certify_possible: true
           stage_id: 1
           slo_initial_response: 2
           needs_work_started_on: 2000-01-23T04:56:07.000+00:00

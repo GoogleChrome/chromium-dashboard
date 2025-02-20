@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from datetime import datetime
 import logging
 from typing import Any, Tuple
 
@@ -70,18 +71,18 @@ class VotesAPI(basehandlers.APIHandler):
     old_state = old_votes[0].state if old_votes else Vote.NO_RESPONSE
     self.require_permissions(user, fe, gate, new_state)
 
-    # Note: We no longer write Approval entities.
     old_gate_state = gate.state
     new_gate_state = approval_defs.set_vote(feature_id, None, new_state,
         user.email(), gate_id)
+    fe.updated = datetime.now()
+    fe.put()
 
+    # Send any notifications necessary if the gate is newly approved.
     recently_approved = (old_gate_state not in (Vote.APPROVED, Vote.NA) and
                          new_gate_state in (Vote.APPROVED, Vote.NA))
-    # Notify that trial extension has been approved.
-    if gate.gate_type == GATE_API_EXTEND_ORIGIN_TRIAL and recently_approved:
+    if recently_approved:
       stage = Stage.get_by_id(gate.stage_id)
-      notifier_helpers.send_trial_extension_approved_notification(
-          fe, stage, gate_id)
+      notifier_helpers.notify_approvals(fe, stage, gate)
 
     if new_state in (Vote.REVIEW_REQUESTED, Vote.NA_REQUESTED):
       old_assignees = gate.assignee_emails[:]
@@ -111,11 +112,15 @@ class VotesAPI(basehandlers.APIHandler):
   def require_permissions(self, user, feature, gate, new_state):
     """Abort the request if the user lacks permission to set this vote."""
     is_requesting_review = new_state in (Vote.REVIEW_REQUESTED, Vote.NA_REQUESTED)
+    is_approving = new_state in (Vote.APPROVED, Vote.NA, Vote.NA_SELF)
     is_editor = permissions.can_edit_feature(user, feature.key.integer_id())
     approvers = approval_defs.get_approvers(gate.gate_type)
     is_approver = permissions.can_review_gate(user, feature, gate, approvers)
 
     if is_requesting_review and is_editor:
+      return
+
+    if is_approving and is_editor and self_certify.is_eligible(gate):
       return
 
     if is_approver:
@@ -160,8 +165,6 @@ class GatesAPI(basehandlers.APIHandler):
     changes: list[str] = []
     new_assignees = request.assignees
     new_answers = request.survey_answers
-
-    logging.info('@@@ request is %r', request)
 
     self.require_permissions(user, fe, gate)
 

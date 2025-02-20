@@ -278,11 +278,13 @@ def get_in_milestone(milestone: int,
     for feature in android_dev_trial_features:
       all_features[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]].append(feature)
 
-    # Construct results as: {type: [json_feature, ...], ...}.
+    # Filter out deleted and inactive features, then
+    # construct results as: {type: [json_feature, ...], ...}.
     for shipping_type in all_features:
       all_features[shipping_type].sort(key=lambda f: f.name)
       all_features[shipping_type] = [
-          f for f in all_features[shipping_type] if not f.deleted]
+          f for f in all_features[shipping_type]
+          if not f.deleted and f.impl_status_chrome not in INACTIVE_IMPL_STATUSES]
       features_by_type[shipping_type] = [converters.feature_entry_to_json_basic(f)
           for f in all_features[shipping_type]]
 

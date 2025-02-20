@@ -244,6 +244,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
       has_updated: bool,
       updated_stages: list[Stage],
       changed_fields: CHANGED_FIELDS_LIST_TYPE,
+      stage_ids: list[int]
     ) -> None:
     """Handle any special FeatureEntry fields."""
     now = datetime.now()
@@ -292,6 +293,13 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
             feature.shipping_year = year
             has_updated = True
 
+    # If any stages were mentioned, update active_stage_id.
+    if stage_ids:
+      highest_stage_id = max(stage_ids)
+      if (feature.active_stage_id is None or
+          highest_stage_id > feature.active_stage_id):
+        feature.active_stage_id = highest_stage_id
+
     # If changes were made, set the feature.updated timestamp.
     if has_updated:
       user_email = self.get_current_user().email()
@@ -303,7 +311,8 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
       feature: FeatureEntry,
       feature_changes: dict[str, Any],
       updated_stages: list[Stage],
-      changed_fields: CHANGED_FIELDS_LIST_TYPE
+      changed_fields: CHANGED_FIELDS_LIST_TYPE,
+      stage_ids: list[int]
     ) -> None:
     """Update feature fields with changes provided in the PATCH request."""
     has_updated = len(updated_stages) > 0
@@ -317,7 +326,8 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
       has_updated = True
 
     self._patch_update_special_fields(
-        feature, feature_changes, has_updated, updated_stages, changed_fields)
+        feature, feature_changes, has_updated, updated_stages, changed_fields,
+        stage_ids)
     feature.put()
 
   def do_patch(self, **kwargs):
@@ -339,9 +349,11 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
       return redirect_resp
 
     changed_fields: CHANGED_FIELDS_LIST_TYPE = []
+    stage_ids = [s['id'] for s in body['stages'] if 'id' in s]
     updated_stages = self._patch_update_stages(body['stages'], changed_fields)
     self._patch_update_feature(
-      feature, body['feature_changes'], updated_stages, changed_fields)
+        feature, body['feature_changes'], updated_stages, changed_fields,
+        stage_ids)
 
     notifier_helpers.notify_subscribers_and_save_amendments(
         feature, changed_fields, notify=True)
