@@ -248,6 +248,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     ) -> None:
     """Handle any special FeatureEntry fields."""
     now = datetime.now()
+    feature_id = feature.key.integer_id()
     # Set accurate_as_of if this is an accuracy verification request.
     if 'accurate_as_of' in feature_changes:
       feature.accurate_as_of = now
@@ -256,7 +257,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
 
     if 'screenshot_links' in feature_changes:
       attachments.delete_orphan_attachments(
-          feature.key.integer_id(), feature_changes['screenshot_links'])
+          feature_id, feature_changes['screenshot_links'])
 
     # Set enterprise first notification milestones.
     if is_update_first_notification_milestone(feature, feature_changes):
@@ -275,7 +276,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     if updated_shipping_stages:
       existing_shipping_stages = (
           stage_helpers.get_all_shipping_stages_with_milestones(
-              feature_id=feature.key.integer_id()))
+              feature_id=feature_id))
       shipping_stage_dict = {
           es.key.integer_id(): es
           for es in existing_shipping_stages
@@ -295,10 +296,17 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
 
     # If any stages were mentioned, update active_stage_id.
     if stage_ids:
-      highest_stage_id = max(stage_ids)
-      if (feature.active_stage_id is None or
-          highest_stage_id > feature.active_stage_id):
-        feature.active_stage_id = highest_stage_id
+      stage_type_to_stage_ids = stage_helpers.get_feature_stage_ids(feature_id)
+      stage_id_to_stage_type = {
+          stage_id: stage_type
+          for stage_type, stage_id_list in stage_type_to_stage_ids.items()
+          for stage_id in stage_id_list}
+      active_stage_type = stage_id_to_stage_type.get(feature.active_stage_id, 0)
+      highest_edited_stage_id = max(
+          stage_ids, key=lambda s: stage_id_to_stage_type[s])
+      highest_edited_stage_type = stage_id_to_stage_type[highest_edited_stage_id]
+      if highest_edited_stage_type > active_stage_type:
+        feature.active_stage_id = highest_edited_stage_id
 
     # If changes were made, set the feature.updated timestamp.
     if has_updated:
