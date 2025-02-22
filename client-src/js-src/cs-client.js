@@ -726,6 +726,11 @@ export class ChromeStatusClient {
     return this.doGet('/blinkcomponents');
   }
 
+  // Webdx Features API
+  async getWebdxFeatures() {
+    return this.doGet('/webdxfeatures');
+  }
+
   // Channels API
   async getChannels() {
     return this.doGet('/channels');

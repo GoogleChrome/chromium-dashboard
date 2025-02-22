@@ -7,6 +7,8 @@ import {
   STAGE_BLINK_ORIGIN_TRIAL,
   STAGE_BLINK_SHIPPING,
 } from './form-field-enums';
+import {ChromeStatusClient} from '../js-src/cs-client';
+import sinon from 'sinon';
 
 describe('chromedash-form-field', () => {
   it('renders a checkbox type of field', async () => {
@@ -66,6 +68,10 @@ describe('chromedash-form-field', () => {
   });
 
   it('renders Web Feature ID field with a link', async () => {
+    window.csClient = new ChromeStatusClient('fake_token', 1);
+    const webdxFeaturesStub = sinon.stub(window.csClient, 'getWebdxFeatures');
+    webdxFeaturesStub.returns(Promise.resolve({}));
+
     const component = await fixture(
       html` <chromedash-form-field name="web_feature" value="hwb">
       </chromedash-form-field>`
