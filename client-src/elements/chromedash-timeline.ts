@@ -300,11 +300,11 @@ class ChromedashTimeline extends LitElement {
         '#bigquery'
       ) as HTMLElement;
       bigqueryEl!.textContent = `#standardSQL
-SELECT yyyymmdd, client, pct_urls, sample_urls
+SELECT date, client, pct_urls, sample_urls
 FROM \`httparchive.blink_features.usage\`
 WHERE feature = '${featureName}'
-AND yyyymmdd = (SELECT MAX(yyyymmdd) FROM \`httparchive.blink_features.usage\`)
-ORDER BY yyyymmdd DESC, client`;
+AND date = (SELECT MAX(date) FROM \`httparchive.blink_features.usage\`)
+ORDER BY date DESC, client`;
     }
   }
 
