@@ -206,6 +206,7 @@ class VerboseFeatureDict(TypedDict):
   enterprise_feature_categories: list[str]
   enterprise_product_category: int
   web_feature: str | None
+  webdx_usecounter_enum: str | None
 
   # Metadata: Process information
   feature_type: str

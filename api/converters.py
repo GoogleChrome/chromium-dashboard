@@ -356,6 +356,7 @@ def feature_entry_to_json_verbose(
     'category_int': fe.category,
     'feature_notes': fe.feature_notes,
     'web_feature': fe.web_feature,
+    'webdx_usecounter_enum': fe.webdx_usecounter_enum,
     'enterprise_feature_categories': fe.enterprise_feature_categories or [],
     'enterprise_product_category': fe.enterprise_product_category or ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE,
     'stages': stage_info['all_stages'],
