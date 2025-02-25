@@ -56,3 +56,6 @@ class CssPropertyHistogram(HistogramModel):
 
 class FeatureObserverHistogram(HistogramModel):
   pass
+
+class WebDXFeatureObserver(HistogramModel):
+  pass
