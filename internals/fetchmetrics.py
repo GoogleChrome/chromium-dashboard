@@ -228,6 +228,7 @@ class HistogramsHandler(basehandlers.FlaskHandler):
   MODEL_CLASS = {
     'FeatureObserver': metrics_models.FeatureObserverHistogram,
     'MappedCSSProperties': metrics_models.CssPropertyHistogram,
+    'WebDXFeatureObserver': metrics_models.WebDXFeatureObserver,
   }
 
   def _SaveData(self, data, histogram_id):
