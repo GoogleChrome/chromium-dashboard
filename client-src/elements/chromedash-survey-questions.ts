@@ -170,8 +170,8 @@ export class ChromedashSurveyQuestions extends LitElement {
           )}
           ${this.renderTextField(
             'explanation',
-            html`Required: If you checked any box above, explain why you
-            checked it. And, provide any other relevant context.`
+            html`Required: If you checked any box above, explain why you checked
+            it. And, provide any other relevant context.`
           )}
         </ol>
       </div>
