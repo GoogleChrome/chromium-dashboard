@@ -479,7 +479,7 @@ export class ChromedashFormField extends LitElement {
               <td colspan="2" class="webdx">
                 See web feature
                 <a
-                  href="https://webstatus.dev/features/${this.value}"
+                  href="https://webstatus.dev/?q=${this.value}"
                   target="_blank"
                 >
                   ${this.value}
