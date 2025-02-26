@@ -562,7 +562,8 @@ class GateConvertersTest(testing_config.CustomTestCase):
         next_action=datetime(2022, 12, 25),
         additional_review=True)
     gate.survey_answers = SurveyAnswers(
-        is_language_polyfill=True, launch_or_contact='reviewer@example.com')
+        is_language_polyfill=True, launch_or_contact='reviewer@example.com',
+        explanation='something')
     gate.put()
     # The review was due on Wednesday 2022-12-21.
     mock_now.return_value = datetime(2022, 12, 23, 1, 2, 3)  # Thursday after.
@@ -597,6 +598,7 @@ class GateConvertersTest(testing_config.CustomTestCase):
           'is_language_polyfill': True,
           'is_same_origin_css': False,
           'launch_or_contact': 'reviewer@example.com',
+          'explanation': 'something',
         },
       }
     self.assertEqual(expected, actual)

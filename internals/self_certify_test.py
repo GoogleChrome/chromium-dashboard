@@ -69,24 +69,36 @@ class SelfCertifyFunctionTest(testing_config.CustomTestCase):
             is_language_polyfill=False,
             is_api_polyfill=False,
             is_same_origin_css=False)))
+    self.assertFalse(self_certify.is_privacy_eligible(
+        SurveyAnswers(is_language_polyfill=True)))  # No explanation
+    self.assertFalse(self_certify.is_privacy_eligible(
+        SurveyAnswers(explanation='Nothing was checked off.')))
 
     self.assertTrue(self_certify.is_privacy_eligible(
-        SurveyAnswers(is_language_polyfill=True)))
+        SurveyAnswers(is_language_polyfill=True, explanation='something')))
     self.assertTrue(self_certify.is_privacy_eligible(
-        SurveyAnswers(is_api_polyfill=True)))
+        SurveyAnswers(is_api_polyfill=True, explanation='something')))
     self.assertTrue(self_certify.is_privacy_eligible(
-        SurveyAnswers(is_same_origin_css=True)))
+        SurveyAnswers(is_same_origin_css=True, explanation='something')))
     self.assertTrue(self_certify.is_privacy_eligible(
         SurveyAnswers(
             is_language_polyfill=False, is_api_polyfill=False,
-            is_same_origin_css=True)))
+            is_same_origin_css=True, explanation='something')))
 
   def test_is_eligible(self):
     """Privacy gates are the only eligible type."""
+    self.assertFalse(self_certify.is_eligible(
+        Gate(
+            gate_type=GATE_PRIVACY_ORIGIN_TRIAL,
+            survey_answers=SurveyAnswers(
+                is_language_polyfill=True))))
+
     self.assertTrue(self_certify.is_eligible(
         Gate(
             gate_type=GATE_PRIVACY_ORIGIN_TRIAL,
-            survey_answers=SurveyAnswers(is_language_polyfill=True))))
+            survey_answers=SurveyAnswers(
+                is_language_polyfill=True,
+                explanation='something'))))
 
     self.assertFalse(self_certify.is_eligible(
         Gate(
@@ -95,5 +107,13 @@ class SelfCertifyFunctionTest(testing_config.CustomTestCase):
 
     self.assertFalse(self_certify.is_eligible(
         Gate(
+            gate_type=GATE_PRIVACY_ORIGIN_TRIAL,
+            survey_answers=SurveyAnswers(
+                explanation='Nothing was checked off'))))
+
+    self.assertFalse(self_certify.is_eligible(
+        Gate(
             gate_type=GATE_ENTERPRISE_SHIP,
-            survey_answers=SurveyAnswers(is_language_polyfill=True))))
+            survey_answers=SurveyAnswers(
+                is_language_polyfill=True,
+                explanation='something'))))

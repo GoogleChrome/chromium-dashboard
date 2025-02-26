@@ -12,7 +12,7 @@ class SurveyAnswers(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, is_language_polyfill=None, is_api_polyfill=None, is_same_origin_css=None, launch_or_contact=None):  # noqa: E501
+    def __init__(self, is_language_polyfill=None, is_api_polyfill=None, is_same_origin_css=None, launch_or_contact=None, explanation=None):  # noqa: E501
         """SurveyAnswers - a model defined in OpenAPI
 
         :param is_language_polyfill: The is_language_polyfill of this SurveyAnswers.  # noqa: E501
@@ -23,25 +23,30 @@ class SurveyAnswers(Model):
         :type is_same_origin_css: bool
         :param launch_or_contact: The launch_or_contact of this SurveyAnswers.  # noqa: E501
         :type launch_or_contact: str
+        :param explanation: The explanation of this SurveyAnswers.  # noqa: E501
+        :type explanation: str
         """
         self.openapi_types = {
             'is_language_polyfill': bool,
             'is_api_polyfill': bool,
             'is_same_origin_css': bool,
-            'launch_or_contact': str
+            'launch_or_contact': str,
+            'explanation': str
         }
 
         self.attribute_map = {
             'is_language_polyfill': 'is_language_polyfill',
             'is_api_polyfill': 'is_api_polyfill',
             'is_same_origin_css': 'is_same_origin_css',
-            'launch_or_contact': 'launch_or_contact'
+            'launch_or_contact': 'launch_or_contact',
+            'explanation': 'explanation'
         }
 
         self._is_language_polyfill = is_language_polyfill
         self._is_api_polyfill = is_api_polyfill
         self._is_same_origin_css = is_same_origin_css
         self._launch_or_contact = launch_or_contact
+        self._explanation = explanation
 
     @classmethod
     def from_dict(cls, dikt) -> 'SurveyAnswers':
@@ -137,3 +142,24 @@ class SurveyAnswers(Model):
         """
 
         self._launch_or_contact = launch_or_contact
+
+    @property
+    def explanation(self) -> str:
+        """Gets the explanation of this SurveyAnswers.
+
+
+        :return: The explanation of this SurveyAnswers.
+        :rtype: str
+        """
+        return self._explanation
+
+    @explanation.setter
+    def explanation(self, explanation: str):
+        """Sets the explanation of this SurveyAnswers.
+
+
+        :param explanation: The explanation of this SurveyAnswers.
+        :type explanation: str
+        """
+
+        self._explanation = explanation

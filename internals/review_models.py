@@ -165,6 +165,7 @@ class SurveyAnswers(ndb.Model):
 
   # Questions that are potentially useful to several teams.
   launch_or_contact = ndb.StringProperty()  # URL or email for more info.
+  explanation = ndb.StringProperty()  # Explain why you chose those answers.
 
 
 class Gate(ndb.Model):

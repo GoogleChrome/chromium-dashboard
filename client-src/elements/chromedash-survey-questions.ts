@@ -116,6 +116,23 @@ export class ChromedashSurveyQuestions extends LitElement {
     `;
   }
 
+  renderTextField(name: string, desc: TemplateResult): TemplateResult {
+    const value: string = this.gate.survey_answers?.[name];
+    return html`
+      <li class="question">
+        ${desc}
+        <sl-textarea
+          name="${name}"
+          size="small"
+          rows=2
+          value=${value}
+          ?disabled=${!this.canEditSurvey()}
+          @sl-change=${e => this.handleFieldChange(name, e.target?.value)}
+        ></sl-input>
+      </li>
+    `;
+  }
+
   renderPrivacyForm(): TemplateResult {
     return html`
       <div id="questionnaire">
@@ -150,6 +167,11 @@ export class ChromedashSurveyQuestions extends LitElement {
             same issue, enter its URL here. Or, if this has previously been
             discussed with someone on the privacy team, enter their email
             address. Or, enter "None".`
+          )}
+          ${this.renderTextField(
+            'explanation',
+            html`Required: If you checked any box above, explain why you checked
+            it, and provide any other relevant context.`
           )}
         </ol>
       </div>

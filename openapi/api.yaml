@@ -1138,6 +1138,8 @@ components:
           type: boolean
         launch_or_contact:
           type: string
+        explanation:
+          type: string
     GetGateResponse:
       type: object
       properties:

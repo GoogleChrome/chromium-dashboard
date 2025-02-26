@@ -320,10 +320,11 @@ class VotesAPITest(testing_config.CustomTestCase):
     mock_get_approvers.return_value = ['reviewer1@example.com']
     testing_config.sign_in('owner1@example.com', 123567890)
     self.gate_1.gate_type = GATE_PRIVACY_SHIP
-    self.gate_1.survey_answers = SurveyAnswers(is_language_polyfill=True)
+    self.gate_1.survey_answers = SurveyAnswers(
+        is_language_polyfill=True, explanation='something')
     self.gate_1.put()
 
-    params = {'state': Vote.APPROVED}
+    params = {'state': Vote.NA_SELF}
     with test_app.test_request_context(self.request_path, json=params):
       actual = self.handler.do_post(
           feature_id=self.feature_id, gate_id=self.gate_1_id)
@@ -335,11 +336,11 @@ class VotesAPITest(testing_config.CustomTestCase):
     self.assertEqual(vote.feature_id, self.feature_id)
     self.assertEqual(vote.gate_id, 1)
     self.assertEqual(vote.set_by, 'owner1@example.com')
-    self.assertEqual(vote.state, Vote.APPROVED)
+    self.assertEqual(vote.state, Vote.NA_SELF)
 
     mock_notifier.assert_called_once_with(
         self.feature_1, self.gate_1, 'owner1@example.com',
-        Vote.APPROVED, Vote.NO_RESPONSE)
+        Vote.NA_SELF, Vote.NO_RESPONSE)
 
 
 class GatesAPITest(testing_config.CustomTestCase):

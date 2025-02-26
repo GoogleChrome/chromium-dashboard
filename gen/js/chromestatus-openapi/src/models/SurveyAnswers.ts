@@ -43,6 +43,12 @@ export interface SurveyAnswers {
      * @memberof SurveyAnswers
      */
     launch_or_contact?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SurveyAnswers
+     */
+    explanation?: string;
 }
 
 /**
@@ -66,6 +72,7 @@ export function SurveyAnswersFromJSONTyped(json: any, ignoreDiscriminator: boole
         'is_api_polyfill': json['is_api_polyfill'] == null ? undefined : json['is_api_polyfill'],
         'is_same_origin_css': json['is_same_origin_css'] == null ? undefined : json['is_same_origin_css'],
         'launch_or_contact': json['launch_or_contact'] == null ? undefined : json['launch_or_contact'],
+        'explanation': json['explanation'] == null ? undefined : json['explanation'],
     };
 }
 
@@ -79,6 +86,7 @@ export function SurveyAnswersToJSON(value?: SurveyAnswers | null): any {
         'is_api_polyfill': value['is_api_polyfill'],
         'is_same_origin_css': value['is_same_origin_css'],
         'launch_or_contact': value['launch_or_contact'],
+        'explanation': value['explanation'],
     };
 }
 

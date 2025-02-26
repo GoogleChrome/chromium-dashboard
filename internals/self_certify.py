@@ -36,11 +36,13 @@ def update_survey_answers(gate: Gate, new_answers: OASurveyAnswers):
 
   if new_answers.launch_or_contact is not None:
     answers.launch_or_contact = new_answers.launch_or_contact
+  if new_answers.explanation is not None:
+    answers.explanation = new_answers.explanation
 
 
 def is_privacy_eligible(answers: SurveyAnswers) -> bool:
   """Return True if the answers allow self-certify for the Privacy gate."""
-  return (
+  return answers.explanation and (
       answers.is_language_polyfill or
       answers.is_api_polyfill or
       answers.is_same_origin_css)
