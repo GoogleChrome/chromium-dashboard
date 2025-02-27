@@ -58,7 +58,7 @@ class FeatureObserverHistogram(HistogramModel):
   pass
 
 class WebDXFeatureObserver(HistogramModel):
-  MISSING_FEATURE_ID = 'N/A'
+  MISSING_FEATURE_ID = 'Missing feature'
   TBD_FEATURE_ID = 'TBD'
 
   @classmethod
