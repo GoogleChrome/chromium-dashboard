@@ -1,7 +1,10 @@
 import {assert, fixture} from '@open-wc/testing';
 import '@shoelace-style/shoelace/dist/components/option/option.js';
 import {html} from 'lit';
-import {ChromedashFormField} from './chromedash-form-field';
+import {
+  ChromedashFormField,
+  enumLabelToFeatureKey,
+} from './chromedash-form-field';
 import {
   STAGE_BLINK_INCUBATE,
   STAGE_BLINK_ORIGIN_TRIAL,
@@ -228,6 +231,36 @@ describe('chromedash-form-field', () => {
         {text: 'Origin trial 2', value: '3'},
         {text: 'Prepare to ship', value: '4'},
       ]);
+    });
+  });
+
+  describe('enumLabelToFeatureKey', () => {
+    it('should handle empty string', () => {
+      assert.equal(enumLabelToFeatureKey(''), '');
+    });
+
+    it('should convert first character to lowercase', () => {
+      assert.equal(enumLabelToFeatureKey('FooBar'), 'foo-bar');
+      assert.equal(enumLabelToFeatureKey('Baz'), 'baz');
+    });
+
+    it('should add hyphen before uppercase letters', () => {
+      assert.equal(enumLabelToFeatureKey('FooBarBaz'), 'foo-bar-baz');
+      assert.equal(enumLabelToFeatureKey('ABC'), 'a-b-c');
+    });
+
+    it('should add hyphen before digits if preceded by a letter', () => {
+      assert.equal(enumLabelToFeatureKey('Foo123'), 'foo-123');
+      assert.equal(enumLabelToFeatureKey('AB1CD2'), 'a-b-1-c-d-2');
+    });
+
+    it('should not add hyphen before digits if not preceded by a letter', () => {
+      assert.equal(enumLabelToFeatureKey('123ABC'), '123-a-b-c');
+      assert.equal(enumLabelToFeatureKey('1A2B3C'), '1-a-2-b-3-c');
+    });
+
+    it('should handle mixed-case input', () => {
+      assert.equal(enumLabelToFeatureKey('fOoBaR123'), 'foo-ba-r-123');
     });
   });
 });
