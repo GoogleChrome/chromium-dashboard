@@ -30,8 +30,6 @@ from internals.review_models import Gate, Vote, Activity
 from internals.core_enums import *
 from internals.feature_links import batch_index_feature_entries
 from internals import stage_helpers
-from internals.webdx_feature_models import WebdxFeatures
-from webstatus_openapi import ApiClient, DefaultApi, Configuration, ApiException, Feature
 import settings
 
 class EvaluateGateStatus(FlaskHandler):
@@ -803,39 +801,6 @@ class BackfillGateDates(FlaskHandler):
 
     return max(v.set_on for v in votes
                if v.state == Vote.NEEDS_WORK)
-
-
-class FetchWebdxFeatureId(FlaskHandler):
-
-  def get_template_data(self, **kwargs) -> str:
-    """Fetch the complete list of Webdx feature ID available from
-    webstatus.dev APIs and store them in datastore.
-    """
-    self.require_cron_header()
-
-    client = DefaultApi(ApiClient(Configuration(settings.API_WEBSTATUS_DEV_URL)))
-
-    all_data_list: list[Feature] = []
-    page_token: str | None = None
-    is_first: bool = True
-    while is_first or page_token:
-        try:
-            resp = client.list_features(page_token=page_token, page_size=100)
-            all_data_list.extend(resp.data)
-            page_token = resp.metadata.next_page_token
-            is_first = False
-        except ApiException as e:
-          logging.error(
-            'Could not fetch from %s?page_token=%s: %s',
-            settings.API_WEBSTATUS_DEV_URL,
-            page_token,
-            e,
-          )
-          return 'Running FetchWebdxFeatureId() job failed.'
-
-    feature_ids_list = [feature_data.feature_id for feature_data in all_data_list]
-    WebdxFeatures.store_webdx_feature_id_list(feature_ids_list)
-    return (f'{len(feature_ids_list)} feature ids are successfully stored.')
 
 
 class SendManualOTCreatedEmail(FlaskHandler):

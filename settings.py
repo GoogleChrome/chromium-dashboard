@@ -99,13 +99,9 @@ OT_DATA_ACCESS_ADMIN_GROUP_NAME: str|None = None
 # Dummy data for local OT support emails.
 DEV_MODE_OT_SUPPORT_EMAILS = 'user1@gmail.com,user2@gmail.com'
 
-# URL host for Webstatus.dev API endponts.
-API_WEBSTATUS_DEV_URL = 'https://api.webstatus.dev'
-
 if UNIT_TEST_MODE:
   APP_TITLE = 'Local testing'
   SITE_URL = 'http://127.0.0.1:7777/'
-  API_WEBSTATUS_DEV_URL = 'https://api.server.test'
 elif DEV_MODE:
   PROD = False
   APP_TITLE = 'Chrome Status Dev'

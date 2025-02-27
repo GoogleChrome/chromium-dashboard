@@ -65,7 +65,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
         intent_stage=1, tag_review_status=1, security_review_status=2,
         privacy_review_status=1, feature_notes='notes',
         updated=self.date, accurate_as_of=self.date, created=self.date,
-         web_feature='css', webdx_usecounter_enum='321')
+        webdx_usecounter_enum='321')
     self.fe_1.put()
 
     # Write stages for the feature.
@@ -372,7 +372,6 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'experiment_timeline': None,
       'explainer_links': [],
       'feature_notes': 'notes',
-      'web_feature': 'css',
       'webdx_usecounter_enum': '321',
       'ff_views': 5,
       'flag_name': None,
