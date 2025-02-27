@@ -375,12 +375,7 @@ def get_feature_names_by_ids(feature_ids: list[int],
     fe: Optional[FeatureEntry] = future.get_result()
     if fe and not fe.deleted:
       feature_id = fe.key.integer_id()
-      feature_name_dict = {
-        'id': feature_id,
-        'name': fe.name,
-        'confidential': fe.confidential
-      }
-      result_dict[feature_id] = feature_name_dict
+      result_dict[feature_id] = converters.feature_entry_to_json_tiny(fe)
 
   if update_cache:
     to_cache = {}
