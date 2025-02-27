@@ -625,6 +625,18 @@ def feature_entry_to_json_basic(fe: FeatureEntry,
   return d
 
 
+def feature_entry_to_json_tiny(fe: FeatureEntry) -> dict[str, Any]:
+  """Return just the name and ID and a few details needed for permissions."""
+  return {
+      'id': fe.key.integer_id(),
+      'name': fe.name,
+      'confidential': fe.confidential,
+      'owner_emails': fe.owner_emails or [],
+      'editor_emails': fe.editor_emails or [],
+      'cc_emails': fe.cc_emails or [],
+  }
+
+
 def vote_value_to_json_dict(vote: Vote) -> dict[str, Any]:
 
   return {
