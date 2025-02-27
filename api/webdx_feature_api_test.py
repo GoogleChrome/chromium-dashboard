@@ -18,21 +18,21 @@ from collections import OrderedDict
 import flask
 
 from api.webdx_feature_api import WebdxFeatureAPI
-from internals.webdx_feature_models import WebdxFeatures
+from internals.metrics_models import WebDXFeatureObserver
 
 test_app = flask.Flask(__name__)
 
 class WebdxFeatureAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.webdx_features = WebdxFeatures(feature_ids = ['zzz', 'aaa'])
-    self.webdx_features.put()
+    self.webdx_observer = WebDXFeatureObserver(bucket_id=3, property_name='css')
+    self.webdx_observer.put()
 
     self.handler = WebdxFeatureAPI()
     self.request_path = '/api/v0/webdxfeatures'
 
   def tearDown(self):
-    for entity in WebdxFeatures.query():
+    for entity in WebDXFeatureObserver.query():
       entity.key.delete()
 
   def test_do_get__success(self):
@@ -45,15 +45,14 @@ class WebdxFeatureAPITest(testing_config.CustomTestCase):
       [
         ('N/A', ['N/A', 'N/A']),
         ('TBD', ['TBD', 'TBD']),
-        ('aaa', ['aaa', 'aaa']),
-        ('zzz', ['zzz', 'zzz']),
+        ('css', ['css', '3']),
       ]
     )
     self.assertEqual(actual, expected)
 
   def test_do_get__empty_data(self):
     testing_config.sign_out()
-    self.webdx_features.key.delete()
+    self.webdx_observer.key.delete()
 
     with test_app.test_request_context(self.request_path):
       actual = self.handler.do_get()

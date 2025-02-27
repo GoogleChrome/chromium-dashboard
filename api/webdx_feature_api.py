@@ -16,10 +16,7 @@ import logging
 from collections import OrderedDict
 
 from framework import basehandlers
-from internals.webdx_feature_models import WebdxFeatures
-
-MISSING_FEATURE_ID = 'N/A'
-TBD_FEATURE_ID = 'TBD'
+from internals.metrics_models import WebDXFeatureObserver
 
 
 class WebdxFeatureAPI(basehandlers.APIHandler):
@@ -27,20 +24,27 @@ class WebdxFeatureAPI(basehandlers.APIHandler):
   in the guide form"""
 
   def do_get(self, **kwargs):
-    """Returns an ordered dict with Webdx feature id as both keys and values."""
-    webdx_features = WebdxFeatures.get_webdx_feature_id_list()
-    if not webdx_features:
-        logging.error('Webdx feature id list is empty.')
-        return {}
+    """Returns an ordered dict with the following structure,
+    {Webdx feature name: [Webdx feature name, usecounter enum], ...}"""
+    webdx_features_mapping = sorted(
+      WebDXFeatureObserver.get_all().items(), key=lambda item: item
+    )
+    if len(webdx_features_mapping) == 0:
+      logging.error('Webdx feature mapping is empty.')
+      return {}
 
-    feature_ids_dict = OrderedDict()
+    web_features_dict = OrderedDict()
     # The first key, value pair is the id when features are missing from the list.
-    feature_ids_dict[MISSING_FEATURE_ID] = [MISSING_FEATURE_ID, MISSING_FEATURE_ID]
-    feature_ids_dict[TBD_FEATURE_ID] = [TBD_FEATURE_ID, TBD_FEATURE_ID]
+    web_features_dict[WebDXFeatureObserver.MISSING_FEATURE_ID] = [
+      WebDXFeatureObserver.MISSING_FEATURE_ID,
+      WebDXFeatureObserver.MISSING_FEATURE_ID,
+    ]
+    web_features_dict[WebDXFeatureObserver.TBD_FEATURE_ID] = [
+      WebDXFeatureObserver.TBD_FEATURE_ID,
+      WebDXFeatureObserver.TBD_FEATURE_ID,
+    ]
 
-    feature_list = webdx_features.feature_ids
-    feature_list.sort()
-    for id in feature_list:
-      feature_ids_dict[id] = [id, id]
+    for entry in webdx_features_mapping:
+      web_features_dict[entry[1]] = [entry[1], str(entry[0])]
 
-    return feature_ids_dict
+    return web_features_dict

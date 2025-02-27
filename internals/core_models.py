@@ -95,6 +95,7 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   search_tags = ndb.StringProperty(repeated=True)
   feature_notes = ndb.TextProperty()  # copy from comments
   web_feature = ndb.StringProperty()
+  webdx_usecounter_enum = ndb.StringProperty()
 
   # Metadata: Process information
   feature_type = ndb.IntegerProperty(required=True, default=FEATURE_TYPE_INCUBATE_ID)
