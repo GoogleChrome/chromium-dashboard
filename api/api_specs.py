@@ -47,7 +47,6 @@ FEATURE_FIELD_DATA_TYPES: FIELD_INFO_DATA_TYPE = [
   ('ergonomics_risks', 'str'),
   ('explainer_links', 'links'),
   ('feature_notes', 'str'),
-  ('web_feature', 'str'),
   ('webdx_usecounter_enum', 'str'),
   ('feature_type', 'int'),
   ('ff_views', 'int'),
