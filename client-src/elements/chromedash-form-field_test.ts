@@ -260,7 +260,7 @@ describe('chromedash-form-field', () => {
     });
 
     it('should handle mixed-case input', () => {
-      assert.equal(enumLabelToFeatureKey('fOoBaR123'), 'foo-ba-r-123');
+      assert.equal(enumLabelToFeatureKey('fOoBaR123'), 'f-oo-ba-r-123');
     });
   });
 });

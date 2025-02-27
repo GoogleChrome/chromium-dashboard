@@ -508,7 +508,7 @@ export function enumLabelToFeatureKey(label: string) {
       result += char.toLowerCase();
       continue;
     }
-    if (char === char.toUpperCase()) {
+    if (char === char.toUpperCase() && /[a-zA-Z]/.test(char)) {
       result += '-' + char.toLowerCase();
       continue;
     }
