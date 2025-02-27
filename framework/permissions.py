@@ -62,6 +62,7 @@ def _can_view_confidential_feature_formatted(user: User, feature: dict):
   if is_google_or_chromium_account(user) or can_admin_site(user):
     return True
 
+  email = user.email()
   is_participant = (
       # Basic JSON format
       email in feature.get('owners', []) or
@@ -72,7 +73,6 @@ def _can_view_confidential_feature_formatted(user: User, feature: dict):
       email in feature.get('editor_emails', []) or
       email in feature.get('cc_emails', [])
       )
-  email = user.email()
   if is_participant:
     return True
 
