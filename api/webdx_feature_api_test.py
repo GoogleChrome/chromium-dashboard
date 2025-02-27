@@ -43,7 +43,7 @@ class WebdxFeatureAPITest(testing_config.CustomTestCase):
 
     expected = OrderedDict(
       [
-        ('N/A', ['N/A', 'N/A']),
+        ('Missing feature', ['Missing feature', 'Missing feature']),
         ('TBD', ['TBD', 'TBD']),
         ('css', ['css', '3']),
       ]

@@ -489,9 +489,10 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: false,
     choices: undefined, // this gets replaced in chromedash-form-field via an web features api
     label: 'Web Feature ID',
-    attrs: {placeholder: 'Please select a WebDX feature ID'},
-    help_text: html` Select the feature this belongs to. If your feature is not
-    listed, pick "Missing feature".`,
+    attrs: {placeholder: 'Please select a Web feature ID'},
+    help_text: html` Select the feature this belongs to in the web-features
+    project: https://github.com/web-platform-dx/web-features. If your feature is
+    not listed, pick "Missing feature".`,
   },
 
   category: {
