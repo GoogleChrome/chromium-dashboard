@@ -412,22 +412,36 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   async handleReviewRequested() {
-    maybeOpenCertifyDialog(this.gate, VOTE_NA_SELF).then(selfCertifying => {
-      if (selfCertifying) {
-        this.handleSelfCertify(VOTE_NA_SELF);
-      } else {
-        this.handleFullReviewRequest();
+    const featureId = this.feature.id;
+    window.csClient.getGates(featureId).then(gatesRes => {
+      for (const g of gatesRes.gates) {
+        if (g.id == this.gate.id) this.gate = g;
       }
+
+      maybeOpenCertifyDialog(this.gate, VOTE_NA_SELF).then(selfCertifying => {
+        if (selfCertifying) {
+          this.handleSelfCertify(VOTE_NA_SELF);
+        } else {
+          this.handleFullReviewRequest();
+        }
+      });
     });
   }
 
   async handleNARequested() {
-    maybeOpenCertifyDialog(this.gate, VOTE_NA_SELF).then(selfCertifying => {
-      if (selfCertifying) {
-        this.handleSelfCertify(VOTE_NA_SELF);
-      } else {
-        this.handleFullNARequested();
+    const featureId = this.feature.id;
+    window.csClient.getGates(featureId).then(gatesRes => {
+      for (const g of gatesRes.gates) {
+        if (g.id == this.gate.id) this.gate = g;
       }
+
+      maybeOpenCertifyDialog(this.gate, VOTE_NA_SELF).then(selfCertifying => {
+        if (selfCertifying) {
+          this.handleSelfCertify(VOTE_NA_SELF);
+        } else {
+          this.handleFullNARequested();
+        }
+      });
     });
   }
 
