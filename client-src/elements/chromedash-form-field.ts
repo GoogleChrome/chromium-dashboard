@@ -479,7 +479,9 @@ export class ChromedashFormField extends LitElement {
               <td colspan="2" class="webdx">
                 See web feature
                 <a
-                  href="https://webstatus.dev/features/${this.value}"
+                  href="https://webstatus.dev/features/${enumLabelToFeatureKey(
+                    this.value
+                  )}"
                   target="_blank"
                 >
                   ${this.value}
@@ -491,6 +493,31 @@ export class ChromedashFormField extends LitElement {
         : nothing}
     `;
   }
+}
+
+/**
+ * enumLabelToFeatureKey converts Webdx enum labels to
+ * web feature IDs. This function is rewritten from
+ * https://github.com/GoogleChrome/webstatus.dev/blob/6ae7ecf7c26e2563a6e1685cc6d92fc12bcc7941/lib/gcpspanner/spanneradapters/chromium_historgram_enum_consumer.go#L102-L125
+ */
+export function enumLabelToFeatureKey(label: string) {
+  let result = '';
+  for (let i = 0; i < label.length; i++) {
+    const char = label[i];
+    if (i === 0) {
+      result += char.toLowerCase();
+      continue;
+    }
+    if (char === char.toUpperCase() && /[a-zA-Z]/.test(char)) {
+      result += '-' + char.toLowerCase();
+      continue;
+    }
+    if (i > 0 && /[a-zA-Z]/.test(label[i - 1]) && char >= '0' && char <= '9') {
+      result += '-';
+    }
+    result += char;
+  }
+  return result;
 }
 
 /**

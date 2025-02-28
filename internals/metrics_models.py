@@ -58,4 +58,16 @@ class FeatureObserverHistogram(HistogramModel):
   pass
 
 class WebDXFeatureObserver(HistogramModel):
-  pass
+  MISSING_FEATURE_ID = 'Missing feature'
+  TBD_FEATURE_ID = 'TBD'
+
+  @classmethod
+  def get_enum_by_web_feature(cls, web_feature) -> str:
+    if web_feature == cls.MISSING_FEATURE_ID or web_feature == cls.TBD_FEATURE_ID:
+      return web_feature
+
+    observers = cls.query(cls.property_name == web_feature).fetch()
+    if len(observers) == 0:
+      return ''
+
+    return str(observers[0].bucket_id)
