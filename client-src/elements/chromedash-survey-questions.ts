@@ -85,6 +85,17 @@ export class ChromedashSurveyQuestions extends LitElement {
       });
   }
 
+  /* Immediately save string values when it changes between empty to non-empty,
+  because that affects eligibility for self-certification,
+  but don't refetch yet because that would overwrite subsequent keystrokes. */
+  handleFieldKeyup(name: string, value: string) {
+    if ((value || '').trim().length <= 1) {
+      window.csClient.updateGate(this.feature.id, this.gate.id, null, {
+        [name]: value,
+      });
+    }
+  }
+
   renderBooleanField(name: string, desc: TemplateResult): TemplateResult {
     const value: boolean = this.gate.survey_answers?.[name];
     return html`
@@ -111,6 +122,7 @@ export class ChromedashSurveyQuestions extends LitElement {
           value=${value}
           ?disabled=${!this.canEditSurvey()}
           @sl-change=${e => this.handleFieldChange(name, e.target?.value)}
+          @keyup=${e => this.handleFieldKeyup(name, e.target?.value)}
         ></sl-input>
       </li>
     `;
@@ -128,6 +140,7 @@ export class ChromedashSurveyQuestions extends LitElement {
           value=${value}
           ?disabled=${!this.canEditSurvey()}
           @sl-change=${e => this.handleFieldChange(name, e.target?.value)}
+          @keyup=${e => this.handleFieldKeyup(name, e.target?.value)}
         ></sl-input>
       </li>
     `;
