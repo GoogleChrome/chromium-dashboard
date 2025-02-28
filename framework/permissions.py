@@ -52,7 +52,7 @@ def can_view_feature_formatted(user: User, feature: dict) -> bool:
   return not feature['confidential'] or _can_view_confidential_feature_formatted(user, feature)
 
 def _can_view_confidential_feature_formatted(user: User, feature: dict):
-  """ Check if the user is an owner, editor, spec mentor, or creator
+  """Check if the user is an owner, editor, spec mentor, or creator
   for this feature or has a google.com or chromium.org account.
   If yes, they feature can be viewed, otherwise they cannot view
   confidential features."""
@@ -63,14 +63,21 @@ def _can_view_confidential_feature_formatted(user: User, feature: dict):
     return True
 
   email = user.email()
-  if (
-      email in feature['owners'] or
-      email in feature['editors'] or
-      email == feature['creator']):
+  is_participant = (
+      # Basic JSON format
+      email in feature.get('owners', []) or
+      email in feature.get('editors', []) or
+      email == feature.get('creator') or
+      # Verbose or tiny JSON formats
+      email in feature.get('owner_emails', []) or
+      email in feature.get('editor_emails', []) or
+      email in feature.get('cc_emails', [])
+      )
+  if is_participant:
     return True
 
   return False
-  
+
 
 def can_view_feature(user: User, feature: FeatureEntry) -> bool:
   """Return True if the user is allowed to view the given feature."""
@@ -98,7 +105,7 @@ def _can_view_confidential_feature(user: User, feature: FeatureEntry):
     return True
 
   return False
-  
+
 def can_create_feature(user: User) -> bool:
   """Return True if the user is allowed to create features."""
   if not user:
