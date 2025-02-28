@@ -323,38 +323,6 @@ def is_valid_gate_type(gate_type):
   return gate_type in APPROVAL_FIELDS_BY_ID
 
 
-def is_approved(approval_values, gate_type):
-  """Return true if we have all needed APPROVED values and no DENIED."""
-  count = 0
-  for av in approval_values:
-    if av.state in (Vote.APPROVED, Vote.NA):
-      count += 1
-    elif av.state == Vote.DENIED:
-      return False
-  afd = APPROVAL_FIELDS_BY_ID[gate_type]
-
-  if afd.rule == ONE_LGTM:
-    return count >= 1
-  elif afd.rule == THREE_LGTM:
-    return count >= 3
-  else:
-    logging.error('Unexpected approval rule')
-    return False
-
-
-def is_resolved(approval_values, gate_type):
-  """Return true if the review is done (approved or not approved)."""
-  if is_approved(approval_values, gate_type):
-    return True
-
-  # Any DENIED value means that the review is no longer pending.
-  for av in approval_values:
-    if av.state == Vote.DENIED:
-      return True
-
-  return False
-
-
 def set_vote(feature_id: int,  gate_type: int | None, new_state: int,
     set_by_email: str, gate_id: int | None=None) -> int | None:
   """Add or update an approval value and return new approval state if
@@ -425,7 +393,7 @@ def _calc_gate_state(votes: list[Vote], rule: str) -> int:
   """Returns the state that a gate should have based on its votes."""
   # A self-certified NA counts iff it is the only vote.
   if len(votes) == 1 and votes[0].state == Vote.NA_SELF and rule == ONE_LGTM:
-    return Vote.NA
+    return Vote.NA_SELF
 
   # If enough reviewed APPROVED or said it is NA, then that is used.
   num_lgtms = sum((1 if v.state in (Vote.APPROVED, Vote.NA) else 0)

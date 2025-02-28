@@ -223,7 +223,7 @@ def notify_approvals(feature: 'FeatureEntry', stage: Stage, gate: Gate) -> None:
     # approved or N/A.
     all_ot_gates: list[Gate] = Gate.query(
         Gate.stage_id == stage.key.integer_id()).fetch()
-    if all(g.state in (Vote.APPROVED, Vote.NA) for g in all_ot_gates): 
+    if all(g.state in Gate.APPROVED_STATES for g in all_ot_gates):
       send_trial_creation_approved_notification(
           feature, stage)
 

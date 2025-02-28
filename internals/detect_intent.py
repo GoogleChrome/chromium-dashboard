@@ -374,8 +374,8 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
       new_gate_state = approval_defs.set_vote(
           feature_id, gate_info.gate_type, Vote.APPROVED, from_addr,
           gate.key.integer_id())
-      recently_approved = (old_gate_state not in (Vote.APPROVED, Vote.NA) and
-                           new_gate_state in (Vote.APPROVED, Vote.NA))
+      recently_approved = (old_gate_state not in Gate.APPROVED_STATES and
+                           new_gate_state in Gate.APPROVED_STATES)
       if recently_approved:
         notifier_helpers.notify_approvals(feature, stage, gate)
 

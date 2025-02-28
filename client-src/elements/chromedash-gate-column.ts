@@ -609,6 +609,26 @@ export class ChromedashGateColumn extends LitElement {
     `;
   }
 
+  renderReviewStatusNa() {
+    // TODO(jrobbins): Show date of N/a.
+    return html`
+      <div class="status approved">
+        <sl-icon library="material" name="check_circle_filled_20px"></sl-icon>
+        N/a
+      </div>
+    `;
+  }
+
+  renderReviewStatusNaSelf() {
+    // TODO(jrobbins): Show date of N/a.
+    return html`
+      <div class="status approved">
+        <sl-icon library="material" name="check_circle_filled_20px"></sl-icon>
+        N/a (self-certified)
+      </div>
+    `;
+  }
+
   renderReviewStatusDenied() {
     // TODO(jrobbins): Show date of denial.
     return html`
@@ -624,6 +644,10 @@ export class ChromedashGateColumn extends LitElement {
       return this.renderReviewStatusPreparing();
     } else if (this.gate.state == VOTE_OPTIONS.NEEDS_WORK[0]) {
       return this.renderReviewStatusNeedsWork();
+    } else if (this.gate.state == VOTE_OPTIONS.NA[0]) {
+      return this.renderReviewStatusNa();
+    } else if (this.gate.state == VOTE_NA_SELF) {
+      return this.renderReviewStatusNaSelf();
     } else if (this.gate.state == VOTE_OPTIONS.APPROVED[0]) {
       return this.renderReviewStatusApproved();
     } else if (this.gate.state == VOTE_OPTIONS.DENIED[0]) {

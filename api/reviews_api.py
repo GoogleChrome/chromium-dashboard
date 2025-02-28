@@ -78,8 +78,8 @@ class VotesAPI(basehandlers.APIHandler):
     fe.put()
 
     # Send any notifications necessary if the gate is newly approved.
-    recently_approved = (old_gate_state not in (Vote.APPROVED, Vote.NA) and
-                         new_gate_state in (Vote.APPROVED, Vote.NA))
+    recently_approved = (old_gate_state not in Gate.APPROVED_STATES and
+                         new_gate_state in Gate.APPROVED_STATES)
     if recently_approved:
       stage = Stage.get_by_id(gate.stage_id)
       notifier_helpers.notify_approvals(fe, stage, gate)
@@ -112,7 +112,7 @@ class VotesAPI(basehandlers.APIHandler):
   def require_permissions(self, user, feature, gate, new_state):
     """Abort the request if the user lacks permission to set this vote."""
     is_requesting_review = new_state in (Vote.REVIEW_REQUESTED, Vote.NA_REQUESTED)
-    is_approving = new_state in (Vote.APPROVED, Vote.NA, Vote.NA_SELF)
+    is_approving = new_state in Gate.APPROVED_STATES
     is_editor = permissions.can_edit_feature(user, feature.key.integer_id())
     approvers = approval_defs.get_approvers(gate.gate_type)
     is_approver = permissions.can_review_gate(user, feature, gate, approvers)

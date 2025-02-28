@@ -98,8 +98,8 @@ def record_vote(gate: Gate, votes: list[Vote], old_gate_state: int) -> bool:
       gate.state != Vote.NEEDS_WORK and
       gate.needs_work_started_on is not None)
   resolved = (
-      old_gate_state not in Vote.FINAL_STATES and
-      gate.state in Vote.FINAL_STATES and
+      old_gate_state not in Gate.FINAL_STATES and
+      gate.state in Gate.FINAL_STATES and
       gate.resolved_on is None)
 
   if finished_rework:

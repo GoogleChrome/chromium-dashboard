@@ -93,7 +93,7 @@ class ActivityTest(testing_config.CustomTestCase):
 
 
 class GateTest(testing_config.CustomTestCase):
-  # TODO(jrobbins): Add tests for is_resolved, is_approved, get_feature_gates.
+  # TODO(jrobbins): Add tests for get_feature_gates.
   pass
 
 

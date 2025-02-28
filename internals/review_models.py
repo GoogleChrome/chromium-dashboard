@@ -114,7 +114,6 @@ class Vote(ndb.Model):
   RESPONSE_STATES = [
       NA, APPROVED, DENIED, REVIEW_STARTED, NEEDS_WORK, INTERNAL_REVIEW,
       NA_SELF]
-  FINAL_STATES = [NA, APPROVED, DENIED, NA_SELF]
 
   feature_id = ndb.IntegerProperty(required=True)
   gate_id = ndb.IntegerProperty(required=True)
@@ -176,7 +175,8 @@ class Gate(ndb.Model):
   PENDING_STATES = [
       Vote.REVIEW_REQUESTED, Vote.REVIEW_STARTED, Vote.NEEDS_WORK,
       Vote.INTERNAL_REVIEW, Vote.NA_REQUESTED]
-  FINAL_STATES = [Vote.NA, Vote.APPROVED, Vote.DENIED]
+  FINAL_STATES = [Vote.NA, Vote.APPROVED, Vote.DENIED, Vote.NA_SELF]
+  APPROVED_STATES = [Vote.NA, Vote.APPROVED, Vote.NA_SELF]
 
   feature_id = ndb.IntegerProperty(required=True)
   stage_id = ndb.IntegerProperty(required=True)
@@ -201,14 +201,6 @@ class Gate(ndb.Model):
   additional_review = ndb.BooleanProperty(default=False)
 
   survey_answers = ndb.StructuredProperty(SurveyAnswers)
-
-  def is_resolved(self) -> bool:
-    """Return if the Gate's outcome has been decided."""
-    return self.state == Vote.APPROVED or self.state == Vote.DENIED
-
-  def is_approved(self) -> bool:
-    """Return if the Gate approval requirements have been met."""
-    return self.state == Vote.APPROVED
 
   @classmethod
   def get_feature_gates(cls, feature_id: int) -> dict[int, list[Gate]]:
