@@ -783,13 +783,13 @@ class BackfillGateDates(FlaskHandler):
 
   def calc_resolved_on(self, gate: Gate, votes: list[Vote]) -> datetime | None:
     """Return the date on which the gate was resolved, or None."""
-    if gate.state not in Vote.FINAL_STATES:
+    if gate.state not in Gate.FINAL_STATES:
       return None
     if gate.resolved_on:
       return None
 
     return max(v.set_on for v in votes
-               if v.state in Vote.FINAL_STATES)
+               if v.state in Gate.FINAL_STATES)
 
   def calc_needs_work_started_on(
       self, gate: Gate, votes: list[Vote]) -> datetime | None:

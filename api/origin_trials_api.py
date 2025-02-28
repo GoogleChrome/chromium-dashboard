@@ -261,7 +261,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
 
     gates: list[Gate] = Gate.query(Gate.stage_id == ot_stage_id)
     for gate in gates:
-      if gate.state not in (Vote.APPROVED, Vote.NA):
+      if gate.state not in Gate.APPROVED_STATES:
         self.abort(400, 'Unapproved gate found for trial stage.')
 
     #TODO(markxiong0122): remove to_dict() when PR#4213 is merged
@@ -313,7 +313,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
                        f'{intent_url}'))
 
     gate = Gate.query(Gate.stage_id == extension_stage.key.integer_id()).get()
-    if not gate or (gate.state != Vote.APPROVED and gate.state != Vote.NA):
+    if not gate or (gate.state not in Gate.APPROVED_STATES):
       self.abort(400, 'Extension has not received the required approvals.')
 
   def do_patch(self, **kwargs):

@@ -247,76 +247,6 @@ class IsApprovedTest(testing_config.CustomTestCase):
         set_on=datetime.datetime.now(),
         set_by='three@example.com')
 
-  @mock.patch('internals.approval_defs.APPROVAL_FIELDS_BY_ID',
-              MOCK_APPROVALS_BY_ID)
-  def test_is_approved(self):
-    """We know if an approval rule has been satisfied."""
-
-    # Field requires 1 LGTM
-    self.assertFalse(approval_defs.is_approved([], 1))
-    self.assertFalse(approval_defs.is_approved([self.appr_nr], 1))
-    self.assertFalse(approval_defs.is_approved([self.appr_no], 1))
-    self.assertTrue(approval_defs.is_approved([self.appr_yes], 1))
-    self.assertTrue(approval_defs.is_approved([self.appr_na], 1))
-    self.assertFalse(approval_defs.is_approved([self.appr_nr, self.appr_no], 1))
-    self.assertFalse(approval_defs.is_approved(
-        [self.appr_nr, self.appr_no, self.appr_yes], 1))
-    self.assertTrue(approval_defs.is_approved([self.appr_nr, self.appr_yes], 1))
-    self.assertTrue(approval_defs.is_approved([self.appr_nr, self.appr_na], 1))
-
-    # Field requires 3 LGTMs
-    self.assertFalse(approval_defs.is_approved([], 2))
-    self.assertFalse(approval_defs.is_approved([self.appr_nr], 2))
-    self.assertFalse(approval_defs.is_approved([self.appr_no], 2))
-    self.assertFalse(approval_defs.is_approved([self.appr_yes], 2))
-    self.assertFalse(approval_defs.is_approved([self.appr_na], 2))
-    self.assertFalse(approval_defs.is_approved([self.appr_nr, self.appr_no], 2))
-    self.assertFalse(approval_defs.is_approved(
-        [self.appr_nr, self.appr_no, self.appr_yes], 2))
-    self.assertFalse(approval_defs.is_approved([self.appr_nr, self.appr_yes], 2))
-
-    self.assertTrue(approval_defs.is_approved(
-        [self.appr_yes, self.appr_yes, self.appr_yes], 2))
-    self.assertTrue(approval_defs.is_approved(
-        [self.appr_yes, self.appr_yes, self.appr_na], 2))
-    self.assertTrue(approval_defs.is_approved(
-        [self.appr_na, self.appr_na, self.appr_na], 2))
-    self.assertFalse(approval_defs.is_approved(
-        [self.appr_yes, self.appr_yes, self.appr_yes, self.appr_no], 2))
-    self.assertFalse(approval_defs.is_approved(
-        [self.appr_na, self.appr_yes, self.appr_yes, self.appr_no], 2))
-
-  @mock.patch('internals.approval_defs.APPROVAL_FIELDS_BY_ID',
-              MOCK_APPROVALS_BY_ID)
-  def test_is_resolved(self):
-    """We know if an approval request has been resolved."""
-    # Field requires 1 LGTM
-    self.assertFalse(approval_defs.is_resolved([], 1))
-    self.assertFalse(approval_defs.is_resolved([self.appr_nr], 1))
-    self.assertTrue(approval_defs.is_resolved([self.appr_no], 1))
-    self.assertTrue(approval_defs.is_resolved([self.appr_yes], 1))
-    self.assertTrue(approval_defs.is_resolved([self.appr_nr, self.appr_no], 1))
-    self.assertTrue(approval_defs.is_resolved(
-        [self.appr_nr, self.appr_no, self.appr_yes], 1))
-    self.assertTrue(approval_defs.is_resolved([self.appr_nr, self.appr_yes], 1))
-
-    # Field requires 3 LGTMs
-    self.assertFalse(approval_defs.is_resolved([], 2))
-    self.assertFalse(approval_defs.is_resolved([self.appr_nr], 2))
-    self.assertTrue(approval_defs.is_resolved([self.appr_no], 2))
-    self.assertFalse(approval_defs.is_resolved([self.appr_yes], 2))
-    self.assertTrue(approval_defs.is_resolved([self.appr_nr, self.appr_no], 2))
-    self.assertTrue(approval_defs.is_resolved(
-        [self.appr_nr, self.appr_no, self.appr_yes], 2))
-    self.assertFalse(approval_defs.is_resolved([self.appr_nr, self.appr_yes], 2))
-
-    self.assertTrue(approval_defs.is_resolved(
-        [self.appr_yes, self.appr_yes, self.appr_yes], 2))
-    self.assertTrue(approval_defs.is_resolved(
-        [self.appr_yes, self.appr_yes, self.appr_yes, self.appr_no], 2))
-
-
-
 RR = Vote.REVIEW_REQUESTED
 AP = Vote.APPROVED
 DN = Vote.DENIED
@@ -421,7 +351,7 @@ class CalcGateStateTest(testing_config.CustomTestCase):
 
   def test_self_cert_stands(self):
     """A feature owner self-certified and no one disagrees."""
-    self.assertEqual(('na', 'preparing'),
+    self.assertEqual(('na (self-certified)', 'preparing'),
                      self.do_calc(NA_SELF))
     self.assertEqual(('na', 'review_requested'),
                      self.do_calc(NA_SELF, NA))
