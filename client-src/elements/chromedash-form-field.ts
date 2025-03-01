@@ -141,6 +141,20 @@ export class ChromedashFormField extends LitElement {
     button.name = details.open ? 'dash-square' : 'plus-square';
   }
 
+  shouldDisplayFeatureLink(field_name: string, feature_value: string) {
+    if (field_name !== 'web_feature') {
+      return false;
+    }
+    if (!feature_value) {
+      return false;
+    }
+    if (feature_value === 'Missing feature' || feature_value == 'TBD') {
+      return false;
+    }
+
+    return true;
+  }
+
   // Must render to light DOM, so sl-form-fields work as intended.
   createRenderRoot() {
     return this;
@@ -473,7 +487,7 @@ export class ChromedashFormField extends LitElement {
             </tr>
           `
         : nothing}
-      ${this.name === 'web_feature' && this.value
+      ${this.shouldDisplayFeatureLink(this.name, this.value)
         ? html`
             <tr>
               <td colspan="2" class="webdx">
