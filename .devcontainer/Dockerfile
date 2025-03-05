@@ -4,7 +4,7 @@
 # Update 'VARIANT' to pick a version of Python: 3, 3.10, 3.9, 3.8, 3.7, 3.6
 # Append -bullseye or -buster to pin to an OS version.
 # Use -bullseye variants on local arm64/Apple Silicon.
-ARG VARIANT="3.11-bullseye"
+ARG VARIANT="3.12-bullseye"
 FROM mcr.microsoft.com/vscode/devcontainers/python:0-${VARIANT} as ide
 
 # [Choice] Node.js version: none, lts/*, 16, 14, 12, 10

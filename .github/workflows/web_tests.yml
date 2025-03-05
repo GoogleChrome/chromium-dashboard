@@ -1,6 +1,6 @@
 name: Continuous Integration Web Tests
 env:
- CLOUDSDK_PYTHON: python3.11
+ CLOUDSDK_PYTHON: python3.12
 on:
   push:
     branches:
@@ -29,7 +29,7 @@ jobs:
       - name: set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
       - name: pre-installation
         run: |

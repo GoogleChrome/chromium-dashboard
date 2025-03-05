@@ -11,12 +11,12 @@
     "./gen/js/*"
   ],
   "scripts": {
-    "setup": "npm ci; python3.11 -m venv cs-env; npm run deps",
+    "setup": "npm ci; python3.12 -m venv cs-env; npm run deps",
     "clean-setup": "rm -rf node_modules cs-env; npm run setup",
     "deps": ". cs-env/bin/activate; pip install -r requirements.txt --upgrade && pip install -r requirements.dev.txt --upgrade",
     "dev-deps": "echo 'dev-deps is no longer needed'",
     "dev-ot-key": "gcloud secrets versions access latest --secret=DEV_OT_API_KEY  --out-file=ot_api_key.txt --project=cr-status-staging",
-    "do-tests": ". cs-env/bin/activate; curl -X POST 'http://localhost:15606/reset' && python3.11 -m unittest discover -p '*_test.py'  -b",
+    "do-tests": ". cs-env/bin/activate; curl -X POST 'http://localhost:15606/reset' && python3.12 -m unittest discover -p '*_test.py'  -b",
     "start-emulator-persist": "gcloud beta emulators datastore start --project=cr-status-staging --host-port=:15606 --use-firestore-in-datastore-mode",
     "start-emulator": "gcloud beta emulators datastore start --project=cr-status-staging --host-port=:15606 --no-store-on-disk --use-firestore-in-datastore-mode",
     "stop-emulator": "curl -X POST 'http://localhost:15606/shutdown'; pkill -f \"CloudDatastore.jar\"",
@@ -35,7 +35,7 @@
     "webtest-coverage": "npm run build && web-test-runner \"build/**/*_test.js\" --node-resolve --playwright --coverage --browsers chromium firefox",
     "do-coverage": "coverage3 erase && coverage3 run -m unittest discover -p '*_test.py' -b && coverage3 html",
     "coverage": ". cs-env/bin/activate; (npm run start-emulator > /dev/null 2>&1 &); sleep 3; curl --retry 4 http://localhost:15606/ --retry-connrefused; npm run do-coverage;  npm run stop-emulator",
-    "view-coverage": "pushd htmlcov/; python3.11 -m http.server 8080; popd",
+    "view-coverage": "pushd htmlcov/; python3.12 -m http.server 8080; popd",
     "mypy": ". cs-env/bin/activate; mypy --ignore-missing-imports --exclude cs-env/ --exclude appengine_config.py --exclude gen/py/chromestatus_openapi/build/ --exclude gen/py/chromestatus_openapi/chromestatus_openapi/test --exclude appengine_config.py --no-namespace-packages --disable-error-code \"annotation-unchecked\" .",
     "lint": "prettier client-src/js-src client-src/elements --check && eslint \"client-src/js-src/**/*.{js,ts}\" && tsc -p tsconfig.json && lit-analyzer \"client-src/elements/chromedash-!(featurelist)*.js\"",
     "lint-fix": "prettier client-src/js-src client-src/elements --write && eslint \"client-src/js-src/**/*.{js,ts}\" --fix",

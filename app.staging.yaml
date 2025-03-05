@@ -1,6 +1,6 @@
 # This GAE service contains most of the app, including all UI pages.
 
-runtime: python311
+runtime: python312
 service: default
 instance_class: F4_1G
 
