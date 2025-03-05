@@ -208,7 +208,7 @@ LOGICAL_OPERATORS_PATTERN = r'OR\s+|-'
 # Structured terms look like: FIELD OPERATOR VALUE.
 # Full-text terms look like: SINGLE_WORD, or like: "QUOTED STRING".
 TERM_RE = re.compile(
-    '(?P<logical>%s)?(?:(?P<field>%s)(?P<op>%s)(?P<val>%s)|(?P<textterm>%s))\s+' % (
+    r'(?P<logical>%s)?(?:(?P<field>%s)(?P<op>%s)(?P<val>%s)|(?P<textterm>%s))\s+' % (
         LOGICAL_OPERATORS_PATTERN, FIELD_NAME_PATTERN, OPERATORS_PATTERN,
         VALUES_PATTERN, TEXT_PATTERN),
     re.I)
