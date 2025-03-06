@@ -1,4 +1,4 @@
-runtime: python311
+runtime: python312
 service: notifier
 instance_class: F4_1G
 

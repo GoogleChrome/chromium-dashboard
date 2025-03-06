@@ -1,10 +1,10 @@
-ARG PYTHON_VARIANT=3.11-bullseye
+ARG PYTHON_VARIANT=3.12-bullseye
 FROM python:${PYTHON_VARIANT} as app
 
 RUN groupadd -g 1001 appuser && \
     useradd appuser -u 1001 -g 1001 -m -d /home/appuser -s /bin/bash
 
-RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \ 
+RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     # openapi-generator-cli dependencies
     && apt-get install -y openjdk-17-jre
 
