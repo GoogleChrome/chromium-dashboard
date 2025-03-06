@@ -402,6 +402,7 @@ class GatesAPITest(testing_config.CustomTestCase):
                 'needs_work_started_on': None,
                 'possible_assignee_emails': ['reviewer1@example.com'],
                 'survey_answers': None,
+                'earliest_milestone': None,
             },
         ],
         }

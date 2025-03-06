@@ -170,6 +170,12 @@ export interface Gate {
      * @memberof Gate
      */
     survey_answers?: SurveyAnswers;
+    /**
+     * 
+     * @type {number}
+     * @memberof Gate
+     */
+    earliest_milestone?: number;
 }
 
 /**
@@ -213,6 +219,7 @@ export function GateFromJSONTyped(json: any, ignoreDiscriminator: boolean): Gate
         'self_certify_eligible': json['self_certify_eligible'] == null ? undefined : json['self_certify_eligible'],
         'self_certify_possible': json['self_certify_possible'] == null ? undefined : json['self_certify_possible'],
         'survey_answers': json['survey_answers'] == null ? undefined : SurveyAnswersFromJSON(json['survey_answers']),
+        'earliest_milestone': json['earliest_milestone'] == null ? undefined : json['earliest_milestone'],
     };
 }
 
@@ -246,6 +253,7 @@ export function GateToJSON(value?: Gate | null): any {
         'self_certify_eligible': value['self_certify_eligible'],
         'self_certify_possible': value['self_certify_possible'],
         'survey_answers': SurveyAnswersToJSON(value['survey_answers']),
+        'earliest_milestone': value['earliest_milestone'],
     };
 }
 

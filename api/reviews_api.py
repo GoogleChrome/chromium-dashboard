@@ -24,7 +24,7 @@ from google.cloud.ndb.tasklets import Future  # for type checking only
 from api import converters
 from framework import basehandlers, permissions
 from framework.users import User
-from internals import approval_defs, notifier_helpers, self_certify
+from internals import approval_defs, notifier_helpers, self_certify, stage_helpers
 from internals.core_enums import *
 from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Gate, Vote, Amendment, Activity
@@ -139,12 +139,19 @@ class GatesAPI(basehandlers.APIHandler):
     """Return a list of all gates associated with the given feature."""
     feature_id = kwargs.get('feature_id', None)
     feature: FeatureEntry = self.get_specified_feature(feature_id=feature_id)
+    stages: list[Stage] = Stage.query(Stage.feature_id == feature_id).fetch()
     gates: list[Gate] = []
 
+    stage_id_to_milestone = {
+        s.key.integer_id(): stage_helpers.find_earliest_milestone([s])
+        for s in stages}
     if not feature.deleted or self.get_bool_arg('include_deleted'):
       gates = Gate.query(Gate.feature_id == feature_id).fetch()
 
-    dicts = [converters.gate_value_to_json_dict(g) for g in gates]
+    dicts = [
+        converters.gate_value_to_json_dict(
+            g, stage_id_to_milestone.get(g.stage_id))
+        for g in gates]
     for g in dicts:
       approvers = approval_defs.get_approvers(g['gate_type'])
       g['possible_assignee_emails'] = approvers

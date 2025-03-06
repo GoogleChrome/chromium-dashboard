@@ -524,7 +524,7 @@ class GateConvertersTest(testing_config.CustomTestCase):
     """If a Gate has only required fields set, we can convert it to JSON."""
     gate = Gate(feature_id=1, stage_id=2, gate_type=3, state=4)
     gate.put()
-    actual = converters.gate_value_to_json_dict(gate)
+    actual = converters.gate_value_to_json_dict(gate, None)
     appr_def = approval_defs.APPROVAL_FIELDS_BY_ID[gate.gate_type]
     expected = {
       'id': gate.key.integer_id(),
@@ -550,6 +550,7 @@ class GateConvertersTest(testing_config.CustomTestCase):
       'self_certify_eligible': False,
       'self_certify_possible': False,
       'survey_answers': None,
+      'earliest_milestone': None,
       }
     self.assertEqual(expected, actual)
 
@@ -569,7 +570,7 @@ class GateConvertersTest(testing_config.CustomTestCase):
     # The review was due on Wednesday 2022-12-21.
     mock_now.return_value = datetime(2022, 12, 23, 1, 2, 3)  # Thursday after.
 
-    actual = converters.gate_value_to_json_dict(gate)
+    actual = converters.gate_value_to_json_dict(gate, 123)
     appr_def = approval_defs.APPROVAL_FIELDS_BY_ID[gate.gate_type]
     expected = {
       'id': gate.key.integer_id(),
@@ -601,6 +602,7 @@ class GateConvertersTest(testing_config.CustomTestCase):
           'launch_or_contact': 'reviewer@example.com',
           'explanation': 'something',
         },
+      'earliest_milestone': 123,
       }
     self.assertEqual(expected, actual)
 
@@ -614,7 +616,7 @@ class GateConvertersTest(testing_config.CustomTestCase):
         next_action=datetime(2022, 12, 25),
         additional_review=True)
     gate.put()
-    actual = converters.gate_value_to_json_dict(gate)
+    actual = converters.gate_value_to_json_dict(gate, None)
 
     self.assertEqual(4, actual['slo_initial_response_took'])
     self.assertEqual(None, actual['slo_initial_response_remaining'])
