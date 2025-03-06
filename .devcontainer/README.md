@@ -8,7 +8,7 @@ Currently, the devcontainer setup leverages docker compose to setup two
 containers:
 
 1. The main development container which contains:
-    - Node,Python and Redis
+    - Node, Python and Redis
 2. [Datastore Emulator](https://cloud.google.com/datastore/docs/tools/datastore-emulator)
 3. [Datastore Emulator viewer](https://github.com/remko/dsadmin)
 
@@ -58,6 +58,7 @@ There are other ports needed for the IDE itself but mainly, you only need to wat
 | 8888 | Datastore Viewer |
 | 8080 | Application (when running)|
 | 8000 | Webtest (when running) |
+| 6379 | Redis (default port) |
 
 ## Upgrading versions of Node and Python
 

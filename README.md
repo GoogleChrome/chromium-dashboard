@@ -14,7 +14,7 @@ For a one-click setup that leverages devcontainers, check out the devcontainer
 
 ### Installation
 1. Install gcloud and needed components:
-    1.  Before you begin, make sure that you have a java JRE (version 8 or greater) installed. JRE is required to use the DataStore Emulator and [openapi-generator-cli](https://github.com/OpenAPITools/openapi-generator-cli).
+    1. Before you begin, make sure that you have a java JRE (version 8 or greater) installed. JRE is required to use the DataStore Emulator and [openapi-generator-cli](https://github.com/OpenAPITools/openapi-generator-cli).
     1. [Google App Engine SDK for Python](https://cloud.google.com/appengine/docs/standard/python3/setting-up-environment). Make sure to select Python 3.
     1. `gcloud init`
     1. `gcloud components install cloud-datastore-emulator`
@@ -23,8 +23,7 @@ For a one-click setup that leverages devcontainers, check out the devcontainer
     1. node and npm.
     1. Gulp: `npm install --global gulp-cli`
     1. Python virtual environment: `sudo apt install python3.11-venv`
-    1.Redis:[installation guide]
-    (https://redis.io/docs/latest/operate/oss_and_stack/install/install-redis/)
+    1. Redis:[installation guide](https://redis.io/docs/latest/operate/oss_and_stack/install/install-redis/)
 1. We recommend using an older node version, e.g. node 18
     1. Use `node -v` to check the default node version
     2. `nvm use 18` to switch to node 18
