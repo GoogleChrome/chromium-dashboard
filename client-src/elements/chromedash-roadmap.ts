@@ -312,7 +312,9 @@ export class ChromedashRoadmap extends LitElement {
     // Note: We use repeat() rather than map() to prevent Lit from reusing
     // elements that fetch data exactly once via their connectedCallback().
     return html`
-      ${repeat(this.pastMilestoneArray, milestone => milestone,
+      ${repeat(
+        this.pastMilestoneArray,
+        milestone => milestone,
         milestone => html`
           <chromedash-roadmap-milestone-card
             style="width:${this.cardWidth}px;"
@@ -328,7 +330,9 @@ export class ChromedashRoadmap extends LitElement {
           </chromedash-roadmap-milestone-card>
         `
       )}
-      ${repeat(this.shownChannelNames, channelType => channelType,
+      ${repeat(
+        this.shownChannelNames,
+        channelType => channelType,
         channelType => html`
           <chromedash-roadmap-milestone-card
             style="width:${this.cardWidth}px;"
@@ -345,7 +349,9 @@ export class ChromedashRoadmap extends LitElement {
           </chromedash-roadmap-milestone-card>
         `
       )}
-      ${repeat(this.futureMilestoneArray, milestone => milestone,
+      ${repeat(
+        this.futureMilestoneArray,
+        milestone => milestone,
         milestone => html`
           <chromedash-roadmap-milestone-card
             style="width:${this.cardWidth}px;"

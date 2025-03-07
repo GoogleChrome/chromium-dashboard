@@ -1,33 +1,31 @@
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
-import {
-  ChromedashReviewStatusIcon,
-} from './chromedash-review-status-icon';
+import {ChromedashReviewStatusIcon} from './chromedash-review-status-icon';
 import {ChromeStatusClient} from '../js-src/cs-client';
 import sinon from 'sinon';
 import {
   GATE_TYPES,
-  GATE_PREPARING, VOTE_OPTIONS, VOTE_NA_SELF,
+  GATE_PREPARING,
+  VOTE_OPTIONS,
+  VOTE_NA_SELF,
 } from './form-field-enums';
 
-
-const COMPONENT_HTML = html`
-  <chromedash-review-status-icon
-      featureId=12345
-      version=123
-      shippingType="Origin trial"
-  ></chromedash-review-status-icon>`;
+const COMPONENT_HTML = html` <chromedash-review-status-icon
+  featureId="12345"
+  version="123"
+  shippingType="Origin trial"
+></chromedash-review-status-icon>`;
 
 const GATE_WRONG_MILESTONE = {
   id: 12345001,
-  earliest_milestone: 999,  // non-matching.
+  earliest_milestone: 999, // non-matching.
   gate_type: GATE_TYPES['API_ORIGIN_TRIAL'],
 };
 
 const GATE_WRONG_TYPE = {
   id: 12345002,
   earliest_milestone: 123,
-  gate_type: GATE_TYPES['API_PLAN'],   // non-matching.
+  gate_type: GATE_TYPES['API_PLAN'], // non-matching.
 };
 
 const GATE_API_PREPARING = {
@@ -79,8 +77,6 @@ const GATE_API_APPROVED = {
   state: VOTE_OPTIONS['APPROVED'][0],
 };
 
-
-
 describe('chromedash-review-status-icon', () => {
   let getGatesStub: sinon.SinonStub;
   /* window.csClient is initialized in spa.html
@@ -118,8 +114,9 @@ describe('chromedash-review-status-icon', () => {
   });
 
   it('is blank for a feature with no relevant gates', async () => {
-    getGatesStub.returns(Promise.resolve({gates: [
-      GATE_WRONG_MILESTONE, GATE_WRONG_TYPE]}));
+    getGatesStub.returns(
+      Promise.resolve({gates: [GATE_WRONG_MILESTONE, GATE_WRONG_TYPE]})
+    );
     const component = await fixture(COMPONENT_HTML);
     assert.exists(component);
     assert.instanceOf(component, ChromedashReviewStatusIcon);
@@ -129,8 +126,9 @@ describe('chromedash-review-status-icon', () => {
   });
 
   it('renders an arrow for a feature with gates all PREPARING', async () => {
-    getGatesStub.returns(Promise.resolve({gates: [
-      GATE_API_PREPARING, GATE_PRIVACY_PREPARING]}));
+    getGatesStub.returns(
+      Promise.resolve({gates: [GATE_API_PREPARING, GATE_PRIVACY_PREPARING]})
+    );
     const component = await fixture(COMPONENT_HTML);
     assert.exists(component);
     assert.instanceOf(component, ChromedashReviewStatusIcon);
@@ -140,8 +138,15 @@ describe('chromedash-review-status-icon', () => {
   });
 
   it('renders "..." for a feature with any gates in progress', async () => {
-    getGatesStub.returns(Promise.resolve({gates: [
-      GATE_API_STARTED, GATE_SECURITY_PREPARING, GATE_PRIVACY_PREPARING]}));
+    getGatesStub.returns(
+      Promise.resolve({
+        gates: [
+          GATE_API_STARTED,
+          GATE_SECURITY_PREPARING,
+          GATE_PRIVACY_PREPARING,
+        ],
+      })
+    );
     const component = await fixture(COMPONENT_HTML);
     assert.exists(component);
     assert.instanceOf(component, ChromedashReviewStatusIcon);
@@ -151,8 +156,15 @@ describe('chromedash-review-status-icon', () => {
   });
 
   it('renders "..." for a feature with mixed gates', async () => {
-    getGatesStub.returns(Promise.resolve({gates: [
-      GATE_API_APPROVED, GATE_SECURITY_PREPARING, GATE_PRIVACY_PREPARING]}));
+    getGatesStub.returns(
+      Promise.resolve({
+        gates: [
+          GATE_API_APPROVED,
+          GATE_SECURITY_PREPARING,
+          GATE_PRIVACY_PREPARING,
+        ],
+      })
+    );
     const component = await fixture(COMPONENT_HTML);
     assert.exists(component);
     assert.instanceOf(component, ChromedashReviewStatusIcon);
@@ -162,8 +174,15 @@ describe('chromedash-review-status-icon', () => {
   });
 
   it('renders "needs work" for a feature with a N-W gate', async () => {
-    getGatesStub.returns(Promise.resolve({gates: [
-      GATE_API_NEEDS_WORK, GATE_SECURITY_PREPARING, GATE_PRIVACY_PREPARING]}));
+    getGatesStub.returns(
+      Promise.resolve({
+        gates: [
+          GATE_API_NEEDS_WORK,
+          GATE_SECURITY_PREPARING,
+          GATE_PRIVACY_PREPARING,
+        ],
+      })
+    );
     const component = await fixture(COMPONENT_HTML);
     assert.exists(component);
     assert.instanceOf(component, ChromedashReviewStatusIcon);
@@ -173,8 +192,7 @@ describe('chromedash-review-status-icon', () => {
   });
 
   it('renders "approved" when all gates are approved', async () => {
-    getGatesStub.returns(Promise.resolve({gates: [
-      GATE_API_APPROVED]}));
+    getGatesStub.returns(Promise.resolve({gates: [GATE_API_APPROVED]}));
     const component = await fixture(COMPONENT_HTML);
     assert.exists(component);
     assert.instanceOf(component, ChromedashReviewStatusIcon);
@@ -184,8 +202,15 @@ describe('chromedash-review-status-icon', () => {
   });
 
   it('renders "denied" if any gate is denied', async () => {
-    getGatesStub.returns(Promise.resolve({gates: [
-      GATE_API_APPROVED, GATE_SECURITY_DENIED, GATE_PRIVACY_PREPARING]}));
+    getGatesStub.returns(
+      Promise.resolve({
+        gates: [
+          GATE_API_APPROVED,
+          GATE_SECURITY_DENIED,
+          GATE_PRIVACY_PREPARING,
+        ],
+      })
+    );
     const component = await fixture(COMPONENT_HTML);
     assert.exists(component);
     assert.instanceOf(component, ChromedashReviewStatusIcon);
@@ -193,5 +218,4 @@ describe('chromedash-review-status-icon', () => {
     assert.exists(icon);
     assert.equal(icon.getAttribute('name'), 'block_20px');
   });
-
 });
