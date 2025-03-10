@@ -86,7 +86,7 @@
     "@web/test-runner": "^0.20.0",
     "@web/test-runner-playwright": "^0.11.0",
     "@web/test-runner-puppeteer": "^0.18.0",
-    "acorn": ">=8.14.0",
+    "acorn": ">=8.14.1",
     "color-string": ">=2.0.1",
     "del": "^8.0.0",
     "dot-prop": ">=9.0.0",
