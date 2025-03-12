@@ -39,6 +39,7 @@ describe('chromedash-feature-page', () => {
     'Spec link': 'fake spec link',
     'Web developer signals': 'True',
   });
+  const featureLinksPromise = Promise.resolve(undefined);
   const channels = {
     canary_asan: {
       version: 81,
@@ -155,12 +156,14 @@ describe('chromedash-feature-page', () => {
     sinon.stub(window.csClient, 'getStars');
     sinon.stub(window.csClient, 'getFeatureProgress');
     sinon.stub(window.csClient, 'getSpecifiedChannels');
+    sinon.stub(window.csClient, 'getFeatureLinks');
     window.csClient.getGates.returns(gatesPromise);
     window.csClient.getComments.returns(commentsPromise);
     window.csClient.getFeatureProcess.returns(processPromise);
     window.csClient.getStars.returns(starsPromise);
     window.csClient.getFeatureProgress.returns(progressPromise);
     window.csClient.getSpecifiedChannels.returns(channelsPromise);
+    window.csClient.getFeatureLinks.returns(featureLinksPromise);
 
     // For the child component - chromedash-gantt
     sinon.stub(window.csClient, 'getChannels');
@@ -173,6 +176,7 @@ describe('chromedash-feature-page', () => {
     window.csClient.getStars.restore();
     window.csClient.getChannels.restore();
     window.csClient.getSpecifiedChannels.restore();
+    window.csClient.getFeatureLinks.restore();
   });
 
   it('renders with no data', async () => {
