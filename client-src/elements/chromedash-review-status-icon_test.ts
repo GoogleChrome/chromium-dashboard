@@ -10,70 +10,63 @@ import {
   VOTE_NA_SELF,
 } from './form-field-enums';
 
+const FEATURE = {
+  id: 5347893,
+  roadmap_stage_ids: [57463],
+}
+
 const COMPONENT_HTML = html` <chromedash-review-status-icon
-  featureId="12345"
-  version="123"
-  shippingType="Origin trial"
+.feature=${FEATURE}
 ></chromedash-review-status-icon>`;
 
-const GATE_WRONG_MILESTONE = {
+const GATE_WRONG_STAGE = {
   id: 12345001,
-  earliest_milestone: 999, // non-matching.
-  gate_type: GATE_TYPES['API_ORIGIN_TRIAL'],
-};
-
-const GATE_WRONG_TYPE = {
-  id: 12345002,
-  earliest_milestone: 123,
-  gate_type: GATE_TYPES['API_PLAN'], // non-matching.
+  stage_id: 999, // non-matching.
 };
 
 const GATE_API_PREPARING = {
   id: 12345001,
-  earliest_milestone: 123,
-  gate_type: GATE_TYPES['API_ORIGIN_TRIAL'],
+  stage_id: 57463,
+  team_name: 'API Owners',
   state: GATE_PREPARING,
 };
 
 const GATE_PRIVACY_PREPARING = {
   id: 12345002,
-  earliest_milestone: 123,
-  gate_type: GATE_TYPES['PRIVACY_ORIGIN_TRIAL'],
+  stage_id: 57463,
   state: GATE_PREPARING,
 };
 
 const GATE_SECURITY_PREPARING = {
   id: 12345002,
-  earliest_milestone: 123,
-  gate_type: GATE_TYPES['SECURITY_ORIGIN_TRIAL'],
+  stage_id: 57463,
   state: GATE_PREPARING,
 };
 
 const GATE_SECURITY_DENIED = {
   id: 12345002,
-  earliest_milestone: 123,
-  gate_type: GATE_TYPES['SECURITY_ORIGIN_TRIAL'],
+  stage_id: 57463,
   state: VOTE_OPTIONS['DENIED'][0],
 };
 
 const GATE_API_STARTED = {
   id: 12345001,
-  earliest_milestone: 123,
-  gate_type: GATE_TYPES['API_ORIGIN_TRIAL'],
+  stage_id: 57463,
+  team_name: 'API OWNERS',
   state: VOTE_OPTIONS['REVIEW_STARTED'][0],
 };
 
 const GATE_API_NEEDS_WORK = {
   id: 12345001,
-  earliest_milestone: 123,
-  gate_type: GATE_TYPES['API_ORIGIN_TRIAL'],
+  stage_id: 57463,
+  team_name: 'API OWNERS',
   state: VOTE_OPTIONS['NEEDS_WORK'][0],
 };
 
 const GATE_API_APPROVED = {
   id: 12345001,
-  earliest_milestone: 123,
-  gate_type: GATE_TYPES['API_ORIGIN_TRIAL'],
+  stage_id: 57463,
+  team_name: 'API OWNERS',
   state: VOTE_OPTIONS['APPROVED'][0],
 };
 
@@ -115,7 +108,7 @@ describe('chromedash-review-status-icon', () => {
 
   it('is blank for a feature with no relevant gates', async () => {
     getGatesStub.returns(
-      Promise.resolve({gates: [GATE_WRONG_MILESTONE, GATE_WRONG_TYPE]})
+      Promise.resolve({gates: [GATE_WRONG_STAGE]})
     );
     const component = await fixture(COMPONENT_HTML);
     assert.exists(component);

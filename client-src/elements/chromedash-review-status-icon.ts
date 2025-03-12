@@ -4,47 +4,10 @@ import {customElement, property, state} from 'lit/decorators.js';
 import {Feature} from '../js-src/cs-client.js';
 import {GateDict} from './chromedash-gate-chip.js';
 import {
-  GATE_TYPES,
   GATE_PREPARING,
   VOTE_OPTIONS,
   VOTE_NA_SELF,
 } from './form-field-enums';
-
-const DEV_TRIAL_GATES = [
-  // This is not required: GATE_TYPES['API_PROTOTYPE'];
-];
-
-const SHIPPING_GATES = [
-  GATE_TYPES['API_SHIP'],
-  GATE_TYPES['PRIVACY_SHIP'],
-  GATE_TYPES['SECURITY_SHIP'],
-  GATE_TYPES['ENTERPRISE_SHIP'],
-  GATE_TYPES['DEBUGGABILITY_SHIP'],
-  GATE_TYPES['TESTING_SHIP'],
-];
-
-const OT_GATES = [
-  GATE_TYPES['API_ORIGIN_TRIAL'],
-  GATE_TYPES['PRIVACY_ORIGIN_TRIAL'],
-  GATE_TYPES['SECURITY_ORIGIN_TRIAL'],
-  GATE_TYPES['DEBUGGABILITY_ORIGIN_TRIAL'],
-];
-
-const PLAN_GATES = [
-  GATE_TYPES['API_PLAN'],
-  GATE_TYPES['ENTERPRISE_PLAN'],
-  GATE_TYPES['DEBUGGABILITY_PLAN'],
-  GATE_TYPES['TESTING_PLAN'],
-];
-
-const SHIPPING_TYPE_TO_GATE_TYPES: Record<string, number[]> = {
-  'Browser Intervention': SHIPPING_GATES,
-  Removed: SHIPPING_GATES,
-  Deprecated: PLAN_GATES,
-  'Origin trial': OT_GATES,
-  'Enabled by default': SHIPPING_GATES,
-  'In developer trial (Behind a flag)': DEV_TRIAL_GATES,
-};
 
 type statusEnum =
   | 'Not started'
@@ -63,14 +26,8 @@ const STATUS_TO_ICON_NAME: Record<statusEnum, string> = {
 
 @customElement('chromedash-review-status-icon')
 export class ChromedashReviewStatusIcon extends LitElement {
-  @property({type: Number})
-  featureId!: number;
-
-  @property({type: String})
-  shippingType!: string;
-
-  @property({type: Number})
-  version!: number;
+  @property({type: Object})
+  feature!: {id: number, roadmap_stage_ids: number[]};
 
   @state()
   gates: GateDict[] = [];
@@ -110,14 +67,10 @@ export class ChromedashReviewStatusIcon extends LitElement {
 
   fetchData() {
     this.gates = [];
-    window.csClient?.getGates(this.featureId).then(gatesRes => {
+    window.csClient?.getGates(this.feature?.id).then(gatesRes => {
       let featureGates = gatesRes.gates;
-      const relevantGateTypes: number[] =
-        SHIPPING_TYPE_TO_GATE_TYPES[this.shippingType] || [];
       this.gates = featureGates.filter(
-        g =>
-          relevantGateTypes.includes(g.gate_type) &&
-          g.earliest_milestone === this.version
+        g => this.feature.roadmap_stage_ids?.includes(g.stage_id)
       );
     });
   }
@@ -193,7 +146,7 @@ export class ChromedashReviewStatusIcon extends LitElement {
 
     if (targetGateId) {
       return html`
-        <a href="/feature/${this.featureId}?gate=${targetGateId}">${icon}</a>
+        <a href="/feature/${this.feature.id}?gate=${targetGateId}">${icon}</a>
       `;
     } else {
       return icon;

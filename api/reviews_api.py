@@ -142,15 +142,11 @@ class GatesAPI(basehandlers.APIHandler):
     stages: list[Stage] = Stage.query(Stage.feature_id == feature_id).fetch()
     gates: list[Gate] = []
 
-    stage_id_to_milestone = {
-        s.key.integer_id(): stage_helpers.find_earliest_milestone([s])
-        for s in stages}
     if not feature.deleted or self.get_bool_arg('include_deleted'):
       gates = Gate.query(Gate.feature_id == feature_id).fetch()
 
     dicts = [
-        converters.gate_value_to_json_dict(
-            g, stage_id_to_milestone.get(g.stage_id))
+        converters.gate_value_to_json_dict(g)
         for g in gates]
     for g in dicts:
       approvers = approval_defs.get_approvers(g['gate_type'])

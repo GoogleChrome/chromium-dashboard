@@ -1127,8 +1127,6 @@ components:
           type: boolean
         survey_answers:
           $ref: '#/components/schemas/SurveyAnswers'
-        earliest_milestone:
-          type: integer
     SurveyAnswers:
       type: object
       properties:

@@ -14,7 +14,7 @@ class Gate(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, id=None, feature_id=None, stage_id=None, gate_type=None, team_name=None, gate_name=None, escalation_email=None, state=None, requested_on=None, responded_on=None, assignee_emails=None, next_action=None, additional_review=None, slo_initial_response=5, slo_initial_response_took=None, slo_initial_response_remaining=None, slo_resolve=10, slo_resolve_took=None, slo_resolve_remaining=None, needs_work_started_on=None, possible_assignee_emails=None, self_certify_eligible=None, self_certify_possible=None, survey_answers=None, earliest_milestone=None):  # noqa: E501
+    def __init__(self, id=None, feature_id=None, stage_id=None, gate_type=None, team_name=None, gate_name=None, escalation_email=None, state=None, requested_on=None, responded_on=None, assignee_emails=None, next_action=None, additional_review=None, slo_initial_response=5, slo_initial_response_took=None, slo_initial_response_remaining=None, slo_resolve=10, slo_resolve_took=None, slo_resolve_remaining=None, needs_work_started_on=None, possible_assignee_emails=None, self_certify_eligible=None, self_certify_possible=None, survey_answers=None):  # noqa: E501
         """Gate - a model defined in OpenAPI
 
         :param id: The id of this Gate.  # noqa: E501
@@ -65,8 +65,6 @@ class Gate(Model):
         :type self_certify_possible: bool
         :param survey_answers: The survey_answers of this Gate.  # noqa: E501
         :type survey_answers: SurveyAnswers
-        :param earliest_milestone: The earliest_milestone of this Gate.  # noqa: E501
-        :type earliest_milestone: int
         """
         self.openapi_types = {
             'id': int,
@@ -92,8 +90,7 @@ class Gate(Model):
             'possible_assignee_emails': List[str],
             'self_certify_eligible': bool,
             'self_certify_possible': bool,
-            'survey_answers': SurveyAnswers,
-            'earliest_milestone': int
+            'survey_answers': SurveyAnswers
         }
 
         self.attribute_map = {
@@ -120,8 +117,7 @@ class Gate(Model):
             'possible_assignee_emails': 'possible_assignee_emails',
             'self_certify_eligible': 'self_certify_eligible',
             'self_certify_possible': 'self_certify_possible',
-            'survey_answers': 'survey_answers',
-            'earliest_milestone': 'earliest_milestone'
+            'survey_answers': 'survey_answers'
         }
 
         self._id = id
@@ -148,7 +144,6 @@ class Gate(Model):
         self._self_certify_eligible = self_certify_eligible
         self._self_certify_possible = self_certify_possible
         self._survey_answers = survey_answers
-        self._earliest_milestone = earliest_milestone
 
     @classmethod
     def from_dict(cls, dikt) -> 'Gate':
@@ -668,24 +663,3 @@ class Gate(Model):
         """
 
         self._survey_answers = survey_answers
-
-    @property
-    def earliest_milestone(self) -> int:
-        """Gets the earliest_milestone of this Gate.
-
-
-        :return: The earliest_milestone of this Gate.
-        :rtype: int
-        """
-        return self._earliest_milestone
-
-    @earliest_milestone.setter
-    def earliest_milestone(self, earliest_milestone: int):
-        """Sets the earliest_milestone of this Gate.
-
-
-        :param earliest_milestone: The earliest_milestone of this Gate.
-        :type earliest_milestone: int
-        """
-
-        self._earliest_milestone = earliest_milestone

@@ -451,6 +451,8 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
 
     actual = feature_helpers.get_in_milestone(milestone=1)
     expected_fe_2 = converters.feature_entry_to_json_basic(self.feature_2)
+    expected_fe_2['roadmap_stage_ids'] = [
+        self.fe_2_stages_dict[260][0].key.integer_id()]
     expected = {
         'Browser Intervention': [],
         'Deprecated': [],

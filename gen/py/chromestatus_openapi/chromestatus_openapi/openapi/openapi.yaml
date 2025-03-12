@@ -1293,12 +1293,25 @@ components:
     Gate:
       example:
         feature_id: 6
+        self_certify_possible: true
+        stage_id: 1
+        slo_initial_response: 2
         needs_work_started_on: 2000-01-23T04:56:07.000+00:00
-        earliest_milestone: 7
         gate_name: gate_name
+        requested_on: 2000-01-23T04:56:07.000+00:00
+        team_name: team_name
         slo_initial_response_took: 7
+        slo_resolve_remaining: 4
         additional_review: true
         gate_type: 5
+        next_action: next_action
+        slo_resolve_took: 2
+        survey_answers:
+          launch_or_contact: launch_or_contact
+          is_language_polyfill: true
+          is_api_polyfill: true
+          is_same_origin_css: true
+          explanation: explanation
         escalation_email: escalation_email
         assignee_emails:
         - assignee_emails
@@ -1309,20 +1322,6 @@ components:
         possible_assignee_emails:
         - possible_assignee_emails
         - possible_assignee_emails
-        self_certify_possible: true
-        stage_id: 1
-        slo_initial_response: 2
-        requested_on: 2000-01-23T04:56:07.000+00:00
-        team_name: team_name
-        slo_resolve_remaining: 4
-        next_action: next_action
-        slo_resolve_took: 2
-        survey_answers:
-          launch_or_contact: launch_or_contact
-          is_language_polyfill: true
-          is_api_polyfill: true
-          is_same_origin_css: true
-          explanation: explanation
         responded_on: 2000-01-23T04:56:07.000+00:00
         self_certify_eligible: true
         slo_resolve: 3
@@ -1413,9 +1412,6 @@ components:
           type: boolean
         survey_answers:
           $ref: '#/components/schemas/SurveyAnswers'
-        earliest_milestone:
-          title: earliest_milestone
-          type: integer
       title: Gate
       type: object
     SurveyAnswers:
@@ -1447,12 +1443,25 @@ components:
       example:
         gates:
         - feature_id: 6
+          self_certify_possible: true
+          stage_id: 1
+          slo_initial_response: 2
           needs_work_started_on: 2000-01-23T04:56:07.000+00:00
-          earliest_milestone: 7
           gate_name: gate_name
+          requested_on: 2000-01-23T04:56:07.000+00:00
+          team_name: team_name
           slo_initial_response_took: 7
+          slo_resolve_remaining: 4
           additional_review: true
           gate_type: 5
+          next_action: next_action
+          slo_resolve_took: 2
+          survey_answers:
+            launch_or_contact: launch_or_contact
+            is_language_polyfill: true
+            is_api_polyfill: true
+            is_same_origin_css: true
+            explanation: explanation
           escalation_email: escalation_email
           assignee_emails:
           - assignee_emails
@@ -1463,30 +1472,29 @@ components:
           possible_assignee_emails:
           - possible_assignee_emails
           - possible_assignee_emails
-          self_certify_possible: true
-          stage_id: 1
-          slo_initial_response: 2
-          requested_on: 2000-01-23T04:56:07.000+00:00
-          team_name: team_name
-          slo_resolve_remaining: 4
-          next_action: next_action
-          slo_resolve_took: 2
-          survey_answers:
-            launch_or_contact: launch_or_contact
-            is_language_polyfill: true
-            is_api_polyfill: true
-            is_same_origin_css: true
-            explanation: explanation
           responded_on: 2000-01-23T04:56:07.000+00:00
           self_certify_eligible: true
           slo_resolve: 3
         - feature_id: 6
+          self_certify_possible: true
+          stage_id: 1
+          slo_initial_response: 2
           needs_work_started_on: 2000-01-23T04:56:07.000+00:00
-          earliest_milestone: 7
           gate_name: gate_name
+          requested_on: 2000-01-23T04:56:07.000+00:00
+          team_name: team_name
           slo_initial_response_took: 7
+          slo_resolve_remaining: 4
           additional_review: true
           gate_type: 5
+          next_action: next_action
+          slo_resolve_took: 2
+          survey_answers:
+            launch_or_contact: launch_or_contact
+            is_language_polyfill: true
+            is_api_polyfill: true
+            is_same_origin_css: true
+            explanation: explanation
           escalation_email: escalation_email
           assignee_emails:
           - assignee_emails
@@ -1497,20 +1505,6 @@ components:
           possible_assignee_emails:
           - possible_assignee_emails
           - possible_assignee_emails
-          self_certify_possible: true
-          stage_id: 1
-          slo_initial_response: 2
-          requested_on: 2000-01-23T04:56:07.000+00:00
-          team_name: team_name
-          slo_resolve_remaining: 4
-          next_action: next_action
-          slo_resolve_took: 2
-          survey_answers:
-            launch_or_contact: launch_or_contact
-            is_language_polyfill: true
-            is_api_polyfill: true
-            is_same_origin_css: true
-            explanation: explanation
           responded_on: 2000-01-23T04:56:07.000+00:00
           self_certify_eligible: true
           slo_resolve: 3

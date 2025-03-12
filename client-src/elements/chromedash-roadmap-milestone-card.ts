@@ -278,9 +278,7 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
         class="${f.id == this.highlightFeature ? 'highlight' : ''}"
       >
         <chromedash-review-status-icon
-          featureId=${f.id}
-          shippingType=${shippingType}
-          version=${this.channel?.version}
+          .feature=${f}
         ></chromedash-review-status-icon>
         <a
           id="feature_link"

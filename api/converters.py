@@ -649,7 +649,7 @@ def vote_value_to_json_dict(vote: Vote) -> dict[str, Any]:
       }
 
 
-def gate_value_to_json_dict(gate: Gate, earliest_milestone: int | None) -> dict[str, Any]:
+def gate_value_to_json_dict(gate: Gate) -> dict[str, Any]:
   next_action = str(gate.next_action) if gate.next_action else None
   requested_on = str(gate.requested_on) if gate.requested_on else None
   responded_on = str(gate.responded_on) if gate.responded_on else None
@@ -708,5 +708,4 @@ def gate_value_to_json_dict(gate: Gate, earliest_milestone: int | None) -> dict[
       'self_certify_possible': self_certify_possible,
       'self_certify_eligible': self_certify_eligible,
       'survey_answers': survey_answers,
-      'earliest_milestone': earliest_milestone,
       }

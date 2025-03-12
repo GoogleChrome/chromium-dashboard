@@ -22,7 +22,7 @@ from api import converters
 from framework import rediscache
 from framework import users
 from framework import permissions
-from internals import stage_helpers
+from internals.stage_helpers import organize_all_stages_by_feature
 from internals.core_enums import *
 from internals.core_models import FeatureEntry, Stage
 from internals.data_types import VerboseFeatureDict
@@ -189,37 +189,38 @@ def get_in_milestone(milestone: int,
     android_dev_trial_future = q.fetch_async()
 
     # Wait for all futures to complete and collect unique feature IDs.
-    desktop_shipping_ids = list({
-        *[s.feature_id for s in desktop_shipping_future.result()]})
-    android_only_shipping_ids = list({
-        *[s.feature_id for s in android_only_shipping_future.result()]})
-    desktop_origin_trials_ids = list({
-        *[s.feature_id for s in desktop_origin_trial_future.result()]})
-    android_origin_trials_ids = list({
-        *[s.feature_id for s in android_origin_trial_future.result()]})
-    webview_origin_trials_ids = list({
-        *[s.feature_id for s in webview_origin_trial_future.result()]})
-    desktop_dev_trials_ids = list({
-        *[s.feature_id for s in desktop_dev_trial_future.result()]})
-    android_dev_trials_ids = list({
-        *[s.feature_id for s in android_dev_trial_future.result()]})
+    desktop_shipping_stages_by_fid = organize_all_stages_by_feature(
+        desktop_shipping_future.result())
+    android_only_shipping_stages_by_fid = organize_all_stages_by_feature(
+        android_only_shipping_future.result())
+    desktop_origin_trial_stages_by_fid = organize_all_stages_by_feature(
+        desktop_origin_trial_future.result())
+    android_origin_trial_stage_by_fid = organize_all_stages_by_feature(
+        android_origin_trial_future.result())
+    webview_origin_trial_stages_by_fid = organize_all_stages_by_feature(
+        webview_origin_trial_future.result())
+    desktop_dev_trial_stages_by_fid = organize_all_stages_by_feature(
+        desktop_dev_trial_future.result())
+    android_dev_trial_stages_by_fid = organize_all_stages_by_feature(
+        android_dev_trial_future.result())
 
     # Query for FeatureEntry entities that match the stage feature IDs.
     # Querying with an empty list will raise an error, so check if each
     # list is not empty first.
-    desktop_shipping_future = get_entries_by_id_async(desktop_shipping_ids)
+    desktop_shipping_future = get_entries_by_id_async(
+        desktop_shipping_stages_by_fid.keys())
     android_only_shipping_future = get_entries_by_id_async(
-        android_only_shipping_ids)
+        android_only_shipping_stages_by_fid.keys())
     desktop_origin_trial_future = get_entries_by_id_async(
-        desktop_origin_trials_ids)
+        desktop_origin_trial_stages_by_fid.keys())
     android_origin_trial_future = get_entries_by_id_async(
-        android_origin_trials_ids)
+        android_origin_trial_stage_by_fid.keys())
     webview_origin_trial_future = get_entries_by_id_async(
-        webview_origin_trials_ids)
+        webview_origin_trial_stages_by_fid.keys())
     desktop_dev_trial_future = get_entries_by_id_async(
-        desktop_dev_trials_ids)
+        desktop_dev_trial_stages_by_fid.keys())
     android_dev_trial_future = get_entries_by_id_async(
-        android_dev_trials_ids)
+        android_dev_trial_stages_by_fid.keys())
 
     desktop_shipping_features = get_future_results(desktop_shipping_future)
     android_only_shipping_features = get_future_results(
@@ -285,8 +286,35 @@ def get_in_milestone(milestone: int,
       all_features[shipping_type] = [
           f for f in all_features[shipping_type]
           if not f.deleted and f.impl_status_chrome not in INACTIVE_IMPL_STATUSES]
-      features_by_type[shipping_type] = [converters.feature_entry_to_json_basic(f)
-          for f in all_features[shipping_type]]
+      features_by_type[shipping_type] = []
+      for f in all_features[shipping_type]:
+        formatted_feature = converters.feature_entry_to_json_basic(f)
+        features_by_type[shipping_type].append(formatted_feature)
+
+    # Fill in the IDs of the stages that caused each feature to appear.
+    for status in [ENABLED_BY_DEFAULT, DEPRECATED, REMOVED, INTERVENTION]:
+      for ff in features_by_type[IMPLEMENTATION_STATUS[status]]:
+        ff['roadmap_stage_ids'] = (
+            [s.key.integer_id()
+             for s in desktop_shipping_stages_by_fid.get(ff['id'], [])] +
+            [s.key.integer_id()
+             for s in android_only_shipping_stages_by_fid.get(ff['id'], [])])
+
+    for ff in features_by_type[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]]:
+      ff['roadmap_stage_ids'] = (
+          [s.key.integer_id()
+           for s in desktop_origin_trial_stages_by_fid.get(ff['id'], [])] +
+          [s.key.integer_id()
+           for s in android_origin_trial_stage_by_fid.get(ff['id'], [])] +
+          [s.key.integer_id()
+           for s in webview_origin_trial_stages_by_fid.get(ff['id'], [])])
+
+    for ff in features_by_type[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]]:
+      ff['roadmap_stage_ids'] = (
+          [s.key.integer_id()
+           for s in desktop_dev_trial_stages_by_fid.get(ff['id'], [])] +
+          [s.key.integer_id()
+           for s in android_dev_trial_stages_by_fid.get(ff['id'], [])])
 
     rediscache.set(cache_key, features_by_type)
 
@@ -422,7 +450,7 @@ def get_by_ids(feature_ids: list[int],
   if futures_by_id:
     needed_ids = list(futures_by_id.keys())
     stages_list = Stage.query(Stage.feature_id.IN(needed_ids), Stage.archived == False).fetch(None)
-    stages_dict = stage_helpers.organize_all_stages_by_feature(stages_list)
+    stages_dict = organize_all_stages_by_feature(stages_list)
 
   for future in futures_by_id.values():
     unformatted_feature: Optional[FeatureEntry] = future.get_result()
@@ -482,7 +510,7 @@ def get_features_by_impl_status(limit: int | None=None, update_cache: bool=False
     futures = futures[1:] + futures[0:1]
     logging.info('Waiting on futures')
     query_results = [future.result() for future in futures]
-    all_stages = stage_helpers.organize_all_stages_by_feature(
+    all_stages = organize_all_stages_by_feature(
         stages_future.result())
 
     # Construct the proper ordering.
