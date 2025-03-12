@@ -3,11 +3,7 @@ import {SHARED_STYLES} from '../css/shared-css.js';
 import {customElement, property, state} from 'lit/decorators.js';
 import {Feature} from '../js-src/cs-client.js';
 import {GateDict} from './chromedash-gate-chip.js';
-import {
-  GATE_PREPARING,
-  VOTE_OPTIONS,
-  VOTE_NA_SELF,
-} from './form-field-enums';
+import {GATE_PREPARING, VOTE_OPTIONS, VOTE_NA_SELF} from './form-field-enums';
 
 type statusEnum =
   | 'Not started'
@@ -27,7 +23,7 @@ const STATUS_TO_ICON_NAME: Record<statusEnum, string> = {
 @customElement('chromedash-review-status-icon')
 export class ChromedashReviewStatusIcon extends LitElement {
   @property({type: Object})
-  feature!: {id: number, roadmap_stage_ids: number[]};
+  feature!: {id: number; roadmap_stage_ids: number[]};
 
   @state()
   gates: GateDict[] = [];
@@ -69,8 +65,8 @@ export class ChromedashReviewStatusIcon extends LitElement {
     this.gates = [];
     window.csClient?.getGates(this.feature?.id).then(gatesRes => {
       let featureGates = gatesRes.gates;
-      this.gates = featureGates.filter(
-        g => this.feature.roadmap_stage_ids?.includes(g.stage_id)
+      this.gates = featureGates.filter(g =>
+        this.feature.roadmap_stage_ids?.includes(g.stage_id)
       );
     });
   }

@@ -13,10 +13,10 @@ import {
 const FEATURE = {
   id: 5347893,
   roadmap_stage_ids: [57463],
-}
+};
 
 const COMPONENT_HTML = html` <chromedash-review-status-icon
-.feature=${FEATURE}
+  .feature=${FEATURE}
 ></chromedash-review-status-icon>`;
 
 const GATE_WRONG_STAGE = {
@@ -107,9 +107,7 @@ describe('chromedash-review-status-icon', () => {
   });
 
   it('is blank for a feature with no relevant gates', async () => {
-    getGatesStub.returns(
-      Promise.resolve({gates: [GATE_WRONG_STAGE]})
-    );
+    getGatesStub.returns(Promise.resolve({gates: [GATE_WRONG_STAGE]}));
     const component = await fixture(COMPONENT_HTML);
     assert.exists(component);
     assert.instanceOf(component, ChromedashReviewStatusIcon);
