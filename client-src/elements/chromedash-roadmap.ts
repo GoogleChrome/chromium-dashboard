@@ -1,6 +1,7 @@
 import '@polymer/iron-icon';
 import {LitElement, css, html} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
+import {repeat} from 'lit/directives/repeat.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {Channels, Feature} from '../js-src/cs-client.js';
 import {TemplateContent} from './chromedash-roadmap-milestone-card.js';
@@ -308,8 +309,12 @@ export class ChromedashRoadmap extends LitElement {
   }
 
   render() {
+    // Note: We use repeat() rather than map() to prevent Lit from reusing
+    // elements that fetch data exactly once via their connectedCallback().
     return html`
-      ${this.pastMilestoneArray.map(
+      ${repeat(
+        this.pastMilestoneArray,
+        milestone => milestone,
         milestone => html`
           <chromedash-roadmap-milestone-card
             style="width:${this.cardWidth}px;"
@@ -325,12 +330,14 @@ export class ChromedashRoadmap extends LitElement {
           </chromedash-roadmap-milestone-card>
         `
       )}
-      ${this.shownChannelNames.map(
-        type => html`
+      ${repeat(
+        this.shownChannelNames,
+        channelType => channelType,
+        channelType => html`
           <chromedash-roadmap-milestone-card
             style="width:${this.cardWidth}px;"
-            .channel=${this.channels?.[type]}
-            .templateContent=${TEMPLATE_CONTENT[type]}
+            .channel=${this.channels?.[channelType]}
+            .templateContent=${TEMPLATE_CONTENT[channelType]}
             ?showdates=${SHOW_DATES}
             .starredFeatures=${this.starredFeatures}
             .highlightFeature=${this.highlightFeature}
@@ -342,7 +349,9 @@ export class ChromedashRoadmap extends LitElement {
           </chromedash-roadmap-milestone-card>
         `
       )}
-      ${this.futureMilestoneArray.map(
+      ${repeat(
+        this.futureMilestoneArray,
+        milestone => milestone,
         milestone => html`
           <chromedash-roadmap-milestone-card
             style="width:${this.cardWidth}px;"

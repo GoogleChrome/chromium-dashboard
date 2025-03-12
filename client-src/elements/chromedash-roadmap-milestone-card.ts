@@ -5,6 +5,7 @@ import {createRef, ref} from 'lit/directives/ref.js';
 import {ROADMAP_MILESTONE_CARD_CSS} from '../css/elements/chromedash-roadmap-milestone-card-css.js';
 import {Channels, ReleaseInfo} from '../js-src/cs-client.js';
 import {isVerifiedWithinGracePeriod} from './utils.js';
+import './chromedash-review-status-icon.js';
 
 const REMOVED_STATUS = ['Removed'];
 const DEPRECATED_STATUS = ['Deprecated', 'No longer pursuing'];
@@ -276,6 +277,9 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
         data-feature-id="${f.id}"
         class="${f.id == this.highlightFeature ? 'highlight' : ''}"
       >
+        <chromedash-review-status-icon
+          .feature=${f}
+        ></chromedash-review-status-icon>
         <a
           id="feature_link"
           href="/feature/${f.id}"
