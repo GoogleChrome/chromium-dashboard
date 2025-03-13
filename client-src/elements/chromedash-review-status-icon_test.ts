@@ -70,6 +70,20 @@ const GATE_API_APPROVED = {
   state: VOTE_OPTIONS['APPROVED'][0],
 };
 
+const GATE_SECURITY_NA = {
+  id: 12345001,
+  stage_id: 57463,
+  team_name: 'Security',
+  state: VOTE_OPTIONS['NA'][0],
+};
+
+const GATE_PRIVACY_NA_SELF = {
+  id: 12345001,
+  stage_id: 57463,
+  team_name: 'Privacy',
+  state: VOTE_NA_SELF,
+};
+
 describe('chromedash-review-status-icon', () => {
   let getGatesStub: sinon.SinonStub;
   /* window.csClient is initialized in spa.html
@@ -183,7 +197,11 @@ describe('chromedash-review-status-icon', () => {
   });
 
   it('renders "approved" when all gates are approved', async () => {
-    getGatesStub.returns(Promise.resolve({gates: [GATE_API_APPROVED]}));
+    getGatesStub.returns(
+      Promise.resolve({
+        gates: [GATE_API_APPROVED, GATE_PRIVACY_NA_SELF, GATE_SECURITY_NA],
+      })
+    );
     const component = await fixture(COMPONENT_HTML);
     assert.exists(component);
     assert.instanceOf(component, ChromedashReviewStatusIcon);
