@@ -38,6 +38,7 @@ from internals.review_models import (Gate, Vote)
 
 MAX_TERMS = 6
 DEFAULT_RESULTS_PER_PAGE = 100
+MAX_RESULTS_PER_PAGE = 1000
 SEARCH_CACHE_TTL = 60 * 60  # One hour
 
 def process_exclude_deleted_unlisted_query() -> Future:
@@ -366,6 +367,7 @@ def process_query_using_cache(
   name_only=False,
 ) -> tuple[list[dict[str, Any]], int]:
   """"""
+  num = min(num, MAX_RESULTS_PER_PAGE)
   cache_key = make_cache_key(
       user_query, sort_spec, show_unlisted, show_deleted, show_enterprise,
       start, num, name_only)
