@@ -83,7 +83,11 @@ export class ChromedashReviewStatusIcon extends LitElement {
         status = 'In-progress';
       }
       // If any gate is not approved, let's link to it.
-      if (g.state !== VOTE_OPTIONS['APPROVED'][0] && g.state !== VOTE_NA_SELF) {
+      if (
+        g.state !== VOTE_OPTIONS['APPROVED'][0] &&
+        g.state !== VOTE_OPTIONS['NA'][0] &&
+        g.state !== VOTE_NA_SELF
+      ) {
         targetGateId = g.id;
       }
       // Keep track of the API Owners gate because we might link to it below.
@@ -97,7 +101,10 @@ export class ChromedashReviewStatusIcon extends LitElement {
     if (
       this.gates.length > 0 &&
       this.gates.every(
-        g => g.state === VOTE_OPTIONS['APPROVED'][0] || g.state === VOTE_NA_SELF
+        g =>
+          g.state === VOTE_OPTIONS['APPROVED'][0] ||
+          g.state === VOTE_OPTIONS['NA'][0] ||
+          g.state === VOTE_NA_SELF
       )
     ) {
       status = 'Approved';
