@@ -626,14 +626,6 @@ export class ChromedashApp extends LitElement {
   }
 
   renderRolloutBanner(currentPage) {
-    if (currentPage.startsWith('/features')) {
-      return html`
-        <p style="padding: 2em 6em">
-          <a href="/oldfeatures">Use the old features page</a>
-        </p>
-      `;
-    }
-
     return nothing;
   }
 
