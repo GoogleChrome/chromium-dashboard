@@ -2049,9 +2049,9 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'input',
     required: true,
     attrs: {...TEXT_FIELD_ATTRS, pattern: GOOGLE_EMAIL_ADDRESS_REGEX},
-    label: 'Trial owner email',
+    label: 'Google point of contact',
     help_text: html` <p>
-      The primary contact for this origin trial. Please supply a '@google.com'
+      A Googler contact for this origin trial. Please supply a '@google.com'
       domain email address only.
     </p>`,
   },
