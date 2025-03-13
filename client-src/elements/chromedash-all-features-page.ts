@@ -86,6 +86,7 @@ export class ChromedashAllFeaturesPage extends LitElement {
       !Number.isNaN(parseInt(this.rawQuery['num']))
     ) {
       this.num = parseInt(this.rawQuery['num']);
+      this.num = Math.max(1, Math.min(this.num, 1000));
     }
     if (this.isNewfeaturesPage) {
       this.nameOnly = true;
