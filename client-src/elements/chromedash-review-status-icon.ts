@@ -16,7 +16,7 @@ const STATUS_TO_ICON_NAME: Record<statusEnum, string> = {
   'Not started': 'arrow_circle_right_20px',
   'In-progress': 'pending_20px',
   'Needs work': 'autorenew_20px',
-  Approved: 'check_circle_20px',
+  Approved: 'check_circle_filled_20px',
   Denied: 'block_20px',
 };
 
