@@ -207,7 +207,7 @@ describe('chromedash-review-status-icon', () => {
     assert.instanceOf(component, ChromedashReviewStatusIcon);
     const icon = component.shadowRoot!.querySelector('sl-icon');
     assert.exists(icon);
-    assert.equal(icon.getAttribute('name'), 'check_circle_20px');
+    assert.equal(icon.getAttribute('name'), 'check_circle_filled_20px');
   });
 
   it('renders "denied" if any gate is denied', async () => {
