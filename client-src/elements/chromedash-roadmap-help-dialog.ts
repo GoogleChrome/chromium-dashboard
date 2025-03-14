@@ -111,7 +111,7 @@ export class ChromedashRoadmapHelpDialog extends LitElement {
               name="block_20px"
             ></sl-icon>
             <span>Denied</span>
-            <td>Reviewers suggested directional change</td>
+            <td>Reviewers suggested directional changes</td>
           </li>
         </ul>
       </div>
