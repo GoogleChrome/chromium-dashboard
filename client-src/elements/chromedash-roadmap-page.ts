@@ -5,6 +5,8 @@ import {SHARED_STYLES} from '../css/shared-css.js';
 import {User} from '../js-src/cs-client';
 import './chromedash-roadmap';
 import {ChromedashRoadmap} from './chromedash-roadmap';
+import {openRoadmapHelpDialog} from './chromedash-roadmap-help-dialog';
+import {SlDialog} from '@shoelace-style/shoelace';
 
 @customElement('chromedash-roadmap-page')
 export class ChromedashRoadmapPage extends LitElement {
@@ -18,6 +20,11 @@ export class ChromedashRoadmapPage extends LitElement {
         .animate {
           transition: margin 0.4s ease;
         }
+        #help-button {
+          font-size: 1.4rem;
+          color: var(--unimportant-text-color);
+          float: right;
+        }
 
         #releases-section {
           overflow: hidden;
@@ -26,6 +33,7 @@ export class ChromedashRoadmapPage extends LitElement {
         .timeline-controls {
           text-align: center;
           padding-bottom: var(--content-padding);
+          margin: 0 var(--content-padding-half);
         }
       `,
     ];
@@ -110,6 +118,18 @@ export class ChromedashRoadmapPage extends LitElement {
     roadmap.style.left = roadmap.cardOffset * (this.cardWidth + margin) + 'px';
   }
 
+  renderHelpIcon() {
+    return html`
+      <sl-icon
+        id="help-button"
+        library="material"
+        name="help_20px"
+        @click="${openRoadmapHelpDialog}"
+      >
+      </sl-icon>
+    `;
+  }
+
   render() {
     return html`
       <div id="subheader">
@@ -133,6 +153,7 @@ export class ChromedashRoadmapPage extends LitElement {
           >
             Next
           </button>
+          ${this.renderHelpIcon()}
         </div>
         <chromedash-roadmap
           ${ref(this.roadmapRef)}
