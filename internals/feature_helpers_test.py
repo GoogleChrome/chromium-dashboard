@@ -367,7 +367,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     self.assertEqual(
         ['feature a', 'feature c'],
         enabled_by_default)
-    self.assertEqual(6, len(actual))
+    self.assertEqual(7, len(actual))
 
     cache_key = '%s|%s|%s' % (
         FeatureEntry.DEFAULT_CACHE_KEY, 'milestone', 1)
@@ -433,7 +433,8 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
 
   def test_get_in_milestone__no_enterprise(self):
     """Enterprise features are not shown in the roadmap."""
-    # This is not included because STAGE_ENT_ROLLOUT is not considered.
+    # This is not included because of feature_type.
+    self.feature_1.feature_type = FEATURE_TYPE_ENTERPRISE_ID
     self.feature_1.impl_status_chrome = ENABLED_BY_DEFAULT
     rollout_stage = Stage(
         feature_id=self.feature_1.key.integer_id(),
@@ -458,8 +459,10 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         'Deprecated': [],
         'Enabled by default': [],
         'In developer trial (Behind a flag)': [],
+        'Stepped rollout': [],
         'Origin trial': [],
         'Removed': [expected_fe_2]}
+    self.maxDiff = None
     self.assertEqual(expected, actual)
 
   def test_get_in_milestone__cached(self):
