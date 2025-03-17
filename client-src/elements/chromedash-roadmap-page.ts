@@ -12,7 +12,6 @@ import {SlDialog} from '@shoelace-style/shoelace';
 export class ChromedashRoadmapPage extends LitElement {
   sectionRef = createRef<HTMLElement>();
   roadmapRef = createRef<ChromedashRoadmap>();
-  helpDialogRef = createRef<SlDialog>();
 
   static get styles() {
     return [
@@ -34,6 +33,7 @@ export class ChromedashRoadmapPage extends LitElement {
         .timeline-controls {
           text-align: center;
           padding-bottom: var(--content-padding);
+          margin: 0 var(--content-padding-half);
         }
       `,
     ];
