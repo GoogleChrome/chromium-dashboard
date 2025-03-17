@@ -130,6 +130,7 @@ def get_in_milestone(milestone: int,
     all_features[IMPLEMENTATION_STATUS[DEPRECATED]] = []
     all_features[IMPLEMENTATION_STATUS[REMOVED]] = []
     all_features[IMPLEMENTATION_STATUS[INTERVENTION]] = []
+    all_features[ROLLOUT_SECTION] = []
     all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]] = []
     all_features[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]] = []
 
@@ -188,6 +189,14 @@ def get_in_milestone(milestone: int,
             STAGE_FAST_DEV_TRIAL, STAGE_DEP_DEV_TRIAL)))
     android_dev_trial_future = q.fetch_async()
 
+    # Rollout stages are mostly used for enterprise features, but some
+    # web platform features may add them.  Enterprise features are
+    # filtered out below.
+    q = Stage.query(Stage.rollout_milestone == milestone,
+        Stage.stage_type == STAGE_ENT_ROLLOUT)
+    q = q.filter()
+    rollout_future = q.fetch_async()
+
     # Wait for all futures to complete and collect unique feature IDs.
     desktop_shipping_stages_by_fid = organize_all_stages_by_feature(
         desktop_shipping_future.result())
@@ -203,10 +212,10 @@ def get_in_milestone(milestone: int,
         desktop_dev_trial_future.result())
     android_dev_trial_stages_by_fid = organize_all_stages_by_feature(
         android_dev_trial_future.result())
+    rollout_stages_by_fid = organize_all_stages_by_feature(
+        rollout_future.result())
 
     # Query for FeatureEntry entities that match the stage feature IDs.
-    # Querying with an empty list will raise an error, so check if each
-    # list is not empty first.
     desktop_shipping_future = get_entries_by_id_async(
         desktop_shipping_stages_by_fid.keys())
     android_only_shipping_future = get_entries_by_id_async(
@@ -221,6 +230,8 @@ def get_in_milestone(milestone: int,
         desktop_dev_trial_stages_by_fid.keys())
     android_dev_trial_future = get_entries_by_id_async(
         android_dev_trial_stages_by_fid.keys())
+    rollout_future = get_entries_by_id_async(
+        rollout_stages_by_fid.keys())
 
     desktop_shipping_features = get_future_results(desktop_shipping_future)
     android_only_shipping_features = get_future_results(
@@ -233,35 +244,20 @@ def get_in_milestone(milestone: int,
         webview_origin_trial_future)
     desktop_dev_trial_features = get_future_results(desktop_dev_trial_future)
     android_dev_trial_features = get_future_results(android_dev_trial_future)
+    rollout_features = get_future_results(rollout_future)
 
-    # Push feature to list corresponding to the implementation status of
-    # feature in queried milestone
-    for feature in desktop_shipping_features:
-      if feature.impl_status_chrome == ENABLED_BY_DEFAULT:
-        all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
-      elif feature.impl_status_chrome == DEPRECATED:
+    # Push feature to list corresponding to the appropriate section
+    # of the milestone card.  Enterprise features are excluded.
+    shipping_features = (
+        desktop_shipping_features + android_only_shipping_features)
+    for feature in shipping_features:
+      if feature.impl_status_chrome == DEPRECATED:
         all_features[IMPLEMENTATION_STATUS[DEPRECATED]].append(feature)
       elif feature.impl_status_chrome == REMOVED:
         all_features[IMPLEMENTATION_STATUS[REMOVED]].append(feature)
       elif feature.impl_status_chrome == INTERVENTION:
         all_features[IMPLEMENTATION_STATUS[INTERVENTION]].append(feature)
-      elif (feature.feature_type == FEATURE_TYPE_DEPRECATION_ID):
-        all_features[IMPLEMENTATION_STATUS[DEPRECATED]].append(feature)
-      elif feature.feature_type == FEATURE_TYPE_INCUBATE_ID:
-        all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
-
-    # Push feature to list corresponding to the implementation status
-    # of feature in queried milestone
-    for feature in android_only_shipping_features:
-      if feature.impl_status_chrome == ENABLED_BY_DEFAULT:
-        all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
-      elif feature.impl_status_chrome == DEPRECATED:
-        all_features[IMPLEMENTATION_STATUS[DEPRECATED]].append(feature)
-      elif feature.impl_status_chrome == REMOVED:
-        all_features[IMPLEMENTATION_STATUS[REMOVED]].append(feature)
-      elif (feature.feature_type == FEATURE_TYPE_DEPRECATION_ID):
-        all_features[IMPLEMENTATION_STATUS[DEPRECATED]].append(feature)
-      elif feature.feature_type == FEATURE_TYPE_INCUBATE_ID:
+      else:
         all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
 
     for feature in desktop_origin_trial_features:
@@ -279,13 +275,18 @@ def get_in_milestone(milestone: int,
     for feature in android_dev_trial_features:
       all_features[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]].append(feature)
 
+    for feature in rollout_features:
+      all_features[ROLLOUT_SECTION].append(feature)
+
     # Filter out deleted and inactive features, then
     # construct results as: {type: [json_feature, ...], ...}.
     for shipping_type in all_features:
       all_features[shipping_type].sort(key=lambda f: f.name)
       all_features[shipping_type] = [
           f for f in all_features[shipping_type]
-          if not f.deleted and f.impl_status_chrome not in INACTIVE_IMPL_STATUSES]
+          if (not f.deleted and
+              f.impl_status_chrome not in INACTIVE_IMPL_STATUSES and
+              f.feature_type in ROADMAP_FEATURE_TYPES)]
       features_by_type[shipping_type] = []
       for f in all_features[shipping_type]:
         formatted_feature = converters.feature_entry_to_json_basic(f)
