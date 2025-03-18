@@ -16,6 +16,7 @@ const GATE_STATE_TO_NAME = {
   8: 'Internal review', // INTERNAL_REVIEW
   9: 'N/A requested', // NA_REQUESTED
   10: 'N/A (self-certified)', //  NA_SELF
+  11: 'N/A (self-certified then verified)', //  NA_VERIFIED
 };
 
 const GATE_STATE_TO_ICON = {
@@ -29,13 +30,15 @@ const GATE_STATE_TO_ICON = {
   // TODO(jrobbins): COMPLETE for auto-approved also check_circle_filled_20px.
   // INTERNAL_REVIEW has no icon.
   // NA_SELF has no icon.
+  // NA_VERIFIED has no icon.
 };
 
 const GATE_STATE_TO_ABBREV = {
   1: 'N/A', //  NA
   8: 'INT', // INTERNAL_REVIEW
-  9: 'N/A?', // INTERNAL_REVIEW
+  9: 'N/A?', // NA_REQUESTED
   10: 'N/A (self)', //  NA_SELF
+  11: 'N/A (ver)', //  NA_VERIFIED
 };
 
 export interface GateDict {
@@ -113,6 +116,10 @@ class ChromedashGateChip extends LitElement {
 
         sl-button.not_applicable::part(base),
         sl-button.na_self-certified::part(base) {
+          background: var(--gate-not-applicable-background);
+          color: var(--gate-not-applicable-color);
+        }
+        sl-button.na_self-certified_then_verified::part(base) {
           background: var(--gate-not-applicable-background);
           color: var(--gate-not-applicable-color);
         }

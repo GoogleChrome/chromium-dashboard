@@ -17,6 +17,7 @@ import {
   GATE_REVIEW_REQUESTED,
   VOTE_OPTIONS,
   VOTE_NA_SELF,
+  VOTE_NA_VERIFIED,
 } from './form-field-enums';
 import {
   autolink,
@@ -643,6 +644,15 @@ export class ChromedashGateColumn extends LitElement {
     `;
   }
 
+  renderReviewStatusNaVerified() {
+    return html`
+      <div class="status approved">
+        <sl-icon library="material" name="check_circle_filled_20px"></sl-icon>
+        N/a (self-certified then verified)
+      </div>
+    `;
+  }
+
   renderReviewStatusDenied() {
     // TODO(jrobbins): Show date of denial.
     return html`
@@ -662,6 +672,8 @@ export class ChromedashGateColumn extends LitElement {
       return this.renderReviewStatusNa();
     } else if (this.gate.state == VOTE_NA_SELF) {
       return this.renderReviewStatusNaSelf();
+    } else if (this.gate.state == VOTE_NA_VERIFIED) {
+      return this.renderReviewStatusNaVerified();
     } else if (this.gate.state == VOTE_OPTIONS.APPROVED[0]) {
       return this.renderReviewStatusApproved();
     } else if (this.gate.state == VOTE_OPTIONS.DENIED[0]) {
@@ -812,6 +824,9 @@ export class ChromedashGateColumn extends LitElement {
     if (state == VOTE_NA_SELF) {
       return 'N/a (self-certified)';
     }
+    if (state == VOTE_NA_VERIFIED) {
+      return 'N/a (verified)';
+    }
     for (const item of Object.values(VOTE_OPTIONS)) {
       if (item[0] == state) {
         return item[1];
@@ -839,6 +854,13 @@ export class ChromedashGateColumn extends LitElement {
         hoist
         size="small"
       >
+        ${this.votes.some(
+          v => v.state === VOTE_NA_SELF || v.state === VOTE_NA_VERIFIED
+        )
+          ? html` <sl-option value="${VOTE_NA_VERIFIED}"
+              >N/a verified</sl-option
+            >`
+          : nothing}
         ${Object.values(VOTE_OPTIONS).map(
           valName =>
             html` <sl-option value="${valName[0]}">${valName[1]}</sl-option>`

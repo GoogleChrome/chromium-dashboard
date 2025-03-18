@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import base64
+import collections
 from dataclasses import dataclass
 import datetime
 import json
@@ -391,25 +392,31 @@ def get_gate_by_type(feature_id: int, gate_type: int):
 
 def _calc_gate_state(votes: list[Vote], rule: str) -> int:
   """Returns the state that a gate should have based on its votes."""
-  # A self-certified NA counts iff it is the only vote.
-  if len(votes) == 1 and votes[0].state == Vote.NA_SELF and rule == ONE_LGTM:
-    return Vote.NA_SELF
+  # NO_RESPONSE votes never affect the vote calculation.
+  votes = [v for v in votes if v.state != Vote.NO_RESPONSE]
+  counts = collections.Counter(v.state for v in votes)
+
+  if counts[Vote.NA_SELF] == 1 and rule == ONE_LGTM:
+    # A self-certified NA makes the gate NA_SELF iff it is the only vote.
+    if len(votes) == 1:
+      return Vote.NA_SELF
+    # Any added NA_VERIFIED votes make the gate NA_VERIFIED.
+    if counts[Vote.NA_VERIFIED] >= 1:
+      return Vote.NA_VERIFIED
 
   # If enough reviewed APPROVED or said it is NA, then that is used.
-  num_lgtms = sum((1 if v.state in (Vote.APPROVED, Vote.NA) else 0)
-                  for v in votes)
+  num_lgtms = counts[Vote.APPROVED] + counts[Vote.NA]
   if ((rule == ONE_LGTM and num_lgtms >= 1) or
       (rule == THREE_LGTM and num_lgtms >= 3)):
-    if any(v.state == Vote.NA for v in votes):
+    if counts[Vote.NA] > 0:
       return Vote.NA  # Any NA vote counts, but makes the result NA.
     else:
       return Vote.APPROVED
 
   # Return the most recent of any REVIEW_REQUESTED, NEEDS_WORK,
-  # REVIEW_STARTED, INTERNAL_REVIEW, or DENIED.  This could allow a
+  # REVIEW_STARTED, INTERNAL_REVIEW, or DENIED.  This allows a
   # feature owner to re-request a review after addressing feedback and
-  # have the gate show up as REVIEW_STARTED again.  However, we will
-  # not offer "re-review" in the UI yet.
+  # have the gate show up as REVIEW_STARTED again.
   for vote in sorted(votes, reverse=True, key=lambda v: v.set_on):
     if vote.state in (
         Vote.NEEDS_WORK, Vote.REVIEW_STARTED, Vote.REVIEW_REQUESTED,
