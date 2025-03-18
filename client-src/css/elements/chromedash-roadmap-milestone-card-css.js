@@ -153,15 +153,9 @@ export const ROADMAP_MILESTONE_CARD_CSS = [
     .features_list li {
       padding: 8px;
       font-weight: 500;
-      display: flex;
-      justify-content: space-between;
     }
     .features_list li .icon_row {
       flex-shrink: 0;
-    }
-    .features_list li > :first-child {
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
     .features_list .features_header {
       font-weight: 500;
@@ -195,6 +189,12 @@ export const ROADMAP_MILESTONE_CARD_CSS = [
     .features_list sl-skeleton {
       height: 20px;
       margin: 8px;
+    }
+    .experiment {
+      font-size: 85%;
+      padding: 2px 8px;
+      background: #fea;
+      border-radius: 8px;
     }
   `,
 ];

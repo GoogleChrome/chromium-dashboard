@@ -198,58 +198,36 @@ def get_in_milestone(milestone: int,
     rollout_future = q.fetch_async()
 
     # Wait for all futures to complete and collect unique feature IDs.
-    desktop_shipping_stages_by_fid = organize_all_stages_by_feature(
-        desktop_shipping_future.result())
-    android_only_shipping_stages_by_fid = organize_all_stages_by_feature(
+    shipping_stages_by_fid = organize_all_stages_by_feature(
+        desktop_shipping_future.result() +
         android_only_shipping_future.result())
-    desktop_origin_trial_stages_by_fid = organize_all_stages_by_feature(
-        desktop_origin_trial_future.result())
-    android_origin_trial_stage_by_fid = organize_all_stages_by_feature(
-        android_origin_trial_future.result())
-    webview_origin_trial_stages_by_fid = organize_all_stages_by_feature(
+    origin_trial_stages_by_fid = organize_all_stages_by_feature(
+        desktop_origin_trial_future.result() +
+        android_origin_trial_future.result() +
         webview_origin_trial_future.result())
-    desktop_dev_trial_stages_by_fid = organize_all_stages_by_feature(
-        desktop_dev_trial_future.result())
-    android_dev_trial_stages_by_fid = organize_all_stages_by_feature(
+    dev_trial_stages_by_fid = organize_all_stages_by_feature(
+        desktop_dev_trial_future.result() +
         android_dev_trial_future.result())
     rollout_stages_by_fid = organize_all_stages_by_feature(
         rollout_future.result())
 
     # Query for FeatureEntry entities that match the stage feature IDs.
-    desktop_shipping_future = get_entries_by_id_async(
-        desktop_shipping_stages_by_fid.keys())
-    android_only_shipping_future = get_entries_by_id_async(
-        android_only_shipping_stages_by_fid.keys())
-    desktop_origin_trial_future = get_entries_by_id_async(
-        desktop_origin_trial_stages_by_fid.keys())
-    android_origin_trial_future = get_entries_by_id_async(
-        android_origin_trial_stage_by_fid.keys())
-    webview_origin_trial_future = get_entries_by_id_async(
-        webview_origin_trial_stages_by_fid.keys())
-    desktop_dev_trial_future = get_entries_by_id_async(
-        desktop_dev_trial_stages_by_fid.keys())
-    android_dev_trial_future = get_entries_by_id_async(
-        android_dev_trial_stages_by_fid.keys())
+    shipping_future = get_entries_by_id_async(
+        shipping_stages_by_fid.keys())
+    origin_trial_future = get_entries_by_id_async(
+        origin_trial_stages_by_fid.keys())
+    dev_trial_future = get_entries_by_id_async(
+        dev_trial_stages_by_fid.keys())
     rollout_future = get_entries_by_id_async(
         rollout_stages_by_fid.keys())
 
-    desktop_shipping_features = get_future_results(desktop_shipping_future)
-    android_only_shipping_features = get_future_results(
-        android_only_shipping_future)
-    desktop_origin_trial_features = get_future_results(
-        desktop_origin_trial_future)
-    android_origin_trial_features = get_future_results(
-        android_origin_trial_future)
-    webview_origin_trial_features = get_future_results(
-        webview_origin_trial_future)
-    desktop_dev_trial_features = get_future_results(desktop_dev_trial_future)
-    android_dev_trial_features = get_future_results(android_dev_trial_future)
+    shipping_features = get_future_results(shipping_future)
+    origin_trial_features = get_future_results(origin_trial_future)
+    dev_trial_features = get_future_results(dev_trial_future)
     rollout_features = get_future_results(rollout_future)
 
     # Push feature to list corresponding to the appropriate section
     # of the milestone card.  Enterprise features are excluded.
-    shipping_features = (
-        desktop_shipping_features + android_only_shipping_features)
     for feature in shipping_features:
       if feature.impl_status_chrome == DEPRECATED:
         all_features[IMPLEMENTATION_STATUS[DEPRECATED]].append(feature)
@@ -260,19 +238,10 @@ def get_in_milestone(milestone: int,
       else:
         all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
 
-    for feature in desktop_origin_trial_features:
+    for feature in origin_trial_features:
       all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]].append(feature)
 
-    for feature in android_origin_trial_features:
-      all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]].append(feature)
-
-    for feature in webview_origin_trial_features:
-      all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]].append(feature)
-
-    for feature in desktop_dev_trial_features:
-      all_features[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]].append(feature)
-
-    for feature in android_dev_trial_features:
+    for feature in dev_trial_features:
       all_features[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]].append(feature)
 
     for feature in rollout_features:
@@ -292,30 +261,22 @@ def get_in_milestone(milestone: int,
         formatted_feature = converters.feature_entry_to_json_basic(f)
         features_by_type[shipping_type].append(formatted_feature)
 
-    # Fill in the IDs of the stages that caused each feature to appear.
-    for status in [ENABLED_BY_DEFAULT, DEPRECATED, REMOVED, INTERVENTION]:
-      for ff in features_by_type[IMPLEMENTATION_STATUS[status]]:
-        ff['roadmap_stage_ids'] = (
-            [s.key.integer_id()
-             for s in desktop_shipping_stages_by_fid.get(ff['id'], [])] +
-            [s.key.integer_id()
-             for s in android_only_shipping_stages_by_fid.get(ff['id'], [])])
+    # Fill in the IDs of the stages that caused each feature to appear,
+    # and any finch URLs.
+    _set_feature_fields_for_roadmap(
+        features_by_type[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]] +
+        features_by_type[IMPLEMENTATION_STATUS[DEPRECATED]] +
+        features_by_type[IMPLEMENTATION_STATUS[REMOVED]] +
+        features_by_type[IMPLEMENTATION_STATUS[INTERVENTION]],
+        shipping_stages_by_fid)
 
-    for ff in features_by_type[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]]:
-      ff['roadmap_stage_ids'] = (
-          [s.key.integer_id()
-           for s in desktop_origin_trial_stages_by_fid.get(ff['id'], [])] +
-          [s.key.integer_id()
-           for s in android_origin_trial_stage_by_fid.get(ff['id'], [])] +
-          [s.key.integer_id()
-           for s in webview_origin_trial_stages_by_fid.get(ff['id'], [])])
+    _set_feature_fields_for_roadmap(
+        features_by_type[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]],
+        origin_trial_stages_by_fid)
 
-    for ff in features_by_type[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]]:
-      ff['roadmap_stage_ids'] = (
-          [s.key.integer_id()
-           for s in desktop_dev_trial_stages_by_fid.get(ff['id'], [])] +
-          [s.key.integer_id()
-           for s in android_dev_trial_stages_by_fid.get(ff['id'], [])])
+    _set_feature_fields_for_roadmap(
+        features_by_type[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]],
+        dev_trial_stages_by_fid)
 
     rediscache.set(cache_key, features_by_type)
 
@@ -327,6 +288,18 @@ def get_in_milestone(milestone: int,
         features_by_type[shipping_type])
 
   return features_by_type
+
+
+def _set_feature_fields_for_roadmap(
+    formatted_features: list[dict[str, Any]],
+    triggering_stages_by_fid: dict[int, list[Stage]]) -> None:
+  """Add roadmap_stage_ids and finch_urls items to formated features."""
+  for ff in formatted_features:
+    # The feature's stages that caused it to appear in this roadmap section.
+    feature_trigger_stages = triggering_stages_by_fid.get(ff['id'], [])
+    ff['roadmap_stage_ids'] = [s.key.integer_id() for s in feature_trigger_stages]
+    ff['finch_urls'] = [
+        s.finch_url for s in feature_trigger_stages if s.finch_url]
 
 
 def get_all(limit: Optional[int]=None,

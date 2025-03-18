@@ -32,6 +32,9 @@ export const FLEX_BOX = css`
   .hbox {
     flex-direction: row;
   }
+  .hbox.align-top {
+    align-items: flex-start;
+  }
   .vbox {
     flex-direction: column;
   }

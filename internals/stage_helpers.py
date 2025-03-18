@@ -96,7 +96,7 @@ def get_feature_stage_ids(feature_id: int) -> dict[int, list[int]]:
   return stage_dict
 
 
-def organize_all_stages_by_feature(stages: list[Stage]):
+def organize_all_stages_by_feature(stages: list[Stage]) -> dict[int, list[Stage]]:
   """Return a dict with feature IDs as keys and feature's stages as values."""
   stages_by_feature = defaultdict(list)
   for stage in stages:

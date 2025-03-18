@@ -103,7 +103,7 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
     e.preventDefault();
     e.stopPropagation();
 
-    const iconEl = e.target.parentNode;
+    const iconEl = e.target.parentNode.parentNode;
     const featureId = Number(iconEl.dataset.featureId);
 
     this._fireEvent('highlight-feature-event', {
@@ -275,19 +275,35 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
     return html`
       <li
         data-feature-id="${f.id}"
-        class="${f.id == this.highlightFeature ? 'highlight' : ''}"
+        class="hbox align-top ${f.id == this.highlightFeature
+          ? 'highlight'
+          : ''}"
       >
         <chromedash-review-status-icon
           .feature=${f}
         ></chromedash-review-status-icon>
-        <a
-          id="feature_link"
-          href="/feature/${f.id}"
-          @mouseenter="${this.highlight}"
-          @mouseleave="${this.removeHighlight}"
-        >
-          ${f.name}
-        </a>
+        <span>
+          <a
+            id="feature_link"
+            href="/feature/${f.id}"
+            @mouseenter="${this.highlight}"
+            @mouseleave="${this.removeHighlight}"
+          >
+            ${f.name}
+          </a>
+          ${f.finch_urls?.map(
+            url => html`
+              <a
+                target="_blank"
+                class="experiment"
+                href=${url}
+                title="Deploying to some users as an experiment"
+                >Exp</a
+              >
+            `
+          )}
+        </span>
+        <span class="spacer"></span>
         <span class="icon_row">
           ${this._isFeatureOutdated(f.accurate_as_of, this.channel?.version)
             ? html`
