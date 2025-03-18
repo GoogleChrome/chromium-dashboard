@@ -864,7 +864,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     extra_help: html`
       <ul>
         <li>
-          Feature is available on Web Platform mainline within 12 months of
+          Feature is available on Web Platform Baseline within 12 months of
           launch in Chrome.
         </li>
 
