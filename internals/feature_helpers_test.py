@@ -447,6 +447,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     # This one is included because it uses a stage that is considered.
     self.feature_2.impl_status_chrome = REMOVED
     self.fe_2_stages_dict[260][0].milestones = MilestoneSet(desktop_first=1)
+    self.fe_2_stages_dict[260][0].finch_url = 'https://example.com/finch'
     self.feature_2.put()
     self.fe_2_stages_dict[260][0].put()
 
@@ -454,6 +455,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     expected_fe_2 = converters.feature_entry_to_json_basic(self.feature_2)
     expected_fe_2['roadmap_stage_ids'] = [
         self.fe_2_stages_dict[260][0].key.integer_id()]
+    expected_fe_2['finch_urls'] = ['https://example.com/finch']
     expected = {
         'Browser Intervention': [],
         'Deprecated': [],
