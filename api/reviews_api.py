@@ -70,6 +70,7 @@ class VotesAPI(basehandlers.APIHandler):
         feature_id=feature_id, gate_id=gate_id, set_by=user.email())
     old_state = old_votes[0].state if old_votes else Vote.NO_RESPONSE
     self.require_permissions(user, fe, gate, new_state)
+    self.check_voting_rules(gate, new_state)
 
     old_gate_state = gate.state
     new_gate_state = approval_defs.set_vote(feature_id, None, new_state,
@@ -130,6 +131,13 @@ class VotesAPI(basehandlers.APIHandler):
       self.abort(403, msg='User may not request a review')
     else:
       self.abort(403, msg='User is not an approver')
+
+  def check_voting_rules(self, gate, new_state):
+    """Abort the request if the user casts a vote that we cannot accept."""
+    if (new_state == Vote.NA_VERIFIED and
+        gate.state not in [Vote.NA_SELF, Vote.NA_VERIFIED]):
+      self.abort(
+          400, msg='User may not verify when gate was not self-certified')
 
 
 class GatesAPI(basehandlers.APIHandler):
