@@ -21,6 +21,7 @@ import {
   STAGE_SHORT_NAMES,
   STAGE_TYPES_ORIGIN_TRIAL,
   VOTE_OPTIONS,
+  GATE_APPROVED_REVIEW_STATES,
 } from './form-field-enums';
 import {makeDisplaySpecs} from './form-field-specs';
 import {getFieldValueFromFeature, hasFieldValue, isDefinedValue} from './utils';
