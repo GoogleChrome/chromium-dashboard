@@ -232,7 +232,7 @@ export class ChromedashFeatureDetail extends LitElement {
     // Don't try to display dialog if we can't find the associated gate or the gate isn't approved.
     if (
       !extensionGate ||
-        !GATE_APPROVED_REVIEW_STATES.includes(extensionGate.state))
+      !GATE_APPROVED_REVIEW_STATES.includes(extensionGate.state)
     ) {
       return;
     }
@@ -723,8 +723,8 @@ export class ChromedashFeatureDetail extends LitElement {
       );
       return (
         e.ot_action_requested &&
-          extensionGate &&
-          GATE_APPROVED_REVIEW_STATES.includes(extensionGate.state)
+        extensionGate &&
+        GATE_APPROVED_REVIEW_STATES.includes(extensionGate.state)
       );
     });
     if (extensionReadyForFinalize) {
