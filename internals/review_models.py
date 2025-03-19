@@ -96,6 +96,7 @@ class Vote(ndb.Model):
   INTERNAL_REVIEW = 8
   NA_REQUESTED = 9
   NA_SELF = 10
+  NA_VERIFIED = 11
   VOTE_VALUES = {
       # Not used: PREPARING: 'preparing',
       NA: 'na',
@@ -108,6 +109,7 @@ class Vote(ndb.Model):
       INTERNAL_REVIEW: 'internal_review',
       NA_REQUESTED: 'na_requested',
       NA_SELF: 'na (self-certified)',
+      NA_VERIFIED: 'na (verified)',
   }
 
   REQUESTING_STATES = [REVIEW_REQUESTED, NA_REQUESTED, NA_SELF]
@@ -175,8 +177,9 @@ class Gate(ndb.Model):
   PENDING_STATES = [
       Vote.REVIEW_REQUESTED, Vote.REVIEW_STARTED, Vote.NEEDS_WORK,
       Vote.INTERNAL_REVIEW, Vote.NA_REQUESTED]
-  FINAL_STATES = [Vote.NA, Vote.APPROVED, Vote.DENIED, Vote.NA_SELF]
-  APPROVED_STATES = [Vote.NA, Vote.APPROVED, Vote.NA_SELF]
+  FINAL_STATES = [Vote.NA, Vote.APPROVED, Vote.DENIED, Vote.NA_SELF,
+                  Vote.NA_VERIFIED]
+  APPROVED_STATES = [Vote.NA, Vote.APPROVED, Vote.NA_SELF, Vote.NA_VERIFIED]
 
   feature_id = ndb.IntegerProperty(required=True)
   stage_id = ndb.IntegerProperty(required=True)
