@@ -247,6 +247,7 @@ class IsApprovedTest(testing_config.CustomTestCase):
         set_on=datetime.datetime.now(),
         set_by='three@example.com')
 
+NR = Vote.NO_RESPONSE
 RR = Vote.REVIEW_REQUESTED
 AP = Vote.APPROVED
 DN = Vote.DENIED
