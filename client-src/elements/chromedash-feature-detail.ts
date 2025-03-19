@@ -20,7 +20,7 @@ import {
   OT_SETUP_STATUS_OPTIONS,
   STAGE_SHORT_NAMES,
   STAGE_TYPES_ORIGIN_TRIAL,
-  VOTE_OPTIONS,
+  GATE_APPROVED_REVIEW_STATES,
 } from './form-field-enums';
 import {makeDisplaySpecs} from './form-field-specs';
 import {getFieldValueFromFeature, hasFieldValue, isDefinedValue} from './utils';
@@ -232,8 +232,7 @@ export class ChromedashFeatureDetail extends LitElement {
     // Don't try to display dialog if we can't find the associated gate or the gate isn't approved.
     if (
       !extensionGate ||
-      (extensionGate.state !== VOTE_OPTIONS.APPROVED[0] &&
-        extensionGate.state !== VOTE_OPTIONS.NA[0])
+      !GATE_APPROVED_REVIEW_STATES.includes(extensionGate.state)
     ) {
       return;
     }
@@ -725,8 +724,7 @@ export class ChromedashFeatureDetail extends LitElement {
       return (
         e.ot_action_requested &&
         extensionGate &&
-        (extensionGate.state === VOTE_OPTIONS.APPROVED[0] ||
-          extensionGate.state === VOTE_OPTIONS.NA[0])
+        GATE_APPROVED_REVIEW_STATES.includes(extensionGate.state)
       );
     });
     if (extensionReadyForFinalize) {
@@ -787,8 +785,7 @@ export class ChromedashFeatureDetail extends LitElement {
     const trialIsApproved = this.gates.every(g => {
       return (
         g.stage_id !== feStage.id ||
-        g.state === VOTE_OPTIONS.APPROVED[0] ||
-        g.state === VOTE_OPTIONS.NA[0]
+        GATE_APPROVED_REVIEW_STATES.includes(g.state)
       );
     });
     if (

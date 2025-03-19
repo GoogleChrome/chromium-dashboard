@@ -8,7 +8,7 @@ import './chromedash-form-field.js';
 import {ORIGIN_TRIAL_CREATION_FIELDS} from './form-definition.js';
 import {
   OT_SETUP_STATUS_OPTIONS,
-  VOTE_OPTIONS,
+  GATE_APPROVED_REVIEW_STATES,
   USE_COUNTER_TYPE_WEBFEATURE,
   USE_COUNTER_TYPE_WEBDXFEATURE,
   USE_COUNTER_TYPE_CSS_PROPERTY_ID,
@@ -143,10 +143,7 @@ export class ChromedashOTCreationPage extends LitElement {
         g => g.stage_id === this.stage.id
       );
       relevantGates.forEach(g => {
-        if (
-          g.state !== VOTE_OPTIONS.APPROVED[0] &&
-          g.state !== VOTE_OPTIONS.NA[0]
-        ) {
+        if (!GATE_APPROVED_REVIEW_STATES.includes(g.state)) {
           // Redirect if approvals have not been obtained.
           window.location.href = `/feature/${this.featureId}`;
         }

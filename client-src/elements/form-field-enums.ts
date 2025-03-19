@@ -523,6 +523,13 @@ export const GATE_FINISHED_REVIEW_STATES: number[] = [
   VOTE_OPTIONS.DENIED[0],
 ];
 
+export const GATE_APPROVED_REVIEW_STATES: number[] = [
+  VOTE_OPTIONS.APPROVED[0],
+  VOTE_OPTIONS.NA[0],
+  VOTE_NA_SELF,
+  VOTE_NA_VERIFIED,
+];
+
 export const GATE_TEAM_ORDER = [
   'Privacy',
   'WP Security',
