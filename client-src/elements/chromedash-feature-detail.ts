@@ -787,8 +787,7 @@ export class ChromedashFeatureDetail extends LitElement {
     const trialIsApproved = this.gates.every(g => {
       return (
         g.stage_id !== feStage.id ||
-        g.state === VOTE_OPTIONS.APPROVED[0] ||
-        g.state === VOTE_OPTIONS.NA[0]
+        GATE_APPROVED_REVIEW_STATES.includes(g.state)
       );
     });
     if (
