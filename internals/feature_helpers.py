@@ -229,7 +229,7 @@ def get_in_milestone(milestone: int,
     # Push feature to list corresponding to the appropriate section
     # of the milestone card.  Enterprise features are excluded.
     for feature in shipping_features:
-      if feature.impl_status_chrome == DEPRECATED:
+      if feature.feature_type == FEATURE_TYPE_DEPRECATION_ID:
         all_features[IMPLEMENTATION_STATUS[DEPRECATED]].append(feature)
       elif feature.impl_status_chrome == REMOVED:
         all_features[IMPLEMENTATION_STATUS[REMOVED]].append(feature)
