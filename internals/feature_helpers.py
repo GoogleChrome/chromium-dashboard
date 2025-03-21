@@ -268,37 +268,32 @@ def _group_by_roadmap_section(
     dev_trial_features: list[FeatureEntry],
     rollout_features: list[FeatureEntry]) -> dict[str, list[FeatureEntry]]:
   """Return a dict of roadmap sections with features belonging in each."""
-  all_features: dict[str, list[FeatureEntry]] = {
-      IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]: [],
-      IMPLEMENTATION_STATUS[DEPRECATED]: [],
-      IMPLEMENTATION_STATUS[REMOVED]: [],
-      IMPLEMENTATION_STATUS[INTERVENTION]: [],
-      ROLLOUT_SECTION: [],
-      IMPLEMENTATION_STATUS[ORIGIN_TRIAL]: [],
-      IMPLEMENTATION_STATUS[BEHIND_A_FLAG]: [],
-  }
+  removed_features = []
+  deprecated_features = []
+  intervention_features = []
+  enabled_features = []
 
-  # Push feature to list corresponding to the appropriate section
-  # of the milestone card.  Enterprise features are excluded.
-  for feature in shipping_features:
-    if feature.impl_status_chrome == REMOVED:
-      all_features[IMPLEMENTATION_STATUS[REMOVED]].append(feature)
-    elif feature.feature_type == FEATURE_TYPE_DEPRECATION_ID:
-      all_features[IMPLEMENTATION_STATUS[DEPRECATED]].append(feature)
-    elif feature.impl_status_chrome == INTERVENTION:
-      all_features[IMPLEMENTATION_STATUS[INTERVENTION]].append(feature)
+  # Push features to lists corresponding to the appropriate section
+  # of the milestone card.
+  for fe in shipping_features:
+    if fe.impl_status_chrome == REMOVED:
+      removed_features.append(fe)
+    elif fe.feature_type == FEATURE_TYPE_DEPRECATION_ID:
+      deprecated_features.append(fe)
+    elif fe.impl_status_chrome == INTERVENTION:
+      intervention_features.append(fe)
     else:
-      all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
+      enabled_features.append(fe)
 
-  for feature in origin_trial_features:
-    all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]].append(feature)
-
-  for feature in dev_trial_features:
-    all_features[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]].append(feature)
-
-  for feature in rollout_features:
-    all_features[ROLLOUT_SECTION].append(feature)
-
+  all_features: dict[str, list[FeatureEntry]] = {
+      IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]: enabled_features,
+      IMPLEMENTATION_STATUS[DEPRECATED]: deprecated_features,
+      IMPLEMENTATION_STATUS[REMOVED]: removed_features,
+      IMPLEMENTATION_STATUS[INTERVENTION]: intervention_features,
+      ROLLOUT_SECTION: rollout_features,
+      IMPLEMENTATION_STATUS[ORIGIN_TRIAL]: origin_trial_features,
+      IMPLEMENTATION_STATUS[BEHIND_A_FLAG]: dev_trial_features,
+  }
   return all_features
 
 
