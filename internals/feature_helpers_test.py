@@ -620,7 +620,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         [fe], [], [], [])
     self.assertEqual(actual['Browser Intervention'], [fe])
 
-  def test_group_by_roadmap_section__intervention(self):
+  def test_group_by_roadmap_section__enabled(self):
     """A shipping feature without a special case is here."""
     fe = FeatureEntry()
     actual = feature_helpers._group_by_roadmap_section(
