@@ -125,15 +125,6 @@ def get_in_milestone(milestone: int,
   if cached_features_by_type:
     features_by_type = cached_features_by_type
   else:
-    all_features: dict[str, list[FeatureEntry]] = {}
-    all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]] = []
-    all_features[IMPLEMENTATION_STATUS[DEPRECATED]] = []
-    all_features[IMPLEMENTATION_STATUS[REMOVED]] = []
-    all_features[IMPLEMENTATION_STATUS[INTERVENTION]] = []
-    all_features[ROLLOUT_SECTION] = []
-    all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]] = []
-    all_features[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]] = []
-
     logging.info('Getting chronological feature list in milestone %d',
                 milestone)
     # Start each query asynchronously in parallel.
@@ -226,36 +217,17 @@ def get_in_milestone(milestone: int,
     dev_trial_features = get_future_results(dev_trial_future)
     rollout_features = get_future_results(rollout_future)
 
-    # Push feature to list corresponding to the appropriate section
-    # of the milestone card.  Enterprise features are excluded.
-    for feature in shipping_features:
-      if feature.feature_type == FEATURE_TYPE_DEPRECATION_ID:
-        all_features[IMPLEMENTATION_STATUS[DEPRECATED]].append(feature)
-      elif feature.impl_status_chrome == REMOVED:
-        all_features[IMPLEMENTATION_STATUS[REMOVED]].append(feature)
-      elif feature.impl_status_chrome == INTERVENTION:
-        all_features[IMPLEMENTATION_STATUS[INTERVENTION]].append(feature)
-      else:
-        all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
-
-    for feature in origin_trial_features:
-      all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]].append(feature)
-
-    for feature in dev_trial_features:
-      all_features[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]].append(feature)
-
-    for feature in rollout_features:
-      all_features[ROLLOUT_SECTION].append(feature)
+    all_features = _group_by_roadmap_section(
+        shipping_features, origin_trial_features, dev_trial_features,
+        rollout_features)
 
     # Filter out deleted and inactive features, then
     # construct results as: {type: [json_feature, ...], ...}.
     for shipping_type in all_features:
       all_features[shipping_type].sort(key=lambda f: f.name)
       all_features[shipping_type] = [
-          f for f in all_features[shipping_type]
-          if (not f.deleted and
-              f.impl_status_chrome not in INACTIVE_IMPL_STATUSES and
-              f.feature_type in ROADMAP_FEATURE_TYPES)]
+          fe for fe in all_features[shipping_type]
+          if _should_appear_on_roadmap(fe)]
       features_by_type[shipping_type] = []
       for f in all_features[shipping_type]:
         formatted_feature = converters.feature_entry_to_json_basic(f)
@@ -288,6 +260,48 @@ def get_in_milestone(milestone: int,
         features_by_type[shipping_type])
 
   return features_by_type
+
+
+def _group_by_roadmap_section(
+    shipping_features: list[FeatureEntry],
+    origin_trial_features: list[FeatureEntry],
+    dev_trial_features: list[FeatureEntry],
+    rollout_features: list[FeatureEntry]) -> dict[str, list[FeatureEntry]]:
+  """Return a dict of roadmap sections with features belonging in each."""
+  removed_features = []
+  deprecated_features = []
+  intervention_features = []
+  enabled_features = []
+
+  # Push features to lists corresponding to the appropriate section
+  # of the milestone card.
+  for fe in shipping_features:
+    if fe.impl_status_chrome == REMOVED:
+      removed_features.append(fe)
+    elif fe.feature_type == FEATURE_TYPE_DEPRECATION_ID:
+      deprecated_features.append(fe)
+    elif fe.impl_status_chrome == INTERVENTION:
+      intervention_features.append(fe)
+    else:
+      enabled_features.append(fe)
+
+  all_features: dict[str, list[FeatureEntry]] = {
+      IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]: enabled_features,
+      IMPLEMENTATION_STATUS[DEPRECATED]: deprecated_features,
+      IMPLEMENTATION_STATUS[REMOVED]: removed_features,
+      IMPLEMENTATION_STATUS[INTERVENTION]: intervention_features,
+      ROLLOUT_SECTION: rollout_features,
+      IMPLEMENTATION_STATUS[ORIGIN_TRIAL]: origin_trial_features,
+      IMPLEMENTATION_STATUS[BEHIND_A_FLAG]: dev_trial_features,
+  }
+  return all_features
+
+
+def _should_appear_on_roadmap(fe: FeatureEntry) -> bool:
+  """Return True for features that should appear on the roadmap."""
+  return (not fe.deleted and
+          fe.impl_status_chrome not in INACTIVE_IMPL_STATUSES and
+          fe.feature_type in ROADMAP_FEATURE_TYPES)
 
 
 def _set_feature_fields_for_roadmap(

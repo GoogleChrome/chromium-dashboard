@@ -584,6 +584,104 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     rediscache.delete(cache_key)
     self.assertEqual(cached_result, features)
 
+  def test_group_by_roadmap_section__empty(self):
+    """An empty list of features results in an empty roadmap card."""
+    actual = feature_helpers._group_by_roadmap_section(
+        [], [], [], [])
+    expected = {
+        'Enabled by default': [],
+        'Deprecated': [],
+        'Removed': [],
+        'Browser Intervention': [],
+        'Stepped rollout': [],
+        'Origin trial': [],
+        'In developer trial (Behind a flag)': [],
+        }
+    self.assertEqual(actual, expected)
+
+  def test_group_by_roadmap_section__removed(self):
+    """A shipping feature with impl_status_chrome=REMOVED is here."""
+    fe = FeatureEntry(impl_status_chrome=REMOVED)
+    actual = feature_helpers._group_by_roadmap_section(
+        [fe], [], [], [])
+    self.assertEqual(actual['Removed'], [fe])
+
+  def test_group_by_roadmap_section__deprecated(self):
+    """A shipping deprecation entry is here."""
+    fe = FeatureEntry(feature_type=FEATURE_TYPE_DEPRECATION_ID)
+    actual = feature_helpers._group_by_roadmap_section(
+        [fe], [], [], [])
+    self.assertEqual(actual['Deprecated'], [fe])
+
+  def test_group_by_roadmap_section__intervention(self):
+    """A shipping feature with impl_status_chrome=INTERVENTION is here."""
+    fe = FeatureEntry(impl_status_chrome=INTERVENTION)
+    actual = feature_helpers._group_by_roadmap_section(
+        [fe], [], [], [])
+    self.assertEqual(actual['Browser Intervention'], [fe])
+
+  def test_group_by_roadmap_section__enabled(self):
+    """A shipping feature without a special case is here."""
+    fe = FeatureEntry()
+    actual = feature_helpers._group_by_roadmap_section(
+        [fe], [], [], [])
+    self.assertEqual(actual['Enabled by default'], [fe])
+
+  def test_group_by_roadmap_section__origin_trial(self):
+    """Any feature found because of a origin trial stage goes here."""
+    fe = FeatureEntry()
+    actual = feature_helpers._group_by_roadmap_section(
+        [], [fe], [], [])
+    self.assertEqual(actual['Origin trial'], [fe])
+
+  def test_group_by_roadmap_section__dev_trial(self):
+    """Any feature found because of a dev trail stage goes here."""
+    fe = FeatureEntry()
+    actual = feature_helpers._group_by_roadmap_section(
+        [], [], [fe], [])
+    self.assertEqual(actual['In developer trial (Behind a flag)'], [fe])
+
+  def test_group_by_roadmap_section__rollout(self):
+    """Any feature found because of a rollout stage goes here."""
+    fe = FeatureEntry()
+    actual = feature_helpers._group_by_roadmap_section(
+        [], [], [], [fe])
+    self.assertEqual(actual['Stepped rollout'], [fe])
+
+  def test_should_appear_on_roadmap__no_deleted(self):
+    """The roadmap does not include deleted feature entries."""
+    self.assertTrue(feature_helpers._should_appear_on_roadmap(
+        FeatureEntry()))
+
+    self.assertFalse(feature_helpers._should_appear_on_roadmap(
+        FeatureEntry(deleted=True)))
+
+  def test_should_appear_on_roadmap__no_inactive(self):
+    """The roadmap does not include inactive feature entries."""
+    for status in [
+        PROPOSED, IN_DEVELOPMENT, BEHIND_A_FLAG, ENABLED_BY_DEFAULT,
+        DEPRECATED, REMOVED, ORIGIN_TRIAL, INTERVENTION]:
+      self.assertTrue(feature_helpers._should_appear_on_roadmap(
+          FeatureEntry(impl_status_chrome=status)))
+
+    for status in [NO_ACTIVE_DEV, ON_HOLD, NO_LONGER_PURSUING]:
+      self.assertFalse(feature_helpers._should_appear_on_roadmap(
+          FeatureEntry(impl_status_chrome=status)))
+
+  def test_should_appear_on_roadmap__no_enterprise(self):
+    """The roadmap does not include enterprise features."""
+    self.assertTrue(feature_helpers._should_appear_on_roadmap(
+        FeatureEntry(feature_type=FEATURE_TYPE_INCUBATE_ID)))
+
+    self.assertTrue(feature_helpers._should_appear_on_roadmap(
+        FeatureEntry(feature_type=FEATURE_TYPE_EXISTING_ID)))
+
+    self.assertTrue(feature_helpers._should_appear_on_roadmap(
+        FeatureEntry(feature_type=FEATURE_TYPE_DEPRECATION_ID)))
+
+    self.assertFalse(feature_helpers._should_appear_on_roadmap(
+        FeatureEntry(feature_type=FEATURE_TYPE_ENTERPRISE_ID)))
+
   def test_get_features_by_impl_status__normal(self):
     """We can get JSON dicts for /features_v2.json."""
     features = feature_helpers.get_features_by_impl_status()
