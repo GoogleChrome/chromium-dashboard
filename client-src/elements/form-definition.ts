@@ -44,8 +44,6 @@ export interface FormattedFeature {
 interface Section {
   name?: string;
   fields: string[];
-  isImplementationSection?: boolean;
-  implStatusValue?: number | null;
 }
 
 export interface MetadataFields {
@@ -214,13 +212,11 @@ export const FLAT_METADATA_FIELDS: MetadataFields = {
     {
       name: 'Implementation in Chromium',
       fields: [
-        'impl_status_chrome',
         'blink_components',
         'bug_url',
         'launch_bug_url',
         'comments',
       ],
-      isImplementationSection: true,
     },
   ],
 };
@@ -261,8 +257,6 @@ const FLAT_INCUBATE_FIELDS: MetadataFields = {
     {
       name: 'Implementation in Chromium',
       fields: ['requires_embedder_support'],
-      isImplementationSection: true,
-      implStatusValue: null,
     },
   ],
 };
@@ -335,8 +329,6 @@ const FLAT_DEV_TRIAL_FIELDS: MetadataFields = {
         'dt_milestone_ios_start',
         'announcement_url',
       ],
-      isImplementationSection: true,
-      implStatusValue: enums.IMPLEMENTATION_STATUS.BEHIND_A_FLAG[0],
     },
   ],
 };
@@ -374,8 +366,6 @@ const FLAT_ORIGIN_TRIAL_FIELDS: MetadataFields = {
         'ot_milestone_webview_end',
         'experiment_timeline', // deprecated
       ],
-      isImplementationSection: true,
-      implStatusValue: enums.IMPLEMENTATION_STATUS.ORIGIN_TRIAL[0],
     },
   ],
 };
@@ -436,8 +426,6 @@ const FLAT_PREPARE_TO_SHIP_FIELDS: MetadataFields = {
         'shipped_ios_milestone',
         'shipped_webview_milestone',
       ],
-      isImplementationSection: true,
-      implStatusValue: enums.IMPLEMENTATION_STATUS.ENABLED_BY_DEFAULT[0],
     },
   ],
 };
@@ -491,8 +479,6 @@ const PSA_PREPARE_TO_SHIP_FIELDS: MetadataFields = {
         'shipped_ios_milestone',
         'shipped_webview_milestone',
       ],
-      isImplementationSection: true,
-      implStatusValue: enums.IMPLEMENTATION_STATUS.ENABLED_BY_DEFAULT[0],
     },
   ],
 };
@@ -554,8 +540,6 @@ const DEPRECATION_DEV_TRIAL_FIELDS: MetadataFields = {
         'dt_milestone_ios_start',
         'announcement_url',
       ],
-      isImplementationSection: true,
-      implStatusValue: enums.IMPLEMENTATION_STATUS.BEHIND_A_FLAG[0],
     },
   ],
 };
@@ -625,8 +609,6 @@ const DEPRECATION_ORIGIN_TRIAL_FIELDS: MetadataFields = {
         'ot_milestone_webview_end',
         'experiment_timeline', // deprecated
       ],
-      isImplementationSection: true,
-      implStatusValue: enums.IMPLEMENTATION_STATUS.ORIGIN_TRIAL[0],
     },
   ],
 };
@@ -649,8 +631,6 @@ const DEPRECATION_PREPARE_TO_SHIP_FIELDS: MetadataFields = {
         'shipped_ios_milestone',
         'shipped_webview_milestone',
       ],
-      isImplementationSection: true,
-      implStatusValue: enums.IMPLEMENTATION_STATUS.ENABLED_BY_DEFAULT[0],
     },
   ],
 };
@@ -671,7 +651,6 @@ export const VERIFY_ACCURACY_METADATA_FIELDS: MetadataFields = {
         'owner',
         'editors',
         'cc_recipients',
-        'impl_status_chrome',
       ],
     },
   ],

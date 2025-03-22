@@ -75,7 +75,6 @@ export const QUERIABLE_FIELDS: QueryField[] = [
     doc: 'Developer relations contact',
   },
 
-  //  'browsers.chrome.status': Feature.impl_status_chrome,
   {
     name: 'browsers.chrome.desktop',
     kind: MILESTONE_KIND,

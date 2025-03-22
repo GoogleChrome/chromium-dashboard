@@ -201,8 +201,6 @@ export class ChromedashFeatureHighlights extends LitElement {
           : nothing}
         <br />
         <p>
-          <label>Implementation status:</label>
-          <b>${this.feature.browsers.chrome.status.text}</b>
           ${this.feature.browsers.chrome.bug
             ? html`<chromedash-link
                 href=${this.feature.browsers.chrome.bug}
@@ -362,7 +360,7 @@ export class ChromedashFeatureHighlights extends LitElement {
                 </sl-dropdown>
               `
             : nothing}
-          ${this.feature.is_enterprise_featqcure
+          ${this.feature.is_enterprise_feature
             ? this.renderEnterpriseFeatureContent()
             : this.renderFeatureContent()}
           ${this.feature.is_enterprise_feature
