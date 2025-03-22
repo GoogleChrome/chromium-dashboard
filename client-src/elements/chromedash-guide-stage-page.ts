@@ -286,12 +286,12 @@ export class ChromedashGuideStagePage extends LitElement {
     const formSections: (typeof nothing | TemplateResult)[] = [];
 
     stageSections.forEach(section => {
-        formSections.push(html`
-          <h3>${section.name}</h3>
-          <section class="stage_form">
-            ${this.renderFields(formattedFeature, section)}
-          </section>
-        `);
+      formSections.push(html`
+        <h3>${section.name}</h3>
+        <section class="stage_form">
+          ${this.renderFields(formattedFeature, section)}
+        </section>
+      `);
     });
 
     if (this.stage.extensions) {

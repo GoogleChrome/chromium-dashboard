@@ -211,12 +211,7 @@ export const FLAT_METADATA_FIELDS: MetadataFields = {
     // Implementation
     {
       name: 'Implementation in Chromium',
-      fields: [
-        'blink_components',
-        'bug_url',
-        'launch_bug_url',
-        'comments',
-      ],
+      fields: ['blink_components', 'bug_url', 'launch_bug_url', 'comments'],
     },
   ],
 };
@@ -646,12 +641,7 @@ export const VERIFY_ACCURACY_METADATA_FIELDS: MetadataFields = {
   sections: [
     {
       name: 'Feature Metadata',
-      fields: [
-        'summary',
-        'owner',
-        'editors',
-        'cc_recipients',
-      ],
+      fields: ['summary', 'owner', 'editors', 'cc_recipients'],
     },
   ],
 };
