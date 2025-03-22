@@ -17,6 +17,7 @@ const GATE_STATE_TO_NAME = {
   9: 'N/A requested', // NA_REQUESTED
   10: 'N/A (self-certified)', //  NA_SELF
   11: 'N/A (self-certified then verified)', //  NA_VERIFIED
+  12: 'No issues found',
 };
 
 const GATE_STATE_TO_ICON = {
