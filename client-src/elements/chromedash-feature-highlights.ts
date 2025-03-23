@@ -379,7 +379,7 @@ export class ChromedashFeatureHighlights extends LitElement {
     }
 
     if (this.canEditFeature) {
-      if (this.isOnHold) {
+      if (this.isOnHold()) {
         offHoldItem = html`
           <sl-menu-item @click=${this.handleTakeOffHold}>
             Take off hold
