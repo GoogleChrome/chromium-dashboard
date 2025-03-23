@@ -18,6 +18,7 @@ import {showToastMessage, isVerifiedWithinGracePeriod} from './utils.js';
 import {
   STAGE_TYPES_SHIPPING,
   STAGE_TYPES_ORIGIN_TRIAL,
+  IMPLEMENTATION_STATUS,
 } from './form-field-enums';
 
 const INACTIVE_STATES = ['No longer pursuing', 'Deprecated', 'Removed'];
@@ -421,6 +422,38 @@ export class ChromedashFeaturePage extends LitElement {
     });
   }
 
+  handlePlaceOnHold() {
+    if (!confirm('Place this feature on hold?  It will not appear on the roadmap.')) return;
+
+    const submitBody = {
+      feature_changes: {
+        id: this.feature.id,
+        impl_status_chrome: IMPLEMENTATION_STATUS.ON_HOLD[0],
+      },
+      stages: [],
+      has_changes: true,
+    };
+    window.csClient.updateFeature(submitBody).then(resp => {
+      window.location.reload();
+    });
+  }
+
+  handleTakeOffHold() {
+    if (!confirm('Take this feature off hold?  That indicates that it is under active development.')) return;
+
+    const submitBody = {
+      feature_changes: {
+        id: this.feature.id,
+        impl_status_chrome: IMPLEMENTATION_STATUS.PROPOSED[0],
+      },
+      stages: [],
+      has_changes: true,
+    };
+    window.csClient.updateFeature(submitBody).then(resp => {
+      window.location.reload();
+    });
+  }
+
   renderSkeletonSection() {
     return html`
       <section>
@@ -721,7 +754,10 @@ export class ChromedashFeaturePage extends LitElement {
         .feature=${this.feature}
         .featureLinks=${this.featureLinks}
         ?canDeleteFeature=${this.canDeleteFeature()}
+        ?canEditFeature=${this.userCanEdit()}
         @delete=${this.handleDeleteFeature}
+        @onhold=${this.handlePlaceOnHold}
+        @offhold=${this.handleTakeOffHold}
       ></chromedash-feature-highlights>
       ${this.renderFeatureDetails()}
     `;

@@ -3,6 +3,7 @@ import {customElement, property} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import type {FeatureLink} from '../js-src/cs-client.js';
 import {DETAILS_STYLES} from './chromedash-feature-detail.js';
+import {IMPLEMENTATION_STATUS} from './form-field-enums.js';
 import './chromedash-gantt.js';
 import {enhanceUrl} from './chromedash-link.js';
 import './chromedash-vendor-views.js';
@@ -45,7 +46,13 @@ export class ChromedashFeatureHighlights extends LitElement {
           float: right;
           margin-right: -16px;
           margin-top: -20px;
-        }
+      }
+      #delete-feature::part(base) {
+      color: var(--error-color);
+      }
+      .on-hold {
+      background: var(--table-header-background);
+      }
       `,
     ];
   }
@@ -59,8 +66,23 @@ export class ChromedashFeatureHighlights extends LitElement {
   @property({type: Boolean})
   canDeleteFeature = false;
 
+  @property({type: Boolean})
+  canEditFeature = false;
+
+  isOnHold() {
+    return this.feature.browsers.status.val === IMPLEMENTATION_STATUS.ON_HOLD[0];
+  }
+
   handleDeleteFeature() {
     this.dispatchEvent(new Event('delete', {bubbles: true, composed: true}));
+  }
+
+  handlePlaceOnHold() {
+    this.dispatchEvent(new Event('onhold', {bubbles: true, composed: true}));
+  }
+
+  handleTakeOffHold() {
+    this.dispatchEvent(new Event('offhold', {bubbles: true, composed: true}));
   }
 
   renderEnterpriseFeatureContent() {
@@ -201,8 +223,10 @@ export class ChromedashFeatureHighlights extends LitElement {
           : nothing}
         <br />
         <p>
+          ${this.isOnHold() ? html`
           <label>Implementation status:</label>
-          <b>${this.feature.browsers.chrome.status.text}</b>
+          <b>Development work is on hold</b>`
+          : nothing }
           ${this.feature.browsers.chrome.bug
             ? html`<chromedash-link
                 href=${this.feature.browsers.chrome.bug}
@@ -336,32 +360,64 @@ export class ChromedashFeatureHighlights extends LitElement {
     `;
   }
 
+  renderDotDotDotMenu() {
+    if (!this.canDeleteFeature && !this.canEditFeature) {
+      return nothing;
+    }
+    let deleteItem = html``;
+    let onHoldItem = html``;
+    let offHoldItem = html``;
+
+    if (this.canDeleteFeature) {
+      deleteItem = html`
+          <sl-menu-item id="delete-feature"
+              @click=${this.handleDeleteFeature}>
+              Delete
+          </sl-menu-item>
+      `;
+    }
+
+    if (this.canEditFeature) {
+      if (this.isOnHold) {
+        offHoldItem = html`
+        <sl-menu-item
+        @click=${this.handleTakeOffHold}>
+        Take off hold
+        </sl-menu-item>
+      `;
+      } else {
+        onHoldItem = html`
+        <sl-menu-item
+        @click=${this.handlePlaceOnHold}>
+        Place on hold
+        </sl-menu-item>
+      `;
+      }
+    }
+
+    return html`
+    <sl-dropdown placement="left-start">
+          <sl-icon-button
+            library="material"
+            name="more_vert_24px"
+            label="Feature menu"
+            style="font-size: 1.3rem;"
+            slot="trigger"
+    ></sl-icon-button>
+    <sl-menu>
+    ${onHoldItem}
+    ${offHoldItem}
+    ${deleteItem}
+    </sl-menu>
+        </sl-dropdown>
+    `;
+  }
+
   render() {
     return html`
       <sl-details summary="Overview" ?open=${true}>
-        <section class="card">
-          ${this.canDeleteFeature
-            ? html`
-                <sl-dropdown placement="left-start">
-                  <sl-icon-button
-                    library="material"
-                    name="more_vert_24px"
-                    label="Feature menu"
-                    style="font-size: 1.3rem;"
-                    slot="trigger"
-                  ></sl-icon-button>
-                  <sl-menu-item value="undo">
-                    <a
-                      id="delete-feature"
-                      class="delete-button"
-                      @click=${this.handleDeleteFeature}
-                    >
-                      Delete
-                    </a>
-                  </sl-menu-item>
-                </sl-dropdown>
-              `
-            : nothing}
+      <section class="card ${this.isOnHold() ? 'on-hold' : ''}">
+        ${this.renderDotDotDotMenu()}
           ${this.feature.is_enterprise_featqcure
             ? this.renderEnterpriseFeatureContent()
             : this.renderFeatureContent()}
