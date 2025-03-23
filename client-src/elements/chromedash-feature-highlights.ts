@@ -46,13 +46,13 @@ export class ChromedashFeatureHighlights extends LitElement {
           float: right;
           margin-right: -16px;
           margin-top: -20px;
-      }
-      #delete-feature::part(base) {
-      color: var(--error-color);
-      }
-      .on-hold {
-      background: var(--table-header-background);
-      }
+        }
+        #delete-feature::part(base) {
+          color: var(--error-color);
+        }
+        .on-hold {
+          background: var(--table-header-background);
+        }
       `,
     ];
   }
@@ -70,7 +70,9 @@ export class ChromedashFeatureHighlights extends LitElement {
   canEditFeature = false;
 
   isOnHold() {
-    return this.feature.browsers.status.val === IMPLEMENTATION_STATUS.ON_HOLD[0];
+    return (
+      this.feature.browsers.status.val === IMPLEMENTATION_STATUS.ON_HOLD[0]
+    );
   }
 
   handleDeleteFeature() {
@@ -223,10 +225,10 @@ export class ChromedashFeatureHighlights extends LitElement {
           : nothing}
         <br />
         <p>
-          ${this.isOnHold() ? html`
-          <label>Implementation status:</label>
-          <b>Development work is on hold</b>`
-          : nothing }
+          ${this.isOnHold()
+            ? html` <label>Implementation status:</label>
+                <b>Development work is on hold</b>`
+            : nothing}
           ${this.feature.browsers.chrome.bug
             ? html`<chromedash-link
                 href=${this.feature.browsers.chrome.bug}
@@ -370,54 +372,47 @@ export class ChromedashFeatureHighlights extends LitElement {
 
     if (this.canDeleteFeature) {
       deleteItem = html`
-          <sl-menu-item id="delete-feature"
-              @click=${this.handleDeleteFeature}>
-              Delete
-          </sl-menu-item>
+        <sl-menu-item id="delete-feature" @click=${this.handleDeleteFeature}>
+          Delete
+        </sl-menu-item>
       `;
     }
 
     if (this.canEditFeature) {
       if (this.isOnHold) {
         offHoldItem = html`
-        <sl-menu-item
-        @click=${this.handleTakeOffHold}>
-        Take off hold
-        </sl-menu-item>
-      `;
+          <sl-menu-item @click=${this.handleTakeOffHold}>
+            Take off hold
+          </sl-menu-item>
+        `;
       } else {
         onHoldItem = html`
-        <sl-menu-item
-        @click=${this.handlePlaceOnHold}>
-        Place on hold
-        </sl-menu-item>
-      `;
+          <sl-menu-item @click=${this.handlePlaceOnHold}>
+            Place on hold
+          </sl-menu-item>
+        `;
       }
     }
 
     return html`
-    <sl-dropdown placement="left-start">
-          <sl-icon-button
-            library="material"
-            name="more_vert_24px"
-            label="Feature menu"
-            style="font-size: 1.3rem;"
-            slot="trigger"
-    ></sl-icon-button>
-    <sl-menu>
-    ${onHoldItem}
-    ${offHoldItem}
-    ${deleteItem}
-    </sl-menu>
-        </sl-dropdown>
+      <sl-dropdown placement="left-start">
+        <sl-icon-button
+          library="material"
+          name="more_vert_24px"
+          label="Feature menu"
+          style="font-size: 1.3rem;"
+          slot="trigger"
+        ></sl-icon-button>
+        <sl-menu> ${onHoldItem} ${offHoldItem} ${deleteItem} </sl-menu>
+      </sl-dropdown>
     `;
   }
 
   render() {
     return html`
       <sl-details summary="Overview" ?open=${true}>
-      <section class="card ${this.isOnHold() ? 'on-hold' : ''}">
-        ${this.renderDotDotDotMenu()}
+        <section class="card ${this.isOnHold() ? 'on-hold' : ''}">
+          ${this.renderDotDotDotMenu()}
           ${this.feature.is_enterprise_featqcure
             ? this.renderEnterpriseFeatureContent()
             : this.renderFeatureContent()}
