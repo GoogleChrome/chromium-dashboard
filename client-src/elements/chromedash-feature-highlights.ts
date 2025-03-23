@@ -71,7 +71,8 @@ export class ChromedashFeatureHighlights extends LitElement {
 
   isOnHold() {
     return (
-      this.feature.browsers.status.val === IMPLEMENTATION_STATUS.ON_HOLD[0]
+      this.feature?.browsers.chrome.status.val ===
+      IMPLEMENTATION_STATUS.ON_HOLD[0]
     );
   }
 
