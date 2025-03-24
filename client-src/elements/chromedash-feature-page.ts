@@ -446,7 +446,7 @@ export class ChromedashFeaturePage extends LitElement {
   handleTakeOffHold() {
     if (
       !confirm(
-        'Take this feature off hold?  That indicates that it is under active development.'
+        'Take this feature off hold? That indicates that it is under active development.'
       )
     )
       return;
