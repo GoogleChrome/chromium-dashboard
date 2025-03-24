@@ -424,11 +424,10 @@ export class ChromedashFeaturePage extends LitElement {
 
   handlePlaceOnHold() {
     if (
-      !confirm(
-        'Place this feature on hold? It will not appear on the roadmap.'
-      )
-    )
+      !confirm('Place this feature on hold? It will not appear on the roadmap.')
+    ) {
       return;
+    }
 
     const submitBody = {
       feature_changes: {
@@ -448,8 +447,9 @@ export class ChromedashFeaturePage extends LitElement {
       !confirm(
         'Take this feature off hold? That indicates that it is under active development.'
       )
-    )
+    ) {
       return;
+    }
 
     const submitBody = {
       feature_changes: {
