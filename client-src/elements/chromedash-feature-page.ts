@@ -425,7 +425,7 @@ export class ChromedashFeaturePage extends LitElement {
   handlePlaceOnHold() {
     if (
       !confirm(
-        'Place this feature on hold?  It will not appear on the roadmap.'
+        'Place this feature on hold? It will not appear on the roadmap.'
       )
     )
       return;
