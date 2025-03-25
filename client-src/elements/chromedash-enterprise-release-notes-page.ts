@@ -1,7 +1,8 @@
 import {css, html, LitElement, TemplateResult} from 'lit';
-import {customElement, state} from 'lit/decorators.js';
+import {customElement, state, property} from 'lit/decorators.js';
+import {SlDialog, SlTextarea} from '@shoelace-style/shoelace';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import {Feature} from '../js-src/cs-client.js';
+import {Feature, User} from '../js-src/cs-client.js';
 import {
   ENTERPRISE_FEATURE_CATEGORIES,
   ENTERPRISE_PRODUCT_CATEGORY,
@@ -27,6 +28,8 @@ interface Channels {
 
 @customElement('chromedash-enterprise-release-notes-page')
 export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
+  @property({attribute: false})
+  user!: User;
   @state()
   currentChromeBrowserUpdates: Feature[] = [];
   @state()
@@ -45,6 +48,8 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   channels!: Channels;
   @state()
   selectedMilestone?: number;
+  @state()
+  editingFeatureIds = new Set<number>();
 
   static get styles() {
     return [
@@ -126,6 +131,10 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         td:not(:first-child),
         th:not(:first-child) {
           text-align: center;
+        }
+
+        .edit-button {
+          float: right;
         }
 
         .screenshots {
@@ -510,6 +519,95 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     );
   }
 
+  userCanEdit(f: Feature) {
+    return (
+      this.user &&
+      (this.user.can_edit_all || this.user.editable_features.includes(f.id))
+    );
+  }
+
+  startEditing(featureId) {
+    let newEditing = new Set(this.editingFeatureIds);
+    newEditing.add(featureId);
+    this.editingFeatureIds = newEditing;
+  }
+
+  cancel(featureId) {
+    let newEditing = new Set(this.editingFeatureIds);
+    newEditing.delete(featureId);
+    this.editingFeatureIds = newEditing;
+  }
+
+  save(f: Feature) {
+    let textarea: SlTextarea = this.shadowRoot?.querySelector(
+      '#edit-feature-' + f.id
+    ) as SlTextarea;
+    let newSummary = textarea?.value;
+    if (newSummary === undefined) {
+      return;
+    }
+    const submitBody = {
+      feature_changes: {
+        id: f.id,
+        summary: newSummary,
+      },
+      stages: [],
+      has_changes: true,
+    };
+    window.csClient
+      .updateFeature(submitBody)
+      .then(resp => {
+        f.summary = newSummary;
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
+      })
+      .finally(() => {
+        this.cancel(f.id);
+      });
+  }
+
+  renderOrEditFeatureSummary(f: Feature) {
+    let editButton = html``;
+    if (this.userCanEdit(f)) {
+      editButton = html`
+        <sl-button
+          @click=${() => {
+            this.startEditing(f.id);
+          }}
+          class="edit-button"
+          size="small"
+          >Edit</sl-button
+        >
+      `;
+    }
+    if (!this.editingFeatureIds.has(f.id)) {
+      return html` ${editButton}
+        <p class="summary preformatted">${f.summary}</p>`;
+    }
+    return html`
+      <sl-textarea id="edit-feature-${f.id}" value=${f.summary} size="small">
+      </sl-textarea>
+      <sl-button
+        @click=${() => {
+          this.save(f);
+        }}
+        size="small"
+        variant="primary"
+        >Save</sl-button
+      >
+      <sl-button
+        @click=${() => {
+          this.cancel(f.id);
+        }}
+        size="small"
+        >Cancel</sl-button
+      >
+    `;
+  }
+
   renderReleaseNotesDetailsSection(
     title,
     features,
@@ -531,7 +629,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
               ${f.first_enterprise_notification_milestone} - Last Updated:
               ${f.updated.when} >
             </p>
-            <p class="summary preformatted">${f.summary}</p>
+            ${this.renderOrEditFeatureSummary(f)}
             <ul>
               ${f.stages.map(
                 s =>
