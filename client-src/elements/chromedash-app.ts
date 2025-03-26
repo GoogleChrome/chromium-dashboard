@@ -286,7 +286,7 @@ export class ChromedashApp extends LitElement {
     window.setTimeout(() => {
       // Timeout required since the form may not be created yet.
       // Allow form submit to proceed without warning.
-      const form = this.pageComponent.shadowRoot.querySelector('form');
+      const form = this.pageComponent.shadowRoot?.querySelector('form');
       if (form) {
         this.addBeforeUnloadHandler();
 

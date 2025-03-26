@@ -567,23 +567,6 @@ export const ALL_FIELDS: Record<string, Field> = {
     help_text: html` Comma separated keywords used only in search.`,
   },
 
-  impl_status_chrome: {
-    type: 'select',
-    choices: IMPLEMENTATION_STATUS,
-    label: 'Implementation status',
-    help_text: html` Select the appropriate Chromium development stage. If you
-    select In developer trial, Origin trial, or Enabled by default, be sure to
-    set the equivalent Process stage.`,
-  },
-
-  set_impl_status: {
-    type: 'checkbox',
-    name: 'impl_status_chrome',
-    label: 'Implementation status',
-    help_text: html` Check this box to update the implementation status of this
-    feature in Chromium.`,
-  },
-
   bug_url: {
     type: 'input',
     attrs: URL_FIELD_ATTRS,
