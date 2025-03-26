@@ -527,13 +527,13 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   }
 
   startEditing(featureId) {
-    let newEditing = new Set(this.editingFeatureIds);
+    const newEditing = new Set(this.editingFeatureIds);
     newEditing.add(featureId);
     this.editingFeatureIds = newEditing;
   }
 
   cancel(featureId) {
-    let newEditing = new Set(this.editingFeatureIds);
+    const newEditing = new Set(this.editingFeatureIds);
     newEditing.delete(featureId);
     this.editingFeatureIds = newEditing;
   }
