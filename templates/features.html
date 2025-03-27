@@ -28,13 +28,6 @@
           </button>
         </div>
       </div>
-
-      <!-- Continuity ID Input Section  -->
-      <div class="continuity-id-section">
-        <label for="continuity_id">Continuity ID (optional)</label>
-        <input type="text" id="continuity_id" name="continuity_id" placeholder="Enter Continuity ID">
-        <small>If this feature has a related security review, enter the ID.</small>
-      </div>
       
       <chromedash-featurelist
         {% if user %} user="{{user_json}}" {% endif %}
