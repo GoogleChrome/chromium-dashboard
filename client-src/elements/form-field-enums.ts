@@ -596,6 +596,7 @@ export const REVIEW_STATUS_CHOICES: Record<string, [number, string]> = {
   REVIEW_ISSUES_OPEN: [2, 'Issues open'],
   REVIEW_ISSUES_ADDRESSED: [3, 'Issues addressed'],
   REVIEW_NA: [4, 'Not applicable'],
+  REVIEW_NO_ISSUES: [5, 'No issues found'],
 };
 
 // Signals from other implementations in an intent-to-ship
