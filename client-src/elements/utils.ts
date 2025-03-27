@@ -242,7 +242,7 @@ export function getFieldValueFromFeature(
     owner: 'browsers.chrome.owners',
     editors: 'editors',
     search_tags: 'tags',
-    spec_link: 'standards.spec',
+    spec_links: 'standards.specs',
     standard_maturity: 'standards.maturity.text',
     sample_links: 'resources.samples',
     docs_links: 'resources.docs',

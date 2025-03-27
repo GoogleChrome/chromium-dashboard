@@ -400,7 +400,7 @@ def feature_entry_to_json_verbose(
     'initial_public_proposal_url': fe.initial_public_proposal_url,
     'explainer_links': fe.explainer_links,
     'requires_embedder_support': fe.requires_embedder_support,
-    'spec_link': fe.spec_link,
+    'spec_links': fe.spec_links,
     'api_spec': fe.api_spec,
     'interop_compat_risks': fe.interop_compat_risks,
     'all_platforms': fe.all_platforms,
@@ -496,7 +496,7 @@ def feature_entry_to_json_verbose(
     'enterprise_feature_categories': fe.enterprise_feature_categories or [],
     'enterprise_product_category': fe.enterprise_product_category or ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE,
     'standards': {
-      'spec': fe.spec_link,
+      'specs': fe.spec_links,
       'maturity': {
         'text': STANDARD_MATURITY_CHOICES.get(fe.standard_maturity),
         'short_text': STANDARD_MATURITY_SHORT.get(fe.standard_maturity),
@@ -552,7 +552,7 @@ def feature_entry_to_json_basic(fe: FeatureEntry,
     'updated': {'by': fe.updater_email, 'when': _date_to_str(fe.updated)},
     'accurate_as_of': _date_to_str(fe.accurate_as_of),
     'standards': {
-      'spec': fe.spec_link,
+      'specs': fe.spec_links,
       'maturity': {
         'text': STANDARD_MATURITY_CHOICES.get(fe.standard_maturity),
         'short_text': STANDARD_MATURITY_SHORT.get(fe.standard_maturity),

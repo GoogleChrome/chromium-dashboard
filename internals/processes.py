@@ -82,7 +82,8 @@ PI_INITIAL_PUBLIC_PROPOSAL = ProgressItem(
 PI_MOTIVATION = ProgressItem('Motivation', 'motivation')
 PI_EXPLAINER = ProgressItem('Explainer', 'explainer_links')
 
-PI_SPEC_LINK = ProgressItem('Spec link', 'spec_link')
+# here plural?
+PI_SPEC_LINK = ProgressItem('Spec links', 'spec_links')
 PI_SPEC_MENTOR = ProgressItem('Spec mentor', 'spec_mentors')
 PI_DRAFT_API_SPEC = ProgressItem('Draft API spec')
 PI_I2P_EMAIL = ProgressItem(
@@ -678,11 +679,11 @@ PROGRESS_DETECTORS = {
     'Doc links':
     lambda f, _: f.doc_links and f.doc_links[0],
 
-    'Spec link':
-    lambda f, _: f.spec_link,
+    'Spec links':
+    lambda f, _: f.spec_links,
 
-    'Draft API spec':
-    lambda f, _: f.spec_link,
+    'Draft API specs':
+    lambda f, _: f.spec_links,
 
     'API spec':
     lambda f, _: f.api_spec,

@@ -78,7 +78,7 @@ FEATURE_FIELD_DATA_TYPES: FIELD_INFO_DATA_TYPE = [
   ('search_tags', 'split_str'),
   ('security_review_status', 'int'),
   ('security_risks', 'str'),
-  ('spec_link', 'link'),
+  ('spec_links', 'links'),
   ('spec_mentor_emails', 'emails'),
   ('standard_maturity', 'int'),
   ('summary', 'str'),
