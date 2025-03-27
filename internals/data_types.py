@@ -241,7 +241,7 @@ class VerboseFeatureDict(TypedDict):
   initial_public_proposal_url: str | None
   explainer_links: list[str]
   requires_embedder_support: bool
-  spec_link: str | None
+  spec_links: list[str]
   api_spec: str | None
   prefixed: bool | None
   interop_compat_risks: str | None

@@ -56,6 +56,23 @@ class ChromedashFeature extends LitElement {
     super.update(changedProperties);
   }
 
+  updated(changedProps: Map<string, any>) {
+    if (
+      (changedProps.has('open') || changedProps.has('feature')) &&
+      this.open &&
+      this.feature?.standards?.specs?.length > 1
+    ) {
+      const dropdown = this.shadowRoot?.querySelector('sl-dropdown');
+      const trigger = dropdown?.querySelector('[slot="trigger"]');
+      if (dropdown && trigger && !trigger.hasAttribute('listeners-attached')) {
+        trigger.setAttribute('listeners-attached', 'true');
+
+        trigger.addEventListener('mouseenter', () => dropdown.show());
+        dropdown.addEventListener('mouseleave', () => dropdown.hide());
+      }
+    }
+  }
+
   _initializeValues() {
     this._crBugNumber = this._getCrBugNumber();
     this._newBugUrl = this._getNewBugUrl();
@@ -538,20 +555,43 @@ class ChromedashFeature extends LitElement {
                       this.feature.standards.maturity.val}"
                       .max="${MAX_STANDARDS_VAL}"
                     ></chromedash-color-status>
-                    ${this.feature.standards.spec
+                    ${Array.isArray(this.feature.standards.specs) &&
+                    this.feature.standards.specs.length === 1
                       ? html`
                           <a
-                            href="${this.feature.standards.spec}"
+                            href="${this.feature.standards.specs[0]}"
                             target="_blank"
-                            >${this.feature.standards.maturity.short_text}</a
+                            rel="noopener noreferrer"
                           >
+                            ${this.feature.standards.maturity.short_text}
+                          </a>
                         `
-                      : html`
-                          <label
-                            >${this.feature.standards.maturity
-                              .short_text}</label
-                          >
-                        `}
+                      : Array.isArray(this.feature.standards.specs) &&
+                          this.feature.standards.specs.length > 1
+                        ? html`
+                            <sl-dropdown hoist>
+                              <a slot="trigger" class="spec-link-label">
+                                ${this.feature.standards.maturity.short_text}
+                                <sl-icon name="chevron-down"></sl-icon>
+                              </a>
+                              <sl-menu>
+                                ${this.feature.standards.specs.map(
+                                  spec =>
+                                    html`<sl-menu-item
+                                      @click="${() =>
+                                        window.open(spec, '_blank')}"
+                                    >
+                                      ${spec}
+                                    </sl-menu-item>`
+                                )}
+                              </sl-menu>
+                            </sl-dropdown>
+                          `
+                        : html`
+                            <label class="spec-label-only">
+                              ${this.feature.standards.maturity.short_text}
+                            </label>
+                          `}
                   </span>
                 </div>
                 <div style="font-size:smaller">

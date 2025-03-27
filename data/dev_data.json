@@ -50,7 +50,7 @@
       ],
       "requires_embedder_support": false,
       "standard_maturity": 1,
-      "spec_link": "https://example.com/spec_link",
+      "spec_links": ["https://example.com/spec_link"],
       "api_spec": true,
       "spec_mentor_emails": [
         "mentor_1@example.com",
@@ -140,7 +140,7 @@
       ],
       "requires_embedder_support": false,
       "standard_maturity": 1,
-      "spec_link": "https://example.com/spec_link",
+      "spec_links": ["https://example.com/spec_link"],
       "api_spec": true,
       "spec_mentor_emails": [
         "mentor_1@example.com",
@@ -232,7 +232,7 @@
       ],
       "requires_embedder_support": true,
       "standard_maturity": 4,
-      "spec_link": "https://example.com/spec_link",
+      "spec_links": ["https://example.com/spec_link"],
       "api_spec": false,
       "spec_mentor_emails": [
         "mentor_3@example.com",
@@ -323,7 +323,7 @@
       ],
       "requires_embedder_support": true,
       "standard_maturity": 4,
-      "spec_link": "https://example.com/spec_link",
+      "spec_links": ["https://example.com/spec_link"],
       "api_spec": false,
       "spec_mentor_emails": [
         "mentor_3@example.com",

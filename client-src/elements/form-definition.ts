@@ -9,7 +9,7 @@ export interface FormattedFeature {
   feature_type: number;
   intent_stage: number;
   accurate_as_of: boolean;
-  spec_link?: string;
+  spec_links?: string[];
   standard_maturity: number;
   tag_review_status?: number;
   security_review_status?: number;
@@ -92,7 +92,7 @@ export function formatFeatureForEdit(feature: Feature): FormattedFeature {
     accurate_as_of: true,
 
     // from feature.standards
-    spec_link: feature.standards.spec,
+    spec_links: feature.standards.specs,
     standard_maturity: feature.standards.maturity.val,
 
     tag_review_status: feature.tag_review_status_int,
@@ -278,7 +278,7 @@ const FLAT_PROTOTYPE_FIELDS: MetadataFields = {
       name: 'Prototype a solution',
       fields: [
         'motivation',
-        'spec_link',
+        'spec_links',
         'standard_maturity',
         'api_spec',
         'spec_mentors',
@@ -469,7 +469,7 @@ const PSA_IMPLEMENT_FIELDS: MetadataFields = {
     // Standardization
     {
       name: 'Start prototyping',
-      fields: ['motivation', 'spec_link', 'standard_maturity'],
+      fields: ['motivation', 'spec_links', 'standard_maturity'],
     },
   ],
 };
@@ -502,7 +502,7 @@ const DEPRECATION_PLAN_FIELDS: MetadataFields = {
   sections: [
     {
       name: 'Write up deprecation plan',
-      fields: ['motivation', 'spec_link'],
+      fields: ['motivation', 'spec_links'],
     },
   ],
 };

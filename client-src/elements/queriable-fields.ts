@@ -130,7 +130,7 @@ export const QUERIABLE_FIELDS: QueryField[] = [
   },
 
   // 'standards.maturity': Feature.standard_maturity,
-  // 'standards.spec': Feature.spec_link,
+  // 'standards.spec': Feature.spec_links,
   // 'api_spec': Feature.api_spec,
   // 'spec_mentors': Feature.spec_mentors,
   // 'security_review_status': Feature.security_review_status,

@@ -759,14 +759,14 @@ export const ALL_FIELDS: Record<string, Field> = {
       ),
   },
 
-  spec_link: {
-    type: 'input',
-    attrs: URL_FIELD_ATTRS,
+  spec_links: {
+    type: 'textarea',
+    attrs: MULTI_URL_FIELD_ATTRS,
     required: false,
-    label: 'Spec link',
-    help_text: html` Link to the spec, if and when available. When implementing
-    a spec update, please link to a heading in a published spec rather than a
-    pull request when possible.`,
+    label: 'Spec link(s)',
+    help_text: html` Link to the spec(s) (one URL per line), if and when
+    available. When implementing a spec update, please link to a heading in a
+    published spec rather than a pull request when possible.`,
     extra_help: html`<p>
       Specifications should be written in the format and hosted in the URL space
       expected by your target standards body. For example, the W3C expects

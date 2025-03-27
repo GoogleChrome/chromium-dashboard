@@ -84,7 +84,7 @@ def add_features(server: str, after: datetime, detailsAfter: datetime):
     fe.devrel_emails = f['browsers']['chrome']['devrel']
     fe.owner_emails = f['browsers']['chrome']['owners']
     fe.prefixed = f['browsers']['chrome']['prefixed']
-    fe.spec_link = f['standards']['spec']
+    fe.spec_links = f['standards']['specs']
     fe.standard_maturity = f['standards']['maturity']['val']
     fe.ff_views = f['browsers']['ff']['view']['val']
     fe.ff_views_link = f['browsers']['ff']['view']['url']

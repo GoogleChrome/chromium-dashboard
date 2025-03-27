@@ -131,7 +131,7 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   explainer_links = ndb.StringProperty(repeated=True)
   requires_embedder_support = ndb.BooleanProperty(default=False)
   standard_maturity = ndb.IntegerProperty(required=True, default=UNSET_STD)
-  spec_link = ndb.StringProperty()
+  spec_links = ndb.StringProperty(repeated=True)
   api_spec = ndb.BooleanProperty(default=False)
   spec_mentor_emails = ndb.StringProperty(repeated=True)
   interop_compat_risks = ndb.TextProperty()
