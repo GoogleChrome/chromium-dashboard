@@ -37,8 +37,6 @@ class ChromedashAddStageDialog extends LitElement {
   canSubmit = false;
   @property({attribute: false})
   onSubmitCustomHandler: ((stage: {stage_type: number}) => void) | null = null;
-  @property({type: String}) continuityId = '';
-
 
   @query('#stage_create_select')
   stageCreateSelect;
@@ -137,28 +135,10 @@ class ChromedashAddStageDialog extends LitElement {
 
   render() {
     return html`
-      <input
-        type="text"
-        id="continuity-id"
-        .value=${this.continuityId}
-        @input=${(e) => this.continuityId = e.target.value}
-        placeholder="Enter Continuity ID (Optional)"
-      >
       <sl-dialog label="Create a new stage">
         <p>Here, you can add additional stages to your feature as needed.</p>
         ${this.renderStageSelect()}
       </sl-dialog>
     `;
-  }
-
-  async handleFormSubmit(event) {
-  event.preventDefault(); // Prevent default form submission
-  
-  if (!(await this.validateContinuityId())) return;
-
-  const stageData = {
-    // Collect form data
-    continuityId: this.continuityId || null,
-    };
   }
 }
