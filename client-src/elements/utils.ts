@@ -695,3 +695,11 @@ export function isVerifiedWithinGracePeriod(
 
   return true;
 }
+
+
+export const METRICS_TYPE_AND_VIEW_TO_SUBTITLE = {
+  csspopularity: 'CSS usage metrics > all properties',
+  cssanimated: 'CSS usage metrics > animated properties',
+  featurepopularity: 'HTML & JavaScript usage metrics > all features',
+  webfeaturepopularity: 'Web features usage metrics > all features',
+};

@@ -37,6 +37,10 @@ class FeatureObserver(StableInstance):
   pass
 
 
+class WebDXFeature(StableInstance):
+  pass
+
+
 class HistogramModel(ndb.Model):
   """Container for a histogram."""
 
@@ -44,19 +48,23 @@ class HistogramModel(ndb.Model):
   property_name = ndb.StringProperty(required=True)
 
   @classmethod
-  def get_all(self):
+  def get_all(cls):
     output = {}
-    buckets = self.query().fetch(None)
+    buckets = cls.query().fetch(None)
     for bucket in buckets:
       output[bucket.bucket_id] = bucket.property_name
     return output
 
+
 class CssPropertyHistogram(HistogramModel):
   pass
+
 
 class FeatureObserverHistogram(HistogramModel):
   pass
 
+
+# TODO(jrobbins): This should be WebDXFeatureHistogram
 class WebDXFeatureObserver(HistogramModel):
   MISSING_FEATURE_ID = 'Missing feature'
   TBD_FEATURE_ID = 'TBD'

@@ -2,7 +2,7 @@ import {LitElement, css, html} from 'lit';
 import {property} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import './chromedash-stack-rank';
-import {showToastMessage} from './utils';
+import {showToastMessage, METRICS_TYPE_AND_VIEW_TO_SUBTITLE} from './utils';
 
 export class ChromedashStackRankPage extends LitElement {
   static get styles() {
@@ -94,11 +94,8 @@ export class ChromedashStackRankPage extends LitElement {
   }
 
   renderSubheader() {
-    const typeText = this.type == 'css' ? 'CSS' : 'HTML & JavaScript';
-    const viewText = this.view == 'animated' ? 'animated' : 'all';
-    const propText = this.type == 'css' ? 'properties' : 'features';
-    const subTitleText = `${typeText} usage metrics > ${viewText} ${propText} > stack rank`;
-    return html`<h2>${subTitleText}</h2>`;
+    const subTitleText = METRICS_TYPE_AND_VIEW_TO_SUBTITLE[this.type + this.view];
+    return html`<h2>${subTitleText} > stack rank</h2>`;
   }
 
   renderSearchBar() {
