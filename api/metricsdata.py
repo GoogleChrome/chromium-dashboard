@@ -261,7 +261,7 @@ class FeatureBucketsHandler(basehandlers.FlaskHandler):
 
   TYPE_TO_HISTOGRAM_CLASS = {
       'cssprops': metrics_models.CssPropertyHistogram,
-      'props': metrics_models.FeatureObserverHistogram,
+      'featureprops': metrics_models.FeatureObserverHistogram,
       'webfeatureprops': metrics_models.WebDXFeatureObserver,
       }
 
