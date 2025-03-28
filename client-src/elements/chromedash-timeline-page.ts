@@ -45,7 +45,8 @@ export class ChromedashTimelinePage extends LitElement {
   }
 
   renderSubheader() {
-    const subTitleText = METRICS_TYPE_AND_VIEW_TO_SUBTITLE[this.type + this.view];
+    const subTitleText =
+      METRICS_TYPE_AND_VIEW_TO_SUBTITLE[this.type + this.view];
     return html`
       <div id="subheader">
         <h2 id="breadcrumbs">

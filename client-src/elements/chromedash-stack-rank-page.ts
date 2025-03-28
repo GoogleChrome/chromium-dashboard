@@ -94,7 +94,8 @@ export class ChromedashStackRankPage extends LitElement {
   }
 
   renderSubheader() {
-    const subTitleText = METRICS_TYPE_AND_VIEW_TO_SUBTITLE[this.type + this.view];
+    const subTitleText =
+      METRICS_TYPE_AND_VIEW_TO_SUBTITLE[this.type + this.view];
     return html`<h2>${subTitleText} > stack rank</h2>`;
   }
 
