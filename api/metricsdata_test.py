@@ -195,12 +195,20 @@ class FeatureBucketsHandlerTest(testing_config.CustomTestCase):
     self.prop_4 = metrics_models.FeatureObserverHistogram(
         bucket_id=4, property_name='a feat')
     self.prop_4.put()
+    self.prop_5 = metrics_models.WebDXFeatureObserver(
+        bucket_id=5, property_name='Popover')
+    self.prop_5.put()
+    self.prop_6 = metrics_models.WebDXFeatureObserver(
+        bucket_id=6, property_name='HTTP/3')
+    self.prop_6.put()
 
   def tearDown(self):
     self.prop_1.key.delete()
     self.prop_2.key.delete()
     self.prop_3.key.delete()
     self.prop_4.key.delete()
+    self.prop_5.key.delete()
+    self.prop_6.key.delete()
 
   def test_get_template_data__css(self):
     with test_app.test_request_context('/data/blink/cssprops'):
@@ -211,7 +219,15 @@ class FeatureBucketsHandlerTest(testing_config.CustomTestCase):
 
   def test_get_template_data__js(self):
     with test_app.test_request_context('/data/blink/features'):
-      actual_buckets = self.handler.get_template_data(prop_type='features')
+      actual_buckets = self.handler.get_template_data(prop_type='featureprops')
     self.assertEqual(
         [(4, 'a feat'), (3, 'b feat')],
+        actual_buckets)
+
+  def test_get_template_data__webfeatures(self):
+    with test_app.test_request_context('/data/blink/features'):
+      actual_buckets = self.handler.get_template_data(
+          prop_type='webfeatureprops')
+    self.assertEqual(
+        [(6, 'HTTP/3'), (5, 'Popover')],
         actual_buckets)

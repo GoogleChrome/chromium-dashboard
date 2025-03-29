@@ -15,6 +15,15 @@ indexes:
   properties:
   - name: blink_components
   - name: name
+- kind: WebDXFeature
+  properties:
+  - name: bucket_id
+  - name: date
+- kind: WebDXFeature
+  properties:
+  - name: bucket_id
+  - name: date
+    direction: desc
 - kind: AnimatedProperty
   properties:
   - name: bucket_id
