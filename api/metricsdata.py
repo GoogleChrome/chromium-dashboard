@@ -117,6 +117,15 @@ class FeatureObserverTimelineHandler(TimelineHandler):
     return super(FeatureObserverTimelineHandler, self).get_template_data()
 
 
+class WebFeatureTimelineHandler(TimelineHandler):
+
+  CACHE_KEY = TimelineHandler.CACHE_PREFIX + 'webfeature_timeline'
+  MODEL_CLASS = metrics_models.WebDXFeature
+
+  def get_template_data(self, **kwargs):
+    return super(WebFeatureTimelineHandler, self).get_template_data()
+
+
 class FeatureHandler(basehandlers.FlaskHandler):
 
   HTTP_CACHE_TYPE = 'private'
@@ -236,19 +245,33 @@ class FeatureObserverPopularityHandler(FeatureHandler):
     return super(FeatureObserverPopularityHandler, self).get_template_data()
 
 
+class WebFeaturePopularityHandler(FeatureHandler):
+
+  CACHE_KEY = FeatureHandler.CACHE_PREFIX + 'webfeature_popularity'
+  MODEL_CLASS = metrics_models.WebDXFeature
+  PROPERTY_CLASS = metrics_models.WebDXFeatureObserver
+
+  def get_template_data(self, **kwargs):
+    return super(WebFeaturePopularityHandler, self).get_template_data()
+
+
 class FeatureBucketsHandler(basehandlers.FlaskHandler):
   HTTP_CACHE_TYPE = 'private'
   JSONIFY = True
 
+  TYPE_TO_HISTOGRAM_CLASS = {
+      'cssprops': metrics_models.CssPropertyHistogram,
+      'featureprops': metrics_models.FeatureObserverHistogram,
+      'webfeatureprops': metrics_models.WebDXFeatureObserver,
+      }
+
   def get_template_data(self, **kwargs):
+    properties = []
     prop_type = kwargs.get('prop_type', None)
-    if prop_type == 'cssprops':
+    histogram_class = self.TYPE_TO_HISTOGRAM_CLASS.get(prop_type)
+    if histogram_class:
       properties = sorted(
-          metrics_models.CssPropertyHistogram.get_all().items(),
-          key=lambda x:x[1])
-    else:
-      properties = sorted(
-          metrics_models.FeatureObserverHistogram.get_all().items(),
+          histogram_class.get_all().items(),
           key=lambda x:x[1])
 
     return properties

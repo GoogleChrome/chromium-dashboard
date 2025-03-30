@@ -173,6 +173,10 @@ UMA_QUERIES = [
   UmaQuery(query_name='usecounter.animatedcssproperties',
            model_class=metrics_models.AnimatedProperty,
            property_map_class=metrics_models.CssPropertyHistogram),
+  UmaQuery(query_name='usecounter.webdxfeatures',
+           model_class=metrics_models.WebDXFeature,
+           # TODO(jrobbins): This should be WebDXFeatureHistogram
+           property_map_class=metrics_models.WebDXFeatureObserver),
 ]
 
 

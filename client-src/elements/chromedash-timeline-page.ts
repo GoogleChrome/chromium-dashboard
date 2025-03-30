@@ -1,7 +1,7 @@
 import {LitElement, css, html} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import './chromedash-timeline.js';
-import {showToastMessage} from './utils.js';
+import {showToastMessage, METRICS_TYPE_AND_VIEW_TO_SUBTITLE} from './utils.js';
 import {property} from 'lit/decorators.js';
 import {Property} from './chromedash-timeline.js';
 
@@ -45,16 +45,14 @@ export class ChromedashTimelinePage extends LitElement {
   }
 
   renderSubheader() {
-    const typeText = this.type == 'css' ? 'CSS' : 'HTML & JavaScript';
-    const viewText = this.view == 'animated' ? 'animated' : 'all';
-    const propText = this.type == 'css' ? 'properties' : 'features';
-    const subTitleText = `${typeText} usage metrics > ${viewText} ${propText} > timeline`;
+    const subTitleText =
+      METRICS_TYPE_AND_VIEW_TO_SUBTITLE[this.type + this.view];
     return html`
       <div id="subheader">
         <h2 id="breadcrumbs">
           <a href="/metrics/${this.type}/${this.view}">
             <iron-icon icon="chromestatus:arrow-back"></iron-icon> </a
-          >${subTitleText}
+          >${subTitleText} > timeline
         </h2>
       </div>
     `;

@@ -480,6 +480,9 @@ export class ChromedashApp extends LitElement {
     page('/metrics/feature/timeline/popularity', () =>
       page.redirect('/metrics/feature/popularity')
     );
+    page('/metrics/webfeature/timeline/popularity', () =>
+      page.redirect('/metrics/webfeature/popularity')
+    );
     page('/reports/external_reviews', ctx => {
       if (
         !this.setupNewPage(
