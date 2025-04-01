@@ -113,7 +113,7 @@
 
 /**
  * @typedef {Object} FeatureDictInnerStandardsInfo
- * @property {string} [spec]
+ * @property {string[]} specs
  * @property {FeatureDictInnerMaturityInfo} maturity
  */
 
@@ -230,7 +230,7 @@
  * @property {string} [initial_public_proposal_url]
  * @property {string[]} explainer_links
  * @property {boolean} requires_embedder_support
- * @property {string} [spec_link]
+ * @property {string} [spec_links]
  * @property {string} [api_spec]
  * @property {boolean} [prefixed]
  * @property {string} [interop_compat_risks]

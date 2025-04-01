@@ -51,7 +51,7 @@ def feature_to_legacy_json(f: Feature) -> dict[str, Any]:
   }
   d['accurate_as_of'] = d.pop('accurate_as_of', None)
   d['standards'] = {
-    'spec': d.pop('spec_link', None),
+    'specs': d.pop('spec_links', None),
     'status': {
       'text': STANDARDIZATION[f.standardization],
       'val': d.pop('standardization', None),

@@ -79,7 +79,7 @@ def _get_strings_dict(fe: FeatureEntry) -> dict[str, list[str|None]]:
       'initial_public_proposal_url': [fe.initial_public_proposal_url],
       'explainer': fe.explainer_links,
       # TODO: standard_maturity
-      'standards.spec': [fe.spec_link],
+      'standards.spec': fe.spec_links,
       'spec_mentors': fe.spec_mentor_emails,
       'interop_compat_risks': [fe.interop_compat_risks],
       'all_platforms_descr': [fe.all_platforms_descr],
