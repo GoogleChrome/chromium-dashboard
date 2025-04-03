@@ -1,0 +1,23 @@
+Metadata-Version: 2.2
+Name: webstatus-openapi
+Version: 1.0.0
+Summary: webstatus.dev API
+Home-page: 
+Author: OpenAPI Generator community
+Author-email: team@openapitools.org
+Keywords: OpenAPI,OpenAPI-Generator,webstatus.dev API
+Description-Content-Type: text/markdown
+Requires-Dist: urllib3<2.1.0,>=1.25.3
+Requires-Dist: python-dateutil
+Requires-Dist: pydantic>=2
+Requires-Dist: typing-extensions>=4.7.1
+Dynamic: author
+Dynamic: author-email
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: keywords
+Dynamic: requires-dist
+Dynamic: summary
+
+    A tool to monitor and track the status of all Web Platform features across dimensions that are related to availability and implementation quality across browsers, and adoption by web developers. 
+    

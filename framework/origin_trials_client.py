@@ -371,3 +371,41 @@ def extend_origin_trial(trial_id: str, end_milestone: int, intent_url: str):
   except requests.exceptions.RequestException as e:
     logging.exception('Failed to get response from origin trials API.')
     raise e
+
+
+def create_security_review_issue(
+    feature_id: int, gate_id: int, continuity_id: int):
+  """Send a request to create a new security review in IssueTracker.
+  
+  Raises:
+    requests.exceptions.RequestException: If the request fails to connect or
+      the HTTP status code is not successful.
+  """
+  if settings.DEV_MODE:
+    logging.info('Creation request will not be sent to origin trials API '
+                 'in local environment.')
+    return
+  key = secrets.get_ot_api_key()
+  # Return if no API key is found.
+  if key is None:
+    return
+
+  access_token = _get_ot_access_token()
+  url = (f'{settings.OT_API_URL}/v1/security-review-issues:create')
+  headers = {'Authorization': f'Bearer {access_token}'}
+  json = {
+    'feature_id': feature_id,
+    'gate_id': gate_id,
+    'continuity_id': continuity_id,
+  }
+  
+  try:
+    response = requests.post(
+        url, headers=headers, params={'key': key}, json=json)
+    logging.info(response.text)
+    response.raise_for_status()
+  except requests.exceptions.RequestException as e:
+    logging.exception('Failed to get response from origin trials API.')
+    raise e
+  response_json = response.json()
+  return response_json['issue_id'], response_json['failed_reason']
