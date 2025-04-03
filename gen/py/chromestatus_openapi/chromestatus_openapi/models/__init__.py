@@ -77,4 +77,5 @@ from chromestatus_openapi.models.success_message import SuccessMessage
 from chromestatus_openapi.models.survey_answers import SurveyAnswers
 from chromestatus_openapi.models.token_refresh_response import TokenRefreshResponse
 from chromestatus_openapi.models.user_permissions import UserPermissions
+from chromestatus_openapi.models.verify_continuity_issue_response import VerifyContinuityIssueResponse
 from chromestatus_openapi.models.vote import Vote

@@ -1395,6 +1395,15 @@ components:
       allOf:
         -  $ref: '#/components/schemas/StageField'
         -  $ref: '#/components/schemas/MilestoneSetField'
+    VerifyContinuityIssueResponse:
+      type: object
+      properties:
+        verification_status:
+          type: boolean
+        verification_failure_reason:
+          type: string
+        launch_issue_id:
+          type: integer
     CreateLaunchIssueRequest:
       type: object
       properties:

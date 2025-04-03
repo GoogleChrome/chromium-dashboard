@@ -70,6 +70,12 @@ class SetUpTrialRequest(TypedDict):
   announcement_groups_owners: list[str]
   trial_contacts: list[str]
 
+class VerificationResult(TypedDict, total=False):
+    """Represents the result of a continuity ID verification."""
+    launch_issue_id: int
+    verification_status: str
+    verification_failure_reason: str
+
 
 def get_trials_list() -> list[dict[str, Any]]:
   """Get a list of all origin trials.
@@ -437,3 +443,47 @@ def create_launch_issue(
     raise
 
   return issue_id, failure_reason
+
+def verify_continuity_issue(continuity_id: int) -> VerificationResult:
+  """Verifies the status of an existing continuity ID in IssueTracker, and
+        returns a launch issue ID if it exists.
+
+  Returns:
+    A dictionary containing verification status and potentially a launch
+    issue ID.
+
+  Raises:
+    requests.exceptions.RequestException: If the request fails to connect or
+      the HTTP status code is not successful.
+    ValueError: If the API key is not configured in the environment.
+  """
+  if settings.DEV_MODE:
+    logging.info(
+      'DEV_MODE: Skipping API call and returning mock data for '
+      f'continuity ID {continuity_id}.')
+    return {
+        'verification_status': 'VERIFIED',
+        'launch_issue_id': 12345
+    }
+  key = secrets.get_ot_api_key()
+  if key is None:
+    raise ValueError("Origin trials API key not found.")
+
+  access_token = _get_ot_access_token()
+  url = (
+      f'{settings.OT_API_URL}/v1/security-review-issues/{continuity_id}:verify')
+  headers = {'Authorization': f'Bearer {access_token}'}
+  try:
+    response = requests.get(
+        url, headers=headers, params={'key': key})
+    logging.info(response.text)
+    response.raise_for_status()
+  except requests.exceptions.RequestException as e:
+    logging.exception('Failed to get response from origin trials API.')
+    raise e
+  response_json = response.json()
+  return {
+    'verification_status': response_json.get('verification_status'),
+    'verification_failure_reason': response_json.get('verification_failure_reason'),
+    'launch_issue_id': response_json.get('launch_issue_id'),
+  }

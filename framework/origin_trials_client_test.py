@@ -445,3 +445,88 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
     
     self.assertIsNone(issue_id)
     self.assertEqual(failure_reason, 'Invalid feature ID.')
+
+  @mock.patch('requests.get')
+  @mock.patch('framework.secrets.get_ot_api_key')
+  @mock.patch('settings.DEV_MODE', True)
+  def test_verify_continuity_issue__dev_mode(
+      self, mock_api_key_get, mock_requests_get):
+    """In DEV_MODE, the function should return mock data without external calls."""
+    continuity_id = 999
+    result = origin_trials_client.verify_continuity_issue(continuity_id)
+
+    self.assertEqual(result, {
+        'verification_status': 'VERIFIED',
+        'launch_issue_id': 12345
+    })
+    # Ensure no external calls were made in dev mode.
+    mock_api_key_get.assert_not_called()
+    mock_requests_get.assert_not_called()
+
+  @mock.patch('framework.secrets.get_ot_api_key')
+  def test_verify_continuity_issue__no_api_key(self, mock_api_key_get):
+    """If no API key is found, a ValueError should be raised."""
+    mock_api_key_get.return_value = None
+    continuity_id = 100
+
+    with self.assertRaisesRegex(ValueError, "Origin trials API key not found."):
+        origin_trials_client.verify_continuity_issue(continuity_id)
+
+    mock_api_key_get.assert_called_once()
+
+  @mock.patch('requests.get')
+  @mock.patch('framework.origin_trials_client._get_ot_access_token')
+  @mock.patch('framework.secrets.get_ot_api_key')
+  def test_verify_continuity_issue__success(
+      self, mock_api_key_get, mock_get_token, mock_requests_get):
+    """A successful API response should be parsed and returned correctly."""
+    continuity_id = 101
+    fake_key = 'fake_api_key'
+    fake_token = 'fake_bearer_token'
+    expected_response = {
+        'verification_status': 'VERIFIED_OK',
+        'launch_issue_id': 54321,
+        'verification_failure_reason': None
+    }
+
+    mock_api_key_get.return_value = fake_key
+    mock_get_token.return_value = fake_token
+    # Configure the mock response from requests.get
+    mock_requests_get.return_value = mock.MagicMock(
+        status_code=200,
+        json=lambda: expected_response
+    )
+
+    result = origin_trials_client.verify_continuity_issue(continuity_id)
+
+    self.assertEqual(result, expected_response)
+    mock_api_key_get.assert_called_once()
+    mock_get_token.assert_called_once()
+    expected_url = (f'{settings.OT_API_URL}/v1/security-review-issues/'
+                    f'{continuity_id}:verify')
+    mock_requests_get.assert_called_once_with(
+        expected_url,
+        headers={'Authorization': f'Bearer {fake_token}'},
+        params={'key': fake_key}
+    )
+    mock_requests_get.return_value.raise_for_status.assert_called_once()
+
+  @mock.patch('requests.get')
+  @mock.patch('framework.origin_trials_client._get_ot_access_token')
+  @mock.patch('framework.secrets.get_ot_api_key')
+  def test_verify_continuity_issue__api_http_error(
+      self, mock_api_key_get, mock_get_token, mock_requests_get):
+    """An HTTP error from the API should raise a RequestException."""
+    continuity_id = 102
+    mock_api_key_get.return_value = 'fake_key'
+    mock_get_token.return_value = 'fake_token'
+
+    # Configure the mock to simulate an HTTP 404 Not Found error.
+    mock_requests_get.return_value.raise_for_status.side_effect = (
+        requests.exceptions.HTTPError("404 Client Error: Not Found"))
+
+    with self.assertRaises(requests.exceptions.HTTPError):
+      origin_trials_client.verify_continuity_issue(continuity_id)
+
+    mock_requests_get.assert_called_once()
+    mock_requests_get.return_value.raise_for_status.assert_called_once()

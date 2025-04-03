@@ -89,6 +89,7 @@ chromestatus_openapi/models/success_message.py
 chromestatus_openapi/models/survey_answers.py
 chromestatus_openapi/models/token_refresh_response.py
 chromestatus_openapi/models/user_permissions.py
+chromestatus_openapi/models/verify_continuity_issue_response.py
 chromestatus_openapi/models/vote.py
 chromestatus_openapi/openapi/openapi.yaml
 chromestatus_openapi/test/__init__.py

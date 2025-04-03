@@ -77,4 +77,5 @@ export * from './SuccessMessage';
 export * from './SurveyAnswers';
 export * from './TokenRefreshResponse';
 export * from './UserPermissions';
+export * from './VerifyContinuityIssueResponse';
 export * from './Vote';

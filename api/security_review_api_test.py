@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 from unittest import mock
 
 import flask
 import requests
 import werkzeug.exceptions  # Flask HTTP stuff.
+
+from chromestatus_openapi.models import VerifyContinuityIssueResponse
 
 import testing_config  # Must be imported before the module under test.
 from api import security_review_api
@@ -54,12 +55,66 @@ class SecurityReviewAPITest(testing_config.CustomTestCase):
         'feature_id': self.feature_1_id,
         'gate_id': self.gate_1_id,
     }
+    self.continuity_id = 123
 
   def tearDown(self):
     testing_config.sign_out()
     for kind in [FeatureEntry, Gate, Stage]:
       for entity in kind.query():
         entity.key.delete()
+
+  @mock.patch('framework.origin_trials_client.verify_continuity_issue')
+  def test_get__success_verified(self, mock_verify):
+    """The handler returns a valid response when the issue is verified."""
+    expected_dict = {
+        'verification_status': True,
+        'verification_failure_reason': None,
+        'launch_issue_id': 98765
+    }
+    mock_verify.return_value = expected_dict
+
+    with test_app.test_request_context(self.request_path, method='GET'):
+      result = self.handler.do_get(continuity_id=self.continuity_id)
+
+    self.assertEqual(VerifyContinuityIssueResponse.from_dict(expected_dict), result)
+    mock_verify.assert_called_once_with(self.continuity_id)
+
+  @mock.patch('framework.origin_trials_client.verify_continuity_issue')
+  def test_get__success_not_verified(self, mock_verify):
+    """The handler returns a valid response when verification fails."""
+    expected_dict = {
+        'verification_status': False,
+        'verification_failure_reason': 'ISSUE_NOT_FOUND',
+        'launch_issue_id': None
+    }
+    mock_verify.return_value = expected_dict
+
+    with test_app.test_request_context(self.request_path, method='GET'):
+      result = self.handler.do_get(continuity_id=self.continuity_id)
+
+    self.assertEqual(VerifyContinuityIssueResponse.from_dict(expected_dict), result)
+    mock_verify.assert_called_once_with(self.continuity_id)
+
+  def test_get__bad_request_missing_id(self):
+    """Handler aborts with 400 if continuity_id is missing."""
+    with test_app.test_request_context(self.request_path, method='GET'):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.do_get(continuity_id=None)
+
+  def test_get__bad_request_invalid_id_type(self):
+    """Handler aborts with 400 if continuity_id is not an integer."""
+    with test_app.test_request_context(self.request_path, method='GET'):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.do_get(continuity_id='not-an-integer')
+
+  @mock.patch('framework.origin_trials_client.verify_continuity_issue')
+  def test_get__upstream_request_exception(self, mock_verify):
+    """Handler aborts with 500 if the OT API call fails."""
+    mock_verify.side_effect = requests.exceptions.RequestException('Network timeout')
+
+    with test_app.test_request_context(self.request_path, method='GET'):
+      with self.assertRaises(werkzeug.exceptions.InternalServerError):
+        self.handler.do_get(continuity_id=self.continuity_id)
 
   @mock.patch('framework.origin_trials_client.create_launch_issue')
   def test_do_post__success(self, mock_create_issue):
