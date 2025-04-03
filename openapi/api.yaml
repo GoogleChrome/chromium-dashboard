@@ -1450,6 +1450,19 @@ components:
       allOf:
         -  $ref: '#/components/schemas/StageField'
         -  $ref: '#/components/schemas/MilestoneSetField'
+    CreateSecurityReviewIssueRequest:
+      type: object
+      properties:
+        feature_id:
+          type: integer
+        gate_id:
+          type: integer
+        continuity_id:
+          type: integer
+      required:
+        - feature_id
+        - gate_id
+        - continuity_id
     StageField:
       type: object
       properties:

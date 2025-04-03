@@ -26,6 +26,7 @@ chromestatus_openapi/models/components_users_response.py
 chromestatus_openapi/models/counter_entry.py
 chromestatus_openapi/models/create_account_request.py
 chromestatus_openapi/models/create_origin_trial_request.py
+chromestatus_openapi/models/create_security_review_issue_request.py
 chromestatus_openapi/models/delete_account200_response.py
 chromestatus_openapi/models/dismiss_cue_request.py
 chromestatus_openapi/models/error_message.py

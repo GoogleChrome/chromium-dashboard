@@ -2356,6 +2356,19 @@ components:
           value: "{}"
       title: CreateOriginTrialRequest
       type: object
+    CreateSecurityReviewIssueRequest:
+      properties:
+        feature_id:
+          type: integer
+        gate_id:
+          type: integer
+        continuity_id:
+          type: integer
+      required:
+      - continuity_id
+      - feature_id
+      - gate_id
+      type: object
     StageField:
       properties:
         announcement_url:
