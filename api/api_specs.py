@@ -38,6 +38,7 @@ FEATURE_FIELD_DATA_TYPES: FIELD_INFO_DATA_TYPE = [
   ('bug_url', 'link'),
   ('category', 'int'),
   ('cc_emails', 'emails'),
+  ('continuity_id', 'int'),
   ('debuggability', 'str'),
   ('devrel_emails', 'emails'),
   ('devtrial_instructions', 'link'),

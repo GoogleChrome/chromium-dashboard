@@ -410,8 +410,13 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'security_review_status_int': 2,
       'privacy_review_status': 'Pending',
       'privacy_review_status_int': 1,
+<<<<<<< HEAD
       'security_continuity_id': 123,
       'security_launch_issue_id': 456,
+=======
+      'continuity_id': 123,
+      'launch_issue_id': 456,
+>>>>>>> 8c9104cb (Add security review fields)
       'editors': ['feature_editor@example.com', 'owner_1@example.com'],
       'creator': 'creator@example.com',
       'comments': 'notes',
