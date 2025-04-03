@@ -413,7 +413,12 @@ export class ChromedashFeaturePage extends LitElement {
   }
 
   handleArchiveFeature() {
-    if (!confirm('Archive feature? It will only be visible to users who can edit it')) return;
+    if (
+      !confirm(
+        'Archive feature? It will only be visible to users who can edit it'
+      )
+    )
+      return;
 
     window.csClient.doDelete(`/features/${this.feature.id}`).then(resp => {
       if (resp.message === 'Done') {
@@ -424,7 +429,9 @@ export class ChromedashFeaturePage extends LitElement {
 
   handleSuspend() {
     if (
-      !confirm('Suspend development of this feature? It will not appear on the roadmap.')
+      !confirm(
+        'Suspend development of this feature? It will not appear on the roadmap.'
+      )
     ) {
       return;
     }
@@ -591,8 +598,8 @@ export class ChromedashFeaturePage extends LitElement {
     if (this.feature.deleted) {
       warnings.push(html`
         <div id="archived" class="warning">
-          This feature is archived. It does not appear in feature lists
-          and is only viewable by users who can edit it.
+          This feature is archived. It does not appear in feature lists and is
+          only viewable by users who can edit it.
         </div>
       `);
     }
