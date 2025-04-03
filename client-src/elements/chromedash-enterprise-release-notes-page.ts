@@ -125,7 +125,6 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
 
         .toremove {
           font-style: italic;
-          font-weight: bold;
         }
 
         td:not(:first-child),
@@ -558,6 +557,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       .updateFeature(submitBody)
       .then(resp => {
         f.summary = newSummary;
+        f.updated.when = (new Date()).toISOString();
       })
       .catch(() => {
         showToastMessage(
@@ -622,12 +622,17 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
           html` <section class="feature">
             <strong>${f.name}</strong>
             <p class="toremove">
-              < To remove -
-              <a target="_blank" href="/feature/${f.id}">Feature details</a> -
-              Owners: ${f.browsers.chrome.owners.join(', ')} - Editors:
-              ${(f.editors || []).join(', ')} - First Notice:
-              ${f.first_enterprise_notification_milestone} - Last Updated:
-              ${f.updated.when} >
+              <b>< To remove</b>
+              - <a target="_blank" href="/feature/${f.id}">Feature details</a> -
+              - <b>Owners:</b> ${f.browsers.chrome.owners.join(', ')}
+              - <b>Editors:</b> ${(f.editors || []).join(', ')}
+              - <b>First Notice:</b>
+              ${f.first_enterprise_notification_milestone}
+              - <b>Last Updated:</b>
+              <a href="/feature/${f.id}/activity" target="_blank">
+              <sl-relative-time date=${f.updated.when}></sl-relative-time>
+              </a>
+              <b>></b>
             </p>
             ${this.renderOrEditFeatureSummary(f)}
             <ul>
