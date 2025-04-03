@@ -412,8 +412,8 @@ export class ChromedashFeaturePage extends LitElement {
     return this.user?.is_admin || this.userCanEdit();
   }
 
-  handleDeleteFeature() {
-    if (!confirm('Delete feature?')) return;
+  handleArchiveFeature() {
+    if (!confirm('Archive feature? It will only be visible to users who can edit it')) return;
 
     window.csClient.doDelete(`/features/${this.feature.id}`).then(resp => {
       if (resp.message === 'Done') {
@@ -422,9 +422,9 @@ export class ChromedashFeaturePage extends LitElement {
     });
   }
 
-  handlePlaceOnHold() {
+  handleSuspend() {
     if (
-      !confirm('Place this feature on hold? It will not appear on the roadmap.')
+      !confirm('Suspend development of this feature? It will not appear on the roadmap.')
     ) {
       return;
     }
@@ -442,10 +442,10 @@ export class ChromedashFeaturePage extends LitElement {
     });
   }
 
-  handleTakeOffHold() {
+  handleResume() {
     if (
       !confirm(
-        'Take this feature off hold? That indicates that it is under active development.'
+        'Resume active development of this feature? It will appear on the roadmap if it has milestones set.'
       )
     ) {
       return;
@@ -590,8 +590,8 @@ export class ChromedashFeaturePage extends LitElement {
     const warnings: TemplateResult[] = [];
     if (this.feature.deleted) {
       warnings.push(html`
-        <div id="deleted" class="warning">
-          This feature is marked as deleted. It does not appear in feature lists
+        <div id="archived" class="warning">
+          This feature is archived. It does not appear in feature lists
           and is only viewable by users who can edit it.
         </div>
       `);
@@ -765,9 +765,9 @@ export class ChromedashFeaturePage extends LitElement {
         .featureLinks=${this.featureLinks}
         ?canDeleteFeature=${this.canDeleteFeature()}
         ?canEditFeature=${this.userCanEdit()}
-        @delete=${this.handleDeleteFeature}
-        @onhold=${this.handlePlaceOnHold}
-        @offhold=${this.handleTakeOffHold}
+        @archive=${this.handleArchiveFeature}
+        @suspend=${this.handleSuspend}
+        @resume=${this.handleResume}
       ></chromedash-feature-highlights>
       ${this.renderFeatureDetails()}
     `;
