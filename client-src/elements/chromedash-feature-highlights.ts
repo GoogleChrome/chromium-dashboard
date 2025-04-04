@@ -47,10 +47,10 @@ export class ChromedashFeatureHighlights extends LitElement {
           margin-right: -16px;
           margin-top: -20px;
         }
-        #delete-feature::part(base) {
+        #archive-feature::part(base) {
           color: var(--error-color);
         }
-        .on-hold {
+        .suspended {
           background: var(--table-header-background);
         }
       `,
@@ -69,23 +69,23 @@ export class ChromedashFeatureHighlights extends LitElement {
   @property({type: Boolean})
   canEditFeature = false;
 
-  isOnHold() {
+  isSuspended() {
     return (
       this.feature?.browsers.chrome.status.val ===
       IMPLEMENTATION_STATUS.ON_HOLD[0]
     );
   }
 
-  handleDeleteFeature() {
-    this.dispatchEvent(new Event('delete', {bubbles: true, composed: true}));
+  handleArchiveFeature() {
+    this.dispatchEvent(new Event('archive', {bubbles: true, composed: true}));
   }
 
-  handlePlaceOnHold() {
-    this.dispatchEvent(new Event('onhold', {bubbles: true, composed: true}));
+  handleSuspend() {
+    this.dispatchEvent(new Event('suspend', {bubbles: true, composed: true}));
   }
 
-  handleTakeOffHold() {
-    this.dispatchEvent(new Event('offhold', {bubbles: true, composed: true}));
+  handleResume() {
+    this.dispatchEvent(new Event('resume', {bubbles: true, composed: true}));
   }
 
   renderEnterpriseFeatureContent() {
@@ -226,7 +226,7 @@ export class ChromedashFeatureHighlights extends LitElement {
           : nothing}
         <br />
         <p>
-          ${this.isOnHold()
+          ${this.isSuspended()
             ? html` <label>Implementation status:</label>
                 <b>Development work is on hold</b>`
             : nothing}
@@ -367,29 +367,29 @@ export class ChromedashFeatureHighlights extends LitElement {
     if (!this.canDeleteFeature && !this.canEditFeature) {
       return nothing;
     }
-    let deleteItem = html``;
-    let onHoldItem = html``;
-    let offHoldItem = html``;
+    let archiveItem = html``;
+    let suspendItem = html``;
+    let resumeItem = html``;
 
     if (this.canDeleteFeature) {
-      deleteItem = html`
-        <sl-menu-item id="delete-feature" @click=${this.handleDeleteFeature}>
-          Delete
+      archiveItem = html`
+        <sl-menu-item id="archive-feature" @click=${this.handleArchiveFeature}>
+          Archive feature
         </sl-menu-item>
       `;
     }
 
     if (this.canEditFeature) {
-      if (this.isOnHold()) {
-        offHoldItem = html`
-          <sl-menu-item @click=${this.handleTakeOffHold}>
-            Take off hold
+      if (this.isSuspended()) {
+        resumeItem = html`
+          <sl-menu-item @click=${this.handleResume}>
+            Resume active development
           </sl-menu-item>
         `;
       } else {
-        onHoldItem = html`
-          <sl-menu-item @click=${this.handlePlaceOnHold}>
-            Place on hold
+        suspendItem = html`
+          <sl-menu-item @click=${this.handleSuspend}>
+            Suspend development
           </sl-menu-item>
         `;
       }
@@ -404,7 +404,7 @@ export class ChromedashFeatureHighlights extends LitElement {
           style="font-size: 1.3rem;"
           slot="trigger"
         ></sl-icon-button>
-        <sl-menu> ${onHoldItem} ${offHoldItem} ${deleteItem} </sl-menu>
+        <sl-menu> ${suspendItem} ${resumeItem} ${archiveItem} </sl-menu>
       </sl-dropdown>
     `;
   }
@@ -412,7 +412,7 @@ export class ChromedashFeatureHighlights extends LitElement {
   render() {
     return html`
       <sl-details summary="Overview" ?open=${true}>
-        <section class="card ${this.isOnHold() ? 'on-hold' : ''}">
+        <section class="card ${this.isSuspended() ? 'suspended' : ''}">
           ${this.renderDotDotDotMenu()}
           ${this.feature.is_enterprise_featqcure
             ? this.renderEnterpriseFeatureContent()
