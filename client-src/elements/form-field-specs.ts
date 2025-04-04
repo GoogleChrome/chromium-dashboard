@@ -1393,8 +1393,8 @@ export const ALL_FIELDS: Record<string, Field> = {
     initial: ROLLOUT_PLAN.ROLLOUT_100[0],
     label: 'Rollout plan',
     help_text: html`Normally, WP features that ship in a milestone go to all
-    users of that milestone.  If your feature needs to roll out in any
-    other way, mark that here.`,
+    users of that milestone. If your feature needs to roll out in any other way,
+    mark that here.`,
   },
 
   origin_trial_feedback_url: {
