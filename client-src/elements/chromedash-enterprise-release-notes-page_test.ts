@@ -32,7 +32,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
             },
           },
           updated: {
-            when: 'feature1 updated',
+            when: '2000-03-01 13:05:00',
           },
           screenshot_links: [],
         },
@@ -59,7 +59,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
             },
           },
           updated: {
-            when: 'updated when',
+            when: '2000-03-04 13:05:00',
           },
           screenshot_links: [],
         },
@@ -92,7 +92,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
             },
           },
           updated: {
-            when: 'updated when',
+            when: '2000-03-04 18:25:55',
           },
           screenshot_links: ['https://example.com/screenshot1'],
         },
@@ -129,7 +129,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
             },
           },
           updated: {
-            when: 'feature 4 updated',
+            when: '2000-03-04 13:05:12',
           },
           screenshot_links: ['https://example.com/screenshot1', 'https://example.com/screenshot2'],
         },
@@ -166,7 +166,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
             },
           },
           updated: {
-            when: 'updated when',
+            when: '2000-03-04 11:22:33',
           },
           screenshot_links: ['https://example.com/screenshot1'],
         },
@@ -195,7 +195,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
             },
           },
           updated: {
-            when: 'updated when',
+            when: '2000-03-04 22:33:44',
           },
           screenshot_links: [],
         },
@@ -228,7 +228,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
             },
           },
           updated: {
-            when: 'updated when',
+            when: '2000-03-04 00:11:22',
           },
           screenshot_links: [],
         },
@@ -257,7 +257,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
             },
           },
           updated: {
-            when: 'updated when',
+            when: '2000-03-04 55:44:33',
           },
           screenshot_links: [],
         },
@@ -348,7 +348,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
     assert.notInclude(children[13].textContent, '✓');
     assert.notInclude(children[14].textContent, '✓');
     assert.include(children[15].textContent, '✓');
-  
+
     assert.equal(children[16].textContent, 'normal feature with shipping stage');
     assert.notInclude(children[17].textContent, '✓');
     assert.notInclude(children[18].textContent, '✓');
@@ -361,7 +361,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
     assert.equal(children[23].textContent, 'Management');
 
     assert.equal(children[24].textContent, 'Nothing');
-  
+
     // Validate upcoming chrome browser updates
     assert.equal(children[25].textContent, 'Upcoming Chrome Browser updates');
     assert.equal(children[26].textContent, 'Security / Privacy');
@@ -415,7 +415,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
     //     assert.equal(
     //       '< To remove - Feature details - ' +
     //       'Owners: owner - Editors: editor1, editor2 - First Notice: n_milestone_feat_3 - ' +
-    //       'Last Updated: updated when >',
+    //       'Last Updated: ( ) >',
     //       normalizedTextContent(features[0].querySelector('.toremove')));
     //     assert.equal(
     //       'feature 3 summary',
@@ -466,7 +466,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
     //     assert.equal(screenshots[1].src, 'https://example.com/screenshot2');
     //     assert.equal(screenshots[1].alt, 'Feature screenshot 2');
     //   }
-    
+
     //   // Feature 2
     //   {
     //     assert.equal(
@@ -475,7 +475,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
     //     assert.equal(
     //       '< To remove - Feature details - ' +
     //       'Owners: owner - Editors: editor1, editor2 - First Notice: n_milestone_feat_7 - ' +
-    //       'Last Updated: updated when >',
+    //       'Last Updated: ( ) >',
     //       normalizedTextContent(features[1].querySelector('.toremove')));
     //     assert.equal(
     //       'normal feature summary',
@@ -500,7 +500,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
       const features = Array.from(releaseNotes[2].querySelectorAll('.feature'));
       assert.isEmpty(features);
     }
-  
+
     // Test Upcoming Chrome Browser updates
     {
       assert.equal(
@@ -514,7 +514,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
         assert.equal(
           '< To remove - Feature details - ' +
           'Owners: owner - Editors: editor1, editor2 - First Notice: n_milestone_feat_6 - ' +
-          'Last Updated: updated when >',
+            'Last Updated: ( ) >',
           normalizedTextContent(features[0].querySelector('.toremove')));
         assert.equal(
           'feature 6 summary',
@@ -528,7 +528,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
         assert.isEmpty(screenshots);
       }
     }
-    
+
     // Test Upcoming Chrome Enterprise Core
     {
       assert.equal(
@@ -552,7 +552,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
         assert.equal(
           '< To remove - Feature details - ' +
           'Owners: owner - Editors: editor1, editor2 - First Notice: n_milestone_feat_8 - ' +
-          'Last Updated: updated when >',
+            'Last Updated: >',
           normalizedTextContent(features[0].querySelector('.toremove')));
         assert.equal(
           'future premium feature summary',
