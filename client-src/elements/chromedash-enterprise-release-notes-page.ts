@@ -14,6 +14,7 @@ import {
 import {
   parseRawQuery,
   renderHTMLIf,
+  renderRelativeDate,
   showToastMessage,
   updateURLParams,
 } from './utils.js';
@@ -537,6 +538,23 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     this.editingFeatureIds = newEditing;
   }
 
+  nowString() {
+    const now = new Date();
+    const formatter = new Intl.DateTimeFormat('en-CA', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: 'numeric',
+      minute: 'numeric',
+      second: 'numeric',
+      hour12: false,
+      timeZone: 'UTC',
+    });
+    let nowStr = formatter.format(now); // YYYY-MM-DD, HH:mm:ss
+    nowStr = nowStr.replace(',', '');
+    return nowStr;
+  }
+
   save(f: Feature) {
     let textarea: SlTextarea = this.shadowRoot?.querySelector(
       '#edit-feature-' + f.id
@@ -557,7 +575,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       .updateFeature(submitBody)
       .then(resp => {
         f.summary = newSummary;
-        f.updated.when = (new Date()).toISOString();
+        f.updated.when = this.nowString();
       })
       .catch(() => {
         showToastMessage(
@@ -624,13 +642,16 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
             <p class="toremove">
               <b>< To remove</b>
               - <a target="_blank" href="/feature/${f.id}">Feature details</a> -
-              - <b>Owners:</b> ${f.browsers.chrome.owners.join(', ')}
-              - <b>Editors:</b> ${(f.editors || []).join(', ')}
-              - <b>First Notice:</b>
-              ${f.first_enterprise_notification_milestone}
+              - <b>Owners:</b> ${f.browsers.chrome.owners.join(', ')} -
+              <b>Editors:</b> ${(f.editors || []).join(', ')} -
+              <b>First Notice:</b> ${f.first_enterprise_notification_milestone}
               - <b>Last Updated:</b>
-              <a href="/feature/${f.id}/activity" target="_blank">
-              <sl-relative-time date=${f.updated.when}></sl-relative-time>
+              <a
+                href="/feature/${f.id}/activity"
+                target="_blank"
+                title=${f.updated.when}
+              >
+                ${renderRelativeDate(f.updated.when)}
               </a>
               <b>></b>
             </p>
