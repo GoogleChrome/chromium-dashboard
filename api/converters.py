@@ -390,6 +390,8 @@ def feature_entry_to_json_verbose(
     'finch_name': fe.finch_name,
     'non_finch_justification': fe.non_finch_justification,
     'ongoing_constraints': fe.ongoing_constraints,
+    'rollout_plan': fe.rollout_plan,
+    'rollout_plan_displayname': ROLLOUT_PLAN_DISPLAYNAMES[fe.rollout_plan],
     'motivation': fe.motivation,
     'devtrial_instructions': fe.devtrial_instructions,
     'activation_risks': fe.activation_risks,

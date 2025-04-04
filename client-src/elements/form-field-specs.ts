@@ -14,6 +14,7 @@ import {
   PLATFORM_CATEGORIES,
   REVIEW_STATUS_CHOICES,
   ROLLOUT_IMPACT,
+  ROLLOUT_PLAN,
   SHIPPED_MILESTONE_FIELDS,
   STAGE_TYPES_DEV_TRIAL,
   STAGE_TYPES_ORIGIN_TRIAL,
@@ -1384,6 +1385,16 @@ export const ALL_FIELDS: Record<string, Field> = {
     to the codebase while implementing this feature? We prefer to avoid features
     that require or assume a specific architecture. For most features, the
     answer is "None."`,
+  },
+
+  rollout_plan: {
+    type: 'select',
+    choices: ROLLOUT_PLAN,
+    initial: ROLLOUT_PLAN.ROLLOUT_100[0],
+    label: 'Rollout plan',
+    help_text: html`Normally, WP features that ship in a milestone go to all
+    users of that milestone. If your feature needs to roll out in any other way,
+    mark that here.`,
   },
 
   origin_trial_feedback_url: {

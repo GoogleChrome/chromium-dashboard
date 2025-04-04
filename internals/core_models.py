@@ -116,6 +116,7 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   finch_name = ndb.StringProperty()
   non_finch_justification = ndb.TextProperty()
   ongoing_constraints = ndb.TextProperty()
+  rollout_plan = ndb.IntegerProperty(required=True, default=ROLLOUT_100)
 
   # Topic: Adoption (reviewed by API Owners.  Auto-approved gate later?)
   motivation = ndb.TextProperty()

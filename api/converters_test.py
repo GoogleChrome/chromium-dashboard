@@ -384,6 +384,8 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'new_crbug_url': 'https://bugs.chromium.org/p/chromium/issues/entry?components=Blink&cc=feature_owner@example.com',
       'non_oss_deps': None,
       'ongoing_constraints': None,
+      'rollout_plan': ROLLOUT_100,
+      'rollout_plan_displayname': ROLLOUT_PLAN_DISPLAYNAMES[ROLLOUT_100],
       'owner_emails': ['feature_owner@example.com'],
       'safari_views': 1,
       'search_tags': [],

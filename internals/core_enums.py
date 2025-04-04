@@ -150,6 +150,19 @@ FEATURE_TYPES = {
     FEATURE_TYPE_ENTERPRISE_ID: 'New Feature or removal affecting enterprises',
 }
 
+# When this Web Platform feature ships, how will it be rolled out to users?
+ROLLOUT_100  = 0
+ROLLOUT_0_THEN_100 = 1
+ROLLOUT_GRADUAL = 2
+ROLLOUT_OTHER = 3
+
+ROLLOUT_PLAN_DISPLAYNAMES = {
+  ROLLOUT_100: 'Will ship enabled for all users',
+  ROLLOUT_0_THEN_100: '(RARE) Ships disabled, then flips on for all users',
+  ROLLOUT_GRADUAL: '(RARE) Experiment users ramp up over time',
+  ROLLOUT_OTHER: "(RARE) It's complicated or unusual",
+}
+
 
 # Intent stages and mapping from stage to stage name.
 INTENT_NONE = 0
@@ -741,6 +754,7 @@ PROPERTY_NAMES_TO_ENUM_DICTS = {
     'browsers.webdev.view': WEB_DEV_VIEWS,
     'rollout_impact': IMPACT_CATEGORIES,
     'rollout_platforms': PLATFORM_CATEGORIES,
+    'rollout_plan': ROLLOUT_PLAN_DISPLAYNAMES,
   }
 
 
