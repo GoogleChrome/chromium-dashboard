@@ -470,6 +470,7 @@ const PSA_PREPARE_TO_SHIP_FIELDS: MetadataFields = {
     {
       name: 'Implementation in Chromium',
       fields: [
+        'rollout_plan',
         'shipped_milestone',
         'shipped_android_milestone',
         'shipped_ios_milestone',
@@ -622,6 +623,7 @@ const DEPRECATION_PREPARE_TO_SHIP_FIELDS: MetadataFields = {
     {
       name: 'Implementation in Chromium',
       fields: [
+        'rollout_plan',
         'shipped_milestone',
         'shipped_android_milestone',
         'shipped_ios_milestone',
