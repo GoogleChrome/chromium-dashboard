@@ -156,12 +156,12 @@ ROLLOUT_0_THEN_100 = 1
 ROLLOUT_GRADUAL = 2
 ROLLOUT_OTHER = 3
 
-ROLLOUT_PLAN_DISPLAYNAMES = collections.OrderedDict([
-  (ROLLOUT_100, 'Will ship enabled for all users'),
-  (ROLLOUT_0_THEN_100, '(RARE) Ships disabled, then flips on for all users'),
-  (ROLLOUT_GRADUAL, '(RARE) Experiment users ramp up over time'),
-  (ROLLOUT_OTHER, "(RARE) It's complicated or unusual"),
-])
+ROLLOUT_PLAN_DISPLAYNAMES = {
+  ROLLOUT_100: 'Will ship enabled for all users',
+  ROLLOUT_0_THEN_100: '(RARE) Ships disabled, then flips on for all users',
+  ROLLOUT_GRADUAL: '(RARE) Experiment users ramp up over time',
+  ROLLOUT_OTHER: "(RARE) It's complicated or unusual",
+}
 
 
 # Intent stages and mapping from stage to stage name.
