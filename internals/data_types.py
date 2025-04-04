@@ -227,6 +227,8 @@ class VerboseFeatureDict(TypedDict):
   finch_name: str | None
   non_finch_justification: str | None
   ongoing_constraints: str | None
+  rollout_plan: int
+  rollout_plan_displayname: str | None
 
   # Topic: Adoption
   motivation: str | None

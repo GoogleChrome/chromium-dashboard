@@ -66,6 +66,7 @@ FEATURE_FIELD_DATA_TYPES: FIELD_INFO_DATA_TYPE = [
   ('name', 'str'),
   ('non_oss_deps', 'str'),
   ('ongoing_constraints', 'str'),
+  ('rollout_plan', 'int'),
   ('other_views_notes', 'str'),
   ('owner_emails', 'emails'),
   ('prefixed', 'bool'),
