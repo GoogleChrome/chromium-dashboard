@@ -199,8 +199,10 @@
   {% endif %}
 {% endif %}
 
-<br><br><h4>Rollout plan</h4>
-{{feature.rollout_plan_displayname}}
+{% if 'ship' in sections_to_show %}
+  <br><br><h4>Rollout plan</h4>
+  {{feature.rollout_plan_displayname}}
+{% endif %}
 
 
 
