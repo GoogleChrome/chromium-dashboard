@@ -12,17 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import concurrent.futures
-import urllib.request
-from base64 import b64decode
+import requests
 
-import flask
-import json5
-import re
-import requests 
-import validators
-
-from chromestatus_openapi.models import (CreateSecurityReviewIssueRequest, SuccessMessage)
+from chromestatus_openapi.models import (
+    CreateLaunchIssueRequest, SuccessMessage)
 
 from framework import permissions
 from framework import basehandlers, origin_trials_client
@@ -37,9 +30,8 @@ class SecurityReviewAPI(basehandlers.APIHandler):
     Returns:
       The issue ID if the security review issue was successfully created.
     """
-    body = CreateSecurityReviewIssueRequest.from_dict(
+    body = CreateLaunchIssueRequest.from_dict(
         self.get_json_param_dict())
-    print(body)
     # Check that feature ID is provided.
     if body.feature_id is None:
       self.abort(400, msg='No feature specified.')
@@ -48,14 +40,16 @@ class SecurityReviewAPI(basehandlers.APIHandler):
     feature: FeatureEntry | None = FeatureEntry.get_by_id(body.feature_id)
     if feature is None:
       self.abort(404, msg=f'Feature {body.feature_id} not found')
+    if feature.security_launch_issue_id is not None:
+      self.abort(400, msg='Feature already has a security review issue.')
 
-    # Validate the user has edit permissions and redirect if needed.
+    # Validate the user has edit permissions.
     redirect_resp = permissions.validate_feature_edit_permission(
         self, body.feature_id)
     if redirect_resp:
       self.abort(403, msg='User does not have permission to edit this feature.')
 
-    # Check that gate_id is priovided.
+    # Check that gate_id is provided.
     if body.gate_id is None:
       self.abort(400, msg='No gate specified.')
     if not isinstance(body.gate_id, int):
@@ -64,25 +58,17 @@ class SecurityReviewAPI(basehandlers.APIHandler):
     if gate is None:
       self.abort(404, msg=f'Gate {body.gate_id} not found')
 
-    # Check that the continuity ID is provided.
-    if body.continuity_id is None:
-      self.abort(400, msg='No continuity ID specified.')
-    try:
-      int(body.continuity_id)
-    except ValueError:
-      self.abort(400, msg='Invalid continuity ID.')
-
     try:
       issue_id, failed_reason = (
-          origin_trials_client.create_security_review_issue())
+          origin_trials_client.create_launch_issue(
+              body.feature_id, body.gate_id, feature.security_continuity_id))
     except requests.exceptions.RequestException:
       self.abort(500, 'Error obtaining origin trial data from API')
     except KeyError:
       self.abort(500, 'Malformed response from origin trials API')
 
     if issue_id is not None:
-      feature.continuity_id = body.continuity_id
-      feature.security_review_issue_id = issue_id
+      feature.security_launch_issue_id = issue_id
       feature.put()
     if failed_reason:
       self.abort(500, failed_reason)

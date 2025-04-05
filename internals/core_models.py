@@ -183,8 +183,8 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   security_risks = ndb.TextProperty()
   security_review_status = ndb.IntegerProperty(default=REVIEW_PENDING)
   privacy_review_status = ndb.IntegerProperty(default=REVIEW_PENDING)
-  continuity_id = ndb.IntegerProperty()
-  launch_issue_id = ndb.IntegerProperty()
+  security_continuity_id = ndb.IntegerProperty()
+  security_launch_issue_id = ndb.IntegerProperty()
 
   # Gate: Testing / Regressions
   ergonomics_risks = ndb.TextProperty()

@@ -16,44 +16,37 @@ import { mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface CreateSecurityReviewIssueRequest
+ * @interface CreateLaunchIssueRequest
  */
-export interface CreateSecurityReviewIssueRequest {
+export interface CreateLaunchIssueRequest {
     /**
      * 
      * @type {number}
-     * @memberof CreateSecurityReviewIssueRequest
+     * @memberof CreateLaunchIssueRequest
      */
     feature_id: number;
     /**
      * 
      * @type {number}
-     * @memberof CreateSecurityReviewIssueRequest
+     * @memberof CreateLaunchIssueRequest
      */
     gate_id: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof CreateSecurityReviewIssueRequest
-     */
-    continuity_id: number;
 }
 
 /**
- * Check if a given object implements the CreateSecurityReviewIssueRequest interface.
+ * Check if a given object implements the CreateLaunchIssueRequest interface.
  */
-export function instanceOfCreateSecurityReviewIssueRequest(value: object): value is CreateSecurityReviewIssueRequest {
+export function instanceOfCreateLaunchIssueRequest(value: object): value is CreateLaunchIssueRequest {
     if (!('feature_id' in value) || value['feature_id'] === undefined) return false;
     if (!('gate_id' in value) || value['gate_id'] === undefined) return false;
-    if (!('continuity_id' in value) || value['continuity_id'] === undefined) return false;
     return true;
 }
 
-export function CreateSecurityReviewIssueRequestFromJSON(json: any): CreateSecurityReviewIssueRequest {
-    return CreateSecurityReviewIssueRequestFromJSONTyped(json, false);
+export function CreateLaunchIssueRequestFromJSON(json: any): CreateLaunchIssueRequest {
+    return CreateLaunchIssueRequestFromJSONTyped(json, false);
 }
 
-export function CreateSecurityReviewIssueRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): CreateSecurityReviewIssueRequest {
+export function CreateLaunchIssueRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): CreateLaunchIssueRequest {
     if (json == null) {
         return json;
     }
@@ -61,11 +54,10 @@ export function CreateSecurityReviewIssueRequestFromJSONTyped(json: any, ignoreD
         
         'feature_id': json['feature_id'],
         'gate_id': json['gate_id'],
-        'continuity_id': json['continuity_id'],
     };
 }
 
-export function CreateSecurityReviewIssueRequestToJSON(value?: CreateSecurityReviewIssueRequest | null): any {
+export function CreateLaunchIssueRequestToJSON(value?: CreateLaunchIssueRequest | null): any {
     if (value == null) {
         return value;
     }
@@ -73,7 +65,6 @@ export function CreateSecurityReviewIssueRequestToJSON(value?: CreateSecurityRev
         
         'feature_id': value['feature_id'],
         'gate_id': value['gate_id'],
-        'continuity_id': value['continuity_id'],
     };
 }
 

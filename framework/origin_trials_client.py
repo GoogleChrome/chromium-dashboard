@@ -373,10 +373,10 @@ def extend_origin_trial(trial_id: str, end_milestone: int, intent_url: str):
     raise e
 
 
-def create_security_review_issue(
-    feature_id: int, gate_id: int, continuity_id: int):
+def create_launch_issue(
+    feature_id: int, gate_id: int, security_continuity_id: int | None=None):
   """Send a request to create a new security review in IssueTracker.
-  
+
   Raises:
     requests.exceptions.RequestException: If the request fails to connect or
       the HTTP status code is not successful.
@@ -396,9 +396,11 @@ def create_security_review_issue(
   json = {
     'feature_id': feature_id,
     'gate_id': gate_id,
-    'continuity_id': continuity_id,
   }
-  
+
+  if security_continuity_id:
+    json['continuity_id'] = security_continuity_id
+
   try:
     response = requests.post(
         url, headers=headers, params={'key': key}, json=json)
@@ -408,4 +410,4 @@ def create_security_review_issue(
     logging.exception('Failed to get response from origin trials API.')
     raise e
   response_json = response.json()
-  return response_json['issue_id'], response_json['failed_reason']
+  return response_json.get('issue_id'), response_json.get('failed_reason')
