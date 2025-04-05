@@ -19,8 +19,8 @@ src/models/ComponentsUser.ts
 src/models/ComponentsUsersResponse.ts
 src/models/CounterEntry.ts
 src/models/CreateAccountRequest.ts
+src/models/CreateLaunchIssueRequest.ts
 src/models/CreateOriginTrialRequest.ts
-src/models/CreateSecurityReviewIssueRequest.ts
 src/models/DeleteAccount200Response.ts
 src/models/DismissCueRequest.ts
 src/models/ErrorMessage.ts

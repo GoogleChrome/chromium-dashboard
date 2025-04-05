@@ -12,78 +12,81 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import concurrent.futures
-import urllib.request
-from base64 import b64decode
+"""
+This module provides the API handler for creating security review issues.
+"""
 
-import flask
-import json5
-import re
-import requests 
-import validators
+import logging
 
-from chromestatus_openapi.models import (CreateSecurityReviewIssueRequest, SuccessMessage)
+import requests
+from chromestatus_openapi.models import CreateLaunchIssueRequest, SuccessMessage
 
-from framework import permissions
-from framework import basehandlers, origin_trials_client
+from framework import basehandlers, origin_trials_client, permissions
 from internals.core_models import FeatureEntry
 from internals.review_models import Gate
 
 class SecurityReviewAPI(basehandlers.APIHandler):
+  """API handler for creating security review issues in the issue tracker."""
 
-  def do_post(self, **kwargs):
-    """Endpoint to create a new security review in IssueTracker.
+  def do_post(self, **kwargs) -> SuccessMessage:
+    """
+    Endpoint to create a new security review in IssueTracker.
+
+    The request body should be a JSON object with the following fields:
+    - feature_id: The ID of the feature to create the review for.
+    - gate_id: The ID of the gate associated with this review.
 
     Returns:
-      The issue ID if the security review issue was successfully created.
+      A success message containing the newly created issue ID.
     """
-    body = CreateSecurityReviewIssueRequest.from_dict(
-        self.get_json_param_dict())
-    print(body)
-    # Check that feature ID is provided.
-    if body.feature_id is None:
-      self.abort(400, msg='No feature specified.')
-    if not isinstance(body.feature_id, int):
-      self.abort(400, msg='Invalid feature ID.')
-    feature: FeatureEntry | None = FeatureEntry.get_by_id(body.feature_id)
-    if feature is None:
-      self.abort(404, msg=f'Feature {body.feature_id} not found')
-
-    # Validate the user has edit permissions and redirect if needed.
-    redirect_resp = permissions.validate_feature_edit_permission(
-        self, body.feature_id)
-    if redirect_resp:
-      self.abort(403, msg='User does not have permission to edit this feature.')
-
-    # Check that gate_id is priovided.
-    if body.gate_id is None:
-      self.abort(400, msg='No gate specified.')
-    if not isinstance(body.gate_id, int):
-      self.abort(400, msg='Invalid gate ID.')
-    gate: Gate | None = Gate.get_by_id(body.gate_id)
-    if gate is None:
-      self.abort(404, msg=f'Gate {body.gate_id} not found')
-
-    # Check that the continuity ID is provided.
-    if body.continuity_id is None:
-      self.abort(400, msg='No continuity ID specified.')
     try:
-      int(body.continuity_id)
-    except ValueError:
-      self.abort(400, msg='Invalid continuity ID.')
+      body = CreateLaunchIssueRequest.from_dict(self.get_json_param_dict())
+    except Exception:
+      self.abort(400, msg='Could not parse request body.')
+
+    feature = self.get_validated_entity(
+      body.feature_id, FeatureEntry)
+
+    if feature.security_launch_issue_id is not None:
+      self.abort(
+        400,msg=(f'Feature {feature.key.integer_id()} '
+                 'already has a security review issue.'))
+
+    permission_error = permissions.validate_feature_edit_permission(
+      self, feature.key.integer_id())
+    if permission_error:
+      self.abort(
+        403, msg='User does not have permission to edit this feature.')
+
+    gate = self.get_validated_entity(body.gate_id, Gate)
 
     try:
-      issue_id, failed_reason = (
-          origin_trials_client.create_security_review_issue())
-    except requests.exceptions.RequestException:
-      self.abort(500, 'Error obtaining origin trial data from API')
+      issue_id, failed_reason = origin_trials_client.create_launch_issue(
+        feature_id=feature.key.integer_id(),
+        gate_id=gate.key.integer_id(),
+        security_continuity_id=feature.security_continuity_id
+      )
+    except requests.exceptions.RequestException as e:
+      logging.error(f"Error calling origin trials API: {e}")
+      self.abort(
+        500, 'Error communicating with the issue creation service.')
     except KeyError:
-      self.abort(500, 'Malformed response from origin trials API')
+      logging.error("Malformed response from origin trials API.")
+      self.abort(
+        500, 'Malformed response from the issue creation service.')
 
-    if issue_id is not None:
-      feature.continuity_id = body.continuity_id
-      feature.security_review_issue_id = issue_id
-      feature.put()
     if failed_reason:
-      self.abort(500, failed_reason)
-    return SuccessMessage(message=f'Security review issue {issue_id} created')
+      self.abort(500, msg=failed_reason)
+
+    if issue_id is None:
+      # If no issue was created and no reason was given, it's an
+      # unexpected state.
+      logging.error("Issue creation returned no ID and no failure reason.")
+      self.abort(
+        500, 'Issue creation failed for an unknown reason.')
+
+    feature.security_launch_issue_id = issue_id
+    feature.put()
+
+    return SuccessMessage(
+      message=f'Security review issue {issue_id} created successfully.')
