@@ -15,7 +15,6 @@
 from unittest import mock
 
 import flask
-import requests
 import werkzeug.exceptions  # Flask HTTP stuff.
 
 import testing_config  # Must be imported before the module under test.

@@ -15,7 +15,6 @@ export * from './CounterEntry';
 export * from './CreateAccountRequest';
 export * from './CreateLaunchIssueRequest';
 export * from './CreateOriginTrialRequest';
-export * from './CreateSecurityReviewIssueRequest';
 export * from './DeleteAccount200Response';
 export * from './DismissCueRequest';
 export * from './ErrorMessage';
