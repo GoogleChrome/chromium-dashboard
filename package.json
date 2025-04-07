@@ -82,7 +82,7 @@
     "@rollup/plugin-typescript": "^12.1.2",
     "@shoelace-style/shoelace": "^2.20.1",
     "@types/jest": "^29.5.14",
-    "@types/node": "^22.13.14",
+    "@types/node": "^22.14.0",
     "@web/test-runner": "^0.20.0",
     "@web/test-runner-playwright": "^0.11.0",
     "@web/test-runner-puppeteer": "^0.18.0",
