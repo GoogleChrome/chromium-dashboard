@@ -90,7 +90,7 @@
     "color-string": ">=2.0.1",
     "del": "^8.0.0",
     "dot-prop": ">=9.0.0",
-    "eslint": "^9.23.0",
+    "eslint": "^9.24.0",
     "eslint-config-prettier": "^10.1.1",
     "glob-parent": ">=6.0.2",
     "gts": "^6.0.2",
