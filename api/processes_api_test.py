@@ -165,7 +165,7 @@ class ProgressAPITest(testing_config.CustomTestCase):
     self.feature_1 = core_models.FeatureEntry(
         name='feature one', summary='sum Z',
         owner_emails=['feature_owner@example.com'],
-        spec_link='fake spec link', category=1, web_dev_views=1,
+        spec_links=['fake spec link'], category=1, web_dev_views=1,
         impl_status_chrome=5, intent_stage=core_enums.INTENT_IMPLEMENT,
         feature_type=0)
     self.feature_1.put()

@@ -294,7 +294,7 @@ QUERIABLE_FIELDS: dict[str, Property] = {
         FeatureEntry.initial_public_proposal_url,
     'explainer': FeatureEntry.explainer_links,
     'requires_embedder_support': FeatureEntry.requires_embedder_support,
-    'standards.spec': FeatureEntry.spec_link,
+    'standards.specs': FeatureEntry.spec_links,
     'api_spec': FeatureEntry.api_spec,
     'spec_mentors': FeatureEntry.spec_mentor_emails,
     'interop_compat_risks': FeatureEntry.interop_compat_risks,
