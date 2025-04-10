@@ -110,7 +110,7 @@
     "path-parse": ">=1.0.7",
     "prettier": "^3.5.3",
     "regenerator-runtime": "^0.14.1",
-    "rollup": "^4.38.0",
+    "rollup": "^4.39.0",
     "rollup-plugin-babel-minify": "^10.0.0",
     "sinon": "^20.0.0",
     "tar": ">=7.4.3",
