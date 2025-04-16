@@ -653,7 +653,8 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
                 title=${f.updated.when}
               >
                 ${renderRelativeDate(f.updated.when)}
-                </a> by ${f.updated.by}
+              </a>
+              by ${f.updated.by}
               <b>></b>
             </p>
             ${this.renderOrEditFeatureSummary(f)}
