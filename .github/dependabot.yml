@@ -13,7 +13,7 @@ updates:
       # Prefix all commit messages with "npm"
       prefix: "npm"
     reviewers:
-      - "kyleju"
+      - "DanielRyanSmith"
       - "jrobbins"
   - package-ecosystem: "docker"
     directory: "/"
