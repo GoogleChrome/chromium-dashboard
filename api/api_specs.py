@@ -28,6 +28,7 @@ FEATURE_FIELD_DATA_TYPES: FIELD_INFO_DATA_TYPE = [
   ('all_platforms_descr', 'str'),
   ('anticipated_spec_changes', 'str'),
   ('api_spec', 'bool'),
+  ('automation_spec', 'bool'),
   ('availability_expectation', 'str'),
   ('blink_components', 'split_str'),
   ('enterprise_impact', 'int'),

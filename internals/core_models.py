@@ -134,6 +134,7 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   standard_maturity = ndb.IntegerProperty(required=True, default=UNSET_STD)
   spec_link = ndb.StringProperty()
   api_spec = ndb.BooleanProperty(default=False)
+  automation_spec = ndb.BooleanProperty(default=False)
   spec_mentor_emails = ndb.StringProperty(repeated=True)
   interop_compat_risks = ndb.TextProperty()
   prefixed = ndb.BooleanProperty()
