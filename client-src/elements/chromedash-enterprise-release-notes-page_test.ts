@@ -33,6 +33,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
           },
           updated: {
             when: '2000-03-01 13:05:00',
+            by: 'updater1',
           },
           screenshot_links: [],
         },
@@ -60,6 +61,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
           },
           updated: {
             when: '2000-03-04 13:05:00',
+            by: 'updater2',
           },
           screenshot_links: [],
         },
@@ -93,6 +95,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
           },
           updated: {
             when: '2000-03-04 18:25:55',
+            by: 'updater3',
           },
           screenshot_links: ['https://example.com/screenshot1'],
         },
@@ -130,6 +133,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
           },
           updated: {
             when: '2000-03-04 13:05:12',
+            by: 'updater4',
           },
           screenshot_links: ['https://example.com/screenshot1', 'https://example.com/screenshot2'],
         },
@@ -167,6 +171,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
           },
           updated: {
             when: '2000-03-04 11:22:33',
+            by: 'updater5',
           },
           screenshot_links: ['https://example.com/screenshot1'],
         },
@@ -196,6 +201,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
           },
           updated: {
             when: '2000-03-04 22:33:44',
+            by: 'updater6',
           },
           screenshot_links: [],
         },
@@ -229,6 +235,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
           },
           updated: {
             when: '2000-03-04 00:11:22',
+            by: 'updater7',
           },
           screenshot_links: [],
         },
@@ -258,6 +265,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
           },
           updated: {
             when: '2000-03-04 55:44:33',
+            by: 'updater8',
           },
           screenshot_links: [],
         },
@@ -514,7 +522,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
         assert.equal(
           '< To remove - Feature details - ' +
           'Owners: owner - Editors: editor1, editor2 - First Notice: n_milestone_feat_6 - ' +
-            'Last Updated: ( ) >',
+            'Last Updated: ( ) by updater6 >',
           normalizedTextContent(features[0].querySelector('.toremove')));
         assert.equal(
           'feature 6 summary',
@@ -544,7 +552,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
         'Upcoming Chrome Enterprise Premium (CEP, paid SKU)',
         releaseNotes[5].querySelector('h2')!.textContent);
       const features = Array.from(releaseNotes[5].querySelectorAll('.feature'));
-      // Test feature 1
+      // Test feature 8
       {
         assert.equal(
           'future premium feature',
@@ -552,7 +560,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
         assert.equal(
           '< To remove - Feature details - ' +
           'Owners: owner - Editors: editor1, editor2 - First Notice: n_milestone_feat_8 - ' +
-            'Last Updated: >',
+            'Last Updated: by updater8 >',
           normalizedTextContent(features[0].querySelector('.toremove')));
         assert.equal(
           'future premium feature summary',

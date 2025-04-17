@@ -576,6 +576,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       .then(resp => {
         f.summary = newSummary;
         f.updated.when = this.nowString();
+        f.updated.by = this.user.email;
       })
       .catch(() => {
         showToastMessage(
@@ -653,6 +654,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
               >
                 ${renderRelativeDate(f.updated.when)}
               </a>
+              by ${f.updated.by}
               <b>></b>
             </p>
             ${this.renderOrEditFeatureSummary(f)}
