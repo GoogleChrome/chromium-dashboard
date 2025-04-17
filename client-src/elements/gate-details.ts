@@ -162,8 +162,13 @@ const DEBUGGABILITY_ORIGIN_TRIAL_QUESTIONNAIRE: TemplateResult = html`
   </p>
 
   <p>
-    When in doubt, please check out https://goo.gle/devtools-checklist for
-    details!
+    (4) Can the feature be tested with a WebDriver BiDi module or other
+    appropriate automation?
+  </p>
+
+  <p>
+    When in doubt, please check out <a href="https://goo.gle/devtools-checklist"
+    target="_blank">https://goo.gle/devtools-checklist</a> for details!
   </p>
 `;
 

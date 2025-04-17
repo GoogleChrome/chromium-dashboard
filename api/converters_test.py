@@ -305,6 +305,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'summary': 'sum',
       'unlisted': False,
       'api_spec': False,
+      'automation_spec': False,
       'enterprise_impact': ENTERPRISE_IMPACT_NONE,
       'enterprise_product_category': 0,
       'shipping_year': 2024,

@@ -244,11 +244,12 @@ class VerboseFeatureDict(TypedDict):
   explainer_links: list[str]
   requires_embedder_support: bool
   spec_link: str | None
-  api_spec: str | None
-  prefixed: bool | None
+  api_spec: bool
+  automation_spec: bool
+  prefixed: bool
   interop_compat_risks: str | None
-  all_platforms: bool | None
-  all_platforms_descr: bool | None
+  all_platforms: bool
+  all_platforms_descr: str | None
   tag_review: str | None
   non_oss_deps: str | None
   anticipated_spec_changes: str | None

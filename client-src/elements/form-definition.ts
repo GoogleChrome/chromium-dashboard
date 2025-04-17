@@ -270,6 +270,7 @@ const FLAT_PROTOTYPE_FIELDS: MetadataFields = {
         'spec_link',
         'standard_maturity',
         'api_spec',
+        'automation_spec',
         'spec_mentors',
         'intent_to_implement_url',
       ],

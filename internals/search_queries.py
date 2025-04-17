@@ -296,6 +296,7 @@ QUERIABLE_FIELDS: dict[str, Property] = {
     'requires_embedder_support': FeatureEntry.requires_embedder_support,
     'standards.spec': FeatureEntry.spec_link,
     'api_spec': FeatureEntry.api_spec,
+    'automation_spec': FeatureEntry.automation_spec,
     'spec_mentors': FeatureEntry.spec_mentor_emails,
     'interop_compat_risks': FeatureEntry.interop_compat_risks,
     'browsers.chrome.prefixed': FeatureEntry.prefixed,

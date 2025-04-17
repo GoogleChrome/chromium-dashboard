@@ -404,6 +404,7 @@ def feature_entry_to_json_verbose(
     'requires_embedder_support': fe.requires_embedder_support,
     'spec_link': fe.spec_link,
     'api_spec': fe.api_spec,
+    'automation_spec': fe.automation_spec,
     'interop_compat_risks': fe.interop_compat_risks,
     'all_platforms': fe.all_platforms,
     'all_platforms_descr': fe.all_platforms_descr,
