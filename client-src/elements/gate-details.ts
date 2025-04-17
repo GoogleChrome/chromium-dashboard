@@ -167,8 +167,11 @@ const DEBUGGABILITY_ORIGIN_TRIAL_QUESTIONNAIRE: TemplateResult = html`
   </p>
 
   <p>
-    When in doubt, please check out <a href="https://goo.gle/devtools-checklist"
-    target="_blank">https://goo.gle/devtools-checklist</a> for details!
+    When in doubt, please check out
+    <a href="https://goo.gle/devtools-checklist" target="_blank"
+      >https://goo.gle/devtools-checklist</a
+    >
+    for details!
   </p>
 `;
 

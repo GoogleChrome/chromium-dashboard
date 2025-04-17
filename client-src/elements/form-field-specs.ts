@@ -797,10 +797,10 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'checkbox',
     initial: false,
     label: 'Automation spec',
-    help_text: html` The platform has sufficient automation features for
-    website authors to test use of this new feature. These automation features
-    can include new automation APIs, like WebDriver BiDi modules, that are
-    defined in this feature's specification.`,
+    help_text: html` The platform has sufficient automation features for website
+    authors to test use of this new feature. These automation features can
+    include new automation APIs, like WebDriver BiDi modules, that are defined
+    in this feature's specification.`,
   },
 
   spec_mentors: {
