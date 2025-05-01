@@ -386,7 +386,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     redirect_resp = permissions.validate_feature_edit_permission(
         self, feature_id)
     if redirect_resp:
-      return redirect_resp
+      self.abort(403, msg='User does not have permission to edit this feature.')
 
     feature: FeatureEntry = self.get_specified_feature(feature_id=feature_id)
     feature.deleted = True
