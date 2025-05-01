@@ -1351,6 +1351,13 @@ class FlaskApplicationTests(testing_config.CustomTestCase):
         '*',
         actual_response.headers['Access-Control-Allow-Origin'])
 
+  def test_cors_with_api(self):
+    """If the request hits a /api/v0/features path, they get a CORS header."""
+    with test_app.test_request_context('/api/v0/features'):
+      actual_response = test_app.full_dispatch_request()
+
+    self.assertIn('Access-Control-Allow-Origin', actual_response.headers)
+
   def test_cors_without_allow_origin(self):
     """If the request hits any non-/data path, they get no header."""
     with test_app.test_request_context('/test'):
