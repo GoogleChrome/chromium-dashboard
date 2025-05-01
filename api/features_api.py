@@ -381,7 +381,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     # TODO(jrobbins): implement undelete UI.  For now, use cloud console.
     if 'feature_id' not in kwargs:
       self.abort(404, msg='Feature ID not specified')
-    feature_id: int = int(kwargs.get('feature_id', 0))
+    feature_id: int = kwargs['feature_id']
     # Validate the user has edit permissions and redirect if needed.
     redirect_resp = permissions.validate_feature_edit_permission(
         self, feature_id)
