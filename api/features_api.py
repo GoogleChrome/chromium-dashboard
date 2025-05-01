@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import flask
 from datetime import datetime
 import re
 from typing import Any
@@ -338,7 +339,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         stage_ids)
     feature.put()
 
-  def do_patch(self, **kwargs):
+  def do_patch(self, **kwargs) -> flask.Response | dict[str, str]:
     """Handle PATCH requests to update fields in a single feature."""
     body = self.get_json_param_dict()
 
@@ -375,17 +376,19 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
 
     return {'message': f'Feature {feature_id} updated.'}
 
-  @permissions.require_create_feature
-  def do_delete(self, **kwargs) -> dict[str, str]:
+  def do_delete(self, **kwargs) -> flask.Response | dict[str, str]:
     """Delete the specified feature."""
     # TODO(jrobbins): implement undelete UI.  For now, use cloud console.
-    feature_id = kwargs.get('feature_id', None)
+    if 'feature_id' not in kwargs:
+      self.abort(404, msg='Feature ID not specified')
+    feature_id: int = int(kwargs.get('feature_id', 0))
+    # Validate the user has edit permissions and redirect if needed.
+    redirect_resp = permissions.validate_feature_edit_permission(
+        self, feature_id)
+    if redirect_resp:
+      return redirect_resp
+
     feature: FeatureEntry = self.get_specified_feature(feature_id=feature_id)
-    user = users.get_current_user()
-    app_user = AppUser.get_app_user(user.email())
-    if ((app_user is None or not app_user.is_admin)
-         and user.email() != feature.creator_email):
-      self.abort(403)
     feature.deleted = True
     feature.put()
     rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)

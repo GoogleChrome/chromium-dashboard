@@ -288,7 +288,7 @@ def validate_feature_edit_permission(
 
   # Respond with 404 if feature is not found.
   # Load feature directly from NDB so as to never get a stale cached copy.
-  if FeatureEntry.get_by_id(int(feature_id)) is None:
+  if FeatureEntry.get_by_id(feature_id) is None:
     handler_obj.abort(404, msg='Feature not found')
 
   # Respond with 403 if user does not have edit permission for feature.
