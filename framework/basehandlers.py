@@ -807,7 +807,7 @@ def FlaskApplication(import_name, routes, pattern_base='', debug=False):
       'https://chromeenterprise.google',
       'https://chromeenterprise-staging.corp.google.com',
       r'https://[a-z]+-dot-xl-chrome-enterprise-staging\.uc\.r\.appspot\.com',
-      r'http://locallhost:\d+',
+      r'http://localhost:\d+',
   ]
   CORS(app, resources={
       r'/data/.*': {'origins': '*'},
