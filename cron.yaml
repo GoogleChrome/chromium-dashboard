@@ -44,3 +44,6 @@ cron:
 - description: Check if any origin trials require activation
   url: /cron/activate_origin_trials
   schedule: every day 9:00
+- description: Fetch a new copy of Webdx feature ID list
+  url: /cron/fetch_webdx_feature_ids
+  schedule: every day 9:00
