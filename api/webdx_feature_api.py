@@ -30,8 +30,8 @@ class WebFeatureIDsAPI(basehandlers.APIHandler):
     return web_feature_ids
 
 
-# TODO(jrobbins): Move the ot_webfeature_use_counter form field a shipping
-# stage and change have it use datalist populated by this API.
+# TODO(jrobbins): Move the ot_webfeature_use_counter form field to a shipping
+# stage and change it to use a datalist populated by this API.
 class WebdxFeatureAPI(basehandlers.APIHandler):
   """The webdx feature UseCounter enums that populates a datalist menu."""
 
