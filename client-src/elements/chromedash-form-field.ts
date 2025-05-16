@@ -91,7 +91,9 @@ export class ChromedashFormField extends LitElement {
     } else if (this.name === 'web_feature') {
       this.fetchChoices(
         window.csClient.getWebFeatureIDs().then((feature_ids: string[]) => {
-          let choices = {missing_feature: ['Missing feature', 'Missing feature']};
+          let choices = {
+            missing_feature: ['Missing feature', 'Missing feature'],
+          };
           for (let id of feature_ids) {
             choices[id] = [id, id];
           }
