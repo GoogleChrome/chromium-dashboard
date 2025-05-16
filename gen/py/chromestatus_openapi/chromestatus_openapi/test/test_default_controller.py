@@ -508,6 +508,21 @@ class TestDefaultController(BaseTestCase):
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
+    def test_get_web_feature_ids(self):
+        """Test case for get_web_feature_ids
+
+        Get Baseline web feature IDs
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/web_feature_ids',
+            method='GET',
+            headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
     def test_list_component_users(self):
         """Test case for list_component_users
 

@@ -444,6 +444,17 @@ def get_votes_for_feature_and_gate(feature_id, gate_id):  # noqa: E501
     return 'do some magic!'
 
 
+def get_web_feature_ids():  # noqa: E501
+    """Get Baseline web feature IDs
+
+     # noqa: E501
+
+
+    :rtype: Union[List[str], Tuple[List[str], int], Tuple[List[str], int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
 def list_component_users():  # noqa: E501
     """List all components and possible users
 

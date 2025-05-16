@@ -1185,6 +1185,20 @@ paths:
             format.
       summary: List spec mentors and their activity
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /web_feature_ids:
+    get:
+      operationId: get_web_feature_ids
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  type: string
+                type: array
+          description: List the Web Feature IDs.
+      summary: Get Baseline web feature IDs
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
 components:
   parameters:
     startAtParam:

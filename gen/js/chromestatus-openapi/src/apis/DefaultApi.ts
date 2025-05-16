@@ -729,6 +729,20 @@ export interface DefaultApiInterface {
 
     /**
      * 
+     * @summary Get Baseline web feature IDs
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getWebFeatureIdsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<string>>>;
+
+    /**
+     * Get Baseline web feature IDs
+     */
+    getWebFeatureIds(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<string>>;
+
+    /**
+     * 
      * @summary List all components and possible users
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1962,6 +1976,32 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async getVotesForFeatureAndGate(requestParameters: GetVotesForFeatureAndGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetVotesResponse> {
         const response = await this.getVotesForFeatureAndGateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get Baseline web feature IDs
+     */
+    async getWebFeatureIdsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<string>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/web_feature_ids`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse<any>(response);
+    }
+
+    /**
+     * Get Baseline web feature IDs
+     */
+    async getWebFeatureIds(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<string>> {
+        const response = await this.getWebFeatureIdsRaw(initOverrides);
         return await response.value();
     }
 

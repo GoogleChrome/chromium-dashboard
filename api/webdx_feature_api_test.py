@@ -16,11 +16,43 @@ import testing_config
 from collections import OrderedDict
 
 import flask
+import mock
 
-from api.webdx_feature_api import WebdxFeatureAPI
+from api.webdx_feature_api import WebFeatureIDsAPI, WebdxFeatureAPI
+from internals.webdx_feature_models import WebdxFeatures
 from internals.metrics_models import WebDXFeatureObserver
 
 test_app = flask.Flask(__name__)
+
+
+class WebFeatureIDsAPITest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.handler = WebFeatureIDsAPI()
+    self.request_path = '/api/v0/web_feature_ids'
+
+  @mock.patch('internals.webdx_feature_models.WebdxFeatures.get_webdx_feature_id_list')
+  def test_do_get__success(self, mock_call):
+    """If we previously got some feature IDs, return them sorted."""
+    mock_call.return_value = WebdxFeatures(
+        feature_ids=['code', 'article', 'details', 'blockquote'])
+
+    with test_app.test_request_context(self.request_path):
+      actual = self.handler.do_get()
+
+    self.assertEqual(actual, ['article', 'blockquote', 'code', 'details'])
+
+  @mock.patch('internals.webdx_feature_models.WebdxFeatures.get_webdx_feature_id_list')
+  def test_do_get__no_known_ids(self, mock_call):
+    """If the cron never ran, we return an empty list."""
+    mock_call.return_value = None
+
+    with test_app.test_request_context(self.request_path):
+      actual = self.handler.do_get()
+
+    self.assertEqual(actual, [])
+
+
 
 class WebdxFeatureAPITest(testing_config.CustomTestCase):
 
