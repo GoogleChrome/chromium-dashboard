@@ -16,7 +16,7 @@ import testing_config
 from collections import OrderedDict
 
 import flask
-import mock
+from unittest import mock
 
 from api.webdx_feature_api import WebFeatureIDsAPI, WebdxFeatureAPI
 from internals.webdx_feature_models import WebdxFeatures
