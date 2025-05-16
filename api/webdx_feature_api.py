@@ -16,12 +16,24 @@ import logging
 from collections import OrderedDict
 
 from framework import basehandlers
+from internals.webdx_feature_models import WebdxFeatures
 from internals.metrics_models import WebDXFeatureObserver
 
 
+class WebFeatureIDsAPI(basehandlers.APIHandler):
+  """The web feature IDs that populates a datalist menu for web_feature."""
+
+  def do_get(self, **kwargs):
+    """Returns a sorted list of WebDX feature IDs."""
+    singleton: WebdxFeatures | None = WebdxFeatures.get_webdx_feature_id_list()
+    web_feature_ids = sorted(singleton.feature_ids if singleton else [])
+    return web_feature_ids
+
+
+# TODO(jrobbins): Move the ot_webfeature_use_counter form field to a shipping
+# stage and change it to use a datalist populated by this API.
 class WebdxFeatureAPI(basehandlers.APIHandler):
-  """The list of ordered webdx feature ID populates the "Web Feature ID" select field
-  in the guide form"""
+  """The webdx feature UseCounter enums that populates a datalist menu."""
 
   def do_get(self, **kwargs):
     """Returns an ordered dict with the following structure,

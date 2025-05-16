@@ -492,8 +492,10 @@ export const ALL_FIELDS: Record<string, Field> = {
     label: 'Web Feature ID',
     attrs: {placeholder: 'Please select a Web feature ID'},
     help_text: html` Select the feature this belongs to in the web-features
-    project: https://github.com/web-platform-dx/web-features. If your feature is
-    not listed, pick "Missing feature".`,
+      project:
+      <a href="https://github.com/web-platform-dx/web-features" target="_blank"
+        >https://github.com/web-platform-dx/web-features</a
+      >. If your feature is not listed, pick "Missing feature".`,
   },
 
   category: {

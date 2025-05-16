@@ -90,8 +90,16 @@ export class ChromedashFormField extends LitElement {
       );
     } else if (this.name === 'web_feature') {
       this.fetchChoices(
-        window.csClient.getWebdxFeatures(),
-        'Error fetching Webdx Features. Please refresh the page or try again later.'
+        window.csClient.getWebFeatureIDs().then((feature_ids: string[]) => {
+          let choices = {
+            missing_feature: ['Missing feature', 'Missing feature'],
+          };
+          for (let id of feature_ids) {
+            choices[id] = [id, id];
+          }
+          return choices;
+        }),
+        'Error fetching Web feature IDs. Please refresh the page or try again later.'
       );
     }
   }
