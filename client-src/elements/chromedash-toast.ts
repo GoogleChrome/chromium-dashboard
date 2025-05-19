@@ -9,9 +9,6 @@ class ChromedashToast extends LitElement {
   @property({type: String})
   msg = '';
 
-  @property({type: Boolean, reflect: true})
-  open = false;
-
   @property({attribute: false})
   actionLabel = '';
 
@@ -20,6 +17,14 @@ class ChromedashToast extends LitElement {
 
   @property({type: Boolean})
   waitingForTransition = false;
+
+ connectedCallback() {
+    super.connectedCallback();
+    // Initialize the element as a manual popover.
+    // 'manual' prevents light-dismiss and Esc key interactions,
+    // suitable for a toast that manages its own lifecycle.
+    this.popover = 'manual';
+  }
 
   static get styles() {
     return [
@@ -41,16 +46,22 @@ class ChromedashToast extends LitElement {
           cursor: default;
           transition:
             transform 0.3s,
-            opacity 0.3s;
+            opacity 0.3s,
+            overlay 0.3s allow-discrete, /* For popover animation */
+            display 0.3s allow-discrete; /* For popover animation */
           opacity: 0;
           will-change: opacity, transform;
           -webkit-transform: translateY(100px);
           transform: translateY(100px);
-          z-index: 3;
+          /* z-index may no longer be needed as popovers are in the top layer,
+             but keeping it doesn't harm if specific stacking order with other
+             non-popover fixed elements is intended. For now, let's try removing.
+             z-index: 3; */
           bottom: 0;
         }
 
-        :host([open]) {
+        /* :host([open]) is replaced by :popover-open */
+        :host(:popover-open) {
           opacity: 1;
           transform: translateY(-32px);
         }
@@ -64,6 +75,16 @@ class ChromedashToast extends LitElement {
 
         #msg {
           margin-right: var(--content-padding);
+        }
+      `,
+      // @starting-style is needed for entry animations of popovers.
+      // It defines the style from which the :popover-open state will transition.
+      css`
+        @starting-style {
+          :host(:popover-open) {
+            opacity: 0;
+            transform: translateY(100px);
+          }
         }
       `,
     ];
@@ -94,9 +115,9 @@ class ChromedashToast extends LitElement {
       }
     }
 
-    if (this.open) {
+    if (this.matches(':popover-open')) {
       // triggers the previous toast to slide out
-      this.open = false;
+      this.hidePopover();
       this.waitingForTransition = true;
       if (this.currentTimeout !== null) {
         clearTimeout(this.currentTimeout);
@@ -120,10 +141,10 @@ class ChromedashToast extends LitElement {
     const duration = optDuration || DEFAULT_DURATION;
     if (duration > 0) {
       this.currentTimeout = window.setTimeout(() => {
-        this.open = false;
+        this.hidePopover();
       }, duration);
     }
-    this.open = true;
+    this.showPopover();
   }
 
   render() {
