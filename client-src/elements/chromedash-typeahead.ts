@@ -1,10 +1,9 @@
-import {SlInput, SlDropdown} from '@shoelace-style/shoelace';
+import {SlInput, SlMenu, SlMenuItem} from '@shoelace-style/shoelace';
 import {css, html, LitElement, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {live} from 'lit/directives/live.js';
 import {createRef, ref, Ref} from 'lit/directives/ref.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
-
 /* This file consists of 3 classes that together implement a "typeahead"
    text field with autocomplete:
 
@@ -13,9 +12,6 @@ import {SHARED_STYLES} from '../css/shared-css.js';
    `sl-change` event when the user hits enter to submit the value.
    Internally, it is responsible for narrowing the vocabulary down to a list
    of candidates based on the prefix that the user has typed.
-
-   2. Private class ChromedashTypeaheadDropdown subclasses SlDropdown and
-   removes code that would change the keyboard focus.
 
    3. Private class ChromedashTypeaheadItem renders a single item in the
    typeahead menu.  We do not use SlMenuItem because it steals keyboard focus.
@@ -28,8 +24,9 @@ export interface Candidate {
 
 @customElement('chromedash-typeahead')
 export class ChromedashTypeahead extends LitElement {
-  slDropdownRef: Ref<SlDropdown> = createRef();
   slInputRef: Ref<SlInput> = createRef();
+  popoverRef: Ref<HTMLDivElement> = createRef();
+  slMenuRef: Ref<SlMenu> = createRef();
 
   @property()
   value = '';
@@ -55,13 +52,31 @@ export class ChromedashTypeahead extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-        chromedash-typeahead-dropdown {
-          width: 100%;
-        }
         #inputfield::part(base) {
           background: #eee;
           border: none;
           border-radius: 8px;
+        }
+
+        #autocomplete-popover {
+          /* Popover itself should not have visible chrome if sl-menu provides it */
+          border: none;
+          box-shadow: none;
+          background: transparent;
+          border-radius: 0;
+          padding: 0; /* Reset padding if sl-menu has its own */
+
+          /* Default popover fixed position override */
+          margin: 0;
+          inset: unset;
+
+          /* Anchor positioning relative to the input field */
+          /* Ensure slInputRef.value becomes the anchor via showPopover({invoker:...}) */
+          top: anchor(bottom); /* Position popover's top at anchor's (input) bottom */
+          left: anchor(left);
+          width: anchor-size(width); /* Make popover same width as anchor */
+          max-height: 300px; /* Example max-height */
+          overflow-y: auto;
         }
       `,
     ];
@@ -85,11 +100,13 @@ export class ChromedashTypeahead extends LitElement {
   }
 
   hide() {
-    this.slDropdownRef.value!.hide();
+    this.popoverRef.value?.hidePopover();
   }
 
   show() {
-    this.slDropdownRef.value!.show();
+    if (this.popoverRef.value && this.slInputRef.value) {
+      this.popoverRef.value.showPopover({invoker: this.slInputRef.value});
+    }
   }
 
   focus() {
@@ -199,22 +216,67 @@ export class ChromedashTypeahead extends LitElement {
     inputEl.focus();
   }
 
-  // Check if the user is pressing Enter to send a query.  This is detected
-  // on keyDown so that the handler is run before the dropdown keyDown is run.
-  handleInputFieldKeyDown(event) {
+  async handleInputFieldKeyDown(event: KeyboardEvent) {
+    const popoverEl = this.popoverRef.value;
+    const menuEl = this.slMenuRef.value;
+
+    if (!popoverEl || !menuEl) return;
+
+    const menuItems = menuEl.getAllItems();
+
     if (event.key === 'Enter') {
-      const slDropdown = this.slDropdownRef.value;
-      if (!slDropdown) return;
+      event.preventDefault(); // Prevent form submission or other default actions
+      const currentItem = menuEl.getCurrentItem();
       if (
-        !slDropdown.open ||
-        !(slDropdown as ChromedashTypeaheadDropdown).getCurrentItem()
+        popoverEl.matches(':popover-open') &&
+        currentItem &&
+        !currentItem.disabled
       ) {
+        currentItem.click(); // Triggers sl-select, which calls handleCandidateSelected
+      } else {
         this._fireEvent('sl-change', this);
-        event.stopPropagation();
+      }
+      event.stopPropagation(); // Stop propagation after handling
+    } else if (['ArrowDown', 'ArrowUp'].includes(event.key)) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (menuItems.length === 0) return;
+
+      if (!popoverEl.matches(':popover-open')) {
+        // If candidates available, show popover. calcCandidates itself will call show().
+        // Ensure it happens before we try to get menu items or current item.
+        this.calcCandidates(); // This might show the popover
+        // A slight delay might be needed if calcCandidates is async and DOM isn't ready.
+        // However, SlMenu methods should be callable if menuEl is resolved.
+        // For simplicity, assume menu is ready after calcCandidates or if already open.
+      }
+
+      // Must ensure menuItems are fresh if popover was just opened by calcCandidates
+      const freshMenuItems = menuEl.getAllItems();
+      if (freshMenuItems.length === 0) return;
+
+      const currentItem = menuEl.getCurrentItem();
+      let newCurrentItem: SlMenuItem | null = null;
+
+      if (currentItem) {
+        const currentItemIndex = freshMenuItems.indexOf(currentItem);
+        if (event.key === 'ArrowDown' && freshMenuItems[currentItemIndex + 1]) {
+          newCurrentItem = freshMenuItems[currentItemIndex + 1];
+        } else if (event.key === 'ArrowUp' && freshMenuItems[currentItemIndex - 1]) {
+          newCurrentItem = freshMenuItems[currentItemIndex - 1];
+        }
+      } else if (freshMenuItems.length > 0) { // No current item, select first/last
+        newCurrentItem = event.key === 'ArrowDown' ? freshMenuItems[0] : freshMenuItems[freshMenuItems.length - 1];
+      }
+
+      if (newCurrentItem && !newCurrentItem.disabled) {
+        menuEl.setCurrentItem(newCurrentItem);
+        // Shoelace's setCurrentItem usually handles tabindex and visual state.
+        newCurrentItem.scrollIntoView({block: 'nearest', behavior: 'smooth'});
       }
     }
   }
-
   // As the user types and moves the caret, keep recalculating a-c choices.
   // Left and right movement is handled on keyUp so that caret has already been
   // moved to its new position before this handler is run.
@@ -242,16 +304,19 @@ export class ChromedashTypeahead extends LitElement {
     if (this.shouldGroup(this.prefix)) {
       this.candidates = this.groupCandidates(this.candidates);
     }
-    const slDropdown = this.slDropdownRef.value;
-    if (!slDropdown) return;
+    const popoverEl = this.popoverRef.value;
+    if (!popoverEl) return;
     if (
       this.candidates.length > 0 &&
       !this.wasDismissed &&
       !this.termWasCompleted
     ) {
-      slDropdown.show();
+      // Pass invoker to establish anchor for positioning
+      if (this.slInputRef.value) {
+        popoverEl.showPopover({invoker: this.slInputRef.value});
+      }
     } else {
-      slDropdown.hide();
+      popoverEl.hidePopover();
     }
   }
 
@@ -259,7 +324,6 @@ export class ChromedashTypeahead extends LitElement {
     return html`
       <sl-input
         id="inputfield"
-        slot="trigger"
         placeholder=${this.placeholder}
         value=${live(this.value)}
         ${ref(this.slInputRef)}
@@ -281,6 +345,7 @@ export class ChromedashTypeahead extends LitElement {
   renderAutocompleteMenu() {
     return html`
       <sl-menu
+        ${ref(this.slMenuRef)}
         @click=${e => e.preventDefault()}
         @sl-select=${this.handleCandidateSelected}
       >
@@ -299,85 +364,14 @@ export class ChromedashTypeahead extends LitElement {
 
   render() {
     return html`
-      <chromedash-typeahead-dropdown
-        stay-open-on-select
-        sync="width"
-        ${ref(this.slDropdownRef)}
-      >
-        ${this.renderInputField()} ${this.renderAutocompleteMenu()}
-      </chromedash-typeahead-dropdown>
+      ${this.renderInputField()}
+      <div id="autocomplete-popover" popover="auto" ${ref(this.popoverRef)}>
+        ${this.renderAutocompleteMenu()}
+      </div>
     `;
   }
 }
 
-@customElement('chromedash-typeahead-dropdown')
-export class ChromedashTypeaheadDropdown extends SlDropdown {
-  getCurrentItem() {
-    return this.getMenu()?.getCurrentItem();
-  }
-
-  setCurrentItem(newCurrentItem) {
-    const menu = this.getMenu();
-    menu!.setCurrentItem(newCurrentItem);
-    newCurrentItem.scrollIntoView({block: 'nearest', behavior: 'smooth'});
-  }
-
-  resetSelection() {
-    const currentItem = this.getCurrentItem();
-    currentItem?.setAttribute('tabindex', '-1');
-  }
-
-  async handleTriggerKeyDown(event) {
-    const menu = this.getMenu();
-    if (!menu) {
-      return;
-    }
-    const menuItems = menu.getAllItems();
-    if (menuItems.length === 0) {
-      return;
-    }
-    const currentItem = menu.getCurrentItem();
-
-    // Handle menu selection keys.
-    if (['Enter'].includes(event.key)) {
-      event.preventDefault();
-
-      if (this.open && currentItem) {
-        currentItem.click();
-        this.resetSelection();
-      }
-    }
-
-    // Handle menu navigation keys.
-    if (['ArrowDown', 'ArrowUp'].includes(event.key)) {
-      event.preventDefault();
-      event.stopPropagation();
-
-      // Show the menu if it's not already open
-      if (!this.open) {
-        this.show();
-      }
-
-      if (currentItem) {
-        const currentItemIndex = menuItems.indexOf(currentItem);
-        if (event.key === 'ArrowDown' && menuItems[currentItemIndex + 1]) {
-          this.setCurrentItem(menuItems[currentItemIndex + 1]);
-        }
-        if (event.key === 'ArrowUp' && menuItems[currentItemIndex - 1]) {
-          this.setCurrentItem(menuItems[currentItemIndex - 1]);
-        }
-      } else {
-        if (event.key === 'ArrowDown') {
-          this.setCurrentItem(menuItems[0]);
-        }
-        if (event.key === 'ArrowUp') {
-          this.setCurrentItem(menuItems[menuItems.length - 1]);
-        }
-      }
-      // Note: We keep keyboard focus on #inputfield.
-    }
-  }
-}
 
 @customElement('chromedash-typeahead-item')
 export class ChromedashTypeaheadItem extends LitElement {
@@ -436,7 +430,10 @@ export class ChromedashTypeaheadItem extends LitElement {
   }
 
   handleMouseOver(event) {
-    (this.parentElement as ChromedashTypeaheadDropdown)?.setCurrentItem(this);
+    const parentMenu = this.parentElement as SlMenu | null;
+    if (parentMenu && typeof parentMenu.setCurrentItem === 'function') {
+      parentMenu.setCurrentItem(this as unknown as SlMenuItem);
+    }
     event.stopPropagation();
   }
 
