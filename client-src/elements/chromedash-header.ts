@@ -65,27 +65,6 @@ export class ChromedashHeader extends LitElement {
         header nav [active] a {
           color: var(--nav-link-active-color);
         }
-        header nav .nav-dropdown-container {
-          position: relative;
-        }
-        header nav .nav-dropdown-container ul {
-          display: none;
-          position: absolute;
-          top: 80%;
-          left: 0;
-          list-style: none;
-          z-index: 1;
-          background: var(--card-background);
-          border-bottom: var(--card-border);
-          box-shadow: var(--card-box-shadow);
-        }
-        header nav .nav-dropdown-container a {
-          display: block;
-        }
-        header nav .nav-dropdown-container .nav-dropdown-trigger:hover + ul,
-        header nav .nav-dropdown-container ul:hover {
-          display: block;
-        }
         header aside a {
           color: var(--logo-color);
         }
@@ -117,6 +96,59 @@ export class ChromedashHeader extends LitElement {
         .menu [active] {
           color: var(--nav-link-active-color);
           border-bottom: var(--nav-link-active-border);
+        }
+
+        /* Styles for the new popover account menu */
+        .account-menu-wrapper {
+          position: relative; /* Can be useful for layout, but popover is in top layer */
+        }
+
+        button#account-menu-trigger {
+          /* Reset button styles */
+          background: none;
+          border: none;
+          padding: var(--content-padding-half) var(--content-padding); /* Match nav a padding */
+          margin: 0;
+          font: inherit;
+          color: var(--nav-link-color); /* Match nav a color */
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          white-space: nowrap;
+          font-size: var(--nav-link-font-size); /* Match nav a font-size */
+        }
+        button#account-menu-trigger:hover {
+          color: black;
+          background: var(--nav-link-hover-background); /* Match nav a hover */
+        }
+        button#account-menu-trigger iron-icon {
+          margin-left: 4px;
+        }
+
+        ul#account-menu-popover {
+          /* Override UA popover defaults */
+          margin: 0;
+          inset: unset;
+          border: var(--card-border);
+          padding: 0; /* List items have padding */
+          background: var(--card-background);
+          box-shadow: var(--card-box-shadow);
+          list-style: none;
+          min-width: 200px; /* Adjust as needed */
+          /* Position below and aligned to the left of the trigger by default */
+          top: anchor(bottom);
+          left: anchor(left);
+        }
+        ul#account-menu-popover li a {
+          display: block;
+          padding: var(--content-padding-half) var(--content-padding);
+          color: var(--nav-link-color);
+          text-decoration: none;
+          white-space: nowrap;
+        }
+        ul#account-menu-popover li a:hover {
+          color: black;
+          background: var(--nav-link-hover-background);
         }
 
         @media only screen and (max-width: 700px) {
@@ -323,12 +355,15 @@ export class ChromedashHeader extends LitElement {
                   </sl-button>
                 `
               : nothing}
-            <div class="nav-dropdown-container" data-testid="account-indicator">
-              <a class="nav-dropdown-trigger">
+            <div class="account-menu-wrapper" data-testid="account-indicator">
+              <button
+                id="account-menu-trigger"
+                popovertarget="account-menu-popover"
+              >
                 ${this.user.email}
                 <iron-icon icon="chromestatus:arrow-drop-down"></iron-icon>
-              </a>
-              <ul>
+              </button>
+              <ul id="account-menu-popover" popover="auto">
                 <li><a href="/settings">Settings</a></li>
                 <li>
                   <a
