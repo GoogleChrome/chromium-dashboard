@@ -105,7 +105,7 @@ export class ChromedashTypeahead extends LitElement {
 
   show() {
     if (this.popoverRef.value && this.slInputRef.value) {
-      this.popoverRef.value.showPopover({invoker: this.slInputRef.value});
+      this.popoverRef.value.showPopover();
     }
   }
 
@@ -313,7 +313,7 @@ export class ChromedashTypeahead extends LitElement {
     ) {
       // Pass invoker to establish anchor for positioning
       if (this.slInputRef.value) {
-        popoverEl.showPopover({invoker: this.slInputRef.value});
+        popoverEl.showPopover();
       }
     } else {
       popoverEl.hidePopover();
