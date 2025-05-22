@@ -308,10 +308,13 @@ export class ChromedashHeader extends LitElement {
   }
 
   renderAccountMenu() {
+    const alreadyOnNew =
+      this.isCurrentPage('/guide/new') ||
+      this.isCurrentPage('/guide/enterprise/new');
     return html`
       ${this.user
         ? html`
-            ${this.user.can_create_feature && !this.isCurrentPage('/guide/new')
+            ${this.user.can_create_feature && !alreadyOnNew
               ? html`
                   <sl-button
                     data-testid="create-feature-button"
