@@ -17,6 +17,11 @@ jobs:
         with:
           node-version: '18.x'
 
+      - name: set up Java JDK
+        uses: actions/setup-java@v4
+        with:
+         java-version: '21'
+
       - name: set up Python
         uses: actions/setup-python@v5
         with:
