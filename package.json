@@ -27,7 +27,7 @@
     "debug-app": "npm run build && curl --retry 4 http://${DATASTORE_EMULATOR_HOST:-localhost:15606}/ --retry-connrefused && ./scripts/debug_server.sh",
     "start": "npm stop; . cs-env/bin/activate; (npm run start-emulator-persist > /dev/null 2>&1 &); npm run start-app; status=$?; npm run stop-emulator; exit $status",
     "stop": "npm run pwtests-shutdown; kill `pgrep gunicorn`",
-    "test": "(npm run start-emulator &); sleep 30; curl --retry 4 http://localhost:15606/ --retry-connrefused; npm run do-tests; status=$?; npm run stop-emulator; exit $status",
+    "test": "(npm run start-emulator > /dev/null 2>&1 &); sleep 6; curl --retry 4 http://localhost:15606/ --retry-connrefused; npm run do-tests; status=$?; npm run stop-emulator; exit $status",
     "webtest": "npm run build && web-test-runner --playwright --browsers chromium firefox",
     "webtest:watch": "npm run build && web-test-runner \"build/**/*_test.{js,ts}\" --node-resolve --playwright --watch --browsers chromium",
     "webtestpuppeteer": "npm run build && web-test-runner --puppeteer --browsers chrome",
