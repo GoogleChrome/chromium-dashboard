@@ -117,7 +117,14 @@ export class ChromedashGuideNewPage extends LitElement {
 
   renderWarnings() {
     if (this.isEnterpriseFeature) {
-      return nothing;
+      return html`
+        <div class="process-notice">
+          <p>
+            Use this form if your feature should be mentioned in the Enterprise
+            Release Notes.
+          </p>
+        </div>
+      `;
     } else {
       return html`
         <div class="process-notice">
