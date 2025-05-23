@@ -421,7 +421,9 @@ export class ChromedashGuideEditallPage extends LitElement {
   // Create a stage requested on the edit all page.
   createNewStage(newStage) {
     window.csClient
-      .createStage(this.featureId, {stage_type: newStage.stage_type})
+      .createStage(this.featureId, {
+        stage_type: {form_field_name: 'stage_type', value: newStage.stage_type},
+      })
       .then(() => window.csClient.getFeature(this.featureId))
       .then(feature => {
         this.feature = feature;
