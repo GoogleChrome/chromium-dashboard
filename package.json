@@ -130,7 +130,7 @@
     "node-fetch": ">=3.3.2",
     "page": "^1.11.6",
     "urijs": ">=1.19.11",
-    "yargs-parser": ">=21.1.1"
+    "yargs-parser": ">=22.0.0"
   },
   "overrides": {
     "glob-parent@<5.1.2": ">=5.1.2"
