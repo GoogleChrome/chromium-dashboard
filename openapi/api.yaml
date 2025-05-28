@@ -1296,6 +1296,35 @@ components:
         - created
         - author
         - content
+    GetReviewActivitiesResponse:
+      properties:
+        activities:
+          items:
+            $ref: '#/components/schemas/ReviewActivity'
+          type: array
+      required:
+      - activities
+    ReviewActivity:
+      properties:
+        feature_id:
+          type: integer
+        event_type:
+          type: string
+        event_date:
+          type: string
+        review_status:
+          type: string
+        review_assignee:
+          type: string
+        author:
+          type: string
+        content:
+          type: string
+      required:
+      - feature_id
+      - event_type
+      - date
+      - author
     CommentsRequest:
       type: object
       properties:

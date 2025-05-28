@@ -1887,6 +1887,43 @@ components:
       - feature_id
       title: Activity
       type: object
+    GetReviewActivitiesResponse:
+      properties:
+        activities:
+          items:
+            $ref: '#/components/schemas/ReviewActivity'
+          type: array
+      required:
+      - activities
+    ReviewActivity:
+      properties:
+        feature_id:
+          title: feature_id
+          type: integer
+        event_type:
+          title: event_type
+          type: string
+        event_date:
+          title: event_date
+          type: string
+        review_status:
+          title: review_status
+          type: string
+        review_assignee:
+          title: review_assignee
+          type: string
+        author:
+          title: author
+          type: string
+        content:
+          title: content
+          type: string
+      required:
+      - author
+      - date
+      - event_type
+      - feature_id
+      title: ReviewActivity
     CommentsRequest:
       example:
         postToThreadType: 0
