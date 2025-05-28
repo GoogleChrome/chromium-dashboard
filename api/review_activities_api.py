@@ -13,9 +13,11 @@
 # limitations under the License.
 
 from datetime import datetime
+from google.cloud import ndb  # type: ignore
 
 from framework import basehandlers
-from internals.review_models import Activity
+from internals.approval_defs import APPROVAL_FIELDS_BY_ID
+from internals.review_models import Activity, Gate
 
 from chromestatus_openapi.models import (
   ReviewActivity as ReviewActivityModel,
@@ -39,7 +41,7 @@ class ReviewActivitiesAPI(basehandlers.APIHandler):
 
     # Note: We assume that anyone may view approval comments.
     activities: list[Activity] = Activity.query(
-        Activity.created >= formatted_time).fetch()
+        Activity.created >= formatted_time).order(Activity.created).fetch(5000)
 
     # Filter deleted activities the user can't see, and activities that have
     # no gate ID, meaning they do not represent review activity.
@@ -47,11 +49,15 @@ class ReviewActivitiesAPI(basehandlers.APIHandler):
       lambda a: (a.deleted_by is None
                  and a.gate_id is not None),
       activities))
+    gate_ids = set([a.gate_id for a in activities])
+    gates = ndb.get_multi([ndb.Key('Gate', g_id) for g_id in gate_ids])
+    gates_dict: dict[int, Gate] = {g.key.integer_id(): g for g in gates}
 
     activities_formatted: list[ReviewActivityModel] = []
     for a in activities:
       review_status = None
       review_assignee = None
+      gate_type = gates_dict[a.gate_id].gate_type
       if len(a.amendments):
         # There should only be 1 amendment for review changes.
         if a.amendments[0].field_name == 'review_status':
@@ -61,6 +67,7 @@ class ReviewActivitiesAPI(basehandlers.APIHandler):
       activities_formatted.append(
         ReviewActivityModel(
           feature_id=a.feature_id,
+          team_name=APPROVAL_FIELDS_BY_ID[gate_type].team_name,
           event_type=(a.amendments[0].field_name
                       if len(a.amendments) else 'comment'),
           event_date=datetime.strftime(a.created, self.RESPONSE_DATETIME_FORMAT),

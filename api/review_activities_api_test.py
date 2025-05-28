@@ -24,7 +24,6 @@ from chromestatus_openapi.models import (
 
 import testing_config  # Must be imported before the module under test.
 from api import review_activities_api
-from internals.core_models import FeatureEntry
 from internals.review_models import Activity, Amendment, Gate, Vote
 
 test_app = flask.Flask(__name__)
@@ -35,6 +34,16 @@ class ReviewActivitiesAPITest(testing_config.CustomTestCase):
   def setUp(self):
     self.request_path = 'api/v0/activities'
     self.handler = review_activities_api.ReviewActivitiesAPI()
+    
+    self.gate_1 = Gate(id=11, feature_id=1, stage_id=100,
+                       gate_type=4, # API Owners.
+                       state=Vote.NA)
+    self.gate_1.put()
+    
+    self.gate_2 = Gate(id=12, feature_id=2, stage_id=200,
+                       gate_type=32, # Privacy team.
+                       state=Vote.NA)
+    self.gate_2.put()
 
     self.activity_1 = Activity(
       feature_id=1, gate_id=11, author='user1@example.com',
@@ -153,6 +162,7 @@ class ReviewActivitiesAPITest(testing_config.CustomTestCase):
       lambda a: a.content is not None, activities))
     self.assertEqual(len(comment_activity), 1)
     self.assertEqual(comment_activity[0].content, 'test comment 5')
+    self.assertEqual(comment_activity[0].team_name, 'Privacy')
     # One review status change activity should exist in the result
     review_status_activity = list(filter(
       lambda a: a.review_status is not None, activities))

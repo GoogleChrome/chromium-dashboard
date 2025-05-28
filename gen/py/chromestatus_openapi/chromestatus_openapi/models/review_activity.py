@@ -12,7 +12,7 @@ class ReviewActivity(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, feature_id=None, event_type=None, event_date=None, review_status=None, review_assignee=None, author=None, content=None):  # noqa: E501
+    def __init__(self, feature_id=None, event_type=None, event_date=None, team_name=None, review_status=None, review_assignee=None, author=None, content=None):  # noqa: E501
         """ReviewActivity - a model defined in OpenAPI
 
         :param feature_id: The feature_id of this ReviewActivity.  # noqa: E501
@@ -21,6 +21,8 @@ class ReviewActivity(Model):
         :type event_type: str
         :param event_date: The event_date of this ReviewActivity.  # noqa: E501
         :type event_date: str
+        :param team_name: The team_name of this ReviewActivity.  # noqa: E501
+        :type team_name: str
         :param review_status: The review_status of this ReviewActivity.  # noqa: E501
         :type review_status: str
         :param review_assignee: The review_assignee of this ReviewActivity.  # noqa: E501
@@ -34,6 +36,7 @@ class ReviewActivity(Model):
             'feature_id': int,
             'event_type': str,
             'event_date': str,
+            'team_name': str,
             'review_status': str,
             'review_assignee': str,
             'author': str,
@@ -44,6 +47,7 @@ class ReviewActivity(Model):
             'feature_id': 'feature_id',
             'event_type': 'event_type',
             'event_date': 'event_date',
+            'team_name': 'team_name',
             'review_status': 'review_status',
             'review_assignee': 'review_assignee',
             'author': 'author',
@@ -53,6 +57,7 @@ class ReviewActivity(Model):
         self._feature_id = feature_id
         self._event_type = event_type
         self._event_date = event_date
+        self._team_name = team_name
         self._review_status = review_status
         self._review_assignee = review_assignee
         self._author = author
@@ -133,8 +138,33 @@ class ReviewActivity(Model):
         :param event_date: The event_date of this ReviewActivity.
         :type event_date: str
         """
+        if event_date is None:
+            raise ValueError("Invalid value for `event_date`, must not be `None`")  # noqa: E501
 
         self._event_date = event_date
+
+    @property
+    def team_name(self) -> str:
+        """Gets the team_name of this ReviewActivity.
+
+
+        :return: The team_name of this ReviewActivity.
+        :rtype: str
+        """
+        return self._team_name
+
+    @team_name.setter
+    def team_name(self, team_name: str):
+        """Sets the team_name of this ReviewActivity.
+
+
+        :param team_name: The team_name of this ReviewActivity.
+        :type team_name: str
+        """
+        if team_name is None:
+            raise ValueError("Invalid value for `team_name`, must not be `None`")  # noqa: E501
+
+        self._team_name = team_name
 
     @property
     def review_status(self) -> str:

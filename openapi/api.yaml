@@ -231,6 +231,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorMessage'
+  /activities:
+    parameters:
+    - name: start
+      in: query
+      required: true
+      schema:
+        type: string
   /features/<int:feature_id>/approvals/comments:
     parameters:
           - name: feature_id
@@ -1312,6 +1319,8 @@ components:
           type: string
         event_date:
           type: string
+        team_name:
+          type: string
         review_status:
           type: string
         review_assignee:
@@ -1323,7 +1332,8 @@ components:
       required:
       - feature_id
       - event_type
-      - date
+      - event_date
+      - team_name
       - author
     CommentsRequest:
       type: object

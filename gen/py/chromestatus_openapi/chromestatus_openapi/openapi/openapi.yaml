@@ -57,6 +57,7 @@ paths:
           description: Account not found
       summary: Delete an account
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /activities: {}
   /components/{componentId}/users/{userId}:
     delete:
       operationId: remove_user_from_component
@@ -1906,6 +1907,9 @@ components:
         event_date:
           title: event_date
           type: string
+        team_name:
+          title: team_name
+          type: string
         review_status:
           title: review_status
           type: string
@@ -1920,9 +1924,10 @@ components:
           type: string
       required:
       - author
-      - date
+      - event_date
       - event_type
       - feature_id
+      - team_name
       title: ReviewActivity
     CommentsRequest:
       example:

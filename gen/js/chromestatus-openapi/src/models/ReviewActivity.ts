@@ -36,7 +36,13 @@ export interface ReviewActivity {
      * @type {string}
      * @memberof ReviewActivity
      */
-    event_date?: string;
+    event_date: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ReviewActivity
+     */
+    team_name: string;
     /**
      * 
      * @type {string}
@@ -69,6 +75,8 @@ export interface ReviewActivity {
 export function instanceOfReviewActivity(value: object): value is ReviewActivity {
     if (!('feature_id' in value) || value['feature_id'] === undefined) return false;
     if (!('event_type' in value) || value['event_type'] === undefined) return false;
+    if (!('event_date' in value) || value['event_date'] === undefined) return false;
+    if (!('team_name' in value) || value['team_name'] === undefined) return false;
     if (!('author' in value) || value['author'] === undefined) return false;
     return true;
 }
@@ -85,7 +93,8 @@ export function ReviewActivityFromJSONTyped(json: any, ignoreDiscriminator: bool
         
         'feature_id': json['feature_id'],
         'event_type': json['event_type'],
-        'event_date': json['event_date'] == null ? undefined : json['event_date'],
+        'event_date': json['event_date'],
+        'team_name': json['team_name'],
         'review_status': json['review_status'] == null ? undefined : json['review_status'],
         'review_assignee': json['review_assignee'] == null ? undefined : json['review_assignee'],
         'author': json['author'],
@@ -102,6 +111,7 @@ export function ReviewActivityToJSON(value?: ReviewActivity | null): any {
         'feature_id': value['feature_id'],
         'event_type': value['event_type'],
         'event_date': value['event_date'],
+        'team_name': value['team_name'],
         'review_status': value['review_status'],
         'review_assignee': value['review_assignee'],
         'author': value['author'],
