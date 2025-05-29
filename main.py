@@ -376,11 +376,6 @@ internals_routes: list[Route] = [
 dev_routes: list[Route] = []
 if settings.DEV_MODE:
   dev_routes = [
-
-    ## These routes can be uncommented for local environment use. ##
-
-    # Route('/dev/clear_entities', dev_api.ClearEntities),
-    # Route('/dev/write_dev_data', dev_api.WriteDevData),
     Route('/dev/mock_login', login_api.MockLogin),
   ]
 # All requests to the app-py3 GAE service are handled by this Flask app.
