@@ -231,6 +231,29 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorMessage'
+  /activities:
+    parameters:
+    - name: start
+      in: query
+      required: true
+      schema:
+        type: string
+    get:
+      summary: Return a list of all review activity events in Chromestatus.
+      operationId: getReviewActivities
+      responses:
+        '200':
+          description: List of review activities since the specified start date.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetReviewActivitiesResponse'
+        '400':
+          description: Invalid or missing start date.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
   /features/<int:feature_id>/approvals/comments:
     parameters:
           - name: feature_id
@@ -1296,6 +1319,38 @@ components:
         - created
         - author
         - content
+    GetReviewActivitiesResponse:
+      properties:
+        activities:
+          items:
+            $ref: '#/components/schemas/ReviewActivity'
+          type: array
+      required:
+      - activities
+    ReviewActivity:
+      properties:
+        feature_id:
+          type: integer
+        event_type:
+          type: string
+        event_date:
+          type: string
+        team_name:
+          type: string
+        review_status:
+          type: string
+        review_assignee:
+          type: string
+        author:
+          type: string
+        content:
+          type: string
+      required:
+      - feature_id
+      - event_type
+      - event_date
+      - team_name
+      - author
     CommentsRequest:
       type: object
       properties:

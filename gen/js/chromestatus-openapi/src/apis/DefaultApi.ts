@@ -36,6 +36,7 @@ import type {
   GetGateResponse,
   GetIntentResponse,
   GetOriginTrialsResponse,
+  GetReviewActivitiesResponse,
   GetSettingsResponse,
   GetStarsResponse,
   GetVotesResponse,
@@ -97,6 +98,8 @@ import {
     GetIntentResponseToJSON,
     GetOriginTrialsResponseFromJSON,
     GetOriginTrialsResponseToJSON,
+    GetReviewActivitiesResponseFromJSON,
+    GetReviewActivitiesResponseToJSON,
     GetSettingsResponseFromJSON,
     GetSettingsResponseToJSON,
     GetStarsResponseFromJSON,
@@ -223,6 +226,10 @@ export interface GetProcessRequest {
 
 export interface GetProgressRequest {
     featureId: number;
+}
+
+export interface GetReviewActivitiesRequest {
+    start: string;
 }
 
 export interface GetUserPermissionsRequest {
@@ -652,6 +659,21 @@ export interface DefaultApiInterface {
      * Get the progress for a feature
      */
     getProgress(requestParameters: GetProgressRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: any; }>;
+
+    /**
+     * 
+     * @summary Return a list of all review activity events in Chromestatus.
+     * @param {string} start 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getReviewActivitiesRaw(requestParameters: GetReviewActivitiesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetReviewActivitiesResponse>>;
+
+    /**
+     * Return a list of all review activity events in Chromestatus.
+     */
+    getReviewActivities(requestParameters: GetReviewActivitiesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetReviewActivitiesResponse>;
 
     /**
      * 
@@ -1821,6 +1843,43 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async getProgress(requestParameters: GetProgressRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: any; }> {
         const response = await this.getProgressRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Return a list of all review activity events in Chromestatus.
+     */
+    async getReviewActivitiesRaw(requestParameters: GetReviewActivitiesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetReviewActivitiesResponse>> {
+        if (requestParameters['start'] == null) {
+            throw new runtime.RequiredError(
+                'start',
+                'Required parameter "start" was null or undefined when calling getReviewActivities().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['start'] != null) {
+            queryParameters['start'] = requestParameters['start'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/activities`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GetReviewActivitiesResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Return a list of all review activity events in Chromestatus.
+     */
+    async getReviewActivities(requestParameters: GetReviewActivitiesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetReviewActivitiesResponse> {
+        const response = await this.getReviewActivitiesRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
