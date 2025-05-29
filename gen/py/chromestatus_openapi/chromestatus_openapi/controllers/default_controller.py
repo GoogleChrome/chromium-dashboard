@@ -24,6 +24,7 @@ from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismis
 from chromestatus_openapi.models.get_gate_response import GetGateResponse  # noqa: E501
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
 from chromestatus_openapi.models.get_origin_trials_response import GetOriginTrialsResponse  # noqa: E501
+from chromestatus_openapi.models.get_review_activities_response import GetReviewActivitiesResponse  # noqa: E501
 from chromestatus_openapi.models.get_settings_response import GetSettingsResponse  # noqa: E501
 from chromestatus_openapi.models.get_stars_response import GetStarsResponse  # noqa: E501
 from chromestatus_openapi.models.get_votes_response import GetVotesResponse  # noqa: E501
@@ -42,6 +43,19 @@ from chromestatus_openapi.models.sign_in_request import SignInRequest  # noqa: E
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
 from chromestatus_openapi.models.success_message import SuccessMessage  # noqa: E501
 from chromestatus_openapi import util
+
+
+def activities_get(start):  # noqa: E501
+    """Return a list of all review activity events in Chromestatus.
+
+     # noqa: E501
+
+    :param start: 
+    :type start: str
+
+    :rtype: Union[GetReviewActivitiesResponse, Tuple[GetReviewActivitiesResponse, int], Tuple[GetReviewActivitiesResponse, int, Dict[str, str]]
+    """
+    return 'do some magic!'
 
 
 def add_attachment(feature_id, uploaded_file=None):  # noqa: E501
@@ -111,21 +125,6 @@ def add_user_to_component(component_id, user_id, component_users_request=None): 
     """
     if connexion.request.is_json:
         component_users_request = ComponentUsersRequest.from_dict(connexion.request.get_json())  # noqa: E501
-    return 'do some magic!'
-
-
-def add_xfn_gates_to_stage(feature_id, stage_id):  # noqa: E501
-    """Add a full set of cross-functional gates to a stage.
-
-     # noqa: E501
-
-    :param feature_id: 
-    :type feature_id: int
-    :param stage_id: 
-    :type stage_id: int
-
-    :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
-    """
     return 'do some magic!'
 
 
@@ -377,6 +376,21 @@ def get_progress(feature_id):  # noqa: E501
     :type feature_id: int
 
     :rtype: Union[Dict[str, object], Tuple[Dict[str, object], int], Tuple[Dict[str, object], int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
+def get_review_activities(feature_id, stage_id):  # noqa: E501
+    """Add a full set of cross-functional gates to a stage.
+
+     # noqa: E501
+
+    :param feature_id: 
+    :type feature_id: int
+    :param stage_id: 
+    :type stage_id: int
+
+    :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
     """
     return 'do some magic!'
 

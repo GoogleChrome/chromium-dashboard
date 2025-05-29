@@ -23,6 +23,7 @@ from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismis
 from chromestatus_openapi.models.get_gate_response import GetGateResponse  # noqa: E501
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
 from chromestatus_openapi.models.get_origin_trials_response import GetOriginTrialsResponse  # noqa: E501
+from chromestatus_openapi.models.get_review_activities_response import GetReviewActivitiesResponse  # noqa: E501
 from chromestatus_openapi.models.get_settings_response import GetSettingsResponse  # noqa: E501
 from chromestatus_openapi.models.get_stars_response import GetStarsResponse  # noqa: E501
 from chromestatus_openapi.models.get_votes_response import GetVotesResponse  # noqa: E501
@@ -45,6 +46,23 @@ from chromestatus_openapi.test import BaseTestCase
 
 class TestDefaultController(BaseTestCase):
     """DefaultController integration test stubs"""
+
+    def test_activities_get(self):
+        """Test case for activities_get
+
+        Return a list of all review activity events in Chromestatus.
+        """
+        query_string = [('start', 'start_example')]
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/activities',
+            method='GET',
+            headers=headers,
+            query_string=query_string)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
 
     @unittest.skip("multipart/form-data not supported by Connexion")
     def test_add_attachment(self):
@@ -120,21 +138,6 @@ class TestDefaultController(BaseTestCase):
             headers=headers,
             data=json.dumps(component_users_request),
             content_type='application/json')
-        self.assert200(response,
-                       'Response body is : ' + response.data.decode('utf-8'))
-
-    def test_add_xfn_gates_to_stage(self):
-        """Test case for add_xfn_gates_to_stage
-
-        Add a full set of cross-functional gates to a stage.
-        """
-        headers = { 
-            'Accept': 'application/json',
-        }
-        response = self.client.open(
-            '/api/v0/features/{feature_id}/stages/{stage_id}/addXfnGates'.format(feature_id=56, stage_id=56),
-            method='POST',
-            headers=headers)
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
@@ -427,6 +430,21 @@ class TestDefaultController(BaseTestCase):
         response = self.client.open(
             '/api/v0/features/{feature_id}/progress'.format(feature_id=56),
             method='GET',
+            headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_get_review_activities(self):
+        """Test case for get_review_activities
+
+        Add a full set of cross-functional gates to a stage.
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/features/{feature_id}/stages/{stage_id}/addXfnGates'.format(feature_id=56, stage_id=56),
+            method='POST',
             headers=headers)
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))

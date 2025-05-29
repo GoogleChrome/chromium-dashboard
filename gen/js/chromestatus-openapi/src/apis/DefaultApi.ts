@@ -36,6 +36,7 @@ import type {
   GetGateResponse,
   GetIntentResponse,
   GetOriginTrialsResponse,
+  GetReviewActivitiesResponse,
   GetSettingsResponse,
   GetStarsResponse,
   GetVotesResponse,
@@ -97,6 +98,8 @@ import {
     GetIntentResponseToJSON,
     GetOriginTrialsResponseFromJSON,
     GetOriginTrialsResponseToJSON,
+    GetReviewActivitiesResponseFromJSON,
+    GetReviewActivitiesResponseToJSON,
     GetSettingsResponseFromJSON,
     GetSettingsResponseToJSON,
     GetStarsResponseFromJSON,
@@ -133,6 +136,10 @@ import {
     SuccessMessageToJSON,
 } from '../models/index';
 
+export interface ActivitiesGetRequest {
+    start: string;
+}
+
 export interface AddAttachmentRequest {
     featureId: number;
     uploadedFile?: Blob;
@@ -153,11 +160,6 @@ export interface AddUserToComponentRequest {
     componentId: number;
     userId: number;
     componentUsersRequest?: ComponentUsersRequest;
-}
-
-export interface AddXfnGatesToStageRequest {
-    featureId: number;
-    stageId: number;
 }
 
 export interface AuthenticateUserRequest {
@@ -223,6 +225,11 @@ export interface GetProcessRequest {
 
 export interface GetProgressRequest {
     featureId: number;
+}
+
+export interface GetReviewActivitiesRequest {
+    featureId: number;
+    stageId: number;
 }
 
 export interface GetUserPermissionsRequest {
@@ -298,6 +305,21 @@ export interface UpdateFeatureCommentRequest {
 export interface DefaultApiInterface {
     /**
      * 
+     * @summary Return a list of all review activity events in Chromestatus.
+     * @param {string} start 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    activitiesGetRaw(requestParameters: ActivitiesGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetReviewActivitiesResponse>>;
+
+    /**
+     * Return a list of all review activity events in Chromestatus.
+     */
+    activitiesGet(requestParameters: ActivitiesGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetReviewActivitiesResponse>;
+
+    /**
+     * 
      * @summary Store a file that will be attached to a feature
      * @param {number} featureId Feature ID
      * @param {Blob} [uploadedFile] 
@@ -361,22 +383,6 @@ export interface DefaultApiInterface {
      * Add a user to a component
      */
     addUserToComponent(requestParameters: AddUserToComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
-
-    /**
-     * 
-     * @summary Add a full set of cross-functional gates to a stage.
-     * @param {number} featureId 
-     * @param {number} stageId 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof DefaultApiInterface
-     */
-    addXfnGatesToStageRaw(requestParameters: AddXfnGatesToStageRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
-
-    /**
-     * Add a full set of cross-functional gates to a stage.
-     */
-    addXfnGatesToStage(requestParameters: AddXfnGatesToStageRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
 
     /**
      * 
@@ -652,6 +658,22 @@ export interface DefaultApiInterface {
      * Get the progress for a feature
      */
     getProgress(requestParameters: GetProgressRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: any; }>;
+
+    /**
+     * 
+     * @summary Add a full set of cross-functional gates to a stage.
+     * @param {number} featureId 
+     * @param {number} stageId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getReviewActivitiesRaw(requestParameters: GetReviewActivitiesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+
+    /**
+     * Add a full set of cross-functional gates to a stage.
+     */
+    getReviewActivities(requestParameters: GetReviewActivitiesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
 
     /**
      * 
@@ -994,6 +1016,43 @@ export interface DefaultApiInterface {
 export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
 
     /**
+     * Return a list of all review activity events in Chromestatus.
+     */
+    async activitiesGetRaw(requestParameters: ActivitiesGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetReviewActivitiesResponse>> {
+        if (requestParameters['start'] == null) {
+            throw new runtime.RequiredError(
+                'start',
+                'Required parameter "start" was null or undefined when calling activitiesGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['start'] != null) {
+            queryParameters['start'] = requestParameters['start'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/activities`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GetReviewActivitiesResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Return a list of all review activity events in Chromestatus.
+     */
+    async activitiesGet(requestParameters: ActivitiesGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetReviewActivitiesResponse> {
+        const response = await this.activitiesGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Store a file that will be attached to a feature
      */
     async addAttachmentRaw(requestParameters: AddAttachmentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AddAttachmentResponse>> {
@@ -1170,46 +1229,6 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async addUserToComponent(requestParameters: AddUserToComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.addUserToComponentRaw(requestParameters, initOverrides);
-    }
-
-    /**
-     * Add a full set of cross-functional gates to a stage.
-     */
-    async addXfnGatesToStageRaw(requestParameters: AddXfnGatesToStageRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
-        if (requestParameters['featureId'] == null) {
-            throw new runtime.RequiredError(
-                'featureId',
-                'Required parameter "featureId" was null or undefined when calling addXfnGatesToStage().'
-            );
-        }
-
-        if (requestParameters['stageId'] == null) {
-            throw new runtime.RequiredError(
-                'stageId',
-                'Required parameter "stageId" was null or undefined when calling addXfnGatesToStage().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        const response = await this.request({
-            path: `/features/{feature_id}/stages/{stage_id}/addXfnGates`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))).replace(`{${"stage_id"}}`, encodeURIComponent(String(requestParameters['stageId']))),
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
-    }
-
-    /**
-     * Add a full set of cross-functional gates to a stage.
-     */
-    async addXfnGatesToStage(requestParameters: AddXfnGatesToStageRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
-        const response = await this.addXfnGatesToStageRaw(requestParameters, initOverrides);
-        return await response.value();
     }
 
     /**
@@ -1821,6 +1840,46 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async getProgress(requestParameters: GetProgressRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: any; }> {
         const response = await this.getProgressRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Add a full set of cross-functional gates to a stage.
+     */
+    async getReviewActivitiesRaw(requestParameters: GetReviewActivitiesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling getReviewActivities().'
+            );
+        }
+
+        if (requestParameters['stageId'] == null) {
+            throw new runtime.RequiredError(
+                'stageId',
+                'Required parameter "stageId" was null or undefined when calling getReviewActivities().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/features/{feature_id}/stages/{stage_id}/addXfnGates`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))).replace(`{${"stage_id"}}`, encodeURIComponent(String(requestParameters['stageId']))),
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Add a full set of cross-functional gates to a stage.
+     */
+    async getReviewActivities(requestParameters: GetReviewActivitiesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+        const response = await this.getReviewActivitiesRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

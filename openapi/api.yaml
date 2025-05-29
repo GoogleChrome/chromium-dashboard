@@ -211,7 +211,7 @@ paths:
           type: integer
     post:
       summary: Add a full set of cross-functional gates to a stage.
-      operationId: addXfnGatesToStage
+      operationId: getReviewActivities
       responses:
         '200':
           description: Vote set successfully
@@ -238,6 +238,21 @@ paths:
       required: true
       schema:
         type: string
+    get:
+      summary: Return a list of all review activity events in Chromestatus.
+      responses:
+        '200':
+          description: List of review activities since the specified start date.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetReviewActivitiesResponse'
+        '400':
+          description: Invalid or missing start date.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
   /features/<int:feature_id>/approvals/comments:
     parameters:
           - name: feature_id
