@@ -211,7 +211,7 @@ paths:
           type: integer
     post:
       summary: Add a full set of cross-functional gates to a stage.
-      operationId: getReviewActivities
+      operationId: addXfnGatesToStage
       responses:
         '200':
           description: Vote set successfully
@@ -240,6 +240,7 @@ paths:
         type: string
     get:
       summary: Return a list of all review activity events in Chromestatus.
+      operationId: getReviewActivities
       responses:
         '200':
           description: List of review activities since the specified start date.

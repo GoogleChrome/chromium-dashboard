@@ -59,7 +59,7 @@ paths:
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /activities:
     get:
-      operationId: activities_get
+      operationId: get_review_activities
       parameters:
       - explode: true
         in: query
@@ -751,7 +751,7 @@ paths:
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /features/{feature_id}/stages/{stage_id}/addXfnGates:
     post:
-      operationId: get_review_activities
+      operationId: add_xfn_gates_to_stage
       parameters:
       - explode: false
         in: path

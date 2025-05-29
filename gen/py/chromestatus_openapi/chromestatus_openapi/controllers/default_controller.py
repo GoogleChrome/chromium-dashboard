@@ -45,19 +45,6 @@ from chromestatus_openapi.models.success_message import SuccessMessage  # noqa: 
 from chromestatus_openapi import util
 
 
-def activities_get(start):  # noqa: E501
-    """Return a list of all review activity events in Chromestatus.
-
-     # noqa: E501
-
-    :param start: 
-    :type start: str
-
-    :rtype: Union[GetReviewActivitiesResponse, Tuple[GetReviewActivitiesResponse, int], Tuple[GetReviewActivitiesResponse, int, Dict[str, str]]
-    """
-    return 'do some magic!'
-
-
 def add_attachment(feature_id, uploaded_file=None):  # noqa: E501
     """Store a file that will be attached to a feature
 
@@ -125,6 +112,21 @@ def add_user_to_component(component_id, user_id, component_users_request=None): 
     """
     if connexion.request.is_json:
         component_users_request = ComponentUsersRequest.from_dict(connexion.request.get_json())  # noqa: E501
+    return 'do some magic!'
+
+
+def add_xfn_gates_to_stage(feature_id, stage_id):  # noqa: E501
+    """Add a full set of cross-functional gates to a stage.
+
+     # noqa: E501
+
+    :param feature_id: 
+    :type feature_id: int
+    :param stage_id: 
+    :type stage_id: int
+
+    :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
+    """
     return 'do some magic!'
 
 
@@ -380,17 +382,15 @@ def get_progress(feature_id):  # noqa: E501
     return 'do some magic!'
 
 
-def get_review_activities(feature_id, stage_id):  # noqa: E501
-    """Add a full set of cross-functional gates to a stage.
+def get_review_activities(start):  # noqa: E501
+    """Return a list of all review activity events in Chromestatus.
 
      # noqa: E501
 
-    :param feature_id: 
-    :type feature_id: int
-    :param stage_id: 
-    :type stage_id: int
+    :param start: 
+    :type start: str
 
-    :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
+    :rtype: Union[GetReviewActivitiesResponse, Tuple[GetReviewActivitiesResponse, int], Tuple[GetReviewActivitiesResponse, int, Dict[str, str]]
     """
     return 'do some magic!'
 
