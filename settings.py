@@ -102,6 +102,9 @@ DEV_MODE_OT_SUPPORT_EMAILS = 'user1@gmail.com,user2@gmail.com'
 # URL host for Webstatus.dev API endponts.
 API_WEBSTATUS_DEV_URL = 'https://api.webstatus.dev'
 
+# Bucket used for scheduled file uploads.
+FILES_BUCKET = 'cr-status-staging'
+
 if UNIT_TEST_MODE:
   APP_TITLE = 'Local testing'
   SITE_URL = 'http://127.0.0.1:7777/'
@@ -126,6 +129,7 @@ elif APP_ID == 'cr-status':
   INBOUND_EMAIL_ADDR = 'chromestatus@cr-status.appspotmail.com'
   REVIEW_COMMENT_MAILING_LIST = 'blink-dev@chromium.org'
   BACKUP_BUCKET = 'cr-status-backups'
+  FILES_BUCKET = 'cr-status'
 elif APP_ID == 'cr-status-staging':
   STAGING = True
   SEND_EMAIL = True

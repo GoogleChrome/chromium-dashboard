@@ -16,7 +16,7 @@ import collections
 from datetime import date, datetime
 import logging
 from typing import Any
-from google.cloud import ndb  # type: ignore
+from google.cloud import ndb, storage  # type: ignore
 import requests
 
 from api import converters, channels_api
@@ -32,6 +32,7 @@ from internals.feature_links import batch_index_feature_entries
 from internals import stage_helpers
 from internals.webdx_feature_models import WebdxFeatures
 from webstatus_openapi import ApiClient, DefaultApi, Configuration, ApiException, Feature
+from chromestatus_openapi.models import ReviewActivity as ReviewActivityModel
 import settings
 
 class EvaluateGateStatus(FlaskHandler):
@@ -883,3 +884,61 @@ class SendManualOTActivatedEmail(FlaskHandler):
         '/tasks/email-ot-activated',
         {'stage': converters.stage_to_json_dict(stage)})
     return 'Email task enqueued'
+
+
+class GenerateReviewActivityFile(FlaskHandler):
+  """Generate a CSV file with all review activity in ChromeStatus."""
+  DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
+
+  def get_template_data(self, **kwargs):
+    self.require_cron_header()
+
+    # Note: We assume that anyone may view approval comments.
+    activities: list[Activity] = Activity.query(
+      ).order(Activity.created).fetch()
+
+    # Filter deleted activities the user can't see, and activities that have
+    # no gate ID, meaning they do not represent review activity.
+    activities = list(filter(
+      lambda a: (a.deleted_by is None
+                 and a.gate_id is not None),
+      activities))
+    gate_ids = set([a.gate_id for a in activities])
+    gates = ndb.get_multi([ndb.Key('Gate', g_id) for g_id in gate_ids])
+    gates_dict: dict[int, Gate] = {g.key.integer_id(): g for g in gates}
+
+    # Add header rows to start.
+    csv_rows = [
+      'FeatureID,TeamName,EventType,EventDate,ReviewStatus,ReviewAssignee,'
+      'Author,Content'
+    ]
+    for a in activities:
+      review_status = ''
+      review_assignee = ''
+      gate_type = gates_dict[a.gate_id].gate_type
+      if len(a.amendments):
+        # There should only be 1 amendment for review changes.
+        if a.amendments[0].field_name == 'review_status':
+          review_status = a.amendments[0].new_value
+        if a.amendments[0].field_name == 'review_assignee':
+          review_assignee = a.amendments[0].new_value
+      csv_rows.append(','.join(
+        [
+          str(a.feature_id),
+          approval_defs.APPROVAL_FIELDS_BY_ID[gate_type].team_name,
+          a.amendments[0].field_name if len(a.amendments) else 'comment',
+        str(datetime.strftime(a.created, self.DATE_FORMAT)),
+          review_status,
+          review_assignee,
+          a.author or '',
+          a.content or '',
+        ]
+      ))
+
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(settings.FILES_BUCKET)
+    blob = bucket.blob('chromestatus-review-activity.csv')
+
+    blob.upload_from_string('\n'.join(csv_rows))
+
+    return f"File chromestatus-review-activity.csv uploaded."

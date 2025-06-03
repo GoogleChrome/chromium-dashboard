@@ -47,3 +47,6 @@ cron:
 - description: Fetch a new copy of Webdx feature ID list
   url: /cron/fetch_webdx_feature_ids
   schedule: every day 9:00
+- description: Generate a CSV of all review activities in ChromeStatus.
+  url: /cron/generate_review_activity
+  schedule: every day 8:00
