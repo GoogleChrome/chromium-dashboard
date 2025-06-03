@@ -86,13 +86,15 @@ export class ChromedashReportReviewLatencyPage extends LitElement {
   }
 
   renderFeatureReviewsRow(reviewLatency) {
+    const groupedByGateType = Object.groupBy(reviewLatency.gate_reviews, ({gate_type}) => gate_type);
     const gateLatency = {};
-    for (const gr of reviewLatency.gate_reviews) {
+    for (const gateType in groupedByGateType) {
+      const gr = groupedByGateType[gateType][0]; // Assuming one review per gate_type for a feature
       let display = gr.latency_days;
       if (gr.latency_days === -1) {
-        display = '';
-      } else if (gr.latency_days == -2) {
-        display = 'Pending';
+        display = \\\'\\\';
+      } else if (gr.latency_days === -2) {
+        display = \\\'Pending\\\';
       }
       gateLatency[gr.gate_type] = display;
     }

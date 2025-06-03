@@ -142,24 +142,20 @@ export class ChromedashTypeahead extends LitElement {
   }
 
   groupCandidates(candidates: Candidate[]): Candidate[] {
-    const groupsSeen = new Set();
-    const groupsSeenTwice = new Set();
-    for (const c of candidates) {
-      if (groupsSeen.has(c.group)) {
-        groupsSeenTwice.add(c.group);
-      } else {
-        groupsSeen.add(c.group);
-      }
-    }
-
-    const groupsSeenTwiceProcessed = new Set();
+    const groupedByGroup = Object.groupBy(candidates, ({ group }) => group);
     const result: Candidate[] = [];
-    for (const c of candidates) {
-      if (!groupsSeenTwice.has(c.group)) {
-        result.push(c);
-      } else if (!groupsSeenTwiceProcessed.has(c.group)) {
-        result.push({group: c.group, name: c.group + ':', doc: c.doc});
-        groupsSeenTwiceProcessed.add(c.group);
+
+    for (const [groupName, groupCandidatesArray] of Object.entries(groupedByGroup)) {
+      if (groupCandidatesArray.length > 1) {
+        // This group was seen more than once. Create the summary candidate.
+        result.push({
+          group: groupName,
+          name: groupName + \\\':\\\',
+          doc: groupCandidatesArray[0].doc, // doc from the first candidate in the group
+        });
+      } else {
+        // This group was seen only once. Add the original candidate.
+        result.push(groupCandidatesArray[0]);
       }
     }
     return result;

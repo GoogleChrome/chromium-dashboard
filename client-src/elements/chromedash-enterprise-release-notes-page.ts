@@ -287,21 +287,10 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         return impactB - impactA;
       });
 
-    this.currentChromeBrowserUpdates = currentFeatures.filter(
-      f =>
-        f.enterprise_product_category ===
-        ENTERPRISE_PRODUCT_CATEGORY.CHROME_BROWSER_UPDATE[0]
-    );
-    this.currentChromeEnterpriseCore = currentFeatures.filter(
-      f =>
-        f.enterprise_product_category ===
-        ENTERPRISE_PRODUCT_CATEGORY.CHROME_ENTERPRISE_CORE[0]
-    );
-    this.currentChromeEnterprisePremium = currentFeatures.filter(
-      f =>
-        f.enterprise_product_category ===
-        ENTERPRISE_PRODUCT_CATEGORY.CHROME_ENTERPRISE_PREMIUM[0]
-    );
+    const groupedCurrentFeatures = Object.groupBy(currentFeatures, ({enterprise_product_category}) => enterprise_product_category);
+    this.currentChromeBrowserUpdates = groupedCurrentFeatures[ENTERPRISE_PRODUCT_CATEGORY.CHROME_BROWSER_UPDATE[0]] || [];
+    this.currentChromeEnterpriseCore = groupedCurrentFeatures[ENTERPRISE_PRODUCT_CATEGORY.CHROME_ENTERPRISE_CORE[0]] || [];
+    this.currentChromeEnterprisePremium = groupedCurrentFeatures[ENTERPRISE_PRODUCT_CATEGORY.CHROME_ENTERPRISE_PREMIUM[0]] || [];
 
     // Features that are rolling out in a future milestone sorted with the closest milestone
     // first.
@@ -330,21 +319,10 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
           ) || 0;
         return minA - minB;
       });
-    this.upcomingChromeBrowserUpdates = upcomingFeatures.filter(
-      f =>
-        f.enterprise_product_category ===
-        ENTERPRISE_PRODUCT_CATEGORY.CHROME_BROWSER_UPDATE[0]
-    );
-    this.upcomingChromeEnterpriseCore = upcomingFeatures.filter(
-      f =>
-        f.enterprise_product_category ===
-        ENTERPRISE_PRODUCT_CATEGORY.CHROME_ENTERPRISE_CORE[0]
-    );
-    this.upcomingChromeEnterprisePremium = upcomingFeatures.filter(
-      f =>
-        f.enterprise_product_category ===
-        ENTERPRISE_PRODUCT_CATEGORY.CHROME_ENTERPRISE_PREMIUM[0]
-    );
+    const groupedUpcomingFeatures = Object.groupBy(upcomingFeatures, ({enterprise_product_category}) => enterprise_product_category);
+    this.upcomingChromeBrowserUpdates = groupedUpcomingFeatures[ENTERPRISE_PRODUCT_CATEGORY.CHROME_BROWSER_UPDATE[0]] || [];
+    this.upcomingChromeEnterpriseCore = groupedUpcomingFeatures[ENTERPRISE_PRODUCT_CATEGORY.CHROME_ENTERPRISE_CORE[0]] || [];
+    this.upcomingChromeEnterprisePremium = groupedUpcomingFeatures[ENTERPRISE_PRODUCT_CATEGORY.CHROME_ENTERPRISE_PREMIUM[0]] || [];
   }
 
   connectedCallback() {
