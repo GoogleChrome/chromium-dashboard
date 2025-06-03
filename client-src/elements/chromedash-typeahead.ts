@@ -141,6 +141,9 @@ export class ChromedashTypeahead extends LitElement {
     return !COMPARE_OPS.some(op => s.includes(op));
   }
 
+  // TODO: Consider using Object.groupBy() here to group candidates by `c.group`.
+  // The subsequent logic to then create the `result` array would need to be adjusted
+  // to iterate over the grouped object and apply the "seen twice" logic.
   groupCandidates(candidates: Candidate[]): Candidate[] {
     const groupsSeen = new Set();
     const groupsSeenTwice = new Set();

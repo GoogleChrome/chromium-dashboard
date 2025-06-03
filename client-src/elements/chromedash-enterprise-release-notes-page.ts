@@ -153,6 +153,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   }
 
   convertShippingStageToRolloutStages(stage) {
+// TODO: Consider using Object.groupBy() here to group items by milestone.
     const milestones = [
       stage.desktop_first,
       stage.android_first,
@@ -287,6 +288,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         return impactB - impactA;
       });
 
+    // TODO: Consider using Object.groupBy() here to group items by enterprise_product_category.
     this.currentChromeBrowserUpdates = currentFeatures.filter(
       f =>
         f.enterprise_product_category ===
@@ -330,6 +332,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
           ) || 0;
         return minA - minB;
       });
+    // TODO: Consider using Object.groupBy() here to group items by enterprise_product_category.
     this.upcomingChromeBrowserUpdates = upcomingFeatures.filter(
       f =>
         f.enterprise_product_category ===

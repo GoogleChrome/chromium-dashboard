@@ -71,6 +71,7 @@ export class ChromedashReviewStatusIcon extends LitElement {
     });
   }
 
+  // TODO: Consider using Object.groupBy() here to group gates by state, then determine overall status.
   calcStatus(): {status: statusEnum; targetGateId: number | undefined} {
     let status: statusEnum = 'Not started';
     let targetGateId: number | undefined = undefined;

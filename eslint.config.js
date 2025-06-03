@@ -11,7 +11,7 @@ export default [
   },
   {
     languageOptions: {
-      ecmaVersion: 2022,
+      ecmaVersion: "latest",
       sourceType: "module",
       globals: {
         "ga": true,

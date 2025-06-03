@@ -92,6 +92,7 @@ export class ChromedashFeatureTable extends LitElement {
   loadGateData() {
     window.csClient
       .getPendingGates()
+      // TODO: Consider using Object.groupBy() here to group gates by feature_id.
       .then(res => {
         const gatesByFID: Record<number, GateDict[]> = {};
         for (const g of res.gates) {

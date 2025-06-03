@@ -132,6 +132,7 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
     args: () => [this.reviewer],
   });
 
+  // TODO: Consider using Object.groupBy() here to group reviews by current_stage.
   groupReviews(
     reviews: OutstandingReview[]
   ): Record<StageEnum, OutstandingReview[]> {
