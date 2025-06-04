@@ -959,15 +959,17 @@ class GenerateReviewActivityFile(FlaskHandler):
     """Append the rows to the review activity CSV, or create a new CSV if it
     does not exist."""
     blob = bucket.blob('chromestatus-review-activity.csv')
+    csv_contents = ''
     if blob.exists():
-      with blob.open('a') as f:
-        f.write('\n'.join(csv_rows))
+      with blob.open('r') as f:
+        existing_csv = f.read()
+        csv_contents = existing_csv + '\n' + '\n'.join(csv_rows)
     else:
-      csv_rows.insert(
-        0,
+      csv_contents = (
         'FeatureID,TeamName,EventType,EventDate,ReviewStatus,ReviewAssignee,'
-        'Author,Content')
-      blob.upload_from_string('\n'.join(csv_rows))
+        'Author,Content'
+      ) + '\n'.join(csv_rows)
+    blob.upload_from_string(csv_contents)
 
   def _write_last_run_timestamp(self, bucket, timestamp: datetime) -> None:
     """Store the date of the last review activity run."""
