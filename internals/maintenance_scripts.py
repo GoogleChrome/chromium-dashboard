@@ -924,8 +924,8 @@ class GenerateReviewActivityFile(FlaskHandler):
         if a.amendments[0].field_name == 'review_assignee':
           review_assignee = a.amendments[0].new_value
         # Handle CSV character escaping for the comment.
-        comment = comment.replace('"', '""')
-        comment = f'"{comment}"'
+      comment = comment.replace('"', '""')
+      comment = f'"{comment}"'
       csv_rows.append(','.join(
         [
           str(a.feature_id),
@@ -935,7 +935,7 @@ class GenerateReviewActivityFile(FlaskHandler):
           review_status,
           review_assignee,
           a.author or '',
-          a.content or '',
+          comment,
         ]
       ))
 
