@@ -897,12 +897,14 @@ class GenerateReviewActivityFile(FlaskHandler):
 
     # Filter deleted activities the user can't see, and activities that have
     # no gate ID, meaning they do not represent review activity.
+    # TODO(DanielRyanSmith): Confirm if deleted features should deleted features
+    # should have existing activity filtered and handle accordingly.
     activities = list(filter(
       lambda a: (a.deleted_by is None
                  and a.gate_id is not None),
       activities))
-    gate_ids = set([a.gate_id for a in activities])
-    gates = ndb.get_multi([ndb.Key('Gate', g_id) for g_id in gate_ids])
+    gate_ids = set(a.gate_id for a in activities)
+    gates = ndb.get_multi(ndb.Key('Gate', g_id) for g_id in gate_ids)
     gates_dict: dict[int, Gate] = {g.key.integer_id(): g for g in gates}
 
     # Add header rows to start.
@@ -921,7 +923,7 @@ class GenerateReviewActivityFile(FlaskHandler):
           review_status = a.amendments[0].new_value
         if a.amendments[0].field_name == 'review_assignee':
           review_assignee = a.amendments[0].new_value
-        # Handle CSV character escaping for the comment.
+      # Handle CSV character escaping for the comment.
       if comment:
         comment = comment.replace('"', '""')
         comment = f'"{comment}"'
