@@ -915,6 +915,7 @@ class GenerateReviewActivityFile(FlaskHandler):
     for a in activities:
       review_status = ''
       review_assignee = ''
+      comment = a.content or ''
       gate_type = gates_dict[a.gate_id].gate_type
       if len(a.amendments):
         # There should only be 1 amendment for review changes.
@@ -922,6 +923,9 @@ class GenerateReviewActivityFile(FlaskHandler):
           review_status = a.amendments[0].new_value
         if a.amendments[0].field_name == 'review_assignee':
           review_assignee = a.amendments[0].new_value
+        # Handle CSV character escaping for the comment.
+        comment = comment.replace('"', '""')
+        comment = f'"{comment}"'
       csv_rows.append(','.join(
         [
           str(a.feature_id),
