@@ -946,10 +946,11 @@ class GenerateReviewActivityFile(FlaskHandler):
     return csv_rows
 
   def _get_last_run_timestamp(self, bucket):
-    """Get the starting timestamp for """
+    """Get the timestamp for the starting interval of querying for new
+    activities."""
     blob = bucket.blob('review-activity-last-timestamp.txt')
     if blob.exists():
-      with blob.open('r')as f:
+      with blob.open('r') as f:
         timestamp_str = f.read()
       return datetime.strptime(timestamp_str, self.DATE_FORMAT)
     # If no previous timestamp exists, start from the beginning.
@@ -960,9 +961,11 @@ class GenerateReviewActivityFile(FlaskHandler):
     does not exist."""
     blob = bucket.blob('chromestatus-review-activity.csv')
     csv_contents = ''
+    logging.info(f'adding {len(csv_rows)} new rows to CSV.')
     if blob.exists():
       with blob.open('r') as f:
         existing_csv = f.read()
+        logging.info(f'Existing csv is {existing_csv.count("\n")} lines long')
         csv_contents = existing_csv + '\n' + '\n'.join(csv_rows)
     else:
       csv_contents = (
@@ -988,4 +991,5 @@ class GenerateReviewActivityFile(FlaskHandler):
     self._write_csv(bucket, csv_rows)
     self._write_last_run_timestamp(bucket, now)
 
-    return f"File chromestatus-review-activity.csv uploaded."
+    return (f'{len(csv_rows)} '
+            'new rows added to chromestatus-review-activity.csv uploaded.')
