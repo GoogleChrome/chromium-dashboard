@@ -889,10 +889,8 @@ class SendManualOTActivatedEmail(FlaskHandler):
 class GenerateReviewActivityFile(FlaskHandler):
   """Generate a CSV file with all review activity in ChromeStatus."""
   DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
-
-  def get_template_data(self, **kwargs):
-    self.require_cron_header()
-
+  
+  def _generate_csv(self):
     # Note: We assume that anyone may view approval comments.
     activities: list[Activity] = Activity.query(
       ).order(Activity.created).fetch()
@@ -924,8 +922,9 @@ class GenerateReviewActivityFile(FlaskHandler):
         if a.amendments[0].field_name == 'review_assignee':
           review_assignee = a.amendments[0].new_value
         # Handle CSV character escaping for the comment.
-      comment = comment.replace('"', '""')
-      comment = f'"{comment}"'
+      if comment:
+        comment = comment.replace('"', '""')
+        comment = f'"{comment}"'
       csv_rows.append(','.join(
         [
           str(a.feature_id),
@@ -938,7 +937,12 @@ class GenerateReviewActivityFile(FlaskHandler):
           comment,
         ]
       ))
+    return csv_rows
 
+  def get_template_data(self, **kwargs):
+    self.require_cron_header()
+
+    csv_rows = self._generate_csv()
     storage_client = storage.Client()
     bucket = storage_client.bucket(settings.FILES_BUCKET)
     blob = bucket.blob('chromestatus-review-activity.csv')

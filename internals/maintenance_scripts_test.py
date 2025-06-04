@@ -22,7 +22,7 @@ from api import converters
 from internals import maintenance_scripts
 from internals import core_enums
 from internals.core_models import FeatureEntry, Stage, MilestoneSet
-from internals.review_models import Gate, Vote
+from internals.review_models import Activity, Amendment, Gate, Vote
 from internals import stage_helpers
 from internals.webdx_feature_models import WebdxFeatures
 from webstatus_openapi import FeaturePage, ApiException
@@ -1070,3 +1070,114 @@ class SendManualOTActivatedEmailTest(testing_config.CustomTestCase):
     result = self.handler.get_template_data(stage_id=self.ot_stage_id)
     self.assertEqual('Stage 111 does not have ot_display_name set', result)
     mock_enqueue.assert_not_called()
+
+
+class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
+  def setUp(self):
+    self.maxDiff = None
+    self.handler = maintenance_scripts.GenerateReviewActivityFile()
+    
+    self.gate_1 = Gate(id=11, feature_id=1, stage_id=100,
+                       gate_type=4, # API Owners.
+                       state=Vote.NA)
+    self.gate_1.put()
+    
+    self.gate_2 = Gate(id=12, feature_id=2, stage_id=200,
+                       gate_type=32, # Privacy team.
+                       state=Vote.NA)
+    self.gate_2.put()
+
+    self.activity_1 = Activity(
+      feature_id=1, gate_id=11, author='user1@example.com',
+      created=datetime(2020, 1, 1, 11), content='test comment', amendments=[])
+    self.activity_1.put()
+    
+    self.activity_2 = Activity(
+      feature_id=1, gate_id=11, created=datetime(2020, 1, 2, 9),
+      author='user1@example.com', content=None,
+      amendments=[Amendment(
+          field_name='review_status', old_value='na', new_value='no_response')
+      ])
+    self.activity_2.put()
+
+    self.activity_3 = Activity(
+      feature_id=1, gate_id=11, author='user2@example.com',
+      created=datetime(2020, 1, 3, 8), content='test "comment" 2', amendments=[])
+    self.activity_3.put()
+
+    self.activity_4 = Activity(
+      feature_id=1, gate_id=11, created=datetime(2020, 1, 4, 12),
+      author='user1@example.com', content=None,
+      amendments=[Amendment(
+          field_name='review_status', old_value='na', new_value='needs_work')
+      ])
+    self.activity_4.put()
+
+    # Deleted comment.
+    self.activity_5 = Activity(
+      feature_id=1, gate_id=11, author='user2@example.com',
+      created=datetime(2020, 1, 11, 8), content='test comment 3', amendments=[],
+      deleted_by='user2@example.com')
+    self.activity_5.put()
+
+    self.activity_6 = Activity(
+      feature_id=1, gate_id=11, created=datetime(2020, 1, 6, 12),
+      author='user2@example.com', content=None,
+      amendments=[Amendment(
+          field_name='review_status', old_value='needs_work',
+          new_value='approved')
+      ])
+    self.activity_6.put()
+
+    # Comment with no gate ID.
+    self.activity_7 = Activity(
+      feature_id=2, gate_id=None, author='user3@example.com',
+      created=datetime(2020, 1, 10, 8), content='test comment 4', amendments=[])
+    self.activity_7.put()
+
+
+    self.activity_8 = Activity(
+      feature_id=2, gate_id=12, author='user3@example.com',
+      created=datetime(2020, 1, 11, 9), content=None,
+      amendments=[Amendment(
+          field_name='review_status', old_value='needs_work',
+          new_value='approved')
+      ])
+    self.activity_8.put()
+
+    self.activity_9 = Activity(
+      feature_id=2, gate_id=12, author='user4@example.com',
+      created=datetime(2020, 1, 12, 10), content=None,
+      amendments=[Amendment(
+          field_name='review_assignee', old_value='',
+          new_value='user3@example.com')
+      ])
+    self.activity_9.put()
+
+    self.activity_10 = Activity(
+      feature_id=2, gate_id=12, author='user3@example.com',
+      created=datetime(2020, 1, 15, 8), content='test comment 5', amendments=[])
+    self.activity_10.put()
+
+  def tearDown(self):
+    for kind in [Activity]:
+      for entity in kind.query():
+        entity.key.delete()
+
+  def test_generate_csv(self):
+    """Generates CSV in the expected shape and format."""
+    csv_rows = self.handler._generate_csv()
+    expected_rows = [
+      'FeatureID,TeamName,EventType,EventDate,ReviewStatus,ReviewAssignee,'
+      'Author,Content',
+      '1,API Owners,comment,2020-01-01T11:00:00,,,user1@example.com,"test comment"',
+      '1,API Owners,review_status,2020-01-02T09:00:00,no_response,,user1@example.com,',
+      '1,API Owners,comment,2020-01-03T08:00:00,,,user2@example.com,"test ""comment"" 2"',
+      '1,API Owners,review_status,2020-01-04T12:00:00,needs_work,,user1@example.com,',
+      '1,API Owners,review_status,2020-01-06T12:00:00,approved,,user2@example.com,',
+      '2,Privacy,review_status,2020-01-11T09:00:00,approved,,user3@example.com,',
+      '2,Privacy,review_assignee,2020-01-12T10:00:00,,user3@example.com,user4@example.com,',
+      '2,Privacy,comment,2020-01-15T08:00:00,,,user3@example.com,"test comment 5"'
+    ]
+    self.assertEqual(expected_rows, csv_rows)
+  
