@@ -890,10 +890,17 @@ class GenerateReviewActivityFile(FlaskHandler):
   """Generate a CSV file with all review activity in ChromeStatus."""
   DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
   
-  def _generate_csv(self):
+  def _generate_csv(
+    self,
+    start_timestamp: datetime,
+    end_timestamp: datetime
+  ) -> list[str]:
+    """Generate a list of rows to add to the review activity CSV."""
     # Note: We assume that anyone may view approval comments.
     activities: list[Activity] = Activity.query(
-      ).order(Activity.created).fetch()
+      Activity.created > start_timestamp,
+      Activity.created <= end_timestamp,
+    ).order(Activity.created).fetch()
 
     # Filter deleted activities the user can't see, and activities that have
     # no gate ID, meaning they do not represent review activity.
@@ -908,10 +915,7 @@ class GenerateReviewActivityFile(FlaskHandler):
     gates_dict: dict[int, Gate] = {g.key.integer_id(): g for g in gates}
 
     # Add header rows to start.
-    csv_rows = [
-      'FeatureID,TeamName,EventType,EventDate,ReviewStatus,ReviewAssignee,'
-      'Author,Content'
-    ]
+    csv_rows: list[str] = []
     for a in activities:
       review_status = ''
       review_assignee = ''
@@ -941,14 +945,45 @@ class GenerateReviewActivityFile(FlaskHandler):
       ))
     return csv_rows
 
+  def _get_last_run_timestamp(self, bucket):
+    """Get the starting timestamp for """
+    blob = bucket.blob('review-activity-last-timestamp.txt')
+    if blob.exists():
+      with blob.open('r')as f:
+        timestamp_str = f.read()
+      return datetime.strptime(timestamp_str, self.DATE_FORMAT)
+    # If no previous timestamp exists, start from the beginning.
+    return datetime(2000, 1, 1)
+
+  def _write_csv(self, bucket, csv_rows: list[str]) -> None:
+    """Append the rows to the review activity CSV, or create a new CSV if it
+    does not exist."""
+    blob = bucket.blob('chromestatus-review-activity.csv')
+    if blob.exists():
+      with blob.open('a') as f:
+        f.write('\n'.join(csv_rows))
+    else:
+      csv_rows = [
+        'FeatureID,TeamName,EventType,EventDate,ReviewStatus,ReviewAssignee,'
+        'Author,Content'
+      ].extend(csv_rows)
+      blob.upload_from_string('\n'.join(csv_rows))
+
+  def _write_last_run_timestamp(self, bucket, timestamp: datetime) -> None:
+    """Store the date of the last review activity run."""
+    blob = bucket.blob('review-activity-last-timestamp.txt')
+    blob.upload_from_string(timestamp.strftime(self.DATE_FORMAT))
+
   def get_template_data(self, **kwargs):
     self.require_cron_header()
 
-    csv_rows = self._generate_csv()
     storage_client = storage.Client()
     bucket = storage_client.bucket(settings.FILES_BUCKET)
-    blob = bucket.blob('chromestatus-review-activity.csv')
 
-    blob.upload_from_string('\n'.join(csv_rows))
+    last_run_timestamp = self._get_last_run_timestamp(bucket)
+    now = datetime.now()
+    csv_rows = self._generate_csv(last_run_timestamp, now)
+    self._write_csv(bucket, csv_rows)
+    self._write_last_run_timestamp(bucket, now)
 
     return f"File chromestatus-review-activity.csv uploaded."

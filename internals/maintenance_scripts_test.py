@@ -1164,12 +1164,10 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
       for entity in kind.query():
         entity.key.delete()
 
-  def test_generate_csv(self):
+  def test_generate_csv_all(self):
     """Generates CSV in the expected shape and format."""
-    csv_rows = self.handler._generate_csv()
+    csv_rows = self.handler._generate_csv(datetime(1970, 1, 1), datetime.now())
     expected_rows = [
-      'FeatureID,TeamName,EventType,EventDate,ReviewStatus,ReviewAssignee,'
-      'Author,Content',
       '1,API Owners,comment,2020-01-01T11:00:00,,,user1@example.com,"test comment"',
       '1,API Owners,review_status,2020-01-02T09:00:00,no_response,,user1@example.com,',
       '1,API Owners,comment,2020-01-03T08:00:00,,,user2@example.com,"test ""comment"" 2"',
@@ -1178,6 +1176,16 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
       '2,Privacy,review_status,2020-01-11T09:00:00,approved,,user3@example.com,',
       '2,Privacy,review_assignee,2020-01-12T10:00:00,,user3@example.com,user4@example.com,',
       '2,Privacy,comment,2020-01-15T08:00:00,,,user3@example.com,"test comment 5"'
+    ]
+    self.assertEqual(expected_rows, csv_rows)
+
+  def test_generate_csv_subset(self):
+    """Generates a subset of rows based on the given timestamps."""
+    csv_rows = self.handler._generate_csv(
+        datetime(2020, 1, 4), datetime(2020, 1, 7))
+    expected_rows = [
+      '1,API Owners,review_status,2020-01-04T12:00:00,needs_work,,user1@example.com,',
+      '1,API Owners,review_status,2020-01-06T12:00:00,approved,,user2@example.com,',
     ]
     self.assertEqual(expected_rows, csv_rows)
   
