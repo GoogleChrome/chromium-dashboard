@@ -16,7 +16,7 @@ import collections
 from datetime import date, datetime
 import logging
 from typing import Any
-from google.cloud import ndb  # type: ignore
+from google.cloud import ndb, storage  # type: ignore
 import requests
 
 from api import converters, channels_api
@@ -32,6 +32,7 @@ from internals.feature_links import batch_index_feature_entries
 from internals import stage_helpers
 from internals.webdx_feature_models import WebdxFeatures
 from webstatus_openapi import ApiClient, DefaultApi, Configuration, ApiException, Feature
+from chromestatus_openapi.models import ReviewActivity as ReviewActivityModel
 import settings
 
 class EvaluateGateStatus(FlaskHandler):
@@ -883,3 +884,112 @@ class SendManualOTActivatedEmail(FlaskHandler):
         '/tasks/email-ot-activated',
         {'stage': converters.stage_to_json_dict(stage)})
     return 'Email task enqueued'
+
+
+class GenerateReviewActivityFile(FlaskHandler):
+  """Generate a CSV file with all review activity in ChromeStatus."""
+  DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
+  
+  def _generate_csv(
+    self,
+    start_timestamp: datetime,
+    end_timestamp: datetime
+  ) -> list[str]:
+    """Generate a list of rows to add to the review activity CSV."""
+    # Note: We assume that anyone may view approval comments.
+    activities: list[Activity] = Activity.query(
+      Activity.created > start_timestamp,
+      Activity.created <= end_timestamp,
+    ).order(Activity.created).fetch()
+
+    # Filter deleted activities the user can't see, and activities that have
+    # no gate ID, meaning they do not represent review activity.
+    # TODO(DanielRyanSmith): Confirm if deleted features should deleted features
+    # should have existing activity filtered and handle accordingly.
+    activities = list(filter(
+      lambda a: (a.deleted_by is None
+                 and a.gate_id is not None),
+      activities))
+    gate_ids = set(a.gate_id for a in activities)
+    gates = ndb.get_multi(ndb.Key('Gate', g_id) for g_id in gate_ids)
+    gates_dict: dict[int, Gate] = {g.key.integer_id(): g for g in gates}
+
+    # Add header rows to start.
+    csv_rows: list[str] = []
+    for a in activities:
+      review_status = ''
+      review_assignee = ''
+      comment = a.content or ''
+      gate_type = gates_dict[a.gate_id].gate_type
+      if len(a.amendments):
+        # There should only be 1 amendment for review changes.
+        if a.amendments[0].field_name == 'review_status':
+          review_status = a.amendments[0].new_value
+        if a.amendments[0].field_name == 'review_assignee':
+          review_assignee = a.amendments[0].new_value
+      # Handle CSV character escaping for the comment.
+      if comment:
+        comment = comment.replace('"', '""')
+        comment = f'"{comment}"'
+      csv_rows.append(','.join(
+        [
+          str(a.feature_id),
+          approval_defs.APPROVAL_FIELDS_BY_ID[gate_type].team_name,
+          a.amendments[0].field_name if len(a.amendments) else 'comment',
+        str(datetime.strftime(a.created, self.DATE_FORMAT)),
+          review_status,
+          review_assignee,
+          a.author or '',
+          comment,
+        ]
+      ))
+    return csv_rows
+
+  def _get_last_run_timestamp(self, bucket):
+    """Get the timestamp for the starting interval of querying for new
+    activities."""
+    blob = bucket.blob('review-activity-last-timestamp.txt')
+    if blob.exists():
+      with blob.open('r') as f:
+        timestamp_str = f.read()
+      return datetime.strptime(timestamp_str, self.DATE_FORMAT)
+    # If no previous timestamp exists, start from the beginning.
+    return datetime(2000, 1, 1)
+
+  def _write_csv(self, bucket, csv_rows: list[str]) -> None:
+    """Append the rows to the review activity CSV, or create a new CSV if it
+    does not exist."""
+    blob = bucket.blob('chromestatus-review-activity.csv')
+    csv_contents = ''
+    logging.info(f'adding {len(csv_rows)} new rows to CSV.')
+    if blob.exists():
+      with blob.open('r') as f:
+        existing_csv = f.read()
+        logging.info(f'Existing csv is {existing_csv.count("\n")} lines long')
+        csv_contents = existing_csv + '\n' + '\n'.join(csv_rows)
+    else:
+      csv_contents = (
+        'FeatureID,TeamName,EventType,EventDate,ReviewStatus,ReviewAssignee,'
+        'Author,Content'
+      ) + '\n'.join(csv_rows)
+    blob.upload_from_string(csv_contents)
+
+  def _write_last_run_timestamp(self, bucket, timestamp: datetime) -> None:
+    """Store the date of the last review activity run."""
+    blob = bucket.blob('review-activity-last-timestamp.txt')
+    blob.upload_from_string(timestamp.strftime(self.DATE_FORMAT))
+
+  def get_template_data(self, **kwargs):
+    self.require_cron_header()
+
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(settings.FILES_BUCKET)
+
+    last_run_timestamp = self._get_last_run_timestamp(bucket)
+    now = datetime.now()
+    csv_rows = self._generate_csv(last_run_timestamp, now)
+    self._write_csv(bucket, csv_rows)
+    self._write_last_run_timestamp(bucket, now)
+
+    return (f'{len(csv_rows)} '
+            'new rows added to chromestatus-review-activity.csv uploaded.')
