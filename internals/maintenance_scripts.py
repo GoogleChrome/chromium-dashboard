@@ -963,10 +963,10 @@ class GenerateReviewActivityFile(FlaskHandler):
       with blob.open('a') as f:
         f.write('\n'.join(csv_rows))
     else:
-      csv_rows = [
+      csv_rows.insert(
+        0,
         'FeatureID,TeamName,EventType,EventDate,ReviewStatus,ReviewAssignee,'
-        'Author,Content'
-      ].extend(csv_rows)
+        'Author,Content')
       blob.upload_from_string('\n'.join(csv_rows))
 
   def _write_last_run_timestamp(self, bucket, timestamp: datetime) -> None:
