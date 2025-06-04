@@ -153,7 +153,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   }
 
   convertShippingStageToRolloutStages(stage) {
-// TODO: Consider using Object.groupBy() here to group items by milestone.
+    // TODO: Consider using Object.groupBy() here to group items by milestone.
     const milestones = [
       stage.desktop_first,
       stage.android_first,
