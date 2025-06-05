@@ -1168,14 +1168,14 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
     """Generates CSV in the expected shape and format."""
     csv_rows = self.handler._generate_csv(datetime(1970, 1, 1), datetime.now())
     expected_rows = [
-      '1,API Owners,comment,2020-01-01T11:00:00,,,user1@example.com,"test comment"',
-      '1,API Owners,review_status,2020-01-02T09:00:00,no_response,,user1@example.com,',
-      '1,API Owners,comment,2020-01-03T08:00:00,,,user2@example.com,"test ""comment"" 2"',
-      '1,API Owners,review_status,2020-01-04T12:00:00,needs_work,,user1@example.com,',
-      '1,API Owners,review_status,2020-01-06T12:00:00,approved,,user2@example.com,',
-      '2,Privacy,review_status,2020-01-11T09:00:00,approved,,user3@example.com,',
-      '2,Privacy,review_assignee,2020-01-12T10:00:00,,user3@example.com,user4@example.com,',
-      '2,Privacy,comment,2020-01-15T08:00:00,,,user3@example.com,"test comment 5"'
+      'http://127.0.0.1:7777/feature/1,API Owners,comment,2020-01-01T11:00:00,,,user1@example.com,"test comment",chromestatus',
+      'http://127.0.0.1:7777/feature/1,API Owners,review_status,2020-01-02T09:00:00,NOT_ASSIGNED_TO_LAUNCH_OWNER,,user1@example.com,,chromestatus',
+      'http://127.0.0.1:7777/feature/1,API Owners,comment,2020-01-03T08:00:00,,,user2@example.com,"test ""comment"" 2",chromestatus',
+      'http://127.0.0.1:7777/feature/1,API Owners,review_status,2020-01-04T12:00:00,NEEDS_WORK,,user1@example.com,,chromestatus',
+      'http://127.0.0.1:7777/feature/1,API Owners,review_status,2020-01-06T12:00:00,APPROVED,,user2@example.com,,chromestatus',
+      'http://127.0.0.1:7777/feature/2,Privacy,review_status,2020-01-11T09:00:00,APPROVED,,user3@example.com,,chromestatus',
+      'http://127.0.0.1:7777/feature/2,Privacy,review_assignee,2020-01-12T10:00:00,,user3@example.com,user4@example.com,,chromestatus',
+      'http://127.0.0.1:7777/feature/2,Privacy,comment,2020-01-15T08:00:00,,,user3@example.com,"test comment 5",chromestatus',
     ]
     self.assertEqual(expected_rows, csv_rows)
 
@@ -1184,8 +1184,8 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
     csv_rows = self.handler._generate_csv(
         datetime(2020, 1, 4), datetime(2020, 1, 7))
     expected_rows = [
-      '1,API Owners,review_status,2020-01-04T12:00:00,needs_work,,user1@example.com,',
-      '1,API Owners,review_status,2020-01-06T12:00:00,approved,,user2@example.com,',
+      'http://127.0.0.1:7777/feature/1,API Owners,review_status,2020-01-04T12:00:00,NEEDS_WORK,,user1@example.com,,chromestatus',
+      'http://127.0.0.1:7777/feature/1,API Owners,review_status,2020-01-06T12:00:00,APPROVED,,user2@example.com,,chromestatus',
     ]
     self.assertEqual(expected_rows, csv_rows)
   

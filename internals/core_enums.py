@@ -523,6 +523,15 @@ class BlinkHistogramID(str, Enum):
   webdx_feature = 'WEBDX_FEATURE'
   css_property_id = 'CSS_PROPERTY_ID'
 
+# Statuses used for go/skyhook-dash
+class SkyhookDashStatus(str, Enum):
+  FYI = 'FYI'
+  APPROVED = 'APPROVED'
+  DENIED = 'DENIED'
+  NEEDS_WORK = 'NEEDS_WORK'
+  PENDING_REVIEW = 'PENDING_REVIEW'
+  NOT_ASSIGNED_TO_LAUNCH_OWNER = 'NOT_ASSIGNED_TO_LAUNCH_OWNER'
+
 NO_ACTIVE_DEV = 1
 PROPOSED = 2
 IN_DEVELOPMENT = 3

@@ -889,6 +889,25 @@ class SendManualOTActivatedEmail(FlaskHandler):
 class GenerateReviewActivityFile(FlaskHandler):
   """Generate a CSV file with all review activity in ChromeStatus."""
   DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
+  VOTE_VALUE_MAPPING: dict[str, SkyhookDashStatus] = {
+      'na': SkyhookDashStatus.FYI,
+      'review_requested': SkyhookDashStatus.PENDING_REVIEW,
+      'review_started': SkyhookDashStatus.PENDING_REVIEW,
+      'needs_work': SkyhookDashStatus.NEEDS_WORK,
+      'approved': SkyhookDashStatus.APPROVED,
+      'denied': SkyhookDashStatus.DENIED,
+      'na (self-certified)': SkyhookDashStatus.FYI,
+      'na (verified)': SkyhookDashStatus.FYI,
+      'no_response': SkyhookDashStatus.NOT_ASSIGNED_TO_LAUNCH_OWNER,
+  }
+  
+  def _get_skyhook_status(self, review_status: str) -> str:
+    if review_status is None:
+      return ''
+    if review_status not in self.VOTE_VALUE_MAPPING:
+      logging.warning(f'No status mapping found for status {review_status}.')
+      return ''
+    return self.VOTE_VALUE_MAPPING[review_status].value
   
   def _generate_csv(
     self,
@@ -924,7 +943,7 @@ class GenerateReviewActivityFile(FlaskHandler):
       if len(a.amendments):
         # There should only be 1 amendment for review changes.
         if a.amendments[0].field_name == 'review_status':
-          review_status = a.amendments[0].new_value
+          review_status = self._get_skyhook_status(a.amendments[0].new_value)
         if a.amendments[0].field_name == 'review_assignee':
           review_assignee = a.amendments[0].new_value
       # Handle CSV character escaping for the comment.
@@ -933,7 +952,7 @@ class GenerateReviewActivityFile(FlaskHandler):
         comment = f'"{comment}"'
       csv_rows.append(','.join(
         [
-          str(a.feature_id),
+          f'{settings.SITE_URL}feature/{a.feature_id}',
           approval_defs.APPROVAL_FIELDS_BY_ID[gate_type].team_name,
           a.amendments[0].field_name if len(a.amendments) else 'comment',
         str(datetime.strftime(a.created, self.DATE_FORMAT)),
@@ -941,6 +960,7 @@ class GenerateReviewActivityFile(FlaskHandler):
           review_assignee,
           a.author or '',
           comment,
+          'chromestatus',
         ]
       ))
     return csv_rows
@@ -968,8 +988,7 @@ class GenerateReviewActivityFile(FlaskHandler):
         csv_contents = existing_csv + '\n' + '\n'.join(csv_rows)
     else:
       csv_contents = (
-        'FeatureID,TeamName,EventType,EventDate,ReviewStatus,ReviewAssignee,'
-        'Author,Content'
+        'launch_id,reviewer_name,event_type,date,status,assignee,author,content,source'
       ) + '\n'.join(csv_rows)
     blob.upload_from_string(csv_contents)
 
