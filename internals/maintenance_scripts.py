@@ -988,7 +988,8 @@ class GenerateReviewActivityFile(FlaskHandler):
     last_run_timestamp = self._get_last_run_timestamp(bucket)
     now = datetime.now()
     csv_rows = self._generate_csv(last_run_timestamp, now)
-    self._write_csv(bucket, csv_rows)
+    if len(csv_rows):
+      self._write_csv(bucket, csv_rows)
     self._write_last_run_timestamp(bucket, now)
 
     return (f'{len(csv_rows)} '
