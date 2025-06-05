@@ -901,8 +901,9 @@ class GenerateReviewActivityFile(FlaskHandler):
       'no_response': SkyhookDashStatus.NOT_ASSIGNED_TO_LAUNCH_OWNER,
   }
   
-  def _get_skyhook_status(self, review_status: str) -> str:
+  def _get_skyhook_status(self, review_status: str | None) -> str:
     if review_status is None:
+      logging.warning('Event changed review status to null value.')
       return ''
     if review_status not in self.VOTE_VALUE_MAPPING:
       logging.warning(f'No status mapping found for status {review_status}.')
