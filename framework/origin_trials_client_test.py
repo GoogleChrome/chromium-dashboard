@@ -330,7 +330,7 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
       self, mock_requests_post, mock_api_key_get):
     """If no API key is available, do not send activation request."""
     mock_api_key_get.return_value = None
-    origin_trials_client.create_origin_trial(self.ot_stage)
+    origin_trials_client.activate_origin_trial(self.ot_stage)
 
     mock_api_key_get.assert_called_once()
     # POST request should not be executed with no API key.
@@ -359,4 +359,39 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
       headers={'Authorization': 'Bearer access_token'},
       params={'key': 'api_key_value'},
       json={'trial_id': '-1234567890'}
+    )
+
+  @mock.patch('framework.secrets.get_ot_api_key')
+  @mock.patch('requests.post')
+  def test_create_launch_issue__no_api_key(
+      self, mock_requests_post, mock_api_key_get):
+    """If no API key is available, do not send request."""
+    mock_api_key_get.return_value = None
+    origin_trials_client.create_launch_issue(123, 456)
+
+    mock_api_key_get.assert_called_once()
+    # POST request should not be executed with no API key.
+    mock_requests_post.assert_not_called()
+
+  @mock.patch('framework.secrets.get_ot_api_key')
+  @mock.patch('framework.origin_trials_client._get_ot_access_token')
+  @mock.patch('requests.post')
+  def test_create_launch_issue__with_api_key(
+      self, mock_requests_post, mock_get_ot_access_token, mock_api_key_get):
+    """If an API key is available, request should be sent."""
+    mock_requests_post.return_value = mock.MagicMock(
+        status_code=200, json=lambda : {
+          'issue_id': 789})
+    mock_get_ot_access_token.return_value = 'access_token'
+    mock_api_key_get.return_value = 'api_key_value'
+
+    origin_trials_client.create_launch_issue(123, 456, 789)
+
+    mock_api_key_get.assert_called_once()
+    mock_get_ot_access_token.assert_called_once()
+    mock_requests_post.assert_called_once_with(
+      f'{settings.OT_API_URL}/v1/security-review-issues:create',
+      headers={'Authorization': 'Bearer access_token'},
+      params={'key': 'api_key_value'},
+      json={'feature_id': 123, 'gate_id': 456, 'continuity_id': 789}
     )

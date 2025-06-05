@@ -1,0 +1,4 @@
+urllib3<2.1.0,>=1.25.3
+python-dateutil
+pydantic>=2
+typing-extensions>=4.7.1
