@@ -961,7 +961,6 @@ class GenerateReviewActivityFile(FlaskHandler):
     does not exist."""
     blob = bucket.blob('chromestatus-review-activity.csv')
     csv_contents = ''
-    logging.info(f'adding {len(csv_rows)} new rows to CSV.')
     if blob.exists():
       with blob.open('r') as f:
         existing_csv = f.read()
@@ -988,6 +987,7 @@ class GenerateReviewActivityFile(FlaskHandler):
     last_run_timestamp = self._get_last_run_timestamp(bucket)
     now = datetime.now()
     csv_rows = self._generate_csv(last_run_timestamp, now)
+    logging.info(f'{len(csv_rows)} new rows to add to CSV.')
     if csv_rows:
       self._write_csv(bucket, csv_rows)
     self._write_last_run_timestamp(bucket, now)
