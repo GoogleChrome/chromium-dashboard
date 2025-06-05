@@ -896,9 +896,11 @@ class GenerateReviewActivityFile(FlaskHandler):
       'needs_work': SkyhookDashStatus.NEEDS_WORK,
       'approved': SkyhookDashStatus.APPROVED,
       'denied': SkyhookDashStatus.DENIED,
+      'internal_review': SkyhookDashStatus.PENDING_REVIEW,
       'na (self-certified)': SkyhookDashStatus.FYI,
+      'na_requested': SkyhookDashStatus.PENDING_REVIEW,
       'na (verified)': SkyhookDashStatus.FYI,
-      'no_response': SkyhookDashStatus.NOT_ASSIGNED_TO_LAUNCH_OWNER,
+      'no_response': SkyhookDashStatus.PENDING_REVIEW,
   }
   
   def _get_skyhook_status(self, review_status: str | None) -> str:
