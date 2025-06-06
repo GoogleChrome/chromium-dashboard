@@ -1135,7 +1135,6 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
       created=datetime(2020, 1, 10, 8), content='test comment 4', amendments=[])
     self.activity_7.put()
 
-
     self.activity_8 = Activity(
       feature_id=2, gate_id=12, author='user3@example.com',
       created=datetime(2020, 1, 11, 9), content=None,
@@ -1158,6 +1157,11 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
       feature_id=2, gate_id=12, author='user3@example.com',
       created=datetime(2020, 1, 15, 8), content='test comment 5', amendments=[])
     self.activity_10.put()
+    
+    # Activity whose gate doesn't exist.
+    self.activity_11 = Activity(feature_id=2, gate_id=13, author='user4@example.com', 
+      created=datetime(2020, 1, 14, 8), content='test comment 5', amendments=[])
+    self.activity_11.put()
 
   def tearDown(self):
     for kind in [Activity]:
