@@ -1291,4 +1291,3 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
       ],
     ]
     self.assertEqual(expected_rows, csv_rows)
-  
