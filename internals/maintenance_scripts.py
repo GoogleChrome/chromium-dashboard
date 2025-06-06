@@ -934,15 +934,17 @@ class GenerateReviewActivityFile(FlaskHandler):
       activities))
     gate_ids = set(a.gate_id for a in activities)
     gates = ndb.get_multi(ndb.Key('Gate', g_id) for g_id in gate_ids)
-    gates_dict: dict[int, Gate] = {g.key.integer_id(): g for g in gates}
+    gates_dict: dict[int, Gate] = {g.key.integer_id(): g for g in gates if g}
 
-    # Add header rows to start.
     csv_rows: list[str] = []
     for a in activities:
+      if a.gate_id not in gates_dict:
+        logging.warning(f'No gate found for gate ID {a.gate_id}')
+        continue
+      gate = gates_dict[a.gate_id]
       review_status = ''
       review_assignee = ''
       comment = a.content or ''
-      gate_type = gates_dict[a.gate_id].gate_type
       if len(a.amendments):
         # There should only be 1 amendment for review changes.
         if a.amendments[0].field_name == 'review_status':
@@ -956,7 +958,7 @@ class GenerateReviewActivityFile(FlaskHandler):
       csv_rows.append(','.join(
         [
           f'{settings.SITE_URL}feature/{a.feature_id}',
-          approval_defs.APPROVAL_FIELDS_BY_ID[gate_type].team_name,
+          approval_defs.APPROVAL_FIELDS_BY_ID[gate.gate_type].team_name,
           a.amendments[0].field_name if len(a.amendments) else 'comment',
         str(datetime.strftime(a.created, self.DATE_FORMAT)),
           review_status,
