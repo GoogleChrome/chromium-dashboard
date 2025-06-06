@@ -991,7 +991,7 @@ class GenerateReviewActivityFile(FlaskHandler):
         csv_contents = existing_csv + '\n' + '\n'.join(csv_rows)
     else:
       csv_contents = (
-        'launch_id,reviewer_name,event_type,date,status,assignee,author,content,source'
+        'launch_id,reviewer_name,event_type,date,status,assignee,author,content,source\n'
       ) + '\n'.join(csv_rows)
     blob.upload_from_string(csv_contents)
 
