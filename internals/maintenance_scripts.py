@@ -918,7 +918,7 @@ class GenerateReviewActivityFile(FlaskHandler):
     self,
     start_timestamp: datetime,
     end_timestamp: datetime
-  ) -> int:
+  ) -> list[list[str]]:
     """Generate a list of rows to add to the review activity CSV."""
     # Note: We assume that anyone may view approval comments.
     activities: list[Activity] = Activity.query(
