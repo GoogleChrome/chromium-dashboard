@@ -1168,28 +1168,126 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
       for entity in kind.query():
         entity.key.delete()
 
-  def test_generate_csv_all(self):
+  @mock.patch('logging.warning')
+  def test_generate_new_activities__all(self, mock_warning):
     """Generates CSV in the expected shape and format."""
-    csv_rows = self.handler._generate_csv(datetime(1970, 1, 1), datetime.now())
+    csv_rows = self.handler._generate_new_activities(datetime(1970, 1, 1), datetime.now())
     expected_rows = [
-      'http://127.0.0.1:7777/feature/1,API Owners,comment,2020-01-01T11:00:00,,,user1@example.com,"test comment",chromestatus',
-      'http://127.0.0.1:7777/feature/1,API Owners,review_status,2020-01-02T09:00:00,PENDING_REVIEW,,user1@example.com,,chromestatus',
-      'http://127.0.0.1:7777/feature/1,API Owners,comment,2020-01-03T08:00:00,,,user2@example.com,"test ""comment"" 2",chromestatus',
-      'http://127.0.0.1:7777/feature/1,API Owners,review_status,2020-01-04T12:00:00,NEEDS_WORK,,user1@example.com,,chromestatus',
-      'http://127.0.0.1:7777/feature/1,API Owners,review_status,2020-01-06T12:00:00,APPROVED,,user2@example.com,,chromestatus',
-      'http://127.0.0.1:7777/feature/2,Privacy,review_status,2020-01-11T09:00:00,APPROVED,,user3@example.com,,chromestatus',
-      'http://127.0.0.1:7777/feature/2,Privacy,review_assignee,2020-01-12T10:00:00,,user3@example.com,user4@example.com,,chromestatus',
-      'http://127.0.0.1:7777/feature/2,Privacy,comment,2020-01-15T08:00:00,,,user3@example.com,"test comment 5",chromestatus',
+      [
+        'http://127.0.0.1:7777/feature/1',
+        'API Owners',
+        'comment',
+        '2020-01-01T11:00:00',
+        '',
+        '',
+        'user1@example.com',
+        'test comment',
+        'chromestatus'
+      ],
+      [
+        'http://127.0.0.1:7777/feature/1',
+        'API Owners',
+        'review_status',
+        '2020-01-02T09:00:00',
+        'PENDING_REVIEW',
+        '',
+        'user1@example.com',
+        '',
+        'chromestatus'
+      ],
+      [
+        'http://127.0.0.1:7777/feature/1',
+        'API Owners',
+        'comment',
+        '2020-01-03T08:00:00',
+        '',
+        '',
+        'user2@example.com',
+        'test "comment" 2',
+        'chromestatus'
+      ],
+      [
+        'http://127.0.0.1:7777/feature/1',
+        'API Owners',
+        'review_status',
+        '2020-01-04T12:00:00',
+        'NEEDS_WORK',
+        '',
+        'user1@example.com',
+        '',
+        'chromestatus'],
+      [
+        'http://127.0.0.1:7777/feature/1',
+        'API Owners',
+        'review_status',
+        '2020-01-06T12:00:00',
+        'APPROVED',
+        '',
+        'user2@example.com',
+        '',
+        'chromestatus'
+      ],
+      [
+        'http://127.0.0.1:7777/feature/2',
+        'Privacy',
+        'review_status',
+        '2020-01-11T09:00:00',
+        'APPROVED',
+        '',
+        'user3@example.com',
+        '',
+        'chromestatus'
+      ],
+      [
+        'http://127.0.0.1:7777/feature/2',
+        'Privacy',
+        'review_assignee',
+        '2020-01-12T10:00:00',
+        '',
+        'user3@example.com',
+        'user4@example.com',
+        '',
+        'chromestatus'
+      ],
+      [
+        'http://127.0.0.1:7777/feature/2',
+        'Privacy',
+        'comment',
+        '2020-01-15T08:00:00',
+        '',
+        '',
+        'user3@example.com',
+        'test comment 5',
+        'chromestatus'
+      ],
     ]
     self.assertEqual(expected_rows, csv_rows)
 
-  def test_generate_csv_subset(self):
+  def test_generate_new_activities__subset(self):
     """Generates a subset of rows based on the given timestamps."""
-    csv_rows = self.handler._generate_csv(
+    csv_rows = self.handler._generate_new_activities(
         datetime(2020, 1, 4), datetime(2020, 1, 7))
     expected_rows = [
-      'http://127.0.0.1:7777/feature/1,API Owners,review_status,2020-01-04T12:00:00,NEEDS_WORK,,user1@example.com,,chromestatus',
-      'http://127.0.0.1:7777/feature/1,API Owners,review_status,2020-01-06T12:00:00,APPROVED,,user2@example.com,,chromestatus',
+      [
+        'http://127.0.0.1:7777/feature/1',
+        'API Owners',
+        'review_status',
+        '2020-01-04T12:00:00',
+        'NEEDS_WORK',
+        '',
+        'user1@example.com',
+        '',
+        'chromestatus'],
+      [
+        'http://127.0.0.1:7777/feature/1',
+        'API Owners',
+        'review_status',
+        '2020-01-06T12:00:00',
+        'APPROVED',
+        '',
+        'user2@example.com',
+        '',
+        'chromestatus'
+      ],
     ]
     self.assertEqual(expected_rows, csv_rows)
-  

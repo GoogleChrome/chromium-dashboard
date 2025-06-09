@@ -13,7 +13,9 @@
 # limitations under the License.
 
 import collections
+import csv
 from datetime import date, datetime
+from io import StringIO
 import logging
 from typing import Any
 from google.cloud import ndb, storage  # type: ignore
@@ -912,11 +914,11 @@ class GenerateReviewActivityFile(FlaskHandler):
       return ''
     return self.VOTE_VALUE_MAPPING[review_status].value
   
-  def _generate_csv(
+  def _generate_new_activities(
     self,
     start_timestamp: datetime,
     end_timestamp: datetime
-  ) -> list[str]:
+  ) -> list[list[str]]:
     """Generate a list of rows to add to the review activity CSV."""
     # Note: We assume that anyone may view approval comments.
     activities: list[Activity] = Activity.query(
@@ -932,11 +934,14 @@ class GenerateReviewActivityFile(FlaskHandler):
       lambda a: (a.deleted_by is None
                  and a.gate_id is not None),
       activities))
+    if activities is None:
+      return []
+
     gate_ids = set(a.gate_id for a in activities)
     gates = ndb.get_multi(ndb.Key('Gate', g_id) for g_id in gate_ids)
     gates_dict: dict[int, Gate] = {g.key.integer_id(): g for g in gates if g}
 
-    csv_rows: list[str] = []
+    csv_rows: list[list[str]] = []
     for a in activities:
       if a.gate_id not in gates_dict:
         logging.warning(f'No gate found for gate ID {a.gate_id}')
@@ -951,24 +956,50 @@ class GenerateReviewActivityFile(FlaskHandler):
           review_status = self._get_skyhook_status(a.amendments[0].new_value)
         if a.amendments[0].field_name == 'review_assignee':
           review_assignee = a.amendments[0].new_value
-      # Handle CSV character escaping for the comment.
-      if comment:
-        comment = comment.replace('"', '""')
-        comment = f'"{comment}"'
-      csv_rows.append(','.join(
+      csv_rows.append(
         [
           f'{settings.SITE_URL}feature/{a.feature_id}',
           approval_defs.APPROVAL_FIELDS_BY_ID[gate.gate_type].team_name,
           a.amendments[0].field_name if len(a.amendments) else 'comment',
-        str(datetime.strftime(a.created, self.DATE_FORMAT)),
+          str(datetime.strftime(a.created, self.DATE_FORMAT)),
           review_status,
           review_assignee,
           a.author or '',
           comment,
           'chromestatus',
         ]
-      ))
+      )
+
     return csv_rows
+
+  def _get_activities_csv(self, bucket):
+    blob = bucket.blob('chromestatus-review-activity.csv')
+    csv_io = StringIO()
+    if blob.exists():
+      with blob.open('r') as f:
+        csv_rows = csv.reader(f, lineterminator='\n')
+        row_count = 0
+        for row in csv_rows:
+          row_count += 1
+          csv_io.write(row)
+        logging.info(f'Existing csv is {row_count} lines long')
+        return csv.writer(csv_io, lineterminator='\n'), csv_io
+
+    writer = csv.writer(csv_io, lineterminator='\n')
+    writer.writerow(
+      [
+        'launch_id',
+        'reviewer_name',
+        'event_type',
+        'date',
+        'status',
+        'assignee',
+        'author',
+        'content',
+        'source',
+       ]
+    )
+    return writer, csv_io
 
   def _get_last_run_timestamp(self, bucket):
     """Get the timestamp for the starting interval of querying for new
@@ -981,21 +1012,11 @@ class GenerateReviewActivityFile(FlaskHandler):
     # If no previous timestamp exists, start from the beginning.
     return datetime(2000, 1, 1)
 
-  def _write_csv(self, bucket, csv_rows: list[str]) -> None:
+  def _write_csv(self, bucket, csv_io: StringIO) -> None:
     """Append the rows to the review activity CSV, or create a new CSV if it
     does not exist."""
     blob = bucket.blob('chromestatus-review-activity.csv')
-    csv_contents = ''
-    if blob.exists():
-      with blob.open('r') as f:
-        existing_csv = f.read()
-        logging.info(f'Existing csv is {existing_csv.count("\n")} lines long')
-        csv_contents = existing_csv + '\n' + '\n'.join(csv_rows)
-    else:
-      csv_contents = (
-        'launch_id,reviewer_name,event_type,date,status,assignee,author,content,source\n'
-      ) + '\n'.join(csv_rows)
-    blob.upload_from_string(csv_contents)
+    blob.upload_from_string(csv_io.getvalue())
 
   def _write_last_run_timestamp(self, bucket, timestamp: datetime) -> None:
     """Store the date of the last review activity run."""
@@ -1007,13 +1028,16 @@ class GenerateReviewActivityFile(FlaskHandler):
 
     storage_client = storage.Client()
     bucket = storage_client.bucket(settings.FILES_BUCKET)
+    activities_csv, csv_io = self._get_activities_csv(bucket)
 
     last_run_timestamp = self._get_last_run_timestamp(bucket)
     now = datetime.now()
-    csv_rows = self._generate_csv(last_run_timestamp, now)
+    csv_rows = self._generate_new_activities(last_run_timestamp, now)
     logging.info(f'{len(csv_rows)} new rows to add to CSV.')
     if csv_rows:
-      self._write_csv(bucket, csv_rows)
+      for row in csv_rows:
+        activities_csv.writerow(row)
+      self._write_csv(bucket, csv_io)
     self._write_last_run_timestamp(bucket, now)
 
     return (f'{len(csv_rows)} '
