@@ -979,11 +979,12 @@ class GenerateReviewActivityFile(FlaskHandler):
       with blob.open('r') as f:
         csv_rows = csv.reader(f, lineterminator='\n')
         row_count = 0
+        activities_csv = csv.writer(csv_io, lineterminator='\n')
         for row in csv_rows:
           row_count += 1
-          csv_io.write(row)
+          activities_csv.writerow(row)
         logging.info(f'Existing csv is {row_count} lines long')
-        return csv.writer(csv_io, lineterminator='\n'), csv_io
+        return activities_csv, csv_io
 
     writer = csv.writer(csv_io, lineterminator='\n')
     writer.writerow(
