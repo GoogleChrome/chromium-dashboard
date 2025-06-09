@@ -56,7 +56,9 @@ DEBUGGABILITY_APPROVERS = IN_NDB
 TESTING_APPROVERS = [
     'sadapala@google.com',
     'santhoshkumarm@google.com',
-    'vivianz@google.com',
+    'maguschen@google.com',
+    'karala@google.com',
+    'aichein@google.com',
 ]
 
 DEFAULT_SLO_LIMIT = 5  # Five weekdays in the Pacific timezone.
