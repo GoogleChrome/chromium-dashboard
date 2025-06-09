@@ -979,11 +979,12 @@ class GenerateReviewActivityFile(FlaskHandler):
       with blob.open('r') as f:
         csv_rows = csv.reader(f, lineterminator='\n')
         row_count = 0
+        activities_csv = csv.writer(csv_io, lineterminator='\n')
         for row in csv_rows:
           row_count += 1
-          csv_io.write(row)
+          activities_csv.writerow(row)
         logging.info(f'Existing csv is {row_count} lines long')
-        return csv.writer(csv_io, lineterminator='\n'), csv_io
+        return activities_csv, csv_io
 
     writer = csv.writer(csv_io, lineterminator='\n')
     writer.writerow(
@@ -1028,13 +1029,13 @@ class GenerateReviewActivityFile(FlaskHandler):
 
     storage_client = storage.Client()
     bucket = storage_client.bucket(settings.FILES_BUCKET)
-    activities_csv, csv_io = self._get_activities_csv(bucket)
 
     last_run_timestamp = self._get_last_run_timestamp(bucket)
     now = datetime.now()
     csv_rows = self._generate_new_activities(last_run_timestamp, now)
     logging.info(f'{len(csv_rows)} new rows to add to CSV.')
     if csv_rows:
+      activities_csv, csv_io = self._get_activities_csv(bucket)
       for row in csv_rows:
         activities_csv.writerow(row)
       self._write_csv(bucket, csv_io)
