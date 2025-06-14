@@ -22,6 +22,7 @@ from internals.core_enums import (
     OT_CREATION_FAILED,
     OT_ACTIVATION_FAILED)
 from internals.core_models import Stage
+from internals.review_models import Gate, Vote
 
 from framework import basehandlers
 from framework import permissions
@@ -48,14 +49,16 @@ class OriginTrialsRequests(basehandlers.FlaskHandler):
       stage_dict = stage_to_json_dict(stage)
       # Group up creation and extension requests.
       if stage_dict['stage_type'] in OT_EXTENSION_STAGE_TYPES:
-        # Information will be needed from the original OT stage.
-        ot_stage = Stage.get_by_id(stage_dict['ot_stage_id'])
-        ot_stage_dict = stage_to_json_dict(ot_stage)
-        # Supply both the OT stage and the extension stage.
-        extension_stages.append({
-            'ot_stage': ot_stage_dict,
-            'extension_stage': stage_dict,
-          })
+        gate: Gate = Gate.query(Gate.stage_id == stage_dict['id']).get()
+        if gate and gate.state in (Vote.NA, Vote.APPROVED):
+          # Information will be needed from the original OT stage.
+          ot_stage = Stage.get_by_id(stage_dict['ot_stage_id'])
+          ot_stage_dict = stage_to_json_dict(ot_stage)
+          # Supply both the OT stage and the extension stage.
+          extension_stages.append({
+              'ot_stage': ot_stage_dict,
+              'extension_stage': stage_dict,
+            })
       else:
         creation_stages.append(stage_dict)
 
