@@ -39,7 +39,10 @@ class FeaturesAPITestDelete(testing_config.CustomTestCase):
   def setUp(self):
     self.feature_1 = FeatureEntry(
         name='feature one', summary='sum', category=1,
-        intent_stage=core_enums.INTENT_IMPLEMENT)
+        intent_stage=core_enums.INTENT_IMPLEMENT,
+        creator_email='creator@example.com',
+        owner_emails=['owner@example.com'],
+        editor_emails=['editor@example.com'])
     self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()
 
@@ -61,9 +64,8 @@ class FeaturesAPITestDelete(testing_config.CustomTestCase):
     testing_config.sign_out()
     rediscache.delete(cache_key)
 
-  def test_delete__valid(self):
-    """Admin wants to soft-delete a feature."""
-    testing_config.sign_in('admin@example.com', 123567890)
+  def check_delete_is_valid(self, email):
+    testing_config.sign_in(email, 123567890)
 
     with test_app.test_request_context(self.request_path):
       actual_json = self.handler.do_delete(feature_id=self.feature_id)
@@ -71,6 +73,22 @@ class FeaturesAPITestDelete(testing_config.CustomTestCase):
 
     revised_feature = FeatureEntry.get_by_id(self.feature_id)
     self.assertTrue(revised_feature.deleted)
+
+  def test_delete__valid_admin(self):
+    """Admin wants to soft-delete a feature."""
+    self.check_delete_is_valid('admin@example.com')
+
+  def test_delete__valid_owner(self):
+    """Feature owner wants to soft-delete a feature."""
+    self.check_delete_is_valid('owner@example.com')
+
+  def test_delete__valid_editor(self):
+    """Feature editor wants to soft-delete a feature."""
+    self.check_delete_is_valid('editor@example.com')
+
+  def test_delete__valid_creator(self):
+    """Feature creator wants to soft-delete a feature."""
+    self.check_delete_is_valid('creator@example.com')
 
   def test_delete__forbidden(self):
     """Regular user cannot soft-delete a feature."""
@@ -88,7 +106,7 @@ class FeaturesAPITestDelete(testing_config.CustomTestCase):
     testing_config.sign_in('admin@example.com', 123567890)
 
     with test_app.test_request_context(self.request_path):
-      with self.assertRaises(werkzeug.exceptions.BadRequest):
+      with self.assertRaises(werkzeug.exceptions.NotFound):
         self.handler.do_delete()
 
     revised_feature = FeatureEntry.get_by_id(self.feature_id)

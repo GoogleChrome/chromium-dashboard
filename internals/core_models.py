@@ -94,7 +94,7 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   star_count = ndb.IntegerProperty(default=0)
   search_tags = ndb.StringProperty(repeated=True)
   feature_notes = ndb.TextProperty()  # copy from comments
-  web_feature = ndb.StringProperty()  # Deprecated
+  web_feature = ndb.StringProperty()  # ID from webstatus.dev
   webdx_usecounter_enum = ndb.StringProperty()
 
   # Metadata: Process information
@@ -116,6 +116,7 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   finch_name = ndb.StringProperty()
   non_finch_justification = ndb.TextProperty()
   ongoing_constraints = ndb.TextProperty()
+  rollout_plan = ndb.IntegerProperty(required=True, default=ROLLOUT_100)
 
   # Topic: Adoption (reviewed by API Owners.  Auto-approved gate later?)
   motivation = ndb.TextProperty()
@@ -133,6 +134,7 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   standard_maturity = ndb.IntegerProperty(required=True, default=UNSET_STD)
   spec_link = ndb.StringProperty()
   api_spec = ndb.BooleanProperty(default=False)
+  automation_spec = ndb.BooleanProperty(default=False)
   spec_mentor_emails = ndb.StringProperty(repeated=True)
   interop_compat_risks = ndb.TextProperty()
   prefixed = ndb.BooleanProperty()

@@ -14,6 +14,7 @@ import {
   PLATFORM_CATEGORIES,
   REVIEW_STATUS_CHOICES,
   ROLLOUT_IMPACT,
+  ROLLOUT_PLAN,
   SHIPPED_MILESTONE_FIELDS,
   STAGE_TYPES_DEV_TRIAL,
   STAGE_TYPES_ORIGIN_TRIAL,
@@ -491,8 +492,10 @@ export const ALL_FIELDS: Record<string, Field> = {
     label: 'Web Feature ID',
     attrs: {placeholder: 'Please select a Web feature ID'},
     help_text: html` Select the feature this belongs to in the web-features
-    project: https://github.com/web-platform-dx/web-features. If your feature is
-    not listed, pick "Missing feature".`,
+      project:
+      <a href="https://github.com/web-platform-dx/web-features" target="_blank"
+        >https://github.com/web-platform-dx/web-features</a
+      >. If your feature is not listed, pick "Missing feature".`,
   },
 
   category: {
@@ -790,6 +793,16 @@ export const ALL_FIELDS: Record<string, Field> = {
     label: 'API spec',
     help_text: html` The spec document has details in a specification language
     such as Web IDL, or there is an existing MDN page.`,
+  },
+
+  automation_spec: {
+    type: 'checkbox',
+    initial: false,
+    label: 'Automation spec',
+    help_text: html` The platform has sufficient automation features for website
+    authors to test use of this new feature. These automation features can
+    include new automation APIs, like WebDriver BiDi modules, that are defined
+    in this feature's specification.`,
   },
 
   spec_mentors: {
@@ -1384,6 +1397,16 @@ export const ALL_FIELDS: Record<string, Field> = {
     to the codebase while implementing this feature? We prefer to avoid features
     that require or assume a specific architecture. For most features, the
     answer is "None."`,
+  },
+
+  rollout_plan: {
+    type: 'select',
+    choices: ROLLOUT_PLAN,
+    initial: ROLLOUT_PLAN.ROLLOUT_100[0],
+    label: 'Rollout plan',
+    help_text: html`Normally, WP features that ship in a milestone go to all
+    users of that milestone. If your feature needs to roll out in any other way,
+    mark that here.`,
   },
 
   origin_trial_feedback_url: {

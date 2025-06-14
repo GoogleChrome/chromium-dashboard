@@ -74,9 +74,7 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
       }):
       enterprise_notification_milestone = get_default_first_notice_milestone_for_feature()
 
-    webdx_usecounter_enum = WebDXFeatureObserver.get_enum_by_web_feature(
-      self.form.get('web_feature')
-    )
+    web_feature = self.form.get('web_feature', '')
 
     # Write for new FeatureEntry entity.
     feature_entry = FeatureEntry(
@@ -96,7 +94,7 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
         first_enterprise_notification_milestone=enterprise_notification_milestone,
         blink_components=blink_components,
         tag_review_status=processes.initial_tag_review_status(feature_type),
-        webdx_usecounter_enum=webdx_usecounter_enum)
+        web_feature=web_feature)
     if shipping_year:
       feature_entry.shipping_year = shipping_year
     key: ndb.Key = feature_entry.put()

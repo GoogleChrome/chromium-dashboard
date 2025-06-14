@@ -726,7 +726,12 @@ export class ChromeStatusClient {
     return this.doGet('/blinkcomponents');
   }
 
-  // Webdx Features API
+  // Web Features API
+  async getWebFeatureIDs() {
+    return this.doGet('/web_feature_ids');
+  }
+
+  // Webdx Feature UseCounter enums
   async getWebdxFeatures() {
     return this.doGet('/webdxfeatures');
   }

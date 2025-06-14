@@ -142,6 +142,7 @@ def add_features(server: str, after: datetime, detailsAfter: datetime):
       fe.explainer_links = details['explainer_links']
       fe.requires_embedder_support = details['requires_embedder_support']
       fe.api_spec = details['api_spec']
+      fe.automation_spec = details['automation_spec']
       fe.interop_compat_risks = details['interop_compat_risks']
       fe.all_platforms = details['all_platforms']
       fe.all_platforms_descr = details['all_platforms_descr']

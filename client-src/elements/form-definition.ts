@@ -270,6 +270,7 @@ const FLAT_PROTOTYPE_FIELDS: MetadataFields = {
         'spec_link',
         'standard_maturity',
         'api_spec',
+        'automation_spec',
         'spec_mentors',
         'intent_to_implement_url',
       ],
@@ -416,6 +417,7 @@ const FLAT_PREPARE_TO_SHIP_FIELDS: MetadataFields = {
     {
       name: 'Implementation in Chromium',
       fields: [
+        'rollout_plan',
         'shipped_milestone',
         'shipped_android_milestone',
         'shipped_ios_milestone',
@@ -469,6 +471,7 @@ const PSA_PREPARE_TO_SHIP_FIELDS: MetadataFields = {
     {
       name: 'Implementation in Chromium',
       fields: [
+        'rollout_plan',
         'shipped_milestone',
         'shipped_android_milestone',
         'shipped_ios_milestone',
@@ -621,6 +624,7 @@ const DEPRECATION_PREPARE_TO_SHIP_FIELDS: MetadataFields = {
     {
       name: 'Implementation in Chromium',
       fields: [
+        'rollout_plan',
         'shipped_milestone',
         'shipped_android_milestone',
         'shipped_ios_milestone',

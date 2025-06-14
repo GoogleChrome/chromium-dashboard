@@ -199,6 +199,11 @@
   {% endif %}
 {% endif %}
 
+{% if 'ship' in sections_to_show %}
+  <br><br><h4>Rollout plan</h4>
+  {{feature.rollout_plan_displayname}}
+{% endif %}
+
 
 
 <br><br><h4>Requires code in //chrome?</h4>

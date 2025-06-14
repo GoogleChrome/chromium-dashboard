@@ -14,6 +14,7 @@ import {
 import {
   parseRawQuery,
   renderHTMLIf,
+  renderRelativeDate,
   showToastMessage,
   updateURLParams,
 } from './utils.js';
@@ -125,7 +126,6 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
 
         .toremove {
           font-style: italic;
-          font-weight: bold;
         }
 
         td:not(:first-child),
@@ -538,6 +538,23 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     this.editingFeatureIds = newEditing;
   }
 
+  nowString() {
+    const now = new Date();
+    const formatter = new Intl.DateTimeFormat('en-CA', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: 'numeric',
+      minute: 'numeric',
+      second: 'numeric',
+      hour12: false,
+      timeZone: 'UTC',
+    });
+    let nowStr = formatter.format(now); // YYYY-MM-DD, HH:mm:ss
+    nowStr = nowStr.replace(',', '');
+    return nowStr;
+  }
+
   save(f: Feature) {
     let textarea: SlTextarea = this.shadowRoot?.querySelector(
       '#edit-feature-' + f.id
@@ -558,6 +575,8 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       .updateFeature(submitBody)
       .then(resp => {
         f.summary = newSummary;
+        f.updated.when = this.nowString();
+        f.updated.by = this.user.email;
       })
       .catch(() => {
         showToastMessage(
@@ -622,12 +641,21 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
           html` <section class="feature">
             <strong>${f.name}</strong>
             <p class="toremove">
-              < To remove -
-              <a target="_blank" href="/feature/${f.id}">Feature details</a> -
-              Owners: ${f.browsers.chrome.owners.join(', ')} - Editors:
-              ${(f.editors || []).join(', ')} - First Notice:
-              ${f.first_enterprise_notification_milestone} - Last Updated:
-              ${f.updated.when} >
+              <b>< To remove</b>
+              - <a target="_blank" href="/feature/${f.id}">Feature details</a> -
+              <b>Owners:</b> ${f.browsers.chrome.owners.join(', ')} -
+              <b>Editors:</b> ${(f.editors || []).join(', ')} -
+              <b>First Notice:</b> ${f.first_enterprise_notification_milestone}
+              - <b>Last Updated:</b>
+              <a
+                href="/feature/${f.id}/activity"
+                target="_blank"
+                title=${f.updated.when}
+              >
+                ${renderRelativeDate(f.updated.when)}
+              </a>
+              by ${f.updated.by}
+              <b>></b>
             </p>
             ${this.renderOrEditFeatureSummary(f)}
             <ul>

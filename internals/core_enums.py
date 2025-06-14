@@ -150,6 +150,19 @@ FEATURE_TYPES = {
     FEATURE_TYPE_ENTERPRISE_ID: 'New Feature or removal affecting enterprises',
 }
 
+# When this Web Platform feature ships, how will it be rolled out to users?
+ROLLOUT_100  = 0
+ROLLOUT_0_THEN_100 = 1
+ROLLOUT_GRADUAL = 2
+ROLLOUT_OTHER = 3
+
+ROLLOUT_PLAN_DISPLAYNAMES = {
+  ROLLOUT_100: 'Will ship enabled for all users',
+  ROLLOUT_0_THEN_100: '(RARE) Ships disabled, then flips on for all users',
+  ROLLOUT_GRADUAL: '(RARE) Experiment users ramp up over time',
+  ROLLOUT_OTHER: "(RARE) It's complicated or unusual",
+}
+
 
 # Intent stages and mapping from stage to stage name.
 INTENT_NONE = 0
@@ -510,6 +523,15 @@ class BlinkHistogramID(str, Enum):
   webdx_feature = 'WEBDX_FEATURE'
   css_property_id = 'CSS_PROPERTY_ID'
 
+# Statuses used for go/skyhook-dash
+class SkyhookDashStatus(str, Enum):
+  FYI = 'FYI'
+  APPROVED = 'APPROVED'
+  DENIED = 'DENIED'
+  NEEDS_WORK = 'NEEDS_WORK'
+  PENDING_REVIEW = 'PENDING_REVIEW'
+  NOT_ASSIGNED_TO_LAUNCH_OWNER = 'NOT_ASSIGNED_TO_LAUNCH_OWNER'
+
 NO_ACTIVE_DEV = 1
 PROPOSED = 2
 IN_DEVELOPMENT = 3
@@ -741,6 +763,7 @@ PROPERTY_NAMES_TO_ENUM_DICTS = {
     'browsers.webdev.view': WEB_DEV_VIEWS,
     'rollout_impact': IMPACT_CATEGORIES,
     'rollout_platforms': PLATFORM_CATEGORIES,
+    'rollout_plan': ROLLOUT_PLAN_DISPLAYNAMES,
   }
 
 

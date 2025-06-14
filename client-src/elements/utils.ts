@@ -12,6 +12,7 @@ import {
   OT_SETUP_STATUS_OPTIONS,
   PLATFORMS_DISPLAYNAME,
   ROLLOUT_IMPACT_DISPLAYNAME,
+  ROLLOUT_PLAN_DISPLAYNAME,
   STAGE_FIELD_NAME_MAPPING,
   STAGE_SPECIFIC_FIELDS,
 } from './form-field-enums';
@@ -289,6 +290,9 @@ export function getFieldValueFromFeature(
   }
   if (fieldName === 'enterprise_impact' && value) {
     return ENTERPRISE_IMPACT_DISPLAYNAME[value];
+  }
+  if (fieldName === 'rollout_plan' && value !== undefined) {
+    return ROLLOUT_PLAN_DISPLAYNAME[value];
   }
   if (fieldName === 'active_stage_id' && value) {
     for (const stage of feature.stages) {

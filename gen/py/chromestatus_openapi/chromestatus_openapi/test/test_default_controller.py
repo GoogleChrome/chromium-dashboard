@@ -23,6 +23,7 @@ from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismis
 from chromestatus_openapi.models.get_gate_response import GetGateResponse  # noqa: E501
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
 from chromestatus_openapi.models.get_origin_trials_response import GetOriginTrialsResponse  # noqa: E501
+from chromestatus_openapi.models.get_review_activities_response import GetReviewActivitiesResponse  # noqa: E501
 from chromestatus_openapi.models.get_settings_response import GetSettingsResponse  # noqa: E501
 from chromestatus_openapi.models.get_stars_response import GetStarsResponse  # noqa: E501
 from chromestatus_openapi.models.get_votes_response import GetVotesResponse  # noqa: E501
@@ -431,6 +432,23 @@ class TestDefaultController(BaseTestCase):
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
+    def test_get_review_activities(self):
+        """Test case for get_review_activities
+
+        Return a list of all review activity events in Chromestatus.
+        """
+        query_string = [('start', 'start_example')]
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/activities',
+            method='GET',
+            headers=headers,
+            query_string=query_string)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
     def test_get_stars(self):
         """Test case for get_stars
 
@@ -503,6 +521,21 @@ class TestDefaultController(BaseTestCase):
         }
         response = self.client.open(
             '/api/v0/features/{feature_id}/votes/{gate_id}'.format(feature_id=56, gate_id=56),
+            method='GET',
+            headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_get_web_feature_ids(self):
+        """Test case for get_web_feature_ids
+
+        Get Baseline web feature IDs
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/web_feature_ids',
             method='GET',
             headers=headers)
         self.assert200(response,

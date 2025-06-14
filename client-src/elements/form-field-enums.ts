@@ -92,6 +92,20 @@ export const ROLLOUT_IMPACT_DISPLAYNAME: Record<number, string> = {
   3: 'High', // IMPACT_HIGH
 };
 
+export const ROLLOUT_PLAN: Record<string, [number, string]> = {
+  ROLLOUT_100: [0, 'Will ship enabled for all users'],
+  ROLLOUT_0_THEN_100: [1, '(RARE) Ships disabled, then flips on for all users'],
+  ROLLOUT_GRADUAL: [2, '(RARE) Experiment users ramp up over time'],
+  ROLLOUT_OTHER: [3, "(RARE) It's complicated or unusual"],
+};
+
+export const ROLLOUT_PLAN_DISPLAYNAME: Record<number, string> = {
+  0: ROLLOUT_PLAN.ROLLOUT_100[1],
+  1: ROLLOUT_PLAN.ROLLOUT_0_THEN_100[1],
+  2: ROLLOUT_PLAN.ROLLOUT_GRADUAL[1],
+  3: ROLLOUT_PLAN.ROLLOUT_OTHER[1],
+};
+
 export const USE_COUNTER_TYPE_WEBFEATURE = 0;
 export const USE_COUNTER_TYPE_WEBDXFEATURE = 1;
 export const USE_COUNTER_TYPE_CSS_PROPERTY_ID = 2;

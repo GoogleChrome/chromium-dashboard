@@ -65,7 +65,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
         intent_stage=1, tag_review_status=1, security_review_status=2,
         privacy_review_status=1, continuity_id=123, launch_issue_id=456,
         feature_notes='notes', updated=self.date, accurate_as_of=self.date,
-        created=self.date, webdx_usecounter_enum='321')
+        created=self.date, web_feature='css', webdx_usecounter_enum='321')
     self.fe_1.put()
 
     # Write stages for the feature.
@@ -305,6 +305,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'summary': 'sum',
       'unlisted': False,
       'api_spec': False,
+      'automation_spec': False,
       'enterprise_impact': ENTERPRISE_IMPACT_NONE,
       'enterprise_product_category': 0,
       'shipping_year': 2024,
@@ -372,6 +373,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'experiment_timeline': None,
       'explainer_links': [],
       'feature_notes': 'notes',
+      'web_feature': 'css',
       'webdx_usecounter_enum': '321',
       'ff_views': 5,
       'flag_name': None,
@@ -384,6 +386,8 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'new_crbug_url': 'https://bugs.chromium.org/p/chromium/issues/entry?components=Blink&cc=feature_owner@example.com',
       'non_oss_deps': None,
       'ongoing_constraints': None,
+      'rollout_plan': ROLLOUT_100,
+      'rollout_plan_displayname': ROLLOUT_PLAN_DISPLAYNAMES[ROLLOUT_100],
       'owner_emails': ['feature_owner@example.com'],
       'safari_views': 1,
       'search_tags': [],

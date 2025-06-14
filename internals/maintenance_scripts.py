@@ -13,10 +13,12 @@
 # limitations under the License.
 
 import collections
+import csv
 from datetime import date, datetime
+from io import StringIO
 import logging
 from typing import Any
-from google.cloud import ndb  # type: ignore
+from google.cloud import ndb, storage  # type: ignore
 import requests
 
 from api import converters, channels_api
@@ -30,6 +32,9 @@ from internals.review_models import Gate, Vote, Activity
 from internals.core_enums import *
 from internals.feature_links import batch_index_feature_entries
 from internals import stage_helpers
+from internals.webdx_feature_models import WebdxFeatures
+from webstatus_openapi import ApiClient, DefaultApi, Configuration, ApiException, Feature
+from chromestatus_openapi.models import ReviewActivity as ReviewActivityModel
 import settings
 
 class EvaluateGateStatus(FlaskHandler):
@@ -803,6 +808,36 @@ class BackfillGateDates(FlaskHandler):
                if v.state == Vote.NEEDS_WORK)
 
 
+class FetchWebdxFeatureId(FlaskHandler):
+
+  def get_template_data(self, **kwargs) -> str:
+    """Fetch the complete list of Webdx feature ID available from
+    webstatus.dev APIs and store them in datastore.
+    """
+    self.require_cron_header()
+
+    client = DefaultApi(ApiClient(Configuration(settings.API_WEBSTATUS_DEV_URL)))
+
+    all_data_list: list[Feature] = []
+    page_token: str | None = None
+    is_first: bool = True
+    while is_first or page_token:
+      try:
+        resp = client.list_features(page_token=page_token, page_size=100)
+        all_data_list.extend(resp.data)
+        page_token = resp.metadata.next_page_token
+        is_first = False
+      except ApiException as e:
+        logging.error(
+            'Could not fetch from %s?page_token=%s: %s',
+            settings.API_WEBSTATUS_DEV_URL, page_token, e)
+        return 'Running FetchWebdxFeatureId() job failed.'
+
+    feature_ids_list = [feature_data.feature_id for feature_data in all_data_list]
+    WebdxFeatures.store_webdx_feature_id_list(feature_ids_list)
+    return (f'{len(feature_ids_list)} feature ids are successfully stored.')
+
+
 class SendManualOTCreatedEmail(FlaskHandler):
   """Manually send an email to origin trial contacts that an origin trial has
   been created but not yet activated."""
@@ -851,3 +886,160 @@ class SendManualOTActivatedEmail(FlaskHandler):
         '/tasks/email-ot-activated',
         {'stage': converters.stage_to_json_dict(stage)})
     return 'Email task enqueued'
+
+
+class GenerateReviewActivityFile(FlaskHandler):
+  """Generate a CSV file with all review activity in ChromeStatus."""
+  DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
+  VOTE_VALUE_MAPPING: dict[str, SkyhookDashStatus] = {
+      'na': SkyhookDashStatus.FYI,
+      'review_requested': SkyhookDashStatus.PENDING_REVIEW,
+      'review_started': SkyhookDashStatus.PENDING_REVIEW,
+      'needs_work': SkyhookDashStatus.NEEDS_WORK,
+      'approved': SkyhookDashStatus.APPROVED,
+      'denied': SkyhookDashStatus.DENIED,
+      'internal_review': SkyhookDashStatus.PENDING_REVIEW,
+      'na (self-certified)': SkyhookDashStatus.FYI,
+      'na_requested': SkyhookDashStatus.PENDING_REVIEW,
+      'na (verified)': SkyhookDashStatus.FYI,
+      'no_response': SkyhookDashStatus.PENDING_REVIEW,
+  }
+  
+  def _get_skyhook_status(self, review_status: str | None) -> str:
+    if review_status is None:
+      logging.warning('Event changed review status to null value.')
+      return ''
+    if review_status not in self.VOTE_VALUE_MAPPING:
+      logging.warning(f'No status mapping found for status {review_status}.')
+      return ''
+    return self.VOTE_VALUE_MAPPING[review_status].value
+  
+  def _generate_new_activities(
+    self,
+    start_timestamp: datetime,
+    end_timestamp: datetime
+  ) -> list[list[str]]:
+    """Generate a list of rows to add to the review activity CSV."""
+    # Note: We assume that anyone may view approval comments.
+    activities: list[Activity] = Activity.query(
+      Activity.created > start_timestamp,
+      Activity.created <= end_timestamp,
+    ).order(Activity.created).fetch()
+
+    # Filter deleted activities the user can't see, and activities that have
+    # no gate ID, meaning they do not represent review activity.
+    # TODO(DanielRyanSmith): Confirm if deleted features should deleted features
+    # should have existing activity filtered and handle accordingly.
+    activities = list(filter(
+      lambda a: (a.deleted_by is None
+                 and a.gate_id is not None),
+      activities))
+    if activities is None:
+      return []
+
+    gate_ids = set(a.gate_id for a in activities)
+    gates = ndb.get_multi(ndb.Key('Gate', g_id) for g_id in gate_ids)
+    gates_dict: dict[int, Gate] = {g.key.integer_id(): g for g in gates if g}
+
+    csv_rows: list[list[str]] = []
+    for a in activities:
+      if a.gate_id not in gates_dict:
+        logging.warning(f'No gate found for gate ID {a.gate_id}')
+        continue
+      gate = gates_dict[a.gate_id]
+      review_status = ''
+      review_assignee = ''
+      comment = a.content or ''
+      if len(a.amendments):
+        # There should only be 1 amendment for review changes.
+        if a.amendments[0].field_name == 'review_status':
+          review_status = self._get_skyhook_status(a.amendments[0].new_value)
+        if a.amendments[0].field_name == 'review_assignee':
+          review_assignee = a.amendments[0].new_value
+      csv_rows.append(
+        [
+          f'{settings.SITE_URL}feature/{a.feature_id}',
+          approval_defs.APPROVAL_FIELDS_BY_ID[gate.gate_type].team_name,
+          a.amendments[0].field_name if len(a.amendments) else 'comment',
+          str(datetime.strftime(a.created, self.DATE_FORMAT)),
+          review_status,
+          review_assignee,
+          a.author or '',
+          comment,
+          'chromestatus',
+        ]
+      )
+
+    return csv_rows
+
+  def _get_activities_csv(self, bucket):
+    blob = bucket.blob('chromestatus-review-activity.csv')
+    csv_io = StringIO()
+    if blob.exists():
+      with blob.open('r') as f:
+        csv_rows = csv.reader(f, lineterminator='\n')
+        row_count = 0
+        activities_csv = csv.writer(csv_io, lineterminator='\n')
+        for row in csv_rows:
+          row_count += 1
+          activities_csv.writerow(row)
+        logging.info(f'Existing csv is {row_count} lines long')
+        return activities_csv, csv_io
+
+    writer = csv.writer(csv_io, lineterminator='\n')
+    writer.writerow(
+      [
+        'launch_id',
+        'reviewer_name',
+        'event_type',
+        'date',
+        'status',
+        'assignee',
+        'author',
+        'content',
+        'source',
+       ]
+    )
+    return writer, csv_io
+
+  def _get_last_run_timestamp(self, bucket):
+    """Get the timestamp for the starting interval of querying for new
+    activities."""
+    blob = bucket.blob('review-activity-last-timestamp.txt')
+    if blob.exists():
+      with blob.open('r') as f:
+        timestamp_str = f.read()
+      return datetime.strptime(timestamp_str, self.DATE_FORMAT)
+    # If no previous timestamp exists, start from the beginning.
+    return datetime(2000, 1, 1)
+
+  def _write_csv(self, bucket, csv_io: StringIO) -> None:
+    """Append the rows to the review activity CSV, or create a new CSV if it
+    does not exist."""
+    blob = bucket.blob('chromestatus-review-activity.csv')
+    blob.upload_from_string(csv_io.getvalue())
+
+  def _write_last_run_timestamp(self, bucket, timestamp: datetime) -> None:
+    """Store the date of the last review activity run."""
+    blob = bucket.blob('review-activity-last-timestamp.txt')
+    blob.upload_from_string(timestamp.strftime(self.DATE_FORMAT))
+
+  def get_template_data(self, **kwargs):
+    self.require_cron_header()
+
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(settings.FILES_BUCKET)
+
+    last_run_timestamp = self._get_last_run_timestamp(bucket)
+    now = datetime.now()
+    csv_rows = self._generate_new_activities(last_run_timestamp, now)
+    logging.info(f'{len(csv_rows)} new rows to add to CSV.')
+    if csv_rows:
+      activities_csv, csv_io = self._get_activities_csv(bucket)
+      for row in csv_rows:
+        activities_csv.writerow(row)
+      self._write_csv(bucket, csv_io)
+    self._write_last_run_timestamp(bucket, now)
+
+    return (f'{len(csv_rows)} '
+            'new rows added to chromestatus-review-activity.csv uploaded.')

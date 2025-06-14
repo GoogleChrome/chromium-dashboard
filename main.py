@@ -38,6 +38,7 @@ from api import (
   origin_trials_api,
   permissions_api,
   processes_api,
+  review_activities_api,
   review_latency_api,
   reviews_api,
   settings_api,
@@ -183,7 +184,12 @@ api_routes: list[Route] = [
     Route(f'{API_BASE}/origintrials/<int:feature_id>/<int:extension_stage_id>/extend',
           origin_trials_api.OriginTrialsAPI),
 
+    # This is for the menu of web feature IDs.
+    Route(f'{API_BASE}/web_feature_ids', webdx_feature_api.WebFeatureIDsAPI),
+    # This is for the menu of webdx use counters.
     Route(f'{API_BASE}/webdxfeatures', webdx_feature_api.WebdxFeatureAPI),
+    
+    Route(f'{API_BASE}/activities', review_activities_api.ReviewActivitiesAPI),
 ]
 
 # The Routes below that have no handler specified use SPAHandler.
@@ -303,6 +309,9 @@ internals_routes: list[Route] = [
   Route('/cron/create_origin_trials', maintenance_scripts.CreateOriginTrials),
   Route('/cron/activate_origin_trials',
         maintenance_scripts.ActivateOriginTrials),
+  Route('/cron/fetch_webdx_feature_ids', maintenance_scripts.FetchWebdxFeatureId),
+  Route('/cron/generate_review_activities',
+        maintenance_scripts.GenerateReviewActivityFile),
 
   Route('/admin/find_stop_words', search_fulltext.FindStopWords),
 
@@ -369,11 +378,6 @@ internals_routes: list[Route] = [
 dev_routes: list[Route] = []
 if settings.DEV_MODE:
   dev_routes = [
-
-    ## These routes can be uncommented for local environment use. ##
-
-    # Route('/dev/clear_entities', dev_api.ClearEntities),
-    # Route('/dev/write_dev_data', dev_api.WriteDevData),
     Route('/dev/mock_login', login_api.MockLogin),
   ]
 # All requests to the app-py3 GAE service are handled by this Flask app.

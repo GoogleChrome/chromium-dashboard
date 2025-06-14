@@ -22,7 +22,10 @@ from api import converters
 from internals import maintenance_scripts
 from internals import core_enums
 from internals.core_models import FeatureEntry, Stage, MilestoneSet
-from internals.review_models import Gate, Vote
+from internals.review_models import Activity, Amendment, Gate, Vote
+from internals import stage_helpers
+from internals.webdx_feature_models import WebdxFeatures
+from webstatus_openapi import FeaturePage, ApiException
 import settings
 
 class EvaluateGateStatusTest(testing_config.CustomTestCase):
@@ -859,6 +862,81 @@ class BackfillGateDatesTest(testing_config.CustomTestCase):
         v4.set_on)
 
 
+class FetchWebdxFeatureIdTest(testing_config.CustomTestCase):
+
+   def setUp(self):
+     self.handler = maintenance_scripts.FetchWebdxFeatureId()
+     self.webdx_features = WebdxFeatures(feature_ids = ['test1'])
+     self.webdx_features.put()
+
+   def tearDown(self):
+     for entity in WebdxFeatures.query():
+       entity.key.delete()
+
+   @mock.patch('webstatus_openapi.DefaultApi.list_features')
+   def test_fetch_webdx_feature_ids__success(self, mock_list_features):
+     feature_page_dict = {
+       'data': [
+         {
+           'baseline': {'low_date': '2024-07-25', 'status': 'newly'},
+           'browser_implementations': {
+             'chrome': {'date': '2024-07-23', 'status': 'available', 'version': '127'},
+             'edge': {'date': '2024-07-25', 'status': 'available', 'version': '127'},
+             'firefox': {'date': '2008-06-17', 'status': 'available', 'version': '3'},
+             'safari': {'date': '2023-03-27', 'status': 'available', 'version': '16.4'},
+           },
+           'feature_id': 'foo',
+           'name': 'font-size-adjust',
+           'spec': {
+             'links': [
+               {'link': 'https://drafts.csswg.org/css-fonts-5/#font-size-adjust-prop'}
+             ]
+           },
+           'usage': {'chromium': {'daily': 0.011191}},
+           'wpt': {
+             'experimental': {
+               'chrome': {'score': 0.974514563},
+               'edge': {'score': 0.998786408},
+               'firefox': {'score': 0.939320388},
+               'safari': {'score': 0.998786408},
+             },
+             'stable': {
+               'chrome': {'score': 0.939320388},
+               'edge': {'score': 0.939320388},
+               'firefox': {'score': 0.939320388},
+               'safari': {'score': 0.998786408},
+             },
+           },
+         }
+       ],
+       'metadata': {'next_page_token': 'eyJvZmZzZXQiOjUwfQ', 'total': 1},
+     }
+     feature_page_1 = FeaturePage.from_dict(feature_page_dict)
+     feature_page_2 = FeaturePage.from_dict(feature_page_dict)
+     feature_page_2.data[0].feature_id = 'bar'
+     feature_page_2.metadata.next_page_token = ''
+     mock_list_features.side_effect = [
+       feature_page_1,
+       feature_page_2
+     ]
+
+     result = self.handler.get_template_data()
+
+     self.assertEqual('2 feature ids are successfully stored.', result)
+     expected = WebdxFeatures.get_by_id(self.webdx_features.key.integer_id())
+     self.assertEqual(len(expected.feature_ids), 2)
+     self.assertEqual(expected.feature_ids[0], 'foo')
+     self.assertEqual(expected.feature_ids[1], 'bar')
+
+   @mock.patch('webstatus_openapi.DefaultApi.list_features')
+   def test_fetch_webdx_feature_ids__exceptions(self, mock_list_features):
+     mock_list_features.side_effect = ApiException(status=503)
+
+     result = self.handler.get_template_data()
+
+     self.assertEqual('Running FetchWebdxFeatureId() job failed.', result)
+
+
 class SendManualOTCreatedEmailTest(testing_config.CustomTestCase):
 
   def setUp(self):
@@ -992,3 +1070,224 @@ class SendManualOTActivatedEmailTest(testing_config.CustomTestCase):
     result = self.handler.get_template_data(stage_id=self.ot_stage_id)
     self.assertEqual('Stage 111 does not have ot_display_name set', result)
     mock_enqueue.assert_not_called()
+
+
+class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
+  def setUp(self):
+    self.maxDiff = None
+    self.handler = maintenance_scripts.GenerateReviewActivityFile()
+    
+    self.gate_1 = Gate(id=11, feature_id=1, stage_id=100,
+                       gate_type=4, # API Owners.
+                       state=Vote.NA)
+    self.gate_1.put()
+    
+    self.gate_2 = Gate(id=12, feature_id=2, stage_id=200,
+                       gate_type=32, # Privacy team.
+                       state=Vote.NA)
+    self.gate_2.put()
+
+    self.activity_1 = Activity(
+      feature_id=1, gate_id=11, author='user1@example.com',
+      created=datetime(2020, 1, 1, 11), content='test comment', amendments=[])
+    self.activity_1.put()
+    
+    self.activity_2 = Activity(
+      feature_id=1, gate_id=11, created=datetime(2020, 1, 2, 9),
+      author='user1@example.com', content=None,
+      amendments=[Amendment(
+          field_name='review_status', old_value='na', new_value='no_response')
+      ])
+    self.activity_2.put()
+
+    self.activity_3 = Activity(
+      feature_id=1, gate_id=11, author='user2@example.com',
+      created=datetime(2020, 1, 3, 8), content='test "comment" 2', amendments=[])
+    self.activity_3.put()
+
+    self.activity_4 = Activity(
+      feature_id=1, gate_id=11, created=datetime(2020, 1, 4, 12),
+      author='user1@example.com', content=None,
+      amendments=[Amendment(
+          field_name='review_status', old_value='na', new_value='needs_work')
+      ])
+    self.activity_4.put()
+
+    # Deleted comment.
+    self.activity_5 = Activity(
+      feature_id=1, gate_id=11, author='user2@example.com',
+      created=datetime(2020, 1, 11, 8), content='test comment 3', amendments=[],
+      deleted_by='user2@example.com')
+    self.activity_5.put()
+
+    self.activity_6 = Activity(
+      feature_id=1, gate_id=11, created=datetime(2020, 1, 6, 12),
+      author='user2@example.com', content=None,
+      amendments=[Amendment(
+          field_name='review_status', old_value='needs_work',
+          new_value='approved')
+      ])
+    self.activity_6.put()
+
+    # Comment with no gate ID.
+    self.activity_7 = Activity(
+      feature_id=2, gate_id=None, author='user3@example.com',
+      created=datetime(2020, 1, 10, 8), content='test comment 4', amendments=[])
+    self.activity_7.put()
+
+    self.activity_8 = Activity(
+      feature_id=2, gate_id=12, author='user3@example.com',
+      created=datetime(2020, 1, 11, 9), content=None,
+      amendments=[Amendment(
+          field_name='review_status', old_value='needs_work',
+          new_value='approved')
+      ])
+    self.activity_8.put()
+
+    self.activity_9 = Activity(
+      feature_id=2, gate_id=12, author='user4@example.com',
+      created=datetime(2020, 1, 12, 10), content=None,
+      amendments=[Amendment(
+          field_name='review_assignee', old_value='',
+          new_value='user3@example.com')
+      ])
+    self.activity_9.put()
+
+    self.activity_10 = Activity(
+      feature_id=2, gate_id=12, author='user3@example.com',
+      created=datetime(2020, 1, 15, 8), content='test comment 5', amendments=[])
+    self.activity_10.put()
+    
+    # Activity whose gate doesn't exist.
+    self.activity_11 = Activity(feature_id=2, gate_id=13, author='user4@example.com', 
+      created=datetime(2020, 1, 14, 8), content='test comment 5', amendments=[])
+    self.activity_11.put()
+
+  def tearDown(self):
+    for kind in [Activity]:
+      for entity in kind.query():
+        entity.key.delete()
+
+  @mock.patch('logging.warning')
+  def test_generate_new_activities__all(self, mock_warning):
+    """Generates CSV in the expected shape and format."""
+    csv_rows = self.handler._generate_new_activities(datetime(1970, 1, 1), datetime.now())
+    expected_rows = [
+      [
+        'http://127.0.0.1:7777/feature/1',
+        'API Owners',
+        'comment',
+        '2020-01-01T11:00:00',
+        '',
+        '',
+        'user1@example.com',
+        'test comment',
+        'chromestatus'
+      ],
+      [
+        'http://127.0.0.1:7777/feature/1',
+        'API Owners',
+        'review_status',
+        '2020-01-02T09:00:00',
+        'PENDING_REVIEW',
+        '',
+        'user1@example.com',
+        '',
+        'chromestatus'
+      ],
+      [
+        'http://127.0.0.1:7777/feature/1',
+        'API Owners',
+        'comment',
+        '2020-01-03T08:00:00',
+        '',
+        '',
+        'user2@example.com',
+        'test "comment" 2',
+        'chromestatus'
+      ],
+      [
+        'http://127.0.0.1:7777/feature/1',
+        'API Owners',
+        'review_status',
+        '2020-01-04T12:00:00',
+        'NEEDS_WORK',
+        '',
+        'user1@example.com',
+        '',
+        'chromestatus'],
+      [
+        'http://127.0.0.1:7777/feature/1',
+        'API Owners',
+        'review_status',
+        '2020-01-06T12:00:00',
+        'APPROVED',
+        '',
+        'user2@example.com',
+        '',
+        'chromestatus'
+      ],
+      [
+        'http://127.0.0.1:7777/feature/2',
+        'Privacy',
+        'review_status',
+        '2020-01-11T09:00:00',
+        'APPROVED',
+        '',
+        'user3@example.com',
+        '',
+        'chromestatus'
+      ],
+      [
+        'http://127.0.0.1:7777/feature/2',
+        'Privacy',
+        'review_assignee',
+        '2020-01-12T10:00:00',
+        '',
+        'user3@example.com',
+        'user4@example.com',
+        '',
+        'chromestatus'
+      ],
+      [
+        'http://127.0.0.1:7777/feature/2',
+        'Privacy',
+        'comment',
+        '2020-01-15T08:00:00',
+        '',
+        '',
+        'user3@example.com',
+        'test comment 5',
+        'chromestatus'
+      ],
+    ]
+    self.assertEqual(expected_rows, csv_rows)
+
+  def test_generate_new_activities__subset(self):
+    """Generates a subset of rows based on the given timestamps."""
+    csv_rows = self.handler._generate_new_activities(
+        datetime(2020, 1, 4), datetime(2020, 1, 7))
+    expected_rows = [
+      [
+        'http://127.0.0.1:7777/feature/1',
+        'API Owners',
+        'review_status',
+        '2020-01-04T12:00:00',
+        'NEEDS_WORK',
+        '',
+        'user1@example.com',
+        '',
+        'chromestatus'],
+      [
+        'http://127.0.0.1:7777/feature/1',
+        'API Owners',
+        'review_status',
+        '2020-01-06T12:00:00',
+        'APPROVED',
+        '',
+        'user2@example.com',
+        '',
+        'chromestatus'
+      ],
+    ]
+    self.assertEqual(expected_rows, csv_rows)

@@ -803,7 +803,16 @@ def FlaskApplication(import_name, routes, pattern_base='', debug=False):
   app.config['MAX_CONTENT_LENGTH'] = settings.MAX_REQUEST_CONTENT_LENGTH
 
   # Set the CORS HEADERS.
-  CORS(app, resources={r'/data/*': {'origins': '*'}})
+  ALLOWED_API_ORIGINS = [
+      'https://chromeenterprise.google',
+      'https://chromeenterprise-staging.corp.google.com',
+      r'https://[a-z]+-dot-xl-chrome-enterprise-staging\.uc\.r\.appspot\.com',
+      r'http://localhost:\d+',
+  ]
+  CORS(app, resources={
+      r'/data/.*': {'origins': '*'},
+      r'/api/v0/features.*': {'origins': ALLOWED_API_ORIGINS,
+                              'methods': ['GET']}})
 
   # Set cookie headers in Flask; see
   # https://flask.palletsprojects.com/en/2.0.x/config/

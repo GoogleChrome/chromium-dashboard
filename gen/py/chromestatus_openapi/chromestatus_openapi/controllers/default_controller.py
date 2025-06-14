@@ -24,6 +24,7 @@ from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismis
 from chromestatus_openapi.models.get_gate_response import GetGateResponse  # noqa: E501
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
 from chromestatus_openapi.models.get_origin_trials_response import GetOriginTrialsResponse  # noqa: E501
+from chromestatus_openapi.models.get_review_activities_response import GetReviewActivitiesResponse  # noqa: E501
 from chromestatus_openapi.models.get_settings_response import GetSettingsResponse  # noqa: E501
 from chromestatus_openapi.models.get_stars_response import GetStarsResponse  # noqa: E501
 from chromestatus_openapi.models.get_votes_response import GetVotesResponse  # noqa: E501
@@ -381,6 +382,19 @@ def get_progress(feature_id):  # noqa: E501
     return 'do some magic!'
 
 
+def get_review_activities(start):  # noqa: E501
+    """Return a list of all review activity events in Chromestatus.
+
+     # noqa: E501
+
+    :param start: 
+    :type start: str
+
+    :rtype: Union[GetReviewActivitiesResponse, Tuple[GetReviewActivitiesResponse, int], Tuple[GetReviewActivitiesResponse, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
 def get_stars():  # noqa: E501
     """Get a list of all starred feature IDs for the signed-in user
 
@@ -440,6 +454,17 @@ def get_votes_for_feature_and_gate(feature_id, gate_id):  # noqa: E501
     :type gate_id: int
 
     :rtype: Union[GetVotesResponse, Tuple[GetVotesResponse, int], Tuple[GetVotesResponse, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
+def get_web_feature_ids():  # noqa: E501
+    """Get Baseline web feature IDs
+
+     # noqa: E501
+
+
+    :rtype: Union[List[str], Tuple[List[str], int], Tuple[List[str], int, Dict[str, str]]
     """
     return 'do some magic!'
 
