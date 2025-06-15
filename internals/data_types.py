@@ -264,8 +264,8 @@ class VerboseFeatureDict(TypedDict):
   security_review_status_int: int | None
   privacy_review_status: str
   privacy_review_status_int: int | None
-  continuity_id: int | None
-  launch_issue_id: int | None
+  security_continuity_id: int | None
+  security_launch_issue_id: int | None
 
   # Gate: Testing / Regressions
   ergonomics_risks: str | None
