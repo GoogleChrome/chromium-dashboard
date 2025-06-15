@@ -435,6 +435,8 @@ def feature_entry_to_json_verbose(
       fe.privacy_review_status, REVIEW_STATUS_CHOICES[REVIEW_PENDING]
     ),
     'privacy_review_status_int': fe.privacy_review_status,
+    'security_continuity_id': fe.security_continuity_id,
+    'security_launch_issue_id': fe.security_launch_issue_id,
     'updated_display': None,
     'resources': {
       'samples': fe.sample_links or [],
