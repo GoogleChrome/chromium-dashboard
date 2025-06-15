@@ -13,6 +13,7 @@ export * from './ComponentsUser';
 export * from './ComponentsUsersResponse';
 export * from './CounterEntry';
 export * from './CreateAccountRequest';
+export * from './CreateLaunchIssueRequest';
 export * from './CreateOriginTrialRequest';
 export * from './DeleteAccount200Response';
 export * from './DismissCueRequest';
