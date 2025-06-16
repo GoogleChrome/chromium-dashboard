@@ -174,30 +174,6 @@
 
 /* --- Buttons and Tags --- */
 
-.copy-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background-color: var(--blue-600);
-  color: var(--white);
-  border: none;
-  border-radius: var(--border-radius-md);
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
-}
-
-.copy-btn iron-icon {
-    --iron-icon-height: 20px;
-    --iron-icon-width: 20px;
-}
-
-.copy-btn:hover {
-  background-color: var(--blue-700);
-}
-
 .tag {
     display: inline-block;
     padding: 0.5rem 1rem;

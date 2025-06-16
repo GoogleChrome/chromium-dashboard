@@ -51,10 +51,6 @@
       <article class="ot-card" data-copy-text="{{ copy_data }}">
         <header class="ot-card-header">
           <h3>{{ stage.ot_display_name }}</h3>
-          <button class="copy-btn" title="Copy row data for spreadsheet">
-            <iron-icon icon="chromestatus:content_copy"></iron-icon>
-            <span>Copy for Spreadsheet</span>
-          </button>
         </header>
         <div class="ot-card-body">
           <div class="data-section">
@@ -171,31 +167,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   // Remove loading spinner at page load.
   document.body.classList.remove('loading');
-
-  const toastEl = document.querySelector('chromedash-toast');
-
-  // Add "copy to clipboard" functionality for all copy buttons.
-  const copyButtons = document.querySelectorAll('.copy-btn');
-
-  copyButtons.forEach(button => {
-    button.addEventListener('click', (e) => {
-      const card = e.currentTarget.closest('.ot-card');
-      const textToCopy = card.dataset.copyText;
-
-      if (!textToCopy || !navigator.clipboard) {
-        if (toastEl) toastEl.showMessage('Could not copy text.');
-        return;
-      }
-
-      // Use the modern clipboard API
-      navigator.clipboard.writeText(textToCopy).then(() => {
-        if (toastEl) toastEl.showMessage('Row data copied!');
-      }).catch(err => {
-        console.error('Failed to copy text: ', err);
-        if (toastEl) toastEl.showMessage('Failed to copy text.');
-      });
-    });
-  });
 });
 </script>
 {% endblock %}
