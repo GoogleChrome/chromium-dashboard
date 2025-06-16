@@ -63,16 +63,10 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
         doc_links=['https://example.com/docs'], other_views_notes='other notes',
         devrel_emails=['devrel@example.com'], prefixed=False,
         intent_stage=1, tag_review_status=1, security_review_status=2,
-<<<<<<< Updated upstream
-        privacy_review_status=1, continuity_id=123, launch_issue_id=456,
-        feature_notes='notes', updated=self.date, accurate_as_of=self.date,
-        created=self.date, web_feature='css', webdx_usecounter_enum='321')
-=======
         privacy_review_status=1, security_continuity_id=123,
         security_launch_issue_id=456, feature_notes='notes', updated=self.date,
-        accurate_as_of=self.date, created=self.date,
+        accurate_as_of=self.date, created=self.date, web_feature='css',
         webdx_usecounter_enum='321')
->>>>>>> Stashed changes
     self.fe_1.put()
 
     # Write stages for the feature.
