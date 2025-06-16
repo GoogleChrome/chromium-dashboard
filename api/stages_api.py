@@ -49,14 +49,8 @@ class StagesAPI(basehandlers.EntitiesAPIHandler):
 
   def do_get(self, **kwargs):
     """Return a specified stage based on the given ID."""
-    stage_id = kwargs.get('stage_id', None)
-
-    if stage_id is None or stage_id == 0:
-      self.abort(404, msg='No stage specified.')
-
-    stage: Stage | None = Stage.get_by_id(stage_id)
-    if stage is None:
-      self.abort(404, msg=f'Stage {stage_id} not found')
+    stage_id = kwargs.get('stage_id')
+    stage = self.get_validated_entity(stage_id, Stage)
 
     stage_dict = converters.stage_to_json_dict(stage)
     # Add extensions associated with the stage if they exist.
@@ -83,11 +77,9 @@ class StagesAPI(basehandlers.EntitiesAPIHandler):
 
   def do_post(self, **kwargs):
     """Create a new stage."""
-    feature_id = int(kwargs['feature_id'])
-
-    feature: FeatureEntry | None = FeatureEntry.get_by_id(feature_id)
-    if feature is None:
-      self.abort(404, msg=f'Feature {feature_id} not found')
+    feature_id_arg = kwargs.get('feature_id')
+    feature = self.get_validated_entity(feature_id_arg, FeatureEntry)
+    feature_id = int(feature_id_arg)
 
     body = self.get_json_param_dict()
     if 'stage_type' not in body:
@@ -112,19 +104,10 @@ class StagesAPI(basehandlers.EntitiesAPIHandler):
 
   def do_patch(self, **kwargs):
     """Update an existing stage based on the stage ID."""
-    stage_id = kwargs.get('stage_id', None)
+    stage_id = kwargs.get('stage_id')
+    stage = self.get_validated_entity(stage_id, Stage)
+    feature = self.get_validated_entity(stage.feature_id, FeatureEntry)
 
-    if stage_id is None:
-      self.abort(404, msg='No stage specified.')
-
-    stage: Stage | None = Stage.get_by_id(stage_id)
-    if stage is None:
-      self.abort(404, msg=f'Stage {stage_id} not found')
-
-    feature: FeatureEntry | None = FeatureEntry.get_by_id(stage.feature_id)
-    if feature is None:
-      self.abort(404, msg=(f'Feature {stage.feature_id} not found '
-                           f'associated with stage {stage_id}'))
     feature_id = feature.key.integer_id()
     body = self.get_json_param_dict()
 
@@ -147,13 +130,8 @@ class StagesAPI(basehandlers.EntitiesAPIHandler):
 
   def do_delete(self, **kwargs):
     """Delete an existing stage."""
-    stage_id = kwargs.get('stage_id', None)
-    if stage_id is None:
-      self.abort(404, msg='No stage specified.')
-
-    stage: Stage | None = Stage.get_by_id(stage_id)
-    if stage is None:
-      self.abort(404, msg=f'Stage {stage_id} not found.')
+    stage_id = kwargs.get('stage_id')
+    stage = self.get_validated_entity(stage_id, Stage)
 
     # Validate the user has edit permissions and redirect if needed.
     redirect_resp = permissions.validate_feature_edit_permission(

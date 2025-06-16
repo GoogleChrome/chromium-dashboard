@@ -190,7 +190,7 @@ class StagesAPITest(testing_config.CustomTestCase):
     with test_app.test_request_context(f'{self.request_path}1/stages/3001'):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_get(feature_id=1, stage_id=3001)
-    mock_abort.assert_called_once_with(404, description='Stage 3001 not found')
+    mock_abort.assert_called_once_with(404, description='Stage 3001 not found.')
 
   @mock.patch('flask.abort')
   def test_get__no_id(self, mock_abort):
@@ -199,7 +199,7 @@ class StagesAPITest(testing_config.CustomTestCase):
     with test_app.test_request_context(f'{self.request_path}1/stages'):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
                 self.handler.do_get(feature_id=1)
-    mock_abort.assert_called_once_with(404, description='No stage specified.')
+    mock_abort.assert_called_once_with(400, description='No Stage ID specified.')
 
   def test_get__valid(self):
     """Returns stage data if requesting a valid stage ID."""
@@ -434,7 +434,7 @@ class StagesAPITest(testing_config.CustomTestCase):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post(feature_id=3001)
     mock_abort.assert_called_once_with(
-        404, description=f'Feature 3001 not found')
+        404, description=f'FeatureEntry 3001 not found.')
 
   @mock.patch('flask.abort')
   def test_post__no_stage_type(self, mock_abort):
@@ -528,7 +528,7 @@ class StagesAPITest(testing_config.CustomTestCase):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_patch(feature_id=1, stage_id=3001)
     mock_abort.assert_called_once_with(
-        404, description=f'Stage 3001 not found')
+        404, description=f'Stage 3001 not found.')
 
   @mock.patch('flask.abort')
   def test_patch__no_id(self, mock_abort):
@@ -541,7 +541,7 @@ class StagesAPITest(testing_config.CustomTestCase):
         f'{self.request_path}1/stages', json=json):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_patch(feature_id=1)
-    mock_abort.assert_called_once_with(404, description='No stage specified.')
+    mock_abort.assert_called_once_with(400, description='No Stage ID specified.')
 
   @mock.patch('flask.abort')
   def test_patch__no_feature(self, mock_abort):
@@ -556,7 +556,7 @@ class StagesAPITest(testing_config.CustomTestCase):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_patch(stage_id=30)
 
-    description = 'Feature 99 not found associated with stage 30'
+    description = 'FeatureEntry 99 not found.'
     mock_abort.assert_called_once_with(404, description=description)
 
   @mock.patch('framework.permissions.validate_feature_edit_permission')
@@ -811,7 +811,7 @@ class StagesAPITest(testing_config.CustomTestCase):
     with test_app.test_request_context(f'{self.request_path}1/stages'):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_delete(feature_id=1)
-    mock_abort.assert_called_once_with(404, description='No stage specified.')
+    mock_abort.assert_called_once_with(400, description='No Stage ID specified.')
 
   @mock.patch('flask.abort')
   def test_delete__bad_id(self, mock_abort):

@@ -395,6 +395,54 @@ class BaseHandlerTests(testing_config.CustomTestCase):
       actual = self.handler.get_int_arg('random')
       self.assertEqual(None, actual)
 
+  def test_get_validated_entity__success_int_id(self):
+    """Should return the entity when a valid integer ID is provided."""
+    feature_id = self.fe_1.key.integer_id()
+    actual_feature = self.handler.get_validated_entity(
+        feature_id, FeatureEntry)
+    self.assertEqual(self.fe_1, actual_feature)
+
+    stage_id = self.stage_1.key.integer_id()
+    actual_stage = self.handler.get_validated_entity(stage_id, Stage)
+    self.assertEqual(self.stage_1, actual_stage)
+
+  def test_get_validated_entity__success_str_id(self):
+    """Should return the entity when a valid string ID is provided."""
+    feature_id_str = str(self.fe_1.key.integer_id())
+    actual = self.handler.get_validated_entity(feature_id_str, FeatureEntry)
+    self.assertEqual(self.fe_1, actual)
+
+  @mock.patch('framework.basehandlers.BaseHandler.abort')
+  def test_get_validated_entity__id_is_none(self, mock_abort):
+    """Should abort with 400 if the entity ID is None."""
+    mock_abort.side_effect = werkzeug.exceptions.BadRequest
+    with self.assertRaises(werkzeug.exceptions.BadRequest):
+      self.handler.get_validated_entity(None, FeatureEntry)
+
+    mock_abort.assert_called_once_with(
+        400, msg='No FeatureEntry ID specified.')
+
+  @mock.patch('framework.basehandlers.BaseHandler.abort')
+  def test_get_validated_entity__invalid_id_str(self, mock_abort):
+    """Should abort with 400 if the entity ID is not a valid integer."""
+    mock_abort.side_effect = werkzeug.exceptions.BadRequest
+    with self.assertRaises(werkzeug.exceptions.BadRequest):
+      self.handler.get_validated_entity('junk', FeatureEntry)
+
+    mock_abort.assert_called_once_with(
+        400, msg='Invalid FeatureEntry ID: junk.')
+
+  @mock.patch('framework.basehandlers.BaseHandler.abort')
+  def test_get_validated_entity__not_found(self, mock_abort):
+    """Should abort with 404 if the entity ID does not exist."""
+    non_existent_id = 99999
+    mock_abort.side_effect = werkzeug.exceptions.NotFound
+    with self.assertRaises(werkzeug.exceptions.NotFound):
+      self.handler.get_validated_entity(non_existent_id, FeatureEntry)
+
+    mock_abort.assert_called_once_with(
+        404, msg=f'FeatureEntry {non_existent_id} not found.')
+
 
 class APIHandlerTests(testing_config.CustomTestCase):
 
