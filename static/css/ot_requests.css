@@ -1,0 +1,242 @@
+/*
+ * ot_requests.css
+ * Styles for the Origin Trial Requests admin page.
+ */
+
+:root {
+  --blue-600: #2563eb;
+  --blue-700: #1d4ed8;
+  --slate-100: #f1f5f9;
+  --slate-200: #e2e8f0;
+  --slate-500: #64748b;
+  --slate-600: #475569;
+  --slate-800: #1e293b;
+  --green-100: #dcfce7;
+  --green-700: #15803d;
+  --red-100: #fee2e2;
+  --red-700: #b91c1c;
+  --orange-100: #ffedd5;
+  --orange-500: #f97316;
+  --blue-100: #dbeafe;
+  --blue-500: #3b82f6;
+  --white: #ffffff;
+  --border-radius-md: 0.5rem;
+  --border-radius-lg: 0.75rem;
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+/* --- Main Layout & Headers --- */
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem 2rem;
+}
+
+.page-header {
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--slate-200);
+  margin-bottom: 2rem;
+}
+
+.page-header h1 {
+  font-size: 2.25rem;
+  color: var(--slate-800);
+  margin-bottom: 0.25rem;
+}
+
+.page-header p {
+  font-size: 1.125rem;
+  color: var(--slate-500);
+}
+
+.section-header {
+  margin-bottom: 1.5rem;
+  margin-top: 2.5rem;
+}
+
+.section-header h2 {
+  font-size: 1.75rem;
+  color: var(--slate-800);
+  margin-bottom: 0.25rem;
+}
+
+.section-header p {
+  color: var(--slate-600);
+}
+
+.section-header a {
+  color: var(--blue-600);
+  text-decoration: none;
+}
+.section-header a:hover {
+  text-decoration: underline;
+}
+
+/* --- Card Styles --- */
+
+.ot-card {
+  background-color: var(--white);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--slate-200);
+  box-shadow: var(--shadow-md);
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+.ot-card:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+.ot-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background-color: var(--slate-100);
+  border-bottom: 1px solid var(--slate-200);
+}
+
+.ot-card-header h3,
+.ot-card-header h4 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--slate-800);
+}
+
+.ot-card-body {
+  padding: 1.5rem;
+}
+
+.ot-card.mini-card .ot-card-body {
+    padding: 1rem 1.5rem;
+}
+
+/* --- Data Display --- */
+
+.data-section {
+  margin-bottom: 1.5rem;
+}
+.data-section:last-child {
+    margin-bottom: 0;
+}
+.data-section h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--blue-700);
+  margin-top: 0;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--slate-200);
+  padding-bottom: 0.5rem;
+}
+
+.data-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1rem;
+}
+
+.data-grid.data-grid-full {
+  grid-template-columns: 1fr;
+}
+
+.data-grid.data-grid-trio {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+.data-pair {
+  display: flex;
+  flex-direction: column;
+}
+
+.data-pair .label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--slate-500);
+  margin-bottom: 0.25rem;
+}
+
+.data-pair .value {
+  font-size: 1rem;
+  color: var(--slate-800);
+  word-break: break-all;
+}
+
+.data-pair .value a {
+  color: var(--blue-600);
+  text-decoration: none;
+}
+.data-pair .value a:hover {
+  text-decoration: underline;
+}
+
+/* --- Buttons and Tags --- */
+
+.copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--blue-600);
+  color: var(--white);
+  border: none;
+  border-radius: var(--border-radius-md);
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.copy-btn iron-icon {
+    --iron-icon-height: 20px;
+    --iron-icon-width: 20px;
+}
+
+.copy-btn:hover {
+  background-color: var(--blue-700);
+}
+
+.tag {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius-md);
+    font-weight: 600;
+    text-align: center;
+}
+
+.tag-yes {
+    background-color: var(--green-100);
+    color: var(--green-700);
+}
+
+.tag-no {
+    background-color: var(--red-100);
+    color: var(--red-700);
+}
+
+.status-pill {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  vertical-align: middle;
+  margin-left: 0.5rem;
+}
+.status-pending {
+  background-color: var(--orange-100);
+  color: var(--orange-500);
+}
+.status-progress {
+  background-color: var(--blue-100);
+  color: var(--blue-500);
+}
+
+/* --- Card Deck for smaller cards --- */
+.card-deck {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
