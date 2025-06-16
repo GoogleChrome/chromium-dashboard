@@ -18,7 +18,7 @@ import json
 import logging
 import os
 import re
-from typing import Any, NoReturn, Optional
+from typing import Any, NoReturn, Optional, Type, TypeVar
 
 import flask
 import flask.views
@@ -64,6 +64,8 @@ URL_RE = re.compile(r'\b%s%s%s\b' % (
     SCHEME_PATTERN, DOMAIN_PATTERN, PATH_PARAMS_ANCHOR_PATTERN))
 ALLOWED_SCHEMES = [None, 'http', 'https']
 
+
+T = TypeVar('T')
 
 class BaseHandler(flask.views.MethodView):
 
@@ -172,6 +174,37 @@ class BaseHandler(flask.views.MethodView):
       self.abort(400, msg='Request parameter %r out of range: %r' % (name, val))
     return num
 
+  def get_validated_entity(
+    self,
+    entity_id: int | str | None,
+    entity_model: Type[T],
+  ) -> T:
+    """
+    Fetches and validates a database entity by its ID.
+
+    Args:
+      entity_id: The ID of the entity to fetch.
+      entity_model: The NDB model class of the entity.
+
+    Returns:
+      The fetched entity instance.
+
+    Raises:
+      Aborts the request with a 400 or 404 error if validation fails.
+    """
+    entity_name = entity_model.__name__
+    if entity_id is None:
+      self.abort(400, msg=f'No {entity_name} ID specified.')
+    try:
+      entity_id = int(entity_id)
+    except:
+      self.abort(400, msg=f'Invalid {entity_name} ID: {entity_id}.')
+
+    entity = entity_model.get_by_id(entity_id)
+    if entity is None:
+      self.abort(404, msg=f'{entity_name} {entity_id} not found.')
+
+    return entity
 
 class APIHandler(BaseHandler):
 
