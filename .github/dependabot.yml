@@ -12,9 +12,6 @@ updates:
     commit-message:
       # Prefix all commit messages with "npm"
       prefix: "npm"
-    reviewers:
-      - "DanielRyanSmith"
-      - "jrobbins"
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
@@ -22,9 +19,6 @@ updates:
     commit-message:
       # Prefix all commit messages with "docker"
       prefix: "docker"
-    reviewers:
-      - "jrobbins"
-      - "jcscottiii"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
