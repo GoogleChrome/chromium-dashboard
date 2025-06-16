@@ -64,8 +64,8 @@ URL_RE = re.compile(r'\b%s%s%s\b' % (
     SCHEME_PATTERN, DOMAIN_PATTERN, PATH_PARAMS_ANCHOR_PATTERN))
 ALLOWED_SCHEMES = [None, 'http', 'https']
 
-
-T = TypeVar('T')
+# Generic type variable for our model entities.
+M = TypeVar('M', bound=ndb.Model)
 
 class BaseHandler(flask.views.MethodView):
 
@@ -177,8 +177,8 @@ class BaseHandler(flask.views.MethodView):
   def get_validated_entity(
     self,
     entity_id: int | str | None,
-    entity_model: Type[T],
-  ) -> T:
+    entity_model: Type[M],
+  ) -> M:
     """
     Fetches and validates a database entity by its ID.
 
