@@ -62,6 +62,8 @@ FEATURE_FIELD_DATA_TYPES: FIELD_INFO_DATA_TYPE = [
   ('intent_stage', 'int'),
   ('interop_compat_risks', 'str'),
   ('launch_bug_url', 'link'),
+  ('security_continuity_id', 'int'),
+  ('security_launch_issue_id', 'int'),
   ('screenshot_links', 'links'),
   ('measurement', 'str'),
   ('motivation', 'str'),
