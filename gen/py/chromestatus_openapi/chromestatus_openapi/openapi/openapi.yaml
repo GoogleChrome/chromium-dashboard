@@ -57,32 +57,6 @@ paths:
           description: Account not found
       summary: Delete an account
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
-  /activities:
-    get:
-      operationId: get_review_activities
-      parameters:
-      - explode: true
-        in: query
-        name: start
-        required: true
-        schema:
-          type: string
-        style: form
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetReviewActivitiesResponse'
-          description: List of review activities since the specified start date.
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorMessage'
-          description: Invalid or missing start date.
-      summary: Return a list of all review activity events in Chromestatus.
-      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /components/{componentId}/users/{userId}:
     delete:
       operationId: remove_user_from_component
@@ -1913,76 +1887,6 @@ components:
       - feature_id
       title: Activity
       type: object
-    GetReviewActivitiesResponse:
-      example:
-        activities:
-        - feature_id: 0
-          event_type: event_type
-          author: author
-          event_date: event_date
-          review_assignee: review_assignee
-          review_status: review_status
-          team_name: team_name
-          content: content
-        - feature_id: 0
-          event_type: event_type
-          author: author
-          event_date: event_date
-          review_assignee: review_assignee
-          review_status: review_status
-          team_name: team_name
-          content: content
-      properties:
-        activities:
-          items:
-            $ref: '#/components/schemas/ReviewActivity'
-          title: activities
-          type: array
-      required:
-      - activities
-      title: GetReviewActivitiesResponse
-    ReviewActivity:
-      example:
-        feature_id: 0
-        event_type: event_type
-        author: author
-        event_date: event_date
-        review_assignee: review_assignee
-        review_status: review_status
-        team_name: team_name
-        content: content
-      properties:
-        feature_id:
-          title: feature_id
-          type: integer
-        event_type:
-          title: event_type
-          type: string
-        event_date:
-          title: event_date
-          type: string
-        team_name:
-          title: team_name
-          type: string
-        review_status:
-          title: review_status
-          type: string
-        review_assignee:
-          title: review_assignee
-          type: string
-        author:
-          title: author
-          type: string
-        content:
-          title: content
-          type: string
-      required:
-      - author
-      - event_date
-      - event_type
-      - feature_id
-      - team_name
-      title: ReviewActivity
     CommentsRequest:
       example:
         postToThreadType: 0

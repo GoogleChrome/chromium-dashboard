@@ -34,7 +34,6 @@ from internals.feature_links import batch_index_feature_entries
 from internals import stage_helpers
 from internals.webdx_feature_models import WebdxFeatures
 from webstatus_openapi import ApiClient, DefaultApi, Configuration, ApiException, Feature
-from chromestatus_openapi.models import ReviewActivity as ReviewActivityModel
 import settings
 
 class EvaluateGateStatus(FlaskHandler):
