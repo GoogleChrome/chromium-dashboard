@@ -374,40 +374,70 @@ def extend_origin_trial(trial_id: str, end_milestone: int, intent_url: str):
 
 
 def create_launch_issue(
-    feature_id: int, gate_id: int, security_continuity_id: int | None=None):
-  """Send a request to create a new security review in IssueTracker.
+    feature_id: int,
+    gate_id: int,
+    security_continuity_id: int | None = None
+  ) -> tuple[int | None, str | None]:
+  """
+    Sends a request to create a new security review issue in Issue Tracker.
 
-  Raises:
-    requests.exceptions.RequestException: If the request fails to connect or
-      the HTTP status code is not successful.
+    Args:
+      feature_id: The ID of the feature to create the review for.
+      gate_id: The ID of the gate associated with this review.
+      security_continuity_id: An optional continuity ID if it exists already.
+
+    Returns:
+      A tuple containing the new launch issue ID and/or a failure reason.
+      (issue_id, None) on success.
+      (None, failure_reason) on a known, graceful failure from the API.
+      (None, "Failed for an unknown reason.") if the response is malformed.
+
+    Raises:
+      requests.exceptions.RequestException: If the request fails to connect,
+        times out, or the server returns an HTTP error status (4xx or 5xx).
+      ValueError: If the API key is not configured in the environment.
   """
   if settings.DEV_MODE:
     logging.info('Creation request will not be sent to origin trials API '
                  'in local environment.')
-    return
+    return 0, None
   key = secrets.get_ot_api_key()
-  # Return if no API key is found.
   if key is None:
-    return
+    raise ValueError("Origin trials API key not found.")
 
-  access_token = _get_ot_access_token()
+  issue_id: int | None = None
+  failure_reason: str | None = None
+
   url = (f'{settings.OT_API_URL}/v1/security-review-issues:create')
+  access_token = _get_ot_access_token()
   headers = {'Authorization': f'Bearer {access_token}'}
-  json = {
-    'feature_id': feature_id,
-    'gate_id': gate_id,
+  payload = {
+      'feature_id': feature_id,
+      'gate_id': gate_id,
   }
-
-  if security_continuity_id:
-    json['continuity_id'] = security_continuity_id
+  if security_continuity_id is not None:
+    payload['continuity_id'] = security_continuity_id
 
   try:
     response = requests.post(
-        url, headers=headers, params={'key': key}, json=json)
-    logging.info(response.text)
+        url,
+        headers=headers,
+        params={'key': key},
+        json=payload,
+    )
+    logging.info(f"Response from issue tracker: {response.status_code} {response.text}")
     response.raise_for_status()
-  except requests.exceptions.RequestException as e:
-    logging.exception('Failed to get response from origin trials API.')
-    raise e
-  response_json = response.json()
-  return response_json.get('issue_id'), response_json.get('failed_reason')
+
+    response_json = response.json()
+    logging.info(f'OT API response: {response_json}')
+    issue_id = response_json.get('issue_id')
+    failure_reason = response_json.get('failed_reason')
+
+  except requests.exceptions.JSONDecodeError as e:
+    logging.exception('Failed to decode JSON response from origin trials API.')
+    failure_reason = f"Malformed response from server: {e}"
+  except requests.exceptions.RequestException:
+    logging.exception('Request to origin trials API failed.')
+    raise
+
+  return issue_id, failure_reason
