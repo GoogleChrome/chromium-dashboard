@@ -39,10 +39,7 @@ class SecurityReviewAPI(basehandlers.APIHandler):
     Returns:
       A success message containing the newly created issue ID.
     """
-    try:
-      body = CreateLaunchIssueRequest.from_dict(self.get_json_param_dict())
-    except Exception:
-      self.abort(400, msg='Could not parse request body.')
+    body = CreateLaunchIssueRequest.from_dict(self.get_json_param_dict())
 
     feature = self.get_validated_entity(
       body.feature_id, FeatureEntry)
@@ -67,26 +64,25 @@ class SecurityReviewAPI(basehandlers.APIHandler):
         security_continuity_id=feature.security_continuity_id
       )
     except requests.exceptions.RequestException as e:
-      logging.error(f"Error calling origin trials API: {e}")
+      logging.error(f'Error calling origin trials API: {e}')
       self.abort(
         500, 'Error communicating with the issue creation service.')
     except KeyError:
-      logging.error("Malformed response from origin trials API.")
+      logging.error('Malformed response from origin trials API.')
       self.abort(
         500, 'Malformed response from the issue creation service.')
 
-    if failed_reason:
-      self.abort(500, msg=failed_reason)
-
-    if issue_id is None:
-      # If no issue was created and no reason was given, it's an
-      # unexpected state.
+    if issue_id is None and failed_reason is None:
+      # This is an unexpected state.
       logging.error("Issue creation returned no ID and no failure reason.")
       self.abort(
         500, 'Issue creation failed for an unknown reason.')
 
-    feature.security_launch_issue_id = issue_id
-    feature.put()
+    if issue_id is not None:
+      feature.security_launch_issue_id = issue_id
+      feature.put()
 
+    if failed_reason:
+      self.abort(500, msg=failed_reason)
     return SuccessMessage(
       message=f'Security review issue {issue_id} created successfully.')
