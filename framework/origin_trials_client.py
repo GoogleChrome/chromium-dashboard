@@ -432,10 +432,6 @@ def create_launch_issue(
     logging.info(f'OT API response: {response_json}')
     issue_id = response_json.get('issue_id')
     failure_reason = response_json.get('failed_reason')
-
-  except requests.exceptions.JSONDecodeError as e:
-    logging.exception('Failed to decode JSON response from origin trials API.')
-    failure_reason = f"Malformed response from server: {e}"
   except requests.exceptions.RequestException:
     logging.exception('Request to origin trials API failed.')
     raise

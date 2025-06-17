@@ -433,23 +433,6 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
   @mock.patch('framework.secrets.get_ot_api_key', return_value='api_key')
   @mock.patch('framework.origin_trials_client._get_ot_access_token', return_value='token')
   @mock.patch('requests.post')
-  def test_create_launch_issue__api_malformed_json_response(
-      self, mock_requests_post, mock_get_token, mock_get_key):
-    """Function handles non-JSON responses gracefully."""
-    mock_response = mock.MagicMock()
-    mock_response.status_code = 200
-    # Simulate the response.json() method failing.
-    mock_response.json.side_effect = requests.exceptions.JSONDecodeError('', '', 0)
-    mock_requests_post.return_value = mock_response
-
-    issue_id, failure_reason = origin_trials_client.create_launch_issue(123, 456)
-
-    self.assertIsNone(issue_id)
-    self.assertIn("Malformed response from server", failure_reason)
-
-  @mock.patch('framework.secrets.get_ot_api_key', return_value='api_key')
-  @mock.patch('framework.origin_trials_client._get_ot_access_token', return_value='token')
-  @mock.patch('requests.post')
   def test_create_launch_issue__api_returns_failure_reason(
       self, mock_requests_post, mock_get_token, mock_get_key):
     """Function returns failure reason if provided by the API."""
