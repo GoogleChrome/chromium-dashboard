@@ -32,7 +32,6 @@ from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismis
 from chromestatus_openapi.models.get_gate_response import GetGateResponse
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse
 from chromestatus_openapi.models.get_origin_trials_response import GetOriginTrialsResponse
-from chromestatus_openapi.models.get_review_activities_response import GetReviewActivitiesResponse
 from chromestatus_openapi.models.get_settings_response import GetSettingsResponse
 from chromestatus_openapi.models.get_stars_response import GetStarsResponse
 from chromestatus_openapi.models.get_votes_response import GetVotesResponse
@@ -67,7 +66,6 @@ from chromestatus_openapi.models.process import Process
 from chromestatus_openapi.models.process_stage import ProcessStage
 from chromestatus_openapi.models.progress_item import ProgressItem
 from chromestatus_openapi.models.reject_unneeded_get_request import RejectUnneededGetRequest
-from chromestatus_openapi.models.review_activity import ReviewActivity
 from chromestatus_openapi.models.review_latency import ReviewLatency
 from chromestatus_openapi.models.set_star_request import SetStarRequest
 from chromestatus_openapi.models.sign_in_request import SignInRequest
