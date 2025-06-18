@@ -2260,6 +2260,15 @@ components:
           value: "{}"
       title: CreateOriginTrialRequest
       type: object
+    VerifyContinuityIssueResponse:
+      properties:
+        verification_status:
+          type: boolean
+        verification_failure_reason:
+          type: string
+        launch_issue_id:
+          type: integer
+      type: object
     CreateLaunchIssueRequest:
       properties:
         feature_id:

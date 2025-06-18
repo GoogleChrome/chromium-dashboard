@@ -19,6 +19,17 @@ This module provides the API handler for creating security review issues.
 import logging
 
 import requests
+from chromestatus_openapi.models import (
+  CreateLaunchIssueRequest,
+  SuccessMessage,
+  VerifyContinuityIssueResponse
+)
+
+from framework import basehandlers, origin_trials_client, permissions
+
+import requests
+
+import requests
 from chromestatus_openapi.models import CreateLaunchIssueRequest, SuccessMessage
 
 from framework import basehandlers, origin_trials_client, permissions
@@ -27,6 +38,37 @@ from internals.review_models import Gate
 
 class SecurityReviewAPI(basehandlers.APIHandler):
   """API handler for creating security review issues in the issue tracker."""
+
+  def do_get(self, **kwargs) -> VerifyContinuityIssueResponse:
+    """Endpoint to verify a continuity issue ID and return its launch issue ID.
+
+    This endpoint is used to check if a continuity-tracking bug from
+    a security review is valid and linked to an existing feature launch bug
+    in Issue Tracker.
+
+    Args:
+      **kwargs: Must contain 'continuity_id'.
+        continuity_id: The integer ID of the continuity-tracking bug.
+
+    Returns:
+      A VerifyContinuityIssueResponse object containing the associated
+        launch bug ID, if found, as well as a possible verification failure
+        reason.
+    """
+    continuity_id_arg = kwargs.get('continuity_id')
+    if continuity_id_arg is None:
+      self.abort(400, msg='No continuity ID provided.')
+    try:
+      continuity_id = int(continuity_id_arg)
+    except (ValueError, TypeError):
+      self.abort(400, msg='A valid continuity ID parameter is required.')
+
+    try:
+      resp_dict = origin_trials_client.verify_continuity_issue(continuity_id)
+    except requests.exceptions.RequestException as e:
+      self.abort(500, msg=f'Error communicating with origin trials API: {e}')
+
+    return VerifyContinuityIssueResponse.from_dict(resp_dict)
 
   def do_post(self, **kwargs) -> SuccessMessage:
     """

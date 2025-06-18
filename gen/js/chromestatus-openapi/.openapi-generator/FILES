@@ -83,6 +83,7 @@ src/models/SuccessMessage.ts
 src/models/SurveyAnswers.ts
 src/models/TokenRefreshResponse.ts
 src/models/UserPermissions.ts
+src/models/VerifyContinuityIssueResponse.ts
 src/models/Vote.ts
 src/models/index.ts
 src/runtime.ts
