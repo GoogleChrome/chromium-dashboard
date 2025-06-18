@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+import logging
 from google.cloud import ndb
 
 from api.converters import stage_to_json_dict
@@ -53,6 +55,11 @@ class OriginTrialsRequests(basehandlers.FlaskHandler):
         if gate and gate.state in (Vote.NA, Vote.APPROVED):
           # Information will be needed from the original OT stage.
           ot_stage = Stage.get_by_id(stage_dict['ot_stage_id'])
+          if ot_stage is None:
+            logging.warning(
+              f'Extension stage {stage_dict["id"]} '
+              f'found with invalid OT stage ID {stage_dict["ot_stage_id"]}.')
+            continue
           ot_stage_dict = stage_to_json_dict(ot_stage)
           # Supply both the OT stage and the extension stage.
           extension_stages.append({
