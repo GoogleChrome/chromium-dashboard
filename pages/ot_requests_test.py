@@ -95,7 +95,7 @@ class OriginTrialsRequestsTest(testing_config.CustomTestCase):
     self.app_admin.put()
 
   def tearDown(self):
-    for kind in [FeatureEntry, Stage, Gate]:
+    for kind in [AppUser, FeatureEntry, Stage, Gate]:
       for entity in kind.query():
         entity.key.delete()
     testing_config.sign_out()
