@@ -1395,6 +1395,16 @@ components:
       allOf:
         -  $ref: '#/components/schemas/StageField'
         -  $ref: '#/components/schemas/MilestoneSetField'
+    CreateLaunchIssueRequest:
+      type: object
+      properties:
+        feature_id:
+          type: integer
+        gate_id:
+          type: integer
+      required:
+        - feature_id
+        - gate_id
     StageField:
       type: object
       properties:

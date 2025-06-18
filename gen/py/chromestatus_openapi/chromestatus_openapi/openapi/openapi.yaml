@@ -2260,6 +2260,16 @@ components:
           value: "{}"
       title: CreateOriginTrialRequest
       type: object
+    CreateLaunchIssueRequest:
+      properties:
+        feature_id:
+          type: integer
+        gate_id:
+          type: integer
+      required:
+      - feature_id
+      - gate_id
+      type: object
     StageField:
       properties:
         announcement_url:

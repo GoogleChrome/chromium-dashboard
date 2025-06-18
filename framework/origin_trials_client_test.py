@@ -15,6 +15,7 @@
 import testing_config  # Must be imported before the module under test.
 
 import flask
+import requests
 from unittest import mock
 
 from framework import origin_trials_client
@@ -330,7 +331,7 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
       self, mock_requests_post, mock_api_key_get):
     """If no API key is available, do not send activation request."""
     mock_api_key_get.return_value = None
-    origin_trials_client.create_origin_trial(self.ot_stage)
+    origin_trials_client.activate_origin_trial(self.ot_stage)
 
     mock_api_key_get.assert_called_once()
     # POST request should not be executed with no API key.
@@ -360,3 +361,87 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
       params={'key': 'api_key_value'},
       json={'trial_id': '-1234567890'}
     )
+
+  @mock.patch('framework.secrets.get_ot_api_key')
+  def test_create_launch_issue__no_api_key(self, mock_get_key):
+    """ValueError is raised if the API key is not configured."""
+    mock_get_key.return_value = None
+
+    # Assert that the specific, documented exception is raised.
+    with self.assertRaises(ValueError, msg="Origin trials API key not found."):
+      origin_trials_client.create_launch_issue(123, 456)
+
+    mock_get_key.assert_called_once()
+
+  @mock.patch('framework.secrets.get_ot_api_key', return_value='api_key')
+  @mock.patch('framework.origin_trials_client._get_ot_access_token', return_value='token')
+  @mock.patch('requests.post')
+  def test_create_launch_issue__success_with_continuity_id(
+      self, mock_requests_post, mock_get_token, mock_get_key):
+    """On success with a continuity ID, the correct API call is made and ID is returned."""
+    mock_response = mock.MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {'issue_id': 789}
+    mock_requests_post.return_value = mock_response
+    
+    issue_id, failure_reason = origin_trials_client.create_launch_issue(
+        123, 456, security_continuity_id=999)
+
+    self.assertEqual(issue_id, 789)
+    self.assertIsNone(failure_reason)
+
+    expected_payload = {
+        'feature_id': 123, 'gate_id': 456, 'continuity_id': 999}
+    mock_requests_post.assert_called_once_with(
+        f'{settings.OT_API_URL}/v1/security-review-issues:create',
+        headers={'Authorization': 'Bearer token'},
+        params={'key': 'api_key'},
+        json=expected_payload
+    )
+
+  @mock.patch('framework.secrets.get_ot_api_key', return_value='api_key')
+  @mock.patch('framework.origin_trials_client._get_ot_access_token', return_value='token')
+  @mock.patch('requests.post')
+  def test_create_launch_issue__success_without_continuity_id(
+      self, mock_requests_post, mock_get_token, mock_get_key):
+    """When continuity ID is None, it is correctly omitted from the payload."""
+    mock_response = mock.MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {'issue_id': 789}
+    mock_requests_post.return_value = mock_response
+
+    origin_trials_client.create_launch_issue(123, 456, security_continuity_id=None)
+
+    # Assert that the 'continuity_id' key is not in the JSON payload.
+    expected_payload = {'feature_id': 123, 'gate_id': 456}
+    mock_requests_post.assert_called_once_with(
+        mock.ANY, headers=mock.ANY, params=mock.ANY, json=expected_payload)
+
+  @mock.patch('framework.secrets.get_ot_api_key', return_value='api_key')
+  @mock.patch('framework.origin_trials_client._get_ot_access_token', return_value='token')
+  @mock.patch('requests.post')
+  def test_create_launch_issue__api_http_error(
+      self, mock_requests_post, mock_get_token, mock_get_key):
+    """RequestException is raised if the API returns a non-200 status code."""
+    mock_response = mock.MagicMock()
+    mock_response.raise_for_status.side_effect = requests.exceptions.HTTPError
+    mock_requests_post.return_value = mock_response
+
+    with self.assertRaises(requests.exceptions.RequestException):
+      origin_trials_client.create_launch_issue(123, 456)
+
+  @mock.patch('framework.secrets.get_ot_api_key', return_value='api_key')
+  @mock.patch('framework.origin_trials_client._get_ot_access_token', return_value='token')
+  @mock.patch('requests.post')
+  def test_create_launch_issue__api_returns_failure_reason(
+      self, mock_requests_post, mock_get_token, mock_get_key):
+    """Function returns failure reason if provided by the API."""
+    mock_response = mock.MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {'failed_reason': 'Invalid feature ID.'}
+    mock_requests_post.return_value = mock_response
+
+    issue_id, failure_reason = origin_trials_client.create_launch_issue(123, 456)
+    
+    self.assertIsNone(issue_id)
+    self.assertEqual(failure_reason, 'Invalid feature ID.')
