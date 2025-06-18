@@ -417,11 +417,12 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
     mock_requests_post.assert_called_once_with(
         mock.ANY, headers=mock.ANY, params=mock.ANY, json=expected_payload)
 
+  @mock.patch('logging.exception')
   @mock.patch('framework.secrets.get_ot_api_key', return_value='api_key')
   @mock.patch('framework.origin_trials_client._get_ot_access_token', return_value='token')
   @mock.patch('requests.post')
   def test_create_launch_issue__api_http_error(
-      self, mock_requests_post, mock_get_token, mock_get_key):
+      self, mock_requests_post, mock_get_token, mock_get_key, mock_log):
     """RequestException is raised if the API returns a non-200 status code."""
     mock_response = mock.MagicMock()
     mock_response.raise_for_status.side_effect = requests.exceptions.HTTPError
@@ -511,11 +512,12 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
     )
     mock_requests_get.return_value.raise_for_status.assert_called_once()
 
+  @mock.patch('logging.exception')
   @mock.patch('requests.get')
   @mock.patch('framework.origin_trials_client._get_ot_access_token')
   @mock.patch('framework.secrets.get_ot_api_key')
   def test_verify_continuity_issue__api_http_error(
-      self, mock_api_key_get, mock_get_token, mock_requests_get):
+      self, mock_api_key_get, mock_get_token, mock_requests_get, mock_log):
     """An HTTP error from the API should raise a RequestException."""
     continuity_id = 102
     mock_api_key_get.return_value = 'fake_key'
