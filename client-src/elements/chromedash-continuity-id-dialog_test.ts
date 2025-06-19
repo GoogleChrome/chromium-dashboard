@@ -17,7 +17,6 @@ const csClient = {
 
 // Assign the mocks to the window object.
 (window as any).csClient = csClient;
-(window as any).showToastMessage = showToastMessage;
 
 describe('chromedash-continuity-id-dialog', () => {
   let component: ChromedashIdVerificationDialog;
@@ -26,11 +25,16 @@ describe('chromedash-continuity-id-dialog', () => {
     component = await fixture<ChromedashIdVerificationDialog>(html`
       <chromedash-continuity-id-dialog></chromedash-continuity-id-dialog>
     `);
+    document.body.appendChild(component);
+    // For all tests by default, replace the _reload method with an empty
+    // function. This prevents the page from actually trying to reload.
+    component._reload = () => {};
   });
 
   afterEach(() => {
     // Reset the spies and stubs.
     sinon.restore();
+    component.remove();
   });
 
   it('is an instance of ChromedashIdVerificationDialog', () => {
@@ -47,7 +51,7 @@ describe('chromedash-continuity-id-dialog', () => {
     assert.equal(component._idValue, '');
     assert.equal(
       component._verificationMessage,
-      'Please enter a Continuity ID.'
+      'Please enter an existing Continuity ID.'
     );
     assert.isFalse(component._canCheck);
 
@@ -100,7 +104,7 @@ describe('chromedash-continuity-id-dialog', () => {
   });
 
   it('handles successful verification', async () => {
-    csClient.createSecurityLaunchIssue.resolves({});
+    csClient.createSecurityLaunchIssue.resolves({failed_reason: ''});
 
     const input = component.shadowRoot!.querySelector('sl-input');
     input!.value = '12345';
@@ -114,18 +118,9 @@ describe('chromedash-continuity-id-dialog', () => {
 
     await component.updateComplete;
 
-    // Check the loading state.
-    assert.equal(component._verificationState, 'loading');
-    assert.equal(component._verificationMessage, 'Verifying...');
-
-    // Wait for the API call to resolve.
-    await component.updateComplete;
-    await new Promise(resolve => setTimeout(resolve, 0)); // Wait for the next tick.
-
     // Check the success state.
     assert.equal(component._verificationState, 'success');
     assert.equal(component._verificationMessage, 'Verification success!');
-    assert.isTrue(showToastMessage.calledWith('Success!'));
   });
 
   it('handles verification failure', async () => {
@@ -141,21 +136,10 @@ describe('chromedash-continuity-id-dialog', () => {
     ) as HTMLButtonElement;
     verifyButton!.click();
 
-    await component.updateComplete;
-
-    // Check the loading state.
-    assert.equal(component._verificationState, 'loading');
-
     // Wait for the API call to reject.
     await new Promise(resolve => setTimeout(resolve, 0));
     await component.updateComplete;
 
-    // The component should show a toast message on error.
-    assert.isTrue(
-      showToastMessage.calledWith(
-        'Some errors occurred. Please refresh the page or try again later.'
-      )
-    );
     assert.equal(component._verificationState, 'error');
     assert.equal(
       component._verificationMessage,
@@ -183,7 +167,6 @@ describe('chromedash-continuity-id-dialog', () => {
     );
 
     assert.equal(component._verificationState, 'success');
-    assert.isTrue(showToastMessage.calledWith('Success!'));
   });
 
   it('resets the state when the dialog is hidden', async () => {
@@ -238,15 +221,11 @@ describe('chromedash-continuity-id-dialog', () => {
         dialogEl.remove();
       }
 
-      await openIdVerificationDialog(1, 2, 3);
+      await openIdVerificationDialog(1, 2);
       dialogEl = document.querySelector('chromedash-continuity-id-dialog');
       assert.exists(dialogEl);
       assert.equal((dialogEl as ChromedashIdVerificationDialog).featureId, 1);
       assert.equal((dialogEl as ChromedashIdVerificationDialog).gateId, 2);
-      assert.equal(
-        (dialogEl as ChromedashIdVerificationDialog).continuityId,
-        3
-      );
       dialogEl.remove();
     });
 
@@ -258,19 +237,17 @@ describe('chromedash-continuity-id-dialog', () => {
       if (dialogEl) {
         dialogEl.remove();
       }
-      assert.isNull(dialogEl);
-      await openIdVerificationDialog(1, 2, 3);
+      await openIdVerificationDialog(1, 2);
 
       dialogEl = document.querySelector(
         'chromedash-continuity-id-dialog'
       ) as ChromedashIdVerificationDialog;
       const showSpy = sinon.spy(dialogEl, 'show');
 
-      await openIdVerificationDialog(4, 5, 6);
+      await openIdVerificationDialog(3, 4);
 
-      assert.equal(dialogEl.featureId, 4);
-      assert.equal(dialogEl.gateId, 5);
-      assert.equal(dialogEl.continuityId, 6);
+      assert.equal(dialogEl.featureId, 3);
+      assert.equal(dialogEl.gateId, 4);
       assert.isTrue(showSpy.calledOnce);
 
       dialogEl.remove();

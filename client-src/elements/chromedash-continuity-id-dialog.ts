@@ -12,12 +12,10 @@ import {showToastMessage} from './utils.js';
  * Opens the singleton dialog for ID verification.
  * @param featureId The ID of the feature on the page.
  * @param gateId The ID of the gate that the dialog was dispatched from.
- * @param continuityId The feature's Continuity ID if it exists.
  */
 export async function openIdVerificationDialog(
   featureId: number,
-  gateId: number,
-  continuityId?: number
+  gateId: number
 ) {
   let idVerificationDialogEl = document.querySelector(
     'chromedash-continuity-id-dialog'
@@ -32,7 +30,6 @@ export async function openIdVerificationDialog(
   }
 
   // Configure the dialog with the provided parameters.
-  idVerificationDialogEl.continuityId = continuityId;
   idVerificationDialogEl.featureId = featureId;
   idVerificationDialogEl.gateId = gateId;
   idVerificationDialogEl.reset();
@@ -59,14 +56,14 @@ export class ChromedashIdVerificationDialog extends LitElement {
   @state()
   _canCheck: boolean = false;
 
+  @state()
+  _reload = () => location.reload();
+
   @property({type: Number})
   featureId = 0;
 
   @property({type: Number})
   gateId = 0;
-
-  @property()
-  continuityId?: number;
 
   static get styles() {
     return [
@@ -135,7 +132,7 @@ export class ChromedashIdVerificationDialog extends LitElement {
 
   /** Resets the component to its initial state. */
   reset() {
-    this._idValue = this.continuityId ? this.continuityId.toString() : '';
+    this._idValue = '';
     this._verificationState = 'idle';
     this._verificationMessage = 'Please enter an existing Continuity ID.';
     this._canCheck = false;
@@ -179,7 +176,7 @@ export class ChromedashIdVerificationDialog extends LitElement {
         this._verificationMessage = 'Verification success!';
         setTimeout(() => {
           this.dialog.hide();
-          location.reload();
+          this._reload();
         }, 3000);
       }
     } catch (error) {
