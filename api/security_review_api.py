@@ -17,20 +17,13 @@ This module provides the API handler for creating security review issues.
 """
 
 import logging
-
 import requests
+
 from chromestatus_openapi.models import (
   CreateLaunchIssueRequest,
   SuccessMessage,
   VerifyContinuityIssueResponse
 )
-
-from framework import basehandlers, origin_trials_client, permissions
-
-import requests
-
-import requests
-from chromestatus_openapi.models import CreateLaunchIssueRequest, SuccessMessage
 
 from framework import basehandlers, origin_trials_client, permissions
 from internals.core_models import FeatureEntry
